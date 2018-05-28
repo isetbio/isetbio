@@ -10,11 +10,11 @@ function [uData, h] = plot(os, pType, varargin)
 %    Examples are contained in the code. To access, type 'edit plot.m'
 %    into the Command Window.
 %
-% Inputs: 
+% Inputs:
 %	 os       - osLinear object
 %    pType    - Plot Type. 'current filters' is a type specific to
 %               osLinear, which converts absorptions to photo current for a
-%               linear model. Other options include 'isomerizations', 
+%               linear model. Other options include 'isomerizations',
 %               'current', 'filter kernels', 'all'.
 %    varargin - (Optional) Additional information for the plot.
 %
@@ -34,7 +34,8 @@ function [uData, h] = plot(os, pType, varargin)
 
 % Examples:
 %{
-    % ETTBSkip. Even with initializing the osL object, the functions do not work.
+    % ETTBSkip. Even when you initialize the osL object, the functions do
+    % not work.
     osL = osCreate;
     osL.plot(absorptions, 'type', 'isomerizations')
     osL.plot(absorptions, 'type', 'current')
@@ -65,19 +66,19 @@ switch ieParamFormat(pType)
     case {'impulseresponse', 'currentfilters'}
         % Plot linear temporal filters for L, M and S cones.
         h = vcNewGraphWin;
-        
+
         if isempty(os.lmsConeFilter), os.linearFilters(cmosaic); end
         tSamples = os.timeAxis;
         uData.t = tSamples;
         uData.y = os.lmsConeFilter;
-        
+
         plot(tSamples, os.lmsConeFilter(:, 1), 'r-', ...
             tSamples, os.lmsConeFilter(:, 2), 'g-', ...
             tSamples, os.lmsConeFilter(:, 3), 'b-');
         xlabel('Time (sec)');
         ylabel('Current (pA)');
         grid on;
-        
+
         % Create legend and title
         l = cell(1, 3);
         if ~isempty(meancurrent)
@@ -91,7 +92,7 @@ switch ieParamFormat(pType)
         end
         legend(l);
         title('Absorption impulse response');
-        
+
     otherwise
         [uData, h] = plot@outerSegment(os, pType);
 end

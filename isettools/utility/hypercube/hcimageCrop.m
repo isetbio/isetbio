@@ -13,8 +13,8 @@ function [hc, rect] = hcimageCrop(img, rect, cPlane)
 % Inputs:
 %    img    - Hypercube input (required)
 %    rect   - (Optional) If you know the rect, send it in. Default is to
-%             show a compressed image in a window created by Matlab's imcrop
-% .           function, and get that to return the rect.
+%             show a compressed image in a window created by Matlab's
+%             imcrop function, and get that to return the rect.
 %    cPlane - (Optional) Which plane to use for cropping. Default 1
 %
 % Outputs:

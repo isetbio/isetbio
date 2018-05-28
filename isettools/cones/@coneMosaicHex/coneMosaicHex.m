@@ -6,31 +6,36 @@ classdef coneMosaicHex < coneMosaic
 %
 % Description:
 %    The cone mosaic HEX is a subclass of coneMosaic. It differs because
-%    the array of cones is placed on a hexagonal, rather than rectangular, 
-%    grid. 
+%    the array of cones is placed on a hexagonal, rather than rectangular,
+%    grid.
 %
-%    The hex mosaic is sampled according to the resamplingFactor. The cone
-%    density can be spatially-varying if eccBasedConeDensity is set to true.
+%    The hex mosaic is sampled according to the provided resamplingFactor.
+%    The cone density can be spatially-varying if eccBasedConeDensity is
+%    set to true.
 %
 %    The customLambda argument is empty to obtain default performance, but
 %    may be set to set the spacing for regularly spaced hexagonal mosaics.
 %    The units of customLambda are microns
 %
+%    The code below contains examples of class usage. To access these
+%    examples, type 'edit coneMosaicHex.m' into the Command Window.
+%
 % Inputs:
-%    None required.
+%    resamplingFactor      - Integer. The grid resampling factor.
 %
 % Outputs:
 %    The created cone mosaic hex object.
 %
 % Optional key/value pairs:
 %    Some of the possible key/value pairs are listed below:
-%    resamplingFactor    - Grid resampling factor
-%    eccBasedConeDensity - Boolean denoting whether or not to use the
-%                          eccentricity-based cone density. Default False.
-%    customLambda        - Custom cone spacing distance in microns
-%    customInnerSegmentDiameter
-%                        - Customer diameter for inner segment. Default is
-%                          the pigment.pdWidth from the super class.
+%    'eccBasedConeDensity' - Boolean. Variable indicating whether or not to
+%                            use the eccentricity-based cone density.
+%                            Default False.
+%    'customLambda'        - Double. Custom micron cone spacing distance.
+%                            Default is [].
+%    'customInnerSegmentDiameter'
+%                          - Double. Custom diameter for the inner segment.
+%                            Default is pigment.pdWidth from super class.
 %
 % See Also:
 %    CONEMOSAIC, t_coneMosaicHex, t_coneMosaicHexReg
@@ -39,6 +44,9 @@ classdef coneMosaicHex < coneMosaic
 % History:
 %    xx/xx/16  NPC  ISETBIO Team, 2016
 %    02/21/18  jnm  Formatting
+%    04/16/18  jnm  Move resamplingFactor to Inputs section as it is
+%                   required, and not optional based on response when
+%                   attempting to instantiate a coneMosaicHex.
 
 % Examples:
 %{
@@ -47,7 +55,7 @@ classdef coneMosaicHex < coneMosaic
     customLambda = 3.0;
     % If not passed (or set to []) @coneMosaiHex chooses the cone spacing
     % based on the eccentricity of the mosaic as determined by the
-    % coneSizeReadData function. If set to a value (specified in microns), 
+    % coneSizeReadData function. If set to a value (specified in microns),
     % cone spacing is set to that value. Note that if the
     % 'eccBasedConeDensity' param is  set to true, the 'customLambda' param
     % is ignored.
@@ -63,7 +71,7 @@ classdef coneMosaicHex < coneMosaic
     cMosaicHex = coneMosaicHex(resamplingFactor, ...
     'name', 'the hex mosaic', ...
     'fovDegs', 0.35, ...
-    'eccBasedConeDensity', eccBasedConeDensity, ...   
+    'eccBasedConeDensity', eccBasedConeDensity, ...
     'noiseFlag', 'none', ...
     'spatialDensity', [0 0.6 0.3 0.1], ...
     'maxGridAdjustmentIterations', 100);
@@ -73,83 +81,82 @@ classdef coneMosaicHex < coneMosaic
 
     %% Private properties:
     properties (SetAccess=private)
-        % lambdaMin  min cone separation in the mosaic
+        % lambdaMin - min cone separation in the mosaic
         lambdaMin
 
-        % lambdaMid  the cone separation at the middle of the mosaic
+        % lambdaMid - the cone separation at the middle of the mosaic
         lambdaMid
 
-        % customLambda  user-supplied lambda value for reg. spaced mosaics.
+        % customLambda - user-supplied lambda value for reg. spaced mosaics
         %   (cone spacing, in microns)
         customLambda
 
-        % customInnerSegmentDiameter  user-supplied inner segment diameter
-        %	(for a circular aperture, in microns).
+        % customInnerSegmentDiameter - user-supplied inner segment diameter
+        %    (for a circular aperture, in microns).
         customInnerSegmentDiameter
 
-        % eccBasedConeDensity  Bool. Ecc.-based spatially-varying density?
+        % eccBasedConeDensity - Bool. Ecc.-based spatially-varying density?
         eccBasedConeDensity
 
-        % resamplingFactor  resamplingFactor
+        % resamplingFactor - The resampling factor.
         resamplingFactor
 
-        % marginF  Factor determining how much more mosaic to compute.
+        % marginF - Factor determining how much more mosaic to compute.
         %   more (if > 1) or less (if < 1).
         marginF
 
-        % sConeMinDistanceFactor  min distance between neighboring S-cones
+        % sConeMinDistanceFactor - min distance between neighboring S-cones
         %   This will make the S-cone lattice semi-regular
         %   min dist = f * local cone separation.
         sConeMinDistanceFactor
 
-        % sConeFreeRadiusMicrons  S-cone free retina radius, default 45 um.
+        % sConeFreeRadiusMicrons - S-cone free retina radius, default 45um.
         %   45 um is 0.15, so S-cone free region = 0.3 degs diameter.
         sConeFreeRadiusMicrons
 
-        % coneLocsHexGrid  floating point coneLocs on the hex grid.
+        % coneLocsHexGrid - floating point coneLocs on the hex grid.
         %   This is sampled according to the resamplingFactor.
         coneLocsHexGrid
 
-        % coneLocsOriginatingRectGrid  coneLocs of originating rect grid.
+        % coneLocsOriginatingRectGrid - coneLocs of originating rect grid.
         coneLocsOriginatingRectGrid
 
-        % patternOriginatingRectGrid  cone pattern of originating rec grid.
+        % patternOriginatingRectGrid - cone pattern of originating rec grid
         patternOriginatingRectGrid
 
-        % patternSampleSizeOriginatingRectGrid  pattern sample size ...
+        % patternSampleSizeOriginatingRectGrid - pattern sample size ...
         patternSampleSizeOriginatingRectGrid
-        
-        % fovOriginatingRectGrid  FOV of the originating rect grid
+
+        % fovOriginatingRectGrid - FOV of the originating rect grid
         fovOriginatingRectGrid
 
-        % rotationDegs  rotation in degrees
+        % rotationDegs - rotation in degrees
         rotationDegs
 
-        % saveLatticeAdjustmentProgression  Bool. save lattice adj. steps?
+        % saveLatticeAdjustmentProgression - Bool. save lattice adj. steps?
         %   Flag for whether saving iterative lattice adjustment steps.
         saveLatticeAdjustmentProgression
 
-        %latticeAdjustmentSteps  3D array w/ coneLocsHexGrid at ea. step.
+        %latticeAdjustmentSteps - 3D array w/ coneLocsHexGrid at ea. step.
         %   Each step is a lattice adjustment with coneLocsHexGrid
         latticeAdjustmentSteps
 
-        %initialLattice  coneLocsHexGrid at iteration 0 (perfect hex grid)
+        %initialLattice - coneLocsHexGrid at iteration 0 (perfect hex grid)
         initialLattice
 
-        %latticeAdjustmentPositionalToleranceF  Movement tolerance
-        %	Tolerance for whether to decide that there is no move movement.
+        %latticeAdjustmentPositionalToleranceF - Movement tolerance
+        %   Tolerance for whether to decide that there is no move movement.
         latticeAdjustmentPositionalToleranceF
 
-        %latticeAdjustmentDelaunayToleranceF  Delaunay trigger tolerance
+        %latticeAdjustmentDelaunayToleranceF - Delaunay trigger tolerance
         %   Tolerance for Delaunay triangularization trigger.
         latticeAdjustmentDelaunayToleranceF
-        
-        %maxGridAdjustmentIterations   Max number of iterations
-        %   Max iterations for deciding whether the grid adjustment is done
-        maxGridAdjustmentIterations             
 
+        %maxGridAdjustmentIterations - Max number of iterations
+        %   Max iterations for deciding whether the grid adjustment is done
+        maxGridAdjustmentIterations
     end
-    
+
     % Public methods
     methods
         % Constructor
@@ -187,7 +194,7 @@ classdef coneMosaicHex < coneMosaic
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF'};
-            
+
             % Call the super-class constructor.
             vararginForConeMosaic = {};
             vararginForConeHexMosaic = {};
@@ -232,7 +239,7 @@ classdef coneMosaicHex < coneMosaic
                 (isnumeric(x) && (x > 0.0))));
             p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);
             p.parse(resamplingFactor, vararginForConeHexMosaic{:});
-            
+
             % Set input params
             obj.resamplingFactor = p.Results.resamplingFactor;
             obj.eccBasedConeDensity = p.Results.eccBasedConeDensity;
@@ -250,7 +257,7 @@ classdef coneMosaicHex < coneMosaic
                 p.Results.latticeAdjustmentPositionalToleranceF;
             obj.maxGridAdjustmentIterations = ...
                 p.Results.maxGridAdjustmentIterations;
-            
+
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1) * [1 1]);
@@ -284,7 +291,7 @@ classdef coneMosaicHex < coneMosaic
             obj.saveOriginalResState();
 
             % Set custom pigment light collecting dimensions
-            if (~isempty(obj.customInnerSegmentDiameter)) 
+            if (~isempty(obj.customInnerSegmentDiameter))
               % maxInnerSegmentDiameter = 1e6 * ...
               % circleSizeFromSquareAperture(obj.pigment.pdWidth);
               % if (obj.eccBasedConeDensity) && ...
@@ -305,6 +312,8 @@ classdef coneMosaicHex < coneMosaic
             end
 
             % Set the pigment geometric dimensions
+            obj.pigment.width = squareSizeFromCircularAperture(obj.pigment.width);
+            obj.pigment.height = obj.pigment.width;
             if (~isempty(obj.customLambda)) 
                 maxSpacing = 1e6 * circleSizeFromSquareAperture(...
                     obj.pigment.width);
@@ -317,20 +326,20 @@ classdef coneMosaicHex < coneMosaic
                         'decrease ''customLambda''.'], ...
                         obj.customLambda, maxSpacing);
                 end
-                obj.pigment.width = 1e-6 * obj.customLambda;
+                obj.pigment.width = 1e-6 * squareSizeFromCircularAperture(obj.customLambda);
                 obj.pigment.height = obj.pigment.width;
             end
 
             % Generate sampled hex grid
             obj.resampleGrid(obj.resamplingFactor);
-            
+
             if ((~isempty(obj.sConeMinDistanceFactor)) || ...
                     (~isempty(obj.sConeFreeRadiusMicrons)))
                 % Make s-cone lattice semi-regular, and/or add an s-cone
                 % free region.
-                obj.reassignConeIdentities('sConeMinDistanceFactor', ...
-                    obj.sConeMinDistanceFactor, ...
-                    'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);    
+                obj.regenerateLMSPattern(obj.spatialDensity(2:4), ...
+                    'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...
+                    'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);
             end
         end
 
@@ -362,7 +371,7 @@ classdef coneMosaicHex < coneMosaic
         % the hex mosaic
         renderActivationMap(obj, axesHandle, activation, varargin);
 
-        % Visualize iterative adjustment of the cone lattice 
+        % Visualize iterative adjustment of the cone lattice
         hFig = plotMosaicProgression(obj, varargin);
 
         % Print various infos about the cone mosaic
@@ -370,8 +379,11 @@ classdef coneMosaicHex < coneMosaic
 
         % Change cone identities according to arguments passed in varargin
         reassignConeIdentities(obj, varargin);
+        
+        % Regenerate the LMS pattern using passed LMS density
+        regenerateLMSPattern(obj, LMSdensity, varargin);
     end % Public methods
-    
+
     methods (Access = private)
         % Private methods
         saveOriginalResState(obj);
@@ -391,7 +403,7 @@ classdef coneMosaicHex < coneMosaic
         renderHexMesh(axesHandle, xHex, yHex, meshEdgeColor, ...
             meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
     end % Static methods
-    
+
 end
 
 function square = squareSizeFromCircularAperture(diameter)

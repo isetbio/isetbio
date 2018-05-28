@@ -36,7 +36,7 @@ function oi = opticsSICompute(scene, oi)
 
 % Examples:
 %{
-	% Currently broken!
+	% ETTBSkip - Example is currently broken!
 	scene = sceneCreate;
 	oi = oiCreate;
     oi = opticsSICompute(scene, oi);

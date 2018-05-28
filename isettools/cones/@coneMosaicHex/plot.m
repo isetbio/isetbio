@@ -165,7 +165,7 @@ switch ieParamFormat(type)
     case 'meancurrent'
         plotHexMeanImage(obj, 'type', 'current');
 
-    case 'moviecurrent'   
+    case 'moviecurrent'
         uData = movieHex(obj, 'type', 'current');
 %         % Copied from t_coneMosaicHex3.m, line 70
 %         isomerizationsHex = obj.current;

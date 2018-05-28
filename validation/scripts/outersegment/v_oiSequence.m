@@ -63,7 +63,10 @@ cMosaic.compute(ois);
 
 tolerance = 2E-2;
 totalAbsorptions = sum(cMosaic.absorptions(:));
-quantityOfInterest = (totalAbsorptions/116255) - 1;
+
+% Changed from the value 116255 when updating the eye movement model
+% to fixationalEM in emGenSequence 
+quantityOfInterest = (totalAbsorptions/127714) - 1;   
 UnitTest.assertIsZero(quantityOfInterest,'coneMosaic absorptions',tolerance);
 
 % assert((sum(cMosaic.absorptions(:))/121450) - 1 < 1e-3);

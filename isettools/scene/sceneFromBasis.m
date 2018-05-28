@@ -36,11 +36,13 @@ function scene = sceneFromBasis(sceneS)
 
 % Examples:
 %{
+    % ETTBSkip - Error with gradleFetchArtifact?
     rd = RdtClient('isetbio');
     rd.crp('/resources/scenes/multiband/scien/2004');
     data = rd.readArtifact('AsianFemale_2', 'type', 'mat');
     scene = sceneFromBasis(data);
-    ieAddObject(scene); sceneWindow;
+    ieAddObject(scene);
+    sceneWindow;
 %}
 
 %%

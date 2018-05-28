@@ -42,11 +42,11 @@ function response = compute(obj, varargin)
 %                   surround responses are calculated and stored in the
 %                   mosaic as responseCenter and responseSurround
 %
-% References: 
+% References:
 %   *Meister option* -
 %       The spatial filtering is followed by a temporal filter that is
 %       selected in order to match the impulse response that expect to find
-%       at the RGC input. 
+%       at the RGC input.
 %
 %   *Chichilnisky option* -
 %       The cMosaicCurrentNTrials has dimensions (nTrials, row, col,
@@ -129,19 +129,19 @@ for iTrial = 1:nTrials
             minval = min(osSig(:));
             osSigCenter(S(:), :)   = minval*ones(size(osSigCenter(S, :)));
             osSigSurround(S(:), :) = minval*ones(size(osSigCenter(S, :)));
-            
+
         case{'offmidget'}
             % Keep S cone input for off Midget but only weight by 0.25
             % Find the locations (row, col) of the different cone types
             [~, ~, S] = coneTypeLocations(cmosaic, 'format', 'index');
             minval = min(osSig(:));
-            
+
             osSigCenter   = osSig;
             osSigCenter(S, :)   = 0.25*(osSigCenter(S, :)-minval)+minval;
-            
+
             osSigSurround   = osSig;
             osSigSurround(S, :) = 0.25*(osSigSurround(S, :)-minval)+minval;
-            
+
         case{'onsbc'}
             % Set L and M cones to zero in SBC center, set S cones to zero
             % in SBC surround.
@@ -163,7 +163,7 @@ for iTrial = 1:nTrials
             % Put effectively zero S-cone signals into the surround
             osSigSurround      = osSig;
             osSigSurround(S, :) = minval*ones(size(osSigSurround(S, :)));
-            
+
         otherwise
             error('Unrecognized bipolar mosaic type %s\n', obj.cellType);
     end
@@ -174,7 +174,7 @@ for iTrial = 1:nTrials
     osSigSurround = XW2RGBFormat(osSigSurround, sz(1), sz(2));
     % cmosaic.window;
     % vcNewGraphWin; ieMovie(osSigCenter);
-    
+
     %% Spatial filtering
     % Full spatial convolution for every frame. The kernel is only 2D
     % which is why we have a space-only convolution.
@@ -188,10 +188,10 @@ for iTrial = 1:nTrials
     % approach.
     strideRow = abs(obj.cellLocation(1, 2, 1) - obj.cellLocation(1, 1, 1));
     strideCol = abs(obj.cellLocation(2, 1, 2) - obj.cellLocation(1, 1, 2));
-    
+
     bipolarCenter   = bipolarCenter(1:strideRow:end, 1:strideCol:end, :);
     bipolarSurround = bipolarSurround(1:strideRow:end, 1:strideCol:end, :);
-    
+
     %% Temporal filtering
     % Reshape the data for the temporal convolution
     [bipolarCenter, row, col] = RGB2XWFormat(bipolarCenter);
@@ -199,7 +199,7 @@ for iTrial = 1:nTrials
 
     % This is the impulse response filter
     bipolarFilt = bipolarFilter(obj, cmosaic);
-    
+
     % If we wanted to rectify the signal, we could do it here
     % obj.rectify(input, 'rType', {hw, fw, none})
     % obj.responseCenter   = ...
@@ -207,8 +207,8 @@ for iTrial = 1:nTrials
     % obj.responseSurround = ...
     %    obj.rectificationSurround(bipolarOutputLinearSurround);
     %
-    
-    %% Rectification and temporal convolution issues    
+
+    %% Rectification and temporal convolution issues
     % Rectification - not tested or analyzed
     %
     % We have in the past shifted the bipolar response levels to a minimum
@@ -216,7 +216,7 @@ for iTrial = 1:nTrials
     % might be OK because we have no real units on the bipolar current.
     % Or, maybe we should leave them alone. Anyway, here we are shifting
     % them to a min of zero.
-    
+
     % bipolarCenter = obj.rectificationCenter(bipolarCenter ...
     %     - (min(bipolarCenter')'*ones(1, size(bipolarCenter, 2))));
     bipolarCenter = bipolarCenter - (min(bipolarCenter, [], 2) ...
@@ -233,7 +233,7 @@ for iTrial = 1:nTrials
     tmpSurround = conv2(bipolarFilt, bipolarSurround);
     % vcNewGraphWin;
     % tmp = XW2RGBFormat(tmpSurround, row, col); ieMovie(tmp);
-    
+
     if ~isempty(coneTrials)
         if iTrial == 1
             nTrialsCenter = zeros([nTrials, size(XW2RGBFormat(...
@@ -241,7 +241,7 @@ for iTrial = 1:nTrials
             nTrialsSurround = zeros([nTrials, size(XW2RGBFormat(...
                 tmpSurround(:, 1:cmosaic.tSamples), row, col))]);
         end
-        
+
         nTrialsCenter(iTrial, :, :, :) = XW2RGBFormat(...
             tmpCenter(:, 1:cmosaic.tSamples), row, col);
         nTrialsSurround(iTrial, :, :, :) = XW2RGBFormat(...
@@ -250,7 +250,7 @@ for iTrial = 1:nTrials
         nTrialsCenter   = 0;
         nTrialsSurround = 0;
     end
-    
+
     if iTrial == nTrials
         % Store the last trial in the object
         obj.responseCenter   = XW2RGBFormat(tmpCenter(:, ...

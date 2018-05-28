@@ -1,13 +1,26 @@
 function ieCloseRequestFcn
-%Method used for closing ISET windows
+% Method used for closing ISET windows
 %
+% Syntax:
 %   ieCloseRequestFcn
 %
-% Purpose:
-%   When we close a graph window, we try to clean up the vcSESSION
-%   information whenever we close the currently selected graph win.
+% Description:
+%    When we close a graph window, we try to clean up the vcSESSION
+%    information whenever we close the currently selected graph win.
 %
-% Copyright ImagEval Consultants, LLC, 2003.
+% Inputs:
+%    None.
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+
+% History:
+%    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
+%    02/28/18  jnm  Formatting
 
 curFig = gcf;
 curGraphWin = ieSessionGet('graphwinfigure');

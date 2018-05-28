@@ -1,5 +1,5 @@
 function sceneWBCreate(sceneAll, workDir)
-% Create a directory of waveband scene images in separate files  
+% Create a directory of waveband scene images in separate files
 %
 % Syntax:
 %	sceneWBCreate(sceneAll, workDir)
@@ -28,7 +28,7 @@ function sceneWBCreate(sceneAll, workDir)
 % Notes:
 %    * TODO: Fix example. Error is:
 %           Error using sceneInterpolateW (line 69)
-%           Wavelength extrapolation not allowed.  Only interpolation
+%           Wavelength extrapolation not allowed. Only interpolation
 %    * N.B. The source contains executable examples of usage, which can be
 %      accessed by typing 'edit sceneWBCreate.m' in the command window.
 %
@@ -40,7 +40,7 @@ function sceneWBCreate(sceneAll, workDir)
 
 % Examples:
 %{
-    % ETTBSkip.  This example throws an error.  Fix and then delete these
+    % ETTBSkip.  This example throws an error. Fix and then delete these
     % comment lines to add back to autorun.
 
     scene = sceneCreate;
@@ -53,13 +53,13 @@ if notDefined('sceneAll'), error('You must define the scene'); end
 name = sceneGet(sceneAll, 'name');
 if notDefined('workDir'), workDir = fullfile(pwd, name);  end
 if ~exist(workDir, 'dir')
-    w = warndlg('Creating work directory.'); 
+    w = warndlg('Creating work directory.');
     [p, n] = fileparts(workDir);
-    chdir(p); mkdir(n); close(w); 
-end 
+    chdir(p); mkdir(n); close(w);
+end
 
 curDir = pwd;
-chdir(workDir); 
+chdir(workDir);
 
 nWave = sceneGet(sceneAll, 'nwave');
 wave = sceneGet(sceneAll, 'wave');

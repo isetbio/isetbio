@@ -45,18 +45,18 @@ function tee = temporalEquivEcc(center, varargin)
 
 %     % Convert angle in degrees to radians
 %     theta = (pi / 180) * theta;
-%     
+%
 %     %% Apply formula for TEE
 %     if ((theta > (pi / 2) && theta < (3 * pi / 2)) && eyeSide == 1) ...
 %             || ((theta < (pi / 2) || theta > (3 * pi / 2)) ...
 %             && eyeSide == 0)
-%         
+%
 %         [xrad, yrad] = pol2cart(theta, rho);
-%         
+%
 %         % Apparently some correction for other quadrants. Formula below:
 %         aspectRatio = 0.61;
 %         TEE = sqrt((xrad * aspectRatio) .^ 2 + yrad .^ 2);
-%         
+%
 %     else
 %         % Temporal side. No need for a correction.
 %         TEE = rho;

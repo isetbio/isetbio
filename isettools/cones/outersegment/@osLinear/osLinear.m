@@ -44,7 +44,7 @@ classdef osLinear < outerSegment
 
 % Public, read-only properties.
 properties (GetAccess = public, SetAccess = public)
-    %lmsConeFilter  linear filters for LMS cones in columns
+    %lmsConeFilter - linear filters for LMS cones in columns
     lmsConeFilter;
 end
 
@@ -53,7 +53,7 @@ properties (Access = private)
     % outersegment so that we can do incremental computation
     % Will likely be deprecated.
 
-    %absHistory  recent absorption history
+    %absHistory - recent absorption history
     absHistory = [];
 end
 

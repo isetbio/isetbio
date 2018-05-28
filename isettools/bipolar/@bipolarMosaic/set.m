@@ -1,17 +1,17 @@
 function obj = set(obj, varargin)
-% Syntax: 
+% Syntax:
 %
 %   bp.set('PARAM1',var1, 'PARAM2', var2, ...);
 %
 % Description:
 %    Gets isetbio bipolar object parameters.
-% 
+%
 %    The bipolar object allows the simulated cone responses to be passed on
 %    to the inner retina object and to approxiately maintain its impulse
 %    response. This will allow us to run the nonlinear biophysical cone
 %    outer segment model and pass its results on to the bipolar stage and
 %    then RGCs.
-% 
+%
 % Inputs:
 %    Properties amenable to being set.
 %
@@ -33,7 +33,7 @@ function obj = set(obj, varargin)
 %    tIR                     - bipolar temporal impulse response
 %
 
-%% History 
+%% History
 % 5/2016 JRG (c) isetbio team
 %
 %    10/18/17  jnm  Comments & formatting
@@ -56,7 +56,7 @@ p.KeepUnmatched = true;
 allowableFieldsToSet = {...
     'cellLocation', ...
     'patchSize', ...
-    'responseCenter', 'bipolarresponsecenter', ...    
+    'responseCenter', 'bipolarresponsecenter', ...
     'responseSurround', 'bipolarresponsesurround'...
     'sRFcenter', ...
     'sRFsurround', ...

@@ -35,7 +35,7 @@ function [scene, I] = sceneFromFile(...
 %                    type, else both are set to results of vcSelectImage.
 %    imType        - 'multispectral' or 'rgb' or 'monochrome'
 %                    When 'rgb', the imageData might be RGB format.
-%    meanLuminance - 
+%    meanLuminance -
 %    dispCal       - A display structure used to convert RGB to spectral
 %                    data. For the typical case an emissive display the
 %                    illuminant SPD is modeled and set to the white point
@@ -140,10 +140,10 @@ if ischar(I)
     % I is a file name. We determine whether it is a Matlab file and
     % contains a scene variable. If so, we return that and end
     [p, n, e] = fileparts(I);
-    
+
     % No extension, so check whether the mat-file exists
     if isempty(e), I = fullfile(p, [n, '.mat']); end
-    if exist(I, 'file') 
+    if exist(I, 'file')
         if strcmp(I((end - 2):end), 'mat')
             if ieVarInFile(I, 'scene'), load(I, 'scene'); return; end
         end
@@ -171,7 +171,7 @@ switch lower(imType)
         elseif isstruct(dispCal) && isequal(dispCal.type, 'display')
             d = dispCal;
         end
-                
+
         % get additional parameter values
         if ~isempty(varargin)
             doSub = varargin{1};
@@ -179,15 +179,15 @@ switch lower(imType)
             doSub = false;
         end
         if length(varargin) > 2, sz = varargin{3}; else, sz = []; end
-        
+
         % read radiance / reflectance
         photons = vcReadImage(I, imType, dispCal, doSub, sz);
-        
+
         % Match the display wavelength and the scene wavelength
         wave = displayGet(d, 'wave');
         scene = sceneCreate('rgb');
         scene = sceneSet(scene, 'wave', wave);
-        
+
         % This code handles both emissive and reflective displays. The
         % white point is set a little differently.
         %
@@ -195,9 +195,9 @@ switch lower(imType)
         % point of the display if ambient lighting is not set.
         % (b) For reflective display, the illuminant is required and should
         % be passed in in varargin{2}
-        
+
         if length(varargin) > 1, il = varargin{2}; else, il = []; end
-        
+
         % Initialize
         if isempty(il) && ~displayGet(d, 'is emissive')
             error('illuminant required for reflective display');
@@ -208,22 +208,22 @@ switch lower(imType)
             il = illuminantSet(il, 'energy', sum(d.spd, 2));
         end
         scene = sceneSet(scene, 'illuminant', il);
-        
+
         % Compute photons for reflective display
-        % For reflective display, until this step the photon variable 
+        % For reflective display, until this step the photon variable
         % stores reflectance information
         if ~displayGet(d, 'is emissive')
             il_photons = illuminantGet(il, 'photons', wave);
             il_photons = reshape(il_photons, [1 1 length(wave)]);
             photons = bsxfun(@times, photons, il_photons);
         end
-        
+
         % Set viewing distance
         scene = sceneSet(scene, 'distance', displayGet(d, 'distance'));
-        
+
         % Set field of view
         if ischar(I)
-            imgSz = size(imread(I), 2); 
+            imgSz = size(imread(I), 2);
         else
             imgSz = size(I, 2);
         end
@@ -236,21 +236,21 @@ switch lower(imType)
     case {'multispectral', 'hyperspectral'}
         if ~ischar(I), error('File name required for multispectral'); end
         if notDefined('wList'), wList = []; end
-        
+
         scene = sceneCreate('multispectral');
-        
+
         % The illuminant structure has photon representation and a
         % standard Create/Get/Set group of functions.
         [photons, il, basis] = vcReadImage(I, imType, wList);
-        
+
         % vcNewGraphWin; imageSPD(photons, basis.wave);
-        
+
         % Override the default spectrum with the basis function
         % wavelength sampling. We don't call sceneSet because that both
         % sets the wavelength and interpolates the data.
         % scene.spectrum.wave = basis.wave(:);
         scene = sceneSet(scene, 'wave', basis.wave);
-                
+
     otherwise
         error('Unknown image type')
 end
@@ -261,7 +261,7 @@ if ieSessionGet('gpu compute')
 end
 
 if ischar(I)
-    scene = sceneSet(scene, 'filename', I); 
+    scene = sceneSet(scene, 'filename', I);
 else
     scene = sceneSet(scene, 'filename', 'numeric input');
 end

@@ -39,6 +39,7 @@ function OImax = oiExtractBright(oi)
 
 % Example:
 %{
+    % ETTBSkip - Example erroring with 'exceeds matrix dimensions'
     scene = sceneCreate;
     oi = oiCreate;
     oi = oiSet(oi, 'photons', oiCalculateIrradiance(scene, oi))
@@ -59,7 +60,7 @@ rect(3) = 1;
 rect(4) = 1;
 
 % Now, we crop the data to form a small opticalimage containing only the
-% highest illuminance. 
+% highest illuminance.
 OImax = oiCrop(oi, rect);
 
 % We adjust the optics

@@ -1,15 +1,16 @@
 function [embRGB, mRGB, pSize] = macbethCompareIdeal(mRGB, pSize, illType)
 % Create an image of an ideal MCC (color, temp, ...) with data embedded
-% 
+%
 % Syntax:
 %	[embRGB, mRGB, pSize] = macbethCompareIdeal(mRGB, pSize, illType)
 %
 % Description:
-%    Create an image of an ideal Macbeth Color Chart (including color, 
+%    Create an image of an ideal Macbeth Color Chart (including color,
 %    temperature, etc...) with embedded data.
 %
 %    Examples are contained in the code. To access, type 'edit
 %    macbethCompareIdeal.m' into the Command Window.
+%
 % Inputs:
 %    mRGB    - Macbeth RGB values of the data in the vcimageWindow. Default
 %              is to calculate from the current vcimage.
@@ -42,7 +43,7 @@ function [embRGB, mRGB, pSize] = macbethCompareIdeal(mRGB, pSize, illType)
 % Examples:
 %{
     % ETTBSkip. This function is broken, so the example doesn't work.
-    [embRGB, mRGB, pSize] = macbethCompareIdeal; 
+    [embRGB, mRGB, pSize] = macbethCompareIdeal;
 
     macbethCompareIdeal(mRGB, pSize, 4000);
     macbethCompareIdeal(mRGB, pSize, 6000);
@@ -68,7 +69,7 @@ if notDefined('illType'), illType = 'd65'; end
 % MCC assuming an sRGB display.
 ideal = macbethIdealColor(illType, 'lrgb');
 
-% We reshape into a mini-image 
+% We reshape into a mini-image
 idealLRGB = XW2RGBFormat(ideal, 4, 6);
 
 % Now expand the image to a bigger size to allow for the insertion of the

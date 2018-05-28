@@ -1,39 +1,61 @@
 function roiLocs = vcRect2Locs(rect)
-% Obsolete.  Use ieRoi2Locs
+% Obsolete. Use ieRoi2Locs. Convert rect from ISET window into RoI locs.
 %
-% Convert a rect from an ISET window into region of interest locations. 
-%
+% Syntax:
 %   roiLocs = vcRect2Locs(rect)
 %
-% The rect is usually selected selected using the Matlab grphical user
-% interface. The rect values are: 
-%     [colMin rowMin (width-1) (height-1)].  
-% (Note that col is the x dimension and row is the y dimension).
+% Description:
+%    OBSOLETE. Use this function to convert a rect from an ISET window into
+%    region of interest locations.
 %
-% See also: vcROISelect(), vcLocs2Rect
+%    The rect is usually selected using the Matlab grphical user interface.
+%    The rect values are:
+%        [colMin rowMin (width-1) (height-1)].
+%    (Note that col is the x dimension and row is the y dimension).
 %
-% Example:
-%   rect = round(getrect(ieSessionGet('vcimagewindow')));
-%   roiLocs = vcRect2Locs(rect);
-%   
-% Usually we call the routine vcROISelect directly, which calls this
-% routine:
-%   vci = vcGetObject('vcimage');
-%   [roiLocs roiRect] = vcROISelect(vci);
+%    Usually we call the routine vcROISelect directly, which then calls
+%    this routine:
+%      vci = vcGetObject('vcimage');
+%      [roiLocs roiRect] = vcROISelect(vci);
 %
+%    The code below contains examples of function usage. To access, type
+%    'edit vcRect2Locs.m' into the Command Window.
 %
-% See also:  Uh oh, there is a routine ieROI2Locs which looks pretty much
-% like this one.
+% Inputs:
+%    rect    - Vector. A 1x4 vector of the format described above.
 %
-% (c) Imageval, 2004
+% Outputs:
+%    roiLocs - Matrix. An Nx2 matric of (row, col) values.
+%
+% Optional key/value pairs:
+%    None.
+%
+% See Also:
+%    Update: Use ieRoi2Locs instead of this function.
+%    vcROISelect(), vcLocs2Rect
+%
 
-% The rect entries are (colMin,rowMin,colWidth-1,rowWidth-1) 
-% The number of data values are colMax - colMin + 1 and similarly for the
-% row 
-cmin = rect(1); cmax = rect(1)+rect(3);
-rmin = rect(2); rmax = rect(2)+rect(4);
+% History:
+%    xx/xx/04       (c) Imageval, 2004
+%    05/09/18  jnm  Formatting.
 
-[c,r] = meshgrid(cmin:cmax,rmin:rmax);
-roiLocs = [r(:),c(:)];
+% Examples:
+%{
+    % ETTBSkip - skipping broken example
+    rect = round(getrect(ieSessionGet('vcimagewindow')));
+    roiLocs = vcRect2Locs(rect);
+%}
+
+% The rect entries are (colMin, rowMin, colWidth - 1, rowWidth - 1)
+% The number of data values for the dimensions follow colMax - colMin + 1
+% and likewise for the rows.
+
+cmin = rect(1);
+cmax = rect(1) + rect(3);
+rmin = rect(2);
+rmax = rect(2) + rect(4);
+
+[c, r] = meshgrid(cmin:cmax, rmin:rmax);
+roiLocs = [r(:), c(:)];
 
 return;

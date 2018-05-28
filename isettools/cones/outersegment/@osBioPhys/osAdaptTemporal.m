@@ -8,7 +8,7 @@
 %    This function is only called internally from @osBioPhys/osCompute.m
 %
 %    Time varying current response from photon rate and initial state.
-% 
+%
 %    In this case, the physiological differential equations for cones are
 %    implemented. The differential equations are:
 %
@@ -28,7 +28,7 @@
 %    osAdaptTemporal.m' into the Command Window.
 %
 % Inputs:
-%    pRate      - Photon absorption rate, 
+%    pRate      - Photon absorption rate,
 %                 coneMosaic.absorptions/coneMosaic.integrationTime.
 %    obj        - osBioPhys object containing many initial parameters
 %
@@ -69,7 +69,7 @@
 if ~exist('pRate', 'var') || isempty(pRate)
     error('Photon absorption rate required.');
 end
-    
+
 dt = obj.timeStep;
 model = obj.state;
 
@@ -79,7 +79,7 @@ adaptedData(:, :, 1) = model.bgCur;
 
 q = 2 * model.beta * model.cdark / (model.k * model.gdark ^ model.h);
 smax = model.eta / model.phi * model.gdark * ...
-    (1 + (model.cdark / model.kGc) ^ model.n);  
+    (1 + (model.cdark / model.kGc) ^ model.n);
 
 for ii = 1 : size(pRate, 3)
     model.opsin = model.opsin + dt * (model.OpsinGain * pRate(:, :, ii) ...
@@ -92,7 +92,7 @@ for ii = 1 : size(pRate, 3)
         (model.Ca_slow - model.Ca);
     model.st = smax ./ (1 + (model.Ca / model.kGc) .^ model.n);
     model.cGMP = model.cGMP  + dt * (model.st - model.PDE .* model.cGMP);
-    
+
     adaptedData(:, :, ii) = - model.k * model.cGMP .^ model.h ./ ...
         (1 + model.Ca_slow / model.cdark);
 end

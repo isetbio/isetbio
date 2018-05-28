@@ -7,7 +7,7 @@ function [udata, g] = scenePlot(scene, pType, roiLocs, varargin)
 % Description:
 %    The scene plots show the radiance, luminance, contrast, illuminant or
 %    depth data in various formats. This function acts as a gateway routine
-%    in order to plot scene radiance properties. 
+%    in order to plot scene radiance properties.
 %
 % Inputs:
 %    scene   - The scene in which to add the plot.
@@ -113,7 +113,7 @@ if notDefined('roiLocs')
               'contrastvline', 'vlinecontrast'}
             % Get a location
         	roiLocs = vcPointSelect(scene);
-            
+
         case {'radianceenergyroi', 'radiancephotonsroi', ...
               'chromaticityroi', 'chromaticity', ...
               'luminanceroi', 'luminance', ...
@@ -131,7 +131,7 @@ if notDefined('roiLocs')
                 % Region of interest plots
                 [roiLocs, roiRect] = vcROISelect(scene);
             end
-            
+
         otherwise
             % Some cases are OK without an roiLocs value or ROI.
     end
@@ -156,7 +156,7 @@ switch lower(pType)
         udata.energy = energy;
         plot(wave, energy, '-');
         grid on;
-        
+
         % Fix an annoying Matlab plotting bug
         if max(energy(:)) < 1.1 * min(energy(:))
             set(gca, 'ylim', ...
@@ -164,19 +164,19 @@ switch lower(pType)
         end
         xlabel('Wavelength (nm)');
         ylabel('Radiance (watts/sr/nm/m^2)');
-        
+
     case {'radiancephotonsroi'}
         % mean radiance in photons of roi
         % g = scenePlot(scene, 'radiance photons roi', roiLocs);
         photons = vcGetROIData(scene, roiLocs, 'photons');
         wave = sceneGet(scene, 'wave');
         photons = mean(photons, 1);
-        
+
         udata.wave = wave;
         udata.photons = photons;
         plot(wave, photons, '-');
         grid on;
-        
+
         % Fix an annoying Matlab plotting bug
         if max(photons(:)) < 1.1 * min(photons(:))
             set(gca, 'ylim', ...
@@ -184,9 +184,9 @@ switch lower(pType)
         end
         xlabel('Wavelength (nm)');
         ylabel('Radiance (q/sec/sr/nm/m^2)');
-        
+
     case {'radiancehline', 'hlineradiance'}
-        
+
         data = sceneGet(scene, 'photons');
         if isempty(data)
             warning('Photon data are unavailable.');
@@ -227,11 +227,11 @@ switch lower(pType)
             warning('Photon data are unavailable.');
             return;
         end
-        
+
         wave = sceneGet(scene, 'wave');
         data = squeeze(data(:, roiLocs(1), :));
         pos = sceneSpatialSupport(scene, 'mm');
-        
+
         if size(data, 2) == 1
             % Monochrome image
             plot(pos.y, data');
@@ -249,12 +249,12 @@ switch lower(pType)
         end
         colormap(mp);
         colorbar;
-        
+
         udata.wave = wave;
         udata.pos = pos.y;
         udata.data = data';
         udata.cmd = 'mesh(pos, wave, data)';
-        
+
     case  {'radiancehlinespectrum'}
         % Horizontal line radiance as a spectrogram image (photons)
         data = sceneGet(scene, 'photons');
@@ -262,25 +262,25 @@ switch lower(pType)
             warning('Photon data are unavailable.');
             return;
         end
-        
+
         wave = sceneGet(scene, 'wave');
         data = squeeze(data(roiLocs(2), :, :));
         pos = sceneSpatialSupport(scene, 'mm');
         x = pos.x;
-        
+
         % Make the spectogram image
         imagesc(x, wave, data');
         ylabel('Wavelength (nm)')
         xlabel('Horizontal position (mm)');
         colormap(hot);
         colorbar;
-        
+
         udata.wave = wave;
         udata.pos = x;
         udata.data = data';
         udata.roiLocs = roiLocs;
         udata.cmd = 'imagesc(x, wave, data'')';
-        
+
     case {'radiancevlinespectrum'}
         % Vertical line radiance as a spectogram image (photons)
         data = sceneGet(scene, 'photons');
@@ -293,13 +293,13 @@ switch lower(pType)
         data = squeeze(data(:, roiLocs(1), :));
         pos = sceneSpatialSupport(scene, 'mm');
         x = pos.x;
-        
+
         % Make the spectogram image
         imagesc(x, wave, data');
         ylabel('Wavelength (nm)')
         xlabel('Vertical Position (mm)');
         colormap(hot);
-        
+
         udata.wave = wave;
         udata.pos = x;
         udata.data = data';
@@ -311,10 +311,10 @@ switch lower(pType)
         wave = sceneGet(scene, 'wave');
         % XW format
         radiance = vcGetROIData(scene, roiLocs, 'photons');
-        
+
         illuminantSPD = sceneGet(scene, 'illuminant photons');
         if isempty(illuminantSPD), error('No illuminant data'); end
-        
+
         illF = sceneGet(scene, 'illuminant format');
         switch illF
             case 'spatial spectral'
@@ -330,17 +330,17 @@ switch lower(pType)
             otherwise
                 error('Unknown illuminant format %s\n', illF);
         end
-                
+
         plot(wave, reflectance);
         mxReflectance = max(reflectance(:));
         set(gca, 'ylim', [0, max(1.05, mxReflectance)]);
         xlabel('Wavelength (nm)')
         ylabel('Reflectance');
         grid on
-        
+
         udata.wave = wave;
         udata.reflectance = reflectance;
-        
+
     case {'radiancefftwaveband'}
         % Spatial frequency amplitude spectrum at a single wavelength. Axis
         % range could be better. The mean is removed, so this is really the
@@ -351,7 +351,7 @@ switch lower(pType)
         else
             selectedWave = varargin{1};
         end
-        
+
         data = sceneGet(scene, 'photons', selectedWave);
         if isempty(data)
             warning('Photon data are unavailable.');
@@ -360,7 +360,7 @@ switch lower(pType)
         % Remove mean to generate contrast
         data = data - mean(data(:));
         sz = size(data);
-        
+
         fov = sceneGet(scene, 'h fov');
         x = 1:sz(2);
         x = x - mean(x);
@@ -380,7 +380,7 @@ switch lower(pType)
         zlabel('Amplitude');
         str = sprintf('Amplitude spectrum at %.0f nm', selectedWave);
         title(str);
-        
+
     case {'radiancefftimage'}
         % Spatial frequency amplitude spectrum at a single wavelength. Axis
         % range could be better. The mean is removed, so this is really the
@@ -391,7 +391,7 @@ switch lower(pType)
         else
             selectedWave = varargin{1};
         end
-        
+
         data = sceneGet(scene, 'photons', selectedWave);
         if isempty(data)
             warning('Photon data are unavailable.');
@@ -400,7 +400,7 @@ switch lower(pType)
         % Remove mean to generate contrast
         data = data - mean(data(:));
         sz = size(data);
-        
+
         fov = sceneGet(scene, 'h fov');
         x = 1:sz(2);
         x = x - mean(x);
@@ -419,33 +419,33 @@ switch lower(pType)
         str = sprintf('Amplitude spectrum at %.0f nm', selectedWave);
         title(str);
         colormap(hot);
-        
+
     case {'radianceimagewithgrid', 'radianceimage'}
         % scene = vcGetObject('SCENE');
         % scenePlot(scene, 'radianceimagewithgrid')
-        
+
         rad = sceneGet(scene, 'photons');
         wave = sceneGet(scene, 'wave');
         sz = sceneGet(scene, 'size');  % Row and col samples
-        
+
         % Spacing is mm per samp here
         spacing = sceneGet(scene, 'sampleSpacing', 'mm');
         xCoords = spacing(2) * (1:sz(2));
         xCoords = xCoords - mean(xCoords);
         yCoords = spacing(1) * (1:sz(1));
         yCoords = yCoords - mean(yCoords);
-        
+
         suggestedSpacing = round(max(xCoords(:)) / 5);
         if length(varargin) >= 1, gSpacing = varargin{1};  % mm spacing
         else
             gSpacing = ieReadNumber('Enter grid spacing (mm)', ...
                 suggestedSpacing, '%.2f');
         end
-        
+
         imageSPD(rad, wave, 1, sz(1), sz(2), 1, xCoords, yCoords);
         xlabel('Position (mm)');
         ylabel('Position (mm)');
-        
+
         udata.rad = rad;
         udata.xCoords = xCoords;
         udata.yCoords = yCoords;
@@ -461,26 +461,26 @@ switch lower(pType)
         set(gca, 'ycolor', [.5 .5 .5]);
         set(gca, 'xtick', xGrid, 'ytick', yGrid);
         grid on
-        
+
     case {'radianceimagenogrid'}
         % scene = vcGetObject('SCENE');
         % scenePlot(scene, 'radianceimagenogrid')
-        
+
         rad = sceneGet(scene, 'photons');
         wave = sceneGet(scene, 'wave');
         sz = sceneGet(scene, 'size');  % Row and col samples
-        
+
         % Spacing is mm per samp here
         spacing = sceneGet(scene, 'sampleSpacing', 'mm');
         xCoords = spacing(2) * (1:sz(2));
         xCoords = xCoords - mean(xCoords);
         yCoords = spacing(1) * (1:sz(1));
         yCoords = yCoords - mean(yCoords);
-                     
+
         imageSPD(rad, wave, 1, sz(1), sz(2), 1, xCoords, yCoords);
         xlabel('Position (mm)');
         ylabel('Position (mm)');
-        
+
         udata.rad = rad;
         udata.xCoords = xCoords;
         udata.yCoords = yCoords;
@@ -535,7 +535,7 @@ switch lower(pType)
         end
         lum = data(roiLocs(2), :);
         pos = sceneSpatialSupport(scene, 'mm');
-        
+
         % figure(vcSelectFigure('GRAPHWIN')); clf
         plot(pos.x, lum);
         xlabel('Position (mm)');
@@ -617,7 +617,7 @@ switch lower(pType)
         udata.freq = freq;
         udata.data = fftlum;
         udata.cmd = 'plot(freq, data, ''r-'')';
-                
+
     case {'luminanceroi', 'luminance'}
         % Mean luminance of roi
         % g = scenePlot(scene, 'luminance roi', roiLocs);
@@ -630,7 +630,7 @@ switch lower(pType)
         xlabel('Luminance (cd/m2)');
         ylabel('Count');
         title('Luminance histogram');
-        
+
     case {'chromaticityroi', 'chromaticity'}
         % Mean CIE-roiLocs chromaticity of roi
         % g = scenePlot(scene, 'chromaticity roi', roiLocs);
@@ -640,7 +640,7 @@ switch lower(pType)
         data = chromaticity(XYZ);
         udata.x = data(:, 1);
         udata.y = data(:, 2);
-        
+
         % Values for legend
         if size(XYZ, 1) > 1
             val = mean(XYZ);
@@ -649,11 +649,11 @@ switch lower(pType)
             val = XYZ;
             valxy = data;
         end
-        
+
         % Put up the plot of the spectrum locus and the data
         chromaticityPlot(data, [], [], 0);
         title('roiLocs-chromaticity (CIE 1931)');
-        
+
         % Legend text
         txt = sprintf('Means\n');
         tmp = sprintf('X= %.02f\nY= %.02f\nZ= %.02f\n', ...
@@ -700,7 +700,7 @@ switch lower(pType)
         udata.data = data';
         udata.cmd = 'mesh(pos, wave, data)';
 
-    case {'contrastvline', 'vlinecontrast'} 
+    case {'contrastvline', 'vlinecontrast'}
         data = sceneGet(scene, 'photons');
         if isempty(data)
             warning('Photon data are unavailable.');
@@ -755,7 +755,7 @@ switch lower(pType)
         zlabel('Amplitude');
         str = sprintf('Amplitude spectrum at %.0f nm', selectedWave);
         title(str);
-        
+
     case {'luminancemeshlinear', 'luminancemeshlog10', 'luminancemeshlog'}
         % scenePlot(scene, 'luminance mesh linear')
         if strfind(pType, 'log') %#ok<*STRIFCND>
@@ -763,7 +763,7 @@ switch lower(pType)
         else
             yScale = 'linear';
         end
-        
+
         lum = sceneGet(scene, 'luminance');
         % Make same orientation as the image in the window
         lum = fliplr(lum);
@@ -772,7 +772,7 @@ switch lower(pType)
         sz = size(lum);
         r = (1:sz(1)) * spacing(1);
         c = (1:sz(2)) * spacing(2);
-        
+
         % It appears that if lum is a constant, the mesh function fails
         % without an error message.  Tell Matlab. This is for version
         % 7.0.1.24704 (R14) Service Pack 1. The actual lum values range a
@@ -788,13 +788,13 @@ switch lower(pType)
             otherwise
                 error('unknown yScale.');
         end
-        
+
         xlabel('mm');
         ylabel('mm');
         title('Luminance');
 
         % Illuminant - pure spectral case should go here
-        % Could all go into scenePlotIlluminant 
+        % Could all go into scenePlotIlluminant
     case {'illuminantenergyroi', 'illuminantenergy'}
         % scenePlot(scene, 'illuminant energy')
         % scenePlot(scene, 'illuminant energy roi', roiLocs');
@@ -802,7 +802,7 @@ switch lower(pType)
         handle = ieSessionGet('scenewindowhandle');
         ieInWindowMessage('', handle);
         wave = sceneGet(scene, 'wave');
-        
+
         switch sceneGet(scene, 'illuminant format')
             case 'spectral'
                 energy = sceneGet(scene, 'illuminant energy');
@@ -825,7 +825,7 @@ switch lower(pType)
         udata.wave = wave;
         udata.energy = energy;
         udata.comment = sceneGet(scene, 'illuminant comment');
-        
+
     case {'illuminantphotonsroi', 'illuminantphotons'}
         % scenePlot(scene, 'illuminant photons')
         % scenePlot(scene, 'illuminant photons roi', roiLocs);
@@ -845,7 +845,7 @@ switch lower(pType)
                 ieInWindowMessage('No illuminant data.', handle);
                 close(gcf)
         end
-        
+
         % Plot 'em up
         plot(wave(:), photons, '-')
         xlabel('Wavelength (nm)');
@@ -855,13 +855,13 @@ switch lower(pType)
         udata.wave = wave;
         udata.photons = photons;
         udata.comment = sceneGet(scene, 'illuminant comment');
-        
+
         % Spatial spectral illumination cases
     case {'illuminantimage'}
         % scenePlot(scene, 'illuminant image')
         % Make an RGB image showing the spatial image of the illuminant.
         handle = ieSessionGet('scenewindowhandle');
-        
+
         wave = sceneGet(scene, 'wave');
         sz = sceneGet(scene, 'size');
         energy = sceneGet(scene, 'illuminant energy');
@@ -878,14 +878,14 @@ switch lower(pType)
                 energy = XW2RGBFormat(energy, sz(1), sz(2));
             otherwise
         end
-        
+
         % Create an RGB image
         udata.srgb = xyz2srgb(ieXYZFromEnergy(energy, wave));
         imagesc(sz(1), sz(2), udata.srgb);
         grid on;
         axis off
-        title('Illumination image')       
-        
+        title('Illumination image')
+
         % Depth - COuld go into scenePlotDepth
     case {'depthmap'}
         %scenePlot(scene, 'depth map')

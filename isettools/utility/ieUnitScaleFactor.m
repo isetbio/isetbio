@@ -27,7 +27,7 @@ function sFactor = ieUnitScaleFactor(unitName)
 %           sec    - sec(ond)
 %           ms     - millisecond
 %           us     - microsecond
-%       From radions to:
+%       From radians to:
 %           deg    - degrees
 %           arcmin - arcmin
 %           arcsec - arcsec

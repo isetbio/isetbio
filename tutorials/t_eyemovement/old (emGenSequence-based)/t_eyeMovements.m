@@ -1,5 +1,8 @@
 %%t_eyeMovements  Tutorial on controlling eye movement parameters
 %
+% Deprecated.  We are changing the eye movement model.
+
+
 
 %% Build an eye movement  and cone mosaic structure
 em = emCreate;

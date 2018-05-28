@@ -53,28 +53,28 @@ end
 % Protected properties; Methods of the parent class and all of its
 % subclasses can set these.
 properties
-    %noiseFlag  determines whether noise is added  
+    %noiseFlag - determines whether noise is added  
     noiseFlag;
 
-    %patchSize  spacing between cones (width) in um
+    %patchSize - spacing between cones (width) in um
     patchSize;
 
-    %eccentricityDegs  eccentricity in degrees
+    %eccentricityDegs - eccentricity in degrees
     eccentricityDegs;
 end
 
 properties (SetAccess = protected)
-    %coneCurrentSignal  output signal in pA
+    %coneCurrentSignal - output signal in pA
     % coneCurrentSignal;
 end
 
 properties (SetObservable, AbortSet)
-    %timeStep  sampling interval in sec
+    %timeStep - sampling interval in sec
     timeStep;
 end
 
 properties (Constant)
-    %validNoiseFlags  The possible valid noise flags.
+    %validNoiseFlags - The possible valid noise flags.
     %   Options are 'random', 'frozen', and 'none'
     validNoiseFlags = {'random', 'none', 'frozen'};
 end
