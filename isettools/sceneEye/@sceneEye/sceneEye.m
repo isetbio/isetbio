@@ -154,7 +154,7 @@ properties (GetAccess=public, SetAccess=public)
     %   = [0 0 1]) then the up vector cannot be [0 0 1].
     eyeUp;
     
-    %DIFFRACTIONENABLED Toggle diffraction. When it diffraction simulation
+    % diffractionEnabled Toggle diffraction. When it diffraction simulation
     %   is enabled, PBRT will use HURB to simulate the effect of
     %   diffraction. May cause slow-downs. 
     diffractionEnabled;
@@ -219,7 +219,7 @@ properties(GetAccess=public, SetAccess=public, Hidden=true)
 end
 
 properties (Constant)
-    %WAVE In PBRT we samples from 400 to 700 nm in 31 intervals
+    % wave - In PBRT we samples from 400 to 700 nm in 31 intervals
     wave = linspace(400,700,31); % nm
 
 end
