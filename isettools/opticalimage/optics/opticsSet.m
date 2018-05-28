@@ -125,7 +125,7 @@ switch parm
         
         % Remove white space and force lower case
         val = ieParamFormat(val);
-        valid = {'diffractionlimited', 'shiftinvariant','iset3d'};
+        valid = {'diffractionlimited', 'shiftinvariant','iset3d','raytrace'};
 
         if validatestring(val, valid)
             optics.model = ieParamFormat(val);

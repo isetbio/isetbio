@@ -113,8 +113,12 @@ switch lower(opticsModel)
         diameter = opticsGet(optics,'aperture diameter','mm');
         txt = [txt, sprintf('  Diameter:  %.2f mm\n',diameter)];
         if checkfields(oi,'optics','lens')
-            d = oiGet(oi,'lens density');
-            txt = [txt, sprintf('  Lens density:  %.2f \n',d)];
+            try
+                d = oiGet(oi,'lens density');
+                txt = [txt, sprintf('  Lens density:  %.2f \n',d)];
+            catch
+                warning('No lens density set in this optical image.');
+            end
         end
 
     otherwise
