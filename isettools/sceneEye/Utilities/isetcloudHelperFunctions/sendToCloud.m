@@ -1,5 +1,5 @@
-function [cloudFolder,zipFileName] = add2gcloud(gcp,se,varargin)
-%ADD2GCLOUD Add a sceneEye object to a gcp object so that it can be
+function [cloudFolder,zipFileName] = sendToCloud(gcp,se,varargin)
+%SENDTOCLOUD Add a sceneEye object to a gcp object so that it can be
 %rendered on gCloud.
 %
 % isetcloud currently works specifically with iset3d recipes. The sceneEye
@@ -7,19 +7,21 @@ function [cloudFolder,zipFileName] = add2gcloud(gcp,se,varargin)
 % view of sceneEye, the recipe is the "raw" data and functions within
 % sceneEye work to change parts of the recipe.)
 %
-% This function does all the necessary steps to add a sceneEye's internal
-% recipe to a gCloud object.
+% This function does all the necessary steps to add sceneEye object's
+% internal recipe to a gCloud object.
 %
 % Inputs:
 %    gcp - the intalized gCloud object from isetcloud
 %    sceneEye - the sceneEye class to add to the gcp targets.
 %    uploadZip - whether the folder should be zipped up and uploaded to
-%               gCloud at this point. Users shoudl call add2gcloud with
-%               this flag when the final sceneEye class is being uploaded.
+%               gCloud at this point. Users should call sendToCloud with
+%               this flag only when they are uploading their final sceneEye
+%               object. 
 %    varargin  - An optional length of key/value pairs describing the scene
 %
 % Outputs:
-%    success - success flag?
+%    cloudFolder - Where things are sent on gcloud.
+%    zipFileName - Resources are zipped into this file and sent to cloud
 %
 % History:
 %    4/23/18  TL   Created
@@ -52,6 +54,9 @@ end
 % Add the new target operation
 addPBRTTarget(gcp,seNew.recipe);
 
+% We're going to keep track of the sceneEye objects for each target by
+% adding another variable to gcp.
+gcp.miscDescriptor = cat(1,gcp.miscDescriptor,seNew.copy);
 
 end
 
