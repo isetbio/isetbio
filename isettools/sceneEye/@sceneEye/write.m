@@ -41,6 +41,12 @@ objNew = copy(obj);
 
 ecc = objNew.eccentricity;
 
+% This section of the code has not been thoroughly finished/debugged, so
+% let's put out a warning.
+if(ecc ~= [0 0])
+    warning('Eccentricity calculations have not beed debugged. Use at your own risk!')
+end
+
 % Given a point at a certain eccentricitity [ecc(1) ecc(2)], what is
 % the minimum FOV the rendered image needs to have in order to
 % encompass the given point?
@@ -101,7 +107,6 @@ if(isempty(objNew.accommodation))
     warning('No accommodation! Setting to 5 diopters.');
 end
 recipe = setAccommodation(recipe, objNew.accommodation, objNew.workingDir);
-
 
 % Film parameters
 recipe.film.xresolution.value = objNew.resolution;

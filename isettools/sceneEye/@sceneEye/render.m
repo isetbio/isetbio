@@ -25,7 +25,7 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 
 %% Write out into a pbrt file
 objNew = obj.write();
-recipe = objNew.recipe;
+recipe = objNew.recipe; % Update the recipe within the sceneEye object. 
 
 %% Render the pbrt file using docker
 [ieObject, terminalOutput] = piRender(recipe,'version',3);

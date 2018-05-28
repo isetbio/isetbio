@@ -29,16 +29,12 @@ classdef sceneEye < hiddenHandle
 %	   myScene.set('eyePos', val) approach, or perhaps myScene.set.eyePos =
 %	   val. In these cases the set operation can pass through an input
 %	   parser that validates the input value (I think).]
-%    * [Note: BW - I wonder if recipe should be a slot in here or whether
-%      we should use myScene.render(recipe, varargin); The current way does
-%      make sense, since this is actually a scene.]
 %    * [Note: BW - maxDepth & nWaveBands are often empty, so let's perform
 %      the checks below. However, I should find a more permanant solution
 %      to cases like these. (See the note above). Maybe in
 %      piGetRenderRecipe we should put in the default values if any of
 %      these rendering options are missing (e.g. if Renderer is missing,
 %      put in Renderer 'sampler'.)]
-%    * TODO - Look (Constant property wave) up and fill it in.
 %    * [Note: XXX - (from constructor) What happens if the recipe doesn't
 %      include any of the following, or any of the subfields we call?]
 %    * TODO - Determine a better way to infer the accommodation. Currently
@@ -210,7 +206,7 @@ properties(GetAccess=public, SetAccess=private)
 
 end
 
-properties(GetAccess=public, SetAccess=private, Hidden=true)
+properties(GetAccess=public, SetAccess=public, Hidden=true)
     % The recipe stores pretty much everything else we read in from the
     % PBRT file that we don't want the user to access directly. This
     % includes things like the WorldBegin/WorldEnd block, the PixelFilter,
@@ -223,8 +219,8 @@ properties(GetAccess=public, SetAccess=private, Hidden=true)
 end
 
 properties (Constant)
-    %WAVE
-    wave = []; % TODO Look it up and fill it in
+    %WAVE In PBRT we samples from 400 to 700 nm in 31 intervals
+    wave = linspace(400,700,31); % nm
 
 end
 
@@ -347,8 +343,6 @@ methods
 
         % Check to make sure this PBRT file has a realistic eye.
         if(~strcmp(recipe.camera.subtype, 'realisticEye'))
-            % error(['This PBRT file does not include a '
-            %    '"realistic eye" camera class.'])
             recipe.camera = piCameraCreate('realisticEye');
         end
 
