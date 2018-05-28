@@ -235,15 +235,16 @@ methods
 
         p = inputParser;
         p.KeepUnmatched = true;
+        
         % pbrtFile: Either a pbrt file or just a scene name
         p.addRequired('pbrtFile', @ischar);
         p.addParameter('name', 'scene-001', @ischar);
         p.addParameter('workingDirectory', '', @ischar);
-
-        % Optional parameters used by scenes that consist of only a
-        % planar surface (e.g. a slanted bar). We will move the plane to
-        % the given distance (in mm) and, if applicable, attach the
-        % provided texture. 
+        
+        % Optional parameters used by unique scenes (e.g. slantedBar,
+        % texturedPlane, pointSource). We can use these parameters to move
+        % the plane/point to the given distance (in mm) and, if applicable,
+        % attach the provided texture.
         p.addParameter('planeDistance', 1, @isnumeric);
         p.addParameter('planeTexture', ...
             fullfile(piRootPath, 'data', 'imageTextures', ...
@@ -251,96 +252,14 @@ methods
         p.addParameter('planeSize', [1 1], @isnumeric);
         p.addParameter('pointDiameter',0.001);
         p.addParameter('pointDistance',1);
+        
+        % Parse
         p.parse(pbrtFile, varargin{:});
-
-        % Read in PBRT file
-        [~, name, ext] = fileparts(pbrtFile);
-
-        if(isempty(ext))
-            % The user has given us a scene name and not a full pbrt
-            % file. Let's find the right file.
-            switch name
-                case('numbersAtDepth')
-                    scenePath = fullfile(isetbioDataPath, 'pbrtscenes', ...
-                        'NumbersAtDepth', 'numbersAtDepth_v3.pbrt');
-                    obj.sceneUnits = 'mm';
-                case('slantedBar')
-                    scenePath = fullfile(piRootPath, 'data', ...
-                        'V3','SlantedBar', 'slantedBar.pbrt');
-                    obj.sceneUnits = 'm';
-                case('chessSet')
-                    scenePath = fullfile(isetbioDataPath, 'pbrtscenes', ...
-                        'ChessSet', 'chessSet.pbrt');
-                    obj.sceneUnits = 'mm';
-                case('texturedPlane')
-                    scenePath = fullfile(piRootPath, 'data', ...
-                        'V3','texturedPlane', 'texturedPlane.pbrt');
-                    obj.sceneUnits = 'm';
-                case('pointSource')
-                    scenePath = fullfile(piRootPath,'data',...
-                        'SimplePoint','simplePointV3.pbrt');
-                    obj.sceneUnits = 'm';
-                otherwise
-                    error('Did not recognize scene type.');
-            end
-        else
-            scenePath = pbrtFile;
-        end
-
-        % Setup working folder
-        if(isempty(p.Results.workingDirectory))
-            % Determine scene folder name from scene path
-            [path, ~, ~] = fileparts(scenePath);
-            [~, sceneFolder] = fileparts(path);
-            obj.workingDir = fullfile(...
-                isetbioRootPath, 'local', sceneFolder);
-        else
-            obj.workingDir = p.Results.workingDirectory;
-        end
-
-        obj.pbrtFile = createWorkingFolder(...
-            scenePath, 'workingDir', obj.workingDir);
-
-        % Parse PBRT file
-        recipe = piRead(obj.pbrtFile,'version',3);
-        % recipe.outputFile = obj.pbrtFile;
-        recipe.inputFile = scenePath;
-
-        % Apply optional parameters to unique scenes
-        if(strcmp(name, 'slantedBar'))
-            recipe = piObjectTransform(recipe, 'SlantedBar', ...
-                'Translate', [0 0 p.Results.planeDistance]);
-        elseif(strcmp(name,'pointSource'))
-            % Clear previous transforms
-            piClearObjectTransforms(recipe,'Point');
-            piClearObjectTransforms(recipe,'Plane');
-            % Add given transforms
-            piObjectTransform(recipe,'Point','Scale',[p.Results.pointDiameter p.Results.pointDiameter 1]);
-            piObjectTransform(recipe,'Point','Translate',[0 0 p.Results.pointDistance]);
-            % Make it large!
-            piObjectTransform(recipe,'Plane','Scale',[p.Results.pointDistance*10 p.Results.pointDistance*10 1]);
-            % Move it slightly beyond the point
-            piObjectTransform(recipe,'Plane','Translate',[0 0 p.Results.pointDistance+0.5]); 
-        elseif(strcmp(name, 'texturedPlane'))
-            % Scale and translate
-            planeSize = p.Results.planeSize;
-            scaling = [planeSize(1) planeSize(2) 1] ./ [1 1 1]; 
-            recipe = piObjectTransform(recipe, 'Plane', 'Scale', scaling); 
-            recipe = piObjectTransform(recipe, 'Plane', ...
-                'Translate', [0 0 p.Results.planeDistance]); 
-            % Texture
-            [pathTex, nameTex, extTex] = fileparts(p.Results.planeTexture);
-            copyfile(p.Results.planeTexture, obj.workingDir);
-            if(isempty(pathTex))
-                error('Image texture must be an absolute path.');
-            end
-            recipe = piWorldFindAndReplace(recipe, 'dummyTexture.exr', ...
-                strcat(nameTex, extTex));
-        end
-
-        % [Note: XXX - What happens if the recipe doesn't include any of
-        % the following, or any of the subfields we call?]
-
+        
+        % Setup the pbrt scene and recipe
+        [recipe, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
+            loadPbrtScene(pbrtFile,p);
+        
         % Check to make sure this PBRT file has a realistic eye.
         if(~strcmp(recipe.camera.subtype, 'realisticEye'))
             recipe.camera = piCameraCreate('realisticEye');
@@ -440,9 +359,12 @@ end
 methods (Access=public)
     [oi, terminalOutput, outputFile] = render(obj, varargin);
     
-    % Should these be public?
+    % These are helper functions called within render() above. Splitting
+    % them into their individual functions allows us to integrate them with
+    % isetcloud tools.
+    % (Should these be public?)
     [obj] = setOI(obj, ieObject,varargin)
-    
+    [objNew] = write(obj, varargin)
 end
 
 
