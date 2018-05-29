@@ -49,9 +49,6 @@ p = inputParser;
 p.addRequired('pbrtFile', @ischar);
 p.parse(pbrtFile, varargin{:});
 
-%% Check for remote data toolbox?
-% How?
-
 %% Check if we've been given a sceneName or a pbrt file.
 [~, sceneName, ext] = fileparts(pbrtFile);
 if(isempty(ext))
