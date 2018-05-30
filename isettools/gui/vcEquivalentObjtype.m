@@ -25,17 +25,16 @@ function objType = vcEquivalentObjtype(objType)
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    05/02/18  jnm  Formatting
 
-% Get rid of case-dependence
-objType = lower(objType);
+% Get rid of case-dependence.  Return must be upper.
+objType = upper(objType);
 
 % These are the aliases we use sometimes
-if strcmp(objType, 'oi'), objType = 'opticalimage';
-elseif strcmp(objType, 'sensor'), objType = 'isa';
-elseif strcmp(objType, 'imgproc') || ...
-       strcmp(objType, 'vci') || ...      % Virtual camera image
-       strcmp(objType, 'ip')              % Image processor
-    objType = 'vcimage';
-    % Other translations belong here
+if     strcmp(objType,'OI'), objType = 'OPTICALIMAGE';
+elseif strcmp(objType,'SENSOR'), objType = 'ISA';
+elseif strcmp(objType,'IMGPROC') || ...
+       strcmp(objType,'VCI') || ...     % Virtual camera image
+       strcmp(objType,'IP')             % Image processor
+    objType = 'VCIMAGE';
 end
 
-return
+end

@@ -33,6 +33,7 @@ function microSaccadeTargetLikelihoodSpatialMap = ...
 %    01/03/18  NPC  ISETBIO Team, 2018
 %    05/15/18  jnm  Formatting
 %    05/24/18  NPC  Comments
+%
 
 % Gaussian with sigma obj.microaccadeTargetSigma
 [x, y] = meshgrid(heatMapXYsupportArcMin, heatMapXYsupportArcMin);

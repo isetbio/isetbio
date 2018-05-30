@@ -25,20 +25,16 @@ classdef sceneEye < hiddenHandle
 %           myScene.eyePos = [x y z];
 %      Is there a way to ensure they put in a 3x1 vector for eyePos, other
 %      than just rigourous error checking in the code?
-%    * [Note: BW - (Reference first TODO) Yes, I think so, using the
-%      myScene.set('eyePos', val) approach, or perhaps myScene.set.eyePos =
-%      val. In these cases the set operation can pass through an input
-%      parser that validates the input value (I think).]
-%    * [Note: BW - I wonder if recipe should be a slot in here or whether
-%      we should use myScene.render(recipe, varargin); The current way does
-%      make sense, since this is actually a scene.]
+%	 * [Note: BW - (Reference first TODO) Yes, I think so, using the
+%	   myScene.set('eyePos', val) approach, or perhaps myScene.set.eyePos =
+%	   val. In these cases the set operation can pass through an input
+%	   parser that validates the input value (I think).]
 %    * [Note: BW - maxDepth & nWaveBands are often empty, so let's perform
 %      the checks below. However, I should find a more permanant solution
 %      to cases like these. (See the note above). Maybe in
 %      piGetRenderRecipe we should put in the default values if any of
 %      these rendering options are missing (e.g. if Renderer is missing,
 %      put in Renderer 'sampler'.)]
-%    * TODO - Look (Constant property wave) up and fill it in.
 %    * [Note: XXX - (from constructor) What happens if the recipe doesn't
 %      include any of the following, or any of the subfields we call?]
 %    * TODO - Determine a better way to infer the accommodation. Currently
@@ -157,8 +153,13 @@ properties (GetAccess=public, SetAccess=public)
     %   if the eye is looking down the z-axis (eyePos = [0 0 0], eyeTo
     %   = [0 0 1]) then the up vector cannot be [0 0 1].
     eyeUp;
-
-    % debugMode - Toggle debug mode.
+    
+    % diffractionEnabled Toggle diffraction. When it diffraction simulation
+    %   is enabled, PBRT will use HURB to simulate the effect of
+    %   diffraction. May cause slow-downs. 
+    diffractionEnabled;
+    
+    %DEBUGMODE Toggle debug mode.
     %   For debug mode we switch to a perspective camera with the same
     %   FOV as the eye. This can be potentially faster and easier to
     %   render than going through the eye.
@@ -197,10 +198,15 @@ properties(GetAccess=public, SetAccess=private)
     %   then output new PBRT files into this directory. We also save
     %   the raw rendered data (xxx.dat) in this folder.
     workingDir;
+    
+    %SCENEUNITS Some scenes are in units of meters, some in units of millimeters.
+    %   We keep of track of this here so we can pass the correct parameter
+    %   to PBRT.
+    sceneUnits;
 
 end
 
-properties(Access=private)
+properties(GetAccess=public, SetAccess=public, Hidden=true)
     % The recipe stores pretty much everything else we read in from the
     % PBRT file that we don't want the user to access directly. This
     % includes things like the WorldBegin/WorldEnd block, the PixelFilter,
@@ -213,8 +219,8 @@ properties(Access=private)
 end
 
 properties (Constant)
-    % wave - Constant wave property.
-    wave = []; % TODO Look it up and fill it in
+    % wave - In PBRT we samples from 400 to 700 nm in 31 intervals
+    wave = linspace(400,700,31); % nm
 
 end
 
@@ -229,98 +235,33 @@ methods
 
         p = inputParser;
         p.KeepUnmatched = true;
+        
         % pbrtFile: Either a pbrt file or just a scene name
         p.addRequired('pbrtFile', @ischar);
         p.addParameter('name', 'scene-001', @ischar);
         p.addParameter('workingDirectory', '', @ischar);
-
-        % Optional parameters used by scenes that consist of only a
-        % planar surface (e.g. a slanted bar). We will move the plane to
-        % the given distance (in mm) and, if applicable, attach the
-        % provided texture.
-        p.addParameter('planeDistance', 1000, @isnumeric);
+        
+        % Optional parameters used by unique scenes (e.g. slantedBar,
+        % texturedPlane, pointSource). We can use these parameters to move
+        % the plane/point to the given distance (in mm) and, if applicable,
+        % attach the provided texture.
+        p.addParameter('planeDistance', 1, @isnumeric);
         p.addParameter('planeTexture', ...
             fullfile(piRootPath, 'data', 'imageTextures', ...
             'squareResolutionChart.exr'), @ischar);
-        p.addParameter('planeSize', [1000 1000], @isnumeric);
+        p.addParameter('planeSize', [1 1], @isnumeric);
+        p.addParameter('pointDiameter',0.001);
+        p.addParameter('pointDistance',1);
+        
+        % Parse
         p.parse(pbrtFile, varargin{:});
-
-        % Read in PBRT file
-        [~, name, ext] = fileparts(pbrtFile);
-
-        if(isempty(ext))
-            % The user has given us a scene name and not a full pbrt
-            % file. Let's find the right file.
-            switch name
-                case('numbersAtDepth')
-                    scenePath = fullfile(isetbioDataPath, 'pbrtscenes', ...
-                        'NumbersAtDepth', 'numbersAtDepth.pbrt');
-                case('slantedBar')
-                    scenePath = fullfile(isetbioDataPath, 'pbrtscenes', ...
-                        'SlantedBar', 'slantedBar.pbrt');
-                case('chessSet')
-                    scenePath = fullfile(isetbioDataPath, 'pbrtscenes', ...
-                        'ChessSet', 'chessSet.pbrt');
-                case('texturedPlane')
-                    % Textured plane scene is located in pbrt2ISET.
-                    scenePath = fullfile(piRootPath, 'data', ...
-                        'texturedPlane', 'texturedPlane.pbrt');
-                otherwise
-                    error('Did not recognize scene type.');
-            end
-        else
-            scenePath = pbrtFile;
-        end
-
-        % Setup working folder
-        if(isempty(p.Results.workingDirectory))
-            % Determine scene folder name from scene path
-            [path, ~, ~] = fileparts(scenePath);
-            [~, sceneFolder] = fileparts(path);
-            obj.workingDir = fullfile(...
-                isetbioRootPath, 'local', sceneFolder);
-        else
-            obj.workingDir = p.Results.workingDirectory;
-        end
-
-        obj.pbrtFile = createWorkingFolder(...
-            scenePath, 'workingDir', obj.workingDir);
-
-        % Parse PBRT file
-        recipe = piRead(obj.pbrtFile);
-        % recipe.outputFile = obj.pbrtFile;
-        recipe.inputFile = scenePath;
-
-        % Apply optional parameters to unique scenes
-        if(strcmp(name, 'slantedBar'))
-            recipe = piMoveObject(recipe, '1_WhiteCube', ...
-                'Translate', [0 p.Results.planeDistance 0]);
-            recipe = piMoveObject(recipe, '2_BlackCube', ...
-                'Translate', [0 p.Results.planeDistance 0]);
-        elseif(strcmp(name, 'texturedPlane'))
-            % Scale and translate
-            planeSize = p.Results.planeSize;
-            scaling = [planeSize(1) 1000 planeSize(2)] ./ [1000 1000 1000];
-            recipe = piMoveObject(recipe, 'Plane', 'Scale', scaling);
-            recipe = piMoveObject(recipe, 'Plane', ...
-                'Translate', [0 p.Results.planeDistance 0]);
-            % Texture
-            [pathTex, nameTex, extTex] = fileparts(p.Results.planeTexture);
-            copyfile(p.Results.planeTexture, obj.workingDir);
-            if(isempty(pathTex))
-                error('Image texture must be an absolute path.');
-            end
-            recipe = piWorldFindAndReplace(recipe, 'dummyTexture.exr', ...
-                strcat(nameTex, extTex));
-        end
-
-        % [Note: XXX - What happens if the recipe doesn't include any of
-        % the following, or any of the subfields we call?]
-
+        
+        % Setup the pbrt scene and recipe
+        [recipe, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
+            loadPbrtScene(pbrtFile,p);
+        
         % Check to make sure this PBRT file has a realistic eye.
         if(~strcmp(recipe.camera.subtype, 'realisticEye'))
-            % error(['This PBRT file does not include a '
-            %    '"realistic eye" camera class.'])
             recipe.camera = piCameraCreate('realisticEye');
         end
 
@@ -351,7 +292,7 @@ methods
 
         obj.numRays = recipe.sampler.pixelsamples.value;
 
-        % These two are often empty, so let's do checks here. However,
+        % These two are often empty, so let's do checks here. However, 
         % I should find a more permanant solution to cases like these.
         % (See note above).
         % Maybe in piGetRenderRecipe we should put in the default
@@ -375,9 +316,12 @@ methods
         end
 
         obj.recipe = recipe;
+        
+        % Default settings.
         obj.debugMode = false;
-
+        obj.diffractionEnabled = false;
         obj.eccentricity = [0 0];
+        
     end
 
     %% Get methods for dependent variables
@@ -414,6 +358,13 @@ end
 
 methods (Access=public)
     [oi, terminalOutput, outputFile] = render(obj, varargin);
+    
+    % These are helper functions called within render() above. Splitting
+    % them into their individual functions allows us to integrate them with
+    % isetcloud tools.
+    % (Should these be public?)
+    [obj] = setOI(obj, ieObject,varargin)
+    [objNew] = write(obj, varargin)
 end
 
 end

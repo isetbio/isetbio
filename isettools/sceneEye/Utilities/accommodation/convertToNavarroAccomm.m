@@ -39,6 +39,13 @@ if(inputAccomm == 0)
     return;
 end
 
+% We can't interpolate past ~0.4 diopters. At that point the difference is
+% minimal, so let's just use the original value
+if(inputAccomm < 0.5)
+    navarroAccomm = inputAccomm;
+    return;
+end
+
 accom = [0; 0.1500; 0.2400; 0.40; 0.6300; 1.0000; 1.5; 2.0000; 3.0000;
     5.0000; 7.0000; 10.0000];
 

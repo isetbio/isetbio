@@ -1,12 +1,12 @@
 function generateEMandMosaicComboVideo(fixEMobj, coneMosaic, varargin)
-% Combined eye movement and mosaic video
+% Generate a video showing the eye movement on top of the cone mosaic.
 %
 % Syntax:
 %   generateEMandMosaicComboVideo(fixEMobj, coneMosaic, [varargin])
 %   fixEMobj.generateEMandMosaicComboVideo(coneMosaic, [varargin])
 %
 % Description:
-%    Generate the video for the both the eye movement and mosaic.
+%    Generate a video showing the eye movement on top of the cone mosaic.
 %
 % Inputs:
 %    fixEMobj            - Object. A fixationalEM object.
@@ -26,21 +26,26 @@ function generateEMandMosaicComboVideo(fixEMobj, coneMosaic, varargin)
 %    'videoFileName'     - String. The filename to save generated video as.
 %                          Default emMosaicCombo.mp4
 %
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
+%
 
 p = inputParser;
 p.addRequired('fixEMobj', @(x)(isa(x, 'fixationalEM')));
 p.addRequired('coneMosaic', @(x)(isa(x, 'coneMosaicHex')));
-p.addParameter('visualizedfovdegs', 0.4, @isnumeric);
-p.addParameter('displaycrosshairs', true, @islogical);
-p.addParameter('showmovingmosaiconseparatesubfig', true, @islogical);
-p.addParameter('videofilename', 'emMosaicCombo.mp4', @ischar);
+p.addParameter('visualizedFOVdegs', 0.4, @isnumeric);
+p.addParameter('displayCrosshairs', true, @islogical);
+p.addParameter('showMovingMosaicOnSeparateSubFig', true, @islogical);
+p.addParameter('videoFileName', 'emMosaicCombo.mp4', @ischar);
 p.parse(fixEMobj, coneMosaic, varargin{:});
 
-visualizedFOVdegs = p.Results.visualizedfovdegs;
-videoFileName = p.Results.videofilename;
+visualizedFOVdegs = p.Results.visualizedFOVdegs;
+videoFileName = p.Results.videoFileName;
 showMovingMosaicOnSeparateSubFig = ...
-    p.Results.showmovingmosaiconseparatesubfig;
-displayCrossHairs = p.Results.displaycrosshairs;
+    p.Results.showMovingMosaicOnSeparateSubFig;
+displayCrossHairs = p.Results.displayCrosshairs;
 
 if isempty(fixEMobj.emPosMicrons)
     fprintf('No eye movements found in the passed fixationalEM object\n');

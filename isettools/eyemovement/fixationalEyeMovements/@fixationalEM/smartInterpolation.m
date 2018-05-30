@@ -1,13 +1,16 @@
 function outMatrix = ...
     smartInterpolation(obj, inputTimeAxis, inputMatrix, outputTimeAxis)
-% Perform the smart interpolation
+% Perform an interpolation of a 2D or a 3D matrix over its time axis
 %
 % Syntax:
 %   outMatrix = ...
 %       smartInterpolation(obj, inputTimeAxis, inputMatrix, outputTimeAxis)
 %
 % Description:
-%    Perform the smart interpolation.
+%    Perform an interpolation of a 2D or a 3D matrix over its time axis.
+%    The routine tries its best to determine the dimension of the 2D/3D 
+%    matrix that corresponds to the time axis, based on the numerosity of
+%    the inputTimeAxis.
 %
 % Inputs:
 %    obj            - Object. A fixationalEM object.
@@ -23,6 +26,11 @@ function outMatrix = ...
 %
 % Optional key/value pairs:
 %    None.
+%
+% History:
+%    01/03/18  NPC  ISETBIO Team, 2018
+%    05/15/18  jnm  Formatting
+%    05/24/18  NPC  Comments
 %
 
 if (ndims(inputMatrix) > 3)

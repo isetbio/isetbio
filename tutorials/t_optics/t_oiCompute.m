@@ -17,14 +17,14 @@
 % Creates an array of points
 scene = sceneCreate('point array');   
 scene = sceneSet(scene,'hfov',0.5);  
-vcAddAndSelectObject(scene); sceneWindow;
+ieAddObject(scene); sceneWindow;
 
 % Diffraction limited optics
 oi = oiCreate;                        
 
 % Compute optical image and show it
 oi = oiCompute(scene,oi);
-vcAddAndSelectObject(oi); oiWindow;
+ieAddObject(oi); oiWindow;
 
 %% Make a bigger f-number, compute and show
 optics = oiGet(oi,'optics');
@@ -35,7 +35,7 @@ optics = oiGet(oi,'optics');
 optics = opticsSet(optics,'fNumber',fnBig);
 oi2 = oiSet(oi,'optics',optics);
 oi2 = oiCompute(scene,oi2);
-vcAddAndSelectObject(oi2); oiWindow;
+ieAddObject(oi2); oiWindow;
 
 %% Plot the psf of the optics
 vcNewGraphWin;
@@ -128,3 +128,4 @@ mesh(x,y,psf);
 hold on; plot3(adX,adY,adZ,'k.'); hold off;
 colormap(0.5*copper + 0.5*ones(size(copper)))
 
+%%
