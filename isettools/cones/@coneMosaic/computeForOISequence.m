@@ -76,7 +76,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %    * TODO: Confirm if implementation referenced in note above is done.
 %
 % See Also:
-%    CONEMOSAIC, COMPUTE
+%    CONEMOSAIC, COMPUTE, t_simplePhotocurrentComputation
 
 % History:
 %    xx/xx/16  NPC  ISETBIO Team 2016

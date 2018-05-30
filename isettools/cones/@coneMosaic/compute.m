@@ -67,7 +67,7 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %                          mosaic.
 %
 % See Also:
-%    coneMosaic, computeForOISequence, emGenSequence.
+%    coneMosaic, computeForOISequence, emGenSequence, t_simplePhotocurrentComputation.
 %
 
 % History:
