@@ -8,7 +8,7 @@ function sceneFile = createWorkingFolder(sceneFile, varargin)
 %    Because we will be modifying the PBRT file and writing out new
 %    resource files for each rendered image, we need a local "working"
 %    folder where everything will be stored. This is passed in through
-%    'workingFolder, ' or is set by default to emRootPath/local/
+%    'workingFolder, ' or is set by default to isetbiopath/local/
 %
 % Inputs:
 %    sceneFile - The scene file's name at original location

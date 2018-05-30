@@ -82,6 +82,7 @@ writeNavarroLensFile(navarroAccom, fullfile(workingFolder, lensFile));
 fprintf('Wrote out a new lens file: \n')
 fprintf('%s \n \n', fullfile(workingFolder, lensFile));
 
-renderRecipe.camera.specfile.value = fullfile(workingFolder, lensFile);
+renderRecipe.camera.lensfile.value = fullfile(workingFolder, lensFile);
+renderRecipe.camera.lensfile.type = 'string';
 
 end
