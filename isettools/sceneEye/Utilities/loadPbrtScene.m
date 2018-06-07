@@ -68,6 +68,11 @@ if(sceneNameFlag)
     
     switch sceneName
         
+        case ('blankScene')
+            
+            scenePath = fullfile(piRootPath,'data','V3','blankScene','blankScene.pbrt');
+            sceneUnits = 'm';
+            
         case('numbersAtDepth')
             
             scenePath = fullfile(piRootPath, 'data', ...
