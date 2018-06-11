@@ -382,6 +382,9 @@ classdef coneMosaicHex < coneMosaic
         
         % Regenerate the LMS pattern using passed LMS density
         regenerateLMSPattern(obj, LMSdensity, varargin);
+        
+        % Return the indices for all L/M/S cones
+        [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj);
     end % Public methods
 
     methods (Access = private)
