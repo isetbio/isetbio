@@ -30,6 +30,9 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 % History:
 %    xx/xx/16  HJ   ISETBIO Team 2016
 %    02/22/18  jnm  Formatting
+%    06/14/18  NPC  Apply eccentricity-based corrections in cone quantal 
+%                   efficiency when the mosaic is hegagonal and has an 
+%                   eccentricity-based cone density. 
 
 %% Parse inputs
 p = inputParser();
@@ -182,8 +185,20 @@ warning('on', 'MATLAB:interp1:NaNinY');
 % number. Set the missing values to 0.
 absorbDensity(isnan(absorbDensity)) = 0;
 
-% Multiply by integration area and time to convert isomerization density to
-% isomerizations.
-absorptions=absorbDensity * obj.pigment.pdArea * obj.integrationTime;
+% Integrate over area
+absorptions = absorbDensity * obj.pigment.pdArea;
+
+% Determine if we need to correct for eccentricity
+correctForEccentricity = isa(obj, 'coneMosaicHex') && ...
+                         (obj.eccBasedConeDensity) && ...
+                         (obj.eccBasedConeQuantalEfficiency);
+
+if (correctForEccentricity)
+   % Eccentricity-based correction needed
+   absorptions = coneMosaicHex.applyEccBasedEfficiencyCorrections(obj, absorptions);
+end
+
+% Multiply by integration time to get absorption counts
+absorptions = absorptions * obj.integrationTime;
 
 end
