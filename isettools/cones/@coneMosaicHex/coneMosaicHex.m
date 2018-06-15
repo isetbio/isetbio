@@ -89,7 +89,7 @@ classdef coneMosaicHex < coneMosaic
         % eccBasedConeQuantalEfficiency - Boolean. Account for eccentricity
         % dependent changes in cone efficiency due to increasing cone 
         % aperture and decreasing outer segment length
-        eccBasedConeQuantalEfficiency
+        eccBasedConeQuantalEfficiency = false;
     end
     
     %% Private properties:
