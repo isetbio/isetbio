@@ -93,7 +93,9 @@ classdef coneMosaic < hiddenHandle
     % History:
     %    xx/xx/16  HJ/JRG/BW  ISETBIO Team, 2016
     %    02/26/18  jnm        Formatting
-
+    %    06/16/18  NPC        Function to determine whether a mosaic can
+    %                         support ecc-based cone efficiency corrections
+    
     properties (GetAccess=public, SetAccess=public)
         %name - The name of the object
         name;
@@ -1160,7 +1162,7 @@ classdef coneMosaic < hiddenHandle
 
         % Declare method for computing retinal coverage
         [apertureCoverage, geometricCoverage] = retinalCoverage(obj);
- 
+        
         function val = timeAxis(obj)
             % Return the cone mosaic time axis
             %
@@ -1221,10 +1223,14 @@ classdef coneMosaic < hiddenHandle
     % Methods may be called by the subclasses, but are otherwise private
     methods (Access = protected)
         cpObj = copyElement(obj);
+        
+        % Determine whether we should correct absorptions with eccentricity
+        correctAbsorptionsForEccentricity = ...
+            shouldCorrectAbsorptionsWithEccentricity(obj);
     end
 
     methods (Access = public, Hidden)
-        absorptions = computeSingleFrame(obj, oi, varargin);
+        [absorptions, correctionFactors] = computeSingleFrame(obj, oi, varargin);
         absorptions = applyEMPath(obj, LMS, varargin);
     end
 

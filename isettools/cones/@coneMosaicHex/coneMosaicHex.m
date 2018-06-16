@@ -53,6 +53,7 @@ classdef coneMosaicHex < coneMosaic
 %    04/16/18  jnm  Move resamplingFactor to Inputs section as it is
 %                   required, and not optional based on response when
 %                   attempting to instantiate a coneMosaicHex.
+%    06/16/18  NPC  Support cone efficiency correction with eccentricity
 
 % Examples:
 %{
@@ -85,6 +86,7 @@ classdef coneMosaicHex < coneMosaic
     cMosaicHex.window;
 %}
 
+    %% Public properties
     properties
         % eccBasedConeQuantalEfficiency - Boolean. Account for eccentricity
         % dependent changes in cone efficiency due to increasing cone 
@@ -110,7 +112,12 @@ classdef coneMosaicHex < coneMosaic
 
         % eccBasedConeDensity - Bool. Ecc.-based spatially-varying density
         eccBasedConeDensity
-  
+        
+        % correction factors for absorptions taking into account the 
+        % eccentricity-based changes in cone aperture and outer segment
+        % length
+        coneEfficiencyCorrectionFactors = [];
+        
         % resamplingFactor - The resampling factor.
         resamplingFactor
 
@@ -374,6 +381,10 @@ classdef coneMosaicHex < coneMosaic
         % activation map (coneRows x coneCols x time)
         hex3Dmap = reshapeHex2DmapToHex3Dmap(obj, hex2Dmap);
 
+        % Reshape a 1D map (non-null cones) to the full 2D hex activation
+        % map (coneRows x coneCols)
+        hex2Dmap = reshapeHex1DmapToHex2Dmap(obj, hex1Dmap);
+        
         % Compute activation images for the hex mosaic
         % (all cones + LMS submosaics)
         [activationImage, activationImageLMScone, imageXaxis, ...
@@ -395,6 +406,9 @@ classdef coneMosaicHex < coneMosaic
 
         % Change cone identities according to arguments passed in varargin
         reassignConeIdentities(obj, varargin);
+        
+        % Method to set obj.coneEfficiencyCorrectionFactors
+        setConeQuantalEfficiencyCorrectionFactors(obj, correctionFactors);
         
         % Regenerate the LMS pattern using passed LMS density
         regenerateLMSPattern(obj, LMSdensity, varargin);
@@ -421,7 +435,8 @@ classdef coneMosaicHex < coneMosaic
             edgeColor, faceColor, lineStyle, lineWidth);
         renderHexMesh(axesHandle, xHex, yHex, meshEdgeColor, ...
             meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
-        absorptions = applyEccBasedEfficiencyCorrections(aConeMosaicHexObject, absorptionDensity)
+        correctionFactors = computeConeEfficiencyCorrectionFactors(aConeMosaicHexObject,...
+            rows, cols, coneTypesNum);
     end % Static methods
 
 end

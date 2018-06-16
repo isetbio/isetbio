@@ -1,23 +1,23 @@
-function absorptionsCorrected = applyEccBasedEfficiencyCorrections(obj, absorptions)
-% Static method for computing absorptions with ecc-based efficiency corrections
+function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, rows, cols, coneTypesNum)
+% Static method for computing ecc-based absorption correction factors
 %
 % Syntax:
-%   absorptionsCorrected  = APPLYECCBASEDEFFICIENCYCORRECTIONS(aConeMosaicHexObject, absorptions)
+%   correctionFactors = COMPUTECONEEFFICIENCYCORRECTIONFACTORS(aConeMosaicHexObject, rows, cols, coneTypesNum)
 %
 % Description:
 %    This method is called by @coneMosaic's computeSingleFrame method
 %    when the mosaic has hexagonal packing AND its eccBasedConeDensity flag
-%    is set to true, i.e, when the mosaic has an eccentricity-based cone
-%    density. The purpose of this method is to compute corrected absorptions
-%    by accounting for each cone's variation in outer segment length and 
-%    inner segment aperture variation with eccentricity.
+%    is set to true, AND its eccBasedConeQuantalEfficiency is set to true.
+%    The purpose of this method is to compute correcttion factors for the
+%    absorptions by accounting for each cone's variation in outer segment 
+%    length and inner segment aperture variation with eccentricity.
 %
 % Inputs:
 %    obj          - A coneMosaicHex object
-%    absorptions  - The absorptions integrated over default cone aperture (zero eccentricity)
+%    rows, cols, coneTypesNum  - The size of the absorptions
 %
 % Outputs:
-%    absorptionsCorrected  - The eccentricity based corrected cone absorptions
+%    correctionFactors  - The computed correction factors
 %
 % Optional key/value pairs:
 %    None' 
@@ -29,9 +29,7 @@ function absorptionsCorrected = applyEccBasedEfficiencyCorrections(obj, absorpti
 % History:
 %    06/14/18  NPC, ISETBIO Team    Wrote it
 
-    fprintf('Applying ecc-based correction in absorptions\n');
-    [rows,cols,coneTypes] = size(absorptions);
-    
+    fprintf('Computing ecc-based correction factors in cone quantal efficiency\n');
     % Compute cone eccentricities in meters
     coneXYEccentricities = obj.coneLocs / obj.resamplingFactor;
     coneEccentricitiesInMeters = (sqrt(sum(coneXYEccentricities.^2,2)))';
@@ -39,7 +37,6 @@ function absorptionsCorrected = applyEccBasedEfficiencyCorrections(obj, absorpti
     
     % Compute cone angles
     coneAnglesInDegrees = atan2(squeeze(coneXYEccentricities(:,2)), squeeze(coneXYEccentricities(:,1))) / pi * 180;
-    absorptionsCorrected  = absorptions*0;
     
     % Compute cone aperture for each cone based on its 2D location
     [~, apertureMeters, ~] = coneSizeReadData(...
@@ -58,24 +55,21 @@ function absorptionsCorrected = applyEccBasedEfficiencyCorrections(obj, absorpti
             apertureMeters*1e6, osLengthMicrons);
     end
 
-    % Apply corrections separately for each cone type
-    for coneTypeIndex = 1:coneTypes
-        absorptionsForTargetCone = reshape(...
-            squeeze(absorptions(:,:,coneTypeIndex)), ...
-            [1, rows*cols]);
-
-        absorptionsCorrected(:,:, coneTypeIndex) = ...
-            reshape(computeAbsorptionsUsingEccentricity(...
-                            absorptionsForTargetCone, ...
+    % Compute correction factors separately for each cone type
+    correctionFactors = zeros(rows, cols, coneTypesNum);
+    for coneTypeIndex = 1:coneTypesNum
+        correctionFactors(:,:,coneTypeIndex) = reshape(...
+            computeAbsorptionCorrectionFactors(...
                             apertureMeters/apertureMetersAtZeroEcc, ...
                             osLengthMicrons/osLengthAtZeroEcc, ...
                             coneTypeIndex), ...
-                    [rows cols 1]);
-    
+                            [rows cols 1]);
     end
+    
 end
 
-function absorptionsCorrected = computeAbsorptionsUsingEccentricity(absorptions, apertureChangeWithRespectToZeroEcc, osChangeWithRespectToZeroEcc, coneTypeIndex)
+function correctionFactors = computeAbsorptionCorrectionFactors(...
+    apertureChangeWithRespectToZeroEcc, osChangeWithRespectToZeroEcc, coneTypeIndex)
     
     % Sensitivity change due to change in aperture diameter (A = r^2);
     sensitivityChangeDueToInnerSegmentDiam = apertureChangeWithRespectToZeroEcc.^2;
@@ -101,7 +95,7 @@ function absorptionsCorrected = computeAbsorptionsUsingEccentricity(absorptions,
         sensitivityChangeDueToOuterSegmentLength(coneIndex) = mean(photonAbsorptionChange);
     end
     
-    absorptionsCorrected = absorptions .* sensitivityChangeDueToInnerSegmentDiam .* sensitivityChangeDueToOuterSegmentLength;
+    correctionFactors = sensitivityChangeDueToInnerSegmentDiam .* sensitivityChangeDueToOuterSegmentLength;
 end
 
 function [osLengthMicrons, osLengthAtZeroEcc] = outerSegmentLengthFromEccentricity(eccDegs)

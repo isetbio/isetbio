@@ -1,4 +1,4 @@
-function absorptions = computeSingleFrame(obj, oi, varargin)
+function [absorptions, correctionFactors] = computeSingleFrame(obj, oi, varargin)
 % Single frame compute function for coneMosaic object.
 %
 % Syntax:
@@ -22,6 +22,7 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 %                  col by 3 matrix, where row and column are the mosaic
 %                  dimensions. This is not biologically realistic but
 %                  useful for some computations (default false).
+%    'correctionFactors', - Correction factors
 %
 % See Also:
 %    coneMosaic, compute, computeForOISequence
@@ -30,19 +31,22 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 % History:
 %    xx/xx/16  HJ   ISETBIO Team 2016
 %    02/22/18  jnm  Formatting
-%    06/14/18  NPC  Apply eccentricity-based corrections in cone quantal 
-%                   efficiency when the mosaic is hegagonal and has an 
-%                   eccentricity-based cone density. 
+%    06/16/18  NPC  Support cone efficiency correction with eccentricity
+ 
 
 %% Parse inputs
 p = inputParser();
 p.addRequired('oi', @isstruct);
 p.addParameter('fullLMS', false, @islogical);
+p.addParameter('correctionFactors', [], @isnumeric);
+p.addParameter('correctForEccentricity', false, @islogical);
+
 p.parse(oi, varargin{:});
 fullLMS = p.Results.fullLMS;  
+correctionFactors = p.Results.correctionFactors;
+correctForEccentricity = p.Results.correctForEccentricity;
 
 %% Get wavelength sampling consistent
-%
 % Do this by making a copy of current obj and setting wavelength samples to
 % be same as oi.
 obj = obj.copy();
@@ -188,14 +192,20 @@ absorbDensity(isnan(absorbDensity)) = 0;
 % Integrate over area
 absorptions = absorbDensity * obj.pigment.pdArea;
 
-% Determine if we need to correct for eccentricity
-correctForEccentricity = isa(obj, 'coneMosaicHex') && ...
-                         (obj.eccBasedConeDensity) && ...
-                         (obj.eccBasedConeQuantalEfficiency);
-
 if (correctForEccentricity)
    % Eccentricity-based correction needed
-   absorptions = coneMosaicHex.applyEccBasedEfficiencyCorrections(obj, absorptions);
+   if isempty((correctionFactors))
+       % If we have not computed the correction factors, do so now
+       [rows, cols, coneTypesNum] = size(absorptions);
+       
+       correctionFactors = ...
+           coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
+           rows, cols, coneTypesNum);
+   end
+   
+   % Apply corrections due to eccentricity-dependent changes in OS length
+   % and inner segment diameter
+   absorptions = absorptions .* correctionFactors;
 end
 
 % Multiply by integration time to get absorption counts

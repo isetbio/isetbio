@@ -75,6 +75,7 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %    08/09/17  dhb     Working on standardizing comment format. I'm wasnt'
 %                      happy with my previous pass.
 %    02/26/18  jnm     Formatting
+%    06/16/18  NPC     Support cone efficiency correction with eccentricity
 
 %% If an oi sequence, head that way
 %
@@ -102,7 +103,7 @@ theExpandedMosaic = p.Results.theExpandedMosaic;
 
 obj.absorptions = [];
 obj.current = [];
-
+                     
 %% Set eye movement path
 %
 %  We do not accept multiple trials for this computational path (single
@@ -165,10 +166,21 @@ else
         padCols = round((theExpandedMosaic.cols - obj.cols) / 2);
     end
 
-    % Compute full LMS noise free absorptions
-    absorptions = theExpandedMosaic.computeSingleFrame(oi, ...
-        'fullLMS', true);
-
+    % Determine if we need to apply eccentricity-dependent corrections to 
+    % the  absorptions, and if so do it                 
+    if (obj.shouldCorrectAbsorptionsWithEccentricity())
+        [absorptions, correctionFactors] = ...
+            theExpandedMosaic.computeSingleFrame(oi, ...
+            'fullLMS', true, ...
+            'correctForEccentricity', true, ...
+            'correctionFactors', obj.coneEfficiencyCorrectionFactors);
+        % Save correctionFactors for re-use
+        obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
+    else
+        absorptions = theExpandedMosaic.computeSingleFrame(oi, ...
+            'fullLMS', true);
+    end
+    
     % Deal with eye movements
     absorptions = obj.applyEMPath(absorptions, 'emPath', emPath, ...
         'padRows', padRows, 'padCols', padCols);
