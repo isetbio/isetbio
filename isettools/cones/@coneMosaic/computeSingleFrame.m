@@ -14,15 +14,16 @@ function [absorptions, correctionFactors] = computeSingleFrame(obj, oi, varargin
 %    oi          - An optical image
 %
 % Outputs:
-%    absorptions - The cone absorptions
-%
+%    absorptions        - The cone absorptions
+%    correctionFactors  - The applied absorption correction factors
+
 % Optional key/value pairs:
 %    'fullLMS'   - Return values for a full mosaic, that is for mosaic with
 %                  L, M, and S cones at each cone position. This is row by
 %                  col by 3 matrix, where row and column are the mosaic
 %                  dimensions. This is not biologically realistic but
 %                  useful for some computations (default false).
-%    'correctionFactors', - Correction factors
+%    'correctionFactors', - Previously computed correction factors
 %
 % See Also:
 %    coneMosaic, compute, computeForOISequence

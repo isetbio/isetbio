@@ -5,13 +5,19 @@ function correctAbsorptions = shouldCorrectAbsorptionsWithEccentricity(obj)
 %	correctAbsorptions = shouldCorrectAbsorptionsWithEccentricity(obj)
 %
 % Description:
-%  Determine whether we should correct absorptions with eccentricity
+%  Determine whether we should correct absorptions with eccentricity. This
+%  only happens when the following 3 conditions are all true:
+%    - the mosaic is hexagonal 
+%    - the eccBasedConeDensity flag is set to true 
+%    - the eccBasedConeQuantalEfficiency flag is set to true
 %
 % Inputs:
-%     obj               - rect cone mosaic object
+%     obj                 -  cone mosaic object
 %
 % Ouputs:
-%     correctAbsorptions  - boolean, whether we should correct absorptions
+%     correctAbsorptions  - boolean, if true, then the computeSingleFrame()
+%                           method corrects the absorptions to account for
+%                           changes in cone efficiency with eccentricity
 %
 
 % History:
