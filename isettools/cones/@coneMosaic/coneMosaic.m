@@ -1163,6 +1163,10 @@ classdef coneMosaic < hiddenHandle
         % Declare method for computing retinal coverage
         [apertureCoverage, geometricCoverage] = retinalCoverage(obj);
         
+        % Determine whether we should correct absorptions with eccentricity
+        correctAbsorptionsForEccentricity = ...
+            shouldCorrectAbsorptionsWithEccentricity(obj);
+        
         function val = timeAxis(obj)
             % Return the cone mosaic time axis
             %
@@ -1223,10 +1227,6 @@ classdef coneMosaic < hiddenHandle
     % Methods may be called by the subclasses, but are otherwise private
     methods (Access = protected)
         cpObj = copyElement(obj);
-        
-        % Determine whether we should correct absorptions with eccentricity
-        correctAbsorptionsForEccentricity = ...
-            shouldCorrectAbsorptionsWithEccentricity(obj);
     end
 
     methods (Access = public, Hidden)
