@@ -121,7 +121,10 @@ if nargout > 0, emPath = fixEMobj.emPos; end
 %% cone efficiency correction factors because the mosaic size may change
 %% due to eye movements, and the correction factors might be invalid
 if (obj.shouldCorrectAbsorptionsWithEccentricity())
-    %fprintf('<strong>Resetting cone efficiency correction factors after emGenSequence because mosaic size may change</strong>\n');
+    beVerbose = false;
+    if (beVerbose)
+        fprintf('<strong>Resetting cone efficiency correction factors after emGenSequence because mosaic size may change</strong>\n');
+    end
     correctionFactors = [];
     obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
 end

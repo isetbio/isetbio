@@ -81,7 +81,8 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 % History:
 %    xx/xx/16  NPC  ISETBIO Team 2016
 %    02/19/18  jnm  Formatting
-
+%    06/17/18  NPC  Support cone efficiency correction with eccentricity
+%
 %   Examples:
 %{
     % This is an example of how to do this for 1, 000 eye movement paths
@@ -169,6 +170,17 @@ if (isempty(theExpandedMosaic))
     theExpandedMosaic = obj.copy();
     theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
         obj.cols + 2 * padCols);
+    
+    if (theExpandedMosaic.shouldCorrectAbsorptionsWithEccentricity())
+        coneTypesNum = 3;
+        correctionFactors = ...
+           coneMosaicHex.computeConeEfficiencyCorrectionFactors(theExpandedMosaic, ...
+           mfilename(), ...
+           obj.rows + 2 * padRows, obj.cols + 2 * padCols, coneTypesNum);
+        % Save correctionFactors for re-use
+        theExpandedMosaic.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
+    end
+    
 end
 
 %% Get ready for output variables

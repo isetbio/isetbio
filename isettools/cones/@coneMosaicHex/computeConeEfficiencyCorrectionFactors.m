@@ -1,8 +1,8 @@
-function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, rows, cols, coneTypesNum)
+function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName, rows, cols, coneTypesNum)
 % Static method for computing ecc-based absorption correction factors
 %
 % Syntax:
-%   correctionFactors = COMPUTECONEEFFICIENCYCORRECTIONFACTORS(aConeMosaicHexObject, rows, cols, coneTypesNum)
+%   correctionFactors = COMPUTECONEEFFICIENCYCORRECTIONFACTORS(aConeMosaicHexObject, triggerFunctionName, rows, cols, coneTypesNum)
 %
 % Description:
 %    This method is called by @coneMosaic's computeSingleFrame method
@@ -14,6 +14,7 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, rows, c
 %
 % Inputs:
 %    obj          - A coneMosaicHex object
+%    triggerFunctionName - The function calling this method (debug purpose)
 %    rows, cols, coneTypesNum  - The size of the absorptions
 %
 % Outputs:
@@ -29,7 +30,20 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, rows, c
 % History:
 %    06/14/18  NPC, ISETBIO Team    Wrote it
 
-    fprintf('Computing ecc-based correction factors in cone quantal efficiency\n');
+    p = inputParser;
+    p.addRequired('obj', @(x)(isa(x,'coneMosaic')));
+    p.addRequired('triggerFunctionName', @(x)(ischar(x)));
+    p.addRequired('rows', @(x)(isnumeric(x)));
+    p.addRequired('cols', @(x)(isnumeric(x)));
+    p.addRequired('coneTypesNum', @(x)(isnumeric(x)));
+    p.parse(obj, triggerFunctionName, rows, cols, coneTypesNum);
+    
+    beVerbose = true;
+    if (beVerbose)
+        tic
+        fprintf('>>> Computing ecc-based correction factors in cone quantal efficiency.\n\tTriggerred by ''%s'' method\n', triggerFunctionName);
+    end
+    
     % Compute cone eccentricities in meters
     coneXYEccentricities = obj.coneLocs / obj.resamplingFactor;
     coneEccentricitiesInMeters = (sqrt(sum(coneXYEccentricities.^2,2)))';
@@ -66,6 +80,10 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, rows, c
                             [rows cols 1]);
     end
     
+    if (beVerbose)
+        fprintf('>>> Done computing ecc-based correction factors in %2.0f seconds\n', toc);
+    end
+        
 end
 
 function correctionFactors = computeAbsorptionCorrectionFactors(...

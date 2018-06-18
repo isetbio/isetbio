@@ -201,7 +201,7 @@ if (correctForEccentricity)
        
        correctionFactors = ...
            coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
-           rows, cols, coneTypesNum);
+           mfilename(), rows, cols, coneTypesNum);
    end
    
    % Apply corrections due to eccentricity-dependent changes in OS length
