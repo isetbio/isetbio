@@ -171,16 +171,14 @@ if (isempty(theExpandedMosaic))
     theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
         obj.cols + 2 * padCols);
     
-    if (theExpandedMosaic.shouldCorrectAbsorptionsWithEccentricity())
-        coneTypesNum = 3;
-        correctionFactors = ...
-           coneMosaicHex.computeConeEfficiencyCorrectionFactors(theExpandedMosaic, ...
-           mfilename(), ...
-           obj.rows + 2 * padRows, obj.cols + 2 * padCols, coneTypesNum);
-        % Save correctionFactors for re-use
-        theExpandedMosaic.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
-    end
-    
+end
+
+if (obj.shouldCorrectAbsorptionsWithEccentricity())
+if (isempty(obj.coneEfficiencyCorrectionFactors))
+    correctionFactors = ...
+        coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, mfilename());
+    obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
+end
 end
 
 %% Get ready for output variables

@@ -1,4 +1,4 @@
-function [absorptions, correctionFactors] = computeSingleFrame(obj, oi, varargin)
+function absorptions = computeSingleFrame(obj, oi, varargin)
 % Single frame compute function for coneMosaic object.
 %
 % Syntax:
@@ -15,7 +15,6 @@ function [absorptions, correctionFactors] = computeSingleFrame(obj, oi, varargin
 %
 % Outputs:
 %    absorptions        - The cone absorptions
-%    correctionFactors  - The applied absorption correction factors
 
 % Optional key/value pairs:
 %    'fullLMS'   - Return values for a full mosaic, that is for mosaic with
@@ -23,7 +22,6 @@ function [absorptions, correctionFactors] = computeSingleFrame(obj, oi, varargin
 %                  col by 3 matrix, where row and column are the mosaic
 %                  dimensions. This is not biologically realistic but
 %                  useful for some computations (default false).
-%    'correctionFactors', - Previously computed correction factors
 %
 % See Also:
 %    coneMosaic, compute, computeForOISequence
@@ -40,12 +38,9 @@ p = inputParser();
 p.addRequired('oi', @isstruct);
 p.addParameter('fullLMS', false, @islogical);
 p.addParameter('correctionFactors', [], @isnumeric);
-p.addParameter('correctForEccentricity', false, @islogical);
 
 p.parse(oi, varargin{:});
-fullLMS = p.Results.fullLMS;  
-correctionFactors = p.Results.correctionFactors;
-correctForEccentricity = p.Results.correctForEccentricity;
+fullLMS = p.Results.fullLMS;
 
 %% Get wavelength sampling consistent
 % Do this by making a copy of current obj and setting wavelength samples to
@@ -192,22 +187,6 @@ absorbDensity(isnan(absorbDensity)) = 0;
 
 % Integrate over area
 absorptions = absorbDensity * obj.pigment.pdArea;
-
-if (correctForEccentricity)
-   % Eccentricity-based correction needed
-   if isempty((correctionFactors))
-       % If we have not computed the correction factors, do so now
-       [rows, cols, coneTypesNum] = size(absorptions);
-       
-       correctionFactors = ...
-           coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
-           mfilename(), rows, cols, coneTypesNum);
-   end
-   
-   % Apply corrections due to eccentricity-dependent changes in OS length
-   % and inner segment diameter
-   absorptions = absorptions .* correctionFactors;
-end
 
 % Multiply by integration time to get absorption counts
 absorptions = absorptions * obj.integrationTime;

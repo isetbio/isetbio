@@ -33,10 +33,16 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     p.addParameter('mapType', 'modulated hexagons', ...
         @(x)ismember(x, {'modulated hexagons', 'modulated disks'}));
     p.addParameter('colorMap', jet(1024), @isnumeric);
+    p.addParameter('titleForColorBar', '', @ischar);
+    p.addParameter('showColorBar', false, @islogical);
+    p.addParameter('labelColorBarTicks', false, @islogical);
+    p.addParameter('crossHairPosition', [], @isnumeric);
+    p.addParameter('visualizedFOV', [], @isnumeric);
     p.addParameter('signalRange', [], @isnumeric);
     p.addParameter('xRange', [], @isnumeric);
     p.addParameter('yRange', [], @isnumeric);
     p.addParameter('activationTime', [], @isnumeric);
+    p.addParameter('backgroundColor', 'none', @isnumeric);
     p.parse(axesHandle, activation, varargin{:});
 
     axesHandle = p.Results.axesHandle;
@@ -47,7 +53,13 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     signalRange = p.Results.signalRange;
     xRange =  p.Results.xRange;
     yRange = p.Results.yRange;
-
+    showColorBar = p.Results.showColorBar;
+    labelColorBarTicks = p.Results.labelColorBarTicks;
+    backgroundColor = p.Results.backgroundColor;
+    crossHairPosition = p.Results.crossHairPosition;
+    visualizedFOV = p.Results.visualizedFOV;
+    titleForColorBar = p.Results.titleForColorBar;
+    
     if (any(size(activation) ~= size(obj.pattern)))    
        activation = obj.reshapeHex2DmapToHex3Dmap(activation);
     end
@@ -72,7 +84,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     end
 
     if strcmp(mapType, 'modulated disks') 
-        iTheta = (0:20:360) / 180 * pi;
+        iTheta = (0:15:360) / 180 * pi;
         apertureOutline.x = dx / 2.0 * cos(iTheta);
         apertureOutline.y = dx / 2.0 * sin(iTheta);
     elseif strcmp(mapType, 'modulated hexagons')
@@ -126,27 +138,61 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     x = [xRange(1) xRange(2) xRange(2) xRange(1)];
     y = [yRange(1) yRange(1) yRange(2) yRange(2)];
     patch(x, y, [0 0 0], 'FaceColor', 'none')
-    renderPatchArray(axesHandle, apertureOutline, ...
+    renderModulatedColorPatchArray(axesHandle, apertureOutline, ...
         coneXcoords, coneYcoords, ...
         faceColorsNormalizedValues, edgeColor, lineWidth);
     xlim(axesHandle, xRange);
     ylim(axesHandle, yRange);
+    
+    if (~isempty(crossHairPosition))
+        plot(axesHandle, [xRange(1) xRange(end)], -crossHairPosition(2)*[1 1], 'g-', 'LineWidth', 1.5);
+        plot(axesHandle, crossHairPosition(1)*[1 1],[yRange(1) yRange(end)], 'g-', 'LineWidth', 1.5);
+    end
+    
     hold(axesHandle, 'off');
     set(axesHandle, 'CLim', [0 1], 'XTick', [], 'YTick', [], ...
-        'Color', 'none');
+        'Color', backgroundColor);
 
     colormap(axesHandle, colorMap);     
+    if (showColorBar)
+        hC = colorbar();
+        if (labelColorBarTicks)
+            ticks = 0:0.1:1.0;
+            hC.Ticks = ticks; 
+            hC.TickLabels = round(10.0 * (ticks * (activationRange(2) - activationRange(1)) + activationRange(1))/10); 
+        else
+            hC.TickLabels = {}; 
+        end
+        if (~isempty(titleForColorBar))
+            hC.Label.String = titleForColorBar;
+        end
+    end
+    
     axis(axesHandle, 'image'); 
     axis(axesHandle, 'xy');
     box(axesHandle, 'on');
+    
+    if (isempty(visualizedFOV))
+        visualizedFOV = max(obj.fov);
+    end
+    ticksDegs = round(100*0.5 * visualizedFOV * [-1 0 1])/100;
+    ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
+    spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6;
+    
+    set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+        'XTickLabels', ticksDegs, 'YTickLabels', ticksDegs, ...
+        'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
+        'FontSize', 12);
+    xlabel(axesHandle, 'space (degs)');
+    ylabel(axesHandle, 'space (degs)');
 end
 
-function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
+function renderModulatedColorPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
     faceColorsNormalizedValues, edgeColor, lineWidth)
 % Render the patch array
 %
 % Syntax:
-%   renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
+%   renderModulatedColorPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
 %       faceColorNormalizedValues, edgeColor, lineStyle)
 %
 % Description:
