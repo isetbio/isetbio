@@ -61,9 +61,14 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     if (strcmp(visualizedConeAperture, 'lightCollectingArea'))
         % Note that pigment.pdWidth defines the size of a square collective
         % aperture. Here we compute the equivalent circular aperture
-        dx = sqrt((obj.pigment.pdWidth ^ 2) / pi) * 2;
+        %dx = sqrt((obj.pigment.pdWidth ^ 2) / pi) * 2;
+        dx = diameterForCircularApertureFromWidthForSquareAperture(...
+            obj.pigment.pdWidth);
+    
     elseif (strcmp(visualizedConeAperture, 'geometricArea'))
-        dx = obj.pigment.width;
+        %dx = obj.pigment.width;
+        dx = diameterForCircularApertureFromWidthForSquareAperture(...
+            obj.pigment.width);
     end
 
     if strcmp(mapType, 'modulated disks') 
@@ -111,6 +116,11 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     edgeColor = [0 0 0];
     lineWidth = 0.1;
 
+    if (obj.shouldCorrectAbsorptionsWithEccentricity())
+    % Compute ecc-varying apertures
+        [apertureOutline, ~] = coneMosaicHex.computeApertureSizes(...
+            dx, [], apertureOutline, [], coneXcoords, coneYcoords);
+    end
 
     hold(axesHandle, 'on');
     x = [xRange(1) xRange(2) xRange(2) xRange(1)];
@@ -158,14 +168,23 @@ function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
 % Optional key/value pairs:
 %    None.
 %
-    verticesPerCone = numel(pixelOutline.x);
+    %verticesPerCone = numel(pixelOutline.x)
+    verticesPerCone = size(pixelOutline.x,2);
+    
     verticesList = zeros(verticesPerCone * numel(xCoords), 2);
     facesList = [];
     colors = [];
+    
     for coneIndex = 1:numel(xCoords)
         idx = (coneIndex - 1) * verticesPerCone + (1:verticesPerCone);
-        verticesList(idx, 1) = pixelOutline.x(:) + xCoords(coneIndex);
-        verticesList(idx, 2) = pixelOutline.y(:) + yCoords(coneIndex);
+        
+        if (size(pixelOutline.x,1) == 1)
+            verticesList(idx, 1) = pixelOutline.x(:) + xCoords(coneIndex);
+            verticesList(idx, 2) = pixelOutline.y(:) + yCoords(coneIndex);
+        else
+            verticesList(idx, 1) = squeeze(pixelOutline.x(coneIndex,:)) + xCoords(coneIndex);
+            verticesList(idx, 2) = squeeze(pixelOutline.y(coneIndex,:)) + yCoords(coneIndex);
+        end
         facesList = cat(1, facesList, idx);
         colors = cat(1, colors, ...
             repmat(faceColorsNormalizedValues(coneIndex), ...
