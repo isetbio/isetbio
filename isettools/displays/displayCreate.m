@@ -64,7 +64,13 @@ switch displayName
         % See comment about the default above. We should make it a
         % little closer to sRGB standard chromaticities.
         d = displayDefault(d);
-
+        
+    case {'equalenergy','equal energy'}
+        % Make the primaries all the same and equal energy
+        d = displayDefault(d);
+        spd = ones(size(d.spd))*1e-3;
+        d = displaySet(d,'spd',spd);
+        
     otherwise
         % Read a file with calibrated display data.
         % This can include pixel psf data for some displays.
