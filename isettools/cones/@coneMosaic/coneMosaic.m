@@ -1230,7 +1230,7 @@ classdef coneMosaic < hiddenHandle
     end
 
     methods (Access = public, Hidden)
-        [absorptions, correctionFactors] = computeSingleFrame(obj, oi, varargin);
+        absorptions = computeSingleFrame(obj, oi, varargin);
         absorptions = applyEMPath(obj, LMS, varargin);
     end
 

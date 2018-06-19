@@ -142,7 +142,7 @@ pixelOutline.y = [0 1 1 0 0] * obj.patternSampleSize(1);
 if strcmp(apertureShape, 'hexagons')
     iTheta = ((0:60:360)+obj.rotationDegs)/180*pi;
 else
-    iTheta = (0:20:360) / 180 * pi;
+    iTheta = (0:10:360) / 180 * pi;
 end
 if (~isempty(dxOuter))
     outerApertureOutline.x = dxOuter / 2.0 * cos(iTheta);

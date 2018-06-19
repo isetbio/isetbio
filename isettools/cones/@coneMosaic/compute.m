@@ -156,18 +156,6 @@ else
         theExpandedMosaic = obj.copy();
         theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
             obj.cols + 2 * padCols);
-        
-        if (theExpandedMosaic.shouldCorrectAbsorptionsWithEccentricity())
-            coneTypesNum = 3;
-            correctionFactors = coneMosaicHex.computeConeEfficiencyCorrectionFactors(...
-                theExpandedMosaic, ...
-                mfilename(), ...
-                obj.rows + 2 * padRows, ...
-                obj.cols + 2 * padCols, ...
-                coneTypesNum);
-            % Save correctionFactors for re-use
-            theExpandedMosaic.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
-        end
     
     elseif isa(theExpandedMosaic, 'coneMosaic')
         % OK, we are passed theExpandedMosaic.
@@ -179,25 +167,26 @@ else
         padCols = round((theExpandedMosaic.cols - obj.cols) / 2);
     end
 
-    % Determine if we need to apply eccentricity-dependent corrections to 
-    % the  absorptions, and if so do it                 
-    if (theExpandedMosaic.shouldCorrectAbsorptionsWithEccentricity())
-        [absorptions, correctionFactors] = ...
-            theExpandedMosaic.computeSingleFrame(oi, ...
-            'fullLMS', true, ...
-            'correctForEccentricity', true, ...
-            'correctionFactors', theExpandedMosaic.coneEfficiencyCorrectionFactors);
-        % Save correctionFactors for re-use
-        obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
-    else
-        absorptions = theExpandedMosaic.computeSingleFrame(oi, ...
+    % Compute full-frame absorptions
+    absorptions = theExpandedMosaic.computeSingleFrame(oi, ...
             'fullLMS', true);
-    end
-    
+        
     % Deal with eye movements
     absorptions = obj.applyEMPath(absorptions, 'emPath', emPath, ...
         'padRows', padRows, 'padCols', padCols);
-
+    
+    % Determine if we need to apply eccentricity-dependent corrections to 
+    % the  absorptions, and if so do it                 
+    if (obj.shouldCorrectAbsorptionsWithEccentricity())
+        if (isempty(obj.coneEfficiencyCorrectionFactors))
+            correctionFactors = ...
+                coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
+                    mfilename());
+            obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
+        end
+        absorptions = absorptions .* obj.coneEfficiencyCorrectionFactors;
+    end
+    
     % Add photon noise to the whole volume
     switch obj.noiseFlag
         case {'frozen', 'random'}

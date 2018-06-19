@@ -1,21 +1,20 @@
-function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName, rows, cols, coneTypesNum)
+function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName)
 % Static method for computing ecc-based absorption correction factors
 %
 % Syntax:
-%   correctionFactors = COMPUTECONEEFFICIENCYCORRECTIONFACTORS(aConeMosaicHexObject, triggerFunctionName, rows, cols, coneTypesNum)
+%   correctionFactors = COMPUTECONEEFFICIENCYCORRECTIONFACTORS(aConeMosaicHexObject, triggerFunctionName)
 %
 % Description:
 %    This method is called by @coneMosaic's computeSingleFrame method
 %    when the mosaic has hexagonal packing AND its eccBasedConeDensity flag
 %    is set to true, AND its eccBasedConeQuantalEfficiency is set to true.
-%    The purpose of this method is to compute correcttion factors for the
+%    The purpose of this method is to compute correction factors for the
 %    absorptions by accounting for each cone's variation in outer segment 
 %    length and inner segment aperture variation with eccentricity.
 %
 % Inputs:
 %    obj          - A coneMosaicHex object
 %    triggerFunctionName - The function calling this method (debug purpose)
-%    rows, cols, coneTypesNum  - The size of the absorptions
 %
 % Outputs:
 %    correctionFactors  - The computed correction factors
@@ -33,57 +32,52 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, trigger
     p = inputParser;
     p.addRequired('obj', @(x)(isa(x,'coneMosaic')));
     p.addRequired('triggerFunctionName', @(x)(ischar(x)));
-    p.addRequired('rows', @(x)(isnumeric(x)));
-    p.addRequired('cols', @(x)(isnumeric(x)));
-    p.addRequired('coneTypesNum', @(x)(isnumeric(x)));
-    p.parse(obj, triggerFunctionName, rows, cols, coneTypesNum);
+    p.parse(obj, triggerFunctionName);
     
     beVerbose = true;
     if (beVerbose)
-        tic
         fprintf('>>> Computing ecc-based correction factors in cone quantal efficiency.\n\tTriggerred by ''%s'' method\n', triggerFunctionName);
     end
     
-    % Compute cone eccentricities in meters
-    coneXYEccentricities = obj.coneLocs / obj.resamplingFactor;
-    coneEccentricitiesInMeters = (sqrt(sum(coneXYEccentricities.^2,2)))';
-    coneEccentricitiesInDegs = coneEccentricitiesInMeters*1e6/obj.micronsPerDegree;
+    correctionFactors = zeros(obj.rows, obj.cols);
+    [lConeIndices, mConeIndices,sConeIndices] = obj.indicesForCones();
     
-    % Compute cone angles
-    coneAnglesInDegrees = atan2(squeeze(coneXYEccentricities(:,2)), squeeze(coneXYEccentricities(:,1))) / pi * 180;
-    
-    % Compute cone aperture for each cone based on its 2D location
-    [~, apertureMeters, ~] = coneSizeReadData(...
-        'eccentricity',coneEccentricitiesInMeters,...
-        'angle',coneAnglesInDegrees);
-    [~,apertureMetersAtZeroEcc, ~] = coneSizeReadData(...
-        'eccentricity', 0.0,...
-        'angle', 0.0);
-    
-    % Compute outer segment length for each cone based on its eccentricity
-    [osLengthMicrons, osLengthAtZeroEcc] = outerSegmentLengthFromEccentricity(coneEccentricitiesInDegs);
-
-    plotEccDependentChanges = false;
+    plotEccDependentChanges = ~true;
     if (plotEccDependentChanges)
-        visualizeOSlengthAndISaperture(coneEccentricitiesInDegs, ...
-            apertureMeters*1e6, osLengthMicrons);
-    end
-
-    % Compute correction factors separately for each cone type
-    correctionFactors = zeros(rows, cols, coneTypesNum);
-    for coneTypeIndex = 1:coneTypesNum
-        correctionFactors(:,:,coneTypeIndex) = reshape(...
-            computeAbsorptionCorrectionFactors(...
-                            apertureMeters/apertureMetersAtZeroEcc, ...
-                            osLengthMicrons/osLengthAtZeroEcc, ...
-                            coneTypeIndex), ...
-                            [rows cols 1]);
+        figure(); clf;
+        colors = [1 0 0; 0 1 0; 0 0 1];
     end
     
-    if (beVerbose)
-        fprintf('>>> Done computing ecc-based correction factors in %2.0f seconds\n', toc);
-    end
+    for coneTypeIndex = 1:3
+        coneIndices = find(obj.pattern == coneTypeIndex+1);
+        % Compute cone eccentricities in meters
+        coneXYEccentricities = obj.coneLocs(coneIndices,:) / obj.resamplingFactor;
+        coneEccentricitiesInMeters = (sqrt(sum(coneXYEccentricities.^2,2)))';
+        coneEccentricitiesInDegs = coneEccentricitiesInMeters*1e6/obj.micronsPerDegree;
         
+        % Compute cone angles
+        coneAnglesInDegrees = atan2(squeeze(coneXYEccentricities(:,2)), squeeze(coneXYEccentricities(:,1))) / pi * 180;
+        
+        % Compute cone aperture for each cone based on its 2D location
+        [~, apertureMeters, ~] = coneSizeReadData(...
+            'eccentricity',coneEccentricitiesInMeters,...
+            'angle',coneAnglesInDegrees);
+        [~,apertureMetersAtZeroEcc, ~] = coneSizeReadData(...
+            'eccentricity', 0.0,...
+            'angle', 0.0);
+        
+        % Compute outer segment length for each cone based on its eccentricity
+        [osLengthMicrons, osLengthAtZeroEcc] = outerSegmentLengthFromEccentricity(coneEccentricitiesInDegs);
+        
+        correctionFactors(coneIndices) = computeAbsorptionCorrectionFactors(...
+              apertureMeters/apertureMetersAtZeroEcc, ...
+              osLengthMicrons/osLengthAtZeroEcc, coneTypeIndex);
+        
+        if (plotEccDependentChanges)
+            visualizeOSlengthAndISaperture(coneEccentricitiesInDegs, ...
+                apertureMeters*1e6, osLengthMicrons, squeeze(colors(coneTypeIndex,:)));
+        end
+    end  
 end
 
 function correctionFactors = computeAbsorptionCorrectionFactors(...
@@ -135,15 +129,17 @@ function [osLengthMicrons, osLengthAtZeroEcc] = outerSegmentLengthFromEccentrici
   osLengthAtZeroEcc = s(1,2);
 end
 
-function visualizeOSlengthAndISaperture(coneEccentricitiesInDegs, apertureMicrons, osLengthMicrons)
-    figure(); clf;
+function visualizeOSlengthAndISaperture(coneEccentricitiesInDegs, apertureMicrons, osLengthMicrons, color)
+    
     subplot(1,2,1)
-    plot(coneEccentricitiesInDegs, apertureMicrons, 'k.');
+    plot(coneEccentricitiesInDegs, apertureMicrons, '.', 'Color', color);
+    hold on
     ylabel('inner segment diam (microns)');
     xlabel('eccentricity (degs)');
     
     subplot(1,2,2)
-    plot(coneEccentricitiesInDegs, osLengthMicrons, 'k.');
+    plot(coneEccentricitiesInDegs, osLengthMicrons, '.', 'Color', color);
+    hold on;
     ylabel('outer segment length (microns)');
     xlabel('eccentricity (degs)');
 end
