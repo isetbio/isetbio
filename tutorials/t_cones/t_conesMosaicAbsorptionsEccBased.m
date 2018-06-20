@@ -26,10 +26,12 @@ parms.col = 128;
 [scene, parms] = sceneCreate('harmonic', parms);
 scene = sceneSet(scene, 'fov', stimFOV);
 
+%% Location of mosaic to be used
+mosaicDir = strrep(isetRootPath, 'isettools', 'tutorials/t_cones/resources');
+mosaicFileName = fullfile(mosaicDir, 'mosaic.mat');
+
 %% Build a cone mosaic or load existing one
 loadPreviouslySavedMosaic = true;
-
-mosaicFileName = sprintf('mosaic.mat');
 if (~loadPreviouslySavedMosaic)
     mosaicFOV = 0.6;
     cMosaic  = coneMosaicHex(9, ...
