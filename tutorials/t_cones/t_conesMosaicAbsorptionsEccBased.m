@@ -3,7 +3,7 @@
 % Description:
 %    Demonstrates the effect of applying eccentricity-based cone efficiency
 %    correction to a static (e.g., not modulated over time) stimulus. 
-%    This demo includes eye movements.
+%    This demo includes fixational eye movements with no microsaccades.
 %
 % 
 % NPC, ISETBIO Team, 2018
@@ -66,10 +66,12 @@ cMosaic2 = cMosaic.copy();
 %% but with ecc-based cone efficiency corrections
 cMosaic2.eccBasedConeQuantalEfficiency = true;
 
-%% Generate two trials of eye movements, each with 100 eye posistions, 
-%% simulating a 100 msec trial
+%% Generate two trials of eye movements, each with 100 eye posistions, simulating
+%% a 100 msec trial. Here we ask for eye movements with no microsaccades.
 eyeMovementsNum = 100; nTrials = 2;
-cMosaic.emGenSequence(eyeMovementsNum, 'nTrials', nTrials);
+cMosaic.emGenSequence(eyeMovementsNum, ...
+    'nTrials', nTrials, ...
+    'microsaccadetype', 'none');
 
 %% Save the eye movement paths so we can apply it to second mosaic
 theEmPositions = cMosaic.emPositions;
@@ -155,7 +157,7 @@ for visualizedTrialIndex = 1:size(theEmPositions,1)
             frame = getframe(gcf);
             writeVideo(writerObj, frame);
         end
-    end % for k
+    end % for timeBin
 end % visualizedTrialIndex
 
 if (generateVideo)
