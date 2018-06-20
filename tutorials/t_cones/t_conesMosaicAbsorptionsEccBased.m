@@ -2,7 +2,7 @@
 %
 % Description:
 %    Demonstrates the effect of applying eccentricity-based cone efficiency
-%    correction to a static (e.g., not modulated over time) stimulus. 
+%    correction for a static (e.g., not modulated over time) stimulus. 
 %    This demo includes fixational eye movements with no microsaccades.
 %
 % 

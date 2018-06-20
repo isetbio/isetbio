@@ -2,7 +2,7 @@
 %
 % Description:
 %    Demonstrates the effect of applying eccentricity-based cone efficiency
-%    correction to a dynamic (ramped on/off) stimulus. 
+%    correction for a dynamic (ramped on/off) stimulus. 
 %    This demo includes the default fixational eye movements which may
 %    contain microsaccades.
 %
