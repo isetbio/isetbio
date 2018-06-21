@@ -14,8 +14,8 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 %    oi          - An optical image
 %
 % Outputs:
-%    absorptions - The cone absorptions
-%
+%    absorptions        - The cone absorptions
+
 % Optional key/value pairs:
 %    'fullLMS'   - Return values for a full mosaic, that is for mosaic with
 %                  L, M, and S cones at each cone position. This is row by
@@ -30,16 +30,19 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 % History:
 %    xx/xx/16  HJ   ISETBIO Team 2016
 %    02/22/18  jnm  Formatting
+%    06/16/18  NPC  Support cone efficiency correction with eccentricity
+ 
 
 %% Parse inputs
 p = inputParser();
 p.addRequired('oi', @isstruct);
 p.addParameter('fullLMS', false, @islogical);
+p.addParameter('correctionFactors', [], @isnumeric);
+
 p.parse(oi, varargin{:});
-fullLMS = p.Results.fullLMS;  
+fullLMS = p.Results.fullLMS;
 
 %% Get wavelength sampling consistent
-%
 % Do this by making a copy of current obj and setting wavelength samples to
 % be same as oi.
 obj = obj.copy();
@@ -182,8 +185,10 @@ warning('on', 'MATLAB:interp1:NaNinY');
 % number. Set the missing values to 0.
 absorbDensity(isnan(absorbDensity)) = 0;
 
-% Multiply by integration area and time to convert isomerization density to
-% isomerizations.
-absorptions=absorbDensity * obj.pigment.pdArea * obj.integrationTime;
+% Integrate over area
+absorptions = absorbDensity * obj.pigment.pdArea;
+
+% Multiply by integration time to get absorption counts
+absorptions = absorptions * obj.integrationTime;
 
 end

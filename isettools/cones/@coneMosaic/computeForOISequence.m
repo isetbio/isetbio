@@ -71,17 +71,19 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %   'workDescription'     A string describing the condition
 %                         computed. Used only when workerID is non-empty
 %                         (default empty).
+%   'beVerbose'          - Whether to display infos (default false).
 %
 % Notes:
 %    * TODO: Confirm if implementation referenced in note above is done.
 %
 % See Also:
-%    CONEMOSAIC, COMPUTE
+%    CONEMOSAIC, COMPUTE, t_simplePhotocurrentComputation
 
 % History:
 %    xx/xx/16  NPC  ISETBIO Team 2016
 %    02/19/18  jnm  Formatting
-
+%    06/17/18  NPC  Support cone efficiency correction with eccentricity
+%
 %   Examples:
 %{
     % This is an example of how to do this for 1, 000 eye movement paths
@@ -115,6 +117,7 @@ p.addParameter('trialBlockSize', [], @isnumeric);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
+p.addParameter('beVerbose', false, @islogical);
 p.addParameter('theExpandedMosaic', []);
 p.addParameter('stimulusSamplingInterval', [], @isnumeric);
 p.parse(oiSequence, varargin{:});
@@ -130,6 +133,7 @@ currentFlag       = p.Results.currentFlag;
 workerID          = p.Results.workerID;
 workDescription   = p.Results.workDescription;
 theExpandedMosaic = p.Results.theExpandedMosaic;
+beVerbose = p.Results.beVerbose;
 
 % Set debugTiming to true to examine the timing between oiFrames and
 % partial/full absorptions. In this mode, the computation stops and waits
@@ -169,6 +173,17 @@ if (isempty(theExpandedMosaic))
     theExpandedMosaic = obj.copy();
     theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
         obj.cols + 2 * padCols);
+    
+end
+
+% Determine if we need to compute eccentricity-dependent corrections for 
+% the absorptions, and if so do it here.  
+if (obj.shouldCorrectAbsorptionsWithEccentricity())
+if (isempty(obj.coneEfficiencyCorrectionFactors))
+    correctionFactors = coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
+        mfilename(), 'beVerbose', beVerbose);
+    obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
+end
 end
 
 %% Get ready for output variables
@@ -333,7 +348,8 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                     'theExpandedMosaic', theExpandedMosaic, ...
                     'seed', currentSeed , ...
                     'emPath', emSubPath, ...
-                    'currentFlag', false));
+                    'currentFlag', false, ...
+                    'beVerbose', beVerbose));
                 if (debugTiming)
                     x = tFrameStart - [0 0 obj.integrationTime / ...
                         rounded.factor obj.integrationTime / ...
@@ -364,7 +380,8 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                     'theExpandedMosaic', theExpandedMosaic, ...
                     'seed', currentSeed, ...
                     'emPath', emSubPath, ...
-                    'currentFlag', false));
+                    'currentFlag', false, ...
+                    'beVerbose', beVerbose));
                 if (debugTiming)
                     x = tFrameStart + [0 0 obj.integrationTime / ...
                         rounded.factor obj.integrationTime / ...
@@ -404,8 +421,8 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                     'theExpandedMosaic', theExpandedMosaic, ...
                     'seed', currentSeed, ...
                     'emPath', emSubPath, ...
-                    'currentFlag', false ...
-                    ));
+                    'currentFlag', false, ...
+                    'beVerbose', beVerbose));
                 % Reformat and insert to time series
                 remainingEMinsertionIndices = round((...
                     rounded.eyeMovementTimeAxis(idx) - ...
@@ -573,8 +590,7 @@ else
                     'theExpandedMosaic', theExpandedMosaic, ...
                     'seed', currentSeed, ...
                     'emPath', emSubPath, ...
-                    'currentFlag', false ...
-                    ));
+                    'currentFlag', false));
             else
                 absorptionsAllTrials = zeros(size(obj.pattern, 1), ...
                     size(obj.pattern, 2), numel(trialIndicesForBlock), ...

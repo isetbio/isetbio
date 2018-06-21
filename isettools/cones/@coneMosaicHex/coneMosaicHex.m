@@ -31,12 +31,18 @@ classdef coneMosaicHex < coneMosaic
 %    'eccBasedConeDensity' - Boolean. Variable indicating whether or not to
 %                            use the eccentricity-based cone density.
 %                            Default False.
+%    'eccBasedConeQuantalEfficiency'
+%                          - Boolean. Account for eccentricity-dependent
+%                            changes in cone efficiency due to increasing
+%                            cone aperture and decreasing outer segment
+%                            length. Default False.
+%
 %    'customLambda'        - Double. Custom micron cone spacing distance.
 %                            Default is [].
 %    'customInnerSegmentDiameter'
 %                          - Double. Custom diameter for the inner segment.
 %                            Default is pigment.pdWidth from super class.
-%
+
 % See Also:
 %    CONEMOSAIC, t_coneMosaicHex, t_coneMosaicHexReg
 %
@@ -47,6 +53,7 @@ classdef coneMosaicHex < coneMosaic
 %    04/16/18  jnm  Move resamplingFactor to Inputs section as it is
 %                   required, and not optional based on response when
 %                   attempting to instantiate a coneMosaicHex.
+%    06/16/18  NPC  Support cone efficiency correction with eccentricity
 
 % Examples:
 %{
@@ -79,6 +86,14 @@ classdef coneMosaicHex < coneMosaic
     cMosaicHex.window;
 %}
 
+    %% Public properties
+    properties
+        % eccBasedConeQuantalEfficiency - Boolean. Account for eccentricity
+        % dependent changes in cone efficiency due to increasing cone 
+        % aperture and decreasing outer segment length
+        eccBasedConeQuantalEfficiency = false;
+    end
+    
     %% Private properties:
     properties (SetAccess=private)
         % lambdaMin - min cone separation in the mosaic
@@ -95,9 +110,14 @@ classdef coneMosaicHex < coneMosaic
         %    (for a circular aperture, in microns).
         customInnerSegmentDiameter
 
-        % eccBasedConeDensity - Bool. Ecc.-based spatially-varying density?
+        % eccBasedConeDensity - Bool. Ecc.-based spatially-varying density
         eccBasedConeDensity
-
+        
+        % correction factors for absorptions taking into account the 
+        % eccentricity-based changes in cone aperture and outer segment
+        % length
+        coneEfficiencyCorrectionFactors = [];
+        
         % resamplingFactor - The resampling factor.
         resamplingFactor
 
@@ -184,6 +204,7 @@ classdef coneMosaicHex < coneMosaic
             paramsForConeMosaicHex = {...
                 'fovDegs', ...
                 'eccBasedConeDensity', ...
+                'eccBasedConeQuantalEfficiency', ...
                 'sConeMinDistanceFactor', ...
                 'sConeFreeRadiusMicrons', ...
                 'customLambda', ...
@@ -224,6 +245,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('fovDegs', 0.25, @(x)(isnumeric(x) && ...
                 ((numel(x) == 1) || (numel(x) == 2))));
             p.addParameter('eccBasedConeDensity', false, @islogical);
+            p.addParameter('eccBasedConeQuantalEfficiency', false, @islogical);
             p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric);
             p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
             p.addParameter('customInnerSegmentDiameter', [], @isnumeric);
@@ -243,6 +265,7 @@ classdef coneMosaicHex < coneMosaic
             % Set input params
             obj.resamplingFactor = p.Results.resamplingFactor;
             obj.eccBasedConeDensity = p.Results.eccBasedConeDensity;
+            obj.eccBasedConeQuantalEfficiency = p.Results.eccBasedConeQuantalEfficiency;
             obj.sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
             obj.sConeFreeRadiusMicrons = p.Results.sConeFreeRadiusMicrons;
             obj.customLambda = p.Results.customLambda;
@@ -341,7 +364,7 @@ classdef coneMosaicHex < coneMosaic
                     'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...
                     'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);
             end
-        end
+        end  % constructor
 
         % Visualize different aspects of the hex grid
         hFig = visualizeGrid(obj, varargin);
@@ -358,6 +381,10 @@ classdef coneMosaicHex < coneMosaic
         % activation map (coneRows x coneCols x time)
         hex3Dmap = reshapeHex2DmapToHex3Dmap(obj, hex2Dmap);
 
+        % Reshape a 1D map (non-null cones) to the full 2D hex activation
+        % map (coneRows x coneCols)
+        hex2Dmap = reshapeHex1DmapToHex2Dmap(obj, hex1Dmap);
+        
         % Compute activation images for the hex mosaic
         % (all cones + LMS submosaics)
         [activationImage, activationImageLMScone, imageXaxis, ...
@@ -380,8 +407,14 @@ classdef coneMosaicHex < coneMosaic
         % Change cone identities according to arguments passed in varargin
         reassignConeIdentities(obj, varargin);
         
+        % Method to set obj.coneEfficiencyCorrectionFactors
+        setConeQuantalEfficiencyCorrectionFactors(obj, correctionFactors);
+        
         % Regenerate the LMS pattern using passed LMS density
         regenerateLMSPattern(obj, LMSdensity, varargin);
+        
+        % Return the indices for all L/M/S cones
+        [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj);
     end % Public methods
 
     methods (Access = private)
@@ -402,6 +435,11 @@ classdef coneMosaicHex < coneMosaic
             edgeColor, faceColor, lineStyle, lineWidth);
         renderHexMesh(axesHandle, xHex, yHex, meshEdgeColor, ...
             meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
+        correctionFactors = computeConeEfficiencyCorrectionFactors(...
+            aConeMosaicHexObject, triggerFunctionName, varargin);
+        [innerApertureOutline, outerApertureOutline] = ...
+            computeApertureSizes(dxInner, dxOuter, innerApertureOutline,...
+            outerApertureOutline, xCoords, yCoords);
     end % Static methods
 
 end

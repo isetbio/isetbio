@@ -65,9 +65,10 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %    'theExpandedMosaic' - This allows you to set a larger cone mosaic to
 %                          make sure that the eye movements are within the
 %                          mosaic.
+%   'beVerbose'          - Whether to display infos (default false).
 %
 % See Also:
-%    coneMosaic, computeForOISequence, emGenSequence.
+%    coneMosaic, computeForOISequence, emGenSequence, t_simplePhotocurrentComputation.
 %
 
 % History:
@@ -75,6 +76,7 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %    08/09/17  dhb     Working on standardizing comment format. I'm wasnt'
 %                      happy with my previous pass.
 %    02/26/18  jnm     Formatting
+%    06/16/18  NPC     Support cone efficiency correction with eccentricity
 
 %% If an oi sequence, head that way
 %
@@ -93,6 +95,7 @@ p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPath', obj.emPositions, @isnumeric);
 p.addParameter('theExpandedMosaic', [], @(x)(isa(x, 'coneMosaic')));
+p.addParameter('beVerbose', false, @islogical);
 p.parse(oi, varargin{:});
 
 currentFlag = p.Results.currentFlag;
@@ -102,7 +105,7 @@ theExpandedMosaic = p.Results.theExpandedMosaic;
 
 obj.absorptions = [];
 obj.current = [];
-
+                     
 %% Set eye movement path
 %
 %  We do not accept multiple trials for this computational path (single
@@ -155,6 +158,7 @@ else
         theExpandedMosaic = obj.copy();
         theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
             obj.cols + 2 * padCols);
+    
     elseif isa(theExpandedMosaic, 'coneMosaic')
         % OK, we are passed theExpandedMosaic.
         % Set the current path and integrationTime and use it.
@@ -165,14 +169,26 @@ else
         padCols = round((theExpandedMosaic.cols - obj.cols) / 2);
     end
 
-    % Compute full LMS noise free absorptions
+    % Compute full-frame absorptions
     absorptions = theExpandedMosaic.computeSingleFrame(oi, ...
-        'fullLMS', true);
-
+            'fullLMS', true);
+        
     % Deal with eye movements
     absorptions = obj.applyEMPath(absorptions, 'emPath', emPath, ...
         'padRows', padRows, 'padCols', padCols);
-
+    
+    % Determine if we need to apply eccentricity-dependent corrections to 
+    % the absorptions, and if so do it here.                
+    if (obj.shouldCorrectAbsorptionsWithEccentricity())
+        if (isempty(obj.coneEfficiencyCorrectionFactors))
+            correctionFactors = ...
+                coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
+                    mfilename(), 'beVerbose', beVerbose);
+            obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
+        end
+        absorptions = absorptions .* obj.coneEfficiencyCorrectionFactors;
+    end
+    
     % Add photon noise to the whole volume
     switch obj.noiseFlag
         case {'frozen', 'random'}

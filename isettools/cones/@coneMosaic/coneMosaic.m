@@ -1,6 +1,7 @@
 classdef coneMosaic < hiddenHandle
     % Create a cone mosaic object
     %
+    
     % Syntax:
     %   cMosaic = coneMosaic;
     %   cMosaic = coneMosaic('pigment', pp);
@@ -53,7 +54,7 @@ classdef coneMosaic < hiddenHandle
     %    'os'               - Outer segment object. Default is set by
     %                         calling osLinear().
     %    'center'           - Vector. Default [0 0]. Position of center of
-    %                         mosaic on the retina.
+    %                         mosaic on the retina. In meters.
     %    'wave'             - Vector. Default 400:10:700. Wavelength
     %                         samples in nm.
     %    'pattern'          - Matrix. Default []. Cone type at each
@@ -92,7 +93,9 @@ classdef coneMosaic < hiddenHandle
     % History:
     %    xx/xx/16  HJ/JRG/BW  ISETBIO Team, 2016
     %    02/26/18  jnm        Formatting
-
+    %    06/16/18  NPC        Function to determine whether a mosaic can
+    %                         support ecc-based cone efficiency corrections
+    
     properties (GetAccess=public, SetAccess=public)
         %name - The name of the object
         name;
@@ -1159,7 +1162,11 @@ classdef coneMosaic < hiddenHandle
 
         % Declare method for computing retinal coverage
         [apertureCoverage, geometricCoverage] = retinalCoverage(obj);
- 
+        
+        % Determine whether we should correct absorptions with eccentricity
+        correctAbsorptionsForEccentricity = ...
+            shouldCorrectAbsorptionsWithEccentricity(obj);
+        
         function val = timeAxis(obj)
             % Return the cone mosaic time axis
             %

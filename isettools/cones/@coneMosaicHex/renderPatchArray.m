@@ -26,13 +26,25 @@ function renderPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
 %    None.
 %
 
-verticesNum = numel(pixelOutline.x);
+
+verticesNum = size(pixelOutline.x,2);
 x = zeros(verticesNum, numel(xCoords));
 y = zeros(verticesNum, numel(xCoords));
 
-for vertexIndex = 1:verticesNum
-    x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
-    y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
+if (size(pixelOutline.x,1) == 1)
+    for vertexIndex = 1:verticesNum
+        x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
+        y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
+    end
+else
+    if (size(pixelOutline.x,1) == numel(xCoords))
+        for vertexIndex = 1:verticesNum
+            x(vertexIndex, :) = squeeze(pixelOutline.x(:,vertexIndex)) + xCoords';
+            y(vertexIndex, :) = squeeze(pixelOutline.y(:,vertexIndex)) + yCoords;
+        end
+    else
+        error('size(pixelOutline.x,1) ~= numel(xCoords)')
+    end
 end
 
 

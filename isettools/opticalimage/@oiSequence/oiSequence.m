@@ -49,7 +49,7 @@ classdef oiSequence < handle
     %        Maybe oiSequence.get('frame', val)?
     %
     % See Also:
-    %    oisCreate, t_oiSequence
+    %    oisCreate, t_oiSequence, t_simplePhotocurrentComputation
     %
 
     % History:

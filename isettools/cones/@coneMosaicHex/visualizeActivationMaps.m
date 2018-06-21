@@ -29,6 +29,8 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     p.addParameter('figureSize', [920 875], @isnumeric);
     p.addParameter('signalName', ' ', @ischar);
     p.addParameter('mapType', 'modulated disks', @ischar);
+    p.addParameter('visualizedConeAperture', 'lightCollectingArea', ...
+        @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
     p.addParameter('colorMap', jet(1024), @isnumeric);
     p.addParameter('signalRange', [], @isnumeric);
     p.addParameter('xRange', [], @isnumeric);
@@ -47,7 +49,8 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     if strcmp(p.Results.mapType, 'modulated disks') || ...
             strcmp(p.Results.mapType, 'modulated hexagons')
         hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, ...
-            activation, p.Results.mapType, p.Results.colorMap, ...
+            activation, p.Results.mapType, ...
+            p.Results.visualizedConeAperture, p.Results.colorMap, ...
             p.Results.signalName, p.Results.signalRange, ...
             p.Results.xRange, p.Results.yRange, ...
             p.Results.separateLMSmosaics, p.Results.activationTime, ...
@@ -66,7 +69,7 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
 end
 
 function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, ...
-    activation, mapType, cMap, signalName, signalRange, xRange, yRange, ...
+    activation, mapType, visualizedConeAperture, cMap, signalName, signalRange, xRange, yRange, ...
     separateLMSmosaics, activationTime, zoomInFactor, instanceIndex, ...
     figureSize)
 % Visualize mosaic activations as disk mosaics
@@ -108,14 +111,24 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, ...
     sampledHexMosaicYaxis = squeeze(obj.patternSupport(:, 1, 2)) + ...
         obj.center(2);
 
+    if (strcmp(visualizedConeAperture, 'lightCollectingArea'))
+        % Note that pigment.pdWidth defines the size of a square collective
+        % aperture. Here we compute the equivalent circular aperture
+    	aperture = diameterForCircularApertureFromWidthForSquareAperture(...
+        obj.pigment.pdWidth);
+        elseif (strcmp(visualizedConeAperture, 'geometricArea'))
+        aperture = diameterForCircularApertureFromWidthForSquareAperture(...
+        obj.pigment.width);
+    end
+    
     if strcmp(mapType, 'modulated disks') 
-        iTheta = (0:20:360) / 180 * pi;
-        apertureOutline.x = obj.pigment.width / 2.0 * cos(iTheta);
-        apertureOutline.y = obj.pigment.height / 2.0 * sin(iTheta);
+        iTheta = (0:15:360) / 180 * pi;
+        apertureOutline.x = aperture / 2.0 * cos(iTheta);
+        apertureOutline.y = aperture / 2.0 * sin(iTheta);
     elseif strcmp(mapType, 'modulated hexagons')
         iTheta = (0:60:360) / 180 * pi;
-        apertureOutline.x = 1.1 * obj.pigment.width / 2.0 * cos(iTheta);
-        apertureOutline.y = 1.1 * obj.pigment.height / 2.0 * sin(iTheta);
+        apertureOutline.x = aperture / 2.0 * cos(iTheta);
+        apertureOutline.y = aperture / 2.0 * sin(iTheta);
     end
 
     activeConesActivations = activation(obj.pattern > 1);

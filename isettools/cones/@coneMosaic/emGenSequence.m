@@ -44,7 +44,7 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %    11/07/17  dhb      More cleaning and robustness.
 %    02/26/18  jnm      Formatting, fix example
 %    05/13/18  baw      Re-wrote for fixationalEM class.
-
+%    06/16/18  npc      Resets cone efficiency correction factors 
 % Examples:
 %{
  cm = coneMosaic;
@@ -117,5 +117,16 @@ fixEMobj.computeForConeMosaic(obj,nEyeMovements, ...
 obj.emPositions = fixEMobj.emPos;
 if nargout > 0, emPath = fixEMobj.emPos; end
 
+%% Since we are computing a new sequence, reset any previously computed
+%% cone efficiency correction factors because the mosaic size may change
+%% due to eye movements, and the correction factors might be invalid
+if (obj.shouldCorrectAbsorptionsWithEccentricity())
+    beVerbose = false;
+    if (beVerbose)
+        fprintf('<strong>Resetting cone efficiency correction factors after emGenSequence because mosaic size may change</strong>\n');
+    end
+    correctionFactors = [];
+    obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
+end
 end
 
