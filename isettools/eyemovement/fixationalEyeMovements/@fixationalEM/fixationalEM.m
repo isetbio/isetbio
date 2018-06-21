@@ -17,20 +17,16 @@ classdef fixationalEM < handle
 %    the micro-saccade jump.
 %
 % Inputs:
-<<<<<<< HEAD
 %   None
 %
 % Returns:
 %   em = Fixational EM object
-=======
-%    None required.
 %
 % Outputs:
 %    The created fixationalEM object.
 %
 % Optional key/value pairs:
 %    None at the moment.
->>>>>>> master
 %
 % See also
 %   emOBJ.compute(durationSeconds, sampleTimeSeconds);
