@@ -17,6 +17,9 @@ function emPlot(fixEM,plotType,varargin)
 %
 % BW, May 13, 2018
 
+% History:
+%   06/21/18  dhb  Fix example, small typo.
+
 % Examples:
 %{
 % EM superimposed on cone mosaic
@@ -35,7 +38,7 @@ fixEM = fixationalEM();
 fixEM.computeForConeMosaic(cm, eyeMovementsPerTrial, ...
     'nTrials', 1, ...
     'rSeed', 1);
-emPlot(fixEM,'emMosaic',cm);
+emPlot(fixEM,'emMosaic','conemosaic',cm);
 %}
 
 %%
