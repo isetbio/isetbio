@@ -33,22 +33,22 @@ function psfMovie(oi,figNum,delay)
 %    xx/xx/05       Copyright ImagEval, LLC, 2005
 %    03/13/18  jnm  Formatting
 %    04/07/18  dhb  Add ETTBSkip for broken examples.
+%    06/21/18  dhb  Someone added more broken examples, or they have
+%                   broken since the last time I was here. Now they
+%                   are skipped.
 
 % Examples:
 %{
     % ETTBSkip.  Example broken.
     %
-    % Returns message correctly! "Not yet implemented..."
+    % vcGetObject retursn empty matrix
     oi = vcGetObject('oi');
-    optics = oiGet(oi, 'optics');
-    psfMovie(optics, 1)
+    psfMovie(oi, 1)
 %}
 %{
     % ETTBSkip.  Example broken.
     %
-    % This example loads, visualizes, rotates, and visualizes again.
-    % psfMovie;
-
+    % This example dies on the call to vcImportObject
     vcImportObject('OPTICS');
     psfMovie([], 1);
     optics = vcGetObject('optics');
@@ -59,12 +59,18 @@ function psfMovie(oi,figNum,delay)
     % [Note: JNM - rtPSFEdit does not exist?]
 %}
 %{
+    % ETTBSkip.  Example broken.
+    % 
+    % Crashes on a call to opticsGet.
     oi = oiCreate('shift invariant');
-    psfMovie(oiGet(oi,'optics'));
+    psfMovie(oi);
 %}
 %{
+    % ETTBSkip.  Example broken.
+    % 
+    % Crashes on a call to opticsGet.
     oi = oiCreate('diffraction limited');
-    psfMovie(oiGet(oi,'optics'));
+    psfMovie(oi);
 %}
 
 %%

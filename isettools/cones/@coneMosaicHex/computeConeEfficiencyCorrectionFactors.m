@@ -1,8 +1,8 @@
-function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName)
+function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName, varargin)
 % Static method for computing ecc-based absorption correction factors
 %
 % Syntax:
-%   correctionFactors = COMPUTECONEEFFICIENCYCORRECTIONFACTORS(aConeMosaicHexObject, triggerFunctionName)
+%   correctionFactors = COMPUTECONEEFFICIENCYCORRECTIONFACTORS(aConeMosaicHexObject, triggerFunctionName, varargin)
 %
 % Description:
 %    This method is called by @coneMosaic's computeSingleFrame method
@@ -20,10 +20,16 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, trigger
 %    correctionFactors  - The computed correction factors
 %
 % Optional key/value pairs:
-%    None' 
+%    'beVerbose'                - Boolean, Whether or not to display the
+%                                 calling function name (used for debugging)
+%                                 Default is False.
+%    'plotEccDependentChanges'  - Boolean, Whether or not to plot how the 
+%                                 aperture size and outer segment length 
+%                                 vary with eccentricity.
+%                                 Default is False.
 %
 % See Also:
-%    coneMosaic.computeSingleFrame
+%    coneMosaic.compute
 %
 
 % History:
@@ -32,22 +38,20 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, trigger
     p = inputParser;
     p.addRequired('obj', @(x)(isa(x,'coneMosaic')));
     p.addRequired('triggerFunctionName', @(x)(ischar(x)));
-    p.parse(obj, triggerFunctionName);
+    p.addParameter('beVerbose', false, @islogical);
+    p.addParameter('plotEccDependentChanges', false, @islogical);
+    p.parse(obj, triggerFunctionName, varargin{:});
     
-    beVerbose = true;
-    if (beVerbose)
+    if (p.Results.beVerbose)
         fprintf('>>> Computing ecc-based correction factors in cone quantal efficiency.\n\tTriggerred by ''%s'' method\n', triggerFunctionName);
     end
-    
-    correctionFactors = zeros(obj.rows, obj.cols);
-    [lConeIndices, mConeIndices,sConeIndices] = obj.indicesForCones();
-    
-    plotEccDependentChanges = ~true;
-    if (plotEccDependentChanges)
+
+    if (p.Results.plotEccDependentChanges)
         figure(); clf;
         colors = [1 0 0; 0 1 0; 0 0 1];
     end
     
+    correctionFactors = zeros(obj.rows, obj.cols);
     for coneTypeIndex = 1:3
         coneIndices = find(obj.pattern == coneTypeIndex+1);
         % Compute cone eccentricities in meters
@@ -73,7 +77,7 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, trigger
               apertureMeters/apertureMetersAtZeroEcc, ...
               osLengthMicrons/osLengthAtZeroEcc, coneTypeIndex);
         
-        if (plotEccDependentChanges)
+        if (p.Results.plotEccDependentChanges)
             visualizeOSlengthAndISaperture(coneEccentricitiesInDegs, ...
                 apertureMeters*1e6, osLengthMicrons, squeeze(colors(coneTypeIndex,:)));
         end

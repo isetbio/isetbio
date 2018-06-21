@@ -65,6 +65,7 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %    'theExpandedMosaic' - This allows you to set a larger cone mosaic to
 %                          make sure that the eye movements are within the
 %                          mosaic.
+%   'beVerbose'          - Whether to display infos (default false).
 %
 % See Also:
 %    coneMosaic, computeForOISequence, emGenSequence, t_simplePhotocurrentComputation.
@@ -94,6 +95,7 @@ p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPath', obj.emPositions, @isnumeric);
 p.addParameter('theExpandedMosaic', [], @(x)(isa(x, 'coneMosaic')));
+p.addParameter('beVerbose', false, @islogical);
 p.parse(oi, varargin{:});
 
 currentFlag = p.Results.currentFlag;
@@ -176,12 +178,12 @@ else
         'padRows', padRows, 'padCols', padCols);
     
     % Determine if we need to apply eccentricity-dependent corrections to 
-    % the  absorptions, and if so do it                 
+    % the absorptions, and if so do it here.                
     if (obj.shouldCorrectAbsorptionsWithEccentricity())
         if (isempty(obj.coneEfficiencyCorrectionFactors))
             correctionFactors = ...
                 coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
-                    mfilename());
+                    mfilename(), 'beVerbose', beVerbose);
             obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
         end
         absorptions = absorptions .* obj.coneEfficiencyCorrectionFactors;
