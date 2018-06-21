@@ -5,16 +5,26 @@ classdef Lens < handle
 %   lens = LENS()
 %
 % Description:
-%    returns a lens object with a variety of derived properties.
+%    returns a lens object whose public properties are the lens name,
+%    wave, and density.  The density refers to the density of the lens
+%    pigment.  
+%
+%    The lens object stores the calibrated lens density values in
+%    private variables (obj.wave_ and obj.unitDensity_). These values
+%    were taken from the PsychToolbox and/or the Stockman site. Go to
+%    http://cvision.ucsd.edu, then click on Prereceptoral filters.
+%
+%    Other values, such as absorbance, absorptance and transmittance,
+%    are derived from these parameters.
 %
 %    Useful factoids:
-%    Absorbance spectra are normalized to a peak value of 1.
-%    Absorptance spectra are the proportion of quanta actually absorbed.
-%    Equation: absorptanceSpectra = 1 - 10.^(-OD * absorbanceSpectra)
 %
-%    The original lens densities values were taken from PTB and/or the
-%    Stockman site. Go to http://cvision.ucsd.edu, then click on
-%    Prereceptoral filters.
+%     * Absorbance spectra are normalized to a peak value of 1.
+%     * Absorptance spectra are the proportion of quanta actually absorbed.
+%     
+%    Equations: 
+%         absorptanceSpectra = 1 - 10.^(-OD * absorbanceSpectra)
+%         transmittance      = 1 - absorptance 
 %
 %    There are examples contained in the code. To access, type 'edit
 %    lens.m' into the Command Window.
@@ -39,12 +49,21 @@ classdef Lens < handle
 %{
     thisLens = Lens('wave', 400:10:700, 'density', 1, 'name', 'my lens');
 %}
+%{
+    lens = Lens();
+    t = lens.transmittance;
+    a = lens.absorptance;
+    vcNewGraphWin; 
+    plot(lens.wave,t,'r-',lens.wave,a,'g-',lens.wave,a+t,'k--');
+    xlabel('Wave (nm)'); ylabel('Fraction');
+    legend({'transmittance','absorptance','sum'});
+%}
 
 properties  % public properties
     % name - Name of this particular lens object
     name;
 
-    % density - macular pigment density
+    % density - pigment density
     density;
 
     % wave - wavelength samples in nm
