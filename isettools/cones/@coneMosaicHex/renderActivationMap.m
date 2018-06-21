@@ -159,7 +159,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         if (labelColorBarTicks)
             ticks = 0:0.1:1.0;
             hC.Ticks = ticks; 
-            hC.TickLabels = round(10.0 * (ticks * (activationRange(2) - activationRange(1)) + activationRange(1))/10); 
+            hC.TickLabels = round(10.0 * (ticks * (activationRange(2) - activationRange(1)) + activationRange(1)))/10; 
         else
             hC.TickLabels = {}; 
         end
@@ -175,16 +175,23 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     if (isempty(visualizedFOV))
         visualizedFOV = max(obj.fov);
     end
-    ticksDegs = round(100*0.5 * visualizedFOV * [-1 0 1])/100;
+    ticksDegs = round(100*0.5 * visualizedFOV * 0.95*[-1 0 1])/100;
     ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
     spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6;
     
+    xlabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+    ylabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+    tickLabels = {sprintf('%2.2f', ticksDegs(1)), sprintf('%2.2f', ticksDegs(2)), sprintf('%2.2f', ticksDegs(3))};
+    
     set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
-        'XTickLabels', ticksDegs, 'YTickLabels', ticksDegs, ...
         'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
+        'XTick', ticksMeters, 'YTick', ticksMeters, ...
+        'XTickLabels', sprintf('%2.2f\n', ticksDegs), 'YTickLabels', sprintf('%2.2f\n', ticksDegs), ...
         'FontSize', 12);
-    xlabel(axesHandle, 'space (degs)');
-    ylabel(axesHandle, 'space (degs)');
+    xticks(axesHandle, ticksMeters); yticks(axesHandle, ticksMeters); 
+    
+    yticklabels(axesHandle, tickLabels);
+    
 end
 
 function renderModulatedColorPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
