@@ -5,17 +5,17 @@ classdef Lens < handle
 %   lens = LENS()
 %
 % Description:
-%    returns a lens object whose public properties are the lens name,
-%    wave, and density.  The density refers to the density of the lens
-%    pigment.  
+%    Creates a lens object whose public properties are the name,
+%    wave, and lens pigment density.
 %
-%    The lens object stores the calibrated lens density values in
-%    private variables (obj.wave_ and obj.unitDensity_). These values
-%    were taken from the PsychToolbox and/or the Stockman site. Go to
-%    http://cvision.ucsd.edu, then click on Prereceptoral filters.
+%    The lens object stores the calibrated lens pigment density values
+%    in private variables (obj.wave_ and obj.unitDensity_). These
+%    values are taken from the PsychToolbox and/or the Stockman site.
+%    Go to http://cvision.ucsd.edu, then click on Prereceptoral
+%    filters.
 %
 %    Other values, such as absorbance, absorptance and transmittance,
-%    are derived from these parameters.
+%    are derived from the stored wave_ and unitDensity_ parameters.
 %
 %    Useful factoids:
 %
@@ -36,7 +36,14 @@ classdef Lens < handle
 %    The lens object
 %
 % Optional key/value pairs:
-%    **Needs to be filled out**
+%    'name'        - name for this object, default is 'human lens'
+%    'wave'        - wavelength samples
+%    'density'     - lens pigment density, (default is 1)
+%    'unitDensity' - lens pigment spectral density (default is from
+%                    Stockman, saved in the file 'lensDensity.mat') 
+%
+% See also
+%     opticsGet, opticsSet
 
 % History:
 %    xx/xx/13  HJ/BW  ISETBIO Team 2013.
@@ -255,17 +262,17 @@ methods  % public methods
         %    obj   - The lens object
         %    param - String. The parameter you wish to modify. Options
         %            include the following:
-        %         name                      - String. The Lens object name
-        %         {wave, wavelength}        - Numerical. Wavelength vector
-        %         {absorbance, unitDensity} - Numerical. Length match wave
-        %         density                   - Numerical. Scalar value.
-        %    val   - The value to assign
+        %      'name'        - String. The Lens object name
+        %      'wave'        - Numerical. Wavelength vector
+        %      'density'     - Scalar value.  lens pigment density.
+        %
+        %     val   - The value to assign
         %
         % Outputs:
         %    None.
         %
         % Optional key/value pairs:
-        %    None.
+         %
         %
 
         p = inputParser;
@@ -294,22 +301,6 @@ methods  % public methods
                 error('Unknown parameter %s\n', param);
         end
     end
-
-    % set methods for dependent variables
-    %         function obj = set.unitDensity(obj, val)
-    %             % interpolate for wavelength samples
-    %             obj.unitDensity_ = interp1(...
-    %                 obj.wave, val, obj.wave_, 'pchip');
-    %             obj.unitDensity_ = max(obj.unitDensity, 0);
-    %         end
-    %
-    %         function set.wave(obj, val)
-    %             obj.wave = val;
-    %         end
-    %
-    %         function set.density(obj, val)
-    %             obj.density = val;
-    %         end
 
 end
 end
