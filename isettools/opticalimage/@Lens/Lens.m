@@ -5,16 +5,26 @@ classdef Lens < handle
 %   lens = LENS()
 %
 % Description:
-%    returns a lens object with a variety of derived properties.
+%    Creates a lens object whose public properties are the name,
+%    wave, and lens pigment density.
+%
+%    The lens object stores the calibrated lens pigment density values
+%    in private variables (obj.wave_ and obj.unitDensity_). These
+%    values are taken from the PsychToolbox and/or the Stockman site.
+%    Go to http://cvision.ucsd.edu, then click on Prereceptoral
+%    filters.
+%
+%    Other values, such as absorbance, absorptance and transmittance,
+%    are derived from the stored wave_ and unitDensity_ parameters.
 %
 %    Useful factoids:
-%    Absorbance spectra are normalized to a peak value of 1.
-%    Absorptance spectra are the proportion of quanta actually absorbed.
-%    Equation: absorptanceSpectra = 1 - 10.^(-OD * absorbanceSpectra)
 %
-%    The original lens densities values were taken from PTB and/or the
-%    Stockman site. Go to http://cvision.ucsd.edu, then click on
-%    Prereceptoral filters.
+%     * Absorbance spectra are normalized to a peak value of 1.
+%     * Absorptance spectra are the proportion of quanta actually absorbed.
+%     
+%    Equations: 
+%         absorptanceSpectra = 1 - 10.^(-OD * absorbanceSpectra)
+%         transmittance      = 1 - absorptance 
 %
 %    There are examples contained in the code. To access, type 'edit
 %    lens.m' into the Command Window.
@@ -26,7 +36,14 @@ classdef Lens < handle
 %    The lens object
 %
 % Optional key/value pairs:
-%    **Needs to be filled out**
+%    'name'        - name for this object, default is 'human lens'
+%    'wave'        - wavelength samples
+%    'density'     - lens pigment density, (default is 1)
+%    'unitDensity' - lens pigment spectral density (default is from
+%                    Stockman, saved in the file 'lensDensity.mat') 
+%
+% See also
+%     opticsGet, opticsSet
 
 % History:
 %    xx/xx/13  HJ/BW  ISETBIO Team 2013.
@@ -39,12 +56,21 @@ classdef Lens < handle
 %{
     thisLens = Lens('wave', 400:10:700, 'density', 1, 'name', 'my lens');
 %}
+%{
+    lens = Lens();
+    t = lens.transmittance;
+    a = lens.absorptance;
+    vcNewGraphWin; 
+    plot(lens.wave,t,'r-',lens.wave,a,'g-',lens.wave,a+t,'k--');
+    xlabel('Wave (nm)'); ylabel('Fraction');
+    legend({'transmittance','absorptance','sum'});
+%}
 
 properties  % public properties
     % name - Name of this particular lens object
     name;
 
-    % density - macular pigment density
+    % density - pigment density
     density;
 
     % wave - wavelength samples in nm
@@ -236,17 +262,17 @@ methods  % public methods
         %    obj   - The lens object
         %    param - String. The parameter you wish to modify. Options
         %            include the following:
-        %         name                      - String. The Lens object name
-        %         {wave, wavelength}        - Numerical. Wavelength vector
-        %         {absorbance, unitDensity} - Numerical. Length match wave
-        %         density                   - Numerical. Scalar value.
-        %    val   - The value to assign
+        %      'name'        - String. The Lens object name
+        %      'wave'        - Numerical. Wavelength vector
+        %      'density'     - Scalar value.  lens pigment density.
+        %
+        %     val   - The value to assign
         %
         % Outputs:
         %    None.
         %
         % Optional key/value pairs:
-        %    None.
+         %
         %
 
         p = inputParser;
@@ -275,22 +301,6 @@ methods  % public methods
                 error('Unknown parameter %s\n', param);
         end
     end
-
-    % set methods for dependent variables
-    %         function obj = set.unitDensity(obj, val)
-    %             % interpolate for wavelength samples
-    %             obj.unitDensity_ = interp1(...
-    %                 obj.wave, val, obj.wave_, 'pchip');
-    %             obj.unitDensity_ = max(obj.unitDensity, 0);
-    %         end
-    %
-    %         function set.wave(obj, val)
-    %             obj.wave = val;
-    %         end
-    %
-    %         function set.density(obj, val)
-    %             obj.density = val;
-    %         end
 
 end
 end

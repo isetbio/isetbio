@@ -8,20 +8,25 @@ function val = get(lens, param, varargin)
 %    See Lens object for notes about the properties in general and the
 %    formulae relating absorbance and absorptance and transmittance.
 %
+%    * Absorbance spectra are normalized to a peak value of 1.
+%    * Absorptance spectra are the proportion of quanta actually absorbed.
+%    * Equation: absorptanceSpectra = 1 - 10 .^ (-OD * absorbanceSpectra)
+%
 % Inputs:
 %    lens     - Object. The lens object to retrieve information from
 %    param    - String. The parameter which you want to know about. Options
 %               for the param include:
-%       name                      - The lens name
-%       {absorbance, unitDensity} - These will be retrieved from
-%                                   lensDensity.mat file, based on Sharp.
-%       density                   - Lens pigment density
-%       transmittance             - The transmittance, calculated by
+%       'name'      - The lens name
+%       'wave'      - Wavelength samples in nm
+%       {absorbance, unitDensity} - unitDensity. Default is in the
+%              file lensDensity.mat based on Sharpe and Stockman
+%       'density'         - Lens pigment density
+%       'transmittance'   - The transmittance, calculated by
 %                                   10 ^ (-(spectral density))
-%       absorptance (absorption)  - The absorptance value, calculated by
+%       'absorptance'     - The absorptance value, calculated by
 %                                   1 - transmittance;
-%    varargin - (Optional) Additional information that may be required in
-%               the call, such as unit type.
+%       'spectraldensity' - Unit density times the density
+%
 %
 % Outputs:
 %    val      - The value of the requested parameter.
@@ -29,11 +34,7 @@ function val = get(lens, param, varargin)
 % Optional key/value pairs:
 %    None.
 %
-% Notes:
-%    * Absorbance spectra are normalized to a peak value of 1.
-%    * Absorptance spectra are the proportion of quanta actually absorbed.
-%    * Equation: absorptanceSpectra = 1 - 10 .^ (-OD * absorbanceSpectra)
-%
+% See also:  opticsSet, opticsGet
 
 % History:
 %    xx/xx/16  HJ/BW  ISETBIO TEAM, 2016

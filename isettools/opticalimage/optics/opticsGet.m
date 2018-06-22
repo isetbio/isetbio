@@ -11,24 +11,26 @@ function val = opticsGet(optics, parm, varargin)
 %    the popup menu in the optics window or programatically via
 %       oiSet(oi, 'optics model', <model type>);
 %
-%    (1) By default, we use a diffraction limited calculation with the
-%    f-number and focal length determined from the window interface. Other
-%    parameters are derived from these two values. In this case, the
-%    optical image is computed using oiCompute. To set this method, use
-%    opticsSet(optics, 'model', 'diffractionLimited'); In this case, the
-%    optical image is computed using opticsDLCompute. To set this method
-%    use oi = oiSet(oi, 'optics model', 'diffraction limited').
+%    (1) By default, we  use a general shift-invariant calculation
+%    based on a numerically-defined OTF that is wavelength-dependent
+%    (but shift-invariant), stored in the optics.OTF structure. When
+%    using this method, the user can supply the optics structure
+%    containing the OTF and other parameters (focal length, aperture,
+%    and so forth). Examples are stored in data/optics directory. It
+%    is also possible to create shift invariant OTF data from
+%    wavefront aberrations specified as Zernike polynomials. In this
+%    case, the optical image is computed using the function
+%    opticsSICompute. To set this method use oi = oiSet(oi, 'optics
+%    model', 'shift invariant').
 %
-%    (2) We can use a general shift-invariant calculation based on a
-%    numerically-defined OTF that is wavelength-dependent (but
-%    shift-invariant), stored in the optics.OTF structure. When using this
-%    method, the user can supply the optics structure containing the OTF
-%    and other parameters (focal length, aperture, and so forth). Examples
-%    are stored in data/optics directory. It is also possible to create
-%    shift invariant OTF data from wavefront aberrations specified as
-%    Zernike polynomials. In this case, the optical image is computed using
-%    the function opticsSICompute. To set this method use oi = oiSet(oi,
-%    'optics model', 'shift invariant').
+%    (2) We use include a diffraction limited optics with the f-number
+%    and focal length determined from the window interface. Other
+%    parameters are derived from these two values. In this case, the
+%    optical image is computed using oiCompute. To set this method,
+%    use opticsSet(optics, 'model', 'diffractionLimited'); In this
+%    case, the optical image is computed using opticsDLCompute. To set
+%    this method use oi = oiSet(oi, 'optics model', 'diffraction
+%    limited').
 %
 %    N.B. The diffraction-limited model is a special case of the
 %    shift-invariant model with the PSF constrained to be the ideal blur
@@ -122,11 +124,19 @@ function val = opticsGet(optics, parm, varargin)
 %               {'wavelength'} - Vector. wavelength samples
 %               {'nwave'}      - Numeric. number of wavelength samples
 %               {'binwidth'}   - Numeric. spacing between the samples
+%
+%           For the diffraction limited case, we store transmittance
+%           in these slots.
 %           {'transmittance'} - Vector. Transmittance function of the lens
 %               {'wave'}       - Wavelength samples *lenstransmittancewave*
 %               {'scale'}      - Vector. Spectral radiance scale factor
 %                                *lensTransmittanceScale*
+%           For human optics, we store a human lens object and derive
+%           the lens transmittance and other properties on the fly
+%           from human data.  Only the lens pigment density can be
+%           changed. 
 %           {'lens'}          - Struct. The lens object
+%
 %    varargin - (Optional). Additional arguments for retrieving or
 %               calculating the desired parameter. Usually the units for
 %               the calculations.

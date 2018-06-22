@@ -17,7 +17,10 @@ classdef fixationalEM < handle
 %    the micro-saccade jump.
 %
 % Inputs:
-%    None required.
+%   None
+%
+% Returns:
+%   em = Fixational EM object
 %
 % Outputs:
 %    The created fixationalEM object.

@@ -4,7 +4,7 @@ function t_fixationalEyeMovementsTypes(varargin)
 %
 % The fixation maps are a bit different for microsaccades that are
 % generated using the 'heatmap/fixation based' strategy vs. the 'stats
-% based' strategy. The heatma/fixation strategy results in fixation maps
+% based' strategy. The heatmap/fixation strategy results in fixation maps
 % that are a bit wider along the horizontal and vertical axes.
 %
 
@@ -51,7 +51,7 @@ fixEMobj.microSaccadeType = 'none';
 fixEMobj.randomSeed = randomSeed;
 fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, ...
     computeVelocity, 'useParfor', useParfor);
-plotTrials(fixEMobj, 1, visualizedSingleTrials);
+plotTrials(fixEMobj, 1, visualizedSingleTrials); drawnow;
 
 % Second case: 'stats based' micro-saccades
 fixEMobj.setDefaultParams();
@@ -59,7 +59,7 @@ fixEMobj.microSaccadeType = 'stats based';
 fixEMobj.randomSeed = randomSeed;
 fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, ...
     computeVelocity, 'useParfor', useParfor);
-plotTrials(fixEMobj, 2, visualizedSingleTrials);
+plotTrials(fixEMobj, 2, visualizedSingleTrials); drawnow;
 
 % Third case: 'heatmap/fixation based' micro-saccades
 fixEMobj.setDefaultParams();
@@ -87,7 +87,7 @@ subplotPosVectors = NicePlot.getSubPlotPosVectors(...
 
 % Plot all trials
 xyRange = [-20 20];
-tickLabel = [xyRange(1):5:xyRange(2)];
+tickLabel = xyRange(1):5:xyRange(2);
 
 if (rowNo == 1)
     hFig = figure(1); clf;
