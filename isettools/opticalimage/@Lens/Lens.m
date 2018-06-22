@@ -293,7 +293,7 @@ methods  % public methods
                     'Val should have same length as lens wavelength');
                 obj.unitDensity_ = interp1(...
                     obj.wave, val, obj.wave_, 'pchip');
-                obj.unitDensity_ = max(obj.unitDensity, 0);
+                obj.unitDensity_ = max(obj.unitDensity_, 0);
             case 'density'
                 assert(isscalar(val), 'val should be scalar');
                 obj.density = val;
