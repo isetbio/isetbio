@@ -68,6 +68,10 @@ if(sceneNameFlag)
     
     switch sceneName
         
+        case ('blackBackdrop')
+            scenePath = fullfile(piRootPath,'data','V3','blackBackdrop','blackBackdrop.pbrt');
+            sceneUnits = 'm';
+            
         case ('blankScene')
             
             scenePath = fullfile(piRootPath,'data','V3','blankScene','blankScene.pbrt');

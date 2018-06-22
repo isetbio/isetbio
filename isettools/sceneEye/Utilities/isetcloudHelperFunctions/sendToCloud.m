@@ -48,7 +48,8 @@ seNew = se.write();
 if(uploadZip)
     [cloudFolder, zipFileName] = gcp.uploadPBRT(seNew.recipe,'overwrite zip',true);
 else
-    gcp.uploadPBRT(seNew.recipe,'upload zip',false,'overwrite zip',false);
+    gcp.uploadPBRT(seNew.recipe,'resources',false,...
+        'overwrite zip',false);
 end
 
 % Add the new target operation
