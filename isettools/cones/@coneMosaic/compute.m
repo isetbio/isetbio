@@ -102,6 +102,7 @@ currentFlag = p.Results.currentFlag;
 seed        = p.Results.seed;
 emPath      = p.Results.emPath;
 theExpandedMosaic = p.Results.theExpandedMosaic;
+beVerbose = p.Results.beVerbose;
 
 obj.absorptions = [];
 obj.current = [];

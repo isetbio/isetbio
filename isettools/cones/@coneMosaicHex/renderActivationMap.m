@@ -160,7 +160,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
             ticks = [0 0.5 1.0];
             hC.Ticks = ticks; 
             tickLabels = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
-            max(abs(tickLabels))
+            
             if (max(abs(tickLabels) < 0.01))
                 if (min(tickLabels) < 0)
                     hC.TickLabels = sprintf('%+2.2f\n',tickLabels); 
