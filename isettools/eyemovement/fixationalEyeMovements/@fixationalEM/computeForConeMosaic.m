@@ -22,16 +22,22 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
 %    'nTrials'            - Numeric. The number of trials. Default 1.
 %    'computeVelocity'    - Boolean. Whether should calculate the velocity.
 %                           Default false.
-%    'rSeed'              - Numeric. Random seed. Default empty ([]).
+%    'rSeed'              - Numeric. Random seed. Empty causes rng to be inititialized
+%                           with 'shuffle', otherwise with the integer seed set here.
+%                           Default empty ([]).
 %    'useParFor'          - Boolean. <Unknown>. Default false.
 %
+
+% History:
+%   6/25/18  dhb  Change arg check for rSeed so that empty is allowable.
+%                 Update header commment to explain its behavior.
 
 p = inputParser;
 p.addRequired('coneMosaic', @(x)(isa(x, 'coneMosaic')));
 p.addRequired('eyeMovementsPerTrial', @isscalar);
 p.addParameter('nTrials', 1, @isscalar);
 p.addParameter('computeVelocity', false, @islogical);
-p.addParameter('rSeed', [], @isscalar);
+p.addParameter('rSeed', [], @(x) (isempty(x) | isscalar(x)));
 p.addParameter('useParfor', false, @islogical);
 p.parse(coneMosaic, eyeMovementsPerTrial, varargin{:});
 

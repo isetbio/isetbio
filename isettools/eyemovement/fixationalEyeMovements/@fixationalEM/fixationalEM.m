@@ -19,14 +19,11 @@ classdef fixationalEM < handle
 % Inputs:
 %   None
 %
-% Returns:
-%   em = Fixational EM object
-%
 % Outputs:
-%    The created fixationalEM object.
+%   em   -   The created fixational EM object
 %
 % Optional key/value pairs:
-%    None at the moment.
+%    None
 %
 % See also
 %   emOBJ.compute(durationSeconds, sampleTimeSeconds);
@@ -34,10 +31,12 @@ classdef fixationalEM < handle
 % References:
 %    Physical Review Letters, Mergenthaler and Engbert (2007). P98.
 %
+
 % History:
 %    01/03/18  NPC  ISETBIO Team, 2018
 %    05/15/18  jnm  Formatting
 %    05/24/18  BW, NPC  Comments
+%    06/25/18  dhb  Comment formatting.
 
 % Public properties (user-settable)
 properties
@@ -368,22 +367,7 @@ methods
     % Constructor
     function obj = fixationalEM(varargin)
         % Initialize the fixational eye movements object
-        %
-        % Syntax:
-        %   obj = fixationalEM([varargin])
-        %
-        % Description:
-        %    The constructor for the fixationalEM
-        %
-        % Inputs:
-        %    None required.
-        %
-        % Outputs:
-        %    obj - The fixationalEM object
-        %
-        % Optional key/value pairs:
-        %    See pairs in header above.
-        %
+        % See header commments at top of file.
 
         setDefaultParams(obj);
     end

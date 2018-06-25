@@ -28,7 +28,9 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %        'none'  -  (default)
 %        'stats based'
 %        'heatmap/fixation based'
-%    'rSeed'            - Random seed to be used
+%    'rSeed'            - Random seed to be used.  Passed to rng.  Pass the
+%                         empty matrix to have 'shuffle' passed to rng.
+%                         Default is 1.
 %    'nTrials'          - Multiple trial case, default = 1
 %
 %
@@ -45,6 +47,9 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %    02/26/18  jnm      Formatting, fix example
 %    05/13/18  baw      Re-wrote for fixationalEM class.
 %    06/16/18  npc      Resets cone efficiency correction factors 
+%    6/25/18   dhb      Change arg check for rSeed so that empty is allowable.
+%                       Update header commment to explain its behavior.
+
 % Examples:
 %{
  cm = coneMosaic;
@@ -90,7 +95,7 @@ p.addParameter('em', fixationalEM, @(x)(isa(x,'fixationalEM')));
 validTypes = {'none','stats based','heatmap/fixation based'};
 p.addParameter('microsaccadetype', 'none', @(x)(ismember(x,validTypes)));
 p.addParameter('ntrials', 1, @isscalar);
-p.addParameter('rseed', 1, @isscalar);
+p.addParameter('rseed', 1, @(x) (isempty(x) | isscalar(x)));
 p.addParameter('computevelocity', [], @islogical);
 p.addParameter('useparfor', false, @islogical);
 
@@ -105,7 +110,6 @@ if ~isempty(p.Results.rseed), rng(p.Results.rseed); end
 microSaccadeType = p.Results.microsaccadetype;
 
 %% Start the calculation
-
 fixEMobj.microSaccadeType = microSaccadeType;
 fixEMobj.randomSeed = randomSeed;
 fixEMobj.computeForConeMosaic(obj,nEyeMovements, ...
@@ -113,7 +117,6 @@ fixEMobj.computeForConeMosaic(obj,nEyeMovements, ...
     'rSeed', randomSeed);
 
 %% Set the cone eye movement positions variable
-
 obj.emPositions = fixEMobj.emPos;
 if nargout > 0, emPath = fixEMobj.emPos; end
 
