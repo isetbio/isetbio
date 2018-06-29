@@ -34,23 +34,64 @@ function [ navarroAccomm ] = convertToNavarroAccomm(inputAccomm)
 %
 
 % Catch the special case of 0 accommodation. 
-if(inputAccomm == 0)
+% if(inputAccomm == 0)
+%     navarroAccomm = 0;
+%     return;
+% end
+
+% We can't interpolate past ~0.4 diopters and over ~9.25. 
+if(inputAccomm < 0.44) 
+    %navarroAccomm = inputAccomm;
     navarroAccomm = 0;
     return;
+elseif(inputAccomm > 9.25)
+    error(['At the moment, we don''t have data for accommodation',...
+    'greater than 0.925 dpt. This may change in the near future...'])
 end
 
-% We can't interpolate past ~0.4 diopters. At that point the difference is
-% minimal, so let's just use the original value
-if(inputAccomm < 0.5)
-    navarroAccomm = inputAccomm;
-    return;
-end
+% accom = [0; 0.1500; 0.2400; 0.40; 0.6300; 1.0000; 1.5; 2.0000; 3.0000;
+%     5.0000; 7.0000; 10.0000];
+% 
+% dist550 = [2275.4; 1518.4; 1280.950; 1013.579; 795.72; 603.02; 466.509;
+%        385.92; 292.23; 198.72; 151.26; 98.886];
 
-accom = [0; 0.1500; 0.2400; 0.40; 0.6300; 1.0000; 1.5; 2.0000; 3.0000;
-    5.0000; 7.0000; 10.0000];
+accom = [0; 0.1500; 0.2400;
+    0.40; 0.6300; 1.0000;
+    1.5; 2.0000; 2.5; 3.0000;
+    3.5; 4; 4.5; 5.0000; 6; 6.5;
+    7.0000; 8; 8.5;
+    9; 9.6; 10.0000];
 
-dist550 = [2275.4; 1518.4; 1280.950; 1013.579; 795.72; 603.02; 466.509;
-       385.92; 292.23; 198.72; 151.26; 98.886];
+dist550 = [2275.4; 1518.4; 1280.950;
+    1013.579; 795.72; 603.02;
+    466.509; 385.92; 331.787; 292.238;
+    263.988; 244.850; 217.098; 200.036; 172.586; 161.308
+    148.158; 131.835; 125.213;
+    119.859; 112.590; 108.021];
+   
+% Plot
+%{
+figure;
+plot(dist550,accom,'ro-'); hold on;
+dist = 50:2300;
+plot(dist,1./(dist*10^-3),'-');
+xlabel('Focal Distance')
+ylabel('Accommodation');
+legend('Navarro model','Ideal');
+grid on;
+set(findall(gcf,'-property','FontSize'),'FontSize',18)
+set(findall(gcf,'-property','LineWidth'),'LineWidth',2)
+
+figure;
+plot(1./(dist550*10^-3),accom,'bo-'); hold on;
+xlabel('Desired Accommodation')
+ylabel('Navarro Accommodation');
+grid on;
+set(findall(gcf,'-property','FontSize'),'FontSize',18)
+set(findall(gcf,'-property','LineWidth'),'LineWidth',2)
+axis([0 10 0 10])
+% axis image;
+%}
 
 % Linearly interpolate
 navarroAccomm = interp1(1 ./ (dist550 * 10 ^ -3), accom, inputAccomm);
