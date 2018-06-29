@@ -1,8 +1,8 @@
-function [centralRefraction, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal2012(varargin)
+function [cRefractionD, emmetropes, myopes, group] = wvfSortSubjectDataJaekenArtal2012(varargin)
 % Sort subjects of Jaeken/Artal report into emmotropes and myopes
 %
 % Syntax:
-%    [centralRefraction, emmetropes, myopes] = sortSubjectDataJaekenArtal2012()
+%    [centralRefraction, emmetropes, myopes, group] = sortSubjectDataJaekenArtal2012()
 %
 % Description:
 %    Analyze the central 5 degrees of individual Subject defocus zernike
@@ -55,6 +55,8 @@ function [centralRefraction, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal
 %                             diopters)
 %    emmetropes             - struct with 2 fields, corresponding to indexing vectors (130 Subjects, RE;LE]), with a 1 for emmetropes
 %    myopes                 - struct with 2 fields, corresponding to indexing vectors (130 Subjects, RE;LE]), with a 1 for myopes
+%    group                  - struct with 6 fields, corresponding to indexing vectors (130 Subjects, RE;LE), for each refraction group in
+%                             Table 1 of Jaeken & Artal (2012)
 %
 % Optional key/value pairs:
 %    'verbose'              - Boolean (default false). Control whether plot
@@ -72,7 +74,7 @@ function [centralRefraction, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal
 
 % Examples:
 %{
-    [centralRefraction, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal2012;
+    [centralRefraction, emmetropes, myopes, group] = wvfSortSubjectDataJaekenArtal2012;
 %}
 
 %% Parse
@@ -90,7 +92,6 @@ totalSubjects       = 130;                      % total number of Subjects
 totalEyes           = length({'right','left'}); % total number of eyes (used in this order, in the dataset, also known as OD - Oculus Dexter and OS - Oculus Sinister)
 totalEccen          = length(-40:1:40);         % total number of measured central eccentricities (in degrees, 0 corresponds to fovea)
 
-% whichEye            = {'right','left'};         % which eyes to analyze
 eccen               = -2:2;                     % Central 5 degrees, fovea =0
 j                   = 4;                        % Defocus coefficient equals J=4
 pupilDiameterMM     = 4;                        % Pupil diameter in mm during measurement
@@ -112,7 +113,7 @@ data = reshape(data, totalZCoefs, totalSubjects, totalEyes, totalEccen); % zerni
 
 %% 4. Analyze dataset
 thisZCoef       = wvfOSAIndexToVectorIndex(j);      % since j index (OSA) starts from 0, and Matlab doesn't, we convert to vector index
-eccenIdx        = find(ismember(-40:1:40, eccen));  % eccentricity indices
+eccenIdx        = ismember(-40:1:40, eccen);  % eccentricity indices
 
 % Get subset of data corresponding to central 5 degrees, only defocus
 cRefractionZ    = data(thisZCoef, :, :, eccenIdx);
@@ -165,60 +166,54 @@ if (p.Results.verbose)
 end
 
 % Find indices for Myopes and Emmetropes
-myopesIdxRE = find(mcRE < threshEM);
-myopesIdxLE = find(mcLE < threshEM);
+myopes.RE = find(mcRE < threshEM);
+myopes.LE = find(mcLE < threshEM);
 
-emmetropesIdxRE = find(mcRE >= threshEM);
-emmetropesIdxLE = find(mcLE >= threshEM);
+emmetropes.RE = find(mcRE >= threshEM);
+emmetropes.LE = find(mcLE >= threshEM);
 
 % Find indices for separate groups
-group(1).idxRE = find(mcRE > thresh1(1));
-group(1).idxLE = find(mcLE > thresh1(1));
+group(1).RE = find(mcRE > thresh1(1));
+group(1).LE = find(mcLE > thresh1(1));
 
-group(2).idxRE = find((mcRE <= thresh2(2)) & (mcRE > thresh2(1)));
-group(2).idxLE = find((mcLE  <= thresh2(2)) & (mcLE > thresh2(1)));
+group(2).RE = find((mcRE <= thresh2(2)) & (mcRE > thresh2(1)));
+group(2).LE = find((mcLE  <= thresh2(2)) & (mcLE > thresh2(1)));
 
-group(3).idxRE = find((mcRE <= thresh3(2)) & (mcRE > thresh3(1)));
-group(3).idxLE = find((mcLE  <= thresh3(2)) & (mcLE > thresh3(1)));
+group(3).RE = find((mcRE <= thresh3(2)) & (mcRE > thresh3(1)));
+group(3).LE = find((mcLE  <= thresh3(2)) & (mcLE > thresh3(1)));
 
-group(4).idxRE = find((mcRE <= thresh4(2)) & (mcRE > thresh4(1)));
-group(4).idxLE = find((mcLE  <= thresh4(2)) & (mcLE > thresh4(1)));
+group(4).RE = find((mcRE <= thresh4(2)) & (mcRE > thresh4(1)));
+group(4).LE = find((mcLE  <= thresh4(2)) & (mcLE > thresh4(1)));
 
-group(5).idxRE = find((mcRE <= thresh5(2)) & (mcRE > thresh5(1)));
-group(5).idxLE = find((mcLE  <= thresh5(2)) & (mcLE > thresh5(1)));
+group(5).RE = find((mcRE <= thresh5(2)) & (mcRE > thresh5(1)));
+group(5).LE = find((mcLE  <= thresh5(2)) & (mcLE > thresh5(1)));
 
-group(6).idxRE = find(mcRE  < thresh6(1));
-group(6).idxLE = find(mcLE   < thresh6(1));
+group(6).RE = find(mcRE  < thresh6(1));
+group(6).LE = find(mcLE   < thresh6(1));
 
 % Print out the group statistics mean +/- std, (#)
 if (p.Results.verbose)
     fprintf('\nReproduction of Table 1 Jaeken & Artal (2012):\n')
-    fprintf('Mc(diopters) Myopes RE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcRE(myopesIdxRE)), nanstd(mcRE(myopesIdxRE)), length(myopesIdxRE))
-    fprintf('Mc(diopters) Myopes LE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcLE(myopesIdxLE)), nanstd(mcLE(myopesIdxLE)), length(myopesIdxLE))
+    fprintf('Mc(diopters) Myopes RE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcRE(myopes.RE)), nanstd(mcRE(myopes.RE)), length(myopes.RE))
+    fprintf('Mc(diopters) Myopes LE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcLE(myopes.LE)), nanstd(mcLE(myopes.LE)), length(myopes.LE))
     
-    fprintf('Mc(diopters) Emmetropes RE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcRE(emmetropesIdxRE)),nanstd(mcRE(emmetropesIdxRE)), length(emmetropesIdxLE))
-    fprintf('Mc(diopters) Emmetropes LE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcLE(emmetropesIdxLE)),nanstd(mcLE(emmetropesIdxLE)), length(emmetropesIdxLE))
+    fprintf('Mc(diopters) Emmetropes RE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcRE(emmetropes.RE)),nanstd(mcRE(emmetropes.RE)), length(emmetropes.LE))
+    fprintf('Mc(diopters) Emmetropes LE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcLE(emmetropes.LE)),nanstd(mcLE(emmetropes.LE)), length(emmetropes.LE))
     
-    rd = randperm(length(emmetropesIdxLE),length(myopesIdxRE));
+    rd = randperm(length(emmetropes.LE),length(myopes.RE));
     
-    fprintf('Mc(diopters) Random selection of Emmetropes RE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcRE(emmetropesIdxLE(rd))),nanstd(mcRE(emmetropesIdxLE(rd))), length(emmetropesIdxLE(rd)))
-    fprintf('Mc(diopters) Random selection of Emmetropes LE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcLE(emmetropesIdxLE(rd))),nanstd(mcLE(emmetropesIdxLE(rd))), length(emmetropesIdxLE(rd)))
+    fprintf('Mc(diopters) Random selection of Emmetropes RE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcRE(emmetropes.LE(rd))),nanstd(mcRE(emmetropes.LE(rd))), length(emmetropes.LE(rd)))
+    fprintf('Mc(diopters) Random selection of Emmetropes LE: %1.2f +/- %1.2f, (%d)\n', nanmean(mcLE(emmetropes.LE(rd))),nanstd(mcLE(emmetropes.LE(rd))), length(emmetropes.LE(rd)))
     
     for ii = 1:6
-        fprintf('Mc(diopters) GR%d RE: %1.2f +/- %1.2f, (%d)\n', ii, nanmean(mcRE(group(ii).idxRE)), nanstd(mcRE(group(ii).idxRE)), length(group(ii).idxLE))
-        fprintf('Mc(diopters) GR%d LE: %1.2f +/- %1.2f, (%d)\n', ii, nanmean(mcLE(group(ii).idxLE)), nanstd(mcLE(group(ii).idxLE)), length(group(ii).idxLE))
+        fprintf('Mc(diopters) GR%d RE: %1.2f +/- %1.2f, (%d)\n', ii, nanmean(mcRE(group(ii).RE)), nanstd(mcRE(group(ii).RE)), length(group(ii).LE))
+        fprintf('Mc(diopters) GR%d LE: %1.2f +/- %1.2f, (%d)\n', ii, nanmean(mcLE(group(ii).LE)), nanstd(mcLE(group(ii).LE)), length(group(ii).LE))
     end
     
-    fprintf('Number of emmetropes: %d\n', length(unique([emmetropesIdxRE;emmetropesIdxLE])))
-    fprintf('Number of myopes: %d\n', length(unique([myopesIdxRE;myopesIdxLE])))
+    fprintf('Number of emmetropes: %d\n', length(unique([emmetropes.RE;emmetropes.LE])))
+    fprintf('Number of myopes: %d\n', length(unique([myopes.RE;myopes.LE])))
 end
 
-%% Return variables
-centralRefraction = cRefractionD;
-emmetropes.RE     = emmetropesIdxRE;
-emmetropes.LE     = emmetropesIdxLE;
-myopes.RE         = myopesIdxRE;
-myopes.LE         = myopesIdxLE;
 
 return
 

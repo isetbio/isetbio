@@ -1,5 +1,6 @@
 function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
-
+% Load wave front data from literature, so far only Jaeken & Artal (2012)
+% containing Zernike coefficients along the central 80 degrees along horizontal merdian 
 %
 % Syntax:
 %    [wvf, oi] = wvfLoadWavefrontOpticsData('jIndex',[0:14], 'whichEye', ...
@@ -71,11 +72,14 @@ function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
 %                    (default 'deg')
 %                    Options:
 %                      'deg' - Degrees of visual angle.
-%    'whichGroup'  - String defining which subset of subjects to analyze
+%    'whichGroup'  - String or scalar defining which subset of subjects to analyze
 %                    (default 'emmetropes').
 %                    Options:
 %                      'emmetropes' - Emmetropes
 %                      'myopes'     - Myopes
+%                      'singleRandomEmmetrope' - select a random observer
+%                      from the emmetrope group
+%                      single scalar between 1-130 - select a specific observer from the entire pool 
 %    'verbose'     - Boolean (default false). Print things out.
 %
 % Examples are included in the source code.
@@ -103,7 +107,7 @@ p.addParameter('jIndex', 0:14, @isnumeric);
 p.addParameter('whichEye','right',@(x)(ismember(x,{'right','left'})));
 p.addParameter('eccentricity',0, @isnumeric);
 p.addParameter('eccentricityUnits','deg',@ischar);
-p.addParameter('whichGroup','emmetropes',@ischar);
+p.addParameter('whichGroup','emmetropes',@(x) (isscalar(x) | ischar(x)) );
 p.addParameter('verbose',false,@islogical);
 p.parse(varargin{:});
 
@@ -153,7 +157,7 @@ data = reshape(data, totalZCoefs, totalSubjects, totalEyes, totalEccen); % zerni
 % Preallocate matrix for data
 theseZCoef   = wvfOSAIndexToVectorIndex(params.jIndex);
 eyeIdx       = strcmp(params.whichEye, {'right','left'});
-eccenIdx     = find(ismember(-40:1:40, round(params.eccentricity)));
+eccenIdx     = ismember(-40:1:40, round(params.eccentricity));
 
 % Remove optic disk for right (1) and left (2) eye
 opticDisk.RE = ismember(-40:40, -18:-10);
@@ -186,16 +190,26 @@ switch params.whichEye
 end
 
 % Select subject group
-[~, emmetropes, myopes] = wvfSortSubjectDataJaekenArtal2012('verbose',params.verbose);
+[~, emmetropes, myopes, group] = wvfSortSubjectDataJaekenArtal2012('verbose',params.verbose);
 switch params.whichGroup
     case 'emmetropes'
-        if eyeIdx == 1; subjectIdx = getfield(emmetropes, 'RE');
+        if find(eyeIdx) == 1; subjectIdx = getfield(emmetropes, 'RE');
         else subjectIdx = getfield(emmetropes, 'LE'); end
     case 'myopes'
-        if eyeIdx == 1; subjectIdx = getfield(myopes, 'RE');
+        if find(eyeIdx) == 1; subjectIdx = getfield(myopes, 'RE');
         else subjectIdx = getfield(myopes, 'LE'); end
+    case 'singleRandomEmmetrope'
+        if find(eyeIdx) == 1; subjects = getfield(emmetropes, 'RE');
+        else subjects = getfield(emmetropes, 'LE'); end        
+        selectOne = randi(length(subjectIdx));
+        subjectIdx = subjectIdx(selectOne(1));        
     otherwise
-        error('Unknown group specified');
+        if isscalar(params.whichGroup)
+            subjectIdx = params.whichGroup;
+            fprintf('\n Subject index: %d\n', subjectIdx)
+        else    
+            error('Unknown group specified');
+        end
 end
 
 % Truncate data to speed up process
