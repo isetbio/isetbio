@@ -201,8 +201,8 @@ switch params.whichGroup
     case 'singleRandomEmmetrope'
         if find(eyeIdx) == 1; subjects = getfield(emmetropes, 'RE');
         else subjects = getfield(emmetropes, 'LE'); end        
-        selectOne = randi(length(subjectIdx));
-        subjectIdx = subjectIdx(selectOne(1));        
+        selectOne = randi(length(subjects));
+        subjectIdx = subjects(selectOne(1));        
     otherwise
         if isscalar(params.whichGroup)
             subjectIdx = params.whichGroup;
