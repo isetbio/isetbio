@@ -33,7 +33,13 @@ for ii=1:length(oiObjects)
     seObjects{ii} = gcp.miscDescriptor(ii).copy;
     
     % Set the parameters correctly for the optical image
-    oiObjects{ii} = seObjects{ii}.setOI(oiObjects{ii});
+    if(seObjects{ii}.debugMode == 1)
+        % seObject is a scene. Don't try to set it as an optical image,
+        % just return it. 
+        oiObjects{ii} = oiObjects{ii};
+    else
+        oiObjects{ii} = seObjects{ii}.setOI(oiObjects{ii});
+    end
     
 end
 
