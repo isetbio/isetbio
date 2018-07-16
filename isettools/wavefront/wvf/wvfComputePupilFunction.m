@@ -228,16 +228,15 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
                 osaIndex = k - 1;
                 [n, m] = wvfOSAIndexToZernikeNM(osaIndex);
                 wavefrontAberrationsUM(norm_radius_index) =  ...
-                    wavefrontAberrationsUM(norm_radius_index) + c(k) ...
-                    * sqrt(pi) * zernfun(n, m, norm_radius(...
-                    norm_radius_index), theta(norm_radius_index), 'norm');
+                    wavefrontAberrationsUM(norm_radius_index) + ...
+                    c(k)*sqrt(pi)*zernfun(n, m, norm_radius(norm_radius_index), ...
+                    theta(norm_radius_index), 'norm');
             end
         end
         
         % Here is phase of the pupil function, w/ unit amplitude everywhere
         wavefrontaberrations{ii} = wavefrontAberrationsUM;
-        pupilfuncphase = exp(-1i * 2 * pi * ...
-            wavefrontAberrationsUM / waveUM(ii));
+        pupilfuncphase = exp(-1i * 2 * pi * wavefrontAberrationsUM / waveUM(ii));
         
         % Set values outside the pupil we're calculating for to 0 amplitude
         pupilfuncphase(norm_radius > calcPupilSizeMM/measPupilSizeMM)=0;
@@ -246,6 +245,7 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         % Important to zero out before this step, because computation of A
         % doesn't know about the pupil size.
         pupilfunc{ii} = A .* pupilfuncphase;
+        % vcNewGraphWin; imagesc(angle(pupilfunc{ii}))
         
         % We think the ratio of these two quantities tells us how much
         % light is effectively lost in cone absorbtions because of the

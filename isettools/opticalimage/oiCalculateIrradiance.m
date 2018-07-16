@@ -16,7 +16,7 @@ function irradiance = oiCalculateIrradiance(scene, optics)
 %
 %       irradiance = pi / (4 * fN ^ 2 * (1 + abs(m)) ^ 2) * radiance;
 %
-%    (e.g., Gerald C. Holst, CCD Arrayas, Cameras and Displays, 2nd
+%    (e.g., Gerald C. Holst, CCD Arrays, Cameras and Displays, 2nd
 %    Edition, pp. 33-34 (1998))
 %
 %    This second formula is accurate for small angles, say when the sensor

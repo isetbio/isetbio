@@ -389,7 +389,7 @@ end
 %
 isMeas = true;
 switch (parm)
-    case {'measuredpupildiameter', 'pupilsizemeasured', ...
+    case {'zpupildiameter','measuredpupildiameter', 'pupilsizemeasured', ...
             'measuredpupilsize', 'measuredpupil', 'measuredpupilmm'}
         % Pupil diameter in mm over for which wavefront expansion is valid
         % wvfGet(wvf, 'measured pupil', 'mm')
@@ -400,9 +400,10 @@ switch (parm)
             val = (val * 1e-3) * ieUnitScaleFactor(varargin{1});
         end
         
-    case {'measuredwavelength', 'wlmeasured', 'wavelengthmeasured', ...
+    case {'zwavelength','measuredwavelength', 'wlmeasured', 'wavelengthmeasured', ...
             'measuredwl'}
-        % Measurement wavelength (nm)
+        % Measurement wavelength (nm) where the Zernike polynomial was
+        % obtained.
         val = wvf.measWlNM;
         if ~isempty(varargin)
             % Convert to meters and then scale
