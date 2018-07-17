@@ -29,7 +29,11 @@ wvf = wvfSet(wvf,'zcoeffs',0,'vertical_astigmatism');
 % This is needed to make the pupilPlaneSizeMM agree with ISETCam
 % But I don't understand it.
 wvf = wvfSet(wvf,'sample interval domain','pupil'); 
-wvf = wvfSet(wvf,'measured pupil size',8); 
+wvf = wvfSet(wvf,'z pupil diameter',8); 
+% wvfGet(wvf,'ref pupil plane size')
+% wvf = wvfSet(wvf,'ref pupil plane size',16.2120);
+wvf = wvfSet(wvf,'ref pupil plane size',50);
+% wvf = wvfSet(wvf,'ref pupil plane size',25);
 
 wvf = wvfComputePSF(wvf);
 
@@ -42,14 +46,35 @@ wvfPlot(wvf,'image psf space','um')
 
 thisWaveUM  = wvfGet(wvf,'wave','um');
 thisWaveNM  = wvfGet(wvf,'wave','nm');
-pupilSizeMM = wvfGet(wvf,'calc pupil size','mm');
+pupilSizeMM = wvfGet(wvf,'pupil diameter','mm');
 zpupilDiameterMM = wvfGet(wvf,'z pupil diameter');
 
 pupilPlaneSizeMM = wvfGet(wvf,'pupil plane size','mm',thisWaveNM);
 nPixels = wvfGet(wvf,'spatial samples');
 wvf     = wvfComputePSF(wvf);
-psfTarget = wvfGet(wvf,'psf');
 
+% These are the spatial samples and psf value.
+% When we get a psf from another source, we should interpolate the
+% values to these spatial samples.
+samp      = wvfGet(wvf, 'psf spatial samples', 'um', wave);
+psfTarget = wvfGet(wvf,'psf');   % The spatial sample positions
+
+%{
+% This example interpolates the data from t_gullstranEyeTrace into
+% the spatial samples required for searching.  We should be able to
+% use this logic
+%
+% I ran the t_gullstranEyeTrace code to get the oi
+% Then ...
+ illuminance = oiGet(oi,'illuminance');
+ s = oiGet(oi,'spatial support','um'); 
+ tmp = interp2(s(1,:,1),s(:,1,2),illuminance,samp,samp(:),'cubic',0);
+ vcNewGraphWin; mesh(samp,samp,tmp)
+ 
+ % Set this
+ psfTarget = tmp/sum(tmp(:));
+ %  now run.
+%}
 f = @(x) psf2zcoeff(x,psfTarget,pupilSizeMM,zpupilDiameterMM,pupilPlaneSizeMM,thisWaveUM, nPixels);
 
 % I should to figure out how to set the tolerances.  Default is 1e-4
@@ -70,11 +95,29 @@ x = fminsearch(f,x0,options);
 x(1) = 0;  
 
 %% Compare the values
-
-fprintf('Estimated\n');
+fprintf('Estimated zcoeffs\n');
 disp(x)
 
-fprintf('True\n');
+% Compare the PSFs to make sure we have a match
+wvf2 = wvfSet(wvf,'zcoeffs',x);
+wvf2 = wvfComputePSF(wvf2);
+wvfPlot(wvf2,'image psf space','um')
+title('Estimated PSF');
+
+vcNewGraphWin;
+imagesc(samp,samp,psfTarget)
+title('Target PSF'); axis image; colormap(hot)
+grid on
+
+%
+psf = wvfGet(wvf2,'psf',wave);
+vcNewGraphWin;
+plot(psfTarget(1:5:end),psf(1:5:end),'.');
+axis equal; identityLine;
+grid on;
+
+%%
+fprintf('True zcoeffs\n');
 disp(zcoeffs(1:nCoeffs))
 
 %% Show the pupil phase functions
