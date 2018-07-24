@@ -36,6 +36,9 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     p.addParameter('titleForColorBar', '', @ischar);
     p.addParameter('showColorBar', false, @islogical);
     p.addParameter('labelColorBarTicks', false, @islogical);
+    p.addParameter('showXLabel', true, @islogical);
+    p.addParameter('showYLabel', true, @islogical);
+    p.addParameter('outlineConesAlongHorizontalMeridian', false, @islogical);
     p.addParameter('crossHairPosition', [], @isnumeric);
     p.addParameter('visualizedFOV', [], @isnumeric);
     p.addParameter('signalRange', [], @isnumeric);
@@ -59,6 +62,9 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     crossHairPosition = p.Results.crossHairPosition;
     visualizedFOV = p.Results.visualizedFOV;
     titleForColorBar = p.Results.titleForColorBar;
+    showXLabel = p.Results.showXLabel;
+    showYLabel = p.Results.showYLabel;
+    outlineConesAlongHorizontalMeridian = p.Results.outlineConesAlongHorizontalMeridian;
     
     if (any(size(activation) ~= size(obj.pattern)))    
        activation = obj.reshapeHex2DmapToHex3Dmap(activation);
@@ -141,6 +147,32 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     renderModulatedColorPatchArray(axesHandle, apertureOutline, ...
         coneXcoords, coneYcoords, ...
         faceColorsNormalizedValues, edgeColor, lineWidth);
+    if (outlineConesAlongHorizontalMeridian)
+        coneXcoordsDegs = coneXcoords * 1e6 / obj.micronsPerDegree;
+        coneYcoordsDegs = coneYcoords * 1e6 / obj.micronsPerDegree;
+        % Find cones lying near the y=0 axis
+        indicesOfConesAlongXaxis = find(abs(coneYcoordsDegs) < dx * 1e6 / obj.micronsPerDegree);
+        coneXcoordsDegs = coneXcoordsDegs(indicesOfConesAlongXaxis);
+        coneYcoordsDegs = coneYcoordsDegs(indicesOfConesAlongXaxis);
+        identitiesOfConesAlongXaxis = obj.pattern(idx(indicesOfConesAlongXaxis));
+        apertureOutline.x = apertureOutline.x(indicesOfConesAlongXaxis,:);
+        apertureOutline.y = apertureOutline.y(indicesOfConesAlongXaxis,:);
+        for kkk = 1:numel(identitiesOfConesAlongXaxis)
+            switch (identitiesOfConesAlongXaxis(kkk))
+                case 2
+                    color = [1 0.2 0.1];
+                case 3
+                    color = [0 1 0];
+                case 4
+                    color = [0 0.6 1];    
+            end
+            plot(apertureOutline.x(kkk,:)+coneXcoords(indicesOfConesAlongXaxis(kkk)), ...
+                apertureOutline.y(kkk,:)+coneYcoords(indicesOfConesAlongXaxis(kkk)), ...
+                'r-', 'Color', color, 'LineWidth', 1.5);
+        end
+        %plot(coneXcoords(indicesOfConesAlongXaxis), coneYcoords(indicesOfConesAlongXaxis), 'ro');
+    end
+    
     xlim(axesHandle, xRange);
     ylim(axesHandle, yRange);
     
@@ -199,8 +231,12 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
     spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6;
     
-    xlabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
-    ylabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+    if (showXLabel)
+        xlabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+    end
+    if (showYLabel)
+        ylabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+    end
     tickLabels = {sprintf('%2.2f', ticksDegs(1)), sprintf('%2.2f', ticksDegs(2)), sprintf('%2.2f', ticksDegs(3))};
     
     set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...

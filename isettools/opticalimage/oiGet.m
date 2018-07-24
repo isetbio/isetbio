@@ -87,6 +87,7 @@ function val = oiGet(oi, parm, varargin)
 %                                          image illuminance
 %                  {'xyz'}               - (row, col, 3) image of the
 %                                          irradiance XYZ values
+%                  {'lms'}              - 3D array of cone values (Stockman)
 %          Wavelength information
 %               {'spectrum'}     - Wavelength information structure
 %                  {'binwidth'}  - spacing between samples
@@ -498,6 +499,21 @@ switch parm
         val = ieXYZFromEnergy(Quanta2Energy(wave, photons), wave);
         % sz = oiGet(oi, 'size');
         % val = XW2RGBFormat(val, sz(1), sz(2));
+    case {'lms', 'datalms', 'cone'}
+        % oiGet(oi,  'lms');
+        % RGB (3D array) of oi Stockman LMS values
+        energy = oiGet(oi, 'energy');
+        wave = oiGet(oi, 'wave');
+        S = ieReadSpectra('stockman', wave);
+        if numel(wave) > 1
+            dWave = wave(2) - wave(1);
+        else
+            dWave = 10;
+            disp('10 nm bandwidth assumed');
+        end
+        [energy, r, c] = RGB2XWFormat(energy);
+        val = energy * S * dWave;
+        val = XW2RGBFormat(val, r, c);    
     case {'spectrum', 'wavespectrum'}
         if isfield(oi, 'spectrum'), val = oi.spectrum; end
     case 'binwidth'     

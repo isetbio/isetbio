@@ -100,6 +100,7 @@ function [uData, pData, fNum] = wvfPlot(wvfP, pType, varargin)
         wvfPlot(wvf, 'image psf', 'um', wave, 20, 'no window');
 %}
 
+%%
 if notDefined('wvfP'), error('Wavefront structure required.'); end
 if notDefined('pType'), pType = '1dpsf'; end
 
@@ -120,6 +121,9 @@ else
     fNum = vcNewGraphWin;
 end
 
+normalizeFlag = ~isempty(strfind(pType, 'normalized'));
+
+%%
 switch(pType)
     
     case {'2dpsf', '2dpsfangle', '2dpsfanglenormalized'}
@@ -140,7 +144,7 @@ switch(pType)
         end
         
         % Search for key word normalized
-        if ~isempty(strfind(pType, 'normalized'))
+        if normalizeFlag
             psf = psf(index, index)/max(psf(:));
         end
         
@@ -170,7 +174,7 @@ switch(pType)
         
         samp = wvfGet(wvfP, 'psf spatial samples', unit, wList);
         psf  = wvfGet(wvfP, 'psf', wList);
-        if ~isempty(strfind(pType, 'normalized'))
+        if normalizeFlag
             psf = psf/max(psf(:));
         end
         
@@ -201,7 +205,7 @@ switch(pType)
         samp = wvfGet(wvfP, 'psf spatial samples', unit, wList);
         psf = wvfGet(wvfP, 'psf', wList);
         % If the string contains normalized
-        if ~isempty(strfind(pType, 'normalized'))
+        if normalizeFlag
             psf = psf / max(psf(:));
         end
         
@@ -239,7 +243,7 @@ switch(pType)
         samp = wvfGet(wvfP, 'psf angular samples', unit, wList);
         psf = wvfGet(wvfP, 'psf', wList);
         % If the string contains normalized
-        if ~isempty(strfind(pType, 'normalized'))
+        if normalizeFlag
             psf = psf / max(psf(:));
         end
         
@@ -277,7 +281,7 @@ switch(pType)
         
         % Get the data and if the string contains normalized ...
         psf = wvfGet(wvfP, 'psf', wave);
-        if ~isempty(strfind(pType, 'normalized'))
+        if normalizeFlag
             psf = psf / max(psf(:));
         end
         
@@ -325,7 +329,7 @@ switch(pType)
         index = find(abs(samp) < pRange);
         samp = samp(index);
         psfLine = psfLine(index);
-        if ~isempty(strfind(pType, 'normalized'))
+        if normalizeFlag
             psfLine = psfLine / max(psfLine(:));
         end
         
@@ -346,7 +350,7 @@ switch(pType)
         end
         
         psfLine = wvfGet(wvfP, '1d psf', wList);
-        if ~isempty(strfind(pType, 'normalized'))
+        if normalizeFlag
             psfLine = psfLine / max(psfLine(:));
         end
         

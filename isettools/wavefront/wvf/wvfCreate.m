@@ -153,4 +153,4 @@ wvf = wvfSet(wvf, 'sce params', p.Results.sceparams);
 % Cone PSF information
 wvf = wvfSet(wvf, 'calc cone psf info', p.Results.calcconepsfinfo);
 
-return
+end
