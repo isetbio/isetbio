@@ -6,7 +6,7 @@ function t_fixationalEMTimeSampling
 %
 % Description:
 %    Examine the effects of different time sampling (cone integration time)
-%    on the resulting eye movement paths.
+%    on the resulting eye movement paths. 
 %
 % Inputs:
 %    None.
@@ -24,7 +24,7 @@ function t_fixationalEMTimeSampling
 
     close all;
 
-    % cone mosaic params
+    % Cone mosaic params
     fovDegs = 0.1;
     integrationTimes = [1 / 1000, 5 / 1000, 10 / 1000, 20 / 1000];
     resamplingFactor = 9;

@@ -2,7 +2,7 @@ function t_fixationalEyeMovementsTypes(varargin)
 % Examine eye movement paths using different 'microSaccadeType' parameters.
 %
 % Syntax:
-%   t_fixationalEyeMovementsTypes(varargin)
+%   t_fixationalEyeMovementsTypes
 %
 % Description:
 %    The fixation maps are a bit different for microsaccades that are
@@ -91,6 +91,8 @@ fixEMobj.compute(emDurationSeconds, sampleTimeSeconds, nTrials, ...
 plotTrials(fixEMobj, 2, visualizedSingleTrials); drawnow;
 
 % Third case: 'heatmap/fixation based' micro-saccades
+%
+% Illustrate use of a custom seed for the rng as well.
 fixEMobj.setDefaultParams();
 fixEMobj.randomSeed = 678;
 fixEMobj.microSaccadeType = 'heatmap/fixation based';

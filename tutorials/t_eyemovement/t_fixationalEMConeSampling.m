@@ -24,7 +24,7 @@ function t_fixationalEMConeSampling
 
 close all;
 
-% cone mosaic params
+% Cone mosaic params
 fovDegs = 0.1;
 integrationTime = 1 / 1000;
 resamplingFactors = [1 3 6 13];

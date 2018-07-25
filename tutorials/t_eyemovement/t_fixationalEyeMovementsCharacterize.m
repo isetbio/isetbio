@@ -57,7 +57,7 @@ function t_fixationalEyeMovementsCharacterize
         [spectrum, displacement] = performAnalyses(fixEMobj);
 
         % Visualize all aspects
-        hFig = visualizeAnalysis(fixEMobj, spectrum, displacement, ...
+        visualizeAnalysis(fixEMobj, spectrum, displacement, ...
             sprintf('micro-saccade type: ''%s''', ...
             microSaccadeTypes{typeIndex}));
     end
@@ -219,6 +219,7 @@ function hFig = ...
     emPosDelta = 1;
 
     nTrials = size(fixEMobj.emPosArcMin, 1);
+    
     % Plot the results
     hFig = figure();
     clf;
@@ -253,11 +254,11 @@ function hFig = ...
     subjectDR.mean = 30;
     subjectDR.std = 17;
     plot([fixEMobj.timeAxis(1) fixEMobj.timeAxis(end)], ...
-        (subjectDR.mean - subjectDR.std) * [1 1], 'k--', 'LineWidth', 1.0);
+        (subjectDR.mean - subjectDR.std) * [1 1], 'r--', 'LineWidth', 1.0);
     subjectDG.mean = 89;
     subjectDG.std = 63;
     plot([fixEMobj.timeAxis(1) fixEMobj.timeAxis(end)], ...
-        (subjectDG.mean + subjectDG.std) * [1 1], 'k--', 'LineWidth', 1.0);
+        (subjectDG.mean + subjectDG.std) * [1 1], 'b--', 'LineWidth', 1.0);
     hold off;
     grid on
     legend({'model (one iteration)', ...

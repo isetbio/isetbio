@@ -1,8 +1,8 @@
 function t_fixationalEyeMovementsToIsomerizations(varargin)
-% Two figure tutorial showing eye movement on cone mosaic and oi sequences
+% Show eye movements on cone mosaic and sequence of cone activations
 %
 % Syntax:
-%   t_fixationalEyeMovementsToIsomerizations([varargin])
+%   t_fixationalEyeMovementsToIsomerizations()
 %
 % Description:
 %    Shows how to integrate fixational eye movements with a cone mosaic and
@@ -16,10 +16,10 @@ function t_fixationalEyeMovementsToIsomerizations(varargin)
 %    path superimposed on top of it.
 %
 %    The second figure is a multi-panel figure and displays the following:
-%       - the stimulus modulation function (top left)
+%       - the stimulus spatial profile (top left)
 %       - 2D mosaic activations (isomerizations) at different epochs during
 %         the course of the trial
-%       - Space (cone) x Time plot of the isomerizations signals showing
+%       - Space (cone) x Time plot of the isomerization signals. showing
 %         how the mosaic response evolves during the entire trial
 %       - Time plot of the x- and y- eye position during the entire trial.
 %
