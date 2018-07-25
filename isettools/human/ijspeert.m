@@ -54,11 +54,12 @@ function [MTF, PSF, LSF] = ijspeert(age, p, m, q, phi)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    06/25/18  jnm  Formatting
+%    07/25/18  dhb  Fix broken example.
 
 % Examples:
 %{
     age = 30;
-    pupilDiameter = 3;
+    p = 3;
     m = 0.142;
     q = [0:60];
     phi = pi;
