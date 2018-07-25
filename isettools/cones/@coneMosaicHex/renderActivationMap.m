@@ -32,7 +32,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
     p.addParameter('mapType', 'modulated hexagons', ...
         @(x)ismember(x, {'modulated hexagons', 'modulated disks'}));
-    p.addParameter('colorMap', jet(1024), @isnumeric);
+    p.addParameter('colorMap', gray(1024), @isnumeric);
     p.addParameter('titleForColorBar', '', @ischar);
     p.addParameter('showColorBar', false, @islogical);
     p.addParameter('labelColorBarTicks', false, @islogical);
@@ -168,7 +168,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
             end
             plot(apertureOutline.x(kkk,:)+coneXcoords(indicesOfConesAlongXaxis(kkk)), ...
                 apertureOutline.y(kkk,:)+coneYcoords(indicesOfConesAlongXaxis(kkk)), ...
-                'r-', 'Color', color, 'LineWidth', 1.5);
+                'r-', 'Color', color, 'LineWidth', 2.0);
         end
         %plot(coneXcoords(indicesOfConesAlongXaxis), coneYcoords(indicesOfConesAlongXaxis), 'ro');
     end
