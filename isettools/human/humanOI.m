@@ -26,10 +26,11 @@ function oi = humanOI(scene, oi)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005
 %    06/21/18  jnm  Formatting
+%    07/25/18  dhb  %ETTBSkip > % ETTBSkip, so it really will get skipped.
 
 % Examples:
 %{
-    %ETTBSkip - Skipping broken example (spectrum missing?)
+    % ETTBSkip - Skipping broken example (spectrum missing?)
     oi = oiCreate();
     scene = sceneCreate('d65');
     oi = humanOI(scene, oi)
