@@ -11,8 +11,8 @@ function [lum, rg, by, positions] = ...
 %    These filters are fitted spatial response, formed by taking the
 %    weighted sum of two or three Gaussians.
 %
-%    This function contains examples of usage inline. To access, type 'edit
-%    poirsonSpatioChromatic.m' into the Command Window.
+%    This is currently broken because we do not have the function sumGauss
+%    in isetbio.
 %
 % Inputs:
 %    sampPerDeg - (Optional) Numeric. The filter sampling resolution.
@@ -29,6 +29,8 @@ function [lum, rg, by, positions] = ...
 % Optional key/value pairs:
 %    None.
 %
+% Examples are included in the source code.
+%
 % See Also:
 %    See the Spatial-CIELAB implementation for other related ideas.
 %
@@ -38,13 +40,17 @@ function [lum, rg, by, positions] = ...
 %    07/06/18  jnm  Formatting
 
 % Examples:
+%
+% These won't work until we find function sumGauss and add it to isetbio.
 %{
+    % ETTBSkip
     [lum, rg, by, x] = poirsonSpatioChromatic([], 1);
     plot(x, lum, 'k-', x, rg, 'r--', x, by, 'b:');
     xlabel('Position (deg)')
     grid on;
 %}
 %{
+    % ETTBSkip
     [lum, rg, by, x] = poirsonSpatioChromatic(120, 2);
     mesh(x, x, lum);
     xlabel('Position (deg)');
@@ -52,6 +58,7 @@ function [lum, rg, by, positions] = ...
     mesh(x, x, by);
 %}
 %{
+    % ETTBSkip
     % To compute the spatial MTF of these filters compute
     clf
     [lum, rg, by, x] = poirsonSpatioChromatic(241, 1);
@@ -64,6 +71,7 @@ function [lum, rg, by, positions] = ...
     grid on;
 %}
 %{
+    % ETTBSkip
     % For 2D plots some fftshifting is required
     [lum, rg, by, x] = poirsonSpatioChromatic(241, 2);
     rgMTF = ifftshift(abs(fft2(fftshift(rg))));
