@@ -25,6 +25,9 @@ function t_fixationalEMConeSampling
 close all;
 
 % Cone mosaic params
+%
+% Use just small patch of mosaic so it runs fairly quickly.
+% 1 msec is fast enough for most calculations we'd do.
 fovDegs = 0.1;
 integrationTime = 1 / 1000;
 resamplingFactors = [1 3 6 13];

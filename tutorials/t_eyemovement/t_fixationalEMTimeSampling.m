@@ -6,7 +6,8 @@ function t_fixationalEMTimeSampling
 %
 % Description:
 %    Examine the effects of different time sampling (cone integration time)
-%    on the resulting eye movement paths. 
+%    on the resulting eye movement paths. Shows that the path doesn't
+%    change drastically when we compute with a longer time interval.
 %
 % Inputs:
 %    None.
@@ -25,6 +26,10 @@ function t_fixationalEMTimeSampling
     close all;
 
     % Cone mosaic params
+    %
+    % Use just small patch of mosaic so it runs fairly quickly.
+    % 1 msec is fast enough for most calculations we'd do, look at
+    % effect of slowing down from there.
     fovDegs = 0.1;
     integrationTimes = [1 / 1000, 5 / 1000, 10 / 1000, 20 / 1000];
     resamplingFactor = 9;
