@@ -40,14 +40,12 @@ function [lum, rg, by, positions] = ...
 %
 % These won't work until we find function sumGauss and add it to isetbio.
 %{
-    % ETTBSkip
     [lum, rg, by, x] = poirsonSpatioChromatic([], 1);
     plot(x, lum, 'k-', x, rg, 'r--', x, by, 'b:');
     xlabel('Position (deg)')
     grid on;
 %}
 %{
-    % ETTBSkip
     [lum, rg, by, x] = poirsonSpatioChromatic(120, 2);
     mesh(x, x, lum);
     xlabel('Position (deg)');
@@ -55,7 +53,6 @@ function [lum, rg, by, positions] = ...
     mesh(x, x, by);
 %}
 %{
-    % ETTBSkip
     % To compute the spatial MTF of these filters compute
     clf
     [lum, rg, by, x] = poirsonSpatioChromatic(241, 1);
@@ -68,7 +65,6 @@ function [lum, rg, by, positions] = ...
     grid on;
 %}
 %{
-    % ETTBSkip
     % For 2D plots some fftshifting is required
     [lum, rg, by, x] = poirsonSpatioChromatic(241, 2);
     rgMTF = ifftshift(abs(fft2(fftshift(rg))));

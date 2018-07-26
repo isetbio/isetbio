@@ -67,7 +67,6 @@ function [sens, fs, ft] = humanSpaceTime(model, fs, ft)
     plot(t, impResp)
 %}
 %{
-    % ETTBSkip - This might start working once poirsonSpatiaChromatic is fixed.
     [spatialFilters, positions] = humanSpaceTime('poirsoncolor');
     mesh(positions, positions, spatialFilters.by);
     xlabel('Position (deg)')
