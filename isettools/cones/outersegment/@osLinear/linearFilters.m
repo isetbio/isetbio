@@ -133,7 +133,17 @@ for meanInd = 1:length(meanRate)
     % Compute outer segment currents with biophysical model with the
     % impulse stimulus
     cm.absorptions  = reshape(stimulus, [1 1 nSamples]);
+<<<<<<< HEAD
+    
+    % EK: Previously, cm.computeCurrent() computed the background rate again.
+    % Here, I put in the back ground as an argument, as line 116, for the
+    % absorption rate calculation of impulse calculation.
+    %     cm.computeCurrent();
+    cm.computeCurrent('bgR',meanRate(meanInd));
+
+=======
     cm.computeCurrent('bgR', meanRate(meanInd));
+>>>>>>> 24af784f75526c07d43761aa0613a2984fc579f7
     currentImpulse = squeeze(cm.current);
     % hold on; plot(timeStep*(1:nSamples), currentImpulse);
     

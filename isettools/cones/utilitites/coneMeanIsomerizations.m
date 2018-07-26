@@ -111,9 +111,22 @@ else
     % Reshape from 3D (x, y, t) to space x nCones
     % [NOTE: DHB - This comment does not parse for me - how does time turn
     % into cones?]
+<<<<<<< HEAD
+    pRate = cMosaic.absorptions;             % Absorptions per sample
+    if isempty(pRate), return; end           % Return 0 when no absorptions
+    
+    % EK: If we deal with a OIS: reshape cone matrix into one space vector, leave time dimension as is (so Space x time samples)
+    if size(cMosaic.emPositions,1) > 1
+        pRateXW = reshape(pRate, [size(pRate,1)*size(pRate,2), cMosaic.tSamples]);
+    else % EK: If not, assume OI (x,y, w), so cone matrix with different wavelengths:
+        pRateXW = RGB2XWFormat(pRate);
+    end
+
+=======
     pRate = cMosaic.absorptions;     % Absorptions per sample
     if isempty(pRate), return; end   % Return 0 when no absorptions
     pRateXW = RGB2XWFormat(pRate);
+>>>>>>> 24af784f75526c07d43761aa0613a2984fc579f7
     lConeIndices = find(coneType == 2);
     mConeIndices = find(coneType == 3);
     sConeIndices = find(coneType == 4);
