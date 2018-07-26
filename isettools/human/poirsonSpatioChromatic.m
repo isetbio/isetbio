@@ -11,9 +11,6 @@ function [lum, rg, by, positions] = ...
 %    These filters are fitted spatial response, formed by taking the
 %    weighted sum of two or three Gaussians.
 %
-%    This is currently broken because we do not have the function sumGauss
-%    in isetbio.
-%
 % Inputs:
 %    sampPerDeg - (Optional) Numeric. The filter sampling resolution.
 %                 Default is 241 samps/deg.
