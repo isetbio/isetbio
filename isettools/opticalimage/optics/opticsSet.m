@@ -85,6 +85,7 @@ function optics = opticsSet(optics, parm, val, varargin)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/13/18  jnm  Formatting
+%    07/25/18  dhb  Fix broken example (lens -> Lens).
 
 % Examples:
 %{
@@ -95,7 +96,7 @@ function optics = opticsSet(optics, parm, val, varargin)
 %}
 %{
  % Lens transmittance plot for human case
- l = lens;
+ l = Lens;
  vcNewGraphWin; 
  hold on; plot(l.wave,l.transmittance);
  l.density = 0.3;
