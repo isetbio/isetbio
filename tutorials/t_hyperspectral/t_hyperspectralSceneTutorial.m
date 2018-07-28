@@ -93,9 +93,9 @@ visualizeSpatialSpectralRadianceOfRetinalImage(theOI, visualizedWaveBands, ...
 %% We should generate a database of high quality mosaics at some point
 regenerateMosaic = true;
 if (regenerateMosaic)
-    mosaicFOV = 2.0;
-    resamplingFactor = 9;  % 11 for high quality mosaic
-    iterations = 5;  % This should be > 1000 for a high quality mosaic
+    mosaicFOV = 1.0;
+    resamplingFactor = 7;  % 11 for high quality mosaic
+    iterations = 10;  % This should be > 1000 for a high quality mosaic
     tol1 = 0.5;   % This should be < 0.1 for a high quality mosaic
     tol2 = 0.05;  % This should be < 0.01 for a high quality mosaic
     theConeMosaic = coneMosaicHex(resamplingFactor, ...
@@ -117,7 +117,7 @@ end
 theConeMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea');
 
 %% Specify how many eye movements to generate. Specify 1 for no eye movements.
-eyeMovementsNum = 20;
+eyeMovementsNum = 50;
     
 %% Generate eye movement path
 if (eyeMovementsNum > 1)
