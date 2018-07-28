@@ -1,4 +1,53 @@
 function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, varargin)
+% Return a custom wavefront-based OI along with corresponding Zcoeffs, WVF
+%
+% Syntax:
+%    [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(...
+%       opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, ...
+%       umPerDegree, varargin)
+%
+% % Inputs:
+%    opticsModel - a string descriptor of the optics model to employ
+%                  possible values:
+%                  'AOoptics'                       - all Zernike coeffs=0
+%                  'WvfHumanMeanOTFmagMeanOTFphase',- mean complex OTF
+%                  'WvfHumanMeanOTFmagZeroOTFphase'  - mean OTF mag
+%                  'WvfHuman'                        - mean Zernike coeff
+%                  'ThibosBestPSFSubject3MMPupil'    - subject1 (CSF paper)
+%                  'ThibosDefaultSubject3MMPupil'    - subject2 (CSF paper)
+%                  'ThibosAverageSubject3MMPupil'    - subject3 (CSF paper)
+%                  'ThibosDefocusedSubject3MMPupil'  - subject4 (CSF paper)
+%                  'ThibosVeryDefocusedSubject3MMPupil' -subject 5 (CSFpap)
+%
+%    wavefrontSpatialSamples - number of spatial samples for the wavefront
+%                              the higher this number, the better the 
+%                              spatial frequency resolution 
+%                              261*2+1 results in 1c/deg
+%
+%    calcPupilDiameterMM - the pupil diameter in mm
+%    umPerDegree         - the number of microns/deg, 300 for human retina
+%
+%
+% Outputs:
+%    theCustomOI - the computed oi
+%    Zcoeffs     - the corresponding Zernike coefficients
+%    theWVF      - the corresponding wavefront function 
+%
+%
+% Optional key/value pairs:
+%    showTranslation - boolean, whether to depict the translation required
+%                      to center the subject PSF at (0,0)
+%    centeringWavelength - the wavelength at which to zero center the PSF
+%
+%    wavelengths  - the wavelengths for which to compute the oi.
+%
+% Notes:
+% This was ported straight from IBIOColorDetect. Eventually it should be
+% part of the core ISETBio routines, but for the purpose of this tutorial
+% and because time was short, I included all the necessary routines here.
+% 
+% 7/24/18  npc  Wrote it
+%
     p = inputParser;
     p.addParameter('showTranslation', false, @islogical);
     p.addParameter('centeringWavelength', 550, @isnumeric);
