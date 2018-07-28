@@ -11,7 +11,8 @@ function theScene = fetchScene(sceneNo, varargin)
 % Inputs:
 %    sceneNo     - the scene no, 1, 2, ...
 %    database    - the hyperspectral data base identifier
-%    destination - where to save the downloaded scene
+%    destination - where to save the downloaded scene. If empty nothing is
+%                  saved
 %
 % Outputs:
 %    theScene    - an ISETBio scene generated from the retrieved 
@@ -51,7 +52,7 @@ function theScene = fetchScene(sceneNo, varargin)
     p = inputParser;
     p.addParameter('origin', 'remote');
     p.addParameter('database', 'manchester_database/2004');
-    p.addParameter('destination', './resources');
+    p.addParameter('destination', '');
     p.parse(varargin{:});
     origin = p.Results.origin;
     database = p.Results.database;
@@ -71,10 +72,12 @@ function theScene = fetchScene(sceneNo, varargin)
         sData = rd.readArtifact(a(sceneNo),'type','mat');
         % Generate an isetbio scene from the hyperspectral data
         scene = sceneFromBasis(sData);
-        % Save locally
-        saveFileName = fullfile(destination, database, sprintf('scene%d', sceneNo));
-        save(saveFileName, 'scene');
-        fprintf('Scene saved in %s\n', saveFileName);
+        if (~isempty(destination))
+            % Save locally
+            saveFileName = fullfile(destination, database, sprintf('scene%d', sceneNo));
+            save(saveFileName, 'scene');
+            fprintf('Scene saved in %s\n', saveFileName);
+        end
     else
         localSceneFileName = fullfile(origin, database, sprintf('scene%d', sceneNo));
         load(localSceneFileName,'scene');
