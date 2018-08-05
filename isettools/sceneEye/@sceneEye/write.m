@@ -44,7 +44,7 @@ ecc = objNew.eccentricity;
 % This section of the code has not been thoroughly finished/debugged, so
 % let's put out a warning.
 if(ecc ~= [0 0])
-    warning('Eccentricity calculations have not beed debugged. Use at your own risk!')
+    warning('Eccentricity calculations have not been debugged. Use at your own risk!')
 end
 
 % Given a point at a certain eccentricitity [ecc(1) ecc(2)], what is
@@ -77,11 +77,11 @@ bottom_ndc = bottom + tempSize/2;
 ndcWindow = [left_ndc right_ndc top_ndc bottom_ndc];
 
 % Convert to ratio
-cropWindow = ndcWindow./tempSize;
+cropWindowEcc = ndcWindow./tempSize;
 
 % Since we'll be cropping the large image down to the desired
 % eccentricity, we have to increase the rendered resolution.
-tempResolution = objNew.resolution/(cropWindow(2)-cropWindow(1));
+tempResolution = objNew.resolution/(cropWindowEcc(2)-cropWindowEcc(1));
 objNew.resolution = round(tempResolution);
 
 % DEBUG
@@ -162,10 +162,20 @@ else
 end
 
 % Crop window
-if(exist('cropWindow','var'))
-    recipe.film.cropwindow.value = cropWindow;
+
+% Crop window and eccentricity can conflicting values. Let's resolve
+% that (messily) here. We may rethink the eccentricity calculation in
+% the future:
+% If there is no eccentricity set, use whatever crop window was in the
+% structure originally. If there is eccentricity, use the updated
+% cropwindow. 
+if(ecc == [0 0])
+    % Do nothing
+else
+    recipe.film.cropwindow.value = cropWindowEcc;
     recipe.film.cropwindow.type = 'float';
 end
+
 
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
