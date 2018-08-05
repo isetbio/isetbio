@@ -241,6 +241,19 @@ if(sceneNameFlag)
             end
             recipe = piWorldFindAndReplace(recipe, 'dummyTexture.exr', ...
                 strcat(nameTex, extTex));
+            
+            % If true, use the lcd-apple display primaries to convert to
+            % RGB texture values to spectra.
+            if(se_p.Results.useDisplaySPD)
+                recipe = piWorldFindAndReplace(recipe, '"bool useSPD" "false"', ...
+                    '"bool useSPD" "true"');
+            end
+            
+            % If true, we convert from sRGB to lRGB in PBRT. 
+            if(strcmp(se_p.Results.gamma,'false'))
+                recipe = piWorldFindAndReplace(recipe,'"bool gamma" "true"',...
+                    '"bool gamma" "false"');
+            end
     end
 end
 
