@@ -467,7 +467,7 @@ switch sceneName
         return;
     case {'whitenoise', 'noise'}
         % sceneCreate('noise', [128 128])
-        sz = 128;
+        sz = [128 128];
         contrast = 20;
         if length(varargin) >= 1, sz = varargin{1}; end
         if length(varargin) >= 2, contrast = varargin{2}; end
