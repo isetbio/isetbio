@@ -162,6 +162,14 @@ if(sceneNameFlag)
             scenePath = fullfile(piRootPath,'data',...
                 'SimplePoint','simplePointV3.pbrt');
             sceneUnits = 'm';
+        
+        case('slantedBarAdjustable')
+            % A variation of slantedBar where the black and white planes
+            % are adjustable to different depths.
+            scenePath = fullfile(piRootPath,'data',...
+                'V3','slantedBarAdjustableDepth',...
+                'slantedBarWhiteFront.pbrt');
+            sceneUnits = 'm';
             
         otherwise
             error('Did not recognize scene type.');
@@ -197,6 +205,14 @@ if(sceneNameFlag)
         case('slantedBar')
             recipe = piObjectTransform(recipe, 'SlantedBar', ...
                 'Translate', [0 0 se_p.Results.planeDistance]);
+        
+        case('slantedBarAdjustable')
+            % A variation of slantedBar where the black and white planes
+            % are adjustable to different depths. We reread the recipe
+            % since we already have piCreateSlantedBarScene. 
+            recipe = piCreateSlantedBarScene(...
+                'whiteDepth',se_p.Results.whiteDepth,...
+                'blackDepth',se_p.Results.blackDepth);
             
         case('pointSource')
             % Clear previous transforms
