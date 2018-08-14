@@ -78,7 +78,7 @@ for iTrial = 1:nTrials
             input   = ieContrast(rgcM.input.get('response'),'maxC',bipolarContrast);
         end
     else
-        prosthesisBipolarScalingFactor = 0.003;
+        prosthesisBipolarScalingFactor = 0.003/12;
         input = prosthesisBipolarScalingFactor*rgcM.input.get('response');
     end
     % vcNewGraphWin; ieMovie(input);
