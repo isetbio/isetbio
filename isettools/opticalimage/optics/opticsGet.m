@@ -188,8 +188,6 @@ function val = opticsGet(optics, parm, varargin)
 %      worth it.]
 %    * [Note - DHB: Not all options appear to be documented in the above
 %      header comments.]
-%    * [Note: JNM - Fixed issue with variable naming in diffraction limited
-%      psf data]
 %    * TODO: When 2015B phased out, replace strfind() with contains()
 %
 
@@ -198,6 +196,11 @@ function val = opticsGet(optics, parm, varargin)
 %    12/21/17  dhb  Use OtfToPsf to do the conversion, but with backwards
 %                   compatible control.
 %    03/14/18  jnm  Formatting
+%    08/30/18  dhb  Replace abs(fft2(OTF)) with OtfToPsf for M-W optics,
+%                   which was special cased for backward compatibility.
+%                   This is based on the view that what was being done was
+%                   not correct, and that we should bite the bullet and
+%                   change. See issue #373 on github.
 
 % Examples:
 %{
@@ -829,22 +832,12 @@ switch parm
                     if nWave == 1
                         % Just do one specified wavelength
                         otf = opticsGet(optics,'otf data',thisWave);
-                        if strcmp(optics.name,'human-MW')
-                            val = fftshift(abs(fft2(otf)));
-                        else
-                            [~,~,val] = OtfToPsf([],[],fftshift(otf));
-                        end
+                        [~,~,val] = OtfToPsf([],[],fftshift(otf));
                     else
                         % Do all the wavelenghts
                         val = zeros(size(optics.OTF.OTF));
-                        if strcmp(optics.name,'human-MW')
-                            for ii=1:length(thisWave)
-                                val(:,:,ii) = fftshift(abs(fft2(optics.OTF.OTF(:,:,ii))));
-                            end
-                        else
-                            for ii=1:length(thisWave)
-                                [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)));
-                            end
+                        for ii=1:length(thisWave)
+                            [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)));
                         end
                     end
 
