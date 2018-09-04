@@ -94,10 +94,8 @@ position1DMinutes = xGridMinutes(centerPosition,:);
 %% Get PTB optics as PSF
 switch (p.Results.opticsModel)
     case 'DeltaFunction'
-        theLsf = position1DMinutes*0;
-        centerPosition = round((numel(position1DMinutes)-1)/2);
-        theLsf(centerPosition+1) = 1;
-        thePsf = LsfToPsf(theLsf);
+        thePsf = zeros(size(xGridMinutes));
+        thePsf(centerPosition,centerPosition) = 1;
     case 'Geisler'
         theLsf = GeislerLSFMinutes(position1DMinutes);
         thePsf = LsfToPsf(theLsf);
