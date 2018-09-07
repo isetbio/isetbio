@@ -391,7 +391,7 @@ methods
         r = obj.retinaRadius;
         
         fun = @(a) myfun(a,k,d,r);    % function of x alone
-        a = fzero(fun,[d 12]);
+        a = fzero(fun,[d obj.retinaRadius]);
         
         if(isnan(a))
             error('Search for a image width to match FOV failed. Initial guess is probably not close...')
