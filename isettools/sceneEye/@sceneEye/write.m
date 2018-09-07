@@ -155,6 +155,16 @@ if(objNew.debugMode)
     fov = struct('value', objNew.fov, 'type', 'float');
     recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
         'fov', fov);
+    if(objNew.accommodation ~= 0)
+        warning(['Setting perspective camera focal distance to %0.2f dpt '...
+            'and lens radius to %0.2f mm'],...
+            objNew.accommodation,objNew.pupilDiameter);
+        recipe.camera.focaldistance.value = 1/objNew.accommodation;
+        recipe.camera.focaldistance.type = 'float';
+        
+        recipe.camera.lensradius.value = (objNew.pupilDiameter/2)*10^-3;
+        recipe.camera.lensradius.type = 'float';
+    end
 else
     recipe.camera.retinaDistance.value = objNew.retinaDistance;
     recipe.camera.pupilDiameter.value = objNew.pupilDiameter;
