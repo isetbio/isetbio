@@ -101,12 +101,45 @@ objNew.resolution = round(tempResolution);
 %% Given the sceneEye object, we make all other adjustments needed to the recipe
 recipe = objNew.recipe;
 
-% Apply any accommodation changes
-if(isempty(objNew.accommodation))
-    objNew.accommodation = 5;
-    warning('No accommodation! Setting to 5 diopters.');
+% Depending on the eye model, set the lens file appropriately
+switch objNew.modelName
+    case {'Navarro','navarro'}
+        % Apply any accommodation changes
+        if(isempty(objNew.accommodation))
+            objNew.accommodation = 5;
+            warning('No accommodation! Setting to 5 diopters.');
+        end
+        
+        % This function also writes out the Navarro lens file
+        recipe = setNavarroAccommodation(recipe, objNew.accommodation,...
+                                         objNew.workingDir);
+        
+    case {'Gullstrand','gullstrand'}
+        
+        % Gullstrand eye does not have accommodation (not yet at least), so
+        % for now all we need to do is write out the lens file.
+        
+        lensFile = 'gullstrand.dat';
+        writeGullstrandLensFile(fullfile(objNew.workingDir, lensFile));
+        fprintf('Wrote out a new lens file: \n')
+        fprintf('%s \n \n', fullfile(objNew.workingDir, lensFile));
+        
+        obj.recipe.camera.lensfile.value = fullfile(objNew.workingDir, lensFile);
+        obj.recipe.camera.lensfile.type = 'string';   
+    
+    case{'Arizona','arizona'}
+        
+        if(isempty(objNew.accommodation))
+            objNew.accommodation = 5;
+            warning('No accommodation! Setting to 5 diopters.');
+        end
+        
+        % This function also writes out the Arizona lens file.
+        recipe = setArizonaAccommodation(recipe, objNew.accommodation,...
+                                         objNew.workingDir);
+                                     
 end
-recipe = setAccommodation(recipe, objNew.accommodation, objNew.workingDir);
+
 
 % Film parameters
 recipe.film.xresolution.value = objNew.resolution;

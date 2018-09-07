@@ -70,7 +70,13 @@ classdef sceneEye < hiddenHandle
 properties (GetAccess=public, SetAccess=public)
     % name - The name of the render
     name;
-
+    
+    % modelname - The name of the schematic eye used to render the scene.
+    %   Depending on the model chosen, some other options may not be
+    %   applicable. Currently possible models include: navarro (default)
+    %   gullstrand-le grand, and arizona eye model.
+    modelName;
+    
     % resolution - resolution of render (pixels)
     %   Instead of rows/cols we use a general resolution variable. This
     %   is because the eye model can only take equal rows and columns
@@ -281,6 +287,7 @@ methods
 
         % Set properties
         obj.name = p.Results.name;
+        obj.modelName = 'Navarro'; % Default
         obj.resolution = recipe.film.xresolution.value;
         obj.retinaDistance = recipe.camera.retinaDistance.value;
         obj.pupilDiameter = recipe.camera.pupilDiameter.value;
@@ -421,8 +428,45 @@ methods
        chordSpatialSamples = (1:obj.resolution).*ss - obj.width/2;
        val = atand(chordSpatialSamples/obj.distance2chord);
     end
-
+    
     %% Set methods for dependent variables
+    
+    % Does this go here? MATLAB doesn't like this setup, but I would like
+    % retinaDistance and retinaRadius to be both dependent (changes with
+    % modelName), but also set-able by the user. What's the best way to do
+    % this?
+    
+    % When we set the eye model, we need to change the retina distance and
+    % radius.
+    function set.modelName(obj,val)
+        switch val
+            case {'Navarro','navarro'}
+                obj.modelName = 'Navarro';
+                obj.retinaDistance = 16.32;
+                obj.retinaRadius = 12;
+            case {'Gullstrand','gullstrand'}
+                obj.modelName = 'Gullstrand';
+                obj.retinaDistance = 16.6;
+                obj.retinaRadius = 13.4;
+            case {'Arizona','arizona'}
+                obj.modelName = 'Arizona';
+                obj.retinaDistance = 16.713;
+                obj.retinaRadius = 13.4;
+                
+        end
+            
+    end
+    
+    % I want to put in this warning, but again MATLAB doesn't really like
+    % this!
+    function set.accommodation(obj,val)
+        obj.accommodation = val;
+        if(strcmp(obj.modelName,'Gullstrand'))
+            warning(['Gullstrand eye has no accommodation modeling.',...
+                'Setting accommodation will do nothing.']);
+        end
+    end
+    
     % I don't think these are necessary. 
 %{
     function set.width(obj, val)
