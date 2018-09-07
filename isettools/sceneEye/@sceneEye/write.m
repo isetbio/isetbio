@@ -45,9 +45,11 @@ ecc = objNew.eccentricity;
 % This section of the code has not been thoroughly finished/debugged, so
 % let's put out a warning.
 if(ecc ~= [0 0])
-    warning('Eccentricity calculations have not been debugged. Use at your own risk!')
+    warning('Eccentricity calculations are currently off.')
+    ecc = [0 0];
 end
 
+%{
 % Given a point at a certain eccentricitity [ecc(1) ecc(2)], what is
 % the minimum FOV the rendered image needs to have in order to
 % encompass the given point?
@@ -84,6 +86,7 @@ cropWindowEcc = ndcWindow./tempSize;
 % eccentricity, we have to increase the rendered resolution.
 tempResolution = objNew.resolution/(cropWindowEcc(2)-cropWindowEcc(1));
 objNew.resolution = round(tempResolution);
+%}
 
 % DEBUG
 %{
