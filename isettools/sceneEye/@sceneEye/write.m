@@ -28,6 +28,7 @@ function [objNew] = write(obj, varargin)
 % before rendering (i.e. in th eccentricity calculations) but we don't want
 % these changes to show up original object given by the user.
 objNew = copy(obj);
+objNew.recipe = copy(obj.recipe);
 
 %% Make some eccentricity calculations
 
@@ -173,6 +174,7 @@ recipe.sampler.pixelsamples.value = objNew.numRays;
 
 % Integrator
 recipe.integrator.maxdepth.value = objNew.numBounces;
+recipe.integrator.maxdepth.type = 'integer';
 
 % Renderer
 if(objNew.numCABands == 0 || objNew.numCABands == 1 || objNew.debugMode)
