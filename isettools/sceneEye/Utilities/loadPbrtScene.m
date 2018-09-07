@@ -68,7 +68,55 @@ if(sceneNameFlag)
     
     switch sceneName
         
+        case('snellenSingle')
+            
+            scenePath = fullfile(piRootPath, 'data', ...
+                'V3','snellenSingle', 'snellen_single.pbrt');
+            sceneUnits = 'm';
+            
+            % Download from RDT
+            if(~exist(scenePath,'file'))
+                piPBRTFetch('snellenSingle','deletezip',true,...
+                    'pbrtversion',3,...
+                    'destination folder',fullfile(piRootPath,'data','V3'));
+                % Check if file exists
+                if(~exist(scenePath,'file'))
+                    error('Something went wrong when downloading the scene.')
+                else
+                    % Success!
+                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
+                end
+                
+            else
+                fprintf('Scene already exists in data folder. Skipping download.\n');
+            end
+            
+            
+        case ('snellenAtDepth')
+            
+            scenePath = fullfile(piRootPath,'data','V3','snellenAtDepth','snellen.pbrt');
+            sceneUnits = 'm';
+            
+             % Download from RDT
+            if(~exist(scenePath,'file'))
+                piPBRTFetch('snellenAtDepth','deletezip',true,...
+                    'pbrtversion',3,...
+                    'destination folder',fullfile(piRootPath,'data','V3'));
+                % Check if file exists
+                if(~exist(scenePath,'file'))
+                    error('Something went wrong when downloading the scene.')
+                else
+                    % Success!
+                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
+                end
+                
+            else
+                fprintf('Scene already exists in data folder. Skipping download.\n');
+            end
+            
+            
         case ('blackBackdrop')
+            
             scenePath = fullfile(piRootPath,'data','V3','blackBackdrop','blackBackdrop.pbrt');
             sceneUnits = 'm';
             
@@ -225,6 +273,12 @@ if(sceneNameFlag)
             recipe = piObjectTransform(recipe,'Plane','Scale',[se_p.Results.pointDistance*10 se_p.Results.pointDistance*10 1]);
             % Move it slightly beyond the point
             recipe = piObjectTransform(recipe,'Plane','Translate',[0 0 se_p.Results.pointDistance+0.5]);
+         
+        case('snellenSingle')
+            scaling = [se_p.Results.objectSize(1) se_p.Results.objectSize(2) 1] ./ [1 1 1];
+            recipe = piObjectTransform(recipe,'Snellen','Scale',scaling);
+            recipe = piObjectTransform(recipe, 'Snellen', ...
+                'Translate', [0 0 se_p.Results.objectDistance]);
             
         case('texturedPlane')
             % Scale and translate
