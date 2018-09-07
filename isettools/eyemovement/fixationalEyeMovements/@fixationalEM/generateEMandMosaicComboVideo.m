@@ -88,7 +88,7 @@ videoOBJ.open();
 for iTrial = 1:nTrials
     % Make figure
     hFig = figure();
-    clf
+    
     set(hFig, 'Position', [10 10 figSize(1) figSize(2)], 'Color', [1 1 1]);
     % Make subplots axes
     if (showMovingMosaicOnSeparateSubFig)
@@ -113,11 +113,13 @@ for iTrial = 1:nTrials
             plot(axMosaic, crossLengthMeters * [-1 1], [0 0], 'k-', ...
                 'LineWidth', 2.0);
         end
-
+        set(axMosaic, 'LineWidth', 1.0, 'FontSize', 20);
         hold(axMosaic, 'off');
         box(axMosaic, 'on');
     end
 
+    
+    
     % emPath for this trial
     theEMpathMeters = squeeze(fixEMobj.emPosMicrons(iTrial, :, :)) * 1e-6;
 
@@ -130,11 +132,25 @@ for iTrial = 1:nTrials
             set(axMosaic, 'XLim', xo + visualizedSpaceMeters * ...
                 [-0.5 0.5] * 1.05, 'YLim', yo + visualizedSpaceMeters * ...
                 [-0.5 0.5] * 1.05, 'XTickLabel', {}, 'YTickLabel', {});
-            set(axMosaic, 'FontSize', 16, 'LineWidth', 1.0);
+            set(axMosaic, 'FontSize', 20, 'LineWidth', 1.0);
             title(axMosaic, ...
                 sprintf('%2.1f msec', 1000 * fixEMobj.timeAxis(timeBin)));
         end
 
+        
+        % plot emPaths for previous trials
+        for k = 1: iTrial-1
+            theEMpathMetersOld = squeeze(fixEMobj.emPosMicrons(k, :, :)) * 1e-6;
+            plot(axEMpath, theEMpathMetersOld(:, 1), ...
+                theEMpathMetersOld(:, 2), 'k-',  ...
+                'LineWidth', 2.0);
+            if (k == 1)
+                hold(axEMpath, 'on');
+            end
+        end
+        
+        
+        
         % Update the emPath
         plot(axEMpath, theEMpathMeters(1:timeBin, 1), ...
             theEMpathMeters(1:timeBin, 2), 'r-', 'Color', [1 0.5 0.5], ...
@@ -168,11 +184,15 @@ for iTrial = 1:nTrials
         xlabel(axEMpath, 'space (degs)');
         grid(axEMpath, 'on');
         box(axEMpath, 'on');
-        set(axEMpath, 'LineWidth', 1.0);
+        set(axEMpath, 'LineWidth', 1.0, 'FontSize', 20);
 
         if (nTrials > 1)
-            title(axEMpath, sprintf('%2.1f msec (trial #%d)', ...
-                1000 * fixEMobj.timeAxis(timeBin), iTrial));
+            if (~showMovingMosaicOnSeparateSubFig)
+                title(axEMpath, sprintf('%2.1f msec (trial #%d)', ...
+                    1000 * fixEMobj.timeAxis(timeBin), iTrial));
+            else
+                title(axEMpath, sprintf('trial #%d', iTrial));
+            end
         else
             title(axEMpath, sprintf('%2.1f msec', ...
                 1000 * fixEMobj.timeAxis(timeBin)));

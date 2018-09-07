@@ -1,5 +1,5 @@
 function [OTF2D, fSupport, wave] = humanOTF(pRadius, D0, fSupport, wave)
-% Calculate the human OTF, including chromatic aberration
+% Calculate the Marimont-Wandell human OTF, including chromatic aberration
 %
 % Syntax:
 %   [OTF2D, fSupport, wave] = ...
@@ -44,6 +44,8 @@ function [OTF2D, fSupport, wave] = humanOTF(pRadius, D0, fSupport, wave)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    06/25/18  jnm  Formatting, fix example to display both subplots
+%    08/20/18  dhb  Change fftshift -> ifftshift for storage of OTF.
+%                   See isetbio issue #373 on github.
 
 % Examples:
 %{
@@ -148,8 +150,9 @@ for ii = 1:nWave
     % zero them out.
     tmp(l) = 0;
 
-    % This is the proper storage format for the OI-ShiftInvariant case.
-    OTF2D(:, :, ii) = fftshift(tmp);
+    % This is the proper storage format for the OI-ShiftInvariant case,
+    % where the DC component goes to the upper left corner.
+    OTF2D(:, :, ii) = ifftshift(tmp);
 end
 
 end
