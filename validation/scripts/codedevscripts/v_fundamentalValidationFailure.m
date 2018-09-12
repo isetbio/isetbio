@@ -1,4 +1,4 @@
-foofunction varargout = v_fundamentalValidationFailure(varargin)
+function varargout = v_fundamentalValidationFailure(varargin)
 %
 % Example validation script that demonstrates usage of the fundemantal failure feature. 
 %
