@@ -1,4 +1,4 @@
-function varargout = v_cmCurrentImpulse(varargin)
+foofunction varargout = v_cmCurrentImpulse(varargin)
 %
 % Cone mosaic photocurrent impulse response calculations.
 %
