@@ -28,8 +28,9 @@ g = sumGauss(params, dimension);
 X = (1:support) - support/2;
 vcNewGraphWin; mesh(X, X, g); grid on;
 %}
-if ieNotDefined('params'), error('params required'); end
-if ieNotDefined('dimension'), dimension = 1; end
+
+if notDefined('params'), error('params required'); end
+if notDefined('dimension'), dimension = 1; end
 
 width = ceil(params(1));
 nGauss = (length(params)-1)/2;
