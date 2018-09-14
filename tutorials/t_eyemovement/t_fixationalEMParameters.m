@@ -57,5 +57,3 @@ axis equal
 xlabel('Pos (cone)')
 ylabel('Pos (cone)')
 title(sprintf('Duration %.1f', duration));
-
-
