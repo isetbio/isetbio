@@ -70,7 +70,13 @@ classdef sceneEye < hiddenHandle
 properties (GetAccess=public, SetAccess=public)
     % name - The name of the render
     name;
-
+    
+    % modelname - The name of the schematic eye used to render the scene.
+    %   Depending on the model chosen, some other options may not be
+    %   applicable. Currently possible models include: navarro (default)
+    %   gullstrand-le grand, and arizona eye model.
+    modelName;
+    
     % resolution - resolution of render (pixels)
     %   Instead of rows/cols we use a general resolution variable. This
     %   is because the eye model can only take equal rows and columns
@@ -179,6 +185,10 @@ properties (Dependent)
     %   We assume square samples. This is not always accurate at large
     %   fov's.
     sampleSize;
+    
+    % angularSupport - location of each pixel in degrees. This should be
+    % accurate even at wide-angles.
+    angularSupport;
 
 end
 
@@ -215,6 +225,12 @@ properties(GetAccess=public, SetAccess=public, Hidden=true)
     % recipe - Structure that holds all instructions needed to
     %   render the PBRT file.
     recipe;
+    
+    %DISTANCE2CHORD This is used in intermediate calculations and is an
+    %   important variable when we are doing calculations at wide angles.
+    %   This is equivalent to the distance "a" shown in the diagram in
+    %   get.width
+    distance2chord;
 
 end
 
@@ -250,8 +266,14 @@ methods
             fullfile(piRootPath, 'data', 'imageTextures', ...
             'squareResolutionChart.exr'), @ischar);
         p.addParameter('planeSize', [1 1], @isnumeric);
-        p.addParameter('pointDiameter',0.001);
-        p.addParameter('pointDistance',1);
+        p.addParameter('pointDiameter',0.001,@isnumeric);
+        p.addParameter('pointDistance',1,@isnumeric);
+        p.addParameter('gamma','true',@ischar); % texturedPlane
+        p.addParameter('useDisplaySPD',0); % texturedPlane
+        p.addParameter('whiteDepth',1,@isnumeric); %slantedBarAdjustable
+        p.addParameter('blackDepth',1,@isnumeric); %slantedBarAdjustable
+        p.addParameter('objectDistance',1,@isnumeric); %snellenSingle
+        p.addParameter('objectSize',[0.3 0.3],@isnumeric); %snellenSingle
         
         % Parse
         p.parse(pbrtFile, varargin{:});
@@ -267,6 +289,7 @@ methods
 
         % Set properties
         obj.name = p.Results.name;
+        obj.modelName = 'Navarro'; % Default
         obj.resolution = recipe.film.xresolution.value;
         obj.retinaDistance = recipe.camera.retinaDistance.value;
         obj.pupilDiameter = recipe.camera.pupilDiameter.value;
@@ -325,22 +348,129 @@ methods
     end
 
     %% Get methods for dependent variables
+    % In PBRT, the image height is equivalent to the size of the chord on
+    % the back of the spherical retina. We have to do the complex
+    % calculation below in order to find an image size that would give us
+    % the desired FOV. We want to measure the FOV from the back of the
+    % lens. 
+    %
+    % I will attempt to illustrate this in ascii:
+    %{
+                       ooo OOO OOO ooo
+                   oOO                 OOo
+               oOO                         OOo
+            oOO                               OOo
+          oOO                                   OOo
+        oOO                                     | OOo
+       oOO                                      |  OOo
+      oOO       back of lens                    |   OOo
+     oOO             |                          |     OOo
+     oOO             |---d----|-------a --------|--b--OOo
+     oOO-------------*--------x-----------------------OOo  retina
+     oOO                      |                ||     OOo
+     oOO                      |                ||    OOo
+      oOO               center of sphere     x ||   OOo
+       oOO                                     ||  OOo
+        oOO                                    || OOo
+          oOO                                  -OOo
+            oO                                OOo
+               oOO                         OOo
+                   oOO                 OOo
+                       ooo OOO OOO ooo
+    %}
+    % Calculations:
+    % retinaDistance = d + a + b
+    % a^2 + x^2 = r^2
+    % x/(d+a) = tand(fov/2) = k
+    %
+    % x = sqrt(r^2-a^2)
+    % sqrt(r^2-a^2)/(d+a) - k = 0 
+    % We can solve for a using an fzero solve.
+    
+    function val = get.distance2chord(obj)
+        % Not entirely accurate but lets treat the origin point for the FOV
+        % calculate as the beack of the lens
+        if(obj.retinaRadius > obj.retinaDistance)
+            error('Retina radius is larger than retina distance.')
+        end
+        
+        myfun = @(a,k,d,r) sqrt(r^2-a.^2)./(d+a) - k;  % parameterized function
+        k = tand(obj.fov/2);
+        d = obj.retinaDistance - obj.retinaRadius;
+        r = obj.retinaRadius;
+        
+        fun = @(a) myfun(a,k,d,r);    % function of x alone
+        a = fzero(fun,[d obj.retinaRadius]);
+        
+        if(isnan(a))
+            error('Search for a image width to match FOV failed. Initial guess is probably not close...')
+        end
+        
+        val = a+d;
+    end
+    
     function val = get.width(obj)
         % Rendered image is alway square.
-        val = 2 * tand(obj.fov / 2) * obj.retinaDistance;
+        val = 2 * tand(obj.fov / 2) * (obj.distance2chord);
     end
 
     function val = get.height(obj)
         % Rendered image is alway square.
-        val = 2 * tand(obj.fov / 2) * obj.retinaDistance;
+        val = obj.width;
     end
 
     function val = get.sampleSize(obj)
-        val = (2 * tand(obj.fov / 2) * obj.retinaDistance) ...
-            / obj.resolution;
+        val = obj.width / obj.resolution;
     end
-
+    
+    function val = get.angularSupport(obj)
+       % We have to be careful with this calculation.
+       % Conver the chord distances to accurate angles.
+       ss = obj.sampleSize;
+       chordSpatialSamples = (1:obj.resolution).*ss - obj.width/2;
+       val = atand(chordSpatialSamples/obj.distance2chord);
+    end
+    
     %% Set methods for dependent variables
+    
+    % Does this go here? MATLAB doesn't like this setup, but I would like
+    % retinaDistance and retinaRadius to be both dependent (changes with
+    % modelName), but also set-able by the user. What's the best way to do
+    % this?
+    
+    % When we set the eye model, we need to change the retina distance and
+    % radius.
+    function set.modelName(obj,val)
+        switch val
+            case {'Navarro','navarro'}
+                obj.modelName = 'Navarro';
+                obj.retinaDistance = 16.32;
+                obj.retinaRadius = 12;
+            case {'Gullstrand','gullstrand'}
+                obj.modelName = 'Gullstrand';
+                obj.retinaDistance = 16.6;
+                obj.retinaRadius = 13.4;
+            case {'Arizona','arizona'}
+                obj.modelName = 'Arizona';
+                obj.retinaDistance = 16.713;
+                obj.retinaRadius = 13.4;
+                
+        end
+            
+    end
+    
+    % I want to put in this warning, but again MATLAB doesn't really like
+    % this!
+    function set.accommodation(obj,val)
+        obj.accommodation = val;
+        if(strcmp(obj.modelName,'Gullstrand'))
+            warning(['Gullstrand eye has no accommodation modeling.',...
+                'Setting accommodation will do nothing.']);
+        end
+    end
+    
+    % I don't think these are necessary. 
+%{
     function set.width(obj, val)
         obj.fov = 2 * atand((val / 2) / obj.retinaDistance);
     end
@@ -353,7 +483,7 @@ methods
         obj.fov = 2 * atand((val * obj.resolution / 2) ...
             / obj.retinaDistance);
     end
-
+%}
 end
 
 methods (Access=public)
@@ -368,3 +498,5 @@ methods (Access=public)
 end
 
 end
+
+

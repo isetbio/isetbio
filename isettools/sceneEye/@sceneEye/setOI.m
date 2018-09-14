@@ -27,6 +27,19 @@ ieObject = oiSet(ieObject,'name',sprintf('%s-%s',obj.name,datestr(now,'mmm-dd,HH
 % the raytracing.
 ieObject = oiSet(ieObject, 'distance', Inf);
 
+% If there is a crop window we're going to have to adjust the FOV
+crop_window = obj.recipe.get('cropwindow');
+full_size = 2*tand(obj.fov/2)*obj.retinaDistance;
+image_size = full_size.*crop_window;
+
+% Convert coordinates so center is (0,0)
+image_size = image_size-(full_size/2);
+
+% Assume image is square
+field_angle(1) = atand(image_size(1)/obj.retinaDistance);
+field_angle(2) = atand(image_size(2)/obj.retinaDistance);
+fov_crop = abs(field_angle(1)-field_angle(2));
+
 % For the optics focal length, we use the distance between the back of
 % the lens and the retina. Although it is not exactly the same as the
 % focal length for the eye (which also changes with accommodation), it
@@ -35,8 +48,8 @@ ieObject = oiSet(ieObject, 'optics focal length', ...
     obj.retinaDistance * 1e-3);
 ieObject = oiSet(ieObject, 'optics fnumber', ...
     obj.retinaDistance / obj.pupilDiameter);
-ieObject = oiSet(ieObject, 'fov', obj.fov);
-
+ieObject = oiSet(ieObject, 'fov', fov_crop);
+    
 % Clear default optics that do not apply to the iset3d optical
 % image. We may want to add these in in the future.
 ieObject.optics = opticsSet(ieObject.optics, 'model', 'iset3d');

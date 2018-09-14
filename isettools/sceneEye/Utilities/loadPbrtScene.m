@@ -68,7 +68,55 @@ if(sceneNameFlag)
     
     switch sceneName
         
+        case('snellenSingle')
+            
+            scenePath = fullfile(piRootPath, 'data', ...
+                'V3','snellenSingle', 'snellen_single.pbrt');
+            sceneUnits = 'm';
+            
+            % Download from RDT
+            if(~exist(scenePath,'file'))
+                piPBRTFetch('snellenSingle','deletezip',true,...
+                    'pbrtversion',3,...
+                    'destination folder',fullfile(piRootPath,'data','V3'));
+                % Check if file exists
+                if(~exist(scenePath,'file'))
+                    error('Something went wrong when downloading the scene.')
+                else
+                    % Success!
+                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
+                end
+                
+            else
+                fprintf('Scene already exists in data folder. Skipping download.\n');
+            end
+            
+            
+        case ('snellenAtDepth')
+            
+            scenePath = fullfile(piRootPath,'data','V3','snellenAtDepth','snellen.pbrt');
+            sceneUnits = 'm';
+            
+             % Download from RDT
+            if(~exist(scenePath,'file'))
+                piPBRTFetch('snellenAtDepth','deletezip',true,...
+                    'pbrtversion',3,...
+                    'destination folder',fullfile(piRootPath,'data','V3'));
+                % Check if file exists
+                if(~exist(scenePath,'file'))
+                    error('Something went wrong when downloading the scene.')
+                else
+                    % Success!
+                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
+                end
+                
+            else
+                fprintf('Scene already exists in data folder. Skipping download.\n');
+            end
+            
+            
         case ('blackBackdrop')
+            
             scenePath = fullfile(piRootPath,'data','V3','blackBackdrop','blackBackdrop.pbrt');
             sceneUnits = 'm';
             
@@ -162,6 +210,14 @@ if(sceneNameFlag)
             scenePath = fullfile(piRootPath,'data',...
                 'SimplePoint','simplePointV3.pbrt');
             sceneUnits = 'm';
+        
+        case('slantedBarAdjustable')
+            % A variation of slantedBar where the black and white planes
+            % are adjustable to different depths.
+            scenePath = fullfile(piRootPath,'data',...
+                'V3','slantedBarAdjustableDepth',...
+                'slantedBarWhiteFront.pbrt');
+            sceneUnits = 'm';
             
         otherwise
             error('Did not recognize scene type.');
@@ -197,6 +253,14 @@ if(sceneNameFlag)
         case('slantedBar')
             recipe = piObjectTransform(recipe, 'SlantedBar', ...
                 'Translate', [0 0 se_p.Results.planeDistance]);
+        
+        case('slantedBarAdjustable')
+            % A variation of slantedBar where the black and white planes
+            % are adjustable to different depths. We reread the recipe
+            % since we already have piCreateSlantedBarScene. 
+            recipe = piCreateSlantedBarScene(...
+                'whiteDepth',se_p.Results.whiteDepth,...
+                'blackDepth',se_p.Results.blackDepth);
             
         case('pointSource')
             % Clear previous transforms
@@ -209,6 +273,12 @@ if(sceneNameFlag)
             recipe = piObjectTransform(recipe,'Plane','Scale',[se_p.Results.pointDistance*10 se_p.Results.pointDistance*10 1]);
             % Move it slightly beyond the point
             recipe = piObjectTransform(recipe,'Plane','Translate',[0 0 se_p.Results.pointDistance+0.5]);
+         
+        case('snellenSingle')
+            scaling = [se_p.Results.objectSize(1) se_p.Results.objectSize(2) 1] ./ [1 1 1];
+            recipe = piObjectTransform(recipe,'Snellen','Scale',scaling);
+            recipe = piObjectTransform(recipe, 'Snellen', ...
+                'Translate', [0 0 se_p.Results.objectDistance]);
             
         case('texturedPlane')
             % Scale and translate
@@ -225,6 +295,19 @@ if(sceneNameFlag)
             end
             recipe = piWorldFindAndReplace(recipe, 'dummyTexture.exr', ...
                 strcat(nameTex, extTex));
+            
+            % If true, use the lcd-apple display primaries to convert to
+            % RGB texture values to spectra.
+            if(se_p.Results.useDisplaySPD)
+                recipe = piWorldFindAndReplace(recipe, '"bool useSPD" "false"', ...
+                    '"bool useSPD" "true"');
+            end
+            
+            % If true, we convert from sRGB to lRGB in PBRT. 
+            if(strcmp(se_p.Results.gamma,'false'))
+                recipe = piWorldFindAndReplace(recipe,'"bool gamma" "true"',...
+                    '"bool gamma" "false"');
+            end
     end
 end
 

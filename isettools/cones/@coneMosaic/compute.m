@@ -28,7 +28,7 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %     computation by setting the eye movement variable to a 3D array
 %          emPath: (nTrials , nTime , 2)
 %     In that case, we return the absorptions and possibly photocurrent for
-%     nTrials in a 4D matrix:  (nTrials x nTime x row x col).
+%     nTrials in a 4D matrix:  (nTrials x row x col x nTime).
 %
 %     If you set 'currentFlag' to true, then the current is also returned
 %     in a matrix of the same size.

@@ -28,6 +28,7 @@ function [objNew] = write(obj, varargin)
 % before rendering (i.e. in th eccentricity calculations) but we don't want
 % these changes to show up original object given by the user.
 objNew = copy(obj);
+objNew.recipe = copy(obj.recipe);
 
 %% Make some eccentricity calculations
 
@@ -44,9 +45,11 @@ ecc = objNew.eccentricity;
 % This section of the code has not been thoroughly finished/debugged, so
 % let's put out a warning.
 if(ecc ~= [0 0])
-    warning('Eccentricity calculations have not beed debugged. Use at your own risk!')
+    warning('Eccentricity calculations are currently off.')
+    ecc = [0 0];
 end
 
+%{
 % Given a point at a certain eccentricitity [ecc(1) ecc(2)], what is
 % the minimum FOV the rendered image needs to have in order to
 % encompass the given point?
@@ -77,12 +80,13 @@ bottom_ndc = bottom + tempSize/2;
 ndcWindow = [left_ndc right_ndc top_ndc bottom_ndc];
 
 % Convert to ratio
-cropWindow = ndcWindow./tempSize;
+cropWindowEcc = ndcWindow./tempSize;
 
 % Since we'll be cropping the large image down to the desired
 % eccentricity, we have to increase the rendered resolution.
-tempResolution = objNew.resolution/(cropWindow(2)-cropWindow(1));
+tempResolution = objNew.resolution/(cropWindowEcc(2)-cropWindowEcc(1));
 objNew.resolution = round(tempResolution);
+%}
 
 % DEBUG
 %{
@@ -101,12 +105,45 @@ objNew.resolution = round(tempResolution);
 %% Given the sceneEye object, we make all other adjustments needed to the recipe
 recipe = objNew.recipe;
 
-% Apply any accommodation changes
-if(isempty(objNew.accommodation))
-    objNew.accommodation = 5;
-    warning('No accommodation! Setting to 5 diopters.');
+% Depending on the eye model, set the lens file appropriately
+switch objNew.modelName
+    case {'Navarro','navarro'}
+        % Apply any accommodation changes
+        if(isempty(objNew.accommodation))
+            objNew.accommodation = 5;
+            warning('No accommodation! Setting to 5 diopters.');
+        end
+        
+        % This function also writes out the Navarro lens file
+        recipe = setNavarroAccommodation(recipe, objNew.accommodation,...
+                                         objNew.workingDir);
+        
+    case {'Gullstrand','gullstrand'}
+        
+        % Gullstrand eye does not have accommodation (not yet at least), so
+        % for now all we need to do is write out the lens file.
+        
+        lensFile = 'gullstrand.dat';
+        writeGullstrandLensFile(fullfile(objNew.workingDir, lensFile));
+        fprintf('Wrote out a new lens file: \n')
+        fprintf('%s \n \n', fullfile(objNew.workingDir, lensFile));
+        
+        obj.recipe.camera.lensfile.value = fullfile(objNew.workingDir, lensFile);
+        obj.recipe.camera.lensfile.type = 'string';   
+    
+    case{'Arizona','arizona'}
+        
+        if(isempty(objNew.accommodation))
+            objNew.accommodation = 5;
+            warning('No accommodation! Setting to 5 diopters.');
+        end
+        
+        % This function also writes out the Arizona lens file.
+        recipe = setArizonaAccommodation(recipe, objNew.accommodation,...
+                                         objNew.workingDir);
+                                     
 end
-recipe = setAccommodation(recipe, objNew.accommodation, objNew.workingDir);
+
 
 % Film parameters
 recipe.film.xresolution.value = objNew.resolution;
@@ -118,6 +155,16 @@ if(objNew.debugMode)
     fov = struct('value', objNew.fov, 'type', 'float');
     recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
         'fov', fov);
+    if(objNew.accommodation ~= 0)
+        warning(['Setting perspective camera focal distance to %0.2f dpt '...
+            'and lens radius to %0.2f mm'],...
+            objNew.accommodation,objNew.pupilDiameter);
+        recipe.camera.focaldistance.value = 1/objNew.accommodation;
+        recipe.camera.focaldistance.type = 'float';
+        
+        recipe.camera.lensradius.value = (objNew.pupilDiameter/2)*10^-3;
+        recipe.camera.lensradius.type = 'float';
+    end
 else
     recipe.camera.retinaDistance.value = objNew.retinaDistance;
     recipe.camera.pupilDiameter.value = objNew.pupilDiameter;
@@ -140,6 +187,7 @@ recipe.sampler.pixelsamples.value = objNew.numRays;
 
 % Integrator
 recipe.integrator.maxdepth.value = objNew.numBounces;
+recipe.integrator.maxdepth.type = 'integer';
 
 % Renderer
 if(objNew.numCABands == 0 || objNew.numCABands == 1 || objNew.debugMode)
@@ -162,10 +210,20 @@ else
 end
 
 % Crop window
-if(exist('cropWindow','var'))
-    recipe.film.cropwindow.value = cropWindow;
+
+% Crop window and eccentricity can conflicting values. Let's resolve
+% that (messily) here. We may rethink the eccentricity calculation in
+% the future:
+% If there is no eccentricity set, use whatever crop window was in the
+% structure originally. If there is eccentricity, use the updated
+% cropwindow. 
+if(ecc == [0 0])
+    % Do nothing
+else
+    recipe.film.cropwindow.value = cropWindowEcc;
     recipe.film.cropwindow.type = 'float';
 end
+
 
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
