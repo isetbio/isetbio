@@ -1,4 +1,4 @@
-function varargout = v_Cones(varargin)
+function varargout = v_Cones(varargion)
 %
 % Test cone, lens and macular function calls.  Compare against PTB answers.
 %
