@@ -62,7 +62,7 @@ p.addParameter('showCorrespondingRectangularMosaicInstead', ...
     false, @islogical);
 p.addParameter('visualizedConeAperture', 'lightCollectingArea', ...
     @(x)ismember(x, {'lightCollectingArea', 'geometricArea', 'both'}));
-p.addParameter('apertureShape', 'hexagons', @(x)ismember(x, ...
+p.addParameter('apertureShape', 'disks', @(x)ismember(x, ...
     {'hexagons', 'disks'}));
 p.addParameter('overlayNullSensors', false, @islogical);
 p.addParameter('overlayEMpathMicrons', [], @(x)(isnumeric(x) && ...
@@ -216,6 +216,7 @@ hold(axesHandle, 'on');
 % end
 
 if (overlayHexMesh)
+    disp('here')
     % Superimpose hex mesh showing the locations of the perfect hex grid
     meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5];
     meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
