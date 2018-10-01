@@ -89,8 +89,8 @@ fprintf('Isomerization visualization took %2.1f seconds\n', toc);
 % The Vernier scene
 if (interactiveMode)
     commandwindow
-    fprintf(strcat('\n<strong>Hit enter to visualize the hex mosaic ', ...
-        'activation maps for the vernier scene. </strong>'));
+    fprintf(strcat("\n<strong>Hit enter to visualize the hex mosaic ", ...
+        "activation maps for the vernier scene. </strong>"));
     pause
 end
 
@@ -128,8 +128,8 @@ fprintf('Isomerization visualization took %2.1f seconds\n', toc);
 % The rays scene
 if (interactiveMode)
     commandwindow
-    fprintf(strcat('\n<strong>Hit enter to visualize the hex mosaic ', ...
-        'activation maps for the rays scene. </strong>'));
+    fprintf(strcat("\n<strong>Hit enter to visualize the hex mosaic ", ...
+        "activation maps for the rays scene. </strong>"));
     pause
 end
 

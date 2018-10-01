@@ -64,8 +64,8 @@ theHexMosaic.displayInfo();
 % two mosaics.
 if (interactiveMode)
     commandwindow
-    fprintf(strcat('\n<strong>Hit enter to display the two mosaics ', ...
-        'using the superclass plotting routines. </strong>'));
+    fprintf(strcat("\n<strong>Hit enter to display the two mosaics ", ...
+        "using the superclass plotting routines. </strong>"));
     pause
 end
 hFig1 = figure(1);
@@ -80,9 +80,9 @@ theHexMosaic.plot('cone mosaic', 'hf', hFig2);
 % the ring rays scene.
 if (interactiveMode)
     commandwindow
-    fprintf(strcat('\n<strong>Hit enter to compare isomerizations ', ...
-        'between the rectangular and hexagonal mosaics for the ring ', ...
-        'rays scene. </strong>'));
+    fprintf(strcat("\n<strong>Hit enter to compare isomerizations ", ...
+        "between the rectangular and hexagonal mosaics for the ring ", ...
+        "rays scene. </strong>"));
     pause
 end
 
@@ -164,9 +164,9 @@ colormap(gray(1024));
 % the Vernier scene.
 if (interactiveMode)
     commandwindow
-    fprintf(strcat('\n<strong>Hit enter to compare isomerizations ', ...
-        'between the rectangular and hexagonal mosaics for the ', ...
-        'Vernier scene. </strong>'));
+    fprintf(strcat("\n<strong>Hit enter to compare isomerizations ", ...
+        "between the rectangular and hexagonal mosaics for the ", ...
+        "Vernier scene. </strong>"));
     pause
 end
 
@@ -247,9 +247,9 @@ colormap(gray(1024));
 % the slanted bar scene.
 if (interactiveMode)
     commandwindow
-    fprintf(strcat('\n<strong>Hit enter to compare isomerizations ', ...
-        'between the rectangular and hexagonal mosaics for the ', ...
-        'slanted bar scene.</strong>\n\n'));
+    fprintf(strcat("\n<strong>Hit enter to compare isomerizations ", ...
+        "between the rectangular and hexagonal mosaics for the ", ...
+        "slanted bar scene.</strong>\n\n"));
     pause
 end
 
