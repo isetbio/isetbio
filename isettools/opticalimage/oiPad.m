@@ -1,8 +1,8 @@
-function oi = oiPad(oi, padSize, sDist, direction)
+function oi = oiPad(oi, padSize, padValue, sDist, direction)
 % Pad the oi irradiance data with zeros, usually prior to applying OTF
 %
 % Syntax:
-%   oi = oiPad(oi, padSize, [sDist], direction)
+%   oi = oiPad(oi, padSize, padValue, [sDist], direction)
 %
 % Description:
 %    For optics calculations we need to pad the size (to avoid edge
@@ -23,6 +23,8 @@ function oi = oiPad(oi, padSize, sDist, direction)
 % Inputs:
 %    oi        - Struct. An optical image structure
 %    padSize   - Matrix. A matrix containing the dimensions to pad out.
+%    padValue  - String. Default: 'mean photons'. How to pad. 
+%                See validatePadStruct() for valid padValue values
 %    sDist     - (Optional) Scalar Numeric. The scene distance. Default is
 %                to query from a scene. If no scene, assume 1m.
 %    direction - (Optional) String. Direction to pad. Default is 'both'.
@@ -42,12 +44,14 @@ function oi = oiPad(oi, padSize, sDist, direction)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/07/18  jnm  Formatting
+%    10/01/18  npc  Updated it to use custom pad size and value
 
 % Examples:
 %{
     oi = oiCreate;
-    oi = oiPad(oi, [8, 8, 0]);
+    oi = oiPad(oi, [8, 8, 0], 'mean photons');
 %}
+
 
 if notDefined('sDist')
     scene = vcGetObject('scene');
@@ -70,11 +74,19 @@ photons = oiGet(oi, 'photons');
 % mean of the data at each wavelength samples. In this way, we will have
 % the mean luminance matched.
 if isa(photons, 'gpuArray')
-    padval = gather(mean(mean(photons)));
+    meanPhotons = gather(mean(mean(photons)));
 else
-    padval = mean(mean(photons));
+    meanPhotons = mean(mean(photons));
 end
 
+switch padValue
+    case 'zero photons'
+        padval = meanPhotons * 0;
+    case 'mean photons'
+        padval = meanPhotons;
+    otherwise
+        error('Unknown padValue argument: ''%s'', padValue');
+end
 
 % Pad one wavelength at a time at single
 % Compute the size of the new, padded array.

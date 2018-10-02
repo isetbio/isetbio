@@ -111,11 +111,13 @@ wave = oiGet(oi, 'wave');
 
 % Pad the optical image to allow for light spread. Also, make sure the row
 % and col values are even.
-imSize   = oiGet(oi, 'size');
-padSize  = round(imSize / 8);
-padSize(3) = 0;
+
+% Determine padSize and padParams
+[padSize, padValue] = oiPadParams(oi);
+
+
 sDist = sceneGet(scene, 'distance');
-oi = oiPad(oi, padSize, sDist);
+oi = oiPad(oi, padSize, padValue, sDist);
 
 % See s_FFTinMatlab to understand the logic of the operations here. We used
 % to do this one wavelength at a time. But this could cause dynamic range
@@ -166,3 +168,4 @@ end
 oi = oiSet(oi, 'photons', p);
 
 end
+
