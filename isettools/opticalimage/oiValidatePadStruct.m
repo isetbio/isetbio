@@ -1,8 +1,8 @@
-function pad = validatePadStruct(pad)
+function pad = oiValidatePadStruct(pad)
 
 % Define valid pad values
 validPadValues = {'mean photons', 'zero photons'};
-    
+
 % Ensure that the pad is a struct
 assert(isstruct(pad), '''pad'' argument must be a struct');
 
@@ -13,5 +13,4 @@ if (isfield(pad, 'value'))
     assert(ismember(pad.value, {'mean photons', 'zero photons'}), ...
         sprintf('valid values for pad.value are: {''%s'' ''%s''}', validPadValues{1}, validPadValues{2}));
 end
-
 end

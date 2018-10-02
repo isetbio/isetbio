@@ -169,7 +169,17 @@ switch parm
 
     case {'pad'}
         % Struct specifying the border-padding of the oi
-        oi.pad = validatePadStruct(val);
+        oi.pad = oiValidatePadStruct(val);
+        
+    case {'padvalue'}
+        % padding value, see oiValidatePadStruct for valid values
+        oi.pad.value = val;
+        oiValidatePadStruct(oi.pad);
+        
+    case {'padsizedegs'}
+        % padding size in visual degrees
+        oi.pad.sizeDegs = val;
+        oiValidatePadStruct(oi.pad);
         
     case {'wangular', 'widthangular', 'fov', ...
             'hfov', 'horizontalfieldofview'}
