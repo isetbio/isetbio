@@ -27,6 +27,7 @@ function reassignConeIdentities(obj, varargin)
     sampledHexMosaicXaxis = obj.patternSupport(1, :, 1) + obj.center(1);
     sampledHexMosaicYaxis = obj.patternSupport(:, 1, 2) + obj.center(2);
 
+    
     if (p.Results.zeroSconeDensity)
         sConeIndices = find(obj.pattern == 4);
         sConeIndicesToBeReassinged = 1:numel(sConeIndices);
@@ -178,7 +179,7 @@ function [newLcones, newMcones] = reassignSconeIdentities(obj, ...
     
     for sIndex = 1:numel(sConeIndicesToBeReassinged) 
         
-        if LconesFraction < obj.spatialDensity(2)/(obj.spatialDensity(2)+obj.spatialDensity(3))
+        if (LconesFraction < obj.spatialDensity(2)/(obj.spatialDensity(2)+obj.spatialDensity(3)))    
             reassignedConeIdentity = 2;
             LconesNum = LconesNum+1;
             newLcones = newLcones + 1;
@@ -187,9 +188,28 @@ function [newLcones, newMcones] = reassignSconeIdentities(obj, ...
             MconesNum = MconesNum+1;
             newMcones = newMcones + 1;
         end
+        if (reassignedConeIdentity == 2)
+            if (obj.spatialDensity(2) == 0) 
+                reassignedConeIdentity = 3;
+                LconesNum = LconesNum-1;
+                newLcones = newLcones- 1;
+                MconesNum = MconesNum+1;
+                newMcones = newMcones+1;
+            end
+        elseif (reassignedConeIdentity == 3)
+            if (obj.spatialDensity(3) == 0) 
+                reassignedConeIdentity = 2;
+                MconesNum = MconesNum-1;
+                newMcones = newMcones- 1;
+                LconesNum = LconesNum+1;
+                newLcones = newLcones+1;
+            end
+        end
+        
         LconesFraction = LconesNum/(LconesNum+MconesNum);
         
         obj.pattern(sConeIndices(sConeIndicesToBeReassinged(randomizedIndices(sIndex)))) = ...
             reassignedConeIdentity;
     end
 end
+
