@@ -17,6 +17,7 @@ function [uData, pData, fNum] = wvfPlot(wvfP, pType, varargin)
 %      + 2d psf angle - mesh. wvfPlot(wvf, '2d psf angle', 'min', [], wave)
 %      + 2d psf space - mesh  wvfPlot(wvf, '2d psf space', 'um', wave, 10)
 %        2d OTF       - mesh (e.g., linepairs/'um')
+%        1d OTF       - mesh (e.g., linepairs/'um')
 %
 %      + 1d psf angle - graph (middle horizontal line)
 %      + 1d psf space - graph (middle horizontal line)
@@ -272,7 +273,64 @@ switch(pType)
         uData.z = psf;
         set(gcf, 'userdata', uData);
         
-    case {'2dotf', 'otf'}
+        
+    case {'1dpsf', '1dpsfangle', '1dpsfanglenormalized'}
+        % wvfPlot(wvfP, '1d psf angle', unit, waveIdx, plotRangeArcMin);
+        if ~isempty(varargin)
+            [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
+        end
+        
+        psfLine = wvfGet(wvfP, '1d psf', wList);
+        samp = wvfGet(wvfP, 'psf angular samples', unit, wList);
+        
+        % Make a plot through of the returned PSF in the central region.
+        index = find(abs(samp) < pRange);
+        samp = samp(index);
+        psfLine = psfLine(index);
+        if normalizeFlag
+            psfLine = psfLine / max(psfLine(:));
+        end
+        
+        pData = plot(samp, psfLine, 'r', 'LineWidth', 4);
+        str = sprintf('Angle (%s)', unit);
+        xlabel(str); ylabel('PSF slice');
+        
+        % Store the data
+        uData.x = samp;
+        uData.y = psfLine;
+        set(gcf, 'userdata', uData);
+        
+    case {'1dpsfspace', '1dpsfspacenormalized'}
+        % wvfPlot(wvfP, '1d psf normalized', waveIdx, plotRangeArcMin);
+        if ~isempty(varargin)
+            [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
+        end
+        
+        psfLine = wvfGet(wvfP, '1d psf', wList);
+        if normalizeFlag
+            psfLine = psfLine / max(psfLine(:));
+        end
+        
+        samp = wvfGet(wvfP, 'psf spatial samples', unit, wList);
+        
+        % Make a plot through of the returned PSF in the central region.
+        if ~isempty(pRange)
+            index = find(abs(samp) < pRange);
+            samp = samp(index);
+            psfLine = psfLine(index);
+        end
+        
+        pData = plot(samp, psfLine, 'r', 'LineWidth', 4);
+        s = sprintf('Position (%s)', unit);
+        xlabel(s);
+        ylabel('PSF slice')
+        
+        % Store the data
+        uData.x = samp;
+        uData.y = psfLine;
+        set(gcf, 'userdata', uData);
+        
+    case {'2dotf', 'otfspace', 'otf'}
         % wvfPlot(wvfP, '2d otf', unit, waveIdx, plotRangeFreq);
         % wvfPlot(wvfP, '2d otf', 'mm', 2, []);
         if ~isempty(varargin)
@@ -308,69 +366,116 @@ switch(pType)
         % vcNewGraphWin;
         mesh(freq, freq, abs(otf))
         str = sprintf('Freq (lines/%s)', unit);
-        xlabel(str);
-        ylabel(str);
+        xlabel(str); ylabel(str);
         title(sprintf('OTF %.0f', wave));
-        uData.fx = freq;
-        uData.fy = freq;
+        uData.fx = freq; uData.fy = freq;
         uData.otf = abs(otf);
         set(gcf, 'userdata', uData);
         
-    case {'1dpsf', '1dpsfangle', '1dpsfanglenormalized'}
-        % wvfPlot(wvfP, '1d psf angle', unit, waveIdx, plotRangeArcMin);
+    case {'1dotf','1dotfspace'}
+        % Plot the positive frequency part of a slice through the 2D
+        % OTF.
         if ~isempty(varargin)
-            [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
+            [unit, wave, pRange] = wvfReadArg(wvfP, varargin);
         end
         
-        psfLine = wvfGet(wvfP, '1d psf', wList);
-        samp = wvfGet(wvfP, 'psf angular samples', unit, wList);
-        
-        % Make a plot through of the returned PSF in the central region.
-        index = find(abs(samp) < pRange);
-        samp = samp(index);
-        psfLine = psfLine(index);
+        % Get the data and if the string contains normalized ...
+        psf = wvfGet(wvfP, 'psf', wave);
         if normalizeFlag
-            psfLine = psfLine / max(psfLine(:));
+            psf = psf / max(psf(:));
         end
         
-        pData = plot(samp, psfLine, 'r', 'LineWidth', 4);
-        str = sprintf('Angle (%s)', unit);
-        xlabel(str);
-        ylabel('PSF slice');
+        freq = wvfGet(wvfP, 'otf support', unit, wave);
+        % samp = wvfGet(wvfP, 'samples space', unit, wList);
+        % nSamp = length(samp);
+        % dx = samp(2) - samp(1);
+        % nyquistF = 1 / (2 * dx);   % Line pairs (cycles) per unit space
+        % freq = unitFrequencyList(nSamp) * nyquistF;
         
-        % Store the data
-        uData.x = samp;
-        uData.y = psfLine;
+        % Compute OTF, with DC at center for visualazation.  Not entirely
+        % clear why we don't simply get the otf from the wvf structure
+        % using wvfGet, shift to zero center using fftshift, and plot that.
+        [~,~,otf] = PsfToOtf([],[],psf);
+        
+        % Restrict to parameter range
+        if ~isempty(pRange)
+            index = (abs(freq) < pRange);
+            freq = freq(index);
+            otf = otf(index, index);
+        end
+        
+        % Axes, labeling, store data
+        % vcNewGraphWin;
+        middleRow = (freq == 0);
+        positiveCols = (freq >= 0);
+        plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
+        
+        str = sprintf('Freq (lines/%s)', unit);
+        xlabel(str); ylabel(str); 
+        grid on
+        title(sprintf('OTF %.0f', wave));
+        uData.fx = freq; uData.fy = freq;
+        uData.otf = abs(otf);
         set(gcf, 'userdata', uData);
         
-    case {'1dpsfspace', '1dpsfspacenormalized'}
-        % wvfPlot(wvfP, '1d psf normalized', waveIdx, plotRangeArcMin);
+                
+    case {'1dotfangle'}
+        % wvfPlot(wvf0, '1d otf angle', 'deg', wave, 10)
+        % Plot the positive frequency part of a slice through the 2D
+        % OTF.
         if ~isempty(varargin)
-            [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
+            % [~, wave, pRange] = wvfReadArg(wvfP, varargin);
+            [~, wave, ~] = wvfReadArg(wvfP, varargin);
+
         end
         
-        psfLine = wvfGet(wvfP, '1d psf', wList);
+        % Get the data and if the string contains normalized ...
+        psf = wvfGet(wvfP, 'psf', wave);
         if normalizeFlag
-            psfLine = psfLine / max(psfLine(:));
+            psf = psf / max(psf(:));
         end
         
-        samp = wvfGet(wvfP, 'psf spatial samples', unit, wList);
+        freq = wvfGet(wvfP, 'otf support', 'deg', wave);
+        % samp = wvfGet(wvfP, 'samples space', unit, wList);
+        % nSamp = length(samp);
+        % dx = samp(2) - samp(1);
+        % nyquistF = 1 / (2 * dx);   % Line pairs (cycles) per unit space
+        % freq = unitFrequencyList(nSamp) * nyquistF;
         
-        % Make a plot through of the returned PSF in the central region.
+        % Compute OTF, with DC at center for visualazation.  Not entirely
+        % clear why we don't simply get the otf from the wvf structure
+        % using wvfGet, shift to zero center using fftshift, and plot that.
+        [~,~,otf] = PsfToOtf([],[],psf);
+        
+        %{
+           % Restrict to parameter range
         if ~isempty(pRange)
-            index = find(abs(samp) < pRange);
-            samp = samp(index);
-            psfLine = psfLine(index);
+            index = (abs(freq) < pRange);
+            freq = freq(index);
+            otf = otf(index, index);
         end
+        %}
         
-        pData = plot(samp, psfLine, 'r', 'LineWidth', 4);
-        s = sprintf('Position (%s)', unit);
-        xlabel(s);
-        ylabel('PSF slice')
+        % This is a small angle linear approximation.  We could try to
+        % find the spacing that is a bit uneven, but that would also
+        % be a problem for interpreting the harmonics over any
+        % distance.
+        %
+        % To change from cycles/space to cycles/deg we multiply
+        % freq * space/deg = freq / (deg/space)
         
-        % Store the data
-        uData.x = samp;
-        uData.y = psfLine;
+        % Axes, labeling, store data
+        % vcNewGraphWin;
+        middleRow = (freq == 0);
+        positiveCols = (freq >= 0);
+        plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
+        
+        str = sprintf('Freq (lines/deg)');
+        xlabel(str); ylabel(str); 
+        grid on
+        title(sprintf('1D OTF %.0f', wave));
+        uData.fx = freq; uData.fy = freq;
+        uData.otf = abs(otf);
         set(gcf, 'userdata', uData);
         
     case {'imagepupilamp', 'imagepupilampspace', '2dpupilamplitudespace'}
