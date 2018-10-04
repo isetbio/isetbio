@@ -1,15 +1,17 @@
-function [padSize, padValue] = oiPadParams(oi)
-% Determine the padSize, padValue padding params from the oi.pad struct
+function [padSize, padValue, rectRadius] = oiPadParams(oi)
+% Determine padding params from the oi.pad struct
 %
 % Syntax:
-%   [padSize, padValue] = oiPadParams(oi)
+%   [padSize, padValue, rectRadius] = oiPadParams(oi)
 %
 % Description:
-%    Determine the padSize, padValue padding params from the oi.pad struct
-%    if the oi.pad has been set using an oi = oiSet(oi, 'pad', padStruct);
+%    Determine the padSize, padValue and rectRadius padding params from 
+%    the oi.pad struct if the oi.pad has been set, e.g., by the call 
+%    oi = oiSet(oi, 'pad', padStruct)
+%
 %    Otherwise, select the defaults:
 %       - padSize  = imSize/8
-%       - padValue = 'meanphotons'
+%       - padValue = 'mean photons'
 %
 % Inputs:
 %    oi        - Struct. An optical image structure
@@ -17,6 +19,9 @@ function [padSize, padValue] = oiPadParams(oi)
 % Outputs:
 %    padSize   - Matrix.  A matrix containing the dimensions to pad out.
 %    padValue  - String.  How to pad. See validatePadStruct() for valid padValue values
+%    rectRadius - Number. The half-width of the cropped oi in pixels. This is
+%                         set to empty if the requested pad size is larger
+%                         that the default pad size (1/8 of the oi width)
 %
 % Optional key/value pairs:
 %    None.
@@ -25,6 +30,9 @@ function [padSize, padValue] = oiPadParams(oi)
 %    10/01/18 npc  Wrote it
 %
 
+    % By default do not crop the oi
+    rectRadius = [];
+    
     % Default pad size
     imSize = oiGet(oi, 'size');
     padSizeDefault  = [round(imSize / 8) 0];
@@ -41,22 +49,25 @@ function [padSize, padValue] = oiPadParams(oi)
         oiHorizontalFOVdegs = oiGet(oi, 'hfov');
         cols = oiGet(oi, 'cols');
         sampleSizeDegs = oiHorizontalFOVdegs/cols;
-        extraCols = ceil(0.5*(oi.pad.sizeDegs - oiHorizontalFOVdegs)/sampleSizeDegs);
+        extraCols = (oi.pad.sizeDegs - oiHorizontalFOVdegs)/sampleSizeDegs;
         
         oiVerticalFOVdegs = oiGet(oi, 'vfov');
         rows = oiGet(oi, 'rows');
         sampleSizeDegs = oiVerticalFOVdegs/rows;
-        extraRows = ceil(0.5*(oi.pad.sizeDegs - oiVerticalFOVdegs)/sampleSizeDegs);
+        extraRows = (oi.pad.sizeDegs - oiVerticalFOVdegs)/sampleSizeDegs;
 
         
-        % pad size in pixels. If new padSize is < pad size, switch to
-        % default pad size
-        padSize = [...
-            max([padSizeDefault(1) extraRows]) ...
-            max([padSizeDefault(2) extraCols])...
-            padSizeDefault(3) ...
-            ];
-
+        % Define padSize (in pixels)
+        if (extraCols*0.5>padSizeDefault(1)) && (extraRows*0.5>padSizeDefault(2))
+            % Larger than default pad size
+            padSize = [round(extraRows*0.5)  round(extraCols*0.5) padSizeDefault(3)];
+        else
+            % Smaller pad size than default pad size.
+            % Use default but define a cropRadius
+            padSize = padSizeDefault;
+            rectRadius = round(0.5* ( oi.pad.sizeDegs/sampleSizeDegs));
+        end
+        
     else
         % Default behavior
         padSize = padSizeDefault;
