@@ -730,7 +730,6 @@ switch (parm)
         
         % This parameter matters for the OTF and PSF quite a bit. It
         % is the number of um per degree on the retina.
-        mPerDeg = (wvfGet(wvf,'um per degree') * 10^-6);
         unit = 'deg';
         wave = wvfGet(wvf, 'calc wave');
         if ~isempty(varargin), unit = varargin{1}; end
@@ -750,6 +749,20 @@ switch (parm)
          val = val * mPerDeg;  % Sample in meters 
          val = val * ieUnitScaleFactor(unit);
         %}
+        switch unit
+            case {'nm', 'um', 'mm', 'cm', 'm', 'km', 'in', 'ft'}
+                mPerDeg = (wvfGet(wvf,'um per degree') * 10^-6);
+                val = val * mPerDeg;  % Sample in meters
+                val = val * ieUnitScaleFactor(unit);
+            case {'min'}
+                val = val*60;
+            case {'sec'}
+                val = val*60*60;
+            case {'deg'}
+                % Leave it alone
+            otherwise
+                error('Bad unit for samples space, %s', unit);
+        end
         
     case {'psfspatialsample'}
         % This parameter matters for the OTF and PSF quite a bit. It
