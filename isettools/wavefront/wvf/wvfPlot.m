@@ -14,8 +14,8 @@ function [uData, pData, fNum] = wvfPlot(wvfP, pType, varargin)
 %      wvf = wvfCreate;
 %      wvf = wvfComputePSF(wvf); 
 %      wave = wvfGet(wvf, 'measured wavelength');
-%      + 2d psf angle - mesh. wvfPlot(wvf, '2d psf angle', 'min', [], wave)
-%      + 2d psf space - mesh  wvfPlot(wvf, '2d psf space', 'um', wave, 10)
+%      + psf angle - mesh. wvfPlot(wvf, 'psf angle', 'min', [], wave)
+%      + psf space - mesh  wvfPlot(wvf, 'psf space', 'um', wave, 10)
 %        2d OTF       - mesh (e.g., linepairs/'um')
 %        1d OTF       - mesh (e.g., linepairs/'um')
 %
@@ -109,6 +109,11 @@ uData = [];
 pType = ieParamFormat(pType);
 fNum  = [];
 
+% Defaults
+unit   = 'mm'; % Space is millimeters, but maybe there should be no default
+wList  = wvfGet(wvfP,'wave'); % Wave list is whatever the wvf has
+pRange = Inf;  % Plot range
+
 % Allow the last argument to turn off window opening.
 if ~isempty(varargin) && ischar(varargin{end})
     % The last argument is not empty, and it is a string
@@ -127,7 +132,7 @@ normalizeFlag = ~isempty(strfind(pType, 'normalized'));
 %%
 switch(pType)
     
-    case {'2dpsf', '2dpsfangle', '2dpsfanglenormalized'}
+    case {'psfangle', '2dpsfangle', '2dpsfanglenormalized'}
         % wvfPlot(wvfP, '2d psf angle normalized', unit, ...
         %    waveIdx, plotRangeArcMin);
         if ~isempty(varargin)
@@ -151,24 +156,14 @@ switch(pType)
         
         % Start the plotting
         pData = mesh(samp, samp, psf);
-        % xlabel('Angle');
-        % ylabel('Angle');
-        % zlabel('PSF')
-        % [Note: JNM - If the labels are immediately overwritten, why not
-        % only do it once? Testing by commenting out generic form to see
-        % if anything breaks]
         s = sprintf('Angle (%s)', unit);
-        xlabel(s);
-        ylabel(s);
-        zlabel('PSF amplitude')
+        xlabel(s); ylabel(s); zlabel('PSF amplitude')
         
-        uData.x = samp;
-        uData.y = samp;
-        uData.z = psf;
+        uData.x = samp; uData.y = samp; uData.z = psf;
         set(gcf, 'userdata', uData);
         
-    case {'2dpsfspace', '2dpsfspacenormalized'}
-        % wvfPlot(wvfP, '2d psf space', unit, waveIdx, plotRangeArcMin);
+    case {'psf','2dpsfspace', '2dpsfspacenormalized'}
+        % wvfPlot(wvfP, '2d psf space', ', waveIdx, plotRangeArcMin);
         if ~isempty(varargin)
             [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
         end
@@ -188,9 +183,7 @@ switch(pType)
         
         pData = mesh(samp, samp, psf);
         s = sprintf('Position (%s)', unit);
-        xlabel(s);
-        ylabel(s);
-        zlabel('Relative amplitude')
+        xlabel(s); ylabel(s); zlabel('Relative amplitude')
         
         uData.x = samp;
         uData.y = samp;
@@ -219,20 +212,14 @@ switch(pType)
         
         % Put up the image
         pData = imagesc(samp, samp, psf);
-        colormap(hot);
-        axis image
-        grid(gca, 'on');
+        colormap(hot); axis image; grid(gca, 'on');
         set(gca, 'xcolor', [.5 .5 .5]);
         set(gca, 'ycolor', [.5 .5 .5]);
         s = sprintf('Position (%s)', unit);
-        xlabel(s);
-        ylabel(s);
-        title('Relative amplitude')
+        xlabel(s); ylabel(s); title('Relative amplitude')
         
         % Save the data
-        uData.x = samp;
-        uData.y = samp;
-        uData.z = psf;
+        uData.x = samp; uData.y = samp; uData.z = psf;
         set(gcf, 'userdata', uData);
         
     case {'imagepsfangle'}
@@ -257,22 +244,15 @@ switch(pType)
         
         % Put up the image
         pData =  imagesc(samp, samp, psf);
-        colormap(hot);
-        axis image
-        grid(gca, 'on');
+        colormap(hot); axis image; grid(gca, 'on');
         set(gca, 'xcolor', [.5 .5 .5]);
         set(gca, 'ycolor', [.5 .5 .5]);
         s = sprintf('Position (%s)', unit);
-        xlabel(s);
-        ylabel(s);
-        title('Relative amplitude')
+        xlabel(s); ylabel(s); title('Relative amplitude')
         
         % Save the data
-        uData.x = samp;
-        uData.y = samp;
-        uData.z = psf;
+        uData.x = samp; uData.y = samp; uData.z = psf;
         set(gcf, 'userdata', uData);
-        
         
     case {'1dpsf', '1dpsfangle', '1dpsfanglenormalized'}
         % wvfPlot(wvfP, '1d psf angle', unit, waveIdx, plotRangeArcMin);
@@ -344,11 +324,14 @@ switch(pType)
         end
         
         freq = wvfGet(wvfP, 'otf support', unit, wave);
+        % This is how we calculate the frequency
+        %
         % samp = wvfGet(wvfP, 'samples space', unit, wList);
         % nSamp = length(samp);
         % dx = samp(2) - samp(1);
         % nyquistF = 1 / (2 * dx);   % Line pairs (cycles) per unit space
         % freq = unitFrequencyList(nSamp) * nyquistF;
+        %
         
         % Compute OTF, with DC at center for visualazation.  Not entirely
         % clear why we don't simply get the otf from the wvf structure
