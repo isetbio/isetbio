@@ -162,7 +162,7 @@ switch(pType)
         uData.x = samp; uData.y = samp; uData.z = psf;
         set(gcf, 'userdata', uData);
         
-    case {'psf','2dpsfspace', '2dpsfspacenormalized'}
+    case {'psf','psfspace','2dpsfspace', '2dpsfspacenormalized'}
         % wvfPlot(wvfP, '2d psf space', ', waveIdx, plotRangeArcMin);
         if ~isempty(varargin)
             [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
@@ -254,7 +254,36 @@ switch(pType)
         uData.x = samp; uData.y = samp; uData.z = psf;
         set(gcf, 'userdata', uData);
         
-    case {'1dpsf', '1dpsfangle', '1dpsfanglenormalized'}
+    
+    case {'1dpsf', '1dpsfspace', '1dpsfspacenormalized'}
+        % wvfPlot(wvfP, '1d psf normalized', waveIdx, plotRangeArcMin);
+        if ~isempty(varargin)
+            [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
+        end
+        
+        psfLine = wvfGet(wvfP, '1d psf', wList);
+        if normalizeFlag
+            psfLine = psfLine / max(psfLine(:));
+        end
+        
+        samp = wvfGet(wvfP, 'psf spatial samples', unit, wList);
+        
+        % Make a plot through of the returned PSF in the central region.
+        if ~isempty(pRange)
+            index = find(abs(samp) < pRange);
+            samp = samp(index);
+            psfLine = psfLine(index);
+        end
+        
+        pData = plot(samp, psfLine,'LineWidth', 2);
+        s = sprintf('Position (%s)', unit);
+        xlabel(s); ylabel('PSF slice')
+        
+        % Store the data
+        uData.x = samp; uData.y = psfLine;
+        set(gcf, 'userdata', uData);
+        
+    case { '1dpsfangle', '1dpsfanglenormalized'}
         % wvfPlot(wvfP, '1d psf angle', unit, waveIdx, plotRangeArcMin);
         if ~isempty(varargin)
             [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
@@ -276,39 +305,9 @@ switch(pType)
         xlabel(str); ylabel('PSF slice');
         
         % Store the data
-        uData.x = samp;
-        uData.y = psfLine;
+        uData.x = samp; uData.y = psfLine;
         set(gcf, 'userdata', uData);
         
-    case {'1dpsfspace', '1dpsfspacenormalized'}
-        % wvfPlot(wvfP, '1d psf normalized', waveIdx, plotRangeArcMin);
-        if ~isempty(varargin)
-            [unit, wList, pRange] = wvfReadArg(wvfP, varargin);
-        end
-        
-        psfLine = wvfGet(wvfP, '1d psf', wList);
-        if normalizeFlag
-            psfLine = psfLine / max(psfLine(:));
-        end
-        
-        samp = wvfGet(wvfP, 'psf spatial samples', unit, wList);
-        
-        % Make a plot through of the returned PSF in the central region.
-        if ~isempty(pRange)
-            index = find(abs(samp) < pRange);
-            samp = samp(index);
-            psfLine = psfLine(index);
-        end
-        
-        pData = plot(samp, psfLine, 'r', 'LineWidth', 4);
-        s = sprintf('Position (%s)', unit);
-        xlabel(s);
-        ylabel('PSF slice')
-        
-        % Store the data
-        uData.x = samp;
-        uData.y = psfLine;
-        set(gcf, 'userdata', uData);
         
     case {'2dotf', 'otfspace', 'otf'}
         % wvfPlot(wvfP, '2d otf', unit, waveIdx, plotRangeFreq);
@@ -349,11 +348,10 @@ switch(pType)
         % vcNewGraphWin;
         mesh(freq, freq, abs(otf))
         str = sprintf('Freq (lines/%s)', unit);
-        xlabel(str); ylabel(str);
-        title(sprintf('OTF %.0f', wave));
-        uData.fx = freq; uData.fy = freq;
-        uData.otf = abs(otf);
+        xlabel(str); ylabel(str); title(sprintf('OTF %.0f', wave));
+        uData.fx = freq; uData.fy = freq; uData.otf = abs(otf);
         set(gcf, 'userdata', uData);
+        set(gca,'ylim',[0 1.2]);
         
     case {'1dotf','1dotfspace'}
         % Plot the positive frequency part of a slice through the 2D
@@ -397,19 +395,16 @@ switch(pType)
         xlabel(str); ylabel(str); 
         grid on
         title(sprintf('OTF %.0f', wave));
-        uData.fx = freq; uData.fy = freq;
-        uData.otf = abs(otf);
+        uData.fx = freq; uData.fy = freq; uData.otf = abs(otf);
         set(gcf, 'userdata', uData);
-        
+        set(gca,'ylim',[0 1.2]);
                 
     case {'1dotfangle'}
         % wvfPlot(wvf0, '1d otf angle', 'deg', wave, 10)
         % Plot the positive frequency part of a slice through the 2D
         % OTF.
         if ~isempty(varargin)
-            % [~, wave, pRange] = wvfReadArg(wvfP, varargin);
-            [~, wave, ~] = wvfReadArg(wvfP, varargin);
-
+            [unit, wave, pRange] = wvfReadArg(wvfP, varargin);
         end
         
         % Get the data and if the string contains normalized ...
@@ -418,7 +413,7 @@ switch(pType)
             psf = psf / max(psf(:));
         end
         
-        freq = wvfGet(wvfP, 'otf support', 'deg', wave);
+        freq = wvfGet(wvfP, 'otf support', unit, wave);
         % samp = wvfGet(wvfP, 'samples space', unit, wList);
         % nSamp = length(samp);
         % dx = samp(2) - samp(1);
@@ -430,15 +425,13 @@ switch(pType)
         % using wvfGet, shift to zero center using fftshift, and plot that.
         [~,~,otf] = PsfToOtf([],[],psf);
         
-        %{
-           % Restrict to parameter range
+        % Restrict to parameter range
         if ~isempty(pRange)
             index = (abs(freq) < pRange);
             freq = freq(index);
             otf = otf(index, index);
         end
-        %}
-        
+      
         % This is a small angle linear approximation.  We could try to
         % find the spacing that is a bit uneven, but that would also
         % be a problem for interpreting the harmonics over any
@@ -454,12 +447,11 @@ switch(pType)
         plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
         
         str = sprintf('Freq (lines/deg)');
-        xlabel(str); ylabel(str); 
-        grid on
+        xlabel(str); ylabel(str); grid on
         title(sprintf('1D OTF %.0f', wave));
-        uData.fx = freq; uData.fy = freq;
-        uData.otf = abs(otf);
+        uData.fx = freq; uData.fy = freq; uData.otf = abs(otf);
         set(gcf, 'userdata', uData);
+        set(gca,'ylim',[0 1.2]);
         
     case {'imagepupilamp', 'imagepupilampspace', '2dpupilamplitudespace'}
         % wvfPlot(wvfP, '2d pupil amplitude space', 'mm', pRange)
