@@ -272,6 +272,8 @@ methods
         p.addParameter('useDisplaySPD',0); % texturedPlane
         p.addParameter('whiteDepth',1,@isnumeric); %slantedBarAdjustable
         p.addParameter('blackDepth',1,@isnumeric); %slantedBarAdjustable
+        p.addParameter('topDepth',1,@isnumeric); %slantedBarTexture
+        p.addParameter('bottomDepth',1,@isnumeric); %slantedBarTexture 
         p.addParameter('objectDistance',1,@isnumeric); %snellenSingle
         p.addParameter('objectSize',[0.3 0.3],@isnumeric); %snellenSingle
         

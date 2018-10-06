@@ -219,6 +219,14 @@ if(sceneNameFlag)
                 'slantedBarWhiteFront.pbrt');
             sceneUnits = 'm';
             
+        case('slantedBarTexture')
+            % A variation of slantedBar where planes have texture.
+            scenePath = fullfile(piRootPath,'data',...
+                'V3','slantedBarTexture',...
+                'slantedBarTexture.pbrt');
+            sceneUnits = 'm';
+        
+            
         otherwise
             error('Did not recognize scene type.');
     end
@@ -261,6 +269,14 @@ if(sceneNameFlag)
             recipe = piCreateSlantedBarScene(...
                 'whiteDepth',se_p.Results.whiteDepth,...
                 'blackDepth',se_p.Results.blackDepth);
+            
+        case('slantedBarTexture')
+            % A variation of slantedBar where the black and white planes
+            % are adjustable to different depths. We reread the recipe
+            % since we already have piCreateSlantedBarScene.
+            recipe = piCreateSlantedBarTextureScene(...
+                'topDepth',se_p.Results.topDepth,...
+                'bottomDepth',se_p.Results.bottomDepth);
             
         case('pointSource')
             % Clear previous transforms
