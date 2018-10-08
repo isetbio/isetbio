@@ -7,36 +7,32 @@
 %% 
 ieInit
 
-%% Base wavefront object
+%% Base  wavefront objects
 
-wvf0 = wvfCreate('human');
 wave = 550;
-wvf0 = wvfSet(wvf0, 'measured wavelength', 550);
-wvf0 = wvfSet(wvf0, 'calc wavelengths', 550);
-wvf0 = wvfComputePSF(wvf0);
 
-%{
-pupilDiameterMM = 3;
-zCoefs = wvfLoadThibosVirtualEyes(pupilDiameterMM);
-wave = 550;
-umPerDegree = 300;
-% Create wavefront parameters. Be sure to set both measured and
-% calc pupil size.
-wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, ...
-    'name', sprintf('human-%d', pupilDiameterMM), ...
-    'umPerDegree', umPerDegree);
-wvfP = wvfSet(wvfP, 'measured pupil size', pupilDiameterMM);
-wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMM);
-wvfP = wvfComputePSF(wvfP);
-wvf0 = wvfP;
-%}
-%% Vary defocus and plot a slice through the PSF
+wvfD = wvfCreate();                    % Diffraction limited
+wvfD = wvfSet(wvfD, 'measured wavelength', 550);
+wvfD = wvfSet(wvfD, 'calc wavelengths', 550);
+wvfD = wvfComputePSF(wvfD);
+wvfPlot(wvfD,'psf','min',wave,5);
+
+%%
+[~,wvfH] = opticsCreate('wvf human');  % Thibos human model
+wvfH = wvfSet(wvfH, 'measured wavelength', 550);
+wvfH = wvfSet(wvfH, 'calc wavelengths', 550);
+wvfH = wvfComputePSF(wvfH);
+wvfPlot(wvfH,'psf','min',wave,5);
+
+%% Vary defocus and plot a slice through the diffraction limited PSF
+
+% Diffraction limited
 
 vcNewGraphWin;
 d = [0 , 0.15, 0.5, 0.7];
 thisL = cell(length(d),1);
 for ii=1:length(d)
-    wvf1 = wvfSet(wvf0,'zcoeffs',d(ii),{'defocus'});
+    wvf1 = wvfSet(wvfD,'zcoeffs',d(ii),{'defocus'});
     wvf1 = wvfComputePSF(wvf1);
     wvfPlot(wvf1, '1d psf space', 'um', wave, 10, 'nowindow');
     hold on;
@@ -47,29 +43,81 @@ hold off
 xlabel('um'); ylabel('Relative amp'); grid on
 legend(thisL);
 
-%% Compare the two PSFs
+% Human version
+
+vcNewGraphWin;
+d = [0 , 0.15, 0.5, 0.7];
+thisL = cell(length(d),1);
+for ii=1:length(d)
+    wvf1 = wvfSet(wvfH,'zcoeffs',d(ii),{'defocus'});
+    wvf1 = wvfComputePSF(wvf1);
+    wvfPlot(wvf1, '1d psf space', 'um', wave, 10, 'nowindow');
+    hold on;
+    thisL{ii} = sprintf('D = %0.2f',d(ii));
+end
+
+hold off
+xlabel('um'); ylabel('Relative amp'); grid on
+legend(thisL);
+
+
+%% PSFs
+
+% Compare the two diffraction PSFs
 
 vcNewGraphWin([],'tall');
 subplot(2,1,1);
-wvfPlot(wvf0, 'psf space', 'um', wave, 10,'no window');
-legend({'D=0'})
+wvfPlot(wvfD, 'psf space', 'um', wave, 10,'no window');
+legend({'Diffraction D=0'})
 
 thisD = d(3);
 subplot(2,1,2);
-wvf1 = wvfSet(wvf0,'zcoeffs',thisD,{'defocus'});
+wvf1 = wvfSet(wvfD,'zcoeffs',thisD,{'defocus'});
 wvf1 = wvfComputePSF(wvf1);
 wvfPlot(wvf1, 'psf space', 'um', wave, 10,'no window');
-legend({sprintf('D=%1.1f',thisD)})
+legend({sprintf('Diffraction D=%1.1f',thisD)})
 
-%%  Show the impact in OTF/MTF version
+%% Compare the two human PSFs
+vcNewGraphWin([],'tall');
+subplot(2,1,1);
+wvfPlot(wvfH, 'psf space', 'um', wave, 10,'no window');
+legend({'Human D=0'})
+
+thisD = d(3);
+subplot(2,1,2);
+wvf1 = wvfSet(wvfH,'zcoeffs',thisD,{'defocus'});
+wvf1 = wvfComputePSF(wvf1);
+wvfPlot(wvf1, 'psf space', 'um', wave, 10,'no window');
+legend({sprintf('Human D=%1.1f',thisD)})
+
+%%  Show the impact in diffraction MTF 
 
 vcNewGraphWin;
 for ii=1:length(d)
-    wvf1 = wvfSet(wvf0,'zcoeffs',d(ii),{'defocus'});
+    wvf1 = wvfSet(wvfD,'zcoeffs',d(ii),{'defocus'});
     wvf1 = wvfComputePSF(wvf1);
     wvfPlot(wvf1, '1d otf angle', 'deg', wave, 100, 'nowindow');
     hold on;
-    thisL{ii} = sprintf('D = %0.2f',d(ii));
+    thisL{ii} = sprintf('Diffraction D = %0.2f',d(ii));
+end
+
+hold off
+xlabel('cycles/deg'); ylabel('Relative amp'); grid on
+legend(thisL);
+
+%%  Show the impact in human MTF version
+%
+% This is like a plot TL and BW spotted in a Navarrow paper.  Get the
+% reference and put it here!
+%
+
+vcNewGraphWin;
+for ii=1:length(d)
+    wvf1 = wvfSet(wvfH,'zcoeffs',d(ii),{'defocus'});
+    wvf1 = wvfComputePSF(wvf1);
+    wvfPlot(wvf1, '1d otf angle', 'deg', wave, 100, 'nowindow');
+    hold on;
+    thisL{ii} = sprintf('Human D = %0.2f',d(ii));
 end
 
 hold off
@@ -80,11 +128,11 @@ legend(thisL);
 
 vcNewGraphWin;
 for ii=1:length(d)
-    wvf1 = wvfSet(wvf0,'zcoeffs',d(ii),{'defocus'});
+    wvf1 = wvfSet(wvfD,'zcoeffs',d(ii),{'defocus'});
     wvf1 = wvfComputePSF(wvf1);
     wvfPlot(wvf1, '1d otf angle', 'deg', wave, 100, 'nowindow');
     hold on;
-    thisL{ii} = sprintf('D = %0.1f',d(ii));
+    thisL{ii} = sprintf('Diffraction D = %0.1f',d(ii));
 end
 
 hold off
@@ -92,25 +140,18 @@ xlabel('deg'); ylabel('Relative amp'); grid on
 legend(thisL);
 
 %%
-wvfPlot(wvf0, '1d otf angle', 'deg', wave, 100);
-legend({'D=0'})
+vcNewGraphWin;
+for ii=1:length(d)
+    wvf1 = wvfSet(wvfH,'zcoeffs',d(ii),{'defocus'});
+    wvf1 = wvfComputePSF(wvf1);
+    wvfPlot(wvf1, '1d otf angle', 'deg', wave, 100, 'nowindow');
+    hold on;
+    thisL{ii} = sprintf('Human D = %0.1f',d(ii));
+end
 
-wvfPlot(wvf1, '1d otf angle', 'deg', wave, 100);
-legend({sprintf('D=%1.1f',d)})
-
-
-% wvfPlot(wvf0, '1d psf angle', 'sec', wave, 100);
-% wvfPlot(wvf0, '2d otf', 'mm', wave, 500)
-
-%% Show the PSF
-wvf = wvfCreate;
-wvf = wvfComputePSF(wvf);
-wvfPlot(wvf,'psf','min');
-
-%%
-wvfD = wvfSet(wvf,'zcoeffs',1,{'defocus'});
-wvfD = wvfComputePSF(wvfD);
-wvfPlot(wvfD,'psf','min');
+hold off
+xlabel('cycles/deg'); ylabel('Relative amp'); grid on
+legend(thisL);
 
 %% Read to compute the MTF/OTF now!
 
