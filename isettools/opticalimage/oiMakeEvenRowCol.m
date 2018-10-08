@@ -32,11 +32,14 @@ if notDefined('sDist')
     sDist = sceneGet(scene, 'distance'); 
 end
 
+% Determine padSize and padParams
+[padSize, padValue] = oiPadParams(oi);
+
 sz = oiGet(oi, 'size');
 
 if isodd(sz(1)), padSize(1) = 1; end
 if isodd(sz(2)), padSize(2) = 1; end
 
-oi = oiPad(oi, [padSize 0], sDist, 'post');
+oi = oiPad(oi, [padSize 0], padValue, sDist, 'post');
 
 end

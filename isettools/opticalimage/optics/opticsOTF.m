@@ -51,6 +51,7 @@ function oi = opticsOTF(oi, scene)
 %                   Remove examples from helper functions in this file.
 %                   They can't work because you can't call those helper
 %                   functions from outside of the top level function.
+%    10/04/18  npc  Handle custom oi padding
 
 % Examples:
 %{
@@ -111,11 +112,19 @@ wave = oiGet(oi, 'wave');
 
 % Pad the optical image to allow for light spread. Also, make sure the row
 % and col values are even.
-imSize   = oiGet(oi, 'size');
-padSize  = round(imSize / 8);
-padSize(3) = 0;
+
+% Determine padSize, padValue and rectRadius
+% A non-empty returned rectRadius indicates that the 
+% user-supplied padSizeDegs will result in a pad size 
+% that is maller than the default, which is 1/8 of the oi width.
+% In this case, we pad using the default pad size and call oiCrop 
+% using the rectRadius value after convolution with the PSF. This is done 
+% at the end of this function.
+[padSize, padValue, rectRadius] = oiPadParams(oi);
+
+
 sDist = sceneGet(scene, 'distance');
-oi = oiPad(oi, padSize, sDist);
+oi = oiPad(oi, padSize, padValue, sDist);
 
 % See s_FFTinMatlab to understand the logic of the operations here. We used
 % to do this one wavelength at a time. But this could cause dynamic range
@@ -165,4 +174,12 @@ end
 % Put all the photons in at once.
 oi = oiSet(oi, 'photons', p);
 
+% Non-empty returned rectRadius. Crop computed oi accordingly.
+if (~isempty(rectRadius))
+    s = oiGet(oi, 'size');
+    oiCenter = round(s / 2);
+    cropRect = [oiCenter(1)-rectRadius oiCenter(2)-rectRadius rectRadius*2 rectRadius*2];
+    oi = oiCrop(oi,cropRect);
 end
+end
+
