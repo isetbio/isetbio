@@ -65,7 +65,7 @@ function [MTF, PSF, LSF] = ijspeert(age, p, m, q, phi)
     q = [0:60];
     phi = pi;
     [MTF] = ijspeert(age, pupilDiameter, m, q)
-    [MTF, PSF] = ijspeert(age, p, m, q, phi) % computes MTF and PSF
+    [MTF, PSF] = ijspeert(age, pupilDiameter, m, q, phi) % computes MTF and PSF
 %}
 %{
     age = 30;
