@@ -228,8 +228,13 @@ end
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
 recipe.outputFile = pbrtFile;
-piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
-    'overwriteresources', false);
+if(strcmp(recipe.exporter,'C4D'))
+    piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
+        'overwriteresources', false,'creatematerials',true);
+else
+    piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
+        'overwriteresources', false);
+end
 obj.recipe = recipe; % Update the recipe.
 
 end

@@ -121,7 +121,10 @@ classdef coneMosaic < hiddenHandle
         %   Expressed as a three-dimensional row vector, 
         %   isomerizations/sec.
         %   Default values are [0 0 0] for backwards compatibility.
-        %   Reasonable values are about [300 300 300].
+        %   Fred Rieke (personal communication with DHB) recommended [300 300 300].
+        %   However, a lower value, e.g., [100 100 100] might be more
+        %   appropriate according to Table 5 of 
+        %   Koenig and Hofer (2011): The Absolute threshold of cone vision
         coneDarkNoiseRate;
 
         %current - The (x, y, t) of photocurrent

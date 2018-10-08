@@ -1,8 +1,8 @@
-function optics = opticsCreate(opticsType, varargin)
+function [optics, wvfP] = opticsCreate(opticsType, varargin)
 % Create an optics structure
 %
 % Syntax:
-%   optics = OPTICSCREATE(opticsType, varargin)
+%   [optics, wvf] = OPTICSCREATE(opticsType, varargin)
 %
 % Description:
 %    This function is typically called through oiCreate. The optics
@@ -48,6 +48,7 @@ function optics = opticsCreate(opticsType, varargin)
 %
 % Outputs:
 %    optics     - Struct. The created optics structure.
+%    wvf        - If a wavefront optics model, the wvf struct is returned
 %
 % Optional key/value pairs:
 %    **Needs to be filled out**
