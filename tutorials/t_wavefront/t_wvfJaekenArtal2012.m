@@ -35,10 +35,12 @@
 %    05/05/18  dhb      Cosmetic.
 %    09/26/18  jnm      Formatting
 
-%% Define which zernike coefficients we want to use:
-zIndices = 0:14;  % In this case, all of them
+%% Define which zernike coefficients we want to use
+%
+% In this case, all of them.  Also define eccentricity [horiz vert]
+zIndices = 0:14; 
 whichEye = 'left';
-eccen = 4;        % degrees
+eccen = [0 4];        % degrees
 whichGroup = 'emmetropes';
 
 %% Get wavefront and optics from Artal data with the requested parameters:
