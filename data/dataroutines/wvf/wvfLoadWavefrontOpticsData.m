@@ -139,12 +139,15 @@ function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
 %      13 'vertical_secondary_astigmatism'
 %      14 'vertical_quadrafoil'
 %
-% Notes:
-%    * TODO: Assign someone to fix broken examples/code
-%
 % See Also:
 %    coneDensityReadData
 %
+
+% History:
+%    04/06/18  ek (NYU) First version of function
+%    05/05/18  dhb      Cosmetic.
+%    09/26/18  jnm      Formatting. Add catch for single eccentricity
+%                       value, note that examples are BROKEN, added TODO.
 
 % Examples:
 %{
@@ -154,17 +157,14 @@ function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
         'whichGroup', 'emmetropes', 'verbose', true);
 %}
 %{
+% ETTBSkip - This example is broken.  Remove this line when it is fixed.
     [wvf, oi] = wvfLoadWavefrontOpticsData(...
         'wvfZcoefsSource', 'Polans2015', 'jIndex', 3:14, ...
         'whichEye', 'right', 'eccentricity', [5, 5], ...
         'whichGroup', 1:10, 'relativeRefraction', true, 'verbose', true);
 %}
 
-% History:
-%    04/06/18  ek (NYU) First version of function
-%    05/05/18  dhb      Cosmetic.
-%    09/26/18  jnm      Formatting. Add catch for single eccentricity
-%                       value, note that examples are BROKEN, added TODO.
+
 
 %% 0. Parse inputs
 p = inputParser;
