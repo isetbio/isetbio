@@ -11,6 +11,11 @@
 %
 %    http://jov.arvojournals.org/article.aspx?articleid=2213266
 %
+% Current status - 
+%    Works for small values, but not for even moderately big ones.
+%    The search doesn't get close.  Not sure about which coefficients
+%    are better or worse.
+%
 % BW, Vistasoft team, 2018
 
 %% This works well in ISETCAM but not in ISETBio
@@ -31,7 +36,9 @@ wvf = wvfCreate('wave',wave);
 wvf = wvfSet(wvf,'measured pupil diameter',8);
 
 % Set the defocus coefficient
-[D,V] = meshgrid(0.1:0.4:.5,0.1:.2:.3);
+% [D,V] = meshgrid( 0.3:0.4:0.7, 0.2:.1:.3);
+[D,V] = meshgrid( 0.3:0.4:1.0, 0);
+
 pList = [D(:),V(:)];
 for ii=1:size(pList,1)
     wvf = wvfSet(wvf,'zcoeffs',pList(ii,1),'defocus');
@@ -89,6 +96,7 @@ for ii=1:size(pList,1)
  psfTarget = tmp/sum(tmp(:));
  %  now run.
     %}
+    
     f = @(x) psf2zcoeff(x,psfTarget,pupilSizeMM,zpupilDiameterMM,pupilPlaneSizeMM,thisWaveUM, nPixels);
     
     % I should to figure out how to set the tolerances.  Default is 1e-4
@@ -110,7 +118,7 @@ for ii=1:size(pList,1)
     
     %% Compare the values
     fprintf('Estimated zcoeffs\n');
-    disp(x)
+    disp(x);
     
     % Compare the PSFs to make sure we have a match
     wvf2 = wvfSet(wvf,'zcoeffs',x);
@@ -123,28 +131,33 @@ for ii=1:size(pList,1)
     title('Target PSF'); axis image; colormap(hot);
     grid on
     
-    %
+    % Error in PSF
     psf = wvfGet(wvf2,'psf',wave);
-    vcNewGraphWin;
+    vcNewGraphWin([],'tall');
+    subplot(2,1,1), mesh(psfTarget - psf);
+    title('Target - True PSF'); colormap(hot);
+    grid on;
+
+    subplot(2,1,2)
     plot(psfTarget(1:5:end),psf(1:5:end),'.');
     axis equal; identityLine;
-    grid on;
+    xlabel('Target'); ylabel('Estimate');
     
     %%
     fprintf('True zcoeffs\n');
-    disp(zcoeffs(1:nCoeffs))
+    disp(zcoeffs(1:nCoeffs));
     
     %% Show the pupil phase functions
-    
+    %{
     vcNewGraphWin([],'tall');
     subplot(2,1,1)
     wvfPlot(wvf,'image pupil phase','mm',wave,'no window');
     
     wvf2 = wvfSet(wvf,'zcoeffs',x);
-    wvf2     = wvfComputePSF(wvf2);
+    wvf2 = wvfComputePSF(wvf2);
     subplot(2,1,2) 
     wvfPlot(wvf2,'image pupil phase','mm',wave,'no window');
-    
+    %}
 end
 
 %%
