@@ -12,8 +12,8 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 %
 % The routine also returns two types of quantal sensitivity functions.  The
 % first gives the probability that a photon will be absorbed.  These are
-% returned in variable T_quantalAbsorptionsNormalized adn
-% T_quantalAbsoprions, with the first being normalized. The second is the
+% returned in variable T_quantalAbsorptionsNormalized and
+% T_quantalAbsorptions, with the first being normalized. The second is the
 % probability that the photon will cause a photopigment isomerization. This
 % is returned in T_quantalIsomerizations.
 %
@@ -86,6 +86,7 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % 8/10/13  dhb  Expand comments.  Return unscaled quantal efficiencies too.
 % 2/26/16  dhb, ms  Add in Asano et al. (2016) individual observer adjustments
 % 3/30/17  ms   Added output argument returning adjusted ind differences
+% 6/4/18   ms   Included absorbance spectrum into adjusted ind diff output arg
 
 % Handle bad value
 index = find(params.axialDensity <= 0.0001);
@@ -117,7 +118,7 @@ end
 %
 % The logic here is a little hairy, because the way that we used to
 % adjust lens and mac density was additive, but Asano et al. (2016) do
-% it in a multipilcative fashion, so we need a flag to keep track of what
+% it in a multiplicative fashion, so we need a flag to keep track of what
 % we're going to do with the numbers down below.
 if (~isfield(params,'extraLens'))
     params.extraLens = 0;
@@ -184,6 +185,7 @@ if (~isempty(params.indDiffParams.lambdaMaxShift))
     
     absorbance = ShiftPhotopigmentAbsorbance(staticParams.S,absorbance,params.indDiffParams.lambdaMaxShift,params.indDiffParams.shiftType);
 end
+adjIndDiffParams.absorbance = absorbance;
 
 % Compute absorptance
 %
@@ -225,6 +227,7 @@ elseif (size(absorbance,1) == 1 && params.DORODS)
 else
     error('Unexpected number of photopigment lambda max values passed');
 end
+adjIndDiffParams.absorptance = absorptance;
 
 %% Put together pre-receptor and receptor parts
 for i = 1:size(absorptance,1)

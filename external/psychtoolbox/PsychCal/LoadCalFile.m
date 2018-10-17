@@ -87,9 +87,10 @@ end
 
 % Now read the sucker if it is there.
 if exist(fullFilename, 'file')
-    s = warning('off','MATLAB:class:EnumerationNameMissing');
+    s1 = warning('off','MATLAB:class:EnumerationNameMissing');
+    s2 = warning('off','MATLAB:class:EnumerableClassNotFound');
 	eval(['load ' QuoteString(fullFilename)]);
-    warning(s.state,'MATLAB:class:EnumerationNameMissing');
+    warning(s1); warning(s2);
 	if isempty(cals) %#ok<NODEF>
 		cal = [];
 	else
