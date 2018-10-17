@@ -284,7 +284,7 @@ if notDefined('pupilRadius'), pupilRadius = 0.0015; end
 % Human focal length is ~17 mm. This corresponds to 296.71 um per degree.
 % Elsewhere we use 300 um per degree, but 17mm is what we've had here and
 % is what the Marimont and Wandell optics is based on so we keep that here.
-focalLengthMM = 17;
+focalLengthMM = 17.1883;
 fLengthMeters = focalLengthMM * 1e-3;
 
 % Calculate umPerDegree. We don't use this here, but this was on the way to
@@ -332,6 +332,23 @@ end
    
 % The human optics are an SI case, and we store the OTF at this point. 
 [OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, fSupport, wave);
+% X = squeeze(fSupport(:, :, 1));
+% Y = squeeze(fSupport(:,:,2));
+% idx = find((X(:) == 0) & (Y(:) == 0))
+% [row,col] = ind2sub(size(X), idx)
+% for k = 1:31
+%     OTFatBand = fftshift(squeeze(OTF2D(:,:,k)));
+%     figure(223); clf;
+%     imagesc(X(row,:),Y(:,col),OTFatBand)
+%     axis 'image'
+%     OTFAtZero = [squeeze(OTFatBand(row,col)) OTF2D(1,1,k)]
+%     pause
+% end
+% 
+% size(fSupport)
+% size(OTF2D)
+% pause
+
 optics = opticsSet(optics, 'otfData', OTF2D);
 umPerDegreeForSupport = umPerDegree;
 
