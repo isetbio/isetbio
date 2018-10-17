@@ -285,6 +285,7 @@ if notDefined('pupilRadius'), pupilRadius = 0.0015; end
 % Elsewhere we use 300 um per degree, but 17mm is what we've had here and
 % is what the Marimont and Wandell optics is based on so we keep that here.
 focalLengthMM = 17.1883;
+focalLengthMM = 17;
 fLengthMeters = focalLengthMM * 1e-3;
 
 % Calculate umPerDegree. We don't use this here, but this was on the way to
