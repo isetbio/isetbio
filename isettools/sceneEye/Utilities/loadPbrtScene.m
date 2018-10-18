@@ -1,3 +1,4 @@
+
 function [recipe, sceneUnits, workingDir, origPath] = ...
     loadPbrtScene(pbrtFile, se_p, varargin)
 % Setup a PBRT scene given it's name or file location. Primarily includes the
@@ -68,52 +69,30 @@ if(sceneNameFlag)
     
     switch sceneName
         
+        case('figure')
+            scenePath = fullfile(piRootPath, 'data', ...
+                'V3','figure', 'figure.pbrt');
+            sceneUnits = 'm';
+            
+        case('coloredCube')
+            scenePath = fullfile(piRootPath, 'data', ...
+                'V3','coloredCube', 'coloredCube.pbrt');
+            sceneUnits = 'm';
+            
         case('snellenSingle')
             
             scenePath = fullfile(piRootPath, 'data', ...
                 'V3','snellenSingle', 'snellen_single.pbrt');
             sceneUnits = 'm';
             
-            % Download from RDT
-            if(~exist(scenePath,'file'))
-                piPBRTFetch('snellenSingle','deletezip',true,...
-                    'pbrtversion',3,...
-                    'destination folder',fullfile(piRootPath,'data','V3'));
-                % Check if file exists
-                if(~exist(scenePath,'file'))
-                    error('Something went wrong when downloading the scene.')
-                else
-                    % Success!
-                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
-                end
-                
-            else
-                fprintf('Scene already exists in data folder. Skipping download.\n');
-            end
-            
+            pullSceneFromRDT('snellenSingle',scenePath);  
             
         case ('snellenAtDepth')
             
             scenePath = fullfile(piRootPath,'data','V3','snellenAtDepth','snellen.pbrt');
             sceneUnits = 'm';
             
-             % Download from RDT
-            if(~exist(scenePath,'file'))
-                piPBRTFetch('snellenAtDepth','deletezip',true,...
-                    'pbrtversion',3,...
-                    'destination folder',fullfile(piRootPath,'data','V3'));
-                % Check if file exists
-                if(~exist(scenePath,'file'))
-                    error('Something went wrong when downloading the scene.')
-                else
-                    % Success!
-                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
-                end
-                
-            else
-                fprintf('Scene already exists in data folder. Skipping download.\n');
-            end
-            
+            pullSceneFromRDT('snellenAtDepth',scenePath);           
             
         case ('blackBackdrop')
             
@@ -131,22 +110,7 @@ if(sceneNameFlag)
                 'V3','NumbersAtDepth', 'numbersAtDepth.pbrt');
             sceneUnits = 'm';
             
-            % Download from RDT
-            if(~exist(scenePath,'file'))
-                piPBRTFetch('NumbersAtDepth','deletezip',true,...
-                    'pbrtversion',3,...
-                    'destination folder',fullfile(piRootPath,'data','V3'));
-                % Check if file exists
-                if(~exist(scenePath,'file'))
-                    error('Something went wrong when downloading the scene.')
-                else
-                    % Success!
-                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
-                end
-                
-            else
-                fprintf('Scene already exists in data folder. Skipping download.\n');
-            end
+            pullSceneFromRDT('NumbersAtDepth',scenePath);
             
         case('slantedBar')
             scenePath = fullfile(piRootPath, 'data', ...
@@ -159,47 +123,15 @@ if(sceneNameFlag)
                 'V3','ChessSet','chessSet.pbrt');
             sceneUnits = 'm';
             
-            % Download from RDT
-            if(~exist(scenePath,'file'))
-                piPBRTFetch('ChessSet','deletezip',true,...                    
-                    'pbrtversion',3,...
-                    'destination folder',fullfile(piRootPath,'data','V3'));
-                % Check if file exists
-                if(~exist(scenePath,'file'))
-                    error('Something went wrong when downloading the scene.')
-                else
-                    % Success!
-                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
-                end
-
-            else
-                fprintf('Scene already exists in data folder. Skipping download.\n');
-            end
-            
-            
+            pullSceneFromRDT('ChessSet',scenePath);
+    
         case('chessSetScaled')
             
             scenePath = fullfile(piRootPath,'data','V3',...
                 'ChessSetScaled','chessSetScaled.pbrt');
             sceneUnits = 'm';
             
-            % Download from RDT
-            if(~exist(scenePath,'file'))
-                piPBRTFetch('ChessSetScaled','deletezip',true,...                    
-                    'pbrtversion',3,...
-                    'destination folder',fullfile(piRootPath,'data','V3'));
-                % Check if file exists
-                if(~exist(scenePath,'file'))
-                    error('Something went wrong when downloading the scene.')
-                else
-                    % Success!
-                    fprintf('PBRT scene downloaded! File is located at: %s \n',scenePath);
-                end
-
-            else
-                fprintf('Scene already exists in data folder. Skipping download.\n');
-            end
-
+            pullSceneFromRDT('ChessSetScaled',scenePath);
             
         case('texturedPlane')
             scenePath = fullfile(piRootPath, 'data', ...
@@ -226,6 +158,16 @@ if(sceneNameFlag)
                 'slantedBarTexture.pbrt');
             sceneUnits = 'm';
         
+        case('lettersAtDepth')
+            % A, B, C placed at different depths. The depths will be
+            % adjustable. 
+            
+            scenePath = fullfile(piRootPath,'data',...
+                'V3','lettersAtDepth',...
+                'lettersAtDepth.pbrt');
+            sceneUnits = 'm';
+            
+            pullSceneFromRDT('lettersAtDepth',scenePath);
             
         otherwise
             error('Did not recognize scene type.');
@@ -259,16 +201,17 @@ if(sceneNameFlag)
     switch sceneName
         
         case('slantedBar')
-            recipe = piObjectTransform(recipe, 'SlantedBar', ...
-                'Translate', [0 0 se_p.Results.planeDistance]);
-        
-        case('slantedBarAdjustable')
             % A variation of slantedBar where the black and white planes
             % are adjustable to different depths. We reread the recipe
             % since we already have piCreateSlantedBarScene. 
-            recipe = piCreateSlantedBarScene(...
-                'whiteDepth',se_p.Results.whiteDepth,...
-                'blackDepth',se_p.Results.blackDepth);
+            if(~isempty(se_p.Results.planeDistance))
+                recipe = piCreateSlantedBarScene(...
+                    'planeDepth',se_p.Results.planeDistance);
+            else
+                recipe = piCreateSlantedBarScene(...
+                    'whiteDepth',se_p.Results.whiteDepth,...
+                    'blackDepth',se_p.Results.blackDepth);
+            end
             
         case('slantedBarTexture')
             % A variation of slantedBar where the black and white planes
