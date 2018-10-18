@@ -321,9 +321,10 @@ if (legacyFrequencySupport)
     % Fsupport used to be [], which defaults to 60 c/deg
     fSupport = [];
 else
-    % Up to 120, to get better PSF
-    maxF = 120;
-    fList = unitFrequencyList(maxF);
+    % Up to 120 c/deg, with 240 samples to get better PSF
+    maxF =120;
+    N = 240;
+    fList = unitFrequencyList(N);
     fList = fList * maxF;
     [X, Y] = meshgrid(fList, fList);
     fSupport(:, :, 1) = X;
