@@ -1,16 +1,29 @@
 function t_wvfAstigmatism
 % Compute the wavefront-based PSF for various astigmatism and blur levels.
 %
+% Syntax:
+%   t_wvfAstigmatism
+%
 % Description:
 %    Compute the wavefront-based point-spread function for various
 %    astigmatism and blur levels.
 %
 %    This illustrates the effect of Zernicke coefficients 4 and 5.
 %
+% Inputs:
+%    None.
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
 
 % History:
-%                 (c) Wavefront Toolbox Team, 2012
-% 01/01/18 dhb    Handled JNM notes.
+%    xx/xx/12       (c) Wavefront Toolbox Team, 2012
+%    01/01/18  dhb  Handled JNM notes.
+%    09/27/18  jnm  Formatting
 
 %% Initialize and set parameters
 ieInit;
@@ -19,7 +32,6 @@ ieInit;
 maxUM  = 20;
 
 %% Set up default parameters structure with diffraction limited default
-%
 % The ranges for coefficients here and below are reasonable given typical
 % variation within human population.  If we look at the diagonal of the
 % covariance matrix for coefficients that we get from the Thibos
@@ -34,16 +46,15 @@ z5 = -0.5:0.5:0.5;
 Zvals = [Z4(:), Z5(:)];
 
 %% Alter defocus and astigmatism
-%
 % Make a plot of the psf for each case.
 h = vcNewGraphWin;
 set(h, 'Position', [0.5 0.5 0.45 0.45]);
 wList = wvfGet(wvfParams, 'calc wave');
-for ii=1:size(Zvals, 1)
+for ii = 1:size(Zvals, 1)
     wvfParams = wvfSet(wvfParams, 'zcoeffs', Zvals(ii, :), ...
         {'defocus' 'vertical_astigmatism'});
     wvfParams = wvfComputePSF(wvfParams);
-    
+
     % Don't open a new window with each plot. Allow them to accumulate in
     % the subplots.
     subplot(3, 3, ii)

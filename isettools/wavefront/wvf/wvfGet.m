@@ -722,14 +722,14 @@ switch (parm)
     case {'psfspatialsamples', 'samplesspace', 'supportspace', ...
             'spatialsupport'}
         % wvfGet(wvf, 'samples space', 'um', wList)
-        % Spatial support in samples, centered on 0
-        % Unit and wavelength must be specified
-        % Should call case below to get one val, and then scale up by
-        % number of pixels.
+        %
+        %  Spatial support in samples, centered on 0
+        %  Unit and wavelength must be specified
+        %  Should call case below to get one val, and then scale up by
+        %  number of pixels.
         
         % This parameter matters for the OTF and PSF quite a bit. It
         % is the number of um per degree on the retina.
-        mPerDeg = (wvfGet(wvf,'um per degree') * 10^-6);
         unit = 'deg';
         wave = wvfGet(wvf, 'calc wave');
         if ~isempty(varargin), unit = varargin{1}; end
@@ -738,9 +738,31 @@ switch (parm)
         % Get the angular samples in degrees
         val = wvfGet(wvf, 'psf angular samples', 'deg', wave);
         
-        % Convert to meters and then to selected spatial scale
-        val = val * mPerDeg;  % Sample in meters
-        val = val * ieUnitScaleFactor(unit);
+        %{
+         % The next few lines are the previous code, I think it is in
+         % error.  When we ask for the samples in degrees, this will produce
+         % the wrong result.  We should only call this code for unit
+         %             nm um mm cm m km in ft
+         %  When the units are min or sec we should do something else!
+        
+         % Convert to meters and then to selected spatial scale 
+         val = val * mPerDeg;  % Sample in meters 
+         val = val * ieUnitScaleFactor(unit);
+        %}
+        switch unit
+            case {'nm', 'um', 'mm', 'cm', 'm', 'km', 'in', 'ft'}
+                mPerDeg = (wvfGet(wvf,'um per degree') * 10^-6);
+                val = val * mPerDeg;  % Sample in meters
+                val = val * ieUnitScaleFactor(unit);
+            case {'min'}
+                val = val*60;
+            case {'sec'}
+                val = val*60*60;
+            case {'deg'}
+                % Leave it alone
+            otherwise
+                error('Bad unit for samples space, %s', unit);
+        end
         
     case {'psfspatialsample'}
         % This parameter matters for the OTF and PSF quite a bit. It

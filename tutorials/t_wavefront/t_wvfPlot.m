@@ -1,17 +1,32 @@
 function t_wvfPlot
 % Illustrate ways to create plots of the wvf structure using wvfPlot call.
 %
+% Syntax:
+%   t_wvfPlot
+%
 % Description:
 %    Illustrate a number of ways to create plots of the wvf structure using
 %    the wvfPlot call.
+%
+% Inputs:
+%    None.
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [Note: XXX - Should improve and demonstrate/explain control over
 %      sampling resolutions.]
 %    * [Note: JNM - What would constitute "additional fussing" below to
-%      better fine-tune results (See comment L25-28)]
+%      better fine-tune results (See comment L40-43)]
 %
-% (BW) Wavefront Toolbox Team, 2014-15
+
+% History:
+%    xx/xx/14  BW   Wavefront Toolbox Team, 2014-15
+%    09/25/18  jnm  Formatting
 
 %% Clear and close
 close all;
@@ -50,7 +65,6 @@ set(p, 'color', 'r', 'linewidth', 3, 'linestyle', ':')
 title([num2str(wave) ' nm']);
 
 %% Show the return arguments
-%
 % Data values that were plotted.
 u
 
@@ -59,14 +73,17 @@ get(p)
 
 %% A multiple axis window
 vcNewGraphWin([], 'tall');
-subplot(3, 1, 1), wvfPlot(wvf, '1dpsfspace', unit, wave, 'no window');
+subplot(3, 1, 1)
+wvfPlot(wvf, '1dpsfspace', unit, wave, 'no window');
 title([num2str(wave) ' nm']);
-subplot(3, 1, 2), wvfPlot(wvf, '1dpsfspacenormalized', unit, wave, ...
-    'no window');
-subplot(3, 1, 3), wvfPlot(wvf, 'imagepsf', 'um', wave, 20, 'no window');
+subplot(3, 1, 2)
+wvfPlot(wvf, '1dpsfspacenormalized', unit, wave, 'no window');
+subplot(3, 1, 3)
+wvfPlot(wvf, 'imagepsf', 'um', wave, 20, 'no window');
 
 %% Pupil amplitude and phase
-unit = 'mm'; maxMM = 2;
+unit = 'mm';
+maxMM = 2;
 wvfPlot(wvf, 'imagepupilamp', unit, wave, maxMM);
 title(['Pupil function amplitude ' num2str(wave) ' nm']);
 wvfPlot(wvf, 'imagepupilphase', unit, wave, maxMM);
@@ -89,7 +106,6 @@ maxF = 300;
 wvfPlot(wvf, '2dotf', unit, wave, maxF);
 
 %% Change the calculated PSF wavelength and plot again
-%
 % Notice that we don't get an Airy disk, because the calculation includes
 % chromatic aberrations. These show up in the optical phase plot in the
 % pupil plane.
@@ -107,14 +123,17 @@ title(['Relative amplitude ' num2str(wave) ' nm']);
 
 % A multiple axis window
 vcNewGraphWin([], 'tall');
-subplot(3, 1, 1), wvfPlot(wvf, '1dpsfspace', unit, wave, 'no window');
+subplot(3, 1, 1)
+wvfPlot(wvf, '1dpsfspace', unit, wave, 'no window');
 title([num2str(wave) ' nm']);
-subplot(3, 1, 2), wvfPlot(wvf, '1dpsfspacenormalized', unit, wave, ...
-    'no window');
-subplot(3, 1, 3), wvfPlot(wvf, 'imagepsf', 'um', wave, 20, 'no window');
+subplot(3, 1, 2)
+wvfPlot(wvf, '1dpsfspacenormalized', unit, wave, 'no window');
+subplot(3, 1, 3)
+wvfPlot(wvf, 'imagepsf', 'um', wave, 20, 'no window');
 
 % Pupil amplitude and phase
-unit = 'mm'; maxMM = 2;
+unit = 'mm';
+maxMM = 2;
 wvfPlot(wvf, 'imagepupilamp', unit, wave, maxMM);
 title(['Pupil function amplitude ' num2str(wave) ' nm']);
 wvfPlot(wvf, 'imagepupilphase', unit, wave, maxMM);

@@ -21,6 +21,7 @@
 %  NPC, ISETBIO Team, 2016
 %
 % 07/24/18  npc  Wrote it.
+% 10/08/18  dhb  Save cached mosaic in tempdir, not inside isetbio tree.
 
 
 %% Close all open figures
@@ -108,9 +109,9 @@ if (regenerateMosaic)
     % 5 millisecond integration time
     theConeMosaic.integrationTime = 5/1000;
     % Export mosaic
-    save('theMosaic',  'theConeMosaic');
+    save(fullfile(tempdir,'theMosaic'),  'theConeMosaic');
 else
-    load('theMosaic', 'theConeMosaic');
+    load(fullfile(tempdir,'theMosaic'), 'theConeMosaic');
 end
 
 %% Visualize cone mosaic

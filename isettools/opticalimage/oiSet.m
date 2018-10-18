@@ -100,6 +100,7 @@ function oi = oiSet(oi, parm, val, varargin)
     oi = oiSet(oi, 'filename', 'test')
     oi = oiSet(oi, 'optics', optics)
     oi = oiSet(oi, 'optics fnumber', 2.8);
+    oi = oiSet(oi, 'pad', struct('sizeDegs', 1.0, 'value', 'mean photons'));
     oiGet(oi, 'optics fnumber')
 %}
 
@@ -166,6 +167,20 @@ switch parm
         % Positive for scenes, negative for optical images
         oi.distance = val;
 
+    case {'pad'}
+        % Struct specifying the border-padding of the oi
+        oi.pad = oiValidatePadStruct(val);
+        
+    case {'padvalue'}
+        % padding value, see oiValidatePadStruct for valid values
+        oi.pad.value = val;
+        oiValidatePadStruct(oi.pad);
+        
+    case {'padsizedegs'}
+        % padding size in visual degrees
+        oi.pad.sizeDegs = val;
+        oiValidatePadStruct(oi.pad);
+        
     case {'wangular', 'widthangular', 'fov', ...
             'hfov', 'horizontalfieldofview'}
         oi.wAngular = val;

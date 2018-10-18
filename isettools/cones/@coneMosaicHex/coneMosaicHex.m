@@ -402,7 +402,7 @@ classdef coneMosaicHex < coneMosaic
         hFig = plotMosaicProgression(obj, varargin);
 
         % Print various infos about the cone mosaic
-        displayInfo(obj);
+        displayInfo(obj, varargin);
 
         % Change cone identities according to arguments passed in varargin
         reassignConeIdentities(obj, varargin);
