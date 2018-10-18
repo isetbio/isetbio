@@ -201,15 +201,14 @@ function val = opticsGet(optics, parm, varargin)
 %                   This is based on the view that what was being done was
 %                   not correct, and that we should bite the bullet and
 %                   change. See issue #373 on github.
+%    10/18/18  dhb  Special case OtfToPsf negative tolerance for M-W optics
+%                   versus everything else. Be explicit about tolerance in
+%                   all the calls, to remove sensitivity to OtfToPsf
+%                   default. This fixes a broken example.
+%              dhb  Deleted a pile of commented out code.
 
 % Examples:
 %{
-    % This example isn't working. Returning errors:
-    %    "Error using OtfToPsf (line 125)
-    %    Mysteriously large negative psf values"
-    %
-    % These examples illustrate calls to opticsGet via oiGet, the usual way
-    % Notice that the parameter names start with 'optics'
     oi = oiCreate;
     oi = oiSet(oi, 'wave', 400:10:700);
     NA = oiGet(oi, 'optics na');              % Numerical aperture
@@ -627,69 +626,6 @@ switch parm
             val = OTF;
         end
         
-    %{
-        % This case is handled in psf data by a case statement.
-        % Not sure why it is here.
-    case {'diffractionlimitedpsfdata'}
-        % psf = opticsGet(optics,'diffraction limited psf data',...
-        %              thisWave,units,nSamp,freqOverSample);
-        %
-        % Diffraction limited pointspread function at a particular
-        % wavelength, spatial sampling in some units ('um','mm', etc.)
-        % some number of spatial samples. Some amount of oversampling
-        % on the frequency calculation to make the curve smooth.
-        %
-        % The frequency support for the OTF is returned by
-        %
-        %   fSupport = opticsGet(optics,'dl fsupport matrix',thisWave,units,nSamp) 
-        %   fSupport = fSupport*frequencyOverSample;
-        %
-        
-        if isempty(varargin), error('You must specify wavelength'); 
-        else, thisWave = varargin{1};
-        end
-        if length(varargin) < 2, units = 'um'; else, units = varargin{2}; end
-        if length(varargin) < 3, nSamp = 100; else, nSamp = varargin{3}; end
-        if length(varargin) < 4, freqOverSample = 1; else, freqOverSample = varargin{4}; end
-        
-        %{
-          % From plotOTF code
-          % This could all be opticsGet(optics,'psf data',thisWave)
-                % As below for shift invariant.
-                nSamp = 25;  % We get 2*nSamp base frequency terms
-                
-                % Get the basic frequency support
-                val = opticsGet(optics,'dlFSupport',thisWave,units,nSamp);
-                [fSupport(:,:,1),fSupport(:,:,2)] = meshgrid(val{1},val{2});
-                
-                % Increase the spatial frequency range (highest
-                % spatial frequency) by a factor of 4, which yields a
-                % higher spatial resolution estimate of the psf
-                fSupport = fSupport*freqOverSample;
-                
-                % Calculate the OTF using diffraction limited MTF (dlMTF)
-                otf = dlMTF(oi,fSupport,thisWave,units);
-                sSupport = opticsGet(optics,'psf support',fSupport,nSamp);   
-                
-                % Derive the psf from the OTF
-                psf = fftshift(ifft2(otf));
-                
-        %}
-        %  Oversample the frequency to get a smoother PSF image.
-        %  You can specify the factor for oversampling in the
-        %  calling arguments.
-        fSupport = opticsGet(optics,'dl fsupport matrix',thisWave,units,nSamp);
-        fSupport = fSupport*freqOverSample;        
-
-        % Get the OTF on the frequency support.
-        otf = dlMTF(optics,fSupport,thisWave,units);
-        % if thisWave == 400; vcNewGraphWin; mesh(fftshift(otf)); end
-        % if thisWave == 700; vcNewGraphWin; mesh(fftshift(otf)); end
-        
-        % Derive the psf from the OTF
-        [~,~,val] = OtfToPsf([],[],fftshift(otf));
-    %}
-        
     case {'degreesperdistance','degperdist'}
         % opticsGet(optics,'deg per dist','mm')
         % We use this constant to convert from the input spatial frequency units
@@ -819,11 +755,11 @@ switch parm
                 % Get diffraction limited OTF and derive PSF from it.
                 otf = dlMTF(optics,fSupport,thisWave,units);
                 if nWave == 1
-                    [~,~,val] = OtfToPsf([],[],fftshift(otf));
+                    [~,~,val] = OtfToPsf([],[],fftshift(otf),'negativeFractionalTolerance',1e-3);
                 else
                     val = zeros(size(otf,1),size(otf,2),length(thisWave));
                     for ii=1:length(thisWave)
-                        [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(otf(:,:,ii)));
+                        [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(otf(:,:,ii)),'negativeFractionalTolerance',1e-3);
                     end
                 end
 
@@ -832,12 +768,20 @@ switch parm
                     if nWave == 1
                         % Just do one specified wavelength
                         otf = opticsGet(optics,'otf data',thisWave);
-                        [~,~,val] = OtfToPsf([],[],fftshift(otf));
+                        if (strcmp(opticsGet(optics,'name'),'human-MW'))
+                            [~,~,val] = OtfToPsf([],[],fftshift(otf),'negativeFractionalTolerance',5e-2);
+                        else
+                            [~,~,val] = OtfToPsf([],[],fftshift(otf),'negativeFractionalTolerance',1e-3);
+                        end
                     else
                         % Do all the wavelenghts
                         val = zeros(size(optics.OTF.OTF));
                         for ii=1:length(thisWave)
-                            [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)));
+                            if (strcmp(opticsGet(optics,'name'),'human-MW'))
+                                [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)),'negativeFractionalTolerance',5e-2);
+                            else
+                                [~,~,val(:,:,ii)] = OtfToPsf([],[],fftshift(optics.OTF.OTF(:,:,ii)),'negativeFractionalTolerance',5e-2);
+                            end
                         end
                     end
 
