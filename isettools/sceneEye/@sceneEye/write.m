@@ -49,59 +49,6 @@ if(ecc ~= [0 0])
     ecc = [0 0];
 end
 
-%{
-% Given a point at a certain eccentricitity [ecc(1) ecc(2)], what is
-% the minimum FOV the rendered image needs to have in order to
-% encompass the given point?
-tempWidth = 2*obj.retinaDistance*tand(abs(ecc(1))) + obj.width;
-tempHeight = 2*obj.retinaDistance*tand(abs(ecc(2))) + obj.height;
-fovHoriz = 2*atand(tempWidth/(2*obj.retinaDistance));
-fovVert = 2*atand(tempHeight/(2*obj.retinaDistance));
-objNew.fov = max(fovHoriz,fovVert); 
-
-% Center of image in mm, given desired ecc
-centerX = obj.retinaDistance*tand(ecc(1));
-centerY = obj.retinaDistance*tand(ecc(2));
-
-% Boundaries of crop window in mm
-% (Use original width and height!)
-left = centerX - obj.width/2;
-right = centerX + obj.width/2;
-bottom = centerY + obj.height/2;
-top = centerY - obj.height/2;
-
-% Convert (0,0) to top left corner (normalized device coordinates) instead
-% of center
-tempSize = 2*objNew.retinaDistance*tand(objNew.fov/2); % Side length of large FOV
-left_ndc = left + tempSize/2;
-right_ndc = right + tempSize/2;
-top_ndc = top + tempSize/2;
-bottom_ndc = bottom + tempSize/2;
-ndcWindow = [left_ndc right_ndc top_ndc bottom_ndc];
-
-% Convert to ratio
-cropWindowEcc = ndcWindow./tempSize;
-
-% Since we'll be cropping the large image down to the desired
-% eccentricity, we have to increase the rendered resolution.
-tempResolution = objNew.resolution/(cropWindowEcc(2)-cropWindowEcc(1));
-objNew.resolution = round(tempResolution);
-%}
-
-% DEBUG
-%{
-    fprintf('*** DEBUG *** \n')
-    fprintf('Original FOV: %0.2f \n',obj.fov);
-    fprintf('New FOV: %0.2f \n',objNew.fov);
-    fprintf('Original width: %0.2f \n', obj.width);
-    fprintf('New width: %0.2f \n',objNew.width);
-    fprintf('Original resolution: %0.2f \n',obj.resolution);
-    fprintf('New resolution: %0.2f \n',objNew.resolution);
-    fprintf('Crop window: [%0.2f %0.2f %0.2f %0.2f] \n',cropWindow);
-    fprintf('*** DEBUG *** \n')
-%}
-
-
 %% Given the sceneEye object, we make all other adjustments needed to the recipe
 recipe = objNew.recipe;
 

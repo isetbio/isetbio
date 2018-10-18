@@ -43,7 +43,7 @@ axis('square');
 xlabel('X'); ylabel('Y'); zlabel('Z'); title('Unit Sphere Check');
 
 %% Add some noise to the ellipsoid, so we can try to fit it
-noiseSd = 0.2;
+noiseSd = 0.01;
 xEllipsoid = EllipsoidGenerate(ellParams,nTheta,nPhi);
 xNoisyEllipsoid = xEllipsoid + normrnd(0,noiseSd,size(xEllipsoid));
 figure; clf; hold on
@@ -81,6 +81,7 @@ set(h,'FaceAlpha',0.25)
 set(h,'EdgeColor',[0.5 0.5 0.5])
 set(h,'FaceColor',[0.6 0.6 0.6]);
 lighting phong;
+axis equal
 
 
 end

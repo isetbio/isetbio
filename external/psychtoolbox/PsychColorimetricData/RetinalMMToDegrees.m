@@ -22,11 +22,10 @@ function degs = RetinalMMToDegrees(mm,eyeLengthMM,fulltrig)
 % with DegreesToRetinalMM.  Nor does it account for the shape and optics of
 % the eye.
 % 
-% Routine EyeLength returns posterior nodal eye lengths for various
-% species and sources.  Use 'Human' and 'Rodieck' to get the eye
-% length implicit in RetinalEccentricityMMToDegrees and
-% DegreesToRetinalEccentricityMM for human, and similarly 'Rhesus' and
-% 'PerryCowey' for rhesus.
+% Routine EyeLength returns posterior nodal eye lengths for various species
+% and sources.  Use 'Human' and 'Rodieck' to get the eye lenght implicit in
+% RetinalEccentricityMMToDegrees and DegreesToRetinalEccentricityMM for
+% human, and similarly 'Rhesus' and 'PerryCowey' for rhesus.
 %
 % See also: DegreesToRetinalMM, EyeLength, RetinalEccentricityMMToDegrees, DegreesToRetinalEccentricityMM
 %

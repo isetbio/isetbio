@@ -70,7 +70,7 @@ function [xGridMinutes,yGridMinutes,psf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCycl
 %   03/31/18  dhb   Document key/value pair added by someone else.
 %             dhb   Add key/value pair for negative value tolerance.
 %                   This is now 1e-3 rather than 1e-10
-%   10/08/18  dhb   Increase fractional tolerance for neg values to 1% of max.
+%   10/17/18  dhb   Now 10-2.
 
 %% Parse input
 p = inputParser;
