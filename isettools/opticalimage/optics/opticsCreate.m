@@ -317,7 +317,7 @@ wave = opticsGet(optics, 'wave');
 
 % Decide whether to use the legacy frequency support (Nyquist:  60 c/deg)
 % or 120 c/deg, which results in a more focused PSF
-legacyFrequencySupport = true;
+legacyFrequencySupport = ~true;
 if (legacyFrequencySupport)
     % Fsupport used to be [], which defaults to 60 c/deg
     fSupport = [];
