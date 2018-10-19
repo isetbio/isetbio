@@ -118,6 +118,10 @@ classdef coneMosaicHex < coneMosaic
         % length
         coneEfficiencyCorrectionFactors = [];
         
+        % structure with min/mean/median/max inner segment diameter and
+        % area across the cone mosaic
+        apertureStats = [];
+        
         % resamplingFactor - The resampling factor.
         resamplingFactor
 

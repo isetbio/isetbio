@@ -75,10 +75,25 @@ absorbDensityLMS = XW2RGBFormat(photons * sQE, r, c);
 % each class of cone. It's faster to convolve here, since there are fewer
 % bands to deal with.
 if (obj.apertureBlur)
-    % Make the blur kernal.
+    % Make the blur kernel.
     %
-    % First convert area of cone aperture to a radius
-    apertureRadius = sqrt(obj.pigment.pdArea / pi);
+    % Select aperture size for optical blurring
+    useMosaicDependentApertureRadiusForBlur = ~true;
+    
+    if (useMosaicDependentApertureRadiusForBlur) && (obj.eccBasedConeQuantalEfficiency)
+        % Compute aperture stats across the mosaic
+        if (isempty(obj.apertureStats))
+            plotApertureStats = false;
+            obj.computeApertureStats(plotApertureStats);
+        end
+        % Use the mean value across the mosaic as the aperture radius
+        apertureRadius = (0.5*obj.apertureStats.meanDiameterMicrons)*1e-6;
+        %apertureRadius = 2.7032/2*1e-6; % This is the mean aperture for the 2 deg (4/cdeg) mosaic
+        fprintf(2, '\ncomputed MEAN aperture radius: %f microns (DEFAULT: %f microns)\n', apertureRadius*1e6, sqrt(obj.pigment.pdArea / pi)*1e6);
+    else
+        % Convert area of (minimum) cone aperture to a radius
+        apertureRadius = sqrt(obj.pigment.pdArea / pi);
+    end
     
     % Get optical image resolution and figure out how big conv kernal needs
     % to be. Make sure it is an odd number greater than 0.
