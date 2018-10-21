@@ -4,7 +4,8 @@ function mtf = NavarroMTF(s, varargin)
 % 
 %   Compute the MTF measured by Navarro et al. The MTF was measured for a
 %   4 mm pupil, and for a varietry of eccentricities. We return the foveal
-%   MTF by default. 
+%   MTF by default.  The desired eccentricity can be passed as a key-value
+%   pair, i.e., mtf10deg = NavarroMTF(1:60, 'eccentricity', '10 deg')
 %
 %   Navarro, R., Artal, P., & Williams, D. R. (1993). 
 %   Modulation transfer function of the human eye as a function of retinal 
