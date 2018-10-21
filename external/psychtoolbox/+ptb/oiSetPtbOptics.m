@@ -110,7 +110,15 @@ switch (p.Results.opticsModel)
         theLsf = WestLSFMinutes(position1DMinutes);
         thePsf = LsfToPsf(theLsf);
     case 'Williams'
-        theMtf = WilliamsMTF(sqrt(xSfGridCyclesDeg.^2 + ySfGridCyclesDeg.^2));
+        radialSF = sqrt(xSfGridCyclesDeg.^2 + ySfGridCyclesDeg.^2);
+        theMtf = WilliamsMTF(radialSF);
+        [a,b,thePsf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCyclesDeg,theMtf);
+        if (any(a ~= xGridMinutes | b ~= yGridMinutes))
+            error('Internal coordinate system transformation error');
+        end
+    case 'Navarro'
+        radialSF = sqrt(xSfGridCyclesDeg.^2 + ySfGridCyclesDeg.^2);
+        theMtf = NavarroMTF(radialSF);
         [a,b,thePsf] = OtfToPsf(xSfGridCyclesDeg,ySfGridCyclesDeg,theMtf);
         if (any(a ~= xGridMinutes | b ~= yGridMinutes))
             error('Internal coordinate system transformation error');
