@@ -57,10 +57,11 @@ obj.wave = oiGet(oi, 'wave');
 sQE = obj.qe * oiGet(oi, 'bin width');
 
 
-%% Correct retinal photons to account for the eccentricity-dependent density
-%% of the macular pigment
+%% Reshape the photons for efficient computations
 [photons, r, c] = RGB2XWFormat(oiGet(oi, 'photons'));
 
+%% Correct retinal photons to account for the eccentricity-dependent density
+%% of the macular pigment
 if (obj.eccBasedMacularPigment)
     fprintf('\nAdjusting optical image photons to account for eccentricity based variation in macular pigment density\n');
     % Compute eccentricities in degrees for all pixels in the OI
