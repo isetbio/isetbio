@@ -36,6 +36,10 @@ classdef coneMosaicHex < coneMosaic
 %                            changes in cone efficiency due to increasing
 %                            cone aperture and decreasing outer segment
 %                            length. Default False.
+%    'eccBasedMacularPigment'
+%                          - Boolean. Account for eccentricity-dependent
+%                            changes in the optical density of the macular
+%                            pigment. Default False.
 %
 %    'customLambda'        - Double. Custom micron cone spacing distance.
 %                            Default is [].
@@ -48,12 +52,13 @@ classdef coneMosaicHex < coneMosaic
 %
 
 % History:
-%    xx/xx/16  NPC  ISETBIO Team, 2016
+%    xx/xx/16  npc  ISETBIO Team, 2016
 %    02/21/18  jnm  Formatting
 %    04/16/18  jnm  Move resamplingFactor to Inputs section as it is
 %                   required, and not optional based on response when
 %                   attempting to instantiate a coneMosaicHex.
-%    06/16/18  NPC  Support cone efficiency correction with eccentricity
+%    06/16/18  npc  Support cone efficiency correction with eccentricity
+%    10/23/18  npc  Support for macular-pigment density variation with eccentricity 
 
 % Examples:
 %{
@@ -79,6 +84,7 @@ classdef coneMosaicHex < coneMosaic
     'name', 'the hex mosaic', ...
     'fovDegs', 0.35, ...
     'eccBasedConeDensity', eccBasedConeDensity, ...
+    'eccBasedMacularPigment', true, ...
     'noiseFlag', 'none', ...
     'spatialDensity', [0 0.6 0.3 0.1], ...
     'maxGridAdjustmentIterations', 100);
@@ -92,6 +98,10 @@ classdef coneMosaicHex < coneMosaic
         % dependent changes in cone efficiency due to increasing cone 
         % aperture and decreasing outer segment length
         eccBasedConeQuantalEfficiency = false;
+        
+        % eccBasedMacularPigment - Boolean. Account for eccentricity
+        % dependent changes in optical density of the macular pigment.
+        eccBasedMacularPigment = false
     end
     
     %% Private properties:
@@ -209,6 +219,7 @@ classdef coneMosaicHex < coneMosaic
                 'fovDegs', ...
                 'eccBasedConeDensity', ...
                 'eccBasedConeQuantalEfficiency', ...
+                'eccBasedMacularPigment', ...
                 'sConeMinDistanceFactor', ...
                 'sConeFreeRadiusMicrons', ...
                 'customLambda', ...
@@ -250,6 +261,7 @@ classdef coneMosaicHex < coneMosaic
                 ((numel(x) == 1) || (numel(x) == 2))));
             p.addParameter('eccBasedConeDensity', false, @islogical);
             p.addParameter('eccBasedConeQuantalEfficiency', false, @islogical);
+            p.addParameter('eccBasedMacularPigment', false, @islogical);
             p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric);
             p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
             p.addParameter('customInnerSegmentDiameter', [], @isnumeric);
@@ -270,6 +282,7 @@ classdef coneMosaicHex < coneMosaic
             obj.resamplingFactor = p.Results.resamplingFactor;
             obj.eccBasedConeDensity = p.Results.eccBasedConeDensity;
             obj.eccBasedConeQuantalEfficiency = p.Results.eccBasedConeQuantalEfficiency;
+            obj.eccBasedMacularPigment = p.Results.eccBasedMacularPigment;
             obj.sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
             obj.sConeFreeRadiusMicrons = p.Results.sConeFreeRadiusMicrons;
             obj.customLambda = p.Results.customLambda;
