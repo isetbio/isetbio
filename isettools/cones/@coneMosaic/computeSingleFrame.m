@@ -62,7 +62,8 @@ sQE = obj.qe * oiGet(oi, 'bin width');
 
 %% Correct retinal photons to account for the eccentricity-dependent density
 %% of the macular pigment
-if (isa(obj, 'ConeMosaicHex')) && (obj.eccBasedMacularPigment)
+
+if (isa(obj, 'coneMosaicHex')) && (obj.eccBasedMacularPigment)
     fprintf('\nAdjusting optical image photons to account for eccentricity based variation in macular pigment density\n');
     % Compute eccentricities in degrees for all pixels in the OI
     xDegs = (0:(c-1))/c * oiGet(oi, 'h fov');
