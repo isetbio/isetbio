@@ -9,11 +9,13 @@
 %    right thing to do, and the two methods give similar, but non-the-less
 %    noticably different, results for the PSF.
 %
-%    The plot of the OTF looks quite similar to Figure 3 of M-W.  A plot of
-%    the LSF is not so close to Figure 4 of that paper, with a "peakier" LSF
-%    obtained by the current code. The LSF is computed from the OTF using code
-%    separate from that which computes the PSF.  The LSF computation is in
-%    oiPlot, and looks like it uses the right Matlab conventions.
+%    The plot of the OTF looks quite similar to Figure 3 of M-W.
+%
+%    A plot of the LSF is not so close to Figure 4 of the M-W paper, with a
+%    "peakier" LSF obtained by the current code. The LSF is computed from
+%    the OTF using code separate from that which computes the PSF.  The LSF
+%    computation is in oiPlot, and looks like it uses the right Matlab
+%    conventions.
 %
 %    The negative values in the original "incorrect" method are smaller
 %    than those in the current "correct" method. I am not sure if that has
