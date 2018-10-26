@@ -80,5 +80,6 @@ fprintf('%53s %2.1f cones/mm^2\n', 'Cone density (all cones):', ...
     numel(obj.pattern) / (obj.width * obj.height * 1e6));
 fprintf('%53s %2.1f cones/mm^2\n', 'Cone density (active cones):', ...
     numel(find(obj.pattern > 1)) / (obj.width * obj.height * 1e6));
-fprintf('%53s %d\n\n', 'Ecc-based efficiency:', obj.eccBasedConeQuantalEfficiency);
+fprintf('%53s %d\n', 'Ecc-based cone efficiency:', obj.eccBasedConeQuantalEfficiency);
+fprintf('%53s %d\n\n', 'Ecc-based macular pigment density:', obj.eccBasedMacularPigment);
 end
