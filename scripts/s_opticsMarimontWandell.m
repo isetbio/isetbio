@@ -10,16 +10,14 @@
 %    noticably different, results for the PSF.
 %
 %    The plot of the OTF looks quite similar to Figure 3 of M-W.  A plot of
-%    the LSF is not so close.  The LSF is computed from the OTF using code
+%    the LSF is not so close to Figure 4 of that paper, with a "peakier" LSF
+%    obtained by the current code. The LSF is computed from the OTF using code
 %    separate from that which computes the PSF.  The LSF computation is in
 %    oiPlot, and looks like it uses the right Matlab conventions.
 %
-%    One mystery that bugs me is that the old method generates PSFs with no
-%    negative values, while there are negative values in the current
-%    method's output.  I don't think there is any guarantee that a
-%    symmetric real all postive OTF has an all postive PSF, and it seems a
-%    little surprising that this is true for the "incorrect" way of
-%    obtaining the PSF but not for the "correct" way.
+%    The negative values in the original "incorrect" method are smaller
+%    than those in the current "correct" method. I am not sure if that has
+%    any significance.
 %
 % 03/31/18  dhb  Wrote it.
 % 10/26/18  dhb  Another try.
@@ -88,7 +86,12 @@ for ww = 1:size(PSFISETBio,3)
     % This is what we are actually doing at each wavelength in the above,
     % see OtfToPsf.  Note that the raw psf has unit volume, which it
     % should.
-    psf = fftshift(ifft2(ifftshift(fftshift(OTFMarimontWandell.OTF(:,:,ww)))));
+    temp = OTFMarimontWandell.OTF(:,:,ww);
+    temp1 = ifftshift(fftshift(temp));
+    if (any(temp ~= temp1))
+        error('ifftshift does not invert fftshift');
+    end
+    psf = fftshift(ifft2(ifftshift(fftshift(temp))));
     if (abs(sum(psf(:))-1) > 1e-10)
         fprintf('Raw ISETBio PSF does not have unit volume\n');
     end
@@ -118,19 +121,22 @@ for ww = 1:size(PSFISETBio,3)
 end
 fprintf('Maximum fractional negative PSF in ISETBio method: %f\n',maxFracNegative);
 
-%% Do it manually, the way it was coded in opticsGet.
+%% Do it manually, the way it was coded.
 %
 % The original isetbio implementation used fft2 rather than ifft2.
+% And the OTF was stored from DC at center using fftshift rather than
+% ifftshift.  The two fftshifts in the arg to fft below reproduce the
+% earlier fftshift behavior.
 maxFracNegative = 0;
 for ww = 1:size(OTFMarimontWandell.OTF,3)
     % Get PSF the original isetbio way. Note that the raw psf does not have
     % unit volumen with this method.
-    PSFOrig(:,:,ww) = fftshift(fft2(OTFMarimontWandell.OTF(:,:,ww)));
+    PSFOrig(:,:,ww) = fftshift(fft2(fftshift(fftshift(OTFMarimontWandell.OTF(:,:,ww)))));
     if (abs(sum(sum(PSFOrig(:,:,ww)))-1) < 1e-3)
         fprintf('Orig PSF does have unit volume\n');
     end
-    if (min(PSFOrig(:,:,ww)) < 0 & abs(min(PSFOrig(:,:,ww))/max(PSFOrig(:,:,ww))) > maxFracNegative)
-        maxFracNegative = abs(min(PSFOrig(:,:,ww))/max(PSFOrig(:,:,ww)));
+    if (min(min(PSFOrig(:,:,ww))) < 0 & abs(min(min(PSFOrig(:,:,ww)))/max(max(PSFOrig(:,:,ww)))) > maxFracNegative)
+        maxFracNegative = abs(min(min(PSFOrig(:,:,ww)))/max(max(PSFOrig(:,:,ww))));
     end
     
     % Check for imag values and zero out imag component.
@@ -144,6 +150,8 @@ for ww = 1:size(OTFMarimontWandell.OTF,3)
     
     % Remove negative values and normalize. Could worry here about
     % imaginary values as well.
+    temp = PSFOrig(:,:,ww);
+    temp(temp < 0) = 0;
     PSFOrig(:,:,ww) = abs(PSFOrig(:,:,ww));
     PSFOrig(:,:,ww) = PSFOrig(:,:,ww)/sum(sum(PSFOrig(:,:,ww)));
 end
