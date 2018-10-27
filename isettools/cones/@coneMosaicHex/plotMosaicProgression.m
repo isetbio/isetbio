@@ -37,7 +37,7 @@ function hFig = plotMosaicProgression(obj, varargin)
         micronsPerDegree;
     hFig = figure(1);
     clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 880 1300]);
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 590 1125]);
 
     rowsNum = 6;
     colsNum = 1;
@@ -46,7 +46,7 @@ function hFig = plotMosaicProgression(obj, varargin)
            'colsNum', colsNum , ...
            'heightMargin', 0.015, ...
            'widthMargin', 0.00, ...
-           'leftMargin', 0.02, ...
+           'leftMargin', 0.04, ...
            'rightMargin', -0.02, ...
            'bottomMargin', 0.05, ...
            'topMargin', 0.00);
@@ -96,7 +96,7 @@ function hFig = plotMosaicProgression(obj, varargin)
 
     row = 5;
     iteration = size(obj.latticeAdjustmentSteps, 1);
-    labelContours = [true true];
+    labelContours = [false false];
     labelCones = false;
     subplotTitle = '(E)';
     plotMosaic(obj, subplotPosVectors, row, col, ...
@@ -218,7 +218,7 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
         faceColor = 0.99*[1 1 1];
         lineStyle = '-';
         lineWidth = 1.0;
-        iTheta = (0:10:300) / 180 * pi;
+        iTheta = (0:10:360) / 180 * pi;
         coneApertureRadius = obj.lambdaMin/2;
         coneAperture.x = coneApertureRadius*cos(iTheta) * 1e-6;
         coneAperture.y = coneApertureRadius*sin(iTheta) * 1e-6;
@@ -240,8 +240,6 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
         % Compute model mosaic density
         [densityMapModel, densityMapSupportX, densityMapSupportY] = ...
             obj.computeDensityMap('from model');
-   
-        [iteration max(densityMapMosaic(:)) max(densityMapModel(:))]
 
         
         [cH1, hH1] = contour(ax, densityMapSupportX, densityMapSupportY, ...
