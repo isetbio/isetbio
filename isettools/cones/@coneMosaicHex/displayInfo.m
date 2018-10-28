@@ -34,6 +34,9 @@ if (isempty(obj.apertureStats))
     obj.computeApertureStats(plotApertureStats);
 end
 
+[~,~,~,maximumConeDensity, minimumConeSeparationMicrons] = ...
+    obj.computeDensityMap('from mosaic');
+        
 fprintf('\nMosaic info:\n');
 fprintf('%53s %2.1f (w) x %2.1f (h)\n', 'Size (microns):', ...
     obj.width * 1e6, obj.height * 1e6);
@@ -78,8 +81,13 @@ fprintf('%53s %d (%2.3f%%)\n', 'M- cones:' , MconesNum, MconesNum/totalConesNum)
 fprintf('%53s %d (%2.3f%%)\n', 'S- cones:' , SconesNum, SconesNum/totalConesNum);
 fprintf('%53s %2.1f cones/mm^2\n', 'Cone density (all cones):', ...
     numel(obj.pattern) / (obj.width * obj.height * 1e6));
-fprintf('%53s %2.1f cones/mm^2\n', 'Cone density (active cones):', ...
+fprintf('%53s %2.1f cones/mm^2\n', 'Mean cone density (active cones):', ...
     numel(find(obj.pattern > 1)) / (obj.width * obj.height * 1e6));
+
+fprintf('%53s %2.1f cones/mm^2 at %2.2f,%2.2f um\n', 'Max cone density (based on 5 neighboring cones):', ...
+maximumConeDensity.value, maximumConeDensity.position(1), maximumConeDensity.position(2));
+fprintf('%53s %2.1f microns at %2.2f,%2.2f um\n', 'Min cone separation (based on 5 neighboring cones):', ...
+minimumConeSeparationMicrons.value, minimumConeSeparationMicrons.position(1), minimumConeSeparationMicrons.position(2));
 fprintf('%53s %d\n', 'Ecc-based cone efficiency:', obj.eccBasedConeQuantalEfficiency);
 fprintf('%53s %d\n\n', 'Ecc-based macular pigment density:', obj.eccBasedMacularPigment);
 end

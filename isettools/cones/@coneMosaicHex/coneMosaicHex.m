@@ -387,7 +387,8 @@ classdef coneMosaicHex < coneMosaic
         hFig = visualizeGrid(obj, varargin);
 
         % Method to compute the cone density of @coneMosaicHex
-        [densityMap, densityMapSupportX, densityMapSupportY] = ...
+        [densityMap, densityMapSupportX, densityMapSupportY, ...
+            maximumConeDensity, minimumConeSeparationMicrons] = ...
             computeDensityMap(obj, computeConeDensityMap)
 
         % Reshape a full 3D hex activation map (coneRows x coneCols x time]

@@ -1,4 +1,5 @@
-function [densityMap, densityMapSupportX, densityMapSupportY] = ...
+function [densityMap, densityMapSupportX, densityMapSupportY, ...
+    maximumConeDensity, minimumConeSeparationMicrons] = ...
     computeDensityMap(obj, dataSource)
 
 % Factor to convert rectangular grid density to hexagonal grid density
@@ -29,7 +30,7 @@ if (strcmp(dataSource, 'from mosaic'))
         tmpConeLocs(targetConeIndex,:) = nan;
         
         % Find the mean distances of the target cone to its 6 neighboring cones
-        neigboringConesNum = 6;
+        neigboringConesNum = 5;
         nearestConeDistancesInMeters = pdist2(tmpConeLocs, ...
             obj.coneLocsHexGrid(targetConeIndex,:), ...
             'Euclidean', 'Smallest', neigboringConesNum);
@@ -37,7 +38,7 @@ if (strcmp(dataSource, 'from mosaic'))
         meanDistanceInMM(1,iPos) = mean(nearestConeDistancesInMeters) * 1000;
     end
 
-    fprintf('Min distance: %2.2f microns\n', min(meanDistanceInMM)*1000);
+    
     
     densityMap = rectToHexDensityFactor * (1./meanDistanceInMM).^2;
     densityMap = reshape(densityMap, [size(densityMapSupportX,1) size(densityMapSupportX,2)]);
@@ -48,9 +49,24 @@ if (strcmp(dataSource, 'from mosaic'))
     densityMapSmoothed = conv2(densityMap, smoothingKernel, 'same');
     densityMap = densityMapSmoothed;
     [maxDensity, idx] = max(densityMap(:));
-    [row,col] = ind2sub(size(densityMap), idx);
-    fprintf('Max density: %2.0f cones/mm2 at %2.1f %2.1f\n', ...
-        maxDensity, densityMapSupportX(idx)*1e6, densityMapSupportY(idx)*1e6);
+    xx = densityMapSupportX(:)*1e6;
+    yy = densityMapSupportY(:)*1e6;
+    maxDensityXpos = xx(idx);
+    maxDensityYpos = yy(idx);
+    
+    maximumConeDensity.value = maxDensity;
+    maximumConeDensity.position = [maxDensityXpos maxDensityYpos];
+    
+    
+    meanDistanceInMM = reshape(meanDistanceInMM, [size(densityMapSupportX,1) size(densityMapSupportX,2)]);
+    [minSep, idx] = min(meanDistanceInMM(:));
+    minSeparationXpos = xx(idx);
+    minSeparationYpos = yy(idx);
+    
+    minimumConeSeparationMicrons.value = minSep*1000;
+    minimumConeSeparationMicrons.position = [minSeparationXpos,minSeparationYpos];
+    
+
 %     figure(221);
 %     imagesc(smoothingKernel)
 %         axis 'image'
