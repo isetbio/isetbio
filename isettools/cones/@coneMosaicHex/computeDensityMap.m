@@ -9,12 +9,14 @@ rectToHexDensityFactor = 2/sqrt(3.0);
 deltaX = 3 * obj.lambdaMin * 1e-6;
 margin = 0 * obj.lambdaMin * 1e-6;
 
-
 mosaicSize = 0.5*max([obj.width obj.height]);
 gridXPos = 0:deltaX:(mosaicSize-margin);
 gridXPos = cat(2,-fliplr(gridXPos), gridXPos(2:end));
 gridYPos = gridXPos;
 [densityMapSupportX,densityMapSupportY] = meshgrid(gridXPos, gridYPos);
+
+% Compute density based on 5 neigboring cones
+neigboringConesNum = 5;
 
 if (strcmp(dataSource, 'from mosaic'))
 
@@ -29,8 +31,7 @@ if (strcmp(dataSource, 'from mosaic'))
         tmpConeLocs = obj.coneLocsHexGrid;
         tmpConeLocs(targetConeIndex,:) = nan;
         
-        % Find the mean distances of the target cone to its 6 neighboring cones
-        neigboringConesNum = 5;
+        % Find the mean distances of the target cone to its 5 neighboring cones
         nearestConeDistancesInMeters = pdist2(tmpConeLocs, ...
             obj.coneLocsHexGrid(targetConeIndex,:), ...
             'Euclidean', 'Smallest', neigboringConesNum);
