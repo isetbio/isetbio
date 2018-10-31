@@ -27,8 +27,6 @@ p = inputParser;
 p.addParameter('plotApertureStats', false, @islogical);
 p.parse(varargin{:});
 
-
-%[apertureCoverage, geometricCoverage] = obj.retinalCoverage();
 if (isempty(obj.apertureStats))
     plotApertureStats = false;
     obj.computeApertureStats(plotApertureStats);

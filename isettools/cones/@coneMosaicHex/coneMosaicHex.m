@@ -433,6 +433,9 @@ classdef coneMosaicHex < coneMosaic
         
         % Return the indices for all L/M/S cones
         [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj);
+        
+        % Return the aperture diameters for all cones
+        apertureDiametersMicrons = computeApertureDiameters(obj);
     end % Public methods
 
     methods (Access = private)
