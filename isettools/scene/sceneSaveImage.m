@@ -37,7 +37,7 @@ if notDefined('scene'), scene = vcGetObject('scene'); end
 
 % Get RGB file name (tif)
 if notDefined('fName')
-    fName = vcSelectDataFile('session', 'w', 'png', 'Image file (png)');
+    fName = vcSelectDataFile('stayput', 'w', 'png', 'Image file (png)');
 end
 
 % open window.

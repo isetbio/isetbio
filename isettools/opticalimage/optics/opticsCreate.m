@@ -322,9 +322,10 @@ if (legacyFrequencySupport)
     % Fsupport used to be [], which defaults to 60 c/deg
     fSupport = [];
 else
-    % Up to 120, to get better PSF
+    % Up to 120 c/deg, with 240 samples to get better PSF
     maxF = 120;
-    fList = unitFrequencyList(maxF);
+    N = 240;
+    fList = unitFrequencyList(N);
     fList = fList * maxF;
     [X, Y] = meshgrid(fList, fList);
     fSupport(:, :, 1) = X;
@@ -333,22 +334,6 @@ end
    
 % The human optics are an SI case, and we store the OTF at this point. 
 [OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, fSupport, wave);
-% X = squeeze(fSupport(:, :, 1));
-% Y = squeeze(fSupport(:,:,2));
-% idx = find((X(:) == 0) & (Y(:) == 0))
-% [row,col] = ind2sub(size(X), idx)
-% for k = 1:31
-%     OTFatBand = fftshift(squeeze(OTF2D(:,:,k)));
-%     figure(223); clf;
-%     imagesc(X(row,:),Y(:,col),OTFatBand)
-%     axis 'image'
-%     OTFAtZero = [squeeze(OTFatBand(row,col)) OTF2D(1,1,k)]
-%     pause
-% end
-% 
-% size(fSupport)
-% size(OTF2D)
-% pause
 
 optics = opticsSet(optics, 'otfData', OTF2D);
 umPerDegreeForSupport = umPerDegree;

@@ -646,11 +646,15 @@ classdef coneMosaic < hiddenHandle
             % Optional key/value pairs:
             %    None.
             %
-            mosaicAreaInMeters = prod(obj.size);
-            conesNum = numel(find(obj.pattern>1));
-            coneAreaInMeters = obj.pigment.area;
-            val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
-            
+            if (isa(obj, 'coneMosaicHex'))
+                [~, geometricCoverage] = obj.retinalCoverage();
+                val = geometricCoverage;
+            else
+                mosaicAreaInMeters = prod(obj.size);
+                conesNum = numel(find(obj.pattern>1));
+                coneAreaInMeters = obj.pigment.area;
+                val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
+            end
         end
         
         function val = get.innerSegmentCoverage(obj)
@@ -671,10 +675,15 @@ classdef coneMosaic < hiddenHandle
             % Optional key/value pairs:
             %    None.
             %
-            mosaicAreaInMeters = prod(obj.size);
-            conesNum = numel(find(obj.pattern>1));
-            coneAreaInMeters = obj.pigment.pdArea;
-            val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
+            if (isa(obj, 'coneMosaicHex'))
+                [lightCollectingCoverage, ~] = obj.retinalCoverage();
+                val = lightCollectingCoverage;
+            else
+                mosaicAreaInMeters = prod(obj.size);
+                conesNum = numel(find(obj.pattern>1));
+                coneAreaInMeters = obj.pigment.pdArea;
+                val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
+            end
         end
         
         function val = get.coneLocs(obj)

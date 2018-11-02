@@ -164,7 +164,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     % sample probabilistically according to coneSpacingFunction
     coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
     normalizedConeSeparations = coneSeparations / gridParams.lambdaMin;
-    fudgeFactor = 0.76;
+    fudgeFactor = 1.0;
     densityP = fudgeFactor * (1 ./ normalizedConeSeparations) .^ 2;
     
     % Remove cones accordingly
@@ -207,6 +207,16 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
 %
     % Convergence parameters
 
+%     s = struct(...
+%         'positionalToleranceF', obj.latticeAdjustmentPositionalToleranceF, ...
+%         'DelaunayToleranceF', obj.latticeAdjustmentDelaunayToleranceF, ...
+%         'maxGridAdjustmentIterations', obj.maxGridAdjustmentIterations, ...
+%         'gridParams', gridParams, ...
+%         'conePositions', conePositions);
+%     save('s.mat', 's');
+%     pwd
+%     pause
+    
     positionalDiffTolerance = obj.latticeAdjustmentPositionalToleranceF ...
         * gridParams.lambdaMin;
     deps = sqrt(eps) * gridParams.lambdaMin;

@@ -6,20 +6,20 @@
 % Copyright, ISETBIO Team, 2014
 
 %%
-s_initISET
+ieInit
 
 %% Plot macular pigment absorptance at a series of densities
-% This is the fraction of absorbed photons
+% Absorptance is the fraction of photons absorbed
 
-m = macularCreate;
-wave = macularGet(m,'wave');
+m = Macular;
+wave = m.wave;
 
 dList = 0:.1:.5;
 
 vcNewGraphWin;
 for ii=1:length(dList)
-    m = macularSet(m,'density',dList(ii));
-    sa = macularGet(m,'absorptance');
+    m.density = dList(ii);
+    sa = m.absorptance;
     plot(wave,sa);
     hold on;
 end
@@ -28,16 +28,18 @@ ylabel('Spectral absorptance')
 title('Macular pigment photon absorptions')
 legend(num2str(dList'));
 
-%% Now, plot the densities
+%% Now, plot the spctral density
+% This is the unit density scaled by the actual pigment density
+
 vcNewGraphWin;
 for ii=1:length(dList)
-    m = macularSet(m,'density',dList(ii));
-    sa = macularGet(m,'spectraldensity');
+    m.density = dList(ii);
+    sa = m.spectralDensity;
     plot(wave,sa);
     hold on;
 end
 xlabel('Wavelength')
-ylabel('Spectral absorbance')
+ylabel('Spectral density')
 title('Macular pigment spectral densities')
 
 legend(num2str(dList'));
