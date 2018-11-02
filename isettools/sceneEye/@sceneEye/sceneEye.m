@@ -257,6 +257,8 @@ methods
         p.addParameter('name', 'scene-001', @ischar);
         p.addParameter('workingDirectory', '', @ischar);
         
+        % TODO: Is there a way to get rid of all of these? Should we pass
+        % varagin directly to loadPbrtScene?
         % Optional parameters used by unique scenes (e.g. slantedBar,
         % texturedPlane, pointSource). We can use these parameters to move
         % the plane/point to the given distance (in mm) and, if applicable,
@@ -268,14 +270,22 @@ methods
         p.addParameter('planeSize', [1 1], @isnumeric);
         p.addParameter('pointDiameter',0.001,@isnumeric);
         p.addParameter('pointDistance',1,@isnumeric);
+        
         p.addParameter('gamma','true',@ischar); % texturedPlane
         p.addParameter('useDisplaySPD',0); % texturedPlane
+        
         p.addParameter('whiteDepth',1,@isnumeric); %slantedBarAdjustable
         p.addParameter('blackDepth',1,@isnumeric); %slantedBarAdjustable
+        
         p.addParameter('topDepth',1,@isnumeric); %slantedBarTexture
         p.addParameter('bottomDepth',1,@isnumeric); %slantedBarTexture 
+        
         p.addParameter('objectDistance',1,@isnumeric); %snellenSingle
         p.addParameter('objectSize',[0.3 0.3],@isnumeric); %snellenSingle
+        
+        p.addParameter('Adist',0.1,@isnumeric); %lettersAtDepth
+        p.addParameter('Bdist',0.2,@isnumeric); %lettersAtDepth
+        p.addParameter('Cdist',0.3,@isnumeric); %lettersAtDepth
         
         % Parse
         p.parse(pbrtFile, varargin{:});
@@ -459,6 +469,22 @@ methods
                 
         end
             
+    end
+    
+    % When the user toggles debugMode, make sure the camera type is
+    % correct.
+    function set.debugMode(obj,val)
+        obj.debugMode = val;
+        if(val)
+            obj.modelName = 'none';
+            % The camera will be changed to perspective in write(), so we
+            % do nothing here. 
+        else
+            % Put the navarro eye back in.
+            obj.modelName = 'Navarro';
+            obj.recipe.camera = piCameraCreate('realisticEye');
+        end
+        
     end
     
     % I want to put in this warning, but again MATLAB doesn't really like

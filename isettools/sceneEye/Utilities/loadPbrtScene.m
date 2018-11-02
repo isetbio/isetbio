@@ -11,8 +11,10 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 %       necessary files over to the newly created working directory.
 %   3. Apply any adjustable parameters given by the user to the recipe,
 %       e.g. moving a planar target a certain distance away.
+%
 % TODO: I'd like to keep splitting up the above steps into more functions
-% to neaten things up.
+% to neaten things up. I think we might even be able to combine step 1 and
+% step 3.
 %
 % Syntax:
 %   [recipe sceneUnits] = selectPbrtScene(sceneName, varargin)
@@ -200,6 +202,13 @@ if(sceneNameFlag)
     
     switch sceneName
         
+        case('lettersAtDepth')
+            % Move the letters in the scene. To do this, we're actually
+            % going to remake the scene.
+            recipe = piCreateLettersAtDepth('Adist',se_p.Results.Adist,...
+                'Bdist',se_p.Results.Bdist,...
+                'Cdist',se_p.Results.Cdist);
+            
         case('slantedBar')
             % A variation of slantedBar where the black and white planes
             % are adjustable to different depths. We reread the recipe
