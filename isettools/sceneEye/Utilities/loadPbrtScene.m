@@ -1,4 +1,3 @@
-
 function [recipe, sceneUnits, workingDir, origPath] = ...
     loadPbrtScene(pbrtFile, se_p, varargin)
 % Setup a PBRT scene given it's name or file location. Primarily includes the
