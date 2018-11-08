@@ -75,6 +75,7 @@ p.addParameter('coneDensityContourLevels', (100:20:250) * 1000, ...
 p.addParameter('overlayContourLabels', false, @islogical);
 p.addParameter('backgroundColor', [0.75 0.75 0.75]);
 p.addParameter('foregroundColor', [0 0 0]);
+p.addParameter('displayVisualDegs', false, @islogical);
 
 p.parse(varargin{:});
 
@@ -495,9 +496,10 @@ end
 
 %% Arrange axis and fonts
 hold(axesHandle, 'off')
-axis(axesHandle, 'xy'); axis(axesHandle, 'equal');
+axis(axesHandle, 'xy');
+axis(axesHandle, 'square');
 
-if (isempty(p.Results.axesHandle))
+if (isempty(p.Results.axesHandle)) || (p.Results.displayVisualDegs)
     if (max(obj.fov) < 1.0)
         tickInc = 0.1;
     elseif (max(obj.fov) < 4.0)

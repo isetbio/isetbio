@@ -45,7 +45,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     p.addParameter('xRange', [], @isnumeric);
     p.addParameter('yRange', [], @isnumeric);
     p.addParameter('activationTime', [], @isnumeric);
-    p.addParameter('backgroundColor', 'none', @isnumeric);
+    p.addParameter('backgroundColor', [0 0 0], @isnumeric);
     p.parse(axesHandle, activation, varargin{:});
 
     axesHandle = p.Results.axesHandle;
@@ -242,10 +242,9 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
         'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
         'XTick', ticksMeters, 'YTick', ticksMeters, ...
-        'XTickLabels', sprintf('%2.2f\n', ticksDegs), 'YTickLabels', sprintf('%2.2f\n', ticksDegs), ...
-        'FontSize', 12);
+        'XTickLabels', sprintf('%2.2f\n', ticksDegs), 'YTickLabels', sprintf('%2.2f\n', ticksDegs));
     xticks(axesHandle, ticksMeters); yticks(axesHandle, ticksMeters); 
-    
+    set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
     yticklabels(axesHandle, tickLabels);
     
 end
