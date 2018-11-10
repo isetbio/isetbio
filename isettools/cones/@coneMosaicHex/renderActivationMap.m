@@ -239,16 +239,13 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     if (showYLabel)
         ylabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
     end
-    tickLabels = {sprintf('%2.2f', ticksDegs(1)), sprintf('%2.2f', ticksDegs(2)), sprintf('%2.2f', ticksDegs(3))};
-    
+
     set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
         'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
         'XTick', ticksMeters, 'YTick', ticksMeters, ...
         'XTickLabels', sprintf('%2.2f\n', ticksDegs), 'YTickLabels', sprintf('%2.2f\n', ticksDegs));
     xticks(axesHandle, ticksMeters); yticks(axesHandle, ticksMeters); 
     set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
-    yticklabels(axesHandle, tickLabels);
-    
 end
 
 function renderModulatedColorPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
