@@ -108,18 +108,20 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     end
 
     if (isempty(xRange))
-        xRange = [sampledHexMosaicXaxis(1) - obj.pigment.width, ...
-            sampledHexMosaicXaxis(end) + obj.pigment.width];
+        xRange = ...
+            [sampledHexMosaicXaxis(1) sampledHexMosaicXaxis(end)] + ...
+            1.5*1e-6*[-1 1];
     else
         xRange = xRange * 1e-6;
     end
     if (isempty(yRange))
-        yRange = [sampledHexMosaicYaxis(1) - obj.pigment.width, ...
-            sampledHexMosaicYaxis(end) + obj.pigment.width];
+        yRange = [sampledHexMosaicYaxis(1) sampledHexMosaicYaxis(end)] + ...
+            1.5*1e-6*[-1 1];
      else
         yRange = yRange * 1e-6;
     end
 
+    
     cMapLevels = size(colorMap, 1);
     idx = find(obj.pattern > 1);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);  
@@ -136,7 +138,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
 
     if (obj.shouldCorrectAbsorptionsWithEccentricity())
     % Compute ecc-varying apertures
-        [apertureOutline, ~] = coneMosaicHex.computeApertureSizes(...
+        [apertureOutline, ~, maxAperture] = coneMosaicHex.computeApertureSizes(...
             dx, [], apertureOutline, [], coneXcoords, coneYcoords);
     end
 
@@ -227,9 +229,9 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     if (isempty(visualizedFOV))
         visualizedFOV = max(obj.fov);
     end
-    ticksDegs = round(100*0.5 * visualizedFOV * 0.95*[-1 0 1])/100;
+    ticksDegs = round(100*0.5 * visualizedFOV * 1.0*[-1 -0.5 0 0.5 1])/100;
     ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
-    spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6;
+    spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6 + maxAperture/2*[-1 1];
     
     if (showXLabel)
         xlabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');

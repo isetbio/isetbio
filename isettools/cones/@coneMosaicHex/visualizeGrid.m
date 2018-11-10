@@ -197,25 +197,6 @@ end
 hold(axesHandle, 'on');
 
 %% Do the display
-
-% Odd that this is here and then again later.  I am trying to delete.
-% switch overlayConeDensityContour
-%     case 'measured'
-%         [densityMapMeasured, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from mosaic');
-%     case 'theoretical'
-%         [densityMapTheoretical, densityMapSupportX, densityMapSupportY] =...
-%             obj.computeDensityMap('from model');
-%     case 'theoretical_and_measured'
-%         [densityMapMeasured, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from mosaic');
-%         [densityMapTheoretical, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from model');
-%     case 'none'
-%     otherwise
-%         error('coneMosaicHex.visualizeGrid: ''coneDensityContourOverlay'' must be set to one of the following: ''measured'', ''theoretical'', ''none''. ');
-% end
-
 if (overlayHexMesh)
     disp('here')
     % Superimpose hex mesh showing the locations of the perfect hex grid

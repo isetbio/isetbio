@@ -1,10 +1,10 @@
-function [innerApertureOutlineVarying, outerApertureOutlineVarying] = ...
+function [innerApertureOutlineVarying, outerApertureOutlineVarying, maxApertureMeters] = ...
     computeApertureSizes(dxInner, dxOuter, innerApertureOutline, ...
     outerApertureOutline, xCoords, yCoords)
 % Compute ecc-dependent aperture sizes for use in renderPatchArray
 %
 % Syntax:
-%   [innerApertureOutlineVarying, outerApertureOutlineVarying] = ...
+%   [innerApertureOutlineVarying, outerApertureOutlineVarying, maxApertureMeters] = ...
 %       computeApertureSizes(...
 %       dxInner, dxOuter, innerApertureOutline, outerApertureOutline, ...
 %       xCoords, yCoords)
@@ -49,15 +49,17 @@ function [innerApertureOutlineVarying, outerApertureOutlineVarying] = ...
         tmp_innerApertureOutline.y = tmp_innerApertureOutline.x;
     end
 
+    increaseFactors = apertureMeters/apertureMetersAtZeroEcc;
+    maxApertureMeters = max(increaseFactors)*apertureMetersAtZeroEcc;
+    
     for k = 1:numel(xCoords)
-        increaseFactor = apertureMeters(k)/apertureMetersAtZeroEcc;
         if (~isempty(dxOuter))
-            tmp_outerApertureOutline.x(k,:) = outerApertureOutline.x * increaseFactor;
-            tmp_outerApertureOutline.y(k,:) = outerApertureOutline.y * increaseFactor;
+            tmp_outerApertureOutline.x(k,:) = outerApertureOutline.x * increaseFactors(k);
+            tmp_outerApertureOutline.y(k,:) = outerApertureOutline.y * increaseFactors(k);
         end
         if (~isempty(dxInner))
-            tmp_innerApertureOutline.x(k,:) = innerApertureOutline.x * increaseFactor;
-            tmp_innerApertureOutline.y(k,:) = innerApertureOutline.y * increaseFactor;
+            tmp_innerApertureOutline.x(k,:) = innerApertureOutline.x * increaseFactors(k);
+            tmp_innerApertureOutline.y(k,:) = innerApertureOutline.y * increaseFactors(k);
         end
     end
     if (~isempty(dxOuter))
