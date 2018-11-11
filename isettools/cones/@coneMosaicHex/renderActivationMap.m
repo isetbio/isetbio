@@ -187,40 +187,9 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     set(axesHandle, 'CLim', [0 1], 'XTick', [], 'YTick', [], ...
         'Color', backgroundColor);
 
-    colormap(axesHandle, colorMap);     
-    if (showColorBar)
-        hC = colorbar();
-        if (labelColorBarTicks)
-            ticks = [0 0.5 1.0];
-            hC.Ticks = ticks; 
-            tickLabels = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
-            
-            if (max(abs(tickLabels) < 0.01))
-                if (min(tickLabels) < 0)
-                    hC.TickLabels = sprintf('%+2.2f\n',tickLabels); 
-                else
-                    hC.TickLabels = sprintf('%2.2f\n',tickLabels); 
-                end
-            elseif (max(abs(tickLabels) < 0.4))
-                if (min(tickLabels) < 0)
-                    hC.TickLabels = sprintf('%+2.1f\n',tickLabels); 
-                else
-                    hC.TickLabels = sprintf('%2.1f\n',tickLabels); 
-                end
-            else
-                if (min(tickLabels) < 0)
-                    hC.TickLabels = sprintf('%+2.0f\n',round(tickLabels)); 
-                else
-                    hC.TickLabels = sprintf('%2.0f\n',round(tickLabels)); 
-                end
-            end
-        else
-            hC.TickLabels = {}; 
-        end
-        if (~isempty(titleForColorBar))
-            hC.Label.String = titleForColorBar;
-        end
-    end
+    colormap(axesHandle, colorMap);  
+    
+    
     
     axis(axesHandle, 'image'); 
     axis(axesHandle, 'xy');
@@ -240,12 +209,45 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         ylabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
     end
 
+
+    if (showColorBar)
+        
+        drawnow;
+        sPosOriginal  = get(gca,'position');
+    
+        hC = colorbar();
+        if (labelColorBarTicks)
+            ticks = [0 0.5 1.0];
+            hC.Ticks = ticks; 
+            tickLabels = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
+            if (min(tickLabels) < 0)
+                hC.TickLabels = sprintf('%+2.1f\n',tickLabels); 
+            else
+                hC.TickLabels = sprintf('%2.1f\n',tickLabels); 
+            end
+        else
+            hC.TickLabels = {}; 
+        end
+        if (~isempty(titleForColorBar))
+            hC.Label.String = titleForColorBar;
+        end
+    end
+    
+    
     set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
         'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
         'XTick', ticksMeters, 'YTick', ticksMeters, ...
         'XTickLabels', sprintf('%2.2f\n', ticksDegs), 'YTickLabels', sprintf('%2.2f\n', ticksDegs));
     xticks(axesHandle, ticksMeters); yticks(axesHandle, ticksMeters); 
     set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
+    
+    if (showColorBar)
+        drawnow;
+        sPos = get(gca,'position');
+        sPos(3:4) = sPosOriginal(3:4);
+        set(gca,'position',sPos);
+        drawnow;
+    end
 end
 
 function renderModulatedColorPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...
