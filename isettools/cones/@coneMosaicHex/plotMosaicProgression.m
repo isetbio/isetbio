@@ -214,11 +214,11 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
             'backgroundColor', backgroundColor);
     else
         % Plot the cones
-        edgeColor = [0.4 0.4 0.4];
+        edgeColor = [0.1 0.1 0.1];
         faceColor = 0.99*[1 1 1];
         lineStyle = '-';
-        lineWidth = 1.0;
-        iTheta = (0:10:360) / 180 * pi;
+        lineWidth = 0.5;
+        iTheta = (0:30:360) / 180 * pi;
         coneApertureRadius = obj.lambdaMin/2;
         coneAperture.x = coneApertureRadius*cos(iTheta) * 1e-6;
         coneAperture.y = coneApertureRadius*sin(iTheta) * 1e-6;
