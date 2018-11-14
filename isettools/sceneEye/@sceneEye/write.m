@@ -176,7 +176,7 @@ end
 
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
-recipe.outputFile = pbrtFile;
+recipe.set('outputFile',pbrtFile);
 if(strcmp(recipe.exporter,'C4D'))
     piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
         'overwriteresources', false,'creatematerials',true);
