@@ -170,6 +170,14 @@ properties (GetAccess=public, SetAccess=public)
     %   FOV as the eye. This can be potentially faster and easier to
     %   render than going through the eye.
     debugMode;
+    
+    %RECIPE Structure that holds all other instructions needed for the
+    %renderer
+    % (PBRT) to render the scene.This includes things like the
+    % WorldBegin/WorldEnd block, the PixelFilter, the Integrator, etc.
+    % Ideally, the sceneEye user will not need to access the recipe very
+    % often.
+    recipe;
 end
 
 properties (Dependent)
@@ -213,18 +221,11 @@ properties(GetAccess=public, SetAccess=private)
     %   We keep of track of this here so we can pass the correct parameter
     %   to PBRT.
     sceneUnits;
+      
 
 end
 
 properties(GetAccess=public, SetAccess=public, Hidden=true)
-    % The recipe stores pretty much everything else we read in from the
-    % PBRT file that we don't want the user to access directly. This
-    % includes things like the WorldBegin/WorldEnd block, the PixelFilter,
-    % the Integrator, etc.
-
-    % recipe - Structure that holds all instructions needed to
-    %   render the PBRT file.
-    recipe;
     
     %DISTANCE2CHORD This is used in intermediate calculations and is an
     %   important variable when we are doing calculations at wide angles.
@@ -274,14 +275,15 @@ methods
         p.addParameter('gamma','true',@ischar); % texturedPlane
         p.addParameter('useDisplaySPD',0); % texturedPlane
         
-        p.addParameter('whiteDepth',1,@isnumeric); %slantedBarAdjustable
-        p.addParameter('blackDepth',1,@isnumeric); %slantedBarAdjustable
+        % I don't think these work at the moment
+        % p.addParameter('whiteDepth',1,@isnumeric); %slantedBar
+        % p.addParameter('blackDepth',1,@isnumeric); %slantedBar
         
         p.addParameter('topDepth',1,@isnumeric); %slantedBarTexture
         p.addParameter('bottomDepth',1,@isnumeric); %slantedBarTexture 
         
         p.addParameter('objectDistance',1,@isnumeric); %snellenSingle
-        p.addParameter('objectSize',[0.3 0.3],@isnumeric); %snellenSingle
+        p.addParameter('objectSize',0.3,@isnumeric); %snellenSingle
         
         p.addParameter('Adist',0.1,@isnumeric); %lettersAtDepth
         p.addParameter('Bdist',0.2,@isnumeric); %lettersAtDepth

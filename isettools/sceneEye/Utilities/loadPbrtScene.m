@@ -242,7 +242,7 @@ if(sceneNameFlag)
             recipe = piObjectTransform(recipe,'Plane','Translate',[0 0 se_p.Results.pointDistance+0.5]);
          
         case('snellenSingle')
-            scaling = [se_p.Results.objectSize(1) se_p.Results.objectSize(2) 1] ./ [1 1 1];
+            scaling = [se_p.Results.objectSize se_p.Results.objectSize 1] ./ [1 1 1];
             recipe = piObjectTransform(recipe,'Snellen','Scale',scaling);
             recipe = piObjectTransform(recipe, 'Snellen', ...
                 'Translate', [0 0 se_p.Results.objectDistance]);
