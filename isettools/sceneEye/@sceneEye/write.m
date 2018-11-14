@@ -42,10 +42,12 @@ objNew.recipe = copy(obj.recipe);
 
 ecc = objNew.eccentricity;
 
-% This section of the code has not been thoroughly finished/debugged, so
-% let's put out a warning.
+% I was having many bugs with my eccentricity code, so for now I've removed
+% it for now. Ideally we do all the right calculations shown above and then
+% use scene3d.recipe.set('cropwindow',[x1 x2 y1 y2]); and then carefully
+% reset the angular support as well...
 if(ecc ~= [0 0])
-    warning('Eccentricity calculations are currently off.')
+    warning('Eccentricity is currently not implemented. Setting to zero.')
     ecc = [0 0];
 end
 
