@@ -158,21 +158,23 @@ else
         'up', objNew.eyeUp);
 end
 
-% Crop window
-
-% Crop window and eccentricity can conflicting values. Let's resolve
-% that (messily) here. We may rethink the eccentricity calculation in
-% the future:
-% If there is no eccentricity set, use whatever crop window was in the
-% structure originally. If there is eccentricity, use the updated
-% cropwindow. 
-if(ecc == [0 0])
-    % Do nothing
-else
-    recipe.film.cropwindow.value = cropWindowEcc;
-    recipe.film.cropwindow.type = 'float';
-end
-
+% If there was a crop window, we have to update the angular support that
+% comes with sceneEye
+% We can't do this right now because the angular support is a dependent
+% variable. How to overcome this?
+%{
+currAngSupport = obj.angularSupport;
+cropWindow = recipe.get('cropwindow');
+cropWindowR = cropWindow.*obj.resolution;
+cropWindowR = [cropWindowR(1) cropWindowR(3) ...
+    cropWindowR(2)-cropWindowR(1) cropWindowR(4)-cropWindowR(3)];
+[X,Y] = meshgrid(currAngSupport,currAngSupport);
+X = imcrop(X,cropWindowR);
+Y = imcrop(Y,cropWindowR);
+% Assume square optical image for now, but we should probably change
+% angularSupport to have both x and y direction.
+objNew.angularSupport = X(1,:); 
+%}
 
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));

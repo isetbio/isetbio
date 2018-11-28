@@ -43,8 +43,6 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 % History:
 %    5/25/18  TL   Created
 %
-% TODO:
-%       - There should be an easy way to list all the scenes available.
 
 %% Parse inputs
 p = inputParser;
@@ -115,7 +113,7 @@ if(sceneNameFlag)
             
         case('slantedBar')
             scenePath = fullfile(piRootPath, 'data', ...
-                'V3','SlantedBar', 'slantedBar.pbrt');
+                'V3','slantedBar', 'slantedBar.pbrt');
             sceneUnits = 'm';
             
         case('chessSet')
