@@ -238,9 +238,10 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     % Iteratively adjust the cone positions until the forces between nodes
     % (conePositions) reach equlibrium.
     notConverged = true;
+    terminateAdjustment = 0;
     iteration = 0;
     tic
-    while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations)
+    while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations) && (terminateAdjustment == 0)
         iteration = iteration + 1;
 
         if (obj.maxGridAdjustmentIterations < 100)
@@ -249,9 +250,10 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         else
             if (mod(iteration,50) == 1)
                 fprintf('\nHex grid adjustment: on iteration %d ...', ...
-                    iteration-1);
+                    iteration);
             end
         end
+
 
         % compute cone positional diffs
         positionalDiffs = sqrt(...
@@ -388,6 +390,19 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
                 size(obj.latticeAdjustmentSteps, 1) + 1, :, :) = ...
                 conePositions * 1e-6;
         end 
+        
+        % check whether we need to ask user whether to continue or not
+        if (mod(iteration,obj.queryGridAdjustmentIterations) == 0)
+            visualizeLatticeState(obj, conePositions, iteration);
+            qString = sprintf('\n[iter: %d] Terminate adjusting (1) or continue (0)', iteration);
+            terminateAdjustment = queryUserWithDefault(qString, 0);
+            if (terminateAdjustment == 0)
+                fprintf('Will ask again at iteration %d.\n', iteration+obj.queryGridAdjustmentIterations);
+            else
+                fprintf('Terminating adjustment at user request\n');
+            end
+        end
+        
     end % while (notConverged) && (iteration < obj.maxGridAdjustmentIterations)
     
     fprintf('\nHex grid smoothing finished in %2.1f seconds.', toc);
@@ -770,5 +785,64 @@ function pattern = rectSampledHexPattern(obj)
         set(gca, 'CLim', [0 1]);
         colormap(cmap);
         axis 'image'
+    end
+end
+
+function visualizeLatticeState(obj, conePositions, iteration)
+    qDist = computeQuality(conePositions);
+    threshold = 70;
+    r = sqrt(sum(conePositions.^2,2));
+    idx = find(r < threshold);
+    conePositions = conePositions(idx,:);
+    hFig = figure(111); clf;
+    set(hFig,'Position', [10 10 1400 700]);
+    subplot('Position', [0.02 0.05 0.45 0.95]);
+    plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 6);
+    set(gca, 'XLim', threshold*[-1 1], 'YLim', threshold*[-1 1], 'XTick', [], 'YTick', []);
+    axis 'square';
+    subplot('Position', [0.52 0.05 0.45 0.95]);
+    plotQuality(qDist);
+    title(sprintf('iteration %d', iteration))
+end
+
+function plotQuality(qDist)
+    qLims = [0.5 1.005]; qBins = [0.3:0.01:1.0];
+    [counts,centers] = hist(qDist, qBins);
+    bar(centers,counts,1)
+    set(gca, 'XLim', qLims, 'YLim', [0 3500], 'XTick', [0.1:0.1:1.0], 'YTick', [0:1000:5000], 'FontSize', 16);
+    axis 'square'; grid on
+    xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 16);
+    ylabel('count', 'FontSize', 16);
+end
+
+function q = computeQuality(coneLocs)
+    
+    triangles = delaunay(squeeze(coneLocs(:,1)),squeeze(coneLocs(:,2)));
+    
+    trianglesNum = size(triangles,1);
+    X = coneLocs(:,1);
+    Y = coneLocs(:,2);
+    
+    q = zeros(1,trianglesNum);
+    for triangleIndex = 1:trianglesNum
+        for node = 1:3
+            x(node) = X(triangles(triangleIndex,node));
+            y(node) = Y(triangles(triangleIndex,node));
+        end 
+        aLength = sqrt((x(1)-x(2))^2 + (y(1)-y(2))^2);
+        bLength = sqrt((x(1)-x(3))^2 + (y(1)-y(3))^2);
+        cLength = sqrt((x(2)-x(3))^2 + (y(2)-y(3))^2);
+        q(triangleIndex) = (bLength+cLength-aLength)*(cLength+aLength-bLength)*(aLength+bLength-cLength)/(aLength*bLength*cLength);
+    end
+end
+
+function inputVal = queryUserWithDefault(prompt,defaultVal)
+    if (ischar(defaultVal))
+        inputVal = input(sprintf([prompt ' [%s]: '],defaultVal),'s');
+    else
+        inputVal = input(sprintf([prompt ' [%g]: '],defaultVal));
+    end
+    if (isempty(inputVal))
+        inputVal = defaultVal;
     end
 end

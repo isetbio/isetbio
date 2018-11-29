@@ -189,6 +189,10 @@ classdef coneMosaicHex < coneMosaic
         %maxGridAdjustmentIterations - Max number of iterations
         %   Max iterations for deciding whether the grid adjustment is done
         maxGridAdjustmentIterations
+        
+        % queryGridAdjustmentIterations - Query whether to continue grid
+        % adjustment every this many iterations
+        queryGridAdjustmentIterations
     end
 
     % Public methods
@@ -227,6 +231,7 @@ classdef coneMosaicHex < coneMosaic
                 'rotationDegs', ...
                 'saveLatticeAdjustmentProgression', ...
                 'maxGridAdjustmentIterations'...
+                'queryGridAdjustmentIterations' ...
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF'};
@@ -276,6 +281,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('marginF', 1.0, @(x)((isempty(x)) || ...
                 (isnumeric(x) && (x > 0.0))));
             p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);
+            p.addParameter('queryGridAdjustmentIterations', Inf, @isnumeric);
             p.parse(resamplingFactor, vararginForConeHexMosaic{:});
 
             % Set input params
@@ -297,7 +303,9 @@ classdef coneMosaicHex < coneMosaic
                 p.Results.latticeAdjustmentPositionalToleranceF;
             obj.maxGridAdjustmentIterations = ...
                 p.Results.maxGridAdjustmentIterations;
-
+            obj.queryGridAdjustmentIterations = ...
+                p.Results.queryGridAdjustmentIterations;
+            
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1) * [1 1]);
