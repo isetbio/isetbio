@@ -26,10 +26,12 @@ function regenerateLMSPattern(obj, LMSdensity, varargin)
     p.addParameter('sConeMinDistanceFactor', 2.5, @isnumeric);
     p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
     p.addParameter('zeroSconeDensity', false, @islogical);
+    p.addParameter('visualizeRegeneratedMosaic', false, @islogical);
     p.parse(varargin{:});
     
     sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
     sConeFreeRadiusMicrons = p.Results.sConeFreeRadiusMicrons;
+    visualizeRegeneratedMosaic = p.Results.visualizeRegeneratedMosaic;
     
     LMSdensity = LMSdensity / sum(LMSdensity);
     
@@ -47,6 +49,8 @@ function regenerateLMSPattern(obj, LMSdensity, varargin)
     obj.reassignConeIdentities(...
                     'sConeMinDistanceFactor', sConeMinDistanceFactor, ...
                     'sConeFreeRadiusMicrons', sConeFreeRadiusMicrons);
-    obj.visualizeGrid();
+    if (visualizeRegeneratedMosaic)
+        obj.visualizeGrid();
+    end
 end
 

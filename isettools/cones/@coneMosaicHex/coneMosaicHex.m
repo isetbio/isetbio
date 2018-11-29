@@ -379,7 +379,8 @@ classdef coneMosaicHex < coneMosaic
                 % free region.
                 obj.regenerateLMSPattern(obj.spatialDensity(2:4), ...
                     'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...
-                    'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);
+                    'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons, ...
+                    'visualizeRegeneratedMosaic', false);
             end
         end  % constructor
 
