@@ -77,8 +77,8 @@ switch objNew.modelName
         fprintf('Wrote out a new lens file: \n')
         fprintf('%s \n \n', fullfile(objNew.workingDir, lensFile));
         
-        obj.recipe.camera.lensfile.value = fullfile(objNew.workingDir, lensFile);
-        obj.recipe.camera.lensfile.type = 'string';   
+        objNew.recipe.camera.lensfile.value = fullfile(objNew.workingDir, lensFile);
+        objNew.recipe.camera.lensfile.type = 'string';   
     
     case{'Arizona','arizona'}
         
