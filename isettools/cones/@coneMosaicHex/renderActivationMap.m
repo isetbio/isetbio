@@ -140,6 +140,8 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     % Compute ecc-varying apertures
         [apertureOutline, ~, maxAperture] = coneMosaicHex.computeApertureSizes(...
             dx, [], apertureOutline, [], coneXcoords, coneYcoords);
+    else
+        maxAperture = 0;
     end
 
     hold(axesHandle, 'on');
