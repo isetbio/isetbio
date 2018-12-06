@@ -63,11 +63,15 @@ function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRa
     instancesNum = size(responses,1);
     visualizedTrialsNum = min([subplotRows*subplotCols, instancesNum]);
     
+    xTicksDegs =  round([-0.9 -0.5 0 0.5 0.9]*coneMosaic.fov(2)/2*100)/100;
+    xTicksMeters = xTicksDegs*coneMosaic.micronsPerDegree*1e-6;
+    xTickLabelDegs = sprintf('%2.1f\n', xTicksDegs);
+    
     axHandle = subplot('Position', subplotPosVectors(1,1).v);
     coneMosaic.visualizeGrid(...
         'axesHandle', axHandle, ...
         'displayVisualDegs', true);
-    set(gca, 'FontSize', 12, 'YTickLabel', {});
+    set(gca, 'FontSize', 12, 'YTickLabel', {}, 'XTick', xTicksMeters, 'XTickLabel', xTickLabelDegs);
     xlabel('space (degs)')
     ylabel('');
     
@@ -87,17 +91,16 @@ function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRa
                 'showColorBar', ~true, ...
                 'labelColorBarTicks', ~true);
         end
-        ylabel(''); set(gca, 'YTickLabel', {});
-        
+        ylabel(''); set(gca, 'YTickLabel', {}, 'XTick', xTicksMeters, 'XTickLabel', xTickLabelDegs);
         xlabel('');
-        set(gca, 'XTickLabel', {});
         
         set(gca, 'FontSize', 12);
         title(sprintf('trial #%d (t: %2.2f sec)', k, responseTime));
     end
     
     % Retrieve indices of cones along horizontal meridian
-    [indicesOfConesAlongXaxis, xCoordsOfConesAlongXaxis, typesOfConesAlongXaxis] = indicesOfConesAlongHorizontalMeridian(coneMosaic);
+    [indicesOfConesAlongXaxis, xCoordsOfConesAlongXaxis, typesOfConesAlongXaxis] =...
+        indicesOfConesAlongHorizontalMeridian(coneMosaic);
 
     % Extract the excitations of cones along horizontal meridian
     responses = reshape(responses, [instancesNum  size(responses,2)* size(responses,3)]);
@@ -119,7 +122,7 @@ function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRa
     SconesNum = numel(idx);
     plot(xCoordsOfConesAlongXaxis(idx), responsesNxXY(:,idx), 'b.');
     grid on
-    set(gca, 'FontSize', 14, 'XTick', [-0.3:0.1:0.3]);
+    set(gca, 'FontSize', 14, 'XTick', xTicksDegs);
     set(gca, 'YLim', responseRange);
     xlabel('\it space (degs)');
     ylabel(sprintf('\\it %s', responseSignalName));
