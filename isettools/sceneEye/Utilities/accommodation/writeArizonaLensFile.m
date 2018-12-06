@@ -28,9 +28,9 @@ posteriorAsph = -1.35-(0.43*A);
 % conicConstantX, and conicConstantY
 corneaA = [-7.8   -7.8   0.55  1  4.820  -0.25   -0.25];
 corneaP = [-6.5   -6.5   2.97  2  4.341  -0.25   -0.25];
-pupil =   [ 0      0     0     2  2      -7.52   -7.52];
-lensA =   [-12    -12    3.77  3  3.750  -1.35   -1.35];
-lensP =   [ 5.22   5.22  0     4  3.750   0       0];
+pupil =   [ 0      0     0     2  2       0       0];
+lensA =   [-12    -12    3.77  3  3.750  -7.52   -7.52];
+lensP =   [ 5.22   5.22  0     4  3.750  -1.35   -1.35];
 
 % flip these because of sign conventions
 lensA(1:2) = [anteriorRadius anteriorRadius] * -1;
