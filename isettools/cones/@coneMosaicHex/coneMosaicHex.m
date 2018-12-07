@@ -443,6 +443,12 @@ classdef coneMosaicHex < coneMosaic
         % Return the indices for all L/M/S cones
         [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj);
         
+        % Return the indices for cones along the horizontal and vertical
+        % meridians
+        [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
+            eccDegsOfConesAlongHorizMeridian, ...
+            eccDegsOfConesAlongVertMeridian] = indicesForConesAlongMeridians(obj)
+        
         % Return the aperture diameters for all cones
         apertureDiametersMicrons = computeApertureDiameters(obj);
     end % Public methods
