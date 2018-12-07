@@ -295,6 +295,9 @@ methods
         p.addParameter('Adist',0.1,@isnumeric); %lettersAtDepth
         p.addParameter('Bdist',0.2,@isnumeric); %lettersAtDepth
         p.addParameter('Cdist',0.3,@isnumeric); %lettersAtDepth
+        p.addParameter('Adeg',6,@isnumeric); %lettersAtDepth
+        p.addParameter('Cdeg',4,@isnumeric); %lettersAtDepth
+        p.addParameter('nchecks',[64 64],@isnumeric); % [wall,ground]
         
         % Parse
         p.parse(pbrtFile, varargin{:});
