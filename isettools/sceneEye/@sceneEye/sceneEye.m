@@ -57,14 +57,19 @@ classdef sceneEye < hiddenHandle
 %{
     % ETTBSkip.  Skip this example in ETTB, since it is known not to work.
     % When the example gets fixed, remove this line and the one above.
-    %
-    % [Note: JNM - Doesn't work for a number of reasons...]
-    sceneName = 'scene name';
-   fileName = 'fileName.pbrt';
-    thisScene = sceneEye('name', sceneName, 'pbrtFile', fileName);
-    thisScene.accommodation = double
-    % ...
-    oi = thisScene.render(varargin);
+
+    scene3d = sceneEye('chessSet');
+               
+    scene3d.fov = 30; 
+    scene3d.resolution = 128;
+    scene3d.numRays = 128;
+    scene3d.numCABands = 0;
+    scene3d.accommodation = 1; 
+
+    oi = scene3d.render();
+    ieAddObject(oi);
+    oiWindow;
+
 %}
 
 properties (GetAccess=public, SetAccess=public)
@@ -95,13 +100,13 @@ properties (GetAccess=public, SetAccess=public)
     %   nm rays from 0.2 meters will be in focus on the retina.
     accommodation;
 
-    % eccentricity - Horizontal and vertical angles on the retina
-    %   corresponding to the center of the rendered image. Positive angles
-    %   are to the right/up (from the eye's point of view) and negative
-    %   angles are to the left/down. For example, an image with [0 0]
-    %   eccentricity is centered on the center of the retina. An image with
-    %   [30 0] eccentricity is centered 30 degrees to the right of the
-    %   center of the retina.
+    % eccentricity - [Currently not implemented!] Horizontal and vertical
+    %   angles on the retina corresponding to the center of the rendered
+    %   image. Positive angles are to the right/up (from the eye's point of
+    %   view) and negative angles are to the left/down. For example, an
+    %   image with [0 0] eccentricity is centered on the center of the
+    %   retina. An image with [30 0] eccentricity is centered 30 degrees to
+    %   the right of the center of the retina.
     eccentricity;
 
     % pupilDiameter - Diameter of the pupil (mm)
@@ -138,9 +143,10 @@ properties (GetAccess=public, SetAccess=public)
 
     % numCABands - Number of wavelength samples to take when modeling CA
     %   We shoot extra rays of different wavelengths in order to model
-    %   chromatic aberration through the lens system. This determines
-    %   the number of samples we take. For example, if we set this to 4
-    %   we shoot rays at...
+    %   chromatic aberration through the lens system. When debugging, this
+    %   can be set to 0 but for the final render it should be something
+    %   like 8 or 16. (e.g. If you set it to 8, then we will shoot rays for
+    %   wavelengths of linspace(400,700,8).);
     numCABands;
 
     % eyePos - Position of the eye within the scene in [x y z] format
@@ -170,6 +176,14 @@ properties (GetAccess=public, SetAccess=public)
     %   FOV as the eye. This can be potentially faster and easier to
     %   render than going through the eye.
     debugMode;
+    
+    %RECIPE Structure that holds all other instructions needed for the
+    %renderer
+    % (PBRT) to render the scene.This includes things like the
+    % WorldBegin/WorldEnd block, the PixelFilter, the Integrator, etc.
+    % Ideally, the sceneEye user will not need to access the recipe very
+    % often.
+    recipe;
 end
 
 properties (Dependent)
@@ -187,7 +201,8 @@ properties (Dependent)
     sampleSize;
     
     % angularSupport - location of each pixel in degrees. This should be
-    % accurate even at wide-angles.
+    % accurate even at wide-angles. May not be accurate if you use a crop
+    % window though!
     angularSupport;
 
 end
@@ -213,18 +228,11 @@ properties(GetAccess=public, SetAccess=private)
     %   We keep of track of this here so we can pass the correct parameter
     %   to PBRT.
     sceneUnits;
+      
 
 end
 
 properties(GetAccess=public, SetAccess=public, Hidden=true)
-    % The recipe stores pretty much everything else we read in from the
-    % PBRT file that we don't want the user to access directly. This
-    % includes things like the WorldBegin/WorldEnd block, the PixelFilter,
-    % the Integrator, etc.
-
-    % recipe - Structure that holds all instructions needed to
-    %   render the PBRT file.
-    recipe;
     
     %DISTANCE2CHORD This is used in intermediate calculations and is an
     %   important variable when we are doing calculations at wide angles.
@@ -257,6 +265,8 @@ methods
         p.addParameter('name', 'scene-001', @ischar);
         p.addParameter('workingDirectory', '', @ischar);
         
+        % TODO: Is there a way to get rid of all of these? Should we pass
+        % varagin directly to loadPbrtScene?
         % Optional parameters used by unique scenes (e.g. slantedBar,
         % texturedPlane, pointSource). We can use these parameters to move
         % the plane/point to the given distance (in mm) and, if applicable,
@@ -268,14 +278,23 @@ methods
         p.addParameter('planeSize', [1 1], @isnumeric);
         p.addParameter('pointDiameter',0.001,@isnumeric);
         p.addParameter('pointDistance',1,@isnumeric);
+        
         p.addParameter('gamma','true',@ischar); % texturedPlane
         p.addParameter('useDisplaySPD',0); % texturedPlane
-        p.addParameter('whiteDepth',1,@isnumeric); %slantedBarAdjustable
-        p.addParameter('blackDepth',1,@isnumeric); %slantedBarAdjustable
+        
+        % I don't think these work at the moment
+        % p.addParameter('whiteDepth',1,@isnumeric); %slantedBar
+        % p.addParameter('blackDepth',1,@isnumeric); %slantedBar
+        
         p.addParameter('topDepth',1,@isnumeric); %slantedBarTexture
         p.addParameter('bottomDepth',1,@isnumeric); %slantedBarTexture 
+        
         p.addParameter('objectDistance',1,@isnumeric); %snellenSingle
-        p.addParameter('objectSize',[0.3 0.3],@isnumeric); %snellenSingle
+        p.addParameter('objectSize',0.3,@isnumeric); %snellenSingle
+        
+        p.addParameter('Adist',0.1,@isnumeric); %lettersAtDepth
+        p.addParameter('Bdist',0.2,@isnumeric); %lettersAtDepth
+        p.addParameter('Cdist',0.3,@isnumeric); %lettersAtDepth
         
         % Parse
         p.parse(pbrtFile, varargin{:});
@@ -459,6 +478,22 @@ methods
                 
         end
             
+    end
+    
+    % When the user toggles debugMode, make sure the camera type is
+    % correct.
+    function set.debugMode(obj,val)
+        obj.debugMode = val;
+        if(val)
+            obj.modelName = 'none';
+            % The camera will be changed to perspective in write(), so we
+            % do nothing here. 
+        else
+            % Put the navarro eye back in.
+            obj.modelName = 'Navarro';
+            obj.recipe.camera = piCameraCreate('realisticEye');
+        end
+        
     end
     
     % I want to put in this warning, but again MATLAB doesn't really like

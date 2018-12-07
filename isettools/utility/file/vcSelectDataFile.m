@@ -71,6 +71,7 @@ function fullName = vcSelectDataFile(dataType, rw, ext, windowTitle)
     fullName = vcSelectDataFile('color', 'r')
 %}
 
+%%
 if notDefined('dataType'), dataType = ''; end
 if notDefined('rw'), rw = 'r'; end
 if notDefined('ext'), ext = '*'; end
@@ -81,13 +82,12 @@ curDir = pwd;
 % variable is empty. But from then on, we use it.
 persistent pDir;
 
+%%
 switch lower(dataType)
     case {'stayput', ''}
         % Use the persistent directory name we have stored
-        if isempty(pDir)
-            fullPath = pwd;
-        else
-            fullPath = pDir;
+        if isempty(pDir),   fullPath = pwd;
+        else,               fullPath = pDir;
         end
     case {'data'}
         % Go to the isetbio data directory

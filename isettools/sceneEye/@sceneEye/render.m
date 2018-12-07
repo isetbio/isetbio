@@ -28,8 +28,9 @@ objNew = obj.write();
 recipe = objNew.recipe; % Update the recipe within the sceneEye object. 
 
 %% Render the pbrt file using docker
-scaleFactor = [];
-[ieObject, terminalOutput,scaleFactor] = piRender(recipe,'version',3);
+%scaleFactor = [];
+[ieObject, terminalOutput,scaleFactor] = piRender(recipe,'version',3,...
+    'scaleFactor',1);
         
 %% Set OI parameters correctly:
 if(~obj.debugMode)

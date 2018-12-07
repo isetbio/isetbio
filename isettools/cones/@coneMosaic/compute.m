@@ -112,7 +112,8 @@ obj.current = [];
 %  We do not accept multiple trials for this computational path (single
 %  image). In that case you should run a loop on the compute itself.
 %
-if length(size(emPath)) > 2
+
+if (ndims(emPath) > 2)
     % If multiple trials are requested, then emPath is 
     %
     %      (nTrials x nTime x 2)
@@ -154,6 +155,10 @@ else
     if (isempty(theExpandedMosaic))
         % We need an enlarged version of the cone mosaic because of the eye
         % movements. Generate it here, if the user did not provide one.
+        % Special case where we only have 1 eye movement
+        if (numel(emPath) == 2)
+            emPath = reshape(emPath, [1 2]);
+        end
         padRows = max(abs(emPath(:, 2)));
         padCols = max(abs(emPath(:, 1)));
         theExpandedMosaic = obj.copy();

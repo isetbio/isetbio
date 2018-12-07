@@ -42,10 +42,12 @@ objNew.recipe = copy(obj.recipe);
 
 ecc = objNew.eccentricity;
 
-% This section of the code has not been thoroughly finished/debugged, so
-% let's put out a warning.
+% I was having many bugs with my eccentricity code, so for now I've removed
+% it for now. Ideally we do all the right calculations shown above and then
+% use scene3d.recipe.set('cropwindow',[x1 x2 y1 y2]); and then carefully
+% reset the angular support as well...
 if(ecc ~= [0 0])
-    warning('Eccentricity calculations are currently off.')
+    warning('Eccentricity is currently not implemented. Setting to zero.')
     ecc = [0 0];
 end
 
@@ -75,8 +77,8 @@ switch objNew.modelName
         fprintf('Wrote out a new lens file: \n')
         fprintf('%s \n \n', fullfile(objNew.workingDir, lensFile));
         
-        obj.recipe.camera.lensfile.value = fullfile(objNew.workingDir, lensFile);
-        obj.recipe.camera.lensfile.type = 'string';   
+        objNew.recipe.camera.lensfile.value = fullfile(objNew.workingDir, lensFile);
+        objNew.recipe.camera.lensfile.type = 'string';   
     
     case{'Arizona','arizona'}
         
@@ -156,25 +158,27 @@ else
         'up', objNew.eyeUp);
 end
 
-% Crop window
-
-% Crop window and eccentricity can conflicting values. Let's resolve
-% that (messily) here. We may rethink the eccentricity calculation in
-% the future:
-% If there is no eccentricity set, use whatever crop window was in the
-% structure originally. If there is eccentricity, use the updated
-% cropwindow. 
-if(ecc == [0 0])
-    % Do nothing
-else
-    recipe.film.cropwindow.value = cropWindowEcc;
-    recipe.film.cropwindow.type = 'float';
-end
-
+% If there was a crop window, we have to update the angular support that
+% comes with sceneEye
+% We can't do this right now because the angular support is a dependent
+% variable. How to overcome this?
+%{
+currAngSupport = obj.angularSupport;
+cropWindow = recipe.get('cropwindow');
+cropWindowR = cropWindow.*obj.resolution;
+cropWindowR = [cropWindowR(1) cropWindowR(3) ...
+    cropWindowR(2)-cropWindowR(1) cropWindowR(4)-cropWindowR(3)];
+[X,Y] = meshgrid(currAngSupport,currAngSupport);
+X = imcrop(X,cropWindowR);
+Y = imcrop(Y,cropWindowR);
+% Assume square optical image for now, but we should probably change
+% angularSupport to have both x and y direction.
+objNew.angularSupport = X(1,:); 
+%}
 
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
-recipe.outputFile = pbrtFile;
+recipe.set('outputFile',pbrtFile);
 if(strcmp(recipe.exporter,'C4D'))
     piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
         'overwriteresources', false,'creatematerials',true);

@@ -1,4 +1,3 @@
-
 function [recipe, sceneUnits, workingDir, origPath] = ...
     loadPbrtScene(pbrtFile, se_p, varargin)
 % Setup a PBRT scene given it's name or file location. Primarily includes the
@@ -11,8 +10,10 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 %       necessary files over to the newly created working directory.
 %   3. Apply any adjustable parameters given by the user to the recipe,
 %       e.g. moving a planar target a certain distance away.
+%
 % TODO: I'd like to keep splitting up the above steps into more functions
-% to neaten things up.
+% to neaten things up. I think we might even be able to combine step 1 and
+% step 3.
 %
 % Syntax:
 %   [recipe sceneUnits] = selectPbrtScene(sceneName, varargin)
@@ -42,8 +43,6 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 % History:
 %    5/25/18  TL   Created
 %
-% TODO:
-%       - There should be an easy way to list all the scenes available.
 
 %% Parse inputs
 p = inputParser;
@@ -114,7 +113,7 @@ if(sceneNameFlag)
             
         case('slantedBar')
             scenePath = fullfile(piRootPath, 'data', ...
-                'V3','SlantedBar', 'slantedBar.pbrt');
+                'V3','slantedBar', 'slantedBar.pbrt');
             sceneUnits = 'm';
             
         case('chessSet')
@@ -200,6 +199,13 @@ if(sceneNameFlag)
     
     switch sceneName
         
+        case('lettersAtDepth')
+            % Move the letters in the scene. To do this, we're actually
+            % going to remake the scene.
+            recipe = piCreateLettersAtDepth('Adist',se_p.Results.Adist,...
+                'Bdist',se_p.Results.Bdist,...
+                'Cdist',se_p.Results.Cdist);
+            
         case('slantedBar')
             % A variation of slantedBar where the black and white planes
             % are adjustable to different depths. We reread the recipe
@@ -234,7 +240,7 @@ if(sceneNameFlag)
             recipe = piObjectTransform(recipe,'Plane','Translate',[0 0 se_p.Results.pointDistance+0.5]);
          
         case('snellenSingle')
-            scaling = [se_p.Results.objectSize(1) se_p.Results.objectSize(2) 1] ./ [1 1 1];
+            scaling = [se_p.Results.objectSize se_p.Results.objectSize 1] ./ [1 1 1];
             recipe = piObjectTransform(recipe,'Snellen','Scale',scaling);
             recipe = piObjectTransform(recipe, 'Snellen', ...
                 'Translate', [0 0 se_p.Results.objectDistance]);

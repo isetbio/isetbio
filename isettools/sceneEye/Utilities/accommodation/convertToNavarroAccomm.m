@@ -45,8 +45,11 @@ if(inputAccomm < 0.44)
     navarroAccomm = 0;
     return;
 elseif(inputAccomm > 9.25)
-    error(['At the moment, we don''t have data for accommodation',...
-    'greater than 0.925 dpt. This may change in the near future...'])
+    warning(['At the moment, we don''t have data for accommodation',...
+    'greater than 9.25 dpt. This may change in the near future, but for',...
+    'we set accommodation to 9.25 dpt.']);
+    navarroAccomm = 9.25;
+    return;
 end
 
 % accom = [0; 0.1500; 0.2400; 0.40; 0.6300; 1.0000; 1.5; 2.0000; 3.0000;

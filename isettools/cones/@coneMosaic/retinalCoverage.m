@@ -45,10 +45,18 @@ function [apertureCoverage, geometricCoverage] =  retinalCoverage(obj)
     coneArea = obj.pigment.width * obj.pigment.height;
 
     % compute aperture coverage
-    retinalAreaCoveredWithApertures = conesNum * coneApertureArea;
+
+    if (obj.eccBasedConeQuantalEfficiency)
+        apertureDiametersMeters = obj.computeApertureDiameters() * 1e-6;
+        apertureCollectingAreas = pi*(apertureDiametersMeters/2).^2;
+        retinalAreaCoveredWithApertures = sum(apertureCollectingAreas);
+    else
+        retinalAreaCoveredWithApertures = conesNum * coneApertureArea;
+    end
     apertureCoverage = retinalAreaCoveredWithApertures / retinalArea;
 
     % compute geometric coverage
-    retinalAreaCoveredWithCones = conesNum * coneArea;
-    geometricCoverage = retinalAreaCoveredWithCones / retinalArea;
+    geometricCoverage = apertureCoverage / coneApertureArea * coneArea;
 end
+
+

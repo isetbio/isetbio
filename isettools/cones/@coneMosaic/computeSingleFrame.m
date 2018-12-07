@@ -30,8 +30,8 @@ function absorptions = computeSingleFrame(obj, oi, varargin)
 % History:
 %    xx/xx/16  HJ   ISETBIO Team 2016
 %    02/22/18  jnm  Formatting
-%    06/16/18  NPC  Support cone efficiency correction with eccentricity
- 
+%    06/16/18  npc  Support for cone efficiency correction with eccentricity
+%    10/23/18  npc  Support for macular-pigment density variation with eccentricity 
 
 %% Parse inputs
 p = inputParser();
@@ -56,6 +56,38 @@ obj.wave = oiGet(oi, 'wave');
 % isetbio world.)
 sQE = obj.qe * oiGet(oi, 'bin width');
 
+
+%% Reshape the photons for efficient computations
+[photons, r, c] = RGB2XWFormat(oiGet(oi, 'photons'));
+
+%% Correct retinal photons to account for the eccentricity-dependent density
+%% of the macular pigment
+
+if (isa(obj, 'coneMosaicHex')) && (obj.eccBasedMacularPigment)
+    fprintf('\nAdjusting optical image photons to account for eccentricity based variation in macular pigment density\n');
+    % Compute eccentricities in degrees for all pixels in the OI
+    xDegs = (0:(c-1))/c * oiGet(oi, 'h fov');
+    yDegs = (0:(r-1))/r * oiGet(oi, 'v fov');
+    xDegs = xDegs-mean(xDegs); yDegs = yDegs-mean(yDegs);
+    [X,Y] = meshgrid(xDegs,yDegs); X = X(:); Y = Y(:); eccDegs = sqrt(X.^2+Y.^2);
+    
+    % Extract default MP transmittance
+    defaultMacularPigmentTransmittance = obj.macular.transmittance;
+    
+    % Compute ecc-based MP optical densities
+    eccBasedMacularPigmentDensities = Macular.eccDensity(eccDegs);
+    % And corresponding transmittances
+    eccBasedMacularPigmentTransmittances = 10.^(-eccBasedMacularPigmentDensities * obj.macular.unitDensity');
+
+    % Compute boost factor for optical image photons so as to counteract the
+    % increased transmittance through the macular pigment at increasing eccentricities 
+    % due to the reduction in the MP density with eccentricity
+    opticalImageBoostFactor = bsxfun(@rdivide, eccBasedMacularPigmentTransmittances, defaultMacularPigmentTransmittance');
+    
+    % Boost retinal image photons 
+    photons = photons .* opticalImageBoostFactor;
+end
+
 %% Compute cone isomerization density oi sampled locs. for each cone class
 %
 % These need to be scaled by cone integration area and time to get actual
@@ -63,7 +95,6 @@ sQE = obj.qe * oiGet(oi, 'bin width');
 %
 % Note that there are not necessarily cones at all of these locations,
 % we'll sample below.
-[photons, r, c] = RGB2XWFormat(oiGet(oi, 'photons'));
 absorbDensityLMS = XW2RGBFormat(photons * sQE, r, c);
 
 %% Blur by cone aperture
@@ -75,10 +106,25 @@ absorbDensityLMS = XW2RGBFormat(photons * sQE, r, c);
 % each class of cone. It's faster to convolve here, since there are fewer
 % bands to deal with.
 if (obj.apertureBlur)
-    % Make the blur kernal.
+    % Make the blur kernel.
     %
-    % First convert area of cone aperture to a radius
-    apertureRadius = sqrt(obj.pigment.pdArea / pi);
+    % Select aperture size for optical blurring
+    useMosaicDependentApertureRadiusForBlur = ~true;
+    
+    if (useMosaicDependentApertureRadiusForBlur) && (obj.eccBasedConeQuantalEfficiency)
+        % Compute aperture stats across the mosaic
+        if (isempty(obj.apertureStats))
+            plotApertureStats = false;
+            obj.computeApertureStats(plotApertureStats);
+        end
+        % Use the mean value across the mosaic as the aperture radius
+        apertureRadius = (0.5*obj.apertureStats.meanDiameterMicrons)*1e-6;
+        %apertureRadius = 2.7032/2*1e-6; % This is the mean aperture for the 2 deg (4/cdeg) mosaic
+        fprintf(2, '\ncomputed MEAN aperture radius: %f microns (DEFAULT: %f microns)\n', apertureRadius*1e6, sqrt(obj.pigment.pdArea / pi)*1e6);
+    else
+        % Convert area of (minimum) cone aperture to a radius
+        apertureRadius = sqrt(obj.pigment.pdArea / pi);
+    end
     
     % Get optical image resolution and figure out how big conv kernal needs
     % to be. Make sure it is an odd number greater than 0.

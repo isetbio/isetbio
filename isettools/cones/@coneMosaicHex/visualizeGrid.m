@@ -75,6 +75,7 @@ p.addParameter('coneDensityContourLevels', (100:20:250) * 1000, ...
 p.addParameter('overlayContourLabels', false, @islogical);
 p.addParameter('backgroundColor', [0.75 0.75 0.75]);
 p.addParameter('foregroundColor', [0 0 0]);
+p.addParameter('displayVisualDegs', false, @islogical);
 
 p.parse(varargin{:});
 
@@ -196,25 +197,6 @@ end
 hold(axesHandle, 'on');
 
 %% Do the display
-
-% Odd that this is here and then again later.  I am trying to delete.
-% switch overlayConeDensityContour
-%     case 'measured'
-%         [densityMapMeasured, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from mosaic');
-%     case 'theoretical'
-%         [densityMapTheoretical, densityMapSupportX, densityMapSupportY] =...
-%             obj.computeDensityMap('from model');
-%     case 'theoretical_and_measured'
-%         [densityMapMeasured, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from mosaic');
-%         [densityMapTheoretical, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from model');
-%     case 'none'
-%     otherwise
-%         error('coneMosaicHex.visualizeGrid: ''coneDensityContourOverlay'' must be set to one of the following: ''measured'', ''theoretical'', ''none''. ');
-% end
-
 if (overlayHexMesh)
     disp('here')
     % Superimpose hex mesh showing the locations of the perfect hex grid
@@ -434,7 +416,7 @@ switch overlayConeDensityContour
         
         if (p.Results.overlayContourLabels)
             [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, ...
-                densityMapTheoretical, contourLevels, 'LineColor', [0.0 1.0 0.3], ...
+                densityMapTheoretical, contourLevels, 'LineColor', [0.0 0.4 1.0], ...
                 'LineWidth', 3.0, 'ShowText', overlayContourLabels, ...
                 'LabelSpacing', contourLabelSpacing);
             clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
@@ -495,9 +477,10 @@ end
 
 %% Arrange axis and fonts
 hold(axesHandle, 'off')
-axis(axesHandle, 'xy'); axis(axesHandle, 'equal');
+axis(axesHandle, 'xy');
+axis(axesHandle, 'square');
 
-if (isempty(p.Results.axesHandle))
+if (isempty(p.Results.axesHandle)) || (p.Results.displayVisualDegs)
     if (max(obj.fov) < 1.0)
         tickInc = 0.1;
     elseif (max(obj.fov) < 4.0)
@@ -517,6 +500,7 @@ if (isempty(p.Results.axesHandle))
     set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
     box(axesHandle, 'on'); grid(axesHandle, 'off');
     %title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 18, 'Color', foregroundColor);
+    axis 'equal'
     set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
     set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
     

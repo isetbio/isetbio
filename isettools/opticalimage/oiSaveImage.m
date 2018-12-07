@@ -31,7 +31,7 @@ if ~exist('oi', 'var') || isempty(oi), oi = vcGetObject('oi'); end
 
 % Get RGB file name (tif)
 if notDefined('fName')
-    fName = vcSelectDataFile('session', 'w', 'png', 'Image file (png)');
+    fName = vcSelectDataFile('stayput', 'w', 'png', 'Image file (png)');
 end
 
 % Get rgb image from photon data.  Gamma either defined here or from the
