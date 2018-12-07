@@ -500,6 +500,7 @@ if (isempty(p.Results.axesHandle)) || (p.Results.displayVisualDegs)
     set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
     box(axesHandle, 'on'); grid(axesHandle, 'off');
     %title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 18, 'Color', foregroundColor);
+    axis 'equal'
     set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
     set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
     
