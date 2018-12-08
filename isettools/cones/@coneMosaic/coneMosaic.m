@@ -994,7 +994,11 @@ classdef coneMosaic < hiddenHandle
             % Optional key/value pairs:
             %    None.
             %
-            obj.setSizeToFOV(val);
+            if (isa(obj, 'coneMosaicHex'))
+                error('Setting the ''fov'' property directly is not allowed for a coneMosaicHex object. The fov is settable only during instantiation.');
+            else
+                obj.setSizeToFOV(val);
+            end
         end
 
         function set.mosaicSize(obj, val)
