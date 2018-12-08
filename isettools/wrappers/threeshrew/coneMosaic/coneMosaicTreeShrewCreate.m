@@ -13,12 +13,15 @@ p.addParameter('integrationTimeSeconds', 50/1000, @isnumeric);
 p.addParameter('sConeMinDistanceFactor', [], @isnumeric);
 % Parse input
 p.parse(varargin{:});
-fovDegs = p.Results.fovDegs/(300/micronsPerDegree)^2;
+
 lConeDensity = p.Results.lConeDensity;
 coneSeparationMicrons = p.Results.coneSeparationMicrons;
 innerSegmentDiameterMicrons = p.Results.innerSegmentDiameterMicrons;
 integrationTimeSeconds = p.Results.integrationTimeSeconds;
 sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
+
+% Treeshrew-specific FOV
+fovDegs = threeShrewFOV(micronsPerDegree);
 
 % Load treeshrew-specific cone photopigments and macular pigment
 theConePhotopigments = treeShrewConePhotopigments();
@@ -73,5 +76,9 @@ thePhotopigment = photoPigment(...
     'absorbance', normalizedAbsorbanceSpectra, ...
     'opticalDensity', [peakOpticalDensitiesLS(1) 0 peakOpticalDensitiesLS(2)], ...
     'peakEfficiency', 0.5*[1 1 1]);
+end
+
+function fovDegs = threeShrewFOV(fovDegs, micronsPerDegree)
+fovDegs = fovDegs/(300/micronsPerDegree)^2;
 end
 
