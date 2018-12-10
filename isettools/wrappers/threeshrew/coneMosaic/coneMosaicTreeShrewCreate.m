@@ -7,25 +7,23 @@ function theConeMosaic = coneMosaicTreeShrewCreate(micronsPerDegree,varargin)
 p = inputParser;
 p.addParameter('fovDegs', [0.5 0.5], @isnumeric);
 p.addParameter('lConeDensity', 0.7, @isnumeric);
-p.addParameter('coneSeparationMicrons', 6, @isnumeric);
-p.addParameter('innerSegmentDiameterMicrons', 6, @isnumeric);
-p.addParameter('integrationTimeSeconds', 50/1000, @isnumeric);
+p.addParameter('customLambda', 6, @isnumeric);
+p.addParameter('customInnerSegmentDiameter', 6, @isnumeric);
+p.addParameter('integrationTimeSeconds', 5/1000, @isnumeric);
 p.addParameter('sConeMinDistanceFactor', [], @isnumeric);
 % Parse input
 p.parse(varargin{:});
 
 lConeDensity = p.Results.lConeDensity;
-coneSeparationMicrons = p.Results.coneSeparationMicrons;
-innerSegmentDiameterMicrons = p.Results.innerSegmentDiameterMicrons;
+fovDegs = p.Results.fovDegs;
+customLambda = p.Results.customLambda;
+customInnerSegmentDiameter = p.Results.customInnerSegmentDiameter;
 integrationTimeSeconds = p.Results.integrationTimeSeconds;
 sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
 
-% Treeshrew-specific FOV
-fovDegs = threeShrewFOV(micronsPerDegree);
+% Treeshrew-specific scaling
+treeShrewScaling = 300/micronsPerDegree;
 
-% Load treeshrew-specific cone photopigments and macular pigment
-theConePhotopigments = treeShrewConePhotopigments();
-theMacularPigment = treeShrewMacularPigment(theConePhotopigments.wave);
 
 % Spatial densities of cones in the treeshrew
 spatialDensity = [...
@@ -35,15 +33,16 @@ spatialDensity = [...
     1-lConeDensity ... %S-cones
 ];
 
+thePhotopigment = treeShrewPhotopigment();
 
-theConeMosaic = coneMosaicHex(3, ...
-    'fovDegs', fovDegs, ...
+theConeMosaic = coneMosaicHex(7, ...
+    'fovDegs', fovDegs/(treeShrewScaling^2), ...
     'micronsPerDegree',micronsPerDegree, ...
     'integrationTime', integrationTimeSeconds, ...
-    'pigment', theConePhotopigments ,...
-    'macular', theMacularPigment, ...
-    'customLambda', coneSeparationMicrons, ...
-    'customInnerSegmentDiameter', innerSegmentDiameterMicrons, ...
+    'pigment', thePhotopigment ,...
+    'macular', treeShrewMacularPigment(thePhotopigment.wave), ...
+    'customLambda', customLambda, ...
+    'customInnerSegmentDiameter', customInnerSegmentDiameter, ...
     'spatialDensity', spatialDensity, ...
     'sConeMinDistanceFactor', sConeMinDistanceFactor, ...
     'sConeFreeRadiusMicrons', 0 ...
@@ -55,30 +54,5 @@ function theMacularPigment = treeShrewMacularPigment(wavelength)
 theMacularPigment = Macular(...
     'wave', wavelength, ...
     'density', 0);
-end
-
-function thePhotopigment = treeShrewConePhotopigments() 
-% Load the threeshrew L and S-cone absorbance spectra
-load('treeshrewConeAbsorbanceSpectra.mat', 'wavelength', 'data');
-
-% Max values of optical densities
-peakOpticalDensitiesLS = max(data,[],1);
-
-normalizedAbsorbanceSpectra = zeros(numel(wavelength),3);
-% L-cone normalized absorbance spectra
-normalizedAbsorbanceSpectra(:,1) = data(:,1)/peakOpticalDensitiesLS(1);
-% S-cone normalized absorbance spectra
-normalizedAbsorbanceSpectra(:,3) = data(:,2)/peakOpticalDensitiesLS(2);
-
-% Generate treeshrew-specific cone photopigments
-thePhotopigment = photoPigment(...
-    'wave', wavelength, ...
-    'absorbance', normalizedAbsorbanceSpectra, ...
-    'opticalDensity', [peakOpticalDensitiesLS(1) 0 peakOpticalDensitiesLS(2)], ...
-    'peakEfficiency', 0.5*[1 1 1]);
-end
-
-function fovDegs = threeShrewFOV(fovDegs, micronsPerDegree)
-fovDegs = fovDegs/(300/micronsPerDegree)^2;
 end
 
