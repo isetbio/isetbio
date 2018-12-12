@@ -76,7 +76,7 @@ p.addParameter('overlayContourLabels', false, @islogical);
 p.addParameter('backgroundColor', [0.75 0.75 0.75]);
 p.addParameter('foregroundColor', [0 0 0]);
 p.addParameter('displayVisualDegs', false, @islogical);
-
+p.addParameter('scaleBarLengthMicrons', [], @(x)(isnumeric(x)));
 p.parse(varargin{:});
 
 showCorrespondingRectangularMosaicInstead = ...
@@ -93,6 +93,7 @@ apertureShape = p.Results.apertureShape;
 labelConeTypes = p.Results.labelConeTypes;
 backgroundColor = p.Results.backgroundColor;
 foregroundColor = p.Results.foregroundColor;
+scaleBarLengthMicrons = p.Results.scaleBarLengthMicrons;
 
 if (p.Results.overlayContourLabels)
     overlayContourLabels = 'on';
@@ -475,12 +476,20 @@ if (~isempty(overlaidEMpathMicrons))
         'LineWidth', 3);
 end
 
+if (~isempty(scaleBarLengthMicrons))
+   scaleBarLengthMeters = scaleBarLengthMicrons*1e-6;
+   scaleBarX = sampledHexMosaicXaxis(end) * 0.99 + [-scaleBarLengthMeters 0];
+   scaleBarY = sampledHexMosaicYaxis(1) * 0.95 * [1 1];
+   plot(scaleBarX, scaleBarY, 'w-', 'LineWidth', 10.0);
+   plot(scaleBarX, scaleBarY, 'k-', 'LineWidth', 5.0);
+end
+
 %% Arrange axis and fonts
 hold(axesHandle, 'off')
 axis(axesHandle, 'xy');
 axis(axesHandle, 'square');
 
-if (isempty(p.Results.axesHandle)) || (p.Results.displayVisualDegs)
+if (isempty(p.Results.axesHandle)) && (p.Results.displayVisualDegs)
     if (max(obj.fov) < 1.0)
         tickInc = 0.1;
     elseif (max(obj.fov) < 4.0)
@@ -504,7 +513,13 @@ if (isempty(p.Results.axesHandle)) || (p.Results.displayVisualDegs)
     set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
     set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
     
-    ylabel('space (degs)');
+    ylabel(axesHandle,'space (degs)');
     drawnow;
+else
+    box(axesHandle, 'on'); grid(axesHandle, 'off');
+    set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
+    axis(axesHandle, 'equal')
+    xlabel(axesHandle,'space (meters)');
+    ylabel(axesHandle,'space (meters)');
 end
 end
