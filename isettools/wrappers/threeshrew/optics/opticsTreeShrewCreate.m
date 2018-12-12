@@ -17,7 +17,7 @@ function optics = opticsTreeShrewCreate(varargin)
 p = inputParser;
 p.addParameter('name', '', @ischar);
 p.addParameter('opticsType', 'gaussian psf', @ischar);
-p.addParameter('inFocusPSFsigmaMicrons', 10, @isnumeric);
+p.addParameter('inFocusPSFsigmaMicrons', 7, @isnumeric);
 p.addParameter('pupilDiameterMM', 4, @isnumeric);
 p.addParameter('wavelengthSupport', 400:10:700, @isnumeric);
 p.addParameter('maxSF', 20.0, @isnumeric);

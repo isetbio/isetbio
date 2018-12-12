@@ -2,16 +2,20 @@ function visualizePSF(theOI, targetWavelength, psfRangeArcMin, varargin)
 p = inputParser;
 p.addParameter('axesHandle', [], @ishandle);
 p.addParameter('withSuperimposedMosaic', [], @(x)(isa(x, 'coneMosaicHex')));
+p.addParameter('figureTitle', '', @ischar);
 % Parse input
 p.parse(varargin{:});
 axesHandle = p.Results.axesHandle;
 theMosaic = p.Results.withSuperimposedMosaic;
-
-
+figureTitle = p.Results.figureTitle;
 
 psfRangeArcMin = 0.5*psfRangeArcMin;
 psfTicksMin = (-30:5:30);
-if (psfRangeArcMin <= 10)
+if (psfRangeArcMin <= 2)
+    psfTicks = (-3:0.5:3);
+elseif (psfRangeArcMin <= 5)
+    psfTicks = 0.2*psfTicksMin;
+elseif (psfRangeArcMin <= 10)
     psfTicks = psfTicksMin;
 elseif (psfRangeArcMin <= 20)
     psfTicks = 2*psfTicksMin;
@@ -28,7 +32,12 @@ elseif (psfRangeArcMin <= 200)
 elseif (psfRangeArcMin <= 400)
     psfTicks = 40*psfTicksMin; 
 end
-psfTickLabels = sprintf('%d\n', psfTicks);
+
+if (psfRangeArcMin <= 2)
+    psfTickLabels = sprintf('%2.1f\n', psfTicks);
+else
+    psfTickLabels = sprintf('%2.0f\n', psfTicks);
+end
 
 optics = oiGet(theOI, 'optics');
 wavelengthSupport = opticsGet(optics, 'wave');
@@ -59,7 +68,7 @@ psfSlice = wavePSF(idx,:)/max(wavePSF(:));
 
 if (isempty(axesHandle))
     figure(); clf;
-    axesHandle = subplot(1,1,1);
+    axesHandle = subplot('Position', [0.15 0.2 0.9 0.7]);
     fontSize = 20;
 else
     fontSize = 12;
@@ -103,8 +112,13 @@ set(gca, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1],
             'XTick', psfTicks, 'YTick', psfTicks, 'XTickLabel', psfTickLabels, 'YTickLabel', psfTickLabels);
 set(gca, 'XColor', [0 0 0], 'YColor', [0 0 0]);
 xlabel('\it space (arc min)');
+ylabel('');
 set(gca, 'FontSize', fontSize);
 cmap = brewermap(1024, 'greys');
 colormap(cmap);
-title(sprintf('%s PSF (%2.0f nm)', optics.name, targetWavelength));
+if (isempty(figureTitle))
+    title(gca, sprintf('%s PSF (%2.0f nm)', optics.name, targetWavelength));
+else
+    title(gca, figureTitle);
+end
 end
