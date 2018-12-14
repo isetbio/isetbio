@@ -75,7 +75,8 @@ p.addParameter('coneDensityContourLevels', (100:20:250) * 1000, ...
 p.addParameter('overlayContourLabels', false, @islogical);
 p.addParameter('backgroundColor', [0.75 0.75 0.75]);
 p.addParameter('foregroundColor', [0 0 0]);
-p.addParameter('displayVisualDegs', false, @islogical);
+p.addParameter('ticksInVisualDegs', false, @islogical);
+p.addParameter('ticksInMicrons', false, @islogical);
 p.addParameter('scaleBarLengthMicrons', [], @(x)(isnumeric(x)));
 p.parse(varargin{:});
 
@@ -489,37 +490,62 @@ hold(axesHandle, 'off')
 axis(axesHandle, 'xy');
 axis(axesHandle, 'square');
 
-if (isempty(p.Results.axesHandle)) && (p.Results.displayVisualDegs)
-    if (max(obj.fov) < 1.0)
+if (p.Results.ticksInVisualDegs)
+    rangeDegs = max(obj.fov);
+    if (rangeDegs < 0.25)
+        tickInc = 0.01;
+    elseif (rangeDegs < 0.5)
+        tickInc = 0.05;
+    elseif (rangeDegs < 1.0)
         tickInc = 0.1;
-    elseif (max(obj.fov) < 4.0)
+    elseif (rangeDegs < 4.0)
         tickInc = 0.25;
     else
         tickInc = 1;
     end
-    
-    xTicksDegs = (-20:tickInc:20);
-    yTicksDegs = xTicksDegs;
-    xTicksMeters = xTicksDegs * obj.micronsPerDegree * 1e-6;
-    yTicksMeters = xTicksMeters;
-    xTickLabels = sprintf('%02.2f\n', xTicksDegs);
-    yTickLabels = sprintf('%02.2f\n', yTicksDegs);
-    set(axesHandle, 'XTick', xTicksMeters, 'YTick', yTicksMeters, ...
-        'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
-    set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
-    box(axesHandle, 'on'); grid(axesHandle, 'off');
-    %title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 18, 'Color', foregroundColor);
-    axis 'equal'
-    set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
-    set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
-    
+    xMax = round(rangeDegs/tickInc)*tickInc;
+    ticksDegs = (-xMax:tickInc:xMax);
+    ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
+    tickLabels = sprintf('%02.1f\n', ticksDegs);
+    set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+        'XTickLabel', tickLabels, 'YTickLabel', tickLabels);
+    xlabel(axesHandle,'space (degs)');
     ylabel(axesHandle,'space (degs)');
-    drawnow;
-else
-    box(axesHandle, 'on'); grid(axesHandle, 'off');
-    set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
-    axis(axesHandle, 'equal')
-    xlabel(axesHandle,'space (meters)');
-    ylabel(axesHandle,'space (meters)');
+elseif (p.Results.ticksInMicrons)
+    rangeMicrons = max(obj.fov) * obj.micronsPerDegree;
+    if (rangeMicrons < 20)
+        tickInc = 5;
+    elseif (rangeMicrons < 50)
+        tickInc = 10;
+    elseif (rangeMicrons < 100)
+        tickInc = 20;
+    elseif (rangeMicrons < 250)
+        tickInc = 50;
+    elseif (rangeMicrons < 400)
+        tickInc = 100;
+    elseif (rangeMicrons < 800)
+        tickInc = 200;
+    elseif (rangeMicrons < 1000)
+        tickInc = 250;
+    else
+        tickInc = 500;
+    end
+    xMax = round(rangeMicrons/tickInc)*tickInc;
+    ticksMicrons = (-xMax:tickInc:xMax);
+    tickLabels = sprintf('%02.0f\n', ticksMicrons);
+    ticksMeters = ticksMicrons * 1e-6;
+    set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+        'XTickLabel', tickLabels, 'YTickLabel', tickLabels);
+    xlabel(axesHandle,'space (microns)');
+    ylabel(axesHandle,'space (microns)');
 end
+
+axis(axesHandle,'equal')
+set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
+set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
+
+box(axesHandle, 'on'); grid(axesHandle, 'off');
+set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
+
+    
 end
