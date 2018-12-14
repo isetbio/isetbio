@@ -40,6 +40,10 @@ else
 end
 
 optics = oiGet(theOI, 'optics');
+fLengthMeters = opticsGet(optics, 'focalLength');
+fN = opticsGet(optics, 'fnumber');
+pupilDiameterMM = fLengthMeters / fN * 1000;
+
 wavelengthSupport = opticsGet(optics, 'wave');
 [~,idx] = min(abs(wavelengthSupport-targetWavelength));
 targetWavelength = wavelengthSupport(idx);
@@ -77,7 +81,7 @@ axes(axesHandle);
 
 if (~isempty(theMosaic))
    theMosaic.visualizeGrid('axesHandle', axesHandle, ...
-       'backgroundColor', [1 1 1], ...
+       'backgroundColor', 0.6*[1 1 1], ...
        'labelConeTypes', false);
    drawnow;
    hold on; 
@@ -95,14 +99,14 @@ if (~isempty(theMosaic))
     contour(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
         'Color', 'b', 'LineWidth', 1);
     hold on;
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 4.0);
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
+    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [1 1 0], 'LineWidth', 3.0);
+    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [1 0.5 0], 'LineWidth', 1.0);
 else
     contourf(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
         'Color', [0 0 0], 'LineWidth', 1.5);
 
     hold on;
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 4.0);
+    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
 end
 
@@ -117,7 +121,7 @@ set(gca, 'FontSize', fontSize);
 cmap = brewermap(1024, 'greys');
 colormap(cmap);
 if (isempty(figureTitle))
-    title(gca, sprintf('%s PSF (%2.0f nm)', optics.name, targetWavelength));
+    title(gca, sprintf('%s\n(%2.0f nm) %dmm pupil', optics.name, targetWavelength, pupilDiameterMM));
 else
     title(gca, figureTitle);
 end
