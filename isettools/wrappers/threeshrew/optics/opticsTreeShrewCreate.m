@@ -4,25 +4,19 @@ function optics = opticsTreeShrewCreate(varargin)
 % Syntax:
 %   [optics, wvf] = OPTICSTREESHREWCREATE(varargin)
 %
-% Default params:
-% The peak spatial frequency sensitivity is around 0.5 cyc/deg, 
-% with a high-frequency cutoff of 2 c/deg (see "Spatial contrast sensitivity of the tree shrew". Petry HM, Fox R, Casagrande VA.)
-% 
-% From "Normal development of refractive state and ocular component dimensions 
-% in the tree shrew (Tupaia belangeri)", by Thomas T. Norton, Neville A. McBrien, 1992
-% anteriorFocalLengthMM = 4.35;
-% posteriorNodalDistanceMM = posteriorFocalPoint - posteriorNodalPoint = 7.84-3.49 = 4.35;
-%
+
+% Get the default tree-shrew optics params
+defaultParams = opticsTreeShrewDefaultParams();
 
 p = inputParser;
 p.addParameter('name', '', @ischar);
-p.addParameter('opticsType', 'gaussian psf', @ischar);
-p.addParameter('inFocusPSFsigmaMicrons', 7, @isnumeric);
-p.addParameter('pupilDiameterMM', 4, @isnumeric);
+p.addParameter('opticsType', defaultParams.opticsType, @ischar);
+p.addParameter('inFocusPSFsigmaMicrons', defaultParams.inFocusPSFsigmaMicrons, @isnumeric);
+p.addParameter('focalLengthMM', defaultParams.focalLengthMM, @isnumeric);
+p.addParameter('pupilDiameterMM', defaultParams.pupilDiameterMM, @isnumeric);
 p.addParameter('wavelengthSupport', 400:10:700, @isnumeric);
 p.addParameter('maxSF', 20.0, @isnumeric);
-p.addParameter('deltaSF', 0.02, @isnumeric);
-p.addParameter('focalLengthMM', 4.35, @isnumeric);
+p.addParameter('deltaSF', 0.1, @isnumeric);
 
 % Parse input
 p.parse(varargin{:});

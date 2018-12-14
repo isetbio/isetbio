@@ -6,7 +6,7 @@ function theConeMosaic = coneMosaicTreeShrewCreate(micronsPerDegree,varargin)
 %
 p = inputParser;
 p.addParameter('fovDegs', [2 2], @isnumeric);
-p.addParameter('lConeDensity', 0.5, @isnumeric);
+p.addParameter('spatialDensity', [0 0.5 0 0.5], @isnumeric);
 p.addParameter('customLambda', 7.5, @isnumeric);
 p.addParameter('customInnerSegmentDiameter', 7, @isnumeric);
 p.addParameter('integrationTimeSeconds', 5/1000, @isnumeric);
@@ -14,7 +14,7 @@ p.addParameter('sConeMinDistanceFactor', 2, @isnumeric);
 % Parse input
 p.parse(varargin{:});
 
-lConeDensity = p.Results.lConeDensity;
+spatialDensity = p.Results.spatialDensity;
 fovDegs = p.Results.fovDegs;
 customLambda = p.Results.customLambda;
 customInnerSegmentDiameter = p.Results.customInnerSegmentDiameter;
@@ -24,14 +24,12 @@ sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
 % Treeshrew-specific scaling
 treeShrewScaling = 300/micronsPerDegree;
 
-
-% Spatial densities of cones in the treeshrew
-spatialDensity = [...
-    0 ...
-    lConeDensity ...   % L-cones
-    0 ...              % M-cones
-    1-lConeDensity ... %S-cones
-];
+if (spatialDensity(1) ~= 0)
+    error('The first element in spatialDensity vector must be 0.');
+end
+if (spatialDensity(3) ~= 0)
+    error('The third element in spatialDensity (M-cone density) vector must be 0.');
+end
 
 thePhotopigment = treeShrewPhotopigment();
 
