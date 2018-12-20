@@ -77,6 +77,9 @@ p.addParameter('backgroundColor', [0.75 0.75 0.75]);
 p.addParameter('foregroundColor', [0 0 0]);
 p.addParameter('ticksInVisualDegs', false, @islogical);
 p.addParameter('ticksInMicrons', false, @islogical);
+p.addParameter('tickInc', [], @isnumeric);
+p.addParameter('noXaxisLabel', false, @islogical);
+p.addParameter('noYaxisLabel', false, @islogical);
 p.addParameter('scaleBarLengthMicrons', [], @(x)(isnumeric(x)));
 p.parse(varargin{:});
 
@@ -95,7 +98,11 @@ labelConeTypes = p.Results.labelConeTypes;
 backgroundColor = p.Results.backgroundColor;
 foregroundColor = p.Results.foregroundColor;
 scaleBarLengthMicrons = p.Results.scaleBarLengthMicrons;
-
+ticksInMicrons = p.Results.ticksInMicrons;
+ticksInVisualDegs = p.Results.ticksInVisualDegs;
+tickInc = p.Results.tickInc;
+noXaxisLabel = p.Results.noXaxisLabel;
+noYaxisLabel = p.Results.noYaxisLabel;
 if (p.Results.overlayContourLabels)
     overlayContourLabels = 'on';
 else
@@ -490,45 +497,62 @@ hold(axesHandle, 'off')
 axis(axesHandle, 'xy');
 axis(axesHandle, 'square');
 
-if (p.Results.ticksInVisualDegs)
+if (ticksInVisualDegs)
     rangeDegs = max(obj.fov);
-    if (rangeDegs < 0.25)
-        tickInc = 0.01;
-    elseif (rangeDegs < 0.5)
-        tickInc = 0.05;
-    elseif (rangeDegs < 1.0)
-        tickInc = 0.1;
-    elseif (rangeDegs < 4.0)
-        tickInc = 0.25;
+    if (~isempty(p.Results.tickInc))
+        tickInc = p.Results.tickInc;
     else
-        tickInc = 1;
+        if (rangeDegs < 0.25)
+            tickInc = 0.01;
+        elseif (rangeDegs < 0.5)
+            tickInc = 0.05;
+        elseif (rangeDegs < 1.0)
+            tickInc = 0.1;
+        elseif (rangeDegs < 4.0)
+            tickInc = 0.25;
+        else
+            tickInc = 1;
+        end
     end
+    
     xMax = round(rangeDegs/tickInc)*tickInc;
     ticksDegs = (-xMax:tickInc:xMax);
     ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
-    tickLabels = sprintf('%02.1f\n', ticksDegs);
+    if (tickInc < 0.1)
+        tickLabels = sprintf('%1.2f\n', ticksDegs);
+    else
+        tickLabels = sprintf('%1.1f\n', ticksDegs);
+    end
     set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
         'XTickLabel', tickLabels, 'YTickLabel', tickLabels);
-    xlabel(axesHandle,'space (degs)');
-    ylabel(axesHandle,'space (degs)');
-elseif (p.Results.ticksInMicrons)
+    if (~noXaxisLabel)
+        xlabel(axesHandle,'space (degs)');
+    end
+    if (~noYaxisLabel)
+        ylabel(axesHandle,'space (degs)');
+    end
+elseif (ticksInMicrons)
     rangeMicrons = max(obj.fov) * obj.micronsPerDegree;
-    if (rangeMicrons < 20)
-        tickInc = 5;
-    elseif (rangeMicrons < 50)
-        tickInc = 10;
-    elseif (rangeMicrons < 100)
-        tickInc = 20;
-    elseif (rangeMicrons < 250)
-        tickInc = 50;
-    elseif (rangeMicrons < 400)
-        tickInc = 100;
-    elseif (rangeMicrons < 800)
-        tickInc = 200;
-    elseif (rangeMicrons < 1000)
-        tickInc = 250;
+    if (~isempty(p.Results.tickInc))
+        tickInc = p.Results.tickInc;
     else
-        tickInc = 500;
+        if (rangeMicrons < 20)
+            tickInc = 5;
+        elseif (rangeMicrons < 50)
+            tickInc = 10;
+        elseif (rangeMicrons < 100)
+            tickInc = 20;
+        elseif (rangeMicrons < 250)
+            tickInc = 50;
+        elseif (rangeMicrons < 400)
+            tickInc = 100;
+        elseif (rangeMicrons < 800)
+            tickInc = 200;
+        elseif (rangeMicrons < 1000)
+            tickInc = 250;
+        else
+            tickInc = 500;
+        end
     end
     xMax = round(rangeMicrons/tickInc)*tickInc;
     ticksMicrons = (-xMax:tickInc:xMax);
@@ -536,8 +560,12 @@ elseif (p.Results.ticksInMicrons)
     ticksMeters = ticksMicrons * 1e-6;
     set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
         'XTickLabel', tickLabels, 'YTickLabel', tickLabels);
-    xlabel(axesHandle,'space (microns)');
-    ylabel(axesHandle,'space (microns)');
+    if (~noXaxisLabel)
+        xlabel(axesHandle,'space (microns)');
+    end
+    if (~noYaxisLabel)
+        ylabel(axesHandle,'space (microns)');
+    end
 end
 
 axis(axesHandle,'equal')
