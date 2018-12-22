@@ -13,6 +13,9 @@ function varargout = oiWindow(varargin)
 %    H = OIWINDOW returns the handle to a new OIWINDOW or the handle to
 %    the existing singleton*.
 %
+%    H = OIWINDOW(oi) adds the oi to the database and opens the window.
+%    Equivalent to ieAddObject(oi); oiWindow;
+%
 %    OIWINDOW('CALLBACK', hObject, eventData, handles, ...) calls the local
 %    function named CALLBACK in OIWINDOW.M with the given input arguments.
 %
@@ -89,10 +92,12 @@ vcSetFigureHandles('OI', hObject, eventdata, handles);
 %  Check the preferences for ISET and adjust the font size.
 ieFontInit(hObject);
 
-% Deal with gamma  Not sure why this is here, really. 
-% More important - Gamma is not working here or in scene
-% g = get(handles.editGamma, 'String');
-% set(handles.editGamma, 'String', g);
+if ~isempty(varargin)
+    oi = varargin{1};
+    if strcmp(oi.type,'opticalimage'), ieAddObject(oi);
+    else, warning('Unexpected variable input.\n');
+    end
+end
 oiRefresh(hObject, eventdata, handles);
 
 return
