@@ -9,6 +9,9 @@ function varargout = sceneWindow(varargin)
 %      H = SCENEWINDOW returns the handle to a new SCENEWINDOW or the handle to
 %      the existing singleton*.
 %
+%      H = SCENEWINDOW(oi) adds the scene to the database and opens the window.
+%      Equivalent to ieAddObject(scene); sceneWindow;
+%
 %      SCENEWINDOW('CALLBACK',hObject,eventData,handles,...) calls the local
 %      function named CALLBACK in SCENEWINDOW.M with the given input arguments.
 %
@@ -52,6 +55,13 @@ vcSetFigureHandles('SCENE',hObject,eventdata,handles);
 
 %  Check the preferences for ISET and adjust the font size.
 ieFontInit(hObject);
+
+if ~isempty(varargin)
+    scene = varargin{1};
+    if strcmp(scene.type,'scene'), ieAddObject(scene);
+    else, warning('Unexpected variable input.\n');
+    end
+end
 
 % Refresh the window.
 sceneRefresh(hObject, eventdata, handles); 

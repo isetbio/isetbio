@@ -1,6 +1,6 @@
 function [demosaicedResponseMap, spatialSupportDegs, coneResponses, coneXlocsDegs, coneYlocsDegs] = ...
     demosaicConeTypeActivationFromFullActivation(obj, coneType,...
-    theFullPatternResponse, demosaicingSampleSpacingMicrons)
+    theFullPatternResponse, demosaicingSampleSpacingMicrons, varargin)
 %  Obtain a demosaiced map of the activation for a single cone type from
 %  the full mosaic response. The spatial support for the demosaiced
 %  response map is returned in degrees.  Also returns the non-demosaiced response 
@@ -22,7 +22,11 @@ function [demosaicedResponseMap, spatialSupportDegs, coneResponses, coneXlocsDeg
 %
 % NPC, ISETBIO TEAM, 2018
 
-    
+    % Parse optional input
+    p = inputParser;
+    p.addParameter('interpolationMethod', 'nearest', @ischar);
+    p.parse(varargin{:});
+    interpolationMethod = p.Results.interpolationMethod;
 
     xPatternSupport = squeeze(obj.patternSupport(:,:,1));
     yPatternSupport = squeeze(obj.patternSupport(:,:,2));
@@ -56,6 +60,5 @@ function [demosaicedResponseMap, spatialSupportDegs, coneResponses, coneXlocsDeg
     [X,Y] = meshgrid(spatialSupportDegs,spatialSupportDegs);
         
     % Compute demosaic response
-    method = 'nearest'; %'natural'; %'nearest';
-    demosaicedResponseMap = griddata(coneXlocsDegs, coneYlocsDegs, coneResponses(:), X,Y, method);
+    demosaicedResponseMap = griddata(coneXlocsDegs, coneYlocsDegs, coneResponses(:), X,Y, interpolationMethod);
 end

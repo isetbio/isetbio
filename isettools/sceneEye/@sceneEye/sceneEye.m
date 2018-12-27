@@ -79,7 +79,7 @@ properties (GetAccess=public, SetAccess=public)
     % modelname - The name of the schematic eye used to render the scene.
     %   Depending on the model chosen, some other options may not be
     %   applicable. Currently possible models include: navarro (default)
-    %   gullstrand-le grand, and arizona eye model.
+    %   le grand, and arizona eye model.
     modelName;
     
     % resolution - resolution of render (pixels)
@@ -470,8 +470,8 @@ methods
                 obj.modelName = 'Navarro';
                 obj.retinaDistance = 16.32;
                 obj.retinaRadius = 12;
-            case {'Gullstrand','gullstrand'}
-                obj.modelName = 'Gullstrand';
+            case {'LeGrand','legrand','le grand'}
+                obj.modelName = 'LeGrand';
                 obj.retinaDistance = 16.6;
                 obj.retinaRadius = 13.4;
             case {'Arizona','arizona'}
@@ -491,8 +491,8 @@ methods
             obj.modelName = 'none';
             % The camera will be changed to perspective in write(), so we
             % do nothing here. 
-        else
-            % Put the navarro eye back in.
+        elseif(~val && strcmp(obj.modelName,'none'))
+            % Put the navarro eye back in if there's not already a model.
             obj.modelName = 'Navarro';
             obj.recipe.camera = piCameraCreate('realisticEye');
         end
