@@ -491,8 +491,8 @@ methods
             obj.modelName = 'none';
             % The camera will be changed to perspective in write(), so we
             % do nothing here. 
-        else
-            % Put the navarro eye back in.
+        elseif(~val && strcmp(obj.modelName,'none'))
+            % Put the navarro eye back in if there's not already a model.
             obj.modelName = 'Navarro';
             obj.recipe.camera = piCameraCreate('realisticEye');
         end
