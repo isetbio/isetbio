@@ -22,7 +22,6 @@ function scene = generateGaborScene(varargin)
 %                                will be overwritten based on the passed
 %                                display's pixel size
 %
-%
 % Outputs:
 %    scene                     - The ISETBio scene representing the Gabor
 %
@@ -131,9 +130,6 @@ function stimParams = updateStimParamsForDisplay(stimParams, presentationDisplay
     stimParams.pixelsAlongHeightDim = ...
         round(stimParams.sizeDegs/displayPixelSizeDegrees(2));
 end
-
-
-
 
 % Method to validation the passed display argument
 function vStatus = validateDisplayArgument(x)
