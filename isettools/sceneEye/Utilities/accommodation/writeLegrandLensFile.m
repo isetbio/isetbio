@@ -1,13 +1,14 @@
-function [] = writeGullstrandLensFile(filename)
-% Write out the Gullstrand lens file. These values are currently all fixed,
-% but may be changeable in the future (I believe Gullstrand has some simple
-% accommodation models which we might implement here.)
+function [] = writeLegrandLensFile(filename)
+% Write out the Le Grand theoreticl eye lens file. These values are
+% currently all fixed, but may be changeable in the future (I believe the
+% model has some simple accommodation models which we might implement
+% here.)
 %
 % Syntax:
-%   writeGullstrandLensFile(filename)
+%   writeLegrandLensFile(filename)
 %
 % Description:
-%    Write out the Gullstrand lens file
+%    Write out the Le Grand lens file
 %
 % Inputs:
 %    filename - The filename to write to `

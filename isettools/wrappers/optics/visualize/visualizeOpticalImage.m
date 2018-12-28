@@ -22,8 +22,10 @@ xMap = squeeze(XYZmap(:,:,1))./sum(XYZmap,3);
 yMap = squeeze(XYZmap(:,:,2))./sum(XYZmap,3);
 % Compute mean chromaticity
 meanChromaticity = [mean(xMap(:)) mean(yMap(:))];
+optics = oiGet(opticalImage, 'optics');
+opticsName = opticsGet(optics, 'name');
 visualizeSceneRGB(spatialSupportDegs, 'degs', rgbImage, ...
-    [], meanChromaticity, 'Gabor optical image');
+    [], meanChromaticity, sprintf('retinal image using ''%s''', opticsName));
 
 % retrieve the retinal irradiance (photon rate in photons/pixel/sec/nm)
 retinalImagePhotonRate = oiGet(opticalImage, 'photons');

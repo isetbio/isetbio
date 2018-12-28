@@ -37,13 +37,14 @@ end
 
 function visualizePeakConeResponseInTime(timeAxis, peakConeTemporalResponses, signalName, peakConePositionMicrons)
     figure(); clf;
-    plot(timeAxis, peakConeTemporalResponses, 'k-');
+    plot(timeAxis, peakConeTemporalResponses, 'c-', 'LineWidth', 2.0);
     hold on;
-    plot(timeAxis, mean(peakConeTemporalResponses,1), 'g-', 'LineWidth', 1.5);
+    plot(timeAxis, mean(peakConeTemporalResponses,1), 'b-', 'LineWidth', 5.0);
     xlabel('\it time (seconds)');
     ylabel(sprintf('\\it %s', signalName));
     title(sprintf('Cone at %2.2f, %2.2f microns', peakConePositionMicrons(1),peakConePositionMicrons(2)));
-    set(gca, 'FontSize', 14);
+    set(gca, 'FontSize', 18);
+    grid on; box on
 end
 
 function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRange, responseSignalName, responseTime)
@@ -63,16 +64,18 @@ function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRa
     instancesNum = size(responses,1);
     visualizedTrialsNum = min([subplotRows*subplotCols, instancesNum]);
     
-    xTicksDegs =  round([-0.9 -0.5 0 0.5 0.9]*coneMosaic.fov(2)/2*100)/100;
+    xTicksDegs =  round([-1 -0.5 0 0.5 1]*coneMosaic.fov(2)/2*100)/100;
     xTicksMeters = xTicksDegs*coneMosaic.micronsPerDegree*1e-6;
     xTickLabelDegs = sprintf('%2.1f\n', xTicksDegs);
     
     axHandle = subplot('Position', subplotPosVectors(1,1).v);
     coneMosaic.visualizeGrid(...
         'axesHandle', axHandle, ...
-        'displayVisualDegs', true);
-    set(gca, 'FontSize', 12, 'YTickLabel', {}, 'XTick', xTicksMeters, 'XTickLabel', xTickLabelDegs);
-    xlabel('space (degs)')
+        'ticksInVisualDegs', true);
+    axis(axHandle, 'square')
+    set(axHandle, 'FontSize', 12, 'YTickLabel', {}, ...
+        'XTick', xTicksMeters, 'XTickLabel', xTickLabelDegs);
+    xlabel(axHandle, 'space (degs)')
     ylabel('');
     
     for k = 1:2
@@ -91,9 +94,8 @@ function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRa
                 'showColorBar', ~true, ...
                 'labelColorBarTicks', ~true);
         end
-        ylabel(''); set(gca, 'YTickLabel', {}, 'XTick', xTicksMeters, 'XTickLabel', xTickLabelDegs);
-        xlabel('');
-        
+        ylabel(''); xlabel('');
+        set(gca, 'XTick', [], 'YTick', []);
         set(gca, 'FontSize', 12);
         title(sprintf('trial #%d (t: %2.2f sec)', k, responseTime));
     end
@@ -110,7 +112,7 @@ function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRa
     end
     
     % Plot the excitations separately for L-,M- and S-cones
-    subplot('Position', [0.15 0.1 0.7 0.33]);
+    subplot('Position', [0.08 0.1 0.9 0.33]);
     idx = find(typesOfConesAlongXaxis == 2);
     LconesNum = numel(idx);
     plot(xCoordsOfConesAlongXaxis(idx), responsesNxXY(:,idx), 'r.');
@@ -122,11 +124,11 @@ function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRa
     SconesNum = numel(idx);
     plot(xCoordsOfConesAlongXaxis(idx), responsesNxXY(:,idx), 'b.');
     grid on
-    set(gca, 'FontSize', 14, 'XTick', xTicksDegs);
+    set(gca, 'FontSize', 16, 'XTick', xTicksDegs);
     set(gca, 'YLim', responseRange);
     xlabel('\it space (degs)');
     ylabel(sprintf('\\it %s', responseSignalName));
-    title(sprintf('%d trials, responses of %d L- %d M- and %d-S cones (along the horiz. meridian)', ...
+    title(gca, sprintf('%d trials, responses of %d L- %d M- and %d-S cones (horiz. meridian)', ...
         instancesNum, LconesNum, MconesNum, SconesNum), 'FontWeight', 'Normal', 'FontSize', 10);
 end
 

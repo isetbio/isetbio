@@ -1,4 +1,4 @@
-function [ieObject, terminalOutput, scaleFactor] = render(obj, varargin)
+function [ieObject, terminalOutput] = render(obj, varargin)
 % Render a scene3D object and return an optical image.
 %
 % Syntax:
@@ -29,8 +29,7 @@ recipe = objNew.recipe; % Update the recipe within the sceneEye object.
 
 %% Render the pbrt file using docker
 %scaleFactor = [];
-[ieObject, terminalOutput,scaleFactor] = piRender(recipe,'version',3,...
-    'scaleFactor',1);
+[ieObject, terminalOutput] = piRender(recipe,'version',3);
         
 %% Set OI parameters correctly:
 if(~obj.debugMode)
