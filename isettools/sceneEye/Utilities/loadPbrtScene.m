@@ -69,18 +69,18 @@ if(sceneNameFlag)
     switch sceneName
         
         case('figure')
-            scenePath = fullfile(piRootPath, 'data', ...
+            scenePath = fullfile(piRootPath, 'local', ...
                 'V3','figure', 'figure.pbrt');
             sceneUnits = 'm';
             
         case('coloredCube')
-            scenePath = fullfile(piRootPath, 'data', ...
+            scenePath = fullfile(piRootPath, 'local', ...
                 'V3','coloredCube', 'coloredCube.pbrt');
             sceneUnits = 'm';
             
         case('snellenSingle')
             
-            scenePath = fullfile(piRootPath, 'data', ...
+            scenePath = fullfile(piRootPath, 'local', ...
                 'V3','snellenSingle', 'snellen_single.pbrt');
             sceneUnits = 'm';
             
@@ -88,37 +88,37 @@ if(sceneNameFlag)
             
         case ('snellenAtDepth')
             
-            scenePath = fullfile(piRootPath,'data','V3','snellenAtDepth','snellen.pbrt');
+            scenePath = fullfile(piRootPath,'local','V3','snellenAtDepth','snellen.pbrt');
             sceneUnits = 'm';
             
             pullSceneFromRDT('snellenAtDepth',scenePath);           
             
         case ('blackBackdrop')
             
-            scenePath = fullfile(piRootPath,'data','V3','blackBackdrop','blackBackdrop.pbrt');
+            scenePath = fullfile(piRootPath,'local','V3','blackBackdrop','blackBackdrop.pbrt');
             sceneUnits = 'm';
             
         case ('blankScene')
             
-            scenePath = fullfile(piRootPath,'data','V3','blankScene','blankScene.pbrt');
+            scenePath = fullfile(piRootPath,'local','V3','blankScene','blankScene.pbrt');
             sceneUnits = 'm';
             
         case('numbersAtDepth')
             
-            scenePath = fullfile(piRootPath, 'data', ...
+            scenePath = fullfile(piRootPath, 'local', ...
                 'V3','NumbersAtDepth', 'numbersAtDepth.pbrt');
             sceneUnits = 'm';
             
             pullSceneFromRDT('NumbersAtDepth',scenePath);
             
         case('slantedBar')
-            scenePath = fullfile(piRootPath, 'data', ...
+            scenePath = fullfile(piRootPath, 'local', ...
                 'V3','slantedBar', 'slantedBar.pbrt');
             sceneUnits = 'm';
             
         case('chessSet')
 
-            scenePath = fullfile(piRootPath,'data',...
+            scenePath = fullfile(piRootPath,'local',...
                 'V3','ChessSet','chessSet.pbrt');
             sceneUnits = 'm';
             
@@ -126,33 +126,33 @@ if(sceneNameFlag)
     
         case('chessSetScaled')
             
-            scenePath = fullfile(piRootPath,'data','V3',...
+            scenePath = fullfile(piRootPath,'local','V3',...
                 'ChessSetScaled','chessSetScaled.pbrt');
             sceneUnits = 'm';
             
             pullSceneFromRDT('ChessSetScaled',scenePath);
             
         case('texturedPlane')
-            scenePath = fullfile(piRootPath, 'data', ...
+            scenePath = fullfile(piRootPath, 'local', ...
                 'V3','texturedPlane', 'texturedPlane.pbrt');
             sceneUnits = 'm';
             
         case('pointSource')
-            scenePath = fullfile(piRootPath,'data',...
+            scenePath = fullfile(piRootPath,'local',...
                 'SimplePoint','simplePointV3.pbrt');
             sceneUnits = 'm';
         
         case('slantedBarAdjustable')
             % A variation of slantedBar where the black and white planes
             % are adjustable to different depths.
-            scenePath = fullfile(piRootPath,'data',...
+            scenePath = fullfile(piRootPath,'local',...
                 'V3','slantedBarAdjustableDepth',...
                 'slantedBarWhiteFront.pbrt');
             sceneUnits = 'm';
             
         case('slantedBarTexture')
             % A variation of slantedBar where planes have texture.
-            scenePath = fullfile(piRootPath,'data',...
+            scenePath = fullfile(piRootPath,'local',...
                 'V3','slantedBarTexture',...
                 'slantedBarTexture.pbrt');
             sceneUnits = 'm';
@@ -161,7 +161,7 @@ if(sceneNameFlag)
             % A, B, C placed at different depths. The depths will be
             % adjustable. 
             
-            scenePath = fullfile(piRootPath,'data',...
+            scenePath = fullfile(piRootPath,'local',...
                 'V3','lettersAtDepth',...
                 'lettersAtDepth.pbrt');
             sceneUnits = 'm';

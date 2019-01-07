@@ -13,7 +13,7 @@ function success = pullSceneFromRDT(sceneName,scenePath)
 if(~exist(scenePath,'file'))
     piPBRTFetch(sceneName,'deletezip',true,...
         'pbrtversion',3,...
-        'destination folder',fullfile(piRootPath,'data','V3'));
+        'destination folder',fullfile(piRootPath,'local','V3'));
     % Check if file exists
     if(~exist(scenePath,'file'))
         error('Something went wrong when downloading the scene.')
