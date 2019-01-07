@@ -69,12 +69,12 @@ if(sceneNameFlag)
     switch sceneName
         
         case('figure')
-            scenePath = fullfile(piRootPath, 'local', ...
+            scenePath = fullfile(piRootPath, 'data', ...
                 'V3','figure', 'figure.pbrt');
             sceneUnits = 'm';
             
         case('coloredCube')
-            scenePath = fullfile(piRootPath, 'local', ...
+            scenePath = fullfile(piRootPath, 'data', ...
                 'V3','coloredCube', 'coloredCube.pbrt');
             sceneUnits = 'm';
             
@@ -95,12 +95,12 @@ if(sceneNameFlag)
             
         case ('blackBackdrop')
             
-            scenePath = fullfile(piRootPath,'local','V3','blackBackdrop','blackBackdrop.pbrt');
+            scenePath = fullfile(piRootPath,'data','V3','blackBackdrop','blackBackdrop.pbrt');
             sceneUnits = 'm';
             
         case ('blankScene')
             
-            scenePath = fullfile(piRootPath,'local','V3','blankScene','blankScene.pbrt');
+            scenePath = fullfile(piRootPath,'data','V3','blankScene','blankScene.pbrt');
             sceneUnits = 'm';
             
         case('numbersAtDepth')
@@ -112,7 +112,7 @@ if(sceneNameFlag)
             pullSceneFromRDT('NumbersAtDepth',scenePath);
             
         case('slantedBar')
-            scenePath = fullfile(piRootPath, 'local', ...
+            scenePath = fullfile(piRootPath, 'data', ...
                 'V3','slantedBar', 'slantedBar.pbrt');
             sceneUnits = 'm';
             
@@ -133,26 +133,26 @@ if(sceneNameFlag)
             pullSceneFromRDT('ChessSetScaled',scenePath);
             
         case('texturedPlane')
-            scenePath = fullfile(piRootPath, 'local', ...
+            scenePath = fullfile(piRootPath, 'data', ...
                 'V3','texturedPlane', 'texturedPlane.pbrt');
             sceneUnits = 'm';
             
         case('pointSource')
-            scenePath = fullfile(piRootPath,'local',...
+            scenePath = fullfile(piRootPath,'data',...
                 'SimplePoint','simplePointV3.pbrt');
             sceneUnits = 'm';
         
         case('slantedBarAdjustable')
             % A variation of slantedBar where the black and white planes
             % are adjustable to different depths.
-            scenePath = fullfile(piRootPath,'local',...
+            scenePath = fullfile(piRootPath,'data',...
                 'V3','slantedBarAdjustableDepth',...
                 'slantedBarWhiteFront.pbrt');
             sceneUnits = 'm';
             
         case('slantedBarTexture')
             % A variation of slantedBar where planes have texture.
-            scenePath = fullfile(piRootPath,'local',...
+            scenePath = fullfile(piRootPath,'data',...
                 'V3','slantedBarTexture',...
                 'slantedBarTexture.pbrt');
             sceneUnits = 'm';
