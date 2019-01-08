@@ -80,15 +80,16 @@ if(sceneNameFlag)
             
         case('snellenSingle')
             
-            scenePath = fullfile(piRootPath, 'local', ...
-                'V3','snellenSingle', 'snellen_single.pbrt');
+            scenePath = fullfile(piRootPath, 'local','scenes', ...
+                'snellenSingle', 'snellen_single.pbrt');
             sceneUnits = 'm';
             
             pullSceneFromRDT('snellenSingle',scenePath);  
             
         case ('snellenAtDepth')
             
-            scenePath = fullfile(piRootPath,'local','V3','snellenAtDepth','snellen.pbrt');
+            scenePath = fullfile(piRootPath,'local','scenes',...
+                'snellenAtDepth','snellen.pbrt');
             sceneUnits = 'm';
             
             pullSceneFromRDT('snellenAtDepth',scenePath);           
@@ -106,7 +107,7 @@ if(sceneNameFlag)
         case('numbersAtDepth')
             
             scenePath = fullfile(piRootPath, 'local', ...
-                'V3','NumbersAtDepth', 'numbersAtDepth.pbrt');
+                'scenes','NumbersAtDepth', 'numbersAtDepth.pbrt');
             sceneUnits = 'm';
             
             pullSceneFromRDT('NumbersAtDepth',scenePath);
@@ -118,15 +119,15 @@ if(sceneNameFlag)
             
         case('chessSet')
 
-            scenePath = fullfile(piRootPath,'local',...
-                'V3','ChessSet','chessSet.pbrt');
+            scenePath = fullfile(piRootPath,'local','scenes',...
+                'ChessSet','chessSet.pbrt');
             sceneUnits = 'm';
             
             pullSceneFromRDT('ChessSet',scenePath);
     
         case('chessSetScaled')
             
-            scenePath = fullfile(piRootPath,'local','V3',...
+            scenePath = fullfile(piRootPath,'local','scenes',...
                 'ChessSetScaled','chessSetScaled.pbrt');
             sceneUnits = 'm';
             
@@ -161,8 +162,8 @@ if(sceneNameFlag)
             % A, B, C placed at different depths. The depths will be
             % adjustable. 
             
-            scenePath = fullfile(piRootPath,'local',...
-                'V3','lettersAtDepth',...
+            scenePath = fullfile(piRootPath,'local','scenes',...
+                'lettersAtDepth',...
                 'lettersAtDepth.pbrt');
             sceneUnits = 'm';
             
