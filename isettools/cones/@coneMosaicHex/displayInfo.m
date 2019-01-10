@@ -79,9 +79,9 @@ LconesNum = numel(find(obj.pattern == 2));
 MconesNum = numel(find(obj.pattern == 3));
 SconesNum = numel(find(obj.pattern == 4));
 fprintf('%53s %d\n', 'Active cones:' , totalConesNum);
-fprintf('%53s %d (%2.3f%%)\n', 'L- cones:' , LconesNum, LconesNum/totalConesNum);
-fprintf('%53s %d (%2.3f%%)\n', 'M- cones:' , MconesNum, MconesNum/totalConesNum);
-fprintf('%53s %d (%2.3f%%)\n', 'S- cones:' , SconesNum, SconesNum/totalConesNum);
+fprintf('%53s %d (%2.3f%%)\n', 'L- cones:' , LconesNum, 100*LconesNum/totalConesNum);
+fprintf('%53s %d (%2.3f%%)\n', 'M- cones:' , MconesNum, 100*MconesNum/totalConesNum);
+fprintf('%53s %d (%2.3f%%)\n', 'S- cones:' , SconesNum, 100*SconesNum/totalConesNum);
 fprintf('%53s %2.1f cones/mm^2\n', 'Cone density (all cones):', ...
     numel(obj.pattern) / (obj.width * obj.height * 1e6));
 fprintf('%53s %2.1f cones/mm^2\n', 'Mean cone density (active cones):', ...
