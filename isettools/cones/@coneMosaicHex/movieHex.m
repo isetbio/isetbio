@@ -72,10 +72,10 @@ else
             dataHex = conemosaicH.current;
     end
     activeConeIndices = find(conemosaicH.pattern>1);
-    dataHex = dataHex(:);
-    dataHex = dataHex(activeConeIndices);
+    timeBins = size(dataHex,3); 
+    dataHex = RGB2XWFormat(dataHex);
+    dataHex = dataHex(activeConeIndices,:);
     conesNum = size(dataHex,1);
-    timeBins = 1;
 end
 
 
