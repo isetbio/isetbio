@@ -20,7 +20,25 @@ function [ieObject] = setOI(obj,ieObject,varargin)
 %                     parameters set. 
 %
 
-    
+%%
+p = inputParser;
+
+varargin =ieParamFormat(varargin);
+
+p.addRequired('obj');
+p.addRequired('ieObject');
+
+p.addParameter('setIlluminanceFlag',true,@islogical);
+p.addParameter('meanluminance',100,@isnumeric);
+p.addParameter('meanilluminancepermm2',5,@isnumeric);
+
+p.parse(obj,ieObject,varargin{:});
+setIlluminanceFlag = p.Results.setIlluminanceFlag;
+meanLuminance      = p.Results.meanluminance;
+meanIlluminance    = p.Results.meanilluminancepermm2;
+
+%%
+
 ieObject = oiSet(ieObject,'name',sprintf('%s-%s',obj.name,datestr(now,'mmm-dd,HH:MM')));
 
 % Scene distance. We set it to infinity, since it doesn't apply to
@@ -65,9 +83,14 @@ ieObject.optics.lens.name = obj.recipe.get('lens file');
 ieObject.optics.offaxis = '';
 ieObject.optics.vignetting = [];
 
-% Shouldn't we adjust the mean illuminance to some reasonable
-% level here?
-% disp('myScene.render: Using oiAdjustIlluminance to set mean illuminance to 5 lux.');
-% ieObject = oiAdjustIlluminance(ieObject,5);  % 5 lux
+% This is directly from piDat2ISET.m. 
+% TODO: We should merge the steps in this function directly into piDat2ISET.
+if(setIlluminanceFlag)
+    lensArea = pi*(obj.pupilDiameter/2)^2;
+    meanIlluminance = meanIlluminance*lensArea;
+    
+    ieObject        = oiAdjustIlluminance(ieObject,meanIlluminance);
+    ieObject.data.illuminance = oiCalculateIlluminance(ieObject);
+end
 
 end
