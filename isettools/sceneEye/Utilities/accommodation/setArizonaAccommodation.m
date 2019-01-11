@@ -62,7 +62,7 @@ wave = (400:10:800); % nm
 n_d = zeros(1,4);
 n_d(1) = 1.377;
 n_d(2) = 1.337;
-n_d(3) = 1.42+(0.0026*accommodation)-(0.00022*accommodation^2);
+n_d(3) = 1.42+(0.00256*accommodation)-(0.00022*accommodation^2);
 n_d(4) = 1.336;
 
 % Abbe number
@@ -112,10 +112,10 @@ set(findall(gcf,'-property','FontSize'),'FontSize',18)
 set(findall(gcf,'-property','LineWidth'),'LineWidth',2)
 %}
 
-iorNames = {sprintf('ior1_%0.2fdp.spd', accommodation), ...
-    sprintf('ior2_%0.2fdp.spd', accommodation), ...
-    sprintf('ior3_%0.2fdp.spd', accommodation), ...
-    sprintf('ior4_%0.2fdp.spd', accommodation)};
+iorNames = {sprintf('ior1_%0.2fdp_arizona.spd', accommodation), ...
+    sprintf('ior2_%0.2fdp_arizona.spd', accommodation), ...
+    sprintf('ior3_%0.2fdp_arizona.spd', accommodation), ...
+    sprintf('ior4_%0.2fdp_arizona.spd', accommodation)};
 
 rtbWriteSpectrumFile(wave, ior{1}, fullfile(workingFolder, iorNames{1}));
 rtbWriteSpectrumFile(wave, ior{2}, fullfile(workingFolder, iorNames{2}));
@@ -127,9 +127,9 @@ renderRecipe.camera.ior2.value = fullfile(workingFolder, iorNames{2});
 renderRecipe.camera.ior3.value = fullfile(workingFolder, iorNames{3});
 renderRecipe.camera.ior4.value = fullfile(workingFolder, iorNames{4});
 
-%% Attach lens file and set retina radius
-% For navarro, the lens file will change depending on accomodation. Here we
-% can write it out to a file to be read in later.
+%% Attach lens file 
+% The lens file will change depending on accomodation. Here we can write it
+% out to a file to be read in later.
 lensFile = sprintf('arizonaAccomodated_%0.2f.dat', accommodation);
 writeArizonaLensFile(accommodation, fullfile(workingFolder, lensFile));
 fprintf('Wrote out a new lens file: \n')
