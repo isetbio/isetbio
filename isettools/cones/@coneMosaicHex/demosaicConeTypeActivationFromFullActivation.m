@@ -44,6 +44,15 @@ function [demosaicedResponseMap, spatialSupportDegs, coneResponses, coneXlocsDeg
             error('Invalid cone type: ''%s''.', coneType);
     end
     
+    if (isempty(targetConesIndices))
+        demosaicedResponseMap = [];
+        spatialSupportDegs = [];
+        coneResponses = []; 
+        coneXlocsDegs = [];
+        coneYlocsDegs = [];
+        return;
+    end
+    
     coneResponses = theFullPatternResponse(targetConesIndices);
     xPatternSupport = xPatternSupport(targetConesIndices);
     yPatternSupport = yPatternSupport(targetConesIndices);
