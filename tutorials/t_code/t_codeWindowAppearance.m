@@ -1,35 +1,36 @@
-%% t_coneWindowAppearance
-%
 % Controlling window properties in Matlab.
 %
-% It is possible to change some of the GUI appearance properties from the
-% command line.  Here we illustrate how to make windows invisible, change
-% the white point, and change the font size.
+% Description:
+%    It is possible to change some of the GUI appearance properties from
+%    the command line.  Here we illustrate how to make windows invisible, 
+%    change the white point, and change the font size.
 %
-% NOTES:
-%   1) This might be elaborated a bit, to show explicitly more things that
-%   you might want to do.
+% Notes:
+%    1) This might be elaborated a bit, to show explicitly more things that
+%       you might want to do.
 %
-% Copyright ImagEval Consultants, LLC, 2010
+
+% History:
+%    XX/XX/10       Copyright ImagEval Consultants, LLC, 2010
+%    11/22/18  JNM  Formatting
 
 %% Initialize
 ieInit;
 
 %% Opening and closing windows from the command line
-
 % Create an isetbio window
-scene = sceneCreate; vcAddAndSelectObject(scene);
+scene = sceneCreate;
+vcAddAndSelectObject(scene);
 
-sceneWindow('visible','on')
+sceneWindow('visible', 'on')
 drawnow
 pause(1)
 
-sceneWindow('visible','off')
+sceneWindow('visible', 'off')
 drawnow
 pause(1)
 
 %% Interacting with the scene handles
-%
 % It is also possible to make adjustments to the display by interacting
 % with the Matlab handle graphics.  To get the handle to the scene figure,
 % you can run
@@ -42,6 +43,6 @@ get(sceneF)
 guidata(sceneF)
 
 % Or you can get the guidata handle directly using
-sceneG = ieSessionGet('scene window handle')
+sceneG = ieSessionGet('scene window handle');
 
 %% END
