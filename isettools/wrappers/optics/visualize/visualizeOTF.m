@@ -1,9 +1,12 @@
 function visualizeOTF(theOI, targetWavelength, otfRange, varargin)
 p = inputParser;
 p.addParameter('axesHandle', [], @ishandle);
+p.addParameter('extraData', []);
+
 % Parse input
 p.parse(varargin{:});
 axesHandle = p.Results.axesHandle;
+extraData = p.Results.extraData;
 
 optics = oiGet(theOI, 'optics');
 waveOTF = fftshift(opticsGet(optics,'otf data',targetWavelength));
@@ -27,15 +30,39 @@ else
 end
 axes(axesHandle);
 
+if (~isempty(extraData))
+    yyaxis left
+end
 plot(xSfCyclesDeg, mtfSlice, 'bo-', 'MarkerFaceColor', [0 0.8 01.0], 'MarkerSize', 10);
+set(gca, 'YTickLabel', 0:0.1:1, 'YTick', 0:0.1:1.0, 'YLim', [0 1.05]);
+ylabel('modulation');
+
+if (~isempty(extraData))
+    yyaxis right
+    hold on
+    legends = {'PSF'};
+    extraDataColors = [1 0 0; 1 0 1; 0 1 0;];
+    maxY = 0;
+    for dataSetIndex = 1:numel(extraData)
+        plot(extraData{dataSetIndex}.sf, extraData{dataSetIndex}.csf/max(extraData{dataSetIndex}.csf), ...
+            'rs-', 'MarkerSize', 10, ...
+            'MarkerEdgeColor', squeeze(extraDataColors(dataSetIndex,:)),  ...
+            'MarkerFaceColor', squeeze(extraDataColors(dataSetIndex,:))*0.5+[0.5 0.5 0.5]);
+        legends{numel(legends)+1} = extraData{dataSetIndex}.legend;
+    end
+    hold off
+    set(gca,'YLim', [0 1.05]);
+    ylabel(extraData{dataSetIndex}.ylabel);
+    legend(legends, 'Location', 'SouthWest');
+end
+
+set(gca, 'XLim', [otfRange/100 otfRange], 'XScale', 'log');
+set(gca, 'XTick', sfTicks);
 axis('square')
-set(gca, 'XLim', [otfRange/100 otfRange], 'XScale', 'log', 'YLim', [0 1.05]);
-set(gca, 'XTick', sfTicks, 'YTick', 0:0.1:1.0);
-set(gca, 'YTickLabel', 0:0.1:1);
 grid('on'); box('on');
 set(gca, 'FontSize', fontSize);
 xlabel('\it spatial frequency (c/deg)', 'FontWeight', 'bold'); 
-ylabel('modulation');
+
 title(sprintf('MTF (%2.0f nm)', targetWavelength));
 end
 
