@@ -13,8 +13,6 @@
 %    * For some purposes the oisCreate() function presents a simpler
 %      approach to creating a sequence. That function has several built-in
 %      cases, and more may be added.
-%    * [Note: JNM - Is there a particular reason for the impermanance of
-%      the figures and how quickly they appear/disappear?]
 %
 % See Also: oisCreate
 %

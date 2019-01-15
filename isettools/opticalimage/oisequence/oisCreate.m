@@ -37,9 +37,7 @@ function [ois, scene] = ...
 %    sceneParameters -  Struct of scene parameters (e.g., fov, luminance)
 %
 % Notes:
-%    * TODO: Assign someone to fix function/examples. Examples are
-%      currently returning "Error using lower. Cell elements must be
-%      character arrays."
+%
 %
 % References:
 %    ISETBIO wiki: https://github.com/isetbio/isetbio/wiki/OI-Sequences

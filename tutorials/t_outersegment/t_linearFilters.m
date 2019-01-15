@@ -25,9 +25,6 @@ function t_linearFilters
 %    None.
 %
 % Notes:
-%    * Copying and pasting the cells doesn't work because it has internal
-%      functions (e.g., oiGenerate). We should re-write so the tutorial can
-%      be run from the editor.
 %
 %    * Questions:
 %      - Should we separate the plots by cone type?

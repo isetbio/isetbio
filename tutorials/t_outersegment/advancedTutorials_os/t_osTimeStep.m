@@ -41,7 +41,7 @@ function t_osTimeStep
 ieInit;
 
 %% Examine the effects of varying the integrationTime
-conditionSet = 1;
+%conditionSet = 1;
 
 % % Examine effects of varying the response time interval (os.timeStep)
 % conditionSet = 2;
@@ -559,8 +559,8 @@ function plotEverything(theConeMosaic, theOIsequence, ...
     %
     % Inputs:
     %    signalRange -
-        for oiIndex = 1:theOIsequence.length
-            plot(oiTimeAxis(oiIndex)*[1 1], signalRange, 'k-');
+        for oiIdx = 1:theOIsequence.length
+            plot(oiTimeAxis(oiIdx)*[1 1], signalRange, 'k-');
         end
         % Plot the origin in magenta
         plot([0 0], signalRange, '-', 'Color', [0.7 0.1 0.3], 'LineWidth', 2);
@@ -690,8 +690,6 @@ function condData = makeConditionSet(conditionSet)
             condData{numel(condData) + 1} = c0;
 
         case 3  % Examine & contrast magnitudes of photon noise vs OS noise
-            stimulusRefreshRateInHz = 25;
-            eyeMovementsPerStimulusRefresh = 6;
 
             %% Steady params
             % mosaicSize: NaN. Indicates a single L, M, and S cone.

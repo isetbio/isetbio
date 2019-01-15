@@ -55,7 +55,7 @@ for ii = 1:length(meanIsoArray)
     fovea(:, ii) = tmp(:, 1);
 
     % Do it for the periphery
-    tmp = os.linearFilters(cMosaic, 'eccentricity', 10);
+    tmp = os.linearFilters(cMosaic, 'eccentricity', 15);
     periphery(:, ii) = tmp(:, 1);
 
 end
