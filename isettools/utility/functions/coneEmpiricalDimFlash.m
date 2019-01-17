@@ -13,7 +13,7 @@ function response = coneEmpiricalDimFlash(coef, t)
 %
 %    The calculation is as follows:
 %       fit = scFact * (((t / TR) ^ 3) / (1 + ((t / TR) ^ 3))) ...
-%             * exp(-((t / TD))) ...
+%             * exp(-((t / TD)^2)) ...
 %             * cos(((2 * pi * t) / TP) + (2 * pi * Phi / 360));
 %
 %    See the papter, Table 2 (p. 693) for some coefficient values.
@@ -22,11 +22,11 @@ function response = coneEmpiricalDimFlash(coef, t)
 %    coef     - The coefficients for the calculations. They will follow the
 %               following order in the provided vector:
 %                   1 - scFact - Scaling Factor
-%                   2 - TauR   - Rising Phase Time Constant
-%                   3 - TauD   - Damping Time Constant
-%                   4 - TauP   - Oscillator Period
-%                   5 - Phi    - Oscillator Phase
-%    t        - Time (in milliseconds)
+%                   2 - TauR   - Rising Phase Time Constant (seconds)
+%                   3 - TauD   - Damping Time Constant (seconds)
+%                   4 - TauP   - Oscillator Period (seconds)
+%                   5 - Phi    - Oscillator Phase (degrees)
+%    t        - Time (in seconds)
 %
 % Outputs:
 %    response - The calculated flash response
@@ -45,6 +45,22 @@ function response = coneEmpiricalDimFlash(coef, t)
 %    01/08/16  dhb       Rename, clean
 %    12/04/17  jnm       Formatting
 %    01/26/18  jnm       Formatting update to match Wiki.
+
+% Examples:
+%{
+    scalingFactor = 20;
+    tauRiseSeconds = 25/1000;
+    tauDampSeconds = 110/1000;
+    tauOscillationSeconds = 220/1000;
+    phaseOscillationDegs = -31;
+    coeffs = [scalingFactor, tauRiseSeconds, tauDampSeconds, tauOscillationSeconds, phaseOscillationDegs];
+    timeAxisSeconds = (0:1:400)/1000;
+    dimFlashPcurrentResponse = coneEmpiricalDimFlash(coeffs, timeAxisSeconds);
+    figure(); clf;
+    plot(timeAxisSeconds, dimFlashPcurrentResponse, 'k-');
+    xlabel('time (seconds)');
+    ylabel('pCurrent (pAmps)');
+%}
 
 %% Give names to the coefficient vector entries
 ScFact = coef(1);  % Scaling Factor
