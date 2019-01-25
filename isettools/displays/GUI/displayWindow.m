@@ -404,7 +404,7 @@ sceneWindow;
 
 % --------------------------------------------------------------------
 function menuAnalyzeScene_Callback(~, ~, ~)
-% (Analyze | Scene) Call to analyze a scene.
+% (Analyze | Scene Pixel) Call to analyze a scene.
 %
 % Syntax:
 %   menuAnalyzeScene_Callback(~, ~, ~)

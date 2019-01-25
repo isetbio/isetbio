@@ -1,5 +1,5 @@
 function [valid, toolboxes] = checkToolbox(toolboxName)
-% Checks whether certain matlab toolbox has been installed
+% Checks whether a specific matlab toolbox has been installed
 %
 % Syntax:
 %   [valid, toolboxes] = checkToolbox(toolboxName)
@@ -32,6 +32,7 @@ function [valid, toolboxes] = checkToolbox(toolboxName)
 
 % Examples:
 %{
+    checkToolbox('Statistics and Machine Learning Toolbox')
     [valid, tbxList] = checkToolbox('Parallel Computing Toolbox');
 %}
 
