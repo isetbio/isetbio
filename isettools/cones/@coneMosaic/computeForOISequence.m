@@ -169,7 +169,9 @@ if (isempty(theExpandedMosaic))
     % instead of in coneMosaic.compute(), which is called multiple times.
     obj.absorptions = [];
     obj.current = [];
-    obj.os.lmsConeFilter = [];
+    if (isa(obj.os, 'osLinear'))
+        obj.os.lmsConeFilter = [];
+    end
     theExpandedMosaic = obj.copy();
     theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
         obj.cols + 2 * padCols);
