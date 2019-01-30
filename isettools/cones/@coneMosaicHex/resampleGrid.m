@@ -239,6 +239,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     % (conePositions) reach equlibrium.
     notConverged = true;
     terminateAdjustment = 0;
+    nextQueryIteration = obj.queryGridAdjustmentIterations;
     iteration = 0;
     tic
     while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations) && (terminateAdjustment == 0)
@@ -392,14 +393,29 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         end 
         
         % check whether we need to ask user whether to continue or not
-        if (mod(iteration,obj.queryGridAdjustmentIterations) == 0)
+        if (iteration == nextQueryIteration) % (mod(iteration,obj.queryGridAdjustmentIterations) == 0)
             visualizeLatticeState(obj, conePositions, iteration);
             qString = sprintf('\n[iter: %d] Terminate adjusting (1) or continue (0)', iteration);
             terminateAdjustment = queryUserWithDefault(qString, 0);
             if (terminateAdjustment == 0)
-                fprintf('Will ask again at iteration %d.\n', iteration+obj.queryGridAdjustmentIterations);
+                possibleIterationIntervals = obj.queryGridAdjustmentIterations * [0.5 1 2 5 10];
+                nextQueryIterationString = sprintf('Next query iterations. 1=%2.0f 2=%2.0f 3=%2.0f 4=%2.0f 5=%2.0f : ', ...
+                    possibleIterationIntervals(1), possibleIterationIntervals(2), possibleIterationIntervals(3), possibleIterationIntervals(4), possibleIterationIntervals(5));
+                nextQueryIteration = queryUserWithDefault(nextQueryIterationString, 1);
+                if (nextQueryIteration < 1)
+                    nextQueryIteration = 1;
+                elseif (nextQueryIteration > numel(possibleIterationIntervals))
+                    nextQueryIteration = numel(possibleIterationIntervals);
+                end
+                nextQueryIteration = iteration+possibleIterationIntervals(nextQueryIteration);
+                fprintf('Will ask again at iteration %d.\n', nextQueryIteration);
             else
                 fprintf('Terminating adjustment at user request\n');
+            end
+        else
+            visualizationUpdateIterations = 5;
+            if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration,visualizationUpdateIterations) == 0)
+                visualizeLatticeState(obj, conePositions, iteration);
             end
         end
         
@@ -795,7 +811,7 @@ function visualizeLatticeState(obj, conePositions, iteration)
     idx = find(r < threshold);
     conePositions = conePositions(idx,:);
     hFig = figure(111); clf;
-    set(hFig,'Position', [10 10 1400 700]);
+    set(hFig,'Position', [10 10 1400 720]);
     subplot('Position', [0.02 0.05 0.45 0.95]);
     plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 6);
     set(gca, 'XLim', threshold*[-1 1], 'YLim', threshold*[-1 1], 'XTick', [], 'YTick', []);
@@ -809,7 +825,7 @@ function plotQuality(qDist)
     qLims = [0.5 1.005]; qBins = [0.3:0.01:1.0];
     [counts,centers] = hist(qDist, qBins);
     bar(centers,counts,1)
-    set(gca, 'XLim', qLims, 'YLim', [0 3500], 'XTick', [0.1:0.1:1.0], 'YTick', [0:1000:5000], 'FontSize', 16);
+    set(gca, 'XLim', qLims, 'YLim', [0 max(counts)*0.75], 'XTick', [0.1:0.1:1.0], 'YTick', [0:1000:5000], 'FontSize', 16);
     axis 'square'; grid on
     xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 16);
     ylabel('count', 'FontSize', 16);
