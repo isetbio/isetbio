@@ -265,46 +265,12 @@ methods
         p.addParameter('name', 'scene-001', @ischar);
         p.addParameter('workingDirectory', '', @ischar);
         
-        % TODO: Is there a way to get rid of all of these? Should we pass
-        % varagin directly to loadPbrtScene?
-        % Optional parameters used by unique scenes (e.g. slantedBar,
-        % texturedPlane, pointSource). We can use these parameters to move
-        % the plane/point to the given distance (in mm) and, if applicable,
-        % attach the provided texture.
-        p.addParameter('planeDistance', 1, @isnumeric);
-        p.addParameter('planeTexture', ...
-            fullfile(piRootPath, 'data', 'imageTextures', ...
-            'squareResolutionChart.exr'), @ischar);
-        p.addParameter('planeSize', [1 1], @isnumeric);
-        p.addParameter('pointDiameter',0.001,@isnumeric);
-        p.addParameter('pointDistance',1,@isnumeric);
-        
-        p.addParameter('gamma','true',@ischar); % texturedPlane
-        p.addParameter('useDisplaySPD',0); % texturedPlane
-        
-        % I don't think these work at the moment
-        % p.addParameter('whiteDepth',1,@isnumeric); %slantedBar
-        % p.addParameter('blackDepth',1,@isnumeric); %slantedBar
-        
-        p.addParameter('topDepth',1,@isnumeric); %slantedBarTexture
-        p.addParameter('bottomDepth',1,@isnumeric); %slantedBarTexture 
-        
-        p.addParameter('objectDistance',1,@isnumeric); %snellenSingle
-        p.addParameter('objectSize',0.3,@isnumeric); %snellenSingle
-        
-        p.addParameter('Adist',0.1,@isnumeric); %lettersAtDepth
-        p.addParameter('Bdist',0.2,@isnumeric); %lettersAtDepth
-        p.addParameter('Cdist',0.3,@isnumeric); %lettersAtDepth
-        p.addParameter('Adeg',6,@isnumeric); %lettersAtDepth
-        p.addParameter('Cdeg',4,@isnumeric); %lettersAtDepth
-        p.addParameter('nchecks',[64 64],@isnumeric); % [wall,ground]
-        
         % Parse
         p.parse(pbrtFile, varargin{:});
         
         % Setup the pbrt scene and recipe
         [recipe, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
-            loadPbrtScene(pbrtFile,p);
+            loadPbrtScene(pbrtFile,varargin);
         
         % Check to make sure this PBRT file has a realistic eye.
         if(~strcmp(recipe.camera.subtype, 'realisticEye'))

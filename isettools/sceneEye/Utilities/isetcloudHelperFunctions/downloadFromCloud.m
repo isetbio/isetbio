@@ -8,6 +8,8 @@ function [oiObjects, seObjects] = downloadFromCloud(gcp,varargin)
 % Inputs:
 %    gcp - the intalized gCloud object from isetcloud
 %    varargin  - An optional length of key/value pairs describing the scene
+%    scaleIlluminance -  if true, we scale the mean illuminance by the
+%                        pupil diameter in piDat2ISET
 %
 % Outputs:
 %    oiObjects - All the optical images rendered.
@@ -18,19 +20,24 @@ function [oiObjects, seObjects] = downloadFromCloud(gcp,varargin)
 %%
 p = inputParser;
 p.addRequired('gcp',@(x)(isa(x,'gCloud')));
+p.addParameter('scaleIlluminance',true,@islogical);
+
+p.parse(gcp,varargin{:});
+scaleIlluminance = p.Results.scaleIlluminance;
 
 oiObjects = [];
 seObjects = [];
 
 %% Download
 
-oiObjects = gcp.downloadPBRT(gcp.miscDescriptor(1).recipe);
+oiObjects = gcp.downloadPBRT(gcp.miscDescriptor(1).recipe,...
+    'scaleIlluminance',scaleIlluminance);
 
 for ii=1:length(oiObjects)
     
     % Get corresponding sceneEye object
     % Check, is this correct?
-    seObjects{ii} = gcp.miscDescriptor(ii).copy;
+    seObjects{ii} = gcp.miscDescriptor(ii);
     
     % Set the parameters correctly for the optical image
     if(seObjects{ii}.debugMode == 1)

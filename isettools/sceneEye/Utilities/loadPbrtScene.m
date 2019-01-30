@@ -1,5 +1,5 @@
 function [recipe, sceneUnits, workingDir, origPath] = ...
-    loadPbrtScene(pbrtFile, se_p, varargin)
+    loadPbrtScene(pbrtFile, varargin)
 % Setup a PBRT scene given it's name or file location. Primarily includes the
 % following steps:
 %   1. Check if we're given a pbrt file or a scene name.
@@ -26,7 +26,7 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 % Inputs:
 %    sceneName - either a scene name like "slantedBar" or an actual pbrt
 %                filepath like ("xxx.pbrt")
-%    se_p - inputParser from sceneEye needs to be passed in so we can find
+%    p - inputParser from sceneEye needs to be passed in so we can find
 %                  certain parameters (e.g. planeDistance) when setting up
 %                  the scene.
 %    varargin  - An optional length of key/value pairs describing the scene
@@ -38,15 +38,60 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 %                 There is a flag in the sceneEye class to specify this and
 %                 render appropriately.
 %    workingDir - a created working directory derived from the scene name.
-%    origPath - the original path to the pbrt file 
+%    origPath - the original path to the pbrt file
 %
 % History:
 %    5/25/18  TL   Created
 %
 
 %% Parse inputs
+
+% Because the inputs have been passed in first through sceneEye, and then
+% through loadPbrtScene, they seem to be in a nested cell. 
+varargin = varargin{:};
+
 p = inputParser;
 p.addRequired('pbrtFile', @ischar);
+
+p.addParameter('name', 'scene-001', @ischar);
+p.addParameter('workingDirectory', '', @ischar);
+
+% The following are optional parameters used by unique scenes (e.g.
+% slantedBar, texturedPlane, pointSource). We can use these parameters to
+% move the plane/point to the given distance (in mm) and, if applicable,
+% attach the provided texture.
+        
+p.addParameter('planeDistance', 1, @isnumeric);
+p.addParameter('planeTexture', ...
+    fullfile(piRootPath, 'data', 'imageTextures', ...
+    'squareResolutionChart.exr'), @ischar);
+p.addParameter('planeSize', [1 1], @isnumeric);
+p.addParameter('pointDiameter',0.001,@isnumeric);
+p.addParameter('pointDistance',1,@isnumeric);
+
+% texturedPlane
+p.addParameter('gamma','true',@ischar); 
+p.addParameter('useDisplaySPD',0);
+
+% slantedBarTexture
+p.addParameter('topDepth',1,@isnumeric); 
+p.addParameter('bottomDepth',1,@isnumeric); 
+
+% slantedBar
+p.addParameter('eccentricity',0,@isnumeric); 
+
+% snellenSingle
+p.addParameter('objectDistance',1,@isnumeric); 
+p.addParameter('objectSize',0.3,@isnumeric); 
+
+%lettersAtDepth
+p.addParameter('Adist',0.1,@isnumeric); 
+p.addParameter('Bdist',0.2,@isnumeric); 
+p.addParameter('Cdist',0.3,@isnumeric); 
+p.addParameter('Adeg',6,@isnumeric); 
+p.addParameter('Cdeg',4,@isnumeric); 
+p.addParameter('nchecks',[64 64],@isnumeric); % [wall,ground]
+
 p.parse(pbrtFile, varargin{:});
 
 %% Check if we've been given a sceneName or a pbrt file.
@@ -84,7 +129,7 @@ if(sceneNameFlag)
                 'snellenSingle', 'snellen_single.pbrt');
             sceneUnits = 'm';
             
-            pullSceneFromRDT('snellenSingle',scenePath);  
+            pullSceneFromRDT('snellenSingle',scenePath);
             
         case ('snellenAtDepth')
             
@@ -92,7 +137,7 @@ if(sceneNameFlag)
                 'snellenAtDepth','snellen.pbrt');
             sceneUnits = 'm';
             
-            pullSceneFromRDT('snellenAtDepth',scenePath);           
+            pullSceneFromRDT('snellenAtDepth',scenePath);
             
         case ('blackBackdrop')
             
@@ -118,13 +163,23 @@ if(sceneNameFlag)
             sceneUnits = 'm';
             
         case('chessSet')
-
+            
             scenePath = fullfile(piRootPath,'local','scenes',...
                 'ChessSet','chessSet.pbrt');
             sceneUnits = 'm';
             
             pullSceneFromRDT('ChessSet',scenePath);
-    
+            
+        case('chessSet-2')
+            % Chess set but with a couple of different materials. This
+            % scene can probably go away in the future when it becomes
+            % easier to adjust the materials directly within the script.
+            scenePath = fullfile(piRootPath,'local','scenes',...
+                'ChessSet_2','chessSet2.pbrt');
+            sceneUnits = 'm';
+            
+            pullSceneFromRDT('ChessSet_2',scenePath);
+            
         case('chessSetScaled')
             
             scenePath = fullfile(piRootPath,'local','scenes',...
@@ -143,13 +198,14 @@ if(sceneNameFlag)
                 'SimplePoint','simplePointV3.pbrt');
             sceneUnits = 'm';
         
-        case('slantedBarAdjustable')
-            % A variation of slantedBar where the black and white planes
-            % are adjustable to different depths.
-            scenePath = fullfile(piRootPath,'data',...
-                'V3','slantedBarAdjustableDepth',...
-                'slantedBarWhiteFront.pbrt');
-            sceneUnits = 'm';
+            % Outdated
+%         case('slantedBarAdjustable')
+%             % A variation of slantedBar where the black and white planes
+%             % are adjustable to different depths.
+%             scenePath = fullfile(piRootPath,'data',...
+%                 'V3','slantedBarAdjustableDepth',...
+%                 'slantedBarWhiteFront.pbrt');
+%             sceneUnits = 'm';
             
         case('slantedBarTexture')
             % A variation of slantedBar where planes have texture.
@@ -157,10 +213,10 @@ if(sceneNameFlag)
                 'V3','slantedBarTexture',...
                 'slantedBarTexture.pbrt');
             sceneUnits = 'm';
-        
+            
         case('lettersAtDepth')
             % A, B, C placed at different depths. The depths will be
-            % adjustable. 
+            % adjustable.
             
             scenePath = fullfile(piRootPath,'local','scenes',...
                 'lettersAtDepth',...
@@ -180,7 +236,7 @@ recipe = piRead(scenePath,'version',3);
 recipe.inputFile = scenePath;
 
 %% Setup the working folder
-if(isempty(se_p.Results.workingDirectory))
+if(isempty(p.Results.workingDirectory))
     % Determine scene folder name from scene path
     [path, ~, ~] = fileparts(scenePath);
     [~, sceneFolder] = fileparts(path);
@@ -193,7 +249,7 @@ end
 % Copy contents of the working folder over to the local folder.
 origPath = createWorkingFolder(...
     scenePath, 'workingDir', workingDir);
-            
+
 %% Make adjustments to the recipe
 % E.g. move the plane to a certain distance
 if(sceneNameFlag)
@@ -203,62 +259,51 @@ if(sceneNameFlag)
         case('lettersAtDepth')
             % Move the letters in the scene. To do this, we're actually
             % going to remake the scene.
-            recipe = piCreateLettersAtDepth('Adist',se_p.Results.Adist,...
-                'Bdist',se_p.Results.Bdist,...
-                'Cdist',se_p.Results.Cdist,...
-                'Adeg',se_p.Results.Adeg,...
-                'Cdeg',se_p.Results.Cdeg,...
-                'nchecks',se_p.Results.nchecks);
+            recipe = piCreateLettersAtDepth('Adist',p.Results.Adist,...
+                'Bdist',p.Results.Bdist,...
+                'Cdist',p.Results.Cdist,...
+                'Adeg',p.Results.Adeg,...
+                'Cdeg',p.Results.Cdeg,...
+                'nchecks',p.Results.nchecks);
             
         case('slantedBar')
-            % A variation of slantedBar where the black and white planes
-            % are adjustable to different depths. We reread the recipe
-            % since we already have piCreateSlantedBarScene. 
-            if(~isempty(se_p.Results.planeDistance))
-                recipe = piCreateSlantedBarScene(...
-                    'planeDepth',se_p.Results.planeDistance);
-            else
-                recipe = piCreateSlantedBarScene(...
-                    'whiteDepth',se_p.Results.whiteDepth,...
-                    'blackDepth',se_p.Results.blackDepth);
-            end
+            recipe = piCreateSlantedBarScene(...
+                'planeDepth',p.Results.planeDistance,...
+                'eccentricity',p.Results.eccentricity);
             
         case('slantedBarTexture')
-            % A variation of slantedBar where the black and white planes
-            % are adjustable to different depths. We reread the recipe
-            % since we already have piCreateSlantedBarScene.
             recipe = piCreateSlantedBarTextureScene(...
-                'topDepth',se_p.Results.topDepth,...
-                'bottomDepth',se_p.Results.bottomDepth);
+                'topDepth',p.Results.topDepth,...
+                'bottomDepth',p.Results.bottomDepth);
             
         case('pointSource')
             % Clear previous transforms
             piClearObjectTransforms(recipe,'Point');
             piClearObjectTransforms(recipe,'Plane');
             % Add given transforms
-            recipe = piObjectTransform(recipe,'Point','Scale',[se_p.Results.pointDiameter se_p.Results.pointDiameter 1]);
-            recipe = piObjectTransform(recipe,'Point','Translate',[0 0 se_p.Results.pointDistance]);
+            recipe = piObjectTransform(recipe,'Point','Scale',[p.Results.pointDiameter p.Results.pointDiameter 1]);
+            recipe = piObjectTransform(recipe,'Point','Translate',[0 0 p.Results.pointDistance]);
             % Make it large!
-            recipe = piObjectTransform(recipe,'Plane','Scale',[se_p.Results.pointDistance*10 se_p.Results.pointDistance*10 1]);
+            recipe = piObjectTransform(recipe,'Plane','Scale',[p.Results.pointDistance*10 p.Results.pointDistance*10 1]);
             % Move it slightly beyond the point
-            recipe = piObjectTransform(recipe,'Plane','Translate',[0 0 se_p.Results.pointDistance+0.5]);
-         
+            recipe = piObjectTransform(recipe,'Plane','Translate',[0 0 p.Results.pointDistance+0.5]);
+            
         case('snellenSingle')
-            scaling = [se_p.Results.objectSize se_p.Results.objectSize 1] ./ [1 1 1];
+            scaling = [p.Results.objectSize p.Results.objectSize 1] ./ [1 1 1];
             recipe = piObjectTransform(recipe,'Snellen','Scale',scaling);
             recipe = piObjectTransform(recipe, 'Snellen', ...
-                'Translate', [0 0 se_p.Results.objectDistance]);
+                'Translate', [0 0 p.Results.objectDistance]);
             
         case('texturedPlane')
             % Scale and translate
-            planeSize = se_p.Results.planeSize;
+            planeSize = p.Results.planeSize;
             scaling = [planeSize(1) planeSize(2) 1] ./ [1 1 1];
             recipe = piObjectTransform(recipe, 'Plane', 'Scale', scaling);
             recipe = piObjectTransform(recipe, 'Plane', ...
-                'Translate', [0 0 se_p.Results.planeDistance]);
+                'Translate', [0 0 p.Results.planeDistance]);
             % Texture
-            [pathTex, nameTex, extTex] = fileparts(se_p.Results.planeTexture);
-            copyfile(se_p.Results.planeTexture, workingDir);
+            [pathTex, nameTex, extTex] = fileparts(p.Results.planeTexture);
+            copyfile(p.Results.planeTexture, workingDir);
             if(isempty(pathTex))
                 error('Image texture must be an absolute path.');
             end
@@ -267,13 +312,13 @@ if(sceneNameFlag)
             
             % If true, use the lcd-apple display primaries to convert to
             % RGB texture values to spectra.
-            if(se_p.Results.useDisplaySPD)
+            if(p.Results.useDisplaySPD)
                 recipe = piWorldFindAndReplace(recipe, '"bool useSPD" "false"', ...
                     '"bool useSPD" "true"');
             end
             
-            % If true, we convert from sRGB to lRGB in PBRT. 
-            if(strcmp(se_p.Results.gamma,'false'))
+            % If true, we convert from sRGB to lRGB in PBRT.
+            if(strcmp(p.Results.gamma,'false'))
                 recipe = piWorldFindAndReplace(recipe,'"bool gamma" "true"',...
                     '"bool gamma" "false"');
             end
