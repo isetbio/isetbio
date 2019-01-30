@@ -38,12 +38,15 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     p.addParameter('labelColorBarTicks', false, @islogical);
     p.addParameter('showXLabel', true, @islogical);
     p.addParameter('showYLabel', true, @islogical);
+    p.addParameter('showXTicks', true, @islogical);
+    p.addParameter('showYTicks', true, @islogical);
     p.addParameter('outlineConesAlongHorizontalMeridian', false, @islogical);
     p.addParameter('crossHairPosition', [], @isnumeric);
     p.addParameter('visualizedFOV', [], @isnumeric);
     p.addParameter('signalRange', [], @isnumeric);
     p.addParameter('xRange', [], @isnumeric);
     p.addParameter('yRange', [], @isnumeric);
+    p.addParameter('fontSize', 14, @isnumeric);
     p.addParameter('activationTime', [], @isnumeric);
     p.addParameter('backgroundColor', [0 0 0], @isnumeric);
     p.parse(axesHandle, activation, varargin{:});
@@ -64,6 +67,9 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     titleForColorBar = p.Results.titleForColorBar;
     showXLabel = p.Results.showXLabel;
     showYLabel = p.Results.showYLabel;
+    showXTicks = p.Results.showXTicks;
+    showYTicks = p.Results.showYTicks;
+    
     outlineConesAlongHorizontalMeridian = p.Results.outlineConesAlongHorizontalMeridian;
     
     if (any(size(activation) ~= size(obj.pattern)))    
@@ -241,7 +247,15 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         'XTick', ticksMeters, 'YTick', ticksMeters, ...
         'XTickLabels', sprintf('%2.2f\n', ticksDegs), 'YTickLabels', sprintf('%2.2f\n', ticksDegs));
     xticks(axesHandle, ticksMeters); yticks(axesHandle, ticksMeters); 
-    set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
+    set(axesHandle, 'FontSize', p.Results.fontSize, 'LineWidth', 1.0);
+    
+    if (~showXTicks)
+        set(axesHandle, 'XTick', []);
+    end
+    
+    if (~showYTicks)
+        set(axesHandle, 'YTick', []);
+    end
     
     if (showColorBar)
         drawnow;
