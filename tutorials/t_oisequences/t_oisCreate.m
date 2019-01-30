@@ -11,9 +11,6 @@
 %    the script t_oiSequence.m
 %
 % Notes:
-%    * TODO: Assign someone to complete note from BW below.
-%    * [Note: JNM - Is there a particular reason that the figures are
-%      impermanent? It would seem that would make it harder to study them?]
 %
 
 % History:
