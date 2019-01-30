@@ -413,8 +413,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
                 fprintf('Terminating adjustment at user request\n');
             end
         else
-            visualizationUpdateIterations = 5;
-            if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration,visualizationUpdateIterations) == 0)
+            if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration,obj.visualizationUpdateIterations) == 0)
                 visualizeLatticeState(obj, conePositions, iteration);
             end
         end
