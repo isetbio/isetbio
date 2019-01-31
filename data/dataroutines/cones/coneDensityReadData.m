@@ -131,7 +131,7 @@ end
 params.angle = NaN;
 
 %% Make sure eccentricity and angle are vectors of the same length.
-if (~isvector(eccMM) | ~isvector(angleDeg))
+if (~isvector(eccMM) || ~isvector(angleDeg))
     error('Passed eccentricity and angle arguments must be vectors.');
 end
 if (length(eccMM) ~= length(angleDeg))

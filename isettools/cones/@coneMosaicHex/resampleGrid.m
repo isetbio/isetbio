@@ -395,7 +395,8 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         % check whether we need to ask user whether to continue or not
         if (iteration == nextQueryIteration) % (mod(iteration,obj.queryGridAdjustmentIterations) == 0)
             visualizeLatticeState(obj, conePositions, iteration);
-            qString = sprintf('\n[iter: %d] Terminate adjusting (1) or continue (0)', iteration);
+            hoursLapsed = toc/60/60;
+            qString = sprintf('\n[at iter %d after %2.2f hours] Terminate adjusting (1) or continue (0)', iteration, hoursLapsed);
             terminateAdjustment = queryUserWithDefault(qString, 0);
             if (terminateAdjustment == 0)
                 possibleIterationIntervals = obj.queryGridAdjustmentIterations * [0.5 1 2 5 10];
@@ -409,6 +410,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
                 end
                 nextQueryIteration = iteration+possibleIterationIntervals(nextQueryIteration);
                 fprintf('Will ask again at iteration %d.\n', nextQueryIteration);
+                tic
             else
                 fprintf('Terminating adjustment at user request\n');
             end
@@ -420,7 +422,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         
     end % while (notConverged) && (iteration < obj.maxGridAdjustmentIterations)
     
-    fprintf('\nHex grid smoothing finished in %2.1f seconds.', toc);
+    fprintf('\nHex grid smoothing finished.');
     if (iteration > obj.maxGridAdjustmentIterations) 
         fprintf('\nDid not converge, but exceeded max number of iterations (%d).', ...
             obj.maxGridAdjustmentIterations);
