@@ -168,7 +168,13 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     densityP = fudgeFactor * (1 ./ normalizedConeSeparations) .^ 2;
     
     % Remove cones accordingly
-    keptConeIndices = find(rand(size(conePositions, 1), 1) < densityP);
+    fixedConePositionsRadiusInCones = 1;
+    radii = sqrt(sum(conePositions.^2,2));
+    
+    keptConeIndices = find(...
+        (rand(size(conePositions, 1), 1) < densityP) | ...
+        ((radii < fixedConePositionsRadiusInCones*gridParams.lambdaMin)) );
+ 
     conePositions = conePositions(keptConeIndices, :);
 
     % Add jitter
@@ -235,12 +241,18 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     % Number of cones to be adjusted
     conesNum = size(conePositions, 1);
 
+    %fixedConePositionsRadiusInCones = 10;
+    %fixedConesPositions = find(sqrt(sum(conePositions.^2,2))< fixedConePositionsRadiusInCones*gridParams.lambdaMin);
+    %fprintf('Fixing positions of %d (out of %d)central cones\n', numel(fixedConesPositions), size(conePositions,1))
+    fixedConesPositions = [];
+    
     % Iteratively adjust the cone positions until the forces between nodes
     % (conePositions) reach equlibrium.
     notConverged = true;
     terminateAdjustment = 0;
     nextQueryIteration = obj.queryGridAdjustmentIterations;
     iteration = 0;
+    triangulationIndex = 0;
     tic
     while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations) && (terminateAdjustment == 0)
         iteration = iteration + 1;
@@ -262,6 +274,8 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
 
         % check if there are any large movements
         if (max(positionalDiffs) > positionalDiffTolerance)
+            triangulationIndex = triangulationIndex + 1;
+            
             % save old come positions
             oldConePositions = conePositions;
 
@@ -344,7 +358,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         end
 
         % force at all fixed cone positions must be 0
-        % netForceVectors(1:size(fixedConesPositions, 1), :) = 0;
+        netForceVectors(1:size(fixedConesPositions, 1), :) = 0;
         
         % Save force magnitudes
         % forceMagnitudes(iteration, :) = ...
@@ -431,6 +445,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     else
         fprintf('Converged after %d iterations.\n', iteration);
     end
+    fprintf('Number of Delayun triangularizations: %d\n', triangulationIndex);
     
     % Turn back on Delaunay triangularization warning
     warning('on', 'MATLAB:qhullmx:InternalWarning');
@@ -807,17 +822,17 @@ end
 
 function visualizeLatticeState(obj, conePositions, iteration)
     qDist = computeQuality(conePositions);
-    threshold = 70;
+    threshold = 150;
     r = sqrt(sum(conePositions.^2,2));
     idx = find(r < threshold);
     conePositions = conePositions(idx,:);
     hFig = figure(111); clf;
-    set(hFig,'Position', [10 10 1400 720]);
-    subplot('Position', [0.02 0.05 0.45 0.95]);
+    set(hFig,'Position', [10 10 1650 950]);
+    subplot('Position', [0.01 0.02 0.68 0.97]);
     plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 6);
     set(gca, 'XLim', threshold*[-1 1], 'YLim', threshold*[-1 1], 'XTick', [], 'YTick', []);
     axis 'square';
-    subplot('Position', [0.52 0.05 0.45 0.95]);
+    subplot('Position', [0.71 0.04 0.28 0.94]);
     plotQuality(qDist);
     title(sprintf('iteration %d', iteration))
 end
@@ -826,8 +841,8 @@ function plotQuality(qDist)
     qLims = [0.5 1.005]; qBins = [0.3:0.01:1.0];
     [counts,centers] = hist(qDist, qBins);
     bar(centers,counts,1)
-    set(gca, 'XLim', qLims, 'YLim', [0 max(counts)*0.75], 'XTick', [0.1:0.1:1.0], 'YTick', [0:1000:5000], 'FontSize', 16);
-    axis 'square'; grid on
+    set(gca, 'XLim', qLims, 'YLim', [0 max(counts)], 'XTick', [0.1:0.1:1.0],  'FontSize', 16);
+    grid on
     xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 16);
     ylabel('count', 'FontSize', 16);
 end
