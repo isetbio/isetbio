@@ -190,12 +190,11 @@ function [spectrum, displacement] = performAnalyses(fixEMobj)
         displacement.yD2degsScrambedIntervals;
 end
 
-function hFig = ...
-    visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
+function visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
 % Display the analysis
 %
 % Syntax:
-%   hFig = visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
+%   visualizeAnalysis(fixEMobj, spectrum, displacement, figureName)
 %
 % Description:
 %    Display the emPaths.
