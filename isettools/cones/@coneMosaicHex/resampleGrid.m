@@ -349,7 +349,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
 
         % Compute net forces on each cone
         netForceVectors = zeros(conesNum, 2);
-        for coneIndex = 1:conesNum
+        parfor coneIndex = 1:conesNum
             % compute net force from all connected springs
             deltaPos = -bsxfun(@minus, springCenters(...
                 springIndices{coneIndex}, :), conePositions(coneIndex, :));
