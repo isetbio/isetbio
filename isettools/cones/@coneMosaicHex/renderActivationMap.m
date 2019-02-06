@@ -70,6 +70,9 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     showXTicks = p.Results.showXTicks;
     showYTicks = p.Results.showYTicks;
     
+    % Clear the axes
+    cla(axesHandle);
+    
     outlineConesAlongHorizontalMeridian = p.Results.outlineConesAlongHorizontalMeridian;
     
     if (any(size(activation) ~= size(obj.pattern)))    

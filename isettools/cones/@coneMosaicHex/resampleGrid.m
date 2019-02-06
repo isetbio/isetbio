@@ -253,6 +253,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     nextQueryIteration = obj.queryGridAdjustmentIterations;
     iteration = 0;
     triangulationIndex = 0;
+    triangulationIndex2 = 0;
     tic
     while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations) && (terminateAdjustment == 0)
         iteration = iteration + 1;
@@ -272,8 +273,29 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         positionalDiffs = sqrt(...
             sum((conePositions-oldConePositions) .^ 2, 2));
 
-        % check if there are any large movements
+        doDelaunaynTriangulation = false;
         if (max(positionalDiffs) > positionalDiffTolerance)
+            doDelaunaynTriangulation = true;
+        else
+            % check if we need to update the mosaic triangulation (determine springs between cone neigbors)
+            coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
+            thresholdFractionalPositionChange = 0.4;
+            if ((max(positionalDiffs ./ coneSeparations) > thresholdFractionalPositionChange))
+                doDelaunaynTriangulation = true;
+                triangulationIndex2 = triangulationIndex2+1;
+                figure(99); clf;
+                plot(coneSeparations, positionalDiffs ./ coneSeparations, 'k.');
+                hold on;
+                plot([1 7], thresholdFractionalPositionChange*[1 1], 'r--');
+                hold off;
+                title(sprintf('iteration: %d', iteration));
+                xlabel('cone separation');
+                ylabel('positionalDiff/coneSeparation');
+                drawnow
+            end
+        end
+        
+        if (doDelaunaynTriangulation)
             triangulationIndex = triangulationIndex + 1;
             
             % save old come positions
@@ -314,7 +336,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
                     (springs(:, 1) == coneIndex) | ...
                     (springs(:, 2) == coneIndex));
             end
-        end % (max(positionalDiffs) > positionalDiffTolerance)
+        end % if (doDelaunaynTriangulation)
         
         % Compute spring vectors
         springVectors =  conePositions(springs(:, 1), :) - ...
@@ -445,7 +467,8 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     else
         fprintf('Converged after %d iterations.\n', iteration);
     end
-    fprintf('Number of Delayun triangularizations: %d\n', triangulationIndex);
+    fprintf('Number of Delayun triangulations: %d\n', triangulationIndex);
+    fprintf('Number of Delayun triangulations due to fractional movement: %d\n', triangulationIndex2);
     
     % Turn back on Delaunay triangularization warning
     warning('on', 'MATLAB:qhullmx:InternalWarning');
