@@ -1,10 +1,11 @@
 function visualizeScene(scene, varargin)
 p = inputParser;
 p.addParameter('displayContrastProfiles', false, @islogical);
+p.addParameter('displayRadianceMaps', true, @islogical);
 % Parse input
 p.parse(varargin{:});
 displayContrastProfiles = p.Results.displayContrastProfiles;
-
+displayRadianceMaps = p.Results.displayRadianceMaps;
 
 % retrieve the spatial support of the scene(in millimeters)
 spatialSupportMilliMeters = sceneGet(scene, 'spatial support', 'mm');
@@ -23,16 +24,18 @@ meanChromaticity = [mean(xMap(:)) mean(yMap(:))];
 visualizeSceneRGB(spatialSupportMilliMeters, 'mm', sceneRGBsettings, ...
     meanLuminance, meanChromaticity, sceneGet(scene, 'name'));
 
-% retrieve the radiance of the scene as emitted photon rate 
-% (photons/pixel/sec/nm)
-scenePhotonRate = sceneGet(scene, 'photons');
-% Retrieve wavelength support
-wavelengthSupport = sceneGet(scene, 'wave');
-wavelengthBandsToVisualize = 400:30:700;
+if (displayRadianceMaps)
+    % retrieve the radiance of the scene as emitted photon rate 
+    % (photons/pixel/sec/nm)
+    scenePhotonRate = sceneGet(scene, 'photons');
+    % Retrieve wavelength support
+    wavelengthSupport = sceneGet(scene, 'wave');
+    wavelengthBandsToVisualize = 400:30:700;
 
-% Visualize radiance maps
-visualizeSceneRadiance(spatialSupportMilliMeters, 'mm', ...
-    scenePhotonRate, wavelengthSupport, wavelengthBandsToVisualize);
+    % Visualize radiance maps
+    visualizeSceneRadiance(spatialSupportMilliMeters, 'mm', ...
+        scenePhotonRate, wavelengthSupport, wavelengthBandsToVisualize);
+end
 
 if (displayContrastProfiles)
     visualizeSceneRadiance(spatialSupportMilliMeters, 'mm', ...
