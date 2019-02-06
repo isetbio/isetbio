@@ -1238,6 +1238,7 @@ classdef coneMosaic < hiddenHandle
         [noisyImage, theNoise] = photonNoise(absorptions, varargin);
         resampledAbsorptionsSequence = tResample(absorptionsSequence, ...
             pattern, originalTimeAxis, resampledTimeAxis);
+        validateClippingRect(clippingRect);
     end
 
     % Methods may be called by the subclasses, but are otherwise private

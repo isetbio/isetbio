@@ -42,11 +42,11 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     p.addParameter('showYTicks', true, @islogical);
     p.addParameter('outlineConesAlongHorizontalMeridian', false, @islogical);
     p.addParameter('crossHairPosition', [], @isnumeric);
-    p.addParameter('visualizedFOV', [], @isnumeric);
+    p.addParameter('visualizedFOV', [], @(x)(isnumeric(x)||(isstruct(x))));
     p.addParameter('signalRange', [], @isnumeric);
     p.addParameter('xRange', [], @isnumeric);
     p.addParameter('yRange', [], @isnumeric);
-    p.addParameter('fontSize', 14, @isnumeric);
+    p.addParameter('fontSize', 18, @isnumeric);
     p.addParameter('activationTime', [], @isnumeric);
     p.addParameter('backgroundColor', [0 0 0], @isnumeric);
     p.parse(axesHandle, activation, varargin{:});
@@ -203,18 +203,50 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     axis(axesHandle, 'xy');
     box(axesHandle, 'on');
     
+    clippingRect = [];
     if (isempty(visualizedFOV))
         visualizedFOV = max(obj.fov);
+    else
+        if (isstruct(visualizedFOV))
+            clippingRect = visualizedFOV;
+            % Check that the clippingRect is valid
+            coneMosaic.validateClippingRect(clippingRect);
+            visualizedFOV = max([clippingRect.width clippingRect.height]);
+        end
     end
-    ticksDegs = round(100*0.5 * visualizedFOV * 1.0*[-1 -0.5 0 0.5 1])/100;
+    
+    
+    if (visualizedFOV < 0.25)
+        tickInc = 0.01;
+    elseif (visualizedFOV < 0.5)
+        tickInc = 0.05;
+    elseif (visualizedFOV < 1.0)
+        tickInc = 0.1;
+    elseif (visualizedFOV < 4.0)
+        tickInc = 0.25;
+    elseif (visualizedFOV < 8.0)
+        tickInc = 0.5;
+    else
+        tickInc = 1;
+    end
+    xMax = round(visualizedFOV/tickInc)*tickInc;
+    ticksDegs = (-xMax:tickInc:xMax);
+    
+    if (tickInc < 0.1)
+        tickLabels = sprintf('%1.2f\n', ticksDegs);
+    else
+        tickLabels = sprintf('%1.1f\n', ticksDegs);
+    end
+    
+    %ticksDegs = round(100*0.5 * visualizedFOV * 1.0*[-1 -0.5 0 0.5 1])/100;
     ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
     spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6 + maxAperture/2*[-1 1];
     
     if (showXLabel)
-        xlabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+        xlabel(axesHandle, 'space (degs)');
     end
     if (showYLabel)
-        ylabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+        ylabel(axesHandle, 'space (degs)');
     end
 
 
@@ -241,12 +273,20 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         end
     end
     
+    if (isempty(clippingRect))
+        set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+            'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
+            'XTick', ticksMeters, 'YTick', ticksMeters, ...
+            'XTickLabels', tickLabels , 'YTickLabels', tickLabels );
+    else
+        spatialExtentMetersX = (clippingRect.xo+clippingRect.width/2*[-1 1])*obj.micronsPerDegree*1e-6;
+        spatialExtentMetersY = (clippingRect.yo+clippingRect.height/2*[-1 1])*obj.micronsPerDegree*1e-6;
+        set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+            'XLim', spatialExtentMetersX,  'YLim', spatialExtentMetersY, ...
+            'XTick', ticksMeters, 'YTick', ticksMeters, ...
+            'XTickLabels', tickLabels , 'YTickLabels', tickLabels );
+    end
     
-    set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
-        'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
-        'XTick', ticksMeters, 'YTick', ticksMeters, ...
-        'XTickLabels', sprintf('%2.2f\n', ticksDegs), 'YTickLabels', sprintf('%2.2f\n', ticksDegs));
-    xticks(axesHandle, ticksMeters); yticks(axesHandle, ticksMeters); 
     set(axesHandle, 'FontSize', p.Results.fontSize, 'LineWidth', 1.0);
     
     if (~showXTicks)
