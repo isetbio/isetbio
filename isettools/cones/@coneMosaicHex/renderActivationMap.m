@@ -34,6 +34,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         @(x)ismember(x, {'modulated hexagons', 'modulated disks'}));
     p.addParameter('colorMap', gray(1024), @isnumeric);
     p.addParameter('titleForColorBar', '', @ischar);
+    p.addParameter('titleForMap', '', @ischar);
     p.addParameter('showColorBar', false, @islogical);
     p.addParameter('labelColorBarTicks', false, @islogical);
     p.addParameter('showXLabel', true, @islogical);
@@ -65,6 +66,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     crossHairPosition = p.Results.crossHairPosition;
     visualizedFOV = p.Results.visualizedFOV;
     titleForColorBar = p.Results.titleForColorBar;
+    titleForMap = p.Results.titleForMap;
     showXLabel = p.Results.showXLabel;
     showYLabel = p.Results.showYLabel;
     showXTicks = p.Results.showXTicks;
@@ -306,6 +308,10 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         sPos(3:4) = sPosOriginal(3:4);
         set(gca,'position',sPos);
         drawnow;
+    end
+    
+    if (~isempty(titleForMap))
+        title(titleForMap);
     end
 end
 
