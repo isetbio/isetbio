@@ -449,7 +449,8 @@ classdef coneMosaicHex < coneMosaic
         regenerateLMSPattern(obj, LMSdensity, varargin);
         
         % Return the indices for all L/M/S cones
-        [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj);
+        [lConeIndices, mConeIndices,sConeIndices, nonNullConeIndices] = ...
+            indicesForCones(obj);
         
         % Return the indices for cones along the horizontal and vertical
         % meridians

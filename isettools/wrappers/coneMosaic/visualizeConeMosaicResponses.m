@@ -1,5 +1,10 @@
-function visualizeConeMosaicResponses(coneMosaic, responses, responseSignalName)
-    
+function visualizeConeMosaicResponses(coneMosaic, responses, responseSignalName, varargin)
+p = inputParser;
+p.addParameter('customTitle', '', @ischar);
+% Parse input
+p.parse(varargin{:});
+customTitle = p.Results.customTitle;
+
     if (ndims(responses) == 4)
         % Compute the mean differential response
         meanResponse = squeeze(mean(responses, 1));
@@ -32,7 +37,7 @@ function visualizeConeMosaicResponses(coneMosaic, responses, responseSignalName)
     end
     
    
-    visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRange, responseSignalName, time);
+    visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRange, responseSignalName, time, customTitle);
 end
 
 function visualizePeakConeResponseInTime(timeAxis, peakConeTemporalResponses, signalName, peakConePositionMicrons)
@@ -47,7 +52,7 @@ function visualizePeakConeResponseInTime(timeAxis, peakConeTemporalResponses, si
     grid on; box on
 end
 
-function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRange, responseSignalName, responseTime)
+function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRange, responseSignalName, responseTime, customTitle)
     figure(); clf;
     subplotRows = 2;
     subplotCols = 3;
@@ -128,8 +133,12 @@ function visualize2DResponseAtASingleTimePoint(coneMosaic, responses, responseRa
     set(gca, 'YLim', responseRange);
     xlabel('\it space (degs)');
     ylabel(sprintf('\\it %s', responseSignalName));
-    title(gca, sprintf('%d trials, responses of %d L- %d M- and %d-S cones (horiz. meridian)', ...
-        instancesNum, LconesNum, MconesNum, SconesNum), 'FontWeight', 'Normal', 'FontSize', 10);
+    if (isempty(customTitle))
+        title(gca, sprintf('%d trials, responses of %d L- %d M- and %d-S cones (horiz. meridian)', ...
+       	instancesNum, LconesNum, MconesNum, SconesNum), 'FontWeight', 'Normal', 'FontSize', 10);
+    else
+        title(gca, sprintf('%s - %d trials (cones along horiz. meridian)',customTitle, instancesNum), 'FontWeight', 'Normal', 'FontSize', 10);
+    end
 end
 
 function [indicesOfConesAlongXaxis,coneXcoordsAlongXaxis, theConeTypes] = indicesOfConesAlongHorizontalMeridian(theMosaic)

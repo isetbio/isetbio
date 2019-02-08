@@ -1,19 +1,22 @@
-function [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj)
+function [lConeIndices, mConeIndices,sConeIndices, nonNullConeIndices] = indicesForCones(obj)
 % Return indices for the L-, M-, and S-cones
 %
 % Syntax:
-%   [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj)
+%   [lConeIndices, mConeIndices,sConeIndices, nonNullConeIndices] = ...
+%     indicesForCones(obj)
 %
 % Description:
-%    Return the indices for the L-, M-, and S-cones
+%    Return the indices for the L-, M-, and S-cones within the nonNullCone
+%    indices and the nonNullConeIndices
 %
 % Inputs:
 %    obj        - The cone mosaic hex object
 %
 % Outputs:
-%    lConeIndices - indices of all L-cones
-%    mConeIndices - indices of all M-cones
-%    sConeIndices - indices of all S-cones
+%    lConeIndices - indices of all L-cones within the nonNullConeIndices
+%    mConeIndices - indices of all M-cones within the nonNullConeIndices
+%    sConeIndices - indices of all S-cones within the nonNullConeIndices
+%    nonNullConeIndices - indices of all non-null cones
 %
 % Optional key/value pairs:
 %    None.
