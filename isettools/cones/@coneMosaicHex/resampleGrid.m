@@ -254,6 +254,9 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
     iteration = 0;
     triangulationIndex = 0;
     triangulationIndex2 = 0;
+    
+    thresholdFractionalPositionChange = 0.9;
+    
     tic
     while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations) && (terminateAdjustment == 0)
         iteration = iteration + 1;
@@ -279,7 +282,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams)
         else
             % check if we need to update the mosaic triangulation (determine springs between cone neigbors)
             coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
-            thresholdFractionalPositionChange = 0.4;
+            
             if ((max(positionalDiffs ./ coneSeparations) > thresholdFractionalPositionChange))
                 doDelaunaynTriangulation = true;
                 triangulationIndex2 = triangulationIndex2+1;
@@ -852,7 +855,7 @@ function visualizeLatticeState(obj, conePositions, iteration)
     hFig = figure(111); clf;
     set(hFig,'Position', [10 10 1650 950]);
     subplot('Position', [0.01 0.02 0.68 0.97]);
-    plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 6);
+    plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 4);
     set(gca, 'XLim', threshold*[-1 1], 'YLim', threshold*[-1 1], 'XTick', [], 'YTick', []);
     axis 'square';
     subplot('Position', [0.71 0.04 0.28 0.94]);
