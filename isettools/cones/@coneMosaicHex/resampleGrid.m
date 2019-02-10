@@ -198,14 +198,14 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     positionalDiffTolerances
 
     
+    iterationsPerZone = 10;
     originalMaxGridAdjustmentIterations = obj.maxGridAdjustmentIterations;
-    obj.maxGridAdjustmentIterations = 5;
-    passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/obj.maxGridAdjustmentIterations)]);
+    passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/iterationsPerZone)]);
     
     for iPass = 1:passesNum
         
         % Do each zone using its own positionalDiffTolerange
-        obj.maxGridAdjustmentIterations = 5;
+        obj.maxGridAdjustmentIterations = iterationsPerZone;
         for eccRangeIndex = 1:numel(eccRangesMicrons)
             if (eccRangeIndex == 1)
                 theEccRangeMicrons = [0 eccRangesMicrons(1)];
@@ -218,7 +218,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
         theEccRangeMicrons = [0 maxEccMicrons];
        
         % Do the entire mosaic using the smallest positionalDiffTolerange
-        obj.maxGridAdjustmentIterations = 10;
+        obj.maxGridAdjustmentIterations = iterationsPerZone*2;
         conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, positionalDiffTolerances(1), iPass, 0);
     end
 end
@@ -325,6 +325,13 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
     coneEcc = sqrt(sum(conePositions.^2,2));
     fixedConeIndices = find((coneEcc < eccRangeMicrons(1)) | (coneEcc > eccRangeMicrons(2)));
     manipulatedConeIndices = setdiff(1:conesNum, fixedConeIndices);
+    
+    isFixedCone = false(1,conesNum);
+    parfor coneIndex = 1:conesNum
+        if (ismember(coneIndex, fixedConeIndices))
+            isFixedCone(coneIndex) = true;
+        end
+    end
     
     % Iteratively adjust the cone positions until the forces between nodes
     % (conePositions) reach equlibrium.
@@ -437,7 +444,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         netForceVectors = zeros(conesNum, 2);
         
         parfor coneIndex = 1:conesNum
-            if (ismember(coneIndex, fixedConeIndices))
+            if (isFixedCone(coneIndex))
                 % force at all fixed cone positions must be 0
                 continue;
             end
