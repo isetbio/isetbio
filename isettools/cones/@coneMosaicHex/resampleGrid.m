@@ -188,14 +188,11 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
         obj.latticeAdjustmentSteps(1, :, :) = conePositions * 1e-6;
     end
     
-    % Find ecc of all cones
+    % Determine ecc zone limits and zone positionalDiffTolerances
     coneEccMicrons = sqrt(sum(conePositions.^2,2));
     maxEccMicrons = max(coneEccMicrons);
     [eccRangesMicrons, meanSpacing, maxSpacing, minSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons);
     positionalDiffTolerances = 0.5*minSpacing;
-    %eccRangesMicrons = [90 240 420 675 945 1410 1830 2415 3060 3900 5025 6000];
-    eccRangesMicrons
-    positionalDiffTolerances
 
     
     iterationsPerZone = 10;
@@ -503,7 +500,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         
         % check whether we need to ask user whether to continue or not
         if (iteration == nextQueryIteration) % (mod(iteration,obj.queryGridAdjustmentIterations) == 0)
-            visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex);
+            visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex);
             hoursLapsed = toc/60/60;
             qString = sprintf('\n[at iter %d after %2.2f hours] Terminate adjusting (1) or continue (0)', iteration, hoursLapsed);
             terminateAdjustment = queryUserWithDefault(qString, 0);
@@ -524,8 +521,8 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
                 fprintf('Terminating adjustment at user request\n');
             end
         else
-            if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration,obj.visualizationUpdateIterations) == 0)
-                visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex);
+            if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration-1,obj.visualizationUpdateIterations) == 0)
+                visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex);
             end
         end
         
