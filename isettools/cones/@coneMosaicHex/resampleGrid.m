@@ -190,9 +190,9 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     
     % Find ecc of all cones
     coneEccMicrons = sqrt(sum(conePositions.^2,2));
-    maxEccMicrons = max(coneEccMicrons)
+    maxEccMicrons = max(coneEccMicrons);
     [eccRangesMicrons, meanSpacing, maxSpacing, minSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons);
-    positionalDiffTolerances = 0.8*minSpacing;
+    positionalDiffTolerances = 0.5*minSpacing;
     %eccRangesMicrons = [90 240 420 675 945 1410 1830 2415 3060 3900 5025 6000];
     eccRangesMicrons
     positionalDiffTolerances
@@ -213,13 +213,13 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
                 theEccRangeMicrons = eccRangesMicrons(eccRangeIndex-1:eccRangeIndex);
             end
             % Iteratively adjust the grid  for this eccRange
-            conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, positionalDiffTolerances(eccRangeIndex), iPass);
+            conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, positionalDiffTolerances(eccRangeIndex), iPass, eccRangeIndex);
         end
         theEccRangeMicrons = [0 maxEccMicrons];
        
         % Do the entire mosaic using the smallest positionalDiffTolerange
         obj.maxGridAdjustmentIterations = 10;
-        conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, positionalDiffTolerances(1), iPass);
+        conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, positionalDiffTolerances(1), iPass, 0);
     end
 end
 
@@ -271,7 +271,7 @@ function [eccRange, meanSpacing, maxSpacing, minSpacing] = determineEccZonesAndM
     
 end
 
-function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicrons, positionalDiffTolerance, iPass)
+function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicrons, positionalDiffTolerance, iPass, zoneIndex)
 % Iteratively adjust the grid for a smooth coverage of the space
 %
 % Syntax:
@@ -324,6 +324,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
     % Cone indices to be fixed
     coneEcc = sqrt(sum(conePositions.^2,2));
     fixedConeIndices = find((coneEcc < eccRangeMicrons(1)) | (coneEcc > eccRangeMicrons(2)));
+    manipulatedConeIndices = setdiff(1:conesNum, fixedConeIndices);
     
     % Iteratively adjust the cone positions until the forces between nodes
     % (conePositions) reach equlibrium.
@@ -335,8 +336,6 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
     iteration = 0;
     triangulationIndex = 0;
     triangulationIndex2 = 0;
-    
-    thresholdFractionalPositionChange = 0.9;
     
     tic
     while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations) && (terminateAdjustment == 0)
@@ -358,25 +357,6 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         doDelaunaynTriangulation = false;
         if (max(positionalDiffs) > positionalDiffTolerance)
             doDelaunaynTriangulation = true;
-        else
-            if (1==2)
-            % check if we need to update the mosaic triangulation (determine springs between cone neigbors)
-            coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
-            
-            if ((max(positionalDiffs ./ coneSeparations) > thresholdFractionalPositionChange))
-                doDelaunaynTriangulation = true;
-                triangulationIndex2 = triangulationIndex2+1;
-                figure(99); clf;
-                plot(coneSeparations, positionalDiffs ./ coneSeparations, 'k.');
-                hold on;
-                plot([1 7], thresholdFractionalPositionChange*[1 1], 'r--');
-                hold off;
-                title(sprintf('iteration: %d', iteration));
-                xlabel('cone separation');
-                ylabel('positionalDiff/coneSeparation');
-                drawnow
-            end
-            end
         end
         
         if (doDelaunaynTriangulation)
@@ -516,7 +496,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         
         % check whether we need to ask user whether to continue or not
         if (iteration == nextQueryIteration) % (mod(iteration,obj.queryGridAdjustmentIterations) == 0)
-            visualizeLatticeState(obj, conePositions, fixedConeIndices, iteration, iPass);
+            visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex);
             hoursLapsed = toc/60/60;
             qString = sprintf('\n[at iter %d after %2.2f hours] Terminate adjusting (1) or continue (0)', iteration, hoursLapsed);
             terminateAdjustment = queryUserWithDefault(qString, 0);
@@ -538,7 +518,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
             end
         else
             if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration,obj.visualizationUpdateIterations) == 0)
-                visualizeLatticeState(obj, conePositions, fixedConeIndices, iteration, iPass);
+                visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex);
             end
         end
         
@@ -929,25 +909,44 @@ function pattern = rectSampledHexPattern(obj)
     end
 end
 
-function visualizeLatticeState(obj, conePositions, fixedConeIndices, iteration, iPass)
+function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex)
     qDist = computeQuality(conePositions);
-    threshold = 150;
-    r = sqrt(sum(conePositions.^2,2));
-    idx = find(r < threshold);
-    conePositions = conePositions(idx,:);
+    % max ecc (in microns) to visualize
+    tic
+    yRatio = 0.4;
+    maxEccVisualized = 500;
+    x = conePositions(:,1);
+    y = conePositions(:,2);
+    idx = find((x <= maxEccVisualized) & (y <= yRatio*maxEccVisualized) & ...
+        (x >= 0) & (y >= 0));
+    conePositionsVisualized = conePositions(idx,:);
+    
+    idx = find((x(manipulatedConeIndices) <= maxEccVisualized) & ...
+               (y(manipulatedConeIndices) <= yRatio*maxEccVisualized) & ...
+               (x(manipulatedConeIndices) >= 0) & (y(manipulatedConeIndices) >= 0));
+    manipulatedConePositionsVisualized = conePositions(manipulatedConeIndices(idx),:);
+    
     hFig = figure(111); clf;
     set(hFig,'Position', [10 10 1650 950]);
-    subplot('Position', [0.01 0.02 0.68 0.97]);
-    plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 4);
-    set(gca, 'XLim', threshold*[-1 1], 'YLim', threshold*[-1 1], 'XTick', [], 'YTick', []);
-    axis 'square';
-    subplot('Position', [0.71 0.04 0.28 0.94]);
+    subplot('Position', [0.01 0.3 0.98 0.68]);
+    plot(conePositionsVisualized(:,1), conePositionsVisualized(:,2), 'ko', ...
+        'MarkerFaceColor', [0.5 0.5 0.5], 'MarkerSize', 6);
+    hold on;
+    plot(manipulatedConePositionsVisualized(:,1), manipulatedConePositionsVisualized(:,2), 'ro', ...
+    'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', 6);
+    hold off
+    set(gca, 'XLim', [0 maxEccVisualized], 'YLim', [0 yRatio*maxEccVisualized], 'XTick', [], 'YTick', []);
+    title(sprintf('pass: %d, zone: %d, iteration %d', iPass, zoneIndex, iteration));
+    axis 'equal'
+    toc
+    
+    subplot('Position', [0.01 0.05 0.98 0.23]);
     plotQuality(qDist);
-    title(sprintf('pass: %d, iteration %d', iPass, iteration))
+    drawnow
 end
 
 function plotQuality(qDist)
-    qLims = [0.5 1.005]; qBins = [0.3:0.01:1.0];
+    qLims = [0 1.005]; qBins = [0.0:0.01:1.0];
     [counts,centers] = hist(qDist, qBins);
     bar(centers,counts,1)
     set(gca, 'XLim', qLims, 'YLim', [0 max(counts)], 'XTick', [0.1:0.1:1.0],  'FontSize', 16);
