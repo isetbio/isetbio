@@ -195,11 +195,11 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     
     selectedPercentIndex  = 11;  % largest soacing
     selectedPercentIndex  = 1;   % smallest spacing
-    selectedPercentIndex = 6;
+    selectedPercentIndex = 7;
     positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
 
     
-    iterationsPerZone = 10;
+    iterationsPerZone = 50;
     originalMaxGridAdjustmentIterations = obj.maxGridAdjustmentIterations;
     passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/iterationsPerZone)]);
     
@@ -219,15 +219,17 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
                 theEccRangeMicrons = eccRangesMicrons(eccRangeIndex-1:eccRangeIndex);
             end
             % Iteratively adjust the grid for this eccRange
+            theEccRangeMicrons = [0 maxEccMicrons];
             conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
                 positionalDiffTolerance, iPass, eccRangeIndex);
         end
-        theEccRangeMicrons = [0 maxEccMicrons];
+        
        
         % Do the entire mosaic using the smallest positionalDiffTolerange
-        obj.maxGridAdjustmentIterations = iterationsPerZone*numel(eccRangesMicrons);
-        conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
-            max(positionalDiffTolerances), iPass, 0);
+%         theEccRangeMicrons = [0 maxEccMicrons];
+%         obj.maxGridAdjustmentIterations = iterationsPerZone*numel(eccRangesMicrons);
+%         conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
+%             max(positionalDiffTolerances), iPass, 0);
     end
 end
 
@@ -262,7 +264,7 @@ function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZ
     minimumSpacing = min(averageSpacing);
     
     p = [0:10:100];
-    deltaSpacing = 0.5;
+    deltaSpacing = 1.0;
     for spacingStep = 1:30
         idx = find(averageSpacing>= minimumSpacing & averageSpacing <= minimumSpacing+deltaSpacing);
         if isempty(idx)
