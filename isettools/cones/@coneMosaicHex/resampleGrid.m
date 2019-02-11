@@ -193,35 +193,37 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     maxEccMicrons = max(coneEccMicrons);
     [eccRangesMicrons, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons);
     
-    selectedPercentIndex  = 11;  % largest soacing
-    selectedPercentIndex  = 1;   % smallest spacing
-    selectedPercentIndex = 7;
-    positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
-
-    
     iterationsPerZone = 50;
     originalMaxGridAdjustmentIterations = obj.maxGridAdjustmentIterations;
-    passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/iterationsPerZone)]);
+    zonesNum = numel(eccRangesMicrons);
+    passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/(zonesNum*iterationsPerZone))]);
     
     for iPass = 1:passesNum
         
         % Iterations
         obj.maxGridAdjustmentIterations = iterationsPerZone;
         
+        % Add some stochasticity to the positionalDiffTolerance
+        selectedPercentIndex = 7+(rand>0.5)*3;
+        positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
+            
         for eccRangeIndex = 1:numel(eccRangesMicrons)
             
             % Do each zone using its own positionalDiffTolerange
             positionalDiffTolerance = positionalDiffTolerances(eccRangeIndex);
             
+            % Add some stochasticity to the eccRanges
             if (eccRangeIndex == 1)
-                theEccRangeMicrons = [0 eccRangesMicrons(1)];
+                theEccRangeMicrons = [0 eccRangesMicrons(1)+(rand>0.5)];
             else
-                theEccRangeMicrons = eccRangesMicrons(eccRangeIndex-1:eccRangeIndex);
+                rangeIndex1 = max([1 eccRangeIndex-1-(rand>0.5)]);
+                rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+(rand>0.5)]);
+                theEccRangeMicrons = [eccRangesMicrons(rangeIndex1) eccRangesMicrons(rangeIndex2)];
             end
+            
             % Iteratively adjust the grid for this eccRange
-            theEccRangeMicrons = [0 maxEccMicrons];
             conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
-                positionalDiffTolerance, iPass, eccRangeIndex);
+                positionalDiffTolerance, iPass, eccRangeIndex, passesNum);
         end
         
        
@@ -264,7 +266,7 @@ function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZ
     minimumSpacing = min(averageSpacing);
     
     p = [0:10:100];
-    deltaSpacing = 1.0;
+    deltaSpacing = 1.0;  % spacing in microns
     for spacingStep = 1:30
         idx = find(averageSpacing>= minimumSpacing & averageSpacing <= minimumSpacing+deltaSpacing);
         if isempty(idx)
@@ -281,7 +283,7 @@ function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZ
     
 end
 
-function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicrons, positionalDiffTolerance, iPass, zoneIndex)
+function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicrons, positionalDiffTolerance, iPass, zoneIndex, passesNum)
 % Iteratively adjust the grid for a smooth coverage of the space
 %
 % Syntax:
@@ -513,7 +515,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         
         % check whether we need to ask user whether to continue or not
         if (iteration == nextQueryIteration) % (mod(iteration,obj.queryGridAdjustmentIterations) == 0)
-            visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex);
+            visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex, passesNum);
             hoursLapsed = toc/60/60;
             qString = sprintf('\n[at iter %d after %2.2f hours] Terminate adjusting (1) or continue (0)', iteration, hoursLapsed);
             terminateAdjustment = queryUserWithDefault(qString, 0);
@@ -535,7 +537,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
             end
         else
             if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration-1,obj.visualizationUpdateIterations) == 0)
-                visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex);
+                visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex, passesNum);
             end
         end
         
@@ -926,7 +928,7 @@ function pattern = rectSampledHexPattern(obj)
     end
 end
 
-function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex)
+function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex, passesNum)
     qDist = computeQuality(conePositions);
     % max ecc (in microns) to visualize
     tic
@@ -953,7 +955,7 @@ function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, itera
     'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', 6);
     hold off
     set(gca, 'XLim', [0 maxEccVisualized], 'YLim', [0 yRatio*maxEccVisualized], 'XTick', [], 'YTick', []);
-    title(sprintf('pass: %d, zone: %d, iteration %d', iPass, zoneIndex, iteration));
+    title(sprintf('pass: %d of %d, zone: %d, iteration %d', iPass, passesNum, zoneIndex, iteration), 'FontSize', 18);
     axis 'equal'
     toc
     
