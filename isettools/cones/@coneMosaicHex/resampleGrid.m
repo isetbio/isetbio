@@ -191,8 +191,12 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     % Determine ecc zone limits and zone positionalDiffTolerances
     coneEccMicrons = sqrt(sum(conePositions.^2,2));
     maxEccMicrons = max(coneEccMicrons);
-    [eccRangesMicrons, meanSpacing, maxSpacing, minSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons);
-    positionalDiffTolerances = 0.5*minSpacing;
+    [eccRangesMicrons, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons);
+    
+    selectedPercentIndex  = 11;  % largest soacing
+    selectedPercentIndex  = 1;   % smallest spacing
+    selectedPercentIndex = 6;
+    positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
 
     
     iterationsPerZone = 10;
@@ -201,27 +205,34 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     
     for iPass = 1:passesNum
         
-        % Do each zone using its own positionalDiffTolerange
+        % Iterations
         obj.maxGridAdjustmentIterations = iterationsPerZone;
+        
         for eccRangeIndex = 1:numel(eccRangesMicrons)
+            
+            % Do each zone using its own positionalDiffTolerange
+            positionalDiffTolerance = positionalDiffTolerances(eccRangeIndex);
+            
             if (eccRangeIndex == 1)
                 theEccRangeMicrons = [0 eccRangesMicrons(1)];
             else
                 theEccRangeMicrons = eccRangesMicrons(eccRangeIndex-1:eccRangeIndex);
             end
-            % Iteratively adjust the grid  for this eccRange
-            conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, positionalDiffTolerances(eccRangeIndex), iPass, eccRangeIndex);
+            % Iteratively adjust the grid for this eccRange
+            conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
+                positionalDiffTolerance, iPass, eccRangeIndex);
         end
         theEccRangeMicrons = [0 maxEccMicrons];
        
         % Do the entire mosaic using the smallest positionalDiffTolerange
-        obj.maxGridAdjustmentIterations = iterationsPerZone*2;
-        conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, positionalDiffTolerances(1), iPass, 0);
+        obj.maxGridAdjustmentIterations = iterationsPerZone*numel(eccRangesMicrons);
+        conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
+            max(positionalDiffTolerances), iPass, 0);
     end
 end
 
 
-function [eccRange, meanSpacing, maxSpacing, minSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons)
+function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons)
     eccentricitiesInDegs = 0:0.05:(maxEccMicrons/300);
     eccentricitiesInMicrons = eccentricitiesInDegs * 300;
     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
@@ -250,17 +261,17 @@ function [eccRange, meanSpacing, maxSpacing, minSpacing] = determineEccZonesAndM
     averageSpacing = (coneSpacingInMicrons1+coneSpacingInMicrons2+coneSpacingInMicrons3+coneSpacingInMicrons4)/4;
     minimumSpacing = min(averageSpacing);
     
-    for spacingStep = 1:15
-        idx = find(averageSpacing>=minimumSpacing & averageSpacing < minimumSpacing+1);
+    p = [0:10:100];
+    deltaSpacing = 0.5;
+    for spacingStep = 1:30
+        idx = find(averageSpacing>= minimumSpacing & averageSpacing <= minimumSpacing+deltaSpacing);
         if isempty(idx)
             continue;
         end
         ecc = eccentricitiesInMicrons(idx);
         eccRange(spacingStep) = max(ecc);
-        meanSpacing(spacingStep) = mean(averageSpacing(idx));
-        maxSpacing(spacingStep) = max(averageSpacing(idx));
-        minSpacing(spacingStep) = min(averageSpacing(idx));
-        minimumSpacing = minimumSpacing + 1;
+        prctileSpacing(spacingStep,:) = prctile(averageSpacing(idx), p);
+        minimumSpacing = minimumSpacing + deltaSpacing;
     end 
     
     idx = find(eccRange <= maxEccMicrons);
