@@ -193,50 +193,61 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     maxEccMicrons = max(coneEccMicrons);
     [eccRangesMicrons, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons);
     
-    iterationsPerZone = 50;
+    iterationsPerZone = 20;
     originalMaxGridAdjustmentIterations = obj.maxGridAdjustmentIterations;
     zonesNum = numel(eccRangesMicrons);
     passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/(zonesNum*iterationsPerZone))]);
+    fprintf('Will do %d passes\n', passesNum);
     
-    for iPass = 1:passesNum
-        
-        % Iterations
-        obj.maxGridAdjustmentIterations = iterationsPerZone;
-        
-        % Add some stochasticity to the positionalDiffTolerance
-        selectedPercentIndex = 7+(rand>0.5)*3;
-        positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
-            
-        for eccRangeIndex = 1:numel(eccRangesMicrons)
-            
-            % Do each zone using its own positionalDiffTolerange
-            positionalDiffTolerance = positionalDiffTolerances(eccRangeIndex);
-            
-            % Add some stochasticity to the eccRanges
-            if (eccRangeIndex == 1)
-                theEccRangeMicrons = [0 eccRangesMicrons(1)+(rand>0.5)];
-            else
-                rangeIndex1 = max([1 eccRangeIndex-1-(rand>0.5)]);
-                rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+(rand>0.5)]);
-                theEccRangeMicrons = [eccRangesMicrons(rangeIndex1) eccRangesMicrons(rangeIndex2)];
+    doMorePasses = true;
+    previousPasses = 0;
+    
+    while (doMorePasses)
+        for iPass = 1:passesNum
+
+            % Iterations
+            obj.maxGridAdjustmentIterations = iterationsPerZone;
+
+            % Add some stochasticity to the positionalDiffTolerance
+            selectedPercentIndex = 7+(rand>0.5)*3;
+            positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
+
+            for eccRangeIndex = 1:numel(eccRangesMicrons)
+
+                % Do each zone using its own positionalDiffTolerange
+                positionalDiffTolerance = positionalDiffTolerances(eccRangeIndex);
+
+                % Add some stochasticity to the eccRanges
+                if (eccRangeIndex == 1)
+                    rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+(rand>0.5)]);
+                    theEccRangeMicrons = [0 eccRangesMicrons(rangeIndex2)];
+                else
+                    rangeIndex1 = max([1 eccRangeIndex-1-(rand>0.5)]);
+                    rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+(rand>0.5)]);
+                    theEccRangeMicrons = [eccRangesMicrons(rangeIndex1) eccRangesMicrons(rangeIndex2)];
+                end
+
+                % Iteratively adjust the grid for this eccRange
+                conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
+                    positionalDiffTolerance, iPass+previousPasses, eccRangeIndex, passesNum+previousPasses);
             end
-            
-            % Iteratively adjust the grid for this eccRange
-            conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
-                positionalDiffTolerance, iPass, eccRangeIndex, passesNum);
-        end
+        end %
         
-       
-        % Do the entire mosaic using the smallest positionalDiffTolerange
-%         theEccRangeMicrons = [0 maxEccMicrons];
-%         obj.maxGridAdjustmentIterations = iterationsPerZone*numel(eccRangesMicrons);
-%         conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
-%             max(positionalDiffTolerances), iPass, 0);
-    end
+        qString = sprintf('\nTerminate (0) or enter additional number of passes:');
+        terminateAdjustment = queryUserWithDefault(qString, passesNum);
+        if (terminateAdjustment == 0)
+           doMorePasses = false;
+        else
+           previousPasses = previousPasses + passesNum;
+           passesNum = terminateAdjustment;
+           fprintf('Will do another %d passes\n', passesNum);
+        end
+    end % while doMorePasses
 end
 
 
 function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons)
+
     eccentricitiesInDegs = 0:0.05:(maxEccMicrons/300);
     eccentricitiesInMicrons = eccentricitiesInDegs * 300;
     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
@@ -931,11 +942,25 @@ end
 function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex, passesNum)
     qDist = computeQuality(conePositions);
     % max ecc (in microns) to visualize
-    tic
+    
     yRatio = 0.4;
     maxEccVisualized = 500;
     x = conePositions(:,1);
     y = conePositions(:,2);
+    
+    xx = []; yy = [];
+    triangleConeIndices = delaunayn([x(:), y(:)]);
+    for triangleIndex = 1:size(triangleConeIndices, 1)
+        coneIndices = triangleConeIndices(triangleIndex, :);
+        xCoords = x(coneIndices);
+        yCoords = y(coneIndices);
+        for k = 1:numel(coneIndices)
+            xx = cat(2, xx, xCoords);
+            yy = cat(2, yy, yCoords);
+        end
+    end
+    
+    
     idx = find((x <= maxEccVisualized) & (y <= yRatio*maxEccVisualized) & ...
         (x >= 0) & (y >= 0));
     conePositionsVisualized = conePositions(idx,:);
@@ -947,17 +972,20 @@ function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, itera
     
     hFig = figure(111); clf;
     set(hFig,'Position', [10 10 1650 950]);
-    subplot('Position', [0.01 0.3 0.98 0.68]);
+    axesHandle = subplot('Position', [0.01 0.3 0.98 0.68]);
+    patch(xx, yy, [0 0 0], 'EdgeColor', [0.4 0.4 0.4], ...
+        'EdgeAlpha', 0.5, 'FaceAlpha', 0.0, ...
+        'FaceColor', [0.99 0.99 0.99], 'LineWidth', 1.0, ...
+        'LineStyle', '-', 'Parent', axesHandle); 
+    hold on;
     plot(conePositionsVisualized(:,1), conePositionsVisualized(:,2), 'ko', ...
         'MarkerFaceColor', [0.5 0.5 0.5], 'MarkerSize', 6);
-    hold on;
     plot(manipulatedConePositionsVisualized(:,1), manipulatedConePositionsVisualized(:,2), 'ro', ...
     'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', 6);
     hold off
-    set(gca, 'XLim', [0 maxEccVisualized], 'YLim', [0 yRatio*maxEccVisualized], 'XTick', [], 'YTick', []);
-    title(sprintf('pass: %d of %d, zone: %d, iteration %d', iPass, passesNum, zoneIndex, iteration), 'FontSize', 18);
     axis 'equal'
-    toc
+    set(axesHandle, 'XLim', [0 maxEccVisualized], 'YLim', [0 yRatio*maxEccVisualized], 'XTick', [], 'YTick', []);
+    title(sprintf('pass: %d of %d, zone: %d, iteration %d', iPass, passesNum, zoneIndex, iteration), 'FontSize', 18);
     
     subplot('Position', [0.01 0.05 0.98 0.23]);
     plotQuality(qDist);
