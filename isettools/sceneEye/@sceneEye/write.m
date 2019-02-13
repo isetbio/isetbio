@@ -83,6 +83,30 @@ switch objNew.modelName
         recipe = setArizonaAccommodation(recipe, objNew.accommodation,...
                                          objNew.workingDir);
                                      
+    case{'Custom','custom'}
+        
+        % Run this first to generate the IOR files.
+        setNavarroAccommodation(recipe, 0, objNew.workingDir);
+                                     
+        % Copy the lens file given over
+        if(isempty(obj.lensFile))
+            error('No lens file given for custom eye.')
+        else
+            % Copy lens file over to the working directory and then attach
+            % to recipe
+            [success,message] = copyfile(obj.lensFile,objNew.workingDir);
+            [~,n,e] = fileparts(obj.lensFile);
+            
+            if(success)
+                recipe.camera.lensfile.value = fullfile(objNew.workingDir,[n e]);
+                recipe.camera.lensfile.type = 'string';
+            else
+                error('Error copying lens file. Error message: %s',message);
+            end
+        end
+        
+     
+                                     
 end
 
 
