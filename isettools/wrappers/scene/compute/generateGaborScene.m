@@ -117,7 +117,7 @@ end
 % Method to compute the number of pixels for the stimulus given the
 % stimulus size, and the viewing distance & pixel size of the display
 function stimParams = updateStimParamsForDisplay(stimParams, presentationDisplay)
-    displayPixelSizeDegrees = displayGet(presentationDisplay, 'deg per dot');
+    displayPixelSizeDegrees = 0.5*displayGet(presentationDisplay, 'deg per dot');
     % divide by the stimulus size in degrees to get the pixels along the width
     stimParams.pixelsAlongWidthDim = ...
         round(stimParams.sizeDegs/displayPixelSizeDegrees(1));
