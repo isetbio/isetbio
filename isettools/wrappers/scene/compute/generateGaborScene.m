@@ -117,18 +117,12 @@ end
 % Method to compute the number of pixels for the stimulus given the
 % stimulus size, and the viewing distance & pixel size of the display
 function stimParams = updateStimParamsForDisplay(stimParams, presentationDisplay)
-    % retrieve the display's pixel size 
-    displayPixelSizeMeters = displayGet(presentationDisplay, 'sample spacing');
-    % retrieve the display's viewing distance
-    viewingDistanceMeters = displayGet(presentationDisplay, 'distance');
-    % compute pixel size in visual degrees
-    displayPixelSizeDegrees = ...
-        2 * atand(0.5*displayPixelSizeMeters/viewingDistanceMeters);
+    displayPixelSizeDegrees = displayGet(presentationDisplay, 'deg per dot');
     % divide by the stimulus size in degrees to get the pixels along the width
     stimParams.pixelsAlongWidthDim = ...
         round(stimParams.sizeDegs/displayPixelSizeDegrees(1));
     stimParams.pixelsAlongHeightDim = ...
-        round(stimParams.sizeDegs/displayPixelSizeDegrees(2));
+        round(stimParams.sizeDegs/displayPixelSizeDegrees(1));
 end
 
 % Method to validation the passed display argument
