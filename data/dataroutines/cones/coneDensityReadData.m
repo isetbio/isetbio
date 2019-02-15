@@ -191,7 +191,11 @@ switch (params.species)
                 
                 % Interpolate for each angle
                 coneDensity = zeros(1,length(eccMM));
-                parfor aa = 1:length(eccMM)
+                
+                % This forces a startup of the parallel toolbox.
+                % I don't think we want that. (BW).
+                % parfor aa = 1:length(eccMM)
+                for aa = 1:length(eccMM)
                     coneDensity(aa) = interp1(angleQ, onAxisD(:,aa), angleDeg(aa), 'linear');
                 end
                 

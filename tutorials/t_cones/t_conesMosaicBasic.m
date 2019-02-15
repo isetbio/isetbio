@@ -32,7 +32,7 @@ oi = oiCompute(oi, s);
 cMosaic = coneMosaic;
 
 % Set size to show about half the scene. Speeds things up.
-cMosaic.setSizeToFOV(0.5 * sceneGet(s, 'fov'));
+cMosaic.setSizeToFOV(0.1 * sceneGet(s, 'fov'));
 
 %% Generate a sequence of 100 eye posistions.
 cMosaic.emGenSequence(100);
