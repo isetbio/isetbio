@@ -194,6 +194,10 @@ classdef coneMosaicHex < coneMosaic
         % adjustment every this many iterations
         queryGridAdjustmentIterations
         
+        % queryAdditionnalPassBatch - Query whether to do more grid
+        % adjustement passes
+        queryAdditionnalPassBatch
+        
         % visualizationUpdateIterations -Iterations interval for update the
         % visualization of the mosaic and its hex-quality
         visualizationUpdateIterations
@@ -237,6 +241,7 @@ classdef coneMosaicHex < coneMosaic
                 'maxGridAdjustmentIterations'...
                 'visualizationUpdateIterations' ...
                 'queryGridAdjustmentIterations' ...
+                'queryAdditionnalPassBatch' ...
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF'};
@@ -288,6 +293,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);
             p.addParameter('visualizationUpdateIterations', Inf, @isnumeric);
             p.addParameter('queryGridAdjustmentIterations', Inf, @isnumeric);
+            p.addParameter('queryAdditionnalPassBatch', false, @islogical);
             p.parse(resamplingFactor, vararginForConeHexMosaic{:});
 
             % Set input params
@@ -311,6 +317,8 @@ classdef coneMosaicHex < coneMosaic
                 p.Results.maxGridAdjustmentIterations;
             obj.queryGridAdjustmentIterations = ...
                 p.Results.queryGridAdjustmentIterations;
+            obj.queryAdditionnalPassBatch = ...
+                p.Results.queryAdditionnalPassBatch;
             obj.visualizationUpdateIterations = ...
                 p.Results.visualizationUpdateIterations;
             
