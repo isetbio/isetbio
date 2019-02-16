@@ -208,7 +208,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
         for iPass = 1:passesNum
 
             % Iterations
-            obj.maxGridAdjustmentIterations = iterationsPerZone+(iPass-1)*4;
+            obj.maxGridAdjustmentIterations = min([20 iterationsPerZone+(iPass-1)*4]);
 
             % Add some stochasticity to the positionalDiffTolerance
             selectedPercentIndex = min([size(prctileSpacing,2) 6+round(rand*1)]);
@@ -232,9 +232,17 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
                 % Iteratively adjust the grid for this eccRange
                 conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
                     positionalDiffTolerance, iPass+previousPasses, eccRangeIndex, passesNum+previousPasses);
-            end
+            end 
         end %
         
+        % Iteratively adjust the grid for the entire eccRange
+        obj.maxGridAdjustmentIterations = 50;
+        positionalDiffTolerances = squeeze(prctileSpacing(:,6));
+        theEccRangeMicrons = [0 eccRangesMicrons(end)];
+        conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
+            positionalDiffTolerances(end), iPass+previousPasses, Inf, passesNum+previousPasses);
+               
+                
         if (obj.queryAdditionnalPassBatch)
             qString = sprintf('\nTerminate (0) or enter additional number of passes:');
             terminateAdjustment = queryUserWithDefault(qString, passesNum);
@@ -383,14 +391,10 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         end
 
         % compute cone positional diffs
-        positionalDiffs = sqrt(sum((conePositions-oldConePositions) .^ 2, 2));
+        positionalDiffs = sqrt(sum((conePositions-oldConePositions).^ 2,2));
 
-        doDelaunaynTriangulation = false;
         if (max(positionalDiffs) > positionalDiffTolerance)
-            doDelaunaynTriangulation = true;
-        end
-        
-        if (doDelaunaynTriangulation)
+
             triangulationIndex = triangulationIndex + 1;
             
             % save old come positions
@@ -398,15 +402,32 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
 
             % Perform new Delaunay triangulation to determine the updated
             % topology of the truss. To save computing time, we
-            % re-triangulate only when we exceed the
-            % positionalDiffTolerance
+            % re-triangulate only when we exceed the positionalDiffTolerance
+            
+            % triangleConeIndices is an [M x 3] matrix with the m-th row
+            % containing indices to the 3 cones that define the triangle
             triangleConeIndices = delaunayn(conePositions);
 
+            coneIndicesForAvertices = triangleConeIndices(:, 1);
+            coneIndicesForBvertices = triangleConeIndices(:, 2);
+            coneIndicesForCvertices = triangleConeIndices(:, 3);
+            
+            triangleConeIndicesToKeep = zeros(1,size(triangleConeIndices,1));
+            parfor k = 1:numel(coneIndicesForAvertices)
+                if ((ismember(coneIndicesForAvertices(k), manipulatedConeIndices)) && ...
+                    (ismember(coneIndicesForBvertices(k), manipulatedConeIndices)) && ...
+                    (ismember(coneIndicesForCvertices(k), manipulatedConeIndices)))
+                    triangleConeIndicesToKeep(k) = 1;
+                end
+            end
+            triangleConeIndicesToKeep = triangleConeIndicesToKeep==1;
+            triangleConeIndices = triangleConeIndices(triangleConeIndicesToKeep,:);
+            
             % Compute the centroids of all triangles
-            centroidPositions = (conePositions(...
-                triangleConeIndices(:, 1), :) + conePositions(...
-                triangleConeIndices(:, 2), :) + conePositions(...
-                triangleConeIndices(:, 3), :)) / 3;
+            centroidPositions = 1.0/3.0 * (...
+                conePositions(triangleConeIndices(:, 1), :) + ...
+                conePositions(triangleConeIndices(:, 2), :) + ...
+                conePositions(triangleConeIndices(:, 3), :));
 
             % Remove centroids outside the desired region by applying the
             % signed distance function
@@ -418,11 +439,11 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
 
             % Create a list of the unique springs (each spring connecting 2
             % cones)
-            % triangleConeIndices is an [M x 3] matrix the m-th row
-            % contains indices to the 3 cones that define the triangle
-            springs = [triangleConeIndices(:, [1, 2]);
-                triangleConeIndices(:, [1, 3]);
-                triangleConeIndices(:, [2, 3])];
+            springs = [...
+                triangleConeIndices(:, [1, 2]); ...
+                triangleConeIndices(:, [1, 3]); ...
+                triangleConeIndices(:, [2, 3]) ...
+            ];
             springs = unique(sort(springs, 2), 'rows');
 
             % find all springs connected to this cone
