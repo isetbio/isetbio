@@ -191,9 +191,11 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     % Determine ecc zone limits and zone positionalDiffTolerances
     coneEccMicrons = sqrt(sum(conePositions.^2,2));
     maxEccMicrons = max(coneEccMicrons);
-    [eccRangesMicrons, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons);
+    coneSpacingRangeWithinZone = 0.5;  % range of cone spacings  (in microns) within all zones
+    [eccRangesMicrons, prctileSpacing] = ...
+        determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons, coneSpacingRangeWithinZone);
     
-    iterationsPerZone = 20;
+    iterationsPerZone = 2;
     originalMaxGridAdjustmentIterations = obj.maxGridAdjustmentIterations;
     zonesNum = numel(eccRangesMicrons);
     passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/(zonesNum*iterationsPerZone))]);
@@ -206,10 +208,10 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
         for iPass = 1:passesNum
 
             % Iterations
-            obj.maxGridAdjustmentIterations = iterationsPerZone;
+            obj.maxGridAdjustmentIterations = iterationsPerZone+(iPass-1)*4;
 
             % Add some stochasticity to the positionalDiffTolerance
-            selectedPercentIndex = 7+(rand>0.5)*3;
+            selectedPercentIndex = min([size(prctileSpacing,2) 6+round(rand*1)]);
             positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
 
             for eccRangeIndex = 1:numel(eccRangesMicrons)
@@ -219,11 +221,11 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
 
                 % Add some stochasticity to the eccRanges
                 if (eccRangeIndex == 1)
-                    rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+(rand>0.5)]);
+                    rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+round(rand*2)]);
                     theEccRangeMicrons = [0 eccRangesMicrons(rangeIndex2)];
                 else
-                    rangeIndex1 = max([1 eccRangeIndex-1-(rand>0.5)]);
-                    rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+(rand>0.5)]);
+                    rangeIndex1 = max([1 eccRangeIndex-1]);
+                    rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+1*round(rand)]);
                     theEccRangeMicrons = [eccRangesMicrons(rangeIndex1) eccRangesMicrons(rangeIndex2)];
                 end
 
@@ -233,20 +235,24 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
             end
         end %
         
-        qString = sprintf('\nTerminate (0) or enter additional number of passes:');
-        terminateAdjustment = queryUserWithDefault(qString, passesNum);
-        if (terminateAdjustment == 0)
-           doMorePasses = false;
+        if (obj.queryAdditionnalPassBatch)
+            qString = sprintf('\nTerminate (0) or enter additional number of passes:');
+            terminateAdjustment = queryUserWithDefault(qString, passesNum);
+            if (terminateAdjustment == 0)
+               doMorePasses = false;
+            else
+               previousPasses = previousPasses + passesNum;
+               passesNum = terminateAdjustment;
+               fprintf('Will do another %d passes\n', passesNum);
+            end
         else
-           previousPasses = previousPasses + passesNum;
-           passesNum = terminateAdjustment;
-           fprintf('Will do another %d passes\n', passesNum);
+            doMorePasses = false;
         end
     end % while doMorePasses
 end
 
 
-function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons)
+function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons, coneSpacingRangeWithinZone)
 
     eccentricitiesInDegs = 0:0.05:(maxEccMicrons/300);
     eccentricitiesInMicrons = eccentricitiesInDegs * 300;
@@ -277,16 +283,15 @@ function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZ
     minimumSpacing = min(averageSpacing);
     
     p = [0:10:100];
-    deltaSpacing = 1.0;  % spacing in microns
-    for spacingStep = 1:30
-        idx = find(averageSpacing>= minimumSpacing & averageSpacing <= minimumSpacing+deltaSpacing);
+    for spacingStep = 1:100
+        idx = find(averageSpacing>= minimumSpacing & averageSpacing <= minimumSpacing+coneSpacingRangeWithinZone);
         if isempty(idx)
             continue;
         end
         ecc = eccentricitiesInMicrons(idx);
         eccRange(spacingStep) = max(ecc);
         prctileSpacing(spacingStep,:) = prctile(averageSpacing(idx), p);
-        minimumSpacing = minimumSpacing + deltaSpacing;
+        minimumSpacing = minimumSpacing + coneSpacingRangeWithinZone;
     end 
     
     idx = find(eccRange <= maxEccMicrons);
@@ -326,8 +331,9 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
 %     pwd
 %     pause
     
-    %positionalDiffTolerance = obj.latticeAdjustmentPositionalToleranceF  * gridParams.lambdaMin
-    fprintf('[PASS: %f]. Adjusting cones between %2.2f %2.2f using posDiffTolerange: %f\n', iPass, eccRangeMicrons(1), eccRangeMicrons(2), positionalDiffTolerance);
+ 
+    fprintf('[PASS: %2.0f/%2.0f]. Adjusting cones between %2.2f %2.2f using posDiffTolerange: %f\n', ...
+        iPass, passesNum, eccRangeMicrons(1), eccRangeMicrons(2), positionalDiffTolerance);
     
     deps = sqrt(eps) * gridParams.lambdaMin;
 
@@ -350,14 +356,10 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
     manipulatedConeIndices = setdiff(1:conesNum, fixedConeIndices);
     
     isFixedCone = false(1,conesNum);
-    parfor coneIndex = 1:conesNum
-        if (ismember(coneIndex, fixedConeIndices))
-            isFixedCone(coneIndex) = true;
-        end
-    end
-    
+    isFixedCone(fixedConeIndices) = true;
+
     % Iteratively adjust the cone positions until the forces between nodes
-    % (conePositions) reach equlibrium.
+    % (conePositions) reach equilibrium.
     notConverged = true;
     oldConePositions = inf;
     
@@ -365,17 +367,16 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
     nextQueryIteration = obj.queryGridAdjustmentIterations;
     iteration = 0;
     triangulationIndex = 0;
-    triangulationIndex2 = 0;
     
     tic
     while (notConverged) && (iteration <= obj.maxGridAdjustmentIterations) && (terminateAdjustment == 0)
         iteration = iteration + 1;
 
-        if (obj.maxGridAdjustmentIterations < 100)
+        if (obj.maxGridAdjustmentIterations < 20)
             fprintf('\nHex grid adjustment: on iteration %d ... ', ...
                 iteration-1);
         else
-            if (mod(iteration,50) == 1)
+            if (mod(iteration,50) == 1)  && (obj.maxGridAdjustmentIterations > 50)
                 fprintf('\nHex grid adjustment: on iteration %d ...', ...
                     iteration);
             end
@@ -564,10 +565,51 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         fprintf('Converged after %d iterations.\n', iteration);
     end
     fprintf('Number of Delayun triangulations: %d\n', triangulationIndex);
-    fprintf('Number of Delayun triangulations due to fractional movement: %d\n', triangulationIndex2);
-    
+
     % Turn back on Delaunay triangularization warning
     warning('on', 'MATLAB:qhullmx:InternalWarning');
+end
+
+function  [springs, springIndices] = ...
+                determineSpringStates(conePositions, gridParams)
+            
+            % Perform new Delaunay triangulation to determine the updated
+            % topology of the truss. To save computing time, we
+            % re-triangulate only when we exceed the
+            % positionalDiffTolerance
+            triangleConeIndices = delaunayn(conePositions);
+
+            % Compute the centroids of all triangles
+            centroidPositions = (conePositions(...
+                triangleConeIndices(:, 1), :) + conePositions(...
+                triangleConeIndices(:, 2), :) + conePositions(...
+                triangleConeIndices(:, 3), :)) / 3;
+
+            % Remove centroids outside the desired region by applying the
+            % signed distance function
+            d = feval(gridParams.domainFunction, centroidPositions, ...
+                gridParams.center, gridParams.radius, ...
+                gridParams.ellipseAxes);
+            triangleConeIndices = triangleConeIndices(d < ...
+                gridParams.borderTolerance, :);
+
+            % Create a list of the unique springs (each spring connecting 2
+            % cones)
+            % triangleConeIndices is an [M x 3] matrix the m-th row
+            % contains indices to the 3 cones that define the triangle
+            springs = [triangleConeIndices(:, [1, 2]);
+                triangleConeIndices(:, [1, 3]);
+                triangleConeIndices(:, [2, 3])];
+            springs = unique(sort(springs, 2), 'rows');
+
+            % find all springs connected to this cone
+            conesNum = size(conePositions,1);
+            springIndices = cell(1,conesNum);
+            for coneIndex = 1:conesNum
+                springIndices{coneIndex} = find(...
+                    (springs(:, 1) == coneIndex) | ...
+                    (springs(:, 2) == coneIndex));
+            end
 end
 
 function conePositions = generateConePositionsOnConstantDensityGrid(...
