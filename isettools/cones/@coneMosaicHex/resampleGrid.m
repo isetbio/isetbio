@@ -408,20 +408,24 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
             % containing indices to the 3 cones that define the triangle
             triangleConeIndices = delaunayn(conePositions);
 
-            coneIndicesForAvertices = triangleConeIndices(:, 1);
-            coneIndicesForBvertices = triangleConeIndices(:, 2);
-            coneIndicesForCvertices = triangleConeIndices(:, 3);
-            
-            triangleConeIndicesToKeep = zeros(1,size(triangleConeIndices,1));
-            parfor k = 1:numel(coneIndicesForAvertices)
-                if ((ismember(coneIndicesForAvertices(k), manipulatedConeIndices)) && ...
-                    (ismember(coneIndicesForBvertices(k), manipulatedConeIndices)) && ...
-                    (ismember(coneIndicesForCvertices(k), manipulatedConeIndices)))
-                    triangleConeIndicesToKeep(k) = 1;
+            % If we are in a local zone, find the relevant triangleConeIndices
+            if (~isinf(zoneIndex))
+                coneIndicesForAvertices = triangleConeIndices(:, 1);
+                coneIndicesForBvertices = triangleConeIndices(:, 2);
+                coneIndicesForCvertices = triangleConeIndices(:, 3);
+
+                triangleConeIndicesToKeep = zeros(1,size(triangleConeIndices,1));
+                parfor k = 1:numel(coneIndicesForAvertices)
+                    if ((ismember(coneIndicesForAvertices(k), manipulatedConeIndices)) && ...
+                        (ismember(coneIndicesForBvertices(k), manipulatedConeIndices)) && ...
+                        (ismember(coneIndicesForCvertices(k), manipulatedConeIndices)))
+                        triangleConeIndicesToKeep(k) = 1;
+                    end
                 end
+                triangleConeIndicesToKeep = triangleConeIndicesToKeep==1;
+                triangleConeIndices = triangleConeIndices(triangleConeIndicesToKeep,:);
             end
-            triangleConeIndicesToKeep = triangleConeIndicesToKeep==1;
-            triangleConeIndices = triangleConeIndices(triangleConeIndicesToKeep,:);
+            
             
             % Compute the centroids of all triangles
             centroidPositions = 1.0/3.0 * (...
