@@ -26,6 +26,9 @@ function resampleGrid(obj, resamplingFactor)
     % Restore original state
     obj.restoreOriginalResState();
     
+    % Create a parallel pool
+    parpool
+    
     % Compute hex grid nodes
     obj.coneLocsHexGrid = computeHexGridNodes(obj);
     
@@ -236,7 +239,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
         end %
         
         % Iteratively adjust the grid for the entire eccRange
-        obj.maxGridAdjustmentIterations = 50;
+        obj.maxGridAdjustmentIterations = 100;
         positionalDiffTolerances = squeeze(prctileSpacing(:,6));
         theEccRangeMicrons = [0 eccRangesMicrons(end)];
         conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
@@ -573,7 +576,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
                 fprintf('Terminating adjustment at user request\n');
             end
         else
-            if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration-1,obj.visualizationUpdateIterations) == 0)
+            if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration-1,obj.visualizationUpdateIterations) == 0) && ((zoneIndex <= 4) || (isinf(zoneIndex)))
                 visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex, passesNum);
             end
         end
