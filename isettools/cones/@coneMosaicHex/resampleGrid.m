@@ -26,8 +26,15 @@ function resampleGrid(obj, resamplingFactor)
     % Restore original state
     obj.restoreOriginalResState();
     
-    % Create a parallel pool
-    parpool
+    if (obj.useParfor)
+        % If no pool, create new one.
+        poolobj = gcp('nocreate'); 
+        if isempty(poolobj)
+            % Create a parallel pool
+            parpool
+        end
+        
+    end
     
     % Compute hex grid nodes
     obj.coneLocsHexGrid = computeHexGridNodes(obj);
@@ -418,11 +425,22 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
                 coneIndicesForCvertices = triangleConeIndices(:, 3);
 
                 triangleConeIndicesToKeep = zeros(1,size(triangleConeIndices,1));
-                parfor k = 1:numel(coneIndicesForAvertices)
-                    if ((ismember(coneIndicesForAvertices(k), manipulatedConeIndices)) && ...
-                        (ismember(coneIndicesForBvertices(k), manipulatedConeIndices)) && ...
-                        (ismember(coneIndicesForCvertices(k), manipulatedConeIndices)))
-                        triangleConeIndicesToKeep(k) = 1;
+                
+                if (obj.useParfor)
+                    parfor k = 1:numel(coneIndicesForAvertices)
+                        if ((ismember(coneIndicesForAvertices(k), manipulatedConeIndices)) && ...
+                            (ismember(coneIndicesForBvertices(k), manipulatedConeIndices)) && ...
+                            (ismember(coneIndicesForCvertices(k), manipulatedConeIndices)))
+                            triangleConeIndicesToKeep(k) = 1;
+                        end
+                    end
+                else
+                    for k = 1:numel(coneIndicesForAvertices)
+                        if ((ismember(coneIndicesForAvertices(k), manipulatedConeIndices)) && ...
+                            (ismember(coneIndicesForBvertices(k), manipulatedConeIndices)) && ...
+                            (ismember(coneIndicesForCvertices(k), manipulatedConeIndices)))
+                            triangleConeIndicesToKeep(k) = 1;
+                        end
                     end
                 end
                 triangleConeIndicesToKeep = triangleConeIndicesToKeep==1;
@@ -495,16 +513,30 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         % Compute net forces on each cone
         netForceVectors = zeros(conesNum, 2);
         
-        parfor coneIndex = 1:conesNum
-            if (isFixedCone(coneIndex))
-                % force at all fixed cone positions must be 0
-                continue;
+        if (obj.useParfor)
+            parfor coneIndex = 1:conesNum
+                if (isFixedCone(coneIndex))
+                    % force at all fixed cone positions must be 0
+                    continue;
+                end
+                % compute net force from all connected springs
+                deltaPos = -bsxfun(@minus, springCenters(...
+                    springIndices{coneIndex}, :), conePositions(coneIndex, :));
+                netForceVectors(coneIndex, :) = sum(sign(deltaPos) .* ...
+                    springForceXYcomponents(springIndices{coneIndex}, :), 1);
             end
-            % compute net force from all connected springs
-            deltaPos = -bsxfun(@minus, springCenters(...
-                springIndices{coneIndex}, :), conePositions(coneIndex, :));
-            netForceVectors(coneIndex, :) = sum(sign(deltaPos) .* ...
-                springForceXYcomponents(springIndices{coneIndex}, :), 1);
+        else
+            for coneIndex = 1:conesNum
+                if (isFixedCone(coneIndex))
+                    % force at all fixed cone positions must be 0
+                    continue;
+                end
+                % compute net force from all connected springs
+                deltaPos = -bsxfun(@minus, springCenters(...
+                    springIndices{coneIndex}, :), conePositions(coneIndex, :));
+                netForceVectors(coneIndex, :) = sum(sign(deltaPos) .* ...
+                    springForceXYcomponents(springIndices{coneIndex}, :), 1);
+            end
         end
         
         % Save force magnitudes
