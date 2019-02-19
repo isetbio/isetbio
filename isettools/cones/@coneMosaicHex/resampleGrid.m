@@ -214,7 +214,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     doMorePasses = true;
     previousPasses = 0;
     
-    % Iteratively adjust the grid for the entire eccRange
+    % Begin by adjusting the grid for the entire eccRange for 20 iterations
     obj.maxGridAdjustmentIterations = 20;
     positionalDiffTolerances = squeeze(prctileSpacing(:,9));
     theEccRangeMicrons = [0 eccRangesMicrons(end)];
@@ -222,6 +222,8 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
         positionalDiffTolerances(end), 0, Inf, 0);
         
     while (doMorePasses)
+        
+        % Do passes
         for iPass = 1:passesNum
 
             % Iterations
@@ -231,6 +233,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
             selectedPercentIndex = min([size(prctileSpacing,2) 6+round(rand*1)]);
             positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
 
+            % Adjust individual eccentricity zones
             for eccRangeIndex = 1:numel(eccRangesMicrons)
 
                 % Do each zone using its own positionalDiffTolerange
@@ -252,8 +255,8 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
             end 
         end %
         
-        % Iteratively adjust the grid for the entire eccRange
-        obj.maxGridAdjustmentIterations = 2;
+        % Finish by adjusting the grid for the entire eccRange for 10 iterations
+        obj.maxGridAdjustmentIterations = 10;
         positionalDiffTolerances = squeeze(prctileSpacing(:,9));
         theEccRangeMicrons = [0 eccRangesMicrons(end)];
         conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
