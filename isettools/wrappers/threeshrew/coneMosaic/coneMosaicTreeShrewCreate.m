@@ -11,6 +11,7 @@ p.addParameter('customLambda', 7.5, @isnumeric);
 p.addParameter('customInnerSegmentDiameter', 7, @isnumeric);
 p.addParameter('integrationTimeSeconds', 5/1000, @isnumeric);
 p.addParameter('sConeMinDistanceFactor', 2, @isnumeric);
+p.addParameter('resamplingFactor', 2, @isnumeric);
 % Parse input
 p.parse(varargin{:});
 
@@ -20,6 +21,7 @@ customLambda = p.Results.customLambda;
 customInnerSegmentDiameter = p.Results.customInnerSegmentDiameter;
 integrationTimeSeconds = p.Results.integrationTimeSeconds;
 sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
+resamplingFactor = p.Results.resamplingFactor;
 
 % Treeshrew-specific scaling
 treeShrewScaling = 300/micronsPerDegree;
@@ -33,7 +35,7 @@ end
 
 thePhotopigment = treeShrewPhotopigment();
 
-theConeMosaic = coneMosaicHex(5, ...
+theConeMosaic = coneMosaicHex(resamplingFactor, ...
     'fovDegs', fovDegs/(treeShrewScaling^2), ...
     'micronsPerDegree',micronsPerDegree, ...
     'integrationTime', integrationTimeSeconds, ...
