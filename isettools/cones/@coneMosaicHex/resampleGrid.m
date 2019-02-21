@@ -205,7 +205,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     [eccRangesMicrons, prctileSpacing] = ...
         determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons, coneSpacingRangeWithinZone);
     
-    iterationsPerZone = 2;
+    iterationsPerZone = 4;
     originalMaxGridAdjustmentIterations = obj.maxGridAdjustmentIterations;
     zonesNum = numel(eccRangesMicrons);
     passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/(zonesNum*iterationsPerZone))]);
@@ -226,9 +226,6 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
         % Do passes
         for iPass = 1:passesNum
 
-            % Iterations
-            obj.maxGridAdjustmentIterations = min([10 iterationsPerZone+(iPass-1)*2]);
-
             % Add some stochasticity to the positionalDiffTolerance
             selectedPercentIndex = min([size(prctileSpacing,2) 6+round(rand*1)]);
             positionalDiffTolerances = squeeze(prctileSpacing(:,selectedPercentIndex));
@@ -236,15 +233,20 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
             % Adjust individual eccentricity zones
             for eccRangeIndex = 1:numel(eccRangesMicrons)
 
+                % Iterations
+                eccBasedIterations = (numel(eccRangesMicrons)-eccRangeIndex);
+                obj.maxGridAdjustmentIterations = min([10 iterationsPerZone+eccBasedIterations]);
+            
                 % Do each zone using its own positionalDiffTolerange
                 positionalDiffTolerance = positionalDiffTolerances(eccRangeIndex);
 
                 % Add some stochasticity to the eccRanges
                 if (eccRangeIndex == 1)
-                    rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+round(rand*2)]);
-                    theEccRangeMicrons = [0 eccRangesMicrons(rangeIndex2)];
+                    theEccRangeMicrons = [0 eccRangesMicrons(2)];
+                elseif (eccRangeIndex == 2)
+                    theEccRangeMicrons = [eccRangesMicrons(2) eccRangesMicrons(3)+round(rand)];
                 else
-                    rangeIndex1 = max([1 eccRangeIndex-1]);
+                    rangeIndex1 = max([1 eccRangeIndex-round(rand)]);
                     rangeIndex2 = min([numel(eccRangesMicrons) eccRangeIndex+1*round(rand)]);
                     theEccRangeMicrons = [eccRangesMicrons(rangeIndex1) eccRangesMicrons(rangeIndex2)];
                 end
@@ -256,7 +258,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
         end %
         
         % Finish by adjusting the grid for the entire eccRange for 10 iterations
-        obj.maxGridAdjustmentIterations = 10;
+        obj.maxGridAdjustmentIterations = 15;
         positionalDiffTolerances = squeeze(prctileSpacing(:,9));
         theEccRangeMicrons = [0 eccRangesMicrons(end)];
         conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
