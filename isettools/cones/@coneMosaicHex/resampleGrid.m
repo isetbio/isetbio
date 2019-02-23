@@ -79,6 +79,7 @@ function hexLocs = computeHexGridNodes(obj)
 
     grid.coneSpacingFunction = @coneSpacingFunction;
     grid.domainFunction = @ellipticalDomainFunction;
+    grid.zoneDomainFunction = @ellipticalDonutDomainFunction;
     grid.center = obj.center * 1e6;
     grid.rotationAngle = obj.rotationDegs / 180 * pi;
     grid.width = obj.width * 1e6;
@@ -234,7 +235,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
             for eccRangeIndex = 1:numel(eccRangesMicrons)
 
                 % Iterations
-                eccBasedIterations = (numel(eccRangesMicrons)-eccRangeIndex);
+                eccBasedIterations = numel(eccRangesMicrons)-eccRangeIndex;
                 obj.maxGridAdjustmentIterations = min([10 iterationsPerZone+eccBasedIterations]);
             
                 % Do each zone using its own positionalDiffTolerange
@@ -252,18 +253,20 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
                 end
 
                 % Iteratively adjust the grid for this eccRange
+                theEccRangeMicrons(2) = theEccRangeMicrons(2) + randn*5;
                 conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
                     positionalDiffTolerance, iPass+previousPasses, eccRangeIndex, passesNum+previousPasses);
             end 
+            
+            % Adjusting the grid for the entire eccRange for 10 iterations
+            obj.maxGridAdjustmentIterations = 10;
+            positionalDiffTolerances = squeeze(prctileSpacing(:,9));
+            theEccRangeMicrons = [0 eccRangesMicrons(end)];
+            conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
+                positionalDiffTolerances(end), iPass+previousPasses, Inf, passesNum+previousPasses);
+                
         end %
-        
-        % Finish by adjusting the grid for the entire eccRange for 10 iterations
-        obj.maxGridAdjustmentIterations = 15;
-        positionalDiffTolerances = squeeze(prctileSpacing(:,9));
-        theEccRangeMicrons = [0 eccRangesMicrons(end)];
-        conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
-            positionalDiffTolerances(end), iPass+previousPasses, Inf, passesNum+previousPasses);
-               
+       
                 
         if (obj.queryAdditionnalPassBatch)
             qString = sprintf('\nTerminate (0) or enter additional number of passes:');
@@ -381,8 +384,9 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
     conesNum = size(conePositions, 1);
 
     % Cone indices to be fixed
-    coneEcc = sqrt(sum(conePositions.^2,2));
-    fixedConeIndices = find((coneEcc < eccRangeMicrons(1)) | (coneEcc > eccRangeMicrons(2)));
+    innerOuterRadii = eccRangeMicrons;
+    d = gridParams.zoneDomainFunction(conePositions, gridParams.center, innerOuterRadii, gridParams.ellipseAxes);
+    fixedConeIndices = find(d>0);
     manipulatedConeIndices = setdiff(1:conesNum, fixedConeIndices);
     
     isFixedCone = false(1,conesNum);
@@ -557,35 +561,70 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         
         % update cone positions according to netForceVectors
         conePositions = conePositions + deltaT * netForceVectors;
-        
-        % Find any points that lie outside the domain boundary
-        d = feval(gridParams.domainFunction, conePositions, ...
-            gridParams.center, gridParams.radius, gridParams.ellipseAxes);
-        outsideBoundaryIndices = d > 0;
-        
-        % And project them back to the domain
-        if (~isempty(outsideBoundaryIndices))
-            % Compute numerical gradient along x-positions
-            dXgradient = (feval(gridParams.domainFunction, ...
-                [conePositions(outsideBoundaryIndices, 1) + deps, ...
-                conePositions(outsideBoundaryIndices, 2)], ...
-                gridParams.center, gridParams.radius, ...
-                gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
-                deps;
-            dYgradient = (feval(gridParams.domainFunction, ...
-                [conePositions(outsideBoundaryIndices, 1), ...
-                conePositions(outsideBoundaryIndices, 2)+deps], ...
-                gridParams.center, gridParams.radius, ...
-                gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
-                deps;
 
-            % Project these points back to boundary
-            conePositions(outsideBoundaryIndices, :) = ...
-                conePositions(outsideBoundaryIndices, :) - ...
-                [d(outsideBoundaryIndices) .* dXgradient, ...
-                d(outsideBoundaryIndices) .* dYgradient];
+        if (isinf(zoneIndex))
+            % Find any points that lie outside the domain boundary
+            d = feval(gridParams.domainFunction, conePositions, ...
+                gridParams.center, gridParams.radius, gridParams.ellipseAxes);
+            outsideBoundaryIndices = d > 0;
+
+            % And project them back to the domain
+            if (~isempty(outsideBoundaryIndices))
+                % Compute numerical gradient along x-positions
+                dXgradient = (feval(gridParams.domainFunction, ...
+                    [conePositions(outsideBoundaryIndices, 1) + deps, ...
+                    conePositions(outsideBoundaryIndices, 2)], ...
+                    gridParams.center, gridParams.radius, ...
+                    gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
+                    deps;
+                dYgradient = (feval(gridParams.domainFunction, ...
+                    [conePositions(outsideBoundaryIndices, 1), ...
+                    conePositions(outsideBoundaryIndices, 2)+deps], ...
+                    gridParams.center, gridParams.radius, ...
+                    gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
+                    deps;
+
+                % Project these points back to boundary
+                conePositions(outsideBoundaryIndices, :) = ...
+                    conePositions(outsideBoundaryIndices, :) - ...
+                    [d(outsideBoundaryIndices) .* dXgradient, ...
+                    d(outsideBoundaryIndices) .* dYgradient];
+            end
+        else
+               
+            % Find any points that lie outside the domain boundary
+            innerOuterRadii = eccRangeMicrons;
+
+            d = feval(gridParams.zoneDomainFunction, conePositions(manipulatedConeIndices,:), ...
+                gridParams.center, innerOuterRadii, gridParams.ellipseAxes);
+            outsideBoundaryIndices = d > 0;
+            outsideBoundaryIndices2 = manipulatedConeIndices(outsideBoundaryIndices);
+            
+            % And project them back to the domain
+            if (~isempty(outsideBoundaryIndices))
+                % Compute numerical gradient along x-positions
+                dXgradient = (feval(gridParams.zoneDomainFunction, ...
+                    [conePositions(outsideBoundaryIndices2, 1) + deps, ...
+                    conePositions(outsideBoundaryIndices2, 2)], ...
+                    gridParams.center, innerOuterRadii, ...
+                    gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
+                    deps;
+                dYgradient = (feval(gridParams.zoneDomainFunction, ...
+                    [conePositions(outsideBoundaryIndices2, 1), ...
+                    conePositions(outsideBoundaryIndices2, 2)+deps], ...
+                    gridParams.center, innerOuterRadii, ...
+                    gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
+                    deps;
+
+                % Project these points back to boundary
+                conePositions(outsideBoundaryIndices2, :) = ...
+                    conePositions(outsideBoundaryIndices2, :) - ...
+                    [d(outsideBoundaryIndices) .* dXgradient, ...
+                    d(outsideBoundaryIndices) .* dYgradient];
+            end
+            
         end
-
+        
         % Check if all interior nodes move less than dTolerance
         movementAmplitudes = sqrt(sum(deltaT * netForceVectors(...
             d < -gridParams.borderTolerance, :) .^2 , 2));
@@ -851,6 +890,20 @@ function hexLocs = computeHexGrid(rows, cols, lambda, rotationAngle)
     hexLocs = (R * (hexLocs)')';
 end
 
+
+function distances = ellipticalDonutDomainFunction(conePositions, center, ...
+    innerOuterRadii, ellipseAxes)
+%
+    %  points with positive distance will be excluded
+    innerR = innerOuterRadii(1);
+    outerR = innerOuterRadii(2);
+    
+    d1 = ellipticalDomainFunction(conePositions, center, outerR, ellipseAxes);
+    d2 = ellipticalDomainFunction(conePositions, center, innerR, ellipseAxes);
+    distances = max(d1,-d2);
+end
+
+
 function distances = circularDomainFunction(conePositions, center, ...
     radius, nullVar)
 % Calculate distances for a ciruclar domain function
@@ -875,7 +928,7 @@ function distances = circularDomainFunction(conePositions, center, ...
     %  points with positive distance will be excluded
     radii = sqrt((conePositions(:, 1) - center(1)) .^ 2 + ...
         (conePositions(:, 2) - center(2)) .^ 2);
-    distances = -(radius - radii);
+    distances = radii - radius;
 end
 
 function distances = ellipticalDomainFunction(conePositions, center, ...
@@ -905,7 +958,7 @@ function distances = ellipticalDomainFunction(conePositions, center, ...
     xx = conePositions(:, 1) - center(1);
     yy = conePositions(:, 2) - center(2);
     radii = sqrt((xx / ellipseAxes(1)) .^ 2 + (yy / ellipseAxes(2)) .^ 2);
-    distances = -(radius - radii);
+    distances = radii - radius;
 end
 
 function ellipseAxes = determineEllipseAxesLength(mosaicHalfFOVmicrons)
