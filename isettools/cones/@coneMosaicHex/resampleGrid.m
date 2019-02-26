@@ -201,15 +201,17 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     
     % Determine ecc zone limits and zone positionalDiffTolerances
     coneEccMicrons = sqrt(sum(conePositions.^2,2));
-    maxEccMicrons = max(coneEccMicrons)
+    maxEccMicrons = max(coneEccMicrons);
     coneSpacingRangeWithinZone = 0.5;  % range of cone spacings  (in microns) within all zones
     [eccRangesMicrons, prctileSpacing] = ...
         determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons, coneSpacingRangeWithinZone);
     
-    iterationsPerZone = 2;
+    iterationsPerZone = 4;
+    iterationsForFullRange = 10;
     originalMaxGridAdjustmentIterations = obj.maxGridAdjustmentIterations;
     zonesNum = numel(eccRangesMicrons);
-    passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/(zonesNum*iterationsPerZone))]);
+    
+    passesNum = max([1 ceil(originalMaxGridAdjustmentIterations/(zonesNum*iterationsPerZone + iterationsForFullRange))]);
     fprintf('Will do %d passes\n', passesNum);
     
     doMorePasses = true;
@@ -236,7 +238,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
 
                 % Iterations
                 % eccBasedIterations = numel(eccRangesMicrons)-eccRangeIndex;
-                obj.maxGridAdjustmentIterations = 4; % min([10 iterationsPerZone+eccBasedIterations]);
+                obj.maxGridAdjustmentIterations = iterationsPerZone;
             
                 % Do each zone using its own positionalDiffTolerange
                 positionalDiffTolerance = positionalDiffTolerances(eccRangeIndex);
@@ -260,12 +262,11 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
             end 
             
             % Adjusting the grid for the entire eccRange for 10 iterations
-            obj.maxGridAdjustmentIterations = 10;
+            obj.maxGridAdjustmentIterations = iterationsForFullRange;
             positionalDiffTolerances = squeeze(prctileSpacing(:,9));
             theEccRangeMicrons = [0 eccRangesMicrons(end)];
             conePositions = smoothGrid(obj, conePositions,  gridParams, theEccRangeMicrons, ...
-                positionalDiffTolerances(end), iPass+previousPasses, Inf, passesNum+previousPasses);
-                
+                positionalDiffTolerances(end), iPass+previousPasses, Inf, passesNum+previousPasses); 
         end %
        
                 
@@ -330,6 +331,7 @@ function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZ
     
     idx = find(eccRange <= maxEccMicrons);
     eccRange = eccRange(idx);
+    
 end
 
 function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicrons, positionalDiffTolerance, iPass, zoneIndex, passesNum)
