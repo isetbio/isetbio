@@ -202,7 +202,7 @@ function conePositions = generateConePositionsOnVaryingDensityGrid(obj, ...
     % Determine ecc zone limits and zone positionalDiffTolerances
     coneEccMicrons = sqrt(sum(conePositions.^2,2));
     maxEccMicrons = max(coneEccMicrons);
-    coneSpacingRangeWithinZone = 0.5;  % range of cone spacings  (in microns) within all zones
+    coneSpacingRangeWithinZone = 2.0;  % range of cone spacings  (in microns) within all zones
     [eccRangesMicrons, prctileSpacing] = ...
         determineEccZonesAndMeanConeSpacingWithinZones(maxEccMicrons, coneSpacingRangeWithinZone);
     
@@ -520,7 +520,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
         % when springLengths is near the desiredSpringLengths, which can be
         % achieved by choosing desiredSpringLengths slightly larger than
         % the length we actually desire. Here, we set this to be 1.2
-        gain = 1.2;
+        gain = 1.1;
         springForces = max(gain * desiredSpringLengths - springLengths, 0);
 
         % compute x, y-components of forces on each of the springs
