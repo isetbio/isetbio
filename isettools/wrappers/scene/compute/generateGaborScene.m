@@ -120,7 +120,7 @@ end
 % stimulus size, and the viewing distance & pixel size of the display
 function [stimParams, presentationDisplay] = updateStimParamsForDisplay(stimParams, presentationDisplay, minimumPixelsPerHalfPeriod)
 
-    if (~isempty(minimumPixelsPerHalfPeriod))
+    if ((~isempty(minimumPixelsPerHalfPeriod)) && (stimParams.spatialFrequencyCyclesPerDeg > 0))
         stimulusHalfPeriodDegrees = 0.5 * 1.0/stimParams.spatialFrequencyCyclesPerDeg;
         displayPixelSizeDegrees = 0.5*displayGet(presentationDisplay, 'deg per dot');
         pixelsPerHalfPeriod = stimulusHalfPeriodDegrees / displayPixelSizeDegrees;
