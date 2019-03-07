@@ -23,7 +23,8 @@ function apertureDiametersMicrons = computeApertureDiameters(obj)
         
     [~, apertureMeters, ~] = coneSizeReadData(...
             'eccentricity',coneEccentricitiesInMeters,...
-            'angle',coneAnglesInDegrees);
+            'angle',coneAnglesInDegrees, ...
+            'useParfor', obj.useParfor);
         
     apertureDiametersMicrons = diameterForCircularApertureFromWidthForSquareAperture(apertureMeters * 1e6);
 end

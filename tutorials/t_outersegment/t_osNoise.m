@@ -1,14 +1,14 @@
 % Illustrate the noise spectrum for photocurrent
 %
 % Description:
-%    
 %    Illustrate the noise spectrum from the outer segment biophysical model
 %    we use for converting photon absorptions to photo current.
 %
-%    Notes from FR on obtaining the noise frequency response amplitude. The
-%    formula used is for the noise frequency response amplitude. The 2 is
-%    there for some negative frequency, and the correction for the number
-%    of time samples is the usual FFT correction.
+%    Notes from Fred Rieke on obtaining the noise frequency response
+%    amplitude. The formula used is for the noise frequency response
+%    amplitude. The 2 is there for some negative frequency, and the
+%    correction for the number of time samples is the usual FFT
+%    correction.
 %
 % Notes:
 %    * [Note: DHB - I don't understand this, really.  If possible,
@@ -40,3 +40,5 @@ line('Xdata', [0.1 freq(end)], 'Ydata', [.205 .205]);
 xlabel('Frequency(Hz)');
 ylabel('Power Spectrum (pA^2/Hz)');
 grid on
+
+%%

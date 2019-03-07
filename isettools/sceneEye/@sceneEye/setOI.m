@@ -68,14 +68,28 @@ ieObject.optics = opticsSet(ieObject.optics, 'model', 'iset3d');
 ieObject.optics = opticsSet(ieObject.optics, 'name', ...
     'PBRT Navarro Eye');
 ieObject.optics.OTF = [];
-
-% BW:  We should set the lens density to the value used in
-% sceneEye, not just remove it.  Ask TL whether she does anything
-% with the lens at all ... if she doesn't, we might apply it here.
-% ieObject.optics.lens = [];
 ieObject.optics.lens.name = obj.recipe.get('lens file');
 ieObject.optics.offaxis = '';
 ieObject.optics.vignetting = [];
 
+%% Apply lens transmittance 
+% The following code is from oiCalculateIrradiance.m
+
+irradiance = oiGet(ieObject, 'photons');
+wave = oiGet(ieObject, 'wave');
+
+if isfield(ieObject.optics, 'lens')
+    transmittance = opticsGet(ieObject.optics, 'transmittance', 'wave', wave);
+else
+    transmittance = opticsGet(ieObject.optics, 'transmittance', wave);
+end
+
+if any(transmittance(:) ~= 1)
+    % Do this in a loop to avoid large memory demand
+    transmittance = reshape(transmittance, [1 1 length(transmittance)]);
+    irradiance = bsxfun(@times, irradiance, transmittance);
+end
+
+ieObject = oiSet(ieObject,'photons',irradiance);
 
 end

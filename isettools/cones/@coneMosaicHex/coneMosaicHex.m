@@ -194,6 +194,10 @@ classdef coneMosaicHex < coneMosaic
         % adjustment every this many iterations
         queryGridAdjustmentIterations
         
+        % queryAdditionnalPassBatch - Query whether to do more grid
+        % adjustement passes
+        queryAdditionnalPassBatch
+        
         % visualizationUpdateIterations -Iterations interval for update the
         % visualization of the mosaic and its hex-quality
         visualizationUpdateIterations
@@ -237,6 +241,7 @@ classdef coneMosaicHex < coneMosaic
                 'maxGridAdjustmentIterations'...
                 'visualizationUpdateIterations' ...
                 'queryGridAdjustmentIterations' ...
+                'queryAdditionnalPassBatch' ...
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF'};
@@ -288,6 +293,7 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);
             p.addParameter('visualizationUpdateIterations', Inf, @isnumeric);
             p.addParameter('queryGridAdjustmentIterations', Inf, @isnumeric);
+            p.addParameter('queryAdditionnalPassBatch', false, @islogical);
             p.parse(resamplingFactor, vararginForConeHexMosaic{:});
 
             % Set input params
@@ -311,6 +317,8 @@ classdef coneMosaicHex < coneMosaic
                 p.Results.maxGridAdjustmentIterations;
             obj.queryGridAdjustmentIterations = ...
                 p.Results.queryGridAdjustmentIterations;
+            obj.queryAdditionnalPassBatch = ...
+                p.Results.queryAdditionnalPassBatch;
             obj.visualizationUpdateIterations = ...
                 p.Results.visualizationUpdateIterations;
             
@@ -449,7 +457,8 @@ classdef coneMosaicHex < coneMosaic
         regenerateLMSPattern(obj, LMSdensity, varargin);
         
         % Return the indices for all L/M/S cones
-        [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj);
+        [lConeIndices, mConeIndices,sConeIndices, nonNullConeIndices] = ...
+            indicesForCones(obj);
         
         % Return the indices for cones along the horizontal and vertical
         % meridians
@@ -459,6 +468,11 @@ classdef coneMosaicHex < coneMosaic
         
         % Return the aperture diameters for all cones
         apertureDiametersMicrons = computeApertureDiameters(obj);
+        
+        % Return a struct with the mosaic geometry (cone positions,
+        % Delaunay triangles, and cone aperture sizes)
+        cmStruct = geometryStruct(obj);
+        
     end % Public methods
 
     methods (Access = private)

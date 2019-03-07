@@ -75,6 +75,7 @@ p.addParameter('coneDensityContourLevels', (100:20:250) * 1000, ...
 p.addParameter('overlayContourLabels', false, @islogical);
 p.addParameter('backgroundColor', [0.75 0.75 0.75]);
 p.addParameter('foregroundColor', [0 0 0]);
+p.addParameter('visualizedFOV', [], @(x)(isnumeric(x)||(isstruct(x))));
 p.addParameter('ticksInVisualDegs', false, @islogical);
 p.addParameter('ticksInMicrons', false, @islogical);
 p.addParameter('tickInc', [], @isnumeric);
@@ -93,6 +94,7 @@ generateNewFigure = p.Results.generateNewFigure;
 panelPosition = p.Results.panelPosition;
 coneDensityContourLevels = p.Results.coneDensityContourLevels;
 visualizedConeAperture = p.Results.visualizedConeAperture;
+visualizedFOV = p.Results.visualizedFOV;
 apertureShape = p.Results.apertureShape;
 labelConeTypes = p.Results.labelConeTypes;
 backgroundColor = p.Results.backgroundColor;
@@ -510,6 +512,8 @@ if (ticksInVisualDegs)
             tickInc = 0.1;
         elseif (rangeDegs < 4.0)
             tickInc = 0.25;
+        elseif (rangeDegs < 8.0)
+            tickInc = 0.5;
         else
             tickInc = 1;
         end
@@ -569,8 +573,23 @@ elseif (ticksInMicrons)
 end
 
 axis(axesHandle,'equal')
-set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
-set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
+
+if (isempty(visualizedFOV))
+    set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
+    set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
+else
+    if (isstruct(visualizedFOV))
+        clippingRect = visualizedFOV;
+        % Check that the clippingRect is valid
+        coneMosaic.validateClippingRect(clippingRect);
+        spatialExtentMetersX = (clippingRect.xo+clippingRect.width/2*[-1 1])*obj.micronsPerDegree*1e-6;
+        spatialExtentMetersY = (clippingRect.yo+clippingRect.height/2*[-1 1])*obj.micronsPerDegree*1e-6;
+        set(axesHandle, 'XLim', spatialExtentMetersX, 'YLim', spatialExtentMetersY);
+    else
+        spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6;
+        set(axesHandle, 'XLim', spatialExtentMeters, 'YLim', spatialExtentMeters);
+    end
+end
 
 box(axesHandle, 'on'); grid(axesHandle, 'off');
 set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);

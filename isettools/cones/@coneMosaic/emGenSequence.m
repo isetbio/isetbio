@@ -9,6 +9,10 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %  rate as the cone integration time. We only update the position at
 %  the beginning of each integration time.
 %
+%  If you do not send in a rSeed (random seed) the seed defaults to 1.
+%  In that case, multiple calls to this function return the same eye
+%  movement positions.
+%
 % Inputs:
 %     obj               - rect cone mosaic object
 %     nEyeMovements     - number of eye movements to generate

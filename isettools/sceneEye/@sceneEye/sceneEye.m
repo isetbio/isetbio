@@ -184,6 +184,15 @@ properties (GetAccess=public, SetAccess=public)
     % Ideally, the sceneEye user will not need to access the recipe very
     % often.
     recipe;
+    
+    % LENSFILE - Path to the .dat file that describes the lens system
+    %   This file includes descriptions of the thickness, curvature,
+    %   and diameter of the various components in the eye. This is usually
+    %   written out automatically in the "write" function for sceneEye
+    %   (which is called during sceneEye.render). However, you can also
+    %   attach a custom file. 
+    lensFile;
+    
 end
 
 properties (Dependent)
@@ -208,10 +217,6 @@ properties (Dependent)
 end
 
 properties(GetAccess=public, SetAccess=private)
-    % lensFile - Path to the .dat file that describes the lens system
-    %   This file includes descriptions of the thickness, curvature,
-    %   and diameter of the various components in the eye.
-    lensFile;
 
     % pbrtFile - Path to the original .pbrt file this scene is based on
     %   Depends on the pbrt file used to create the scene. Should not
@@ -444,6 +449,16 @@ methods
                 obj.modelName = 'Arizona';
                 obj.retinaDistance = 16.713;
                 obj.retinaRadius = 13.4;
+            case {'Custom','custom'}
+                % Use Navarro as a default.
+                % Do we need to be able to change this later?
+                obj.modelName = 'Custom';
+                if(isempty(obj.retinaDistance))
+                    obj.retinaDistance = [];
+                end
+                if(isempty(obj.retinaRadius))
+                    obj.retinaRadius = [];
+                end
                 
         end
             
@@ -472,6 +487,29 @@ methods
         if(strcmp(obj.modelName,'Gullstrand'))
             warning(['Gullstrand eye has no accommodation modeling.',...
                 'Setting accommodation will do nothing.']);
+        end
+    end
+    
+    function set.lensFile(obj,val)
+        
+        % On creation, the lensFile is left empty
+        % There should be a better way to do this right? I don't think I'm
+        % doing this right. Maybe we need a seperate set function like we
+        % do with render recipes?
+        if(~isempty(val))
+            
+            % Make sure it's a valid file
+            [p,~,e] = fileparts(val);
+            if(isempty(p))
+                error('Lens file needs to be a full file path.');
+            elseif(~strcmp(e,'.dat'))
+                error('Lens file needs to be a .dat file.');
+            end
+            
+            obj.modelName = 'Custom';
+            obj.lensFile = val;
+        else
+            obj.lensFile = '';
         end
     end
     

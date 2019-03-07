@@ -23,6 +23,9 @@ ieAddObject(scene); sceneWindow;
 % typical lens absoprtance and then multiplying by the macular
 % absorptance.  We stick the whole thing into the OI and image.
 
+% Create the OI
+oi = oiCreate();
+
 % Make sure we are set correctly
 oi = oiSet(oi,'lens density',1);
 oi = oiCompute(oi, scene);

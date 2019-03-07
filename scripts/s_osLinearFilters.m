@@ -48,7 +48,7 @@ for ii = 1:length(lum)
     cMosaic.compute(oi);
     % mean(cMosaic.absorptions(:))   
     tmp = coneMeanIsomerizations(cMosaic);
-    meanI(ii) = tmp(1);    % Mean number of isomerizations
+    meanI(ii) = tmp(2);    % Mean number of isomerizations
     
     % Compute the linear filters and plot them
     cMosaic.os.linearFilters(cMosaic);

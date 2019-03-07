@@ -179,6 +179,10 @@ classdef coneMosaic < hiddenHandle
         %   when computing the isomerizations?
         apertureBlur;
 
+        %useParfor - Boolean. Whether to use parfor to accelerate mosaic
+        %    construction
+        useParfor;
+        
         %hdl  Handle of the CONEMOSAIC window
         hdl
     end
@@ -337,6 +341,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('apertureBlur', false, @islogical);
             p.addParameter('noiseFlag', 'random', ...
                 @(x)(ismember(lower(x), coneMosaic.validNoiseFlags)));
+            p.addParameter('useParfor', false, @islogical);
             p.parse(varargin{:});
 
             % Set properties
@@ -353,7 +358,8 @@ classdef coneMosaic < hiddenHandle
             obj.coneDarkNoiseRate = [0 0 0];
             obj.noiseFlag = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
-
+            obj.useParfor = p.Results.useParfor;
+            
             % Construct outersgement if not passed.
             if (isempty(p.Results.os))
                 eccentricityMeters = norm(p.Results.center);
@@ -380,7 +386,8 @@ classdef coneMosaic < hiddenHandle
             [spacing, aperture] = coneSizeReadData( p.Unmatched, ...
                 'eccentricity', ecc, 'eccentricityUnits', 'm', ...
                 'angle', ang, 'angleUnits', 'deg', ...
-                'whichEye', obj.whichEye);
+                'whichEye', obj.whichEye, ...
+                'useParfor', obj.useParfor);
 
             obj.pigment.pdWidth = aperture;
             obj.pigment.pdHeight = aperture;
@@ -1238,6 +1245,7 @@ classdef coneMosaic < hiddenHandle
         [noisyImage, theNoise] = photonNoise(absorptions, varargin);
         resampledAbsorptionsSequence = tResample(absorptionsSequence, ...
             pattern, originalTimeAxis, resampledTimeAxis);
+        validateClippingRect(clippingRect);
     end
 
     % Methods may be called by the subclasses, but are otherwise private
