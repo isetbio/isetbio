@@ -206,6 +206,8 @@ switch lower(imType)
             il = illuminantCreate('d65', wave);
             % Replace default with display white point SPD
             il = illuminantSet(il, 'energy', sum(d.spd, 2));
+            % Rename illuminant
+            il = illuminantSet(il, 'name', 'display white point');
         end
         scene = sceneSet(scene, 'illuminant', il);
 
