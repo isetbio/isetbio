@@ -45,7 +45,8 @@ for ii=1:length(oiObjects)
         % just return it. 
         oiObjects{ii} = oiObjects{ii};
     else
-        oiObjects{ii} = seObjects{ii}.setOI(oiObjects{ii});
+        oiObjects{ii} = seObjects{ii}.setOI(oiObjects{ii},...
+            'scaleIlluminance',scaleIlluminance);
     end
     
 end
