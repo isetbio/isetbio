@@ -47,13 +47,15 @@ defaultStimParams = struct(...
 p = inputParser;
 p.addParameter('stimParams', defaultStimParams, @validateStimParamsStruct);
 p.addParameter('presentationDisplay', [], @validateDisplayArgument);
+p.addParameter('minimumPixelsPerHalfPeriod', [], @isnumeric);
 p.parse(varargin{:});
 
 presentationDisplay = p.Results.presentationDisplay;
 stimParams = p.Results.stimParams;
+minimumPixelsPerHalfPeriod = p.Results.minimumPixelsPerHalfPeriod;
 
 if (~isempty(presentationDisplay))
-    stimParams = updateStimParamsForDisplay(stimParams, presentationDisplay);
+    [stimParams, presentationDisplay] = updateStimParamsForDisplay(stimParams, presentationDisplay, minimumPixelsPerHalfPeriod);
 end
 
 % Transform stimParams into imageHarmonicParams
@@ -116,13 +118,30 @@ end
 
 % Method to compute the number of pixels for the stimulus given the
 % stimulus size, and the viewing distance & pixel size of the display
-function stimParams = updateStimParamsForDisplay(stimParams, presentationDisplay)
+function [stimParams, presentationDisplay] = updateStimParamsForDisplay(stimParams, presentationDisplay, minimumPixelsPerHalfPeriod)
+
+    if ((~isempty(minimumPixelsPerHalfPeriod)) && (stimParams.spatialFrequencyCyclesPerDeg > 0))
+        stimulusHalfPeriodDegrees = 0.5 * 1.0/stimParams.spatialFrequencyCyclesPerDeg;
+        displayPixelSizeDegrees = 0.5*displayGet(presentationDisplay, 'deg per dot');
+        pixelsPerHalfPeriod = stimulusHalfPeriodDegrees / displayPixelSizeDegrees;
+
+        % We want a minimum of 5 pixels / stimulus half period
+        if (pixelsPerHalfPeriod < minimumPixelsPerHalfPeriod)
+            % boost the display's resolution to achieve 5 pixels / stimulus half period
+            resolutionBoostFactor = minimumPixelsPerHalfPeriod/pixelsPerHalfPeriod;
+            oldDPI = displayGet(presentationDisplay, 'dpi');
+            newDPI = ceil(oldDPI*resolutionBoostFactor);
+            presentationDisplay = displaySet(presentationDisplay, 'dpi', newDPI);
+        end
+    end
+    
     displayPixelSizeDegrees = 0.5*displayGet(presentationDisplay, 'deg per dot');
     % divide by the stimulus size in degrees to get the pixels along the width
     stimParams.pixelsAlongWidthDim = ...
         round(stimParams.sizeDegs/displayPixelSizeDegrees(1));
     stimParams.pixelsAlongHeightDim = ...
         round(stimParams.sizeDegs/displayPixelSizeDegrees(1));
+    
 end
 
 % Method to validation the passed display argument

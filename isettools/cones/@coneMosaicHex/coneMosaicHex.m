@@ -468,6 +468,11 @@ classdef coneMosaicHex < coneMosaic
         
         % Return the aperture diameters for all cones
         apertureDiametersMicrons = computeApertureDiameters(obj);
+        
+        % Return a struct with the mosaic geometry (cone positions,
+        % Delaunay triangles, and cone aperture sizes)
+        cmStruct = geometryStruct(obj);
+        
     end % Public methods
 
     methods (Access = private)

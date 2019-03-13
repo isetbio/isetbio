@@ -28,8 +28,12 @@ varargin =ieParamFormat(varargin);
 p.addRequired('obj');
 p.addRequired('ieObject');
 
-p.parse(obj,ieObject,varargin{:});
+p.addParameter('meanilluminancepermm2',5,@isnumeric);
+p.addParameter('scaleIlluminance',true,@islogical);
 
+p.parse(obj,ieObject,varargin{:});
+meanIlluminancePerMM2 = p.Results.meanilluminancepermm2;
+scaleIlluminance = p.Results.scaleIlluminance;
 
 %%
 
@@ -61,7 +65,7 @@ ieObject = oiSet(ieObject, 'optics focal length', ...
 ieObject = oiSet(ieObject, 'optics fnumber', ...
     obj.retinaDistance / obj.pupilDiameter);
 ieObject = oiSet(ieObject, 'fov', fov_crop);
-    
+
 % Clear default optics that do not apply to the iset3d optical
 % image. We may want to add these in in the future.
 ieObject.optics = opticsSet(ieObject.optics, 'model', 'iset3d');
@@ -72,8 +76,10 @@ ieObject.optics.lens.name = obj.recipe.get('lens file');
 ieObject.optics.offaxis = '';
 ieObject.optics.vignetting = [];
 
-%% Apply lens transmittance 
+%% Apply lens transmittance
 % The following code is from oiCalculateIrradiance.m
+
+ieObject = oiSet(ieObject, 'lens density', obj.lensDensity);
 
 irradiance = oiGet(ieObject, 'photons');
 wave = oiGet(ieObject, 'wave');
@@ -91,5 +97,18 @@ if any(transmittance(:) ~= 1)
 end
 
 ieObject = oiSet(ieObject,'photons',irradiance);
+
+%% Scale the irradiance with pupil size
+% This is already done in piDat2ISET.m. However for the human eye the lens
+% file is unique, so we are unable to extract the aperture (at the moment)
+% in piDat2ISET.m. Until we add that code, let's make the change here where
+% the aperture size is known from the sceneEye object. 
+if(scaleIlluminance)
+    lensArea = pi*(obj.pupilDiameter/2)^2;
+    meanIlluminance = meanIlluminancePerMM2*lensArea;
+    
+    ieObject        = oiAdjustIlluminance(ieObject,meanIlluminance);
+    ieObject.data.illuminance = oiCalculateIlluminance(ieObject);
+end
 
 end

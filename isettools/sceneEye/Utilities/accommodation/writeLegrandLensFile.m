@@ -27,51 +27,31 @@ lensP =   [ 6     6      0     4  3.750  0  0];
 
 %% Write out dispersion curves
 
-% The Le Grand eye doesn't seem to specify wavelength, so we'll use the
-% same as the Arizona eye
+% From Atchison, David A., and George Smith. "Chromatic dispersions of the
+% ocular media of human eyes." JOSA A 22.1 (2005): 29-37.
 
 wave = (400:10:800); % nm
 
-% This is equivalent to IOR at 589.3 nm
-% [cornea aqueous lens vitreous]
-n_d = zeros(1,4);
-n_d(1) = 1.377;
-n_d(2) = 1.337;
-n_d(3) = 1.42;
-n_d(4) = 1.336;
+% [Cornea; Aqueous; Lens; Vitreous]
+n_inf = [1.3610 1.3221 1.3999 1.3208]';
+K = [7.4147 7.0096 9.2492 6.9806]';
+lambda_o = [130.0 130.0 130.0 130.0]';
+V = [56 53 50 53]';
 
-% Abbe number
-% [cornea aqueous lens vitreous]
-V_d = zeros(1,4);
-V_d(1) = 57.1;
-V_d(2) = 61.3;
-V_d(3) = 51.9;
-V_d(4) = 61.1;
+% Cornu dispersion equation
+% Rows will be each ocular media
+ior = n_inf + K./(wave-lambda_o);
 
-% Calculate dispersion curves
-% n_f is IOR at 486.1 nm
-% n_c is IOR at 656.3 nm
-% V_d  = (n_d - 1)/(n_f - n_c)
-% V_d = ( f(589.3) - 1 )/( f(486.1) - f(656.3) )
-ior = cell(1,4); 
-
-for ii = 1:length(n_d)
-    
-    m = (n_d(ii)-1)/(V_d(ii)*(486.1-656.3));
-    b = n_d(ii)-m*589.3;
-    ior{ii} = m*wave+b;        
-end
-
-iorNames = {sprintf('ior1_%0.2fdp_arizona.spd', 0), ...
-    sprintf('ior2_%0.2fdp_arizona.spd', 0), ...
-    sprintf('ior3_%0.2fdp_arizona.spd', 0), ...
-    sprintf('ior4_%0.2fdp_arizona.spd', 0)};
+iorNames = {sprintf('ior1_%0.2fdp_legrand.spd', 0), ...
+    sprintf('ior2_%0.2fdp_legrand.spd', 0), ...
+    sprintf('ior3_%0.2fdp_legrand.spd', 0), ...
+    sprintf('ior4_%0.2fdp_legrand.spd', 0)};
 
 % Write dispersion curves out to working folder
-rtbWriteSpectrumFile(wave, ior{1}, fullfile(workingFolder, iorNames{1}));
-rtbWriteSpectrumFile(wave, ior{2}, fullfile(workingFolder, iorNames{2}));
-rtbWriteSpectrumFile(wave, ior{3}, fullfile(workingFolder, iorNames{3}));
-rtbWriteSpectrumFile(wave, ior{4}, fullfile(workingFolder, iorNames{4}));
+rtbWriteSpectrumFile(wave, ior(1,:), fullfile(workingFolder, iorNames{1}));
+rtbWriteSpectrumFile(wave, ior(2,:), fullfile(workingFolder, iorNames{2}));
+rtbWriteSpectrumFile(wave, ior(3,:), fullfile(workingFolder, iorNames{3}));
+rtbWriteSpectrumFile(wave, ior(4,:), fullfile(workingFolder, iorNames{4}));
 
 renderRecipe.camera.ior1.value = fullfile(workingFolder, iorNames{1});
 renderRecipe.camera.ior2.value = fullfile(workingFolder, iorNames{2});
