@@ -113,6 +113,13 @@ if(sceneNameFlag)
     
     switch sceneName
         
+        case('colorfulScene')
+            scenePath = fullfile(piRootPath, 'local','scenes', ...
+                'colorfulScene', 'ColorfulScene.pbrt');
+            sceneUnits = 'm';
+            
+            pullSceneFromRDT('ColorfulScene',scenePath);
+            
         case('figure')
             scenePath = fullfile(piRootPath, 'data', ...
                 'V3','figure', 'figure.pbrt');
@@ -247,6 +254,8 @@ else
 end
 
 % Copy contents of the working folder over to the local folder.
+% We may no longer need to do this, I think it is taken care of in
+% recipe.set. Right now it might just be redundant. 
 origPath = createWorkingFolder(...
     scenePath, 'workingDir', workingDir);
 
