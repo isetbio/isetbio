@@ -193,6 +193,10 @@ properties (GetAccess=public, SetAccess=public)
     %   attach a custom file. 
     lensFile;
     
+    % LENSDENSITY - Lens pigment density. Equivalent to lens density in the
+    % Lens class for ISETBio (non-3D calculations).
+    lensDensity;
+    
 end
 
 properties (Dependent)
@@ -339,6 +343,7 @@ methods
         obj.debugMode = false;
         obj.diffractionEnabled = false;
         obj.eccentricity = [0 0];
+        obj.lensDensity = 1.0;
         
     end
 

@@ -76,8 +76,10 @@ ieObject.optics.lens.name = obj.recipe.get('lens file');
 ieObject.optics.offaxis = '';
 ieObject.optics.vignetting = [];
 
-%% Apply lens transmittance 
+%% Apply lens transmittance
 % The following code is from oiCalculateIrradiance.m
+
+ieObject = oiSet(ieObject, 'lens density', obj.lensDensity);
 
 irradiance = oiGet(ieObject, 'photons');
 wave = oiGet(ieObject, 'wave');
