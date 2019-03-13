@@ -1114,7 +1114,7 @@ end
 function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration, iPass, zoneIndex, passesNum)
     qDist = computeQuality(conePositions);
     % max ecc (in microns) to visualize
-    
+    if (1==2)
     yRatio = 0.4;
     maxEccVisualized = 500;
     x = conePositions(:,1);
@@ -1141,9 +1141,10 @@ function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, itera
                (y(manipulatedConeIndices) <= yRatio*maxEccVisualized) & ...
                (x(manipulatedConeIndices) >= 0) & (y(manipulatedConeIndices) >= 0));
     manipulatedConePositionsVisualized = conePositions(manipulatedConeIndices(idx),:);
-    
+    end
     hFig = figure(111); clf;
     set(hFig,'Position', [10 10 1650 950]);
+    if (1==2) 
     axesHandle = subplot('Position', [0.01 0.3 0.98 0.68]);
     patch(xx, yy, [0 0 0], 'EdgeColor', [0.4 0.4 0.4], ...
         'EdgeAlpha', 0.5, 'FaceAlpha', 0.0, ...
@@ -1160,6 +1161,7 @@ function visualizeLatticeState(obj, conePositions, manipulatedConeIndices, itera
     title(sprintf('pass: %d of %d, zone: %d, iteration %d', iPass, passesNum, zoneIndex, iteration), 'FontSize', 18);
     
     subplot('Position', [0.01 0.05 0.98 0.23]);
+    end
     plotQuality(qDist);
     drawnow
 end
