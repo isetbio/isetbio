@@ -95,11 +95,15 @@ p.addParameter('angle',0, @isnumeric);
 p.addParameter('whichEye','left',@(x)(ismember(x,{'left','right'})));
 p.addParameter('eccentricityUnits','m',@ischar);
 p.addParameter('angleUnits','deg',@ischar);
-p.addParameter('useParfor', false, @islogical);
+p.addParameter('useParfor', false, @(x)((islogical(x))||(isempty(x))));
 p.parse(varargin{:});
 
 %% Set up params return.
 params = p.Results;
+
+if (isempty(params.useParfor))
+    params.useParfor = false;
+end
 
 %% Take care of case where a function handle is specified as source
 %
