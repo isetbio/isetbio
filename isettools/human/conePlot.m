@@ -44,9 +44,9 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
 %                      columns comprising the image support. If not
 %                      previously provided, the calculated values. Default
 %                      is [8 8].
-%    spread          - Numeric. The spread value. If not provided, then is
+%    spread          - Numeric. The Gaussian  spread value. If not provided, then is
 %                      the default, 2.1.
-%    delta           - Numeric. The spacing in microns between the cones.
+%    delta           - Numeric. The spacing in microns between samples of  the coneMosaicImage.
 %                      Default value is 0.25.
 %    coneMosaicImage - (Optional) The image. If this fourth output argument
 %                      is present, the function returns the RGB image and
@@ -69,7 +69,7 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
     c = coneMosaicHex(5);
     xy = c.coneLocsHexGrid * 1e6;
     coneType = c.coneTypesHexGrid;
-    conePlot(xy, coneType);
+    [support, spread, delta] = conePlot(xy, coneType);
 %}
 %{
     sz = [75, 75];
