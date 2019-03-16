@@ -62,12 +62,13 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
 % History:
 %    xx/xx/09       Copyright ImagEval LLLC, 2009
 %    06/12/18  jnm  Formatting
+%    03/19/19  npc  Fixed example  to work with @coneMosaicHex
 
 % Examples:
 %{
-    % ETTBSkip - Broken since sensor removed.
-    % [TODO: EXAMPLE NEEDS UPDATING NOW THAT SENSOR IS GONE.]
-    [sensor, xy, coneType] = sensorCreateConeMosaic;
+    c = coneMosaicHex(5);
+    xy = c.coneLocsHexGrid * 1e6;
+    coneType = c.coneTypesHexGrid;
     conePlot(xy, coneType);
 %}
 %{
