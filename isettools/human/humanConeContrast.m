@@ -27,10 +27,6 @@ function coneContrast = ...
 % Optional key/value pairs:
 %   None.
 %
-% Notes:
-%    * [Note: XXX - We should add an option to calculate with different
-%      macular pigment densities. Should be straightforward, but ...]
-%
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.

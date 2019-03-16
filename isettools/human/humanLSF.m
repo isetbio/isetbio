@@ -39,9 +39,6 @@ function [lineSpread, xDim, wave] = ...
 %    None.
 %
 % Notes:
-%    * [Note: JNM - Modified examples to account for order of variables.]
-%    * [Note: JNM - Dioptric Power in description does not match up to the
-%      default value provided...?]
 %
 % References:
 %    Marimont & Wandell (1994 --  J. Opt. Soc. Amer. A, v. 11,
@@ -84,9 +81,6 @@ if notDefined('pupilRadius'), p = 0.0015; else, p = pupilRadius; end
 if notDefined('dioptricPower'), D0 = 59.9404; else, D0 = dioptricPower; end
 if notDefined('unit'), unit = 'mm'; end
 if notDefined('wave'), wave = 400:700; end  % Default wavelength sampes
-
-% [Note: XXX - We could put in a higher spatial sample frequency and get a
-% finer spatial sampling resolution.]
 
 % [Note: BW - I may change the humanOTF return format to include the
 % fftshift ... be aware that may break this code. And I may forget to come

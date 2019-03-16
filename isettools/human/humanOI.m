@@ -30,9 +30,8 @@ function oi = humanOI(scene, oi)
 
 % Examples:
 %{
-    % ETTBSkip - Skipping broken example (spectrum missing?)
     oi = oiCreate();
-    scene = sceneCreate('d65');
+    scene = sceneCreate();
     oi = humanOI(scene, oi)
 %}
 
@@ -48,13 +47,13 @@ optics = opticsSet(optics, 'otfmethod', 'human');
 
 % Compute the basic parameters of the oi from the scene parameters.
 oi = oiSet(oi, 'wangular', sceneGet(scene, 'wangular'));
-oi = oiSet(oi, 'spectrum', sceneGet(scene, 'spectrum'));
+oi = oiSet(oi, 'wave',  sceneGet(scene,  'wave'));
 
 % There really shouldn't be both. Not sure what to do at this point. If
 % this is the only time we ever set the optics spectrum, then we have
 % enforced the equality. But just by having the variable, people can create
 % an inconsistency. Think.
-optics = opticsSet(optics, 'spectrum', oiGet(oi, 'spectrum'));
+optics = opticsSet(optics, 'spectrum', sceneGet(scene, 'spectrum'));
 oi = oiSet(oi, 'optics', optics);
 
 % Calculate the irradiance of the optical image in photons/(s m^2 nm)

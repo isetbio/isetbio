@@ -27,12 +27,9 @@ function [otf, achOTF] = humanCore(wave, sampleSF, p, D0)
 %    None.
 %
 % Notes:
-%    * [Note: XXX - Use the Marimont paper to get more references for this
-%      routine. There are comments below about the Hopkins formula. These
-%      should be moved to a wiki page or perhaps to opticsDefocusedMTF?]
-%    * [Note: JNM - Below where it says the compute the reduced spatial
-%      frequency below. It says it is dimensionless in the end, but from
-%      the description the end result is in cycles? (m * m/m * cyc/m) ?]
+%    * [Calculation is based on 
+%    Marimont and Wandell 1994): Matching color images: the effects of 
+%    axial chromatic aberration, JOSA,  Vol. 11, Issue 12, pp. 3113-3122]
 %
 
 % History:
