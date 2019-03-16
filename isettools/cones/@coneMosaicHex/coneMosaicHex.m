@@ -148,6 +148,9 @@ classdef coneMosaicHex < coneMosaic
         %   45 um is 0.15, so S-cone free region = 0.3 degs diameter.
         sConeFreeRadiusMicrons
 
+        % coneTypesHexGrid - types of cones at hex nodes
+        coneTypesHexGrid
+        
         % coneLocsHexGrid - floating point coneLocs on the hex grid.
         %   This is sampled according to the resamplingFactor.
         coneLocsHexGrid
@@ -406,6 +409,9 @@ classdef coneMosaicHex < coneMosaic
                     'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons, ...
                     'visualizeRegeneratedMosaic', false);
             end
+            
+            obj.coneTypesHexGrid = obj.pattern(find(obj.pattern > 1));
+    
         end  % constructor
 
         % Visualize different aspects of the hex grid

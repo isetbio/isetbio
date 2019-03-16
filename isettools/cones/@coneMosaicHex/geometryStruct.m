@@ -22,7 +22,9 @@ function cmStruct = geometryStruct(obj)
 %    3/3/19  NPC  ISETBIO TEAM, 2019
 
     % cone positions in degrees
-    cmStruct.coneLocs = obj.coneLocsHexGrid() * 1e6 / obj.micronsPerDegree;
+    cmStruct.coneLocs = obj.coneLocsHexGrid * 1e6 / obj.micronsPerDegree;
+    
+    cmStruct.coneTypes = obj.coneTypesHexGrid;
     
     % cone aperture in degrees
     cmStruct.coneApertures = (obj.computeApertureDiameters()/obj.micronsPerDegree)';
@@ -49,7 +51,7 @@ function cmStruct = geometryStruct(obj)
         end
     end
     
-    % Compute hex-index  for all triangles
+    % Compute hex-index for all triangles
     hexIndices = computeHexIndex(cmStruct.coneLocs, cmStruct.triangles);
     hexIndicesBins = 0.0:0.01:1.0;
     [counts,centers] = hist(hexIndices, hexIndicesBins);
