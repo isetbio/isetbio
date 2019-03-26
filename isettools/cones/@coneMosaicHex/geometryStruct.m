@@ -24,6 +24,7 @@ function cmStruct = geometryStruct(obj)
     % cone positions in degrees
     cmStruct.coneLocs = obj.coneLocsHexGrid * 1e6 / obj.micronsPerDegree;
     
+    % cone types (K/L/M/S)
     cmStruct.coneTypes = obj.coneTypesHexGrid;
     
     % cone aperture in degrees
