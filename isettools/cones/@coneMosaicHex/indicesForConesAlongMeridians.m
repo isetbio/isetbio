@@ -8,7 +8,7 @@ function [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
 %       indicesForConesAlongHorizontalMeridian(obj)
 %
 % Description:
-%    Return the indices for the L-, M-, and S-cones
+%    Return the indices for for all cones along the meridians
 %
 % Inputs:
 %    obj        - The cone mosaic hex object
@@ -35,7 +35,6 @@ function [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
     coneDiameter = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.width);
     idxOfConesAlongHorizMeridian = find(abs(coneYcoords) < coneDiameter);
     idxOfConesAlongVertMeridian = find(abs(coneXcoords) < coneDiameter);
-    numel(idxOfConesAlongHorizMeridian)
     
     metersToDegs = 1e6 / obj.micronsPerDegree;
     eccDegsOfConesAlongHorizMeridian = metersToDegs*coneXcoords(idxOfConesAlongHorizMeridian);
