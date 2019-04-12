@@ -201,18 +201,9 @@ if(sceneNameFlag)
             sceneUnits = 'm';
             
         case('pointSource')
-            scenePath = fullfile(piRootPath,'data',...
+            scenePath = fullfile(piRootPath,'data','V3',...
                 'SimplePoint','simplePointV3.pbrt');
             sceneUnits = 'm';
-        
-            % Outdated
-%         case('slantedBarAdjustable')
-%             % A variation of slantedBar where the black and white planes
-%             % are adjustable to different depths.
-%             scenePath = fullfile(piRootPath,'data',...
-%                 'V3','slantedBarAdjustableDepth',...
-%                 'slantedBarWhiteFront.pbrt');
-%             sceneUnits = 'm';
             
         case('slantedBarTexture')
             % A variation of slantedBar where planes have texture.
