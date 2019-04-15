@@ -245,7 +245,6 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('isetSRGBs', isetSRGBs*255);
     UnitTest.validationData('ptbSRGBs_2', ptbSRGBs);
     
-    
     % lrgb -> srgb -> lrgb in ISET
     isetSRGBPrimaryCheckImage = srgb2lrgb(isetSRGBImage);
     isetSRGBPrimaryCheck = ImageToCalFormat(isetSRGBPrimaryCheckImage);
@@ -301,10 +300,23 @@ function ValidationFunction(runTimeParams)
     
     load B_cieday
     testWls = SToWls(S_cieday);
-    testTemp = 4987;
+    testTemp = 4444;
     ptbDaySpd = GenerateCIEDay(testTemp,B_cieday);
     ptbDaySpd = ptbDaySpd/max(ptbDaySpd(:));
-
+    
+    % Get correlated color temp.  This comes
+    % out pretty close to what we put in.
+    load T_xyz1931
+    T_xyz = SplineCmf(S_xyz1931,T_xyz1931,S_cieday);
+    ptbDayXYZ = T_xyz*ptbDaySpd;
+    ptbDayuv_isetbio = xyz2uv(ptbDayXYZ','uv')';
+    ptbDayCCT_isetbio = cct(ptbDayuv_isetbio)
+    
+    % Compare with PTB routine
+    if (exist('SPDToCCT', 'file'))
+        ptbDayCCT_ptb = SPDToCCT(ptbDaySpd,S_cieday)
+    end
+    
     % Iset version of normalized daylight
     isetDaySpd = daylight(testWls,testTemp);
     isetDaySpd = isetDaySpd/max(isetDaySpd(:));
