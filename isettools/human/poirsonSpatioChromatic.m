@@ -38,7 +38,6 @@ function [lum, rg, by, positions] = ...
 
 % Examples:
 %
-% These won't work until we find function sumGauss and add it to isetbio.
 %{
     [lum, rg, by, x] = poirsonSpatioChromatic([], 1);
     plot(x, lum, 'k-', x, rg, 'r--', x, by, 'b:');
