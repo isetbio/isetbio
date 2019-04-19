@@ -3,7 +3,7 @@
 % Illustrates cone mosaic object and computation of cone isomerizations.
 %
 %   t_conesDensity                       - Show how human cone density varies across the retina
-%   t_conesEyeSensitivity                - Verify analytic preditions of how isomerizations vary with parameters
+%   t_conesEyeSensitivity                - Illustrate basic principles of how eye parameters affect isomerizations
 %   t_conesMosaicAbsorptionNoise         - Illustrate noise generation for the coneMosaic object
 %   t_conesMosaicBasic                   - Basic introduction to the cone mosaic object.
 %   t_conesMosaicHex                     - Create & use a hexagonal cone mosaic with eccentricity-based cone spacing

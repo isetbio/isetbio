@@ -1,5 +1,5 @@
 function t_eyeSensitivity
-%% t_eyeSensitivity
+%% t_conesEyeSensitivity
 % Illustrate basic principles of how eye parameters affect isomerizations.
 %
 % Description:
