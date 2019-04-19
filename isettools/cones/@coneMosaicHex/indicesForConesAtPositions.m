@@ -1,4 +1,4 @@
-function [coneIndices, conePositionsDegs, coneTypes] = indicesForConesAtPositions(obj, targetPosDegs)
+function [coneIndices, conePositionsDegs, coneTypes, coneIndicesInSerializedList] = indicesForConesAtPositions(obj, targetPosDegs)
 % Return the indices for cones at a list of positions
 %
 % Syntax:
@@ -45,9 +45,9 @@ function [coneIndices, conePositionsDegs, coneTypes] = indicesForConesAtPosition
     coneYcoords = ySupport(iRows);
     
     allConePositionsDegs = [coneXcoords(:) coneYcoords(:)]*1e6/obj.micronsPerDegree;
-    [distancesFromTargets, idx2] = pdist2(allConePositionsDegs, targetPosDegs, 'euclidean', 'Smallest', 1);
+    [distancesFromTargets, coneIndicesInSerializedList] = pdist2(allConePositionsDegs, targetPosDegs, 'euclidean', 'Smallest', 1);
     
-    coneIndices = idx(idx2);
+    coneIndices = idx(coneIndicesInSerializedList);
     
     [iRows, iCols] = ind2sub(size(obj.pattern), coneIndices); 
     coneXcoordsDegs = xSupport(iCols)*1e6/obj.micronsPerDegree;

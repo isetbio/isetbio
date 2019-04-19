@@ -475,7 +475,8 @@ classdef coneMosaicHex < coneMosaic
         % Return the indices for cones at a list of target positions
         % (specified in degrees of visual angle) along  with the distances
         % between target positions and corresponding cones
-        [coneIndices, conePositions, coneTypes] = indicesForConesAtPositions(obj, targetPosDegs);
+        [coneIndices, conePositions, coneTypes, coneIndicesInSerializedList] = ...
+            indicesForConesAtPositions(obj, targetPosDegs);
         
         % Return the aperture diameters for all cones
         apertureDiametersMicrons = computeApertureDiameters(obj);
