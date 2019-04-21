@@ -300,7 +300,7 @@ function ValidationFunction(runTimeParams)
     
     load B_cieday
     testWls = SToWls(S_cieday);
-    testTemp = 4444;
+    testTemp = 4987;
     ptbDaySpd = GenerateCIEDay(testTemp,B_cieday);
     ptbDaySpd = ptbDaySpd/max(ptbDaySpd(:));
     
