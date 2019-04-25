@@ -296,22 +296,22 @@ function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZ
     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
     angles = 0*eccentricitiesInMeters;
     
-    [coneSpacingInMeters, aperture, density] = ...
+    coneSpacingInMeters  = ...
         coneSizeReadData('eccentricity', eccentricitiesInMeters, ...
         'angle', angles);
     coneSpacingInMicrons1 = coneSpacingInMeters' * 1e6;
     
-    [coneSpacingInMeters, aperture, density] = ...
+    coneSpacingInMeters  = ...
         coneSizeReadData('eccentricity', eccentricitiesInMeters, ...
         'angle', angles+90);
     coneSpacingInMicrons2 = coneSpacingInMeters' * 1e6;
     
-    [coneSpacingInMeters, aperture, density] = ...
+    coneSpacingInMeters  = ...
         coneSizeReadData('eccentricity', eccentricitiesInMeters, ...
         'angle', angles+180);
     coneSpacingInMicrons3 = coneSpacingInMeters' * 1e6;
     
-    [coneSpacingInMeters, aperture, density] = ...
+    coneSpacingInMeters = ...
         coneSizeReadData('eccentricity', eccentricitiesInMeters, ...
         'angle', angles+270);
     coneSpacingInMicrons4 = coneSpacingInMeters' * 1e6;
@@ -319,7 +319,7 @@ function [eccRange, prctileSpacing] = determineEccZonesAndMeanConeSpacingWithinZ
     averageSpacing = (coneSpacingInMicrons1+coneSpacingInMicrons2+coneSpacingInMicrons3+coneSpacingInMicrons4)/4;
     minimumSpacing = min(averageSpacing);
     
-    p = [0:10:100];
+    p = 0:10:100;
     for spacingStep = 1:100
         idx = find(averageSpacing>= minimumSpacing & averageSpacing <= minimumSpacing+coneSpacingRangeWithinZone);
         if isempty(idx)
@@ -910,7 +910,7 @@ end
 
 
 function distances = circularDomainFunction(conePositions, center, ...
-    radius, nullVar)
+    radius, ~)
 % Calculate distances for a ciruclar domain function
 %
 % Syntax:

@@ -59,10 +59,7 @@ function hFig = visualizeActivationMaps(obj, activation, varargin)
     elseif strcmp(p.Results.mapType, 'density plot')
         hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, ...
             p.Results.colorMap, p.Results.signalName, ...
-            p.Results.signalRange, p.Results.xRange, p.Results.yRange, ...
-            p.Results.separateLMSmosaics, p.Results.activationTime, ...
-            p.Results.zoomInFactor, p.Results.visualizedInstanceIndex, ...
-            p.Results.figureSize);
+            p.Results.signalRange,p.Results.figureSize);
     else
         error('visualizeActivationMaps:: Unknown map type');
     end
@@ -94,7 +91,7 @@ function hFig = visualizeMosaicActivationsMapsAsModulatedPixels(obj, ...
 %    yRange             - The y-axis range for the graph
 %    separateLMSmosaics - Boolean indicating whether to plot the LMS
 %                         mosaics separately.
-%    activationTime     - The amount of time until activation, in ms
+%    activationTime     - The latency of the activation map, in ms
 %    zoomInFactor       - The factor by which to zoom in (Multiply ranges)
 %    instanceIndex      - The index for the instance (of the response)
 %    figureSize         - The size of the figure
@@ -451,14 +448,12 @@ function renderPatchArray(pixelOutline, xCoords, yCoords, ...
 end
 
 function hFig = visualizeMosaicActivationsAsDensityMaps(...
-    obj, activation, cMap, signalName, signalRange, separateLMSmosaics, ...
-    activationTime, zoomInFactor, instanceIndex, figureSize)
+    obj, activation, cMap, signalName, signalRange, figureSize)
 % Visualize mosaic activations as density maps
 %
 % Syntax:
 %   hFig = visualizeMosaicActivationsAsDensityMaps(obj, activation, ...
-%       cMap, signalName, signalRange, separateLMSmosaics, ...
-%       activationTime, zoomInFactor, instanceIndex, figureSize)
+%       cMap, signalName, signalRange, figureSize)
 %
 % Description:
 %    Visualize the mosaic activations as density maps
@@ -469,11 +464,6 @@ function hFig = visualizeMosaicActivationsAsDensityMaps(...
 %    cMap               - The color map
 %    signalName         - The name of the signal
 %    signalRange        - The range associated with the signal
-%    separateLMSmosaics - Boolean indicating whether or not to plot the LMS
-%                         mosaics separately.
-%	 activationTime     - The activation time in milliseconds.
-%    zoomInFactor       - The factor by which to zoom in (multiply range)
-%    instanceIndex      - The instance index of the responses
 %    figureSize         - The size of the figure
 %
 % Outputs:

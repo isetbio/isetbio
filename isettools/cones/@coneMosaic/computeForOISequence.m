@@ -541,7 +541,7 @@ else
         if (~isempty(workerID))
             displayProgress(workerID, ...
                 sprintf('%s-absorptions', workDescription), ...
-                0.5 * oiIndex / oiSequence.length);
+                0.5 * emIndex / nEyeMovements);
         end
 
         % Current eye movement time limits

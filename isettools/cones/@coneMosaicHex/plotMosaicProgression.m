@@ -14,8 +14,14 @@ function hFig = plotMosaicProgression(obj, varargin)
 %    hFig - The figure handle
 %
 % Optional key/value pairs:
-%    **Needed!**
+%  
+%  'contourLevels'                    - Vector. cone density levels at which to draw contours
+%  'intermediateIterationsToDisplay'  - 2 element vector. 2 iterations at 
+%                                       which to display the in-progress cone mosaic
+%   'displayedXrangeDegs'             - visualzed x-axis range in degrees
+%   'displayedYrangeDegs'             - visualzed y-axis range in degrees
 %
+
     p = inputParser;
     p.addParameter('contourLevels', 1e3 * [150 175 200 225 250], ...
         @isnumeric);
@@ -166,17 +172,6 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
             iteration, :, :));
     end
 
-%     figure(10+iteration); clf;
-%         x = squeeze(obj.coneLocsHexGrid(:,1));
-%         y = squeeze(obj.coneLocsHexGrid(:,2));
-%         idx = find((abs(x) < 0.5*1e-4) & (abs(y) < 0.5*1e-4));
-%         x = x(idx);
-%         y = y(idx);
-%         plot(x,y, 'ko');
-%         lengthInMeters = max(x)-min(x)
-%         densityInThousandsPerMM2 = numel(x) / (lengthInMeters*1e3)^2 / 1000
-%         
-%         pause
         
     ax = axes('Position', subplotPosVectors(row, col).v, ...
         'units', 'normalized', 'Color', backgroundColor);
@@ -272,11 +267,11 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
         end
     end
 
-%     if (plotHexMesh)
-%         coneMosaicHex.renderHexMesh(ax, obj.coneLocsHexGrid(idx, 1), ...
-%             obj.coneLocsHexGrid(idx, 2), [0.5 0.5 0.5], 'none', ...
-%             0.8, 0.2, '-');
-%     end
+    if (plotHexMesh)
+        coneMosaicHex.renderHexMesh(ax, obj.coneLocsHexGrid(idx, 1), ...
+            obj.coneLocsHexGrid(idx, 2), [0.5 0.5 0.5], 'none', ...
+            0.8, 0.2, '-');
+    end
 
     xRange = displayedXrangeMeters + [-2 2]*1e-6;
     yRange = displayedYrangeMeters + [-2 2]*1e-6;

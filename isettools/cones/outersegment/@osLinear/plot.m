@@ -24,7 +24,8 @@ function [uData, h] = plot(os, pType, varargin)
 %    h        - Handle to the plot window
 %
 % Optional key/value pairs:
-%    None.
+%    'cmosaic'      - Parent @coneMosaic object
+%    'meancurrent'  - Background current for linear model
 %
 
 % History:

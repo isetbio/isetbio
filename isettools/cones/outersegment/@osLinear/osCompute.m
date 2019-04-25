@@ -54,7 +54,10 @@ function [current, interpFilters, meanCur] = osCompute(obj, cMosaic, varargin)
 %	 meanCur       - mean value of the output current
 %
 % Optional key/value pairs:
-%    None.
+%    'seed',                - Random seed.
+%    'interpFilters',       - The LMS linear filters to use
+%    'meanCur'              - The background current
+%    'absorptionsInXWFormat'- The absorptions in 2D format (space, time)
 %
 
 % History:
