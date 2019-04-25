@@ -208,6 +208,49 @@ else
                 absorptionsCopy = absorptions;
                 absorptions = absorptions(:, nonNullConeIndices);
 
+                % NPC's note about noise:
+                % In out eccentricity-based hexagonal cone mosaics we correct 
+                % the absorptions (which are computed for a foveal cone) based 
+                % on the eccentricity-dependent variation in outer-segment 
+                % length and inner segment diameter. This correction is applied 
+                % to the (dark noise + absorptions) signal. This would be OK, if 
+                % we think that cones with longer outer segments and larger 
+                % apertures have higher levels of dark noise, or in other words 
+                % that the dark noise level should be proportional to the 
+                % photopigment volume. More photopigment molecules -> more spontaneous 
+                % isomerizations. The alternative is to apply the eccentricity-based 
+                % corrections to the absorptions signal and then add the steady 
+                % dark noise level.
+                %
+                % David Brainard thinks that the dark noise should be proportional 
+                % to the number of photopigment molecules in the cone. That is going 
+                % to scale much, but not exactly like, the change in number of 
+                % isomerizations. The reason not exactly is the self-screening 
+                % effect that applies to the absorptions but not to the number 
+                % of photopigment molecules. But correcting seems a little better 
+                % than not correcting, and correcting differently just seems totally 
+                % not worth it. David Brainard also makes the point that the uncertainty 
+                % in the estimate of dark noise is going to completely dominate 
+                % correcting or not for eccentricity.
+                %
+                % Fred Rieke's response - 
+                % We have made direct measurements of noise in cones, mainly in the
+                % periphery but also centrally.  Those indicate equivalent dark noise levels
+                % of ~200 isomerizations/sec in L and M cones, and ~700 in S cones.  These
+                % are much lower than previous physiological measurements, but still a bit
+                % higher than the (indirect) measures from psychophysics.  There are lots of
+                % possibilities for such discrepancies of course - starting with damage to
+                % the cones in our in vitro preparations, and including errors introduced in
+                % inferring noise from the psychophysics.  Yet they are not dramatically
+                % different either - so that is good!
+                % Noise in the cones appears to scale at most modestly with eccentricity -
+                % effective noise levels and corresponding detection thresholds for the cones
+                % are within a factor of two for the fovea, central retina and periphery
+                % cone noise does not appear to originate from the photopigment itself, but
+                % instead downstream within the cone transduction cascade.
+                % S cones have slightly slower kinetics, and their kinetics change less
+                % with background, than L and M cones.
+                %
                 % Add noise
                 absorptionsCopy(:, nonNullConeIndices) = ...
                     obj.photonNoise(absorptions, ...
