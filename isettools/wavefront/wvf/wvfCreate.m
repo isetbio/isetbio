@@ -46,6 +46,7 @@ function wvf = wvfCreate(varargin)
 %                                            correction.
 %     'calc cone psf info'                 - Default structure returned by
 %                                            conePsfInfoCreate.
+%
 % Examples are included in the code.     
 %
 % See Also:
