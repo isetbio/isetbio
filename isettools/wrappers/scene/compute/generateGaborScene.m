@@ -34,7 +34,7 @@ function scene = generateGaborScene(varargin)
 defaultStimParams = struct(...
     'spatialFrequencyCyclesPerDeg', 10, ... % 10 cycles/deg
     'orientationDegs', 0, ...               % 45 degrees
-    'phaseDegs', 90, ...                    % spatial phase in degrees
+    'phaseDegs', 0, ...                     % spatial phase in degrees
     'sizeDegs', 0.5, ...                    % 0.5 x 0.5 degrees
     'sigmaDegs', 0.2/3, ...                 % sigma of Gaussian envelope
     'contrast', 0.6,...                     % 0.6 Michelson contrast
