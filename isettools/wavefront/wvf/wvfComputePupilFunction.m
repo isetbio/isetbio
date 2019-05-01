@@ -121,6 +121,14 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
     % time and the defocus correction for this calculatiion. This models
     % any lenses external to the observer's eye, which affect focus but not
     % the accommodative state.
+    %
+    % There are also calc and measured observer accommodation parameters,
+    % which seem similar to these and I don't think are currently used.
+    if (wvfGet(wvf, 'calcobserveraccommodation') ~= wvfGet(wvf, 'measuredobserveraccommodation'))
+        error(['We do not currently know how to deal with values '...
+            'that differ from measurement time']);
+    end
+            
     defocusCorrectionDiopters = ...
         wvfGet(wvf, 'calc observer focus correction') - ...
         wvfGet(wvf, 'measured observer focus correction');

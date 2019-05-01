@@ -385,10 +385,12 @@ switch parm
         
     case {'calcobserveraccommodation'}
         % Specify observer accommodation at calculation time
-        if (val ~= wvfGet(wvf, 'measuredobserveraccommodation'))
-            error(['We do not currently know how to deal with values '...
-                'that differ from measurement time']);
-        end
+        %
+        % If we ever decide to use this, it should be done when
+        % we compute the pupil function.  Currently we through
+        % an error if it differs from the specified observer accommodation
+        % at measurement time.  Also need to understand how this should be
+        % integrated with the focus correction parameters.
         wvf.calcObserverAccommodationDiopters = val;
         wvf.PUPILFUNCTION_STALE = true;
         
