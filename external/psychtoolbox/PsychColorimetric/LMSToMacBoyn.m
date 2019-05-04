@@ -19,7 +19,12 @@ function ls = LMSToMacBoyn(LMS,T_cones,T_lum)
 %
 % Note that the s cone scaling can vary a bit depending on the wavelength
 % sampling of the passed T_cones and T_lum, since the max is taken over
-% these.
+% these. If you use the T_cones_ss2/T_cones_ss10 and T_CIE_Y2/T_CIE_Y10
+% files provided in PTB, the default sampling is at 1 nm and this is fine.
+% If you use subsampled wavelength spacing, the computation of the s cone
+% scaling will begin to deviate from the standard.  But so will your
+% computation of LMS values, so this isn't really an issue specific to this
+% routine.
 %
 % When you use the CIE cone fundamentals and corresponding luminance
 % functions, this procedure yields the MacLeod-Boynton chromaticity
@@ -56,13 +61,23 @@ function ls = LMSToMacBoyn(LMS,T_cones,T_lum)
     % of CIE 170-2:2015. Also performs a regression check.
     load T_cones_ss2
     load T_CIE_Y2
-    lsSpectrumLocus = LMSToMacBoyn(T_cones_ss2,T_cones_ss2,T_CIE_Y2); 
+    lsSpectrumLocus = LMSToMacBoyn(T_cones_ss2,T_cones_ss2,T_CIE_Y2);
+ 
+    % Compute the sum of the ls values in the spectrum locus, and compare
+    % to the value that this example computed in February 2019, entered
+    % here to four places as 412.2608.  This comparison provides a
+    % check that this routine still works the way it did when we put in the
+    % check.
     check = round(sum(lsSpectrumLocus(:)),4);
     if (abs(check-412.2608) > 1e-4)
         error('No longer get same check value as we used to');
     end
+
+    % Compute ls for equal energy white
     LMSEEWhite = sum(T_cones_ss2,2);
     lsEEWhite = LMSToMacBoyn(LMSEEWhite,T_cones_ss2,T_CIE_Y2); 
+
+    % Plot
     figure; hold on;
     plot(lsSpectrumLocus(1,:)',lsSpectrumLocus(2,:)','r','LineWidth',3);
     plot(lsEEWhite(1),lsEEWhite(2),'bs','MarkerFaceColor','b','MarkerSize',12);
@@ -71,17 +86,32 @@ function ls = LMSToMacBoyn(LMS,T_cones,T_lum)
     title('CIE 170-2:2015 Figure 8.2');
 %}
 %{
-    % Demonstrate invariance of ls after scaling of cones and luminance, when
+    % Demonstrate invariance of ls after scaling of cones and luminance, as
+    % long as LMS valued are computed with respect to passed cones and
+    % luminance.
     load T_cones_ss2
     load T_CIE_Y2
+
+    % Spectrum locus ls chromaticity with no scaling.
     lsSpectrumLocus = LMSToMacBoyn(T_cones_ss2,T_cones_ss2,T_CIE_Y2); 
+
+
+    % Do some scaling and recompute spectrum locus.
+    % The choices of 1.8, 3, 0.05 as scaling are
+    % just three numbers I made up. You can use any three numbers and it
+    % should still work, modulo any numerical issues with very big or
+    % very small numbers.
     T_CIE_Y2_scaled = 1.8*T_CIE_Y2;
     T_cones_ss2_scaled = T_cones_ss2;
     T_cones_ss2_scaled(1,:) = 3*T_cones_ss2(1,:);
     T_cones_ss2_scaled(3,:) = 0.05*T_cones_ss2(3,:);
     lsSpectrumLocusScaled = LMSToMacBoyn(T_cones_ss2_scaled,T_cones_ss2_scaled,T_CIE_Y2_scaled); 
+
+    % Make sure the difference is very small numerically.
     diff = max(abs(lsSpectrumLocus(:)-lsSpectrumLocusScaled(:)));
     fprintf('Difference in spectrum locus chromaticity after scaling is %0.5f (should be small)\n',diff);
+
+    % Plot the locus computed both ways to compare visually.
     figure; hold on;
     plot(lsSpectrumLocus(1,:)',lsSpectrumLocus(2,:)','r','LineWidth',3);
     plot(lsSpectrumLocusScaled(1,:)',lsSpectrumLocusScaled(2,:)','g','LineWidth',2);

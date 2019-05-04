@@ -310,11 +310,13 @@ function ValidationFunction(runTimeParams)
     T_xyz = SplineCmf(S_xyz1931,T_xyz1931,S_cieday);
     ptbDayXYZ = T_xyz*ptbDaySpd;
     ptbDayuv_isetbio = xyz2uv(ptbDayXYZ','uv')';
-    ptbDayCCT_isetbio = cct(ptbDayuv_isetbio)
+    ptbDayCCT_isetbio = cct(ptbDayuv_isetbio);
+    fprintf('ISETBio function cct recovers %d as CCT of daylight at %d\n',round(ptbDayCCT_isetbio),testTemp);
     
     % Compare with PTB routine
     if (exist('SPDToCCT', 'file'))
-        ptbDayCCT_ptb = SPDToCCT(ptbDaySpd,S_cieday)
+        ptbDayCCT_ptb = SPDToCCT(ptbDaySpd,S_cieday);
+        fprintf('PTB function SPDToCCT recovers %d as CCT of daylight at %d\n',ptbDayCCT_ptb,testTemp);
     end
     
     % Iset version of normalized daylight

@@ -28,12 +28,12 @@ function [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,ellParams0,fitCenterOffset,isX
 % 08/16/18  dhb  Update initial guess to match new ellipsoid parameterization
 %                Also allow angles to run from -2*pi to 2*pi, so search can
 %                wrap around if it needs to.
+% 04/22/19  dhb  Respect passed fitCenterOffset - this was being forced to
+%                true when passed.
 
 % Offset?
 if (nargin < 3 || isempty(fitCenterOffset))
     fitCenterOffset = false;
-else
-    fitCenterOffset = true;
 end
 
 if (nargin < 4 || isempty(isXYEllipse))
@@ -50,6 +50,7 @@ meanX = mean(x,2);
 if (nargin < 2 || isempty(ellParams0))
     ellRanges = maxX-minX;
     ellParams0 = [1./ellRanges.^0.5' 0 0 0]';
+    ellParams0(isinf(ellParams0)) = 1;
 end
 vlb = [1e-3 1e-3 1e-3 -2*pi -2*pi -2*pi]';
 vub = [1e3 1e3 1e3 2*pi 2*pi 2*pi]';
@@ -97,7 +98,6 @@ else
 end
 
 [A,Ainv,Q] = EllipsoidMatricesGenerate(ellParamsFit);
-
 
 end
 

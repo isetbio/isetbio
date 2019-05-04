@@ -63,6 +63,7 @@
 %   SampleCircle        - Sample points on a circle.
 %   SampleSphere        - Sample points on a sphere.
 %   ShiftSpectra        - Shift a spectral function along the wavelength axis.
+%   SPDToCCT            - Find correlated color temperature of a spectrum.
 %   SPDToLinSPD         - Find approximation within specified linear model.
 %   SPDToMetSPD         - Find a metameric spd.
 %   SplineCmf           - Spline color matching functions to new wavelength sampling.
