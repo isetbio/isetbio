@@ -75,6 +75,12 @@ classdef coneMosaic < hiddenHandle
     %    'noiseFlag'        - String. Default 'random'. Add photon noise
     %                         (default) or not. Valid values are 'random', 
     %                         'frozen', or 'none'.
+    %    'patternSeed'      - seed used to generate the cone mosaic
+    %                         pattern. If unspecified, the seed will be
+    %                         random. Warning: If you change the FOV, (e.g.
+    %                         cm.setSizeToFOV) the mosaic WILL change,
+    %                         since a new pattern size is being generated
+    %                         (with the same seed).
     %
     % Notes:
     %    * TODO: We should take eccentricity and angle as an input
@@ -145,7 +151,11 @@ classdef coneMosaic < hiddenHandle
         %   This defines the row and column dimensions of the grid on
         %   which the mosic is defined. 
         pattern;
-
+        
+        %patternSeed - seed used to generate the cone mosaic pattern. If
+        %   unspecified, the seed will be random.
+        patternSeed;
+        
         %patternSampleSize - Separation between KLMS pattern samples
         %   For rectangular grid mosaics, this is set to the width/heigh
         %   field of the PIGMENT object, i.e., the actual cone separation.
@@ -342,6 +352,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('noiseFlag', 'random', ...
                 @(x)(ismember(lower(x), coneMosaic.validNoiseFlags)));
             p.addParameter('useParfor', false, @islogical);
+            p.addParameter('patternSeed',[],@isnumeric);
             p.parse(varargin{:});
 
             % Set properties
@@ -359,6 +370,7 @@ classdef coneMosaic < hiddenHandle
             obj.noiseFlag = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
             obj.useParfor = p.Results.useParfor;
+            obj.patternSeed = p.Results.patternSeed;
             
             % Construct outersgement if not passed.
             if (isempty(p.Results.os))
@@ -403,7 +415,8 @@ classdef coneMosaic < hiddenHandle
             % generate human cone mosaic pattern if not specified
             if isempty(p.Results.pattern)
                 [~, obj.pattern] = humanConeMosaic(p.Results.size, ...
-                    obj.spatialDensity_, obj.patternSampleSize(1));
+                    obj.spatialDensity_, obj.patternSampleSize(1),...
+                    obj.patternSeed);
             else
                 obj.pattern = p.Results.pattern;
             end
@@ -883,7 +896,7 @@ classdef coneMosaic < hiddenHandle
             if all(obj.spatialDensity_(:) == val(:)), return; end
             obj.spatialDensity_ = val;
             [~, obj.pattern] = humanConeMosaic(obj.mosaicSize, ...
-                val, obj.patternSampleSize(1));
+                val, obj.patternSampleSize(1),obj.patternSeed);
             obj.clearData();
         end
 
@@ -1030,7 +1043,8 @@ classdef coneMosaic < hiddenHandle
             %
             if any(val ~= obj.mosaicSize)
                 [~, obj.pattern] = humanConeMosaic(val, ...
-                    obj.spatialDensity_, obj.patternSampleSize(1));
+                    obj.spatialDensity_, obj.patternSampleSize(1),...
+                    obj.patternSeed);
                 obj.os.patchSize = obj.width;
                 obj.clearData();
             end
