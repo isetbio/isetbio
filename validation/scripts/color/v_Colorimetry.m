@@ -293,7 +293,7 @@ function ValidationFunction(runTimeParams)
     % append to validationData
     UnitTest.validationData('isetEnergyFromQuanta', Quanta2Energy(wlsTest,isetQuanta')');
     
-    %% CIE daylights
+    %% CIE daylights and CCT
     % 
     % These routines are now running in ISET and everything agrees.
     UnitTest.validationRecord('SIMPLE_MESSAGE', '***** CIE Daylights *****');
