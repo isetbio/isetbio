@@ -103,6 +103,5 @@ if ispref(p.projectName), rmpref(p.projectName); end
 
 % generate and save the project-specific preferences
 setpref(p.projectName, 'projectSpecificPreferences', p);
-fprintf(strcat("Generated and saved preferences specific to the ", ...
-    "'%s' project.\n"), p.projectName);
+fprintf('Generated and saved preferences specific to the %s project.\n', p.projectName);
 end
