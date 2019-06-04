@@ -5,7 +5,7 @@ function [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
 %
 % Syntax:
 %   [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian] = ...
-%       indicesForConesAlongHorizontalMeridian(obj)
+%       indicesForConesAlongMeridians(obj)
 %
 % Description:
 %    Return the indices for for all cones along the meridians
