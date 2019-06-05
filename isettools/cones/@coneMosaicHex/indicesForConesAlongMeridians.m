@@ -1,5 +1,6 @@
 function [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
-    eccDegsOfConesAlongHorizMeridian, eccDegsOfConesAlongVertMeridian] = ...
+    eccDegsOfConesAlongHorizMeridian, eccDegsOfConesAlongVertMeridian, ...
+    idxOfConesAlongHorizMeridianInSerializedList, idxOfConesAlongVertMeridianInSerializedList] = ...
     indicesForConesAlongMeridians(obj)
 % Return the indices for all cones along the meridians
 %
@@ -33,14 +34,25 @@ function [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
     coneXcoords = (xSupport(iCols))';
     coneYcoords = ySupport(iRows);
     coneDiameter = diameterForCircularApertureFromWidthForSquareAperture(obj.pigment.width);
-    idxOfConesAlongHorizMeridian = find(abs(coneYcoords) < coneDiameter);
-    idxOfConesAlongVertMeridian = find(abs(coneXcoords) < coneDiameter);
+    idxOfConesAlongHorizMeridianInSerializedList = find(abs(coneYcoords) < coneDiameter);
+    idxOfConesAlongVertMeridianInSerializedList = find(abs(coneXcoords) < coneDiameter);
     
     metersToDegs = 1e6 / obj.micronsPerDegree;
-    eccDegsOfConesAlongHorizMeridian = metersToDegs*coneXcoords(idxOfConesAlongHorizMeridian);
-    eccDegsOfConesAlongVertMeridian = metersToDegs*coneYcoords(idxOfConesAlongVertMeridian);
+    eccDegsOfConesAlongHorizMeridian = metersToDegs*coneXcoords(idxOfConesAlongHorizMeridianInSerializedList);
+    eccDegsOfConesAlongVertMeridian = metersToDegs*coneYcoords(idxOfConesAlongVertMeridianInSerializedList);
     
-    idxOfConesAlongHorizMeridian = idx(idxOfConesAlongHorizMeridian);
-    idxOfConesAlongVertMeridian = idx(idxOfConesAlongVertMeridian);
+    idxOfConesAlongHorizMeridian = idx(idxOfConesAlongHorizMeridianInSerializedList);
+    idxOfConesAlongVertMeridian = idx(idxOfConesAlongVertMeridianInSerializedList);
+    
+    [~,iii] = sort(eccDegsOfConesAlongHorizMeridian);
+    idxOfConesAlongHorizMeridian = idxOfConesAlongHorizMeridian(iii);
+    eccDegsOfConesAlongHorizMeridian = eccDegsOfConesAlongHorizMeridian(iii);
+    idxOfConesAlongHorizMeridianInSerializedList = idxOfConesAlongHorizMeridianInSerializedList(iii);
+    
+    [~,iii] = sort(eccDegsOfConesAlongVertMeridian);
+    idxOfConesAlongVertMeridian = idxOfConesAlongVertMeridian(iii);
+    eccDegsOfConesAlongVertMeridian = eccDegsOfConesAlongVertMeridian(iii);
+    idxOfConesAlongVertMeridianInSerializedList = idxOfConesAlongVertMeridianInSerializedList(iii);
+    
 end
 
