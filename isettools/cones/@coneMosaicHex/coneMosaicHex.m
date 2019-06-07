@@ -447,6 +447,9 @@ classdef coneMosaicHex < coneMosaic
         % the hex mosaic
         renderActivationMap(obj, axesHandle, activation, varargin);
 
+        % the coneLocsHexGrid ordered so they correspond to the serialized 1D response
+        coneLocsHexGrid = coneLocsHexGridAlignedWithSerializedConeMosaicResponse(obj);
+        
         % Visualize iterative adjustment of the cone lattice
         hFig = plotMosaicProgression(obj, varargin);
 
