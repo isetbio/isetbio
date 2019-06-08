@@ -124,11 +124,9 @@ if (~isempty(p.Results.absorptionsInXWFormat))
     current = 0 * absorptions;
     
     % Find LMS cone indices
-    nonNullConeIndices = find(cMosaic.pattern > 1);
-    nonNullConeTypes = coneType(nonNullConeIndices);
-    coneIndices{2} = find(nonNullConeTypes == 2);
-    coneIndices{3} = find(nonNullConeTypes == 3);
-    coneIndices{4} = find(nonNullConeTypes == 4);
+    coneIndices{2} = find(coneType == 2);
+    coneIndices{3} = find(coneType == 3);
+    coneIndices{4} = find(coneType == 4);
 else
     % Convert (x, y, t) to (space, t)
     [absorptions, r, c] = RGB2XWFormat(cMosaic.absorptions);  % Per sample
