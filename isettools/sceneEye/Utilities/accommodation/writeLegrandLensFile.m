@@ -1,35 +1,37 @@
-function renderRecipe = writeLegrandLensFile(renderRecipe,workingFolder)
-% Write out the Le Grand theoreticl eye lens file. These values are
-% currently all fixed, but may be changeable in the future (I believe the
-% model has some simple accommodation models which we might implement
-% here.)
+function renderRecipe = writeLegrandLensFile(renderRecipe, workingFolder)
+% Write out the Le Grand lens file.
 %
 % Syntax:
 %   writeLegrandLensFile(filename)
 %
 % Description:
-%    Write out the Le Grand lens file
+%    Write out the Le Grand theoreticl eye lens file. These values are
+%    currently all fixed, but may be changeable in the future (I believe
+%    the model has some simple accommodation models which we might
+%    implement here.)
 %
 % Inputs:
-%    filename - The filename to write to `
+%    filename      - String. The filename to write to.
+%    workingFolder - String. The working directory file path.
 %
 % Outputs:
-%    None. 
+%    renderRecipe  - Struct. The Recipe structure for the object.
+%
+% Optional key/value pairs:
+%    None.
 %
 
 % Columns are: radiusX, radiusY, thickness, materialIndex, semiDiameter,
 % conicConstantX, and conicConstantY
-corneaA = [-7.8  -7.8    0.55  1  4.820  0  0];
-corneaP = [-6.5  -6.5    3.05  2  4.341  0  0];
-pupil =   [ 0     0      0     2  2      0  0];
-lensA =   [-10.2 -10.2   4     3  3.750  0  0];
-lensP =   [ 6     6      0     4  3.750  0  0];
+corneaA = [-7.8, -7.8, 0.55, 1, 4.820, 0, 0];
+corneaP = [-6.5, -6.5, 3.05, 2, 4.341, 0, 0];
+pupil = [0, 0, 0, 2, 2, 0, 0];
+lensA = [-10.2, -10.2, 4, 3, 3.750, 0, 0];
+lensP = [6, 6, 0, 4, 3.750, 0, 0];
 
 %% Write out dispersion curves
-
 % From Atchison, David A., and George Smith. "Chromatic dispersions of the
 % ocular media of human eyes." JOSA A 22.1 (2005): 29-37.
-
 wave = (400:10:800); % nm
 
 % [Cornea; Aqueous; Lens; Vitreous]
@@ -40,7 +42,7 @@ V = [56 53 50 53]';
 
 % Cornu dispersion equation
 % Rows will be each ocular media
-ior = n_inf + K./(wave-lambda_o);
+ior = n_inf + K ./ (wave - lambda_o);
 
 iorNames = {sprintf('ior1_%0.2fdp_legrand.spd', 0), ...
     sprintf('ior2_%0.2fdp_legrand.spd', 0), ...
@@ -59,12 +61,9 @@ renderRecipe.camera.ior3.value = fullfile(workingFolder, iorNames{3});
 renderRecipe.camera.ior4.value = fullfile(workingFolder, iorNames{4});
 
 %% Write out lens file
-
 lensFile = 'legrand.dat';
 filename = fullfile(workingFolder, lensFile);
-
 lensMatrix = [corneaA; corneaP; pupil; lensA; lensP];
-
 focalLength = 1 / (59.94) * 10 ^ 3; % mm
 fid = fopen(filename,'w');
 
@@ -75,11 +74,10 @@ fprintf(fid,'%s',str);
 str = sprintf(['# radiusX radiusY thickness materialIndex semiDiameter' ...
     ' conicConstantX conicConstantY\n']);
 fprintf(fid,'%s',str);
-for ii=1:size(lensMatrix,1)
-    fprintf(fid,'%f\t%f\t%f\t%f\t%f\t%f\t%f\n', ...
-        lensMatrix(ii,1), lensMatrix(ii, 2), lensMatrix(ii,3), ...
-        lensMatrix(ii,4), lensMatrix(ii,5), lensMatrix(ii,6), ...
-        lensMatrix(ii,7));
+for ii = 1:size(lensMatrix,1)
+    fprintf(fid,'%f\t%f\t%f\t%f\t%f\t%f\t%f\n', lensMatrix(ii,1), ...
+        lensMatrix(ii, 2), lensMatrix(ii,3), lensMatrix(ii,4), ...
+        lensMatrix(ii,5), lensMatrix(ii,6), lensMatrix(ii,7));
 end
 fclose(fid);
 

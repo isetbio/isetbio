@@ -2,21 +2,28 @@ function [cor, aqu, len, vit] = getNavarroRefractiveIndices(wave, accom)
 % Return the Navarro IoR at given accommodation and wavelengths
 %
 % Syntax:
-%	[cor, aqu, len, vit] = getNavarroRefractiveIndices(wave, accom)
+%   [cor, aqu, len, vit] = getNavarroRefractiveIndices(wave, accom)
 %
 % Description:
 %    Returns the index of refraction (from Navarro's model) for the various
 %    ocular media at the given wavelengths and the given accomodative state
 %
 % Inputs:
-%    wave  - A wavelengths vector in nm.
-%    accom - Non-navarro accommodation, in diopters
+%    wave  - Array. A wavelengths vector in nm.
+%    accom - Numeric. Non-navarro accommodation, in diopters.
 %
 % Outputs:
-%    cor   - Refractive indices through the cornea
-%    aqu   - Refractive indices through the aqueous solution
-%    len   - Refractive indices through the lens
-%    vit   - Refractive indices through the vitreous fluid
+%    cor   - Array. An array of length(wave), of the refractive indices
+%            through the cornea.
+%    aqu   - Array. An array of length(wave), of the refractive indices
+%            through the aqueous solution.
+%    len   - Array. An array of length(wave), of the refractive indices
+%            through the lens.
+%    vit   - Array. An array of length(wave), of the refractive indices
+%            through the vitreous fluid.
+%
+% Optional key/value pairs:
+%    None.
 %
 
 %% Convert from Herzberger
@@ -30,7 +37,7 @@ A = [ 0.66147196 -0.40352796 -0.28046790  0.03385979
      -4.20146383  2.73508956  1.50543784 -0.11593235
       6.29834237 -4.69409935 -1.57508650  0.10293038
      -1.75835059  2.36253794  0.35011657 -0.02085782];
-  
+
 n = [ 1.3975 1.3807  1.37405 1.3668
       1.3593 1.3422  1.3354  1.3278
       1.4492 1.42625 1.4175  1.4097
@@ -44,10 +51,9 @@ mediaNames = {'cornea', 'aqueous', 'lens', 'vitreous'};
 % Rows are ocular media, columns are coefficients (e.g. A, D, B, C)
 a = zeros(4, 4);
 for i = 1:4
-    
     % [n**, n_F, n_C, n*]
     n_curr = n(i, :);
-    
+
     % [A D B C]
     a(i, :) = [n_curr * (A(:, 1)), n_curr * (A(:, 2)), ...
         n_curr * (A(:, 3)), n_curr * (A(:, 4))];
@@ -56,11 +62,10 @@ for i = 1:4
 end
 
 %% Calculate refractive indices at given wavelength
-
 % Check units for wavelength
 if(sum(wave < 400 + wave > 800) > 0)
     error(['Units for wavelength don''t seem correct...' ...
-        'they should be nm here.']);
+        ' they should be nm here.']);
 end
 
 % The equations use um, so let's convert to um. We want to stick with the
