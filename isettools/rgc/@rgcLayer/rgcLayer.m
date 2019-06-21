@@ -6,18 +6,18 @@ classdef rgcLayer < cellLayer
 %
 % Description:
 %    This is a subclass of the general class 'cellLayer'. It inherits all
-%    of the properties of that class, including slots for an input, fig, 
+%    of the properties of that class, including slots for an input, fig,
 %    center, size, etc...
 %
 %    The rgcLayer class stores general properties of the RGC layer patch
 %    and stores the rgcMosaic objects in its mosaic property field. (This
 %    object replaces the innerretina object.)
 %
-%      obj = rgcLayer(inputObj, params);    
+%      obj = rgcLayer(inputObj, params);
 %
 %    Usually called internally from rgcLayerCreate ... not sure why. Maybe
 %    that will change?  It seems like the input parameters to rgcLayer()
-%    should be those of the 
+%    should be those of the
 %
 %    An ir object takes as input a bipolar object or an outerSegment
 %    object. The ir (inner retina) object stores basic properties about the
@@ -41,10 +41,13 @@ classdef rgcLayer < cellLayer
 %        timing:    Stimulus input time step (sec)
 %
 %      Established by the mosaicCreate method
-%        mosaic: cell array of rgc mosaics 
+%        mosaic: cell array of rgc mosaics
 %
-%    Methods: 
+%    Methods:
 %        set, get, compute, plot
+%
+%    This function contains examples of usage inline. To access these, type
+%    'edit rgcLayer.m' into the Command Window.
 %
 % References:
 %    * ISETBIO wiki: <a href="matlab:web(strcat('https://github.com/', ...
@@ -76,7 +79,7 @@ end
 % Public, read-only properties.
 properties (SetAccess = public, GetAccess = public)
     % MOSAIC Cell array containing ganglion cell mosaics
-    % Cells are added by mosaicCreate method    
+    % Cells are added by mosaicCreate method
     mosaic = {};  % The spatial sampling differs for each mosaic
 end
 
@@ -95,7 +98,7 @@ methods
         % Constructor
         %
         % Syntax:
-        %   rgcL = rgcLayer(bipolarLayer, params)
+        %   rgcL = rgcLayer(bipolarLayer, [varargin])
         %
         % Description:
         %    The coupled-GLM model is described in the Pillow, Shlens,
@@ -168,7 +171,7 @@ methods
 
 end
 
-% Methods that must only be implemented in the subclasses. 
+% Methods that must only be implemented in the subclasses.
 methods (Abstract, Access=public)
 end
 
@@ -181,5 +184,5 @@ end
 % Methods that are totally private (subclasses cannot call these)
 methods (Access = private)
 end
-    
+
 end
