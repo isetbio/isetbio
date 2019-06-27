@@ -15,6 +15,7 @@ function compute(obj, emDurationSeconds, sampleDurationSeconds, ...
 %    sampleDurationSeconds - Numeric. The duration of the sample period,
 %                            also in seconds.
 %    nTrials               - Numeric. The number of trials.
+%    centerPaths           - Logical. Whether to center the eye movement paths
 %    computeVelocity       - Boolean. A boolean indicating whether or not
 %                            to also compute the velocity.
 %    varargin              - (Optional) Additional parameter(s) that may be
@@ -33,10 +34,10 @@ function compute(obj, emDurationSeconds, sampleDurationSeconds, ...
 %  t_fixationalEyeMovementsTypes
 %
 % History:
-%    01/03/18  NPC  ISETBIO Team, 2018
-%    05/15/18  jnm  Formatting
+%    01/03/18  NPC      ISETBIO Team, 2018
+%    05/15/18  jnm      Formatting
 %    05/24/18  BW, NPC  Comments
-
+%    6/04/19   NPC      Added centerPaths key/value pair
 
 % Parse inputs
 p = inputParser;
@@ -45,6 +46,7 @@ p.addRequired('sampleDurationSeconds', @isnumeric);
 p.addRequired('nTrials', @isnumeric);
 p.addRequired('computeVelocity', @islogical);
 p.addParameter('useParfor', false, @islogical);
+p.addParameter('centerPaths', false, @islogical);
 p.parse(emDurationSeconds, sampleDurationSeconds, ...
     nTrials, computeVelocity, varargin{:});
 
@@ -105,6 +107,12 @@ else
                 obj.velocityArcMinPerSecTimeSeries;
         end
     end
+end
+
+% Center all paths on the origin
+if (p.Results.centerPaths)
+    centers = mean(allTrialsEmPosArcMin,2);
+    allTrialsEmPosArcMin = bsxfun(@minus, allTrialsEmPosArcMin, centers);
 end
 
 obj.emPosArcMin = allTrialsEmPosArcMin;

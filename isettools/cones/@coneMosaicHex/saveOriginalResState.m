@@ -5,7 +5,8 @@ function saveOriginalResState(obj)
     %   saveOriginalResState(obj, fov)
     %
     % Description:
-    %    Save the original rectangular grid state
+    %    Save the original rectangular grid state. Internal method used
+    %    only by the setSizeToFOVForHexMosaic.
     %
     % Inputs:
     %    obj - The cone mosaic hex object

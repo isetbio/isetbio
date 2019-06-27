@@ -14,6 +14,8 @@ function CCT = SPDToCCT(SPD,S_SPD)
 %
 %                Written by Danny Garside 
 % 05/04/19  dhb  Try to fix line breaks, tune up comments.
+% 05/10/19  dhb  Use bsxfun rather than -, because dimension expansion does
+%                not work in older versions of Matlab.
 
 % Examples:
 %{ 
@@ -66,7 +68,7 @@ end
 
 %% Find closest
 for i=1:size(SPD,2)
-    [~,minloc(i)] = min(sqrt(sum((lookup_uv - SPD_uv(:,i)).^2)));
+    [~,minloc(i)] = min(sqrt(sum((bsxfun(@minus,lookup_uv,SPD_uv(:,i))).^2)));
     CCT(i) = range(minloc(i));
 end
 
