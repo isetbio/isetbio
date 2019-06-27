@@ -283,7 +283,7 @@ methods
         
         % Check to make sure this PBRT file has a realistic eye.
         if(~strcmp(recipe.camera.subtype, 'realisticEye'))
-            recipe.camera = piCameraCreate('realisticEye');
+            recipe.camera = piCameraCreate('humaneye');
         end
 
         % Set properties
