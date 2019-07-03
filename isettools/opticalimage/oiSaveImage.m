@@ -5,9 +5,9 @@ function fName = oiSaveImage(oi, fName, gam)
 %   fName = oiSaveImage(oi, [fName], [gam]);
 %
 % Description:
-%    Save out an RGB image of the photon image as a PNG file.  If the name
+%    Save out an RGB image of the photon image as a PNG file. If the name
 %    is not passed in, then the user is queried to select the fullpath name
-%    of the output file.  This routine is used for scenes.  sceneSaveImage
+%    of the output file. This routine is used for scenes. sceneSaveImage
 %    is used for scenes.
 %
 % Inputs:
@@ -26,6 +26,7 @@ function fName = oiSaveImage(oi, fName, gam)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/06/18  jnm  Formatting
+%    06/24/19  JNM  Minor formatting adjustments
 
 if ~exist('oi', 'var') || isempty(oi), oi = vcGetObject('oi'); end
 
@@ -34,7 +35,7 @@ if notDefined('fName')
     fName = vcSelectDataFile('stayput', 'w', 'png', 'Image file (png)');
 end
 
-% Get rgb image from photon data.  Gamma either defined here or from the
+% Get rgb image from photon data. Gamma either defined here or from the
 % open window.
 if ~exist('gam', 'var')
     RGB = oiGet(oi, 'rgb image');

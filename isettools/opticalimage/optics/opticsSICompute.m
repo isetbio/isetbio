@@ -18,11 +18,6 @@ function oi = opticsSICompute(scene, oi)
 %    None.
 %
 % Notes:
-%    * TODO: Assign someone to fix example. Error is:
-%      Error using opticsGet (line 471)
-%      format is ... oi, spatialUnits,wave
-%      Error in opticsSICompute (line 42)
-%      if isempty(opticsGet(optics, 'otf data')), error('No otf data'); end
 %    * TODO: Determine if we want to include distortion in the area
 %      specified below.
 %
@@ -33,12 +28,20 @@ function oi = opticsSICompute(scene, oi)
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005
 %    03/12/18  jnm  Formatting
+%    06/26/19  JNM  Fixed example, minor formatting adjustments.
 
 % Examples:
 %{
-	% ETTBSkip - Example is currently broken!
-	scene = sceneCreate;
-	oi = oiCreate;
+	scene = sceneCreate('uniform');
+    scene = sceneSet(scene, 'fov', 15);  % Reasonably large
+    scene = sceneAdjustLuminance(scene, 10 ^ -10);
+    oi = oiCreate;
+    % No lens shading
+    optics = oiGet(oi, 'optics');
+    optics = opticsSet(optics, 'cos4th', 'off');
+    oi = oiSet(oi, 'optics', optics);
+    oi = oiCompute(oi, scene);
+    [I, meanI, mcI] =  oiCalculateIlluminance(oi);
     oi = opticsSICompute(scene, oi);
 %}
 

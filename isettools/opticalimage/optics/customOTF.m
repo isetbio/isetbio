@@ -15,8 +15,8 @@ function [OTF2D, fSupport] = customOTF(oi, fSupport, wavelength, units)
 %    to one. If we ever have a case when the peak is other than the DC, we
 %    have a problem with energy conservation - where did the photons go?
 %
-%    The units for the frequency support are cycles/millimeters. 
-%    Perhaps we should add a 'units' input argument here. 
+%    The units for the frequency support are cycles/millimeters.
+%    Perhaps we should add a 'units' input argument here.
 %
 % Inputs:
 %    oi         - Struct. An optical image structure
@@ -25,14 +25,14 @@ function [OTF2D, fSupport] = customOTF(oi, fSupport, wavelength, units)
 %    units      - (Optional) String. OTF units. Default millimeter ('mm')
 %
 % Outputs:
-%    OTF2D      - Two-dimensional OTF
-%    fSupport   - Frequency support.
+%    OTF2D      - Matrix. Two-dimensional OTF for each wavelength.
+%    fSupport   - Matrix. Frequency support.
 %
 % Optional key/value pairs:
 %    None.
 %
 % See Also:
-%    oiCalculateOTF, dlMTF, dlCore
+%   oiCalculateOTF, dlMTF, dlCore
 %
 
 % History:
@@ -43,6 +43,7 @@ function [OTF2D, fSupport] = customOTF(oi, fSupport, wavelength, units)
 %                   indeed that was correctly used in the branch that
 %                   didn't loop over wavelength.
 %    03/08/18  jnm  Formatting
+%    06/28/19  JNM  Documentation update
 
 % Handle optional args
 if notDefined('oi'), error('Optical image required.'); end

@@ -2,7 +2,7 @@ function oDist = opticsDefocusDepth(defocus, optics, imgPlaneDist)
 % Compute depth in object space to achieve a particular defocus (diopters).
 %
 % Syntax:
-%   oDist = opticsDefocusDepth(defocus, optics, imgPlaneDist)
+%   oDist = opticsDefocusDepth(defocus, optics, [imgPlaneDist])
 %
 % Description:
 %    Given an optics structure and an image plot, we compute where the
@@ -14,7 +14,7 @@ function oDist = opticsDefocusDepth(defocus, optics, imgPlaneDist)
 %    optics       - Struct. Optics structure
 %    imgPlaneDist - (Optional) Numeric. The distance of the image plane
 %                   behind the lens. Must be further than the focal length.
-%                   Default is retrieve focal length.
+%                   Default is to retrieve the focal length.
 %
 % Outputs:
 %    oDist        - Vector. Object distances to achieve the various
@@ -24,12 +24,13 @@ function oDist = opticsDefocusDepth(defocus, optics, imgPlaneDist)
 %    None.
 %
 % See Also:
-%    opticsDepthDefocus, s3d_DepthSpacing
+%   opticsDepthDefocus, s3d_DepthSpacing
 %
 
 % History:
 %    xx/xx/11       Copyright ImagEval Consultants, LLC, 2011.
 %    03/09/18  jnm  Formatting
+%    06/27/19  JNM  Formatting update
 
 % Examples:
 %{
@@ -62,7 +63,7 @@ end
 imgDist = 1 ./ (defocus + (1 / imgPlaneDist));
 
 % Invert
-%   imgDist = (fLength*objDist) ./ (objDist - fLength);
+%   imgDist = (fLength * objDist) ./ (objDist - fLength);
 % To get objDist from imgDist
 oDist = imgDist * fLength ./ (imgDist - fLength);
 

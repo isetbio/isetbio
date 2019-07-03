@@ -2,7 +2,7 @@ function val = get(lens, param, varargin)
 % Get parameters of the lens structure
 %
 % Syntax:
-%   val = get(lens, param, varargin)
+%   val = get(lens, param, [varargin])
 %
 % Description:
 %    See Lens object for notes about the properties in general and the
@@ -15,21 +15,23 @@ function val = get(lens, param, varargin)
 % Inputs:
 %    lens     - Object. The lens object to retrieve information from
 %    param    - String. The parameter which you want to know about. Options
-%               for the param include:
-%       'name'      - The lens name
-%       'wave'      - Wavelength samples in nm
-%       {absorbance, unitDensity} - unitDensity. Default is in the
-%              file lensDensity.mat based on Sharpe and Stockman
-%       'density'         - Lens pigment density
-%       'transmittance'   - The transmittance, calculated by
-%                                   10 ^ (-(spectral density))
-%       'absorptance'     - The absorptance value, calculated by
-%                                   1 - transmittance;
-%       'spectraldensity' - Unit density times the density
-%
+%               for the param, and the associated return type include:
+%       name            - String. The lens name.
+%       wave            - Vector. Wavelength samples in nm.
+%       {absorbance, unitDensity}
+%                       - File. The unitDensity information. Default is the
+%                         file lensDensity.mat based on Sharpe and Stockman
+%       density         - Numeric. Lens pigment density.
+%       transmittance   - Numeric. The transmittance, calculated by
+%                         10 ^ (-(spectral density)).
+%       {absorptance, absorption}
+%                       - Numeric. The absorptance value, calculated by
+%                         1 - transmittance;
+%       spectraldensity - Numeric. Unit density times the density.
 %
 % Outputs:
-%    val      - The value of the requested parameter.
+%    val      - VARIES. The value of the requested parameter. See param's
+%               listed options above for type information.
 %
 % Optional key/value pairs:
 %    None.
@@ -39,6 +41,7 @@ function val = get(lens, param, varargin)
 % History:
 %    xx/xx/16  HJ/BW  ISETBIO TEAM, 2016
 %    03/05/18  jnm    Formatting
+%    07/03/19  JNM    Formatting update
 
 % parse parameters
 p = inputParser;

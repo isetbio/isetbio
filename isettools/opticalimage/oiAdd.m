@@ -5,7 +5,7 @@ function oiSum = oiAdd(oi1, oi2, wgts)
 %   oiSum = oiAdd(oi1, oi2, wgts)
 %
 % Description:
-%    We use this to form the spectral irradiance images in an @oiSequence. 
+%    We use this to form the spectral irradiance images in an @oiSequence.
 %
 %       oiSum = oiAdd(oi1, oi2, wgts)
 %
@@ -31,17 +31,14 @@ function oiSum = oiAdd(oi1, oi2, wgts)
 % Optional key/value pairs:
 %    None.
 %
-% Notes:
-%    * [Note: JNM - TODO: Fix example. Current has done just enough to kill
-%      the error message, there is not an actual illuminance here yet.]
-%
 % See Also:
-%    OISEQUENCE
+%   OISEQUENCE
 %
 
 % History:
 %    xx/xx/16  BW   ISETBIO Team, 2016
 %    03/01/18  jnm  Formatting
+%    06/26/19  JNM  Added second example & removed corresponding TODO.
 
 % Examples:
 %{
@@ -51,8 +48,26 @@ function oiSum = oiAdd(oi1, oi2, wgts)
    oi1 = oiSet(oi1, 'illuminance', illu);
     oi1 = oiAdjustIlluminance(oi1, 10);
     oi2 = oi1;
-   wgts = [0.75, 0.25]; 
+   wgts = [0.75, 0.25];
    oiSum = oiAdd(oi1, oi2, wgts);
+%}
+%{
+    scene = sceneCreate('uniform');
+    scene = sceneSet(scene, 'fov', 15);  % Reasonably large
+    scene = sceneAdjustLuminance(scene, 10 ^ -10);
+
+    oi = oiCreate;
+    % No lens shading
+    optics = oiGet(oi, 'optics');
+    optics = opticsSet(optics, 'cos4th', 'off');
+    oi = oiSet(oi, 'optics', optics);
+    oi = oiCompute(oi, scene);
+
+    [I, meanI, mcI] =  oiCalculateIlluminance(oi);
+    o2 = oiAdjustIlluminance(oi, 10, 'max');
+    I2 = oiCalculateIlluminance(o2);
+
+    oSum = oiAdd(oi, o2, [0.75, 0.25]);
 %}
 
 oiSum = oi1;

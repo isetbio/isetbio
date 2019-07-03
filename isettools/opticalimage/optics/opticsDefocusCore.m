@@ -1,5 +1,5 @@
 function [otf, sampleSFmm] = opticsDefocusCore(optics, sampleSF, D)
-% Compute the optical transfer function for dioptric power D0 and defocus D 
+% Compute the optical transfer function for dioptric power D0 & defocus D.
 %
 % Syntax:
 %   [otf, sampleSFmm] = opticsDefocusCore(optics, sampleSF, D)
@@ -19,25 +19,24 @@ function [otf, sampleSFmm] = opticsDefocusCore(optics, sampleSF, D)
 %    D          - Numeric. Defocus in diopters for each wavelength
 %
 % Outputs:
-%    otf        - Optical transfer function (actually, this is the MTF,
-%                 just a set of scale factors. We assume there is no
-%                 frequency-dependent phase shift.
+%    otf        - Matrix. The optical transfer function (actually, this is
+%                 the MTF, just a set of scale factors. We assume there is
+%                 no frequency-dependent phase shift.
 %    sampleSFmm - Numeric. Sample spatial frequency in cyc/millimeters
 %
 % Optional key/value pairs:
 %    None.
 %
-% Notes:
-%
 % See Also:
-%    humanCore (this routine derived from that), opticsDefocusedMTF, 
-%    defocusMTF, s_opticsDefocus
+%   humanCore (this routine derived from that), opticsDefocusedMTF,
+%   defocusMTF, s_opticsDefocus
 %
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/09/18  jnm  Formatting
-%    04/07/18  dhb  Got example to run.  Might even do something sensible.
+%    04/07/18  dhb  Got example to run. Might even do something sensible.
+%    06/27/19  JNM  Formatting update.
 
 % Examples:
 %{
@@ -71,7 +70,7 @@ w20 = (p ^ 2 / 2) * (D0 .* D) ./ (D0 + D);
 c = opticsGet(optics, 'deg per dist', 'm');
 % 1 / (atand(1) * (1 / D0));  %  deg per meter (rad/meter)
 
-% The units are: 
+% The units are:
 % cycles/meter = (cycles/deg) * (deg/meter) 
 cSF = sampleSF * c;
 
@@ -84,15 +83,16 @@ cSF = sampleSF * c;
 % out what's up with the formula. Also remember that the paper by Subbaro
 % claims that the scale factor on the formula is wrong. So there's two of
 % out there.
-% If we have SF=0, we replace it with a very small number.
-ii = (cSF == 0);
+%
+% If we have SF = 0, we replace it with a very small number.
+ii = cSF == 0;
 cSF(ii) = min(cSF(~ii)) * 1e-12;
 
 % Note: When D0 = 60, as for human, the number is:
 %    c = 3434.07;
 % This logic is repeated in the humanCore routine
 
-lambda = opticsGet(optics, 'wave', 'm');     % Wavelength in meters
+lambda = opticsGet(optics, 'wave', 'm');  % Wavelength in meters
 s = zeros(length(lambda), length(sampleSF));
 alpha = zeros(size(s));
 otf = zeros(size(s));
@@ -104,10 +104,10 @@ for ii = 1:length(lambda)
     % Appendix B from Marimont and Wandell
     % Compute the reduced spatial frequency (0, 2)
     % m * (m/m) * cy/m  - Dimensionless in the end
-    s(ii, :) = (lambda(ii) / (D0 * p)) * cSF; 
+    s(ii, :) = (lambda(ii) / (D0 * p)) * cSF;
 
     % Methods: Marimont and Wandell
-    % Related to the defocus specified by w20, which in turn depends on p, 
+    % Related to the defocus specified by w20, which in turn depends on p,
     % D and D0.
     alpha(ii, :) = (4 * pi ./ (lambda(ii))) .* w20(ii) .* abs(s(ii, :));
 

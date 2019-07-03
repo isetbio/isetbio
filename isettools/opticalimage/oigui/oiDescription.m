@@ -22,9 +22,9 @@ function txt = oiDescription(oi)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/19/18  jnm  Formatting
+%    07/01/19  JNM  Formatting update
 
 txt = sprintf('\nOptical image\n');
-
 
 if isempty(oi)
     txt = 'No image'; return;
@@ -32,7 +32,6 @@ else
     sz = oiGet(oi, 'size');
     if isempty(oiGet(oi, 'photons'))
         txt = addText(txt, sprintf('  No image\n'));
-
     else
         str = sprintf('  Size:       [%.0f, %.0f] samples\n', ...
             sz(1), sz(2));
@@ -48,7 +47,6 @@ else
         else
             str = sprintf('  Hgt, wdth: [%.2f, %.2f] um\n', ...
                 oiGet(oi, 'height', 'um'), oiGet(oi, 'width', 'um'));
-
         end
         txt = addText(txt, str);
 
@@ -62,7 +60,6 @@ else
         else
             str = sprintf('  Sample:  %.2f um\n', ...
                 oiGet(oi, 'sampleSize', 'um'));
-
         end
         txt = addText(txt, str);
 
@@ -94,7 +91,6 @@ switch lower(opticsModel)
             opticsGet(optics, 'magnification'))];
         diameter = opticsGet(optics, 'aperturediameter', 'mm');
         txt = [txt, sprintf('  Diameter:  %.2f mm\n', diameter)];
-
     case 'shiftinvariant'
         txt = [txt, sprintf('Optics (SI)\n')];
         % See above
@@ -106,7 +102,6 @@ switch lower(opticsModel)
             d = oiGet(oi, 'lens density');
             txt = [txt, sprintf('  Lens density:  %.2f \n', d)];
         end
-
     case 'iset3d'
         % Like shift invariant for now
         txt = [txt, sprintf('Optics (iset3d)\n')];
@@ -120,7 +115,6 @@ switch lower(opticsModel)
                 warning('No lens density set in this optical image.');
             end
         end
-
     otherwise
         error('Unknown optics model %s. ', opticsModel);
 end

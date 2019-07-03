@@ -2,7 +2,7 @@ function optics = cos4th(optics, oi)
 % Calculate cos4th offaxis fall off data
 %
 % Syntax:
-%   optics = cos4th(optics, opticalImage)
+%   optics = cos4th(optics, oi)
 %
 % Description:
 %    The irradiance of a uniform radiance input field declines as we move
@@ -20,8 +20,8 @@ function optics = cos4th(optics, oi)
 %       s = sqrt(d ^ 2 + fieldHeight ^ 2)
 %       fN = f-number
 %
-%    If d > 10*image diagonal size
-%       RI = (d / sFactor).^4;
+%    If d > 10 * image diagonal size
+%       RI = (d / sFactor) .^ 4;
 %    else
 %       m = magnification
 %       {A complicated formula}
@@ -40,6 +40,7 @@ function optics = cos4th(optics, oi)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/08/18  jnm  Formatting
+%    06/28/19  JNM  Formatting update
 
 % Setting up local variables
 sSupport = oiGet(oi, 'spatialsupport');
@@ -77,7 +78,8 @@ else
     spatialFall = spatialFall ./ (pi * sin_theta .^ 2);
 end
 
-% figure; mesh(spatialFall)
+% figure;
+% mesh(spatialFall)
 optics = opticsSet(optics, 'cos4thdata', spatialFall);
 
 end

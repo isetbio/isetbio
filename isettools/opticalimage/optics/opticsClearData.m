@@ -1,5 +1,5 @@
 function obj = opticsClearData(obj)
-% Clear OTF data from optics. Used after parameter change to optics or OI. 
+% Clear OTF data from optics. Used after parameter change to optics or OI.
 %
 % Syntax:
 %   obj = opticsClearData(obj)
@@ -23,6 +23,7 @@ function obj = opticsClearData(obj)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/09/18  jnm  Formatting
+%    06/27/19  JNM  Formatting update
 
 switch lower(obj.type)
     case {'opticalimage', 'oi'}

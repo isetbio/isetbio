@@ -28,7 +28,7 @@ function oi = oiCombineDepths(oiD)
 
 % History:
 %    xx/xx/11       Copyright ImagEval Consultants, LLC, 2011.
-%    03/28/18  jnm  Formatting
+%    03/28/18  jnm  Formatting (Also 07/01/19)
 
 if notDefined('oiD'), error('OI cell array for depths required'); end
 
@@ -99,7 +99,7 @@ end
 %     thisMap = oiGet(oiD{jj}, 'depth map');
 %     bothMap = thisMap & dMap;
 %     % Zero out photons from behind this map.
-%     for ii=1:nWave
+%     for ii = 1:nWave
 %         p = photons(:, :, ii);
 %         p(bothMap) = 0;
 %         % Put the good ones back into photons
@@ -115,7 +115,6 @@ end
 %     % imagesc(bothMap);
 %
 %     for ii = 1:nWave
-%
 %         % Photons from this depth plane
 %         nPhotons = oiGet(oiD{jj}, 'photons', wave(ii));  % New photons
 %

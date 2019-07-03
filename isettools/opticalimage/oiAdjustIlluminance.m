@@ -15,8 +15,8 @@ function oi = oiAdjustIlluminance(oi, newLevel, stat)
 %
 % Inputs:
 %    oi       - Struct. The OI structure.
-%    newLevel - Integer. The desired "stat type" illuminance level.
-%               (Usually mean illuminance level).
+%    newLevel - Numeric. The desired "stat type" illuminance level as an
+%               integer. (Usually mean illuminance level).
 %    stat     - (Optional) String. The desired statistic of photon level.
 %               Options are 'mean' and 'max' (aka 'peak'). Default 'mean'.
 %
@@ -26,23 +26,35 @@ function oi = oiAdjustIlluminance(oi, newLevel, stat)
 % Optional key/value pairs:
 %    None.
 %
-% Notes:
-%    * [Note: JNM - TODO: Assign someone to fix the example. I've fleshed
-%      it out enough to stop the error message, but it does not create a
-%      real illuminance, or modify it.]
-%
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/01/18  jnm  Formatting
+%    06/26/19  JNM  Added second example and removed corresponding TODO.
 
 % Examples:
 %{
     OI = oiCreate;
     illu = oiCalculateIlluminance(OI);
-   OI = oiSet(OI, 'illuminance', illu);
+    OI = oiSet(OI, 'illuminance', illu);
     OI = oiAdjustIlluminance(OI, 10);
-   OI = oiAdjustIlluminance(OI, 100, 'max');
+    OI = oiAdjustIlluminance(OI, 100, 'max');
+%}
+%{
+    scene = sceneCreate('uniform');
+    scene = sceneSet(scene, 'fov', 15);  % Reasonably large
+    scene = sceneAdjustLuminance(scene, 10 ^ -10);
+
+    oi = oiCreate;
+    % No lens shading
+    optics = oiGet(oi, 'optics');
+    optics = opticsSet(optics, 'cos4th', 'off');
+    oi = oiSet(oi, 'optics', optics);
+    oi = oiCompute(oi, scene);
+
+    [I, meanI, mcI] =  oiCalculateIlluminance(oi);
+    OI = oiAdjustIlluminance(oi, 10, 'max');
+    I2 = oiCalculateIlluminance(OI);
 %}
 
 if notDefined('stat'), stat = 'mean'; end

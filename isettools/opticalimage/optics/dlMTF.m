@@ -25,34 +25,59 @@ function [OTF2D, fSupport, inCutoffFreq] = dlMTF(oi, fSupport, wave, units)
 % 
 %    The formulae are described in dlCore.m
 %
-%  See Also:
-%	 oitCalculateOTF, dlCore.m
+%    This function contains examples of usage inline. To access these, type
+%    'edit dlMTF.m' into the Command Window.
 %
+% Inputs:
+%    oi           - Struct. An optical image structure.
+%    fSupport     - (Optional) Matrix. The fSupport function. Default is to
+%                   retrieve the oi's fSupport with the provided units.
+%    wave         - (Optional) Vector. A vector containing the wavelengths.
+%                   Default is retrieve from the provided oi.
+%    units        - (Optional) String. A string describing the units.
+%                   Default is cyclesPerDegree.
+% Outputs:
+%    OTF2D        - Matrix. A 3D Matrix containing the 2D diffraction
+%                   limited OTF at each wavelength for the provided oi.
+%    fSupport     - Matrix. The fSupport function for the OTF.
+%    inCutoffFreq - Vector. A cutoff frequency vector for each wavelength.
 %
+% Optional key/value pairs:
+%    None.
+%
+% See Also:
+%   oitCalculateOTF, dlCore.m
+%
+
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/08/18  jnm  Formatting
 %    04/07/18  dhb  Deep six broken examples.
+%    06/28/19  JNM  Documentation update
 
 % Examples:
 %{
-     oi = oiCreate('diffraction limited');
-     wavelength = 700; 
-     unit = 'mm';
-     fSupport = oiGet(oi,'fSupport',unit);
-     OTF2D = dlMTF(oi,fSupport,wavelength,unit);
-     vcNewGraphWin;
-     mesh(fSupport(1,:,1),fSupport(:,1,2),fftshift(OTF2D));
-     colorbar; xlabel('cyc/mm'); ylabel('cyc/mm');
+    oi = oiCreate('diffraction limited');
+    wavelength = 700; 
+    unit = 'mm';
+    fSupport = oiGet(oi, 'fSupport', unit);
+    OTF2D = dlMTF(oi, fSupport, wavelength, unit);
+    vcNewGraphWin;
+    mesh(fSupport(1, :, 1), fSupport(:, 1, 2), fftshift(OTF2D));
+    colorbar;
+    xlabel('cyc/mm');
+    ylabel('cyc/mm');
 %}
 %{
     scene = sceneCreate;
     oi = oiCreate('diffraction limited');
-    oi = oiCompute(oi,scene);
+    oi = oiCompute(oi, scene);
     OTF2D = dlMTF(oi);
     size(OTF2D)
-    vcNewGraphWin; mesh(fftshift(OTF2D(:,:,1)));
-    vcNewGraphWin; mesh(fftshift(OTF2D(:,:,end)));
+    vcNewGraphWin;
+    mesh(fftshift(OTF2D(:, :, 1)));
+    vcNewGraphWin;
+    mesh(fftshift(OTF2D(:, :, end)));
 %}
 
 %%
@@ -84,7 +109,7 @@ fy = fSupport(:, :, 2);
 rho = sqrt(fx .^ 2 + fy .^ 2);
 
 % Wavelength is stored in nanometers. This converts it to meters, the same
-% units as the apertureDimaeter. 
+% units as the apertureDimaeter.
 wave = wave *  1e-9;
 
 % This formula assumes that a lens that is free of spherical aberration and
@@ -93,8 +118,8 @@ wave = wave *  1e-9;
 %
 %  see discussion in dlCore.m  
 %
-% http://spie.org/x34304.xml  - Cutoff frequency
-% http://spie.org/x34468.xml  - Airy disk
+% http://spie.org/x34304.xml - Cutoff frequency
+% http://spie.org/x34468.xml - Airy disk
 %
 inCutoffFreq = (apertureDiameter / fpDistance) ./ wave;
 

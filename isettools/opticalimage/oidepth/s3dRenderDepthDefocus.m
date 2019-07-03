@@ -3,8 +3,8 @@ function [oi, oiD, D] = s3dRenderDepthDefocus(...
 % Compute blurred optical image for a scene, optics, & image plane distance
 %
 % Syntax:
-%   [oi, oiD, D]= s3dRenderDepthDefocus(scene, oi, imgPlaneDist, ... 
-%       depthEdges, cAberration)
+%   [oi, oiD, D] = s3dRenderDepthDefocus(scene, oi, [imgPlaneDist], ... 
+%       [depthEdges], [cAberration])
 %
 % Description:
 %    IMPLEMENTATION
@@ -50,15 +50,15 @@ function [oi, oiD, D] = s3dRenderDepthDefocus(...
 %    None.
 %
 % See Also:
-%    s_opticsDepthScene, oiDepthCompute
+%   s_opticsDepthScene, oiDepthCompute
 %
 
 % History:
 %    xx/xx/11       Copyright, Stanford, 2011
 %    03/28/18  jnm  Formatting
+%    07/01/19  JNM  Formatting update
 
 if notDefined('scene'), error('Scene required'); end
-
 if notDefined('oi'), error('oi required');
 else, optics =  oiGet(oi, 'optics');
 end

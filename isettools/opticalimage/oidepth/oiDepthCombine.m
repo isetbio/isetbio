@@ -25,12 +25,12 @@ function oi = oiDepthCombine(oiD, scene, depthEdges)
 %    None.
 %
 % See Also:
-%    s3d_DepthSpacing, oiCompute, oiDepthSegmentMap, oiDepthOverlay
+%   s3d_DepthSpacing, oiCompute, oiDepthSegmentMap, oiDepthOverlay
 %
 
 % History:
 %    xx/xx/11       Copyright ImagEval Consultants, LLC, 2011.
-%    03/28/18  jnm  Formatting
+%    03/28/18  jnm  Formatting (Also 07/01/19)
 
 nEdges = length(depthEdges);
 oiDmap = oiPadDepthMap(scene);
@@ -138,4 +138,4 @@ oi = oiSet(oi, 'depth map', dMap);
 % vcAddAndSelectObject(oi);
 % oiWindow
 
-return
+end

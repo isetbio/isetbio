@@ -2,22 +2,22 @@ function oi = oiSpatialResample(oi, dx, units, method, promptUser)
 % Spatial resample all wavebands of a scene
 %
 % Syntax:
-%   oi = oiSpatialResample(oi, dx, 'units', 'method')
+%   oi = oiSpatialResample(oi, dx, units, method, promptUser)
 %
 % Description:
-%    The current oi spatial sampling can be measured 
+%    The current oi spatial sampling can be measured
 %
 %    There are examples contained in the code. To access, typed 'edit
 %    oiSpatialResample.m' into the Command Window.
 %
 % Inputs:
 %    oi         - Struct. An optical image structure.
-%    dx         - Scalar Numerical. New spatial sampling difference
-%    units      - (Optional) String. Spatial units. Default 'm' for meters
-%    method     - (Optional) String. Interpolation method. Default 'linear'
-%    promptUser - (Optional) Boolean. Whether or not to wait for a key
-%                 press from the user. Set to false to avoid the routine
-%                 waiting for user to enter a keypress. Default true (wait)
+%    dx         - Scalar Numeric. New spatial sampling difference
+%    units      - (Optional) String. Spatial units. Default 'm' (meters).
+%    method     - (Optional) String. Interpolation method. Default linear.
+%    promptUser - (Optional) Boolean. Whether to wait for a key press from
+%                 the user. Set to false to avoid the routine waiting for
+%                 the user to enter a keypress. Default true (wait).
 %
 % Outputs:
 %    oi         - Struct. The modified optical image structure.
@@ -32,6 +32,7 @@ function oi = oiSpatialResample(oi, dx, units, method, promptUser)
 % History:
 %    xx/xx/16       Copyright Imageval Consulting, LLC 2016
 %    03/07/18  jnm  Formatting
+%    06/24/19  JNM  Minor formatting adjustments
 
 % Examples:
 %{
@@ -100,7 +101,7 @@ oi = oiSet(oi, 'name', sprintf('%s-%s', n, method));
 % Now adjust the FOV so that the dx works out perfectly
 sr = oiGet(oi, 'spatial resolution');
 fov = oiGet(oi, 'fov');
-oi = oiSet(oi, 'fov', fov*dx/sr(2));
+oi = oiSet(oi, 'fov', fov * dx / sr(2));
 
 oi = oiSet(oi, 'illuminance', oiCalculateIlluminance(oi));
 

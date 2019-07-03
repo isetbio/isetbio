@@ -42,7 +42,7 @@ function [alpha, rSF, w20] = opticsReducedSFandW20(p, D0, sampleSF, wave)
 % History:
 %    xx/xx/10       Copyright ImagEval Consultants, LLC, 2010.
 %    03/16/18  jnm  Formatting. Changed inputs to reflect the 'needed'
-%    values rather than what was in the header. 
+%                   values rather than what was in the header. 
 
 % Constants for formula to compute defocus in diopters (D) as a function of
 % wavelength for human eye. Need citation, but the curve is in my book.

@@ -37,7 +37,6 @@ function oi = opticsCos4th(oi)
 %}
 
 optics = oiGet(oi, 'optics');
-
 method = opticsGet(optics, 'cos4thfunction');
 if isempty(method)
     method = 'cos4th';

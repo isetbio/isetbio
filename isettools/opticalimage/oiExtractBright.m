@@ -2,7 +2,7 @@ function OImax = oiExtractBright(oi)
 % Extract brightest pixel from an optical image and return it as an OI
 %
 % Syntax:
-%   OImax = oiExtractBright([OI])
+%   OImax = oiExtractBright([oi])
 %
 % Description:
 %    Make a 1 pixel optical image with a spectral illumination of the
