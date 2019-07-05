@@ -94,6 +94,9 @@ p.addParameter('nchecks',[64 64],@isnumeric); % [wall,ground]
 
 p.parse(pbrtFile, varargin{:});
 
+% Default
+sceneUnits = 'm';
+
 %% Check if we've been given a sceneName or a pbrt file.
 [~, sceneName, ext] = fileparts(pbrtFile);
 if(isempty(ext))

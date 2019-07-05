@@ -303,7 +303,7 @@ methods
         % from the name of the lens. We assume the naming conventions
         % is "%s_%f.dat" This is not foolproof, so maybe we can think
         % of a more robust way to do this in the future?
-        obj.lensFile = recipe.camera.specfile.value;
+        obj.lensFile = recipe.camera.lensfile.value;
         if(strcmp(obj.lensFile, ''))
             obj.accommodation = [];
         else
@@ -480,7 +480,7 @@ methods
         elseif(~val && strcmp(obj.modelName,'none'))
             % Put the navarro eye back in if there's not already a model.
             obj.modelName = 'Navarro';
-            obj.recipe.camera = piCameraCreate('realisticEye');
+            obj.recipe.camera = piCameraCreate('humaneye');
         end
         
     end
