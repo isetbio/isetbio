@@ -447,6 +447,9 @@ classdef coneMosaicHex < coneMosaic
         % the hex mosaic
         renderActivationMap(obj, axesHandle, activation, varargin);
 
+        % the coneLocsHexGrid ordered so they correspond to the serialized 1D response
+        coneLocsHexGrid = coneLocsHexGridAlignedWithSerializedConeMosaicResponse(obj);
+        
         % Visualize iterative adjustment of the cone lattice
         hFig = plotMosaicProgression(obj, varargin);
 
@@ -470,7 +473,9 @@ classdef coneMosaicHex < coneMosaic
         % meridians
         [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
             eccDegsOfConesAlongHorizMeridian, ...
-            eccDegsOfConesAlongVertMeridian] = indicesForConesAlongMeridians(obj)
+            eccDegsOfConesAlongVertMeridian, ...
+            idxOfConesAlongHorizMeridianInSerializedList, ...
+            idxOfConesAlongVertMeridianInSerializedList] = indicesForConesAlongMeridians(obj)
         
         % Return the indices for cones at a list of target positions
         % (specified in degrees of visual angle) along  with the distances

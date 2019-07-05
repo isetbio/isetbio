@@ -44,6 +44,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     p.addParameter('outlineConesAlongHorizontalMeridian', false, @islogical);
     p.addParameter('crossHairPosition', [], @isnumeric);
     p.addParameter('visualizedFOV', [], @(x)(isnumeric(x)||(isstruct(x))));
+    p.addParameter('tickInc', [], @isnumeric);
     p.addParameter('signalRange', [], @isnumeric);
     p.addParameter('xRange', [], @isnumeric);
     p.addParameter('yRange', [], @isnumeric);
@@ -65,6 +66,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     backgroundColor = p.Results.backgroundColor;
     crossHairPosition = p.Results.crossHairPosition;
     visualizedFOV = p.Results.visualizedFOV;
+    tickInc = p.Results.tickInc;
     titleForColorBar = p.Results.titleForColorBar;
     titleForMap = p.Results.titleForMap;
     showXLabel = p.Results.showXLabel;
@@ -220,22 +222,34 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         end
     end
     
-    
-    if (visualizedFOV < 0.25)
-        tickInc = 0.01;
-    elseif (visualizedFOV < 0.5)
-        tickInc = 0.05;
-    elseif (visualizedFOV < 1.0)
-        tickInc = 0.1;
-    elseif (visualizedFOV < 4.0)
-        tickInc = 0.25;
-    elseif (visualizedFOV < 8.0)
-        tickInc = 0.5;
+    if (~isempty(p.Results.tickInc))
+        tickInc = p.Results.tickInc;
     else
-        tickInc = 1;
+        if (visualizedFOV < 0.25)
+            tickInc = 0.01;
+        elseif (visualizedFOV < 0.5)
+            tickInc = 0.05;
+        elseif (visualizedFOV < 1.0)
+            tickInc = 0.1;
+        elseif (visualizedFOV < 4.0)
+            tickInc = 0.25;
+        elseif (visualizedFOV < 8.0)
+            tickInc = 0.5;
+        else
+            tickInc = 1;
+        end
+        
+        
     end
-    xMax = round(visualizedFOV/tickInc)*tickInc;
-    ticksDegs = (-xMax:tickInc:xMax);
+    
+    if (isempty(clippingRect))
+        xMax = round(visualizedFOV/tickInc)*tickInc;
+        ticksDegs = (-xMax:tickInc:xMax);
+    else
+        xMax = max([ clippingRect.xo+clippingRect.width/2 clippingRect.yo+clippingRect.height/2]);
+        xMin = min([ clippingRect.xo-clippingRect.width/2 clippingRect.yo-clippingRect.height/2]);
+        ticksDegs = (xMin:tickInc:xMax);
+    end
     
     if (tickInc < 0.1)
         tickLabels = sprintf('%1.2f\n', ticksDegs);
@@ -264,11 +278,11 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         if (labelColorBarTicks)
             ticks = [0 0.5 1.0];
             hC.Ticks = ticks; 
-            tickLabels = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
+            tickLabelsForColorbar = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
             if (min(tickLabels) < 0)
-                hC.TickLabels = sprintf('%+2.1f\n',tickLabels); 
+                hC.TickLabels = sprintf('%+2.1f\n',tickLabelsForColorbar); 
             else
-                hC.TickLabels = sprintf('%2.1f\n',tickLabels); 
+                hC.TickLabels = sprintf('%2.1f\n',tickLabelsForColorbar); 
             end
         else
             hC.TickLabels = {}; 
