@@ -148,8 +148,11 @@ elseif isgraphics(hf, 'axes')
 end
 
 %% Set color order so that LMS plots as RGB
+
+% This is a problem.  If the user has a ColorOrder defined in their work
+% space, it will not work with this code.
 if ~isequal(hf, 'none')
-    co = get(gca, 'ColorOrder');
+    co = get(gca, 'ColorOrder');  % If not the Matlab default, this code is not good
     if isgraphics(hf, 'axes')
         set(get(hf, 'parent'), ...
             'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
@@ -251,6 +254,7 @@ switch ieParamFormat(plotType)
         end
 
     case {'hlineabsorptionslms', 'vlineabsorptionslms'}
+        % Does not work correctly when in the cone mosaic viewing mode.
         data = mean(obj.absorptions, 3);
 
         % The plots below are with respect to a point.
