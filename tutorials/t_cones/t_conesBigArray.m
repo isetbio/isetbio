@@ -4,9 +4,12 @@
 %
 % 
 
+%% 
+ieInit
+
 %% First the scene
 s = sceneCreate('rings rays');
-s = sceneSet(s, 'fov', 3);
+s = sceneSet(s, 'fov', 0.3);
 
 % Then the oi
 oi = oiCreate;
@@ -24,10 +27,22 @@ cMosaic.setSizeToFOV(sceneGet(s, 'fov'));
 cMosaic.compute(oi);
 
 %% Bring up a window so that we can look at things.
-%
-% Using the pull down in the window, you can look at
-% the mosaic, the isomerizations for one fixation, or
-% the movie of fixations.
-cMosaic.window;
 
-%%
+% Using the pull down in the window, you can choose the image that is
+% displayed. You can bring up one or the other images with the 'show'
+% argument
+cMosaic.window('show','mean absorptions');
+
+%% Or the cone mosaic
+cMosaic.window('show','cone mosaic');
+
+%% No photocurrent because we didn't compute it
+
+% But if we add eye movements, recompute, then we can show
+%{
+   cMosaic.emGenSequence(100);
+   cMosaic.compute(oi);
+   cMosaic.computeCurrent;
+   cMosaic.window('show','mean photocurrent');
+%}
+%% END

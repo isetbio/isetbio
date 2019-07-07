@@ -135,9 +135,6 @@ p.parse(obj, plotType, varargin{:});
 hf = p.Results.hf;
 oi = p.Results.oi;                    % Used in plotGraphs routine
 
-% Initialize return structure
-uData = [];
-
 %% Initialize where we'll plot
 if isempty(hf)
     hf = vcNewGraphWin;
