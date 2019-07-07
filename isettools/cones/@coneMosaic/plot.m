@@ -161,13 +161,15 @@ end
 
 %% Switch on passed plot type
 
-% We should get what is in there now.  We will add slots to this.
-uData = get(gca,'UserData');
-
+% When we draw into the main axis in the cMosaic window, we store the user
+% data in that window.  Otherwise, we build up some user data in a new
+% variable that is stored in the temporary plotting window.
 switch ieParamFormat(plotType)
     case 'conemosaic'
-        if isfield(uData,'mosaicImage') && ~isempty(uData.mosaicImage)
-            imagesc(uData.mosaicImage)
+        axisData = get(gca,'UserData');  % Main axis in the window
+
+        if isfield(axisData,'mosaicImage') && ~isempty(axisData.mosaicImage)
+            imagesc(axisData.mosaicImage)
             axis off; axis image;
         else
             locs    = obj.coneLocs;
@@ -194,21 +196,25 @@ switch ieParamFormat(plotType)
             %}
             
             % The locations are converted to microns from meters, I think.
-            [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
+            [axisData.support, axisData.spread, axisData.delta, axisData.mosaicImage] = ...
                 conePlot(locs * 1e6, pattern);
-            imagesc(uData.mosaicImage);
+            imagesc(axisData.mosaicImage);
             axis off; axis image;
         end
         
+        set(gca,'UserData',axisData);  % Put the modified values back
+
     case 'meanabsorptions'
+        axisData = get(gca,'UserData'); % Main axis in window
+
         % Image of mean absorptions per integration period
         if isempty(obj.absorptions), error('no absorption data'); end
 
         % Show the data, with the gamma from the window.
-        uData.data = mean(obj.absorptions, 3);
+        axisData.data = mean(obj.absorptions, 3);
         gdata = guidata(obj.hdl);
         gam = str2double(get(gdata.editGam, 'string'));
-        imagesc((uData.data) .^ gam);
+        imagesc((axisData.data) .^ gam);
         axis off;
 
         % Preserve the tick labels in real photons
@@ -221,6 +227,8 @@ switch ieParamFormat(plotType)
         set(cbar, 'TickLabels', photons);
         axis image;
         title('Absorptions per integration time');
+        
+        set(gca,'UserData',axisData);  % Put it back
 
     case 'movieabsorptions'
         % Movie in gray scale
@@ -233,6 +241,7 @@ switch ieParamFormat(plotType)
         uData = ieMovie(obj.absorptions, varargin{:});
 
     case {'hlineabsorptions', 'vlineabsorptions'}
+        % Data are stored in the temporary potting window.
         data = mean(obj.absorptions, 3);
 
         % The plots below are with respect to a point.
@@ -246,7 +255,7 @@ switch ieParamFormat(plotType)
         vcNewGraphWin;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
-            plot(data(:, x), 'LineWidth', 2);
+            plot(data(:, x), 'k-', 'LineWidth', 2);
             uData.y = data(:, x);
             uData.x = 1:length(uData.y);
             grid on;
@@ -254,7 +263,7 @@ switch ieParamFormat(plotType)
             ylabel(yStr);
             set(gca, 'userdata', data(:, x));
         else
-            plot(data(y, :), 'LineWidth', 2);
+            plot(data(y, :), 'k-', 'LineWidth', 2);
             uData.y = data(y, :);
             uData.x = 1:length(uData.y);
             grid on;
@@ -596,10 +605,11 @@ switch ieParamFormat(plotType)
 end
 
 % Put back the modified user data
-set(gca, 'userdata', uData);
+if exist('uData','var'), set(gca, 'userdata', uData); end
 
 end
 
+%{
 function mov = coneImageActivity(cMosaic, hf, varargin)
 % Make a movie or a single image of cone absorptions on a colored mosaic
 %
@@ -756,3 +766,4 @@ xlabel('Time (sec)');
 ylabel('pA');
 
 end
+%}

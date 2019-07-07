@@ -9,7 +9,7 @@ ieInit
 
 %% First the scene
 s = sceneCreate('rings rays');
-s = sceneSet(s, 'fov', 0.3);
+s = sceneSet(s, 'fov', 3);
 
 % Then the oi
 oi = oiCreate;
