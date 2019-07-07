@@ -16,7 +16,7 @@
 ieInit;
 
 %% Set range
-pos = 0:(1e-4):10e-3;         % Eccentricity in meters
+pos = logspace(-5,-2,50);
 ang = (0:.02:1.02) * 2 * pi;  % Angle around all 360 deg (plus a little)
 
 %% Fill up a matrix with cone density

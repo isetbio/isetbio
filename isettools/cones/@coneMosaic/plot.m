@@ -150,9 +150,10 @@ end
 %% Set color order so that LMS plots as RGB
 
 % This is a problem.  If the user has a ColorOrder defined in their work
-% space, it will not work with this code.
+% space, it will not work with this code.  We should probably just define
+% the color map explicitly here.
 if ~isequal(hf, 'none')
-    co = get(gca, 'ColorOrder');  % If not the Matlab default, this code is not good
+    co = get(gca, 'ColorOrder');  
     if isgraphics(hf, 'axes')
         set(get(hf, 'parent'), ...
             'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
@@ -162,35 +163,46 @@ if ~isequal(hf, 'none')
 end
 
 %% Switch on passed plot type
+
+% We should get what is in there now.  We will add slots to this.
+uData = get(gca,'UserData');
+
 switch ieParamFormat(plotType)
     case 'conemosaic'
-        % Default for cone size
-        support = [4, 4];
-        spread = 2;
-        maxCones = 5e4;
-
-        % Speed things up
-        nCones = size(obj.coneLocs, 1);
-        locs = obj.coneLocs;
-        pattern = obj.pattern(:);
-        if  nCones > maxCones
+        if isfield(uData,'mosaicImage') && ~isempty(uData.mosaicImage)
+            imagesc(uData.mosaicImage)
+            axis off; axis image;
+        else
+            locs    = obj.coneLocs;
+            pattern = obj.pattern(:);
+            
+            % We used to speed things up when there are a lot of cones But on
+            % my new Mac even with 200,000 cones things are fast enough. There
+            % may be people on slower older Macs.  Not sure what to do but
+            % maybe this.
+            %{
+           nCones  = size(obj.coneLocs, 1);
+           maxCones = 5e4;
+           if  nCones > maxCones
             disp('Displaying subsampled (50K) version')
             lst = randi(nCones, [maxCones, 1]);
             lst = unique(lst);
             locs = locs(lst, :);
             pattern = pattern(lst, :);
 
-            % Brighten up in this case
-            support = round([nCones / maxCones, nCones / maxCones]);
-            spread = 2 * support(1);
+             % Need to check the rendering when there are a lot of cones
+             % support = round([nCones / maxCones, nCones / maxCones]);
+             % spread = 2 * support(1);
+            end
+            %}
+            
+            % The locations are converted to microns from meters, I think.
+            [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
+                conePlot(locs * 1e6, pattern);
+            imagesc(uData.mosaicImage);
+            axis off; axis image;
         end
-
-        [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
-            conePlot(locs * 1e6, pattern, support, spread);
-        imagesc(uData.mosaicImage);
-        axis off;
-        axis image;
-
+        
     case 'meanabsorptions'
         % Image of mean absorptions per integration period
         if isempty(obj.absorptions), error('no absorption data'); end
@@ -586,6 +598,7 @@ switch ieParamFormat(plotType)
         error('unsupported plot type');
 end
 
+% Put back the modified user data
 set(gca, 'userdata', uData);
 
 end

@@ -482,11 +482,21 @@ function menuEditClearData_Callback(hObject, eventdata, handles)
 % Optional key/value pairs:
 %    None.
 %
-handles.cMosaic.clearData();
-handles.mov = [];
+handles.cMosaic.clearData();  % Clear absorptions and current
+
+% Clear any movies and stored mosaic image
+handles.mov    = [];
 handles.curMov = [];
-guidata(hObject, handles);
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+uData = get(handles.axes2,'UserData');
+if isfield(uData,'mosaicImage')
+    uData.mosaicImage = [];
+    set(handles.axes2,'UserData',uData);
+end
+
+guidata(hObject, handles); % Put back the modified handles
+
+coneMosaicGUIRefresh(hObject, eventdata, handles); % Update the window
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -630,12 +640,15 @@ else
     set(handles.menuPlotMosaicMeanCurrent, 'Enable', 'on');
 end
 
-% popup menu content
+%% Set the strings in the popup menu for what to plot
 str = {'Cone mosaic'};
+
+% Add absorption options
 if ~isempty(cm.absorptions)
     str = [str {'Mean absorptions', 'Absorption movie'}];
 end
 
+% Add photocurrent options
 if ~isempty(cm.current)
     str = [str {'Mean photocurrent', 'Photocurrent movie'}];
 end
@@ -643,14 +656,16 @@ end
 index = get(handles.popupImageType, 'Value');
 if index > length(str), index = 1; end  % Mean absorptions
 plotType = str{index};
+
+% Set the index and then string in the window popup menu
 set(handles.popupImageType, 'Value', index);
 set(handles.popupImageType, 'String', str);
 
-%% Here are the different window options
+%% Here are the different plotting options for the main axis (handles.axes2)
 
-% Gamma is handled within plot for the mean images
-% For the video, we are handling it this way so we can, in the future, set
-% additional parameters for the movies that get passed to ieMovie.
+% Gamma is managed within plot for the mean images. For the video, we are
+% handling it this way so we can, in the future, set additional parameters
+% for the movies that get passed to ieMovie.
 g = str2num(get(handles.editGam, 'string'));
 
 switch plotType
@@ -658,7 +673,13 @@ switch plotType
         % cone mosaic image
         % TODO:  For large mosaics, the computation is slow. We should
         % compute it once and store it.
+        nCones  = size(cm.coneLocs, 1);
+        maxCones = 1e4;
+        if  nCones > maxCones
+            ieInWindowMessage('Drawing large mosaic', handles);
+        end
         cm.plot('cone mosaic', 'hf', handles.axes2);
+        ieInWindowMessage('', handles)
 
     case 'Mean absorptions'
         % mean cone absorptions
