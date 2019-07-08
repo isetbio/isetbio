@@ -14,13 +14,13 @@
 %    09/04/18  jbm  Formatting
 
 %% Init
-s_initISET;
+ieInit;
 
 %% The Gretag/Macbeth ColorChecker reflectance spectra
 wave = 400:10:700;  % nanometers
 macbethReflectance = macbethReadReflectance(wave);
 
-% Plot
+%% Plot
 vcNewGraphWin;
 p = plot(wave, macbethReflectance);
 set(p, 'linewidth', 1);

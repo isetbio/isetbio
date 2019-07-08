@@ -59,3 +59,5 @@ axis 'square'
 xlabel('Pos (arc min)')
 ylabel('Pos (arc min)')
 title(sprintf('Duration %.1f', duration));
+
+%%
