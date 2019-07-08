@@ -39,7 +39,7 @@ fovea = project.sessions.findOne('label=fovea');
 
 %% Set mosaic FOV list.
 
-fovList = [1,2];
+fovList = 0.7;
 
 %% Set mosaic parameters
 % The various mosaic parameters and their descriptions
@@ -110,30 +110,25 @@ for pIndex = 1:numel(fovList)
     save(mosaicDataFile, 'hexMosaic');
     jsonwrite(mosaicMetaDataFile,mParams)
     
-    %{
-    foo = load(mosaicFileName);
-    mdata = jsonread(metadata);
-    %}
     
     %% Print mosaic info
-    hexMosaic.displayInfo();
+    % hexMosaic.displayInfo();
     
     %% Visualize the mosaic, showing inner segment and geometric area.
     % The inner segment being the light collecting area
     
     % Choose aperture from 'both', 'lightCollectingArea', 'geometricArea'
     visualizedAperture = 'lightCollectingArea';
-    vcNewGraphWin;
-    hFig = hexMosaic.visualizeGrid(...
+    hFig1 = hexMosaic.visualizeGrid(...
         'axesHandle', gca, ...
         'visualizedConeAperture', visualizedAperture, ...
         'apertureShape', 'disks', ...
         'ticksInMicrons', true);
-    set(hFig, 'Position', [10 900 1365 1365]);
+    set(hFig1, 'Position', [50 50 1200 1200]);
 
-    [p,n,e] = fileparts(mosaicDataFile);
+    [p,n,~] = fileparts(mosaicDataFile);
     mosaicConesPDF = fullfile(p,[n,'-cones.pdf']);
-    NicePlot.exportFigToPDF(mosaicConesPDF, hFig, 300);
+    NicePlot.exportFigToPDF(mosaicConesPDF, hFig1, 300);
 
     %% Visualize mosaic w/ overlayed theoretical & measured cone dens plots
     
@@ -141,7 +136,7 @@ for pIndex = 1:numel(fovList)
 
     % maxEccMicrons = 300*mParams.fovDegs;
     contourLevels = 1000 * linspace(20,200,5);
-    hFig = hexMosaic.visualizeGrid(...
+    hFig2 = hexMosaic.visualizeGrid(...
         'axesHandle', gca, ...
         'visualizedConeAperture', visualizedAperture, ...
         'apertureShape', 'disks', ...
@@ -150,16 +145,16 @@ for pIndex = 1:numel(fovList)
         'overlayConeDensityContour', 'theoretical_and_measured', ...
         'coneDensityContourLevels', contourLevels, ...
         'ticksInMicrons', true);
-    set(hFig, 'Position', [10 900 1365 1365]);
+    set(hFig2, 'Position', [50 50 1200 1200]);
 
     [p,n,e] = fileparts(mosaicDataFile);
-    mosaicDensityPDF = fullfile(p,[n,'-cones.pdf']);
-    NicePlot.exportFigToPDF(mosaicDensityPDF, hFig, 300);
+    mosaicDensityPDF = fullfile(p,[n,'-density.pdf']);
+    NicePlot.exportFigToPDF(mosaicDensityPDF, hFig2, 300);
 
     %% Upload to FLywheel
-    acqLabel = sprintf('%sdeg',mParams.center);
+    acqLabel = sprintf('%2.2f deg',mParams.fovDegs);
     try
-        acq = fovea.acquisitions.findOne(acqLabel);
+        acq = fovea.acquisitions.findOne(['label=',acqLabel]);
     catch
         acq = fovea.addAcquisition('label',acqLabel);
     end

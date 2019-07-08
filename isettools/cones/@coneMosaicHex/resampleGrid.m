@@ -680,7 +680,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
     else
         fprintf('Converged after %d iterations.\n', iteration);
     end
-    fprintf('Number of Delayun triangulations: %d\n', triangulationIndex);
+    fprintf('Number of Delaunay triangulations: %d\n', triangulationIndex);
 
     % Turn back on Delaunay triangularization warning
     warning('on', 'MATLAB:qhullmx:InternalWarning');
