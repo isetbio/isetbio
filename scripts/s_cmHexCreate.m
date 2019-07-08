@@ -18,9 +18,28 @@
 %
 
 %% Initialize
+% If you want to clear all by default, or not, use
+%
+%   ieSessionSet('init clear',false);
+%   ieSessionGet('init clear')
+%
+% See doc ieSessionSet() for other parameters you can control and
+% ieSessionGet() for general ISETBio parameters you can retrieve.
+%
 ieInit;
-clear;
-close all;
+
+%% Local storage location
+
+chdir(fullfile(isetbioRootPath,'local','mosaics'));
+
+% Flywheel set up 
+st = scitran('stanfordlabs');
+project = st.lookup('wandell/ISETBio Mosaics');
+fovea = project.sessions.findOne('label=fovea');
+
+%% Set mosaic FOV list.
+
+fovList = [1,2];
 
 %% Set mosaic parameters
 % The various mosaic parameters and their descriptions
@@ -50,109 +69,105 @@ mParams = struct(...
 
 % larger than default tolerances to speed-up computation. For production
 % work, either do not set, or set to equal or lower than 0.01.
-quality.tolerance1 = 0.5;
+mParams.quality.tolerance1 = 0.5;
 % larger than default tolerances to speed-up computation, For production
 % work, either do not set, or set to equal or lower than 0.001.
-quality.tolerance2 = 0.05;
+mParams.quality.tolerance2 = 0.05;
 % How much larger lattice to generate so as to minimize artifacts in cone
 % spacing near the edges. If empty, a dynamic adjustment of margin is done
 % for mosaics < 1.0 degs.
-quality.marginF = [];
+mParams.quality.marginF = [];
+% Iterations
+mParams.quality.gridAdjustmentIterations = 50;
+% Some day, this will be a meaningful parameter
+mParams.center = 'center(0,0)';
 
-%% Set import/export options
-saveMosaic = false;     % whether to save the mosaic
-loadMosaic = false;     % whether to load a previously saved mosaic
-saveMosaicPDF = false;  % whether to save a PDF of the mosaic
-
-%% Set mosaic FOV
-fovExamined = 0.4;
-
-for pIndex = 1:numel(fovExamined)
-    mosaicFOV = fovExamined(pIndex);
-    mParams.fovDegs = mosaicFOV;
-    mosaicFileName = sprintf('mosaic%2.2f.mat', mosaicFOV);
-
-    if (loadMosaic)
-        load(mosaicFileName);
-    else
-        tic
-        %% Generate the mosaic. This takes a little while.
-        theHexMosaic = coneMosaicHex(mParams.resamplingFactor, ...
-            'name', mParams.name, ...
-            'fovDegs', mParams.fovDegs, ...
-            'eccBasedConeDensity', mParams.eccBasedConeDensity, ...
-            'eccBasedConeQuantalEfficiency', mParams.eccBasedConeQuantalEfficiency, ...
-            'eccBasedMacularPigment', mParams.eccBasedMacularPigment, ...
-            'sConeMinDistanceFactor', mParams.sConeMinDistanceFactor, ...
-            'sConeFreeRadiusMicrons', mParams.sConeFreeRadiusMicrons, ...
-            'spatialDensity', mParams.spatialDensity, ...
-            'latticeAdjustmentPositionalToleranceF', quality.tolerance1, ...
-            'latticeAdjustmentDelaunayToleranceF', quality.tolerance2, ...
-            'maxGridAdjustmentIterations', 50, ...
-            'marginF', quality.marginF);
-
-        % Save the mosaic for later analysis
-        if (saveMosaic), save(mosaicFileName, 'theHexMosaic', '-v7.3'); end
-    end
-
+for pIndex = 1:numel(fovList)
+    mParams.fovDegs = fovList(pIndex);
+    mosaicFileName = sprintf('hexMosaic-%s-fov(%2.2f)', mParams.center,mParams.fovDegs);
+    
+    tic
+    %% Generate the mosaic. This takes a little while.
+    hexMosaic = coneMosaicHex(mParams.resamplingFactor, ...
+        'name', mParams.name, ...
+        'fovDegs', mParams.fovDegs, ...
+        'eccBasedConeDensity', mParams.eccBasedConeDensity, ...
+        'eccBasedConeQuantalEfficiency', mParams.eccBasedConeQuantalEfficiency, ...
+        'eccBasedMacularPigment', mParams.eccBasedMacularPigment, ...
+        'sConeMinDistanceFactor', mParams.sConeMinDistanceFactor, ...
+        'sConeFreeRadiusMicrons', mParams.sConeFreeRadiusMicrons, ...
+        'spatialDensity', mParams.spatialDensity, ...
+        'latticeAdjustmentPositionalToleranceF', mParams.quality.tolerance1, ...
+        'latticeAdjustmentDelaunayToleranceF', mParams.quality.tolerance2, ...
+        'maxGridAdjustmentIterations', mParams.quality.gridAdjustmentIterations, ...
+        'marginF', mParams.quality.marginF);
+    toc
+    
+    % Save the mosaic for later analysis (Why are we saving with this
+    % version?)
+    mosaicDataFile = sprintf('%s.mat',mosaicFileName);
+    mosaicMetaDataFile = sprintf('%s.json',mosaicFileName);
+    save(mosaicDataFile, 'hexMosaic');
+    jsonwrite(mosaicMetaDataFile,mParams)
+    
+    %{
+    foo = load(mosaicFileName);
+    mdata = jsonread(metadata);
+    %}
+    
     %% Print mosaic info
-    theHexMosaic.displayInfo();
-
+    hexMosaic.displayInfo();
+    
     %% Visualize the mosaic, showing inner segment and geometric area.
     % The inner segment being the light collecting area
-
+    
     % Choose aperture from 'both', 'lightCollectingArea', 'geometricArea'
     visualizedAperture = 'lightCollectingArea';
-    hFig = figure(); clf;
-    set(hFig, 'Position', [10 10 1365 380]);
-    axHandle = subplot(1,3,1);
-    theHexMosaic.visualizeGrid(...
-        'axesHandle', axHandle, ...
+    vcNewGraphWin;
+    hFig = hexMosaic.visualizeGrid(...
+        'axesHandle', gca, ...
         'visualizedConeAperture', visualizedAperture, ...
         'apertureShape', 'disks', ...
         'ticksInMicrons', true);
+    set(hFig, 'Position', [10 900 1365 1365]);
+
+    [p,n,e] = fileparts(mosaicDataFile);
+    mosaicConesPDF = fullfile(p,[n,'-cones.pdf']);
+    NicePlot.exportFigToPDF(mosaicConesPDF, hFig, 300);
 
     %% Visualize mosaic w/ overlayed theoretical & measured cone dens plots
+    
     % coneDensityContour levels are in cones/mm^2
-    axHandle = subplot(1,3,2);
-    hFig = theHexMosaic.visualizeGrid(...
-        'axesHandle', axHandle, ...
+
+    % maxEccMicrons = 300*mParams.fovDegs;
+    contourLevels = 1000 * linspace(20,200,5);
+    hFig = hexMosaic.visualizeGrid(...
+        'axesHandle', gca, ...
         'visualizedConeAperture', visualizedAperture, ...
         'apertureShape', 'disks', ...
         'labelConeTypes', false, ...
         'overlayHexMesh', true, ...
         'overlayConeDensityContour', 'theoretical_and_measured', ...
-        'coneDensityContourLevels', 1000 * [170 190 210 220 230 240], ...
+        'coneDensityContourLevels', contourLevels, ...
         'ticksInMicrons', true);
+    set(hFig, 'Position', [10 900 1365 1365]);
 
-    %% Export PDF
-    if (saveMosaicPDF)
-        NicePlot.exportFigToPDF(...
-            sprintf('%s.pdf', mosaicFileName), hFig, 300);
+    [p,n,e] = fileparts(mosaicDataFile);
+    mosaicDensityPDF = fullfile(p,[n,'-cones.pdf']);
+    NicePlot.exportFigToPDF(mosaicDensityPDF, hFig, 300);
+
+    %% Upload to FLywheel
+    acqLabel = sprintf('%sdeg',mParams.center);
+    try
+        acq = fovea.acquisitions.findOne(acqLabel);
+    catch
+        acq = fovea.addAcquisition('label',acqLabel);
     end
+    acq.uploadFile(mosaicDataFile);
+    acq.uploadFile(mosaicMetaDataFile);
+    acq.uploadFile(mosaicConesPDF);
+    acq.uploadFile(mosaicDensityPDF);
+    
 end % pIndex
 
-%% Compute isomerizations to a simple stimulus for the resulting mosaic.
-% Generate ring rays stimulus
-scene = sceneCreate('rings rays');
-scene = sceneSet(scene, 'fov', 1.0);
-
-% Compute the optical image
-oi = oiCreate;
-oi = oiCompute(scene, oi);
-
-% Compute isomerizations for both mosaics and look at them in a window.
-isomerizationsHex = theHexMosaic.compute(oi, 'currentFlag', false);
-
-axHandle = subplot(1,3,3);
-theHexMosaic.renderActivationMap(axHandle, isomerizationsHex, ...
-                'mapType', 'modulated disks', ...
-                'showXLabel', false, ...
-                'showYLabel', false, ...
-                'showXTicks', false, ...
-                'showYTicks', false, ...
-                'showColorBar', true, ...
-                'labelColorBarTicks', true, ...
-                'titleForColorBar', sprintf('R*/cone/%2.0fms', theHexMosaic.integrationTime*1000));
-            
 %% END

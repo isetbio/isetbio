@@ -209,7 +209,7 @@ hold(axesHandle, 'on');
 
 %% Do the display
 if (overlayHexMesh)
-    disp('here')
+    % disp('here')
     % Superimpose hex mesh showing the locations of the perfect hex grid
     meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5];
     meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
