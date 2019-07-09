@@ -2,10 +2,12 @@ function visualizeScene(scene, varargin)
 p = inputParser;
 p.addParameter('displayContrastProfiles', false, @islogical);
 p.addParameter('displayRadianceMaps', true, @islogical);
+p.addParameter('spatialSupportInDegs', false, @islogical);
 % Parse input
 p.parse(varargin{:});
 displayContrastProfiles = p.Results.displayContrastProfiles;
 displayRadianceMaps = p.Results.displayRadianceMaps;
+spatialSupportInDegs = p.Results.spatialSupportInDegs;
 
 % retrieve the spatial support of the scene(in millimeters)
 spatialSupportMilliMeters = sceneGet(scene, 'spatial support', 'mm');
@@ -20,8 +22,21 @@ yMap = squeeze(XYZmap(:,:,2))./sum(XYZmap,3);
 % Compute mean luminance and mean chromaticity
 meanLuminance = mean(luminanceMap(:));
 meanChromaticity = [mean(xMap(:)) mean(yMap(:))];
+
+if (spatialSupportInDegs)
+    viewingDistance = sceneGet(scene, 'distance');
+    spatialSupportDegs = 2 * atand(spatialSupportMilliMeters/1e3/2/viewingDistance);
+
+    spatialSupport = spatialSupportDegs;
+    spatialSupportUnits = 'degs';
+else
+    spatialSupport = spatialSupportMilliMeters;
+    spatialSupportUnits = 'mm';
+end
+
 % visualize the scene as RGB
-visualizeSceneRGB(spatialSupportMilliMeters, 'mm', sceneRGBsettings, ...
+
+visualizeSceneRGB(spatialSupport, spatialSupportUnits, sceneRGBsettings, ...
     meanLuminance, meanChromaticity, sceneGet(scene, 'name'));
 
 if (displayRadianceMaps)
