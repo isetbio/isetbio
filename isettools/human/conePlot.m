@@ -145,7 +145,20 @@ if notDefined('support')
     coneSep = conePos(2) - conePos(1);
     support = [coneSep,coneSep];
 end
-if notDefined('spread'), spread = (support(1)/4); end
+
+% Not sure that I have this right.  Setting this has a big impact on
+% how the rendered mosaic looks.  Keep experimenting.  (BW).
+if notDefined('spread')
+    if support(1) < 20
+        spread = (support(1)/3);
+    elseif support(1) < 30
+        spread = (support(1)/4);
+    elseif support(1) < 40
+        spread = (support(1)/5);
+    else
+        spread = (support(1)/6);
+    end    
+end
 
 if notDefined('whiteBackground'), whiteBackground = false; end
 if (whiteBackground)

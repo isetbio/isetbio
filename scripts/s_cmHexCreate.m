@@ -39,7 +39,7 @@ fovea = project.sessions.findOne('label=fovea');
 
 %% Set mosaic FOV list.
 
-fovList = [2,4];
+fovList = 0.2;
 
 %% Set mosaic parameters
 % The various mosaic parameters and their descriptions
@@ -82,6 +82,7 @@ mParams.quality.gridAdjustmentIterations = 50;
 % Some day, this will be a meaningful parameter
 mParams.center = 'center(0,0)';
 
+%%
 for pIndex = 1:numel(fovList)
     mParams.fovDegs = fovList(pIndex);
     mosaicFileName = sprintf('hexMosaic-%s-fov(%2.2f)', mParams.center,mParams.fovDegs);
@@ -149,7 +150,7 @@ for pIndex = 1:numel(fovList)
 
     [p,n,e] = fileparts(mosaicDataFile);
     mosaicDensityPDF = fullfile(p,[n,'-density.pdf']);
-    NicePlot.exportFigToPDF(mosaicDensityPDF, hFig2, 300);
+    % NicePlot.exportFigToPDF(mosaicDensityPDF, hFig2, 300);
 
     %% Upload to FLywheel
     acqLabel = sprintf('%2.2f deg',mParams.fovDegs);

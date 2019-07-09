@@ -38,7 +38,7 @@ project = st.lookup('wandell/ISETBio Mosaics');
 fovea = project.sessions.findOne('label=fovea');
 
 %% Set mosaic FOV list.
-fovList = [2,4];
+fovList = 2;
 
 
 %% Set mosaic parameters
@@ -72,7 +72,7 @@ mParams.fovdegs = 2;
 rectMosaic = rectMosaic.setSizeToFOV(mParams.fovdegs);
 % rectMosaic.window('show','cone mosaic');
 support = [];
-spread = 12;
+spread = 8;
 conePlot(rectMosaic.coneLocs * 1e6, rectMosaic.pattern, support, spread);
 axis off; axis image; 
 
@@ -85,10 +85,10 @@ save(mosaicDataFile, 'rectMosaic');
 jsonwrite(mosaicMetaDataFile,mParams)
 [p,n,~] = fileparts(mosaicDataFile);
 mosaicConesPDF = fullfile(p,[n,'-cones.pdf']);
-NicePlot.exportFigToPDF(mosaicConesPDF, hFig1, 300);
+NicePlot.exportFigToPDF(mosaicConesPDF, gcf, 300);
 
 %% Upload to FLywheel
-acqLabel = sprintf('%2.2f deg',mParams.fovDegs);
+acqLabel = sprintf('%2.2f deg',mParams.fovdegs);
 try
     acq = fovea.acquisitions.findOne(['label=',acqLabel]);
 catch
@@ -97,7 +97,5 @@ end
 acq.uploadFile(mosaicDataFile);
 acq.uploadFile(mosaicMetaDataFile);
 acq.uploadFile(mosaicConesPDF);
-acq.uploadFile(mosaicDensityPDF);
-
 
 %% END
