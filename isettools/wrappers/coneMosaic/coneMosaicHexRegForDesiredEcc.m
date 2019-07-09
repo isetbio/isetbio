@@ -8,6 +8,7 @@
 % 
 % See Also:
 %   wrappers/scene/compute/sceneFromROI
+%   ISETBIO LiveScripts repository: ls_computingWithEccentricityVaryingHexMosaics.mlx
 
 % History:
 %    7/9/19  NPC  ISETBIO Team, Copyright 2019
@@ -25,9 +26,9 @@ SconeMinDistanceFactor = 2;
 
 
 p = inputParser;
-p.addParameter('eccRadiusDegs', 30, @isnumeric);              % radial eccentricity in degs
-p.addParameter('eccAngleDegs', 45, @isnumeric);               % angular eccentricity in degs
-p.addParameter('fovDegs', [5 5], @isnumeric);                 % field of view in degs
+p.addParameter('eccRadiusDegs', 30, @isnumeric);               % radial eccentricity in degs
+p.addParameter('eccAngleDegs', 45, @isnumeric);                % angular eccentricity in degs
+p.addParameter('fovDegs', [5 5], @isnumeric);                  % field of view in degs
 p.addParameter('spatialDensity', spatialDensity, @isnumeric);  % density of L/M/S cones
 p.addParameter('sConeMinDistanceFactor', SconeMinDistanceFactor, @isnumeric);
 p.addParameter('integrationTimeSeconds', 5/1000, @isnumeric);
@@ -50,6 +51,7 @@ eccRadiusMeters = eccRadiusDegs*defaultMicronsPerDegree*1e-6;
     coneSizeReadData('whichEye','left', ...
     'eccentricity', eccRadiusMeters, ...
     'angle', eccAngleDegs);
+
 coneSpacingMicrons = spacingMeters * 1e6
 coneApertureMicrons = apertureMeters * 1e6
 

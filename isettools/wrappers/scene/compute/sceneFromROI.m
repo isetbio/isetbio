@@ -6,11 +6,12 @@
 % 
 % See Also:
 %   wrappers/coneMosaic/coneMosaicHexRegForDesiredEcc
+%   ISETBIO LiveScripts repository: ls_computingWithEccentricityVaryingHexMosaics.mlx
 
 % History:
 %    7/9/19  NPC  ISETBIO Team, Copyright 2019
 
-function roiScene = sceneFromROI(scene, roiEccRadiusDegs, roiAngleDegs, roiSizeDegs)
+function roiScene = sceneFromROI(scene, roiRect)
 
     % retrieve the spatial support of the scene(in millimeters)
     spatialSupportMilliMeters = sceneGet(scene, 'spatial support', 'mm');
@@ -20,10 +21,8 @@ function roiScene = sceneFromROI(scene, roiEccRadiusDegs, roiAngleDegs, roiSizeD
     spatialSupportDegsX = squeeze(spatialSupportDegs(1,:,1));
     spatialSupportDegsY = squeeze(spatialSupportDegs(:,1,2));
     
-    xo = roiEccRadiusDegs * cosd(roiAngleDegs);
-    yo = roiEccRadiusDegs * sind(roiAngleDegs);
-    xLimits = xo + roiSizeDegs(1)/2*[-1 1];
-    yLimits = yo + roiSizeDegs(2)/2*[-1 1];
+    xLimits = roiRect.xo + roiRect.width/2*[-1 1];
+    yLimits = roiRect.yo + roiRect.height/2*[-1 1];
     cols = find((spatialSupportDegsX >= xLimits(1)) & (spatialSupportDegsX <= xLimits(2)));
     rows = find((spatialSupportDegsY >= yLimits(1)) & (spatialSupportDegsY <= yLimits(2)));
     
