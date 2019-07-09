@@ -1,5 +1,5 @@
 function [coneDensity,params,comment] = coneDensityReadData(varargin)
-%%coneDensityReadData  Compute cone packing density as a function of retinal position
+% Compute cone packing density as a function of retinal position
 %
 % Syntax:
 %     [coneDensity,params,comment] = coneDensityReadData;

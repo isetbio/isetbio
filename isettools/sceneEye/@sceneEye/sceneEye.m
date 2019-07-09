@@ -283,7 +283,7 @@ methods
         
         % Check to make sure this PBRT file has a realistic eye.
         if(~strcmp(recipe.camera.subtype, 'realisticEye'))
-            recipe.camera = piCameraCreate('realisticEye');
+            recipe.camera = piCameraCreate('humaneye');
         end
 
         % Set properties
@@ -480,7 +480,7 @@ methods
         elseif(~val && strcmp(obj.modelName,'none'))
             % Put the navarro eye back in if there's not already a model.
             obj.modelName = 'Navarro';
-            obj.recipe.camera = piCameraCreate('realisticEye');
+            obj.recipe.camera = piCameraCreate('humaneye');
         end
         
     end

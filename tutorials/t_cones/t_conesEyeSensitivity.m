@@ -1,16 +1,16 @@
 function t_eyeSensitivity
-%% t_conesEyeSensitivity
-% Illustrate basic principles of how eye parameters affect isomerizations.
+%% Illustrate how eye parameters affect isomerizations.
 %
 % Description:
 %    Demonstrate how changing the focal length, the pupil diameter and the
 %    inner segment aperture affect retinal illuminance/photoreceptor
 %    isomerization rate computed by ISETBio, and compare this with the
-%    analytical analysis presented Animal Eyes, pages 65-66 ff. Currently,
-%    only a single parameter can be varied at a time. This analysis derives
-%    the functional form of how retinal illuminance should vary with focal
-%    length (goes down as the square), pupil diameter (goes up as the
-%    square),  and inner segment diameter (goes up as the square).
+%    analytical analysis presented Land and Nilson (2012), Animal Eyes,
+%    pages 65-66 ff. Currently, only a single parameter can be varied at a
+%    time. This analysis derives the functional form of how retinal
+%    illuminance should vary with focal length (goes down as the square),
+%    pupil diameter (goes up as the square),  and inner segment diameter
+%    (goes up as the square).
 %
 %    Default is to examine effect of pupil diameter.
 %

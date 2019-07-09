@@ -46,7 +46,8 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
 %                      is [8 8].
 %    spread          - Numeric. The Gaussian  spread value. If not provided, then is
 %                      the default, 2.1.
-%    delta           - Numeric. The spacing in microns between samples of  the coneMosaicImage.
+%    delta           - Numeric. The spacing in microns between samples of
+%                      the coneMosaicImage. 
 %                      Default value is 0.25.
 %    coneMosaicImage - (Optional) The image. If this fourth output argument
 %                      is present, the function returns the RGB image and
@@ -78,6 +79,7 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
     [support, spread, delta] = conePlot(xy, coneType(:));
 %}
 
+%%
 if notDefined('delta'), delta = 0.25; end  % Sampling in microns
 % support and spread are adjusted below, after the grid is built
 
@@ -105,7 +107,7 @@ end
 % Could have an else dgrid = ones(size(xy, 1), 1) here and then eliminate
 % the else below.
 
-% Find the positions of the empty (K) and three cone types
+%% Find the positions of the empty (K) and three cone types
 K = find(fgrid == 1);
 L = find(fgrid == 2);
 M = find(fgrid == 3);
@@ -135,9 +137,16 @@ coneImage = reshape(coneImage, size(fgrid, 1), size(fgrid, 2), 3);
 % image(fgrid);
 % colormap(mp)
 
-% Blur the image by a Gaussian - we set blur and support here.
-if notDefined('spread'), spread = 2.1; end
-if notDefined('support'), support = round(spread * [4 4]); end
+%% Blur the image by a Gaussian - we set blur and support here.
+
+if notDefined('support')
+    % Find cone positions and set support to spacing between the cones in
+    % the coneImage
+    conePos = find(coneImage(1,:));
+    coneSep = conePos(2) - conePos(1);
+    support = [coneSep,coneSep];
+end
+if notDefined('spread'), spread = support(1)/3; end
 
 if notDefined('whiteBackground'), whiteBackground = false; end
 if (whiteBackground)
@@ -158,6 +167,7 @@ if (whiteBackground)
     tmp(repmat(indices, [1, 1, 3])) = 1;
 end
 
+%%
 if (nargout < 4)
     % Show the image
     h = vcNewGraphWin;
@@ -166,4 +176,6 @@ if (nargout < 4)
 else
     % return the image
     coneMosaicImage = tmp / max(tmp(:));
+end
+
 end

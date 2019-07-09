@@ -1,4 +1,4 @@
-% Basic introduction to the cone mosaic object.
+%% Introduction to the cone mosaic object.
 %
 % Description:
 %    Show how to create a cone mosaic object and compute cone
@@ -47,3 +47,4 @@ cMosaic.compute(oi);
 % the movie of fixations.
 cMosaic.window;
 
+%%
