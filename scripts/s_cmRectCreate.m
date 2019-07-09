@@ -38,7 +38,7 @@ project = st.lookup('wandell/ISETBio Mosaics');
 fovea = project.sessions.findOne('label=fovea');
 
 %% Set mosaic FOV list.
-fovList = 2;
+fovList = 1;
 
 
 %% Set mosaic parameters
@@ -59,7 +59,7 @@ fovList = 2;
 %                               of of 6:3:1.
 mParams = struct(...
     'name', 'rect mosaic', ...
-    'center',[2,2], ...
+    'center',[3,3], ...
     'eccentricityunits','deg',...
     'spatialDensity', [0 .6 .3 .1]);
 
@@ -68,7 +68,7 @@ mParams = struct(...
 rectMosaic = coneMosaic(mParams);
 
 % Set its field of view
-mParams.fovdegs = 2;
+mParams.fovdegs = 5;
 rectMosaic = rectMosaic.setSizeToFOV(mParams.fovdegs);
 % rectMosaic.window('show','cone mosaic');
 support = [];

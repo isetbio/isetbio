@@ -119,13 +119,14 @@ for pIndex = 1:numel(fovList)
     % The inner segment being the light collecting area
     
     % Choose aperture from 'both', 'lightCollectingArea', 'geometricArea'
+    vcNewGraphWin;
     visualizedAperture = 'lightCollectingArea';
     hFig1 = hexMosaic.visualizeGrid(...
         'axesHandle', gca, ...
         'visualizedConeAperture', visualizedAperture, ...
         'apertureShape', 'disks', ...
         'ticksInMicrons', true);
-    set(hFig1, 'Position', [50 50 1200 1200]);
+    % set(hFig1, 'Position', [50 50 1200 1200]);
 
     [p,n,~] = fileparts(mosaicDataFile);
     mosaicConesPDF = fullfile(p,[n,'-cones.pdf']);
@@ -146,7 +147,7 @@ for pIndex = 1:numel(fovList)
         'overlayConeDensityContour', 'theoretical_and_measured', ...
         'coneDensityContourLevels', contourLevels, ...
         'ticksInMicrons', true);
-    set(hFig2, 'Position', [50 50 1200 1200]);
+    % set(hFig2, 'Position', [50 50 1200 1200]);
 
     [p,n,e] = fileparts(mosaicDataFile);
     mosaicDensityPDF = fullfile(p,[n,'-density.pdf']);
