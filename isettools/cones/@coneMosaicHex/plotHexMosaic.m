@@ -1,11 +1,12 @@
 function plotHexMosaic(obj, varargin)
-% Visualize different aspects of the hex grid
+% Visualize the hex grid
 %
 % Syntax:
 %   plotHexMosaic(obj, [varargin])
 %
 % Description:
-%    Visualize the different aspects of the hex grid
+%   Using the key/value pairs you can visualize different aspects of
+%   the hexagonal cone mosaic.
 %
 % Inputs:
 %    obj                                       - The cone mosaic hex object
@@ -131,7 +132,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [1 0 0];
     faceColor = [1.0 0.7 0.7];
-    renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
         sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     % M-cones
@@ -139,7 +140,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [0 0.7 0];
     faceColor = [0.7 1.0 0.7];
-    renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
         sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     % S-cones
@@ -147,7 +148,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [0 0 1];
     faceColor = [0.7 0.7 1.0];
-    renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
         sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     if (showPerfectHexMesh)
@@ -211,8 +212,10 @@ xTickLabels = sprintf('%2.0f um\n', xTicks * 1e6);
 yTickLabels = sprintf('%2.0f um\n', yTicks * 1e6);
 set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, ...
     'YTickLabel', yTickLabels);
-set(gca, 'FontSize', 16, 'XColor', [0.1 0.2 0.9], ...
-    'YColor', [0.1 0.2 0.9], 'LineWidth', 1.0);
+set(gca, 'FontSize', 16, ...
+    'LineWidth', 1.0); 
+    % 'XColor', [0.1 0.2 0.9], ...
+    % 'YColor', [0.1 0.2 0.9]);
 box on;
 grid off;
 set(gca, 'XLim', [sampledHexMosaicXaxis(1) - dx, ...

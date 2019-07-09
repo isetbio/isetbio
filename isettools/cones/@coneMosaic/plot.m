@@ -146,16 +146,18 @@ end
 
 %% Set color order so that LMS plots as RGB
 
-% This is a problem.  If the user has a ColorOrder defined in their work
-% space, it will not work with this code.  We should probably just define
-% the color map explicitly here.
+% Set color order so that LMS plots as RGB
+% Matlab default is 7 colors, and we reorder
+% If the user has changed the default, we leave it alone.
 if ~isequal(hf, 'none')
     co = get(gca, 'ColorOrder');  
-    if isgraphics(hf, 'axes')
-        set(get(hf, 'parent'), ...
-            'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
-    else
-        set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+    if size(co,1) == 7    % Figure        
+        if isgraphics(hf, 'axes')
+            set(get(hf, 'parent'), ...
+                'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
+        else
+            set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+        end
     end
 end
 
