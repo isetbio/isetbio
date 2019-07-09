@@ -158,12 +158,12 @@ switch param
         else
             vcSESSION.imgData = val;
         end
-        
-    case {'metricswindow'}
-        if length(varargin) < 2, error('metrics window requires hObject,eventdata,handles'); end
-        vcSESSION.GUI.metricsWindow.hObject = val;
-        vcSESSION.GUI.metricsWindow.eventdata = varargin{1};
-        vcSESSION.GUI.metricsWindow.handles = varargin{2};
+    case {'conemosaicwindow'}
+        if length(varargin) < 2, error('sensor window requires hObject,eventdata,handles'); end
+        vcSESSION.GUI.vcConeImgWindow.hObject = val;
+        vcSESSION.GUI.vcConeImgWindow.eventdata = varargin{1};
+        vcSESSION.GUI.vcConeImgWindow.handles = varargin{2};
+
         
         % This graphics window stuff is a mess.  We usually store data using
         % set(gcf,'userdata',XXX) not the guidata.

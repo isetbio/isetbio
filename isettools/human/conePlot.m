@@ -29,9 +29,8 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
 %                      spread, delta are gaussian blurring parameters for
 %                      creating the image.
 %    support         - (Optional) Vector. 1x2 Vector containing the number
-%                      of rows and columns in the figure. This is the
-%                      spatial support for each cone (computed by default).
-%                      The default is [8 8] if spread is also undefined.
+%                      of rows and columns for each cone. The default is
+%                      the cone-cone separation.
 %    spread          - (Optional) Numeric. The spatial spread for each cone
 %                      (computed by default). Default is 2.1.
 %    delta           - (Optional) Numeric. Spacing between the cones
@@ -146,11 +145,11 @@ if notDefined('support')
     coneSep = conePos(2) - conePos(1);
     support = [coneSep,coneSep];
 end
-if notDefined('spread'), spread = support(1)/3; end
+if notDefined('spread'), spread = (support(1)/4); end
 
 if notDefined('whiteBackground'), whiteBackground = false; end
 if (whiteBackground)
-    g = fspecial('gaussian', support, spread * 0.87);
+    g = fspecial('gaussian', support, spread);
     g = g / max(g(:));
     g(g < 0.1) = 0;
     g = 1.5 * g .^ 0.3;

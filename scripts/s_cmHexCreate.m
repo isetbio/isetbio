@@ -39,7 +39,7 @@ fovea = project.sessions.findOne('label=fovea');
 
 %% Set mosaic FOV list.
 
-fovList = 0.7;
+fovList = [2,4];
 
 %% Set mosaic parameters
 % The various mosaic parameters and their descriptions

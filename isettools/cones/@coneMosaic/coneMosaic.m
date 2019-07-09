@@ -147,7 +147,7 @@ classdef coneMosaic < hiddenHandle
         pattern;
 
         %patternSampleSize - Separation between KLMS pattern samples
-        %   For rectangular grid mosaics, this is set to the width/heigh
+        %   For rectangular grid mosaics, this is set to the width/height
         %   field of the PIGMENT object, i.e., the actual cone separation.
         %
         %   For hexagonal grid mosaics (instances of the coneMosaicHex
@@ -329,6 +329,9 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('os', [], ...
                 @(x)(isempty(x) || isa(x, 'outerSegment')));
             p.addParameter('center', [0 0], @(x)(numel(x) == 2));
+            
+            p.addParameter('eccentricityunits', 'm', @ischar); % Should check for valid
+
             p.addParameter('whichEye', 'left', ...
                 @(x) ismember(x, {'left', 'right'}));
             p.addParameter('wave', 400:10:700, @isnumeric);
@@ -384,7 +387,8 @@ classdef coneMosaic < hiddenHandle
             ecc = sqrt(sum(obj.center .^ 2));
             ang = atan2d(obj.center(2), obj.center(1));
             [spacing, aperture] = coneSizeReadData( p.Unmatched, ...
-                'eccentricity', ecc, 'eccentricityUnits', 'm', ...
+                'eccentricity', ecc, ...
+                'eccentricityUnits', p.Results.eccentricityunits, ...
                 'angle', ang, 'angleUnits', 'deg', ...
                 'whichEye', obj.whichEye, ...
                 'useParfor', obj.useParfor);
