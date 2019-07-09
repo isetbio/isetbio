@@ -1,5 +1,15 @@
-% Generate scene by cropping an ROI from a source scene at a given
-% eccentricity. The new scene is zero centered.
+% Generate scene by cropping an ROI from a source scene at a desired eccentricity
+%
+% Description:
+%    Generate a new scene by cropping an ROI from a source scene at a desired 
+%    eccentricity. The new scene is zero centered.
+% 
+% See Also:
+%   wrappers/coneMosaic/coneMosaicHexRegForDesiredEcc
+
+% History:
+%    7/9/19  NPC  ISETBIO Team, Copyright 2019
+
 function roiScene = sceneFromROI(scene, roiEccRadiusDegs, roiAngleDegs, roiSizeDegs)
 
     % retrieve the spatial support of the scene(in millimeters)
