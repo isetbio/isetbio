@@ -37,8 +37,10 @@ function D = humanWaveDefocus(wave)
 %}
 
 % Constants for formula to compute defocus in diopters (D) as a function of
-% wavelength for human eye. Need citation, but the curve is in my book.
-% Not sure where the formula comes from.
+% wavelength for human eye. From 
+% Larry N. Thibos, Ming Ye, Xiaoxiao Zhang, and Arthur Bradley, 
+% "The chromatic eye: a new reduced-eye model of ocular chromatic aberration 
+% in humans," Appl. Opt. 31, 3594-3600 (1992)
 q1 = 1.7312;
 q2 = 0.63346;
 q3 = 0.21410;

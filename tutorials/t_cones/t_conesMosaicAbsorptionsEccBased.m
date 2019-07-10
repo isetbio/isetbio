@@ -19,8 +19,6 @@ function t_conesMosaicAbsorptionsEccBased
 %    None.
 %
 % Notes:
-%    * [Note: JNM - Accidentally resizing the window during execution
-%      crashes the script.]
 
 % History:
 %    06/16/18  NPC  ISETBIO Team, 2018
@@ -31,13 +29,13 @@ function t_conesMosaicAbsorptionsEccBased
 ieInit;
 
 %% Build a Gabor scene
-stimFOV = 0.4;
-parms.freq = 5;
+stimFOV = 0.25;
+parms.freq = 2;
 parms.contrast = 1.0;
-parms.ph = 0;
+parms.ph = pi;
 parms.ang = 0;
 parms.row = 128;
-parms.GaborFlag = .12;
+parms.GaborFlag = .2;
 parms.col = 128;
 [scene, parms] = sceneCreate('harmonic', parms);
 scene = sceneSet(scene, 'fov', stimFOV);
@@ -50,7 +48,7 @@ mosaicFileName = fullfile(mosaicDir, 'mosaic.mat');
 %% Build a cone mosaic or load existing one
 loadPreviouslySavedMosaic = true;
 if (~loadPreviouslySavedMosaic)
-    mosaicFOV = 0.6;
+    mosaicFOV = 0.3;
     cMosaic  = coneMosaicHex(9, ...
             'name', 'test', ...
             'fovDegs', mosaicFOV, ...
@@ -72,8 +70,8 @@ end
 %% No photon noise because we want to see the mean isomerizations
 cMosaic.noiseFlag = 'none';
 
-%% 1 msec integration time
-cMosaic.integrationTime = 1 / 1000;
+%% 5 msec integration time
+cMosaic.integrationTime = 5 / 1000;
 
 %% No correction for ecc-dependent change in cone efficiency
 cMosaic.eccBasedConeQuantalEfficiency = false;
@@ -84,11 +82,11 @@ cMosaic2 = cMosaic.copy();
 %% but with ecc-based cone efficiency corrections
 cMosaic2.eccBasedConeQuantalEfficiency = true;
 
-%% Generate 2 eye movement trials
-% Each trial with 100 eye posistions, simulating a 100 msec trial. Here we
+%% Generate eye movements
+% One trial with 20 eye posistions, simulating a 100 msec trial. Here we
 % ask for eye movements with no microsaccades.
-eyeMovementsNum = 100;
-nTrials = 2;
+eyeMovementsNum = 20;
+nTrials = 1;
 cMosaic.emGenSequence(eyeMovementsNum, ...
     'nTrials', nTrials, ...
     'microsaccadetype', 'none');
@@ -117,7 +115,7 @@ signalRange = [...
     max([max(absorptions1(:)) max(absorptions2(:))])];
 
 %% Init figure and video
-generateVideo = true;
+generateVideo = ~true;
 [hFig, subplotPosVectors, writerObj] = initFigure(generateVideo);
 
 %% Plot the scene/optical image
@@ -229,7 +227,7 @@ function [hFig, subplotPosVectors, writerObj] = initFigure(generateVideo)
     % Generate figure
     hFig = figure(1);
     clf;
-    set(hFig, 'Position', [10 10 1295 792], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1500 830], 'Color', [1 1 1]);
 
     if (generateVideo)
         videoFile = fullfile(tempdir, 'video.m4v');
@@ -490,27 +488,24 @@ function plotMosaicActivation(cMosaic, visualizedActivationPattern, ...
     p.addParameter('displayTicksY', true, @islogical);
     p.parse(varargin{:});
 
-    ax = subplot('Position', ...
-        subplotPosVectors(subplotPos(1), subplotPos(2)).v);
+    ax = subplot('Position', subplotPosVectors(subplotPos(1), subplotPos(2)).v);
+    cBarTitle = sprintf('R* / cone /%2.0fmsec', 1000 * cMosaic.integrationTime);
+    crossHairPosition = squeeze(theEmPositions(visualizedTrialIndex, timeBin, :)) * cMosaic.patternSampleSize(1);
     cMosaic.renderActivationMap(ax, visualizedActivationPattern, ...
              'signalRange', signalRange, ...
              'visualizedConeAperture', 'geometricArea', ...
              'mapType', 'modulated disks', ...
              'showColorBar', true, ...
              'labelColorBarTicks', true, ...
-             'titleForColorBar', sprintf('R* / cone /%2.0fmsec', ...
-             1000 * cMosaic.integrationTime), ...
+             'titleForColorBar', cBarTitle, ...
              'colorMap', activationLUT, ...
-             'crossHairPosition', ...
-             squeeze(theEmPositions(visualizedTrialIndex, timeBin, :)) ...
-             * cMosaic.patternSampleSize(1), ...
+             'crossHairPosition', crossHairPosition, ...
              'visualizedFOV', visualizedFOV, ...
+             'showXLabel', p.Results.displaylabelX, ...
+             'showYLabel', p.Results.displaylabelY, ...
+             'showXTicks', p.Results.displayTicksX, ...
+             'showYTicks', p.Results.displayTicksY, ...
              'backgroundColor', backgroundColor);
-    set(ax, 'FontSize', 14);
-    if (~p.Results.displaylabelX), xlabel(ax, ''); end
-    if (~p.Results.displaylabelY), ylabel(ax, ''); end
-    if (~p.Results.displayTicksX), set(ax, 'XTickLabels', {}); end
-    if (~p.Results.displayTicksY), set(ax, 'YTickLabels', {}); end
     title(ax, titleText);
 end
 

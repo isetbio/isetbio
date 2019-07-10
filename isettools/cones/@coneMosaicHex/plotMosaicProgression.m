@@ -14,8 +14,14 @@ function hFig = plotMosaicProgression(obj, varargin)
 %    hFig - The figure handle
 %
 % Optional key/value pairs:
-%    **Needed!**
+%  
+%  'contourLevels'                    - Vector. cone density levels at which to draw contours
+%  'intermediateIterationsToDisplay'  - 2 element vector. 2 iterations at 
+%                                       which to display the in-progress cone mosaic
+%   'displayedXrangeDegs'             - visualzed x-axis range in degrees
+%   'displayedYrangeDegs'             - visualzed y-axis range in degrees
 %
+
     p = inputParser;
     p.addParameter('contourLevels', 1e3 * [150 175 200 225 250], ...
         @isnumeric);
@@ -37,7 +43,7 @@ function hFig = plotMosaicProgression(obj, varargin)
         micronsPerDegree;
     hFig = figure(1);
     clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 880 1300]);
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 620 1125]);
 
     rowsNum = 6;
     colsNum = 1;
@@ -46,29 +52,29 @@ function hFig = plotMosaicProgression(obj, varargin)
            'colsNum', colsNum , ...
            'heightMargin', 0.015, ...
            'widthMargin', 0.00, ...
-           'leftMargin', 0.02, ...
+           'leftMargin', 0.04, ...
            'rightMargin', -0.02, ...
            'bottomMargin', 0.05, ...
            'topMargin', 0.00);
 
-    backgroundColor = [1 1 1];
+    backgroundColor = 0.7*[1 1 1];
 
     col = 1;
     row = 1;
     iteration = 0;
-    labelContours = false;
+    labelContours = [true false];
     labelCones = false;
-    subplotTitle = '(A)';
+    subplotTitle = '';
     plotMosaic(obj, subplotPosVectors, row, col, ...
-        displayedXrangeMicrons, displayedYrangeMicrons, false, false, ...
+        displayedXrangeMicrons, displayedYrangeMicrons, false, true, ...
         contourLevels, labelContours, labelCones, backgroundColor, ...
         iteration, subplotTitle);
 
     row = 2;
     iteration = 1;
-    labelContours = false;
+    labelContours = [false false];
     labelCones = false;
-    subplotTitle = '(B)';
+    subplotTitle = sprintf('%04.0f', iteration);
     plotMosaic(obj, subplotPosVectors, row, col, ...
         displayedXrangeMicrons, displayedYrangeMicrons, false, false, ...
         contourLevels, labelContours, labelCones, backgroundColor, ...
@@ -76,9 +82,9 @@ function hFig = plotMosaicProgression(obj, varargin)
 
     row = 3;
     iteration = intermediateIterationsToDisplay(1);
-    labelContours = false;
+    labelContours = [false false];
     labelCones = false;
-    subplotTitle = '(C)';
+    subplotTitle =  sprintf('%04.0f', iteration);
     plotMosaic(obj, subplotPosVectors, row, col, ...
         displayedXrangeMicrons, displayedYrangeMicrons, false, true, ...
         contourLevels, labelContours, labelCones, backgroundColor, ...
@@ -86,9 +92,9 @@ function hFig = plotMosaicProgression(obj, varargin)
 
     row = 4;
     iteration = intermediateIterationsToDisplay(2);
-    labelContours = false;
+    labelContours = [false false];
     labelCones = false;
-    subplotTitle = '(D)';
+    subplotTitle =  sprintf('%04.0f', iteration);
     plotMosaic(obj, subplotPosVectors, row, col, ...
         displayedXrangeMicrons, displayedYrangeMicrons, false, true, ...
         contourLevels, labelContours, labelCones, backgroundColor, ...
@@ -96,9 +102,9 @@ function hFig = plotMosaicProgression(obj, varargin)
 
     row = 5;
     iteration = size(obj.latticeAdjustmentSteps, 1);
-    labelContours = true;
+    labelContours = [false false];
     labelCones = false;
-    subplotTitle = '(E)';
+    subplotTitle =  sprintf('%04.0f', iteration);
     plotMosaic(obj, subplotPosVectors, row, col, ...
         displayedXrangeMicrons, displayedYrangeMicrons, false, true, ...
         contourLevels, labelContours, labelCones, backgroundColor, ...
@@ -106,10 +112,10 @@ function hFig = plotMosaicProgression(obj, varargin)
 
     row = 6;
     iteration = size(obj.latticeAdjustmentSteps, 1);
-    labelContours = false;
+    labelContours = [false false];
     labelCones = true;
     contourLevels = [];
-    subplotTitle = '(F)';
+    subplotTitle = '';
     plotMosaic(obj, subplotPosVectors, row, col, ...
         displayedXrangeMicrons, displayedYrangeMicrons, false, true, ...
         contourLevels, labelContours, labelCones, backgroundColor, ...
@@ -166,8 +172,10 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
             iteration, :, :));
     end
 
+        
     ax = axes('Position', subplotPosVectors(row, col).v, ...
         'units', 'normalized', 'Color', backgroundColor);
+
 
     if (isempty(displayedXrangeMicrons))
         displayedXrangeMeters = obj.center(1)+ obj.width / 2 * [-1 1];
@@ -182,8 +190,8 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
 
     % Determine cones to be plotted
     coneApertureMicrons = obj.lambdaMin / 1e6;
-    kFactorX = 0.5;
-    kFactorY = -0.5;
+    kFactorX = -1.5;
+    kFactorY = -1.5;
 
     idx = find(...
             (obj.coneLocsHexGrid(:, 1) - kFactorX * coneApertureMicrons ...
@@ -197,14 +205,15 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
 
     if (labelCones)
         obj.visualizeGrid('axesHandle', ax, ...
-            'visualizedConeAperture', 'both');
+            'visualizedConeAperture', 'both', ...
+            'backgroundColor', backgroundColor);
     else
         % Plot the cones
-        edgeColor = 'none';
-        faceColor = 0.7*[1 1 1];
+        edgeColor = [0.1 0.1 0.1];
+        faceColor = 0.99*[1 1 1];
         lineStyle = '-';
-        lineWidth = 1.0;
-        iTheta = (0:60:300) / 180 * pi;
+        lineWidth = 0.5;
+        iTheta = (0:30:360) / 180 * pi;
         coneApertureRadius = obj.lambdaMin/2;
         coneAperture.x = coneApertureRadius*cos(iTheta) * 1e-6;
         coneAperture.y = coneApertureRadius*sin(iTheta) * 1e-6;
@@ -222,25 +231,38 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
         [densityMapMosaic, densityMapSupportX, densityMapSupportY] = ...
             obj.computeDensityMap('from mosaic');
 
+        
         % Compute model mosaic density
         [densityMapModel, densityMapSupportX, densityMapSupportY] = ...
             obj.computeDensityMap('from model');
-   
-        [cH, hH] = contour(ax, densityMapSupportX, densityMapSupportY, ...
-            densityMapModel, contourLevels, 'LineColor', [0.1 .1 1.0], ...
-            'LineWidth', 3.0, 'ShowText', 'off');
-        if (labelContours)
-            clabel(cH, hH, 'FontWeight', 'bold', 'FontName', 'Menlo', ...
-                'FontSize', 12, 'Color', [0.1 0.1 1.0], ...
+
+        
+        contour(ax, densityMapSupportX, densityMapSupportY, ...
+            densityMapModel, contourLevels, 'LineColor', [0.7 0.7 1.0], ...
+            'LineWidth', 4.0, 'ShowText', 'off');
+        
+        
+        [cH1, hH1] = contour(ax, densityMapSupportX, densityMapSupportY, ...
+            densityMapModel, contourLevels, 'LineColor', [0.0 .0 1.0], ...
+            'LineWidth', 2, 'ShowText', 'off');
+        
+        contour(ax, densityMapSupportX, densityMapSupportY, ...
+            densityMapMosaic, contourLevels, 'LineColor', [1 0.7 0.7], ...
+            'LineWidth', 4.0, 'ShowText', 'off');
+        
+        [cH2, hH2] = contour(ax, densityMapSupportX, densityMapSupportY, ...
+            densityMapMosaic, contourLevels, 'LineColor', [1 0.0 0.0], ...
+            'LineWidth', 2, 'ShowText', 'off');
+        
+        if (labelContours(1))
+            clabel(cH1, hH1, 'FontWeight', 'bold', 'FontName', 'Menlo', ...
+                'FontSize', 14, 'Color', [0.1 0.1 1.0], ...
                 'Background', [1 1 1], 'LabelSpacing', 400);
         end
-
-        [cH, hH] = contour(ax, densityMapSupportX, densityMapSupportY, ...
-            densityMapMosaic, contourLevels, 'LineColor', [1 0.1 0.1], ...
-            'LineWidth', 3.0, 'ShowText', 'off');
-        if (labelContours)
-            clabel(cH, hH, 'FontWeight', 'bold', 'FontName', 'Menlo', ...
-                'FontSize', 12, 'Color', [1 0.1 0.1], ...
+        
+        if (labelContours(2))
+            clabel(cH2, hH2, 'FontWeight', 'bold', 'FontName', 'Menlo', ...
+                'FontSize', 14, 'Color', [1 0.1 0.1], ...
                 'Background', [1 1 1], 'LabelSpacing', 200);
         end
     end
@@ -251,6 +273,15 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
             0.8, 0.2, '-');
     end
 
+    xRange = displayedXrangeMeters + [-2 2]*1e-6;
+    yRange = displayedYrangeMeters + [-2 2]*1e-6;
+    
+    % Plot box around plot.
+    xBox = [xRange(1) xRange(1) xRange(2) xRange(2) xRange(1)];
+    yBox = [yRange(1) yRange(2) yRange(2) yRange(1) yRange(1)];
+    plot(ax, xBox, yBox, 'k-', 'LineWidth', 1.0);
+    
+    
     % Finalize plot
     hold off;
     axis 'equal';
@@ -263,31 +294,32 @@ function plotMosaic(obj, subplotPosVectors, row, col, ...
     yAxisColor = 'k';
     xAxisColor = 'k';
 
-    if (row == size(subplotPosVectors, 1))
-        xlabel('microns');
-    else
-        xAxisColor = 'none';
-    end
 
-    if (col == 1), ylabel('microns'); else, yAxisColor = 'none'; end
-    
-    set(gca, ...
-        'XLim', [displayedXrangeMeters(1) - 2 * 1e-6, ...
-        displayedXrangeMeters(2) + 3 * 1e-6], ...
-        'YLim', [displayedYrangeMeters(1) - 2 * 1e-6, ...
-        displayedYrangeMeters(2) + 3 * 1e-6], ...
+    set(ax, 'XLim', xRange, 'YLim', yRange, ...
         'XTick', xTicks, 'XTickLabels', xTickLabels, ...
         'YTick', yTicks, 'YTickLabels', yTickLabels, ...
-        'TickDir', 'both', ...
-        'FontSize', 18, ...
-        'XColor', xAxisColor, ...
-        'YColor', yAxisColor, ...
+        'FontSize', 18, 'XColor', xAxisColor, 'YColor', yAxisColor, ...
         'LineWidth', 1.0);
     grid off;
     box off;
+    
+    if (row == size(subplotPosVectors, 1))
+        xlabel('\it microns', 'Interpreter','tex', 'FontWeight', 'normal', 'FontSize', 24);
+    else
+        xAxisColor = 'none';
+        set(ax, 'xTickLabels', {});
+    end
 
-    text(displayedXrangeMeters(1) - 40 * 1e-6, ...
-        displayedYrangeMeters(2) - 2 * 1e-6, subplotTitle, ...
-        'Color', [0 0 0], 'FontSize', 26, 'FontWeight', 'bold');
+    if (col == 1)
+        ylabel('\it microns', 'Interpreter','tex', 'FontWeight', 'normal', 'FontSize', 24); 
+    else
+        yAxisColor = 'none'; 
+    end
+    
+    if (~isempty(subplotTitle))
+        t = text(64*1e-6, 61*1e-6 , subplotTitle, 'Color', [0 0 0], 'FontSize', 16);
+        t.BackgroundColor = 0.9*[1 1 1];
+        t.EdgeColor = 0.3*[1 1 1];
+    end
     drawnow;
 end

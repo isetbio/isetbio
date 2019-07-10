@@ -75,7 +75,13 @@ p.addParameter('coneDensityContourLevels', (100:20:250) * 1000, ...
 p.addParameter('overlayContourLabels', false, @islogical);
 p.addParameter('backgroundColor', [0.75 0.75 0.75]);
 p.addParameter('foregroundColor', [0 0 0]);
-
+p.addParameter('visualizedFOV', [], @(x)(isnumeric(x)||(isstruct(x))));
+p.addParameter('ticksInVisualDegs', false, @islogical);
+p.addParameter('ticksInMicrons', false, @islogical);
+p.addParameter('tickInc', [], @isnumeric);
+p.addParameter('noXaxisLabel', false, @islogical);
+p.addParameter('noYaxisLabel', false, @islogical);
+p.addParameter('scaleBarLengthMicrons', [], @(x)(isnumeric(x)));
 p.parse(varargin{:});
 
 showCorrespondingRectangularMosaicInstead = ...
@@ -88,11 +94,17 @@ generateNewFigure = p.Results.generateNewFigure;
 panelPosition = p.Results.panelPosition;
 coneDensityContourLevels = p.Results.coneDensityContourLevels;
 visualizedConeAperture = p.Results.visualizedConeAperture;
+visualizedFOV = p.Results.visualizedFOV;
 apertureShape = p.Results.apertureShape;
 labelConeTypes = p.Results.labelConeTypes;
 backgroundColor = p.Results.backgroundColor;
 foregroundColor = p.Results.foregroundColor;
-
+scaleBarLengthMicrons = p.Results.scaleBarLengthMicrons;
+ticksInMicrons = p.Results.ticksInMicrons;
+ticksInVisualDegs = p.Results.ticksInVisualDegs;
+tickInc = p.Results.tickInc;
+noXaxisLabel = p.Results.noXaxisLabel;
+noYaxisLabel = p.Results.noYaxisLabel;
 if (p.Results.overlayContourLabels)
     overlayContourLabels = 'on';
 else
@@ -196,27 +208,8 @@ end
 hold(axesHandle, 'on');
 
 %% Do the display
-
-% Odd that this is here and then again later.  I am trying to delete.
-% switch overlayConeDensityContour
-%     case 'measured'
-%         [densityMapMeasured, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from mosaic');
-%     case 'theoretical'
-%         [densityMapTheoretical, densityMapSupportX, densityMapSupportY] =...
-%             obj.computeDensityMap('from model');
-%     case 'theoretical_and_measured'
-%         [densityMapMeasured, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from mosaic');
-%         [densityMapTheoretical, densityMapSupportX, densityMapSupportY] = ...
-%             obj.computeDensityMap('from model');
-%     case 'none'
-%     otherwise
-%         error('coneMosaicHex.visualizeGrid: ''coneDensityContourOverlay'' must be set to one of the following: ''measured'', ''theoretical'', ''none''. ');
-% end
-
 if (overlayHexMesh)
-    disp('here')
+    % disp('here')
     % Superimpose hex mesh showing the locations of the perfect hex grid
     meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5];
     meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
@@ -434,7 +427,7 @@ switch overlayConeDensityContour
         
         if (p.Results.overlayContourLabels)
             [cH, hH] = contour(axesHandle, densityMapSupportX, densityMapSupportY, ...
-                densityMapTheoretical, contourLevels, 'LineColor', [0.0 1.0 0.3], ...
+                densityMapTheoretical, contourLevels, 'LineColor', [0.0 0.4 1.0], ...
                 'LineWidth', 3.0, 'ShowText', overlayContourLabels, ...
                 'LabelSpacing', contourLabelSpacing);
             clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
@@ -493,34 +486,113 @@ if (~isempty(overlaidEMpathMicrons))
         'LineWidth', 3);
 end
 
+if (~isempty(scaleBarLengthMicrons))
+   scaleBarLengthMeters = scaleBarLengthMicrons*1e-6;
+   scaleBarX = sampledHexMosaicXaxis(end) * 0.99 + [-scaleBarLengthMeters 0];
+   scaleBarY = sampledHexMosaicYaxis(1) * 0.95 * [1 1];
+   plot(scaleBarX, scaleBarY, 'w-', 'LineWidth', 10.0);
+   plot(scaleBarX, scaleBarY, 'k-', 'LineWidth', 5.0);
+end
+
 %% Arrange axis and fonts
 hold(axesHandle, 'off')
-axis(axesHandle, 'xy'); axis(axesHandle, 'equal');
+axis(axesHandle, 'xy');
+axis(axesHandle, 'square');
 
-if (isempty(p.Results.axesHandle))
-    if (max(obj.fov) < 1.0)
-        tickInc = 0.1;
-    elseif (max(obj.fov) < 4.0)
-        tickInc = 0.25;
+if (ticksInVisualDegs)
+    rangeDegs = max(obj.fov);
+    if (~isempty(p.Results.tickInc))
+        tickInc = p.Results.tickInc;
     else
-        tickInc = 1;
+        if (rangeDegs < 0.25)
+            tickInc = 0.01;
+        elseif (rangeDegs < 0.5)
+            tickInc = 0.05;
+        elseif (rangeDegs < 1.0)
+            tickInc = 0.1;
+        elseif (rangeDegs < 4.0)
+            tickInc = 0.25;
+        elseif (rangeDegs < 8.0)
+            tickInc = 0.5;
+        else
+            tickInc = 1;
+        end
     end
     
-    xTicksDegs = (-20:tickInc:20);
-    yTicksDegs = xTicksDegs;
-    xTicksMeters = xTicksDegs * obj.micronsPerDegree * 1e-6;
-    yTicksMeters = xTicksMeters;
-    xTickLabels = sprintf('%02.2f\n', xTicksDegs);
-    yTickLabels = sprintf('%02.2f\n', yTicksDegs);
-    set(axesHandle, 'XTick', xTicksMeters, 'YTick', yTicksMeters, ...
-        'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels);
-    set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
-    box(axesHandle, 'on'); grid(axesHandle, 'off');
-    %title(axesHandle, sprintf('%2.0f microns', obj.width*1e6), 'FontSize', 18, 'Color', foregroundColor);
+    xMax = round(rangeDegs/tickInc)*tickInc;
+    ticksDegs = (-xMax:tickInc:xMax);
+    ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
+    if (tickInc < 0.1)
+        tickLabels = sprintf('%1.2f\n', ticksDegs);
+    else
+        tickLabels = sprintf('%1.1f\n', ticksDegs);
+    end
+    set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+        'XTickLabel', tickLabels, 'YTickLabel', tickLabels);
+    if (~noXaxisLabel)
+        xlabel(axesHandle,'space (degs)');
+    end
+    if (~noYaxisLabel)
+        ylabel(axesHandle,'space (degs)');
+    end
+elseif (ticksInMicrons)
+    rangeMicrons = max(obj.fov) * obj.micronsPerDegree;
+    if (~isempty(p.Results.tickInc))
+        tickInc = p.Results.tickInc;
+    else
+        if (rangeMicrons < 20)
+            tickInc = 5;
+        elseif (rangeMicrons < 50)
+            tickInc = 10;
+        elseif (rangeMicrons < 100)
+            tickInc = 20;
+        elseif (rangeMicrons < 250)
+            tickInc = 50;
+        elseif (rangeMicrons < 400)
+            tickInc = 100;
+        elseif (rangeMicrons < 800)
+            tickInc = 200;
+        elseif (rangeMicrons < 1000)
+            tickInc = 250;
+        else
+            tickInc = 500;
+        end
+    end
+    xMax = round(rangeMicrons/tickInc)*tickInc;
+    ticksMicrons = (-xMax:tickInc:xMax);
+    tickLabels = sprintf('%02.0f\n', ticksMicrons);
+    ticksMeters = ticksMicrons * 1e-6;
+    set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+        'XTickLabel', tickLabels, 'YTickLabel', tickLabels);
+    if (~noXaxisLabel)
+        xlabel(axesHandle,'space (microns)');
+    end
+    if (~noYaxisLabel)
+        ylabel(axesHandle,'space (microns)');
+    end
+end
+
+axis(axesHandle,'equal')
+
+if (isempty(visualizedFOV))
     set(axesHandle, 'XLim', [sampledHexMosaicXaxis(1)-1.5*1e-6 sampledHexMosaicXaxis(end)+1.5*1e-6]);
     set(axesHandle, 'YLim', [sampledHexMosaicYaxis(1)-1.5*1e-6 sampledHexMosaicYaxis(end)+1.5*1e-6]);
-    
-    ylabel('space (degs)');
-    drawnow;
+else
+    if (isstruct(visualizedFOV))
+        clippingRect = visualizedFOV;
+        % Check that the clippingRect is valid
+        coneMosaic.validateClippingRect(clippingRect);
+        spatialExtentMetersX = (clippingRect.xo+clippingRect.width/2*[-1 1])*obj.micronsPerDegree*1e-6;
+        spatialExtentMetersY = (clippingRect.yo+clippingRect.height/2*[-1 1])*obj.micronsPerDegree*1e-6;
+        set(axesHandle, 'XLim', spatialExtentMetersX, 'YLim', spatialExtentMetersY);
+    else
+        spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6;
+        set(axesHandle, 'XLim', spatialExtentMeters, 'YLim', spatialExtentMeters);
+    end
 end
+
+box(axesHandle, 'on'); grid(axesHandle, 'off');
+set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
+
+    
 end

@@ -53,12 +53,17 @@ function [spacing, aperture, density, params, comment] = coneSizeReadData(vararg
 %                                  'deg'                Degrees (default).
 %                                  'rad'                Radians.
 %
+%    'useParfor'                Logical. Default false. Used to parallelize
+%                               the interp1 function calls which take a
+%                               long time. This is useful when generating
+%                               large > 5 deg mosaics.
+%
 % See also: coneDensityReadData.
 
 % BW ISETBIO Team, 2016
 %
 % 08/16/17  dhb  Call through new coneDensityReadData rather than old coneDensity.
-
+% 02/17/19  npc  Added useParfor k/v pair
 
 %% Parse inputs
 p = inputParser;
@@ -70,6 +75,7 @@ p.addParameter('angle',0, @isnumeric);
 p.addParameter('whichEye','left',@(x)(ismember(x,{'left','right'})));
 p.addParameter('eccentricityUnits','m',@ischar);
 p.addParameter('angleUnits','deg',@ischar);
+p.addParameter('useParfor', false, @(x)((islogical(x))||(isempty(x))));
 p.parse(varargin{:});
 
 %% Set up params return.

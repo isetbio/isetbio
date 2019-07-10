@@ -1,4 +1,4 @@
-function wvf = wvfComputePupilFunction(wvf, showBar)
+function wvf = wvfComputePupilFunction(wvf, showBar, varargin)
 % Compute the pupil fuction given the wvf object.
 %
 % Syntax:
@@ -44,7 +44,9 @@ function wvf = wvfComputePupilFunction(wvf, showBar)
 %    wvf     - The wavefront object
 %
 % Optional key/value pairs:
-%    None.
+%     'no lca'                             - If true, do not adjust
+%                                            zcoeffs for LCA. Default
+%                                            false.
 %
 % Notes:
 %    * If the function is already computed and not stale, this will return
@@ -76,12 +78,24 @@ function wvf = wvfComputePupilFunction(wvf, showBar)
 %                   when sampling is a little coarse.
 %    01/01/18  dhb  Consistency check to numerical precision.
 %    01/18/18  jnm  Formatting update to match Wiki.
+%    04/29/19  dhb  Add 'nolca' key/value pair and force lca values to zero
+%                   in this case.
 
 % Examples:
 %{
 	wvf = wvfCreate;
 	wvf = wvfComputePupilFunction(wvf);
 %}
+
+%% Input parse
+%
+% Run ieParamFormat over varargin before passing to the parser,
+% so that keys are put into standard format
+p = inputParser;
+p.addParameter('nolca',false,@islogical);
+ieVarargin = ieParamFormat(varargin);
+ieVarargin = wvfKeySynonyms(ieVarargin);
+p.parse(ieVarargin{:});
 
 %% Parameter checking
 if notDefined('wvf'), error('wvf required'); end
@@ -107,6 +121,14 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
     % time and the defocus correction for this calculatiion. This models
     % any lenses external to the observer's eye, which affect focus but not
     % the accommodative state.
+    %
+    % There are also calc and measured observer accommodation parameters,
+    % which seem similar to these and I don't think are currently used.
+    if (wvfGet(wvf, 'calcobserveraccommodation') ~= wvfGet(wvf, 'measuredobserveraccommodation'))
+        error(['We do not currently know how to deal with values '...
+            'that differ from measurement time']);
+    end
+            
     defocusCorrectionDiopters = ...
         wvfGet(wvf, 'calc observer focus correction') - ...
         wvfGet(wvf, 'measured observer focus correction');
@@ -183,10 +205,15 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         %  
         % We flip the sign to describe change in optical power when we pass
         % this through wvfDefocusDioptersToMicrons.
-        lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf, ...
-            'measured wavelength', 'nm'), thisWave);
-        lcaMicrons = wvfDefocusDioptersToMicrons(-lcaDiopters, ...
-            measPupilSizeMM);
+        if (p.Results.nolca)
+            lcaDiopters = 0;
+            lcaMicrons = 0;
+        else
+            lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf, ...
+                'measured wavelength', 'nm'), thisWave);
+            lcaMicrons = wvfDefocusDioptersToMicrons(-lcaDiopters, ...
+                measPupilSizeMM);
+        end
         
         % The Zernike polynomials are defined over the unit disk. At
         % measurement time, the pupil was mapped onto the unit disk, so we

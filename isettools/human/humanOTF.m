@@ -3,7 +3,7 @@ function [OTF2D, fSupport, wave] = humanOTF(pRadius, D0, fSupport, wave)
 %
 % Syntax:
 %   [OTF2D, fSupport, wave] = ...
-%        humanOTF([pRadius = 0.0015], [D0 = 59.9404], [fSupport], [wave])
+%        humanOTF([pRadius = 0.0015], [D0 = 58.8235], [fSupport], [wave])
 %
 % Description:
 %    Calculate the human OTF, including the chromatic abberation.

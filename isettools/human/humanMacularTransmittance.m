@@ -7,7 +7,7 @@ function oi = humanMacularTransmittance(oi, dens)
 % Description:
 %    Set the macular pigment as the optical transmittance in an oi.
 %
-%    Dens refers to the pigment density. The default is 0.28 for the
+%    Dens refers to the pigment density. The default is 0.35 for the
 %    central fovea. It drops to zero a few degrees eccentric from the fovea
 %
 % Inputs:

@@ -135,6 +135,14 @@ workDescription   = p.Results.workDescription;
 theExpandedMosaic = p.Results.theExpandedMosaic;
 beVerbose = p.Results.beVerbose;
 
+
+if (currentFlag)
+    % save noiseFlag
+    copyOfConeMosaicNoiseFlag = obj.noiseFlag;
+    % compute absorptions without noise
+    obj.noiseFlag = 'none';
+end
+
 % Set debugTiming to true to examine the timing between oiFrames and
 % partial/full absorptions. In this mode, the computation stops and waits
 % for the user to hit enter during each step.
@@ -169,7 +177,9 @@ if (isempty(theExpandedMosaic))
     % instead of in coneMosaic.compute(), which is called multiple times.
     obj.absorptions = [];
     obj.current = [];
-    obj.os.lmsConeFilter = [];
+    if (isa(obj.os, 'osLinear'))
+        obj.os.lmsConeFilter = [];
+    end
     theExpandedMosaic = obj.copy();
     theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
         obj.cols + 2 * padCols);
@@ -539,7 +549,7 @@ else
         if (~isempty(workerID))
             displayProgress(workerID, ...
                 sprintf('%s-absorptions', workDescription), ...
-                0.5 * oiIndex / oiSequence.length);
+                0.5 * emIndex / nEyeMovements);
         end
 
         % Current eye movement time limits
@@ -741,6 +751,19 @@ else
             [1 obj.rows obj.cols numel(rounded.eyeMovementTimeAxis)]));
     end
 end
+
+%% Since we computed noise-free absorptions (so that the photocurrent
+%% is computed on the noise-free absorptions), we need to add photon noise
+%% to the absorptions at this point
+
+obj.noiseFlag = copyOfConeMosaicNoiseFlag;
+if ~(strcmp(obj.noiseFlag, 'none'))
+    %% add photon noise
+    absorptions = obj.photonNoise(absorptions, ...
+         'noiseFlag', obj.noiseFlag, 'seed', currentSeed);
+end
+
+
 
 % Reload the absorptions from the last instance (again, since we destroyed
 % obj.absorptions in the current computation)

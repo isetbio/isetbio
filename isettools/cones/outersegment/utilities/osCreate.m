@@ -31,10 +31,6 @@ function obj = osCreate(type)
 %    @osLinear, @osBioPhys and @osIdentity subclasses for more details of
 %    the specific implementations.
 %
-% Notes:
-%    * [Note: JNM - The empty call wasn't working -- parsing an empty type
-%      throws an error. Rather than removing the 'empty' option, I inserted
-%      a notDefined, which should accomplish the desired default case.]
 
 % History:
 %    xx/xx/15  JRG  ISETBIO Team, Copyright, 2015

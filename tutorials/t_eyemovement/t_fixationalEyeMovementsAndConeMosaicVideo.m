@@ -24,8 +24,14 @@ function t_fixationalEyeMovementsAndConeMosaicVideo
 
     close all
 
-    % Cone hexagonal mosaic params
+    % Change to true to render the video
+    renderAndSaveVideo = ~true;
+    
+    % Cone hexagonal mosaic params. 
+    % Here we use a short integration time to obtain a smoother video.
     integrationTime = 0.25 / 1000;
+    
+    % Load a previously generated mosaic to same time
     loadMosaic = true;
 
     % Instantiate a hexagonal cone mosaic, or load a cone mosaic
@@ -61,7 +67,6 @@ function t_fixationalEyeMovementsAndConeMosaicVideo
         'nTrials', nTrials, 'rSeed', 857);
 
     % Render the video
-    renderAndSaveVideo = ~true;
     if (renderAndSaveVideo)
         videoExportDir = uigetdir('~/', 'VIDEO EXPORT DIRECTORY');
         fixationalEM.generateEMandMosaicComboVideo(...

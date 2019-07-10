@@ -89,7 +89,7 @@ function val = sceneGet(scene, parm, varargin)
 %                                     sceneGet(scene, 'degPerDist', 'um')
 %         {'degrees per sample'}    - ???
 %         {'spatial support'}       - spatial locations of points e.g.,
-%                                     sceneGet(oi, 'spatialsupport', 'um')
+%                                     sceneGet(scene, 'spatialsupport', 'um')
 %         {'h angular resolution'}  - height degrees per pixel
 %         {'w angular resolution'}  - width degrees per pixel
 %         {'angular resolution'}    - (height, width) degrees per pixel

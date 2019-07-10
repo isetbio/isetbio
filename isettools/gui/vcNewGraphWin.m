@@ -64,7 +64,7 @@ if notDefined('figHdl'), figHdl = figure; end
 if notDefined('fType'), fType = 'upper left'; end
 
 set(figHdl, 'Name', 'ISET GraphWin', 'NumberTitle', 'off');
-set(figHdl, 'CloseRequestFcn', 'ieCloseRequestFcn');
+% set(figHdl, 'CloseRequestFcn', 'ieCloseRequestFcn');
 set(figHdl, 'Color', [1 1 1]);
 
 % Position the figure
@@ -101,7 +101,7 @@ if ~isempty(varargin)
 end
 
 %% Store some information. Not sure it is needed; not much used.
-ieSessionSet('graphwinfigure', figHdl);
-ieSessionSet('graphwinhandle', guidata(figHdl));
+% ieSessionSet('graphwinfigure', figHdl);
+% ieSessionSet('graphwinhandle', guidata(figHdl));
 
 end

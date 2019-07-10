@@ -20,7 +20,11 @@ function uData = movieHex(conemosaicH, varargin)
 %    uData       - The user data containing the movie.
 %
 % Optional key/value pairs:
-%    None.
+%    'activationTimeSeries'   - specific time series to visualize. if not 
+%                               passed, data are taken from the @coneMosaic
+%                               object
+%    'type'                   - String. Specifies the data source from the
+%                               @coneMosaic ('absorptions' or 'photocurrents')
 %
 % See Also:
 %    t_coneMosaicHex3.m, line 70.
@@ -72,10 +76,10 @@ else
             dataHex = conemosaicH.current;
     end
     activeConeIndices = find(conemosaicH.pattern>1);
-    dataHex = dataHex(:);
-    dataHex = dataHex(activeConeIndices);
+    timeBins = size(dataHex,3); 
+    dataHex = RGB2XWFormat(dataHex);
+    dataHex = dataHex(activeConeIndices,:);
     conesNum = size(dataHex,1);
-    timeBins = 1;
 end
 
 

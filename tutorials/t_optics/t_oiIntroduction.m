@@ -29,8 +29,7 @@ ieInit;
 % points, and then setting the FoV to 1 degree.
 scene = sceneCreate('pointarray');
 scene = sceneSet(scene, 'hfov', 1);
-vcAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
 
 %% Create and show an optical image
 % ISET has several optics models that you can experiment with. These
@@ -43,8 +42,7 @@ sceneWindow;
 oi = oiCreate('diffraction');
 oi = oiCompute(scene, oi);
 oi = oiSet(oi, 'name', 'Small f number');
-vcAddAndSelectObject(oi);
-oiWindow;
+oiWindow(oi);
 
 %% Increase the f-number of the optics and compute again. 
 % Increasing the f-number of the optics will blur the irradiance image. The
@@ -57,8 +55,7 @@ oiBigF = oiSet(oi, 'optics fNumber', fnBig);
 oiBigF = oiCompute(scene, oiBigF);
 
 oiBigF = oiSet(oiBigF, 'name', 'Big f number');  % Name for the GUI
-vcAddObject(oiBigF);
-oiWindow;
+oiWindow(oiBigF);
 
 %% Use oiPlot to compare the two different optics 
 % For this example, plot the PSF at 600nm. First for the small f/#.
@@ -108,7 +105,6 @@ title(sprintf('Zoomed view: F-number = %d', fnBig))
 oiHuman = oiCreate('human');
 oiHuman = oiCompute(scene, oiHuman);
 oiHuman = oiSet(oiHuman, 'name', 'human optics');
-vcAddAndSelectObject(oiHuman);
-oiWindow;
+oiWindow(oiHuman);
 
 %% End

@@ -1,11 +1,12 @@
 function plotHexMosaic(obj, varargin)
-% Visualize different aspects of the hex grid
+% Visualize the hex grid
 %
 % Syntax:
 %   plotHexMosaic(obj, [varargin])
 %
 % Description:
-%    Visualize the different aspects of the hex grid
+%   Using the key/value pairs you can visualize different aspects of
+%   the hexagonal cone mosaic.
 %
 % Inputs:
 %    obj                                       - The cone mosaic hex object
@@ -115,13 +116,14 @@ if (~showCorrespondingRectangularMosaicInstead)
     % that renders the hex mosaic in a separate window for the mean time.
     % When we the solve the problem we will use that code in here.
     lineStyle = '-';
+    lineWidth = 1.0;
     if (showNullSensors)
         idx = find(obj.pattern == 1);
         [iRows, iCols] = ind2sub(size(obj.pattern), idx);
         edgeColor = [0.4 0.4 0.4];
         faceColor = 'none';
-        renderPatchArray(pixelOutline, sampledHexMosaicXaxis(iCols), ...
-            sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+        renderPatchArray(gca, pixelOutline, sampledHexMosaicXaxis(iCols), ...
+            sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
     end
 
     % L-cones - The 'finds' take a long time, 3-times. Let's see if we
@@ -130,24 +132,24 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [1 0 0];
     faceColor = [1.0 0.7 0.7];
-    renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     % M-cones
     idx = find(obj.pattern == 3);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [0 0.7 0];
     faceColor = [0.7 1.0 0.7];
-    renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     % S-cones
     idx = find(obj.pattern == 4);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [0 0 1];
     faceColor = [0.7 0.7 1.0];
-    renderPatchArray(apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle);
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     if (showPerfectHexMesh)
         % Superimpose hex mesh showing locations of the perfect hex grid
@@ -156,7 +158,7 @@ if (~showCorrespondingRectangularMosaicInstead)
         meshFaceAlpha = 0.0;
         meshEdgeAlpha = 0.5;
         lineStyle = '-';
-        renderHexMesh(hexCoords(:, 1), hexCoords(:, 2), meshEdgeColor, ...
+        renderHexMesh(gca, hexCoords(:, 1), hexCoords(:, 2), meshEdgeColor, ...
             meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
     end
 else
@@ -169,22 +171,23 @@ else
     edgeColor = [0.3 0.3 0.3];
     faceColor = [1.0 0.7 0.7];
     lineStyle = '-';
-    renderPatchArray(originalPixelOutline, rectCoords(idx, 1), ...
-        rectCoords(idx, 2), edgeColor, faceColor, lineStyle);
+    lineWidth = 1.0;
+    renderPatchArray(gca, originalPixelOutline, rectCoords(idx, 1), ...
+        rectCoords(idx, 2), edgeColor, faceColor, lineStyle, lineWidth);
 
     idx = find(obj.patternOriginatingRectGrid==3);
     %[iRows, iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3];
     faceColor = [0.7 1.0 0.7];
-    renderPatchArray(originalPixelOutline, rectCoords(idx, 1), ...
-        rectCoords(idx, 2), edgeColor, faceColor, lineStyle);
+    renderPatchArray(gca, originalPixelOutline, rectCoords(idx, 1), ...
+        rectCoords(idx, 2), edgeColor, faceColor, lineStyle, lineWidth);
 
     idx = find(obj.patternOriginatingRectGrid==4);
     %[iRows, iCols] = ind2sub(size(obj.patternOriginatingRectGrid), idx);
     edgeColor = [0.3 0.3 0.3];
     faceColor = [0.7 0.7 1.0];
-    renderPatchArray(originalPixelOutline, rectCoords(idx, 1), ...
-        rectCoords(idx, 2), edgeColor, faceColor, lineStyle);
+    renderPatchArray(gca, originalPixelOutline, rectCoords(idx, 1), ...
+        rectCoords(idx, 2), edgeColor, faceColor, lineStyle, lineWidth);
 end
 
 if (~strcmp(showConeDensityContour, 'none'))
@@ -209,8 +212,10 @@ xTickLabels = sprintf('%2.0f um\n', xTicks * 1e6);
 yTickLabels = sprintf('%2.0f um\n', yTicks * 1e6);
 set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, ...
     'YTickLabel', yTickLabels);
-set(gca, 'FontSize', 16, 'XColor', [0.1 0.2 0.9], ...
-    'YColor', [0.1 0.2 0.9], 'LineWidth', 1.0);
+set(gca, 'FontSize', 16, ...
+    'LineWidth', 1.0); 
+    % 'XColor', [0.1 0.2 0.9], ...
+    % 'YColor', [0.1 0.2 0.9]);
 box on;
 grid off;
 set(gca, 'XLim', [sampledHexMosaicXaxis(1) - dx, ...
@@ -292,87 +297,4 @@ gridYPos = mosaicRangeY(1) + ...
     (gridYPos - min(gridYPos)) / (max(gridYPos) - min(gridYPos)) * ...
     (mosaicRangeY(2) - mosaicRangeY(1));
 [densityMapSupportX, densityMapSupportY] = meshgrid(gridXPos, gridYPos);
-end
-
-%% Maybe put in utility directory
-function renderPatchArray(pixelOutline, xCoords, yCoords, edgeColor, ...
-    faceColor, lineStyle)
-% Render the patch array
-%
-% Syntax:
-%   renderPatchArray(pixelOutline, xCoords, yCoords, edgeColor, ...
-%       faceColor, lineStyle)
-%
-% Description:
-%    Render the patch array
-%
-% Inputs:
-%    pixelOutline - The outline of the pixels
-%    xCoords      - The X-axis coordinates
-%    yCoords      - The Y-axis coordinates
-%    edgeColor    - The color of the edge of the shape (line)
-%    faceColor    - The color of the face of the shape (fill)
-%    lineStyle    - The style of the lines (dash, solid, etc...)
-%
-% Outputs:
-%    None.
-%
-% Optional key/value pairs:
-%    None.
-%
-verticesNum = numel(pixelOutline.x);
-x = zeros(verticesNum, numel(xCoords));
-y = zeros(verticesNum, numel(xCoords));
-
-for vertexIndex = 1:verticesNum
-    x(vertexIndex, :) = pixelOutline.x(vertexIndex) + xCoords;
-    y(vertexIndex, :) = pixelOutline.y(vertexIndex) + yCoords;
-end
-patch(x, y, [0 0 0], 'EdgeColor', edgeColor, 'FaceColor', faceColor, ...
-    'LineWidth', 1.0, 'LineStyle', lineStyle);
-end
-
-%% Separate function??
-function renderHexMesh(xHex, yHex, meshEdgeColor, meshFaceColor, ...
-    meshFaceAlpha, meshEdgeAlpha, lineStyle)
-% Render the hex mesh for the cone mosaic hex object
-%
-% Syntax:
-%    renderHexMesh(xHex, yHex, meshEdgeColor, meshFaceColor, ...
-%       meshFaceAlpha, meshEdgeAlpha, lineStyle)
-%
-% Description:
-%    Render (draw) the hex mesh for the cone mosaic hex object using the
-%    provided variables.
-%
-% Inputs:
-%    xHex          - x-bounded Hex
-%    yHex          - y-bounded Hex
-%    meshEdgeColor - The color of the edge of the mesh
-%    meshFaceColor - The color for the face of the mesh
-%    meshFaceAlpha - 
-%    meshEdgeAlpha - 
-%    lineStyle     - The line style for the edging, ex. dash, solid, etc...
-%
-% Outputs:
-%    None.
-%
-% Optional key/value pairs:
-%    None.
-%
-x = [];
-y = [];
-triangleConeIndices = delaunayn([xHex(:), yHex(:)]);
-for triangleIndex = 1:size(triangleConeIndices, 1)
-    coneIndices = triangleConeIndices(triangleIndex, :);
-    xCoords = xHex(coneIndices);
-    yCoords = yHex(coneIndices);
-    for k = 1:numel(coneIndices)
-        x = cat(2, x, xCoords);
-        y = cat(2, y, yCoords);
-    end
-end
-patch(x, y, [0 0 0], 'EdgeColor', meshEdgeColor, ...
-    'EdgeAlpha', meshEdgeAlpha, 'FaceAlpha', meshFaceAlpha, ...
-    'FaceColor', meshFaceColor, 'LineWidth', 1.5, 'LineStyle', lineStyle);
 end

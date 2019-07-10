@@ -49,7 +49,7 @@
 
 % History:
 %    xx/xx/11       *Copyright ImagEval Consultants, LLC, 2011.*
-%    09/06/18  jnm  Formattin
+%    09/06/18  jnm  Formatting
 
 %% Initializing ISETBio
 % ISETBIO stores a small database of scenes and optical images. This
@@ -73,8 +73,13 @@ doc sceneCreate
 % We add the scene to the database and then invoke a window (GUI) to help
 % you interact with the scene. (You can add multiple scenes to the
 % database and click through them from the GUI).
-ieAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
+
+%{
+% The two steps can be performed separately this way:
+  ieAddObject(scene);
+  sceneWindow;
+%}
 
 %% Window Manipulation
 % You can scale the window size and adjust the font size as well
@@ -178,8 +183,7 @@ sceneGet(scene, 'sample spacing', 'm')
 fname = fullfile(isetbioDataPath, 'images', 'multispectral', ...
     'stuffedAnimals_tungsten-hdrs.mat');
 scene = sceneFromFile(fname, 'multispectral');
-ieAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
 
 %% Creating a scene from  RGB data
 % If the wavelength data are not critical for your analysis, we have a
@@ -190,8 +194,7 @@ sceneWindow;
 fname = 'ma_blkbkjackal_412.jpg';
 scene = sceneFromFile(fname, 'rgb', 100, 'LCD-Apple.mat');
 scene = sceneSet(scene, 'name', 'jackal');
-ieAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
 
 %% Changing the illuminant spectral power distribution
 % You can also change the scene illuminant. This code creates a blackbody
@@ -200,6 +203,7 @@ sceneWindow;
 % consequences of changing the illuminant.
 bb = blackbody(sceneGet(scene, 'wave'), 8000, 'energy');
 scene = sceneAdjustIlluminant(scene, bb);
-ieAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
 scenePlot(scene, 'illuminant energy');
+
+%%

@@ -1,5 +1,5 @@
 function [coneDensity,params,comment] = coneDensityReadData(varargin)
-%%coneDensityReadData  Compute cone packing density as a function of retinal position
+% Compute cone packing density as a function of retinal position
 %
 % Syntax:
 %     [coneDensity,params,comment] = coneDensityReadData;
@@ -64,6 +64,11 @@ function [coneDensity,params,comment] = coneDensityReadData(varargin)
 %                                  'deg'                Degrees (default).
 %                                  'rad'                Radians.
 %
+%    'useParfor'                Logical. Default false. Used to parallelize
+%                               the interp1 function calls which take a
+%                               long time. This is useful when generating
+%                               large > 5 deg mosaics.
+%
 % References:
 %   1) Curcio, C. A., Sloan, K. R., Kalina, R. E. and Hendrickson, A. E.
 %      (1990), Human photoreceptor topography. J. Comp. Neurol., 292:
@@ -78,7 +83,8 @@ function [coneDensity,params,comment] = coneDensityReadData(varargin)
 % HJ, ISETBIO TEAM, 2015
 %
 % 08/16/17  dhb  Big rewrite.
-
+% 02/17/19  npc  Added useParfor k/v pair
+%
 %% Parse inputs
 p = inputParser;
 p.KeepUnmatched = true;
@@ -89,10 +95,15 @@ p.addParameter('angle',0, @isnumeric);
 p.addParameter('whichEye','left',@(x)(ismember(x,{'left','right'})));
 p.addParameter('eccentricityUnits','m',@ischar);
 p.addParameter('angleUnits','deg',@ischar);
+p.addParameter('useParfor', false, @(x)((islogical(x))||(isempty(x))));
 p.parse(varargin{:});
 
 %% Set up params return.
 params = p.Results;
+
+if (isempty(params.useParfor))
+    params.useParfor = false;
+end
 
 %% Take care of case where a function handle is specified as source
 %
@@ -104,6 +115,7 @@ if (isa(params.coneDensitySource,'function_handle'))
     [coneDensity,params,comment] = params.coneDensitySource(varargin{:});
     return;
 end
+
 
 %% Handle units
 switch (params.eccentricityUnits)
@@ -131,7 +143,7 @@ end
 params.angle = NaN;
 
 %% Make sure eccentricity and angle are vectors of the same length.
-if (~isvector(eccMM) | ~isvector(angleDeg))
+if (~isvector(eccMM) || ~isvector(angleDeg))
     error('Passed eccentricity and angle arguments must be vectors.');
 end
 if (length(eccMM) ~= length(angleDeg))
@@ -191,10 +203,20 @@ switch (params.species)
                 
                 % Interpolate for each angle
                 coneDensity = zeros(1,length(eccMM));
-                for aa = 1:length(eccMM)
-                    coneDensity(aa) = interp1(angleQ, onAxisD(:,aa), angleDeg(aa), 'linear');
-                end
                 
+                if (params.useParfor)
+                    % For large mosaics (>5 deg), having a parfor loop here
+                    % reduced computation time significantly because this
+                    % function is called all the time during the iterative
+                    % process.
+                    parfor aa = 1:length(eccMM)
+                        coneDensity(aa) = interp1(angleQ, onAxisD(:,aa), angleDeg(aa), 'linear');
+                    end
+                else
+                    for aa = 1:length(eccMM)
+                        coneDensity(aa) = interp1(angleQ, onAxisD(:,aa), angleDeg(aa), 'linear');
+                    end
+                end
                 comment = 'Cone density derived from Figure 6 of Curcio et al (1990).  See coneDensityReadData.';
                 
             otherwise

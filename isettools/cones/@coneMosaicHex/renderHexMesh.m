@@ -16,8 +16,8 @@ function renderHexMesh(axesHandle, xHex, yHex, meshEdgeColor, ...
 %    yHex          - y-bounded Hex
 %    meshEdgeColor - The color of the edge of the mesh
 %    meshFaceColor - The color for the face of the mesh
-%    meshFaceAlpha - 
-%    meshEdgeAlpha - 
+%    meshFaceAlpha - The alpha (transparency) value of the mesh faces
+%    meshEdgeAlpha - The alpha value of the mesh edges
 %    lineStyle     - The line style for the edging, ex. dash, solid, etc...
 %
 % Outputs:

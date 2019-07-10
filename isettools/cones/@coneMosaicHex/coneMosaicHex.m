@@ -36,6 +36,10 @@ classdef coneMosaicHex < coneMosaic
 %                            changes in cone efficiency due to increasing
 %                            cone aperture and decreasing outer segment
 %                            length. Default False.
+%    'eccBasedMacularPigment'
+%                          - Boolean. Account for eccentricity-dependent
+%                            changes in the optical density of the macular
+%                            pigment. Default False.
 %
 %    'customLambda'        - Double. Custom micron cone spacing distance.
 %                            Default is [].
@@ -48,12 +52,13 @@ classdef coneMosaicHex < coneMosaic
 %
 
 % History:
-%    xx/xx/16  NPC  ISETBIO Team, 2016
+%    xx/xx/16  npc  ISETBIO Team, 2016
 %    02/21/18  jnm  Formatting
 %    04/16/18  jnm  Move resamplingFactor to Inputs section as it is
 %                   required, and not optional based on response when
 %                   attempting to instantiate a coneMosaicHex.
-%    06/16/18  NPC  Support cone efficiency correction with eccentricity
+%    06/16/18  npc  Support cone efficiency correction with eccentricity
+%    10/23/18  npc  Support for macular-pigment density variation with eccentricity 
 
 % Examples:
 %{
@@ -79,6 +84,7 @@ classdef coneMosaicHex < coneMosaic
     'name', 'the hex mosaic', ...
     'fovDegs', 0.35, ...
     'eccBasedConeDensity', eccBasedConeDensity, ...
+    'eccBasedMacularPigment', true, ...
     'noiseFlag', 'none', ...
     'spatialDensity', [0 0.6 0.3 0.1], ...
     'maxGridAdjustmentIterations', 100);
@@ -92,6 +98,10 @@ classdef coneMosaicHex < coneMosaic
         % dependent changes in cone efficiency due to increasing cone 
         % aperture and decreasing outer segment length
         eccBasedConeQuantalEfficiency = false;
+        
+        % eccBasedMacularPigment - Boolean. Account for eccentricity
+        % dependent changes in optical density of the macular pigment.
+        eccBasedMacularPigment = false
     end
     
     %% Private properties:
@@ -118,6 +128,10 @@ classdef coneMosaicHex < coneMosaic
         % length
         coneEfficiencyCorrectionFactors = [];
         
+        % structure with min/mean/median/max inner segment diameter and
+        % area across the cone mosaic
+        apertureStats = [];
+        
         % resamplingFactor - The resampling factor.
         resamplingFactor
 
@@ -134,6 +148,9 @@ classdef coneMosaicHex < coneMosaic
         %   45 um is 0.15, so S-cone free region = 0.3 degs diameter.
         sConeFreeRadiusMicrons
 
+        % coneTypesHexGrid - types of cones at hex nodes
+        coneTypesHexGrid
+        
         % coneLocsHexGrid - floating point coneLocs on the hex grid.
         %   This is sampled according to the resamplingFactor.
         coneLocsHexGrid
@@ -175,6 +192,18 @@ classdef coneMosaicHex < coneMosaic
         %maxGridAdjustmentIterations - Max number of iterations
         %   Max iterations for deciding whether the grid adjustment is done
         maxGridAdjustmentIterations
+        
+        % queryGridAdjustmentIterations - Query whether to continue grid
+        % adjustment every this many iterations
+        queryGridAdjustmentIterations
+        
+        % queryAdditionnalPassBatch - Query whether to do more grid
+        % adjustement passes
+        queryAdditionnalPassBatch
+        
+        % visualizationUpdateIterations -Iterations interval for update the
+        % visualization of the mosaic and its hex-quality
+        visualizationUpdateIterations
     end
 
     % Public methods
@@ -205,6 +234,7 @@ classdef coneMosaicHex < coneMosaic
                 'fovDegs', ...
                 'eccBasedConeDensity', ...
                 'eccBasedConeQuantalEfficiency', ...
+                'eccBasedMacularPigment', ...
                 'sConeMinDistanceFactor', ...
                 'sConeFreeRadiusMicrons', ...
                 'customLambda', ...
@@ -212,6 +242,9 @@ classdef coneMosaicHex < coneMosaic
                 'rotationDegs', ...
                 'saveLatticeAdjustmentProgression', ...
                 'maxGridAdjustmentIterations'...
+                'visualizationUpdateIterations' ...
+                'queryGridAdjustmentIterations' ...
+                'queryAdditionnalPassBatch' ...
                 'latticeAdjustmentPositionalToleranceF', ...
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF'};
@@ -246,6 +279,7 @@ classdef coneMosaicHex < coneMosaic
                 ((numel(x) == 1) || (numel(x) == 2))));
             p.addParameter('eccBasedConeDensity', false, @islogical);
             p.addParameter('eccBasedConeQuantalEfficiency', false, @islogical);
+            p.addParameter('eccBasedMacularPigment', false, @islogical);
             p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric);
             p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
             p.addParameter('customInnerSegmentDiameter', [], @isnumeric);
@@ -260,12 +294,16 @@ classdef coneMosaicHex < coneMosaic
             p.addParameter('marginF', 1.0, @(x)((isempty(x)) || ...
                 (isnumeric(x) && (x > 0.0))));
             p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);
+            p.addParameter('visualizationUpdateIterations', Inf, @isnumeric);
+            p.addParameter('queryGridAdjustmentIterations', Inf, @isnumeric);
+            p.addParameter('queryAdditionnalPassBatch', false, @islogical);
             p.parse(resamplingFactor, vararginForConeHexMosaic{:});
 
             % Set input params
             obj.resamplingFactor = p.Results.resamplingFactor;
             obj.eccBasedConeDensity = p.Results.eccBasedConeDensity;
             obj.eccBasedConeQuantalEfficiency = p.Results.eccBasedConeQuantalEfficiency;
+            obj.eccBasedMacularPigment = p.Results.eccBasedMacularPigment;
             obj.sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
             obj.sConeFreeRadiusMicrons = p.Results.sConeFreeRadiusMicrons;
             obj.customLambda = p.Results.customLambda;
@@ -280,7 +318,13 @@ classdef coneMosaicHex < coneMosaic
                 p.Results.latticeAdjustmentPositionalToleranceF;
             obj.maxGridAdjustmentIterations = ...
                 p.Results.maxGridAdjustmentIterations;
-
+            obj.queryGridAdjustmentIterations = ...
+                p.Results.queryGridAdjustmentIterations;
+            obj.queryAdditionnalPassBatch = ...
+                p.Results.queryAdditionnalPassBatch;
+            obj.visualizationUpdateIterations = ...
+                p.Results.visualizationUpdateIterations;
+            
             % Set FOV of the underlying rect mosaic
             if (numel(p.Results.fovDegs) == 1)
                 obj.setSizeToFOV(p.Results.fovDegs(1) * [1 1]);
@@ -362,15 +406,20 @@ classdef coneMosaicHex < coneMosaic
                 % free region.
                 obj.regenerateLMSPattern(obj.spatialDensity(2:4), ...
                     'sConeMinDistanceFactor', obj.sConeMinDistanceFactor, ...
-                    'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons);
+                    'sConeFreeRadiusMicrons', obj.sConeFreeRadiusMicrons, ...
+                    'visualizeRegeneratedMosaic', false);
             end
+            
+            obj.coneTypesHexGrid = obj.pattern(find(obj.pattern > 1));
+    
         end  % constructor
 
         % Visualize different aspects of the hex grid
         hFig = visualizeGrid(obj, varargin);
 
         % Method to compute the cone density of @coneMosaicHex
-        [densityMap, densityMapSupportX, densityMapSupportY] = ...
+        [densityMap, densityMapSupportX, densityMapSupportY, ...
+            maximumConeDensity, minimumConeSeparationMicrons] = ...
             computeDensityMap(obj, computeConeDensityMap)
 
         % Reshape a full 3D hex activation map (coneRows x coneCols x time]
@@ -398,11 +447,14 @@ classdef coneMosaicHex < coneMosaic
         % the hex mosaic
         renderActivationMap(obj, axesHandle, activation, varargin);
 
+        % the coneLocsHexGrid ordered so they correspond to the serialized 1D response
+        coneLocsHexGrid = coneLocsHexGridAlignedWithSerializedConeMosaicResponse(obj);
+        
         % Visualize iterative adjustment of the cone lattice
         hFig = plotMosaicProgression(obj, varargin);
 
         % Print various infos about the cone mosaic
-        displayInfo(obj);
+        displayInfo(obj, varargin);
 
         % Change cone identities according to arguments passed in varargin
         reassignConeIdentities(obj, varargin);
@@ -414,7 +466,30 @@ classdef coneMosaicHex < coneMosaic
         regenerateLMSPattern(obj, LMSdensity, varargin);
         
         % Return the indices for all L/M/S cones
-        [lConeIndices, mConeIndices,sConeIndices]  = indicesForCones(obj);
+        [lConeIndices, mConeIndices,sConeIndices, nonNullConeIndices] = ...
+            indicesForCones(obj);
+        
+        % Return the indices for cones along the horizontal and vertical
+        % meridians
+        [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
+            eccDegsOfConesAlongHorizMeridian, ...
+            eccDegsOfConesAlongVertMeridian, ...
+            idxOfConesAlongHorizMeridianInSerializedList, ...
+            idxOfConesAlongVertMeridianInSerializedList] = indicesForConesAlongMeridians(obj)
+        
+        % Return the indices for cones at a list of target positions
+        % (specified in degrees of visual angle) along  with the distances
+        % between target positions and corresponding cones
+        [coneIndices, conePositions, coneTypes, coneIndicesInSerializedList] = ...
+            indicesForConesAtPositions(obj, targetPosDegs);
+        
+        % Return the aperture diameters for all cones
+        apertureDiametersMicrons = computeApertureDiameters(obj);
+        
+        % Return a struct with the mosaic geometry (cone positions,
+        % Delaunay triangles, and cone aperture sizes)
+        cmStruct = geometryStruct(obj);
+        
     end % Public methods
 
     methods (Access = private)
@@ -437,7 +512,7 @@ classdef coneMosaicHex < coneMosaic
             meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
         correctionFactors = computeConeEfficiencyCorrectionFactors(...
             aConeMosaicHexObject, triggerFunctionName, varargin);
-        [innerApertureOutline, outerApertureOutline] = ...
+        [innerApertureOutline, outerApertureOutline, maxApertureMeters] = ...
             computeApertureSizes(dxInner, dxOuter, innerApertureOutline,...
             outerApertureOutline, xCoords, yCoords);
     end % Static methods

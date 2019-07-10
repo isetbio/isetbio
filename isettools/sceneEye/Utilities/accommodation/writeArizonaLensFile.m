@@ -18,19 +18,19 @@ function [] = writeArizonaLensFile(A,filename)
 % All following equations are from :
 % https://photonengr.com/wp-content/uploads/kbasefiles/ArizonaEyeModel.pdf
 anteriorRadius = 12-(0.4*A);
-posteriorRadius = -5.22+(0.2*A); 
+posteriorRadius = -5.224557+(0.2*A); 
 aqueousThickness = 2.97-(0.04*A) ;
-lensThickness = 3.77+(0.04*A) ;
-anteriorAsph = -7.52+(1.29*A);
-posteriorAsph = -1.35-(0.43*A);
+lensThickness = 3.767+(0.04*A) ;
+anteriorAsph = -7.518749+(1.285720*A);
+posteriorAsph = -1.353971-(0.431762*A);
 
 % Columns are: radiusX, radiusY, thickness, materialIndex, semiDiameter,
 % conicConstantX, and conicConstantY
-corneaA = [-7.8   -7.8   0.55  1  4.820  -0.25   -0.25];
-corneaP = [-6.5   -6.5   2.97  2  4.341  -0.25   -0.25];
-pupil =   [ 0      0     0     2  2      -7.52   -7.52];
-lensA =   [-12    -12    3.77  3  3.750  -1.35   -1.35];
-lensP =   [ 5.22   5.22  0     4  3.750   0       0];
+corneaA = [-7.8        -7.8       0.55    1   4.820  -0.25       -0.25];
+corneaP = [-6.5        -6.5       2.97    2   4.341  -0.25       -0.25];
+pupil =   [ 0           0         0       2   2       0           0];
+lensA =   [-12         -12        3.767   3   3.750  -7.518749   -7.518749];
+lensP =   [ 5.224557    5.224557  0       4   3.750  -1.353971   -1.353971];
 
 % flip these because of sign conventions
 lensA(1:2) = [anteriorRadius anteriorRadius] * -1;

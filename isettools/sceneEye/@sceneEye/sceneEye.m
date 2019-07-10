@@ -57,14 +57,19 @@ classdef sceneEye < hiddenHandle
 %{
     % ETTBSkip.  Skip this example in ETTB, since it is known not to work.
     % When the example gets fixed, remove this line and the one above.
-    %
-    % [Note: JNM - Doesn't work for a number of reasons...]
-    sceneName = 'scene name';
-   fileName = 'fileName.pbrt';
-    thisScene = sceneEye('name', sceneName, 'pbrtFile', fileName);
-    thisScene.accommodation = double
-    % ...
-    oi = thisScene.render(varargin);
+
+    scene3d = sceneEye('chessSet');
+               
+    scene3d.fov = 30; 
+    scene3d.resolution = 128;
+    scene3d.numRays = 128;
+    scene3d.numCABands = 0;
+    scene3d.accommodation = 1; 
+
+    oi = scene3d.render();
+    ieAddObject(oi);
+    oiWindow;
+
 %}
 
 properties (GetAccess=public, SetAccess=public)
@@ -74,7 +79,7 @@ properties (GetAccess=public, SetAccess=public)
     % modelname - The name of the schematic eye used to render the scene.
     %   Depending on the model chosen, some other options may not be
     %   applicable. Currently possible models include: navarro (default)
-    %   gullstrand-le grand, and arizona eye model.
+    %   le grand, and arizona eye model.
     modelName;
     
     % resolution - resolution of render (pixels)
@@ -95,13 +100,13 @@ properties (GetAccess=public, SetAccess=public)
     %   nm rays from 0.2 meters will be in focus on the retina.
     accommodation;
 
-    % eccentricity - Horizontal and vertical angles on the retina
-    %   corresponding to the center of the rendered image. Positive angles
-    %   are to the right/up (from the eye's point of view) and negative
-    %   angles are to the left/down. For example, an image with [0 0]
-    %   eccentricity is centered on the center of the retina. An image with
-    %   [30 0] eccentricity is centered 30 degrees to the right of the
-    %   center of the retina.
+    % eccentricity - [Currently not implemented!] Horizontal and vertical
+    %   angles on the retina corresponding to the center of the rendered
+    %   image. Positive angles are to the right/up (from the eye's point of
+    %   view) and negative angles are to the left/down. For example, an
+    %   image with [0 0] eccentricity is centered on the center of the
+    %   retina. An image with [30 0] eccentricity is centered 30 degrees to
+    %   the right of the center of the retina.
     eccentricity;
 
     % pupilDiameter - Diameter of the pupil (mm)
@@ -138,9 +143,10 @@ properties (GetAccess=public, SetAccess=public)
 
     % numCABands - Number of wavelength samples to take when modeling CA
     %   We shoot extra rays of different wavelengths in order to model
-    %   chromatic aberration through the lens system. This determines
-    %   the number of samples we take. For example, if we set this to 4
-    %   we shoot rays at...
+    %   chromatic aberration through the lens system. When debugging, this
+    %   can be set to 0 but for the final render it should be something
+    %   like 8 or 16. (e.g. If you set it to 8, then we will shoot rays for
+    %   wavelengths of linspace(400,700,8).);
     numCABands;
 
     % eyePos - Position of the eye within the scene in [x y z] format
@@ -170,6 +176,27 @@ properties (GetAccess=public, SetAccess=public)
     %   FOV as the eye. This can be potentially faster and easier to
     %   render than going through the eye.
     debugMode;
+    
+    %RECIPE Structure that holds all other instructions needed for the
+    %renderer
+    % (PBRT) to render the scene.This includes things like the
+    % WorldBegin/WorldEnd block, the PixelFilter, the Integrator, etc.
+    % Ideally, the sceneEye user will not need to access the recipe very
+    % often.
+    recipe;
+    
+    % LENSFILE - Path to the .dat file that describes the lens system
+    %   This file includes descriptions of the thickness, curvature,
+    %   and diameter of the various components in the eye. This is usually
+    %   written out automatically in the "write" function for sceneEye
+    %   (which is called during sceneEye.render). However, you can also
+    %   attach a custom file. 
+    lensFile;
+    
+    % LENSDENSITY - Lens pigment density. Equivalent to lens density in the
+    % Lens class for ISETBio (non-3D calculations).
+    lensDensity;
+    
 end
 
 properties (Dependent)
@@ -187,16 +214,13 @@ properties (Dependent)
     sampleSize;
     
     % angularSupport - location of each pixel in degrees. This should be
-    % accurate even at wide-angles.
+    % accurate even at wide-angles. May not be accurate if you use a crop
+    % window though!
     angularSupport;
 
 end
 
 properties(GetAccess=public, SetAccess=private)
-    % lensFile - Path to the .dat file that describes the lens system
-    %   This file includes descriptions of the thickness, curvature,
-    %   and diameter of the various components in the eye.
-    lensFile;
 
     % pbrtFile - Path to the original .pbrt file this scene is based on
     %   Depends on the pbrt file used to create the scene. Should not
@@ -213,18 +237,11 @@ properties(GetAccess=public, SetAccess=private)
     %   We keep of track of this here so we can pass the correct parameter
     %   to PBRT.
     sceneUnits;
+      
 
 end
 
 properties(GetAccess=public, SetAccess=public, Hidden=true)
-    % The recipe stores pretty much everything else we read in from the
-    % PBRT file that we don't want the user to access directly. This
-    % includes things like the WorldBegin/WorldEnd block, the PixelFilter,
-    % the Integrator, etc.
-
-    % recipe - Structure that holds all instructions needed to
-    %   render the PBRT file.
-    recipe;
     
     %DISTANCE2CHORD This is used in intermediate calculations and is an
     %   important variable when we are doing calculations at wide angles.
@@ -257,36 +274,16 @@ methods
         p.addParameter('name', 'scene-001', @ischar);
         p.addParameter('workingDirectory', '', @ischar);
         
-        % Optional parameters used by unique scenes (e.g. slantedBar,
-        % texturedPlane, pointSource). We can use these parameters to move
-        % the plane/point to the given distance (in mm) and, if applicable,
-        % attach the provided texture.
-        p.addParameter('planeDistance', 1, @isnumeric);
-        p.addParameter('planeTexture', ...
-            fullfile(piRootPath, 'data', 'imageTextures', ...
-            'squareResolutionChart.exr'), @ischar);
-        p.addParameter('planeSize', [1 1], @isnumeric);
-        p.addParameter('pointDiameter',0.001,@isnumeric);
-        p.addParameter('pointDistance',1,@isnumeric);
-        p.addParameter('gamma','true',@ischar); % texturedPlane
-        p.addParameter('useDisplaySPD',0); % texturedPlane
-        p.addParameter('whiteDepth',1,@isnumeric); %slantedBarAdjustable
-        p.addParameter('blackDepth',1,@isnumeric); %slantedBarAdjustable
-        p.addParameter('topDepth',1,@isnumeric); %slantedBarTexture
-        p.addParameter('bottomDepth',1,@isnumeric); %slantedBarTexture 
-        p.addParameter('objectDistance',1,@isnumeric); %snellenSingle
-        p.addParameter('objectSize',[0.3 0.3],@isnumeric); %snellenSingle
-        
         % Parse
         p.parse(pbrtFile, varargin{:});
         
         % Setup the pbrt scene and recipe
         [recipe, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
-            loadPbrtScene(pbrtFile,p);
+            loadPbrtScene(pbrtFile,varargin);
         
         % Check to make sure this PBRT file has a realistic eye.
         if(~strcmp(recipe.camera.subtype, 'realisticEye'))
-            recipe.camera = piCameraCreate('realisticEye');
+            recipe.camera = piCameraCreate('humaneye');
         end
 
         % Set properties
@@ -346,6 +343,7 @@ methods
         obj.debugMode = false;
         obj.diffractionEnabled = false;
         obj.eccentricity = [0 0];
+        obj.lensDensity = 1.0;
         
     end
 
@@ -448,17 +446,43 @@ methods
                 obj.modelName = 'Navarro';
                 obj.retinaDistance = 16.32;
                 obj.retinaRadius = 12;
-            case {'Gullstrand','gullstrand'}
-                obj.modelName = 'Gullstrand';
+            case {'LeGrand','legrand','le grand'}
+                obj.modelName = 'LeGrand';
                 obj.retinaDistance = 16.6;
                 obj.retinaRadius = 13.4;
             case {'Arizona','arizona'}
                 obj.modelName = 'Arizona';
                 obj.retinaDistance = 16.713;
                 obj.retinaRadius = 13.4;
+            case {'Custom','custom'}
+                % Use Navarro as a default.
+                % Do we need to be able to change this later?
+                obj.modelName = 'Custom';
+                if(isempty(obj.retinaDistance))
+                    obj.retinaDistance = [];
+                end
+                if(isempty(obj.retinaRadius))
+                    obj.retinaRadius = [];
+                end
                 
         end
             
+    end
+    
+    % When the user toggles debugMode, make sure the camera type is
+    % correct.
+    function set.debugMode(obj,val)
+        obj.debugMode = val;
+        if(val)
+            obj.modelName = 'none';
+            % The camera will be changed to perspective in write(), so we
+            % do nothing here. 
+        elseif(~val && strcmp(obj.modelName,'none'))
+            % Put the navarro eye back in if there's not already a model.
+            obj.modelName = 'Navarro';
+            obj.recipe.camera = piCameraCreate('humaneye');
+        end
+        
     end
     
     % I want to put in this warning, but again MATLAB doesn't really like
@@ -468,6 +492,29 @@ methods
         if(strcmp(obj.modelName,'Gullstrand'))
             warning(['Gullstrand eye has no accommodation modeling.',...
                 'Setting accommodation will do nothing.']);
+        end
+    end
+    
+    function set.lensFile(obj,val)
+        
+        % On creation, the lensFile is left empty
+        % There should be a better way to do this right? I don't think I'm
+        % doing this right. Maybe we need a seperate set function like we
+        % do with render recipes?
+        if(~isempty(val))
+            
+            % Make sure it's a valid file
+            [p,~,e] = fileparts(val);
+            if(isempty(p))
+                error('Lens file needs to be a full file path.');
+            elseif(~strcmp(e,'.dat'))
+                error('Lens file needs to be a .dat file.');
+            end
+            
+            obj.modelName = 'Custom';
+            obj.lensFile = val;
+        else
+            obj.lensFile = '';
         end
     end
     

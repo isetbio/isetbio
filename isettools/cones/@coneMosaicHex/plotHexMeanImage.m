@@ -60,33 +60,46 @@ addRequired(p, 'conemosaicH', @(x) isa(x, 'coneMosaicHex'));
 addParameter(p, 'activationTimeSeries', [], @isnumeric);
 addParameter(p, 'type', 'absorptions', @ischar);
 p.parse(conemosaicH, varargin{:});
+
 conemosaicH = p.Results.conemosaicH;
-plotType = p.Results.type;
+
+plotType = ieParamFormat(p.Results.type);
 
 %% Select type of data to plot
+
+% This returns the dataHex and the timeBins
 if (~isempty(p.Results.activationTimeSeries))
+    % I think this should be part of the switch statement below.  It
+    % looks like the logic is if you have an activationTimeSeries,
+    % override the plotType and do this.s
     trialToVisualize = 1;
     dataHex = squeeze(p.Results.activationTimeSeries(trialToVisualize,:,:));
-    conesNum = size(dataHex,1)
-    timeBins = size(dataHex,2)
+    % conesNum = size(dataHex,1);
+    timeBins = size(dataHex,2);
 else
     switch plotType
         case 'absorptions'
             dataHex = conemosaicH.absorptions;
+        case 'current'
+            dataHex = conemosaicH.current;
         otherwise
             dataHex = conemosaicH.current;
     end
-    activeConeIndices = find(conemosaicH.pattern>1);
-    dataHex = dataHex(:);
-    dataHex = dataHex(activeConeIndices);
-    conesNum = size(dataHex,1);
+    activeConeIndices = (conemosaicH.pattern>1);
+    if ~isempty(dataHex)
+        dataHex = dataHex(activeConeIndices);
+        % conesNum = size(dataHex,1);
+        dataHex = dataHex(:);
+    else
+        disp('No absorptions or current computed.  No display');
+        return;
+    end
     timeBins = 1;
 end
 
-
 for frameIndex = 1:timeBins
     dataHexFrame = squeeze(dataHex(:, frameIndex));
-    [activationsHexImage, activationImageLMScone, supX, supY] = ...
+    [activationsHexImage, ~, supX, supY] = ...
         conemosaicH.computeActivationDensityMap(dataHexFrame);
     if (frameIndex == 1)
         activationsHexMovie = zeros(size(activationsHexImage,1), size(activationsHexImage,2), timeBins);
@@ -98,30 +111,32 @@ end
 activationsHexImage = squeeze(mean(activationsHexMovie,3));
 
 %% Display results
-imagesc(supX, supY, activationsHexImage);
-axis 'image';
-axis 'xy';
-colormap gray;
 
+imagesc(supX, supY, activationsHexImage);
+axis 'image'; axis 'xy'; colormap(gray);
 hold on;
+
+%%
 sampledHexMosaicXaxis = conemosaicH.patternSupport(1, :, 1) + ...
     conemosaicH.center(1);
 sampledHexMosaicYaxis = conemosaicH.patternSupport(:, 1, 2) + ...
     conemosaicH.center(2);
 dx = conemosaicH.pigment.pdWidth;
 
-axis 'equal';
-axis 'xy'
 xTicks = [sampledHexMosaicXaxis(1) conemosaicH.center(1) ...
     sampledHexMosaicXaxis(end)];
 yTicks = [sampledHexMosaicYaxis(1) conemosaicH.center(2) ...
     sampledHexMosaicYaxis(end)];
 xTickLabels = sprintf('%2.0f um\n', xTicks * 1e6);
 yTickLabels = sprintf('%2.0f um\n', yTicks * 1e6);
-set(gca, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', xTickLabels, ...
+set(gca, 'XTick', xTicks, ...
+    'YTick', yTicks, ...
+    'XTickLabel', xTickLabels, ...
     'YTickLabel', yTickLabels);
-set(gca, 'FontSize', 16, 'XColor', [0.1 0.2 0.9], ...
-    'YColor', [0.1 0.2 0.9], 'LineWidth', 1.0);
+set(gca, 'FontSize', 16, ...
+    'LineWidth', 1.0); % , ...
+    % 'XColor', [0.1 0.2 0.9], ...
+    % 'YColor', [0.1 0.2 0.9]);
 box on;
 grid off;
 dataRange = prctile(activationsHexImage(:), [5 95]);
@@ -132,4 +147,21 @@ set(gca, 'XLim', [sampledHexMosaicXaxis(1) - dx ...
 set(gca, 'YLim', [sampledHexMosaicYaxis(1) - dx ...
     sampledHexMosaicYaxis(end) + dx]);
 
+%% Show and label the color bar
+cbar = colorbar;
+
+% set(get(cbar, 'title'), 'string', 'p per frame', 'rotation', 90);
+
+% If we ever implement the gamma correctly, we will need to change
+% this, too.
+% gdata = guidata(gcf);
+% gam = str2double(get(gdata.editGam, 'string'));
+photons = str2double(get(cbar, 'TickLabels')); % .^ (1 / gam);
+photons = num2str(round(photons));
+
+set(cbar, 'TickLabels', photons);
+axis image;
+title('Absorptions per integration time');
 drawnow
+
+end

@@ -20,6 +20,7 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
 %
 % Optional key/value pairs:
 %    'nTrials'            - Numeric. The number of trials. Default 1.
+%    'centerPaths'        - Logical. Whether to center the eye movement paths
 %    'computeVelocity'    - Boolean. Whether should calculate the velocity.
 %                           Default false.
 %    'rSeed'              - Numeric. Random seed. Empty causes rng to be inititialized
@@ -29,13 +30,15 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
 %
 
 % History:
-%   6/25/18  dhb  Change arg check for rSeed so that empty is allowable.
-%                 Update header commment to explain its behavior.
+%   6/25/18  dhb      Change arg check for rSeed so that empty is allowable.
+%                     Update header commment to explain its behavior.
+%   6/04/19  npc      Added centerPaths key/value pair
 
 p = inputParser;
 p.addRequired('coneMosaic', @(x)(isa(x, 'coneMosaic')));
 p.addRequired('eyeMovementsPerTrial', @isscalar);
 p.addParameter('nTrials', 1, @isscalar);
+p.addParameter('centerPaths', false, @islogical);
 p.addParameter('computeVelocity', false, @islogical);
 p.addParameter('rSeed', [], @(x) (isempty(x) | isscalar(x)));
 p.addParameter('useParfor', false, @islogical);
@@ -44,6 +47,7 @@ p.parse(coneMosaic, eyeMovementsPerTrial, varargin{:});
 % Set optional parameters based on input
 obj.randomSeed = p.Results.rSeed;
 nTrials = p.Results.nTrials;
+centerPaths = p.Results.centerPaths;
 computeVelocitySignal = p.Results.computeVelocity;
 useParfor = p.Results.useParfor;
 
@@ -55,7 +59,7 @@ emDurationSeconds = eyeMovementsPerTrial * sampleDurationSeconds;
 
 % Generate fixational eye movements (obj.emPathsArcMin)
 compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, ...
-    computeVelocitySignal, 'useParfor', useParfor);
+    computeVelocitySignal, 'centerPaths', centerPaths, 'useParfor', useParfor);
 
 % Subsample to cone positions
 conePatternSampleMicrons = coneMosaic.patternSampleSize(1) * 1e6;

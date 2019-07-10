@@ -147,7 +147,7 @@ classdef coneMosaic < hiddenHandle
         pattern;
 
         %patternSampleSize - Separation between KLMS pattern samples
-        %   For rectangular grid mosaics, this is set to the width/heigh
+        %   For rectangular grid mosaics, this is set to the width/height
         %   field of the PIGMENT object, i.e., the actual cone separation.
         %
         %   For hexagonal grid mosaics (instances of the coneMosaicHex
@@ -179,6 +179,10 @@ classdef coneMosaic < hiddenHandle
         %   when computing the isomerizations?
         apertureBlur;
 
+        %useParfor - Boolean. Whether to use parfor to accelerate mosaic
+        %    construction
+        useParfor;
+        
         %hdl  Handle of the CONEMOSAIC window
         hdl
     end
@@ -325,6 +329,9 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('os', [], ...
                 @(x)(isempty(x) || isa(x, 'outerSegment')));
             p.addParameter('center', [0 0], @(x)(numel(x) == 2));
+            
+            p.addParameter('eccentricityunits', 'm', @ischar); % Should check for valid
+
             p.addParameter('whichEye', 'left', ...
                 @(x) ismember(x, {'left', 'right'}));
             p.addParameter('wave', 400:10:700, @isnumeric);
@@ -337,6 +344,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('apertureBlur', false, @islogical);
             p.addParameter('noiseFlag', 'random', ...
                 @(x)(ismember(lower(x), coneMosaic.validNoiseFlags)));
+            p.addParameter('useParfor', false, @islogical);
             p.parse(varargin{:});
 
             % Set properties
@@ -353,7 +361,8 @@ classdef coneMosaic < hiddenHandle
             obj.coneDarkNoiseRate = [0 0 0];
             obj.noiseFlag = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
-
+            obj.useParfor = p.Results.useParfor;
+            
             % Construct outersgement if not passed.
             if (isempty(p.Results.os))
                 eccentricityMeters = norm(p.Results.center);
@@ -378,9 +387,11 @@ classdef coneMosaic < hiddenHandle
             ecc = sqrt(sum(obj.center .^ 2));
             ang = atan2d(obj.center(2), obj.center(1));
             [spacing, aperture] = coneSizeReadData( p.Unmatched, ...
-                'eccentricity', ecc, 'eccentricityUnits', 'm', ...
+                'eccentricity', ecc, ...
+                'eccentricityUnits', p.Results.eccentricityunits, ...
                 'angle', ang, 'angleUnits', 'deg', ...
-                'whichEye', obj.whichEye);
+                'whichEye', obj.whichEye, ...
+                'useParfor', obj.useParfor);
 
             obj.pigment.pdWidth = aperture;
             obj.pigment.pdHeight = aperture;
@@ -646,11 +657,15 @@ classdef coneMosaic < hiddenHandle
             % Optional key/value pairs:
             %    None.
             %
-            mosaicAreaInMeters = prod(obj.size);
-            conesNum = numel(find(obj.pattern>1));
-            coneAreaInMeters = obj.pigment.area;
-            val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
-            
+            if (isa(obj, 'coneMosaicHex'))
+                [~, geometricCoverage] = obj.retinalCoverage();
+                val = geometricCoverage;
+            else
+                mosaicAreaInMeters = prod(obj.size);
+                conesNum = numel(find(obj.pattern>1));
+                coneAreaInMeters = obj.pigment.area;
+                val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
+            end
         end
         
         function val = get.innerSegmentCoverage(obj)
@@ -671,10 +686,15 @@ classdef coneMosaic < hiddenHandle
             % Optional key/value pairs:
             %    None.
             %
-            mosaicAreaInMeters = prod(obj.size);
-            conesNum = numel(find(obj.pattern>1));
-            coneAreaInMeters = obj.pigment.pdArea;
-            val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
+            if (isa(obj, 'coneMosaicHex'))
+                [lightCollectingCoverage, ~] = obj.retinalCoverage();
+                val = lightCollectingCoverage;
+            else
+                mosaicAreaInMeters = prod(obj.size);
+                conesNum = numel(find(obj.pattern>1));
+                coneAreaInMeters = obj.pigment.pdArea;
+                val = conesNum * coneAreaInMeters / mosaicAreaInMeters;
+            end
         end
         
         function val = get.coneLocs(obj)
@@ -985,7 +1005,11 @@ classdef coneMosaic < hiddenHandle
             % Optional key/value pairs:
             %    None.
             %
-            obj.setSizeToFOV(val);
+            if (isa(obj, 'coneMosaicHex'))
+                error('Setting the ''fov'' property directly is not allowed for a coneMosaicHex object. The fov is settable only during instantiation.');
+            else
+                obj.setSizeToFOV(val);
+            end
         end
 
         function set.mosaicSize(obj, val)
@@ -1225,6 +1249,7 @@ classdef coneMosaic < hiddenHandle
         [noisyImage, theNoise] = photonNoise(absorptions, varargin);
         resampledAbsorptionsSequence = tResample(absorptionsSequence, ...
             pattern, originalTimeAxis, resampledTimeAxis);
+        validateClippingRect(clippingRect);
     end
 
     % Methods may be called by the subclasses, but are otherwise private

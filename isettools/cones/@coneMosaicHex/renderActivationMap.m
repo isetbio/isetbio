@@ -34,18 +34,23 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         @(x)ismember(x, {'modulated hexagons', 'modulated disks'}));
     p.addParameter('colorMap', gray(1024), @isnumeric);
     p.addParameter('titleForColorBar', '', @ischar);
+    p.addParameter('titleForMap', '', @ischar);
     p.addParameter('showColorBar', false, @islogical);
     p.addParameter('labelColorBarTicks', false, @islogical);
     p.addParameter('showXLabel', true, @islogical);
     p.addParameter('showYLabel', true, @islogical);
+    p.addParameter('showXTicks', true, @islogical);
+    p.addParameter('showYTicks', true, @islogical);
     p.addParameter('outlineConesAlongHorizontalMeridian', false, @islogical);
     p.addParameter('crossHairPosition', [], @isnumeric);
-    p.addParameter('visualizedFOV', [], @isnumeric);
+    p.addParameter('visualizedFOV', [], @(x)(isnumeric(x)||(isstruct(x))));
+    p.addParameter('tickInc', [], @isnumeric);
     p.addParameter('signalRange', [], @isnumeric);
     p.addParameter('xRange', [], @isnumeric);
     p.addParameter('yRange', [], @isnumeric);
+    p.addParameter('fontSize', 18, @isnumeric);
     p.addParameter('activationTime', [], @isnumeric);
-    p.addParameter('backgroundColor', 'none', @isnumeric);
+    p.addParameter('backgroundColor', [0 0 0], @isnumeric);
     p.parse(axesHandle, activation, varargin{:});
 
     axesHandle = p.Results.axesHandle;
@@ -61,9 +66,17 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     backgroundColor = p.Results.backgroundColor;
     crossHairPosition = p.Results.crossHairPosition;
     visualizedFOV = p.Results.visualizedFOV;
+    tickInc = p.Results.tickInc;
     titleForColorBar = p.Results.titleForColorBar;
+    titleForMap = p.Results.titleForMap;
     showXLabel = p.Results.showXLabel;
     showYLabel = p.Results.showYLabel;
+    showXTicks = p.Results.showXTicks;
+    showYTicks = p.Results.showYTicks;
+    
+    % Clear the axes
+    cla(axesHandle);
+    
     outlineConesAlongHorizontalMeridian = p.Results.outlineConesAlongHorizontalMeridian;
     
     if (any(size(activation) ~= size(obj.pattern)))    
@@ -108,18 +121,20 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     end
 
     if (isempty(xRange))
-        xRange = [sampledHexMosaicXaxis(1) - obj.pigment.width, ...
-            sampledHexMosaicXaxis(end) + obj.pigment.width];
+        xRange = ...
+            [sampledHexMosaicXaxis(1) sampledHexMosaicXaxis(end)] + ...
+            1.5*1e-6*[-1 1];
     else
         xRange = xRange * 1e-6;
     end
     if (isempty(yRange))
-        yRange = [sampledHexMosaicYaxis(1) - obj.pigment.width, ...
-            sampledHexMosaicYaxis(end) + obj.pigment.width];
+        yRange = [sampledHexMosaicYaxis(1) sampledHexMosaicYaxis(end)] + ...
+            1.5*1e-6*[-1 1];
      else
         yRange = yRange * 1e-6;
     end
 
+    
     cMapLevels = size(colorMap, 1);
     idx = find(obj.pattern > 1);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);  
@@ -136,8 +151,10 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
 
     if (obj.shouldCorrectAbsorptionsWithEccentricity())
     % Compute ecc-varying apertures
-        [apertureOutline, ~] = coneMosaicHex.computeApertureSizes(...
+        [apertureOutline, ~, maxAperture] = coneMosaicHex.computeApertureSizes(...
             dx, [], apertureOutline, [], coneXcoords, coneYcoords);
+    else
+        maxAperture = 0;
     end
 
     hold(axesHandle, 'on');
@@ -185,32 +202,87 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     set(axesHandle, 'CLim', [0 1], 'XTick', [], 'YTick', [], ...
         'Color', backgroundColor);
 
-    colormap(axesHandle, colorMap);     
+    colormap(axesHandle, colorMap);  
+    
+    
+    
+    axis(axesHandle, 'image'); 
+    axis(axesHandle, 'xy');
+    box(axesHandle, 'on');
+    
+    clippingRect = [];
+    if (isempty(visualizedFOV))
+        visualizedFOV = max(obj.fov);
+    else
+        if (isstruct(visualizedFOV))
+            clippingRect = visualizedFOV;
+            % Check that the clippingRect is valid
+            coneMosaic.validateClippingRect(clippingRect);
+            visualizedFOV = max([clippingRect.width clippingRect.height]);
+        end
+    end
+    
+    if (~isempty(p.Results.tickInc))
+        tickInc = p.Results.tickInc;
+    else
+        if (visualizedFOV < 0.25)
+            tickInc = 0.01;
+        elseif (visualizedFOV < 0.5)
+            tickInc = 0.05;
+        elseif (visualizedFOV < 1.0)
+            tickInc = 0.1;
+        elseif (visualizedFOV < 4.0)
+            tickInc = 0.25;
+        elseif (visualizedFOV < 8.0)
+            tickInc = 0.5;
+        else
+            tickInc = 1;
+        end
+        
+        
+    end
+    
+    if (isempty(clippingRect))
+        xMax = round(visualizedFOV/tickInc)*tickInc;
+        ticksDegs = (-xMax:tickInc:xMax);
+    else
+        xMax = max([ clippingRect.xo+clippingRect.width/2 clippingRect.yo+clippingRect.height/2]);
+        xMin = min([ clippingRect.xo-clippingRect.width/2 clippingRect.yo-clippingRect.height/2]);
+        ticksDegs = (xMin:tickInc:xMax);
+    end
+    
+    if (tickInc < 0.1)
+        tickLabels = sprintf('%1.2f\n', ticksDegs);
+    else
+        tickLabels = sprintf('%1.1f\n', ticksDegs);
+    end
+    
+    %ticksDegs = round(100*0.5 * visualizedFOV * 1.0*[-1 -0.5 0 0.5 1])/100;
+    ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
+    spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6 + maxAperture/2*[-1 1];
+    
+    if (showXLabel)
+        xlabel(axesHandle, 'space (degs)');
+    end
+    if (showYLabel)
+        ylabel(axesHandle, 'space (degs)');
+    end
+
+
     if (showColorBar)
+        
+        drawnow;
+        sPosOriginal  = get(gca,'position');
+    
         hC = colorbar();
         if (labelColorBarTicks)
             ticks = [0 0.5 1.0];
             hC.Ticks = ticks; 
-            tickLabels = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
-            
-            if (max(abs(tickLabels) < 0.01))
-                if (min(tickLabels) < 0)
-                    hC.TickLabels = sprintf('%+2.2f\n',tickLabels); 
-                else
-                    hC.TickLabels = sprintf('%2.2f\n',tickLabels); 
-                end
-            elseif (max(abs(tickLabels) < 0.4))
-                if (min(tickLabels) < 0)
-                    hC.TickLabels = sprintf('%+2.1f\n',tickLabels); 
-                else
-                    hC.TickLabels = sprintf('%2.1f\n',tickLabels); 
-                end
+            tickLabelsForColorbar = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
+            if (min(tickLabels) < 0)
+                hC.TickLabels = sprintf('%+2.1f\n',tickLabelsForColorbar); 
             else
-                if (min(tickLabels) < 0)
-                    hC.TickLabels = sprintf('%+2.0f\n',round(tickLabels)); 
-                else
-                    hC.TickLabels = sprintf('%2.0f\n',round(tickLabels)); 
-                end
+                hC.TickLabels = sprintf('%2.1f\n',tickLabelsForColorbar); 
             end
         else
             hC.TickLabels = {}; 
@@ -220,34 +292,41 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         end
     end
     
-    axis(axesHandle, 'image'); 
-    axis(axesHandle, 'xy');
-    box(axesHandle, 'on');
-    
-    if (isempty(visualizedFOV))
-        visualizedFOV = max(obj.fov);
+    if (isempty(clippingRect))
+        set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+            'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
+            'XTick', ticksMeters, 'YTick', ticksMeters, ...
+            'XTickLabels', tickLabels , 'YTickLabels', tickLabels );
+    else
+        spatialExtentMetersX = (clippingRect.xo+clippingRect.width/2*[-1 1])*obj.micronsPerDegree*1e-6;
+        spatialExtentMetersY = (clippingRect.yo+clippingRect.height/2*[-1 1])*obj.micronsPerDegree*1e-6;
+        set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
+            'XLim', spatialExtentMetersX,  'YLim', spatialExtentMetersY, ...
+            'XTick', ticksMeters, 'YTick', ticksMeters, ...
+            'XTickLabels', tickLabels , 'YTickLabels', tickLabels );
     end
-    ticksDegs = round(100*0.5 * visualizedFOV * 0.95*[-1 0 1])/100;
-    ticksMeters = ticksDegs * obj.micronsPerDegree * 1e-6;
-    spatialExtentMeters = 0.5 * visualizedFOV * [-1 1] * obj.micronsPerDegree * 1e-6;
     
-    if (showXLabel)
-        xlabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+    set(axesHandle, 'FontSize', p.Results.fontSize, 'LineWidth', 1.0);
+    
+    if (~showXTicks)
+        set(axesHandle, 'XTick', []);
     end
-    if (showYLabel)
-        ylabel(axesHandle, 'space (degs)', 'FontWeight', 'bold');
+    
+    if (~showYTicks)
+        set(axesHandle, 'YTick', []);
     end
-    tickLabels = {sprintf('%2.2f', ticksDegs(1)), sprintf('%2.2f', ticksDegs(2)), sprintf('%2.2f', ticksDegs(3))};
     
-    set(axesHandle, 'XTick', ticksMeters, 'YTick', ticksMeters, ...
-        'XLim', spatialExtentMeters,  'YLim', spatialExtentMeters, ...
-        'XTick', ticksMeters, 'YTick', ticksMeters, ...
-        'XTickLabels', sprintf('%2.2f\n', ticksDegs), 'YTickLabels', sprintf('%2.2f\n', ticksDegs), ...
-        'FontSize', 12);
-    xticks(axesHandle, ticksMeters); yticks(axesHandle, ticksMeters); 
+    if (showColorBar)
+        drawnow;
+        sPos = get(gca,'position');
+        sPos(3:4) = sPosOriginal(3:4);
+        set(gca,'position',sPos);
+        drawnow;
+    end
     
-    yticklabels(axesHandle, tickLabels);
-    
+    if (~isempty(titleForMap))
+        title(titleForMap);
+    end
 end
 
 function renderModulatedColorPatchArray(axesHandle, pixelOutline, xCoords, yCoords, ...

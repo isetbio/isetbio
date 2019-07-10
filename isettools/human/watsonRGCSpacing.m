@@ -58,9 +58,9 @@ function [smf0, r, smf1d] = watsonRGCSpacing(fovCols)
 % Nasal      2.4607  1.7463  0.77754  15.111  ?0.15933
 %
 % Item                                         Value     Unit
-% Peak cone density                            14,804.6  deg?2
-% Peak RGCf density                            33,162.3  deg?2
-% Peak mRGCf density                           29,609.2  deg?2
+% Peak cone density                            14,804.6  deg^-2
+% Peak RGCf density                            33,162.3  deg^-2
+% Peak mRGCf density                           29,609.2  deg^-2
 % Minimum on-center mRGCf (or cone) spacing    0.5299    arcmin
 % Peak on-center mRGCf (or cone) Nyquist       65.37     cycles/deg
 % f(0), midget fraction at zero eccentricity   1/1.12 = 0.8928
@@ -153,7 +153,6 @@ clear smf
 % y = 1;
 % rxy = sqrt(x .^ 2 + y .^ 2);
 xctr = 0;
-yctr = 0;
 % for x = .1:.1:1
 % degarr = [-40:.25:40];
 

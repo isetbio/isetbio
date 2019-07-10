@@ -102,6 +102,8 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 %                                     L, M and S cones (in that order), as calculated in lines
 %                                     200-202 of ComputeRawConeFundamentals; or rods, as calculated
 %                                     in line 216 of ComputeRawConeFundamentals if params.DORODS is true.
+%    adjIndDiffParams.absorbance - Photopigment absorbance as given in line 188 of ComputeRawConeFundamentals
+%    adjIndDiffParams.absorptance - Photopigment absorptance as given in line 230 of ComputeRawConeFundamentals
 %
 % For both adjIndDiffParams.mac and adjIndDiffParams.lens, the wavelength
 % spacing is the same as in the S input variable of this function.

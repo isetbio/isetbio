@@ -1,8 +1,8 @@
-function [scene, I] = sceneFromFile(...
+function [scene, I, linearizedI] = sceneFromFile(...
     I, imType, meanLuminance, dispCal, wList, varargin)
 % Create a scene structure by reading data from a file
 %
-%     [scene, I] = sceneFromFile(imageData, imageType, [meanLuminance], ...
+%     [scene, I, linearizedI] = sceneFromFile(imageData, imageType, [meanLuminance], ...
 %                       [display], [wave], [doSub], [ambient], [oSample])
 %
 % Description:
@@ -51,6 +51,9 @@ function [scene, I] = sceneFromFile(...
 % Outputs:
 %    scene         - The created scene structure
 %    I             - The image, in the same format as entry.
+%    linearizedI   - A linearized image, set sometimes.  Otherwise empty.
+%                    This applies to RGB images after linearization through
+%                    a display gamma table.
 %
 % Optional key/value pairs:
 %    None.
@@ -59,6 +62,7 @@ function [scene, I] = sceneFromFile(...
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    01/03/18  jnm  Formatting
 %    01/23/18  dhb  Skip autorun on examples that require user input.
+%    02/14/19  dhb, lz Add return of linearized image, sometimes.
 
 % Examples:
 %{
@@ -136,6 +140,10 @@ if notDefined('I')
     if isempty(I), scene = []; return; end
 end
 
+% Set linearizedI return to empty.  Sometimes set to something
+% meaningful.
+linearizedI = [];
+
 if ischar(I)
     % I is a file name. We determine whether it is a Matlab file and
     % contains a scene variable. If so, we return that and end
@@ -181,7 +189,7 @@ switch lower(imType)
         if length(varargin) > 2, sz = varargin{3}; else, sz = []; end
 
         % read radiance / reflectance
-        photons = vcReadImage(I, imType, dispCal, doSub, sz);
+        [photons, ~, ~, ~, ~, linearizedI] = vcReadImage(I, imType, dispCal, doSub, sz);
 
         % Match the display wavelength and the scene wavelength
         wave = displayGet(d, 'wave');
@@ -206,6 +214,8 @@ switch lower(imType)
             il = illuminantCreate('d65', wave);
             % Replace default with display white point SPD
             il = illuminantSet(il, 'energy', sum(d.spd, 2));
+            % Rename illuminant
+            il = illuminantSet(il, 'name', 'display white point');
         end
         scene = sceneSet(scene, 'illuminant', il);
 

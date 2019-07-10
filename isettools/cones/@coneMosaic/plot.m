@@ -135,9 +135,6 @@ p.parse(obj, plotType, varargin{:});
 hf = p.Results.hf;
 oi = p.Results.oi;                    % Used in plotGraphs routine
 
-% Initialize return structure
-uData = [];
-
 %% Initialize where we'll plot
 if isempty(hf)
     hf = vcNewGraphWin;
@@ -148,55 +145,78 @@ elseif isgraphics(hf, 'axes')
 end
 
 %% Set color order so that LMS plots as RGB
+
+% Set color order so that LMS plots as RGB
+% Matlab default is 7 colors, and we reorder
+% If the user has changed the default, we leave it alone.
 if ~isequal(hf, 'none')
-    co = get(gca, 'ColorOrder');
-    if isgraphics(hf, 'axes')
-        set(get(hf, 'parent'), ...
-            'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
-    else
-        set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+    co = get(gca, 'ColorOrder');  
+    if size(co,1) == 7    % Figure        
+        if isgraphics(hf, 'axes')
+            set(get(hf, 'parent'), ...
+                'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
+        else
+            set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
+        end
     end
 end
 
 %% Switch on passed plot type
+
+% When we draw into the main axis in the cMosaic window, we store the user
+% data in that window.  Otherwise, we build up some user data in a new
+% variable that is stored in the temporary plotting window.
 switch ieParamFormat(plotType)
     case 'conemosaic'
-        % Default for cone size
-        support = [4, 4];
-        spread = 2;
-        maxCones = 5e4;
+        axisData = get(gca,'UserData');  % Main axis in the window
 
-        % Speed things up
-        nCones = size(obj.coneLocs, 1);
-        locs = obj.coneLocs;
-        pattern = obj.pattern(:);
-        if  nCones > maxCones
+        if isfield(axisData,'mosaicImage') && ~isempty(axisData.mosaicImage)
+            imagesc(axisData.mosaicImage)
+            axis off; axis image;
+        else
+            locs    = obj.coneLocs;
+            pattern = obj.pattern(:);
+            
+            % We used to speed things up when there are a lot of cones But on
+            % my new Mac even with 200,000 cones things are fast enough. There
+            % may be people on slower older Macs.  Not sure what to do but
+            % maybe this.
+            %{
+           nCones  = size(obj.coneLocs, 1);
+           maxCones = 5e4;
+           if  nCones > maxCones
             disp('Displaying subsampled (50K) version')
             lst = randi(nCones, [maxCones, 1]);
             lst = unique(lst);
             locs = locs(lst, :);
             pattern = pattern(lst, :);
 
-            % Brighten up in this case
-            support = round([nCones / maxCones, nCones / maxCones]);
-            spread = 2 * support(1);
+             % Need to check the rendering when there are a lot of cones
+             % support = round([nCones / maxCones, nCones / maxCones]);
+             % spread = 2 * support(1);
+            end
+            %}
+            
+            % The locations are converted to microns from meters, I think.
+            [axisData.support, axisData.spread, axisData.delta, axisData.mosaicImage] = ...
+                conePlot(locs * 1e6, pattern);
+            imagesc(axisData.mosaicImage);
+            axis off; axis image;
         end
-
-        [uData.support, uData.spread, uData.delta, uData.mosaicImage] = ...
-            conePlot(locs * 1e6, pattern, support, spread);
-        imagesc(uData.mosaicImage);
-        axis off;
-        axis image;
+        
+        set(gca,'UserData',axisData);  % Put the modified values back
 
     case 'meanabsorptions'
+        axisData = get(gca,'UserData'); % Main axis in window
+
         % Image of mean absorptions per integration period
         if isempty(obj.absorptions), error('no absorption data'); end
 
         % Show the data, with the gamma from the window.
-        uData.data = mean(obj.absorptions, 3);
+        axisData.data = mean(obj.absorptions, 3);
         gdata = guidata(obj.hdl);
         gam = str2double(get(gdata.editGam, 'string'));
-        imagesc((uData.data) .^ gam);
+        imagesc((axisData.data) .^ gam);
         axis off;
 
         % Preserve the tick labels in real photons
@@ -209,6 +229,8 @@ switch ieParamFormat(plotType)
         set(cbar, 'TickLabels', photons);
         axis image;
         title('Absorptions per integration time');
+        
+        set(gca,'UserData',axisData);  % Put it back
 
     case 'movieabsorptions'
         % Movie in gray scale
@@ -218,9 +240,10 @@ switch ieParamFormat(plotType)
 
         % Additional movie arguments may include the video file name, step,
         % and FrameRate
-        uData = ieMovie(obj.absorptions, varargin{:});
+        ieMovie(obj.absorptions, varargin{:});
 
     case {'hlineabsorptions', 'vlineabsorptions'}
+        % Data are stored in the temporary potting window.
         data = mean(obj.absorptions, 3);
 
         % The plots below are with respect to a point.
@@ -234,7 +257,7 @@ switch ieParamFormat(plotType)
         vcNewGraphWin;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
-            plot(data(:, x), 'LineWidth', 2);
+            plot(data(:, x), 'k-', 'LineWidth', 2);
             uData.y = data(:, x);
             uData.x = 1:length(uData.y);
             grid on;
@@ -242,7 +265,7 @@ switch ieParamFormat(plotType)
             ylabel(yStr);
             set(gca, 'userdata', data(:, x));
         else
-            plot(data(y, :), 'LineWidth', 2);
+            plot(data(y, :), 'k-', 'LineWidth', 2);
             uData.y = data(y, :);
             uData.x = 1:length(uData.y);
             grid on;
@@ -251,6 +274,7 @@ switch ieParamFormat(plotType)
         end
 
     case {'hlineabsorptionslms', 'vlineabsorptionslms'}
+        % Does not work correctly when in the cone mosaic viewing mode.
         data = mean(obj.absorptions, 3);
 
         % The plots below are with respect to a point.
@@ -479,7 +503,7 @@ switch ieParamFormat(plotType)
 
         % Additional arguments may be the video file name, step, and
         % FrameRate
-        uData = ieMovie(obj.current, varargin{:});
+        ieMovie(obj.current, varargin{:});
 
     case 'conefundamentals'
         % The cone absorptance without macular pigment or lens
@@ -582,10 +606,12 @@ switch ieParamFormat(plotType)
         error('unsupported plot type');
 end
 
-set(gca, 'userdata', uData);
+% Put back the modified user data
+if exist('uData','var'), set(gca, 'userdata', uData); end
 
 end
 
+%{
 function mov = coneImageActivity(cMosaic, hf, varargin)
 % Make a movie or a single image of cone absorptions on a colored mosaic
 %
@@ -742,3 +768,4 @@ xlabel('Time (sec)');
 ylabel('pA');
 
 end
+%}

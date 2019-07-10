@@ -31,10 +31,6 @@ function obj = osSet(obj, varargin)
 %    None.
 %
 % Notes:
-%    * [Note: JNM - Set does not seem to like taking multiple parameters
-%      and values. Tends to not agree with anything past the first? Same
-%      question as osGet about parameters that do not appear to be
-%      supported anymore?]
 %
 
 % History:
@@ -43,13 +39,9 @@ function obj = osSet(obj, varargin)
 
 % Examples:
 %{
-    % ETTBSkip.  Example is broken, possibly becaues underlying routine is
-    % not parsing well.
-    %
-    % [Note: JNM - The time step being set in the same call as noise flag
-    % appears to be upsetting things?]
     adaptedOS = osCreate;
-	adaptedOS = osSet(adaptedOS, 'noiseFlag', 0, 'time step', 0.001);
+	adaptedOS = osSet(adaptedOS, 'noiseFlag', 'none');
+    adaptedOS = osSet(adaptedOS,  'time step', 0.001);
 %}
 
 narginchk(0, Inf);

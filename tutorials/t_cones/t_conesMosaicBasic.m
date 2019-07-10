@@ -1,4 +1,4 @@
-% Basic introduction to the cone mosaic object.
+%% Introduction to the cone mosaic object.
 %
 % Description:
 %    Show how to create a cone mosaic object and compute cone
@@ -32,7 +32,7 @@ oi = oiCompute(oi, s);
 cMosaic = coneMosaic;
 
 % Set size to show about half the scene. Speeds things up.
-cMosaic.setSizeToFOV(0.5 * sceneGet(s, 'fov'));
+cMosaic.setSizeToFOV(0.1 * sceneGet(s, 'fov'));
 
 %% Generate a sequence of 100 eye posistions.
 cMosaic.emGenSequence(100);
@@ -47,3 +47,4 @@ cMosaic.compute(oi);
 % the movie of fixations.
 cMosaic.window;
 
+%%

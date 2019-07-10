@@ -721,6 +721,8 @@ switch (pType)
             ylabel('Transmittance');
         end
 
+        udata.wavelength = w;
+        udata.transmittance = t;
     case {'otf', 'otfanywave'}
         % User asked to select a wavelength
         % Optical transfer function, units are lines/mm

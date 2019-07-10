@@ -1,9 +1,9 @@
-function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
+function [photons, illuminant, basis, comment, mcCOEF, linearizedImage] = vcReadImage(...
     fullname, imageType, varargin)
 % Read image color data, return multispectral photons
 %
 % Syntax:
-%   [photons, illuminant, basis, comment, mcCOEF ] = ...
+%   [photons, illuminant, basis, comment, mcCOEF, linearizedImage] = ...
 %             vcReadImage([fullname], [imageType], [varargin])
 %
 % Description:
@@ -61,6 +61,9 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %                 multispectral SPD
 %    comment    - A comment string
 %    mcCOEF     - Coefficients for basis functions for multispectral SPD
+%    linearizedImage - RGB image after linearization by display gamma.
+%                 Only set to something interesting on some ways through
+%                 this routine.  Otherwise empty.
 %
 % Optional key/value pairs:
 %    Needs to be populated.
@@ -73,6 +76,7 @@ function [photons, illuminant, basis, comment, mcCOEF] = vcReadImage(...
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    11/29/17  jnm  Formatting & notes
 %    01/29/18  jnm  Formatting update to match Wiki.
+%    02/14/19  dhb, lz  Return linearized image too.
 
 % Examples:
 %{
@@ -99,6 +103,13 @@ if isempty(fullname), photons = []; return; end
 % These are loaded for a file, when they are returned.
 mcCOEF = [];
 comment = '';
+
+% This is sometimes set to the linearized image
+linearizedImage = [];
+
+% Initialize other parameters to empty that are sometimes set
+illuminant = [];
+basis = [];
 
 imageType = ieParamFormat(imageType);
 
@@ -211,6 +222,7 @@ switch lower(imageType)
             
             % Convert DAC values to linear intensities for the channels.
             inImg = ieLUTDigital(inImg, gTable);
+            linearizedImage = inImg;
             
             % Subpixel rendering
             if doSub

@@ -37,6 +37,6 @@ function circularApertureDiameter = ...
         diameterForCircularApertureFromWidthForSquareAperture(...
         squareApertureWidth)
 %}
-    area = squareApertureWidth ^ 2;
+    area = squareApertureWidth .^ 2;
     circularApertureDiameter = 2.0 * sqrt(area / pi);
 end

@@ -50,7 +50,7 @@ function ls = westheimerLSF(xSec)
     grid on;
     xlabel('Freq (cpd)');
     ylabel('Relative contrast');
-    set(gca, 'ylim', [-.1 1.1])
+    set(gca, 'ylim', [0.01 1.1])
 %}
 
 if notDefined('xSec'), xSec = -300:1:300; end

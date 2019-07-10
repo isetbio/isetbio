@@ -29,9 +29,8 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
 %                      spread, delta are gaussian blurring parameters for
 %                      creating the image.
 %    support         - (Optional) Vector. 1x2 Vector containing the number
-%                      of rows and columns in the figure. This is the
-%                      spatial support for each cone (computed by default).
-%                      The default is [8 8] if spread is also undefined.
+%                      of rows and columns for each cone. The default is
+%                      the cone-cone separation.
 %    spread          - (Optional) Numeric. The spatial spread for each cone
 %                      (computed by default). Default is 2.1.
 %    delta           - (Optional) Numeric. Spacing between the cones
@@ -44,9 +43,10 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
 %                      columns comprising the image support. If not
 %                      previously provided, the calculated values. Default
 %                      is [8 8].
-%    spread          - Numeric. The spread value. If not provided, then is
+%    spread          - Numeric. The Gaussian  spread value. If not provided, then is
 %                      the default, 2.1.
-%    delta           - Numeric. The spacing in microns between the cones.
+%    delta           - Numeric. The spacing in microns between samples of
+%                      the coneMosaicImage. 
 %                      Default value is 0.25.
 %    coneMosaicImage - (Optional) The image. If this fourth output argument
 %                      is present, the function returns the RGB image and
@@ -62,13 +62,14 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
 % History:
 %    xx/xx/09       Copyright ImagEval LLLC, 2009
 %    06/12/18  jnm  Formatting
+%    03/19/19  npc  Fixed example  to work with @coneMosaicHex
 
 % Examples:
 %{
-    % ETTBSkip - Broken since sensor removed.
-    % [TODO: EXAMPLE NEEDS UPDATING NOW THAT SENSOR IS GONE.]
-    [sensor, xy, coneType] = sensorCreateConeMosaic;
-    conePlot(xy, coneType);
+    c = coneMosaicHex(5);
+    xy = c.coneLocsHexGrid * 1e6;
+    coneType = c.coneTypesHexGrid;
+    [support, spread, delta] = conePlot(xy, coneType);
 %}
 %{
     sz = [75, 75];
@@ -77,6 +78,7 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
     [support, spread, delta] = conePlot(xy, coneType(:));
 %}
 
+%%
 if notDefined('delta'), delta = 0.25; end  % Sampling in microns
 % support and spread are adjusted below, after the grid is built
 
@@ -104,7 +106,7 @@ end
 % Could have an else dgrid = ones(size(xy, 1), 1) here and then eliminate
 % the else below.
 
-% Find the positions of the empty (K) and three cone types
+%% Find the positions of the empty (K) and three cone types
 K = find(fgrid == 1);
 L = find(fgrid == 2);
 M = find(fgrid == 3);
@@ -134,13 +136,33 @@ coneImage = reshape(coneImage, size(fgrid, 1), size(fgrid, 2), 3);
 % image(fgrid);
 % colormap(mp)
 
-% Blur the image by a Gaussian - we set blur and support here.
-if notDefined('spread'), spread = 2.1; end
-if notDefined('support'), support = round(spread * [4 4]); end
+%% Blur the image by a Gaussian - we set blur and support here.
+
+if notDefined('support')
+    % Find cone positions and set support to spacing between the cones in
+    % the coneImage
+    conePos = find(coneImage(1,:));
+    coneSep = conePos(2) - conePos(1);
+    support = [coneSep,coneSep];
+end
+
+% Not sure that I have this right.  Setting this has a big impact on
+% how the rendered mosaic looks.  Keep experimenting.  (BW).
+if notDefined('spread')
+    if support(1) < 20
+        spread = (support(1)/3);
+    elseif support(1) < 30
+        spread = (support(1)/4);
+    elseif support(1) < 40
+        spread = (support(1)/5);
+    else
+        spread = (support(1)/6);
+    end    
+end
 
 if notDefined('whiteBackground'), whiteBackground = false; end
 if (whiteBackground)
-    g = fspecial('gaussian', support, spread * 0.87);
+    g = fspecial('gaussian', support, spread);
     g = g / max(g(:));
     g(g < 0.1) = 0;
     g = 1.5 * g .^ 0.3;
@@ -157,6 +179,7 @@ if (whiteBackground)
     tmp(repmat(indices, [1, 1, 3])) = 1;
 end
 
+%%
 if (nargout < 4)
     % Show the image
     h = vcNewGraphWin;
@@ -165,4 +188,6 @@ if (nargout < 4)
 else
     % return the image
     coneMosaicImage = tmp / max(tmp(:));
+end
+
 end

@@ -26,6 +26,7 @@
 %   FillInPhotoreceptors      - Convert from data source specification to numeric values in photoreceptors structure.
 %   FitConeFundamentalsWithNomogram - Try to fit CIE cone fundamentals with absorbance from various nomograms.
 %   GovardovskiiNomogram      - Govardoskii et al. (2000) A1 photopigment nomogram.
+%   JuddVosToSmithPorkorny    - Get Smith-Pokorny fundamentals from Judd-Vos XYZ.
 %   LambNomogram              - Lamb's (1995) photopigment nomogram.
 %   LensTransmittance         - Return transmittance of human lens.
 %   MacularTransmittance      - Return transmittance of human macular pigment.

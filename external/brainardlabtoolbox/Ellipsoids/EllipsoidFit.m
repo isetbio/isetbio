@@ -1,35 +1,46 @@
 function [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,ellParams0,fitCenterOffset,isXYEllipse)
-% [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,[ellParams0],[offset])
+% Fit an ellipsoid (or ellipse) to data
 %
-% Find the ellipsoid that goes through a set of passed points in the
-% columns of matrix x.  The method follows that described in:
-%   Poirson AB, Wandell BA, Varner DC, Brainard DH. 1990. Surface
-%   characterizations of color thresholds. J. Opt. Soc. Am. A 7: 783-89
-% 
-% You can pass an initial set of ellipse parameters.  If this argument is missing
-% or empty, the routine tries to do something sensible.
+% Syntax
+%     [A,Ainv,Q,ellParamsFit] = EllipsoidFit(x,[ellParams0],[offset])
 %
-% If isXYEllipse is true, the z dimension center position is locked to
-% zero.  This is useful when we are using the ellipsoid code to fit data
-% which is restricted to the xy plane.  This is a bit of hack, and may not
-% be completely robust.
+% Description:
+%     Find the ellipsoid that goes through a set of passed points in the
+%     columns of matrix x.  The method follows that described in:
+%        Poirson AB, Wandell BA, Varner DC, Brainard DH. 1990. Surface
+%        characterizations of color thresholds. J. Opt. Soc. Am. A 7: 783-89
 % 
+%     You can pass an initial set of ellipse parameters.  If this argument is missing
+%     or empty, the routine tries to do something sensible.
+%
+%     If isXYEllipse is true, the z dimension center position is locked to
+%     zero.  This is useful when we are using the ellipsoid code to fit data
+%     which is restricted to the xy plane.  This is a bit of hack, and may not
+%     be completely robust.
+%
+% Inputs:
+%
+% Outputs:
+%
 % See EllipsoidMatricesGenerate for the parameter convention.
 % 
-% 7/4/16  dhb  Wrote it.
+% 07/04/16  dhb  Wrote it.
+% 08/16/18  dhb  Update initial guess to match new ellipsoid parameterization
+%                Also allow angles to run from -2*pi to 2*pi, so search can
+%                wrap around if it needs to.
+% 04/22/19  dhb  Respect passed fitCenterOffset - this was being forced to
+%                true when passed.
 
 % Offset?
 if (nargin < 3 || isempty(fitCenterOffset))
     fitCenterOffset = false;
-else
-    fitCenterOffset = true;
 end
 
 if (nargin < 4 || isempty(isXYEllipse))
     isXYEllipse = false;
 end
 
-% Get infor on ellipse location
+% Get info on ellipse location
 maxX = max(x,[],2);
 minX = min(x,[],2);
 meanX = mean([maxX minX],2);
@@ -38,9 +49,10 @@ meanX = mean(x,2);
 % Have a go at reasonable initial values
 if (nargin < 2 || isempty(ellParams0))
     ellRanges = maxX-minX;
-    ellParams0 = [ellRanges' 0 0 0]';
+    ellParams0 = [1./ellRanges.^0.5' 0 0 0]';
+    ellParams0(isinf(ellParams0)) = 1;
 end
-vlb = [1e-3 1e-3 1e-3 0 0 0]';
+vlb = [1e-3 1e-3 1e-3 -2*pi -2*pi -2*pi]';
 vub = [1e3 1e3 1e3 2*pi 2*pi 2*pi]';
 
 % Add on offset parameters if we're searching on an offset.
@@ -87,7 +99,6 @@ end
 
 [A,Ainv,Q] = EllipsoidMatricesGenerate(ellParamsFit);
 
-
 end
 
 %% Error function for the fit
@@ -101,7 +112,7 @@ if (length(ellParams) == 9)
     ellParams = ellParams(1:6);
 end
 
-[A,Ainv,Q] = EllipsoidMatricesGenerate(ellParams);
+[~,~,Q] = EllipsoidMatricesGenerate(ellParams);
 vectorLengths = diag(x'*Q*x);
 f = sqrt(mean((vectorLengths-1).^2));
 end

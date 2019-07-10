@@ -20,7 +20,23 @@ function [ieObject] = setOI(obj,ieObject,varargin)
 %                     parameters set. 
 %
 
-    
+%%
+p = inputParser;
+
+varargin =ieParamFormat(varargin);
+
+p.addRequired('obj');
+p.addRequired('ieObject');
+
+p.addParameter('meanilluminancepermm2',5,@isnumeric);
+p.addParameter('scaleIlluminance',true,@islogical);
+
+p.parse(obj,ieObject,varargin{:});
+meanIlluminancePerMM2 = p.Results.meanilluminancepermm2;
+scaleIlluminance = p.Results.scaleIlluminance;
+
+%%
+
 ieObject = oiSet(ieObject,'name',sprintf('%s-%s',obj.name,datestr(now,'mmm-dd,HH:MM')));
 
 % Scene distance. We set it to infinity, since it doesn't apply to
@@ -49,25 +65,50 @@ ieObject = oiSet(ieObject, 'optics focal length', ...
 ieObject = oiSet(ieObject, 'optics fnumber', ...
     obj.retinaDistance / obj.pupilDiameter);
 ieObject = oiSet(ieObject, 'fov', fov_crop);
-    
+
 % Clear default optics that do not apply to the iset3d optical
 % image. We may want to add these in in the future.
 ieObject.optics = opticsSet(ieObject.optics, 'model', 'iset3d');
 ieObject.optics = opticsSet(ieObject.optics, 'name', ...
     'PBRT Navarro Eye');
 ieObject.optics.OTF = [];
-
-% BW:  We should set the lens density to the value used in
-% sceneEye, not just remove it.  Ask TL whether she does anything
-% with the lens at all ... if she doesn't, we might apply it here.
-% ieObject.optics.lens = [];
 ieObject.optics.lens.name = obj.recipe.get('lens file');
 ieObject.optics.offaxis = '';
 ieObject.optics.vignetting = [];
 
-% Shouldn't we adjust the mean illuminance to some reasonable
-% level here?
-% disp('myScene.render: Using oiAdjustIlluminance to set mean illuminance to 5 lux.');
-% ieObject = oiAdjustIlluminance(ieObject,5);  % 5 lux
+%% Apply lens transmittance
+% The following code is from oiCalculateIrradiance.m
+
+ieObject = oiSet(ieObject, 'lens density', obj.lensDensity);
+
+irradiance = oiGet(ieObject, 'photons');
+wave = oiGet(ieObject, 'wave');
+
+if isfield(ieObject.optics, 'lens')
+    transmittance = opticsGet(ieObject.optics, 'transmittance', 'wave', wave);
+else
+    transmittance = opticsGet(ieObject.optics, 'transmittance', wave);
+end
+
+if any(transmittance(:) ~= 1)
+    % Do this in a loop to avoid large memory demand
+    transmittance = reshape(transmittance, [1 1 length(transmittance)]);
+    irradiance = bsxfun(@times, irradiance, transmittance);
+end
+
+ieObject = oiSet(ieObject,'photons',irradiance);
+
+%% Scale the irradiance with pupil size
+% This is already done in piDat2ISET.m. However for the human eye the lens
+% file is unique, so we are unable to extract the aperture (at the moment)
+% in piDat2ISET.m. Until we add that code, let's make the change here where
+% the aperture size is known from the sceneEye object. 
+if(scaleIlluminance)
+    lensArea = pi*(obj.pupilDiameter/2)^2;
+    meanIlluminance = meanIlluminancePerMM2*lensArea;
+    
+    ieObject        = oiAdjustIlluminance(ieObject,meanIlluminance);
+    ieObject.data.illuminance = oiCalculateIlluminance(ieObject);
+end
 
 end

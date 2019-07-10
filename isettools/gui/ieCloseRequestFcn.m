@@ -1,5 +1,5 @@
 function ieCloseRequestFcn
-% Method used for closing ISET windows
+% Deprecated:  Method used for closing ISET graph windows
 %
 % Syntax:
 %   ieCloseRequestFcn
@@ -23,14 +23,14 @@ function ieCloseRequestFcn
 %    02/28/18  jnm  Formatting
 
 curFig = gcf;
-curGraphWin = ieSessionGet('graphwinfigure');
+% curGraphWin = ieSessionGet('graphwinfigure');
 
 % If this is the current graph window, then we set the figure information
 % to empty before exiting.
-if (curFig == curGraphWin)
-    ieSessionSet('graphwinfigure',[]);
-    ieSessionSet('graphwinhandle',[]);
-end
+% if (curFig == curGraphWin)
+%     ieSessionSet('graphwinfigure',[]);
+%     ieSessionSet('graphwinhandle',[]);
+% end
 
 closereq;
 

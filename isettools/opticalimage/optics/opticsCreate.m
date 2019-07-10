@@ -284,6 +284,7 @@ if notDefined('pupilRadius'), pupilRadius = 0.0015; end
 % Human focal length is ~17 mm. This corresponds to 296.71 um per degree.
 % Elsewhere we use 300 um per degree, but 17mm is what we've had here and
 % is what the Marimont and Wandell optics is based on so we keep that here.
+focalLengthMM = 17.1883;
 focalLengthMM = 17;
 fLengthMeters = focalLengthMM * 1e-3;
 
@@ -314,8 +315,26 @@ dioptricPower = 1 / fLengthMeters;  % About 60 diopters
 % wave was not yet assigned.
 wave = opticsGet(optics, 'wave');
 
+% Decide whether to use the legacy frequency support (Nyquist:  60 c/deg)
+% or 120 c/deg, which results in a more focused PSF
+legacyFrequencySupport = true;
+if (legacyFrequencySupport)
+    % Fsupport used to be [], which defaults to 60 c/deg
+    fSupport = [];
+else
+    % Up to 120 c/deg, with 240 samples to get better PSF
+    maxF = 120;
+    N = 240;
+    fList = unitFrequencyList(N);
+    fList = fList * maxF;
+    [X, Y] = meshgrid(fList, fList);
+    fSupport(:, :, 1) = X;
+    fSupport(:, :, 2) = Y;
+end
+   
 % The human optics are an SI case, and we store the OTF at this point. 
-[OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, [], wave);
+[OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, fSupport, wave);
+
 optics = opticsSet(optics, 'otfData', OTF2D);
 umPerDegreeForSupport = umPerDegree;
 

@@ -157,7 +157,6 @@ function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
         'whichGroup', 'emmetropes', 'verbose', true);
 %}
 %{
-% ETTBSkip - This example is broken.  Remove this line when it is fixed.
     [wvf, oi] = wvfLoadWavefrontOpticsData(...
         'wvfZcoefsSource', 'Polans2015', 'jIndex', 3:14, ...
         'whichEye', 'right', 'eccentricity', [5, 5], ...
@@ -302,9 +301,8 @@ eyeIdx = strcmp(params.whichEye, {'right', 'left'});
 
 % [Note: JNM - Adding check if eccentricity is a single value]
 if length(params.eccentricity) < 2
-    params.eccentricity = [0, params.eccentricity];
-    warning(strcat("Only a single value for eccentricity supplied. ", ...
-        "Assuming horizontal eccentricity is 0\n."));
+    params.eccentricity = [params.eccentricity, 0];
+    warning('Only a single value for eccentricity supplied. Assuming vertical eccentricity is 0');
 end
 
 % Horizontal followed by Vertical
@@ -436,19 +434,19 @@ subjectWithoutData = zeros(length(subjectIdx), 1);
 
 %% 3. Get psf with zernike coefficients then convert to OTF 
 % for the requested coordinates (in degrees)
-for p = subjectIdx'
-    % Get subect data
-    subjectZData = currData(:, p == subjectIdx);
+for p = 1:length(subjectIdx)
+    % Get subject data
+    subjectZData = currData(:, p);
 
     % If requested to use a relative measure of wavefront, i.e. use the
     % foveal refraction as the baseline, then subtract the refractive error
     % of foveal Z4 from all other Z4 eccentricities.
     if params.relativeRefraction
-        subjectRF = centralRefraction(p);
-        fprintf('Subject foveal refraction: %1.2f\n', subjectRF)
+        subjectCRF = centralRefraction(p);
+        fprintf('Subject foveal refraction: %1.2f\n', subjectCRF)
         if any(ismember(params.jIndex, 4))
             idx = find(ismember(params.jIndex, 4));
-            subjectZData(idx) = subjectZData(idx) - subjectRF;
+            subjectZData(idx) = subjectZData(idx) - subjectCRF;
         end
     end
 
@@ -472,15 +470,17 @@ for p = subjectIdx'
 
         % Report the zernikes if requested
         if params.verbose
+            if length(subjectIdx)<2
             fprintf('Zernike coefficients (um):\n')
             disp(subjectZData)
+            end
         end
 
         % Compute and accumulate the PSF, OTF and zernikes across subjects
         wvf = wvfComputePSF(wvf);
-        all_psf(:, :, p == subjectIdx) = wvfGet(wvf, 'psf');
-        all_otf(:, :, p == subjectIdx) = wvfGet(wvf, 'otf');
-        usedSubjectData(:, p == subjectIdx) = subjectZData;
+        all_psf(:, :, p) = wvfGet(wvf, 'psf');
+        all_otf(:, :, p) = wvfGet(wvf, 'otf');
+        usedSubjectData(:, p) = subjectZData;
 
         % Optional plots for debugging
 %{
@@ -523,8 +523,7 @@ end
 if length(subjectIdx) > 1
     % First check for subjects without data
     if any(subjectWithoutData)
-        fprintf(strcat("(%s): Excluding subject(s) %d because there's", ...
-            " no data available\n"), mfilename, find(subjectWithoutData));
+        fprintf('(%s): Excluding subject nr %02d because there is no data available \n', mfilename, find(subjectWithoutData))
     end
     all_otf = all_otf(:, :, ~subjectWithoutData);
 

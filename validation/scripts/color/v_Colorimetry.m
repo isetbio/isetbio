@@ -245,7 +245,6 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('isetSRGBs', isetSRGBs*255);
     UnitTest.validationData('ptbSRGBs_2', ptbSRGBs);
     
-    
     % lrgb -> srgb -> lrgb in ISET
     isetSRGBPrimaryCheckImage = srgb2lrgb(isetSRGBImage);
     isetSRGBPrimaryCheck = ImageToCalFormat(isetSRGBPrimaryCheckImage);
@@ -294,7 +293,7 @@ function ValidationFunction(runTimeParams)
     % append to validationData
     UnitTest.validationData('isetEnergyFromQuanta', Quanta2Energy(wlsTest,isetQuanta')');
     
-    %% CIE daylights
+    %% CIE daylights and CCT
     % 
     % These routines are now running in ISET and everything agrees.
     UnitTest.validationRecord('SIMPLE_MESSAGE', '***** CIE Daylights *****');
@@ -304,7 +303,22 @@ function ValidationFunction(runTimeParams)
     testTemp = 4987;
     ptbDaySpd = GenerateCIEDay(testTemp,B_cieday);
     ptbDaySpd = ptbDaySpd/max(ptbDaySpd(:));
-
+    
+    % Get correlated color temp.  This comes
+    % out pretty close to what we put in.
+    load T_xyz1931
+    T_xyz = SplineCmf(S_xyz1931,T_xyz1931,S_cieday);
+    ptbDayXYZ = T_xyz*ptbDaySpd;
+    ptbDayuv_isetbio = xyz2uv(ptbDayXYZ','uv')';
+    ptbDayCCT_isetbio = cct(ptbDayuv_isetbio);
+    fprintf('ISETBio function cct recovers %d as CCT of daylight at %d\n',round(ptbDayCCT_isetbio),testTemp);
+    
+    % Compare with PTB routine
+    if (exist('SPDToCCT', 'file'))
+        ptbDayCCT_ptb = SPDToCCT(ptbDaySpd,S_cieday);
+        fprintf('PTB function SPDToCCT recovers %d as CCT of daylight at %d\n',ptbDayCCT_ptb,testTemp);
+    end
+    
     % Iset version of normalized daylight
     isetDaySpd = daylight(testWls,testTemp);
     isetDaySpd = isetDaySpd/max(isetDaySpd(:));

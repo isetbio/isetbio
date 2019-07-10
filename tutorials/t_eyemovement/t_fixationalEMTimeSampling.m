@@ -7,7 +7,10 @@ function t_fixationalEMTimeSampling
 % Description:
 %    Examine the effects of different time sampling (cone integration time)
 %    on the resulting eye movement paths. Shows that the path doesn't
-%    change drastically when we compute with a longer time interval.
+%    change drastically when we compute with a longer time interval up to  
+%    five milliseconds. 
+%    We should compare the frequency component as well. Some high frequency
+%    content will be lost at longering intergation times
 %
 % Inputs:
 %    None.
@@ -30,10 +33,11 @@ function t_fixationalEMTimeSampling
     % Use just small patch of mosaic so it runs fairly quickly.
     % 1 msec is fast enough for most calculations we'd do, look at
     % effect of slowing down from there.
-    fovDegs = 0.1;
-    integrationTimes = [1 / 1000, 5 / 1000, 10 / 1000, 20 / 1000];
-    resamplingFactor = 9;
-
+    fovDegs = 0.1;  
+    
+    % Different integration times to examine
+    integrationTimes = [1.0 2.5 4.0 5.0 10]/1000;
+    
     % Stimulus params for a pulse stimulus
     sceneParams = struct('fov', fovDegs, 'luminance', 100);
     stimRefreshInterval = 50 / 1000;
@@ -46,15 +50,18 @@ function t_fixationalEMTimeSampling
         'sampleTimes', sampleTimes, 'sceneParameters', sceneParams);
 
     % Instantiate a hex mosaic
+    resamplingFactor = 9;
     cm = coneMosaicHex(resamplingFactor, 'fovDegs', fovDegs);
 
     % Instantiate a fixational eye movement object
     fixEMobj = fixationalEM();
+    
+    % Generate 2 trials to make it run faster
     nTrials = 2;
 
     % Set up figure
-    vcNewGraphWin([], 'tall');
-    colors = [1 0 0; 0 0 1; 0 0 0; 0.4 0.4 0.4];
+    vcNewGraphWin([], 'wide');
+    colors = [1 0 0; 0 0 1; 0 0 0; 0.4 0.4 0.4; 0 0 0];
     legends = {};
 
     for intTimeIndex = 1:numel(integrationTimes)

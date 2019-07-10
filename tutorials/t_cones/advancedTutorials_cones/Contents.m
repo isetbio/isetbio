@@ -8,7 +8,6 @@
 %   t_conesMosaicHex3              - t_conesMosaicHex3
 %   t_conesMosaicHex4              - Hex mosaid isomerization maps for achromatic Gabor scene & Vernier space.
 %   t_conesMosaicHex5              - How to generate a hexagonal mosaic with a spatially-varying cone density.
-%   t_conesMosaicHex6              - How to generate a hexagonal mosaic with a eccentricity based cone density
 %   t_conesMosaicLowPassResponses  - Demonstrates how to spatially low-pass a mosaic's responses.
 %   t_conesCustomMosaic            - Show how to customize various mosaic parameters
 %   t_conesMosaicDemosaicResponses - Show how to demosaic, either at isomerizations or photocurrent.

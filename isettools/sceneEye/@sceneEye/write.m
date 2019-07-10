@@ -42,65 +42,14 @@ objNew.recipe = copy(obj.recipe);
 
 ecc = objNew.eccentricity;
 
-% This section of the code has not been thoroughly finished/debugged, so
-% let's put out a warning.
+% I was having many bugs with my eccentricity code, so for now I've removed
+% it for now. Ideally we do all the right calculations shown above and then
+% use scene3d.recipe.set('cropwindow',[x1 x2 y1 y2]); and then carefully
+% reset the angular support as well...
 if(ecc ~= [0 0])
-    warning('Eccentricity calculations are currently off.')
+    warning('Eccentricity is currently not implemented. Setting to zero.')
     ecc = [0 0];
 end
-
-%{
-% Given a point at a certain eccentricitity [ecc(1) ecc(2)], what is
-% the minimum FOV the rendered image needs to have in order to
-% encompass the given point?
-tempWidth = 2*obj.retinaDistance*tand(abs(ecc(1))) + obj.width;
-tempHeight = 2*obj.retinaDistance*tand(abs(ecc(2))) + obj.height;
-fovHoriz = 2*atand(tempWidth/(2*obj.retinaDistance));
-fovVert = 2*atand(tempHeight/(2*obj.retinaDistance));
-objNew.fov = max(fovHoriz,fovVert); 
-
-% Center of image in mm, given desired ecc
-centerX = obj.retinaDistance*tand(ecc(1));
-centerY = obj.retinaDistance*tand(ecc(2));
-
-% Boundaries of crop window in mm
-% (Use original width and height!)
-left = centerX - obj.width/2;
-right = centerX + obj.width/2;
-bottom = centerY + obj.height/2;
-top = centerY - obj.height/2;
-
-% Convert (0,0) to top left corner (normalized device coordinates) instead
-% of center
-tempSize = 2*objNew.retinaDistance*tand(objNew.fov/2); % Side length of large FOV
-left_ndc = left + tempSize/2;
-right_ndc = right + tempSize/2;
-top_ndc = top + tempSize/2;
-bottom_ndc = bottom + tempSize/2;
-ndcWindow = [left_ndc right_ndc top_ndc bottom_ndc];
-
-% Convert to ratio
-cropWindowEcc = ndcWindow./tempSize;
-
-% Since we'll be cropping the large image down to the desired
-% eccentricity, we have to increase the rendered resolution.
-tempResolution = objNew.resolution/(cropWindowEcc(2)-cropWindowEcc(1));
-objNew.resolution = round(tempResolution);
-%}
-
-% DEBUG
-%{
-    fprintf('*** DEBUG *** \n')
-    fprintf('Original FOV: %0.2f \n',obj.fov);
-    fprintf('New FOV: %0.2f \n',objNew.fov);
-    fprintf('Original width: %0.2f \n', obj.width);
-    fprintf('New width: %0.2f \n',objNew.width);
-    fprintf('Original resolution: %0.2f \n',obj.resolution);
-    fprintf('New resolution: %0.2f \n',objNew.resolution);
-    fprintf('Crop window: [%0.2f %0.2f %0.2f %0.2f] \n',cropWindow);
-    fprintf('*** DEBUG *** \n')
-%}
-
 
 %% Given the sceneEye object, we make all other adjustments needed to the recipe
 recipe = objNew.recipe;
@@ -118,18 +67,10 @@ switch objNew.modelName
         recipe = setNavarroAccommodation(recipe, objNew.accommodation,...
                                          objNew.workingDir);
         
-    case {'Gullstrand','gullstrand'}
+    case {'LeGrand','legrand','le grand'}
         
-        % Gullstrand eye does not have accommodation (not yet at least), so
-        % for now all we need to do is write out the lens file.
-        
-        lensFile = 'gullstrand.dat';
-        writeGullstrandLensFile(fullfile(objNew.workingDir, lensFile));
-        fprintf('Wrote out a new lens file: \n')
-        fprintf('%s \n \n', fullfile(objNew.workingDir, lensFile));
-        
-        obj.recipe.camera.lensfile.value = fullfile(objNew.workingDir, lensFile);
-        obj.recipe.camera.lensfile.type = 'string';   
+        % Le Grand eye does not have accommodation (not yet at least).
+        recipe = writeLegrandLensFile(recipe,objNew.workingDir); 
     
     case{'Arizona','arizona'}
         
@@ -141,6 +82,30 @@ switch objNew.modelName
         % This function also writes out the Arizona lens file.
         recipe = setArizonaAccommodation(recipe, objNew.accommodation,...
                                          objNew.workingDir);
+                                     
+    case{'Custom','custom'}
+        
+        % Run this first to generate the IOR files.
+        setNavarroAccommodation(recipe, 0, objNew.workingDir);
+                                     
+        % Copy the lens file given over
+        if(isempty(obj.lensFile))
+            error('No lens file given for custom eye.')
+        else
+            % Copy lens file over to the working directory and then attach
+            % to recipe
+            [success,message] = copyfile(obj.lensFile,objNew.workingDir);
+            [~,n,e] = fileparts(obj.lensFile);
+            
+            if(success)
+                recipe.camera.lensfile.value = fullfile(objNew.workingDir,[n e]);
+                recipe.camera.lensfile.type = 'string';
+            else
+                error('Error copying lens file. Error message: %s',message);
+            end
+        end
+        
+     
                                      
 end
 
@@ -209,25 +174,27 @@ else
         'up', objNew.eyeUp);
 end
 
-% Crop window
-
-% Crop window and eccentricity can conflicting values. Let's resolve
-% that (messily) here. We may rethink the eccentricity calculation in
-% the future:
-% If there is no eccentricity set, use whatever crop window was in the
-% structure originally. If there is eccentricity, use the updated
-% cropwindow. 
-if(ecc == [0 0])
-    % Do nothing
-else
-    recipe.film.cropwindow.value = cropWindowEcc;
-    recipe.film.cropwindow.type = 'float';
-end
-
+% If there was a crop window, we have to update the angular support that
+% comes with sceneEye
+% We can't do this right now because the angular support is a dependent
+% variable. How to overcome this?
+%{
+currAngSupport = obj.angularSupport;
+cropWindow = recipe.get('cropwindow');
+cropWindowR = cropWindow.*obj.resolution;
+cropWindowR = [cropWindowR(1) cropWindowR(3) ...
+    cropWindowR(2)-cropWindowR(1) cropWindowR(4)-cropWindowR(3)];
+[X,Y] = meshgrid(currAngSupport,currAngSupport);
+X = imcrop(X,cropWindowR);
+Y = imcrop(Y,cropWindowR);
+% Assume square optical image for now, but we should probably change
+% angularSupport to have both x and y direction.
+objNew.angularSupport = X(1,:); 
+%}
 
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
-recipe.outputFile = pbrtFile;
+recipe.set('outputFile',pbrtFile);
 if(strcmp(recipe.exporter,'C4D'))
     piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
         'overwriteresources', false,'creatematerials',true);
