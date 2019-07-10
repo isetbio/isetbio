@@ -483,10 +483,9 @@ function menuEditClearData_Callback(hObject, eventdata, handles)
 %
 handles.cMosaic.clearData();  % Clear absorptions and current
 
-% Clear any movies and stored mosaic image
-handles.mov    = [];
-handles.curMov = [];
-
+% mosaicImage is the colorful cone mosaic image.
+% We used to save the absorption and current movie.  But no more.  It
+% doesn't seem to save any time.
 uData = get(handles.axes2,'UserData');
 if isfield(uData,'mosaicImage')
     uData.mosaicImage = [];
@@ -696,11 +695,9 @@ switch ieParamFormat(plotType)
         
     case 'absorptionmovie'
         ieInWindowMessage('Showing absorption movie', handles)
-        uData = cm.plot('movie absorptions', 'hf', handles.axes2, ...
+        cm.plot('movie absorptions', 'hf', handles.axes2, ...
             'gamma', g);
-        % Save the movie data in the figure
-        disp('Saving movie data in the current figure as userdata');
-        set(gcf, 'userdata', uData);
+        % Saved the movie data in the axis as userdata.data
         ieInWindowMessage('', handles)
         
     case 'meanphotocurrent'

@@ -240,7 +240,7 @@ switch ieParamFormat(plotType)
 
         % Additional movie arguments may include the video file name, step,
         % and FrameRate
-        uData = ieMovie(obj.absorptions, varargin{:});
+        ieMovie(obj.absorptions, varargin{:});
 
     case {'hlineabsorptions', 'vlineabsorptions'}
         % Data are stored in the temporary potting window.
@@ -503,7 +503,7 @@ switch ieParamFormat(plotType)
 
         % Additional arguments may be the video file name, step, and
         % FrameRate
-        uData = ieMovie(obj.current, varargin{:});
+        ieMovie(obj.current, varargin{:});
 
     case 'conefundamentals'
         % The cone absorptance without macular pigment or lens

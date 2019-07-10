@@ -9,6 +9,7 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 % Description:
 %    Compute the temporal Sequence of cone absorptions, which we treat as
 %    isomerizations, R*. The computation can executed on
+%
 %      * a single optical image (snapshot)
 %      * a single optical image with eye movements
 %      * an optical image sequence (oiSequence) with eye movements.
