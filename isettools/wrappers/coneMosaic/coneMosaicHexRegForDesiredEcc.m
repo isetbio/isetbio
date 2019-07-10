@@ -20,22 +20,24 @@ c = coneMosaicHex(1);
 defaultMicronsPerDegree = c.micronsPerDegree;
 defaultSconeFreeRadiusMicrons = c.sConeFreeRadiusMicrons;
 
-% Settings for a 7% s-cone population with a semirandom S-cone arrangement
+% Params for a 7% s-cone population with a semirandom S-cone arrangement
 spatialDensity = [0.5 0.25 0.15];
 SconeMinDistanceFactor = 2;
 
 
 p = inputParser;
-p.addParameter('eccRadiusDegs', 30, @isnumeric);               % radial eccentricity in degs
-p.addParameter('eccAngleDegs', 45, @isnumeric);                % angular eccentricity in degs
-p.addParameter('fovDegs', [5 5], @isnumeric);                  % field of view in degs
-p.addParameter('spatialDensity', spatialDensity, @isnumeric);  % density of L/M/S cones
+p.addParameter('whichEye', 'left', @(x)ismember(x, {'left', 'right'}));   % which eye
+p.addParameter('eccRadiusDegs', 30, @isnumeric);                          % radial eccentricity in degs
+p.addParameter('eccAngleDegs', 45, @isnumeric);                           % angular eccentricity in degs
+p.addParameter('fovDegs', [5 5], @isnumeric);                             % field of view in degs
+p.addParameter('spatialDensity', spatialDensity, @isnumeric);             % density of L/M/S cones
 p.addParameter('sConeMinDistanceFactor', SconeMinDistanceFactor, @isnumeric);
 p.addParameter('integrationTimeSeconds', 5/1000, @isnumeric);
 p.addParameter('resamplingFactor', 3, @isnumeric);
 
 % Parse input
 p.parse(varargin{:});
+whichEye = p.Results.whichEye;
 eccRadiusDegs = abs(p.Results.eccRadiusDegs);
 eccAngleDegs = p.Results.eccAngleDegs;
 fovDegs = p.Results.fovDegs;
@@ -48,7 +50,7 @@ spatialDensity = [0 spatialDensity(1) spatialDensity(2) spatialDensity(3)];
 
 eccRadiusMeters = eccRadiusDegs*defaultMicronsPerDegree*1e-6;
 [spacingMeters, apertureMeters, densityConesPerMM2] = ...
-    coneSizeReadData('whichEye','left', ...
+    coneSizeReadData('whichEye', whichEye, ...
     'eccentricity', eccRadiusMeters, ...
     'angle', eccAngleDegs);
 
