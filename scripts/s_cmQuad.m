@@ -75,7 +75,7 @@ chdir(fullfile(isetbioRootPath,'local'));
 hparams = harmonicP; 
 hparams.freq = 3;
 scene = sceneCreate('harmonic',hparams);
-fov = 1;
+fov = 4;
 scene = sceneSet(scene,'fov',3);
 oi = oiCreate; oi = oiCompute(oi,scene);
 ieAddObject(oi);
@@ -83,7 +83,7 @@ ieAddObject(oi);
 %% Start the cone absorptions with no Poisson noise
 
 cm = coneMosaic;
-cm.setSizeToFOV(fov*0.8);
+cm.setSizeToFOV(fov*0.7);
 cm.emGenSequence(50);
 cm.noiseFlag = 'none';
 cm.compute(oi);
@@ -100,16 +100,17 @@ hparams.freq = 2;
 hparams.ph = pi/2;
 sQuad = imageHarmonic(hparams);
 sQuad = sQuad - 1;
-vcNewGraphWin; mesh(sQuad); colormap(gray)
+% vcNewGraphWin; mesh(sQuad); colormap(gray)
 
 hparams.ph = 0;
 cQuad = imageHarmonic(hparams);
 cQuad = cQuad - 1;
-vcNewGraphWin; mesh(cQuad); colormap(gray)
+% vcNewGraphWin; mesh(cQuad); colormap(gray)
 
 %% Use this as the base image and just shift it
 
-baseIMG     = cm.absorptions(:,:,10);
+baseFrame   = 2;
+baseIMG     = cm.absorptions(:,:,baseFrame);
 eBase = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
 eAbsorb = zeros(t,1);
 
@@ -137,7 +138,7 @@ end
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
-plot(d,eAbsorb,'o');
+plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 
 %%  Does the failure arise in part because of the different types of cones
@@ -149,7 +150,7 @@ cm.compute(oi);
 [r,c,t] = size(cm.absorptions);
 % cm.window;
 
-baseIMG     = cm.absorptions(:,:,10);
+baseIMG     = cm.absorptions(:,:,baseFrame);
 eBase = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
 eAbsorb = zeros(t,1);
 
@@ -165,7 +166,7 @@ end
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
-plot(d,eAbsorb,'o');
+plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 
 %% Add in the Poisson noise
@@ -177,7 +178,7 @@ cm.compute(oi);
 [r,c,t] = size(cm.absorptions);
 % cm.window;
 
-baseIMG     = cm.absorptions(:,:,10);
+baseIMG     = cm.absorptions(:,:,baseFrame);
 eBase = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
 eAbsorb = zeros(t,1);
 
@@ -193,7 +194,7 @@ end
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
-plot(d,eAbsorb,'o');
+plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 
 %% And now half L and half M cones
@@ -205,7 +206,7 @@ cm.compute(oi);
 [r,c,t] = size(cm.absorptions);
 % cm.window;
 
-baseIMG = cm.absorptions(:,:,10);
+baseIMG = cm.absorptions(:,:,baseFrame);
 eBase   = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
 eAbsorb = zeros(t,1);
 
@@ -221,7 +222,7 @@ end
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
-plot(d,eAbsorb,'o');
+plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 
 %% Finally, put the S cones and noise back in
@@ -234,7 +235,7 @@ cm.compute(oi);
 % cm.window;
 
 %
-baseIMG     = cm.absorptions(:,:,10);
+baseIMG     = cm.absorptions(:,:,baseFrame);
 eBase = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
 eAbsorb = zeros(t,1);
 
@@ -250,7 +251,7 @@ end
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
-plot(d,eAbsorb,'o');
+plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 %%
 
