@@ -17,8 +17,7 @@
 %    only (OSA j-index = 4). In the corresponding published article, the
 %    subjects are also dividied into 6 non-overlapping groups based on the
 %    strength of central refractions. This division is visualized by the
-%    function sortPatientDataJaekenArtal2012 (inside
-%    wvfLoadJaekenArtal2012Data).
+%    function wvfSortSubjectDataJaekenArtal2012.
 %
 % References:
 %    Jaeken, B. & Artal, P. (2012) Optical Quality of Emmetropic and Myopic
@@ -37,11 +36,16 @@
 
 %% Define which zernike coefficients we want to use
 %
-% In this case, all of them.  Also define eccentricity [horiz vert]
+% In this case, all of them.  
 zIndices = 0:14; 
 whichEye = 'left';
-eccen = [0 4];        % degrees
+
+% Eccentricity is [horiz vert]. Artal data varies in horizontal
+% dimension only. We think eccen might be on the pupillary axis, not
+% on the fovea. Best focus is at 8 deg.  Worse at 3 or 15.
+eccen = [3 0];        
 whichGroup = 'emmetropes';
+% whichGroup = 'singleRandomEmmetrope';
 
 %% Get wavefront and optics from Artal data with the requested parameters:
 % The function wvfLoadJaekenArtal2012Data loads the wavefront zernike
@@ -53,13 +57,22 @@ whichGroup = 'emmetropes';
 % sensitivity) wavelength (550 nm).
 [wvf, oi] = wvfLoadWavefrontOpticsData('source', 'JaekenArtal2012', ...
     'jIndex', zIndices, 'whichEye', whichEye, ...
-    'eccentricity', eccen, 'whichGroup', whichGroup, 'verbose', true);
+    'eccentricity', eccen, 'whichGroup', whichGroup, 'verbose', false);
 
-%% Visualize
+%{
+    % Faster ISETBio way to get the plots
+    % 8 deg is the smallest PSF
+    % 3 deg is larger.
+    % wvfGet(wvf,'zcoeffs')
+    wvfPlot(wvf,'psf space','um');
+    title(sprintf('%.2f deg eccen',eccen(1)));
+%}
+    
+%% Plot OTF
+
 % Get [x,y] support for plotting OTF
 otfSupport = wvfGet(wvf, 'otfSupport', 'mm');
 
-% Plot OTF
 vcNewGraphWin;
 surf(otfSupport, otfSupport, fftshift(wvf.otf{1}));
 set(gca, 'XLim', [-100 100], 'YLim', [-100 100])
@@ -68,7 +81,7 @@ ylabel('Freq (lines/mm)');
 title(sprintf('%s: OTF 550 nm, pupil 4 mm, eccen %d deg, %s eye', ...
     whichGroup, eccen, whichEye))
 
-% Get [x,y] support for plotting PSF
+%% Get [x,y] support and plot PSF
 psfSupport = wvfGet(wvf, 'spatial Support', 'um');
 centeredPSF = [wvf.psf{1}(101:end,:);
     wvf.psf{1}(1:100,:)];
@@ -83,7 +96,7 @@ ylabel('Pos (um)');
 title(sprintf('%s: PSF 550 nm, pupil 4 mm, eccen %d deg, %s eye', ...
     whichGroup, eccen, whichEye))
 
-% Plot normalized PSF
+%% Plot normalized PSF
 vcNewGraphWin;
 surf(psfSupport, psfSupport, centeredPSFNormalized)
 set(gca, 'XLim', [-40 40], 'YLim', [-40 40])
@@ -91,3 +104,5 @@ xlabel('Pos (um)');
 ylabel('Pos (um)');
 title(sprintf(strcat("%s: Normalized PSF 550 nm, pupil 4 mm, ", ...
     "eccen %d deg, %s eye"), whichGroup, eccen, whichEye))
+
+%% END

@@ -410,6 +410,10 @@ if strcmp(params.wvfZcoefsSource, 'JaekenArtal2012')
 
     % Truncate data to speed up process
     currData = allData(theseZCoef, subjectIdx, eyeIdx, eccenIdx(1));
+    if isnan(currData)
+        fprintf('Clean up the data. ecc %d\n',params.eccentricity(1));
+        error('NaNs for subject.'); 
+    end
 
 elseif strcmp(params.wvfZcoefsSource, 'Polans2015')
     % Only option is to get single subject
@@ -523,7 +527,8 @@ end
 if length(subjectIdx) > 1
     % First check for subjects without data
     if any(subjectWithoutData)
-        fprintf('(%s): Excluding subject nr %02d because there is no data available \n', mfilename, find(subjectWithoutData))
+        fprintf('(%s): Excluding subject nr %02d because there is no data available \n', ...
+            mfilename, find(subjectWithoutData))
     end
     all_otf = all_otf(:, :, ~subjectWithoutData);
 

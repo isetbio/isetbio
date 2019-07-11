@@ -2,7 +2,7 @@ function [cRefractionD, emmetropes, myopes, group] = wvfSortSubjectDataJaekenArt
 % Sort subjects of Jaeken/Artal report into emmotropes and myopes
 %
 % Syntax:
-%    [centralRefraction, emmetropes, myopes, group] = sortSubjectDataJaekenArtal2012()
+%    [centralRefraction, emmetropes, myopes, group] = wvfSortSubjectDataJaekenArtal2012()
 %
 % Description:
 %    Analyze the central 5 degrees of individual Subject defocus zernike

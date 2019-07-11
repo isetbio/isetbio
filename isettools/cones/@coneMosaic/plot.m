@@ -576,11 +576,19 @@ switch ieParamFormat(plotType)
         %     uData = plotCurrentTimeseries(obj, varargin{:});
 
     case {'empath', 'eyemovementpath'}
-        plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
+        plot(obj.emPositions(:, 1), obj.emPositions(:, 2),'ko:');
+        xLim = [min(obj.emPositions(:,1)),max(obj.emPositions(:,1))];
+        yLim = [min(obj.emPositions(:,2)),max(obj.emPositions(:,2))];
+        if xLim(1) > -1, xLim(1) = -3; end
+        if xLim(2) < 1,  xLim(2) = 3; end
+        if yLim(1) > -1, yLim(1) = -3; end
+        if yLim(2) < 1,  yLim(2) = 3; end
         grid on;
         xlabel('Horizontal position (cones)');
         ylabel('Vertical position (cones)');
-
+        set(gca,'xlim',xLim,'ylim',yLim);
+        title(sprintf('Eye movement path (%.1f ms steps)',obj.integrationTime*1e3));
+        
         % RGB movies on cone mosaic. These are not currently implemented,
         % but exist here in draft form. See routine coneImageActivity below
         % as well. Could be resurrected some day.
