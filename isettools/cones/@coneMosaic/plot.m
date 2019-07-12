@@ -466,9 +466,14 @@ switch ieParamFormat(plotType)
         if isempty(obj.absorptions)
             lmsFilters = obj.os.linearFilters(obj);
         else
+            % This doesn't make sense to me (BW).  GUessing this
+            % if/else is older code that should be removed.
+            %{
             absorptionsInXWFormat = RGB2XWFormat(obj.absorptions);
             lmsFilters = obj.os.linearFilters('absorptionsInXWFormat', ...
                 absorptionsInXWFormat);
+            %}
+            lmsFilters = obj.os.linearFilters(obj);
         end
 
         %% Interpolate stored lmsFilters to the time base of absorptions
@@ -483,9 +488,8 @@ switch ieParamFormat(plotType)
         interpFilters = interp1(osTimeAxis(:), lmsFilters, ...
             coneTimeAxis(:), 'linear', 0);
         
-        vcNewGraphWin;
-        plot(coneTimeAxis, interpFilters(:, 1), 'r-', ...
-            coneTimeAxis, interpFilters(:, 2), 'g-', ...
+        plot(coneTimeAxis, interpFilters(:, 1), 'r-o', ...
+            coneTimeAxis, interpFilters(:, 2), 'g-o', ...
             coneTimeAxis, interpFilters(:, 3), 'b-o');
         xlabel('Time (sec)');
         ylabel('Current (pA)');

@@ -23,7 +23,8 @@ cQuad = imageHarmonic(hparams);
 cQuad = cQuad - 1;
 % vcNewGraphWin; mesh(cQuad); colormap(gray)
 
-%%
+%% Make the dead leaves scene
+
 dlSize = 128; dlSigma = 3;
 n = 128; sigma = 3; 
 scene = sceneDeadleaves(dlSize, dlSigma);
@@ -95,7 +96,7 @@ baseIMG     = cm.current(:,:,baseFrame);
 eBase = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
 eAbsorb = zeros(t,1);
 
-%% Compute the error, but because of the ramp up use 25 as the base frame
+% Compute the error, but because of the ramp up use 25 as the base frame
 for ii=1:cm.tSamples
     thisIMG     = cm.current(:,:,ii);
     eAbsorb(ii) = dot(thisIMG(:),sQuad(:))^2 + dot(thisIMG(:),cQuad(:))^2;
@@ -111,4 +112,4 @@ xlabel('Distance (cones)'); ylabel('Percent error');
 subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 title(sprintf('Noise %s',cm.noiseFlag));
 
-%%
+%% END
