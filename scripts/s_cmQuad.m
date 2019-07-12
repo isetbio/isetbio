@@ -7,7 +7,9 @@
 %%
 ieInit
 
-%% Make a signal and two harmonics in quadrature
+%% Testing the basic idea
+
+%  Make a signal and two harmonics in quadrature
 x = [0:127]/128;
 f = 2;
 s = sin(2*pi*f*x);
@@ -16,10 +18,13 @@ sig = 0.4*square(2*f*pi*x) + 0.5;
 
 eBase = dot(sig,s)^2 + dot(sig,c)^2;
 
-%%
+%
 vcNewGraphWin; plot(x,sig,'k-',x,s,'r-',x,c,'b-');
 
-%% Take the inner product of the signal with each.  Energy.
+%% Take the inner product of the signal with each harmonic. 
+
+% Then compute the energy, also known as the amplitude at that
+% frequency.
 
 % Shift the signal and recompute
 for ii=1:2:10
@@ -27,7 +32,7 @@ for ii=1:2:10
     fprintf('Difference: %.6f\n',eBase - eShift)
 end
 
-%% Now once again, but for a 2D image
+%% Now do the same, but for a 2D image
 img    = repmat(sig,[128,1]);
 simg   = repmat(s,[128,1]);
 cimg   = repmat(c,[128,1]);
@@ -41,7 +46,7 @@ for ii=1:2:10
     fprintf('Difference: %.6f\n',eBase - eShift)
 end
 
-%% Now modify the calculation by using by a Gaussian envelope
+%% Now modify the calculation by applying by a Gaussian envelope
 
 % Big difference with a small envelope, and little difference with a big
 % envelope, like the full harmonic above.
