@@ -1,8 +1,8 @@
-%% Show the quadrature calculation at the cone excitations
+%% Show the quadrature calculation at the cone excitations for a harmonic
 %
-% On the cone excitations for this timing interval, we see that when
-% the shift is within a few cones the response stays about the same.
-% But for a bigger shift, the value changes.
+% On the cone excitations. When the shift is within a few cones the
+% response stays within a couple of percent. But for a shift of five
+% or so cones, the value changes more than a couple of percent.
 %
 
 %% Quadrature filters with cone mosaic data
@@ -10,9 +10,27 @@
 ieInit
 chdir(fullfile(isetbioRootPath,'local'));
 
+%% Harmonic image at the cone mosaic
+
+% In this case, the pattern is 1D and although the eye movements are
+% in both directions, the filters are 1D, and the noise will be
+% varied.
+hparams = harmonicP; 
+hparams.freq = 3;
+scene = sceneCreate('harmonic',hparams);
+fov = 4; scene = sceneSet(scene,'fov',3);
+oi = oiCreate; oi = oiCompute(oi,scene); ieAddObject(oi);
+
+cm = coneMosaic;
+cm.noiseFlag = 'none';
+cm.spatialDensity = [0 .6 .3 .1];
+cm.setSizeToFOV(fov*0.7);
+cm.emGenSequence(50,'rSeed',[],'nTrials',1);
+cm.compute(oi);
+% cm.window;
+
 %% Calculate the quadrature filters
 
-% Make the Gabor patches in quadrature phase as above.
 hparams = harmonicP;
 hparams.row = size(cm.absorptions,1);
 hparams.col = size(cm.absorptions,2);
@@ -27,29 +45,6 @@ cQuad = imageHarmonic(hparams);
 cQuad = cQuad - 1;
 % vcNewGraphWin; mesh(cQuad); colormap(gray)
 
-%% Harmonic image
-
-% In this case, the pattern is 1D and although the eye movements are
-% in both directions, the filters are 1D, and the noise will be
-% varied.
-hparams = harmonicP; 
-hparams.freq = 3;
-scene = sceneCreate('harmonic',hparams);
-fov = 4;
-scene = sceneSet(scene,'fov',3);
-oi = oiCreate; oi = oiCompute(oi,scene);
-ieAddObject(oi);
-
-%% Start the cone absorptions with no Poisson noise
-
-cm = coneMosaic;
-cm.spatialDensity = [0 .6 .3 .1];
-cm.setSizeToFOV(fov*0.7);
-cm.emGenSequence(50,'rSeed',[],'nTrials',1);
-cm.noiseFlag = 'none';
-cm.compute(oi);
-% cm.window;
-
 %% Validate that the circshift does the expected 0 change
 
 baseFrame   = 2;
@@ -57,9 +52,8 @@ baseIMG     = cm.absorptions(:,:,baseFrame);
 eBase = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
 eAbsorb = zeros(cm.tSamples,1);
 
-% Try just shifting the base frame.
-
-% We get a very solid result.  No noise and pure shifting has no impact
+% Try just shifting the base frame. We get a clean result.  No noise
+% and pure shifting has no impact
 for ii=1:cm.tSamples
     thisIMG = circshift(baseIMG,ii,2);
     eAbsorb(ii) = dot(thisIMG(:),sQuad(:))^2 + dot(thisIMG(:),cQuad(:))^2;
@@ -68,20 +62,24 @@ for ii=1:cm.tSamples
 end
 
 % Plot the size of the displacement and the error on the same graph
-%{
+% {
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
-subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on;
+plot(d,eAbsorb,'o-'); grid on; set(gca, 'ylim',[-1 1]); title('Circular shift')
 xlabel('Distance (cones)'); ylabel('Percent error');
-subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 %}
 
 %% Instead of shifting, use the eye movement sequence.
 
-% In this case, the cone images are not shifted copies of one another
-% because there is some clipping at the edges and new signals moving
-% in and out. When the eye movement shift is large the change is
-% rather significant. 
+% There is still no Poisson noise.  So frame-to-frame is just a shift
+% but no independent noise samples.
+
+% The cone images are not shifted copies of one another because there
+% is some clipping at the edges;  new signals moving in and out. When
+% the eye movement shift is large the change is rather significant.
+%
+% For a 64 x 64 image, a 10 cone horizontal shift changes 20 percent
+% of the columns.
 for ii=1:cm.tSamples
     thisIMG     = cm.absorptions(:,:,ii);
     eAbsorb(ii) = dot(thisIMG(:),sQuad(:))^2 + dot(thisIMG(:),cQuad(:))^2;
@@ -93,11 +91,12 @@ end
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
-xlabel('Distance (cones)'); ylabel('Percent error');
+xlabel('Distance (cones)'); ylabel('Percent error'); 
 subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 title(sprintf('Noise %s',cm.noiseFlag));
 
-%% Add in the Poisson noise, but only one cone type
+%% Recompute the cone mosaic, adding Poisson noise
+
 cm.spatialDensity = [0 .6 .3 .1];
 cm.noiseFlag = 'random';
 cm.emGenSequence(50,'rSeed',[],'nTrials',1);
@@ -125,6 +124,9 @@ xlabel('Distance (cones)'); ylabel('Percent error');
 subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 title(sprintf('Noise %s',cm.noiseFlag));
 
+%% END
+
+%{
 %% Same pattern with only one cone type
 
 cm.spatialDensity = [0 0 1 0];
@@ -152,9 +154,8 @@ subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
 subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 title(sprintf('Noise %s',cm.noiseFlag));
+%}
 
-
-%% END
 
 %{
 %%  Does the failure arise in part because of the different types of cones
