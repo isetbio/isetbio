@@ -1,6 +1,11 @@
 %% ----------- Dead leaves calculation ----------------
 %
+% Experiments with photocurrent and with how we calculate the change from
+% frame-to-frame.  Here we use the prior frame as the base, rather than a
+% fixed frame at the beginning of the whole period.
 %
+% We might compare these numbers with what happens during a saccade or
+% during a change in the stimulus.  
 %
 %%
 ieInit
@@ -22,6 +27,8 @@ cm.setSizeToFOV(fov*0.7);
 cm.emGenSequence(100,'rSeed',[],'nTrials',1);
 cm.noiseFlag = 'random';
 cm.compute(oi);
+cm.computeCurrent;
+
 % cm.plot('eye movement path');
 % cm.window;
 
@@ -42,7 +49,7 @@ cQuad = imageHarmonic(hparams);
 cQuad = cQuad - 1;
 % vcNewGraphWin; mesh(cQuad); colormap(gray)
 
-%% Use this as the base image and just shift it
+%% Demonstrate the quadrature shifting (again)
 
 baseFrame   = 2;
 baseIMG     = cm.absorptions(:,:,baseFrame);
@@ -52,7 +59,7 @@ eAbsorb = zeros(cm.tSamples,1);
 % Try just shifting the base frame.
 % We get a very solid result.  No noise and pure shifting has no impact
 % This was so repeatable, I commented it out.
-for ii=1:t
+for ii=1:cm.tSamples
     thisIMG = circshift(baseIMG,ii,2);
     eAbsorb(ii) = dot(thisIMG(:),sQuad(:))^2 + dot(thisIMG(:),cQuad(:))^2;
     eAbsorb(ii) = 100*(eAbsorb(ii) - eBase)/eBase;
@@ -63,39 +70,21 @@ end
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
-plot(d,eAbsorb,'o-'); grid on; set(gca, 'ylim',[-1 1]); title('Circular shift')
+plot(d,eAbsorb,'o-'); grid on; set(gca, 'ylim',[-1 1]); 
+title('Circular shift')
 xlabel('Distance (cones)'); ylabel('Percent error');
+drawnow
 %}
 
-%% Now use the absorptions
+%% Now use the absorptions and eye movements
 
-for ii=1:cm.tSamples
+% In these calculations, we are comparing the prior 5 msec with the current
+% 5 msec of absorptions
+
+for ii=2:cm.tSamples
+    baseIMG     = cm.absorptions(:,:,ii-1);
+    eBase       = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
     thisIMG     = cm.absorptions(:,:,ii);
-    eAbsorb(ii) = dot(thisIMG(:),sQuad(:))^2 + dot(thisIMG(:),cQuad(:))^2;
-    eAbsorb(ii) = 100*(eAbsorb(ii) - eBase)/eBase;
-    fprintf('Difference (percentage) %f\n',eAbsorb(ii));
-end
-
-% Plot the size of the displacement and the error on the same graph
-d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
-subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
-xlabel('Distance (cones)'); ylabel('Percent error');
-subplot(1,2,2), cm.plot('eye movement path','hf',gca);
-title(sprintf('Noise %s',cm.noiseFlag));
-
-%% Compute the photocurrent
-
-cm.computeCurrent;
-
-baseFrame   = 25;
-baseIMG     = cm.current(:,:,baseFrame);
-eBase = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
-eAbsorb = zeros(cm.tSamples,1);
-
-% Compute the error, but because of the ramp up use 25 as the base frame
-for ii=1:cm.tSamples
-    thisIMG     = cm.current(:,:,ii);
     eAbsorb(ii) = dot(thisIMG(:),sQuad(:))^2 + dot(thisIMG(:),cQuad(:))^2;
     eAbsorb(ii) = 100*(eAbsorb(ii) - eBase)/eBase;
     % fprintf('Difference (percentage) %f\n',eAbsorb(ii));
@@ -106,16 +95,72 @@ d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
 subplot(1,2,1), plot(d,eAbsorb,'o-'); grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
+title('Quadratic case, absorptions, 1-back')
+
 subplot(1,2,2), cm.plot('eye movement path','hf',gca);
 title(sprintf('Noise %s',cm.noiseFlag));
+drawnow
 
-%% Get rid of the warm up samples
+%% Use the photocurrent response rather than absorptions
+
+startFrame   = 25;   % Eliminate the warm up period
+eAbsorb = zeros(cm.tSamples,1);
+
+% Compute the error, but because of the ramp up use 25 as the base frame
+for ii=startFrame:cm.tSamples
+    baseIMG     = cm.current(:,:,ii-1);
+    eBase       = dot(baseIMG(:),sQuad(:))^2 + dot(baseIMG(:),cQuad(:))^2;
+    
+    thisIMG     = cm.current(:,:,ii);
+    eAbsorb(ii) = dot(thisIMG(:),sQuad(:))^2 + dot(thisIMG(:),cQuad(:))^2;
+    eAbsorb(ii) = 100*(eAbsorb(ii) - eBase)/eBase;
+    % fprintf('Difference (percentage) %f\n',eAbsorb(ii));
+end
 
 % Plot the size of the displacement and the error on the same graph
-start = baseFrame;
+d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
 vcNewGraphWin;
-plot(d(start:end),eAbsorb(start:end),'o-'); grid on; set(gca,'ylim',[-10 10]);
+subplot(1,2,1), plot(d(startFrame:end),eAbsorb(startFrame:end),'o-'); 
+grid on; set(gca,'ylim',[-10 10]);
 xlabel('Distance (cones)'); ylabel('Percent error');
+title('Quadratic case, current, 1-back')
 
+subplot(1,2,2), cm.plot('eye movement path','hf',gca);
+title(sprintf('Noise %s',cm.noiseFlag));
+drawnow
+
+%% Suppose we used the linear responses from the photocurrent
+
+startFrame   = 25;   % Eliminate the warm up period
+eAbsorbS = zeros(cm.tSamples,1);
+eAbsorbC = zeros(cm.tSamples,1);
+
+% Compute the error, but because of the ramp up use 25 as the base frame
+for ii=startFrame:cm.tSamples
+    baseIMG     = cm.current(:,:,ii-1);
+    thisIMG     = cm.current(:,:,ii);
+
+    eBase        = dot(baseIMG(:),cQuad(:));    
+    eAbsorbC(ii) = dot(thisIMG(:),cQuad(:));
+    eAbsorbC(ii) = 100*(eAbsorbC(ii) - eBase)/eBase;
+    
+    eBase        = dot(baseIMG(:),sQuad(:));
+    eAbsorbS(ii) = dot(thisIMG(:),sQuad(:));
+    eAbsorbS(ii) = 100*(eAbsorbS(ii) - eBase)/eBase;
+    
+    % fprintf('Difference (percentage) %f\n',eAbsorb(ii));
+end
+
+% Plot the size of the displacement and the error on the same graph
+d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
+vcNewGraphWin;
+subplot(1,2,1), 
+plot(d(startFrame:end),eAbsorbS(startFrame:end),'ob-', ...
+    d(startFrame:end),eAbsorbC(startFrame:end),'xr-'); 
+grid on; 
+xlabel('Distance (cones)'); ylabel('Percent error');
+title('Linear case')
+subplot(1,2,2), cm.plot('eye movement path','hf',gca);
+title(sprintf('Noise %s',cm.noiseFlag));
 
 %% END

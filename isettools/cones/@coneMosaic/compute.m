@@ -114,7 +114,7 @@ obj.current = [];
 %  image). In that case you should run a loop on the compute itself.
 %
 
-if (ndims(emPath) > 2)
+if (ndims(emPath) > 2) %#ok<ISMAT>
     % If multiple trials are requested, then emPath is 
     %
     %      (nTrials x nTime x 2)

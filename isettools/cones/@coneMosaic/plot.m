@@ -351,7 +351,7 @@ switch ieParamFormat(plotType)
             warning('Gamma correction in display is not correct');
         end
 
-        % Carry on assuming current is negative pA.
+        % Carry on assuming current is all negative pA.
         % uData = -1*(abs(uData).^gam);
         data = abs(data);
         if ~isequal(hf, 'none'), imagesc(data .^ gam); end
