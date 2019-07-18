@@ -67,7 +67,7 @@ opticsModel = oiGet(oi, 'optics model');
 
 switch lower(opticsModel)
     case {'skip', 'skipotf'}
-        return    
+        return
     case {'dlmtf', 'diffractionlimited'}
         oi = oiApplyOTF(oi, scene);
     case {'shiftinvariant', 'custom', 'humanotf'}
@@ -159,7 +159,7 @@ for ii = 1:length(wave)
     % Multiply the transformed otf and the image.
     % Then invert and put the image center in  the center of the matrix
     filteredIMG = abs(ifftshift(ifft2(otf .* imgFFT)));
-    
+
     % Sometimes we had annoying complex values left after this filtering.
     % We got rid of it by an abs() operator. It should never be there. But
     % we think it arises because of rounding error. We haven't seen this in

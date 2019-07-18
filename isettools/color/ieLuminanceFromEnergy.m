@@ -2,7 +2,7 @@ function lum = ieLuminanceFromEnergy(energy, wave, varargin)
 % Calculate luminance and related quantities from spectral energy
 %
 % Syntax:
-%   lum = ieLuminanceFromEnergy(energy, wave)
+%   lum = ieLuminanceFromEnergy(energy, wave, [varargin])
 %
 % Description:
 %    Calculate luminance (cd/m2) and related quantities (lux, lumens, cd)
@@ -26,39 +26,42 @@ function lum = ieLuminanceFromEnergy(energy, wave, varargin)
 %        Luminous intensity: cd from W/[sr-nm]
 %
 %    To calculate luminance (or illuminance) from a spectral power
-%    distribution in photons, use ieLuminanceFromPhotons() 
+%    distribution in photons, use ieLuminanceFromPhotons()
+%
+%    This function contains examples of usage inline. To access these, type
+%    'edit ieLuminanceFromEnergy.m' into the Command Window.
 %
 % Inputs:
-%    energy  - Spectral radiance distribution in W / (m^2 * sr * nm), or
-%              other units as in description above.
-%    wave    - The wavelengths
+%    energy  - Matrix. The spectral radiance distribution in
+%              W / (m^2 * sr * nm), or other units as in description above.
+%    wave    - Vector. The wavelengths.
 %
 % Outputs:
-%    lum     - Luminance, in candelas per meter squared, or other units as
-%              in description above.
+%    lum     - Vector. The luminance, in candelas per meter squared, or
+%              other units as in description above.
 %
 % Optional key/value pairs:
-%    'quiet' - Boolean indicating whether or not to suppress diagnositic
-%              printout to command window (default is true)
+%    'quiet' - Boolean. A boolean indicating whether or not to suppress
+%              diagnositic printout to command window. Default is true.
 %
 % References:
 %   http://www.optics.arizona.edu/Palmer/rpfaq/rpfaq.htm
 %
 % See Also:
-%    ieLuminanceFromPhotons
+%   ieLuminanceFromPhotons
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/30/17  jnm  Comments & formatting
 %    11/16/17  jnm  Formatting
-%
+%    07/11/19  JNM  Formatting update
 
 % Examples:
 %{
-   wave = 400:10:700;  
-   energy = [blackbody(wave, 5000, 'energy'), blackbody(wave, 6000, ...
-        'energy')];
+   wave = 400:10:700;
+   energy = [blackbody(wave, 5000, 'energy'), ...
+        blackbody(wave, 6000, 'energy')];
    energy = energy';
    lum = ieLuminanceFromEnergy(energy, wave)
 %}

@@ -10,7 +10,7 @@ function bMatrix = colorBlockMatrix(wList, extrapVal)
 %    and B values from the SPD. The columns of the returned matrix define
 %    how to sum across the wavebands.
 %
-%    There are many ways one could do an spd -> RGB rendering.  This one is
+%    There are many ways one could do an spd -> RGB rendering. This one is
 %    simple, and uses a linear mapping that is implemented by the matrix
 %    returned by this routine. By default, the wavelengths from 400-490 add
 %    to the blue channel, from 500-570 add to the green channel, and
@@ -21,21 +21,24 @@ function bMatrix = colorBlockMatrix(wList, extrapVal)
 %    in the infrared. When we are trying to visualize IR, it is useful to
 %    set a value of 0.1 or 0.2.
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit colorBlockMatrix.m' into the Command Window.
+%
 % Inputs:
-%    wList     - The list of wavelengths in the SPD to be rendered.
-%    extrapval - The amount contributed outside the visible band. The
-%                default value is 0
+%    wList     - Vector. The list of wavelengths in the SPD to be rendered.
+%    extrapval - (Optional) Numeric. The amount contributed outside the
+%                visible band. Default is 0.
 %
 % Outputs:
-%    bMatrix   - The color matrix used for rendering a photon spectrum,
-%                where photonSPD is a column vector, following the
-%                following format:
-%                   displayRGB = photonSPD*bMatrix
+%    bMatrix   - Matrix. The color matrix used for rendering a photon
+%                spectrum, where photonSPD is a column vector, following
+%                the following format:
+%                   displayRGB = photonSPD * bMatrix
 %
 % Optional key/value pairs:
-%    whiteSPD  - By default, an equal photon spectrum is rendered as white
-%                (1, 1, 1). To render another photon spectrum as (1, 1, 1),
-%                send in this vector.
+%    whiteSPD  - Vector. By default, an equal photon spectrum is rendered
+%                as white (1, 1, 1). To render another photon spectrum as
+%                (1, 1, 1), send in this vector.
 %
 % Notes:
 %    * [NOTE - XXX: We used to set this with ieSessionSet and manage it
@@ -57,27 +60,29 @@ function bMatrix = colorBlockMatrix(wList, extrapVal)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/30/17  jnm  Comments & formatting
+%    07/11/19  JNM  Formatting update
 
 % Examples:
 %{
-   wList = [400:5:700];
-   bMatrix = colorBlockMatrix(wList);
-   figure;
-   plot(wList, bMatrix)
+    wList = [400:5:700];
+    bMatrix = colorBlockMatrix(wList);
+    figure;
+    plot(wList, bMatrix)
 %}
 %{
-   wList = [400:5:900]; 
-   bMatrix = colorBlockMatrix(wList, 0.1);
-   figure; plot(wList, bMatrix)
+    wList = [400:5:900];
+    bMatrix = colorBlockMatrix(wList, 0.1);
+    figure;
+    plot(wList, bMatrix)
 %}
 %{
-   % The spectrum that will be rendered as white (1, 1, 1) is equal photon.
-   % This can be calculated as:
-   wList = [400:5:700];
-   bMatrix = colorBlockMatrix(wList);
-   whiteSPDPhotons = [1, 1, 1] * pinv(bMatrix);
-   figure;
-   plot(wList, whiteSPDPhotons)
+    % The spectrum that will be rendered as white (1, 1, 1) is equal photon
+    % This can be calculated as:
+    wList = [400:5:700];
+    bMatrix = colorBlockMatrix(wList);
+    whiteSPDPhotons = [1, 1, 1] * pinv(bMatrix);
+    figure;
+    plot(wList, whiteSPDPhotons)
 %}
 
 if notDefined('wList')
@@ -92,12 +97,12 @@ end
 % compatibility. But I am trying to eliminate all such calls
 if length(wList) == 1
     % warning('Old wList format.')
-    if     wList == 31
+    if wList == 31
         wList = 400:10:700;
     elseif wList == 371
-        wList = (370:730);
+        wList = 370:730;
     elseif wList == 37
-        wList = (370:10:730);
+        wList = 370:10:730;
     end
 end
 
@@ -110,27 +115,25 @@ defaultW = (400:10:700);
 b = 10;
 g = 8;
 r = 31 - b - g;
-defaultMatrix = ...
-    [zeros(1, b), zeros(1, g),  ones(1, r); ...
-     zeros(1, b),  ones(1, g), zeros(1, r); ...
-      ones(1, b), zeros(1, g), zeros(1, r)]';
+defaultMatrix = [zeros(1, b), zeros(1, g),  ones(1, r); ...
+    zeros(1, b),  ones(1, g), zeros(1, r); ...
+    ones(1, b), zeros(1, g), zeros(1, r)]';
 
 % Adjust for any differences in the wave list
 if isequal(wList(:), (400:10:700)')
-     % Set the default matrix columns sum to 1
-     d = sum(defaultMatrix);
-     bMatrix = defaultMatrix * diag(1 ./ d);
+    % Set the default matrix columns sum to 1
+    d = sum(defaultMatrix);
+    bMatrix = defaultMatrix * diag(1 ./ d);
 else
     % Adjust the matrix to match the default over 400-700 but be a small
     % value in the infrared. The default is 0. But it could be a non-zero
     % value the user sends in.
     bMatrix = zeros(length(wList), 3);
-    for ii=1:3
-        bMatrix(:, ii) = ...
-            interp1(defaultW(:), defaultMatrix(:, ii), wList(:), ...
-            'linear', extrapVal);
+    for ii = 1:3
+        bMatrix(:, ii) = interp1(defaultW(:), defaultMatrix(:, ii), ...
+            wList(:), 'linear', extrapVal);
     end
-    d = sum(bMatrix); 
+    d = sum(bMatrix);
     bMatrix = bMatrix * diag(1 ./ d);
 end
 
@@ -138,12 +141,12 @@ end
 % That is
 %   ones(1, length(wList)) * bMatrix = (1, 1, 1)
 % Examples below show how to change from default in which equal photon
-% equal to (1, 1, 1) 
+% equal to (1, 1, 1)
 % We should think about whether we want whiteSPD to be persistent
 % We used to set this with ieSessionSet and manage it with ieSessionGet and
 % matlab setpref/getpref. Now, not so much. This code is left here as a
 % reminder that we might reconsider.
-wp = 'd65';   
+wp = 'd65';
 switch lower(wp)
     case 'ee'
         % Make equal energy (1, 1, 1)

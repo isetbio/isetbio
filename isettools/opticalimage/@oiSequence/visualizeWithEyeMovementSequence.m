@@ -1,5 +1,5 @@
 function visualizeWithEyeMovementSequence(obj, emTimeAxis)
-% Visualize the eye movements 
+% Visualize the eye movements
 %
 % Syntax:
 %   visualizeWithEyeMovementSequence(obj, emTimeAxis)

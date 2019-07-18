@@ -1,5 +1,5 @@
 function g = chromaticityPlot(pts, background, nPix, newFig)
-% Draw points superimposed on an xy chromaticity diagram 
+% Draw points superimposed on an xy chromaticity diagram
 %
 % Syntax:
 %   g = chromaticityPlot([pts], [background], [nPix], [newFig])
@@ -8,17 +8,24 @@ function g = chromaticityPlot(pts, background, nPix, newFig)
 %    Draw points superimposed on an xy chromaticity diagram  The general
 %    surrounding background can be gray (by default), white or black.
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit chromaticityPlot.m' into the Command Window.
+%
 % Inputs:
-%    pts        - xy values of points on the graph. Default is []. This
-%                 is an number of points by 2 matrix, with x values in the
-%                 first column and y in the second.
-%    background - Image background color. Default is 'gray'. Other
-%                 options are 'black' and 'white'.
-%    nPix       - Spatial resolution. Default is 256.
-%    newFig     - Plot in a new figure. Default is 1 (true).
+%    pts        - (Optional) Matrix. The xy values of points on the graph.
+%                 Default []. This is an number of points by 2 matrix,
+%                 with x values in the first column and y in the second.
+%    background - (Optional) String. The image background color. Default
+%                 'gray'. Other options are 'black' and 'white'.
+%    nPix       - (Optional) Numeric. The spatial resolution. Default 256.
+%    newFig     - (Optional) Boolean. A numeric boolean indicating whether
+%                 or not to plot in a new figure. Default 1 (true).
 %
 % Outputs:
-%    g          - The drawn graph of points
+%    g          - Figure. The drawn graph of points.
+%
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
 %   ieXYZFromPhotons, ieXYZFromEnergy, chromaticity, ieXYZ2LAB
@@ -28,25 +35,26 @@ function g = chromaticityPlot(pts, background, nPix, newFig)
 %    xx/xx/11       Copyright ImagEval LLC
 %    10/30/17  jnm  Comments & formatting
 %    11/17/17  jnm  Formatting
+%    07/11/19  JNM  Formatting update
 
 % Examples:
 %{
-   % Just the (gray) background, not points
-   chromaticityPlot;
+    % Just the (gray) background, not points
+    chromaticityPlot;
 %}
 %{
-   % A few points on backgrounds at different colors and resolutions
-   pts = [[.33, .33] ; [0.40 0.45]];
-   chromaticityPlot(pts, 'gray', 256);
-   chromaticityPlot(pts, 'black');
-   chromaticityPlot(pts, 'white', 384);
+    % A few points on backgrounds at different colors and resolutions
+    pts = [[.33, .33]; [0.40 0.45]];
+    chromaticityPlot(pts, 'gray', 256);
+    chromaticityPlot(pts, 'black');
+    chromaticityPlot(pts, 'white', 384);
 %}
 %{
-   % Compare two types of points 
-   pts = [.33, .33];
-   chromaticityPlot(pts, 'gray', 256);
-   hold on;
-   plot(pts(1), pts(2), '.')
+    % Compare two types of points
+    pts = [.33, .33];
+    chromaticityPlot(pts, 'gray', 256);
+    hold on;
+    plot(pts(1), pts(2), '.')
 %}
 
 %% Defaults
@@ -79,7 +87,7 @@ wave = 380:5:700;
 spectrumLocus = chromaticity(ieReadSpectra('XYZ', wave));
 
 inPoints = inpolygon(xy(:, 1), xy(:, 2), ...
-                     spectrumLocus(:, 1), spectrumLocus(:, 2));
+    spectrumLocus(:, 1), spectrumLocus(:, 2));
 % vcNewGraphWin;
 % imagesc(XW2RGBFormat(color_me, nRows, nCols));
 % axis xy;
@@ -91,19 +99,13 @@ backXYZ = srgb2xyz(w);
 switch background
     case 'white'
         backXYZ = backXYZ * Y_val;
-        if newFig
-            g = vcNewGraphWin([], [], 'Color', [1 1 1]);
-        end
+        if newFig, g = vcNewGraphWin([], [], 'Color', [1 1 1]); end
     case 'black'
         backXYZ = backXYZ * 0;
-        if newFig
-            g = vcNewGraphWin([], [], 'Color', [0 0 0]);
-        end
+        if newFig, g = vcNewGraphWin([], [], 'Color', [0 0 0]); end
     case 'gray'
         backXYZ = backXYZ * Y_val / 2;
-        if newFig
-            g = vcNewGraphWin([], [], 'Color', [0.7 0.7 0.7]);
-        end
+        if newFig, g = vcNewGraphWin([], [], 'Color', [0.7 0.7 0.7]); end
     otherwise
         error('Unknown background %s\n', background);
 end

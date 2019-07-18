@@ -32,7 +32,7 @@ function oi = opticsCos4th(oi)
 %{
     scene = sceneCreate;
     oi = oiCreate('human');
-    oi = oiCompute(oi,scene); 
+    oi = oiCompute(oi,scene);
     oi = opticsCos4th(oi)
 %}
 
@@ -56,6 +56,6 @@ sFactor = opticsGet(optics,'cos4thData');  % figure(3); mesh(sFactor)
 photons = bsxfun(@times, oiGet(oi, 'photons'), sFactor);
 
 % Compress the calculated image and put it back in the structure.
-oi = oiSet(oi, 'photons',photons); 
+oi = oiSet(oi, 'photons',photons);
 
 end

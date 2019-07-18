@@ -17,12 +17,12 @@ function [responsivity, sFactor] = ...
 %    calculations.
 %
 %    But some important sensors are defined with respect to signal energy.
-%    The most important of these are the XYZ sensors. These are specified 
+%    The most important of these are the XYZ sensors. These are specified
 %    with respect to energy. It is also the case that the human cone
-%    responses are often specified with respect to energy units. 
+%    responses are often specified with respect to energy units.
 %
 %    In some cases in the code, we convert the input signal in photons to
-%    energy and use the standard XYZ values. 
+%    energy and use the standard XYZ values.
 %
 %    In other cases, however, we have many inputs and it is easier to
 %    convert the specification of the XYZ functions into a form that is
@@ -33,18 +33,18 @@ function [responsivity, sFactor] = ...
 %    quanta as a function of wavelength. Finally, suppose inE and inQ are
 %    input signals in energy and quanta units.
 %
-%	 response = transE' * inE = (transE' * (1 / E2Q)) * (E2Q * inE) ...
-%             = transQ' * inQ
+%     response = transE' * inE = (transE' * (1 / E2Q)) * (E2Q * inE) ...
+%              = transQ' * inQ
 %
-%    We can see that transQ is related to transE as 
-%       transQ' = transE' * (1 / E2Q). 
+%    We can see that transQ is related to transE as
+%       transQ' = transE' * (1 / E2Q).
 %
 %    This routine converts responsivities measured in energy units (respE)
 %    to responsivities appropriate for photons calculations (respQ).
 %
-%    These issues are handled explicitly in ieLuminanceFromEnergy, 
+%    These issues are handled explicitly in ieLuminanceFromEnergy,
 %    ieLuminanceFromPhotons and ieXYZFromEnergy
-%   
+%
 %    To specify filter transmissivities, it is not necessary to pay
 %    attention to the input signal units (photons or energy). Filters
 %    transmit a fraction of the photons and they transmit the same fraction
@@ -56,25 +56,32 @@ function [responsivity, sFactor] = ...
 %    for energy to work with photons (quanta). if method = 'q2e' this
 %    routine converts filters for quanta to work with energy.
 %
+%   This function contains examples of usage inline. To access these, enter
+%   'edit ieResponsivityConvert.m' into the Command Window.
+%
 % Inputs:
-%    responsivity - Columns represent color responsivities
-%    wave         - wavelength sampling (nm) as a vector
-%    method       - Representation of the desired methods. The options are:
-%        'e2q' - (Default) Filters specified for energy to work with
+%    responsivity - Matrix. The columns represent color responsivities.
+%    wave         - Vector. A wavelength sampling (nm) as a vector.
+%    method       - (Optional) String. A representation of the desired
+%                   methods. The options include:
+%        'e2q': (Default) Filters specified for energy to work with
 %                quanta/photons
-%        'q2e' - Filters specified for quanta to work with energy
+%        'q2e': Filters specified for quanta to work with energy
 %
 % Outputs:
-%    responsivity - The columns of color responsivities after manipulation
-%                   to the corresponding new format
-%    sFactor      - Sensitivity factor.  A row vector of how how the input
-%                   was scaled into the output at each wavelength, before a
-%                   final overall scaling.
+%    responsivity - Matrix. The columns of color responsivities after
+%                   manipulation to the corresponding new format
+%    sFactor      - Vector. The sensitivity factor. A row vector of how
+%                   how the input was scaled into the output at each
+%                   wavelength, before a final overall scaling.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [Note - DHB: There is a rescaling of the output at the end of this
 %      routine that makes the max value of the output have the same value
-%      as the max value of the input sensitivities.  This makes it so that
+%      as the max value of the input sensitivities. This makes it so that
 %      computing with the input and output sensitivies does not produce
 %      the same answer. I don't think this scaling is a good idea, but
 %      left it alone in case other code counts on it. Currently, the
@@ -84,7 +91,7 @@ function [responsivity, sFactor] = ...
 %      the rescaling.]
 %    * [Note - DHB: To make the example work, I had to read in some energy
 %      sensitivities, the old example method used a function that no
-%      longer exists.  I think ieReadSpectral('stockman',wave) gets cone
+%      longer exists. I think ieReadSpectral('stockman',wave) gets cone
 %      sensitivities in energy units, but there doesn't appear to be any
 %      easy way to find out. Check and fix if necessary.]
 %
@@ -96,7 +103,7 @@ function [responsivity, sFactor] = ...
 %    xx/xx/05       Copyright ImagEval Consultants, LLC.
 %    10/27/17  jnm  Comments & formatting
 %    11/16/17  jnm  Formatting
-%
+%    07/11/19  JNM  Formatting update
 
 % Examples:
 %{
@@ -104,13 +111,13 @@ function [responsivity, sFactor] = ...
    wave = 400:10:700;
    signalEnergy = ieReadSpectra('D65', wave);
    signalPhotons = Energy2Quanta(wave(:), signalEnergy(:));
-   
+
    % Signal in energy units
    conesE = ieReadSpectra('stockman', wave);
    [conesP, sFactor] = ieResponsivityConvert(conesE, wave, 'e2q');
 
    % These two calculations produce equal results
-   vP = conesP' * signalPhotons(:)  
+   vP = conesP' * signalPhotons(:)
    vE = conesE' * signalEnergy(:)
 %}
 

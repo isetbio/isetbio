@@ -14,53 +14,62 @@ function LMS = lms2lmsDichromat(LMS, cbType, method, varargin)
 %       value that is a piece-wise linear transform of the preserved cones
 %     * interpolation the missing cone using the linear interpolation
 %       proposed by Jiang, Farrell and Wandell, 2015
-%     * returning a constant for the missing cone type  
+%     * returning a constant for the missing cone type
+%
+%    This function contains examples of usage inline. To access these, type
+%    'edit lms2lmsDichromat.m' into the Command Window.
 %
 % Inputs:
-%    LMS    - an image in cone space (Stockman LMS Space)
-%    cbType - Type of colorblindness, can be choosen from
-%      {0, 'trichromat'}             - Trichromatic observer (default)
+%    LMS      - Matrix. An image in cone space (Stockman LMS Space).
+%    cbType   - (Optional) Scalar/String. A type of colorblindness, can be
+%               choosen from the following:
+%      {0, 'trichromat'}             - Default. Trichromatic observer.
 %      {1, 'protan', 'protanopia'}   - Protanopia observer, missing L cones
 %      {2, 'deutan', 'deuteranopia'} - Deuteranope, missing M cones
 %      {3, 'tritan', 'tritanopia'}   - Tritanope, missing S cones
-%    method - Algorithm to be used to interpolate the missing cone values
-%      'brettel'  - Using Bettel's algorithm (Default)
-%      'linear'   - Using Linear Interpolation
-%      'constant' - leave missing cone values as a constant (default 0)
-%    varargin - Extra arguments for specific methods
-%      varargin{1} - White LMS value for the 'brettel' method, row vector.
-%                    The constant value used for the 'constant' method.
+%    method   - (Optional) String. Which algorithm to be used to
+%               interpolate the missing cone values. Options (and their
+%               varargin information) include:
+%        brettel: Default. Use Bettel's algorithm. Provide numeric value to
+%                 varargin{1} of a white XYZ value.
+%        linear: Use linear interpolation algorithm
+%        constant: Leave missing cone values as a constant. Default 0.
+%    varargin - (Optional) VARIES. Extra arguments for specific methods.
+%               See the method entries above for more information.
 %
 % Outputs:
-%    LMS    - LMS values in Stockman LMS space
+%    LMS    - Matrix. The LMS values in Stockman LMS space.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
-%  * [NOTE - DHB: I made the example run, but did not actually check that
-%    the output is correct.]
-%  * [NOTE - DHB: Not clear if it is 2 degree or 10 degree XYZ/Stockman.
-%    There are various constants hard coded into the transformations, so
-%    to determine which it is one would need to recreate where those
-%    constants came from.]
+%    * [NOTE - DHB: I made the example run, but did not actually check that
+%      the output is correct.]
+%    * [NOTE - DHB: Not clear if it is 2 degree or 10 degree XYZ/Stockman.
+%      There are various constants hard coded into the transformations, so
+%      to determine which it is one would need to recreate where those
+%      constants came from.]
 %
 % See Also:
-%    xyz2lms
+%   xyz2lms
 %
 
 % History:
 %    xx/xx/15  HJ   ISETBIO TEAM
 %    11/01/17  jnm  Comments, formatting & fix example
 %    11/17/17  jnm  Formatting & fix note
-%
+%    07/16/19  JNM  Formatting update
 
 % Examples:
 %{
-   scene = sceneCreate;
-   imgLMS = sceneGet(scene, 'lms');
-   LMS = lms2lmsDichromat(imgLMS, 0, 'linear');
-   xyz2lmsM = colorTransformMatrix('xyz2lms');
-   whiteXYZ = sceneGet(scene,'illuminant xyz');
-   whiteLMS = whiteXYZ(:)' * xyz2lmsM;
-   LMS = lms2lmsDichromat(imgLMS, 'deutan', 'brettel', whiteLMS);
+    scene = sceneCreate;
+    imgLMS = sceneGet(scene, 'lms');
+    LMS = lms2lmsDichromat(imgLMS, 0, 'linear');
+    xyz2lmsM = colorTransformMatrix('xyz2lms');
+    whiteXYZ = sceneGet(scene,'illuminant xyz');
+    whiteLMS = whiteXYZ(:)' * xyz2lmsM;
+    LMS = lms2lmsDichromat(imgLMS, 'deutan', 'brettel', whiteLMS);
 %}
 
 %% Init and check inputs
@@ -93,19 +102,24 @@ function LMS = cbBrettel(LMS, cbType, whiteLMS)
 % Interpolation with Brettel's method
 %
 % Syntax:
-%   LMS = cbBrettel(LMS, cbType, whiteLMS)
+%   LMS = cbBrettel(LMS, [cbType], whiteLMS)
 %
 % Description:
 %    Perform the interpolation using Brettel's Method
 %
 % Inputs:
-%    LMS      - LMS color space values
-%    cbType   - Type of color-blindness
-%    whiteLMS - The LMS white point
+%    LMS      - Matrix. LMS color space values
+%    cbType   - (Optional) Scalar/String. Type of color-blindness. See the
+%               variable of the same name above in lms2lmsDichromat.
+%               Default 0.
+%    whiteLMS - Vector. The LMS white point.
 %
 % Outputs:
-%    LMS      - LMS Color space values after manipulation to account for
-%               the specified type of color blindness
+%    LMS      - Matrix. LMS Color space values after manipulation to
+%               account for the specified type of color blindness
+%
+% Optional key/value pairs:
+%    None.
 %
 
 % Check inputs
@@ -121,8 +135,8 @@ if ischar(cbType), cbType = ieParamFormat(cbType); end
 %
 % The anchor values are roughly
 %   anchor = ieReadSpectra('stockman', [475 485 575 660]);
-anchor = [0.1193 0.2123 0.5309 
-          0.1620 0.2709 0.2894 
+anchor = [0.1193 0.2123 0.5309
+          0.1620 0.2709 0.2894
           0.9881 0.7266 0.0004
           0.0941 0.0077 0.0]';
 % anchor = [0.1420    0.2413    0.4964
@@ -141,10 +155,10 @@ switch cbType
         a2 = whiteLMS(2) * anchor(3) - whiteLMS(3) * anchor(2);
         b2 = whiteLMS(3) * anchor(1) - whiteLMS(1) * anchor(3);
         c2 = whiteLMS(1) * anchor(2) - whiteLMS(2) * anchor(1);
-        
+
         % Divides the space
         inflection = whiteLMS(3) / whiteLMS(2);
-        
+
         % Interpolate missing L values for protonape
         L = LMS(:, :, 1);
         M = LMS(:, :, 2);
@@ -161,9 +175,9 @@ switch cbType
         a2 = whiteLMS(2) * anchor(3) - whiteLMS(3) * anchor(2);
         b2 = whiteLMS(3) * anchor(1) - whiteLMS(1) * anchor(3);
         c2 = whiteLMS(1) * anchor(2) - whiteLMS(2) * anchor(1);
-        
+
         inflection = whiteLMS(3) / whiteLMS(1);
-        
+
         % Interpolate missing M values for deuteranope
         L = LMS(:, :, 1);
         M = LMS(:, :, 2);
@@ -176,20 +190,20 @@ switch cbType
         a1 = whiteLMS(2) * anchor(12) - whiteLMS(3) * anchor(11);
         b1 = whiteLMS(3) * anchor(10) - whiteLMS(1) * anchor(12);
         c1 = whiteLMS(1) * anchor(11) - whiteLMS(2) * anchor(10);
-        
+
         % Greater than the inflection
         a2 = whiteLMS(2) * anchor(6)  - whiteLMS(3) * anchor(5);
         b2 = whiteLMS(3) * anchor(4)  - whiteLMS(1) * anchor(6);
         c2 = whiteLMS(1) * anchor(5)  - whiteLMS(2) * anchor(4);
-        
+
         % Inflection point
         inflection = (whiteLMS(2) / whiteLMS(1));
-        
+
         % Interpolate missing M values for tritanope
         L = LMS(:, :, 1);
         M = LMS(:, :, 2);
         S = LMS(:, :, 3);
-        lst = ((M ./ L) < inflection);
+        lst = (M ./ L) < inflection;
         S(lst)  = -(a1 * L(lst)  + b1 * M(lst)) / c1;
         S(~lst) = -(a2 * L(~lst) + b2 * M(~lst)) / c2;
         LMS(:, :, 3) = S;
@@ -203,18 +217,23 @@ function LMS = cbLinear(LMS, cbType)
 % Interpolation with linear method
 %
 % Syntax:
-%   LMS = cbLinear(LMS, cbType)
+%   LMS = cbLinear(LMS, [cbType])
 %
 % Description:
 %    Interpolation with linear method
 %
 % Inputs:
-%    LMS    - LMS color space values
-%    cbType - Type of color-blindness
+%    LMS    - Matrix. The LMS color space values.
+%    cbType - (Optional) Scalar/Numeric. Type of color-blindness. Default
+%             0. See the variable of the same name above in
+%             lms2lmsDichromat for more information.
 %
 % Outputs:
-%    LMS    - LMS color space values after manipulation to account for the
-%             specified type of color blindness
+%    LMS    - Matrix. The LMS color space values after manipulation to
+%             account for the specified type of color blindness.
+%
+% Optional key/value pairs:
+%    None.
 %
 
 % Check inputs
@@ -241,20 +260,25 @@ function LMS = cbConstant(LMS, cbType, val)
 % Interpolation with constant
 %
 % Syntax:
-%   LMS = cbConstant(LMS, cbType, val)
+%   LMS = cbConstant(LMS, [cbType], val)
 %
 % Description:
-%    Interpolation with a constant value.  Just use that value for the
+%    Interpolation with a constant value. Just use that value for the
 %    missing cone type.
 %
 % Inputs:
-%    LMS    - LMS color space values
-%    cbType - Type of color-blindness
-%    val    - The requisite constant
+%    LMS    - Matrix. The LMS color space values.
+%    cbType - (Optional) Scalar/String. The type of color-blindness.
+%             Default 0. See the variable of the same name above in
+%             lms2lmsDichromat for more information.
+%    val    - Numeric. A scalar numeric of the requisite constant.
 %
 % Outputs:
-%    LMS    - LMS color space values after manipulation to account for the
-%             specified type of color blindness
+%    LMS    - Matrix. The LMS color space values after manipulation to
+%             account for the specified type of color blindness
+%
+% Optional key/value pairs:
+%    None.
 %
 
 % check inputs

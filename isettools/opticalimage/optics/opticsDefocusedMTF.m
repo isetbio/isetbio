@@ -19,10 +19,10 @@ function OTF = opticsDefocusedMTF(s, alpha)
 %    frequency. The formula is defined in the Marimont and Wandell paper.
 %
 %    This function is used when calculating
-%      * the effects of human chromatic aberration, 
+%      * the effects of human chromatic aberration,
 %      * understanding defocus and depth-of-field (opticsDepthDefocus).
 %
-%    This routine is called from defocusMTF via opticsDefocusCore. 
+%    This routine is called from defocusMTF via opticsDefocusCore.
 %
 % Inputs:
 %    s     - Vector. The reduced spatial frequency [Range: 0-2]

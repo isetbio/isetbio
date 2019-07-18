@@ -5,7 +5,7 @@ function [uData, vObj] = visualize(obj, plotType, varargin)
 %   [uData, vObj] = visualize(obj, plotType, [varargin]);
 %
 % Description
-%    This is a plot method for the oiSequence class. 
+%    This is a plot method for the oiSequence class.
 %
 % Inputs:
 %    obj       - Object. The oi sequence object
@@ -119,7 +119,7 @@ switch ieParamFormat(plotType)
             case 'add'
                 for ii = 1:nFrames
                     d(:, :, ii) = illFixed + illMod * wgts(ii);
-                end     
+                end
             otherwise
                 error('Unknown composition method: %s\n', obj.composition);
         end

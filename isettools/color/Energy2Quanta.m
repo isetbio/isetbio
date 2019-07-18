@@ -15,20 +15,26 @@ function photons = Energy2Quanta(wavelength, energy)
 %    The columns of the matrix energy are different spatial samples. The
 %    entries down a column represent the energy as a function of
 %    wavelength. Thus, the entries across a row represent the energy at a
-%    single wavelength for each of the samples. This format is unfortunate, 
+%    single wavelength for each of the samples. This format is unfortunate,
 %    because it is the transpose of the standard XW format used throughout
 %    the rest of ISET. It is also the transpose of the format used in the
 %    function Quanta2Energy.
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit Energy2Quanta.m' into the Command Window.
 %
 % Inputs:
-%    wavelength - The vector of sample wavelengths in nm.
-%    energy     - A matrix containing the spatial samples. Each column
-%                 represents one spatial sample, with each row
+%    wavelength - Vector. A vector of sample wavelengths in nm.
+%    energy     - Matrix. A matrix containing the spatial samples. Each
+%                 column represents one spatial sample, with each row
 %                 corresponding to one wavelength (transpose of XW format).
 %
 % Outputs:
-%    photons    - Matrix in same format as input (transpose of XW format).
+%    photons    - Matrix. A matrix in the same format as input (transpose
+%                 of XW format).
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [NOTE - BAW: In the fullness of time, this function will be
@@ -42,38 +48,39 @@ function photons = Energy2Quanta(wavelength, energy)
 %   Quanta2Energy
 %
 
-% History: 
+% History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/30/17  jnm  Comments & formatting
 %    11/16/17  jnm  Formatting
-%
+%    07/11/19  JNM  Formatting update
 
 % Examples:
 %{
-   wave = 400:10:700;  
-   in = [blackbody(wave, 5000, 'energy'), blackbody(wave, 6000, 'energy')];
-   p = Energy2Quanta(wave, in);  
-   figure;
-   plot(wave, p);
+    wave = 400:10:700;
+    in = [blackbody(wave, 5000, 'energy'), ...
+        blackbody(wave, 6000, 'energy')];
+    p = Energy2Quanta(wave, in);
+    figure;
+    plot(wave, p);
 
-   % Notice that we have to transpose p when we call the inverse
-   % Quanta2Energy. Tragic.
+    % Notice that we have to transpose p when we call the inverse
+    % Quanta2Energy. Tragic.
 
-   % Now, from Quanta2Energy, out in XW format
-   out = Quanta2Energy(wave, p');     
-   figure;
-   plot(wave, in, 'ro', wave, out', 'k-');
+    % Now, from Quanta2Energy, out in XW format
+    out = Quanta2Energy(wave, p');
+    figure;
+    plot(wave, in, 'ro', wave, out', 'k-');
 %}
 
 if ~isvector(wavelength)
-        error('Energy2Quanta: Wavelength must be a vector');
+    error('Energy2Quanta: Wavelength must be a vector');
 else
-    wavelength = wavelength(:);      % Force to column
+    wavelength = wavelength(:);  % Force to column
 end
 
-% Fundamental constants. 
-h = vcConstants('h');		% Planck's constant [J sec]
-c = vcConstants('c');		% speed of light [m/sec]
+% Fundamental constants.
+h = vcConstants('h');  % Planck's constant [J sec]
+c = vcConstants('c');  % speed of light [m/sec]
 
 if ndims(energy) == 3
     [n, m, w] = size(energy);
