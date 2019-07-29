@@ -100,6 +100,8 @@ function coneMosaicWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 if isempty(varargin) || ~isa(varargin{1}, 'coneMosaic')
     error('cone mosaic object required');
 end
+plotType = 'meanabsorptions';
+if length(varargin) > 1, plotType = varargin{2}; end
 
 % Choose default command line output for coneMosaicWindow
 handles.output = hObject;
@@ -118,13 +120,10 @@ figure(hObject);
 % Set the popup default image selection to mean absorptions for when the
 % window opens.
 str = get(handles.popupImageType, 'String');
-if iscell(str) && length(str) > 1
-    % This is mean absorptions
-    set(handles.popupImageType, 'Value', 2);
-end
+for ii=1:numel(str), str{ii} = ieParamFormat(str{ii}); end
 
 % Refresh and move on
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+coneMosaicGUIRefresh(hObject, eventdata, handles, plotType);
 
 % Set the font size based on the ISETBIO preferences
 ieFontInit(hObject);
@@ -482,11 +481,21 @@ function menuEditClearData_Callback(hObject, eventdata, handles)
 % Optional key/value pairs:
 %    None.
 %
-handles.cMosaic.clearData();
-handles.mov = [];
+handles.cMosaic.clearData();  % Clear absorptions and current
+
+% Clear any movies and stored mosaic image
+handles.mov    = [];
 handles.curMov = [];
-guidata(hObject, handles);
-coneMosaicGUIRefresh(hObject, eventdata, handles);
+
+uData = get(handles.axes2,'UserData');
+if isfield(uData,'mosaicImage')
+    uData.mosaicImage = [];
+    set(handles.axes2,'UserData',uData);
+end
+
+guidata(hObject, handles); % Put back the modified handles
+
+coneMosaicGUIRefresh(hObject, eventdata, handles); % Update the window
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -540,7 +549,7 @@ coneMosaicGUIRefresh(hObject, eventdata, handles);
 
 end
 
-function coneMosaicGUIRefresh(~, ~, handles)
+function coneMosaicGUIRefresh(~, ~, handles, plotType)
 % (Top | Refresh) Update the Cone mosaic window interface - main pulldown
 %
 % Syntax:
@@ -630,41 +639,62 @@ else
     set(handles.menuPlotMosaicMeanCurrent, 'Enable', 'on');
 end
 
-% popup menu content
+%% Set the strings in the popup menu for what to plot
 str = {'Cone mosaic'};
+
+% Add absorption options
 if ~isempty(cm.absorptions)
     str = [str {'Mean absorptions', 'Absorption movie'}];
 end
 
+% Add photocurrent options
 if ~isempty(cm.current)
     str = [str {'Mean photocurrent', 'Photocurrent movie'}];
 end
 
-index = get(handles.popupImageType, 'Value');
-if index > length(str), index = 1; end  % Mean absorptions
-plotType = str{index};
+if ~exist('plotType','var')
+    % The user did not specify the plot type.  So we get it from the
+    % window.
+    index = get(handles.popupImageType, 'Value');
+    if index > length(str), index = 1; end  % Cone mosaic
+    plotType = str{index};
+else
+    plotType = ieParamFormat(plotType);
+    tmp = cell(size(str));
+    for ii=1:numel(str), tmp{ii} = ieParamFormat(str{ii}); end
+    % The user did specify plotType.  Find it and use it
+    [~,index] = ismember(plotType,tmp);
+end
+
+% Set the index and then string in the window popup menu
 set(handles.popupImageType, 'Value', index);
 set(handles.popupImageType, 'String', str);
 
-%% Here are the different window options
+%% Here are the different plotting options for the main axis (handles.axes2)
 
-% Gamma is handled within plot for the mean images
-% For the video, we are handling it this way so we can, in the future, set
-% additional parameters for the movies that get passed to ieMovie.
+% Gamma is managed within plot for the mean images. For the video, we are
+% handling it this way so we can, in the future, set additional parameters
+% for the movies that get passed to ieMovie.
 g = str2num(get(handles.editGam, 'string'));
 
-switch plotType
-    case 'Cone mosaic'
+switch ieParamFormat(plotType)
+    case 'conemosaic'
         % cone mosaic image
         % TODO:  For large mosaics, the computation is slow. We should
         % compute it once and store it.
+        nCones  = size(cm.coneLocs, 1);
+        maxCones = 1e4;
+        if  nCones > maxCones
+            ieInWindowMessage('Initializing large mosaic image', handles);
+        end
         cm.plot('cone mosaic', 'hf', handles.axes2);
+        ieInWindowMessage('', handles)
 
-    case 'Mean absorptions'
+    case 'meanabsorptions'
         % mean cone absorptions
         cm.plot('mean absorptions', 'hf', handles.axes2);
         
-    case 'Absorption movie'
+    case 'absorptionmovie'
         ieInWindowMessage('Showing absorption movie', handles)
         uData = cm.plot('movie absorptions', 'hf', handles.axes2, ...
             'gamma', g);
@@ -673,10 +703,10 @@ switch plotType
         set(gcf, 'userdata', uData);
         ieInWindowMessage('', handles)
         
-    case 'Mean photocurrent'
+    case 'meanphotocurrent'
         cm.plot('mean current', 'hf', handles.axes2);
 
-    case 'Photocurrent movie'
+    case 'photocurrentmovie'
         ieInWindowMessage('Showing photocurrent movie', handles)
         cm.plot('movie current', 'hf', handles.axes2, 'gamma', g);
         ieInWindowMessage('', handles)

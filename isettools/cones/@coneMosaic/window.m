@@ -15,7 +15,7 @@ function window(obj, varargin)
 %   None.
 %
 %   Optional key/value pairs:
-%   None.
+%   'show' - 'mean absorptions', 'cone mosaic', 'mean photocurrent'
 %
 %   See Also:
 %    coneMosaicWindow
@@ -24,5 +24,14 @@ function window(obj, varargin)
 %    xx/xx/16  HJ   ISETBIO Team 2016
 %    02/19/18  jnm  Formatting
 
-    coneMosaicWindow(obj);
+%% 
+p = inputParser;
+
+valid = {'conemosaic','meanabsorptions','meanphotocurrent'};
+p.addRequired('obj',@(x)(isa(x,'coneMosaic')));
+p.addParameter('show','meanabsorptions',@(x)(ismember(ieParamFormat(x),valid)));
+
+p.parse(obj,varargin{:});
+coneMosaicWindow(obj,p.Results.show);
+
 end
