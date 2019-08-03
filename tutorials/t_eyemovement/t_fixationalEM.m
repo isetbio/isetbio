@@ -1,7 +1,11 @@
 %% t_fixationalEM
-% Show how to generate fixational eye movements and how to do this 
-% for a cone mosaic. We then use the eye movement positions to generate a
-% movie of cone isomerizations from calculate from a simple scene. 
+% This tutorial demonstrates how to generate fixational eye movements. It
+% first generates 50 different eye movements sequences, each over the
+% specified duration and temporal sampling. These 50 eye movements are
+% displayed in a figure. Next, the eye movements are re-generated and
+% re-plotted, but this time spatially sampled on a cone mosaic. Lastly, one
+% of the eye movement sequences is chosen and used to generate a movie of
+% cone excitations from a simple example scene. 
 %
 % Description:
 %    * Calculate em straight or using a cone mosaic
