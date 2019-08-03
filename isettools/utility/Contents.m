@@ -106,6 +106,10 @@
 %   programming/ieParamFormat         - Converts s to a standard ISET parameter format  (lower case, no spaces)
 %   programming/ieRemovePathDir       - Removes any .svn directories from the pathList.
 %
+% PSYCHOPHYSICS (subdir psychophysics)  Related to calculating psychophysical performance
+%   psychophysics/analyticPoissonIdealObserver - Performance of analytic ideal observer
+%   psychophysics/dPrimeToTAFCFractionCorrect  - Calculate TAFCfraction correct from d-prime
+%
 % STATISTICS (subdir statistics)        Statistical calculations for isetbio
 %   statistics/biNormal               - Compute bivariate normal function
 %   statistics/expRand                - Exponentially distributed random number generator
