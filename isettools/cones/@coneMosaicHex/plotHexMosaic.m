@@ -21,8 +21,6 @@ function plotHexMosaic(obj, varargin)
 %    coneDensityContourLevelStep               - Integer, Default 5000
 %
 % Note:
-%    * This function includes functions, some of which might get moved out
-%    in the future: computeDensityMap, renderPatchArray, renderHexMesh
 %    * TODO - Assign someone to fix the CurrentAxes problem that DHB
 %      describes below.
 %
@@ -30,6 +28,7 @@ function plotHexMosaic(obj, varargin)
 % History:
 %    xx/xx/15  NPC  ISETBIO TEAM, 2015
 %    02/20/18  jnm  Formatting
+%    03/08/19  NPC  Fixed subroutine calling issues
 
 %% parse input
 p = inputParser;
@@ -96,10 +95,10 @@ cla(thisAxes, 'reset');
 switch showConeDensityContour
     case 'measured'
         [densityMap, densityMapSupportX, densityMapSupportY] = ...
-            computeDensityMap(obj, 'from mosaic');
+            obj.computeDensityMap('from mosaic');
     case 'theoretical'
         [densityMap, densityMapSupportX, densityMapSupportY] = ...
-            computeDensityMap(obj, 'from model');
+            obj.computeDensityMap('from model');
     case 'none'
     otherwise
         error(['coneMosaicHex.visualizeGrid: '...
@@ -131,7 +130,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [1 0 0];
     faceColor = [1.0 0.7 0.7];
-    renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
         sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     % M-cones
@@ -139,7 +138,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [0 0.7 0];
     faceColor = [0.7 1.0 0.7];
-    renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
         sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     % S-cones
@@ -147,7 +146,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     edgeColor = [0 0 1];
     faceColor = [0.7 0.7 1.0];
-    renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
+    obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
         sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     if (showPerfectHexMesh)
@@ -157,7 +156,7 @@ if (~showCorrespondingRectangularMosaicInstead)
         meshFaceAlpha = 0.0;
         meshEdgeAlpha = 0.5;
         lineStyle = '-';
-        renderHexMesh(gca, hexCoords(:, 1), hexCoords(:, 2), meshEdgeColor, ...
+        obj.renderHexMesh(gca, hexCoords(:, 1), hexCoords(:, 2), meshEdgeColor, ...
             meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
     end
 else
