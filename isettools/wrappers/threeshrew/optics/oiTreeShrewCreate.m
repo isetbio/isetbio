@@ -30,10 +30,6 @@ function oi = oiTreeShrewCreate(varargin)
     oi = oiSet(oi, 'diffuser method', 'skip');
     oi = oiSet(oi, 'consistency', 1);
     
-    if checkfields(oi.optics, 'transmittance')
-        oi.optics = rmfield(oi.optics, 'transmittance');
-    end  
-    
     % TreeShrew lens absorption.
     theTreeShrewLens = lensTreeShrewCreate('wave', oiGet(oi, 'optics wave'));
     
