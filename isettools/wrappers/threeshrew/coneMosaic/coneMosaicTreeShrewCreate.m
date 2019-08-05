@@ -23,7 +23,8 @@ integrationTimeSeconds = p.Results.integrationTimeSeconds;
 sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
 resamplingFactor = p.Results.resamplingFactor;
 
-% Treeshrew-specific scaling
+% Treeshrew-specific scaling. This is a hack because of the way the setSizeToFOV()
+% is called in @coneMosaic, which assumes a 17mm focal length
 treeShrewScaling = 300/micronsPerDegree;
 
 if (spatialDensity(1) ~= 0)
