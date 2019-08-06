@@ -23,9 +23,9 @@ integrationTimeSeconds = p.Results.integrationTimeSeconds;
 sConeMinDistanceFactor = p.Results.sConeMinDistanceFactor;
 resamplingFactor = p.Results.resamplingFactor;
 
-% Treeshrew-specific scaling. This is a hack because of the way the setSizeToFOV()
+% Scale fovDegs: this is a hack because of the way the setSizeToFOV()
 % is called in @coneMosaic, which assumes a 17mm focal length
-treeShrewScaling = 300/micronsPerDegree;
+fovDegs = fovDegs/((300/micronsPerDegree)^2);
 
 if (spatialDensity(1) ~= 0)
     error('The first element in spatialDensity vector must be 0.');
@@ -37,7 +37,7 @@ end
 thePhotopigment = treeShrewPhotopigment();
 
 theConeMosaic = coneMosaicHex(resamplingFactor, ...
-    'fovDegs', fovDegs/(treeShrewScaling^2), ...
+    'fovDegs', fovDegs, ...
     'micronsPerDegree',micronsPerDegree, ...
     'integrationTime', integrationTimeSeconds, ...
     'pigment', thePhotopigment ,...
