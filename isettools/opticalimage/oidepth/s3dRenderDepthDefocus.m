@@ -3,7 +3,7 @@ function [oi, oiD, D] = s3dRenderDepthDefocus(...
 % Compute blurred optical image for a scene, optics, & image plane distance
 %
 % Syntax:
-%   [oi, oiD, D] = s3dRenderDepthDefocus(scene, oi, [imgPlaneDist], ...
+%   [oi, oiD, D] = s3dRenderDepthDefocus(scene, oi, [imgPlaneDist], ... 
 %       [depthEdges], [cAberration])
 %
 % Description:
@@ -22,9 +22,9 @@ function [oi, oiD, D] = s3dRenderDepthDefocus(...
 %       Another approach is to compute a table of PSFs that depend on
 %       wavelength and depth. This could have the form of a 4D matrix in
 %       which (x, y, lambda, depth).
-%           * The (x, y) dimensions must match the OI spatial dimensions.
+%           * The (x, y) dimensions must match the OI spatial dimensions. 
 %           * For each scene point we form a (x, y, lambda) matrix that is
-%       interpolated from the depth dimension.
+%       interpolated from the depth dimension. 
 %           * We then compute a weighted sum of these, where the weights
 %             are the wavelength SPD of the point. We add these to the
 %             output photons.
@@ -119,7 +119,7 @@ for dd = length(depthCenters):-1:1
     defocus = cAberration + ones(size(cAberration)) * D(dd);
 
     % Here, we build up the OI
-    % The returned otf is otf(wave, sf)
+    % The returned otf is otf(wave, sf) 
     [otf, sampleSFmm] = opticsDefocusCore(optics, sampleSF, defocus);
     % mesh(sampleSFmm, wave, abs(otf))
 

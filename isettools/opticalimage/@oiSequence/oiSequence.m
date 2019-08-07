@@ -60,8 +60,8 @@ classdef oiSequence < handle
 %{
     % Harmonic
     oi = oiCreate('wvf human');
-    params.freq = 6;
-    params.contrast = 0.6;
+    params.freq = 6;       
+    params.contrast = 0.6;  
     scene = sceneCreate('harmonic', params);
     oiModulated =  oiCompute(oi, scene);
 

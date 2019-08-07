@@ -17,7 +17,7 @@ function [D, imgDist] = opticsDepthDefocus(objDist, optics, imgPlaneDist)
 %    The equation can be used for various purposes, including specifying
 %    the defocus of an object in various imaging conditions.
 %
-%    For example,
+%    For example, 
 %      * Objects at infinity are imaged in the focal plane.
 %      * If the image plane is at the focal length, then closer objects
 %        will be in defocus and we can assess the degree of defocus. These
@@ -47,7 +47,7 @@ function [D, imgDist] = opticsDepthDefocus(objDist, optics, imgPlaneDist)
 %
 %      errDist = fLength - fLength * (N / (N - 1))
 %      errDist = fLength * (1 - (N / (N - 1))
-%
+%   
 %    The blurring caused by this difference in best image plane depends on
 %    the pupil aperture as well as the focal length. For small pupil
 %    apertures, there is less of a penalty in defocus (e.g., a pinhole).

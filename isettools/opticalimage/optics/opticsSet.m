@@ -22,7 +22,7 @@ function optics = opticsSet(optics, parm, val, varargin)
 %         fnumber = oiGet(oi, 'optics fnumber')
 %         oi = oiSet(oi, 'optics fnumber', 2.8);
 %
-%    Those calls act via opticsGet and opticsSet
+%    Those calls act via opticsGet and opticsSet 
 %
 %    To set the aperture you must change either the focal length or the
 %    f# = fL/aperture, so aperture = fL/f#
@@ -75,7 +75,7 @@ function optics = opticsSet(optics, parm, val, varargin)
 %    val      - VARIES. The value to assign to the parameter, following the
 %               form specified by the parameter examples above.
 %    varargin - (Optional) VARIES. Additional arguments that may be
-%               required. Some examples include units.
+%               required. Some examples include units. 
 %
 % Outputs:
 %    optics   - Struct. The modified optics structure.
@@ -202,7 +202,7 @@ switch parm
 
     case {'transmittancewave'}
         % For human optics, there is a lens object but no
-        % transmittance slot.  For diffraction limited optics,
+        % transmittance slot.  For diffraction limited optics, 
         % however, there is a transmittance slot you can set.
 
         % The transmittance wave must be set before the scale is set.
@@ -230,7 +230,7 @@ switch parm
 
     % ---- Relative illumination calculations
     case {'offaxis', 'offaxismethod', 'relillummethod', 'cos4thflag'}
-        % Flag determining whether you use the cos4th method
+        % Flag determining whether you use the cos4th method 
         % Bad naming because of history.
         optics.offaxis = val;
 

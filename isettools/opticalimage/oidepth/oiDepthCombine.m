@@ -99,7 +99,7 @@ return
 
 % Loop through nearer planes, adding their photons in turn
 % for jj = (nDepths - 1):-1:1
-%     % Combine the OI depth maps
+%     % Combine the OI depth maps 
 %     thisMap = oiGet(oiD{jj}, 'depth map');
 %     bothMap = thisMap & dMap;
 %     % Zero out photons from behind this map.
@@ -110,7 +110,7 @@ return
 %         photons(:, :, ii) = p;
 %     end
 %     dMap = (dMap | thisMap);  % New cumulative depth map
-%
+% 
 %     % figure;
 %     % imagesc(thisMap);
 %     % figure;

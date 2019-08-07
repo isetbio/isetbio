@@ -62,7 +62,7 @@ function psfMovie(oi, figNum, delay)
 %}
 %{
     % ETTBSkip.  Example broken.
-    %
+    % 
     % Crashes on a call to opticsGet.
     oi = oiCreate('shift invariant');
     psfMovie(oi);
@@ -70,7 +70,7 @@ function psfMovie(oi, figNum, delay)
 %}
 %{
     % ETTBSkip.  Example broken.
-    %
+    % 
     % Crashes on a call to opticsGet.
     oi = oiCreate('diffraction limited');
     psfMovie(oi);

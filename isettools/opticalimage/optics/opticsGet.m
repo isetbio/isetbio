@@ -110,7 +110,7 @@ function val = opticsGet(optics, parm, varargin)
 %           {'otf binwidth'} - Numeric. difference in wavelength samples
 %           {'psf data'}     - Matrix. psf data, which is calculated from
 %                              the stored otfdata
-%           {'diffraction limited psf data'}*
+%           {'diffraction limited psf data'}* 
 %                            - Matrix. diffraction limited psf data,
 %                              requires an additional argument of
 %                              wavelength, with optional arguments for
@@ -118,10 +118,10 @@ function val = opticsGet(optics, parm, varargin)
 %                              frequency over the samples.
 %           {'psf spacing'}  - Numeric. PSF Spacing.
 %           {'psf support'}  - Array. 1x2 Cell array.
-%           {'incoherentcutoffspatialfrequency'} *
+%           {'incoherentcutoffspatialfrequency'} * 
 %                            - Vector. A Vector of incoherent cutoff freq
 %                              for all of the wavelengths
-%           {'maxincoherentcutoffspatialfrequency'} *
+%           {'maxincoherentcutoffspatialfrequency'} * 
 %                            - Numeric. Largest incoherent cutoff
 %        Wavlength information
 %           {'spectrum'}      - wavelength information
@@ -138,7 +138,7 @@ function val = opticsGet(optics, parm, varargin)
 %           For human optics, we store a human lens object and derive
 %           the lens transmittance and other properties on the fly
 %           from human data. Only the lens pigment density can be
-%           changed.
+%           changed. 
 %           {'lens'}          - Struct. The lens object
 %
 %    varargin - (Optional). Additional arguments for retrieving or
@@ -199,7 +199,7 @@ function val = opticsGet(optics, parm, varargin)
 %    12/21/17  dhb  Use OtfToPsf to do the conversion, but with backwards
 %                   compatible control.
 %    03/14/18  jnm  Formatting
-%    08/30/18  dhb  Replace abs(fft2(OTF)) with OtfToPsf for M-W optics,
+%    08/30/18  dhb  Replace abs(fft2(OTF)) with OtfToPsf for M-W optics, 
 %                   which was special cased for backward compatibility.
 %                   This is based on the view that what was being done was
 %                   not correct, and that we should bite the bullet and
@@ -236,10 +236,10 @@ function val = opticsGet(optics, parm, varargin)
 
 %% Control some printout
 RESPECT_THE_COMMAND_WINDOW = true;
-
+      
 val = [];
 if ~exist('optics', 'var') || isempty(optics)
-    error('No optics specified.');
+    error('No optics specified.'); 
 end
 if ~exist('parm', 'var') || isempty(parm)
     error('No parameter specified.');
@@ -395,8 +395,8 @@ switch parm
         % Distance to the image divided by distance to the object (source)
         % http://en.wikipedia.org/wiki/Magnification
         % Also f / (f - distObj)
-        % If you want the mag to be -2, then
-        % distObj -2 * f + 2 * distObj
+        % If you want the mag to be -2, then 
+        % distObj -2 * f + 2 * distObj 
         %   = f, 2 * distObj
         %   = 3 * f, distObj = 3f/2
         % and in general distObj = (-M+1)f/(-M) * f
@@ -607,7 +607,7 @@ switch parm
                 if checkfields(optics, 'OTF', 'OTF')
                     OTF = optics.OTF.OTF;
                     if ~isempty(varargin), thisWave = varargin{1}; end
-                else, OTF = [];
+                else, OTF = []; 
                 end
 
             case 'raytrace'
@@ -747,8 +747,8 @@ switch parm
         end
         nWave = length(thisWave);
 
-        if length(varargin) < 2, units = 'um';
-        else, units = varargin{2};
+        if length(varargin) < 2, units = 'um'; 
+        else, units = varargin{2}; 
         end
 
         oModel = opticsGet(optics, 'model');
@@ -825,13 +825,13 @@ switch parm
         %
         % Warning:  We assume that fx and fy have the same peak spatial
         % frequency and spatial sampling.
-
+        
         if ~isempty(varargin), units = varargin{1}; else, units = 'mm'; end
-
+        
         % We use these parameters for the diffraction limited case.
         if length(varargin) > 1, thisWave = varargin{2}; end
         if length(varargin) > 2, nSamp = varargin{3}; end
-
+        
         oModel = opticsGet(optics, 'model');
         switch oModel
             case 'shiftinvariant'
@@ -853,7 +853,7 @@ switch parm
         val = 1 / (2 * peakF);
 
     case {'psfsupport'}
-        % opticsGet(optics, 'psf support', unit)
+        % opticsGet(optics, 'psf support', unit) 
         % Calculate the spatial support for the psf.
         %
         % Returns mesh grid of X & Y values in a 2-dimensional cell array.
@@ -918,7 +918,7 @@ switch parm
                 error('unknown model %s\n', oModel)
         end
 
-        % Make grids
+        % Make grids 
         [X, Y] = meshgrid(x, x);
         val{1} = X;
         val{2} = Y;

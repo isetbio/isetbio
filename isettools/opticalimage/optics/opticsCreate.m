@@ -17,7 +17,7 @@ function [optics, wvfP] = opticsCreate(opticsType, varargin)
 %    structure. This information is stored in the optical image.
 %
 %    For diffraction-limited optics, the key parameter is the f-number.
-%
+%         
 %    Specifying human optics creates a shift-invariant optics structure
 %    with human OTF data.
 %
@@ -95,7 +95,7 @@ switch lower(opticsType)
         % Perhaps we should allow the transmittance to be set freely as in
         % ISET?  Or ...
         optics.lens = Lens;        % Human lens object
-        optics.lens.density = 0;   % Pigment density set to 0
+        optics.lens.density = 0;   % Pigment density set to 0 
 
     case {'default', 'human', 'humanmw'}
         % Optics for the Marimont and Wandell human eye
@@ -172,7 +172,7 @@ switch lower(opticsType)
         % Some day might add in a default mouse optics. Here are some
         % guesses about the right parameters:
         %
-        % Pupil radius in meters.
+        % Pupil radius in meters. 
         %   Dilated pupil: 1.009mm = 0.001009m
         %   Contracted pupil: 0.178 mm
         %   (Source: From candelas to photoisomerizations in the mouse eye
@@ -259,7 +259,7 @@ function optics = opticsHuman(pupilRadius)
 % Description:
 %    Use the shift-invariant method place the estimated human OTF, using
 %    humanOTF from Marimont and Wandell, in the OTF fields.
-%
+% 
 %    The frequency support is calculated in cyc/deg but stored in units of
 %    cyc/mm.
 %
@@ -331,7 +331,7 @@ else
     fSupport(:, :, 1) = X;
     fSupport(:, :, 2) = Y;
 end
-
+   
 % The human optics are an SI case, and we store the OTF at this point.
 [OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, fSupport, wave);
 

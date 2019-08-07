@@ -30,7 +30,7 @@ function OTF2D = dlCore(rho, inCutFreq)
 %    The formula for the OTF at frequency rho and wavelength lambda is
 %    often quoted as
 %
-%     H(rho, lambda)
+%     H(rho, lambda)  
 %        = (2 / pi) * (acos(rho / (2 * rho0)) - ...
 %           (rho / 2 * rho0) * sqrt(1 - (rho / (2 * rho0) ^ 2)))
 %        = (2 / pi) * (acos(rho / inCutF)   - ...
@@ -38,14 +38,14 @@ function OTF2D = dlCore(rho, inCutFreq)
 %        or 0 if rho >= 2 * rho0, which is rho / inCutFreq >= 1
 %
 %    Simplify using the spatial cutoff frequency (2 * rho0)
-%
+%       
 %      inCutFreq = (A / (di * wavelength)) = 2 * rho0
 %
-%    Define the normalized frequency, rho/inCutF.
+%    Define the normalized frequency, rho/inCutF. 
 %
 %       normF = rho / (A / (d i *wavelength))
 %
-%    In that case, the OTF formula becomes
+%    In that case, the OTF formula becomes 
 %
 %       H(normF, lambda) = (2 / pi) * ...
 %           (acos(normF) - normF * sqrt((1 - normF) ^ 2))

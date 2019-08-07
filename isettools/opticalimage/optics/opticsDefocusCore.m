@@ -8,7 +8,7 @@ function [otf, sampleSFmm] = opticsDefocusCore(optics, sampleSF, D)
 %    A computation for a defocused OTF.
 %
 %    Compute the optical transfer function for dioptic power DO and the
-%    defocus D.
+%    defocus D. 
 %
 %    There are examples contained in the code. To access, type 'edit
 %    opticsDefocusCore.m' into the Command Window.
@@ -63,7 +63,7 @@ D0 = opticsGet(optics, 'diopters', 'm');
 % The explanation for this formula is in Marimont and Wandell, Appendix C:
 % Converting from w20 to Defocus in diopters
 w20 = (p ^ 2 / 2) * (D0 .* D) ./ (D0 + D);
-% plot(wave, w20);
+% plot(wave, w20); 
 
 % Re-write so we can get sampleSF in cycles/mm directly without these two
 % extra steps.
@@ -71,7 +71,7 @@ c = opticsGet(optics, 'deg per dist', 'm');
 % 1 / (atand(1) * (1 / D0));  %  deg per meter (rad/meter)
 
 % The units are:
-% cycles/meter = (cycles/deg) * (deg/meter)
+% cycles/meter = (cycles/deg) * (deg/meter) 
 cSF = sampleSF * c;
 
 % The formulae in the opticsDefocusedMTF appears to have a problem handling

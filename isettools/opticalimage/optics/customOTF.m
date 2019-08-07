@@ -50,7 +50,7 @@ if notDefined('oi'), error('Optical image required.'); end
 if notDefined('wavelength'), wavelength = oiGet(oi, 'wavelength'); end
 
 % In the custom case, we think the units should always be millimeters.
-if notDefined('units'), units = 'mm'; end
+if notDefined('units'), units = 'mm'; end  
 if notDefined('fSupport'), fSupport = oiGet(oi, 'fSupport', units); end
 
 % Get the frequency support
@@ -84,7 +84,7 @@ end
 if isscalar(wavelength)
     % Not entirely clear we need to interpolate in this case, as the
     OTF2D = opticsGet(optics, 'otfData', wavelength);
-
+    
     % Do interpolation, use fftshift/ifftshift to take care of DC
     % positions. The reason we have to do this is that the frequency
     % support is represented with DC in the center, while the OTF is stored

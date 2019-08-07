@@ -31,7 +31,7 @@ if ~invert
     padSize(3) = 0;
     padval = 0;
     direction = 'both';
-    dMap = padarray(dMap, padSize, padval, direction);
+    dMap = padarray(dMap, padSize, padval, direction); 
     % figure;
     % imagesc(dMap)
 else
