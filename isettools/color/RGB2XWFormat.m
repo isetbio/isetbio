@@ -19,44 +19,47 @@ function [XW, r, c, w] = RGB2XWFormat(imRGB)
 %    conventional image() routines. When w > 3, use imageSPD.
 %
 %    The XW (space-wavelength) format is useful for computation. In this
-%    format, for example, XW*spectralFunction yields a spectral response.
+%    format, for example, XW * spectralFunction yields a spectral response.
 %
 %    The inverse routine is XW2RGBFormat
 %
+%    This function contains examples of usage. To access, type 'edit
+%    RGB2XWFormat.m' into the Command Window.
+%
 % Inputs:
-%    imRGB - The provided RGB formatted matrix
+%    imRGB - Matrix. The provided RGB formatted matrix.
 %
 % Outputs:
-%    XW    - Space-wavelength formatted matrix
-%    r     - Row data for the space-wavelength matrix
-%    c     - Column data for the space-wavelength matrix
-%    w     - The number of data color bands
+%    XW    - Matrix. The space-wavelength formatted matrix
+%    r     - Numeric. Row data for the space-wavelength matrix (# rows).
+%    c     - Numeric. Column data for the space-wavelength matrix (# cols).
+%    w     - Numeric. The number of data color bands.
+%
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
-%    imageSPD, imagescRGB, XW2RGBFormat
+%   imageSPD, imagescRGB, XW2RGBFormat
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/27/17  jnm  Comments & formatting
 %    11/16/17  jnm  Formatting
-%
+%    07/03/19  JNM  Formatting update
 
 % Examples:
 %{
-   xwSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
+    xwSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
        [255 3 203]']' / 255;
-   rgbSRGBs = XW2RGBFormat(xwSRGBs, 2, 2);
-   [xwCheck, r, w, c] = RGB2XWFormat(rgbSRGBs)
+    rgbSRGBs = XW2RGBFormat(xwSRGBs, 2, 2);
+    [xwCheck, r, w, c] = RGB2XWFormat(rgbSRGBs)
 %}
 s = size(imRGB);
 
-% If the data are in a matrix, then assume only one wavelength dimension, 
+% If the data are in a matrix, then assume only one wavelength dimension,
 % (row, col, 1).
-if length(s) < 3
-    s(3) = 1;
-end
-
+if length(s) < 3, s(3) = 1; end
 XW = reshape(imRGB, s(1) * s(2), s(3));
 
 r = s(1);

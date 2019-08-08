@@ -11,7 +11,7 @@ function optics = cos4th(optics, oi)
 %    formula is a good approximation in many cases. It is possible to
 %    obtain more detailed calculations for specific lenses can be obtained
 %    using ray trace methods.
-% 
+%
 %    The algorithm in this routine handles the case of a distant image
 %    separately from that of a close image.
 %

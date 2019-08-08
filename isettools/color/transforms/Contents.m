@@ -10,7 +10,7 @@
 %   lms2srgb             - Convert LMS data to sRGB format for visualization
 %   lms2xyz              - Convert stockman lms to xyz 10 deg
 %   lrgb2srgb            - Convert linear sRGB values to proper sRGB values
-%   srgb2lrgb            - Revert srgb (nonlinear) to its precursor, linear rgb (lrgb)
+%   srgb2lrgb            - Transform srgb (nonlinear) to linear rgb (lrgb)
 %   srgb2xyz             - Transform srgb to CIE XYZ
 %   xyy2xyz              - Convert data from CIE xyY to CIE XYZ values
 %   xyz2lms              - Transform an XYZ image to Stockman LMS cone format, colorblind permitted
@@ -18,3 +18,4 @@
 %   xyz2srgb             - Convert CIE XYZ to sRGB color space
 %   xyz2uv               - Convert CIE XYZ to uv chromaticity coordinates
 %   Y2Lstar              - Convert Y (luminance) to L* (CIELAB)
+%   xyy2uv               - Convert data from CIE xyY to CIE uv values

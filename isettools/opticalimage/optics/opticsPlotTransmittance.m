@@ -5,7 +5,7 @@ function opticsPlotTransmittance(oi)
 %   opticsPlotTransmittance(oi)
 %
 % Description:
-%    Plot the transmittance of the lens and other intervening media. 
+%    Plot the transmittance of the lens and other intervening media.
 %
 %    This slot is used to store the human macular pigment density. It can
 %    also be used for the lens transmittance or the combination of the two.

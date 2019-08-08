@@ -93,7 +93,7 @@ if rtDist ~= sceneDist
     % sceneWindow;
 end
 
-% We calculate the ray traced output in the order of 
+% We calculate the ray traced output in the order of
 %  (a) Geometric distortion,
 %  (b) Relative illumination, and
 %  (c) OTF blurring
@@ -109,7 +109,7 @@ if isempty(irradiance), close(wBar); return; end  % Error condition
 % imagesc(img)
 
 % Copy the geometrically distorted irradiance data into the optical image
-% structure 
+% structure
 oi = oiSet(oi, 'photons', irradiance);
 
 % Pre-compute the OTF

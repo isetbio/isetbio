@@ -31,13 +31,20 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %    clipping applied. lRGB values nominally run from [0, 1], but we allow
 %    them to be returned  outside of this range.
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit xyz2srgb.m' into the Command Window.
+%
 % Inputs:
-%    xyz  - XYZ values, in isetbio RGB image format
+%    xyz  - Matrix. The XYZ values, in isetbio RGB image format.
 %
 % Outputs:
-%    srgb - Standard Red-Green-Blue values
-%    lrgb - Linear Red-Green-Blue values
-%    maxY - Y value for scaling the xyz image to the sRGB standard
+%    srgb - Matrix. The standard Red-Green-Blue values.
+%    lrgb - Matrix. The linear Red-Green-Blue values.
+%    maxY - Numeric. The Y value, which can be used to scale the xyz image
+%           to the sRGB standard.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    This xyz -> sRGB matrix is supposed to work for XYZ values scaled so
@@ -45,7 +52,6 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %       if you start with XYZ values going to 100 or so, divide them by 100
 %       first, or apply the matrix and then scale by a constant factor to
 %       the [0, 1] range).
-%
 %    They add:
 %       display white represented as (1, 1, 1) [RGB]; the corresponding
 %       original XYZ values are such that white is D65 with unit luminance
@@ -56,22 +62,22 @@ function [srgb, lrgb, maxY] = xyz2srgb(xyz)
 %    Original: <http://www.w3.org/Graphics/Color/sRGB>
 %
 % See Also:
-%    srgb2xzy, lrgb2srgb, colorTransformMatrix, mageLinearTransform.
+%   srgb2xzy, lrgb2srgb, colorTransformMatrix, mageLinearTransform.
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
 %    11/17/17  jnm  Formatting
-%
+%    07/15/19  JNM  Formatting update
 
 % Examples:
 %{
-   inputSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
+    inputSRGBs = [[188 188 188]' [124 218 89]' [255 149 203]' ...
         [255 3 203]'] / 255;
-   isetSRGBs = XW2RGBFormat(inputSRGBs', 4, 1)
-   isetXYZ = srgb2xyz(isetSRGBs);
-   againSRGBs = xyz2srgb(isetXYZ)
+    isetSRGBs = XW2RGBFormat(inputSRGBs', 4, 1)
+    isetXYZ = srgb2xyz(isetSRGBs);
+    againSRGBs = xyz2srgb(isetXYZ)
 %}
 
 % The matrix converts (R, G, B) * matrix. This is the transpose of the
@@ -88,9 +94,9 @@ matrix = colorTransformMatrix('xyz2srgb');
 % range, we need to scale. We return the true maximum luminance in the
 % event the user wants to invert, later.
 Y = xyz(:, :, 2);
-maxY = max(Y(:)); 
+maxY = max(Y(:));
 if maxY > 1
-    xyz = xyz / maxY; 
+    xyz = xyz / maxY;
 else
     maxY = 1;
 end
@@ -100,7 +106,7 @@ if min(xyz(:)) < 0
 end
 lrgb = imageLinearTransform(xyz, matrix);
 
-% The sRGB values must be clipped to 0, 1 range. 
+% The sRGB values must be clipped to 0, 1 range.
 % The linear values may be outside the range. This is also described on
 % the Wikipedia page.
 srgb = lrgb2srgb(ieClip(lrgb, 0, 1));

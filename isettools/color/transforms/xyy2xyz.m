@@ -14,35 +14,39 @@ function XYZ = xyy2xyz(xyy)
 %    columns must be x,y, and Y.
 %
 %    Formula:
-%       X = (x / y) * Y, 
+%       X = (x / y) * Y,
 %       Z = ((1 - x - y)/y) * Y
 %       Also, note that Y / y = X + Y + Z
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit xyy2xyz.m' into the Command Window.
+%
 % Inputs:
-%    xyy - Chromacity Coordinates and Luminance
+%    xyy - Matrix. The chromacity Coordinates and Luminance.
 %
 % Outputs:
-%    XYZ - Standard representation of light and color
+%    XYZ - Matrix. The standard representation of light and color.
+%
+% Optional key/value pairs:
+%    None.
 %
 
-% History: 
+% History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
 %    11/17/17  jnm  Formatting
-%
+%    07/16/19  JNM  Formatting update
 
 % Examples:
 %{
-   % Use PTB XYZToxyY, included in isetbio, to produce test input
-   testXYZs = [[1 2 1]' [2 1 0.5]' [1 1 1]' [0.6 2.3 4]']
-   ptbxyYs = XYZToxyY(testXYZs);
-   isetXYZs = xyy2xyz(ptbxyYs')'
+    % Use PTB XYZToxyY, included in isetbio, to produce test input
+    testXYZs = [[1 2 1]' [2 1 0.5]' [1 1 1]' [0.6 2.3 4]']
+    ptbxyYs = XYZToxyY(testXYZs);
+    isetXYZs = xyy2xyz(ptbxyYs')'
 %}
 
 % Check input
-if size(xyy, 2) ~= 3
-    error('Input must be x,y,Y in the rows.')
-end
+if size(xyy, 2) ~= 3, error('Input must be x,y,Y in the rows.'); end
 
 XYZ = zeros(size(xyy));
 

@@ -20,9 +20,9 @@ classdef Lens < handle
 %     * Absorbance spectra are normalized to a peak value of 1.
 %     * Absorptance spectra are the proportion of quanta actually absorbed.
 %
-%    Equations: 
+%    Equations:
 %         absorptanceSpectra = 1 - 10 .^ (-OD * absorbanceSpectra)
-%         transmittance      = 1 - absorptance 
+%         transmittance      = 1 - absorptance
 %
 %    There are examples contained in the code. To access, type 'edit
 %    lens.m' into the Command Window.
@@ -60,7 +60,7 @@ classdef Lens < handle
     lens = Lens();
     t = lens.transmittance;
     a = lens.absorptance;
-    vcNewGraphWin; 
+    vcNewGraphWin;
     plot(lens.wave, t, 'r-', lens.wave, a, 'g-', lens.wave, a + t, 'k--');
     xlabel('Wave (nm)');
     ylabel('Fraction');

@@ -1,6 +1,6 @@
 function [OTF2D, fSupport, inCutoffFreq] = dlMTF(oi, fSupport, wave, units)
 % Gateway routine that assembles params to compute diffraction limited OTF
-% 
+%
 % Syntax:
 %   [OTF2D, fSupport, inCutoffFreq] = ...
 %       dlMTF(oi, [fSupport], [wave], [units])
@@ -22,7 +22,7 @@ function [OTF2D, fSupport, inCutoffFreq] = dlMTF(oi, fSupport, wave, units)
 %    a function of wavelength (in nm) can also be calculated and returned.
 %    The units for the frequency support, cycles/{meters, millimeters,
 %    microns}, can be specified (units).
-% 
+%
 %    The formulae are described in dlCore.m
 %
 %    This function contains examples of usage inline. To access these, type
@@ -58,7 +58,7 @@ function [OTF2D, fSupport, inCutoffFreq] = dlMTF(oi, fSupport, wave, units)
 % Examples:
 %{
     oi = oiCreate('diffraction limited');
-    wavelength = 700; 
+    wavelength = 700;
     unit = 'mm';
     fSupport = oiGet(oi, 'fSupport', unit);
     OTF2D = dlMTF(oi, fSupport, wavelength, unit);
@@ -116,7 +116,7 @@ wave = wave *  1e-9;
 % coma. When the source is far away, fpDistance is the focal length and
 % the ratio (apertureDiameter / fpDistance) is the f#.
 %
-%  see discussion in dlCore.m  
+%  see discussion in dlCore.m
 %
 % http://spie.org/x34304.xml - Cutoff frequency
 % http://spie.org/x34468.xml - Airy disk

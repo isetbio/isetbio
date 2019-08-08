@@ -840,7 +840,7 @@ function menuOptTrans_Callback(hObject, eventdata, handles)
 %
 % Description:
 %    Read the optical transmittance in wavelength. This is useful for
-%    diffraction cases. 
+%    diffraction cases.
 %
 %    We could use a function that multiplies the transmittance by another
 %    function, such as a lens or macular pigment transmittance. As things
@@ -1248,33 +1248,33 @@ return;
 
 % % --------------------------------------------------------------------
 % function menuOpticsHalfInch_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 % oi = oiClearData(oi);
 % optics = opticsCreate('standard (1/2-inch)');
 % oi = oiSet(oi, 'optics', optics);
 % vcReplaceObject(oi, val);
-% 
+%
 % oiRefresh(hObject, eventdata, handles);
-% 
+%
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuOpticsQuarterInch_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 % oi = oiClearData(oi);
 % optics = opticsCreate('standard (1/4-inch)');
 % oi = oiSet(oi, 'optics', optics);
 % vcReplaceObject(oi, val);
 % oiRefresh(hObject, eventdata, handles);
-% 
+%
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuOpticsThird_Callback(hObject, eventdata, handles)
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-% 
+%
 % optics = opticsCreate('standard (1/3-inch)');
 % oi.optics = optics;
 % oi.data = [];
@@ -1282,10 +1282,10 @@ return;
 % vcReplaceObject(oi, val);
 % oiRefresh(hObject, eventdata, handles);
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuOpticsTwoThirds_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 % optics = opticsCreate('standard (2/3-inch)');
 % oi.optics = optics;
@@ -1293,17 +1293,17 @@ return;
 % vcReplaceObject(oi, val);
 % oiRefresh(hObject, eventdata, handles);
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuOpticsInch_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-% 
+%
 % optics = opticsCreate('standard (1-inch)');
 % oi.optics = optics;
 % oi = sceneClearData(oi);
 % vcReplaceObject(oi, val);
-% 
+%
 % oiRefresh(hObject, eventdata, handles);
 % return;
 % --------------------------------------------------------------------
@@ -1316,15 +1316,15 @@ return;
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 % oi = humanMacularTransmittance(oi, 0.28);
 % vcReplaceObject(oi, val);
-% 
+%
 % oiRefresh(hObject, eventdata, handles);
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuMacular_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-% 
+%
 % % Could use ieReadNumber here.
 % dens = ieReadNumber('Enter macular density', 0.28, ' %.2f');
 % % prompt = {'Enter macular density:'};
@@ -1334,7 +1334,7 @@ return;
 % % dens = str2num(answer{1});
 % oi = humanMacularTransmittance([], dens);
 % vcReplaceObject(oi, val);
-% 
+%
 % oiRefresh(hObject, eventdata, handles);
 % return;
 
@@ -1720,7 +1720,7 @@ if ~checkfields(oi, 'data', 'illuminance')
     oi = oiSet(oi, 'illuminance', illuminance);
     vcReplaceObject(oi, val);
 end
-% Plots log10 or linear luminance, 
+% Plots log10 or linear luminance,
 % oiPlotIlluminance(oi, 'log');
 oiPlot(oi, 'illuminance mesh log');
 return;
@@ -1752,7 +1752,7 @@ if ~checkfields(oi, 'data', 'illuminance')
     [oi.data.illuminance, oi.data.meanIll] = oiCalculateIlluminance(oi);
     vcReplaceObject(oi, val);
 end
-% Plots log10 or linear luminance, 
+% Plots log10 or linear luminance,
 oiPlot(oi, 'illuminance mesh linear');
 return;
 
@@ -2260,7 +2260,7 @@ function menuAnOptSampling_Callback(hObject, eventdata, handles)
 %
 %    In many cases, people will leave the lower sampling rate, which
 %    provides speed but blurs the image, because they are interested in
-%    other features of the simulation. 
+%    other features of the simulation.
 %
 % Inputs:
 %    hObject   - Handle. Handle to menuVLine (see GCBO)
@@ -2362,7 +2362,7 @@ function menuPlotMultiRGB_Callback(hObject, eventdata, handles)
 %
 % Description:
 %    Plot option. Plot the selected RGB images from all of the OIs in the
-%    current session. 
+%    current session.
 %
 % Inputs:
 %    hObject   - Handle. Handle to menuPlotMultiRGB (see GCBO)
@@ -2591,7 +2591,7 @@ return;
 
 % --- Executes on selection change in popCustom.
 function popCustom_Callback(hObject, eventdata, handles)
-% (PopUp | Custom) Calls a custom render popUp. 
+% (PopUp | Custom) Calls a custom render popUp.
 %
 % Syntax:
 %   popCustom_Callback(hObject, eventdata, handles)
