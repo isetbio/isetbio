@@ -1,3 +1,5 @@
+% t_conesCustomMosaic
+%
 % Show how to customize various mosaic parameters
 %
 % Description:
@@ -5,7 +7,7 @@
 %    cone mosaic.
 %
 
-%% Jon's desired coordinates
+%% Jon W.'s desired coordinates
 eccentricityDeg = 6;
 angle = 90;
 
@@ -26,9 +28,12 @@ cm = coneMosaic('center', [eccentricityXM eccentricityYM], ...
 cm.pigment
 
 %% Make sure passing units parameter doesn't screw things up for now.
+
 % Eventually we should respect all of the parameters handled by
 % coneDensityReadData, but for right now center must be passed in meters.
 % We'll fix this when we update cone mosaic to use eccentricity and angle.
 cm = coneMosaic('center', [eccentricityXM eccentricityYM], ...
     'coneDensitySource', 'Song2011Old', 'eccentricityUnits', 'mm');
 cm.pigment
+
+%%

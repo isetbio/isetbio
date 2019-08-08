@@ -98,6 +98,7 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 % History:
 %    05/25/18  TL   Created
 %    05/13/19  JNM  Documentation pass
+%    08/08/19  JNM  Merge master in
 
 %% Parse inputs
 % Because the inputs have been passed in first through sceneEye, and then
@@ -136,15 +137,23 @@ p.addParameter('eccentricity', 0, @isnumeric);
 p.addParameter('objectDistance', 1, @isnumeric); 
 p.addParameter('objectSize', 0.3, @isnumeric); 
 
-%lettersAtDepth
+%lettersAtDepth and lettersAtDepthPlus
 p.addParameter('Adist', 0.1, @isnumeric); 
 p.addParameter('Bdist', 0.2, @isnumeric); 
 p.addParameter('Cdist', 0.3, @isnumeric); 
+p.addParameter('Ddist', [], @isnumeric); 
+p.addParameter('Edist', [], @isnumeric); 
 p.addParameter('Adeg', 6, @isnumeric); 
+p.addParameter('Bdeg', [], @isnumeric);
 p.addParameter('Cdeg', 4, @isnumeric); 
+p.addParameter('Ddeg', [], @isnumeric);
+p.addParameter('Edeg', [], @isnumeric);
 p.addParameter('nchecks', [64 64], @isnumeric); % [wall, ground]
 
 p.parse(pbrtFile, varargin{:});
+
+% Default
+sceneUnits = 'm';
 
 %% Check if we've been given a sceneName or a pbrt file.
 [~, sceneName, ext] = fileparts(pbrtFile);
@@ -245,18 +254,24 @@ if(sceneNameFlag)
         case('slantedBarTexture')
             % A variation of slantedBar where planes have texture.
             scenePath = fullfile(piRootPath, 'data', ...
-                'V3', 'slantedBarTexture', ...
-                'slantedBarTexture.pbrt');
+                'V3', 'slantedBarTexture', 'slantedBarTexture.pbrt');
             sceneUnits = 'm';
 
         case('lettersAtDepth')
             % A, B, C placed at different depths. The depths will be
             % adjustable.
             scenePath = fullfile(piRootPath, 'local', 'scenes', ...
-                'lettersAtDepth', ...
-                'lettersAtDepth.pbrt');
+                'lettersAtDepth', 'lettersAtDepth.pbrt');
             sceneUnits = 'm';
-            pullSceneFromRDT('lettersAtDepth', scenePath);
+            pullSceneFromRDT('lettersAtDepth',scenePath);
+
+        case('lettersAtDepthPlus')
+            % A, B, C, D and E at different depths.
+            
+            scenePath = fullfile(piRootPath, 'local', 'scenes',...
+                'lettersAtDepthPlus', 'lettersAtDepthPlus.pbrt');
+            sceneUnits = 'm';
+            pullSceneFromRDT('lettersAtDepthPlus', scenePath);
 
         otherwise
             error('Did not recognize scene type.');
@@ -294,6 +309,21 @@ if(sceneNameFlag)
                 'Cdist', p.Results.Cdist, ...
                 'Adeg', p.Results.Adeg, ...
                 'Cdeg', p.Results.Cdeg, ...
+                'nchecks', p.Results.nchecks);
+
+        case('lettersAtDepthPlus')
+            % Move the letters in the scene. To do this, we're actually
+            % going to remake the scene.
+            recipe = piCreateLettersAtDepthPlus(...
+                'Adist', p.Results.Adist, ...
+                'Bdist', p.Results.Bdist, ...
+                'Cdist', p.Results.Cdist, ...
+                'Ddist', p.Results.Ddist, ...
+                'Edist', p.Results.Edist, ...
+                'Adeg', p.Results.Adeg, ...
+                'Bdeg', p.Results.Bdeg, ...
+                'Ddeg', p.Results.Ddeg, ...
+                'Edeg', p.Results.Edeg, ...
                 'nchecks', p.Results.nchecks);
 
         case('slantedBar')

@@ -88,6 +88,9 @@
 %                       -   Measurements made with PR-650, power in Watts/[m2-sr-wlband].
 %   spd_xenonArc        - Spectral power distribution for some xenon arc lamp.
 %   spd_xenonFlash      - Spectral power distribuiton for some xenon flash tube.
+%   sur_koivisto        - Koivisto reflectance measurements. Also has a labels variable.
+%                       -   Converted from ASCII sourced from http://www.uef.fi/web/spectral/natural-colors
+%                       -   using this script: https://github.com/da5nsy/Melanopsin_Computational/blob/4195492841471f943f62194d345269cbefcccec8/Auxiliary%20Scripts/loadKoivistoData.m
 %   sur_krinov          - Krinov reflectance measurements. Also has a labels variable.
 %                       -   These were typed in by Larry Maloney long ago
 %                       -   and put into PTB format by Danny Garside.

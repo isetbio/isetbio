@@ -278,11 +278,11 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
         if (labelColorBarTicks)
             ticks = [0 0.5 1.0];
             hC.Ticks = ticks; 
-            tickLabels = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
+            tickLabelsForColorbar = (ticks * (activationRange(2) - activationRange(1)) + activationRange(1));
             if (min(tickLabels) < 0)
-                hC.TickLabels = sprintf('%+2.1f\n',tickLabels); 
+                hC.TickLabels = sprintf('%+2.1f\n',tickLabelsForColorbar); 
             else
-                hC.TickLabels = sprintf('%2.1f\n',tickLabels); 
+                hC.TickLabels = sprintf('%2.1f\n',tickLabelsForColorbar); 
             end
         else
             hC.TickLabels = {}; 

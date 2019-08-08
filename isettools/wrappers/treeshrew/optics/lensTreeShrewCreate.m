@@ -29,12 +29,6 @@ function theLens = lensTreeShrewCreate(varargin)
     % Default TreeShrew lens model
     lens = lensTreeShrewCreate();
 %}
-%{
-    % Custom tree shew optics lens with a user-specified lens absorbance spectrum
-    lens = lensTreeShrewCreate(...
-        'lensAbsorbanceFile', 'l.mat' ... % a lens absorbance file 
-    );
-%}
 
     %% parse input
     p = inputParser;

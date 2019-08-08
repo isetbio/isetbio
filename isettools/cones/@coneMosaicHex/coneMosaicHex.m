@@ -59,6 +59,7 @@ classdef coneMosaicHex < coneMosaic
 %                   attempting to instantiate a coneMosaicHex.
 %    06/16/18  npc  Support cone efficiency correction with eccentricity
 %    10/23/18  npc  Support for macular-pigment density variation with eccentricity 
+%    08/03/19  npc  Fixed example plotting issue
 
 % Examples:
 %{
@@ -82,14 +83,14 @@ classdef coneMosaicHex < coneMosaic
 
     cMosaicHex = coneMosaicHex(resamplingFactor, ...
     'name', 'the hex mosaic', ...
-    'fovDegs', 0.35, ...
+    'fovDegs', 0.15, ...
     'eccBasedConeDensity', eccBasedConeDensity, ...
     'eccBasedMacularPigment', true, ...
     'noiseFlag', 'none', ...
     'spatialDensity', [0 0.6 0.3 0.1], ...
-    'maxGridAdjustmentIterations', 100);
+    'maxGridAdjustmentIterations', 50);
 
-    cMosaicHex.window;
+    cMosaicHex.window('show','conemosaic');
 %}
 
     %% Public properties
@@ -447,6 +448,9 @@ classdef coneMosaicHex < coneMosaic
         % the hex mosaic
         renderActivationMap(obj, axesHandle, activation, varargin);
 
+        % the coneLocsHexGrid ordered so they correspond to the serialized 1D response
+        coneLocsHexGrid = coneLocsHexGridAlignedWithSerializedConeMosaicResponse(obj);
+        
         % Visualize iterative adjustment of the cone lattice
         hFig = plotMosaicProgression(obj, varargin);
 
@@ -470,7 +474,9 @@ classdef coneMosaicHex < coneMosaic
         % meridians
         [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
             eccDegsOfConesAlongHorizMeridian, ...
-            eccDegsOfConesAlongVertMeridian] = indicesForConesAlongMeridians(obj)
+            eccDegsOfConesAlongVertMeridian, ...
+            idxOfConesAlongHorizMeridianInSerializedList, ...
+            idxOfConesAlongVertMeridianInSerializedList] = indicesForConesAlongMeridians(obj)
         
         % Return the indices for cones at a list of target positions
         % (specified in degrees of visual angle) along  with the distances

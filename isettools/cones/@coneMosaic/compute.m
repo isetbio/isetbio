@@ -195,7 +195,28 @@ else
         absorptions = absorptions .* obj.coneEfficiencyCorrectionFactors;
     end
     
-    % Add photon noise to the whole volume
+    
+    %% Set the obj.absorptions to the noise-free absorptions, so 
+    %% that the current is computed on the noise-free absorptions.
+    obj.absorptions = absorptions;
+
+    %% Compute photocurrent if requested on the noise-free absorptions
+    current = [];
+    interpFilters = [];
+    meanCur = [];
+    if currentFlag
+        if size(obj.absorptions, 3) == 1
+            disp(['Absorptions are a single frame. No current to ' ...
+                'calculate.'])
+            return;
+        else
+            [current, interpFilters, meanCur] = obj.os.osCompute(obj);
+            obj.current = current;
+        end
+    end
+    
+    
+    %% Add photon noise to the whole volume
     switch obj.noiseFlag
         case {'frozen', 'random'}
             if (isa(obj, 'coneMosaicHex'))
@@ -269,24 +290,10 @@ else
         otherwise
             error('Invalid noise flag passed');
     end
-
-    % Set the absorptions in the object.
+    
+    %% Set the absorptions to the noisy absorptions
     obj.absorptions = absorptions;
-
-    %% Compute photocurrent if requested
-    current = [];
-    interpFilters = [];
-    meanCur = [];
-    if currentFlag
-        if size(obj.absorptions, 3) == 1
-            disp(['Absorptions are a single frame. No current to ' ...
-                'calculate.'])
-            return;
-        else
-            [current, interpFilters, meanCur] = obj.os.osCompute(obj);
-            obj.current = current;
-        end
-    end
+    
 end
 
 end

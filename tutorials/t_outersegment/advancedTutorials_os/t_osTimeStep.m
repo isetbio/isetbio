@@ -41,7 +41,7 @@ function t_osTimeStep
 ieInit;
 
 %% Examine the effects of varying the integrationTime
-%conditionSet = 1;
+conditionSet = 1;
 
 % % Examine effects of varying the response time interval (os.timeStep)
 % conditionSet = 2;

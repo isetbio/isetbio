@@ -50,18 +50,12 @@ if(inputAccomm < 0.44)
     navarroAccomm = 0;
     return;
 elseif(inputAccomm > 9.25)
-    warning(['At the moment, we don''t have data for accommodation ',...
+    warning(['At the moment, we don''t have data for accommodation ', ...
     'greater than 9.25 dpt. This may change in the near future, but ', ...
     'for now we set accommodation to 9.25 dpt.']);
     navarroAccomm = 9.25;
     return;
 end
-
-% accom = [0; 0.1500; 0.2400; 0.40; 0.6300; 1.0000; 1.5; 2.0000; 3.0000;
-%     5.0000; 7.0000; 10.0000];
-% 
-% dist550 = [2275.4; 1518.4; 1280.950; 1013.579; 795.72; 603.02; 466.509;
-%        385.92; 292.23; 198.72; 151.26; 98.886];
 
 accom = [0; 0.1500; 0.2400;
     0.40; 0.6300; 1.0000;

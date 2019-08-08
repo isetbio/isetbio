@@ -52,6 +52,7 @@ classdef sceneEye < hiddenHandle
 % History:
 %    xx/xx/17  TL   ISETBIO Team, 2017
 %    12/19/17  jnm  Formatting
+%    08/08/19  JNM  Merge master in
 
 % Examples:
 %{
@@ -308,7 +309,7 @@ methods
         % from the name of the lens. We assume the naming conventions
         % is "%s_%f.dat" This is not foolproof, so maybe we can think
         % of a more robust way to do this in the future?
-        obj.lensFile = recipe.camera.specfile.value;
+        obj.lensFile = recipe.camera.lensfile.value;
         if(strcmp(obj.lensFile, ''))
             obj.accommodation = [];
         else
@@ -391,29 +392,29 @@ methods
     % x = sqrt(r^2-a^2)
     % sqrt(r^2-a^2)/(d+a) - k = 0 
     % We can solve for a using an fzero solve.
-    
+
     function val = get.distance2chord(obj)
         % Not entirely accurate but lets treat the origin point for the FOV
         % calculate as the beack of the lens
         if(obj.retinaRadius > obj.retinaDistance)
             error('Retina radius is larger than retina distance.')
         end
-        
+
         myfun = @(a, k, d, r) sqrt(r^2-a.^2)./(d+a) - k;  % parameterized function
         k = tand(obj.fov/2);
         d = obj.retinaDistance - obj.retinaRadius;
         r = obj.retinaRadius;
-        
+
         fun = @(a) myfun(a, k, d, r);    % function of x alone
         a = fzero(fun, [d obj.retinaRadius]);
-        
+
         if(isnan(a))
             error('Search for a image width to match FOV failed. Initial guess is probably not close...')
         end
-        
+
         val = a+d;
     end
-    
+
     function val = get.width(obj)
         % Rendered image is alway square.
         val = 2 * tand(obj.fov / 2) * (obj.distance2chord);
@@ -427,7 +428,7 @@ methods
     function val = get.sampleSize(obj)
         val = obj.width / obj.resolution;
     end
-    
+
     function val = get.angularSupport(obj)
        % We have to be careful with this calculation.
        % Conver the chord distances to accurate angles.
@@ -435,14 +436,14 @@ methods
        chordSpatialSamples = (1:obj.resolution).*ss - obj.width/2;
        val = atand(chordSpatialSamples/obj.distance2chord);
     end
-    
+
     %% Set methods for dependent variables
-    
+
     % Does this go here? MATLAB doesn't like this setup, but I would like
     % retinaDistance and retinaRadius to be both dependent (changes with
     % modelName), but also set-able by the user. What's the best way to do
     % this?
-    
+
     % When we set the eye model, we need to change the retina distance and
     % radius.
     function set.modelName(obj, val)
@@ -469,11 +470,9 @@ methods
                 if(isempty(obj.retinaRadius))
                     obj.retinaRadius = [];
                 end
-                
         end
-            
     end
-    
+
     % When the user toggles debugMode, make sure the camera type is
     % correct.
     function set.debugMode(obj, val)
@@ -485,11 +484,10 @@ methods
         elseif(~val && strcmp(obj.modelName, 'none'))
             % Put the navarro eye back in if there's not already a model.
             obj.modelName = 'Navarro';
-            obj.recipe.camera = piCameraCreate('realisticEye');
+            obj.recipe.camera = piCameraCreate('humaneye');
         end
-        
     end
-    
+
     % I want to put in this warning, but again MATLAB doesn't really like
     % this!
     function set.accommodation(obj, val)
@@ -499,7 +497,7 @@ methods
                 'Setting accommodation will do nothing.']);
         end
     end
-    
+
     function set.lensFile(obj, val)
         
         % On creation, the lensFile is left empty
@@ -507,7 +505,6 @@ methods
         % doing this right. Maybe we need a seperate set function like we
         % do with render recipes?
         if(~isempty(val))
-            
             % Make sure it's a valid file
             [p, ~, e] = fileparts(val);
             if(isempty(p))
@@ -515,7 +512,7 @@ methods
             elseif(~strcmp(e, '.dat'))
                 error('Lens file needs to be a .dat file.');
             end
-            
+
             obj.modelName = 'Custom';
             obj.lensFile = val;
         else
@@ -552,5 +549,3 @@ methods (Access=public)
 end
 
 end
-
-
