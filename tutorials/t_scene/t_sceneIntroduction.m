@@ -49,7 +49,7 @@
 
 % History:
 %    xx/xx/11       *Copyright ImagEval Consultants, LLC, 2011.*
-%    09/06/18  jnm  Formattin
+%    09/06/18  jnm  Formatting
 
 %% Initializing ISETBio
 % ISETBIO stores a small database of scenes and optical images. This
