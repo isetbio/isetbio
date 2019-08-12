@@ -1,8 +1,8 @@
-function val = fontSet(font, param, val, varargin)
+function font = fontSet(font, param, val, varargin)
 % Set the font parameters and derived properties
 %
 % Syntax:
-%   val = fontSet(font, parm, val, [varargin])
+%   font = fontSet(font, parm, val, [varargin])
 %
 % Description:
 %    Set the font parameters and derived properties
@@ -23,7 +23,7 @@ function val = fontSet(font, param, val, varargin)
 %                        bitmap to flip it to white on a black background.
 %
 % Outputs:
-%    val   - The value assigned to the parameter
+%    font   - The value assigned to the parameter
 %
 % Optional key/value pairs:
 %    **Needs to be filled out**
@@ -36,7 +36,7 @@ function val = fontSet(font, param, val, varargin)
 %    xx/xx/14  HJ/BW  PDCSoft Team, 2014.
 %    02/27/18  jnm    Formatting
 
-if notDefined('param'), error('Parameter must be defined.'); end
+if notDefined('param'),  error('Parameter must be defined.'); end
 if ~exist('val', 'var'), error('Parameter must be defined.'); end
 
 param = ieParamFormat(param);
@@ -62,5 +62,8 @@ switch param
     otherwise
         disp(['Unknown parameter: ', param]);
 end
+
+% Always update the font bitmap when you change the size or character.
+font.bitmap = fontBitmapGet(font);
 
 end
