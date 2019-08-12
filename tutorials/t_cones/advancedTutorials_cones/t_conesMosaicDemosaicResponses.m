@@ -89,19 +89,16 @@ drawnow;
 
 hFig = figure(2);
 clf;
-set(hFig, 'Position', [10 10 1470 990])
-subplot(2, 2, 1);
+set(hFig, 'Position', [10 10 1340 470])
+subplot(1, 3, 1);
 imshow(sceneGet(scene, 'RGB'));
 title('input scene RGB rendition');
 
-subplot(2, 2, 2);
+subplot(1, 3, 2);
 imshow(sRGB(:, :, :, 1));
 title('photoisomerization RGB rendition');
 
-subplot(2, 2, 4);
-uData = cMosaicOBJ.plot('cone mosaic', 'hf', 'none');
-imagesc(uData.mosaicImage);
-axis off;
-axis image;
+subplot(1, 3, 3);
+cMosaicOBJ.plot('conemosaic', 'hf', 'none');
 title('cone mosaic');
 end

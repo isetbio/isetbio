@@ -20,15 +20,13 @@ ieInit;
 %% Opening and closing windows from the command line
 % Create an isetbio window
 scene = sceneCreate;
-vcAddAndSelectObject(scene);
+sceneW = sceneWindow(scene);
 
-sceneWindow('visible', 'on')
-drawnow
-pause(1)
+sceneW.Visible = 'off';
+pause(1);
+sceneW.Visible = 'on';
+pause(1);
 
-sceneWindow('visible', 'off')
-drawnow
-pause(1)
 
 %% Interacting with the scene handles
 % It is also possible to make adjustments to the display by interacting
