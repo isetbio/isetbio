@@ -45,7 +45,7 @@ switch lower(opticsType)
         optics = opticsUpdateOTFUsingGaussianPSF(optics, inFocusPSFsigmaMicrons, ...
             maxSF, deltaSF, wavelengthSupport);
     case {'wvf'}
-        optics = opticsFromTreeShrewZernikeCoefficients(pupilDiameterMM, wavelengthSupport, micronsPerDegree);
+        optics = opticsFromTreeShrewZCoefs(pupilDiameterMM, wavelengthSupport, micronsPerDegree);
     otherwise
         error('Unknown optics type: ''%s''.', opticsType)
 end % switch lower(opticsType)
@@ -66,7 +66,7 @@ optics = opticsSet(optics, 'offAxisMethod', 'cos4th');
 optics.vignetting =  0;
 end
 
-function optics = opticsFromTreeShrewZernikeCoefficients(pupilDiameterMM, wavelengthSupport, micronsPerDegree)
+function optics = opticsFromTreeShrewZCoefs(pupilDiameterMM, wavelengthSupport, micronsPerDegree)
 
     % Reference: "Noninvasive imaging of the tree shrew eye: Wavefront
     % analysis and retinal imaging with correlative histology", Sajdak et
