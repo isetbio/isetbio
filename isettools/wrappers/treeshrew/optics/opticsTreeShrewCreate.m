@@ -74,14 +74,27 @@ function optics = opticsFromTreeShrewZCoefs(pupilDiameterMM, wavelengthSupport, 
     % 4 mm pupil used in measurements of Sajdak et al 2019
     measuredDiameterMM_TreeShrew = 4.0;
     
+    % 840 nm light used in measurements of Sajdak et al 2019 (section 2.2)
+    measuredWavelenth = 840;
+    
     % Defocusm with coefficient #4, (#5 in Matlab' indexing) is by far the dominant Zcoeffs in measurents of Sajdak et al 2019
     % So we are setting all the other coeffs to 0.
     % The data here are from Figure 2 of Sajdak et al 2019
-    zCoeffs_TreeShrew = zeros(1,13);
-    zCoeffs_TreeShrew(5) = -2.75;  % (microns)
+    zCoeffs_TreeShrew = randn(1,20)*0.0;
+    %zCoeffs_TreeShrew(4) = -0.15;
+    zCoeffs_TreeShrew(5) = -2.75;
+    %zCoeffs_TreeShrew(6) = -0.2;
+    %zCoeffs_TreeShrew(7) = 0.08;
+    %zCoeffs_TreeShrew(8) = 0.05;
+    %zCoeffs_TreeShrew(9) = -0.04;
+    %zCoeffs_TreeShrew(10) = -0.5;
+    %zCoeffs_TreeShrew(15) = -0.02;
+    %zCoeffs_TreeShrew(18) = -0.08;
     
+
     wvfP = wvfCreate(...
         'spatialsamples', 1001, ...
+        'measured wl', measuredWavelenth, ... 
         'calc wavelengths', wavelengthSupport, ...
         'zcoeffs', zCoeffs_TreeShrew, ...
         'name', sprintf('treeshrew-%d', pupilDiameterMM), ...
@@ -92,4 +105,5 @@ function optics = opticsFromTreeShrewZCoefs(pupilDiameterMM, wavelengthSupport, 
     wvfP = wvfComputePSF(wvfP);
         
     optics = oiGet(wvf2oi(wvfP), 'optics');
+
 end
