@@ -84,6 +84,9 @@ switch padValue
         padval = meanPhotons * 0;
     case 'mean photons'
         padval = meanPhotons;
+    case 'border photons'
+        % The photons at the corner of the optical image
+        padval = meanPhotons*0 + photons(1,1,:);
     otherwise
         error('Unknown padValue argument: ''%s'', padValue');
 end

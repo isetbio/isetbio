@@ -10,7 +10,7 @@ assert(isstruct(pad), '''pad'' argument must be a struct');
 % Ensure that if pad.value exists, it has a valid value
 if (isfield(pad, 'value'))
     assert(ischar(pad.value), 'pad.value must be a string');
-    assert(ismember(pad.value, {'mean photons', 'zero photons'}), ...
+    assert(ismember(pad.value, {'mean photons', 'zero photons', 'border photons'}), ...
         sprintf('valid values for pad.value are: {''%s'' ''%s''}', validPadValues{1}, validPadValues{2}));
 end
 end
