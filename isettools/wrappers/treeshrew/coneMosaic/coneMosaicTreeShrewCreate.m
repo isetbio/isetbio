@@ -7,11 +7,11 @@ function theConeMosaic = coneMosaicTreeShrewCreate(micronsPerDegree,varargin)
 p = inputParser;
 p.addParameter('fovDegs', [2 2], @isnumeric);
 p.addParameter('spatialDensity', [0 0.5 0 0.5], @isnumeric);
-p.addParameter('customLambda', 7.5, @isnumeric);
-p.addParameter('customInnerSegmentDiameter', 7, @isnumeric);
+p.addParameter('customLambda', 6.2, @isnumeric);
+p.addParameter('customInnerSegmentDiameter', 6.0, @isnumeric);
 p.addParameter('integrationTimeSeconds', 5/1000, @isnumeric);
-p.addParameter('sConeMinDistanceFactor', 2, @isnumeric);
-p.addParameter('resamplingFactor', 2, @isnumeric);
+p.addParameter('sConeMinDistanceFactor', 2.5, @isnumeric);
+p.addParameter('resamplingFactor', 3, @isnumeric);
 % Parse input
 p.parse(varargin{:});
 
