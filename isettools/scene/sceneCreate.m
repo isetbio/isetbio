@@ -79,6 +79,7 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 %                                  printers and displays
 %       TEXT
 %         {'letter'}             - Scene of a display character
+%
 %       NOISE ANALYSIS TEST PATTERNS
 %             Many of the patterns can have an arbitrary image (row, col)
 %             size. This is possible for patterns such as: whitenoise,
@@ -184,10 +185,11 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 %}
 %{
     % Text Example
-    font = fontCreate;
+    % family, size, dpi
+    font = fontCreate('A', 'Georgia', 24, 96);
     display = 'LCD-Apple';
     scene = sceneCreate('letter', font, display);
-
+    % sceneWindow(scene);
 %}
 %{
     % Other Examples

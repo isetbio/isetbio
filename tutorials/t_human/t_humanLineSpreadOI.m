@@ -9,7 +9,7 @@
 %    XX/XX/15       Copyright ISETBIO Team, 2015
 %    11/26/18  JNM  Formatting
 
-% Initialize
+%% Initialize
 ieInit;
 
 %% Create a line scene, human optics, and a human sensor
@@ -30,8 +30,7 @@ oi = oiCompute(lineS, oi);
 % visualization a little nicer, and we are only interested in the center
 % part anyway.
 oi = oiCrop(oi, [20 20 120 120]);
-vcAddObject(oi);
-oiWindow('scale', true);
+oiWindow(oi);
 
 roi = [];
 wList = [450, 550, 650];  % nm
@@ -40,3 +39,5 @@ for ww = 1:length(wList)
     thisWave = wList(ww); 
     oiPlot(oi, 'irradiance image wave grid', roi, thisWave, gSpacing);
 end
+
+%% END

@@ -351,7 +351,7 @@ switch ieParamFormat(plotType)
             warning('Gamma correction in display is not correct');
         end
 
-        % Carry on assuming current is negative pA.
+        % Carry on assuming current is all negative pA.
         % uData = -1*(abs(uData).^gam);
         data = abs(data);
         if ~isequal(hf, 'none'), imagesc(data .^ gam); end
@@ -466,9 +466,14 @@ switch ieParamFormat(plotType)
         if isempty(obj.absorptions)
             lmsFilters = obj.os.linearFilters(obj);
         else
+            % This doesn't make sense to me (BW).  GUessing this
+            % if/else is older code that should be removed.
+            %{
             absorptionsInXWFormat = RGB2XWFormat(obj.absorptions);
             lmsFilters = obj.os.linearFilters('absorptionsInXWFormat', ...
                 absorptionsInXWFormat);
+            %}
+            lmsFilters = obj.os.linearFilters(obj);
         end
 
         %% Interpolate stored lmsFilters to the time base of absorptions
@@ -483,9 +488,8 @@ switch ieParamFormat(plotType)
         interpFilters = interp1(osTimeAxis(:), lmsFilters, ...
             coneTimeAxis(:), 'linear', 0);
         
-        vcNewGraphWin;
-        plot(coneTimeAxis, interpFilters(:, 1), 'r-', ...
-            coneTimeAxis, interpFilters(:, 2), 'g-', ...
+        plot(coneTimeAxis, interpFilters(:, 1), 'r-o', ...
+            coneTimeAxis, interpFilters(:, 2), 'g-o', ...
             coneTimeAxis, interpFilters(:, 3), 'b-o');
         xlabel('Time (sec)');
         ylabel('Current (pA)');
@@ -576,11 +580,19 @@ switch ieParamFormat(plotType)
         %     uData = plotCurrentTimeseries(obj, varargin{:});
 
     case {'empath', 'eyemovementpath'}
-        plot(obj.emPositions(:, 1), obj.emPositions(:, 2));
+        plot(obj.emPositions(:, 1), obj.emPositions(:, 2),'ko:');
+        xLim = [min(obj.emPositions(:,1)),max(obj.emPositions(:,1))];
+        yLim = [min(obj.emPositions(:,2)),max(obj.emPositions(:,2))];
+        if xLim(1) > -1, xLim(1) = -3; end
+        if xLim(2) < 1,  xLim(2) = 3; end
+        if yLim(1) > -1, yLim(1) = -3; end
+        if yLim(2) < 1,  yLim(2) = 3; end
         grid on;
         xlabel('Horizontal position (cones)');
         ylabel('Vertical position (cones)');
-
+        set(gca,'xlim',xLim,'ylim',yLim);
+        title(sprintf('Eye movement path (%.1f ms steps)',obj.integrationTime*1e3));
+        
         % RGB movies on cone mosaic. These are not currently implemented,
         % but exist here in draft form. See routine coneImageActivity below
         % as well. Could be resurrected some day.

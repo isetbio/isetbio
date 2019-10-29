@@ -34,7 +34,13 @@ cMosaic = coneMosaic;
 % Set size to show about half the scene. Speeds things up.
 cMosaic.setSizeToFOV(0.1 * sceneGet(s, 'fov'));
 
+% You can see the field of view for this cone mosaic object, along with
+% other parameters, within the coneMosaic object:
+% cMosaic.fov;
+
 %% Generate a sequence of 100 eye posistions.
+% This function creates an eye movement object (see t_fixationalEM.m) and
+% automatically generates a path for this given cone mosaic.
 cMosaic.emGenSequence(100);
 
 %% Compute isomerizations for each eye position.
@@ -47,4 +53,9 @@ cMosaic.compute(oi);
 % the movie of fixations.
 cMosaic.window;
 
-%%
+%% Plot things individually
+% Instead of using the cone mosaic window, you can call the plot function
+% directly. 
+
+% cMosaic.plot('Cone mosaic');
+% cMosaic.plot('meanabsorptions');

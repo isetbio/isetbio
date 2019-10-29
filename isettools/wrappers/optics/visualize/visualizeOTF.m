@@ -61,7 +61,7 @@ set(gca, 'XTick', sfTicks);
 axis('square')
 grid('on'); box('on');
 set(gca, 'FontSize', fontSize);
-xlabel('\it spatial frequency (c/deg)', 'FontWeight', 'bold'); 
+xlabel('\it spatial frequency (c/deg)', 'FontWeight', 'normal'); 
 
 title(sprintf('MTF (%2.0f nm)', targetWavelength));
 end

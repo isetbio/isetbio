@@ -1,5 +1,5 @@
 function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptortype,units,source,initialFraction,timeUnits)
-% [fractionBleached] = ComputePhtopigmentBleaching(irradiance,[units],[source],[initialFraction],[timeUnits])
+% [fractionBleached] = ComputePhtopigmentBleaching(irradiance,[receptorType],[units],[source],[initialFraction],[timeUnits])
 %
 % Compute fraction of photopigment bleached, given irradiance of light
 % reaching the eye.
@@ -98,7 +98,7 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
 %   'Boynton'      Boynton and Kaiser, Human Color Vision, 2nd edition,
 %                  pp. 211 and following.  [Default]
 %
-%  initialFraction -- fraction of input bleached at time zero. If
+% initialFraction -- fraction of input bleached at time zero. If
 %                 empty, steady state fraction bleached is
 %                 returned. Default is empty.
 %

@@ -35,12 +35,12 @@ function scene = sceneFromFont(font, display, scene, oSample, varargin)
 %    02/28/18  jnm    Formatting
 
 %% Input arguments
-if notDefined('font'), font = fontCreate; end
+if notDefined('font'),    font = fontCreate; end
 if notDefined('display'), display = displayCreate('LCD-Apple'); end
-if notDefined('scene'), scene = sceneCreate; end
+if notDefined('scene'),   scene = sceneCreate; end
 if notDefined('oSample'), oSample = [20 20]; end
-if ~isempty(varargin), padsz = varargin{1}; else, padsz = []; end
-if length(varargin) > 1, padval = varargin{2}; else, padval = []; end
+if ~isempty(varargin),    padsz = varargin{1}; else, padsz = []; end
+if length(varargin) > 1,  padval = varargin{2}; else, padval = []; end
 
 % Initialize the display to match the scene and font properties
 if ischar(display), display = displayCreate(display); end
@@ -52,6 +52,8 @@ end
 
 %% Compute the high resolution display image
 paddedBitmap = fontGet(font, 'padded bitmap', padsz, padval);
+% vcNewGraphWin; imagesc(paddedBitmap);
+
 np = displayGet(display, 'n primaries');
 paddedBitmap = padarray(paddedBitmap, ...
     [0 0 np - size(paddedBitmap, 3)], 'post');
@@ -66,8 +68,7 @@ energy = XW2RGBFormat(energy, r, c);
 p = Energy2Quanta(wave, energy);
 scene = sceneSet(scene, 'photons', p);   % Compressed photons
 
-% vcAddObject(scene);
-% sceneWindow;
+% sceneWindow(scene);
 
 %% Adjust the scene to match the display resolution
 

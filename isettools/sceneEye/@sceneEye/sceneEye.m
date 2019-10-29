@@ -303,7 +303,7 @@ methods
         % from the name of the lens. We assume the naming conventions
         % is "%s_%f.dat" This is not foolproof, so maybe we can think
         % of a more robust way to do this in the future?
-        obj.lensFile = recipe.camera.specfile.value;
+        obj.lensFile = recipe.camera.lensfile.value;
         if(strcmp(obj.lensFile, ''))
             obj.accommodation = [];
         else
