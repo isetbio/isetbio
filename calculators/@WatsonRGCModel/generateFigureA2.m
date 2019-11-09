@@ -1,5 +1,3 @@
-% Generate Figure A2 of Watson (2014) which plots ratio of area in
-% mm2 to area in deg^2 as a function of eccentricity.
 function hFig = generateFigureA2(obj)
 % Generate Figure A2 of the Watson 2014 paper
 %
@@ -8,7 +6,8 @@ function hFig = generateFigureA2(obj)
 %   WatsonRGCCalc.generateFigureA2();
 %
 % Description:
-%   Generate Figure A2 of the Watson 2014 paper
+%   Generate Figure A2 of Watson (2014) which plots the ratio of area in
+%   mm2 to area in deg^2 as a function of eccentricity.
 %
 % Inputs:
 %    obj                       - The WatsonRGCModel object
@@ -22,8 +21,9 @@ function hFig = generateFigureA2(obj)
 % History:
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
+    figureNumber = 'A2';
     hFig = figure(); clf;
-    set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure A2 of %s', obj.paperTitleShort));
+    set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
     eccDegs = 0:0.1:100;
     plot(eccDegs, obj.alpha(eccDegs), 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
     xlabel('eccentricity, r'' (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
