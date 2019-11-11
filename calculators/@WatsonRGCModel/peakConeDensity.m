@@ -24,7 +24,7 @@ function val = peakConeDensity(obj, units)
 % History:
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
-    % Retrieve cone density in cones/deg2
+    % Retrieve peak cone density in cones/deg2
     coneDensityPerDeg2 = obj.dc0;
     
     switch (units)

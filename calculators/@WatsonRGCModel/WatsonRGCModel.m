@@ -20,10 +20,12 @@ classdef WatsonRGCModel
     % Constant properties (model parameters)
     properties (Constant)
         % Meridian parameters
+        % NOTE: WE HAVE REVERSED THE PARAMS FOR TEMPORAL AND NASAL
+        % MERIDIANS BECAUSE WE BELIEVE WATSON REVERSED THEM
         meridianParamsTable = {
-            'temporal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ...
+            'nasal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ...
             'superior meridian'  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35); ...
-            'nasal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ...
+            'temporal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ...
             'inferior meridian'  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13);
         }
      
@@ -46,12 +48,30 @@ classdef WatsonRGCModel
         % Peak cone density (cones/deg^2) at 0 deg eccentricity
         dc0 = 14804.6;
         
-        % Conversion factor, alpha, of mm^2 -> deg^2 as a function of eccentricity in
+        % Conversion factor, rho, of retinal distance deg->mm as as a function of eccentricity in
+        % degs (Equation A5)
+        rhoDegsToMMs = @(eccDegs) ...
+            0.268         * eccDegs + ...
+            0.0003427     * eccDegs .^2 + ...
+           -8.3309 * 1e-6 * eccDegs .^3;
+        
+        % Conversion factor, rho, of retinal distance mm->deg as as a function of eccentricity in
+        % degs (Equation A6)
+        rhoMMsToDegs = @(eccMM) ...
+            3.556     * eccMM + ...
+            0.05993   * eccMM .^2 + ...
+           -0.007358  * eccMM .^3 + ...
+            0.0003027 * eccMM .^4;
+       
+       
+        % Conversion factor, alpha, of retinal area mm^2 -> deg^2 as a function of eccentricity in
         % degs (Equation A7)
         alpha = @(eccDegs) 0.0752 + ...
                     5.846 * 1e-5 * eccDegs    + ...
                    -1.064 * 1e-5 * eccDegs.^2 + ...
                     4.116 * 1e-8 * eccDegs.^3;
+                
+        
     end
    
     % Constant properties related to figure generation
@@ -103,14 +123,33 @@ classdef WatsonRGCModel
             
             % Create dictionary with meridian params 
             obj.meridianParams = containers.Map(obj.meridianParamsTable(:,1), obj.meridianParamsTable(:,2));
-            
+             
             % Generate figures
             if (generateAllFigures)
+                % RF density of all RGCs as a function of eccentricity for all quadrants
                 obj.generateFigure5();
+                
+                % fraction of midget to total RGCs RFs as a function of eccentrity
+                obj.generateFigure8();
+                
+                % RF density of midget RGCs as a function of eccentricity for all quadrants
+                obj.generateFigure9();
+                
+                % RF spacing of midget RGCs as a function of eccentricity for all quadrants
+                obj.generateFigures10And11();
+                
+                % Ratio of midget RGCs to cones as a function of eccentricity for all quadrants
+                obj.generateFigure14();
+                
+                % Relation between retinal distance in mm and degs
+                obj.generateFigureA1();
+                
+                % Ratio of area in mm^2 to deg^2 as a function of eccentricity
                 obj.generateFigureA2();
             end
         end
         
+        % --------------------- COMPUTE METHODS ---------------------------
         % Convert retinal area from deg^2 to mm^2 for a given eccentricity
         val = mmSquaredToDegSquared(obj, mmSquared, eccDegs);
         
@@ -120,15 +159,61 @@ classdef WatsonRGCModel
         % Return peak cone density (#cones per either deg^2 or mm^2)
         val = peakConeDensity(obj, units);
         
-        % Return peak midget and peak total RGC receptive field density (#RFs per either deg^2 or mm^2)
+        % Return peak midget and peak total RGC receptive field density 
         [peakMidgetRGCRFDensity, peakRGCRFDensity] = peakRGCRFDensity(obj, units);
         
-        % Return total RGC density at the requested eccentricities (#RFs per either deg^2 or mm^2)
+        % Return total RGC receptive field  density at the requested meridian and eccentricities 
         val = totalRGCRFDensity(obj, eccDegs, meridian, units);
         
-        % Figure generation methods
+        % Return fraction of total RGCs that are midgets
+        val = midgetRGCFraction(obj, eccDegs);
+        
+        % Return midgetRGC receptive field  density at the requested meridian and eccentricities
+        val = midgetRGCRFDensity(obj, eccDegs, meridian, units);
+        
+        % Return midgetRGC receptive field  spacing at the requested meridian and
+        % eccentricities for a given RGC type: 'singlePolarity' (ON/OFF) or
+        % 'bothPolarities' (ON+OFF).
+        val = midgetRGCRFSpacing(obj, eccDegs, meridian, units, type);
+        
+        % Return cone RF spacing and density at the requested meridian and eccentricities
+        [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, meridian, units);
+        % --------------------- COMPUTE METHODS ---------------------------
+        
+        
+        % ------------------ FIGURE GENERATION METHODS --------------------
+        % Cone density as a function of eccentricity for all quadrants
+        generateFigure1(obj);
+        
+        
+        % RF density of all RGCs as a function of eccentricity for all quadrants
         generateFigure5(obj);
+        
+        % Fraction of midget to total RGCs RFs as a function of eccentrity
+        generateFigure8(obj);
+        
+        % RF density of midget RGCs as a function of eccentricity for all quadrants
+        generateFigure9(obj);
+        
+        % RF spacing of midget RGCs as a function of eccentricity for all quadrants
+        generateFigures10And11(obj);
+        
+        % Relationhip between retinal distance from the optic axis in mm and degs as a
+        % function of eccentricity
+        generateFigureA1(obj);
+        
+        % Ratio of area in mm^2 to deg^2 as a function of eccentricity
         generateFigureA2(obj);
+        
+        % Method to generate RGCdensity at four quadrants as a function of eccentricity
+        generateRGCRFDensityPlot(obj, RGCRFDensityFunctionHandle, eccDegs);
+        
+        % Method to generate RGCspacing at four quadrants as a function of
+        % eccentricity for a given cell type (ON/OFF or both ON+OFF)
+        generateRGCRFSpacingPlot(obj, RGCRFSpacingFunctionHandle, eccDegs, type)
+        % ------------------ Figure generation methods --------------------
     end
+    
+    
 end
 
