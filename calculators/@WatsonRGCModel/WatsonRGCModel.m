@@ -20,12 +20,10 @@ classdef WatsonRGCModel
     % Constant properties (model parameters)
     properties (Constant)
         % Meridian parameters
-        % NOTE: WE HAVE REVERSED THE PARAMS FOR TEMPORAL AND NASAL
-        % MERIDIANS BECAUSE WE BELIEVE WATSON REVERSED THEM
         meridianParamsTable = {
-            'nasal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ...
+            'temporal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ...
             'superior meridian'  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35); ...
-            'temporal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ...
+            'nasal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ...
             'inferior meridian'  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13);
         }
      
@@ -126,6 +124,10 @@ classdef WatsonRGCModel
              
             % Generate figures
             if (generateAllFigures)
+                
+                % Cone density as a function of eccentricity for all quadrants
+                obj.generateFigure1();
+                
                 % RF density of all RGCs as a function of eccentricity for all quadrants
                 obj.generateFigure5();
                 
@@ -185,7 +187,6 @@ classdef WatsonRGCModel
         % Cone density as a function of eccentricity for all quadrants
         generateFigure1(obj);
         
-        
         % RF density of all RGCs as a function of eccentricity for all quadrants
         generateFigure5(obj);
         
@@ -198,6 +199,9 @@ classdef WatsonRGCModel
         % RF spacing of midget RGCs as a function of eccentricity for all quadrants
         generateFigures10And11(obj);
         
+        % Ratio of midget RGCs to cones as a function of eccentricity for all quadrants
+        generateFigure14(obj);
+                
         % Relationhip between retinal distance from the optic axis in mm and degs as a
         % function of eccentricity
         generateFigureA1(obj);

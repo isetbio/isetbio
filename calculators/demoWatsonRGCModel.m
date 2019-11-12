@@ -18,8 +18,8 @@ function demoWatsonRGCModel
     WatsonRGCCalc = WatsonRGCModel('generateAllFigures', true);
     
     % Compute peak cone density in cones/mm2 and in cones/deg2
-    fprintf('peak cone density: %3.2fk cones/mm2\n', WatsonRGCCalc.peakConeDensity('cones per mm2')/1000);
-    fprintf('peak cone density: %3.2fk cones/deg2\n', WatsonRGCCalc.peakConeDensity('cones per deg2')/1000);
+    fprintf('peak cone density: %3.2fk cones/mm2\n', WatsonRGCCalc.peakConeDensity('Cones per mm2')/1000);
+    fprintf('peak cone density: %3.2fk cones/deg2\n', WatsonRGCCalc.peakConeDensity('Cones per deg2')/1000);
     
     % Compute peak midget and total RGC RFs
     [peakMidgetRGCRFDensityPerDeg2, peakTotalRGCRFDensityPerDeg2] = WatsonRGCCalc.peakRGCRFDensity('RFs per deg2');

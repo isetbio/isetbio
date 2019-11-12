@@ -32,7 +32,7 @@ function hFig = generateFigureA1(obj)
     legend({'deg->mm (ecc)', 'linear approximation'}, 'Location', 'SouthEast');
     axis 'square';
     xlabel('eccentricity, r'' (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
-    ylabel('eccentricity, r'' (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
+    ylabel('eccentricity, r'' (mm)', 'FontAngle', obj.figurePrefs.fontAngle);
     set(gca, 'XLim', [0 100], 'YLim', [0 27], 'XTick', 0:20:100, 'YTick', 0:5:30, 'FontSize', obj.figurePrefs.fontSize);
     grid(gca, obj.figurePrefs.grid);
     title('Relationhip between retinal distance from the optic axis in mm and degs');
@@ -46,8 +46,8 @@ function hFig = generateFigureA1(obj)
     plot(eccMM, 1 / linearApproximationDegsToMMs * eccMM, 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
     legend({'mm->deg (ecc)', 'linear approximation'}, 'Location', 'SouthEast');
     axis 'square';
+    xlabel('eccentricity, r'' (mm)', 'FontAngle', obj.figurePrefs.fontAngle);
     ylabel('eccentricity, r'' (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
-    xlabel('eccentricity, r'' (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
     set(gca, 'YLim', [0 100], 'XLim', [0 22], 'YTick', 0:20:100, 'XTick', 0:5:30, 'FontSize', obj.figurePrefs.fontSize);
     grid(gca, obj.figurePrefs.grid);
     title('Relationhip between retinal distance from the optic axis in mm and degs');

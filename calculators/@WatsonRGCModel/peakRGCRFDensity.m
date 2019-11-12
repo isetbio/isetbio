@@ -27,11 +27,11 @@ function [peakMidgetRGCRFDensity, peakTotalRGCRFDensity] = peakRGCRFDensity(obj,
 
     % Retrieve cone density
     if (contains(units, 'per mm2'))
-        peakConeDensity = obj.peakConeDensity('cones per mm2');
+        peakConeDensity = obj.peakConeDensity('Cones per mm2');
     elseif (contains(units, 'per deg2'))
-        peakConeDensity = obj.peakConeDensity('cones per deg2');
+        peakConeDensity = obj.peakConeDensity('Cones per deg2');
     else
-        error('units must be either ''RFs per mm2'' or ''RFs per deg2''.');
+        error('units must be either ''Cones per mm2'' or ''Cones per deg2''. Instead it was ''%s''.', units);
     end
     
     % The foveal density of midget RGC RFs is twice the cone density

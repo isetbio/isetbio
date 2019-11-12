@@ -27,5 +27,4 @@ function hFig = generateFigure5(obj)
     eccDegs = 0.1:0.1:100;
     
     generateRGCRFDensityPlot(obj, @obj.totalRGCRFDensity, eccDegs);
-    title('Total RGC RF density as a function of eccentricity for four meridians');
 end

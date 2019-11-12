@@ -25,7 +25,6 @@ function hFig = generateFigure9(obj)
     hFig = figure(); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
     eccDegs = 0.1:0.1:100;
-    
     generateRGCRFDensityPlot(obj, @obj.midgetRGCRFDensity, eccDegs);
-    title('Midget RGC RF density (ON+OFF) as a function of eccentricity for four meridians');
+    
 end
