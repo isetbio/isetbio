@@ -1,13 +1,13 @@
-function hFig = generateFigure5(obj, hFig)
-% Generate Figure 5 of the Watson 2014 paper
+function hFig = generateFigure10(obj, hFig)
+% Generate Figure 10 of the Watson 2014 paper
 %
 % Syntax:
 %   WatsonRGCCalc = WatsonRGCModel();
-%   WatsonRGCCalc.generateFigure5();
+%   WatsonRGCCalc.generateFigures10And11();
 %
 % Description:
-%   Generate Figure 5 of Watson (2014) which plots the total RGC RF density
-%   as a function of eccentricity for all 4 meridians.
+%   Generate Figures 10 of Watson (2014) which plot the midget RGC RF
+%   spacing as a function of eccentricity for all 4 meridians.
 %
 % Inputs:
 %    obj                       - The WatsonRGCModel object
@@ -21,11 +21,11 @@ function hFig = generateFigure5(obj, hFig)
 % History:
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
-    figureNumber = '5';
+    figureNumber = '10';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0.1:0.1:100;
-    
-    generateRGCRFDensityPlot(obj, @obj.totalRGCRFDensity, eccDegs);
-    drawnow;
+    eccDegs = 0:5:100;
+    type = 'both polarities';
+    generateRGCRFSpacingPlot(obj, @obj.midgetRGCRFSpacing, eccDegs, type);
+    title('Midget RGC RF spacing (ON+OFF) as a function of eccentricity');
 end

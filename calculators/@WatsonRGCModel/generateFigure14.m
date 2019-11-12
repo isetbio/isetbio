@@ -1,4 +1,4 @@
-function hFig = generateFigure14(obj)
+function hFig = generateFigure14(obj, hFig)
 % Generate Figure 14 of the Watson 2014 paper
 %
 % Syntax:
@@ -22,7 +22,7 @@ function hFig = generateFigure14(obj)
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
     figureNumber = '14';
-    hFig = figure(); clf;
+    figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
     eccDegs = 0.2:0.01:80;
     

@@ -1,4 +1,4 @@
-function hFig = generateFigure1(obj)
+function hFig = generateFigure1(obj, hFig)
 % Generate Figure 1 of the Watson 2014 paper
 %
 % Syntax:
@@ -22,7 +22,7 @@ function hFig = generateFigure1(obj)
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
     figureNumber = '1';
-    hFig = figure(); clf;
+    figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
     eccDegs = 0.1:0.002:90;
     
@@ -54,4 +54,5 @@ function hFig = generateFigure1(obj)
     grid(gca, obj.figurePrefs.grid);
     
     title('Cone density as a function of eccentricity (Curcio et al, 1990)');
+    drawnow;
 end
