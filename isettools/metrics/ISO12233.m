@@ -9,11 +9,11 @@ function [results, fitme, esf, h] = ISO12233(barImage, deltaX, weight, plotOptio
 %
 % Inputs
 %  barImage:  The RGB image of the slanted bar
-%  deltaX:    The sensor sample spacing in millimeters (expected). It
-%   is possible to send in a display spacing in dots per inch (dpi), in
-%   which case the number is > 1 (it never is for sensor sample spacing).
-%   In that case, the value returned is cpd on the display at a 1m viewing
-%   distance.
+%  deltaX:    The cone sample spacing in millimeters. 
+%             It is possible to send in a display spacing in dots per inch
+%             (dpi), in which case the number is > 1 (it never is for
+%             sensor sample spacing). In that case, the value returned is
+%             cpd on the display at a 1m viewing distance.
 %
 % weight:    The luminance weights; these are [0.3R +  0.6G + 0.1B] by
 %            default.
@@ -45,27 +45,23 @@ function [results, fitme, esf, h] = ISO12233(barImage, deltaX, weight, plotOptio
 
 % Examples:
 %{
-  % ETTBSkip.  This is interactive and should not be autorun.  But some
-  % comments about what user should do would be great.
+  %  The slanted edge scene
+  scene = sceneCreate('slanted edge');
+  scene = sceneSet(scene,'fov',0.5);
+  oi = oiCreate; oi = oiCompute(oi,scene);
+  cones = coneMosaic;
+  cones.spatialDensity = [0,1,0,0];   % Only L cones
+  cones.emGenSequence(50);            % 50 eye movements (50 ms)
+  cones.compute(oi);
+  edgeImage = mean(cones.absorptions,3);
+  % Working region must be taller than wide
+  edgeImage = imcrop(edgeImage,[30 30 30 50]);
+  ieNewGraphWin; imagesc(edgeImage); colormap(gray); axis image
 
-  % Interactive usage 
-  ISO12233;
-  %}
-%{
-  % ETTBSkip. This also requiers user input and should not be autorun.  But
-  % some comments about what user should do would be great.
-
-  deltaX = 0.006; % Six micron pixel.  deltaX Units appear to be mm.
-  [results, fitme, esf] = ISO12233([],deltaX,[]);
-
-  % The whole thing and cpd assuming a 1m viewing distance
-  rectMTF    = [xmin ymin width height];
-  c = rectMTF(3)+1; r = rectMTF(4)+1;
-  roiMTFLocs = ieRoi2Locs(rectMTF);
-  barImage   = vcGetROIData(vciBlurred,roiMTFLocs,'results');
-  barImage = reshape(barImage,r,c,3);
-  wgts = [ 0.3 0.6 0.1];
-  [results, fitme, esf] = ISO12233(barImage, deltaX, wgts, 'luminance');
+  % The plot goes further than the Nyquist frequency
+  wgts = [ 0.3 0.6 0.1]; thisPlot = 'luminance';
+  dx = cones.patternSampleSize(1)*1e3;   % In millimeters
+  ISO12233(edgeImage,dx,wgts,thisPlot);
 %}
 
 % PROGRAMMING TODO: 
@@ -77,11 +73,12 @@ if notDefined('deltaX'), deltaX = .002;  warning('Assuming 2 micron pixel');  en
 if notDefined('weight'), weight = [0.3, 0.6, 0.1]; end  % RGB: Luminance weights
 if notDefined('plotOptions'), plotOptions = 'all'; end  % all or luminance or none
 if notDefined('barImage')
-    % If there is no image, then you can read a file with the bar image.
-    % You are also asked to specify a look-up table file that converts the
-    % data in the edgeFile into linear units appropriate for the MTF
-    % calculation.  If no lutFile is selected, then we assume this
-    % transformation is not necessary for your data.
+    % If there is no image, then you can 'imread' a file with the bar
+    % image. You are also asked to specify a look-up table file that
+    % converts the image data in the file into linear units appropriate for
+    % the MTF calculation.  If no lutFile is selected, then we assume this
+    % transformation is not necessary for your data (i.e., the data are
+    % linear).
     edgeFile = vcSelectDataFile('stayput','r',[],'Select slanted bar image');
     [barImage,smax] = readBarImage(edgeFile);
     lutFile = vcSelectDataFile('stayput','r',[],'Select LUT file');
