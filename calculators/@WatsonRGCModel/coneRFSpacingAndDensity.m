@@ -59,7 +59,7 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
             coneRFDensity = densityConesPerMM2;
             
         case 'Cones per deg2'
-            spacingMM = spacingMeters * 1e-3;
+            spacingMM = spacingMeters * 1e3;
             % Convert cone spacing in mm to cone spacing in degs at all eccentricities
             coneRFSpacing = obj.rhoMMsToDegs(spacingMM+eccMM)-obj.rhoMMsToDegs(eccMM); 
             

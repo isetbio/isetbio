@@ -6,7 +6,7 @@ function hFig = generateFigure9(obj, hFig)
 %   WatsonRGCCalc.generateFigure9();
 %
 % Description:
-%   Generate Figure 9 of Watson (2014) which plots the total RGC RF density
+%   Generate Figure 9 of Watson (2014) which plots the midget RGC RF density
 %   as a function of eccentricity for all 4 meridians.
 %
 % Inputs:
