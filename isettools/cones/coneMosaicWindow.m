@@ -1643,8 +1643,9 @@ function menuConesGenerateEM_Callback(hObject, eventdata, handles)
 %
 str = ieReadString('Number of frames', '500');
 if ~isempty(str)
-    % Changed by BW on Nov 12, 2019.  Was not randomized.
-    % Must check with everyone about this!
+    % Changed by BW on Nov 12, 2019.  The path was not randomized when
+    % called from the pulldown.  This rSeed calls shuffle.
+    % Must check with others about this!
     handles.cMosaic.emGenSequence(str2double(str),'rSeed',[]);
     menuEditClearData_Callback(hObject, eventdata, handles);
     set(handles.popupImageType, 'Value', 2); % mean absorptions
