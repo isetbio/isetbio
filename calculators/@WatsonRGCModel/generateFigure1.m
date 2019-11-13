@@ -1,13 +1,13 @@
-function hFig = generateFigure14(obj, hFig)
-% Generate Figure 14 of the Watson 2014 paper
+function hFig = generateFigure1(obj, hFig)
+% Generate Figure 1 of the Watson 2014 paper
 %
 % Syntax:
 %   WatsonRGCCalc = WatsonRGCModel();
-%   WatsonRGCCalc.generateFigure14();
+%   WatsonRGCCalc.generateFigure1();
 %
 % Description:
-%   Generate Figure 14 of Watson (2014) which plots the ratio of midget to
-%   cones as a function of eccentricity for all 4 meridians.
+%   Generate Figure 14 of Watson (2014) which plots cone density as a 
+%   function of eccentricity for all 4 meridians.
 %
 % Inputs:
 %    obj                       - The WatsonRGCModel object
@@ -21,40 +21,38 @@ function hFig = generateFigure14(obj, hFig)
 % History:
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
-    figureNumber = '14';
+    figureNumber = '1';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0.2:0.01:80;
+    eccDegs = 0.1:0.002:90;
     
     meridianName = 'temporal meridian';
-    midgetRGCRFDensity = obj.midgetRGCRFDensity(eccDegs, meridianName, 'RFs per deg2');
     [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, midgetRGCRFDensity./coneRFDensity, 'r-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
+    plot(eccDegs, coneRFDensity, 'r-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
         
     meridianName = 'superior meridian';
-    midgetRGCRFDensity = obj.midgetRGCRFDensity(eccDegs, meridianName, 'RFs per deg2');
     [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, midgetRGCRFDensity./coneRFDensity, 'b-', 'LineWidth', obj.figurePrefs.lineWidth);
+    plot(eccDegs, coneRFDensity, 'b-', 'LineWidth', obj.figurePrefs.lineWidth);
     
     meridianName = 'nasal meridian';
-    midgetRGCRFDensity = obj.midgetRGCRFDensity(eccDegs, meridianName, 'RFs per deg2');
     [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, midgetRGCRFDensity./coneRFDensity, 'g-', 'LineWidth', obj.figurePrefs.lineWidth);
+    plot(eccDegs, coneRFDensity, 'g-', 'LineWidth', obj.figurePrefs.lineWidth);
     
     meridianName = 'inferior meridian';
-    midgetRGCRFDensity = obj.midgetRGCRFDensity(eccDegs, meridianName, 'RFs per deg2');
     [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, midgetRGCRFDensity./coneRFDensity, 'k-', 'LineWidth', obj.figurePrefs.lineWidth);
+    plot(eccDegs, coneRFDensity, 'k-', 'LineWidth', obj.figurePrefs.lineWidth);
     
     legend({'temporal', 'superior', 'nasal', 'inferior'}, 'Location', 'SouthWest');
 
     xlabel('eccentricity (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
-    ylabel('midget RGC / cone ratio', 'FontAngle', obj.figurePrefs.fontAngle);
-    set(gca, 'XLim', [0.1 80], 'YLim', [0.02 2.2], ...
+    ylabel('density (cones/deg^2)', 'FontAngle', obj.figurePrefs.fontAngle);
+    set(gca, 'XLim', [0.09 100], 'YLim', [100 20000], ...
         'XScale', 'log', 'YScale', 'log', ...
-        'XTick', [0.5 1 5 10 50], 'YTick', [0.05 0.1 0.2 0.5 1 2], ...
+        'XTick', [0.1 0.5 1 5 10 50 100], ...
+        'YTick', [100 1000 10000], 'YTickLabel', {'100', '1000', '10000'},...
         'FontSize', obj.figurePrefs.fontSize);
     grid(gca, obj.figurePrefs.grid);
     
-    title('Ratio of midget RGC RFs to cones as a function of eccentricity');
+    title('Cone density as a function of eccentricity (Curcio et al, 1990)');
+    drawnow;
 end

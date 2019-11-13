@@ -1,4 +1,4 @@
-function hFig = generateFigureA2(obj)
+function hFig = generateFigureA2(obj, hFig)
 % Generate Figure A2 of the Watson 2014 paper
 %
 % Syntax:
@@ -22,7 +22,7 @@ function hFig = generateFigureA2(obj)
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
     figureNumber = 'A2';
-    hFig = figure(); clf;
+    figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
     eccDegs = 0:0.1:100;
     plot(eccDegs, obj.alpha(eccDegs), 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
