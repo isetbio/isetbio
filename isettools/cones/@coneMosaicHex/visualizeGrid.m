@@ -111,7 +111,6 @@ else
     overlayContourLabels = 'off';
 end
 
-
 %% Set up cone coordinates and outline
 sampledHexMosaicXaxis = obj.patternSupport(1, :, 1) + obj.center(1);
 sampledHexMosaicYaxis = obj.patternSupport(:, 1, 2) + obj.center(2);
