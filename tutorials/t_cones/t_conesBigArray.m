@@ -1,14 +1,14 @@
 %% t_conesBigArray
 %
 %  Create a fairly large rectangular array.  The cone mosaic is computed
-%  and stored in the axis userdata. So, the first time 
+%  and stored in the axis userdata.
 %
 % 
 
 %% 
 ieInit
 
-%% First the scene
+%% First create the scene
 s = sceneCreate('rings rays');
 s = sceneSet(s, 'fov', 3);
 
@@ -21,7 +21,7 @@ oi = oiCompute(oi, s);
 % Create the coneMosaic object
 cMosaic = coneMosaic;
 
-% Set size to show about half the scene. Speeds things up.
+% Set cone mosaic size to show the entire scene
 cMosaic.setSizeToFOV(sceneGet(s, 'fov'));
 
 %% Compute isomerizations for each eye position.
