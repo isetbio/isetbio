@@ -1,12 +1,12 @@
-function hFig = generateFigures10And11(obj, hFig)
-% Generate Figures 10 and 11 of the Watson 2014 paper
+function hFig = generateFigure11(obj, hFig)
+% Generate Figure 11 of the Watson 2014 paper
 %
 % Syntax:
 %   WatsonRGCCalc = WatsonRGCModel();
 %   WatsonRGCCalc.generateFigures10And11();
 %
 % Description:
-%   Generate Figures 10 and 11 of Watson (2014) which plot the midget RGC RF
+%   Generate Figures 11 of Watson (2014) which plot the midget RGC RF
 %   spacing as a function of eccentricity for all 4 meridians.
 %
 % Inputs:
@@ -21,17 +21,9 @@ function hFig = generateFigures10And11(obj, hFig)
 % History:
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
-    figureNumber = '10';
-    hFig = figure(); clf;
-    set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0:5:100;
-    type = 'both polarities';
-    generateRGCRFSpacingPlot(obj, @obj.midgetRGCRFSpacing, eccDegs, type);
-    title('Midget RGC RF spacing (ON+OFF) as a function of eccentricity');
-    
     
     figureNumber = '11';
-    hFig = figure(); clf;
+    figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
     eccDegs = 0:0.5:10;
     type = 'single polarity';

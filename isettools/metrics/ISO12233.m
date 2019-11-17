@@ -9,26 +9,33 @@ function [results, fitme, esf, h] = ISO12233(barImage, deltaX, weight, plotOptio
 %
 % Inputs
 %  barImage:  The RGB image of the slanted bar
-%  deltaX:    The sensor sample spacing in millimeters (expected). It
-%   is possible to send in a display spacing in dots per inch (dpi), in
-%   which case the number is > 1 (it never is for sensor sample spacing).
-%   In that case, the value returned is cpd on the display at a 1m viewing
-%   distance.
+%  deltaX:    The cone sample spacing in millimeters. 
+%             It is possible to send in a display spacing in dots per inch
+%             (dpi), in which case the number is > 1 (it never is for
+%             sensor sample spacing). In that case, the value returned is
+%             cpd on the display at a 1m viewing distance.
 %
-% weight:    The luminance weights; these are [0.3R +  0.6G + 0.1B] by
-%            default.
+% weight:     The luminance weights; these are [0.3R +  0.6G + 0.1B] by
+%             default.
+% plotOptions:
 %
-% fitme:  The full linear fit to something
-% esf:    Not sure
+% Returns
+%  results
+%  fitme:  The full linear fit to something
+%  esf:    Not sure
+%  h:      Window handle
 %
 % Notes:
 %   1 cycle on the sensor has frequency: 1/sensorGet(sensor,'width','mm')
 %   1 cycle on the sensor is 1/sensorGet(sensor,'fov') cycles in the
 %     original image.
 %
-% Run like this
+% YOu can run interactively like this
+%
 %   ISO12233;
-% You are prompted for a bar file and other parameters:
+%
+% You are prompted for ah image file with the slanted edge and other
+% parameters 
 %
 % Reference
 %  This code originated with Peter Burns, peter.burns@kodak.com
@@ -36,6 +43,9 @@ function [results, fitme, esf, h] = ISO12233(barImage, deltaX, weight, plotOptio
 %  Substantially re-written by ImagEval Consulting, LLC
 %
 % Copyright ImagEval Consultants, LLC, 2005.
+%
+% See also
+%    ISOFindSlantedBar.m, isetbioEyeMovements
 %
 
 % Hisory:
@@ -45,27 +55,28 @@ function [results, fitme, esf, h] = ISO12233(barImage, deltaX, weight, plotOptio
 
 % Examples:
 %{
-  % ETTBSkip.  This is interactive and should not be autorun.  But some
-  % comments about what user should do would be great.
+  %  The slanted edge scene
+  scene = sceneCreate('slanted edge');
+  scene = sceneSet(scene,'fov',0.5);
+  oi = oiCreate; oi = oiCompute(oi,scene);
+  cones = coneMosaic;
+  cones.spatialDensity = [0,1,0,0];   % Only L cones
+  cones.emGenSequence(50);            % 50 eye movements (50 ms)
+  cones.compute(oi);
 
-  % Interactive usage 
-  ISO12233;
-  %}
-%{
-  % ETTBSkip. This also requiers user input and should not be autorun.  But
-  % some comments about what user should do would be great.
+  % Use a single image to place the rectangle
+  edgeImage = cones.absorptions(:,:,1);
+  % Working region must be taller than wide
+  rect = ISOFindSlantedBar(edgeImage); % rect = [30 30 30 50];
+  
+  % Now find the MTF for averaging all the absorptions
+  edgeImage = imcrop(mean(cones.absorptions,3),rect);
+  ieNewGraphWin; imagesc(edgeImage); colormap(gray); axis image
 
-  deltaX = 0.006; % Six micron pixel.  deltaX Units appear to be mm.
-  [results, fitme, esf] = ISO12233([],deltaX,[]);
-
-  % The whole thing and cpd assuming a 1m viewing distance
-  rectMTF    = [xmin ymin width height];
-  c = rectMTF(3)+1; r = rectMTF(4)+1;
-  roiMTFLocs = ieRoi2Locs(rectMTF);
-  barImage   = vcGetROIData(vciBlurred,roiMTFLocs,'results');
-  barImage = reshape(barImage,r,c,3);
-  wgts = [ 0.3 0.6 0.1];
-  [results, fitme, esf] = ISO12233(barImage, deltaX, wgts, 'luminance');
+  % The plot goes further than the Nyquist frequency
+  wgts = [ 0.3 0.6 0.1]; thisPlot = 'luminance';
+  dx = cones.patternSampleSize(1)*1e3;   % In millimeters
+  ISO12233(edgeImage,dx,wgts,thisPlot);
 %}
 
 % PROGRAMMING TODO: 
@@ -77,11 +88,12 @@ if notDefined('deltaX'), deltaX = .002;  warning('Assuming 2 micron pixel');  en
 if notDefined('weight'), weight = [0.3, 0.6, 0.1]; end  % RGB: Luminance weights
 if notDefined('plotOptions'), plotOptions = 'all'; end  % all or luminance or none
 if notDefined('barImage')
-    % If there is no image, then you can read a file with the bar image.
-    % You are also asked to specify a look-up table file that converts the
-    % data in the edgeFile into linear units appropriate for the MTF
-    % calculation.  If no lutFile is selected, then we assume this
-    % transformation is not necessary for your data.
+    % If there is no image, then you can 'imread' a file with the bar
+    % image. You are also asked to specify a look-up table file that
+    % converts the image data in the file into linear units appropriate for
+    % the MTF calculation.  If no lutFile is selected, then we assume this
+    % transformation is not necessary for your data (i.e., the data are
+    % linear).
     edgeFile = vcSelectDataFile('stayput','r',[],'Select slanted bar image');
     [barImage,smax] = readBarImage(edgeFile);
     lutFile = vcSelectDataFile('stayput','r',[],'Select LUT file');
@@ -339,18 +351,13 @@ belowNyquist = (results.freq < nfreq);
 % Sometimes, if the image is very noisy, lumMTF has a number of NaNs. We
 % won't find mtf50 in such cases.
 if ~isnan(lumMTF)
-    % Old calculation
-    %   results.mtf50 = interp1(lumMTF,results.freq,0.5);
-    % New calculation
-    %   Sample freq finely
-    %   Find the below-nyquist freq closest to an MTF value of 0.5
     iFreq = 0:0.2:results.nyquistf;
     iLumMTF = interp1(results.freq(belowNyquist),lumMTF(belowNyquist),iFreq);
-    [v,idx] = min(abs(iLumMTF - 0.5));
+    [~,idx] = min(abs(iLumMTF - 0.5));
     results.mtf50 = iFreq(idx);
 else
     fprintf('NaN lumMTF values.  No plot is generated.\n');
-    return
+    return;
 end
 
 % The area under the curve to the right of the nyquist as a percentage of
@@ -433,7 +440,7 @@ switch plotOptions
         error('Unknown plotOptions: %s\n',plotOptions);
 end
 
-return;
+end
 
 %---------------------------------------------------
 % ISO 12233 subroutines
@@ -453,7 +460,7 @@ switch (lower(class(tempBarImage)))
 end
 barImage = getroi(tempBarImage);
 
-return;
+end
 
 %----------------------------------------------------
 function [data] = ahamming(n, mid)
@@ -476,7 +483,7 @@ for i = 1:n
     arg = i-mid;
     data(i) = 0.54 + 0.46*cos( pi*arg/wid );
 end
-return;
+end
 
 %----------------------------------------------------
 function [b] = cent(a, center)
@@ -511,7 +518,7 @@ elseif del < 1
     
 else, b = a;
 end
-
+end
 %----------------------------------------------------
 function [loc] = centroid(x)
 %
@@ -528,8 +535,7 @@ for n=1:length(x), loc = loc + n*x(n); end
 
 if sum(x) == 0, warndlg('Values are all zero.  Invalid centroid'); end
 loc = loc/sum(x);
-return;
-
+end
 %----------------------------------------------------
 function [nlow, nhigh, status] = clipping(barImage, low, high, thresh1)
 %
@@ -579,7 +585,8 @@ nlow = nlow./(nRow*nCol);
 
 if status ~= 1, warndlg('Data clipping errors detected','ClipCheck'); end
 
-return;
+end
+
 %----------------------------------------------------
 function  [b] = deriv1(a, nRow, nCol, fil)
 %
@@ -601,8 +608,7 @@ for i=1:nRow
     b(i, nn-1) = b(i, nn);
 end
 
-return;
-
+end
 %----------------------------------------------------
 function  [slope, int] = findedge(cent, nRow)
 % [slope, int] = findedge(cent, nRow)  Fits linear equation to data
@@ -618,7 +624,7 @@ function  [slope, int] = findedge(cent, nRow)
 
 index = 0:nRow-1;
 [slope, int] = polyfit(index, cent, 1);            % x = f(y)
-return
+end
 
 %----------------------------------------------------
 function [array, status] = getoecf(array, oepath,oename)
@@ -664,7 +670,8 @@ else
         end
     end
 end
-return;
+end
+
 %----------------------------------------------------
 function [select, coord] = getroi(array)
 % [select, coord] = getroi(array)  Select and return region of interest
@@ -769,7 +776,7 @@ end
 select=double( array(ul(2):lr(2), ul(1):lr(1), :) );
 coord = [ul(:,:), lr(:,:)];
 close;
-return;
+end
 
 %----------------------------------------------------
 function [point, status] = project(barImage, loc, slope, fac)
@@ -875,7 +882,7 @@ end
 % This is the returned unified edge profile
 % figure(1); plot(point);
 
-return;
+end
 
 
 %----------------------------------------------------
@@ -913,4 +920,4 @@ if nCol>nRow
     nCol = temp;
 end
 
-return
+end

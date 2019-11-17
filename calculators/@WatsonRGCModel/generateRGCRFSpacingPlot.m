@@ -10,7 +10,7 @@ function generateRGCRFSpacingPlot(obj, RGCRFSpacingFunctionHandle, eccDegs, type
         'k-', 'LineWidth', obj.figurePrefs.lineWidth);
     legend({'temporal', 'superior', 'nasal', 'inferior'}, 'Location', 'NorthWest');
     xlabel('eccentricity (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
-    ylabel('RGC spacing (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
+    ylabel('RGC RF spacing (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
     set(gca, 'XLim', [eccDegs(1) eccDegs(end)], 'YLim', [0 1.05], ...
         'XTick', eccDegs(1):eccDegs(end)/10:eccDegs(end), 'YTick', 0:0.1:1.0, ...
         'FontSize', obj.figurePrefs.fontSize);

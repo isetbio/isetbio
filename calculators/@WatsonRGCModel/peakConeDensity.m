@@ -28,16 +28,17 @@ function val = peakConeDensity(obj, units)
     coneDensityPerDeg2 = obj.dc0;
     
     switch (units)
-        case 'cones per mm2'
+        case 'Cones per mm2'
             % Compute mmSquaredPerDegSquared conversion factor at zero eccentricity
-            mmSquaredPerDegSquared = obj.alpha(0);
+            eccDegs = 0;
+            mmSquaredPerDegSquared = obj.alpha(eccDegs);
             % Compute degSquaredPerMMSquared conversion factor
             deg2PerMM2 = 1/mmSquaredPerDegSquared;
             % Compute cones per mm2
             val = coneDensityPerDeg2 * deg2PerMM2;
-        case 'cones per deg2'
+        case 'Cones per deg2'
             val = coneDensityPerDeg2;
         otherwise
-            error('units must be either ''cones per mm2'' or ''cones per deg2''.');
+            error('units must be either ''Cones per mm2'' or ''Cones per deg2''. Instead it was ''%s''.', units);
     end
 end

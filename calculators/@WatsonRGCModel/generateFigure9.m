@@ -1,4 +1,4 @@
-function hFig = generateFigure9(obj)
+function hFig = generateFigure9(obj, hFig)
 % Generate Figure 9 of the Watson 2014 paper
 %
 % Syntax:
@@ -6,7 +6,7 @@ function hFig = generateFigure9(obj)
 %   WatsonRGCCalc.generateFigure9();
 %
 % Description:
-%   Generate Figure 9 of Watson (2014) which plots the total RGC RF density
+%   Generate Figure 9 of Watson (2014) which plots the midget RGC RF density
 %   as a function of eccentricity for all 4 meridians.
 %
 % Inputs:
@@ -22,10 +22,9 @@ function hFig = generateFigure9(obj)
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
     figureNumber = '9';
-    hFig = figure(); clf;
+    figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
     eccDegs = 0.1:0.1:100;
-    
     generateRGCRFDensityPlot(obj, @obj.midgetRGCRFDensity, eccDegs);
-    title('Midget RGC RF density (ON+OFF) as a function of eccentricity for four meridians');
+    
 end

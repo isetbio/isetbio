@@ -9,8 +9,8 @@ function val = midgetRGCRFDensity(obj, eccDegs, meridian, units)
 %   midgetRGCRFDensityPerDeg2 = WatsonRGCCalc.midgetRGCRFDensity(eccDegs, meridian, 'RFs per deg2')
 %
 % Description:
-%   Method to return the midget RGC receptive field density as a function of the requested
-%   meridian and eccentricities (#of RFs/area, with area specified either in deg^2 or mm^2.
+%   Method to return the midget RGC receptive field density (ON and OFF submosaics combined)
+%   as a function of the requested meridian and eccentricities (#of RFs/area, with area specified either in deg^2 or mm^2.
 %
 % Inputs:
 %    obj                       - The WatsonRGCModel object

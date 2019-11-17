@@ -5,8 +5,8 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
 %   WatsonRGCCalc = WatsonRGCModel();
 %   eccDegs = 0:0.1:10;
 %   meridian = 'superior meridian';
-%   [coneSpacingMM, coneDensityPerMM2] = WatsonRGCCalc.coneRFSpacingAndDensity(eccDegs, meridian, 'mm')
-%   [coneSpacingDeg, coneDensityPerDeg2] = WatsonRGCCalc.coneRFSpacingAndDensity(eccDegs, meridian, 'deg')
+%   [coneSpacingMM, coneDensityPerMM2] = WatsonRGCCalc.coneRFSpacingAndDensity(eccDegs, meridian, 'Cones per mm2')
+%   [coneSpacingDeg, coneDensityPerDeg2] = WatsonRGCCalc.coneRFSpacingAndDensity(eccDegs, meridian, 'Cones per deg2')
 %
 % Description:
 %   Method to return cone spacing as a function of the requested meridian and 
@@ -16,8 +16,8 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
 %    obj                       - The WatsonRGCModel object
 %    eccDegs                   - Eccentricities at which to compute RF densities
 %    meridian                  - Meridian for which to compute RF densities
-%    units                     - Retinal area units, either 'RFs per mm2'
-%                                or 'RFs per deg2'
+%    units                     - Retinal area units, either 'Cones per mm2'
+%                                or 'Cones per deg2'
 % Outputs:
 %    val                       - Cone spacing at the requested eccentricities
 % 
@@ -54,20 +54,22 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
                                         'useParfor', false);
     
     switch (units)
-        case 'deg'
-            spacingMM = spacingMeters * 1e-3;
+        case 'Cones per mm2'
+            coneRFSpacing = spacingMeters * 1e-3;
+            coneRFDensity = densityConesPerMM2;
+            
+        case 'Cones per deg2'
+            spacingMM = spacingMeters * 1e3;
             % Convert cone spacing in mm to cone spacing in degs at all eccentricities
             coneRFSpacing = obj.rhoMMsToDegs(spacingMM+eccMM)-obj.rhoMMsToDegs(eccMM); 
             
             % Convert cone density from per mm2 to per deg2
-            % Compute mmSquaredPerDegSquared conversion factor for the eccentricities in mm
-            mmSquaredPerDegSquared = obj.alpha(eccMM);
+            % Compute mmSquaredPerDegSquared conversion factor for the
+            % eccentricities (ecc specified in degs)
+            mmSquaredPerDegSquared = obj.alpha(eccDegs);
             coneRFDensity = densityConesPerMM2 .* mmSquaredPerDegSquared;
-        case 'mm'
-            coneRFSpacing = spacingMeters * 1e-3;
-            coneRFDensity = densityConesPerMM2;
         otherwise
-            error('Units must be either ''deg'' or ''mm''.');
+            error('Density units must be either ''Cones per mm2'' or ''Cones per deg2''.');
     end
     
 end

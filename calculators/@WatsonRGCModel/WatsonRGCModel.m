@@ -20,12 +20,10 @@ classdef WatsonRGCModel
     % Constant properties (model parameters)
     properties (Constant)
         % Meridian parameters
-        % NOTE: WE HAVE REVERSED THE PARAMS FOR TEMPORAL AND NASAL
-        % MERIDIANS BECAUSE WE BELIEVE WATSON REVERSED THEM
         meridianParamsTable = {
-            'nasal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ...
+            'temporal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ...
             'superior meridian'  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35); ...
-            'temporal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ...
+            'nasal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ...
             'inferior meridian'  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13);
         }
      
@@ -126,26 +124,7 @@ classdef WatsonRGCModel
              
             % Generate figures
             if (generateAllFigures)
-                % RF density of all RGCs as a function of eccentricity for all quadrants
-                obj.generateFigure5();
-                
-                % fraction of midget to total RGCs RFs as a function of eccentrity
-                obj.generateFigure8();
-                
-                % RF density of midget RGCs as a function of eccentricity for all quadrants
-                obj.generateFigure9();
-                
-                % RF spacing of midget RGCs as a function of eccentricity for all quadrants
-                obj.generateFigures10And11();
-                
-                % Ratio of midget RGCs to cones as a function of eccentricity for all quadrants
-                obj.generateFigure14();
-                
-                % Relation between retinal distance in mm and degs
-                obj.generateFigureA1();
-                
-                % Ratio of area in mm^2 to deg^2 as a function of eccentricity
-                obj.generateFigureA2();
+                obj.generateAndDockAllFigures();
             end
         end
         
@@ -182,28 +161,35 @@ classdef WatsonRGCModel
         
         
         % ------------------ FIGURE GENERATION METHODS --------------------
-        % Cone density as a function of eccentricity for all quadrants
-        generateFigure1(obj);
+        generateAndDockAllFigures(obj);
         
+        % Cone density as a function of eccentricity for all quadrants
+        generateFigure1(obj, hFig);
         
         % RF density of all RGCs as a function of eccentricity for all quadrants
-        generateFigure5(obj);
+        generateFigure5(obj, hFig);
         
         % Fraction of midget to total RGCs RFs as a function of eccentrity
-        generateFigure8(obj);
+        generateFigure8(obj, hFig);
         
         % RF density of midget RGCs as a function of eccentricity for all quadrants
-        generateFigure9(obj);
+        generateFigure9(obj, hFig);
         
         % RF spacing of midget RGCs as a function of eccentricity for all quadrants
-        generateFigures10And11(obj);
+        generateFigure10(obj, hFig);
         
+        % RF spacing of midget RGCs as a function of eccentricity for all quadrants
+        generateFigure11(obj, hFig);
+        
+        % Ratio of midget RGCs to cones as a function of eccentricity for all quadrants
+        generateFigure14(obj, hFig);
+                
         % Relationhip between retinal distance from the optic axis in mm and degs as a
         % function of eccentricity
-        generateFigureA1(obj);
+        generateFigureA1(obj, hFig);
         
         % Ratio of area in mm^2 to deg^2 as a function of eccentricity
-        generateFigureA2(obj);
+        generateFigureA2(obj, hFig);
         
         % Method to generate RGCdensity at four quadrants as a function of eccentricity
         generateRGCRFDensityPlot(obj, RGCRFDensityFunctionHandle, eccDegs);
@@ -213,7 +199,5 @@ classdef WatsonRGCModel
         generateRGCRFSpacingPlot(obj, RGCRFSpacingFunctionHandle, eccDegs, type)
         % ------------------ Figure generation methods --------------------
     end
-    
-    
 end
 
