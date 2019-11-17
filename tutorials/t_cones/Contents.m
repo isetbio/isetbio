@@ -11,6 +11,7 @@
 %   t_conesMosaicHexReg                  - Create/use hex. mosaic w/ custom fixed cone spacing & inner segment diam.
 %   t_conesPhotoPigment                  - Illustrate photoPigment object
 %   t_conesMosaicAbsorptionsEccBased     - Demonstrate applying ecc-based efficiency correction on static stimulus.
+%   t_conesLetter                        - Display a letter on a display and show cone absorptions
 %
 % /advancedTutorials_cones               - Advanced tutorials (directory).
 % /underDevelopment_cones                - Tutorials that are under development (directory).
