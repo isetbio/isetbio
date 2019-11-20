@@ -28,7 +28,7 @@ function cmStruct = geometryStruct(obj)
     cmStruct.coneTypes = obj.coneTypesHexGrid;
     
     % cone aperture in degrees
-    cmStruct.coneApertures = (obj.computeApertureDiameters()/obj.micronsPerDegree)';
+    cmStruct.coneApertures = (obj.computeApertureDiametersHexGrid()/obj.micronsPerDegree)';
     
     % Delaunayn triangularization
     xHex = cmStruct.coneLocs(:,1);

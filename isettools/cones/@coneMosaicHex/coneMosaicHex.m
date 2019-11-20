@@ -487,6 +487,11 @@ classdef coneMosaicHex < coneMosaic
         % Return the aperture diameters for all cones
         apertureDiametersMicrons = computeApertureDiameters(obj);
         
+        % Return the aperture diameters for all cones serialized so that 
+        % they correspond to the serialized 1D response as well as to
+        % obj.coneLocsHexGrid and the obj.coneTypesHexGrid
+        apertureDiametersMicrons = computeApertureDiametersHexGrid(obj);
+        
         % Return a struct with the mosaic geometry (cone positions,
         % Delaunay triangles, and cone aperture sizes)
         cmStruct = geometryStruct(obj);
