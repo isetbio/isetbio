@@ -77,21 +77,17 @@ function [T_quantalAbsorptionsNormalized,T_quantalAbsorptions,T_quantalIsomeriza
 % published by Asano, Fairchild, & Blonde (2016), PLOS One, doi: 10.1371/journal.pone.0145671
 % to tailor the CIE fundamentals to individual observers.  This is done by
 % passing the argument indDiffParams, which is a structure as follows.
-%     'linear' gets the Asano et al. behavior
 %   indDiffParams.dlens - deviation in % from CIE computed peak lens density
-%   indDiffParams.dmac - deviation in % from CIE peak macular pigment
-%     density
-%   indDiffParams.dphotopigment - vector of deviations in % from CIE
-%     photopigment peak density.
-%   indDiffParams.lambdaMaxShift - vector of values (in nm) to shift lambda max of
-%     each photopigment absorbance by.  
-%   indDiffParams.shiftType - 'linear' (default) or 'log'.
+%   indDiffParams.dmac -  deviation in % from CIE peak macular pigment density
+%   indDiffParams.dphotopigment - vector of deviations in % from CIE photopigment peak density.
+%   indDiffParams.lambdaMaxShift - vector of values (in nm) to shift lambda max of each photopigment absorbance by.  
+%   indDiffParams.shiftType - 'linear' (default) or 'log'. 'linear' gets the Asano et al. behavior
 %
 % You also can shift the absorbances along a wavenumber axis after you have
 % obtained them.  To do this, pass argument lambdaMaxShift with the same
 % number of entries as the number of absorbances that are used.
 %
-% The adjIndDiffParams outputs is a struct which is populated by ComputeRawConeFundamentals.
+% The adjIndDiffParams output is a struct which is populated by ComputeRawConeFundamentals.
 % It contains the actual parameter values for the parameters adjusted using the indDiffParams 
 % input. It contains the following fields:
 %    adjIndDiffParams.mac - the adjusted macular pigment transmittance as a function of wavelength
