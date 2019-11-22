@@ -44,6 +44,10 @@ function val = get(obj, param, varargin)
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define rgc1 before it could
+    % possibly work.
     val = mosaicGet(rgc1.mosaic{1}, 'cell type')
     val = mosaicGet(rgc1.mosaic{3}, 'psth response')
 %}
