@@ -33,15 +33,15 @@ function figNum = vcSelectFigure(objType, noNewWin)
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    05/09/18  jnm  Formatting
 
-% Example:
+% Examples:
 %{
-    figNum = vcSelectFigure('GRAPHWIN');
     figNum = vcSelectFigure('scene', 1);
     figNum = vcSelectFigure('scene');
     figNum = vcSelectFigure('oi');
 %}
 %{
     % ETTBSkip - skipping broken example
+    figNum = vcSelectFigure('GRAPHWIN');
     figure(vcSelectFigure('ISA'));
 %}
 
