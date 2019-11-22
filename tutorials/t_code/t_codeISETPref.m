@@ -70,18 +70,18 @@ pause(2)
 
 % To make the font larger, use the pull down  "Edit | Change font size" or
 % use this command
-d = ieSessionGet('font delta');
-ieSessionSet('font delta', d + 2);
-sceneWindow
-drawnow
-pause(2)
+% d = ieSessionGet('font delta');
+% ieSessionSet('font delta', d + 2);
+% sceneWindow
+% drawnow
+% pause(2)
 
 % To return it to the previous run
-d = ieSessionGet('font delta');
-ieSessionSet('font delta', d - 2);
-sceneWindow
-drawnow
-pause(2)
+% d = ieSessionGet('font delta');
+% ieSessionSet('font delta', d - 2);
+% sceneWindow
+% drawnow
+% pause(2)
 
 %% Finally, you can see the pref list using the Matlab command getpref
 iePref = getpref('ISET')
