@@ -2,7 +2,7 @@ function img = imgDeadleaves(n,sigma,options)
 % Compute a random image using the dead-leaves model
 %
 % Syntax
-%   image = imgDeadleaves(n,sigma,options);
+%   img = imgDeadleaves(n,sigma,options);
 %
 % TODO
 %  I would like to put texture patterns inside the disks. *BW*
@@ -42,8 +42,8 @@ function img = imgDeadleaves(n,sigma,options)
 % Examples:
 %{
  n = 256; sigma = 3; options = [];
- img = sceneDeadleaves(n,sigma,options);
- ieNewGraphWin; imagesc(img); axis image; colormap(gray)
+ scene = sceneDeadleaves(n,sigma,options);
+ ieNewGraphWin; imagesc(scene.data.photons(:,:,1)); axis image; colormap(gray);
 %}
 
 %% Parameters - TODO:  Use parser
