@@ -24,14 +24,13 @@ function [oiD, D] = oiDepthCompute(oi, scene, imageDist, depthEdges, ...
 %                  oiWindow. Default is true.
 %
 % Outputs:
-%    oiD         - A cell array of irradiance images. There is one image
-%                  for from a scene. For each of the distances (m) in
-%                  depthEdges. The defocused image is calculated for each
-%                  distance. This cell array of irradiance images is
-%                  combined (oiDepthCombine) into a single image. The
-%                  combination is based on picking out the pixels at the
-%                  appropriate depth.
-%    D           - The defocus.
+%    oiD         - Cell. A cell array of irradiance images. There is one
+%                  image per distance (m) in depthEdges. The defocused
+%                  image is calculated for each distance. This cell array
+%                  of irradiance images is combined (oiDepthCombine) into a
+%                  single image. The combination is based on picking out
+%                  the pixels at the appropriate depth.
+%    D           - Vector. The defocus per each image in oiD.
 %
 % Optional key/value pairs:
 %    None.
@@ -41,13 +40,15 @@ function [oiD, D] = oiDepthCompute(oi, scene, imageDist, depthEdges, ...
 %      is oi, oiD, D ... however, we are taking the first and third of
 %      those arguments and calling them oiD and D. Can we double check that
 %      we are parsing this properly?]
+%
 % See Also:
-%    oiDepthCombine, oiDepthSegmentMap, s_opticsDepthScene
+%   oiDepthCombine, oiDepthSegmentMap, s_opticsDepthScene
 %
 
 % History:
 %    xx/xx/11       Copyright ImagEval Consultants, LLC, 2011.
 %    03/28/18  jnm  Formatting
+%    07/01/19  JNM  Formatting update
 
 if notDefined('oi'), error('oi required'); end
 if notDefined('scene'), error('scene required'); end

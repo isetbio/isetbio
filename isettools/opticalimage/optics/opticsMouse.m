@@ -28,13 +28,13 @@ function optics = opticsMouse(pupilRadius)
 %    03/12/18  jnm  Formatting
 
 %%
-if notDefined('pupilRadius'), pupilRadius = 0.00059; end 
+if notDefined('pupilRadius'), pupilRadius = 0.00059; end
 fLength = 0.001756;  % 1.756 mm
 %% NOTES ABOUT FOCAL LENGTH
 % Since the mouse optical system is not symmetric, there are two focal
 % lengths: front (before the cornea + lens) and back (after the cornea +
 % lens, roughly the lens-retina distance).
-% 
+%
 % Since light travels in air before the optical system, and in vitreous
 % humor after, the value for the back focal length should be multiplied by
 % the refraction index to be used. We have:
@@ -56,22 +56,22 @@ fLength = 0.001756;  % 1.756 mm
 % for long wavelengths. For fLength, we need the focal length at the
 % infocus wavelength.
 % (DO WE?? TODO: what is the dioptric power of the unaccomodated eye?)
-% 
+%
 % (i.e. that focuses on the retina surface, or as close to it as possible.)
 % At 544nm, we have 0.4 diopters of defocus, which is our best value. (see
 % the plot in mouseCore.m for defocus values. By interpolation, the zero
 % defocus would be at about 542nm.)
 %
 % So ***we are using the front focal length at 544nm for fLength value***.
-% 
-% (Source: A SCHEMATIC EYE FOR THE MOUSE, AND COMPARISONS WITH THE RAT, 
+%
+% (Source: A SCHEMATIC EYE FOR THE MOUSE, AND COMPARISONS WITH THE RAT,
 % Remtulla and Hallett, 1984)
 
 optics.type = 'optics';
 optics.name = 'mouse';
 optics = opticsSet(optics, 'model', 'shiftInvariant');
 
-% Ratio of focal length to diameter. 
+% Ratio of focal length to diameter.
 optics = opticsSet(optics, 'fnumber', fLength / (2 * pupilRadius));
 optics = opticsSet(optics, 'focalLength', fLength);
 

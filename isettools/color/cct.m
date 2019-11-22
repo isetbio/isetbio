@@ -12,71 +12,77 @@ function Tc = cct(uvs)
 %    of the correlated blackbody radiators.
 %
 %    This correlated color temperature is often used to summarize the
-%    appearance properties of a light source. 
+%    appearance properties of a light source.
 %
 %    This routine requires the information in the file: cct.mat
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit cct.m' into the Command Window.
+%
 % Inputs:
-%    uvs - CIE UV - chromaticity coordinates represented as a 2xN matrix
-%          [u1 u2 ... un; v1 v2 ... vn]
+%    uvs - Matrix. A CIE UV - chromaticity coordinates represented as a 2xN
+%          matrix in the format [u1 u2 ... un; v1 v2 ... vn]
 %
 % Outputs:
-%    Tc  - Correlated color temperatures. This comes back as a row vector,
-%          with each entry corresponding to a column of uvs.
+%    Tc  - Vector. The correlated color temperatures. This comes back as a
+%          row vector, with each entry corresponding to a column of uvs.
+%
+% Optional key/value pairs:
+%    None.
 %
 % References:
 %    Wyszecki & Stiles pgs. 227-228
 %
 % See Also:
-%    spd2cct, xyz2uv
+%   spd2cct, xyz2uv
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    10/30/17  jnm  Comments & formatting
-%    11/11/17  bw   Added examples to responding to NOTES 
+%    11/11/17  bw   Added examples to responding to NOTES
 %    11/16/17  jnm  Formatting
-%    12/12/17  bw   Added xyy2uv routine.  Compared it with PTB
-%                   routine.
+%    12/12/17  bw   Added xyy2uv routine. Compared it with PTB routine.
+%    07/11/19  JNM  Formatting update
 
 % Examples:
 %{
-   % Two uv values
-   uvs = [[.31, .32]' [0.33 0.35]'];
-   colorTemp = cct(uvs);
-   fprintf('Correlated color temperature %f\n',colorTemp);
+    % Two uv values
+    uvs = [[.31, .32]' [0.33 0.35]'];
+    colorTemp = cct(uvs);
+    fprintf('Correlated color temperature %f\n', colorTemp);
 %}
 %{
-   % Starting with blackbody.
-   % Note the 'uv' flag, rather than uprime vprime return on xyz2uv
-   wave = 400:10:700;
-   bb = blackbody(wave,6000,'energy');
-   XYZ = ieXYZFromEnergy(bb,wave);
-   uv = xyz2uv(XYZ,'uv')';
-   fprintf('Correlated color temperature %f\n',cct(uv));
+    % Starting with blackbody.
+    % Note the 'uv' flag, rather than uprime vprime return on xyz2uv
+    wave = 400:10:700;
+    bb = blackbody(wave, 6000, 'energy');
+    XYZ = ieXYZFromEnergy(bb, wave);
+    uv = xyz2uv(XYZ, 'uv')';
+    fprintf('Correlated color temperature %f\n', cct(uv));
 %}
 %{
-  % Starting with xyY
-  xyY = [.3221 .3322 100];
-  XYZ = xyy2xyz(xyY); 
-  fprintf('Correlated color temperatre %f\n', cct(xyz2uv(XYZ,'uv')'));
+    % Starting with xyY
+    xyY = [.3221 .3322 100];
+    XYZ = xyy2xyz(xyY);
+    fprintf('Correlated color temperatre %f\n', cct(xyz2uv(XYZ, 'uv')'));
 %}
 %{
-  xyY = [.3221 .3322 100];
-  XYZ = xyy2xyz(xyY); 
-  err = xyYToXYZ(xyY') - XYZ';
-  assert(max(abs(err)) < 1e-12) 
+    xyY = [.3221 .3322 100];
+    XYZ = xyy2xyz(xyY);
+    err = xyYToXYZ(xyY') - XYZ';
+    assert(max(abs(err)) < 1e-12)
 %}
 
-if notDefined('uvs'),       error('uv coordinates are required');
-elseif (size(uvs, 1) ~= 2), error('uv must be 2xN'); 
+if notDefined('uvs'),   error('uv coordinates are required');
+elseif (size(uvs, 1) ~= 2), error('uv must be 2xN');
 end
 
 tmp = load('cct.mat');
 table = tmp.table;
 
-Nd = size(uvs, 2);		% Number of uv coordinates
-Nt = size(table, 1);	% Number of temperatures
+Nd = size(uvs, 2);    % Number of uv coordinates
+Nt = size(table, 1);  % Number of temperatures
 
 T  = repmat(table(:, 1), [1 Nd]);
 u  = repmat(table(:, 2), [1 Nd]);
@@ -95,10 +101,10 @@ d  = ((us - u) - t .* (vs - v)) ./ sqrt(1 + t .^ 2);
 % ds is padded by zeros to ensure the indices are correct when doing the
 % find operation.
 ds = sign(d);
-ds = ds .* (ds~=0) + 1 .* (ds==0);
-ds = [ds; zeros(1, Nd)];	
+ds = ds .* (ds ~= 0) + 1 .* (ds == 0);
+ds = [ds; zeros(1, Nd)];
 
-j  = find( abs(diff(ds)) == 2 )';
+j  = find(abs(diff(ds)) == 2)';
 
 if (length(j) ~= Nd)
    error(['Check input range. ' ...

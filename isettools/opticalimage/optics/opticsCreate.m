@@ -2,7 +2,7 @@ function [optics, wvfP] = opticsCreate(opticsType, varargin)
 % Create an optics structure
 %
 % Syntax:
-%   [optics, wvf] = OPTICSCREATE(opticsType, varargin)
+%   [optics, wvf] = OPTICSCREATE(opticsType, [varargin])
 %
 % Description:
 %    This function is typically called through oiCreate. The optics
@@ -17,13 +17,13 @@ function [optics, wvfP] = opticsCreate(opticsType, varargin)
 %    structure. This information is stored in the optical image.
 %
 %    For diffraction-limited optics, the key parameter is the f-number.
-%         
+%
 %    Specifying human optics creates a shift-invariant optics structure
 %    with human OTF data.
 %
 %    Human and general shift-invariant models can also be created by
-%    specifying wavefront aberrations using Zernike polynomials. There is
-%    a collection of wavefront methods to help with this (see wvfCreate, 
+%    specifying wavefront aberrations using Zernike polynomials. There is a
+%    collection of wavefront methods to help with this (see wvfCreate,
 %    wvf<TAB>). That is the method used here for 'wvf human'.
 %
 % Inputs:
@@ -39,12 +39,12 @@ function [optics, wvfP] = opticsCreate(opticsType, varargin)
 %        {'diffraction'}      - 46 deg field of view, f number 4 optics.
 %    varargin   - (Optional) Additional arguments, such as the following
 %                 for a wavefront/Thibos human: (in this order)
-%        pupil diameter: Numeric. Diameter of a human pupil in
-%                        millimeters. Default 3mm.
-%        zCoefs:         The zernike coefficients. Default pulls from
-%                        wvfLoadThibosVirtualEyes.
-%        wave:           Vector. Wavelengths. Default 400:10:700.
-%        umPerDegree:    Retinal parameter, microns per degree. Default 300
+%        pupilDiameter: Numeric. Diameter of a human pupil in millimeters.
+%                       Default 3mm.
+%        zCoefs:        The zernike coefficients. Default pulls from
+%                       wvfLoadThibosVirtualEyes.
+%        wave:          Vector. Wavelengths. Default 400:10:700.
+%        umPerDegree:   Retinal parameter, microns per degree. Default 300.
 %
 % Outputs:
 %    optics     - Struct. The created optics structure.
@@ -58,10 +58,9 @@ function [optics, wvfP] = opticsCreate(opticsType, varargin)
 %    * TODO: Determine if we want to implement setting transmittance freely
 %      in iset
 %    * TODO: Determine if planning to eventually add mouse optics.
-%    * 
 %
 % See Also:
-%    oiCreate, opticsSet, opticsGet
+%   oiCreate, opticsSet, opticsGet
 %
 
 % History
@@ -72,6 +71,7 @@ function [optics, wvfP] = opticsCreate(opticsType, varargin)
 %                   and umPerDegree.
 %    12/20/17  dhb  Set meas pupil size for wvfHuman calcs.
 %    03/13/18  jnm  Formatting
+%    06/27/19  JNM  Formatting adjustments
 
 % Examples:
 %{
@@ -95,7 +95,7 @@ switch lower(opticsType)
         % Perhaps we should allow the transmittance to be set freely as in
         % ISET?  Or ...
         optics.lens = Lens;        % Human lens object
-        optics.lens.density = 0;   % Pigment density set to 0 
+        optics.lens.density = 0;   % Pigment density set to 0
 
     case {'default', 'human', 'humanmw'}
         % Optics for the Marimont and Wandell human eye
@@ -159,12 +159,12 @@ switch lower(opticsType)
         % mm per degree, and we back it out the other way here so that it
         % is all consistent.
         focalLengthMM = (umPerDegree * 1e-3) / (2 * tand(0.5));
-        fLengthMeters = focalLengthMM*1e-3;
-        pupilRadiusMeters = (pupilDiameterMM/2)*1e-3;
+        fLengthMeters = focalLengthMM * 1e-3;
+        pupilRadiusMeters = (pupilDiameterMM / 2) * 1e-3;
         optics = opticsSet(optics, 'fnumber', fLengthMeters / ...
             (2 * pupilRadiusMeters));
         optics = opticsSet(optics, 'focalLength', fLengthMeters);
-    
+
         % Add default Lens by default
         optics.lens = Lens;
 
@@ -172,7 +172,7 @@ switch lower(opticsType)
         % Some day might add in a default mouse optics. Here are some
         % guesses about the right parameters:
         %
-        % Pupil radius in meters. 
+        % Pupil radius in meters.
         %   Dilated pupil: 1.009mm = 0.001009m
         %   Contracted pupil: 0.178 mm
         %   (Source: From candelas to photoisomerizations in the mouse eye
@@ -259,7 +259,7 @@ function optics = opticsHuman(pupilRadius)
 % Description:
 %    Use the shift-invariant method place the estimated human OTF, using
 %    humanOTF from Marimont and Wandell, in the OTF fields.
-% 
+%
 %    The frequency support is calculated in cyc/deg but stored in units of
 %    cyc/mm.
 %
@@ -299,7 +299,7 @@ optics.type = 'optics';
 optics.name = 'human';
 optics = opticsSet(optics, 'model', 'shiftInvariant');
 
-% Convert from pupil size and focal length to f number and focal length, 
+% Convert from pupil size and focal length to f number and focal length,
 % because that is what we can set. This implies a number of mm per degree.
 optics = opticsSet(optics, 'fnumber', fLengthMeters / (2 * pupilRadius));
 optics = opticsSet(optics, 'focalLength', fLengthMeters);
@@ -318,7 +318,7 @@ wave = opticsGet(optics, 'wave');
 % Decide whether to use the legacy frequency support (Nyquist:  60 c/deg)
 % or 120 c/deg, which results in a more focused PSF
 legacyFrequencySupport = true;
-if (legacyFrequencySupport)
+if legacyFrequencySupport
     % Fsupport used to be [], which defaults to 60 c/deg
     fSupport = [];
 else
@@ -331,8 +331,8 @@ else
     fSupport(:, :, 1) = X;
     fSupport(:, :, 2) = Y;
 end
-   
-% The human optics are an SI case, and we store the OTF at this point. 
+
+% The human optics are an SI case, and we store the OTF at this point.
 [OTF2D, fSupport] = humanOTF(pupilRadius, dioptricPower, fSupport, wave);
 
 optics = opticsSet(optics, 'otfData', OTF2D);

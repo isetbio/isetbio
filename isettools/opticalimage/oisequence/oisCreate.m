@@ -25,31 +25,34 @@ function [ois, scene] = ...
 %
 % Inputs:
 %    oisType         - String. One of 'vernier', 'harmonic', 'impulse'.
-%    composition     - 'add' or 'blend'
-%    modulation      - Series of weights describing the add or blend
+%    composition     - String. Either 'add' or 'blend'.
+%    modulation      - Vector. A series of weights describing the add or
+%                      blend composition levels.
 %
 % Outputs:
 %    ois             - Struct. The created oi sequence structure.
 %    scene           - Struct. A scene structure.
 %
 % Optional key/value pairs:
-%    testParameters  -  Struct of parameters for the test targets 
-%    sceneParameters -  Struct of scene parameters (e.g., fov, luminance)
-%
-% Notes:
-%
+%    sampleTimes     - Vector. A vector of sample times. Default [].
+%    testParameters  - Struct. A parameter structure for test targets.
+%                      Default [].
+%    sceneParameters - Struct. A scene parameter structure
+%                      (e.g., fov, luminance). Default [].
+%    oi              - Struct. An optical image structure. Default [].
 %
 % References:
-%    ISETBIO wiki: https://github.com/isetbio/isetbio/wiki/OI-Sequences
+%   ISETBIO wiki: https://github.com/isetbio/isetbio/wiki/OI-Sequences
 %
 % See Also:
-%    t_oisCreate, oiSequence, sceneCreate, sceneHarmonic,
-%    humanConeContrast, humanConeIsolating
+%   t_oisCreate, oiSequence, sceneCreate, sceneHarmonic,
+%   humanConeContrast, humanConeIsolating
 %
 
 % History:
 %    xx/xx/16  BW   ISETBIO Team, 2016
 %    03/19/18  jnm  Formatting
+%    06/28/19  JNM  Formatting update
 
 % Examples:
 %{
@@ -104,8 +107,9 @@ p.KeepUnmatched = true;
 
 % Required
 validTypes = {'harmonic', 'vernier', 'impulse'};
+validComp = {'add', 'blend'};
 p.addRequired('oisType', @(x)(ismember(x, validTypes)));
-p.addRequired('composition', @ischar);
+p.addRequired('composition', @(x)(ismember(x, validComp)));
 p.addRequired('modulation');
 
 % Parameters
@@ -258,5 +262,3 @@ switch oisType
     otherwise
         error('Unknown type %s\n', oisType);
 end
-
-%%

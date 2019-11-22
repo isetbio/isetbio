@@ -2,7 +2,7 @@ function varargout = oiWindow(varargin)
 % Optical image window
 %
 % Syntax:
-%   varargout = oiWindow(varargin)
+%   [varargout] = oiWindow([varargin])
 %
 % Description:
 %    Graphical user interface to manage the ISET OPTICALIMAGE properties.
@@ -19,9 +19,9 @@ function varargout = oiWindow(varargin)
 %    OIWINDOW('CALLBACK', hObject, eventData, handles, ...) calls the local
 %    function named CALLBACK in OIWINDOW.M with the given input arguments.
 %
-%    OIWINDOW('Property', 'Value', ...) creates a new OIWINDOW or raises the
-%    existing singleton*. Starting from the left, property value pairs are
-%    applied to the GUI before oiWindow_OpeningFunction gets called. An
+%    OIWINDOW('Property', 'Value', ...) creates a new OIWINDOW or raises
+%    the existing singleton*. Starting from the left, property value pairs
+%    are applied to the GUI before oiWindow_OpeningFunction gets called. An
 %    unrecognized property name or invalid value makes property application
 %    stop. All inputs are passed to oiWindow_OpeningFcn via varargin.
 %
@@ -39,7 +39,7 @@ function varargout = oiWindow(varargin)
 %    xx/xx/03         Copyright ImagEval Consultants, LLC, 2003.
 %    01/25/17  GUIDE  Last Modified by GUIDE v2.5 25-Jan-2017 15:25:04
 %    03/19/18  jnm    Formatting (Fin 03/22)
-
+%    06/18/19  JNM    Formatting update (also 07/01/19)
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -71,9 +71,9 @@ function oiWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 %    Set up defaults for oiWindow just before it is made visible.
 %
 % Inputs:
-%    hObject   - handle to oiWindow (see GCBO)
+%    hObject   - Handle. Handle to oiWindow (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -114,9 +114,9 @@ function varargout = oiWindow_OutputFcn(hObject, eventdata, handles)
 %    the handles structure.
 %
 % Inputs:
-%    hObject   - handle to oiWindow (see GCBO)
+%    hObject   - Handle. Handle to oiWindow (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -138,9 +138,9 @@ function oiDelete(hObject, eventdata, handles)
 %    Delete current OI as called from within menu selection function.
 %
 % Inputs:
-%    hObject   - handle to oiDelete (see GCBO)
+%    hObject   - Handle. Handle to oiDelete (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -170,9 +170,9 @@ function menuEditDeleteSome_Callback(hObject, eventdata, handles)
 %    separate option).
 %
 % Inputs:
-%    hObject   - handle to menuEditDeleteSome (see GCBO)
+%    hObject   - Handle. Handle to menuEditDeleteSome (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -196,7 +196,7 @@ function SelectOptImg_CreateFcn(hObject, eventdata, handles)
 %    pre-defined default values.
 %
 % Inputs:
-%    hObject   - handle to SelectOptImg (see GCBO)
+%    hObject   - Handle. Handle to SelectOptImg (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - Empty - The handles are not created until after all of the
 %                CreateFcns have been called.
@@ -226,9 +226,9 @@ function SelectOptImg_Callback(hObject, eventdata, handles)
 %    Optical image selection change callback
 %
 % Inputs:
-%    hObject   - handle to SelectOptImg (see GCBO)
+%    hObject   - Handle. Handle to SelectOptImg (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -261,9 +261,9 @@ function oiRefresh(hObject, eventdata, handles)
 %    Refresh function called when menu option selected
 %
 % Inputs:
-%    hObject   - handle to oiRefresh (see GCBO)
+%    hObject   - Handle. Handle to oiRefresh (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -286,9 +286,9 @@ function FileMenu_Callback(hObject, eventdata, handles)
 %    The top level of the File Menu option
 %
 % Inputs:
-%    hObject   - handle to FileMenu (see GCBO)
+%    hObject   - Handle. Handle to FileMenu (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -309,9 +309,9 @@ function menuSaveImage_Callback(hObject, eventdata, handles)
 %    Function to save the current OI as an image (.png).
 %
 % Inputs:
-%    hObject   - handle to menuSaveImage (see GCBO)
+%    hObject   - Handle. Handle to menuSaveImage (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -335,9 +335,9 @@ function menuFileClose_Callback(hObject, eventdata, handles)
 %    Calls the close function under the File menu heading.
 %
 % Inputs:
-%    hObject   - handle to menuFileClose (see GCBO)
+%    hObject   - Handle. Handle to menuFileClose (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -359,9 +359,9 @@ function EditMenu_Callback(hObject, eventdata, handles)
 %    Top level menu option for Edit
 %
 % Inputs:
-%    hObject   - handle to EditMenu (see GCBO)
+%    hObject   - Handle. Handle to EditMenu (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -382,7 +382,7 @@ function editFnumber_CreateFcn(hObject, eventdata, handles)
 %    Creates the F-number textbox according to the pre-existing defaults.
 %
 % Inputs:
-%    hObject   - handle to editFnumber (see GCBO)
+%    hObject   - Handle. Handle to editFnumber (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - Empty - The handles are not created until after all of the
 %                CreateFcns have been called.
@@ -412,9 +412,9 @@ function editFnumber_Callback(hObject, eventdata, handles)
 %    Edit the value located in the F-number text box.
 %
 % Inputs:
-%    hObject   - handle to editFnumber (see GCBO)
+%    hObject   - Handle. Handle to editFnumber (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -444,9 +444,9 @@ function editFocalLength_CreateFcn(hObject, eventdata, handles)
 %    default values.
 %
 % Inputs:
-%    hObject   - handle to editFocalLength (see GCBO)
+%    hObject   - Handle. Handle to editFocalLength (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -472,9 +472,9 @@ function editFocalLength_Callback(hObject, eventdata, handles)
 %    Edit the value in the Focal Length textbox.
 %
 % Inputs:
-%    hObject   - handle to editFocalLength (see GCBO)
+%    hObject   - Handle. Handle to editFocalLength (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -505,7 +505,7 @@ function editDefocus_CreateFcn(hObject, eventdata, handles)
 %    Defocus creation function
 %
 % Inputs:
-%    hObject   - handle to editDefocus (see GCBO)
+%    hObject   - Handle. Handle to editDefocus (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - Empty - Handles are not created until after all of the
 %                CreateFcns have been called.
@@ -540,9 +540,9 @@ function btnSimulate_Callback(hObject, eventdata, handles)
 %    this in a separate function rather than keeping it in here.]
 %
 % Inputs:
-%    hObject   - handle to menuEditZoom (see GCBO)
+%    hObject   - Handle. Handle to menuEditZoom (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -588,9 +588,9 @@ function menuFileLoadOI_Callback(hObject, eventdata, handles)
 %    current session.
 %
 % Inputs:
-%    hObject   - handle to menuFileLoadOI (see GCBO)
+%    hObject   - Handle. Handle to menuFileLoadOI (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -614,9 +614,9 @@ function menuFileSaveOI_Callback(hObject, eventdata, handles)
 %    Save OI function. Function saves the current OI to a .mat file.
 %
 % Inputs:
-%    hObject   - handle to menuFileSaveOI (see GCBO)
+%    hObject   - Handle. Handle to menuFileSaveOI (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -639,7 +639,7 @@ function editGamma_CreateFcn(hObject, eventdata, handles)
 %    Create the Gamma textbox and value according to defaults.
 %
 % Inputs:
-%    hObject   - handle to editGamma (see GCBO)
+%    hObject   - Handle. Handle to editGamma (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - Empty - The handles are not created until after all of the
 %                CreateFcns have been called.
@@ -671,9 +671,9 @@ function editGamma_Callback(hObject, eventdata, handles)
 %    with the new gamma value.
 %
 % Inputs:
-%    hObject   - handle to editGamma (see GCBO)
+%    hObject   - Handle. Handle to editGamma (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -696,9 +696,9 @@ function popupDisplay_Callback(hObject, eventdata, handles)
 %    call the relevant rendering routine.
 %
 % Inputs:
-%    hObject   - handle to popupDisplay (see GCBO)
+%    hObject   - Handle. Handle to popupDisplay (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -726,7 +726,7 @@ function popupDisplay_CreateFcn(hObject, eventdata, handles)
 %    Create the popUp display.
 %
 % Inputs:
-%    hObject   - handle to popupDisplay (see GCBO)
+%    hObject   - Handle. Handle to popupDisplay (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - Empty - The handles are not created until after all of the
 %                CreateFcns have been called.
@@ -760,9 +760,9 @@ function oiNew(hObject, eventdata, handles)
 %    Create New OI under the Edit menu.
 %
 % Inputs:
-%    hObject   - handle to oiNew (see GCBO)
+%    hObject   - Handle. Handle to oiNew (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -790,9 +790,9 @@ function menuLens_Callback(hObject, eventdata, handles)
 %    Lens sub-heading under Optics
 %
 % Inputs:
-%    hObject   - handle to menuLens (see GCBO)
+%    hObject   - Handle. Handle to menuLens (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -813,9 +813,9 @@ function menuLensDensity_Callback(hObject, eventdata, handles)
 %    Set the human lens density.
 %
 % Inputs:
-%    hObject   - handle to menuLensDensity (see GCBO)
+%    hObject   - Handle. Handle to menuLensDensity (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -840,7 +840,7 @@ function menuOptTrans_Callback(hObject, eventdata, handles)
 %
 % Description:
 %    Read the optical transmittance in wavelength. This is useful for
-%    diffraction cases. 
+%    diffraction cases.
 %
 %    We could use a function that multiplies the transmittance by another
 %    function, such as a lens or macular pigment transmittance. As things
@@ -848,9 +848,9 @@ function menuOptTrans_Callback(hObject, eventdata, handles)
 %    that gets the existing one and multipllies it by another.
 %
 % Inputs:
-%    hObject   - handle to menuOptTrans (see GCBO)
+%    hObject   - Handle. Handle to menuOptTrans (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -883,9 +883,9 @@ function menuFileRefresh_Callback(hObject, eventdata, handles)
 %    Refresh function under File.
 %
 % Inputs:
-%    hObject   - handle to menuFileRefresh (see GCBO)
+%    hObject   - Handle. Handle to menuFileRefresh (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -907,9 +907,9 @@ function menuEditScale_Callback(hObject, eventdata, handles)
 %    Scale the irradiance levels by s - received from popUp.
 %
 % Inputs:
-%    hObject   - handle to menuEditScale (see GCBO)
+%    hObject   - Handle. Handle to menuEditScale (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -949,9 +949,9 @@ function menuEditFontSize_Callback(hObject, eventdata, handles)
 %    Function to change the font size.
 %
 % Inputs:
-%    hObject   - handle to menuEditFontSize (see GCBO)
+%    hObject   - Handle. Handle to menuEditFontSize (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -973,9 +973,9 @@ function menuEditName_Callback(hObject, eventdata, handles)
 %    OI Re-naming function
 %
 % Inputs:
-%    hObject   - handle to menuEditName (see GCBO)
+%    hObject   - Handle. Handle to menuEditName (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1006,9 +1006,9 @@ function menuCopyOI_Callback(hObject, eventdata, handles)
 %    Copy OI function contained under Edit.
 %
 % Inputs:
-%    hObject   - handle to menuCopyOI (see GCBO)
+%    hObject   - Handle. Handle to menuCopyOI (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1034,9 +1034,9 @@ function menuEditDelete_Callback(hObject, eventdata, handles)
 %    Delete current OI function (not delete some)
 %
 % Inputs:
-%    hObject   - handle to menuEditDelete (see GCBO)
+%    hObject   - Handle. Handle to menuEditDelete (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1058,9 +1058,9 @@ function menuEditCreate_Callback(hObject, eventdata, handles)
 %    Create New OI.
 %
 % Inputs:
-%    hObject   - handle to menuEditCreate (see GCBO)
+%    hObject   - Handle. Handle to menuEditCreate (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1081,9 +1081,9 @@ function menuEditClearMessage_Callback(hObject, eventdata, handles)
 %    Clear Window Message function.
 %
 % Inputs:
-%    hObject   - handle to menuEditClearMessage (see GCBO)
+%    hObject   - Handle. Handle to menuEditClearMessage (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1105,9 +1105,9 @@ function menuEditZoom_Callback(hObject, eventdata, handles)
 %    Zoom function
 %
 % Inputs:
-%    hObject   - handle to menuEditZoom (see GCBO)
+%    hObject   - Handle. Handle to menuEditZoom (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1129,9 +1129,9 @@ function menuEditViewer_Callback(hObject, eventdata, handles)
 %    Plot the irradiance in terms of photons.
 %
 % Inputs:
-%    hObject   - handle to menuEditViewer (see GCBO)
+%    hObject   - Handle. Handle to menuEditViewer (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1156,9 +1156,9 @@ function menuOptics_Callback(hObject, eventdata, handles)
 %    Top level of Optics menu.
 %
 % Inputs:
-%    hObject   - handle to menuOptics (see GCBO)
+%    hObject   - Handle. Handle to menuOptics (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1179,9 +1179,9 @@ function menuOpticsHuman_Callback(hObject, eventdata, handles)
 %    Optics -> Human Optics (mw)
 %
 % Inputs:
-%    hObject   - handle to menuOpticsHuman (see GCBO)
+%    hObject   - Handle. Handle to menuOpticsHuman (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1205,9 +1205,9 @@ function menuHumanWVF_Callback(hObject, eventdata, handles)
 %    Human 'wvf' optics option.
 %
 % Inputs:
-%    hObject   - handle to menuHumanWVF (see GCBO)
+%    hObject   - Handle. Handle to menuHumanWVF (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1231,9 +1231,9 @@ function Diffraction_Callback(hObject, eventdata, handles)
 %    The diffraction option under Optics.
 %
 % Inputs:
-%    hObject   - handle to Diffraction (see GCBO)
+%    hObject   - Handle. Handle to Diffraction (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1248,33 +1248,33 @@ return;
 
 % % --------------------------------------------------------------------
 % function menuOpticsHalfInch_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 % oi = oiClearData(oi);
 % optics = opticsCreate('standard (1/2-inch)');
 % oi = oiSet(oi, 'optics', optics);
 % vcReplaceObject(oi, val);
-% 
+%
 % oiRefresh(hObject, eventdata, handles);
-% 
+%
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuOpticsQuarterInch_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 % oi = oiClearData(oi);
 % optics = opticsCreate('standard (1/4-inch)');
 % oi = oiSet(oi, 'optics', optics);
 % vcReplaceObject(oi, val);
 % oiRefresh(hObject, eventdata, handles);
-% 
+%
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuOpticsThird_Callback(hObject, eventdata, handles)
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-% 
+%
 % optics = opticsCreate('standard (1/3-inch)');
 % oi.optics = optics;
 % oi.data = [];
@@ -1282,10 +1282,10 @@ return;
 % vcReplaceObject(oi, val);
 % oiRefresh(hObject, eventdata, handles);
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuOpticsTwoThirds_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 % optics = opticsCreate('standard (2/3-inch)');
 % oi.optics = optics;
@@ -1293,17 +1293,17 @@ return;
 % vcReplaceObject(oi, val);
 % oiRefresh(hObject, eventdata, handles);
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuOpticsInch_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-% 
+%
 % optics = opticsCreate('standard (1-inch)');
 % oi.optics = optics;
 % oi = sceneClearData(oi);
 % vcReplaceObject(oi, val);
-% 
+%
 % oiRefresh(hObject, eventdata, handles);
 % return;
 % --------------------------------------------------------------------
@@ -1316,15 +1316,15 @@ return;
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
 % oi = humanMacularTransmittance(oi, 0.28);
 % vcReplaceObject(oi, val);
-% 
+%
 % oiRefresh(hObject, eventdata, handles);
 % return;
-% 
+%
 % % --------------------------------------------------------------------
 % function menuMacular_Callback(hObject, eventdata, handles)
-% 
+%
 % [val, oi] = vcGetSelectedObject('OPTICALIMAGE');
-% 
+%
 % % Could use ieReadNumber here.
 % dens = ieReadNumber('Enter macular density', 0.28, ' %.2f');
 % % prompt = {'Enter macular density:'};
@@ -1334,7 +1334,7 @@ return;
 % % dens = str2num(answer{1});
 % oi = humanMacularTransmittance([], dens);
 % vcReplaceObject(oi, val);
-% 
+%
 % oiRefresh(hObject, eventdata, handles);
 % return;
 
@@ -1350,9 +1350,9 @@ function menuOpticsImport_Callback(hObject, eventdata, handles)
 %    Import Optics
 %
 % Inputs:
-%    hObject   - handle to menuOpticsImport (see GCBO)
+%    hObject   - Handle. Handle to menuOpticsImport (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1375,9 +1375,9 @@ function menuOpticsRename_Callback(hObject, eventdata, handles)
 %    Rename the existing optics
 %
 % Inputs:
-%    hObject   - handle to menuOpticsRename (see GCBO)
+%    hObject   - Handle. Handle to menuOpticsRename (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1414,9 +1414,9 @@ function menuOpticsExports_Callback(hObject, eventdata, handles)
 %    Export the current Optics  to a file.
 %
 % Inputs:
-%    hObject   - handle to menuOpticsExport (see GCBO)
+%    hObject   - Handle. Handle to menuOpticsExport (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1439,9 +1439,9 @@ function menuOpticsLoadSI_Callback(hObject, eventdata, handles)
 %    Load the SI Data.
 %
 % Inputs:
-%    hObject   - handle to menuOpticsLoadSI (see GCBO)
+%    hObject   - Handle. Handle to menuOpticsLoadSI (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1467,9 +1467,9 @@ function PlotMenu_Callback(hObject, eventdata, handles)
 %    This is the top level of the Plot Menu.
 %
 % Inputs:
-%    hObject   - handle to PlotMenu (see GCBO)
+%    hObject   - Handle. Handle to PlotMenu (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1490,9 +1490,9 @@ function plotIrradiance_Callback(hObject, eventdata, handles)
 %    Plot the irradiance in terms of photons.
 %
 % Inputs:
-%    hObject   - handle to plotIrradiance (see GCBO)
+%    hObject   - Handle. Handle to plotIrradiance (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1515,9 +1515,9 @@ function menuPlotIrradEnergy_Callback(hObject, eventdata, handles)
 %    Plot the irradiance in terms of energy.
 %
 % Inputs:
-%    hObject   - handle to menuPlotIrradEnergy (see GCBO)
+%    hObject   - Handle. Handle to menuPlotIrradEnergy (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1540,9 +1540,9 @@ function menuPlotImageGrid_Callback(hObject, eventdata, handles)
 %    Plot the RGB image grid.
 %
 % Inputs:
-%    hObject   - handle to menuPlotImageGrid (see GCBO)
+%    hObject   - Handle. Handle to menuPlotImageGrid (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1564,9 +1564,9 @@ function menuPlotLens_Callback(hObject, eventdata, handles)
 %    Plot the lens transmittance.
 %
 % Inputs:
-%    hObject   - handle to menuPlotLens (see GCBO)
+%    hObject   - Handle. Handle to menuPlotLens (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1589,9 +1589,9 @@ function menuPlotDepthmap_Callback(hObject, eventdata, handles)
 %    Plot the Depth Map.
 %
 % Inputs:
-%    hObject   - handle to menuPlotDepthmap (see GCBO)
+%    hObject   - Handle. Handle to menuPlotDepthmap (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1620,9 +1620,9 @@ function menuPlotDepthContour_Callback(hObject, eventdata, handles)
 %    Plot -> Depth Contour
 %
 % Inputs:
-%    hObject   - handle to menuPlotVLContrast (see GCBO)
+%    hObject   - Handle. Handle to menuPlotVLContrast (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1652,9 +1652,9 @@ function menuPlotHLContrast_Callback(hObject, eventdata, handles)
 %    This may never be called. If it is, it is from the Analyze pulldown.
 %
 % Inputs:
-%    hObject   - handle to menuPlotHLContrast (see GCBO)
+%    hObject   - Handle. Handle to menuPlotHLContrast (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1679,9 +1679,9 @@ function menuPlotVLContrast_Callback(hObject, eventdata, handles)
 %    This may never be called. If it is, it is from the Analyze pulldown.
 %
 % Inputs:
-%    hObject   - handle to menuPlotVLContrast (see GCBO)
+%    hObject   - Handle. Handle to menuPlotVLContrast (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1704,9 +1704,9 @@ function menuPlotIllumLog_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze the log10 Illuminance Mesh option.
 %
 % Inputs:
-%    hObject   - handle to menuPlotIllumLog (see GCBO)
+%    hObject   - Handle. Handle to menuPlotIllumLog (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1720,7 +1720,7 @@ if ~checkfields(oi, 'data', 'illuminance')
     oi = oiSet(oi, 'illuminance', illuminance);
     vcReplaceObject(oi, val);
 end
-% Plots log10 or linear luminance, 
+% Plots log10 or linear luminance,
 % oiPlotIlluminance(oi, 'log');
 oiPlot(oi, 'illuminance mesh log');
 return;
@@ -1736,9 +1736,9 @@ function menuPlotIllumLin_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze the Linear Illuminance Mesh option.
 %
 % Inputs:
-%    hObject   - handle to menuPlotIllumLin (see GCBO)
+%    hObject   - Handle. Handle to menuPlotIllumLin (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1752,7 +1752,7 @@ if ~checkfields(oi, 'data', 'illuminance')
     [oi.data.illuminance, oi.data.meanIll] = oiCalculateIlluminance(oi);
     vcReplaceObject(oi, val);
 end
-% Plots log10 or linear luminance, 
+% Plots log10 or linear luminance,
 oiPlot(oi, 'illuminance mesh linear');
 return;
 
@@ -1767,9 +1767,9 @@ function menuPlotCIE_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze -> Optics -> LS by Wavelength
 %
 % Inputs:
-%    hObject   - handle to menuPlotCIE (see GCBO)
+%    hObject   - Handle. Handle to menuPlotCIE (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1792,9 +1792,9 @@ function menuPlotNewGraphWin_Callback(hObject, eventdata, handles)
 %    Open a new window using vcNewGraphWin.
 %
 % Inputs:
-%    hObject   - handle to menuPlotNewGraphWin (see GCBO)
+%    hObject   - Handle. Handle to menuPlotNewGraphWin (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1816,9 +1816,9 @@ function menuPlOp_Callback(hObject, eventdata, handles)
 %    Plot option. Plot -> Optics
 %
 % Inputs:
-%    hObject   - handle to menuPlOp (see GCBO)
+%    hObject   - Handle. Handle to menuPlOp (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1839,9 +1839,9 @@ function menuTransmittance_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze -> Optics -> Transmittance
 %
 % Inputs:
-%    hObject   - handle to menuPlotLSWave (see GCBO)
+%    hObject   - Handle. Handle to menuPlotLSWave (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1863,9 +1863,9 @@ function menuAnPSFMovie_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze -> Optics -> PSF Movie
 %
 % Inputs:
-%    hObject   - handle to menuAnPSFMovie (see GCBO)
+%    hObject   - Handle. Handle to menuAnPSFMovie (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1887,9 +1887,9 @@ function menuPlotPS550_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze -> Optics -> PSF Mesh 550nm
 %
 % Inputs:
-%    hObject   - handle to menuPlotPS550 (see GCBO)
+%    hObject   - Handle. Handle to menuPlotPS550 (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1912,9 +1912,9 @@ function menuPlotLSWave_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze -> Optics -> LS by Wavelength
 %
 % Inputs:
-%    hObject   - handle to menuPlotLSWave (see GCBO)
+%    hObject   - Handle. Handle to menuPlotLSWave (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1937,9 +1937,9 @@ function menuPlOTFWave_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze the OTF (1D) by a wavelength.
 %
 % Inputs:
-%    hObject   - handle to menuPlOTFWave (see GCBO)
+%    hObject   - Handle. Handle to menuPlOTFWave (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1964,9 +1964,9 @@ function menuOTFAnyWave_Callback(hObject, eventdata, handles)
 %    the OTF calculation.
 %
 % Inputs:
-%    hObject   - handle to menuOTFAnyWave (see GCBO)
+%    hObject   - Handle. Handle to menuOTFAnyWave (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -1989,9 +1989,9 @@ function plotOTF_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze the OTF at 550nm in the Optics sub-menu.
 %
 % Inputs:
-%    hObject   - handle to plotOTF (see GCBO)
+%    hObject   - Handle. Handle to plotOTF (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2014,9 +2014,9 @@ function menuPlotOffAxis_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze the off-axis fall-off
 %
 % Inputs:
-%    hObject   - handle to menuPlotOffAxis (see GCBO)
+%    hObject   - Handle. Handle to menuPlotOffAxis (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2039,9 +2039,9 @@ function menuPlCIE_Callback(hObject, eventdata, handles)
 %    Longer Description.
 %
 % Inputs:
-%    hObject   - handle to menuP1CIE_Callback(see GCBO)
+%    hObject   - Handle. Handle to menuP1CIE_Callback(see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2062,9 +2062,9 @@ function menuAn_Callback(hObject, eventdata, handles)
 %    Menu option. Top level for Analyze
 %
 % Inputs:
-%    hObject   - handle to menuAnLineIllumVertical (see GCBO)
+%    hObject   - Handle. Handle to menuAnLineIllumVertical (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2085,9 +2085,9 @@ function menuAnOpticsPSF_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze the PSF of the Optics
 %
 % Inputs:
-%    hObject   - handle to menuAnOpticsPSF (see GCBO)
+%    hObject   - Handle. Handle to menuAnOpticsPSF (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2112,9 +2112,9 @@ function menuAnalyzeLinePlots_Callback(hObject, eventdata, handles)
 %    Analyze option. Analyze the Line plots
 %
 % Inputs:
-%    hObject   - handle to menuAnalyzeLinePlots (see GCBO)
+%    hObject   - Handle. Handle to menuAnalyzeLinePlots (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2135,9 +2135,9 @@ function menuAnLineIllum_Callback(hObject, eventdata, handles)
 %    Menu option. Plot line illuminance.
 %
 % Inputs:
-%    hObject   - handle to menuAnLineIllum (see GCBO)
+%    hObject   - Handle. Handle to menuAnLineIllum (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2158,9 +2158,9 @@ function menuAnLineIllumHorizontal_Callback(hObject, eventdata, handles)
 %    Menu option. Plot a Horizontal line for the illuminance.
 %
 % Inputs:
-%    hObject   - handle to menuAnLineIllumHorizontal (see GCBO)
+%    hObject   - Handle. Handle to menuAnLineIllumHorizontal (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2182,9 +2182,9 @@ function menuAnLineIllumVertical_Callback(hObject, eventdata, handles)
 %    Menu option. Plot a Veritcal line for the illuminance.
 %
 % Inputs:
-%    hObject   - handle to menuAnLineIllumVertical (see GCBO)
+%    hObject   - Handle. Handle to menuAnLineIllumVertical (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2206,9 +2206,9 @@ function menuAnLineIllumHorFFT_Callback(hObject, eventdata, handles)
 %    Menu option. Plot a Horizontal Line FFT for the illuminance.
 %
 % Inputs:
-%    hObject   - handle to menuAnLineIllumHorFFT (see GCBO)
+%    hObject   - Handle. Handle to menuAnLineIllumHorFFT (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2230,9 +2230,9 @@ function menuAnLineIllumVertFFT_Callback(hObject, eventdata, handles)
 %    Menu option. Plot a Veritcal line FFT for the illuminance.
 %
 % Inputs:
-%    hObject   - handle to menuAnLineIllumVertFFT (see GCBO)
+%    hObject   - Handle. Handle to menuAnLineIllumVertFFT (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2260,12 +2260,12 @@ function menuAnOptSampling_Callback(hObject, eventdata, handles)
 %
 %    In many cases, people will leave the lower sampling rate, which
 %    provides speed but blurs the image, because they are interested in
-%    other features of the simulation. 
+%    other features of the simulation.
 %
 % Inputs:
-%    hObject   - handle to menuVLine (see GCBO)
+%    hObject   - Handle. Handle to menuVLine (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2292,9 +2292,9 @@ function menuROISummaries_Callback(hObject, eventdata, handles)
 %    Menu option. Analyzes -> ROI Summaries.
 %
 % Inputs:
-%    hObject   - handle to menuROISummaries (see GCBO)
+%    hObject   - Handle. Handle to menuROISummaries (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2315,9 +2315,9 @@ function menuPlotLuxHist_Callback(hObject, eventdata, handles)
 %    Menu option. Analyzes and Plot the ROI Summary & Illuminance.
 %
 % Inputs:
-%    hObject   - handle to menuPlotLuxHist (see GCBO)
+%    hObject   - Handle. Handle to menuPlotLuxHist (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2340,9 +2340,9 @@ function menuPlotRGB_Callback(hObject, eventdata, handles)
 %    Menu option. Plots the current RGB image in a separate window.
 %
 % Inputs:
-%    hObject   - handle to menuPlotRGB (see GCBO)
+%    hObject   - Handle. Handle to menuPlotRGB (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2362,12 +2362,12 @@ function menuPlotMultiRGB_Callback(hObject, eventdata, handles)
 %
 % Description:
 %    Plot option. Plot the selected RGB images from all of the OIs in the
-%    current session. 
+%    current session.
 %
 % Inputs:
-%    hObject   - handle to menuPlotMultiRGB (see GCBO)
+%    hObject   - Handle. Handle to menuPlotMultiRGB (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2389,9 +2389,9 @@ function menuHline_Callback(hObject, eventdata, handles)
 %    Menu option. Analyzes the Horizontal option of Line.
 %
 % Inputs:
-%    hObject   - handle to menuHLine (see GCBO)
+%    hObject   - Handle. Handle to menuHLine (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2414,9 +2414,9 @@ function menuVLine_Callback(hObject, eventdata, handles)
 %    Menu option. Analyzes the Vertical option of Line.
 %
 % Inputs:
-%    hObject   - handle to menuVLine (see GCBO)
+%    hObject   - Handle. Handle to menuVLine (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2440,9 +2440,9 @@ function menuFFTamp_Callback(hObject, eventdata, handles)
 %    whole image and a middle wavelength.
 %
 % Inputs:
-%    hObject   - handle to menuFFTamp (see GCBO)
+%    hObject   - Handle. Handle to menuFFTamp (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2465,9 +2465,9 @@ function menuStandForm_Callback(hObject, eventdata, handles)
 %    Menu option. Clicking calls the optics standardFormat
 %
 % Inputs:
-%    hObject   - handle to menuStandForm (see GCBO)
+%    hObject   - Handle. Handle to menuStandForm (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2488,7 +2488,7 @@ function popCustom_CreateFcn(hObject, eventdata, handles)
 %    PopUp option. Create a custom popUp using the defaults.
 %
 % Inputs:
-%    hObject   - handle to popCustom (see GCBO)
+%    hObject   - Handle. Handle to popCustom (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - empty - The handles are not created until after all of the
 %                CreateFcns have been called.
@@ -2519,7 +2519,7 @@ function popOpticsModel_CreateFcn(hObject, eventdata, handles)
 %    creation defaults.
 %
 % Inputs:
-%    hObject   - handle to popOpticsModel (see GCBO)
+%    hObject   - Handle. Handle to popOpticsModel (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - empty - The handles are not created until after all of the
 %                CreateFcns have been called.
@@ -2547,9 +2547,9 @@ function popOpticsModel_Callback(hObject, eventdata, handles)
 %    PopUp option. Interprets the optics model popUp callback
 %
 % Inputs:
-%    hObject   - handle to popOpticsModel (see GCBO)
+%    hObject   - Handle. Handle to popOpticsModel (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2591,7 +2591,7 @@ return;
 
 % --- Executes on selection change in popCustom.
 function popCustom_Callback(hObject, eventdata, handles)
-% (PopUp | Custom) Calls a custom render popUp. 
+% (PopUp | Custom) Calls a custom render popUp.
 %
 % Syntax:
 %   popCustom_Callback(hObject, eventdata, handles)
@@ -2602,9 +2602,9 @@ function popCustom_Callback(hObject, eventdata, handles)
 %    delete routines from vcSESSION.CUSTOM.procMethod list.
 %
 % Inputs:
-%    hObject   - handle to popCustom (see GCBO)
+%    hObject   - Handle. Handle to popCustom (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2636,9 +2636,9 @@ function btnOffAxis_Callback(hObject, eventdata, handles)
 %    and off.
 %
 % Inputs:
-%    hObject   - handle to btnOffAxis (see GCBO)
+%    hObject   - Handle. Handle to btnOffAxis (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2671,7 +2671,7 @@ function popDiffuser_CreateFcn(hObject, eventdata, handles)
 %    PopUp option. Create the diffuser's popUp
 %
 % Inputs:
-%    hObject   - handle to popDiffuser (see GCBO)
+%    hObject   - Handle. Handle to popDiffuser (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
 %    handles   - empty - handles are not created until after all of the
 %                CreateFcns have been called.
@@ -2705,9 +2705,9 @@ function popDiffuser_Callback(hObject, eventdata, handles)
 %    include: skip, blur, and birefringent.
 %
 % Inputs:
-%    hObject   - handle to menuHelpAppNotes (see GCBO)
+%    hObject   - Handle. Handle to menuHelpAppNotes (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2737,9 +2737,9 @@ function btnDiffuser_Callback(hObject, eventdata, handles)
 %    *May be obsolete?? Possibly replaced by the popup, popDiffuser.*
 %
 % Inputs:
-%    hObject   - handle to menuHelpAppNotes (see GCBO)
+%    hObject   - Handle. Handle to menuHelpAppNotes (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2771,9 +2771,9 @@ function editDiffuserBlur_CreateFcn(hObject, eventdata, handles)
 %    Menu option. Clicking calls the web page help file.
 %
 % Inputs:
-%    hObject   - handle to menuHelpAppNotes (see GCBO)
+%    hObject   - Handle. Handle to menuHelpAppNotes (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2799,9 +2799,9 @@ function editDiffuserBlur_Callback(hObject, eventdata, handles)
 %    Edit option. Edit the Diffuser's FWHM in micrometers.
 %
 % Inputs:
-%    hObject   - handle to editDiffuserBlur (see GCBO)
+%    hObject   - Handle. Handle to editDiffuserBlur (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2830,9 +2830,9 @@ function btnOTF_Callback(hObject, eventdata, handles)
 %    Button. Pressing calls diffraction limited OTF.
 %
 % Inputs:
-%    hObject   - handle to btnOTF (see GCBO)
+%    hObject   - Handle. Handle to btnOTF (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2866,9 +2866,9 @@ function menuHelp_Callback(hObject, eventdata, handles)
 %    Top Menu option. Clicking opens the help menu
 %
 % Inputs:
-%    hObject   - handle to menuHelp (see GCBO)
+%    hObject   - Handle. Handle to menuHelp (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2889,9 +2889,9 @@ function menuHelpAppNotes_Callback(hObject, eventdata, handles)
 %    Menu option. Clicking calls the web page help file.
 %
 % Inputs:
-%    hObject   - handle to menuHelpAppNotes (see GCBO)
+%    hObject   - Handle. Handle to menuHelpAppNotes (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2913,9 +2913,9 @@ function menuHelpOpticsOnline_Callback(hObject, eventdata, handles)
 %    Menu option. Clicking calls the web page help file for Optics.
 %
 % Inputs:
-%    hObject   - handle to menuHelpOpticsOnline (see GCBO)
+%    hObject   - Handle. Handle to menuHelpOpticsOnline (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2937,9 +2937,9 @@ function menuHelpOIOnline_Callback(hObject, eventdata, handles)
 %    Menu option. Clicking calls the web page help file for OI.
 %
 % Inputs:
-%    hObject   - handle to menuHelpOIOnline (see GCBO)
+%    hObject   - Handle. Handle to menuHelpOIOnline (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2961,9 +2961,9 @@ function menuHelpISETOnline_Callback(hObject, eventdata, handles)
 %    Menu option. Clicking calls the web page help file for ISET.
 %
 % Inputs:
-%    hObject   - handle to menuHelpISETOnline (see GCBO)
+%    hObject   - Handle. Handle to menuHelpISETOnline (see GCBO)
 %    eventdata - reserved - to be defined in a future version of MATLAB
-%    handles   - structure with handles and user data (see GUIDATA)
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
 %
 % Outputs:
 %    None.
@@ -2978,21 +2978,57 @@ return;
 % --- Executes on button press in btnNext.
 function btnNext_Callback(hObject, eventdata, handles)
 % Button to move to next image (->)
-thisOI = ieSessionGet('selected','oi');
-nS  = ieSessionGet('nobjects','oi');
-thisOI = min(thisOI + 1,nS);
-thisOI = max(thisOI,1);
-vcSetSelectedObject('oi',thisOI);
+%
+% Syntax:
+%   btnPrev_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    The call to the button to navigate to the next image.
+%
+% Inputs:
+%    hObject   - Handle. Handle to btnNext (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+thisOI = ieSessionGet('selected', 'oi');
+nS  = ieSessionGet('nobjects', 'oi');
+thisOI = min(thisOI + 1, nS);
+thisOI = max(thisOI, 1);
+vcSetSelectedObject('oi', thisOI);
 oiRefresh(hObject, eventdata, handles);
 return;
 
 % --- Executes on button press in btnPrev.
 function btnPrev_Callback(hObject, eventdata, handles)
 % Button to move to previous image (<-)
-thisOI  = ieSessionGet('selected','oi');
-nS = ieSessionGet('nobjects','oi');
-thisOI = min(thisOI - 1,nS);
-thisOI = max(thisOI,1);
-vcSetSelectedObject('oi',thisOI);
+%
+% Syntax:
+%   btnPrev_Callback(hObject, eventdata, handles)
+%
+% Description:
+%    The call to the button to navigate to the previous image.
+%
+% Inputs:
+%    hObject   - Handle. Handle to btnPrev (see GCBO)
+%    eventdata - reserved - to be defined in a future version of MATLAB
+%    handles   - Struct. Structure with handles and user data (see GUIDATA)
+%
+% Outputs:
+%    None.
+%
+% Optional key/value pairs:
+%    None.
+%
+thisOI  = ieSessionGet('selected', 'oi');
+nS = ieSessionGet('nobjects', 'oi');
+thisOI = min(thisOI - 1, nS);
+thisOI = max(thisOI, 1);
+vcSetSelectedObject('oi', thisOI);
 oiRefresh(hObject, eventdata, handles);
 return;

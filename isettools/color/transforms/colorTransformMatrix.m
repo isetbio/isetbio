@@ -13,53 +13,57 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %    The matrix, T, transforms each color point, p, to an output
 %    vector p*T.
 %
-%    The convention above is used in many places in isetbio.  But note that
+%    The convention above is used in many places in isetbio. But note that
 %    it is opposite from the convention used in the Psychtoolbox and in
-%    DHB's brain.  Need to transpose result if you are working in that
+%    DHB's brain. Need to transpose result if you are working in that
 %    world.
 %
-%    This routine works with imageLinearTransform.  So for example:
+%    This routine works with imageLinearTransform. So for example:
 %
 %       T = colorTransformMatrix('lms2xyz');
 %       xyzImage = imageLinearTransform(lmsImage, T)
 %
 %    would return an NxMx3 xyz image, if lmsImage is in RGB (NxMx3) format.
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit colorTransformMatrix.m' into the Command Window.
+%
 % Inputs:
-%    matrixtype - Type of color transformation. See some options below:
-%       'lms2opp'    cone coordinate to opponent (Poirson & Wandell 1993)
-%       'opp2lms'    inverse of the above matrix
-%       'xyz2opp'    xyz to opponent (CIE1931 XYZ. Or is it the newer XYZ
-%                    standard - a comment in the code suggests it may be.)
-%       'hpe2xyz'    Hunter-Pointer-Estevez cones to XYZ
-%       'xyz2hpe'    XYZ to Hunter-Pointer-Estevez cones
-%       'opp2xyz'    inverse of the above matrix
-%
-%       Normalized for D65 (lms=[100 100 100] for D65)
-%       'lms2xyz'    LMS cone coordinate to XYZ (HPE* transform)
-%       'xyz2lms'    XYZ to LMS (HPE* transform)
-%       'xyz2yiq'    convert from XYZ to YIQ
-%       'yiq2xyz'    inverse of the above matrix
-%       'rgb2yuv'    convert from RGB to YUV (YCbCr) for JPEG compression
-%       'yuv2rgb'    inverse of the above matrix
-%       'xyz2srgb'   from XYZ to sRGB values
-%       'srgb2xyz'   inverse of the above matrix
-%                    (the above are not dependent on device calibration)
-%
-%       We added lrgb, which does the same as srgb, to be a little clearer
-%       about the fact that this matrix is really in linear (0, 1) space,
-%       not in the framebuffer (0, 255) nonlinear space.
-%       'xyz2lrgb'   from XYZ to lRGB values
-%       'lrgb2xyz'   inverse of the above matrix
-%       'cmy2rgb'    converts cyan, magenta, yellow to RGB
-%    spaceType  - (Optional) Whether 2 degree or 10 degree color matching
-%                 functions should be used for xyz2opp and opp2xyz matrices
-%                 [] gets you the default value, which is 10 degree. Pass 2
-%                 or 10 to specify explicitly what you want.
+%    matrixtype - String. The color transformation type. Options include:
+%         lms2opp:  cone coordinate to opponent (Poirson & Wandell 1993)
+%         opp2lms:  inverse of the above matrix
+%         xyz2opp:  xyz to opponent (CIE1931 XYZ. Or is it the newer XYZ
+%                   standard - a comment in the code suggests it may be.)
+%         hpe2xyz:  Hunter-Pointer-Estevez cones to XYZ
+%         xyz2hpe:  XYZ to Hunter-Pointer-Estevez cones
+%         opp2xyz:  inverse of the above matrix
+%       [Normalized for D65 (lms = [100 100 100] for D65)]
+%         lms2xyz:  LMS cone coordinate to XYZ (HPE* transform)
+%         xyz2lms:  XYZ to LMS (HPE* transform)
+%         xyz2yiq:  convert from XYZ to YIQ
+%         yiq2xyz:  inverse of the above matrix
+%         rgb2yuv:  convert from RGB to YUV (YCbCr) for JPEG compression
+%         yuv2rgb:  inverse of the above matrix
+%         xyz2srgb: from XYZ to sRGB values
+%         srgb2xyz: inverse of the above matrix
+%                   (the above are not dependent on device calibration)
+%       [We added lrgb, which does the same as srgb, to be a little clearer
+%        about the fact that this matrix is really in linear (0, 1) space,
+%        not in the framebuffer (0, 255) nonlinear space.]
+%         xyz2lrgb: from XYZ to lRGB values
+%         lrgb2xyz: inverse of the above matrix
+%         cmy2rgb:  converts cyan, magenta, yellow to RGB
+%    spaceType  - (Optional) Numeric. Whether 2 degree or 10 degree color
+%                 matching functions should be used for xyz2opp and opp2xyz
+%                 matrices. Default of [] will update to 10. Pass 2 or 10
+%                 to specify explicitly what you want.
 %
 % Outputs:
-%    result     - a 3x3 color matrix used to convert an image from one
-%                 color space to another
+%    result     - Matrix. A 3x3 color matrix used to convert an image from
+%                 one color space to another.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [NOTE: DHB - The comment in the header indicated that the xyz2opp
@@ -68,15 +72,15 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %      replacement. Hard to tell from the actual numbers, without
 %      recomputing the matrices. Someone should check, and then make the
 %      comments in the header and the code match accordingly. More
-%      generally, I am not sure what this "opp" space is.  Either expand on
-%      definition or get rid of it, I think.  Also, need to be clear about
+%      generally, I am not sure what this "opp" space is. Either expand on
+%      definition or get rid of it, I think. Also, need to be clear about
 %      when XYZ is 1931 and when it has been updated to the new standard.]
 %
 % References:
 %    http://en.wikipedia.org/wiki/SRGB
 %
 % See Also:
-%    colorTransformMatrixCreate
+%   colorTransformMatrixCreate
 %
 
 % History:
@@ -84,7 +88,7 @@ function result = colorTransformMatrix(matrixtype, spacetype)
 %    04/13/15  dhb  Comment fix: ieReadSpectra('Stockman', wave) ->
 %                   ieReadSpectral('stockman', wave)
 %    11/17/17  jnm  Formatting
-%
+%    07/18/19  JNM  Formatting update
 
 % Examples:
 %{
@@ -133,7 +137,7 @@ function result = colorTransformMatrix(matrixtype, spacetype)
     axis equal;
     grid on
 
-    % Notice, these aren't perfect inverses. Maybe they should be?  But
+    % Notice, these aren't perfect inverses. Maybe they should be? But
     % Stockman and XYZ are not within a perfect linear transformation.
 	T1 = colorTransformMatrix('stockman2xyz');
 	T2 = colorTransformMatrix('xyz2stockman');
@@ -185,42 +189,34 @@ switch lower(matrixtype)
 
     case {'stockman2xyz', 'sto2xyz', 'lms2xyz'}
         % Stockman cone coordinates
-        result = [1.7896  0.6079 -0.0499;
-                 -1.2865  0.4072  0.0808;
+        result = [1.7896  0.6079 -0.0499; ...
+                 -1.2865  0.4072  0.0808; ...
                   0.3645 -0.0379  1.8040]';
 
     case {'xyz2opp', 'opp2xyz'}
-        if notDefined('spacetype')
-            spacetype = 10;
-        end
-        if (spacetype == 2)
+        if notDefined('spacetype'), spacetype = 10; end
+        if spacetype == 2
             result = [278.7336  721.8031 -106.5520; ...
                      -448.7736  289.8056   77.1569; ...
                        85.9513 -589.9859  501.1089] / 1000;
-        elseif (spacetype == 10)
+        elseif spacetype == 10
             result = [288.5613  659.7617 -130.5654; ...
                      -464.8864  326.2702   62.4200; ...
                        79.8787 -554.7976  481.4746] / 1000;
         end
-        if matrixtype(1) == 'o'
-            result = inv(result);
-        end
+        if matrixtype(1) == 'o', result = inv(result); end
 
     case {'xyz2yiq', 'yiq2xyz' }
         result = [0       1.0000  0; ...
                   1.4070 -0.8420 -0.4510; ...
                   0.9320 -1.1890  0.2330];
-        if matrixtype(1) == 'y'
-            result = inv(result);
-        end
+        if matrixtype(1) == 'y', result = inv(result); end
 
     case {'rgb2yuv', 'yuv2rgb'}
         result = [0.299   0.587   0.114; ...
                  -0.1687 -0.3313  0.5; ...
                   0.5    -0.4187 -0.0813];
-        if (matrixtype(1) == 'y')
-            result = inv(result);
-        end
+        if matrixtype(1) == 'y', result = inv(result); end
 
     case{'xyz2srgb', 'srgb2xyz'}
         % On the Wikipedia page
@@ -241,11 +237,9 @@ switch lower(matrixtype)
         result = [3.241  -1.5374 -0.4986; ...
                  -0.9692  1.8760  0.0416; ...
                   0.0556 -0.2040  1.0570];
-              
+
         % If user wanted srgb2xyz, we invert the matrix
-        if (matrixtype(1) == 's')
-            result = inv(result);
-        end
+        if matrixtype(1) == 's', result = inv(result); end
 
     case{'xyz2lrgb', 'lrgb2xyz'}
         % Only type in the values once. Here, we get them from the once.
@@ -256,9 +250,7 @@ switch lower(matrixtype)
                  -0.9692  1.8760  0.0416; ...
                   0.0556 -0.2040  1.0570];
         % If user wanted lrgb2xyz, we invert the matrix
-        if (matrixtype(1) =='l')
-            result = inv(result);
-        end
+        if matrixtype(1) =='l', result = inv(result); end
 
     case{'cmy2rgb', 'rgb2cmy'}
         % These are used for sensor display purposes. Sometimes we have a
@@ -266,22 +258,18 @@ switch lower(matrixtype)
         % the CMY. Matlab treats the data as RGB. So, we need to convert
         % the data prior to display, so it looks right. Used in
         % sensorImageWindow and vcimageWindow.
-        if (matrixtype(1) == 'c')
-            result = [0 1 1; ...
-                      1 0 1 ; ...
-                      1 1 0];
+        if matrixtype(1) == 'c'
+            result = [0 1 1; 1 0 1 ; 1 1 0];
         else
-            result = [0 1 1; ...
-                      1 0 1 ; ...
-                      1 1 0];
+            result = [0 1 1; 1 0 1 ; 1 1 0];
         end
     otherwise
         error('Unknown matrix type')
 end
 
 % The original coding of these matrices assumed that the matrices would be
-% applied from the left onto values in columns.  But in isetbio, we apply
-% matrices from the right, ont values in rows.  So, the transpose here.
+% applied from the left onto values in columns. But in isetbio, we apply
+% matrices from the right, ont values in rows. So, the transpose here.
 result = result';
 
 end

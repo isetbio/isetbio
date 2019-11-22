@@ -1,8 +1,8 @@
-function [ navarroAccomm ] = convertToNavarroAccomm(inputAccomm)
+function navarroAccomm = convertToNavarroAccomm(inputAccomm)
 % Convert accommodations to use Navarro with data from other models
 %
 % Syntax:
-%   [navarroAccomm] = convertToNavarroAccomm(inputAccomm)
+%   navarroAccomm = convertToNavarroAccomm(inputAccomm)
 %
 % Description:
 %    The reason we need this function is because the input accommodation to
@@ -22,10 +22,15 @@ function [ navarroAccomm ] = convertToNavarroAccomm(inputAccomm)
 %    of best focus.
 %
 % Inputs:
-%    inputAccomm   - The non-Navarro accommodation
+%    inputAccomm   - Numeric. The non-Navarro accommodation. This should be
+%                    within a reasonable range for accommodation, aka it
+%                    should be between 0.44 and 9.25.
 %
 % Outputs:
-%    navarroAccomm - The Navarro model accommodation.
+%    navarroAccomm - Numeric. The Navarro model accommodation.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %    * [Note: XXX - The values listed below were sampled manually in Zemax.
@@ -45,9 +50,9 @@ if(inputAccomm < 0.44)
     navarroAccomm = 0;
     return;
 elseif(inputAccomm > 9.25)
-    warning(['At the moment, we don''t have data for accommodation ',...
-    'greater than 9.25 dpt. This may change in the near future, but for now ',...
-    'we set accommodation to 9.25 dpt.']);
+    warning(['At the moment, we don''t have data for accommodation ', ...
+    'greater than 9.25 dpt. This may change in the near future, but ', ...
+    'for now we set accommodation to 9.25 dpt.']);
     navarroAccomm = 9.25;
     return;
 end
@@ -65,7 +70,7 @@ dist550 = [2275.4; 1518.4; 1280.950;
     263.988; 244.850; 217.098; 200.036; 172.586; 161.308
     148.158; 131.835; 125.213;
     119.859; 112.590; 108.021];
-   
+
 % Plot
 %{
 figure;

@@ -2,13 +2,13 @@ function val = oiGet(oi, parm, varargin)
 % Get properties and derived quantities from an optical image structure
 %
 % Syntax:
-%   val = oiGet(oi, parm, varargin)
+%   val = oiGet(oi, parm, [varargin])
 %
 % Description:
-%    Optical image parameters are stored in a structure. Some parameters
-%    are stored directly, others are calculated from  the data structure.
-%    We store the unique values and calculate many derived values in this
-%    routine.
+%    Optical image parameters are stored in a structure. Some of the
+%    parameters are stored directly, and others are calculated from the
+%    data structure. We store the unique values and calculate many derived
+%    values in this routine.
 %
 %    The optical image structures are stored in a cell array,
 %    vcSESSION.OPTICALIMAGE{}
@@ -39,117 +39,132 @@ function val = oiGet(oi, parm, varargin)
 % Inputs:
 %    oi       - Struct. An optical image structure.
 %    parm     - String. The parameter you wish to retrieve the info from.
-%    varargin - (Optional) Additional information that may be required to
-%               retrieve the desired parameter. Some examples of parameters
-%               are separated out into categories here:
+%               Some of the options (in categories) include the following:
 %          General properties
-%               {'name'}            - optical image name
-%               {'type'}            - 'opticalimage'
-%               {'filename'}        - if read from a file, could store here
-%               {'consistency'}     - the oiWindow display reflects the
-%                                     current state (1) or not (0).
-%               {'rows'}            - number of row samples
-%               {'cols'}            - number of col samples
-%               {'size'}            - rows, cols
-%               {'image distance'}  - distance from lens to image, negative
-%               {'hfov'}            - horizontal field of view (deg)
-%               {'vfov'}            - vertical field of view (deg)
-%               {'aspectratio'}     - aspect ratio of image
-%               {'height'}*         - image height
-%               {'width'}*          - image width
-%               {'diagonal'}*       - image diagonal length
-%               {'heightandwidth'}* - (height, width)
-%               {'area'}*           - optical image area
-%               {'centerpixel'}     - (row, col) of point at image center
+%               {'name'}            - String. The optical image name.
+%               {'type'}            - String. Always 'opticalimage'.
+%               {'filename'}        - String. If read from file, put here.
+%               {'consistency'}     - Boolean. Whether the oiWindow display
+%                                     reflects the current state 1 (yes) or
+%                                     0 (not).
+%               {'rows'}            - Numeric. The number of row samples.
+%               {'cols'}            - Numeric. The number of col samples.
+%               {'size'}            - Matrix. [rows, cols].
+%               {'image distance'}  - Numeric. The distance from lens to
+%                                     image, negative.
+%               {'hfov'}            - Numeric. The horizontal field of view
+%                                     in degrees.
+%               {'vfov'}            - Numeric. The vertical field of view
+%                                     in degrees.
+%               {'aspectratio'}     - Numeric. The aspect ratio of image.
+%               {'height'}*         - Numeric. The image height.
+%               {'width'}*          - Numeric. The image width.
+%               {'diagonal'}*       - Numeric. The image diagonal length.
+%               {'heightandwidth'}* - Matrix. [height, width].
+%               {'area'}*           - Numeric. The optical image area.
+%               {'centerpixel'}     - Matrix. The [row, col] point at the
+%                                     image center.
 %          Irradiance
-%               {'data'}                 - Data structure
-%                  {'photons'}           - Irradiance data
-%                  {'photons noise'}     - Irradiance data with photon
-%                                          noise for 50 msec integration
-%                                          time & 1 pixel collection area.
-%                  {'data max'}          - Used for compression, not for
-%                                          general users
-%                  {'data min''}         - Used for compression, not for
-%                                          general users
-%                  {'bit depth''}        - Used for compression, not for
-%                                          general users
-%                  {'energy'}            - Energy rather than photon
-%                                          representation
-%                  {'roi energy'}        - Energy of the points in a
-%                                          region of interest
-%                  {'roi mean energy'}   - Energy of the points averaged
-%                                          within in a region of interest
-%                  {'energy noise'}      - Energy with photon noise for 50
-%                                          msec integration time and 1
-%                                          pixel collection area.
-%                  {'mean illuminance'}  - Mean illuminance
-%                  {'illuminance'}       - Spatial array of the optical
-%                                          image illuminance
-%                  {'xyz'}               - (row, col, 3) image of the
-%                                          irradiance XYZ values
-%                  {'lms'}              - 3D array of cone values (Stockman)
+%               {'data'}                - Struct. The data structure.
+%                  {'photons'}          - Matrix. Irradiance data
+%                  {'photons noise'}    - Matrix. Irradiance data w/ photon
+%                                         noise for 50 msec integration
+%                                         time & 1 pixel collection area.
+%                  {'data max'}         - Numeric. Used for compression,
+%                                         not for general users.
+%                  {'data min''}        - Numeric. Used for compression,
+%                                         not for general users.
+%                  {'bit depth''}       - Numeric. Used for compression,
+%                                         not for general users.
+%                  {'energy'}           - Matrix. Energy rather than
+%                                         photon representation.
+%                  {'roi energy'}       - Numeric. Energy of the points in
+%                                         a region of interest
+%                  {'roi mean energy'}  - Numeric. Average energy of the
+%                                         points in a region of interest.
+%                  {'energy noise'}     - Matrix. Energy with photon noise
+%                                         for 50 msec integration time and
+%                                         1 pixel collection area.
+%                  {'mean illuminance'} - Numeric. The mean illuminance.
+%                  {'illuminance'}      - Matrix. A matrix representation
+%                                         of the optical image illuminance.
+%                  {'xyz'}              - Matrix. [row, col, 3] an image of
+%                                         the irradiance XYZ values.
+%                  {'lms'}              - Matrix. A 3D array of cone
+%                                         values, from Stockman.
 %          Wavelength information
-%               {'spectrum'}     - Wavelength information structure
-%                  {'binwidth'}  - spacing between samples
-%                  {'wave'}      - wavelength samples (nm)
-%                  {'nwave'}     - number of wavelength samples
+%               {'spectrum'}    - Struct. Wavelength information structure.
+%                  {'binwidth'} - Numeric. The spacing between samples.
+%                  {'wave'}     - Array. Wavelength samples (nm).
+%                  {'nwave'}    - Numeric. Number of wavelength samples.
 %          Resolution
-%               {'hspatial resolution'}*   - height spatial resolution
-%               {'wspatial resolution'}*   - width spatial resolution    
-%               {'sample spacing'}*        - (width, height) The sample
-%                                            spacing spatial resolution
-%               {'distance per sample'}*   - (row, col) The distance per
-%                                            spatial sample
-%               {'distance per degree'}*   - The distance per degree of
-%                                            visual angle
-%               {'degrees per distance'}*  -
+%               {'hspatial resolution'}*  - Numeric. The spatial resolution
+%                                           of the height.
+%               {'wspatial resolution'}*  - Numeric. The spatial resolution
+%                                           of the width.
+%               {'sample spacing'}*       - Matrix. The [width, height]
+%                                           sample spacing resolution.
+%               {'distance per sample'}*  - Matrix. The [row, col] distance
+%                                           per spatial sample.
+%               {'distance per degree'}*  - Numeric. The distance per
+%                                           degree of visual angle.
+%               {'degrees per distance'}* - Numeric. *Needs to be added*.
 %               {'spatial sampling positions'}*
-%                                          - Spatial locations of points
-%               {'hangular resolution'}    - The angular degree per pixel
-%                                            in height
-%               {'wangular resolution'}    - The angular degree per pixel
-%                                            in width
-%               {'angular resolution'}     - (height, width) angular resol.
-%               {'frequency Support'}*     - frequency resolution in
-%                                            cyc/deg or lp/Unit, i.e.,
-%                                            cycles/{meters, mm, microns}
-%                                            ex. oiGet(oi, ...
-%                                            'frequencyResolution', 'mm')
+%                                         - Matrix. Spatial point locations
+%               {'hangular resolution'}   - Numeric. The angular degree per
+%                                           pixel in height.
+%               {'wangular resolution'}   - Numeric. The angular degree per
+%                                           pixel in width.
+%               {'angular resolution'}    - Matrix. The [height, width]
+%                                           angular resolution.
+%               {'frequency Support'}*    - Numeric. The frequency
+%                                           resolution in cyc/deg or
+%                                           lp/Unit, i.e., cycles/{meters,
+%                                           mm, microns} ex. oiGet(oi, ...
+%                                           'frequencyResolution', 'mm')
 %               {'max frequency resolution'}*
-%                                          - Highest frequency oiGet(oi,...
-%                                            'maxFrequencyResolution','um')
+%                                         - Numeric. The highest frequency
+%                                           oiGet(oi, ...
+%                                           'maxFrequencyResolution', 'um')
 %               {'frequency support col', 'fsupportx'}*
-%                                          - Frequency support for cols
+%                                         - Numeric. The frequency support
+%                                           for cols.
 %               {'frequency support row', 'fsupporty'}*
-%                                          - Frequency support for rows
+%                                         - Numeric. The frequency support
+%                                           for rows.
 %          Depth
-%               {'depthMap'} - Pixel wise depth map in meters
+%               {'depthMap'} - Matrix. Pixel wise depth map in meters.
 %          Optics information
-%               {'optics'}          - See opticsSet/Get
-%               {'optics model'}    - diffraction limited, shift
-%                                     invariant, ray trace
-%               {'diffuser method'} - 'skip', 'blur' (gaussian),
-%                                     'birefringent'
-%               {'diffuser blur'}   - S.D. of Gaussian blur
-%               {'psfstruct'}       - Entire shift-variant PSF structure
-%                  {'sampled rt psf'}    - Precomputed shift-variant psfs
-%                  {'psf sample angles'} - Vector of sample angle
-%                  {'psf angle step'}    - The spacing between ray trace
-%                                          angle samples
-%                  {'psf image heights'} - Vector of sampled image heights
-%                                          (use optics)
+%               {'optics'}          - Struct. See opticsSet/Get
+%               {'optics model'}    - String. Options are: diffraction
+%                                     limited, shift invariant, ray trace.
+%               {'diffuser method'} - String. Options are: 'skip', 'blur'
+%                                     (gaussian), 'birefringent'
+%               {'diffuser blur'}   - Numeric. The std of Gaussian blur.
+%               {'psfstruct'}       - DEPRECATED. Struct. The entire
+%                                     shift-variant PSF structure.
+%                  {'sampled rt psf'}    - DEPRECATED. Matrix. Precomputed
+%                                          shift-variant psfs.
+%                  {'psf sample angles'} - DEPRECATED. Array. Vector of
+%                                          sample angle.
+%                  {'psf angle step'}    - DEPRECATED. Numeric. The spacing
+%                                          between ray trace angle samples.
+%                  {'psf image heights'} - DEPRECATED. Array. Sampled image
+%                                          heights vector (use optics).
 %                  {'raytrace optics name'}
-%                                        - Optics used to derive the
-%                                          shift-variant psf
-%                  {'rt psf size'}       - row, col dimensions of the psf
+%                                        - DEPRECATED. String. Optics used
+%                                          to derive the shift-variant psf.
+%                  {'rt psf size'}       - DEPRECATED. Matrix. The [row,
+%                                          col] dimensions of the psf.
 %          Misc
-%               {'rgb image'} - RGB rendering of OI data
+%               {'rgb image'} - Matrix. The RGB rendering of OI data.
 %
 % Outputs:
-%    val      - The value of the requested parameter
+%    val      - VARIES. The value of the requested parameter. See param
+%               descriptions above for indications of type.
 %
 % Optional key/value pairs:
-%    None.
+%    Needs to be added.
 %
 
 % History:
@@ -160,8 +175,9 @@ function val = oiGet(oi, parm, varargin)
 %    03/26/18  dhb  Change arg to determineUnits to (..., varargin{1}).
 %                   Needs to be like that to work, otherwise a cell array
 %                   rather than a string comes back.
-%   04/07/18  dhb   Change call to vcGetSelectedObject to vcGetObject.  I
+%    04/07/18  dhb  Change call to vcGetSelectedObject to vcGetObject. I
 %                   did this once before, but somehow it was lost.
+%    06/25/19  JNM  Documentation update
 
 
 % Examples:
@@ -209,7 +225,6 @@ switch oType
         else, val = lens.get(parm, varargin{:});
         end
         return;
-    otherwise
 end
 
 % It appears to be an oi, so onward.
@@ -266,7 +281,7 @@ switch parm
             sz = sceneGet(scene, 'size');
             if isempty(sz)
                 error('No scene or OI');
-            else 
+            else
                 padSize = round(sz / 8);
                 sz = size(...
                     padarray(zeros(sz(1), sz(2)), padSize, 0, 'both'));
@@ -326,7 +341,7 @@ switch parm
             end
         end
     case {'hangular', 'heightangular', 'vfov', 'verticalfieldofview'}
-        % We only store the width FOV. We insist that the pixels are square       
+        % We only store the width FOV. We insist that the pixels are square
         h = oiGet(oi, 'height');         % Height in meters
         d = oiGet(oi, 'distance');       % Distance to lens
         val = 2 * atand((0.5 * h) / d);  % Vertical field of view
@@ -335,7 +350,7 @@ switch parm
     case 'aspectratio'
         r = oiGet(oi, 'rows');
         c = oiGet(oi, 'cols');
-        if (isempty(c) || c == 0), disp('No OI'); return;
+        if isempty(c) || c == 0, disp('No OI'); return;
         else, val = r / c;
         end
     case 'optics'
@@ -343,26 +358,25 @@ switch parm
         % This is the large optics structure
         if checkfields(oi, 'optics'), val = oi.optics; end
     case 'opticsmodel'
-        if checkfields(oi,'optics','model'), val = oi.optics.model; end
-        
+        if checkfields(oi, 'optics', 'model'), val = oi.optics.model; end
+
         %{
-        % I think this was only used for the shift-variant (raytrace) model.
-        % It is not used any more here.  It is still retained in ISETCAM.
-        
+        % I think this's only used for the shift-variant (raytrace) model.
+        % It's not used any more here. It's still retained in ISETCAM.
+
         % Sometimes we precompute the psf from the optics and store it
         % here. The angle spacing of the precomputation is specified here
     case {'psfstruct'}
         % Entire svPSF structure
-        if checkfields(oi,'psf'), val = oi.psf; end
-        
-    case {'svpsf','shiftvariantpsf'}
-
+        if checkfields(oi, 'psf'), val = oi.psf; end
+    case {'svpsf', 'shiftvariantpsf'}
         % Precomputed shift-variant psfs
         if checkfields(oi, 'psf', 'psf'), val = oi.psf.psf; end
     case {'rtpsfsize'}
         % Number of spatial samples in each psf
-        if checkfields(oi,'psf','psf'), val = size(oi.psf.psf{1,1,1}); end
-
+        if checkfields(oi, 'psf', 'psf')
+            val = size(oi.psf.psf{1, 1, 1});
+        end
     case {'psfsampleangles'}
         % Vector of sample angle
         if checkfields(oi, 'psf', 'sampAngles')
@@ -370,7 +384,7 @@ switch parm
         end
     case {'psfanglestep'}
         % Spacing between angles
-        if checkfields(oi,'psf','sampAngles')
+        if checkfields(oi, 'psf', 'sampAngles')
             val = oi.psf.sampAngles(2) - oi.psf.sampAngles(1);
         end
     case {'psfimageheights'}
@@ -386,12 +400,12 @@ switch parm
         end
     case 'psfwavelength'
         % Wavelengths for this calculation. Should match the optics, I
-
         % think.  Not sure why it is duplicated.
-        if checkfields(oi,'psf','wavelength'), val = oi.psf.wavelength; end
+        if checkfields(oi, 'psf', 'wavelength')
+            val = oi.psf.wavelength;
+        end
         %}
         % optical diffuser properties
-        
   case {'diffusermethod'}
       % 0 - skip, 1 - gauss blur, 2 - birefringent
       if checkfields(oi, 'diffuser', 'method')
@@ -405,7 +419,7 @@ switch parm
     case 'data'
        if checkfields(oi, 'data'), val = oi.data; end
    case {'photons'}
-       % Read photon data. 
+       % Read photon data.
        % Data are returned as doubles.
        if checkfields(oi, 'data', 'photons')
            if isempty(varargin)
@@ -480,7 +494,8 @@ switch parm
     case {'meanilluminance', 'meanillum'}
         % Get / compute mean illuminance
         % Always update the mean. Cheap to do. Forces synchronization.
-        if notDefined('oi.data.illuminance') || isempty(oi.data.illuminance)
+        if notDefined('oi.data.illuminance') || ...
+                isempty(oi.data.illuminance)
             oi.data.illuminance = oiCalculateIlluminance(oi);
         end
         val = mean(oi.data.illuminance(:));
@@ -500,7 +515,7 @@ switch parm
         % sz = oiGet(oi, 'size');
         % val = XW2RGBFormat(val, sz(1), sz(2));
     case {'lms', 'datalms', 'cone'}
-        % oiGet(oi,  'lms');
+        % oiGet(oi, 'lms');
         % RGB (3D array) of oi Stockman LMS values
         energy = oiGet(oi, 'energy');
         wave = oiGet(oi, 'wave');
@@ -513,24 +528,24 @@ switch parm
         end
         [energy, r, c] = RGB2XWFormat(energy);
         val = energy * S * dWave;
-        val = XW2RGBFormat(val, r, c);    
+        val = XW2RGBFormat(val, r, c);
     case {'spectrum', 'wavespectrum'}
         if isfield(oi, 'spectrum'), val = oi.spectrum; end
-    case 'binwidth'     
+    case 'binwidth'
         wave = oiGet(oi, 'wave');
         if length(wave) > 1, val = wave(2) - wave(1); else, val = 1; end
     case {'datawave', 'photonswave', 'photonswavelength', ...
             'wave', 'wavelength'}
-        % oiGet(oi, 'wave') 
-        % There are a number of different 
+        % oiGet(oi, 'wave')
+        % There are a number of different
         % differ from the optics spectrum. There should only be one, and
         % it should probably be part of the optics. To smooth the
         % transition to that wonderful day, we return the optics spectrum
         % if there is no oi spectrum. Always a column vector, even if
         % people stick it in the wrong way.
-        if checkfields(oi, 'spectrum', 'wave') 
+        if checkfields(oi, 'spectrum', 'wave')
             val = oi.spectrum.wave(:);
-        % elseif checkfields(oi, 'optics', 'spectrum', 'wave'), 
+        % elseif checkfields(oi, 'optics', 'spectrum', 'wave'),
         %     val = oi.optics.spectrum.wave(:);
         % elseif checkfields(oi, 'optics', 'OTF', 'wave')
         %     val = oi.optics.OTF.wave(:);
@@ -549,7 +564,7 @@ switch parm
             val = val * ieUnitScaleFactor(varargin{1});
         end
     case {'width'}
-        % Width in meters is default - We need to handle 'skip' case 
+        % Width in meters is default - We need to handle 'skip' case
         d = oiGet(oi, 'focalPlaneDistance');  % Distance from lens to image
         fov = oiGet(oi, 'wangular');          % FOV (horizontal, width)
         % ieRad2deg(2 * atan((0.5 * width) / imageDistance)) = fov
@@ -569,16 +584,16 @@ switch parm
             val = val * ieUnitScaleFactor(varargin{1});
         end
     case {'area', 'areameterssquared'}
-        % oiGet(oi, 'area')       % square meters
-        % oiGet(oi, 'area', 'mm') % square millimeters
-        val = oiGet(oi, 'height')*oiGet(oi, 'width');
+        % oiGet(oi, 'area')        % square meters
+        % oiGet(oi, 'area', 'mm')  % square millimeters
+        val = oiGet(oi, 'height') * oiGet(oi, 'width');
         if ~isempty(varargin)
             val = val * ieUnitScaleFactor(varargin{1}) ^ 2;
         end
     case {'centerpixel', 'centerpoint'}
         val = [oiGet(oi, 'rows'), oiGet(oi, 'cols')];
         val = floor(val / 2) + 1;
-    case {'hspatialresolution', 'heightspatialresolution', 'hres'}   
+    case {'hspatialresolution', 'heightspatialresolution', 'hres'}
         % Resolution parameters
         % Size in distance per pixel, default is meters per pixel
         % oiGet(oi, 'hres', 'microns') is acceptable syntax.
@@ -599,13 +614,13 @@ switch parm
         if ~isempty(varargin)
             val = val * ieUnitScaleFactor(varargin{1});
         end
-    case {'wspatialresolution', 'widthspatialresolution', 'wres'}   
+    case {'wspatialresolution', 'widthspatialresolution', 'wres'}
         % Size in m per pixel is default.
         % oiGet(oi, 'wres', 'microns')
-        % oiGet(oi, 'wres')      
+        % oiGet(oi, 'wres')
         w = oiGet(oi, 'width');
         c = oiGet(oi, 'cols');
-        if isempty(c) 
+        if isempty(c)
             % For optical images we return a default based on the scene.
             % This is used when no optical image has been calculated.
             scene = vcGetObject('scene');
@@ -628,7 +643,7 @@ switch parm
             val = val * ieUnitScaleFactor(varargin{1});
         end
     case {'distperdeg', 'distanceperdegree'}
-        % This routine should call 
+        % This routine should call
         % opticsGet(optics, 'dist per deg', unit) rather than compute it
         % here.
         val = oiGet(oi, 'width') / oiGet(oi, 'fov');
@@ -639,8 +654,8 @@ switch parm
         % oiGet(oi, 'degrees per distance')
         % oiGet(oi, 'degPerDist', 'micron')
         %
-        % We should probably call:  
-        %   opticsGet(optics, 'dist per deg', unit) 
+        % We should probably call:
+        %   opticsGet(optics, 'dist per deg', unit)
         % which is preferable to this call.
         % if isempty(varargin), units = 'm'; else, units = varargin{1}; end
         units = determineUnits('m', varargin{1});
@@ -661,7 +676,7 @@ switch parm
             val = val * ieUnitScaleFactor(varargin{1});
         end
     case {'angularsupport', 'angularsamplingpositions'}
-        % Angular values of sample points 
+        % Angular values of sample points
         % Units can be deg (default), min or sec and should include radians
         degPerSamp = oiGet(oi, 'angular resolution');
         sz = oiGet(oi, 'size');
@@ -673,7 +688,7 @@ switch parm
         if ~isempty(varargin)
             unit = lower(varargin{1});
             switch unit
-                case {'deg'} 
+                case {'deg'}
                     % Default
                 case 'min'
                     aSupport.x = aSupport.x * 60;
@@ -694,11 +709,11 @@ switch parm
     case {'hangularresolution', 'heightangularresolution'}
         % Angular degree per pixel -- in degrees
         val = 2 * atand((oiGet(oi, 'hspatialResolution') / ...
-                                oiGet(oi, 'distance')) / 2);
+            oiGet(oi, 'distance')) / 2);
     case {'wangularresolution', 'widthangularresolution'}
-        % Angle (degree) per pixel -- width 
+        % Angle (degree) per pixel -- width
         val = 2 * atand((oiGet(oi, 'wspatialResolution') / ...
-                                oiGet(oi, 'distance')) / 2);
+            oiGet(oi, 'distance')) / 2);
     case {'angularresolution', 'degperpixel', 'degpersample', ...
             'degreepersample', 'degreeperpixel'}
         % Height and width
@@ -772,7 +787,7 @@ switch parm
         %
         % Get the rgb image shown in the oi window. If the displayFlag is
         % set, show the image too.
-        %     rgb = oiGet(oi, 'rgb image', gamma=1, displayFlag=-1);
+        %     rgb = oiGet(oi, 'rgb image', gamma = 1, displayFlag = -1);
         if checkfields(oi, 'data', 'photons')
             % Get the photons to later render the rgb image
             % Save a lot of memory by direct access.
@@ -805,7 +820,7 @@ switch parm
         % all logically '1' (true).
         if checkfields(oi, 'depthMap'), val = oi.depthMap; end
     case {'logicaldepthmap'}
-        % Boolean values indicating locations computed from 
+        % Boolean values indicating locations computed from
         val = logical(oiGet(oi, 'depth map'));
     case {'depthmapphotons'}
         % Get the photons that are within the specified depth map region

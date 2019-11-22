@@ -2,7 +2,7 @@ function oi = oiCreate(oiType, varargin)
 % Create an optical image structure
 %
 % Syntax:
-%   oi = OICREATE(oiType, [varargin])
+%   oi = oiCreate(oiType, [varargin])
 %
 % Description:
 %    The optical image represents the spectral irradiance at the sensor.
@@ -28,7 +28,7 @@ function oi = oiCreate(oiType, varargin)
 %    oiCreate.m' into the Command Window.
 %
 % Inputs:
-%    oiType   - (Optional) String. the type of oi structure. The two
+%    oiType   - (Optional) String. The type of oi structure. The two
 %               options marked with * are typically used for testing and
 %               not called for experiments. Options are:
 %       {'human'}      - (Default) Human shift-invariant optics based on
@@ -47,14 +47,14 @@ function oi = oiCreate(oiType, varargin)
 %               default values below:
 %      'wvf human' - A human optical image structurem such as contained in
 %                    oiCreate('wvf human', pupilMM, zCoefs, wave, umPerDeg)
-%                     pupilMM      Numerical. Pupil Size. Default 3mm.
-%                     zCoefs       () z Coefficients Default calls the
+%                     pupilMM:     Numerical. Pupil Size. Default 3mm.
+%                     zCoefs:      () z Coefficients Default calls the
 %                                  function wvfLoadThibosVirtualEyes.
-%                     wave         Vector. Wavelengths. Default 400:10:700.
-%                     umPerDegree  Scalar. Microns per Degree. Default 300.
+%                     wave:        Vector. Wavelengths. Default 400:10:700.
+%                     umPerDegree: Scalar. Microns per Degree. Default 300.
 %
 % Outputs:
-%    oi       - The created optical image structure
+%    oi       - Struct. The created optical image structure
 %
 % Optional key/value pairs:
 %    None.
@@ -63,12 +63,13 @@ function oi = oiCreate(oiType, varargin)
 %    * TODO: Determine if still need to set bit depth to single precision.
 %
 % See Also:
-%    sceneCreate, opticsCreate
+%   sceneCreate, opticsCreate
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/06/18  jnm  Formatting
+%    06/25/19  JNM  Minor formatting adjustments
 
 % Examples:
 %{
@@ -106,7 +107,7 @@ oi.name = vcNewObjectName('opticalimage');  % Get a fresh name
 oi = oiSet(oi, 'bit depth', 32);
 
 oiType = ieParamFormat(oiType);
-switch oiType 
+switch oiType
     case {'default', 'human', 'mwhuman'}
         % Marimont and Wandell optics, which is a simple shift-invariant
         % but wavelength-dependent model. This is a little faster than the
@@ -146,12 +147,12 @@ switch oiType
         oi = oiSet(oi, 'optics', optics);
         oi = oiSet(oi, 'name', 'diffraction');
 
-        % Set up the default glass diffuser with a 2 micron blur circle, 
+        % Set up the default glass diffuser with a 2 micron blur circle,
         % but skipped
         oi = oiSet(oi, 'diffuser method', 'skip');
         oi = oiSet(oi, 'diffuser blur', 2 * 10 ^ -6);
         oi = oiSet(oi, 'consistency', 1);
-        
+
         if checkfields(oi.optics, 'lens')
             oi.optics = rmfield(oi.optics, 'lens');
             oi.optics.transmittance.wave = (370:730)';
@@ -202,6 +203,7 @@ function oi = oiCreateUniformD65
 %    * [Note: XXX - This does not yet extend in the IR, but it should. See
 %      notes in sceneCreate.]
 %
+
 scene = sceneCreate('uniform d65');
 scene = sceneSet(scene, 'hfov', 120);
 
@@ -237,6 +239,7 @@ function oi = oiCreateUniformEE
 %    * [Note: XXX - This does not yet extend in the IR, but it should. See
 %      notes in sceneCreate.]
 %
+
 scene = sceneCreate('uniform ee');
 scene = sceneSet(scene, 'hfov', 120);
 

@@ -41,7 +41,7 @@ function [depthEdges, imageDist, oDefocus] = ...
 % Examples:
 %{
     oi = oiCreate;
-    optics = oiGet(oi, 'optics'); 
+    optics = oiGet(oi, 'optics');
     f = opticsGet(optics, 'focal length', 'm');
     optics = opticsSet(optics, 'focal length', 5 * f);
 

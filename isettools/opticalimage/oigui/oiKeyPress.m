@@ -26,6 +26,7 @@ function oiKeyPress
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/19/18  jnm  Formatting
+%    07/01/19  JNM  Commented out duplicate case 8 (Ctrl+H) vs bkspc/del
 
 % Read the current key press from the buffer. A control key is empty on
 % first entry. But a ctrl-Value gets read properly on second entry.
@@ -45,19 +46,19 @@ switch key
     case 5  % ctrl-E
     case 6  % ctrl-F
     case 7  % ctrl-G
-    case 8  % ctrl-H
+    % case 8  % ctrl-H
     case 9  % ctrl-I
     case 10  % ctrl-J
     case 11  % ctrl-K
     case 12  % ctrl-L
     case 13  % ctrl-M
     case 14 % ctrl-N
-        oiWindow('menuEditName_Callback', hObject, eventData, handles) 
+        oiWindow('menuEditName_Callback', hObject, eventData, handles)
     case 15 % ctrl-O
     case 16 % ctrl-P
     case 17 % ctrl-Q
     case 18 % ctrl-R
-        oiWindow('oiRefresh', hObject, eventData, handles) 
+        oiWindow('oiRefresh', hObject, eventData, handles)
     case 19 % ctrl-S
     case 20 % ctrl-T
     case 21 % ctrl-U

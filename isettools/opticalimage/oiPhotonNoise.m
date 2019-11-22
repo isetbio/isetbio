@@ -28,12 +28,13 @@ function [noisyPhotons, theNoise] = oiPhotonNoise(oi)
 %    None.
 %
 % See Also:
-%    noiseShot, iePoisson, v_photonNoise
+%   noiseShot, iePoisson, v_photonNoise
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/07/18  jnm  Formatting
+%    06/24/19  JNM  Minor formatting adjustments
 
 % Examples:
 %{
@@ -67,9 +68,9 @@ theNoise = sqrt(photons) .* randn(size(photons));
 % We add the mean electron and noise electrons together.
 noisyPhotons = round(photons + theNoise);
 
-% When the signal is very large, say 10^14, the noise is only 10^7. This
-% is very small and you see basically nothing. But if the signal is small, 
-% you have a chance of seeing something in these plots.
+% When the signal is very large, say 10^14, the noise is only 10^7. This is
+% very small and you see basically nothing. But if the signal is small, you
+% have a chance of seeing something in these plots.
 
 % Now, we find the small mean values and create a Poisson sample. This is
 % too slow in general because the Poisson algorithm is slow for big

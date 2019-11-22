@@ -12,7 +12,7 @@ function oiFrame = frameAtIndex(obj, index)
 %    index   - Numeric. The index at which to calculate the oi.
 %
 % Outputs:
-%    oiFrame - The calculated oi frame.
+%    oiFrame - Matrix. The calculated oi frame.
 %
 % Optional key/value pairs:
 %    None.
@@ -21,6 +21,7 @@ function oiFrame = frameAtIndex(obj, index)
 % History:
 %    xx/xx/16  NP/BW  ISETBIO Team, 2016
 %    03/27/18  jnm    Formatting
+%    07/02/19  JNM    Formatting update
 
 % Extract the fixed and modulated photons.
 % We do it this way because oiGet
@@ -38,14 +39,14 @@ else
     obj.photonsModulated = modulatedPhotons;
 end
 
-if (strcmp(obj.composition, 'add'))
+if strcmp(obj.composition, 'add')
     retinalPhotons = fixedPhotons + ...
         obj.modulationFunction(index) * modulatedPhotons;
-elseif (strcmp(obj.composition, 'blend'))
+elseif strcmp(obj.composition, 'blend')
     retinalPhotons = fixedPhotons * (1 - obj.modulationFunction(index)) ...
         + obj.modulationFunction(index) * modulatedPhotons;
-elseif (strcmp(obj.composition, 'xor'))
-    if (obj.modulationFunction(index) == 0)
+elseif strcmp(obj.composition, 'xor')
+    if obj.modulationFunction(index) == 0
         retinalPhotons = fixedPhotons;
     else
         retinalPhotons = obj.modulationFunction(index) * modulatedPhotons;
@@ -54,7 +55,7 @@ else
     error('Unknown oiSequence composition: ''%s''.', obj.composition);
 end
 
-if (~isnan(obj.modulationRegion.radiusInMicrons))
+if ~isnan(obj.modulationRegion.radiusInMicrons)
     % modulate a subregion only
     pos = oiGet(obj.oiModulated, 'spatial support', 'microns');
     ecc = sqrt(sum(pos .^ 2, 3));

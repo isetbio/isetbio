@@ -5,11 +5,11 @@ function [uData, vObj] = visualize(obj, plotType, varargin)
 %   [uData, vObj] = visualize(obj, plotType, [varargin]);
 %
 % Description
-%   This is a plot method for the oiSequence class. 
+%    This is a plot method for the oiSequence class.
 %
 % Inputs:
-%    obj      - Object. The oi sequence object
-%    plotType - String. The type of plot. Options are:
+%    obj       - Object. The oi sequence object
+%    plotType  - String. The type of plot. Options are:
 %        'movie illuminance': Gray scale (luminance) video of the stimulus
 %        'movie rgb':         Video of the stimuli
 %        'weights':           Plot showing time series of weights
@@ -17,20 +17,21 @@ function [uData, vObj] = visualize(obj, plotType, varargin)
 %                             of weights
 %
 % Outputs:
-%    uData    - Displayed data
-%    vObj     - Video object for the movie case.
+%    uData     - Struct. A structure containing the displayed data in a
+%                matrix named movie.
+%    vObj      - Object. Video object for the movie case.
 %
 % Optional key/value pairs:
-%   save      - Boolean. Save the movie. Default false.
-%   FrameRate - Numeric. Frames per second. Default 20.
-%   vname     - String. Video file name when saving. Default 'videoName'.
-%   showIlluminanceMap
-%             - Boolean. Show illuminance map. Default false.
-%   eyeMovementsData
-%             -  Boolean. Show eye movement data. Default false.
+%    save      - Boolean. Save the movie. Default false.
+%    FrameRate - Numeric. Frames per second. Default 20.
+%    vname     - String. Video file name when saving. Default 'videoName'.
+%    showIlluminanceMap
+%              - Boolean. Show illuminance map. Default false.
+%    eyeMovementsData
+%              -  Boolean. Show eye movement data. Default false.
 %
 % See Also:
-%    t_oisCreate
+%   t_oisCreate
 %
 
 % History:
@@ -38,7 +39,7 @@ function [uData, vObj] = visualize(obj, plotType, varargin)
 %    01/06/18  dhb    Don't print text into command window.
 %                     If we want text sometimes, add key/value 'verbose'
 %                     pair and set default to false.
-%    03/27/18  jnm    Formatting
+%    03/27/18  jnm    Formatting (Also 07/01/19)
 
 %% Interpret parameter values
 p = inputParser;
@@ -64,7 +65,7 @@ p.addParameter('backendrenderer', 'vcGraphWin', ...
 
 p.parse(obj, plotType, varargin{:});
 
-vname     = p.Results.vname;
+vname = p.Results.vname;
 FrameRate = p.Results.framerate;
 
 save = false;
@@ -118,7 +119,7 @@ switch ieParamFormat(plotType)
             case 'add'
                 for ii = 1:nFrames
                     d(:, :, ii) = illFixed + illMod * wgts(ii);
-                end     
+                end
             otherwise
                 error('Unknown composition method: %s\n', obj.composition);
         end

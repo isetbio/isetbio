@@ -15,33 +15,46 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %       4. Return the OI
 %
 % Inputs:
-%    obj            - The scene3D object to render
-%    varargin       - (Optional) Other key/value pair arguments
+%    obj              - Object. The scene3D object to render.
 %
 % Outputs:
-%    ieObject       - The Optical Image object
-%    terminalOutput - Terminal output
+%    ieObject         - Object. The Optical Image object.
+%    terminalOutput   - String. Terminal output.
 %
+% Optional key/value pairs:
+%    scaleIlluminance - Boolean. Whether or not to calculate the scale
+%                       illuminance of the scene.
+%    reuse            - Boolean. Whether or not to reuse existing
+%                       renderings of the same calculation. (Warning: This
+%                       means changes to the parameters will not be
+%                       displayed in the rendered image.)
 
 %%
 p = inputParser;
-p.addRequired('obj',@(x)(isa(x,'sceneEye')));
-p.addParameter('scaleIlluminance',true,@islogical);
+p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
+p.addParameter('scaleIlluminance', true, @islogical);
+p.addParameter('reuse', false, @islogical);
 
-p.parse(obj,varargin{:});
+p.parse(obj, varargin{:});
 scaleIlluminance = p.Results.scaleIlluminance;
+reuse = p.Results.reuse;
 
 %% Write out into a pbrt file
 objNew = obj.write();
-recipe = objNew.recipe; % Update the recipe within the sceneEye object. 
+recipe = objNew.recipe; % Update the recipe within the sceneEye object.
 
 %% Render the pbrt file using docker
 %scaleFactor = [];
-[ieObject, terminalOutput] = piRender(recipe,'version',3);
-        
+if reuse
+    [ieObject, terminalOutput] = piRender(recipe, 'version', 3, ...
+        'reuse', true);
+else
+    [ieObject, terminalOutput] = piRender(recipe, 'version', 3);
+end
+
 %% Set OI parameters correctly:
 if(~obj.debugMode)
-    ieObject = obj.setOI(ieObject,'scaleIlluminance',scaleIlluminance);
+    ieObject = obj.setOI(ieObject, 'scaleIlluminance', scaleIlluminance);
 end
 
 end

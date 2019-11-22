@@ -1,56 +1,59 @@
-function [oiObjects, seObjects] = downloadFromCloud(gcp,varargin)
-%DOWNLOADFROMCLOUD Download rendered data from the cloud. 
+function [oiObjects, seObjects] = downloadFromCloud(gcp, varargin)
+% Download rendered data from the cloud. 
 %
-% An variation of the function "downloadPBRT" from isetcloud but adapated to
-% work specifically for sceneEye. (We need to do some extra processing
-% specific to the sceneEye class.)
+% Syntax:
+%   [oiObjects, seObjects] = downloadFromCloud(gcp, [varargin])
+%
+% Description:
+%    An variation of the function "downloadPBRT" from isetcloud but
+%    adapated to work specifically for sceneEye. (We need to do some extra
+%    processing specific to the sceneEye class.)
 %
 % Inputs:
-%    gcp - the intalized gCloud object from isetcloud
-%    varargin  - An optional length of key/value pairs describing the scene
-%    scaleIlluminance -  if true, we scale the mean illuminance by the
-%                        pupil diameter in piDat2ISET
+%    gcp              - Object. The intalized gCloud object from isetcloud
 %
 % Outputs:
-%    oiObjects - All the optical images rendered.
-%    seObjects - Corresponding scene eye objects. 
+%    oiObjects        - Object. All of the optical images rendered.
+%    seObjects        - Object. The corresponding scene eye objects. 
 %
-% History:
-%    4/26/18  TL   Created
-%%
-p = inputParser;
-p.addRequired('gcp',@(x)(isa(x,'gCloud')));
-p.addParameter('scaleIlluminance',true,@islogical);
+% Optional key/value pairs:
+%    scaleIlluminance -  Boolean. If true, we scale the mean illuminance by
+%                        the pupil diameter in piDat2ISET
+%
 
-p.parse(gcp,varargin{:});
+% History:
+%    04/26/18  TL   Created
+%    05/29/19  JNM  Documentation pass
+
+%% Initialize
+p = inputParser;
+p.addRequired('gcp', @(x)(isa(x, 'gCloud')));
+p.addParameter('scaleIlluminance', true, @islogical);
+
+p.parse(gcp, varargin{:});
 scaleIlluminance = p.Results.scaleIlluminance;
 
 oiObjects = [];
 seObjects = [];
 
 %% Download
+oiObjects = gcp.downloadPBRT(gcp.miscDescriptor(1).recipe, ...
+    'scaleIlluminance', scaleIlluminance);
 
-oiObjects = gcp.downloadPBRT(gcp.miscDescriptor(1).recipe,...
-    'scaleIlluminance',scaleIlluminance);
-
-for ii=1:length(oiObjects)
-    
+for ii = 1:length(oiObjects)
     % Get corresponding sceneEye object
     % Check, is this correct?
     seObjects{ii} = gcp.miscDescriptor(ii);
-    
+
     % Set the parameters correctly for the optical image
-    if(seObjects{ii}.debugMode == 1)
+    if seObjects{ii}.debugMode == 1
         % seObject is a scene. Don't try to set it as an optical image,
         % just return it. 
         oiObjects{ii} = oiObjects{ii};
     else
-        oiObjects{ii} = seObjects{ii}.setOI(oiObjects{ii},...
-            'scaleIlluminance',scaleIlluminance);
+        oiObjects{ii} = seObjects{ii}.setOI(oiObjects{ii}, ...
+            'scaleIlluminance', scaleIlluminance);
     end
-    
 end
 
-
 end
-

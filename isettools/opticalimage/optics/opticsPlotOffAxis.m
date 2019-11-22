@@ -42,8 +42,8 @@ if isempty(data)
     if isempty(method), method = 'cos4th'; end
 
     % Calculating the cos4th scaling factors
-    % We might check whether it exists already and only do this if
-    % the cos4th slot is empty.
+    % We might check whether it exists already and only do this if the
+    % cos4th slot is empty.
     optics = feval(method, optics, oi);
     oi = oiSet(oi, 'optics', optics);
     data = opticsGet(optics, 'cos4th');

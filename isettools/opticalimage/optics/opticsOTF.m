@@ -1,7 +1,7 @@
 function oi = opticsOTF(oi, scene)
 % Apply the opticalImage OTF to the photon data
 %
-%Syntax:
+% Syntax:
 %   oi = opticsOTF(oi, scene);
 %
 % Description:
@@ -41,7 +41,7 @@ function oi = opticsOTF(oi, scene)
 %    * TODO: Implement otfSaveFlag
 %
 % See Also:
-%    s_FFTinMatlab, oiCalculateOTF, oiCompute
+%   s_FFTinMatlab, oiCalculateOTF, oiCompute
 %
 
 % History:
@@ -52,11 +52,12 @@ function oi = opticsOTF(oi, scene)
 %                   They can't work because you can't call those helper
 %                   functions from outside of the top level function.
 %    10/04/18  npc  Handle custom oi padding
+%    06/27/19  JNM  Minor formatting adjustments
 
 % Examples:
 %{
    oi = oiCreate('human');
-   oi = opticsOTF(oi);      
+   oi = opticsOTF(oi);
 %}
 
 if notDefined('oi'), error('Optical image required.'); end
@@ -66,7 +67,7 @@ opticsModel = oiGet(oi, 'optics model');
 
 switch lower(opticsModel)
     case {'skip', 'skipotf'}
-        return    
+        return
     case {'dlmtf', 'diffractionlimited'}
         oi = oiApplyOTF(oi, scene);
     case {'shiftinvariant', 'custom', 'humanotf'}
@@ -113,15 +114,13 @@ wave = oiGet(oi, 'wave');
 % Pad the optical image to allow for light spread. Also, make sure the row
 % and col values are even.
 
-% Determine padSize, padValue and rectRadius
-% A non-empty returned rectRadius indicates that the 
-% user-supplied padSizeDegs will result in a pad size 
-% that is maller than the default, which is 1/8 of the oi width.
-% In this case, we pad using the default pad size and call oiCrop 
-% using the rectRadius value after convolution with the PSF. This is done 
-% at the end of this function.
+%% Determine padSize, padValue and rectRadius
+% A non-empty returned rectRadius indicates that the user-supplied
+% padSizeDegs will result in a pad size that is smaller than the default,
+% which is 1/8 of the oi width. In this case, we pad using the default pad
+% size and call oiCrop using the rectRadius value after convolution with
+% the PSF. This is done at the end of this function.
 [padSize, padValue, rectRadius] = oiPadParams(oi);
-
 
 sDist = sceneGet(scene, 'distance');
 oi = oiPad(oi, padSize, padValue, sDist);
@@ -160,8 +159,8 @@ for ii = 1:length(wave)
     % Multiply the transformed otf and the image.
     % Then invert and put the image center in  the center of the matrix
     filteredIMG = abs(ifftshift(ifft2(otf .* imgFFT)));
-    
-    % Sometimes we had  annoying complex values left after this filtering.
+
+    % Sometimes we had annoying complex values left after this filtering.
     % We got rid of it by an abs() operator. It should never be there. But
     % we think it arises because of rounding error. We haven't seen this in
     % years, however.
@@ -178,8 +177,9 @@ oi = oiSet(oi, 'photons', p);
 if (~isempty(rectRadius))
     s = oiGet(oi, 'size');
     oiCenter = round(s / 2);
-    cropRect = [oiCenter(1)-rectRadius oiCenter(2)-rectRadius rectRadius*2 rectRadius*2];
+    cropRect = [oiCenter(1) - rectRadius, oiCenter(2) - rectRadius, ...
+        rectRadius * 2, rectRadius * 2];
     oi = oiCrop(oi,cropRect);
 end
-end
 
+end

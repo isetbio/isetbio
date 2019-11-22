@@ -8,7 +8,7 @@ function oi = oiCompute(scene, oi, opticsModel)
 %    The spectral irradiance image, on the sensor plane, just before sensor
 %    capture is the optical image. This spectral irradiance distribution
 %    depends on the scene and the the optics attached to the optical image
-%    structure, oi. 
+%    structure, oi.
 %
 %    Three types of optical calculations are implemented in ISET. These are
 %    selected from the interface in the oiWindow, or they can be set via
@@ -54,10 +54,8 @@ function oi = oiCompute(scene, oi, opticsModel)
 % Optional key/value pairs:
 %    None.
 %
-% Notes:
-%
 % See Also:
-%    opticsGet, opticsSet, wvfCreate, opticsCreate
+%   opticsGet, opticsSet, wvfCreate, opticsCreate
 %
 
 % History:
@@ -65,7 +63,7 @@ function oi = oiCompute(scene, oi, opticsModel)
 %    03/06/18  jnm  Formatting
 %    04/07/18  dhb  Leave the gun, keep the canoli. (This means,
 %                   deleted broken example, kept the working one.)
-%                 
+%    06/25/19  JNM  Minor formatting adjustments
 
 % Examples:
 %{

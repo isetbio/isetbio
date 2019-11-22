@@ -1,4 +1,4 @@
-[![Build Status](http://brainard-jenkins.psych.upenn.edu/buildStatus/icon?job=isetbio)](http://brainard-jenkins.psych.upenn.edu/job/isetbio/)
+[![Build Status](http://brainard-jenkins.psych.upenn.edu/buildStatus/icon?job=isetbioJM)](http://brainard-jenkins.psych.upenn.edu/job/isetbioJM/)
 
 The Image System Engineering Toolbox for Biology - ISETBIO - is a Matlab toolbox for calculating the properties of the front end of the visual system.  This includes a description of the scene, the optics and retinal image, the capture of light by the photopigment, the photocurrent responses in the receptors, bipolar responses, and retinal ganglion cell responses.
 

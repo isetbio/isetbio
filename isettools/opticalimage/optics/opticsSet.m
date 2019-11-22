@@ -16,13 +16,13 @@ function optics = opticsSet(optics, parm, val, varargin)
 %        oi = vcGetObject('OI');
 %        optics = oiGet(oi, 'optics');
 %
-%    Often, we get and set optics properties from the oiSet/Get commands
-%    as in 
+%    Often, we get and set optics properties from the oiSet/Get commands,
+%    such as
 %
 %         fnumber = oiGet(oi, 'optics fnumber')
 %         oi = oiSet(oi, 'optics fnumber', 2.8);
 %
-%    Those calls act via opticsGet and opticsSet 
+%    Those calls act via opticsGet and opticsSet
 %
 %    To set the aperture you must change either the focal length or the
 %    f# = fL/aperture, so aperture = fL/f#
@@ -41,8 +41,8 @@ function optics = opticsSet(optics, parm, val, varargin)
 %                               is dimensionless.
 %           {'focallength'}   - Numeric. The focal distance in meters for
 %                               image at infinity
-%           {'transmittance'} - Wavelength transmittance  ([0, 1])
-%                  OTF Information for shift-invariant optics model
+%           {'transmittance'} - Matrix. Wavelength transmittance  ([0, 1])
+%        OTF Information for shift-invariant optics model
 %           {'otfdata'}       - Array. Used to store custom data.
 %                               Row x Col x Wave
 %           {'otffx'}         - Vector. Frequency samples across otfdata
@@ -50,27 +50,32 @@ function optics = opticsSet(optics, parm, val, varargin)
 %           {'otffy'}         - Vector. Frequency samples down otfdata rows
 %                               (in cyc/mm)
 %           {'otfwave'}       - Vector. The otf wavelengths
-%        
 %        Lens
-%           {'lens'}          - For human optics, we store a human
-%             lens object.  The public properties are the lens name,
-%             wave, and density.  Other values  (transmittance,
-%             absorptance, absorbance) are derived.
-%           {'transmittance wave'} - For diffraction limited optics,
-%             we allow the transmittance to be aribtrary and we store
-%             the wavelength samples in optics.transmittance.wave.
-%           {'transmittance scale'} - For diffraction limited optics,
-%             we store the scale value at each wavelength
-%             optics.transmittance.scale
-%
+%           {'lens'}                - Object. For human optics, we store a
+%                                     human lens object. The public
+%                                     properties are the lens name, wave,
+%                                     and density. Other values
+%                                     (transmittance, absorptance,
+%                                     absorbance) are derived.
+%           {'transmittance wave'}  - Vector. For diffraction limited
+%                                     optics, we allow the transmittance to
+%                                     be aribtrary and we store the
+%                                     wavelength samples in
+%                                     optics.transmittance.wave.
+%           {'transmittance scale'} - Vector. For diffraction limited
+%                                     optics, we store the scale value at
+%                                     each wavelength
+%                                     optics.transmittance.scale.
 %        Relative illumination data
-%           {'relillummethod'}   - Poorly-named offAxis flag. (See below)
-%           {'off axis method'}  - Set to 'Skip' to turn off or 'cos4th'
-%           {'cos4thdata'}       - Cached cos4th data
-%    val      - The value to assign to the parameter, following the form
-%               specified by the parameter examples above.
-%    varargin - (Optional) Additional arguments that may be required. Some
-%               examples include units. 
+%           {'relillummethod'}  - Boolean. A poorly-named offAxis flag.
+%                                 (See below).
+%           {'off axis method'} - String. Options for this are: 'Skip' to
+%                                 turn off or 'cos4th'.
+%           {'cos4thdata'}      - Matrix. The cached cos4th data.
+%    val      - VARIES. The value to assign to the parameter, following the
+%               form specified by the parameter examples above.
+%    varargin - (Optional) VARIES. Additional arguments that may be
+%               required. Some examples include units.
 %
 % Outputs:
 %    optics   - Struct. The modified optics structure.
@@ -86,41 +91,41 @@ function optics = opticsSet(optics, parm, val, varargin)
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/13/18  jnm  Formatting
 %    07/25/18  dhb  Fix broken example (lens -> Lens).
+%    06/26/19  JNM  Documentation update and minor formatting fixes.
 
 % Examples:
 %{
- oi = oiCreate('diffraction limited');
- oiGet(oi,'optics fnumber')
- oi = oiSet(oi,'optics fnumber',8);
- oiGet(oi,'optics fnumber')
+    oi = oiCreate('diffraction limited');
+    oiGet(oi, 'optics fnumber')
+    oi = oiSet(oi, 'optics fnumber', 8);
+    oiGet(oi, 'optics fnumber')
 %}
 %{
- % Lens transmittance plot for human case
- l = Lens;
- vcNewGraphWin; 
- hold on; plot(l.wave,l.transmittance);
- l.density = 0.3;
- oi = oiCreate;
- oiSet(oi,'optics lens',l);
- l = oiGet(oi,'lens'); 
- plot(l.wave,l.transmittance);
+    % Lens transmittance plot for human case
+    l = Lens;
+    vcNewGraphWin;
+    hold on;
+    plot(l.wave, l.transmittance);
+    l.density = 0.3;
+    oi = oiCreate;
+    oiSet(oi, 'optics lens', l);
+    l = oiGet(oi, 'lens');
+    plot(l.wave, l.transmittance);
 %}
 %{
-  oi = oiCreate('diffraction limited');
-  oi = oiSet(oi,'optics transmittance wave',400:10:700);
-  oi = oiSet(oi,'optics transmittance scale',ones(31,1));
+    oi = oiCreate('diffraction limited');
+    oi = oiSet(oi, 'optics transmittance wave', 400:10:700);
+    oi = oiSet(oi, 'optics transmittance scale', ones(31, 1));
 %}
 
 %%
-if ~exist('optics','var') || isempty(optics)
-  error('No optics specified.'); 
+if ~exist('optics', 'var') || isempty(optics)
+  error('No optics specified.');
 end
-if ~exist('parm','var') || isempty(parm)
-    error('No parameter specified.'); 
+if ~exist('parm', 'var') || isempty(parm)
+    error('No parameter specified.');
 end
-if ~exist('val','var')
-    error('No value.'); 
-end
+if ~exist('val', 'var'), error('No value.'); end
 
 %%
 parm = ieParamFormat(parm);
@@ -134,8 +139,8 @@ switch parm
             warning('Non standard optics type setting');
         end
         optics.type = val;
-        
-    case {'model','opticsmodel'}
+
+    case {'model', 'opticsmodel'}
         % Set the optics model type
         %
         % diffractionlimited and shiftinvariant are the legitimate
@@ -151,10 +156,11 @@ switch parm
         % BW: If we need a special case for sceneeye, let's make that.
         % ray trace is used for a different meaning in ISETCAM.  We
         % should use a different name for the scene eye calculation.
-        
+
         % Remove white space and force lower case
         val = ieParamFormat(val);
-        valid = {'diffractionlimited', 'shiftinvariant','iset3d','raytrace'};
+        valid = {'diffractionlimited', 'shiftinvariant', ...
+            'iset3d', 'raytrace'};
 
         if validatestring(val, valid)
             optics.model = ieParamFormat(val);
@@ -193,35 +199,38 @@ switch parm
     case {'lens'}
         % New lens object. This should replace transmittance.
         optics.lens = val;
+
     case {'transmittancewave'}
         % For human optics, there is a lens object but no
         % transmittance slot.  For diffraction limited optics,
         % however, there is a transmittance slot you can set.
-        
+
         % The transmittance wave must be set before the scale is set.
-        if isfield(optics,'transmittance')
+        if isfield(optics, 'transmittance')
             optics.transmittance.wave = val;
         else
             fprintf('Set transmittance only for diffraction');
             fprintf('Set lens density for human case')
-            fprintf('Optics name: %s',optics.name);
+            fprintf('Optics name: %s', optics.name);
         end
+
     case {'transmittancescale'}
         % The wave must be set before you set the transmittance scale
-        if isfield(optics,'transmittance')
+        if isfield(optics, 'transmittance')
             if numel(val) ~= numel(optics.transmittance.wave)
-                error('The transmittance scale does not match the number of wave slots');
+                error(strcat('The transmittance scale does not match ', ...
+                    'the number of wave slots'));
             end
             optics.transmittance.scale = val;
         else
             fprintf('Set transmittance only for diffraction');
             fprintf('Set lens density for human case')
-            fprintf('Optics name: %s',optics.name);
+            fprintf('Optics name: %s', optics.name);
         end
-        
+
     % ---- Relative illumination calculations
     case {'offaxis', 'offaxismethod', 'relillummethod', 'cos4thflag'}
-        % Flag determining whether you use the cos4th method 
+        % Flag determining whether you use the cos4th method
         % Bad naming because of history.
         optics.offaxis = val;
 

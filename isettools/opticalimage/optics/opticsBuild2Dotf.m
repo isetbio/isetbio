@@ -8,7 +8,7 @@ function optics = opticsBuild2Dotf(optics, otf, sampleSF)
 %    We calcute the otf(wave, freq) using opticsDefocusedMTF and
 %    opticsDefocusCore. We then need to convert that data into the format
 %    used by an optics structure. This one stores the frequency support
-%    running from [-f, f]
+%    running from [-f, f].
 %
 % Inputs:
 %    optics   - Struct. ISET optics structure
@@ -16,8 +16,8 @@ function optics = opticsBuild2Dotf(optics, otf, sampleSF)
 %    sampleSF - Vector. Spatial frequency samples in cyc/mm (all positive).
 %
 % Outputs:
-%    OTF2D    - OTF appropriate for storing in optics (includes -f, f)
-%    fSupport - Spatial frequency support for OTF2D (cyc/mm)
+%    optics   - Struct. The modified ISET optics structure with modified
+%               otfData, otf fx, and otf fy.
 %
 % Optional key/value pairs:
 %    None.
@@ -33,6 +33,7 @@ function optics = opticsBuild2Dotf(optics, otf, sampleSF)
 % History:
 %    xx/xx/11       Copyright ImagEval Consultants, LLC, 2011.
 %    03/09/18  jnm  Formatting
+%    06/27/19  JNM  Documentation update. Output is a single struct.
 
 % Examples:
 %{
@@ -45,7 +46,7 @@ function optics = opticsBuild2Dotf(optics, otf, sampleSF)
     defocus = defocus + 5;  % In units of diopters
 
     [otf, sampleSFmm] = opticsDefocusCore(optics, sampleSF, defocus);
-   optics = opticsBuild2Dotf(optics, otf, sampleSF);
+    optics = opticsBuild2Dotf(optics, otf, sampleSF);
 %}
 
 if notDefined('optics'), error('optics required'); end
@@ -100,8 +101,8 @@ for ii = 1:nWave
     tmp = abs(interp1(sampleSF, otf(ii, :), effSF, 'linear', 0));
     % mesh(fX, fY, tmp)
 
-    % We don't want any frequencies beyond the sampling grid. Here we
-    % zero them out.
+    % We don't want any frequencies beyond the sampling grid. Here we zero
+    % them out.
     tmp(l) = 0;
     % mesh(fX, fY, tmp)
 

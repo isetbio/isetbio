@@ -23,7 +23,7 @@ function oi = oiPad(oi, padSize, padValue, sDist, direction)
 % Inputs:
 %    oi        - Struct. An optical image structure
 %    padSize   - Matrix. A matrix containing the dimensions to pad out.
-%    padValue  - String. Default: 'mean photons'. How to pad. 
+%    padValue  - String. Default: 'mean photons'. How to pad.
 %                See validatePadStruct() for valid padValue values
 %    sDist     - (Optional) Scalar Numeric. The scene distance. Default is
 %                to query from a scene. If no scene, assume 1m.
@@ -45,13 +45,13 @@ function oi = oiPad(oi, padSize, padValue, sDist, direction)
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/07/18  jnm  Formatting
 %    10/01/18  npc  Updated it to use custom pad size and value
+%    06/24/19  JNM  Documentation update
 
 % Examples:
 %{
     oi = oiCreate;
     oi = oiPad(oi, [8, 8, 0], 'mean photons');
 %}
-
 
 if notDefined('sDist')
     scene = vcGetObject('scene');
@@ -68,11 +68,10 @@ if notDefined('direction'), direction = 'both'; end
 % Probably not necessary. But ...
 if ismatrix(padSize), padSize(3) = 0; end
 
-
 photons = oiGet(oi, 'photons');
-% To prevent ieCompressData error, we set the surrounding region as the
-% mean of the data at each wavelength samples. In this way, we will have
-% the mean luminance matched.
+% To prevent an ieCompressData error, we set the surrounding region as the
+% mean of the data at each wavelength samples. In this way, we will match
+% the mean luminance.
 if isa(photons, 'gpuArray')
     meanPhotons = gather(mean(mean(photons)));
 else

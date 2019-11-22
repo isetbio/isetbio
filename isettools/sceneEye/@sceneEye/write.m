@@ -1,13 +1,15 @@
-function [objNew] = write(obj, varargin)
-% Write out the sceneEye object into a pbrt file that will later be
-% rendered. This function is a substep of sceneEye.render. Typically a user
-% will not run this directly, but rather it will be run within the render
-% function.
+function objNew = write(obj, varargin)
+% A substep of sceneEye.render. Typically not called directly.
 %
 % Syntax:
-%   [success] = write(obj, [varargin])
+%   objNew = write(obj, [varargin])
 %
 % Description:
+%    Write out the sceneEye object into a pbrt file that will later be
+%    rendered. This function is a substep of sceneEye.render. Typically a
+%    user will not run this directly, but rather it will be run within the
+%    render function.
+%
 %	 Given a sceneEye object, we have all the information we need to
 %    construct a PBRT file and render it. Therefore, this function reads
 %    and interprets the parameters given in the sceneEye object and writes
@@ -15,12 +17,14 @@ function [objNew] = write(obj, varargin)
 %    sceneEye.render.
 %
 % Inputs:
-%    obj            - The scene3D object to render
-%    varargin       - (Optional) Other key/value pair arguments
+%    obj   - Object. The scene3D object to render.
 %
 % Outputs:
-%   objNew          - the object may have been modified in the processing
-%                     below. We return this modified version.
+%   objNew - Object. The object may have been modified in the processing
+%            below. We return this modified version.
+%
+% Optional key/value pairs:
+%    Needs to be added.
 %
 
 %% Make a copy of the current object
@@ -31,84 +35,78 @@ objNew = copy(obj);
 objNew.recipe = copy(obj.recipe);
 
 %% Make some eccentricity calculations
-
 % To render an image centered at a certain eccentricity without having
 % change PBRT, we do the following:
 % 1. Change the film size and resolution so that renders a larger image
-% that encompasses the desired eccentricity (tempWidth/tempHeight)
+%    that encompasses the desired eccentricity (tempWidth/tempHeight)
 % 2. Insert a "crop window" PBRT parameter to only render the window
-% centered at the desired eccentricity with the desired film
-% diagonal/resolution.
-
+%    centered at the desired eccentricity with the desired film
+%    diagonal/resolution.
 ecc = objNew.eccentricity;
 
 % I was having many bugs with my eccentricity code, so for now I've removed
 % it for now. Ideally we do all the right calculations shown above and then
-% use scene3d.recipe.set('cropwindow',[x1 x2 y1 y2]); and then carefully
+% use scene3d.recipe.set('cropwindow', [x1 x2 y1 y2]); and then carefully
 % reset the angular support as well...
-if(ecc ~= [0 0])
+if(ecc ~= [0, 0])
     warning('Eccentricity is currently not implemented. Setting to zero.')
     ecc = [0 0];
 end
 
-%% Given the sceneEye object, we make all other adjustments needed to the recipe
+%% Given the sceneEye object, make all adjustments needed to the recipe
 recipe = objNew.recipe;
 
 % Depending on the eye model, set the lens file appropriately
 switch objNew.modelName
-    case {'Navarro','navarro'}
+    case {'Navarro', 'navarro'}
         % Apply any accommodation changes
         if(isempty(objNew.accommodation))
             objNew.accommodation = 5;
             warning('No accommodation! Setting to 5 diopters.');
         end
-        
+
         % This function also writes out the Navarro lens file
-        recipe = setNavarroAccommodation(recipe, objNew.accommodation,...
-                                         objNew.workingDir);
-        
-    case {'LeGrand','legrand','le grand'}
-        
+        recipe = setNavarroAccommodation(recipe, objNew.accommodation, ...
+            objNew.workingDir);
+
+    case {'LeGrand', 'legrand', 'le grand'}
         % Le Grand eye does not have accommodation (not yet at least).
-        recipe = writeLegrandLensFile(recipe,objNew.workingDir); 
-    
-    case{'Arizona','arizona'}
-        
+        recipe = writeLegrandLensFile(recipe, objNew.workingDir); 
+
+    case{'Arizona', 'arizona'}
         if(isempty(objNew.accommodation))
             objNew.accommodation = 5;
             warning('No accommodation! Setting to 5 diopters.');
         end
-        
+
         % This function also writes out the Arizona lens file.
-        recipe = setArizonaAccommodation(recipe, objNew.accommodation,...
-                                         objNew.workingDir);
-                                     
-    case{'Custom','custom'}
+        recipe = setArizonaAccommodation(recipe, objNew.accommodation, ...
+            objNew.workingDir);
+
+    case{'Custom', 'custom'}
         
         % Run this first to generate the IOR files.
         setNavarroAccommodation(recipe, 0, objNew.workingDir);
-                                     
+
         % Copy the lens file given over
         if(isempty(obj.lensFile))
             error('No lens file given for custom eye.')
         else
             % Copy lens file over to the working directory and then attach
             % to recipe
-            [success,message] = copyfile(obj.lensFile,objNew.workingDir);
-            [~,n,e] = fileparts(obj.lensFile);
-            
+            [success, message] = copyfile(obj.lensFile, objNew.workingDir);
+            [~, n, e] = fileparts(obj.lensFile);
+
             if(success)
-                recipe.camera.lensfile.value = fullfile(objNew.workingDir,[n e]);
+                recipe.camera.lensfile.value = ...
+                    fullfile(objNew.workingDir, [n e]);
                 recipe.camera.lensfile.type = 'string';
             else
-                error('Error copying lens file. Error message: %s',message);
+                error('Error copying lens file. Err message: %s', message);
             end
         end
-        
-     
-                                     
-end
 
+end
 
 % Film parameters
 recipe.film.xresolution.value = objNew.resolution;
@@ -121,13 +119,14 @@ if(objNew.debugMode)
     recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
         'fov', fov);
     if(objNew.accommodation ~= 0)
-        warning(['Setting perspective camera focal distance to %0.2f dpt '...
-            'and lens radius to %0.2f mm'],...
-            objNew.accommodation,objNew.pupilDiameter);
+        warning(['Setting perspective camera focal distance to %0.2f ' ...
+            'dpt and lens radius to %0.2f mm'], ...
+            objNew.accommodation, objNew.pupilDiameter);
         recipe.camera.focaldistance.value = 1/objNew.accommodation;
         recipe.camera.focaldistance.type = 'float';
-        
-        recipe.camera.lensradius.value = (objNew.pupilDiameter/2)*10^-3;
+
+        recipe.camera.lensradius.value = ...
+            (objNew.pupilDiameter / 2) * 10 ^ -3;
         recipe.camera.lensradius.type = 'float';
     end
 else
@@ -135,9 +134,9 @@ else
     recipe.camera.pupilDiameter.value = objNew.pupilDiameter;
     recipe.camera.retinaDistance.value = objNew.retinaDistance;
     recipe.camera.retinaRadius.value = objNew.retinaRadius;
-    recipe.camera.retinaSemiDiam.value = objNew.retinaDistance ...
-        * tand(objNew.fov / 2);
-    if(strcmp(objNew.sceneUnits,'m'))
+    recipe.camera.retinaSemiDiam.value = objNew.retinaDistance * ...
+        tand(objNew.fov / 2);
+    if(strcmp(objNew.sceneUnits, 'm'))
         recipe.camera.mmUnits.value = 'false';
         recipe.camera.mmUnits.type = 'bool';
     end
@@ -162,12 +161,12 @@ else
     % Spectral rendering
     numCABands = struct('value', objNew.numCABands, 'type', 'integer');
     recipe.integrator = struct('type', 'Integrator', ...
-        'subtype', 'spectralpath', ...
-        'numCABands', numCABands);
+        'subtype', 'spectralpath', 'numCABands', numCABands);
 end
 
 % Look At
-if(isempty(objNew.eyePos) || isempty(objNew.eyeTo) || isempty(objNew.eyeUp))
+if(isempty(objNew.eyePos) || isempty(objNew.eyeTo) || ...
+        isempty(objNew.eyeUp))
     error('Eye location missing!');
 else
     recipe.lookAt = struct('from', objNew.eyePos, 'to', objNew.eyeTo, ...
@@ -184,23 +183,24 @@ cropWindow = recipe.get('cropwindow');
 cropWindowR = cropWindow.*obj.resolution;
 cropWindowR = [cropWindowR(1) cropWindowR(3) ...
     cropWindowR(2)-cropWindowR(1) cropWindowR(4)-cropWindowR(3)];
-[X,Y] = meshgrid(currAngSupport,currAngSupport);
-X = imcrop(X,cropWindowR);
-Y = imcrop(Y,cropWindowR);
+[X, Y] = meshgrid(currAngSupport, currAngSupport);
+X = imcrop(X, cropWindowR);
+Y = imcrop(Y, cropWindowR);
 % Assume square optical image for now, but we should probably change
 % angularSupport to have both x and y direction.
-objNew.angularSupport = X(1,:); 
+objNew.angularSupport = X(1, :); 
 %}
 
 %% Write out the adjusted recipe into a PBRT file
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
-recipe.set('outputFile',pbrtFile);
-if(strcmp(recipe.exporter,'C4D'))
-    piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
-        'overwriteresources', false,'creatematerials',true);
+recipe.set('outputFile', pbrtFile);
+if(strcmp(recipe.exporter, 'C4D'))
+    piWrite(recipe, 'overwritepbrtfile', true, ...
+        'overwritelensfile', false, 'overwriteresources', false, ...
+        'creatematerials', true);
 else
-    piWrite(recipe, 'overwritepbrtfile', true, 'overwritelensfile', false, ...
-        'overwriteresources', false);
+    piWrite(recipe, 'overwritepbrtfile', true, ...
+        'overwritelensfile', false, 'overwriteresources', false);
 end
 obj.recipe = recipe; % Update the recipe.
 
