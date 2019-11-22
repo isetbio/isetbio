@@ -69,7 +69,11 @@ drawnow
 pause(2)
 
 % To make the font larger, use the pull down  "Edit | Change font size" or
-% use this command
+% use this command.
+%
+% DHB: This was broken, using a non-extant call to 'font delta'.  Changing to
+% 'font size' makes it run fine.  But I don't see any obvious effect on
+% the actual font size in the window.
 d = ieSessionGet('font size');
 ieSessionSet('font size', d + 2);
 sceneWindow
