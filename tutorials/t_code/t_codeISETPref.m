@@ -72,7 +72,7 @@ pause(2)
 % use this command.
 %
 % DHB: The font set stuff doesn't seem to do anything.  Commented out for
-% now.
+% now.tbUse
 d = ieSessionGet('font size');
 % ieSessionSet('font delta', d + 2);
 % sceneWindow
