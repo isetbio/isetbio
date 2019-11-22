@@ -102,6 +102,10 @@ function nTrialsSpikes = compute(rgcL, varargin)
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define rgcL before it could
+    % possibly work.
     rgcL.compute();
 %}
 

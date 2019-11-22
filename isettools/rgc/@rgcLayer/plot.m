@@ -35,6 +35,10 @@ function [hdl, uData] = plot(obj, pType, varargin)
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define rgcLayer before it could
+    % possibly work.
     rgcLayer.plot('mosaic', 'nMosaic', 1);
     rgcLayer.plot('psth', 'nMosaic', 2);
     rgcLayer.plot('psth', 'nMosaic', 2, 'cell', [1 1]);

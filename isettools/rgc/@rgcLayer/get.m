@@ -46,6 +46,10 @@ function val = get(obj, param, varargin)
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define rgc1 before it could
+    % possibly work.
     val = rgcGet(rgc1, 'name')
     val = rgcGet(rgc1, 'input')
 %}
