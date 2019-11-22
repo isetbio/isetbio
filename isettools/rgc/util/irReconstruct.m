@@ -40,6 +40,10 @@ function [stimulusReconstruction, params] = ...
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define irReconstruct before it could
+    % possibly work.
     irReconstruct(innerRetina);
     irReconstruct(innerRetina, 'model', 'linear');
 %}

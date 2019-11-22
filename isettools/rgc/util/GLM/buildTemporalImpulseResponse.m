@@ -34,6 +34,10 @@ function [k, timeAxis] = buildTemporalImpulseResponse(samplingTime)
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define obj before it could
+    % possibly work.
     obj.tCenter{rgbInd, 1} = multFactor * ...
         buildTemporalImpulseResponse(samplingTime);
 %}

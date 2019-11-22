@@ -72,6 +72,10 @@ function ieSessionSet(param, val, varargin)
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define newALg before it could
+    % possibly work.
     ieSessionSet('addrender', newAlg);
     ieSessionSet('main window', hObject, eventdata, handles);
 %}

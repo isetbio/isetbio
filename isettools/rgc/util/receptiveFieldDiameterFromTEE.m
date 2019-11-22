@@ -39,6 +39,10 @@ function receptiveFieldDiameterParasol2STD = ...
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define rgcLayer before it could
+    % possibly work.
     TEE = retinalLocationToTEE(rgcLayer.center, eyeSide)
     receptiveFieldDiameterParasol2STD = receptiveFieldDiameterFromTEE(TEE);
 %}

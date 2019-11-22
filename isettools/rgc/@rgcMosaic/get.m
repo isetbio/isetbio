@@ -79,6 +79,10 @@ function val = get(obj, param, varargin)
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define rgcMosaic before it could
+    % possibly work.
     val = @rgcMosaic.get('cellType')
     val = @rgcMosaic.get('linearResponse')
 %}

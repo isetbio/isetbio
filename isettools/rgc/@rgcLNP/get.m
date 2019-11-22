@@ -43,6 +43,10 @@ function val = get(obj, param, varargin)
 
 % Examples:
 %{
+    % ETTBSkip - skipping broken examples
+    %
+    % This needs code to define rgcLNP before it could
+    % possibly work.
     val = @rgcLNP.get('cell type')
     val = @rgcLNP.get('psth response')
 %}

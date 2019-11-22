@@ -70,7 +70,7 @@ function [I, params] = imageVernier(params, varargin)
     imshow(img);
     p.bgColor = 0.2;
     img = imageVernier(p);
-    Imshow(img);
+    imshow(img);
     p.barLength = 16;
     img = imageVernier(p);
     imshow(img);
@@ -95,7 +95,6 @@ function [I, params] = imageVernier(params, varargin)
     p.pattern = 0.5 * cos(2 * pi * f * x) + 0.5;
     img = imageVernier(p);
     imshow(img);
-
 %}
 
 %% Parse input parameters
