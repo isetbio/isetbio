@@ -99,7 +99,7 @@ if (ischar(cbType) && strcmp(lower(cbType),'default'))
     error('Change passed ''default'' cbType to ''trichromat''');
 end
 if ischar(cbType) && (strcmp(lower(cbType), 'trichromats') || ...
-        strcmp(lower(cbtype), 'trichromat'))
+        strcmp(lower(cbType), 'trichromat'))
     cbType = 0;
 end
 
