@@ -55,9 +55,11 @@ obj.initOutputs();
 
 % Set random seed
 if (isempty(obj.randomSeed))
-    rng('shuffle');
+    %rng('shuffle');                         % 2018b and before
+    rng('shuffle', "CombRecursive");         % 2019a and after
 else
-    rng(obj.randomSeed);
+    %rng(obj.randomSeed);                    % 2018b and before
+    rng(obj.randomSeed, "CombRecursive");    % 2019a and after
 end
 
 if (obj.beVerbose)
