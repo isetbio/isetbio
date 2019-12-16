@@ -348,7 +348,7 @@ switch(pType)
         % vcNewGraphWin;
         mesh(freq, freq, abs(otf))
         str = sprintf('Freq (lines/%s)', unit);
-        xlabel(str); ylabel(str); title(sprintf('OTF %.0f', wave));
+        xlabel(str); title(sprintf('OTF %.0f', wave));
         uData.fx = freq; uData.fy = freq; uData.otf = abs(otf);
         set(gcf, 'userdata', uData);
         set(gca,'ylim',[0 1.2]);
