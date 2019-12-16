@@ -389,7 +389,7 @@ switch(pType)
         % vcNewGraphWin;
         middleRow = (freq == 0);
         positiveCols = (freq >= 0);
-        plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
+        pData = plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
         
         str = sprintf('Freq (lines/%s)', unit);
         xlabel(str); ylabel(str); 
@@ -444,7 +444,7 @@ switch(pType)
         % vcNewGraphWin;
         middleRow = (freq == 0);
         positiveCols = (freq >= 0);
-        plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
+        pData = plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
         
         str = sprintf('Freq (lines/deg)');
         xlabel(str); ylabel(str); grid on
