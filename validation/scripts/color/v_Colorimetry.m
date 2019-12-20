@@ -19,6 +19,9 @@ function ValidationFunction(runTimeParams)
     % (Changed isetbio to ieLAB2XYZ).
     % lab2xyz = overrideBuiltInFunction('lab2xyz', 'isetbio');
     
+    %% TEMP for Jenkins debug
+    getpref('isetbio')
+    
     %% SETUP
     isetbioPath = fileparts(which('colorTransformMatrix'));
     curDir = pwd; 
