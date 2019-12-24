@@ -348,7 +348,7 @@ switch(pType)
         % vcNewGraphWin;
         mesh(freq, freq, abs(otf))
         str = sprintf('Freq (lines/%s)', unit);
-        xlabel(str); ylabel(str); title(sprintf('OTF %.0f', wave));
+        xlabel(str); ylabel('Contrast reduction (SFR)'); title(sprintf('OTF %.0f', wave));
         uData.fx = freq; uData.fy = freq; uData.otf = abs(otf);
         set(gcf, 'userdata', uData);
         set(gca,'ylim',[0 1.2]);
@@ -389,7 +389,7 @@ switch(pType)
         % vcNewGraphWin;
         middleRow = (freq == 0);
         positiveCols = (freq >= 0);
-        plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
+        pData = plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
         
         str = sprintf('Freq (lines/%s)', unit);
         xlabel(str); ylabel(str); 
@@ -444,7 +444,7 @@ switch(pType)
         % vcNewGraphWin;
         middleRow = (freq == 0);
         positiveCols = (freq >= 0);
-        plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
+        pData = plot(freq(positiveCols), abs(otf(middleRow,positiveCols)));
         
         str = sprintf('Freq (lines/deg)');
         xlabel(str); ylabel(str); grid on
