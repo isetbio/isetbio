@@ -25,7 +25,7 @@ function ValidationFunction(runTimeParams)
 ieInit;
 
 % Reproduce identical random number
-rng('default'); rng(1);
+rng(1, 'combRecursive');
 
 %% Produces the harmonic.  Need to lock this down as a function.
 
