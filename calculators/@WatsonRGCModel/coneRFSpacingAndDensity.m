@@ -52,6 +52,21 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
                                         'angle', angle*ones(1,numel(eccMM)), ...
                                         'eccentricityUnits', 'mm', ...
                                         'useParfor', false);
+                                    
+    % Correct for the fact that the isetbio max cone density (18,800 cones/deg^2) 
+    % does not agree with Watson's (obj.dc0 =  14,804.6 cones/deg^2)
+    WatsonModelMaxConeDensityPerDeg2 = obj.dc0;
+    [~,~,ISETBioMaxConeDensityPerMM2] = coneSizeReadData('eccentricity', 0, 'angle', 0);
+    % Convert to density per Deg2
+    ISETBioMaxConeDensityPerDeg2 = ISETBioMaxConeDensityPerMM2 * obj.alpha(0);
+    correctionFactorMax = ISETBioMaxConeDensityPerDeg2 - WatsonModelMaxConeDensityPerDeg2;
+    correctionFactorMax = correctionFactorMax / obj.alpha(0);
+    % Apply this correction for eccentricities up to 0.18 degs
+    idx = find(eccDegs>=0.18);
+    indicesToBeCorrected = 1:(idx(1)-1);
+    correctionFactors = (1:numel(indicesToBeCorrected))/numel(indicesToBeCorrected) * correctionFactorMax;
+    densityConesPerMM2(indicesToBeCorrected) = densityConesPerMM2(indicesToBeCorrected) - fliplr(correctionFactors);
+    
     
     switch (units)
         case 'Cones per mm2'

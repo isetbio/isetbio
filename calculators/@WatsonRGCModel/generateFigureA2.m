@@ -24,8 +24,7 @@ function hFig = generateFigureA2(obj, hFig)
     figureNumber = 'A2';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0:0.1:100;
-    plot(eccDegs, obj.alpha(eccDegs), 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
+    plot(obj.eccDegs, obj.alpha(eccDegs), 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
     xlabel('eccentricity, r'' (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
     ylabel('area ratio, \alpha (mm^2/deg^2)', 'FontAngle', obj.figurePrefs.fontAngle);
     set(gca, 'XLim', [0 100], 'YLim', [0.01 0.08], 'FontSize', obj.figurePrefs.fontSize);

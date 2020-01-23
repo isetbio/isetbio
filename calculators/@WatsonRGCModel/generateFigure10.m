@@ -24,8 +24,7 @@ function hFig = generateFigure10(obj, hFig)
     figureNumber = '10';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0:5:100;
     type = 'both polarities';
-    generateRGCRFSpacingPlot(obj, @obj.midgetRGCRFSpacing, eccDegs, type);
+    generateRGCRFSpacingPlot(obj, @obj.midgetRGCRFSpacing, obj.eccDegs, type);
     title('Midget RGC RF spacing (ON+OFF) as a function of eccentricity');
 end

@@ -24,9 +24,8 @@ function hFig = generateFigure8(obj, hFig)
     figureNumber = '8';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0.1:0.1:100;
-    midgetRGCFraction = obj.midgetRGCFraction(eccDegs);
-    plot(eccDegs, midgetRGCFraction, 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
+    midgetRGCFraction = obj.midgetRGCFraction(obj.eccDegs);
+    plot(obj.eccDegs, midgetRGCFraction, 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
     xlabel('eccentricity (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
     ylabel('midget RGC RF fraction', 'FontAngle', obj.figurePrefs.fontAngle);
     set(gca, 'XLim', [0 100], 'YLim', [0 1], ...

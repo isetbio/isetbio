@@ -24,11 +24,10 @@ function hFig = generateFigureA1(obj, hFig)
     figureNumber = 'A1-left';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0:0.1:100;
-    eccMM = obj.rhoDegsToMMs(eccDegs);
+    eccMM = obj.rhoDegsToMMs(obj.eccDegs);
     linearApproximationDegsToMMs = 268/1000;
-    plot(eccDegs, eccMM, 'k-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
-    plot(eccDegs, linearApproximationDegsToMMs*eccDegs, 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
+    plot(obj.eccDegs, eccMM, 'k-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
+    plot(obj.eccDegs, linearApproximationDegsToMMs*obj.eccDegs, 'r-', 'LineWidth', obj.figurePrefs.lineWidth);
     legend({'deg->mm (ecc)', 'linear approximation'}, 'Location', 'SouthEast');
     axis 'square';
     xlabel('eccentricity, r'' (degs)', 'FontAngle', obj.figurePrefs.fontAngle);

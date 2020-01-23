@@ -24,35 +24,34 @@ function hFig = generateFigure14(obj, hFig)
     figureNumber = '14';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0.2:0.01:80;
     
     meridianName = 'temporal meridian';
-    midgetRGCRFDensity = obj.midgetRGCRFDensity(eccDegs, meridianName, 'RFs per deg2');
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, midgetRGCRFDensity./coneRFDensity, 'r-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
+    midgetRGCRFDensity = obj.midgetRGCRFDensity(obj.eccDegs, meridianName, 'RFs per deg2');
+    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
+    plot(obj.eccDegs, midgetRGCRFDensity./coneRFDensity, 'r-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
         
     meridianName = 'superior meridian';
-    midgetRGCRFDensity = obj.midgetRGCRFDensity(eccDegs, meridianName, 'RFs per deg2');
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, midgetRGCRFDensity./coneRFDensity, 'b-', 'LineWidth', obj.figurePrefs.lineWidth);
+    midgetRGCRFDensity = obj.midgetRGCRFDensity(obj.eccDegs, meridianName, 'RFs per deg2');
+    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
+    plot(obj.eccDegs, midgetRGCRFDensity./coneRFDensity, 'b-', 'LineWidth', obj.figurePrefs.lineWidth);
     
     meridianName = 'nasal meridian';
-    midgetRGCRFDensity = obj.midgetRGCRFDensity(eccDegs, meridianName, 'RFs per deg2');
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, midgetRGCRFDensity./coneRFDensity, 'g-', 'LineWidth', obj.figurePrefs.lineWidth);
+    midgetRGCRFDensity = obj.midgetRGCRFDensity(obj.eccDegs, meridianName, 'RFs per deg2');
+    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
+    plot(obj.eccDegs, midgetRGCRFDensity./coneRFDensity, 'g-', 'LineWidth', obj.figurePrefs.lineWidth);
     
     meridianName = 'inferior meridian';
-    midgetRGCRFDensity = obj.midgetRGCRFDensity(eccDegs, meridianName, 'RFs per deg2');
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, midgetRGCRFDensity./coneRFDensity, 'k-', 'LineWidth', obj.figurePrefs.lineWidth);
+    midgetRGCRFDensity = obj.midgetRGCRFDensity(obj.eccDegs, meridianName, 'RFs per deg2');
+    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
+    plot(obj.eccDegs, midgetRGCRFDensity./coneRFDensity, 'k-', 'LineWidth', obj.figurePrefs.lineWidth);
     
     legend({'temporal', 'superior', 'nasal', 'inferior'}, 'Location', 'SouthWest');
 
     xlabel('eccentricity (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
     ylabel('midget RGC / cone ratio', 'FontAngle', obj.figurePrefs.fontAngle);
-    set(gca, 'XLim', [0.1 80], 'YLim', [0.02 2.2], ...
+    set(gca, 'XLim', [0.01 80], 'YLim', [0.02 2.2], ...
         'XScale', 'log', 'YScale', 'log', ...
-        'XTick', [0.5 1 5 10 50], 'YTick', [0.05 0.1 0.2 0.5 1 2], ...
+        'XTick', [0.1 0.5 1 5 10 50 100], 'YTick', [0.05 0.1 0.2 0.5 1 2], ...
         'FontSize', obj.figurePrefs.fontSize);
     grid(gca, obj.figurePrefs.grid);
     

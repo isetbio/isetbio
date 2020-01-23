@@ -24,8 +24,7 @@ function hFig = generateFigure5(obj, hFig)
     figureNumber = '5';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0.1:0.1:100;
     
-    generateRGCRFDensityPlot(obj, @obj.totalRGCRFDensity, eccDegs);
+    generateRGCRFDensityPlot(obj, @obj.totalRGCRFDensity, obj.eccDegs);
     drawnow;
 end

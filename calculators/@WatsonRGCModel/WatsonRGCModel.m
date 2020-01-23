@@ -42,8 +42,8 @@ classdef WatsonRGCModel
      
         % Fraction of all ganglion cells that are midget at 0 deg eccentricity
         f0 = 1/1.12;
-             
-        % Peak cone density (cones/deg^2) at 0 deg eccentricity
+
+        % Peak cone density (cones/deg^2) at 0 deg eccentricity (page 3, dc(0), Also in Appendix 4)
         dc0 = 14804.6;
         
         % Conversion factor, rho, of retinal distance deg->mm as as a function of eccentricity in
@@ -99,6 +99,9 @@ classdef WatsonRGCModel
     properties
         % Struct with default preferences for all figures
         figurePrefs
+        
+        % the eccentricity support for all figures
+        eccDegs = 0:0.002:90;
     end
     
     % Public methods (class interface)
@@ -108,6 +111,7 @@ classdef WatsonRGCModel
             % Parse input
             p = inputParser;
             p.addParameter('generateAllFigures', false, @islogical);
+            p.addParameter('eccDegs', 0:0.002:90, @isnumeric);
             p.parse(varargin{:});
             
             % Set the default figure preferences
@@ -115,13 +119,14 @@ classdef WatsonRGCModel
             
             % Set options
             generateAllFigures = p.Results.generateAllFigures;
+            obj.eccDegs = p.Results.eccDegs;
             
             % Create dictionary with various acronyms of the the Watson (2014) paper and their meaning
             obj.glossary = containers.Map(obj.glossaryTable(:,1), obj.glossaryTable(:,2));
             
             % Create dictionary with meridian params 
             obj.meridianParams = containers.Map(obj.meridianParamsTable(:,1), obj.meridianParamsTable(:,2));
-             
+        
             % Generate figures
             if (generateAllFigures)
                 obj.generateAndDockAllFigures();

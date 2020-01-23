@@ -24,29 +24,30 @@ function hFig = generateFigure1(obj, hFig)
     figureNumber = '1';
     figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
-    eccDegs = 0.1:0.002:90;
+    
     
     meridianName = 'temporal meridian';
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, coneRFDensity, 'r-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
+    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
+    plot(obj.eccDegs, coneRFDensity, 'r-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
         
     meridianName = 'superior meridian';
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, coneRFDensity, 'b-', 'LineWidth', obj.figurePrefs.lineWidth);
+    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
+    plot(obj.eccDegs, coneRFDensity, 'b-', 'LineWidth', obj.figurePrefs.lineWidth);
     
     meridianName = 'nasal meridian';
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, coneRFDensity, 'g-', 'LineWidth', obj.figurePrefs.lineWidth);
+    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
+    plot(obj.eccDegs, coneRFDensity, 'g-', 'LineWidth', obj.figurePrefs.lineWidth); 
     
     meridianName = 'inferior meridian';
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccDegs, meridianName, 'Cones per deg2');
-    plot(eccDegs, coneRFDensity, 'k-', 'LineWidth', obj.figurePrefs.lineWidth);
+    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
+    plot(obj.eccDegs, coneRFDensity, 'k-', 'LineWidth', obj.figurePrefs.lineWidth);
     
-    legend({'temporal', 'superior', 'nasal', 'inferior'}, 'Location', 'SouthWest');
+    plot([obj.eccDegs(2) obj.eccDegs(end)], obj.dc0*[1 1], 'k--', 'LineWidth', 1.5);
+    legend({'temporal', 'superior', 'nasal', 'inferior', '(0,0)'}, 'Location', 'SouthWest');
 
     xlabel('eccentricity (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
     ylabel('density (cones/deg^2)', 'FontAngle', obj.figurePrefs.fontAngle);
-    set(gca, 'XLim', [0.09 100], 'YLim', [100 20000], ...
+    set(gca, 'XLim', [0.005 100], 'YLim', [100 20000], ...
         'XScale', 'log', 'YScale', 'log', ...
         'XTick', [0.1 0.5 1 5 10 50 100], ...
         'YTick', [100 1000 10000], 'YTickLabel', {'100', '1000', '10000'},...
