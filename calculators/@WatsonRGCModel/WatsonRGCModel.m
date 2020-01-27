@@ -134,6 +134,10 @@ classdef WatsonRGCModel
         end
         
         % --------------------- COMPUTE METHODS ---------------------------
+        
+        %Compute ratios of midget RGC receptive fields to cones at the requested (x,y) retinal eccentricities (degs)
+        [ratios, coneRFDensities, mRGCRFDensities] = ratioOfMidgetRGCsToCones(obj, eccXYposDegs, whichEye);
+        
         % Convert retinal area from deg^2 to mm^2 for a given eccentricity
         val = mmSquaredToDegSquared(obj, mmSquared, eccDegs);
         
