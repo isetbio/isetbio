@@ -52,23 +52,29 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
                                         'angle', angle*ones(1,numel(eccMM)), ...
                                         'eccentricityUnits', 'mm', ...
                                         'useParfor', false);
-    % Correct for the fact that the isetbio max cone density (18,800 cones/deg^2) 
-    % does not agree with Watson's (obj.dc0 =  14,804.6 cones/deg^2)
-    WatsonModelMaxConeDensityPerDeg2 = obj.dc0;
-    [~,~,ISETBioMaxConeDensityPerMM2] = coneSizeReadData('eccentricity', 0, 'angle', 0);
-    % Convert to density per Deg2
-    ISETBioMaxConeDensityPerDeg2 = ISETBioMaxConeDensityPerMM2 * obj.alpha(0);
-    correctionFactorMax = ISETBioMaxConeDensityPerDeg2 - WatsonModelMaxConeDensityPerDeg2;
-    correctionFactorMax = correctionFactorMax / obj.alpha(0);
-    % Apply this correction for eccentricities up to 0.18 degs
-    eccLimit = 0.18;
-    idx = find(abs(eccDegs)<=eccLimit);
-    if (~isempty(idx))
-        indicesToBeCorrected = idx;
-        correctionFactors = correctionFactorMax.*(eccLimit-eccDegs(indicesToBeCorrected))/eccLimit;
-        densityConesPerMM2(indicesToBeCorrected) = densityConesPerMM2(indicesToBeCorrected) - correctionFactors;
-    end
+                                    
+    % Apply correction for the fact that the isetbio max cone density (18,800 cones/deg^2) 
+    % does not agree with Watson's (obj.dc0 =  14,804.6 cones/deg^2), and the fact that if we do not
+    % apply this correction we get less than 2 mRGCs/cone at foveal eccentricities. We
+    % apply this correction only for ecc <= 0.18 degs
+    correctForFovealEcc = true;
+    if (correctForFovealEcc)                                
+        eccLimit = 0.18;
+        
+        WatsonModelMaxConeDensityPerDeg2 = obj.dc0;
+        [~,~,ISETBioMaxConeDensityPerMM2] = coneSizeReadData('eccentricity', 0, 'angle', 0);
+        ISETBioMaxConeDensityPerDeg2 = ISETBioMaxConeDensityPerMM2 * obj.alpha(0);
     
+        correctionFactorMax = ISETBioMaxConeDensityPerDeg2 - WatsonModelMaxConeDensityPerDeg2;
+        correctionFactorMax = correctionFactorMax / obj.alpha(0);
+        
+        idx = find(abs(eccDegs)<=eccLimit);
+        if (~isempty(idx))
+            indicesToBeCorrected = idx;
+            correctionFactors = correctionFactorMax.*(eccLimit-eccDegs(indicesToBeCorrected))/eccLimit;
+            densityConesPerMM2(indicesToBeCorrected) = densityConesPerMM2(indicesToBeCorrected) - correctionFactors;
+        end
+    end
     
     switch (units)
         case 'Cones per mm2'

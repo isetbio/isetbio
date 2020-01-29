@@ -3,108 +3,142 @@ function computeConnectivityMatrix
     % Instantiate a WatsonRGCModel object.
     WatsonRGCCalc = WatsonRGCModel('generateAllFigures', false);
     
-    nSamples = 50; maxEcc = 30;
-    xPos = logspace(log10(0.05), log10(maxEcc), nSamples);
-    xPos = [-fliplr(xPos) xPos]; yPos = xPos;
-    [X,Y] = meshgrid(xPos, yPos);
-    eccXYposDegs = [X(:) Y(:)];
+    % Sample the retinal space
+    samplesPerMeridian = 50; maxEcc = 30; spacing = 'log';
+    [eccXYposDegs, quadrants] = sampleRetinalSpace(WatsonRGCCalc,samplesPerMeridian, maxEcc, spacing);
     
-   
+    % Compute midgetRGCRF to cone ratios at the above eccentricities
+    whichEye = 'left';
+    [midgetRGCRFToConeRatios, coneRFDensities, mRGCRFDensities] ...
+        = WatsonRGCCalc.ratioOfMidgetRGCsToCones(eccXYposDegs, whichEye);
+    
+    % Compute cones per midget RGC
+    conesPerMidgetRGCRF = 1 ./ midgetRGCRFToConeRatios;
+    
+    
+    % Compute midget spacing using equation (9) in the Watson (2014) paper.
+    singlePolarityMidgetRGCRFDensities = 0.5*mRGCRFDensities; % only ON or OFF
+    singlePolarityMidgetRGCRFSpacings = sqrt(2.0./(sqrt(3.0)*singlePolarityMidgetRGCRFDensities));
+     
+    % Compute cone spacing from density
+    coneSpacings = sqrt(2.0./(sqrt(3.0)*coneRFDensities));
+    
+    % Plot cones per mRGC along meridians
+    figureNo = 1;
+    plotMeridianStats(figureNo, conesPerMidgetRGCRF,eccXYposDegs, quadrants, maxEcc, [1 20], 1:1:20, 'cones / mRGC RF center');
+    
+    % Plot mRGC RF spacing along meridians
+    figureNo = 2;
+    plotMeridianStats(figureNo, singlePolarityMidgetRGCRFSpacings,eccXYposDegs, quadrants, 16, [0 0.16], 0:0.04:0.16, 'mRGC RF spacing');
+    
+    % Plot cone spacing along meridians
+    figureNo = 3;
+    plotMeridianStats(figureNo, coneSpacings,eccXYposDegs, quadrants, 16, [0 0.16], 0:0.04:0.16, 'cone spacing');
+    
+end
 
-    % Points along the nasal meridian
-    nasalIndices = find((eccXYposDegs(:,1) >= 0) & (eccXYposDegs(:,2) == min(abs(yPos))));
-
-    % Points along the temporal meridian
-    temporalIndices = find((eccXYposDegs(:,1) <= 0) & (eccXYposDegs(:,2) == min(abs(yPos))));
+function plotMeridianStats(figureNo, stats,eccXYposDegs, quadrants, maxEcc, statsRange, statsTicks, statsName)
+    nasalStats = stats(quadrants('nasal').meridianIndices);
+    nasalEccDegs = eccXYposDegs(quadrants('nasal').meridianIndices,1);
     
-    % Points along the superior meridian
-    superiorIndices = find((eccXYposDegs(:,2) >= 0) & (eccXYposDegs(:,1) == min(abs(xPos))));
+    temporalStats = stats(quadrants('temporal').meridianIndices);
+    temporalEccDegs = eccXYposDegs(quadrants('temporal').meridianIndices,1);
     
-    % Points along the inferior meridian
-    inferiorIndices = find((eccXYposDegs(:,2) <= 0) & (eccXYposDegs(:,1) == min(abs(xPos))));
+    superiorStats = stats(quadrants('superior').meridianIndices);
+    superiorEccDegs = eccXYposDegs(quadrants('superior').meridianIndices,2);
     
-    
-    % Meridian colors
-    quadrantColors = containers.Map();
-    quadrantColors('nasal')    = [0.0 0.7 0.0; 0.0 1.00 0.0];  % green
-    quadrantColors('temporal') = [1.0 0.0 0.0; 1.0 0.50 0.50]; % red
-    quadrantColors('superior') = [0.0 0.0 1.0; 0.5 0.5 1.0];   % blue
-    quadrantColors('inferior') = [0.0 0.0 0.0; 0.5 0.5 0.5];   % gray
+    inferiorStats = stats(quadrants('inferior').meridianIndices);
+    inferiorEccDegs = eccXYposDegs(quadrants('inferior').meridianIndices,2);
     
     % Meridian axes names
     xEccentricityAxisName = sprintf('space (deg)\n   <- nasal  |  temporal ->');
     yEccentricityAxisName = sprintf('space (deg)\n<- inferior  |  superior ->');
     
-    
-    conesPerRGCRFRatioLevels = [1:1:21]; 
-    midgetRGCRFPerConeRatioLevels = [0 0.05 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0];
-    
-    logConeDensityLevels = [1:0.1:4];
-    cMapConeDensity = brewermap(numel(logConeDensityLevels), '*greys');
-    cMapConesPerRGCRatio = brewermap(numel(conesPerRGCRFRatioLevels), 'YlGnBu');
-    cMapRGCRFPerConeRatio = brewermap(numel(conesPerRGCRFRatioLevels), '*YlGnBu');
-    
-    [midgetRGCRFToConeRatios, coneRFDensities, mRGCRFDensities] ...
-        = WatsonRGCCalc.ratioOfMidgetRGCsToCones(eccXYposDegs, 'left');
-    conesPerMidgetRGCRF = 1 ./ midgetRGCRFToConeRatios;
-    nasalRatios = 1./midgetRGCRFToConeRatios(nasalIndices);
-    temporalRatios = 1./midgetRGCRFToConeRatios(temporalIndices);
-    superiorRatios = 1./midgetRGCRFToConeRatios(superiorIndices);
-    inferiorRatios = 1./midgetRGCRFToConeRatios(inferiorIndices);
-    
-    
-    
-    figure(100);
-    clf;
-    
-    subplot(3,4,1);
-    makeContourPlot(log10(coneRFDensities), xPos, yPos, logConeDensityLevels, logConeDensityLevels(1:2:end), cMapConeDensity, ...
-        'cone density (log(cones)/deg^2 left eye)', ...
-        xEccentricityAxisName, yEccentricityAxisName);
-    
-    subplot(3,4,2);
-    makeContourPlot(log10(mRGCRFDensities), xPos, yPos, logConeDensityLevels, logConeDensityLevels(1:2:end), cMapConeDensity, ...
-        'mRGC RF density (log(mRGC)/deg^2 left eye)', ...
-        xEccentricityAxisName, yEccentricityAxisName);
-    
-    
-    subplot(3,4,3);
-    makeContourPlot(midgetRGCRFToConeRatios, xPos, yPos, midgetRGCRFPerConeRatioLevels, midgetRGCRFPerConeRatioLevels(1:1:end), cMapRGCRFPerConeRatio, ...
-        'mRGC RF / cones (left eye)', ...
-        xEccentricityAxisName, yEccentricityAxisName);
-    
-    subplot(3,4,4);
-    makeContourPlot(conesPerMidgetRGCRF, xPos, yPos, conesPerRGCRFRatioLevels, conesPerRGCRFRatioLevels(1:2:end), cMapConesPerRGCRatio, ...
-        'cones / mRGC RF center (left eye)', ...
-        xEccentricityAxisName, yEccentricityAxisName);
-    
-    subplot(3,4,8);
-    makeLinePlot(eccXYposDegs(nasalIndices,1), nasalRatios, ...
-                 eccXYposDegs(temporalIndices,1), temporalRatios, ...
-                 quadrantColors, {'nasal' 'temporal'}, ...
-                 maxEcc, -30:5:30, [1 20], 1:1:20, xEccentricityAxisName, 'cones / mRGC RF center');
+    figure(figureNo); clf;
+    subplot(1,2,1);
+    makeLinePlot(nasalEccDegs, nasalStats, ...
+                 temporalEccDegs, temporalStats, ...
+                 quadrants('nasal').colors, quadrants('temporal').colors, ...
+                 {'nasal' 'temporal'}, ...
+                 maxEcc, -30:5:30, statsRange, statsTicks, xEccentricityAxisName, statsName);
              
-    subplot(3,4,12);
-    makeLinePlot(eccXYposDegs(superiorIndices,2), superiorRatios, ...
-                 eccXYposDegs(inferiorIndices,2), inferiorRatios, ...
-                 quadrantColors, {'superior' 'inferior'}, ...
-                 maxEcc, -30:5:30, [1 20], 1:1:20, yEccentricityAxisName, 'cones / mRGC RF center');
-             
-             
-    subplot(3,4,7);
-    makeLinePlot(eccXYposDegs(nasalIndices,1), nasalRatios, ...
-                 eccXYposDegs(temporalIndices,1), temporalRatios, ...
-                 quadrantColors, {'nasal' 'temporal'}, ...
-                 5, -5:1:5, [1 5.0], 1:0.5:5.0, xEccentricityAxisName, 'cones / mRGC RF center');
-             
-    subplot(3,4,11);
-    makeLinePlot(eccXYposDegs(superiorIndices,2), superiorRatios, ...
-                 eccXYposDegs(inferiorIndices,2), inferiorRatios, ...
-                 quadrantColors, {'superior' 'inferior'}, ...
-                 5, -5:1:5, [1 5.0], 1:0.5:5.0, yEccentricityAxisName, 'cones / mRGC RF center');
+    subplot(1,2,2);
+    makeLinePlot(superiorEccDegs, superiorStats, ...
+                 inferiorEccDegs, inferiorStats, ...
+                 quadrants('superior').colors, quadrants('inferior').colors, ...
+                 {'superior' 'inferior'}, ...
+                 maxEcc, -30:5:30, statsRange, statsTicks, yEccentricityAxisName, statsName);
              
              
 end
+
+
+    
+%     
+%     
+%     conesPerRGCRFRatioLevels = [1:1:21]; 
+%     midgetRGCRFPerConeRatioLevels = [0 0.05 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0];
+%     
+%     logConeDensityLevels = [1:0.1:4];
+%     cMapConeDensity = brewermap(numel(logConeDensityLevels), '*greys');
+%     cMapConesPerRGCRatio = brewermap(numel(conesPerRGCRFRatioLevels), 'YlGnBu');
+%     cMapRGCRFPerConeRatio = brewermap(numel(conesPerRGCRFRatioLevels), '*YlGnBu');
+%     
+%     
+%     
+%     
+%     
+%     figure(100);
+%     clf;
+%     
+%     subplot(3,4,1);
+%     makeContourPlot(log10(coneRFDensities), xPos, yPos, logConeDensityLevels, logConeDensityLevels(1:2:end), cMapConeDensity, ...
+%         'cone density (log(cones)/deg^2 left eye)', ...
+%         xEccentricityAxisName, yEccentricityAxisName);
+%     
+%     subplot(3,4,2);
+%     makeContourPlot(log10(mRGCRFDensities), xPos, yPos, logConeDensityLevels, logConeDensityLevels(1:2:end), cMapConeDensity, ...
+%         'mRGC RF density (log(mRGC)/deg^2 left eye)', ...
+%         xEccentricityAxisName, yEccentricityAxisName);
+%     
+%     
+%     subplot(3,4,3);
+%     makeContourPlot(midgetRGCRFToConeRatios, xPos, yPos, midgetRGCRFPerConeRatioLevels, midgetRGCRFPerConeRatioLevels(1:1:end), cMapRGCRFPerConeRatio, ...
+%         'mRGC RF / cones (left eye)', ...
+%         xEccentricityAxisName, yEccentricityAxisName);
+%     
+%     subplot(3,4,4);
+%     makeContourPlot(conesPerMidgetRGCRF, xPos, yPos, conesPerRGCRFRatioLevels, conesPerRGCRFRatioLevels(1:2:end), cMapConesPerRGCRatio, ...
+%         'cones / mRGC RF center (left eye)', ...
+%         xEccentricityAxisName, yEccentricityAxisName);
+%     
+%     subplot(3,4,8);
+%     makeLinePlot(eccXYposDegs(nasalIndices,1), nasalRatios, ...
+%                  eccXYposDegs(temporalIndices,1), temporalRatios, ...
+%                  quadrantColors, {'nasal' 'temporal'}, ...
+%                  maxEcc, -30:5:30, [1 20], 1:1:20, xEccentricityAxisName, 'cones / mRGC RF center');
+%              
+%     subplot(3,4,12);
+%     makeLinePlot(eccXYposDegs(superiorIndices,2), superiorRatios, ...
+%                  eccXYposDegs(inferiorIndices,2), inferiorRatios, ...
+%                  quadrantColors, {'superior' 'inferior'}, ...
+%                  maxEcc, -30:5:30, [1 20], 1:1:20, yEccentricityAxisName, 'cones / mRGC RF center');
+%              
+%              
+%     subplot(3,4,7);
+%     makeLinePlot(eccXYposDegs(nasalIndices,1), nasalRatios, ...
+%                  eccXYposDegs(temporalIndices,1), temporalRatios, ...
+%                  quadrantColors, {'nasal' 'temporal'}, ...
+%                  5, -5:1:5, [1 5.0], 1:0.5:5.0, xEccentricityAxisName, 'cones / mRGC RF center');
+%              
+%     subplot(3,4,11);
+%     makeLinePlot(eccXYposDegs(superiorIndices,2), superiorRatios, ...
+%                  eccXYposDegs(inferiorIndices,2), inferiorRatios, ...
+%                  quadrantColors, {'superior' 'inferior'}, ...
+%                  5, -5:1:5, [1 5.0], 1:0.5:5.0, yEccentricityAxisName, 'cones / mRGC RF center');
+%              
+%              
+% end
 
 
 function makeContourPlot(ratioMap, xPos, yPos, zLevels, zLevelsOnCbar, cMap, titleName, xLabelName, yLabelName)
@@ -122,21 +156,18 @@ function makeContourPlot(ratioMap, xPos, yPos, zLevels, zLevelsOnCbar, cMap, tit
     ylabel(yLabelName, 'FontName', 'Menlo', 'FontSize', 12, 'FontAngle', 'italic');
 end
 
-function makeLinePlot(eccXYposDegs1, ratios1, eccXYposDegs2, ratios2, ...
-                 quadrantColors, dataNames, ...
+function makeLinePlot(eccDegs1, ratios1, eccDegs2, ratios2, ...
+                 color1,color2, dataNames, ...
                  maxEcc, eccTicks, yRange, yTicks, xLabelName, yLabelName)
-             
-    color1 = quadrantColors(dataNames{1});
-    color2 = quadrantColors(dataNames{2});
     
-    plot(eccXYposDegs1, ratios1, ...
+    plot(eccDegs1, ratios1, ...
         'ko-', 'LineWidth', 1.5, 'MarkerSize', 6, ...
         'Color', color1(1,:), ...
         'MarkerFaceColor', color1(2,:), ...
         'MarkerEdgeColor', color1(1,:));
     hold on;
     
-    plot(eccXYposDegs2, ratios2, ...
+    plot(eccDegs2, ratios2, ...
         'ko-', 'LineWidth', 1.5, 'MarkerSize', 6, ...
         'Color', color2(1,:), ...
         'MarkerFaceColor', color2(2,:), ...
@@ -153,6 +184,44 @@ function makeLinePlot(eccXYposDegs1, ratios1, eccXYposDegs2, ratios2, ...
     grid('on');
 end
 
+
+function [eccXYposDegs, quadrants] = sampleRetinalSpace(WatsonRGCCalc, samplesPerMeridian, maxEcc, spacing)
+    
+    if (strcmp(spacing, 'log'))
+        eccDegs = 0;
+        minimalConeSpacingDegs = WatsonRGCCalc.coneRFSpacingAndDensity(eccDegs, 'superior meridian', 'Cones per deg2');
+        xPos = logspace(log10(minimalConeSpacingDegs), log10(maxEcc), samplesPerMeridian);
+    else
+        xPos = linspace(0, maxEcc, samplesPerMeridian);
+    end
+    
+    xPos = [-fliplr(xPos) xPos]; yPos = xPos;
+    [X,Y] = meshgrid(xPos, yPos);
+    eccXYposDegs = [X(:) Y(:)];
+   
+    quadrants = containers.Map();
+    
+    % Points along the nasal meridian
+    quadrants('nasal') = struct(...
+        'meridianIndices', find((eccXYposDegs(:,1) >= 0) & (eccXYposDegs(:,2) == min(abs(yPos)))), ...
+        'colors', [0.0 0.7 0.0; 0.0 1.00 0.0]);
+    
+    % Points along the temporal meridian
+    quadrants('temporal') = struct(...
+        'meridianIndices', find((eccXYposDegs(:,1) <= 0) & (eccXYposDegs(:,2) == min(abs(yPos)))), ...
+        'colors', [1.0 0.0 0.0; 1.0 0.50 0.50]);
+
+    % Points along the superior meridian
+    quadrants('superior') = struct(...
+        'meridianIndices',  find((eccXYposDegs(:,2) >= 0) & (eccXYposDegs(:,1) == min(abs(xPos)))), ...
+        'colors', [0.0 0.0 1.0; 0.5 0.5 1.0]);
+    
+    % Points along the inferior meridian
+    quadrants('inferior') = struct(...
+        'meridianIndices', find((eccXYposDegs(:,2) <= 0) & (eccXYposDegs(:,1) == min(abs(xPos)))), ...
+        'colors', [0.0 0.0 0.0; 0.5 0.5 0.5]);
+    
+end
 
 
 function oldConnectivityMatrix
