@@ -59,48 +59,54 @@ function computeConnectivityMatrix
     hFig = figure(figureNo);
     clf;
      
-    eccRange = [-30 30];
-    eccTicks = eccRange(1):10:eccRange(2);
+    eccRange = [-25 25];
+    eccTicks = -100:10:100;
 
+    % Plot the 2D map of cone spacing
     subplot(2,2,1);
     spacingArcMinLevels(1) = min(coneSpacingsDeg(:))*60;
     spacingArcMinLevels = cat(2, spacingArcMinLevels, (1:0.5:10));
+    spacingCMapLabel = 'arc min';
     spacingArcMinLevelsLabeled = [spacingArcMinLevels(1) spacingArcMinLevels(2:2:end)];
-    spacingCMap = brewermap(numel(spacingArcMinLevels), 'YlGnBu');
+    spacingCMap = brewermap(numel(spacingArcMinLevels), 'greys');
     renderContourPlot(coneSpacingsDeg*60, eccXYposDegs, samplesPerMeridian, ...
-         eccRange, eccTicks, spacingArcMinLevels, spacingArcMinLevelsLabeled, spacingCMap, ...
-         'cone spacing (arc min)', ...
+         eccRange, eccTicks, spacingArcMinLevels, spacingArcMinLevelsLabeled, spacingCMap, spacingCMapLabel,...
+         'cone spacing', ...
          xEccentricityAxisName, yEccentricityAxisName);
      
+    % Plot the 2D map of mRGC RF spacing
     subplot(2,2,3);
     spacingArcMinLevels = [];
     spacingArcMinLevels(1) = min(singlePolarityMidgetRGCRFSpacingsDeg(:))*60;
     spacingArcMinLevels = cat(2, spacingArcMinLevels, (1:0.5:10));
     spacingArcMinLevelsLabeled = [spacingArcMinLevels(1) spacingArcMinLevels(2:2:end)];
     renderContourPlot(singlePolarityMidgetRGCRFSpacingsDeg*60, eccXYposDegs, samplesPerMeridian, ...
-        eccRange, eccTicks, spacingArcMinLevels, spacingArcMinLevelsLabeled, spacingCMap, ...
-         'mRGC RF spacing (arc min)', ...
+        eccRange, eccTicks, spacingArcMinLevels, spacingArcMinLevelsLabeled, spacingCMap, spacingCMapLabel, ...
+         'mRGC RF spacing', ...
          xEccentricityAxisName, yEccentricityAxisName);
      
 
+    % Plot the 2D map of cones/mRGCRF center
     subplot(2,2,2);
-    conesPerMidgetRGCLevels = 1:2:51;
+    conesPerMidgetRGCLevels = 1:0.5:35;
     conesPerMidgetRGCLevelsLabeled = [1 5 10 15 20 25 30 35 40 45 50];
-    cMap = brewermap(numel(conesPerMidgetRGCLevels), '*YlGnBu');
+    cMapLabel = '# of cones';
+    cMap = brewermap(numel(conesPerMidgetRGCLevels), 'spectral');
     renderContourPlot(conesPerMidgetRGCRF, eccXYposDegs, samplesPerMeridian, ...
-        eccRange, eccTicks, conesPerMidgetRGCLevels, conesPerMidgetRGCLevelsLabeled, cMap, ...
-        'cones per mRGC', ...
+        eccRange, eccTicks, conesPerMidgetRGCLevels, conesPerMidgetRGCLevelsLabeled, cMap, cMapLabel, ...
+        'cones per mRGC RF center', ...
         xEccentricityAxisName, yEccentricityAxisName);
     
+    % Plot the 2D map of cones/mRGCRF center within the central 10 deg
     subplot(2,2,4);
-    eccRange = [-10 10];
+    eccRange = [-5 5];
     eccTicks = -10:1:10; 
-    conesPerMidgetRGCLevels = 1:0.5:6;
-    conesPerMidgetRGCLevelsLabeled = conesPerMidgetRGCLevels(1:2:end);
-    cMap = brewermap(numel(conesPerMidgetRGCLevels), '*YlGnBu');
+    conesPerMidgetRGCLevels = 1:0.25:3;
+    conesPerMidgetRGCLevelsLabeled = [1 1.5 2 2.5 3];
+    cMap = brewermap(numel(conesPerMidgetRGCLevels), 'spectral');
     renderContourPlot(conesPerMidgetRGCRF, eccXYposDegs, samplesPerMeridian, ...
-        eccRange, eccTicks, conesPerMidgetRGCLevels, conesPerMidgetRGCLevelsLabeled, cMap, ...
-        'cones per mRGC', ...
+        eccRange, eccTicks, conesPerMidgetRGCLevels, conesPerMidgetRGCLevelsLabeled, cMap, cMapLabel, ...
+        'cones per mRGC RF center', ...
         xEccentricityAxisName, yEccentricityAxisName);
      
 end
@@ -236,7 +242,7 @@ end
 
 
 function renderContourPlot(stats, eccXYposDegs, samplesPerMeridian, eccRange, eccTicks, ...
-    zLevels, zLevelsOnCbar, cMap, titleName, xLabelName, yLabelName)
+    zLevels, zLevelsOnCbar, cMap, cMapLabel, titleName, xLabelName, yLabelName)
     
     X = eccXYposDegs(:,1);
     Y = eccXYposDegs(:,2);
@@ -249,9 +255,10 @@ function renderContourPlot(stats, eccXYposDegs, samplesPerMeridian, eccRange, ec
     set(gca, 'XLim', eccRange, 'YLim', eccRange, 'CLim', [min(zLevels) max(zLevels)], ...
         'XTick', eccTicks, 'YTick', eccTicks, 'FontSize', 14);
     
-    colormap(gca,cMap)
+    colormap(gca,cMap);
     hL = colorbar;
     set(hL, 'Ticks', zLevelsOnCbar, 'Limits', [min(zLevels) max(zLevels)]);
+    hL.Label.String = cMapLabel;
     title(titleName);
     xlabel(xLabelName, 'FontName', 'Menlo', 'FontSize', 12, 'FontAngle', 'italic');
     ylabel(yLabelName, 'FontName', 'Menlo', 'FontSize', 12, 'FontAngle', 'italic');
