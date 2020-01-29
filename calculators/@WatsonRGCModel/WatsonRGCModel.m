@@ -19,13 +19,13 @@ classdef WatsonRGCModel
     
     % Constant properties (model parameters)
     properties (Constant)
-        % Meridian parameters
-        meridianParamsTable = {
+        % Cell array with original meridian parameters (nasal/temporal likely reversed)
+        meridianParamsTableOriginal = {
             'temporal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ...
             'superior meridian'  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35); ...
             'nasal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ...
             'inferior meridian'  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13);
-        }
+        };
      
         % Various acronyms and their meaning in the Watson (2014) paper
         glossaryTable = {
@@ -86,6 +86,9 @@ classdef WatsonRGCModel
        % Dictionary with meridian params indexed by meridian name
        meridianParams;
        
+       % Dictionary with meridian params
+       meridianParamsTable;
+       
        % Struct with default preferences for all figures
        defaultFigurePrefs = struct(...
             'lineWidth', 1.5, ...
@@ -112,6 +115,7 @@ classdef WatsonRGCModel
             p = inputParser;
             p.addParameter('generateAllFigures', false, @islogical);
             p.addParameter('eccDegs', 0:0.002:90, @isnumeric);
+            p.addParameter('reverseNasalTemporalParams', true, @islogical);
             p.parse(varargin{:});
             
             % Set the default figure preferences
@@ -123,6 +127,15 @@ classdef WatsonRGCModel
             
             % Create dictionary with various acronyms of the the Watson (2014) paper and their meaning
             obj.glossary = containers.Map(obj.glossaryTable(:,1), obj.glossaryTable(:,2));
+            
+            % See if we need to revert the nasal and temporal meridian params table
+            obj.meridianParamsTable = obj.meridianParamsTableOriginal;
+            if (p.Results.reverseNasalTemporalParams)
+                tmp = obj.meridianParamsTable{1,1};
+                obj.meridianParamsTable{1,1} = obj.meridianParamsTable{3,1};
+                obj.meridianParamsTable{3,1} = tmp;
+            end
+
             
             % Create dictionary with meridian params 
             obj.meridianParams = containers.Map(obj.meridianParamsTable(:,1), obj.meridianParamsTable(:,2));

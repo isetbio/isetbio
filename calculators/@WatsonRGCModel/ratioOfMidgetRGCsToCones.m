@@ -1,4 +1,4 @@
-function [ratios, coneRFDensities, mRGCRFDensities] = ratioOfMidgetRGCsToCones(obj, eccXYposDegs, whichEye)
+function [ratios, coneRFDensitiesPerDeg2, mRGCRFDensitiesPerDeg2] = ratioOfMidgetRGCsToCones(obj, eccXYposDegs, whichEye)
 % Compute ratios of midget RGC receptive fields to cones at the requested (x,y) retinal eccentricities (degs)
 %
 % Syntax:
@@ -19,10 +19,14 @@ function [ratios, coneRFDensities, mRGCRFDensities] = ratioOfMidgetRGCsToCones(o
 %    whichEye                  - 'Left' or 'right' eye
 %
 % Outputs:
-%    val                       - Ratio of midget RGC receptive fields to
+%    ratios                    - Ratios of midget RGC receptive fields to
 %                                cones at the requested (x,y) retinal eccentricities 
 %                                and eye
-% 
+%    coneRFDensitiesPerDeg2    - Densities of cones per deg2 at
+%                                corresponding eccentricities
+%    mRGCRFDensitiesPerDeg2    - Densities of mRGC RFs per deg2 at
+%                                corresponding eccentricities
+%
 % References:
 %    Watson (2014). 'A formula for human RGC receptive field density as
 %    a function of visual field location', JOV (2014), 14(7), 1-17.
@@ -43,13 +47,13 @@ function [ratios, coneRFDensities, mRGCRFDensities] = ratioOfMidgetRGCsToCones(o
     
     % Compute the on-axis ratios at the requested eccentricity magnitudes
     [onAxisRatios, onAxisAngles, ...
-        onAxisMidgetRGCRFDensities, ...
-        onAxisConeRFDensities] = computeOnAxisRatios(obj,eccXYposDegs,whichEye);
+        onAxisMidgetRGCRFDensitiesPerDeg2, ...
+        onAxisConeRFDensitiesPerDeg2] = computeOnAxisRatios(obj,eccXYposDegs,whichEye);
     
     % Interpolate at the requested eccentricity angles
-    ratios = 0.5*interpolateRatios(onAxisRatios,onAxisAngles, eccXYposDegs);
-    coneRFDensities = interpolateRatios(onAxisConeRFDensities,onAxisAngles, eccXYposDegs);
-    mRGCRFDensities = interpolateRatios(onAxisMidgetRGCRFDensities,onAxisAngles, eccXYposDegs);
+    ratios = interpolateRatios(onAxisRatios,onAxisAngles, eccXYposDegs);
+    coneRFDensitiesPerDeg2 = interpolateRatios(onAxisConeRFDensitiesPerDeg2,onAxisAngles, eccXYposDegs);
+    mRGCRFDensitiesPerDeg2 = interpolateRatios(onAxisMidgetRGCRFDensitiesPerDeg2,onAxisAngles, eccXYposDegs);
 end
 
 function ratios = interpolateRatios(onAxisRatios, onAxisAngles, eccXYposDegs)

@@ -9,35 +9,106 @@ function computeConnectivityMatrix
     
     % Compute midgetRGCRF to cone ratios at the above eccentricities
     whichEye = 'left';
-    [midgetRGCRFToConeRatios, coneRFDensities, mRGCRFDensities] ...
+    [midgetRGCRFToConeRatios, coneRFDensitiesDeg2, mRGCRFDensitiesDeg2] ...
         = WatsonRGCCalc.ratioOfMidgetRGCsToCones(eccXYposDegs, whichEye);
     
-    % Compute cones per midget RGC
-    conesPerMidgetRGCRF = 1 ./ midgetRGCRFToConeRatios;
+    % Compute cones per ON or OFF midget RGC
+    conesPerMidgetRGCRF = 1 ./ (0.5*midgetRGCRFToConeRatios);
     
-    
-    % Compute midget spacing using equation (9) in the Watson (2014) paper.
-    singlePolarityMidgetRGCRFDensities = 0.5*mRGCRFDensities; % only ON or OFF
-    singlePolarityMidgetRGCRFSpacings = sqrt(2.0./(sqrt(3.0)*singlePolarityMidgetRGCRFDensities));
+    % Compute midget RGC RF spacing from the their density using equation (9) in the Watson (2014) paper.
+    singlePolarityMidgetRGCRFDensitiesDeg2 = 0.5*mRGCRFDensitiesDeg2; % only ON or OFF
+    singlePolarityMidgetRGCRFSpacingsDeg = sqrt(2.0./(sqrt(3.0)*singlePolarityMidgetRGCRFDensitiesDeg2));
      
-    % Compute cone spacing from density
-    coneSpacings = sqrt(2.0./(sqrt(3.0)*coneRFDensities));
+    % Compute cone spacing from their density using equation (9) in the Watson (2014) paper.
+    coneSpacingsDeg = sqrt(2.0./(sqrt(3.0)*coneRFDensitiesDeg2));
+    
+    
+    % Meridian axes names
+    xEccentricityAxisName = sprintf('space (deg)\n   <- nasal  |  temporal ->');
+    yEccentricityAxisName = sprintf('space (deg)\n<- inferior  |  superior ->');
     
     % Plot cones per mRGC along meridians
     figureNo = 1;
-    plotMeridianStats(figureNo, conesPerMidgetRGCRF,eccXYposDegs, quadrants, maxEcc, [1 20], 1:1:20, 'cones / mRGC RF center');
+    extraData = [];
+    renderMeridianStats(figureNo, conesPerMidgetRGCRF,eccXYposDegs, quadrants, ...
+        extraData, maxEcc*[-1 1], -30:5:30, [1 20], 1:1:20, ...
+        xEccentricityAxisName, yEccentricityAxisName, 'cones / mRGC RF center');
+    
+    
+    % Load Bradley-Geisler data
+    load('BradleyGeislerRGCspacing.mat','RGCspacingBradleyGeisler');
     
     % Plot mRGC RF spacing along meridians
     figureNo = 2;
-    plotMeridianStats(figureNo, singlePolarityMidgetRGCRFSpacings,eccXYposDegs, quadrants, 16, [0 0.16], 0:0.04:0.16, 'mRGC RF spacing');
+    extraData = RGCspacingBradleyGeisler;
+    renderMeridianStats(figureNo, singlePolarityMidgetRGCRFSpacingsDeg*60, eccXYposDegs, quadrants, ...
+        extraData, 11*[-1 1], -10:1:10, [0 12], 0:1:12, ...
+        xEccentricityAxisName, yEccentricityAxisName, ...
+        'ON or OFF mRGC RF spacing (arc min)');
     
     % Plot cone spacing along meridians
     figureNo = 3;
-    plotMeridianStats(figureNo, coneSpacings,eccXYposDegs, quadrants, 16, [0 0.16], 0:0.04:0.16, 'cone spacing');
+    extraData = [];
+    renderMeridianStats(figureNo, coneSpacingsDeg*60, eccXYposDegs, quadrants, ...
+        extraData, 11*[-1 1], -30:1:30, [0 12], 0:1:12, ...
+        xEccentricityAxisName, yEccentricityAxisName, ...
+        'cone spacing (arc min)');
     
+    % Plot contour map of midgetRGCRF to cones ratio
+    figureNo = 4;
+    hFig = figure(figureNo);
+    clf;
+     
+    eccRange = [-30 30];
+    eccTicks = eccRange(1):10:eccRange(2);
+
+    subplot(2,2,1);
+    spacingArcMinLevels(1) = min(coneSpacingsDeg(:))*60;
+    spacingArcMinLevels = cat(2, spacingArcMinLevels, (1:0.5:10));
+    spacingArcMinLevelsLabeled = [spacingArcMinLevels(1) spacingArcMinLevels(2:2:end)];
+    spacingCMap = brewermap(numel(spacingArcMinLevels), 'YlGnBu');
+    renderContourPlot(coneSpacingsDeg*60, eccXYposDegs, samplesPerMeridian, ...
+         eccRange, eccTicks, spacingArcMinLevels, spacingArcMinLevelsLabeled, spacingCMap, ...
+         'cone spacing (arc min)', ...
+         xEccentricityAxisName, yEccentricityAxisName);
+     
+    subplot(2,2,3);
+    spacingArcMinLevels = [];
+    spacingArcMinLevels(1) = min(singlePolarityMidgetRGCRFSpacingsDeg(:))*60;
+    spacingArcMinLevels = cat(2, spacingArcMinLevels, (1:0.5:10));
+    spacingArcMinLevelsLabeled = [spacingArcMinLevels(1) spacingArcMinLevels(2:2:end)];
+    renderContourPlot(singlePolarityMidgetRGCRFSpacingsDeg*60, eccXYposDegs, samplesPerMeridian, ...
+        eccRange, eccTicks, spacingArcMinLevels, spacingArcMinLevelsLabeled, spacingCMap, ...
+         'mRGC RF spacing (arc min)', ...
+         xEccentricityAxisName, yEccentricityAxisName);
+     
+
+    subplot(2,2,2);
+    conesPerMidgetRGCLevels = 1:2:51;
+    conesPerMidgetRGCLevelsLabeled = [1 5 10 15 20 25 30 35 40 45 50];
+    cMap = brewermap(numel(conesPerMidgetRGCLevels), '*YlGnBu');
+    renderContourPlot(conesPerMidgetRGCRF, eccXYposDegs, samplesPerMeridian, ...
+        eccRange, eccTicks, conesPerMidgetRGCLevels, conesPerMidgetRGCLevelsLabeled, cMap, ...
+        'cones per mRGC', ...
+        xEccentricityAxisName, yEccentricityAxisName);
+    
+    subplot(2,2,4);
+    eccRange = [-10 10];
+    eccTicks = -10:1:10; 
+    conesPerMidgetRGCLevels = 1:0.5:6;
+    conesPerMidgetRGCLevelsLabeled = conesPerMidgetRGCLevels(1:2:end);
+    cMap = brewermap(numel(conesPerMidgetRGCLevels), '*YlGnBu');
+    renderContourPlot(conesPerMidgetRGCRF, eccXYposDegs, samplesPerMeridian, ...
+        eccRange, eccTicks, conesPerMidgetRGCLevels, conesPerMidgetRGCLevelsLabeled, cMap, ...
+        'cones per mRGC', ...
+        xEccentricityAxisName, yEccentricityAxisName);
+     
 end
 
-function plotMeridianStats(figureNo, stats,eccXYposDegs, quadrants, maxEcc, statsRange, statsTicks, statsName)
+function renderMeridianStats(figureNo, stats, eccXYposDegs, quadrants, ...
+    extraData, eccRange, eccTicks, statsRange, statsTicks, ...
+    xEccentricityAxisName, yEccentricityAxisName, statsName)
+
     nasalStats = stats(quadrants('nasal').meridianIndices);
     nasalEccDegs = eccXYposDegs(quadrants('nasal').meridianIndices,1);
     
@@ -50,24 +121,47 @@ function plotMeridianStats(figureNo, stats,eccXYposDegs, quadrants, maxEcc, stat
     inferiorStats = stats(quadrants('inferior').meridianIndices);
     inferiorEccDegs = eccXYposDegs(quadrants('inferior').meridianIndices,2);
     
-    % Meridian axes names
-    xEccentricityAxisName = sprintf('space (deg)\n   <- nasal  |  temporal ->');
-    yEccentricityAxisName = sprintf('space (deg)\n<- inferior  |  superior ->');
+    if (~isempty(extraData))
+        % visual field is complementary to retinal field
+        % superior retina == inferir visual field
+        extraNasalEccDegs = extraData('temporalField').ecc;
+        extraNasalStats = extraData('temporalField').spacingDegs*60;
+        extraTemporalEccDegs = -extraData('nasalField').ecc;
+        extraTemporalStats = extraData('nasalField').spacingDegs*60;
+        extraSuperiorEccDegs = extraData('inferiorField').ecc;
+        extraSuperiorStats = extraData('inferiorField').spacingDegs*60;
+        extraInferiorEccDegs = -extraData('superiorField').ecc;
+        extraInferiorStats = extraData('superiorField').spacingDegs*60;
+    else
+        extraNasalEccDegs = [];
+        extraNasalStats = [];
+        extraTemporalEccDegs = [];
+        extraTemporalStats = [];
+        extraSuperiorEccDegs = [];
+        extraSuperiorStats = [];
+        extraInferiorEccDegs = [];
+        extraInferiorStats = [];
+    end
     
-    figure(figureNo); clf;
+    hFig = figure(figureNo); clf;
+    set(hFig, 'Position', [rand(1,1)*100 rand(1,1)*100 850 450]);
     subplot(1,2,1);
-    makeLinePlot(nasalEccDegs, nasalStats, ...
+    renderLinesPlot(nasalEccDegs, nasalStats, ...
                  temporalEccDegs, temporalStats, ...
+                 extraNasalEccDegs, extraNasalStats, ...
+                 extraTemporalEccDegs, extraTemporalStats, ...
                  quadrants('nasal').colors, quadrants('temporal').colors, ...
-                 {'nasal' 'temporal'}, ...
-                 maxEcc, -30:5:30, statsRange, statsTicks, xEccentricityAxisName, statsName);
+                 {'nasal', 'temporal'}, ...
+                 eccRange, eccTicks, statsRange, statsTicks, xEccentricityAxisName, statsName);
              
     subplot(1,2,2);
-    makeLinePlot(superiorEccDegs, superiorStats, ...
+    renderLinesPlot(superiorEccDegs, superiorStats, ...
                  inferiorEccDegs, inferiorStats, ...
+                 extraSuperiorEccDegs, extraSuperiorStats, ...
+                 extraInferiorEccDegs, extraInferiorStats, ...
                  quadrants('superior').colors, quadrants('inferior').colors, ...
                  {'superior' 'inferior'}, ...
-                 maxEcc, -30:5:30, statsRange, statsTicks, yEccentricityAxisName, statsName);
+                 eccRange, eccTicks, statsRange, statsTicks, yEccentricityAxisName, statsName);
              
              
 end
@@ -141,13 +235,20 @@ end
 % end
 
 
-function makeContourPlot(ratioMap, xPos, yPos, zLevels, zLevelsOnCbar, cMap, titleName, xLabelName, yLabelName)
-    rows = numel(yPos);
-    cols = numel(xPos);
-    [X,Y] = meshgrid(xPos, yPos);
-    contourf(X,Y, reshape(ratioMap, [rows, cols]), zLevels);
-    set(gca, 'XLim', [min(xPos) max(xPos)], 'YLim', [min(yPos) max(yPos)], 'FontSize', 14);
+function renderContourPlot(stats, eccXYposDegs, samplesPerMeridian, eccRange, eccTicks, ...
+    zLevels, zLevelsOnCbar, cMap, titleName, xLabelName, yLabelName)
+    
+    X = eccXYposDegs(:,1);
+    Y = eccXYposDegs(:,2);
+    N = 2*samplesPerMeridian;
+    contourf(reshape(X, [N N]), reshape(Y, [N N]), reshape(stats, [N N]), zLevels);
+    hold on;
+    plot([0 0], eccRange, 'k-', 'LineWidth', 1.0);
+    plot(eccRange, [0 0], 'k-', 'LineWidth', 1.0);
     axis 'image';
+    set(gca, 'XLim', eccRange, 'YLim', eccRange, 'CLim', [min(zLevels) max(zLevels)], ...
+        'XTick', eccTicks, 'YTick', eccTicks, 'FontSize', 14);
+    
     colormap(gca,cMap)
     hL = colorbar;
     set(hL, 'Ticks', zLevelsOnCbar, 'Limits', [min(zLevels) max(zLevels)]);
@@ -156,30 +257,44 @@ function makeContourPlot(ratioMap, xPos, yPos, zLevels, zLevelsOnCbar, cMap, tit
     ylabel(yLabelName, 'FontName', 'Menlo', 'FontSize', 12, 'FontAngle', 'italic');
 end
 
-function makeLinePlot(eccDegs1, ratios1, eccDegs2, ratios2, ...
-                 color1,color2, dataNames, ...
-                 maxEcc, eccTicks, yRange, yTicks, xLabelName, yLabelName)
+function renderLinesPlot(x1, y1, x2, y2, extraX1, extraY1, extraX2, extraY2, color1, color2, dataNames, ...
+                 xRange, xTicks, yRange, yTicks, xLabelName, yLabelName)
     
-    plot(eccDegs1, ratios1, ...
+    plot(x1, y1, ...
         'ko-', 'LineWidth', 1.5, 'MarkerSize', 6, ...
         'Color', color1(1,:), ...
         'MarkerFaceColor', color1(2,:), ...
         'MarkerEdgeColor', color1(1,:));
     hold on;
     
-    plot(eccDegs2, ratios2, ...
+    plot(x2, y2, ...
         'ko-', 'LineWidth', 1.5, 'MarkerSize', 6, ...
         'Color', color2(1,:), ...
         'MarkerFaceColor', color2(2,:), ...
         'MarkerEdgeColor', color2(1,:));
     
+    if (~isempty(extraX1))
+        plot(extraX1, extraY1, ...
+            'ko--', 'LineWidth', 1.5, 'MarkerSize', 6, ...
+            'Color', color1(1,:), ...
+            'MarkerFaceColor', color1(2,:), ...
+            'MarkerEdgeColor', color1(1,:));
+    end
+    if (~isempty(extraX2))
+        plot(extraX2, extraY2, ...
+            'ko-', 'LineWidth', 1.5, 'MarkerSize', 6, ...
+            'Color', color2(1,:), ...
+            'MarkerFaceColor', color2(2,:), ...
+            'MarkerEdgeColor', color2(1,:));
+    end
+    
     xlabel(xLabelName, 'FontName', 'Menlo', 'FontAngle', 'italic');
     ylabel(yLabelName, 'FontName', 'Menlo', 'FontAngle', 'italic');
-    hL = legend(dataNames, 'Location', 'North');
-    axis 'square'
-    set(gca, 'XLim', maxEcc*[-1 1], 'YLim', yRange, ...
+    legend(dataNames, 'Location', 'North');
+    
+    set(gca, 'XLim', xRange, 'YLim', yRange, ...
          'XScale', 'linear', 'YScale', 'linear', ...
-         'XTick', eccTicks, 'YTick', yTicks, ...
+         'XTick', xTicks, 'YTick', yTicks, ...
          'FontSize', 14);
     grid('on');
 end
