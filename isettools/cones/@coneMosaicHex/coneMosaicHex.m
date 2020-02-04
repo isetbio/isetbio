@@ -496,6 +496,10 @@ classdef coneMosaicHex < coneMosaic
         % Delaunay triangles, and cone aperture sizes)
         cmStruct = geometryStruct(obj);
         
+        % Return a struct with the mosaic geometry (cone positions,
+        % Delaunay triangles, and cone aperture sizes), with indices
+        % serialized the same way as the response
+        cmStruct = geometryStructAlignedWithSerializedConeMosaicResponse(obj);
     end % Public methods
 
     methods (Access = private)
