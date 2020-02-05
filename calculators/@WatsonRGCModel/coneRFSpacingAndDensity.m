@@ -48,11 +48,13 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
     
     % Call the isetbio function coneSizeReadData to read-in the Curcio '1990
     % cone spacing/density data
-    [spacingMeters, apertureMeters, densityConesPerMM2] = coneSizeReadData('eccentricity', eccMM, ...
+    [~, ~, densityConesPerMM2] = coneSizeReadData('eccentricity', eccMM, ...
                                         'angle', angle*ones(1,numel(eccMM)), ...
                                         'eccentricityUnits', 'mm', ...
                                         'useParfor', false);
-                                    
+        
+    
+    
     % Apply correction for the fact that the isetbio max cone density (18,800 cones/deg^2) 
     % does not agree with Watson's (obj.dc0 =  14,804.6 cones/deg^2), and the fact that if we do not
     % apply this correction we get less than 2 mRGCs/cone at foveal eccentricities. We
@@ -76,9 +78,15 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
         end
     end
     
+    % In ConeSizeReadData, spacing is computed as sqrt(1/density). This is
+    % true for a rectangular mosaic. For a hex mosaic, spacing =
+    % sqrt(2.0/(3*density)).
+    spacingMM = sqrt(2.0./(sqrt(3.0)*densityConesPerMM2));
+    spacingMeters = spacingMM * 1e-3;
+     
     switch (units)
         case 'Cones per mm2'
-            coneRFSpacing = spacingMeters * 1e-3;
+            coneRFSpacing = spacingMeters * 1e3;
             coneRFDensity = densityConesPerMM2;
             
         case 'Cones per deg2'

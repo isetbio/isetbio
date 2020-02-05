@@ -185,22 +185,22 @@ classdef WatsonRGCModel
         % ------------------ FIGURE GENERATION METHODS --------------------
         generateAndDockAllFigures(obj);
         
-        % Cone density as a function of eccentricity for all quadrants
+        % Cone density (cones/deg2) as a function of eccentricity for all quadrants
         generateFigure1(obj, hFig);
         
-        % RF density of all RGCs as a function of eccentricity for all quadrants
+        % RF density of all RGCs (RFs/deg2) as a function of eccentricity for all quadrants
         generateFigure5(obj, hFig);
         
         % Fraction of midget to total RGCs RFs as a function of eccentrity
         generateFigure8(obj, hFig);
         
-        % RF density of midget RGCs as a function of eccentricity for all quadrants
+        % RF density of midget RGCs (RFs/deg2) as a function of eccentricity for all quadrants
         generateFigure9(obj, hFig);
         
-        % RF spacing of midget RGCs as a function of eccentricity for all quadrants
+        % RF spacing of midget RGCs (degs) as a function of eccentricity for all quadrants
         generateFigure10(obj, hFig);
         
-        % RF spacing of midget RGCs as a function of eccentricity for all quadrants
+        % RF spacing of midget RGCs (degs) as a function of eccentricity for all quadrants
         generateFigure11(obj, hFig);
         
         % Ratio of midget RGCs to cones as a function of eccentricity for all quadrants

@@ -6,8 +6,8 @@ function hFig = generateFigure1(obj, hFig)
 %   WatsonRGCCalc.generateFigure1();
 %
 % Description:
-%   Generate Figure 14 of Watson (2014) which plots cone density as a 
-%   function of eccentricity for all 4 meridians.
+%   Generate Figure 14 of Watson (2014) which plots cone density in cones/deg^2 
+%   as a function of eccentricity for all 4 meridians.
 %
 % Inputs:
 %    obj                       - The WatsonRGCModel object

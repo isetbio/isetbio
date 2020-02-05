@@ -46,6 +46,9 @@ function generateAndDockAllFigures(obj)
             case 8
                 % Relation between retinal distance in mm and degs
                 obj.generateFigureA1(hFigs(iFig));
+            case 9
+                % Relation between retinal distance in mm and degs
+                obj.generateFigureA2(hFigs(iFig));
         end
         drawnow;
         pause(0.1);
