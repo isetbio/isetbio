@@ -19,14 +19,18 @@ classdef WatsonRGCModel
     
     % Constant properties (model parameters)
     properties (Constant)
-        % Cell array with original meridian parameters (nasal/temporal likely reversed)
-        meridianParamsTableOriginal = {
-            'temporal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ...
-            'superior meridian'  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35); ...
-            'nasal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ...
-            'inferior meridian'  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13);
+        % Cell array with meridian parameters
+        % These meridians are in the Right Eye visual field domain See
+        % Watson (2014) section titled "Conventions regarding meridians
+        % ..." in the Introduction.
+        meridianParamsTable = {
+            'temporal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ... 
+            'superior meridian'  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13); ...
+            'nasal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ... 
+            'inferior meridian'  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35) ... 
         };
      
+        
         % Various acronyms and their meaning in the Watson (2014) paper
         glossaryTable = {
              'mRGCf'    'midget RGC receptive field'; ...
@@ -83,15 +87,19 @@ classdef WatsonRGCModel
        % Dictionary with various acronyms of the the Watson (2014) paper and their meaning
        glossary;
        
+       % Enumerated meridian names:  temporal, superior, nasal, inferior
+       enumeratedMeridianNames;
+        
        % Dictionary with meridian params indexed by meridian name
        meridianParams;
        
-       % Dictionary with meridian params
-       meridianParamsTable;
+       % Dictionary with meridian colors indexed by meridian name
+       meridianColors;
        
        % Struct with default preferences for all figures
        defaultFigurePrefs = struct(...
             'lineWidth', 1.5, ...
+            'markerLineWidth', 1.0, ...
             'fontSize', 14, ...
             'fontAngle', 'italic', ...
             'grid', 'on', ...
@@ -103,7 +111,7 @@ classdef WatsonRGCModel
         % Struct with default preferences for all figures
         figurePrefs
         
-        % the eccentricity support for all figures
+        % the default eccentricity support (in degs) for all figures
         eccDegs = 0:0.002:90;
     end
     
@@ -115,7 +123,6 @@ classdef WatsonRGCModel
             p = inputParser;
             p.addParameter('generateAllFigures', false, @islogical);
             p.addParameter('eccDegs', 0:0.002:90, @isnumeric);
-            p.addParameter('reverseNasalTemporalParams', true, @islogical);
             p.parse(varargin{:});
             
             % Set the default figure preferences
@@ -128,18 +135,22 @@ classdef WatsonRGCModel
             % Create dictionary with various acronyms of the the Watson (2014) paper and their meaning
             obj.glossary = containers.Map(obj.glossaryTable(:,1), obj.glossaryTable(:,2));
             
-            % See if we need to revert the nasal and temporal meridian params table
-            obj.meridianParamsTable = obj.meridianParamsTableOriginal;
-            if (p.Results.reverseNasalTemporalParams)
-                tmp = obj.meridianParamsTable{1,1};
-                obj.meridianParamsTable{1,1} = obj.meridianParamsTable{3,1};
-                obj.meridianParamsTable{3,1} = tmp;
-            end
-
-            
             % Create dictionary with meridian params 
             obj.meridianParams = containers.Map(obj.meridianParamsTable(:,1), obj.meridianParamsTable(:,2));
-        
+            
+            % Create enumerated meridian names
+            obj.enumeratedMeridianNames = cell(size(obj.meridianParams,1),1);
+            for k = 1:size(obj.meridianParams,1)
+                obj.enumeratedMeridianNames{k} = WatsonRGCModel.meridianParamsTable{k,1};
+            end
+    
+            % Create dictionary with meridian colors
+            obj.meridianColors = containers.Map();
+            obj.meridianColors('temporal meridian') = [1.0 0.0 0.0];
+            obj.meridianColors('superior meridian') = [0.0 0.0 1.0];
+            obj.meridianColors('nasal meridian')    = [0.0 0.8 0.0];
+            obj.meridianColors('inferior meridian') = [0.2 0.2 0.2];
+            
             % Generate figures
             if (generateAllFigures)
                 obj.generateAndDockAllFigures();
@@ -178,15 +189,18 @@ classdef WatsonRGCModel
         val = midgetRGCRFSpacing(obj, eccDegs, meridian, units, type);
         
         % Return cone RF spacing and density at the requested meridian and eccentricities
-        [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, meridian, units);
+        [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, ecc, meridian, whichEye, eccUnits, returnUnits);
         % --------------------- COMPUTE METHODS ---------------------------
         
         
         % ------------------ FIGURE GENERATION METHODS --------------------
         generateAndDockAllFigures(obj);
         
-        % Cone density (cones/deg2) as a function of eccentricity for all quadrants
-        generateFigure1(obj, hFig);
+        % Meridian conventions figure
+        generateMeridianConventionsFigure(obj);
+        
+        % Cone density (cones/deg2) as a function of eccentricity in degs for all quadrants
+        generateFigure1(obj, hFig, varargin);
         
         % RF density of all RGCs (RFs/deg2) as a function of eccentricity for all quadrants
         generateFigure5(obj, hFig);
@@ -219,6 +233,11 @@ classdef WatsonRGCModel
         % Method to generate RGCspacing at four quadrants as a function of
         % eccentricity for a given cell type (ON/OFF or both ON+OFF)
         generateRGCRFSpacingPlot(obj, RGCRFSpacingFunctionHandle, eccDegs, type)
+        
+        % Correct meridian color & legend based on which eye we are showing and whether we
+        % are labeling meridians in retinal or visual space
+        [theLegend, theColor] = correctLegendAndColor(obj,theLegend, theColor, meridianName, displayRetinalMeridiansLegends, whichEye)
+        
         % ------------------ Figure generation methods --------------------
     end
 end

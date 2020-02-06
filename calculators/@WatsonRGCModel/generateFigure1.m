@@ -1,4 +1,4 @@
-function hFig = generateFigure1(obj, hFig)
+function hFig = generateFigure1(obj, hFig, varargin)
 % Generate Figure 1 of the Watson 2014 paper
 %
 % Syntax:
@@ -10,9 +10,27 @@ function hFig = generateFigure1(obj, hFig)
 %   as a function of eccentricity for all 4 meridians.
 %
 % Inputs:
-%    obj                       - The WatsonRGCModel object
+%    obj                            - The WatsonRGCModel object
+%    hFig                           - Figure handle
+%    
+% Optional Inputs:
+%    whichEye                       - Which eye, 'left' or 'right'. The default 
+%                                     is 'right' to match Watson (2014).
+%
+%    eccentricityInMMInsteadOfDegs  - Logical. Whether to plot as a function
+%                                     of retinal distance specified in mm. 
+%                                     Default is false, in which case we 
+%                                     plot density as a function of 
+%                                     eccentricity in visual degrees. Also
+%                                     changes the reported density from per
+%                                     deg^2 to per mm^2.
+%    retinalMeridiansLegendsInsteadOfVisualSpaceMeridians - Logical.
+%                                     Whether to label meridians in visual
+%                                     space (default) or retinal space.
+%
+%
 % Outputs:
-%    hFig                      - The generated figure handle
+%    hFig                           - The generated figure handle
 %
 % References:
 %    Watson (2014). 'A formula for human RGC receptive field density as
@@ -21,39 +39,104 @@ function hFig = generateFigure1(obj, hFig)
 % History:
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('eccentricityInMMInsteadOfDegs', false, @islogical);
+    p.addParameter('whichEye','right',@(x)(ismember(x,{'left','right'})));
+    p.addParameter('retinalMeridiansLegendsInsteadOfVisualSpaceMeridians', false, @islogical);
+    p.parse(varargin{:});
+     
+    if (p.Results.eccentricityInMMInsteadOfDegs)
+        eccentricity = obj.rhoDegsToMMs(obj.eccDegs);
+    else
+        eccentricity = obj.eccDegs;
+    end
+    whichEye = p.Results.whichEye;
+    retinalMeridiansLegendsInsteadOfVisualSpaceMeridians = p.Results.retinalMeridiansLegendsInsteadOfVisualSpaceMeridians;
+    
+    % Reset figure
+    if (isempty(hFig))
+        hFig = figure();
+    else
+        figure(hFig); 
+    end
+    clf;
+    legends = cell(numel(obj.enumeratedMeridianNames),1);
+    
+    % Label figure
     figureNumber = '1';
-    figure(hFig); clf;
     set(hFig, 'Color', obj.figurePrefs.backgroundColor, 'Name', sprintf('Figure %s of %s', figureNumber, obj.paperTitleShort));
     
-    
-    meridianName = 'temporal meridian';
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
-    plot(obj.eccDegs, coneRFDensity, 'r-', 'LineWidth', obj.figurePrefs.lineWidth); hold on
+    % Loop over the four meridians
+    for k = 1:numel(obj.enumeratedMeridianNames)
         
-    meridianName = 'superior meridian';
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
-    plot(obj.eccDegs, coneRFDensity, 'b-', 'LineWidth', obj.figurePrefs.lineWidth);
+        % Get meridian name and color in Right Eye visual space
+        meridianName = obj.enumeratedMeridianNames{k};
+        theLegend = sprintf('%s (%s eye visual field)',meridianName, whichEye);
+        theColor = obj.meridianColors(meridianName);
+        
+        % Correct meridian legend and color depending on whichEye and space of meridian (retinal or visual space)
+        [theLegend, theColor] = obj.correctLegendAndColor(theLegend, theColor, meridianName, retinalMeridiansLegendsInsteadOfVisualSpaceMeridians, whichEye);
+        
+        % Accumulate legends
+        legends{k} = theLegend;
+        
+        % Compute the data
+        if (p.Results.eccentricityInMMInsteadOfDegs)
+            eccUnits = 'mm';
+            [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccentricity, meridianName, whichEye, eccUnits, 'Cones per mm2');
+        else
+            eccUnits = 'deg';
+            [~, coneRFDensity] = obj.coneRFSpacingAndDensity(eccentricity, meridianName, whichEye, eccUnits, 'Cones per deg2');
+        end
+        
+        % Plot the data
+        plot(eccentricity, coneRFDensity, 'o-', ...
+            'MarkerSize', 4, ...
+            'MarkerFaceColor', min([1 1 1], theColor + 0.4), ...
+            'Color', theColor, ...
+            'LineWidth', obj.figurePrefs.markerLineWidth); 
+        hold on;
+    end
     
-    meridianName = 'nasal meridian';
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
-    plot(obj.eccDegs, coneRFDensity, 'g-', 'LineWidth', obj.figurePrefs.lineWidth); 
+    % Add the maximal density line
+    legends{numel(legends)+1} = '(0,0)';
+    if (p.Results.eccentricityInMMInsteadOfDegs)
+        plot([obj.eccDegs(2) obj.eccDegs(end)], obj.dc0/obj.alpha(0)*[1 1], 'k--', 'LineWidth', 1.5);
+    else
+        plot([obj.eccDegs(2) obj.eccDegs(end)], obj.dc0*[1 1], 'k--', 'LineWidth', 1.5);
+    end
     
-    meridianName = 'inferior meridian';
-    [~, coneRFDensity] = obj.coneRFSpacingAndDensity(obj.eccDegs, meridianName, 'Cones per deg2');
-    plot(obj.eccDegs, coneRFDensity, 'k-', 'LineWidth', obj.figurePrefs.lineWidth);
+    % Show the legends
+    legend(legends, 'Location', 'SouthWest');
     
-    plot([obj.eccDegs(2) obj.eccDegs(end)], obj.dc0*[1 1], 'k--', 'LineWidth', 1.5);
-    legend({'temporal', 'superior', 'nasal', 'inferior', '(0,0)'}, 'Location', 'SouthWest');
-
-    xlabel('eccentricity (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
-    ylabel('density (cones/deg^2)', 'FontAngle', obj.figurePrefs.fontAngle);
-    set(gca, 'XLim', [0.005 100], 'YLim', [100 20000], ...
+    % Ticks and Lims
+    if (p.Results.eccentricityInMMInsteadOfDegs)
+        xlabel('eccentricity (retinal mm)', 'FontAngle', obj.figurePrefs.fontAngle);
+        ylabel('density (cones/mm^2)', 'FontAngle', obj.figurePrefs.fontAngle);
+        xLims = obj.rhoDegsToMMs([0.005 100]);
+        yLims = [2000 250*1000];
+        xTicks = [0.01 0.03 0.1 0.3 1 3 10];
+        yTicks = [2000 5*1000 10*1000 20*1000 50*1000 100*1000 200*1000];
+        yTicksLabels = {'2k', '5k', '10k', '20k', '50k', '100k', '200K'};
+    else
+        xlabel('eccentricity (degs)', 'FontAngle', obj.figurePrefs.fontAngle);
+        ylabel('density (cones/deg^2)', 'FontAngle', obj.figurePrefs.fontAngle);
+        xLims = [0.005 100];
+        yLims = [100 20000];
+        xTicks = [0.1 0.5 1 5 10 50 100];
+        yTicks = [100 1000 10000];
+        yTicksLabels = {'100', '1000', '10000'};
+    end
+    
+    set(gca, 'XLim', xLims, 'YLim', yLims, ...
         'XScale', 'log', 'YScale', 'log', ...
-        'XTick', [0.1 0.5 1 5 10 50 100], ...
-        'YTick', [100 1000 10000], 'YTickLabel', {'100', '1000', '10000'},...
+        'XTick', xTicks, ...
+        'YTick', yTicks, 'YTickLabel', yTicksLabels,...
         'FontSize', obj.figurePrefs.fontSize);
-    grid(gca, obj.figurePrefs.grid);
     
+    % Grid & Title
+    grid(gca, obj.figurePrefs.grid);
     title('Cone density as a function of eccentricity (Curcio et al, 1990)');
     drawnow;
 end

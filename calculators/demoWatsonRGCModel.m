@@ -18,6 +18,44 @@ function demoWatsonRGCModel
     % to true to generate several figures of the Watson 2014 paper
     WatsonRGCCalc = WatsonRGCModel('generateAllFigures', false);
     
+    % How to sample visual space
+    eccMinArcMin = 0.2;
+    eccMaxDegs = 90;
+    eccSamples = 200;
+    WatsonRGCCalc.eccDegs = logspace(log10(eccMinArcMin/60), log10(eccMaxDegs), eccSamples);
+    
+    % Generate the meridian conventions figure
+    WatsonRGCCalc.generateMeridianConventionsFigure();
+    
+    % Plot cone density as a function of ecc for the left eye (by default, meridians are labeled in the right eye visual space)
+    WatsonRGCCalc.generateFigure1(figure(10), 'whichEye', 'left', ...
+        'eccentricityInMMInsteadOfDegs', false);
+    
+    % Plot cone density as a function of ecc for the left eye with meridians labeled in the eye's own retinal space
+    WatsonRGCCalc.generateFigure1(figure(11), 'whichEye', 'left', ...
+        'eccentricityInMMInsteadOfDegs', false, 'retinalMeridiansLegendsInsteadOfVisualSpaceMeridians', true);
+    
+    % Plot cone density as a function of ecc for the left eye with meridians labeled in the eye's own retinal space 
+    % and in retinal mm instead of visual degs
+    WatsonRGCCalc.generateFigure1(figure(12), 'whichEye', 'left', ...
+        'eccentricityInMMInsteadOfDegs', true, 'retinalMeridiansLegendsInsteadOfVisualSpaceMeridians', true);
+    
+    % Plot cone density as a function of ecc for the right eye (by default, meridians are labeled in the right eye visual space)
+    WatsonRGCCalc.generateFigure1(figure(20), 'whichEye', 'right', ...
+        'eccentricityInMMInsteadOfDegs', false);
+    
+    % Plot cone density as a function of ecc for the lright eye with meridians labeled in the eye's own retinal space
+    WatsonRGCCalc.generateFigure1(figure(21), 'whichEye', 'right', ...
+        'eccentricityInMMInsteadOfDegs', false, 'retinalMeridiansLegendsInsteadOfVisualSpaceMeridians', true);
+    
+    % Plot cone density as a function of ecc for the left eye with meridians labeled in the eye's own retinal space 
+    % and in retinal mm instead of visual degs
+    WatsonRGCCalc.generateFigure1(figure(22), 'whichEye', 'right', ...
+        'eccentricityInMMInsteadOfDegs', true, 'retinalMeridiansLegendsInsteadOfVisualSpaceMeridians', true);
+    
+end
+
+function oldTests()
     % Compute peak cone density in cones/mm2 and in cones/deg2
     fprintf('peak cone density: %3.2fk cones/mm2\n', WatsonRGCCalc.peakConeDensity('Cones per mm2')/1000);
     fprintf('peak cone density: %3.2fk cones/deg2\n', WatsonRGCCalc.peakConeDensity('Cones per deg2')/1000);

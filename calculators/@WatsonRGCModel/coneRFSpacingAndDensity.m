@@ -1,22 +1,27 @@
-function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, meridian, units)
-% Return cone receptive field spacing and density at the requested meridian and eccentricities
+function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, ecc, meridian, whichEye, eccUnits, returnUnits)
+% Return cone receptive field spacing and density at the requested meridian
+% and retinal eccentricities in visual degrees
 %
 % Syntax:
 %   WatsonRGCCalc = WatsonRGCModel();
-%   eccDegs = 0:0.1:10;
+%   ecc = 0:0.1:10;
 %   meridian = 'superior meridian';
-%   [coneSpacingMM, coneDensityPerMM2] = WatsonRGCCalc.coneRFSpacingAndDensity(eccDegs, meridian, 'Cones per mm2')
-%   [coneSpacingDeg, coneDensityPerDeg2] = WatsonRGCCalc.coneRFSpacingAndDensity(eccDegs, meridian, 'Cones per deg2')
+%   eye = 'left';
+%   eccUnits = 'deg';
+%   [coneSpacingMM, coneDensityPerMM2] = WatsonRGCCalc.coneRFSpacingAndDensity(ecc, meridian, eye, eccUnits, 'Cones per mm2')
+%   [coneSpacingDeg, coneDensityPerDeg2] = WatsonRGCCalc.coneRFSpacingAndDensity(ecc, meridian, eye, eccUnits, 'Cones per deg2')
 %
 % Description:
 %   Method to return cone spacing as a function of the requested meridian and 
-%   eccentricities (with spacing specified either in deg or mm).
+%   eccentricities, specified in visual degrees (with returned spacing/density specified either in deg or mm).
 %
 % Inputs:
 %    obj                       - The WatsonRGCModel object
-%    eccDegs                   - Eccentricities at which to compute RF densities
+%    ecc                       - Eccentricities at which to compute RF densities
 %    meridian                  - Meridian for which to compute RF densities
-%    units                     - Retinal area units, either 'Cones per mm2'
+%    whichEye                  - 'left' or 'right'
+%    eccUnits                  - Units at which the passed eccentricities are specified
+%    returnUnits               - Return units, either 'Cones per mm2'
 %                                or 'Cones per deg2'
 % Outputs:
 %    val                       - Cone spacing at the requested eccentricities
@@ -31,11 +36,19 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
     % Load the Curcio '1990 cone spacing data
     switch (meridian)
         case 'temporal meridian'
-            angle = 180;
+            if (strcmp(whichEye, 'right'))
+                angle = 180;
+            else
+                angle = 0;
+            end
         case 'superior meridian'
             angle = 90;
         case 'nasal meridian'
-            angle = 0;
+            if (strcmp(whichEye, 'right'))
+                angle = 0;
+            else
+                angle = 180;
+            end
         case 'inferior meridian'
             angle = 270;
         otherwise
@@ -43,18 +56,27 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
             error('Invalid meridian name: ''%s''.', meridian);
     end
     
-    % Convert ecc in degs to ecc in MMs
-    eccMM = obj.rhoDegsToMMs(eccDegs);
+    switch (eccUnits)
+        case 'deg'
+            % Convert ecc from degs to retinal MMs
+            eccMM = obj.rhoDegsToMMs(ecc);
+            eccDegs = ecc;
+        case 'mm'
+            eccMM = ecc;
+            eccDegs = obj.rhoMMsToDegs(eccMM);
+        otherwise
+            error('eccUnits must be either ''deg'' or ''mm''. ''%s'' not recognized', eccUnits);
+    end
+    
     
     % Call the isetbio function coneSizeReadData to read-in the Curcio '1990
     % cone spacing/density data
     [~, ~, densityConesPerMM2] = coneSizeReadData('eccentricity', eccMM, ...
                                         'angle', angle*ones(1,numel(eccMM)), ...
                                         'eccentricityUnits', 'mm', ...
+                                        'whichEye', whichEye, ...
                                         'useParfor', false);
         
-    
-    
     % Apply correction for the fact that the isetbio max cone density (18,800 cones/deg^2) 
     % does not agree with Watson's (obj.dc0 =  14,804.6 cones/deg^2), and the fact that if we do not
     % apply this correction we get less than 2 mRGCs/cone at foveal eccentricities. We
@@ -79,12 +101,11 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, eccDegs, 
     end
     
     % In ConeSizeReadData, spacing is computed as sqrt(1/density). This is
-    % true for a rectangular mosaic. For a hex mosaic, spacing =
-    % sqrt(2.0/(3*density)).
+    % true for a rectangular mosaic. For a hex mosaic, spacing = sqrt(2.0/(3*density)).
     spacingMM = sqrt(2.0./(sqrt(3.0)*densityConesPerMM2));
     spacingMeters = spacingMM * 1e-3;
      
-    switch (units)
+    switch (returnUnits)
         case 'Cones per mm2'
             coneRFSpacing = spacingMeters * 1e3;
             coneRFDensity = densityConesPerMM2;
