@@ -1,6 +1,7 @@
 function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, ecc, meridian, whichEye, eccUnits, returnUnits)
 % Return cone receptive field spacing and density at the requested meridian
-% and retinal eccentricities in visual degrees
+% and retinal eccentricities. The specified meridian name is for the right
+% eye visual field (as per the Watson, 2014 paper)
 %
 % Syntax:
 %   WatsonRGCCalc = WatsonRGCModel();
@@ -33,6 +34,12 @@ function [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, ecc, meri
 % History:
 %    11/11/19  NPC, ISETBIO Team     Wrote it.
     
+    if (~ismember(meridian, obj.enumeratedMeridianNames))
+        fprintf(2,'\nValid meridian names:');
+        obj.enumeratedMeridianNames
+        error('Invalid passed ''meridian'' name: ''%s''.', meridian);
+    end
+        
     % Load the Curcio '1990 cone spacing data
     switch (meridian)
         case 'temporal meridian'
