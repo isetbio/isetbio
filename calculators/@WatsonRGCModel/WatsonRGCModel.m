@@ -23,14 +23,42 @@ classdef WatsonRGCModel
         % These meridians are in the Right Eye visual field domain See
         % Watson (2014) section titled "Conventions regarding meridians
         % ..." in the Introduction.
-        meridianParamsTable = {
-            'temporal meridian'  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ... 
-            'superior meridian'  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13); ...
-            'nasal meridian'     struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ... 
-            'inferior meridian'  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35) ... 
-        };
-     
         
+        % Watson (2014) orders the meridians temporal, superior, nasal, inferior, consistent with increasing polar angle 
+        % in the visual field of the right eye
+        
+        enumeratedMeridianNames = {...
+            'temporal meridian' ...
+            'superior meridian' ...
+            'nasal meridian' ...
+            'inferior meridian' ...
+            };
+        
+     
+        enumeratedMeridianAngles = (0:3)*90;
+        
+        meridianParamsTable = {
+            WatsonRGCModel.enumeratedMeridianNames{1}  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ... 
+            WatsonRGCModel.enumeratedMeridianNames{2}  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13); ...
+            WatsonRGCModel.enumeratedMeridianNames{3}  struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ... 
+            WatsonRGCModel.enumeratedMeridianNames{4}  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35) ... 
+        };
+    
+        % Dictionary with meridian colors
+        meridianColors = containers.Map(...
+             { ...
+             WatsonRGCModel.meridianParamsTable{1,1}, ...
+             WatsonRGCModel.meridianParamsTable{2,1}, ...
+             WatsonRGCModel.meridianParamsTable{3,1}, ...
+             WatsonRGCModel.meridianParamsTable{4,1} ...
+             }, ...
+             { ...
+             '[1.0 0.0 0.0]', ...
+             '[0.0 0.0 1.0]', ...
+             '[0.0 0.8 0.0]', ...
+             '[0.2 0.2 0.2]', ...
+             }, 'UniformValues', true);
+            
         % Various acronyms and their meaning in the Watson (2014) paper
         glossaryTable = {
              'mRGCf'    'midget RGC receptive field'; ...
@@ -73,28 +101,28 @@ classdef WatsonRGCModel
                    -1.064 * 1e-5 * eccDegs.^2 + ...
                     4.116 * 1e-8 * eccDegs.^3;
                 
+        % Valid eccentricity units
+        visualDegsEccUnits = 'visual deg';
+        retinalMMEccUnits = 'retinal mm';
         
-    end
-   
+        % Valid density units
+        visualDegsDensityUnits = 'visual deg^2';
+        retinalMMDensityUnits = 'retinal mm^2';
+    end % Constant properties
+    
     % Constant properties related to figure generation
     properties (Constant)
         paperTitleFull = 'Watson (2014): ''A formula for human RGC receptive field density as a function of visual field location'' ';
         paperTitleShort = 'Watson (2014) RGC model';
     end
-
+   
     % Public properties (read-only)
     properties (SetAccess = private)
        % Dictionary with various acronyms of the the Watson (2014) paper and their meaning
        glossary;
-       
-       % Enumerated meridian names:  temporal, superior, nasal, inferior
-       enumeratedMeridianNames;
         
        % Dictionary with meridian params indexed by meridian name
        meridianParams;
-       
-       % Dictionary with meridian colors indexed by meridian name
-       meridianColors;
        
        % Struct with default preferences for all figures
        defaultFigurePrefs = struct(...
@@ -105,7 +133,7 @@ classdef WatsonRGCModel
             'grid', 'on', ...
             'backgroundColor', [1 1 1]);
     end
-       
+    
     % Public properties
     properties
         % Struct with default preferences for all figures
@@ -137,108 +165,46 @@ classdef WatsonRGCModel
             
             % Create dictionary with meridian params 
             obj.meridianParams = containers.Map(obj.meridianParamsTable(:,1), obj.meridianParamsTable(:,2));
-            
-            % Create enumerated meridian names
-            obj.enumeratedMeridianNames = cell(size(obj.meridianParams,1),1);
-            for k = 1:size(obj.meridianParams,1)
-                obj.enumeratedMeridianNames{k} = WatsonRGCModel.meridianParamsTable{k,1};
-            end
-    
-            % Create dictionary with meridian colors
-            obj.meridianColors = containers.Map();
-            obj.meridianColors('temporal meridian') = [1.0 0.0 0.0];
-            obj.meridianColors('superior meridian') = [0.0 0.0 1.0];
-            obj.meridianColors('nasal meridian')    = [0.0 0.8 0.0];
-            obj.meridianColors('inferior meridian') = [0.2 0.2 0.2];
-            
+
             % Generate figures
             if (generateAllFigures)
                 obj.generateAndDockAllFigures();
             end
-        end
+        end % Constructor
         
-        % --------------------- COMPUTE METHODS ---------------------------
+        % Return cone RF spacing, cone RF density and meridian angle for the 
+        % requested meridian and eccentricities
+        [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpacingAndDensity(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
         
-        %Compute ratios of midget RGC receptive fields to cones at the requested (x,y) retinal eccentricities (degs)
-        [ratios, coneRFDensities, mRGCRFDensities] = ratioOfMidgetRGCsToCones(obj, eccXYposDegs, whichEye);
+        % Return ISETBio retinal angle for Watson's meridians (specified in
+        % visual field of the right eye)
+        [isetbioAngle, whichEye, rightEyeRetinalMeridianName] = isetbioRetinalAngleForWatsonMeridian(obj, rightEyeVisualFieldMeridianName);
         
-        % Convert retinal area from deg^2 to mm^2 for a given eccentricity
-        val = mmSquaredToDegSquared(obj, mmSquared, eccDegs);
-        
-        % Convert retinal area from deg^2 to mm^2 for a given eccentricity
-        val = degSquaredToMMSquared(obj, degSquared, eccDegs);
-        
-        % Return peak cone density (#cones per either deg^2 or mm^2)
-        val = peakConeDensity(obj, units);
-        
-        % Return peak midget and peak total RGC receptive field density 
-        [peakMidgetRGCRFDensity, peakRGCRFDensity] = peakRGCRFDensity(obj, units);
-        
-        % Return total RGC receptive field  density at the requested meridian and eccentricities 
-        val = totalRGCRFDensity(obj, eccDegs, meridian, units);
-        
-        % Return fraction of total RGCs that are midgets
-        val = midgetRGCFraction(obj, eccDegs);
-        
-        % Return midgetRGC receptive field  density at the requested meridian and eccentricities
-        val = midgetRGCRFDensity(obj, eccDegs, meridian, units);
-        
-        % Return midgetRGC receptive field  spacing at the requested meridian and
-        % eccentricities for a given RGC type: 'singlePolarity' (ON/OFF) or
-        % 'bothPolarities' (ON+OFF).
-        val = midgetRGCRFSpacing(obj, eccDegs, meridian, units, type);
-        
-        % Return cone RF spacing and density at the requested meridian and eccentricities
-        [coneRFSpacing, coneRFDensity] = coneRFSpacingAndDensity(obj, ecc, meridian, whichEye, eccUnits, returnUnits);
-        % --------------------- COMPUTE METHODS ---------------------------
-        
-        
-        % ------------------ FIGURE GENERATION METHODS --------------------
-        generateAndDockAllFigures(obj);
-        
-        % Meridian conventions figure
-        generateMeridianConventionsFigure(obj);
-        
-        % Cone density (cones/deg2) as a function of eccentricity in degs for all quadrants
-        generateFigure1(obj, hFig, varargin);
-        
-        % RF density of all RGCs (RFs/deg2) as a function of eccentricity for all quadrants
-        generateFigure5(obj, hFig);
-        
-        % Fraction of midget to total RGCs RFs as a function of eccentrity
-        generateFigure8(obj, hFig);
-        
-        % RF density of midget RGCs (RFs/deg2) as a function of eccentricity for all quadrants
-        generateFigure9(obj, hFig);
-        
-        % RF spacing of midget RGCs (degs) as a function of eccentricity for all quadrants
-        generateFigure10(obj, hFig);
-        
-        % RF spacing of midget RGCs (degs) as a function of eccentricity for all quadrants
-        generateFigure11(obj, hFig);
-        
-        % Ratio of midget RGCs to cones as a function of eccentricity for all quadrants
-        generateFigure14(obj, hFig);
-                
-        % Relationhip between retinal distance from the optic axis in mm and degs as a
-        % function of eccentricity
-        generateFigureA1(obj, hFig);
-        
-        % Ratio of area in mm^2 to deg^2 as a function of eccentricity
-        generateFigureA2(obj, hFig);
-        
-        % Method to generate RGCdensity at four quadrants as a function of eccentricity
-        generateRGCRFDensityPlot(obj, RGCRFDensityFunctionHandle, eccDegs);
-        
-        % Method to generate RGCspacing at four quadrants as a function of
-        % eccentricity for a given cell type (ON/OFF or both ON+OFF)
-        generateRGCRFSpacingPlot(obj, RGCRFSpacingFunctionHandle, eccDegs, type)
-        
-        % Correct meridian color & legend based on which eye we are showing and whether we
-        % are labeling meridians in retinal or visual space
-        [theLegend, theColor] = correctLegendAndColor(obj,theLegend, theColor, meridianName, displayRetinalMeridiansLegends, whichEye)
-        
-        % ------------------ Figure generation methods --------------------
-    end
-end
+        % Compute 2D cone RF density in the right eye visual space coordinates
+        [coneRFDensity, spatialSupport] = compute2DConeRFDensity(obj, eccDegsInREVisualSpace, eccUnits, densityUnits);
 
+        
+    end % Public methods
+    
+    methods (Access=private)
+        % Angular interpolation from meridian values to full 360
+        val = interpolatedValuesFromMeridianValues(obj, meridianValues, requestedAngles);
+        
+        % Assert whether the passed eccUnits have valid value
+        validateEccUnits(obj,eccUnits);
+        
+        % Validate densityUnits
+        validateDensityUnits(obj,densityUnits);
+    
+        % Assert whether the passed meridianName has valid value
+        validateMeridianName(obj,meridianName)
+    end
+    
+    % Unit tests
+    methods (Static)
+        unitTestFigure1();
+        unitTestRFConeDensity2D();
+    end
+    
+end % Classdef
+    

@@ -6,7 +6,7 @@ function hFig = generateFigure1(obj, hFig, varargin)
 %   WatsonRGCCalc.generateFigure1();
 %
 % Description:
-%   Generate Figure 14 of Watson (2014) which plots cone density in cones/deg^2 
+%   Generate Figure 1 of Watson (2014) which plots cone density in cones/deg^2 
 %   as a function of eccentricity for all 4 meridians.
 %
 % Inputs:
@@ -24,6 +24,7 @@ function hFig = generateFigure1(obj, hFig, varargin)
 %                                     eccentricity in visual degrees. Also
 %                                     changes the reported density from per
 %                                     deg^2 to per mm^2.
+%
 %    retinalMeridiansLegendsInsteadOfVisualSpaceMeridians - Logical.
 %                                     Whether to label meridians in visual
 %                                     space (default) or retinal space.
