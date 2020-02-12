@@ -102,12 +102,18 @@ classdef WatsonRGCModel
                     4.116 * 1e-8 * eccDegs.^3;
                 
         % Valid eccentricity units
-        visualDegsEccUnits = 'visual deg';
-        retinalMMEccUnits = 'retinal mm';
+        visualDegsEccUnits = 'deg';
+        retinalMMEccUnits = 'mm';
         
         % Valid density units
-        visualDegsDensityUnits = 'visual deg^2';
-        retinalMMDensityUnits = 'retinal mm^2';
+        visualDegsDensityUnits = 'deg^2';
+        retinalMMDensityUnits = 'mm^2';
+        
+        % Valid view names
+        rightEyeVisualField = 'right eye visual field';
+        rightEyeRetina = 'right eye retina';
+        leftEyeRetina = 'left eye retina';
+        
     end % Constant properties
     
     % Constant properties related to figure generation
@@ -181,7 +187,7 @@ classdef WatsonRGCModel
         [isetbioAngle, whichEye, rightEyeRetinalMeridianName] = isetbioRetinalAngleForWatsonMeridian(obj, rightEyeVisualFieldMeridianName);
         
         % Compute 2D cone RF density in the right eye visual space coordinates
-        [coneRFDensity, spatialSupport] = compute2DConeRFDensity(obj, eccDegsInREVisualSpace, eccUnits, densityUnits);
+        [coneRFDensity, spatialSupport, xLabelString, yLabelString, meridianDensities, densityLabelString, eccUnits, densityUnits] = compute2DConeRFDensity(obj, eccDegsInREVisualSpace, eccUnits, densityUnits);
 
         
     end % Public methods
@@ -197,7 +203,10 @@ classdef WatsonRGCModel
         validateDensityUnits(obj,densityUnits);
     
         % Assert whether the passed meridianName has valid value
-        validateMeridianName(obj,meridianName)
+        validateMeridianName(obj,meridianName);
+        
+        % Assert whether the passed view has valid value
+        validateView(obj, viewName);
     end
     
     % Unit tests
