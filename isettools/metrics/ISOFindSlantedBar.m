@@ -31,7 +31,9 @@ function rect = ISOFindSlantedBar(edgeImage,blurFlag)
   edgeImage = cones.absorptions;
   rect = ISOFindSlantedBar(edgeImage);
   ieNewGraphWin; imagesc(edgeImage); colormap(gray); axis image
-  h = drawrectangle('Position',rect)
+  if (~verLessThan('matlab','9.6.0'))
+    h = drawrectangle('Position',rect)
+  end
 %}
 
 if notDefined('edgeImage'), error('image required'); end
