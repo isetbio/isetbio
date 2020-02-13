@@ -213,6 +213,7 @@ classdef WatsonRGCModel
     methods (Static)
         unitTestFigure1();
         unitTestRFConeDensity2D();
+        unitTestSmoothGrid();
     end
     
 end % Classdef

@@ -1,13 +1,13 @@
 function unitTestRFConeDensity2D()
 
     eccMinDegs = 1/60;
-    eccMaxDegs = 20;
+    eccMaxDegs = 2.5;
     eccSamplesNum = 50;
     eccDegs = logspace(log10(eccMinDegs), log10(eccMaxDegs), eccSamplesNum);
     
     obj = WatsonRGCModel();
     theView = 'right eye visual field';
-   % theView = 'right eye retina';
+    theView = 'right eye retina';
     
     [coneDensity2D, meridianDensities, coneDensitySupport, ...
         horizontalMeridianLabel, verticalMeridianLabel, densityLabel, ...
@@ -163,6 +163,14 @@ function renderContourPlot(spatialSupport, Z, zLevels, scaling, xLabelString, yL
     else
         contourf(X,Y, Z, zLevels);
     end
+    
+    hold on;
+    contourLabelSpacing = 4000;
+    [cH, hH] = contour(X,Y, Z, round(zLevels/100)*100, 'LineColor', [0.0 1.0 0.3], ...
+            'LineWidth', 2.0, 'ShowText', 'on', 'LabelSpacing', contourLabelSpacing);
+    clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, 'Color', [0 0 1], 'BackgroundColor', [1 1 1])
+
+    
     cMap = brewermap(1024, 'greys');
     axis 'square';
     colormap(cMap);
