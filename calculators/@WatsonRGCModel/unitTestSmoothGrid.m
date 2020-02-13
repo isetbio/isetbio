@@ -10,22 +10,28 @@ function unitTestSmoothGrid()
     idx = find(ecc <= fovMax/2);
     conePositions = conePositions(idx,:);
     
+    % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
     eccentricitySamplesNum = 32;
-    [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(conePositions, eccentricitySamplesNum);
+    whichEye = 'left';
+    [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye);
    
     % Termination conditions
     dTolerance = 1.0e-4;
     maxIterations = 10000;
     
+    % Do it
     visualizeProgress = ~true;
     useOldMethod = ~true;
-    [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(conePositions,  dTolerance, maxIterations, visualizeProgress, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs);        
-    saveFileName = fullfile(coneLocsDir, 'progress.mat');
+    [conePositions, conePositionsHistory,iterationsHistory] = ...
+        smoothGrid(conePositions,  dTolerance, maxIterations, visualizeProgress, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs);        
+    
+    % Save results
+    saveFileName = fullfile(coneLocsDir, fprintf('progress%s.mat', whichEye));
     save(saveFileName, 'conePositionsHistory','iterationsHistory', '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
 end
 
-function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(conePositions, eccentricitySamplesNum)
+function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye)
         eccentricitiesInMeters = sqrt(sum(conePositions .^ 2, 2)) * 1e-6;
         s = sort(eccentricitiesInMeters);
         maxConePositionMeters = max(s);
@@ -38,7 +44,12 @@ function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOf
         tabulatedEccXYMicrons = [tabulatedEccX tabulatedEccY]*1e6;
         tabulatedEccMeters = sqrt(tabulatedEccX.^2 + tabulatedEccY.^2);
         tabulatedEccAngles = atan2d(tabulatedEccY, tabulatedEccX);
-        tabulatedConeSpacingInMicrons = coneSizeReadData('eccentricity', tabulatedEccMeters, 'angle', tabulatedEccAngles)*1e6;
+        tabulatedConeSpacingInMeters = coneSizeReadData(...
+            'eccentricity', tabulatedEccMeters, ...
+            'angle', tabulatedEccAngles, ...
+            'whichEye', whichEye);
+        
+        tabulatedConeSpacingInMicrons = tabulatedConeSpacingInMeters * 1e6;
 end
     
 function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(conePositions,  dTolerance, maxIterations, visualizeProgress, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs)  
