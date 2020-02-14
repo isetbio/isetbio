@@ -12,12 +12,12 @@ function unitTestSmoothGrid()
     
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
     eccentricitySamplesNum = 32;
-    whichEye = 'left';
+    whichEye = 'right';
     [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye);
    
     % Termination conditions
     dTolerance = 1.0e-4;
-    maxIterations = 10000;
+    maxIterations = 2000;
     
     % Do it
     visualizeProgress = ~true;

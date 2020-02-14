@@ -12,7 +12,7 @@ function val = interpolatedValuesFromMeridianValues(obj, meridianValues, request
    
    % Do the angular interpolation
    val = zeros(size(requestedAngles));
-   method = 'spline'; % 'linear'
+   method = 'linear'; % 'spline'; % 'linear'
    parfor aa = 1:length(requestedAngles)
         val(aa) = interp1(meridianAngles, meridianValues(:,aa), requestedAngles(aa), method);
    end
