@@ -11,7 +11,7 @@ function unitTestSmoothGrid()
     gridParams.lambdaMin = 2;
     
     coneLocsDir = '/Users/nicolas/Documents/MATLAB/projects/ISETBioCSF/sideprojects/MosaicGenerator';
-    loadConePositions = ~false;
+    loadConePositions = ~true;
     
     tic
     if (loadConePositions)
