@@ -11,14 +11,14 @@ function unitTestSmoothGrid()
     gridParams.lambdaMin = 2;
     
     coneLocsDir = '/Users/nicolas/Documents/MATLAB/projects/ISETBioCSF/sideprojects/MosaicGenerator';
-    loadConePositions = false;
+    loadConePositions = ~false;
     
     tic
     if (loadConePositions)
         %load('cp0.5degs.mat', 'conePositions');
         
         mosaicFOVDegs = 7.0; % choose from '0.5', '1.5', '7.0';
-        load(fullfile(coneLocsDir,sprintf('cp%%2.1fdegs.mat',mosaicFOVDegs)), 'conePositions');
+        load(fullfile(coneLocsDir,sprintf('cp%2.1fdegs.mat',mosaicFOVDegs)), 'conePositions');
 
         fovMax = 5.0;
         ecc = sqrt(sum(conePositions.^2,2))/300;
@@ -26,8 +26,16 @@ function unitTestSmoothGrid()
         conePositions = conePositions(idx,:);
         gridParams.radius = max(abs(conePositions(:)));
     else
-        mosaicFOVDegs  = 60.0;
+        mosaicFOVDegs  = 30.0;
         conePositions = generateConePositions(mosaicFOVDegs);
+        conesNum = size(conePositions,1);
+        if (conesNum > 1000*1000)
+            fprintf('Started with %2.1f million cones, time lapsed: %f minutes\n', conesNum/1000000, toc/60);
+        else
+            fprintf('Started with %2.1f thousand cones, time lapsed: %f minutes\n', conesNum/1000, toc/60);
+        end
+        
+        fprintf('Removing cones outside the ellipse ...');
         gridParams.radius = max(abs(conePositions(:)));
     
         % Remove cones outside the desired region by applying the provided
@@ -35,9 +43,21 @@ function unitTestSmoothGrid()
         d = feval(gridParams.domainFunction, conePositions, ...
             gridParams.center, gridParams.radius, gridParams.ellipseAxes);
         conePositions = conePositions(d < gridParams.borderTolerance, :);
-
+        fprintf('... time lapsed: %f minutes.\n', toc/60);
+        
+        
         % sample probabilistically according to coneSpacingFunction
+        conesNum = size(conePositions,1);
+        if (conesNum > 1000*1000)
+            fprintf('Computing separations for %2.1f million cones, time lapsed: %f minutes\n', conesNum/1000000, toc/60);
+        else
+            fprintf('Computing separations for %2.1f thousand cones, time lapsed: %f minutes\n', conesNum/1000, toc/60);
+        end
         coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
+        fprintf('... time lapsed: %f minutes.',  toc/60);
+    
+        fprintf('\nProbabilistic sampling ...');
+        pause(0.1)
         normalizedConeSeparations = coneSeparations / gridParams.lambdaMin;
         densityP = 1/(sqrt(2/3)) * (1 ./ normalizedConeSeparations) .^ 2;
     
@@ -50,10 +70,15 @@ function unitTestSmoothGrid()
             ((radii < fixedConePositionsRadiusInCones*gridParams.lambdaMin)) );
  
         conePositions = conePositions(keptConeIndices, :);
+        fprintf(' ... done !\n');
     end
     
-    fprintf('Iteration: 0, Generated %2.2fk cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc/60);
-            
+    conesNum = size(conePositions,1);
+    if (conesNum > 1000*1000)
+        fprintf('Iteration: 0, Adusting %2.1f million cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc/60);
+    else
+        fprintf('Iteration: 0, Adusting %2.1f thousand cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc/60);
+    end
     
     
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
@@ -75,7 +100,6 @@ function unitTestSmoothGrid()
 
     [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = ...
             computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye, eccSpacePartitions);
-    
     
 
     
