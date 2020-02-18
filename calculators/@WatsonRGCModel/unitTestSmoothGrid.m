@@ -1,5 +1,19 @@
 function unitTestSmoothGrid()
 
+    % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
+    eccentricitySamplesNum = 32;
+    eccSpacePartitions = 4;
+    whichEye = 'right';
+    
+    % Termination conditions
+    dTolerance = 1.0e-4;
+    maxIterations = 500;
+    
+    % Options
+    visualizeProgress = ~true;
+    useOldMethod = ~true;
+    
+    
     gridParams.coneSpacingFunction = @coneSpacingFunction;
     gridParams.coneSpacingFunctionNew = @coneSpacingFunctionNew;
     gridParams.domainFunction = @ellipticalDomainFunction;
@@ -7,10 +21,11 @@ function unitTestSmoothGrid()
     gridParams.center = [0 0];
     gridParams.ellipseAxes = [1 1.2247];
     gridParams.borderTolerance = 0.001 * 2;
-    gridParams.positionalDiffTolerance = 0.8;
+    gridParams.positionalDiffTolerance = 0.4;
     gridParams.lambdaMin = 2;
     
-    coneLocsDir = '/Users/nicolas/Documents/MATLAB/projects/ISETBioCSF/sideprojects/MosaicGenerator';
+    p = getpref('IBIOColorDetect');
+    coneLocsDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator');
     loadConePositions = ~true;
     
     tic
@@ -26,7 +41,7 @@ function unitTestSmoothGrid()
         conePositions = conePositions(idx,:);
         gridParams.radius = max(abs(conePositions(:)));
     else
-        mosaicFOVDegs  = 20.0;
+        mosaicFOVDegs  = 10.0; %20.0;
         conePositions = generateConePositions(mosaicFOVDegs);
         conesNum = size(conePositions,1);
         if (conesNum > 1000*1000)
@@ -80,18 +95,7 @@ function unitTestSmoothGrid()
     end
     
     
-    % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
-    eccentricitySamplesNum = 32;
-    eccSpacePartitions = 4;
-    whichEye = 'right';
     
-    % Termination conditions
-    dTolerance = 1.0e-4;
-    maxIterations = 1000;
-    
-    % Options
-    visualizeProgress = ~true;
-    useOldMethod = ~true;
     
     % Save filename
     saveFileName = fullfile(coneLocsDir, sprintf('progress_%s_partitionsNum%d_samplesNum_%d.mat', whichEye, eccSpacePartitions, eccentricitySamplesNum));
@@ -108,7 +112,7 @@ function unitTestSmoothGrid()
     
     % Save results
     save(saveFileName, 'conePositionsHistory','iterationsHistory', ...
-        tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, ...
+        'tabulatedEccXYMicrons', 'tabulatedConeSpacingInMicrons', ...
         '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
 end
@@ -224,8 +228,16 @@ function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gr
     conePositionsHistory = [];
     
     tic
+    lastTriangularizationAtIteration = iteration;
+    minimalIterationsPerformedAfterLastTriangularization = 2;
     
-    while (notConverged) && (iteration <= gridParams.maxIterations)
+    while (notConverged) && (iteration <= gridParams.maxIterations) || ...
+            ((lastTriangularizationAtIteration > iteration-minimalIterationsPerformedAfterLastTriangularization)&&(iteration > gridParams.maxIterations))
+        
+        if ((lastTriangularizationAtIteration > iteration-minimalIterationsPerformedAfterLastTriangularization)&&(iteration > gridParams.maxIterations))
+            fprintf('Exceed max iterations (%d), but last triangularization was less than %d iterations before so we will do one more iteration\n', gridParams.maxIterations,minimalIterationsPerformedAfterLastTriangularization);
+        end
+        
         iteration = iteration + 1;
 
         % compute cone positional diffs
@@ -233,6 +245,7 @@ function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gr
         
         reTriangulationIsNeeded = (max(positionalDiffs) > gridParams.positionalDiffTolerance);
         if (reTriangulationIsNeeded)
+            lastTriangularizationAtIteration = iteration;
             % save old come positions
             oldConePositions = conePositions;
             
@@ -274,29 +287,30 @@ function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gr
         % and their lengths
         springLengths = sqrt(sum(springVectors.^2, 2));
 
-        
-        % Compute desired spring lengths. This is done by evaluating the
-        % passed coneDistance function at the spring centers.
-        if (useOldMethod)
-            desiredSpringLengths = feval(gridParams.coneSpacingFunction, springCenters);
-            
-        elseif (eccSpacePartitions==1)
-            desiredSpringLengths= feval(gridParams.coneSpacingFunctionNew, springCenters, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons);
-
-        elseif (eccSpacePartitions==4)
-            desiredSpringLengths = [];
-            for qIndex = 1:4
-                switch (qIndex)
-                    case 1
-                        idx = find( (springCenters(:,1)>=0) & (springCenters(:,2)>=0));
-                    case 2
-                        idx = find( (springCenters(:,1)>=0) & (springCenters(:,2)<=0));
-                    case 3
-                        idx = find( (springCenters(:,1)<=0) & (springCenters(:,2)>=0));
-                    case 4
-                        idx = find( (springCenters(:,1)<=0) & (springCenters(:,2)<=0));
+        if (reTriangulationIsNeeded)
+            % Compute desired spring lengths. This is done by evaluating the
+            % passed coneDistance function at the spring centers.
+            if (useOldMethod)
+                desiredSpringLengths = feval(gridParams.coneSpacingFunction, springCenters);
+                
+            elseif (eccSpacePartitions==1)
+                desiredSpringLengths= feval(gridParams.coneSpacingFunctionNew, springCenters, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons);
+                
+            elseif (eccSpacePartitions==4)
+                desiredSpringLengths = [];
+                for qIndex = 1:4
+                    switch (qIndex)
+                        case 1
+                            idx = find( (springCenters(:,1)>=0) & (springCenters(:,2)>=0));
+                        case 2
+                            idx = find( (springCenters(:,1)>=0) & (springCenters(:,2)<=0));
+                        case 3
+                            idx = find( (springCenters(:,1)<=0) & (springCenters(:,2)>=0));
+                        case 4
+                            idx = find( (springCenters(:,1)<=0) & (springCenters(:,2)<=0));
+                    end
+                    desiredSpringLengths(idx,1) = feval(gridParams.coneSpacingFunctionNew, springCenters(idx,:), squeeze(tabulatedEccXYMicrons(qIndex,:,:)), squeeze(tabulatedConeSpacingInMicrons(qIndex,:)));
                 end
-                desiredSpringLengths(idx,1) = feval(gridParams.coneSpacingFunctionNew, springCenters(idx,:), squeeze(tabulatedEccXYMicrons(qIndex,:,:)), squeeze(tabulatedConeSpacingInMicrons(qIndex,:)));
             end
         end
         
