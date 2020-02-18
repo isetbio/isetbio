@@ -26,7 +26,7 @@ function unitTestSmoothGrid()
         conePositions = conePositions(idx,:);
         gridParams.radius = max(abs(conePositions(:)));
     else
-        mosaicFOVDegs  = 30.0;
+        mosaicFOVDegs  = 20.0;
         conePositions = generateConePositions(mosaicFOVDegs);
         conesNum = size(conePositions,1);
         if (conesNum > 1000*1000)
@@ -49,15 +49,14 @@ function unitTestSmoothGrid()
         % sample probabilistically according to coneSpacingFunction
         conesNum = size(conePositions,1);
         if (conesNum > 1000*1000)
-            fprintf('Computing separations for %2.1f million cones, time lapsed: %f minutes\n', conesNum/1000000, toc/60);
+            fprintf('Computing separations for %2.1f million cones ...', conesNum/1000000);
         else
-            fprintf('Computing separations for %2.1f thousand cones, time lapsed: %f minutes\n', conesNum/1000, toc/60);
+            fprintf('Computing separations for %2.1f thousand cones ...', conesNum/1000);
         end
         coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
         fprintf('... time lapsed: %f minutes.',  toc/60);
     
         fprintf('\nProbabilistic sampling ...');
-        pause(0.1)
         normalizedConeSeparations = coneSeparations / gridParams.lambdaMin;
         densityP = 1/(sqrt(2/3)) * (1 ./ normalizedConeSeparations) .^ 2;
     
@@ -75,20 +74,20 @@ function unitTestSmoothGrid()
     
     conesNum = size(conePositions,1);
     if (conesNum > 1000*1000)
-        fprintf('Iteration: 0, Adusting %2.1f million cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc/60);
+        fprintf('Iteration: 0, Adusting %2.1f million cones, time lapsed: %f minutes\n', size(conePositions,1)/1000000, toc/60);
     else
         fprintf('Iteration: 0, Adusting %2.1f thousand cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc/60);
     end
     
     
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
-    eccentricitySamplesNum = 64;
+    eccentricitySamplesNum = 32;
     eccSpacePartitions = 4;
     whichEye = 'right';
     
     % Termination conditions
     dTolerance = 1.0e-4;
-    maxIterations = 2000;
+    maxIterations = 1000;
     
     % Options
     visualizeProgress = ~true;
