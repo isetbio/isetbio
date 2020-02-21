@@ -4,12 +4,15 @@ function t_peripheralOpticsAndMosaic
     eccXrange = -40:20:40;
     eccYrange =  sort(-10:5:10, 'descend');
  
+    % Generate optics using the mean Zernike coefficients
     theSubjectIndex = [];  % mean over all subjects
+    computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
+    
+    % Generate optics using individual subject Zernike coefficients
     for theSubjectIndex = 1:10
         desiredPupilDiamMM = 3.0;
         computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
     end
-    
 end
 
 function computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange)
