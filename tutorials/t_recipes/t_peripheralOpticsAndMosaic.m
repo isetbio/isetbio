@@ -12,8 +12,20 @@ function t_peripheralOpticsAndMosaic
     computeCentralRefractionErrorForAllSubjects(d);
     
     meridian = 'horizontal';
+    applyCentralCorrection = true
+    
+    
     [zCoeffs, eccDegs] = zCoeffsForSubjectAndMeridian(d,bestSubjectIndex, meridian);
-    makePSFs(zCoeffs, eccDegs, meridian)
+    
+    targetWavelength = 550;
+    targetEccX = -50; 
+    targetPupilDiamMM = 2.0;
+    theOI = makeCustomOI(zCoeffs, eccDegs, d.measurementPupilDiameMM, d.measurementWavelength, targetEccX, targetPupilDiamMM)
+
+    
+    spatialSupportArcMin = 5;
+    spatialFrequencySupportCyclePerDeg = 60;
+    visualizeOptics(theOI, targetWavelength,spatialSupportArcMin, spatialFrequencySupportCyclePerDeg)
 
 %     for subjectIndex = 1:d.subjectsNum
 %         generateFigure3(d, subjectIndex,nan);
@@ -21,23 +33,48 @@ function t_peripheralOpticsAndMosaic
     
     % Generate figure 3 of the Polans (2015) paper
     
-    generateFigure3(d, bestSubjectIndex, worseSubjectIndex);
-    generateFigureS3(d, bestSubjectIndex, worseSubjectIndex)
+    %generateFigure3(d, bestSubjectIndex, worseSubjectIndex);
+    %generateFigureS3(d, bestSubjectIndex, worseSubjectIndex)
     
 end
 
-function makePSFs(zCoeffsAllEcc, eccDegs, meridian)
+function theOI = makeCustomOI(zCoeffsAllEcc, eccDegs, measPupilDiameterMM, measWavelength, targetEccX, targetPupilDiamMM)
 
-    eccIndex = find(eccDegs == 0)
+    [~,eccIndex] = min(abs(eccDegs-targetEccX));
     zCoeffs = squeeze(zCoeffsAllEcc(eccIndex,:))
+    eccDegs(eccIndex)
     
-    wavelengthsListToCompute = [400:50:750];
+    wavelengthsListToCompute = 400:50:750;
     wavefrontSpatialSamples = 201;
+    showTranslation = false;
+    
     [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = ...
         computePSFandOTF(zCoeffs, ...
-             wavelengthsListToCompute, wavefrontSpatialSamples, calcPupilDiameterMM, ...
-%             p.Results.centeringWavelength, showTranslation);
+             wavelengthsListToCompute, wavefrontSpatialSamples, ...
+             measPupilDiameterMM, targetPupilDiamMM, ...
+             measWavelength, showTranslation);
         
+    for waveIndex = 1:numel(wavelengthsListToCompute)
+        theWaveOTF = squeeze(theOTF(:,:,waveIndex));
+        theOTF(:,:,waveIndex) = ifftshift(theWaveOTF);
+    end
+       
+    umPerDegree = 300;
+    theOI = oiCreate('wvf human', targetPupilDiamMM,[],[], umPerDegree);
+    optics = oiGet(theOI,'optics');
+    optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
+    
+    % Update optics with new OTF data
+    xSfCyclesPerMM = 1000*xSfCyclesDeg / umPerDegree;
+    ySfCyclesPerMM = 1000*ySfCyclesDeg / umPerDegree;
+    customOptics = opticsSet(optics,'otf data',theOTF);
+    customOptics = opticsSet(customOptics, 'otffx',xSfCyclesPerMM);
+    customOptics = opticsSet(customOptics,'otffy',ySfCyclesPerMM);
+    
+    % Update theOI with custom optics
+    theOI = oiSet(theOI,'optics', customOptics);
+    theOI = oiSet(theOI,'name', sprintf('human-WVF at %2.1f degs ecc', targetEccX));
+    
 end
 
 
@@ -235,7 +272,16 @@ function d = PolansData()
           'Z20', '??' ...
         };
     
+    % Measurement params
+   
     % The Polans 2015 measurements were all done in the right eye
     d.eye = 'right';
+    
+    % Using a 4 mm pupil
+    d.measurementPupilDiameMM = 4;
+    
+    % And 550 nm light
+    d.measurementWavelength = 550;
+    
 end
 
