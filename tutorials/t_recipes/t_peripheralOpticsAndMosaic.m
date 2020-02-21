@@ -2,7 +2,7 @@ function t_peripheralOpticsAndMosaic
 
     % Examined eccentricities
     eccXrange = -40:20:40;
-    eccYrange =  sort(-10:5:10, 'descend');
+    eccYrange =  -10:5:10;
  
     % Generate optics using the mean Zernike coefficients
     theSubjectIndex = [];  % mean over all subjects
@@ -81,7 +81,7 @@ function computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDia
             desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY, d.eye);
 
         % Plot PSF and cone mosaic at this eccentricity
-        ax1 = subplot('Position', subplotPosVectors(eccYindex,eccXindex).v);
+        ax1 = subplot('Position', subplotPosVectors(numel(eccYrange)-eccYindex+1,eccXindex).v);
         visualizePSF(theOI, visualizePSTAtThisWavelength, visualizePSFOverThisSpatialSupportArcMin, ...
             'withSuperimposedMosaic', theConeMosaic, ...
             'contourLevels', [0.1 0.25 0.5 0.75 0.9], ...
