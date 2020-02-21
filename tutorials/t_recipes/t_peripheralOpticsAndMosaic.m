@@ -4,28 +4,28 @@ function t_peripheralOpticsAndMosaic
     ieInit;
 
     % Get a struct with the Polans data
-    d = PolansData();
+    applyCentralCorrection = true;
+    d = PolansData(applyCentralCorrection);
     
     bestSubjectIndex = 7;
     worseSubjectIndex = 9;
     
-    computeCentralRefractionErrorForAllSubjects(d);
+    % Get coeffs for desired eccenticity
+    eccXY = [-35.60, -9];
+    [zCoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,bestSubjectIndex, eccXY);
     
-    meridian = 'horizontal';
-    applyCentralCorrection = true
-    
-    
-    [zCoeffs, eccDegs] = zCoeffsForSubjectAndMeridian(d,bestSubjectIndex, meridian);
-    
-    targetWavelength = 550;
-    targetEccX = -50; 
-    targetPupilDiamMM = 2.0;
-    theOI = makeCustomOI(zCoeffs, eccDegs, d.measurementPupilDiameMM, d.measurementWavelength, targetEccX, targetPupilDiamMM)
+    % Generate oi struct 
+    wavefrontSpatialSamples = 201;
+    wavelengthsListToCompute = [400:50:750];
+    desiredPupilDiamMM = 2.0;
+    theOI = makeCustomOI(zCoeffs, d.measurementPupilDiameMM, d.measurementWavelength, ...
+        desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY);
 
     
     spatialSupportArcMin = 5;
     spatialFrequencySupportCyclePerDeg = 60;
-    visualizeOptics(theOI, targetWavelength,spatialSupportArcMin, spatialFrequencySupportCyclePerDeg)
+    visualizedWavelength = d.measurementWavelength;
+    visualizeOptics(theOI, visualizedWavelength,spatialSupportArcMin, spatialFrequencySupportCyclePerDeg)
 
 %     for subjectIndex = 1:d.subjectsNum
 %         generateFigure3(d, subjectIndex,nan);
@@ -38,20 +38,15 @@ function t_peripheralOpticsAndMosaic
     
 end
 
-function theOI = makeCustomOI(zCoeffsAllEcc, eccDegs, measPupilDiameterMM, measWavelength, targetEccX, targetPupilDiamMM)
+function theOI = makeCustomOI(zCoeffs, measPupilDiameterMM, measWavelength, ...
+    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY)
 
-    [~,eccIndex] = min(abs(eccDegs-targetEccX));
-    zCoeffs = squeeze(zCoeffsAllEcc(eccIndex,:))
-    eccDegs(eccIndex)
-    
-    wavelengthsListToCompute = 400:50:750;
-    wavefrontSpatialSamples = 201;
     showTranslation = false;
     
     [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = ...
         computePSFandOTF(zCoeffs, ...
              wavelengthsListToCompute, wavefrontSpatialSamples, ...
-             measPupilDiameterMM, targetPupilDiamMM, ...
+             measPupilDiameterMM, desiredPupilDiamMM, ...
              measWavelength, showTranslation);
         
     for waveIndex = 1:numel(wavelengthsListToCompute)
@@ -60,7 +55,7 @@ function theOI = makeCustomOI(zCoeffsAllEcc, eccDegs, measPupilDiameterMM, measW
     end
        
     umPerDegree = 300;
-    theOI = oiCreate('wvf human', targetPupilDiamMM,[],[], umPerDegree);
+    theOI = oiCreate('wvf human', desiredPupilDiamMM,[],[], umPerDegree);
     optics = oiGet(theOI,'optics');
     optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
     
@@ -73,31 +68,19 @@ function theOI = makeCustomOI(zCoeffsAllEcc, eccDegs, measPupilDiameterMM, measW
     
     % Update theOI with custom optics
     theOI = oiSet(theOI,'optics', customOptics);
-    theOI = oiSet(theOI,'name', sprintf('human-WVF at %2.1f degs ecc', targetEccX));
+    theOI = oiSet(theOI,'name', sprintf('human-WVF at (%2.1f,%2.1f) degs', nearestEccXY(1), nearestEccXY(2)));
     
 end
 
-
-function [theZcoeffs, eccDegs] = zCoeffsForSubjectAndMeridian(d, subjectIndex, meridian)
-    if (strcmp(meridian, 'horizontal'))
-        eccIndicesAcrossMeridian = find(d.eccYgrid == 0);
-        eccDegs = d.eccXgrid(eccIndicesAcrossMeridian);
-    else
-        eccIndicesAcrossMeridian = find(d.eccXgrid == 0);
-        eccDegs = d.eccYgrid(eccIndicesAcrossMeridian);
-    end
-    theZcoeffs = squeeze(d.zCoeffs(subjectIndex,eccIndicesAcrossMeridian,:));
+function [theZcoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,subjectIndex, eccXY)
+    dX = d.eccXgrid - eccXY(1);
+    dY = d.eccYgrid - eccXY(2);
+    [~,indexOfNearestEcc] = min(dX.^2+dY.^2);
+    nearestEccXY = [d.eccXgrid(indexOfNearestEcc) d.eccYgrid(indexOfNearestEcc)];
+    theZcoeffs = squeeze(d.zCoeffs(subjectIndex,indexOfNearestEcc,:));
 end
 
-function computeCentralRefractionErrorForAllSubjects(d)
-    zeroEccIndex = find(d.eccXgrid == 0 & d.eccYgrid == 0);
-    theDataSetIndex = find(strcmp(d.zCoeffNames(:,2), 'defocus'));
-    centralRefractionCorrections = d.zCoeffs(:, zeroEccIndex, theDataSetIndex);
-    for k = 1:d.subjectsNum
-        fprintf('Subject %d has central refraction correction (defocus) of : %f\n', ...
-            k, centralRefractionCorrections(k));
-    end
-end
+
 
 function generateFigureS3(d, bestSubjectIndex, worseSubjectIndex)
     visualizedZCoeffs = {'Z3', 'Z4', 'Z5', 'Z7', 'Z12'};
@@ -217,7 +200,7 @@ function generateFigure3(d, bestSubjectIndex, worseSubjectIndex)
 end
 
 
-function d = PolansData()
+function d = PolansData(applyCentralCorrection)
 % Load the raw data from Polans et al (2015), "Wide-field optical model
 %     of the human eye with asymmetrically tilted and decentered lens 
 %     that reproduces measured ocular aberrations", Optica, 2(2), 2015,
@@ -283,5 +266,22 @@ function d = PolansData()
     % And 550 nm light
     d.measurementWavelength = 550;
     
+    if (applyCentralCorrection)
+        d.zCoeffs = removeCentralRefractionError(d);
+    end
+    
+    function zCoeffs = removeCentralRefractionError(d)
+        zCoeffs = d.zCoeffs;
+        % Find the zero ecc index
+        zeroEccIndex = find(d.eccXgrid == 0 & d.eccYgrid == 0);
+        % Find the z-coeff index corresponding to the defocus term
+        theDataSetIndex = find(strcmp(d.zCoeffNames(:,2), 'defocus'));
+        % Central corrections for all subjects
+        allSubjectsCentralRefractionCorrection = zCoeffs(:, zeroEccIndex, theDataSetIndex);
+        % Subtract central correction for all subjects and all eccentricities
+        zCoeffs(:,:,theDataSetIndex) = bsxfun(@minus, ...
+            zCoeffs(:,:,theDataSetIndex), allSubjectsCentralRefractionCorrection);
+    end
+
 end
 
