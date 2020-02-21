@@ -6,6 +6,7 @@ function t_peripheralOpticsAndMosaic
  
     % Generate optics using the mean Zernike coefficients
     theSubjectIndex = [];  % mean over all subjects
+    desiredPupilDiamMM = 3.0;
     computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
     
     % Generate optics using individual subject Zernike coefficients
