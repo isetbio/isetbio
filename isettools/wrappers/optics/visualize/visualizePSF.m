@@ -102,9 +102,9 @@ if (~isempty(theMosaic))
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [1 1 0], 'LineWidth', 3.0);
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [1 0.5 0], 'LineWidth', 1.0);
 else
-    %contourf(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
+    contourf(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
         'Color', [0 0 0], 'LineWidth', 1.5);
-    imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
+    %imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
     hold on;
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
@@ -120,8 +120,9 @@ ylabel('');
 set(gca, 'FontSize', fontSize);
 cmap = brewermap(1024, 'greys');
 colormap(cmap);
+
 if (isempty(figureTitle))
-    title(gca, sprintf('%s\n(%2.0f nm) %dmm pupil', optics.name, targetWavelength, pupilDiameterMM));
+    title(gca, sprintf('%s\n(%2.0f nm) %dmm pupil', oiGet(theOI,'name'), targetWavelength, pupilDiameterMM));
 else
     title(gca, figureTitle);
 end
