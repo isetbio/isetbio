@@ -1,31 +1,102 @@
 function t_peripheralOpticsAndMosaic
 
-    %% Initialize
-    ieInit;
+    % Examined eccentricities
+    eccXrange = -40:20:40;
+    eccYrange =  sort(-10:5:10, 'descend');
+ 
+    theSubjectIndex = [];  % mean over all subjects
+    for theSubjectIndex = 1:10
+        desiredPupilDiamMM = 3.0;
+        computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
+    end
+    
+end
+
+function computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange)
 
     % Get a struct with the Polans data
     applyCentralCorrection = true;
     d = PolansData(applyCentralCorrection);
-    
-    bestSubjectIndex = 7;
-    worseSubjectIndex = 9;
-    
-    % Get coeffs for desired eccenticity
-    eccXY = [-35.60, -9];
-    [zCoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,bestSubjectIndex, eccXY);
-    
-    % Generate oi struct 
+     
     wavefrontSpatialSamples = 201;
-    wavelengthsListToCompute = [400:50:750];
-    desiredPupilDiamMM = 2.0;
-    theOI = makeCustomOI(zCoeffs, d.measurementPupilDiameMM, d.measurementWavelength, ...
-        desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY);
-
+    wavelengthsListToCompute = 450:100:750;
     
-    spatialSupportArcMin = 5;
-    spatialFrequencySupportCyclePerDeg = 60;
-    visualizedWavelength = d.measurementWavelength;
-    visualizeOptics(theOI, visualizedWavelength,spatialSupportArcMin, spatialFrequencySupportCyclePerDeg)
+    visualizePSFOverThisSpatialSupportArcMin = 8;
+    visualizePSTAtThisWavelength = d.measurementWavelength;
+    
+    % plotting coords
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', numel(eccYrange), ...
+       'colsNum', numel(eccXrange), ...
+       'heightMargin',  0.03, ...
+       'widthMargin',    0.01, ...
+       'leftMargin',     0.02, ...
+       'rightMargin',    0.01, ...
+       'bottomMargin',   0.03, ...
+       'topMargin',      0.03);
+   
+   
+    if (isempty(theSubjectIndex))
+        figNo = 1000;
+    else
+        figNo = theSubjectIndex;
+    end
+    
+    % Reset figure
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [10 10 1700 1500], 'Color', [1 1 1]);
+    
+    for eccYindex = 1:numel(eccYrange)
+    for eccXindex = 1:numel(eccXrange)
+    
+        % The eccentricity in degrees
+        eccXY = [eccXrange(eccXindex) eccYrange(eccYindex)];
+        
+        % Get cone spacing at this eccentricity
+        eccRadiusDegs = sqrt(sum(eccXY.^2,2));
+        eccAngleDegs = atan2d(eccXY(2), eccXY(1));
+        [coneSpacingInMeters, coneApertureInMeters] = coneSizeReadData('eccentricity', eccRadiusDegs, ...
+                                        'angle', eccAngleDegs, ...
+                                        'eccentricityUnits', 'deg', ...
+                                        'angleUnits', 'deg', ...
+                                        'whichEye', d.eye, ...
+                                        'useParfor', false);
+                                    
+        % Generate a 0.2 x 0.2 deg regular hex cone mosaic with ecc-adjusted cone separation and aperture
+        theConeMosaic = coneMosaicHex(13, ...
+            'fovDegs', 0.2, ...
+            'customLambda', coneSpacingInMeters*1e6, ...
+            'customInnerSegmentDiameter', coneApertureInMeters*1e6);
+
+
+        % Get zCoeffs for this eccentricity
+        [zCoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,theSubjectIndex, eccXY);
+
+        % Generate oi at this eccentricity
+        theOI = makeCustomOI(zCoeffs, d.measurementPupilDiameMM, d.measurementWavelength, ...
+            desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY, d.eye);
+
+        % Plot PSF and cone mosaic at this eccentricity
+        ax1 = subplot('Position', subplotPosVectors(eccYindex,eccXindex).v);
+        visualizePSF(theOI, visualizePSTAtThisWavelength, visualizePSFOverThisSpatialSupportArcMin, ...
+            'withSuperimposedMosaic', theConeMosaic, ...
+            'contourLevels', [0.1 0.25 0.5 0.75 0.9], ...
+            'axesHandle', ax1, 'fontSize', 14);
+        
+        if (eccYrange(eccYindex) > min(eccYrange))
+            xlabel('');
+            set(gca, 'XTickLabel', {});
+        end
+        
+        if (eccXrange(eccXindex) > min(eccXrange))
+            set(gca, 'YTickLabel', {});
+        end
+        drawnow;
+    end
+    end
+    
+    NicePlot.exportFigToPDF(sprintf('Subject%d_pupilDiam%2.1fmm.pdf', figNo, desiredPupilDiamMM), hFig, 300);
+    
 
 %     for subjectIndex = 1:d.subjectsNum
 %         generateFigure3(d, subjectIndex,nan);
@@ -33,13 +104,13 @@ function t_peripheralOpticsAndMosaic
     
     % Generate figure 3 of the Polans (2015) paper
     
-    %generateFigure3(d, bestSubjectIndex, worseSubjectIndex);
-    %generateFigureS3(d, bestSubjectIndex, worseSubjectIndex)
+    %generateFigure3(d, theSubjectIndex);
+    %generateFigureS3(d, theSubjectIndex)
     
 end
 
 function theOI = makeCustomOI(zCoeffs, measPupilDiameterMM, measWavelength, ...
-    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY)
+    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY, whichEye)
 
     showTranslation = false;
     
@@ -68,7 +139,25 @@ function theOI = makeCustomOI(zCoeffs, measPupilDiameterMM, measWavelength, ...
     
     % Update theOI with custom optics
     theOI = oiSet(theOI,'optics', customOptics);
-    theOI = oiSet(theOI,'name', sprintf('human-WVF at (%2.1f,%2.1f) degs', nearestEccXY(1), nearestEccXY(2)));
+    if (strcmp(whichEye, 'right'))
+        if (nearestEccXY(1)<0)
+            xEccLabel = sprintf('%2.0f^o (N)', nearestEccXY(1));
+        elseif(nearestEccXY(1)>0)
+            xEccLabel = sprintf('%2.0f^o (T)', nearestEccXY(1));
+        elseif(nearestEccXY(1)==0)
+            xEccLabel = sprintf('%2.0f^o', nearestEccXY(1));
+        end
+    elseif (strcmp(whichEye, 'left'))
+        if (nearestEccXY(1)<0)
+            xEccLabel = sprintf('%2.0f^o (T)', nearestEccXY(1));
+        elseif(nearestEccXY(1)>0)
+            xEccLabel = sprintf('%2.0f^o (N)', nearestEccXY(1));
+        elseif(nearestEccXY(1)==0)
+            xEccLabel = sprintf('%2.0f^o', nearestEccXY(1));
+        end
+        theOI = oiSet(theOI,'name', sprintf('%2.0f^o,%2.0f^o', nearestEccXY(1), nearestEccXY(2)));
+    end
+    theOI = oiSet(theOI,'name', sprintf('%s,%2.0f^o', xEccLabel, nearestEccXY(2)));
     
 end
 
@@ -77,12 +166,17 @@ function [theZcoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,subject
     dY = d.eccYgrid - eccXY(2);
     [~,indexOfNearestEcc] = min(dX.^2+dY.^2);
     nearestEccXY = [d.eccXgrid(indexOfNearestEcc) d.eccYgrid(indexOfNearestEcc)];
-    theZcoeffs = squeeze(d.zCoeffs(subjectIndex,indexOfNearestEcc,:));
+    if (isempty(subjectIndex))
+        % mean over all subjects
+        theZcoeffs = mean(squeeze(d.zCoeffs(:,indexOfNearestEcc,:)),1);
+    else
+        theZcoeffs = squeeze(d.zCoeffs(subjectIndex,indexOfNearestEcc,:));
+    end
 end
 
 
 
-function generateFigureS3(d, bestSubjectIndex, worseSubjectIndex)
+function generateFigureS3(d, theSubjectIndex)
     visualizedZCoeffs = {'Z3', 'Z4', 'Z5', 'Z7', 'Z12'};
     allCoeffIndices = d.zCoeffNames(:,1);
     figure(); clf;
@@ -97,7 +191,7 @@ function generateFigureS3(d, bestSubjectIndex, worseSubjectIndex)
             eccY = d.eccYgrid(eccIndicesAcrossVerticalMeridian);
             theZcoeffs = squeeze(d.zCoeffs(1:d.subjectsNum,eccIndicesAcrossVerticalMeridian,theDataSetIndex));
             
-            if (~isnan(bestSubjectIndex) && ~isnan(worseSubjectIndex))
+            if (~isnan(theSubjectIndex))
                 % get data across the vertical meridian
                 indexOfZeroEcc = find(eccY == 0);
                 for eccIndex = 1:numel(eccY)
@@ -107,14 +201,13 @@ function generateFigureS3(d, bestSubjectIndex, worseSubjectIndex)
                     plot(eccY(eccIndex)*[1 1], subjectMean(eccIndex)+0.5*subjectStd*[-1 1], 'b-');  hold on;
                 end
                 plot(eccY, subjectMean, 'b-');
-                % Best and worse subject
-                plot(eccY, theZcoeffs(bestSubjectIndex,:), 'r-', 'LineWidth', 1.5);
-                plot(eccY, theZcoeffs(worseSubjectIndex,:), 'k-', 'LineWidth', 1.5);
+                % Bestsubject
+                plot(eccY, theZcoeffs(theSubjectIndex,:), 'r-', 'LineWidth', 1.5);
                 title(sprintf('%s (%s)', d.zCoeffNames{theDataSetIndex,2}, d.zCoeffNames{theDataSetIndex,1}));
 
             else
                 % Individual subject
-                theSubjectIndex = bestSubjectIndex; 
+                theSubjectIndex = theSubjectIndex; 
                 plot(eccX, theZcoeffs(theSubjectIndex,:), 'r-', 'LineWidth', 1.5);
                 hold on
                 indexOfZeroEcc = find(eccY == 0);
@@ -145,7 +238,7 @@ function generateFigureS3(d, bestSubjectIndex, worseSubjectIndex)
 end
 
 
-function generateFigure3(d, bestSubjectIndex, worseSubjectIndex)
+function generateFigure3(d, theSubjectIndex)
     visualizedZCoeffs = {'Z3', 'Z4', 'Z5', 'Z8', 'Z9', 'Z12'};
     allCoeffIndices = d.zCoeffNames(:,1);
     
@@ -161,7 +254,7 @@ function generateFigure3(d, bestSubjectIndex, worseSubjectIndex)
             eccX = d.eccXgrid(eccIndicesAcrossHorizontalMeridian);
             theZcoeffs = squeeze(d.zCoeffs(1:d.subjectsNum,eccIndicesAcrossHorizontalMeridian,theDataSetIndex));
             
-            if (~isnan(bestSubjectIndex) && ~isnan(worseSubjectIndex))
+            if (~isnan(theSubjectIndex))
                 % get data across the horizontal meridian
                 for eccIndex = 1:numel(eccX)
                     subjectRange = [min(squeeze(theZcoeffs(:,eccIndex))) max(squeeze(theZcoeffs(:,eccIndex)))];
@@ -170,14 +263,13 @@ function generateFigure3(d, bestSubjectIndex, worseSubjectIndex)
                     plot(eccX(eccIndex)*[1 1], subjectMean(eccIndex)+0.5*subjectStd*[-1 1], 'b-');  hold on;
                 end
                 plot(eccX, subjectMean, 'b-');
-                % Best and worse subject
-                plot(eccX, theZcoeffs(bestSubjectIndex,:), 'r-', 'LineWidth', 1.5);
-                plot(eccX, theZcoeffs(worseSubjectIndex,:), 'k-', 'LineWidth', 1.5);
+                % Best subject
+                plot(eccX, theZcoeffs(theSubjectIndex,:), 'r-', 'LineWidth', 1.5);
                 title(sprintf('%s (%s)', d.zCoeffNames{theDataSetIndex,2}, d.zCoeffNames{theDataSetIndex,1}));
 
             else
                 % Individual subject
-                theSubjectIndex = bestSubjectIndex; 
+                theSubjectIndex = theSubjectIndex; 
                 plot(eccX, theZcoeffs(theSubjectIndex,:), 'r-', 'LineWidth', 1.5);
                 hold on
                 indexOfZeroEcc = find(eccX == 0);
@@ -211,9 +303,6 @@ function d = PolansData(applyCentralCorrection)
     allData = rawDataReadData('zCoefsPolans2015', ...
                         'datatype', 'isetbiomatfileonpath');
     allData = allData.data;
-
-    horizontalEccSamplesNum = 81;
-    verticalEccSamplesNum = 11;
     
     d.subjectsNum = size(allData,1);
     % Retrieve the Y-eccentricity grid          
@@ -224,8 +313,6 @@ function d = PolansData(applyCentralCorrection)
     % Retrieve the X-eccentricity grid
     entryIndex = 2;
     d.eccXgrid = allData(subjectIndex,:,entryIndex);
-    
-
     
     % Retrieve the z-coeffs
     entryIndices = 3:20;                
