@@ -1,7 +1,7 @@
-function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, measPupilDiamMM, targetPupilDiamMM, centeringWavelength, showTranslation)
+function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, measPupilDiamMM, targetPupilDiamMM, measWavelength, showTranslation)
     %% Compute WVF
     umPerDegree = 300;
-    theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...
+    theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, measWavelength, wavelengthsListToCompute, ...
             measPupilDiamMM, targetPupilDiamMM, umPerDegree, '');
     
     xSfCyclesPerRetinalMicron = wvfGet(theWVF, 'otf support', 'um', wavelengthsListToCompute(1));
@@ -9,10 +9,10 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     ySfCyclesDeg = xSfCyclesDeg;
     [xSfGridCyclesDegGrid,ySfGridCyclesDegGrid] = meshgrid(xSfCyclesDeg, ySfCyclesDeg);
     
-    if (~isempty(centeringWavelength))
-        % Retrieve OTF at the centeringWavelength
-        theCenteringOTF = wvfGet(theWVF, 'otf', centeringWavelength);
-        theCenteringPSF = wvfGet(theWVF, 'psf', centeringWavelength);
+    if (~isempty(measWavelength))
+        % Retrieve OTF at the measurement wavelength
+        theCenteringOTF = wvfGet(theWVF, 'otf', measWavelength);
+        theCenteringPSF = wvfGet(theWVF, 'psf', measWavelength);
         translationVector = []; showTranslation = false;
         [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(...
                     theCenteringOTF, theCenteringPSF, ...
