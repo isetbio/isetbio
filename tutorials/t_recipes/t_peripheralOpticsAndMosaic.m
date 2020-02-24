@@ -1,13 +1,18 @@
 function t_peripheralOpticsAndMosaic
 
     % Examined eccentricities
-    eccXrange = -40:10:40;
+    eccXrange = [-40 -20 -10 -5 0 5 10 20 40];
     eccYrange =  -20:10:20;
  
     % Generate optics using the mean Zernike coefficients
     theSubjectIndex = [];  % mean over all subjects
-    desiredPupilDiamMM = 4.0;
-    computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
+    desiredPupilDiamMM = 3.0;
+
+    
+    %computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
+    
+    whichEye ='right';
+    computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye);
     
     % Generate optics using individual subject Zernike coefficients
 %     for theSubjectIndex = 1:10
@@ -16,17 +21,109 @@ function t_peripheralOpticsAndMosaic
 %     end
 end
 
-function computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange)
-
+function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye)
+    applyCentralCorrection = true;
+    
+    
     % Get a struct with the Polans data
-    applyCentralCorrection = ~true;
-    d = PolansData(applyCentralCorrection);
-     
+    d = Artal2012Data(applyCentralCorrection);
+    
     wavefrontSpatialSamples = 201;
-    wavelengthsListToCompute = 450:100:750;
+    wavelengthsListToCompute = [450:100:750];
+    
+    visualizePSFOverThisSpatialSupportArcMin = 13;
+    visualizePSTAtThisWavelength = 550;
+    
+    % plotting coords
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 5, ...
+       'colsNum', numel(eccXrange), ...
+       'heightMargin',  0.02, ...
+       'widthMargin',    0.01, ...
+       'leftMargin',     0.01, ...
+       'rightMargin',    0.01, ...
+       'bottomMargin',   0.03, ...
+       'topMargin',      0.02);
+   
+   figNo = 1000;
+   examinedSubjects = [1 2 8 9 11];  % 1,2,8,9, 11, 12, 15, 18, 19, 20, 21, 22, 35, 41, 43, 44, 45, 48, 49 are good
+   
+   % Reset figure
+   hFig = figure(1); clf;
+   set(hFig, 'Position', [10 10 2540 1420], 'Color', [1 1 1]);
+    
+   for sIndex = 1:numel(examinedSubjects)
+   for eccXindex = 1:numel(eccXrange)
+       % The eccentricity in degrees
+        eccXY = [eccXrange(eccXindex) 0];
+        
+        % Get cone spacing at this eccentricity
+        eccRadiusDegs = sqrt(sum(eccXY.^2,2));
+        eccAngleDegs = atan2d(eccXY(2), eccXY(1));
+        [coneSpacingInMeters, coneApertureInMeters] = coneSizeReadData('eccentricity', eccRadiusDegs, ...
+                                        'angle', eccAngleDegs, ...
+                                        'eccentricityUnits', 'deg', ...
+                                        'angleUnits', 'deg', ...
+                                        'whichEye', whichEye, ...
+                                        'useParfor', false);
+                                    
+        % Generate a 0.2 x 0.2 deg regular hex cone mosaic with ecc-adjusted cone separation and aperture
+        theConeMosaic = coneMosaicHex(13, ...
+            'fovDegs', 0.3, ...
+            'customLambda', coneSpacingInMeters*1e6, ...
+            'customInnerSegmentDiameter', coneApertureInMeters*1e6);
+
+
+        % Get zCoeffs for this eccentricity
+        theSubjectIndex = examinedSubjects(sIndex);
+        [zCoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,theSubjectIndex, eccXY);
+        
+        
+        % Generate oi at this eccentricity
+        theOI = makeCustomOI(zCoeffs, d.measurementPupilDiameMM, d.measurementWavelength, ...
+            desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY, whichEye);
+
+        % Plot PSF and cone mosaic at this eccentricity
+        ax1 = subplot('Position', subplotPosVectors(sIndex,eccXindex).v);
+        visualizePSF(theOI, visualizePSTAtThisWavelength, visualizePSFOverThisSpatialSupportArcMin, ...
+            'withSuperimposedMosaic', theConeMosaic, ...
+            'contourLevels', [0.1 0.25 0.5 0.75 0.9], ...
+            'includePupilAndInFocusWavelengthInTitle', (eccXindex==1)&&(sIndex == numel(examinedSubjects)), ...
+            'axesHandle', ax1, 'fontSize', 14);
+        
+        if (any(isnan(zCoeffs)))
+            title('NaN values');
+        end
+        
+        if (sIndex < numel(examinedSubjects))
+            xlabel('');
+            set(gca, 'XTickLabel', {});
+        end
+        
+        if (eccXrange(eccXindex) > min(eccXrange))
+            set(gca, 'YTickLabel', {});
+        end
+        drawnow;
+        
+   end
+   end
+    
+end
+
+
+function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange)
+
+    
+    applyCentralCorrection = true;
+    % Get a struct with the Polans data
+    d = Polans2015Data(applyCentralCorrection);
+
+    
+    wavefrontSpatialSamples = 201;
+    wavelengthsListToCompute = [450:100:750];
     
     visualizePSFOverThisSpatialSupportArcMin = 7;
-    visualizePSTAtThisWavelength = d.measurementWavelength;
+    visualizePSTAtThisWavelength = 550;
     
     % plotting coords
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -100,7 +197,7 @@ function computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDia
     end
     end
     
-    NicePlot.exportFigToPDF(sprintf('Subject%d_pupilDiam%2.1fmm.pdf', figNo, desiredPupilDiamMM), hFig, 300);
+    NicePlot.exportFigToPDF(sprintf('PolansSubject%d_pupilDiam%2.1fmm.pdf', figNo, desiredPupilDiamMM), hFig, 300);
     
 
 %     for subjectIndex = 1:d.subjectsNum
@@ -171,12 +268,23 @@ function [theZcoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,subject
     dY = d.eccYgrid - eccXY(2);
     [~,indexOfNearestEcc] = min(dX.^2+dY.^2);
     nearestEccXY = [d.eccXgrid(indexOfNearestEcc) d.eccYgrid(indexOfNearestEcc)];
-    if (isempty(subjectIndex))
-        % mean over all subjects
-        theZcoeffs = mean(squeeze(d.zCoeffs(:,indexOfNearestEcc,:)),1);
+    if (strcmp(d.source, 'Polans_2015'))
+        if (isempty(subjectIndex))
+            % mean over all subjects
+            theZcoeffs = mean(squeeze(d.zCoeffs(:,indexOfNearestEcc,:)),1);
+        else
+            theZcoeffs = squeeze(d.zCoeffs(subjectIndex,indexOfNearestEcc,:));
+        end
     else
-        theZcoeffs = squeeze(d.zCoeffs(subjectIndex,indexOfNearestEcc,:));
+        eyeIndex = 1;
+        if (isempty(subjectIndex))
+            theZcoeffs = squeeze(d.zCoeffsMean(eyeIndex,indexOfNearestEcc,:));
+        else
+            theZcoeffs = squeeze(d.zCoeffs(eyeIndex,subjectIndex,indexOfNearestEcc,:));
+        end
+        
     end
+    
 end
 
 
@@ -296,8 +404,101 @@ function generateFigure3(d, theSubjectIndex)
     end
 end
 
+function d = Artal2012Data(applyCentralCorrection)
+    % Load the matfile
+    allData = rawDataReadData('zCoefsJaekenArtal2012', ...
+                    'datatype', 'isetbiomatfileonpath');
+                
+    allData = allData.data;
+    
+    d.source = 'Artal_2012';
+    
+    d.subjectsNum = size(allData,1);
+    
+    % Retrieve the Y-eccentricity grid          
+    subjectIndex = 1; entryIndex = 4;
+    d.eccXgrid = allData(subjectIndex,entryIndex:end);
+    d.eccYgrid = 0*d.eccXgrid;
+    
+    % Truncate headers and reshape data
+    allData = allData(2:end, 4:end);
+    
+    % 2*(130*2)*15 x 81 eccentricities
+    d.subjectsNum  = 130;
+    d.eyes = {'right', 'left'};
+    
+    
+    % Add zcoeff OSA indices and names
+    d.zCoeffOSAIndices = 0:14;
+    d.zCoeffNames = {...
+          'Z0',  '?'; ...
+          'Z1',  '?'; ...
+          'Z2',  '?'; ...
+          'Z3',  'oblique astigmatism'; ...
+          'Z4',  'defocus'; ...
+          'Z5',  'vertical astigmatism'; ...
+          'Z6' , 'vertical trefoil'; ...
+          'Z7',  'vertical coma'; ...
+          'Z8',  'horizontal coma'; ...
+          'Z9',  'oblique trefoil'; ...
+          'Z10', 'oblique quadrafoil'; ...
+          'Z11', 'oblique secondary astigmatism'; ...
+          'Z12', 'primary spherical'; ...
+          'Z13', 'vertical secondary astigmatism'; ...
+          'Z14', 'vertical quadrafoil' ...
+        };
+    
+    % Arrange zCoeffs as [eye subject eccentricity ZcoffOrder]
+    allData = reshape(allData, [numel(d.zCoeffOSAIndices) d.subjectsNum numel(d.eyes) numel(d.eccXgrid)]);
+    zCoeffDimIndex = 1;
+    subjectDimIndex = 2;
+    eyeDimIndex = 3;
+    eccDimIndex = 4;
+    d.zCoeffs = permute(allData, [eyeDimIndex subjectDimIndex eccDimIndex zCoeffDimIndex]);
+    size(d.zCoeffs)
+    d.zCoeffsMean = squeeze(mean(d.zCoeffs, 2, 'omitnan'));
+    
+    % Find subjects whose coeffs are nan and remove them
+    tmpZcoeffs = [];
+    keptEccIndices = find(abs(d.eccXgrid)<=1);
+    
+    for subjectIndex = 1:d.subjectsNum
+        left = squeeze(d.zCoeffs(2,subjectIndex,keptEccIndices,:));
+        if (any(isnan(left(:))))
+            fprintf('Removing left eye of suject %d\n', subjectIndex);
+        end
+        right = squeeze(d.zCoeffs(1,subjectIndex,keptEccIndices,:));
+        if (any(isnan(right(:))))
+            fprintf('Removing right eye of suject %d\n', subjectIndex);
+        end
+    end
 
-function d = PolansData(applyCentralCorrection)
+    % Using a 4 mm pupil
+    d.measurementPupilDiameMM = 4;
+    
+    % And 780 nm light
+    d.measurementWavelength = 550;
+    
+    if (applyCentralCorrection)
+        d.zCoeffs = removeCentralRefractionError(d);
+    end
+    
+    function zCoeffs = removeCentralRefractionError(d)
+        zCoeffs = d.zCoeffs;
+        % Find the zero ecc index
+        zeroEccIndex = find(d.eccXgrid == 0);
+        % Find the z-coeff index corresponding to the defocus term
+        theDefocusCoeffIndex = find(strcmp(d.zCoeffNames(:,2), 'defocus'));
+        % Central corrections for all subjects
+        allSubjectsCentralRefractionCorrection = zCoeffs(:, :, zeroEccIndex, theDefocusCoeffIndex);
+        % Subtract central correction for all subjects and all eccentricities
+        zCoeffs(:,:,:,theDefocusCoeffIndex) = bsxfun(@minus, ...
+            zCoeffs(:,:,:,theDefocusCoeffIndex), allSubjectsCentralRefractionCorrection);
+    end
+
+end
+
+function d = Polans2015Data(applyCentralCorrection)
 % Load the raw data from Polans et al (2015), "Wide-field optical model
 %     of the human eye with asymmetrically tilted and decentered lens 
 %     that reproduces measured ocular aberrations", Optica, 2(2), 2015,
@@ -309,6 +510,7 @@ function d = PolansData(applyCentralCorrection)
                         'datatype', 'isetbiomatfileonpath');
     allData = allData.data;
     
+    d.source = 'Polans_2015';
     d.subjectsNum = size(allData,1);
     % Retrieve the Y-eccentricity grid          
     subjectIndex = 1; entryIndex = 1;
@@ -322,6 +524,9 @@ function d = PolansData(applyCentralCorrection)
     % Retrieve the z-coeffs
     entryIndices = 3:20;                
     d.zCoeffs = allData(:,:,entryIndices);
+    if (any(isnan(d.zCoeffs(:))))
+        fprintf(2,'Found z-coeff with NaN values');
+    end
 
     
     % Add zcoeff OSA indices and names
@@ -367,12 +572,12 @@ function d = PolansData(applyCentralCorrection)
         % Find the zero ecc index
         zeroEccIndex = find(d.eccXgrid == 0 & d.eccYgrid == 0);
         % Find the z-coeff index corresponding to the defocus term
-        theDataSetIndex = find(strcmp(d.zCoeffNames(:,2), 'defocus'));
+        theDefocusCoeffIndex = find(strcmp(d.zCoeffNames(:,2), 'defocus'));
         % Central corrections for all subjects
-        allSubjectsCentralRefractionCorrection = zCoeffs(:, zeroEccIndex, theDataSetIndex);
+        allSubjectsCentralRefractionCorrection = zCoeffs(:, zeroEccIndex, theDefocusCoeffIndex);
         % Subtract central correction for all subjects and all eccentricities
-        zCoeffs(:,:,theDataSetIndex) = bsxfun(@minus, ...
-            zCoeffs(:,:,theDataSetIndex), allSubjectsCentralRefractionCorrection);
+        zCoeffs(:,:,theDefocusCoeffIndex) = bsxfun(@minus, ...
+            zCoeffs(:,:,theDefocusCoeffIndex), allSubjectsCentralRefractionCorrection);
     end
 
 end
