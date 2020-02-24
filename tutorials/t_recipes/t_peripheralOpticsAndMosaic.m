@@ -1,42 +1,42 @@
 function t_peripheralOpticsAndMosaic
 
     % Examined eccentricities
-    eccXrange = -40:20:40;
-    eccYrange =  -10:5:10;
+    eccXrange = -40:10:40;
+    eccYrange =  -20:10:20;
  
     % Generate optics using the mean Zernike coefficients
     theSubjectIndex = [];  % mean over all subjects
-    desiredPupilDiamMM = 3.0;
+    desiredPupilDiamMM = 4.0;
     computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
     
     % Generate optics using individual subject Zernike coefficients
-    for theSubjectIndex = 1:10
-        desiredPupilDiamMM = 3.0;
-        computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
-    end
+%     for theSubjectIndex = 1:10
+%         desiredPupilDiamMM = 3.0;
+%         computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
+%     end
 end
 
 function computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange)
 
     % Get a struct with the Polans data
-    applyCentralCorrection = true;
+    applyCentralCorrection = ~true;
     d = PolansData(applyCentralCorrection);
      
     wavefrontSpatialSamples = 201;
     wavelengthsListToCompute = 450:100:750;
     
-    visualizePSFOverThisSpatialSupportArcMin = 8;
+    visualizePSFOverThisSpatialSupportArcMin = 7;
     visualizePSTAtThisWavelength = d.measurementWavelength;
     
     % plotting coords
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'rowsNum', numel(eccYrange), ...
        'colsNum', numel(eccXrange), ...
-       'heightMargin',  0.03, ...
+       'heightMargin',  0.02, ...
        'widthMargin',    0.01, ...
-       'leftMargin',     0.02, ...
+       'leftMargin',     0.03, ...
        'rightMargin',    0.01, ...
-       'bottomMargin',   0.03, ...
+       'bottomMargin',   0.04, ...
        'topMargin',      0.03);
    
    
@@ -48,7 +48,7 @@ function computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDia
     
     % Reset figure
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1700 1500], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1640 1064], 'Color', [1 1 1]);
     
     for eccYindex = 1:numel(eccYrange)
     for eccXindex = 1:numel(eccXrange)
@@ -85,6 +85,7 @@ function computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDia
         visualizePSF(theOI, visualizePSTAtThisWavelength, visualizePSFOverThisSpatialSupportArcMin, ...
             'withSuperimposedMosaic', theConeMosaic, ...
             'contourLevels', [0.1 0.25 0.5 0.75 0.9], ...
+            'includePupilAndInFocusWavelengthInTitle', (eccXindex==1)&&(eccYindex==1), ...
             'axesHandle', ax1, 'fontSize', 14);
         
         if (eccYrange(eccYindex) > min(eccYrange))
@@ -145,23 +146,23 @@ function theOI = makeCustomOI(zCoeffs, measPupilDiameterMM, measWavelength, ...
     theOI = oiSet(theOI,'optics', customOptics);
     if (strcmp(whichEye, 'right'))
         if (nearestEccXY(1)<0)
-            xEccLabel = sprintf('%2.0f^o (N)', nearestEccXY(1));
+            xEccLabel = sprintf('x:%2.0f^o(N)', nearestEccXY(1));
         elseif(nearestEccXY(1)>0)
-            xEccLabel = sprintf('%2.0f^o (T)', nearestEccXY(1));
+            xEccLabel = sprintf('x:%2.0f^o(T)', nearestEccXY(1));
         elseif(nearestEccXY(1)==0)
-            xEccLabel = sprintf('%2.0f^o', nearestEccXY(1));
+            xEccLabel = sprintf('x:%2.0f^o', nearestEccXY(1));
         end
     elseif (strcmp(whichEye, 'left'))
         if (nearestEccXY(1)<0)
-            xEccLabel = sprintf('%2.0f^o (T)', nearestEccXY(1));
+            xEccLabel = sprintf('x:%2.0f^o(T)', nearestEccXY(1));
         elseif(nearestEccXY(1)>0)
-            xEccLabel = sprintf('%2.0f^o (N)', nearestEccXY(1));
+            xEccLabel = sprintf('x:%2.0f^o(N)', nearestEccXY(1));
         elseif(nearestEccXY(1)==0)
-            xEccLabel = sprintf('%2.0f^o', nearestEccXY(1));
+            xEccLabel = sprintf('x:%2.0f^o', nearestEccXY(1));
         end
-        theOI = oiSet(theOI,'name', sprintf('%2.0f^o,%2.0f^o', nearestEccXY(1), nearestEccXY(2)));
     end
-    theOI = oiSet(theOI,'name', sprintf('%s,%2.0f^o', xEccLabel, nearestEccXY(2)));
+    yEccLabel = sprintf('y:%2.0f^o', nearestEccXY(2));
+    theOI = oiSet(theOI,'name', sprintf('%s  %s', xEccLabel, yEccLabel));
     
 end
 

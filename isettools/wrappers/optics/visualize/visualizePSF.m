@@ -5,6 +5,7 @@ p.addParameter('withSuperimposedMosaic', [], @(x)(isa(x, 'coneMosaicHex')));
 p.addParameter('figureTitle', '', @ischar);
 p.addParameter('fontSize', []);
 p.addParameter('contourLevels', 0.1:0.1:1.0);
+p.addParameter('includePupilAndInFocusWavelengthInTitle', true, @islogical);
 
 % Parse input
 p.parse(varargin{:});
@@ -102,27 +103,12 @@ end
 
 
 cmap = brewermap(1024, 'greys');
+cmap = brewermap(1024, 'YlGnBu');
 colormap(cmap);
 
 if (~isempty(theMosaic))
-    
-    C = contourc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), [0.1 0.3 0.5 0.7 0.9]);
-    
-    dataPoints = size(C,2);
-    startPoint = 1;
-    hold on;
-    while (startPoint < dataPoints)
-        theLevel = C(1,startPoint);
-        theLevelVerticesNum = C(2,startPoint);
-        x = C(1,startPoint+(1:theLevelVerticesNum));
-        y = C(2,startPoint+(1:theLevelVerticesNum));
-        v = [x(:) y(:)];
-        f = 1:numel(x);
-        patch('Faces', f, 'Vertices', v, 'EdgeColor', (1-theLevel)*[1 1 1], 'FaceColor', cmap(round(theLevel*1024),:), 'FaceAlpha', min([1 0.2+0.7*theLevel]), 'LineStyle', '-', 'LineWidth', 1.0);
-        startPoint = startPoint + theLevelVerticesNum+1;
-    end
-    
-
+    transparentContourPlot(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), ...
+        [0.1 0.3 0.5 0.7 0.9], cmap);
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.1 0.3 0.3], 'LineWidth', 4.0);
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.3 0.99 0.99], 'LineWidth', 2);
 else
@@ -145,8 +131,34 @@ set(gca, 'FontSize', fontSize);
 
 
 if (isempty(figureTitle))
-    title(gca, sprintf('%s\n%2.0fnm, %dmm pupil', oiGet(theOI,'name'), targetWavelength, pupilDiameterMM));
+    if (~p.Results.includePupilAndInFocusWavelengthInTitle)
+         title(gca, sprintf('%s', oiGet(theOI,'name')), ...
+            'FontWeight', 'Normal', 'FontSize', fontSize);
+    else
+        title(gca, sprintf('(%2.0fnm,%dmm pupil)\n%s', targetWavelength, pupilDiameterMM, oiGet(theOI,'name')), ...
+            'FontWeight', 'Normal', 'FontSize', fontSize);
+    end
 else
-    title(gca, figureTitle);
+    title(gca, figureTitle, 'FontWeight', 'Normal', 'FontSize', fontSize);
 end
+end
+
+function transparentContourPlot(xSupportMinutes, ySupportMinutes, zData, zLevels, cmap)
+    C = contourc(xSupportMinutes, ySupportMinutes, zData, zLevels);
+    dataPoints = size(C,2);
+    startPoint = 1;
+    hold on;
+    while (startPoint < dataPoints)
+        theLevel = C(1,startPoint);
+        theLevelVerticesNum = C(2,startPoint);
+        x = C(1,startPoint+(1:theLevelVerticesNum));
+        y = C(2,startPoint+(1:theLevelVerticesNum));
+        v = [x(:) y(:)];
+        f = 1:numel(x);
+        patch('Faces', f, 'Vertices', v, 'EdgeColor', 0.5*(1-theLevel)*[1 1 1], ...
+            'FaceColor', cmap(round(theLevel*size(cmap,1)),:), ...
+            'FaceAlpha', min([1 0.3+theLevel]), ...
+            'LineStyle', '-', 'LineWidth', 1.0);
+        startPoint = startPoint + theLevelVerticesNum+1;
+    end
 end
