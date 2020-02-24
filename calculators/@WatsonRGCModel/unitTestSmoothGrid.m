@@ -2,17 +2,21 @@ function unitTestSmoothGrid()
 
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
     eccentricitySamplesNum = 32;
-    eccSpacePartitions = 4;
+    eccSpacePartitions = 1;
     whichEye = 'right';
+    mosaicFOVDegs  = 10; % 10.0; %20.0;
     
     % Termination conditions
     dTolerance = 1.0e-4;
     maxIterations = 500;
     
     % Options
-    visualizeProgress = ~true;
+    visualizeProgress = true;
     useOldMethod = ~true;
     
+
+    loadConePositions = ~true;
+    loadHistory = ~true;
     
     gridParams.coneSpacingFunction = @coneSpacingFunction;
     gridParams.coneSpacingFunctionNew = @coneSpacingFunctionNew;
@@ -21,12 +25,29 @@ function unitTestSmoothGrid()
     gridParams.center = [0 0];
     gridParams.ellipseAxes = [1 1.2247];
     gridParams.borderTolerance = 0.001 * 2;
-    gridParams.positionalDiffTolerance = 0.4;
-    gridParams.lambdaMin = 2;
     
+    gridParams.lambdaMin = 2;
+
+        
     p = getpref('IBIOColorDetect');
     coneLocsDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator');
-    loadConePositions = ~true;
+   
+    
+    % Save filename
+    saveFileName = fullfile(coneLocsDir, sprintf('progress_%s_partitionsNum%d_samplesNum_%d.mat', whichEye, eccSpacePartitions, eccentricitySamplesNum));
+   
+    if (loadHistory)
+        load(saveFileName);
+        figure(1); clf;
+        for k = 1:size(conePositionsHistory,1)
+            currentConePositions = squeeze(conePositionsHistory(k,:,:));
+            triangleConeIndices = delaunayn(double(currentConePositions));
+            maxMovements = iterationsHistory(1:k);
+            plotMosaic(currentConePositions, triangleConeIndices, maxMovements,  dTolerance, mosaicFOVDegs);
+            pause(0.1);
+        end
+        return;
+    end
     
     tic
     if (loadConePositions)
@@ -41,7 +62,7 @@ function unitTestSmoothGrid()
         conePositions = conePositions(idx,:);
         gridParams.radius = max(abs(conePositions(:)));
     else
-        mosaicFOVDegs  = 10.0; %20.0;
+        
         conePositions = generateConePositions(mosaicFOVDegs);
         conesNum = size(conePositions,1);
         if (conesNum > 1000*1000)
@@ -69,6 +90,8 @@ function unitTestSmoothGrid()
             fprintf('Computing separations for %2.1f thousand cones ...', conesNum/1000);
         end
         coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
+        gridParams.positionalDiffTolerance = prctile(coneSeparations,10);
+        
         fprintf('... time lapsed: %f minutes.',  toc/60);
     
         fprintf('\nProbabilistic sampling ...');
@@ -97,9 +120,7 @@ function unitTestSmoothGrid()
     
     
     
-    % Save filename
-    saveFileName = fullfile(coneLocsDir, sprintf('progress_%s_partitionsNum%d_samplesNum_%d.mat', whichEye, eccSpacePartitions, eccentricitySamplesNum));
-    
+     
 
     [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = ...
             computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye, eccSpacePartitions);
@@ -429,9 +450,10 @@ end
 
 function plotMosaic(conePositions, triangleConeIndices, maxMovements,  dTolerance, mosaicFOVDegs)
 
-    %eccDegs = (sqrt(sum(conePositions.^2, 2)))/300;
-    %idx = find(eccDegs <= mosaicFOVDegs/2);
-    idx = 1:size(conePositions,1);
+    eccDegs = (sqrt(sum(conePositions.^2, 2)))/300;
+    mosaicFOVDegs = 1;
+    idx = find(eccDegs <= mosaicFOVDegs/2);
+    %idx = 1:size(conePositions,1);
     
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1596 1076]);
