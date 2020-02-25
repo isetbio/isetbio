@@ -1,24 +1,35 @@
 function unitTestSmoothGrid()
 
+    % Options
+    loadHistory = ~true;
+    visualizeProgress = true; %loadHistory;
+    useOldMethod = ~true;
+    
+    
+    % Size of mosaic to generate
+    mosaicFOVDegs  = 5; 
+    
+    % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
     eccentricitySamplesNum = 32;
     eccSpacePartitions = 1;
+    
+    % Which eye
     whichEye = 'right';
-    mosaicFOVDegs  = 10; % 10.0; %20.0;
+    
     
     % Termination conditions
+    % 1. Stop if cones move less than this positional tolerance (x 2) in microns
     dTolerance = 1.0e-4;
-    maxIterations = 500;
-    percentage =1;
     
-    % Options
-    loadHistory = ~true;
-    visualizeProgress = loadHistory;
-    useOldMethod = ~true;
+    % 2. Stop if we exceed this many iterations
+    maxIterations = 2000;
     
-
-    loadConePositions = ~true;
+    % 3. Trigger Delayun triangularization if come movements (x 2 microns) for triggering a Delayun triangularization
+    percentageConeSeparationPositionalThreshold = 99;
     
+    
+    % Set grid params
     
     gridParams.coneSpacingFunction = @coneSpacingFunction;
     gridParams.coneSpacingFunctionNew = @coneSpacingFunctionNew;
@@ -36,112 +47,95 @@ function unitTestSmoothGrid()
    
     
     % Save filename
-    saveFileName = fullfile(coneLocsDir, sprintf('progress_%s_partitionsNum%d_samplesNum_%d_prctile%d.mat', whichEye, eccSpacePartitions, eccentricitySamplesNum, percentage));
+    saveFileName = fullfile(coneLocsDir, sprintf('progress_%s_partitionsNum%d_samplesNum_%d_prctile%d.mat', whichEye, eccSpacePartitions, eccentricitySamplesNum, percentageConeSeparationPositionalThreshold));
    
     if (loadHistory)
-        load(saveFileName);
-        figure(1); clf;
-        for k = 1:size(conePositionsHistory,1)
-            currentConePositions = squeeze(conePositionsHistory(k,:,:));
-            triangleConeIndices = delaunayn(double(currentConePositions));
-            maxMovements = iterationsHistory(1:k);
-            plotMosaic(currentConePositions, triangleConeIndices, maxMovements,  dTolerance, mosaicFOVDegs);
-            pause(0.1);
-        end
+        load(saveFileName, 'conePositionsHistory','iterationsHistory', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
+        fprintf('Termination reason for this mosaic: %s\n', terminationReason)
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 1596 1076]);
+        generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, dTolerance, mosaicFOVDegs);
         return;
     end
     
-    tic
-    if (loadConePositions)
-        %load('cp0.5degs.mat', 'conePositions');
-        
-        mosaicFOVDegs = 7.0; % choose from '0.5', '1.5', '7.0';
-        load(fullfile(coneLocsDir,sprintf('cp%2.1fdegs.mat',mosaicFOVDegs)), 'conePositions');
-
-        fovMax = 5.0;
-        ecc = sqrt(sum(conePositions.^2,2))/300;
-        idx = find(ecc <= fovMax/2);
-        conePositions = conePositions(idx,:);
-        gridParams.radius = max(abs(conePositions(:)));
-    else
-        
-        conePositions = generateConePositions(mosaicFOVDegs);
-        conesNum = size(conePositions,1);
-        if (conesNum > 1000*1000)
-            fprintf('Started with %2.1f million cones, time lapsed: %f minutes\n', conesNum/1000000, toc/60);
-        else
-            fprintf('Started with %2.1f thousand cones, time lapsed: %f minutes\n', conesNum/1000, toc/60);
-        end
-        
-        fprintf('Removing cones outside the ellipse ...');
-        gridParams.radius = max(abs(conePositions(:)));
-    
-        % Remove cones outside the desired region by applying the provided
-        % domain function
-        d = feval(gridParams.domainFunction, conePositions, ...
-            gridParams.center, gridParams.radius, gridParams.ellipseAxes);
-        conePositions = conePositions(d < gridParams.borderTolerance, :);
-        fprintf('... time lapsed: %f minutes.\n', toc/60);
-        
-        
-        % sample probabilistically according to coneSpacingFunction
-        conesNum = size(conePositions,1);
-        if (conesNum > 1000*1000)
-            fprintf('Computing separations for %2.1f million cones ...', conesNum/1000000);
-        else
-            fprintf('Computing separations for %2.1f thousand cones ...', conesNum/1000);
-        end
-        coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
-        gridParams.positionalDiffTolerance = prctile(coneSeparations,percentage);
-        
-        fprintf('... time lapsed: %f minutes.',  toc/60);
-    
-        fprintf('\nProbabilistic sampling ...');
-        normalizedConeSeparations = coneSeparations / gridParams.lambdaMin;
-        densityP = 1/(sqrt(2/3)) * (1 ./ normalizedConeSeparations) .^ 2;
-    
-        % Remove cones accordingly
-        fixedConePositionsRadiusInCones = 1;
-        radii = sqrt(sum(conePositions.^2,2));
-    
-        keptConeIndices = find(...
-            (rand(size(conePositions, 1), 1) < densityP) | ...
-            ((radii < fixedConePositionsRadiusInCones*gridParams.lambdaMin)) );
- 
-        conePositions = conePositions(keptConeIndices, :);
-        fprintf(' ... done !\n');
-    end
+    % Generate cone positions and downsample according to the density
+    tStart = tic;
+    conePositions = generateConePositions(mosaicFOVDegs);
+    [conePositions, gridParams] = downSampleConePositions(conePositions, gridParams, percentageConeSeparationPositionalThreshold, tStart);
+       
     
     conesNum = size(conePositions,1);
     if (conesNum > 1000*1000)
-        fprintf('Iteration: 0, Adusting %2.1f million cones, time lapsed: %f minutes\n', size(conePositions,1)/1000000, toc/60);
+        fprintf('Iteration: 0, Adusting %2.1f million cones, time lapsed: %f minutes\n', size(conePositions,1)/1000000, toc(tStart)/60);
     else
-        fprintf('Iteration: 0, Adusting %2.1f thousand cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc/60);
+        fprintf('Iteration: 0, Adusting %2.1f thousand cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc(tStart)/60);
     end
     
-    
-    
-    
-     
 
+    % Tabulate ecc
     [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = ...
             computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye, eccSpacePartitions);
     
-
     
     % Do it
-    [conePositions, conePositionsHistory,iterationsHistory] = ...
-        smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress, eccSpacePartitions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs);        
+    [conePositions, conePositionsHistory,iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
+        smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress, eccSpacePartitions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs, tStart);        
     
     % Save results
-    save(saveFileName, 'conePositionsHistory','iterationsHistory', ...
-        'tabulatedEccXYMicrons', 'tabulatedConeSpacingInMicrons', ...
+    save(saveFileName, 'conePositionsHistory', 'iterationsHistory', 'maxMovements', 'reTriangulationIterations', ...
+        'terminationReason', 'tabulatedEccXYMicrons', 'tabulatedConeSpacingInMicrons', ...
         '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
 end
 
-function conePositions = generateConePositions(fovDegs)
+function [conePositions, gridParams] = downSampleConePositions(conePositions, gridParams, percentageConeSeparationPositionalThreshold, tStart)
+    conesNum = size(conePositions,1);
+    if (conesNum > 1000*1000)
+        fprintf('Started with %2.1f million cones, time lapsed: %f minutes\n', conesNum/1000000, toc(tStart)/60);
+    else
+        fprintf('Started with %2.1f thousand cones, time lapsed: %f minutes\n', conesNum/1000, toc(tStart)/60);
+    end
 
+    fprintf('Removing cones outside the ellipse ...');
+    gridParams.radius = max(abs(conePositions(:)));
+
+    % Remove cones outside the desired region by applying the provided
+    % domain function
+    d = feval(gridParams.domainFunction, conePositions, ...
+        gridParams.center, gridParams.radius, gridParams.ellipseAxes);
+    conePositions = conePositions(d < gridParams.borderTolerance, :);
+    fprintf('... time lapsed: %f minutes.\n', toc(tStart)/60);
+
+
+    % sample probabilistically according to coneSpacingFunction
+    conesNum = size(conePositions,1);
+    if (conesNum > 1000*1000)
+        fprintf('Computing separations for %2.1f million cones ...', conesNum/1000000);
+    else
+        fprintf('Computing separations for %2.1f thousand cones ...', conesNum/1000);
+    end
+    coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
+    gridParams.positionalDiffTolerance = prctile(coneSeparations,percentageConeSeparationPositionalThreshold);
+
+    fprintf('... time lapsed: %f minutes.',  toc(tStart)/60);
+
+    fprintf('\nProbabilistic sampling ...');
+    normalizedConeSeparations = coneSeparations / gridParams.lambdaMin;
+    densityP = 1/(sqrt(2/3)) * (1 ./ normalizedConeSeparations) .^ 2;
+
+    % Remove cones accordingly
+    fixedConePositionsRadiusInCones = 1;
+    radii = sqrt(sum(conePositions.^2,2));
+
+    keptConeIndices = find(...
+        (rand(size(conePositions, 1), 1) < densityP) | ...
+        ((radii < fixedConePositionsRadiusInCones*gridParams.lambdaMin)) );
+
+    conePositions = conePositions(keptConeIndices, :);
+    fprintf(' ... done ! After %f minutes.\n', toc(tStart)/60);
+end
+    
+function conePositions = generateConePositions(fovDegs)
     micronsPerDeg = 300;
     radius = fovDegs/2*1.2*micronsPerDeg;
     lambda = 2;
@@ -225,7 +219,7 @@ function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOf
         tabulatedConeSpacingInMicrons = sqrt(2/3)*tabulatedConeSpacingInMicrons;
 end
     
-function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress, eccSpacePartitions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs)  
+function [conePositions, conePositionsHistory,iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress, eccSpacePartitions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs, tStart)  
 
     gridParams.maxIterations = maxIterations;
     gridParams.dTolerance = gridParams.lambdaMin * dTolerance;
@@ -244,17 +238,19 @@ function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gr
     % Iteratively adjust the cone positions until the forces between nodes
     % (conePositions) reach equilibrium.
     notConverged = true;
+    terminateNowDueToReductionInLatticeQuality = false;
     oldConePositions = inf;
     
     iteration = 0;
     maxMovements = [];
     conePositionsHistory = [];
     
-    tic
     lastTriangularizationAtIteration = iteration;
     minimalIterationsPerformedAfterLastTriangularization = 0;
+    histogramWidths = [];
+    reTriangulationIterations = [];
     
-    while (notConverged) && (iteration <= gridParams.maxIterations) || ...
+    while (~terminateNowDueToReductionInLatticeQuality) && (notConverged) && (iteration <= gridParams.maxIterations) || ...
             ((lastTriangularizationAtIteration > iteration-minimalIterationsPerformedAfterLastTriangularization)&&(iteration > gridParams.maxIterations))
         
         if ((lastTriangularizationAtIteration > iteration-minimalIterationsPerformedAfterLastTriangularization)&&(iteration > gridParams.maxIterations))
@@ -266,6 +262,7 @@ function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gr
         % compute cone positional diffs
         positionalDiffs = sqrt(sum((conePositions-oldConePositions).^ 2,2)); 
         
+        % Check if we need to re-triangulate
         reTriangulationIsNeeded = (max(positionalDiffs) > gridParams.positionalDiffTolerance);
         if (reTriangulationIsNeeded)
             lastTriangularizationAtIteration = iteration;
@@ -396,18 +393,20 @@ function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gr
             notConverged = false; 
         end
           
-        if  ( ...
-                (iteration < 10) || ...
-                ((iteration < 100)&& (mod(iteration,10) == 0)) || ...
-                ((iteration < 500)&& (mod(iteration,50) == 0)) || ...
-                ((iteration < 1000)&& (mod(iteration,100) == 0)) || ...
-                (mod(iteration,500) == 0) ...
-                )
+        % Check for early termination due to decrease in hex lattice quality
+        if (reTriangulationIsNeeded)
+            reTriangulationIterations = cat(2,reTriangulationIterations, iteration);
+            [terminateNowDueToReductionInLatticeQuality, histogramData, histogramWidths, histogramDiffWidths, checkedBins] = ...
+                checkForEarlyTerminationDueToHexLatticeQualityDecrease(conePositions, triangleConeIndices, histogramWidths);
+        end
+        
+ 
+        if  ( reTriangulationIsNeeded || terminateNowDueToReductionInLatticeQuality)
             fprintf('Iteration: %d/%d, maxMov: %2.6f, tolerance: %2.6f, time lapsed: %f minutes\n', ...
-                iteration, gridParams.maxIterations, max(movementAmplitudes), gridParams.dTolerance, toc/60);
+                iteration, gridParams.maxIterations, max(movementAmplitudes), gridParams.dTolerance, toc(tStart)/60);
             
             if (visualizeProgress)
-                plotMosaic(conePositions, triangleConeIndices, maxMovements, gridParams.dTolerance, mosaicFOVDegs);
+                plotMosaic([], conePositions, triangleConeIndices, maxMovements, reTriangulationIterations, histogramDiffWidths, histogramData, checkedBins, gridParams.dTolerance, mosaicFOVDegs);
             end
             
             if (isempty(conePositionsHistory))
@@ -419,15 +418,19 @@ function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gr
             end
            
         end
-    end
-    toc
-    
-    if notConverged
-        fprintf('Exceeded max number of iteraritions\n');
-    else
-        fprintf('Converged !\n');
-    end
         
+    end
+    
+    if (notConverged)
+        if (terminateNowDueToReductionInLatticeQuality)
+            terminationReason = 'Decrease in hex lattice quality.';
+        else
+            terminationReason = 'Exceeded max number of iterations.';
+        end
+    else
+        terminationReason = 'Converged.';
+    end
+    fprintf('Hex lattice adjustment ended. Reason: %s\n', terminationReason);
 end
 
 function distances = ellipticalDomainFunction(conePositions, center, radius, ellipseAxes)
@@ -450,18 +453,76 @@ function coneSpacingInMicrons = coneSpacingFunctionNew(conePositions, tabulatedE
     coneSpacingInMicrons = (tabulatedConeSpacingInMicrons(I))';
 end
 
-function plotMosaic(conePositions, triangleConeIndices, maxMovements,  dTolerance, mosaicFOVDegs)
+function generateMosaicProgressVideo(videoFileName, hFigVideo, conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, dTolerance, mosaicFOVDegs)
+    videoOBJ = VideoWriter(videoFileName, 'MPEG-4'); % H264 format
+    videoOBJ.FrameRate = 30;
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+    
+    widths = [];
+    for k = 1:size(conePositionsHistory,1)
+        currentConePositions = squeeze(conePositionsHistory(k,:,:));
+        triangleConeIndices = delaunayn(double(currentConePositions));
+        [~, histogramData, widths, diffWidths, checkedBins] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentConePositions, triangleConeIndices, widths);
+        plotMosaic(hFigVideo, currentConePositions, triangleConeIndices, maxMovements(1:iterationsHistory(k)), reTriangulationIterations(1:k), diffWidths, histogramData, checkedBins, dTolerance, mosaicFOVDegs);
+        % Add video frame
+        videoOBJ.writeVideo(getframe(hFigVideo));
+    end
+    
+end
+
+function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentConePositions, triangleConeIndices, widths)
+    
+    qDist = computeQuality(currentConePositions, triangleConeIndices);
+    qBins = [0.0:0.02:1.0];
+    [counts,centers] = hist(qDist, qBins);
+    bin1Percent = prctile(qDist,[0.3 4 8 16 99.8]);
+    [~, idx1] = min(abs(centers-bin1Percent(2)));
+    [~, idx2] = min(abs(centers-bin1Percent(3)));
+    [~, idx3] = min(abs(centers-bin1Percent(4)));
+    [~, idxEnd] = min(abs(centers-bin1Percent(end)));
+    if (isempty(widths))
+        k = 1;
+    else
+        k = size(widths,1)+1;
+    end
+    widths(k,:) = centers(idxEnd)-[centers(idx1) centers(idx2) centers(idx3)];
+    if (k == 1)
+        diffWidths = nan;
+    else
+        diffWidths = diff(widths,1)./(widths(end,:));
+    end
+
+    histogramData.x = centers;
+    histogramData.y = counts;
+
+    % Termination condition
+    cond1 = bin1Percent(1) > 0.7;
+    cond2 = (any(diffWidths(:) > 0.05)) && (~any((isnan(diffWidths(:)))));
+    if (cond1 && cond2)
+        fprintf(2,'Should terminate here\n');
+        terminateNow = true;
+    else
+        terminateNow = false;
+    end
+        
+end
+
+
+function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reTriangulationIterations, widths, histogramData, bin1Percent,  dTolerance, mosaicFOVDegs)
 
     eccDegs = (sqrt(sum(conePositions.^2, 2)))/300;
     mosaicFOVDegs = 1;
     idx = find(eccDegs <= mosaicFOVDegs/2);
     %idx = 1:size(conePositions,1);
     
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1596 1076]);
+    if (isempty(hFig))
+        hFig = figure(1);
+        set(hFig, 'Position', [10 10 1596 1076]);
+    end
+    
+    clf;
     subplot(2,3,[1 2 4 5]);
-    
-    
     plotTriangularizationGrid = true;
     if (plotTriangularizationGrid)
         visualizeLatticeState(conePositions, triangleConeIndices);
@@ -471,6 +532,9 @@ function plotMosaic(conePositions, triangleConeIndices, maxMovements,  dToleranc
     maxPos = max(max(abs(conePositions(idx,:))));
     set(gca, 'XLim', maxPos*[-1 1], 'YLim', maxPos*[-1 1], 'FontSize', 16);
     axis 'square'
+    
+    
+
     
     subplot(2,3,3);
     if (numel(maxMovements) < 10) 
@@ -484,21 +548,31 @@ function plotMosaic(conePositions, triangleConeIndices, maxMovements,  dToleranc
     else
         markerSize = 4;
     end
+    yyaxis left
     plot(1:numel(maxMovements), maxMovements, 'ko-', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize);
     hold on;
     plot([1 numel(maxMovements)], dTolerance*[1 1], 'r-', 'LineWidth', 1.5);
     set(gca, 'YLim', [dTolerance*0.5 max(maxMovements)], 'YScale', 'linear', 'FontSize', 16);
     xlabel('iteration');
     ylabel('max movement', 'FontSize', 16)
-    ylabel('movement', 'FontSize', 16);
     axis 'square'
     
-    qDist = computeQuality(conePositions, triangleConeIndices);
-    qLims = [0 1.005]; qBins = [0.0:0.01:1.0];
-    [counts,centers] = hist(qDist, qBins);
-    subplot(2,3,6)
-    bar(centers,counts,1)
-    set(gca, 'XLim', qLims, 'YLim', [0 max(counts)], 'XTick', [0.1:0.2:1.0],  'FontSize', 16);
+    yyaxis right
+    if (~isnan(widths))
+        plot(reTriangulationIterations(2:end), widths(:,1), 'rs-', 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.0, 'MarkerSize', 10); hold on
+        plot(reTriangulationIterations(2:end), widths(:,2), 'rs-', 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.0, 'MarkerSize', 10);
+        plot(reTriangulationIterations(2:end), widths(:,3), 'rs-', 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.0, 'MarkerSize', 10);
+    end
+    
+    subplot(2,3,6);
+    qLims = [0 1.005]; 
+    bar(histogramData.x,histogramData.y,1); hold on;
+    plot(bin1Percent(1)*[1 1], [0 max(histogramData.y)], 'r-', 'LineWidth', 1.5);
+    plot(bin1Percent(end)*[1 1], [0 max(histogramData.y)], 'c-', 'LineWidth', 1.5);
+    plot(bin1Percent(2)*[1 1], [0 max(histogramData.y)], 'k-',  'LineWidth', 1.5);
+    plot(bin1Percent(3)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
+    plot(bin1Percent(4)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
+    set(gca, 'XLim', qLims, 'YLim', [0 max(histogramData.y)], 'XTick', [0.1:0.2:1.0],  'FontSize', 16);
     grid on
     xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 16);
     ylabel('count', 'FontSize', 16);
