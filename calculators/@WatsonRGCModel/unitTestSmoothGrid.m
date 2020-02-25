@@ -2,17 +2,15 @@ function unitTestSmoothGrid()
 
     % Options
     loadHistory = ~true;
-    visualizeProgress = ~true; %loadHistory;
-    useOldMethod = ~true;
-    
+    visualizeProgress = true; %loadHistory;
+
     
     % Size of mosaic to generate
-    mosaicFOVDegs  = 3.0; 
+    mosaicFOVDegs  = 2; 
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
     eccentricitySamplesNum = 32;
-    eccSpacePartitions = 1;
     
     % Which eye
     whichEye = 'right';
@@ -23,10 +21,10 @@ function unitTestSmoothGrid()
     dTolerance = 1.0e-3;
     
     % 2. Stop if we exceed this many iterations
-    maxIterations = 2000;
+    maxIterations = 3000;
     
     % 3. Trigger Delayun triangularization if come movements (x 2 microns) for triggering a Delayun triangularization
-    percentageConeSeparationPositionalThreshold = 99;
+    percentageConeSeparationPositionalThreshold = 90;
     
     
     % Save filename
@@ -35,23 +33,24 @@ function unitTestSmoothGrid()
     saveFileName = fullfile(coneLocsDir, sprintf('progress_%sMosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, mosaicFOVDegs, eccentricitySamplesNum, percentageConeSeparationPositionalThreshold));
 
     % Set grid params
-    gridParams.coneSpacingFunction = @coneSpacingFunction;
-    gridParams.coneSpacingFunctionNew = @coneSpacingFunctionNew;
+    gridParams.coneSpacingFunctionFull = @coneSpacingFunctionFull;
+    gridParams.coneSpacingFunctionFast = @coneSpacingFunctionFast;
     gridParams.domainFunction = @ellipticalDomainFunction;
     
     gridParams.center = [0 0];
     gridParams.ellipseAxes = [1 1.2247];
     gridParams.borderTolerance = 0.001 * 2;
     gridParams.lambdaMin = 2;
-
-
+    gridParams.dTolerance = gridParams.lambdaMin * dTolerance;
+    gridParams.rng = 1;
+    
    
     if (loadHistory)
         load(saveFileName, 'conePositionsHistory','iterationsHistory', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
         fprintf('Termination reason for this mosaic: %s\n', terminationReason)
         hFig = figure(1); clf;
         set(hFig, 'Position', [10 10 1596 1076]);
-        generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, dTolerance, mosaicFOVDegs);
+        generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs);
         return;
     end
     
@@ -71,12 +70,12 @@ function unitTestSmoothGrid()
 
     % Tabulate ecc
     [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = ...
-            computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye, eccSpacePartitions);
+            computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye);
     
     
     % Do it
     [conePositions, conePositionsHistory,iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
-        smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress, eccSpacePartitions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs, tStart);        
+        smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress,  tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons,  mosaicFOVDegs, tStart);        
     
     % Save results
     save(saveFileName, 'conePositions', 'conePositionsHistory', 'iterationsHistory', 'maxMovements', 'reTriangulationIterations', ...
@@ -86,6 +85,9 @@ function unitTestSmoothGrid()
 end
 
 function [conePositions, gridParams] = downSampleConePositions(conePositions, gridParams, percentageConeSeparationPositionalThreshold, tStart)
+    
+    rng(gridParams.rng);
+    
     conesNum = size(conePositions,1);
     if (conesNum > 1000*1000)
         fprintf('Started with %2.1f million cones, time lapsed: %f minutes\n', conesNum/1000000, toc(tStart)/60);
@@ -111,7 +113,7 @@ function [conePositions, gridParams] = downSampleConePositions(conePositions, gr
     else
         fprintf('Computing separations for %2.1f thousand cones ...', conesNum/1000);
     end
-    coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
+    coneSeparations = feval(gridParams.coneSpacingFunctionFull, conePositions);
     gridParams.positionalDiffTolerance = prctile(coneSeparations,percentageConeSeparationPositionalThreshold);
 
     fprintf('... time lapsed: %f minutes.',  toc(tStart)/60);
@@ -165,7 +167,7 @@ function hexLocs = computeHexGrid(rows, cols, lambda)
     hexLocs = [xHex(:) - mean(xHex(:)) yHex(:) - mean(yHex(:))];
 end
 
-function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye, partitions)
+function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye)
         eccentricitiesInMeters = sqrt(sum(conePositions .^ 2, 2)) * 1e-6;
         s = sort(eccentricitiesInMeters);
         maxConePositionMeters = max(s);
@@ -176,50 +178,24 @@ function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOf
         tabulatedEccX = tabulatedEccX(:);
         tabulatedEccY = tabulatedEccY(:);
         
-        if (partitions == 1)
-            tabulatedEccMeters = sqrt(tabulatedEccX.^2 + tabulatedEccY.^2);
-            tabulatedEccAngles = atan2d(tabulatedEccY, tabulatedEccX);
-            tabulatedConeSpacingInMeters = coneSizeReadData(...
-                'eccentricity', tabulatedEccMeters, ...
-                'angle', tabulatedEccAngles, ...
-                'whichEye', whichEye);
-            
-            tabulatedEccXYMicrons = [tabulatedEccX tabulatedEccY]*1e6;
-            tabulatedConeSpacingInMicrons = tabulatedConeSpacingInMeters * 1e6;
-        else
-            for qIndex = 1:4
-                switch (qIndex)
-                    case 1
-                        idx = find( (tabulatedEccX>=0) & (tabulatedEccY>=0));
-                    case 2
-                        idx = find( (tabulatedEccX>=0) & (tabulatedEccY<=0));
-                    case 3
-                        idx = find( (tabulatedEccX<=0) & (tabulatedEccY>=0));
-                    case 4
-                        idx = find( (tabulatedEccX<=0) & (tabulatedEccY<=0));
-                end
-                
-                tabulatedEccMeters = sqrt(tabulatedEccX(idx).^2 + tabulatedEccY(idx).^2);
-                tabulatedEccAngles = atan2d(tabulatedEccY(idx), tabulatedEccX(idx));
-                tabulatedConeSpacingInMeters = coneSizeReadData(...
-                    'eccentricity', tabulatedEccMeters, ...
-                    'angle', tabulatedEccAngles, ...
-                    'whichEye', whichEye);
-                
-                tabulatedEccXYMicrons(qIndex,:,:) = [tabulatedEccX(idx) tabulatedEccY(idx)]*1e6;
-                tabulatedConeSpacingInMicrons(qIndex,:) = tabulatedConeSpacingInMeters * 1e6;
-            end
-        end
+        tabulatedEccMeters = sqrt(tabulatedEccX.^2 + tabulatedEccY.^2);
+        tabulatedEccAngles = atan2d(tabulatedEccY, tabulatedEccX);
+        tabulatedConeSpacingInMeters = coneSizeReadData(...
+            'eccentricity', tabulatedEccMeters, ...
+            'angle', tabulatedEccAngles, ...
+            'whichEye', whichEye);
+
+        tabulatedEccXYMicrons = [tabulatedEccX tabulatedEccY]*1e6;
+        tabulatedConeSpacingInMicrons = tabulatedConeSpacingInMeters * 1e6;
         
         % In ConeSizeReadData, spacing is computed as sqrt(1/density). This is
         % true for a rectangular mosaic. For a hex mosaic, spacing = sqrt(2.0/(3*density)).
         tabulatedConeSpacingInMicrons = sqrt(2/3)*tabulatedConeSpacingInMicrons;
 end
     
-function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress, eccSpacePartitions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, useOldMethod, mosaicFOVDegs, tStart)  
+function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, mosaicFOVDegs, tStart)  
 
     gridParams.maxIterations = maxIterations;
-    gridParams.dTolerance = gridParams.lambdaMin * dTolerance;
     deps = sqrt(eps) * gridParams.lambdaMin;
     deltaT = 0.2;
 
@@ -248,7 +224,7 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
     reTriangulationIterations = [];
     
     minIterationsBeforeRetriangulation = 5;
-    maxIterationsBeforeRetriangulation = 20;
+    maxIterationsBeforeRetriangulation = 15;
     
     while (~terminateNowDueToReductionInLatticeQuality) && (notConverged) && (iteration <= gridParams.maxIterations) || ...
             ((lastTriangularizationAtIteration > iteration-minimalIterationsPerformedAfterLastTriangularization)&&(iteration > gridParams.maxIterations))
@@ -269,8 +245,14 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         
 
         reTriangulationIsNeeded = (positionalDiffsMetric > gridParams.positionalDiffTolerance);
+        
+        
+        if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 0.5*(maxMovements(iteration-2)+maxMovements(iteration-3)))
+            reTriangulationIsNeeded = true;
+        end
+        
         % But dont go for more than maxIterationsToRetriangulate
-        if ((abs(lastTriangularizationAtIteration-iteration-1)) > maxIterationsBeforeRetriangulation)
+        if ((abs(lastTriangularizationAtIteration-iteration-1)) > maxIterationsBeforeRetriangulation+(round(iteration/10)))
             reTriangulationIsNeeded = true;
         end
         % And dont repeat too often
@@ -327,28 +309,7 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         if (reTriangulationIsNeeded)
             % Compute desired spring lengths. This is done by evaluating the
             % passed coneDistance function at the spring centers.
-            if (useOldMethod)
-                desiredSpringLengths = feval(gridParams.coneSpacingFunction, springCenters);
-                
-            elseif (eccSpacePartitions==1)
-                desiredSpringLengths= feval(gridParams.coneSpacingFunctionNew, springCenters, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons);
-                
-            elseif (eccSpacePartitions==4)
-                desiredSpringLengths = [];
-                for qIndex = 1:4
-                    switch (qIndex)
-                        case 1
-                            idx = find( (springCenters(:,1)>=0) & (springCenters(:,2)>=0));
-                        case 2
-                            idx = find( (springCenters(:,1)>=0) & (springCenters(:,2)<=0));
-                        case 3
-                            idx = find( (springCenters(:,1)<=0) & (springCenters(:,2)>=0));
-                        case 4
-                            idx = find( (springCenters(:,1)<=0) & (springCenters(:,2)<=0));
-                    end
-                    desiredSpringLengths(idx,1) = feval(gridParams.coneSpacingFunctionNew, springCenters(idx,:), squeeze(tabulatedEccXYMicrons(qIndex,:,:)), squeeze(tabulatedConeSpacingInMicrons(qIndex,:)));
-                end
-            end
+            desiredSpringLengths= feval(gridParams.coneSpacingFunctionFast, springCenters, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons);
         end
         
         % Normalize spring lengths
@@ -467,7 +428,7 @@ function distances = ellipticalDomainFunction(conePositions, center, radius, ell
     distances = radii - radius;
 end
 
-function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunction(conePositions)
+function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunctionFull(conePositions)
     eccentricitiesInMicrons = sqrt(sum(conePositions .^ 2, 2));
     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
     angles = atan2(conePositions(:, 2), conePositions(:, 1)) / pi * 180;
@@ -475,7 +436,7 @@ function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunction(c
     coneSpacingInMicrons = coneSpacingInMeters' * 1e6;
 end
 
-function coneSpacingInMicrons = coneSpacingFunctionNew(conePositions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons)
+function coneSpacingInMicrons = coneSpacingFunctionFast(conePositions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons)
     [~, I] = pdist2(tabulatedEccXYMicrons, conePositions, 'euclidean', 'Smallest', 1);
     coneSpacingInMicrons = (tabulatedConeSpacingInMicrons(I))';
 end
@@ -501,7 +462,7 @@ end
 function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentConePositions, triangleConeIndices, widths)
     
     qDist = computeQuality(currentConePositions, triangleConeIndices);
-    qBins = [0.0:0.02:1.0];
+    qBins = [0.5:0.01:1.0];
     [counts,centers] = hist(qDist, qBins);
     bin1Percent = prctile(qDist,[0.8 3 7 15 99.8]);
     [~, idx1] = min(abs(centers-bin1Percent(2)));
@@ -524,7 +485,7 @@ function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkF
     histogramData.y = counts;
 
     % Termination condition
-    cond1 = bin1Percent(1) > 0.75;
+    cond1 = bin1Percent(1) > 0.85;
     cond2 = (any(diffWidths(:) > 0.05)) && (~any((isnan(diffWidths(:)))));
     if (cond1 && cond2)
         fprintf(2,'Should terminate here\n');
@@ -592,14 +553,14 @@ function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reT
     set(gca, 'YLim', [-1.5 0.1]);
      
     subplot(2,3,6);
-    qLims = [0 1.005]; 
+    qLims = [0.6 1.005]; 
     bar(histogramData.x,histogramData.y,1); hold on;
     plot(bin1Percent(1)*[1 1], [0 max(histogramData.y)], 'r-', 'LineWidth', 1.5);
     plot(bin1Percent(end)*[1 1], [0 max(histogramData.y)], 'c-', 'LineWidth', 1.5);
     plot(bin1Percent(2)*[1 1], [0 max(histogramData.y)], 'k-',  'LineWidth', 1.5);
     plot(bin1Percent(3)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
     plot(bin1Percent(4)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
-    set(gca, 'XLim', qLims, 'YLim', [0 max(histogramData.y)], 'XTick', [0.1:0.2:1.0],  'FontSize', 16);
+    set(gca, 'XLim', qLims, 'YLim', [0 max(histogramData.y)], 'XTick', [0.1:0.05:1.0],  'FontSize', 16);
     grid on
     xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 16);
     ylabel('count', 'FontSize', 16);
