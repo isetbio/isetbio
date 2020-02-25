@@ -9,14 +9,16 @@ function unitTestSmoothGrid()
     % Termination conditions
     dTolerance = 1.0e-4;
     maxIterations = 500;
+    percentage =1;
     
     % Options
-    visualizeProgress = true;
+    loadHistory = ~true;
+    visualizeProgress = loadHistory;
     useOldMethod = ~true;
     
 
     loadConePositions = ~true;
-    loadHistory = ~true;
+    
     
     gridParams.coneSpacingFunction = @coneSpacingFunction;
     gridParams.coneSpacingFunctionNew = @coneSpacingFunctionNew;
@@ -34,7 +36,7 @@ function unitTestSmoothGrid()
    
     
     % Save filename
-    saveFileName = fullfile(coneLocsDir, sprintf('progress_%s_partitionsNum%d_samplesNum_%d.mat', whichEye, eccSpacePartitions, eccentricitySamplesNum));
+    saveFileName = fullfile(coneLocsDir, sprintf('progress_%s_partitionsNum%d_samplesNum_%d_prctile%d.mat', whichEye, eccSpacePartitions, eccentricitySamplesNum, percentage));
    
     if (loadHistory)
         load(saveFileName);
@@ -90,7 +92,7 @@ function unitTestSmoothGrid()
             fprintf('Computing separations for %2.1f thousand cones ...', conesNum/1000);
         end
         coneSeparations = feval(gridParams.coneSpacingFunction, conePositions);
-        gridParams.positionalDiffTolerance = prctile(coneSeparations,10);
+        gridParams.positionalDiffTolerance = prctile(coneSeparations,percentage);
         
         fprintf('... time lapsed: %f minutes.',  toc/60);
     
@@ -250,7 +252,7 @@ function [conePositions, conePositionsHistory,iterationsHistory] = smoothGrid(gr
     
     tic
     lastTriangularizationAtIteration = iteration;
-    minimalIterationsPerformedAfterLastTriangularization = 2;
+    minimalIterationsPerformedAfterLastTriangularization = 0;
     
     while (notConverged) && (iteration <= gridParams.maxIterations) || ...
             ((lastTriangularizationAtIteration > iteration-minimalIterationsPerformedAfterLastTriangularization)&&(iteration > gridParams.maxIterations))
