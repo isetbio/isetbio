@@ -7,7 +7,7 @@ function unitTestSmoothGrid()
     
     
     % Size of mosaic to generate
-    mosaicFOVDegs  = 5; 
+    mosaicFOVDegs  = 2.0; 
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
@@ -29,8 +29,12 @@ function unitTestSmoothGrid()
     percentageConeSeparationPositionalThreshold = 99;
     
     
+    % Save filename
+    p = getpref('IBIOColorDetect');
+    coneLocsDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
+    saveFileName = fullfile(coneLocsDir, sprintf('progress_%sMosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, mosaicFOVDegs, eccentricitySamplesNum, percentageConeSeparationPositionalThreshold))
+
     % Set grid params
-    
     gridParams.coneSpacingFunction = @coneSpacingFunction;
     gridParams.coneSpacingFunctionNew = @coneSpacingFunctionNew;
     gridParams.domainFunction = @ellipticalDomainFunction;
@@ -38,16 +42,9 @@ function unitTestSmoothGrid()
     gridParams.center = [0 0];
     gridParams.ellipseAxes = [1 1.2247];
     gridParams.borderTolerance = 0.001 * 2;
-    
     gridParams.lambdaMin = 2;
 
-        
-    p = getpref('IBIOColorDetect');
-    coneLocsDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator');
-   
-    
-    % Save filename
-    saveFileName = fullfile(coneLocsDir, sprintf('progress_%s_partitionsNum%d_samplesNum_%d_prctile%d.mat', whichEye, eccSpacePartitions, eccentricitySamplesNum, percentageConeSeparationPositionalThreshold));
+
    
     if (loadHistory)
         load(saveFileName, 'conePositionsHistory','iterationsHistory', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
@@ -60,7 +57,7 @@ function unitTestSmoothGrid()
     
     % Generate cone positions and downsample according to the density
     tStart = tic;
-    conePositions = generateConePositions(mosaicFOVDegs);
+    conePositions = generateConePositions(mosaicFOVDegs*1.07);
     [conePositions, gridParams] = downSampleConePositions(conePositions, gridParams, percentageConeSeparationPositionalThreshold, tStart);
        
     
@@ -476,7 +473,7 @@ function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkF
     qDist = computeQuality(currentConePositions, triangleConeIndices);
     qBins = [0.0:0.02:1.0];
     [counts,centers] = hist(qDist, qBins);
-    bin1Percent = prctile(qDist,[0.3 4 8 16 99.8]);
+    bin1Percent = prctile(qDist,[0.5 3 7 15 99.8]);
     [~, idx1] = min(abs(centers-bin1Percent(2)));
     [~, idx2] = min(abs(centers-bin1Percent(3)));
     [~, idx3] = min(abs(centers-bin1Percent(4)));
@@ -497,7 +494,7 @@ function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkF
     histogramData.y = counts;
 
     % Termination condition
-    cond1 = bin1Percent(1) > 0.7;
+    cond1 = bin1Percent(1) > 0.75;
     cond2 = (any(diffWidths(:) > 0.05)) && (~any((isnan(diffWidths(:)))));
     if (cond1 && cond2)
         fprintf(2,'Should terminate here\n');
@@ -512,8 +509,7 @@ end
 function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reTriangulationIterations, widths, histogramData, bin1Percent,  dTolerance, mosaicFOVDegs)
 
     eccDegs = (sqrt(sum(conePositions.^2, 2)))/300;
-    mosaicFOVDegs = 1;
-    idx = find(eccDegs <= mosaicFOVDegs/2);
+    idx = find(eccDegs <= min([1 mosaicFOVDegs])/2);
     %idx = 1:size(conePositions,1);
     
     if (isempty(hFig))
