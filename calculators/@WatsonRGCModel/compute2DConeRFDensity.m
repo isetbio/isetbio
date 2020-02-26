@@ -42,7 +42,8 @@ function [coneRFDensity2D, meridianDensities, spatialSupport, xLabelString, yLab
     % Compute variation along each of the enumerated meridians
     for meridianIndex = 1:numel(obj.enumeratedMeridianNames)
         [meridianConeRFSpacing(meridianIndex,:), meridianConeRFDensity(meridianIndex,:)] = ...
-            obj.coneRFSpacingAndDensity(requestedEccentricities, obj.enumeratedMeridianNames{meridianIndex}, eccUnits, densityUnits); 
+            obj.coneRFSpacingAndDensity(requestedEccentricities, obj.enumeratedMeridianNames{meridianIndex}, ...
+            eccUnits, densityUnits); 
     end
     
     % Do angular interpolation

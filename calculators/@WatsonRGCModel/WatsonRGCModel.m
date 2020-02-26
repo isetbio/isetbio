@@ -182,8 +182,7 @@ classdef WatsonRGCModel
         % requested meridian and eccentricities
         [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpacingAndDensity(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
         
-        % Return ISETBio retinal angle for Watson's meridians (specified in
-        % visual field of the right eye)
+        % Return ISETBio retinal angle for Watson's meridians (specified in visual field of the right eye)
         [isetbioAngle, whichEye, rightEyeRetinalMeridianName] = isetbioRetinalAngleForWatsonMeridian(obj, rightEyeVisualFieldMeridianName);
         
         % Compute 2D cone RF density in the right eye visual space coordinates

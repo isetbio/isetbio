@@ -6,10 +6,13 @@ function unitTestSmoothGrid()
 
     
     % Size of mosaic to generate
-    mosaicFOVDegs  = 20; 
+    mosaicFOVDegs  = 2; 
+    
+    neuronalType = 'cones';
+    %neuronalType = 'mRGC';
     
     % Samples of eccentricities to tabulate spacing on
-    % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
+    % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
     eccentricitySamplesNum = 32;
     
     % Which eye
@@ -23,8 +26,8 @@ function unitTestSmoothGrid()
     % 2. Stop if we exceed this many iterations
     maxIterations = 3000;
     
-    % 3. Trigger Delayun triangularization if come movements (x 2 microns) for triggering a Delayun triangularization
-    percentageConeSeparationPositionalThreshold = 99;
+    % 3. Trigger Delayun triangularization if rfmovement exceeds this number
+    percentageRFSeparationPositionalThreshold = 99;
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
     minIterationsBeforeRetriangulation = 5;
@@ -33,17 +36,27 @@ function unitTestSmoothGrid()
     maxIterationsBeforeRetriangulation = 15;
     
     % 6. Interval to query user whether he/she wants to terminate
-    queryUserIntervalMinutes = 90;
+    queryUserIntervalMinutes = 2;
     
     % Save filename
     p = getpref('IBIOColorDetect');
-    coneLocsDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
-    saveFileName = fullfile(coneLocsDir, sprintf('progress_%sMosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, mosaicFOVDegs, eccentricitySamplesNum, percentageConeSeparationPositionalThreshold));
+    mosaicDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
+    saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%sMosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, percentageRFSeparationPositionalThreshold));
 
     % Set grid params
-    gridParams.coneSpacingFunctionFull = @coneSpacingFunctionFull;
-    gridParams.coneSpacingFunctionFast = @coneSpacingFunctionFast;
-    gridParams.domainFunction = @ellipticalDomainFunction;
+    switch (neuronalType)
+        case 'cones'
+            gridParams.rfSpacingFunctionFull = @coneSpacingFunctionFull;
+            gridParams.rfSpacingFunctionFast = @rfSpacingFunctionFast;
+            gridParams.domainFunction = @ellipticalDomainFunction;
+        case 'mRGC'
+            gridParams.rfSpacingFunctionFull = @mRGCSpacingFunctionFull;
+            gridParams.rfSpacingFunctionFast = @rfSpacingFunctionFast;
+            gridParams.domainFunction = @ellipticalDomainFunction;
+        otherwise
+            error('Unknown neuronal type: ''%s''.',  neuronalType);
+    end
+    
     
     gridParams.center = [0 0];
     gridParams.ellipseAxes = [1 1.2247];
@@ -54,74 +67,74 @@ function unitTestSmoothGrid()
     
    
     if (loadHistory)
-        load(saveFileName, 'conePositionsHistory','iterationsHistory', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
+        load(saveFileName, 'rfPositionsHistory','iterationsHistory', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
         fprintf('Termination reason for this mosaic: %s\n', terminationReason)
         hFig = figure(1); clf;
         set(hFig, 'Position', [10 10 1596 1076]);
-        generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs);
+        generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs);
         return;
     end
     
-    % Generate cone positions and downsample according to the density
+    % Generate initial RF positions and downsample according to the density
     tStart = tic;
-    conePositions = generateConePositions(mosaicFOVDegs*1.07);
-    [conePositions, gridParams] = downSampleConePositions(conePositions, gridParams, percentageConeSeparationPositionalThreshold, tStart);
+    rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin);
+    [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationPositionalThreshold, tStart);
        
     
-    conesNum = size(conePositions,1);
-    if (conesNum > 1000*1000)
-        fprintf('Iteration: 0, Adusting %2.1f million cones, time lapsed: %f minutes\n', size(conePositions,1)/1000000, toc(tStart)/60);
+    rfsNum = size(rfPositions,1);
+    if (rfsNum > 1000*1000)
+        fprintf('Iteration: 0, Adusting %2.1f million cones, time lapsed: %f minutes\n', size(rfPositions,1)/1000000, toc(tStart)/60);
     else
-        fprintf('Iteration: 0, Adusting %2.1f thousand cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc(tStart)/60);
+        fprintf('Iteration: 0, Adusting %2.1f thousand cones, time lapsed: %f minutes\n', size(rfPositions,1)/1000, toc(tStart)/60);
     end
     
     % Tabulate ecc
     [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = ...
-            computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye);
+            computeTableOfRFSpacings(rfPositions, eccentricitySamplesNum, whichEye);
     
     % Do it
-    [conePositions, conePositionsHistory,iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
-        smoothGrid(gridParams, conePositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
+    [rfPositions, rfPositionsHistory,iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
+        smoothGrid(gridParams, rfPositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
         visualizeProgress,  tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons,  mosaicFOVDegs, tStart);        
     
     % Save results
-    save(saveFileName, 'conePositions', 'conePositionsHistory', 'iterationsHistory', 'maxMovements', 'reTriangulationIterations', ...
+    save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iterationsHistory', 'maxMovements', 'reTriangulationIterations', ...
         'terminationReason', 'tabulatedEccXYMicrons', 'tabulatedConeSpacingInMicrons', ...
         '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
 end
 
-function [conePositions, gridParams] = downSampleConePositions(conePositions, gridParams, percentageConeSeparationPositionalThreshold, tStart)
+function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationPositionalThreshold, tStart)
     
     rng(gridParams.rng);
     
-    conesNum = size(conePositions,1);
-    if (conesNum > 1000*1000)
-        fprintf('Started with %2.1f million cones, time lapsed: %f minutes\n', conesNum/1000000, toc(tStart)/60);
+    rfsNum = size(rfPositions,1);
+    if (rfsNum > 1000*1000)
+        fprintf('Started with %2.1f million RFs, time lapsed: %f minutes\n', rfsNum/1000000, toc(tStart)/60);
     else
-        fprintf('Started with %2.1f thousand cones, time lapsed: %f minutes\n', conesNum/1000, toc(tStart)/60);
+        fprintf('Started with %2.1f thousand RFs, time lapsed: %f minutes\n', rfsNum/1000, toc(tStart)/60);
     end
 
     fprintf('Removing cones outside the ellipse ...');
-    gridParams.radius = max(abs(conePositions(:)));
+    gridParams.radius = max(abs(rfPositions(:)));
 
     % Remove cones outside the desired region by applying the provided
     % domain function
-    d = feval(gridParams.domainFunction, conePositions, ...
+    d = feval(gridParams.domainFunction, rfPositions, ...
         gridParams.center, gridParams.radius, gridParams.ellipseAxes);
-    conePositions = conePositions(d < gridParams.borderTolerance, :);
+    rfPositions = rfPositions(d < gridParams.borderTolerance, :);
     fprintf('... time lapsed: %f minutes.\n', toc(tStart)/60);
 
 
     % sample probabilistically according to coneSpacingFunction
-    conesNum = size(conePositions,1);
-    if (conesNum > 1000*1000)
-        fprintf('Computing separations for %2.1f million cones ...', conesNum/1000000);
+    rfsNum = size(rfPositions,1);
+    if (rfsNum > 1000*1000)
+        fprintf('Computing separations for %2.1f million cones ...', rfsNum/1000000);
     else
-        fprintf('Computing separations for %2.1f thousand cones ...', conesNum/1000);
+        fprintf('Computing separations for %2.1f thousand cones ...', rfsNum/1000);
     end
-    coneSeparations = feval(gridParams.coneSpacingFunctionFull, conePositions);
-    gridParams.positionalDiffTolerance = prctile(coneSeparations,percentageConeSeparationPositionalThreshold);
+    coneSeparations = feval(gridParams.rfSpacingFunctionFull, rfPositions);
+    gridParams.positionalDiffTolerance = prctile(coneSeparations,percentageRFSeparationPositionalThreshold);
 
     fprintf('... time lapsed: %f minutes.',  toc(tStart)/60);
 
@@ -130,24 +143,23 @@ function [conePositions, gridParams] = downSampleConePositions(conePositions, gr
     densityP = 1/(sqrt(2/3)) * (1 ./ normalizedConeSeparations) .^ 2;
 
     % Remove cones accordingly
-    fixedConePositionsRadiusInCones = 1;
-    radii = sqrt(sum(conePositions.^2,2));
+    fixedRFPositionsRadiusInCones = 1;
+    radii = sqrt(sum(rfPositions.^2,2));
 
     keptConeIndices = find(...
-        (rand(size(conePositions, 1), 1) < densityP) | ...
-        ((radii < fixedConePositionsRadiusInCones*gridParams.lambdaMin)) );
+        (rand(size(rfPositions, 1), 1) < densityP) | ...
+        ((radii < fixedRFPositionsRadiusInCones*gridParams.lambdaMin)) );
 
-    conePositions = conePositions(keptConeIndices, :);
+    rfPositions = rfPositions(keptConeIndices, :);
     fprintf(' ... done ! After %f minutes.\n', toc(tStart)/60);
 end
     
-function conePositions = generateConePositions(fovDegs)
+function rfPositions = generateInitialRFpositions(fovDegs, lambda)
     micronsPerDeg = 300;
     radius = fovDegs/2*1.2*micronsPerDeg;
-    lambda = 2;
     rows = 2 * radius;
     cols = rows;
-    conePositions = computeHexGrid(rows, cols, lambda);
+    rfPositions = computeHexGrid(rows, cols, lambda);
 end
 
 function hexLocs = computeHexGrid(rows, cols, lambda)
@@ -164,18 +176,18 @@ function hexLocs = computeHexGrid(rows, cols, lambda)
     % Scale to get correct density
     X2 = X2 * lambda;
     Y2 = Y2 * lambda;
-    marginInConePositions = 0.1;
-    indicesToKeep = (X2 >= -marginInConePositions) & ...
-                    (X2 <= cols+marginInConePositions) &...
-                    (Y2 >= -marginInConePositions) & ...
-                    (Y2 <= rows+marginInConePositions);
+    marginInRFPositions = 0.1;
+    indicesToKeep = (X2 >= -marginInRFPositions) & ...
+                    (X2 <= cols+marginInRFPositions) &...
+                    (Y2 >= -marginInRFPositions) & ...
+                    (Y2 <= rows+marginInRFPositions);
     xHex = X2(indicesToKeep);
     yHex = Y2(indicesToKeep);
     hexLocs = [xHex(:) - mean(xHex(:)) yHex(:) - mean(yHex(:))];
 end
 
-function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye)
-        eccentricitiesInMeters = sqrt(sum(conePositions .^ 2, 2)) * 1e-6;
+function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfRFSpacings(rfPositions, eccentricitySamplesNum, whichEye)
+        eccentricitiesInMeters = sqrt(sum(rfPositions .^ 2, 2)) * 1e-6;
         s = sort(eccentricitiesInMeters);
         maxConePositionMeters = max(s);
         minConePositionMeters = min(s(s>0));
@@ -200,8 +212,8 @@ function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOf
         tabulatedConeSpacingInMicrons = sqrt(2/3)*tabulatedConeSpacingInMicrons;
 end
     
-function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
-    smoothGrid(gridParams, conePositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
+function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
+    smoothGrid(gridParams, rfPositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
     visualizeProgress, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, mosaicFOVDegs, tStart)  
 
     gridParams.maxIterations = maxIterations;
@@ -215,17 +227,17 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
     warning('off', 'MATLAB:qhullmx:InternalWarning');
     
     % Number of cones
-    conesNum = size(conePositions, 1);
+    rfsNum = size(rfPositions, 1);
     
     % Iteratively adjust the cone positions until the forces between nodes
-    % (conePositions) reach equilibrium.
+    % (rfPositions) reach equilibrium.
     notConverged = true;
     terminateNowDueToReductionInLatticeQuality = false;
-    oldConePositions = inf;
+    oldRFPositions = inf;
     
     iteration = 0;
     maxMovements = [];
-    conePositionsHistory = [];
+    rfPositionsHistory = [];
     
     lastTriangularizationAtIteration = iteration;
     minimalIterationsPerformedAfterLastTriangularization = 0;
@@ -245,7 +257,7 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         iteration = iteration + 1;
 
         % compute cone positional diffs
-        positionalDiffs = sqrt(sum((conePositions-oldConePositions).^ 2,2)); 
+        positionalDiffs = sqrt(sum((rfPositions-oldRFPositions).^ 2,2)); 
         
         % Check if we need to re-triangulate
         %positionalDiffsMetric = max(positionalDiffs);
@@ -278,50 +290,50 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         if (reTriangulationIsNeeded)
             lastTriangularizationAtIteration = iteration;
             % save old come positions
-            oldConePositions = conePositions;
+            oldRFPositions = rfPositions;
             
             % Perform new Delaunay triangulation to determine the updated
             % topology of the truss.
-            triangleConeIndices = delaunayn(conePositions);
+            triangleIndices = delaunayn(rfPositions);
             % Compute the centroids of all triangles
             centroidPositions = 1.0/3.0 * (...
-                    conePositions(triangleConeIndices(:, 1), :) + ...
-                    conePositions(triangleConeIndices(:, 2), :) + ...
-                    conePositions(triangleConeIndices(:, 3), :));
+                    rfPositions(triangleIndices(:, 1), :) + ...
+                    rfPositions(triangleIndices(:, 2), :) + ...
+                    rfPositions(triangleIndices(:, 3), :));
             
             % Remove centroids outside the desired region by applying the
             % signed distance function
             d = feval(gridParams.domainFunction, centroidPositions, ...
                     gridParams.center, gridParams.radius, ...
                     gridParams.ellipseAxes);
-            triangleConeIndices = triangleConeIndices(d < gridParams.borderTolerance, :);
+            triangleIndices = triangleIndices(d < gridParams.borderTolerance, :);
             
            % Create a list of the unique springs (each spring connecting 2 cones)
            springs = [...
-                    triangleConeIndices(:, [1, 2]); ...
-                    triangleConeIndices(:, [1, 3]); ...
-                    triangleConeIndices(:, [2, 3]) ...
+                    triangleIndices(:, [1, 2]); ...
+                    triangleIndices(:, [1, 3]); ...
+                    triangleIndices(:, [2, 3]) ...
            ];
            springs = unique(sort(springs, 2), 'rows');
             
            % find all springs connected to this cone
-           springIndices = cell(1,conesNum);
-           for coneIndex = 1:conesNum
-               springIndices{coneIndex} = find((springs(:, 1) == coneIndex) | (springs(:, 2) == coneIndex));
+           springIndices = cell(1,rfsNum);
+           for rfIndex = 1:rfsNum
+               springIndices{rfIndex} = find((springs(:, 1) == rfIndex) | (springs(:, 2) == rfIndex));
            end
         end % reTriangulationIsNeeded
         
         % Compute spring vectors
-        springVectors =  conePositions(springs(:, 1), :) - conePositions(springs(:, 2), :);
+        springVectors =  rfPositions(springs(:, 1), :) - rfPositions(springs(:, 2), :);
         % their centers
-        springCenters = (conePositions(springs(:, 1), :) + conePositions(springs(:, 2), :)) / 2.0;
+        springCenters = (rfPositions(springs(:, 1), :) + rfPositions(springs(:, 2), :)) / 2.0;
         % and their lengths
         springLengths = sqrt(sum(springVectors.^2, 2));
 
         if (reTriangulationIsNeeded)
             % Compute desired spring lengths. This is done by evaluating the
-            % passed coneDistance function at the spring centers.
-            desiredSpringLengths= feval(gridParams.coneSpacingFunctionFast, springCenters, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons);
+            % passed distance function at the spring centers.
+            desiredSpringLengths= feval(gridParams.rfSpacingFunctionFast, springCenters, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons);
         end
         
         % Normalize spring lengths
@@ -336,18 +348,18 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         springForceXYcomponents = abs(springForces ./ springLengths * [1, 1] .* springVectors);
 
         % Compute net forces on each cone
-        netForceVectors = zeros(conesNum, 2);
+        netForceVectors = zeros(rfsNum, 2);
         
-        parfor coneIndex = 1:conesNum
+        parfor rfIndex = 1:rfsNum
            % compute net force from all connected springs
-           deltaPos = -bsxfun(@minus, springCenters(springIndices{coneIndex}, :), conePositions(coneIndex, :));
-           netForceVectors(coneIndex, :) = sum(sign(deltaPos) .* springForceXYcomponents(springIndices{coneIndex}, :), 1);
+           deltaPos = -bsxfun(@minus, springCenters(springIndices{rfIndex}, :), rfPositions(rfIndex, :));
+           netForceVectors(rfIndex, :) = sum(sign(deltaPos) .* springForceXYcomponents(springIndices{rfIndex}, :), 1);
         end
             
         % update cone positions according to netForceVectors
-        conePositions = conePositions + deltaT * netForceVectors;
+        rfPositions = rfPositions + deltaT * netForceVectors;
         
-        d = feval(gridParams.domainFunction, conePositions, ...
+        d = feval(gridParams.domainFunction, rfPositions, ...
                 gridParams.center, gridParams.radius, gridParams.ellipseAxes);
         outsideBoundaryIndices = d > 0;
             
@@ -355,21 +367,21 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         if (~isempty(outsideBoundaryIndices))
                 % Compute numerical gradient along x-positions
                 dXgradient = (feval(gridParams.domainFunction, ...
-                    [conePositions(outsideBoundaryIndices, 1) + deps, ...
-                    conePositions(outsideBoundaryIndices, 2)], ...
+                    [rfPositions(outsideBoundaryIndices, 1) + deps, ...
+                    rfPositions(outsideBoundaryIndices, 2)], ...
                     gridParams.center, gridParams.radius, ...
                     gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
                     deps;
                 dYgradient = (feval(gridParams.domainFunction, ...
-                    [conePositions(outsideBoundaryIndices, 1), ...
-                    conePositions(outsideBoundaryIndices, 2)+deps], ...
+                    [rfPositions(outsideBoundaryIndices, 1), ...
+                    rfPositions(outsideBoundaryIndices, 2)+deps], ...
                     gridParams.center, gridParams.radius, ...
                     gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
                     deps;
 
                 % Project these points back to boundary
-                conePositions(outsideBoundaryIndices, :) = ...
-                    conePositions(outsideBoundaryIndices, :) - ...
+                rfPositions(outsideBoundaryIndices, :) = ...
+                    rfPositions(outsideBoundaryIndices, :) - ...
                     [d(outsideBoundaryIndices) .* dXgradient, ...
                     d(outsideBoundaryIndices) .* dYgradient];
         end
@@ -387,7 +399,7 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         if (reTriangulationIsNeeded)
             reTriangulationIterations = cat(2,reTriangulationIterations, iteration);
             [terminateNowDueToReductionInLatticeQuality, histogramData, histogramWidths, histogramDiffWidths, checkedBins] = ...
-                checkForEarlyTerminationDueToHexLatticeQualityDecrease(conePositions, triangleConeIndices, histogramWidths);
+                checkForEarlyTerminationDueToHexLatticeQualityDecrease(rfPositions, triangleIndices, histogramWidths);
         end
         
         if  ( reTriangulationIsNeeded || terminateNowDueToReductionInLatticeQuality)  
@@ -410,16 +422,16 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
             fprintf('\t>Iteration: %d/%d, medianMov: %2.6f, tolerance: %2.3f, time lapsed: %f minutes\n', ...
                 iteration, gridParams.maxIterations, maxMovement, gridParams.dTolerance, timeLapsedMinutes);
             
-            if (isempty(conePositionsHistory))
-                conePositionsHistory(1,:,:) = single(conePositions);
+            if (isempty(rfPositionsHistory))
+                rfPositionsHistory(1,:,:) = single(rfPositions);
                 iterationsHistory = iteration;
             else
-                conePositionsHistory = cat(1, conePositionsHistory, reshape(single(conePositions), [1 size(conePositions,1) size(conePositions,2)]));
+                rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
                 iterationsHistory = cat(2, iterationsHistory, iteration);
             end
             
             if (visualizeProgress)
-                plotMosaic([], conePositions, triangleConeIndices, maxMovements, reTriangulationIterations, histogramDiffWidths, histogramData, checkedBins, gridParams.dTolerance, mosaicFOVDegs);
+                plotMosaic([], rfPositions, triangleIndices, maxMovements, reTriangulationIterations, histogramDiffWidths, histogramData, checkedBins, gridParams.dTolerance, mosaicFOVDegs);
             else
                 plotMovementSequence([],maxMovements, gridParams.dTolerance)
                 plotMeshQuality([],histogramData, checkedBins, iterationsHistory);
@@ -443,14 +455,14 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         
         if (terminateNowDueToReductionInLatticeQuality)
             % Return the last cone positions
-            conePositions = conePositionsLast;
+            rfPositions = rfPositionsLast;
         else
-            % Save last conePositions
-            conePositionsLast = conePositions;
+            % Save last rfPositions
+            rfPositionsLast = rfPositions;
         end
         
         if (~isempty(userRequestTerminationAtIteration)) && (iteration >= userRequestTerminationAtIteration)
-            conePositionsHistory = cat(1, conePositionsHistory, reshape(single(conePositions), [1 size(conePositions,1) size(conePositions,2)]));
+            rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
             iterationsHistory = cat(2, iterationsHistory, iteration);
             reTriangulationIterations = cat(2,reTriangulationIterations, iteration);
             fprintf('Current iteration: %d, user request stop iteration: %d\n', iteration,userRequestTerminationAtIteration)
@@ -476,47 +488,63 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
     fprintf('Hex lattice adjustment ended. Reason: %s\n', terminationReason);
 end
 
-function distances = ellipticalDomainFunction(conePositions, center, radius, ellipseAxes)
-    xx = conePositions(:, 1) - center(1);
-    yy = conePositions(:, 2) - center(2);
+function distances = ellipticalDomainFunction(rfPositions, center, radius, ellipseAxes)
+    xx = rfPositions(:, 1) - center(1);
+    yy = rfPositions(:, 2) - center(2);
     radii = sqrt((xx / ellipseAxes(1)) .^ 2 + (yy / ellipseAxes(2)) .^ 2);
     distances = radii - radius;
 end
 
-function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunctionFull(conePositions)
-    eccentricitiesInMicrons = sqrt(sum(conePositions .^ 2, 2));
+function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunctionFull(rfPositions)
+    eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
-    angles = atan2(conePositions(:, 2), conePositions(:, 1)) / pi * 180;
+    angles = atan2(rfPositions(:, 2), rfPositions(:, 1)) / pi * 180;
     coneSpacingInMeters = coneSizeReadData('eccentricity', eccentricitiesInMeters, 'angle', angles);
     coneSpacingInMicrons = coneSpacingInMeters' * 1e6;
 end
 
-function coneSpacingInMicrons = coneSpacingFunctionFast(conePositions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons)
-    [~, I] = pdist2(tabulatedEccXYMicrons, conePositions, 'euclidean', 'Smallest', 1);
-    coneSpacingInMicrons = (tabulatedConeSpacingInMicrons(I))';
+function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunctionFull(rfPositions)
+
+    % Following needs to be replaced with Watson model  calls
+%     eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
+%     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
+%     angles = atan2(rfPositions(:, 2), rfPositions(:, 1)) / pi * 180;
+%     coneSpacingInMeters = coneSizeReadData('eccentricity', eccentricitiesInMeters, 'angle', angles);
+%     coneSpacingInMicrons = coneSpacingInMeters' * 1e6;
+
+
+    mRGCSpacingInMicrons = [];
+    eccentricitiesInMicrons = [];
+    
 end
 
-function generateMosaicProgressVideo(videoFileName, hFigVideo, conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, dTolerance, mosaicFOVDegs)
+
+function rfSpacingInMicrons = rfSpacingFunctionFast(rfPositions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons)
+    [~, I] = pdist2(tabulatedEccXYMicrons, rfPositions, 'euclidean', 'Smallest', 1);
+    rfSpacingInMicrons = (tabulatedConeSpacingInMicrons(I))';
+end
+
+function generateMosaicProgressVideo(videoFileName, hFigVideo, rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, dTolerance, mosaicFOVDegs)
     videoOBJ = VideoWriter(videoFileName, 'MPEG-4'); % H264 format
     videoOBJ.FrameRate = 30;
     videoOBJ.Quality = 100;
     videoOBJ.open();
     
     widths = [];
-    for k = 1:size(conePositionsHistory,1)
-        currentConePositions = squeeze(conePositionsHistory(k,:,:));
-        triangleConeIndices = delaunayn(double(currentConePositions));
-        [~, histogramData, widths, diffWidths, checkedBins] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentConePositions, triangleConeIndices, widths);
-        plotMosaic(hFigVideo, currentConePositions, triangleConeIndices, maxMovements(1:iterationsHistory(k)), reTriangulationIterations(1:k), diffWidths, histogramData, checkedBins, dTolerance, mosaicFOVDegs);
+    for k = 1:size(rfPositionsHistory,1)
+        currentRFPositions = squeeze(rfPositionsHistory(k,:,:));
+        triangleIndices = delaunayn(double(currentRFPositions));
+        [~, histogramData, widths, diffWidths, checkedBins] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentRFPositions, triangleIndices, widths);
+        plotMosaic(hFigVideo, currentRFPositions, triangleIndices, maxMovements(1:iterationsHistory(k)), reTriangulationIterations(1:k), diffWidths, histogramData, checkedBins, dTolerance, mosaicFOVDegs);
         % Add video frame
         videoOBJ.writeVideo(getframe(hFigVideo));
     end
     
 end
 
-function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentConePositions, triangleConeIndices, widths)
+function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentRFPositions, triangleIndices, widths)
     
-    qDist = computeQuality(currentConePositions, triangleConeIndices);
+    qDist = computeQuality(currentRFPositions, triangleIndices);
     qBins = [0.5:0.01:1.0];
     [counts,centers] = hist(qDist, qBins);
     bin1Percent = prctile(qDist,[0.8 3 7 15 99.8]);
@@ -609,11 +637,11 @@ function plotMovementSequence(figNo, maxMovements, dTolerance)
 end
 
 
-function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reTriangulationIterations, widths, histogramData, bin1Percent,  dTolerance, mosaicFOVDegs)
+function plotMosaic(hFig, rfPositions, triangleIndices, maxMovements,  reTriangulationIterations, widths, histogramData, bin1Percent,  dTolerance, mosaicFOVDegs)
 
-    eccDegs = (sqrt(sum(conePositions.^2, 2)))/300;
+    eccDegs = (sqrt(sum(rfPositions.^2, 2)))/300;
     idx = find(eccDegs <= min([1 mosaicFOVDegs])/2);
-    %idx = 1:size(conePositions,1);
+    %idx = 1:size(rfPositions,1);
     
     if (isempty(hFig))
         hFig = figure(1);
@@ -624,11 +652,11 @@ function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reT
     subplot(2,3,[1 2 4 5]);
     plotTriangularizationGrid = true;
     if (plotTriangularizationGrid)
-        visualizeLatticeState(conePositions, triangleConeIndices);
+        visualizeLatticeState(rfPositions, triangleIndices);
     end
 
-    plot(conePositions(idx,1), conePositions(idx,2), 'r.');
-    maxPos = max(max(abs(conePositions(idx,:))));
+    plot(rfPositions(idx,1), rfPositions(idx,2), 'r.');
+    maxPos = max(max(abs(rfPositions(idx,:))));
     set(gca, 'XLim', maxPos*[-1 1], 'YLim', maxPos*[-1 1], 'FontSize', 16);
     axis 'square'
     
@@ -651,11 +679,11 @@ function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reT
     drawnow
 end
 
-function q = computeQuality(coneLocs, triangles)
+function q = computeQuality(rfLocs, triangles)
     
     trianglesNum = size(triangles,1);
-    X = coneLocs(:,1);
-    Y = coneLocs(:,2);
+    X = rfLocs(:,1);
+    Y = rfLocs(:,2);
     
     q = zeros(1,trianglesNum);
     for triangleIndex = 1:trianglesNum
@@ -671,13 +699,13 @@ function q = computeQuality(coneLocs, triangles)
 end
 
 
-function visualizeLatticeState(conePositions, triangleConeIndices)
-    x = conePositions(:,1);
-    y = conePositions(:,2);
+function visualizeLatticeState(rfPositions, triangleIndices)
+    x = rfPositions(:,1);
+    y = rfPositions(:,2);
     
     xx = []; yy = [];
-    for triangleIndex = 1:size(triangleConeIndices, 1)
-        coneIndices = triangleConeIndices(triangleIndex, :);
+    for triangleIndex = 1:size(triangleIndices, 1)
+        coneIndices = triangleIndices(triangleIndex, :);
         xCoords = x(coneIndices);
         yCoords = y(coneIndices);
         for k = 1:numel(coneIndices)
