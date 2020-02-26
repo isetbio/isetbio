@@ -2,11 +2,11 @@ function unitTestSmoothGrid()
 
     % Options
     loadHistory = ~true;
-    visualizeProgress = true; %loadHistory;
+    visualizeProgress = loadHistory;
 
     
     % Size of mosaic to generate
-    mosaicFOVDegs  = 2; 
+    mosaicFOVDegs  = 20; 
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of conePositions
@@ -24,8 +24,16 @@ function unitTestSmoothGrid()
     maxIterations = 3000;
     
     % 3. Trigger Delayun triangularization if come movements (x 2 microns) for triggering a Delayun triangularization
-    percentageConeSeparationPositionalThreshold = 90;
+    percentageConeSeparationPositionalThreshold = 99;
     
+    % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
+    minIterationsBeforeRetriangulation = 5;
+    
+    % 5. Trigger Delayun triangularization if more than maxIterationsBeforeRetriangulation have passed since last one
+    maxIterationsBeforeRetriangulation = 15;
+    
+    % 6. Interval to query user whether he/she wants to terminate
+    queryUserIntervalMinutes = 90;
     
     % Save filename
     p = getpref('IBIOColorDetect');
@@ -67,15 +75,14 @@ function unitTestSmoothGrid()
         fprintf('Iteration: 0, Adusting %2.1f thousand cones, time lapsed: %f minutes\n', size(conePositions,1)/1000, toc(tStart)/60);
     end
     
-
     % Tabulate ecc
     [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = ...
             computeTableOfConeSpacings(conePositions, eccentricitySamplesNum, whichEye);
     
-    
     % Do it
     [conePositions, conePositionsHistory,iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
-        smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress,  tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons,  mosaicFOVDegs, tStart);        
+        smoothGrid(gridParams, conePositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
+        visualizeProgress,  tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons,  mosaicFOVDegs, tStart);        
     
     % Save results
     save(saveFileName, 'conePositions', 'conePositionsHistory', 'iterationsHistory', 'maxMovements', 'reTriangulationIterations', ...
@@ -193,7 +200,9 @@ function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOf
         tabulatedConeSpacingInMicrons = sqrt(2/3)*tabulatedConeSpacingInMicrons;
 end
     
-function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = smoothGrid(gridParams, conePositions,  dTolerance, maxIterations, visualizeProgress, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, mosaicFOVDegs, tStart)  
+function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
+    smoothGrid(gridParams, conePositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
+    visualizeProgress, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, mosaicFOVDegs, tStart)  
 
     gridParams.maxIterations = maxIterations;
     deps = sqrt(eps) * gridParams.lambdaMin;
@@ -222,11 +231,11 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
     minimalIterationsPerformedAfterLastTriangularization = 0;
     histogramWidths = [];
     reTriangulationIterations = [];
+    timeLapsedHoursPrevious = [];
+    userRequestTerminationAtIteration = [];
+    terminateNow = false;
     
-    minIterationsBeforeRetriangulation = 5;
-    maxIterationsBeforeRetriangulation = 15;
-    
-    while (~terminateNowDueToReductionInLatticeQuality) && (notConverged) && (iteration <= gridParams.maxIterations) || ...
+    while (~terminateNow) && (~terminateNowDueToReductionInLatticeQuality) && (notConverged) && (iteration <= gridParams.maxIterations) || ...
             ((lastTriangularizationAtIteration > iteration-minimalIterationsPerformedAfterLastTriangularization)&&(iteration > gridParams.maxIterations))
         
         if ((lastTriangularizationAtIteration > iteration-minimalIterationsPerformedAfterLastTriangularization)&&(iteration > gridParams.maxIterations))
@@ -243,22 +252,25 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
         %positionalDiffsMetric = median(positionalDiffs);
         positionalDiffsMetric = prctile(positionalDiffs, 99);
         
-
+        % We need to triangulate again if the positionalDiff is above the set tolerance
         reTriangulationIsNeeded = (positionalDiffsMetric > gridParams.positionalDiffTolerance);
         
-        
+        % We need to triangulate again if the movement in the current iteration was > the average movement in the last 2 iterations 
         if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 0.5*(maxMovements(iteration-2)+maxMovements(iteration-3)))
             reTriangulationIsNeeded = true;
         end
         
-        % But dont go for more than maxIterationsToRetriangulate
+        % We need to triangulate again if we went for maxIterationsToRetriangulate + some more since last triangularization
         if ((abs(lastTriangularizationAtIteration-iteration-1)) > maxIterationsBeforeRetriangulation+(round(iteration/10)))
             reTriangulationIsNeeded = true;
         end
-        % And dont repeat too often
+        
+        % Do not triangulare if we did one less than minIterationsBeforeRetriangulation before
         if ((abs(lastTriangularizationAtIteration-iteration-1)) < minIterationsBeforeRetriangulation)
             reTriangulationIsNeeded = false;
         end
+        
+        %
         if (iteration==1)
             reTriangulationIsNeeded = true;
         end
@@ -378,16 +390,25 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
                 checkForEarlyTerminationDueToHexLatticeQualityDecrease(conePositions, triangleConeIndices, histogramWidths);
         end
         
- 
-
-        
-        if  ( reTriangulationIsNeeded || terminateNowDueToReductionInLatticeQuality)
-            fprintf('\t>Iteration: %d/%d, medianMov: %2.6f, tolerance: %2.3f, time lapsed: %f minutes\n', ...
-                iteration, gridParams.maxIterations, maxMovement, gridParams.dTolerance, toc(tStart)/60);
-            
-            if (visualizeProgress)
-                plotMosaic([], conePositions, triangleConeIndices, maxMovements, reTriangulationIterations, histogramDiffWidths, histogramData, checkedBins, gridParams.dTolerance, mosaicFOVDegs);
+        if  ( reTriangulationIsNeeded || terminateNowDueToReductionInLatticeQuality)  
+            % See if another hour passed and asked the used whether to
+            % terminate soon
+            timeLapsedMinutes = toc(tStart)/60;
+            if (isempty(timeLapsedHoursPrevious))
+                timeLapsedHoursPrevious = 0;
             end
+            
+            timeLapsedHours = floor(timeLapsedMinutes/queryUserIntervalMinutes);
+            
+            if (timeLapsedHours > timeLapsedHoursPrevious)
+                queryUserWhetherToTerminateSoon = true;
+            else
+                queryUserWhetherToTerminateSoon = false;
+            end
+            timeLapsedHoursPrevious = timeLapsedHours;
+            
+            fprintf('\t>Iteration: %d/%d, medianMov: %2.6f, tolerance: %2.3f, time lapsed: %f minutes\n', ...
+                iteration, gridParams.maxIterations, maxMovement, gridParams.dTolerance, timeLapsedMinutes);
             
             if (isempty(conePositionsHistory))
                 conePositionsHistory(1,:,:) = single(conePositions);
@@ -396,8 +417,29 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
                 conePositionsHistory = cat(1, conePositionsHistory, reshape(single(conePositions), [1 size(conePositions,1) size(conePositions,2)]));
                 iterationsHistory = cat(2, iterationsHistory, iteration);
             end
-           
+            
+            if (visualizeProgress)
+                plotMosaic([], conePositions, triangleConeIndices, maxMovements, reTriangulationIterations, histogramDiffWidths, histogramData, checkedBins, gridParams.dTolerance, mosaicFOVDegs);
+            else
+                plotMovementSequence([],maxMovements, gridParams.dTolerance)
+                plotMeshQuality([],histogramData, checkedBins, iterationsHistory);
+            end
         end
+        
+        if (queryUserWhetherToTerminateSoon)
+            fprintf('Another %d minute period has passed. Terminate soon?', queryUserIntervalMinutes);
+            userTermination = GetWithDefault(' If so enter # of iteration to terminate on. Otherwise hit enter to continue', 'continue');
+            if (~strcmp(userTermination, 'continue'))
+                userRequestTerminationAtIteration = str2double(userTermination);
+                if (isnan(userRequestTerminationAtIteration))
+                    userRequestTerminationAtIteration = [];
+                end
+            else
+                fprintf('OK, will ask again in %d minutes.', queryUserIntervalMinutes);
+            end
+        end
+        queryUserWhetherToTerminateSoon = false;
+        
         
         if (terminateNowDueToReductionInLatticeQuality)
             % Return the last cone positions
@@ -407,17 +449,30 @@ function [conePositions, conePositionsHistory, iterationsHistory, maxMovements, 
             conePositionsLast = conePositions;
         end
         
+        if (~isempty(userRequestTerminationAtIteration)) && (iteration >= userRequestTerminationAtIteration)
+            conePositionsHistory = cat(1, conePositionsHistory, reshape(single(conePositions), [1 size(conePositions,1) size(conePositions,2)]));
+            iterationsHistory = cat(2, iterationsHistory, iteration);
+            reTriangulationIterations = cat(2,reTriangulationIterations, iteration);
+            fprintf('Current iteration: %d, user request stop iteration: %d\n', iteration,userRequestTerminationAtIteration)
+            terminateNow = true;
+        end
+        
     end
     
-    if (notConverged)
-        if (terminateNowDueToReductionInLatticeQuality)
-            terminationReason = 'Decrease in hex lattice quality.';
-        else
-            terminationReason = 'Exceeded max number of iterations.';
-        end
+    if (terminateNow)
+            terminationReason = sprintf('User requested termination at iteration %d', userRequestTerminationAtIteration);
     else
-        terminationReason = 'Converged.';
+        if (notConverged)
+            if (terminateNowDueToReductionInLatticeQuality)
+                terminationReason = 'Decrease in hex lattice quality.';
+            else
+                terminationReason = 'Exceeded max number of iterations.';
+            end
+        else
+            terminationReason = 'Converged.';
+        end
     end
+    
     fprintf('Hex lattice adjustment ended. Reason: %s\n', terminationReason);
 end
 
@@ -496,6 +551,63 @@ function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkF
         
 end
 
+function plotMeshQuality(figNo,histogramData, bin1Percent, iterationsHistory)
+    if (isempty(figNo))
+        figure(10); 
+        subplotIndex = mod(numel(iterationsHistory)-1,12)+1;
+        if (subplotIndex == 1)
+            clf;
+        end
+        subplot(4,3,subplotIndex);
+    end
+ 
+    qLims = [0.6 1.005]; 
+    bar(histogramData.x,histogramData.y,1); hold on;
+    plot(bin1Percent(1)*[1 1], [0 max(histogramData.y)], 'r-', 'LineWidth', 1.5);
+    plot(bin1Percent(end)*[1 1], [0 max(histogramData.y)], 'c-', 'LineWidth', 1.5);
+    plot(bin1Percent(2)*[1 1], [0 max(histogramData.y)], 'k-',  'LineWidth', 1.5);
+    plot(bin1Percent(3)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
+    plot(bin1Percent(4)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
+    set(gca, 'XLim', qLims, 'YLim', [0 max(histogramData.y)], 'XTick', [0.1:0.05:1.0],  'FontSize', 16);
+    grid on
+    xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 16);
+    ylabel('count', 'FontSize', 16);
+    if (isempty(figNo))
+        title(sprintf('iteration:%d', iterationsHistory(end)))
+        drawnow;
+    end
+    
+    if (isempty(figNo))
+        figure(11); hold on;
+    end
+    
+end
+
+function plotMovementSequence(figNo, maxMovements, dTolerance)
+    if (isempty(figNo))
+        figure(11); clf;
+    end
+    
+    if (numel(maxMovements) < 10) 
+        markerSize = 12;
+    elseif (numel(maxMovements) < 50)
+        markerSize = 10;
+    elseif (numel(maxMovements) < 100)
+        markerSize = 8;
+    elseif (numel(maxMovements) < 500)
+        markerSize = 6;
+    else
+        markerSize = 4;
+    end
+    
+    plot(1:numel(maxMovements), maxMovements, 'ko-', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize);
+    hold on;
+    plot([1 numel(maxMovements)], dTolerance*[1 1], 'r-', 'LineWidth', 1.5);
+    set(gca, 'YLim', [dTolerance*0.5 max(maxMovements)], 'YScale', 'log', 'FontSize', 16);
+    xlabel('iteration');
+    ylabel('median movement', 'FontSize', 16)
+end
+
 
 function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reTriangulationIterations, widths, histogramData, bin1Percent,  dTolerance, mosaicFOVDegs)
 
@@ -520,29 +632,11 @@ function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reT
     set(gca, 'XLim', maxPos*[-1 1], 'YLim', maxPos*[-1 1], 'FontSize', 16);
     axis 'square'
     
-    
-
+   
     
     subplot(2,3,3);
-    if (numel(maxMovements) < 10) 
-        markerSize = 12;
-    elseif (numel(maxMovements) < 50)
-        markerSize = 10;
-    elseif (numel(maxMovements) < 100)
-        markerSize = 8;
-    elseif (numel(maxMovements) < 500)
-        markerSize = 6;
-    else
-        markerSize = 4;
-    end
     yyaxis left
-    plot(1:numel(maxMovements), maxMovements, 'ko-', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize);
-    hold on;
-    plot([1 numel(maxMovements)], dTolerance*[1 1], 'r-', 'LineWidth', 1.5);
-    set(gca, 'YLim', [dTolerance*0.5 max(maxMovements)], 'YScale', 'log', 'FontSize', 16);
-    xlabel('iteration');
-    ylabel('median movement', 'FontSize', 16)
-    axis 'square'
+    plotMovementSequence(hFig, maxMovements, dTolerance);
     
     yyaxis right
     if (~isnan(widths))
@@ -553,18 +647,7 @@ function plotMosaic(hFig, conePositions, triangleConeIndices, maxMovements,  reT
     set(gca, 'YLim', [-1.5 0.1]);
      
     subplot(2,3,6);
-    qLims = [0.6 1.005]; 
-    bar(histogramData.x,histogramData.y,1); hold on;
-    plot(bin1Percent(1)*[1 1], [0 max(histogramData.y)], 'r-', 'LineWidth', 1.5);
-    plot(bin1Percent(end)*[1 1], [0 max(histogramData.y)], 'c-', 'LineWidth', 1.5);
-    plot(bin1Percent(2)*[1 1], [0 max(histogramData.y)], 'k-',  'LineWidth', 1.5);
-    plot(bin1Percent(3)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
-    plot(bin1Percent(4)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
-    set(gca, 'XLim', qLims, 'YLim', [0 max(histogramData.y)], 'XTick', [0.1:0.05:1.0],  'FontSize', 16);
-    grid on
-    xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 16);
-    ylabel('count', 'FontSize', 16);
-    axis 'square'
+    plotMeshQuality(hFig,histogramData, bin1Percent, []);
     drawnow
 end
 
@@ -608,4 +691,17 @@ function visualizeLatticeState(conePositions, triangleConeIndices)
         'FaceColor', [0.99 0.99 0.99], 'LineWidth', 1.0, ...
         'LineStyle', '-', 'Parent', gca); 
     hold on;
+end
+
+
+function inputVal = GetWithDefault(prompt,defaultVal)
+    if (ischar(defaultVal))
+        inputVal = input(sprintf([prompt ' [%s]: '],defaultVal),'s');
+    else
+        inputVal = input(sprintf([prompt ' [%g]: '],defaultVal));
+    end
+    if (isempty(inputVal))
+        inputVal = defaultVal;
+    end
+
 end
