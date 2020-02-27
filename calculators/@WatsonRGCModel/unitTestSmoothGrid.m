@@ -31,7 +31,7 @@ function unitTestSmoothGrid()
     maxIterations = 3000;
     
     % 3. Trigger Delayun triangularization if rfmovement exceeds this number
-    ercentageRFSeparationThresholdForTriangularizationPositionalThreshold = 99;
+    percentageRFSeparationThresholdForTriangularization = 99;
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
     minIterationsBeforeRetriangulation = 5;
@@ -40,12 +40,12 @@ function unitTestSmoothGrid()
     maxIterationsBeforeRetriangulation = 15;
     
     % 6. Interval to query user whether he/she wants to terminate
-    queryUserIntervalMinutes = 600;
+    queryUserIntervalMinutes = 120;
     
     % Save filename
     p = getpref('IBIOColorDetect');
     mosaicDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
-    saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, ercentageRFSeparationThresholdForTriangularizationPositionalThreshold));
+    saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, percentageRFSeparationThresholdForTriangularization));
 
     % Set grid params
     switch (neuronalType)
@@ -81,7 +81,7 @@ function unitTestSmoothGrid()
     % Generate initial RF positions and downsample according to the density
     tStart = tic;
     rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin);
-    [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, ercentageRFSeparationThresholdForTriangularization, tStart);
+    [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationThresholdForTriangularization, tStart);
        
     
     rfsNum = size(rfPositions,1);
@@ -584,12 +584,26 @@ end
 
 function plotMeshQuality(figNo,histogramData, bin1Percent, iterationsHistory)
     if (isempty(figNo))
-        figure(10); 
+        hFig = figure(10); 
         subplotIndex = mod(numel(iterationsHistory)-1,12)+1;
         if (subplotIndex == 1)
             clf;
+            set(hFig, 'Position', [10 10 820 930]);
         end
-        subplot(4,3,subplotIndex);
+        
+        rows = 5; cols = 3;
+        posVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', rows, ...
+           'colsNum', cols, ...
+           'heightMargin',  0.07, ...
+           'widthMargin',    0.03, ...
+           'leftMargin',     0.03, ...
+           'rightMargin',    0.01, ...
+           'bottomMargin',   0.03, ...
+           'topMargin',      0.02);
+        row = 1+floor((subplotIndex-1)/cols);
+        col = 1+mod((subplotIndex-1),cols);
+        subplot('Position', posVectors(row,col).v);
     end
  
     qLims = [0.6 1.005]; 
@@ -599,10 +613,11 @@ function plotMeshQuality(figNo,histogramData, bin1Percent, iterationsHistory)
     plot(bin1Percent(2)*[1 1], [0 max(histogramData.y)], 'k-',  'LineWidth', 1.5);
     plot(bin1Percent(3)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
     plot(bin1Percent(4)*[1 1], [0 max(histogramData.y)], 'k-', 'LineWidth', 1.5);
-    set(gca, 'XLim', qLims, 'YLim', [0 max(histogramData.y)], 'XTick', [0.1:0.05:1.0],  'FontSize', 16);
+    set(gca, 'XLim', qLims, 'YLim', [0 max(histogramData.y)], ...
+        'XTick', [0.6:0.05:1.0],  'XTickLabel', {'.6', '', '.7', '', '.8', '', '.9', '', '1.'}, ...
+        'YTickLabel', {}, 'FontSize', 12);
     grid on
-    xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 16);
-    ylabel('count', 'FontSize', 16);
+    xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 12);
     if (isempty(figNo))
         title(sprintf('iteration:%d', iterationsHistory(end)))
         drawnow;
