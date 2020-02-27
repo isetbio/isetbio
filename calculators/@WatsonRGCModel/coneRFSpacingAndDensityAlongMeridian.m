@@ -1,4 +1,5 @@
-function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpacingAndDensity(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits)
+function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
+    coneRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits)
 % Input
 %   eccentricities      1-D vector with eccentricities (specified in eccUnits)
 %   rightEyeVisualFieldMeridianName        name of the meridian in Watson's reference (visual
@@ -18,7 +19,7 @@ function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpa
     assert(size(eccentricities,1) == 1, 'Eccentricities must be a 1xN vector');
     
     
-    % Convert passed eccentricities to visual degs
+    % Convert passed eccentricities as requested
     switch (eccUnits)
         case obj.visualDegsEccUnits
             % Convert ecc from degs to retinal MMs

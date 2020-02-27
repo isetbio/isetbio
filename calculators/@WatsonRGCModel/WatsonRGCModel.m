@@ -39,9 +39,9 @@ classdef WatsonRGCModel
         
         meridianParamsTable = {
             WatsonRGCModel.enumeratedMeridianNames{1}  struct('a_k', 0.9851, 'r_2k', 1.058,  'r_ek', 22.14); ... 
-            WatsonRGCModel.enumeratedMeridianNames{2}  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13); ...
+            WatsonRGCModel.enumeratedMeridianNames{2}  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35); ...
             WatsonRGCModel.enumeratedMeridianNames{3}  struct('a_k', 0.9729, 'r_2k', 1.084,  'r_ek',  7.633); ... 
-            WatsonRGCModel.enumeratedMeridianNames{4}  struct('a_k', 0.9935, 'r_2k', 1.035,  'r_ek', 16.35) ... 
+            WatsonRGCModel.enumeratedMeridianNames{4}  struct('a_k', 0.996,  'r_2k', 0.9932, 'r_ek', 12.13) ... 
         };
     
         % Dictionary with meridian colors
@@ -178,16 +178,28 @@ classdef WatsonRGCModel
             end
         end % Constructor
         
-        % Return cone RF spacing, cone RF density and meridian angle for the 
-        % requested meridian and eccentricities
-        [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpacingAndDensity(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        % Return cone RF spacing, cone RF density along the requested meridian and requested eccentricities
+        [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        
+        % Return midget RGC RF spacing and density along the requested meridian and requested eccentricities
+        [mRGCRFSpacing, mRGCRFDensity, rightEyeRetinalMeridianName] = mRGCRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        
+        % Return total RGC RF density along the requested meridian and requested eccentricities
+        totalRGCRFSpacing = totalRGCRFDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        
         
         % Return ISETBio retinal angle for Watson's meridians (specified in visual field of the right eye)
         [isetbioAngle, whichEye, rightEyeRetinalMeridianName] = isetbioRetinalAngleForWatsonMeridian(obj, rightEyeVisualFieldMeridianName);
         
-        % Compute 2D cone RF density in the right eye visual space coordinates
-        [coneRFDensity, spatialSupport, xLabelString, yLabelString, meridianDensities, densityLabelString, eccUnits, densityUnits] = compute2DConeRFDensity(obj, eccDegsInREVisualSpace, eccUnits, densityUnits);
+        % Compute 2D cone RF density for eccentricities specified in the right eye visual space
+        [coneRFDensity, spatialSupport, xLabelString, yLabelString, ...
+            meridianDensities, densityLabelString, eccUnits, densityUnits] = ...
+            compute2DConeRFDensity(obj, eccDegsInREVisualSpace, eccUnits, densityUnits);
 
+        % Compute 2D mRGC RF density for eccentricities specified in the right eye visual space
+        [mRGCRFDensity, spatialSupport, xLabelString, yLabelString, ...
+            meridianDensities, densityLabelString, eccUnits, densityUnits] = ...
+            compute2DmRGCRFDensity(obj, eccDegsInREVisualSpace, eccUnits, densityUnits);
         
     end % Public methods
     
@@ -211,7 +223,12 @@ classdef WatsonRGCModel
     % Unit tests
     methods (Static)
         unitTestFigure1();
+        unitTestFigure5();
+        unitTestFigure9();
+        unitTestFigure10();
+        unitTestFigure11();
         unitTestRFConeDensity2D();
+        unitTestRFDensity2D();
         unitTestSmoothGrid();
     end
     
