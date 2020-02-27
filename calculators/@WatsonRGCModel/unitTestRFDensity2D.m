@@ -1,13 +1,13 @@
 function unitTestRFDensity2D()
 
     eccMinDegs = 1/60;
-    eccMaxDegs = 10;
+    eccMaxDegs = 2.5;
     eccSamplesNum = 32;
     eccDegs = logspace(log10(eccMinDegs), log10(eccMaxDegs), eccSamplesNum);
     
     obj = WatsonRGCModel();
     theView = 'right eye visual field';
-    theView = 'right eye retina';
+    theView = 'left eye retina';
     
     [coneDensity2DMap, coneMeridianDensities, densitySupport, ...
         horizontalMeridianLabel, verticalMeridianLabel, densityLabel, ...
@@ -86,18 +86,18 @@ function doIt(figNo, obj, supportUnits, eccMinDegs, eccMaxDegs, densityUnits, de
     
 
     if (strcmp(densityUnits, obj.visualDegsDensityUnits))
-        densityLims = [50 15000];
-        densityLevels = logspace(log10(densityLims(1)), log10(densityLims(2)), 12);
+        densityLims = [50 20000];
+        densityLevels = logspace(log10(densityLims(1)), log10(densityLims(2)), 15);
         scaling = 'log';
     elseif (strcmp(densityUnits, obj.retinalMMDensityUnits))
-        densityLims = [50 15000];
+        densityLims = [50 20000];
         densityLims(1) = densityLims(1) / obj.alpha(0);
         densityLims(2) = densityLims(2) / obj.alpha(eccMaxDegs);
-        densityLevels = logspace(log10(densityLims(1)), log10(densityLims(2)), 12);
+        densityLevels = logspace(log10(densityLims(1)), log10(densityLims(2)), 15);
         scaling = 'log';
     elseif (strcmp(densityUnits, 'unitless'))
         densityLims = [0 10];
-        densityLevels = linspace(0,10,21);
+        densityLevels = [1.05 1.25 1.5:0.5:10];
         scaling = 'linear';
     end
     
