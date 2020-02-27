@@ -1,33 +1,37 @@
 function unitTestSmoothGrid()
 
-    % Options
-    loadHistory = ~true;
-    visualizeProgress = loadHistory;
+    % Generate or view saved mosaic
+    generateNewMosaic = true;
+    
+    % Visualize mosaic and progress
+    visualizeProgress = ~generateNewMosaic;
 
-    
     % Size of mosaic to generate
-    mosaicFOVDegs  = 2; 
+    mosaicFOVDegs = 15; 
     
-    neuronalType = 'cones';
+    % Type of mosaic to generate
+    neuronalType = 'cone';
     %neuronalType = 'mRGC';
+    
+    % Which eye
+    whichEye = 'right';
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
     eccentricitySamplesNum = 32;
     
-    % Which eye
-    whichEye = 'right';
-    
+    % Set a random seed
+    theRandomSeed = 1;
     
     % Termination conditions
-    % 1. Stop if cones move less than this positional tolerance (x 2) in microns
+    % 1. Stop if cones move less than this positional tolerance (x gridParams.lambdaMin) in microns
     dTolerance = 1.0e-3;
     
     % 2. Stop if we exceed this many iterations
     maxIterations = 3000;
     
     % 3. Trigger Delayun triangularization if rfmovement exceeds this number
-    percentageRFSeparationPositionalThreshold = 99;
+    ercentageRFSeparationThresholdForTriangularizationPositionalThreshold = 99;
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
     minIterationsBeforeRetriangulation = 5;
@@ -36,16 +40,16 @@ function unitTestSmoothGrid()
     maxIterationsBeforeRetriangulation = 15;
     
     % 6. Interval to query user whether he/she wants to terminate
-    queryUserIntervalMinutes = 2;
+    queryUserIntervalMinutes = 600;
     
     % Save filename
     p = getpref('IBIOColorDetect');
     mosaicDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
-    saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%sMosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, percentageRFSeparationPositionalThreshold));
+    saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, ercentageRFSeparationThresholdForTriangularizationPositionalThreshold));
 
     % Set grid params
     switch (neuronalType)
-        case 'cones'
+        case 'cone'
             gridParams.rfSpacingFunctionFull = @coneSpacingFunctionFull;
             gridParams.rfSpacingFunctionFast = @rfSpacingFunctionFast;
             gridParams.domainFunction = @ellipticalDomainFunction;
@@ -57,16 +61,15 @@ function unitTestSmoothGrid()
             error('Unknown neuronal type: ''%s''.',  neuronalType);
     end
     
-    
-    gridParams.center = [0 0];
+   
     gridParams.ellipseAxes = [1 1.2247];
-    gridParams.borderTolerance = 0.001 * 2;
     gridParams.lambdaMin = 2;
+    gridParams.borderTolerance = 0.001 * gridParams.lambdaMin;
     gridParams.dTolerance = gridParams.lambdaMin * dTolerance;
-    gridParams.rng = 1;
+    gridParams.rng = theRandomSeed;
     
    
-    if (loadHistory)
+    if (~generateNewMosaic)
         load(saveFileName, 'rfPositionsHistory','iterationsHistory', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
         fprintf('Termination reason for this mosaic: %s\n', terminationReason)
         hFig = figure(1); clf;
@@ -78,7 +81,7 @@ function unitTestSmoothGrid()
     % Generate initial RF positions and downsample according to the density
     tStart = tic;
     rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin);
-    [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationPositionalThreshold, tStart);
+    [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, ercentageRFSeparationThresholdForTriangularization, tStart);
        
     
     rfsNum = size(rfPositions,1);
@@ -104,7 +107,7 @@ function unitTestSmoothGrid()
     fprintf('History saved  in %s\n', saveFileName);
 end
 
-function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationPositionalThreshold, tStart)
+function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationThresholdForTriangularization, tStart)
     
     rng(gridParams.rng);
     
@@ -121,7 +124,7 @@ function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, g
     % Remove cones outside the desired region by applying the provided
     % domain function
     d = feval(gridParams.domainFunction, rfPositions, ...
-        gridParams.center, gridParams.radius, gridParams.ellipseAxes);
+        gridParams.radius, gridParams.ellipseAxes);
     rfPositions = rfPositions(d < gridParams.borderTolerance, :);
     fprintf('... time lapsed: %f minutes.\n', toc(tStart)/60);
 
@@ -134,7 +137,7 @@ function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, g
         fprintf('Computing separations for %2.1f thousand cones ...', rfsNum/1000);
     end
     coneSeparations = feval(gridParams.rfSpacingFunctionFull, rfPositions);
-    gridParams.positionalDiffTolerance = prctile(coneSeparations,percentageRFSeparationPositionalThreshold);
+    gridParams.positionalDiffToleranceForTriangularization = prctile(coneSeparations,percentageRFSeparationThresholdForTriangularization);
 
     fprintf('... time lapsed: %f minutes.',  toc(tStart)/60);
 
@@ -265,7 +268,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
         positionalDiffsMetric = prctile(positionalDiffs, 99);
         
         % We need to triangulate again if the positionalDiff is above the set tolerance
-        reTriangulationIsNeeded = (positionalDiffsMetric > gridParams.positionalDiffTolerance);
+        reTriangulationIsNeeded = (positionalDiffsMetric > gridParams.positionalDiffToleranceForTriangularization);
         
         % We need to triangulate again if the movement in the current iteration was > the average movement in the last 2 iterations 
         if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 0.5*(maxMovements(iteration-2)+maxMovements(iteration-3)))
@@ -304,7 +307,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
             % Remove centroids outside the desired region by applying the
             % signed distance function
             d = feval(gridParams.domainFunction, centroidPositions, ...
-                    gridParams.center, gridParams.radius, ...
+                    gridParams.radius, ...
                     gridParams.ellipseAxes);
             triangleIndices = triangleIndices(d < gridParams.borderTolerance, :);
             
@@ -360,7 +363,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
         rfPositions = rfPositions + deltaT * netForceVectors;
         
         d = feval(gridParams.domainFunction, rfPositions, ...
-                gridParams.center, gridParams.radius, gridParams.ellipseAxes);
+                gridParams.radius, gridParams.ellipseAxes);
         outsideBoundaryIndices = d > 0;
             
         % And project them back to the domain
@@ -369,13 +372,13 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
                 dXgradient = (feval(gridParams.domainFunction, ...
                     [rfPositions(outsideBoundaryIndices, 1) + deps, ...
                     rfPositions(outsideBoundaryIndices, 2)], ...
-                    gridParams.center, gridParams.radius, ...
+                    gridParams.radius, ...
                     gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
                     deps;
                 dYgradient = (feval(gridParams.domainFunction, ...
                     [rfPositions(outsideBoundaryIndices, 1), ...
                     rfPositions(outsideBoundaryIndices, 2)+deps], ...
-                    gridParams.center, gridParams.radius, ...
+                    gridParams.radius, ...
                     gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
                     deps;
 
@@ -488,9 +491,9 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
     fprintf('Hex lattice adjustment ended. Reason: %s\n', terminationReason);
 end
 
-function distances = ellipticalDomainFunction(rfPositions, center, radius, ellipseAxes)
-    xx = rfPositions(:, 1) - center(1);
-    yy = rfPositions(:, 2) - center(2);
+function distances = ellipticalDomainFunction(rfPositions, radius, ellipseAxes)
+    xx = rfPositions(:, 1);
+    yy = rfPositions(:, 2);
     radii = sqrt((xx / ellipseAxes(1)) .^ 2 + (yy / ellipseAxes(2)) .^ 2);
     distances = radii - radius;
 end
