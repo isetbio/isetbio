@@ -7,11 +7,11 @@ function unitTestSmoothGrid()
     visualizeProgress = ~generateNewMosaic;
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 5; 
+    mosaicFOVDegs = 2; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
-    neuronalType = 'mRGC';
+    %neuronalType = 'mRGC';
     
     % Which eye
     whichEye = 'right';
@@ -40,7 +40,7 @@ function unitTestSmoothGrid()
     maxIterationsBeforeRetriangulation = 15;
     
     % 6. Interval to query user whether he/she wants to terminate
-    queryUserIntervalMinutes = 120;
+    queryUserIntervalMinutes =1;
     
     % Save filename
     p = getpref('IBIOColorDetect');
@@ -255,7 +255,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
     minimalIterationsPerformedAfterLastTriangularization = 0;
     histogramWidths = [];
     reTriangulationIterations = [];
-    timeLapsedHoursPrevious = [];
+    timePrevious = clock;
     userRequestTerminationAtIteration = [];
     terminateNow = false;
     
@@ -420,24 +420,18 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
         end
         
         if  ( reTriangulationIsNeeded || terminateNowDueToReductionInLatticeQuality)  
-            % See if another hour passed and asked the used whether to
-            % terminate soon
-            timeLapsedMinutes = toc(tStart)/60;
-            if (isempty(timeLapsedHoursPrevious))
-                timeLapsedHoursPrevious = 0;
-            end
+
+            % See if we need to query the user about terminating
+            timeLapsedMinutes = etime(clock, timePrevious)/60;
             
-            timeLapsedHours = floor(timeLapsedMinutes/queryUserIntervalMinutes);
-            
-            if (timeLapsedHours > timeLapsedHoursPrevious)
+            if (timeLapsedMinutes > queryUserIntervalMinutes)
                 queryUserWhetherToTerminateSoon = true;
             else
                 queryUserWhetherToTerminateSoon = false;
             end
-            timeLapsedHoursPrevious = timeLapsedHours;
             
             fprintf('\t>Triangularization at iteration: %d/%d (%s) - medianMov: %2.6f, tolerance: %2.3f, time lapsed: %2.1f minutes\n', ...
-                iteration, gridParams.maxIterations, triangularizationTriggerEvent, maxMovement, gridParams.dTolerance, timeLapsedMinutes);
+                iteration, gridParams.maxIterations, triangularizationTriggerEvent, maxMovement, gridParams.dTolerance, toc(tStart)/60);
             
             if (isempty(rfPositionsHistory))
                 rfPositionsHistory(1,:,:) = single(rfPositions);
@@ -466,6 +460,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
             else
                 fprintf('OK, will ask again in %d minutes.', queryUserIntervalMinutes);
             end
+            timePrevious = clock;
         end
         queryUserWhetherToTerminateSoon = false;
         
