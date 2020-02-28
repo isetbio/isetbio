@@ -34,7 +34,7 @@ function unitTestSmoothGrid()
     percentageRFSeparationThresholdForTriangularization = 99;
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
-    minIterationsBeforeRetriangulation = 5;
+    minIterationsBeforeRetriangulation = 8;
     
     % 5. Trigger Delayun triangularization if more than maxIterationsBeforeRetriangulation have passed since last one
     maxIterationsBeforeRetriangulation = 15;
@@ -277,20 +277,25 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
         positionalDiffsMetric = prctile(positionalDiffs, 99);
         
         % We need to triangulate again if the positionalDiff is above the set tolerance
-        reTriangulationIsNeeded = (positionalDiffsMetric > gridParams.positionalDiffToleranceForTriangularization);
+        if ((positionalDiffsMetric > gridParams.positionalDiffToleranceForTriangularization))
+            reTriangulationIsNeeded = true;
+            triangularizationTriggerEvent = 'movement > tolerance';
+        end
         
         % We need to triangulate again if the movement in the current iteration was > the average movement in the last 2 iterations 
         if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 0.5*(maxMovements(iteration-2)+maxMovements(iteration-3)))
             reTriangulationIsNeeded = true;
+             triangularizationTriggerEvent = 'movement stopped decreasing';
         end
         
         % We need to triangulate again if we went for maxIterationsToRetriangulate + some more since last triangularization
-        if ((abs(lastTriangularizationAtIteration-iteration-1)) > maxIterationsBeforeRetriangulation+(round(iteration/10)))
+        if ((abs(lastTriangularizationAtIteration-iteration-1)) > maxIterationsBeforeRetriangulation+min([10 round(iteration/20)]))
             reTriangulationIsNeeded = true;
+            triangularizationTriggerEvent = 'maxIterations passed';
         end
         
         % Do not triangulare if we did one less than minIterationsBeforeRetriangulation before
-        if ((abs(lastTriangularizationAtIteration-iteration-1)) < minIterationsBeforeRetriangulation)
+        if ((abs(lastTriangularizationAtIteration-iteration)) < minIterationsBeforeRetriangulation+min([5 round(iteration/50)]))
             reTriangulationIsNeeded = false;
         end
         
@@ -431,8 +436,8 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
             end
             timeLapsedHoursPrevious = timeLapsedHours;
             
-            fprintf('\t>Iteration: %d/%d, medianMov: %2.6f, tolerance: %2.3f, time lapsed: %f minutes\n', ...
-                iteration, gridParams.maxIterations, maxMovement, gridParams.dTolerance, timeLapsedMinutes);
+            fprintf('\t>Triangularization at iteration: %d/%d (%s) - medianMov: %2.6f, tolerance: %2.3f, time lapsed: %2.1f minutes\n', ...
+                iteration, gridParams.maxIterations, triangularizationTriggerEvent, maxMovement, gridParams.dTolerance, timeLapsedMinutes);
             
             if (isempty(rfPositionsHistory))
                 rfPositionsHistory(1,:,:) = single(rfPositions);
