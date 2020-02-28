@@ -7,11 +7,11 @@ function unitTestSmoothGrid()
     visualizeProgress = ~generateNewMosaic;
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 15; 
+    mosaicFOVDegs = 5; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
-    %neuronalType = 'mRGC';
+    neuronalType = 'mRGC';
     
     % Which eye
     whichEye = 'right';
@@ -25,7 +25,7 @@ function unitTestSmoothGrid()
     
     % Termination conditions
     % 1. Stop if cones move less than this positional tolerance (x gridParams.lambdaMin) in microns
-    dTolerance = 1.0e-3;
+    dTolerance = 1.0e-4;
     
     % 2. Stop if we exceed this many iterations
     maxIterations = 3000;
@@ -61,7 +61,8 @@ function unitTestSmoothGrid()
             error('Unknown neuronal type: ''%s''.',  neuronalType);
     end
     
-   
+    gridParams.whichEye = whichEye;
+    gridParams.micronsPerDegree = 300;
     gridParams.ellipseAxes = [1 1.2247];
     gridParams.lambdaMin = 2;
     gridParams.borderTolerance = 0.001 * gridParams.lambdaMin;
@@ -74,36 +75,44 @@ function unitTestSmoothGrid()
         fprintf('Termination reason for this mosaic: %s\n', terminationReason)
         hFig = figure(1); clf;
         set(hFig, 'Position', [10 10 1596 1076]);
-        generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs);
+        generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs, gridParams.micronsPerDegree);
         return;
     end
     
     % Generate initial RF positions and downsample according to the density
     tStart = tic;
-    rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin);
+    rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin, gridParams.micronsPerDegree);
     [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationThresholdForTriangularization, tStart);
        
     
     rfsNum = size(rfPositions,1);
     if (rfsNum > 1000*1000)
-        fprintf('Iteration: 0, Adusting %2.1f million cones, time lapsed: %f minutes\n', size(rfPositions,1)/1000000, toc(tStart)/60);
+        fprintf('Iteration: 0, Adusting %2.1f million nodes, time lapsed: %f minutes\n', size(rfPositions,1)/1000000, toc(tStart)/60);
     else
-        fprintf('Iteration: 0, Adusting %2.1f thousand cones, time lapsed: %f minutes\n', size(rfPositions,1)/1000, toc(tStart)/60);
+        fprintf('Iteration: 0, Adusting %2.1f thousand nodes, time lapsed: %f minutes\n', size(rfPositions,1)/1000, toc(tStart)/60);
     end
     
-    % Tabulate ecc
-    [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = ...
-            computeTableOfRFSpacings(rfPositions, eccentricitySamplesNum, whichEye);
+    % Precompure table of spacing across eccentricities
+    switch (neuronalType)
+        case 'cone'
+            [tabulatedEccXYMicrons, tabulatedRFSpacingInMicrons] = ...
+                computeTableOfConeSpacings(rfPositions, eccentricitySamplesNum, whichEye);
+        case 'mRGC'
+            [tabulatedRFSpacingInMicrons, tabulatedEccXYMicrons] = ...
+                computeTableOfmRGCRFSpacings(rfPositions, eccentricitySamplesNum, whichEye);
+        otherwise
+            error('Unknown neuronal type: ''%s''.',  neuronalType);
+    end
+    
     
     % Do it
     [rfPositions, rfPositionsHistory,iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
         smoothGrid(gridParams, rfPositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
-        visualizeProgress,  tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons,  mosaicFOVDegs, tStart);        
+        visualizeProgress,  tabulatedEccXYMicrons, tabulatedRFSpacingInMicrons,  mosaicFOVDegs, tStart);        
     
     % Save results
     save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iterationsHistory', 'maxMovements', 'reTriangulationIterations', ...
-        'terminationReason', 'tabulatedEccXYMicrons', 'tabulatedConeSpacingInMicrons', ...
-        '-v7.3');
+        'terminationReason', '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
 end
 
@@ -132,33 +141,32 @@ function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, g
     % sample probabilistically according to coneSpacingFunction
     rfsNum = size(rfPositions,1);
     if (rfsNum > 1000*1000)
-        fprintf('Computing separations for %2.1f million cones ...', rfsNum/1000000);
+        fprintf('Computing separations for %2.1f million nodes ...', rfsNum/1000000);
     else
-        fprintf('Computing separations for %2.1f thousand cones ...', rfsNum/1000);
+        fprintf('Computing separations for %2.1f thousand nodes ...', rfsNum/1000);
     end
-    coneSeparations = feval(gridParams.rfSpacingFunctionFull, rfPositions);
-    gridParams.positionalDiffToleranceForTriangularization = prctile(coneSeparations,percentageRFSeparationThresholdForTriangularization);
+    rfSeparations = feval(gridParams.rfSpacingFunctionFull, rfPositions, gridParams.whichEye);
+    gridParams.positionalDiffToleranceForTriangularization = prctile(rfSeparations,percentageRFSeparationThresholdForTriangularization);
 
     fprintf('... time lapsed: %f minutes.',  toc(tStart)/60);
 
     fprintf('\nProbabilistic sampling ...');
-    normalizedConeSeparations = coneSeparations / gridParams.lambdaMin;
-    densityP = 1/(sqrt(2/3)) * (1 ./ normalizedConeSeparations) .^ 2;
+    normalizedRFSeparations = rfSeparations / gridParams.lambdaMin;
+    densityP = WatsonRGCModel.densityFromSpacing(normalizedRFSeparations);
 
     % Remove cones accordingly
     fixedRFPositionsRadiusInCones = 1;
     radii = sqrt(sum(rfPositions.^2,2));
 
-    keptConeIndices = find(...
+    keptRFIndices = find(...
         (rand(size(rfPositions, 1), 1) < densityP) | ...
         ((radii < fixedRFPositionsRadiusInCones*gridParams.lambdaMin)) );
 
-    rfPositions = rfPositions(keptConeIndices, :);
+    rfPositions = rfPositions(keptRFIndices, :);
     fprintf(' ... done ! After %f minutes.\n', toc(tStart)/60);
 end
     
-function rfPositions = generateInitialRFpositions(fovDegs, lambda)
-    micronsPerDeg = 300;
+function rfPositions = generateInitialRFpositions(fovDegs, lambda, micronsPerDeg)
     radius = fovDegs/2*1.2*micronsPerDeg;
     rows = 2 * radius;
     cols = rows;
@@ -189,7 +197,7 @@ function hexLocs = computeHexGrid(rows, cols, lambda)
     hexLocs = [xHex(:) - mean(xHex(:)) yHex(:) - mean(yHex(:))];
 end
 
-function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfRFSpacings(rfPositions, eccentricitySamplesNum, whichEye)
+function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOfConeSpacings(rfPositions, eccentricitySamplesNum, whichEye)
         eccentricitiesInMeters = sqrt(sum(rfPositions .^ 2, 2)) * 1e-6;
         s = sort(eccentricitiesInMeters);
         maxConePositionMeters = max(s);
@@ -211,8 +219,9 @@ function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOf
         tabulatedConeSpacingInMicrons = tabulatedConeSpacingInMeters * 1e6;
         
         % In ConeSizeReadData, spacing is computed as sqrt(1/density). This is
-        % true for a rectangular mosaic. For a hex mosaic, spacing = sqrt(2.0/(3*density)).
-        tabulatedConeSpacingInMicrons = sqrt(2/3)*tabulatedConeSpacingInMicrons;
+        % true for a rectangular mosaic. For a hex mosaic, spacing = sqrt(2.0/(sqrt(3)*density)).
+        correctionFactor = WatsonRGCModel.spacingFromDensity(1);
+        tabulatedConeSpacingInMicrons = correctionFactor*tabulatedConeSpacingInMicrons;
 end
     
 function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
@@ -434,7 +443,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
             end
             
             if (visualizeProgress)
-                plotMosaic([], rfPositions, triangleIndices, maxMovements, reTriangulationIterations, histogramDiffWidths, histogramData, checkedBins, gridParams.dTolerance, mosaicFOVDegs);
+                plotMosaic([], rfPositions, triangleIndices, maxMovements, reTriangulationIterations, histogramDiffWidths, histogramData, checkedBins, gridParams.dTolerance, mosaicFOVDegs, gridParams.micronsPerDegree);
             else
                 plotMovementSequence([],maxMovements, gridParams.dTolerance)
                 plotMeshQuality([],histogramData, checkedBins, iterationsHistory);
@@ -498,27 +507,100 @@ function distances = ellipticalDomainFunction(rfPositions, radius, ellipseAxes)
     distances = radii - radius;
 end
 
-function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunctionFull(rfPositions)
+function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunctionFull(rfPositions, whichEye)
     eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
     angles = atan2(rfPositions(:, 2), rfPositions(:, 1)) / pi * 180;
-    coneSpacingInMeters = coneSizeReadData('eccentricity', eccentricitiesInMeters, 'angle', angles);
+    coneSpacingInMeters = coneSizeReadData('eccentricity', eccentricitiesInMeters, ...
+        'angle', angles, 'whichEye', whichEye);
     coneSpacingInMicrons = coneSpacingInMeters' * 1e6;
 end
 
-function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunctionFull(rfPositions)
+function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = computeTableOfmRGCRFSpacings(rfPositions, eccentricitySamplesNum, whichEye)
 
-    % Following needs to be replaced with Watson model  calls
-%     eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
-%     eccentricitiesInMeters = eccentricitiesInMicrons * 1e-6;
-%     angles = atan2(rfPositions(:, 2), rfPositions(:, 1)) / pi * 180;
-%     coneSpacingInMeters = coneSizeReadData('eccentricity', eccentricitiesInMeters, 'angle', angles);
-%     coneSpacingInMicrons = coneSpacingInMeters' * 1e6;
-
-
-    mRGCSpacingInMicrons = [];
-    eccentricitiesInMicrons = [];
+    % Find range of retinal positions in microns that we need to compute
+    % density for
+    eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
+    idx = find(eccentricitiesInMicrons<2.1);
+    t = rfPositions(idx,:);
+    tt = pdist2(t,t);
+    tt(tt==0) = Inf;
+    minSeparationMicrons = min(tt(:));
+    maxEccMicrons = max(eccentricitiesInMicrons(:));
     
+    % Support of retinal positions in mm
+    xPosMicrons = logspace(log10(minSeparationMicrons), log10(maxEccMicrons+minSeparationMicrons), eccentricitySamplesNum);
+    xPosMicrons = [-fliplr(xPosMicrons) 0 xPosMicrons];
+
+    [X,Y] = meshgrid(xPosMicrons);
+    rfPositions = [X(:) Y(:)];
+    [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, eccentricitySamplesNum, whichEye);
+    eccentricitiesInMicrons = rfPositions;
+    mRGCSpacingInMicrons = mRGCSpacingInMicrons';
+end
+
+function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunctionFull(rfPositions, whichEye)
+    eccentricitySamplesNum = 128;
+    [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, eccentricitySamplesNum, whichEye);
+end
+
+function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, nSamples, whichEye)
+
+    % Find range of retinal positions in microns that we need to compute
+    % density for
+    eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
+    idx = find(eccentricitiesInMicrons<2.1);
+    t = rfPositions(idx,:);
+    tt = pdist2(t,t);
+    tt(tt==0) = Inf;
+    minSeparationMicrons = min(tt(:));
+    maxEccMicrons = max(eccentricitiesInMicrons(:));
+    
+    % Support of retinal positions in mm
+    xPosMM = [0 logspace(log10(minSeparationMicrons), log10(maxEccMicrons+minSeparationMicrons), nSamples)]/1e3;
+    
+    switch whichEye
+        case 'left'
+            theView = 'left eye retina';
+        case 'right'
+            theView = 'right eye retina';
+        otherwise
+            error('Which eye must be either ''left'' or ''right'', not ''%s''.', whichEye)
+    end
+
+    WatsonRGCModelObj = WatsonRGCModel();
+    
+    % Convert retinal mm to visual degs
+    eccDegs = WatsonRGCModelObj.rhoMMsToDegs(xPosMM);
+
+    % Compute mRGC density map
+    [mRGCDensity2DMap, mRGCMeridianDensities, densitySupportMM, ...
+        horizontalMeridianLabel, verticalMeridianLabel, densityLabel, ...
+        supportUnits, densityUnits] = WatsonRGCModelObj.compute2DmRGCRFDensity(eccDegs, theView);
+
+
+    % Make sure results are returned in retinal mm units
+    assert((strcmp(densityUnits, WatsonRGCModelObj.retinalMMDensityUnits)) && ...
+           (strcmp(supportUnits, WatsonRGCModelObj.retinalMMEccUnits)), ...
+           sprintf('Expected mm units, but got ''%s'' and ''%s'' instead.', supportUnits, densityUnits)); 
+
+    % Density is for both types of mRGCs (ON + OFF), so we need density for
+    % one type, which is half (assuming equal numerosities of ON and OFF cells)
+    mRGCDensity2DMap = 0.5*mRGCDensity2DMap;
+    
+    % Convert the density map into a spacing map
+    mRGCSpacing2DMapMM = WatsonRGCModelObj.spacingFromDensity(mRGCDensity2DMap);
+    
+    % Convert to microns from mm
+    mRGCSpacing2DMapMicrons = mRGCSpacing2DMapMM*1e3;
+    densitySupportMicrons = densitySupportMM*1e3;
+
+    % Create a scatterred interpolant function
+    [X,Y] = meshgrid(squeeze(densitySupportMicrons(1,:)), squeeze(densitySupportMicrons(2,:)));
+    F = scatteredInterpolant(X(:),Y(:),mRGCSpacing2DMapMicrons(:), 'linear');
+
+    % Evaluate the interpolant function at the requested rfPositions
+    mRGCSpacingInMicrons = F(rfPositions(:,1), rfPositions(:,2));
 end
 
 
@@ -527,7 +609,7 @@ function rfSpacingInMicrons = rfSpacingFunctionFast(rfPositions, tabulatedEccXYM
     rfSpacingInMicrons = (tabulatedConeSpacingInMicrons(I))';
 end
 
-function generateMosaicProgressVideo(videoFileName, hFigVideo, rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, dTolerance, mosaicFOVDegs)
+function generateMosaicProgressVideo(videoFileName, hFigVideo, rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, dTolerance, mosaicFOVDegs, micronsPerDegree)
     videoOBJ = VideoWriter(videoFileName, 'MPEG-4'); % H264 format
     videoOBJ.FrameRate = 30;
     videoOBJ.Quality = 100;
@@ -538,7 +620,7 @@ function generateMosaicProgressVideo(videoFileName, hFigVideo, rfPositionsHistor
         currentRFPositions = squeeze(rfPositionsHistory(k,:,:));
         triangleIndices = delaunayn(double(currentRFPositions));
         [~, histogramData, widths, diffWidths, checkedBins] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentRFPositions, triangleIndices, widths);
-        plotMosaic(hFigVideo, currentRFPositions, triangleIndices, maxMovements(1:iterationsHistory(k)), reTriangulationIterations(1:k), diffWidths, histogramData, checkedBins, dTolerance, mosaicFOVDegs);
+        plotMosaic(hFigVideo, currentRFPositions, triangleIndices, maxMovements(1:iterationsHistory(k)), reTriangulationIterations(1:k), diffWidths, histogramData, checkedBins, dTolerance, mosaicFOVDegs, micronsPerDegree);
         % Add video frame
         videoOBJ.writeVideo(getframe(hFigVideo));
     end
@@ -572,7 +654,7 @@ function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkF
 
     % Termination condition
     cond1 = bin1Percent(1) > 0.85;
-    cond2 = (any(diffWidths(:) > 0.05)) && (~any((isnan(diffWidths(:)))));
+    cond2 = (any(diffWidths(:) > 0.1)) && (~any((isnan(diffWidths(:)))));
     if (cond1 && cond2)
         fprintf(2,'Should terminate here\n');
         terminateNow = true;
@@ -655,9 +737,9 @@ function plotMovementSequence(figNo, maxMovements, dTolerance)
 end
 
 
-function plotMosaic(hFig, rfPositions, triangleIndices, maxMovements,  reTriangulationIterations, widths, histogramData, bin1Percent,  dTolerance, mosaicFOVDegs)
+function plotMosaic(hFig, rfPositions, triangleIndices, maxMovements,  reTriangulationIterations, widths, histogramData, bin1Percent,  dTolerance, mosaicFOVDegs, micronsPerDeg)
 
-    eccDegs = (sqrt(sum(rfPositions.^2, 2)))/300;
+    eccDegs = (sqrt(sum(rfPositions.^2, 2)))/micronsPerDeg;
     idx = find(eccDegs <= min([1 mosaicFOVDegs])/2);
     %idx = 1:size(rfPositions,1);
     

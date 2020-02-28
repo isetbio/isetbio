@@ -67,7 +67,7 @@ function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
     
     % In ConeSizeReadData, spacing is computed as sqrt(1/density). This is
     % true for a rectangular mosaic. For a hex mosaic, spacing = sqrt(2.0/(3*density)).
-    spacingMM = sqrt(2.0./(sqrt(3.0)*densityConesPerMM2));
+    spacingMM = obj.spacingFromDensity(densityConesPerMM2);
     spacingMeters = spacingMM * 1e-3;
      
     switch (densityUnits)

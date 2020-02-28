@@ -100,7 +100,13 @@ classdef WatsonRGCModel
                     5.846 * 1e-5 * eccDegs    + ...
                    -1.064 * 1e-5 * eccDegs.^2 + ...
                     4.116 * 1e-8 * eccDegs.^3;
-                
+        
+        % Convert density to spacing in a perfect hex mosaic. This is equation (A4) in the Watson (2014) paper.
+        spacingFromDensity = @(density) sqrt(2.0./(sqrt(3.0)*density));
+
+        % Convert density to spacing in a perfect hex mosaic. This is equation (A4) in the Watson (2014) paper.
+        densityFromSpacing = @(spacing) 2.0./(sqrt(3.0)*spacing.^2);
+        
         % Valid eccentricity units
         visualDegsEccUnits = 'deg';
         retinalMMEccUnits = 'mm';

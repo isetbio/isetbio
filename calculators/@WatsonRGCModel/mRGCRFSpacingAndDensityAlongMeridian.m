@@ -45,8 +45,8 @@ function [mRGCRFSpacing, mRGCRFDensity, rightEyeRetinalMeridianName] = ...
     % Compute mRGC RF density along the requested meridian. This is equation (8) in the Watson (2014) paper.
     mRGCRFDensity = midgetRGCFractionAlongMeridian .* totalRGCRFdensityAlongMeridian;
     
-    % Compute mRGC RF spacing from their density. This is equation (9) in the Watson (2014) paper.
-    mRGCRFSpacing = sqrt(2.0./(sqrt(3.0)*mRGCRFDensity));
+    % Compute mRGC RF spacing from their density. 
+    mRGCRFSpacing = obj.spacingFromDensity(mRGCRFDensity);
     
     % Return the name of the corresponding retinal meridian.
     [~, ~, rightEyeRetinalMeridianName] = obj.isetbioRetinalAngleForWatsonMeridian(rightEyeVisualFieldMeridianName);
