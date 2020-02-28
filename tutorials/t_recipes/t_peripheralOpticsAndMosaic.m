@@ -1,24 +1,22 @@
 function t_peripheralOpticsAndMosaic
 
     % Examined eccentricities
-    eccXrange = [-40 -20 -10 -5 0 5 10 20 40];
-    eccYrange =  -20:10:20;
+   
  
     % Generate optics using the mean Zernike coefficients
     theSubjectIndex = [];  % mean over all subjects
     desiredPupilDiamMM = 3.0;
 
+    eccXrange = [-25 -10 -5 -2 0 2 5 10 25];
+    eccYrange =  [-25 -10 -5 0 5 10 25];
+    theSubjectIndex = 1;
+    computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
     
-    %computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
     
     whichEye ='right';
-    computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye);
+    eccXrange = [-40 -20 -10 -5 0 5 10 20 40];
+    %computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye);
     
-    % Generate optics using individual subject Zernike coefficients
-%     for theSubjectIndex = 1:10
-%         desiredPupilDiamMM = 3.0;
-%         computeOIAndMosaicAcrossEccentricities(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
-%     end
 end
 
 function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye)
@@ -45,15 +43,28 @@ function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXran
        'bottomMargin',   0.03, ...
        'topMargin',      0.02);
    
-   figNo = 1000;
-   examinedSubjects = [1 2 8 9 11];  % 1,2,8,9, 11, 12, 15, 18, 19, 20, 21, 22, 35, 41, 43, 44, 45, 48, 49 are good
+   examinedSubjects = [
+       1   2  8  9 11; ... 
+       12 15 18 19 20; ...
+       21 22 35 41 43; ...
+       44 45 48 49 50];
    
-   % Reset figure
-   hFig = figure(1); clf;
-   set(hFig, 'Position', [10 10 2540 1420], 'Color', [1 1 1]);
-    
-   for sIndex = 1:numel(examinedSubjects)
+   examinedSubjects = [
+       51:55; ... 
+       56:60; ...
+       61:65; ... 
+       66:70];
+   
+   examinedSubjects = examinedSubjects + 20;
+   
+   for subjectGroupIndex = 1:size(examinedSubjects,1)
+       
+       hFig = figure(subjectGroupIndex+10); clf;
+       set(hFig, 'Position', [10 10 2540 1420], 'Color', [1 1 1]);
+   
+   for sIndex = 1:size(examinedSubjects,2)
    for eccXindex = 1:numel(eccXrange)
+       
        % The eccentricity in degrees
         eccXY = [eccXrange(eccXindex) 0];
         
@@ -75,7 +86,7 @@ function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXran
 
 
         % Get zCoeffs for this eccentricity
-        theSubjectIndex = examinedSubjects(sIndex);
+        theSubjectIndex = examinedSubjects(subjectGroupIndex,sIndex);
         [zCoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,theSubjectIndex, eccXY);
         
         
@@ -107,14 +118,15 @@ function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXran
         
    end
    end
-    
+   end
+   
 end
 
 
 function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange)
 
     
-    applyCentralCorrection = true;
+    applyCentralCorrection = ~true;
     % Get a struct with the Polans data
     d = Polans2015Data(applyCentralCorrection);
 
@@ -126,15 +138,15 @@ function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPu
     visualizePSTAtThisWavelength = 550;
     
     % plotting coords
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+    posVectors = NicePlot.getSubPlotPosVectors(...
        'rowsNum', numel(eccYrange), ...
        'colsNum', numel(eccXrange), ...
-       'heightMargin',  0.02, ...
+       'heightMargin',  0.01, ...
        'widthMargin',    0.01, ...
-       'leftMargin',     0.03, ...
-       'rightMargin',    0.01, ...
-       'bottomMargin',   0.04, ...
-       'topMargin',      0.03);
+       'leftMargin',     0.02, ...
+       'rightMargin',    0.00, ...
+       'bottomMargin',   0.03, ...
+       'topMargin',      0.01);
    
    
     if (isempty(theSubjectIndex))
@@ -145,7 +157,7 @@ function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPu
     
     % Reset figure
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1640 1064], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1560 1280], 'Color', [1 1 1]);
     
     for eccYindex = 1:numel(eccYrange)
     for eccXindex = 1:numel(eccXrange)
@@ -165,7 +177,7 @@ function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPu
                                     
         % Generate a 0.2 x 0.2 deg regular hex cone mosaic with ecc-adjusted cone separation and aperture
         theConeMosaic = coneMosaicHex(13, ...
-            'fovDegs', 0.2, ...
+            'fovDegs', 0.3, ...
             'customLambda', coneSpacingInMeters*1e6, ...
             'customInnerSegmentDiameter', coneApertureInMeters*1e6);
 
@@ -178,12 +190,12 @@ function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPu
             desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY, d.eye);
 
         % Plot PSF and cone mosaic at this eccentricity
-        ax1 = subplot('Position', subplotPosVectors(numel(eccYrange)-eccYindex+1,eccXindex).v);
+        ax1 = subplot('Position', posVectors(numel(eccYrange)-eccYindex+1,eccXindex).v);
         visualizePSF(theOI, visualizePSTAtThisWavelength, visualizePSFOverThisSpatialSupportArcMin, ...
             'withSuperimposedMosaic', theConeMosaic, ...
             'contourLevels', [0.1 0.25 0.5 0.75 0.9], ...
             'includePupilAndInFocusWavelengthInTitle', (eccXindex==1)&&(eccYindex==1), ...
-            'axesHandle', ax1, 'fontSize', 14);
+            'axesHandle', ax1, 'fontSize', 12);
         
         if (eccYrange(eccYindex) > min(eccYrange))
             xlabel('');
@@ -268,23 +280,27 @@ function [theZcoeffs, nearestEccXY] = zCoeffsForSubjectAndEccentricity(d,subject
     dY = d.eccYgrid - eccXY(2);
     [~,indexOfNearestEcc] = min(dX.^2+dY.^2);
     nearestEccXY = [d.eccXgrid(indexOfNearestEcc) d.eccYgrid(indexOfNearestEcc)];
+    
     if (strcmp(d.source, 'Polans_2015'))
         if (isempty(subjectIndex))
             % mean over all subjects
-            theZcoeffs = mean(squeeze(d.zCoeffs(:,indexOfNearestEcc,:)),1);
+            theMeasuredZcoeffs = mean(squeeze(d.zCoeffs(:,indexOfNearestEcc,:)),1);
         else
-            theZcoeffs = squeeze(d.zCoeffs(subjectIndex,indexOfNearestEcc,:));
+            theMeasuredZcoeffs = squeeze(d.zCoeffs(subjectIndex,indexOfNearestEcc,:));
         end
     else
         eyeIndex = 1;
         if (isempty(subjectIndex))
-            theZcoeffs = squeeze(d.zCoeffsMean(eyeIndex,indexOfNearestEcc,:));
+            theMeasuredZcoeffs = squeeze(d.zCoeffsMean(eyeIndex,indexOfNearestEcc,:));
         else
-            theZcoeffs = squeeze(d.zCoeffs(eyeIndex,subjectIndex,indexOfNearestEcc,:));
+            theMeasuredZcoeffs = squeeze(d.zCoeffs(eyeIndex,subjectIndex,indexOfNearestEcc,:));
         end
         
     end
     
+    % Place zCoeffs in right bin
+    theZcoeffs = zeros(1,21);
+    theZcoeffs(d.zCoeffOSAIndices+1) = theMeasuredZcoeffs;
 end
 
 
@@ -455,7 +471,6 @@ function d = Artal2012Data(applyCentralCorrection)
     eyeDimIndex = 3;
     eccDimIndex = 4;
     d.zCoeffs = permute(allData, [eyeDimIndex subjectDimIndex eccDimIndex zCoeffDimIndex]);
-    size(d.zCoeffs)
     d.zCoeffsMean = squeeze(mean(d.zCoeffs, 2, 'omitnan'));
     
     % Find subjects whose coeffs are nan and remove them
