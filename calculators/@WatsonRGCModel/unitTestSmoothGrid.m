@@ -1,24 +1,24 @@
 function unitTestSmoothGrid()
 
     % Generate or view saved mosaic
-    generateNewMosaic = true;
+    generateNewMosaic = ~true;
     
     % Visualize mosaic and progress
     visualizeProgress = ~generateNewMosaic;
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 2; 
+    mosaicFOVDegs = 30; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
-    %neuronalType = 'mRGC';
+    neuronalType = 'mRGC';
     
     % Which eye
     whichEye = 'right';
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
-    eccentricitySamplesNum = 32;
+    eccentricitySamplesNum = 48;
     
     % Set a random seed
     theRandomSeed = 1;
@@ -75,7 +75,18 @@ function unitTestSmoothGrid()
         fprintf('Termination reason for this mosaic: %s\n', terminationReason)
         hFig = figure(1); clf;
         set(hFig, 'Position', [10 10 1596 1076]);
-        generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs, gridParams.micronsPerDegree);
+        
+        renderFinalMosaic = true;
+        if (renderFinalMosaic)
+            finalRFPositions = squeeze(rfPositionsHistory(end,:,:));
+            triangleIndices = delaunayn(double(finalRFPositions));
+            nSamples = 128;
+            mRGCSpacingInMicrons = mRGCSpacingFunction(double(finalRFPositions), nSamples, whichEye);
+            ax = subplot('Position', [0.05 0.05 0.9 0.9]);
+            renderMosaicWithApertures(ax, finalRFPositions, triangleIndices, mRGCSpacingInMicrons, mosaicFOVDegs, gridParams.micronsPerDegree);
+        else
+            generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs, gridParams.micronsPerDegree);
+        end
         return;
     end
     
@@ -609,6 +620,8 @@ function rfSpacingInMicrons = rfSpacingFunctionFast(rfPositions, tabulatedEccXYM
     rfSpacingInMicrons = (tabulatedConeSpacingInMicrons(I))';
 end
 
+
+
 function generateMosaicProgressVideo(videoFileName, hFigVideo, rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, dTolerance, mosaicFOVDegs, micronsPerDegree)
     videoOBJ = VideoWriter(videoFileName, 'MPEG-4'); % H264 format
     videoOBJ.FrameRate = 30;
@@ -620,7 +633,10 @@ function generateMosaicProgressVideo(videoFileName, hFigVideo, rfPositionsHistor
         currentRFPositions = squeeze(rfPositionsHistory(k,:,:));
         triangleIndices = delaunayn(double(currentRFPositions));
         [~, histogramData, widths, diffWidths, checkedBins] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentRFPositions, triangleIndices, widths);
-        plotMosaic(hFigVideo, currentRFPositions, triangleIndices, maxMovements(1:iterationsHistory(k)), reTriangulationIterations(1:k), diffWidths, histogramData, checkedBins, dTolerance, mosaicFOVDegs, micronsPerDegree);
+        plotMosaic(hFigVideo, currentRFPositions, triangleIndices, ...
+            maxMovements(1:iterationsHistory(k)), reTriangulationIterations(1:k), ...
+            diffWidths, histogramData, checkedBins, dTolerance, mosaicFOVDegs, ...
+            micronsPerDegree);
         % Add video frame
         videoOBJ.writeVideo(getframe(hFigVideo));
     end
@@ -736,6 +752,71 @@ function plotMovementSequence(figNo, maxMovements, dTolerance)
     ylabel('median movement', 'FontSize', 16)
 end
 
+function renderMosaicWithApertures(axesHandle, rfPositions, triangleIndices, rfSpacing, mosaicFOVDegs, micronsPerDeg)
+
+    eccDegs = (sqrt(sum(rfPositions.^2, 2)))/micronsPerDeg;
+    idx = find(eccDegs < 0.3);
+    
+    segmentsNum = 20;
+    deltaTheta = 360/segmentsNum ;
+    radii = 0.5*rfSpacing(idx);
+    
+    % rf.xProfiles in [nodes x (segmentsNum+1)]
+    rf.xProfiles = 0.9*radii * cosd((0:segmentsNum)*deltaTheta);
+    rf.yProfiles = 0.9*radii * sind((0:segmentsNum)*deltaTheta);
+    
+    % add some noise
+    rf.xProfiles = rf.xProfiles + randn(size(rf.xProfiles))*0.1;
+    rf.xProfiles = rf.xProfiles + randn(size(rf.yProfiles))*0.1;
+    
+    % Translate profiles according to RF center position
+    x = bsxfun(@plus, rf.xProfiles, rfPositions(idx,1));
+    y = bsxfun(@plus, rf.yProfiles, rfPositions(idx,2));
+
+    visualizeLatticeState(rfPositions, triangleIndices);
+    hold on;
+    
+    edgeColor = 'none'; lineWidth = 0.4;
+    renderPatchArray(axesHandle, x, y,  edgeColor, lineWidth)
+    
+    set(gca, 'XLim', mosaicFOVDegs/2*[-1 1], 'YLim', mosaicFOVDegs/2*[-1 1], 'CLim', [0 1], 'FontSize', 16);
+    axis 'square'
+        
+end
+
+function renderPatchArray(axesHandle, x, y, edgeColor, lineWidth)
+
+   
+    verticesPerCone = size(x,2);
+    conesNum = size(x,1);
+    
+    verticesList = zeros(verticesPerCone * conesNum, 2);
+    facesList = [];
+    colors = [];
+    
+    for coneIndex = 1:conesNum
+        idx = (coneIndex - 1) * verticesPerCone + (1:verticesPerCone);
+ 
+        verticesList(idx, 1) = x(coneIndex,:);
+        verticesList(idx, 2) = y(coneIndex,:);
+        
+        facesList = cat(1, facesList, idx);
+        lConeColor = 0.1;
+        colors = cat(1, colors, repmat(lConeColor, [verticesPerCone 1]));
+    end
+
+    colorMap = [1 0 0; 0 1 0; 0 0 1];
+    
+    S.Vertices = verticesList;
+    S.Faces = facesList;
+    S.FaceVertexCData = colors;
+    S.FaceColor = 'flat';
+    S.FaceAlpha = 0.4;
+    S.EdgeColor = edgeColor;
+    S.LineWidth = lineWidth;
+    patch(S, 'Parent', axesHandle);
+    colormap(axesHandle, colorMap); 
+end
 
 function plotMosaic(hFig, rfPositions, triangleIndices, maxMovements,  reTriangulationIterations, widths, histogramData, bin1Percent,  dTolerance, mosaicFOVDegs, micronsPerDeg)
 
@@ -750,18 +831,19 @@ function plotMosaic(hFig, rfPositions, triangleIndices, maxMovements,  reTriangu
     
     clf;
     subplot(2,3,[1 2 4 5]);
-    plotTriangularizationGrid = true;
-    if (plotTriangularizationGrid)
-        visualizeLatticeState(rfPositions, triangleIndices);
-    end
+    
+    if (1==1)
+        plotTriangularizationGrid = true;
+        if (plotTriangularizationGrid)
+            visualizeLatticeState(rfPositions, triangleIndices);
+        end
 
-    plot(rfPositions(idx,1), rfPositions(idx,2), 'r.');
-    maxPos = max(max(abs(rfPositions(idx,:))));
-    set(gca, 'XLim', maxPos*[-1 1], 'YLim', maxPos*[-1 1], 'FontSize', 16);
-    axis 'square'
-    
-   
-    
+        plot(rfPositions(idx,1), rfPositions(idx,2), 'r.');
+        maxPos = max(max(abs(rfPositions(idx,:))));
+        set(gca, 'XLim', maxPos*[-1 1], 'YLim', maxPos*[-1 1], 'FontSize', 16);
+        axis 'square'
+    end
+      
     subplot(2,3,3);
     yyaxis left
     plotMovementSequence(hFig, maxMovements, dTolerance);
@@ -815,7 +897,7 @@ function visualizeLatticeState(rfPositions, triangleIndices)
     end
     
     patch(xx, yy, [0 0 1], 'EdgeColor', [0.4 0.4 0.4], ...
-        'EdgeAlpha', 0.5, 'FaceAlpha', 0.4, ...
+        'EdgeAlpha', 0.5, 'FaceAlpha', 0.0, ...
         'FaceColor', [0.99 0.99 0.99], 'LineWidth', 1.0, ...
         'LineStyle', '-', 'Parent', gca); 
     hold on;
