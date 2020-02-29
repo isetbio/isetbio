@@ -9,7 +9,7 @@ function t_peripheralOpticsAndMosaic
 
     eccXrange = [-25 -10 -5 -2 0 2 5 10 25];
     eccYrange =  [-25 -10 -5 0 5 10 25];
-    theSubjectIndex = 1;
+    theSubjectIndex = 2;
     computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
     
     
@@ -126,7 +126,7 @@ end
 function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange)
 
     
-    applyCentralCorrection = ~true;
+    applyCentralCorrection = true;
     % Get a struct with the Polans data
     d = Polans2015Data(applyCentralCorrection);
 
@@ -157,7 +157,7 @@ function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPu
     
     % Reset figure
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1560 1280], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1440 1180], 'Color', [1 1 1]);
     
     for eccYindex = 1:numel(eccYrange)
     for eccXindex = 1:numel(eccXrange)
