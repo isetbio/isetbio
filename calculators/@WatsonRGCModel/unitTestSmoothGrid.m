@@ -83,7 +83,10 @@ function unitTestSmoothGrid()
             nSamples = 128;
             mRGCSpacingInMicrons = mRGCSpacingFunction(double(finalRFPositions), nSamples, whichEye);
             ax = subplot('Position', [0.05 0.05 0.9 0.9]);
-            renderMosaicWithApertures(ax, finalRFPositions, triangleIndices, mRGCSpacingInMicrons, mosaicFOVDegs, gridParams.micronsPerDegree);
+            visualizedRect.center = [0 0];
+            visualizedRect.size = [2 1];
+            renderMosaicWithApertures(ax, finalRFPositions, triangleIndices, mRGCSpacingInMicrons, ...
+                mosaicFOVDegs, gridParams.micronsPerDegree, visualizedRect);
         else
             generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs, gridParams.micronsPerDegree);
         end
@@ -752,10 +755,20 @@ function plotMovementSequence(figNo, maxMovements, dTolerance)
     ylabel('median movement', 'FontSize', 16)
 end
 
-function renderMosaicWithApertures(axesHandle, rfPositions, triangleIndices, rfSpacing, mosaicFOVDegs, micronsPerDeg)
+function renderMosaicWithApertures(axesHandle, rfPositions, triangleIndices, rfSpacing, mosaicFOVDegs, micronsPerDeg, visualizedRect)
 
-    eccDegs = (sqrt(sum(rfPositions.^2, 2)))/micronsPerDeg;
-    idx = find(eccDegs < 0.3);
+    xLims = visualizedRect.size(1)/2*[-1 1] + visualizedRect.center(1);
+    yLims = visualizedRect.size(2)/2*[-1 1] + visualizedRect.center(2);
+    
+    xLims = xLims * micronsPerDeg;
+    yLims = yLims * micronsPerDeg;
+    
+    visualizedRect.center = visualizedRect.center * micronsPerDeg;
+    visualizedRect.size = visualizedRect.size * micronsPerDeg;
+    
+    idx = find((abs(rfPositions(:,1)-visualizedRect.center(1))<visualizedRect.size(1)/2) & ...
+          (abs(rfPositions(:,2)-visualizedRect.center(2))<visualizedRect.size(2)/2));
+      
     
     segmentsNum = 20;
     deltaTheta = 360/segmentsNum ;
@@ -764,47 +777,58 @@ function renderMosaicWithApertures(axesHandle, rfPositions, triangleIndices, rfS
     % rf.xProfiles in [nodes x (segmentsNum+1)]
     rf.xProfiles = 0.9*radii * cosd((0:segmentsNum)*deltaTheta);
     rf.yProfiles = 0.9*radii * sind((0:segmentsNum)*deltaTheta);
-    
-    % add some noise
-    rf.xProfiles = rf.xProfiles + randn(size(rf.xProfiles))*0.1;
-    rf.xProfiles = rf.xProfiles + randn(size(rf.yProfiles))*0.1;
+   
     
     % Translate profiles according to RF center position
     x = bsxfun(@plus, rf.xProfiles, rfPositions(idx,1));
     y = bsxfun(@plus, rf.yProfiles, rfPositions(idx,2));
 
+    rfContours = cell(1,size(x,1));
+    for coneIndex = 1:size(x,1)
+       rfContours{coneIndex} = struct('x', x(coneIndex,:), 'y', y(coneIndex,:));  
+    end
+    
     visualizeLatticeState(rfPositions, triangleIndices);
     hold on;
     
-    edgeColor = 'none'; lineWidth = 0.4;
-    renderPatchArray(axesHandle, x, y,  edgeColor, lineWidth)
+    edgeColor = [0 0 0]; lineWidth = 1.0;
+    renderPatchArray(axesHandle, rfContours,  edgeColor, lineWidth)
     
-    set(gca, 'XLim', mosaicFOVDegs/2*[-1 1], 'YLim', mosaicFOVDegs/2*[-1 1], 'CLim', [0 1], 'FontSize', 16);
-    axis 'square'
-        
+
+    set(gca, 'Color', 'none', 'XLim', xLims, 'YLim', yLims, 'CLim', [0 1], 'FontSize', 16);
+    axis 'equal'
+    drawnow;
+    
 end
 
-function renderPatchArray(axesHandle, x, y, edgeColor, lineWidth)
-
+function renderPatchArray(axesHandle, rfContours, edgeColor, lineWidth)
    
-    verticesPerCone = size(x,2);
-    conesNum = size(x,1);
-    
-    verticesList = zeros(verticesPerCone * conesNum, 2);
-    facesList = [];
-    colors = [];
-    
+    conesNum = numel(rfContours);
+    maxVerticesPerRFcontour = 50;
+   
+    bigN = 0;
     for coneIndex = 1:conesNum
-        idx = (coneIndex - 1) * verticesPerCone + (1:verticesPerCone);
- 
-        verticesList(idx, 1) = x(coneIndex,:);
-        verticesList(idx, 2) = y(coneIndex,:);
-        
-        facesList = cat(1, facesList, idx);
-        lConeColor = 0.1;
-        colors = cat(1, colors, repmat(lConeColor, [verticesPerCone 1]));
+        c = rfContours{coneIndex};
+        bigN = bigN + numel(c.x);
     end
-
+    
+    verticesList = zeros(bigN, 2);
+    facesList = nan(conesNum, maxVerticesPerRFcontour);
+    colors = zeros(bigN,1);
+    
+    idx = 0;
+    for coneIndex = 1:conesNum
+        c = rfContours{coneIndex};
+        N = numel(c.x);
+        indices = idx + (1:N);
+        verticesList(indices, 1) = c.x;
+        verticesList(indices, 2) = c.y;
+        facesList(coneIndex,1:N) = indices;
+        lConeColor = 0.1;
+        colors(indices, 1) = lConeColor;
+        idx = idx + N;
+    end
+    
     colorMap = [1 0 0; 0 1 0; 0 0 1];
     
     S.Vertices = verticesList;
