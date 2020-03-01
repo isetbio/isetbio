@@ -74,20 +74,51 @@ function unitTestSmoothGrid()
         load(saveFileName, 'rfPositionsHistory','iterationsHistory', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
         fprintf('Termination reason for this mosaic: %s\n', terminationReason)
         hFig = figure(1); clf;
-        set(hFig, 'Position', [10 10 1596 1076]);
+        
         
         renderFinalMosaic = true;
+        
         if (renderFinalMosaic)
+            set(hFig, 'Position', [10 10 950 600], 'Color', [1 1 1]);
             finalRFPositions = squeeze(rfPositionsHistory(end,:,:));
+            rfSpacingInMicrons = gridParams.rfSpacingFunctionFull(double(finalRFPositions),  whichEye);
+            
             triangleIndices = delaunayn(double(finalRFPositions));
-            nSamples = 128;
-            mRGCSpacingInMicrons = mRGCSpacingFunction(double(finalRFPositions), nSamples, whichEye);
-            ax = subplot('Position', [0.05 0.05 0.9 0.9]);
-            visualizedRect.center = [0 0];
-            visualizedRect.size = [2 1];
-            renderMosaicWithApertures(ax, finalRFPositions, triangleIndices, mRGCSpacingInMicrons, ...
-                mosaicFOVDegs, gridParams.micronsPerDegree, visualizedRect);
+            
+            switch (neuronalType)
+                case 'cone'
+                    rfIDs = generateConeRFIDs(finalRFPositions);
+                case 'mRGC'
+                    rfIDs = generateRGCRFIDs(finalRFPositions);
+                otherwise
+                    error('Unknown neuronal type: ''%s''.',  neuronalType);
+            end
+            
+            ax = subplot('Position', [0.04 0.07 0.95 0.925]);
+            
+            visualizedRect.size = [0.5 0.3];
+            plotTriangularizationGrid = ~true;
+            
+            videoFileName = strrep(saveFileName, '.mat', '_panVideo');
+            videoOBJ = VideoWriter(videoFileName, 'MPEG-4'); % H264 format
+            videoOBJ.FrameRate = 30;
+            videoOBJ.Quality = 100;
+            videoOBJ.open();
+    
+            deltaX = 0.002;
+            stepsNum = 15/deltaX;
+            for step = 1:1700
+                cla(ax);
+                visualizedRect.center = [0.49+(step-1)*deltaX 0];
+                deltaX = min([deltaX*1.0015 0.01]);
+                renderMosaicWithApertures(ax, finalRFPositions, rfIDs, triangleIndices, rfSpacingInMicrons, ...
+                    mosaicFOVDegs, gridParams.micronsPerDegree, visualizedRect, neuronalType, plotTriangularizationGrid);
+                videoOBJ.writeVideo(getframe(hFig));
+            end
+            videoOBJ.close();
+            
         else
+            set(hFig, 'Position', [10 10 1596 1076]);
             generateMosaicProgressVideo(strrep(saveFileName, 'progress', 'video'), hFig , rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, gridParams.dTolerance, mosaicFOVDegs, gridParams.micronsPerDegree);
         end
         return;
@@ -129,6 +160,29 @@ function unitTestSmoothGrid()
         'terminationReason', '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
 end
+
+function rfIDs = generateConeRFIDs(finalRFPositions)
+
+    rfPercentages = [0.62 0.31 0.07];
+    ecc = sqrt(sum(finalRFPositions.^2,2));
+    rfNums = size(finalRFPositions,1);
+    
+    LconesNum = floor(rfPercentages(1)*rfNums);
+    MconesNum = floor(rfPercentages(2)*rfNums);
+    SconesNum = rfNums -LconesNum - MconesNum;
+    SconeSkip = round(rfNums/SconesNum);
+    MconeSkip = round(rfNums/MconesNum);
+    rfIDs(1:rfNums,1) = 1;
+    rfIDs(1:SconeSkip:end,1) = 3;
+    rfIDs(1:MconeSkip:end,1) = 2;
+    rfIDs(find((ecc<30)&(rfIDs==3))) = 2;
+end
+
+function rfIDs = generateRGCRFIDs(finalRFPositions)
+    rfNums = size(finalRFPositions,1);
+    rfIDs(1:rfNums,1) = nan;
+end
+
 
 function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationThresholdForTriangularization, tStart)
     
@@ -755,53 +809,92 @@ function plotMovementSequence(figNo, maxMovements, dTolerance)
     ylabel('median movement', 'FontSize', 16)
 end
 
-function renderMosaicWithApertures(axesHandle, rfPositions, triangleIndices, rfSpacing, mosaicFOVDegs, micronsPerDeg, visualizedRect)
-
-    xLims = visualizedRect.size(1)/2*[-1 1] + visualizedRect.center(1);
-    yLims = visualizedRect.size(2)/2*[-1 1] + visualizedRect.center(2);
+function renderMosaicWithApertures(axesHandle, rfPositions, rfIDs, triangleIndices, rfSpacing, mosaicFOVDegs, micronsPerDeg, visualizedRect, neuronalType, plotTriangularizationGrid)
+    xLimsDeg = visualizedRect.size(1)/2*[-1 1] + visualizedRect.center(1);
+    yLimsDeg = visualizedRect.size(2)/2*[-1 1] + visualizedRect.center(2);
     
-    xLims = xLims * micronsPerDeg;
-    yLims = yLims * micronsPerDeg;
     
-    visualizedRect.center = visualizedRect.center * micronsPerDeg;
-    visualizedRect.size = visualizedRect.size * micronsPerDeg;
+    rfPositionsDeg = rfPositions / micronsPerDeg;
+    rfPositionsDegFull = rfPositionsDeg;
     
-    idx = find((abs(rfPositions(:,1)-visualizedRect.center(1))<visualizedRect.size(1)/2) & ...
-          (abs(rfPositions(:,2)-visualizedRect.center(2))<visualizedRect.size(2)/2));
+    rfSpacingDeg = rfSpacing / micronsPerDeg;
+    
+    idx = find((abs(rfPositionsDeg(:,1)-visualizedRect.center(1))<visualizedRect.size(1)/2) & ...
+          (abs(rfPositionsDeg(:,2)-visualizedRect.center(2))<visualizedRect.size(2)/2));
       
+    rfPositions = rfPositions(idx,:);
+    rfPositionsDeg = rfPositionsDeg(idx,:);
+    rfSpacingDeg = rfSpacingDeg(idx);
+    rfIDs = rfIDs(idx);
     
-    segmentsNum = 20;
-    deltaTheta = 360/segmentsNum ;
-    radii = 0.5*rfSpacing(idx);
+    
+    % Outline
+    switch (neuronalType)
+        case 'cone'
+             deltaTheta = 20;
+             rfOutlineSamplesNum = 360/deltaTheta;
+             anglesDegs = (0:rfOutlineSamplesNum)*deltaTheta;
+             rDegs = 0.7*(0.5*rfSpacingDeg);
+        case 'mRGC'
+            deltaTheta = 20;
+            rfOutlineSamplesNum = 360/deltaTheta;
+            anglesDegs = (0:rfOutlineSamplesNum)*deltaTheta;
+            rDegs = 1.0*(0.5*rfSpacingDeg);
+    end
+    
+   
     
     % rf.xProfiles in [nodes x (segmentsNum+1)]
-    rf.xProfiles = 0.9*radii * cosd((0:segmentsNum)*deltaTheta);
-    rf.yProfiles = 0.9*radii * sind((0:segmentsNum)*deltaTheta);
+    rf.xProfilesDeg = rDegs * cosd(anglesDegs);
+    rf.yProfilesDeg = rDegs * sind(anglesDegs);
    
     
     % Translate profiles according to RF center position
-    x = bsxfun(@plus, rf.xProfiles, rfPositions(idx,1));
-    y = bsxfun(@plus, rf.yProfiles, rfPositions(idx,2));
+    x = bsxfun(@plus, rf.xProfilesDeg, rfPositionsDeg(:,1));
+    y = bsxfun(@plus, rf.yProfilesDeg, rfPositionsDeg(:,2));
 
     rfContours = cell(1,size(x,1));
     for coneIndex = 1:size(x,1)
        rfContours{coneIndex} = struct('x', x(coneIndex,:), 'y', y(coneIndex,:));  
     end
     
-    visualizeLatticeState(rfPositions, triangleIndices);
+    
+    if (plotTriangularizationGrid)
+        visualizeLatticeState(rfPositionsDegFull, triangleIndices);
+    end
+        
     hold on;
     
     edgeColor = [0 0 0]; lineWidth = 1.0;
-    renderPatchArray(axesHandle, rfContours,  edgeColor, lineWidth)
+    renderPatchArray(axesHandle, rfContours, rfIDs, edgeColor, lineWidth);
     
-
-    set(gca, 'Color', 'none', 'XLim', xLims, 'YLim', yLims, 'CLim', [0 1], 'FontSize', 16);
     axis 'equal'
+    if (xLimsDeg(1) < 2)
+        xTicks = 0:0.1:35;
+        yTicks = [-3:0.1:3];
+    elseif (xLimsDeg(1) < 4)
+        xTicks = 0:0.2:35;
+        yTicks = [-3:0.2:3];
+    elseif (xLimsDeg(1) <10)
+        xTicks = 0:0.5:35;
+        yTicks = [-3:0.5:3];
+    else
+        xTicks = 0:1:35;
+        yTicks = [-3:1:3];
+    end
+
+    xTicks = 0:0.1:35;
+    yTicks = [-3:0.1:3];
+        
+    box on;
+    set(gca, 'Color', 'none', 'XLim', xLimsDeg, 'YLim', yLimsDeg, 'CLim', [1 3], 'FontSize', 16);
+    set(gca, 'XTick', xTicks, 'YTick', yTicks);
+    xlabel('\it space (degs)');
     drawnow;
     
 end
 
-function renderPatchArray(axesHandle, rfContours, edgeColor, lineWidth)
+function renderPatchArray(axesHandle, rfContours, rfIDs, edgeColor, lineWidth)
    
     conesNum = numel(rfContours);
     maxVerticesPerRFcontour = 50;
@@ -824,19 +917,18 @@ function renderPatchArray(axesHandle, rfContours, edgeColor, lineWidth)
         verticesList(indices, 1) = c.x;
         verticesList(indices, 2) = c.y;
         facesList(coneIndex,1:N) = indices;
-        lConeColor = 0.1;
-        colors(indices, 1) = lConeColor;
+        colors(indices, 1) = rfIDs(coneIndex);
         idx = idx + N;
     end
     
-    colorMap = [1 0 0; 0 1 0; 0 0 1];
+    colorMap = [1 0.2 0.6; 0.3 1 0.6; 0.1 0.2 0.8];
     
     S.Vertices = verticesList;
     S.Faces = facesList;
     S.FaceVertexCData = colors;
     S.FaceColor = 'flat';
-    S.FaceAlpha = 0.4;
-    S.EdgeColor = edgeColor;
+    S.FaceAlpha = 0.8;
+    S.EdgeColor = [0.3 0.3 0.3];
     S.LineWidth = lineWidth;
     patch(S, 'Parent', axesHandle);
     colormap(axesHandle, colorMap); 
@@ -920,8 +1012,8 @@ function visualizeLatticeState(rfPositions, triangleIndices)
         end
     end
     
-    patch(xx, yy, [0 0 1], 'EdgeColor', [0.4 0.4 0.4], ...
-        'EdgeAlpha', 0.5, 'FaceAlpha', 0.0, ...
+    patch(xx, yy, [0 0 1], 'EdgeColor', [1 0 0], ...
+        'EdgeAlpha', 0.8, 'FaceAlpha', 0.0, ...
         'FaceColor', [0.99 0.99 0.99], 'LineWidth', 1.0, ...
         'LineStyle', '-', 'Parent', gca); 
     hold on;
