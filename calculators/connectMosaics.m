@@ -60,7 +60,10 @@ function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpa
     hold on;
     
     % plot all cones
-    plot(conePositions(coneIndices,1), conePositions(coneIndices,2), 'ko', 'MarkerFaceColor', 'c', 'MarkerSize', 10);
+    plotCones = false;
+    if (plotCones)
+        plot(conePositions(coneIndices,1), conePositions(coneIndices,2), 'ko', 'MarkerFaceColor', 'c', 'MarkerSize', 10);
+    end
     
     % Plot mRGCs
     for m = 1:numel(mRGCindices)
@@ -73,7 +76,7 @@ function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpa
         coneDiam = 0.7*mean(coneSpacings(cIndices));
         coneSigma = coneDiam/6;
         
-        zLevels = exp([-3 -2 -1]);
+        zLevels = exp([-3 -1]);
         [xRGCEnsembleOutline, yRGCEnsembleOutline, xPeak, yPeak] = generateRGCRFoutlineBasedOnItsConnectivity(...
             connectionMatrix(mRGCindex,cIndices), conePositions(cIndices,:), coneSigma, X, Y, xAxis, yAxis,  zLevels);
         
@@ -84,7 +87,7 @@ function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpa
         %plot(xRGCoutline, yRGCoutline, 'b--', 'LineWidth', 1); 
         
         % PLot RGC RF based on its cone inputs
-        whichLevelsToContour = [1];
+        whichLevelsToContour = [1 2];
         multipleContourPlot(xRGCEnsembleOutline, yRGCEnsembleOutline, whichLevelsToContour);
         
         
@@ -141,7 +144,7 @@ function  [xRGCEnsembleOutline, yRGCEnsembleOutline, xPeak, yPeak] = ...
         gain = double(connectionsVector(inputConeIndex));
         % Make flat top coneProfile
         coneProfile = exp(-0.5*((X-cP(1))/coneSigma).^2) .* exp(-0.5*((Y-cP(2))/coneSigma).^2);
-        coneProfile = coneProfile.^0.35;
+        coneProfile = coneProfile.^0.3;
         coneProfile = coneProfile/max(coneProfile(:));
         
         coneRF =  gain * coneProfile;
@@ -179,10 +182,11 @@ function multipleContourPlot(xRGCEnsembleOutline, yRGCEnsembleOutline, whichLeve
     
     for iLevel = 1:numel(whichLevels)
         theLevel = whichLevels(iLevel);
+        maxLevel = max(whichLevels);
         f = 1:numel(xRGCEnsembleOutline.level{theLevel});
         v = [xRGCEnsembleOutline.level{theLevel}(:) yRGCEnsembleOutline.level{theLevel}(:)];
-        patch('Faces', f, 'Vertices', v, 'FaceColor', [0.8 0.8 0.8], ...
-            'FaceAlpha', 0.5, 'EdgeColor', [0 0 0.6], 'LineWidth', 1.0);
+        patch('Faces', f, 'Vertices', v, 'FaceColor', (1-0.8*theLevel/maxLevel)*[0.8 0.8 0.8], ...
+            'FaceAlpha', 0.5, 'EdgeColor', [0 0 0.6], 'EdgeAlpha', 0, 'LineWidth', 1.0);
     end
     
 end
@@ -250,7 +254,7 @@ function connectionMatrix = computeConnectionMatrix(RGCRFPositions, conePosition
         [~,closestRGCindex] = min(distanceToAllRGCs);
         
         % Choose the spacing of that RGC as the search radius
-        searchRadius = RGCRFSpacings(closestRGCindex);
+        searchRadius = 0.75*RGCRFSpacings(closestRGCindex);
         
         % Find nearby RGCs (within a searchRadius from the target cone)
         possibleRGCindicesForConnection = find(distanceToAllRGCs <= searchRadius);
@@ -329,9 +333,14 @@ function connectionMatrix = computeConnectionMatrix(RGCRFPositions, conePosition
         
     end % cIndex
 
-    %
+    % Normalize cone weights by dividing with the net cone weight
     netConeWeights = sum(connectionMatrix,2);
-    connectionMatrix = bsxfun(@times, connectionMatrix, 1./netConeWeights);
+    
+    % Or Normalize cone weights by dividing with the max cone weight
+    maxConeWeights = max(connectionMatrix,[],2);
+    
+    normalizingFactor = maxConeWeights;
+    connectionMatrix = bsxfun(@times, connectionMatrix, 1./normalizingFactor);
 end
 
 
