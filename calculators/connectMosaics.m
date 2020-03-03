@@ -2,9 +2,9 @@ function connectMosaics()
    
     % Select mosaics to load
     whichEye = 'right';
-    mosaicFOVDegs = 15; %30;
-    eccentricitySamplesNumCones = 32; %48;
-    eccentricitySamplesNumRGC = 32;
+    mosaicFOVDegs = 10; %15; %30;
+    eccentricitySamplesNumCones = 64; %32; %48;
+    eccentricitySamplesNumRGC = 64;% 32;
     
     % Connect mosaics only within a central region to save compute time
     connectivityRadiusDeg = 2.5;
@@ -18,25 +18,32 @@ function connectMosaics()
 
     % Visualized connectivity in a chosen region of interest
     roi.centerDeg = [0 0];
-    roi.sizeDeg = [0.1 0.1];
+    roi.sizeDeg = [0.07 0.07];
     figNo = 1;
-    visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, roi)
+    visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, conesToRGCratios, roi)
 
-    roi.centerDeg = [1 0];
+    roi.centerDeg = [1.0 0];
+    roi.sizeDeg = [0.15 0.15];
+    figNo = 2;
+    visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, conesToRGCratios, roi)
+
+    
+    roi.centerDeg = [2.0 0];
     roi.sizeDeg = [0.25 0.25];
     figNo = 2;
-    visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, roi)
+    visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, conesToRGCratios, roi)
 
-    roi.centerDeg = [2 0];
-    roi.sizeDeg = [0.5 0.5];
-    figNo = 3;
-    visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, roi)
-
+%     roi.centerDeg = [4.7 0];
+%     roi.sizeDeg = [0.3 0.3];
+%     figNo = 3;
+%     visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, conesToRGCratios, roi)
+% 
+%     
 
 end
 
 
-function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpacings, conePositions, coneSpacings, roi)
+function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpacings, conePositions, coneSpacings, conesToRGCratios, roi)
 
     % Convert to microns
     micronsPerDeg = 300;
@@ -57,6 +64,26 @@ function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpa
     [X,Y] = meshgrid(xAxis,yAxis);
     
     figure(figNo); clf;
+    subplot(1,2,1);
+    plot(conePositions(coneIndices,1), conePositions(coneIndices,2), 'ro', 'MarkerFaceColor', [1 0.6 0.6], 'MarkerSize', 10); hold on;
+    plot(RGCRFPositions(mRGCindices,1), RGCRFPositions(mRGCindices,2), 'ko',  'MarkerSize', 16, 'LineWidth', 1.0);
+    legend({'cones', 'mRGC'});
+    drawnow;
+%     for m = 1:numel(mRGCindices)
+%         mPos = RGCRFPositions(mRGCindices(m),:);
+%         connectionStrengths = full(connectionMatrix(mRGCindices(m),coneIndices));
+%         idx = find(connectionStrengths>0);
+%         for c = 1:numel(idx)
+%             cPos =  conePositions(coneIndices(idx),:);
+%             plot([mPos(1) cPos(1)], [mPos(2) cPos(2)], 'r-');
+%             drawnow;
+%         end
+%     end
+    coneToRGCRatio = numel(coneIndices)/numel(mRGCindices)
+    title(sprintf('actual cone to RGC ratio: %2.3f', coneToRGCRatio));
+    
+                
+    subplot(1,2,2);
     hold on;
     
     % plot all cones
@@ -78,7 +105,7 @@ function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpa
         
         zLevels = exp([-3 -1]);
         [xRGCEnsembleOutline, yRGCEnsembleOutline, xPeak, yPeak] = generateRGCRFoutlineBasedOnItsConnectivity(...
-            connectionMatrix(mRGCindex,cIndices), conePositions(cIndices,:), coneSigma, X, Y, xAxis, yAxis,  zLevels);
+            full(connectionMatrix(mRGCindex,cIndices)), conePositions(cIndices,:), coneSigma, X, Y, xAxis, yAxis, zLevels);
         
         % Plot original RGC RF 
         %mPos = RGCRFPositions(mRGCindex,:);
@@ -86,16 +113,17 @@ function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpa
         %yRGCoutline = mPos(2)+sind(0:20:360)*RGCRFSpacings(mRGCindex)/4;
         %plot(xRGCoutline, yRGCoutline, 'b--', 'LineWidth', 1); 
         
-        % PLot RGC RF based on its cone inputs
+        % Plot RGC RF based on its cone inputs
         whichLevelsToContour = [1 2];
-        multipleContourPlot(xRGCEnsembleOutline, yRGCEnsembleOutline, whichLevelsToContour);
+        multipleContourPlot(xRGCEnsembleOutline, yRGCEnsembleOutline, whichLevelsToContour, xPeak, yPeak, conesToRGCratios(mRGCindex));
         
         
         for c = 1:numel(cIndices)
             cIndex = cIndices(c);
-            connectionStrength = connectionMatrix(mRGCindex,cIndex);
+            connectionStrength = full(connectionMatrix(mRGCindex,cIndex));
             if (connectionStrength>0)
-                plot([conePositions(cIndex,1) xPeak], [conePositions(cIndex,2) yPeak], 'r.-', 'LineWidth', 1); %connectionStrength*3);
+                plot([conePositions(cIndex,1) xPeak], [conePositions(cIndex,2) yPeak], 'r-', 'LineWidth', 1); %connectionStrength*3);
+                plot(conePositions(cIndex,1), conePositions(cIndex,2), 'ro', 'MarkerFaceColor', [1 0.4 0.4], 'LineWidth', 1);
                 
                 if (connectionStrength == 0.0123456789)
                     plot(conePositions(cIndex,1), conePositions(cIndex,2), 'r.', 'MarkerSize', 10);
@@ -119,7 +147,7 @@ function visualizeConnectivity(figNo, connectionMatrix, RGCRFPositions, RGCRFSpa
         xTickDegLabel = sprintf('%2.2f\n', xTicks/micronsPerDeg);
         
         axis 'equal'
-        lessSpaceMicrons = 4;
+        lessSpaceMicrons = 0;
         xLims = roi.center(1) + (roi.size(1)/2-lessSpaceMicrons)*[-1 1];
         yLims = roi.center(2) + (roi.size(2)/2-lessSpaceMicrons)*[-1 1];
         set(gca, 'FontSize', 12, 'XLim', xLims, 'YLim', yLims,  ...
@@ -136,7 +164,6 @@ function  [xRGCEnsembleOutline, yRGCEnsembleOutline, xPeak, yPeak] = ...
             generateRGCRFoutlineBasedOnItsConnectivity(...
             connectionsVector, conePositions, coneSigma, X,Y, xAxis, yAxis,  zLevels)
         
-
     ensembleRF = [];  
     for inputConeIndex = 1:size(conePositions)
         cP = squeeze(conePositions(inputConeIndex,:));
@@ -174,11 +201,11 @@ function  [xRGCEnsembleOutline, yRGCEnsembleOutline, xPeak, yPeak] = ...
         end
         k = k+points+1;
     end
-        
+
 end
 
 
-function multipleContourPlot(xRGCEnsembleOutline, yRGCEnsembleOutline, whichLevels)
+function multipleContourPlot(xRGCEnsembleOutline, yRGCEnsembleOutline, whichLevels, xPeak, yPeak, conesToRGCratio)
     
     for iLevel = 1:numel(whichLevels)
         theLevel = whichLevels(iLevel);
@@ -188,7 +215,7 @@ function multipleContourPlot(xRGCEnsembleOutline, yRGCEnsembleOutline, whichLeve
         patch('Faces', f, 'Vertices', v, 'FaceColor', (1-0.8*theLevel/maxLevel)*[0.8 0.8 0.8], ...
             'FaceAlpha', 0.5, 'EdgeColor', [0 0 0.6], 'EdgeAlpha', 0, 'LineWidth', 1.0);
     end
-    
+    text(xPeak-2, yPeak-1, sprintf('%2.2f', conesToRGCratio), 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'b');
 end
 
 function [RGCRFPositions, RGCRFSpacings, conePositions, coneSpacings, conesToRGCratios] = ...
@@ -213,13 +240,13 @@ function [RGCRFPositions, RGCRFSpacings, conePositions, coneSpacings, conesToRGC
     
     % Only keep cones  within the working radius
     eccCones = sqrt(sum(conePositions.^2,2));
-    idx = find(eccCones<workingRadiusMicrons);
+    idx = find((eccCones<workingRadiusMicrons) & (conePositions(:,1)>=-20));
     conePositions = conePositions(idx,:);
     coneSpacings = coneSpacings(idx);
     
     % Only keep RGC within the working radius
     eccRGC = sqrt(sum(RGCRFPositions.^2,2));
-    idx = find(eccRGC<workingRadiusMicrons);
+    idx = find((eccRGC<workingRadiusMicrons) & (RGCRFPositions(:,1)>=-20));
     RGCRFPositions = RGCRFPositions(idx,:);
     RGCRFSpacings = RGCRFSpacings(idx);
     conesToRGCratios = conesToRGCratios(idx);
@@ -234,26 +261,29 @@ function connectionMatrix = computeConnectionMatrix(RGCRFPositions, conePosition
     conesNum = size(conePositions,1);
     RGCsNum = size(RGCRFPositions,1);
     
-    connectionMatrix = zeros(RGCsNum, conesNum, 'single');
+    fprintf('Connecting %d cones to %d RGCs\n', conesNum, RGCsNum);
+    pause
+    connectionMatrix = sparse(RGCsNum, conesNum) ; % zeros(RGCsNum, conesNum, 'single');
     
     RGCinputsNum = zeros(RGCsNum,1);
     
+    % Sort cones according to their eccentricity so we can start connecting
+    % from fovea towards the periphery
     coneEcc = sqrt(sum(conePositions.^2,2));
     [~,sortedConeIndices] = sort(coneEcc, 'ascend');
     
-        
     % Connect every cone to its nearest RGC 
     for cIndex = 1:conesNum
         theTargetConeIndex = sortedConeIndices(cIndex);
         theTargetConePos = conePositions(theTargetConeIndex,:);
         
-        % distance to all RGCs
+        % compute distance to all RGCs
         distanceToAllRGCs = sqrt(sum((bsxfun(@minus, RGCRFPositions, theTargetConePos)).^2,2));
         
         % find the closest RGC 
         [~,closestRGCindex] = min(distanceToAllRGCs);
         
-        % Choose the spacing of that RGC as the search radius
+        % Set the search radius proportional to the spacing of the closest RGC
         searchRadius = 0.75*RGCRFSpacings(closestRGCindex);
         
         % Find nearby RGCs (within a searchRadius from the target cone)
@@ -266,7 +296,7 @@ function connectionMatrix = computeConnectionMatrix(RGCRFPositions, conePosition
             willAcceptAnotherConnection = 1./distanceToAllRGCs(possibleRGCindicesForConnection);
             willAcceptAnotherConnection(willAcceptAnotherConnection>100) = 100;
             
-            % Do not connect connections to RGCs that already have a connection 
+            % Do not connect to RGCs that already have a connection 
             for k = 1:numel(possibleRGCindicesForConnection)
                 theRGCindex = possibleRGCindicesForConnection(k);
                 if (RGCinputsNum(theRGCindex) > 0)
@@ -311,7 +341,7 @@ function connectionMatrix = computeConnectionMatrix(RGCRFPositions, conePosition
                     postfix = 'th';
                 end
 
-                if (minConeInputs >= 2)
+                if (minConeInputs >= 1)
                     fprintf(2, 'Connecting %d%s cone to RGC %d (which has mean cone inputs of %2.3f) with strength:%f\n', ...
                         RGCinputsNum(matchedRGCindex)+1,postfix,  matchedRGCindex, conesToRGCratios(matchedRGCindex), connectionStrength);
                 else
