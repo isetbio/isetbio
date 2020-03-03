@@ -47,6 +47,7 @@ function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
     % apply this correction we get less than 2 mRGCs/cone at foveal eccentricities. We
     % apply this correction only for ecc <= 0.18 degs
     correctForFovealEcc = true;
+    
     if (correctForFovealEcc)                                
         eccLimit = 0.18;
         
@@ -57,16 +58,31 @@ function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
         correctionFactorMax = ISETBioMaxConeDensityPerDeg2 - WatsonModelMaxConeDensityPerDeg2;
         correctionFactorMax = correctionFactorMax / obj.alpha(0);
         
+        plotCorrection = ~true;
+        if (plotCorrection)
+            figure(99); clf;
+            plot(eccDegs, densityConesPerMM2, 'k--', 'LineWidth', 1.5); hold on
+        end
+        
         idx = find(abs(eccDegs)<=eccLimit);
         if (~isempty(idx))
             indicesToBeCorrected = idx;
             correctionFactors = correctionFactorMax.*(eccLimit-eccDegs(indicesToBeCorrected))/eccLimit;
             densityConesPerMM2(indicesToBeCorrected) = densityConesPerMM2(indicesToBeCorrected) - correctionFactors;
         end
+        if (plotCorrection)
+            plot(eccDegs, densityConesPerMM2, 'r-', 'LineWidth', 1.5);
+            legend({'ISETBio', 'ISETBio with correction'})
+            set(gca, 'XScale', 'log', 'YScale', 'log', 'FontSize', 12);
+            xlabel('ecc (degs)'); ylabel('density (cones/mm^2');
+            drawnow
+            pause
+        end
+        
+        
     end
     
-    % In ConeSizeReadData, spacing is computed as sqrt(1/density). This is
-    % true for a rectangular mosaic. For a hex mosaic, spacing = sqrt(2.0/(3*density)).
+    % Compute cone spacing from their density. 
     spacingMM = obj.spacingFromDensity(densityConesPerMM2);
     spacingMeters = spacingMM * 1e-3;
      

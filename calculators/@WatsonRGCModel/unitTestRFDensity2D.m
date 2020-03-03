@@ -35,17 +35,13 @@ function unitTestRFDensity2D()
         densitySupport, mRGCDensity2DMap, mRGCMeridianDensities, horizontalMeridianLabel, verticalMeridianLabel, theView, densityLabel);
     
     
-    conesToMRGCratio = coneDensity2DMap./mRGCDensity2DMap;
-    meridianRatios.ecc = coneMeridianDensities.ecc;
-    meridianRatios.temporal = coneMeridianDensities.temporal ./ mRGCMeridianDensities.temporal;
-    meridianRatios.nasal    = coneMeridianDensities.nasal ./ mRGCMeridianDensities.nasal;
-    meridianRatios.superior = coneMeridianDensities.superior ./ mRGCMeridianDensities.superior;
-    meridianRatios.inferior = coneMeridianDensities.inferior ./ mRGCMeridianDensities.inferior;
-    
-    densityLabel = 'cones to mRGC ratio';
+    % cone to mRGC ratio map
+    [conesToMRGCratio2DMap, spatialSupport, horizontalMeridianLabel, verticalMeridianLabel, ratioLabel, ...
+            meridianConeToMRGratio, supportUnits] = obj.compute2DConeToMRGCRFRatio(eccDegs,  theView);
+        
     figNo = 3;
     doIt(figNo, obj, supportUnits, eccMinDegs, eccMaxDegs, 'unitless', ...
-        densitySupport, conesToMRGCratio, meridianRatios, horizontalMeridianLabel, verticalMeridianLabel, theView, densityLabel);
+        spatialSupport, conesToMRGCratio2DMap, meridianConeToMRGratio, horizontalMeridianLabel, verticalMeridianLabel, theView, ratioLabel);
     
 end
 

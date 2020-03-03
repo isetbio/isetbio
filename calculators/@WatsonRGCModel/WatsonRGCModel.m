@@ -238,6 +238,7 @@ classdef WatsonRGCModel
         unitTestFigure9();
         unitTestFigure10();
         unitTestFigure11();
+        unitTestFigure14();
         unitTestRFConeDensity2D();
         unitTestRFDensity2D();
         unitTestSmoothGrid();
