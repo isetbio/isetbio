@@ -197,15 +197,20 @@ classdef WatsonRGCModel
         % Return ISETBio retinal angle for Watson's meridians (specified in visual field of the right eye)
         [isetbioAngle, whichEye, rightEyeRetinalMeridianName] = isetbioRetinalAngleForWatsonMeridian(obj, rightEyeVisualFieldMeridianName);
         
-        % Compute 2D cone RF density for eccentricities specified in the right eye visual space
+        % Compute 2D cone RF density map for eccentricities specified in the right eye visual space
         [coneRFDensity, spatialSupport, xLabelString, yLabelString, ...
             meridianDensities, densityLabelString, eccUnits, densityUnits] = ...
-            compute2DConeRFDensity(obj, eccDegsInREVisualSpace, eccUnits, densityUnits);
+            compute2DConeRFDensity(obj, eccDegsInREVisualSpace,  theReturnedView);
 
-        % Compute 2D mRGC RF density for eccentricities specified in the right eye visual space
+        % Compute 2D mRGC RF density map for eccentricities specified in the right eye visual space
         [mRGCRFDensity, spatialSupport, xLabelString, yLabelString, ...
             meridianDensities, densityLabelString, eccUnits, densityUnits] = ...
-            compute2DmRGCRFDensity(obj, eccDegsInREVisualSpace, eccUnits, densityUnits);
+            compute2DmRGCRFDensity(obj, eccDegsInREVisualSpace,  theReturnedView);
+        
+        % Compute 2D cone to mRGC RF ratio map for eccentricities specified in the right eye visual space
+        [conesToMRGCratio, spatialSupport,xLabelString, yLabelString, ratioLabel, ...
+            meridianConeToMRGratios, eccUnits] = ...
+            compute2DConeToMRGCRFRatio(obj, eccDegsInREVisualSpace, eccUnits);
         
     end % Public methods
     
