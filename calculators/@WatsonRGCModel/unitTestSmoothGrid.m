@@ -2,8 +2,6 @@ function unitTestSmoothGrid()
 
     % Generate or view saved mosaic
     generateNewMosaic = true;
-    generateMRGCMosaicFromExistingConeMosaic = ~true;
-    
     
     % Visualize mosaic and progress
     visualizeProgress = ~generateNewMosaic;
@@ -36,7 +34,7 @@ function unitTestSmoothGrid()
     percentageRFSeparationThresholdForTriangularization = 99;
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
-    minIterationsBeforeRetriangulation = 15;
+    minIterationsBeforeRetriangulation = 2;
     
     % 5. Trigger Delayun triangularization if more than maxIterationsBeforeRetriangulation have passed since last one
     maxIterationsBeforeRetriangulation = 30;
@@ -127,17 +125,13 @@ function unitTestSmoothGrid()
     end
     
     tStart = tic;
-    if (strcmp(neuronalType,'mRGC')&&( generateMRGCMosaicFromExistingConeMosaic))
-        existingMosaicFileName = strrep(saveFileName, 'mRGC', 'cone');
-        existingMosaicFileName = strrep(existingMosaicFileName, '48','32');
-        load(existingMosaicFileName, 'rfPositionsHistory');
-        rfPositions = squeeze(rfPositionsHistory(end,:,:));
-    else
-        % Generate initial RF positions and downsample according to the density
-        rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin, gridParams.micronsPerDegree);
-    end
-    
+
+    % Generate initial RF positions and downsample according to the density
+    rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin, gridParams.micronsPerDegree);
     [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationThresholdForTriangularization, tStart);
+
+
+    
     
     rfsNum = size(rfPositions,1);
     if (rfsNum > 1000*1000)
@@ -591,10 +585,14 @@ function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunctionFu
     coneSpacingInMeters = coneSizeReadData('eccentricity', eccentricitiesInMeters, ...
         'angle', angles, 'whichEye', whichEye);
     coneSpacingInMicrons = coneSpacingInMeters' * 1e6;
+    
+    % In ConeSizeReadData, spacing is computed as sqrt(1/density). This is
+    % true for a rectangular mosaic. For a hex mosaic, spacing = sqrt(2.0/(sqrt(3)*density)).
+    correctionFactor = WatsonRGCModel.spacingFromDensity(1);
+    coneSpacingInMicrons = coneSpacingInMicrons*correctionFactor;    
 end
 
 function [mRGCSpacingInMicrons, tabulatedEccXYMicrons] = computeTableOfmRGCRFSpacings(rfPositions, eccentricitySamplesNum, whichEye)
-
     % Compute radial sampling vector of retinal positions that we need to compute spacings for
     eccMicrons = WatsonRGCModel.generateSamplingVectorFromScatteredXYPositions(rfPositions, eccentricitySamplesNum);
     eccMicrons = [-fliplr(eccMicrons) 0 eccMicrons];
@@ -611,6 +609,7 @@ function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunctionFu
     [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, eccentricitySamplesNum, whichEye);
 end
 
+    
 % Function to get RGC spacing based on Watson's mRGC-to-cone ratio and ISETBio's cone density.
 function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, eccentricitySamplesNum, whichEye)
     
@@ -655,7 +654,6 @@ function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(r
     mRGCSpacingInMicrons = F(rfPositions(:,1), rfPositions(:,2));
     
     eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
-    
 end
 
 
