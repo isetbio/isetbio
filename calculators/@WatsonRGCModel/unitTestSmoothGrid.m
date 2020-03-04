@@ -1,13 +1,15 @@
 function unitTestSmoothGrid()
 
     % Generate or view saved mosaic
-    generateNewMosaic = ~true;
+    generateNewMosaic = true;
+    generateMRGCMosaicFromExistingConeMosaic = ~true;
+    
     
     % Visualize mosaic and progress
     visualizeProgress = ~generateNewMosaic;
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 30; 
+    mosaicFOVDegs = 15; %30; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
@@ -34,13 +36,13 @@ function unitTestSmoothGrid()
     percentageRFSeparationThresholdForTriangularization = 99;
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
-    minIterationsBeforeRetriangulation = 8;
+    minIterationsBeforeRetriangulation = 15;
     
     % 5. Trigger Delayun triangularization if more than maxIterationsBeforeRetriangulation have passed since last one
-    maxIterationsBeforeRetriangulation = 15;
+    maxIterationsBeforeRetriangulation = 30;
     
     % 6. Interval to query user whether he/she wants to terminate
-    queryUserIntervalMinutes =1;
+    queryUserIntervalMinutes = 120;
     
     % Save filename
     p = getpref('IBIOColorDetect');
@@ -124,11 +126,18 @@ function unitTestSmoothGrid()
         return;
     end
     
-    % Generate initial RF positions and downsample according to the density
     tStart = tic;
-    rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin, gridParams.micronsPerDegree);
+    if (strcmp(neuronalType,'mRGC')&&( generateMRGCMosaicFromExistingConeMosaic))
+        existingMosaicFileName = strrep(saveFileName, 'mRGC', 'cone');
+        existingMosaicFileName = strrep(existingMosaicFileName, '48','32');
+        load(existingMosaicFileName, 'rfPositionsHistory');
+        rfPositions = squeeze(rfPositionsHistory(end,:,:));
+    else
+        % Generate initial RF positions and downsample according to the density
+        rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin, gridParams.micronsPerDegree);
+    end
+    
     [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationThresholdForTriangularization, tStart);
-       
     
     rfsNum = size(rfPositions,1);
     if (rfsNum > 1000*1000)
@@ -351,7 +360,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
         end
         
         % We need to triangulate again if the movement in the current iteration was > the average movement in the last 2 iterations 
-        if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 0.5*(maxMovements(iteration-2)+maxMovements(iteration-3)))
+        if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 1.1*0.5*(maxMovements(iteration-2)+maxMovements(iteration-3)))
             reTriangulationIsNeeded = true;
              triangularizationTriggerEvent = 'movement stopped decreasing';
         end
@@ -584,26 +593,16 @@ function [coneSpacingInMicrons, eccentricitiesInMicrons] = coneSpacingFunctionFu
     coneSpacingInMicrons = coneSpacingInMeters' * 1e6;
 end
 
-function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = computeTableOfmRGCRFSpacings(rfPositions, eccentricitySamplesNum, whichEye)
+function [mRGCSpacingInMicrons, tabulatedEccXYMicrons] = computeTableOfmRGCRFSpacings(rfPositions, eccentricitySamplesNum, whichEye)
 
-    % Find range of retinal positions in microns that we need to compute
-    % density for
-    eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
-    idx = find(eccentricitiesInMicrons<2.1);
-    t = rfPositions(idx,:);
-    tt = pdist2(t,t);
-    tt(tt==0) = Inf;
-    minSeparationMicrons = min(tt(:));
-    maxEccMicrons = max(eccentricitiesInMicrons(:));
-    
-    % Support of retinal positions in mm
-    xPosMicrons = logspace(log10(minSeparationMicrons), log10(maxEccMicrons+minSeparationMicrons), eccentricitySamplesNum);
-    xPosMicrons = [-fliplr(xPosMicrons) 0 xPosMicrons];
-
-    [X,Y] = meshgrid(xPosMicrons);
+    % Compute radial sampling vector of retinal positions that we need to compute spacings for
+    eccMicrons = WatsonRGCModel.generateSamplingVectorFromScatteredXYPositions(rfPositions, eccentricitySamplesNum);
+    eccMicrons = [-fliplr(eccMicrons) 0 eccMicrons];
+    [X,Y] = meshgrid(eccMicrons);
     rfPositions = [X(:) Y(:)];
+    
     [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, eccentricitySamplesNum, whichEye);
-    eccentricitiesInMicrons = rfPositions;
+    tabulatedEccXYMicrons = rfPositions;
     mRGCSpacingInMicrons = mRGCSpacingInMicrons';
 end
 
@@ -612,20 +611,8 @@ function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunctionFu
     [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, eccentricitySamplesNum, whichEye);
 end
 
-function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, nSamples, whichEye)
-
-    % Find range of retinal positions in microns that we need to compute
-    % density for
-    eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
-    idx = find(eccentricitiesInMicrons<2.1);
-    t = rfPositions(idx,:);
-    tt = pdist2(t,t);
-    tt(tt==0) = Inf;
-    minSeparationMicrons = min(tt(:));
-    maxEccMicrons = max(eccentricitiesInMicrons(:));
-    
-    % Support of retinal positions in mm
-    xPosMM = [0 logspace(log10(minSeparationMicrons), log10(maxEccMicrons+minSeparationMicrons), nSamples)]/1e3;
+% Function to get RGC spacing based on Watson's mRGC-to-cone ratio and ISETBio's cone density.
+function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(rfPositions, eccentricitySamplesNum, whichEye)
     
     switch whichEye
         case 'left'
@@ -638,8 +625,61 @@ function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(r
 
     WatsonRGCModelObj = WatsonRGCModel();
     
+    % Compute radial sampling vector of retinal positions that we need to compute density for
+    eccMM = 1e-3 *  WatsonRGCModel.generateSamplingVectorFromScatteredXYPositions(rfPositions,eccentricitySamplesNum);
+    eccMM = [0 eccMM];
+    eccDegs = WatsonRGCModel.rhoMMsToDegs(eccMM);
+    
+    [coneDensity2DMap, coneMeridianDensities, densitySupportMM, ...
+        horizontalMeridianLabel, verticalMeridianLabel, densityLabel, ...
+        supportUnits, densityUnits] = WatsonRGCModelObj.compute2DConeRFDensity(eccDegs, theView, ...
+        'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
+    
+
+    [conesToMRGCratio2DMap, spatialSupport, horizontalMeridianLabel, verticalMeridianLabel, ratioLabel, ...
+            meridianConeToMRGratio, supportUnits] = WatsonRGCModelObj.compute2DConeToMRGCRFRatio(eccDegs,  theView);
+    
+    mRGCDensity2DMap = coneDensity2DMap ./ conesToMRGCratio2DMap;
+    
+    mRGCSpacing2DMapMM = WatsonRGCModelObj.spacingFromDensity(mRGCDensity2DMap);
+    
+    % Convert to microns from mm
+    mRGCSpacing2DMapMicrons = mRGCSpacing2DMapMM*1e3;
+    densitySupportMicrons = densitySupportMM*1e3;
+    
+    % Create a scatterred interpolant function
+    [X,Y] = meshgrid(squeeze(densitySupportMicrons(1,:)), squeeze(densitySupportMicrons(2,:)));
+    F = scatteredInterpolant(X(:),Y(:),mRGCSpacing2DMapMicrons(:), 'linear');
+
+    % Evaluate the interpolant function at the requested rfPositions
+    mRGCSpacingInMicrons = F(rfPositions(:,1), rfPositions(:,2));
+    
+    eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
+    
+end
+
+
+% Function to get RGC spacing based on Watson's formula. But this is based
+% on cone density dropping somewhat differently (in < 0.2 degs) from ISETBio
+function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunctionDirect(rfPositions, eccentricitySamplesNum, whichEye)
+
+    switch whichEye
+        case 'left'
+            theView = 'left eye retina';
+        case 'right'
+            theView = 'right eye retina';
+        otherwise
+            error('Which eye must be either ''left'' or ''right'', not ''%s''.', whichEye)
+    end
+
+    WatsonRGCModelObj = WatsonRGCModel();
+    
+    % Compute radial sampling vector of retinal positions that we need to compute density for
+    eccMM = 1e-3 *  WatsonRGCModel.generateSamplingVectorFromScatteredXYPositions(rfPositions,eccentricitySamplesNum);
+    eccMM = [0 eccMM];
+    
     % Convert retinal mm to visual degs
-    eccDegs = WatsonRGCModelObj.rhoMMsToDegs(xPosMM);
+    eccDegs = WatsonRGCModelObj.rhoMMsToDegs(eccMM);
 
     % Compute mRGC density map
     [mRGCDensity2DMap, mRGCMeridianDensities, densitySupportMM, ...
@@ -669,6 +709,8 @@ function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(r
 
     % Evaluate the interpolant function at the requested rfPositions
     mRGCSpacingInMicrons = F(rfPositions(:,1), rfPositions(:,2));
+    
+    eccentricitiesInMicrons = sqrt(sum(rfPositions .^ 2, 2));
 end
 
 

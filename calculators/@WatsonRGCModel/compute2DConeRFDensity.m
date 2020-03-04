@@ -1,5 +1,12 @@
 function [coneRFDensity2D, meridianDensities, spatialSupport, xLabelString, yLabelString, ...
-    densityLabelString, eccUnits, densityUnits] = compute2DConeRFDensity(obj, eccDegsInREVisualSpace, theReturnedView)
+    densityLabelString, eccUnits, densityUnits] = compute2DConeRFDensity(obj, eccDegsInREVisualSpace, theReturnedView, varargin)
+    
+    % Parse input
+    p = inputParser;       
+    p.addParameter('correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', true, @islogical)
+    p.parse(varargin{:});
+    correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio = ...
+        p.Results.correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio;
     
     % Validate the view name
     obj.validateViewName(theReturnedView);
@@ -43,7 +50,8 @@ function [coneRFDensity2D, meridianDensities, spatialSupport, xLabelString, yLab
     for meridianIndex = 1:numel(obj.enumeratedMeridianNames)
         [meridianConeRFSpacing(meridianIndex,:), meridianConeRFDensity(meridianIndex,:)] = ...
             obj.coneRFSpacingAndDensityAlongMeridian(requestedEccentricities, obj.enumeratedMeridianNames{meridianIndex}, ...
-            eccUnits, densityUnits); 
+            eccUnits, densityUnits, ...
+            'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio); 
     end
     
     % Do angular interpolation

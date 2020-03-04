@@ -1,11 +1,18 @@
 function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
-    coneRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits)
+    coneRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits, varargin)
 % Input
 %   eccentricities      1-D vector with eccentricities (specified in eccUnits)
 %   rightEyeVisualFieldMeridianName        name of the meridian in Watson's reference (visual
 %                       field of the right eye, with temporal being at 0 degs
 %                       superior at 90, nasal at 18, & inferior at 270 degs
 
+    % Parse input
+    p = inputParser;       
+    p.addParameter('correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', true, @islogical)
+    p.parse(varargin{:});
+    correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio = ...
+        p.Results.correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio;
+    
     % Validate eccUnits
     obj.validateEccUnits(eccUnits);
     
@@ -46,9 +53,8 @@ function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
     % does not agree with Watson's (obj.dc0 =  14,804.6 cones/deg^2), and the fact that if we do not
     % apply this correction we get less than 2 mRGCs/cone at foveal eccentricities. We
     % apply this correction only for ecc <= 0.18 degs
-    correctForFovealEcc = true;
-    
-    if (correctForFovealEcc)                                
+
+    if (correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio)                                
         eccLimit = 0.18;
         
         WatsonModelMaxConeDensityPerDeg2 = obj.dc0;

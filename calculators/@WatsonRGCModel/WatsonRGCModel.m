@@ -185,7 +185,7 @@ classdef WatsonRGCModel
         end % Constructor
         
         % Return cone RF spacing, cone RF density along the requested meridian and requested eccentricities
-        [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits, varargin);
         
         % Return midget RGC RF spacing and density along the requested meridian and requested eccentricities
         [mRGCRFSpacing, mRGCRFDensity, rightEyeRetinalMeridianName] = mRGCRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
@@ -200,7 +200,7 @@ classdef WatsonRGCModel
         % Compute 2D cone RF density map for eccentricities specified in the right eye visual space
         [coneRFDensity, spatialSupport, xLabelString, yLabelString, ...
             meridianDensities, densityLabelString, eccUnits, densityUnits] = ...
-            compute2DConeRFDensity(obj, eccDegsInREVisualSpace,  theReturnedView);
+            compute2DConeRFDensity(obj, eccDegsInREVisualSpace,  theReturnedView, varargin);
 
         % Compute 2D mRGC RF density map for eccentricities specified in the right eye visual space
         [mRGCRFDensity, spatialSupport, xLabelString, yLabelString, ...
@@ -242,6 +242,8 @@ classdef WatsonRGCModel
         unitTestRFConeDensity2D();
         unitTestRFDensity2D();
         unitTestSmoothGrid();
+        samplingVector = generateSamplingVectorFromScatteredXYPositions(scatteredXYPositionsMicrons, nSamples);
+
     end
     
 end % Classdef
