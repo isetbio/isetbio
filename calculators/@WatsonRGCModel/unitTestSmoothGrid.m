@@ -1,7 +1,7 @@
 function unitTestSmoothGrid()
 
     % Generate or view saved mosaic
-    generateNewMosaic = true;
+    generateNewMosaic = ~true;
     
     % Visualize mosaic and progress
     visualizeProgress = ~generateNewMosaic;
@@ -18,7 +18,7 @@ function unitTestSmoothGrid()
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
-    eccentricitySamplesNum = 48;
+    eccentricitySamplesNum = 32;
     
     % Set a random seed
     theRandomSeed = 1;
@@ -31,21 +31,24 @@ function unitTestSmoothGrid()
     maxIterations = 3000;
     
     % 3. Trigger Delayun triangularization if rfmovement exceeds this number
-    percentageRFSeparationThresholdForTriangularization = 99;
+    maxMovementPercentile = 20;
+    
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
-    minIterationsBeforeRetriangulation = 2;
+    minIterationsBeforeRetriangulation = 5;
     
     % 5. Trigger Delayun triangularization if more than maxIterationsBeforeRetriangulation have passed since last one
     maxIterationsBeforeRetriangulation = 30;
     
     % 6. Interval to query user whether he/she wants to terminate
-    queryUserIntervalMinutes = 120;
+    queryUserIntervalMinutes = 60*5;
     
     % Save filename
     p = getpref('IBIOColorDetect');
     mosaicDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
-    saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d_prctile%d.mat', whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, percentageRFSeparationThresholdForTriangularization));
+    mosaicDir = strrep(p.validationRootDir, 'validations', '');
+    saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d_maxMovPrctile%d.mat', ...
+        whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, maxMovementPercentile));
 
     % Set grid params
     switch (neuronalType)
@@ -68,6 +71,7 @@ function unitTestSmoothGrid()
     gridParams.borderTolerance = 0.001 * gridParams.lambdaMin;
     gridParams.dTolerance = gridParams.lambdaMin * dTolerance;
     gridParams.rng = theRandomSeed;
+    gridParams.maxMovementPercentile = maxMovementPercentile;
     
    
     if (~generateNewMosaic)
@@ -76,7 +80,7 @@ function unitTestSmoothGrid()
         hFig = figure(1); clf;
         
         
-        renderFinalMosaic = true;
+        renderFinalMosaic = ~true;
         
         if (renderFinalMosaic)
             set(hFig, 'Position', [10 10 950 600], 'Color', [1 1 1]);
@@ -128,7 +132,7 @@ function unitTestSmoothGrid()
 
     % Generate initial RF positions and downsample according to the density
     rfPositions = generateInitialRFpositions(mosaicFOVDegs*1.07, gridParams.lambdaMin, gridParams.micronsPerDegree);
-    [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationThresholdForTriangularization, tStart);
+    [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, tStart);
 
 
     
@@ -187,7 +191,7 @@ function rfIDs = generateRGCRFIDs(finalRFPositions)
 end
 
 
-function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams, percentageRFSeparationThresholdForTriangularization, tStart)
+function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, gridParams,  tStart)
     
     rng(gridParams.rng);
     
@@ -217,7 +221,6 @@ function [rfPositions, gridParams] = downSampleInitialRFpositions(rfPositions, g
         fprintf('Computing separations for %2.1f thousand nodes ...', rfsNum/1000);
     end
     rfSeparations = feval(gridParams.rfSpacingFunctionFull, rfPositions, gridParams.whichEye);
-    gridParams.positionalDiffToleranceForTriangularization = prctile(rfSeparations,percentageRFSeparationThresholdForTriangularization);
 
     fprintf('... time lapsed: %f minutes.',  toc(tStart)/60);
 
@@ -345,16 +348,16 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
         % Check if we need to re-triangulate
         %positionalDiffsMetric = max(positionalDiffs);
         %positionalDiffsMetric = median(positionalDiffs);
-        positionalDiffsMetric = prctile(positionalDiffs, 99);
+       % positionalDiffsMetric = prctile(positionalDiffs, 99);
         
         % We need to triangulate again if the positionalDiff is above the set tolerance
-        if ((positionalDiffsMetric > gridParams.positionalDiffToleranceForTriangularization))
-            reTriangulationIsNeeded = true;
-            triangularizationTriggerEvent = 'movement > tolerance';
-        end
+%         if ((positionalDiffsMetric > gridParams.positionalDiffToleranceForTriangularization))
+%             reTriangulationIsNeeded = true;
+%             triangularizationTriggerEvent = 'movement > tolerance';
+%         end
         
         % We need to triangulate again if the movement in the current iteration was > the average movement in the last 2 iterations 
-        if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 1.1*0.5*(maxMovements(iteration-2)+maxMovements(iteration-3)))
+        if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 1.02*0.5*(maxMovements(iteration-2)+maxMovements(iteration-3)))
             reTriangulationIsNeeded = true;
              triangularizationTriggerEvent = 'movement stopped decreasing';
         end
@@ -373,6 +376,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
         %
         if (iteration==1)
             reTriangulationIsNeeded = true;
+            triangularizationTriggerEvent = '1st iteration';
         end
         
         if (reTriangulationIsNeeded)
@@ -476,7 +480,7 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
             
         % Check if all interior nodes move less than dTolerance
         movementAmplitudes = sqrt(sum(deltaT * netForceVectors(d < -gridParams.borderTolerance, :) .^2 , 2));
-        maxMovement = prctile(movementAmplitudes, 50);
+        maxMovement = prctile(movementAmplitudes, gridParams.maxMovementPercentile);
         maxMovements(iteration) = maxMovement;
         
         if maxMovement < gridParams.dTolerance
@@ -505,10 +509,10 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
                 iteration, gridParams.maxIterations, triangularizationTriggerEvent, maxMovement, gridParams.dTolerance, toc(tStart)/60);
             
             if (isempty(rfPositionsHistory))
-                rfPositionsHistory(1,:,:) = single(rfPositions);
+                rfPositionsHistory(1,:,:) = single(oldRFPositions);
                 iterationsHistory = iteration;
             else
-                rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
+                rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(oldRFPositions), [1 size(oldRFPositions,1) size(oldRFPositions,2)]));
                 iterationsHistory = cat(2, iterationsHistory, iteration);
             end
             
@@ -538,14 +542,11 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
         
         if (terminateNowDueToReductionInLatticeQuality)
             % Return the last cone positions
-            rfPositions = rfPositionsLast;
-        else
-            % Save last rfPositions
-            rfPositionsLast = rfPositions;
+            rfPositions = oldRFPositions;
         end
         
         if (~isempty(userRequestTerminationAtIteration)) && (iteration >= userRequestTerminationAtIteration)
-            rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
+            rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(oldRFPositions), [1 size(oldRFPositions,1) size(oldRFPositions,2)]));
             iterationsHistory = cat(2, iterationsHistory, iteration);
             reTriangulationIterations = cat(2,reTriangulationIterations, iteration);
             fprintf('Current iteration: %d, user request stop iteration: %d\n', iteration,userRequestTerminationAtIteration)
@@ -726,10 +727,12 @@ function generateMosaicProgressVideo(videoFileName, hFigVideo, rfPositionsHistor
     videoOBJ.open();
     
     widths = [];
+    checkedBinHistory = zeros(size(rfPositionsHistory,1), 10);
     for k = 1:size(rfPositionsHistory,1)
         currentRFPositions = squeeze(rfPositionsHistory(k,:,:));
         triangleIndices = delaunayn(double(currentRFPositions));
         [~, histogramData, widths, diffWidths, checkedBins] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentRFPositions, triangleIndices, widths);
+        checkedBinHistory(k,1:numel(checkedBins)) = checkedBins;
         plotMosaic(hFigVideo, currentRFPositions, triangleIndices, ...
             maxMovements(1:iterationsHistory(k)), reTriangulationIterations(1:k), ...
             diffWidths, histogramData, checkedBins, dTolerance, mosaicFOVDegs, ...
@@ -737,7 +740,12 @@ function generateMosaicProgressVideo(videoFileName, hFigVideo, rfPositionsHistor
         % Add video frame
         videoOBJ.writeVideo(getframe(hFigVideo));
     end
+    videoOBJ.close();
     
+    figure(12345);
+    plot(reTriangulationIterations, checkedBinHistory(:,1), 'rs-');
+    xlabel('iteration');
+    ylabel('histogram width');
 end
 
 function [terminateNow, histogramData, widths, diffWidths, bin1Percent] = checkForEarlyTerminationDueToHexLatticeQualityDecrease(currentRFPositions, triangleIndices, widths)
@@ -1003,7 +1011,7 @@ function plotMosaic(hFig, rfPositions, triangleIndices, maxMovements,  reTriangu
     subplot(2,3,3);
     yyaxis left
     plotMovementSequence(hFig, maxMovements, dTolerance);
-    
+    title(sprintf('Iteration: %d', reTriangulationIterations(end)));
     yyaxis right
     if (~isnan(widths))
         plot(reTriangulationIterations(2:end), widths(:,1), 'rs-', 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.0, 'MarkerSize', 10); hold on
