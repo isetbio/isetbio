@@ -3,6 +3,7 @@ function unitTestSmoothGrid()
     % Generate or view saved mosaic
     generateNewMosaic = ~true;
     
+    
     % Visualize mosaic and progress
     visualizeProgress = ~generateNewMosaic;
 
@@ -46,7 +47,6 @@ function unitTestSmoothGrid()
     % Save filename
     p = getpref('IBIOColorDetect');
     mosaicDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
-    mosaicDir = strrep(p.validationRootDir, 'validations', '');
     saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d_maxMovPrctile%d.mat', ...
         whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, maxMovementPercentile));
 

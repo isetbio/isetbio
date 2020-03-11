@@ -2,16 +2,23 @@ function connectMosaics()
    
     % Select mosaics to load
     whichEye = 'right';
-    mosaicFOVDegs = 10; %15; %30;
-    eccentricitySamplesNumCones = 64; %32; %48;
-    eccentricitySamplesNumRGC = 64;% 32;
+    mosaicFOVDegs = 15;
+    eccentricitySamplesNumCones = 32;  
+    eccentricitySamplesNumRGC = 32; 
+    maxMovementPercentileCones = 20;
+    maxMovementPercentileRGC = 20;
+    bestIterationCones = Inf;
+    bestIterationRGC = 95;
+    
     
     % Connect mosaics only within a central region to save compute time
     connectivityRadiusDeg = 2.5;
     
     % Load data for the analyzed region
     [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, conesToRGCratios] = ...
-        loadData(whichEye, mosaicFOVDegs, eccentricitySamplesNumCones, eccentricitySamplesNumRGC, connectivityRadiusDeg);
+        loadData(whichEye, mosaicFOVDegs, eccentricitySamplesNumCones, eccentricitySamplesNumRGC, ...
+        maxMovementPercentileCones, maxMovementPercentileRGC, ...
+         bestIterationCones,  bestIterationRGC, connectivityRadiusDeg);
     
     % Compute connection matrix between the 2 mosaics
     connectionMatrix = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, conesToRGCratios);
@@ -33,12 +40,12 @@ function connectMosaics()
     figNo = 2;
     visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, conesToRGCratios, roi)
 
-%     roi.centerDeg = [4.7 0];
-%     roi.sizeDeg = [0.3 0.3];
-%     figNo = 3;
-%     visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, conesToRGCratios, roi)
-% 
-%     
+    roi.centerDeg = [4.7 0];
+    roi.sizeDeg = [0.3 0.3];
+    figNo = 3;
+    visualizeConnectivity(figNo, connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, coneSpacingsMicrons, conesToRGCratios, roi)
+
+    
 
 end
 
@@ -219,21 +226,22 @@ function multipleContourPlot(xRGCEnsembleOutline, yRGCEnsembleOutline, whichLeve
 end
 
 function [RGCRFPositions, RGCRFSpacings, conePositions, coneSpacings, conesToRGCratios] = ...
-        loadData(whichEye, mosaicFOVDegs, eccentricitySamplesNumCones, eccentricitySamplesNumRGC, analyzedRadiusDeg)
+        loadData(whichEye, mosaicFOVDegs, eccentricitySamplesNumCones, eccentricitySamplesNumRGC, ...
+        maxMovementPercentileCones, maxMovementPercentileRGC,  bestIterationCones,  bestIterationRGC, analyzedRadiusDeg)
     
     micronsPerDeg = 300;
     workingRadiusMicrons = analyzedRadiusDeg*micronsPerDeg;
     
     % Load the positions of the mRGC mosaic
     neuronalType = 'mRGC';
-    RGCRFPositions = getPositions(neuronalType, whichEye, mosaicFOVDegs, eccentricitySamplesNumRGC);
+    RGCRFPositions = getPositions(neuronalType, whichEye, mosaicFOVDegs, eccentricitySamplesNumRGC, maxMovementPercentileRGC,  bestIterationRGC);
     
     % Compute spacing and cone-to-RGC ratios for each  RGCRF position
     [RGCRFSpacings, conesToRGCratios] = mRGCStats(RGCRFPositions, 128, whichEye);
 
     % Load the positions of the cone mosaic
     neuronalType = 'cone';
-    conePositions = getPositions(neuronalType, whichEye, mosaicFOVDegs, eccentricitySamplesNumCones);
+    conePositions = getPositions(neuronalType, whichEye, mosaicFOVDegs, eccentricitySamplesNumCones, maxMovementPercentileCones,  bestIterationCones);
     
     % Compute cone spacing for each cone location
     coneSpacings = coneStats(conePositions, 128, whichEye);
@@ -251,8 +259,14 @@ function [RGCRFPositions, RGCRFSpacings, conePositions, coneSpacings, conesToRGC
     RGCRFSpacings = RGCRFSpacings(idx);
     conesToRGCratios = conesToRGCratios(idx);
     
-    fprintf('Loaded %2.0f RGCs\n', size(RGCRFPositions,1));
-    fprintf('Loaded %2.0f cones\n', size(conePositions,1));
+    minRGCEccDegs = min(RGCRFPositions(:,1))/micronsPerDeg;
+    maxRGCEccDegs = max(RGCRFPositions(:,1))/micronsPerDeg;
+    
+    minRGCEccCones = min(conePositions(:,1))/micronsPerDeg;
+    maxRGCEccCones = max(conePositions(:,1))/micronsPerDeg;
+    
+    fprintf('Loaded %2.0f RGCs from %2.2f-%2.2f degs\n', size(RGCRFPositions,1), minRGCEccDegs, maxRGCEccDegs);
+    fprintf('Loaded %2.0f cones from %2.2f-%2.2f degs\n', size(conePositions,1), minRGCEccCones, maxRGCEccCones);
 end
 
 
@@ -376,18 +390,155 @@ end
 
 
 
-function rfPositions = getPositions(neuronalType, whichEye, mosaicFOVDegs, eccentricitySamplesNum)
+function rfPositions = getPositions(neuronalType, whichEye, mosaicFOVDegs, eccentricitySamplesNum, maxMovementPercentile, bestIteration)
     % Save filename
     p = getpref('IBIOColorDetect');
     mosaicDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
     
-    
-    RGCMosaicFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d_prctile%d.mat', ...
-        whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, 99));
+    mosaicFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d_maxMovPrctile%d.mat', ...
+        whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum, maxMovementPercentile));
 
-    load(RGCMosaicFileName, 'rfPositionsHistory');
-    rfPositions = double(squeeze(rfPositionsHistory(end,:,:)));   
+    load(mosaicFileName, 'rfPositionsHistory', 'reTriangulationIterations');
+    if (~isinf(bestIteration))
+        [~, targetIterationIndex] = min(abs(reTriangulationIterations - bestIteration));
+    else
+        targetIterationIndex = numel(reTriangulationIterations);
+    end
+    
+    fprintf('Loading %s mosaic with %d neurons from iteration %d\n', neuronalType, size(rfPositionsHistory,2), reTriangulationIterations (targetIterationIndex));
+    rfPositions = double(squeeze(rfPositionsHistory(targetIterationIndex,:,:)));   
+    
+    contrastMeridianDensitiesFromActualMosaicsToModel(neuronalType,rfPositions, mosaicFOVDegs);
 end
+
+function contrastMeridianDensitiesFromActualMosaicsToModel(neuronalType, rfPositions, mosaicFOVDegs)
+    
+    meridianDensities = [];
+
+    if (strcmp(neuronalType, 'cone'))
+        figNo = 99;
+    else
+        figNo = 100;
+    end
+    figure(figNo); clf;
+    
+    samplesNum = 30;
+    
+    eccAxis = logspace(log10(0.01), log10(mosaicFOVDegs/2), samplesNum);
+    
+    subplot(1,2,1);
+    targetPositionsDegs(:,1) = eccAxis;
+    targetPositionsDegs(:,2) = eccAxis*0;
+    [targetHorizRFPositionsMicrons, meanLocalSpacingMicrons] = computeMeanLocalSpacing(rfPositions, targetPositionsDegs);
+    plot(WatsonRGCModel.rhoMMsToDegs(1e-3*targetHorizRFPositionsMicrons(:,1)), WatsonRGCModel.densityFromSpacing(meanLocalSpacingMicrons*1e-3), 'rs-', 'LineWidth', 1.0); hold on
+    
+    targetPositionsDegs(:,1) = eccAxis * 0;
+    targetPositionsDegs(:,2) = eccAxis;
+    [targetHorizRFPositionsMicrons, meanLocalSpacingMicrons] = computeMeanLocalSpacing(rfPositions, targetPositionsDegs);
+    plot(WatsonRGCModel.rhoMMsToDegs(1e-3*targetHorizRFPositionsMicrons(:,2)), WatsonRGCModel.densityFromSpacing(meanLocalSpacingMicrons*1e-3), 'bs-', 'LineWidth', 1.0);
+    
+    targetPositionsDegs(:,1) = -fliplr(eccAxis);
+    targetPositionsDegs(:,2) = eccAxis * 0;
+    [targetHorizRFPositionsMicrons, meanLocalSpacingMicrons] = computeMeanLocalSpacing(rfPositions, targetPositionsDegs);
+    plot(-WatsonRGCModel.rhoMMsToDegs(1e-3*targetHorizRFPositionsMicrons(:,1)), WatsonRGCModel.densityFromSpacing(meanLocalSpacingMicrons*1e-3), 'rs-', 'LineWidth', 1.0);
+    
+    targetPositionsDegs(:,1) = eccAxis * 0;
+    targetPositionsDegs(:,2) = -fliplr(eccAxis);
+    [targetHorizRFPositionsMicrons, meanLocalSpacingMicrons] = computeMeanLocalSpacing(rfPositions, targetPositionsDegs);
+    plot(-WatsonRGCModel.rhoMMsToDegs(1e-3*targetHorizRFPositionsMicrons(:,2)), WatsonRGCModel.densityFromSpacing(meanLocalSpacingMicrons*1e-3), 'bs-', 'LineWidth', 1.0);
+    xlabel('ecc(degs)');
+    ylabel(sprintf('density from mosaic (%s per mm^2)', neuronalType));
+    set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', [0.1 10], 'YLim', [1e3 1e5*3], 'XTick', [0.1 0.3 1 3 10], 'YTick', [1000 3000 10000 30000  100000]);
+    grid on;
+    
+    obj = WatsonRGCModel();
+    subplot(1,2,2);
+    rightEyeVisualFieldMeridianName = obj.enumeratedMeridianNames{1};
+    eccUnits = obj.visualDegsEccUnits;
+    densityUnits = obj.retinalMMDensityUnits;
+    if (strcmp(neuronalType, 'cone'))
+        [coneRFSpacing, density, rightEyeRetinalMeridianName] = obj.coneRFSpacingAndDensityAlongMeridian(eccAxis, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+    else
+        [mRGCRFSpacing, density, rightEyeRetinalMeridianName] = obj.mRGCRFSpacingAndDensityAlongMeridian(eccAxis, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+         % half density because the reported density is for both ON and OFF mRGCs
+         density = density /2 ;
+    end
+    
+    plot(eccAxis, density, 'rs-', 'LineWidth', 1.0); hold on
+    rightEyeVisualFieldMeridianName = obj.enumeratedMeridianNames{2};
+    if (strcmp(neuronalType, 'cone'))
+        [coneRFSpacing, density, rightEyeRetinalMeridianName] = obj.coneRFSpacingAndDensityAlongMeridian(eccAxis, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+    else
+        [mRGCRFSpacing, density, rightEyeRetinalMeridianName] = obj.mRGCRFSpacingAndDensityAlongMeridian(eccAxis, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+         % half density because the reported density is for both ON and OFF mRGCs
+         density = density /2;
+    end
+    plot(eccAxis, density, 'gs-', 'LineWidth', 1.0);
+    
+    rightEyeVisualFieldMeridianName = obj.enumeratedMeridianNames{3};
+    if (strcmp(neuronalType, 'cone'))
+        [coneRFSpacing, density, rightEyeRetinalMeridianName] = obj.coneRFSpacingAndDensityAlongMeridian(eccAxis, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+    else
+        [mRGCRFSpacing, density, rightEyeRetinalMeridianName] = obj.mRGCRFSpacingAndDensityAlongMeridian(eccAxis, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+         % half density because the reported density is for both ON and OFF mRGCs
+         density = density /2 ;
+    end
+    plot(eccAxis, density, 'bs-', 'LineWidth', 1.0);
+    
+    rightEyeVisualFieldMeridianName = obj.enumeratedMeridianNames{4};
+    if (strcmp(neuronalType, 'cone'))
+        [coneRFSpacing, density, rightEyeRetinalMeridianName] = obj.coneRFSpacingAndDensityAlongMeridian(eccAxis, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+    else
+        [mRGCRFSpacing, density, rightEyeRetinalMeridianName] = obj.mRGCRFSpacingAndDensityAlongMeridian(eccAxis, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        % half density because the reported density is for both ON and OFF mRGCs
+        density = density /2 ;
+    end
+    plot(eccAxis, density, 'ms-', 'LineWidth', 1.0);
+    xlabel('ecc(degs)');
+    ylabel(sprintf('density from model (%s per mm^2)', neuronalType));
+    set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', [0.1 10], 'YLim', [1e3 1e5*3], 'XTick', [0.1 0.3 1 3 10], 'YTick', [1000 3000 10000 30000 100000]);
+    grid on
+    drawnow
+end
+
+function [targetRFPositionsMicrons, meanLocalSpacingMicrons] = computeMeanLocalSpacing(rfPositions, targetPositionsDegs)
+    
+    targetPositionsMicrons = 1e3*WatsonRGCModel.rhoMMsToDegs(targetPositionsDegs);
+    
+    plotNeighbors = false;
+    targetsNum = size(targetPositionsDegs,1);
+    
+    for targetIndex = 1:targetsNum
+        d = sum((bsxfun(@minus, rfPositions, targetPositionsMicrons(targetIndex,:))).^2,2);
+        [~,idx(targetIndex)] = min(d);
+    end
+    targetRFPositionsMicrons = rfPositions(idx,:);
+    [D,I] = pdist2(rfPositions, targetRFPositionsMicrons, 'euclidean', 'Smallest', 7);
+    
+    meanLocalSpacingMicrons = zeros(targetsNum,1);
+    if (plotNeighbors)
+        figure(100); clf;
+    end
+    
+    for targetIndex = 1:targetsNum
+        for neigborIndex = 2:size(I,1)
+            rfIndex = I(neigborIndex,targetIndex);
+            if (plotNeighbors)
+                plot(rfPositions(rfIndex,1), rfPositions(rfIndex,2), 'ko',  'MarkerSize', 8);
+                hold on;
+            end
+        end
+        meanLocalSpacingMicrons(targetIndex) = mean(D(:,targetIndex));
+        if (plotNeighbors)
+            plot(targetRFPositionsMicrons(targetIndex,1), targetRFPositionsMicrons(targetIndex,2), 'rs', 'MarkerSize', 12);
+            plot(targetRFPositionsMicrons(targetIndex,1)+meanLocalSpacingMicrons(targetIndex)*cosd(0:20:360), ...
+                targetRFPositionsMicrons(targetIndex,2)+meanLocalSpacingMicrons(targetIndex)*sind(0:20:360), 'r-', 'MarkerSize', 12);
+        end
+    end
+end
+
+
+
 
 
 function coneSpacingInMicrons = coneStats(rfPositions, nSamples, whichEye)
