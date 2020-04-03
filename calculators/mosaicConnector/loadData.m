@@ -15,9 +15,7 @@ function [RGCRFPositions, RGCRFSpacings, conePositions, conesToRGCratios] = ...
   
     % Compute spacing and cone-to-RGC ratios for each  RGCRF position
     [RGCRFSpacings, conesToRGCratios] = mRGCStats(RGCRFPositions, 128, whichEye);
-    
-    coneSpacings = coneStats(conePositions);
-    
+      
     % Only keep cones  within the working radius
     eccCones = sqrt(sum(conePositions.^2,2));
     idx = find((eccCones<workingRadiusMicrons) & (conePositions(:,1)>=-20));

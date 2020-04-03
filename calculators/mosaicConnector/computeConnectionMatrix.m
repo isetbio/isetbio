@@ -1,147 +1,187 @@
-function connectionMatrix = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios)
+function connectivityMatrix = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios)
 
-    xo = 300;
-    yo = 300;
-    radius = 20;
+    % Define region of interest to work on
+    roi.center = [1100 0];
+    roi.size = [150 70];
 
-    d = bsxfun(@minus,conePositionsMicrons, [xo yo]);
-    d = sqrt(sum(d.^2,2))/radius;
-    idxCones = find(d < 1);
+    % Find cones within the roi
+    idxCones = positionsWithinROI(roi, conePositionsMicrons);
+    conesNum = numel(idxCones);
     conePositionsMicrons = conePositionsMicrons(idxCones,:);
     coneSpacingsMicrons = coneStats(conePositionsMicrons);
     
-    d = bsxfun(@minus,RGCRFPositionsMicrons, [xo yo]);
-    d = sqrt(sum(d.^2,2))/radius;
-    idxRGC = find(d < 1);
+    
+    % Find RGCs within the roi
+    idxRGC = positionsWithinROI(roi, RGCRFPositionsMicrons);
+    rgcsNum = numel(idxRGC);
     RGCRFPositionsMicrons = RGCRFPositionsMicrons(idxRGC,:);
     RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(idxRGC);
     desiredConesToRGCratios = desiredConesToRGCratios(idxRGC);
     
+    % Step1. Align each RGC with its nearest cone. This ensure all RGC's
+    % are connected to at least one cone. Since cones are more numerous
+    % than RGCs some cones will not connect to an RGC at this step. This 
+    % step occurs only for RGCs for which the cone-to-RGC ratio is [1..2]
     
-    
-    synapsesPerCone = 100;
-    allConeSynapseLocs = zeros(synapsesPerCone*numel(idxCones),2);
-    % Generate Gaussian cloud of 100 cone synapses  with a sigma = 0.2*cone spacing
-    for k = 1:numel(idxCones)
-        allConeSynapseLocs((k-1)*synapsesPerCone+(1:synapsesPerCone),:) = ...
-            bsxfun(@plus, conePositionsMicrons(k,:), randn(synapsesPerCone,2) * 0.2*coneSpacingsMicrons(k));
-    end
-    
-    allConeSynapseLocsOriginal = allConeSynapseLocs;
-    
-    connectivityMatrix = zeros(numel(idxRGC), numel(idxCones));
-    RGCconnections = cell(1, numel(idxRGC));
+    visualizeAlignmentProcess = true;
+    RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
+        conePositionsMicrons, coneSpacingsMicrons, ...
+        RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        desiredConesToRGCratios, visualizeAlignmentProcess );
+end
 
-    figure(2); clf;
-    for k = 1:numel(idxRGC)
-        plot(allConeSynapseLocs(:,1), allConeSynapseLocs(:,2), 'k.'); hold on;
+function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
+    conePositionsMicrons, coneSpacingsMicrons, ...
+    RGCRFPositionsMicrons, RGCRFSpacingsMicrons,...
+    desiredConesToRGCratios, visualizeAlignmentProcess)
+   
+    if (visualizeAlignmentProcess)
+        X1 = []; X2 = [];
+        Y1 = []; Y2 = [];
         
-        drawnow;
-        
-        connectionApproach = 'new';
-        if (connectionApproach == 'new')
-            
-            % Pooling area for cone synapses
-            rgcPoolingOutline.x = RGCRFPositionsMicrons(k,1) + 0.6*RGCRFSpacingsMicrons(k)*cosd(0:10:360);
-            rgcPoolingOutline.y = RGCRFPositionsMicrons(k,2) + 0.6*RGCRFSpacingsMicrons(k)*sind(0:10:360);
-            fill(rgcPoolingOutline.x, rgcPoolingOutline.y, 'r', 'FaceAlpha', 0.4);
-            drawnow;
-            
-            % find all cone synapses that are within the rgcPoolingOutline
-            
-        end
-        
-        if (connectionApproach == 'old')
-            % Generate a Gaussian cloud of RGC synapses (N = cone synapses * cone-to-RGC ratio) with a sigma = 0.2*RGCspacing
-            synapsesPerRGC = round(synapsesPerCone * desiredConesToRGCratios(k));
-            thisRGCSynapseLocs = bsxfun(@plus, RGCRFPositionsMicrons(k,:), randn(synapsesPerRGC,2) * 0.2*RGCRFSpacingsMicrons(k));
-            
-            % Find closest cone synapse to each of the RGC synapses
-            [~,indicesOfConnectedConeSynapses] = pdist2(allConeSynapseLocs, thisRGCSynapseLocs,   'euclidean', 'Smallest', 1);
-        
-            % Find the cone to which each of the closest synapse belongs to
-            coneIDs = floor((indicesOfConnectedConeSynapses-1)/synapsesPerCone)+1;
-            fprintf('RGC % d connects to %d cones\n', k, numel(unique(coneIDs)));
-       
-            % Form connectivity matrix
-            for ll = 1:numel(coneIDs)
-                connectivityMatrix(k, coneIDs(ll)) = connectivityMatrix(k, coneIDs(ll)) + 1;
-            end
-        
-            % Save cone synapses connected to this RGC
-            RGCconnections{k} = indicesOfConnectedConeSynapses;
-            %allConeSynapseLocs(indicesOfConnectedConeSynapses,:) = Inf;
-        end  % OLD connection approach
-        
+        xOutline = cosd(0:10:360);
+        yOutline = sind(0:10:360);
+    
+        % Instantiate a plotlab object
+        plotlabOBJ = plotlab();
+    
+        % Apply the default plotlab recipe overriding 
+        % the color order and the figure size
+        plotlabOBJ.applyRecipe(...
+            'colorOrder', [0 0 0; 1 0 0.5], ...
+            'figureWidthInches', 25, ...
+            'figureHeightInches', 15);
     end
     
-    % Total connection weighgts to each RGC is 1
-    connectivityMatrix = bsxfun(@times, connectivityMatrix,  1./ sum(connectivityMatrix,2));
+    % Cones Num
+    conesNum = size(conePositionsMicrons,1);
+    rgcsNum = size(RGCRFPositionsMicrons,1);
     
-    for k = 1:numel(idxRGC)
-        x = RGCRFPositionsMicrons(k,1);
-        y = RGCRFPositionsMicrons(k,2);
-        text(x,y,sprintf('%2.2f', desiredConesToRGCratios(k)));
-    end
+    % Keep a track of cones that have already been aligned to some RGC
+    coneAlignedWithRGCalready = false(1, conesNum);
     
-    % Instantiate a plotlab object
-    plotlabOBJ = plotlab();
+    % Go through all the RGCs one by one
+    indicesOfRGCsrequiringAlignment = find(desiredConesToRGCratios < 2);
     
-    % Apply the default plotlab recipe overriding 
-    % the color order and the figure size
-    plotlabOBJ.applyRecipe(...
-        'colorOrder', [0 0 0; 1 0 0.5], ...
-        'figureWidthInches', 12, ...
-        'figureHeightInches', 12);
+    fprintf('Will align %d of %d RGCs in this patch, which had a cone-to-RGC ration < 2\n', ...
+        numel(indicesOfRGCsrequiringAlignment), rgcsNum);
     
-    % New figure
-    hFig = figure(1); clf; hold on;
-    
-    % Cones
-    scatter(conePositionsMicrons(:,1), conePositionsMicrons(:,2));
-    scatter(RGCRFPositionsMicrons(:,1), RGCRFPositionsMicrons(:,2));
-    for k = 1:numel(idxCones)
-        scatter(conePositionsMicrons(k,1), conePositionsMicrons(k,2), 'b');
-       % coneSynapseIndices = (k-1)*synapsesPerCone+(1:synapsesPerCone);
-       % plot(allConeSynapseLocs(coneSynapseIndices,1), allConeSynapseLocs(coneSynapseIndices,2), 'k.');
-    end
-    
-    plot(allConeSynapseLocsOriginal(:,1), allConeSynapseLocsOriginal(:,2), 'k.');
-    for k = 1:numel(idxRGC)
+    for iRGC = 1:numel(indicesOfRGCsrequiringAlignment)
         
-        x = RGCRFPositionsMicrons(k,1);
-        y = RGCRFPositionsMicrons(k,2);
-        scatter(x,y, 'g');
-        pause
-        indicesOfConnectedConeSynapses = RGCconnections{k};
-        scatter(allConeSynapseLocsOriginal(indicesOfConnectedConeSynapses,1), allConeSynapseLocsOriginal(indicesOfConnectedConeSynapses,2), 50);
+        % Get RGC index
+        rgcIndex = indicesOfRGCsrequiringAlignment(iRGC);
         
-        text(x,y,sprintf('%2.2f', desiredConesToRGCratios(k)));
-        pause
-    end
-    title(sprintf('cones/RGC ratio in patch: %2.2f', numel(idxCones)/numel(idxRGC)));
-    axis 'square'
-    set(gca, 'XLim', xo+1.1*radius*[-1 1], 'YLim', yo+1.1*radius*[-1 1]);
-    
-    connectivityMatrix
-    figure(3);
-    scatter(conePositionsMicrons(:,1), conePositionsMicrons(:,2)); hold on
-    scatter(RGCRFPositionsMicrons(:,1), RGCRFPositionsMicrons(:,2), 200);
-    for RGCindex = 1:numel(idxRGC)
-        for coneIndex = 1:numel(idxCones)
-            if (connectivityMatrix(RGCindex, coneIndex)>0)
-            plot([RGCRFPositionsMicrons(RGCindex,1) conePositionsMicrons(coneIndex,1)], ...
-                 [RGCRFPositionsMicrons(RGCindex,2) conePositionsMicrons(coneIndex,2)], ...
-                 'r-', 'LineWidth', 4*connectivityMatrix(RGCindex, coneIndex));
+        % Compute distance of this RGC to all the cones
+        rgcPMicrons = RGCRFPositionsMicrons(rgcIndex,:);
+        distances = sqrt(sum((bsxfun(@minus, conePositionsMicrons, rgcPMicrons ).^2),2));
+        
+        % Find indices of cones in neighborhood of this RGC
+        coneIndicesWithinReach = find(distances < 0.55*(RGCRFSpacingsMicrons(rgcIndex)+max(coneSpacingsMicrons)));
+        
+        % Sort neigbors according to their distance to the RGC
+        [~, sortedIndices] = sort(distances(coneIndicesWithinReach));
+        
+        % Find which cone (within the above neigborhhod) to align to. This
+        % will be the closest cone that has not already been aligned with
+        % another RGC
+        keepGoing = true; k = 0;
+        alignmentConeIndex = nan;
+        while (keepGoing) && (k < numel(sortedIndices))
+            k = k + 1;
+            theConeIndex = coneIndicesWithinReach(sortedIndices(k));
+            if (~coneAlignedWithRGCalready(theConeIndex))
+                keepGoing = false;
+                alignmentConeIndex = theConeIndex;
+                coneAlignedWithRGCalready(theConeIndex) = true;
             end
         end
         
+        % If all neighboring cones are already aligned to other RGCs, just
+        % align to the closest cone.
+        if (isnan(alignmentConeIndex))
+            fprintf(2, 'Could not find a cone to align this RGC that has not been aligned with another RGC already. Aligning to the closest cone.\n');
+            alignmentConeIndex = coneIndicesWithinReach(sortedIndices(1));
+        end
+        
+        % Position of the cone to be aligned to
+        rgcPMicronsConeAligned = conePositionsMicrons(alignmentConeIndex,:); 
+        
+        % Update position of RGC to get closer to  rgcPMicronsConeAligned
+        % depending on desiredConesToRGCratios(rgcIndex);
+        g = min([1 desiredConesToRGCratios(rgcIndex)-1]);
+        rgcPMicronsAligned = g * rgcPMicrons + (1-g)*rgcPMicronsConeAligned;
+        
+        % Update RGC mosaic
+        RGCRFPositionMicronsBeforeAlignment = RGCRFPositionsMicrons(rgcIndex,:);
+        RGCRFPositionsMicrons(rgcIndex,:) = rgcPMicronsAligned;
+        
+        if (visualizeAlignmentProcess)
+            visualizeEachAlignment = ~false;
+            if (visualizeEachAlignment)
+                hFig = figure(1); clf;
+                theAxesGrid = plotlab.axesGrid(hFig, 'leftMargin', 0.03);
+
+                xPts = rgcPMicrons(1)+0.5*RGCRFSpacingsMicrons(rgcIndex)*xOutline;
+                yPts = rgcPMicrons(2)+0.5*RGCRFSpacingsMicrons(rgcIndex)*yOutline;
+                plot(theAxesGrid{1,1}, rgcPMicrons(1)+0.5*RGCRFSpacingsMicrons(rgcIndex)*xOutline, ...
+                     rgcPMicrons(2)+0.5*RGCRFSpacingsMicrons(rgcIndex)*yOutline, 'r-'); hold on; 
+
+                plot(theAxesGrid{1,1}, rgcPMicronsAligned(1)+0.5*RGCRFSpacingsMicrons(rgcIndex)*xOutline, ...
+                     rgcPMicronsAligned(2)+0.5*RGCRFSpacingsMicrons(rgcIndex)*yOutline, 'g-');
+                hold(theAxesGrid{1,1}, 'on')
+                for k = 1:numel(coneIndicesWithinReach)
+                    coneIndex = coneIndicesWithinReach(k);
+                    xPts = cat(2, xPts, conePositionsMicrons(coneIndex,1) + 0.5*coneSpacingsMicrons(coneIndex)*xOutline);
+                    yPts = cat(2, yPts, conePositionsMicrons(coneIndex,2) + 0.5*coneSpacingsMicrons(coneIndex)*yOutline);
+                    plot(theAxesGrid{1,1}, conePositionsMicrons(coneIndex,1) + 0.6*coneSpacingsMicrons(coneIndex)*xOutline, ...
+                         conePositionsMicrons(coneIndex,2) + 0.6*coneSpacingsMicrons(coneIndex)*yOutline,'b-');
+                end
+
+                xMin = min(xPts); xMax = max(xPts); xRange = xMax-xMin;
+                yMin = min(yPts); yMax = max(yPts); yRange = yMax-yMin;
+
+                xLim = [xMin xMax];
+                yLim = [yMin yMax];
+
+                set(theAxesGrid{1,1}, 'XLim', xLim, 'YLim', yLim);
+                axis(theAxesGrid{1,1}, 'equal')
+                title(theAxesGrid{1,1},sprintf('cone-to-RGC ratio: %2.2f', desiredConesToRGCratios(rgcIndex)));
+            end
+            
+            hFig = figure(2); clf;
+            theAxesGrid = plotlab.axesGrid(hFig, ...
+                'leftMargin', 0.04, ...
+                'bottomMargin', 0.05);
+            scatter(theAxesGrid{1,1}, conePositionsMicrons(:,1), conePositionsMicrons(:,2), 'b'); hold on;
+            scatter(theAxesGrid{1,1},RGCRFPositionsMicrons(:,1), RGCRFPositionsMicrons(:,2), 300, 'g');
+            X1 = cat(2, X1, RGCRFPositionMicronsBeforeAlignment(1));
+            X2 = cat(2, X2, rgcPMicronsAligned(1));
+            Y1 = cat(2, Y1, RGCRFPositionMicronsBeforeAlignment(2));
+            Y2 = cat(2, Y2, rgcPMicronsAligned(2));
+            plot(theAxesGrid{1,1},[X1; X2], ...
+                 [Y1; Y2], 'k-', 'LineWidth', 1.5);
+            title(theAxesGrid{1,1},sprintf('cone-to-RGC ratio: %2.2f', desiredConesToRGCratios(rgcIndex)))
+            pause(0.1);
+        end % visualizeAlignmentProcess
+        
     end
+    
     
 end
 
+    
+function indices = positionsWithinROI(roi, positions)
+    d = bsxfun(@minus,positions, roi.center);
+    ecc = sqrt(sum(positions.^2,2));
+    indices = find((abs(d(:,1)) <= 0.5*roi.size(1)) & (abs(d(:,2)) <= 0.5*roi.size(2)));
+    
+    % Re-order according to increasing eccentricity
+    [~,sortedIdx] = sort(ecc(indices), 'ascend');
+    indices = indices(sortedIdx);
+end
+
 function coneSpacings = coneStats(conePositions)
-    p = pdist2(conePositions, conePositions, 'euclidean', 'Smallest', 6);
+    p = pdist2(conePositions, conePositions, 'euclidean', 'Smallest', 3);
     p = p(2:end,:);
     coneSpacings = mean(p,1);
 end

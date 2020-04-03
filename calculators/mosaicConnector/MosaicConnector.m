@@ -14,7 +14,7 @@ function MosaicConnector
         bestIterationForRGCMosaic = 95;
 
         % Connect mosaics only within a central region to save compute time
-        connectivityRadiusDeg = 2.5;
+        connectivityRadiusDeg = 6;
 
         % Load data for the analyzed region
         [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, desiredConesToRGCratios] = ...
