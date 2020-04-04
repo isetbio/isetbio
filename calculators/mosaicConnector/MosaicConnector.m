@@ -26,8 +26,13 @@ function MosaicConnector
         save('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
     else
         load('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
-        connectionMatrix = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios);
+        
+        % Define region of interest to work on
+        roi.center = [50 0];
+        roi.size = [100 70];
+        [connectivityMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons] = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios, roi);
 
+        visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons, roi)
     end
     
 end

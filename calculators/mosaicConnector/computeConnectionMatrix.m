@@ -1,8 +1,4 @@
-function connectionMatrix = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios)
-
-    % Define region of interest to work on
-    roi.center = [100 0];
-    roi.size = [100 70];
+function [connectionMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons] = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios, roi)
 
     % Find cones within the roi
     idxCones = positionsWithinROI(roi, conePositionsMicrons);
@@ -51,8 +47,7 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
     % Numbers of neurons
     conesNum = size(conePositionsMicrons,1);
     rgcsNum = size(RGCRFPositionsMicrons,1);
-    
-    
+     
     % First pass. Connect each cone to its closest RGC. Since there are more cones than RGCs, some
     % RGCs will receive inputs from more than 1 cone in this pass.
     connectionMatrix = zeros(conesNum, rgcsNum,2);
@@ -82,7 +77,6 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
         rgcIDsWithMoreThanTwoInputs = find(squeeze(sum(squeeze(connectionMatrix(:, :,1)),1)) > 2);
         fprintf('There are %d out of a total of %d RGCs that receive more than 2 cone inputs 1\n', ...
             numel(rgcIDsWithMoreThanTwoInputs), size(connectionMatrix,2));
-        pause
     
         for iRGC = 1:numel(rgcIDsWithMoreThanTwoInputs)
             
@@ -152,9 +146,7 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
     
     end
     
-    
-    
-    
+      
     normalizeNetWeights = true;
     if (normalizeNetWeights)
         % Some RGCs will have more than one cones connected to them. Adjust the
@@ -166,7 +158,6 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
             fprintf('RGC at position %2.1f, %2.1f has zero cone inputs\n', pos(1), pos(2));
         end
         
-        assert(isempty(RGCswithZeroInputs), 'There are RGCs with zero cone inputs');
 
         % Connection matrix for RGCs with more than 1 cone inputs
         RGCswithMoreThanOneInputs = find(numberOfConeInputs > 1);
@@ -178,10 +169,10 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
             % Adjust connection strengths
             distancesOfConesConnectedToThisRGC = squeeze(connectionMatrix(coneIndicesConnectedToThisRGC, theRGCindex,2));
             originalConnectionStrengths = squeeze(connectionMatrix(coneIndicesConnectedToThisRGC, theRGCindex, 1));
-            weights = exp(-(distancesOfConesConnectedToThisRGC/RGCRFSpacingsMicrons(theRGCindex)));
-            adjustedConeInputWeights = originalConnectionStrengths .* weights;
+            %weights = exp(-0.2*(distancesOfConesConnectedToThisRGC/RGCRFSpacingsMicrons(theRGCindex)));
+            adjustedConeInputWeights = originalConnectionStrengths; % .* weights;
             % Net weight of all inputs should be 1.
-            adjustedConeInputWeights = adjustedConeInputWeights / sum(adjustedConeInputWeights);
+            %adjustedConeInputWeights = adjustedConeInputWeights / sum(adjustedConeInputWeights);
             % Update connection matrix
             connectionMatrix(coneIndicesConnectedToThisRGC, theRGCindex, 1) = adjustedConeInputWeights;
         end
@@ -202,6 +193,8 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
         disp('Some RGCs have net cone weights < 1')
     end
     
+    % Just keep the weights
+    connectionMatrix = squeeze(connectionMatrix(:,:,1));
 end
 
 function visualizeConnectivity(figNo, conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, meanConesToRGCratio)
@@ -230,13 +223,8 @@ function visualizeConnectivity(figNo, conePositionsMicrons, RGCRFPositionsMicron
                 'LineWidth', 1.5, 'Color', (1-lineColors(iCone))*[1 1 1]);
         end
     end
-    title(sprintf('mean cone-to-RGC ratio: %2.2f', meanConesToRGCratio));
-    
+    title(sprintf('mean cone-to-RGC ratio: %2.2f', meanConesToRGCratio));    
 end
-
-
-
-
 
 
 function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
@@ -370,9 +358,7 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
                 pause(0.1);
             end
         end % visualizeProcess
-        
     end
-    
     
 end
 
