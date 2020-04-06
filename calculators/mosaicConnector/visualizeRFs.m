@@ -74,7 +74,6 @@ function theRF = generateRGCRFsFromConnectivityMatrix(connectivityVectorForRGC, 
     
     theRF = [];
     connectedConeIDs = find(connectivityVectorForRGC>0);
-    connectivityVectorForRGC(connectedConeIDs)
     
     for k = 1:numel(connectedConeIDs)
         coneIndex = connectedConeIDs(k);
