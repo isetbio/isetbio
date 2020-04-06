@@ -1,24 +1,13 @@
-function [connectionMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons] = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios, roi)
+function [connectionMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons] = computeConnectionMatrix(RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios, roi, thresholdSeparationMicronsForRemovingUnitsFromMosaic)
 
     % Find cones within the roi
-    idxCones = positionsWithinROI(roi, conePositionsMicrons);
+    idxCones = positionsWithinROI(roi, conePositionsMicrons,  thresholdSeparationMicronsForRemovingUnitsFromMosaic);
     conePositionsMicrons = conePositionsMicrons(idxCones,:);
     coneSpacingsMicrons = coneStats(conePositionsMicrons);
-    
-    % Instantiate a plotlab object
-    plotlabOBJ = plotlab();
-
-    % Apply the default plotlab recipe overriding 
-    % the color order and the figure size
-    figWidthInches = 28;
-    plotlabOBJ.applyRecipe(...
-        'colorOrder', [0 0 0; 1 0 0.5], ...
-        'figureWidthInches', figWidthInches, ...
-        'figureHeightInches', figWidthInches*roi.size(2)/roi.size(1));
-        
+      
     
     % Find RGCs within the roi
-    idxRGC = positionsWithinROI(roi, RGCRFPositionsMicrons);
+    idxRGC = positionsWithinROI(roi, RGCRFPositionsMicrons,  thresholdSeparationMicronsForRemovingUnitsFromMosaic );
     RGCRFPositionsMicrons = RGCRFPositionsMicrons(idxRGC,:);
     RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(idxRGC);
     desiredConesToRGCratios = desiredConesToRGCratios(idxRGC);
@@ -335,7 +324,7 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
 end
 
     
-function indices = positionsWithinROI(roi, positions)
+function indices = positionsWithinROI(roi, positions, thresholdSeparation)
     d = bsxfun(@minus,positions, roi.center);
     ecc = sqrt(sum(positions.^2,2));
     indices = find((abs(d(:,1)) <= 0.5*roi.size(1)) & (abs(d(:,2)) <= 0.5*roi.size(2)));
@@ -343,7 +332,33 @@ function indices = positionsWithinROI(roi, positions)
     % Re-order according to increasing eccentricity
     [~,sortedIdx] = sort(ecc(indices), 'ascend');
     indices = indices(sortedIdx);
+    
+    % mosaic correction: Remove units that are too close to each other
+    % Compute all distances in included positions
+    posIncluded = positions(indices,:);
+    indicesToBeRemoved = indicesOfUnitsWithNearestSeparationLessThanThresholdSeparation(posIncluded, thresholdSeparation);
+    % Remove units that are too close to each other
+    indices = setdiff(indices, indices(indicesToBeRemoved));
+    
 end
+
+function indices = indicesOfUnitsWithNearestSeparationLessThanThresholdSeparation(positions, thresholdSeparation)
+    % Find the closest distance from each cone to all other cones
+    allPairwiseDistances = pdist(positions);
+    %thresholdSeparation = prctile(allPairwiseDistances(:), 0.02);
+    idx = find(allPairwiseDistances < thresholdSeparation);
+    [unit1Indices,unit2Indices] = returnRowColFromLowerTriIndex(idx, size(positions,1));
+    indices = unit1Indices;
+    for k = 1:numel(indices)
+        distEst1 = sqrt(sum((positions(unit1Indices(k),:)-positions(unit2Indices(k),:)).^2));
+        distEst2 = allPairwiseDistances(indices(k));
+        fprintf('Elements %d and %d are too close. (distance = %2.2f, %2.2f). Removed %d.\n', ...
+            unit1Indices(k), unit2Indices(k), distEst1, distEst2, unit1Indices(k));
+    end
+    
+end
+
+
 
 function coneSpacings = coneStats(conePositions)
     p = pdist2(conePositions, conePositions, 'euclidean', 'Smallest', 3);

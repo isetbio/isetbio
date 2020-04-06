@@ -7,13 +7,17 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     [X,Y] = meshgrid(xAxis,yAxis);
     
    
-    zLevels = 0.2:0.2:0.7;
+    zLevels = [0.2 0.5];
     
     whichLevelsToContour = 1:numel(zLevels);
     
     hFig = figure(1); clf;
     theAxesGrid = plotlab.axesGrid(hFig, ...
-        'leftMargin', 0.05, 'bottomMargin', 0.15, 'topMargin', 0.05);
+            'leftMargin', 0.03, ...
+            'bottomMargin', 0.05, ...
+            'rightMargin', 0.03, ...
+            'topMargin', 0.03);
+        
     theAxesGrid = theAxesGrid{1,1};
     set(theAxesGrid, 'XLim', roi.center(1)+roi.size(1)/2*[-1 1], 'YLim', roi.center(2)+roi.size(2)/2*[-1 1]);
     hold(theAxesGrid, 'on');
@@ -36,6 +40,9 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     end
         
     scatter(conePositionsMicrons(:,1), conePositionsMicrons(:,2), 'r');
+    for k = 1:size(conePositionsMicrons,1)
+        text(conePositionsMicrons(k,1), conePositionsMicrons(k,2), sprintf('%d', k));
+    end
     
     colormap(brewermap(512, 'greys'))
     set(theAxesGrid, 'CLim', [0 1]);
