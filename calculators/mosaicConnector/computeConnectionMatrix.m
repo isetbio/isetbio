@@ -10,10 +10,11 @@ function [connectionMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpa
 
     % Apply the default plotlab recipe overriding 
     % the color order and the figure size
+    figWidthInches = 28;
     plotlabOBJ.applyRecipe(...
         'colorOrder', [0 0 0; 1 0 0.5], ...
-        'figureWidthInches', 25, ...
-        'figureHeightInches', 15);
+        'figureWidthInches', figWidthInches, ...
+        'figureHeightInches', figWidthInches*roi.size(2)/roi.size(1));
         
     
     % Find RGCs within the roi
@@ -195,35 +196,6 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
     
     % Just keep the weights
     connectionMatrix = squeeze(connectionMatrix(:,:,1));
-end
-
-function visualizeConnectivity(figNo, conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, meanConesToRGCratio)
-    hFig = figure(figNo); clf;
-    theAxesGrid = plotlab.axesGrid(hFig, ...
-            'leftMargin', 0.04, ...
-            'bottomMargin', 0.05);
-    scatter(theAxesGrid{1,1}, conePositionsMicrons(:,1), conePositionsMicrons(:,2), 'b'); hold on;
-    scatter(theAxesGrid{1,1}, RGCRFPositionsMicrons(:,1), RGCRFPositionsMicrons(:,2), 300, 'g');
-
-    rgcsNum = size(RGCRFPositionsMicrons,1);
-    
-    for theRGCindex = 1:rgcsNum  
-        rgcPos = RGCRFPositionsMicrons(theRGCindex,:);
-
-        % Find cones connected to this RGC
-        coneWeights = squeeze(connectionMatrix(:, theRGCindex, 1));
-        coneIndicesConnectedToThisRGC = find(coneWeights > 0);
-        coneWeights = coneWeights(coneIndicesConnectedToThisRGC);
-        lineColors = coneWeights / max(coneWeights);
-
-        for iCone = 1:numel(coneIndicesConnectedToThisRGC)
-            theConeIndex = coneIndicesConnectedToThisRGC(iCone);
-            conePos = conePositionsMicrons(theConeIndex,:);
-            line([rgcPos(1) conePos(1)], [rgcPos(2) conePos(2)], ...
-                'LineWidth', 1.5, 'Color', (1-lineColors(iCone))*[1 1 1]);
-        end
-    end
-    title(sprintf('mean cone-to-RGC ratio: %2.2f', meanConesToRGCratio));    
 end
 
 
