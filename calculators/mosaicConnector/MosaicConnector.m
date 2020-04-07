@@ -29,7 +29,7 @@ function MosaicConnector
         load('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
         
         % Define region of interest to work on
-        roi.center = [100 0];
+        roi.center = [1900 0];
         roi.size = [100 50];
         
         % Instantiate a plotlab object

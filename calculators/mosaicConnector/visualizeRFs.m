@@ -28,20 +28,15 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
         % Generate RFs of RGCs based on cone psotions and connection matrix
         theRF = generateRGCRFsFromConnectivityMatrix(...
             squeeze(connectivityMatrix(:, RGCindex)), conePositionsMicrons, coneSpacingsMicrons, X,Y);
-    
-        if (all(isnan(theRF(:))))
-            fprintf('Zero RF. skipping\n');
-            continue;
-        end
-        %contourf(theAxesGrid, xAxis, yAxis, theRF, zLevels);
+
         C = contourc(xAxis, yAxis,theRF, zLevels);
         renderContourPlot(theAxesGrid, C, zLevels, whichLevelsToContour );
-        
     end
         
-    scatter(conePositionsMicrons(:,1), conePositionsMicrons(:,2), 'r');
+    % Cones in blue
+    scatter(conePositionsMicrons(:,1), conePositionsMicrons(:,2), 'b');
     for k = 1:size(conePositionsMicrons,1)
-        text(conePositionsMicrons(k,1), conePositionsMicrons(k,2), sprintf('%d', k));
+        text(conePositionsMicrons(k,1)+0.5, conePositionsMicrons(k,2)+1, sprintf('%d', k), 'Color', 'b');
     end
     
     colormap(brewermap(512, 'greys'))
@@ -55,7 +50,7 @@ function renderContourPlot(theAxes, C, zLevels, whichLevelsToContour )
         level = C(1,k);
         points = C(2,k);
         if (level == zLevels(whichLevelsToContour(1)))
-            edgeAlpha = 0.5;
+            edgeAlpha = 0.7;
             faceAlpha = 0.2;
         else
             edgeAlpha = 0;
@@ -66,8 +61,8 @@ function renderContourPlot(theAxes, C, zLevels, whichLevelsToContour )
         yRGCEnsembleOutline = C(2,k+(1:points));
         v = [xRGCEnsembleOutline(:) yRGCEnsembleOutline(:)];
         f = 1:numel(xRGCEnsembleOutline);
-        patch(theAxes, 'Faces', f, 'Vertices', v, 'FaceColor', [0.7 0.7 0.7]-level*0.05, ...
-            'FaceAlpha', faceAlpha, 'EdgeColor', [0 0 0], 'EdgeAlpha', edgeAlpha, 'LineWidth', 1.0);
+        patch(theAxes, 'Faces', f, 'Vertices', v, 'FaceColor', [0.5 0.5 0.5]-level*0.05, ...
+            'FaceAlpha', faceAlpha, 'EdgeColor', [0.2 0.2 0.2], 'EdgeAlpha', edgeAlpha, 'LineWidth', 1.0);
         
         k = k+points+1;
         contoursNum = contoursNum + 1;

@@ -83,11 +83,16 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
             [~, sortedIndices] = sort(distances(rgcIndicesWithinReach), 'ascend');
 
             % Find which RGC to connect to. This will be the closest RGC that
-            % has the minimal # of cones already connected to it.
+            % has the minimal # of cones already connected to it, and which
+            % is less that the current number of inputs to this RGC
             % The minimum number of cone connections for the RGCs within reach 
             neighboringRGCConnectionsNum = sum(squeeze(connectionMatrix(:, rgcIndicesWithinReach,1)),1);
             minConnections = min(neighboringRGCConnectionsNum);
 
+            if (minConnections >= numberOfConeInputs(rgcIndex))
+                continue;
+            end
+            
             keepGoing = true; k = 0;
             betterAlternativeRGCindex = nan;
             while (keepGoing) && (k < numel(sortedIndices))
@@ -100,6 +105,8 @@ function connectionMatrix = connectConesToRGC(conePositionsMicrons, coneSpacings
             end
 
             if (~isnan(betterAlternativeRGCindex))
+                fprintf('Disconnecting cone %d from rgc %d (which has %d inputs) and connecting it to rgc %d, which had %d inputs\n', ...
+                    coneIndex, rgcIndex, numberOfConeInputs(rgcIndex), betterAlternativeRGCindex, numberOfConeInputs(betterAlternativeRGCindex));
                 % Of DISCONNECT coneIndex from rgcIndex
                 connectionMatrix(coneIndex, rgcIndex, 1) = 0; % strength
                 connectionMatrix(coneIndex, rgcIndex, 2) = 0; % distance

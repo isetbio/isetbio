@@ -9,10 +9,16 @@ function visualizeConnectivity(figNo, figureName, conePositionsMicrons, RGCRFPos
         
     % Cones in blue
     scatter(theAxesGrid{1,1}, conePositionsMicrons(:,1), conePositionsMicrons(:,2), 'b'); 
+    for coneIndex = 1:size(conePositionsMicrons,1)
+        text(conePositionsMicrons(coneIndex,1)+0.5, conePositionsMicrons(coneIndex,2)+1, sprintf('%d', coneIndex), 'Color', 'b');
+    end
     hold(theAxesGrid{1,1}, 'on');
     % RGCs in black
-    scatter(theAxesGrid{1,1}, RGCRFPositionsMicrons(:,1), RGCRFPositionsMicrons(:,2), 300, 'k');
-
+    scatter(theAxesGrid{1,1}, RGCRFPositionsMicrons(:,1), RGCRFPositionsMicrons(:,2), 300,  [0.4 0.4 0.4]);
+    for rgcIndex = 1:size(RGCRFPositionsMicrons,1)
+        text(RGCRFPositionsMicrons(rgcIndex,1)+0.5, RGCRFPositionsMicrons(rgcIndex,2)+1, sprintf('%d', rgcIndex), 'Color', 'k');
+    end
+    
     rgcsNum = size(RGCRFPositionsMicrons,1);
     for theRGCindex = 1:rgcsNum  
         rgcPos = RGCRFPositionsMicrons(theRGCindex,:);
