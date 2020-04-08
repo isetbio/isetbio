@@ -29,14 +29,16 @@ function MosaicConnector
         load('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
         
         % Define region of interest to work on
-        roi.center = [2500 1000];
-        roi.size = round([100 50]*3);
+        roi.center = [50 0];
+        roi.size = round([100 50]*2);
         
         % Options
         orphanRGCpolicy = 'remove' ; % valid options: {'remove', 'share input'}
         
         % Treshold (x mean spacing) for removing cones/rgcs that are too close
         thresholdFractionForMosaicIncosistencyCorrection = 0.5;
+        
+        visualizeConnectionProcess = true;
         
         % Instantiate a plotlab object
         plotlabOBJ = plotlab();
@@ -50,17 +52,35 @@ function MosaicConnector
             'figureWidthInches', figHeightInches*roi.size(1)/roi.size(2), ...
             'figureHeightInches', figHeightInches);
     
+        % Step 1. Remove inconstencies within and across mosaics
+        [conePositionsMicrons, coneSpacingsMicrons,...
+         RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+         desiredConesToRGCratios] = improveMosaicStats(conePositionsMicrons, ...
+                       RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+                       desiredConesToRGCratios, ...
+                       thresholdFractionForMosaicIncosistencyCorrection, roi);
+        
+        
+        % Step 2. Assigne types (L,M,S) in the cone mosaic
+        visualizeMosaic = true;
+        tritanopicAreaDiameterMicrons = 0.25 * 300;
+        relativeSconeSpacing = 2.7;  % This results to around 8-9% S-cones
+        LtoMratio = 2.0;  % Valid range: [0 - Inf]
+        coneTypes = assignConeTypes(conePositionsMicrons, coneSpacingsMicrons, ...
+            tritanopicAreaDiameterMicrons, relativeSconeSpacing, LtoMratio, visualizeMosaic);
+
+        % Step 3. Connect mosaics
         [connectivityMatrix, ...
          conePositionsMicrons, ...
-         RGCRFPositionsMicrons, ...
-         coneSpacingsMicrons] = computeConnectionMatrix(...
+         RGCRFPositionsMicrons] = computeConnectionMatrix(...
                 RGCRFPositionsMicrons, conePositionsMicrons, ...
-                RGCRFSpacingsMicrons, desiredConesToRGCratios, roi, ...
-                thresholdFractionForMosaicIncosistencyCorrection, ...
-                orphanRGCpolicy);
+                RGCRFSpacingsMicrons, coneSpacingsMicrons, ...
+                desiredConesToRGCratios, ...
+                orphanRGCpolicy, visualizeConnectionProcess);
 
+            
         visualizeRFs(connectivityMatrix, conePositionsMicrons, ...
-            RGCRFPositionsMicrons, coneSpacingsMicrons, roi)
+            RGCRFPositionsMicrons, coneSpacingsMicrons, roi);
     end
     
 end
