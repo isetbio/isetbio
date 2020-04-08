@@ -3,14 +3,19 @@ function visualizeFinalAlignment(conePositionsMicrons, RGCRFPositionsMicrons, X1
         set(hFig, 'Name', 'RGC mosaic alignment to cone mosaic');
         theAxesGrid = plotlab.axesGrid(hFig, ...
             'leftMargin', 0.04, ...
-            'bottomMargin', 0.05);
+            'bottomMargin', 0.05, ...
+            'topMargin', 0.1);
 
         scatter(theAxesGrid{1,1}, conePositionsMicrons(:,1), conePositionsMicrons(:,2), 'b'); hold on;
-        scatter(theAxesGrid{1,1},RGCRFPositionsMicrons(:,1), RGCRFPositionsMicrons(:,2), 300, 'g');
+        scatter(theAxesGrid{1,1}, RGCRFPositionsMicrons(:,1), RGCRFPositionsMicrons(:,2), 300, 'g');
 
+        conesInMosaicPatch = size(conePositionsMicrons,1);
+        rgcsInMosaicPatch = size(RGCRFPositionsMicrons,1);
+        
         plot(theAxesGrid{1,1},[X1; X2], ...
              [Y1; Y2], 'k-', 'LineWidth', 1.5);
-        title(theAxesGrid{1,1},sprintf('cone-to-RGC ratio: %2.2f', mean(desiredConesToRGCratios)));
+        title(theAxesGrid{1,1},sprintf('cone-to-RGC ratio: %2.2f (desired), %2.2f (actual)', ...
+            mean(desiredConesToRGCratios), conesInMosaicPatch/rgcsInMosaicPatch));
         drawnow;
 end
 

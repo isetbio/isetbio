@@ -24,21 +24,25 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
     % Align RGC with cones only for those RGCs whose desired cone-to-RGC
     % ratio is less than 2
     indicesOfRGCsrequiringAlignment = find(desiredConesToRGCratios < 2); 
-    fprintf('Will align %d of %d RGCs in this patch, which had a cone-to-RGC ration < 2\n', ...
+    fprintf('Will align %d of %d RGCs in this patch, which had a cone-to-RGC ratio < 2\n', ...
         numel(indicesOfRGCsrequiringAlignment), rgcsNum);
+
+    % Sort according to ecc
+    ecc = sqrt(sum(RGCRFPositionsMicrons(indicesOfRGCsrequiringAlignment,:).^2,2));
+    [ecc,idx] = sort(ecc, 'ascend');
+    indicesOfRGCsrequiringAlignment = indicesOfRGCsrequiringAlignment(idx);
     
     % Go through all the RGCs one by one
     for iRGC = 1:numel(indicesOfRGCsrequiringAlignment)
-        
         % Get RGC index
         rgcIndex = indicesOfRGCsrequiringAlignment(iRGC);
-        
+
         % Compute distance of this RGC to all the cones
         rgcPMicrons = RGCRFPositionsMicrons(rgcIndex,:);
         distances = sqrt(sum((bsxfun(@minus, conePositionsMicrons, rgcPMicrons ).^2),2));
         
         % Find indices of cones in neighborhood of this RGC
-        coneIndicesWithinReach = find(distances < 0.55*(RGCRFSpacingsMicrons(rgcIndex)+max(coneSpacingsMicrons)));
+        coneIndicesWithinReach = find(distances < 0.8*(RGCRFSpacingsMicrons(rgcIndex)));
         
         % Sort neigboring cones according to their distance to the RGC
         [~, sortedIndices] = sort(distances(coneIndicesWithinReach));
@@ -76,9 +80,8 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
         % Update RGC mosaic
         RGCRFPositionMicronsBeforeAlignment = RGCRFPositionsMicrons(rgcIndex,:);
         RGCRFPositionsMicrons(rgcIndex,:) = rgcPMicronsAligned;
-        
+
         if (visualizeProcess)
-            
             if (visualizeEachAlignment)
                 visualizeCurrentRGCalignment(rgcPMicrons, rgcPMicronsAligned, RGCRFSpacingsMicrons(rgcIndex), ...
                     xOutline, yOutline, coneIndicesWithinReach, conePositionsMicrons, coneSpacingsMicrons, desiredConesToRGCratios);
@@ -93,7 +96,7 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
             if (iRGC == numel(indicesOfRGCsrequiringAlignment))
                 visualizeFinalAlignment(conePositionsMicrons, RGCRFPositionsMicrons, X1, X2, Y1, Y2, desiredConesToRGCratios);
             end
+            
         end % visualizeProcess
-        
     end
 end

@@ -29,30 +29,35 @@ function MosaicConnector
         load('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
         
         % Define region of interest to work on
-        roi.center = [1900 0];
-        roi.size = [100 50];
+        roi.center = [2500 1000];
+        roi.size = round([100 50]*3);
+        
+        % Options
+        orphanRGCpolicy = 'remove' ; % valid options: {'remove', 'share input'}
+        
+        % Treshold (x mean spacing) for removing cones/rgcs that are too close
+        thresholdFractionForMosaicIncosistencyCorrection = 0.5;
         
         % Instantiate a plotlab object
         plotlabOBJ = plotlab();
 
         % Apply the default plotlab recipe overriding 
         % the color order and the figure size
-        figHeightInches = 10;
+        figHeightInches = 11;
         plotlabOBJ.applyRecipe(...
+            'renderer', 'opengl', ...
             'colorOrder', [0 0 0; 1 0 0.5], ...
             'figureWidthInches', figHeightInches*roi.size(1)/roi.size(2), ...
             'figureHeightInches', figHeightInches);
-    
-        % Some times, elements are too close. Remove them
-        thresholdSeparationMicronsForRemovingUnitsFromMosaic = 0.0;
     
         [connectivityMatrix, ...
          conePositionsMicrons, ...
          RGCRFPositionsMicrons, ...
          coneSpacingsMicrons] = computeConnectionMatrix(...
                 RGCRFPositionsMicrons, conePositionsMicrons, ...
-                RGCRFSpacingsMicrons, desiredConesToRGCratios, ...
-                roi, thresholdSeparationMicronsForRemovingUnitsFromMosaic);
+                RGCRFSpacingsMicrons, desiredConesToRGCratios, roi, ...
+                thresholdFractionForMosaicIncosistencyCorrection, ...
+                orphanRGCpolicy);
 
         visualizeRFs(connectivityMatrix, conePositionsMicrons, ...
             RGCRFPositionsMicrons, coneSpacingsMicrons, roi)
