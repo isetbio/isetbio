@@ -29,12 +29,11 @@ function MosaicConnector
         load('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
         
         % *********** Define region of interest to work on *****
-        horizEcc = 0.5; %0.1667;
+        horizEcc = 0.0; %0.1667; 0.5;
         micronsPerDegree = 300;
-        roi.center = [round(horizEcc*micronsPerDegree) 0]
-        pause
-        roi.size = round([100 70]*1.0);
-        roi.margin = 10;
+        roi.center = [round(horizEcc*micronsPerDegree) 0];
+        roi.size = round([100 100]/4);
+        roi.margin = 5;
         % *************************************************
         
         
@@ -51,7 +50,7 @@ function MosaicConnector
 
         % Apply the default plotlab recipe overriding 
         % the color order and the figure size
-        figHeightInches = 11;
+        figHeightInches = 13;
         plotlabOBJ.applyRecipe(...
             'renderer', 'painters', ... %'opengl', ...
             'axesBox', 'on', ...

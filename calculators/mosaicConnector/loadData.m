@@ -18,12 +18,12 @@ function [RGCRFPositions, RGCRFSpacings, conePositions, conesToRGCratios] = ...
       
     % Only keep cones  within the working radius
     eccCones = sqrt(sum(conePositions.^2,2));
-    idx = find((eccCones<workingRadiusMicrons) & (conePositions(:,1)>=-20));
+    idx = find((eccCones<workingRadiusMicrons));
     conePositions = conePositions(idx,:);
     
     % Only keep RGC within the working radius
     eccRGC = sqrt(sum(RGCRFPositions.^2,2));
-    idx = find((eccRGC<workingRadiusMicrons) & (RGCRFPositions(:,1)>=-20));
+    idx = find((eccRGC<workingRadiusMicrons));
     RGCRFPositions = RGCRFPositions(idx,:);
     RGCRFSpacings = RGCRFSpacings(idx);
     conesToRGCratios = conesToRGCratios(idx);
