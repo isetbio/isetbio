@@ -29,7 +29,10 @@ function MosaicConnector
         load('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
         
         % *********** Define region of interest to work on *****
-        roi.center = [50 0];
+        horizEcc = 0.5; %0.1667;
+        micronsPerDegree = 300;
+        roi.center = [round(horizEcc*micronsPerDegree) 0]
+        pause
         roi.size = round([100 70]*1.0);
         roi.margin = 10;
         % *************************************************
@@ -66,6 +69,8 @@ function MosaicConnector
                        desiredConesToRGCratios, ...
                        thresholdFractionForMosaicIncosistencyCorrection, roi);
         
+        visualizeRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, 'original', plotlabOBJ);
+                   
         
         % Step 2. Assign types (L,M,S) in the cone mosaic
         visualizeMosaic = true;
@@ -78,7 +83,8 @@ function MosaicConnector
         % Step 3. Connect cone to the midget RGC mosaic
         [midgetRGCconnectionMatrix, ...
          conePositionsMicrons, ...
-         RGCRFPositionsMicrons] = computeConnectionMatrix(...
+         RGCRFPositionsMicrons, ...
+         RGCRFSpacingsMicrons] = computeConnectionMatrix(...
                 RGCRFPositionsMicrons, conePositionsMicrons, ...
                 RGCRFSpacingsMicrons, coneSpacingsMicrons, ...
                 coneTypes, desiredConesToRGCratios, ...
@@ -88,6 +94,10 @@ function MosaicConnector
         displayIDs = ~true;
         visualizeRFs(midgetRGCconnectionMatrix, conePositionsMicrons, ...
             RGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, roi, displayIDs, plotlabOBJ);
+        
+        
+        visualizeRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, 'final', plotlabOBJ);
+        
     end
     
 end

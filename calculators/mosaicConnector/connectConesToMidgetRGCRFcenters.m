@@ -1,4 +1,5 @@
-function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToMidgetRGCRFcenters(conePositionsMicrons, coneSpacingsMicrons, ...
+function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
+    connectConesToMidgetRGCRFcenters(conePositionsMicrons, coneSpacingsMicrons, ...
         RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
         orphanRGCpolicy, coneTypes, desiredConesToRGCratios, visualizeProcess)
     
@@ -27,11 +28,9 @@ function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToMidgetRGCRFce
         numberOfConeInputs(connectedRGCIndex) = numberOfConeInputs(connectedRGCIndex)+1;
     end % for iCone
     
-
     if (visualizeProcess)
         visualizeConnectivity(3, 'Pass 1', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, coneTypes, mean(desiredConesToRGCratios))
     end
-    
     
     % Second pass
     % Some RGCs will have N > 2 cone inputs. See if we can assign inputs
@@ -98,7 +97,6 @@ function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToMidgetRGCRFce
                 continue;
             end
             
-            
             keepGoing = true; k = 0;
             betterAlternativeRGCindex = nan;
             while (keepGoing) && (k < numel(sortedIndices))
@@ -142,6 +140,7 @@ function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToMidgetRGCRFce
             end
             indicesToKeep = setdiff(1:size(RGCRFPositionsMicrons,1), RGCswithZeroInputs);
             RGCRFPositionsMicrons = RGCRFPositionsMicrons(indicesToKeep,:);
+            RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(indicesToKeep);
             connectionMatrix = connectionMatrix(:,indicesToKeep,:);
             numberOfConeInputs = numberOfConeInputs(indicesToKeep);
             

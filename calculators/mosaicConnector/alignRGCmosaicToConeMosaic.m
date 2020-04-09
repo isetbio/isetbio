@@ -14,24 +14,29 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
         end
     end
     
-    % Numbers of neurons
-    conesNum = size(conePositionsMicrons,1);
-    rgcsNum = size(RGCRFPositionsMicrons,1);
-    
-    % Keep a track of cones that have already been aligned to some RGC
-    coneAlignedWithRGCalready = false(1, conesNum);
     
     % Align RGC with cones only for those RGCs whose desired cone-to-RGC
     % ratio is less than 2
     indicesOfRGCsrequiringAlignment = find(desiredConesToRGCratios < 2); 
+    rgcsNum = size(RGCRFPositionsMicrons,1);
     fprintf('Will align %d of %d RGCs in this patch, which had a cone-to-RGC ratio < 2\n', ...
         numel(indicesOfRGCsrequiringAlignment), rgcsNum);
 
     % Sort according to ecc
     ecc = sqrt(sum(RGCRFPositionsMicrons(indicesOfRGCsrequiringAlignment,:).^2,2));
-    [ecc,idx] = sort(ecc, 'ascend');
+    [~,idx] = sort(ecc, 'ascend');
     indicesOfRGCsrequiringAlignment = indicesOfRGCsrequiringAlignment(idx);
     
+    % We only align mRGCs to L/M cones, not S
+    eligibleConeIndices = find(coneTypes < 4);
+    conePositionsMicrons = conePositionsMicrons(eligibleConeIndices,:);
+    
+    % Numbers of eligibe cones
+    conesNum = size(conePositionsMicrons,1);
+    
+    % Keep a track of cones that have already been aligned to some RGC
+    coneAlignedWithRGCalready = false(1, conesNum);
+      
     % Go through all the RGCs one by one
     for iRGC = 1:numel(indicesOfRGCsrequiringAlignment)
         % Get RGC index

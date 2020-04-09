@@ -69,7 +69,7 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     
     % Export the figure to the gallery directory in PNG format
     micronsPerDegree = 300;
-    fName = sprintf('RFs_x=%2.2f_y=%2.2fdegs', roi.center(1)/micronsPerDegree, roi.center(1)/micronsPerDegree);
+    fName = sprintf('RFs_x=%2.2f_y=%2.2fdegs', roi.center(1)/micronsPerDegree, roi.center(2)/micronsPerDegree);
     plotlabOBJ.exportFig(hFig, 'png', fName, pwd());
 end
 

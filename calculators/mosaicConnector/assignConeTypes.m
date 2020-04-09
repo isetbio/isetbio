@@ -116,7 +116,7 @@ function visualizeConeMosaic(conePositionsMicrons, coneTypes, roi, plotlabOBJ)
     set(theAxesGrid{1,1}, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
     
     micronsPerDegree = 300;
-    fName = sprintf('ConeMosaic_x=%2.2f_y=%2.2fdegs', roi.center(1)/micronsPerDegree, roi.center(1)/micronsPerDegree);
+    fName = sprintf('ConeMosaic_x=%2.2f_y=%2.2fdegs', roi.center(1)/micronsPerDegree, roi.center(2)/micronsPerDegree);
     plotlabOBJ.exportFig(hFig, 'png', fName, pwd());
     
 end
