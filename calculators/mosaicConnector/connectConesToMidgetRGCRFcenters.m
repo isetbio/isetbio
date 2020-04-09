@@ -1,6 +1,6 @@
-function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToRGC(conePositionsMicrons, coneSpacingsMicrons, ...
+function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToMidgetRGCRFcenters(conePositionsMicrons, coneSpacingsMicrons, ...
         RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        orphanRGCpolicy, desiredConesToRGCratios, visualizeProcess)
+        orphanRGCpolicy, coneTypes, desiredConesToRGCratios, visualizeProcess)
     
     % Numbers of neurons
     conesNum = size(conePositionsMicrons,1);
@@ -11,6 +11,12 @@ function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToRGC(conePosit
     connectionMatrix = zeros(conesNum, rgcsNum,2);
     numberOfConeInputs = zeros(1,rgcsNum);
     for iCone = 1:conesNum
+        
+        % Do not connect S-cones
+        if (coneTypes(iCone) == 4)
+            continue;
+        end
+        
         % Compute distance of this cone to all RGCs
         conePosMicrons = conePositionsMicrons(iCone,:);
         distances = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons, conePosMicrons).^2),2));
@@ -22,10 +28,9 @@ function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToRGC(conePosit
     end % for iCone
     
 
-     if (visualizeProcess)
-        visualizeConnectivity(3, 'Pass 1', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, mean(desiredConesToRGCratios))
-     end
-    
+    if (visualizeProcess)
+        visualizeConnectivity(3, 'Pass 1', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, coneTypes, mean(desiredConesToRGCratios))
+    end
     
     
     % Second pass
@@ -121,7 +126,7 @@ function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToRGC(conePosit
     end % for iRGC
    
     if (visualizeProcess)
-        visualizeConnectivity(4, 'Pass 2', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, mean(desiredConesToRGCratios));
+        visualizeConnectivity(4, 'Pass 2', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, coneTypes, mean(desiredConesToRGCratios));
     end
     
     
@@ -158,15 +163,8 @@ function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToRGC(conePosit
     end
     
     if (visualizeProcess)
-        visualizeConnectivity(5, 'Pass 3', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, mean(desiredConesToRGCratios));
+        visualizeConnectivity(5, 'Pass 3', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, coneTypes, mean(desiredConesToRGCratios));
     end
-    
-    
-    % Fourth pass. Some RGCs will have N = 2 cone inputs. If those inputs are from cones
-    % of the same type we do nothing. If the inputs are from different cone
-    % types see if we can assign the second cone to another RGC that has a
-    % SINGLE input of the same cone type
-    % NEED TO IMPLEMENT THIS
     
 
     % Make sure we have no RGCs with 0 inputs
@@ -201,7 +199,7 @@ function [connectionMatrix, RGCRFPositionsMicrons] = connectConesToRGC(conePosit
     end
     
     if (visualizeProcess)
-        visualizeConnectivity(10, 'Final pass', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, mean(desiredConesToRGCratios));
+        visualizeConnectivity(10, 'Final pass', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix,  coneTypes, mean(desiredConesToRGCratios));
     end
     
     % Return the connection strengths 

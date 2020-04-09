@@ -1,4 +1,4 @@
-function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons, roi)
+function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, roi, displayIDs, plotlabOBJ)
 
     % Sampling for contours
     deltaX = 0.2;
@@ -7,16 +7,15 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     [X,Y] = meshgrid(xAxis,yAxis);
     
    
-    zLevels = [0.05 1 ];
-    
+    zLevels = [0.3 1 ];
     whichLevelsToContour = [1];
     
     hFig = figure(99); clf;
     theAxesGrid = plotlab.axesGrid(hFig, ...
-            'leftMargin', 0.03, ...
-            'bottomMargin', 0.05, ...
-            'rightMargin', 0.03, ...
-            'topMargin', 0.03);
+            'leftMargin', 0.05, ...
+            'bottomMargin', 0.08, ...
+            'rightMargin', 0.01, ...
+            'topMargin', 0.05);
         
     theAxesGrid = theAxesGrid{1,1};
     set(theAxesGrid, 'XLim', roi.center(1)+roi.size(1)/2*[-1 1], 'YLim', roi.center(2)+roi.size(2)/2*[-1 1]);
@@ -43,14 +42,35 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
         
     end
         
-    % Cones in blue
-    scatter(conePositionsMicrons(:,1), conePositionsMicrons(:,2), 'b');
-    for k = 1:size(conePositionsMicrons,1)
-        text(conePositionsMicrons(k,1)+0.5, conePositionsMicrons(k,2)+1, sprintf('%d', k), 'Color', 'b');
+    % Display cones
+    LconeIndices = find(coneTypes == 2);
+    MconeIndices = find(coneTypes == 3);
+    SconeIndices = find(coneTypes == 4);
+    scatter(conePositionsMicrons(LconeIndices,1), conePositionsMicrons(LconeIndices,2), 'r');
+    scatter(conePositionsMicrons(MconeIndices,1), conePositionsMicrons(MconeIndices,2), 'g');
+    scatter(conePositionsMicrons(SconeIndices,1), conePositionsMicrons(SconeIndices,2), 'b');
+    
+    if (displayIDs)
+        for k = 1:size(conePositionsMicrons,1)
+            text(conePositionsMicrons(k,1)+0.5, conePositionsMicrons(k,2)+1, sprintf('%d', k), 'Color', 'b');
+        end
     end
+    
+    conesNum = numel(LconeIndices)+numel(MconeIndices);
+    ratio = conesNum/rgcsNum;
+    
+    title(theAxesGrid,sprintf('LM cone-to-mRGC ratio = %2.2f', ratio));
      
-    colormap(brewermap(512, 'greys'))
-    set(theAxesGrid, 'CLim', [0 1]);
+    xLims = [xAxis(1) xAxis(end)] + roi.margin*[1,-1];
+    yLims = [yAxis(1) yAxis(end)] + roi.margin*[1,-1];
+   
+    set(theAxesGrid, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
+    colormap(brewermap(512, 'greys'));
+    
+    % Export the figure to the gallery directory in PNG format
+    micronsPerDegree = 300;
+    fName = sprintf('RFs_x=%2.2f_y=%2.2fdegs', roi.center(1)/micronsPerDegree, roi.center(1)/micronsPerDegree);
+    plotlabOBJ.exportFig(hFig, 'png', fName, pwd());
 end
 
 function renderContourPlot(theAxes, C, zLevels, whichLevelsToContour )
@@ -88,12 +108,12 @@ function theRF = generateRGCRFsFromConnectivityMatrix(connectivityVectorForRGC, 
     
     theRF = [];
     connectedConeIDs = find(connectivityVectorForRGC>0);
-    flatTopZ = 0.05;
+    flatTopZ = 0.4;
     
     for k = 1:numel(connectedConeIDs)
         coneIndex = connectedConeIDs(k);
         cP = squeeze(conePositions(coneIndex,:));
-        coneSigma = coneSpacings(coneIndex)/6;
+        coneSigma = coneSpacings(coneIndex)/3;
         coneProfile = exp(-0.5*((X-cP(1))/coneSigma).^2) .* exp(-0.5*((Y-cP(2))/coneSigma).^2);
         coneProfile(coneProfile>=flatTopZ) = flatTopZ;
         if (isempty(theRF))
@@ -119,7 +139,7 @@ function displayConnectedConesPolygon(indicesOfConeInputs, conePositionsMicrons)
     yy = yy(idx);
     xx(end+1) = xx(1);
     yy(end+1) = yy(1);
-    plot(xx,yy, 'k--', 'LineWidth', 1.0);
+    plot(xx,yy, 'k:', 'LineWidth', 1.0);
 end
 
 
