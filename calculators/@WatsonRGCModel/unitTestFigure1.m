@@ -8,10 +8,10 @@ function unitTestFigure1()
     densityUnits = 'deg^2';
     meridianLabeling = 'Watson'; %'retinal';   % choose from 'retinal', 'Watson'
 
-    doIt(eccDegs, eccUnits, densityUnits, meridianLabeling, 'coneDensity');
+    doIt(eccDegs, eccUnits, densityUnits, meridianLabeling, 'coneDensity', mfilename);
 end
 
-function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureName)
+function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureName, theFileName)
     
     obj = WatsonRGCModel();
     plotlabOBJ  = obj.setUpPlotLab();
@@ -76,6 +76,7 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
         'YTick', yTicks, 'YTickLabel', yTicksLabels);
     
     % Export figure
-    plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(pwd(), 'exports'));
+    localDir = fileparts(which(theFileName));
+    plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
     
 end

@@ -4,7 +4,6 @@ function  plotlabOBJ  = setUpPlotLab()
     obj = WatsonRGCModel();
     meridianNames = obj.enumeratedMeridianNames;
     for k = 1:numel(meridianNames)
-        obj.meridianColors(meridianNames{k})
         meridianColors(k,:) = str2num(obj.meridianColors(meridianNames{k}));
     end
     
