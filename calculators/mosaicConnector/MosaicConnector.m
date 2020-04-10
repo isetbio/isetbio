@@ -29,10 +29,11 @@ function MosaicConnector
         load('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
         
         % *********** Define region of interest to work on *****
-        horizEcc = 0.0; %0.1667; 0.5;
+        horizEccDegs = 8; %0.1667; 0.5;
+        fovDegs = [0.25 0.15]*6.0;
         micronsPerDegree = 300;
-        roi.center = [round(horizEcc*micronsPerDegree) 0];
-        roi.size = round([100 100]/4);
+        roi.center = [round(horizEccDegs*micronsPerDegree) 0];
+        roi.size = round(fovDegs*micronsPerDegree);
         roi.margin = 5;
         % *************************************************
         
@@ -50,7 +51,7 @@ function MosaicConnector
 
         % Apply the default plotlab recipe overriding 
         % the color order and the figure size
-        figHeightInches = 13;
+        figHeightInches = 12;
         plotlabOBJ.applyRecipe(...
             'renderer', 'painters', ... %'opengl', ...
             'axesBox', 'on', ...
@@ -68,7 +69,7 @@ function MosaicConnector
                        desiredConesToRGCratios, ...
                        thresholdFractionForMosaicIncosistencyCorrection, roi);
         
-        visualizeRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, 'original', plotlabOBJ);
+        visualizeRGCmosaic(90,RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, 'original', plotlabOBJ);
                    
         
         % Step 2. Assign types (L,M,S) in the cone mosaic
@@ -95,7 +96,7 @@ function MosaicConnector
             RGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, roi, displayIDs, plotlabOBJ);
         
         
-        visualizeRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, 'final', plotlabOBJ);
+        visualizeRGCmosaic(91,RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, 'final', plotlabOBJ);
         
     end
     

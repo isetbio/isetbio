@@ -148,11 +148,13 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
             for k = 1:numel(RGCswithZeroInputs)
                 rgcIndex = RGCswithZeroInputs(k);
                 rgcPos = RGCRFPositionsMicrons(rgcIndex,:);
-                % Find the closest cone
-                distances = sqrt(sum((bsxfun(@minus, conePositionsMicrons, rgcPos).^2),2));
-                [~, iCone] = min(distances);
+                % Find the closest cone that is not an S-cone
+                validConeIndices = find(coneTypes < 4);
+                distances = sqrt(sum((bsxfun(@minus, conePositionsMicrons(validConeIndices,:), rgcPos).^2),2));
+                [~, idx] = min(distances);
+                iCone = validConeIndices(idx);
                 connectionMatrix(iCone, rgcIndex,1) = 1;                            % strength
-                connectionMatrix(iCone, rgcIndex,2) = distances(iCone);             % distance
+                connectionMatrix(iCone, rgcIndex,2) = distances(idx);             % distance
                 numberOfConeInputs(rgcIndex) = numberOfConeInputs(rgcIndex)+1;
                 fprintf('Provided shared cone input to orphan RGC #%d (from cone at position %2.1f, %2.1f)\n', ...
                     rgcIndex, conePositionsMicrons(iCone,1), conePositionsMicrons(iCone,2));

@@ -1,12 +1,12 @@
-function visualizeRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, stateLabel, plotlabOBJ)
+function visualizeRGCmosaic(figNo, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, stateLabel, plotlabOBJ)
 
     xOutline = cosd(0:10:360);
     yOutline = sind(0:10:360);
       
-    hFig = figure(98); clf;
+    hFig = figure(figNo); clf;
     theAxesGrid = plotlab.axesGrid(hFig, ...
-            'leftMargin', 0.05, ...
-            'bottomMargin', 0.08, ...
+            'leftMargin', 0.06, ...
+            'bottomMargin', 0.06, ...
             'rightMargin', 0.01, ...
             'topMargin', 0.05);
     theAxesGrid = theAxesGrid{1,1};
@@ -35,7 +35,7 @@ function visualizeRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, st
     % Export the figure to the gallery directory in PNG format
     micronsPerDegree = 300;
     fName = sprintf('RGCMosaic(%s)_x=%2.2f_y=%2.2fdegs', stateLabel, roi.center(1)/micronsPerDegree, roi.center(2)/micronsPerDegree);
-    plotlabOBJ.exportFig(hFig, 'png', fName, pwd());
+    plotlabOBJ.exportFig(hFig, 'png', fName, fullfile(pwd(), 'exports'));
     
 end
 

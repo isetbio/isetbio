@@ -12,8 +12,8 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     
     hFig = figure(99); clf;
     theAxesGrid = plotlab.axesGrid(hFig, ...
-            'leftMargin', 0.05, ...
-            'bottomMargin', 0.08, ...
+            'leftMargin', 0.06, ...
+            'bottomMargin', 0.06, ...
             'rightMargin', 0.01, ...
             'topMargin', 0.05);
         
@@ -22,9 +22,21 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     hold(theAxesGrid, 'on');
     
     rgcsNum = size(RGCRFPositionsMicrons,1);
+    multiInputRGCs = 0;
+    mixedInputRGCs = 0;
+    
     for RGCindex = 1:rgcsNum
         
         connectivityVector = squeeze(connectivityMatrix(:, RGCindex));
+        inputIDs = find(connectivityVector>0);
+        inputsNum = numel(inputIDs);
+        if (inputsNum > 1)
+            multiInputRGCs = multiInputRGCs + 1;
+            inputTypesNum = numel(unique(coneTypes(inputIDs)));
+            if (inputTypesNum>1)
+                mixedInputRGCs = mixedInputRGCs + 1;
+            end
+        end
         
         % Generate RFs of RGCs based on cone positions and connection matrix
         theRF = generateRGCRFsFromConnectivityMatrix(...
@@ -58,8 +70,7 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     
     conesNum = numel(LconeIndices)+numel(MconeIndices);
     ratio = conesNum/rgcsNum;
-    
-    title(theAxesGrid,sprintf('LM cone-to-mRGC ratio = %2.2f', ratio));
+    title(theAxesGrid,sprintf('LM-to-mRGC ratio = %2.2f, RGCs with > 1 inputs = %d/%d (%2.1f%%), RGCs with mixed inputs = %d/%d (%2.1f%%)', ratio, multiInputRGCs,rgcsNum, 100*multiInputRGCs/rgcsNum, mixedInputRGCs, rgcsNum, 100*mixedInputRGCs/rgcsNum));
      
     xLims = [xAxis(1) xAxis(end)] + roi.margin*[1,-1];
     yLims = [yAxis(1) yAxis(end)] + roi.margin*[1,-1];
@@ -70,7 +81,7 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     % Export the figure to the gallery directory in PNG format
     micronsPerDegree = 300;
     fName = sprintf('RFs_x=%2.2f_y=%2.2fdegs', roi.center(1)/micronsPerDegree, roi.center(2)/micronsPerDegree);
-    plotlabOBJ.exportFig(hFig, 'png', fName, pwd());
+    plotlabOBJ.exportFig(hFig, 'png', fName, fullfile(pwd(), 'exports'));
 end
 
 function renderContourPlot(theAxes, C, zLevels, whichLevelsToContour )
