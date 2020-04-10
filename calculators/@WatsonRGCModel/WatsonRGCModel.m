@@ -233,6 +233,7 @@ classdef WatsonRGCModel
     
     % Unit tests
     methods (Static)
+        plotLabOBJ = setUpPlotLab();
         unitTestFigure1();
         unitTestFigure5();
         unitTestFigure9();

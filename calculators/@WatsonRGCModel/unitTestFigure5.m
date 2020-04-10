@@ -1,21 +1,31 @@
 function unitTestFigure5()
     
     eccMinDegs = 0.1;
-    eccMaxDegs = 90;
+    eccMaxDegs = 100;
     eccSamplesNum = 100;
     eccDegs = logspace(log10(eccMinDegs), log10(eccMaxDegs), eccSamplesNum);
     eccUnits = 'deg';
     densityUnits = 'deg^2';
     meridianLabeling = 'Watson'; %'retinal';   % choose from {'retinal', 'Watson'}
     
-    doIt(eccDegs, eccUnits, densityUnits, meridianLabeling);
+    doIt(eccDegs, eccUnits, densityUnits, meridianLabeling, 'TotalRGCDensity');
 end
 
-function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling)
-    obj = WatsonRGCModel();
-    meridianNames = obj.enumeratedMeridianNames;
+function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureName)
     
-    figure(1); clf; hold on;
+    obj = WatsonRGCModel();
+    plotlabOBJ  = obj.setUpPlotLab();
+        
+    hFig = figure(1); clf;
+    theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
+            'leftMargin', 0.18, ...
+            'bottomMargin', 0.18, ...
+            'rightMargin', 0.04, ...
+            'topMargin', 0.05);
+    theAxesGrid = theAxesGrid{1,1};
+    hold(theAxesGrid, 'on');
+    
+    meridianNames = obj.enumeratedMeridianNames;
     theLegends = cell(numel(meridianNames),1);
     
     % Loop over meridians
@@ -24,9 +34,7 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling)
         rightEyeVisualFieldMeridianName = meridianNames{k};
         totalRGCRFDensity = obj.totalRGCRFDensityAlongMeridian(eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
         
-        plot(eccentricities, totalRGCRFDensity, 'k-', ...
-            'Color', obj.meridianColors(meridianNames{k}), ...
-            'LineWidth', obj.figurePrefs.lineWidth);
+        plot(eccentricities, totalRGCRFDensity);
         if (strcmp(meridianLabeling, 'retinal'))
             theLegends{k} = rightEyeRetinalMeridianName;
         else
@@ -42,7 +50,7 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling)
         xLabelString = sprintf('eccentricity (%s)', eccUnits);
     else
         xLims = [0.05 100];
-        xTicks = [0.1 0.5 1 5 10 50 100];
+        xTicks = [0.1 0.3 1 3 10 30 100];
         xLabelString = sprintf('eccentricity (%s)', strrep(eccUnits, 'visual', ''));
     end
     
@@ -59,17 +67,17 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling)
     end
     
     % Labels and legends
-    xlabel(xLabelString, 'FontAngle', obj.figurePrefs.fontAngle);
-    ylabel(yLabelString, 'FontAngle', obj.figurePrefs.fontAngle);
+    xlabel(xLabelString);
+    ylabel(yLabelString);
     legend(theLegends);
    
     set(gca, 'XLim', xLims, 'YLim', yLims, ...
         'XScale', 'log', 'YScale', 'log', ...
         'XTick', xTicks, ...
-        'YTick', yTicks, 'YTickLabel', yTicksLabels,...
-        'FontSize', obj.figurePrefs.fontSize);
+        'YTick', yTicks, 'YTickLabel', yTicksLabels);
     
-    % Finalize figure
-    grid(gca, obj.figurePrefs.grid);
+    % Export figure
+    plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(pwd(), 'exports'));
+   
     
 end
