@@ -1,14 +1,14 @@
 function unitTestSmoothGrid()
 
     % Generate or view saved mosaic
-    generateNewMosaic = ~true;
+    generateNewMosaic = true;
     
     
     % Visualize mosaic and progress
     visualizeProgress = ~generateNewMosaic;
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 15; %30; 
+    mosaicFOVDegs = 20; %30; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
@@ -42,7 +42,7 @@ function unitTestSmoothGrid()
     maxIterationsBeforeRetriangulation = 30;
     
     % 6. Interval to query user whether he/she wants to terminate
-    queryUserIntervalMinutes = 60*5;
+    queryUserIntervalMinutes = 60*12;
     
     % Save filename
     p = getpref('IBIOColorDetect');
