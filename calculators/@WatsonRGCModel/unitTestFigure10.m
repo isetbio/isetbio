@@ -23,13 +23,6 @@ function doIt(eccentricities, eccUnits, spacingUnits, meridianLabeling)
         % Compute the data
         rightEyeVisualFieldMeridianName = meridianNames{k};
         [mRGCRFSpacing, mRGCRFDensity] = obj.mRGCRFSpacingAndDensityAlongMeridian(eccentricities, rightEyeVisualFieldMeridianName, eccUnits, sprintf('%s^2',spacingUnits));
-        if (strcmp(spacingUnits, 'deg'))
-            % Convert to arcmin from deg
-            %mRGCRFSpacing = mRGCRFSpacing*60;
-        else
-            % Convert to microns from mm
-            %mRGCRFSpacing = mRGCRFSpacing*1000;
-        end
         plot(eccentricities, mRGCRFSpacing, 'k-', ...
             'Color', obj.meridianColors(meridianNames{k}), ...
             'LineWidth', obj.figurePrefs.lineWidth);

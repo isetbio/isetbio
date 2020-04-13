@@ -28,6 +28,10 @@ function MosaicConnector
     else
         load('tmp.mat', 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
         
+        % Visualize the 2 lattices together
+%         coVisualizeLattices(conePositionsMicrons, RGCRFPositionsMicrons);
+%         pause
+        
         % *********** Define region of interest to work on *****
         horizEccDegs = 8; %0.1667; 0.5;
         fovDegs = [0.25 0.15]*6.0;
