@@ -44,7 +44,7 @@ function visualizeRFs(zLevels, whichLevelsToContour, connectivityMatrix, conePos
         renderContourPlot(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse);
         
         indicesOfConeInputsToThisRGC = find(connectivityVector>0);
-        indicesOfConnectedCones = cat(2, indicesOfConnectedCones, indicesOfConeInputsToThisRGC);
+        indicesOfConnectedCones = cat(1, indicesOfConnectedCones, indicesOfConeInputsToThisRGC(:));
         
         showConnectedConePolygon = true;
         if (showConnectedConePolygon)
