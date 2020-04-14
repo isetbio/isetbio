@@ -72,6 +72,8 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
         
         % Go throuch each of these cones and see if we can assign some
         % to other RGCs
+        localRGCSpacingMicrons = RGCRFSpacingsMicrons(rgcIndex);
+        
         iCone = 0;
         while (numberOfConeInputs(rgcIndex) > 2) && (iCone < numel(indicesOfMultipleConesConnectedToThisRGC))
             iCone = iCone+ 1;
@@ -85,9 +87,9 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
             distances = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons, conePosMicrons).^2),2));
             
             % Find indices of RGCs in neighborhood of this cone that also
-            % are less distant that this cone is to its parent RGC
+            % are also not much more distant (up to 20% more) that this cone is to its parent RGC
             rgcIndicesWithinReach = find(...
-                distances < 0.6*(max(RGCRFSpacingsMicrons)+coneSpacingsMicrons(coneIndex)) & ...
+                distances <= localRGCSpacingMicrons & ...
                 distances <= 1.2*distanceOFCurrentConeInputToParentRGC ...
                 );
             

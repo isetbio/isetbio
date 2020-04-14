@@ -22,6 +22,7 @@ function visualizeRFs(zLevels, whichLevelsToContour, connectivityMatrix, conePos
     multiInputRGCs = 0;
     mixedInputRGCs = 0;
     
+    indicesOfConnectedCones = [];
     for RGCindex = 1:rgcsNum
         
         connectivityVector = full(squeeze(connectivityMatrix(:, RGCindex)));
@@ -42,16 +43,21 @@ function visualizeRFs(zLevels, whichLevelsToContour, connectivityMatrix, conePos
         C = contourc(xAxis, yAxis,theRF, zLevels);
         renderContourPlot(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse);
         
+        indicesOfConeInputsToThisRGC = find(connectivityVector>0);
+        indicesOfConnectedCones = cat(2, indicesOfConnectedCones, indicesOfConeInputsToThisRGC);
+        
         showConnectedConePolygon = true;
         if (showConnectedConePolygon)
             % Connected cones
-            indicesOfConeInputs = find(connectivityVector>0);
-            displayConnectedConesPolygon(indicesOfConeInputs, conePositionsMicrons);
+            displayConnectedConesPolygon(indicesOfConeInputsToThisRGC, conePositionsMicrons);
         end
         
     end
        
-
+    indicesOfConnectedCones = unique(indicesOfConnectedCones);
+    conePositionsMicrons = conePositionsMicrons(indicesOfConnectedCones,:);
+    coneTypes = coneTypes(indicesOfConnectedCones);
+    
     % Display cones
     LconeIndices = find(coneTypes == 2);
     MconeIndices = find(coneTypes == 3);
