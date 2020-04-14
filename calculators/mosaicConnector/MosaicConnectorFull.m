@@ -1,7 +1,6 @@
 function MosaicConnectorFull
 
     recomputePhase1 = ~true;
-    tmpDir = '/Volumes/SamsungT3/MATLAB/toolboxes/isetbio/calculators/mosaicConnector';
     tmpDir = '/Users/nicolas/Documents/MATLAB/toolboxes/isetbio/calculators/mosaicConnector';
     
     if (recomputePhase1)
@@ -27,7 +26,8 @@ function MosaicConnectorFull
 
         % Compute connection matrix between the 2 mosaics
         save(fullfile(tmpDir,'tmp2.mat'), 'RGCRFPositionsMicrons', 'conePositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
-    else
+        return;
+    end
        
         
     % Options
@@ -37,7 +37,7 @@ function MosaicConnectorFull
     thresholdFractionForMosaicIncosistencyCorrection = 0.5;
         
     centerEccDegs = [0 0];
-    fovDegs = [6.0 0.5];  % up to 20
+    fovDegs = [20 0.5];  % up to 20
     postFix = sprintf('ecc_%2.1f_fov_%2.1f', centerEccDegs(1), fovDegs(1));
     
     % Specify center in microns
@@ -125,23 +125,25 @@ function MosaicConnectorFull
     zLevels = [0.3 1 ];
     whichLevelsToContour = [1];
     
-    depictRGCTesselation = true;
-    if (depictRGCTesselation)
+    depictRGCTesselationForASubregion = ~true;
+    if (depictRGCTesselationForASubregion)
         displayIDs = ~true;
         displayEllipseInsteadOfContour = true;
         % Visualize tesselation is some patch
         patchEccDegs = [2 0];
         patchSizeDegs = [0.5 0.5];
-        window.center = round(1000*WatsonRGCModel.rhoDegsToMMs(patchEccDegs));
-        window.size = round(1000*WatsonRGCModel.rhoDegsToMMs(patchSizeDegs));
-        window.margin = roi.margin;
+        subregion.center = round(1000*WatsonRGCModel.rhoDegsToMMs(patchEccDegs));
+        subregion.size = round(1000*WatsonRGCModel.rhoDegsToMMs(patchSizeDegs));
+        subregion.margin = roi.margin;
         xPos = RGCRFPositionsMicrons(:,1);
         yPos = RGCRFPositionsMicrons(:,2);
-        subsetRGCidx = find( (xPos-window.center(1) < window.size(1)) & (yPos-window.center(2) < window.size(2)));
-        subsetMidgetRGCconnectionMatrix = midgetRGCconnectionMatrix(subsetRGCidx,:);
-        subsetRGCRFPositionsMicrons = RGCRFPositionsMicrons(subsetRGCidx,:);
-        visualizeRFs(zLevels, whichLevelsToContour, subsetMidgetRGCconnectionMatrix, conePositionsMicrons, ...
-            subsetRGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, window, displayEllipseInsteadOfContour, displayIDs, plotlabOBJ);
+        subregionRGCidx = find( (xPos-subregion.center(1) < subregion.size(1)) & ...
+                             (yPos-subregion.center(2) < subregion.size(2)));
+        subregionMidgetRGCconnectionMatrix = midgetRGCconnectionMatrix(subregionRGCidx,:);
+        subregionRGCRFPositionsMicrons = RGCRFPositionsMicrons(subregionRGCidx,:);
+        visualizeRFs(zLevels, whichLevelsToContour, subregionMidgetRGCconnectionMatrix, conePositionsMicrons, ...
+            subregionRGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, window, displayEllipseInsteadOfContour, ...
+            displayIDs, plotlabOBJ);
     end
     
     %visualizeRGCmosaic(91,RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, 'final', plotlabOBJ);
@@ -155,7 +157,7 @@ function MosaicConnectorFull
     end
     
     plotlabOBJ.applyRecipe(...
-        'renderer', 'painters', ... %'opengl', ...
+        'renderer', 'painters', ...
         'axesBox', 'off', ...
         'colorOrder', [.9 0.1 0.1; 0 0 1; 0.2 0.6 0.5], ...
         'axesTickLength', [0.015 0.01],...
@@ -163,7 +165,7 @@ function MosaicConnectorFull
         'figureWidthInches', 12, ...
         'figureHeightInches', 9);
     
-    hFig = figure(222);
+    hFig = figure(222); clf;
     eccNeuronsMicrons = sqrt(sum(rfCenters.^2,2));
     eccNeuronsDegs = WatsonRGCModel.rhoMMsToDegs(eccNeuronsMicrons/1000);
     rfCenterRadiusDegs = WatsonRGCModel.rhoMMsToDegs(mean(semiAxes,2)/1000);
@@ -187,10 +189,6 @@ function MosaicConnectorFull
 
     fName = sprintf('SemiAxes');
     plotlabOBJ.exportFig(hFig, 'png', fName, fullfile(pwd(), 'exports'));
-
-        
-    end
-
 end
 
 
