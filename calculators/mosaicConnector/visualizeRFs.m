@@ -1,14 +1,10 @@
-function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, roi, displayIDs, plotlabOBJ)
+function visualizeRFs(zLevels, whichLevelsToContour, connectivityMatrix, conePositionsMicrons, RGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, roi, fitEllipse, displayIDs, plotlabOBJ)
 
     % Sampling for contours
     deltaX = 0.2;
     xAxis = (roi.center(1)-roi.size(1)/2): deltaX: (roi.center(1)+roi.size(1)/2);
     yAxis = (roi.center(2)-roi.size(2)/2): deltaX: (roi.center(2)+roi.size(2)/2);
     [X,Y] = meshgrid(xAxis,yAxis);
-    
-   
-    zLevels = [0.3 1 ];
-    whichLevelsToContour = [1];
     
     hFig = figure(99); clf;
     theAxesGrid = plotlab.axesGrid(hFig, ...
@@ -18,7 +14,8 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
             'topMargin', 0.05);
         
     theAxesGrid = theAxesGrid{1,1};
-    set(theAxesGrid, 'XLim', roi.center(1)+roi.size(1)/2*[-1 1], 'YLim', roi.center(2)+roi.size(2)/2*[-1 1]);
+    set(theAxesGrid, 'XLim', roi.center(1)+roi.size(1)/2*[-1 1]-roi.margin*[-1 1], ...
+        'YLim', roi.center(2)+roi.size(2)/2*[-1 1]-roi.margin*[-1 1]);
     hold(theAxesGrid, 'on');
     
     rgcsNum = size(RGCRFPositionsMicrons,1);
@@ -27,7 +24,7 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     
     for RGCindex = 1:rgcsNum
         
-        connectivityVector = squeeze(connectivityMatrix(:, RGCindex));
+        connectivityVector = full(squeeze(connectivityMatrix(:, RGCindex)));
         inputIDs = find(connectivityVector>0);
         inputsNum = numel(inputIDs);
         if (inputsNum > 1)
@@ -43,7 +40,7 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
             connectivityVector, conePositionsMicrons, coneSpacingsMicrons, X,Y);
 
         C = contourc(xAxis, yAxis,theRF, zLevels);
-        renderContourPlot(theAxesGrid, C, zLevels, whichLevelsToContour);
+        renderContourPlot(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse);
         
         showConnectedConePolygon = true;
         if (showConnectedConePolygon)
@@ -53,7 +50,8 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
         end
         
     end
-        
+       
+
     % Display cones
     LconeIndices = find(coneTypes == 2);
     MconeIndices = find(coneTypes == 3);
@@ -84,7 +82,7 @@ function visualizeRFs(connectivityMatrix, conePositionsMicrons, RGCRFPositionsMi
     plotlabOBJ.exportFig(hFig, 'png', fName, fullfile(pwd(), 'exports'));
 end
 
-function renderContourPlot(theAxes, C, zLevels, whichLevelsToContour )
+function  [semiAxes, rfCenter] = renderContourPlot(theAxes, C, zLevels, whichLevelsToContour, fitEllipse )
     k = 1;
     contoursNum = 0;
     while k < size(C,2)
@@ -104,37 +102,32 @@ function renderContourPlot(theAxes, C, zLevels, whichLevelsToContour )
         
         xRGCEnsembleOutline = C(1,k+(1:points));
         yRGCEnsembleOutline = C(2,k+(1:points));
-        v = [xRGCEnsembleOutline(:) yRGCEnsembleOutline(:)];
-        f = 1:numel(xRGCEnsembleOutline);
-        patch(theAxes, 'Faces', f, 'Vertices', v, 'FaceColor', [0.5 0.5 0.5]-level*0.05, ...
-            'FaceAlpha', faceAlpha, 'EdgeColor', [0.2 0.2 0.2], 'EdgeAlpha', edgeAlpha, 'LineWidth', 1.0);
         
+        
+        if (fitEllipse)
+            [xRGCEnsembleOutline,  yRGCEnsembleOutline, ...
+                semiAxes, rfCenter, noFit] = fitEllipseToContour(xRGCEnsembleOutline,  yRGCEnsembleOutline);
+        else
+            semiAxes = [nan nan];
+            rfCenter = [nan nan];
+        end
+        
+        faceColor = [0.5 0.5 0.5]-level*0.05;
+        edgeColor = [0.2 0.2 0.2];
+        patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceColor, edgeColor, faceAlpha, edgeAlpha);
+
         k = k+points+1;
         contoursNum = contoursNum + 1;
     end
 end
 
-
-function theRF = generateRGCRFsFromConnectivityMatrix(connectivityVectorForRGC, conePositions, coneSpacings,  X,Y)
-    
-    theRF = [];
-    connectedConeIDs = find(connectivityVectorForRGC>0);
-    flatTopZ = 0.4;
-    
-    for k = 1:numel(connectedConeIDs)
-        coneIndex = connectedConeIDs(k);
-        cP = squeeze(conePositions(coneIndex,:));
-        coneSigma = coneSpacings(coneIndex)/3;
-        coneProfile = exp(-0.5*((X-cP(1))/coneSigma).^2) .* exp(-0.5*((Y-cP(2))/coneSigma).^2);
-        coneProfile(coneProfile>=flatTopZ) = flatTopZ;
-        if (isempty(theRF))
-            theRF = coneProfile * connectivityVectorForRGC(coneIndex);
-        else
-            theRF = theRF + coneProfile * connectivityVectorForRGC(coneIndex);
-        end 
-    end
-    theRF = theRF/max(theRF(:));
-        
+function patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceColor, edgeColor, faceAlpha, edgeAlpha)
+    v = [xRGCEnsembleOutline(:) yRGCEnsembleOutline(:)];
+    f = 1:numel(xRGCEnsembleOutline);
+    patch(theAxes, 'Faces', f, 'Vertices', v, 'FaceColor', faceColor, ...
+            'FaceAlpha', faceAlpha, 'EdgeColor', edgeColor, ... 
+           'EdgeAlpha', edgeAlpha, 'LineWidth', 1.0);
+       
 end
 
 function displayConnectedConesPolygon(indicesOfConeInputs, conePositionsMicrons)

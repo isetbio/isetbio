@@ -32,6 +32,7 @@ function [conePositionsMicrons, coneSpacingsMicrons,...
 end
 
 function indices = positionsWithinROI(roi, positions)
+
     d = bsxfun(@minus,positions, roi.center);
     ecc = sqrt(sum(positions.^2,2));
     indices = find((abs(d(:,1)) <= 0.5*roi.size(1)) & (abs(d(:,2)) <= 0.5*roi.size(2)));

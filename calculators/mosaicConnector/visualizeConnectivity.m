@@ -32,7 +32,7 @@ function visualizeConnectivity(figNo, figureName, conePositionsMicrons, RGCRFPos
         rgcPos = RGCRFPositionsMicrons(theRGCindex,:);
 
         % Find cones connected to this RGC
-        coneWeights = squeeze(connectionMatrix(:, theRGCindex, 1));
+        coneWeights = squeeze(connectionMatrix(:, theRGCindex));
         coneIndicesConnectedToThisRGC = find(coneWeights > 0);
         coneWeights = coneWeights(coneIndicesConnectedToThisRGC);
         lineColors = coneWeights / max(coneWeights);

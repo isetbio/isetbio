@@ -40,6 +40,7 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
     coneAlignedWithRGCalready = false(1, conesNum);
       
     % Go through all the RGCs one by one
+    notAlignedRGCs = 0;
     for iRGC = 1:numel(indicesOfRGCsrequiringAlignment)
         % Get RGC index
         rgcIndex = indicesOfRGCsrequiringAlignment(iRGC);
@@ -72,7 +73,8 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
         % If all neighboring cones are already aligned to other RGCs, keep
         % original position
         if (isnan(alignmentConeIndex))
-            fprintf('%s Could not find a cone to align RGC %d that has not been aligned with another RGC already. Keeping original position %2.1f,%2.1f)\n', phaseString, rgcIndex, rgcPMicrons(1), rgcPMicrons(2));
+            notAlignedRGCs = notAlignedRGCs+1;
+            %fprintf('%s Could not find a cone to align RGC %d that has not been aligned with another RGC already. Keeping original position %2.1f,%2.1f)\n', phaseString, rgcIndex, rgcPMicrons(1), rgcPMicrons(2));
             continue;
         end
         
@@ -106,4 +108,7 @@ function  RGCRFPositionsMicrons = alignRGCmosaicToConeMosaic(...
             
         end % visualizeProcess
     end
+    
+    fprintf('%s Could not find a cone that was not already aligned to another RGC for %d out of %d RGCs\n', phaseString, notAlignedRGCs, numel(indicesOfRGCsrequiringAlignment));
+           
 end
