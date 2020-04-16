@@ -75,7 +75,7 @@ function unitTestSmoothGrid()
     
    
     if (~generateNewMosaic)
-        load(saveFileName, 'rfPositionsHistory','iterationsHistory', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
+        load(saveFileName, 'rfPositionsHistory','iterationsHistory', 'rfPositionsHistory2','iterationsHistory2', 'maxMovements', 'reTriangulationIterations', 'terminationReason');
         fprintf('Termination reason for this mosaic: %s\n', terminationReason)
         hFig = figure(1); clf;
         
@@ -158,12 +158,12 @@ function unitTestSmoothGrid()
     
     
     % Do it
-    [rfPositions, rfPositionsHistory,iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
+    [rfPositions, rfPositionsHistory,iterationsHistory, rfPositionsHistory2, iterationsHistory2, maxMovements, reTriangulationIterations, terminationReason] = ...
         smoothGrid(gridParams, rfPositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
         visualizeProgress,  tabulatedEccXYMicrons, tabulatedRFSpacingInMicrons,  mosaicFOVDegs, tStart);        
     
     % Save results
-    save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iterationsHistory', 'maxMovements', 'reTriangulationIterations', ...
+    save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iterationsHistory', 'rfPositionsHistory2', 'iterationsHistory2', 'maxMovements', 'reTriangulationIterations', ...
         'terminationReason', '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
 end
@@ -298,7 +298,7 @@ function [tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons] = computeTableOf
         tabulatedConeSpacingInMicrons = correctionFactor*tabulatedConeSpacingInMicrons;
 end
     
-function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTriangulationIterations, terminationReason] = ...
+function [rfPositions, rfPositionsHistory, iterationsHistory, rfPositionsHistory2, iterationsHistory2, maxMovements, reTriangulationIterations, terminationReason] = ...
     smoothGrid(gridParams, rfPositions,  minIterationsBeforeRetriangulation, maxIterationsBeforeRetriangulation, maxIterations, queryUserIntervalMinutes, ...
     visualizeProgress, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons, mosaicFOVDegs, tStart)  
 
@@ -522,7 +522,20 @@ function [rfPositions, rfPositionsHistory, iterationsHistory, maxMovements, reTr
                 plotMovementSequence([],maxMovements, gridParams.dTolerance)
                 plotMeshQuality([],histogramData, checkedBins, iterationsHistory);
             end
+        else
+            % Store positions at intermediate iterations (every 5 iterations)
+            if (mod(iteration,3)==0)
+                if (isempty(rfPositionsHistory))
+                    rfPositionsHistory2(1,:,:) = single(rfPositions);
+                    iterationsHistory2 = iteration;
+                else
+                    rfPositionsHistory2 = cat(1, rfPositionsHistory2, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
+                    iterationsHistory2 = cat(2, iterationsHistory2, iteration);
+                end
+            end
+            
         end
+        
         
         if (queryUserWhetherToTerminateSoon)
             fprintf('Another %d minute period has passed. Terminate soon?', queryUserIntervalMinutes);
