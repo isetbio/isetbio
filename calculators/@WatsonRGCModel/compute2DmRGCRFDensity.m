@@ -18,6 +18,7 @@ function [mRGCRFDensity2D, meridianDensities, spatialSupport, xLabelString, yLab
     end
     
     % Symmetrical around 0 eccentricity
+    ecc = ecc(2:end);
     ecc = [-fliplr(ecc) 0 ecc];
     
     % Returned density label

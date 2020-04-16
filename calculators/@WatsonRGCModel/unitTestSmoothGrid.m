@@ -5,7 +5,7 @@ function unitTestSmoothGrid()
     
     
     % Visualize mosaic and progress
-    visualizeProgress = ~generateNewMosaic;
+    visualizeProgress = generateNewMosaic;
 
     % Size of mosaic to generate
     mosaicFOVDegs = 20; %30; 
@@ -650,7 +650,7 @@ function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunction(r
     % Create a scatterred interpolant function
     [X,Y] = meshgrid(squeeze(densitySupportMicrons(1,:)), squeeze(densitySupportMicrons(2,:)));
     F = scatteredInterpolant(X(:),Y(:),mRGCSpacing2DMapMicrons(:), 'linear');
-
+    
     % Evaluate the interpolant function at the requested rfPositions
     mRGCSpacingInMicrons = F(rfPositions(:,1), rfPositions(:,2));
     
@@ -713,9 +713,22 @@ function [mRGCSpacingInMicrons, eccentricitiesInMicrons] = mRGCSpacingFunctionDi
 end
 
 
-function rfSpacingInMicrons = rfSpacingFunctionFast(rfPositions, tabulatedEccXYMicrons, tabulatedConeSpacingInMicrons)
-    [~, I] = pdist2(tabulatedEccXYMicrons, rfPositions, 'euclidean', 'Smallest', 1);
-    rfSpacingInMicrons = (tabulatedConeSpacingInMicrons(I))';
+function rfSpacingInMicrons = rfSpacingFunctionFast(rfPositions, tabulatedEccXYMicrons, tabulatedSpacingInMicrons)
+    measuresNum = 9;
+    [D, I] = pdist2(tabulatedEccXYMicrons, rfPositions, 'euclidean', 'Smallest', measuresNum);
+
+    if (measuresNum > 1)
+        totalD = sum(D,1);
+        b = zeros(measuresNum, size(D,2));
+        for k = 1:measuresNum
+            b(k,:) = (totalD - D(k,:)) ./ totalD;
+        end
+        meanSpacing = sum(b.*tabulatedSpacingInMicrons(I),1); % b1 .* tabulatedSpacingInMicrons(I(1,:)) + b2 .* tabulatedSpacingInMicrons(I(2,:));
+    else
+        meanSpacing = tabulatedSpacingInMicrons(I);
+    end
+    
+    rfSpacingInMicrons = meanSpacing';
 end
 
 
