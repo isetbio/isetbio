@@ -1,7 +1,11 @@
 function [mRGCRFDensity2D, meridianDensities, spatialSupport, xLabelString, yLabelString, ...
             densityLabelString, eccUnits, densityUnits] = ...
-            compute2DmRGCRFDensity(obj, eccDegsInREVisualSpace, theReturnedView)
+            compute2DmRGCRFDensity(obj, eccDegsInREVisualSpace, theReturnedView, varargin)
         
+    % Parse input
+    p = inputParser;       
+    p.addParameter('adjustForISETBioConeDensity', false, @islogical)
+    p.parse(varargin{:});
 
     % Validate the view name
     obj.validateViewName(theReturnedView);
@@ -46,7 +50,7 @@ function [mRGCRFDensity2D, meridianDensities, spatialSupport, xLabelString, yLab
     for meridianIndex = 1:numel(obj.enumeratedMeridianNames)
         [meridianmRGCRFSpacing(meridianIndex,:), meridianmRGCRFDensity(meridianIndex,:)] = ...
             obj.mRGCRFSpacingAndDensityAlongMeridian(requestedEccentricities, obj.enumeratedMeridianNames{meridianIndex}, ...
-            eccUnits, densityUnits); 
+            eccUnits, densityUnits, 'adjustForISETBioConeDensity', p.Results.adjustForISETBioConeDensity);
     end
     
     % Do angular interpolation

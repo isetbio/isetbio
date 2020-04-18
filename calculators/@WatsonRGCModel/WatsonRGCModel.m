@@ -193,11 +193,10 @@ classdef WatsonRGCModel
         [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = coneRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits, varargin);
         
         % Return midget RGC RF spacing and density along the requested meridian and requested eccentricities
-        [mRGCRFSpacing, mRGCRFDensity, rightEyeRetinalMeridianName] = mRGCRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        [mRGCRFSpacing, mRGCRFDensity, rightEyeRetinalMeridianName] = mRGCRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits, varargin);
         
         % Return total RGC RF density along the requested meridian and requested eccentricities
         totalRGCRFSpacing = totalRGCRFDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
-        
         
         % Return ISETBio retinal angle for Watson's meridians (specified in visual field of the right eye)
         [isetbioAngle, whichEye, rightEyeRetinalMeridianName] = isetbioRetinalAngleForWatsonMeridian(obj, rightEyeVisualFieldMeridianName);
