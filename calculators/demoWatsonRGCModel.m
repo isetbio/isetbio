@@ -14,9 +14,14 @@ function demoWatsonRGCModel
 % History:
 %    11/8/19  NPC, ISETBIO Team     Wrote it.
 
-    WatsonRGCModel.unitTestFigure1();
-    WatsonRGCModel.unitTestFigure5();
-    WatsonRGCModel.unitTestFigure9();
-    WatsonRGCModel.unitTestFigure14();
+    obj = WatsonRGCModel();
+    plotlabOBJ = obj.setUpPlotLab();
+    
+    WatsonRGCModel.unitTestFigure1('plotlabOBJ', plotlabOBJ);
+    WatsonRGCModel.unitTestFigure5('plotlabOBJ', plotlabOBJ);
+    WatsonRGCModel.unitTestFigure9('plotlabOBJ', plotlabOBJ);
+    WatsonRGCModel.unitTestFigure10('plotlabOBJ', plotlabOBJ);
+    WatsonRGCModel.unitTestFigure11('plotlabOBJ', plotlabOBJ);
+    WatsonRGCModel.unitTestFigure14('plotlabOBJ', plotlabOBJ);
 end
 

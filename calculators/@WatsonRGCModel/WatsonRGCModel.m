@@ -239,12 +239,12 @@ classdef WatsonRGCModel
     % Unit tests
     methods (Static)
         plotLabOBJ = setUpPlotLab();
-        unitTestFigure1();
-        unitTestFigure5();
-        unitTestFigure9();
-        unitTestFigure10();
-        unitTestFigure11();
-        unitTestFigure14();
+        unitTestFigure1(varargin);
+        unitTestFigure5(varargin);
+        unitTestFigure9(varargin);
+        unitTestFigure10(varargin);
+        unitTestFigure11(varargin);
+        unitTestFigure14(varargin);
         unitTestRFConeDensity2D();
         unitTestRFDensity2D();
         unitTestSmoothGrid();

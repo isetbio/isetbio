@@ -1,4 +1,9 @@
-function unitTestFigure11()
+function unitTestFigure11(varargin)
+    % Parse input
+    p = inputParser;
+    p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
+    p.parse(varargin{:});
+    plotlabOBJ = p.Results.plotlabOBJ;
     
     eccMinDegs = 0.0;
     eccMaxDegs = 10;
@@ -8,14 +13,28 @@ function unitTestFigure11()
     spacingUnits = 'deg';
     meridianLabeling = 'Watson'; %'retinal';   % choose from {'retinal', 'Watson'}
     
-    doIt(eccDegs, eccUnits, spacingUnits , meridianLabeling);
+    obj = WatsonRGCModel();
+    if (isempty(plotlabOBJ))
+        plotlabOBJ  = obj.setUpPlotLab();
+    end
+    
+    doIt(obj,eccDegs, eccUnits, spacingUnits , meridianLabeling, 'spacing', mfilename, plotlabOBJ);
 end
 
-function doIt(eccentricities, eccUnits, spacingUnits, meridianLabeling)
-    obj = WatsonRGCModel();
-    meridianNames = obj.enumeratedMeridianNames;
+function doIt(obj,eccentricities, eccUnits, spacingUnits, meridianLabeling, figureName, theFileName, plotlabOBJ)
     
-    figure(1); clf; hold on;
+    exportFigure = false;
+    
+    hFig = figure(); clf;
+    theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
+            'leftMargin', 0.16, ...
+            'bottomMargin', 0.18, ...
+            'rightMargin', 0.04, ...
+            'topMargin', 0.05);
+    theAxesGrid = theAxesGrid{1,1};
+    hold(theAxesGrid, 'on');
+    
+    meridianNames = obj.enumeratedMeridianNames;
     theLegends = cell(numel(meridianNames),1);
     
     % Loop over meridians
@@ -35,9 +54,7 @@ function doIt(eccentricities, eccUnits, spacingUnits, meridianLabeling)
             % Convert to microns from mm
             OnOrOFF_mRGCRFSpacing = OnOrOFF_mRGCRFSpacing*1000;
         end
-        plot(eccentricities, OnOrOFF_mRGCRFSpacing, 'k-', ...
-            'Color', obj.meridianColors(meridianNames{k}), ...
-            'LineWidth', obj.figurePrefs.lineWidth);
+        plot(theAxesGrid, eccentricities, OnOrOFF_mRGCRFSpacing);
         if (strcmp(meridianLabeling, 'retinal'))
             theLegends{k} = rightEyeRetinalMeridianName;
         else
@@ -70,17 +87,17 @@ function doIt(eccentricities, eccUnits, spacingUnits, meridianLabeling)
     end
     
     % Labels and legends
-    xlabel(xLabelString, 'FontAngle', obj.figurePrefs.fontAngle);
-    ylabel(yLabelString, 'FontAngle', obj.figurePrefs.fontAngle);
-    legend(theLegends, 'Location', 'NorthWest');
+    xlabel(theAxesGrid, xLabelString);
+    ylabel(theAxesGrid, yLabelString);
+    legend(theAxesGrid, theLegends, 'Location', 'NorthWest');
    
-    set(gca, 'XLim', xLims, 'YLim', yLims, ...
-        'XScale', 'linear', 'YScale', 'linear', ...
+    set(theAxesGrid, 'XLim', xLims, 'YLim', yLims, ...
         'XTick', xTicks, ...
-        'YTick', yTicks, 'YTickLabel', yTicksLabels,...
-        'FontSize', obj.figurePrefs.fontSize);
+        'YTick', yTicks, 'YTickLabel', yTicksLabels);
     
-    % Finalize figure
-    grid(gca, obj.figurePrefs.grid);
-    
+    % Export figure
+    if (exportFigure)
+        localDir = fileparts(which(theFileName));
+        plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
+    end
 end

@@ -1,4 +1,9 @@
-function unitTestFigure9()
+function unitTestFigure9(varargin)
+    % Parse input
+    p = inputParser;
+    p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
+    p.parse(varargin{:});
+    plotlabOBJ = p.Results.plotlabOBJ;
     
     eccMinDegs = 0.1;
     eccMaxDegs = 80;
@@ -8,14 +13,19 @@ function unitTestFigure9()
     densityUnits = 'deg^2';
     meridianLabeling = 'Watson'; %'retinal';   % choose from {'retinal', 'Watson'}
     
-    doIt(eccDegs, eccUnits, densityUnits, meridianLabeling, 'mRGCDensity', mfilename);
+    obj = WatsonRGCModel();
+    if (isempty(plotlabOBJ))
+        plotlabOBJ  = obj.setUpPlotLab();
+    end
+    
+    doIt(obj, eccDegs, eccUnits, densityUnits, meridianLabeling, 'mRGCDensity', mfilename, plotlabOBJ);
 end
 
-function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureName, theFileName)
-    obj = WatsonRGCModel();
-    plotlabOBJ  = obj.setUpPlotLab();
+function doIt(obj, eccentricities, eccUnits, densityUnits, meridianLabeling, figureName, theFileName, plotlabOBJ)
     
-    hFig = figure(1); clf;
+    exportFigure = false;
+    
+    hFig = figure(); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.18, ...
             'bottomMargin', 0.18, ...
@@ -33,7 +43,7 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
         rightEyeVisualFieldMeridianName = meridianNames{k};
         [mRGCRFSpacing, mRGCRFDensity] = obj.mRGCRFSpacingAndDensityAlongMeridian(eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
         
-        plot(eccentricities, mRGCRFDensity);
+        plot(theAxesGrid, eccentricities, mRGCRFDensity);
         if (strcmp(meridianLabeling, 'retinal'))
             theLegends{k} = rightEyeRetinalMeridianName;
         else
@@ -66,11 +76,11 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
     end
     
     % Labels and legends
-    xlabel(xLabelString);
-    ylabel(yLabelString);
-    legend(theLegends);
+    xlabel(theAxesGrid,xLabelString);
+    ylabel(theAxesGrid,yLabelString);
+    legend(theAxesGrid,theLegends);
    
-    set(gca, 'XLim', xLims, 'YLim', yLims, ...
+    set(theAxesGrid, 'XLim', xLims, 'YLim', yLims, ...
         'XScale', 'log', 'YScale', 'log', ...
         'XTick', xTicks, ...
         'YTick', yTicks, 'YTickLabel', yTicksLabels);

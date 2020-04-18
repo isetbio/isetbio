@@ -1,4 +1,9 @@
-function unitTestFigure1()
+function unitTestFigure1(varargin)
+    % Parse input
+    p = inputParser;
+    p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
+    p.parse(varargin{:});
+    plotlabOBJ = p.Results.plotlabOBJ;
     
     eccMinDegs = 0.2;
     eccMaxDegs = 100;
@@ -8,16 +13,19 @@ function unitTestFigure1()
     densityUnits = 'deg^2';
     meridianLabeling = 'Watson'; %'retinal';   % choose from 'retinal', 'Watson'
 
-    doIt(eccDegs, eccUnits, densityUnits, meridianLabeling, 'coneDensity', mfilename);
+    obj = WatsonRGCModel();
+    if (isempty(plotlabOBJ))
+        plotlabOBJ  = obj.setUpPlotLab();
+    end
+    
+    doIt(obj, eccDegs, eccUnits, densityUnits, meridianLabeling, 'coneDensity', mfilename, plotlabOBJ);
 end
 
-function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureName, theFileName)
+function doIt(obj, eccentricities, eccUnits, densityUnits, meridianLabeling, figureName, theFileName, plotlabOBJ)
     
-    obj = WatsonRGCModel();
-    plotlabOBJ  = obj.setUpPlotLab();
     exportFigure = false;
     
-    hFig = figure(1); clf;
+    hFig = figure(); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.16, ...
             'bottomMargin', 0.18, ...
@@ -70,9 +78,9 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
     % Labels and legends
     xlabel(theAxesGrid, xLabelString);
     ylabel(theAxesGrid, yLabelString);
-    legend(theLegends);
+    legend(theAxesGrid,theLegends);
    
-    set(gca, 'XLim', xLims, 'YLim', yLims, ...
+    set(theAxesGrid, 'XLim', xLims, 'YLim', yLims, ...
         'XScale', 'log', 'YScale', 'log', ...
         'XTick', xTicks, 'MinorGridLineStyle', '-', 'MinorGridAlpha', 0.1, ...
         'YTick', yTicks, 'YTickLabel', yTicksLabels);

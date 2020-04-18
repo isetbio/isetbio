@@ -40,7 +40,7 @@ function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
     % Call the isetbio function coneSizeReadData to read-in the Curcio '1990
     % cone spacing/density data. 
     [isetbioAngle, whichEye, rightEyeRetinalMeridianName] = obj.isetbioRetinalAngleForWatsonMeridian(rightEyeVisualFieldMeridianName);
-    fprintf('ISETBio angle for Watson''s ''%s'' (%s): %d\n', rightEyeVisualFieldMeridianName, rightEyeRetinalMeridianName, isetbioAngle);
+    %fprintf('ISETBio angle for Watson''s ''%s'' (%s): %d\n', rightEyeVisualFieldMeridianName, rightEyeRetinalMeridianName, isetbioAngle);
     
     [~, ~, densityConesPerMM2] = coneSizeReadData('eccentricity', eccMM, ...
                                         'angle', isetbioAngle*ones(1,numel(eccMM)), ...
@@ -64,28 +64,12 @@ function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
         correctionFactorMax = ISETBioMaxConeDensityPerDeg2 - WatsonModelMaxConeDensityPerDeg2;
         correctionFactorMax = correctionFactorMax / obj.alpha(0);
         
-        plotCorrection = ~true;
-        if (plotCorrection)
-            figure(99); clf;
-            plot(eccDegs, densityConesPerMM2, 'k--', 'LineWidth', 1.5); hold on
-        end
-        
         idx = find(abs(eccDegs)<=eccLimit);
         if (~isempty(idx))
             indicesToBeCorrected = idx;
             correctionFactors = correctionFactorMax.*(eccLimit-eccDegs(indicesToBeCorrected))/eccLimit;
             densityConesPerMM2(indicesToBeCorrected) = densityConesPerMM2(indicesToBeCorrected) - correctionFactors;
         end
-        if (plotCorrection)
-            plot(eccDegs, densityConesPerMM2, 'r-', 'LineWidth', 1.5);
-            legend({'ISETBio', 'ISETBio with correction'})
-            set(gca, 'XScale', 'log', 'YScale', 'log', 'FontSize', 12);
-            xlabel('ecc (degs)'); ylabel('density (cones/mm^2');
-            drawnow
-            pause
-        end
-        
-        
     end
     
     % Compute cone spacing from their density. 
@@ -107,8 +91,6 @@ function [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
             % eccentricities (ecc specified in degs)
             mmSquaredPerDegSquared = obj.alpha(eccDegs);
             coneRFDensity = densityConesPerMM2 .* mmSquaredPerDegSquared;
-    end
-    
-                                    
+    end                             
 end
 

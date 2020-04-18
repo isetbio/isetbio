@@ -1,4 +1,9 @@
-function unitTestFigure14()
+function unitTestFigure14(varargin)
+    % Parse input
+    p = inputParser;
+    p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
+    p.parse(varargin{:});
+    plotlabOBJ = p.Results.plotlabOBJ;
     
     eccMinDegs = 0.1;
     eccMaxDegs = 100;
@@ -8,12 +13,15 @@ function unitTestFigure14()
     densityUnits = 'deg^2';
     meridianLabeling = 'Watson'; %'retinal';   % choose from {'retinal', 'Watson'}
     
-    doIt(eccDegs, eccUnits, densityUnits, meridianLabeling, 'mRGCToConesRatio', mfilename);
+    obj = WatsonRGCModel();
+    if (isempty(plotlabOBJ))
+        plotlabOBJ  = obj.setUpPlotLab();
+    end
+    doIt(obj, eccDegs, eccUnits, densityUnits, meridianLabeling, 'mRGCToConesRatio', mfilename, plotlabOBJ);
 end
 
-function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureName, theFileName)
-    obj = WatsonRGCModel();
-    plotlabOBJ = obj.setUpPlotLab();
+function doIt(obj,eccentricities, eccUnits, densityUnits, meridianLabeling, figureName, theFileName, plotlabOBJ)
+
     exportFigure = false;
         
     hFig = figure(1); clf;
