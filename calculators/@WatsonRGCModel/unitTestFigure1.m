@@ -1,7 +1,7 @@
 function unitTestFigure1()
     
-    eccMinDegs = 0.1;
-    eccMaxDegs = 80;
+    eccMinDegs = 0.2;
+    eccMaxDegs = 100;
     eccSamplesNum = 100;
     eccDegs = logspace(log10(eccMinDegs), log10(eccMaxDegs), eccSamplesNum);
     eccUnits = 'deg';
@@ -15,11 +15,11 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
     
     obj = WatsonRGCModel();
     plotlabOBJ  = obj.setUpPlotLab();
-    
+    exportFigure = false;
     
     hFig = figure(1); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
-            'leftMargin', 0.18, ...
+            'leftMargin', 0.16, ...
             'bottomMargin', 0.18, ...
             'rightMargin', 0.04, ...
             'topMargin', 0.05);
@@ -32,7 +32,8 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
     % Loop over meridians
     for k = 1:numel(meridianNames)
         rightEyeVisualFieldMeridianName = meridianNames{k};
-        [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = obj.coneRFSpacingAndDensityAlongMeridian(eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        [coneRFSpacing, coneRFDensity, rightEyeRetinalMeridianName] = ...
+            obj.coneRFSpacingAndDensityAlongMeridian(eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
         plot(theAxesGrid, eccentricities, coneRFDensity);
         if (strcmp(meridianLabeling, 'retinal'))
             theLegends{k} = rightEyeRetinalMeridianName;
@@ -49,7 +50,8 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
         xLabelString = sprintf('eccentricity (%s)', eccUnits);
     else
         xLims = [0.05 100];
-        xTicks = [0.1 0.3 1 3 10 30 100];
+        xTicks = [0.1 0.5 1 5 10 50 100];
+        plot(theAxesGrid, xLims(1), obj.dc0, 'ko');
         xLabelString = sprintf('eccentricity (%s)', strrep(eccUnits, 'visual', ''));
     end
     
@@ -59,7 +61,7 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
         yTicksLabels = {'2k', '5k', '10k', '20k', '50k', '100k', '200K'};
         yLabelString = sprintf('density (cones / %s)', densityUnits);
     else
-        yLims = [1 40000];
+        yLims = [100 20000];
         yTicks = [1 10 100 1000 10000];
         yTicksLabels = {'1' '10' '100', '1000', '10000'};
         yLabelString = sprintf('density (cones / %s)', strrep(densityUnits, 'visual', ''));
@@ -72,11 +74,12 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
    
     set(gca, 'XLim', xLims, 'YLim', yLims, ...
         'XScale', 'log', 'YScale', 'log', ...
-        'XTick', xTicks, ...
+        'XTick', xTicks, 'MinorGridLineStyle', '-', 'MinorGridAlpha', 0.1, ...
         'YTick', yTicks, 'YTickLabel', yTicksLabels);
     
     % Export figure
-    localDir = fileparts(which(theFileName));
-    plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
-    
+    if (exportFigure)
+        localDir = fileparts(which(theFileName));
+        plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
+    end
 end

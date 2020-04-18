@@ -163,6 +163,7 @@ classdef WatsonRGCModel
             p = inputParser;
             p.addParameter('generateAllFigures', false, @islogical);
             p.addParameter('eccDegs', 0:0.002:90, @isnumeric);
+            p.addParameter('instantiatePlotLab', false, @islogical);
             p.parse(varargin{:});
             
             % Set the default figure preferences
@@ -178,6 +179,10 @@ classdef WatsonRGCModel
             % Create dictionary with meridian params 
             obj.meridianParams = containers.Map(obj.meridianParamsTable(:,1), obj.meridianParamsTable(:,2));
 
+            if (p.Results.instantiatePlotLab)
+                WatsonRGCModel.setUpPlotLab();
+            end
+            
             % Generate figures
             if (generateAllFigures)
                 obj.generateAndDockAllFigures();

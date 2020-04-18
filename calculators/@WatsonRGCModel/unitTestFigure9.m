@@ -76,7 +76,8 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
         'YTick', yTicks, 'YTickLabel', yTicksLabels);
     
     % Export figure
-    localDir = fileparts(which(theFileName));
-    plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
-    
+    if (exportFigure)
+        localDir = fileparts(which(theFileName));
+        plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
+    end
 end

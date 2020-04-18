@@ -14,10 +14,11 @@ end
 function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureName, theFileName)
     obj = WatsonRGCModel();
     plotlabOBJ = obj.setUpPlotLab();
-    
+    exportFigure = false;
+        
     hFig = figure(1); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
-            'leftMargin', 0.18, ...
+            'leftMargin', 0.12, ...
             'bottomMargin', 0.18, ...
             'rightMargin', 0.04, ...
             'topMargin', 0.05);
@@ -63,7 +64,7 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
         xLabelString = sprintf('eccentricity (%s)', strrep(eccUnits, 'visual', ''));
     end
     
-    yLims = [0.02 2.2];
+    yLims = [0.02 3];
     yTicks = [0.05 0.1 0.2 0.5 1 2];
     yTicksLabels = {'.05', '.10', '.20', '.50', '1.0', '2.0'};
     yLabelString = 'mRGC/cone ratio';
@@ -80,6 +81,8 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
         'YTick', yTicks, 'YTickLabel', yTicksLabels);
     
     % Export figure
-    localDir = fileparts(which(theFileName));
-    plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
+    if (exportFigure)
+        localDir = fileparts(which(theFileName));
+        plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
+    end
 end

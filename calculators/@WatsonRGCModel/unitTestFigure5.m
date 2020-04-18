@@ -15,10 +15,11 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
     
     obj = WatsonRGCModel();
     plotlabOBJ  = obj.setUpPlotLab();
+    exportFigure = false;
         
     hFig = figure(1); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
-            'leftMargin', 0.18, ...
+            'leftMargin', 0.16, ...
             'bottomMargin', 0.18, ...
             'rightMargin', 0.04, ...
             'topMargin', 0.05);
@@ -77,6 +78,8 @@ function doIt(eccentricities, eccUnits, densityUnits, meridianLabeling, figureNa
         'YTick', yTicks, 'YTickLabel', yTicksLabels);
     
     % Export figure
-    localDir = fileparts(which(theFileName));
-    plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
+    if (exportFigure)
+        localDir = fileparts(which(theFileName));
+        plotlabOBJ.exportFig(hFig, 'png', figureName, fullfile(localDir, 'exports'));
+    end
 end
