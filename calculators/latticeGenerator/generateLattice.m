@@ -50,11 +50,18 @@ function generateLattice
     rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain, neuronalType, whichEye, theRandomSeed);
     visualizeLattice(rfPositions);
     
+    visualizeGridQuality = true
+    if (visualizeGridQuality)
+        triangleIndices = delaunayn(rfPositions);
+        [minQualityValue, histogramData] = computeHexLatticeQuality(rfPositions, triangleIndices);
+        visualizeHexLatticeQuality(histogramData, minQualityValue);
+    end
+    
     % STEP 3. Generate lookup density tables
     [tabulatedDensity, tabulatedEcc] = generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
     
     % STEP 4. Iteratively smooth the lattice grid
-    [rfPositions] = iterativelySmoothGrid(rfPositions, tabulatedDensity, tabulatedEcc, iterativeParams, lambda, domain, neuronalType, whichEye);
+    %[rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedDensity, tabulatedEcc, iterativeParams, lambda, domain, neuronalType, whichEye);
     
 end
 

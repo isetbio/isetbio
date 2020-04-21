@@ -1,4 +1,4 @@
-function [rfPositions] = iterativelySmoothGrid(rfPositions, tabulatedDensity, tabulatedEcc, iterativeParams, lambda, domain, neuronalType, whichEye)
+function [rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedDensity, tabulatedEcc, iterativeParams, lambda, domain, neuronalType, whichEye)
 
     % Initiate state
     iteration = 0;
@@ -47,17 +47,12 @@ function [keepLooping, histogramData, minQualityValue] = ...
     checkForEarlyTerminationDueToHexLatticeQualityDecrease(rfPositions, triangleIndices)
     
     % Compute quality values
-    qValues = computeHexLatticeQuality(rfPositions, triangleIndices);
-    pointEightPercent = 0.8;
-    minQualityValue = prctile(qValues,pointEightPercent);
+    [minQualityValue, histogramData] = computeHexLatticeQuality(rfPositions, triangleIndices);
+    
     keepLooping = true;
     if (minQualityValue > 0.85)
         keepLooping = false;
     end
-    
-    % Compute histogram for visualization
-    qBins = 0.2:0.01:1.0;
-    [histogramData.y,histogramData.x] = hist(qValues, qBins);  
 end
 
 

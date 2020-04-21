@@ -1,6 +1,6 @@
 function rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain, neuronalType, whichEye, theRandomSeed)
     % Remove rfs outside the desired region by applying the provided domain function
-    d = feval(domain.function, rfPositions, domain.macEcc, domain.ellipseAxes);
+    d = feval(domain.function, rfPositions, domain.maxEcc, domain.ellipseAxes);
     rfPositions = rfPositions(d < lambda/1000,:);
 
     % Determine smallest spacing (delta)
