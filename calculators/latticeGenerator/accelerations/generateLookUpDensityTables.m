@@ -1,4 +1,4 @@
-function [tabulatedDensity, tabulatedEcc] = generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda, neuronalType, whichEye)
+function [tabulatedDensity, tabulatedSpacing, tabulatedEcc] = generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda, neuronalType, whichEye)
 
     ecc = sqrt(sum(rfPositions .^ 2, 2));
     eccentricitySamplingVector = logspace(log10(lambda), log10(max(ecc)), eccentricitySamplesNum);
@@ -9,26 +9,37 @@ function [tabulatedDensity, tabulatedEcc] = generateLookUpDensityTables(rfPositi
      % Determine smallest spacing (delta)
     switch (neuronalType)
         case 'cone'
-            [~,~,tabulatedDensity] = coneSizeReadData(...
-                'eccentricity', sqrt(sum(tabulatedEcc.^2,2))*1e-6, ...  % ecc in meters
-                'angle', atan2d(tabulatedEccY(:), tabulatedEccX(:)), ...
-                'whichEye', whichEye);
+            tabulatedDensity = coneDensityFunctionFull(tabulatedEcc, whichEye);
         case 'mRGC'
            
         otherwise
             error('Unknown neuronalType: ''%s''.', neuronalType)
     end    
         
-    displayTableAs2DMap = false;
+    % Spacing (in microns) from density
+    tabulatedSpacing = 1e3 * WatsonRGCModel.spacingFromDensity(tabulatedDensity);
+    
+    displayTableAs2DMap = ~true;
     if (displayTableAs2DMap)
-        figure()
+        figure(123); clf;
+        subplot(1,2,1)
         X = reshape(tabulatedEcc(:,1), (2*eccentricitySamplesNum+1)*[1 1]);
         Y = reshape(tabulatedEcc(:,2), (2*eccentricitySamplesNum+1)*[1 1]);
         Z = reshape(tabulatedDensity, (2*eccentricitySamplesNum+1)*[1 1]);
-        figure
         contourf(X,Y,Z,10)
+        title('density');
         colorbar
         axis 'square'
+        
+        subplot(1,2,2)
+        X = reshape(tabulatedEcc(:,1), (2*eccentricitySamplesNum+1)*[1 1]);
+        Y = reshape(tabulatedEcc(:,2), (2*eccentricitySamplesNum+1)*[1 1]);
+        Z = reshape(tabulatedSpacing, (2*eccentricitySamplesNum+1)*[1 1]);
+        contourf(X,Y,Z,10)
+        title('spacing');
+        colorbar
+        axis 'square'
+        drawnow;
     end
     
 end

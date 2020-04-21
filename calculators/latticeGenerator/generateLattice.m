@@ -1,7 +1,7 @@
 function generateLattice
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 1; %30; 
+    mosaicFOVDegs = 20; %30; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
@@ -18,14 +18,17 @@ function generateLattice
     theRandomSeed = 1;
     
     % Iterative smoothing params
-    % 1. Stop if cones move less than this positional tolerance (x gridParams.lambdaMin) in microns
+    % 1. Stop if rfs move less than this positional tolerance (x gridParams.lambdaMin) in microns
     iterativeParams.dTolerance = 1.0e-4;
+    % 1a. Trigger Delayun triangularization if rfmovement exceeds this number
+    iterativeParams.maxMovementPercentile = 20;
     
     % 2. Stop if we exceed this many iterations
     iterativeParams.maxIterations = 3000;
     
-    % 3. Trigger Delayun triangularization if rfmovement exceeds this number
-    iterativeParams.maxMovementPercentile = 20;
+    %3. Trigger Delayun triangularization if
+    %(rfspacing-desiredSpacing)/desiredSpacing > threshold
+    iterativeParams.thresholdSpacingDeviation = 0.4;
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
     iterativeParams.minIterationsBeforeRetriangulation = 5;
@@ -50,18 +53,11 @@ function generateLattice
     rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain, neuronalType, whichEye, theRandomSeed);
     visualizeLattice(rfPositions);
     
-    visualizeGridQuality = true
-    if (visualizeGridQuality)
-        triangleIndices = delaunayn(rfPositions);
-        [minQualityValue, histogramData] = computeHexLatticeQuality(rfPositions, triangleIndices);
-        visualizeHexLatticeQuality(histogramData, minQualityValue);
-    end
-    
     % STEP 3. Generate lookup density tables
-    [tabulatedDensity, tabulatedEcc] = generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
+    [tabulatedDensity, tabulatedSpacing, tabulatedEcc] = generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
     
     % STEP 4. Iteratively smooth the lattice grid
-    %[rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedDensity, tabulatedEcc, iterativeParams, lambda, domain, neuronalType, whichEye);
+    [rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain);
     
 end
 

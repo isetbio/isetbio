@@ -1,8 +1,18 @@
 function visualizeLattice(rfPositions)
 
-    % Compute density in count/mm2
+    % Sampling vector
     densitySampling = struct('minPos', 1/1000, 'maxPos', max(abs(rfPositions(:)))/1000, 'intervals', 20, 'scale', 'log');
-    [densityMap, densityMapSupport] = densityMapFromPositions(rfPositions/1000, densitySampling);
+    
+    % Find distances to neighors in mm
+    neighborsNum = 5;
+    spacings = localRFSpacings(rfPositions/1000, neighborsNum);
+    
+    % Densities from medians
+    densities = WatsonRGCModel.densityFromSpacing(spacings);
+    
+    % Generate 2D map from scattered values
+    [densityMap, densityMapSupport] = mapFromScatteredPositions(rfPositions, densities, densitySampling);
+    
     % plot in microns
     densityMapSupport = densityMapSupport * 1000;
     
@@ -54,6 +64,6 @@ function visualizeLattice(rfPositions)
         'Location','eastoutside' ,...
         'Ticks',levels,...
         'TickLabels',levelLabels);
-    
+    drawnow;
 end
     
