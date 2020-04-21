@@ -1,11 +1,11 @@
 function generateLattice
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 0.5; %30; 
+    mosaicFOVDegs = 1; %30; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
-    neuronalType = 'mRGC';
+    %neuronalType = 'mRGC';
     
     % Which eye
     whichEye = 'right';
@@ -17,38 +17,52 @@ function generateLattice
     % Set a random seed
     theRandomSeed = 1;
     
-    % Termination conditions
+    % Iterative smoothing params
     % 1. Stop if cones move less than this positional tolerance (x gridParams.lambdaMin) in microns
-    dTolerance = 1.0e-4;
+    iterativeParams.dTolerance = 1.0e-4;
     
     % 2. Stop if we exceed this many iterations
-    maxIterations = 3000;
+    iterativeParams.maxIterations = 3000;
     
     % 3. Trigger Delayun triangularization if rfmovement exceeds this number
-    maxMovementPercentile = 20;
+    iterativeParams.maxMovementPercentile = 20;
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one
-    minIterationsBeforeRetriangulation = 5;
+    iterativeParams.minIterationsBeforeRetriangulation = 5;
     
     % 5. Trigger Delayun triangularization if more than maxIterationsBeforeRetriangulation have passed since last one
-    maxIterationsBeforeRetriangulation = 30;
+    iterativeParams.maxIterationsBeforeRetriangulation = 30;
     
     % 6. Interval to query user whether he/she wants to terminate
-    queryUserIntervalMinutes = 60*12;
+    iterativeParams.queryUserIntervalMinutes = 60*12;
     
-    plotlabOBJ = plotlab();
-    plotlabOBJ.applyRecipe(...
-            'colorOrder', [0.1 0.1 0.1; 1 0 0; 0 0 1], ...
-            'axesBox', 'off', ...
-            'axesTickLength', [0.01 0.01], ...
-            'legendLocation', 'SouthWest', ...
-            'figureWidthInches', 14, ...
-            'figureHeightInches', 14);
         
-    % Generate initial RF positions in a regular hex lattice with lambda = min separation
-    rfPositions = generateInitialRFpositions(mosaicFOVDegs, neuronalType);
+    % STEP 1. Generate initial RF positions in a regular hex lattice with lambda = min separation
+    [rfPositions, lambda] = generateInitialRFpositions(mosaicFOVDegs, neuronalType);
     
     % Visualize lattice
     visualizeLattice(rfPositions);
+    
+    % STEP 2. Downsample uniform grid
+    domain.function = @ellipticalDomainFunction;
+    domain.ellipseAxes = [1 1.2247];
+    domain.maxEcc = max(abs(rfPositions(:)));
+    rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain, neuronalType, whichEye, theRandomSeed);
+    visualizeLattice(rfPositions);
+    
+    % STEP 3. Generate lookup density tables
+    [tabulatedDensity, tabulatedEcc] = generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
+    
+    % STEP 4. Iteratively smooth the lattice grid
+    [rfPositions] = iterativelySmoothGrid(rfPositions, tabulatedDensity, tabulatedEcc, iterativeParams, lambda, domain, neuronalType, whichEye);
+    
 end
 
+
+
+function distances = ellipticalDomainFunction(rfPositions, maxEcc, ellipseAxes)
+    xx = rfPositions(:, 1);
+    yy = rfPositions(:, 2);
+    radii = sqrt((xx / ellipseAxes(1)) .^ 2 + (yy / ellipseAxes(2)) .^ 2);
+    distances = radii - maxEcc;
+end

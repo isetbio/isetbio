@@ -1,4 +1,4 @@
-function rfPositions = generateInitialRFpositions(mosaicWidthDegs, neuronalType)
+function [rfPositions, lambdaMicrons] = generateInitialRFpositions(mosaicWidthDegs, neuronalType)
 
     % Instantiate a WatsonRGCModel
     WatsonOBJ = WatsonRGCModel();
@@ -21,7 +21,7 @@ function rfPositions = generateInitialRFpositions(mosaicWidthDegs, neuronalType)
     % Determine mosaicWidth in retinal microns
     mosaicRadiusRetinalMicrons = WatsonOBJ.rhoDegsToMMs(0.5*mosaicWidthDegs)*1000;
     
-    % Generate a mosaic that is 20% larger to minize edge effects
+    % Generate a mosaic that is 20% larger to minimize edge effects
     margin = 1.2;
     radius = margin*mosaicRadiusRetinalMicrons;
     rows = ceil(2 * radius);
@@ -53,5 +53,9 @@ function hexLocs = generateRegularHexGrid(rows, cols, lambda)
                     (Y2 <= rows+marginInRFPositions);
     xHex = X2(indicesToKeep);
     yHex = Y2(indicesToKeep);
+    
+    % Center central cone at (0,0)
     hexLocs = [xHex(:) - mean(xHex(:)) yHex(:) - mean(yHex(:))];
+    mins = min(abs(hexLocs),[],1);
+    hexLocs = bsxfun(@minus, hexLocs, [mins(1) 0]);
 end
