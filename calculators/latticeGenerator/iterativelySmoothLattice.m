@@ -1,4 +1,4 @@
-function [rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain)
+function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizedFOVMicrons)
 
     % Initiate state
     iteration = 0;
@@ -8,6 +8,7 @@ function [rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedSpacing,
     maxMovements = [];
     keepLooping = true;
     visualizeLatticeGridQuality = true;
+    rfPositionsHistory = [];
     
     if (visualizeLatticeGridQuality)
         plotlabOBJ = plotlab();
@@ -17,7 +18,7 @@ function [rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedSpacing,
                 'axesTickLength', [0.01 0.01], ...
                 'legendLocation', 'SouthWest', ...
                 'figureWidthInches', 28, ...
-                'figureHeightInches', 14);
+                'figureHeightInches', 16);
     end
     
     while (keepLooping)
@@ -45,7 +46,7 @@ function [rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedSpacing,
         end % retriangularizationIsNeeded
         
         if (visualizeLatticeGridQuality)
-            visualizeLatticeAndQuality(rfPositions, spacingDeviations, reTriangulationIsNeeded, iteration);
+            visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements, reTriangulationIsNeeded, triangularizationTriggerEvent, iteration, visualizedFOVMicrons, iterativeParams);
         end
         
         % Update rfPositions
@@ -61,16 +62,8 @@ function [rfPositions] = iterativelySmoothLattice(rfPositions, tabulatedSpacing,
         if (reTriangulationIsNeeded)
             [keepLooping, histogramData, minQualityValue] = ...
                 checkForEarlyTerminationDueToHexLatticeQualityDecrease(rfPositions);
-            visualizeHexLatticeQuality(histogramData, minQualityValue);
         end
-        
-        figure(55);
-        plot(1:iteration, maxMovements,'ks-');
-        drawnow;
-        
-        % Visualize lattice
-        %visualizeLattice(rfPositions);
-        
+          
         if (iteration > iterativeParams.maxIterations)
             keepLooping = false;
         end
@@ -169,27 +162,8 @@ function [reTriangulationIsNeeded, triangularizationTriggerEvent, spacingDeviati
     reallyCloseRFsNum = numel(find(spacingDeviations >iterativeParams.thresholdSpacingDeviation));
     
     if (reallyCloseRFsNum > 0)
-        
         reTriangulationIsNeeded = true;
         triangularizationTriggerEvent = 'rfs closer than thresholdSpacingDeviation';
-        
-        visualizeDeviationMap = true;
-        if (visualizeDeviationMap)
-            % Sampling vector
-            sampling = struct('minPos', 1, 'maxPos', max(abs(rfPositions(:))), 'intervals', 100, 'scale', 'log');
-            % Generate 2D map from scattered values
-            [deviationMap, mapSupport] = mapFromScatteredPositions(rfPositions, spacingDeviations, sampling);
-            
-            figure(444);
-            contourf(mapSupport(:,:,1), mapSupport(:,:,2), deviationMap, 0:0.05:1.0);
-            set(gca, 'CLim', [0 1], 'ZLim', [0 1]);
-            colormap(jet)
-            axis 'square'
-            colorbar
-            title(sprintf('deviations = %f-%f', min(deviationMap(:)), max(deviationMap(:))));
-        end
-        
-    
     else
         reTriangulationIsNeeded = false;
         triangularizationTriggerEvent = '';
@@ -210,7 +184,6 @@ function [reTriangulationIsNeeded, triangularizationTriggerEvent] = ...
         triangularizationTriggerEvent = '1st iteration';
         return;
     end
-    
     
     % We need to triangulate again if the movement in the current iteration was > the average movement in the last 2 iterations 
     if (numel(maxMovements)>3) && (maxMovements(iteration-1) > 0.52*(maxMovements(iteration-2)+maxMovements(iteration-3)))
