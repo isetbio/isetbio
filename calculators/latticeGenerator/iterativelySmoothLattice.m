@@ -9,24 +9,8 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationR
     keepLooping = true;
     rfPositionsHistory(1,:,:) = single(rfPositions);
     
-    if (~visualizationParams.visualizeNothing)
-        plotlabOBJ = plotlab();
-        if (visualizationParams.visualizeProgressOnly)
-            figWidth = 12;
-        else
-            figWidth = 28;
-        end
-        plotlabOBJ.applyRecipe(...
-                'colorOrder', [0.1 0.1 0.1; 1 0 0; 0 0 1], ...
-                'axesBox', 'off', ...
-                'axesTickLength', [0.01 0.01], ...
-                'legendLocation', 'SouthWest', ...
-                'figureWidthInches', figWidth, ...
-                'figureHeightInches', 16);
-    end
-    
     tStart = clock;
-    timePrevius = tStart;
+    timePrevious = tStart;
     userRequestTerminationAtIteration = [];
     
     while (keepLooping)
@@ -40,8 +24,16 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationR
         
         % determine if we need to re-triangulate because local density is too high
         if (~reTriangulationIsNeeded)
-            [reTriangulationIsNeeded, triangularizationTriggerEvent, spacingDeviations] = ...
-                checkForLocalSpacingDeviations(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams);
+            spacingDeviations = localRFSpacingDeviations(rfPositions, tabulatedSpacing, tabulatedEcc);
+            reallyCloseRFsNum = numel(find(spacingDeviations >iterativeParams.thresholdSpacingDeviation));
+    
+            if (reallyCloseRFsNum > 0)
+                reTriangulationIsNeeded = true;
+                triangularizationTriggerEvent = 'rfs closer than thresholdSpacingDeviation';
+            else
+                reTriangulationIsNeeded = false;
+                triangularizationTriggerEvent = '';
+            end
         end
         
         if (reTriangulationIsNeeded)
@@ -88,12 +80,12 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationR
         
         if (~isempty(userRequestTerminationAtIteration)) && (iteration >= userRequestTerminationAtIteration)
             keepLooping = false;
-            terminationReason = sprintf('Terminated at iteration %d as per user request', userRequestTerminationAtIteration);
+            terminationReason = sprintf('Terminated at iteration %d as per user request', iteration);
             continue;
         end
         
         if (visualizationParams.visualizeNothing)
-            fprintf('Iteration %d (%2.1f hours): maxMovement = %2.4f microns, qVal = %2.3f\n', iteration, etime(clock, tStart)/60/60, maxMovements(iteration), minQualityValue);
+            fprintf('Iteration %d (%2.2f hours): maxMovement = %2.4f microns, qVal = %2.3f\n', iteration, etime(clock, tStart)/60/60, maxMovements(iteration), minQualityValue);
         end
         
         
@@ -196,24 +188,6 @@ function [rfPositions, d] = projectPointsBackToEllipse(rfPositions, lambda, doma
 
         % Project these points back to boundary
         rfPositions(idx, :) = rfPositions(idx, :) - [d(idx) .* dXgradient, d(idx) .* dYgradient];
-    end
-end
-
-function [reTriangulationIsNeeded, triangularizationTriggerEvent, spacingDeviations] = checkForLocalSpacingDeviations(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams)
-
-    % Find distances to neighors
-    neighborsNum = 1;
-    spacings = localRFSpacings(rfPositions, neighborsNum);
-    desiredSpacings = (lookUpValues(rfPositions, tabulatedEcc, tabulatedSpacing, neighborsNum))';
-    spacingDeviations = (abs(desiredSpacings-spacings))./desiredSpacings;
-    reallyCloseRFsNum = numel(find(spacingDeviations >iterativeParams.thresholdSpacingDeviation));
-    
-    if (reallyCloseRFsNum > 0)
-        reTriangulationIsNeeded = true;
-        triangularizationTriggerEvent = 'rfs closer than thresholdSpacingDeviation';
-    else
-        reTriangulationIsNeeded = false;
-        triangularizationTriggerEvent = '';
     end
 end
 

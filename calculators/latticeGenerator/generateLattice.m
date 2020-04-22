@@ -1,12 +1,7 @@
 function generateLattice
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 10.0; %30; 
-    visualizationParams = struct(...
-        'visualizedFOVMicrons', 200, ...     % zoomed-in fov
-        'visualizeProgressOnly', true, ...   % Set to true to only visualize the progress, not the mosaic
-        'visualizeNothing', true...         % Set to true to have zero visualizations
-    );
+    mosaicFOVDegs = 30; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
@@ -17,7 +12,15 @@ function generateLattice
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
-    eccentricitySamplesNum = 32;
+    eccentricitySamplesNum = 32*4;
+    
+    % Visualization params
+    visualizationParams = struct(...
+        'visualizedFOVMicrons', 200, ...     % zoomed-in fov
+        'visualizeProgressOnly', true, ...   % Set to true to only visualize the progress, not the mosaic
+        'visualizeNothing', true...          % Set to true to have absolutely no visualizations
+    );
+    setupPlotLab(visualizationParams);
     
     % Save filename
     p = getpref('IBIOColorDetect');
@@ -52,7 +55,7 @@ function generateLattice
     iterativeParams.maxIterationsBeforeRetriangulation = 30;
     
     % 6. Interval to query user whether he/she wants to terminate
-    iterativeParams.queryUserIntervalMinutes = 60*10;
+    iterativeParams.queryUserIntervalMinutes = 1/2; % 60*10;
     
     % STEP 1. Generate initial RF positions in a regular hex lattice with lambda = min separation
     [rfPositions, lambda] = generateInitialRFpositions(mosaicFOVDegs, neuronalType);
@@ -68,10 +71,8 @@ function generateLattice
         generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
     
     % STEP 4. Iteratively smooth the lattice grid
-    profile on
     [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationReason] = ...
         iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams);
-    profile viewer
     
     fprintf('Termination reason: %s\n', terminationReason);
     
@@ -80,11 +81,27 @@ function generateLattice
     fprintf('History saved  in %s\n', saveFileName);
 end
 
-
-
 function distances = ellipticalDomainFunction(rfPositions, maxEcc, ellipseAxes)
     xx = rfPositions(:, 1);
     yy = rfPositions(:, 2);
     radii = sqrt((xx / ellipseAxes(1)) .^ 2 + (yy / ellipseAxes(2)) .^ 2);
     distances = radii - maxEcc;
 end
+
+function setupPlotLab(visualizationParams)
+    if (~visualizationParams.visualizeNothing)
+        plotlabOBJ = plotlab();
+        if (visualizationParams.visualizeProgressOnly)
+            figWidth = 12;
+        else
+            figWidth = 28;
+        end
+        plotlabOBJ.applyRecipe(...
+                'colorOrder', [0.1 0.1 0.1; 1 0 0; 0 0 1], ...
+                'axesBox', 'off', ...
+                'axesTickLength', [0.01 0.01], ...
+                'legendLocation', 'SouthWest', ...
+                'figureWidthInches', figWidth, ...
+                'figureHeightInches', 16);
+    end
+end     
