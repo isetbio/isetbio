@@ -8,7 +8,7 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
     maxMovements = [];
     keepLooping = true;
     visualizeLatticeGridQuality = true;
-    rfPositionsHistory = [];
+    rfPositionsHistory(1,:,:) = single(rfPositions);
     
     if (visualizeLatticeGridQuality)
         plotlabOBJ = plotlab();
@@ -30,8 +30,7 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
             determineWhetherReTriangularizationIsNeeded(iteration, ...
             lastTriangularizationIteration, maxMovements, iterativeParams);
         
-        % determine if we need to re-triangulate because local density is
-        % too high
+        % determine if we need to re-triangulate because local density is too high
         if (~reTriangulationIsNeeded)
             [reTriangulationIsNeeded, triangularizationTriggerEvent, spacingDeviations] = ...
                 checkForLocalSpacingDeviations(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams);
@@ -56,6 +55,9 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
             updatePositions(rfPositions, desiredSpringLengths, springs, springIndices, ...
             tabulatedSpacing, tabulatedEcc, lambda, reTriangulationIsNeeded, domain, iterativeParams);
 
+        % Save history
+        rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
+               
         % Check different criteria for terminating looping
         if (maxMovements(iteration) < iterativeParams.dTolerance)
             keepLooping = false; 
@@ -67,7 +69,7 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
         if (iteration > iterativeParams.maxIterations)
             keepLooping = false;
         end
-    end % while keepLoopong
+    end % while keepLooping
 end
 
 function keepLooping = checkForAdequateLatticeQuality(rfPositions, minQValue)
