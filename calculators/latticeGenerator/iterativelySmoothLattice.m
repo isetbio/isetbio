@@ -1,4 +1,4 @@
-function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams)
+function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationReason] = iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams)
 
     % Initiate state
     iteration = 0;
@@ -7,19 +7,26 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
     spacingDeviations = [];
     maxMovements = [];
     keepLooping = true;
-    visualizeLatticeGridQuality = true;
     rfPositionsHistory(1,:,:) = single(rfPositions);
     
-    if (visualizeLatticeGridQuality)
+    if (~visualizationParams.visualizeNothing)
         plotlabOBJ = plotlab();
+        if (visualizationParams.visualizeProgressOnly)
+            figWidth = 12;
+        else
+            figWidth = 28;
+        end
         plotlabOBJ.applyRecipe(...
                 'colorOrder', [0.1 0.1 0.1; 1 0 0; 0 0 1], ...
                 'axesBox', 'off', ...
                 'axesTickLength', [0.01 0.01], ...
                 'legendLocation', 'SouthWest', ...
-                'figureWidthInches', 28, ...
+                'figureWidthInches', figWidth, ...
                 'figureHeightInches', 16);
     end
+    
+    timePrevious = clock;
+    userRequestTerminationAtIteration = [];
     
     while (keepLooping)
         iteration = iteration + 1;
@@ -41,14 +48,15 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
             lastTriangularizationIteration = iteration;
             
             % Re-triangulate and compute new spring structure
-            [springs, springIndices] = triangulate(rfPositions, lambda, domain);
-        end % retriangularizationIsNeeded
+            [springs, springIndices, triangleIndices] = triangulate(rfPositions, lambda, domain);
         
-        if (visualizeLatticeGridQuality)
-            visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements, ...
-                reTriangulationIsNeeded, triangularizationTriggerEvent, iteration, ...
-                iterativeParams, visualizationParams);
-        end
+            % Visualize lattice progression
+            if (~visualizationParams.visualizeNothing)
+                visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements, ...
+                    triangleIndices, reTriangulationIsNeeded, triangularizationTriggerEvent, iteration, ...
+                    iterativeParams, visualizationParams);
+            end
+        end % retriangularizationIsNeeded
         
         % Update rfPositions
         [rfPositions, desiredSpringLengths, maxMovements(iteration)] = ...
@@ -57,29 +65,66 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
 
         % Save history
         rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
-               
+        
         % Check different criteria for terminating looping
         if (maxMovements(iteration) < iterativeParams.dTolerance)
-            keepLooping = false; 
+            keepLooping = false;
+            terminationReason = 'movement less than specified tolerance';
+            continue;
         end
         
         % Check whether we have achived the desired lattice qulity
-        keepLooping = checkForAdequateLatticeQuality(rfPositions, iterativeParams.minQValue);
-          
+        [keepLooping, minQualityValue] = checkForAdequateLatticeQuality(rfPositions, reTriangulationIsNeeded, triangleIndices, iterativeParams.minQValue);
+        if (keepLooping == false)
+            terminationReason = 'achieved specified lattice quality';
+        end
+        
+        % Check whether we exceeded the max no of iterations
         if (iteration > iterativeParams.maxIterations)
             keepLooping = false;
+            terminationReason = 'exceeded max no of iterations';
         end
+        
+        if (~isempty(userRequestTerminationAtIteration)) && (iteration >= userRequestTerminationAtIteration)
+            keepLooping = false;
+            terminationReason = sprintf('Terminated at iteration %d as per user request', userRequestTerminationAtIteration);
+            continue;
+        end
+        
+        if (visualizationParams.visualizeNothing)
+            fprintf('Iteration %d: maxMovement = %2.4f microns, qVal = %2.3f\n', iteration, maxMovements(iteration), minQualityValue);
+        end
+        
+        
+        % See if we need to query the user about terminating
+        timeLapsedMinutes = etime(clock, timePrevious)/60;
+        if (timeLapsedMinutes > iterativeParams.queryUserIntervalMinutes)
+            fprintf('Another %d minute period has passed. Terminate soon?', iterativeParams.queryUserIntervalMinutes);
+            userTermination = GetWithDefault(' If so enter # of iteration to terminate on. Otherwise hit enter to continue', 'continue');
+            if (~strcmp(userTermination, 'continue'))
+                userRequestTerminationAtIteration = str2double(userTermination);
+                if (isnan(userRequestTerminationAtIteration))
+                    userRequestTerminationAtIteration = [];
+                end
+            else
+                fprintf('OK, will ask again in %d minutes.', iterativeParams.queryUserIntervalMinutes);
+            end
+            timePrevious = clock;
+        end
+            
     end % while keepLooping
 end
 
-function keepLooping = checkForAdequateLatticeQuality(rfPositions, minQValue)
+function [keepLooping, minQualityValue] = checkForAdequateLatticeQuality(rfPositions, reTriangulationIsNeeded, triangleIndices, minQValue)
     
     % Compute quality values
-    triangleIndices = delaunayn(rfPositions);
+    if (~reTriangulationIsNeeded)
+        triangleIndices = delaunayn(rfPositions);
+    end
     minQualityValue = computeHexLatticeQuality(rfPositions, triangleIndices);
     
     keepLooping = true;
-    if (minQualityValue > minQValue)
+    if (minQualityValue >= minQValue)
         keepLooping = false;
     end
 end
@@ -206,7 +251,7 @@ function [reTriangulationIsNeeded, triangularizationTriggerEvent] = ...
 end
 
 
-function [springs, springIndices] = triangulate(rfPositions, lambda, domain)
+function [springs, springIndices, triangleIndices] = triangulate(rfPositions, lambda, domain)
     % Perform new Delaunay triangulation to determine the updated
     % topology of the truss.
     triangleIndices = delaunayn(rfPositions);
@@ -237,4 +282,15 @@ function [springs, springIndices] = triangulate(rfPositions, lambda, domain)
         springIndices{rfIndex} = find((springs(:, 1) == rfIndex) | (springs(:, 2) == rfIndex));
     end
            
+end
+
+function inputVal = GetWithDefault(prompt,defaultVal)
+    if (ischar(defaultVal))
+        inputVal = input(sprintf([prompt ' [%s]: '],defaultVal),'s');
+    else
+        inputVal = input(sprintf([prompt ' [%g]: '],defaultVal));
+    end
+    if (isempty(inputVal))
+        inputVal = defaultVal;
+    end
 end

@@ -3,8 +3,9 @@ function generateLattice
     % Size of mosaic to generate
     mosaicFOVDegs = 10; %30; 
     visualizationParams = struct(...
-        'visualizedFOVMicrons', 200, ...
-        'visualizeProgressOnly', true ...
+        'visualizedFOVMicrons', 200, ...     % zoomed-in fov
+        'visualizeProgressOnly', true, ...   % Set to true to only visualize the progress, not the mosaic
+        'visualizeNothing', ~true...         % Set to true to have zero visualizations
     );
     
     % Type of mosaic to generate
@@ -35,10 +36,10 @@ function generateLattice
     iterativeParams.maxMovementPercentile = 20;
     
     % 2. Stop if we exceed this many iterations
-    iterativeParams.maxIterations = 3000;
+    iterativeParams.maxIterations = 3000/10;
     
-    % 2a. Stop if we exceed this lattice qValues
-    iterativeParams.minQValue = 0.85;
+    % 2a. Stop if we exceed this lattice qValue
+    iterativeParams.minQValue = 0.82;
 
     %3. Trigger Delayun triangularization if
     %(rfspacing-desiredSpacing)/desiredSpacing > threshold
@@ -51,7 +52,7 @@ function generateLattice
     iterativeParams.maxIterationsBeforeRetriangulation = 30;
     
     % 6. Interval to query user whether he/she wants to terminate
-    iterativeParams.queryUserIntervalMinutes = 60*12;
+    iterativeParams.queryUserIntervalMinutes = 60*10;
     
     % STEP 1. Generate initial RF positions in a regular hex lattice with lambda = min separation
     [rfPositions, lambda] = generateInitialRFpositions(mosaicFOVDegs, neuronalType);
@@ -67,11 +68,15 @@ function generateLattice
         generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
     
     % STEP 4. Iteratively smooth the lattice grid
-    [rfPositions, rfPositionsHistory, maxMovements, iteration] = ...
+    profile on
+    [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationReason] = ...
         iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams);
+    profile viewer
+    
+    fprintf('Termination reason: %s\n', terminationReason);
     
     % STEP 5. Save results
-    save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iteration', 'maxMovements', '-v7.3');
+    save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iteration', 'maxMovements', 'terminationReason', '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
 end
 
