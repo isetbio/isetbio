@@ -1,11 +1,11 @@
 function generateLattice
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 10; %30; 
+    mosaicFOVDegs = 10.0; %30; 
     visualizationParams = struct(...
         'visualizedFOVMicrons', 200, ...     % zoomed-in fov
         'visualizeProgressOnly', true, ...   % Set to true to only visualize the progress, not the mosaic
-        'visualizeNothing', ~true...         % Set to true to have zero visualizations
+        'visualizeNothing', true...         % Set to true to have zero visualizations
     );
     
     % Type of mosaic to generate
@@ -36,7 +36,7 @@ function generateLattice
     iterativeParams.maxMovementPercentile = 20;
     
     % 2. Stop if we exceed this many iterations
-    iterativeParams.maxIterations = 3000/10;
+    iterativeParams.maxIterations = 3000;
     
     % 2a. Stop if we exceed this lattice qValue
     iterativeParams.minQValue = 0.82;

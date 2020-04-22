@@ -25,7 +25,8 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationR
                 'figureHeightInches', 16);
     end
     
-    timePrevious = clock;
+    tStart = clock;
+    timePrevius = tStart;
     userRequestTerminationAtIteration = [];
     
     while (keepLooping)
@@ -92,7 +93,7 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationR
         end
         
         if (visualizationParams.visualizeNothing)
-            fprintf('Iteration %d: maxMovement = %2.4f microns, qVal = %2.3f\n', iteration, maxMovements(iteration), minQualityValue);
+            fprintf('Iteration %d (%2.1f hours): maxMovement = %2.4f microns, qVal = %2.3f\n', iteration, etime(clock, tStart)/60/60, maxMovements(iteration), minQualityValue);
         end
         
         
