@@ -1,8 +1,11 @@
 function generateLattice
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 1.0; %30; 
-    visualizedFOVMicrons = 200;
+    mosaicFOVDegs = 10; %30; 
+    visualizationParams = struct(...
+        'visualizedFOVMicrons', 200, ...
+        'visualizeProgressOnly', true ...
+    );
     
     % Type of mosaic to generate
     neuronalType = 'cone';
@@ -34,6 +37,9 @@ function generateLattice
     % 2. Stop if we exceed this many iterations
     iterativeParams.maxIterations = 3000;
     
+    % 2a. Stop if we exceed this lattice qValues
+    iterativeParams.minQValue = 0.85;
+
     %3. Trigger Delayun triangularization if
     %(rfspacing-desiredSpacing)/desiredSpacing > threshold
     iterativeParams.thresholdSpacingDeviation = 0.4;
@@ -57,10 +63,12 @@ function generateLattice
     rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain, neuronalType, whichEye, theRandomSeed);
     
     % STEP 3. Generate lookup density tables
-    [tabulatedDensity, tabulatedSpacing, tabulatedEcc] = generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
+    [tabulatedDensity, tabulatedSpacing, tabulatedEcc] = ...
+        generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
     
     % STEP 4. Iteratively smooth the lattice grid
-    [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizedFOVMicrons);
+    [rfPositions, rfPositionsHistory, maxMovements, iteration] = ...
+        iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams);
     
     % STEP 5. Save results
     save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iteration', 'maxMovements', '-v7.3');

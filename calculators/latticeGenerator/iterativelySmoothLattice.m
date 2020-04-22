@@ -1,4 +1,4 @@
-function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizedFOVMicrons)
+function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams)
 
     % Initiate state
     iteration = 0;
@@ -46,7 +46,9 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
         end % retriangularizationIsNeeded
         
         if (visualizeLatticeGridQuality)
-            visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements, reTriangulationIsNeeded, triangularizationTriggerEvent, iteration, visualizedFOVMicrons, iterativeParams);
+            visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements, ...
+                reTriangulationIsNeeded, triangularizationTriggerEvent, iteration, ...
+                iterativeParams, visualizationParams);
         end
         
         % Update rfPositions
@@ -59,10 +61,8 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
             keepLooping = false; 
         end
         
-        if (reTriangulationIsNeeded)
-            [keepLooping, histogramData, minQualityValue] = ...
-                checkForEarlyTerminationDueToHexLatticeQualityDecrease(rfPositions);
-        end
+        % Check whether we have achived the desired lattice qulity
+        keepLooping = checkForAdequateLatticeQuality(rfPositions, iterativeParams.minQValue);
           
         if (iteration > iterativeParams.maxIterations)
             keepLooping = false;
@@ -70,15 +70,14 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration] = iterativel
     end % while keepLoopong
 end
 
-function [keepLooping, histogramData, minQualityValue] = ...
-    checkForEarlyTerminationDueToHexLatticeQualityDecrease(rfPositions)
+function keepLooping = checkForAdequateLatticeQuality(rfPositions, minQValue)
     
     % Compute quality values
     triangleIndices = delaunayn(rfPositions);
-    [minQualityValue, histogramData] = computeHexLatticeQuality(rfPositions, triangleIndices);
+    minQualityValue = computeHexLatticeQuality(rfPositions, triangleIndices);
     
     keepLooping = true;
-    if (minQualityValue > 0.8)
+    if (minQualityValue > minQValue)
         keepLooping = false;
     end
 end

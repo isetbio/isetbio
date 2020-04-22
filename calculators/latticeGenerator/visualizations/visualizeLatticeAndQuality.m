@@ -1,4 +1,4 @@
-function visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements, reTriangulationIsNeeded, triangularizationTriggerEvent, iteration, visualizedFOVMicrons, iterativeParams)
+function visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements, reTriangulationIsNeeded, triangularizationTriggerEvent, iteration, iterativeParams, visualizationParams)
     hFig = figure(2); clf;
    
     theAxesGrid = plotlab.axesGrid(hFig, ...
@@ -11,24 +11,26 @@ function visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements
         'rightMargin', 0.06, ...
         'topMargin', 0.05);
     
-    absX = abs(rfPositions(:,1));
-    absY = abs(rfPositions(:,2));
-    idx = find((absX < visualizedFOVMicrons/2) & (absY < visualizedFOVMicrons/2));
-    idx2 = find((absX < visualizedFOVMicrons) & (absY < visualizedFOVMicrons));
-    
-    % The central lattice on the top-left
-    plotMosaic(theAxesGrid{1,1}, rfPositions(idx,:), visualizedFOVMicrons, reTriangulationIsNeeded, triangularizationTriggerEvent);
-    
-    % The central density plot on the bottom-left
-    %plotDensityMap(theAxesGrid{2,1}, rfPositions(idx,:), visualizedFOVMicrons);
-    plotSpacingDeviationsMap(theAxesGrid{2,1}, rfPositions, spacingDeviations, visualizedFOVMicrons)
-    
-    % The extended lattice on the middle
-    plotMosaic(theAxesGrid{1,2}, rfPositions(idx2,:), visualizedFOVMicrons*2, reTriangulationIsNeeded, triangularizationTriggerEvent);
-    
-    % The central density plot on the middle
-    %plotDensityMap(theAxesGrid{2,1}, rfPositions(idx,:), visualizedFOVMicrons);
-    plotSpacingDeviationsMap(theAxesGrid{2,2}, rfPositions, spacingDeviations, visualizedFOVMicrons*2);
+    if (~visualizationParams.visualizeProgressOnly)
+        absX = abs(rfPositions(:,1));
+        absY = abs(rfPositions(:,2));
+        idx = find((absX < visualizationParams.visualizedFOVMicrons/2) & (absY < visualizationParams.visualizedFOVMicrons/2));
+        idx2 = find((absX < visualizationParams.visualizedFOVMicrons) & (absY < visualizationParams.visualizedFOVMicrons));
+
+        % The central lattice on the top-left
+        plotMosaic(theAxesGrid{1,1}, rfPositions(idx,:), visualizationParams.visualizedFOVMicrons, reTriangulationIsNeeded, triangularizationTriggerEvent);
+
+        % The central density plot on the bottom-left
+        %plotDensityMap(theAxesGrid{2,1}, rfPositions(idx,:), visualizedFOVMicrons);
+        plotSpacingDeviationsMap(theAxesGrid{2,1}, rfPositions, spacingDeviations, visualizationParams.visualizedFOVMicrons)
+
+        % The extended lattice on the middle
+        plotMosaic(theAxesGrid{1,2}, rfPositions(idx2,:), visualizationParams.visualizedFOVMicrons*2, reTriangulationIsNeeded, triangularizationTriggerEvent);
+
+        % The central density plot on the middle
+        %plotDensityMap(theAxesGrid{2,1}, rfPositions(idx,:), visualizedFOVMicrons);
+        plotSpacingDeviationsMap(theAxesGrid{2,2}, rfPositions, spacingDeviations, visualizationParams.visualizedFOVMicrons*2);
+    end
     
     
     % The quality on the top-right
@@ -108,7 +110,10 @@ end
 
 function plotQuality(theAxesHandle, rfPositions, iteration, maxIterations)
     triangleIndices = delaunayn(rfPositions);
-    [minQualityValue, histogramData] = computeHexLatticeQuality(rfPositions, triangleIndices);
+    [minQualityValue, qValues] = computeHexLatticeQuality(rfPositions, triangleIndices);
+    % Compute histogram for visualization
+    qBins = 0.2:0.01:1.0;
+    [histogramData.y,histogramData.x] = hist(qValues, qBins);  
     bar(theAxesHandle, histogramData.x, histogramData.y, 1, 'FaceColor', [0.5 0.5 0.5]); 
     hold(theAxesHandle, 'on');
     plot(theAxesHandle, minQualityValue*[1 1], [0 max(histogramData.y)], 'r');

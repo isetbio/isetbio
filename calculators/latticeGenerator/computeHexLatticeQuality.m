@@ -1,4 +1,4 @@
-function [minQValue, qHist] =  computeHexLatticeQuality(rfPositions, triangles)
+function [minQValue, qValues] =  computeHexLatticeQuality(rfPositions, triangles)
     
     trianglesNum = size(triangles,1);
     X = rfPositions(:,1);
@@ -18,9 +18,4 @@ function [minQValue, qHist] =  computeHexLatticeQuality(rfPositions, triangles)
     
     pointEightPercent = 0.8;
     minQValue = prctile(qValues,pointEightPercent);
-    
-    % Compute histogram for visualization
-    qBins = 0.2:0.01:1.0;
-    [qHist.y,qHist.x] = hist(qValues, qBins);  
-    
 end
