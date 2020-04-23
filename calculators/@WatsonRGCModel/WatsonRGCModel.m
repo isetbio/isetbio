@@ -195,6 +195,10 @@ classdef WatsonRGCModel
         % Return midget RGC RF spacing and density along the requested meridian and requested eccentricities
         [mRGCRFSpacing, mRGCRFDensity, rightEyeRetinalMeridianName] = mRGCRFSpacingAndDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits, varargin);
         
+        % Return midget RFC RF spacing and density at each of the passed
+        % retinal positions and the left/right eye
+        [mRGCSpacings, mRGCRFDensities] = mRGCRFSpacingAndDensityAtRetinalPositions(obj, rfPositions, whichEye, posUnits, densityUnits, varargin);
+
         % Return total RGC RF density along the requested meridian and requested eccentricities
         totalRGCRFSpacing = totalRGCRFDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
         
@@ -216,9 +220,11 @@ classdef WatsonRGCModel
             meridianConeToMRGratios, eccUnits] = ...
             compute2DConeToMRGCRFRatio(obj, eccDegsInREVisualSpace, eccUnits);
         
+        
     end % Public methods
     
     methods (Access=private)
+
         % Angular interpolation from meridian values to full 360
         val = interpolatedValuesFromMeridianValues(obj, meridianValues, requestedAngles);
         

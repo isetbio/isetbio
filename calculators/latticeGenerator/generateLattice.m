@@ -1,20 +1,20 @@
 function generateLattice
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 30; 
+    mosaicFOVDegs = 10; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
-    %neuronalType = 'mRGC';
+    neuronalType = 'mRGC';
     
     % Which eye
     whichEye = 'right';
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
-    eccentricitySamplesNum = 32*4;
+    eccentricitySamplesNum = 64; %  32*4;
     
-    % Visualization params
+    % Visualization setup
     visualizationParams = struct(...
         'visualizedFOVMicrons', 200, ...     % zoomed-in fov
         'visualizeProgressOnly', true, ...   % Set to true to only visualize the progress, not the mosaic
@@ -22,15 +22,12 @@ function generateLattice
     );
     setupPlotLab(visualizationParams);
     
-    % Save filename
+    % Lattice progression history filename
     p = getpref('IBIOColorDetect');
     mosaicDir = strrep(p.validationRootDir, 'validations', 'sideprojects/MosaicGenerator'); 
     saveFileName = fullfile(mosaicDir, sprintf('progress_%s_%s_Mosaic%2.1fdegs_samplesNum%d.mat', ...
         whichEye, neuronalType, mosaicFOVDegs, eccentricitySamplesNum));
 
-    
-    % Set a random seed
-    theRandomSeed = 1;
     
     % Iterative smoothing params
     % 1. Stop if rfs move less than this positional tolerance in microns
@@ -55,7 +52,7 @@ function generateLattice
     iterativeParams.maxIterationsBeforeRetriangulation = 30;
     
     % 6. Interval to query user whether he/she wants to terminate
-    iterativeParams.queryUserIntervalMinutes = 1/2; % 60*10;
+    iterativeParams.queryUserIntervalMinutes = 60*10;
     
     % STEP 1. Generate initial RF positions in a regular hex lattice with lambda = min separation
     [rfPositions, lambda] = generateInitialRFpositions(mosaicFOVDegs, neuronalType);
@@ -64,12 +61,13 @@ function generateLattice
     domain.function = @ellipticalDomainFunction;
     domain.ellipseAxes = [1 1.2247];
     domain.maxEcc = max(abs(rfPositions(:)));
+    theRandomSeed = 1;
     rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain, neuronalType, whichEye, theRandomSeed);
     
     % STEP 3. Generate lookup density tables
     [tabulatedDensity, tabulatedSpacing, tabulatedEcc] = ...
         generateLookUpDensityTables(rfPositions, eccentricitySamplesNum, lambda,  neuronalType, whichEye);
-    
+
     % STEP 4. Iteratively smooth the lattice grid
     [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationReason] = ...
         iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams);

@@ -11,7 +11,7 @@ function [tabulatedDensity, tabulatedSpacing, tabulatedEcc] = generateLookUpDens
         case 'cone'
             tabulatedDensity = coneDensityFunctionFull(tabulatedEcc, whichEye);
         case 'mRGC'
-           
+            tabulatedDensity = mRGCRFDensityFunctionFull(tabulatedEcc, whichEye);
         otherwise
             error('Unknown neuronalType: ''%s''.', neuronalType)
     end    

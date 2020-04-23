@@ -8,7 +8,7 @@ function rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain,
         case 'cone'
             [densityPerMM2, maxDensity] = coneDensityFunctionFull(rfPositions, whichEye);
         case 'mRGC'
-            [densityPerMM2, maxDensity] = mRGCDensityFunctionFull(rfPositions, whichEye);
+            [densityPerMM2, maxDensity] = mRGCRFDensityFunctionFull(rfPositions, whichEye);
         otherwise
             error('Unknown neuronalType: ''%s''.', neuronalType)
     end
@@ -20,7 +20,7 @@ function rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain,
     
     % Reset the rng
     rng(theRandomSeed);
-    
+
     % Probabilistically remove rfs with a P(remove) = 1 - norm density
     keptRFIndices = find((rand(rfsNum, 1) < normDensities') | (ecc < lambda)) ;
     rfPositions = rfPositions(keptRFIndices, :);
