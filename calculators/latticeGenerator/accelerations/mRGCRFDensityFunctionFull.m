@@ -8,9 +8,11 @@ function [mRGCDensityPerMM2, maxDensity] = mRGCRFDensityFunctionFull(rfPositions
     densityUnits = 'mm^2';
     
     [~,mRGCDensityPerMM2] = WatsonOBJ.mRGCRFSpacingAndDensityAtRetinalPositions(rfPositionsMM, whichEye, ...
-        eccUnits, densityUnits, 'adjustForISETBioConeDensity', true); 
+        eccUnits, densityUnits, 'adjustForISETBioConeDensity', true, ...
+        'subtype', 'ON'); 
     mRGCDensityPerMM2 = mRGCDensityPerMM2';
     
     [~,maxDensity] = WatsonOBJ.mRGCRFSpacingAndDensityAtRetinalPositions([0 0], whichEye, ...
-         eccUnits, densityUnits, 'adjustForISETBioConeDensity', true);
+         eccUnits, densityUnits, 'adjustForISETBioConeDensity', true, ...
+         'subtype', 'ON');
 end

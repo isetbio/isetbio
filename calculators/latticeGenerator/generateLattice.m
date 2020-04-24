@@ -1,7 +1,7 @@
 function generateLattice
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 10; 
+    mosaicFOVDegs = 20; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
@@ -12,7 +12,7 @@ function generateLattice
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
-    eccentricitySamplesNum = 64; %  32*4;
+    eccentricitySamplesNum = 256; %  32*4;
     
     % Visualization setup
     visualizationParams = struct(...

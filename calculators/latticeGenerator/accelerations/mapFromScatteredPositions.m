@@ -5,17 +5,22 @@ function [densityMap, support] = mapFromScatteredPositions(rfPositions, values, 
     
     % Compute the support for the density map
     if (strcmp(sampling.scale, 'log'))
+        if (sampling.minPos == 0)
+            error('minPos cannot be 0 with a log spacing');
+        end
         xAxis = logspace(...
             log10(sampling.minPos), ...
             log10(sampling.maxPos), ...
             sampling.intervals);
+        xAxis = [-fliplr(xAxis(2:end)) 0 xAxis];
     else
         xAxis = linspace(...
             sampling.minPos, ...
             sampling.maxPos, ...
             sampling.intervals);
+        xAxis = [-fliplr(xAxis(2:end)) xAxis];
     end
-    xAxis = [-fliplr(xAxis(2:end)) xAxis];
+    
     [X,Y] = meshgrid(xAxis, xAxis);
 
     % Evaluate the interpolant function at the support
