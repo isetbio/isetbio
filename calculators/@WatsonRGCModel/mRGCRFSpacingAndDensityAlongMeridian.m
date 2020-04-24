@@ -9,7 +9,8 @@ function [mRGCRFSpacing, mRGCRFDensity, rightEyeRetinalMeridianName] = ...
 
     % Parse input
     p = inputParser;       
-    p.addParameter('adjustForISETBioConeDensity', false, @islogical)
+    p.addParameter('adjustForISETBioConeDensity', false, @islogical);
+    p.addParameter('subtype', 'ONOFF', @(x)(ismember(x, {'ON', 'OFF', 'ONOFF'})));
     p.parse(varargin{:});
    
     % Validate eccUnits
@@ -48,6 +49,18 @@ function [mRGCRFSpacing, mRGCRFDensity, rightEyeRetinalMeridianName] = ...
    
     % Compute mRGC RF density along the requested meridian. This is equation (8) in the Watson (2014) paper.
     mRGCRFDensity = midgetRGCFractionAlongMeridian .* totalRGCRFdensityAlongMeridian;
+    
+    switch(p.Results.subtype)
+        case 'ON'
+            mRGCRFDensity = 0.5*mRGCRFDensity;
+        case 'OFF'
+            mRGCRFDensity = 0.5*mRGCRFDensity;
+        case 'ONOFF'
+            % do nothing
+        otherwise
+            error('subtype must be ''ON'', ''OFF'', or ''ONOFF''.');
+    end
+    
     
     if (p.Results.adjustForISETBioConeDensity)
         [~, coneDensityWatson] = obj.coneRFSpacingAndDensityAlongMeridian( ...

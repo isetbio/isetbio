@@ -5,7 +5,8 @@ function [mRGCSpacings, mRGCRFDensities] = mRGCRFSpacingAndDensityAtRetinalPosit
     
      % Parse input
     p = inputParser;       
-    p.addParameter('adjustForISETBioConeDensity', false, @islogical)
+    p.addParameter('adjustForISETBioConeDensity', false, @islogical);
+    p.addParameter('subtype', 'ONOFF', @(x)(ismember(x, {'ON', 'OFF', 'ONOFF'})));
     p.parse(varargin{:});
     
     % Compute variation along each of the enumerated meridians
@@ -37,7 +38,9 @@ function [mRGCSpacings, mRGCRFDensities] = mRGCRFSpacingAndDensityAtRetinalPosit
     for meridianIndex = 1:numel(obj.enumeratedMeridianNames)
         [~, meridianRFDensities(meridianIndex,:)] = ...
             obj.mRGCRFSpacingAndDensityAlongMeridian(eccMags, mappedMeridianName(obj.enumeratedMeridianNames{meridianIndex}), ...
-            posUnits, densityUnits,'adjustForISETBioConeDensity',p.Results.adjustForISETBioConeDensity); 
+            posUnits, densityUnits,...
+            'subtype', p.Results.subtype, ...
+            'adjustForISETBioConeDensity',p.Results.adjustForISETBioConeDensity); 
     end
     
     % Interpolate radially
