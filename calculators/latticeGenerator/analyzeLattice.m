@@ -27,11 +27,13 @@ function analyzeLattice
     visualizationParams.visualizedFOVMicrons = 200;
     
     plotlabOBJ = setupPlotLab();
-    figNo = 1;
-    displayDesiredAndAchievedDensities(figNo, double(squeeze(rfPositionsHistory(end,:,:))), whichEye, plotlabOBJ);
+    figNo = 1; plotCorrespondenceAndMap = true;
+    displayDesiredAndAchievedDensities(figNo, double(squeeze(rfPositionsHistory(end,:,:))), whichEye, plotCorrespondenceAndMap, plotlabOBJ);
     
+    figNo = 2; plotCorrespondenceAndMap = ~true;
+    displayDesiredAndAchievedDensities(figNo, double(squeeze(rfPositionsHistory(end,:,:))), whichEye, plotCorrespondenceAndMap, plotlabOBJ);
     
-    figNo = 2;
+    figNo = 3;
     displayLatticeProgressionHistory(figNo, rfPositionsHistory, maxMovements, visualizationParams);
 end
 
@@ -97,7 +99,7 @@ function displayLatticeProgressionHistory(figNo, rfPositionsHistory, maxMovement
     end
 end
 
-function displayDesiredAndAchievedDensities(figNo, positions, whichEye, plotlabOBJ)
+function displayDesiredAndAchievedDensities(figNo, positions, whichEye, plotCorrespondenceAndMap, plotlabOBJ)
     hFig = figure(figNo);
     theAxesGrid = plotlab.axesGrid(hFig, ...
             'rowsNum', 1, ...
@@ -136,31 +138,29 @@ function displayDesiredAndAchievedDensities(figNo, positions, whichEye, plotlabO
     achievedDensityMap = conv2(achievedDensityMap, h, 'same');
     desiredDensityMap = conv2(desiredDensityMap, h, 'same');
     
-    maxAchievedDensity = max(achievedDensities);
-    minAchievedDensity = min(achievedDensities);
-    maxDesiredDensity = max(desiredDensities);
-    minDesiredDensity = min(desiredDensities);
+    maxAchievedDensity = max(achievedDensities); minAchievedDensity = min(achievedDensities);
+    maxDesiredDensity = max(desiredDensities); minDesiredDensity = min(desiredDensities);
     
     maxDensity = max([maxAchievedDensity maxDesiredDensity]);
-    levels = 40;
-    portion = 0.1;
-    levels = 20;
-    portion = 1;
+    levels = 20;  % how many density levels
+    portion = 1;  % what portion of the mosaic to display
     densityLogLevels = round(logspace(log10(300), log10(300000), levels)/100)*100;
     xyRange = max(abs(positions(:)))*[-1 1]/1.3;
     
-    plotCorrespondenceAndMap = ~false;
     if (plotCorrespondenceAndMap)
         plotCorrespondence(theAxesGrid{1,1}, desiredDensities, achievedDensities, maxDensity, xyRange);
-        renderContourPlot(theAxesGrid{1,2}, support, achievedDensityMap, densityLogLevels, portion*xyRange, 'achieved', true)  
+        renderContourPlot(theAxesGrid{1,2}, support, achievedDensityMap, densityLogLevels, portion*xyRange, 'achieved', true);
+        drawnow;
+        plotlabOBJ.exportFig(hFig, 'pdf', 'densityAndCorrespondence', pwd);
     else
         portion = 1.0;
         renderContourPlot(theAxesGrid{1,1}, support, desiredDensityMap, densityLogLevels, portion*xyRange, 'desired', true);
         renderContourPlot(theAxesGrid{1,2}, support, achievedDensityMap, densityLogLevels, portion*xyRange, 'achieved', false);
+        drawnow;
+        plotlabOBJ.exportFig(hFig, 'pdf', 'densityAchievedAndModel', pwd);
     end
     
-    drawnow;
-    plotlabOBJ.exportFig(hFig, 'pdf', 'density', pwd);
+    
 end
 
 function plotCorrespondence(theAxes, desiredDensities, achievedDensities, maxDensity, xyRange)
