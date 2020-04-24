@@ -4,7 +4,8 @@ function [mRGCRFDensity2D, meridianDensities, spatialSupport, xLabelString, yLab
         
     % Parse input
     p = inputParser;       
-    p.addParameter('adjustForISETBioConeDensity', false, @islogical)
+    p.addParameter('adjustForISETBioConeDensity', false, @islogical);
+    p.addParameter('subtype', 'ONOFF', @(x)(ismember(x, {'ON', 'OFF', 'ONOFF'})));
     p.parse(varargin{:});
 
     % Validate the view name
@@ -50,7 +51,9 @@ function [mRGCRFDensity2D, meridianDensities, spatialSupport, xLabelString, yLab
     for meridianIndex = 1:numel(obj.enumeratedMeridianNames)
         [meridianmRGCRFSpacing(meridianIndex,:), meridianmRGCRFDensity(meridianIndex,:)] = ...
             obj.mRGCRFSpacingAndDensityAlongMeridian(requestedEccentricities, obj.enumeratedMeridianNames{meridianIndex}, ...
-            eccUnits, densityUnits, 'adjustForISETBioConeDensity', p.Results.adjustForISETBioConeDensity);
+            eccUnits, densityUnits, ...
+            'adjustForISETBioConeDensity', p.Results.adjustForISETBioConeDensity, ...
+            'subtype', p.Results.subtype);
     end
     
     % Do angular interpolation
