@@ -1,6 +1,6 @@
 function plotMovements(theAxesHandle, iteration, maxMovements, tolerance)
     if (~isempty(maxMovements))
-        plot(theAxesHandle, 1:(iteration-1), maxMovements,'ks-'); 
+        plot(theAxesHandle, 1:numel(maxMovements), maxMovements,'ks-'); 
         if (~isempty(tolerance))
             hold(theAxesHandle, 'on');
             plot(theAxesHandle, [1 iteration-1], tolerance*[1 1], 'r-');

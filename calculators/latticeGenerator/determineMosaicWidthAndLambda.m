@@ -10,9 +10,8 @@ function [mosaicRadiusRetinalMicrons, lambdaMicrons] = determineMosaicWidthAndLa
             lambdaMicrons = lambdaConesMM * 1000;
         case 'mRGC'
             lambdaMidgetsMM = WatsonOBJ.mRGCRFSpacingAndDensityAlongMeridian(0, 'nasal meridian', 'deg', 'mm^2', ...
-                 'adjustForISETBioConeDensity', true);
-            lambdaMidgetsOnOrOffMM = sqrt(2.0)*lambdaMidgetsMM;
-            lambdaMicrons = lambdaMidgetsOnOrOffMM * 1000;
+                 'adjustForISETBioConeDensity', true,  'subtype', 'ON');
+            lambdaMicrons = lambdaMidgetsMM * 1000;
         otherwise
             error('Unknown neuronalType: ''%s''.', neuronalType)
     end

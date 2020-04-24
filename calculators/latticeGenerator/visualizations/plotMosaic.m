@@ -6,7 +6,7 @@ function plotMosaic(theAxesHandle, rfPositions, visualizedFOVMicrons, mosaicTitl
         yRange = 0.5*visualizedFOVMicrons*[-1 1] + 0.5*(max(squeeze(rfPositions(:,2)))+min(squeeze(rfPositions(:,2))));
         axis(theAxesHandle, 'square');
         set(theAxesHandle , 'XLim', xRange, 'YLim', yRange);
-        ylabel(theAxesHandle, 'space (microns)');
+        xlabel(theAxesHandle, 'space (microns)');
         if (~isempty(mosaicTitle))
             title(theAxesHandle,mosaicTitle, 'Color', 'r');
         end
