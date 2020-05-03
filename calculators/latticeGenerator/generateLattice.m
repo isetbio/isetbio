@@ -1,22 +1,22 @@
 function generateLattice
 
     % Size of mosaic to generate
-    mosaicFOVDegs = 20; 
+    mosaicFOVDegs = 40.0; 
     
     % Type of mosaic to generate
     neuronalType = 'cone';
-    neuronalType = 'mRGC';
+    %neuronalType = 'mRGC';
     
     % Which eye
     whichEye = 'right';
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
-    eccentricitySamplesNum = 256; %  32*4;
+    eccentricitySamplesNum = max([96 ceil(round(log10(mosaicFOVDegs)*300)/2)*2])
     
     % Visualization setup
     visualizationParams = struct(...
-        'visualizedFOVMicrons', 200, ...     % zoomed-in fov
+        'visualizedFOVMicrons', min([200 mosaicFOVDegs*300]), ...     % zoomed-in fov
         'visualizeProgressOnly', true, ...   % Set to true to only visualize the progress, not the mosaic
         'visualizeNothing', true...          % Set to true to have absolutely no visualizations
     );
@@ -52,7 +52,10 @@ function generateLattice
     iterativeParams.maxIterationsBeforeRetriangulation = 30;
     
     % 6. Interval to query user whether he/she wants to terminate
-    iterativeParams.queryUserIntervalMinutes = 60*10;
+    iterativeParams.queryUserIntervalMinutes = 60*24*2;
+    
+    % 7. Save history interval
+    iterativeParams.iterationsIntervalForSavingPositions = Inf;
     
     % STEP 1. Generate initial RF positions in a regular hex lattice with lambda = min separation
     [rfPositions, lambda] = generateInitialRFpositions(mosaicFOVDegs, neuronalType);
@@ -73,6 +76,7 @@ function generateLattice
         iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams);
     
     fprintf('Termination reason: %s\n', terminationReason);
+    size(rfPositionsHistory)
     
     % STEP 5. Save results
     save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iteration', 'maxMovements', 'terminationReason', '-v7.3');

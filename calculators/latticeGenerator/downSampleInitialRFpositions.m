@@ -24,6 +24,6 @@ function rfPositions = downSampleInitialRFpositions(rfPositions, lambda, domain,
     % Probabilistically remove rfs with a P(remove) = 1 - norm density
     keptRFIndices = find((rand(rfsNum, 1) < normDensities') | (ecc < lambda)) ;
     rfPositions = rfPositions(keptRFIndices, :);
-    fprintf('Kept %2.2f%% of the RFs (mean density:%2.3f) \n', size(rfPositions,1)/rfsNum*100, mean(normDensities));
+    fprintf('Kept %2.2f%% of the RFs (n: %d, mean density:%2.3f) \n', size(rfPositions,1)/rfsNum*100, size(rfPositions,1), mean(normDensities));
 end
 
