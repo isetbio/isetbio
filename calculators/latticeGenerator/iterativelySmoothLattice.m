@@ -7,7 +7,11 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationR
     spacingDeviations = [];
     maxMovements = [];
     keepLooping = true;
-    rfPositionsHistory(1,:,:) = single(rfPositions);
+    if (~isinf(iterativeParams.iterationsIntervalForSavingPositions))
+        rfPositionsHistory(1,:,:) = single(rfPositions);
+    else
+        rfPositionsHistory = [];
+    end
     
     tStart = clock;
     timePrevious = tStart;
@@ -56,8 +60,11 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationR
             updatePositions(rfPositions, desiredSpringLengths, springs, springIndices, ...
             tabulatedSpacing, tabulatedEcc, lambda, reTriangulationIsNeeded, domain, iterativeParams);
 
-        % Save history
-        rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
+        % Save history        
+        if ((mod(iteration,iterativeParams.iterationsIntervalForSavingPositions)==0) && ...
+            (~isinf(iterativeParams.iterationsIntervalForSavingPositions)))
+            rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
+        end
         
         % Check different criteria for terminating looping
         if (maxMovements(iteration) < iterativeParams.dTolerance)
@@ -106,6 +113,15 @@ function [rfPositions, rfPositionsHistory, maxMovements, iteration, terminationR
         end
             
     end % while keepLooping
+    
+    % Visualize final lattice progression
+    if (~visualizationParams.visualizeNothing)
+        triangleIndices = delaunayn(rfPositions);
+        visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements, ...
+            triangleIndices, reTriangulationIsNeeded, 'final iteration', iteration, ...
+            iterativeParams, visualizationParams);
+    end
+            
 end
 
 function [keepLooping, minQualityValue] = checkForAdequateLatticeQuality(rfPositions, reTriangulationIsNeeded, triangleIndices, minQValue)

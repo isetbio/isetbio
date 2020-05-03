@@ -76,8 +76,7 @@ function generateLattice
         iterativelySmoothLattice(rfPositions, tabulatedSpacing, tabulatedEcc, iterativeParams, lambda, domain, visualizationParams);
     
     fprintf('Termination reason: %s\n', terminationReason);
-    size(rfPositionsHistory)
-    
+
     % STEP 5. Save results
     save(saveFileName, 'rfPositions', 'rfPositionsHistory', 'iteration', 'maxMovements', 'terminationReason', '-v7.3');
     fprintf('History saved  in %s\n', saveFileName);
