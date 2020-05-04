@@ -23,8 +23,10 @@ function visualizeLatticeAndQuality(rfPositions, spacingDeviations, maxMovements
         idx2 = find((absX < visualizationParams.visualizedFOVMicrons) & (absY < visualizationParams.visualizedFOVMicrons));
 
         % The central lattice on the top-left
-        if (reTriangulationIsNeeded)
+        if (reTriangulationIsNeeded) || (strcmp(triangularizationTriggerEvent, 'final iteration'))
             mosaicTitle = sprintf('Re-triangularization in next iteration.\nReason: %s',triangularizationTriggerEvent);
+        else
+            mosaicTitle = '';
         end
         plotMosaic(theAxesGrid{1,2}, rfPositions(idx,:), visualizationParams.visualizedFOVMicrons, mosaicTitle);
 
