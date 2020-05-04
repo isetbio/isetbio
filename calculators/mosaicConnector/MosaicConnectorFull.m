@@ -46,10 +46,10 @@ function MosaicConnectorFull
     roi.margin = 5;
 
         
-    computeStep1 = true;
-    computeStep2 = true;
-    computeStep3 = true;
-    computeStep4 = true;
+    computeStep1 = ~true;
+    computeStep2 = ~true;
+    computeStep3 = ~true;
+    computeStep4 = ~true;
     
     visualizeConnectionProcess = ~true;
     visualizeMosaic = ~true;
@@ -125,25 +125,56 @@ function MosaicConnectorFull
     zLevels = [0.3 1 ];
     whichLevelsToContour = [1];
     
-    depictRGCTesselationForASubregion = ~true;
+    depictRGCTesselationForASubregion = true;
     if (depictRGCTesselationForASubregion)
+        
         displayIDs = ~true;
         displayEllipseInsteadOfContour = true;
-        % Visualize tesselation is some patch
-        patchEccDegs = [2 0];
-        patchSizeDegs = [0.5 0.5];
-        subregion.center = round(1000*WatsonRGCModel.rhoDegsToMMs(patchEccDegs));
-        subregion.size = round(1000*WatsonRGCModel.rhoDegsToMMs(patchSizeDegs));
-        subregion.margin = roi.margin;
-        xPos = RGCRFPositionsMicrons(:,1);
-        yPos = RGCRFPositionsMicrons(:,2);
-        subregionRGCidx = find( (xPos-subregion.center(1) < subregion.size(1)) & ...
-                             (yPos-subregion.center(2) < subregion.size(2)));
-        subregionMidgetRGCconnectionMatrix = midgetRGCconnectionMatrix(subregionRGCidx,:);
-        subregionRGCRFPositionsMicrons = RGCRFPositionsMicrons(subregionRGCidx,:);
-        visualizeRFs(zLevels, whichLevelsToContour, subregionMidgetRGCconnectionMatrix, conePositionsMicrons, ...
-            subregionRGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, window, displayEllipseInsteadOfContour, ...
-            displayIDs, plotlabOBJ);
+        % Visualize tesselation is some patchES
+        
+   
+        eccsDisplayed =  5; % logspace(log10(0.2), log10(9), 6);
+        
+        for k = 1:numel(eccsDisplayed)
+            
+            patchEccDegs = [eccsDisplayed(k) 0];
+            if (eccsDisplayed(k) <= 4)
+                patchSizeDegs = 0.25*[1.5  1];
+            else
+                patchSizeDegs = 0.8*[1.5  1];
+            end
+            patchSizeDegs = [0.5 0.5];
+            
+            figHeightInches = 15;
+            
+            subregion.center = round(1000*WatsonRGCModel.rhoDegsToMMs(patchEccDegs));
+            subregion.size = round(1000*WatsonRGCModel.rhoDegsToMMs(patchSizeDegs));
+            subregion.margin = roi.margin;
+
+            
+            plotlabOBJ.applyRecipe(...
+                'renderer', 'painters', ... %'opengl', ...
+                'axesBox', 'on', ...
+                'colorOrder', [0 0 0; 1 0 0.5], ...
+                'axesTickLength', [0.015 0.01]/4,...
+                'axesFontSize', 22, ...
+                'figureWidthInches', figHeightInches/(subregion.size(2)-2*subregion.margin)*(subregion.size(1)-2*subregion.margin), ...
+                'figureHeightInches', figHeightInches);
+
+            xPos = RGCRFPositionsMicrons(:,1);
+            yPos = RGCRFPositionsMicrons(:,2);
+            subregionRGCidx = find( (xPos> subregion.center(1) - subregion.size(1)/2) & ...
+                                    (xPos< subregion.center(1) + subregion.size(1)/2) & ...
+                                    (yPos> subregion.center(2) - subregion.size(2)/2) & ...
+                                    (yPos< subregion.center(2) + subregion.size(2)/2));
+
+            subregionMidgetRGCconnectionMatrix = midgetRGCconnectionMatrix(:,subregionRGCidx);
+            subregionRGCRFPositionsMicrons = RGCRFPositionsMicrons(subregionRGCidx,:);
+            visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, subregionMidgetRGCconnectionMatrix, conePositionsMicrons, ...
+                subregionRGCRFPositionsMicrons, coneSpacingsMicrons, coneTypes, subregion, displayEllipseInsteadOfContour, ...
+                displayIDs, plotlabOBJ);
+        end
+        
     end
     
     %visualizeRGCmosaic(91,RGCRFPositionsMicrons, RGCRFSpacingsMicrons, roi, 'final', plotlabOBJ);
@@ -155,6 +186,31 @@ function MosaicConnectorFull
     else
         load(fullfile(tmpDir,sprintf('tmp2_step4_%s.mat', postFix)), 'semiAxes','rfCenters');
     end
+    
+    plotlabOBJ.applyRecipe(...
+        'renderer', 'painters', ...
+        'axesBox', 'off', ...
+        'colorOrder', [0 0 1; 0.2 0.6 0.5], ...
+        'axesTickLength', [0.015 0.01],...
+        'axesFontSize', 16, ...
+        'figureWidthInches', 12/2, ...
+        'figureHeightInches', 9/2);
+    
+    hFig = figure(222); clf;
+    midgetDenditicTreeDiameterArcMinDacey = DaceyData(); hold on;
+    scatter(midgetDenditicTreeDiameterArcMinDacey(:,1), midgetDenditicTreeDiameterArcMinDacey(:,2), 100);
+    
+    set(gca, 'XLim', [0.1 40], 'YLim', [0.5 30], 'YScale', 'log', 'XScale', 'log');
+    set(gca, 'XTick', [0.1 0.3 1 3 10 30], 'YTick', [1 3 10 30 100]);
+    legend({ ...
+            sprintf('Dacey & Petersen (1992), N = %d', size(midgetDenditicTreeDiameterArcMinDacey,1)), ...
+            });
+    ylabel('\it mRGC dendrite diam. (arc min)');
+    xlabel('\it eccentricity (degs)');
+    drawnow;
+    fName = sprintf('SemiAxes1');
+    plotlabOBJ.exportFig(hFig, 'png', fName, fullfile(pwd(), 'exports'));
+    
     
     plotlabOBJ.applyRecipe(...
         'renderer', 'painters', ...
@@ -187,8 +243,9 @@ function MosaicConnectorFull
     xlabel('eccentricity (degs)');
     drawnow;
 
-    fName = sprintf('SemiAxes');
+    fName = sprintf('SemiAxes2');
     plotlabOBJ.exportFig(hFig, 'png', fName, fullfile(pwd(), 'exports'));
+    
 end
 
 
