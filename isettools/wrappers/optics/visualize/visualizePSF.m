@@ -92,8 +92,7 @@ if (~isempty(theMosaic))
        'backgroundColor', 0.6*[1 1 1], ...
        'visualizedConeAperture', 'lightCollectingArea', ...
        'labelConeTypes', false);
-   drawnow;
-   hold on; 
+   hold(axesHandle, 'on'); 
    % transform minutes to meters
    xSupportMinutes = xSupportMinutes / 60 * theMosaic.micronsPerDegree * 1e-6;
    ySupportMinutes = ySupportMinutes / 60 * theMosaic.micronsPerDegree * 1e-6;
@@ -104,50 +103,51 @@ end
 
 cmap = brewermap(1024, 'greys');
 cmap = brewermap(1024, 'YlGnBu');
-colormap(cmap);
+colormap(axesHandle, cmap);
 
 if (~isempty(theMosaic))
-    transparentContourPlot(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), ...
+    transparentContourPlot(axesHandle, xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), ...
         [0.1 0.3 0.5 0.7 0.9], cmap);
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.1 0.3 0.3], 'LineWidth', 4.0);
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.3 0.99 0.99], 'LineWidth', 2);
+    plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.1 0.3 0.3], 'LineWidth', 4.0);
+    plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.3 0.99 0.99], 'LineWidth', 2);
 else
-    contourf(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), p.Results.contourLevels, ...
+    contourf(axesHandle, xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), p.Results.contourLevels, ...
         'Color', [0 0 0], 'LineWidth', 1.0);
     %imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
-    hold on;
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
+    hold(axesHandle, 'on');
+    plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
+    plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
 end
 
-axis 'image'; axis 'xy';
-grid on; box on
-set(gca, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1], 'CLim', [0 1], ...
+axis(axesHandle, 'image'); axis(axesHandle, 'xy');
+grid(axesHandle, 'on'); box(axesHandle,  'on');
+
+set(axesHandle, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1], 'CLim', [0 1], ...
             'XTick', psfTicks, 'YTick', psfTicks, 'XTickLabel', psfTickLabels, 'YTickLabel', psfTickLabels);
-set(gca, 'XColor', [0 0 0], 'YColor', [0 0 0]);
-xlabel('\it space (arc min)');
-ylabel('');
-set(gca, 'FontSize', fontSize);
+set(axesHandle, 'XColor', [0 0 0], 'YColor', [0 0 0]);
+xlabel(axesHandle,'\it space (arc min)');
+ylabel(axesHandle, '');
+set(axesHandle, 'FontSize', fontSize);
 
 
 if (isempty(figureTitle))
     if (~p.Results.includePupilAndInFocusWavelengthInTitle)
-         title(gca, sprintf('%s', oiGet(theOI,'name')), ...
+         title(axesHandle, sprintf('%s', oiGet(theOI,'name')), ...
             'FontWeight', 'Normal', 'FontSize', fontSize);
     else
-        title(gca, sprintf('(%2.0fnm,%dmm pupil)\n%s', targetWavelength, pupilDiameterMM, oiGet(theOI,'name')), ...
+        title(axesHandle, sprintf('(%2.0fnm,%dmm pupil)\n%s', targetWavelength, pupilDiameterMM, oiGet(theOI,'name')), ...
             'FontWeight', 'Normal', 'FontSize', fontSize);
     end
 else
-    title(gca, figureTitle, 'FontWeight', 'Normal', 'FontSize', fontSize);
+    title(axesHandle, figureTitle, 'FontWeight', 'Normal', 'FontSize', fontSize);
 end
 end
 
-function transparentContourPlot(xSupportMinutes, ySupportMinutes, zData, zLevels, cmap)
+function transparentContourPlot(axesHandle, xSupportMinutes, ySupportMinutes, zData, zLevels, cmap)
     C = contourc(xSupportMinutes, ySupportMinutes, zData, zLevels);
     dataPoints = size(C,2);
     startPoint = 1;
-    hold on;
+    hold(axesHandle, 'on');
     while (startPoint < dataPoints)
         theLevel = C(1,startPoint);
         theLevelVerticesNum = C(2,startPoint);
@@ -155,7 +155,7 @@ function transparentContourPlot(xSupportMinutes, ySupportMinutes, zData, zLevels
         y = C(2,startPoint+(1:theLevelVerticesNum));
         v = [x(:) y(:)];
         f = 1:numel(x);
-        patch('Faces', f, 'Vertices', v, 'EdgeColor', 0.5*(1-theLevel)*[1 1 1], ...
+        patch(axesHandle, 'Faces', f, 'Vertices', v, 'EdgeColor', 0.5*(1-theLevel)*[1 1 1], ...
             'FaceColor', cmap(round(theLevel*size(cmap,1)),:), ...
             'FaceAlpha', min([1 0.3+theLevel]), ...
             'LineStyle', '-', 'LineWidth', 1.0);

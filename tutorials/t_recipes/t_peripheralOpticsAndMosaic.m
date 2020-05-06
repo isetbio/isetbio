@@ -2,7 +2,8 @@ function t_peripheralOpticsAndMosaic
 
     % Examined eccentricities
    
- 
+    applyCentralCorrection = ~true;
+    
     % Generate optics using the mean Zernike coefficients
     theSubjectIndex = [];  % mean over all subjects
     desiredPupilDiamMM = 3.0;
@@ -10,17 +11,25 @@ function t_peripheralOpticsAndMosaic
     eccXrange = [-25 -10 -5 -2 0 2 5 10 25];
     eccYrange =  [-25 -10 -5 0 5 10 25];
     theSubjectIndex = 2;
-    computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange);
+    %computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange, applyCentralCorrection);
     
     
-    whichEye ='right';
-    eccXrange = [-40 -20 -10 -5 0 5 10 20 40];
-    %computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye);
+    whichEye = 'right';
+    whichEcc = 'temporal';
+    % Eccentricities are specified in visual field space
+    temporalEcc = [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 19 10 20];  % Temporal side, which includes the OD at around +(12-15) degs
+    nasalEcc = -fliplr(temporalEcc);                                       % Nasal size, which includes the fovea at around -5 deg
+    if (strcmp(whichEcc, 'temporal'))
+        eccXrange = temporalEcc;
+    else
+        eccXrange = nasalEcc;
+    end
+    computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye, applyCentralCorrection, sprintf('%s_%s', whichEye, whichEcc));
     
 end
 
-function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye)
-    applyCentralCorrection = true;
+function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXrange, whichEye, applyCentralCorrection, label)
+    
     
     
     % Get a struct with the Polans data
@@ -29,41 +38,49 @@ function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXran
     wavefrontSpatialSamples = 201;
     wavelengthsListToCompute = [450:100:750];
     
-    visualizePSFOverThisSpatialSupportArcMin = 13;
+    visualizePSFOverThisSpatialSupportArcMin = 5; %13;
     visualizePSTAtThisWavelength = 550;
+    
+
+    if (strcmp(whichEye,  'right'))
+        examinedSubjects = [...
+            1   5  7 16 20; ...
+            21 39 42 48 50; ...
+            54 57 59 60 62; ...
+            64 65 69 70 72; ...
+            81 85 90 97 100 ...
+        ];
+    else
+        examinedSubjects = [ ...
+            1   5   7  8 16; ...
+            20 21  26 29 30; ...
+            37 38 39 42 48; ...
+            54 62 65 69 70; ...
+            79 81 88 97 100];
+    end
     
     % plotting coords
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 5, ...
+       'rowsNum', size(examinedSubjects,2), ...
        'colsNum', numel(eccXrange), ...
-       'heightMargin',  0.02, ...
+       'heightMargin',  0.01, ...
        'widthMargin',    0.01, ...
-       'leftMargin',     0.01, ...
+       'leftMargin',     0.02, ...
        'rightMargin',    0.01, ...
-       'bottomMargin',   0.03, ...
-       'topMargin',      0.02);
+       'bottomMargin',   0.01, ...
+       'topMargin',      0.01);
    
-   examinedSubjects = [
-       1   2  8  9 11; ... 
-       12 15 18 19 20; ...
-       21 22 35 41 43; ...
-       44 45 48 49 50];
    
-   examinedSubjects = [
-       51:55; ... 
-       56:60; ...
-       61:65; ... 
-       66:70];
-   
-   examinedSubjects = examinedSubjects + 20;
-   
+
    for subjectGroupIndex = 1:size(examinedSubjects,1)
        
        hFig = figure(subjectGroupIndex+10); clf;
-       set(hFig, 'Position', [10 10 2540 1420], 'Color', [1 1 1]);
+       set(hFig, 'Position', [10 10 4040 1420], 'Color', [1 1 1]);
    
+  
    for sIndex = 1:size(examinedSubjects,2)
    for eccXindex = 1:numel(eccXrange)
+      
        
        % The eccentricity in degrees
         eccXY = [eccXrange(eccXindex) 0];
@@ -79,10 +96,10 @@ function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXran
                                         'useParfor', false);
                                     
         % Generate a 0.2 x 0.2 deg regular hex cone mosaic with ecc-adjusted cone separation and aperture
-        theConeMosaic = coneMosaicHex(13, ...
-            'fovDegs', 0.3, ...
-            'customLambda', coneSpacingInMeters*1e6, ...
-            'customInnerSegmentDiameter', coneApertureInMeters*1e6);
+%         theConeMosaic = coneMosaicHex(13, ...
+%             'fovDegs', 0.3, ...
+%             'customLambda', coneSpacingInMeters*1e6, ...
+%             'customInnerSegmentDiameter', coneApertureInMeters*1e6);
 
 
         % Get zCoeffs for this eccentricity
@@ -95,12 +112,18 @@ function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXran
             desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, nearestEccXY, whichEye);
 
         % Plot PSF and cone mosaic at this eccentricity
-        ax1 = subplot('Position', subplotPosVectors(sIndex,eccXindex).v);
+        ax1 = subplot('Position', subplotPosVectors(mod(sIndex-1,5)+1,eccXindex).v);
+%         visualizePSF(theOI, visualizePSTAtThisWavelength, visualizePSFOverThisSpatialSupportArcMin, ...
+%             'withSuperimposedMosaic', theConeMosaic, ...
+%             'contourLevels', [0.1 0.25 0.5 0.75 0.9], ...
+%             'includePupilAndInFocusWavelengthInTitle', (eccXindex==1)&&(sIndex == numel(examinedSubjects)), ...
+%             'axesHandle', ax1, 'fontSize', 14);
+        
         visualizePSF(theOI, visualizePSTAtThisWavelength, visualizePSFOverThisSpatialSupportArcMin, ...
-            'withSuperimposedMosaic', theConeMosaic, ...
             'contourLevels', [0.1 0.25 0.5 0.75 0.9], ...
             'includePupilAndInFocusWavelengthInTitle', (eccXindex==1)&&(sIndex == numel(examinedSubjects)), ...
             'axesHandle', ax1, 'fontSize', 14);
+        
         
         if (any(isnan(zCoeffs)))
             title('NaN values');
@@ -113,20 +136,22 @@ function computeOIAndMosaicAcrossEccentricitiesArtal(desiredPupilDiamMM, eccXran
         
         if (eccXrange(eccXindex) > min(eccXrange))
             set(gca, 'YTickLabel', {});
+        else
+            ylabel(sprintf('subject %d', theSubjectIndex));
         end
         drawnow;
         
    end
    end
+   NicePlot.exportFigToPDF(sprintf('%s_group%d',label,subjectGroupIndex), hFig, 300);
+   close(hFig);
    end
    
 end
 
 
-function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange)
+function computeOIAndMosaicAcrossEccentricitiesPolans(theSubjectIndex, desiredPupilDiamMM, eccXrange, eccYrange, applyCentralCorrection)
 
-    
-    applyCentralCorrection = true;
     % Get a struct with the Polans data
     d = Polans2015Data(applyCentralCorrection);
 
