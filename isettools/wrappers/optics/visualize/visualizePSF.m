@@ -103,7 +103,7 @@ if (~isempty(theMosaic))
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [1 0.5 0], 'LineWidth', 1.0);
 else
     %contourf(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
-        'Color', [0 0 0], 'LineWidth', 1.5);
+    %    'Color', [0 0 0], 'LineWidth', 1.5);
     imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
     hold on;
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
