@@ -6,12 +6,16 @@ p.addParameter('figureTitle', '', @ischar);
 p.addParameter('fontSize', []);
 p.addParameter('contourLevels', 0.1:0.1:1.0);
 p.addParameter('includePupilAndInFocusWavelengthInTitle', true, @islogical);
+p.addParameter('omitTickLabels', false, @islogical);
+p.addParameter('omitAxesLabels', false, @islogical);
 
 % Parse input
 p.parse(varargin{:});
 axesHandle = p.Results.axesHandle;
 theMosaic = p.Results.withSuperimposedMosaic;
 figureTitle = p.Results.figureTitle;
+omitTickLabels = p.Results.omitTickLabels;
+omitAxesLabels = p.Results.omitAxesLabels;
 
 psfRangeArcMin = 0.5*psfRangeArcMin;
 psfTicksMin = (-30:5:30);
@@ -37,10 +41,14 @@ elseif (psfRangeArcMin <= 400)
     psfTicks = 40*psfTicksMin; 
 end
 
-if (psfRangeArcMin <= 2)
-    psfTickLabels = sprintf('%2.1f\n', psfTicks);
+if (~omitTickLabels)
+    if (psfRangeArcMin <= 2)
+        psfTickLabels = sprintf('%2.1f\n', psfTicks);
+    else
+        psfTickLabels = sprintf('%2.0f\n', psfTicks);
+    end
 else
-    psfTickLabels = sprintf('%2.0f\n', psfTicks);
+    psfTickLabels = {};
 end
 
 optics = oiGet(theOI, 'optics');
@@ -102,8 +110,8 @@ end
 
 
 cmap = brewermap(1024, 'greys');
-cmap = brewermap(1024, 'YlGnBu');
-colormap(axesHandle, cmap);
+%cmap = brewermap(1024, 'YlGnBu');
+
 
 if (~isempty(theMosaic))
     transparentContourPlot(axesHandle, xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), ...
@@ -111,30 +119,25 @@ if (~isempty(theMosaic))
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.1 0.3 0.3], 'LineWidth', 4.0);
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.3 0.99 0.99], 'LineWidth', 2);
 else
-<<<<<<< HEAD
-    contourf(axesHandle, xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), p.Results.contourLevels, ...
-        'Color', [0 0 0], 'LineWidth', 1.0);
-    %imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
-    hold(axesHandle, 'on');
-    plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
-    plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
-=======
     %contourf(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
     %    'Color', [0 0 0], 'LineWidth', 1.5);
     imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
     hold on;
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
     plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
->>>>>>> RGCmodeling
 end
 
+colormap(axesHandle, cmap);
 axis(axesHandle, 'image'); axis(axesHandle, 'xy');
 grid(axesHandle, 'on'); box(axesHandle,  'on');
 
 set(axesHandle, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1], 'CLim', [0 1], ...
             'XTick', psfTicks, 'YTick', psfTicks, 'XTickLabel', psfTickLabels, 'YTickLabel', psfTickLabels);
 set(axesHandle, 'XColor', [0 0 0], 'YColor', [0 0 0]);
+if (~omitAxesLabels)
 xlabel(axesHandle,'\it space (arc min)');
+end
+    
 ylabel(axesHandle, '');
 set(axesHandle, 'FontSize', fontSize);
 

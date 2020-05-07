@@ -1,4 +1,12 @@
-function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, measPupilDiamMM, targetPupilDiamMM, measWavelength, showTranslation)
+function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = ...
+        computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, measPupilDiamMM, ...
+        targetPupilDiamMM, measWavelength, showTranslation, varargin)
+    
+    p = inputParser;
+    p.addParameter('doNotZeroCenterPSF', false, @islogical);
+    p.parse(varargin{:});
+    doNotZeroCenterPSF = p.Results.doNotZeroCenterPSF;
+    
     %% Compute WVF
     umPerDegree = 300;
     theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, measWavelength, wavelengthsListToCompute, ...
@@ -19,6 +27,10 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
                     translationVector, xSfGridCyclesDegGrid,ySfGridCyclesDegGrid, ...
                     showTranslation);
     else
+        translationVector = [0 0];
+    end
+    
+    if (doNotZeroCenterPSF)
         translationVector = [0 0];
     end
     
