@@ -4,7 +4,7 @@ function [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjec
     
     measurementWavelength = 550;
     wavelengthsListToCompute = 550;
-    wavefrontSpatialSamples = 1201;
+    wavefrontSpatialSamples = 701;
     desiredPupilDiamMM = 3;
     
     % For monkey retina

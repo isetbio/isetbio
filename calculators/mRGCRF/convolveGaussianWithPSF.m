@@ -33,18 +33,41 @@ function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  vis
         [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(subjectID, ...
                 imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
             
+        % Make a large PSF (via zero padding to be used to convolve with
+        % the largest stimuli)
+        thePSFOriginal = squeeze(thePSFs(1, 1, 1,:,:));
+        thePSFsupportDegsOriginal = thePSFsupportDegs;
+        
+        psfSize = size(thePSFOriginal,1);
+        largePSFsize = 1201;
+        theLargePSF = zeros(largePSFsize, largePSFsize);
+        margin = 0.5*(largePSFsize-psfSize);
+        theLargePSF(margin+(1:psfSize), margin+(1:psfSize)) = thePSFOriginal;
+        
+        % Make corresponding large PSF support
+        dS = thePSFsupportDegsOriginal(2)-thePSFsupportDegsOriginal(1);
+        theLargePSFsupportDegs = -(0.5*(largePSFsize-1)*dS):dS:(0.5*(largePSFsize-1)*dS);
+        
+        
         % Convolve different retinal pooling regions and compute the
         % visually-mapped pooling region
         for retinalRadiusIndex = 1:numel(retinalPoolingRadii)
             
             rfPoolingRadiusDegsInRetinalSpace = retinalPoolingRadii(retinalRadiusIndex);
+            if (rfPoolingRadiusDegsInRetinalSpace < 0.2)
+                thePSF = thePSFOriginal;
+                thePSFsupportDegs = thePSFsupportDegsOriginal;
+            else
+                thePSF = theLargePSF;
+                thePSFsupportDegs = theLargePSFsupportDegs;
+            end
 
             [X,Y] = meshgrid(thePSFsupportDegs,thePSFsupportDegs);
             rfPoolingInRetinalSpace = exp(-(X/rfPoolingRadiusDegsInRetinalSpace).^2).*exp(-(Y/rfPoolingRadiusDegsInRetinalSpace).^2);
             rfPoolingInRetinalSpace = rfPoolingInRetinalSpace / max(rfPoolingInRetinalSpace(:));
             [ellipseInRetinalSpace, semiAxesRetinalSpace, noFitRetinalSpace] = fitEllipse(thePSFsupportDegs, rfPoolingInRetinalSpace);
 
-            rfPoolingInVisualSpace = conv2(rfPoolingInRetinalSpace, squeeze(thePSFs(1, 1, 1,:,:)), 'same');
+            rfPoolingInVisualSpace = conv2(rfPoolingInRetinalSpace, thePSF, 'same');
             rfPoolingInVisualSpace = rfPoolingInVisualSpace / max(rfPoolingInVisualSpace(:));
             [ellipseInVisualSpace, semiAxesVisualSpace, noFitVisualSpace] = fitEllipse(thePSFsupportDegs, rfPoolingInVisualSpace);
 
@@ -52,7 +75,7 @@ function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  vis
             visualRadius(retinalRadiusIndex, subjectID) = mean(semiAxesVisualSpace);
 
             if ( visualizeAnalysis)
-                visualizeFit(thePSFsupportDegs, thePSFs, subjectID, eccXrange, eccYrange, ...
+                visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange, ...
                 rfPoolingInRetinalSpace, rfPoolingInVisualSpace, ...
                 retinalRadius(retinalRadiusIndex, subjectID), visualRadius(retinalRadiusIndex, subjectID), ...
                 ellipseInRetinalSpace, ellipseInVisualSpace, cMap);
@@ -82,7 +105,7 @@ function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  vis
     ylabel('visual radius');
 end
 
-function visualizeFit(thePSFsupportDegs, thePSFs, subjectID, eccXrange, eccYrange, ...
+function visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange, ...
                 rfPoolingInRetinalSpace, rfPoolingInVisualSpace, retinalRadius, visualRadius, ...
                 ellipseInRetinalSpace, ellipseInVisualSpace, cMap)
             
@@ -101,7 +124,7 @@ function visualizeFit(thePSFsupportDegs, thePSFs, subjectID, eccXrange, eccYrang
                'topMargin',      0.01);
 
         ax = subplot('Position', subplotPosVectors(1,1).v);
-        imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, squeeze(thePSFs(1, 1, 1,:,:))); hold(ax, 'on');
+        imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, squeeze(thePSF)); hold(ax, 'on');
         plot(ax, [0 0], [-1 1], 'r-'); plot(ax, [-1 1], [0 0], 'r-');
         set(ax, 'XLim', 0.5*max(thePSFsupportDegs)*[-1 1], 'YLim', 0.5*max(thePSFsupportDegs)*[-1 1]);
         axis(ax, 'square');  axis(ax, 'xy');
