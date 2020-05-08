@@ -109,7 +109,7 @@ if (~isempty(theMosaic))
 end
 
 
-cmap = brewermap(1024, 'greys');
+cmap = brewermap(1024, '*greys');
 %cmap = brewermap(1024, 'YlGnBu');
 
 

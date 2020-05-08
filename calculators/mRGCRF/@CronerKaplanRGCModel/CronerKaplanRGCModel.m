@@ -88,7 +88,7 @@ classdef CronerKaplanRGCModel < handle
     methods (Static)
         plotSensitivities(theAxes, d, model, pointSize, color,displayYLabel, theLabel);
         plotRadii(theAxes, d, model, pointSize, color, displayYLabel, theLabel);
-        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjects, eccXrange, eccYrange, deltaEcc);
+        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
     end
     
     methods (Access=private)

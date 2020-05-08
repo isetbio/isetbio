@@ -1,11 +1,10 @@
-function [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjects, eccXrange, eccYrange, deltaEcc)
+function [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc)
 
     subtractCentralRefraction = true;
-    imposedRefractionErrorDiopters = 1.0
     
     measurementWavelength = 550;
     wavelengthsListToCompute = 550;
-    wavefrontSpatialSamples = 501;
+    wavefrontSpatialSamples = 1201;
     desiredPupilDiamMM = 3;
     
     % For monkey retina
@@ -110,39 +109,55 @@ function [hEccQ, vEccQ, zCoeffIndices, zMapQ, pupilDiamMM] = getTypicalSubjectZc
     minVerticalEcc = eccYrange(1);
     maxVerticalEcc = eccYrange(2);
     
-     allData = rawDataReadData('zCoefsPolans2015', ...
+    allData = rawDataReadData('zCoefsPolans2015', ...
                     'datatype', 'isetbiomatfileonpath');
-     allData = allData.data;
-     pupilDiamMM = 4.0;
+    allData = allData.data;
+    
+    % Measurement pupil size (according to Polans paper)
+    pupilDiamMM = 4.0;
      
-     zCoeffs = squeeze(allData(subjectIndex , :, 3:end));
-     zCoeffIndices = 3:size(allData,3);
+    % Reported Z-coeffs are Z3-Z20
+    zCoeffs = squeeze(allData(subjectIndex , :, 3:end));
+    zCoeffIndices = 3:size(allData,3);
      
-     vEcc = 25:-5:-25;
-     hEcc = 40:-1:-40;
-     zMap = zeros(numel(vEcc), numel(hEcc),numel(zCoeffIndices));
-     pt = 0;
-     for vEccIndex = 1:numel(vEcc)
+    % Measured eccentricities
+    vEcc = 25:-5:-25;
+    hEcc = 40:-1:-40;
+    zMap = zeros(numel(vEcc), numel(hEcc),numel(zCoeffIndices));
+   
+    pt = 0;
+    for vEccIndex = 1:numel(vEcc)
          for hEccIndex = 1:numel(hEcc)
              pt = pt+1;
              zMap(vEccIndex, hEccIndex,:) = zCoeffs(pt,:);
          end
-     end
+    end
+    
+    % Interpolate measured zMap according to desired eccRange and deltaEcc
+    vEccQ = max([minVerticalEcc min(vEcc)]) :deltaEcc: min([max(vEcc) maxVerticalEcc]);
+    hEccQ = max([minHorizontalEcc min(hEcc)]) :deltaEcc: min([max(hEcc) maxHorizontalEcc]);
      
-     vEccQ = max([minVerticalEcc min(vEcc)]) :deltaEcc: min([max(vEcc) maxVerticalEcc]);
-     hEccQ = max([minHorizontalEcc min(hEcc)]) :deltaEcc: min([max(hEcc) maxHorizontalEcc]);
+    [X,Y] = meshgrid(hEcc, vEcc);
+    [XQ,YQ] = meshgrid(hEccQ, vEccQ);
+    zMapQ = zeros(numel(vEccQ), numel(hEccQ),numel(zCoeffIndices));
      
-     [X,Y] = meshgrid(hEcc, vEcc);
-     [XQ,YQ] = meshgrid(hEccQ, vEccQ);
-     zMapQ = zeros(numel(vEccQ), numel(hEccQ),numel(zCoeffIndices));
-     
-     for zIndex = 1:size(zMap,3)
+    for zIndex = 1:size(zMap,3)
          zz = squeeze(zMap(:,:,zIndex));
+         % The 4-th z-coeff is defocus. Subtract central defocus from all
+         % spatial positions
          if ((zCoeffIndices(zIndex) == 4) && (subtractCentralRefraction))
              idx = find((X==0) & (Y==0));
-             micronsError = wvfDefocusDioptersToMicrons(refractionErrorDiopters, pupilDiamMM);
-             zz = zz - zz(idx) + micronsError;
+             zz = zz - zz(idx);
          end
+         
+         % Add a uniform refraction defocus error at all positions instread
+         % of the measured defocus. This assumes that we are focused on
+         % each cell, but with a defocus error.
+         if ((zCoeffIndices(zIndex) == 4) && (refractionErrorDiopters ~= 0))
+            micronsError = wvfDefocusDioptersToMicrons(refractionErrorDiopters, pupilDiamMM);
+            zz = zz*0 + micronsError;
+         end
+         
          zz = interp2(X,Y,zz, XQ, YQ);
          zMapQ(:,:,zIndex) = zz;
      end
