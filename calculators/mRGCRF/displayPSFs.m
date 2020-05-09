@@ -1,51 +1,65 @@
 function displayPSFs()
 
-    goodSubjects = [8 9 10];
+    goodSubjects = [4 5 6 7 8 9 10];
     
     % Compute good subject PSFs along the Y = 0, negative X, with an
     % eccentricity resolution of 1 deg
     eccXrange = [-40 0];
     eccYrange = [0 0];
-    deltaEcc = 1;
+    deltaEcc = 5;
     
-    % Compute the PSFs at the desired eccentricities
-    [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(goodSubjects, ...
-        eccXrange, eccYrange, deltaEcc);
+    imposedRefractionErrorDiopters = 0;
     
-    % Visualize them
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 2040 300]);
+    plotlabOBJ = setupPlotLab();
+    
+    if (1==2)
+        % Compute the PSFs at the desired eccentricities
+        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(goodSubjects, ...
+            imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
 
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', numel(goodSubjects), ...
-           'colsNum', numel(hEcc), ...
-           'heightMargin',  0.001, ...
-           'widthMargin',    0.005, ...
-           'leftMargin',     0.02, ...
-           'rightMargin',    0.00, ...
-           'bottomMargin',   0.02, ...
-           'topMargin',      0.01);
+        % Visualize them
+        hFig = figure(1); clf;
+
+        theAxesGrid = plotlab.axesGrid(hFig, ...
+                'rowsNum', numel(goodSubjects), ...
+                'colsNum', numel(hEcc), ...
+                'leftMargin', 0.04, ...
+                'rightMargin', 0.01, ...
+                'widthMargin', 0.01, ...
+                'heightMargin', 0.01, ...
+                'bottomMargin', 0.01, ...
+                'topMargin', 0.01);
+        
        
-    cMap = brewermap(512, 'greys');
-    for subjIdx = 1:numel(goodSubjects)
-       for eccYIndex = 1:numel(vEcc)
-       for eccXIndex = 1:numel(hEcc)
-            
-            ax = subplot('Position', subplotPosVectors(subjIdx, eccXIndex).v);
-            imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, squeeze(thePSFs(subjIdx, eccYIndex, eccXIndex,:,:)));
-            axis(ax, 'square'); 
-            set(ax, 'XTickLabel', {}, 'YTickLabel', {});
-            if ((vEcc(eccYIndex) == 0) && (hEcc(eccXIndex) == 0))
-                title(ax,sprintf('%2.0f at %2.0f^o', goodSubjects(subjIdx), hEcc(eccXIndex)));
-            end
-            
-            colormap(ax,cMap);
-            drawnow;
-       end
-       end
-    end % subIdx
-    
-    
+        cMap = brewermap(512, '*greys');
+        for subjIdx = 1:numel(goodSubjects)
+           for eccYIndex = 1:numel(vEcc)
+           for eccXIndex = 1:numel(hEcc)
+
+                ax = theAxesGrid{subjIdx, eccXIndex};
+                imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, squeeze(thePSFs(subjIdx, eccYIndex, eccXIndex,:,:)));
+                axis(ax, 'square'); 
+                set(ax, 'XTick', -1:0.1:1, 'YTick', -1:0.1:1, 'XLim', [-0.35 0.35], 'YLim', [-0.35 0.35]);
+                if (eccXIndex == 1) && (subjIdx == numel(goodSubjects))
+                    ylabel(ax,'space (degs)');
+                else   
+                    set(ax, 'XTickLabel', {}, 'YTickLabel', {});
+                end
+                set(ax, 'XTickLabel', {});
+                axis(ax, 'xy');
+                if (subjIdx == 1)
+                    title(ax,sprintf('eccX =  %2.0f^o', hEcc(eccXIndex)));
+                end
+
+                colormap(ax,cMap);
+                drawnow;
+           end
+           end
+        end % subIdx
+        plotlabOBJ.exportFig(hFig, 'pdf', 'psfs', pwd());
+
+    end
+
     % Custom 2D sampling (2.5 deg) for one subject
     eccXrange = [-20 20];
     eccYrange = [-20 20];
@@ -54,19 +68,18 @@ function displayPSFs()
     
     % Compute the PSFs at the desired eccentricities
     [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(goodSubjects, ...
-        eccXrange, eccYrange, deltaEcc);
+        imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
     
     hFig = figure(2); clf;
-    set(hFig, 'Position', [10 10 1200 1180]);
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', numel(vEcc), ...
            'colsNum', numel(hEcc), ...
            'heightMargin',  0.01, ...
-           'widthMargin',   0.001, ...
+           'widthMargin',   0.01, ...
            'leftMargin',    0.02, ...
            'rightMargin',   0.01, ...
-           'bottomMargin',  0.02, ...
+           'bottomMargin',  0.01, ...
            'topMargin',     0.01);
 
      for eccYIndex = 1:numel(vEcc)
@@ -83,3 +96,18 @@ function displayPSFs()
      
 end
 
+function plotlabOBJ = setupPlotLab()
+    plotlabOBJ = plotlab();
+    plotlabOBJ.applyRecipe(...
+            'colorOrder', [0 0 0], ...
+            'lineColor', [0.5 0.5 0.5], ...
+            'scatterMarkerEdgeColor', [0.3 0.3 0.9], ...
+            'lineMarkerSize', 10, ...
+            'axesBox', 'off', ...
+            'axesTickDir', 'in', ...
+            'renderer', 'painters', ...
+            'axesTickLength', [0.01 0.01], ...
+            'legendLocation', 'SouthWest', ...
+            'figureWidthInches', 20, ...
+            'figureHeightInches', 16);
+end
