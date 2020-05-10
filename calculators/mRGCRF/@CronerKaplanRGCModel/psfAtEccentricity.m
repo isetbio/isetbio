@@ -20,23 +20,23 @@ function [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjec
        for eccXIndex = 1:numel(hEcc)
 
            fprintf('Computing PSF for subject %d, ecc = %f %f\n', subjectIndex, hEcc(eccXIndex), vEcc(eccYIndex));
-            zCoeffs = zeros(1,21);
-            zCoeffs(zCoeffIndices+1) = squeeze(zMap(eccYIndex, eccXIndex,:));
+           zCoeffs = zeros(1,21);
+           zCoeffs(zCoeffIndices+1) = squeeze(zMap(eccYIndex, eccXIndex,:));
             
-            % Generate oi at this eccentricity
-            theOI = makeCustomOI(zCoeffs, pupilDiamMM, measurementWavelength, ...
+           % Generate oi at this eccentricity
+           theOI = makeCustomOI(zCoeffs, pupilDiamMM, measurementWavelength, ...
                 desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree);
             
-            % Extract PSF
-            [thePSF,thePSFsupportDegs] = extractPSFfromOI(theOI, wavelengthsListToCompute);
+           % Extract PSF
+           [thePSF,thePSFsupportDegs] = extractPSFfromOI(theOI, wavelengthsListToCompute);
             
-            % Allocate memory
-            if (subjIdx*eccYIndex*eccXIndex == 1)
+           % Allocate memory
+           if (subjIdx*eccYIndex*eccXIndex == 1)
                 thePSFs = zeros(numel(goodSubjects), numel(vEcc), numel(hEcc), size(thePSF,1), size(thePSF,2));
-            end
+           end
             
-            % Save PSF
-            thePSFs(subjIdx, eccYIndex, eccXIndex,:,:) = thePSF;
+           % Save PSF
+           thePSFs(subjIdx, eccYIndex, eccXIndex,:,:) = thePSF;
        end
        end
             
@@ -118,6 +118,7 @@ function [hEccQ, vEccQ, zCoeffIndices, zMapQ, pupilDiamMM] = getTypicalSubjectZc
      
     % Reported Z-coeffs are Z3-Z20
     zCoeffs = squeeze(allData(subjectIndex , :, 3:end));
+    % Z3-Z20
     zCoeffIndices = 3:size(allData,3);
      
     % Measured eccentricities
@@ -125,11 +126,11 @@ function [hEccQ, vEccQ, zCoeffIndices, zMapQ, pupilDiamMM] = getTypicalSubjectZc
     hEcc = 40:-1:-40;
     zMap = zeros(numel(vEcc), numel(hEcc),numel(zCoeffIndices));
    
-    pt = 0;
+    spatialPointIndex = 0;
     for vEccIndex = 1:numel(vEcc)
          for hEccIndex = 1:numel(hEcc)
-             pt = pt+1;
-             zMap(vEccIndex, hEccIndex,:) = zCoeffs(pt,:);
+             spatialPointIndex = spatialPointIndex+1;
+             zMap(vEccIndex, hEccIndex,:) = zCoeffs(spatialPointIndex,:);
          end
     end
     
