@@ -1,6 +1,6 @@
 function convolveGaussianWithPSF()
     
-    retinalPoolingRadii = logspace(log10(0.01), log10(0.6), 8);
+    retinalPoolingRadii = logspace(log10(0.006), log10(0.6), 7);
     plotlabOBJ = setupPlotLab();
     
     visualizeAnalysis = ~true;
@@ -18,94 +18,107 @@ function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  vis
 
     dataFileName = sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', cellEcc(1), imposedRefractionErrorDiopters);
     
-    
-    subjectsNum = 10;
+    subjectIDs = 1:10;
+    subjectsNum = numel(subjectIDs);
     cMap = brewermap(512, 'greys');
     
     retinalRadius = zeros(numel(retinalPoolingRadii), subjectsNum);
     visualRadius = retinalRadius;
     visualGain = visualRadius;
     
-    for kSubject = 1:(10*3)
-        
-        subjectID = mod(kSubject-1,10)+1;
-        eccQuadrant = floor((kSubject-1)/10)+1;
-        switch (eccQuadrant)
-            case 1
-                eccXrange = cellEcc(1)*[1 1];
-                eccYrange = 0*[1 1];
-            case 2
-                eccYrange = cellEcc(1)*[1 1];
-                eccXrange = 0*[1 1];
-            case 3
-                eccYrange = -cellEcc(1)*[1 1];
-                eccXrange = 0*[1 1];
-        end
-        deltaEcc = 1;
     
-         % Compute the subject PSF at the desired eccentricity
-        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(subjectID, ...
+    
+    quadrants = [1 2 3];
+    
+    for qIndex = 1:numel(quadrants)
+        eccQuadrant = quadrants(qIndex);
+        
+        for sIndex = 1:numel(subjectIDs)
+            subjectID = subjectIDs(sIndex);
+            
+            kSubject = (eccQuadrant-1)*subjectsNum + subjectID;
+            
+            switch (eccQuadrant)
+                case 1
+                    eccXrange = cellEcc(1)*[1 1];
+                    eccYrange = 0*[1 1];
+                case 2
+                    eccYrange = cellEcc(1)*[1 1];
+                    eccXrange = 0*[1 1];
+                case 3
+                    eccYrange = -cellEcc(1)*[1 1];
+                    eccXrange = 0*[1 1];
+            end
+            deltaEcc = 1;
+            
+            % Compute the subject PSF at the desired eccentricity
+            [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(subjectID, ...
                 imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
             
-        % Make a large PSF (via zero padding to be used to convolve with
-        % the largest stimuli)
-        thePSFOriginal = squeeze(thePSFs(1, 1, 1,:,:));
-        thePSFsupportDegsOriginal = thePSFsupportDegs;
-        
-        psfSize = size(thePSFOriginal,1);
-        largePSFsize = 1201;
-        theLargePSF = zeros(largePSFsize, largePSFsize);
-        margin = 0.5*(largePSFsize-psfSize);
-        theLargePSF(margin+(1:psfSize), margin+(1:psfSize)) = thePSFOriginal;
-        
-        % Make corresponding large PSF support
-        dS = thePSFsupportDegsOriginal(2)-thePSFsupportDegsOriginal(1);
-        theLargePSFsupportDegs = -(0.5*(largePSFsize-1)*dS):dS:(0.5*(largePSFsize-1)*dS);
-        
-        
-        % Convolve different retinal pooling regions and compute the
-        % visually-mapped pooling region
-        for retinalRadiusIndex = 1:numel(retinalPoolingRadii)
+            % Make a large PSF (via zero padding to be used to convolve with
+            % the largest stimuli)
+            thePSFOriginal = squeeze(thePSFs(1, 1, 1,:,:));
+            thePSFsupportDegsOriginal = thePSFsupportDegs;
             
-            rfPoolingRadiusDegsInRetinalSpace = retinalPoolingRadii(retinalRadiusIndex);
-            if (rfPoolingRadiusDegsInRetinalSpace < 0.2)
-                thePSF = thePSFOriginal;
-                thePSFsupportDegs = thePSFsupportDegsOriginal;
-            else
-                thePSF = theLargePSF;
-                thePSFsupportDegs = theLargePSFsupportDegs;
-            end
-
-            [X,Y] = meshgrid(thePSFsupportDegs,thePSFsupportDegs);
-            rfPoolingInRetinalSpace = exp(-(X/rfPoolingRadiusDegsInRetinalSpace).^2).*exp(-(Y/rfPoolingRadiusDegsInRetinalSpace).^2);
-            rfPoolingInRetinalSpaceNorm = rfPoolingInRetinalSpace / max(rfPoolingInRetinalSpace(:));
-            [ellipseInRetinalSpace, semiAxesRetinalSpace, noFitRetinalSpace] = ...
-                fitEllipse(thePSFsupportDegs, rfPoolingInRetinalSpaceNorm);
-
-            rfPoolingInVisualSpace = conv2(rfPoolingInRetinalSpace, thePSF, 'same');
-            rfPoolingInVisualSpaceNorm = rfPoolingInVisualSpace / max(rfPoolingInVisualSpace(:));
-            [ellipseInVisualSpace, semiAxesVisualSpace, noFitVisualSpace] = ...
-                fitEllipse(thePSFsupportDegs, rfPoolingInVisualSpaceNorm);
-
-            % Saved data
-            retinalRadius(retinalRadiusIndex, kSubject) = mean(semiAxesRetinalSpace);
-            visualRadius(retinalRadiusIndex, kSubject) = mean(semiAxesVisualSpace);
-            visualGain(retinalRadiusIndex, kSubject) = max(rfPoolingInVisualSpace(:))/max(rfPoolingInRetinalSpace(:));
+            psfSize = size(thePSFOriginal,1);
+            largePSFsize = 1201;
+            theLargePSF = zeros(largePSFsize, largePSFsize);
+            margin = 0.5*(largePSFsize-psfSize);
+            theLargePSF(margin+(1:psfSize), margin+(1:psfSize)) = thePSFOriginal;
             
-            if ( visualizeAnalysis)
-                % Extract profile at peak
-                row = round(size(rfPoolingInRetinalSpace,1)/2);
-                rfPoolingRetinalSpaceProfile = squeeze(rfPoolingInRetinalSpace(row,:));
-                rfPoolingVisualSpaceProfile = squeeze(rfPoolingInVisualSpace(row,:));
+          
+            % Make corresponding large PSF support
+            dS = thePSFsupportDegsOriginal(2)-thePSFsupportDegsOriginal(1);
+            theLargePSFsupportDegs = -(0.5*(largePSFsize-1)*dS):dS:(0.5*(largePSFsize-1)*dS);
+            
+            
+            % Convolve different retinal pooling regions and compute the
+            % visually-mapped pooling region
+            for retinalRadiusIndex = 1:numel(retinalPoolingRadii)
                 
-                visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange, ...
-                    rfPoolingInRetinalSpaceNorm, rfPoolingInVisualSpaceNorm, ...
-                    rfPoolingRetinalSpaceProfile, rfPoolingVisualSpaceProfile, ...
-                    retinalRadius(retinalRadiusIndex, kSubject), visualRadius(retinalRadiusIndex, kSubject), ...
-                    visualGain(retinalRadiusIndex, kSubject), ellipseInRetinalSpace, ellipseInVisualSpace, cMap, plotlabOBJ );
+                rfPoolingRadiusDegsInRetinalSpace = retinalPoolingRadii(retinalRadiusIndex);
+                maxX = 0.1; %min([0.3 rfPoolingRadiusDegsInRetinalSpace*8]);
+                
+                if (rfPoolingRadiusDegsInRetinalSpace < 0.2)
+                    thePSF = thePSFOriginal;
+                    thePSFsupportDegs = thePSFsupportDegsOriginal;
+                else
+                    thePSF = theLargePSF;
+                    thePSFsupportDegs = theLargePSFsupportDegs;
+                end
+                
+                [X,Y] = meshgrid(thePSFsupportDegs,thePSFsupportDegs);
+                rfPoolingInRetinalSpace = exp(-(X/rfPoolingRadiusDegsInRetinalSpace).^2).*exp(-(Y/rfPoolingRadiusDegsInRetinalSpace).^2);
+                rfPoolingInRetinalSpaceNorm = rfPoolingInRetinalSpace / max(rfPoolingInRetinalSpace(:));
+                [ellipseInRetinalSpace, semiAxesRetinalSpace, noFitRetinalSpace] = ...
+                    fitEllipse(thePSFsupportDegs, rfPoolingInRetinalSpaceNorm);
+                
+                rfPoolingInVisualSpace = conv2(rfPoolingInRetinalSpace, thePSF, 'same');
+                rfPoolingInVisualSpaceNorm = rfPoolingInVisualSpace / max(rfPoolingInVisualSpace(:));
+                [ellipseInVisualSpace, semiAxesVisualSpace, noFitVisualSpace] = ...
+                    fitEllipse(thePSFsupportDegs, rfPoolingInVisualSpaceNorm);
+                
+                % Saved data
+                retinalRadius(retinalRadiusIndex, kSubject) = mean(semiAxesRetinalSpace);
+                visualRadius(retinalRadiusIndex, kSubject) = mean(semiAxesVisualSpace);
+                visualGain(retinalRadiusIndex, kSubject) = max(rfPoolingInVisualSpace(:))/max(rfPoolingInRetinalSpace(:));
+                
+                if ( visualizeAnalysis)
+                    % Extract profile at peak
+                    row = round(size(rfPoolingInRetinalSpace,1)/2);
+                    rfPoolingRetinalSpaceProfile = squeeze(rfPoolingInRetinalSpace(row,:));
+                    rfPoolingVisualSpaceProfile = squeeze(rfPoolingInVisualSpace(row,:));
+                    
+                    visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange, ...
+                        rfPoolingInRetinalSpaceNorm, rfPoolingInVisualSpaceNorm, ...
+                        rfPoolingRetinalSpaceProfile, rfPoolingVisualSpaceProfile, ...
+                        retinalRadius(retinalRadiusIndex, kSubject), visualRadius(retinalRadiusIndex, kSubject), ...
+                        visualGain(retinalRadiusIndex, kSubject), ellipseInRetinalSpace, ellipseInVisualSpace, cMap, maxX, plotlabOBJ );
+                end
             end
         end
     end
+    
     save(dataFileName, 'retinalPoolingRadii', 'retinalRadius', 'visualRadius', 'visualGain');
 end
 
@@ -113,7 +126,7 @@ function visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange
                 rfPoolingInRetinalSpace, rfPoolingInVisualSpace, ...
                 rfPoolingRetinalSpaceProfile, rfPoolingVisualSpaceProfile, ...
                 retinalRadius, visualRadius, ...
-                visualGain, ellipseInRetinalSpace, ellipseInVisualSpace, cMap, plotlabOBJ )
+                visualGain, ellipseInRetinalSpace, ellipseInVisualSpace, cMap, maxX, plotlabOBJ )
             
         % Visualize them
         hFig = figure(1); clf;
@@ -121,14 +134,14 @@ function visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                'rowsNum', 2, ...
                'colsNum', 4, ...
-               'heightMargin',  0.02, ...
+               'heightMargin',  0.03, ...
                'widthMargin',    0.02, ...
                'leftMargin',     0.03, ...
                'rightMargin',    0.00, ...
                'bottomMargin',   0.04, ...
                'topMargin',      0.02);
 
-        xLims = 0.2*[-1 1];
+        xLims = maxX*[-1 1];
         % Plot the PSF
         
         ax = subplot('Position', subplotPosVectors(1,1).v);
@@ -158,20 +171,43 @@ function visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange
         bar(ax, 0, visualGain, 1, 'r');
         set(ax, 'XLim', [-0.1 0.1], 'YLim', [0 1], 'XTick', [0], 'YTick', 0:0.2:1);
         axis(ax, 'square');
+        drawnow;
         
-        %plotlabOBJ.exportFig(hFig, 'pdf', sprintf('subj_%d_ecc_%2.0f_%2.0f_radius_%2.3fDegs', subjectID, eccXrange(1), eccYrange(1), rfPoolingInRetinalSpace), pwd());
+        %plotlabOBJ.exportFig(hFig, 'png', sprintf('subj_%d_ecc_%2.0f_%2.0f_radius_%2.3fDegs', subjectID, eccXrange(1), eccYrange(1), rfPoolingInRetinalSpace), pwd());
 
 end
 
-function renderPSF(ax, thePSFsupportDegs, thePSF, xLims, cMap, theTitle)
+function renderPSFOLD(ax, thePSFsupportDegs, thePSF, xLims, cMap, theTitle)
         imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, thePSF); hold(ax, 'on');
         plot(ax, [0 0], [-1 1], 'k-'); plot(ax, [-1 1], [0 0], 'k-');
         axis(ax, 'square');  axis(ax, 'xy');
+        ticks = -1:0.05:1;
         set(ax, 'XLim', xLims, 'YLim', xLims);
-        set(ax, 'XTickLabel', {}, 'YTickLabel', {});
+        set(ax, 'XTick', ticks, 'YTick', ticks, 'XTickLabel', {}, 'YTickLabel', {});
         colormap(ax,cMap);
         title(ax, theTitle);
 end
+
+
+function renderPSF(ax, thePSFSupportDegs, thePSF, xLims, cMap, theTitle)
+    peakV = max(thePSF(:));
+    imagesc(ax, thePSFSupportDegs, thePSFSupportDegs, thePSF); hold(ax, 'on');
+    zLevels = logspace(log10(0.05), log10(1), 6)*peakV;
+    [X,Y] = meshgrid(thePSFSupportDegs, thePSFSupportDegs);
+    contour(ax, X,Y, thePSF, zLevels, 'LineColor', [0.5 0.5 0.5]);
+    midRow = round(size(thePSF,1)/2)+1;
+    profile = thePSF(midRow,:);
+    deltaX = xLims(2)-xLims(1);
+    area(ax,thePSFSupportDegs, xLims(1) + deltaX*profile/peakV, xLims(1), 'FaceColor', [1 0.5 0.5], 'EdgeColor', [1 0 0]);
+    %plot(ax, [0 0], [-1 1], 'k-'); plot(ax, [-1 1], [0 0], 'k-');
+    axis(ax, 'square');  axis(ax, 'xy');
+    set(ax, 'XLim', xLims, 'YLim', xLims, 'CLim', [0 peakV]);
+    set(ax, 'XTickLabel', {}, 'YTickLabel', {});
+    set(ax, 'XTick', -1:0.05:1, 'YTick', -1:0.05:1, 'XTickLabel', {}, 'YTickLabel', {});
+    colormap(ax,cMap);
+    title(ax, theTitle);
+end
+
 
 function renderKernel(ax, thePSFsupportDegs, rfPoolingInRetinalSpace, xLims, cMap, theTitle)
         contourf(ax, thePSFsupportDegs, thePSFsupportDegs, rfPoolingInRetinalSpace, 6);  hold(ax, 'on');
@@ -179,7 +215,10 @@ function renderKernel(ax, thePSFsupportDegs, rfPoolingInRetinalSpace, xLims, cMa
         axis(ax, 'square');  axis(ax, 'xy');
         set(ax, 'XLim', xLims, 'YLim', xLims, 'CLim', [0 1.1]);
         colormap(ax,cMap);
-        set(ax, 'XTickLabel', {}, 'YTickLabel', {}, 'XTick', -1:0.05:1, 'YTick', -1:0.05:1);
+        ticks = -1:0.05:1;
+        set(ax, 'XTickLabel', {}, 'YTickLabel', {}, ...
+            'XTick', ticks, 'YTick', ticks, ...
+            'XTickLabel', ticks*60, 'YTick', ticks*60);
         axis(ax, 'square');
         title(ax, theTitle);
 end
@@ -205,7 +244,8 @@ function renderKernelProfile(ax, thePSFsupportDegs, rfPoolingRetinalSpaceProfile
         plot(ax, [0 0], [0 1], 'k-');
         axis(ax, 'square'); axis(ax, 'xy');
         set(ax, 'XLim', xLims, 'YLim', [0 1]);
-        set(ax, 'XTick', -1:0.02:1, 'XTick', -1:0.05:1, 'YTick', 0:0.2:1, 'YTickLabel', {});
+        ticks = -1:0.05:1;
+        set(ax, 'XTick', ticks,  'XTickLabel', ticks*60, 'YTick', 0:0.2:1, 'YTickLabel', {});
         axis(ax, 'square');
 end
 
@@ -215,27 +255,42 @@ function renderFittedEllipses(ax, ellipseInRetinalSpace, ellipseInVisualSpace, x
         plot(ax, ellipseInVisualSpace.x, ellipseInVisualSpace.y, 'r-', 'LineWidth', 1.5);
         plot(ax, [0 0], [-1 1], 'k-'); plot(ax, [-1 1], [0 0], 'k-');
         axis(ax, 'square');  axis(ax, 'xy');
-        set(ax, 'XLim', xLims, 'YLim', xLims,  'XTick', -1:0.05:1, 'YTick', -1:0.05:1);
+        ticks = -1:0.05:1;
+        set(ax, 'XLim', xLims, 'YLim', xLims,  'XTick', ticks, 'YTick', ticks, ...
+            'XTickLabel', ticks*60, 'YTickLabel', ticks*60);
         set(ax, 'XTickLabel', {}, 'YTickLabel', {});
         title(ax, theTitle);
 end
 
 function [ellipse, semiAxes, noFit] = fitEllipse(support, kernel)
 
-    C = contourc(support, support, kernel, exp(-1)*[1 0.1]);
+    [~, idx] = max(kernel(:));
+    [X,Y] = meshgrid(support, support);
+    X = X(:);
+    Y = Y(:);
+    peakPos = [X(idx) Y(idx)];
+
+    
+    zLevels = exp(-1)*[1 0.9];
+    C = contourc(support, support, kernel, zLevels);
     kk = 1;
     contourIndex = 0;
+    centerNotEncountered = true;
     while (kk < size(C,2))
         contourIndex = contourIndex+1;
         theLevel = C(1,kk);
        
         verticesNumForThisLevel = C(2,kk);
-         if (theLevel == exp(-1))
+        if (theLevel == zLevels(1)) && (centerNotEncountered)
             cM.level = theLevel;
             cM.x = C(1, kk+(1:verticesNumForThisLevel));
             cM.y = C(2, kk+(1:verticesNumForThisLevel));
-         end
-         
+        
+            if (inpolygon(peakPos(1), peakPos(2), cM.x, cM.y))
+                centerNotEncountered = false;
+            end
+        end
+        
         kk = kk + verticesNumForThisLevel+1;
     end
  
@@ -253,7 +308,7 @@ function plotlabOBJ = setupPlotLab()
             'lineMarkerSize', 10, ...
             'axesBox', 'off', ...
             'axesTickDir', 'in', ...
-            'renderer', 'opengl', ...
+            'renderer', 'painters', ...
             'axesTickLength', [0.01 0.01], ...
             'legendLocation', 'SouthWest', ...
             'figureWidthInches', 24, ...
