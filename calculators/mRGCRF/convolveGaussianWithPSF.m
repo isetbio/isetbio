@@ -1,12 +1,12 @@
 function convolveGaussianWithPSF()
     
-    retinalPoolingRadii = logspace(log10(0.006), log10(0.6), 7);
+    retinalPoolingRadii = logspace(log10(0.001), log10(0.6), 10);
     plotlabOBJ = setupPlotLab();
     
     visualizeAnalysis = ~true;
     
-    imposedRefractionErrorDiopters = 0.01; 
-    eccTested = -[0 1 2.5 5.0 7.5 10 15 20 25];
+    imposedRefractionErrorDiopters = 0.0; 
+    eccTested = -[0 2.5 5.0 7.5 10 15 20 25];
     for eccIndex = 1:numel(eccTested)
         ecc = eccTested(eccIndex);
         doIt(ecc, imposedRefractionErrorDiopters, retinalPoolingRadii,  visualizeAnalysis, plotlabOBJ);
