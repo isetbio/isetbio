@@ -6,7 +6,7 @@ function convolveGaussianWithPSF()
     visualizeAnalysis = ~true;
     
     imposedRefractionErrorDiopters = 0.0; 
-    eccTested = -[0 2.5 5.0 7.5 10 15 20 25];
+    eccTested = -(0:1:25);
     for eccIndex = 1:numel(eccTested)
         ecc = eccTested(eccIndex);
         doIt(ecc, imposedRefractionErrorDiopters, retinalPoolingRadii,  visualizeAnalysis, plotlabOBJ);
