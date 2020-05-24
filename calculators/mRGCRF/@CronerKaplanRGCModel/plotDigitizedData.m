@@ -43,51 +43,5 @@ function plotDigitizedData(obj, varargin)
     if (generatePlots)
         obj.plotlabOBJ.exportFig(hFig, 'pdf', 'CronnerKaplanParams', pwd());
     end
-    
-    % Plot the retinal radius
-    hFig = figure(11); clf
-    theAxesGrid = plotlab.axesGrid(hFig, ...
-            'rowsNum', 2, ...
-            'colsNum', 2, ...
-            'leftMargin', 0.08, ...
-            'rightMargin', 0.01, ...
-            'widthMargin', 0.1, ...
-            'heightMargin', 0.06, ...
-            'bottomMargin', 0.06, ...
-            'topMargin', 0.04);
-    
-
-    centerRetinalRadiusModel.eccDegs = eccDegs;
-    centerRetinalRadiusModel.function = obj.centerRetinalRadiusFunction;
-    centerRetinalRadiusModel.params = obj.centerRetinalRadiusParams;
-    CronerKaplanRGCModel.plotRadii(theAxesGrid{1,1}, obj.centerData, centerRetinalRadiusModel, pointSize, [1 0 0], true, 'retinal center');
-
-    eccMM = 0.3:0.1:20;
-    eccDegsFromMM = @(x)(0.1 + 4.21 * x + 0.038 * x.^2);
-    midgetDendriticFieldDiameterMM =  8.64 * eccMM.^1.04/1000;
-    midgetDendriticFieldDiameterDegs = eccDegsFromMM(midgetDendriticFieldDiameterMM);
-    
-    
-    plotRadiusRatio(theAxesGrid{1,2}, centerRadiusModel, eccDegsFromMM(eccMM), midgetDendriticFieldDiameterDegs, [1 0 0]);
-    pause
 end
 
-function plotRadiusRatio(theAxes, visualModel, retinalModelEccDegs, retinalModelDendriticDiameter,  color)
-
-    hold(theAxes, 'on');
-    
-    visualRadius  = visualModel.function(visualModel.params, visualModel.eccDegs);
-    size(retinalModelEccDegs)
-    size(retinalModelDendriticDiameter)
-    line(theAxes, retinalModelEccDegs, retinalModelDendriticDiameter, 'Color', [0 0 0]);
-    line(theAxes, visualModel.eccDegs, visualRadius, 'Color', color);
-    
-    set(theAxes, 'XLim', [0 100], 'YLim', [0 0.3]);
-    set(theAxes, 'XTick', 0:20:100, 'YTick', 0:0.1:0.3);
-    xlabel(theAxes, 'eccentricity (degs)');
-    ylabel(theAxes, 'radius');
-    set(theAxes, 'XScale', 'linear', 'YScale', 'linear');
-    grid(theAxes, 'on');
-    box(theAxes, 'off');
-    
-end

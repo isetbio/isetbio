@@ -199,6 +199,11 @@ classdef WatsonRGCModel
         % retinal positions and the left/right eye
         [mRGCSpacings, mRGCRFDensities] = mRGCRFSpacingAndDensityAtRetinalPositions(obj, rfPositions, whichEye, posUnits, densityUnits, varargin);
 
+        % Return cone RF spacing and density at each of the passed
+        % retinal positions and the left/right eye
+        [coneSpacings, coneDensities] = coneRFSpacingAndDensityAtRetinalPositions(obj, rfPositions, whichEye, posUnits, densityUnits, varargin);
+
+        
         % Return total RGC RF density along the requested meridian and requested eccentricities
         totalRGCRFSpacing = totalRGCRFDensityAlongMeridian(obj, eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
         
