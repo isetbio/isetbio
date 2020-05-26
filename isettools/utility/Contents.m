@@ -106,9 +106,14 @@
 %   programming/ieParamFormat         - Converts s to a standard ISET parameter format  (lower case, no spaces)
 %   programming/ieRemovePathDir       - Removes any .svn directories from the pathList.
 %
-% PSYCHOPHYSICS (subdir psychophysics)  Related to calculating psychophysical performance
+% PSYCHOPHYSICS (subdir psychophysics)  Related to calculating psychophysical performance. The TSD
+%                                       routines are based on the equal-variance normal assumption.
+%   psychophysics/analyticpHitpFa     - Compute hit and fa rates from underlying distributions and criterion
 %   psychophysics/analyticPoissonIdealObserver - Performance of analytic ideal observer
-%   psychophysics/dPrimeToTAFCFractionCorrect  - Calculate TAFCfraction correct from d-prime
+%   psychophysics/computeDPrimeCritNorm - Compute d-Prime and criterion from hit and fa rates
+%   psychophysics/computeROCArea      - Compute area under ROC curve from underlying distributions
+%   psychophysics/dPrimeToTAFCFractionCorrect - Calculate TAFC fraction correct from d-prime
+%   psychophysics/TAFCFractionCorrectToDPrime - Calculate d-prime from TAFC fraction correct
 %
 % STATISTICS (subdir statistics)        Statistical calculations for isetbio
 %   statistics/biNormal               - Compute bivariate normal function
