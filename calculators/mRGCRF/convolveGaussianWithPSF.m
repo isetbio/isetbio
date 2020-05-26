@@ -3,10 +3,10 @@ function convolveGaussianWithPSF()
     retinalPoolingRadii = logspace(log10(0.001), log10(0.6), 10);
     plotlabOBJ = setupPlotLab();
     
-    visualizeAnalysis = ~true;
+    visualizeAnalysis = true;
     
     imposedRefractionErrorDiopters = 0.0; 
-    eccTested = -(0:1:25);
+    eccTested = -1; %-(0:1:25);
     for eccIndex = 1:numel(eccTested)
         ecc = eccTested(eccIndex);
         doIt(ecc, imposedRefractionErrorDiopters, retinalPoolingRadii,  visualizeAnalysis, plotlabOBJ);
@@ -18,7 +18,7 @@ function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  vis
 
     dataFileName = sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', cellEcc(1), imposedRefractionErrorDiopters);
     
-    subjectIDs = 1:10;
+    subjectIDs = 7% 8:10;
     subjectsNum = numel(subjectIDs);
     cMap = brewermap(512, 'greys');
     

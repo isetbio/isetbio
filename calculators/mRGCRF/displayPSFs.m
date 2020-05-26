@@ -11,7 +11,8 @@ function displayPSFs()
     imposedRefractionErrorDiopters = 0;
     
     plotlabOBJ = setupPlotLab();
-    
+    cMap = brewermap(512, 'greys');
+     
     if (1==2)
         % Compute the PSFs at the desired eccentricities
         [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(goodSubjects, ...
@@ -23,15 +24,15 @@ function displayPSFs()
         theAxesGrid = plotlab.axesGrid(hFig, ...
                 'rowsNum', numel(goodSubjects), ...
                 'colsNum', numel(hEcc), ...
-                'leftMargin', 0.04, ...
-                'rightMargin', 0.01, ...
-                'widthMargin', 0.01, ...
-                'heightMargin', 0.01, ...
-                'bottomMargin', 0.01, ...
-                'topMargin', 0.01);
+                'leftMargin', 0.005, ...
+                'rightMargin', 0.005, ...
+                'widthMargin', 0.005, ...
+                'heightMargin', 0.005, ...
+                'bottomMargin', 0.005, ...
+                'topMargin', 0.005);
         
        
-        cMap = brewermap(512, '*greys');
+       
         for subjIdx = 1:numel(goodSubjects)
            for eccYIndex = 1:numel(vEcc)
            for eccXIndex = 1:numel(hEcc)
@@ -63,7 +64,7 @@ function displayPSFs()
     % Custom 2D sampling (2.5 deg) for one subject
     eccXrange = [-20 20];
     eccYrange = [-20 20];
-    deltaEcc = 2.5;
+    deltaEcc = 5;
     goodSubjects = [8];
     
     % Compute the PSFs at the desired eccentricities
@@ -87,13 +88,14 @@ function displayPSFs()
         ax = subplot('Position', subplotPosVectors(eccYIndex, eccXIndex).v);
         imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, squeeze(thePSFs(1, eccYIndex, eccXIndex,:,:)));
         axis(ax, 'square'); 
-        set(ax, 'XTickLabel', {}, 'YTickLabel', {});
-        title(ax,sprintf('%2.1f,%2.1f', hEcc(eccXIndex), vEcc(eccYIndex)));
+        xyRange = max(thePSFsupportDegs(:))*[-1 1]*0.25;
+        set(ax, 'XTickLabel', {}, 'YTickLabel', {}, 'XLim', xyRange, 'YLim', xyRange);
+       % title(ax,sprintf('%2.1f,%2.1f', hEcc(eccXIndex), vEcc(eccYIndex)));
         colormap(ax,cMap);
         drawnow;
      end
      end
-     
+     plotlabOBJ.exportFig(hFig, 'pdf', 'psfs', pwd());
 end
 
 function plotlabOBJ = setupPlotLab()
@@ -108,6 +110,6 @@ function plotlabOBJ = setupPlotLab()
             'renderer', 'painters', ...
             'axesTickLength', [0.01 0.01], ...
             'legendLocation', 'SouthWest', ...
-            'figureWidthInches', 20, ...
+            'figureWidthInches', 18, ...
             'figureHeightInches', 16);
 end
