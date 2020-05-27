@@ -17,6 +17,10 @@ function reassignConeIdentities(obj, varargin)
     %    varargin - Will contain the provided keys and values, such as...
     %    ***Needs to be filled out!***
     %
+    % History:
+    %    5/26/20   NPC  Fixed iRow issue, which was causing the mosaic plotting Y-coord flip 
+%                   (rows grow top -> bottom, whereas Y-coords grow bottom -> top)
+
     p = inputParser;
     p.addParameter('sConeMinDistanceFactor', 2.5, @isnumeric);
     p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
@@ -47,7 +51,7 @@ function reassignConeIdentities(obj, varargin)
 
         [iRows, iCols] = ind2sub(size(obj.pattern), sConeIndices);
         x2Microns = (1e6 * sampledHexMosaicXaxis(iCols)) .^ 2;
-        y2Microns = (1e6 * sampledHexMosaicYaxis(iRows)) .^ 2;
+        y2Microns = (1e6 * sampledHexMosaicYaxis(end-iRows)) .^ 2;
         sConeEccentricitiesMicrons = sqrt(x2Microns(:) + y2Microns(:));
         sConeIndicesToBeReassinged = find(sConeEccentricitiesMicrons < ...
             p.Results.sConeFreeRadiusMicrons);
@@ -71,7 +75,7 @@ function reassignConeIdentities(obj, varargin)
             sConeIndices = find(obj.pattern == 4);
             [iRows, iCols] = ind2sub(size(obj.pattern), sConeIndices);
             xxMeters = sampledHexMosaicXaxis(iCols);
-            yyMeters = sampledHexMosaicYaxis(iRows);
+            yyMeters = sampledHexMosaicYaxis(end-iRows);
             coneLocsInMeters(:, 1) = xxMeters;
             coneLocsInMeters(:, 2) = yyMeters;
             xxMicrons = 1e6 * xxMeters;
