@@ -51,6 +51,8 @@ function hFig = visualizeGrid(obj, varargin)
 %    xx/xx/15  NPC  ISETBIO TEAM, 2015
 %    02/21/18  jnm  Formatting
 %    04/23/18  npc  Added coverage, innerSegmentCoverage properties
+%    5/26/20   NPC  Fixed iRow issue, which was causing the mosaic plotting Y-coord flip 
+%                   (rows grow top -> bottom, whereas Y-coords grow bottom -> top)
 
 %% parse input
 p = inputParser;
@@ -247,7 +249,7 @@ if (~showCorrespondingRectangularMosaicInstead)
         edgeColor = [0.4 0.4 0.4];
         faceColor = 'none';
         coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(end-iRows), ...
             edgeColor, faceColor, lineStyle, lineWidth);
     end
     
@@ -260,7 +262,7 @@ if (~showCorrespondingRectangularMosaicInstead)
 
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows);
     
     edgeColor = 'none'; % [1 0 0];
     if (labelConeTypes)
@@ -311,7 +313,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     end
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows);
     
     edgeColor = 'none';  % = [0 0.7 0];
     if (labelConeTypes)
@@ -365,7 +367,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     end
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows);
     
     edgeColor = 'none';  % = [0 0 1];
     if (labelConeTypes)

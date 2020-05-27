@@ -23,6 +23,8 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
 % History:
 %    xx/xx/17  NPC  ISETBIO TEAM, 2017
 %    02/20/18  jnm  Formatting
+%    5/26/20   NPC  Fixed iRow issue, which was causing the mosaic plotting Y-coord flip 
+%                   (rows grow top -> bottom, whereas Y-coords grow bottom -> top)
 
     p = inputParser;
     p.addRequired('axesHandle', @ishandle);
@@ -139,7 +141,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     idx = find(obj.pattern > 1);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);  
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows);
     activationsNlevels = round((activation(idx) - activationRange(1)) / ...
         (activationRange(2) - activationRange(1)) * cMapLevels);
     faceColorsNormalizedValues = activationsNlevels / cMapLevels;
@@ -194,7 +196,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     ylim(axesHandle, yRange);
     
     if (~isempty(crossHairPosition))
-        plot(axesHandle, [xRange(1) xRange(end)], -crossHairPosition(2)*[1 1], 'g-', 'LineWidth', 1.5);
+        plot(axesHandle, [xRange(1) xRange(end)], crossHairPosition(2)*[1 1], 'g-', 'LineWidth', 1.5);
         plot(axesHandle, crossHairPosition(1)*[1 1],[yRange(1) yRange(end)], 'g-', 'LineWidth', 1.5);
     end
     

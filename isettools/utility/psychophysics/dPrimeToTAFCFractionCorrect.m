@@ -1,61 +1,40 @@
 function fractionCorrect = dPrimeToTAFCFractionCorrect(dPrime)
 % fractionCorrect = dPrimeToTAFCPercentFraction(dPrime)
 %
-% Get area under ROC curve for a normal distribution d-prime and from there
-% compute fraction correct.
+% Get area under ROC curve for an equal-variance normal distribution
+% d-prime and from there compute fraction correct.
+%
+% This was originally written as numerical integration of ROC curve.  Now
+% has analytic calculation inserted, and a check that the two are close.
+% At some point, might want to change over to the analytic version.
+%
+% See also: computeROCArea, analyticPHitPpFA, computeDPrimCritNorm
+
+% History:
+%    05/26/2020  dhb  Added analytic calculation
+
+%% Examples:
+%{
+    dPrimeToTAFCFractionCorrect(0.25)
+    dPrimeToTAFCFractionCorrect(0.5)
+    dPrimeToTAFCFractionCorrect(0.1)
+    dPrimeToTAFCFractionCorrect(2)
+    dPrimeToTAFCFractionCorrect(3)
+%}
 
 nCriteria = 1000;
 lowCriterion = -8;
 highCriterion = 8;
 
-fractionCorrect = ComputeROCArea(dPrime,0,1,linspace(lowCriterion,highCriterion,nCriteria));
+fractionCorrect = computeROCArea(dPrime,0,1,linspace(lowCriterion,highCriterion,nCriteria));
+fractionCorrect1 = normcdf(dPrime/sqrt(2));
+if (max(abs(fractionCorrect-fractionCorrect1)) > 1e-3)
+    error('Numerical and analytic calculations do not match');
+end
     
 end
 
-%% Function to get area under ROC curve
-function rocArea = ComputeROCArea(signalMean,noiseMean,commonSd,criteria)
-
-% Compute ROC curve
-for i = 1:length(criteria)
-    [pHitAnalytic(i),pFaAnalytic(i)] = AnalyticpHitpFa(signalMean,noiseMean,commonSd,criteria(i));
-end
-
-% Integrate numerically to get area.  The negative
-% sign is because the way the computation goes, the hit rates
-% decrease with increasing criteria.
-rocArea = -trapz([1 pFaAnalytic 0],[1 pHitAnalytic 0]);
-
-end
 
 
-%% [pHit,pFa] = AnalyticpHitpFa(signalMean,noiseMean,commonSd,rightCrit)
-% 
-% This just finds the area under the signal and noise
-% distributions to the right of the criterion to obtain
-% hit and false alarm rates
-function [pHit,pFa] = AnalyticpHitpFa(signalMean,noiseMean,commonSd,rightCrit)
 
-pHit = 1-normcdf(rightCrit,signalMean,commonSd);
-pFa = 1-normcdf(rightCrit,noiseMean,commonSd);
-
-end
-
-%% [dprime,critNorm] = ComputeDPrimeCritNorm(pHit,pFa)
-%
-% FindFdPrime and criterion from
-% hit and fa rates.
-%
-% This assumes equal variance normal for the noise and
-% signal response distributions.
-%
-% The criterion is returned in normalized units where the
-% noise distribution is taken to have mean 0 and the common SD is 1.
-%
-% Formula from lecture slides.
-function [dprime,critNorm] = ComputeDPrimeCritNorm(pHit,pFa)
-
-dprime = norminv(pHit,0,1)-norminv(pFa,0,1);
-critNorm = norminv(1-pFa,0,1);
-
-end
 

@@ -30,6 +30,8 @@ function plotHexMosaic(obj, varargin)
 %    xx/xx/15  NPC  ISETBIO TEAM, 2015
 %    02/20/18  jnm  Formatting
 %    03/08/19  NPC  Fixed subroutine calling issues
+%    5/26/20   NPC  Fixed iRow issue, which was causing the mosaic plotting Y-coord flip 
+%                   (rows grow top -> bottom, whereas Y-coords grow bottom -> top)
 
 %% parse input
 p = inputParser;
@@ -122,7 +124,7 @@ if (~showCorrespondingRectangularMosaicInstead)
         edgeColor = [0.4 0.4 0.4];
         faceColor = 'none';
         renderPatchArray(gca, pixelOutline, sampledHexMosaicXaxis(iCols), ...
-            sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
+            sampledHexMosaicYaxis(end-iRows), edgeColor, faceColor, lineStyle, lineWidth);
     end
 
     % L-cones - The 'finds' take a long time, 3-times. Let's see if we
@@ -132,7 +134,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = [1 0 0];
     faceColor = [1.0 0.7 0.7];
     obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
+        sampledHexMosaicYaxis(end-iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     % M-cones
     idx = find(obj.pattern == 3);
@@ -140,7 +142,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = [0 0.7 0];
     faceColor = [0.7 1.0 0.7];
     obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
+        sampledHexMosaicYaxis(end-iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     % S-cones
     idx = find(obj.pattern == 4);
@@ -148,7 +150,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = [0 0 1];
     faceColor = [0.7 0.7 1.0];
     obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(iRows), edgeColor, faceColor, lineStyle, lineWidth);
+        sampledHexMosaicYaxis(end-iRows), edgeColor, faceColor, lineStyle, lineWidth);
 
     if (showPerfectHexMesh)
         % Superimpose hex mesh showing locations of the perfect hex grid

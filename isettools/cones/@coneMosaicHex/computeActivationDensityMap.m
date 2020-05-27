@@ -38,7 +38,9 @@ function [activationImage, activationImageLMScone, ...
 %    xx/xx/15  NPC  ISETBIO TEAM, 2015
 %    02/16/18  jnm  Formatting
 %    4/5/18    NPC  Sped up algorithm
-
+%    5/26/20   NPC  Fixed iRow issue, which was causing the mosaic plotting Y-coord flip 
+%                   (rows grow top -> bottom, whereas Y-coords grow bottom -> top)
+    
     sampledHexMosaicXaxis = squeeze(obj.patternSupport(1, :, 1)) + ...
         obj.center(1);
     sampledHexMosaicYaxis = squeeze(obj.patternSupport(:, 1, 2)) + ...
@@ -90,62 +92,12 @@ function [activationImage, activationImageLMScone, ...
         ix = find(obj.pattern(activeConeIndices) == coneID);  % Positions for this cone class
         [r, c] = ind2sub(size(obj.pattern), activeConeIndices(ix));
         for k = 1:numel(r)
-            rr = (r(k)-1)*interpolationF+round(interpolationF/2);
-            cc = (c(k)-1)*interpolationF+round(interpolationF/2);
-            activationImageSingleCone(rr,cc) = activationFrame(ix(k));
+            iRow = (r(k)-1)*interpolationF+round(interpolationF/2);
+            iCol = (c(k)-1)*interpolationF+round(interpolationF/2);
+            activationImageSingleCone(end-iRow,iCol) = activationFrame(ix(k));
         end
          activationImageLMScone(:,:, coneID-1) = conv2(activationImageSingleCone, apertureKernel, 'same');
     end
 
     activationImage = sum(activationImageLMScone, 3);
 end
-
-
-
-%     size(obj.patternSupport)
-%     obj.visualizeGrid();
-%     pause
-%     zeroFrame = zeros(interpolationF * obj.rows, ...
-%         interpolationF * obj.cols);
-% 
-%     [size(zeroFrame) obj.rows obj.cols]
-%     
-%     % [Row, Col, 3]
-%     activationImageLMScone = zeros(interpolationF * obj.rows, ...
-%         interpolationF * obj.cols, 3);
-% 
-%     % First is blank, 2, 3, 4 are L, M, S
-%     % Not sure what the algorithm is doing here.
-%     % But it is very slow when we have a movie (e.g., 100 temporal samples)
-%     % Must rethink. (TODO)
-%     for coneID = 2:4
-%         % Calculating individual maps, and then summing at the end
-%         fprintf('Cone ID %d\n', coneID);
-%         ix = find(obj.pattern == coneID);  % Positions for this cone class
-%         frame = zeroFrame;
-%         [r, c] = ind2sub(size(obj.pattern), ix);
-%         [numel(r) numel(c)]
-%         for k = 1:numel(ix)  % For each cone position in this cone class
-%             yy = (r(k) - 1) * interpolationF + interpolationF / 2 + ...
-%                 round(apertureSupport / dx);
-%             xx = (c(k) - 1) * interpolationF + interpolationF / 2 + ...
-%                 round(apertureSupport / dx);
-%             xx = xx(xx > 0 & xx <= size(frame, 2));
-%             yy = yy(yy > 0 & yy <= size(frame, 1));
-%             [xxx, yyy] = meshgrid(xx, yy);
-%             xxx = xxx(:);
-%             yyy = yyy(:);
-%             [numel(r) numel(c) k]
-%             yyyy = yyy - ((r(k) - 1) * interpolationF + ...
-%                 interpolationF / 2) + 1 + nSamples;
-%             xxxx = xxx - ((c(k) - 1) * interpolationF + ...
-%                 interpolationF / 2) + 1 + nSamples;
-%             frame(yyy, xxx) = frame(yyy, xxx) + ...
-%                 activation(r(k), c(k)) * apertureKernel(yyyy, xxxx);
-%         end
-%         % frame has been interpolated to the whole image size.
-%         activationImageLMScone(:, :, coneID - 1) = frame;
-%     end
-%     fprintf('Combining cone maps\n');
-%     activationImage = sum(activationImageLMScone, 3);
-% end
