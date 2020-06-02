@@ -549,7 +549,7 @@ coneMosaicGUIRefresh(hObject, eventdata, handles);
 end
 
 function coneMosaicGUIRefresh(~, ~, handles, plotType)
-% (Top | Refresh) Update the Cone mosaic window interface - main pulldown
+% (File | Refresh) Update the Cone mosaic window interface - main pulldown
 %
 % Syntax:
 %   coneMosaicGUIRefresh(handles)

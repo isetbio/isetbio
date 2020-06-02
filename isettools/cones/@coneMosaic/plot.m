@@ -137,7 +137,7 @@ oi = p.Results.oi;                    % Used in plotGraphs routine
 
 %% Initialize where we'll plot
 if isempty(hf)
-    hf = vcNewGraphWin;
+    hf = ieNewGraphWin;
 elseif isgraphics(hf, 'figure')
     figure(hf);
 elseif isgraphics(hf, 'axes')

@@ -32,7 +32,8 @@
 %% Initialize ISET
 % Set the largest size in microns for plotting
 % Set the pupil diameter in millimeters
-s_initISET
+ieInit;
+
 maxUM = 30;
 measPupilMM = 4.5;  % This selects which Thibos data set to load
 calcPupilMM = 3.0;  % Calculate for this pupil size
@@ -46,7 +47,7 @@ calcPupilMM = 3.0;  % Calculate for this pupil size
 [sample_mean, S] = wvfLoadThibosVirtualEyes(measPupilMM);
 
 %% Plot the means and covariance (not)
-vcNewGraphWin([], 'tall');
+ieNewGraphWin([], 'tall');
 
 subplot(3, 1, 1)
 plot(sample_mean, '--o');
@@ -101,7 +102,7 @@ thisGuy = wvfComputePSF(thisGuy);
 % These illustrate the strong axial chromatic aberration.
 wave = wvfGet(thisGuy, 'calc wave');
 nWave = wvfGet(thisGuy, 'calc nwave');
-vcNewGraphWin([], 'tall');
+ieNewGraphWin([], 'tall');
 for ii = 1:nWave
     subplot(nWave, 1, ii)
     wvfPlot(thisGuy, 'image psf space', 'um', wave(ii), maxUM, ...
@@ -127,7 +128,7 @@ thisGuy = wvfSet(thisGuy, 'measured pupil', measPupilMM);
 % What we calculate
 thisGuy = wvfSet(thisGuy, 'calculated pupil', calcPupilMM);
 
-vcNewGraphWin([], 'tall');
+ieNewGraphWin([], 'tall');
 thisWave = wave(1);
 for ii = 1:nSubjects
     % Choose different coefficients and compute for each subject
@@ -145,7 +146,7 @@ for ii = 1:nSubjects
 end
 colormap(gray(256));
 
-vcNewGraphWin([], 'tall');
+ieNewGraphWin([], 'tall');
 thisWave = wave(2);
 for ii = 1:nSubjects
     % Choose different coefficients and compute for each subject
@@ -162,3 +163,5 @@ for ii = 1:nSubjects
     colorbar;
 end
 colormap(gray(256));
+
+%% END
