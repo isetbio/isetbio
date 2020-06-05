@@ -85,8 +85,8 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     % Export the figure to the gallery directory in PNG format
     exportFig = true;
     if (exportFig)
-        micronsPerDegree = 300;
-        fName = sprintf('%s__RF_x=%2.2f_y=%2.2fdegs', exportFileName, roi.center(1)/micronsPerDegree, roi.center(2)/micronsPerDegree);
+        rfEccDegs = WatsonRGCModel.rhoMMsToDegs(roi.center/1000);
+        fName = sprintf('%s__RFecc_x=%2.2f_y=%2.2fdegs', exportFileName, rfEccDegs(1), rfEccDegs(2));
         plotlabOBJ.exportFig(hFig, 'png', fName, exportsDir);
     end
 end

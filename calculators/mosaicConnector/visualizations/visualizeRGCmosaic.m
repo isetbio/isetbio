@@ -33,8 +33,8 @@ function visualizeRGCmosaic(figNo, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, 
     set(theAxesGrid, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
     
     % Export the figure to the gallery directory in PNG format
-    micronsPerDegree = 300;
-    fName = sprintf('RGCMosaic(%s)_x=%2.2f_y=%2.2fdegs', stateLabel, roi.center(1)/micronsPerDegree, roi.center(2)/micronsPerDegree);
+    roi.center = WatsonRGCModel.rhoMMsToDegs(roi.center/1000);
+    fName = sprintf('RGCMosaic(%s)_x=%2.2f_y=%2.2fdegs', stateLabel, roi.center(1), roi.center(2));
     plotlabOBJ.exportFig(hFig, 'png', fName, fullfile(pwd(), 'exports'));
     
 end

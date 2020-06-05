@@ -17,19 +17,24 @@ function visualizeConeMosaic(conePositionsMicrons, coneTypes, roi, plotlabOBJ)
     title(theAxesGrid{1,1}, sprintf('%2.2f%% (L), %2.2f%% (M), %2.2f%% (S)', LconePercent, MconePercent, SconePercent));
     
     deltaX = 50;
-    micronsPerDeg = 300;
-    xAxis = 0 : deltaX: (roi.xo+roi.width/2)*micronsPerDeg;
+    xAxis = 0 : deltaX: (roi.xo+roi.width/2);
     xAxis = [-fliplr(xAxis(2:end)) xAxis];
-    yAxis = 0 : deltaX: (roi.yo+roi.height/2)*micronsPerDeg;
+    yAxis = 0 : deltaX: (roi.yo+roi.height/2);
     yAxis = [-fliplr(yAxis(2:end)) yAxis];
+    xAxis = WatsonRGCModel.rhoMMsToDegs(xAxis/1000);
+    yAxis = WatsonRGCModel.rhoMMsToDegs(yAxis/1000);
     
     xLims = [xAxis(1) xAxis(end)];
     yLims = [yAxis(1) yAxis(end)];
+    
+    
     axis(theAxesGrid{1,1}, 'equal');
     set(theAxesGrid{1,1}, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
     
-    micronsPerDegree = 300;
-    fName = sprintf('ConeMosaic_x=%2.2f_y=%2.2fdegs', roi.xo/micronsPerDegree, roi.yo/micronsPerDegree);
+    roi.xo = WatsonRGCModel.rhoMMsToDegs(roi.xo/1000);
+    roi.yo = WatsonRGCModel.rhoMMsToDegs(roi.yo/1000);
+    
+    fName = sprintf('ConeMosaic_x=%2.2f_y=%2.2fdegs', roi.xo, roi.yo);
     plotlabOBJ.exportFig(hFig, 'png', fName, fullfile(pwd(), 'exports'));
     
 end

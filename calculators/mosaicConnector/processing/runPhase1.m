@@ -1,0 +1,13 @@
+function runPhase1(runParams)
+
+        % Select data for the analyzed region
+        [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, conePositionsMicrons, desiredConesToRGCratios] = ...
+            loadData(runParams.whichEye, runParams.mosaicFOVDegs, runParams.eccentricitySamplesNumCones, ...
+            runParams.eccentricitySamplesNumRGC, runParams.roiRadiusDeg);
+
+        % Save mosaic data within the roiRadiusDeg
+        save(fullfile(runParams.outputDir, sprintf('%s.mat',runParams.outputFile)), ...
+            'RGCRFPositionsMicrons', 'conePositionsMicrons', ...
+            'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
+end
+

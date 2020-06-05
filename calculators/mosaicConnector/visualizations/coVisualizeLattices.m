@@ -4,13 +4,15 @@ function coVisualizeLattices(conePositionsMicrons, RGCRFPositionsMicrons)
     minX = 2; maxX = 4;
     eccRangeY = 0.6;
     
-    micronsPerDeg = 300;
-    ecc = sqrt(sum(conePositionsMicrons.^2,2));
-    idx = find(ecc<1.1*maxEcc*micronsPerDeg);
+    conePositionsDegs = WatsonRGCModel.rhoMMsToDegs(conePositionsMicrons/1000);
+    RGCRFPositionsDegs =  WatsonRGCModel.rhoMMsToDegs(RGCRFPositionsMicrons/1000);
+    
+    ecc = sqrt(sum(conePositionsDegs.^2,2));
+    idx = find(ecc<1.1*maxEcc);
     conePositionsMicrons = conePositionsMicrons(idx,:);
     
-    ecc = sqrt(sum(RGCRFPositionsMicrons.^2,2));
-    idx = find(ecc<1.1*maxEcc*micronsPerDeg);
+    ecc = sqrt(sum(GCRFPositionsDegs.^2,2));
+    idx = find(ecc<1.1*maxEcc);
     RGCRFPositionsMicrons = RGCRFPositionsMicrons(idx,:);
     
     % Instantiate a plotlab object
@@ -35,8 +37,8 @@ function coVisualizeLattices(conePositionsMicrons, RGCRFPositionsMicrons)
     visualizeLattice(conePositionsMicrons);
     visualizeLattice(RGCRFPositionsMicrons);
     axis 'equal';
-    set(gca, 'XLim', [minX maxX]*micronsPerDeg, ...
-        'YLim', 0.5*eccRangeY*[-1 1]*micronsPerDeg);
+    set(gca, 'XLim', [minX maxX], ...
+        'YLim', 0.5*eccRangeY*[-1 1]);
     
     
 end
