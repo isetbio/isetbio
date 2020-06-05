@@ -1,12 +1,12 @@
 function displayPSFs()
 
-    goodSubjects = [4 5 6 7 8 9 10];
+    goodSubjects = [4 8 9];  % The best subjects
     
     % Compute good subject PSFs along the Y = 0, negative X, with an
     % eccentricity resolution of 1 deg
-    eccXrange = [-40 0];
+    eccXrange = [-20 0];
     eccYrange = [0 0];
-    deltaEcc = 5;
+    deltaEcc = 1;
     
     imposedRefractionErrorDiopters = 0;
     
@@ -20,7 +20,7 @@ function displayPSFs()
 
         % Visualize them
         hFig = figure(1); clf;
-
+        set(hFig, 'Position', [10 10 28 16])
         theAxesGrid = plotlab.axesGrid(hFig, ...
                 'rowsNum', numel(goodSubjects), ...
                 'colsNum', numel(hEcc), ...
@@ -32,7 +32,7 @@ function displayPSFs()
                 'topMargin', 0.005);
         
        
-       
+        psfRangeDegs = 0.1;
         for subjIdx = 1:numel(goodSubjects)
            for eccYIndex = 1:numel(vEcc)
            for eccXIndex = 1:numel(hEcc)
@@ -40,7 +40,7 @@ function displayPSFs()
                 ax = theAxesGrid{subjIdx, eccXIndex};
                 imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, squeeze(thePSFs(subjIdx, eccYIndex, eccXIndex,:,:)));
                 axis(ax, 'square'); 
-                set(ax, 'XTick', -1:0.1:1, 'YTick', -1:0.1:1, 'XLim', [-0.35 0.35], 'YLim', [-0.35 0.35]);
+                set(ax, 'XTick', -1:0.1:1, 'YTick', -1:0.1:1, 'XLim', psfRangeDegs*[-1 1], 'YLim', psfRangeDegs*[-1 1]);
                 if (eccXIndex == 1) && (subjIdx == numel(goodSubjects))
                     ylabel(ax,'space (degs)');
                 else   
@@ -59,43 +59,46 @@ function displayPSFs()
         end % subIdx
         plotlabOBJ.exportFig(hFig, 'pdf', 'psfs', pwd());
 
+    else
+
+        % 2D sampling (2.5 deg)
+        eccXrange = [-20 0];
+        eccYrange = [0 20];
+        deltaEcc = 5;
+
+        % Compute the PSFs at the desired eccentricities
+        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(goodSubjects, ...
+            imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
+
+        for subjectIndex = 1:numel(goodSubjects)
+            hFig = figure(goodSubjects(subjectIndex)); clf;
+
+            subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                       'rowsNum', numel(vEcc), ...
+                       'colsNum', numel(hEcc), ...
+                       'heightMargin',  0.01, ...
+                       'widthMargin',   0.01, ...
+                       'leftMargin',    0.02, ...
+                       'rightMargin',   0.01, ...
+                       'bottomMargin',  0.01, ...
+                       'topMargin',     0.01);
+
+            for eccYIndex = 1:numel(vEcc)
+                for eccXIndex = 1:numel(hEcc)
+                    ax = subplot('Position', subplotPosVectors(eccYIndex, eccXIndex).v);
+                    imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, squeeze(thePSFs(subjectIndex, eccYIndex, eccXIndex,:,:)));
+                    axis(ax, 'square'); 
+                    xyRange = max(thePSFsupportDegs(:))*[-1 1]*0.25;
+                    set(ax, 'XTickLabel', {}, 'YTickLabel', {}, 'XLim', xyRange, 'YLim', xyRange);
+                   % title(ax,sprintf('%2.1f,%2.1f', hEcc(eccXIndex), vEcc(eccYIndex)));
+                    colormap(ax,cMap);
+                    drawnow;
+                end
+            end
+            plotlabOBJ.exportFig(hFig, 'pdf', sprintf('psfs_subject%d', goodSubjects(subjectIndex)), pwd());
+        end
     end
-
-    % Custom 2D sampling (2.5 deg) for one subject
-    eccXrange = [-20 20];
-    eccYrange = [-20 20];
-    deltaEcc = 5;
-    goodSubjects = [8];
     
-    % Compute the PSFs at the desired eccentricities
-    [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(goodSubjects, ...
-        imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
-    
-    hFig = figure(2); clf;
-
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', numel(vEcc), ...
-           'colsNum', numel(hEcc), ...
-           'heightMargin',  0.01, ...
-           'widthMargin',   0.01, ...
-           'leftMargin',    0.02, ...
-           'rightMargin',   0.01, ...
-           'bottomMargin',  0.01, ...
-           'topMargin',     0.01);
-
-     for eccYIndex = 1:numel(vEcc)
-     for eccXIndex = 1:numel(hEcc)
-        ax = subplot('Position', subplotPosVectors(eccYIndex, eccXIndex).v);
-        imagesc(ax, thePSFsupportDegs, thePSFsupportDegs, squeeze(thePSFs(1, eccYIndex, eccXIndex,:,:)));
-        axis(ax, 'square'); 
-        xyRange = max(thePSFsupportDegs(:))*[-1 1]*0.25;
-        set(ax, 'XTickLabel', {}, 'YTickLabel', {}, 'XLim', xyRange, 'YLim', xyRange);
-       % title(ax,sprintf('%2.1f,%2.1f', hEcc(eccXIndex), vEcc(eccYIndex)));
-        colormap(ax,cMap);
-        drawnow;
-     end
-     end
-     plotlabOBJ.exportFig(hFig, 'pdf', 'psfs', pwd());
 end
 
 function plotlabOBJ = setupPlotLab()
