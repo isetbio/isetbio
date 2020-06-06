@@ -1,56 +1,51 @@
 function convolveGaussianWithPSF()
-    
+    rootDir = fileparts(which(mfilename));
     retinalPoolingRadii = logspace(log10(0.001), log10(0.6), 10);
     plotlabOBJ = setupPlotLab();
     
-    visualizeAnalysis = true;
+    visualizeAnalysis = ~true;
     
     imposedRefractionErrorDiopters = 0.0; 
-    eccTested = -1; %-(0:1:25);
+    eccTested = [0 0.5 1.0]; % 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
+    eccTested = -fliplr(eccTested);
+    
     for eccIndex = 1:numel(eccTested)
         ecc = eccTested(eccIndex);
-        doIt(ecc, imposedRefractionErrorDiopters, retinalPoolingRadii,  visualizeAnalysis, plotlabOBJ);
+        doIt(rootDir, ecc, imposedRefractionErrorDiopters, retinalPoolingRadii,  visualizeAnalysis, plotlabOBJ);
     end
     
 end
 
-function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  visualizeAnalysis, plotlabOBJ )
+function doIt(rootDir,cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  visualizeAnalysis, plotlabOBJ )
 
-    dataFileName = sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', cellEcc(1), imposedRefractionErrorDiopters);
+    dataFileName = fullfile(rootDir,'VisualToRetinalCorrectionData',sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', cellEcc(1), imposedRefractionErrorDiopters));
     
-    subjectIDs = 7% 8:10;
+    subjectIDs = [1:10];
     subjectsNum = numel(subjectIDs);
     cMap = brewermap(512, 'greys');
     
-    retinalRadius = zeros(numel(retinalPoolingRadii), subjectsNum);
+    quadrants = [1 2 3];
+    retinalRadius = zeros(numel(retinalPoolingRadii), numel(quadrants),  subjectsNum);
     visualRadius = retinalRadius;
     visualGain = visualRadius;
     
-    
-    
-    quadrants = [1 2 3];
-    
     for qIndex = 1:numel(quadrants)
         eccQuadrant = quadrants(qIndex);
-        
+        switch (eccQuadrant)
+            case 1
+                eccXrange = cellEcc(1)*[1 1];
+                eccYrange = 0*[1 1];
+            case 2
+                eccYrange = cellEcc(1)*[1 1];
+                eccXrange = 0*[1 1];
+            case 3
+                eccYrange = -cellEcc(1)*[1 1];
+                eccXrange = 0*[1 1];
+        end
+        deltaEcc = 1;
+            
         for sIndex = 1:numel(subjectIDs)
             subjectID = subjectIDs(sIndex);
-            
-            kSubject = (eccQuadrant-1)*subjectsNum + subjectID;
-            
-            switch (eccQuadrant)
-                case 1
-                    eccXrange = cellEcc(1)*[1 1];
-                    eccYrange = 0*[1 1];
-                case 2
-                    eccYrange = cellEcc(1)*[1 1];
-                    eccXrange = 0*[1 1];
-                case 3
-                    eccYrange = -cellEcc(1)*[1 1];
-                    eccXrange = 0*[1 1];
-            end
-            deltaEcc = 1;
-            
             % Compute the subject PSF at the desired eccentricity
             [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(subjectID, ...
                 imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
@@ -66,16 +61,13 @@ function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  vis
             margin = 0.5*(largePSFsize-psfSize);
             theLargePSF(margin+(1:psfSize), margin+(1:psfSize)) = thePSFOriginal;
             
-          
             % Make corresponding large PSF support
             dS = thePSFsupportDegsOriginal(2)-thePSFsupportDegsOriginal(1);
             theLargePSFsupportDegs = -(0.5*(largePSFsize-1)*dS):dS:(0.5*(largePSFsize-1)*dS);
             
-            
             % Convolve different retinal pooling regions and compute the
             % visually-mapped pooling region
             for retinalRadiusIndex = 1:numel(retinalPoolingRadii)
-                
                 rfPoolingRadiusDegsInRetinalSpace = retinalPoolingRadii(retinalRadiusIndex);
                 maxX = 0.1; %min([0.3 rfPoolingRadiusDegsInRetinalSpace*8]);
                 
@@ -99,9 +91,9 @@ function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  vis
                     fitEllipse(thePSFsupportDegs, rfPoolingInVisualSpaceNorm);
                 
                 % Saved data
-                retinalRadius(retinalRadiusIndex, kSubject) = mean(semiAxesRetinalSpace);
-                visualRadius(retinalRadiusIndex, kSubject) = mean(semiAxesVisualSpace);
-                visualGain(retinalRadiusIndex, kSubject) = max(rfPoolingInVisualSpace(:))/max(rfPoolingInRetinalSpace(:));
+                retinalRadius(retinalRadiusIndex,qIndex, sIndex) = mean(semiAxesRetinalSpace);
+                visualRadius(retinalRadiusIndex,qIndex, sIndex) = mean(semiAxesVisualSpace);
+                visualGain(retinalRadiusIndex,qIndex, sIndex) = max(rfPoolingInVisualSpace(:))/max(rfPoolingInRetinalSpace(:));
                 
                 if ( visualizeAnalysis)
                     % Extract profile at peak
@@ -112,14 +104,14 @@ function doIt(cellEcc, imposedRefractionErrorDiopters, retinalPoolingRadii,  vis
                     visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange, ...
                         rfPoolingInRetinalSpaceNorm, rfPoolingInVisualSpaceNorm, ...
                         rfPoolingRetinalSpaceProfile, rfPoolingVisualSpaceProfile, ...
-                        retinalRadius(retinalRadiusIndex, kSubject), visualRadius(retinalRadiusIndex, kSubject), ...
-                        visualGain(retinalRadiusIndex, kSubject), ellipseInRetinalSpace, ellipseInVisualSpace, cMap, maxX, plotlabOBJ );
+                        retinalRadius(retinalRadiusIndex,qIndex, sIndex), visualRadius(retinalRadiusIndex,qIndex, sIndex), ...
+                        visualGain(retinalRadiusIndex,qIndex, sIndex), ellipseInRetinalSpace, ellipseInVisualSpace, cMap, maxX, plotlabOBJ );
                 end
             end
         end
     end
     
-    save(dataFileName, 'retinalPoolingRadii', 'retinalRadius', 'visualRadius', 'visualGain');
+    save(dataFileName, 'retinalPoolingRadii', 'retinalRadius', 'visualRadius', 'visualGain', 'subjectIDs', 'quadrants');
 end
 
 function visualizeFit(thePSFsupportDegs, thePSF, subjectID, eccXrange, eccYrange, ...
