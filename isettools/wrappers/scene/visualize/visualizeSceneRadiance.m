@@ -54,7 +54,7 @@ for iBand = 1:numel(wavelengthBandsToVisualize)
     else
         imagesc(spatialSupportX, spatialSupportY, ...
             squeeze(photons(:,:,visualizedWavelengthIndex)), photonRange);
-        axis 'image';
+        axis 'xy'; axis 'image';
         set(gca, 'XTick', [], 'YTick', []);
         colorbar();
     end
