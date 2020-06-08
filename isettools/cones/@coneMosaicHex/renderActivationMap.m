@@ -141,7 +141,7 @@ function renderActivationMap(obj, axesHandle, activation, varargin)
     idx = find(obj.pattern > 1);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);  
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(end-iRows+1);
+    coneYcoords = sampledHexMosaicYaxis(iRows);
     activationsNlevels = round((activation(idx) - activationRange(1)) / ...
         (activationRange(2) - activationRange(1)) * cMapLevels);
     faceColorsNormalizedValues = activationsNlevels / cMapLevels;
