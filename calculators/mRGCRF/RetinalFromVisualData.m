@@ -1,10 +1,11 @@
 function RetinalFromVisualData()
-    % Step1. Convolve different size Gaussians with good subject (Polans et al) PSFs
+    % Step 1. Convolve different size Gaussians with good subject (Polans et al) PSFs
     % convolveGaussianWithPSF()
     
-    % Step2. Analyze the results of this convolution
+    % Step 2. Analyze the results of this convolution
     analyzeConvolutionResults()
     
-    
+    % Step 3. Plot the corrected visual data based on the convolution  results
+    plotCorrectedCronerKaplanStats()
 end
 

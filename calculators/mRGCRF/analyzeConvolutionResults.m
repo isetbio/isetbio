@@ -1,6 +1,8 @@
 function analyzeConvolutionResults
     rootDir = fileparts(which(mfilename));
-    quandrantsToInclude =  'vertical'; %'horizontal';   % choose from {'horizontal', 'vertical', 'both'}
+    quandrantsToInclude =   'both';   % choose from {'horizontal', 'vertical', 'both'}
+    subjectsToInclude = [1:10]; %[4 8 9];
+    
     defocusMode = 'subjectDefault';
     
     if (strcmp(defocusMode, 'subjectDefault'))
@@ -8,13 +10,9 @@ function analyzeConvolutionResults
     else
         imposedRefractionErrorDiopters =  0.01; 
     end
-   
-    
-    eccTested = -[0.0 0.5 1.0 1.5 2.0 2.5 3.0 ...
-                  4   5   6      8   9    10 ...
-                  11 12  13  14  15  16    17 ...
-                  18 20  21  22  23  24    25];
-
+  
+    eccTested = -[0 0.25 0.5 1 1.5 2:25];
+              
     plotlabOBJ = setupPlotLab([26 14], 'both');
     
     % Display the visual radius data
@@ -34,18 +32,34 @@ function analyzeConvolutionResults
     coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(eccTested), ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
-    coneApertureRadii = 0.5*coneRFSpacingsDegs;
+    coneApertureRadii = 0.8*0.5*coneRFSpacingsDegs;
     
     for eccIndex = 1:numel(eccTested)
         eccDegs = eccTested(eccIndex);
         dataFileName = fullfile(rootDir,'VisualToRetinalCorrectionData',sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', eccDegs, imposedRefractionErrorDiopters));
         load(dataFileName, 'retinalPoolingRadii', 'visualRadius', 'subjectIDs', 'quadrants');
         
+        if (eccDegs == 0)
+            w = WatsonRGCModel();
+            coneRFSpacingDeg  = w.coneRFSpacingAndDensityAlongMeridian(0, ...
+            'nasal meridian','deg', 'deg^2', ...
+            'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio',false);
+            % min retinal radius = 0.5 * cone spacing at 0 deg  
+            minRetinalRadius = 0.8*0.5*coneRFSpacingDeg;
+            % Find closest retinal pooling radius
+            [dd,idx] = sort(abs(minRetinalRadius-retinalPoolingRadii));
+            minRetinalRadius = retinalPoolingRadii(idx(1));
+            d1 = dd(2)/(dd(1)+dd(2));
+            d2 = dd(1)/(dd(1)+dd(2));
+            visualRadii = d1 * squeeze(visualRadius(idx(1),:,:)) + d2 * squeeze(visualRadius(idx(2),:,:));
+            minVisualRadiusDegs = median(median(visualRadii));
+        end
+        
         % Get data for the quadrant of interest
-        visualRadius = quadrantData(visualRadius, quandrantsToInclude);
+        visualRadius = quadrantData(visualRadius, quandrantsToInclude, quadrants);
         
         % Only include points for retinal pooling radii > = cone aperture
-        idx = find(retinalPoolingRadii >= 0.5*coneApertureRadii(eccIndex));
+        idx = find(retinalPoolingRadii >= coneApertureRadii(eccIndex));
         retinalPoolingRadii = retinalPoolingRadii(1,idx);
         visualRadius = visualRadius(:,idx);
  
@@ -53,6 +67,7 @@ function analyzeConvolutionResults
         col = mod(eccIndex-1, plotCols)+1;
 
         % median over subjects/ecc quadrants
+        visualRadius = visualRadius(subjectsToInclude,:);
         medianVisualRadius = (median(visualRadius,1, 'omitnan'))';
 
         % Extend the visual radius data to 1.5
@@ -104,7 +119,7 @@ function analyzeConvolutionResults
         retinalPoolingRadiiOriginal = retinalPoolingRadii;
         
          % Get data for the quadrant of interest
-        visualGain = quadrantData(visualGain, quandrantsToInclude);
+        visualGain = quadrantData(visualGain, quandrantsToInclude, quadrants);
         
         % Only include points for retinal pooling radii > = cone aperture
         idx = find(retinalPoolingRadii >= 0.5*coneApertureRadii(eccIndex));
@@ -115,19 +130,15 @@ function analyzeConvolutionResults
         col = mod(eccIndex-1, plotCols)+1;
         
         % Median over all subjects/ecc quadrants
+        visualGain = visualGain(subjectsToInclude,:);
         medianVisualGain = (median(visualGain,1, 'omitnan'))';
         
         % Extend the visual gain data 
         medianVisualGainExtended = [medianVisualGain; [1 1 1]'];
         retinalPoolingRadiiExtended = [retinalPoolingRadii [0.8 1 2]]';
         
-        
         % Fit the visualGain with a saturating function
-        modelFunctionGain = @(p,x)(p(1) - (p(2)-p(1))*exp(-p(3)*x));
         modelFunctionGain = @(p,x)((p(1)*x.^p(3))./(x.^p(3)+p(2)));
-        
-        
-        
         initialParams = [0.9 0.002 2];
         [fittedParams, fittedParamsSE] = nonLinearFitData(retinalPoolingRadiiExtended, medianVisualGainExtended, modelFunctionGain, initialParams);
         fittedParamsGain(eccIndex,:) = fittedParams;
@@ -157,7 +168,7 @@ function analyzeConvolutionResults
     retinalPoolingRadii = retinalPoolingRadiiOriginal;
     save(sprintf('%sFittedModel.mat', matFileName), 'retinalPoolingRadii', ...
         'eccTested', 'fittedParamsRadius', 'fittedParamsGain', ...
-        'modelFunctionRadius', 'modelFunctionGain');
+        'modelFunctionRadius', 'modelFunctionGain', 'minVisualRadiusDegs');
    
     visualizeFittedModel(defocusMode);
 end
@@ -189,8 +200,8 @@ function visualizeFittedModel(defocusMode)
     w = WatsonRGCModel();
     coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(eccTested), ...
             'nasal meridian','deg', 'deg^2', ...
-            'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', ~false);
-    coneApertureRadii = 0.5*coneRFSpacingsDegs;
+            'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', true);
+    coneApertureRadii = 0.8*0.5*coneRFSpacingsDegs;
         
     ax = theAxesGrid{1,1};
     hold(ax, 'on');
@@ -349,98 +360,17 @@ function plotlabOBJ = setupPlotLabForFittedModel(figSize, tickDir, colorOrder)
             'figureHeightInches', figSize(2));
 end
 
-function plotThePSFs(goodSubjects, eccTested, groupIndices)
-
-    plotlabOBJ = setupPlotLab([28 14], 'in');
-    cMap = brewermap(512, 'greys');
-    
-    for subk = 1:numel(goodSubjects)
-        
-        subIndex = goodSubjects(subk);
-        hFig = figure(subIndex); clf;
-        theAxesGrid = plotlab.axesGrid(hFig, ...
-                'rowsNum', 3, ...
-                'colsNum', numel(eccTested), ...
-                'leftMargin', 0.08, ...
-                'rightMargin', 0.01, ...
-                'widthMargin', 0.03, ...
-                'heightMargin', 0.08, ...
-                'bottomMargin', 0.06, ...
-                'topMargin', 0.06);
-            
-       
-        eccTested = sort(eccTested);
-        
-        for kkk = 1:numel(groupIndices)
-            groupIndex = groupIndices(kkk);
-            for eccIndex = 1:numel(eccTested)
-                eccDegs = eccTested(eccIndex);
-                switch (groupIndex)
-                case 1
-                    eccDegs = [eccDegs 0];
-                case 2
-                    eccDegs = [0 eccDegs];
-                case 3
-                    eccDegs = [0 -eccDegs];
-                end
-        
-                eccXrange = eccDegs(1)*[1 1];
-                eccYrange = eccDegs(2)*[1 1];
-                deltaEcc = 0.5;
-                % Compute the subject PSF at the desired eccentricity
-                [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(subIndex, ...
-                    imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
-        
-                thePSF(groupIndex,eccIndex,:,:) = squeeze(thePSFs(1, 1, 1,:,:));
-            end
-        end
-        peakV = max(thePSF(:))*0.9;
-        
-        for kkk = 1:numel(groupIndices)
-            groupIndex = groupIndices(kkk);
-            for eccIndex = 1:numel(eccTested)
-                
-                row = kkk;
-                col = eccIndex;
-                eccDegs = eccTested(eccIndex);
-                switch (groupIndex)
-                case 1
-                    eccDegs = [eccDegs 0];
-                case 2
-                    eccDegs = [0 eccDegs];
-                case 3
-                    eccDegs = [0 -eccDegs];
-                end
-       
-                xLims = [-0.1 0.1];
-                
-                theTitle = sprintf('ecc (degs) = (%2.1f , %2.1f)', eccDegs(1), eccDegs(2));
-                renderPSF(theAxesGrid{row,col}, thePSFsupportDegs, squeeze(thePSF(groupIndex,eccIndex,:,:)), xLims, cMap, theTitle, (kkk == 3) && (col== 1), peakV);
-                drawnow;
-            end
-            
-            if (strcmp(defocusMode, 'subjectDefault'))
-                pdfFileName = sprintf('defocusDefault_psf_subj_%d', subIndex);
-            else
-                pdfFileName = sprintf('defocus%2.2fD_psf_subj_%d', imposedRefractionErrorDiopters, subIndex);
-            end
-            
-            plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, pwd());
-        end
-    end
- end % plotPSFs
-   
  
- function data = quadrantData(allQuadrantData, quandrantsToInclude)
+ function data = quadrantData(allQuadrantData, quandrantsToInclude, quadrants)
      switch (quandrantsToInclude)
          case  'horizontal'
              % Use horizontal eccs only
              data = squeeze(allQuadrantData(:, 1, :));
          case 'vertical'
              % Use vertical eccs only
-             data = squeeze(allQuadrantData(:, 2, :));
+             data =  [squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
          case 'both'
-             data = [squeeze(allQuadrantData(:, 1, :)) squeeze(allQuadrantData(:, 2, :))];
+             data = [squeeze(allQuadrantData(:, 1, :))  squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
          otherwise
              error('quandrantsToInclude has an invalid value')
      end

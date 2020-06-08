@@ -20,11 +20,6 @@ classdef CronerKaplanRGCModel < handle
         centerRadiusParams;
         centerRadiusParamsSE;
         
-        % Model of RETINAL center radius with eccentricity
-        centerRetinalRadiusFunction;
-        centerRetinalRadiusParams;
-        centerRetinalRadiusParamsSE;
-        
         % Model of surround radius with eccentricity
         surroundRadiusFunction;
         surroundRadiusParams;
@@ -52,10 +47,11 @@ classdef CronerKaplanRGCModel < handle
             p = inputParser;
             p.addParameter('generateAllFigures', true, @islogical);
             p.addParameter('instantiatePlotLab', true, @islogical);
+            p.addParameter('dataSetToFit', 'medians', @(x)(ismember(x, {'medians', 'raw', 'paperFormulas'})));
             p.parse(varargin{:});
             
             obj.loadRawData();
-            obj.fitModel();
+            obj.fitModel('dataset', p.Results.dataSetToFit);
             
             obj.synthesisOptions = struct( ...
                 'randomizeCenterRadii', true, ...

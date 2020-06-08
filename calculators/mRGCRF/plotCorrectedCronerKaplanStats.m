@@ -1,7 +1,18 @@
 function plotCorrectedCronerKaplanStats
 
-    ck = CronerKaplanRGCModel();
+    ck = CronerKaplanRGCModel('dataSetToFit', 'medians');
+     pause
+     
+    defocusMode = 'subjectDefault';
+    if (strcmp(defocusMode, 'subjectDefault'))
+        matFileName = 'defocusDefaultFittedModel.mat';
+    else
+        matFileName = 'defocusNoneFittedModel.mat';
+    end
 
+    load(matFileName, 'retinalPoolingRadii', 'eccTested', 'fittedParamsRadius', ...
+        'fittedParamsGain', 'modelFunctionRadius', 'modelFunctionGain', 'minVisualRadiusDegs');
+    
     plotlabOBJ = plotlab();
     plotlabOBJ.applyRecipe(...
             'colorOrder', [1 0 0; 0 0 1], ...
@@ -10,38 +21,29 @@ function plotCorrectedCronerKaplanStats
             'renderer', 'painters', ...
             'axesTickLength', [0.01 0.01], ...
             'legendLocation', 'SouthWest', ...
-            'figureWidthInches', 14, ...
+            'figureWidthInches', 20, ...
             'figureHeightInches', 14);
 
-        
-    eccDegs = logspace(log10(0.1), log10(25), 16);
-    centerVisualRadiusDegs = ck.centerRadiusFunction(ck.centerRadiusParams, eccDegs);
-    minRFradius = 0.013 % 0.6*min(ck.centerData('size').radiusDegs)
-    centerVisualRadiusDegs(centerVisualRadiusDegs<minRFradius) = minRFradius;
-    surroundVisualRadiusDegs = ck.surroundRadiusFunction(ck.surroundRadiusParams, eccDegs);
-    centerVisualPeakSensitivity = ck.centerPeakSensitivityFunction(ck.centerPeakSensitivityParams, centerVisualRadiusDegs);
-    surroundVisualPeakSensitivity = ck.surroundPeakSensitivityFunction(ck.surroundPeakSensitivityParams, surroundVisualRadiusDegs);
+    eccDegs = logspace(log10(0.01), log10(22), 24);
     w = WatsonRGCModel();
     coneRFSpacingDeg  = w.coneRFSpacingAndDensityAlongMeridian(eccDegs, ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio',false);
         
-    
-    defocusMode = 'subjectDefault';
-    if (strcmp(defocusMode, 'subjectDefault'))
-        matFileName = 'defocusDefaultFittedModel.mat';
-    else
-        matFileName = 'defocusNoneFittedModel.mat';
-    end
-
-    load(matFileName, 'retinalPoolingRadii', 'eccTested', 'fittedParamsRadius', 'fittedParamsGain', 'modelFunctionRadius', 'modelFunctionGain');
-
-    
+    centerVisualRadiusDegs = ck.centerRadiusFunction(ck.centerRadiusParams, eccDegs);
+    centerVisualRadiusDegs(centerVisualRadiusDegs<minVisualRadiusDegs) = minVisualRadiusDegs;
+    surroundVisualRadiusDegs = ck.surroundRadiusFunction(ck.surroundRadiusParams, eccDegs);
+    centerVisualPeakSensitivity = ck.centerPeakSensitivityFunction(ck.centerPeakSensitivityParams, centerVisualRadiusDegs);
+    surroundVisualPeakSensitivity = ck.surroundPeakSensitivityFunction(ck.surroundPeakSensitivityParams, surroundVisualRadiusDegs);
         
+    figure(99);
+    plot(eccDegs, surroundVisualPeakSensitivity.*surroundVisualRadiusDegs.^2 ./ (centerVisualPeakSensitivity.*centerVisualRadiusDegs.^2));
+    set(gca, 'XScale', 'log')
+    
     hFig = figure(2); clf;
     theAxesGrid = plotlab.axesGrid(hFig, ...
             'rowsNum', 2, ...
-            'colsNum', 2, ...
+            'colsNum', 3, ...
             'leftMargin', 0.08, ...
             'rightMargin', 0.01, ...
             'widthMargin', 0.1, ...
@@ -52,13 +54,26 @@ function plotCorrectedCronerKaplanStats
     plotDataForSubregion(theAxesGrid{1,1}, theAxesGrid{2,1}, eccDegs, centerVisualRadiusDegs, centerVisualPeakSensitivity, ...
         eccTested, fittedParamsRadius, fittedParamsGain, modelFunctionRadius, modelFunctionGain, coneRFSpacingDeg,  [1 0 0]);
 
-
     plotDataForSubregion(theAxesGrid{1,2}, theAxesGrid{2,2}, eccDegs, surroundVisualRadiusDegs, surroundVisualPeakSensitivity, ...
         eccTested, fittedParamsRadius, fittedParamsGain, modelFunctionRadius, modelFunctionGain, coneRFSpacingDeg, [0 0 1]);
     
+    plotRadiusRatioData(theAxesGrid{1,3}, eccDegs, centerVisualRadiusDegs, surroundVisualRadiusDegs, eccTested, fittedParamsRadius, modelFunctionRadius);
+    
+    plotGainRatioData(theAxesGrid{2,3}, eccDegs, centerVisualPeakSensitivity, centerVisualRadiusDegs, ...
+        surroundVisualPeakSensitivity, surroundVisualRadiusDegs, eccTested, fittedParamsRadius, modelFunctionRadius, fittedParamsGain, modelFunctionGain);
+
+    
     plotlabOBJ.exportFig(hFig, 'pdf', 'ModelCorrections', pwd());
     
-    pause
+    figure(1000)
+    subplot(1,2,1)
+    plot(centerVisualRadiusDegs, centerVisualPeakSensitivity, 'ro-')
+     set(gca, 'XLim', [0.01 03], 'YLim', [0.003 3000], 'XScale', 'log', 'YScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100], 'YTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30 100 300 1000 3000]);
+  
+    subplot(1,2,2)
+    plot(surroundVisualRadiusDegs, surroundVisualPeakSensitivity, 'bo-')
+    set(gca, 'XLim', [0.01 03], 'YLim', [0.003 3000], 'XScale', 'log', 'YScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100], 'YTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30 100 300 1000 3000]);
+    return;
     
 
     plotlabOBJ = plotlab();
@@ -77,7 +92,7 @@ function plotCorrectedCronerKaplanStats
     
     eccDegs = [0.25:0.05:1 1.1:0.1:2 3 4 5 6 7 8 9 10];
     centerVisualRadiusDegs = ck.centerRadiusFunction(ck.centerRadiusParams, eccDegs);
-    minRFradius = 0.013 % 0.6*min(ck.centerData('size').radiusDegs)
+    minRFradius = 0.01
     centerVisualRadiusDegs(centerVisualRadiusDegs<minRFradius) = minRFradius;
     surroundVisualRadiusDegs = ck.surroundRadiusFunction(ck.surroundRadiusParams, eccDegs);
     centerVisualPeakSensitivity = ck.centerPeakSensitivityFunction(ck.centerPeakSensitivityParams, centerVisualRadiusDegs);
@@ -91,7 +106,7 @@ function plotCorrectedCronerKaplanStats
         surroundVisualRadiusDegs, surroundVisualPeakSensitivity, ...
         eccTested, fittedParamsRadius, fittedParamsGain, modelFunctionRadius, modelFunctionGain, ...
         coneRFSpacingDeg, 'normalized', plotlabOBJ );
-%     pause
+     pause
     
 %     plotMeanRFs(2, eccDegs, centerVisualRadiusDegs, centerVisualPeakSensitivity, ...
 %         surroundVisualRadiusDegs, surroundVisualPeakSensitivity, ...
@@ -239,38 +254,149 @@ function render2DDogRF(ax, eccDegs, coneRFSpacingDeg , centerVisualRadiusDegs, c
     set(ax, 'XLim', xLims, 'YLim', xLims, 'XTick', [], 'YTick', []);
 end
 
+function  plotRadiusRatioData(theAxes, eccDegs, visualValueCenter, visualValueSurround, eccTested, fittedParams, modelFunction)
+
+    retinalValueCenter = zeros(1,numel(eccDegs));
+    retinalValueSurround = retinalValueCenter;
+     for iecc = 1:numel(eccDegs)
+        targetEcc = eccDegs(iecc);
+        % find nearest ecc in eccTested
+        [~,idx] = sort(abs(targetEcc-abs(eccTested)), 'ascend');
+        
+        % estimate based on closest ecc
+        retinalEst1 =  modelFunction(fittedParams(idx(1),:), visualValueCenter(iecc));
+          % estimate based on second closest ecc
+        retinalEst2 =  modelFunction(fittedParams(idx(2),:), visualValueCenter(iecc));
+        % Weighted mean of 2 estimates based on distance from target Ecc
+        d1 = abs(targetEcc-abs(eccTested(idx(1))));
+        d2 = abs(targetEcc-abs(eccTested(idx(2))));
+        retinalValueCenter(iecc) = retinalEst2 * d1/(d1+d2) + retinalEst1 * d2/(d1+d2);
+        
+        
+         % estimate based on closest ecc
+        retinalEst1 =  modelFunction(fittedParams(idx(1),:), visualValueSurround(iecc));
+         % estimate based on second closest ecc
+        retinalEst2 =  modelFunction(fittedParams(idx(2),:), visualValueSurround(iecc));
+        % Weighted mean of 2 estimates based on distance from target Ecc
+        retinalValueSurround(iecc) =  retinalEst2 * d1/(d1+d2) + retinalEst1 * d2/(d1+d2);
+     end
+     
+      hold(theAxes, 'on');
+     scatter(theAxes, eccDegs, retinalValueSurround./retinalValueCenter, 'd', 'MarkerFaceColor',  [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
+     scatter(theAxes, eccDegs,visualValueSurround./visualValueCenter, 'o', 'MarkerFaceColor',  [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
+     set(theAxes, 'XScale', 'log', 'YScale', 'log', 'XLim', [0.01 100], 'YLim', [1 30]);
+     set(theAxes, 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100], 'YTick', [0.3 1 3 10 30]);
+     xlabel(theAxes, 'eccentricity (degs)');
+     ylabel(theAxes, sprintf('surround/center radius'));
+end
+
+function plotGainRatioData(theAxes, eccDegs, centerVisualPeakSensitivity, centerVisualRadiusDegs, ...
+        surroundVisualPeakSensitivity, surroundVisualRadiusDegs, eccTested, fittedParamsRadius, modelFunctionRadius, fittedParamsGain, modelFunctionGain)
+    
+    gainAttenuation = zeros(1,numel(eccDegs));
+    for iecc = 1:numel(eccDegs)
+        targetEcc = eccDegs(iecc);
+        % find nearest ecc in eccTested
+        [~,idx] = sort(abs(targetEcc-abs(eccTested)), 'ascend');
+        
+        % estimate based on closest ecc
+        retinalEst1 =  modelFunctionRadius(fittedParamsRadius(idx(1),:), centerVisualRadiusDegs(iecc));
+          % estimate based on second closest ecc
+        retinalEst2 =  modelFunctionRadius(fittedParamsRadius(idx(2),:), centerVisualRadiusDegs(iecc));
+        % Weighted mean of 2 estimates based on distance from target Ecc
+        d1 = abs(targetEcc-abs(eccTested(idx(1))));
+        d2 = abs(targetEcc-abs(eccTested(idx(2))));
+        centerRetinalRadiusDegs(iecc) = retinalEst2 * d1/(d1+d2) + retinalEst1 * d2/(d1+d2);
+        
+        
+         % estimate based on closest ecc
+        retinalEst1 =  modelFunctionRadius(fittedParamsRadius(idx(1),:), surroundVisualRadiusDegs(iecc));
+         % estimate based on second closest ecc
+        retinalEst2 =  modelFunctionRadius(fittedParamsRadius(idx(2),:), surroundVisualRadiusDegs(iecc));
+        % Weighted mean of 2 estimates based on distance from target Ecc
+        surroundRetinalRadiusDegs(iecc) =  retinalEst2 * d1/(d1+d2) + retinalEst1 * d2/(d1+d2);
+        
+        % estimate based on closest ecc
+        gainAttenuationEst1 =  modelFunctionGain(fittedParamsGain(idx(1),:), centerRetinalRadiusDegs(iecc));
+         % estimate based on second closest ecc
+        gainAttenuationEst2 =  modelFunctionGain(fittedParamsGain(idx(2),:), centerRetinalRadiusDegs(iecc));
+        % Weighted mean of 2 estimates based on distance from target Ecc
+        gainAttenuationCenter(iecc) = gainAttenuationEst2 * d1/(d1+d2) + gainAttenuationEst1 * d2/(d1+d2);
+        
+         % estimate based on closest ecc
+        gainAttenuationEst1 =  modelFunctionGain(fittedParamsGain(idx(1),:), surroundRetinalRadiusDegs(iecc));
+         % estimate based on second closest ecc
+        gainAttenuationEst2 =  modelFunctionGain(fittedParamsGain(idx(2),:), surroundRetinalRadiusDegs(iecc));
+        % Weighted mean of 2 estimates based on distance from target Ecc
+        gainAttenuationSurround(iecc) = gainAttenuationEst2 * d1/(d1+d2) + gainAttenuationEst1 * d2/(d1+d2);
+        
+    end
+    centerRetinalPeakSensitivity = centerVisualPeakSensitivity ./ gainAttenuationCenter;
+    surroundRetinalPeakSensitivity = surroundVisualPeakSensitivity ./ gainAttenuationSurround;
+    
+    centerVisualIntegratedSensitivity = centerVisualPeakSensitivity .* centerVisualRadiusDegs.^2;
+    surroundVisualIntegratedSensitivity = surroundVisualPeakSensitivity .* surroundVisualRadiusDegs.^2;
+    
+    centerRetinalIntegratedSensitivity = centerRetinalPeakSensitivity .* centerRetinalRadiusDegs.^2;
+    surroundRetinalIntegratedSensitivity = surroundRetinalPeakSensitivity .* surroundRetinalRadiusDegs.^2;
+    
+    hold(theAxes, 'on');
+    scatter(theAxes, eccDegs, surroundRetinalIntegratedSensitivity./centerRetinalIntegratedSensitivity, 'd', 'MarkerFaceColor',  [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
+    scatter(theAxes, eccDegs, surroundVisualIntegratedSensitivity./centerVisualIntegratedSensitivity, 'o', 'MarkerFaceColor',  [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
+     set(theAxes, 'XScale', 'log', 'YScale', 'log', 'XLim', [0.01 100], 'YLim', [1 1000]);
+     set(theAxes, 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100], 'YTick', [0.3 1 3 10 30 100 300 1000]);
+     xlabel(theAxes, 'eccentricity (degs)');
+     ylabel(theAxes, sprintf('csurround/center integrated sensitivity'));
+end
+
 
 function plotDataForSubregion(theAxes1, theAxes2, eccDegs, CronnerKaplanModelForSubregionVisualRadiusDegs, CronnerKaplanModelForSubregionVisualPeakSensitivity, ...
     eccTested, fittedParamsRadius, fittedParamsGain, modelFunctionRadius, modelFunctionGain, coneRFSpacingDeg, color)
     
     % Compute correction for subregion radius
+    retinalRadiusDegs = zeros(1,numel(eccDegs));
     for iecc = 1:numel(eccDegs)
+        targetEcc = eccDegs(iecc);
         % find nearest ecc in eccTested
-        [~,eccIndex] = min(abs(eccDegs(iecc)-abs(eccTested)));
-        retinalRadiusDegs(iecc) = modelFunctionRadius(fittedParamsRadius(eccIndex,:), CronnerKaplanModelForSubregionVisualRadiusDegs(iecc));
+        [~,idx] = sort(abs(targetEcc-abs(eccTested)), 'ascend');
+        % estimate based on closest ecc
+        retinalRadiusDegsEst1 =  modelFunctionRadius(fittedParamsRadius(idx(1),:), CronnerKaplanModelForSubregionVisualRadiusDegs(iecc));
+          % estimate based on second closest ecc
+        retinalRadiusDegsEst2 =  modelFunctionRadius(fittedParamsRadius(idx(2),:), CronnerKaplanModelForSubregionVisualRadiusDegs(iecc));
+        % Weighted mean of 2 estimates based on distance from target Ecc
+        d1 = abs(targetEcc-abs(eccTested(idx(1))));
+        d2 = abs(targetEcc-abs(eccTested(idx(2))));
+        retinalRadiusDegs(iecc) = retinalRadiusDegsEst2 * d1/(d1+d2) + retinalRadiusDegsEst1 * d2/(d1+d2);
     end
     radiusCorrection = retinalRadiusDegs ./ CronnerKaplanModelForSubregionVisualRadiusDegs;
     
     
-    
-        
     theAxes = theAxes1;
-    line(theAxes, eccDegs, coneRFSpacingDeg*0.5, 'LineStyle', '--', 'Color', 'k');
+    line(theAxes, eccDegs, 0.8*coneRFSpacingDeg*0.5, 'LineStyle', '--', 'Color', 'k');
     hold(theAxes, 'on');
     scatter(theAxes, eccDegs, CronnerKaplanModelForSubregionVisualRadiusDegs, 'o', 'MarkerFaceColor',  color, 'MarkerEdgeColor', color);
     scatter(theAxes, eccDegs,  CronnerKaplanModelForSubregionVisualRadiusDegs.*radiusCorrection, 'd', 'MarkerFaceColor', color/2, 'MarkerEdgeColor', color);
     
     xlabel(theAxes, 'eccentricity (degs)');
     ylabel(theAxes, 'radius (degs)')
-    set(theAxes, 'XScale', 'log', 'YScale', 'log', 'XLim', [0.1 100], 'YLim', [0.003 1]);
+    set(theAxes, 'XScale', 'log', 'YScale', 'log', 'XLim', [0.01 100], 'YLim', [0.001 1]);
     set(theAxes, 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100], 'YTick', [0.0001 0.003 0.01 0.03 0.1 0.3 1 3 10]);
 
    
     
     % Now the visual gain attenuation
     for iecc = 1:numel(eccDegs)
-        [~,eccIndex] = min(abs(eccDegs(iecc)-abs(eccTested)));
-        gainAttenuation(iecc) = modelFunctionGain(fittedParamsGain(eccIndex,:), retinalRadiusDegs(iecc));
+         targetEcc = eccDegs(iecc);
+        % find nearest ecc in eccTested
+        [~,idx] = sort(abs(targetEcc-abs(eccTested)), 'ascend');
+        % estimate based on closest ecc
+        gainAttenuationEst1 =  modelFunctionGain(fittedParamsGain(idx(1),:), retinalRadiusDegs(iecc));
+         % estimate based on second closest ecc
+        gainAttenuationEst2 =  modelFunctionGain(fittedParamsGain(idx(2),:), retinalRadiusDegs(iecc));
+        % Weighted mean of 2 estimates based on distance from target Ecc
+        d1 = abs(targetEcc-abs(eccTested(idx(1))));
+        d2 = abs(targetEcc-abs(eccTested(idx(2))));
+        gainAttenuation(iecc) = gainAttenuationEst2 * d1/(d1+d2) + gainAttenuationEst1 * d2/(d1+d2);
     end
     gainCorrection = 1./gainAttenuation;
     
@@ -281,7 +407,7 @@ function plotDataForSubregion(theAxes1, theAxes2, eccDegs, CronnerKaplanModelFor
    
     xlabel(theAxes, 'ecc (degs)');
     ylabel(theAxes, 'peak sensitivity');
-    set(theAxes, 'XScale', 'log', 'YScale', 'log', 'XLim', [0.1 100], 'YLim', [0.3 30000]);
+    set(theAxes, 'XScale', 'log', 'YScale', 'log', 'XLim', [0.01 100], 'YLim', [0.3 50000]);
     set(theAxes, 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100], 'YTick',  [0.003 0.01 0.03 0.1 0.3 1 3 10 30 100 300 1000 3000 10000 30000 100000]);
     
 

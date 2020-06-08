@@ -6,7 +6,7 @@ function convolveGaussianWithPSF()
     visualizeAnalysis = ~true;
     
     imposedRefractionErrorDiopters = 0.0; 
-    eccTested = [0 0.5 1.0]; % 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
+    eccTested = [0 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
     eccTested = -fliplr(eccTested);
     
     for eccIndex = 1:numel(eccTested)

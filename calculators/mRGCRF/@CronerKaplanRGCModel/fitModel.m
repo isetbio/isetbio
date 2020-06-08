@@ -1,25 +1,22 @@
 function fitModel(obj, varargin)
     p = inputParser;
-    p.addParameter('dataset', 'medians', @(x)(ismember(x, {'medians', 'raw'})));
+    p.addParameter('dataset', 'medians', @(x)(ismember(x, {'medians', 'raw', 'paperFormulas'})));
     p.parse(varargin{:});
     dataSet = p.Results.dataset;
     
     rng(1);
     
-    if (strcmp(dataSet, 'raw'))
-        fitRawData(obj);
-    else
-        fitMedianData(obj);
+    switch (dataSet)
+        case 'raw'
+            fitRawData(obj);
+        case 'medians'
+            fitMedianData(obj);
+        case 'paperFormulas'
+            usePaperFits(obj)
+        otherwise
+            error('Unknown dataSet: ''%s''.', dataSet)
     end
-    
-    fitRetinalRawData(obj);
-end
 
-function fitRetinalRawData(obj)
-    x = obj.centerData('size').retinalEccDegs;
-    y = obj.centerData('size').retinalRadiusDegs;
-    [obj.centerRetinalRadiusFunction, obj.centerRetinalRadiusParams, obj.centerRetinalRadiusParamsSE] = ...
-        nonLinearFitData(x,y,[],[], obj.centerData('size').initialParams);
 end
 
 
@@ -50,6 +47,34 @@ function fitRawData(obj)
         nonLinearFitData(x,y,[],[], obj.surroundData('sensitivity').initialParams);
 end
 
+function usePaperFits(obj)
+
+    % Fit the ecc - center radius data
+    x = obj.centerData('size').eccDegsTable;
+    yMedian = obj.centerData('size').radiusDegsMedianTable;
+    yIQR = obj.centerData('size').radiusDegsIQRTable;
+    ySamplesNum = obj.centerData('size').samplesTable;
+    [obj.centerRadiusFunction, ...
+        obj.centerRadiusParams, obj.centerRadiusParamsSE] = nonLinearFitData(...
+        x,yMedian,yIQR,ySamplesNum, obj.centerData('size').initialParams);
+    
+    
+    % The ecc - surround radius equation from the paper (Figure 4 caption)
+    obj.surroundRadiusFunction = @(p,x)(p(1)*x.^p(2));
+    obj.surroundRadiusParams = [0.203 0.472];
+    obj.surroundRadiusParamsSE = [0 0];
+    
+    
+    % The radius - center sensitivity equation from the paper (Figure 5 caption)
+    obj.centerPeakSensitivityFunction = @(p,x)(p(1)*x.^p(2));
+    obj.centerPeakSensitivityParams = [0.391 -1.850];
+    obj.centerPeakSensitivityParamsSE = [0 0];
+    
+    % The radius - surround sensitivity equation from the paper (Figure 5 caption)
+    obj.surroundPeakSensitivityFunction = @(p,x)(p(1)*x.^p(2));
+    obj.surroundPeakSensitivityParams = [0.128 -2.147];
+    obj.surroundPeakSensitivityParamsSE = [0 0];
+end
 
 function fitMedianData(obj)
     % Fit the ecc - center radius data
@@ -60,7 +85,6 @@ function fitMedianData(obj)
     [obj.centerRadiusFunction, ...
         obj.centerRadiusParams, obj.centerRadiusParamsSE] = nonLinearFitData(...
         x,yMedian,yIQR,ySamplesNum, obj.centerData('size').initialParams);
-    
     
     % Fit the ecc - surround radius data
     x = obj.surroundData('size').eccDegsTable;

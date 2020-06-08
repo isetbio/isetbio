@@ -3,9 +3,6 @@ function synthesizeData(obj,eccDegs,synthesisOptions)
     % Noise-free parameters
     centerRadii = obj.centerRadiusFunction(obj.centerRadiusParams, eccDegs);
     surroundRadii = obj.surroundRadiusFunction(obj.surroundRadiusParams, eccDegs);
-%     mean(centerRadii/surroundRadii)
-%     pause
-%     centerRadii = surroundRadii * 0.15;
     centerSurroundRadiusRatios = centerRadii ./ surroundRadii;
     
     centerPeakSensitivities = obj.centerPeakSensitivityFunction(obj.centerPeakSensitivityParams, centerRadii);
