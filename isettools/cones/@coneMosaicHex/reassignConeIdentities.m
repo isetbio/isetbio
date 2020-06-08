@@ -51,7 +51,7 @@ function reassignConeIdentities(obj, varargin)
 
         [iRows, iCols] = ind2sub(size(obj.pattern), sConeIndices);
         x2Microns = (1e6 * sampledHexMosaicXaxis(iCols)) .^ 2;
-        y2Microns = (1e6 * sampledHexMosaicYaxis(end-iRows)) .^ 2;
+        y2Microns = (1e6 * sampledHexMosaicYaxis(end-iRows+1)) .^ 2;
         sConeEccentricitiesMicrons = sqrt(x2Microns(:) + y2Microns(:));
         sConeIndicesToBeReassinged = find(sConeEccentricitiesMicrons < ...
             p.Results.sConeFreeRadiusMicrons);
@@ -75,7 +75,7 @@ function reassignConeIdentities(obj, varargin)
             sConeIndices = find(obj.pattern == 4);
             [iRows, iCols] = ind2sub(size(obj.pattern), sConeIndices);
             xxMeters = sampledHexMosaicXaxis(iCols);
-            yyMeters = sampledHexMosaicYaxis(end-iRows);
+            yyMeters = sampledHexMosaicYaxis(end-iRows+1);
             coneLocsInMeters(:, 1) = xxMeters;
             coneLocsInMeters(:, 2) = yyMeters;
             xxMicrons = 1e6 * xxMeters;
