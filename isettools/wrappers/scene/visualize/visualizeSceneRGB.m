@@ -9,7 +9,7 @@ image(spatialSupportX, spatialSupportY, RGBsettings);
 hold on;
 plot([0 0], [spatialSupportY(1) spatialSupportY(end)], 'r-');
 plot([spatialSupportX(1) spatialSupportX(end)], [0 0],'r-');
-axis 'image';
+axis 'xy'; axis 'image';
 xtickformat('%0.2f'); ytickformat('%0.2f');
 set(gca, 'XTick', max(spatialSupportX)*[-1 -0.5 0 0.5 1]);
 set(gca, 'YTick', max(spatialSupportY)*[-1 -0.5 0 0.5 1]);
