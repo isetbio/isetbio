@@ -124,7 +124,7 @@ if (~showCorrespondingRectangularMosaicInstead)
         edgeColor = [0.4 0.4 0.4];
         faceColor = 'none';
         renderPatchArray(gca, pixelOutline, sampledHexMosaicXaxis(iCols), ...
-            sampledHexMosaicYaxis(end-iRows), edgeColor, faceColor, lineStyle, lineWidth);
+            sampledHexMosaicYaxis(end-iRows+1), edgeColor, faceColor, lineStyle, lineWidth);
     end
 
     % L-cones - The 'finds' take a long time, 3-times. Let's see if we
@@ -134,7 +134,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = [1 0 0];
     faceColor = [1.0 0.7 0.7];
     obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(end-iRows), edgeColor, faceColor, lineStyle, lineWidth);
+        sampledHexMosaicYaxis(end-iRows+1), edgeColor, faceColor, lineStyle, lineWidth);
 
     % M-cones
     idx = find(obj.pattern == 3);
@@ -142,7 +142,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = [0 0.7 0];
     faceColor = [0.7 1.0 0.7];
     obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(end-iRows), edgeColor, faceColor, lineStyle, lineWidth);
+        sampledHexMosaicYaxis(end-iRows+1), edgeColor, faceColor, lineStyle, lineWidth);
 
     % S-cones
     idx = find(obj.pattern == 4);
@@ -150,7 +150,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     edgeColor = [0 0 1];
     faceColor = [0.7 0.7 1.0];
     obj.renderPatchArray(gca, apertureOutline, sampledHexMosaicXaxis(iCols), ...
-        sampledHexMosaicYaxis(end-iRows), edgeColor, faceColor, lineStyle, lineWidth);
+        sampledHexMosaicYaxis(end-iRows+1), edgeColor, faceColor, lineStyle, lineWidth);
 
     if (showPerfectHexMesh)
         % Superimpose hex mesh showing locations of the perfect hex grid
