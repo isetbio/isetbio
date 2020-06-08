@@ -17,8 +17,6 @@
 %    09/27/18  jnm  Formatting
 
 %% Initialize
-clear;
-close all;
 ieInit;
 
 %% Create  simple scene
@@ -52,3 +50,5 @@ oiM = oiCompute(scene, oiM);
 oiM = oiSet(oiM, 'name', 'Marimont');
 vcAddAndSelectObject(oiM);
 oiWindow;
+
+%% END

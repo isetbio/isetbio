@@ -43,7 +43,7 @@ cones.compute(oi);
 cones.window;
 
 %% Now add fixational eye movements
-cones.setSizeToFOV(sceneGet(scene,'fov')*0.5);
+cones.setSizeToFOV(sceneGet(scene,'fov'));
 
 cones.emGenSequence(50);
 cones.compute(oi);
@@ -53,6 +53,10 @@ cones.window;
 
 % Set up the parameters and make this version work, next.
 %
-% cones = coneMosaicHex;
-
-%%
+%{
+ resampleFactor = 4;
+ conesH = coneMosaicHex(resampleFactor,'fovDegs',0.5);
+ conesH.emGenSequence(50);
+ conesH.compute(oi);
+ conesH.window;
+%}

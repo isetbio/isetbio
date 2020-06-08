@@ -30,7 +30,7 @@ end
 
 %% You could plot the individual lines
 %{
-	vcNewGraphWin;
+	ieNewGraphWin;
 	semilogx(pos * 1e3 * (1 / 3), coneDensity)
 	xlabel('Position (deg)')
 	ylabel('Density');

@@ -7,8 +7,9 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 %       loadPbrtScene(pbrt, [varargin])
 %
 % Description:
-%    Setup a PBRT scene given it's name or file location. Primarily
-%    includes the following steps:
+%    Setup a PBRT scene given it's name or file location. 
+%
+%    Primarily includes the following steps:
 %      1. Check if we're given a pbrt file or a scene name.
 %         a) If a pbrt file, read it, and return a recipe
 %         b) If a scene name, download it from the RDT, read it, and return
@@ -24,7 +25,8 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 %
 % Inputs:
 %    sceneName   - String. Either a scene name like "slantedBar" or an
-%                  actual pbrt filepath like ("xxx.pbrt")
+%                  actual pbrt filepath like ("xxx.pbrt").  See the list of
+%                  'Known Scenes' below.
 %    p           - Object. An inputParser from sceneEye needs to be passed
 %                  in so we can find certain parameters (e.g.
 %                  planeDistance) when setting up the scene.
@@ -89,6 +91,26 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 %                  parameter, representing the number of checks along the
 %                  wall and ground in the background. Default [64 64].
 %
+%  Known scenes
+%
+%   'colorfulScene'     - Requires RDT
+%   'figure'
+%   'coloredCube'
+%   'snellenSingle'     - Requires RDT
+%   'snellenAtDepth'    - Requires RDT
+%   'blackBackdrop'
+%   'blankScene'
+%   'numbersAtDepth'    - Requires RDT
+%   'slantedBar'
+%   'chessSet'          - Requires RDT
+%   'chessSet-2'        - Requires RDT
+%   'chessSetScaled'    - Requires RDT
+%   'texturedPlane'
+%   'pointSource'
+%   'slantedBarTexture'
+%   'lettersAtDepth'     - Requires RDT
+%   'lettersAtDepthPlus' - Requires RDT
+%
 % Notes:
 %    * TODO: I'd like to keep splitting up the above steps into more
 %      functions to neaten things up. I think we might even be able to
@@ -101,12 +123,23 @@ function [recipe, sceneUnits, workingDir, origPath] = ...
 %    08/08/19  JNM  Merge master in
 
 %% Parse inputs
-% Because the inputs have been passed in first through sceneEye, and then
-% through loadPbrtScene, they seem to be in a nested cell. 
-varargin = varargin{:};
+
+% The inputs have been passed in first through sceneEye, and then
+% through loadPbrtScene, they seem to be in a nested cell. We could
+% probably fix this.
+if ~isempty(varargin)
+    varargin = varargin{:};
+end
+
+% Check if this is a help call
+if strcmp(ieParamFormat(pbrtFile),'help')
+    doc('loadPbrtScene');
+    return;
+end
 
 p = inputParser;
 p.addRequired('pbrtFile', @ischar);
+
 
 p.addParameter('name', 'scene-001', @ischar);
 p.addParameter('workingDirectory', '', @ischar);
@@ -152,8 +185,11 @@ p.addParameter('nchecks', [64 64], @isnumeric); % [wall, ground]
 
 p.parse(pbrtFile, varargin{:});
 
+
 % Default
 sceneUnits = 'm';
+
+
 
 %% Check if we've been given a sceneName or a pbrt file.
 [~, sceneName, ext] = fileparts(pbrtFile);

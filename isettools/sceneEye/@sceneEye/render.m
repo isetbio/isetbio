@@ -28,6 +28,10 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %                       renderings of the same calculation. (Warning: This
 %                       means changes to the parameters will not be
 %                       displayed in the rendered image.)
+%
+% See also
+%    piRender
+
 
 %%
 p = inputParser;

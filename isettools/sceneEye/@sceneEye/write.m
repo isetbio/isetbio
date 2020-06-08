@@ -1,20 +1,18 @@
 function objNew = write(obj, varargin)
-% A substep of sceneEye.render. Typically not called directly.
+% Used by sceneEye.render. Typically not called directly.
 %
 % Syntax:
 %   objNew = write(obj, [varargin])
 %
 % Description:
-%    Write out the sceneEye object into a pbrt file that will later be
-%    rendered. This function is a substep of sceneEye.render. Typically a
-%    user will not run this directly, but rather it will be run within the
-%    render function.
+%	 A sceneEye object, has all the information needed to construct a PBRT
+%	 file and render it. This function reads and interprets the parameters
+%	 given in the sceneEye object and writes them out into an PBRT file.
+%	 This file will later be rendered in sceneEye.render.
 %
-%	 Given a sceneEye object, we have all the information we need to
-%    construct a PBRT file and render it. Therefore, this function reads
-%    and interprets the parameters given in the sceneEye object and writes
-%    them out into an PBRT file. This file will later be rendered in
-%    sceneEye.render.
+%    Copies the sceneEye parameters into the recipe and then writes out the
+%    PBRT file. Typically a user will not run this directly, but rather it
+%    will be run within the render function.
 %
 % Inputs:
 %    obj   - Object. The scene3D object to render.
@@ -24,7 +22,21 @@ function objNew = write(obj, varargin)
 %            below. We return this modified version.
 %
 % Optional key/value pairs:
-%    Needs to be added.
+%    N/A
+%
+% See also
+%   piWrite
+
+%% PROGRAMMING TODO
+%
+%  This function should be using thisR.set/get not direct writes into the
+%  recipe.
+%
+%  It seems to me also that this function copies the parameters in the
+%  sceneEye object into the recipe object.  That is what a lot of the
+%  sets/gets are about.  It then calls piWrite with the 'recipe'.  I am not
+%  sure why sceneEye doesn't just manage the recipe directly, rather than
+%  duplicating the parameters.
 %
 
 %% Make a copy of the current object
