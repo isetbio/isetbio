@@ -35,6 +35,9 @@ classdef CronerKaplanRGCModel < handle
         surroundPeakSensitivityParams;
         surroundPeakSensitivityParamsSE;
         
+        % Directory with psf deconvolution results
+        psfDeconvolutionDir;
+        
         synthesisOptions;
         
         plotlabOBJ;
@@ -49,6 +52,9 @@ classdef CronerKaplanRGCModel < handle
             p.addParameter('instantiatePlotLab', true, @islogical);
             p.addParameter('dataSetToFit', 'medians', @(x)(ismember(x, {'medians', 'raw', 'paperFormulas'})));
             p.parse(varargin{:});
+            
+            obj.psfDeconvolutionDir = strrep(fileparts(which(mfilename())), ...
+                '@CronerKaplanRGCModel', 'VisualToRetinalCorrectionData');
             
             obj.loadRawData();
             obj.fitModel('dataset', p.Results.dataSetToFit);
@@ -79,6 +85,12 @@ classdef CronerKaplanRGCModel < handle
         
         % Method to simulate the Croner&Kaplan results
         simulateCronerKaplanResults(obj, varargin);
+        
+        % Method to generate retinal RF params given the retinal center radius
+        % and eccentricity as inputs. This is to be used with mRGC mosaics
+        % whose centers are determined by connectivity to an underlying
+        % cone mosaic
+        synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFparams(obj, retinalCenterRadii, retinalCenterMicrons);
     end
     
     methods (Static)
@@ -89,6 +101,10 @@ classdef CronerKaplanRGCModel < handle
     
     methods (Access=private)
         setupPlotLab(obj);
+        
+        % Method to compute the visual->retinal deconvolution model
+        % based on the convolution results with the Polans data
+        deconvolutionModel = computeDeconvolutionModel(obj);
     end
     
 end

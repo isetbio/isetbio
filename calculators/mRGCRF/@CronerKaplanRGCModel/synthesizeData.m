@@ -9,13 +9,12 @@ function synthesizeData(obj,eccDegs,synthesisOptions)
     surroundPeakSensitivities = obj.surroundPeakSensitivityFunction(obj.surroundPeakSensitivityParams, surroundRadii);
     surroundCenterPeakSensitivityRatios = surroundPeakSensitivities./centerPeakSensitivities;
     
-
     maxAttemptsNo = 1000;
     pW = 0.15;
     
     % Synthesize params for each rfUnit
     parfor rfUnit = 1:numel(eccDegs)
-        
+        % From Cronner and Kaplan '94 Figure 11
         meanIntegratedSurroundToCenterSensitivityRatio = 0.466 + eccDegs(rfUnit)*0.007*0.5;
         integratedSurroundToCenterSensitivityRatio = Inf;
         attemptsNo = 0;
