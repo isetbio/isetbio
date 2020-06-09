@@ -10,8 +10,12 @@ function runPhase5(runParams)
             'desiredConesToRGCratios', 'midgetRGCconnectionMatrix');
      
     figHeightInches = 15;
+    % Subregion center and size in microns
     subregion.center = round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs));
-    subregion.size = round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchSizeDegs));
+    subregion.size(1) = round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(1) + runParams.patchSizeDegs(1)/2)) - ...
+                        round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(1) - runParams.patchSizeDegs(1)/2));
+    subregion.size(2) = round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(2) + runParams.patchSizeDegs(2)/2)) - ...
+                        round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(2) - runParams.patchSizeDegs(2)/2));
 
     plotlabOBJ = plotlab();
     plotlabOBJ.applyRecipe(...

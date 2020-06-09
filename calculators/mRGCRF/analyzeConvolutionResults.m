@@ -118,7 +118,7 @@ function analyzeConvolutionResults
         load(dataFileName, 'retinalPoolingRadii',  'visualGain', 'subjectIDs', 'quadrants');
         retinalPoolingRadiiOriginal = retinalPoolingRadii;
         
-         % Get data for the quadrant of interest
+        % Get data for the quadrant of interest
         visualGain = quadrantData(visualGain, quandrantsToInclude, quadrants);
         
         % Only include points for retinal pooling radii > = cone aperture
@@ -186,7 +186,7 @@ function visualizeFittedModel(defocusMode)
     cMap =  (brewermap(numel(eccTested), 'spectral'))/1.3;
     plotlabOBJ = setupPlotLabForFittedModel([15 8], 'both', cMap);
     
-    hFig = figure(1); clf;
+    hFig = figure(1234); clf;
     theAxesGrid = plotlab.axesGrid(hFig, ...
             'rowsNum', 1, ...
             'colsNum', 2, ...
