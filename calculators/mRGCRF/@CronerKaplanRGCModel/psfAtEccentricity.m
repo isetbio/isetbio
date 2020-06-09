@@ -1,10 +1,10 @@
-function [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc)
+function [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc)
 
     subtractCentralRefraction = true;
     
     measurementWavelength = 550;
     wavelengthsListToCompute = 550;
-    wavefrontSpatialSamples = 701;
+   
     desiredPupilDiamMM = 3;
     
     % For monkey retina
