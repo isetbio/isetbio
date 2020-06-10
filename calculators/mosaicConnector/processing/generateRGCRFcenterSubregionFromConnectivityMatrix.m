@@ -1,4 +1,4 @@
-function theRF = generateRGCRFsFromConnectivityMatrix(connectivityVectorForRGC, conePositions, coneSpacings,  X,Y)
+function theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(connectivityVectorForRGC, conePositions, coneSpacings,  X,Y)
     
     theRF = [];
     connectedConeIDs = find(connectivityVectorForRGC>0);

@@ -5,24 +5,40 @@ function runPhase6(runParams)
     connectivityFile = fullfile(runParams.outputDir, sprintf('%s.mat',runParams.inputFile));
     
     % Compute RF center radius and position from the connectivity matrix (both in microns) for each mRGC
-    [rfCenterRadiiMicrons,rfCenterPositionsMicrons] = ...
-        computeRFcenterSizeAndPositionsFromConnectivityMatrix(connectivityFile, runParams.patchEccDegs, runParams.patchSizeDegs);
+    % in the passed patch
+    patchEccDegs = runParams.patchEccDegs;
+    patchSizeDegs = runParams.patchSizeDegs;
+    [rfCenterRadiiMicrons, rfCenterPositionsMicrons, rgcIndices] = ...
+        computeRFcenterSizeAndPositionsFromConnectivityMatrix(connectivityFile, patchEccDegs, patchSizeDegs);
     
     % Compute visual and retinal RF params from the retinal rf center radii
     % and positions (both in microns)
     ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
-    synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(rfCenterRadiiMicrons, rfCenterPositionsMicrons);
-   
-    % Visualize visual rf properties
-    plotlabOBJ = setupPlotLab();
-    visualizeCenterSurroundProperties(1, synthesizedRFParams, 'visual', plotlabOBJ, runParams.outputFile,runParams.exportsDir);
+    synthesizedRFParamsForRetinalPatch = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(rfCenterRadiiMicrons, rfCenterPositionsMicrons);
     
-    % Visualize retinal rf properties
-    visualizeCenterSurroundProperties(2, synthesizedRFParams, 'retinal', plotlabOBJ, runParams.outputFile,runParams.exportsDir);
-     
+    % Add the corresponding rgcIndices, and patch ecc/size
+    synthesizedRFParamsForRetinalPatch.rgcIndices = rgcIndices;     % indices of RGCs within the target patch
+    synthesizedRFParamsForRetinalPatch.rgcCenterPositionMicrons = rfCenterPositionsMicrons;  % position as computed by the summed inputs to the center
+    synthesizedRFParamsForRetinalPatch.patchEccDegs = patchEccDegs;
+    synthesizedRFParamsForRetinalPatch.patchSizeDegs = patchSizeDegs;
+       
+    % Save synthesizedRF params (cone weights to center/surround regions)
+    saveDataFile = sprintf('%s_inPatchAt_%2.1f_%2.1fdegs_WithSize_%2.2f_%2.2f.mat', ...
+        runParams.outputFile, patchEccDegs(1), patchEccDegs(2), patchSizeDegs(1), patchSizeDegs(2));
+    
+    load(connectivityFile , ...
+            'conePositionsMicrons', 'coneSpacingsMicrons', 'coneTypes', ...
+            'RGCRFPositionsMicrons', 'RGCRFSpacingsMicrons', ...
+            'desiredConesToRGCratios', 'midgetRGCconnectionMatrix');
+        
+    save(fullfile(runParams.outputDir, saveDataFile), ...
+            'conePositionsMicrons', 'coneSpacingsMicrons', 'coneTypes', ...
+            'RGCRFPositionsMicrons', 'RGCRFSpacingsMicrons', ...
+            'desiredConesToRGCratios', 'midgetRGCconnectionMatrix', ...
+            'synthesizedRFParamsForRetinalPatch', 'patchEccDegs', 'patchSizeDegs');
 end
 
-function [rfCenterRadiiMicrons, rfCenterPositionsMicrons] = ...
+function [rfCenterRadiiMicrons, rfCenterPositionsMicrons, subregionRGCidx] = ...
     computeRFcenterSizeAndPositionsFromConnectivityMatrix(connectivityFile, patchEccDegs, patchSizeDegs)
 
     % Load connectivity data
@@ -71,9 +87,7 @@ function [rfCenterRadiiMicrons, rfCenterPositionsMicrons] = ...
         
         rfCenterPositionsMicrons(RGCindex,:) = rfCenterPosition;
         rfCenterRadiiMicrons(RGCindex) = 0.5*rfCenterSize;
-    end
-    
-    
+    end 
 end
 
     
@@ -136,20 +150,6 @@ function  [center, semiAxes, rotationAngleDegs] = determineRotationAndSemiaxes(x
     
 	% Center of RF
     center = [xo yo];
-    
 end
 
-function plotlabOBJ = setupPlotLab()
-    plotlabOBJ = plotlab();
-    plotlabOBJ.applyRecipe(...
-            'colorOrder', [1 0 0; 0 0 1], ...
-            'axesBox', 'off', ...
-            'axesTickDir', 'in', ...
-            'renderer', 'painters', ...
-            'lineMarkerSize', 6, ...
-            'axesTickLength', [0.01 0.01], ...
-            'legendLocation', 'SouthWest', ...
-            'figureWidthInches', 14, ...
-            'figureHeightInches', 14);
-end 
 

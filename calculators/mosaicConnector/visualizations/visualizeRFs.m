@@ -36,8 +36,8 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
             end
         end
         
-        % Generate RFs of RGCs based on cone positions and connection matrix
-        theRF = generateRGCRFsFromConnectivityMatrix(...
+        % Generate RF centers of RGCs based on cone positions and connection matrix
+        theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(...
             connectivityVector, conePositionsMicrons, coneSpacingsMicrons, X,Y);
 
         C = contourc(xAxis, yAxis,theRF, zLevels);

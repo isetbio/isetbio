@@ -14,8 +14,8 @@ function [semiAxes,rfCenters] = computeRFsizes(zLevels, whichLevelsToContour, co
         fprintf('Fitting cell %d of %d\n', RGCindex, rgcsNum);
         connectivityVector = full(squeeze(connectivityMatrix(:, RGCindex)));
         
-        % Generate RFs of RGCs based on cone positions and connection matrix
-        theRF = generateRGCRFsFromConnectivityMatrix(...
+        % Generate RF centers of RGCs based on cone positions and connection matrix
+        theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(...
             connectivityVector, conePositionsMicrons, coneSpacingsMicrons, X,Y);
 
         C = contourc(xAxis, yAxis,theRF, zLevels);

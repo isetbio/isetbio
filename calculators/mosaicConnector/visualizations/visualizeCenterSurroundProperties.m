@@ -33,9 +33,9 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
     
     % Plot the center&surround radii
     theAxes = theAxesGrid{1,1};
-    scatter(theAxes,eccDegs, rfParams.centerRadii, 'o');
+    scatter(theAxes,eccDegs, rfParams.centerRadiiDegs, 'o');
     hold(theAxes, 'on');
-    scatter(theAxes, eccDegs,  rfParams.surroundRadii, 'd');
+    scatter(theAxes, eccDegs,  rfParams.surroundRadiiDegs, 'd');
     scatter(theAxes, eccDegs, coneApertureRadiiNasalRetina, 9, '.', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
     %legend({'center', 'surround'});
     set(theAxes, 'XScale', 'log', 'XLim', [0.01 50], 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30]);
@@ -46,16 +46,16 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
     
     % Plot the center/surround radius ratios
     theAxes = theAxesGrid{1,2};
-    scatter(theAxes,eccDegs,  rfParams.centerRadii ./ rfParams.surroundRadii, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
+    scatter(theAxes,eccDegs,  rfParams.centerRadiiDegs ./ rfParams.surroundRadiiDegs, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
     set(theAxes, 'XLim', [0 30], 'YLim', [0 0.4], 'YTick', 0:0.05:0.4);
     xlabel(theAxes, 'eccentricity (degs)');
     ylabel(theAxes, 'center radius/surround radius');
     
     % Plot the center & surround peak sensitivities
     theAxes = theAxesGrid{2,1};
-    scatter(theAxes, rfParams.centerRadii, rfParams.centerPeakSensitivities, 'o'); 
+    scatter(theAxes, rfParams.centerRadiiDegs, rfParams.centerPeakSensitivities, 'o'); 
     hold(theAxes, 'on');
-    scatter(theAxes,rfParams.surroundRadii, rfParams.surroundPeakSensitivities, 'd'); 
+    scatter(theAxes,rfParams.surroundRadiiDegs, rfParams.surroundPeakSensitivities, 'd'); 
    % legend({'center', 'surround'});
     set(theAxes, 'XScale', 'log', 'XLim', [0.003 10], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30], 'XTickLabel', {'0.003', '0.01', '0.03', '0.1', '0.3', '1', '3', '10', '30'});
     set(theAxes, 'YScale', 'log', 'YLim', [0.1 40000], 'YTick', [0.1 0.3 1 3 10 30 100 300 1000 3000 10000 30000]);
@@ -65,7 +65,7 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
     % Plot the integrated surround/center sensitiy ratios
     theAxes = theAxesGrid{2,2};
     integratedRatios = rfParams.surroundPeakSensitivities ./ rfParams.centerPeakSensitivities .* ...
-                       (rfParams.surroundRadii ./ rfParams.centerRadii).^2;
+                       (rfParams.surroundRadiiDegs ./ rfParams.centerRadiiDegs).^2;
     scatter(theAxes,synthesizedRFParams.eccDegs, integratedRatios, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
     set(theAxes, 'XLim', [0 30], 'YLim', [0 1]);
     xlabel(theAxes, 'eccentricity (degs)');
