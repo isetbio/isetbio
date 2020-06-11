@@ -169,7 +169,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
      
     % First pass. Connect each cone to its closest RGC. Since there are more cones than RGCs, some
     % RGCs will receive inputs from more than 1 cone in this pass.
-    maxNumberOfConnections = rgcsNum*5;
+    maxNumberOfConnections = rgcsNum*10;
     
     fprintf('%s Allocating sparse arrays for connecting %d cones to %d RGCs\n', ...
         phaseString, conesNum, rgcsNum);
