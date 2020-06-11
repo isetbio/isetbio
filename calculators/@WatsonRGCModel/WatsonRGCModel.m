@@ -34,7 +34,6 @@ classdef WatsonRGCModel
             'inferior meridian' ...
             };
         
-     
         enumeratedMeridianAngles = (0:3)*90;
         
         meridianParamsTable = {
@@ -93,7 +92,14 @@ classdef WatsonRGCModel
            -0.007358  * eccMM .^3 + ...
             0.0003027 * eccMM .^4;
        
-       
+        % Conversion factor of size in visual degress at a given eccentricity in degrees to size in retinal microns 
+        sizeDegsToSizeRetinalMicrons = @(sizeDegs, eccDegs) ...
+            1000.0 * (WatsonRGCModel.rhoDegsToMMs(eccDegs + sizeDegs/2) - WatsonRGCModel.rhoDegsToMMs(eccDegs - sizeDegs/2))
+
+        % Conversion factor of size in retinal microns at a given eccentricity in microns to size in visual degrees
+        sizeRetinalMicronsToSizeDegs = @(sizeMicrons, eccMicrons) ...
+            WatsonRGCModel.rhoMMsToDegs((eccMicrons + sizeMicrons/2)/1000.0) - WatsonRGCModel.rhoMMsToDegs((eccMicrons - sizeMicrons/2)/1000)
+        
         % Conversion factor, alpha, of retinal area mm^2 -> deg^2 as a function of eccentricity in
         % degs (Equation A7)
         alpha = @(eccDegs) 0.0752 + ...
