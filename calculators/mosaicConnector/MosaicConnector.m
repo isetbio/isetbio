@@ -36,7 +36,7 @@ function MosaicConnector
         'outputDir', tmpDir ...
     );
         
-    % Phase 2: Check that rfs are not less than a treshold (x mean spacing). If any rfs
+    % Phase 2: Check that rfs are not less than a threshold (x mean spacing). If any rfs
     % are found with a separation less than that, an error is thrown. Also
     % crop to desired size
     roiCropDegs = struct('xo', 0.0, 'yo', 0.0, 'width', 45, 'height',24);
