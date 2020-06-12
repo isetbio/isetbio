@@ -24,7 +24,7 @@ function visualizeWeigtedConeInputsToRGCSubregion(theAxes, coneTypes, ...
             case 2
                coneColor = [1 0 0]*connectionWeights(iCone) + backgroundColor * (1-connectionWeights(iCone));
             case 3
-               coneColor = [0 1 0]*connectionWeights(iCone) + backgroundColor * (1-connectionWeights(iCone));
+               coneColor = [0 0.7 0]*connectionWeights(iCone) + backgroundColor * (1-connectionWeights(iCone));
             case 4
                coneColor = [0 0 1]*connectionWeights(iCone) + backgroundColor * (1-connectionWeights(iCone));
         end

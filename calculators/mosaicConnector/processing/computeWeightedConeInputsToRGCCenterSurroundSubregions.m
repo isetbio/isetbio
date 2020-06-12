@@ -1,5 +1,5 @@
 function [connectionMatrixCenter, connectionMatrixSurround] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
-    rgcParams, rgcCenterPositionMicrons, rgcEccDegs, rgcIndices, conePositionsMicrons, midgetRGCconnectionMatrix)
+    rgcParams, rgcCenterPositionMicrons, rgcEccDegs, rgcIndices, conePositionsMicrons, coneTypes, midgetRGCconnectionMatrix)
 
     conesNum = size(midgetRGCconnectionMatrix,1);
     rgcsNum = size(midgetRGCconnectionMatrix,2);
@@ -38,6 +38,12 @@ function [connectionMatrixCenter, connectionMatrixSurround] = computeWeightedCon
         % Retrieve cone indices connected to the RGC surround
         weights = gaussianConeWeights(conePositionsMicrons, rgcPositionMicrons, rgcSurroundRadiusMicrons);
         coneIndicesConnectedToSurround = find(weights >= exp(-3));
+        
+        % Find S-cones, and set their weight to 0, as H1 horizontal cells
+        % (which make the surrounds of mRGCs) do not contact S-cones.
+        sConeIndices = find(coneTypes(coneIndicesConnectedToSurround) == 4);
+        weights(coneIndicesConnectedToSurround(sConeIndices)) = 0.00001;
+        
         weightsS = weights(coneIndicesConnectedToSurround) * rgcSurroundPeakSensivity;
  
         % Acummulate sparse matrix indices for the surround
