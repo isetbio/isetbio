@@ -12,10 +12,8 @@ function runPhase5(runParams)
     figHeightInches = 15;
     % Subregion center and size in microns
     subregion.center = round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs));
-    subregion.size(1) = round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(1) + runParams.patchSizeDegs(1)/2)) - ...
-                        round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(1) - runParams.patchSizeDegs(1)/2));
-    subregion.size(2) = round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(2) + runParams.patchSizeDegs(2)/2)) - ...
-                        round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(2) - runParams.patchSizeDegs(2)/2));
+    subregion.size(1) = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(runParams.patchSizeDegs(1), runParams.patchEccDegs(1));
+    subregion.size(2) = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(runParams.patchSizeDegs(2), runParams.patchEccDegs(2));
 
     plotlabOBJ = plotlab();
     plotlabOBJ.applyRecipe(...

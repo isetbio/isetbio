@@ -12,9 +12,9 @@ function visualizeConnectivity(figNo, figureName, conePositionsMicrons, RGCRFPos
     MconeIndices = find(coneTypes == 3);
     SconeIndices = find(coneTypes == 4);
     hold(theAxesGrid{1,1}, 'on');
-    scatter(theAxesGrid{1,1}, conePositionsMicrons(LconeIndices,1), conePositionsMicrons(LconeIndices,2), 'r');
-    scatter(theAxesGrid{1,1}, conePositionsMicrons(MconeIndices,1), conePositionsMicrons(MconeIndices,2), 'g');
-    scatter(theAxesGrid{1,1}, conePositionsMicrons(SconeIndices,1), conePositionsMicrons(SconeIndices,2), 'b');
+    scatter(theAxesGrid{1,1}, conePositionsMicrons(LconeIndices,1), conePositionsMicrons(LconeIndices,2), 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0]);
+    scatter(theAxesGrid{1,1}, conePositionsMicrons(MconeIndices,1), conePositionsMicrons(MconeIndices,2), 'MarkerFaceColor', [0.3 0.8 0.3], 'MarkerEdgeColor', [0 1 0]);
+    scatter(theAxesGrid{1,1}, conePositionsMicrons(SconeIndices,1), conePositionsMicrons(SconeIndices,2), 'MarkerFaceColor', [0.5 0.5 1.0], 'MarkerEdgeColor', [0 0 1]);
     
     
     for coneIndex = 1:size(conePositionsMicrons,1)
