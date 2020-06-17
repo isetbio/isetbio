@@ -13,12 +13,12 @@ function MosaicConnector
     tmpDir = fullfile(rootDir, 'tmpMatFiles');
     exportsDir = fullfile(rootDir, 'exports');
     
-    doInitialMosaicCropping = ~true;                        % phase 1 - crop within circular window
-    checkMosaicSeparationAndCropAgain = ~true;              % phase 2 - check separation and possibly crop within rectangular window
-    assignConeTypes = ~true;                                % phase 3 - assign cone types
+    doInitialMosaicCropping = true;                        % phase 1 - crop within circular window
+    checkMosaicSeparationAndCropAgain = true;              % phase 2 - check separation and possibly crop within rectangular window
+    assignConeTypes = true;                                % phase 3 - assign cone types
     connectConesToRGCcenters = true;                        % phase 4 - connect cones to RGC RF centers
     visualizeConeToRGCcenterConnections = true;             % phase 5 - visualize cone inputs to RGC RF centers
-    computeConeWeightsToRGCcentersAndSurrounds = ~true;     % phase 6 - compute cone weights to RGC RF center/surrounds
+    computeConeWeightsToRGCcentersAndSurrounds = true;     % phase 6 - compute cone weights to RGC RF center/surrounds
     visualizeConeWeightsToRGCcentersAndSurrounds =  true;   % phase 7 - visualize cone weights to RGC RF center/surrounds
     
     coVisualizeRFsizeWithDendriticFieldSize = ~true;        % Phase 10
@@ -46,7 +46,7 @@ function MosaicConnector
     % Phase 2: Check that rfs are not less than a threshold (x mean spacing). If any rfs
     % are found with a separation less than that, an error is thrown. Also
     % crop to desired size
-    roiCropDegs = struct('xo', 0.0, 'yo', 0.0, 'width', 45, 'height',24);
+    roiCropDegs = struct('xo', 0.0, 'yo', 0.0, 'width', 45, 'height',45);
     %roiCropDegs = struct('xo', 0.0, 'yo', 0.0, 'width', 30, 'height',4);
     postFix = sprintf('eccX_%2.1f_eccWidth_%2.1f_eccHeight_%2.1f', roiCropDegs.xo, roiCropDegs.width, roiCropDegs.height);
     

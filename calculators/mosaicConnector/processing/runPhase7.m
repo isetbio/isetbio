@@ -15,14 +15,20 @@ function runPhase7(runParams)
     outputFile = sprintf('%s_Summary',runParams.outputFile);
     
     % Visualize summary of visual rf properties
-    visualizeCenterSurroundProperties(1, synthesizedRFParams, 'visual', plotlabOBJ, outputFile,runParams.exportsDir);
+    %visualizeCenterSurroundProperties(1, synthesizedRFParams, 'visual', plotlabOBJ, outputFile,runParams.exportsDir);
     
     % Visualize summary of retinal rf properties
-    visualizeCenterSurroundProperties(2, synthesizedRFParams, 'retinal', plotlabOBJ, outputFile,runParams.exportsDir);
+    %visualizeCenterSurroundProperties(2, synthesizedRFParams, 'retinal', plotlabOBJ, outputFile,runParams.exportsDir);
+    
+    % Visualize # of cones and cone types per RF center as a function of eccentricity
+    visualizeConeInputRatioToSubregions(3, midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
+        synthesizedRFParams.rgcIndices, synthesizedRFParams.eccDegs, coneTypes, ...
+        plotlabOBJ, outputFile, runParams.exportsDir);
+    pause
     
     % Visualize examples of retinal 2D RFs (video)
     outputFile = sprintf('%s_RFexamples',runParams.outputFile);
-    visualizeSubregions(3,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
+    visualizeSubregions(4,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
         synthesizedRFParams.rgcIndices,  synthesizedRFParams.eccDegs, ...
         synthesizedRFParams.centerPositionMicrons, synthesizedRFParams.retinal.centerRadiiDegs, synthesizedRFParams.retinal.surroundRadiiDegs,...
         conePositionsMicrons, coneSpacingsMicrons,  coneTypes, ...
@@ -31,6 +37,117 @@ function runPhase7(runParams)
 end
 
 
+function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
+        rgcIndices, rgcEccDegs, coneTypes, plotlabOBJ, pdfFileName,exportsDir)
+    
+    hFig = figure(figNo); clf;
+    theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
+        'rowsNum', 2, ...
+        'colsNum', 2, ...
+        'leftMargin', 0.08, ...
+        'widthMargin', 0.08, ...
+        'heightMargin', 0.1, ...
+        'bottomMargin', 0.06, ...
+        'rightMargin', 0.01, ...
+        'topMargin', 0.01);
+    
+    binEdges = 0:0.5:30;
+    inputs1Count = zeros(1, numel(binEdges));
+    inputs2Count = zeros(1, numel(binEdges));
+    inputs3Count = zeros(1, numel(binEdges));
+    inputs4Count = zeros(1, numel(binEdges));
+    inputs2CountSameCone = zeros(1, numel(binEdges));
+    inputs3CountSameCone = zeros(1, numel(binEdges));
+    inputs4CountSameCone = zeros(1, numel(binEdges));
+    
+    for iRGC  = 1:numel(rgcIndices)   
+        
+        % Get the rgcIndex (index in the full RGC mosaic, not in the
+        % patch we are currently analyzing)
+        rgcIndex = rgcIndices(iRGC);
+        
+        % center weights
+        connectivityVector = full(squeeze(midgetRGCconnectionMatrixCenter(:, rgcIndex)));
+        coneIndicesConnectedToCenter = find(connectivityVector>0);
+        centerWeights = squeeze(full(midgetRGCconnectionMatrixCenter(coneIndicesConnectedToCenter, rgcIndex)));
+        
+        iecc = round(rgcEccDegs(iRGC)/0.5)+1;
+        switch (numel(coneIndicesConnectedToCenter))
+            case 1
+                inputs1Count(iecc) = inputs1Count(iecc) + 1;
+            case 2
+                inputs2Count(iecc) = inputs2Count(iecc) + 1;
+                if (coneTypes(coneIndicesConnectedToCenter(1)) == coneTypes(coneIndicesConnectedToCenter(2)))
+                    inputs2CountSameCone(iecc) = inputs2CountSameCone(iecc) +1;
+                end
+            case 3
+                inputs3Count(iecc) = inputs3Count(iecc) + 1;
+                if (coneTypes(coneIndicesConnectedToCenter(1)) == coneTypes(coneIndicesConnectedToCenter(2))) && ...
+                   (coneTypes(coneIndicesConnectedToCenter(1)) == coneTypes(coneIndicesConnectedToCenter(3)))
+                    inputs3CountSameCone(iecc) = inputs3CountSameCone(iecc) +1;
+                end
+            otherwise
+                inputs4Count(iecc) = inputs4Count(iecc) + 1;
+                allSame = true;
+                for k = 1:numel(coneIndicesConnectedToCenter)
+                    if (coneTypes(coneIndicesConnectedToCenter(k))~= coneTypes(coneIndicesConnectedToCenter(1)))
+                        allSame = false;
+                    end
+                end
+                if (allSame)
+                    inputs4CountSameCone(iecc) = inputs4CountSameCone(iecc) +1;
+                end
+                
+        end
+        
+        
+    end % iRGC
+    
+    binEdges = binEdges + 0.25;
+    theAxes = theAxesGrid{1,1};
+    cla(theAxes);
+    hold(theAxes, 'on');
+    bar(theAxes,  binEdges, inputs1Count, 1, 'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none'); 
+    stairs(theAxes, binEdges-0.25, inputs1Count, 'k-', 'LineWidth', 1.5);
+    set(theAxes, 'XScale', 'linear', 'XLim', [0 25], 'XTick', 0:5:25);
+    set(theAxes, 'YScale', 'linear', 'YLim', [0 3000]);
+    ylabel(theAxes,'number of  rgcs');
+    title(theAxes,'single cone center')
+    
+    theAxes = theAxesGrid{1,2};
+    cla(theAxes);
+    hold(theAxes, 'on');
+    bar(theAxes, binEdges,  inputs2Count, 1,  'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none'); 
+    stairs(theAxes, binEdges-0.25, inputs2CountSameCone, 'k-', 'LineWidth', 1.5);
+    set(theAxes, 'XScale', 'linear', 'XLim', [0 25], 'XTick', 0:5:25);
+    set(theAxes, 'YScale', 'linear', 'YLim', [0 150]);
+    title(theAxes,'2 cone center')
+    
+    theAxes = theAxesGrid{2,1};
+    cla(theAxes);
+    hold(theAxes, 'on');
+    bar(theAxes, binEdges,  inputs3Count, 1,  'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none'); 
+    stairs(theAxes, binEdges-0.25, inputs3CountSameCone, 'k-', 'LineWidth', 1.5);
+    set(theAxes, 'XScale', 'linear', 'XLim', [0 25], 'XTick', 0:5:25);
+    set(theAxes, 'YScale', 'linear', 'YLim', [0 150]);
+    xlabel(theAxes,'eccentricity (degs)');
+    ylabel(theAxes,'number of rgcs');
+    title(theAxes,'3 cone center')
+    
+    theAxes = theAxesGrid{2,2};
+    cla(theAxes);
+    hold(theAxes, 'on');
+    bar(theAxes, binEdges, inputs4Count, 1,  'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none'); 
+    stairs(theAxes, binEdges-0.25, inputs4CountSameCone, 'k-', 'LineWidth', 1.5);
+    set(theAxes, 'XScale', 'linear', 'XLim', [0 25], 'XTick', 0:5:25);
+    set(theAxes, 'YScale', 'linear', 'YLim', [0 150]);
+    xlabel(theAxes,'eccentricity (degs)');
+    title(theAxes,'4+ cone center')
+    
+    plotlabOBJ.exportFig(hFig, 'png', sprintf('%s__numberOfConesInCenter',pdfFileName),exportsDir);
+    
+    
+end
 
 function visualizeSubregions(figNo,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, rgcIndices, rgcEccDegs, ...
     rgcCenterPositionMicrons, retinalCenterRadiiDegs, retinalSurroundRadiiDegs, conePositionsMicrons, coneSpacingsMicrons,  coneTypes, plotlabOBJ, pdfFileName,exportsDir)

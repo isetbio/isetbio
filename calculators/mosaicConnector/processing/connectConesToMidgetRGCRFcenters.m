@@ -76,7 +76,8 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
     RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(RGCindicesToKeep);
     connectionMatrix = connectionMatrix(:,RGCindicesToKeep);
             
-    for iCone = 1:conesNum
+    fprintf('Checking connectivity matrix\n');
+    parfor iCone = 1:conesNum
         checkConnectionMatrix(connectionMatrix, coneTypes, conePositionsMicrons, iCone, 'at end')
     end
     
