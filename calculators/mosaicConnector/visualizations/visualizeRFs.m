@@ -1,6 +1,12 @@
 function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityMatrix, RGCRFPositionsMicrons, ...
     conePositionsMicrons, coneSpacingsMicrons, coneTypes, roi, fitEllipse,  plotlabOBJ, exportFileName, exportsDir)
 
+    % Define constants
+    global LCONE_ID
+    global MCONE_ID
+    global SCONE_ID 
+    
+    
     % Sampling for contours
     deltaX = 0.2;
     xAxis = (roi.center(1)-roi.size(1)/2): deltaX: (roi.center(1)+roi.size(1)/2);
@@ -23,11 +29,13 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     multiInputRGCs = 0;
     mixedInputRGCs = 0;
     
+    coneInputsPerRGC = zeros(1,100);
     for RGCindex = 1:rgcsNum
         
         connectivityVector = full(squeeze(connectivityMatrix(:, RGCindex)));
-        inputIDs = find(connectivityVector>0);
+        inputIDs = find(connectivityVector == 1);
         inputsNum = numel(inputIDs);
+        coneInputsPerRGC(inputsNum) = coneInputsPerRGC(inputsNum) + 1;
         if (inputsNum > 1)
             multiInputRGCs = multiInputRGCs + 1;
             inputTypesNum = numel(unique(coneTypes(inputIDs)));
@@ -40,9 +48,14 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
         theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(...
             connectivityVector, conePositionsMicrons, coneSpacingsMicrons, X,Y);
 
+        if (isempty(theRF))
+            fprintf(2,'No cone inputs to this RF -> No visualization\n');
+            continue;
+        end
+        
         C = contourc(xAxis, yAxis,theRF, zLevels);
         renderContourPlot(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse);
-        
+    
         indicesOfConeInputsToThisRGC = find(connectivityVector>0);
         
         showConnectedConePolygon = true;
@@ -61,18 +74,20 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     
 
     % Display cones
-    LconeIndices = find(coneTypes == 2);
-    MconeIndices = find(coneTypes == 3);
-    SconeIndices = find(coneTypes == 4);
-    scatter(conePositionsMicrons(LconeIndices,1), conePositionsMicrons(LconeIndices,2), 'r');
-    scatter(conePositionsMicrons(MconeIndices,1), conePositionsMicrons(MconeIndices,2), 'g');
-    scatter(conePositionsMicrons(SconeIndices,1), conePositionsMicrons(SconeIndices,2), 'b');
+    LconeIndices = find(coneTypes == LCONE_ID);
+    MconeIndices = find(coneTypes == MCONE_ID);
+    SconeIndices = find(coneTypes == SCONE_ID);
+    scatter(conePositionsMicrons(LconeIndices,1), conePositionsMicrons(LconeIndices,2), 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
+    scatter(conePositionsMicrons(MconeIndices,1), conePositionsMicrons(MconeIndices,2), 'MarkerEdgeColor', [0 0.7 0], 'MarkerFaceColor', [0.5 0.9 0.5]);
+    scatter(conePositionsMicrons(SconeIndices,1), conePositionsMicrons(SconeIndices,2), 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1.0]);
     
     
     conesNum = numel(LconeIndices)+numel(MconeIndices);
     
     ratio = conesNum/rgcsNum;
-    title(theAxesGrid,sprintf('\\color[rgb]{0.3 0.3 0.3} eccentricity = %2.1f degs, \\color[rgb]{1.0 0.1 0.1} LMcones-to-mRGCs ratio = %2.2f\n\\color[rgb]{0.4 0.4 0.6}RGCs with > 1 inputs = %d/%d (%2.1f%%), RGCs with mixed inputs = %d/%d (%2.1f%%)', patchEccDegs(1), ratio, multiInputRGCs,rgcsNum, 100*multiInputRGCs/rgcsNum, mixedInputRGCs, rgcsNum, 100*mixedInputRGCs/rgcsNum));
+    title(theAxesGrid,...
+        sprintf('\\color[rgb]{0.3 0.3 0.3} eccentricity = %2.1f degs, \\color[rgb]{1.0 0.1 0.1} LMcones-to-mRGCs ratio = %2.2f\n\\color[rgb]{0.4 0.4 0.6}RGCs with 1 input: %2.1f%%, 2 inputs: %2.1f%%, 3 inputs: %2.1f%%, 4 inputs: %2.1f%%, >= 5 inputs: %2.1f%%, RGCs with mixed cone inputs: %2.1f%%', ...
+        patchEccDegs(1), ratio, 100*coneInputsPerRGC(1)/rgcsNum, 100*coneInputsPerRGC(2)/rgcsNum, 100*coneInputsPerRGC(3)/rgcsNum, 100*coneInputsPerRGC(4)/rgcsNum, 100*sum(coneInputsPerRGC(5:end))/rgcsNum, 100*mixedInputRGCs/rgcsNum));
      
     xLims = [xAxis(1) xAxis(end)];
     yLims = [yAxis(1) yAxis(end)];
@@ -150,5 +165,5 @@ function displayConnectedConesPolygon(indicesOfConeInputs, conePositionsMicrons)
     yy = yy(idx);
     xx(end+1) = xx(1);
     yy(end+1) = yy(1);
-    plot(xx,yy, 'k:', 'LineWidth', 1.0);
+    plot(xx,yy, ':', 'Color', [0.4 0.4 0.4], 'LineWidth', 1.0);
 end

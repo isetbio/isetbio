@@ -16,6 +16,7 @@ function theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(connectivity
             theRF = theRF + coneProfile * connectivityVectorForRGC(coneIndex);
         end 
     end
-    theRF = theRF/max(theRF(:));
-        
+    if (~isempty(theRF))
+        theRF = theRF/max(theRF(:));
+    end
 end

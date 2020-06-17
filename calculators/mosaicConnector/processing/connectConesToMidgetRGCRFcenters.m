@@ -3,20 +3,96 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
         RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
         orphanRGCpolicy, maximizeConeSpecificity, coneTypes, desiredConesToRGCratios, visualizeProcess)
     
-    % Define constants
-    LCONE_ID = 2;
-    MCONE_ID = 3;
-    SCONE_ID = 4;
     
-    % Numbers of neurons
+    
+    % First pass. Connect each cone to its closest RGC. Since there are more cones than RGCs, some
+    % RGCs will receive inputs from more than 1 cone in this pass.
+    [connectionMatrix, numberOfConeInputs] = ...
+        performPass1(conePositionsMicrons, coneTypes, RGCRFPositionsMicrons);
+    
+    % Plot ecc of orphanRGCs
+    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 1);
+    
+    
+    % Second pass. For RGCs with several (> 4) cone inputs, see if we can
+    % assign some of the inputs to nearby RGCs with less cone inputs
+    [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
+        performPass2(conePositionsMicrons,  RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs);
+
+    conesNum = size(connectionMatrix,1);
+    
+    % Plot ecc of orphanRGCs
+    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 2);
+    
+    % Third pass - Maximize the frequency by which cones to 2-input RGCs have matched types
+    [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
+        performPass3(conePositionsMicrons,coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs);
+    
+    % Plot ecc of orphanRGCs
+    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 3);
+    
+    % Fourth pass - In 3-input RGCs, see if we can re-assign 1 of
+    % these inputs to an nearby RGC with only 1 cone input, ensuring that the cone types match
+    [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
+        performPass4(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs);
+    
+    % Plot ecc of orphanRGCs
+    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 4);
+    
+    % Final phase. For RGCs with several (> 5) cone inputs, see if we can
+    % assign some of the most distant inputs to nearby RGCs with less cone inputs
+    [connectionMatrix, numberOfConeInputs] = ...
+        performPass5(conePositionsMicrons,  RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs);
+    
+    % Check that each and every (non S-cone) connects to one only mRGC
+    % S-cones do not connect to mRGCs
+    for iCone = 1:conesNum
+        checkConnectionMatrix(connectionMatrix, coneTypes, conePositionsMicrons, iCone, 'after pass 5')
+    end
+    
+    % Plot ecc of orphanRGCs
+    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 5);
+    
+    % Remove all remaining orphan RGCs
+    orphanRGCindices = find(numberOfConeInputs == 0);
+    orphanRGCindicesFromConnectionMatrix = find(squeeze(sum(connectionMatrix,1)) == 0);
+    if (numel(orphanRGCindicesFromConnectionMatrix) ~= numel(orphanRGCindices))
+        error('Number of RFs with zero inputs do not agree');
+    end
+    
+    for k = 1:numel(orphanRGCindicesFromConnectionMatrix)
+        if (~ismember(orphanRGCindicesFromConnectionMatrix(k), orphanRGCindices))
+            error('RFs with zero inputs do not agree');
+        end
+    end
+    
+    fprintf('Orphan RGCs to be removed: %d\n', numel(orphanRGCindices));
+    RGCindicesToKeep = setdiff(1:size(RGCRFPositionsMicrons,1), orphanRGCindices);
+    RGCRFPositionsMicrons = RGCRFPositionsMicrons(RGCindicesToKeep,:);
+    RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(RGCindicesToKeep);
+    connectionMatrix = connectionMatrix(:,RGCindicesToKeep);
+            
+    for iCone = 1:conesNum
+        checkConnectionMatrix(connectionMatrix, coneTypes, conePositionsMicrons, iCone, 'at end')
+    end
+    
+end
+
+function [connectionMatrix, numberOfConeInputs] = performPass1(...
+    conePositionsMicrons, coneTypes, RGCRFPositionsMicrons)
+    
+    global SCONE_ID
+    
     conesNum = size(conePositionsMicrons,1);
     rgcsNum = size(RGCRFPositionsMicrons,1);
-    phaseString = sprintf('Connecting %d cones to %d mRGCRF centers: ', conesNum, rgcsNum);
-    fprintf('\n\t %s-PASS 1: connecting each cone to their closest RGC ...', phaseString);
-    tic
-    
-    % Number of cone inputs in the RF center of each mRGC
     numberOfConeInputs = zeros(1,rgcsNum);
+    
+    fprintf('\n-PASS 1: connecting each cone to their closest RGC ...');
+    tic
     
     % Indices for sparse arrays
     closestRGCindices = [];
@@ -47,393 +123,529 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
     
     % Generate sparse connection and distance matrices
     connectionMatrix = sparse(nonSconeIndices, closestRGCindices, ones([1 numel(nonSconeIndices)]), conesNum, rgcsNum);  % connections
-    distanceMatrix = sparse(nonSconeIndices, closestRGCindices, distances, conesNum, rgcsNum);                           % distances
     
-    fprintf('Completed in %f minutes\n', toc/60);
-    if (visualizeProcess)
-        visualizeConnectivity(3, 'Pass 1', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, coneTypes, mean(desiredConesToRGCratios))
-    end
+    fprintf('\nCompleted successfully in %f minutes\n',  toc/60);
+end
+
+function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
+        performPass2(conePositionsMicrons,  RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs)
     
- 
+    % Second pass. For RGCs with several (> 4) cone inputs, see if we can
+    % assign some of the inputs to nearby RGCs with less cone inputs
     
-    % Second pass
-    % Some RGCs will have N > 2 cone inputs. See if we can assign inputs
-    % 3 ... N to other RGCs in the neigborhood that have the minimal number of
-    % inputs <= N-1. 
+    minConeInputsNum = 4;
+    maxConeInputsNum = Inf;
+    [rgcIDsWithSeveralConeInputs, indicesOfConnectedCones] = findRGCsWithThreeOrMoreConeInputs(...
+        connectionMatrix, minConeInputsNum, maxConeInputsNum, RGCRFPositionsMicrons);
     
-    % Find RGCs with more than 2 cone inputs
-    rgcIDsWithMoreThanTwoInputs = find(squeeze(sum(connectionMatrix,1)) > 2);
-    fprintf('\n \t %s-PASS 2: reassigning cones in %d RGCs (that have > 2 cone inputs) to neighboring RGCs ...', phaseString, numel(rgcIDsWithMoreThanTwoInputs));
+    fprintf('\n -PASS 2: Reassigning cone inputs of %d multi-input RGCs (>4 cone inputs) to nearby RGCs with fewer cone inputs ...', numel(rgcIDsWithSeveralConeInputs));
     tic
-
-    for iRGC = 1:numel(rgcIDsWithMoreThanTwoInputs)
-        
-        % Get the RGC index
-        rgcIndex = rgcIDsWithMoreThanTwoInputs(iRGC);
-
-        % Get the indices of cones connected to this RGC
-        indicesOfMultipleConesConnectedToThisRGC = find(squeeze(connectionMatrix(:, rgcIndex)) == 1);
-
-        % Sort the indices of connected cones according to their distance
-        % from the RGC. We want to start re-assigning the longest distance
-        % inputs first
-        inputDistances = squeeze(distanceMatrix(indicesOfMultipleConesConnectedToThisRGC, rgcIndex));
-        [~, idx] = sort(inputDistances, 'descend');
-        indicesOfMultipleConesConnectedToThisRGC = indicesOfMultipleConesConnectedToThisRGC(idx);
-        
-        % Exclude the cone with the smallest distance (last one since we sorted in descending order). 
-        % We dont want to assign this one to another RGC.
-        indicesOfMultipleConesConnectedToThisRGC = indicesOfMultipleConesConnectedToThisRGC(1:end-1);
-        
-        % Go through each of these cones (and as long as we still have more than 2 connected cones)
-        % and see if we can assign some to other RGCs
-        localRGCSpacingMicrons = RGCRFSpacingsMicrons(rgcIndex);
-        
-        iCone = 0;
-        while (numberOfConeInputs(rgcIndex) > 2) && (iCone < numel(indicesOfMultipleConesConnectedToThisRGC))
-            iCone = iCone+ 1;
-            % Retrieve cone index
-            coneIndex = indicesOfMultipleConesConnectedToThisRGC(iCone);
-            
-            % Distance of this cone to current RGC
-            distanceOFCurrentConeInputToParentRGC = distanceMatrix(coneIndex, rgcIndex);
-            
-            % Compute distance of this cone to all RGCs
-            conePosMicrons = conePositionsMicrons(coneIndex,:);
-            distances = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons, conePosMicrons).^2),2));
-            
-            % Find indices of RGCs in neighborhood of this cone that also
-            % are also not much more distant (up to 20% more) that this cone is to its parent RGC
-            rgcIndicesWithinReach = find(...
-                distances <= localRGCSpacingMicrons & ...
-                distances <= 1.2*distanceOFCurrentConeInputToParentRGC ...
-                );
-
-            % Find which RGC to connect to. This will be the closest RGC that
-            % has the minimal # of cones already connected to it, and which
-            % is less that the current number of inputs to this RGC
-            
-            % The minimum number of cone connections for the RGCs within reach 
-            neighboringRGCConnectionsNum = sum(squeeze(connectionMatrix(:, rgcIndicesWithinReach)),1);
-            minConnections = min(neighboringRGCConnectionsNum);
-
-            % Forget it if the inputs to the nearby RGCs are more numerous
-            % than in the current RGC
-            if (minConnections+1 >= numberOfConeInputs(rgcIndex))
-                continue;
-            end
-            
-            % Sort neigboring RGCs according to their distance to the cone
-            [~, sortedIndices] = sort(distances(rgcIndicesWithinReach), 'ascend');
-            
-            % Go through the neihboring RGCs from the closest to the
-            % farthest and find the first one that has the min # of connections
-            keepGoing = true; k = 0;
-            reassignedRGCindex = nan;
-            while (keepGoing) && (k < numel(sortedIndices))
-                k = k + 1;
-                theNeighboringRGCIndex = rgcIndicesWithinReach(sortedIndices(k));
-                if (neighboringRGCConnectionsNum(sortedIndices(k)) == minConnections)
-                    % That's the one, exit the while loop
-                    keepGoing = false;
-                    reassignedRGCindex = theNeighboringRGCIndex;
-                end
-            end
-
-            if (~isnan(reassignedRGCindex))
-                % Update the connection/ distance matrices
-                newDistance = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons(reassignedRGCindex,:), conePosMicrons).^2),2));
-                [connectionMatrix, distanceMatrix, numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
-                    coneIndex, rgcIndex, ...                               % existing connection to be dissolved
-                    coneIndex, reassignedRGCindex, newDistance, ... % new connection to be established
-                    connectionMatrix, distanceMatrix, numberOfConeInputs); % old matrices
-            end
-        end % while
-    end % for iRGC
-    fprintf('Completed in %f minutes\n', toc/60);
     
-    
-    if (visualizeProcess)
-        visualizeConnectivity(4, 'Pass 2', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, coneTypes, mean(desiredConesToRGCratios));
-    end
-    
-    
-    % Look for RGCs with exactly 2 cone inputs that are of different type and see if can re-assign/exchange
-    % one these inputs to a neighboring RGC that has one cone input making sure we match the cone type
-    if (maximizeConeSpecificity)
-        
-        fprintf('\n \t %s-PASS 3.1: finding cones in RGCs that receive a mixed 2 cone-input ...', phaseString);
-        tic
-        
-        rgcIDsWithExactlyTwoInputs = find(squeeze(sum(connectionMatrix,1)) == 2);
-        
-        % Find indices of RGCs with 2 cone inputs of different type
-        rgcIDsWithTwoConeInputsOfDifferentType = [];
-        coneIDsToRGCswithMixedCenters = [];
-        
-        for iRGC = 1:numel(rgcIDsWithExactlyTwoInputs)
-            % Get RGC index
-            rgcIndex = rgcIDsWithExactlyTwoInputs(iRGC);
+    for iRGC = 1:numel(rgcIDsWithSeveralConeInputs)
+        % Get the RGC index and its cone input indices
+        multiInputRGCindex = rgcIDsWithSeveralConeInputs(iRGC);
+        multiInputRGCconeIndices = indicesOfConnectedCones{iRGC};
 
-            % Get the indices of cones connected to this RGC
-            indicesOfConesConnectedToThisRGC = find(squeeze(connectionMatrix(:, rgcIndex)) == 1);
-            
-            % Check to see if the input cones have mismatched types (i.e. L and M)
-            if (coneTypes(indicesOfConesConnectedToThisRGC(1)) ~= coneTypes(indicesOfConesConnectedToThisRGC(2)))
-                rgcIDsWithTwoConeInputsOfDifferentType = cat(2,rgcIDsWithTwoConeInputsOfDifferentType, rgcIndex);
-                coneIDsToRGCswithMixedCenters = cat(2, coneIDsToRGCswithMixedCenters, indicesOfConesConnectedToThisRGC);
+        % Retrieve all the neigboring RGCs and their cone input IDs
+        [neighboringRGCindices, neighboringRGCconeInputIndices] = ...
+            findNeighboringRGCsAndTheirConeInputs(multiInputRGCindex, ...
+            1.4*RGCRFSpacingsMicrons(multiInputRGCindex), ...
+            RGCRFPositionsMicrons, connectionMatrix);
+        
+        meanInputsNumToNeighbors = 0;
+        nonOrphanNeighbors = 0;
+        for k = 1:numel(neighboringRGCindices)
+            neighboringRGCconeInputIDs = neighboringRGCconeInputIndices{k};
+            inputsNum = numel(neighboringRGCconeInputIDs);
+            if (inputsNum>0)
+                meanInputsNumToNeighbors = meanInputsNumToNeighbors + inputsNum;
+                nonOrphanNeighbors = nonOrphanNeighbors + 1;
             end
         end
-        fprintf('Completed in %f minutes\n', toc/60);
+        meanInputsNumToNeighbors = meanInputsNumToNeighbors/nonOrphanNeighbors;
         
-        fprintf('\n \t %s-PASS 3.2: reassigning cones in %d RGCs that receive a mixed 2 cone-input ...', phaseString, numel(rgcIDsWithTwoConeInputsOfDifferentType));
-        tic
-        
-        % Try to reassign one of the 2 cones in the mixed 2-cone RGCs
-        for iRGC = 1:numel(rgcIDsWithTwoConeInputsOfDifferentType)
+        for k = 1:numel(neighboringRGCindices)
+            neighboringRGCindex = neighboringRGCindices(k);
+            neighboringRGCconeInputIDs = neighboringRGCconeInputIndices{k};
             
-            % Retrieve the 2 (mixed) cones that are connected to this RGC
-            rgcIndex = rgcIDsWithTwoConeInputsOfDifferentType(iRGC);
-            indicesOfConesConnectedToThisRGC = coneIDsToRGCswithMixedCenters(:,iRGC);
-            coneIndexToBeDisconnected = indicesOfConesConnectedToThisRGC(1);
-            
-            % Find neighboring RGCs to the current RGC
-            rgcPosMicrons =  RGCRFPositionsMicrons(rgcIndex,:);
-            distances = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons, rgcPosMicrons).^2),2));
-            
-            % See if there are nearby orphan RGCs we can reassign this cone
-            % to. Since orphanRGCs will most likely be due to S-cones, look
-            % in a large region, like:  5*RGCRFSpacingsMicrons(rgcIndex)
-            rgcIndicesWithinReach = find(distances <= 2.0*RGCRFSpacingsMicrons(rgcIndex));
-            nearbyOrphanRGCs = find(numberOfConeInputs(rgcIndicesWithinReach) == 0);
-            
-            if (~isempty(nearbyOrphanRGCs))
-                candidateRGCindex = rgcIndicesWithinReach(nearbyOrphanRGCs(1));
-                % Update the connection/ distance matrices
-                newDistance = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons(candidateRGCindex,:), conePositionsMicrons(coneIndexToBeDisconnected,:)).^2),2));
-                [connectionMatrix, distanceMatrix, numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
-                        coneIndexToBeDisconnected, rgcIndex, ...                               % existing connection to be dissolved
-                        coneIndexToBeDisconnected, candidateRGCindex, newDistance, ...         % new connection to be established
-                        connectionMatrix, distanceMatrix, numberOfConeInputs);                 % old matrices
-                %fprintf(2,'Assigned mixed cone input from one RGC to a nearby ORPHAN rgc !!\n');
-            else
-                % Ok, no nearby orphan RGC, lets see if we can reassign one
-                % of these 2 cones to one of those
-                foundCandidateRGCForTransferingMixedConeInput = false;
-                for k = 1:2
-                    % If we already assigned the first cone, skip the rest
-                    if (foundCandidateRGCForTransferingMixedConeInput)
-                        continue;
-                    end
-                    
-                    coneIndexToBeDisconnected = indicesOfConesConnectedToThisRGC(k);
-                    
-                    % Find nearby RGCs to this cone
-                    distances = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons, conePositionsMicrons(coneIndexToBeDisconnected,:)).^2),2));
-                    rgcIndicesWithinReach = find(distances <= 1.2*RGCRFSpacingsMicrons(rgcIndex));
-                    
-                    % Sort neigboring RGCs according to their distance to this RGC
-                    [~, sortedIndices] = sort(distances(rgcIndicesWithinReach), 'ascend');
-                    candidateRGCindices = rgcIndicesWithinReach(sortedIndices);
-                    
-                    for cRGC = 1:numel(candidateRGCindices)
-                        candidateRGCindex = candidateRGCindices(cRGC);
-                        if ((candidateRGCindex == rgcIndex) || (foundCandidateRGCForTransferingMixedConeInput == true))
-                            continue
-                        end
-                        if (numberOfConeInputs(candidateRGCindex) == 1)
-                            % Determine the cone type of the candiate RGC
-                            idx = find(squeeze(connectionMatrix(:, candidateRGCindex)) == 1);
-                            if (coneTypes(idx) == coneTypes(coneIndexToBeDisconnected))
-                                % Found it
-                                foundCandidateRGCForTransferingMixedConeInput = true;
-                                
-                                % Update the connection/ distance matrices
-                                newDistance = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons(candidateRGCindex,:), conePositionsMicrons(coneIndexToBeDisconnected,:)).^2),2));
-                                [connectionMatrix, distanceMatrix, numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
-                                    coneIndexToBeDisconnected, rgcIndex, ...                               % existing connection to be dissolved
-                                    coneIndexToBeDisconnected, candidateRGCindex, newDistance, ...         % new connection to be established
-                                    connectionMatrix, distanceMatrix, numberOfConeInputs);                 % old matrices
-                               % fprintf('Assigned mixed cone input from one RGC to a nearby rgc !!\n');
-                            end
-                        end
-                    end % for cRGC
-                    
-                end % k
-            end 
-        end % iRGC
-    end % maximineConeSpecificity
-    fprintf('Completed in %f minutes\n', toc/60);
-        
-    % Fourth pass - dealing with remaining orphan RGCs
-    RGCswithZeroInputs = find(numberOfConeInputs == 0);
+            if ((numel(neighboringRGCconeInputIDs)+1 < numel(multiInputRGCconeIndices)) && ...
+                (meanInputsNumToNeighbors < numel(multiInputRGCconeIndices))) 
+                % Neighbor has less cone inputs and we still have more cone
+                % inputs than our neighbors on average
+                
+                % Determine which cone input to give to this neighbor
+                if (numel(neighboringRGCconeInputIDs) == 0)
+                    % Assigning to an orphanRGC, so just pick the first cone
+                    indexOfConeToBeReassigned = multiInputRGCconeIndices(1);
+                    % update the position of the previously orphan RGC
+                    RGCRFPositionsMicrons(neighboringRGCindex,:) = conePositionsMicrons(indexOfConeToBeReassigned,:);
+                else
+                    %  fprintf('Assigning one input for cell #%d which had %d inputs to a nearby cell with %d inputs\n', ...
+                    %      multiInputRGCindex, numel(multiInputRGCconeIndices), numel(neighboringRGCconeInputIDs));
+                    % Assigning to a non-orphan RGC, so pick the cone
+                    % closest to the cones of that RGC
+                    distances = zeros(1,numel(multiInputRGCconeIndices));
+                    for kk = 1:numel(multiInputRGCconeIndices)
+                        distances(kk) = min(sqrt(sum((bsxfun(@minus, conePositionsMicrons(neighboringRGCconeInputIDs,:), conePositionsMicrons(multiInputRGCconeIndices(kk),:))).^2,2)));
+                    end % kk
+                    [~,idx] = min(distances);
+                    indexOfConeToBeReassigned = multiInputRGCconeIndices(idx);
+                end
+                
+                % Update the cone indices to the multiInputRGC
+                multiInputRGCconeIndices = setdiff(multiInputRGCconeIndices, indexOfConeToBeReassigned);
+                
+                % disconnect indexOfConeToBeReassigned from the multiInputRGCindex
+                % and connect it to the neighboringRGCindex
+                [connectionMatrix, numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
+                    indexOfConeToBeReassigned, multiInputRGCindex, ...
+                    indexOfConeToBeReassigned, neighboringRGCindex, ...
+                    connectionMatrix,  numberOfConeInputs); 
+            end
+        end % for k
+    end % iRGC
     
-    fprintf('\n \t %s-PASS 4: Trying to reallocate cones to %d orphan RGCs ...', phaseString, numel(RGCswithZeroInputs));
+    fprintf('\nCompleted successfully for %d multi (>=4) input RGCs in %f minutes\n', numel(rgcIDsWithSeveralConeInputs), toc/60);
+end
+    
+function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
+        performPass3(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs)
+    
+    [rgcIDsWithTwoMismatchedConeInputs, indicesOfMismatchedCones] = findRGCsWithTwoMismatchedConeInputs(connectionMatrix, RGCRFPositionsMicrons,coneTypes);
+    fprintf('\n -PASS 3: reassigning cones in %d RGCs with 2 mismatched cone inputs to neighboring RGCs with 1 or 0 cone inputs ...',  numel(rgcIDsWithTwoMismatchedConeInputs));
     tic
     
-    switch (orphanRGCpolicy) % valid options: {'remove', 'share input'}
-        case 'remove'
-            for k = 1:numel(RGCswithZeroInputs)
-                fprintf('%s Removing orphan RGC #%d at position %2.1f,%2.1f\n', ...
-                    phaseString, RGCswithZeroInputs(k), RGCRFPositionsMicrons(RGCswithZeroInputs(k),1), ...
-                    RGCRFPositionsMicrons(RGCswithZeroInputs(k),2));
-            end
-            indicesToKeep = setdiff(1:size(RGCRFPositionsMicrons,1), RGCswithZeroInputs);
-            RGCRFPositionsMicrons = RGCRFPositionsMicrons(indicesToKeep,:);
-            RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(indicesToKeep);
-            connectionMatrix = connectionMatrix(:,indicesToKeep);
-            numberOfConeInputs = numberOfConeInputs(indicesToKeep);
-            
-        case 'share input'
-            for k = 1:numel(RGCswithZeroInputs)
-                rgcIndex = RGCswithZeroInputs(k);
-                rgcPos = RGCRFPositionsMicrons(rgcIndex,:);
-                % Find the closest cone that is not an S-cone
-                validConeIndices = find(coneTypes < 4);
-                distances = sqrt(sum((bsxfun(@minus, conePositionsMicrons(validConeIndices,:), rgcPos).^2),2));
-                [~, idx] = min(distances);
-                iCone = validConeIndices(idx);
-                connectionMatrix(iCone, rgcIndex) = 1;                            % strength
-                distanceMatrix(iCone, rgcIndex) = distances(idx);             % distance
-                numberOfConeInputs(rgcIndex) = numberOfConeInputs(rgcIndex)+1;
-                fprintf('%s Provided shared cone input to orphan RGC #%d (from cone at position %2.1f, %2.1f)\n', ...
-                    phaseString, rgcIndex, conePositionsMicrons(iCone,1), conePositionsMicrons(iCone,2));
-            end
-            
-        case 'steal input'
-            RGCswithRealZeroInputs = [];
-            for iRGC = 1:numel(RGCswithZeroInputs)
-                orphanRGCindex = RGCswithZeroInputs(iRGC);
-                
-                % Find neighboring RGCs
-                rgcPosMicrons =  RGCRFPositionsMicrons(orphanRGCindex,:);
-                distances = sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons, rgcPosMicrons).^2),2));
-                rgcIndicesWithinReach = find(distances <= 1.4*RGCRFSpacingsMicrons(orphanRGCindex));
-            
-                % Sort neigboring RGCs according to their distance to this RGC
-                [sortedDistances, sortedIndices] = sort(distances(rgcIndicesWithinReach), 'ascend');
-
-                % Exclude the RGC itself, which will have zero distance
-                sortedIndices = sortedIndices(2:end);
-                candidateRGCindices = rgcIndicesWithinReach(sortedIndices);
-                
-                % Determine the max cone inputs to the nearby RGCs
-                coneInputsToNearbyRGCs = numberOfConeInputs(candidateRGCindices);
-                maxConeInputsInTheNeigborhood = max(coneInputsToNearbyRGCs);
-                
-                if (maxConeInputsInTheNeigborhood > 2)
-                    meanConeInputsInTheNeiborhood = floor(mean(coneInputsToNearbyRGCs));
-                    % Go through the neirhboring cones and steal 1
-                    % cone from each until the previously orphan RGC has meanConeInputsInTheNeiborhood
-                    stolenCones = 0;
-                    for cRGC = 1:numel(candidateRGCindices)
-                        if (stolenCones >= meanConeInputsInTheNeiborhood)
-                            continue;
-                        end
-                        candidateRGCindex = candidateRGCindices(cRGC);
-                        if (numberOfConeInputs(candidateRGCindex) > 1)
-                            % Find the cones connected to this RGC
-                            indicesOfConesConnectedToTheCandidateRGC = find(squeeze(connectionMatrix(:, candidateRGCindex)) == 1);
-                            % Find the cone closest to the orphanRGC location
-                            distanceToCones = sqrt(sum((bsxfun(@minus, conePositionsMicrons(indicesOfConesConnectedToTheCandidateRGC,:), rgcPosMicrons).^2),2));
-                            [~,coneIndexToSteal] = min(distanceToCones);
-
-                            % Update the connection/ distance matrices
-                            [connectionMatrix, distanceMatrix, numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
-                                  coneIndexToSteal, candidateRGCindex, ...                               % existing connection to be dissolved
-                                  coneIndexToSteal, orphanRGCindex, 0, ...         % new connection to be established
-                                  connectionMatrix, distanceMatrix, numberOfConeInputs);                 % old matrices
-
-                            stolenCones = stolenCones + 1;
-                        end
-                        
-                    end
-                    %fprintf(2,'Eliminated oprhan RGC by stealing %d cone inputs from nearby RGCs with > %d cone inputs!!\n', stolenCones, meanConeInputsInTheNeiborhood);
-                    
-                else % 2 or 1 max cone inputs in the neighborhood
-                    switch (maxConeInputsInTheNeigborhood)
-                        case 2
-                            % Steel on input so we dont have an oprhan RGC here
-                            foundCandidateRGCForTransferingMixedConeInput = false;
-                            for cRGC = 1:numel(candidateRGCindices)
-                                candidateRGCindex = candidateRGCindices(cRGC);
-                                if ( (sum(connectionMatrix(:,candidateRGCindex),1) == maxConeInputsInTheNeigborhood) && ...
-                                     (numberOfConeInputs(candidateRGCindex) > 1) && (foundCandidateRGCForTransferingMixedConeInput == false) )
-                                     
-                                    foundCandidateRGCForTransferingMixedConeInput = true;
-
-                                     % Find the 2 cones connected to this RGC
-                                     indexOfConesConnectedToTheCandidateRGC = find(squeeze(connectionMatrix(:, candidateRGCindex)) == 1);
-
-                                     % Update the connection/ distance
-                                     % matrices (by disconnecting the first
-                                     % cone)
-                                     coneIndexToSteal = indexOfConesConnectedToTheCandidateRGC(1);
-                                     [connectionMatrix, distanceMatrix, numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
-                                        coneIndexToSteal, candidateRGCindex, ...                    % existing connection to be dissolved
-                                        coneIndexToSteal, orphanRGCindex, 0, ...                    % new connection to be established
-                                        connectionMatrix, distanceMatrix, numberOfConeInputs);      % old matrices
-                          
-                                     %fprintf(2,'Eliminated oprhan RGC by stealing 1 cone input from a nearby RGC with 2 cone inputs!!\n');
-
-                                end
-                            end % cRGC
-                        case 1
-                            %fprintf('All %d RGCs in the neighbohood of this RGC had 1 cone input. RGC will remain an orphan.\n', numel(candidateRGCindices));
-                            % All nearby RGCs have 1 input, so this has to remain
-                            % an orphan RGC, so we will have to remove it
-                            RGCswithRealZeroInputs = cat(2,RGCswithRealZeroInputs, orphanRGCindex);
-                    end  % switch
+    successfullReassignementsNum = 0;
+    orphanAssignmentsNum = 0;
+    
+    eccDegs =  WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCRFSpacingsMicrons(rgcIDsWithTwoMismatchedConeInputs,:).^2,2))/1000.0);
+    
+    for iRGC = 1:numel(rgcIDsWithTwoMismatchedConeInputs)
+        % Get the RGC index
+        mismatchedConeInputRGCindex = rgcIDsWithTwoMismatchedConeInputs(iRGC);
+        mismatchedConeIndices = indicesOfMismatchedCones(iRGC,:);
+        
+        if (eccDegs(iRGC) <= 1.0)
+            multiplier = 41;
+        else
+            multiplier = 7;
+        end
+        % Seek to connect one cone input to a nearby orphan RGC
+        % Since these are orphans look in a large region (7xlocal spacing)
+        orphanRGCindex = findNeigboringOrphanRGC(mismatchedConeInputRGCindex, ...
+            multiplier*RGCRFSpacingsMicrons(mismatchedConeInputRGCindex), RGCRFPositionsMicrons, connectionMatrix);
+       
+        if (~isempty(orphanRGCindex))
+            orphanAssignmentsNum = orphanAssignmentsNum + 1;
+            % Reassign the first cone input (arbitary)
+            indexOfConeToBeReassigned = mismatchedConeIndices(1);
+            % disconnect indexOfConeToBeReassigned from the mismatchedConeInputRGCindex
+            % and connect it to the orphanRGCindex
+            [connectionMatrix,  numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
+                indexOfConeToBeReassigned, mismatchedConeInputRGCindex, ...
+                indexOfConeToBeReassigned, orphanRGCindex, ...
+                connectionMatrix, numberOfConeInputs);
+            % update the position of the previously orphan RGC
+            RGCRFPositionsMicrons(orphanRGCindex,:) = conePositionsMicrons(indexOfConeToBeReassigned,:);
+        else
+            % Second chance: See if we can re-assign one of the 2 mismatched cone inputs to a nearby RGC with 1 cone input
+            foundRGCwithMatchedCone = false;
+            for coneInputNo = 1:2
+                if (foundRGCwithMatchedCone)
+                    continue;
                 end
-            end % iRGC
-             
-            % Remove any remaining orphan RGCs
-            indicesToKeep = setdiff(1:size(RGCRFPositionsMicrons,1), RGCswithRealZeroInputs);
-            RGCRFPositionsMicrons = RGCRFPositionsMicrons(indicesToKeep,:);
-            RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(indicesToKeep);
-            connectionMatrix = connectionMatrix(:,indicesToKeep);
-            numberOfConeInputs = numberOfConeInputs(indicesToKeep);
-            
-        otherwise
-            error('Unknown orpanRGCpolicy: ''%s''.', orphanRGCpolicy)
-    end % Switch (ophanPolicy)
+
+                indexOfConeToBeReassigned = mismatchedConeIndices(coneInputNo);
+                typeOfConeToBeReassigned = coneTypes(indexOfConeToBeReassigned);
+
+                matchedConeInputRGCindex = findNeigboringRGCWithOneConeInputOfMatchedType(...
+                    indexOfConeToBeReassigned, typeOfConeToBeReassigned, ...
+                    1.5*coneSpacingsMicrons(indexOfConeToBeReassigned), ...
+                    coneTypes, conePositionsMicrons, connectionMatrix);
+
+                if (~isempty(matchedConeInputRGCindex))
+                    foundRGCwithMatchedCone = true;
+                    successfullReassignementsNum = successfullReassignementsNum + 1;
+                    % disconnect indexOfConeToBeReassigned from the mismatchedConeInputRGCindex
+                    % and connect it to the matchedRGCindex
+                    [connectionMatrix,  numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
+                        indexOfConeToBeReassigned, mismatchedConeInputRGCindex, ...
+                        indexOfConeToBeReassigned, matchedConeInputRGCindex, ...
+                        connectionMatrix, numberOfConeInputs); 
+                end
+            end % for coneInputNo
+        end
+    end %iRGC
+    
+    fprintf('\nCompleted successfully for %d RGCs + %d orphan RGCs in %f minutes\n', successfullReassignementsNum, orphanAssignmentsNum, toc/60);
+
+end
+
+
+function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
+        performPass4(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs)
+    
+    global LCONE_ID
+    global MCONE_ID
+    
+    % Fourth pass - In RGCs with 3 inputs, see if we can re-assign 1 of
+    % these inputs to an nearby RGC with only 1 cone input, ensuring that the cone types match
+    minConeInputsNum = 3;
+    maxInputsNum = 3;
+    [rgcIDsWithThreeConeInputs, indicesOfConnectedCones] = findRGCsWithThreeOrMoreConeInputs(connectionMatrix, minConeInputsNum, maxInputsNum, RGCRFPositionsMicrons);
+    eccDegs =  WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCRFSpacingsMicrons(rgcIDsWithThreeConeInputs,:).^2,2))/1000.0);
+    
+    fprintf('\n -PASS 4: Reassigning 3-rd cone input of %d 3-cone input RGCs to a nearby orphanRGC or an RGC with 1 cone input ...',  numel(rgcIDsWithThreeConeInputs));
+    tic
+    
+    successfullReassignementsNum = 0;
+    orphanAssignmentsNum = 0;
+    
+    for iRGC = 1:numel(rgcIDsWithThreeConeInputs)
+        % Get the RGC index
+        threeInputRGCindex = rgcIDsWithThreeConeInputs(iRGC);
+        coneIndices = indicesOfConnectedCones{iRGC};
+        
+        % See if we can re-assign one of the 3 cone inputs to either an orphanRGC
+        % or to a nearby RGC with 1 cone input, matching the cone type
+        inputConeTypes = coneTypes(coneIndices);
+        lConeIndices = find(inputConeTypes == LCONE_ID);
+        mConeIndices = find(inputConeTypes == MCONE_ID);
+                
+        % Determine the order by which we will attempt cones
+        if ((numel(lConeIndices) == 3) || (numel(mConeIndices) == 3))
+            coneInputOrder = [1 2 3];
+        else
+            % mixed 3-cone input. Select the odd cone
+            if (numel(lConeIndices) == 1)
+                 coneInputOrder(1) = find(inputConeTypes == LCONE_ID);
+            else
+                 coneInputOrder(1) = find(inputConeTypes == MCONE_ID);
+            end
+            coneInputOrder = [coneInputOrder(1) setdiff([1 2 3], coneInputOrder(1))];
+        end
+        
+      
+        if (eccDegs(iRGC) <= 4.0)
+            multiplier = 51;
+        else
+            multiplier = 7;
+        end
+        
+        % First chance - seek to connect one cone input to a nearby orphan RGC
+        % Since these are orphans look in a large region (41xlocal spacing)
+        orphanRGCindex = findNeigboringOrphanRGC(threeInputRGCindex, ...
+                    multiplier*RGCRFSpacingsMicrons(threeInputRGCindex), RGCRFPositionsMicrons, connectionMatrix);
+                
+        if (~isempty(orphanRGCindex))
+            orphanAssignmentsNum = orphanAssignmentsNum + 1;
+            indexOfConeToBeReassigned = coneIndices(coneInputOrder(1));
+
+            % disconnect indexOfConeToBeReassigned from the mismatchedConeInputRGCindex
+            % and connect it to the orphanRGCindex
+            [connectionMatrix,  numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
+                indexOfConeToBeReassigned, threeInputRGCindex, ...
+                indexOfConeToBeReassigned, orphanRGCindex,  ...
+                connectionMatrix,  numberOfConeInputs); 
+            % update the position of the previously orphan RGC
+            RGCRFPositionsMicrons(orphanRGCindex,:) = conePositionsMicrons(indexOfConeToBeReassigned,:);
+        else
+            foundOneConeInputRGCwithMatchedConeIndex = false;
+            % Go through all the cones and see which one can connect
+            for kkk = 1:numel(coneInputOrder)
+                if (foundOneConeInputRGCwithMatchedConeIndex)
+                    continue;
+                end
+                coneInputNo = coneInputOrder(kkk);
+                indexOfConeToBeReassigned = coneIndices(coneInputNo);
+                typeOfConeToBeReassigned = coneTypes(indexOfConeToBeReassigned);
+
+                matchedConeInputRGCindex = findNeigboringRGCWithOneConeInputOfMatchedType(...
+                    indexOfConeToBeReassigned, typeOfConeToBeReassigned, ...
+                    1.5*coneSpacingsMicrons(indexOfConeToBeReassigned), ...
+                    coneTypes, conePositionsMicrons, connectionMatrix);
+
+                if (~isempty(matchedConeInputRGCindex))
+                    foundOneConeInputRGCwithMatchedConeIndex = true;
+                    successfullReassignementsNum = successfullReassignementsNum + 1;
+                    % disconnect indexOfConeToBeReassigned from the threeInputRGCindex
+                    % and connect it to the matchedRGCindex
+                    [connectionMatrix,  numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
+                        indexOfConeToBeReassigned, threeInputRGCindex, ...
+                        indexOfConeToBeReassigned, matchedConeInputRGCindex, ...
+                        connectionMatrix,  numberOfConeInputs); 
+                end
+            end % for kkk
+        end
+        
+    end % iRGC
     
     
-    fprintf('Completed in %2.1f minutes. There are still %d remaining orphan RGCs, which were removed.\n', toc/60, numel(RGCswithRealZeroInputs));         
+    fprintf('\nCompleted successfully for %d RGCs + %d orphan RGCs in %f minutes\n', successfullReassignementsNum, orphanAssignmentsNum, toc/60);
+end
+
+
+function [connectionMatrix, numberOfConeInputs] = ...
+        performPass5(conePositionsMicrons, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs)
     
-    if (visualizeProcess)
-        visualizeConnectivity(5, 'Pass 4', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix, coneTypes, mean(desiredConesToRGCratios));
+    % Final phase. For RGCs with several (> 5) cone inputs, see if we can
+    % assign some of the most distant inputs to nearby RGCs with less cone inputs
+    minConeInputsNum = 4;
+    maxConeInputsNum = Inf;
+    [rgcIDsWithSeveralConeInputs, indicesOfConnectedCones] = findRGCsWithThreeOrMoreConeInputs(...
+        connectionMatrix, minConeInputsNum, maxConeInputsNum, RGCRFPositionsMicrons);
+    
+    fprintf('\n \t -PASS 5: Reassigning farthest cone input of %d multi-input RGCs (>=4 cone inputs) to the closest RGCs with fewer cone inputs ...', numel(rgcIDsWithSeveralConeInputs));
+    tic
+        
+    for phaseRepeat = 1:3
+        
+        if (phaseRepeat > 1)
+            [rgcIDsWithSeveralConeInputs, indicesOfConnectedCones] = findRGCsWithThreeOrMoreConeInputs(...
+                connectionMatrix, minConeInputsNum, maxConeInputsNum, RGCRFPositionsMicrons);
+        end
+        
+        conesReassignedInPhase(phaseRepeat) = 0;
+        
+        for iRGC = 1:numel(rgcIDsWithSeveralConeInputs)
+            % Get the RGC index and its cone input indices
+            multiInputRGCindex = rgcIDsWithSeveralConeInputs(iRGC);
+            multiInputRGCconeIndices = indicesOfConnectedCones{iRGC};
+
+            % Compute the centroid of all our cones
+            centroidOfInputs = mean(conePositionsMicrons(multiInputRGCconeIndices,:),1);
+
+            % Determine the furthest cone from the centroid
+            dd = sqrt(sum((bsxfun(@minus, conePositionsMicrons(multiInputRGCconeIndices,:), centroidOfInputs)).^2,2));
+            [~,idx] = max(dd);
+            indexOfConeToBeReassigned = multiInputRGCconeIndices(idx(1));
+
+            % Retrieve the neigboring RGCs to that cone and their cone inputs
+            [neighboringRGCindices, neighboringRGCconeInputIndices] = indicesOfNeigbboringRGCsToTargetCone(...
+                conePositionsMicrons(indexOfConeToBeReassigned,:), ...
+                RGCRFPositionsMicrons, 1.2*RGCRFSpacingsMicrons(multiInputRGCindex), ...
+                multiInputRGCindex, connectionMatrix);
+
+            coneReassigned = false;
+            for k = 1:numel(neighboringRGCindices)
+                neighboringRGCindex = neighboringRGCindices(k);
+                neighboringRGCconeInputIDs = neighboringRGCconeInputIndices{k};
+
+                if (numel(neighboringRGCconeInputIDs)+1 < numel(multiInputRGCconeIndices)) && (coneReassigned == false)
+                    coneReassigned = true;
+                    conesReassignedInPhase(phaseRepeat) = conesReassignedInPhase(phaseRepeat) + 1;
+                    % disconnect indexOfConeToBeReassigned from the multiInputRGCindex
+                    % and connect it to the neighboringRGCindex
+                    [connectionMatrix, numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
+                        indexOfConeToBeReassigned, multiInputRGCindex, ...
+                        indexOfConeToBeReassigned, neighboringRGCindex, ...
+                        connectionMatrix,  numberOfConeInputs); 
+                end
+            end % for k
+        end % iRGC
+    end % phase repeat
+    
+    fprintf('\nCompleted successfully for %d multi (>=4) -input RGCs in %f minutes\n', sum(conesReassignedInPhase), toc/60);
+    conesReassignedInPhase
+end
+
+function plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, subplotIndex)
+    % Plot initial distribution of orphanRGCs
+    orphanRGCindices = find(numberOfConeInputs == 0);
+    orphanRGCeccentricitiesMicrons = sqrt(sum(RGCRFPositionsMicrons(orphanRGCindices,:).^2,2));
+    orphanRGCeccentricitiesDegs = WatsonRGCModel.rhoMMsToDegs(orphanRGCeccentricitiesMicrons/1000.0);
+    figure(100);
+    subplot(5,1,subplotIndex)
+    histogram(orphanRGCeccentricitiesDegs, 0:0.25:30)
+    set(gca, 'XLim', [0 15], 'XTick', 0:1:15);
+    xlabel('eccentricity (degs)');
+    ylabel('orphan RGCs');
+    title(sprintf('Pass %d', subplotIndex));
+    drawnow;
+end
+
+
+function [neighboringRGCindices, neighboringRGCconeInputIndices] = findNeighboringRGCsAndTheirConeInputs(rgcIndex, ...
+            localRGCRFSpacingMicrons, RGCRFPositionsMicrons, connectionMatrix)
+        
+    % Find nearby RGCs, which are potential re-allocators for this RGC's cone inputs
+    neighboringRGCindices = indicesOfNeigboringRFs(rgcIndex, ...
+        localRGCRFSpacingMicrons, ...
+        RGCRFPositionsMicrons, ...
+        'ascend');
+
+    % Return cone indices
+    neighboringRGCconeInputIndices = cell(1, numel(neighboringRGCindices));
+    for k = 1:numel(neighboringRGCindices)
+        theConeIndices = find(squeeze(connectionMatrix(:,neighboringRGCindices(k))) == 1);
+        neighboringRGCconeInputIndices{k} = theConeIndices;
+    end   
+end
+
+function orphanRGCindex = findNeigboringOrphanRGC(rgcIndex, localRGCSpacingMicrons, RGCRFPositionsMicrons, connectionMatrix)
+    % Find this cone's neigboring RGCs
+    neighboringRGCindices = indicesOfNeigboringRFs(...
+        rgcIndex, ...
+        localRGCSpacingMicrons, ...
+        RGCRFPositionsMicrons, ...
+        'ascend');
+    
+    % Go through each of the neighboring cones
+    orphanRGCindex = [];
+    foundNearbyOrhpahRGC = false;
+    
+    for kk = 1:numel(neighboringRGCindices)
+        if (foundNearbyOrhpahRGC)
+            continue;
+        end
+        rgcIndex = neighboringRGCindices(kk);
+        coneInputIndices = find(squeeze(connectionMatrix(:,rgcIndex)) == 1);
+        if (isempty(coneInputIndices))
+            orphanRGCindex = rgcIndex;
+            foundNearbyOrhpahRGC = true;
+        end
+    end % kk
+end
+
+
+function matchedRGCindex = findNeigboringRGCWithOneConeInputOfMatchedType(indexOfConeToBeReassigned, typeOfConeToBeReassigned, localConeSpacingMicrons, coneTypes, conePositionsMicrons, connectionMatrix)
+    % Find this cone's neigboring cones
+    neighboringConeIndices = indicesOfNeigboringRFs(...
+        indexOfConeToBeReassigned, ...
+        localConeSpacingMicrons, ...
+        conePositionsMicrons, ...
+        'ascend');
+
+    % Go through each of the neighboring cones
+    matchedRGCindex = [];
+    foundRGCwithMatchedCone = false;
+    
+    for kk = 1:numel(neighboringConeIndices)
+        if (foundRGCwithMatchedCone)
+            continue;
+        end
+        coneIndex = neighboringConeIndices(kk);
+        % Find the RGC that this cone is connected to
+        candidateRGCindex = find(squeeze(connectionMatrix(coneIndex,:)) == 1);
+        % See if this RGC has one only 1 cone and if so, if this cone
+        % is matched to the typeOfConeToBeReassigned
+        connectedConeIDs = find(squeeze(connectionMatrix(:,candidateRGCindex)) == 1);
+        if (numel(connectedConeIDs) == 1) && (coneTypes(connectedConeIDs(1)) == typeOfConeToBeReassigned)
+            % Got it
+            foundRGCwithMatchedCone = true;
+            matchedRGCindex = candidateRGCindex;
+        end
+    end % for kk
+end
+
+function [neighboringRGCindices, neighboringRGCconeInputIndices] = indicesOfNeigbboringRGCsToTargetCone(targetConePositionMicrons, rgcPositionsMicrons, localSpacingMicrons, sourceRGCindex, connectionMatrix)
+    distances = sqrt(sum((bsxfun(@minus, rgcPositionsMicrons, targetConePositionMicrons).^2),2));
+    neighboringRGCindices= find(distances <= localSpacingMicrons);
+    [~,idx] = sort(distances(neighboringRGCindices), 'ascend');
+    neighboringRGCindices = neighboringRGCindices(idx);
+    % Exclude the source RGC index
+    neighboringRGCindices = setdiff(neighboringRGCindices, sourceRGCindex);
+
+    % Return cone indices
+    neighboringRGCconeInputIndices = cell(1, numel(neighboringRGCindices));
+    for k = 1:numel(neighboringRGCindices)
+        theConeIndices = find(squeeze(connectionMatrix(:,neighboringRGCindices(k))) == 1);
+        neighboringRGCconeInputIndices{k} = theConeIndices;
     end
-   
-    % Make sure we have no RGCs with 0 inputs
-    RGCswithZeroInputs = find(numberOfConeInputs == 0);
-    RGCswithZeroInputsFromConnectionMatrix = find(squeeze(sum(connectionMatrix,1)) == 0);
-    fprintf('Number of RGCs with zero inputs: %d , from matrix:%d\n', numel(RGCswithZeroInputs), numel(RGCswithZeroInputsFromConnectionMatrix));
     
-    for k = 1:numel(RGCswithZeroInputsFromConnectionMatrix)
-        pos = RGCRFPositionsMicrons(RGCswithZeroInputs(k),:);
-        error('RGC at position %2.1f, %2.1f has zero cone inputs\n', pos(1), pos(2));
-    end
+end
+
+
+function neighboringIndices = indicesOfNeigboringRFs(targetIndex, localSpacingMicrons, positionsMicrons, sortingOrder)
+   distances = sqrt(sum((bsxfun(@minus, positionsMicrons, positionsMicrons(targetIndex,:)).^2),2));
+   neighboringIndices = find(distances <= localSpacingMicrons);
+   [d,idx] = sort(distances(neighboringIndices), sortingOrder);
+   if ((d(1)~=0) && (strcmp(sortingOrder, 'ascend')))
+       error('D is not zero: %f', d(1));
+   else
+       idx = idx(2:end);
+   end
+   if ((d(end) ~= 0) && (strcmp(sortingOrder, 'descend')))
+       error('D is not zero: %f', d(end));
+   else
+       idx = idx(1:(end-1));
+   end
+   % Do not include the targer RF itself, which would have 0 distance
+   neighboringIndices = neighboringIndices(idx);
+end
+
+
+function  [rgcIDsWithThreeOrMoreInputs, coneInputIDs] = findRGCsWithThreeOrMoreConeInputs(connectionMatrix, minNumberOfInputs, maxNumberOfInputs, RGCRFPositionsMicrons)
     
-    if (visualizeProcess)
-        visualizeConnectivity(10, 'Final pass', conePositionsMicrons, RGCRFPositionsMicrons, connectionMatrix,  coneTypes, mean(desiredConesToRGCratios));
+    coneInputsNumForAllRGCs = full(squeeze(sum(connectionMatrix,1)));
+    
+    % IDs of multi-input RGCs
+    rgcIDsWithThreeOrMoreInputs = find(...
+        (coneInputsNumForAllRGCs(:) >= minNumberOfInputs) & ...
+        (coneInputsNumForAllRGCs(:) <= maxNumberOfInputs) );
+    
+    % Return indices sorted according to the RGC eccentricity
+    ecc = sum(RGCRFPositionsMicrons(rgcIDsWithThreeOrMoreInputs,:).^2,2);
+    [~,idx] = sort(ecc, 'ascend');
+    rgcIDsWithThreeOrMoreInputs = rgcIDsWithThreeOrMoreInputs(idx);
+    
+    % Return the cone input IDs for each of these multi-input RGCs
+    coneInputIDs = cell(1, numel(rgcIDsWithThreeOrMoreInputs));
+    for k = 1:numel(rgcIDsWithThreeOrMoreInputs)
+        % Get the indices of cones connected to this RGC
+        rgcIndex = rgcIDsWithThreeOrMoreInputs(k);
+        indicesOfConeInputs = find(squeeze(connectionMatrix(:, rgcIndex)) == 1);
+        coneInputIDs{k} = indicesOfConeInputs;
     end
 end
 
-function  [connectionMatrix, distanceMatrix, numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
-                    oldConeIndex, oldRGCindex, newConeIndex, newRGCindex, newDistance, ...
-                    connectionMatrix, distanceMatrix, numberOfConeInputs)           
+
+function [rgcIDs, coneInputIDs] = findRGCsWithTwoMismatchedConeInputs(connectionMatrix, RGCRFPositionsMicrons, coneTypes)
+    
+    rgcIDs = [];
+    coneInputIDs = [];
+    
+    rgcIDsWithTwoInputs = find(squeeze(sum(connectionMatrix,1)) == 2);
+    for k = 1:numel(rgcIDsWithTwoInputs)
+        % Get the indices of cones connected to this RGC
+        rgcIndex = rgcIDsWithTwoInputs(k);
+        indicesOfConeInputs = find(squeeze(connectionMatrix(:, rgcIndex)) == 1);
+        % add to list 
+        if ( coneTypes(indicesOfConeInputs(1)) ~= coneTypes(indicesOfConeInputs(2)) )
+            rgcIDs = cat(2, rgcIDs, rgcIndex);
+            coneInputIDs = cat(2, coneInputIDs, indicesOfConeInputs);
+        end
+    end
+    
+    % Return indeces sorted according to the RGC eccentricity
+    ecc = sum(RGCRFPositionsMicrons(rgcIDs,:).^2,2);
+    [~,idx] = sort(ecc, 'ascend');
+    
+    rgcIDs = rgcIDs(idx);
+    coneInputIDs = coneInputIDs(:, idx);
+    
+    coneInputIDs = coneInputIDs';
+    if (size(coneInputIDs,2) ~=2)
+        error('Size must be 2');
+    end
+end
+
+function  [connectionMatrix,  numberOfConeInputs] = updateConnectionAndDistanceMatrices(...
+                    oldConeIndex, oldRGCindex, newConeIndex, newRGCindex,  ...
+                    connectionMatrix, numberOfConeInputs)           
 
     % DISCONNECT oldConeIndex, from oldRGCindex
     connectionMatrix(oldConeIndex, oldRGCindex) = 0; % disconnect
-    distanceMatrix(oldConeIndex, oldRGCindex) = 0; % distance
     numberOfConeInputs(oldRGCindex) = numberOfConeInputs(oldRGCindex)-1;
     if (numberOfConeInputs(oldRGCindex) == 0)
-        error('We removed all cone inputs from RGC. This should never have haneppened');
+        error('We removed all cone inputs from this RGC. This should never have haneppened');
     end
     
     % And CONNECT newConeIndex to newRGCindex
     connectionMatrix(newConeIndex, newRGCindex) = 1; % strength
-    distanceMatrix(newConeIndex, newRGCindex) = newDistance;
     numberOfConeInputs(newRGCindex) = numberOfConeInputs(newRGCindex)+1;
 end
