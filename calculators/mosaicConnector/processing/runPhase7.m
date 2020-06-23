@@ -51,7 +51,7 @@ function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCen
         'rightMargin', 0.01, ...
         'topMargin', 0.01);
     
-    binEdges = 0:0.5:30;
+    binEdges = 0:0.25:30;
     inputs1Count = zeros(1, numel(binEdges));
     inputs2Count = zeros(1, numel(binEdges));
     inputs3Count = zeros(1, numel(binEdges));
@@ -103,14 +103,16 @@ function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCen
         
     end % iRGC
     
+    eccRange = [0 28];
+    cellsRange = [0 12000];
     binEdges = binEdges + 0.25;
     theAxes = theAxesGrid{1,1};
     cla(theAxes);
     hold(theAxes, 'on');
     bar(theAxes,  binEdges, inputs1Count, 1, 'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none'); 
     stairs(theAxes, binEdges-0.25, inputs1Count, 'k-', 'LineWidth', 1.5);
-    set(theAxes, 'XScale', 'linear', 'XLim', [0 25], 'XTick', 0:5:25);
-    set(theAxes, 'YScale', 'linear', 'YLim', [0 3000]);
+    set(theAxes, 'XScale', 'linear', 'XLim', eccRange, 'XTick', 0:5:25);
+    set(theAxes, 'YScale', 'linear', 'YLim', cellsRange);
     ylabel(theAxes,'number of  rgcs');
     title(theAxes,'single cone center')
     
@@ -119,8 +121,8 @@ function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCen
     hold(theAxes, 'on');
     bar(theAxes, binEdges,  inputs2Count, 1,  'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none'); 
     stairs(theAxes, binEdges-0.25, inputs2CountSameCone, 'k-', 'LineWidth', 1.5);
-    set(theAxes, 'XScale', 'linear', 'XLim', [0 25], 'XTick', 0:5:25);
-    set(theAxes, 'YScale', 'linear', 'YLim', [0 150]);
+    set(theAxes, 'XScale', 'linear', 'XLim', eccRange, 'XTick', 0:5:25);
+    set(theAxes, 'YScale', 'linear', 'YLim', cellsRange);
     title(theAxes,'2 cone center')
     
     theAxes = theAxesGrid{2,1};
@@ -128,8 +130,8 @@ function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCen
     hold(theAxes, 'on');
     bar(theAxes, binEdges,  inputs3Count, 1,  'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none'); 
     stairs(theAxes, binEdges-0.25, inputs3CountSameCone, 'k-', 'LineWidth', 1.5);
-    set(theAxes, 'XScale', 'linear', 'XLim', [0 25], 'XTick', 0:5:25);
-    set(theAxes, 'YScale', 'linear', 'YLim', [0 150]);
+    set(theAxes, 'XScale', 'linear', 'XLim', eccRange, 'XTick', 0:5:25);
+    set(theAxes, 'YScale', 'linear', 'YLim', cellsRange);
     xlabel(theAxes,'eccentricity (degs)');
     ylabel(theAxes,'number of rgcs');
     title(theAxes,'3 cone center')
@@ -139,8 +141,8 @@ function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCen
     hold(theAxes, 'on');
     bar(theAxes, binEdges, inputs4Count, 1,  'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none'); 
     stairs(theAxes, binEdges-0.25, inputs4CountSameCone, 'k-', 'LineWidth', 1.5);
-    set(theAxes, 'XScale', 'linear', 'XLim', [0 25], 'XTick', 0:5:25);
-    set(theAxes, 'YScale', 'linear', 'YLim', [0 150]);
+    set(theAxes, 'XScale', 'linear', 'XLim', eccRange, 'XTick', 0:5:25);
+    set(theAxes, 'YScale', 'linear', 'YLim', cellsRange);
     xlabel(theAxes,'eccentricity (degs)');
     title(theAxes,'4+ cone center')
     

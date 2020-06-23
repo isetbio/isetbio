@@ -46,7 +46,7 @@ function runPhase6(runParams)
             'conePositionsMicrons', 'coneSpacingsMicrons', 'coneTypes', ...
             'RGCRFPositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios', ...
             'midgetRGCconnectionMatrixCenter', 'midgetRGCconnectionMatrixSurround', ...
-            'synthesizedRFParams', 'patchEccDegs', 'patchSizeDegs');
+            'synthesizedRFParams', 'patchEccDegs', 'patchSizeDegs', '-v7.3');
 end
 
 function [rfCenterRadiiMicrons, rfCenterPositionsMicrons, subregionRGCidx] = ...
@@ -83,7 +83,7 @@ function [rfCenterRadiiMicrons, rfCenterPositionsMicrons, subregionRGCidx] = ...
     rfCenterPositionsMicrons = zeros(rgcsNum,2);
     
     % Compute RGC RF center positions and radii
-    parfor RGCindex = 1:rgcsNum
+    for RGCindex = 1:rgcsNum
         fprintf('Computing rf center and size for RGC %d of %d\n', RGCindex, rgcsNum);
         connectivityVector = full(squeeze(midgetRGCconnectionMatrix(:, RGCindex)));
         inputIDs = find(connectivityVector>0);
