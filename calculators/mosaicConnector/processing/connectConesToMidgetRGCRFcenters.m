@@ -28,7 +28,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
     % Third pass - Maximize the frequency by which cones to 2-input RGCs have matched types
     [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
         performPass3(conePositionsMicrons,coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        connectionMatrix, numberOfConeInputs);
+        connectionMatrix, numberOfConeInputs, maximizeConeSpecificity);
     
     % Plot ecc of orphanRGCs
     plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 3);
@@ -37,7 +37,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
     % these inputs to an nearby RGC with only 1 cone input, ensuring that the cone types match
     [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
         performPass4(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        connectionMatrix, numberOfConeInputs);
+        connectionMatrix, numberOfConeInputs, maximizeConeSpecificity);
     
     % Plot ecc of orphanRGCs
     plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 4);
@@ -212,7 +212,7 @@ end
     
 function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
         performPass3(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        connectionMatrix, numberOfConeInputs)
+        connectionMatrix, numberOfConeInputs, maximizeConeSpecificity)
     
     [rgcIDsWithTwoMismatchedConeInputs, indicesOfMismatchedCones] = findRGCsWithTwoMismatchedConeInputs(connectionMatrix, RGCRFPositionsMicrons,coneTypes);
     fprintf('\n -PASS 3: reassigning cones in %d RGCs with 2 mismatched cone inputs to neighboring RGCs with 1 or 0 cone inputs ...',  numel(rgcIDsWithTwoMismatchedConeInputs));
@@ -223,7 +223,16 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
     
     eccDegs =  WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCRFSpacingsMicrons(rgcIDsWithTwoMismatchedConeInputs,:).^2,2))/1000.0);
     
+    % Probabilities of cone-specific wiring
+    pAttemptConeSpecificity = rand(1,numel(rgcIDsWithTwoMismatchedConeInputs))<=maximizeConeSpecificity/100;
+    
     for iRGC = 1:numel(rgcIDsWithTwoMismatchedConeInputs)
+        
+         % Check whether to attempt cone-specific wiring in the center
+        if (pAttemptConeSpecificity(iRGC) == 0)
+            continue;
+        end
+        
         % Get the RGC index
         mismatchedConeInputRGCindex = rgcIDsWithTwoMismatchedConeInputs(iRGC);
         mismatchedConeIndices = indicesOfMismatchedCones(iRGC,:);
@@ -287,7 +296,7 @@ end
 
 function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
         performPass4(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        connectionMatrix, numberOfConeInputs)
+        connectionMatrix, numberOfConeInputs, maximizeConeSpecificity)
     
     global LCONE_ID
     global MCONE_ID
@@ -305,7 +314,16 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
     successfullReassignementsNum = 0;
     orphanAssignmentsNum = 0;
     
+    % Probabilities of cone-specific wiring
+    pAttemptConeSpecificity = rand(1,numel(rgcIDsWithThreeConeInputs))<=maximizeConeSpecificity/100;
+    
     for iRGC = 1:numel(rgcIDsWithThreeConeInputs)
+        
+        % Check whether to attempt cone-specific wiring in the center
+        if (pAttemptConeSpecificity(iRGC) == 0)
+            continue;
+        end
+        
         % Get the RGC index
         threeInputRGCindex = rgcIDsWithThreeConeInputs(iRGC);
         coneIndices = indicesOfConnectedCones{iRGC};

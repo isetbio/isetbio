@@ -3,7 +3,7 @@ classdef WatsonRGCModel
     %
     %
     % Syntax:
-    %   cMosaic = WatsonRGCModel('generateAllFigures', false);
+    %   w = WatsonRGCModel('generateAllFigures', false);
     %
     % Usage:
     % - Compute peak cone density:

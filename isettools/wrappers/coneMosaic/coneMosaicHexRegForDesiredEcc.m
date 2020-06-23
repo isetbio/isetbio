@@ -54,8 +54,8 @@ eccRadiusMeters = eccRadiusDegs*defaultMicronsPerDegree*1e-6;
     'eccentricity', eccRadiusMeters, ...
     'angle', eccAngleDegs);
 
-coneSpacingMicrons = spacingMeters * 1e6
-coneApertureMicrons = apertureMeters * 1e6
+coneSpacingMicrons = spacingMeters * 1e6;
+coneApertureMicrons = apertureMeters * 1e6;
 
 if (eccRadiusDegs > 0.0)
     sConeFreeRadiusMicrons = [];

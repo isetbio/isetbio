@@ -16,19 +16,23 @@ function MosaicConnector
     doInitialMosaicCropping = ~true;                        % phase 1 - crop within circular window
     checkMosaicSeparationAndCropAgain = ~true;              % phase 2 - check separation and possibly crop within rectangular window
     assignConeTypes = ~true;                                % phase 3 - assign cone types
-    connectConesToRGCcenters = ~true;                        % phase 4 - connect cones to RGC RF centers
-    visualizeConeToRGCcenterConnections = ~true;             % phase 5 - visualize cone inputs to RGC RF centers
+    
+    connectConesToRGCcenters = ~true;                       % phase 4 - connect cones to RGC RF centers
+    visualizeConeToRGCcenterConnections = ~true;            % phase 5 - visualize cone inputs to RGC RF centers
     computeConeWeightsToRGCcentersAndSurrounds = ~true;     % phase 6 - compute cone weights to RGC RF center/surrounds
-    visualizeConeWeightsToRGCcentersAndSurrounds =  true;   % phase 7 - visualize cone weights to RGC RF center/surrounds
+    visualizeConeWeightsToRGCcentersAndSurrounds =  ~true;   % phase 7 - visualize cone weights to RGC RF center/surrounds
+    
+    wirePartOfMRGCMosaicToConeMosaicPatch = true;             % phase X - wire part of a full RGC mosaic to a small cone mosaic
     
     coVisualizeRFsizeWithDendriticFieldSize = ~true;        % Phase 10
     
     % Configure the phase run parameters
     connector = containers.Map();
     
-
     % Large mosaic
     inputMosaic = struct('fov',40, 'eccSamples', 482);
+    
+    
     
     % Phase1: isolate the central (roiRadiusDeg) mosaic
     connector('phase1') = struct( ...
@@ -77,8 +81,8 @@ function MosaicConnector
         'run', connectConesToRGCcenters, ...
         'runFunction', @runPhase4, ...
         'inputFile', connector('phase3').outputFile, ...
-        'orphanRGCpolicy', 'steal input', ...                        // How to deal with RGCs that have no input
-        'maximizeConeSpecificity', true, ...                    // Attempt to maximize cone specific RF centers
+        'orphanRGCpolicy', 'steal input', ...                  // How to deal with RGCs that have no input
+        'maximizeConeSpecificity', 100, ...                    // percent of RGCs for which to attempt cone specific wiring to the RF center
         'outputFile', sprintf('%s__ConeConnectionsToRGCcenters', connector('phase3').outputFile),...
         'outputDir', tmpDir ...
     );
@@ -156,6 +160,19 @@ function MosaicConnector
         'outputDir', tmpDir ...
     );
 
+    % PhaseX: Connect RGC mosaic to a patch of a regular hex cone mosaic 
+    connector('phaseX') = struct( ...
+        'run', wirePartOfMRGCMosaicToConeMosaicPatch, ...
+        'runFunction', @runPhaseX, ...
+        'inputFile', connector('phase1').outputFile, ...
+        'rgcMosaicPatchPosMicrons', [300*2 300*2], ...
+        'rgcMosaicPatchSizeMicrons', [50 50], ...
+        'orphanRGCpolicy', 'steal input', ...                  // How to deal with RGCs that have no input
+        'maximizeConeSpecificity', 100, ...                    // percent of RGCs for which to attempt cone specific wiring to the RF center
+        'outputFile', 'midgetMosaicConnectedWithConeMosaicPatch', ...
+        'outputDir', tmpDir ...
+        );
+    
     % Phase 10: Visualize relationship between RF sizes and dendritic size data
     connector('phase10') = struct( ...
         'run', coVisualizeRFsizeWithDendriticFieldSize, ...
