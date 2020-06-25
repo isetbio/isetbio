@@ -4,11 +4,10 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
         orphanRGCpolicy, maximizeConeSpecificity, coneTypes, desiredConesToRGCratios, visualizeProcess)
     
     
-    
     % First pass. Connect each cone to its closest RGC. Since there are more cones than RGCs, some
     % RGCs will receive inputs from more than 1 cone in this pass.
     [connectionMatrix, numberOfConeInputs] = ...
-        performPass1(conePositionsMicrons, coneTypes, RGCRFPositionsMicrons);
+        performPass1(conePositionsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons);
     
     % Plot ecc of orphanRGCs
     plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 1);
@@ -84,7 +83,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
 end
 
 function [connectionMatrix, numberOfConeInputs] = performPass1(...
-    conePositionsMicrons, coneTypes, RGCRFPositionsMicrons)
+    conePositionsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons)
     
     global SCONE_ID
     
@@ -113,6 +112,12 @@ function [connectionMatrix, numberOfConeInputs] = performPass1(...
         % Find the index of the closest RGC and connect the iCone to it
         [d, closestRGCIndex] = min(sqrt(sum((bsxfun(@minus, RGCRFPositionsMicrons, conePosMicrons).^2),2)));
        
+        maxDistanceBetweenConeAndRGC = 3.0*RGCRFSpacingsMicrons(closestRGCIndex);
+        if (d > maxDistanceBetweenConeAndRGC)
+            fprintf('Cone is too far from nearest RGC. Will not get connected to any RGC.\n');
+            continue
+        end
+        
         % Accumulate indices for sparse array construction 
         nonSconeIndices = cat(2, nonSconeIndices, iCone);
         closestRGCindices = cat(2, closestRGCindices, closestRGCIndex);
@@ -215,6 +220,11 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
         connectionMatrix, numberOfConeInputs, maximizeConeSpecificity)
     
     [rgcIDsWithTwoMismatchedConeInputs, indicesOfMismatchedCones] = findRGCsWithTwoMismatchedConeInputs(connectionMatrix, RGCRFPositionsMicrons,coneTypes);
+    if (isempty(indicesOfMismatchedCones))
+        fprintf('\n -PASS 3: skipped - no RGCs with 2 mismatched cone inputs ...');
+        return;
+    end
+    
     fprintf('\n -PASS 3: reassigning cones in %d RGCs with 2 mismatched cone inputs to neighboring RGCs with 1 or 0 cone inputs ...',  numel(rgcIDsWithTwoMismatchedConeInputs));
     tic
     
@@ -627,17 +637,20 @@ function [rgcIDs, coneInputIDs] = findRGCsWithTwoMismatchedConeInputs(connection
     
     rgcIDs = [];
     coneInputIDs = [];
-    
+
     rgcIDsWithTwoInputs = find(squeeze(sum(connectionMatrix,1)) == 2);
     for k = 1:numel(rgcIDsWithTwoInputs)
         % Get the indices of cones connected to this RGC
         rgcIndex = rgcIDsWithTwoInputs(k);
         indicesOfConeInputs = find(squeeze(connectionMatrix(:, rgcIndex)) == 1);
         % add to list 
-        if ( coneTypes(indicesOfConeInputs(1)) ~= coneTypes(indicesOfConeInputs(2)) )
+        if (coneTypes(indicesOfConeInputs(1)) ~= coneTypes(indicesOfConeInputs(2)) )
             rgcIDs = cat(2, rgcIDs, rgcIndex);
             coneInputIDs = cat(2, coneInputIDs, indicesOfConeInputs);
         end
+    end
+    if (isempty(coneInputIDs))
+        return;
     end
     
     % Return indeces sorted according to the RGC eccentricity

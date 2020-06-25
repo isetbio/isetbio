@@ -4,7 +4,8 @@ function checkConnectionMatrix(connectionMatrix, coneTypes, conePositionsMicrons
     if (coneTypes(targetConeIndex) ~= SCONE_ID)
         rgcNumsConnectingTo(targetConeIndex) = full(sum(connectionMatrix(targetConeIndex,:),2));
         if (rgcNumsConnectingTo(targetConeIndex) ~= 1)
-            fprintf('%s: cone at %2.0f, %2.0f projects to %d RGCs\n', prefix, conePositionsMicrons(targetConeIndex,1), conePositionsMicrons(targetConeIndex,2), rgcNumsConnectingTo);
+            fprintf('%s: cone at (%2.0f, %2.0f) is connected to %2.0f RGCs, NOT 1 RGC !! \n', ...
+                prefix, conePositionsMicrons(targetConeIndex,1), conePositionsMicrons(targetConeIndex,2), rgcNumsConnectingTo(targetConeIndex));
         end
     end
 

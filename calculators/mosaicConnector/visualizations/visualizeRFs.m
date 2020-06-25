@@ -18,7 +18,7 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
             'leftMargin', 0.05, ...
             'bottomMargin', 0.05, ...
             'rightMargin', 0.03, ...
-            'topMargin', 0.07);
+            'topMargin', 0.1);
         
     theAxesGrid = theAxesGrid{1,1};
     set(theAxesGrid, 'XLim', roi.center(1)+roi.size(1)/2*[-1 1], ...
@@ -26,22 +26,27 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     hold(theAxesGrid, 'on');
     
     rgcsNum = size(RGCRFPositionsMicrons,1);
-    multiInputRGCs = 0;
     mixedInputRGCs = 0;
     
     coneInputsPerRGC = zeros(1,100);
+    rgcsNumWithNonZeroInputs = 0;
+    
     for RGCindex = 1:rgcsNum
         
         connectivityVector = full(squeeze(connectivityMatrix(:, RGCindex)));
         inputIDs = find(connectivityVector == 1);
         inputsNum = numel(inputIDs);
+        
+        if (inputsNum == 0)
+            continue;
+        end
+        
+        rgcsNumWithNonZeroInputs = rgcsNumWithNonZeroInputs + 1;
         coneInputsPerRGC(inputsNum) = coneInputsPerRGC(inputsNum) + 1;
-        if (inputsNum > 1)
-            multiInputRGCs = multiInputRGCs + 1;
-            inputTypesNum = numel(unique(coneTypes(inputIDs)));
-            if (inputTypesNum>1)
-                mixedInputRGCs = mixedInputRGCs + 1;
-            end
+  
+        inputTypesNum = numel(unique(coneTypes(inputIDs)));
+        if (inputTypesNum>1)
+            mixedInputRGCs = mixedInputRGCs + 1;
         end
         
         % Generate RF centers of RGCs based on cone positions and connection matrix
@@ -63,7 +68,11 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
             % Connected cones
             displayConnectedConesPolygon(indicesOfConeInputsToThisRGC, conePositionsMicrons);
         end
-    end
+        
+        if (mod(RGCindex-1,10) == 9)
+            drawnow;
+        end
+    end % RGCindex
        
     % Only show cones within ROI
     xPos = conePositionsMicrons(:,1);
@@ -86,8 +95,13 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     
     ratio = conesNum/rgcsNum;
     title(theAxesGrid,...
-        sprintf('\\color[rgb]{0.3 0.3 0.3} eccentricity = %2.1f degs, \\color[rgb]{1.0 0.1 0.1} LMcones-to-mRGCs ratio = %2.2f\n\\color[rgb]{0.4 0.4 0.6}RGCs with 1 input: %2.1f%%, 2 inputs: %2.1f%%, 3 inputs: %2.1f%%, 4 inputs: %2.1f%%, >= 5 inputs: %2.1f%%, RGCs with mixed cone inputs: %2.1f%%', ...
-        patchEccDegs(1), ratio, 100*coneInputsPerRGC(1)/rgcsNum, 100*coneInputsPerRGC(2)/rgcsNum, 100*coneInputsPerRGC(3)/rgcsNum, 100*coneInputsPerRGC(4)/rgcsNum, 100*sum(coneInputsPerRGC(5:end))/rgcsNum, 100*mixedInputRGCs/rgcsNum));
+        sprintf('\\color[rgb]{0.3 0.3 0.3} eccentricity = %2.1f degs, \\color[rgb]{1.0 0.1 0.1} LMcones-to-mRGCs ratio = %2.2f\n\\color[rgb]{0.4 0.4 0.6}RGCs with 1 input: %2.1f%%, 2 inputs: %2.1f%%, 3 inputs: %2.1f%%, 4+ inputs: %2.1f%%\n RGCs with mixed cone inputs: %2.1f%%', ...
+        patchEccDegs(1), ratio, ...
+        100*coneInputsPerRGC(1)/rgcsNumWithNonZeroInputs, ...
+        100*coneInputsPerRGC(2)/rgcsNumWithNonZeroInputs, ...
+        100*coneInputsPerRGC(3)/rgcsNumWithNonZeroInputs, ...
+        100*sum(coneInputsPerRGC(4:end))/rgcsNumWithNonZeroInputs, ...
+        100*mixedInputRGCs/rgcsNumWithNonZeroInputs));
      
     xLims = [xAxis(1) xAxis(end)];
     yLims = [yAxis(1) yAxis(end)];
@@ -113,11 +127,11 @@ function  [semiAxes, rfCenter] = renderContourPlot(theAxes, C, zLevels, whichLev
         level = C(1,k);
         points = C(2,k);
         if (level == zLevels(whichLevelsToContour(1)))
-            edgeAlpha = 0.7;
-            faceAlpha = 0.2;
+            edgeAlpha = 0.8;
+            faceAlpha = 0.4;
         elseif (ismember(level, zLevels(whichLevelsToContour)))
-            edgeAlpha = 0;
-            faceAlpha = 0.2+(level)*0.05;
+            edgeAlpha = 0/8;
+            faceAlpha = 0.4+(level)*0.05;
         else
             % skip this contour
             k = k+points+1;
@@ -135,7 +149,7 @@ function  [semiAxes, rfCenter] = renderContourPlot(theAxes, C, zLevels, whichLev
             rfCenter = [nan nan];
         end
         
-        faceColor = [0.5 0.5 0.5]-level*0.05;
+        faceColor = [0.3 0.3 0.3]-level*0.05;
         edgeColor = [0.2 0.2 0.2];
         patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceColor, edgeColor, faceAlpha, edgeAlpha);
 

@@ -1,21 +1,15 @@
 function runPhaseX(runParams)
     
-    % Compute cone spacing in microns for the retinal position corresponding 
-    % to the center of the mosaic and the right eye
-    coneMosaicCenterPositionMM = runParams.rgcMosaicPatchPosMicrons * 1e-3;
-    whichEye = 'right';
-    
-    w = WatsonRGCModel('generateAllFigures', false);
-    posUnits = 'mm'; densityUnits = 'mm^2';
-    coneSpacingMicrons = 1e3 * w.coneRFSpacingAndDensityAtRetinalPositions(...
-        coneMosaicCenterPositionMM, whichEye, posUnits, densityUnits, ...
-        'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
-    
     % Compute the cone mosaic FOV in degrees
-    extraMicronsForSurroundCones = 200;
+    coneMosaicCenterPositionMM = runParams.rgcMosaicPatchEccMicrons * 1e-3;
+    extraMicronsForSurroundCones = runParams.extraMicronsForSurroundCones;
     regHexConeMosaicPatchSizeMicrons = runParams.rgcMosaicPatchSizeMicrons + 2*extraMicronsForSurroundCones*[1 1];
-    coneMosaicEccDegs = sqrt(sum((WatsonRGCModel.rhoMMsToDegs(coneMosaicCenterPositionMM)).^2,2))
-    fovDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(regHexConeMosaicPatchSizeMicrons, coneMosaicEccDegs)
+    coneMosaicEccDegs = sqrt(sum((WatsonRGCModel.rhoMMsToDegs(coneMosaicCenterPositionMM)).^2,2));
+    fovDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(regHexConeMosaicPatchSizeMicrons, coneMosaicEccDegs);
+    
+    % Determine the median cone spacing with the patch
+    whichEye = 'right';
+    coneSpacingMicrons = medianConeSpacingInPatch(whichEye, runParams.rgcMosaicPatchEccMicrons, regHexConeMosaicPatchSizeMicrons);
     
     
     % Generate reg hex cone mosaic
@@ -36,7 +30,7 @@ function runPhaseX(runParams)
     cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
     
     % Cone positions: add the mosaic center so as to align with ecc-varying full mRGC mosaic
-    conePositionsMicrons = bsxfun(@plus, cmStruct.coneLocsMicrons, runParams.rgcMosaicPatchPosMicrons);
+    conePositionsMicrons = bsxfun(@plus, cmStruct.coneLocsMicrons, runParams.rgcMosaicPatchEccMicrons);
     % Cone spacings: all the same
     coneSpacingsMicrons = ones(size(conePositionsMicrons,1),1) * coneSpacingMicrons;
     % Cone types
@@ -47,16 +41,62 @@ function runPhaseX(runParams)
         'RGCRFPositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
 
     % Crop midget mosaic to the size and position of the cone mosaic, leaving enough space for the surround cones
-  	mRGCRFroi.center = runParams.rgcMosaicPatchPosMicrons;
-    mRGCRFroi.size = regHexConeMosaicPatchSizeMicrons - 2.0*extraMicronsForSurroundCones;
+  	mRGCRFroi.center = runParams.rgcMosaicPatchEccMicrons;
+    mRGCRFroi.size = regHexConeMosaicPatchSizeMicrons;
     [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios] = ...
         cropRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons,  desiredConesToRGCratios, mRGCRFroi);
     
     % Visualize mosaics to be connected
-    visualizeMosaics(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, extraMicronsForSurroundCones, coneMosaicCenterPositionMM)
+    visualizeMosaicPatchesToBeConnected(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, extraMicronsForSurroundCones, coneMosaicCenterPositionMM)
+
+    % Compute inputs to RGC RF centers
+    orphanRGCpolicy = 'steal input';
+    maximizeConeSpecificity = runParams.maximizeConeSpecificity;
+    visualizeConnectionProcess = ~true;
+    [midgetRGCconnectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = computeConnectionMatrix(...
+                RGCRFPositionsMicrons, conePositionsMicrons, RGCRFSpacingsMicrons, coneSpacingsMicrons, ...
+                coneTypes, desiredConesToRGCratios, orphanRGCpolicy, maximizeConeSpecificity, ...
+                visualizeConnectionProcess);
+            
+    % Only keep RGCs within mRGCRFroi.center +/- 0.5*rgcMosaicPatchSizeMicrons
+    finalRGCindices = [];
+    for rgcIndex = 1:size(RGCRFPositionsMicrons,1)
+        distanceVector = abs(RGCRFPositionsMicrons(rgcIndex,:) - mRGCRFroi.center);
+        if (distanceVector(1) <= 0.5*runParams.rgcMosaicPatchSizeMicrons(1)) && (distanceVector(2) <=  0.5*runParams.rgcMosaicPatchSizeMicrons(1))
+            finalRGCindices = cat(2, finalRGCindices, rgcIndex);
+        end
+    end
+    midgetRGCconnectionMatrix = midgetRGCconnectionMatrix(:, finalRGCindices);
+    RGCRFPositionsMicrons = RGCRFPositionsMicrons(finalRGCindices,:);
+    RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(finalRGCindices);
+    
+    % Visualize the connections to the RF centers
+    zLevels = [0.3 1];
+    whichLevelsToContour = [1];
+    displayEllipseInsteadOfContour = false;
+    subregionToVisualize.center = round(runParams.rgcMosaicPatchEccMicrons);
+    subregionToVisualize.size = 1.2*runParams.rgcMosaicPatchSizeMicrons;
+    patchEccDegs = coneMosaicEccDegs;
+   
+    figHeightInches = 15;
+    plotlabOBJ = plotlab();
+    plotlabOBJ.applyRecipe(...
+                'renderer', 'painters', ...
+                'axesBox', 'on', ...
+                'colorOrder', [0 0 0; 1 0 0.5], ...
+                'axesTickLength', [0.015 0.01]/4,...
+                'axesFontSize', 22, ...
+                'figureWidthInches', figHeightInches/(subregionToVisualize.size(2))*(subregionToVisualize.size(1)), ...
+                'figureHeightInches', figHeightInches);
+
+    visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, ...
+             midgetRGCconnectionMatrix, RGCRFPositionsMicrons,...
+             conePositionsMicrons, coneSpacingsMicrons, coneTypes, subregionToVisualize, ...
+             displayEllipseInsteadOfContour, plotlabOBJ, runParams.outputFile,runParams.exportsDir);
+         
 end
 
-function visualizeMosaics(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, extraMicronsForSurroundCones, coneMosaicCenterPositionMM)
+function visualizeMosaicPatchesToBeConnected(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, extraMicronsForSurroundCones, coneMosaicCenterPositionMM)
     
     global LCONE_ID
     global MCONE_ID

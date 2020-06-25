@@ -11,8 +11,6 @@ function runPhase5(runParams)
             'desiredConesToRGCratios', 'midgetRGCconnectionMatrix');
     
   
-    
-    
     for sizeIndex = 1:size(runParams.patchEccDegs,1)
         figHeightInches = 15;
         % Subregion center and size in microns
