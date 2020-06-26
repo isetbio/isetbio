@@ -46,6 +46,7 @@ function [coneIndices, conePositionsDegs, coneTypes, coneIndicesInSerializedList
     
     allConePositionsDegs = [coneXcoords(:) coneYcoords(:)]*1e6/obj.micronsPerDegree;
     [distancesFromTargets, coneIndicesInSerializedList] = pdist2(allConePositionsDegs, targetPosDegs, 'euclidean', 'Smallest', 1);
+    coneIndicesInSerializedList = unique(coneIndicesInSerializedList);
     
     coneIndices = idx(coneIndicesInSerializedList);
     

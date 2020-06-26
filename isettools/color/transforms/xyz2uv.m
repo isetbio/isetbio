@@ -2,8 +2,7 @@ function [u, v] = xyz2uv(xyz, format)
 % Convert CIE XYZ to uv chromaticity coordinates
 %
 % Syntax:
-%   [uprime, vprime] = xyz2uv(xyz, [format])
-%   uv = xyz2uv(xyz,[format]);
+%   [u, v] = xyz2uv(xyz, [format])
 %
 % Description:
 %    Convert XYZ to uprime, vprime chromaticity coordinates (uniform
@@ -16,10 +15,8 @@ function [u, v] = xyz2uv(xyz, format)
 %    If the user asks for just one variable returned, then we return a
 %    2-vector that has uv(1:2), as in
 %
-%    
-% 
-%    N.B. There are two very closely related (u, v) formats. 
-%    These are (u, v) and (u', v'). The relationship between them is 
+%    N.B. There are two very closely related (u, v) formats.
+%    These are (u, v) and (u', v'). The relationship between them is
 %    uprime = u and vprime = 1.5 * v
 %
 %    The u', v' was an improvement made in the 1960s or so, and this
@@ -29,38 +26,45 @@ function [u, v] = xyz2uv(xyz, format)
 %
 %    X + Y + Z = 0 is returned as u = v = 0.
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit xyz2uv.m' into the Command Window.
+%
 % Inputs:
-%    xyz    - the normalized CIE XYZ coordinates
-%    format - (Optional) how to distinguish between [u, v], and [u', v']
+%    xyz    - Vector. A 1x3 vector of the normalized CIE XYZ coordinates.
+%    format - (Optional) String. This is how to distinguish between [u, v],
+%             & [u', v']. The only case we care about is 'uv'. Default ''.
 %
 % Outputs:
-%    u      - u-prime chromacity coordinate
-%    v      - v-prime chromacity coordinate
+%    u      - Numeric. The u-prime chromacity coordinate.
+%    v      - Numeric. The v-prime chromacity coordinate.
+%
+% Optional key/value pairs:
+%    None.
 %
 % References:
 %    See (e.g.) Wyszecki and Stiles, 2cd, page 165.
 %    <http://en.wikipedia.org/wiki/CIELUV>
 %
 % See Also:
-%    cct, spd2cct, xyz2srgb, xyz2<TAB>
+%   cct, spd2cct, xyz2srgb, xyz2<TAB>
 %
 
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC.
 %    11/01/17  jnm  Comments & formatting
 %    11/17/17  jnm  Formatting
-%
+%    07/15/19  JNM  Formatting update
 
 % Examples:
 %{
-   wave = 400:10:700;
-   d65 = ieReadSpectra('D65', wave);
-   XYZ = ieXYZFromEnergy(d65', wave);   
-   [uP, vP] = xyz2uv(XYZ)
-   u = uP;
-   v = vP / 1.5;
- 
-   [u, v] = xyz2uv(XYZ, 'uv')
+    wave = 400:10:700;
+    d65 = ieReadSpectra('D65', wave);
+    XYZ = ieXYZFromEnergy(d65', wave);
+    [uP, vP] = xyz2uv(XYZ)
+    u = uP;
+    v = vP / 1.5;
+
+    [u, v] = xyz2uv(XYZ, 'uv')
 %}
 
 if notDefined('xyz'), error('XYZ values required'); end
@@ -77,9 +81,9 @@ v = zeros(size(u));
 % Whenever B is valid, we set the u, v values to something legitimate. I am
 % not sure what they should be when X + Y + Z is zero, as above. For now,
 % we are leaving them as zero.
-nz = (B > 0);
-u(nz) = 4 * xyz(nz, 1) ./ B(nz); 
-v(nz) = 9 * xyz(nz, 2) ./ B(nz); 
+nz = B > 0;
+u(nz) = 4 * xyz(nz, 1) ./ B(nz);
+v(nz) = 9 * xyz(nz, 2) ./ B(nz);
 
 % Check if the old 1960s (u, v), not (u', v') is being requested.
 if isequal(format, 'uv'), v = v / 1.5; end
@@ -87,7 +91,7 @@ if isequal(format, 'uv'), v = v / 1.5; end
 % If the user asked for just one ouptut, we combine u and v into a vector
 % and return that
 if nargout == 1
-    u = [u,v];
+    u = [u, v];
 end
 
 end

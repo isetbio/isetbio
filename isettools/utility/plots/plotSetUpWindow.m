@@ -31,9 +31,13 @@ function figNum = plotSetUpWindow(figNum)
 
 % Examples:
 %{
-    plotSetUpWindow;
     plotSetUpWindow(1);
 %}
+%{
+    % ETTBSkip - skipping broken examples
+    plotSetUpWindow;
+%}
+
 
 if notDefined('figNum')
     figNum = vcSelectFigure('GRAPHWIN'); 

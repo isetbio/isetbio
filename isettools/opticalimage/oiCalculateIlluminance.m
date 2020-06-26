@@ -29,8 +29,9 @@ function [illuminance, meanIlluminance, meanCompIlluminance] = ...
 %    oi                  - Struct. An optical image structure.
 %
 % Outputs:
-%    illuminance         - The illuminance of the OI's irradiance in lux
-%    meanIlluminance     - The mean illuminance of the OI
+%    illuminance         - Matrix. The illuminance of the optical image's
+%                          irradiance in lux.
+%    meanIlluminance     - Numeric. The mean illuminance of the OI.
 %    meanCompIlluminance - The complementary illuminance
 %
 % Optional key/value pairs:
@@ -48,17 +49,35 @@ function [illuminance, meanIlluminance, meanCompIlluminance] = ...
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/02/18  jnm  Formatting
+%    06/26/19  JNM  Documentation update, added third example, uncommented
+%                   newPeak to fix failing script if meanCompIlluminance is
+%                   requested. Not sure if 750 value is the correct peak to
+%                   specify, so I'll leave that up to brighter minds.
 
 % Examples:
 %{
     oi = oiCreate;
-   illuminance = oiCalculateIlluminance(oi);
-   oi = oiSet(oi, 'illuminance', illuminance);
+    illuminance = oiCalculateIlluminance(oi);
+    oi = oiSet(oi, 'illuminance', illuminance);
 %}
 %{
-    % Complementary illuminance mean
+   % Complementary illuminance mean
    oi = oiCreate;
    [I, meanI, meanC] =  oiCalculateIlluminance(oi);
+%}
+%{
+    scene = sceneCreate('uniform');
+    scene = sceneSet(scene, 'fov', 15);  % Reasonably large
+    scene = sceneAdjustLuminance(scene, 10 ^ -10);
+
+    oi = oiCreate;
+    % No lens shading
+    optics = oiGet(oi, 'optics');
+    optics = opticsSet(optics, 'cos4th', 'off');
+    oi = oiSet(oi, 'optics', optics);
+    oi = oiCompute(oi, scene);
+
+   [I, meanI] =  oiCalculateIlluminance(oi);
 %}
 
 if notDefined('oi'), error('Optical image required.'); end
@@ -110,7 +129,7 @@ if nargout > 1, meanIlluminance = mean(illuminance(:)); end
 if nargout > 2
     % shiftedV = V;
     % oldPeak = find(V == max(V)); % The luminosity function's peak
-    % newPeak = find(wave > 750); % Move peak to the right to here
+    newPeak = find(wave > 750); % Move peak to the right to here
     if isempty(newPeak)
         return;
     else

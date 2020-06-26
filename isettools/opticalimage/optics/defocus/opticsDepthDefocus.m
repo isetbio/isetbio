@@ -2,7 +2,7 @@ function [D, imgDist] = opticsDepthDefocus(objDist, optics, imgPlaneDist)
 % Compute defocus in diopters for vector of object distances (meters)
 %
 % Syntax:
-%   [D, imgDist] = opticsDepthDefocus(objDist, optics, [imgPlaneDist])
+%   [D, imgDist] = opticsDepthDefocus(objDist, [optics], [imgPlaneDist])
 %
 % Description:
 %    The lensmaker's equation specifies the relationship between object and
@@ -17,8 +17,8 @@ function [D, imgDist] = opticsDepthDefocus(objDist, optics, imgPlaneDist)
 %    The equation can be used for various purposes, including specifying
 %    the defocus of an object in various imaging conditions.
 %
-%    For example, 
-%      * Objects at infinity are imaged in the focal plane. 
+%    For example,
+%      * Objects at infinity are imaged in the focal plane.
 %      * If the image plane is at the focal length, then closer objects
 %        will be in defocus and we can assess the degree of defocus. These
 %        will all be positive.
@@ -47,18 +47,21 @@ function [D, imgDist] = opticsDepthDefocus(objDist, optics, imgPlaneDist)
 %
 %      errDist = fLength - fLength * (N / (N - 1))
 %      errDist = fLength * (1 - (N / (N - 1))
-%   
+%
 %    The blurring caused by this difference in best image plane depends on
 %    the pupil aperture as well as the focal length. For small pupil
 %    apertures, there is less of a penalty in defocus (e.g., a pinhole).
 %    The significance of the pupil aperture is captured in other
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit opticsDepthDefocus.m' into the Command Window.
+%
 % Inputs:
 %    objDist      - Vector. Vector of object distances in meters.
 %    optics       - (Optional) Struct. Optics structure. Default uses
 %                   vcGetObject to pull an existing optics.
-%    imgPlaneDist - Numeric. Image plane distance (meters). Default is to
-%                   use the focal length.
+%    imgPlaneDist - (Optional) Numeric. Image plane distance (meters).
+%                   Default is to use the focal length.
 %
 % Outputs:
 %    D            - Vector. Defocus in diopters
@@ -69,12 +72,13 @@ function [D, imgDist] = opticsDepthDefocus(objDist, optics, imgPlaneDist)
 %    None.
 %
 % See Also:
-%    opticsDefocusedMTF, defocusMTF, humanCore
+%   opticsDefocusedMTF, defocusMTF, humanCore
 %
 
 % History:
 %    xx/xx/10       Copyright ImagEval Consultants, LLC, 2010.
 %    03/16/18  jnm  Formatting
+%    06/28/19  JNM  Documentation update
 
 % Examples:
 %{

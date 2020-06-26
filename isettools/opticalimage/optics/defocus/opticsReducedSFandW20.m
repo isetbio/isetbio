@@ -10,7 +10,7 @@ function [alpha, rSF, w20] = opticsReducedSFandW20(p, D0, sampleSF, wave)
 %
 % Inputs:
 %	 p        - Numeric. Pupil radius in meters (computed from f/# and
-%               focal length) 
+%               focal length)
 %    D0       - Numeric. Base dioptric power (accomodation), this is
 %               usually around 60.
 %    sampleSF - Vector. Spatial frequencies in cycles/deg
@@ -42,7 +42,7 @@ function [alpha, rSF, w20] = opticsReducedSFandW20(p, D0, sampleSF, wave)
 % History:
 %    xx/xx/10       Copyright ImagEval Consultants, LLC, 2010.
 %    03/16/18  jnm  Formatting. Changed inputs to reflect the 'needed'
-%    values rather than what was in the header. 
+%                   values rather than what was in the header.
 
 % Constants for formula to compute defocus in diopters (D) as a function of
 % wavelength for human eye. Need citation, but the curve is in my book.
@@ -54,7 +54,7 @@ q3 = 0.21410;
 % This is the human defocus as a function of wavelength. This formula
 % converts the wave in nanometers to wave in microns. D is in diopters.
 D = q1 - (q2 ./ (wave * 1e-3 - q3));
-% plot(wave, D); 
+% plot(wave, D);
 % grid;
 % xlabel('Wavelength (nm)');
 % ylabel('relative defocus (diopters)');
@@ -89,7 +89,7 @@ otf = zeros(size(s));
 for ii = 1:length(wave)
     % Compute the reduced spatial frequency (0, 2)
     % deg/m * m * (m/m) * 1/deg  -- Dimensionless in the end
-    s(ii, :) = (c * wave(ii) * 1e-9 / (D0 * p)) * sampleSF; 
+    s(ii, :) = (c * wave(ii) * 1e-9 / (D0 * p)) * sampleSF;
 
     % Related to the defocus specified by w20, which in turn depends on p,
     % D and D0.

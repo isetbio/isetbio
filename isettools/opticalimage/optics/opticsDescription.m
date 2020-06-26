@@ -1,5 +1,5 @@
 function txt = opticsDescription(optics)
-% Text description of the optics properties. 
+% Text description of the optics properties.
 %
 % Syntax:
 %   txt = opticsDescription(optics)
@@ -16,11 +16,13 @@ function txt = opticsDescription(optics)
 %
 % Optional key/value pairs:
 %    None.
+%
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/09/18  jnm  Formatting
 %    04/07/18  dhb  Make example run.
+%    06/27/19  JNM  Formatting update
 
 % Examples:
 %{

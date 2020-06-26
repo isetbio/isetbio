@@ -20,11 +20,11 @@ function optics = siSynthetic(psfType, oi, varargin)
 %
 % Inputs:
 %    psfType  - String. The PSF Type. Options are:
-%           'gaussian' --  bivariate normals.  
-%           'custom'   --  read a file with variables explained below
+%         'gaussian' --  bivariate normals.
+%         'custom'   --  read a file with variables explained below
 %    oi       - Struct. An optical image. It must be shift invariant type
-%    varargin - (Optional) Additional arguments for the function. Arguments
-%               depend on the psf type. See some examples below.
+%    varargin - (Optional) VARIES. Additional arguments for the function.
+%               Arguments depend on the psf type. See some examples below.
 %       for gaussian:
 %           waveSpread: size of the PSF spread at each of the wavelength
 %                       for gaussian this is in microns (um)
@@ -36,13 +36,13 @@ function optics = siSynthetic(psfType, oi, varargin)
 %           outFile - Optional
 %
 % Outputs:
-%    optics   - The created optics structure.
+%    optics   - Struct. The created optics structure.
 %
 % Optional key/value pairs:
 %   None.
 %
 % See Also:
-%    s_SIExamples, ieSaveSIOpticsFile, t_codeFFTinMatlab
+%   s_SIExamples, ieSaveSIOpticsFile, t_codeFFTinMatlab
 %
 
 % History:
@@ -53,6 +53,7 @@ function optics = siSynthetic(psfType, oi, varargin)
 %              dhb  Created working example for 'custom'
 %    01/22/18  dhb  Examples run in clean workspace.
 %    03/15/18  jnm  Formatting
+%    06/28/19  JNM  Documentation update
 
 % Examples:
 %{
@@ -159,14 +160,14 @@ switch lower(psfType)
             psf = biNormal(xSpread(jj) / dx(2), ySpread(jj) / dx(1), ...
                 0, nSamples);
             psf = psf / sum(psf(:));
-            
+
             % Use PsfToOtf to make the change, and then put center in upper
             % right to match isetbio conventions.  Commented out below is
             % the older code, which may or may not do the same thing
             [~,~,centeredOTF] = PsfToOtf([],[],psf);
-            OTF(:,:,jj) = ifftshift(centeredOTF); 
-            % psf = fftshift(psf);   
-            % OTF(:,:,jj) = fft2(psf);
+            OTF(:,:,jj) = ifftshift(centeredOTF);
+            % psf = fftshift(psf);
+            % OTF(:, :, jj) = fft2(psf);
         end
 
     case 'custom'
@@ -176,7 +177,7 @@ switch lower(psfType)
             inFile = ...
                 vcSelectDataFile('stayPut', 'r', 'mat', ...
                 'Select custom SI optics');
-            if isempty(inFile) 
+            if isempty(inFile)
                 disp('User canceled');
                 optics = [];
                 return;
@@ -200,20 +201,20 @@ switch lower(psfType)
 
         % Check the parameters for consistency
         [m, n, nWave] = size(psfIn);
-        if length(wave) ~= nWave 
+        if length(wave) ~= nWave
             error('Mis-match between wavelength and psf');
         end
         if m ~= nSamples || n ~= nSamples
             error('Need input and output number of samples to match');
         end
-        if (max(abs(mmPerSamp(2)-dx(2))) > 1e-10 || ...
+        if (max(abs(mmPerSamp(2) - dx(2))) > 1e-10 || ...
                 max(abs(mmPerSamp(1) - dx(1))) > 1e-10)
             error('Cannot yet change psf sampling here.')
         end
 
-        % OTF computation 
+        % OTF computation
         %
-        % This is the sampling grid of the psfIn.  
+        % This is the sampling grid of the psfIn.
         % Units at this point are in mm. The psf gets interpolated
         % to the desired sampling size and then converted to an OTF.
         x = (1:n) * mmPerSamp(2);
@@ -264,7 +265,6 @@ optics = opticsSet(optics, 'otfData', OTF);
 optics = opticsSet(optics, 'otffx', fx);
 optics = opticsSet(optics, 'otffy', fy);
 optics = opticsSet(optics, 'otfwave', wave);
-
 optics.lens.density = 0;
 
 if isempty(outFile), return; else, vcSaveObject(optics, outFile); end

@@ -665,7 +665,7 @@ function conePositions = smoothGrid(obj, conePositions, gridParams, eccRangeMicr
             end
         else
             if (~isinf(obj.maxGridAdjustmentIterations)) && (mod(iteration-1,obj.visualizationUpdateIterations) == 0) && ((zoneIndex <= 4) || (isinf(zoneIndex)))
-                visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex, passesNum);
+                %visualizeLatticeState(obj, conePositions, manipulatedConeIndices, iteration-1, iPass, zoneIndex, passesNum);
             end
         end
         

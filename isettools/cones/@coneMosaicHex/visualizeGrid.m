@@ -51,6 +51,8 @@ function hFig = visualizeGrid(obj, varargin)
 %    xx/xx/15  NPC  ISETBIO TEAM, 2015
 %    02/21/18  jnm  Formatting
 %    04/23/18  npc  Added coverage, innerSegmentCoverage properties
+%    5/26/20   NPC  Fixed iRow issue, which was causing the mosaic plotting Y-coord flip 
+%                   (rows grow top -> bottom, whereas Y-coords grow bottom -> top)
 
 %% parse input
 p = inputParser;
@@ -60,7 +62,7 @@ p.addParameter('axesHandle', []);
 p.addParameter('labelConeTypes', true, @islogical);
 p.addParameter('showCorrespondingRectangularMosaicInstead', ...
     false, @islogical);
-p.addParameter('visualizedConeAperture', 'lightCollectingArea', ...
+p.addParameter('visualizedConeAperture', 'geometricArea', ...
     @(x)ismember(x, {'lightCollectingArea', 'geometricArea', 'both'}));
 p.addParameter('apertureShape', 'disks', @(x)ismember(x, ...
     {'hexagons', 'disks'}));
@@ -110,7 +112,6 @@ if (p.Results.overlayContourLabels)
 else
     overlayContourLabels = 'off';
 end
-
 
 %% Set up cone coordinates and outline
 sampledHexMosaicXaxis = obj.patternSupport(1, :, 1) + obj.center(1);
@@ -172,6 +173,28 @@ end
 rectCoords = obj.coneLocsOriginatingRectGrid;
 hexCoords = obj.coneLocsHexGrid;
 
+
+if (isstruct(visualizedFOV))
+    clippingRect = visualizedFOV;
+    
+    % Check that the clippingRect is valid
+    coneMosaic.validateClippingRect(clippingRect);
+    rr = abs(bsxfun(@minus, hexCoords, [clippingRect.xo clippingRect.yo]*obj.micronsPerDegree*1e-6));
+    % 5 micron margin
+    marginMeters = 5*1e-6;
+    % Find cone indices within the ROI
+    coneIndicesWithinROI = find((rr(:,1) <= clippingRect.width/2*obj.micronsPerDegree*1e-6+marginMeters) & (rr(:,2) <= clippingRect.height/2*obj.micronsPerDegree*1e-6+marginMeters));
+    hexCoords = hexCoords(coneIndicesWithinROI,:); 
+    xxx = obj.patternSupport(:,:,1);
+    yyy = obj.patternSupport(:,:,2);
+    xxx = abs(xxx(:) - clippingRect.xo*obj.micronsPerDegree*1e-6);
+    yyy = abs(yyy(:) - clippingRect.yo*obj.micronsPerDegree*1e-6);
+    pixelIndicesWithinROI = (xxx <= clippingRect.width/2*obj.micronsPerDegree*1e-6+marginMeters) &  (yyy <= clippingRect.height/2*obj.micronsPerDegree*1e-6+marginMeters);
+else
+    pixelIndicesWithinROI = [];
+end
+
+
 %% Set up figure
 axesHandle = p.Results.axesHandle;
 if (isempty(axesHandle))
@@ -209,7 +232,6 @@ hold(axesHandle, 'on');
 
 %% Do the display
 if (overlayHexMesh)
-    % disp('here')
     % Superimpose hex mesh showing the locations of the perfect hex grid
     meshFaceColor = [0.8 0.8 0.8]; meshEdgeColor = [0.5 0.5 0.5];
     meshFaceAlpha = 0.0; meshEdgeAlpha = 0.5; lineStyle = '-';
@@ -227,13 +249,21 @@ if (~showCorrespondingRectangularMosaicInstead)
         edgeColor = [0.4 0.4 0.4];
         faceColor = 'none';
         coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(end-iRows+1), ...
             edgeColor, faceColor, lineStyle, lineWidth);
     end
     
     % L-cones
-    idx = find(obj.pattern == 2);
+    if (isempty(pixelIndicesWithinROI))
+        idx = find(obj.pattern == 2);
+    else
+        idx = find((obj.pattern(:) == 2) & (pixelIndicesWithinROI));
+    end
+
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
+    coneXcoords = sampledHexMosaicXaxis(iCols);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows+1);
+    
     edgeColor = 'none'; % [1 0 0];
     if (labelConeTypes)
         faceColorInner = [1 0 0];
@@ -248,27 +278,27 @@ if (~showCorrespondingRectangularMosaicInstead)
         [innerApertureOutlineVarying, outerApertureOutlineVarying] = coneMosaicHex.computeApertureSizes(...
             dxInner, dxOuter, ...
             innerApertureOutline, outerApertureOutline, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows) ...
+            coneXcoords, coneYcoords ...
         );
         if (~isempty(outerApertureOutlineVarying))
             coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutlineVarying, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+            coneXcoords, coneYcoords, ...
             edgeColor, faceColorOuter, lineStyle, lineWidth);
         end
         if (~isempty(innerApertureOutlineVarying))
             coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutlineVarying, ...
-                sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+                coneXcoords, coneYcoords, ...
                 edgeColor, faceColorInner, lineStyle, lineWidth);
         end
     else
         if (~isempty(outerApertureOutline))
             coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutline, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+            coneXcoords, coneYcoords, ...
             edgeColor, faceColorOuter, lineStyle, lineWidth);
         end
         if (~isempty(innerApertureOutline))
             coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutline, ...
-                sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+                coneXcoords, coneYcoords, ...
                 edgeColor, faceColorInner, lineStyle, lineWidth);
         end
     end
@@ -276,8 +306,15 @@ if (~showCorrespondingRectangularMosaicInstead)
     
     
     % M-cones
-    idx = find(obj.pattern == 3);
+    if (isempty(pixelIndicesWithinROI))
+        idx = find(obj.pattern == 3);
+    else
+        idx = find((obj.pattern(:) == 3) & (pixelIndicesWithinROI));
+    end
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
+    coneXcoords = sampledHexMosaicXaxis(iCols);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows+1);
+    
     edgeColor = 'none';  % = [0 0.7 0];
     if (labelConeTypes)
         if (mean(backgroundColor) < 0.5)
@@ -297,34 +334,41 @@ if (~showCorrespondingRectangularMosaicInstead)
         [innerApertureOutlineVarying, outerApertureOutlineVarying] = coneMosaicHex.computeApertureSizes(...
             dxInner, dxOuter, ...
             innerApertureOutline, outerApertureOutline, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows) ...
+            coneXcoords, coneYcoords ...
         );
         if (~isempty(outerApertureOutlineVarying))
             coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutlineVarying, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+            coneXcoords, coneYcoords, ...
             edgeColor, faceColorOuter, lineStyle, lineWidth);
         end
         if (~isempty(innerApertureOutlineVarying))
             coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutlineVarying, ...
-                sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+                coneXcoords, coneYcoords, ...
                 edgeColor, faceColorInner, lineStyle, lineWidth);
         end
     else
         if (~isempty(outerApertureOutline))
             coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutline, ...
-                sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+                coneXcoords, coneYcoords, ...
                 edgeColor, faceColorOuter, lineStyle, lineWidth);
         end
         if (~isempty(innerApertureOutline))
             coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutline, ...
-                sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+                coneXcoords, coneYcoords, ...
                 edgeColor, faceColorInner, lineStyle, lineWidth);
         end
     end
     
     % S-cones
-    idx = find(obj.pattern == 4);
+    if (isempty(pixelIndicesWithinROI))
+        idx = find(obj.pattern == 4);
+    else
+        idx = find((obj.pattern(:) == 4) & (pixelIndicesWithinROI));
+    end
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
+    coneXcoords = sampledHexMosaicXaxis(iCols);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows+1);
+    
     edgeColor = 'none';  % = [0 0 1];
     if (labelConeTypes)
         if (mean(backgroundColor) < 0.5)
@@ -344,27 +388,27 @@ if (~showCorrespondingRectangularMosaicInstead)
         [innerApertureOutlineVarying, outerApertureOutlineVarying] = coneMosaicHex.computeApertureSizes(...
             dxInner, dxOuter, ...
             innerApertureOutline, outerApertureOutline, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows) ...
+            coneXcoords, coneYcoords ...
         );
         if (~isempty(outerApertureOutlineVarying))
             coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutlineVarying, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+            coneXcoords, coneYcoords, ...
             edgeColor, faceColorOuter, lineStyle, lineWidth);
         end
         if (~isempty(innerApertureOutlineVarying))
             coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutlineVarying, ...
-                sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+                coneXcoords, coneYcoords, ...
                 edgeColor, faceColorInner, lineStyle, lineWidth);
         end
     else
         if (~isempty(outerApertureOutline))
             coneMosaicHex.renderPatchArray(axesHandle, outerApertureOutline, ...
-                sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+                coneXcoords, coneYcoords, ...
                 edgeColor, faceColorOuter, lineStyle, lineWidth);
         end
         if (~isempty(innerApertureOutline))
             coneMosaicHex.renderPatchArray(axesHandle, innerApertureOutline, ...
-                sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+                coneXcoords, coneYcoords, ...
                 edgeColor, faceColorInner, lineStyle, lineWidth);
         end
     end

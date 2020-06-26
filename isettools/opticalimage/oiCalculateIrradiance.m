@@ -37,20 +37,21 @@ function irradiance = oiCalculateIrradiance(scene, optics)
 %    optics     - Struct. An optical structure. Can be an OI.
 %
 % Outputs:
-%    irradiance - The calculated irradiance of the OI.
+%    irradiance - Matrix. The calculated irradiance of the OI.
 %
 % Optional key/value pairs:
 %    None.
 %
 %  References:
 %    The formula is derived in Peter Catrysse's dissertation (pp. 150-151).
-%    See also http://eeclass.stanford.edu/ee392b/, course handouts
+%    Also see http://eeclass.stanford.edu/ee392b/, course handouts
 %    William L. Wolfe, Introduction to Radiometry, SPIE Press, 1998.
 %
 
 % History:
 %    xx/xx/05       Copyright ImagEval Consultants, LLC, 2005.
 %    03/02/18  jnm  Formatting
+%    06/25/19  JNM  Minor formatting adjustments
 
 % optics might be an oi or an optics
 if isequal(optics.type, 'opticalimage')
@@ -90,8 +91,7 @@ if any(transmittance(:) ~= 1)
     radiance = bsxfun(@times, radiance, transmittance);
 end
 
-% Apply the formula that converts scene radiance to optical image
-% irradiance
+% Apply formula to converts scene radiance to optical image irradiance
 irradiance = pi / (1 + 4 * fN ^ 2 * (1 + abs(m)) ^ 2) * radiance;
 
 end

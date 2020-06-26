@@ -11,25 +11,31 @@ function XYZ = ieXYZFromEnergy(energy, wave)
 %    are stored in the variable wave.
 %
 %    For XW format input, the SPDs are in the rows, and the returned XYZ
-%    values are in the corresponding rows of the returned matrix.  That is,
+%    values are in the corresponding rows of the returned matrix. That is,
 %    the return comes back in XW format if the input is in XW format.
 %
 %    The units of Y are candelas/meter-squared if energy is radiance and
 %    lux if energy is irradiance, and if the units of radiance are
 %    watts/[sr-m2-nm] or the units of irradiance are Watts/[m2-nm].
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit ieXYZFromEnergy.m' into the Command Window.
+%
 % Inputs:
-%    energy - Energy in XW (space-wavelength) or RGB formats
-%    wave   - Wavelength samples of energy
+%    energy - Matrix. Energy in XW (space-wavelength) or RGB formats.
+%    wave   - Vector. Wavelength samples of energy.
 %
 % Outputs:
-%    XYZ    - CIE XYZ values in format matched to the input. Y is in
-%             candelas per meter squared (radiance), or lux (irradiance).
-%             Units for radiance are w / [sr * m^2 * nm]), and for
-%             irradiance w / [m^2 * nm].
+%    XYZ    - Matrix. CIE XYZ values in format matched to the input. Y is
+%             either in candelas per meter squared (radiance), or in lux
+%             (irradiance). Units for radiance are w / [sr * m^2 * nm]),
+%             and for irradiance w / [m^2 * nm].
+%
+% Optional key/value pairs:
+%    None.
 %
 % See Also:
-%   ieXYZFromPhotons()
+%   ieXYZFromPhotons
 %
 
 % History:
@@ -38,22 +44,23 @@ function XYZ = ieXYZFromEnergy(energy, wave)
 %    10/27/17  jnm  Comments & formatting
 %    11/01/17  dhb  Remove comments that RGB return is new, since it isn't
 %                   anymore.
+%    07/10/19  JNM  Formatting update
 
 % Examples:
 %{
-   wave = 400:10:700;
-   tmp = load('CRT-Dell');
-   dsp = tmp.d;
-   energy = displayGet(dsp, 'spd', wave);
-   energy = energy';
-   displayXYZ = ieXYZFromEnergy(energy, wave)
+    wave = 400:10:700;
+    tmp = load('CRT-Dell');
+    dsp = tmp.d;
+    energy = displayGet(dsp, 'spd', wave);
+    energy = energy';
+    displayXYZ = ieXYZFromEnergy(energy, wave)
 
-   patchSize = 1;
-   macbethChart = sceneCreate('macbeth', patchSize); 
-   p = sceneGet(macbethChart, 'photons');
-   wave = sceneGet(macbethChart, 'wave');
-   e = Quanta2Energy(wave, p);
-   XYZ = ieXYZFromEnergy(e, wave);  
+    patchSize = 1;
+    macbethChart = sceneCreate('macbeth', patchSize);
+    p = sceneGet(macbethChart, 'photons');
+    wave = sceneGet(macbethChart, 'wave');
+    e = Quanta2Energy(wave, p);
+    XYZ = ieXYZFromEnergy(e, wave);
 %}
 
 %% Force data into XW format.
@@ -64,7 +71,6 @@ if ndims(energy) == 3
 elseif isvector(energy)
     energy = energy(:)';  % Force to row vector
 end
-
 
 iFormat = vcGetImageFormat(energy, wave);
 switch iFormat

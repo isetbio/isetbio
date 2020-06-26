@@ -6,15 +6,21 @@ function luv = xyz2luv(xyz, whitepoint)
 %
 % Description:
 %    The whitepoint is a 3-vector indicating the XYZ of a white object or
-%    patch in the scene. 
+%    patch in the scene.
+%
+%    This function contains examples of usage inline. To access these, type
+%    'edit xyz2luv.m' into the Command Window.
 %
 % Inputs:
-%    xyz        - Can be in XW or RGB format.
-%    whitepoint - a 3-vector of the xyz values of the white point.
+%    xyz        - Matrix. The xyz values, in either XW or RGB format.
+%    whitepoint - Vector. A 3-vector of the xyz values of the white point.
 %
 % Outputs:
-%    LUV        - Returned in identical format as the input matrix xyz.
-%                 (Formats are RGB or XW)
+%    LUV        - Matrix. This is returned in identical format as the input
+%                 matrix xyz. (Formats are RGB or XW)
+%
+% Optional key/value pairs:
+%    None.
 %
 % References:
 %    Formulae are taken from Hunt's book,page 116. I liked the irony that
@@ -29,7 +35,7 @@ function luv = xyz2luv(xyz, whitepoint)
 %                   old default value, which should make it easy to fix any
 %                   calling code that breaks.
 %    11/17/17  jnm  Formatting
-%
+%    07/15/19  JNM  Formatting update
 
 % Examples:
 %{
@@ -62,7 +68,7 @@ luv(:, 2) = 13 * luv(:,1) .* (u - un);
 luv(:, 3) = 13 * luv(:,1) .* (v - vn);
 
 % return CIELUV in the appropriate format.
-% Currently it is a XW format.  If the input had three dimensions then we
+% Currently it is a XW format. If the input had three dimensions then we
 % need to change it to that format.
 if strcmp(iFormat, 'RGB'), luv = XW2RGBFormat(luv, r, c); end
 

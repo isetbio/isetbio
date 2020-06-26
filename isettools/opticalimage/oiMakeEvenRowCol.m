@@ -29,12 +29,11 @@ function oi = oiMakeEvenRowCol(oi, sDist)
 
 if notDefined('sDist')
     scene = vcGetObject('scene');
-    sDist = sceneGet(scene, 'distance'); 
+    sDist = sceneGet(scene, 'distance');
 end
 
 % Determine padSize and padParams
 [padSize, padValue] = oiPadParams(oi);
-
 sz = oiGet(oi, 'size');
 
 if isodd(sz(1)), padSize(1) = 1; end

@@ -24,6 +24,7 @@
 %   ContrastToExcitation - Convert contrast to excitation coordinate.
 %   ContrastToIncrement - Convert contrast to incremental coordinates.
 %   DKLToConeInc        - Convert from DKL to cone increments.
+%   drawChromaticity -    Plot chromaticity diagram w spectrum locus (provided by Danny Garside).
 %   EffectiveTrolandsFromLum - Compute effective trolands from luminance.
 %   EnergyToCones       - Convert monochromatic energy to cone excitations.
 %   ExcitationToContrast - Convert excitation coordinates to contrast.

@@ -2,7 +2,7 @@ function oi = oiSet(oi, parm, val, varargin)
 % Set ISET optical image parameter values
 %
 % Syntax:
-%   oi = oiSet(oi, parm, val, varargin)
+%   oi = oiSet(oi, parm, val, [varargin])
 %
 % Description:
 %    The parameters of an optical image are set through the calls to this
@@ -24,8 +24,8 @@ function oi = oiSet(oi, parm, val, varargin)
 %
 %    oiSet(oi, 'optics param', val) where param is the optics parameter.
 %
-%    This synatx replaces the older and more tedious style  
-%       optics = oiGet(oi, 'optics'); 
+%    This synatx replaces the older and more tedious style
+%       optics = oiGet(oi, 'optics');
 %       optics = opticsSet(optics, 'param', val);
 %       oi = oiSet(oi, 'optics', optics);
 %
@@ -43,7 +43,7 @@ function oi = oiSet(oi, parm, val, varargin)
 %           {'mean illuminance'}
 % Inputs:
 %    oi       - Struct. An optical image structure.
-%    param    - String. The parameter you wish to assign/alter the value.
+%    parm     - String. The parameter you wish to assign/alter the value.
 %               Some of the user-settable options are categorized below:
 %        Bookkeeping
 %             {'name'}              - The name of the optical image
@@ -60,7 +60,7 @@ function oi = oiSet(oi, parm, val, varargin)
 %        Optics
 %             {'optics'}            - Main optics structure
 %             {'optics model'}      - Optics computation
-%                    One of raytrace, diffractionlimited, or shiftinvariant 
+%                    One of raytrace, diffractionlimited, or shiftinvariant
 %                    Spaces and case variation is allowed, i.e.
 %                    oiSet(oi, 'optics model', 'diffraction limited');
 %                    The proper data must be loaded to run oiCompute.
@@ -90,6 +90,7 @@ function oi = oiSet(oi, parm, val, varargin)
 % History:
 %    xx/xx/03       Copyright ImagEval Consultants, LLC, 2003.
 %    03/07/18  jnm  Formatting
+%    06/24/19  JNM  Minor formatting adjustments
 
 
 % Examples:
@@ -100,7 +101,8 @@ function oi = oiSet(oi, parm, val, varargin)
     oi = oiSet(oi, 'filename', 'test')
     oi = oiSet(oi, 'optics', optics)
     oi = oiSet(oi, 'optics fnumber', 2.8);
-    oi = oiSet(oi, 'pad', struct('sizeDegs', 1.0, 'value', 'mean photons'));
+    oi = oiSet(oi, 'pad', ...
+        struct('sizeDegs', 1.0, 'value', 'mean photons'));
     oiGet(oi, 'optics fnumber')
 %}
 
@@ -170,17 +172,17 @@ switch parm
     case {'pad'}
         % Struct specifying the border-padding of the oi
         oi.pad = oiValidatePadStruct(val);
-        
+
     case {'padvalue'}
         % padding value, see oiValidatePadStruct for valid values
         oi.pad.value = val;
         oiValidatePadStruct(oi.pad);
-        
+
     case {'padsizedegs'}
         % padding size in visual degrees
         oi.pad.sizeDegs = val;
         oiValidatePadStruct(oi.pad);
-        
+
     case {'wangular', 'widthangular', 'fov', ...
             'hfov', 'horizontalfieldofview'}
         oi.wAngular = val;
@@ -196,7 +198,7 @@ switch parm
 
     case {'data', 'datastructure'}
         oi.data = val;
-        
+
     case {'lens', 'lenspigment'}
         oi.optics.lens = val;
 
@@ -237,13 +239,13 @@ switch parm
         % Clear out derivative luminance/illuminance computations
         oi = oiSet(oi, 'illuminance', []);
 
-
-        %     case {'datamin', 'dmin'}
-        %         error('datamin and datamax are not used anymore');
-        %         oi.data.dmin = val;
-        %     case {'datamax', 'dmax'}
-        %         error('datamin and datamax are not used anymore');
-        %         % oi.data.dmax = val;
+    % case {'datamin', 'dmin'}
+    %    error('datamin and datamax are not used anymore');
+    %    oi.data.dmin = val;
+    %
+    % case {'datamax', 'dmax'}
+    %    error('datamin and datamax are not used anymore');
+    %    % oi.data.dmax = val;
 
     case 'bitdepth'
         % Only used to control space allocated to photons (single or
@@ -273,7 +275,7 @@ switch parm
         % Set the data wavelength term, for now stored in spectrum. It will
         % get shifted to oi.data.wave at some point.
         if checkfields(oi, 'spectrum')
-            oldWave = oi.spectrum.wave; 
+            oldWave = oi.spectrum.wave;
         else
             oldWave = [];
         end
@@ -287,8 +289,8 @@ switch parm
 
         % At this point the photon data might be inconsistent with the data
         % wavelength. We either
-        %   * interpolate the data, or 
-        %   * if this is an extrapolation case we fill with zeros. 
+        %   * interpolate the data, or
+        %   * if this is an extrapolation case we fill with zeros.
         %
         % We don't clear the data because the row/col information include
         % spatial measurements that are needed subsequently.
@@ -297,7 +299,7 @@ switch parm
             % Ok, so now we have to interpolate the photon data.
             if oldWave(1) < val(1) && oldWave(end) > val(end)
                 % Interpolation OK. If the original is monochromatic, we
-                % can't interpolate. 
+                % can't interpolate.
                 disp('Interpolating OI photon data');
                 p = oiGet(oi, 'photons');
                 if ~isempty(p)
@@ -325,7 +327,7 @@ switch parm
 
         % Glass diffuser properties
     case {'diffusermethod'}
-        % This determines calculation 
+        % This determines calculation
         % 0 - skip, 1 - gaussian blur, 2 - birefringent
         % We haven't set up the interface yet (12/2009)
         oi.diffuser.method = val;
@@ -337,30 +339,35 @@ switch parm
         %{
         % Should be able to delete this - and the comments at the top
         %
-        % This was used for the shift variant calculations (ray trace). 
+        % This was used for the shift variant calculations (ray trace).
         % It is not used any more here.  It is still retained in ISETCAM.
-        % Precomputed shift-variant (sv) psf and related parameters          
+        % Precomputed shift-variant (sv) psf and related parameters
     case {'psfstruct', 'shiftvariantstructure'}
         % This structure
         oi.psf = val;
+
     case {'svpsf', 'sampledrtpsf', 'shiftvariantpsf'}
         % The precomputed shift-variant psfs
         oi.psf.psf = val;
+
     case {'psfanglestep', 'psfsampleangles'}
-        % Vector of sample angles  
-        oi.psf.sampAngles= val;
+        % Vector of sample angles
+        oi.psf.sampAngles = val;
+
     case {'psfopticsname', 'raytraceopticsname'}
         % Name of the optics data are derived from
         oi.psf.opticsName =val;
+
     case 'psfimageheights'
         % Vector of sample image heights
         oi.psf.imgHeight = val;
+
     case 'psfwavelength'
         % Wavelengths for this calculation. Should match the optics, I
         % think. Not sure why it is duplicated.
         oi.psf.wavelength = val;
         %}
-        
+
     case 'depthmap'
         % Depth map, usuaully inherited from scene, in meters
         % oiSet(oi, 'depth map', dMap);

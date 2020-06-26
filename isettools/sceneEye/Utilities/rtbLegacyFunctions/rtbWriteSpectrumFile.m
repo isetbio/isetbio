@@ -9,8 +9,8 @@ function filename = rtbWriteSpectrumFile(wavelengths, magnitudes, filename)
 %    file, with the given filename.
 %
 %    The text file will contain one wavelength-magnitude pair on each line.
-%    This format is suitable for specifying spectra to PBRT or Mitsuba. For
-%    example:
+%    This format is suitable for specifying spectra to PBRT or Mitsuba.
+%    some examples are:
 %       300 0.1
 %       550 0.5
 %       800 0.9
@@ -18,12 +18,17 @@ function filename = rtbWriteSpectrumFile(wavelengths, magnitudes, filename)
 %    and 0.9 are arbitrary magnutudes at each wavelength.
 %
 % Inputs:
-%    wavelengths - The wavelengths
-%    magnitudes  - The magnitudes
-%    filename    - The file to write the wavelength/magnitude pairs to
+%    wavelengths - Array. The wavelengths.
+%    magnitudes  - Array. The magnitudes.
+%    filename    - String. The file you wish to write the
+%                  wavelength/magnitude pairs to.
 %
 % Outputs:
-%    filename    - The file the wavelength/magnitude pairs are written to
+%    filename    - String. The file the wavelength/magnitude pairs have
+%                  been written to.
+%
+% Optional key/value pairs:
+%    None.
 %
 % References:
 %    About Us://github.com/RenderToolbox/RenderToolbox4/wiki/About-Us
@@ -33,6 +38,7 @@ function filename = rtbWriteSpectrumFile(wavelengths, magnitudes, filename)
 % History:
 %	 xx/xx/12       RenderToolbox4 Copyright 2012-2016 RenderToolbox Team.
 %    12/19/17  jnm  Formatting
+%    05/30/19  JNM  Documentation pass
 
 parser = inputParser();
 parser.addRequired('wavelengths', @isnumeric);

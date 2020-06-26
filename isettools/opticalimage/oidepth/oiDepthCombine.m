@@ -25,12 +25,12 @@ function oi = oiDepthCombine(oiD, scene, depthEdges)
 %    None.
 %
 % See Also:
-%    s3d_DepthSpacing, oiCompute, oiDepthSegmentMap, oiDepthOverlay
+%   s3d_DepthSpacing, oiCompute, oiDepthSegmentMap, oiDepthOverlay
 %
 
 % History:
 %    xx/xx/11       Copyright ImagEval Consultants, LLC, 2011.
-%    03/28/18  jnm  Formatting
+%    03/28/18  jnm  Formatting (Also 07/01/19)
 
 nEdges = length(depthEdges);
 oiDmap = oiPadDepthMap(scene);
@@ -99,7 +99,7 @@ return
 
 % Loop through nearer planes, adding their photons in turn
 % for jj = (nDepths - 1):-1:1
-%     % Combine the OI depth maps 
+%     % Combine the OI depth maps
 %     thisMap = oiGet(oiD{jj}, 'depth map');
 %     bothMap = thisMap & dMap;
 %     % Zero out photons from behind this map.
@@ -110,7 +110,7 @@ return
 %         photons(:, :, ii) = p;
 %     end
 %     dMap = (dMap | thisMap);  % New cumulative depth map
-% 
+%
 %     % figure;
 %     % imagesc(thisMap);
 %     % figure;
@@ -138,4 +138,4 @@ oi = oiSet(oi, 'depth map', dMap);
 % vcAddAndSelectObject(oi);
 % oiWindow
 
-return
+end

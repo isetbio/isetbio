@@ -24,24 +24,33 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %        proposed by Jiang, Farrell and Wandell, 2015
 %      * returning a constant for the missing cone type
 %
+%    This function contains examples of usage inline. To access these, type
+%    'edit xyz2lms.m' into the Command Window.
+%
 % Inputs:
-%    imgXYZ   - XYZ image to transform
-%    cbType   - Type of colorblindness, can be choosen from
-%      {0, 'trichromat'}             - Trichromatic observer (default)
+%    imgXYZ   - Matrix. The XYZ image to transform.
+%    cbType   - (Optional) Scalar/String. Type of colorblindness. This can
+%               be represented by an integer, or a string, with the
+%               following options available:
+%      {0, 'trichromat'}             - Default. Trichromatic observer.
 %      {1, 'protan', 'protanopia'}   - Protanopia observer, missing L cones
 %      {2, 'deutan', 'deuteranopia'} - Deuteranope, missing M cones
 %      {3, 'tritan', 'tritanopia'}   - Tritanope, missing S cones
-%
-%    method   - Algorithm to be used to interpolate the missing cone values
-%      'brettel'  - Use Bettel's algorithm (default)
-%      'linear'   - Use linear interpolation algorithm
-%      'constant' - Leave missing cone values as a constant (default 0)
-%    varargin - Extra arguments for specific methods
-%      varargin   - White XYZ value for Brettel method. This also provides
-%                   the constant value used for the 'constant' method.
+%    method   - (Optional) String. Which algorithm to be used to
+%               interpolate the missing cone values. Options (and their
+%               varargin information) include:
+%        brettel: Default. Use Bettel's algorithm. Provide numeric value to
+%                 varargin of a white XYZ value.
+%        linear: Use linear interpolation algorithm
+%        constant: Leave missing cone values as a constant. Default 0.
+%    varargin - (Optional) VARIES. Extra arguments for specific methods.
+%               See the method entries above for more information.
 %
 % Outputs:
-%   LMS           - values in Stockman LMS space
+%   LMS       - Matrix. The values in Stockman LMS space.
+%
+% Optional key/value pairs:
+%    None.
 %
 % Notes:
 %   * [NOTE - DHB: Following exactly what happens with the varargin values
@@ -49,7 +58,7 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %      with key value pairs so that the code is clearer.]
 %   * [NOTE - DHB: Not clear if it is 2 degree or 10 degree XYZ/Stockman.]
 %
-% See Also: 
+% See Also:
 %   lms2srgb, xyz2lms, colorTransformMatrix
 %
 
@@ -63,21 +72,21 @@ function imgLMS = xyz2lms(imgXYZ, cbType, method, varargin)
 %    11/05/17  dhb   Change 'trichromats' -> 'trichromat'. This is what
 %                    the called routine wants.
 %    11/17/17  jnm  Formatting
-%
+%    07/15/19  JNM  Formatting update
 
 % Examples:
 %{
-   scene = sceneCreate('reflectance chart');
-   vcAddAndSelectObject(scene);
-   sceneWindow
-   imgXYZ = sceneGet(scene, 'xyz');
-   
-   whiteXYZ = sceneGet(scene,'illuminant xyz');
-   cbType = 'Tritanope'; 
-   imgLMS = xyz2lms(imgXYZ, cbType, 'Brettel', whiteXYZ);
-   
-   vcNewGraphWin;
-   imagescRGB(lms2srgb(imgLMS));
+    scene = sceneCreate('reflectance chart');
+    vcAddAndSelectObject(scene);
+    sceneWindow
+    imgXYZ = sceneGet(scene, 'xyz');
+
+    whiteXYZ = sceneGet(scene,'illuminant xyz');
+    cbType = 'Tritanope';
+    imgLMS = xyz2lms(imgXYZ, cbType, 'Brettel', whiteXYZ);
+
+    vcNewGraphWin;
+    imagescRGB(lms2srgb(imgLMS));
 %}
 
 %% Check input parameters
@@ -89,7 +98,10 @@ if notDefined('method'), method = 'Brettel'; end
 if (ischar(cbType) && strcmp(lower(cbType),'default'))
     error('Change passed ''default'' cbType to ''trichromat''');
 end
-if (ischar(cbType) && strcmp(lower(cbType),'trichromats')), cbType = 0; end
+if ischar(cbType) && (strcmp(lower(cbType), 'trichromats') || ...
+        strcmp(lower(cbType), 'trichromat'))
+    cbType = 0;
+end
 
 %% Transform to LMS
 %

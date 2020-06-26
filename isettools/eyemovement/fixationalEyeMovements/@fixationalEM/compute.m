@@ -69,11 +69,13 @@ end
 % Compute first trial
 iTrial = 1;
 computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
-allTrialsEmPosArcMin = zeros(nTrials, ...
-    length(obj.emPosTimeSeriesArcMin), 2);
+nTimeBins = length(obj.timeAxis);
+
+allTrialsEmPosArcMin = zeros(nTrials, nTimeBins, 2);
 allTrialsEmPosArcMin(iTrial, :, :) = ...
     reshape(obj.emPosTimeSeriesArcMin', ...
-    [1 length(obj.emPosTimeSeriesArcMin) 2]);
+    [1 nTimeBins 2]);
+
 
 if (computeVelocity)
     allTrialsVelocityArcMin = zeros(nTrials, ...

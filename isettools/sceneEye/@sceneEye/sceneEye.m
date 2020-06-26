@@ -18,7 +18,7 @@ classdef sceneEye < hiddenHandle
 %
 % Notes:
 %    * TODO - Implement the check that BW describes below. Is there a way
-%      to check inputs? For example, eyePos is not a dependent variable,
+%      to check inputs? For example, eyePos is not a dependent variable, 
 %      but is instead read in from the PBRT file. However, say the user
 %      wants to change the value in their script so they write:
 %           myScene = sceneEye('pbrtFile', xxx);
@@ -33,7 +33,7 @@ classdef sceneEye < hiddenHandle
 %      the checks below. However, I should find a more permanant solution
 %      to cases like these. (See the note above). Maybe in
 %      piGetRenderRecipe we should put in the default values if any of
-%      these rendering options are missing (e.g. if Renderer is missing,
+%      these rendering options are missing (e.g. if Renderer is missing, 
 %      put in Renderer 'sampler'.)]
 %    * [Note: XXX - (from constructor) What happens if the recipe doesn't
 %      include any of the following, or any of the subfields we call?]
@@ -52,6 +52,7 @@ classdef sceneEye < hiddenHandle
 % History:
 %    xx/xx/17  TL   ISETBIO Team, 2017
 %    12/19/17  jnm  Formatting
+%    08/08/19  JNM  Merge master in
 
 % Examples:
 %{
@@ -146,7 +147,7 @@ properties (GetAccess=public, SetAccess=public)
     %   chromatic aberration through the lens system. When debugging, this
     %   can be set to 0 but for the final render it should be something
     %   like 8 or 16. (e.g. If you set it to 8, then we will shoot rays for
-    %   wavelengths of linspace(400,700,8).);
+    %   wavelengths of linspace(400, 700, 8).);
     numCABands;
 
     % eyePos - Position of the eye within the scene in [x y z] format
@@ -186,7 +187,7 @@ properties (GetAccess=public, SetAccess=public)
     recipe;
     
     % LENSFILE - Path to the .dat file that describes the lens system
-    %   This file includes descriptions of the thickness, curvature,
+    %   This file includes descriptions of the thickness, curvature, 
     %   and diameter of the various components in the eye. This is usually
     %   written out automatically in the "write" function for sceneEye
     %   (which is called during sceneEye.render). However, you can also
@@ -253,7 +254,7 @@ end
 
 properties (Constant)
     % wave - In PBRT we samples from 400 to 700 nm in 31 intervals
-    wave = linspace(400,700,31); % nm
+    wave = linspace(400, 700, 31); % nm
 
 end
 
@@ -279,10 +280,15 @@ methods
         
         % Setup the pbrt scene and recipe
         [recipe, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
-            loadPbrtScene(pbrtFile,varargin);
+            loadPbrtScene(pbrtFile, varargin);
         
         % Check to make sure this PBRT file has a realistic eye.
+        % [Note: JNM - 5/14/19 the human eye has retinaDistance parameters,
+        % realistic does not. Changing type to see if call for ChessSet
+        % continues failing.]
         if(~strcmp(recipe.camera.subtype, 'realisticEye'))
+            % recipe.camera = piCameraCreate('realisticEye');
+            % recipe.camera = piCameraCreate('realistic');
             recipe.camera = piCameraCreate('humaneye');
         end
 
@@ -386,29 +392,29 @@ methods
     % x = sqrt(r^2-a^2)
     % sqrt(r^2-a^2)/(d+a) - k = 0 
     % We can solve for a using an fzero solve.
-    
+
     function val = get.distance2chord(obj)
         % Not entirely accurate but lets treat the origin point for the FOV
         % calculate as the beack of the lens
         if(obj.retinaRadius > obj.retinaDistance)
             error('Retina radius is larger than retina distance.')
         end
-        
-        myfun = @(a,k,d,r) sqrt(r^2-a.^2)./(d+a) - k;  % parameterized function
+
+        myfun = @(a, k, d, r) sqrt(r^2-a.^2)./(d+a) - k;  % parameterized function
         k = tand(obj.fov/2);
         d = obj.retinaDistance - obj.retinaRadius;
         r = obj.retinaRadius;
-        
-        fun = @(a) myfun(a,k,d,r);    % function of x alone
-        a = fzero(fun,[d obj.retinaRadius]);
-        
+
+        fun = @(a) myfun(a, k, d, r);    % function of x alone
+        a = fzero(fun, [d obj.retinaRadius]);
+
         if(isnan(a))
             error('Search for a image width to match FOV failed. Initial guess is probably not close...')
         end
-        
+
         val = a+d;
     end
-    
+
     function val = get.width(obj)
         % Rendered image is alway square.
         val = 2 * tand(obj.fov / 2) * (obj.distance2chord);
@@ -422,7 +428,7 @@ methods
     function val = get.sampleSize(obj)
         val = obj.width / obj.resolution;
     end
-    
+
     function val = get.angularSupport(obj)
        % We have to be careful with this calculation.
        % Conver the chord distances to accurate angles.
@@ -430,31 +436,31 @@ methods
        chordSpatialSamples = (1:obj.resolution).*ss - obj.width/2;
        val = atand(chordSpatialSamples/obj.distance2chord);
     end
-    
+
     %% Set methods for dependent variables
-    
+
     % Does this go here? MATLAB doesn't like this setup, but I would like
     % retinaDistance and retinaRadius to be both dependent (changes with
     % modelName), but also set-able by the user. What's the best way to do
     % this?
-    
+
     % When we set the eye model, we need to change the retina distance and
     % radius.
-    function set.modelName(obj,val)
+    function set.modelName(obj, val)
         switch val
-            case {'Navarro','navarro'}
+            case {'Navarro', 'navarro'}
                 obj.modelName = 'Navarro';
                 obj.retinaDistance = 16.32;
                 obj.retinaRadius = 12;
-            case {'LeGrand','legrand','le grand'}
+            case {'LeGrand', 'legrand', 'le grand'}
                 obj.modelName = 'LeGrand';
                 obj.retinaDistance = 16.6;
                 obj.retinaRadius = 13.4;
-            case {'Arizona','arizona'}
+            case {'Arizona', 'arizona'}
                 obj.modelName = 'Arizona';
                 obj.retinaDistance = 16.713;
                 obj.retinaRadius = 13.4;
-            case {'Custom','custom'}
+            case {'Custom', 'custom'}
                 % Use Navarro as a default.
                 % Do we need to be able to change this later?
                 obj.modelName = 'Custom';
@@ -464,53 +470,49 @@ methods
                 if(isempty(obj.retinaRadius))
                     obj.retinaRadius = [];
                 end
-                
         end
-            
     end
-    
+
     % When the user toggles debugMode, make sure the camera type is
     % correct.
-    function set.debugMode(obj,val)
+    function set.debugMode(obj, val)
         obj.debugMode = val;
         if(val)
             obj.modelName = 'none';
             % The camera will be changed to perspective in write(), so we
             % do nothing here. 
-        elseif(~val && strcmp(obj.modelName,'none'))
+        elseif(~val && strcmp(obj.modelName, 'none'))
             % Put the navarro eye back in if there's not already a model.
             obj.modelName = 'Navarro';
             obj.recipe.camera = piCameraCreate('humaneye');
         end
-        
     end
-    
+
     % I want to put in this warning, but again MATLAB doesn't really like
     % this!
-    function set.accommodation(obj,val)
+    function set.accommodation(obj, val)
         obj.accommodation = val;
-        if(strcmp(obj.modelName,'Gullstrand'))
-            warning(['Gullstrand eye has no accommodation modeling.',...
+        if(strcmp(obj.modelName, 'Gullstrand'))
+            warning(['Gullstrand eye has no accommodation modeling.', ...
                 'Setting accommodation will do nothing.']);
         end
     end
-    
-    function set.lensFile(obj,val)
+
+    function set.lensFile(obj, val)
         
         % On creation, the lensFile is left empty
         % There should be a better way to do this right? I don't think I'm
         % doing this right. Maybe we need a seperate set function like we
         % do with render recipes?
         if(~isempty(val))
-            
             % Make sure it's a valid file
-            [p,~,e] = fileparts(val);
+            [p, ~, e] = fileparts(val);
             if(isempty(p))
                 error('Lens file needs to be a full file path.');
-            elseif(~strcmp(e,'.dat'))
+            elseif(~strcmp(e, '.dat'))
                 error('Lens file needs to be a .dat file.');
             end
-            
+
             obj.modelName = 'Custom';
             obj.lensFile = val;
         else
@@ -542,10 +544,8 @@ methods (Access=public)
     % them into their individual functions allows us to integrate them with
     % isetcloud tools.
     % (Should these be public?)
-    [obj] = setOI(obj, ieObject,varargin)
+    [obj] = setOI(obj, ieObject, varargin)
     [objNew] = write(obj, varargin)
 end
 
 end
-
-

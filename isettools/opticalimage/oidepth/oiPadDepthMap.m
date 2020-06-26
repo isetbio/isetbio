@@ -5,7 +5,7 @@ function dMap = oiPadDepthMap(scene, invert)
 %   dMap = oiPadDepthMap(scene)
 %
 % Description:
-%    It is also possible to extract the center part of the depth map, 
+%    It is also possible to extract the center part of the depth map,
 %    without the padding.
 %
 % Inputs:
@@ -31,7 +31,7 @@ if ~invert
     padSize(3) = 0;
     padval = 0;
     direction = 'both';
-    dMap = padarray(dMap, padSize, padval, direction); 
+    dMap = padarray(dMap, padSize, padval, direction);
     % figure;
     % imagesc(dMap)
 else
