@@ -69,8 +69,8 @@ end
 recipe = objNew.recipe;
 
 % Depending on the eye model, set the lens file appropriately
-switch objNew.modelName
-    case {'Navarro', 'navarro'}
+switch ieParamFormat(objNew.modelName)
+    case {'navarro'}
         % Apply any accommodation changes
         if(isempty(objNew.accommodation))
             objNew.accommodation = 5;
@@ -81,11 +81,11 @@ switch objNew.modelName
         recipe = setNavarroAccommodation(recipe, objNew.accommodation, ...
             objNew.workingDir);
 
-    case {'LeGrand', 'legrand', 'le grand'}
+    case {'legrand'}
         % Le Grand eye does not have accommodation (not yet at least).
         recipe = writeLegrandLensFile(recipe, objNew.workingDir); 
 
-    case{'Arizona', 'arizona'}
+    case{'arizona'}
         if(isempty(objNew.accommodation))
             objNew.accommodation = 5;
             warning('No accommodation! Setting to 5 diopters.');
@@ -95,7 +95,7 @@ switch objNew.modelName
         recipe = setArizonaAccommodation(recipe, objNew.accommodation, ...
             objNew.workingDir);
 
-    case{'Custom', 'custom'}
+    case{'custom'}
         
         % Run this first to generate the IOR files.
         setNavarroAccommodation(recipe, 0, objNew.workingDir);

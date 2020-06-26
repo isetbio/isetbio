@@ -5,16 +5,22 @@ classdef sceneEye < hiddenHandle
 %   myScene = sceneEye();
 %
 % Description:
-%    sceneEye contains the information needed to construct a new PBRT
-%    file that we can then render to get a retinal image.
+%    sceneEye is represents the information needed to construct a new PBRT
+%    file that we render to estimate the retinal image (spectral
+%    irradiance) of the human eye.
 %
-%    sceneEye is analogous to the "scene" structure in ISETBIO (and
-%    ISET), and it will support similar commands. Unlike the
-%    ISET/ISETBIO "scene", as for new entities we created it as a
-%    MATLAB class.
+%    The sceneEye class is analogous to the "scene" structure in ISETBIO
+%    (and ISET). The class supports similar methods. Unlike the older
+%    ISET/ISETBIO "scene" struct, sceneEye is implemented as a MATLAB class
+%    with its own methods.
 %
-%    This code is starting out in service of the eyeModel. We may
-%    extend to replace the scene structure (some day).
+%    The sceneEye includes the PBRT rendering recipe (thisR) in one of its
+%    slots. The camera struct is called 'realisticEye' and it contains the
+%    slots that are necessary to specify the human eye model.  These
+%    parameter slots differ from the standard camera model (e.g.,
+%    'realistic', 'pinhole', or 'omni'.  The slots in 'realisticEye'
+%    include retinal curvature, the index of refraction of the components
+%    of the eye, and so forth.
 %
 % Notes:
 %    * TODO - Implement the check that BW describes below. Is there a way
@@ -45,9 +51,10 @@ classdef sceneEye < hiddenHandle
 %      avoid errors.]
 %    * TODO - Fix example!
 %
-% See Also:
-%    Dependencies: pbrt2ISET, ISETBIO
+%    Dependencies: ISET3D
 %
+% See Also:
+%    
 
 % History:
 %    xx/xx/17  TL   ISETBIO Team, 2017
@@ -279,37 +286,45 @@ methods
         p.parse(pbrtFile, varargin{:});
         
         % Setup the pbrt scene and recipe
-        [recipe, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
-            loadPbrtScene(pbrtFile, varargin);
+        thisR = piRecipeDefault('scene name',pbrtFile);
+        %{
+        % The original method used this complicated function to load the 
+        % scene file and set these fields.  I am not  sure why sceneUnits
+        % is still with us.  Every scene in loadPbrtScene is 'm' (meters).
+        [thisR, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
+           loadPbrtScene(pbrtFile, varargin);
+        %}
         
-        % Check to make sure this PBRT file has a realistic eye.
+        % Make sure the recipe specifies realistic eye.  That camera has
+        % the parameters needed to model the human.  Note:  realisticEye
+        % differs from realistic.
+        %
         % [Note: JNM - 5/14/19 the human eye has retinaDistance parameters,
         % realistic does not. Changing type to see if call for ChessSet
         % continues failing.]
-        if(~strcmp(recipe.camera.subtype, 'realisticEye'))
-            % recipe.camera = piCameraCreate('realisticEye');
-            % recipe.camera = piCameraCreate('realistic');
-            recipe.camera = piCameraCreate('humaneye');
+        if ~strcmp(thisR.get('camera subtype'), 'realisticEye')
+            thisR.camera = piCameraCreate('humaneye');
         end
 
-        % Set properties
+        % I am not sure why we are duplicating the recipe properties here.
+        % We should add extra properties, but we should not duplicate.
         obj.name = p.Results.name;
         obj.modelName = 'Navarro'; % Default
-        obj.resolution = recipe.film.xresolution.value;
-        obj.retinaDistance = recipe.camera.retinaDistance.value;
-        obj.pupilDiameter = recipe.camera.pupilDiameter.value;
+        obj.resolution = thisR.film.xresolution.value;
+        obj.retinaDistance = thisR.camera.retinaDistance.value;
+        obj.pupilDiameter = thisR.camera.pupilDiameter.value;
 
-        obj.retinaDistance = recipe.camera.retinaDistance.value;
-        obj.retinaRadius = recipe.camera.retinaRadius.value;
+        obj.retinaDistance = thisR.camera.retinaDistance.value;
+        obj.retinaRadius = thisR.camera.retinaRadius.value;
 
-        retinaSemiDiam = recipe.camera.retinaSemiDiam.value;
+        retinaSemiDiam = thisR.camera.retinaSemiDiam.value;
         obj.fov = 2 * atand(retinaSemiDiam / obj.retinaDistance);
 
         % There's no variable for accommodation but we can infer it
         % from the name of the lens. We assume the naming conventions
         % is "%s_%f.dat" This is not foolproof, so maybe we can think
         % of a more robust way to do this in the future?
-        obj.lensFile = recipe.camera.lensfile.value;
+        obj.lensFile = thisR.camera.lensfile.value;
         if(strcmp(obj.lensFile, ''))
             obj.accommodation = [];
         else
@@ -318,7 +333,7 @@ methods
             obj.accommodation = str2double(value{1});
         end
 
-        obj.numRays = recipe.sampler.pixelsamples.value;
+        obj.numRays = thisR.sampler.pixelsamples.value;
 
         % These two are often empty, so let's do checks here. However, 
         % I should find a more permanant solution to cases like these.
@@ -326,24 +341,24 @@ methods
         % Maybe in piGetRenderRecipe we should put in the default
         % values if any of these rendering options are missing
         % (e.g. if Renderer is missing, put in Renderer 'sampler'.)
-        if(isfield(recipe.integrator, 'maxdepth'))
-            obj.numBounces = recipe.integrator.maxdepth.value;
+        if(isfield(thisR.integrator, 'maxdepth'))
+            obj.numBounces = thisR.integrator.maxdepth.value;
         else
             obj.numBounces = 1;
         end
-        if(isfield(recipe.renderer, 'nWaveBands'))
-            obj.numCABands = recipe.renderer.nWaveBands.value;
+        if(isfield(thisR.renderer, 'nWaveBands'))
+            obj.numCABands = thisR.renderer.nWaveBands.value;
         else
             obj.numCABands = 0;
         end
 
-        if(~isempty(recipe.lookAt))
-            obj.eyePos = recipe.lookAt.from;
-            obj.eyeTo = recipe.lookAt.to;
-            obj.eyeUp = recipe.lookAt.up;
+        if(~isempty(thisR.lookAt))
+            obj.eyePos = thisR.lookAt.from;
+            obj.eyeTo = thisR.lookAt.to;
+            obj.eyeUp = thisR.lookAt.up;
         end
 
-        obj.recipe = recipe;
+        obj.recipe = thisR;
         
         % Default settings.
         obj.debugMode = false;
