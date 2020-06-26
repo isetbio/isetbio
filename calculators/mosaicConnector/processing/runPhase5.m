@@ -11,12 +11,12 @@ function runPhase5(runParams)
             'desiredConesToRGCratios', 'midgetRGCconnectionMatrix');
     
   
-    for sizeIndex = 1:size(runParams.patchEccDegs,1)
+    for sizeIndex = 1:size(runParams.patchEccMicrons,1)
         figHeightInches = 15;
         % Subregion center and size in microns
-        subregion.center = round(1000*WatsonRGCModel.rhoDegsToMMs(runParams.patchEccDegs(sizeIndex,:)));
-        subregion.size(1) = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(runParams.patchSizeDegs(sizeIndex,1), runParams.patchEccDegs(sizeIndex,1));
-        subregion.size(2) = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(runParams.patchSizeDegs(sizeIndex,2), runParams.patchEccDegs(sizeIndex,2));
+        patchEccDegs = WatsonRGCModel.rhoMMsToDegs(runParams.patchEccMicrons(sizeIndex,:)*1e-3);
+        subregion.center = runParams.patchEccMicrons(sizeIndex,:);
+        subregion.size = runParams.patchSizeMicrons(sizeIndex,:);
 
         plotlabOBJ = plotlab();
         plotlabOBJ.applyRecipe(...
@@ -38,7 +38,7 @@ function runPhase5(runParams)
          subregionMidgetRGCconnectionMatrix = midgetRGCconnectionMatrix(:,subregionRGCidx);
          subregionRGCRFPositionsMicrons = RGCRFPositionsMicrons(subregionRGCidx,:);
 
-         visualizeRFs(runParams.patchEccDegs(sizeIndex,:), runParams.zLevels, runParams.whichLevelsToContour, ...
+         visualizeRFs(patchEccDegs, runParams.zLevels, runParams.whichLevelsToContour, ...
              subregionMidgetRGCconnectionMatrix, subregionRGCRFPositionsMicrons,...
              conePositionsMicrons, coneSpacingsMicrons, coneTypes, subregion, ...
              runParams.displayEllipseInsteadOfContour, plotlabOBJ, runParams.outputFile,runParams.exportsDir);
