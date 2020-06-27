@@ -17,10 +17,10 @@ function MosaicConnector
     checkMosaicSeparationAndCropAgain = ~true;              % phase 2 - check separation and possibly crop within rectangular window
     assignConeTypes = ~true;                                % phase 3 - assign cone types
     
-    connectConesToRGCcenters = true;                        % phase 4 - connect cones to RGC RF centers
+    connectConesToRGCcenters = ~true;                        % phase 4 - connect cones to RGC RF centers
     visualizeConeToRGCcenterConnections = ~true;            % phase 5 - visualize cone inputs to RGC RF centers
-    computeConeWeightsToRGCcentersAndSurrounds = true;      % phase 6 - compute cone weights to RGC RF center/surrounds
-    visualizeConeWeightsToRGCcentersAndSurrounds = ~true;   % phase 7 - visualize cone weights to RGC RF center/surrounds
+    computeConeWeightsToRGCcentersAndSurrounds = ~true;      % phase 6 - compute cone weights to RGC RF center/surrounds
+    visualizeConeWeightsToRGCcentersAndSurrounds = true;   % phase 7 - visualize cone weights to RGC RF center/surrounds
     
     wirePartOfMRGCMosaicToConeMosaicPatch = true;           % phase X - wire part of a full RGC mosaic to a small cone mosaic
     
