@@ -1,6 +1,28 @@
-function [connectionMatrixCenter, connectionMatrixSurround] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
-    rgcParams, rgcCenterPositionMicrons, rgcEccDegs, rgcIndices, conePositionsMicrons, coneTypes, midgetRGCconnectionMatrix)
+function [connectionMatrixCenter, connectionMatrixSurround, ...
+    synthesizedRFParams] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
+        conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+        RGCRFPositionsMicrons, midgetRGCconnectionMatrix, ...
+        rgcMosaicPatchEccMicrons, rgcMosaicPatchSizeMicrons)
 
+    % Convert patch ecc and size from retinal microns to visual degrees
+    patchEccDegs = WatsonRGCModel.rhoMMsToDegs(rgcMosaicPatchEccMicrons*1e-3);
+    patchSizeDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(rgcMosaicPatchSizeMicrons, rgcMosaicPatchEccMicrons);
+    
+    % Synthesize RF params using the Croner&Kaplan model
+    synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, coneSpacingsMicrons, ...
+            RGCRFPositionsMicrons, ...
+            midgetRGCconnectionMatrix, ...
+            patchEccDegs, patchSizeDegs);
+
+    rgcParams = synthesizedRFParams.retinal;
+    rgcCenterPositionMicrons = synthesizedRFParams.centerPositionMicrons;
+    rgcEccDegs = synthesizedRFParams.eccDegs;
+    rgcIndices = synthesizedRFParams.rgcIndices;
+    
+    % Compute weights of cone inputs to the RF center and to the RF
+    % surround based on the midgetRGCconnectionMatrix and the
+    % synthesizedRFparams
+    
     conesNum = size(midgetRGCconnectionMatrix,1);
     rgcsNum = size(midgetRGCconnectionMatrix,2);
   
@@ -35,10 +57,10 @@ function [connectionMatrixCenter, connectionMatrixSurround] = computeWeightedCon
         % Get peak sensitivity of RGC surround
         rgcSurroundPeakSensivity = rgcParams.surroundPeakSensitivities(iRGC);
         
-        % Retrieve cone indices connected to the RGC surround
+        % Retrieve cone indices connected to the RGC surround, 99%
         weights = gaussianConeWeights(conePositionsMicrons, rgcPositionMicrons, rgcSurroundRadiusMicrons);
-        coneIndicesConnectedToSurround = find(weights >= exp(-3));
-        
+        coneIndicesConnectedToSurround = find(weights >= 0.01);
+
         % Find S-cones, and set their weight to 0, as H1 horizontal cells
         % (which make the surrounds of mRGCs) do not contact S-cones.
         sConeIndices = find(coneTypes(coneIndicesConnectedToSurround) == 4);

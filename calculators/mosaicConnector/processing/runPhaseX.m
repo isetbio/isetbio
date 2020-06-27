@@ -1,11 +1,12 @@
 function runPhaseX(runParams)
 
-    [theConeMosaic, coneMosaicEccDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes] = ...
+    % STEP 1. Generate a regular hex cone mosaic patch with the desired eccentricity and size
+    [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes] = ...
         generateRegularHexMosaicPatch(...
             runParams.rgcMosaicPatchEccMicrons, ...
-            runParams.rgcMosaicPatchSizeMicrons, ...
-            runParams.extraMicronsForSurroundCones);
+            runParams.rgcMosaicPatchSizeMicrons);
      
+    % STEP 2. Connect the cone mosaic patch to the centers of the midget RGC mosaic
     mRGCmosaicFile = fullfile(runParams.outputDir, sprintf('%s.mat',runParams.inputFile));
     orphanRGCpolicy = 'steal input';
     maximizeConeSpecificity = runParams.maximizeConeSpecificity;
@@ -15,13 +16,44 @@ function runPhaseX(runParams)
          conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
          orphanRGCpolicy, maximizeConeSpecificity, visualizeMosaics);
      
+    
+    % Visualize connections to the RF centers
+    subregionToVisualize.center = round(runParams.rgcMosaicPatchEccMicrons);
+    subregionToVisualize.size = coneMosaicSizeMicrons;
+    visualizeCenterConnections(midgetRGCconnectionMatrix, RGCRFPositionsMicrons,...
+            conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+            coneMosaicEccDegs, subregionToVisualize, ...
+            runParams.outputFile,runParams.exportsDir);
+        
+    % STEP 3. 
+    [midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
+     synthesizedRFParams] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
+            conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+            RGCRFPositionsMicrons, midgetRGCconnectionMatrix, ...
+            runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons);
+        
+    
+    % Visualize the generated retinal 2D RFs (video)
+    plotlabOBJ = setupPlotLab();
+   
+    outputFile = sprintf('%s_RFexamples',runParams.outputFile);
+    visualizeSubregions(1,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
+        synthesizedRFParams.rgcIndices,  synthesizedRFParams.eccDegs, ...
+        synthesizedRFParams.centerPositionMicrons, synthesizedRFParams.retinal.centerRadiiDegs, ...
+        synthesizedRFParams.retinal.surroundRadiiDegs,...
+        conePositionsMicrons, coneSpacingsMicrons,  coneTypes, ...
+        plotlabOBJ, outputFile, runParams.exportsDir);
+end
+
+
+function visualizeCenterConnections(midgetRGCconnectionMatrix, RGCRFPositionsMicrons,...
+            conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+            coneMosaicEccDegs, subregionToVisualize, outputFile, exportsDir)
     %Visualize the connections to the RF centers
     zLevels = [0.3 1];
     whichLevelsToContour = [1];
     displayEllipseInsteadOfContour = false;
-    subregionToVisualize.center = round(runParams.rgcMosaicPatchEccMicrons);
-    subregionToVisualize.size = 1.5*runParams.rgcMosaicPatchSizeMicrons;
-
+    
     figHeightInches = 15;
     plotlabOBJ = plotlab();
     plotlabOBJ.applyRecipe(...
@@ -36,22 +68,43 @@ function runPhaseX(runParams)
     visualizeRFs(coneMosaicEccDegs, zLevels, whichLevelsToContour, ...
              midgetRGCconnectionMatrix, RGCRFPositionsMicrons,...
              conePositionsMicrons, coneSpacingsMicrons, coneTypes, subregionToVisualize, ...
-             displayEllipseInsteadOfContour, plotlabOBJ, runParams.outputFile,runParams.exportsDir);
+             displayEllipseInsteadOfContour, plotlabOBJ,  outputFile, exportsDir);
          
 end
 
-function [theConeMosaic, coneMosaicEccDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes] = ...
-    generateRegularHexMosaicPatch(eccentricityMicrons, sizeMicrons, extraMicronsForSurroundCones)
+function extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentricityMicrons, sizeMicrons)
+    w = WatsonRGCModel('generateAllFigures', false);
+    posUnits = 'mm'; densityUnits = 'mm^2';
+    coneEccMaxMicrons = max(abs([eccentricityMicrons+sizeMicrons/2; eccentricityMicrons-sizeMicrons/2]));
+    
+    % Cone spacing at the most eccentric position
+    coneSpacingMicronsMax = 1e3 * w.coneRFSpacingAndDensityAtRetinalPositions(...
+        coneEccMaxMicrons*1e-3, 'right', posUnits, densityUnits, ...
+        'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
+ 
+    % Compute RF params using the CronerKaplan model
+    ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
+    synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(coneSpacingMicronsMax, coneEccMaxMicrons);
+    retinalSurroundRadiusDegsAt1overE = synthesizedRFParams.retinal.surroundRadiiDegs;
+    extraDegsForSurroundCones = retinalSurroundRadiusDegsAt1overE*2;
+    extraMicronsForSurroundCones = ceil(WatsonRGCModel.sizeDegsToSizeRetinalMicrons(extraDegsForSurroundCones, synthesizedRFParams.eccDegs));
+end
+
+function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes] = ...
+    generateRegularHexMosaicPatch(eccentricityMicrons, sizeMicrons)
+
+    % Estimate max RF surround radius
+    extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentricityMicrons, sizeMicrons);
 
     % Compute the cone mosaic FOV in degrees
     coneMosaicCenterPositionMM = eccentricityMicrons * 1e-3;
-    regHexConeMosaicPatchSizeMicrons = sizeMicrons + 2*extraMicronsForSurroundCones*[1 1];
-    coneMosaicEccDegs = sqrt(sum((WatsonRGCModel.rhoMMsToDegs(coneMosaicCenterPositionMM)).^2,2));
-    fovDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(regHexConeMosaicPatchSizeMicrons, coneMosaicEccDegs);
+    coneMosaicSizeMicrons = sizeMicrons + 2*extraMicronsForSurroundCones*[1 1];
+    coneMosaicEccDegs = WatsonRGCModel.rhoMMsToDegs(coneMosaicCenterPositionMM);
+    fovDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(coneMosaicSizeMicrons, sqrt(sum((coneMosaicCenterPositionMM*1e3).^2,2.0)));
     
     % Determine the median cone spacing with the patch
     whichEye = 'right';
-    coneSpacingMicrons = medianConeSpacingInPatch(whichEye, eccentricityMicrons, regHexConeMosaicPatchSizeMicrons);
+    coneSpacingMicrons = medianConeSpacingInPatch(whichEye, eccentricityMicrons, coneMosaicSizeMicrons);
     
     % Generate reg hex cone mosaic
     resamplingFactor = 5;

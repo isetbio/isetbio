@@ -1,4 +1,4 @@
-function coneSpacingMicrons = medianConeSpacingInPatch(whichEye, patchEccMicrons, patchSizeMicrons)
+function [coneSpacingMicrons, coneSpacingMaxMicrons] = medianConeSpacingInPatch(whichEye, patchEccMicrons, patchSizeMicrons)
 
     w = WatsonRGCModel('generateAllFigures', false);
     posUnits = 'mm'; densityUnits = 'mm^2';
@@ -25,6 +25,7 @@ function coneSpacingMicrons = medianConeSpacingInPatch(whichEye, patchEccMicrons
     
     % Determine the median cone spacing with the patch
     coneSpacingMicrons = median(coneSpacingMicronsList);
+    coneSpacingMaxMicrons = max(coneSpacingMicronsList);
     fprintf('Cone spacing (patch center): %2.1f microns, median over patch: %2.1f\n', ...
         coneSpacingMicronsAtPatchCenter, coneSpacingMicrons);
 end
