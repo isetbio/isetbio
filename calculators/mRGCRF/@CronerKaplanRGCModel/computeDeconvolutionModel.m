@@ -96,6 +96,7 @@ end
 
 function [fittedParams, fittedParamsSE] = nonLinearFitData(x,y, modelFunction, initialParams)
     opts.RobustWgtFun = 'talwar';
+    opts.MaxIter = 1000;
     [fittedParams,~,~,varCovarianceMatrix,~] = nlinfit(x,y,modelFunction,initialParams,opts);
     % standard error of the mean
     fittedParamsSE = sqrt(diag(varCovarianceMatrix));

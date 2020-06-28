@@ -1,15 +1,13 @@
-function [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc)
+function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, desiredPupilDiamMM, wavelengthsListToCompute, micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc)
 
     subtractCentralRefraction = true;
-    
     measurementWavelength = 550;
-    wavelengthsListToCompute = 550;
-   
-    desiredPupilDiamMM = 3;
     
-    % For monkey retina
-    micronsPerDegree = 300;
-        
+    computeMicronsPerDegreeAtEachEccentricity = false;
+    if (isempty(micronsPerDegree))
+        computeMicronsPerDegreeAtEachEccentricity = true;
+    end
+    
     for subjIdx = 1:numel(goodSubjects)
         
         subjectIndex = goodSubjects(subjIdx);
@@ -19,24 +17,42 @@ function [hEcc, vEcc, thePSFs, thePSFsupportDegs] = psfAtEccentricity(goodSubjec
        for eccYIndex = 1:numel(vEcc)
        for eccXIndex = 1:numel(hEcc)
 
-           fprintf('Computing PSF for subject %d, ecc = %f %f\n', subjectIndex, hEcc(eccXIndex), vEcc(eccYIndex));
+           fprintf('Computing PSF for subject %d at ecc (x,y) = (%2.1f, %2.1f) degs\n', subjectIndex, hEcc(eccXIndex), vEcc(eccYIndex));
            zCoeffs = zeros(1,21);
            zCoeffs(zCoeffIndices+1) = squeeze(zMap(eccYIndex, eccXIndex,:));
             
+           % Compute microns per degree at this eccentricity
+           if (computeMicronsPerDegreeAtEachEccentricity)
+               eccRadius = sqrt(hEcc(eccXIndex)^2+vEcc(eccYIndex)^2);
+               micronsPerDegree = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(1.0, eccRadius);
+           end
+           
            % Generate oi at this eccentricity
            theOI = makeCustomOI(zCoeffs, pupilDiamMM, measurementWavelength, ...
                 desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree);
             
            % Extract PSF
-           [thePSF,thePSFsupportDegs] = extractPSFfromOI(theOI, wavelengthsListToCompute);
-            
+           for wIndex = 1:numel(wavelengthsListToCompute)
+                [thePSF(:,:,wIndex),thePSFsupportDegs] = extractPSFfromOI(theOI, wavelengthsListToCompute(wIndex));
+           end
+           
            % Allocate memory
            if (subjIdx*eccYIndex*eccXIndex == 1)
-                thePSFs = zeros(numel(goodSubjects), numel(vEcc), numel(hEcc), size(thePSF,1), size(thePSF,2));
+                if (numel(wavelengthsListToCompute)==1)
+                    thePSFs = zeros(numel(goodSubjects), numel(vEcc), numel(hEcc), size(thePSF,1), size(thePSF,2));
+                else
+                    thePSFs = zeros(numel(goodSubjects), numel(vEcc), numel(hEcc), size(thePSF,1), size(thePSF,2), size(thePSF,3));
+                end
+                theOIs =  cell(numel(goodSubjects), numel(vEcc), numel(hEcc));
            end
             
-           % Save PSF
-           thePSFs(subjIdx, eccYIndex, eccXIndex,:,:) = thePSF;
+           % Save PSF and the OI
+           if (numel(wavelengthsListToCompute)==1)
+                thePSFs(subjIdx, eccYIndex, eccXIndex,:,:) = squeeze(thePSF(:,:,1));
+           else
+               thePSFs(subjIdx, eccYIndex, eccXIndex,:,:,:) = thePSF;
+           end
+           theOIs{subjIdx, eccYIndex, eccXIndex} = theOI;
        end
        end
             

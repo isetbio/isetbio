@@ -67,8 +67,13 @@ function displayPSFs()
         deltaEcc = 5;
 
         % Compute the PSFs at the desired eccentricities
+        pupilDiameterMM = 3.0;
+        wavelengthsListToCompute = [550];
+        micronsPerDegree = 300; % for monkey retina
+        wavefrontSpatialSamples = 1001;
         [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(goodSubjects, ...
-            imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
+            imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, ...
+            micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc);
 
         for subjectIndex = 1:numel(goodSubjects)
             hFig = figure(goodSubjects(subjectIndex)); clf;
