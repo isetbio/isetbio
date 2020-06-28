@@ -300,31 +300,37 @@ methods
         % differs from realistic.
         %
         % [Note: JNM - 5/14/19 the human eye has retinaDistance parameters,
-        % realistic does not. Changing type to see if call for ChessSet
-        % continues failing.]
+        % realistic does not.]
         if ~strcmp(thisR.get('camera subtype'), 'realisticEye')
             thisR.camera = piCameraCreate('humaneye');
         end
 
-        % I am not sure why we are duplicating the recipe properties here.
-        % We should add extra properties, but we should not duplicate.
+        % Set up units and working directory.  These should go away
+        obj.workingDir = thisR.get('output dir');
+        obj.pbrtFile   = thisR.get('input basename');
+        
+        % We are duplicating the recipe properties here. We should add
+        % extra properties, but we should not duplicate.  These changes are
+        % in preparation for getting rid of the extra parameters
         obj.name = p.Results.name;
         obj.modelName = 'Navarro'; % Default
-        obj.resolution = thisR.film.xresolution.value;
-        obj.retinaDistance = thisR.camera.retinaDistance.value;
-        obj.pupilDiameter = thisR.camera.pupilDiameter.value;
+        obj.resolution     = thisR.get('film xresolution'); %thisR.film.xresolution.value;
+        obj.retinaDistance = thisR.get('retina distance');  % thisR.camera.retinaDistance.value;
+        obj.pupilDiameter  = thisR.get('pupil diameter'); % thisR.camera.pupilDiameter.value;
 
-        obj.retinaDistance = thisR.camera.retinaDistance.value;
-        obj.retinaRadius = thisR.camera.retinaRadius.value;
+        obj.retinaDistance = thisR.get('retina distance'); % thisR.camera.retinaDistance.value;
+        obj.retinaRadius   = thisR.get('retina radius'); % thisR.camera.retinaRadius.value;
 
-        retinaSemiDiam = thisR.camera.retinaSemiDiam.value;
+        retinaSemiDiam = thisR.get('retina semi diam'); % thisR.camera.retinaSemiDiam.value;
         obj.fov = 2 * atand(retinaSemiDiam / obj.retinaDistance);
 
         % There's no variable for accommodation but we can infer it
         % from the name of the lens. We assume the naming conventions
         % is "%s_%f.dat" This is not foolproof, so maybe we can think
         % of a more robust way to do this in the future?
-        obj.lensFile = thisR.camera.lensfile.value;
+        obj.lensFile = thisR.get('lens file'); % thisR.camera.lensfile.value;
+        
+        % What is this about?
         if(strcmp(obj.lensFile, ''))
             obj.accommodation = [];
         else
@@ -333,7 +339,7 @@ methods
             obj.accommodation = str2double(value{1});
         end
 
-        obj.numRays = thisR.sampler.pixelsamples.value;
+        obj.numRays = thisR.get('rays per pixel'); % thisR.sampler.pixelsamples.value;
 
         % These two are often empty, so let's do checks here. However, 
         % I should find a more permanant solution to cases like these.
@@ -341,21 +347,16 @@ methods
         % Maybe in piGetRenderRecipe we should put in the default
         % values if any of these rendering options are missing
         % (e.g. if Renderer is missing, put in Renderer 'sampler'.)
-        if(isfield(thisR.integrator, 'maxdepth'))
-            obj.numBounces = thisR.integrator.maxdepth.value;
-        else
-            obj.numBounces = 1;
-        end
-        if(isfield(thisR.renderer, 'nWaveBands'))
-            obj.numCABands = thisR.renderer.nWaveBands.value;
-        else
-            obj.numCABands = 0;
-        end
+        obj.numBounces = thisR.get('nbounces'); % thisR.integrator.maxdepth.value;
+        
+        % More duplicates
+        obj.numCABands = thisR.get('n wave bands'); % thisR.renderer.nWaveBands.value;
 
+        % More duplicates
         if(~isempty(thisR.lookAt))
-            obj.eyePos = thisR.lookAt.from;
-            obj.eyeTo = thisR.lookAt.to;
-            obj.eyeUp = thisR.lookAt.up;
+            obj.eyePos = thisR.get('from'); % thisR.lookAt.from;
+            obj.eyeTo  = thisR.get('to');   % thisR.lookAt.to;
+            obj.eyeUp  = thisR.get('up');   % thisR.lookAt.up;
         end
 
         obj.recipe = thisR;

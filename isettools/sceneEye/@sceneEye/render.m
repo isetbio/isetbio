@@ -32,6 +32,9 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 % See also
 %    piRender
 
+%% Programming
+%  Why does this return a scene sometimes and an oi sometimes?
+%  
 
 %%
 p = inputParser;
@@ -50,13 +53,13 @@ recipe = objNew.recipe; % Update the recipe within the sceneEye object.
 %% Render the pbrt file using docker
 %scaleFactor = [];
 if reuse
-    [ieObject, terminalOutput] = piRender(recipe, 'version', 3, ...
-        'reuse', true);
+    [ieObject, terminalOutput] = piRender(recipe, 'reuse', true);
 else
-    [ieObject, terminalOutput] = piRender(recipe, 'version', 3);
+    [ieObject, terminalOutput] = piRender(recipe);
 end
 
-%% Set OI parameters correctly:
+%% If we are not in debug mode, set OI parameters.  
+% I guess if we are in debug mode, we return a scene.
 if(~obj.debugMode)
     ieObject = obj.setOI(ieObject, 'scaleIlluminance', scaleIlluminance);
 end
