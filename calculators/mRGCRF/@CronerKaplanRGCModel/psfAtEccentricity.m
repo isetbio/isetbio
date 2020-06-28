@@ -94,16 +94,19 @@ function theOI = makeCustomOI(zCoeffs, measPupilDiameterMM, measWavelength, ...
         computePSFandOTF(zCoeffs, ...
              wavelengthsListToCompute, wavefrontSpatialSamples, ...
              measPupilDiameterMM, desiredPupilDiamMM, ...
-             measWavelength, showTranslation, 'doNotZeroCenterPSF', true);
+             measWavelength, showTranslation, ...
+             'doNotZeroCenterPSF', true, ...
+             'micronsPerDegree', micronsPerDegree);
         
     for waveIndex = 1:numel(wavelengthsListToCompute)
         theWaveOTF = squeeze(theOTF(:,:,waveIndex));
         theOTF(:,:,waveIndex) = ifftshift(theWaveOTF);
     end
     
-    theOI = oiCreate('wvf human', desiredPupilDiamMM,[],[], micronsPerDegree);
+    theOI = oiCreate('wvf human', desiredPupilDiamMM,[],wavelengthsListToCompute, micronsPerDegree);
     optics = oiGet(theOI,'optics');
     optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
+    optics = opticsSet(optics, 'wave', wavelengthsListToCompute);
     
     % Update optics with new OTF data
     xSfCyclesPerMM = 1000*xSfCyclesDeg / micronsPerDegree;
