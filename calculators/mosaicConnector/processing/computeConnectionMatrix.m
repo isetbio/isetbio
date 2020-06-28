@@ -148,7 +148,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
         performPass1(conePositionsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons);
     
     % Plot ecc of orphanRGCs
-    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 1);
+    %plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 1);
     
     
     % Second pass. For RGCs with several (> 4) cone inputs, see if we can
@@ -160,7 +160,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
     conesNum = size(connectionMatrix,1);
     
     % Plot ecc of orphanRGCs
-    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 2);
+    %plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 2);
     
     % Third pass - Maximize the frequency by which cones to 2-input RGCs have matched types
     [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
@@ -168,7 +168,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
         connectionMatrix, numberOfConeInputs, maximizeConeSpecificity);
     
     % Plot ecc of orphanRGCs
-    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 3);
+    %plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 3);
     
     % Fourth pass - In 3-input RGCs, see if we can re-assign 1 of
     % these inputs to an nearby RGC with only 1 cone input, ensuring that the cone types match
@@ -177,7 +177,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
         connectionMatrix, numberOfConeInputs, maximizeConeSpecificity);
     
     % Plot ecc of orphanRGCs
-    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 4);
+    %plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 4);
     
     % Final phase. For RGCs with several (> 5) cone inputs, see if we can
     % assign some of the most distant inputs to nearby RGCs with less cone inputs
@@ -192,7 +192,7 @@ function [connectionMatrix, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
     end
     
     % Plot ecc of orphanRGCs
-    plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 5);
+    %plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, 5);
     
     % Remove all remaining orphan RGCs
     orphanRGCindices = find(numberOfConeInputs == 0);
@@ -622,7 +622,7 @@ function [connectionMatrix, numberOfConeInputs] = ...
     end % phase repeat
     
     fprintf('\nCompleted successfully for %d multi (>=4) -input RGCs in %f minutes\n', sum(conesReassignedInPhase), toc/60);
-    conesReassignedInPhase
+    %conesReassignedInPhase
 end
 
 function plotEccOfOrphanRGCs(numberOfConeInputs, RGCRFPositionsMicrons, subplotIndex)
