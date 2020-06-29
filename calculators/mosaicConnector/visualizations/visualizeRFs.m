@@ -59,14 +59,14 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
         end
         
         C = contourc(xAxis, yAxis,theRF, zLevels);
-        renderContourPlot(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse);
+        fillRFoutline(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse);
     
         indicesOfConeInputsToThisRGC = find(connectivityVector>0);
         
         showConnectedConePolygon = true;
         if (showConnectedConePolygon)
             % Connected cones
-            displayConnectedConesPolygon(indicesOfConeInputsToThisRGC, conePositionsMicrons);
+            displayConnectedConesPolygon(theAxesGrid, indicesOfConeInputsToThisRGC, conePositionsMicrons);
         end
         
         if (mod(RGCindex-1,10) == 9)
@@ -86,9 +86,9 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     LconeIndices = find(coneTypes == LCONE_ID);
     MconeIndices = find(coneTypes == MCONE_ID);
     SconeIndices = find(coneTypes == SCONE_ID);
-    scatter(conePositionsMicrons(LconeIndices,1), conePositionsMicrons(LconeIndices,2), 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
-    scatter(conePositionsMicrons(MconeIndices,1), conePositionsMicrons(MconeIndices,2), 'MarkerEdgeColor', [0 0.7 0], 'MarkerFaceColor', [0.5 0.9 0.5]);
-    scatter(conePositionsMicrons(SconeIndices,1), conePositionsMicrons(SconeIndices,2), 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1.0]);
+    scatter(theAxesGrid,conePositionsMicrons(LconeIndices,1), conePositionsMicrons(LconeIndices,2), 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
+    scatter(theAxesGrid,conePositionsMicrons(MconeIndices,1), conePositionsMicrons(MconeIndices,2), 'MarkerEdgeColor', [0 0.7 0], 'MarkerFaceColor', [0.5 0.9 0.5]);
+    scatter(theAxesGrid,conePositionsMicrons(SconeIndices,1), conePositionsMicrons(SconeIndices,2), 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1.0]);
     
     
     conesNum = numel(LconeIndices)+numel(MconeIndices);
@@ -120,64 +120,3 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     end
 end
 
-function  [semiAxes, rfCenter] = renderContourPlot(theAxes, C, zLevels, whichLevelsToContour, fitEllipse )
-    k = 1;
-    contoursNum = 0;
-    while k < size(C,2)
-        level = C(1,k);
-        points = C(2,k);
-        if (level == zLevels(whichLevelsToContour(1)))
-            edgeAlpha = 0.8;
-            faceAlpha = 0.4;
-        elseif (ismember(level, zLevels(whichLevelsToContour)))
-            edgeAlpha = 0/8;
-            faceAlpha = 0.4+(level)*0.05;
-        else
-            % skip this contour
-            k = k+points+1;
-            continue;
-        end
-        
-        xRGCEnsembleOutline = C(1,k+(1:points));
-        yRGCEnsembleOutline = C(2,k+(1:points));
-       
-        if (fitEllipse)
-            [xRGCEnsembleOutline,  yRGCEnsembleOutline, ...
-                semiAxes, rfCenter, noFit] = fitEllipseToContour(xRGCEnsembleOutline,  yRGCEnsembleOutline);
-        else
-            semiAxes = [nan nan];
-            rfCenter = [nan nan];
-        end
-        
-        faceColor = [0.3 0.3 0.3]-level*0.05;
-        edgeColor = [0.2 0.2 0.2];
-        patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceColor, edgeColor, faceAlpha, edgeAlpha);
-
-        k = k+points+1;
-        contoursNum = contoursNum + 1;
-    end
-end
-
-function patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceColor, edgeColor, faceAlpha, edgeAlpha)
-    v = [xRGCEnsembleOutline(:) yRGCEnsembleOutline(:)];
-    f = 1:numel(xRGCEnsembleOutline);
-    patch(theAxes, 'Faces', f, 'Vertices', v, 'FaceColor', faceColor, ...
-            'FaceAlpha', faceAlpha, 'EdgeColor', edgeColor, ... 
-           'EdgeAlpha', edgeAlpha, 'LineWidth', 1.0);
-end
-
-function displayConnectedConesPolygon(indicesOfConeInputs, conePositionsMicrons)
-    % Polygon connecting input cones
-    xx = conePositionsMicrons(indicesOfConeInputs,1);
-    yy = conePositionsMicrons(indicesOfConeInputs,2);
-    xo = mean(xx);
-    yo = mean(yy);
-    dx = xx-xo;
-    dy = yy-yo;
-    [~,idx] = sort(unwrap(atan2(dy,dx)));
-    xx = xx(idx);
-    yy = yy(idx);
-    xx(end+1) = xx(1);
-    yy(end+1) = yy(1);
-    plot(xx,yy, ':', 'Color', [0.4 0.4 0.4], 'LineWidth', 1.0);
-end

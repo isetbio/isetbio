@@ -64,8 +64,7 @@ function [connectionMatrixCenter, connectionMatrixSurround, ...
         % Find S-cones, and set their weight to 0, as H1 horizontal cells
         % (which make the surrounds of mRGCs) do not contact S-cones.
         sConeIndices = find(coneTypes(coneIndicesConnectedToSurround) == 4);
-        weights(coneIndicesConnectedToSurround(sConeIndices)) = 0.00001;
-        
+        weights(coneIndicesConnectedToSurround(sConeIndices)) = 0.000001;
         weightsS = weights(coneIndicesConnectedToSurround) * rgcSurroundPeakSensivity;
  
         % Acummulate sparse matrix indices for the surround
@@ -89,11 +88,28 @@ function [connectionMatrixCenter, connectionMatrixSurround, ...
         rgcIndicesVectorC = cat(1, rgcIndicesVectorC, repmat(rgcIndex, [numel(coneIndicesConnectedToCenter) 1]));
         coneIndicesVectorC = cat(1, coneIndicesVectorC, coneIndicesConnectedToCenter);
         weightsVectorC = cat(1, weightsVectorC, weightsC);
-        
     end
     
+    % Form sparse matrices with weights
     connectionMatrixSurround = sparse(coneIndicesVectorS', rgcIndicesVectorS', weightsVectorS', conesNum, rgcsNum);
     connectionMatrixCenter = sparse(coneIndicesVectorC', rgcIndicesVectorC', weightsVectorC', conesNum, rgcsNum);
+
+    % Find indices of RGCs within the [rgcMosaicPatchEccMicrons,
+    % rgcMosaicPatchSizeMicrons] region, which have > 0 inputs to their
+    % center
+    rgcsNum = size(connectionMatrixCenter,2);
+    rgcIndicesWithNonZeroInputs = [];
+    for mRGCindex = 1:rgcsNum
+        weights = full(connectionMatrixCenter(:,mRGCindex));
+        centerIndices = find(weights>0);
+        if (numel(centerIndices) > 0)
+            rgcIndicesWithNonZeroInputs = cat(2,rgcIndicesWithNonZeroInputs, mRGCindex);
+        end
+    end % mRGCindex
+    
+    % Only keep weights for RGCs within the [rgcMosaicPatchEccMicrons, rgcMosaicPatchSizeMicrons] region
+    connectionMatrixCenter = connectionMatrixCenter(:, rgcIndicesWithNonZeroInputs);
+    connectionMatrixSurround = connectionMatrixSurround(:, rgcIndicesWithNonZeroInputs);
 end
 
 

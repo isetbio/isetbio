@@ -14,7 +14,6 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
          conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
          orphanRGCpolicy, maximizeConeSpecificity, visualizeMosaicsToBeConnected);
      
-    
     % Visualize connections to the RF centers
     visualizeRFcenterTiling = ~true;
     if (visualizeRFcenterTiling)
@@ -36,8 +35,8 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
     % The midget RGC mosaic object (for now just the cone weights to the
     % center and surround regions)
     theMidgetRGCmosaic = struct(...
-        'centerWeights', midgetRGCconnectionMatrixCenter, ... % sparse matrix of weights for center cone signals, indexed according to the serialization order of the cone mosaic
-        'surroundWeights', midgetRGCconnectionMatrixCenter);  % sparse matrix of weights for surround cone signals, indexed according to the serialization order of the cone mosaic
+        'centerWeights', midgetRGCconnectionMatrixCenter, ...   % sparse matrix of weights for center cone signals, indexed according to the serialization order of the cone mosaic
+        'surroundWeights', midgetRGCconnectionMatrixSurround);  % sparse matrix of weights for surround cone signals, indexed according to the serialization order of the cone mosaic
     
     visualizeRFs = ~true;
     if (visualizeRFs)
@@ -151,7 +150,7 @@ function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix
 
     % Crop midget mosaic to the size and position of the cone mosaic, leaving enough space for the surround cones
   	mRGCRFroi.center = 0.5*(min(conePositionsMicrons, [], 1) + max(conePositionsMicrons, [], 1));
-     mRGCRFroi.size = max(conePositionsMicrons, [], 1) - min(conePositionsMicrons, [], 1);
+    mRGCRFroi.size = max(conePositionsMicrons, [], 1) - min(conePositionsMicrons, [], 1);
     [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios] = ...
         cropRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons,  desiredConesToRGCratios, mRGCRFroi);
     

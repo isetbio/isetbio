@@ -63,7 +63,7 @@ end
 function [thePSF, thePSFsupportDegs] = extractPSFfromOI(theOI, targetWavelength)
     optics = oiGet(theOI, 'optics');
 
-    wavelengthSupport = opticsGet(optics, 'wave');
+    wavelengthSupport = opticsGet(optics, 'otfwave');
     [~,idx] = min(abs(wavelengthSupport-targetWavelength));
     targetWavelength = wavelengthSupport(idx);
 
@@ -105,8 +105,8 @@ function theOI = makeCustomOI(zCoeffs, measPupilDiameterMM, measWavelength, ...
     
     theOI = oiCreate('wvf human', desiredPupilDiamMM,[],wavelengthsListToCompute, micronsPerDegree);
     optics = oiGet(theOI,'optics');
-    optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
     optics = opticsSet(optics, 'wave', wavelengthsListToCompute);
+    optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
     
     % Update optics with new OTF data
     xSfCyclesPerMM = 1000*xSfCyclesDeg / micronsPerDegree;
