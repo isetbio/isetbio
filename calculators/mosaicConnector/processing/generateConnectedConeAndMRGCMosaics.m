@@ -1,6 +1,6 @@
 function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams)
     % STEP 1. Generate a regular hex cone mosaic patch with the desired eccentricity and size
-    [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes] = ...
+    [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
         generateRegularHexMosaicPatch(...
             mosaicParams.rgcMosaicPatchEccMicrons, ...
             mosaicParams.rgcMosaicPatchSizeMicrons);
@@ -36,7 +36,8 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
     % center and surround regions)
     theMidgetRGCmosaic = struct(...
         'centerWeights', midgetRGCconnectionMatrixCenter, ...   % sparse matrix of weights for center cone signals, indexed according to the serialization order of the cone mosaic
-        'surroundWeights', midgetRGCconnectionMatrixSurround);  % sparse matrix of weights for surround cone signals, indexed according to the serialization order of the cone mosaic
+        'surroundWeights', midgetRGCconnectionMatrixSurround, ...  % sparse matrix of weights for surround cone signals, indexed according to the serialization order of the cone mosaic
+        'extraMicronsForSurroundCones', extraMicronsForSurroundCones);
     
     visualizeRFs = ~true;
     if (visualizeRFs)
@@ -98,7 +99,7 @@ function extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentr
     extraMicronsForSurroundCones = ceil(WatsonRGCModel.sizeDegsToSizeRetinalMicrons(extraDegsForSurroundCones, synthesizedRFParams.eccDegs));
 end
 
-function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes] = ...
+function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
     generateRegularHexMosaicPatch(eccentricityMicrons, sizeMicrons)
 
     % Estimate max RF surround radius

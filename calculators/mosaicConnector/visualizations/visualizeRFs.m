@@ -59,7 +59,9 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
         end
         
         C = contourc(xAxis, yAxis,theRF, zLevels);
-        fillRFoutline(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse);
+        faceAlpha = 0.4;
+        edgeAlpha = 0.8;
+        fillRFoutline(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse, faceAlpha, edgeAlpha);
     
         indicesOfConeInputsToThisRGC = find(connectivityVector>0);
         

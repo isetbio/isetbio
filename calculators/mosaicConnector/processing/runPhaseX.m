@@ -1,12 +1,18 @@
 function runPhaseX(runParams)
 
-    photocurrentResponseDataFile = 'photocurrentResponses2.mat';
+    sfsExamined = [0.5 1.0 2.0 4.0 8.0 16.0];
+    testSpatialFrequencyCPD = 4.0;
+    photocurrentResponseDataFile = sprintf('LconeIsolatingResponses_%2.1fCPD', testSpatialFrequencyCPD);
     
     recomputePhotocurrents = ~true;
     if (recomputePhotocurrents)
+        testLMScontrast = [0.1 0.0 0.0];
         instancesNum = 2;
-        stimDurationSeconds = 0.1;
-        computePhotocurrents(runParams, instancesNum, stimDurationSeconds, photocurrentResponseDataFile);
+        stimDurationSeconds = 0.5;
+        fprintf('Will compute %d instances, each %2.1f seconds long\n', ...
+            instancesNum, stimDurationSeconds);
+        computePhotocurrents(runParams, instancesNum, stimDurationSeconds, ...
+            testSpatialFrequencyCPD, testLMScontrast, photocurrentResponseDataFile);
     else
         computeRGCresponses(runParams, photocurrentResponseDataFile);
     end
@@ -14,119 +20,97 @@ end
 
 function computeRGCresponses(runParams, photocurrentResponseDataFile)
 
-    mFile = matfile(photocurrentResponseDataFile, 'Writable', false);
+    mFile = matfile(sprintf('%s.mat',photocurrentResponseDataFile), 'Writable', false);
+    
     fprintf('\nImporting the cone mosaic ...');
     theConeMosaic = mFile.theConeMosaic;
     fprintf('Done !\n');
+    
     fprintf('\nImporting the RGC mosaic ...');
     theMidgetRGCmosaic = mFile.theMidgetRGCmosaic;
     fprintf('Done !\n');
-    fprintf('\nVisualizing the RGC mosaic ...');
-    visualizeConeAndRGCmosaics(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, theMidgetRGCmosaic);
-    fprintf('Done !\n');
-    pause
     
-    theOISequence = mFile.theOIsequence;
-    thePhotocurrents = mFile.photocurrents;
-    
-    size(photocurrents)
-    class(photocurrents)
-end
-
-function visualizeConeAndRGCmosaics(theConeMosaic, eccentricityMicrons, sizeMicrons, theMidgetRGCmosaic)
-    global LCONE_ID
-    global MCONE_ID
-    global SCONE_ID
-    
-    % Retrieve cone positions (microns), cone spacings, and cone types
-    cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
-    
-    % Cone positions: add the mosaic center so as to align with ecc-varying full mRGC mosaic
-    conePositionsMicrons = bsxfun(@plus, cmStruct.coneLocsMicrons, eccentricityMicrons);
-   
-    % Cone types
-    coneTypes = cmStruct.coneTypes;
-    coneDiameterMicrons = cmStruct.coneApertures * theConeMosaic.micronsPerDegree;
-    coneSpacingsMicrons = 1.0/0.7 * coneDiameterMicrons;
-    
-    conesNum = size(theMidgetRGCmosaic.centerWeights,1);
-    rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
-    
-    rgcPos = zeros(rgcsNum,2);
-
-    % Sampling for contours
-    deltaX = 0.25;
-    xAxis = (eccentricityMicrons(1)-sizeMicrons(1)/2): deltaX: (eccentricityMicrons(1)+sizeMicrons(1)/2);
-    yAxis = (eccentricityMicrons(2)-sizeMicrons(2)/2): deltaX: (eccentricityMicrons(2)+sizeMicrons(2)/2);
-    [X,Y] = meshgrid(xAxis,yAxis);
-    
-    hFig = figure(99); clf;
-    theAxesGrid = plotlab.axesGrid(hFig, ...
-            'leftMargin', 0.05, ...
-            'bottomMargin', 0.05, ...
-            'rightMargin', 0.03, ...
-            'topMargin', 0.1);
+    plotlabOBJ = plotlab();
+    plotlabOBJ.applyRecipe(...
+            'colorOrder', [1 0 0; 0 0 1], ...
+            'axesBox', 'off', ...
+            'axesTickDir', 'in', ...
+            'renderer', 'painters', ...
+            'lineMarkerSize', 6, ...
+            'axesTickLength', [0.01 0.01], ...
+            'legendLocation', 'SouthWest', ...
+            'figureWidthInches', 30, ...
+            'figureHeightInches', 14);
         
-    theAxesGrid = theAxesGrid{1,1};
-    xLims = [xAxis(1) xAxis(end)];
-    yLims = [yAxis(1) yAxis(end)];
-    ylabel(theAxesGrid, 'microns');
-    set(theAxesGrid, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
-    hold(theAxesGrid, 'on');
-    colormap(theAxesGrid, brewermap(512, 'greys'));
-    
-    % Display cones
-    LconeIndices = find(coneTypes == LCONE_ID);
-    MconeIndices = find(coneTypes == MCONE_ID);
-    SconeIndices = find(coneTypes == SCONE_ID);
-    scatter(theAxesGrid,conePositionsMicrons(LconeIndices,1), conePositionsMicrons(LconeIndices,2), 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
-    scatter(theAxesGrid,conePositionsMicrons(MconeIndices,1), conePositionsMicrons(MconeIndices,2), 'MarkerEdgeColor', [0 0.7 0], 'MarkerFaceColor', [0.5 0.9 0.5]);
-    scatter(theAxesGrid,conePositionsMicrons(SconeIndices,1), conePositionsMicrons(SconeIndices,2), 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1.0]);
-    
-    
-    for mRGCindex = 1:rgcsNum
-        centerWeights = full(squeeze(theMidgetRGCmosaic.centerWeights(:, mRGCindex)));
-        centerIndices = find(centerWeights>0);
-        
-        % Use binary weights for visualization
-        centerWeightsForVisualization = centerWeights;
-        centerWeightsForVisualization(centerIndices) = 1;
-        
-        surroundWeights = full(theMidgetRGCmosaic.surroundWeights(:, mRGCindex));
-        surroundIndices = find(surroundWeights>0);
-        
-        % Generate RF centers of RGCs based on cone positions and connection matrix
-        theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(...
-            centerWeightsForVisualization, conePositionsMicrons, coneSpacingsMicrons, X,Y);
-        
-        if (isempty(theRF))
-            fprintf(2,'No cone inputs to this RF -> No visualization\n');
-            continue;
-        end
-        
+    % Visualize the mosaics
+    visualizeMosaics = true;
+    if (visualizeMosaics)
+        fprintf('\nVisualizing the RGC mosaic with the optical image ...');
+        theOISequence = mFile.theOIsequence;
+        theFirstOI = theOISequence.frameAtIndex(1);
         zLevels = [0.3 1];
-        whichLevelsToContour = 1;
-        fitEllipse = false;
-        
-        C = contourc(xAxis, yAxis, theRF, zLevels);
-        fillRFoutline(theAxesGrid, C, zLevels, whichLevelsToContour, fitEllipse);
-        displayConnectedConesPolygon(theAxesGrid, centerIndices, conePositionsMicrons);
-        
-        drawnow;
-        
-        fprintf('mRGC %d has %d inputs in its center and %d inputs in its surround\n', ...
-            mRGCindex, numel(centerIndices), numel(surroundIndices));
-        
-        rgcPos(mRGCindex,:) = mean(conePositionsMicrons(centerIndices,:),1);
-        
-    end % mRGCindex
+        hFig = visualizeConeAndRGCmosaicsWithRetinalImage(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
+            theMidgetRGCmosaic, zLevels, 'centers', theFirstOI);
+        fprintf('Done !\n');
+    end
+    plotlabOBJ.exportFig(hFig, 'pdf', sprintf('%s.mat',photocurrentResponseDataFile), pwd());
+
+
+    thePresynapticResponses = mFile.isomerizations;
+    %thePresynapticResponses = mFile.photocurrents;
     
-    figure(100); clf;
-    plot(rgcPos(:,1), rgcPos(:,2), 'ko'); hold on
+    % Compute responses
+    fprintf('\nComputing RGC responses ...');
+    centerResponses = computeSubregionResponses(theMidgetRGCmosaic.centerWeights, thePresynapticResponses);
+    surroundResponses = computeSubregionResponses(theMidgetRGCmosaic.surroundWeights, thePresynapticResponses);
+    fprintf('Done !\n');
+    
+    % Normalize separately for center/surround
+    centerResponses = centerResponses / max(centerResponses(:));
+    surroundResponses = surroundResponses / max(surroundResponses(:));
+    
+    % Compute time axis
+    timeAxis = (1:size(centerResponses,3))*theConeMosaic.integrationTime;
+    
+%     hFig = figure(98); clf;
+%     plotWidthMicrons = 30;
+%     plotHeightMicrons = 25;
+%     
+%     rgcsNum = size(centerResponses,2);
+%     for iRGC = 1:rgcsNum
+%         ax = axes('Position', [rgcRFpos(iRGC,1) rgcRFpos(iRGC,2) plotWidthMicrons plotHeightMicrons]/);
+%         line(ax, timeAxis, squeeze(centerResponses(:,iRGC,:)), 'Color', [1 0 0]); hold(ax, 'on');
+%         line(ax, timeAxis, squeeze(surroundResponses(:,iRGC,:)), 'Color', [0 0 1]);
+%         set(ax, 'XTick', (0:50:500)/1000, 'YLim', [0 max(centerResponses(:))], 'YTick', 0:0.2:1);
+%         set(ax, 'XTickLabel', {}, 'YTickLabel', {}, 'XColor', 'none', 'YColor', 'none', 'Color', 'none');
+%     end
+end
+
+function responses = computeSubregionResponses(weights, presynapticResponses)
+
+    % Get dimensionalities
+    [instancesNum, conesNum, timeBins] = size(presynapticResponses);
+    rgcsNum = size(weights,2);
+    
+    % Form response matrix
+    responses = zeros(instancesNum, rgcsNum, timeBins);
+    for instanceIndex = 1:instancesNum
+        % All presynaptic spatiotemporal responses for this instance
+        instancePresynapticResponse = squeeze(presynapticResponses(instanceIndex,:,:));
+        parfor iRGC = 1:rgcsNum
+            % The RGC's weights
+            iRGCweights = full(squeeze(weights(:,iRGC)));
+            % The RGC temporal response
+            responses(instanceIndex,iRGC,:) = iRGCweights' * instancePresynapticResponse;
+        end
+    end
+    % mean over instances
+    responses = mean(responses,1);
 end
 
 
-function computePhotocurrents(runParams, instancesNum, stimDurationSeconds, photocurrentResponseDataFile)
+
+function computePhotocurrents(runParams, instancesNum, stimDurationSeconds, testSpatialFrequencyCPD, testLMScontrast, photocurrentResponseDataFile)
     % Params for the connected mRGC mosaic
     mosaicParams.rgcMosaicPatchEccMicrons = runParams.rgcMosaicPatchEccMicrons;
     mosaicParams.rgcMosaicPatchSizeMicrons = runParams.rgcMosaicPatchSizeMicrons;
@@ -162,17 +146,17 @@ function computePhotocurrents(runParams, instancesNum, stimDurationSeconds, phot
     stimColor = struct(...
         'backgroundChroma', [0.31, 0.31], ...
         'meanLuminanceCdPerM2', 40, ...
-        'lmsContrast', [0.1 0.0 0.0]);
+        'lmsContrast', testLMScontrast);
     
     stimTemporalParams = struct(...
-        'temporalFrequencyHz', 10.0, ...
+        'temporalFrequencyHz', 4.0, ...
         'stimDurationSeconds', stimDurationSeconds);
     
     stimSpatialParams = struct(...
-        'fovDegs', 2.0,...
+        'fovDegs', max(theConeMosaic.fov),...
         'pixelsNum', 256, ...
         'gaborPosDegs', [0 0], ...
-        'gaborSpatialFrequencyCPD', 4.0, ...
+        'gaborSpatialFrequencyCPD', testSpatialFrequencyCPD, ...
         'gaborSigma', Inf, ...
         'gaborOrientationDegs', 0, ...
         'deltaPhaseDegs', 30);
@@ -194,15 +178,17 @@ function computePhotocurrents(runParams, instancesNum, stimDurationSeconds, phot
     % Compute isomerizations and photocurrents
     fprintf('\nComputing the mosaic response ...');
     tic
+    
     [isomerizations, photocurrents, osLinearFilters] = ...
         theConeMosaic.computeForOISequence(theOIsequence, ...
         'emPaths', emPaths, 'currentFlag', true, ...
         'workerID', 1);
+    
     fprintf('Done in %2.1f minutes!\n', toc/60);
     
     fprintf('\nExporting data ...');
     tic
-    save(photocurrentResponseDataFile, ...
+    save(sprintf('%s.mat',photocurrentResponseDataFile), ...
         'theConeMosaic', ...
         'theMidgetRGCmosaic', ...
         'theOIsequence', ...

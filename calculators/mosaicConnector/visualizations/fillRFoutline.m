@@ -1,16 +1,10 @@
-function  [semiAxes, rfCenter] = fillRFoutline(theAxes, C, zLevels, whichLevelsToContour, fitEllipse )
+function  [semiAxes, rfCenter] = fillRFoutline(theAxes, C, zLevels, whichLevelsToContour, fitEllipse, faceAlpha, edgeAlpha )
     k = 1;
     contoursNum = 0;
     while k < size(C,2)
         level = C(1,k);
         points = C(2,k);
-        if (level == zLevels(whichLevelsToContour(1)))
-            edgeAlpha = 0.8;
-            faceAlpha = 0.4;
-        elseif (ismember(level, zLevels(whichLevelsToContour)))
-            edgeAlpha = 0/8;
-            faceAlpha = 0.4+(level)*0.05;
-        else
+        if  (level ~= zLevels(whichLevelsToContour(1))) && (~ismember(level, zLevels(whichLevelsToContour)))
             % skip this contour
             k = k+points+1;
             continue;
