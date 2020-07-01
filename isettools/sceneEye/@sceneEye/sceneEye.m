@@ -325,13 +325,17 @@ methods
         retinaSemiDiam = thisR.get('retina semi diam'); % thisR.camera.retinaSemiDiam.value;
         obj.fov = 2 * atand(retinaSemiDiam / obj.retinaDistance);
 
-        % There's no variable for accommodation but we can infer it
-        % from the name of the lens. We assume the naming conventions
-        % is "%s_%f.dat" This is not foolproof, so maybe we can think
-        % of a more robust way to do this in the future?
+        % The current default eye model is Navarro focused at 10m (0.1
+        % diopters accommodation).  That is placed in data/lens/*
+        thisR.set('lens file',fullfile(isetRootPath,'data','lens','navarro.dat'));
         obj.lensFile = thisR.get('lens file'); % thisR.camera.lensfile.value;
+       
+        % Indicate the accommodation.  This is how the navarro.dat file was
+        % built.
+        thisR.set('object distance',10);   % 10 meters
+        obj.accommodation = 1/thisR.get('object distance'); 
         
-        % What is this about?
+        %{
         if(strcmp(obj.lensFile, ''))
             obj.accommodation = [];
         else
@@ -339,7 +343,7 @@ methods
             value = regexp(obj.lensFile, '(\d+, )*\d+(\.\d*)?', 'match');
             obj.accommodation = str2double(value{1});
         end
-
+        %}
         obj.numRays = thisR.get('rays per pixel'); % thisR.sampler.pixelsamples.value;
 
         % These two are often empty, so let's do checks here. However, 
@@ -362,7 +366,8 @@ methods
 
         obj.recipe = thisR;
         
-        % Default settings.
+        % Default settings that are special to the sceneEye.  Everything
+        % else is really part of the thisR (the rendering recipe).
         obj.debugMode = false;
         obj.diffractionEnabled = false;
         obj.eccentricity = [0 0];
