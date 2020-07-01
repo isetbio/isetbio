@@ -1,30 +1,30 @@
-function renderRecipe = setNavarroAccommodation(...
-    renderRecipe, accommodation, workingFolder)
+function thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 % Change renderRecipe to match the accommodation
 %
 % Syntax:
-%   renderRecipe = setNavarroAccommodation(..
-%       renderRecipe, accommodation, workingFolder)
+%   thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 %
 % Description:
-%    We change the fields of the renderRecipe to match accommodation. As
+%    We change the fields of the thisR to match accommodation. As
 %    accommodation changes, the lens file will change, as will the index of
 %    refraction for the lens media. We write these new files out and
 %    reference them in the structure.
 %
 % Inputs:
-%    renderRecipe  - Object. Un-modified renderRecipe object.
+%    thisR         - Object (Render recipe)
 %    accommodation - Numeric. The accommodation to shape the modified
-%                    renderRecipe by.
+%                    thisR by.
 %    workingFolder - String. The file location to write the new
 %                    renderRecipe to.
 %
 % Outputs:
-%    renderRecipe  - Object. The modified renderRecipe.
+%    thisR          - Object. The modified render recipe.
 %
 % Optional key/value pairs:
 %    None.
 %
+% See also
+%   navarroLensCreate
 
 % History:
 %    xx/xx/17  TL   Created by Trisha Lian IESTBIO Team 2017
@@ -34,7 +34,7 @@ function renderRecipe = setNavarroAccommodation(...
 %    05/29/19  JNM  Second documentation pass (minor tweaks)
 
 %% Check and make sure this recipe includes a realisticEye
-if(~strcmp(renderRecipe.camera.subtype, 'realisticEye'))
+if(~strcmp(thisR.camera.subtype, 'realisticEye'))
     warning('The camera type is not a realisticEye. Returning untouched.');
     return;
 end
@@ -78,10 +78,10 @@ rtbWriteSpectrumFile(wave, aqu, fullfile(workingFolder, iorNames{2}));
 rtbWriteSpectrumFile(wave, len, fullfile(workingFolder, iorNames{3}));
 rtbWriteSpectrumFile(wave, vit, fullfile(workingFolder, iorNames{4}));
 
-renderRecipe.camera.ior1.value = fullfile(workingFolder, iorNames{1});
-renderRecipe.camera.ior2.value = fullfile(workingFolder, iorNames{2});
-renderRecipe.camera.ior3.value = fullfile(workingFolder, iorNames{3});
-renderRecipe.camera.ior4.value = fullfile(workingFolder, iorNames{4});
+thisR.camera.ior1.value = fullfile(workingFolder, iorNames{1});
+thisR.camera.ior2.value = fullfile(workingFolder, iorNames{2});
+thisR.camera.ior3.value = fullfile(workingFolder, iorNames{3});
+thisR.camera.ior4.value = fullfile(workingFolder, iorNames{4});
 
 %% Attach lens file and set retina radius
 % For navarro, the lens file will change depending on accomodation. Here we
@@ -91,7 +91,7 @@ writeNavarroLensFile(navarroAccom, fullfile(workingFolder, lensFile));
 fprintf('Wrote out a new lens file: \n')
 fprintf('%s \n \n', fullfile(workingFolder, lensFile));
 
-renderRecipe.camera.lensfile.value = fullfile(workingFolder, lensFile);
-renderRecipe.camera.lensfile.type = 'string';
+thisR.camera.lensfile.value = fullfile(workingFolder, lensFile);
+thisR.camera.lensfile.type = 'string';
 
 end

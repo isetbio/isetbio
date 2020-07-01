@@ -287,6 +287,7 @@ methods
         
         % Setup the pbrt scene and recipe
         thisR = piRecipeDefault('scene name',pbrtFile);
+        obj.sceneUnits = 'meters';
         %{
         % The original method used this complicated function to load the 
         % scene file and set these fields.  I am not  sure why sceneUnits
