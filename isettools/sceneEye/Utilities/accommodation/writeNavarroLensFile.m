@@ -17,6 +17,8 @@ function writeNavarroLensFile(A, filename)
 % Optional key/value pairs:
 %    None.
 %
+% See also
+%   
 
 % These equations are from Table 4 in Navarro's paper.
 anteriorRadius = 10.2 - 1.75 * log(A + 1);
