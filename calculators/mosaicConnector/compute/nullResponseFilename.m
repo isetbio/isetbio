@@ -1,0 +1,6 @@
+function fname = nullResponseFilename(runParams)
+    fname = sprintf('NullResponses_%2.0f_%2.0f_%2.0f_%2.0f.mat', ...
+            runParams.rgcMosaicPatchEccMicrons(1), runParams.rgcMosaicPatchEccMicrons(2), ...
+            runParams.rgcMosaicPatchSizeMicrons(1), runParams.rgcMosaicPatchSizeMicrons(2));
+end
+
