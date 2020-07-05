@@ -1,4 +1,4 @@
-function visualizeSubregions(figNo,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, rgcIndices, rgcEccDegs, ...
+function visualizeSubregions(figNo,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, rgcEccDegs, ...
     rgcCenterPositionMicrons, retinalCenterRadiiDegs, retinalSurroundRadiiDegs, conePositionsMicrons, coneSpacingsMicrons,  coneTypes, plotlabOBJ, pdfFileName,exportsDir)
 
     maxGainDivisor = 500;
@@ -26,28 +26,26 @@ function visualizeSubregions(figNo,midgetRGCconnectionMatrixCenter, midgetRGCcon
     previousSurroundRadii = [];
     previousIntegratedSensitivityRatios = [];
     
-    randomizedK = randperm(numel(rgcIndices));
+    rgcsNum = size(rgcCenterPositionMicrons,1);
+    
+    randomizedK = randperm(rgcsNum);
     for k = 1:numel(randomizedK)   
         
         % Get randomized index
         iRGC = randomizedK(k);
         
-        % Get the rgcIndex (index in the full RGC mosaic, not in the
-        % patch we are currently analyzing)
-        rgcIndex = rgcIndices(iRGC);
-        
         % Get position of RGC in microns
         rgcPositionMicrons = rgcCenterPositionMicrons(iRGC,:);
          
         % center weights
-        connectivityVector = full(squeeze(midgetRGCconnectionMatrixCenter(:, rgcIndex)));
+        connectivityVector = full(squeeze(midgetRGCconnectionMatrixCenter(:, iRGC)));
         coneIndicesConnectedToCenter = find(connectivityVector>0);
-        centerWeights = squeeze(full(midgetRGCconnectionMatrixCenter(coneIndicesConnectedToCenter, rgcIndex)));
+        centerWeights = squeeze(full(midgetRGCconnectionMatrixCenter(coneIndicesConnectedToCenter, iRGC)));
         
         % surround weights
-        connectivityVector = full(squeeze(midgetRGCconnectionMatrixSurround(:, rgcIndex)));
+        connectivityVector = full(squeeze(midgetRGCconnectionMatrixSurround(:, iRGC)));
         coneIndicesConnectedToSurround = find(connectivityVector>0);
-        surroundWeights = squeeze(full(midgetRGCconnectionMatrixSurround(coneIndicesConnectedToSurround, rgcIndex)));
+        surroundWeights = squeeze(full(midgetRGCconnectionMatrixSurround(coneIndicesConnectedToSurround, iRGC)));
         
         
         % Get radius of RGC center in microns

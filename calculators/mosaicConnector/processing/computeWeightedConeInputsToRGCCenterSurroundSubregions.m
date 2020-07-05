@@ -1,23 +1,19 @@
 function [connectionMatrixCenter, connectionMatrixSurround, ...
     synthesizedRFParams] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
         conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-        RGCRFPositionsMicrons, midgetRGCconnectionMatrix, ...
+        midgetRGCconnectionMatrix, ...
         rgcMosaicPatchEccMicrons, rgcMosaicPatchSizeMicrons)
-
-    % Convert patch ecc and size from retinal microns to visual degrees
-    patchEccDegs = WatsonRGCModel.rhoMMsToDegs(rgcMosaicPatchEccMicrons*1e-3);
-    patchSizeDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(rgcMosaicPatchSizeMicrons, rgcMosaicPatchEccMicrons);
     
     % Synthesize RF params using the Croner&Kaplan model
-    synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, coneSpacingsMicrons, ...
-            RGCRFPositionsMicrons, ...
-            midgetRGCconnectionMatrix, ...
-            patchEccDegs, patchSizeDegs);
+    synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, coneSpacingsMicrons, midgetRGCconnectionMatrix);
 
+    % Convert patch ecc and size from retinal microns to visual degrees
+    synthesizedRFParams.patchEccDegs = WatsonRGCModel.rhoMMsToDegs(rgcMosaicPatchEccMicrons*1e-3);
+    synthesizedRFParams.patchSizeDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(rgcMosaicPatchSizeMicrons, rgcMosaicPatchEccMicrons);
+    
     rgcParams = synthesizedRFParams.retinal;
     rgcCenterPositionMicrons = synthesizedRFParams.centerPositionMicrons;
     rgcEccDegs = synthesizedRFParams.eccDegs;
-    rgcIndices = synthesizedRFParams.rgcIndices;
     
     % Compute weights of cone inputs to the RF center and to the RF
     % surround based on the midgetRGCconnectionMatrix and the
@@ -34,11 +30,11 @@ function [connectionMatrixCenter, connectionMatrixSurround, ...
     coneIndicesVectorS = [];
     weightsVectorS = [];
     
-    for iRGC = 1:numel(rgcIndices)
-        fprintf('%d of %d\n', iRGC, numel(rgcIndices))
+    for iRGC = 1:rgcsNum
+        fprintf('%d of %d\n', iRGC, rgcsNum)
         
         % Get index of RGC in full mosaic
-        rgcIndex = rgcIndices(iRGC);
+        rgcIndex = iRGC;
         
         % Get position of RGC in microns
         rgcPositionMicrons = rgcCenterPositionMicrons(iRGC,:);

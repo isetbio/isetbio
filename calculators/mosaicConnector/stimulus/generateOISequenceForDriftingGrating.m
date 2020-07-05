@@ -1,17 +1,16 @@
-function theOIsequence = generateOISequenceForDriftingGrating(theSceneFrames, theOI, stimSpatialParams, stimTemporalParams)
-    sceneFramesNum = numel(theSceneFrames);
-    sinusoidalPeriodSeconds = 1.0/stimTemporalParams.temporalFrequencyHz;
-    framesPerSinusoidalPeriod = 360/stimSpatialParams.deltaPhaseDegs;
-    frameDurationSeconds = sinusoidalPeriodSeconds/framesPerSinusoidalPeriod;
+function theOIsequence = generateOISequenceForDriftingGrating(theSceneFrames, theOptics, stimTemporalParams)
 
-    % Generate the oiSequence
-    oiTimeAxis = 0:frameDurationSeconds:(stimTemporalParams.stimDurationSeconds-frameDurationSeconds);
+    sinusoidalPeriodSeconds = 1.0/stimTemporalParams.temporalFrequencyHz;
+    sceneFramesNum = numel(theSceneFrames);
+    frameDurationSeconds = sinusoidalPeriodSeconds / sceneFramesNum;
+    oiTimeAxis = 0:frameDurationSeconds:stimTemporalParams.stimDurationSeconds;
     nFrames = numel(oiTimeAxis);
     
     oiList = cell(1, nFrames);
-    for oiFrame = 1:nFrames
+    parfor oiFrame = 1:nFrames
+        fprintf('Computing optical image for frame %d/%d\n', oiFrame, nFrames);
         % Compute the retinal image
-        theOI = oiCompute(theOI, theSceneFrames{mod(oiFrame-1,sceneFramesNum)+1});
+        theOI = oiCompute(theSceneFrames{mod(oiFrame-1,sceneFramesNum)+1}, theOptics);
         oiList{oiFrame} = theOI;
     end
     

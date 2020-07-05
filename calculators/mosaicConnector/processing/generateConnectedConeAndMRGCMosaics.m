@@ -1,4 +1,5 @@
-function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams)
+function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams, outputFile, exportsDir)
+    
     % STEP 1. Generate a regular hex cone mosaic patch with the desired eccentricity and size
     [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
         generateRegularHexMosaicPatch(...
@@ -17,19 +18,19 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
     % Visualize connections to the RF centers
     visualizeRFcenterTiling = ~true;
     if (visualizeRFcenterTiling)
-        subregionToVisualize.center = round(runParams.rgcMosaicPatchEccMicrons);
+        subregionToVisualize.center = round(mosaicParams.rgcMosaicPatchEccMicrons);
         subregionToVisualize.size = coneMosaicSizeMicrons;
         visualizeCenterConnections(midgetRGCconnectionMatrix, RGCRFPositionsMicrons,...
                 conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
                 coneMosaicEccDegs, subregionToVisualize, ...
-                runParams.outputFile,runParams.exportsDir);
+                outputFile,exportsDir);
     end
     
     % STEP 3. 
     [midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
      synthesizedRFParams] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
             conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            RGCRFPositionsMicrons, midgetRGCconnectionMatrix, ...
+            midgetRGCconnectionMatrix, ...
             mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons);
         
     % The midget RGC mosaic object (for now just the cone weights to the
@@ -44,13 +45,13 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
         % Visualize the generated retinal 2D RFs (video)
         plotlabOBJ = setupPlotLab();
 
-        outputFile = sprintf('%s_RFexamples',runParams.outputFile);
+        outputFile = sprintf('%s_RFexamples',outputFile);
         visualizeSubregions(1,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
-            synthesizedRFParams.rgcIndices,  synthesizedRFParams.eccDegs, ...
+            synthesizedRFParams.eccDegs, ...
             synthesizedRFParams.centerPositionMicrons, synthesizedRFParams.retinal.centerRadiiDegs, ...
             synthesizedRFParams.retinal.surroundRadiiDegs,...
             conePositionsMicrons, coneSpacingsMicrons,  coneTypes, ...
-            plotlabOBJ, outputFile, runParams.exportsDir);
+            plotlabOBJ, outputFile, exportsDir);
     end
 end
 
@@ -138,7 +139,6 @@ function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositions
     coneSpacingsMicrons = ones(size(conePositionsMicrons,1),1) * coneSpacingMicrons;
     % Cone types
     coneTypes = cmStruct.coneTypes;
- 
 end
 
 function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix] = ...
@@ -152,6 +152,7 @@ function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix
     % Crop midget mosaic to the size and position of the cone mosaic, leaving enough space for the surround cones
   	mRGCRFroi.center = 0.5*(min(conePositionsMicrons, [], 1) + max(conePositionsMicrons, [], 1));
     mRGCRFroi.size = max(conePositionsMicrons, [], 1) - min(conePositionsMicrons, [], 1);
+    
     [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios] = ...
         cropRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons,  desiredConesToRGCratios, mRGCRFroi);
     
@@ -168,16 +169,27 @@ function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix
                 coneTypes, desiredConesToRGCratios, orphanRGCpolicy, maximizeConeSpecificity, ...
                 visualizeConnectionProcess);
             
+           
+    % Compute RGC positions from connectivity here
+    rgcsNum = size(midgetRGCconnectionMatrix,2);
+    RGCRFPositionsMicronsFromConnectivity = zeros(rgcsNum,2);
+    for iRGC = 1:size(RGCRFPositionsMicrons,1)
+        weights = full(squeeze(midgetRGCconnectionMatrix(:, iRGC)));
+        centerIndices = find(weights>0);
+        RGCRFPositionsMicronsFromConnectivity(iRGC,:) = mean(conePositionsMicrons(centerIndices,:),1);
+    end
+    
     % Only keep RGCs within mRGCRFroi.center +/- 0.5*rgcMosaicPatchSizeMicrons
     finalRGCindices = [];
     for rgcIndex = 1:size(RGCRFPositionsMicrons,1)
-        distanceVector = abs(RGCRFPositionsMicrons(rgcIndex,:) - mRGCRFroi.center);
+        distanceVector = abs(RGCRFPositionsMicronsFromConnectivity(rgcIndex,:) - mRGCRFroi.center);
         if (distanceVector(1) <= 0.5*rgcMosaicPatchSizeMicrons(1)) && (distanceVector(2) <= 0.5*rgcMosaicPatchSizeMicrons(2))
             finalRGCindices = cat(2, finalRGCindices, rgcIndex);
         end
     end
+    
     midgetRGCconnectionMatrix = midgetRGCconnectionMatrix(:, finalRGCindices);
-    RGCRFPositionsMicrons = RGCRFPositionsMicrons(finalRGCindices,:);
+    RGCRFPositionsMicrons = RGCRFPositionsMicronsFromConnectivity(finalRGCindices,:);
     RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(finalRGCindices);
 end
 
@@ -257,7 +269,7 @@ function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios] 
     cropRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons,  desiredConesToRGCratios, roi)
 
     % Find RGCs within the roi
-    idxRGC = positionsWithinROI(roi, RGCRFPositionsMicrons);
+    idxRGC = positionsWithinROI(roi, RGCRFPositionsMicrons); 
     RGCRFPositionsMicrons = RGCRFPositionsMicrons(idxRGC,:);
     RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(idxRGC);
     desiredConesToRGCratios = desiredConesToRGCratios(idxRGC);
@@ -268,6 +280,7 @@ function indices = positionsWithinROI(roi, positions)
     d = bsxfun(@minus,positions, roi.center);
     ecc = sqrt(sum(positions.^2,2));
     indices = find((abs(d(:,1)) <= 0.5*roi.size(1)) & (abs(d(:,2)) <= 0.5*roi.size(2)));
+
     if (isempty(indices))
         d = sqrt(sum(d.^2,2));
         [~,indices] = min(d);
@@ -276,4 +289,5 @@ function indices = positionsWithinROI(roi, positions)
         [~,sortedIdx] = sort(ecc(indices), 'ascend');
         indices = indices(sortedIdx);
     end
+
 end
