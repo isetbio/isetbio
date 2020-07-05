@@ -36,8 +36,8 @@ wave = (400:10:800); % nm
 
 %% Writes out the navarro.dat file in the lens directory of the output
 lensFile = fullfile(thisR.get('lens dir output'),'navarro.dat');
-accom = thisR.get('object distance','m');
-navarroLensCreate(lensFile,'accommodation',accom);
+accom    = (1 / thisR.get('object distance','m'));
+navarroLensCreate(lensFile,'accommodation',accom);  % Diopters
 
 % The file should be there, so no warning should come from this.
 thisR.set('lens file',lensFile);
@@ -54,7 +54,7 @@ iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 % We assume the eye is accommodated to the object distance.  There is only
 % a very very small impact of accommodation until the object is very close
 % (less than 0.5 m).
-[cornea, aqueuous, lens, vitreous] = navarroRefractiveIndices(wave, 1/accom);
+[cornea, aqueuous, lens, vitreous] = navarroRefractiveIndices(wave, accom);
 ior = [cornea(:),aqueuous(:), lens(:), vitreous(:)];
 
 % We will put these files next to the lens file (navarro.dat).

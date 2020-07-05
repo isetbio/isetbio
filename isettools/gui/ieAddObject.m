@@ -51,6 +51,7 @@ global vcSESSION;
 % Makes objType proper type and forces upper case.
 objType = obj.type;
 val = vcNewObjectValue(objType);
+if isempty(val), disp('Please initialize ISET (ieInit)'); return; end
 
 % gather to avoid distributed component (e.g. gpuArray)
 obj = gatherStruct(obj);

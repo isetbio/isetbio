@@ -303,7 +303,8 @@ methods
         % [Note: JNM - 5/14/19 the human eye has retinaDistance parameters,
         % realistic does not.]
         if ~strcmp(thisR.get('camera subtype'), 'realisticEye')
-            thisR.camera = piCameraCreate('humaneye');
+            % thisR.set('lens file',fullfile(isetRootPath,'data','lens','navarro.dat'));
+            thisR.camera = piCameraCreate('humaneye','lens file','navarro.dat');
         end
 
         % Set up units and working directory.  These should go away
@@ -327,8 +328,7 @@ methods
 
         % The current default eye model is Navarro focused at 10m (0.1
         % diopters accommodation).  That is placed in data/lens/*
-        thisR.set('lens file',fullfile(isetRootPath,'data','lens','navarro.dat'));
-        obj.lensFile = thisR.get('lens file'); % thisR.camera.lensfile.value;
+        obj.lensFile = which(thisR.get('lens file')); % thisR.camera.lensfile.value;
        
         % Indicate the accommodation.  This is how the navarro.dat file was
         % built.

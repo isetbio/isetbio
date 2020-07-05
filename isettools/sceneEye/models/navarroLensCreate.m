@@ -37,20 +37,20 @@ p.parse(filename,varargin{:});
 A = p.Results.accommodation;
 
 %% These equations are from Table 4 in Navarro's paper.
-anteriorRadius = 10.2 - 1.75 * log(A + 1);
-posteriorRadius = -6 + 0.2294 * log(A + 1);
+anteriorRadius   = 10.2 - 1.75 * log(A + 1);
+posteriorRadius  = -6 + 0.2294 * log(A + 1);
 aqueousThickness = 3.05 - 0.05 * log(A + 1);
-lensThickness = 4 + 0.1 * log(A + 1);
-anteriorAsph = -3.1316 - 0.34 * log(A + 1);
-posteriorAsph = -1 - 0.125 * log(A + 1);
+lensThickness    = 4 + 0.1 * log(A + 1);
+anteriorAsph     = -3.1316 - 0.34 * log(A + 1);
+posteriorAsph    = -1 - 0.125 * log(A + 1);
 
 % Columns are: radiusX, radiusY, thickness, materialIndex, semiDiameter, 
 % conicConstantX, and conicConstantY
 corneaA = [-7.72, -7.72, 0.55, 1, 4.820, -0.26, -0.26];
 corneaP = [-6.5, -6.5, 3.050, 2, 4.341, 0, 0];
-pupil = [0, 0, 0, 2, 2, 0, 0];
-lensA = [-10.2, -10.2, 4, 3, 3.750, -3.132, -3.132];
-lensP = [6, 6, 0, 4, 3.750, -1, -1];
+pupil   = [0, 0, 0, 2, 2, 0, 0];
+lensA   = [-10.2, -10.2, 4, 3, 3.750, -3.132, -3.132];
+lensP   = [6, 6, 0, 4, 3.750, -1, -1];
 
 % flip these because of sign conventions
 lensA(1:2) = [anteriorRadius anteriorRadius] * -1;
