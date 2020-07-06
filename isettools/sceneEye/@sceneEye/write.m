@@ -15,7 +15,7 @@ function objNew = write(obj, varargin)
 %    will be run within the render function.
 %
 % Inputs:
-%    obj   - Object. The scene3D object to render.
+%    obj   - The sceneEye object to render.  It contains the render recipe.
 %
 % Outputs:
 %   objNew - Object. The object may have been modified in the processing
@@ -40,6 +40,7 @@ function objNew = write(obj, varargin)
 %
 
 %% Make a copy of the current object
+%
 % We will render this copy, since we may make changes to certain parameters
 % before rendering (i.e. in th eccentricity calculations) but we don't want
 % these changes to show up original object given by the user.
@@ -47,6 +48,7 @@ objNew = copy(obj);
 objNew.recipe = copy(obj.recipe);
 
 %% Make some eccentricity calculations
+
 % To render an image centered at a certain eccentricity without having
 % change PBRT, we do the following:
 % 1. Change the film size and resolution so that renders a larger image
@@ -117,19 +119,39 @@ switch ieParamFormat(objNew.modelName)
                 error('Error copying lens file. Err message: %s', message);
             end
         end
+    case {'perspective'}
+        % Probably in debug mode.  So let it go through, though you might
+        % check debug mode.
+    otherwise
+        error('Unknown human eye model %s\n',modelName);
 
 end
 
 % Film parameters
+% This should always be
+%   sceneEye.set('x resolution',val);
+% 
+%  and that set should set 
+%
+%  sceneEye.recipe.film.xresolution
+%
+
+% In that case, we wouldn't need this copy.
+%{
 recipe.film.xresolution.value = objNew.resolution;
 recipe.film.yresolution.value = objNew.resolution;
+%}
 
 % Camera parameters
 if(objNew.debugMode)
     % Use a perspective camera with matching FOV instead of an eye.
+    recipe.set('fov',obj.fov);  
+    %{
     fov = struct('value', objNew.fov, 'type', 'float');
     recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
         'fov', fov);
+    %}
+    %{
     if(objNew.accommodation ~= 0)
         warning(['Setting perspective camera focal distance to %0.2f ' ...
             'dpt and lens radius to %0.2f mm'], ...
@@ -141,42 +163,84 @@ if(objNew.debugMode)
             (objNew.pupilDiameter / 2) * 10 ^ -3;
         recipe.camera.lensradius.type = 'float';
     end
+    %}
 else
+    % Same comment as above for all of these.  We should be using
+    %   sceneEye.set('retina distance',val) and it should be setting 
+    %
+    %   sceneEye.recipe.camera. ....
+    %
+    %{
     recipe.camera.retinaDistance.value = objNew.retinaDistance;
     recipe.camera.pupilDiameter.value = objNew.pupilDiameter;
     recipe.camera.retinaDistance.value = objNew.retinaDistance;
     recipe.camera.retinaRadius.value = objNew.retinaRadius;
-    recipe.camera.retinaSemiDiam.value = objNew.retinaDistance * ...
-        tand(objNew.fov / 2);
+    %}
+    
+    % Maybe we always need a 'fov' in the sceneEye object for this purpose,
+    % which may be related to the retinal curvature?  The semiDiam is the
+    % radius of the implicit circle at the endpoints of the retina (which
+    % is curved).  So the end points of the retina are not in the same
+    % plane as the central point of the retina.
+    %
+    % The retina is conceived of as sitting on a sphere.  It is a curved
+    % surface on that sphere.
+    %
+    % The retinal radius is the radius of the sphere that the retina is
+    % located on.
+    %
+    % The retina semiDiam the radius of the circle formed on the plane that
+    % intersects the sphere at the position of the end points of the
+    % retina.
+    semidiam = objNew.retinaDistance * tand(objNew.fov / 2);
+    recipe.set('retina semidiam',semidiam);
+    
+    % recipe.camera.retinaSemiDiam.value = objNew.retinaDistance * ...
+    %    tand(objNew.fov / 2);
+    
     if(strcmp(objNew.sceneUnits, 'm'))
+        % Units should always be meters. This switch statement can be a lot
+        % of trouble.  Let's stay on top of it.
         recipe.camera.mmUnits.value = 'false';
         recipe.camera.mmUnits.type = 'bool';
     end
     if(objNew.diffractionEnabled)
-        recipe.camera.diffractionEnabled.value = 'true';
-        recipe.camera.diffractionEnabled.type = 'bool';
+        % We should never get here.  Diffraction should always be set as
+        % below.
+        recipe.set('diffraction',true);
+        % recipe.camera.diffractionEnabled.value = 'true';
+        % recipe.camera.diffractionEnabled.type = 'bool';
     end
 end
 
 % Sampler
-recipe.sampler.pixelsamples.value = objNew.numRays;
+% recipe.sampler.pixelsamples.value = objNew.numRays;
 
 % Integrator
-recipe.integrator.maxdepth.value = objNew.numBounces;
-recipe.integrator.maxdepth.type = 'integer';
+% recipe.integrator.maxdepth.value = objNew.numBounces;
+% recipe.integrator.maxdepth.type = 'integer';
 
 % Renderer
-if(objNew.numCABands == 0 || objNew.numCABands == 1 || objNew.debugMode)
+numCABands = obj.recipe.get('num ca bands');
+if(numCABands == 0 || numCABands == 1 || objNew.debugMode)
     % No spectral rendering
-    recipe.integrator.subtype = 'path';
+    recipe.set('integrator subtype','path');
+    % recipe.integrator.subtype = 'path';
 else
+    numCABands = struct('value', objNew.numCABands, 'type', 'integer');
+    recipe.set('integrator subtype','spectralpath');
+    recipe.set('integrator num ca bands',numCABands);
+    
     % Spectral rendering
+    %{
     numCABands = struct('value', objNew.numCABands, 'type', 'integer');
     recipe.integrator = struct('type', 'Integrator', ...
         'subtype', 'spectralpath', 'numCABands', numCABands);
+    %}
 end
 
 % Look At
+%{
 if(isempty(objNew.eyePos) || isempty(objNew.eyeTo) || ...
         isempty(objNew.eyeUp))
     error('Eye location missing!');
@@ -184,6 +248,7 @@ else
     recipe.lookAt = struct('from', objNew.eyePos, 'to', objNew.eyeTo, ...
         'up', objNew.eyeUp);
 end
+%}
 
 % If there was a crop window, we have to update the angular support that
 % comes with sceneEye
@@ -204,16 +269,21 @@ objNew.angularSupport = X(1, :);
 %}
 
 %% Write out the adjusted recipe into a PBRT file
+piWrite(recipe);
+
+%{
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
 recipe.set('outputFile', pbrtFile);
 if(strcmp(recipe.exporter, 'C4D'))
-    piWrite(recipe, 'overwritepbrtfile', true, ...
+    piWrite(recipe,  ...
         'overwritelensfile', false, 'overwriteresources', false, ...
         'creatematerials', true);
 else
-    piWrite(recipe, 'overwritepbrtfile', true, ...
+    piWrite(recipe,  ...
         'overwritelensfile', false, 'overwriteresources', false);
 end
+%}
+
 obj.recipe = recipe; % Update the recipe.
 
 end

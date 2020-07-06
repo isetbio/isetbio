@@ -246,7 +246,6 @@ properties(GetAccess=public, SetAccess=private)
     %   to PBRT.
     sceneUnits;
       
-
 end
 
 properties(GetAccess=public, SetAccess=public, Hidden=true)
@@ -279,8 +278,8 @@ methods
         
         % pbrtFile: Either a pbrt file or just a scene name
         p.addRequired('pbrtFile', @ischar);
-        p.addParameter('name', 'scene-001', @ischar);
-        p.addParameter('workingDirectory', '', @ischar);
+        % p.addParameter('name', 'scene-001', @ischar);
+        % p.addParameter('workingDirectory', '', @ischar);
         
         % Parse
         p.parse(pbrtFile, varargin{:});
@@ -308,27 +307,27 @@ methods
         end
 
         % Set up units and working directory.  These should go away
-        obj.workingDir = thisR.get('output dir');
-        obj.pbrtFile   = thisR.get('input basename');
+        % obj.workingDir = thisR.get('output dir');
+        % obj.pbrtFile   = thisR.get('input basename');
         
         % We are duplicating the recipe properties here. We should add
         % extra properties, but we should not duplicate.  These changes are
         % in preparation for getting rid of the extra parameters
-        obj.name = p.Results.name;
+        % obj.name = p.Results.name;
         obj.modelName = 'Navarro'; % Default
-        obj.resolution     = thisR.get('film xresolution'); %thisR.film.xresolution.value;
-        obj.retinaDistance = thisR.get('retina distance');  % thisR.camera.retinaDistance.value;
-        obj.pupilDiameter  = thisR.get('pupil diameter'); % thisR.camera.pupilDiameter.value;
+        % obj.resolution     = thisR.get('film xresolution'); %thisR.film.xresolution.value;
+        % obj.retinaDistance = thisR.get('retina distance');  % thisR.camera.retinaDistance.value;
+        % obj.pupilDiameter  = thisR.get('pupil diameter'); % thisR.camera.pupilDiameter.value;
 
-        obj.retinaDistance = thisR.get('retina distance'); % thisR.camera.retinaDistance.value;
-        obj.retinaRadius   = thisR.get('retina radius'); % thisR.camera.retinaRadius.value;
+        % obj.retinaDistance = thisR.get('retina distance'); % thisR.camera.retinaDistance.value;
+        % obj.retinaRadius   = thisR.get('retina radius'); % thisR.camera.retinaRadius.value;
 
-        retinaSemiDiam = thisR.get('retina semi diam'); % thisR.camera.retinaSemiDiam.value;
-        obj.fov = 2 * atand(retinaSemiDiam / obj.retinaDistance);
+        % retinaSemiDiam = thisR.get('retina semi diam'); % thisR.camera.retinaSemiDiam.value;
+        % obj.fov = 2 * atand(retinaSemiDiam / obj.retinaDistance);
 
         % The current default eye model is Navarro focused at 10m (0.1
         % diopters accommodation).  That is placed in data/lens/*
-        obj.lensFile = which(thisR.get('lens file')); % thisR.camera.lensfile.value;
+        % obj.lensFile = which(thisR.get('lens file')); % thisR.camera.lensfile.value;
        
         % Indicate the accommodation.  This is how the navarro.dat file was
         % built.
@@ -344,7 +343,7 @@ methods
             obj.accommodation = str2double(value{1});
         end
         %}
-        obj.numRays = thisR.get('rays per pixel'); % thisR.sampler.pixelsamples.value;
+        % obj.numRays = thisR.get('rays per pixel'); % thisR.sampler.pixelsamples.value;
 
         % These two are often empty, so let's do checks here. However, 
         % I should find a more permanant solution to cases like these.
@@ -352,18 +351,19 @@ methods
         % Maybe in piGetRenderRecipe we should put in the default
         % values if any of these rendering options are missing
         % (e.g. if Renderer is missing, put in Renderer 'sampler'.)
-        obj.numBounces = thisR.get('nbounces'); % thisR.integrator.maxdepth.value;
+        % obj.numBounces = thisR.get('nbounces'); % thisR.integrator.maxdepth.value;
         
         % More duplicates
-        obj.numCABands = thisR.get('n wave bands'); % thisR.renderer.nWaveBands.value;
+        % obj.numCABands = thisR.get('n wave bands'); % thisR.renderer.nWaveBands.value;
 
         % More duplicates
+        %{
         if(~isempty(thisR.lookAt))
             obj.eyePos = thisR.get('from'); % thisR.lookAt.from;
             obj.eyeTo  = thisR.get('to');   % thisR.lookAt.to;
             obj.eyeUp  = thisR.get('up');   % thisR.lookAt.up;
         end
-
+        %}
         obj.recipe = thisR;
         
         % Default settings that are special to the sceneEye.  Everything
@@ -376,6 +376,7 @@ methods
     end
 
     %% Get methods for dependent variables
+    
     % In PBRT, the image height is equivalent to the size of the chord on
     % the back of the spherical retina. We have to do the complex
     % calculation below in order to find an image size that would give us
@@ -458,105 +459,23 @@ methods
        chordSpatialSamples = (1:obj.resolution).*ss - obj.width/2;
        val = atand(chordSpatialSamples/obj.distance2chord);
     end
-
-    %% Set methods for dependent variables
-
-    % Does this go here? MATLAB doesn't like this setup, but I would like
-    % retinaDistance and retinaRadius to be both dependent (changes with
-    % modelName), but also set-able by the user. What's the best way to do
-    % this?
-
-    % When we set the eye model, we need to change the retina distance and
-    % radius.
-    function set.modelName(obj, val)
-        switch val
-            case {'Navarro', 'navarro'}
-                obj.modelName = 'Navarro';
-                obj.retinaDistance = 16.32;
-                obj.retinaRadius = 12;
-            case {'LeGrand', 'legrand', 'le grand'}
-                obj.modelName = 'LeGrand';
-                obj.retinaDistance = 16.6;
-                obj.retinaRadius = 13.4;
-            case {'Arizona', 'arizona'}
-                obj.modelName = 'Arizona';
-                obj.retinaDistance = 16.713;
-                obj.retinaRadius = 13.4;
-            case {'Custom', 'custom'}
-                % Use Navarro as a default.
-                % Do we need to be able to change this later?
-                obj.modelName = 'Custom';
-                if(isempty(obj.retinaDistance))
-                    obj.retinaDistance = [];
-                end
-                if(isempty(obj.retinaRadius))
-                    obj.retinaRadius = [];
-                end
-        end
-    end
-
-    % When the user toggles debugMode, make sure the camera type is
-    % correct.
-    function set.debugMode(obj, val)
-        obj.debugMode = val;
-        if(val)
-            obj.modelName = 'none';
-            % The camera will be changed to perspective in write(), so we
-            % do nothing here. 
-        elseif(~val && strcmp(obj.modelName, 'none'))
-            % Put the navarro eye back in if there's not already a model.
-            obj.modelName = 'Navarro';
-            obj.recipe.camera = piCameraCreate('humaneye');
-        end
-    end
-
-    % I want to put in this warning, but again MATLAB doesn't really like
-    % this!
-    function set.accommodation(obj, val)
-        obj.accommodation = val;
-        if(strcmp(obj.modelName, 'Gullstrand'))
-            warning(['Gullstrand eye has no accommodation modeling.', ...
-                'Setting accommodation will do nothing.']);
-        end
-    end
-
-    function set.lensFile(obj, val)
-        
-        % On creation, the lensFile is left empty
-        % There should be a better way to do this right? I don't think I'm
-        % doing this right. Maybe we need a seperate set function like we
-        % do with render recipes?
-        if(~isempty(val))
-            % Make sure it's a valid file
-            [p, ~, e] = fileparts(val);
-            if(isempty(p))
-                error('Lens file needs to be a full file path.');
-            elseif(~strcmp(e, '.dat'))
-                error('Lens file needs to be a .dat file.');
-            end
-
-            obj.modelName = 'Custom';
-            obj.lensFile = val;
-        else
-            obj.lensFile = '';
-        end
-    end
     
-    % I don't think these are necessary. 
-%{
-    function set.width(obj, val)
-        obj.fov = 2 * atand((val / 2) / obj.retinaDistance);
+    %{
+    % We may make all the get.xxx go away from here and be handled inside
+    % of eyeGet.  This is like recipeGet/Set
+    %
+    function val = get(obj,varargin)
+        % Returns derived parameters of the recipe that require some
+        % computation
+        val = eyeGet(obj,varargin{:});
     end
-
-    function set.height(obj, val)
-        obj.fov = 2 * atand((val / 2) / obj.retinaDistance);
+    %}
+    
+    % Interface to the main set routine.  Sets parameters of sceneEye.
+    % Mostly these are passed through to the rendering recipe.
+    function obj = set(obj,varargin)
+        obj = eyeSet(obj,varargin{:});
     end
-
-    function set.sampleSize(obj, val)
-        obj.fov = 2 * atand((val * obj.resolution / 2) ...
-            / obj.retinaDistance);
-    end
-%}
 end
 
 methods (Access=public)
