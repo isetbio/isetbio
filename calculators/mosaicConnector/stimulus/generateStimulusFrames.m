@@ -3,47 +3,53 @@ function [theSceneFrames, presentationDisplay, sceneLuminanceSlice] = generateSt
     % Generate the presentation display
     presentationDisplay = generatePresentationDisplay('wave', wavelengthSampling);
 
-    % Background XYZ tri-stimulus values
-    background.xyY = [stimColor.backgroundChroma(1) stimColor.backgroundChroma(2) stimColor.meanLuminanceCdPerM2];
+    % Background chromaticity and mean luminance vector
+    xyY = [stimColor.backgroundChroma(1) stimColor.backgroundChroma(2) stimColor.meanLuminanceCdPerM2];
    
     % Background XYZ tri-stimulus values
-    background.XYZ = (xyYToXYZ(background.xyY(:)))';
+    backgroundXYZ = (xyYToXYZ(xyY(:)))';
     
     % Background linear RGB primary values for the presentation display
-    background.RGB = imageLinearTransform(background.XYZ, inv(displayGet(presentationDisplay, 'rgb2xyz')));
+    backgroundRGB = imageLinearTransform(backgroundXYZ, inv(displayGet(presentationDisplay, 'rgb2xyz')));
     
     % Background LMS excitations
-    background.LMS = imageLinearTransform(background.RGB, displayGet(presentationDisplay, 'rgb2lms'));
+    backgroundLMS = imageLinearTransform(backgroundRGB, displayGet(presentationDisplay, 'rgb2lms'));
     
     % Generate a new scene for each spatial phase
     spatialPhases = (0 : stimSpatialParams.deltaPhaseDegs : (360-stimSpatialParams.deltaPhaseDegs));
     spatialPhases = spatialPhases/180*pi;
     theSceneFrames = cell(1, numel(spatialPhases));
     
-    for spatialPhaseIndex = 1:numel(spatialPhases)
+    % Stimulus LMS contrast vector
+    stimLMScontrast = stimColor.lmsContrast;
+    
+    % Generate scenes for each spatial phase
+    parfor spatialPhaseIndex = 1:numel(spatialPhases)
+        fprintf('Generating scene for the %2.0d deg spatial phase stimulus.\n', spatialPhases(spatialPhaseIndex)/pi*180);
+        
         % Stimulus spatial modulation of the L-, M-, and S-cone contrast
-        test.LMScontrastImage = generateSpatialContrastImage(stimSpatialParams, stimColor.lmsContrast, spatialPhases(spatialPhaseIndex));
+        LMScontrastImage = generateSpatialContrastImage(stimSpatialParams, stimLMScontrast, spatialPhases(spatialPhaseIndex));
         
         % Stimulus LMS excitations image for the given background and spatial modulation
-        test.LMSexcitationImage = bsxfun(@times, (1+test.LMScontrastImage), reshape(background.LMS, [1 1 3]));
+        LMSexcitationImage = bsxfun(@times, (1+LMScontrastImage), reshape(backgroundLMS, [1 1 3]));
     
         % Stimulus linear RGB primaries image
-        test.RGBimage = imageLinearTransform(test.LMSexcitationImage, inv(displayGet(presentationDisplay, 'rgb2lms')));
+        RGBimage = imageLinearTransform(LMSexcitationImage, inv(displayGet(presentationDisplay, 'rgb2lms')));
         
         % Make sure we are in gamut (no subpixels with primary values outside of [0 1]
-        outOfGamutPixels = numel(find((test.RGBimage(:)<0)|(test.RGBimage(:)>1)));
+        outOfGamutPixels = numel(find((RGBimage(:)<0)|(RGBimage(:)>1)));
         assert(outOfGamutPixels==0, ...
             sprintf('%d subpixels with primary values > 1; %d subpixels with primary values < 0', ...
-            numel(find(test.RGBimage>1)), numel(find(test.RGBimage<0))));
+            numel(find(RGBimage>1)), numel(find(RGBimage<0))));
         
-        % Generate a gamma corrected RGB image that we can pop in the
+        % Generate a gamma corrected RGB image (RGBsettings) that we can pop in the
         % isetbio scene straightforward
-        test.RGBimageGammaCorrected = (ieLUTLinear(test.RGBimage, displayGet(presentationDisplay, 'inverse gamma'))) / displayGet(presentationDisplay, 'nLevels');
+        RGBsettings = (ieLUTLinear(RGBimage, displayGet(presentationDisplay, 'inverse gamma'))) / displayGet(presentationDisplay, 'nLevels');
     
         % Generate scene corresponding to the test stimulus on the presentation display
         format = 'rgb';
-        meanLuminance = []; % DO NOT SET stimColor.meanLuminanceCdPerM2;
-        theScene = sceneFromFile(test.RGBimageGammaCorrected, format, meanLuminance, presentationDisplay);
+        meanLuminance = []; % EMPTY, so that mean luminance is determined from the rgb settings values we pass
+        theScene = sceneFromFile(RGBsettings, format, meanLuminance, presentationDisplay);
         
         % Set the desired FOV
         theScene = sceneSet(theScene, 'h fov', stimSpatialParams.fovDegs);

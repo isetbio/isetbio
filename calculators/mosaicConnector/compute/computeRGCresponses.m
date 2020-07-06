@@ -1,8 +1,6 @@
 function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     presynapticSignal, spatialFrequenciesCPD, LMScontrast, saveDir)
     
-    global LCONE_ID
-    
     % Load the null presynaptic responses
     mFile = matfile(fullfile(saveDir,nullResponseFilename(runParams)), 'Writable', false);
     switch presynapticSignal
@@ -18,12 +16,6 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     responseTimeAxis = mFile.responseTimeAxis;
     stimulusTimeAxis = mFile.stimulusTimeAxis;
            
-    cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
-    LConeIndices = find(cmStruct.coneTypes == LCONE_ID);
-    
-    figure(55); clf;
-    maxResponse = zeros(1, numel(spatialFrequenciesCPD));
-    
     % Compute the RGC responses
     for sfIndex = 1:numel(spatialFrequenciesCPD)
         gaborSpatialFrequencyCPD = spatialFrequenciesCPD(sfIndex);
@@ -47,82 +39,52 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         fprintf('\nComputing RGC responses ...');
         tic
 
-        [centerResponses(sfIndex,:,:,:), surroundResponses(sfIndex,:,:,:)] = ...
-            computeSubregionResponses(theConeMosaic, theMidgetRGCmosaic.centerWeights, theMidgetRGCmosaic.surroundWeights, thePresynapticResponses);
-
+        % Compute subregion responses
+        [cR, sR] = computeSubregionResponses(theConeMosaic, theMidgetRGCmosaic.centerWeights, theMidgetRGCmosaic.surroundWeights, thePresynapticResponses);
+            
+        if (sfIndex == 1)
+            % Preallocate memory
+            centerResponseInstances = zeros(numel(spatialFrequenciesCPD), size(cR,1), size(cR,2), size(cR,3));
+            surroundResponseInstances = centerResponseInstances;
+        end
+        
+        centerResponseInstances(sfIndex,:,:,:) = cR;
+        surroundResponseInstances(sfIndex,:,:,:) = sR;
+        
+        % Compute mean over all instances integrated response
+        integratedResponsesMean(sfIndex,:,:) = squeeze(mean(cR-sR, 1));
+        
+        % Compute modulation of the response at the fundamental temporal frequency
+        fundamentalTuning(:, sfIndex) = computeFundamentalResponseModulation(squeeze(integratedResponsesMean(sfIndex,:,:)));
+        
         fprintf('Done in %2.1f minutes\n', toc/60);
         
         % Display the mean presynaptic response
         showMeanMosaicResponseAsMovie = ~true;
-        theMeanPresynapticResponses = squeeze(mean(thePresynapticResponses,1));
-       
         if (showMeanMosaicResponseAsMovie)
             % Load the stimulus RGB sequence
             theStimulusRGBsequence = mFile.theStimulusRGBsequence;
-            visualizeStimConeResponseMovie(responseTimeAxes, stimulusTimeAxis, theStimulusRGBsequence, theMeanPresynapticResponses, theConeMosaic);
-        else
-            
-            subplot(3,5,sfIndex)
-            imagesc(responseTimeAxis,1:numel(LConeIndices), theMeanPresynapticResponses(LConeIndices,:));
-            set(gca, 'CLim', [0 600]);
-            title('mean spatiotemporal response');
-            colormap(gray);
-            
-            subplot(3,5,15)
-            maxResponse(sfIndex) = max(max(theMeanPresynapticResponses(LConeIndices,:)));
-            plot(spatialFrequenciesCPD(1:sfIndex), maxResponse(1:sfIndex), 'ks-');
-            set(gca, 'XLim', [0.1 60], 'XScale', 'log');
-           
+            theMeanPresynapticResponses = squeeze(mean(thePresynapticResponses,1));
+            visualizeStimResponseMovie(responseTimeAxis, stimulusTimeAxis, theStimulusRGBsequence, theMeanPresynapticResponses, theConeMosaic);
         end
     end % sfIndex
     
-    % Integrated center/surround responses
-    integratedResponses = centerResponses - surroundResponses;
     
-    % Average integrated responses over iterations
-    integratedResponsesMean = mean(integratedResponses,2);
-    integratedResponsesMean = integratedResponsesMean / max(abs(integratedResponsesMean(:)));
+    iRGC = 100;
+    figNo = 123;
+    visualizeResponseComponentsForSingleRGC(figNo, iRGC, responseTimeAxis, centerResponseInstances, surroundResponseInstances, spatialFrequenciesCPD);  
     
-    centerResponsesMean = mean(centerResponses,2);
-    surroundResponsesMean = mean(surroundResponses,2);
-    m = max(centerResponsesMean(:));
-    centerResponsesMean = centerResponsesMean/m;
-    surroundResponsesMean = surroundResponsesMean/m;
-
-    rgcsNum = size(integratedResponsesMean,3);
-    figure(123); clf;
+    % Visualize the temporal response of each RGC at the RGC's location
     for sfIndex = 1:numel(spatialFrequenciesCPD)
-        
-        subplot(3,5,sfIndex);
-        iRGC = 100;
-        timeResponse = squeeze(integratedResponsesMean(sfIndex,1,iRGC,:));
-        plot(1:length(timeResponse), timeResponse, 'gs-'); hold on;
-        timeResponse = squeeze(centerResponsesMean(sfIndex,1,iRGC,:));
-        plot(1:length(timeResponse), timeResponse, 'r-'); hold on;
-        timeResponse = squeeze(surroundResponsesMean(sfIndex,1,iRGC,:));
-        plot(1:length(timeResponse), timeResponse, 'b-'); hold on;
-        
-        set(gca, 'YLim', [-1 1]);
-
-        
-        title(sprintf('sf = %2.2f',spatialFrequenciesCPD(sfIndex)))
-        for iRGC = 1:rgcsNum
-            timeResponse = squeeze(integratedResponsesMean(sfIndex,1,iRGC,:));
-            p = prctile(timeResponse,[15 85]);
-            responseModulations(iRGC,sfIndex) = p(2)-p(1);
-            prctiles(sfIndex,iRGC,:) = p;
-        end
-    end
-    
-    zLevels = [0.3 1];
-    for sfIndex = 1:numel(spatialFrequenciesCPD)
+        zLevels = [0.3 1];
         visualizeRGCmosaicWithResponses(100+sfIndex, theConeMosaic, 'linear', ...
-           responseTimeAxis, squeeze(integratedResponsesMean(sfIndex,1,:,:)), ...
+           responseTimeAxis, squeeze(integratedResponsesMean(sfIndex,:,:)), ...
            runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
            theMidgetRGCmosaic, zLevels, 'centers');    
     end
     
-    visualizeRGCmosaicWithResponses(1000, theConeMosaic, 'log', spatialFrequenciesCPD, responseModulations, ...
+    % Visualize the spatial frequency tuning of each RGC at the RGC's location
+    visualizeRGCmosaicWithResponses(1000, theConeMosaic, 'log', spatialFrequenciesCPD, fundamentalTuning, ...
                 runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
                 theMidgetRGCmosaic, zLevels, 'centers'); 
    
@@ -142,6 +104,16 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     end
 end
 
+function fundamentalTuning = computeFundamentalResponseModulation(responses)
+        % Compute response modulations
+        rgcsNum = size(responses,1);
+        fundamentalTuning = zeros(rgcsNum,1);
+        for iRGC = 1:rgcsNum
+            timeResponse = squeeze(responses(iRGC,:));
+            p = prctile(timeResponse,[15 85]);
+            fundamentalTuning(iRGC) = p(2)-p(1);
+        end
+end
 
 function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, weightsC, weightsS, presynapticResponses)
     % Get dimensionalities
@@ -160,33 +132,14 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
     surroundIR = exp(-t/tauC);
     surroundIR = surroundIR/sum(surroundIR);
     
-%     figure(222); clf;
-%     subplot(1,2,1);
-%     plot(t, centerIR, 'rs-'); hold on;
-%     plot(t, surroundIR, 'bs-');
-%     set(gca, 'XLim', [0 200/1000]);
     
     for instanceIndex = 1:instancesNum
         % All presynaptic spatiotemporal responses for this instance
         instancePresynapticResponse = squeeze(presynapticResponses(instanceIndex,:,:));
         for iRGC = 1:rgcsNum
-
-            
             % The RGC's weights
             iRGCweightsC = (full(squeeze(weightsC(:,iRGC))))';
             iRGCweightsS = (full(squeeze(weightsS(:,iRGC))))';
-            
-%             if (iRGC == 100)
-%                 figure(999)
-%                 ax = subplot(2,2,1);
-%                 theConeMosaic.renderActivationMap(ax, iRGCweightsC', 'signalRange', [0 max(iRGCweightsC)]);
-%                 ax = subplot(2,2,2);
-%                 theConeMosaic.renderActivationMap(ax, iRGCweightsS', 'signalRange', [0 max(iRGCweightsS)]);
-%                 ax = subplot(2,2,3)
-%                 theConeMosaic.renderActivationMap(ax, instancePresynapticResponse.*iRGCweightsC' );
-%                  ax = subplot(2,2,4)
-%                 theConeMosaic.renderActivationMap(ax, instancePresynapticResponse.*iRGCweightsS' );
-%             end
             
             % The RGC temporal response
             centerR = iRGCweightsC * instancePresynapticResponse;
@@ -200,16 +153,23 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
             
             responsesC(instanceIndex,iRGC,:) = centerR;
             responsesS(instanceIndex,iRGC,:) = surroundR;
+        end % iRGC
+        
+    end % instanceIndex
+end
+        
+function  visualizeResponseComponentsForSingleRGC(figNo, iRGC, responseTimeAxis, centerResponses, surroundResponses, spatialFrequenciesCPD)
+    centerResponsesMean = squeeze(mean(centerResponses,2));
+    surroundResponsesMean = squeeze(mean(surroundResponses,2));
+    m = max(abs(centerResponsesMean(:)));
 
-%             [iRGC sum(iRGCweightsS)/sum(iRGCweightsC) mean(surroundR./centerR)]
-             
-%             subplot(1,2,2);
-%             plot(t, centerR, 'r-');
-%             hold on;
-%             plot(t, surroundR, 'b-');
-%             plot(t, centerR-surroundR, 'k-', 'LineWidth', 1.5);
-%             pause
-            
-        end
+    figure(figNo); clf;
+    for sfIndex = 1:numel(spatialFrequenciesCPD)    
+        subplot(3,5,sfIndex);
+        centerResponses = squeeze(centerResponsesMean(sfIndex,iRGC,:));
+        plot(responseTimeAxis, centerResponses, 'r-'); hold on;
+        surroundResponses = squeeze(surroundResponsesMean(sfIndex,iRGC,:));
+        plot(responseTimeAxis, surroundResponses, 'b-'); hold on;
+        set(gca, 'YLim', [-m m]);
     end
 end

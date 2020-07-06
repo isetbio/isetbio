@@ -36,8 +36,8 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     theAxes = axes('Position', [0.02 0.03 0.45 0.96]);
     renderPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
         theMidgetRGCmosaic, eccentricityMicrons, xAxis, yAxis, zLevels, subregions, true);
-    xLims = eccentricityMicrons(1)+sizeMicrons(1)/2.0*[-1 1];
-    yLims = eccentricityMicrons(2)+sizeMicrons(2)/2.0*[-1 1];
+    xLims = eccentricityMicrons(1)+1.1*sizeMicrons(1)/2.0*[-1 1];
+    yLims = eccentricityMicrons(2)+1.1*sizeMicrons(2)/2.0*[-1 1];
     axis(theAxes, 'equal');
     box(theAxes, 'on');
     set(theAxes, 'XLim', xLims, 'YLim', yLims, 'FontSize', 12);

@@ -6,13 +6,12 @@ function runPhaseX(runParams)
     % Compute cone mosaic responses
     recomputeConeMosaicResponses = ~true;
     recomputeNullResponses = ~true;
-    recomputeMosaicsAndOptics = ~true;
-    
+
     % Load/Recompute connected mosaics and the optics
-    [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicsAndOptics, saveDir);
+    [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, false, saveDir);
 
     % Stimulation parameters
-    LMScontrast = [0.1 0.0 0.0];
+    LMScontrast = [0.1 0.1 0.0];
     minSF = 0.1;
     maxSF = 60;
     spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),12);
