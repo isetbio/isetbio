@@ -28,18 +28,20 @@ function [ieObject] = setOI(obj, ieObject, varargin)
 %
 
 %% Initialization
-p = inputParser;
+
 varargin = ieParamFormat(varargin);
+
+p = inputParser;
 
 p.addRequired('obj');
 p.addRequired('ieObject');
 
 p.addParameter('meanilluminancepermm2', 5, @isnumeric);
-p.addParameter('scaleIlluminance', true, @islogical);
+p.addParameter('scaleilluminance', true, @islogical);
 
 p.parse(obj, ieObject, varargin{:});
 meanIlluminancePerMM2 = p.Results.meanilluminancepermm2;
-scaleIlluminance = p.Results.scaleIlluminance;
+scaleIlluminance = p.Results.scaleilluminance;
 
 %% Initial calculations
 ieObject = oiSet(ieObject, 'name', ...
@@ -50,48 +52,48 @@ ieObject = oiSet(ieObject, 'distance', Inf);
 
 % If there is a crop window we're going to have to adjust the FOV
 crop_window = obj.recipe.get('cropwindow');
-full_size = 2 * tand(obj.fov / 2) * obj.retinaDistance;
+retDistance = obj.recipe.get('retina distance','m');
+pupilDiameter = obj.recipe.get('pupil diameter','m');
+
+full_size = 2 * tand(obj.fov / 2) * retDistance;
 image_size = full_size .* crop_window;
 
 % Convert coordinates so center is (0, 0)
 image_size = image_size-(full_size / 2);
 
 % Assume image is square
-field_angle(1) = atand(image_size(1) / obj.retinaDistance);
-field_angle(2) = atand(image_size(2) / obj.retinaDistance);
+field_angle(1) = atand(image_size(1) / retDistance);
+field_angle(2) = atand(image_size(2) / retDistance);
 fov_crop = abs(field_angle(1) - field_angle(2));
 
 % For the optics focal length, we use the distance between the back of
 % the lens and the retina. Although it is not exactly the same as the
 % focal length for the eye (which also changes with accommodation), it
 % is a good approximation for the oiWindow.
-ieObject = oiSet(ieObject, 'optics focal length', ...
-    obj.retinaDistance * 1e-3);
-ieObject = oiSet(ieObject, 'optics fnumber', ...
-    obj.retinaDistance / obj.pupilDiameter);
+ieObject = oiSet(ieObject, 'optics focal length', retDistance);
+ieObject = oiSet(ieObject, 'optics fnumber', retDistance / pupilDiameter);
 ieObject = oiSet(ieObject, 'fov', fov_crop);
 
-% Clear default optics that do not apply to the iset3d optical
+% Set optics that do not apply to the iset3d optical
 % image. We may want to add these in in the future.
-ieObject.optics = opticsSet(ieObject.optics, 'model', 'iset3d');
-ieObject.optics = opticsSet(ieObject.optics, 'name', 'PBRT Navarro Eye');
+ieObject = oiSet(ieObject, 'optics model', 'iset3d');
+ieObject = oiSet(ieObject, 'optics name', 'PBRT Navarro Eye');
+ieObject = oiSet(ieObject, 'optics focal length',retDistance);
+
 ieObject.optics.OTF = [];
 ieObject.optics.lens.name = obj.recipe.get('lens file');
 ieObject.optics.offaxis = '';
 ieObject.optics.vignetting = [];
 
-%% Apply lens transmittance
-% The following code is from oiCalculateIrradiance.m
-ieObject = oiSet(ieObject, 'lens density', obj.lensDensity);
-irradiance = oiGet(ieObject, 'photons');
-wave = oiGet(ieObject, 'wave');
+%% Calculate and apply lens transmittance
 
-if isfield(ieObject.optics, 'lens')
-    transmittance = opticsGet(ieObject.optics, 'transmittance', ...
-        'wave', wave);
-else
-    transmittance = opticsGet(ieObject.optics, 'transmittance', wave);
-end
+thisLens = Lens;
+thisLens.wave = oiGet(ieObject,'wave');
+thisLens.density = obj.lensDensity;
+ieObject = oiSet(ieObject,'optics lens',thisLens);
+
+irradiance = oiGet(ieObject, 'photons');
+transmittance = oiGet(ieObject, 'optics transmittance');
 
 if any(transmittance(:) ~= 1)
     % Do this in a loop to avoid large memory demand
@@ -107,11 +109,12 @@ ieObject = oiSet(ieObject, 'photons', irradiance);
 % in piDat2ISET.m. Until we add that code, let's make the change here where
 % the aperture size is known from the sceneEye object. 
 if(scaleIlluminance)
-    lensArea = pi * (obj.pupilDiameter / 2) ^ 2;
+    lensArea = pi * (pupilDiameter / 2) ^ 2;
     meanIlluminance = meanIlluminancePerMM2 * lensArea;
     
     ieObject = oiAdjustIlluminance(ieObject, meanIlluminance);
-    ieObject.data.illuminance = oiCalculateIlluminance(ieObject);
+    ieObject = oiSet(ieObject,'illuminance',oiCalculateIlluminance(ieObject));
 end
+% oiWindow(ieObject);
 
 end

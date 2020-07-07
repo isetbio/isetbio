@@ -39,11 +39,11 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %%
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
-p.addParameter('scaleIlluminance', true, @islogical);
+p.addParameter('scaleilluminance', true, @islogical);
 p.addParameter('reuse', false, @islogical);
 
 p.parse(obj, varargin{:});
-scaleIlluminance = p.Results.scaleIlluminance;
+scaleIlluminance = p.Results.scaleilluminance;
 reuse = p.Results.reuse;
 
 %% Write out into a pbrt file
@@ -57,11 +57,12 @@ if reuse
 else
     [ieObject, terminalOutput] = piRender(recipe);
 end
+% oiWindow(ieObject);
 
 %% If we are not in debug mode, set OI parameters.  
 % I guess if we are in debug mode, we return a scene.
 if(~obj.debugMode)
-    ieObject = obj.setOI(ieObject, 'scaleIlluminance', scaleIlluminance);
+    ieObject = obj.setOI(ieObject, 'scale illuminance', scaleIlluminance);
 end
 
 end

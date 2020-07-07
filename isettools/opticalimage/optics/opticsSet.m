@@ -209,8 +209,8 @@ switch parm
         if isfield(optics, 'transmittance')
             optics.transmittance.wave = val;
         else
-            fprintf('Set transmittance only for diffraction');
-            fprintf('Set lens density for human case')
+            fprintf('Set transmittance only for diffraction\n');
+            fprintf('Set lens density for human case\n')
             fprintf('Optics name: %s', optics.name);
         end
 

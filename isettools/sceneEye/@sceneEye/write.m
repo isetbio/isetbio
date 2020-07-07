@@ -79,9 +79,11 @@ switch ieParamFormat(objNew.modelName)
             warning('No accommodation! Setting to 5 diopters.');
         end
 
+        navarroWrite(objNew.recipe);
+        
         % This function also writes out the Navarro lens file
-        recipe = setNavarroAccommodation(recipe, objNew.accommodation, ...
-            objNew.workingDir);
+        % recipe = setNavarroAccommodation(recipe, objNew.accommodation, ...
+        %     objNew.workingDir);
 
     case {'legrand'}
         % Le Grand eye does not have accommodation (not yet at least).
