@@ -369,7 +369,7 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
     successfullReassignementsNum = 0;
     orphanAssignmentsNum = 0;
     
-    eccDegs =  WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCRFSpacingsMicrons(rgcIDsWithTwoMismatchedConeInputs,:).^2,2))/1000.0);
+    eccDegs =  WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCRFPositionsMicrons(rgcIDsWithTwoMismatchedConeInputs,:).^2,2))/1000.0);
     
     % Probabilities of cone-specific wiring
     pAttemptConeSpecificity = rand(1,numel(rgcIDsWithTwoMismatchedConeInputs))<=maximizeConeSpecificity/100;
@@ -454,7 +454,7 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsMicrons] = ...
     minConeInputsNum = 3;
     maxInputsNum = 3;
     [rgcIDsWithThreeConeInputs, indicesOfConnectedCones] = findRGCsWithThreeOrMoreConeInputs(connectionMatrix, minConeInputsNum, maxInputsNum, RGCRFPositionsMicrons);
-    eccDegs =  WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCRFSpacingsMicrons(rgcIDsWithThreeConeInputs,:).^2,2))/1000.0);
+    eccDegs =  WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCRFPositionsMicrons(rgcIDsWithThreeConeInputs,:).^2,2))/1000.0);
     
     fprintf('\n -PASS 4: Reassigning 3-rd cone input of %d 3-cone input RGCs to a nearby orphanRGC or an RGC with 1 cone input ...',  numel(rgcIDsWithThreeConeInputs));
     tic

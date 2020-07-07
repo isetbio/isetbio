@@ -13,7 +13,7 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
         mRGCmosaicFile = fullfile(runParams.outputDir, sprintf('%s.mat',runParams.inputFile));
 
         % Generate cone mosaic and connected mRGC mosaic patches
-        [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams, ...
+        [theConeMosaic, theMidgetRGCmosaic] = edit(mRGCmosaicFile, mosaicParams, ...
              runParams.outputFile, runParams.exportsDir);
          
         wavelengthSampling = theConeMosaic.pigment.wave;

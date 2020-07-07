@@ -1,32 +1,16 @@
-function computeConeResponses(runParams, theConeMosaic, theOptics, ...
+function computeConeResponses(runParams, ...
+    stimColor,  stimTemporalParams, stimSpatialParams, ...
+    theConeMosaic, theOptics, ...
     recomputeNullResponses, ...
-    instancesNum, stimDurationSeconds, stimulusFOVdegs, stimulusPixelsNum, ...
-    spatialFrequenciesCPD, temporalFrequency, LMScontrast, ...
+    instancesNum, ...
+    spatialFrequenciesCPD, ...
     saveDir)
 
-    % Generate sine-wave scene as realized on a display
-    stimColor = struct(...
-        'backgroundChroma', [0.3, 0.31], ...
-        'meanLuminanceCdPerM2', 40, ...
-        'lmsContrast', LMScontrast);
-    
-    stimTemporalParams = struct(...
-        'temporalFrequencyHz', temporalFrequency, ...
-        'stimDurationSeconds', stimDurationSeconds);
     
     % Determine phase increment at each stimulus frame so as to get required temporal frequency with the
     % constraint that the frame duration is evenly divisible by cone mosaic integration time
-    [deltaPhaseDegs, stimTemporalParams.temporalFrequencyHz] = ...
+    [stimSpatialParams.deltaPhaseDegs, stimTemporalParams.temporalFrequencyHz] = ...
         computeDeltaPhaseDegs(stimTemporalParams.temporalFrequencyHz, theConeMosaic.integrationTime);
-    
-    stimSpatialParams = struct(...
-        'fovDegs', stimulusFOVdegs,...
-        'pixelsNum', stimulusPixelsNum, ...
-        'gaborPosDegs', [0 0], ...
-        'gaborSpatialFrequencyCPD', 0, ...
-        'gaborSigmaDegs', Inf, ... %stimulusFOVdegs/(2*4), ...%Inf, ...
-        'gaborOrientationDegs', 0, ...
-        'deltaPhaseDegs', deltaPhaseDegs);
     
     if (recomputeNullResponses)
         % Compute the null (zero contrast, no-noise responses)
@@ -37,6 +21,9 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
         wavelengthSampling = theConeMosaic.pigment.wave;
         [theNullSceneFrames, presentationDisplay] = generateStimulusFrames(nullColor, stimSpatialParams, wavelengthSampling);
         
+        % Generate the stimulus SRGBsequence
+        theStimulusSRGBsequence = extractSRGBsequence(theNullSceneFrames, presentationDisplay);
+        
         % Generate the corresponding optical image sequence
         fprintf('\nComputing the NULL oiSequence ...');
         tic
@@ -46,7 +33,6 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
         clear 'theNullSceneFrames';
         fprintf('Done in %2.1f minutes\n', toc/60);
 
-        
         % Zero eye movements
         eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
         emPaths = zeros(1, eyeMovementsNum, 2);
@@ -86,7 +72,7 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
         fprintf('\nExporting the NULL responses ...');
         tic
         % Extract the RGB sequence of optical images for the  null stimulus
-        theStimulusRGBsequence = extractRGBsequence(theOIsequence, presentationDisplay);
+        %theOISRGBsequence = extractSRGBsequence(theOIsequence, presentationDisplay);
         
         % Extract the stimulus and response time axes
         stimulusTimeAxis = theOIsequence.timeAxis;
@@ -94,7 +80,8 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
         
         % Save the null responses, and the photocurrent impulse responses/mean currents
         save(fullfile(saveDir, nullResponseFilename(runParams)), ...
-             'theStimulusRGBsequence', ...
+             'stimColor', 'stimTemporalParams', 'stimSpatialParams', ...
+             'theStimulusSRGBsequence', ...
              'isomerizationsNull', ...
              'photocurrentsNull', ...
              'responseTimeAxis', ...
@@ -127,6 +114,9 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
         wavelengthSampling = theConeMosaic.pigment.wave;
         [theSceneFrames, presentationDisplay, sceneLuminanceSlice] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling);
         
+        % Generate the stimulus SRGBsequence
+        theStimulusSRGBsequence = extractSRGBsequence(theSceneFrames, presentationDisplay);
+        
         figure(4000);
         subplot(3,5,sfIndex)
         imagesc(sceneLuminanceSlice);
@@ -143,7 +133,7 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
         % Generate the corresponding optical image sequence
         fprintf('\nComputing the %2.1f c/deg, [%2.2f %2.2f %2.2f] LMS %2.1f-second stimulus oiSequence ...', ...
             stimSpatialParams.gaborSpatialFrequencyCPD, ...
-            LMScontrast(1), LMScontrast(2), LMScontrast(3), ...
+            stimColor.lmsContrast(1), stimColor.lmsContrast(2), stimColor.lmsContrast(3), ...
             stimTemporalParams.stimDurationSeconds);
         tic
         theOIsequence = generateOISequenceForDriftingGrating(theSceneFrames, theOptics, stimTemporalParams);
@@ -172,8 +162,9 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
         fprintf('\nExporting the %2.1f c/deg responses ...', stimSpatialParams.gaborSpatialFrequencyCPD);
         tic
         % Extract the RGB sequence of optical images for the  null stimulus
-        [theStimulusRGBsequence, retinalIlluminanceSlice] = extractRGBsequence(theOIsequence, presentationDisplay);
+        [~, retinalIlluminanceSlice] = extractSRGBsequence(theOIsequence, presentationDisplay);
        
+        
         figure(6000);
         subplot(3,5,sfIndex)
         imagesc(retinalIlluminanceSlice);
@@ -186,14 +177,15 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
         set(gca, 'XLim', [0.1 60], 'XScale', 'log');
         colormap(gray);
         
-        save(fullfile(saveDir,sprintf('%s_%2.1fCPD.mat',testResponseFilename(runParams, LMScontrast), stimSpatialParams.gaborSpatialFrequencyCPD)), ...
-            'theStimulusRGBsequence', ...
+        save(fullfile(saveDir,sprintf('%s_%2.1fCPD.mat',testResponseFilename(runParams, stimColor.lmsContrast), stimSpatialParams.gaborSpatialFrequencyCPD)), ...
+            'stimColor', 'stimTemporalParams', 'stimSpatialParams', ...
+            'theStimulusSRGBsequence', ...
             'isomerizations', ...
             'photocurrents', ...
             '-v7.3');
         
         fprintf('Done in %2.1f minutes!\n', toc/60);
-        clear('theStimulusRGBsequence');
+        clear('theStimulusSRGBsequence');
         clear('isomerizations');
         clear('photocurrents');
         clear('theOIsequence');
@@ -202,23 +194,41 @@ function computeConeResponses(runParams, theConeMosaic, theOptics, ...
 
 end
 
-function [theRGBsequence,retinalIlluminanceSlice] = extractRGBsequence(theOIsequence, presentationDisplay)
-    
+function [theSRGBsequence, theSlices] = extractSRGBsequence(theSequence, presentationDisplay)
     displaySPDs = displayGet(presentationDisplay, 'spd'); 
-    theOI = theOIsequence.frameAtIndex(1);
-    retinalIlluminanceImage = oiGet(theOI, 'illuminance');
-    framesNum = theOIsequence.length;
-    theRGBsequence = zeros(framesNum , size(retinalIlluminanceImage,1), size(retinalIlluminanceImage,2), 3, 'uint8');
-    retinalIlluminanceSlice = zeros(framesNum, size(retinalIlluminanceImage,2), 'single');
-    midRow = round(size(retinalIlluminanceImage,1)/2);
-   
-    for k = 1:framesNum
-        theOI = theOIsequence.frameAtIndex(k);
-        retinalIrradianceImage = oiGet(theOI, 'energy');
+    
+    if (isa(theSequence, 'oiArbitrarySequence'))
+        framesNum = theOIsequence.length;
+        theOI = theSequence.frameAtIndex(1);
         retinalIlluminanceImage = oiGet(theOI, 'illuminance');
-        retinalIlluminanceSlice(k,:) = single(squeeze(retinalIlluminanceImage(midRow,:)));
-        [~, retinalSRGBimage] = displayRadianceToDisplayRGB(retinalIrradianceImage, displaySPDs);
-        theRGBsequence(k,:,:,:) = uint8(retinalSRGBimage*255.0);
+        theSRGBsequence = zeros(framesNum , size(retinalIlluminanceImage,1), size(retinalIlluminanceImage,2), 3, 'uint8');
+        theSlices = zeros(framesNum, size(retinalIlluminanceImage,2), 'single');
+        midRow = round(size(retinalIlluminanceImage,1)/2);
+
+        for k = 1:framesNum
+            theOI = theOIsequence.frameAtIndex(k);
+            retinalIrradianceImage = oiGet(theOI, 'energy');
+            retinalIlluminanceImage = oiGet(theOI, 'illuminance');
+            theSlices(k,:) = single(squeeze(retinalIlluminanceImage(midRow,:)));
+            [~, retinalSRGBimage] = displayRadianceToDisplaySRGB(retinalIrradianceImage, displaySPDs);
+            theSRGBsequence(k,:,:,:) = uint8(retinalSRGBimage*255.0);
+        end
+    elseif (iscell(theSequence))
+        framesNum = numel(theSequence);
+        for k = 1:framesNum 
+            theScene = theSequence{k};
+            [~, sceneSRGBimage] = ...
+                sceneRepresentations(theScene, presentationDisplay);
+            if (k == 1)
+                theRGBsequence = zeros(framesNum , size(sceneSRGBimage,1), size(sceneSRGBimage,2), 3, 'uint8');
+                theSlices = zeros(framesNum, size(sceneSRGBimage,2), 'single');
+            end
+            luminanceImage = sceneGet(theScene, 'luminance');
+            theSRGBsequence(k,:,:,:) = uint8(sceneSRGBimage*255.0);
+            midRow = round(size(sceneSRGBimage,1)/2);
+            theSlices(k,:) = single(squeeze(luminanceImage(midRow,:)));
+        end
+         
     end
     
 end

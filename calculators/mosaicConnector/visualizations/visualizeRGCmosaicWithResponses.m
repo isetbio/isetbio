@@ -1,6 +1,8 @@
 function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScaling, ...
-    xAxisData, theMidgetRGCmosaicResponses, eccentricityMicrons, sizeMicrons, ...
-    theMidgetRGCmosaic,  zLevels, subregions)
+    xAxisData, theMidgetRGCmosaicResponses, ...
+    xAxisDataFit, theMidgetRGCmosaicResponsesFit, ...
+    eccentricityMicrons, sizeMicrons, ...
+    theMidgetRGCmosaic,  zLevels, subregions, maxSpikeRate)
 
     % Retrieve cone positions (microns), cone spacings, and cone types
     cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
@@ -44,7 +46,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
 
     
     rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
-    RGCpositions = determineResponsePositions(theConeMosaic, eccentricityMicrons, theMidgetRGCmosaic.centerWeights);
+    [~,RGCpositionsNormalized] = determineRGCPositionsFromCenterInputs(theConeMosaic, eccentricityMicrons, theMidgetRGCmosaic.centerWeights);
     
     w = 0.1/2;
     h = 0.1/2;
@@ -53,42 +55,39 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     m = 0.015/2;
 
     for iRGC = 1:rgcsNum
-            ax = axes('Position', [0.48+gw*RGCpositions(iRGC,1)+m 0.03+gh*RGCpositions(iRGC,2)+m w h]);
-            line(ax, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), 'Color', [0 0 0], 'LineWidth', 1.5);
+            ax = axes('Position', [0.48+gw*RGCpositionsNormalized(iRGC,1)+m 0.03+gh*RGCpositionsNormalized(iRGC,2)+m w h]);
+            if (strcmp(xAxisScaling, 'log'))
+                markerSize = 169;
+                lineColor = [1 0 0];
+            else
+                markerSize = 100;
+                lineColor = [0 1 1];
+            end
+            
+            scatter(ax, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), markerSize, '.', ...
+                    'MarkerFaceColor', [0 0 1], 'MarkerEdgeColor', [0 0 1]);
+            if (~isempty(xAxisDataFit))
+                hold(ax, 'on')
+                line(ax, xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), 'Color', lineColor, 'LineWidth', 1.5);
+                hold(ax, 'off');
+            end
             set(ax, 'XTickLabel', {}, 'YTickLabel', {}, ...
-                'XLim', [xAxisData(1) xAxisData(end)], 'YLim', [min(theMidgetRGCmosaicResponses(:)) max(theMidgetRGCmosaicResponses(:))], ...
+                'XLim', [xAxisData(1) xAxisData(end)], ...
                 'XColor', 'none', 'YColor', 'none');
             set(ax, 'XScale', xAxisScaling);
-            box(ax, 'off'); grid(ax, 'off');
+            if (strcmp(xAxisScaling, 'log'))
+                set(ax, 'XTick', [0.1 0.3 1 3 10 30], 'YTick', (0:0.25:1)*max(theMidgetRGCmosaicResponses(:)), ...
+                    'YLim', [0 2*maxSpikeRate]);
+            else
+                set(ax, 'XTick',linspace(xAxisData(1), xAxisData(end), 5), 'YTick', max(abs(theMidgetRGCmosaicResponses(:)))*(-1:0.25:1), ...
+                    'YLim', maxSpikeRate*[-1.0 1.0]);
+            end
+            box(ax, 'on'); grid(ax, 'on');
             axis(ax, 'square')
             drawnow;
     end
         
 end
-
-
-function RGCpositions = determineResponsePositions(theConeMosaic, eccentricityMicrons, centerWeights)
-     % Retrieve cone positions (microns), cone spacings, and cone types
-    cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
-    
-    % Cone positions: add the mosaic center so as to align with ecc-varying full mRGC mosaic
-    conePositionsMicrons = bsxfun(@plus, cmStruct.coneLocsMicrons, eccentricityMicrons);
-    
-    rgcsNum = size(centerWeights,2);
-    RGCpositions = zeros(rgcsNum,2);
-    for iRGC = 1:rgcsNum
-        weights = full(squeeze(centerWeights(:, iRGC)));
-        centerIndices = find(weights>0);
-        RGCpositions(iRGC,:) = mean(conePositionsMicrons(centerIndices,:),1);
-    end
-    
-    % Normalize to [0..1]
-    mins = min(RGCpositions, [], 1);
-    maxs = max(RGCpositions, [], 1);
-    RGCpositions(:,1) = (RGCpositions(:,1)-mins(1))/(maxs(1)-mins(1));
-    RGCpositions(:,2) = (RGCpositions(:,2)-mins(2))/(maxs(2)-mins(2));
-end
-
 
 function renderPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
     theMidgetRGCmosaic, eccentricityMicrons, xAxis, yAxis, zLevels, subregions, coneLabeling)

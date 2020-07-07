@@ -1,5 +1,5 @@
 function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
-    presynapticSignal, spatialFrequenciesCPD, LMScontrast, saveDir)
+    presynapticSignal, spatialFrequenciesCPD, LMScontrast, stimSpatialParams, stimTemporalParams, saveDir)
     
     % Load the null presynaptic responses
     mFile = matfile(fullfile(saveDir,nullResponseFilename(runParams)), 'Writable', false);
@@ -51,12 +51,6 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         centerResponseInstances(sfIndex,:,:,:) = cR;
         surroundResponseInstances(sfIndex,:,:,:) = sR;
         
-        % Compute mean over all instances integrated response
-        integratedResponsesMean(sfIndex,:,:) = squeeze(mean(cR-sR, 1));
-        
-        % Compute modulation of the response at the fundamental temporal frequency
-        fundamentalTuning(:, sfIndex) = computeFundamentalResponseModulation(squeeze(integratedResponsesMean(sfIndex,:,:)));
-        
         fprintf('Done in %2.1f minutes\n', toc/60);
         
         % Display the mean presynaptic response
@@ -70,25 +64,74 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     end % sfIndex
     
     
+   % Compute mean over all instances integrated response. This is used
+   % to measure the F tuning below.
+   integratedResponseInstances = centerResponseInstances-surroundResponseInstances;
+   
+   % Convert to spikes/sec
+   maxSpikeRate = 200;
+   m99 = prctile(integratedResponseInstances(:), 99);
+   
+   integratedResponseInstances = integratedResponseInstances / m99 * maxSpikeRate;
+   integratedResponsesMean = squeeze(mean(integratedResponseInstances,2));
+   integratedResponsesStDev = squeeze(std(integratedResponseInstances,0,2));
+        
+   for sfIndex = 1:numel(spatialFrequenciesCPD)
+        
+        % Compute response tuning
+        switch (stimSpatialParams.type)
+            case 'driftingGrating'
+                visualizeFits = ~true;
+                % Compute modulation of the response at the fundamental temporal frequency
+                [responseAmplitude(:, sfIndex), responsePhase(:, sfIndex), ...
+                    responseTimeAxisHR, fittedResponsesHR(sfIndex,:,:)] = fitSinusoidalModulationToResponseTimeCourse(...
+                    squeeze(integratedResponsesMean(sfIndex,:,:)), ...
+                    squeeze(integratedResponsesStDev(sfIndex,:,:)), ...
+                    responseTimeAxis, ...
+                    stimTemporalParams.temporalFrequencyHz, ...
+                    visualizeFits, spatialFrequenciesCPD(sfIndex), maxSpikeRate);
+            otherwise
+                error('Unknown stimulus type: ''%''.', stimulusSpatialParams.type)
+        end
+    end
+    
+    % Fit the responses
+    plotFitResults = ~true; initialParams = [];
+    [~,~,~, meanParams] = ...
+        fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, plotFitResults, initialParams, maxSpikeRate);
+    
+    % Second fit
+    plotFitResults = true; initialParams = meanParams;
+    [patchDogParams,spatialFrequenciesCPDHR, responseAmplitudeHR, meanParams] = ...
+        fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, plotFitResults, initialParams, maxSpikeRate);
+
+    % Visualize data to contrast with Cronner and Kaplan data
+    RGCpositionsMicrons = determineRGCPositionsFromCenterInputs(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, theMidgetRGCmosaic.centerWeights);
+    RGCeccentricityDegs = WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCpositionsMicrons.^2,2))/1000.0);
+    visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCeccentricityDegs);
+    
     iRGC = 100;
     figNo = 123;
-    visualizeResponseComponentsForSingleRGC(figNo, iRGC, responseTimeAxis, centerResponseInstances, surroundResponseInstances, spatialFrequenciesCPD);  
+    visualizeResponseComponentsForSingleRGC(figNo, iRGC, responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
+        responseTimeAxisHR, squeeze(fittedResponsesHR(:,iRGC,:)), spatialFrequenciesCPD, maxSpikeRate);  
     
     % Visualize the temporal response of each RGC at the RGC's location
     for sfIndex = 1:numel(spatialFrequenciesCPD)
         zLevels = [0.3 1];
         visualizeRGCmosaicWithResponses(100+sfIndex, theConeMosaic, 'linear', ...
            responseTimeAxis, squeeze(integratedResponsesMean(sfIndex,:,:)), ...
+           responseTimeAxisHR, squeeze(fittedResponsesHR(sfIndex,:,:)), ...
            runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-           theMidgetRGCmosaic, zLevels, 'centers');    
+           theMidgetRGCmosaic, zLevels, 'centers', maxSpikeRate);    
     end
     
-    % Visualize the spatial frequency tuning of each RGC at the RGC's location
-    visualizeRGCmosaicWithResponses(1000, theConeMosaic, 'log', spatialFrequenciesCPD, fundamentalTuning, ...
+    % Visualize the response tuning of each RGC at the RGC's location
+    visualizeRGCmosaicWithResponses(1000, theConeMosaic, 'log', ...
+                spatialFrequenciesCPD, responseAmplitude, ...
+                spatialFrequenciesCPDHR, responseAmplitudeHR, ...
                 runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-                theMidgetRGCmosaic, zLevels, 'centers'); 
+                theMidgetRGCmosaic, zLevels, 'centers', maxSpikeRate); 
    
-    
     % Visualize the mosaics
     visualizeMosaics = ~true;
     if (visualizeMosaics)
@@ -102,17 +145,6 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         plotlabOBJ.exportFig(hFig, 'pdf', sprintf('%s.mat',coneResponsesFileName), pwd());
         fprintf('Done !\n');
     end
-end
-
-function fundamentalTuning = computeFundamentalResponseModulation(responses)
-        % Compute response modulations
-        rgcsNum = size(responses,1);
-        fundamentalTuning = zeros(rgcsNum,1);
-        for iRGC = 1:rgcsNum
-            timeResponse = squeeze(responses(iRGC,:));
-            p = prctile(timeResponse,[15 85]);
-            fundamentalTuning(iRGC) = p(2)-p(1);
-        end
 end
 
 function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, weightsC, weightsS, presynapticResponses)
@@ -158,18 +190,21 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
     end % instanceIndex
 end
         
-function  visualizeResponseComponentsForSingleRGC(figNo, iRGC, responseTimeAxis, centerResponses, surroundResponses, spatialFrequenciesCPD)
+function  visualizeResponseComponentsForSingleRGC(figNo, iRGC, responseTimeAxis, centerResponses, surroundResponses, ...
+    responseTimeAxisHR, fittedResponses, spatialFrequenciesCPD, maxSpikeRate)
+
     centerResponsesMean = squeeze(mean(centerResponses,2));
     surroundResponsesMean = squeeze(mean(surroundResponses,2));
-    m = max(abs(centerResponsesMean(:)));
+    m = maxSpikeRate;
 
     figure(figNo); clf;
     for sfIndex = 1:numel(spatialFrequenciesCPD)    
         subplot(3,5,sfIndex);
         centerResponses = squeeze(centerResponsesMean(sfIndex,iRGC,:));
-        plot(responseTimeAxis, centerResponses, 'r-'); hold on;
+        plot(responseTimeAxis, centerResponses, 'rs-'); hold on;
         surroundResponses = squeeze(surroundResponsesMean(sfIndex,iRGC,:));
-        plot(responseTimeAxis, surroundResponses, 'b-'); hold on;
+        plot(responseTimeAxis, surroundResponses, 'bs-');
+        plot(responseTimeAxisHR, squeeze(fittedResponses(sfIndex,:)), 'k-', 'LineWidth', 1.5);
         set(gca, 'YLim', [-m m]);
     end
 end
