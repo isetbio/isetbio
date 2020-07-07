@@ -5,13 +5,13 @@ function runPhaseX(runParams)
     
     % Compute cone mosaic responses
     recomputeConeMosaicResponses = true;
-    recomputeNullResponses = true;
+    recomputeNullResponses = ~true;
 
     % Load/Recompute connected mosaics and the optics
-    [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, true, saveDir);
+    [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, false, saveDir);
 
     % Stimulation parameters
-    LMScontrast = [0.1 0.1 0.0];
+    LMScontrast = [0.1 0.0 0.0];
     minSF = 0.1;
     maxSF = 60;
     spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),12);
@@ -21,7 +21,7 @@ function runPhaseX(runParams)
     stimulusPixelsNum = maxSF*stimulusFOVdegs*minPixelsPerCycle;
     temporalFrequency = 4.0;
     stimDurationSeconds = 0.5;
-    instancesNum = 2;
+    instancesNum = 16;
     
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
@@ -52,7 +52,7 @@ function runPhaseX(runParams)
             theConeMosaic, theOptics, ...
             recomputeNullResponses, ...
             instancesNum, ...
-            spatialFrequenciesCPD, temporalFrequency, LMScontrast, ...
+            spatialFrequenciesCPD, ...
             saveDir);
     else
         computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...

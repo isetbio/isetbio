@@ -25,7 +25,7 @@ function [theSceneFrames, presentationDisplay, sceneLuminanceSlice] = generateSt
     
     % Generate scenes for each spatial phase
     parfor spatialPhaseIndex = 1:numel(spatialPhases)
-        fprintf('Generating scene for the %2.0d deg spatial phase stimulus.\n', spatialPhases(spatialPhaseIndex)/pi*180);
+        fprintf('Generating scene for the %2.0f deg spatial phase stimulus.\n', spatialPhases(spatialPhaseIndex)/pi*180);
         
         % Stimulus spatial modulation of the L-, M-, and S-cone contrast
         LMScontrastImage = generateSpatialContrastImage(stimSpatialParams, stimLMScontrast, spatialPhases(spatialPhaseIndex));
@@ -69,7 +69,7 @@ function [theSceneFrames, presentationDisplay, sceneLuminanceSlice] = generateSt
 
             % Assert that the scene cone contrasts match the desired ones
             figNo = 1999;
-            assertDisplayContrasts(figNo, sceneLMScontrastsImage, test.LMScontrastImage);
+            assertDisplayContrasts(figNo, sceneLMScontrastsImage, sceneLMScontrastImage);
 
             % Visualize scene components
             figNo = 2000;
