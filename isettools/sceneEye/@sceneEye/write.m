@@ -147,11 +147,12 @@ recipe.film.yresolution.value = objNew.resolution;
 % Camera parameters
 if(objNew.debugMode)
     % Use a perspective camera with matching FOV instead of an eye.
-    recipe.set('fov',obj.fov);  
-    %{
-    fov = struct('value', objNew.fov, 'type', 'float');
-    recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
-        'fov', fov);
+    
+    
+    %
+    % fov = struct('value', objNew.fov, 'type', 'float');
+    % recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
+    %     'fov', fov);
     %}
     %{
     if(objNew.accommodation ~= 0)
@@ -286,6 +287,7 @@ else
 end
 %}
 
-obj.recipe = recipe; % Update the recipe.
+% Not sure about any changes to recipe.  We should check carefully.
+obj.recipe = recipe; 
 
 end

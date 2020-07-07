@@ -74,6 +74,10 @@ switch param
         % will be replaced by a pinhole in the write() phase.
     case 'debugmode'
         obj.debugMode = val;
+        
+        %{
+        % Too many things were happening here.  I do not think we need this
+        % any more.
         if(val)
             obj.modelName = 'perspective';
             % The camera will be changed to perspective in write(), so we
@@ -86,6 +90,7 @@ switch param
             warning('Need to set the accom distance coming out of debug mode');
             obj.recipe.camera = piCameraCreate('humaneye');
         end
+        %}
         
         % I want to put in this warning, but again MATLAB doesn't really like
         % this!

@@ -46,23 +46,40 @@ p.parse(obj, varargin{:});
 scaleIlluminance = p.Results.scaleilluminance;
 reuse = p.Results.reuse;
 
+thisR = obj.recipe;
+
+if obj.debugMode
+    % We will render a scene through a pinhole camera
+    cameraSave = thisR.get('camera');
+    thisR.set('camera',piCameraCreate('pinhole'));
+    thisR.set('fov',obj.fov);
+end
+
 %% Write out into a pbrt file
+
+% Can this just be piWrite(thisR)?  Or does write() do a lot of stuff?
+
 objNew = obj.write();
-recipe = objNew.recipe; % Update the recipe within the sceneEye object.
+thisR = objNew.recipe; % Update the recipe within the sceneEye object.
 
 %% Render the pbrt file using docker
 %scaleFactor = [];
 if reuse
-    [ieObject, terminalOutput] = piRender(recipe, 'reuse', true);
+    [ieObject, terminalOutput] = piRender(thisR, 'reuse', true);
 else
-    [ieObject, terminalOutput] = piRender(recipe);
+    [ieObject, terminalOutput] = piRender(thisR);
 end
-% oiWindow(ieObject);
 
 %% If we are not in debug mode, set OI parameters.  
 % I guess if we are in debug mode, we return a scene.
 if(~obj.debugMode)
     ieObject = obj.setOI(ieObject, 'scale illuminance', scaleIlluminance);
+else
+    thisR.set('camera',cameraSave);
+    obj.recipe = thisR;
 end
+
+% oiWindow(ieObject);
+
 
 end
