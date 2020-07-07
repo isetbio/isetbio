@@ -68,7 +68,7 @@ if(ecc ~= [0, 0])
 end
 
 %% Given the sceneEye object, make all adjustments needed to the recipe
-recipe = objNew.recipe;
+thisR = objNew.recipe;
 
 % Depending on the eye model, set the lens file appropriately
 switch ieParamFormat(objNew.modelName)
@@ -87,7 +87,7 @@ switch ieParamFormat(objNew.modelName)
 
     case {'legrand'}
         % Le Grand eye does not have accommodation (not yet at least).
-        recipe = writeLegrandLensFile(recipe, objNew.workingDir); 
+        thisR = writeLegrandLensFile(thisR, objNew.workingDir); 
 
     case{'arizona'}
         if(isempty(objNew.accommodation))
@@ -96,13 +96,13 @@ switch ieParamFormat(objNew.modelName)
         end
 
         % This function also writes out the Arizona lens file.
-        recipe = setArizonaAccommodation(recipe, objNew.accommodation, ...
+        thisR = setArizonaAccommodation(thisR, objNew.accommodation, ...
             objNew.workingDir);
 
     case{'custom'}
         
         % Run this first to generate the IOR files.
-        setNavarroAccommodation(recipe, 0, objNew.workingDir);
+        setNavarroAccommodation(thisR, 0, objNew.workingDir);
 
         % Copy the lens file given over
         if(isempty(obj.lensFile))
@@ -114,9 +114,9 @@ switch ieParamFormat(objNew.modelName)
             [~, n, e] = fileparts(obj.lensFile);
 
             if(success)
-                recipe.camera.lensfile.value = ...
+                thisR.camera.lensfile.value = ...
                     fullfile(objNew.workingDir, [n e]);
-                recipe.camera.lensfile.type = 'string';
+                thisR.camera.lensfile.type = 'string';
             else
                 error('Error copying lens file. Err message: %s', message);
             end
@@ -129,150 +129,47 @@ switch ieParamFormat(objNew.modelName)
 
 end
 
-% Film parameters
-% This should always be
-%   sceneEye.set('x resolution',val);
-% 
-%  and that set should set 
-%
-%  sceneEye.recipe.film.xresolution
-%
-
-% In that case, we wouldn't need this copy.
-%{
-recipe.film.xresolution.value = objNew.resolution;
-recipe.film.yresolution.value = objNew.resolution;
-%}
-
-% Camera parameters
-if(objNew.debugMode)
-    % Use a perspective camera with matching FOV instead of an eye.
-    
-    
-    %
-    % fov = struct('value', objNew.fov, 'type', 'float');
-    % recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
-    %     'fov', fov);
-    %}
-    %{
-    if(objNew.accommodation ~= 0)
-        warning(['Setting perspective camera focal distance to %0.2f ' ...
-            'dpt and lens radius to %0.2f mm'], ...
-            objNew.accommodation, objNew.pupilDiameter);
-        recipe.camera.focaldistance.value = 1/objNew.accommodation;
-        recipe.camera.focaldistance.type = 'float';
-
-        recipe.camera.lensradius.value = ...
-            (objNew.pupilDiameter / 2) * 10 ^ -3;
-        recipe.camera.lensradius.type = 'float';
-    end
-    %}
-else
-    % Same comment as above for all of these.  We should be using
-    %   sceneEye.set('retina distance',val) and it should be setting 
-    %
-    %   sceneEye.recipe.camera. ....
-    %
-    %{
-    recipe.camera.retinaDistance.value = objNew.retinaDistance;
-    recipe.camera.pupilDiameter.value = objNew.pupilDiameter;
-    recipe.camera.retinaDistance.value = objNew.retinaDistance;
-    recipe.camera.retinaRadius.value = objNew.retinaRadius;
-    %}
-    
-    % Maybe we always need a 'fov' in the sceneEye object for this purpose,
-    % which may be related to the retinal curvature?  The semiDiam is the
-    % radius of the implicit circle at the endpoints of the retina (which
-    % is curved).  So the end points of the retina are not in the same
-    % plane as the central point of the retina.
-    %
-    % The retina is conceived of as sitting on a sphere.  It is a curved
-    % surface on that sphere.
-    %
-    % The retinal radius is the radius of the sphere that the retina is
-    % located on.
-    %
-    % The retina semiDiam the radius of the circle formed on the plane that
-    % intersects the sphere at the position of the end points of the
-    % retina.
-    semidiam = objNew.retinaDistance * tand(objNew.fov / 2);
-    recipe.set('retina semidiam',semidiam);
-    
-    % recipe.camera.retinaSemiDiam.value = objNew.retinaDistance * ...
-    %    tand(objNew.fov / 2);
-    
-    if(strcmp(objNew.sceneUnits, 'm'))
-        % Units should always be meters. This switch statement can be a lot
-        % of trouble.  Let's stay on top of it.
-        recipe.camera.mmUnits.value = 'false';
-        recipe.camera.mmUnits.type = 'bool';
-    end
-    if(objNew.diffractionEnabled)
-        % We should never get here.  Diffraction should always be set as
-        % below.
-        recipe.set('diffraction',true);
-        % recipe.camera.diffractionEnabled.value = 'true';
-        % recipe.camera.diffractionEnabled.type = 'bool';
-    end
+% semidiam = objNew.retinaDistance * tand(objNew.fov / 2);
+if ~obj.debugMode
+    % I am suspicious about the units here (mm vs m)
+    semidiam = thisR.get('retina Distance') * tand(objNew.fov / 2);  % Looks like mm now
+    thisR.set('retina semidiam',semidiam);  % Which makes this mm, too.
 end
 
-% Sampler
-% recipe.sampler.pixelsamples.value = objNew.numRays;
+% recipe.camera.retinaSemiDiam.value = objNew.retinaDistance * ...
+%    tand(objNew.fov / 2);
 
-% Integrator
-% recipe.integrator.maxdepth.value = objNew.numBounces;
-% recipe.integrator.maxdepth.type = 'integer';
+%{
+if(strcmp(objNew.sceneUnits, 'm'))
+    % Units should always be meters. This switch statement can be a lot
+    % of trouble.  Let's stay on top of it.
+    thisR.camera.mmUnits.value = 'false';
+    thisR.camera.mmUnits.type = 'bool';
+end
+%}
+
+if(objNew.diffractionEnabled)
+    % We should never get here.  Diffraction should always be set as
+    % below.
+    warning('Why am I here in diffraction enabled?');
+    thisR.set('diffraction',true);
+    % recipe.camera.diffractionEnabled.value = 'true';
+    % recipe.camera.diffractionEnabled.type = 'bool';
+end
 
 % Renderer
 numCABands = obj.recipe.get('num ca bands');
 if(numCABands == 0 || numCABands == 1 || objNew.debugMode)
-    % No spectral rendering
-    recipe.set('integrator subtype','path');
-    % recipe.integrator.subtype = 'path';
+    % No spectral chromab rendering
+    thisR.set('integrator subtype','path');
 else
     numCABands = struct('value', objNew.numCABands, 'type', 'integer');
-    recipe.set('integrator subtype','spectralpath');
-    recipe.set('integrator num ca bands',numCABands);
-    
-    % Spectral rendering
-    %{
-    numCABands = struct('value', objNew.numCABands, 'type', 'integer');
-    recipe.integrator = struct('type', 'Integrator', ...
-        'subtype', 'spectralpath', 'numCABands', numCABands);
-    %}
+    thisR.set('integrator subtype','spectralpath');
+    thisR.set('integrator num ca bands',numCABands);
 end
-
-% Look At
-%{
-if(isempty(objNew.eyePos) || isempty(objNew.eyeTo) || ...
-        isempty(objNew.eyeUp))
-    error('Eye location missing!');
-else
-    recipe.lookAt = struct('from', objNew.eyePos, 'to', objNew.eyeTo, ...
-        'up', objNew.eyeUp);
-end
-%}
-
-% If there was a crop window, we have to update the angular support that
-% comes with sceneEye
-% We can't do this right now because the angular support is a dependent
-% variable. How to overcome this?
-%{
-currAngSupport = obj.angularSupport;
-cropWindow = recipe.get('cropwindow');
-cropWindowR = cropWindow.*obj.resolution;
-cropWindowR = [cropWindowR(1) cropWindowR(3) ...
-    cropWindowR(2)-cropWindowR(1) cropWindowR(4)-cropWindowR(3)];
-[X, Y] = meshgrid(currAngSupport, currAngSupport);
-X = imcrop(X, cropWindowR);
-Y = imcrop(Y, cropWindowR);
-% Assume square optical image for now, but we should probably change
-% angularSupport to have both x and y direction.
-objNew.angularSupport = X(1, :); 
-%}
 
 %% Write out the adjusted recipe into a PBRT file
-piWrite(recipe);
+piWrite(thisR);
 
 %{
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
@@ -288,6 +185,6 @@ end
 %}
 
 % Not sure about any changes to recipe.  We should check carefully.
-obj.recipe = recipe; 
+obj.recipe = thisR; 
 
 end
