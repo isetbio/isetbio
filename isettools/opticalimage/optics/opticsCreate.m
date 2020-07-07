@@ -209,7 +209,7 @@ end
 optics = opticsSet(optics, 'offAxisMethod', 'cos4th');
 
 % Pixel vignetting is off
-optics.vignetting =  0;
+optics.vignetting =  false;
 
 end
 

@@ -80,10 +80,10 @@ ieObject = oiSet(ieObject, 'optics model', 'iset3d');
 ieObject = oiSet(ieObject, 'optics name', 'PBRT Navarro Eye');
 ieObject = oiSet(ieObject, 'optics focal length',retDistance);
 
-ieObject.optics.OTF = [];
-ieObject.optics.lens.name = obj.recipe.get('lens file');
-ieObject.optics.offaxis = '';
-ieObject.optics.vignetting = [];
+ieObject = oiSet(ieObject,'optics OTF', []);
+ieObject = oiSet(ieObject,'optics name',obj.recipe.get('lens file'));
+ieObject = oiSet(ieObject,'optics offaxis','');
+% ieObject = oiSet(ieObject,'optics vignetting',[]);
 
 %% Calculate and apply lens transmittance
 
@@ -104,12 +104,16 @@ end
 ieObject = oiSet(ieObject, 'photons', irradiance);
 
 %% Scale the irradiance with pupil size
-% This is already done in piDat2ISET.m. However for the human eye the lens
-% file is unique, so we are unable to extract the aperture (at the moment)
-% in piDat2ISET.m. Until we add that code, let's make the change here where
-% the aperture size is known from the sceneEye object. 
+
+% This is already done in piDat2ISET.m in some cases.
+% 
+% However for the human eye the lens file and other properties are not
+% always available, and we are unable to extract the aperture (at the
+% moment) in piDat2ISET.m. Until we we upgrade that code, we adjust the
+% oi illuminance here because the pupil diameter is known in the sceneEye
+% object. 
 if(scaleIlluminance)
-    lensArea = pi * (pupilDiameter / 2) ^ 2;
+    lensArea = pi * (pupilDiameter*1e3 / 2) ^ 2;   % In mm^2
     meanIlluminance = meanIlluminancePerMM2 * lensArea;
     
     ieObject = oiAdjustIlluminance(ieObject, meanIlluminance);
