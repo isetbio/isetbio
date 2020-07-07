@@ -210,7 +210,7 @@ function [theSRGBsequence, theSlices] = extractSRGBsequence(theSequence, present
             retinalIrradianceImage = oiGet(theOI, 'energy');
             retinalIlluminanceImage = oiGet(theOI, 'illuminance');
             theSlices(k,:) = single(squeeze(retinalIlluminanceImage(midRow,:)));
-            [~, retinalSRGBimage] = displayRadianceToDisplaySRGB(retinalIrradianceImage, displaySPDs);
+            [~, retinalSRGBimage] = displayRadianceToDisplayRGB(retinalIrradianceImage, displaySPDs);
             theSRGBsequence(k,:,:,:) = uint8(retinalSRGBimage*255.0);
         end
     elseif (iscell(theSequence))

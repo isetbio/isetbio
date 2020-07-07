@@ -8,7 +8,8 @@ function [patchDogParams, spatialFrequenciesCPDHR, responseTuningHR, meanParams]
     %               Kc       Rc     kS/kC       Rs/Rc
     lowerBounds   = [1     0.001   1e-4   2];
     upperBounds   = [Inf   1.0     1e-1   20];
-
+    oldoptions = optimoptions('lsqcurvefit');
+    options = optimoptions(oldoptions,'MaxFunctionEvaluations',5000, 'FunctionTolerance', 1e-8, 'MaxIterations', 10000);
     
     
     rgcsNum = size(responseTuning,1);
@@ -21,7 +22,7 @@ function [patchDogParams, spatialFrequenciesCPDHR, responseTuningHR, meanParams]
         if (isempty(initialParams))
             initialParams = [max(theSFtuning)   0.05    1/1000       0.5];
         end
-        fittedParams(iRGC,:)  = lsqcurvefit(DoGFunction, initialParams,spatialFrequenciesCPD, theSFtuning,lowerBounds,upperBounds);
+        fittedParams(iRGC,:)  = lsqcurvefit(DoGFunction, initialParams,spatialFrequenciesCPD, theSFtuning,lowerBounds,upperBounds, options);
         patchDogParams{iRGC} = struct(...
             'kC', fittedParams(iRGC,1), ...
             'rC', fittedParams(iRGC,2), ...
@@ -33,7 +34,7 @@ function [patchDogParams, spatialFrequenciesCPDHR, responseTuningHR, meanParams]
             figure(334); clf;
             plot(spatialFrequenciesCPD, theSFtuning, 'ko', 'MarkerSize', 12, 'MarkerFaceColor', [0.8 0.8 0.8]); hold on;
             plot(spatialFrequenciesCPDHR, squeeze(responseTuningHR(iRGC,:)), 'r-', 'LineWidth', 1.5);
-            set(gca, 'XScale', 'log', 'XLim', [0.1 60], 'YLim', [0 maxSpikeRate]);
+            set(gca, 'XScale', 'log', 'XLim', [0.1 60], 'YScale', 'log','YLim', [1 maxSpikeRate]);
             p = patchDogParams{iRGC};
             title(sprintf('kc=%2.0f, ks=%2.0f, rc=%2.4f, rs=%2.4f',p.kC, p.kS, p.rC, p.rS));
             drawnow;

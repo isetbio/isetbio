@@ -25,9 +25,8 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
         deltaEcc = 1;
         eccXrangeDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*mosaicParams.rgcMosaicPatchEccMicrons(1))*[1 1];
         eccYrangeDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*mosaicParams.rgcMosaicPatchEccMicrons(2))*[1 1];
-        PolansSubjectID = 9;
 
-        [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = CronerKaplanRGCModel.psfAtEccentricity(PolansSubjectID, ...
+        [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = CronerKaplanRGCModel.psfAtEccentricity(runParams.PolansWavefrontAberrationSubjectID, ...
                     imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, micronsPerDegree, wavefrontSpatialSamples, ...
                     eccXrangeDegs, eccYrangeDegs, deltaEcc);
 

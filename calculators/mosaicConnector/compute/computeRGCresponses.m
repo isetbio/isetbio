@@ -81,7 +81,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         % Compute response tuning
         switch (stimSpatialParams.type)
             case 'driftingGrating'
-                visualizeFits = ~true;
+                visualizeIndividualFits = ~true;
                 % Compute modulation of the response at the fundamental temporal frequency
                 [responseAmplitude(:, sfIndex), responsePhase(:, sfIndex), ...
                     responseTimeAxisHR, fittedResponsesHR(sfIndex,:,:)] = fitSinusoidalModulationToResponseTimeCourse(...
@@ -89,31 +89,31 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
                     squeeze(integratedResponsesStDev(sfIndex,:,:)), ...
                     responseTimeAxis, ...
                     stimTemporalParams.temporalFrequencyHz, ...
-                    visualizeFits, spatialFrequenciesCPD(sfIndex), maxSpikeRate);
+                    visualizeIndividualFits, spatialFrequenciesCPD(sfIndex), maxSpikeRate);
             otherwise
                 error('Unknown stimulus type: ''%''.', stimulusSpatialParams.type)
         end
     end
     
     % Fit the responses
-    plotFitResults = ~true; initialParams = [];
+    visualizeIndividualFits = ~true; initialParams = [];
     [~,~,~, meanParams] = ...
-        fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, plotFitResults, initialParams, maxSpikeRate);
+        fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, visualizeIndividualFits, initialParams, maxSpikeRate/2);
     
     % Second fit
-    plotFitResults = true; initialParams = meanParams;
-    [patchDogParams,spatialFrequenciesCPDHR, responseAmplitudeHR, meanParams] = ...
-        fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, plotFitResults, initialParams, maxSpikeRate);
+    visualizeIndividualFits = true; initialParams = meanParams;
+    [patchDogParams,spatialFrequenciesCPDHR, responseAmplitudeHR] = ...
+        fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, visualizeIndividualFits, initialParams, maxSpikeRate/2);
 
     % Visualize data to contrast with Cronner and Kaplan data
     RGCpositionsMicrons = determineRGCPositionsFromCenterInputs(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, theMidgetRGCmosaic.centerWeights);
     RGCeccentricityDegs = WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCpositionsMicrons.^2,2))/1000.0);
     visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCeccentricityDegs);
     
-    iRGC = 100;
-    figNo = 123;
-    visualizeResponseComponentsForSingleRGC(figNo, iRGC, responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
-        responseTimeAxisHR, squeeze(fittedResponsesHR(:,iRGC,:)), spatialFrequenciesCPD, maxSpikeRate);  
+%     iRGC = 100;
+%     figNo = 123;
+%     visualizeResponseComponentsForSingleRGC(figNo, iRGC, responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
+%         responseTimeAxisHR, squeeze(fittedResponsesHR(:,iRGC,:)), spatialFrequenciesCPD, maxSpikeRate);  
     
     % Visualize the temporal response of each RGC at the RGC's location
     for sfIndex = 1:numel(spatialFrequenciesCPD)
@@ -130,7 +130,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
                 spatialFrequenciesCPD, responseAmplitude, ...
                 spatialFrequenciesCPDHR, responseAmplitudeHR, ...
                 runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-                theMidgetRGCmosaic, zLevels, 'centers', maxSpikeRate); 
+                theMidgetRGCmosaic, zLevels, 'centers', maxSpikeRate/2); 
    
     % Visualize the mosaics
     visualizeMosaics = ~true;
@@ -164,6 +164,14 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
     surroundIR = exp(-t/tauC);
     surroundIR = surroundIR/sum(surroundIR);
     
+    for iRGC = 1:rgcsNum
+            % The RGC's weights
+            iRGCweightsC = full(squeeze(weightsC(:,iRGC)));
+            iRGCweightsS = full(squeeze(weightsS(:,iRGC)));
+            iRatio(iRGC) = sum(iRGCweightsS(:))/sum(iRGCweightsC(:));
+            fprintf(2,'RGC %d integrated S/C ratio from weights: %2.2f\n', iRGC, iRatio(iRGC));
+    end
+    fprintf(2, 'mean  integrated S/C ratio from weights: %2.2f\n', mean(iRatio));
     
     for instanceIndex = 1:instancesNum
         % All presynaptic spatiotemporal responses for this instance
