@@ -198,7 +198,7 @@ function [theSRGBsequence, theSlices] = extractSRGBsequence(theSequence, present
     displaySPDs = displayGet(presentationDisplay, 'spd'); 
     
     if (isa(theSequence, 'oiArbitrarySequence'))
-        framesNum = theOIsequence.length;
+        framesNum = theSequence.length;
         theOI = theSequence.frameAtIndex(1);
         retinalIlluminanceImage = oiGet(theOI, 'illuminance');
         theSRGBsequence = zeros(framesNum , size(retinalIlluminanceImage,1), size(retinalIlluminanceImage,2), 3, 'uint8');
@@ -206,7 +206,7 @@ function [theSRGBsequence, theSlices] = extractSRGBsequence(theSequence, present
         midRow = round(size(retinalIlluminanceImage,1)/2);
 
         for k = 1:framesNum
-            theOI = theOIsequence.frameAtIndex(k);
+            theOI = theSequence.frameAtIndex(k);
             retinalIrradianceImage = oiGet(theOI, 'energy');
             retinalIlluminanceImage = oiGet(theOI, 'illuminance');
             theSlices(k,:) = single(squeeze(retinalIlluminanceImage(midRow,:)));
