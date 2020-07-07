@@ -31,7 +31,7 @@ function [connectionMatrixCenter, connectionMatrixSurround, ...
     weightsVectorS = [];
     
     for iRGC = 1:rgcsNum
-        fprintf('%d of %d\n', iRGC, rgcsNum)
+        fprintf('Generating weights for RGC %d of %d\n', iRGC, rgcsNum)
         
         % Get index of RGC in full mosaic
         rgcIndex = iRGC;

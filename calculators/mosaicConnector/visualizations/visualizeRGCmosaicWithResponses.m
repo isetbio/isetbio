@@ -26,23 +26,16 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
    
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [1 1 2040 950], 'Color', [1 1 1]);
-        
-%     % Full view, no cone labeling
-%     renderPlot(theAxesGrid{1,1}, theMidgetRGCmosaicResponses, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
-%         theMidgetRGCmosaic, eccentricityMicrons, xAxis, yAxis, zLevels, subregions, false);
-%     xLims = [xAxis(1) xAxis(end)];
-%     yLims = [yAxis(1) yAxis(end)];
-%     set(theAxesGrid{1,1}, 'XLim', xLims, 'YLim', yLims);
-    
+
     % Zoomedin view, labeled cone types
     theAxes = axes('Position', [0.02 0.03 0.45 0.96]);
     renderPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
-        theMidgetRGCmosaic, eccentricityMicrons, xAxis, yAxis, zLevels, subregions, true);
-    xLims = eccentricityMicrons(1)+1.1*sizeMicrons(1)/2.0*[-1 1];
-    yLims = eccentricityMicrons(2)+1.1*sizeMicrons(2)/2.0*[-1 1];
+        theMidgetRGCmosaic, xAxis, yAxis, zLevels, subregions);
+    xLims = eccentricityMicrons(1)+1.2*sizeMicrons(1)/2.0*[-1 1];
+    yLims = eccentricityMicrons(2)+1.2*sizeMicrons(2)/2.0*[-1 1];
     axis(theAxes, 'equal');
     box(theAxes, 'on');
-    set(theAxes, 'XLim', xLims, 'YLim', yLims, 'FontSize', 12);
+    set(theAxes, 'XLim', xLims, 'YLim', yLims, 'FontSize', 14);
 
     
     rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
@@ -90,63 +83,24 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
 end
 
 function renderPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
-    theMidgetRGCmosaic, eccentricityMicrons, xAxis, yAxis, zLevels, subregions, coneLabeling)
-
-    global LCONE_ID
-    global MCONE_ID
-    global SCONE_ID
-
-    [X,Y] = meshgrid(xAxis,yAxis);
-    
-%     % Render the optical image
-%     spatialSupportMM = oiGet(theOI, 'spatial support', 'mm');
-%     spatialSupportMicrons = 1e3 * squeeze(spatialSupportMM(1,:,1));
-%     imagesc(theAxes, ...
-%             spatialSupportMicrons+eccentricityMicrons(1), ...
-%             spatialSupportMicrons+eccentricityMicrons(2), ...
-%             oiGet(theOI, 'rgbimage'));
-%     axis(theAxes, 'xy')
-%     axis(theAxes, 'image')
+    theMidgetRGCmosaic,  xAxis, yAxis, zLevels, subregions)
 
     hold(theAxes, 'on');
     colormap(theAxes, brewermap(512, 'greys'));
+    renderConeConnections(theAxes, theMidgetRGCmosaic, conePositionsMicrons);
+    renderCones(theAxes, coneTypes, conePositionsMicrons, coneDiameterMicrons);
+    renderRGCoutlines(theAxes,theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels,xAxis, yAxis);
+   
     
-    xxx = cosd(0:10:360);
-    yyy = sind(0:10:360);
-    
-    if (coneLabeling)
-        % Display cones
-        LconeIndices = find(coneTypes == LCONE_ID);
-        MconeIndices = find(coneTypes == MCONE_ID);
-        SconeIndices = find(coneTypes == SCONE_ID);
-    
-        for k = 1:numel(LconeIndices)
-            xx = conePositionsMicrons(LconeIndices(k),1) + 0.5*coneDiameterMicrons(LconeIndices(k))*xxx;
-            yy = conePositionsMicrons(LconeIndices(k),2) + 0.5*coneDiameterMicrons(LconeIndices(k))*yyy;
-            line(theAxes, xx, yy, 'Color', 'r', 'LineWidth', 1.5);
-        end
-        for k = 1:numel(MconeIndices)
-            xx = conePositionsMicrons(MconeIndices(k),1) + 0.5*coneDiameterMicrons(MconeIndices(k))*xxx;
-            yy = conePositionsMicrons(MconeIndices(k),2) + 0.5*coneDiameterMicrons(MconeIndices(k))*yyy;
-            line(theAxes, xx, yy, 'Color', [0 0.8 0], 'LineWidth', 1.5);
-        end
-        for k = 1:numel(SconeIndices)
-            xx = conePositionsMicrons(SconeIndices(k),1) + 0.5*coneDiameterMicrons(SconeIndices(k))*xxx;
-            yy = conePositionsMicrons(SconeIndices(k),2) + 0.5*coneDiameterMicrons(SconeIndices(k))*yyy;
-            line(theAxes, xx, yy, 'Color', 'b', 'LineWidth', 1.5);
-        end
-    else
-        for k = 1:size(conePositionsMicrons,1)
-            xx = conePositionsMicrons(k,1) + 0.5*coneDiameterMicrons(k)*cosd(0:30:360);
-            yy = conePositionsMicrons(k,2) + 0.5*coneDiameterMicrons(k)*sind(0:30:360);
-            line(theAxes, xx, yy, 'Color', 'k');
-        end
-    end
-    
+    set(theAxes, 'CLim', [0 1]);
+end
+
+function renderRGCoutlines(theAxes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels, xAxis, yAxis)
+    [X,Y] = meshgrid(xAxis,yAxis);
     rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
+    
     for mRGCindex = 1:rgcsNum
         centerWeights = full(squeeze(theMidgetRGCmosaic.centerWeights(:, mRGCindex)));
-        centerIndices = find(centerWeights>0);
         centerWeights(centerWeights>0) = 1;
                 
         % Generate RF centers of RGCs based on cone positions and connection matrix
@@ -166,15 +120,61 @@ function renderPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpac
         fitEllipse = false;
         
         C = contourc(xAxis, yAxis, theRF, zLevels);
-        faceAlpha = 0.2;
-        edgeAlpha = 0.8;
+        faceAlpha = 0.35;
+        edgeAlpha = 0.5;
         fillRFoutline(theAxes, C, zLevels, whichLevelsToContour, fitEllipse, faceAlpha, edgeAlpha);
-%         if (strcmp(subregions, 'centers'))
-%             displayConnectedConesPolygon(theAxes, centerIndices, conePositionsMicrons);
-%         end
         
     end % mRGCindex
-    
-    set(theAxes, 'CLim', [0 1])
 end
 
+function renderConeConnections(theAxes, theMidgetRGCmosaic, conePositionsMicrons)
+    rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
+    for mRGCindex = 1:rgcsNum
+        centerWeights = full(squeeze(theMidgetRGCmosaic.centerWeights(:, mRGCindex)));
+        centerIndices = find(centerWeights>0);
+
+        displayConnectedConesPolygon(theAxes, centerIndices, conePositionsMicrons);
+    end % mRGCindex
+end
+
+
+function renderCones(theAxes, coneTypes, conePositionsMicrons, coneDiameterMicrons)
+
+    global LCONE_ID
+    global MCONE_ID
+    global SCONE_ID
+
+    xxx = cosd(0:10:360);
+    yyy = sind(0:10:360);
+    coneLabeling = true;
+    
+    if (coneLabeling)
+        % Display cones
+        LconeIndices = find(coneTypes == LCONE_ID);
+        MconeIndices = find(coneTypes == MCONE_ID);
+        SconeIndices = find(coneTypes == SCONE_ID);
+    
+        for k = 1:numel(LconeIndices)
+            xx = conePositionsMicrons(LconeIndices(k),1) + 0.5*coneDiameterMicrons(LconeIndices(k))*xxx;
+            yy = conePositionsMicrons(LconeIndices(k),2) + 0.5*coneDiameterMicrons(LconeIndices(k))*yyy;
+            patch(theAxes, 'Faces', 1:numel(xx),'Vertices',[xx(:) yy(:)],'FaceColor',[1 0.6 0.6], 'FaceAlpha', 1, 'EdgeColor', [1 0 0], 'LineWidth', 1.5);
+        end
+        for k = 1:numel(MconeIndices)
+            xx = conePositionsMicrons(MconeIndices(k),1) + 0.5*coneDiameterMicrons(MconeIndices(k))*xxx;
+            yy = conePositionsMicrons(MconeIndices(k),2) + 0.5*coneDiameterMicrons(MconeIndices(k))*yyy;
+            patch(theAxes, 'Faces', 1:numel(xx),'Vertices',[xx(:) yy(:)],'FaceColor',[0.7 1 0.7], 'FaceAlpha', 1, 'EdgeColor', [0 1 0], 'LineWidth', 1.5);
+        end
+        for k = 1:numel(SconeIndices)
+            xx = conePositionsMicrons(SconeIndices(k),1) + 0.5*coneDiameterMicrons(SconeIndices(k))*xxx;
+            yy = conePositionsMicrons(SconeIndices(k),2) + 0.5*coneDiameterMicrons(SconeIndices(k))*yyy;
+            patch(theAxes, 'Faces', 1:numel(xx),'Vertices',[xx(:) yy(:)],'FaceColor',[0.7 0.7 1], 'FaceAlpha', 1, 'EdgeColor', [0 0 1], 'LineWidth', 1.5);
+        end
+    else
+        for k = 1:size(conePositionsMicrons,1)
+            xx = conePositionsMicrons(k,1) + 0.5*coneDiameterMicrons(k)*cosd(0:30:360);
+            yy = conePositionsMicrons(k,2) + 0.5*coneDiameterMicrons(k)*sind(0:30:360);
+            patch(theAxes, 'Faces', 1:numel(xx),'Vertices',[xx(:) yy(:)],'FaceColor',[0.9 0.9 0.9], 'FaceAlpha', 1, 'EdgeColor', [0 0 0], 'LineWidth', 1.5);
+        end
+    end
+    
+end

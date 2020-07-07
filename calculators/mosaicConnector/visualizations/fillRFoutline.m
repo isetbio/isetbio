@@ -35,5 +35,5 @@ function patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceCol
     f = 1:numel(xRGCEnsembleOutline);
     patch(theAxes, 'Faces', f, 'Vertices', v, 'FaceColor', faceColor, ...
             'FaceAlpha', faceAlpha, 'EdgeColor', edgeColor, ... 
-           'EdgeAlpha', edgeAlpha, 'LineWidth', 1.0);
+           'EdgeAlpha', edgeAlpha, 'LineWidth', 1.5);
 end

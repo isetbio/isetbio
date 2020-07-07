@@ -11,5 +11,5 @@ function displayConnectedConesPolygon(ax, indicesOfConeInputs, conePositionsMicr
     yy = yy(idx);
     xx(end+1) = xx(1);
     yy(end+1) = yy(1);
-    plot(ax, xx,yy, ':', 'Color', [0.4 0.4 0.4], 'LineWidth', 1.0);
+    plot(ax, xx,yy, '-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
 end

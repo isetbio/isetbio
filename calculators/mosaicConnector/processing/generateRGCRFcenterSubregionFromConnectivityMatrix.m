@@ -2,8 +2,8 @@ function theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(connectivity
     
     theRF = [];
     connectedConeIDs = find(connectivityVectorForRGC>0);
-    flatTopZ = 0.4;
-    
+    flatTopZ = 0.45;
+
     for k = 1:numel(connectedConeIDs)
         coneIndex = connectedConeIDs(k);
         cP = squeeze(conePositions(coneIndex,:));
