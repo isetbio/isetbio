@@ -73,12 +73,13 @@ thisR = objNew.recipe;
 % Depending on the eye model, set the lens file appropriately
 switch ieParamFormat(objNew.modelName)
     case {'navarro'}
+        %{
         % Apply any accommodation changes
         if(isempty(objNew.accommodation))
             objNew.accommodation = 5;
             warning('No accommodation! Setting to 5 diopters.');
         end
-
+        %}
         navarroWrite(objNew.recipe);
         
         % This function also writes out the Navarro lens file

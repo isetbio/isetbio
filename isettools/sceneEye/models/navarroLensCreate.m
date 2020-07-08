@@ -66,6 +66,8 @@ lensP(6:7) = [posteriorAsph posteriorAsph];
 lensMatrix = [corneaA; corneaP; pupil; lensA; lensP];
 
 focalLength = 1 / (60.6061 + A) * 10 ^ 3; % mm
+
+% We need to make sure the lens sub-directory exists.
 fid = fopen(filename, 'w');
 
 str = sprintf('# Focal length (mm) \n');

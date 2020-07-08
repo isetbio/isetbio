@@ -1,21 +1,21 @@
 function [ieObject, terminalOutput] = render(obj, varargin)
-% Render a scene3D object and return an optical image.
+% Render a sceneEye object 
 %
 % Syntax:
-%   [ieObject, terminalOutput, outputFile] = render(obj, [varargin])
+%   [ieObject, terminalOutput] = render(obj, [varargin])
 %
 % Description:
-%	 Given a scene3D object, we have all the information we need to
-%    construct a PBRT file and render it. Therefore, this function does the
-%    following:
-%       1. Write out a new PBRT ([renderName].pbrt) in working directory
-%       2. Render using docker container
-%       3. Load the output into an ISETBIO optical image, filling in the
-%          right parameters with the scene information
-%       4. Return the OI
+%	A sceneEye object wraps an iset3d recipe that contains the information 
+%   needed to (a) construct a PBRT file, and (b) render it through one of
+%   the human physiological optics models.
+%
+%   This returns a scene when in debugMode or when the camera model is
+%   'pinhole' or equivalently 'perspective.
+%
 %
 % Inputs:
-%    obj              - Object. The scene3D object to render.
+%    obj       - Object. The scene3D object to render.  This object
+%                has a slot for an iset3d render recipe.
 %
 % Outputs:
 %    ieObject         - Object. The Optical Image object.
@@ -29,57 +29,86 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %                       means changes to the parameters will not be
 %                       displayed in the rendered image.)
 %
+% Description:
+%
+%   This method renders an iset3d image using physiological optics model.
+%   The actions are
+%
+%    1. Writes out a new PBRT ([renderName].pbrt) in working directory
+%    2. Renders using the PBRT spectral docker container
+%    3. Loads the output into an ISETBio optical image (unless in
+%    debugMode, in which case it is a scene), filling in the parameters
+%    with the ISETBio information from the rendering recipe
+%
+% It returns an oi when there is a lens specified (omni, realisticEye), but
+% if you turn on the debugMode it renders a scene through a pinhole.
+%
+% Dependencies
+%   iset3d, ISEBio
+%
 % See also
-%    piRender
+%   recipe, piWrite, piRender
 
-%% Programming
-%  Why does this return a scene sometimes and an oi sometimes?
-%  
 
-%%
+%% Parse
+varargin = ieParamFormat(varargin);
+
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
 p.addParameter('reuse', false, @islogical);
 
+rTypes = {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'};
+p.addParameter('rendertype','both',@(x)(ismember(ieParamFormat(x),rTypes)));
+
 p.parse(obj, varargin{:});
+reuse      = p.Results.reuse;
+renderType = p.Results.rendertype;
 scaleIlluminance = p.Results.scaleilluminance;
-reuse = p.Results.reuse;
+
+%% Get the render recipe
 
 thisR = obj.recipe;
 
+% If debug, switch the camera to pinhole to render a scene
 if obj.debugMode
     % We will render a scene through a pinhole camera
     cameraSave = thisR.get('camera');
     thisR.set('camera',piCameraCreate('pinhole'));
-    thisR.set('fov',obj.fov);
 end
 
 %% Write out into a pbrt file
 
 % Can this just be piWrite(thisR)?  Or does write() do a lot of stuff?
 
-objNew = obj.write();
-thisR = objNew.recipe; % Update the recipe within the sceneEye object.
+% objNew = obj.write();
+% thisR = objNew.recipe; % Update the recipe within the sceneEye object.
+
+% Write the PBRT files
+piWrite(thisR);
 
 %% Render the pbrt file using docker
 %scaleFactor = [];
 if reuse
-    [ieObject, terminalOutput] = piRender(thisR, 'reuse', true);
+    [ieObject, terminalOutput] = piRender(thisR, 'reuse', true, 'render type',renderType);
 else
-    [ieObject, terminalOutput] = piRender(thisR);
+    [ieObject, terminalOutput] = piRender(thisR,'render type',renderType);
 end
 
-%% If we are not in debug mode, set OI parameters.  
-% I guess if we are in debug mode, we return a scene.
+%% Fix up the returned object
+
 if(~obj.debugMode)
+    % If we are not in debug mode, set OI parameters.
     ieObject = obj.setOI(ieObject, 'scale illuminance', scaleIlluminance);
+    % oiWindow(ieObject);
 else
+    % If debugMode, put back the saved camera information.
     thisR.set('camera',cameraSave);
-    obj.recipe = thisR;
+    % sceneWindow(ieObject);
 end
 
-% oiWindow(ieObject);
-
+% Not sure why we need to do this, but perhaps something was changed in the
+% recipe and we want to preserve that????
+obj.recipe = thisR;
 
 end

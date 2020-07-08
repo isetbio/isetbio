@@ -55,7 +55,7 @@ crop_window = obj.recipe.get('cropwindow');
 retDistance = obj.recipe.get('retina distance','m');
 pupilDiameter = obj.recipe.get('pupil diameter','m');
 
-full_size = 2 * tand(obj.fov / 2) * retDistance;
+full_size = 2 * tand(obj.recipe.get('fov') / 2) * retDistance;
 image_size = full_size .* crop_window;
 
 % Convert coordinates so center is (0, 0)
@@ -92,7 +92,7 @@ thisLens.wave = oiGet(ieObject,'wave');
 thisLens.density = obj.lensDensity;
 ieObject = oiSet(ieObject,'optics lens',thisLens);
 
-irradiance = oiGet(ieObject, 'photons');
+irradiance    = oiGet(ieObject, 'photons');
 transmittance = oiGet(ieObject, 'optics transmittance');
 
 if any(transmittance(:) ~= 1)

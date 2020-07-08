@@ -94,7 +94,7 @@ properties (GetAccess=public, SetAccess=public)
     %   Instead of rows/cols we use a general resolution variable. This
     %   is because the eye model can only take equal rows and columns
     %   and the rendered image is always square.
-    resolution;
+    % resolution;
 
     % fov - Field of view of the render in degrees
     %   This value is calculated from the retina distance and the
@@ -106,7 +106,7 @@ properties (GetAccess=public, SetAccess=public)
     %   We change the properties of the lens to match the desired
     %   accommodation. For example, if we set this to 5 diopters, 550
     %   nm rays from 0.2 meters will be in focus on the retina.
-    accommodation;
+    % accommodation;
 
     % eccentricity - [Currently not implemented!] Horizontal and vertical
     %   angles on the retina corresponding to the center of the rendered
@@ -118,7 +118,7 @@ properties (GetAccess=public, SetAccess=public)
     eccentricity;
 
     % pupilDiameter - Diameter of the pupil (mm)
-    pupilDiameter;
+    % pupilDiameter;
 
     %retinaRadius - The curvature of the retina in mm
     %   If one imagines the retina as asection of a sphere, this radius
@@ -126,20 +126,20 @@ properties (GetAccess=public, SetAccess=public)
     %   its center. We will not change this most of the time, but
     %   sometimes it is helpful to make the retina very flat in order
     %   to measure certain properties of the eye.
-    retinaRadius;
+    % retinaRadius;
 
     % retinaDistance - Distance between the back lens and the retina
     %   We will not change this most of the time, but sometimes it is
     %   helpful to move the retina back and forth, like a camera
     %   sensor, to see things affects like chromatic aberration.
-    retinaDistance;
+    % retinaDistance;
 
     % numRays - Number of rays to shoot per pixel.
     %   This determines the quality of the render and affects the time
     %   spent rendering. This should be a factor of 2. Low quality is
     %   typically 64 or256 rays, high quality is typically 2048 or 4096
     %   rays.
-    numRays;
+    % numRays;
 
     % numBounces - Number of bounces before ray terminates
     %   This also determines how accurately light is modeled in the
@@ -147,7 +147,7 @@ properties (GetAccess=public, SetAccess=public)
     %   Typically set to 1 for simple, diffuse scenes. A high value
     %   would be 4-8 for scenes with lots of reflections, caustics, or
     %   glassy materials.
-    numBounces;
+    % numBounces;
 
     % numCABands - Number of wavelength samples to take when modeling CA
     %   We shoot extra rays of different wavelengths in order to model
@@ -155,16 +155,16 @@ properties (GetAccess=public, SetAccess=public)
     %   can be set to 0 but for the final render it should be something
     %   like 8 or 16. (e.g. If you set it to 8, then we will shoot rays for
     %   wavelengths of linspace(400, 700, 8).);
-    numCABands;
+    % numCABands;
 
     % eyePos - Position of the eye within the scene in [x y z] format
     %   [x y z]
-    eyePos;
+    % eyePos;
 
     % eyeTo - Point where the eye is looking at
     %   [x y z], the difference between eyeTo and eyePos is the
     %   direction vector that the optical axis is aligned with.
-    eyeTo;
+    % eyeTo;
 
     % eyeUp - Up vector used when building the LookAt transform
     %   [x y z], this is typically [0 0 1] but it depends on how the
@@ -172,7 +172,7 @@ properties (GetAccess=public, SetAccess=public)
     %   would be "upside down." Some values are not valid, for example
     %   if the eye is looking down the z-axis (eyePos = [0 0 0], eyeTo
     %   = [0 0 1]) then the up vector cannot be [0 0 1].
-    eyeUp;
+    % eyeUp;
     
     % diffractionEnabled Toggle diffraction. When it diffraction simulation
     %   is enabled, PBRT will use HURB to simulate the effect of
@@ -199,7 +199,7 @@ properties (GetAccess=public, SetAccess=public)
     %   written out automatically in the "write" function for sceneEye
     %   (which is called during sceneEye.render). However, you can also
     %   attach a custom file. 
-    lensFile;
+    % lensFile;
     
     % LENSDENSITY - Lens pigment density. Equivalent to lens density in the
     % Lens class for ISETBio (non-3D calculations).
@@ -233,18 +233,18 @@ properties(GetAccess=public, SetAccess=private)
     % pbrtFile - Path to the original .pbrt file this scene is based on
     %   Depends on the pbrt file used to create the scene. Should not
     %   be changed.
-    pbrtFile;
+    % pbrtFile;
 
     % workingDir - Directory to store temp files needed for rendering
     %   We make a copy of the scene into the working directory, and
     %   then output new PBRT files into this directory. We also save
     %   the raw rendered data (xxx.dat) in this folder.
-    workingDir;
+    % workingDir;
     
     %SCENEUNITS Some scenes are in units of meters, some in units of millimeters.
     %   We keep of track of this here so we can pass the correct parameter
     %   to PBRT.
-    sceneUnits;
+    % sceneUnits;
       
 end
 
@@ -286,7 +286,7 @@ methods
         
         % Setup the pbrt scene and recipe
         thisR = piRecipeDefault('scene name',pbrtFile);
-        obj.sceneUnits = 'meters';
+        % obj.sceneUnits = 'meters';
         %{
         % The original method used this complicated function to load the 
         % scene file and set these fields.  I am not  sure why sceneUnits
@@ -314,7 +314,7 @@ methods
         % extra properties, but we should not duplicate.  These changes are
         % in preparation for getting rid of the extra parameters
         % obj.name = p.Results.name;
-        obj.modelName = 'Navarro'; % Default
+        obj.modelName = 'navarro'; % Default
         % obj.resolution     = thisR.get('film xresolution'); %thisR.film.xresolution.value;
         % obj.retinaDistance = thisR.get('retina distance');  % thisR.camera.retinaDistance.value;
         % obj.pupilDiameter  = thisR.get('pupil diameter'); % thisR.camera.pupilDiameter.value;
@@ -331,8 +331,8 @@ methods
        
         % Indicate the accommodation.  This is how the navarro.dat file was
         % built.
-        thisR.set('object distance',10);   % 10 meters
-        obj.accommodation = 1/thisR.get('object distance'); 
+        thisR.set('object distance',1);   % 10 meters
+        % obj.accommodation = 1/thisR.get('object distance'); 
         
         %{
         if(strcmp(obj.lensFile, ''))
