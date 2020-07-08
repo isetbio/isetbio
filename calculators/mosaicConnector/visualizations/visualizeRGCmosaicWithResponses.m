@@ -2,7 +2,8 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     xAxisData, theMidgetRGCmosaicResponses, ...
     xAxisDataFit, theMidgetRGCmosaicResponsesFit, ...
     eccentricityMicrons, sizeMicrons, ...
-    theMidgetRGCmosaic,  zLevels, subregions, maxSpikeRate)
+    theMidgetRGCmosaic,  zLevels, subregions, maxSpikeRate, ...
+    exportFig, condition, LMScontrast, targetRGC)
 
     % Retrieve cone positions (microns), cone spacings, and cone types
     cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
@@ -23,86 +24,121 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     xAxis = (eccentricityMicrons(1)-sizeMicrons(1)/2-extraMicrons): deltaX: (eccentricityMicrons(1)+sizeMicrons(1)/2+extraMicrons);
     yAxis = (eccentricityMicrons(2)-sizeMicrons(2)/2-extraMicrons): deltaX: (eccentricityMicrons(2)+sizeMicrons(2)/2+extraMicrons);
     
-   
+    figWidthInches = 28; figHeightInches = 14;
+    plotlabOBJ = setupPlotLab(0, figWidthInches, figHeightInches);
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [1 1 2040 950], 'Color', [1 1 1]);
-
-    % Zoomedin view, labeled cone types
-    theAxes = axes('Position', [0.02 0.03 0.45 0.96]);
-    renderPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
-        theMidgetRGCmosaic, xAxis, yAxis, zLevels, subregions);
+    set(hFig, 'Color', [1 1 1]);
+    
+    theAxes = axes('Position', [0.02*figWidthInches 0.02*figHeightInches 0.49*figWidthInches 0.98*figHeightInches]);
+    renderMosaicConnectivityPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
+        theMidgetRGCmosaic, xAxis, yAxis, zLevels, subregions, targetRGC);
+    
     xLims = eccentricityMicrons(1)+1.2*sizeMicrons(1)/2.0*[-1 1];
     yLims = eccentricityMicrons(2)+1.2*sizeMicrons(2)/2.0*[-1 1];
     axis(theAxes, 'equal');
     box(theAxes, 'on');
     set(theAxes, 'XLim', xLims, 'YLim', yLims, 'FontSize', 14);
 
-    
-    rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
-    [~,RGCpositionsNormalized] = determineRGCPositionsFromCenterInputs(theConeMosaic, eccentricityMicrons, theMidgetRGCmosaic.centerWeights);
-    
-    w = 0.1/2;
-    h = 0.1/2;
-    gw = 0.5-w;
-    gh = 0.96-h;
-    m = 0.015/2;
-
-    for iRGC = 1:rgcsNum
-            ax = axes('Position', [0.48+gw*RGCpositionsNormalized(iRGC,1)+m 0.03+gh*RGCpositionsNormalized(iRGC,2)+m w h]);
-            if (strcmp(xAxisScaling, 'log'))
-                markerSize = 169;
-                lineColor = [1 0 0];
-            else
-                markerSize = 100;
-                lineColor = [0 1 1];
-            end
+    if (~isempty(targetRGC))
+        w0 = 0.55;
+        h0 = 0.15;
+        w = 0.35;
+        h = 0.75;
+        axesPosition = [...
+                w0*figWidthInches, ...
+                h0*figHeightInches, ...
+                w*figWidthInches, ...
+                h*figHeightInches];
             
-            scatter(ax, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), markerSize, '.', ...
-                    'MarkerFaceColor', [0 0 1], 'MarkerEdgeColor', [0 0 1]);
-            if (~isempty(xAxisDataFit))
-                hold(ax, 'on')
-                line(ax, xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), 'Color', lineColor, 'LineWidth', 1.5);
-                hold(ax, 'off');
-            end
-            set(ax, 'XTickLabel', {}, 'YTickLabel', {}, ...
-                'XLim', [xAxisData(1) xAxisData(end)], ...
-                'XColor', 'none', 'YColor', 'none');
-            set(ax, 'XScale', xAxisScaling);
-            if (strcmp(xAxisScaling, 'log'))
-                set(ax, 'XTick', [0.1 0.3 1 3 10 30], 'YTick', (0:0.25:1)*max(theMidgetRGCmosaicResponses(:)), ...
-                    'YLim', [0 2*maxSpikeRate]);
-            else
-                set(ax, 'XTick',linspace(xAxisData(1), xAxisData(end), 5), 'YTick', max(abs(theMidgetRGCmosaicResponses(:)))*(-1:0.25:1), ...
-                    'YLim', maxSpikeRate*[-1.0 1.0]);
-            end
-            box(ax, 'on'); grid(ax, 'on');
-            axis(ax, 'square')
-            drawnow;
+        ax = axes('Position', axesPosition, 'Color', [1 1 1]);
+          renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
+                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate);
+    else
+        rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
+        [~,RGCpositionsNormalized] = determineRGCPositionsFromCenterInputs(theConeMosaic, eccentricityMicrons, theMidgetRGCmosaic.centerWeights);
+        w = 0.1/2;
+        h = 0.1/2;
+        gw = 0.5-w;
+        w0 = 0.50;
+        gh = 0.83-h;
+        h0 = 0.09;
+        m = 0.015/2;
+        for iRGC = 1:rgcsNum
+            axesPosition = [...
+                (w0+gw*RGCpositionsNormalized(iRGC,1)+m)*figWidthInches, ...
+                (h0+gh*RGCpositionsNormalized(iRGC,2)+m)*figHeightInches, ...
+                w*figWidthInches, ...
+                h*figHeightInches];
+            
+            ax = axes('Position', axesPosition, 'Color', [1 1 1]);
+            renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
+                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate);
+        end
     end
-        
+    
+     if (exportFig)
+       plotlabOBJ.exportFig(hFig, 'pdf', sprintf('Ensemble_%s_LMS_%0.2f_%0.2f_%0.2f', condition,LMScontrast(1), LMScontrast(2), LMScontrast(3)), pwd());
+    end
+            
+    setupPlotLab(-1);
 end
 
-function renderPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
-    theMidgetRGCmosaic,  xAxis, yAxis, zLevels, subregions)
+function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate)
+    
+    if (strcmp(xAxisScaling, 'log'))
+        markerSize = 169;
+        lineColor = [1 0 0];
+    else
+        markerSize = 100;
+        lineColor = [0 1 1];
+    end
+
+    scatter(ax, xAxisData, yAxisData, markerSize, '.', 'MarkerFaceColor', [0 0 0], 'MarkerEdgeColor', [0 0 0]);
+    if (~isempty(xAxisDataFit))
+        hold(ax, 'on')
+        line(ax, xAxisDataFit, yAxisDataFit, 'Color', lineColor, 'LineWidth', 1.5);
+        hold(ax, 'off');
+    end
+    
+    set(ax, 'XTickLabel', {}, 'YTickLabel', {}, ...
+        'XLim', [xAxisData(1) xAxisData(end)], ...
+        'XColor', 'none', 'YColor', 'none');
+    set(ax, 'XScale', xAxisScaling);
+    set(ax, 'YTick', (0:0.25:1)*maxSpikeRate, 'YLim', [0 maxSpikeRate]);
+    
+    if (strcmp(xAxisScaling, 'log'))
+        set(ax, 'XTick', [0.1 0.3 1 3 10 30])
+    else
+        set(ax, 'XTick',linspace(xAxisData(1), xAxisData(end), 5));
+    end
+    box(ax, 'on'); grid(ax, 'on');
+    axis(ax, 'square')
+    drawnow;
+end
+
+function renderMosaicConnectivityPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
+    theMidgetRGCmosaic,  xAxis, yAxis, zLevels, subregions, targetRGC)
 
     hold(theAxes, 'on');
     colormap(theAxes, brewermap(512, 'greys'));
     renderConeConnections(theAxes, theMidgetRGCmosaic, conePositionsMicrons);
     renderCones(theAxes, coneTypes, conePositionsMicrons, coneDiameterMicrons);
-    renderRGCoutlines(theAxes,theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels,xAxis, yAxis);
-   
-    
+    renderRGCoutlines(theAxes,targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels,xAxis, yAxis);  
     set(theAxes, 'CLim', [0 1]);
 end
 
-function renderRGCoutlines(theAxes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels, xAxis, yAxis)
+function renderRGCoutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels, xAxis, yAxis)
     [X,Y] = meshgrid(xAxis,yAxis);
     rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
     
     for mRGCindex = 1:rgcsNum
+        
+        if ((~isempty(targetRGC)) && (mRGCindex ~= targetRGC))
+            continue;
+        end
         centerWeights = full(squeeze(theMidgetRGCmosaic.centerWeights(:, mRGCindex)));
-        centerWeights(centerWeights>0) = 1;
-                
+        %centerWeights(centerWeights>0) = 1;
+        
         % Generate RF centers of RGCs based on cone positions and connection matrix
         switch subregions
             case 'centers'        
@@ -178,3 +214,22 @@ function renderCones(theAxes, coneTypes, conePositionsMicrons, coneDiameterMicro
     end
     
 end
+
+function plotlabOBJ = setupPlotLab(mode, figWidthInches, figHeightInches)
+    if (mode == 0)
+        plotlabOBJ = plotlab();
+        plotlabOBJ.applyRecipe(...
+                'colorOrder', [1 0 0; 0 0 1], ...
+                'axesBox', 'off', ...
+                'axesTickDir', 'in', ...
+                'renderer', 'painters', ...
+                'lineMarkerSize', 14, ...
+                'axesTickLength', [0.01 0.01], ...
+                'legendLocation', 'SouthWest', ...
+                'figureWidthInches', figWidthInches, ...
+                'figureHeightInches', figHeightInches);
+    else
+        plotlab.resetAllDefaults();
+    end
+end 
+
