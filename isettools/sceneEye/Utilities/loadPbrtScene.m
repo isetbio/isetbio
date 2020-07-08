@@ -315,8 +315,8 @@ if(sceneNameFlag)
 end
 
 %% Read the filename and get a recipe
-thisR = piRead(scenePath, 'version', 3);
-thisR.inputFile = scenePath;
+thisR = piRead(scenePath);
+% thisR.inputFile = scenePath;
 
 %% Setup the working folder
 if(isempty(p.Results.workingDirectory))
