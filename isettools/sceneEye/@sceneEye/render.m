@@ -24,10 +24,6 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 % Optional key/value pairs:
 %    scaleIlluminance - Boolean. Whether or not to calculate the scale
 %                       illuminance of the scene.
-%    reuse            - Boolean. Whether or not to reuse existing
-%                       renderings of the same calculation. (Warning: This
-%                       means changes to the parameters will not be
-%                       displayed in the rendered image.)
 %
 % Description:
 %
@@ -56,13 +52,11 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
-p.addParameter('reuse', false, @islogical);
 
 rTypes = {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'};
 p.addParameter('rendertype','both',@(x)(ismember(ieParamFormat(x),rTypes)));
 
 p.parse(obj, varargin{:});
-reuse      = p.Results.reuse;
 renderType = p.Results.rendertype;
 scaleIlluminance = p.Results.scaleilluminance;
 
@@ -88,12 +82,8 @@ end
 piWrite(thisR);
 
 %% Render the pbrt file using docker
-%scaleFactor = [];
-if reuse
-    [ieObject, terminalOutput] = piRender(thisR, 'reuse', true, 'render type',renderType);
-else
-    [ieObject, terminalOutput] = piRender(thisR,'render type',renderType);
-end
+
+[ieObject, terminalOutput] = piRender(thisR,'render type',renderType);
 
 %% Fix up the returned object
 
@@ -109,6 +99,6 @@ end
 
 % Not sure why we need to do this, but perhaps something was changed in the
 % recipe and we want to preserve that????
-obj.recipe = thisR;
+% obj.recipe = thisR;
 
 end

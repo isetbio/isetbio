@@ -58,16 +58,10 @@ switch param
                 obj.modelName = val;
                 obj.recipe.set('retina distance',16.713);
                 obj.recipe.set('retina radius',13.4);
-            case {'custom'}
-                % Use Navarro as a default.
-                % Do we need to be able to change this later?
+            otherwise
+                % User defined name
                 obj.modelName = val;
-                if(isempty(obj.retinaDistance))
-                obj.recipe.set('retina distance',[]);
-                end
-                if(isempty(obj.retinaRadius))
-                obj.recipe.set('retina radius',[]);
-                end
+                fprintf('Custom model. Set the retina distance and radius\n');
         end
         
         % When the user toggles into debugMode, that indicates the lens
@@ -97,6 +91,9 @@ switch param
     case 'accommodation'
         % obj.set('accommodation',diopters);
         %
+        % When using the Navarro lens model, the lens is written out for
+        % the proper accommodation in piWriteLens();
+
         obj.recipe.set('focal distance',1/val);
         
         if(strcmp(obj.modelName, 'Gullstrand'))
@@ -106,7 +103,10 @@ switch param
     case {'focaldistance'}
         % obj.set('focal distance',Meters)
         %
-        obj.recipe.set('focal distance',1/val);
+        % When using the Navarro lens model, the lens is written out for
+        % the proper accommodation in piWriteLens();
+        obj.recipe.set('focal distance',val);
+        
     case 'fov'
         % We specify our hope for the horizontal field of view
         obj.fov = val;
@@ -135,6 +135,10 @@ switch param
         %
         obj.recipe.set('diffraction',val);
         
+        % Sometimes we swap in a special camera for testing
+    case 'camera'
+        obj.recipe.camera = val;
+        
         % Eye position
     case 'lookat'
         % obj.set('look at',valStruct);
@@ -150,6 +154,9 @@ switch param
         obj.recipe.lookAt.to = val;
     case 'up'
         obj.recipe.lookAt.up = val;
+        
+    otherwise
+        error('Unknown sceneEye set parameter %s\n',param);
 end
 
 end

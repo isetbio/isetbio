@@ -36,7 +36,8 @@ wave = (400:10:800); % nm
 
 %% Writes out the navarro.dat file in the lens directory of the output
 lensFile = fullfile(thisR.get('lens dir output'),'navarro.dat');
-accom    = (1 / thisR.get('object distance','m'));
+accom    = (1 / thisR.get('focal distance','m'));
+
 navarroLensCreate(lensFile,'accommodation',accom);  % Diopters
 
 % The file should be there, so no warning should come from this.
@@ -71,5 +72,7 @@ for ii=1:4
     [~,str,~] = fileparts(filename);
     thisR.set(str,filename);
 end
+
+fprintf('Wrote Navarro lens information with accommodation %f\n',accom);
 
 end

@@ -106,6 +106,10 @@ properties (GetAccess=public, SetAccess=public)
     %   We change the properties of the lens to match the desired
     %   accommodation. For example, if we set this to 5 diopters, 550
     %   nm rays from 0.2 meters will be in focus on the retina.
+    %
+    % Remember to re-write the at least Navarro lens file when you change
+    % the accommodation.
+    %
     % accommodation;
 
     % eccentricity - [Currently not implemented!] Horizontal and vertical
@@ -467,6 +471,8 @@ methods
     function val = get(obj,varargin)
         % Returns derived parameters of the recipe that require some
         % computation
+        obj.recipe.get('mumble')
+    
         val = eyeGet(obj,varargin{:});
     end
     %}
