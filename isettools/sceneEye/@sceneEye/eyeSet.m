@@ -29,7 +29,11 @@ switch param
         
         if numel(val) == 1, val = [val,val]; end
         obj.recipe.set('film resolution',val);
-
+    case 'mmunits'
+        % If true, PBRT is told the scene units are millimeters, not the
+        % default of meters. 
+        obj.recipe.set('mm units',val);
+        
     case 'raysperpixel'
         % obj.set('rays per pixel',val);
         %
@@ -137,7 +141,12 @@ switch param
         
         % Sometimes we swap in a special camera for testing
     case 'camera'
-        obj.recipe.camera = val;
+        obj.recipe.set('camera',val);
+        
+    case 'retinaradius'
+        obj.recipe.set('retina radius',val);
+    case 'retinasemidiam'
+        obj.recipe.set('retina semidiam',val);
         
         % Eye position
     case 'lookat'

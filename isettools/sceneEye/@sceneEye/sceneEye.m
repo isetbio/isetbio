@@ -245,10 +245,10 @@ properties(GetAccess=public, SetAccess=private)
     %   the raw rendered data (xxx.dat) in this folder.
     % workingDir;
     
-    %SCENEUNITS Some scenes are in units of meters, some in units of millimeters.
+    %MMUNITS Some scenes are in units of meters, some in units of millimeters.
     %   We keep of track of this here so we can pass the correct parameter
     %   to PBRT.
-    % sceneUnits;
+    mmUnits;
       
 end
 
@@ -282,15 +282,14 @@ methods
         
         % pbrtFile: Either a pbrt file or just a scene name
         p.addRequired('pbrtFile', @ischar);
-        % p.addParameter('name', 'scene-001', @ischar);
-        % p.addParameter('workingDirectory', '', @ischar);
         
         % Parse
         p.parse(pbrtFile, varargin{:});
         
         % Setup the pbrt scene and recipe
         thisR = piRecipeDefault('scene name',pbrtFile);
-        % obj.sceneUnits = 'meters';
+        obj.mmUnits = 'meters';  % By default, we expect meters for units
+        
         %{
         % The original method used this complicated function to load the 
         % scene file and set these fields.  I am not  sure why sceneUnits
@@ -306,7 +305,6 @@ methods
         % [Note: JNM - 5/14/19 the human eye has retinaDistance parameters,
         % realistic does not.]
         if ~strcmp(thisR.get('camera subtype'), 'realisticEye')
-            % thisR.set('lens file',fullfile(isetRootPath,'data','lens','navarro.dat'));
             thisR.camera = piCameraCreate('humaneye','lens file','navarro.dat');
         end
 
@@ -414,13 +412,22 @@ methods
     
     % Calculations:
     % retinaDistance = d + a + b
-    % a^2 + x^2 = r^2
+    % a^2 + x^2 = r^2   (radius of the sphere)
     % x/(d+a) = tand(fov/2) = k
     %
     % x = sqrt(r^2-a^2)
     % sqrt(r^2-a^2)/(d+a) - k = 0 
     % We can solve for a using an fzero solve.
 
+    % These are pretty much constant unless the model changes them.
+    % r = retinaRadius
+    % d + a + b = retinaDistance
+    %
+    % This one should determine the field of view, partitioning a and b.
+    %
+    % x = retinaSemiDiam
+
+    
     %{
     function val = get.distance2chord(obj)
         % Not entirely accurate but lets treat the origin point for the FOV
@@ -475,7 +482,7 @@ methods
     
     % Sets parameters of sceneEye. Mostly these are passed through to the
     % rendering recipe.
-    function obj = set(obj,varargin)
+    function obj = set(obj,param,varargin)
         obj = eyeSet(obj,param,varargin{:});
     end
     

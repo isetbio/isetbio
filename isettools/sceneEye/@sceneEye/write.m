@@ -141,9 +141,9 @@ end
 %    tand(objNew.fov / 2);
 
 %{
-if(strcmp(objNew.sceneUnits, 'm'))
-    % Units should always be meters. This switch statement can be a lot
-    % of trouble.  Let's stay on top of it.
+if(strcmp(objNew.mmUnits, 'meters'))
+    % We have some scenes that are in millimeters, not meters.  In that
+    % case we set this flag to be true, indicating that mmUnits are true.
     thisR.camera.mmUnits.value = 'false';
     thisR.camera.mmUnits.type = 'bool';
 end
