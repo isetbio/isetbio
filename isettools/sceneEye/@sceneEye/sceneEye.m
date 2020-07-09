@@ -411,6 +411,7 @@ methods
                    oOO                 OOo
                        ooo OOO OOO ooo
     %}
+    
     % Calculations:
     % retinaDistance = d + a + b
     % a^2 + x^2 = r^2
@@ -420,6 +421,7 @@ methods
     % sqrt(r^2-a^2)/(d+a) - k = 0 
     % We can solve for a using an fzero solve.
 
+    %{
     function val = get.distance2chord(obj)
         % Not entirely accurate but lets treat the origin point for the FOV
         % calculate as the beack of the lens
@@ -463,25 +465,20 @@ methods
        chordSpatialSamples = (1:obj.resolution).*ss - obj.width/2;
        val = atand(chordSpatialSamples/obj.distance2chord);
     end
-    
-    %{
-    % We may make all the get.xxx go away from here and be handled inside
-    % of eyeGet.  This is like recipeGet/Set
-    %
-    function val = get(obj,varargin)
-        % Returns derived parameters of the recipe that require some
-        % computation
-        obj.recipe.get('mumble')
-    
-        val = eyeGet(obj,varargin{:});
-    end
     %}
-    
-    % Interface to the main set routine.  Sets parameters of sceneEye.
-    % Mostly these are passed through to the rendering recipe.
-    function obj = set(obj,varargin)
-        obj = eyeSet(obj,varargin{:});
+
+    % Get function for sceneEye. Returns derived parameters of the
+    % sceneEye that require some computation
+    function val = get(obj,param, varargin)
+        val = eyeGet(obj, param, varargin{:});
     end
+    
+    % Sets parameters of sceneEye. Mostly these are passed through to the
+    % rendering recipe.
+    function obj = set(obj,varargin)
+        obj = eyeSet(obj,param,varargin{:});
+    end
+    
 end
 
 methods (Access=public)
