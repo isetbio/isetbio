@@ -3,7 +3,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     xAxisDataFit, theMidgetRGCmosaicResponsesFit, ...
     eccentricityMicrons, sizeMicrons, ...
     theMidgetRGCmosaic,  zLevels, subregions, maxSpikeRate, ...
-    exportFig, condition, LMScontrast, targetRGC)
+    exportFig, condition, LMScontrast, targetRGC, labelCells)
 
     % Retrieve cone positions (microns), cone spacings, and cone types
     cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
@@ -52,7 +52,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
             
         ax = axes('Position', axesPosition, 'Color', [1 1 1]);
           renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
-                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate);
+                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  targetRGC, false);
     else
         rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
         [~,RGCpositionsNormalized] = determineRGCPositionsFromCenterInputs(theConeMosaic, eccentricityMicrons, theMidgetRGCmosaic.centerWeights);
@@ -72,18 +72,19 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
             
             ax = axes('Position', axesPosition, 'Color', [1 1 1]);
             renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
-                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate);
+                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate, iRGC, labelCells);
         end
     end
     
      if (exportFig)
-       plotlabOBJ.exportFig(hFig, 'pdf', sprintf('Ensemble_%s_LMS_%0.2f_%0.2f_%0.2f', condition,LMScontrast(1), LMScontrast(2), LMScontrast(3)), pwd());
+          pdfFileName = sprintf('Ensemble_%s_LMS_%0.2f_%0.2f_%0.2f', condition,LMScontrast(1), LMScontrast(2), LMScontrast(3));
+         plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, pwd());
     end
             
     setupPlotLab(-1);
 end
 
-function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate)
+function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate, iRGC, labelCells)
     
     if (strcmp(xAxisScaling, 'log'))
         markerSize = 169;
@@ -113,6 +114,16 @@ function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFi
     end
     box(ax, 'on'); grid(ax, 'on');
     axis(ax, 'square')
+    if (labelCells)
+        if (strcmp(xAxisScaling, 'log'))
+            xo = 0.12;
+            yo = maxSpikeRate*0.85;
+        else
+            xo = xAxisData(1);
+            yo = maxSpikeRate*0.85;
+        end
+        text(ax, xo,yo, sprintf('%d', iRGC), 'FontSize',10);
+    end
     drawnow;
 end
 
@@ -229,6 +240,7 @@ function plotlabOBJ = setupPlotLab(mode, figWidthInches, figHeightInches)
                 'figureWidthInches', figWidthInches, ...
                 'figureHeightInches', figHeightInches);
     else
+        pause(2.0);
         plotlab.resetAllDefaults();
     end
 end 

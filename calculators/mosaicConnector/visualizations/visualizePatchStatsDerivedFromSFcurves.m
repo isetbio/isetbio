@@ -49,7 +49,6 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, patchRGCecc
     set(gca, 'XScale', 'log', 'XLim', [0.01 30], 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30]);
     set(gca, 'YScale', 'linear', 'YLim', [0 1], 'YTick', [0:0.2:1]);
     axis 'square';
-    pause
 end
 
 

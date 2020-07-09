@@ -54,7 +54,7 @@ function [responseAmplitude, responseAmplitudeSE, responsePhase, responseTimeAxi
                 if (exportFig)
                     plotlabOBJ.exportFig(hFig, 'pdf', sprintf('Response_RGC_%d_SF_%2.2fcpd_LMS_%0.2f_%0.2f_%0.2f',iRGC, spatialFrequency, LMScontrast(1), LMScontrast(2), LMScontrast(3)), pwd());
                 end
-                pause
+                
             end
         end
         

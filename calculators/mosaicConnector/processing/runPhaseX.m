@@ -4,14 +4,14 @@ function runPhaseX(runParams)
     saveDir = strrep(fileparts(which(mfilename())), 'processing', 'responseFiles');
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = true;
-    recomputeNullResponses = true;
+    recomputeConeMosaicResponses = ~true;
+    recomputeNullResponses = ~true;
 
     % Load/Recompute connected mosaics and the optics
     [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, ~true, saveDir);
 
     % Stimulation parameters
-    LMScontrast = [0.0 0.1 0.0];
+    LMScontrast = [0.1 0.1 0.0];
     minSF = 0.1;
     maxSF = 60;
     spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),12);
