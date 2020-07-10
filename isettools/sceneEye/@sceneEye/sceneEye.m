@@ -277,17 +277,18 @@ methods
         % for the sceneEye object. That object will be rendered
         % using the PBRT methods (docker image).
 
-        p = inputParser;
-        p.KeepUnmatched = true;
+        if ~exist('pbrtFile','var'), pbrtFile = ''; end
         
         % pbrtFile: Either a pbrt file or just a scene name
-        p.addRequired('pbrtFile', @ischar);
+        % p.addRequired('pbrtFile', @ischar);
         
         % Parse
-        p.parse(pbrtFile, varargin{:});
+        % p.parse(pbrtFile, varargin{:});
         
         % Setup the pbrt scene and recipe
-        thisR = piRecipeDefault('scene name',pbrtFile);
+        if isempty(pbrtFile),  obj.recipe = recipe;
+        else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
+        end
         obj.mmUnits = 'meters';  % By default, we expect meters for units
         
         %{
@@ -301,75 +302,16 @@ methods
         % Make sure the recipe specifies realistic eye.  That camera has
         % the parameters needed to model the human.  Note:  realisticEye
         % differs from realistic.
-        %
-        % [Note: JNM - 5/14/19 the human eye has retinaDistance parameters,
-        % realistic does not.]
-        if ~strcmp(thisR.get('camera subtype'), 'realisticEye')
-            thisR.camera = piCameraCreate('humaneye','lens file','navarro.dat');
+        if ~strcmp(obj.get('camera subtype'), 'realisticEye')
+            disp('Setting Navarro model default');
+            obj.set('camera',piCameraCreate('humaneye','lens file','navarro.dat'));
+            obj.modelName = 'navarro'; % Default
         end
-
-        % Set up units and working directory.  These should go away
-        % obj.workingDir = thisR.get('output dir');
-        % obj.pbrtFile   = thisR.get('input basename');
-        
-        % We are duplicating the recipe properties here. We should add
-        % extra properties, but we should not duplicate.  These changes are
-        % in preparation for getting rid of the extra parameters
-        % obj.name = p.Results.name;
-        obj.modelName = 'navarro'; % Default
-        % obj.resolution     = thisR.get('film xresolution'); %thisR.film.xresolution.value;
-        % obj.retinaDistance = thisR.get('retina distance');  % thisR.camera.retinaDistance.value;
-        % obj.pupilDiameter  = thisR.get('pupil diameter'); % thisR.camera.pupilDiameter.value;
-
-        % obj.retinaDistance = thisR.get('retina distance'); % thisR.camera.retinaDistance.value;
-        % obj.retinaRadius   = thisR.get('retina radius'); % thisR.camera.retinaRadius.value;
-
-        % retinaSemiDiam = thisR.get('retina semi diam'); % thisR.camera.retinaSemiDiam.value;
-        % obj.fov = 2 * atand(retinaSemiDiam / obj.retinaDistance);
-
-        % The current default eye model is Navarro focused at 10m (0.1
-        % diopters accommodation).  That is placed in data/lens/*
-        % obj.lensFile = which(thisR.get('lens file')); % thisR.camera.lensfile.value;
-       
-        % Indicate the accommodation.  This is how the navarro.dat file was
-        % built.
-        thisR.set('object distance',1);   % 10 meters
-        % obj.accommodation = 1/thisR.get('object distance'); 
-        
-        %{
-        if(strcmp(obj.lensFile, ''))
-            obj.accommodation = [];
-        else
-            % Use regular expressions to find any floats within the string
-            value = regexp(obj.lensFile, '(\d+, )*\d+(\.\d*)?', 'match');
-            obj.accommodation = str2double(value{1});
-        end
-        %}
-        % obj.numRays = thisR.get('rays per pixel'); % thisR.sampler.pixelsamples.value;
-
-        % These two are often empty, so let's do checks here. However, 
-        % I should find a more permanant solution to cases like these.
-        % (See note above).
-        % Maybe in piGetRenderRecipe we should put in the default
-        % values if any of these rendering options are missing
-        % (e.g. if Renderer is missing, put in Renderer 'sampler'.)
-        % obj.numBounces = thisR.get('nbounces'); % thisR.integrator.maxdepth.value;
-        
-        % More duplicates
-        % obj.numCABands = thisR.get('n wave bands'); % thisR.renderer.nWaveBands.value;
-
-        % More duplicates
-        %{
-        if(~isempty(thisR.lookAt))
-            obj.eyePos = thisR.get('from'); % thisR.lookAt.from;
-            obj.eyeTo  = thisR.get('to');   % thisR.lookAt.to;
-            obj.eyeUp  = thisR.get('up');   % thisR.lookAt.up;
-        end
-        %}
-        obj.recipe = thisR;
         
         % Default settings that are special to the sceneEye.  Everything
         % else is really part of the thisR (the rendering recipe).
+        
+        % Maybe call debugMode 'usePinhole'
         obj.debugMode = false;
         obj.diffractionEnabled = false;
         obj.eccentricity = [0 0];
@@ -431,7 +373,7 @@ methods
     %{
     function val = get.distance2chord(obj)
         % Not entirely accurate but lets treat the origin point for the FOV
-        % calculate as the beack of the lens
+        % calculate as the back of the lens
         if(obj.retinaRadius > obj.retinaDistance)
             error('Retina radius is larger than retina distance.')
         end

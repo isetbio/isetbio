@@ -2,16 +2,24 @@ function obj = eyeSet(obj,param,val,varargin)
 % Set methods for dependent variables
 %
 % Synopsis
+%   obj = eyeSet(obj,param,val,varargin)
 %
 % Brief description
+%  Set the iset3d recipe and sceneEye parameters through this call.
 %
 % Input
-%
+%  obj:   sceneEye class
+%  param:
+%  val:
+% 
 % Optional key/val parmeters
+%  N/A
 %
 % Output
+%   obj:  Modified sceneEye class
 %
 % Description
+%
 %
 % See also
 %  sceneEye
@@ -23,29 +31,7 @@ param = ieParamFormat(param);
 switch param
     case 'name'
         obj.name = val;
-    case 'resolution'
-        % obj.set('resolution',[x,y]);
-        % Resolution means the number of spatial samples on the film plane.
-        
-        if numel(val) == 1, val = [val,val]; end
-        obj.recipe.set('film resolution',val);
-    case 'mmunits'
-        % If true, PBRT is told the scene units are millimeters, not the
-        % default of meters. 
-        obj.recipe.set('mm units',val);
-        
-    case 'raysperpixel'
-        % obj.set('rays per pixel',val);
-        %
-        % Number of samples set out from each film pixel
-        obj.recipe.set('rays per pixel',val);
-    case{'maxdepth','bounces','nbounces'}
-        obj.recipe.set('n bounces',val);
-        
-    case 'pupildiameter'
-        obj.recipe.set('pupil diameter',val);
-    % case 'fov'  
-        
+
     case 'modelname'
         % When we set the eye model, we need to change the retina distance and
         % radius.  
@@ -68,104 +54,25 @@ switch param
                 fprintf('Custom model. Set the retina distance and radius\n');
         end
         
+    case {'recipe'}
+        % This is the iset3d recipe.
+        obj.recipe = val;
+        
         % When the user toggles into debugMode, that indicates the lens
         % will be replaced by a pinhole in the write() phase.
     case 'debugmode'
         obj.debugMode = val;
-        
-        %{
-        % Too many things were happening here.  I do not think we need this
-        % any more.
-        if(val)
-            obj.modelName = 'perspective';
-            % The camera will be changed to perspective in write(), so we
-            % do nothing here.
-        elseif(~val && strcmp(obj.modelName, 'none'))
-            % Not debug mode. Put the navarro eye back in if there's not
-            % already a model.  We should add in the accommodation
-            % distance.
-            obj.modelName = 'navarro';
-            warning('Need to set the accom distance coming out of debug mode');
-            obj.recipe.camera = piCameraCreate('humaneye');
-        end
-        %}
-        
-        % I want to put in this warning, but again MATLAB doesn't really like
-        % this!
-    case 'accommodation'
-        % obj.set('accommodation',diopters);
-        %
-        % When using the Navarro lens model, the lens is written out for
-        % the proper accommodation in piWriteLens();
-
-        obj.recipe.set('focal distance',1/val);
-        
-        if(strcmp(obj.modelName, 'Gullstrand'))
-            warning(['Gullstrand eye has no accommodation modeling.', ...
-                'Setting accommodation will do nothing.']);
-        end
-    case {'focaldistance'}
-        % obj.set('focal distance',Meters)
-        %
-        % When using the Navarro lens model, the lens is written out for
-        % the proper accommodation in piWriteLens();
-        obj.recipe.set('focal distance',val);
-        
+                
     case 'fov'
-        % We specify our hope for the horizontal field of view
+        % We specify our hope for the horizontal field of view.  We have a
+        % PPT about the various parameters needed here.  The PPTX is in the
+        % wiki/images directory.
         obj.fov = val;
-        
-    case 'lensfile'
-        % On creation, the lensFile is left empty
-        % There should be a better way to do this right? I don't think I'm
-        % doing this right. Maybe we need a seperate set function like we
-        % do with render recipes?
-        if(~isempty(val))
-            % Make sure it's a valid file
-            [p, ~, e] = fileparts(val);
-            if(isempty(p))
-                error('Lens file needs to be a full file path.');
-            elseif(~strcmp(e, '.dat'))
-                error('Lens file needs to be a .dat file.');
-            end
-            
-            obj.modelName = 'custom';
-            obj.recipe.set('lensFile',val);
-        else
-            obj.recipe.set('lensFile','');
-        end
-    case 'diffraction'
-        % obj.set('diffraction',true/false);
-        %
-        obj.recipe.set('diffraction',val);
-        
-        % Sometimes we swap in a special camera for testing
-    case 'camera'
-        obj.recipe.set('camera',val);
-        
-    case 'retinaradius'
-        obj.recipe.set('retina radius',val);
-    case 'retinasemidiam'
-        obj.recipe.set('retina semidiam',val);
-        
-        % Eye position
-    case 'lookat'
-        % obj.set('look at',valStruct);
-        %
-        % Includes the from, to and up in a struct
-        if isstruct(val) &&  isfield(val,'from') && isfield(val,'to')
-            obj.recipe.lookAt = val;
-        end
-    case 'from'
-        % obj.set('from',val);
-        obj.recipe.lookAt.from = val;
-    case 'to'
-        obj.recipe.lookAt.to = val;
-    case 'up'
-        obj.recipe.lookAt.up = val;
-        
+      
     otherwise
-        error('Unknown sceneEye set parameter %s\n',param);
+        % Rather than a sceneEye set, this is probably an iset3d recipe
+        % set.  So send it in and hoe for the best.
+        obj.recipe.set(param,val,varargin{:});
 end
 
 end
