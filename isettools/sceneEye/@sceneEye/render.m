@@ -65,7 +65,7 @@ scaleIlluminance = p.Results.scaleilluminance;
 thisR = obj.recipe;
 
 % If debug, switch the camera to pinhole to render a scene
-if obj.debugMode
+if obj.usePinhole
     % We will render a scene through a pinhole camera
     cameraSave = thisR.get('camera');
     thisR.set('camera',piCameraCreate('pinhole'));
@@ -87,7 +87,7 @@ piWrite(thisR);
 
 %% Fix up the returned object
 
-if(~obj.debugMode)
+if(~obj.usePinhole)
     % If we are not in debug mode, set OI parameters.
     ieObject = obj.setOI(ieObject, 'scale illuminance', scaleIlluminance);
     % oiWindow(ieObject);

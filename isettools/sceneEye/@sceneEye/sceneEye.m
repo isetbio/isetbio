@@ -183,11 +183,11 @@ properties (GetAccess=public, SetAccess=public)
     %   diffraction. May cause slow-downs. 
     diffractionEnabled;
     
-    %DEBUGMODE Toggle debug mode.
-    %   For debug mode we switch to a perspective camera with the same
+    % USEPINHOLE - a debugging mode
+    %   For debug mode we switch to a pinhole camera with the same
     %   FOV as the eye. This can be potentially faster and easier to
     %   render than going through the eye.
-    debugMode;
+    usePinhole;
     
     %RECIPE Structure that holds all other instructions needed for the
     %renderer
@@ -289,7 +289,7 @@ methods
         if isempty(pbrtFile),  obj.recipe = recipe;
         else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
         end
-        obj.mmUnits = 'meters';  % By default, we expect meters for units
+        % obj.mmUnits = 'meters';  % By default, we expect meters for units
         
         %{
         % The original method used this complicated function to load the 
@@ -311,8 +311,7 @@ methods
         % Default settings that are special to the sceneEye.  Everything
         % else is really part of the thisR (the rendering recipe).
         
-        % Maybe call debugMode 'usePinhole'
-        obj.debugMode = false;
+        obj.usePinhole = false;
         obj.diffractionEnabled = false;
         obj.eccentricity = [0 0];
         obj.lensDensity = 1.0;
@@ -327,7 +326,8 @@ methods
     % the desired FOV. We want to measure the FOV from the back of the
     % lens. 
     %
-    % I will attempt to illustrate this in ascii:
+    % I will attempt to illustrate this in ascii - and there is a
+    % PowerPoint in the iset3d.wiki/images directory that does this, too.
     %{
                        ooo OOO OOO ooo
                    oOO                 OOo

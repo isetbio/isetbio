@@ -60,8 +60,8 @@ switch param
         
         % When the user toggles into debugMode, that indicates the lens
         % will be replaced by a pinhole in the write() phase.
-    case 'debugmode'
-        obj.debugMode = val;
+    case 'usepinhole'
+        obj.usePinhole = val;
                 
     case 'fov'
         % We specify our hope for the horizontal field of view.  We have a

@@ -39,6 +39,9 @@ switch ieParamFormat(param)
     case 'distance2chord'
         val = 2 * tand(obj.fov / 2) * (obj.distance2chord);
         
+    case 'usepinhole'
+        val = obj.usePinhole;
+        
     otherwise
         % Pass through to the main get of the recipe.
         val = obj.recipe.get(param,varargin{:});
