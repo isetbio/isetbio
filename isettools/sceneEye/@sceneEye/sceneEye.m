@@ -289,12 +289,12 @@ methods
         if isempty(pbrtFile),  obj.recipe = recipe;
         else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
         end
-        % obj.mmUnits = 'meters';  % By default, we expect meters for units
+        
+        obj.set('mm units',false);  % We expect meters for units, not millimeters
         
         %{
         % The original method used this complicated function to load the 
-        % scene file and set these fields.  I am not  sure why sceneUnits
-        % is still with us.  Every scene in loadPbrtScene is 'm' (meters).
+        % scene file and set these fields. 
         [thisR, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
            loadPbrtScene(pbrtFile, varargin);
         %}
@@ -302,11 +302,9 @@ methods
         % Make sure the recipe specifies realistic eye.  That camera has
         % the parameters needed to model the human.  Note:  realisticEye
         % differs from realistic.
-        if ~strcmp(obj.get('camera subtype'), 'realisticEye')
-            disp('Setting Navarro model default');
-            obj.set('camera',piCameraCreate('humaneye','lens file','navarro.dat'));
-            obj.modelName = 'navarro'; % Default
-        end
+        % disp('Setting Navarro model default');
+        obj.set('camera',piCameraCreate('humaneye','lens file','navarro.dat'));
+        obj.modelName = 'navarro'; % Default
         
         % Default settings that are special to the sceneEye.  Everything
         % else is really part of the thisR (the rendering recipe).
