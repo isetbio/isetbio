@@ -64,10 +64,24 @@ switch param
         obj.usePinhole = val;
                 
     case 'fov'
-        % We specify our hope for the horizontal field of view.  We have a
-        % PPT about the various parameters needed here.  The PPTX is in the
-        % wiki/images directory.
-        obj.fov = val;
+        % We have a PPT about the various parameters needed here.  The PPTX
+        % is in the wiki/images directory.
+        %
+        % Setting the field of view amounts to setting the 'retina
+        % semidiam' parameter.  We figure out what it should be set to
+        % here.
+        % fov = atand(semidiam/lens2chord)*2
+        % tand(fov/2) = semidiam/lens2chord
+        % semidiam = tand(fov/2)*lens2chord
+        lens2chord = obj.get('lens 2 chord','mm');
+        semidiam = tand(val/2)*lens2chord;
+        radius = obj.get('eye radius','mm');
+        if semidiam >= radius
+            error('Semidiam %f must be smaller than eyeball radius %f ',);
+        end
+        obj.set('retina semidiam',semidiam);
+        
+        % obj.fov = val;
       
     otherwise
         % Rather than a sceneEye set, this is probably an iset3d recipe

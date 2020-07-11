@@ -319,10 +319,9 @@ methods
     %% Get methods for dependent variables
     
     % In PBRT, the image height is equivalent to the size of the chord on
-    % the back of the spherical retina. We have to do the complex
-    % calculation below in order to find an image size that would give us
-    % the desired FOV. We want to measure the FOV from the back of the
-    % lens. 
+    % the back of the spherical retina. We have to do the calculation below
+    %  to find an image size that would give us the desired FOV. We
+    % want to measure the FOV from the back of the lens.
     %
     % I will attempt to illustrate this in ascii - and there is a
     % PowerPoint in the iset3d.wiki/images directory that does this, too.
