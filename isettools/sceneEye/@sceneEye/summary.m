@@ -32,7 +32,7 @@ if thisEye.get('use pinhole'), renderMode = 'scene'; end
 
 delimit = '---------------';
 txt = addText(delimit,sprintf('\nEye Model: %s\n',thisR.get('camera subtype')));
-txt = addText(txt,sprintf('Lens: %s\n',thisR.get('lens file')));
+txt = addText(txt,sprintf('Lens: %s\n',thisR.get('lens basename')));
 txt = addText(txt,sprintf('Rays per pixel: %d \n',thisR.get('rays per pixel')));
 txt = addText(txt,sprintf('Ray bounces: %d \n',thisR.get('n bounces')));
 txt = addText(txt,sprintf('Integrator:  %s\n',thisR.get('integrator')));
@@ -42,16 +42,26 @@ txt = addText(txt,sprintf('\nRendering an *** %s *** \n',renderMode));
 txt = addText(txt,sprintf('Input: %s \n',thisR.get('input basename')));
 txt = addText(txt,sprintf('Docker dir: %s \n',thisR.get('output dir')));
 txt = addText(txt,delimit);
-txt = addText(txt,sprintf('\nFocal distance: %0.2f (m)\n',thisR.get('focal distance','m')));
+
+focaldist = thisR.get('focal distance','m');
+txt = addText(txt,sprintf('\nFocal distance: %0.2f (m), %0.2f (diopters)\n',focaldist,1/focaldist));
+txt = addText(txt,sprintf('Pupil diameter: %0.1f mm\n',thisR.get('pupil diameter','mm')));
+txt = addText(txt,sprintf('FOV: %0.1f deg\n',thisR.get('fov')));
+txt = addText(txt,sprintf('Spatial samples: %d %d\n',thisR.get('spatial resolution')));
+
 caEnabled = thisR.get('chromatic aberration');
 if caEnabled, nBands = thisR.get('num ca bands');
     txt = addText(txt,sprintf('Chromatic aberration: Enabled (%d bands)\n',nBands));
 else
     txt = addText(txt,sprintf('Chromatic aberration: Disabled\n'));
 end
-txt = addText(txt,sprintf('FOV: %0.1f deg\n',thisR.get('fov')));
-txt = addText(txt,sprintf('Spatial samples: %d %d\n',thisR.get('spatial resolution')));
 
+diffEnabled = thisR.get('diffraction');
+if diffEnabled
+    txt = addText(txt,sprintf('Diffraction: Enabled\n'));
+else
+    txt = addText(txt,sprintf('Diffraction: Disabled\n'));
+end
 txt = addText(txt,delimit);
 
 
