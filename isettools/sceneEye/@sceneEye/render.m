@@ -66,9 +66,13 @@ thisR = obj.recipe;
 
 % If debug, switch the camera to pinhole to render a scene
 if obj.usePinhole
-    % We will render a scene through a pinhole camera
+    % We will render a scene through a pinhole camera.  We try to match the
+    % fov for the scene with the fov that was set for the eyeballc ase.
+    fov = thisR.get('fov');
     cameraSave = thisR.get('camera');
+    
     thisR.set('camera',piCameraCreate('pinhole'));
+    thisR.set('fov',fov);
 end
 
 %% Write out into a pbrt file

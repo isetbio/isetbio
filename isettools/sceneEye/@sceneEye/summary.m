@@ -36,6 +36,14 @@ txt = addText(txt,sprintf('Lens: %s\n',thisR.get('lens file')));
 txt = addText(txt,sprintf('Resolution: %d %d\n',thisR.get('spatial resolution')));
 txt = addText(txt,sprintf('Rays per pixel: %d \n',thisR.get('rays per pixel')));
 txt = addText(txt,sprintf('Ray bounces: %d \n',thisR.get('n bounces')));
+txt = addText(txt,sprintf('Integrator:  %s\n',thisR.get('integrator')));
+caEnabled = thisR.get('chromatic aberration');
+if caEnabled, nBands = thisR.get('num ca bands');
+    txt = addText(txt,sprintf('Chromatic aberration bands: %d \n',nBands));
+else
+    txt = addText(txt,sprintf('Chromatic aberration disabled\n'));
+end
+
 txt = addText(txt,delimit);
 txt = addText(txt,delimit);
 txt = addText(txt,sprintf('\nRendering as a *** %s *** \n',renderMode));

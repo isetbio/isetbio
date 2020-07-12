@@ -77,11 +77,9 @@ switch param
         semidiam = tand(val/2)*lens2chord;
         radius = obj.get('eye radius','mm');
         if semidiam >= radius
-            error('Semidiam %f must be smaller than eyeball radius %f ',);
+            error('Semidiam %f must be smaller than eyeball radius %f ',semidiam,radius);
         end
         obj.set('retina semidiam',semidiam);
-        
-        % obj.fov = val;
       
     otherwise
         % Rather than a sceneEye set, this is probably an iset3d recipe
