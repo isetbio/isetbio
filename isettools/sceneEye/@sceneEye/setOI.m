@@ -44,15 +44,15 @@ meanIlluminancePerMM2 = p.Results.meanilluminancepermm2;
 scaleIlluminance = p.Results.scaleilluminance;
 
 %% Initial calculations
-ieObject = oiSet(ieObject, 'name', ...
-    sprintf('%s-%s', obj.name, datestr(now, 'mmm-dd, HH:MM')));
+% ieObject = oiSet(ieObject, 'name', ...
+%     sprintf('%s-%s', obj.name, datestr(now, 'mmm-dd, HH:MM')));
 
 % Scene distance. Set it to infinity, since it doesn't apply to raytracing.
 ieObject = oiSet(ieObject, 'distance', Inf);
 
 % If there is a crop window we're going to have to adjust the FOV
-crop_window = obj.recipe.get('cropwindow');
-retDistance = obj.recipe.get('retina distance','m');
+crop_window   = obj.recipe.get('cropwindow');
+retDistance   = obj.recipe.get('retina distance','m');
 pupilDiameter = obj.recipe.get('pupil diameter','m');
 
 full_size = 2 * tand(obj.recipe.get('fov') / 2) * retDistance;

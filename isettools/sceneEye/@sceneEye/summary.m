@@ -39,10 +39,11 @@ txt = addText(txt,sprintf('Ray bounces: %d \n',thisR.get('n bounces')));
 txt = addText(txt,sprintf('Integrator:  %s\n',thisR.get('integrator')));
 caEnabled = thisR.get('chromatic aberration');
 if caEnabled, nBands = thisR.get('num ca bands');
-    txt = addText(txt,sprintf('Chromatic aberration bands: %d \n',nBands));
+    txt = addText(txt,sprintf('Chromatic aberration: Enabled (%d bands)\n',nBands));
 else
-    txt = addText(txt,sprintf('Chromatic aberration disabled\n'));
+    txt = addText(txt,sprintf('Chromatic aberration: Disabled\n'));
 end
+txt = addText(txt,sprintf('FOV: %0.1f deg\n',thisR.get('fov')));
 
 txt = addText(txt,delimit);
 txt = addText(txt,delimit);
