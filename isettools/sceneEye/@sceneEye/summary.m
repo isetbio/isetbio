@@ -25,7 +25,7 @@ function txt = summary(thisEye,varargin)
 thisR = thisEye.get('recipe');
 if isempty(thisR), disp('No rendering recipe found'); return; end
 
-renderMode = 'oi';
+renderMode = 'optical image';
 if thisEye.get('use pinhole'), renderMode = 'scene'; end
 
 %% Basic information printed for now
@@ -33,10 +33,16 @@ if thisEye.get('use pinhole'), renderMode = 'scene'; end
 delimit = '---------------';
 txt = addText(delimit,sprintf('\nEye Model: %s\n',thisR.get('camera subtype')));
 txt = addText(txt,sprintf('Lens: %s\n',thisR.get('lens file')));
-txt = addText(txt,sprintf('Resolution: %d %d\n',thisR.get('spatial resolution')));
 txt = addText(txt,sprintf('Rays per pixel: %d \n',thisR.get('rays per pixel')));
 txt = addText(txt,sprintf('Ray bounces: %d \n',thisR.get('n bounces')));
 txt = addText(txt,sprintf('Integrator:  %s\n',thisR.get('integrator')));
+
+txt = addText(txt,delimit);
+txt = addText(txt,sprintf('\nRendering an *** %s *** \n',renderMode));
+txt = addText(txt,sprintf('Input: %s \n',thisR.get('input basename')));
+txt = addText(txt,sprintf('Docker dir: %s \n',thisR.get('output dir')));
+txt = addText(txt,delimit);
+txt = addText(txt,sprintf('\nFocal distance: %0.2f (m)\n',thisR.get('focal distance','m')));
 caEnabled = thisR.get('chromatic aberration');
 if caEnabled, nBands = thisR.get('num ca bands');
     txt = addText(txt,sprintf('Chromatic aberration: Enabled (%d bands)\n',nBands));
@@ -44,12 +50,8 @@ else
     txt = addText(txt,sprintf('Chromatic aberration: Disabled\n'));
 end
 txt = addText(txt,sprintf('FOV: %0.1f deg\n',thisR.get('fov')));
+txt = addText(txt,sprintf('Spatial samples: %d %d\n',thisR.get('spatial resolution')));
 
-txt = addText(txt,delimit);
-txt = addText(txt,delimit);
-txt = addText(txt,sprintf('\nRendering as a *** %s *** \n',renderMode));
-txt = addText(txt,sprintf('Input: %s \n',thisR.get('input basename')));
-txt = addText(txt,sprintf('Docker dir: %s \n',thisR.get('output dir')));
 txt = addText(txt,delimit);
 
 
