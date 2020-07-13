@@ -1,53 +1,60 @@
-function performGaussianConvolutionWithPolansPSFanalysis(obj, varargin)
+function performGaussianConvolutionWithPolansPSFanalysis(obj, deconvolutionOpticsParams, varargin)
 
-    defaultEccTested = [0 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
+    defaultEccTested = [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
     defaultRetinalPoolingRadii = logspace(log10(0.001), log10(0.6), 10);
     
     % Parse input
     p = inputParser;
     p.addParameter('eccTested', defaultEccTested);
     p.addParameter('retinalPoolingRadii', defaultRetinalPoolingRadii);
-    p.addParameter('PolansSubjectIDs', 1:10);
-    p.addParameter('quadrants', [1 2 3]);
     p.parse(varargin{:});
             
+    % Validate the deconvolutionOpticsParams
+    obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
+    
     eccTested = -fliplr(p.Results.eccTested);
     for eccIndex = 1:numel(eccTested)
         ecc = eccTested(eccIndex);
-        doIt(obj.psfDeconvolutionDir, ecc, p.Results.retinalPoolingRadii, p.Results.PolansSubjectIDs, p.Results.quadrants);
+        doIt(obj.psfDeconvolutionDir, ecc, p.Results.retinalPoolingRadii, deconvolutionOpticsParams);
     end
 end
 
-function doIt(rootDir, cellEcc, retinalPoolingRadii, subjectIDs, quadrants)
+function doIt(rootDir, cellEcc, retinalPoolingRadii, deconvolutionOpticsParams)
 
     % Whether to visualize the analysis
     visualizeAnalysis = false;
-    subjectsNum = numel(subjectIDs);
+    subjectsNum = numel(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDToAverage);
+    quadrantsNum = numel(deconvolutionOpticsParams.quadrantsToAverage);
+    
+    subjectIDs =  deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
+    quadrants =convolutionOpticsParams.quadrantsToAverage;
     
     % Preallocate memory
-    retinalRadius = zeros(numel(retinalPoolingRadii), numel(quadrants),  subjectsNum);
+    retinalRadius = zeros(numel(retinalPoolingRadii), quadrantsNum,  subjectsNum);
     visualRadius = retinalRadius;
     visualGain = visualRadius;
    
     deltaEcc = 1;
-    for qIndex = 1:numel(quadrants)
-        eccQuadrant = quadrants(qIndex);
+    for qIndex = 1:quadrantsNum
+        eccQuadrant = quadrants{qIndex};
         switch (eccQuadrant)
-            case 1
+            case 'horizontal'
                 % horizontal meridian (nasal)
                 eccXrange = cellEcc(1)*[1 1];
                 eccYrange = 0*[1 1];
-            case 2
+            case 'upper vertical'
                 % vertical meridian (upper)
                 eccYrange = cellEcc(1)*[1 1];
                 eccXrange = 0*[1 1];
-            case 3
+            case 'lower vertical'
                 % vertical meridian (lower)
                 eccYrange = -cellEcc(1)*[1 1];
                 eccXrange = 0*[1 1];
+            otherwise
+                error('Unknown Polans quadrant: ''%s''.', eccQuadrant);
         end
         
-        for sIndex = 1:numel(subjectIDs)
+        for sIndex = 1:subjectsNum
             subjectID = subjectIDs(sIndex);
             % Compute the subject PSF at the desired eccentricity
             
@@ -124,7 +131,7 @@ function doIt(rootDir, cellEcc, retinalPoolingRadii, subjectIDs, quadrants)
     end % qIndex
     
     % Save data
-    dataFileName = fullfile(rootDir, sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', cellEcc(1), 0));
+    dataFileName = fullfile(rootDir, sprintf('ecc_%2.1f_deconvolutions_refractionError_%2.2fD.mat', cellEcc(1), 0));
     save(dataFileName, 'retinalPoolingRadii', 'retinalRadius', 'visualRadius', 'visualGain', 'subjectIDs', 'quadrants');   
 end
 
