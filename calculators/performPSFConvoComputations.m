@@ -19,7 +19,8 @@ function performPSFConvoComputations
      
     % Generate the various 'ecc_%2.1f_deconvolutions_refractionError_%2.2fD.mat' files, located in the DeconvolutionData directory
     ck.performGaussianConvolutionWithPolansPSFanalysis(...
-        deconvolutionOpticsParams);
+        deconvolutionOpticsParams, ...
+        'eccTested', [0]);
     
     % Generate the deconvolution model only for the horizontal meridian
     deconvolutionOpticsParams = struct(...

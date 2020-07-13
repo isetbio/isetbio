@@ -1,7 +1,6 @@
 function performGaussianConvolutionWithPolansPSFanalysis(obj, deconvolutionOpticsParams, varargin)
 
     defaultEccTested = [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
-    defaultEccTested = [0 0.25 0.5 1 1.5 2.0];
     
     defaultRetinalPoolingRadii = logspace(log10(0.001), log10(0.6), 10);
     
@@ -68,9 +67,13 @@ function doIt(rootDir, cellEcc, retinalPoolingRadii, deconvolutionOpticsParams)
             
             pupilDiameterMM = 3.0;
             wavelengthsListToCompute = [550];
-            micronsPerDegree = 300; % for monkey retina
+            micronsPerDegree = []; % empty so as to compute for each eccentricity
+            imposedRefractionErrorDiopters = 0;
+            
             [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(subjectID, ...
-                0, pupilDiameterMM, wavelengthsListToCompute, micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc);
+                imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, micronsPerDegree, ...
+                wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc);
+            fprintf('PSF computed');
             
             % Make a large PSF (via zero padding to be used to convolve with
             % the largest stimuli)
@@ -90,6 +93,7 @@ function doIt(rootDir, cellEcc, retinalPoolingRadii, deconvolutionOpticsParams)
             % Convolve different retinal pooling regions and compute the
             % visually-mapped pooling region
             parfor retinalRadiusIndex = 1:numel(retinalPoolingRadii)
+                fprintf('Computing spread for quadrant %s, radius %d/%d\n', eccQuadrant, retinalRadiusIndex, numel(retinalPoolingRadii));
                 rfPoolingRadiusDegsInRetinalSpace = retinalPoolingRadii(retinalRadiusIndex);
                 
                 if (rfPoolingRadiusDegsInRetinalSpace < 0.2)
@@ -133,7 +137,8 @@ function doIt(rootDir, cellEcc, retinalPoolingRadii, deconvolutionOpticsParams)
     end % qIndex
     
     % Save data
-    dataFileName = fullfile(rootDir, sprintf('ecc_%2.1f_deconvolutions_refractionError_%2.2fD.mat', cellEcc(1), 0));
+    dataFileName = fullfile(rootDir, sprintf('ecc_%2.1f_deconvolutions_refractionError_%2.2fD.mat', cellEcc(1), imposedRefractionErrorDiopters));
+    fprintf('Saving data to %s\n', dataFileName);
     save(dataFileName, 'retinalPoolingRadii', 'retinalRadius', 'visualRadius', 'visualGain', 'subjectIDs', 'quadrants');   
 end
 
@@ -220,7 +225,7 @@ function renderKernel(ax, thePSFsupportDegs, rfPoolingInRetinalSpace, xLims, cMa
             'XTick', ticks, 'YTick', ticks, ...
             'XTickLabel', ticks*60, 'YTick', ticks*60);
         axis(ax, 'square');
-        title(ax, theTitle);
+        title(ax, theTitla@Qe);
 end
 
 

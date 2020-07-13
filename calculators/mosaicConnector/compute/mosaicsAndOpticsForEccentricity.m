@@ -27,8 +27,8 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
         eccYrangeDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*mosaicParams.rgcMosaicPatchEccMicrons(2))*[1 1];
 
         [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = CronerKaplanRGCModel.psfAtEccentricity(runParams.PolansWavefrontAberrationSubjectID, ...
-                    imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, micronsPerDegree, wavefrontSpatialSamples, ...
-                    eccXrangeDegs, eccYrangeDegs, deltaEcc);
+                    imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, micronsPerDegree, ...
+                    wavefrontSpatialSamples, eccXrangeDegs, eccYrangeDegs, deltaEcc);
 
         theOptics = theOIs{1,1,1};
         save(fullfile(saveDir,mosaicsAndOpticsFileName(runParams)), 'theConeMosaic', 'theMidgetRGCmosaic', 'theOptics');
