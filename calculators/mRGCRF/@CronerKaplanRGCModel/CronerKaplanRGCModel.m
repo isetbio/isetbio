@@ -36,7 +36,7 @@ classdef CronerKaplanRGCModel < handle
         surroundPeakSensitivityParamsSE;
         
         % Valid quadrant names for the Polans wavefront-based optics
-        validPolansQuadrants = {'horizontal', 'upper vertical', 'lower vertical'};
+        validPolansQuadrants = {'horizontal', 'superior', 'inferior'};
         validPolansSubjectIDs = 1:10;
         
         % Directory with psf deconvolution results
@@ -94,8 +94,12 @@ classdef CronerKaplanRGCModel < handle
         performGaussianConvolutionWithPolansPSFanalysis(obj, deconvolutionOpticsParams, varargin);
         
         % Generate the deconvolution model (operates on the output of
-        % performGaussianConvolutionWithPolansPSFanalysis())
+        % performGaussianConvolutionWithPolansPSFanalysis()) - printing
         generateDeconvolutionModel(obj, deconvolutionOpticsParams, varargin);
+        
+        % Generate the deconvolution model (operates on the output of
+        % performGaussianConvolutionWithPolansPSFanalysis()) - no printing
+        deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams);
         
         % Method to generate retinal RF params given the retinal center radius
         % and eccentricity as inputs. This uses (via computeDeconvolutionModel()),
@@ -111,14 +115,12 @@ classdef CronerKaplanRGCModel < handle
         [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(goodSubjects, ...
             imposedRefractionErrorDiopters, desiredPupilDiamMM, wavelengthsListToCompute, ...
             micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc);
+        data = quadrantData(allQuadrantData, quadrantsToAverage, quadrantsComputed, subjectsToAverage, subjectsComputed);
+        plotDeconvolutionModel(deconvolutionModel);
     end
     
     methods (Access=private)
         setupPlotLab(obj);
-        
-        % Method to compute the visual->retinal deconvolution model
-        % based on the convolution results with the Polans data
-        deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams);
         
         % Method to validate the deconvolutionOpticsParams
         validateDeconvolutionOpticsParams(obj,deconvolutionOpticsParams);

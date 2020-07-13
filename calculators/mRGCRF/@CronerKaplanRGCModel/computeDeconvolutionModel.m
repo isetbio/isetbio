@@ -1,7 +1,19 @@
-function deconvolutionModel = computeDeconvolutionModel(obj)
+function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams)
     
-    subjectsToInclude = [1:10]; %[4 8 9];
-    tabulatedEccentricities = -[0 0.25 0.5 1 1.5 2:25];
+    % Validate the deconvolutionOpticsParams
+    obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
+    
+    subjectsToAverage = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
+    quadrantsToAverage = deconvolutionOpticsParams.quadrantsToAverage;
+    
+    tabulatedEccentricities = [0 0.25 0.5 1 1.5 2:25];
+    
+    defocusMode = 'subjectDefault';
+    if (strcmp(defocusMode, 'subjectDefault'))
+        imposedRefractionErrorDiopters = 0; 
+    else
+        imposedRefractionErrorDiopters = 0.01; 
+    end
     
     % Use WatsonRGCModel to retrieve cone apertures along the nasal meridian
     % for the tabulated eccentricities
@@ -19,7 +31,7 @@ function deconvolutionModel = computeDeconvolutionModel(obj)
         
         % Load deconvolution file for this eccentricity
         dataFileName = fullfile(obj.psfDeconvolutionDir,...
-            sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', eccDegs, 0));
+            sprintf('ecc_-%2.1f_deconvolutions_refractionError_%2.2fD.mat', eccDegs, imposedRefractionErrorDiopters));
         load(dataFileName, 'retinalPoolingRadii', 'visualRadius', 'visualGain', 'subjectIDs', 'quadrants');
         retinalPoolingRadiiOriginal = retinalPoolingRadii;
         
@@ -35,12 +47,12 @@ function deconvolutionModel = computeDeconvolutionModel(obj)
             visualRadii = d1 * squeeze(visualRadius(idx(1),:,:)) + d2 * squeeze(visualRadius(idx(2),:,:));
             minVisualRadiusDegs = median(median(visualRadii));
         end
+
+        % Get data for the quadrant of interest
+        visualRadius = CronerKaplanRGCModel.quadrantData(visualRadius, quadrantsToAverage, quadrants, subjectsToAverage, subjectIDs);
+        visualGain = CronerKaplanRGCModel.quadrantData(visualGain, quadrantsToAverage, quadrants, subjectsToAverage, subjectIDs);
         
-        % Get visual radius/gain data for the quadrant of interest
-        quandrantsToInclude = 'both';   % choose from {'horizontal', 'vertical', 'both'}
-        visualRadius = quadrantData(visualRadius, quandrantsToInclude, quadrants);
-        visualGain = quadrantData(visualGain, quandrantsToInclude, quadrants);
-        
+
         % We will fit the relationship between visual and retinal radii
         % using a saturating function, but only for retinal radii >= cone aperture radii
         % So select these data here:
@@ -50,17 +62,18 @@ function deconvolutionModel = computeDeconvolutionModel(obj)
         visualGain = visualGain(:,idx);
         
         % Compute the median visual radius over subjects/ecc quadrants
-        visualRadius = visualRadius(subjectsToInclude,:);
         medianVisualRadius = (median(visualRadius,1, 'omitnan'))';
         
         % Compute the median gain over all subjects/ecc quadrants
-        visualGain = visualGain(subjectsToInclude,:);
         medianVisualGain = (median(visualGain,1, 'omitnan'))';
        
         % Fit the relationship: retinalRadius(visualRadius) = Model(visualRadius, params)
         [modelFunctionRadius, fittedParamsRadius(eccIndex,:)] = fitRadiusData(medianVisualRadius, retinalPoolingRadii);
         % Fit the relationship: visualGain(retinalRadius) = Model(retinalRadius, params)
         [modelFunctionGain, fittedParamsGain(eccIndex,:)] = fitGainData(medianVisualGain, retinalPoolingRadii);
+        
+        nonAveragedVisualRadius{eccIndex} = visualRadius;
+        nonAveragedVisualGain{eccIndex} = visualGain;
     end % eccIndex
     
     deconvolutionModel = struct(...
@@ -72,6 +85,11 @@ function deconvolutionModel = computeDeconvolutionModel(obj)
         'modelFunctionGain', modelFunctionGain, ...
         'minVisualRadiusDegs', minVisualRadiusDegs ...
         );
+     % Other meta-parameters
+     deconvolutionModel.coneApertureRadii = coneApertureRadii;
+     deconvolutionModel.opticsParams = deconvolutionOpticsParams;
+     deconvolutionModel.nonAveragedVisualRadius = nonAveragedVisualRadius;
+     deconvolutionModel.nonAveragedVisualGain = nonAveragedVisualGain;
 end
 
 function [modelFunction, fittedParams] = fitRadiusData(visualRadius, retinalRadius)
@@ -102,19 +120,3 @@ function [fittedParams, fittedParamsSE] = nonLinearFitData(x,y, modelFunction, i
     fittedParamsSE = sqrt(diag(varCovarianceMatrix));
     fittedParamsSE = fittedParamsSE';
 end
-
-function data = quadrantData(allQuadrantData, quandrantsToInclude, quadrants)
-     switch (quandrantsToInclude)
-         case  'horizontal'
-             % Use horizontal eccs only
-             data = squeeze(allQuadrantData(:, 1, :));
-         case 'vertical'
-             % Use vertical eccs only
-             data =  [squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
-         case 'both'
-             data = [squeeze(allQuadrantData(:, 1, :))  squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
-         otherwise
-             error('quandrantsToInclude has an invalid value')
-     end
-     data = data';
- end

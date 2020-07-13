@@ -43,12 +43,12 @@ function doIt(rootDir, cellEcc, retinalPoolingRadii, deconvolutionOpticsParams)
                 % horizontal meridian (nasal)
                 eccXrange = cellEcc(1)*[1 1];
                 eccYrange = 0*[1 1];
-            case 'upper vertical'
-                % vertical meridian (upper)
+            case 'superior'
+                % vertical meridian (superior)
                 eccYrange = cellEcc(1)*[1 1];
                 eccXrange = 0*[1 1];
-            case 'lower vertical'
-                % vertical meridian (lower)
+            case 'inferior'
+                % vertical meridian (inferior)
                 eccYrange = -cellEcc(1)*[1 1];
                 eccXrange = 0*[1 1];
             otherwise

@@ -6,6 +6,7 @@ function generateDeconvolutionModel(obj, deconvolutionOpticsParams, modelPrefix)
     subjectsToAverage = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
     
     eccTested = [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
+    eccTested = [0 0.25 0.5 1 1.5 2.0 2.5 3 4];
     rootDir = obj.psfDeconvolutionDir;
   
     defocusMode = 'subjectDefault';
@@ -58,7 +59,7 @@ function generateDeconvolutionModel(obj, deconvolutionOpticsParams, modelPrefix)
         end
         
         % Get data for the quadrant of interest
-        visualRadius = quadrantData(visualRadius, quadrantsToAverage, quadrants, subjectsToAverage, subjectIDs);
+        visualRadius = CronerKaplanRGCModel.quadrantData(visualRadius, quadrantsToAverage, quadrants, subjectsToAverage, subjectIDs);
         
         % Only include points for retinal pooling radii > = cone aperture
         idx = find(retinalPoolingRadii >= coneApertureRadii(eccIndex));
@@ -120,7 +121,7 @@ function generateDeconvolutionModel(obj, deconvolutionOpticsParams, modelPrefix)
         retinalPoolingRadiiOriginal = retinalPoolingRadii;
         
         % Get data for the quadrant of interest
-        visualGain = quadrantData(visualGain, quadrantsToAverage, quadrants, subjectsToAverage, subjectIDs);
+        visualGain = CronerKaplanRGCModel.quadrantData(visualGain, quadrantsToAverage, quadrants, subjectsToAverage, subjectIDs);
         
         % Only include points for retinal pooling radii > = cone aperture
         idx = find(retinalPoolingRadii >= 0.5*coneApertureRadii(eccIndex));
@@ -353,36 +354,4 @@ function plotlabOBJ = setupPlotLabForFittedModel(figSize, tickDir, colorOrder)
             'figureWidthInches', figSize(1), ...
             'figureHeightInches', figSize(2));
 end
-
- 
- function data = quadrantData(allQuadrantData, quadrantsToAverage, quadrantsComputed, subjectsToAverage, subjectsComputed)
- 
-    data = [];
-    retinalPoolingRadiiNum = size(allQuadrantData,1);
-    quadrantsNum = size(allQuadrantData,2);
-    subjectsNum = size(allQuadrantData,3);
-    for k = 1:quadrantsNum
-        if (ismember(quadrantsComputed(k), quadrantsToAverage))
-            for s = 1:subjectsNum
-                if (ismember(subjectsComputed(s), subjectsToAverage))
-                    data = cat(2,data,squeeze(allQuadrantData(1:retinalPoolingRadiiNum, k, s)));
-                end
-            end
-        end
-    end
-    
-%      switch (quandrantsToInclude)
-%          case  'horizontal'
-%              % Use horizontal eccs only
-%              data = squeeze(allQuadrantData(:, 1, :));
-%          case 'vertical'
-%              % Use vertical eccs only
-%              data =  [squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
-%          case 'both'
-%              data = [squeeze(allQuadrantData(:, 1, :))  squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
-%          otherwise
-%              error('quandrantsToInclude has an invalid value')
-%      end
-     data = data';
- end
  
