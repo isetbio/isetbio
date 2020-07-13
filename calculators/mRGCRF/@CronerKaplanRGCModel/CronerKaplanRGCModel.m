@@ -91,11 +91,7 @@ classdef CronerKaplanRGCModel < handle
         simulateCronerKaplanResults(obj, varargin);
         
         % Compute the Gaussian-PSF convolution data
-        performGaussianConvolutionWithPolansPSFanalysis(obj, deconvolutionOpticsParams, varargin);
-        
-        % Generate the deconvolution model (operates on the output of
-        % performGaussianConvolutionWithPolansPSFanalysis()) - printing
-        generateDeconvolutionModel(obj, deconvolutionOpticsParams, varargin);
+        generatePolansOpticsDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin);
         
         % Generate the deconvolution model (operates on the output of
         % performGaussianConvolutionWithPolansPSFanalysis()) - no printing
