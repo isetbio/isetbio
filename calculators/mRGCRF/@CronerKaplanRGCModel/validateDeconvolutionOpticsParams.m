@@ -5,17 +5,36 @@ function validateDeconvolutionOpticsParams(obj,deconvolutionOpticsParams)
     
     fNames = fieldnames(deconvolutionOpticsParams);
     for k = 1:numel(fNames)
-        assert(ismember(fNames{k}, {'PolansWavefrontAberrationSubjectIDsToAverage', 'quadrantsToAverage'}), ...
+        assert(ismember(fNames{k}, {'PolansWavefrontAberrationSubjectIDsToAverage', 'PolansWavefrontAberrationSubjectIDsToCompute', ...
+                                    'quadrantsToAverage', 'quadrantsToCompute'}), ...
            sprintf('field ''%s'' is deconvolutionOpticsParams struct is not valid.', fNames{k}));
     end
+   
+    if (isfield(deconvolutionOpticsParams, 'quadrantsToAverage'))
+        for k = 1:numel(deconvolutionOpticsParams.quadrantsToAverage)
+            quadrantName = deconvolutionOpticsParams.quadrantsToAverage{k};
+            assert(ismember(quadrantName, obj.validPolansQuadrants), ...
+                sprintf('Quadrant ''%s'' is not a valid quadrant name for Polans Optics', deconvolutionOpticsParams.quadrantsToAverage{k}));
+        end
+    else
+        for k = 1:numel(deconvolutionOpticsParams.quadrantsToCompute)
+            quadrantName = deconvolutionOpticsParams.quadrantsToCompute{k};
+            assert(ismember(quadrantName, obj.validPolansQuadrants), ...
+                sprintf('Quadrant ''%s'' is not a valid quadrant name for Polans Optics', deconvolutionOpticsParams.quadrantsToCompute{k}));
+         end
+    end
     
-    for k = 1:numel(deconvolutionOpticsParams.quadrantsToAverage)
-        assert(ismember(deconvolutionOpticsParams.quadrantsToAverage{k}, obj.validPolansQuadrants), ...
-            sprintf('Quadrant ''%s'' is not a valid quadrant name for Polans Optics', deconvolutionOpticsParams.quadrantsToAverage{k}));
+    if (isfield(deconvolutionOpticsParams, 'PolansWavefrontAberrationSubjectIDsToAverage'))
+        for k = 1:numel(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage)
+            assert(ismember(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage(k), obj.validPolansSubjectIDs), ...
+                sprintf('Subject %d is not a valid subject ID for Polans Optics', deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage(k)));
+        end
+    else
+        for k = 1:numel(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute)
+            assert(ismember(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute(k), obj.validPolansSubjectIDs), ...
+                sprintf('Subject %d is not a valid subject ID for Polans Optics', deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute(k)));
+        end
     end
-    for k = 1:numel(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage)
-        assert(ismember(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDToAverage(k), obj.alidPolansSubjectIDs), ...
-            sprintf('Subject %d is not a valid subject ID for Polans Optics', deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDToAverage(k)));
-    end
+    
 end
 

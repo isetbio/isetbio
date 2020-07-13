@@ -1,6 +1,8 @@
 function performGaussianConvolutionWithPolansPSFanalysis(obj, deconvolutionOpticsParams, varargin)
 
     defaultEccTested = [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
+    defaultEccTested = [0 0.25 0.5 1 1.5 2.0];
+    
     defaultRetinalPoolingRadii = logspace(log10(0.001), log10(0.6), 10);
     
     % Parse input
@@ -23,11 +25,11 @@ function doIt(rootDir, cellEcc, retinalPoolingRadii, deconvolutionOpticsParams)
 
     % Whether to visualize the analysis
     visualizeAnalysis = false;
-    subjectsNum = numel(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDToAverage);
-    quadrantsNum = numel(deconvolutionOpticsParams.quadrantsToAverage);
+    subjectsNum = numel(deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute);
+    quadrantsNum = numel(deconvolutionOpticsParams.quadrantsToCompute);
     
-    subjectIDs =  deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
-    quadrants =convolutionOpticsParams.quadrantsToAverage;
+    subjectIDs = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
+    quadrants = deconvolutionOpticsParams.quadrantsToCompute;
     
     % Preallocate memory
     retinalRadius = zeros(numel(retinalPoolingRadii), quadrantsNum,  subjectsNum);
@@ -87,7 +89,7 @@ function doIt(rootDir, cellEcc, retinalPoolingRadii, deconvolutionOpticsParams)
             
             % Convolve different retinal pooling regions and compute the
             % visually-mapped pooling region
-            for retinalRadiusIndex = 1:numel(retinalPoolingRadii)
+            parfor retinalRadiusIndex = 1:numel(retinalPoolingRadii)
                 rfPoolingRadiusDegsInRetinalSpace = retinalPoolingRadii(retinalRadiusIndex);
                 
                 if (rfPoolingRadiusDegsInRetinalSpace < 0.2)
