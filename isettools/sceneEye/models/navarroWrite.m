@@ -1,5 +1,5 @@
 function navarroWrite(thisR)
-% Write out the navarro lens and support IoR files in the output directory
+% Write the navarro lens and support IoR files in the output directory
 %
 % Synopsis
 %    navarroWrite(thisR);

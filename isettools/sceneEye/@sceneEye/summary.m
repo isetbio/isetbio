@@ -48,6 +48,7 @@ txt = addText(txt,sprintf('\nFocal distance: %0.2f (m), %0.2f (diopters)\n',foca
 txt = addText(txt,sprintf('Pupil diameter: %0.1f mm\n',thisR.get('pupil diameter','mm')));
 txt = addText(txt,sprintf('FOV: %0.1f deg\n',thisR.get('fov')));
 txt = addText(txt,sprintf('Spatial samples: %d %d\n',thisR.get('spatial resolution')));
+txt = addText(txt,sprintf('Lens pigment density: %0.1f \n',thisEye.get('lens density')));
 
 caEnabled = thisR.get('chromatic aberration');
 if caEnabled, nBands = thisR.get('num ca bands');
