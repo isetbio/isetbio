@@ -1,10 +1,13 @@
-function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams, outputFile, exportsDir)
+function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams, ...
+    deconvolutionOpticsParams, outputFile, exportsDir)
     
     % STEP 1. Generate a regular hex cone mosaic patch with the desired eccentricity and size
+    extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons, deconvolutionOpticsParams);
     [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
         generateRegularHexMosaicPatch(...
             mosaicParams.rgcMosaicPatchEccMicrons, ...
-            mosaicParams.rgcMosaicPatchSizeMicrons);
+            mosaicParams.rgcMosaicPatchSizeMicrons, ...
+            extraMicronsForSurroundCones);
      
     % STEP 2. Connect the cone mosaic patch to the centers of the midget RGC mosaic
     orphanRGCpolicy = mosaicParams.orphanRGCpolicy;
@@ -31,7 +34,8 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
      synthesizedRFParams] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
             conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
             midgetRGCconnectionMatrix, ...
-            mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons);
+            mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons, ...
+            deconvolutionOpticsParams);
         
     % The midget RGC mosaic object (for now just the cone weights to the
     % center and surround regions)
@@ -82,7 +86,7 @@ function visualizeCenterConnections(midgetRGCconnectionMatrix, RGCRFPositionsMic
          
 end
 
-function extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentricityMicrons, sizeMicrons)
+function extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentricityMicrons, sizeMicrons, deconvolutionOpticsParams)
     w = WatsonRGCModel('generateAllFigures', false);
     posUnits = 'mm'; densityUnits = 'mm^2';
     coneEccMaxMicrons = max(abs([eccentricityMicrons+sizeMicrons/2; eccentricityMicrons-sizeMicrons/2]));
@@ -94,17 +98,14 @@ function extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentr
  
     % Compute RF params using the CronerKaplan model
     ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
-    synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(coneSpacingMicronsMax, coneEccMaxMicrons);
+    synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(coneSpacingMicronsMax, coneEccMaxMicrons, deconvolutionOpticsParams);
     retinalSurroundRadiusDegsAt1overE = synthesizedRFParams.retinal.surroundRadiiDegs;
     extraDegsForSurroundCones = retinalSurroundRadiusDegsAt1overE*2;
     extraMicronsForSurroundCones = ceil(WatsonRGCModel.sizeDegsToSizeRetinalMicrons(extraDegsForSurroundCones, synthesizedRFParams.eccDegs));
 end
 
 function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
-    generateRegularHexMosaicPatch(eccentricityMicrons, sizeMicrons)
-
-    % Estimate max RF surround radius
-    extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentricityMicrons, sizeMicrons);
+    generateRegularHexMosaicPatch(eccentricityMicrons, sizeMicrons, extraMicronsForSurroundCones)
 
     % Compute the cone mosaic FOV in degrees
     coneMosaicCenterPositionMM = eccentricityMicrons * 1e-3;

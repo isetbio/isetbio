@@ -6,15 +6,22 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
     mosaicParams.orphanRGCpolicy = runParams.orphanRGCpolicy;
     mosaicParams.maximizeConeSpecificity = runParams.maximizeConeSpecificity;
         
+    % Extract the Polans subjectID for the optics
+    runParams.PolansSubjectID = runParams.deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
+    if (numel(runParams.PolansSubjectID )>1)
+        runParams.PolansSubjectID = runParams.PolansSubjectID(1);
+        fprintf(2, 'deconvolutionOpticsParams indicates more than 1 subject being used to derive the deconvolution model. Will generate optics for the first of these subjects\n');
+    end
+        
     tic  
     if (recompute)
         fprintf('\nComputing mosaics and optics ...');
         % Location of file with the full (50 x 50 deg) ecc-based mRGCRF lattice
         mRGCmosaicFile = fullfile(runParams.outputDir, sprintf('%s.mat',runParams.inputFile));
-
+       
         % Generate cone mosaic and connected mRGC mosaic patches
         [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams, ...
-             runParams.outputFile, runParams.exportsDir);
+             runParams.deconvolutionOpticsParams, runParams.outputFile, runParams.exportsDir);
          
         wavelengthSampling = theConeMosaic.pigment.wave;
         pupilDiameterMM = 3.0;
@@ -26,7 +33,7 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
         eccXrangeDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*mosaicParams.rgcMosaicPatchEccMicrons(1))*[1 1];
         eccYrangeDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*mosaicParams.rgcMosaicPatchEccMicrons(2))*[1 1];
 
-        [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = CronerKaplanRGCModel.psfAtEccentricity(runParams.PolansWavefrontAberrationSubjectID, ...
+        [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = CronerKaplanRGCModel.psfAtEccentricity(runParams.PolansSubjectID, ...
                     imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, micronsPerDegree, ...
                     wavefrontSpatialSamples, eccXrangeDegs, eccYrangeDegs, deltaEcc);
 

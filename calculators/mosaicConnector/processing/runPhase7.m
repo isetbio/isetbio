@@ -1,19 +1,31 @@
 % Phase 7: Visualize weights of cone inputs to mRGC  RF centers and surrounds
 function runPhase7(runParams)
     % Weights datafile
-    weightsFile = fullfile(runParams.outputDir, sprintf('%s_inPatchAt_%2.1f_%2.1fdegs_WithSize_%2.2f_%2.2f.mat', ...
-        runParams.inputFile, runParams.patchEccDegs(1), runParams.patchEccDegs(2), runParams.patchSizeDegs(1), runParams.patchSizeDegs(2)));
     
-    load(weightsFile, ...
+    % Assemble cone weights data file name
+    qNum = numel(runParams.deconvolutionOpticsParams.quadrantsToAverage);
+    quadrantsToAverage = '';
+    for qIndex = 1:qNum
+        quadrantsToAverage = sprintf('_%s', quadrantsToAverage, runParams.deconvolutionOpticsParams.quadrantsToAverage{qIndex});
+    end
+    
+    dataFile = sprintf('%s_inPatchAt_%2.1f_%2.1fdegs_WithSize_%2.2f_%2.2f_ForSubject_%d_AndQuadrants%s.mat', ...
+                        runParams.inputFile, runParams.patchEccDegs(1), runParams.patchEccDegs(2), runParams.patchSizeDegs(1), runParams.patchSizeDegs(2), ...
+                        runParams.deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage, ...       // Deconvolution model: which subject)
+                        quadrantsToAverage...                                            // Deconvolution model: which quadrant to use/average
+                );    
+    
+    load(fullfile(runParams.outputDir, dataFile), ...
         'conePositionsMicrons', 'coneSpacingsMicrons', 'coneTypes', ...
         'RGCRFPositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios', ...
         'midgetRGCconnectionMatrixCenter', 'midgetRGCconnectionMatrixSurround', ...
-        'synthesizedRFParams', 'patchEccDegs', 'patchSizeDegs');
+        'synthesizedRFParams', 'patchEccDegs', 'patchSizeDegs', ...
+        'PolansSubjectIDsAveraged', 'quadrantsAveraged');
     
     % Set up plotlab
     plotlabOBJ = setupPlotLab();
     outputFile = sprintf('%s_Summary',runParams.outputFile);
-    
+
     % Visualize summary of visual rf properties
     %visualizeCenterSurroundProperties(1, synthesizedRFParams, 'visual', plotlabOBJ, outputFile,runParams.exportsDir);
     
@@ -21,15 +33,15 @@ function runPhase7(runParams)
     %visualizeCenterSurroundProperties(2, synthesizedRFParams, 'retinal', plotlabOBJ, outputFile,runParams.exportsDir);
     
     % Visualize # of cones and cone types per RF center as a function of eccentricity
-    visualizeConeInputRatioToSubregions(3, midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
-        synthesizedRFParams.eccDegs, coneTypes, ...
-        plotlabOBJ, outputFile, runParams.exportsDir);
-    pause
+%     visualizeConeInputRatioToSubregions(3, midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
+%         synthesizedRFParams.eccDegs, coneTypes, ...
+%         plotlabOBJ, outputFile, runParams.exportsDir);
+%     pause
     
     % Visualize examples of retinal 2D RFs (video)
     outputFile = sprintf('%s_RFexamples',runParams.outputFile);
     visualizeSubregions(4,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
-        synthesizedRFParams.rgcIndices,  synthesizedRFParams.eccDegs, ...
+         synthesizedRFParams.eccDegs, ...
         synthesizedRFParams.centerPositionMicrons, synthesizedRFParams.retinal.centerRadiiDegs, synthesizedRFParams.retinal.surroundRadiiDegs,...
         conePositionsMicrons, coneSpacingsMicrons,  coneTypes, ...
         plotlabOBJ, outputFile, runParams.exportsDir);
@@ -38,7 +50,7 @@ end
 
 
 function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
-        rgcIndices, rgcEccDegs, coneTypes, plotlabOBJ, pdfFileName,exportsDir)
+        rgcEccDegs, coneTypes, plotlabOBJ, pdfFileName,exportsDir)
     
     hFig = figure(figNo); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
@@ -63,18 +75,15 @@ function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCen
     inputs3CountSameCone = zeros(1, numel(binEdges));
     inputs4CountSameCone = zeros(1, numel(binEdges));
     
-    for iRGC  = 1:numel(rgcIndices)   
-        
-        % Get the rgcIndex (index in the full RGC mosaic, not in the
-        % patch we are currently analyzing)
-        rgcIndex = rgcIndices(iRGC);
+    rgcsNum = size(midgetRGCconnectionMatrixCenter,2);
+    for rgcIndex  = 1:rgcsNum   
         
         % center weights
         connectivityVector = full(squeeze(midgetRGCconnectionMatrixCenter(:, rgcIndex)));
         coneIndicesConnectedToCenter = find(connectivityVector>0);
         centerWeights = squeeze(full(midgetRGCconnectionMatrixCenter(coneIndicesConnectedToCenter, rgcIndex)));
         
-        iecc = round(rgcEccDegs(iRGC)/eccBinWidthDegs)+1;
+        iecc = round(rgcEccDegs(rgcIndex)/eccBinWidthDegs)+1;
         switch (numel(coneIndicesConnectedToCenter))
             case 1
                 inputs1Count(iecc) = inputs1Count(iecc) + 1;
@@ -100,11 +109,10 @@ function visualizeConeInputRatioToSubregions(figNo, midgetRGCconnectionMatrixCen
                 if (allSame)
                     inputs4CountSameCone(iecc) = inputs4CountSameCone(iecc) +1;
                 end
-                
         end
         
         
-    end % iRGC
+    end % rgcIndex
     
     eccRange = [0 28];
     cellsRange = [0 12000];

@@ -20,24 +20,27 @@ function runPhase6(runParams)
             coneMosaicEccMicrons, coneMosaicSizeMicrons, ...
             deconvolutionOpticsParams);
     
-    % Save cone weights to center/surround regions
+   
+    % Assemble cone weights data file name
     qNum = numel(runParams.deconvolutionOpticsParams.quadrantsToAverage);
     quadrantsToAverage = '';
     for qIndex = 1:qNum
         quadrantsToAverage = sprintf('_%s', quadrantsToAverage, runParams.deconvolutionOpticsParams.quadrantsToAverage{qIndex});
     end
-    quadrantsToAverage
+
     saveDataFile = sprintf('%s_inPatchAt_%2.1f_%2.1fdegs_WithSize_%2.2f_%2.2f_ForSubject_%d_AndQuadrants%s.mat', ...
         runParams.outputFile, runParams.patchEccDegs(1), runParams.patchEccDegs(2), ...
         runParams.patchSizeDegs(1), runParams.patchSizeDegs(2), ...
         runParams.deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage, ...       // Deconvolution model: which subject
         quadrantsToAverage...                                            // Deconvolution model: which quadrant to use/average
-      )
+      );
         
     patchEccDegs = runParams.patchSizeDegs;
     patchSizeDegs = runParams.patchEccDegs;
     PolansSubjectIDsAveraged = runParams.deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
-    quadrantsAveraged = runParams.deconvolutionOpticsParams.quadrantsToAverage{qIndex};
+    quadrantsAveraged = runParams.deconvolutionOpticsParams.quadrantsToAverage;
+    
+     % Save cone weights to center/surround regions
     save(fullfile(runParams.outputDir, saveDataFile), ...
             'conePositionsMicrons', 'coneSpacingsMicrons', 'coneTypes', ...
             'RGCRFPositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios', ...
