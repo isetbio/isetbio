@@ -100,7 +100,7 @@ properties (GetAccess=public, SetAccess=public)
     %   This value is calculated from the retina distance and the
     %   retina size. This is only a close approximation since the
     %   retina is very slightly curved.
-    fov;
+    % fov;
 
     % accommodation - Diopters of accommodation for 550 nm light
     %   We change the properties of the lens to match the desired
@@ -119,7 +119,7 @@ properties (GetAccess=public, SetAccess=public)
     %   image with [0 0] eccentricity is centered on the center of the
     %   retina. An image with [30 0] eccentricity is centered 30 degrees to
     %   the right of the center of the retina.
-    eccentricity;
+    % eccentricity;
 
     % pupilDiameter - Diameter of the pupil (mm)
     % pupilDiameter;
@@ -180,8 +180,8 @@ properties (GetAccess=public, SetAccess=public)
     
     % diffractionEnabled Toggle diffraction. When it diffraction simulation
     %   is enabled, PBRT will use HURB to simulate the effect of
-    %   diffraction. May cause slow-downs. 
-    diffractionEnabled;
+    %   diffraction. May cause slow-downs.  In the recipe, not here.
+    % diffractionEnabled;
     
     % USEPINHOLE - a debugging mode
     %   For debug mode we switch to a pinhole camera with the same
@@ -247,8 +247,8 @@ properties(GetAccess=public, SetAccess=private)
     
     %MMUNITS Some scenes are in units of meters, some in units of millimeters.
     %   We keep of track of this here so we can pass the correct parameter
-    %   to PBRT.
-    mmUnits;
+    %   to PBRT.  This was moved into the recipe (BW).
+    % mmUnits;
       
 end
 
@@ -289,8 +289,7 @@ methods
         if isempty(pbrtFile),  obj.recipe = recipe;
         else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
         end
-        
-        obj.set('mm units',false);  % We expect meters for units, not millimeters
+        obj.set('name',obj.get('input basename'));
         
         %{
         % The original method used this complicated function to load the 
@@ -310,8 +309,8 @@ methods
         % else is really part of the thisR (the rendering recipe).
         
         obj.usePinhole = false;
-        obj.diffractionEnabled = false;
-        obj.eccentricity = [0 0];
+        % obj.diffractionEnabled = false;  In the recipe.
+        % obj.eccentricity = [0 0];  Not yet implemented.
         obj.lensDensity = 1.0;
         
     end
