@@ -19,7 +19,7 @@ function MosaicConnector
     
     connectConesToRGCcenters = ~true;                        % phase 4 - connect cones to RGC RF centers
     visualizeConeToRGCcenterConnections = ~true;            % phase 5 - visualize cone inputs to RGC RF centers
-    computeConeWeightsToRGCcentersAndSurrounds = ~true;      % phase 6 - compute cone weights to RGC RF center/surrounds
+    computeConeWeightsToRGCcentersAndSurrounds = true;      % phase 6 - compute cone weights to RGC RF center/surrounds
     visualizeConeWeightsToRGCcentersAndSurrounds = ~true;   % phase 7 - visualize cone weights to RGC RF center/surrounds
     
     wirePartOfMRGCMosaicToConeMosaicPatch = true;           % phase X - wire part of a full RGC mosaic to a small cone mosaic
@@ -104,17 +104,24 @@ function MosaicConnector
     );
         
     % Phase 6: Compute cone weights to mRGC RF subregions
+    deconvolutionOpticsParams = struct(...
+        'PolansWavefrontAberrationSubjectIDsToAverage', [8]);        % Deconvolution model: which subject  
+    deconvolutionOpticsParams.quadrantsToAverage{1} = 'horizontal';  % Deconvolution model: which quadrant to use/average (choose one or more from {'horizontal', 'superior','inferior'}
+    
     connector('phase6') = struct( ...
         'run', computeConeWeightsToRGCcentersAndSurrounds, ...
         'runFunction', @runPhase6, ...
         'inputFile', connector('phase4').outputFile, ...
-        'patchEccDegs', [0 0], ...                                 // Eccenticity of computed patch
-        'patchSizeDegs', [48 48], ...                               // Size (width, height) of computed patch
+        'patchEccDegs', [0 0], ...                                  // Eccenticity of computed patch
+        'patchSizeDegs', [48 48], ...                               // Size (width, height) of computed patch                 
+        'deconvolutionOpticsParams', deconvolutionOpticsParams, ...
         'outputFile', sprintf('%s__ConeWeightsToRGCRFsubregions', connector('phase4').outputFile),...
         'exportsDir', exportsDir, ...
         'outputDir', tmpDir ...
     );
-
+                             
+    
+    
     % Phase 7: Visualize cone weights to mRGC RF subregions
     connector('phase7') = struct( ...
         'run', visualizeConeWeightsToRGCcentersAndSurrounds, ...

@@ -11,8 +11,12 @@ function data = quadrantData(allQuadrantData, quadrantsToAverage, quadrantsCompu
                  [includeThisSubject,s_idx] = ismember(subjectsToAverage(s), subjectsComputed);
                  if (includeThisSubject)
                     data = cat(2,data,squeeze(allQuadrantData(1:retinalPoolingRadiiNum, k_idx, s_idx)));
+                 else
+                     error('Data for subject ID %d were not computed.', subjectsToAverage(s));
                  end
             end
+        else
+            error('Data for quadrant ''%s'' were not computed.', quadrantsToAverage{k});
         end
     end
     data = data';

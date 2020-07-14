@@ -1,15 +1,17 @@
-function synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, coneSpacingsMicrons, midgetRGCconnectionMatrix)
+function synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, coneSpacingsMicrons, midgetRGCconnectionMatrix, ...
+    deconvolutionOpticsParams)
     
     [rfCenterRadiiMicrons, rfCenterPositionsMicrons] = ...
         computeRFcenterSizeAndPositionsFromConnectivityMatrix(...
             conePositionsMicrons, coneSpacingsMicrons, ...
             midgetRGCconnectionMatrix);
-    
+
     % Compute visual and retinal RF params from the retinal rf center radii
     % and positions (both in microns)
     ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
-    synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(rfCenterRadiiMicrons, rfCenterPositionsMicrons);
-    
+    synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(...
+        rfCenterRadiiMicrons, rfCenterPositionsMicrons, deconvolutionOpticsParams);
+        
     % Add the corresponding rgcIndices, and patch ecc/size
     synthesizedRFParams.centerPositionMicrons = rfCenterPositionsMicrons;  % position as computed by the summed inputs to the center
 end
@@ -25,7 +27,7 @@ function [rfCenterRadiiMicrons, rfCenterPositionsMicrons] = ...
     rfCenterPositionsMicrons = zeros(rgcsNum,2);
     
     % Compute RGC RF center positions and radii
-    for RGCindex = 1:rgcsNum
+    parfor RGCindex = 1:rgcsNum
         fprintf('Computing rf center and size for RGC %d of %d\n', RGCindex, rgcsNum);
         connectivityVector = full(squeeze(midgetRGCconnectionMatrix(:, RGCindex)));
         inputIDs = find(connectivityVector>0);
