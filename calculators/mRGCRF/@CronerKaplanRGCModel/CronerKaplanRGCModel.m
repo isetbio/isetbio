@@ -107,11 +107,15 @@ classdef CronerKaplanRGCModel < handle
     
     methods (Static)
         plotSensitivities(theAxes, d, model, pointSize, color,displayYLabel, theLabel);
+        
         plotRadii(theAxes, d, model, pointSize, color, displayYLabel, theLabel);
+        
         [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(goodSubjects, ...
             imposedRefractionErrorDiopters, desiredPupilDiamMM, wavelengthsListToCompute, ...
-            micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc);
+            micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc, varargin);
+        
         data = quadrantData(allQuadrantData, quadrantsToAverage, quadrantsComputed, subjectsToAverage, subjectsComputed);
+        
         plotDeconvolutionModel(deconvolutionModel);
     end
     

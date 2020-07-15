@@ -9,14 +9,20 @@ function runPhaseX(runParams)
     
     % Load/Recompute connected mosaics and the optics
     recomputeMosaicAndOptics = ~true;
-    [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, saveDir);
+    recomputeOpticsOnly = ~true;
+    [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
 
+    displayPSFs = ~true;
+    if (displayPSFs)
+        eccDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*runParams.rgcMosaicPatchEccMicrons);
+        visualizePSFs(theOptics, eccDegs(1), eccDegs(2));
+    end
+    
     % Stimulation parameters
     LMScontrast = [0.1 0.1 0.0];
     minSF = 0.1;
     maxSF = 60;
     spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),12);
-    
     
     stimulusFOVdegs = 2.0;
     minPixelsPerCycle = 10;
@@ -24,6 +30,9 @@ function runPhaseX(runParams)
     temporalFrequency = 4.0;
     stimDurationSeconds = 0.5;
     instancesNum = 16;
+    
+    % Visualized cells
+    targetRGCs = [3 14 52];
     
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
@@ -59,7 +68,7 @@ function runPhaseX(runParams)
     else
         computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             rgcInputSignal, spatialFrequenciesCPD, LMScontrast, ...
-            stimSpatialParams, stimTemporalParams, ...
+            stimSpatialParams, stimTemporalParams, targetRGCs, ...
             saveDir);
     end
 end

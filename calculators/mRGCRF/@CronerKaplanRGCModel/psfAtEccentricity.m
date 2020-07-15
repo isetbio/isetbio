@@ -1,6 +1,17 @@
-function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, desiredPupilDiamMM, wavelengthsListToCompute, micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc)
+function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, ...
+    desiredPupilDiamMM, wavelengthsListToCompute, micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc, ...
+    varargin)
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('noLCA', false, @islogical);
+    p.parse(varargin{:});
+    
+    % See if we will simulate no longitudinal chromatic aberration
+    noLCAflag = p.Results.noLCA;
+    
     subtractCentralRefraction = true;
+    % Best focus at 550 nm
     measurementWavelength = 550;
     
     computeMicronsPerDegreeAtEachEccentricity = false;
@@ -28,8 +39,9 @@ function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(go
            end
            
            % Generate oi at this eccentricity
-           theOI = makeCustomOI(zCoeffs, pupilDiamMM, measurementWavelength, ...
-                desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree);
+           theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, pupilDiamMM, measurementWavelength, ...
+                desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree, ...
+                noLCAflag);
             
            % Extract PSF
            for wIndex = 1:numel(wavelengthsListToCompute)
@@ -85,8 +97,8 @@ function [thePSF, thePSFsupportDegs] = extractPSFfromOI(theOI, targetWavelength)
 end
 
 
-function theOI = makeCustomOI(zCoeffs, measPupilDiameterMM, measWavelength, ...
-    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree)
+function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measPupilDiameterMM, measWavelength, ...
+    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree, noLCAflag)
 
     showTranslation = false;
     
@@ -101,6 +113,15 @@ function theOI = makeCustomOI(zCoeffs, measPupilDiameterMM, measWavelength, ...
     for waveIndex = 1:numel(wavelengthsListToCompute)
         theWaveOTF = squeeze(theOTF(:,:,waveIndex));
         theOTF(:,:,waveIndex) = ifftshift(theWaveOTF);
+    end
+    
+    if (noLCAflag)
+        inFocusWindex = find(wavelengthsListToCompute == measWavelength);
+        assert(~isempty(inFocusWindex), 'In focus wavelength is not in the list of wavelenghts to compute');
+        fprintf(2, 'Generating Polans optics with no LCA\n');
+        for waveIndex = 1:numel(wavelengthsListToCompute)
+             theOTF(:,:,waveIndex) = theOTF(:,:,inFocusWindex);
+        end
     end
     
     theOI = oiCreate('wvf human', desiredPupilDiamMM,[],wavelengthsListToCompute, micronsPerDegree);
