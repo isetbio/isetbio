@@ -119,10 +119,13 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
    
    
     labelCells = true;
-%     targetRGC = 1;  % 36 (M-only center, diagonal) 1 (M-only center, 2 vertical cones) 120 (L-only center, artifact)
-%     visualizeResponseComponentsForTargetRGC(targetRGC, responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
-%         spatialFrequenciesCPD, maxSpikeRate, LMScontrast);  
-  
+    visualizeResponseComponents = true;
+    if (visualizeResponseComponents)
+        for iTargetRGC = 1:numel(targetRGCs)
+             visualizeResponseComponentsForTargetRGC(targetRGCs(iTargetRGC), responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
+                spatialFrequenciesCPD, maxSpikeRate, LMScontrast);  
+        end
+    end
     
     for sfIndex = 1:numel(spatialFrequenciesCPD)
         

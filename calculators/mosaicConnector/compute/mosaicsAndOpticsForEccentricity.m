@@ -24,7 +24,8 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
              runParams.deconvolutionOpticsParams, runParams.outputFile, runParams.exportsDir);
         
         % Compute the optics
-        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(runParams.PolansSubjectID, runParams.noLCA, ...
+        fprintf('\nComputing optics with noLCA flag: %d and noOptics flag: %d\n', runParams.noLCA, runParams.noOptics);
+        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(runParams.PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
             theConeMosaic.pigment.wave, mosaicParams.rgcMosaicPatchEccMicrons);
         
         % Save mosaic and optics
@@ -35,8 +36,8 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
         fprintf('\nLoading previously-generated mosaics ...');
         load(fullfile(saveDir,mosaicsAndOpticsFileName(runParams)), 'theConeMosaic', 'theMidgetRGCmosaic');
         
-        fprintf('\nComputing new optics with noLCA flag: %d\n', runParams.noLCA);
-        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(runParams.PolansSubjectID, runParams.noLCA, ...
+        fprintf('\nComputing new optics with noLCA flag: %d and noOptics flag: %d\n', runParams.noLCA, runParams.noOptics);
+        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(runParams.PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
             theConeMosaic.pigment.wave, mosaicParams.rgcMosaicPatchEccMicrons);
         
         % Save mosaic and optics
@@ -51,7 +52,7 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
     
 end
 
-function [theOptics, eccXrangeDegs, eccYrangeDegs] =  generatePolansOptics(PolansSubjectID, noLCA, wavelengthSampling, rgcMosaicPatchEccMicrons)
+function [theOptics, eccXrangeDegs, eccYrangeDegs] =  generatePolansOptics(PolansSubjectID, noLCA, noOptics, wavelengthSampling, rgcMosaicPatchEccMicrons)
     pupilDiameterMM = 3.0;
     wavelengthsListToCompute = wavelengthSampling;
     wavefrontSpatialSamples = 501;
@@ -64,7 +65,7 @@ function [theOptics, eccXrangeDegs, eccYrangeDegs] =  generatePolansOptics(Polan
     [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = CronerKaplanRGCModel.psfAtEccentricity(PolansSubjectID, ...
                 imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, micronsPerDegree, ...
                 wavefrontSpatialSamples, eccXrangeDegs, eccYrangeDegs, deltaEcc, ...
-                'noLCA', noLCA);
+                'noLCA', noLCA, 'noOptics', noOptics);
 
     theOptics = theOIs{1,1,1};
 end

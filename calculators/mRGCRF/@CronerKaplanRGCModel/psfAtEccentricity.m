@@ -5,10 +5,12 @@ function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(go
     % Parse input
     p = inputParser;
     p.addParameter('noLCA', false, @islogical);
+    p.addParameter('noOptics', false, @islogical);
     p.parse(varargin{:});
     
     % See if we will simulate no longitudinal chromatic aberration
     noLCAflag = p.Results.noLCA;
+    noOpticsFlag = p.Results.noOptics;
     
     subtractCentralRefraction = true;
     % Best focus at 550 nm
@@ -41,7 +43,7 @@ function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(go
            % Generate oi at this eccentricity
            theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, pupilDiamMM, measurementWavelength, ...
                 desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree, ...
-                noLCAflag);
+                noLCAflag, noOpticsFlag);
             
            % Extract PSF
            for wIndex = 1:numel(wavelengthsListToCompute)
@@ -98,9 +100,23 @@ end
 
 
 function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measPupilDiameterMM, measWavelength, ...
-    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree, noLCAflag)
+    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree, noLCAflag, noOpticsFlag)
 
     showTranslation = false;
+    
+    if (noOpticsFlag) 
+        fprintf(2, 'Generating Polans optics with no Optics\n');
+    else
+        if (noLCAflag) 
+            fprintf(2, 'Generating Polans optics with no LCA\n');
+        else
+            fprintf(2, 'Generating standard Polans optics\n');
+        end
+    end
+    
+    if (noOpticsFlag)
+        zCoeffs = zCoeffs * 0;
+    end
     
     [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = ...
         computePSFandOTF(zCoeffs, ...
@@ -118,7 +134,6 @@ function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measP
     if (noLCAflag)
         inFocusWindex = find(wavelengthsListToCompute == measWavelength);
         assert(~isempty(inFocusWindex), 'In focus wavelength is not in the list of wavelenghts to compute');
-        fprintf(2, 'Generating Polans optics with no LCA\n');
         for waveIndex = 1:numel(wavelengthsListToCompute)
              theOTF(:,:,waveIndex) = theOTF(:,:,inFocusWindex);
         end
