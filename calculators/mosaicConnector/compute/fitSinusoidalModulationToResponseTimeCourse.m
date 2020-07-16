@@ -1,7 +1,8 @@
 function [responseAmplitude, responseAmplitudeSE, responsePhase, responseTimeAxisHR, fittedResponses] = ...
     fitSinusoidalModulationToResponseTimeCourse(responses, responsesStDev, responseTimeAxis, ...
         stimulusTemporalFrequencyHz, spatialFrequency, maxSpikeRate, ...
-        visualizeIndividualFits, exportFig, LMScontrast, targetRGC)
+        visualizeIndividualFits, LMScontrast, targetRGC, exportFig, exportDir)
+    
         % Compute response modulations
         rgcsNum = size(responses,1);
         responseAmplitude = zeros(rgcsNum,1);
@@ -9,8 +10,6 @@ function [responseAmplitude, responseAmplitudeSE, responsePhase, responseTimeAxi
         responsePhase = zeros(rgcsNum,1);
         responseTimeAxisHR = responseTimeAxis(1):0.5/1000.0:responseTimeAxis(end);
         fittedResponses = zeros(rgcsNum, numel(responseTimeAxisHR));
-        
-        
         
         sinFunction = @(params,time)(params(3) + params(1) * sin(2.0*pi*stimulusTemporalFrequencyHz*time - params(2)));
         opts.RobustWgtFun = []; %'talwar';
@@ -52,7 +51,7 @@ function [responseAmplitude, responseAmplitudeSE, responsePhase, responseTimeAxi
                 ylabel('response');
                 drawnow;
                 if (exportFig)
-                    plotlabOBJ.exportFig(hFig, 'pdf', sprintf('Response_RGC_%d_SF_%2.2fcpd_LMS_%0.2f_%0.2f_%0.2f',iRGC, spatialFrequency, LMScontrast(1), LMScontrast(2), LMScontrast(3)), pwd());
+                    plotlabOBJ.exportFig(hFig, 'pdf', sprintf('Response_RGC_%d_SF_%2.2fcpd_LMS_%0.2f_%0.2f_%0.2f',iRGC, spatialFrequency, LMScontrast(1), LMScontrast(2), LMScontrast(3)), exportDir);
                 end
                 
             end

@@ -22,7 +22,8 @@ function computeConeResponses(runParams, ...
         [theNullSceneFrames, presentationDisplay] = generateStimulusFrames(nullColor, stimSpatialParams, wavelengthSampling);
         
         % Generate the stimulus SRGBsequence
-        [theStimulusSRGBsequence, ~, theStimulusLMSexcitationsSequence] = extractSRGBsequence(theNullSceneFrames, presentationDisplay, theConeMosaic.qe);
+        [theStimulusSRGBsequence, ~, theStimulusLMSexcitationsSequence, ...
+            stimulusSpatialSupportDegs, stimulusSpatialSupportMicrons] = extractSRGBsequence(theNullSceneFrames, presentationDisplay, theConeMosaic.qe);
         
         % Generate the corresponding optical image sequence
         fprintf('\nComputing the NULL oiSequence ...');
@@ -72,7 +73,8 @@ function computeConeResponses(runParams, ...
         fprintf('\nExporting the NULL responses ...');
         tic
         % Extract the RGB sequence of optical images and LMS excitation images
-        [theOISRGBsequence, ~, theRetinalLMSexcitationsSequence] = extractSRGBsequence(theOIsequence, presentationDisplay, theConeMosaic.qe);
+        [theOISRGBsequence, ~, theRetinalLMSexcitationsSequence, ...
+            retinalSpatialSupportDegs, retinalSpatialSupportMicrons] = extractSRGBsequence(theOIsequence, presentationDisplay, theConeMosaic.qe);
         
         % Extract the stimulus and response time axes
         stimulusTimeAxis = theOIsequence.timeAxis;
@@ -85,6 +87,8 @@ function computeConeResponses(runParams, ...
              'theStimulusLMSexcitationsSequence', ...
              'theOISRGBsequence', ...
              'theRetinalLMSexcitationsSequence', ...
+             'stimulusSpatialSupportDegs', 'stimulusSpatialSupportMicrons', ...
+             'retinalSpatialSupportDegs', 'retinalSpatialSupportMicrons', ...
              'isomerizationsNull', ...
              'photocurrentsNull', ...
              'responseTimeAxis', ...
@@ -118,7 +122,8 @@ function computeConeResponses(runParams, ...
         [theSceneFrames, presentationDisplay, sceneLuminanceSlice] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling);
         
         % Generate the stimulus SRGBsequence
-        [theStimulusSRGBsequence,~, theStimulusLMSexcitationsSequence] = extractSRGBsequence(theSceneFrames, presentationDisplay, theConeMosaic.qe);
+        [theStimulusSRGBsequence,~, theStimulusLMSexcitationsSequence, ...
+            stimulusSpatialSupportDegs, stimulusSpatialSupportMicrons] = extractSRGBsequence(theSceneFrames, presentationDisplay, theConeMosaic.qe);
         
         figure(4000);
         subplot(3,5,sfIndex)
@@ -165,7 +170,8 @@ function computeConeResponses(runParams, ...
         fprintf('\nExporting the %2.1f c/deg responses ...', stimSpatialParams.gaborSpatialFrequencyCPD);
         tic
         % Extract the RGB sequence of optical images and LMS excitation images
-        [theOISRGBsequence, retinalIlluminanceSlice, theRetinalLMSexcitationsSequence] = extractSRGBsequence(theOIsequence, presentationDisplay, theConeMosaic.qe);
+        [theOISRGBsequence, retinalIlluminanceSlice, theRetinalLMSexcitationsSequence, ...
+            retinalSpatialSupportDegs, retinalSpatialSupportMicrons] = extractSRGBsequence(theOIsequence, presentationDisplay, theConeMosaic.qe);
        
         
         figure(6000);
@@ -186,6 +192,8 @@ function computeConeResponses(runParams, ...
             'theStimulusLMSexcitationsSequence', ...
             'theOISRGBsequence', ...
             'theRetinalLMSexcitationsSequence', ...
+            'stimulusSpatialSupportDegs', 'stimulusSpatialSupportMicrons', ...
+            'retinalSpatialSupportDegs', 'retinalSpatialSupportMicrons', ...
             'isomerizations', ...
             'photocurrents', ...
             '-v7.3');
@@ -199,7 +207,7 @@ function computeConeResponses(runParams, ...
     end % sfIndex
 end
 
-function [theSRGBsequence, theSlices, theLMSexcitationsSequence] = extractSRGBsequence(theSequence, presentationDisplay, coneQuantalEfficiencies)
+function [theSRGBsequence, theSlices, theLMSexcitationsSequence, spatialSupportDegs, spatialSupportMicrons] = extractSRGBsequence(theSequence, presentationDisplay, coneQuantalEfficiencies)
     displaySPDs = displayGet(presentationDisplay, 'spd'); 
     
     if (isa(theSequence, 'oiArbitrarySequence'))
@@ -217,6 +225,18 @@ function [theSRGBsequence, theSlices, theLMSexcitationsSequence] = extractSRGBse
         % Extract sequences
         for k = 1:framesNum
             theOI = theSequence.frameAtIndex(k);
+            % Extract spatial support
+            if (k == 1)
+                spatialSupportMM = oiGet(theOI, 'spatial support', 'mm');
+                optics = oiGet(theOI, 'optics');
+                focalLength = opticsGet(optics, 'focal length');
+                mmPerDegree = focalLength*tand(1)*1e3;
+                spatialSupportDegsMatrix = spatialSupportMM/mmPerDegree;
+                spatialSupportDegs.x = squeeze(spatialSupportDegsMatrix(1,:,1));
+                spatialSupportDegs.y = squeeze(spatialSupportDegsMatrix(:,1,2));
+                spatialSupportMicrons.x = 1e3*squeeze(spatialSupportMM(1,:,1));
+                spatialSupportMicrons.y = 1e3*squeeze(spatialSupportMM(:,1,2));
+            end
             retinalIrradianceImage = oiGet(theOI, 'energy');
             
             % Radiance to SRGB (scaled to max contrast)
@@ -251,6 +271,18 @@ function [theSRGBsequence, theSlices, theLMSexcitationsSequence] = extractSRGBse
          % Extract sequences
         for k = 1:framesNum 
             theScene = theSequence{k};
+            if (k == 1)
+                % Extract spatial support
+                spatialSupportMM = sceneGet(theScene, 'spatial support', 'mm');
+                fovDegrees = sceneGet(theScene, 'wAngular');
+                xSupport = squeeze(spatialSupportMM (1,:,1));
+                spatialSupportDegs.x = xSupport / max(abs(xSupport(:))) * fovDegrees(1)/2;
+                ySupport = squeeze(spatialSupportMM (:,1,2));
+                spatialSupportDegs.y  = ySupport / max(abs(ySupport(:))) * fovDegrees(2)/2;
+                spatialSupportMicrons.x = 1e3*squeeze(spatialSupportMM(1,:,1));
+                spatialSupportMicrons.y = 1e3*squeeze(spatialSupportMM(:,1,2));
+            end
+            
             [~, sceneSRGBimage, ~, sceneLMSexcitationsImage] = ...
                 sceneRepresentations(theScene, presentationDisplay);
             

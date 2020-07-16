@@ -1,5 +1,6 @@
 function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
-    presynapticSignal, spatialFrequenciesCPD, LMScontrast, stimSpatialParams, stimTemporalParams, targetRGCs, saveDir)
+    presynapticSignal, spatialFrequenciesCPD, LMScontrast, stimSpatialParams, stimTemporalParams, ...
+    targetRGCs, saveDir, figExportsDir, visualizeAllSpatialFrequencyTuningCurves, visualizeResponseComponents)
     
     % Load the null presynaptic responses
     mFile = matfile(fullfile(saveDir,nullResponseFilename(runParams)), 'Writable', false);
@@ -12,7 +13,6 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             error('Unknown presynaptic signal: ''%s''.', presynapticSignal)
     end
 
-    
     visualizeRetinalContrasts = ~true;
     if (visualizeRetinalContrasts)
         % Retrieve the background retinal LMS excitations
@@ -30,7 +30,6 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         gaborSpatialFrequencyCPD = spatialFrequenciesCPD(sfIndex);
         dataFile = fullfile(saveDir, sprintf('%s_%2.1fCPD.mat',testResponseFilename(runParams, LMScontrast), gaborSpatialFrequencyCPD));
         mFile = matfile(dataFile, 'Writable', false);
-        
         
          if (visualizeRetinalContrasts)     
             % The test retinal LMS excitations 
@@ -50,7 +49,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             roiLcontrast(sfIndex,:) = reshape(squeeze(theRetinalLMScontrastSequence(:,midRow,colsToUse,1)), [1 size(theRetinalLMScontrastSequence,1)*colsToUseNum]);
             roiMcontrast(sfIndex,:) = reshape(squeeze(theRetinalLMScontrastSequence(:,midRow,colsToUse,2)), [1 size(theRetinalLMScontrastSequence,1)*colsToUseNum]);
 
-            visualizeRetinalContrastSequence(theRetinalLMScontrastSequence, gaborSpatialFrequencyCPD, LMScontrast);
+            visualizeRetinalContrastSequence(theRetinalLMScontrastSequence, gaborSpatialFrequencyCPD, LMScontrast, figExportsDir);
         end
 
         
@@ -98,7 +97,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     end % sfIndex
     
     if (visualizeRetinalContrasts)
-        visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontrast, roiMcontrast, LMScontrast)
+        visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontrast, roiMcontrast, LMScontrast, figExportsDir)
     end
     
     % Compute mean over all instances integrated response. This is used
@@ -119,11 +118,10 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
    
    
     labelCells = true;
-    visualizeResponseComponents = true;
     if (visualizeResponseComponents)
         for iTargetRGC = 1:numel(targetRGCs)
              visualizeResponseComponentsForTargetRGC(targetRGCs(iTargetRGC), responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
-                spatialFrequenciesCPD, maxSpikeRate, LMScontrast);  
+                spatialFrequenciesCPD, maxSpikeRate, LMScontrast, figExportsDir);  
         end
     end
     
@@ -142,7 +140,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
                     responseTimeAxis, ...
                     stimTemporalParams.temporalFrequencyHz, ...
                     spatialFrequenciesCPD(sfIndex), maxSpikeRate, ...
-                    visualizeIndividualFits, exportFig, LMScontrast, []);
+                    visualizeIndividualFits, LMScontrast, [], exportFig, figExportsDir);
             otherwise
                 error('Unknown stimulus type: ''%''.', stimulusSpatialParams.type)
         end
@@ -151,53 +149,57 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     % Fit the responses
     maxSpikeRatModulation = 26;
     initialParams = [];
+    visualizeIndividualFits = false; exportFig = true;
     [~,~,~, meanParams] = ...
         fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, responseAmplitudeSE, initialParams, ...
-        maxSpikeRatModulation, false, false, LMScontrast);
+        maxSpikeRatModulation, LMScontrast, visualizeIndividualFits, exportFig, '');
     
     % Second fit
-    visualizeIndividualFits = true; exportFig = true;
+    visualizeIndividualFits = visualizeAllSpatialFrequencyTuningCurves; exportFig = true;
     initialParams = meanParams;
     [patchDogParams,spatialFrequenciesCPDHR, responseAmplitudeHR] = ...
         fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, responseAmplitudeSE, initialParams, ...
-        maxSpikeRatModulation, visualizeIndividualFits, exportFig, LMScontrast);
+        maxSpikeRatModulation, LMScontrast, visualizeIndividualFits, exportFig, figExportsDir);
 
     % Visualize data to contrast with Cronner and Kaplan data
     RGCpositionsMicrons = determineRGCPositionsFromCenterInputs(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, theMidgetRGCmosaic.centerWeights);
     RGCeccentricityDegs = WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCpositionsMicrons.^2,2))/1000.0);
     visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCeccentricityDegs);
     
-    zLevels = [0.3 1];
+    
      
    
 %   Visualize the temporal response of each RGC at the RGC's location
     for sfIndex = 0:-1 %1:numel(spatialFrequenciesCPD)
         
         exportFig = true;
-        visualizeRGCmosaicWithResponses(100+sfIndex, theConeMosaic, 'linear', ...
+        visualizeRGCmosaicWithResponses(100+sfIndex, theConeMosaic, 'linear', 'TimeResponse', ...
            responseTimeAxis, squeeze(integratedResponsesMean(sfIndex,:,:)), ...
            responseTimeAxisHR, squeeze(fittedResponsesHR(sfIndex,:,:)), ...
            runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-           theMidgetRGCmosaic, zLevels, 'centers', maxSpikeRate, ...
-           exportFig, sprintf('%2.1fcpdResponse', spatialFrequenciesCPD(sfIndex)), LMScontrast, [], labelCells);
+           theMidgetRGCmosaic, 'centers', maxSpikeRate, ...
+           sprintf('%2.1fcpdResponse', spatialFrequenciesCPD(sfIndex)), LMScontrast, [], labelCells, ...
+           exportFig, figExportsDir);
     end
     
     % Visualize the response tuning of each RGC at the RGC's location
     exportFig = true;
-    visualizeRGCmosaicWithResponses(1000, theConeMosaic, 'log', ...
+    visualizeRGCmosaicWithResponses(1000, theConeMosaic, 'log', 'SFtuning', ...
                 spatialFrequenciesCPD, responseAmplitude, ...
                 spatialFrequenciesCPDHR, responseAmplitudeHR, ...
                 runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-                theMidgetRGCmosaic, zLevels, 'centers', maxSpikeRatModulation, ...
-                exportFig, 'SFtuningAll', LMScontrast, [], labelCells);
+                theMidgetRGCmosaic, 'centers', maxSpikeRatModulation, ...
+                'SFtuningAll', LMScontrast, [], labelCells, ...
+                 exportFig, figExportsDir);
             
     for iTargetRGC = 1:numel(targetRGCs)
-        visualizeRGCmosaicWithResponses(1000+targetRGCs(iTargetRGC), theConeMosaic, 'log', ...
+        visualizeRGCmosaicWithResponses(1000+targetRGCs(iTargetRGC), theConeMosaic, 'log', 'SFtuning', ...
                     spatialFrequenciesCPD, responseAmplitude, ...
                     spatialFrequenciesCPDHR, responseAmplitudeHR, ...
                     runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-                    theMidgetRGCmosaic, zLevels, 'centers', maxSpikeRatModulation, ...
-                    exportFig, sprintf('SFtuning%d', targetRGCs(iTargetRGC)), LMScontrast, targetRGCs(iTargetRGC), false);
+                    theMidgetRGCmosaic,  'centers', maxSpikeRatModulation, ...
+                    sprintf('SFtuning%d', targetRGCs(iTargetRGC)), LMScontrast, targetRGCs(iTargetRGC), false, ...
+                    exportFig, figExportsDir);
     end
     
     % Visualize the mosaics
@@ -265,138 +267,4 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
         
     end % instanceIndex
 end
-        
-function  visualizeResponseComponentsForTargetRGC(targetRGC, responseTimeAxis, centerResponses, surroundResponses, ...
-    spatialFrequenciesCPD, maxSpikeRate, LMScontrast)
-
-    plotlabOBJ = setupPlotLab(0, 16, 12);
-    hFig = figure(123); clf;
-    
-    theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
-        'rowsNum', 3, ...
-        'colsNum', 4, ...
-        'leftMargin', 0.06, ...
-        'widthMargin', 0.03, ...
-        'heightMargin', 0.03, ...
-        'bottomMargin', 0.05, ...
-        'rightMargin', 0.0, ...
-        'topMargin', 0.01);
-    
-    centerResponsesMean = squeeze(mean(centerResponses,2));
-    surroundResponsesMean = squeeze(mean(surroundResponses,2));
-    
-    for sfIndex = 1:numel(spatialFrequenciesCPD)  
-        row = floor((sfIndex-1)/4)+1;
-        col = mod(sfIndex-1,4)+1;
-        ax = theAxesGrid{row,col};
-        centerResponses = squeeze(centerResponsesMean(sfIndex,targetRGC,:));
-        surroundResponses = squeeze(surroundResponsesMean(sfIndex,targetRGC,:));
-        line(ax, responseTimeAxis, centerResponses, 'Color', [1 0 0], 'LineWidth', 1.5); hold on;
-        line(ax, responseTimeAxis, surroundResponses, 'Color', [0 0 1], 'LineWidth', 1.5);
-        set(ax, 'XLim', [0 0.5], 'YLim', maxSpikeRate*[0 1], 'XTick', 0:0.1:0.5, 'YTick',(0:0.2:1)*maxSpikeRate);
-        if (row ==3)&&(col == 1)
-            xlabel(ax, 'time (sec)');
-            ylabel(ax, 'response');
-        else
-            set(ax, 'XTickLabel', {}, 'YTickLabel', {});
-        end
-        axis(ax, 'square');
-        text(ax,0.02, 180,sprintf('%4.2f c/deg', spatialFrequenciesCPD(sfIndex)), 'FontSize',16);
-        
-    end
-    
-    drawnow;
-    exportFig = true;
-    if (exportFig)
-       plotlabOBJ.exportFig(hFig, 'pdf', sprintf('ResponseComponents_RGC_%2.0f_LMS_%0.2f_%0.2f_%0.2f', targetRGC, LMScontrast(1), LMScontrast(2), LMScontrast(3)), pwd());
-    end
-    setupPlotLab(-1);
-end
-
-
-function visualizeRetinalContrastSequence(theRetinalLMScontrastSequence, gaborSpatialFrequencyCPD, LMScontrast)
-        
-    plotlabOBJ = setupPlotLab(0, 5, 6);
-    hFig = figure(100); clf;
-    
-    midRow = round(size(theRetinalLMScontrastSequence,2)/2);
-    colsNum = size(theRetinalLMScontrastSequence,3);
-    margin = round(colsNum/4);
-    colsToUse = margin:colsNum-margin;
-
-    for frame = 1:1 %size(theRetinalLMScontrastSequence,1)
-        
-        line(1:numel(colsToUse),squeeze(theRetinalLMScontrastSequence(frame,midRow,colsToUse,1)), 'Color', [1 0 0], 'LineWidth', 2); hold on;
-        line(1:numel(colsToUse),squeeze(theRetinalLMScontrastSequence(frame,midRow,colsToUse,2)), 'Color', [0 0.7 0], 'LineWidth', 2); 
-        line(1:numel(colsToUse),squeeze(theRetinalLMScontrastSequence(frame,midRow,colsToUse,3)), 'Color', [ 0 0 1], 'LineWidth', 2); 
-
-        set(gca, 'YLim', [-0.11 0.11], 'XLim', [1 numel(colsToUse)], 'XTick', [], 'YTick', 0.1*[-1:0.5:1]);
-        axis 'square'
-        title(sprintf('%4.2f c/deg', gaborSpatialFrequencyCPD));
-    end
-    plotlab.offsetAxes(gca);
-    drawnow;
-    exportFig = true;
-    if (exportFig)
-       plotlabOBJ.exportFig(hFig, 'pdf', sprintf('RetinalContrastProfiles_%2.2fcpd_LMS_%0.2f_%0.2f_%0.2f', gaborSpatialFrequencyCPD, LMScontrast(1), LMScontrast(2), LMScontrast(3)), pwd());
-    end
-    setupPlotLab(-1);
-end
-
-function visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontrast, roiMcontrast, LMScontrast)
-    plotlabOBJ = setupPlotLab(0, 16, 12);
-    hFig = figure(101); clf;
-    
-    theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
-        'rowsNum', 3, ...
-        'colsNum', 4, ...
-        'leftMargin', 0.06, ...
-        'widthMargin', 0.03, ...
-        'heightMargin', 0.03, ...
-        'bottomMargin', 0.05, ...
-        'rightMargin', 0.0, ...
-        'topMargin', 0.01);
-    
-    for sfIndex = 1:size(roiLcontrast,1)
-        row = floor((sfIndex-1)/4)+1;
-        col = mod(sfIndex-1,4)+1;
-        ax = theAxesGrid{row,col};
-        scatter(ax, roiLcontrast(sfIndex,1:4:end), roiMcontrast(sfIndex,1:4:end), '.');
-        set(ax, 'XLim', 0.1*[-1 1], 'YLim', 0.1*[-1 1], 'XTick', 0.1*[-1:0.5:1], 'YTick', 0.1*[-1:0.5:1]);
-        if (row ==3)&&(col == 1)
-            xlabel(ax, 'retinal L-cone contrast');
-            ylabel(ax, 'retinal M-cone contrast');
-        else
-            set(ax, 'XTickLabel', {}, 'YTickLabel', {});
-        end
-        axis(ax, 'square');
-        text(ax,-0.09, 0.085,sprintf('%4.2f c/deg', spatialFrequenciesCPD(sfIndex)), 'FontSize',16);
-    end
-    drawnow;
-    exportFig = true;
-    if (exportFig)
-        plotlabOBJ.exportFig(hFig, 'pdf', sprintf('RetinalLMContrastCorrelationAtDifferentSFs_LMS_%0.2f_%0.2f_%0.2f', LMScontrast(1), LMScontrast(2), LMScontrast(3)), pwd());
-    end
-    setupPlotLab(-1);
-    
-end
-
-function plotlabOBJ = setupPlotLab(mode, figWidthInches, figHeightInches)
-    if (mode == 0)
-        plotlabOBJ = plotlab();
-        plotlabOBJ.applyRecipe(...
-                'colorOrder', [1 0 0; 0 0 1], ...
-                'axesBox', 'off', ...
-                'axesTickDir', 'in', ...
-                'renderer', 'painters', ...
-                'lineMarkerSize', 8, ...
-                'axesTickLength', [0.01 0.01], ...
-                'legendLocation', 'SouthWest', ...
-                'figureWidthInches', figWidthInches, ...
-                'figureHeightInches', figHeightInches);
-    else
-        pause(2.0);
-        plotlab.resetAllDefaults();
-    end
-end 
-
+       

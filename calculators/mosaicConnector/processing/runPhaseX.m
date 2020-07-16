@@ -3,13 +3,16 @@ function runPhaseX(runParams)
     % Intermediate files directory
     saveDir = strrep(fileparts(which(mfilename())), 'processing', 'responseFiles');
     
+    % Figure exports dir
+    figExportsDir = strrep(fileparts(which(mfilename())), 'processing', 'exports');
+    
     % Compute cone mosaic responses
     recomputeConeMosaicResponses = true;
     recomputeNullResponses = true;
     
     % Load/Recompute connected mosaics and the optics
     recomputeMosaicAndOptics = ~true;
-    recomputeOpticsOnly = true;
+    recomputeOpticsOnly = ~true;
     [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
 
     displayPSFs = ~true;
@@ -23,6 +26,7 @@ function runPhaseX(runParams)
     minSF = 0.1;
     maxSF = 60;
     spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),12);
+    spatialFrequenciesCPD = spatialFrequenciesCPD(spatialFrequenciesCPD>1.8);
     
     stimulusFOVdegs = 2.0;
     minPixelsPerCycle = 10;
@@ -32,7 +36,7 @@ function runPhaseX(runParams)
     instancesNum = 16;
     
     % Visualized cells
-    targetRGCs = [3 14 52];
+    targetRGCs = [52]; %[3 14 52];
     
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
@@ -66,9 +70,12 @@ function runPhaseX(runParams)
             spatialFrequenciesCPD, ...
             saveDir);
     else
+        visualizeAllSpatialFrequencyTuningCurves = false;
+        visualizeResponseComponents = ~true;
         computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             rgcInputSignal, spatialFrequenciesCPD, LMScontrast, ...
             stimSpatialParams, stimTemporalParams, targetRGCs, ...
-            saveDir);
+            saveDir, figExportsDir, ...
+            visualizeAllSpatialFrequencyTuningCurves, visualizeResponseComponents);
     end
 end
