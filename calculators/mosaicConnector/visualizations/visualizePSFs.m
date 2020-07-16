@@ -33,9 +33,11 @@ function visualizePSFs(theOI, eccX, eccY)
                'topMargin',      0.02);
            
     maxPSF = max(thePSFs(:));
-    for wIndex = 1:2:numel(wavelengthSupport)
-        row = floor((wIndex-1)/colsNum)+1;
-        col = mod(wIndex-1,colsNum)+1;
+    sampledWindices = 1:4:numel(wavelengthSupport);
+    for k = 1:numel(sampledWindices)
+        wIndex = sampledWindices(k);
+        row = floor((k-1)/colsNum)+1;
+        col = mod(k-1,colsNum)+1;
         subplot('Position', subplotPosVectors(row,col).v);
         thePSF = squeeze(thePSFs(:,:,wIndex));
         imagesc(thePSFsupportDegs*60, thePSFsupportDegs*60, thePSF);
