@@ -19,6 +19,9 @@
 %                     ieReadSpectra, DHB
 %    07/28/17  DHB    R2016a: Checked 07.28.17, DHB
 %    10/01/18  JNM    Formatting adjustments
+%    07/17/20  DHB    Fix bug.  Matrix mon2XYZ was transposed from what it should
+%                     have been.  Also added some check code, which is how
+%                     I found this.
 
 %% Initialize
 ieInit;
@@ -73,10 +76,10 @@ disp(['Max luminance of phosphors: ' num2str(maxXYZ(2, :))]);
 % The total luminance the display can reach, with all three phosphors on, 
 % is given by the sum of these three values, 100 cd/m^2 is a typical
 % luminance level for monitors.
-disp(['Total luminance:' num2str(sum(maxXYZ(2, :)))]);
+disp(['Total luminance: ' num2str(sum(maxXYZ(2, :)))]);
 
 % Simple way to compute XYZ from spectrum is using function ieXYZFromEnergy
-maxXYZ = ieXYZFromEnergy(phosphors', wavelength)';
+maxXYZ1 = ieXYZFromEnergy(phosphors', wavelength)';
 
 %% Using the CMFs to Match a target (linear display, gamma = 1)
 %  Suppose that you send a space ship to the surface of Mars. The spaceship
@@ -122,11 +125,12 @@ title('SPD of Red and Blue Phosphors Combined');
 % To find the relationship between the [r, g, b] values and the monitor XYZ
 % outputs, we only need to multiply the output times the XYZ functions.
 % Hence, there is a matrix that maps the linear monitor intensities into
-% the XYZ values. This matrix is
-mon2XYZ = ieXYZFromEnergy(phosphors', wavelength); %#ok
+% the XYZ values. This matrix is computed below, with the transpose making
+% the columns what contains the XYZ values rather than the rows.
+mon2XYZ = ieXYZFromEnergy(phosphors', wavelength)'; %#ok
 
 % Or we can use
-mon2XYZ = displayGet(d, 'rgb2xyz');
+mon2XYZ = displayGet(d, 'rgb2xyz')';
 
 % Take a look at this matrix and think about its entries. Notice that the
 % first column contains the XYZ values associated with the red phosphor, 
@@ -140,11 +144,16 @@ mon2XYZ = displayGet(d, 'rgb2xyz');
 % to monitor linear gun intensities, the inverse of the matrix that we
 % have. So, we calculate this new matrix as
 marsRGB = mon2XYZ \ marsXYZ(:);
+checkXYZ = mon2XYZ*marsRGB;
+
+% Construct the metamer explicitly and check its XYZ values
+metamerSpd = phosphors*marsRGB;
+metamerXYZ = ieXYZFromEnergy(metamerSpd', wavelength);
 
 % The spectrum we should display, therefore, is equal to
 vcNewGraphWin;
 subplot(2, 1, 1);
-plot(wavelength, phosphors * marsRGB)
+plot(wavelength, metamerSpd)
 title('Output SPD of the monitor');
 xlabel('wavelength(nm)');
 ylabel('Intensity')
