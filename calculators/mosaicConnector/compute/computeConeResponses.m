@@ -274,7 +274,8 @@ function [theSRGBsequence, theSlices, theLMSexcitationsSequence, spatialSupportD
             if (k == 1)
                 % Extract spatial support
                 spatialSupportMM = sceneGet(theScene, 'spatial support', 'mm');
-                fovDegrees = sceneGet(theScene, 'wAngular');
+                fovDegrees(1) = sceneGet(theScene, 'hfov');
+                fovDegrees(2) = sceneGet(theScene, 'vfov');
                 xSupport = squeeze(spatialSupportMM (1,:,1));
                 spatialSupportDegs.x = xSupport / max(abs(xSupport(:))) * fovDegrees(1)/2;
                 ySupport = squeeze(spatialSupportMM (:,1,2));
