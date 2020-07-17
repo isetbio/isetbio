@@ -21,7 +21,7 @@ function  [semiAxes, rfCenter] = fillRFoutline(theAxes, C, zLevels, whichLevelsT
             rfCenter = [nan nan];
         end
         
-        faceColor = [0.3 0.3 0.3]-level*0.05;
+        faceColor = [1 1 0.2]-level*0.05;
         edgeColor = [0.2 0.2 0.2];
         patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceColor, edgeColor, faceAlpha, edgeAlpha);
 
