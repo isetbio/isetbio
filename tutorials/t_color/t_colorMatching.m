@@ -73,10 +73,10 @@ disp(['Max luminance of phosphors: ' num2str(maxXYZ(2, :))]);
 % The total luminance the display can reach, with all three phosphors on, 
 % is given by the sum of these three values, 100 cd/m^2 is a typical
 % luminance level for monitors.
-disp(['Total luminance:' num2str(sum(maxXYZ(2, :)))]);
+disp(['Total luminance: ' num2str(sum(maxXYZ(2, :)))]);
 
 % Simple way to compute XYZ from spectrum is using function ieXYZFromEnergy
-maxXYZ = ieXYZFromEnergy(phosphors', wavelength)';
+maxXYZ1 = ieXYZFromEnergy(phosphors', wavelength)';
 
 %% Using the CMFs to Match a target (linear display, gamma = 1)
 %  Suppose that you send a space ship to the surface of Mars. The spaceship
