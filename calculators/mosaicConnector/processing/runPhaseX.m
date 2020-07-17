@@ -11,8 +11,8 @@ function runPhaseX(runParams)
     recomputeNullResponses = true;
     
     % Load/Recompute connected mosaics and the optics
-    recomputeMosaicAndOptics = ~true;
-    recomputeOpticsOnly = ~true;
+    recomputeMosaicAndOptics = true;
+    recomputeOpticsOnly = true;
     [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
 
     displayPSFs = ~true;
@@ -26,7 +26,6 @@ function runPhaseX(runParams)
     minSF = 0.1;
     maxSF = 60;
     spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),12);
-    spatialFrequenciesCPD = spatialFrequenciesCPD(spatialFrequenciesCPD>1.8);
     
     stimulusFOVdegs = 2.0;
     minPixelsPerCycle = 10;

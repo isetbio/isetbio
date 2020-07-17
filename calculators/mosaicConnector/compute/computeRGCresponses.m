@@ -13,25 +13,38 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             error('Unknown presynaptic signal: ''%s''.', presynapticSignal)
     end
 
-    visualizeRetinalContrasts = ~true;
-    if (visualizeRetinalContrasts)
-        % Retrieve the background retinal LMS excitations
-        %theOISRGBsequence = mFile.theOISRGBsequence;
-        theRetinalLMSexcitationsSequenceNull = mFile.theRetinalLMSexcitationsSequence;
-        backgroundLMSexcitations = mean(mean(mean(theRetinalLMSexcitationsSequenceNull,1),2),3);
-    end
+    % Retrieve background LMS excitations
+    theRetinalLMSexcitationsSequenceNull = mFile.theRetinalLMSexcitationsSequence;
+    backgroundLMSexcitations = mean(mean(mean(theRetinalLMSexcitationsSequenceNull,1),2),3);
     
     % Retrieve time axes
     responseTimeAxis = mFile.responseTimeAxis;
     stimulusTimeAxis = mFile.stimulusTimeAxis;
-           
+          
+    visualizedRetinalStimulus = [];
+    visualizedRetinalStimulusSpatialFrequencyCPD = 60;
+    visualizedRetinalStimulusConeContrastIndex = 1;  % visualize the L-cone contrast
+    [~,visualizedRetinalSFindex] = min(abs(spatialFrequenciesCPD-visualizedRetinalStimulusSpatialFrequencyCPD));
+    
+    fprintf('Will superimpose retinal stimulus at %2.1f c/deg', spatialFrequenciesCPD(visualizedRetinalSFindex));
+    
     % Compute the RGC responses
     for sfIndex = 1:numel(spatialFrequenciesCPD)
         gaborSpatialFrequencyCPD = spatialFrequenciesCPD(sfIndex);
         dataFile = fullfile(saveDir, sprintf('%s_%2.1fCPD.mat',testResponseFilename(runParams, LMScontrast), gaborSpatialFrequencyCPD));
         mFile = matfile(dataFile, 'Writable', false);
         
-         if (visualizeRetinalContrasts)     
+        if (sfIndex == visualizedRetinalSFindex)
+            frameIndex = 5;      
+            size(mFile.theRetinalLMSexcitationsSequence)
+            theRetinalLMSexcitations = mFile.theRetinalLMSexcitationsSequence(frameIndex,:,:,:);
+            theRetinalLMScontrast = bsxfun(@times, bsxfun(@minus, theRetinalLMSexcitations, backgroundLMSexcitations), 1./backgroundLMSexcitations);
+            visualizedRetinalStimulus.retinalContrastImage = squeeze(theRetinalLMScontrast(1,:,:,visualizedRetinalStimulusConeContrastIndex));
+            visualizedRetinalStimulus.spatialSupportMicrons = mFile.retinalSpatialSupportMicrons;
+        end
+
+        visualizeRetinalContrasts = ~true;
+        if (visualizeRetinalContrasts)     
             % The test retinal LMS excitations 
             %theOISRGBsequence = mFile.theOISRGBsequence;
             theRetinalLMSexcitationsSequence = mFile.theRetinalLMSexcitationsSequence;
@@ -144,7 +157,8 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             otherwise
                 error('Unknown stimulus type: ''%''.', stimulusSpatialParams.type)
         end
-    end
+        
+    end % sfIndex
     
     % Fit the responses
     maxSpikeRatModulation = 26;
@@ -166,40 +180,50 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     RGCeccentricityDegs = WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCpositionsMicrons.^2,2))/1000.0);
     visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCeccentricityDegs);
     
-    
-     
-   
 %   Visualize the temporal response of each RGC at the RGC's location
     for sfIndex = 0:-1 %1:numel(spatialFrequenciesCPD)
         
         exportFig = true;
-        visualizeRGCmosaicWithResponses(100+sfIndex, theConeMosaic, 'linear', 'TimeResponse', ...
+        superimposedRetinalStimulus = [];
+        plotXaxisScaling = 'linear';
+        plotType = 'TimeResponse';
+        figureName = sprintf('%2.1fcpdResponse', spatialFrequenciesCPD(sfIndex));
+        visualizeRGCmosaicWithResponses(100+sfIndex, theConeMosaic, plotXaxisScaling, plotType, ...
            responseTimeAxis, squeeze(integratedResponsesMean(sfIndex,:,:)), ...
            responseTimeAxisHR, squeeze(fittedResponsesHR(sfIndex,:,:)), ...
            runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
            theMidgetRGCmosaic, 'centers', maxSpikeRate, ...
-           sprintf('%2.1fcpdResponse', spatialFrequenciesCPD(sfIndex)), LMScontrast, [], labelCells, ...
+           superimposedRetinalStimulus, ....
+           figureName, LMScontrast, [], labelCells, ...
            exportFig, figExportsDir);
     end
     
     % Visualize the response tuning of each RGC at the RGC's location
     exportFig = true;
-    visualizeRGCmosaicWithResponses(1000, theConeMosaic, 'log', 'SFtuning', ...
+    superimposedRetinalStimulus = [];
+    plotXaxisScaling = 'log';
+    plotType = 'SFtuning';
+    figureName = 'SFtuningAll';
+    visualizeRGCmosaicWithResponses(1000, theConeMosaic, plotXaxisScaling, plotType, ...
                 spatialFrequenciesCPD, responseAmplitude, ...
                 spatialFrequenciesCPDHR, responseAmplitudeHR, ...
                 runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
                 theMidgetRGCmosaic, 'centers', maxSpikeRatModulation, ...
-                'SFtuningAll', LMScontrast, [], labelCells, ...
-                 exportFig, figExportsDir);
+                superimposedRetinalStimulus, ....
+                figureName, LMScontrast, [], labelCells, ...
+                exportFig, figExportsDir);
             
     for iTargetRGC = 1:numel(targetRGCs)
-        visualizeRGCmosaicWithResponses(1000+targetRGCs(iTargetRGC), theConeMosaic, 'log', 'SFtuning', ...
-                    spatialFrequenciesCPD, responseAmplitude, ...
-                    spatialFrequenciesCPDHR, responseAmplitudeHR, ...
-                    runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-                    theMidgetRGCmosaic,  'centers', maxSpikeRatModulation, ...
-                    sprintf('SFtuning%d', targetRGCs(iTargetRGC)), LMScontrast, targetRGCs(iTargetRGC), false, ...
-                    exportFig, figExportsDir);
+        figureName = sprintf('SFtuning%d', targetRGCs(iTargetRGC));
+
+        visualizeRGCmosaicWithResponses(1000+targetRGCs(iTargetRGC), theConeMosaic, plotXaxisScaling, plotType, ...
+                spatialFrequenciesCPD, responseAmplitude, ...
+                spatialFrequenciesCPDHR, responseAmplitudeHR, ...
+                runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
+                theMidgetRGCmosaic,  'centers', maxSpikeRatModulation, ...
+                visualizedRetinalStimulus, ...
+                figureName, LMScontrast, targetRGCs(iTargetRGC), false, ...
+                exportFig, figExportsDir);
     end
     
     % Visualize the mosaics
@@ -233,15 +257,6 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
     tauC = 25/1000;
     surroundIR = exp(-t/tauC);
     surroundIR = surroundIR/sum(surroundIR);
-    
-    for iRGC = 1:rgcsNum
-            % The RGC's weights
-            iRGCweightsC = full(squeeze(weightsC(:,iRGC)));
-            iRGCweightsS = full(squeeze(weightsS(:,iRGC)));
-            iRatio(iRGC) = sum(iRGCweightsS(:))/sum(iRGCweightsC(:));
-            fprintf(2,'RGC %d integrated S/C ratio from weights: %2.2f\n', iRGC, iRatio(iRGC));
-    end
-    fprintf(2, 'mean  integrated S/C ratio from weights: %2.2f\n', mean(iRatio));
     
     for instanceIndex = 1:instancesNum
         % All presynaptic spatiotemporal responses for this instance
