@@ -90,104 +90,11 @@ properties (GetAccess=public, SetAccess=public)
     %   le grand, and arizona eye model.
     modelName;
     
-    % resolution - resolution of render (pixels)
-    %   Instead of rows/cols we use a general resolution variable. This
-    %   is because the eye model can only take equal rows and columns
-    %   and the rendered image is always square.
-    % resolution;
-
-    % fov - Field of view of the render in degrees
-    %   This value is calculated from the retina distance and the
-    %   retina size. This is only a close approximation since the
-    %   retina is very slightly curved.
-    % fov;
-
-    % accommodation - Diopters of accommodation for 550 nm light
-    %   We change the properties of the lens to match the desired
-    %   accommodation. For example, if we set this to 5 diopters, 550
-    %   nm rays from 0.2 meters will be in focus on the retina.
-    %
-    % Remember to re-write the at least Navarro lens file when you change
-    % the accommodation.
-    %
-    % accommodation;
-
-    % eccentricity - [Currently not implemented!] Horizontal and vertical
-    %   angles on the retina corresponding to the center of the rendered
-    %   image. Positive angles are to the right/up (from the eye's point of
-    %   view) and negative angles are to the left/down. For example, an
-    %   image with [0 0] eccentricity is centered on the center of the
-    %   retina. An image with [30 0] eccentricity is centered 30 degrees to
-    %   the right of the center of the retina.
-    % eccentricity;
-
-    % pupilDiameter - Diameter of the pupil (mm)
-    % pupilDiameter;
-
-    %retinaRadius - The curvature of the retina in mm
-    %   If one imagines the retina as asection of a sphere, this radius
-    %   value determines the distance from the edge of the sphere to
-    %   its center. We will not change this most of the time, but
-    %   sometimes it is helpful to make the retina very flat in order
-    %   to measure certain properties of the eye.
-    % retinaRadius;
-
-    % retinaDistance - Distance between the back lens and the retina
-    %   We will not change this most of the time, but sometimes it is
-    %   helpful to move the retina back and forth, like a camera
-    %   sensor, to see things affects like chromatic aberration.
-    % retinaDistance;
-
-    % numRays - Number of rays to shoot per pixel.
-    %   This determines the quality of the render and affects the time
-    %   spent rendering. This should be a factor of 2. Low quality is
-    %   typically 64 or256 rays, high quality is typically 2048 or 4096
-    %   rays.
-    % numRays;
-
-    % numBounces - Number of bounces before ray terminates
-    %   This also determines how accurately light is modeled in the
-    %   rendering. The amount needed is highly scene dependent.
-    %   Typically set to 1 for simple, diffuse scenes. A high value
-    %   would be 4-8 for scenes with lots of reflections, caustics, or
-    %   glassy materials.
-    % numBounces;
-
-    % numCABands - Number of wavelength samples to take when modeling CA
-    %   We shoot extra rays of different wavelengths in order to model
-    %   chromatic aberration through the lens system. When debugging, this
-    %   can be set to 0 but for the final render it should be something
-    %   like 8 or 16. (e.g. If you set it to 8, then we will shoot rays for
-    %   wavelengths of linspace(400, 700, 8).);
-    % numCABands;
-
-    % eyePos - Position of the eye within the scene in [x y z] format
-    %   [x y z]
-    % eyePos;
-
-    % eyeTo - Point where the eye is looking at
-    %   [x y z], the difference between eyeTo and eyePos is the
-    %   direction vector that the optical axis is aligned with.
-    % eyeTo;
-
-    % eyeUp - Up vector used when building the LookAt transform
-    %   [x y z], this is typically [0 0 1] but it depends on how the
-    %   eye is oriented. For example, if this was [0 0 -1] the eye
-    %   would be "upside down." Some values are not valid, for example
-    %   if the eye is looking down the z-axis (eyePos = [0 0 0], eyeTo
-    %   = [0 0 1]) then the up vector cannot be [0 0 1].
-    % eyeUp;
-    
-    % diffractionEnabled Toggle diffraction. When it diffraction simulation
-    %   is enabled, PBRT will use HURB to simulate the effect of
-    %   diffraction. May cause slow-downs.  In the recipe, not here.
-    % diffractionEnabled;
-    
     % USEPINHOLE - a debugging mode
     %   For debug mode we switch to a pinhole camera with the same
     %   FOV as the eye. This can be potentially faster and easier to
     %   render than going through the eye.
-    usePinhole;
+    usePinhole = false;
     
     %RECIPE Structure that holds all other instructions needed for the
     %renderer
@@ -197,17 +104,9 @@ properties (GetAccess=public, SetAccess=public)
     % often.
     recipe;
     
-    % LENSFILE - Path to the .dat file that describes the lens system
-    %   This file includes descriptions of the thickness, curvature, 
-    %   and diameter of the various components in the eye. This is usually
-    %   written out automatically in the "write" function for sceneEye
-    %   (which is called during sceneEye.render). However, you can also
-    %   attach a custom file. 
-    % lensFile;
-    
     % LENSDENSITY - Lens pigment density. Equivalent to lens density in the
     % Lens class for ISETBio (non-3D calculations).
-    lensDensity;
+    lensDensity = 1;
     
 end
 
@@ -233,38 +132,17 @@ properties (Dependent)
 end
 
 properties(GetAccess=public, SetAccess=private)
-
-    % pbrtFile - Path to the original .pbrt file this scene is based on
-    %   Depends on the pbrt file used to create the scene. Should not
-    %   be changed.
-    % pbrtFile;
-
-    % workingDir - Directory to store temp files needed for rendering
-    %   We make a copy of the scene into the working directory, and
-    %   then output new PBRT files into this directory. We also save
-    %   the raw rendered data (xxx.dat) in this folder.
-    % workingDir;
-    
-    %MMUNITS Some scenes are in units of meters, some in units of millimeters.
-    %   We keep of track of this here so we can pass the correct parameter
-    %   to PBRT.  This was moved into the recipe (BW).
-    % mmUnits;
       
 end
 
 properties(GetAccess=public, SetAccess=public, Hidden=true)
     
-    %DISTANCE2CHORD This is used in intermediate calculations and is an
-    %   important variable when we are doing calculations at wide angles.
-    %   This is equivalent to the distance "a" shown in the diagram in
-    %   get.width
-    distance2chord;
 
 end
 
 properties (Constant)
     % wave - In PBRT we samples from 400 to 700 nm in 31 intervals
-    wave = linspace(400, 700, 31); % nm
+    % wave = linspace(400, 700, 31); % nm
 
 end
 
@@ -278,25 +156,14 @@ methods
         % using the PBRT methods (docker image).
 
         if ~exist('pbrtFile','var'), pbrtFile = ''; end
-        
-        % pbrtFile: Either a pbrt file or just a scene name
-        % p.addRequired('pbrtFile', @ischar);
-        
-        % Parse
-        % p.parse(pbrtFile, varargin{:});
-        
-        % Setup the pbrt scene and recipe
+         
+        % Setup the pbrt scene recipe
         if isempty(pbrtFile),  obj.recipe = recipe;
         else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
         end
-        obj.set('name',obj.get('input basename'));
         
-        %{
-        % The original method used this complicated function to load the 
-        % scene file and set these fields. 
-        [thisR, obj.sceneUnits, obj.workingDir, obj.pbrtFile]  = ...
-           loadPbrtScene(pbrtFile, varargin);
-        %}
+        % Assign this object the basename of the input file
+        obj.set('name',obj.get('input basename'));
         
         % Make sure the recipe specifies realistic eye.  That camera has
         % the parameters needed to model the human.  Note:  realisticEye
@@ -304,15 +171,7 @@ methods
         % disp('Setting Navarro model default');
         obj.set('camera',piCameraCreate('humaneye','lens file','navarro.dat'));
         obj.modelName = 'navarro'; % Default
-        
-        % Default settings that are special to the sceneEye.  Everything
-        % else is really part of the thisR (the rendering recipe).
-        
-        obj.usePinhole = false;
-        % obj.diffractionEnabled = false;  In the recipe.
-        % obj.eccentricity = [0 0];  Not yet implemented.
-        obj.lensDensity = 1.0;
-        
+                
     end
 
     %% Get methods for dependent variables
