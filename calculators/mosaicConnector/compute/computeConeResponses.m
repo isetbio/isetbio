@@ -4,13 +4,24 @@ function computeConeResponses(runParams, ...
     recomputeNullResponses, ...
     instancesNum, ...
     spatialFrequenciesCPD, ...
-    saveDir)
+    opticsPostFix, ...
+    saveDir, varargin)
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('saveCornealStimulusSequence', true, @islogical);
+    p.addParameter('saveRetinalStimulusSequence', true, @islogical);
+    p.parse(varargin{:});
+    saveCornealStimulusSequence = p.Results.saveCornealStimulusSequence;
+    saveRetinalStimulusSequence = p.Results.saveRetinalStimulusSequence;
     
     % Determine phase increment at each stimulus frame so as to get required temporal frequency with the
     % constraint that the frame duration is evenly divisible by cone mosaic integration time
     [stimSpatialParams.deltaPhaseDegs, stimTemporalParams.temporalFrequencyHz] = ...
         computeDeltaPhaseDegs(stimTemporalParams.temporalFrequencyHz, theConeMosaic.integrationTime);
+    
+    % Whether to display plots of the generated scene and optical image
+    debugStimulusGeneration = false;
     
     if (recomputeNullResponses)
         % Compute the null (zero contrast, no-noise responses)
@@ -21,9 +32,11 @@ function computeConeResponses(runParams, ...
         wavelengthSampling = theConeMosaic.pigment.wave;
         [theNullSceneFrames, presentationDisplay] = generateStimulusFrames(nullColor, stimSpatialParams, wavelengthSampling);
         
-        % Generate the stimulus SRGBsequence
-        [theStimulusSRGBsequence, ~, theStimulusLMSexcitationsSequence, ...
-            stimulusSpatialSupportDegs, stimulusSpatialSupportMicrons] = extractSRGBsequence(theNullSceneFrames, presentationDisplay, theConeMosaic.qe);
+        if (saveCornealStimulusSequence)
+            % Generate the stimulus SRGBsequence
+            [theStimulusSRGBsequence, ~, theStimulusLMSexcitationsSequence, ...
+                stimulusSpatialSupportDegs, stimulusSpatialSupportMicrons] = extractSRGBsequence(theNullSceneFrames, presentationDisplay, theConeMosaic.qe);
+        end
         
         % Generate the corresponding optical image sequence
         fprintf('\nComputing the NULL oiSequence ...');
@@ -72,23 +85,24 @@ function computeConeResponses(runParams, ...
         % Save the data
         fprintf('\nExporting the NULL responses ...');
         tic
-        % Extract the RGB sequence of optical images and LMS excitation images
-        [theOISRGBsequence, ~, theRetinalLMSexcitationsSequence, ...
-            retinalSpatialSupportDegs, retinalSpatialSupportMicrons] = extractSRGBsequence(theOIsequence, presentationDisplay, theConeMosaic.qe);
+        
+        if (saveRetinalStimulusSequence)
+            % Extract the RGB sequence of optical images and LMS excitation images
+            [theOISRGBsequence, ~, theRetinalLMSexcitationsSequence, ...
+                retinalSpatialSupportDegs, retinalSpatialSupportMicrons] = extractSRGBsequence(theOIsequence, presentationDisplay, theConeMosaic.qe);
+        end
         
         % Extract the stimulus and response time axes
         stimulusTimeAxis = theOIsequence.timeAxis;
         responseTimeAxis = theConeMosaic.timeAxis;
         
+        % Assemble the null response filename
+        theNullResponseFileName = nullResponseFilename(runParams, opticsPostFix);
+        
         % Save the null responses, and the photocurrent impulse responses/mean currents
-        save(fullfile(saveDir, nullResponseFilename(runParams)), ...
+        save(fullfile(saveDir, theNullResponseFileName), ...
              'stimColor', 'stimTemporalParams', 'stimSpatialParams', ...
-             'theStimulusSRGBsequence', ...
-             'theStimulusLMSexcitationsSequence', ...
-             'theOISRGBsequence', ...
-             'theRetinalLMSexcitationsSequence', ...
-             'stimulusSpatialSupportDegs', 'stimulusSpatialSupportMicrons', ...
-             'retinalSpatialSupportDegs', 'retinalSpatialSupportMicrons', ...
+             'saveCornealStimulusSequence', 'saveRetinalStimulusSequence ', ...
              'isomerizationsNull', ...
              'photocurrentsNull', ...
              'responseTimeAxis', ...
@@ -96,8 +110,32 @@ function computeConeResponses(runParams, ...
              'osImpulseResponseFunctions', ...
              'osMeanCurrents', ...
              '-v7.3');
+         
+         % Append corneal stimulus sequence
+         if (saveCornealStimulusSequence)
+             save(fullfile(saveDir, theNullResponseFileName), ...
+                'theStimulusSRGBsequence', ...
+                'theStimulusLMSexcitationsSequence', ...
+                'stimulusSpatialSupportDegs', 'stimulusSpatialSupportMicrons', ...
+                '-append');
+         end
+         
+         % Append retinal stimulus sequence
+         if (saveRetinalStimulusSequence)
+             save(fullfile(saveDir, theNullResponseFileName), ...
+                'theOISRGBsequence', ...
+                'theRetinalLMSexcitationsSequence', ...
+                'retinalSpatialSupportDegs', 'retinalSpatialSupportMicrons', ...
+                '-append');
+         end
+         
          fprintf('Done in %2.1f minutes\n', toc/60);
+         
+         % Clear some space from memory
          clear('theStimulusRGBsequence');
+         clear('theStimulusLMSexcitationsSequence');
+         clear('theOISRGBsequence');
+         clear('theRetinalLMSexcitationsSequence');
          clear('isomerizationsNull');
          clear('photocurrentsNull');
          clear('theOIsequence')
@@ -105,7 +143,7 @@ function computeConeResponses(runParams, ...
         fprintf('\nLoading null responses ...');
         tic
         % Load the photocurrent impulse responses and mean currents
-        load(fullfile(saveDir, nullResponseFilename(runParams)), ...
+        load(fullfile(saveDir, nullResponseFilename(runParams, opticsPostFix)), ...
              'osImpulseResponseFunctions', ...
              'osMeanCurrents');
          fprintf('Done in %2.1f minutes\n', toc/60);
@@ -119,24 +157,20 @@ function computeConeResponses(runParams, ...
         
         % Generate the test (spatial frequency) stimulus frame scene sequence
         wavelengthSampling = theConeMosaic.pigment.wave;
-        [theSceneFrames, presentationDisplay, sceneLuminanceSlice] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling);
+        [theSceneFrames, presentationDisplay] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling);
         
-        % Generate the stimulus SRGBsequence
-        [theStimulusSRGBsequence,~, theStimulusLMSexcitationsSequence, ...
-            stimulusSpatialSupportDegs, stimulusSpatialSupportMicrons] = extractSRGBsequence(theSceneFrames, presentationDisplay, theConeMosaic.qe);
-        
-        figure(4000);
-        subplot(3,5,sfIndex)
-        imagesc(sceneLuminanceSlice);
-        set(gca, 'CLim', [0 100]);
-        maxSceneLuminance(sfIndex) = max(sceneLuminanceSlice(:));
+        if (debugStimulusGeneration) || (saveCornealStimulusSequence)
+            % Generate the stimulus SRGBsequence
+            [theStimulusSRGBsequence, sceneLuminanceSlice, theStimulusLMSexcitationsSequence, ...
+                stimulusSpatialSupportDegs, stimulusSpatialSupportMicrons] = extractSRGBsequence(theSceneFrames, presentationDisplay, theConeMosaic.qe);
 
-        subplot(3,5,15);
-        plot(spatialFrequenciesCPD(1:sfIndex), maxSceneLuminance(1:sfIndex), 'ks-');
-        ylabel('scene luminance');
-        xlabel('c/deg');
-        set(gca, 'XLim', [0 100], 'XScale', 'log');
-        colormap(gray);
+            if (debugStimulusGeneration)
+                sceneLuminanceRange = [0 100];
+                maxSceneLuminance = updateStimulusDebugFigure(4000, sceneLuminanceSlice, sceneLuminanceRange, ...
+                    spatialFrequenciesCPD, maxSceneLuminance, sfIndex, 'scene luminance');
+            end
+        end
+        
         
         % Generate the corresponding optical image sequence
         fprintf('\nComputing the %2.1f c/deg, [%2.2f %2.2f %2.2f] LMS %2.1f-second stimulus oiSequence ...', ...
@@ -165,39 +199,54 @@ function computeConeResponses(runParams, ...
             'meanCur', osMeanCurrents, ...                     % employ mean photocurrents from null response
             'currentFlag', true);
         fprintf('Done in %2.1f minutes!\n', toc/60);
-    
+        
         % Save data
         fprintf('\nExporting the %2.1f c/deg responses ...', stimSpatialParams.gaborSpatialFrequencyCPD);
         tic
-        % Extract the RGB sequence of optical images and LMS excitation images
-        [theOISRGBsequence, retinalIlluminanceSlice, theRetinalLMSexcitationsSequence, ...
-            retinalSpatialSupportDegs, retinalSpatialSupportMicrons] = extractSRGBsequence(theOIsequence, presentationDisplay, theConeMosaic.qe);
-       
         
-        figure(6000);
-        subplot(3,5,sfIndex)
-        imagesc(retinalIlluminanceSlice);
-        set(gca, 'CLim', [1 2]);
-        maxRetinalIlluminance(sfIndex) = max(retinalIlluminanceSlice(:));
-        subplot(3,5,15);
-        plot(spatialFrequenciesCPD(1:sfIndex), maxRetinalIlluminance(1:sfIndex), 'ks-');
-        ylabel('retinal illuminance');
-        xlabel('c/deg');
-        set(gca, 'XLim', [0.1 60], 'XScale', 'log');
-        colormap(gray);
+        if (debugStimulusGeneration) || (saveRetinalStimulusSequence)
+            % Extract the RGB sequence of optical images and LMS excitation images
+            [theOISRGBsequence, retinalIlluminanceSlice, theRetinalLMSexcitationsSequence, ...
+                retinalSpatialSupportDegs, retinalSpatialSupportMicrons] = extractSRGBsequence(theOIsequence, presentationDisplay, theConeMosaic.qe);
+
+            if (debugStimulusGeneration)
+                retinalIlluminanceRange = [1 2];
+                maxRetinalIlluminance = updateStimulusDebugFigure(6000, retinalIlluminanceSlice, retinalIlluminanceRange, ...
+                    spatialFrequenciesCPD, maxRetinalIlluminance, sfIndex, 'retinal illuminance');
+            end
+        end
         
-        save(fullfile(saveDir,sprintf('%s_%2.1fCPD.mat',testResponseFilename(runParams, stimColor.lmsContrast), stimSpatialParams.gaborSpatialFrequencyCPD)), ...
+        % Assemble the test response filename
+        theTestResponseFileName = sprintf('%s_%2.1fCPD.mat',testResponseFilename(runParams, stimColor.lmsContrast, opticsPostFix), stimSpatialParams.gaborSpatialFrequencyCPD);
+        
+        save(fullfile(saveDir,theTestResponseFileName), ...
             'stimColor', 'stimTemporalParams', 'stimSpatialParams', ...
-            'theStimulusSRGBsequence', ...
-            'theStimulusLMSexcitationsSequence', ...
+            'saveCornealStimulusSequence', 'saveRetinalStimulusSequence ', ...
             'theOISRGBsequence', ...
             'theRetinalLMSexcitationsSequence', ...
-            'stimulusSpatialSupportDegs', 'stimulusSpatialSupportMicrons', ...
             'retinalSpatialSupportDegs', 'retinalSpatialSupportMicrons', ...
             'isomerizations', ...
             'photocurrents', ...
             '-v7.3');
         
+        % Append corneal stimulus sequence
+        if (saveCornealStimulusSequence)
+            save(fullfile(saveDir, theTestResponseFileName), ...
+                'theStimulusSRGBsequence', ...
+                'theStimulusLMSexcitationsSequence', ...
+                'stimulusSpatialSupportDegs', 'stimulusSpatialSupportMicrons', ...
+                '-append');
+        end
+        
+        % Append retinal stimulus sequence
+        if (saveRetinalStimulusSequence)
+            save(fullfile(saveDir, theTestResponseFileName), ...
+                'theOISRGBsequence', ...
+                'theRetinalLMSexcitationsSequence', ...
+                'retinalSpatialSupportDegs', 'retinalSpatialSupportMicrons', ...
+                '-append');
+        end
+         
         fprintf('Done in %2.1f minutes!\n', toc/60);
         clear('theStimulusSRGBsequence');
         clear('isomerizations');
@@ -207,7 +256,9 @@ function computeConeResponses(runParams, ...
     end % sfIndex
 end
 
-function [theSRGBsequence, theSlices, theLMSexcitationsSequence, spatialSupportDegs, spatialSupportMicrons] = extractSRGBsequence(theSequence, presentationDisplay, coneQuantalEfficiencies)
+function [theSRGBsequence, theSlices, theLMSexcitationsSequence, spatialSupportDegs, spatialSupportMicrons] = ...
+    extractSRGBsequence(theSequence, presentationDisplay, coneQuantalEfficiencies)
+
     displaySPDs = displayGet(presentationDisplay, 'spd'); 
     
     if (isa(theSequence, 'oiArbitrarySequence'))
@@ -220,8 +271,7 @@ function [theSRGBsequence, theSlices, theLMSexcitationsSequence, spatialSupportD
         theSRGBsequence = zeros(framesNum , size(retinalIlluminanceImage,1), size(retinalIlluminanceImage,2), 3, 'uint8');
         theLMSexcitationsSequence = zeros(framesNum, size(retinalIlluminanceImage,1), size(retinalIlluminanceImage,2), 3, 'single');
         theSlices = zeros(framesNum, size(retinalIlluminanceImage,2), 'single');
-       
-
+        
         % Extract sequences
         for k = 1:framesNum
             theOI = theSequence.frameAtIndex(k);
@@ -297,5 +347,20 @@ function [theSRGBsequence, theSlices, theLMSexcitationsSequence, spatialSupportD
         end
          
     end
-    
 end
+
+function maxSlice = updateStimulusDebugFigure(figNo, theSlices, theSlicesRange, spatialFrequenciesCPD, maxSlice, sfIndex, yAxisLabel)
+     figure(figNo);
+     subplot(3,5,sfIndex)
+     imagesc(theSlices);
+     set(gca, 'CLim', theSlicesRange);
+     maxSlice(sfIndex) = max(theSlices(:));
+
+     subplot(3,5,15);
+     plot(spatialFrequenciesCPD(1:sfIndex), maxSlice(1:sfIndex), 'ks-');
+     ylabel(yAxisLabel);
+     xlabel('c/deg');
+     set(gca, 'XLim', [0.1 70], 'XScale', 'log');
+     colormap(gray);
+end
+

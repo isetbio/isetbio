@@ -1,4 +1,4 @@
-function [theSceneFrames, presentationDisplay, sceneLuminanceSlice] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling)
+function [theSceneFrames, presentationDisplay] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling)
 
     % Generate the presentation display
     presentationDisplay = generatePresentationDisplay('wave', wavelengthSampling);
@@ -57,10 +57,6 @@ function [theSceneFrames, presentationDisplay, sceneLuminanceSlice] = generateSt
         % Add to the list of frames
         theSceneFrames{spatialPhaseIndex} = theScene;
            
-        % Get the scene luminance
-        luminanceImage = sceneGet(theScene, 'luminance');
-        sceneLuminanceSlice(spatialPhaseIndex,:) = squeeze(luminanceImage(round(size(luminanceImage,1)/2),:));
-        
         validateScene = ~true;
         if (validateScene)
             % Compute different scene representations for validation and visualization purposes

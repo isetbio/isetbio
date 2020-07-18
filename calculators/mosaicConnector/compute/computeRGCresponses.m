@@ -3,7 +3,13 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     targetRGCs, saveDir, figExportsDir, visualizeAllSpatialFrequencyTuningCurves, visualizeResponseComponents)
     
     % Load the null presynaptic responses
-    mFile = matfile(fullfile(saveDir,nullResponseFilename(runParams)), 'Writable', false);
+    % Assemble the null response filename
+    [~, ~, opticsPostFix] = mosaicsAndOpticsFileName(runParams);
+    theNullResponseFileName = nullResponseFilename(runParams, opticsPostFix);
+        
+    % Open data file for read-only
+    
+    mFile = matfile(fullfile(saveDir,theNullResponseFileName), 'Writable', false);
     switch presynapticSignal
         case 'isomerizations'
             theNullPresynapticResponses = mFile.isomerizationsNull;
@@ -31,8 +37,12 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     % Compute the RGC responses
     for sfIndex = 1:numel(spatialFrequenciesCPD)
         gaborSpatialFrequencyCPD = spatialFrequenciesCPD(sfIndex);
-        dataFile = fullfile(saveDir, sprintf('%s_%2.1fCPD.mat',testResponseFilename(runParams, LMScontrast), gaborSpatialFrequencyCPD));
-        mFile = matfile(dataFile, 'Writable', false);
+        
+        % Assemble the test response filename
+        theTestResponseFileName = sprintf('%s_%2.1fCPD.mat',testResponseFilename(runParams, LMScontrast, opticsPostFix), gaborSpatialFrequencyCPD);
+        
+        % Open data file for read-only
+        mFile = matfile(fullfile(saveDir, theTestResponseFileName), 'Writable', false);
         
         if (sfIndex == visualizedRetinalSFindex)
             frameIndex = 5;      

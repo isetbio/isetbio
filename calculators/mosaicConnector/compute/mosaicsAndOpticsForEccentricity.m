@@ -1,4 +1,4 @@
-function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir)
+function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir)
 
     % Params for the connected mRGC mosaic
     mosaicParams.rgcMosaicPatchEccMicrons = runParams.rgcMosaicPatchEccMicrons;
@@ -14,6 +14,10 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
     end
         
     tic  
+    
+    % Compute filenames for mosaics and optics
+    [mosaicsFilename, opticsFilename, opticsPostFix] = mosaicsAndOpticsFileName(runParams);
+     
     if (recomputeMosaicAndOptics)
         fprintf('\nComputing mosaics and optics ...');
         % Location of file with the full (50 x 50 deg) ecc-based mRGCRF lattice
@@ -29,22 +33,25 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEcc
             theConeMosaic.pigment.wave, mosaicParams.rgcMosaicPatchEccMicrons);
         
         % Save mosaic and optics
-        save(fullfile(saveDir,mosaicsAndOpticsFileName(runParams)), 'theConeMosaic', 'theMidgetRGCmosaic', 'theOptics');
+        save(fullfile(saveDir,mosaicsFilename), 'theConeMosaic', 'theMidgetRGCmosaic');
+        save(fullfile(saveDir,opticsFilename),'theOptics');
         
     elseif (recomputeOpticsOnly)
         % Load previously generated mosaic
         fprintf('\nLoading previously-generated mosaics ...');
-        load(fullfile(saveDir,mosaicsAndOpticsFileName(runParams)), 'theConeMosaic', 'theMidgetRGCmosaic');
+        load(fullfile(saveDir,mosaicsFilename), 'theConeMosaic', 'theMidgetRGCmosaic');
         
         fprintf('\nComputing new optics with noLCA flag: %d and noOptics flag: %d\n', runParams.noLCA, runParams.noOptics);
         [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(runParams.PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
             theConeMosaic.pigment.wave, mosaicParams.rgcMosaicPatchEccMicrons);
         
         % Save mosaic and optics
-        save(fullfile(saveDir,mosaicsAndOpticsFileName(runParams)), 'theConeMosaic', 'theMidgetRGCmosaic', 'theOptics');
+        save(fullfile(saveDir,opticsFilename),'theOptics');
+        
     else
         fprintf('\nLoading previously-generated mosaics & optics ...');
-        load(fullfile(saveDir,mosaicsAndOpticsFileName(runParams)), 'theConeMosaic', 'theMidgetRGCmosaic', 'theOptics')
+        load(fullfile(saveDir,mosaicsFilename), 'theConeMosaic', 'theMidgetRGCmosaic');
+        load(fullfile(saveDir,opticsFilename),'theOptics');
     end
 
     fprintf('Done in %2.1f minutes\n', toc/60);

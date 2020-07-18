@@ -13,7 +13,7 @@ function runPhaseX(runParams)
     % Load/Recompute connected mosaics and the optics
     recomputeMosaicAndOptics = true;
     recomputeOpticsOnly = true;
-    [theConeMosaic, theMidgetRGCmosaic, theOptics] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
+    [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
 
     displayPSFs = ~true;
     if (displayPSFs)
@@ -67,7 +67,10 @@ function runPhaseX(runParams)
             recomputeNullResponses, ...
             instancesNum, ...
             spatialFrequenciesCPD, ...
-            saveDir);
+            opticsPostFix, ...
+            saveDir, ...
+            'saveCornealStimulusSequence', true, ...
+            'saveRetinalStimulusSequence', true);
     else
         visualizeAllSpatialFrequencyTuningCurves = false;
         visualizeResponseComponents = ~true;
