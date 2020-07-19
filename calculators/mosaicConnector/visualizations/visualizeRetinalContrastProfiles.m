@@ -1,4 +1,4 @@
-function visualizeRetinalContrastSequence(theRetinalLMScontrastSequence, gaborSpatialFrequencyCPD, LMScontrast, figExportsDir)
+function visualizeRetinalContrastProfiles(theRetinalLMScontrastSequence, gaborSpatialFrequencyCPD, LMScontrast, figExportsDir)
         
     plotlabOBJ = setupPlotLab(0, 5, 6);
     hFig = figure(100); clf;

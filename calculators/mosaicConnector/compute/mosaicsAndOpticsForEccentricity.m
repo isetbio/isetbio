@@ -1,4 +1,4 @@
-function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir)
+function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir)
 
     % Params for the connected mRGC mosaic
     mosaicParams.rgcMosaicPatchEccMicrons = runParams.rgcMosaicPatchEccMicrons;
@@ -6,18 +6,11 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix] = mosaics
     mosaicParams.orphanRGCpolicy = runParams.orphanRGCpolicy;
     mosaicParams.maximizeConeSpecificity = runParams.maximizeConeSpecificity;
         
-    % Extract the Polans subjectID for the optics
-    runParams.PolansSubjectID = runParams.deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
-    if (numel(runParams.PolansSubjectID )>1)
-        runParams.PolansSubjectID = runParams.PolansSubjectID(1);
-        fprintf(2, 'deconvolutionOpticsParams indicates more than 1 subject being used to derive the deconvolution model. Will generate optics for the first of these subjects\n');
-    end
-        
     tic  
     
     % Compute filenames for mosaics and optics
-    [mosaicsFilename, opticsFilename, opticsPostFix] = mosaicsAndOpticsFileName(runParams);
-     
+    [mosaicsFilename, opticsFilename, opticsPostFix, PolansSubjectID] = mosaicsAndOpticsFileName(runParams);
+    
     if (recomputeMosaicAndOptics)
         fprintf('\nComputing mosaics and optics ...');
         % Location of file with the full (50 x 50 deg) ecc-based mRGCRF lattice
@@ -29,7 +22,7 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix] = mosaics
         
         % Compute the optics
         fprintf('\nComputing optics with noLCA flag: %d and noOptics flag: %d\n', runParams.noLCA, runParams.noOptics);
-        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(runParams.PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
+        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
             theConeMosaic.pigment.wave, mosaicParams.rgcMosaicPatchEccMicrons);
         
         % Save mosaic and optics
@@ -42,7 +35,7 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix] = mosaics
         load(fullfile(saveDir,mosaicsFilename), 'theConeMosaic', 'theMidgetRGCmosaic');
         
         fprintf('\nComputing new optics with noLCA flag: %d and noOptics flag: %d\n', runParams.noLCA, runParams.noOptics);
-        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(runParams.PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
+        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
             theConeMosaic.pigment.wave, mosaicParams.rgcMosaicPatchEccMicrons);
         
         % Save mosaic and optics
