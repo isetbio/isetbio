@@ -10,11 +10,11 @@ function runPhaseX(runParams)
     figExportsDir = strrep(fileparts(which(mfilename())), 'processing', 'exports');
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = true;
-    recomputeNullResponses = true;
+    recomputeConeMosaicResponses =~ true;
+    recomputeNullResponses = ~true;
     
     % Load/Recompute connected mosaics and the optics
-    recomputeMosaicAndOptics = true;
+    recomputeMosaicAndOptics = ~true;
     recomputeOpticsOnly = ~true;
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
 
@@ -27,18 +27,18 @@ function runPhaseX(runParams)
     % Stimulation parameters
     LMScontrast = [0.1 0.0 0.0];
     minSF = 0.1;
-    maxSF = 60;
-    spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),12);
+    maxSF = 100;
+    spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),15);
     
     stimulusFOVdegs = 2.0;
-    minPixelsPerCycle = 10;
+    minPixelsPerCycle = 8;
     stimulusPixelsNum = maxSF*stimulusFOVdegs*minPixelsPerCycle;
     temporalFrequency = 4.0;
     stimDurationSeconds = 0.5;
     instancesNum = 16;
     
     % Visualized cells
-    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [52]; %[3 14 52];
+    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [60]; %[3 14 52];
     
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
@@ -82,8 +82,7 @@ function runPhaseX(runParams)
         visualizeMeanConeMosaicResponseAsAMovie = false;
         visualizeRGCTemporalResponsesAtRGCPositions = false;
         visualizeRGCSFTuningsAtRGCPositions = true;
-        visualizePatchStatistics = false;
-        targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [];
+        visualizePatchStatistics = true;
         
         computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             rgcInputSignal, spatialFrequenciesCPD, LMScontrast, ...
@@ -94,7 +93,7 @@ function runPhaseX(runParams)
             visualizeRetinalContrasts, visualizeMeanConeMosaicResponseAsAMovie, ...
             targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, visualizePatchStatistics, ...
             'coVisualizeRetinalStimulusWithMosaics', coVisualizeRetinalStimulusWithMosaics, ...
-            'coVisualizedRetinalStimulusSpatialFrequency', 60, ...
+            'coVisualizedRetinalStimulusSpatialFrequency', 30, ...
             'coVisualizedRetinalStimulusConeContrast', LCONE_ID);
             
     end

@@ -17,12 +17,12 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
         line(axesHandle, spatialFrequenciesCPD(k)*[1 1], theSFtuning(k)+theSFtuningSE(k)*[-1 1], 'LineWidth', 1.5, 'Color', [0.3 0.3 0.3]); hold on;
     end
             
-    % Plot the mean points
-    scatter(axesHandle, spatialFrequenciesCPD, theSFtuning, 'MarkerEdgeColor', [0.3 0.3 0.3], 'MarkerFaceColor', [0.8 0.8 0.8]);
-    
     % Plot the model fit
     line(axesHandle, spatialFrequenciesCPDHR, responseTuningHR, 'Color', [1 0 0]);
-            
+    
+    % Plot the mean points
+    scatter(axesHandle, spatialFrequenciesCPD, theSFtuning); %, 'MarkerEdgeColor', [1 0.3 0.3], 'MarkerFaceColor', [0.8 0.8 0.8]);
+    
     % Set the axes
     axis(axesHandle, 'square');
     set(axesHandle, 'XScale', 'log', 'XLim', [0.03 101], 'XTick', [0.03 0.1 0.3 1 3 10 30], ...
@@ -30,7 +30,8 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     xlabel(axesHandle,'spatial frequency (c/deg)');
     ylabel(axesHandle, 'response modulation');
             
-    title(axesHandle,sprintf('RGC #%d,  c_{LMS} = (%0.1f, %0.1f, %0.1f)', targetRGC, LMScontrast(1), LMScontrast(2), LMScontrast(3)));
+    title(axesHandle, sprintf('RGC #%d, C_{LMS} = <%0.1f, %0.1f, %0.1f>', targetRGC, LMScontrast(1), LMScontrast(2), LMScontrast(3)), ...
+        'FontName', 'Source Code Pro', 'FontSize', 24);
     
     % Show the params of the fitted model
     if (~isempty(modelParams))
@@ -50,7 +51,7 @@ function plotlabOBJ = setupPlotLab(mode, figSize)
     if (mode == 0)
         plotlabOBJ = plotlab();
         plotlabOBJ.applyRecipe(...
-                'colorOrder', [0 0 0; 1 0 0], ...
+                'colorOrder', [1 0 0; 1 0 0], ...
                 'axesBox', 'off', ...
                 'axesTickDir', 'both', ...
                 'renderer', 'painters', ...
