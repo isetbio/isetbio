@@ -98,29 +98,53 @@ end
 methods
     % Constructor
     function obj = sceneEye(pbrtFile, varargin)
-        % Initialize the sceneEye class
+        % Initialize the sceneEye class.  Default human eye model is
+        % navarro.
+        %
+        %   thisSE = sceneEye;
+        %   thisSE = sceneEye('bedroom');
+        %   thisSE = sceneEye('bathroom','human eye','legrand');
         %
         % Reads a PBRT file and fills out the information needed
         % for the sceneEye object. That object will be rendered
         % using the PBRT methods (docker image).
 
         if ~exist('pbrtFile','var'), pbrtFile = ''; end
-         
+        varargin = ieParamFormat(varargin);
+
+        p = inputParser;
+        p.addRequired('pbrtfile',@(x)(isempty(x) || ischar(x)));
+        p.addParameter('humaneye','navarro',@ischar);
+        p.parse(pbrtFile,varargin{:});
+        
         % Setup the pbrt scene recipe
         if isempty(pbrtFile),  obj.recipe = recipe;
         else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
         end
         
+        switch lower(p.Results.humaneye)
+            case {'navarro'}
+                % Make sure the recipe specifies realistic eye.  That camera has
+                % the parameters needed to model the human.  Note:  realisticEye
+                % differs from realistic.
+                % disp('Setting Navarro model default');
+                obj.set('camera',piCameraCreate('humaneye','lens file','navarro.dat'));
+                obj.modelName = 'navarro'; % Default
+            case 'legrand'
+                obj.set('camera',piCameraCreate('humaneye','lens file','legrand.dat'));
+                obj.modelName = 'legrand'; % Default
+            case 'arizona'
+                obj.set('camera',piCameraCreate('humaneye','lens file','arizona.dat'));
+                obj.modelName = 'arizona'; % Default
+            otherwise
+                error('Unknown physiological optics model %s\n',varargin{1});
+        end
+        
+
+        
         % Assign this object the basename of the input file
         obj.set('name',obj.get('input basename'));
-        
-        % Make sure the recipe specifies realistic eye.  That camera has
-        % the parameters needed to model the human.  Note:  realisticEye
-        % differs from realistic.
-        % disp('Setting Navarro model default');
-        obj.set('camera',piCameraCreate('humaneye','lens file','navarro.dat'));
-        obj.modelName = 'navarro'; % Default
-                
+                        
     end
 
     %% Get methods for dependent variables

@@ -1,5 +1,7 @@
 function writeNavarroLensFile(A, filename)
-% Write out the Navarro lens file for a given accomodation
+% Deprecated:  Write out the Navarro lens file for a given accomodation
+%
+%    DEPRECATED:  Use the navarro* methods
 %
 % Syntax:
 %   writeNavarroLensFile(A, filename)

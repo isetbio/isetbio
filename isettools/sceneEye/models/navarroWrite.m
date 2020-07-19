@@ -1,8 +1,8 @@
-function navarroWrite(thisR)
-% Write the navarro lens and support IoR files in the output directory
+function filename = navarroWrite(thisR)
+% Write the navarro lens and support IoR files for a given accommodation
 %
 % Synopsis
-%    navarroWrite(thisR);
+%     filename = navarroWrite(thisR);
 %
 % Description
 %   The navarro.dat file and associated index of refraction files
@@ -13,13 +13,14 @@ function navarroWrite(thisR)
 %   small on the IOR.
 %
 % Input
-%  thisR:  The rendering recipe.  It should include an object distance.
+%  thisR:  The rendering recipe.  It should include the accommodation
+%          (1 / focus distance)
 %
 % Optional key/val pairs
 %   N/A
 %
 % Outputs
-%   N/A
+%   filename:  Lens file
 %
 % See also
 %   navarroLensCreate, navarroRefractiveIndices
@@ -35,10 +36,46 @@ function navarroWrite(thisR)
 wave = (400:10:800); % nm
 
 %% Writes out the navarro.dat file in the lens directory of the output
-lensFile = fullfile(thisR.get('lens dir output'),'navarro.dat');
-accom    = (1 / thisR.get('focal distance','m'));
+accom = (thisR.get('accommodation'));
+na    = navarroLensCreate(accom);  % Diopters
 
-navarroLensCreate(lensFile,'accommodation',accom);  % Diopters
+% Build matrix and set focal Length
+lensMatrix = [na.corneaA; na.corneaP; na.pupil; na.lensA; na.lensP];
+
+focalLength = 1 / (60.6061 + accom) * 10 ^ 3; % mm
+
+%% Set up the lens sub-directory
+
+lensDir = thisR.get('lens dir output');
+if ~exist(lensDir,'dir'), mkdir(lensDir); end
+lensFile = fullfile(lensDir,'navarro.dat');
+
+%% Do the writing
+fid = fopen(lensFile, 'w');
+
+str = sprintf('# Focal length (mm) \n');
+fprintf(fid, '%s', str);
+
+str = sprintf('%.3f\n', focalLength);
+fprintf(fid, '%s', str);
+
+str = sprintf(['# radiusX radiusY thickness materialIndex semiDiameter' ...
+    ' conicConstantX conicConstantY\n']);
+fprintf(fid, '%s', str);
+
+for ii = 1:size(lensMatrix, 1)
+    fprintf(fid, '%f\t%f\t%f\t%f\t%f\t%f\t%f\n', ...
+        lensMatrix(ii, 1), lensMatrix(ii, 2), lensMatrix(ii, 3), ...
+        lensMatrix(ii, 4), lensMatrix(ii, 5), lensMatrix(ii, 6), ...
+        lensMatrix(ii, 7));
+end
+
+str = sprintf('\n# Accommodation (Diopters) %f \n',accom);
+fprintf(fid, '%s', str);
+
+str = '# See navarroLensCreate.m for adjusting accommodation';
+fprintf(fid,'%s\n',str);
+fclose(fid);
 
 % The file should be there, so no warning should come from this.
 thisR.set('lens file',lensFile);
@@ -73,6 +110,6 @@ for ii=1:4
     thisR.set(str,filename);
 end
 
-fprintf('Wrote Navarro lens information with accommodation %f\n',accom);
+fprintf('Wrote Navarro lens information with accommodation %0.2f\n',accom);
 
 end

@@ -1,6 +1,8 @@
 function renderRecipe = writeLegrandLensFile(renderRecipe, workingFolder)
-% Write out the LeGrand lens file.
+% DEPRECATED:  Write out the LeGrand lens file.
 %
+%    DEPRECATED:  Use the legrand* methods
+
 % Syntax:
 %   writeLegrandLensFile(renderRecipe, workingFolder)
 %
