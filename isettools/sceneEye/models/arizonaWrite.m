@@ -30,7 +30,7 @@ function filename = arizonaWrite(thisR)
 %}
 
 %% Get the parameters given the accommodation
-wave = (400:10:800); % nm
+
 accommodation = thisR.get('accommodation');
 az = arizonaLensCreate(accommodation);
 
@@ -75,13 +75,8 @@ fclose(fid);
 
 thisR.set('lens file',filename);
 
-fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
 
-%% There were no specified Arizona IOR files
-%
-% I will write out the Navarro files
-
-%% Now write out the IoR files from Navarro for Arizona
+%% Now write out the IoR files for Arizona
 %
 % Waiting for TL comment
 
@@ -95,8 +90,7 @@ iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 % We assume the eye is accommodated to the object distance.  There is only
 % a very very small impact of accommodation until the object is very close
 % (less than 0.5 m).
-[cornea, aqueuous, lens, vitreous] = navarroRefractiveIndices(wave, accommodation);
-ior = [cornea(:),aqueuous(:), lens(:), vitreous(:)];
+[ior,wave] = arizonaRefractiveIndices(accommodation);
 
 % We will put these files next to the lens file (navarro.dat).
 nSamples = numel(wave);
@@ -113,6 +107,6 @@ for ii=1:4
     thisR.set(str,filename);
 end
 
-fprintf('Wrote Navarro IOR for Arizona\n');
+fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
 
 end

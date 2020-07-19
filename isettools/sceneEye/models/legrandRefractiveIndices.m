@@ -1,18 +1,22 @@
-function [ior,wave] = legrandRefractiveIndices
+function [ior,wave,txt] = legrandRefractiveIndices
 % Calculate the IOR for the LeGrand model
 %
 % Synopsis
-%   [ior,wave] = legrandRefractiveIndices
+%   [ior,wave,txt] = legrandRefractiveIndices
 %
 % Inputs
+%  N/A
 %
 % Optional key/val pairs
+%  N/A
 %
 % Outputs
-%   ior:
+%   ior:   Index of refraction from 400:10:800
+%   wave:  Wavelength samples
+%   txt:   {'cornea','aqeous','lens','vitreous'}
 %
 % See also
-%   legrandLensCreate; navarroLensCreate;
+%   legrandLensCreate; legrandWrte, navarroLensCreate;
 
 % Examples:
 %{
@@ -22,6 +26,7 @@ ieNewGraphWin; plot(wave,ior);
 
 %%
 wave = (400:10:800); % nm
+txt  = {'cornea','aqeous','lens','vitreous'};
 
 %% These are the index of refraction parameters
 
@@ -40,4 +45,4 @@ ior = n_inf + K ./ (wave - lambda_o);
 % Put them in the columns, not rows
 ior = ior';
 
-%%
+end

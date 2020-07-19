@@ -1,8 +1,8 @@
-function [cor, aqu, len, vit] = navarroRefractiveIndices(wave, accom)
+function  [ior,wave,txt] = navarroRefractiveIndices(accom)
 % Return the set of Navarro model index of refractions for an accommodation 
 %
 % Syntax:
-%   [cor, aqu, len, vit] = navarroRefractiveIndices(wave, accom)
+%   [ior,wave,txt] = navarroRefractiveIndices(wave, accom)
 %
 % Description:
 %    The the index of refraction in the Navarro model for the various
@@ -10,23 +10,16 @@ function [cor, aqu, len, vit] = navarroRefractiveIndices(wave, accom)
 %    calculates the IoR for the four elements of the model.
 %
 % Inputs:
-%    wave  - Array. A wavelengths vector in nm.
 %    accom - Numeric. Non-navarro accommodation, in diopters.
-%
-% Outputs:
-%    cor   - Array. An array of length(wave), of the refractive indices
-%            through the cornea.
-%    aqu   - Array. An array of length(wave), of the refractive indices
-%            through the aqueous solution.
-%    len   - Array. An array of length(wave), of the refractive indices
-%            through the lens.
-%    vit   - Array. An array of length(wave), of the refractive indices
-%            through the vitreous fluid.
 %
 % Optional key/value pairs:
 %    None.
 %
-% ieExamplesPrint('nvarraoRefractiveIndices');
+% Outputs:
+%    ior   - Matrix of length(wave), of the refractive indices
+%            through the cornea, aqueous, lens, vitreous
+%    wave   - Sample wavelengths (nm)
+%    txt   - {'cornea','aqeous','lens','vitreous'};
 %
 % See also
 %   navarro*
@@ -35,14 +28,21 @@ function [cor, aqu, len, vit] = navarroRefractiveIndices(wave, accom)
 % Examples:
 %{
   % Is the dependence on accommodation is worth any effort?
-  ieNewGraphWin; wave = 400:5:700; accDiopters = 1/10;
-  [cor, aqu, len, vit] = navarroRefractiveIndices(wave,accDiopters);
-  plot(wave,cor,'r-',wave,aqu,'g',wave,len,'b-',wave,vit,'k-'); 
+  accDiopters = 1/10;
+  [ior,wave] = navarroRefractiveIndices(accDiopters);
+  ieNewGraphWin; plot(wave,ior); 
+
   accDiopters = 1/0.4;
-  [cor, aqu, len, vit] = navarroRefractiveIndices(wave,accDiopters);
-  hold on; plot(wave,cor,'ro',wave,aqu,'go',wave,len,'bo',wave,vit,'ko'); 
+  [ior,~,txt] = navarroRefractiveIndices(accDiopters);
+  hold on; plot(wave,ior,'o'); 
   grid on;
+  txt
 %}
+
+%% Fixed variables
+
+wave = 400:10:800;
+txt  = {'cornea','aqeous','lens','vitreous'};
 
 %% Convert from Herzberger
 % Let's start by converting from the Herzberger coefficients described in
@@ -98,9 +98,14 @@ for i = 1:length(mediaNames)
         + a(i, 3) * L + a(i, 4) * L .^ 2;
 end
 
+% We used to return this.
+%{
 cor = RI_all(1, :);
 aqu = RI_all(2, :);
 len = RI_all(3, :);
 vit = RI_all(4, :);
+%}
+
+ior = RI_all'; % [cornea(:),aqueuous(:), lens(:), vitreous(:)];
 
 end

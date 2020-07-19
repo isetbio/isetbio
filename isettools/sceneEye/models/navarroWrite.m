@@ -32,8 +32,6 @@ function filename = navarroWrite(thisR)
   navarroWrite(thisR);
 %}
 
-%% Until we have another idea, we use this wave default as per TL
-wave = (400:10:800); % nm
 
 %% Writes out the navarro.dat file in the lens directory of the output
 accom = (thisR.get('accommodation'));
@@ -92,8 +90,7 @@ iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 % We assume the eye is accommodated to the object distance.  There is only
 % a very very small impact of accommodation until the object is very close
 % (less than 0.5 m).
-[cornea, aqueuous, lens, vitreous] = navarroRefractiveIndices(wave, accom);
-ior = [cornea(:),aqueuous(:), lens(:), vitreous(:)];
+[ior, wave]= navarroRefractiveIndices(accom);
 
 % We will put these files next to the lens file (navarro.dat).
 nSamples = numel(wave);
@@ -110,6 +107,6 @@ for ii=1:4
     thisR.set(str,filename);
 end
 
-fprintf('Wrote Navarro lens information with accommodation %0.2f\n',accom);
+fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accom);
 
 end

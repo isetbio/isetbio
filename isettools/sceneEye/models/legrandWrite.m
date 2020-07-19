@@ -81,10 +81,6 @@ end
 % Store the name
 thisR.set('lens file',filename);
 
-% Tell the user
-fprintf('Wrote out a new LeGrand lens file: \n')
-fprintf('%s \n \n', thisR.get('lens file'));
-
 %% Write out the IOR files in the same directory
 
 [ior,wave] = legrandRefractiveIndices;
@@ -105,4 +101,6 @@ for ii=1:4
     thisR.set(str,filename);
 end
         
+fprintf('Wrote lens file to %s\n',thisR.get('lensfile'));
+
 end
