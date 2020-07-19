@@ -1,8 +1,8 @@
 function renderRecipe = writeLegrandLensFile(renderRecipe, workingFolder)
-% Write out the Le Grand lens file.
+% Write out the LeGrand lens file.
 %
 % Syntax:
-%   writeLegrandLensFile(filename)
+%   writeLegrandLensFile(renderRecipe, workingFolder)
 %
 % Description:
 %    Write out the Le Grand theoreticl eye lens file. These values are
@@ -11,15 +11,23 @@ function renderRecipe = writeLegrandLensFile(renderRecipe, workingFolder)
 %    implement here.)
 %
 % Inputs:
-%    filename      - String. The filename to write to.
+%    renderRecipe  - ISET3d render @recipe
 %    workingFolder - String. The working directory file path.
-%
-% Outputs:
-%    renderRecipe  - Struct. The Recipe structure for the object.
 %
 % Optional key/value pairs:
 %    None.
 %
+% Outputs:
+%    renderRecipe  - The modified Recipe
+%
+% See also
+%  (BW fixed a lot of comments.  Started to add an example)
+
+% Examples:
+%{
+thisR = piRecipeDefault;
+writeLegrandLensFile(thisR,thisR.get('output dir'));
+%}
 
 % Columns are: radiusX, radiusY, thickness, materialIndex, semiDiameter,
 % conicConstantX, and conicConstantY

@@ -22,62 +22,13 @@ classdef sceneEye < hiddenHandle
 %    include retinal curvature, the index of refraction of the components
 %    of the eye, and so forth.
 %
-% Notes:
-%    * TODO - Implement the check that BW describes below. Is there a way
-%      to check inputs? For example, eyePos is not a dependent variable, 
-%      but is instead read in from the PBRT file. However, say the user
-%      wants to change the value in their script so they write:
-%           myScene = sceneEye('pbrtFile', xxx);
-%           myScene.eyePos = [x y z];
-%      Is there a way to ensure they put in a 3x1 vector for eyePos, other
-%      than just rigourous error checking in the code?
-%	 * [Note: BW - (Reference first TODO) Yes, I think so, using the
-%	   myScene.set('eyePos', val) approach, or perhaps myScene.set.eyePos =
-%	   val. In these cases the set operation can pass through an input
-%	   parser that validates the input value (I think).]
-%    * [Note: BW - maxDepth & nWaveBands are often empty, so let's perform
-%      the checks below. However, I should find a more permanant solution
-%      to cases like these. (See the note above). Maybe in
-%      piGetRenderRecipe we should put in the default values if any of
-%      these rendering options are missing (e.g. if Renderer is missing, 
-%      put in Renderer 'sampler'.)]
-%    * [Note: XXX - (from constructor) What happens if the recipe doesn't
-%      include any of the following, or any of the subfields we call?]
-%    * TODO - Determine a better way to infer the accommodation. Currently
-%      we assume the naming conventions is "%s_%f.dat" This is not
-%      foolproof, so maybe we can think of a more robust way to do this in
-%      the future?
-%    * [Note: TL - What does this hiddenHandle mean? I seem to need it to
-%      avoid errors.]
-%    * TODO - Fix example!
-%
 %    Dependencies: ISET3D
 %
 % See Also:
 %    
 
-% History:
-%    xx/xx/17  TL   ISETBIO Team, 2017
-%    12/19/17  jnm  Formatting
-%    08/08/19  JNM  Merge master in
-
 % Examples:
 %{
-    % ETTBSkip.  Skip this example in ETTB, since it is known not to work.
-    % When the example gets fixed, remove this line and the one above.
-
-    scene3d = sceneEye('chessSet');
-               
-    scene3d.fov = 30; 
-    scene3d.resolution = 128;
-    scene3d.numRays = 128;
-    scene3d.numCABands = 0;
-    scene3d.accommodation = 1; 
-
-    oi = scene3d.render();
-    ieAddObject(oi);
-    oiWindow;
-
 %}
 
 properties (GetAccess=public, SetAccess=public)
@@ -132,18 +83,16 @@ properties (Dependent)
 end
 
 properties(GetAccess=public, SetAccess=private)
-      
+  
 end
 
 properties(GetAccess=public, SetAccess=public, Hidden=true)
-    
 
 end
 
 properties (Constant)
     % wave - In PBRT we samples from 400 to 700 nm in 31 intervals
     % wave = linspace(400, 700, 31); % nm
-
 end
 
 methods
@@ -223,53 +172,6 @@ methods
     % This one should determine the field of view, partitioning a and b.
     %
     % x = retinaSemiDiam
-
-    
-    %{
-    function val = get.distance2chord(obj)
-        % Not entirely accurate but lets treat the origin point for the FOV
-        % calculate as the back of the lens
-        if(obj.retinaRadius > obj.retinaDistance)
-            error('Retina radius is larger than retina distance.')
-        end
-
-        myfun = @(a, k, d, r) sqrt(r^2-a.^2)./(d+a) - k;  % parameterized function
-        k = tand(obj.fov/2);
-        d = obj.retinaDistance - obj.retinaRadius;
-        r = obj.retinaRadius;
-
-        fun = @(a) myfun(a, k, d, r);    % function of x alone
-        a = fzero(fun, [d obj.retinaRadius]);
-
-        if(isnan(a))
-            error('Search for a image width to match FOV failed. Initial guess is probably not close...')
-        end
-
-        val = a+d;
-    end
-
-    function val = get.width(obj)
-        % Rendered image is alway square.
-        val = 2 * tand(obj.fov / 2) * (obj.distance2chord);
-    end
-
-    function val = get.height(obj)
-        % Rendered image is alway square.
-        val = obj.width;
-    end
-
-    function val = get.sampleSize(obj)
-        val = obj.width / obj.resolution;
-    end
-
-    function val = get.angularSupport(obj)
-       % We have to be careful with this calculation.
-       % Conver the chord distances to accurate angles.
-       ss = obj.sampleSize;
-       chordSpatialSamples = (1:obj.resolution).*ss - obj.width/2;
-       val = atand(chordSpatialSamples/obj.distance2chord);
-    end
-    %}
 
     % Get function for sceneEye. Returns derived parameters of the
     % sceneEye that require some computation
