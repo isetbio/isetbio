@@ -133,7 +133,8 @@ classdef coneMosaic < hiddenHandle
         current;
 
         %center - Center position of patch (x, y - meters)
-        %   This tells us where the mosaic is relative to the optical image
+        %   The mosaic center relative on the retina.  Used to set cone
+        %   aperture and density parameters
         center;
 
         %whichEye - String ('left' or 'right') to indicate which eye
@@ -316,10 +317,15 @@ classdef coneMosaic < hiddenHandle
             %    Listed above.
             %
             % Notes:
-            %    * TODO:  We should take eccentricity and angle as an input
-            %      parameter and create cones of the appropriate size for
-            %      that retinal location.
+            %    * TODO:  At present we take center (in meters) and compute
+            %    eccentricity and angle. We use that to figure out cone
+            %    aperture size and spacing. I wonder if we should take
+            %    eccentricity and angle as an input parameter and computer
+            %    center
             %
+            %    * TODO:  Use ieParamFormat to simplify naming and allow
+            %    spacing of the input arguments.
+            
             p = inputParser;
             p.KeepUnmatched = true;
             p.addParameter('name', 'cone mosaic', @ischar);
@@ -348,20 +354,20 @@ classdef coneMosaic < hiddenHandle
             p.parse(varargin{:});
 
             % Set properties
-            obj.name = p.Results.name;
+            obj.name    = p.Results.name;
             obj.pigment = p.Results.pigment;
             obj.macular = p.Results.macular;
 
-            obj.center = p.Results.center(:)';
+            obj.center   = p.Results.center(:)';
             obj.whichEye = p.Results.whichEye;
-            obj.wave = p.Results.wave;
-            obj.spatialDensity_ = p.Results.spatialDensity(:);
-            obj.integrationTime = p.Results.integrationTime;
-            obj.micronsPerDegree = p.Results.micronsPerDegree;
+            obj.wave     = p.Results.wave;
+            obj.spatialDensity_   = p.Results.spatialDensity(:);
+            obj.integrationTime   = p.Results.integrationTime;
+            obj.micronsPerDegree  = p.Results.micronsPerDegree;
             obj.coneDarkNoiseRate = [0 0 0];
-            obj.noiseFlag = p.Results.noiseFlag;
+            obj.noiseFlag   = p.Results.noiseFlag;
             obj.emPositions = p.Results.emPositions;
-            obj.useParfor = p.Results.useParfor;
+            obj.useParfor   = p.Results.useParfor;
             
             % Construct outersgement if not passed.
             if (isempty(p.Results.os))
@@ -393,10 +399,10 @@ classdef coneMosaic < hiddenHandle
                 'whichEye', obj.whichEye, ...
                 'useParfor', obj.useParfor);
 
-            obj.pigment.pdWidth = aperture;
+            obj.pigment.pdWidth  = aperture;
             obj.pigment.pdHeight = aperture;
-            obj.pigment.height = spacing;
-            obj.pigment.width = spacing;
+            obj.pigment.height   = spacing;
+            obj.pigment.width    = spacing;
 
             % See description of this parameter on the wiki page at
             % <https://github.com/isetbio/isetbio/wiki/

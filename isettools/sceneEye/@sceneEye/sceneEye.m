@@ -140,8 +140,6 @@ methods
                 error('Unknown physiological optics model %s\n',varargin{1});
         end
         
-
-        
         % Assign this object the basename of the input file
         obj.set('name',obj.get('input basename'));
                         
