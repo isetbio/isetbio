@@ -1,5 +1,5 @@
 function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRateModulation, ...
-    spatialFrequenciesCPDHR, responseTuningHR, modelParams, targetRGC, LMScontrast, exportFig, exportDir)
+    spatialFrequenciesCPDHR, responseTuningHR, modelParams, targetRGC, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir)
 
     % Reset figure
     if (isempty(axesHandle))
@@ -42,7 +42,8 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     drawnow;
     
     if (exportFig)
-        plotlabOBJ.exportFig(hFig, 'pdf', sprintf('SF_RGC_%d_LMS_%0.2f_%0.2f_%0.2f',targetRGC, LMScontrast(1), LMScontrast(2), LMScontrast(3)), exportDir);
+        pdfFileName = sprintf('SF_RGC_%d_LMS_%0.2f_%0.2f_%0.2f_PolansSID_%d_%s',targetRGC, LMScontrast(1), LMScontrast(2), LMScontrast(3), PolansSubjectID, opticsPostFix);
+        plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, exportDir);
         setupPlotLab(-1);
     end
 end

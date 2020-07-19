@@ -1,4 +1,4 @@
-function visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontrast, roiMcontrast, LMScontrast, figExportsDir)
+function visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontrast, roiMcontrast, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir)
     plotlabOBJ = setupPlotLab(0, 16, 12);
     hFig = figure(101); clf;
     
@@ -28,9 +28,9 @@ function visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontra
         text(ax,-0.09, 0.085,sprintf('%4.2f c/deg', spatialFrequenciesCPD(sfIndex)), 'FontSize',16);
     end
     drawnow;
-    exportFig = true;
     if (exportFig)
-        plotlabOBJ.exportFig(hFig, 'pdf', sprintf('RetinalLMContrastCorrelationAtDifferentSFs_LMS_%0.2f_%0.2f_%0.2f', LMScontrast(1), LMScontrast(2), LMScontrast(3)), figExportsDir);
+        pdfFileName = sprintf('RetinalLMContrastCorrelationAtDifferentSFs_LMS_%0.2f_%0.2f_%0.2f_PolansSID_%d_%s', LMScontrast(1), LMScontrast(2), LMScontrast(3), PolansSubjectID, opticsPostFix);
+        plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, figExportsDir);
     end
     setupPlotLab(-1);
     

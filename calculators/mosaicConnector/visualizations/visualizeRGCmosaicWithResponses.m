@@ -79,9 +79,9 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
             responseTuningHR = squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:));
             patchDogParams = {};
             visualizeSpatialFrequencyTuning(ax, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRate, ...
-                spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, targetRGC, LMScontrast, false, '');
+                spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, targetRGC, LMScontrast, opticsPostFix, PolansSubjectID, false, '');
         else
-            renderResponsePlotAtRFposition(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
+            renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
                 xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  targetRGC, false);
         end
         
@@ -103,7 +103,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
                 h*figHeightInches];
             
             ax = axes('Position', axesPosition, 'Color', [1 1 1]);
-            renderResponsePlotAtRFposition(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
+            renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
                 xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate, iRGC, labelCells);
         end
     end
@@ -116,7 +116,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     setupPlotLab(-1);
 end
 
-function  renderResponsePlotAtRFposition(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate, iRGC, labelCells)
+function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate, iRGC, labelCells)
     
     if (strcmp(xAxisScaling, 'log'))
         markerSize = 169;

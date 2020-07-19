@@ -1,5 +1,5 @@
 function  visualizeResponseComponentsForTargetRGC(targetRGC, responseTimeAxis, centerResponses, surroundResponses, ...
-    spatialFrequenciesCPD, maxSpikeRate, LMScontrast, figExportsDir)
+    spatialFrequenciesCPD, maxSpikeRate, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir)
 
     plotlabOBJ = setupPlotLab(0, 16, 12);
     hFig = figure(123); clf;
@@ -38,9 +38,9 @@ function  visualizeResponseComponentsForTargetRGC(targetRGC, responseTimeAxis, c
     end
     
     drawnow;
-    exportFig = true;
     if (exportFig)
-       plotlabOBJ.exportFig(hFig, 'pdf', sprintf('ResponseComponents_RGC_%2.0f_LMS_%0.2f_%0.2f_%0.2f', targetRGC, LMScontrast(1), LMScontrast(2), LMScontrast(3)), figExportsDir);
+       pdfFileName = sprintf('ResponseComponents_RGC_%2.0f_LMS_%0.2f_%0.2f_%0.2f_PolansSID_%d_%s', targetRGC, LMScontrast(1), LMScontrast(2), LMScontrast(3), PolansSubjectID, opticsPostFix);
+       plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, figExportsDir);
     end
     setupPlotLab(-1);
 end

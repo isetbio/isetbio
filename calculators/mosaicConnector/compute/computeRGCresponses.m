@@ -151,7 +151,8 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     end % sfIndex
     
     if (visualizeRetinalContrasts)
-        visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontrast, roiMcontrast, LMScontrast, figExportsDir)
+        visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontrast, roiMcontrast, ...
+            opticsPostFix, PolansSubjectID, true, figExportsDir);
     end
     
     % Compute mean over all instances integrated response. This is used
@@ -173,8 +174,9 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     labelCells = true;
     if (visualizeResponseComponents)
         for iTargetRGC = 1:numel(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves)
-             visualizeResponseComponentsForTargetRGC(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves(iTargetRGC), responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
-                spatialFrequenciesCPD, maxSpikeRate, LMScontrast, figExportsDir);  
+             visualizeResponseComponentsForTargetRGC(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves(iTargetRGC), ...
+                 responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
+                 spatialFrequenciesCPD, maxSpikeRate, LMScontrast, opticsPostFix, PolansSubjectID, true, figExportsDir);  
         end
     end
     
@@ -193,7 +195,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
                     responseTimeAxis, ...
                     stimTemporalParams.temporalFrequencyHz, ...
                     spatialFrequenciesCPD(sfIndex), maxSpikeRate, ...
-                    visualizeIndividualFits, LMScontrast, [], exportFig, figExportsDir);
+                    visualizeIndividualFits, [], LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
             otherwise
                 error('Unknown stimulus type: ''%''.', stimulusSpatialParams.type)
         end
@@ -206,25 +208,28 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     visualizeIndividualFits = false; exportFig = true;
     [~,~,~, meanParams] = ...
         fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, responseAmplitudeSE, initialParams, ...
-        maxSpikeRatModulation, LMScontrast, visualizeIndividualFits, exportFig, '');
+        maxSpikeRatModulation, visualizeIndividualFits, ...
+        LMScontrast, opticsPostFix, PolansSubjectID, exportFig, '');
     
     % Second fit
     visualizeIndividualFits = visualizeAllSpatialFrequencyTuningCurves; exportFig = true;
     initialParams = meanParams;
     [patchDogParams,spatialFrequenciesCPDHR, responseAmplitudeHR] = ...
         fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, responseAmplitudeSE, initialParams, ...
-        maxSpikeRatModulation, LMScontrast, visualizeIndividualFits, exportFig, figExportsDir);
+        maxSpikeRatModulation, visualizeIndividualFits, ...
+        LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
 
     if (visualizePatchStatistics)
         % Visualize data to contrast with Cronner and Kaplan data
         RGCpositionsMicrons = determineRGCPositionsFromCenterInputs(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, theMidgetRGCmosaic.centerWeights);
         RGCeccentricityDegs = WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCpositionsMicrons.^2,2))/1000.0);
-        visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCeccentricityDegs);
+        visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCeccentricityDegs, ...
+            LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
     end
     
     %   Visualize the temporal response of each RGC at the RGC's location
     if (visualizeRGCTemporalResponsesAtRGCPositions)
-        for sfIndex = 0:numel(spatialFrequenciesCPD)
+        for sfIndex = 1:numel(spatialFrequenciesCPD)
             exportFig = true;
             superimposedRetinalStimulus = [];
             plotXaxisScaling = 'linear';

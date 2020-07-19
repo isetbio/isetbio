@@ -1,7 +1,7 @@
 function [responseAmplitude, responseAmplitudeSE, responsePhase, responseTimeAxisHR, fittedResponses] = ...
     fitSinusoidalModulationToResponseTimeCourse(responses, responsesStDev, responseTimeAxis, ...
         stimulusTemporalFrequencyHz, spatialFrequency, maxSpikeRate, ...
-        visualizeIndividualFits, LMScontrast, targetRGC, exportFig, exportDir)
+        visualizeIndividualFits, targetRGC, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir)
     
         % Compute response modulations
         rgcsNum = size(responses,1);
@@ -51,7 +51,8 @@ function [responseAmplitude, responseAmplitudeSE, responsePhase, responseTimeAxi
                 ylabel('response');
                 drawnow;
                 if (exportFig)
-                    plotlabOBJ.exportFig(hFig, 'pdf', sprintf('Response_RGC_%d_SF_%2.2fcpd_LMS_%0.2f_%0.2f_%0.2f',iRGC, spatialFrequency, LMScontrast(1), LMScontrast(2), LMScontrast(3)), exportDir);
+                    pdfFileName = sprintf('Response_RGC_%d_SF_%2.2fcpd_LMS_%0.2f_%0.2f_%0.2f_PolansSID_%d_%s',iRGC, spatialFrequency, LMScontrast(1), LMScontrast(2), LMScontrast(3), PolansSubjectID, opticsPostFix);
+                    plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, exportDir);
                 end
                 
             end

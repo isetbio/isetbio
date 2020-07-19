@@ -10,12 +10,12 @@ function runPhaseX(runParams)
     figExportsDir = strrep(fileparts(which(mfilename())), 'processing', 'exports');
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses =~ true;
-    recomputeNullResponses = ~true;
+    recomputeConeMosaicResponses = true;
+    recomputeNullResponses = true;
     
     % Load/Recompute connected mosaics and the optics
-    recomputeMosaicAndOptics = ~true;
-    recomputeOpticsOnly = ~true;
+    recomputeMosaicAndOptics = true;
+    recomputeOpticsOnly = true;
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
 
     displayPSFs = ~true;
@@ -25,10 +25,11 @@ function runPhaseX(runParams)
     end
     
     % Stimulation parameters
-    LMScontrast = [0.1 0.0 0.0];
+    LMScontrast = [0.1 0.1 0.0];
     minSF = 0.1;
     maxSF = 100;
-    spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),15);
+    sfsNum = 15;
+    spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),sfsNum);
     
     stimulusFOVdegs = 2.0;
     minPixelsPerCycle = 8;
@@ -75,12 +76,12 @@ function runPhaseX(runParams)
             'saveCornealStimulusSequence', true, ...
             'saveRetinalStimulusSequence', true);
     else
-        visualizeAllSpatialFrequencyTuningCurves = false;
-        visualizeResponseComponents = ~true;
+        visualizeAllSpatialFrequencyTuningCurves = true;
+        visualizeResponseComponents = true;
         visualizeRetinalContrasts = false;
-        coVisualizeRetinalStimulusWithMosaics = true;
+        coVisualizeRetinalStimulusWithMosaics = ~true;
         visualizeMeanConeMosaicResponseAsAMovie = false;
-        visualizeRGCTemporalResponsesAtRGCPositions = false;
+        visualizeRGCTemporalResponsesAtRGCPositions = true;
         visualizeRGCSFTuningsAtRGCPositions = true;
         visualizePatchStatistics = true;
         
