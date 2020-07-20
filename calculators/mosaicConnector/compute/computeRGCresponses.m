@@ -22,14 +22,15 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     coVisualizedRetinalStimulusSpatialFrequency = p.Results.coVisualizedRetinalStimulusSpatialFrequency;
     coVisualizedRetinalStimulusConeContrast = p.Results.coVisualizedRetinalStimulusConeContrast;
     
-    % Load the null presynaptic responses
+    
     % Assemble the null response filename
     [~, ~, opticsPostFix, PolansSubjectID] = mosaicsAndOpticsFileName(runParams);
-  
     theNullResponseFileName = nullResponseFilename(runParams, opticsPostFix, PolansSubjectID);
         
     % Open data file for read-only
     mFile = matfile(fullfile(saveDir,theNullResponseFileName), 'Writable', false);
+    
+    % Load the null presynaptic responses
     switch presynapticSignal
         case 'isomerizations'
             theNullPresynapticResponses = mFile.isomerizationsNull;
@@ -39,8 +40,10 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             error('Unknown presynaptic signal: ''%s''.', presynapticSignal)
     end
 
-    retinalStimulusDataIsAvailable = mFile.saveRetinalStimulusSequence;
+    % Flags indicating whether the file containst corneal/retinal stimulus
+    % sequence info
     cornealStimulusDataIsAvailable = mFile.saveCornealStimulusSequence;
+    retinalStimulusDataIsAvailable = mFile.saveRetinalStimulusSequence;
     
     % Retrieve background retinal LMS excitations
     if (coVisualizeRetinalStimulusWithMosaics && retinalStimulusDataIsAvailable)

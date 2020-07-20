@@ -20,6 +20,11 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSub
         [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams, ...
              runParams.deconvolutionOpticsParams, runParams.outputFile, runParams.exportsDir);
         
+%          theMidgetRGCmosaic
+%          theMidgetRGCmosaic.synthesizedRFParams
+%          theMidgetRGCmosaic.synthesizedRFParams.visual
+%          theMidgetRGCmosaic.synthesizedRFParams.retinal
+%          pause
         % Compute the optics
         fprintf('\nComputing optics with noLCA flag: %d and noOptics flag: %d\n', runParams.noLCA, runParams.noOptics);
         [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(PolansSubjectID, runParams.noLCA, runParams.noOptics, ...

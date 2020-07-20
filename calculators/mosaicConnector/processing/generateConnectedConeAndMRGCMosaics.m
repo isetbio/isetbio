@@ -42,7 +42,8 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
     theMidgetRGCmosaic = struct(...
         'centerWeights', midgetRGCconnectionMatrixCenter, ...   % sparse matrix of weights for center cone signals, indexed according to the serialization order of the cone mosaic
         'surroundWeights', midgetRGCconnectionMatrixSurround, ...  % sparse matrix of weights for surround cone signals, indexed according to the serialization order of the cone mosaic
-        'extraMicronsForSurroundCones', extraMicronsForSurroundCones);
+        'extraMicronsForSurroundCones', extraMicronsForSurroundCones, ...
+        'synthesizedRFParams', synthesizedRFParams);
     
     visualizeRFs = ~true;
     if (visualizeRFs)

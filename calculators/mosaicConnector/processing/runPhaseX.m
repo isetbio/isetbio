@@ -10,12 +10,12 @@ function runPhaseX(runParams)
     figExportsDir = strrep(fileparts(which(mfilename())), 'processing', 'exports');
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = true;
-    recomputeNullResponses = true;
+    recomputeConeMosaicResponses = ~true;
+    recomputeNullResponses = ~true;
     
     % Load/Recompute connected mosaics and the optics
     recomputeMosaicAndOptics = true;
-    recomputeOpticsOnly = true;
+    recomputeOpticsOnly = ~true;
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
 
     displayPSFs = ~true;
@@ -25,7 +25,7 @@ function runPhaseX(runParams)
     end
     
     % Stimulation parameters
-    LMScontrast = [0.1 0.1 0.0];
+    LMScontrast = [0.1 0.0 0.0];
     minSF = 0.1;
     maxSF = 100;
     sfsNum = 15;
@@ -73,15 +73,15 @@ function runPhaseX(runParams)
             spatialFrequenciesCPD, ...
             opticsPostFix, PolansSubjectID, ...
             saveDir, ...
-            'saveCornealStimulusSequence', true, ...
-            'saveRetinalStimulusSequence', true);
+            'saveCornealStimulusSequence', ~true, ...
+            'saveRetinalStimulusSequence', ~true);
     else
         visualizeAllSpatialFrequencyTuningCurves = true;
         visualizeResponseComponents = true;
         visualizeRetinalContrasts = false;
         coVisualizeRetinalStimulusWithMosaics = ~true;
         visualizeMeanConeMosaicResponseAsAMovie = false;
-        visualizeRGCTemporalResponsesAtRGCPositions = true;
+        visualizeRGCTemporalResponsesAtRGCPositions = ~true;
         visualizeRGCSFTuningsAtRGCPositions = true;
         visualizePatchStatistics = true;
         
