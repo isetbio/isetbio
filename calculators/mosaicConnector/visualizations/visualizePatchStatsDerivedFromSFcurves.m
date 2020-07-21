@@ -64,8 +64,8 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, synthesized
     set(ax, 'XScale', 'linear', 'XLim', [0 1], 'XTick', 0:0.2:1);
     set(ax, 'YScale', 'linear', 'YLim', [0 1], 'YTick', 0:0.2:1);
     axis(ax, 'square');
-    xlabel(ax, 'synthesized integrated sensitivity ratio (surround/center)');
-    ylabel(ax, 'fitted integrated sensitivity ratio (surround/center)');
+    xlabel(ax, 'synthesized integr. sensitivity ratio (surround/center)');
+    ylabel(ax, 'fitted integr. sensitivity ratio (surround/center)');
     
     ax = theAxesGrid{2,2};
     synthesizedRadiusRatios = synthesizedRFParams.visual.centerRadiiDegs ./synthesizedRFParams.visual.surroundRadiiDegs;

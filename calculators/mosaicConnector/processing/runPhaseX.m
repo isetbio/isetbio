@@ -9,14 +9,18 @@ function runPhaseX(runParams)
     % Figure exports dir
     figExportsDir = strrep(fileparts(which(mfilename())), 'processing', 'exports');
     
-    % Compute cone mosaic responses
-    recomputeConeMosaicResponses = true;
-    recomputeNullResponses = true;
-    
+   
     % Load/Recompute connected mosaics and the optics
-    recomputeMosaicAndOptics = true;
-    recomputeOpticsOnly = ~true;
-    [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = mosaicsAndOpticsForEccentricity(runParams, recomputeMosaicAndOptics, recomputeOpticsOnly, saveDir);
+    recomputeConeMosaic = true;
+    recomputeOptics = true;
+    recomputeRGCmosaic = true;
+     
+     % Compute cone mosaic responses
+    recomputeConeMosaicResponses = ~true;
+    recomputeNullResponses = ~true;
+    
+    [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
+        mosaicsAndOpticsForEccentricity(runParams, recomputeConeMosaic, recomputeRGCmosaic, recomputeOptics, saveDir);
 
     displayPSFs = ~true;
     if (displayPSFs)

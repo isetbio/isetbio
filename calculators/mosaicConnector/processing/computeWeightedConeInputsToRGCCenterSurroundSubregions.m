@@ -87,9 +87,9 @@ function [connectionMatrixCenter, connectionMatrixSurround, ...
         % result in some RF center overlap
         acceptSharedConeInputWithinRadiusMatchingTheCronerKaplanModel = true;
         if (acceptSharedConeInputWithinRadiusMatchingTheCronerKaplanModel)
-            % Retrieve cone indices connected to the RGC center, 95%
+            % Retrieve cone indices connected to the RGC center, 90%
             weights = gaussianConeWeights(conePositionsMicrons, rgcPositionMicrons, rgcCenterRadiusMicrons);
-            coneIndicesNearRFcenter = find((weights >= 0.05)&((coneTypes==LCONE_ID)|(coneTypes==MCONE_ID)));
+            coneIndicesNearRFcenter = find((weights >= 0.1)&((coneTypes==LCONE_ID)|(coneTypes==MCONE_ID)));
         else
             coneIndicesNearRFcenter = [];
         end

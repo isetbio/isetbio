@@ -1,13 +1,13 @@
-function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosaics(mRGCmosaicFile, mosaicParams, ...
+function theMidgetRGCmosaic = generateConnectedConeAndMRGCMosaics(theConeMosaicMetaData, mRGCmosaicFile, mosaicParams, ...
     deconvolutionOpticsParams, outputFile, exportsDir)
     
-    % STEP 1. Generate a regular hex cone mosaic patch with the desired eccentricity and size
-    extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons, deconvolutionOpticsParams);
-    [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
-        generateRegularHexMosaicPatch(...
-            mosaicParams.rgcMosaicPatchEccMicrons, ...
-            mosaicParams.rgcMosaicPatchSizeMicrons, ...
-            extraMicronsForSurroundCones);
+    % STEP 1. Retrieve regular hex cone mosaic metadata
+    coneMosaicEccDegs = theConeMosaicMetaData.coneMosaicEccDegs;
+    coneMosaicSizeMicrons = theConeMosaicMetaData.coneMosaicSizeMicrons;
+    conePositionsMicrons = theConeMosaicMetaData.conePositionsMicrons;
+    coneSpacingsMicrons = theConeMosaicMetaData.coneSpacingsMicrons;
+    coneTypes = theConeMosaicMetaData.coneTypes;
+    extraMicronsForSurroundCones = theConeMosaicMetaData.extraMicronsForSurroundCones;
      
     % STEP 2. Connect the cone mosaic patch to the centers of the midget RGC mosaic
     orphanRGCpolicy = mosaicParams.orphanRGCpolicy;
@@ -100,63 +100,6 @@ function visualizeCenterConnections(midgetRGCconnectionMatrix, RGCRFPositionsMic
          
 end
 
-function extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentricityMicrons, sizeMicrons, deconvolutionOpticsParams)
-    w = WatsonRGCModel('generateAllFigures', false);
-    posUnits = 'mm'; densityUnits = 'mm^2';
-    coneEccMaxMicrons = max(abs([eccentricityMicrons+sizeMicrons/2; eccentricityMicrons-sizeMicrons/2]));
-    
-    % Cone spacing at the most eccentric position
-    coneSpacingMicronsMax = 1e3 * w.coneRFSpacingAndDensityAtRetinalPositions(...
-        coneEccMaxMicrons*1e-3, 'right', posUnits, densityUnits, ...
-        'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
- 
-    % Compute RF params using the CronerKaplan model
-    ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
-    synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(coneSpacingMicronsMax, coneEccMaxMicrons, deconvolutionOpticsParams);
-    retinalSurroundRadiusDegsAt1overE = synthesizedRFParams.retinal.surroundRadiiDegs;
-    extraDegsForSurroundCones = retinalSurroundRadiusDegsAt1overE*2;
-    extraMicronsForSurroundCones = ceil(WatsonRGCModel.sizeDegsToSizeRetinalMicrons(extraDegsForSurroundCones, synthesizedRFParams.eccDegs));
-end
-
-function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
-    generateRegularHexMosaicPatch(eccentricityMicrons, sizeMicrons, extraMicronsForSurroundCones)
-
-    % Compute the cone mosaic FOV in degrees
-    coneMosaicCenterPositionMM = eccentricityMicrons * 1e-3;
-    coneMosaicSizeMicrons = sizeMicrons + 2*extraMicronsForSurroundCones*[1 1];
-    coneMosaicEccDegs = WatsonRGCModel.rhoMMsToDegs(coneMosaicCenterPositionMM);
-    fovDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(coneMosaicSizeMicrons, sqrt(sum((coneMosaicCenterPositionMM*1e3).^2,2.0)));
-    
-    % Determine the median cone spacing with the patch
-    whichEye = 'right';
-    coneSpacingMicrons = medianConeSpacingInPatch(whichEye, eccentricityMicrons, coneMosaicSizeMicrons);
-    
-    % Generate reg hex cone mosaic
-    resamplingFactor = 5;
-    spatialDensity = [0 0.5 0.25 0.15];
-    sConeFreeRadiusMicrons = 0;
-    theConeMosaic = coneMosaicHex(resamplingFactor, ...
-        'fovDegs', fovDegs, ...
-        'micronsPerDegree', coneMosaicSizeMicrons(1)/fovDegs(1), ...
-        'integrationTime', 5/1000, ...
-        'customLambda', coneSpacingMicrons, ...
-        'customInnerSegmentDiameter', coneSpacingMicrons * 0.7, ...
-        'spatialDensity', spatialDensity, ...
-        'sConeMinDistanceFactor', 2, ...
-        'sConeFreeRadiusMicrons', sConeFreeRadiusMicrons ...
-    );
-
-
-    % Retrieve cone positions (microns), cone spacings, and cone types
-    cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
-    
-    % Cone positions: add the mosaic center so as to align with ecc-varying full mRGC mosaic
-    conePositionsMicrons = bsxfun(@plus, cmStruct.coneLocsMicrons, eccentricityMicrons);
-    % Cone spacings: all the same
-    coneSpacingsMicrons = ones(size(conePositionsMicrons,1),1) * coneSpacingMicrons;
-    % Cone types
-    coneTypes = cmStruct.coneTypes;
-end
 
 function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix] = ...
     connectMidgetRGCMosaicToConeMosaic(mRGCmosaicFile, rgcMosaicPatchSizeMicrons, conePositionsMicrons, ...
