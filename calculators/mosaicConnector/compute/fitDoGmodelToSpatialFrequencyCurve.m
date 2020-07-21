@@ -3,14 +3,14 @@ function [patchDogParams, spatialFrequenciesCPDHR, responseTuningHR, meanParams]
     maxSpikeRateModulation, visualizeIndividualFits, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir)
 
     % The DOF model function handle
-    DoGFunction = @(params,sf)(...
+    DoGFunction = @(params,sf)(params(5)*(...
         params(1)           * ( pi * (params(2))^2 * exp(-(pi*params(2)*sf).^2) ) - ...
-        params(1)*params(3) * ( pi * (params(2)*params(4))^2 * exp(-(pi*params(2)*params(4)*sf).^2) ) );
+        params(1)*params(3) * ( pi * (params(2)*params(4))^2 * exp(-(pi*params(2)*params(4)*sf).^2) ) ));
     
     % Upper and lower values of DoG params
-    %               Kc       Rc     kS/kC       Rs/Rc
-    lowerBounds   = [1     0.001   1e-4   2];
-    upperBounds   = [Inf   1.0     1e-1   20];
+    %               Kc       Rc     kS/kC       Rs/Rc   C
+    lowerBounds   = [1     0.001   1e-4   2       1 ];
+    upperBounds   = [5000   1.0     1e-1   20     Inf];
     
     % Fitting options
     oldoptions = optimoptions('lsqcurvefit');
@@ -33,7 +33,7 @@ function [patchDogParams, spatialFrequenciesCPDHR, responseTuningHR, meanParams]
         
         % Set initial params if not set
         if (isempty(initialParams))
-            initialParams = [max(theSFtuning)   0.05    1/1000       0.5];
+            initialParams = [300   0.05    1e-2   7 20];
         end
         
         % Fit the model to the data

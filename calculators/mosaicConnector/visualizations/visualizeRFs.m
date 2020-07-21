@@ -34,10 +34,11 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     for RGCindex = 1:rgcsNum
         
         connectivityVector = full(squeeze(connectivityMatrix(:, RGCindex)));
-        inputIDs = find(connectivityVector == 1);
+        inputIDs = find(connectivityVector > 0.01);
         inputsNum = numel(inputIDs);
         
         if (inputsNum == 0)
+            fprintf(2, 'RGC %d has zero inputs!!!\n', RGCindex);
             continue;
         end
         
@@ -51,7 +52,7 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
         
         % Generate RF centers of RGCs based on cone positions and connection matrix
         theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(...
-            connectivityVector, conePositionsMicrons, coneSpacingsMicrons, X,Y);
+            connectivityVector/max(connectivityVector), conePositionsMicrons, coneSpacingsMicrons, X,Y);
 
         if (isempty(theRF))
             fprintf(2,'No cone inputs to this RF -> No visualization\n');
@@ -65,7 +66,7 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     
         indicesOfConeInputsToThisRGC = find(connectivityVector>0);
         
-        showConnectedConePolygon = true;
+        showConnectedConePolygon = ~true;
         if (showConnectedConePolygon)
             % Connected cones
             displayConnectedConesPolygon(theAxesGrid, indicesOfConeInputsToThisRGC, conePositionsMicrons);

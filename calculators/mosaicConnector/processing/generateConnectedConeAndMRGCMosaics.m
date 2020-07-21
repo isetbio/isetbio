@@ -18,8 +18,9 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
          conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
          orphanRGCpolicy, maximizeConeSpecificity, visualizeMosaicsToBeConnected);
      
-    % Visualize connections to the RF centers
-    visualizeRFcenterTiling = ~true;
+     
+    % Visualize EXCLUSIVE connections to the RF centers
+    visualizeRFcenterTiling = true;
     if (visualizeRFcenterTiling)
         subregionToVisualize.center = round(mosaicParams.rgcMosaicPatchEccMicrons);
         subregionToVisualize.size = coneMosaicSizeMicrons;
@@ -37,6 +38,18 @@ function [theConeMosaic, theMidgetRGCmosaic] = generateConnectedConeAndMRGCMosai
             mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons, ...
             deconvolutionOpticsParams);
         
+    % Visualize ALL (EXCLUSIVE+SHARED) connections to the RF centers
+    visualizeRFcenterTiling = true;
+    if (visualizeRFcenterTiling)
+        subregionToVisualize.center = round(mosaicParams.rgcMosaicPatchEccMicrons);
+        subregionToVisualize.size = coneMosaicSizeMicrons;
+        visualizeCenterConnections(midgetRGCconnectionMatrixCenter, RGCRFPositionsMicrons,...
+                conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+                coneMosaicEccDegs, subregionToVisualize, ...
+                outputFile,exportsDir);
+    end
+    
+    
     % The midget RGC mosaic object (for now just the cone weights to the
     % center and surround regions)
     theMidgetRGCmosaic = struct(...

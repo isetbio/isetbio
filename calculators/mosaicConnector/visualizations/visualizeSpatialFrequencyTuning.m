@@ -35,7 +35,7 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     
     % Show the params of the fitted model
     if (~isempty(modelParams))
-        text(axesHandle, 0.035, maxSpikeRateModulation*0.82, sprintf('K_c: %2.0f\nK_s: %2.0f\nR_c: %2.1f arcmin\nR_s: %2.1f arcmin', ...
+        text(axesHandle, 0.035, maxSpikeRateModulation*0.82, sprintf('K_c: %2.0f\nK_s: %2.1f\nR_c: %2.1f arcmin\nR_s: %2.1f arcmin', ...
             modelParams.kC, modelParams.kS, modelParams.rC*60, modelParams.rS*60), 'FontSize', 12, 'FontName', 'Source Code Pro');
     end
     

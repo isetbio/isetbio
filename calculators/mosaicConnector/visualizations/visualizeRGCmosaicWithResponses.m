@@ -163,7 +163,7 @@ function renderMosaicConnectivityPlot(theAxes, conePositionsMicrons, coneDiamete
 
     hold(theAxes, 'on');
     colormap(theAxes, brewermap(512, 'greys'));
-    renderConeConnections(theAxes, theMidgetRGCmosaic, conePositionsMicrons);
+    %renderConeConnections(theAxes, theMidgetRGCmosaic, conePositionsMicrons);
     renderCones(theAxes, coneTypes, conePositionsMicrons, coneDiameterMicrons);
     renderRGCoutlines(theAxes,targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels,xAxis, yAxis);  
     set(theAxes, 'CLim', [0 1]);

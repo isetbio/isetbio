@@ -10,8 +10,8 @@ function runPhaseX(runParams)
     figExportsDir = strrep(fileparts(which(mfilename())), 'processing', 'exports');
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = ~true;
-    recomputeNullResponses = ~true;
+    recomputeConeMosaicResponses = true;
+    recomputeNullResponses = true;
     
     % Load/Recompute connected mosaics and the optics
     recomputeMosaicAndOptics = true;
@@ -25,7 +25,7 @@ function runPhaseX(runParams)
     end
     
     % Stimulation parameters
-    LMScontrast = [0.1 0.0 0.0];
+    LMScontrast = [0.1 0.1 0.0];
     minSF = 0.1;
     maxSF = 100;
     sfsNum = 15;
