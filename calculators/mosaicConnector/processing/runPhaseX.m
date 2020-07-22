@@ -16,8 +16,8 @@ function runPhaseX(runParams)
     recomputeRGCmosaic = true;
      
      % Compute cone mosaic responses
-    recomputeConeMosaicResponses = ~true;
-    recomputeNullResponses = ~true;
+    recomputeConeMosaicResponses = true;
+    recomputeNullResponses = true;
     
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
         mosaicsAndOpticsForEccentricity(runParams, recomputeConeMosaic, recomputeRGCmosaic, recomputeOptics, saveDir);
@@ -78,7 +78,7 @@ function runPhaseX(runParams)
             opticsPostFix, PolansSubjectID, ...
             saveDir, ...
             'saveCornealStimulusSequence', ~true, ...
-            'saveRetinalStimulusSequence', ~true);
+            'saveRetinalStimulusSequence', true);
     else
         visualizeAllSpatialFrequencyTuningCurves = true;
         visualizeResponseComponents = true;
