@@ -61,6 +61,8 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSub
 
             % Save the optics
             save(fullfile(saveDir,opticsFilename),'theOptics');
+        else
+            load(fullfile(saveDir,opticsFilename),'theOptics');
         end
         
     elseif (recomputeOpticsOnly)

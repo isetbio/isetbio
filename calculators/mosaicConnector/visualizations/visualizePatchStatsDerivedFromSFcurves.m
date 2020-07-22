@@ -19,7 +19,7 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, synthesized
     
     eccRange = [0.01 30];
     radiusRange = [0.01 3];
-    peakSensitivityRange = [0.1 1000];
+    peakSensitivityRange = [0.1 3000];
     peakSensitivityRatioRange = [1e-4 1];
     
     plotlabOBJ = setupPlotLab(0, 13, 12);
@@ -82,6 +82,7 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, synthesized
          pdfFileName = sprintf('PatchStatsVsSynthesizedStats_LMS_%0.2f_%0.2f_%0.2f_PolansSID_%d_%s', LMScontrast(1), LMScontrast(2), LMScontrast(3), PolansSubjectID, opticsPostFix);
          plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, figExportsDir);
     end
+    pause
     
     
     hFig = figure(555); clf
