@@ -27,6 +27,7 @@ function [theSceneFrames, presentationDisplay, stimSpatialParamsPixelsNum] = gen
     pixelsNumAtCurrentSpatialFrequencyAndMinPixelsPerCycle = stimSpatialParams.gaborSpatialFrequencyCPD * stimSpatialParams.pixelsNumPerSF;
     
     % Store it in stimSpatialParams struct and also return it to the caller function
+    fprintf('Pixels num: max([%2.0f %2.0f])\n', stimSpatialParams.minPixelsNum, pixelsNumAtCurrentSpatialFrequencyAndMinPixelsPerCycle);
     stimSpatialParams.pixelsNum = max([stimSpatialParams.minPixelsNum  pixelsNumAtCurrentSpatialFrequencyAndMinPixelsPerCycle]);
     stimSpatialParamsPixelsNum = stimSpatialParams.pixelsNum;
 
