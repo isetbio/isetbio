@@ -11,13 +11,13 @@ function runPhaseX(runParams)
     
    
     % Load/Recompute connected mosaics and the optics
-    recomputeConeMosaic = true;
-    recomputeOptics = true;
-    recomputeRGCmosaic = true;
+    recomputeConeMosaic = ~true;
+    recomputeOptics = ~true;
+    recomputeRGCmosaic = ~true;
      
      % Compute cone mosaic responses
     recomputeConeMosaicResponses = true;
-    recomputeNullResponses = true;
+    recomputeNullResponses = ~true;
     
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
         mosaicsAndOpticsForEccentricity(runParams, recomputeConeMosaic, recomputeRGCmosaic, recomputeOptics, saveDir);
@@ -37,7 +37,7 @@ function runPhaseX(runParams)
     
     stimulusFOVdegs = 2.0;
     minPixelsPerCycle = 8;
-    stimulusPixelsNum = maxSF*stimulusFOVdegs*minPixelsPerCycle;
+    stimulusPixelsNum = stimulusFOVdegs*minPixelsPerCycle;
     temporalFrequency = 4.0;
     stimDurationSeconds = 0.5;
     instancesNum = 16;
@@ -57,7 +57,7 @@ function runPhaseX(runParams)
     stimSpatialParams = struct(...
         'type', 'driftingGrating', ...
         'fovDegs', stimulusFOVdegs,...
-        'pixelsNum', stimulusPixelsNum, ...
+        'pixelsNumPerSF', stimulusPixelsNum, ...
         'gaborPosDegs', [0 0], ...
         'gaborSpatialFrequencyCPD', 0, ...
         'gaborSigmaDegs', Inf, ... %stimulusFOVdegs/(2*4), ...%Inf, ...

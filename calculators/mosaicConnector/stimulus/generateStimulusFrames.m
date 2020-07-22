@@ -1,4 +1,4 @@
-function [theSceneFrames, presentationDisplay] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling)
+function [theSceneFrames, presentationDisplay, stimSpatialParamsPixelsNum] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling)
 
     % Generate the presentation display
     presentationDisplay = generatePresentationDisplay('wave', wavelengthSampling);
@@ -23,6 +23,13 @@ function [theSceneFrames, presentationDisplay] = generateStimulusFrames(stimColo
     % Stimulus LMS contrast vector
     stimLMScontrast = stimColor.lmsContrast;
     
+    % Compute pixelsNum
+    pixelsNumAtCurrentSpatialFrequencyAndMinPixelsPerCycle = stimSpatialParams.gaborSpatialFrequencyCPD * stimSpatialParams.pixelsNumPerSF;
+    
+    % Store it in stimSpatialParams struct and also return it to the caller function
+    stimSpatialParams.pixelsNum = max([stimSpatialParams.minPixelsNum  pixelsNumAtCurrentSpatialFrequencyAndMinPixelsPerCycle]);
+    stimSpatialParamsPixelsNum = stimSpatialParams.pixelsNum;
+
     % Generate scenes for each spatial phase
     parfor spatialPhaseIndex = 1:numel(spatialPhases)
         fprintf('Generating scene for the %2.0f deg spatial phase stimulus.\n', spatialPhases(spatialPhaseIndex)/pi*180);

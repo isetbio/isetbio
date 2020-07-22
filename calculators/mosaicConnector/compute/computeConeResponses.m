@@ -30,7 +30,7 @@ function computeConeResponses(runParams, ...
         
         % Generate the null stimulus frame scene sequence
         wavelengthSampling = theConeMosaic.pigment.wave;
-        [theNullSceneFrames, presentationDisplay] = generateStimulusFrames(nullColor, stimSpatialParams, wavelengthSampling);
+        [theNullSceneFrames, presentationDisplay, stimSpatialParams.pixelsNum] = generateStimulusFrames(nullColor, stimSpatialParams, wavelengthSampling);
         
         if (saveCornealStimulusSequence)
             % Generate the stimulus SRGBsequence
