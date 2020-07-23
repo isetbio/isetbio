@@ -14,19 +14,19 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     
     % Plot the error of the mean vertical bars
     for k = 1:numel(spatialFrequenciesCPD)
-        line(axesHandle, spatialFrequenciesCPD(k)*[1 1], theSFtuning(k)+theSFtuningSE(k)*[-1 1], 'LineWidth', 1.5, 'Color', [0.3 0.3 0.3]); hold on;
+        line(axesHandle, spatialFrequenciesCPD(k)*[1 1], theSFtuning(k)+theSFtuningSE(k)*[-1 1], 'LineWidth', 2.0, 'Color', [1 .5 0.5]); hold on;
     end
             
     % Plot the model fit
     line(axesHandle, spatialFrequenciesCPDHR, responseTuningHR, 'Color', [1 0 0]);
     
     % Plot the mean points
-    scatter(axesHandle, spatialFrequenciesCPD, theSFtuning); %, 'MarkerEdgeColor', [1 0.3 0.3], 'MarkerFaceColor', [0.8 0.8 0.8]);
+    scatter(axesHandle, spatialFrequenciesCPD, theSFtuning, 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
     
     % Set the axes
     axis(axesHandle, 'square');
-    set(axesHandle, 'XScale', 'log', 'XLim', [0.03 101], 'XTick', [0.03 0.1 0.3 1 3 10 30], ...
-        'YTick', [0:5:200], 'YScale', 'linear','YLim', [0 maxSpikeRateModulation]);
+    set(axesHandle, 'XScale', 'log', 'XLim', [0.03 105], 'XTick', [0.03 0.1 0.3 1 3 10 30 100], ...
+        'YTick', [0:50:200], 'YScale', 'linear','YLim', [0 maxSpikeRateModulation]);
     xlabel(axesHandle,'spatial frequency (c/deg)');
     ylabel(axesHandle, 'response modulation');
             
@@ -35,8 +35,8 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     
     % Show the params of the fitted model
     if (~isempty(modelParams))
-        text(axesHandle, 0.035, maxSpikeRateModulation*0.82, sprintf('K_c: %2.0f\nK_s: %2.1f\nR_c: %2.1f arcmin\nR_s: %2.1f arcmin', ...
-            modelParams.kC, modelParams.kS, modelParams.rC*60, modelParams.rS*60), 'FontSize', 12, 'FontName', 'Source Code Pro');
+        text(axesHandle, 0.035, maxSpikeRateModulation*0.88, sprintf('K_c: %2.0f\nK_s: %2.1f\nR_c: %2.1f arcmin\nR_s: %2.1f arcmin', ...
+            modelParams.kC, modelParams.kS, modelParams.rC*60, modelParams.rS*60), 'FontSize', 12, 'FontName', 'Source Code Pro', 'BackgroundColor', [1 1 1]);
     end
     
     drawnow;

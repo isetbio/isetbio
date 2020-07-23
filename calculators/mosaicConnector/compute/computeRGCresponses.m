@@ -19,9 +19,10 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     
     p.parse(varargin{:});
     coVisualizeRetinalStimulusWithMosaics = p.Results.coVisualizeRetinalStimulusWithMosaics;
-    coVisualizedRetinalStimulusSpatialFrequency = p.Results.coVisualizedRetinalStimulusSpatialFrequency;
-    coVisualizedRetinalStimulusConeContrast = p.Results.coVisualizedRetinalStimulusConeContrast;
-    
+    coVisualizedRetinalStimulusData = struct(...
+        'spatialFrequency', p.Results.coVisualizedRetinalStimulusSpatialFrequency, ...
+        'coneContrast', p.Results.coVisualizedRetinalStimulusConeContrast, ...
+        'frameIndex', 1);
     
     % Assemble the null response filename
     [~, ~, opticsPostFix, PolansSubjectID] = mosaicsAndOpticsFileName(runParams);
@@ -30,7 +31,18 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     % Open data file for read-only
     mFile = matfile(fullfile(saveDir,theNullResponseFileName), 'Writable', false);
     
-    % Load the null presynaptic responses
+    % Render retinal stimulus info
+    coVisualizedRetinalStimulus = renderRetinalStimFigures(mFile, spatialFrequenciesCPD, ...
+        coVisualizeRetinalStimulusWithMosaics, coVisualizedRetinalStimulusData, ...
+        visualizeRetinalContrasts, visualizeMeanConeMosaicResponseAsAMovie, ...
+        saveDir,runParams, LMScontrast, opticsPostFix, PolansSubjectID, ...
+        figExportsDir);
+    
+    % Retrieve time axes
+    responseTimeAxis = mFile.responseTimeAxis;
+    stimulusTimeAxis = mFile.stimulusTimeAxis;
+    
+    % Retrieve the null presynaptic responses
     switch presynapticSignal
         case 'isomerizations'
             theNullPresynapticResponses = mFile.isomerizationsNull;
@@ -40,24 +52,10 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             error('Unknown presynaptic signal: ''%s''.', presynapticSignal)
     end
 
-    % Flags indicating whether the file containst corneal/retinal stimulus
-    % sequence info
-    cornealStimulusDataIsAvailable = mFile.saveCornealStimulusSequence;
-    retinalStimulusDataIsAvailable = mFile.saveRetinalStimulusSequence;
-    
-    % Retrieve background retinal LMS excitations
-    if (coVisualizeRetinalStimulusWithMosaics && retinalStimulusDataIsAvailable)
-        theRetinalLMSexcitationsSequenceNull = mFile.theRetinalLMSexcitationsSequence;
-        backgroundLMSexcitations = mean(mean(mean(theRetinalLMSexcitationsSequenceNull,1),2),3);
-    end
-    
-    % Retrieve time axes
-    responseTimeAxis = mFile.responseTimeAxis;
-    stimulusTimeAxis = mFile.stimulusTimeAxis;
-          
-    % Stimulus to be co-visualized under the cone/RGC mosaic in target RGCs
-    coVisualizedRetinalStimulus = [];
-    
+    % Compute subregion responses to null stimulus
+    [centerNullStimulusMeanResponse, surroundNullStimulusMeanResponse] = computeSubregionResponses(...
+        theConeMosaic, theMidgetRGCmosaic.centerWeights, theMidgetRGCmosaic.surroundWeights, theNullPresynapticResponses);
+       
     % Compute the RGC responses
     for sfIndex = 1:numel(spatialFrequenciesCPD)
         gaborSpatialFrequencyCPD = spatialFrequenciesCPD(sfIndex);
@@ -67,50 +65,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         
         % Open data file for read-only
         mFile = matfile(fullfile(saveDir, theTestResponseFileName), 'Writable', false);
-        
-        if (coVisualizeRetinalStimulusWithMosaics && retinalStimulusDataIsAvailable)
-            switch (coVisualizedRetinalStimulusConeContrast)
-                case LCONE_ID
-                        visualizedRetinalStimulusConeContrastIndex = 1;  % visualize the L-cone contrast
-                case MCONE_ID
-                        visualizedRetinalStimulusConeContrastIndex = 2;  % visualize the M-cone contrast
-                case SCONE_ID
-                        visualizedRetinalStimulusConeContrastIndex = 3;  % visualize the S-cone contrast
-            end
-            [~,visualizedRetinalSFindex] = min(abs(spatialFrequenciesCPD-coVisualizedRetinalStimulusSpatialFrequency));
-            fprintf('Will superimpose retinal stimulus at %2.1f c/deg', spatialFrequenciesCPD(visualizedRetinalSFindex));
-    
-            if (sfIndex == visualizedRetinalSFindex)
-                frameIndex = 5;      
-                theRetinalLMSexcitations = mFile.theRetinalLMSexcitationsSequence(frameIndex,:,:,:);
-                theRetinalLMScontrast = bsxfun(@times, bsxfun(@minus, theRetinalLMSexcitations, backgroundLMSexcitations), 1./backgroundLMSexcitations);
-                coVisualizedRetinalStimulus.retinalContrastImage = squeeze(theRetinalLMScontrast(1,:,:,visualizedRetinalStimulusConeContrastIndex));
-                coVisualizedRetinalStimulus.spatialSupportMicrons = mFile.retinalSpatialSupportMicrons;
-            end
-        end
-        
-        
-        if (visualizeRetinalContrasts && retinalStimulusDataIsAvailable)
-            % The test retinal LMS excitations 
-            theRetinalLMSexcitationsSequence = mFile.theRetinalLMSexcitationsSequence;
-
-            % Compute retinal contrast
-            theRetinalLMScontrastSequence = bsxfun(@minus, theRetinalLMSexcitationsSequence, backgroundLMSexcitations);
-            theRetinalLMScontrastSequence = bsxfun(@times, theRetinalLMScontrastSequence, 1./backgroundLMSexcitations);
-
-            % Extract retinal L and M contrast over central region
-            colsNum = size(theRetinalLMScontrastSequence,3);
-            margin = round(colsNum/5);
-            colsToUse = margin:2:(colsNum-margin);
-            colsToUseNum = numel(colsToUse);
-            midRow = round(0.5*size(theRetinalLMScontrastSequence,2));
-            roiLcontrast(sfIndex,:) = reshape(squeeze(theRetinalLMScontrastSequence(:,midRow,colsToUse,1)), [1 size(theRetinalLMScontrastSequence,1)*colsToUseNum]);
-            roiMcontrast(sfIndex,:) = reshape(squeeze(theRetinalLMScontrastSequence(:,midRow,colsToUse,2)), [1 size(theRetinalLMScontrastSequence,1)*colsToUseNum]);
-
-            visualizeRetinalContrastProfiles(theRetinalLMScontrastSequence, gaborSpatialFrequencyCPD, LMScontrast, figExportsDir);
-        end
-
-        
+       
         % Load the presynaptic input signals
         switch presynapticSignal
             case 'isomerizations'
@@ -121,183 +76,114 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
                 error('UNknown presynaptic signal: ''%s''.', presynapticSignal)
         end
         
-        
-        % Compute the differential response instances
-        %thePresynapticResponses = bsxfun(@minus, thePresynapticResponses, theNullPresynapticResponses(:,:,end));
-        
         % Compute the center and the surround responses
         fprintf('\nComputing RGC responses ...');
         tic
         
-        % Compute subregion responses
-        [cR, sR] = computeSubregionResponses(theConeMosaic, theMidgetRGCmosaic.centerWeights, theMidgetRGCmosaic.surroundWeights, thePresynapticResponses);
+        % Compute center and surround subregion responses to the test stimulus
+        [cRtest, sRtest] = computeSubregionResponses(theConeMosaic, theMidgetRGCmosaic.centerWeights, theMidgetRGCmosaic.surroundWeights, thePresynapticResponses);
             
+        % Preallocate memory
         if (sfIndex == 1)
-            % Preallocate memory
-            centerResponseInstances = zeros(numel(spatialFrequenciesCPD), size(cR,1), size(cR,2), size(cR,3));
-            surroundResponseInstances = centerResponseInstances;
+            instancesNum = size(cRtest,1);
+            rgcsNum = size(cRtest,2);
+            timeBins = size(cRtest,3);
+            centerTestStimulusResponseInstances = zeros(numel(spatialFrequenciesCPD), instancesNum, rgcsNum, timeBins);
+            surroundTestStimulusResponseInstances = centerTestStimulusResponseInstances;
         end
         
-        centerResponseInstances(sfIndex,:,:,:) = cR;
-        surroundResponseInstances(sfIndex,:,:,:) = sR;
+        centerTestStimulusResponseInstances(sfIndex,:,:,:) = cRtest;
+        surroundTestStimulusResponseInstances(sfIndex,:,:,:) = sRtest;
         
         fprintf('Done in %2.1f minutes\n', toc/60);
-        
-        % Display the mean presynaptic response
-        if (visualizeMeanConeMosaicResponseAsAMovie && cornealStimulusDataIsAvailable)
-            % Load the stimulus RGB sequence
-            theStimulusRGBsequence = mFile.theStimulusSRGBsequence;
-            theMeanPresynapticResponses = squeeze(mean(thePresynapticResponses,1));
-            visualizeStimResponseMovie(responseTimeAxis, stimulusTimeAxis, stimSpatialParams, theStimulusRGBsequence, ...
-                theMeanPresynapticResponses, theConeMosaic);
-        end
     end % sfIndex
     
-    if (visualizeRetinalContrasts)
-        visualizeRetinalLMcontrastCorrelation(spatialFrequenciesCPD, roiLcontrast, roiMcontrast, ...
-            opticsPostFix, PolansSubjectID, true, figExportsDir);
+    
+    % Center-surround integrated response instances
+    integratedTestStimulusResponseInstances = centerTestStimulusResponseInstances - surroundTestStimulusResponseInstances;
+    
+    % Integrated response instance modulations (deviation from background response)
+    integratedNullStimulusMeanResponse = centerNullStimulusMeanResponse - surroundNullStimulusMeanResponse;
+    
+    coneIsomerizationsDeltaPerSpikePerSecond = 30*1000.0;  % so many R*/sec lead to an RGC response of 1 spikes/sec above baseline
+    responseTimeBin = responseTimeAxis(2)-responseTimeAxis(1);
+    
+    % Integrated responses in spikes/sec
+    integratedResponseInstanceSpikesPerSec = isomerizationDeltasToSpikesPerSecond(...
+            integratedTestStimulusResponseInstances, integratedNullStimulusMeanResponse, ...
+            coneIsomerizationsDeltaPerSpikePerSecond, responseTimeBin);
+    
+
+    % Center responses in spikes/sec
+    centerResponseInstances = isomerizationDeltasToSpikesPerSecond(...
+            centerTestStimulusResponseInstances, centerNullStimulusMeanResponse, ...
+            coneIsomerizationsDeltaPerSpikePerSecond, responseTimeBin);
+        
+    % Surround responses in spikes/sec
+    surroundResponseInstances = isomerizationDeltasToSpikesPerSecond(...
+            surroundTestStimulusResponseInstances, surroundNullStimulusMeanResponse, ...
+            coneIsomerizationsDeltaPerSpikePerSecond, responseTimeBin);
+        
+    % Mean (over instances) integrated responses in spikes/sec
+    integratedResponsesMean = squeeze(mean(integratedResponseInstanceSpikesPerSec,2));
+    integratedResponsesStDev = squeeze(std(integratedResponseInstanceSpikesPerSec,0,2));
+
+    
+    % Report spikes per seconds
+    for iRGC = 1:rgcsNum
+        r = squeeze(integratedResponseInstanceSpikesPerSec(:, :, iRGC, :));
+        r = squeeze(mean(r,2));
+        fprintf('Max mean integrated response for RGC %d: %2.2f spikes/sec\n', iRGC, max(r(:)));
     end
     
-    % Compute mean over all instances integrated response. This is used
-    % to measure the F tuning below.
-    integratedResponseInstances = centerResponseInstances-surroundResponseInstances;
-   
-    % Convert to spikes/sec
-    maxSpikeRate = 200;
-    m99 = prctile(integratedResponseInstances(:), 99);
-   
-    integratedResponseInstances = integratedResponseInstances / m99 * maxSpikeRate;
-    integratedResponsesMean = squeeze(mean(integratedResponseInstances,2));
-    integratedResponsesStDev = squeeze(std(integratedResponseInstances,0,2));
-        
-    mTotal = max([max(abs(centerResponseInstances(:))) max(abs(surroundResponseInstances(:)))]);
-    centerResponseInstances = centerResponseInstances / mTotal * maxSpikeRate;
-    surroundResponseInstances = surroundResponseInstances / mTotal * maxSpikeRate;
-   
-    labelCells = true;
+    maxSpikeRateModulation = 200;
+    maxSpikeRateModulationForComponents = 500;
+    
+    % Visualize the center and surround response components for the targeted RGCs
     if (visualizeResponseComponents)
+        exportFig = true;
         for iTargetRGC = 1:numel(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves)
              visualizeResponseComponentsForTargetRGC(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves(iTargetRGC), ...
                  responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
-                 spatialFrequenciesCPD, maxSpikeRate, LMScontrast, opticsPostFix, PolansSubjectID, true, figExportsDir);  
+                 spatialFrequenciesCPD, maxSpikeRateModulationForComponents, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);  
         end
     end
     
-    for sfIndex = 1:numel(spatialFrequenciesCPD)
-        
-        % Compute response tuning
-        switch (stimSpatialParams.type)
-            case 'driftingGrating'
-                visualizeIndividualFits = ~true;
-                exportFig = ~true;
-                % Compute modulation of the response at the fundamental temporal frequency
-                [responseAmplitude(:, sfIndex), responseAmplitudeSE(:, sfIndex), responsePhase(:, sfIndex), ...
-                    responseTimeAxisHR, fittedResponsesHR(sfIndex,:,:)] = fitSinusoidalModulationToResponseTimeCourse(...
-                    squeeze(integratedResponsesMean(sfIndex,:,:)), ...
-                    squeeze(integratedResponsesStDev(sfIndex,:,:)), ...
-                    responseTimeAxis, ...
-                    stimTemporalParams.temporalFrequencyHz, ...
-                    spatialFrequenciesCPD(sfIndex), maxSpikeRate, ...
-                    visualizeIndividualFits, [], LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
-            otherwise
-                error('Unknown stimulus type: ''%''.', stimulusSpatialParams.type)
-        end
-        
-    end % sfIndex
     
-    % Fit the DoG model to the cell SF tuning
-    maxSpikeRatModulation = 26;
-    initialParams = [];
-    visualizeIndividualFits = false; exportFig = true;
-    [~,~,~, meanParams] = ...
-        fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, responseAmplitudeSE, initialParams, ...
-        maxSpikeRatModulation, visualizeIndividualFits, ...
-        LMScontrast, opticsPostFix, PolansSubjectID, exportFig, '');
+    % Fit the DoG model to all SF tuning curves
+    exportFig = true;
+    [patchDogParams, responseAmplitude, spatialFrequenciesCPDHR, responseAmplitudeHR, responseTimeAxisHR, fittedResponsesHR] = ...
+        computeAndFitDOGmodelToSpatialFrequencyTuningCurves(responseTimeAxis, integratedResponsesMean, integratedResponsesStDev,...
+        maxSpikeRateModulation, stimSpatialParams, stimTemporalParams, spatialFrequenciesCPD, visualizeAllSpatialFrequencyTuningCurves, ...
+        LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
     
-    % Second fit
-    visualizeIndividualFits = visualizeAllSpatialFrequencyTuningCurves; exportFig = true;
-    initialParams = meanParams;
-    [patchDogParams,spatialFrequenciesCPDHR, responseAmplitudeHR] = ...
-        fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, responseAmplitudeSE, initialParams, ...
-        maxSpikeRatModulation, visualizeIndividualFits, ...
-        LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
-
-    if (visualizePatchStatistics)
-        % Visualize data to contrast with Cronner and Kaplan data
-        RGCpositionsMicrons = determineRGCPositionsFromCenterInputs(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, theMidgetRGCmosaic.centerWeights);
-        RGCeccentricityDegs = WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCpositionsMicrons.^2,2))/1000.0);
-        visualizePatchStatsDerivedFromSFcurves(patchDogParams, theMidgetRGCmosaic.synthesizedRFParams, RGCeccentricityDegs, ...
-            LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
-    end
-    
-    %   Visualize the temporal response of each RGC at the RGC's location
-    if (visualizeRGCTemporalResponsesAtRGCPositions)
-        for sfIndex = 1:numel(spatialFrequenciesCPD)
-            exportFig = true;
-            superimposedRetinalStimulus = [];
-            plotXaxisScaling = 'linear';
-            plotType = 'TimeResponse';
-            figureName = sprintf('%2.1fcpdResponse', spatialFrequenciesCPD(sfIndex));
-            visualizeRGCmosaicWithResponses(100+sfIndex, theConeMosaic, plotXaxisScaling, plotType, ...
-               responseTimeAxis, squeeze(integratedResponsesMean(sfIndex,:,:)), ...
-               responseTimeAxisHR, squeeze(fittedResponsesHR(sfIndex,:,:)), ...
-               runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-               theMidgetRGCmosaic, 'centers', maxSpikeRate, ...
-               superimposedRetinalStimulus, ....
-               figureName, LMScontrast, opticsPostFix, PolansSubjectID, ...
-               [], labelCells, ...
-               exportFig, figExportsDir);
-        end
-    end
-    
-    if (visualizeRGCSFTuningsAtRGCPositions)
-        % Visualize the response tuning of each RGC at the RGC's location
-        exportFig = true;
-        superimposedRetinalStimulus = [];
-        plotXaxisScaling = 'log';
-        plotType = 'SFtuning';
-        figureName = 'SFtuningAll';
-        visualizeRGCmosaicWithResponses(1000, theConeMosaic, plotXaxisScaling, plotType, ...
-                    spatialFrequenciesCPD, responseAmplitude, ...
-                    spatialFrequenciesCPDHR, responseAmplitudeHR, ...
-                    runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-                    theMidgetRGCmosaic, 'centers', maxSpikeRatModulation, ...
-                    superimposedRetinalStimulus, ....
-                    figureName, LMScontrast, opticsPostFix, PolansSubjectID, ...
-                    [], labelCells, ...
-                    exportFig, figExportsDir);
-    end
-    
-    if (~isempty(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves))
-        for iTargetRGC = 1:numel(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves)
-            figureName = sprintf('SFtuning%d', targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves(iTargetRGC));
-
-            visualizeRGCmosaicWithResponses(1000+targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves(iTargetRGC), theConeMosaic, plotXaxisScaling, plotType, ...
-                    spatialFrequenciesCPD, responseAmplitude, ...
-                    spatialFrequenciesCPDHR, responseAmplitudeHR, ...
-                    runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-                    theMidgetRGCmosaic,  'centers', maxSpikeRatModulation, ...
-                    coVisualizedRetinalStimulus, ...
-                    figureName, LMScontrast, opticsPostFix, PolansSubjectID, ...
-                    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves(iTargetRGC), false, ...
-                    exportFig, figExportsDir);
-        end
-    end
-    
-    % Visualize the mosaics
-    visualizeMosaics = ~true;
-    if (visualizeMosaics)
-        fprintf('\nVisualizing the RGC mosaic with the optical image ...');
-        theOISequence = mFile.theOIsequence;
-        theFirstOI = theOISequence.frameAtIndex(1);
-        zLevels = [0.3 1];
-       
-        hFig = visualizeConeAndRGCmosaicsWithRetinalImage(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, runParams.rgcMosaicPatchSizeMicrons, ...
-            theMidgetRGCmosaic, zLevels, 'centers', theFirstOI); 
-        plotlabOBJ.exportFig(hFig, 'pdf', sprintf('%s.mat',coneResponsesFileName), pwd());
-        fprintf('Done !\n');
-    end
+    % Generate figures showing temporal responses, SF tuning curves, and the DOG parameter statistics for the patch
+    renderRGCanalysesFigures(patchDogParams, spatialFrequenciesCPDHR, responseAmplitudeHR, spatialFrequenciesCPD, responseAmplitude, ...
+        responseTimeAxis, integratedResponsesMean, responseTimeAxisHR, fittedResponsesHR, ...
+        maxSpikeRateModulation, theConeMosaic, runParams, theMidgetRGCmosaic, ...
+        visualizePatchStatistics, visualizeRGCTemporalResponsesAtRGCPositions, visualizeRGCSFTuningsAtRGCPositions, ...
+        targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, coVisualizedRetinalStimulus, ...
+        LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
 end
+
+function responseInstanceModulationsSpikesPerSec = isomerizationDeltasToSpikesPerSecond(...
+         responseInstances, nullResponses, ...
+         coneIsomerizationsDeltaPerSpikePerSecond, responseTimeBinSeconds)
+     
+     sfsNum = size(responseInstances,1);
+     instancesNum = size(responseInstances,2);
+     rgcsNum = size(responseInstances,3);
+     timeBins = size(responseInstances,4);
+    
+     % Subtract null responses (last time bin - useful for photocurrent response)
+     nullResponses = reshape(nullResponses, [1 1 rgcsNum timeBins]);
+     responseInstanceModulations = bsxfun(@minus, responseInstances, nullResponses(1,1,:,end));
+     
+     % Transform delta isomerizations/timebin to spikes/sec
+     coneIsomerizationsDeltaPerTimeBin = coneIsomerizationsDeltaPerSpikePerSecond * responseTimeBinSeconds;
+     responseInstanceModulationsSpikesPerSec = responseInstanceModulations / coneIsomerizationsDeltaPerTimeBin;
+end
+
 
 function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, weightsC, weightsS, presynapticResponses)
     % Get dimensionalities
@@ -334,10 +220,12 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
 %             surroundR = conv(surroundR, surroundIR);
 %             surroundR = surroundR(1:timeBins);
             
+            [iRGC min(centerR(:)) max(centerR(:))]
+
             responsesC(instanceIndex,iRGC,:) = centerR;
             responsesS(instanceIndex,iRGC,:) = surroundR;
         end % iRGC
         
     end % instanceIndex
 end
-       
+      

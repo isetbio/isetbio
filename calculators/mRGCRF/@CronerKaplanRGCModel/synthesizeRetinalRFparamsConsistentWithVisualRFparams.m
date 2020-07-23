@@ -9,7 +9,9 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % See performPSFConvoComputations
     deconvolutionModel = obj.computeDeconvolutionModel(deconvolutionOpticsParams);
     
-    surroundToCenterIntegratedSensitivitySigma = 0.3;
+    surroundToCenterIntegratedSensitivitySigma = 0; % 0.3;
+    surroundToCenterIntegratedSensitivityAtZeroEccentricity = 0.466;
+    surroundToCenterIntegratedSensitivityIncreaseWithEccentricity = 0.007;
     surroundCenterRadiusRatioMean = 0.15;
     surroundCenterRadiusRatioStd = 0.00;
     
@@ -52,7 +54,9 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         visualCenterPeakSensitivities(cellIndex) = obj.centerPeakSensitivityFunction(obj.centerPeakSensitivityParams, visualCenterRadii(cellIndex));
        
         % Compute visual peak sensitivity for surround based on the stats of integrated sensitivity ratio in the visual data
-        surroundToCenterIntegratedSensitivityRatio = normrnd(0.466 + 0.007*retinalEccDegs, surroundToCenterIntegratedSensitivitySigma);
+        surroundToCenterIntegratedSensitivityMean = surroundToCenterIntegratedSensitivityAtZeroEccentricity  + ...
+                                                    surroundToCenterIntegratedSensitivityIncreaseWithEccentricity * retinalEccDegs;
+        surroundToCenterIntegratedSensitivityRatio = normrnd(surroundToCenterIntegratedSensitivityMean, surroundToCenterIntegratedSensitivitySigma);
         % Not less than 0.15 and not more than 0.85
         while (surroundToCenterIntegratedSensitivityRatio<0.2) || (surroundToCenterIntegratedSensitivityRatio>0.8)
             surroundToCenterIntegratedSensitivityRatio = normrnd(0.466 + 0.007*retinalEccDegs, surroundToCenterIntegratedSensitivitySigma);

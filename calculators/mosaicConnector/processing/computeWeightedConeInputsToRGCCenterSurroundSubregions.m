@@ -67,6 +67,9 @@ function [connectionMatrixCenter, connectionMatrixSurround, ...
         sConeIndices = find(coneTypes(coneIndicesConnectedToSurround) == SCONE_ID);
         weights(coneIndicesConnectedToSurround(sConeIndices)) = 0.000001;
         weightsS = weights(coneIndicesConnectedToSurround);
+        
+        % Multiply with peak surround sensitivity
+        netWeightWithin1eSurround = sum(weightsS(weightsS>=exp(-1)))*rgcSurroundPeakSensivity;
         weightsS = weightsS * rgcSurroundPeakSensivity;
         
         % Acummulate sparse matrix indices for the surround
@@ -85,38 +88,44 @@ function [connectionMatrixCenter, connectionMatrixSurround, ...
         % to pool more cones into the center (but these will be providing
         % most of their output to other RGCs). These additional cones will
         % result in some RF center overlap
-        acceptSharedConeInputWithinRadiusMatchingTheCronerKaplanModel = true;
+        acceptSharedConeInputWithinRadiusMatchingTheCronerKaplanModel = ~true;
         if (acceptSharedConeInputWithinRadiusMatchingTheCronerKaplanModel)
             % Retrieve cone indices connected to the RGC center, 90%
             weights = gaussianConeWeights(conePositionsMicrons, rgcPositionMicrons, rgcCenterRadiusMicrons);
             coneIndicesNearRFcenter = find((weights >= 0.1)&((coneTypes==LCONE_ID)|(coneTypes==MCONE_ID)));
+            
+            allConeIndicesConnectedToCenter = unique([coneIndicesConnectedExclusivelyToCenter(:); coneIndicesNearRFcenter(:)]);
+            coneIndicesConnectedToCenterProvidingSharedInput = setdiff(allConeIndicesConnectedToCenter, coneIndicesConnectedExclusivelyToCenter);
+        
+            if (~isempty(coneIndicesConnectedToCenterProvidingSharedInput))
+                fprintf(' RGC %d center: %d cones provide exclusive input and %d cones provide shared input\n', ...
+                    iRGC, numel(coneIndicesConnectedExclusivelyToCenter), numel(coneIndicesConnectedToCenterProvidingSharedInput));
+            end
+        
         else
             coneIndicesNearRFcenter = [];
+            allConeIndicesConnectedToCenter = coneIndicesConnectedExclusivelyToCenter;
         end
         
-        allConeIndicesConnectedToCenter = unique([coneIndicesConnectedExclusivelyToCenter(:); coneIndicesNearRFcenter(:)]);
-        coneIndicesConnectedToCenterProvidingSharedInput = setdiff(allConeIndicesConnectedToCenter, coneIndicesConnectedExclusivelyToCenter);
-        
-        if (~isempty(coneIndicesConnectedToCenterProvidingSharedInput))
-            fprintf(' RGC %d center: %d cones provide exclusive input and %d cones provide shared input\n', ...
-                iRGC, numel(coneIndicesConnectedExclusivelyToCenter), numel(coneIndicesConnectedToCenterProvidingSharedInput));
-        end
         
         % Gaussian weights for all cones
-        weights = gaussianConeWeights(conePositionsMicrons(allConeIndicesConnectedToCenter,:), rgcPositionMicrons, rgcCenterRadiusMicrons);
+        weightsC = gaussianConeWeights(conePositionsMicrons(allConeIndicesConnectedToCenter,:), rgcPositionMicrons, rgcCenterRadiusMicrons);
         
-        % Except for the origiMaximum weights (1) for cones 
-        for iConeExclusive = 1:numel(coneIndicesConnectedExclusivelyToCenter)
-            idx = find(allConeIndicesConnectedToCenter == coneIndicesConnectedExclusivelyToCenter(iConeExclusive));
-            weights(idx) = 1.0;
+        if (acceptSharedConeInputWithinRadiusMatchingTheCronerKaplanModel)
+            % Except for the origiMaximum weights (1) for cones 
+            for iConeExclusive = 1:numel(coneIndicesConnectedExclusivelyToCenter)
+                idx = find(allConeIndicesConnectedToCenter == coneIndicesConnectedExclusivelyToCenter(iConeExclusive));
+                weightsC(idx) = 1.0;
+            end
         end
         
-        % Multiple by center's peak sensitivity
-        weightsC = weights * rgcCenterPeakSensivity;
+        % Multiply with peak center sensitivity
+        netWeightWithin1eCenter = sum(weightsC(weightsC>=exp(-1)))*rgcCenterPeakSensivity;
+        weightsC = weightsC * rgcCenterPeakSensivity;
         
         % Adjust center weights to ensure the achieved integrated sensitivity ratio matches the desired one
         desiredSurroundToCenterIntegratedSensitivityRatio = rgcSurroundPeakSensivity/rgcCenterPeakSensivity * (rgcSurroundRadiusMicrons/rgcCenterRadiusMicrons)^2;
-        actualSurroundToCenterIntegratedSensitivityRatio = sum(weightsS)/sum(weightsC);
+        actualSurroundToCenterIntegratedSensitivityRatio = netWeightWithin1eSurround /netWeightWithin1eCenter;
 
         sensitivityCorrectionFactor = desiredSurroundToCenterIntegratedSensitivityRatio/actualSurroundToCenterIntegratedSensitivityRatio;   
         weightsC = weightsC / sensitivityCorrectionFactor;

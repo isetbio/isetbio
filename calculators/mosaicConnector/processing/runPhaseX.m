@@ -13,10 +13,10 @@ function runPhaseX(runParams)
     % Load/Recompute connected mosaics and the optics
     recomputeConeMosaic = ~true;
     recomputeOptics = ~true;
-    recomputeRGCmosaic = ~true;
+    recomputeRGCmosaic = true;
      
      % Compute cone mosaic responses
-    recomputeConeMosaicResponses = true;
+    recomputeConeMosaicResponses = ~true;
     recomputeNullResponses = ~true;
     
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
@@ -33,7 +33,7 @@ function runPhaseX(runParams)
     minSF = 0.1;
     maxSF = 100;
     sfsNum = 15;
-    spatialFrequenciesCPD = fliplr(logspace(log10(minSF), log10(maxSF),sfsNum));
+    spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),sfsNum);
     
     stimulusFOVdegs = 2.0;
     minPixelsPerCycle = 8;
@@ -43,7 +43,7 @@ function runPhaseX(runParams)
     instancesNum = 16;
     
     % Visualized cells
-    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [60]; %[3 14 52];
+    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [57 62]; %[3 14 52];
     
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
@@ -83,7 +83,7 @@ function runPhaseX(runParams)
     else
         visualizeAllSpatialFrequencyTuningCurves = true;
         visualizeResponseComponents = true;
-        visualizeRetinalContrasts = false;
+        visualizeRetinalContrasts = ~true;
         coVisualizeRetinalStimulusWithMosaics = ~true;
         visualizeMeanConeMosaicResponseAsAMovie = false;
         visualizeRGCTemporalResponsesAtRGCPositions = ~true;
@@ -99,7 +99,7 @@ function runPhaseX(runParams)
             visualizeRetinalContrasts, visualizeMeanConeMosaicResponseAsAMovie, ...
             targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, visualizePatchStatistics, ...
             'coVisualizeRetinalStimulusWithMosaics', coVisualizeRetinalStimulusWithMosaics, ...
-            'coVisualizedRetinalStimulusSpatialFrequency', 30, ...
+            'coVisualizedRetinalStimulusSpatialFrequency', 5, ...
             'coVisualizedRetinalStimulusConeContrast', LCONE_ID);
             
     end

@@ -35,8 +35,8 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, synthesized
         'topMargin', 0.01);
     
     ax = theAxesGrid{1,1};
-    scatter(ax, synthesizedRFParams.visual.centerRadiiDegs, centerRadii); hold(ax, 'on');
-    scatter(ax, synthesizedRFParams.visual.surroundRadiiDegs, surroundRadii);
+    scatter(ax, synthesizedRFParams.visual.centerRadiiDegs, centerRadii, 'MarkerEdgeColor', 'none'); hold(ax, 'on');
+    scatter(ax, synthesizedRFParams.visual.surroundRadiiDegs, surroundRadii, 'MarkerEdgeColor', 'none');
     line(ax, radiusRange, radiusRange, 'Color', 'k', 'LineWidth', 1.5);
     set(ax, 'XScale', 'log', 'XLim', radiusRange , 'XTick', [0.01 0.03 0.1 0.3 1 3]);
     set(ax, 'YScale', 'log', 'YLim', radiusRange, 'YTick', [0.01 0.03 0.1 0.3 1 3]);
@@ -45,8 +45,8 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, synthesized
     ylabel(ax,'fitted model radius (degs)');
     
     ax = theAxesGrid{1,2};
-    scatter(ax, synthesizedRFParams.visual.centerPeakSensitivities, centerPeakSensitivities); hold(ax, 'on');
-    scatter(ax, synthesizedRFParams.visual.surroundPeakSensitivities, surroundPeakSensitivities);
+    scatter(ax, synthesizedRFParams.visual.centerPeakSensitivities, centerPeakSensitivities, 'MarkerEdgeColor', 'none'); hold(ax, 'on');
+    scatter(ax, synthesizedRFParams.visual.surroundPeakSensitivities, surroundPeakSensitivities, 'MarkerEdgeColor', 'none');
     line(ax, peakSensitivityRange, peakSensitivityRange, 'Color', 'k', 'LineWidth', 1.5);
     set(ax, 'XScale', 'log', 'XLim', peakSensitivityRange, 'XTick', [1 3 10 30 100 300 1000 3000 10000 30000 100000]);
     set(ax, 'YScale', 'log', 'YLim', peakSensitivityRange, 'YTick', [1 3 10 30 100 300 1000 3000 10000 30000 100000]);
@@ -82,8 +82,7 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, synthesized
          pdfFileName = sprintf('PatchStatsVsSynthesizedStats_LMS_%0.2f_%0.2f_%0.2f_PolansSID_%d_%s', LMScontrast(1), LMScontrast(2), LMScontrast(3), PolansSubjectID, opticsPostFix);
          plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, figExportsDir);
     end
-    pause
-    
+
     
     hFig = figure(555); clf
     

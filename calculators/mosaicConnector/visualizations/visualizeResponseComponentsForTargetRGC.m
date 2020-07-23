@@ -1,12 +1,14 @@
-function  visualizeResponseComponentsForTargetRGC(targetRGC, responseTimeAxis, centerResponses, surroundResponses, ...
+function  visualizeResponseComponentsForTargetRGC(targetRGC, responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
     spatialFrequenciesCPD, maxSpikeRate, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir)
 
     plotlabOBJ = setupPlotLab(0, 16, 12);
     hFig = figure(123); clf;
     
+    rowsNum = 4;
+    colsNum = 4;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
-        'rowsNum', 4, ...
-        'colsNum', 4, ...
+        'rowsNum', rowsNum, ...
+        'colsNum', colsNum, ...
         'leftMargin', 0.06, ...
         'widthMargin', 0.03, ...
         'heightMargin', 0.03, ...
@@ -14,26 +16,29 @@ function  visualizeResponseComponentsForTargetRGC(targetRGC, responseTimeAxis, c
         'rightMargin', 0.0, ...
         'topMargin', 0.01);
     
-    centerResponsesMean = squeeze(mean(centerResponses,2));
-    surroundResponsesMean = squeeze(mean(surroundResponses,2));
+    % Mean over instances
+    centerResponsesMean = squeeze(mean(centerResponseInstances,2));
+    surroundResponsesMean = squeeze(mean(surroundResponseInstances,2));
     
     for sfIndex = 1:numel(spatialFrequenciesCPD)  
         row = floor((sfIndex-1)/4)+1;
         col = mod(sfIndex-1,4)+1;
         ax = theAxesGrid{row,col};
-        centerResponses = squeeze(centerResponsesMean(sfIndex,targetRGC,:));
-        surroundResponses = squeeze(surroundResponsesMean(sfIndex,targetRGC,:));
-        line(ax, responseTimeAxis, centerResponses, 'Color', [1 0 0], 'LineWidth', 1.5); hold on;
-        line(ax, responseTimeAxis, surroundResponses, 'Color', [0 0 1], 'LineWidth', 1.5);
-        set(ax, 'XLim', [0 0.5], 'YLim', maxSpikeRate*[0 1], 'XTick', 0:0.1:0.5, 'YTick',(0:0.2:1)*maxSpikeRate);
-        if (row ==3)&&(col == 1)
+        theMeanCenterResponse = squeeze(centerResponsesMean(sfIndex,targetRGC,:));
+        theMeaSurroundResponse = squeeze(surroundResponsesMean(sfIndex,targetRGC,:));
+        line(ax, responseTimeAxis, squeeze(centerResponseInstances(sfIndex, :, targetRGC, :)), 'Color', [1 0.5 0.5], 'LineWidth', 1.0); hold on;
+        line(ax, responseTimeAxis, squeeze(surroundResponseInstances(sfIndex, :, targetRGC, :)), 'Color', [0.2 0.8 1], 'LineWidth', 1.0);
+        line(ax, responseTimeAxis, theMeanCenterResponse, 'Color', [1 0 0], 'LineWidth', 2); hold on;
+        line(ax, responseTimeAxis, theMeaSurroundResponse, 'Color', [0 0 1], 'LineWidth', 2);
+        set(ax, 'XLim', [0 0.5], 'YLim', maxSpikeRate*[-1 1], 'XTick', 0:0.1:0.5, 'YTick',(-1:0.5:1)*maxSpikeRate);
+        if (row == rowsNum) && (col == 1)
             xlabel(ax, 'time (sec)');
             ylabel(ax, 'response');
         else
             set(ax, 'XTickLabel', {}, 'YTickLabel', {});
         end
         axis(ax, 'square');
-        text(ax,0.02, 180,sprintf('%4.2f c/deg', spatialFrequenciesCPD(sfIndex)), 'FontSize',16);
+        title(ax,sprintf('%4.2f c/deg', spatialFrequenciesCPD(sfIndex)));
         
     end
     

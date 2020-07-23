@@ -8,9 +8,9 @@ function [patchDogParams, spatialFrequenciesCPDHR, responseTuningHR, meanParams]
         params(1)*params(3) * ( pi * (params(2)*params(4))^2 * exp(-(pi*params(2)*params(4)*sf).^2) ) ));
     
     % Upper and lower values of DoG params
-    %               Kc       Rc     kS/kC       Rs/Rc   C
-    lowerBounds   = [1     0.001   1e-4   2       1 ];
-    upperBounds   = [5000   1.0     1e-1   20     Inf];
+    %               Kc       Rc     kS/kC       Rs/Rc     C
+    lowerBounds   = [1     0.001    1e-4          2       1 ];
+    upperBounds   = [5000   1.0     1e-1          20     Inf];
     
     % Fitting options
     oldoptions = optimoptions('lsqcurvefit');
