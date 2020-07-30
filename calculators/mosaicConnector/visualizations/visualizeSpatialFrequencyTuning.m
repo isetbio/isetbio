@@ -1,6 +1,12 @@
 function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRateModulation, ...
-    spatialFrequenciesCPDHR, responseTuningHR, modelParams, targetRGC, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir)
+    spatialFrequenciesCPDHR, responseTuningHR, modelParams, targetRGC, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir, varargin)
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('synthParams', [], @(x)(isempty(x)||(isstruct(x))));
+    p.parse(varargin{:});
+    synthParams = p.Results.synthParams;
+    
     % Reset figure
     if (isempty(axesHandle))
         % Set plotLab
@@ -23,9 +29,13 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     % Plot the mean points
     scatter(axesHandle, spatialFrequenciesCPD, theSFtuning, 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
     
+    if (~isempty(synthParams))
+          visualizeSFTuningOfUnderlyingModel(axesHandle, targetRGC, synthParams, spatialFrequenciesCPDHR, max(responseTuningHR));
+    end
+            
     % Set the axes
     axis(axesHandle, 'square');
-    set(axesHandle, 'XScale', 'log', 'XLim', [0.03 105], 'XTick', [0.03 0.1 0.3 1 3 10 30 100], ...
+    set(axesHandle, 'XScale', 'log', 'XLim', [0.06 105], 'XTick', [0.03 0.1 0.3 1 3 10 30 100], ...
         'YTick', [0:50:200], 'YScale', 'linear','YLim', [0 maxSpikeRateModulation]);
     xlabel(axesHandle,'spatial frequency (c/deg)');
     ylabel(axesHandle, 'response modulation');
@@ -35,7 +45,7 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     
     % Show the params of the fitted model
     if (~isempty(modelParams))
-        text(axesHandle, 0.035, maxSpikeRateModulation*0.88, sprintf('K_c: %2.0f\nK_s: %2.1f\nR_c: %2.1f arcmin\nR_s: %2.1f arcmin', ...
+        text(axesHandle, 0.035, maxSpikeRateModulation*0.05, sprintf('K_c: %2.0f\nK_s: %2.1f\nR_c: %2.1f arcmin\nR_s: %2.1f arcmin', ...
             modelParams.kC, modelParams.kS, modelParams.rC*60, modelParams.rS*60), 'FontSize', 12, 'FontName', 'Source Code Pro', 'BackgroundColor', [1 1 1]);
     end
     

@@ -1,5 +1,5 @@
-function theMidgetRGCmosaic = generateConnectedConeAndMRGCMosaics(theConeMosaicMetaData, mRGCmosaicFile, mosaicParams, ...
-    deconvolutionOpticsParams, outputFile, exportsDir)
+function theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMosaicMetaData, mRGCmosaicFile, mosaicParams, ...
+    deconvolutionOpticsParams, visualizePatchDeconvolutionModel, outputFile, exportsDir)
     
     % STEP 1. Retrieve regular hex cone mosaic metadata
     coneMosaicEccDegs = theConeMosaicMetaData.coneMosaicEccDegs;
@@ -19,8 +19,9 @@ function theMidgetRGCmosaic = generateConnectedConeAndMRGCMosaics(theConeMosaicM
          orphanRGCpolicy, maximizeConeSpecificity, visualizeMosaicsToBeConnected);
      
      
-    % Visualize EXCLUSIVE connections to the RF centers
-    visualizeRFcenterTiling = true;
+    % Visualize EXCLUSIVE connections to the RF centers. These are
+    % determined solely by the relationship of the cone/mRGCRF densities
+    visualizeRFcenterTiling = ~true;
     if (visualizeRFcenterTiling)
         subregionToVisualize.center = round(mosaicParams.rgcMosaicPatchEccMicrons);
         subregionToVisualize.size = coneMosaicSizeMicrons;
@@ -30,16 +31,18 @@ function theMidgetRGCmosaic = generateConnectedConeAndMRGCMosaics(theConeMosaicM
                 outputFile,exportsDir);
     end
     
-    % STEP 3. 
+    % STEP 3. Determine weighted connection to center/surround regions
     [midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
      synthesizedRFParams] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
             conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
             midgetRGCconnectionMatrix, ...
             mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons, ...
-            deconvolutionOpticsParams);
+            deconvolutionOpticsParams, visualizePatchDeconvolutionModel, exportsDir);
         
-    % Visualize ALL (EXCLUSIVE+SHARED) connections to the RF centers
-    visualizeRFcenterTiling = true;
+    % Visualize ALL (EXCLUSIVE+SHARED) connections to the RF centers.
+    % The Shared cone connections are guided by weigthed connections, which
+    % are determined by the CronerKaplan decolvolution model
+    visualizeRFcenterTiling = ~true;
     if (visualizeRFcenterTiling)
         subregionToVisualize.center = round(mosaicParams.rgcMosaicPatchEccMicrons);
         subregionToVisualize.size = coneMosaicSizeMicrons;

@@ -79,7 +79,9 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
             responseTuningHR = squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:));
             patchDogParams = {};
             visualizeSpatialFrequencyTuning(ax, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRate, ...
-                spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, targetRGC, LMScontrast, opticsPostFix, PolansSubjectID, false, '');
+                spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, targetRGC, LMScontrast, opticsPostFix, ...
+                PolansSubjectID, false, '', 'synthParams', theMidgetRGCmosaic.synthesizedRFParams.visual);
+            
         else
             renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
                 xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  targetRGC, false);

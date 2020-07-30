@@ -1,4 +1,5 @@
-function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFparams(obj, retinalCenterRadiiMicrons, retinalCenterPositionMicrons, deconvolutionOpticsParams)
+function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFparams(obj, ...
+    retinalCenterRadiiMicrons, retinalCenterPositionMicrons, deconvolutionOpticsParams)
     
     % Validate deconvolutionOpticsParams
     obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
@@ -22,9 +23,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     retinalEccentricitiesDegs = (WatsonRGCModel.rhoMMsToDegs(retinalEccentricitiesMicrons/1000.0))';
     
     % Convert RF center radii from retinal microns to visual degs
-    pMinus = retinalEccentricitiesMicrons - retinalCenterRadiiMicrons;
-    pPlus = retinalEccentricitiesMicrons + retinalCenterRadiiMicrons;
-    retinalCenterRadii = (0.5*(WatsonRGCModel.rhoMMsToDegs(pPlus/1000.0) - WatsonRGCModel.rhoMMsToDegs(pMinus/1000.0)))';
+    retinalCenterRadii = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(retinalCenterRadiiMicrons, retinalEccentricitiesMicrons);
     
     % Stats of surround/center radius
     surroundToCenterRadiusRatio = normrnd(surroundCenterRadiusRatioMean, surroundCenterRadiusRatioStd, [1 cellsNum]);
@@ -34,10 +33,13 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     visualSurroundRadii = zeros(1, cellsNum);
     visualCenterPeakSensitivities = zeros(1, cellsNum);
     visualSurroundPeakSensitivities = zeros(1, cellsNum);
+    visualSurroundToCenterIntegratedSensitivityRatio = zeros(1, cellsNum);
     
+    retinalCenterRadii = reshape(retinalCenterRadii, [1 cellsNum]);
     retinalSurroundRadii = zeros(1, cellsNum);
     retinalCenterPeakSensitivities = zeros(1, cellsNum);
     retinalSurroundPeakSensitivities = zeros(1, cellsNum);
+    retinalSurroundToCenterIntegratedSensitivityRatio = zeros(1, cellsNum);
     
     for cellIndex = 1:cellsNum
         retinalEccDegs = retinalEccentricitiesDegs(cellIndex);
@@ -61,8 +63,13 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         while (surroundToCenterIntegratedSensitivityRatio<0.2) || (surroundToCenterIntegratedSensitivityRatio>0.8)
             surroundToCenterIntegratedSensitivityRatio = normrnd(0.466 + 0.007*retinalEccDegs, surroundToCenterIntegratedSensitivitySigma);
         end
+        
         visualSurroundPeakSensitivities(cellIndex) = surroundToCenterIntegratedSensitivityRatio * visualCenterPeakSensitivities(cellIndex) * (visualCenterRadii(cellIndex)/visualSurroundRadii(cellIndex))^2;
-         
+        
+        visualSurroundToCenterIntegratedSensitivityRatio(cellIndex) = ...
+            visualSurroundPeakSensitivities(cellIndex)/visualCenterPeakSensitivities(cellIndex) * ...
+            (visualSurroundRadii(cellIndex)/visualCenterRadii(cellIndex))^2;
+        
         % Determine corresponding retinal gain for center
         gainAttenuation = determineRetinalGainAttenuation(retinalCenterRadii(cellIndex), retinalEccDegs, deconvolutionModel, closestEccIndices);
         retinalCenterPeakSensitivities(cellIndex) = visualCenterPeakSensitivities(cellIndex) / gainAttenuation;
@@ -70,6 +77,11 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         % Determine corresponding retinal gain for surround
         gainAttenuation = determineRetinalGainAttenuation(retinalSurroundRadii(cellIndex), retinalEccDegs, deconvolutionModel, closestEccIndices);
         retinalSurroundPeakSensitivities(cellIndex) = visualSurroundPeakSensitivities(cellIndex) / gainAttenuation;
+        
+        retinalSurroundToCenterIntegratedSensitivityRatio(cellIndex) = ...
+            retinalSurroundPeakSensitivities(cellIndex)/retinalCenterPeakSensitivities(cellIndex) * ...
+            (retinalSurroundRadii(cellIndex)/retinalCenterRadii(cellIndex))^2;
+        
     end % cellIndex
     
     synthesizedRFParams = struct(...
@@ -78,15 +90,18 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
             'centerRadiiDegs', visualCenterRadii, ...
             'surroundRadiiDegs', visualSurroundRadii, ...
             'centerPeakSensitivities', visualCenterPeakSensitivities,...
-            'surroundPeakSensitivities', visualSurroundPeakSensitivities...
+            'surroundPeakSensitivities', visualSurroundPeakSensitivities,...
+            'surroundToCenterIntegratedSensitivityRatio', visualSurroundToCenterIntegratedSensitivityRatio ...
             ), ...
         'retinal', struct(...                          % retinal RF properties
             'centerRadiiDegs', retinalCenterRadii, ...
             'surroundRadiiDegs', retinalSurroundRadii, ...
             'centerPeakSensitivities', retinalCenterPeakSensitivities,...
-            'surroundPeakSensitivities', retinalSurroundPeakSensitivities...
+            'surroundPeakSensitivities', retinalSurroundPeakSensitivities,...
+            'surroundToCenterIntegratedSensitivityRatio', retinalSurroundToCenterIntegratedSensitivityRatio ...
             ) ...
         );
+
 end
 
 function retinalGainAttenuation = determineRetinalGainAttenuation(retinalRadius, retinalEccDegs, deconvolutionModel, closestEccIndices)

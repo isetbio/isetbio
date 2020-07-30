@@ -1,19 +1,24 @@
 function synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, coneSpacingsMicrons, midgetRGCconnectionMatrix, ...
     deconvolutionOpticsParams)
     
+    % Determine rf center size and rf center position from the connectivity matrix
     [rfCenterRadiiMicrons, rfCenterPositionsMicrons] = ...
         computeRFcenterSizeAndPositionsFromConnectivityMatrix(...
             conePositionsMicrons, coneSpacingsMicrons, ...
             midgetRGCconnectionMatrix);
-
+        
+    rfCenterRadiiMicrons = mean(rfCenterRadiiMicrons,2);
+    %rfCenterRadiiMicrons = min(rfCenterRadiiMicrons,[],2);
+    rfCenterRadiiMicrons = max(rfCenterRadiiMicrons,[],2);
+    
     % Compute visual and retinal RF params from the retinal rf center radii
     % and positions (both in microns)
     ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
     synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(...
         rfCenterRadiiMicrons, rfCenterPositionsMicrons, deconvolutionOpticsParams);
-        
-    % Add the corresponding rgcIndices, and patch ecc/size
-    synthesizedRFParams.centerPositionMicrons = rfCenterPositionsMicrons;  % position as computed by the summed inputs to the center
+    
+    % position as computed by the summed inputs to the center
+    synthesizedRFParams.centerPositionMicrons = rfCenterPositionsMicrons;  
 end
 
 function [rfCenterRadiiMicrons, rfCenterPositionsMicrons] = ...
@@ -23,12 +28,14 @@ function [rfCenterRadiiMicrons, rfCenterPositionsMicrons] = ...
         
     % Preallocate memory
     rgcsNum = size(midgetRGCconnectionMatrix,2);
-    rfCenterRadiiMicrons = zeros(rgcsNum,1);
+    rfCenterRadiiMicrons = zeros(rgcsNum,2);
     rfCenterPositionsMicrons = zeros(rgcsNum,2);
     
+    deltaX = min(coneSpacingsMicrons)/20;
+    
     % Compute RGC RF center positions and radii
-    parfor RGCindex = 1:rgcsNum
-        fprintf('Computing rf center and size for RGC %d of %d\n', RGCindex, rgcsNum);
+    for RGCindex = 1:rgcsNum
+        
         connectivityVector = full(squeeze(midgetRGCconnectionMatrix(:, RGCindex)));
         inputIDs = find(connectivityVector>0);
         inputsNum = numel(inputIDs);
@@ -36,33 +43,74 @@ function [rfCenterRadiiMicrons, rfCenterPositionsMicrons] = ...
             error('RGC %d has zero inputs\n', RGCindex);
         end
         
-        % Generate RFs of RGCs based on cone positions and connection matrix
-        [rfCenterPosition, rfCenterSize, rfRotationDegs] = computeRFcenterAndSizeFromConnectivityMatrix(...
-            connectivityVector(inputIDs), conePositionsMicrons(inputIDs,:), coneSpacingsMicrons(inputIDs));
+        % Compute RF center position and size based on the connectivity matrix
+        switch inputsNum
+            case 1
+                 rfCenterPosition = conePositionsMicrons(inputIDs,:);
+                 rfSigmas = 0.5*coneSpacingsMicrons(inputIDs)/3*[1 1];
+                 
+            case 2
+                [rfCenterPosition, rfSigmas] = computeRFcenterAndSizeFor2inputRGCFromConnectivityMatrix(...
+                    connectivityVector(inputIDs), conePositionsMicrons(inputIDs,:), coneSpacingsMicrons(inputIDs));
+                
+            otherwise
+                [rfCenterPosition, rfSigmas] = computeRFcenterAndSizeFromConnectivityMatrixViaGaussianFitting(...
+                    connectivityVector(inputIDs), conePositionsMicrons(inputIDs,:), coneSpacingsMicrons(inputIDs), deltaX);
+        end
+        
+        fprintf('RF center size for RGC %d (%d-input):%2.2f um\n', RGCindex, inputsNum, mean(rfSigmas));
         
         rfCenterPositionsMicrons(RGCindex,:) = rfCenterPosition;
-        rfCenterRadiiMicrons(RGCindex) = 0.5*rfCenterSize;
+        rfCenterRadiiMicrons(RGCindex,:) = rfSigmas;
     end 
 end
 
-    
-function [rfCenterPosition, rfCenterSize, rfRotationDegs] = computeRFcenterAndSizeFromConnectivityMatrix(connectivityVector, conePositionsMicrons, coneSpacingsMicrons)
+function [rfCenterPosition, rfSigmas] = computeRFcenterAndSizeFor2inputRGCFromConnectivityMatrix(...
+            connectivityVector, conePositionsMicrons, coneSpacingsMicrons)
+        
+       if (numel(connectivityVector) ~= 2)
+           error('Must have 2 only inputs');
+       end
+       
+       rfCenterPosition = [];
+       for coneIndex = 1:numel(connectivityVector)
+           if (isempty(rfCenterPosition))
+               rfCenterPosition = conePositionsMicrons(coneIndex,:) * connectivityVector(coneIndex);
+           else
+               rfCenterPosition = rfCenterPosition + conePositionsMicrons(coneIndex,:) * connectivityVector(coneIndex);
+           end
+           
+       end
+       coneApertureRadius = 0.7*0.5*coneSpacingsMicrons(1);
+       coneSigma = coneApertureRadius/3;
+       rfCenterPosition = sum(rfCenterPosition,1)/sum(connectivityVector);
+       rfSigmas = [coneSigma coneSpacingsMicrons(1)*0.5+coneSigma];
+
+end
+
+
+function [rfCenterPosition, rfSigmas] = computeRFcenterAndSizeFromConnectivityMatrixViaGaussianFitting(connectivityVector, conePositionsMicrons, coneSpacingsMicrons, deltaX)
     % Determine spatial support
     minXY = min(conePositionsMicrons,[],1);
     maxXY = max(conePositionsMicrons,[],1);
     s = max(coneSpacingsMicrons);
     xMin = minXY(1)-s; xMax = maxXY(1)+s;
     yMin = minXY(2)-s; yMax = maxXY(2)+s;
-    deltaX = min(coneSpacingsMicrons)/9;
     xAxis = (xMin: deltaX: xMax);
     yAxis = (yMin: deltaX: yMax);
     [X,Y] = meshgrid(xAxis,yAxis);
     theRF = [];
+    
     for coneIndex = 1:numel(connectivityVector)
         cP = squeeze(conePositionsMicrons(coneIndex,:));
-        coneSigma = 0.5*coneSpacingsMicrons(coneIndex)/3;
-        coneProfile = exp(-0.5*((X-cP(1))/coneSigma).^2) .* exp(-0.5*((Y-cP(2))/coneSigma).^2).^0.1;
-  
+        coneApertureRadius = 0.7*0.5*coneSpacingsMicrons(coneIndex);
+        coneSigma = coneApertureRadius/3;
+        coneProfile = (exp(-((X-cP(1))/coneSigma).^2) .* exp(-((Y-cP(2))/coneSigma).^2));
+        
+        % Flat-top sensitivity
+        %coneProfile(coneProfile>=exp(-1)*exp(-1)) = exp(-1)*exp(-1);
+        %coneProfile = coneProfile / max(coneProfile(:));
+        
         if (isempty(theRF))
             theRF = coneProfile * connectivityVector(coneIndex);
         else
@@ -70,40 +118,10 @@ function [rfCenterPosition, rfCenterSize, rfRotationDegs] = computeRFcenterAndSi
         end 
     end
     
-    % Find all the points that are greater than 1/e
-    theRF = theRF/max(theRF(:));
-    idx = find(theRF >= exp(-1));
-    [row,col] = ind2sub(size(theRF), idx);
-
-    % Determine semiAxes and rotation angle of the cloud point
-    [rfCenterPosition, semiAxes, rfRotationDegs] = determineRotationAndSemiaxes(xAxis(col), yAxis(row));
-    rfCenterSize = mean(semiAxes);
+    % Fit a 2D Gaussian with different minor/major axes
+    center = mean(conePositionsMicrons,1);
+    [rfCenterPosition, rfSigmas] = fitElliptical2DGausianToRF(X, Y, theRF/max(theRF(:)), deltaX, center);
+    
 end
 
-function  [center, semiAxes, rotationAngleDegs] = determineRotationAndSemiaxes(xx,yy)
-    
-    % Determine rotation of point cloud
-    xo = mean(xx); yo = mean(yy);
-    xx = xx - xo; yy = yy - yo;
-    coeffs = polyfit(xx, yy, 1);
-    slope = coeffs(1);
-    rotationAngleDegs = atand(slope);
-    if (abs(slope)>1)
-        coeffs = polyfit(yy, xx, 1);
-        slope = coeffs(1);
-        rotationAngleDegs = 90-atand(slope);
-    end
-    
-    % rotate to either 0 or 90 axis
-    rotAngle = -rotationAngleDegs;
-    xx2 = xo + xx*cosd(rotAngle) - yy*sind(rotAngle);
-    yy2 = yo + xx*sind(rotAngle) + yy*cosd(rotAngle);
-
-    % Compute semiAxes
-    semiAxes(1) = max(xx2)-min(xx2);
-    semiAxes(2) = max(yy2)-min(yy2);
-    
-	% Center of RF
-    center = [xo yo];
-end
 

@@ -14,13 +14,12 @@ function performPSFConvoComputations
 %     
     % Perform the deconvolution analysis for certain Polans subjects 
     % These files are 
-    generateDeconvolutionFiles = true;
+    generateDeconvolutionFiles = ~true;
     if (generateDeconvolutionFiles)
         deconvolutionOpticsParams = struct(...
             'PolansWavefrontAberrationSubjectIDsToCompute', 9 ...
             );
-        eccTested = [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10];
-        %eccTested = [11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
+        eccTested = [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
         deconvolutionOpticsParams.quadrantsToCompute =  {'horizontal'}; % {'horizontal', 'superior', 'inferior'};
         ck.generatePolansOpticsDeconvolutionFiles(...
             deconvolutionOpticsParams, ...
@@ -36,7 +35,7 @@ function performPSFConvoComputations
     deconvolutionOpticsParams.quadrantsToAverage = {'horizontal'};
   
     deconvolutionModel = ck.computeDeconvolutionModel(deconvolutionOpticsParams);
-    CronerKaplanRGCModel.plotDeconvolutionModel(deconvolutionModel)
+    CronerKaplanRGCModel.plotDeconvolutionModel(deconvolutionModel);
     
     
 end

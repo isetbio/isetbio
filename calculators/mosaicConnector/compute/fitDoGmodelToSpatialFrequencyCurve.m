@@ -1,7 +1,13 @@
 function [patchDogParams, spatialFrequenciesCPDHR, responseTuningHR, meanParams] = ...
     fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseTuning, responseTuningSE, initialParams, ...
-    maxSpikeRateModulation, visualizeIndividualFits, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir)
+    maxSpikeRateModulation, visualizeIndividualFits, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir, varargin)
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('synthParams', [], @(x)(isempty(x)||(isstruct(x))));
+    p.parse(varargin{:});
+    synthParams = p.Results.synthParams;
+    
     % The DOF model function handle
     DoGFunction = @(params,sf)(params(5)*(...
         params(1)           * ( pi * (params(2))^2 * exp(-(pi*params(2)*sf).^2) ) - ...
@@ -52,7 +58,8 @@ function [patchDogParams, spatialFrequenciesCPDHR, responseTuningHR, meanParams]
         if (visualizeIndividualFits)
             visualizeSpatialFrequencyTuning([], spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRateModulation, ...
                 spatialFrequenciesCPDHR, squeeze(responseTuningHR(iRGC,:)), patchDogParams{iRGC}, ...
-                iRGC, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir);
+                iRGC, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir, ...
+                'synthParams', synthParams);
         end
     end
     

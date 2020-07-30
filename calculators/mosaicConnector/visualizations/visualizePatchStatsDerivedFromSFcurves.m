@@ -18,7 +18,7 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, synthesized
     end
     
     eccRange = [0.01 30];
-    radiusRange = [0.01 3];
+    radiusRange = [0.001 1];
     peakSensitivityRange = [0.1 3000];
     peakSensitivityRatioRange = [1e-4 1];
     

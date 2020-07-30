@@ -14,14 +14,19 @@ function runPhaseX(runParams)
     recomputeConeMosaic = ~true;
     recomputeOptics = ~true;
     recomputeRGCmosaic = true;
-     
+    visualizeCronerKaplanDeconvolutionModel = true;
+    
      % Compute cone mosaic responses
-    recomputeConeMosaicResponses = ~true;
-    recomputeNullResponses = ~true;
+    recomputeConeMosaicResponses = true;
+    recomputeNullResponses = true;
+    
     
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
-        mosaicsAndOpticsForEccentricity(runParams, recomputeConeMosaic, recomputeRGCmosaic, recomputeOptics, saveDir);
+        mosaicsAndOpticsForEccentricity(runParams, recomputeConeMosaic, ...
+        recomputeRGCmosaic, recomputeOptics, saveDir, ...
+        visualizeCronerKaplanDeconvolutionModel);
 
+    
     displayPSFs = ~true;
     if (displayPSFs)
         eccDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*runParams.rgcMosaicPatchEccMicrons);
@@ -40,7 +45,7 @@ function runPhaseX(runParams)
     stimulusPixelsNum = stimulusFOVdegs*minPixelsPerCycle;
     temporalFrequency = 4.0;
     stimDurationSeconds = 0.5;
-    instancesNum = 16;
+    instancesNum = 64;
     
     % Visualized cells
     targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [57 62]; %[3 14 52];
@@ -84,7 +89,7 @@ function runPhaseX(runParams)
         visualizeAllSpatialFrequencyTuningCurves = true;
         visualizeResponseComponents = true;
         visualizeRetinalContrasts = ~true;
-        coVisualizeRetinalStimulusWithMosaics = ~true;
+        coVisualizeRetinalStimulusWithMosaics = true;
         visualizeMeanConeMosaicResponseAsAMovie = false;
         visualizeRGCTemporalResponsesAtRGCPositions = ~true;
         visualizeRGCSFTuningsAtRGCPositions = true;
@@ -99,7 +104,7 @@ function runPhaseX(runParams)
             visualizeRetinalContrasts, visualizeMeanConeMosaicResponseAsAMovie, ...
             targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, visualizePatchStatistics, ...
             'coVisualizeRetinalStimulusWithMosaics', coVisualizeRetinalStimulusWithMosaics, ...
-            'coVisualizedRetinalStimulusSpatialFrequency', 5, ...
+            'coVisualizedRetinalStimulusSpatialFrequency', 10, ...
             'coVisualizedRetinalStimulusConeContrast', LCONE_ID);
             
     end

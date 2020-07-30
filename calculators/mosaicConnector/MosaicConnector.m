@@ -33,7 +33,6 @@ function MosaicConnector
     inputMosaic = struct('fov',40, 'eccSamples', 482);
     
     
-    
     % Phase1: isolate the central (roiRadiusDeg) mosaic
     connector('phase1') = struct( ...
         'run', doInitialMosaicCropping, ...
@@ -76,6 +75,8 @@ function MosaicConnector
         'outputDir', tmpDir ...
     );
 
+
+    
     % Phase 4: Connect cones to the mRGC RF centers
     connector('phase4') = struct( ...
         'run', connectConesToRGCcenters, ...
@@ -103,6 +104,7 @@ function MosaicConnector
         'outputDir', tmpDir ...
     );
         
+
     % Phase 6: Compute cone weights to mRGC RF subregions
     deconvolutionOpticsParams = struct(...
         'PolansWavefrontAberrationSubjectIDsToAverage', [9]);        % Deconvolution model: which subject  
@@ -121,7 +123,6 @@ function MosaicConnector
     );
                              
     
-    
     % Phase 7: Visualize cone weights to mRGC RF subregions
     connector('phase7') = struct( ...
         'run', visualizeConeWeightsToRGCcentersAndSurrounds, ...
@@ -135,13 +136,15 @@ function MosaicConnector
         'outputDir', tmpDir ...
     );
 
+
+
     % PhaseX: Connect RGC mosaic to a patch of a regular hex cone mosaic 
     connector('phaseX') = struct( ...
         'run', wirePartOfMRGCMosaicToConeMosaicPatch, ...
         'runFunction', @runPhaseX, ...
         'inputFile', connector('phase1').outputFile, ...
-        'rgcMosaicPatchEccMicrons', [1200 0], ... %% [3000 0], ... %[600 0],
-        'rgcMosaicPatchSizeMicrons',  [100 100], ...  ... % [200 200], ... %[75 75], 
+        'rgcMosaicPatchEccMicrons', [150 0], ... %[3000 0], ... %[600 0],
+        'rgcMosaicPatchSizeMicrons', 40*[1 1], ... %[200 200], ... %[75 75], 
         'orphanRGCpolicy', 'steal input', ...                  // How to deal with RGCs that have no input
         'maximizeConeSpecificity', 100, ...                    // percent of RGCs for which to attempt cone specific wiring to the RF center
         'deconvolutionOpticsParams', deconvolutionOpticsParams, ...

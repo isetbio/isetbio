@@ -2,8 +2,14 @@ function [patchDogParams, responseAmplitude, spatialFrequenciesCPDHR, responseAm
     computeAndFitDOGmodelToSpatialFrequencyTuningCurves(...
     responseTimeAxis, integratedResponsesMean, integratedResponsesStDev, ...
     maxSpikeRateModulation, stimSpatialParams, stimTemporalParams,  spatialFrequenciesCPD, visualizeIndividualFits, ...
-    LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir)
+    LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir, varargin)
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('synthParams', [], @(x)(isempty(x)||(isstruct(x))));
+    p.parse(varargin{:});
+    synthParams = p.Results.synthParams;
+    
     % Compute response modulations at each spatial frequency
     for sfIndex = 1:numel(spatialFrequenciesCPD)
         switch (stimSpatialParams.type)
@@ -37,6 +43,7 @@ function [patchDogParams, responseAmplitude, spatialFrequenciesCPDHR, responseAm
     [patchDogParams,spatialFrequenciesCPDHR, responseAmplitudeHR] = ...
         fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, responseAmplitudeSE, initialParams, ...
         maxSpikeRateModulation, visualizeIndividualFits, ...
-        LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
+        LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir, ...
+        'synthParams', synthParams);
 end
 
