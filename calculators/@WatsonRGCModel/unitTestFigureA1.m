@@ -1,6 +1,6 @@
-function plotlabOBJ = unitTestFigure11(varargin)
-% Generate Figure 10 of Watson (2014) which plots the mRGC RF spacing as a function
-% of eccentricity (0-10 degs).
+function plotlabOBJ = unitTestFigureA1(varargin)
+% Generate Figure A1 of Watson (2014) which plots the relationshi between
+% retinal distance in mm and retinal distance in degrees.
 
     % Parse input
     p = inputParser;
@@ -9,26 +9,70 @@ function plotlabOBJ = unitTestFigure11(varargin)
     plotlabOBJ = p.Results.plotlabOBJ;
     
     eccMinDegs = 0.0;
-    eccMaxDegs = 10;
+    eccMaxDegs = 100;
+    eccMinMM = 0.0;
+    eccMaxMM = 23.0;
     eccSamplesNum = 200;
+    
     eccDegs = linspace(eccMinDegs, eccMaxDegs, eccSamplesNum);
-    eccUnits = 'deg';
-    spacingUnits = 'deg';
-    meridianLabeling = 'Watson'; %'retinal';   % choose from {'retinal', 'Watson'}
+    % Convert ecc in degrees to ecc in millimeters
+    eccMMfromDegs = WatsonRGCModel.rhoDegsToMMs(eccDegs);
+    
+    eccMM = linspace(eccMinMM, eccMaxMM, eccSamplesNum);
+    % Convert ecc in millimeters to ecc in degrees
+    eccDegsFromMM = WatsonRGCModel.rhoMMsToDegs(eccMM);
     
     obj = WatsonRGCModel();
     if (isempty(plotlabOBJ))
         plotlabOBJ  = obj.setUpPlotLab();
     end
     
-    doIt(obj,eccDegs, eccUnits, spacingUnits , meridianLabeling, 'spacing', mfilename, plotlabOBJ);
+    hFig = figure(101); clf;
+    theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
+            'rowsNum', 1, 'colsNum', 2, ...
+            'leftMargin', 0.08, ...
+            'bottomMargin', 0.18, ...
+            'widthMargin', 0.1, ...
+            'rightMargin', 0.01, ...
+            'topMargin', 0.05);
+
+    % The left plot
+    hold(theAxesGrid{1,1}, 'on');    
+    
+    line(theAxesGrid{1,1}, eccDegs, eccDegs*WatsonRGCModel.micronsPerDegreeLinearApproximation/1000, 'LineWidth', 1.5, 'LineStyle', '--', 'Color', 'r');
+    line(theAxesGrid{1,1}, eccDegs, eccMMfromDegs, 'LineWidth', 1.5, 'Color', 'k');
+    
+    axis(theAxesGrid{1,1}, 'square');
+    set(theAxesGrid{1,1}, 'XLim', [0 100], 'YLim', [0 27], ...
+        'XTick', 0:20:100, ...
+        'YTick', 0:5:30);
+    
+    % Labels and legends
+    xlabel(theAxesGrid{1,1}, 'r (deg)');
+    ylabel(theAxesGrid{1,1}, 'r (mm)');
+
+    % The right plot
+    hold(theAxesGrid{1,2}, 'on');    
+    degreesPerMicron = 1/WatsonRGCModel.micronsPerDegreeLinearApproximation;
+    line(theAxesGrid{1,2}, eccMM, eccMM*degreesPerMicron*1000, 'LineWidth', 1.5, 'LineStyle', '--', 'Color', 'r');
+    line(theAxesGrid{1,2}, eccMM, eccDegsFromMM, 'LineWidth', 1.5, 'Color', 'k');
+    
+    axis(theAxesGrid{1,2}, 'square');
+    set(theAxesGrid{1,2}, 'YLim', [0 100], 'XLim', [0 25], ...
+        'YTick', 0:20:100, ...
+        'XTick', 0:5:30);
+    
+    % Labels and legends
+    ylabel(theAxesGrid{1,2}, 'r (deg)');
+    xlabel(theAxesGrid{1,2}, 'r (mm)');
+    
 end
 
 function doIt(obj,eccentricities, eccUnits, spacingUnits, meridianLabeling, figureName, theFileName, plotlabOBJ)
     
     exportFigure = false;
     
-    hFig = figure(11); clf;
+    hFig = figure(101); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.16, ...
             'bottomMargin', 0.18, ...

@@ -1,6 +1,7 @@
-function plotlabOBJ = unitTestFigure11(varargin)
-% Generate Figure 10 of Watson (2014) which plots the mRGC RF spacing as a function
-% of eccentricity (0-10 degs).
+function plotlabOBJ = unitTestRetinalSizeToVisualSize(varargin)
+% Plot the correspondence of a constant retinal size (in microns) to the visual
+% size (in degrees), and conversely, the correspondence of a constant visual size
+% (in degrees) to retinal size (in microns), both as a function of eccentricity
 
     % Parse input
     p = inputParser;
@@ -9,26 +10,75 @@ function plotlabOBJ = unitTestFigure11(varargin)
     plotlabOBJ = p.Results.plotlabOBJ;
     
     eccMinDegs = 0.0;
-    eccMaxDegs = 10;
+    eccMaxDegs = 100;
     eccSamplesNum = 200;
+    
     eccDegs = linspace(eccMinDegs, eccMaxDegs, eccSamplesNum);
-    eccUnits = 'deg';
-    spacingUnits = 'deg';
-    meridianLabeling = 'Watson'; %'retinal';   % choose from {'retinal', 'Watson'}
+    eccMicrons = 1000 * WatsonRGCModel.rhoDegsToMMs(eccDegs);
+    retinalSizeMicrons = 10; 
+    visualSizeDegs = 1.0;
+    
+    % Convert retinal size in microns to visual degrees
+    sizeDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(retinalSizeMicrons, eccMicrons);
+    
+    % Convert visual size in degrees to retinal microns
+    sizeMicrons = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(visualSizeDegs, eccDegs);
     
     obj = WatsonRGCModel();
     if (isempty(plotlabOBJ))
         plotlabOBJ  = obj.setUpPlotLab();
     end
     
-    doIt(obj,eccDegs, eccUnits, spacingUnits , meridianLabeling, 'spacing', mfilename, plotlabOBJ);
+    hFig = figure(101); clf;
+    theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
+            'rowsNum', 1, 'colsNum', 2, ...
+            'leftMargin', 0.08, ...
+            'bottomMargin', 0.18, ...
+            'widthMargin', 0.1, ...
+            'rightMargin', 0.01, ...
+            'topMargin', 0.05);
+
+    % The left plot
+    hold(theAxesGrid{1,1}, 'on');    
+    
+    line(theAxesGrid{1,1}, eccDegs, eccDegs*0 + 60*retinalSizeMicrons/WatsonRGCModel.micronsPerDegreeLinearApproximation, ...
+        'LineWidth', 1.5, 'LineStyle', '--', 'Color', 'r');
+    line(theAxesGrid{1,1}, eccDegs, sizeDegs*60, 'LineWidth', 1.5, 'Color', 'k');
+    
+    axis(theAxesGrid{1,1}, 'square');
+    set(theAxesGrid{1,1}, 'XLim', [eccMinDegs eccMaxDegs], 'YLim', [0 5], ...
+        'XTick', 0:20:100, ...
+        'YTick', 0:1:10);
+    
+    % Labels and legends
+    xlabel(theAxesGrid{1,1}, 'ecc (deg)');
+    ylabel(theAxesGrid{1,1}, 'visual size (arc min)');
+    title(theAxesGrid{1,1}, sprintf('%2.0f um retinal size', retinalSizeMicrons));
+    
+    % The right plot
+    hold(theAxesGrid{1,2}, 'on');
+    line(theAxesGrid{1,2}, eccDegs, eccDegs*0 + visualSizeDegs * WatsonRGCModel.micronsPerDegreeLinearApproximation, ...
+        'LineWidth', 1.5, 'LineStyle', '--', 'Color', 'r');
+    line(theAxesGrid{1,2}, eccDegs, sizeMicrons, 'LineWidth', 1.5, 'Color', 'k');
+
+    % Labels and legends
+    xlabel(theAxesGrid{1,2}, 'ecc (deg)');
+    ylabel(theAxesGrid{1,2}, 'retinal size (um)');
+    title(theAxesGrid{1,2}, sprintf('%2.1f deg visual size', visualSizeDegs));
+    
+    axis(theAxesGrid{1,2}, 'square');
+    set(theAxesGrid{1,2}, 'XLim', [eccMinDegs eccMaxDegs], 'YLim', [50 300], ...
+        'XTick', 0:20:100, ...
+        'YTick', 50:50:300);
+    
+    
 end
 
 function doIt(obj,eccentricities, eccUnits, spacingUnits, meridianLabeling, figureName, theFileName, plotlabOBJ)
     
     exportFigure = false;
     
-    hFig = figure(11); clf;
+    hFig = figure(101); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.16, ...
             'bottomMargin', 0.18, ...
