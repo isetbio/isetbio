@@ -7,7 +7,7 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSub
     mosaicParams.rgcMosaicPatchSizeMicrons = runParams.rgcMosaicPatchSizeMicrons;
     mosaicParams.orphanRGCpolicy = runParams.orphanRGCpolicy;
     mosaicParams.maximizeConeSpecificity = runParams.maximizeConeSpecificity;
-        
+
     tic  
     
     % Compute filenames for mosaics and optics
@@ -25,8 +25,8 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSub
         else
             fprintf('\nRecomputing cone mosaic ...');
             % Generate a regular hex cone mosaic patch with the desired eccentricity and size
-            extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons, runParams.deconvolutionOpticsParams);
-            [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
+            extraMicronsForSurroundCones = 2*3*estimateMaxSurroundCharacteristicRadiusMicrons(mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons);
+            [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes] = ...
                 generateRegularHexMosaicPatch(...
                 mosaicParams.rgcMosaicPatchEccMicrons, ...
                 mosaicParams.rgcMosaicPatchSizeMicrons, ...
@@ -43,25 +43,35 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSub
                 );
         end
         
-        fprintf('\nRecomputing mRGC mosaic and connecting it to the cone mosaic ...');
-        % Location of file with the full (50 x 50 deg) ecc-based mRGCRF lattice
-        mRGCmosaicFile = fullfile(runParams.outputDir, sprintf('%s.mat',runParams.inputFile));
-       
-        % Generate connected mRGC mosaic patch
-        theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMosaicMetaData, mRGCmosaicFile, mosaicParams, ...
-             runParams.deconvolutionOpticsParams, visualizeCronerKaplanDeconvolutionModel, runParams.outputFile, runParams.exportsDir);
+        if (recomputeRGCmosaic)
+            fprintf('\nRecomputing mRGC mosaic and connecting it to the cone mosaic ...');
+            % Location of file with the full (50 x 50 deg) ecc-based mRGCRF lattice
+            mRGCmosaicFile = fullfile(runParams.outputDir, sprintf('%s.mat',runParams.inputFile));
+
+            % Generate connected mRGC mosaic patch
+            theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMosaicMetaData, mRGCmosaicFile, mosaicParams, ...
+                 runParams.deconvolutionOpticsParams, visualizeCronerKaplanDeconvolutionModel, runParams.outputFile, runParams.exportsDir);
+        else
+            theMidgetRGCmosaic = [];
+        end
         
         % Save the mosaics
-        save(fullfile(saveDir,mosaicsFilename), 'theConeMosaic', 'theConeMosaicMetaData', 'theMidgetRGCmosaic');
+        if (~isempty(saveDir))
+            save(fullfile(saveDir,mosaicsFilename), 'theConeMosaic', 'theConeMosaicMetaData', 'theMidgetRGCmosaic');
+        end
         
         if (recomputeOptics)
             % Generate the optics
             fprintf('\nComputing optics with noLCA flag: %d and noOptics flag: %d\n', runParams.noLCA, runParams.noOptics);
-            [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
-                theConeMosaic.pigment.wave, mosaicParams.rgcMosaicPatchEccMicrons);
+            [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(PolansSubjectID, ...
+                runParams.noLCA, runParams.noOptics, runParams.imposedRefractionErrorDiopters, ...
+                theConeMosaic.micronsPerDegree, theConeMosaic.pigment.wave, ...
+                mosaicParams.rgcMosaicPatchEccMicrons);
 
             % Save the optics
-            save(fullfile(saveDir,opticsFilename),'theOptics');
+            if (~isempty(saveDir))
+                save(fullfile(saveDir,opticsFilename),'theOptics');
+            end
         else
             load(fullfile(saveDir,opticsFilename),'theOptics');
         end
@@ -72,7 +82,8 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSub
         load(fullfile(saveDir,mosaicsFilename), 'theConeMosaic', 'theMidgetRGCmosaic');
         
         fprintf('\nComputing optics with noLCA flag: %d and noOptics flag: %d\n', runParams.noLCA, runParams.noOptics);
-        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(PolansSubjectID, runParams.noLCA, runParams.noOptics, ...
+        [theOptics, eccXrangeDegs, eccYrangeDegs] = generatePolansOptics(PolansSubjectID, ...
+            runParams.noLCA, runParams.noOptics, runParams.imposedRefractionErrorDiopters, ...
             theConeMosaic.pigment.wave, mosaicParams.rgcMosaicPatchEccMicrons);
         
         % Save mosaic and optics
@@ -89,15 +100,25 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSub
     
 end
 
-function [theOptics, eccXrangeDegs, eccYrangeDegs] =  generatePolansOptics(PolansSubjectID, noLCA, noOptics, wavelengthSampling, rgcMosaicPatchEccMicrons)
+function [theOptics, eccXrangeDegs, eccYrangeDegs] =  generatePolansOptics(PolansSubjectID, noLCA, noOptics, ...
+    imposedRefractionErrorDiopters, micronsPerDegree, wavelengthSampling, rgcMosaicPatchEccMicrons)
     pupilDiameterMM = 3.0;
     wavelengthsListToCompute = wavelengthSampling;
-    wavefrontSpatialSamples = 501;
-    micronsPerDegree = []; % empty so as to compute for each eccentricity
-    imposedRefractionErrorDiopters = 0;
     deltaEcc = 1;
     eccXrangeDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*rgcMosaicPatchEccMicrons(1))*[1 1];
     eccYrangeDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*rgcMosaicPatchEccMicrons(2))*[1 1];
+
+    
+    mosaicEccDegs = WatsonRGCModel.rhoMMsToDegs(rgcMosaicPatchEccMicrons/1000);
+    mosaicEccDegs = sqrt(sum(mosaicEccDegs.^2,2));
+    
+    if (mosaicEccDegs <= 10)
+        wavefrontSpatialSamples = 501;
+    elseif (mosaicEccDegs <= 15)
+        wavefrontSpatialSamples = 701;
+    else
+        wavefrontSpatialSamples = 1001;
+    end
 
     [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = CronerKaplanRGCModel.psfAtEccentricity(PolansSubjectID, ...
                 imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, micronsPerDegree, ...
@@ -107,26 +128,29 @@ function [theOptics, eccXrangeDegs, eccYrangeDegs] =  generatePolansOptics(Polan
     theOptics = theOIs{1,1,1};
 end
 
-function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones] = ...
+function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositionsMicrons, coneSpacingsMicrons, coneTypes] = ...
     generateRegularHexMosaicPatch(eccentricityMicrons, sizeMicrons, extraMicronsForSurroundCones)
 
     % Compute the cone mosaic FOV in degrees
     coneMosaicCenterPositionMM = eccentricityMicrons * 1e-3;
-    coneMosaicSizeMicrons = sizeMicrons + 2*extraMicronsForSurroundCones*[1 1];
+    coneMosaicSizeMicrons = sizeMicrons + extraMicronsForSurroundCones*[1 1];
     coneMosaicEccDegs = WatsonRGCModel.rhoMMsToDegs(coneMosaicCenterPositionMM);
     fovDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(coneMosaicSizeMicrons, sqrt(sum((coneMosaicCenterPositionMM*1e3).^2,2.0)));
     
     % Determine the median cone spacing with the patch
     whichEye = 'right';
     coneSpacingMicrons = medianConeSpacingInPatch(whichEye, eccentricityMicrons, coneMosaicSizeMicrons);
-    
+    % Compute microns per degree on the retina
+    micronsPerDegree = coneMosaicSizeMicrons(1)/fovDegs(1);
+
     % Generate reg hex cone mosaic
     resamplingFactor = 5;
-    spatialDensity = [0 0.5 0.25 0.15];
+    spatialDensity = [0 0.6 0.3 0.1];
     sConeFreeRadiusMicrons = 0;
+    fprintf('Generating regular hex cone mosaic with FOV %2.1f x %2.1f degs\n', fovDegs(1), fovDegs(2));
     theConeMosaic = coneMosaicHex(resamplingFactor, ...
         'fovDegs', fovDegs, ...
-        'micronsPerDegree', coneMosaicSizeMicrons(1)/fovDegs(1), ...
+        'micronsPerDegree', micronsPerDegree, ...
         'integrationTime', 5/1000, ...
         'customLambda', coneSpacingMicrons, ...
         'customInnerSegmentDiameter', coneSpacingMicrons * 0.7, ...
@@ -145,22 +169,4 @@ function [theConeMosaic, coneMosaicEccDegs, coneMosaicSizeMicrons, conePositions
     coneSpacingsMicrons = ones(size(conePositionsMicrons,1),1) * coneSpacingMicrons;
     % Cone types
     coneTypes = cmStruct.coneTypes;
-end
-
-function extraMicronsForSurroundCones = estimateMaxSurroundRadiusMicrons(eccentricityMicrons, sizeMicrons, deconvolutionOpticsParams)
-    w = WatsonRGCModel('generateAllFigures', false);
-    posUnits = 'mm'; densityUnits = 'mm^2';
-    coneEccMaxMicrons = max(abs([eccentricityMicrons+sizeMicrons/2; eccentricityMicrons-sizeMicrons/2]));
-    
-    % Cone spacing at the most eccentric position
-    coneSpacingMicronsMax = 1e3 * w.coneRFSpacingAndDensityAtRetinalPositions(...
-        coneEccMaxMicrons*1e-3, 'right', posUnits, densityUnits, ...
-        'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
- 
-    % Compute RF params using the CronerKaplan model
-    ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
-    synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(coneSpacingMicronsMax, coneEccMaxMicrons, deconvolutionOpticsParams);
-    retinalSurroundRadiusDegsAt1overE = synthesizedRFParams.retinal.surroundRadiiDegs;
-    extraDegsForSurroundCones = retinalSurroundRadiusDegsAt1overE*2;
-    extraMicronsForSurroundCones = ceil(WatsonRGCModel.sizeDegsToSizeRetinalMicrons(extraDegsForSurroundCones, synthesizedRFParams.eccDegs));
 end

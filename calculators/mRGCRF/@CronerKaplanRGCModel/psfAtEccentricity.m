@@ -86,13 +86,15 @@ function [thePSF, thePSFsupportDegs] = extractPSFfromOI(theOI, targetWavelength)
 
     % Extract support in arcmin
     psfSupportMicrons = opticsGet(optics,'psf support','um');
+    
     if (isfield(optics, 'micronsPerDegree'))
         micronsPerDegree = optics.micronsPerDegree;
     else
         focalLengthMeters = opticsGet(optics, 'focalLength');
         focalLengthMicrons = focalLengthMeters * 1e6;
-        micronsPerDegree = focalLengthMicrons * tand(1);
+        micronsPerDegree = focalLengthMicrons * 2 * tand(0.5);
     end
+
 
     xGridDegs = psfSupportMicrons{1}/micronsPerDegree;
     thePSFsupportDegs = xGridDegs(1,:);

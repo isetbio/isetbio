@@ -7,7 +7,7 @@ function displayPSFs()
     someArtifactPSFSubjects = [1 3 6];
     largeArtifacPSFSubjects = [2];
     
-    visualizedSubjects = 8;
+    visualizedSubjects = 4;
     
     % Compute good subject PSFs along the Y = 0, negative X, with an
     % eccentricity resolution of 1 deg

@@ -21,8 +21,8 @@ function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOptics
     coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(tabulatedEccentricities), ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
-    % Cone aperture is 80% of the cone radius
-    coneApertureRadii = 0.8 * coneRFSpacingsDegs/2;
+    % Cone aperture is a percentage of the cone spacing
+    coneApertureRadii = WatsonRGCModel.coneApertureToDiameterRatio * 0.5 * coneRFSpacingsDegs;
     coneApertureRadiusAtZeroDegs = coneApertureRadii(1);
     
     for eccIndex = 1:numel(tabulatedEccentricities)
