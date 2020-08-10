@@ -1,4 +1,4 @@
-function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, ...
+function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfsAtEccentricity(goodSubjects, imposedRefractionErrorDiopters, ...
     desiredPupilDiamMM, wavelengthsListToCompute, micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc, ...
     varargin)
 
@@ -141,20 +141,28 @@ function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measP
         end
     end
     
-    theOI = oiCreate('wvf human', desiredPupilDiamMM,[],wavelengthsListToCompute, micronsPerDegree);
-    optics = oiGet(theOI,'optics');
-    optics = opticsSet(optics, 'wave', wavelengthsListToCompute);
-    optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
+%     OLD
+%     theOI = oiCreate('wvf human', desiredPupilDiamMM,[],wavelengthsListToCompute, micronsPerDegree);
+%     optics = oiGet(theOI,'optics');
+%     optics = opticsSet(optics, 'wave', wavelengthsListToCompute);
+%     optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
+%     
+%     
     
-    % Update optics with new OTF data
-    xSfCyclesPerMM = 1000*xSfCyclesDeg / micronsPerDegree;
-    ySfCyclesPerMM = 1000*ySfCyclesDeg / micronsPerDegree;
-    customOptics = opticsSet(optics,'otf data',theOTF);
-    customOptics = opticsSet(customOptics, 'otffx',xSfCyclesPerMM);
-    customOptics = opticsSet(customOptics,'otffy',ySfCyclesPerMM);
+%     % Update optics with new OTF data
+%     xSfCyclesPerMM = 1000*xSfCyclesDeg / micronsPerDegree;
+%     ySfCyclesPerMM = 1000*ySfCyclesDeg / micronsPerDegree;
+%     customOptics = opticsSet(optics,'otf data',theOTF);
+%     customOptics = opticsSet(customOptics, 'otffx',xSfCyclesPerMM);
+%     customOptics = opticsSet(customOptics,'otffy',ySfCyclesPerMM);
+%     
+%     % Update theOI with custom optics
+%     theOI = oiSet(theOI,'optics', customOptics);
     
-    % Update theOI with custom optics
-    theOI = oiSet(theOI,'optics', customOptics);
+%    END OF OLD
+
+    theOI = wvf2oi(theWVF);
+    
 end
 
 function [hEccQ, vEccQ, zCoeffIndices, zMapQ, pupilDiamMM] = getTypicalSubjectZcoeffs(subjectIndex, subtractCentralRefraction, ...
@@ -181,6 +189,14 @@ function [hEccQ, vEccQ, zCoeffIndices, zMapQ, pupilDiamMM] = getTypicalSubjectZc
     % Measured eccentricities
     vEcc = 25:-5:-25;
     hEcc = 40:-1:-40;
+    
+    % Make sure the requested ecc is within the range of measurements
+    assert((minHorizontalEcc >= min(hEcc)) && (minHorizontalEcc <= max(hEcc)), 'horizontal ecc out of range');
+    assert((minVerticalEcc >= min(vEcc)) && (minVerticalEcc <= max(vEcc)), 'vertical ecc out of range')
+    assert((maxHorizontalEcc >= min(hEcc)) && (maxHorizontalEcc <= max(hEcc)), 'horizontal ecc out of range');
+    assert((maxVerticalEcc >= min(vEcc)) && (maxVerticalEcc <= max(vEcc)), 'vertical ecc out of range')
+    
+    
     zMap = zeros(numel(vEcc), numel(hEcc),numel(zCoeffIndices));
    
     spatialPointIndex = 0;

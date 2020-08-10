@@ -9,14 +9,10 @@ function performPSFConvoComputations(varargin)
 %     largeArtifacPSFSubjectIDs = [2];
 
 
-    % Characteristic radius: 1 sigma of the gaussian
-    defaultRetinalCharacteristicRadiiDegs = logspace(log10(0.01), log10(0.6), 10);
-    
     % Parse input
     p = inputParser;
     p.addParameter('PolansSubjectIDs', [4], @isnumeric);
     p.addParameter('eccTested', [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25]);
-    p.addParameter('retinalCharacteristicRadiiDegsTested', defaultRetinalCharacteristicRadiiDegs, @isnumeric);
     p.addParameter('quadrantsToCompute', {'horizontal'}); %, @(x)(ismember(x, {'horizontal', 'superior', 'inferior'})));
     p.addParameter('generateNewDeconvolutionFiles', false, @islogical);
     
@@ -26,7 +22,6 @@ function performPSFConvoComputations(varargin)
     eccTested = p.Results.eccTested;
     quadrantsToCompute = p.Results.quadrantsToCompute;
     generateNewDeconvolutionFiles = p.Results.generateNewDeconvolutionFiles;
-    retinalCharacteristicRadiiDegsTested = p.Results.retinalCharacteristicRadiiDegsTested;
     
     ck = CronerKaplanRGCModel(...
         'generateAllFigures', false, ...
@@ -39,9 +34,8 @@ function performPSFConvoComputations(varargin)
             );
         deconvolutionOpticsParams.quadrantsToCompute =  quadrantsToCompute;
         
-        ck.generatePolansOpticsDeconvolutionFiles(...
+        ck.generateDeconvolutionFiles(...
             deconvolutionOpticsParams, ...
-            'retinalCharacteristicRadii', retinalCharacteristicRadiiDegsTested, ...
             'eccTested', eccTested);
     end
     

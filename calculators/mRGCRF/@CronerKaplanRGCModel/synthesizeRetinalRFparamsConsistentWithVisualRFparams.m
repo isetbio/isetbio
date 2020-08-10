@@ -18,9 +18,20 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     
     cellsNum = numel(retinalCenterRadiiMicrons);
     
+    
+    
     % Convert RF center positions from retinal microns to visual degs
     retinalEccentricitiesMicrons = sqrt(sum(retinalCenterPositionMicrons.^2,2.0));
     retinalEccentricitiesDegs = (WatsonRGCModel.rhoMMsToDegs(retinalEccentricitiesMicrons/1000.0))';
+    
+    
+    w = WatsonRGCModel();
+    coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(retinalEccentricitiesDegs, ...
+            'nasal meridian','deg', 'deg^2', ...
+            'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
+    
+    coneApertureRadii = WatsonRGCModel.coneApertureToDiameterRatio * coneRFSpacingsDegs/2;
+    
     
     % Convert RF center radii from retinal microns to visual degs
     retinalCenterRadii = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(retinalCenterRadiiMicrons, retinalEccentricitiesMicrons);
@@ -37,20 +48,26 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     
     retinalCenterRadii = reshape(retinalCenterRadii, [1 cellsNum]);
     retinalSurroundRadii = zeros(1, cellsNum);
+    retinalSurroundRadiiMicrons = zeros(1, cellsNum);
     retinalCenterPeakSensitivities = zeros(1, cellsNum);
     retinalSurroundPeakSensitivities = zeros(1, cellsNum);
     retinalSurroundToCenterIntegratedSensitivityRatio = zeros(1, cellsNum);
     
     for cellIndex = 1:cellsNum
+        % Cell eccentricity
         retinalEccDegs = retinalEccentricitiesDegs(cellIndex);
-        retinalCenterRadius = retinalCenterRadii(cellIndex);
-        [visualCenterRadii(cellIndex),closestEccIndices] = determineVisualRadius(retinalCenterRadius, retinalEccDegs, deconvolutionModel);
         
-        % Visual surround radius from visual center radius and surround-to-center radius ratio
+        % Determine the visual radius using the retinal radius and the deconvolution model
+        [visualCenterRadii(cellIndex),closestEccIndices] = determineVisualRadius(coneApertureRadii(cellIndex)/3, retinalCenterRadii(cellIndex), retinalEccDegs, deconvolutionModel);
+        
+        % Determine the visual surround radius from the visual center radius and surround-to-center radius ratio
         visualSurroundRadii(cellIndex) = visualCenterRadii(cellIndex) / surroundToCenterRadiusRatio(cellIndex);
         
-        % Determine the corresponding retinal surround radius
+        % Determine the corresponding retinal surround radius (in degrees) from the visual surround radius and the deconvolution model
         retinalSurroundRadii(cellIndex) = determineRetinalRadius(visualSurroundRadii(cellIndex), retinalEccDegs, deconvolutionModel, closestEccIndices);
+        
+        % Retinal surround radius in microns
+        retinalSurroundRadiiMicrons(cellIndex) = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(retinalSurroundRadii(cellIndex), retinalEccDegs);
         
         % Compute visual peak sensitivity for center 
         visualCenterPeakSensitivities(cellIndex) = obj.centerPeakSensitivityFunction(obj.centerPeakSensitivityParams, visualCenterRadii(cellIndex));
@@ -63,7 +80,6 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         while (surroundToCenterIntegratedSensitivityRatio<0.2) || (surroundToCenterIntegratedSensitivityRatio>0.8)
             surroundToCenterIntegratedSensitivityRatio = normrnd(0.466 + 0.007*retinalEccDegs, surroundToCenterIntegratedSensitivitySigma);
         end
-        
         visualSurroundPeakSensitivities(cellIndex) = surroundToCenterIntegratedSensitivityRatio * visualCenterPeakSensitivities(cellIndex) * (visualCenterRadii(cellIndex)/visualSurroundRadii(cellIndex))^2;
         
         visualSurroundToCenterIntegratedSensitivityRatio(cellIndex) = ...
@@ -71,12 +87,17 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
             (visualSurroundRadii(cellIndex)/visualCenterRadii(cellIndex))^2;
         
         % Determine corresponding retinal gain for center
-        gainAttenuation = determineRetinalGainAttenuation(retinalCenterRadii(cellIndex), retinalEccDegs, deconvolutionModel, closestEccIndices);
-        retinalCenterPeakSensitivities(cellIndex) = visualCenterPeakSensitivities(cellIndex) / gainAttenuation;
+        centerGainAttenuation = determineRetinalGainAttenuation(retinalCenterRadii(cellIndex), retinalEccDegs, deconvolutionModel, closestEccIndices);
+        retinalCenterPeakSensitivities(cellIndex) = visualCenterPeakSensitivities(cellIndex) / centerGainAttenuation;
         
         % Determine corresponding retinal gain for surround
-        gainAttenuation = determineRetinalGainAttenuation(retinalSurroundRadii(cellIndex), retinalEccDegs, deconvolutionModel, closestEccIndices);
-        retinalSurroundPeakSensitivities(cellIndex) = visualSurroundPeakSensitivities(cellIndex) / gainAttenuation;
+        surroundGainAttenuation = determineRetinalGainAttenuation(retinalSurroundRadii(cellIndex), retinalEccDegs, deconvolutionModel, closestEccIndices);
+        
+        % We need this bias in gain attenuation to get SF tuning curves with proper surround strengths
+        centerBias = 0.65;
+        surroundGainAttenuation = (1-centerBias)*surroundGainAttenuation+(centerBias)*centerGainAttenuation;
+        
+        retinalSurroundPeakSensitivities(cellIndex) = visualSurroundPeakSensitivities(cellIndex) / surroundGainAttenuation;
         
         retinalSurroundToCenterIntegratedSensitivityRatio(cellIndex) = ...
             retinalSurroundPeakSensitivities(cellIndex)/retinalCenterPeakSensitivities(cellIndex) * ...
@@ -94,6 +115,8 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
             'surroundToCenterIntegratedSensitivityRatio', visualSurroundToCenterIntegratedSensitivityRatio ...
             ), ...
         'retinal', struct(...                          % retinal RF properties
+            'centerRadiiMicrons', retinalCenterRadiiMicrons, ...
+            'surroundRadiiMicrons', retinalSurroundRadiiMicrons, ...
             'centerRadiiDegs', retinalCenterRadii, ...
             'surroundRadiiDegs', retinalSurroundRadii, ...
             'centerPeakSensitivities', retinalCenterPeakSensitivities,...
@@ -132,7 +155,7 @@ function retinalRadius =  determineRetinalRadius(visualRadius, retinalEccDegs, d
 end
 
 
-function [visualRadius, closestEccIndices] = determineVisualRadius(retinalRadius, retinalEccDegs, deconvolutionModel)
+function [visualRadius, closestEccIndices] = determineVisualRadius(coneRadius, retinalRadius, retinalEccDegs, deconvolutionModel)
     % Find closest tabulated eccentricities to this cell's eccentricity
     [~,idx] = sort(abs(abs(deconvolutionModel.tabulatedEccentricities) - retinalEccDegs));
     d1 = abs(deconvolutionModel.tabulatedEccentricities(idx(1))-retinalEccDegs);
@@ -145,6 +168,8 @@ function [visualRadius, closestEccIndices] = determineVisualRadius(retinalRadius
     retinalPoolingRadiusModel1 = deconvolutionModel.modelFunctionRadius(deconvolutionModel.fittedParamsRadius(idx(1),:), visualRadiusSupport);
     retinalPoolingRadiusModel2 = deconvolutionModel.modelFunctionRadius(deconvolutionModel.fittedParamsRadius(idx(2),:), visualRadiusSupport);
         
+    
+    
     % Choose the visual center radius that corresponds to the model
     % retinal pooling radius that is closest to this cells center radius
     [~,index] = min(abs(retinalRadius-retinalPoolingRadiusModel1));
@@ -152,5 +177,16 @@ function [visualRadius, closestEccIndices] = determineVisualRadius(retinalRadius
     [~,index] = min(abs(retinalRadius-retinalPoolingRadiusModel2));
     visualRadius2 = visualRadiusSupport(index);
     visualRadius = visualRadius1 * d2/(d1+d2) + visualRadius2 * d1/(d1+d2);
+    
+%     figure(500);
+%     plot(visualRadiusSupport, retinalPoolingRadiusModel1, 'rs-'); hold on;
+%     plot(visualRadiusSupport, retinalPoolingRadiusModel2, 'bs-'); hold on;
+%     plot(visualRadiusSupport, visualRadiusSupport*0 + coneRadius, 'g-');
+%     plot(visualRadius, retinalRadius, 'k*');
+%     xlabel('visual radius (degs)');
+%     ylabel('retinal radius (degs)')
+%     set(gca, 'XLim', [0 max(visualRadiusSupport)], 'YLim', [0 max(visualRadiusSupport)]);
+%     title(sprintf('Ecc: %2.3f degs',  retinalEccDegs));
+%     axis 'square'
 end
 

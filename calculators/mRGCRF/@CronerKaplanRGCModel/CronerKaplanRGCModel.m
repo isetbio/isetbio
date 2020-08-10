@@ -7,6 +7,7 @@ classdef CronerKaplanRGCModel < handle
     % History:
     %    11/8/19  NPC, ISETBIO Team     Wrote it.
     
+    
     properties (SetAccess = private)
         % Digitized data from Figure 4 & 5
         centerData;
@@ -17,11 +18,13 @@ classdef CronerKaplanRGCModel < handle
         
         % Model of center radius with eccentricity
         centerRadiusFunction;
+        centerRadiusThreshold;
         centerRadiusParams;
         centerRadiusParamsSE;
         
         % Model of surround radius with eccentricity
         surroundRadiusFunction;
+        surroundRadiusThreshold;
         surroundRadiusParams;
         surroundRadiusParamsSE;
         
@@ -70,7 +73,7 @@ classdef CronerKaplanRGCModel < handle
                 'randomizeSurroundSensitivities', true);
             
             if (p.Results.instantiatePlotLab)
-                obj.setupPlotLab();
+                obj.setupPlotLab(0, 14, 14);
             end
             
             if (p.Results.generateAllFigures)
@@ -90,9 +93,9 @@ classdef CronerKaplanRGCModel < handle
         % Method to simulate the Croner&Kaplan results
         simulateCronerKaplanResults(obj, varargin);
         
-        % Compute the Gaussian-PSF convolution data
-        generatePolansOpticsDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin);
-        
+        % Generate the Gaussian-PSF deconvolution analysis data files
+        generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin);
+
         % Generate the deconvolution model (operates on the output of
         % performGaussianConvolutionWithPolansPSFanalysis()) - no printing
         deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams);
@@ -110,7 +113,16 @@ classdef CronerKaplanRGCModel < handle
         
         plotRadii(theAxes, d, model, pointSize, color, displayYLabel, theLabel);
         
-        [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfAtEccentricity(goodSubjects, ...
+        
+        % Generate a cone mosaic for performing the deconvolution analysis
+        [theConeMosaic, theConeMosaicMetaData] = generateConeMosaicForDeconvolution(patchEcc, patchSize, varargin);
+        
+        % Generate Polans optics for performing the deconvolution analysis
+        theOptics = generatePolansOpticsForDeconcolution(PolansSubjectID, imposedRefractionErrorDiopters, ...
+            pupilDiameterMM , wavelengthSampling, micronsPerDegree, patchEcc, varargin);
+        
+        % Generate Polans PSF at desired eccentricitiy
+        [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfsAtEccentricity(goodSubjects, ...
             imposedRefractionErrorDiopters, desiredPupilDiamMM, wavelengthsListToCompute, ...
             micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc, varargin);
         
@@ -120,7 +132,7 @@ classdef CronerKaplanRGCModel < handle
     end
     
     methods (Access=private)
-        setupPlotLab(obj);
+        setupPlotLab(obj, mode, figWidthInches, figHeightInches);
         
         % Method to validate the deconvolutionOpticsParams
         validateDeconvolutionOpticsParams(obj,deconvolutionOpticsParams);

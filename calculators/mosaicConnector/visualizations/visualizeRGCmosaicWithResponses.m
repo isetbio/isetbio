@@ -19,7 +19,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     
     % Cone apertures and spacing
     coneDiameterMicrons = cmStruct.coneApertures * theConeMosaic.micronsPerDegree;
-    coneSpacingsMicrons = 1.0/0.7 * coneDiameterMicrons;
+    coneSpacingsMicrons = 1.0/WatsonRGCModel.coneApertureToDiameterRatio * coneDiameterMicrons;
     
     % Sampling for RF center contours
     deltaX = 0.25;

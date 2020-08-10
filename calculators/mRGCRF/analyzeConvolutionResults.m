@@ -41,7 +41,7 @@ function analyzeConvolutionResults(obj,varargin)
     coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(eccTested), ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
-    coneApertureRadii = 0.8*0.5*coneRFSpacingsDegs;
+    coneApertureRadii = WatsonRGCModel.coneApertureToDiameterRatio * 0.5 * coneRFSpacingsDegs;
     
     for eccIndex = 1:numel(eccTested)
         eccDegs = eccTested(eccIndex);
@@ -54,7 +54,7 @@ function analyzeConvolutionResults(obj,varargin)
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio',false);
             % min retinal radius = 0.5 * cone spacing at 0 deg  
-            minRetinalRadius = 0.8*0.5*coneRFSpacingDeg;
+            minRetinalRadius = WatsonRGCModel.coneApertureToDiameterRatio * 0.5 * coneRFSpacingDeg;
             % Find closest retinal pooling radius
             [dd,idx] = sort(abs(minRetinalRadius-retinalPoolingRadii));
             minRetinalRadius = retinalPoolingRadii(idx(1));
