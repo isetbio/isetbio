@@ -12,7 +12,7 @@ function runPhaseX(runParams)
    
     % Load/Recompute connected mosaics and the optics
     recomputeConeMosaic = ~true;
-    recomputeOptics = ~true;
+    recomputeOptics = true;
     recomputeRGCmosaic = true;
     visualizeCronerKaplanDeconvolutionModel = true;
     
@@ -48,7 +48,7 @@ function runPhaseX(runParams)
     instancesNum = 64;
     
     % Visualized cells
-    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [57 62]; %[3 14 52];
+    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [43 45 48 57];
     
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
@@ -104,7 +104,7 @@ function runPhaseX(runParams)
             visualizeRetinalContrasts, visualizeMeanConeMosaicResponseAsAMovie, ...
             targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, visualizePatchStatistics, ...
             'coVisualizeRetinalStimulusWithMosaics', coVisualizeRetinalStimulusWithMosaics, ...
-            'coVisualizedRetinalStimulusSpatialFrequency', 10, ...
+            'coVisualizedRetinalStimulusSpatialFrequency', 35, ...
             'coVisualizedRetinalStimulusConeContrast', LCONE_ID);
             
     end

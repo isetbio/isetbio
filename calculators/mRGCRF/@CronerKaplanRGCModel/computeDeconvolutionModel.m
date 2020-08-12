@@ -3,17 +3,73 @@ function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOptics
     % Validate the deconvolutionOpticsParams
     obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
     
-    subjectsToAverage = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
-    quadrantsToAverage = deconvolutionOpticsParams.quadrantsToAverage;
-    
-    tabulatedEccentricities = [0 0.25 0.5 1 1.5 2:25];
-    
+    tabulatedEccentricities = [0 0.25 0.5 1 1.5 2:9 11 13:17];
     defocusMode = 'subjectDefault';
     if (strcmp(defocusMode, 'subjectDefault'))
         imposedRefractionErrorDiopters = 0; 
     else
         imposedRefractionErrorDiopters = 0.01; 
     end
+    
+    deconvolutionModel.center = computeCenterDeconvolutionModel(obj, tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionOpticsParams);
+    %deconvolutionModel.surround = computeSurroundDeconvolutionModel(obj, tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionOpticsParams);
+end
+
+function deconvolutionModel = computeCenterDeconvolutionModel(obj, tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionOpticsParams)
+    
+    deconvolutionQuadrant = deconvolutionOpticsParams.quadrantsToAverage{1};
+    deconvolutionSubject = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage(1);
+    
+    deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrantAndSubject(obj, ...
+        tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionQuadrant, deconvolutionSubject);
+
+end
+
+
+
+function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrantAndSubject(obj, ...
+        tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionQuadrant, deconvolutionSubject)
+    
+    deconvolutionModel.subjectID = deconvolutionSubject;
+    deconvolutionModel.quadrant = deconvolutionQuadrant;
+    deconvolutionModel.tabulatedEccentricities = tabulatedEccentricities;
+    
+    for eccIndex = 1:numel(tabulatedEccentricities)
+        % Eccentricity
+        eccDegs(1) = tabulatedEccentricities(eccIndex);
+        eccDegs(2) = 0;
+        deconvolutionModel.eccDegs(eccIndex,:) = eccDegs;
+        
+        % Load deconvolution file for this eccentricity
+        dataFileName = fullfile(obj.psfDeconvolutionDir,...
+            sprintf('ecc_-%2.1f_%2.1f_centerDeconvolutions_refractionError_%2.2fD.mat', eccDegs(1), eccDegs(2), imposedRefractionErrorDiopters));
+        load(dataFileName, 'deconvolutionStruct', 'quadrants', 'subjectIDs');
+        
+        assert((numel(subjectIDs) == 1) && (subjectIDs == deconvolutionSubject), ...
+            sprintf('Deconvolution file does not contain subject %d', deconvolutionSubject));
+        
+
+        assert((numel(quadrants) == 1) && (strcmp(quadrants{1},deconvolutionQuadrant)), ...
+            sprintf('Deconvolution file does not contain quadrant''%s''', deconvolutionQuadrant));
+        
+        dataDictionary = deconvolutionStruct{1,1}.data;
+        dataLabels = keys(dataDictionary);
+        
+        for coneInputConfigIndex = 1:numel(dataLabels)
+            coneInputConfig = dataLabels{coneInputConfigIndex};
+            coneInputsNum = str2double(strrep(coneInputConfig, '-coneInput', ''));
+            decolvolutionData = dataDictionary(coneInputConfig);
+            
+            deconvolutionModel.centerConeInputsNum(eccIndex,coneInputsNum) = coneInputsNum;
+            deconvolutionModel.visualGainAttenuation(eccIndex,coneInputsNum) = decolvolutionData.visualGainAttenuation;
+            deconvolutionModel.visualCharacteristicRadius(eccIndex,coneInputsNum) = decolvolutionData.minVisualSigma;
+        end
+    end
+end
+
+function deconvolutionModel = computeSurroundDeconvolutionModel(obj, tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionOpticsParams)
+    subjectsToAverage = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
+    quadrantsToAverage = deconvolutionOpticsParams.quadrantsToAverage;
     
     % Use WatsonRGCModel to retrieve cone apertures along the nasal meridian
     % for the tabulated eccentricities

@@ -1,5 +1,65 @@
 function plotDeconvolutionModel(deconvolutionModel)
+    
+    visualizeCenterDeconvolutionModel(deconvolutionModel.center);
+end
 
+function visualizeCenterDeconvolutionModel(deconvolutionModel)
+
+    hFig = figure();
+    figName = sprintf('RF center deconvolution model for subject %d and ''%s'' quadrant.', ...
+        deconvolutionModel.subjectID, deconvolutionModel.quadrant);
+    figPosition = [0 0 2000 1000];
+    set(hFig, 'Name', figName, 'Position', figPosition);
+    
+    rowsNum = 2;
+    colsNum = numel(deconvolutionModel.tabulatedEccentricities);
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', rowsNum, ...
+       'colsNum', colsNum, ...
+       'heightMargin',  0.03, ...
+       'widthMargin',    0.01, ...
+       'leftMargin',     0.03, ...
+       'rightMargin',    0.00, ...
+       'bottomMargin',   0.04, ...
+       'topMargin',      0.02);
+   
+    for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricities)
+        % Visual characteristic radius as a function of number of cone in RF center
+        subplot('Position', subplotPosVectors(1,eccIndex).v);
+        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualCharacteristicRadius(eccIndex,:), 'rs-');
+        set(gca, 'XLim', [1 100], 'YLim', [0.005 1], ...
+            'XTick', [1 3 10 30 100], ...
+            'XScale', 'log', 'YScale', 'log');
+        if (eccIndex == 1)
+            ylabel('visual characteristic radius');
+        else
+            set(gca, 'YTickLabel', {})
+        end
+        title(sprintf('%2.1f, %2.1f', deconvolutionModel.eccDegs(1), deconvolutionModel.eccDegs(2)));
+                
+        % Visual gain attenuation as a function of number of cone in RF center
+        subplot('Position', subplotPosVectors(2,eccIndex).v);
+        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualGainAttenuation(eccIndex,:), 'rs-');
+        set(gca, 'XLim', [1 100], 'YLim', [0.1 1.0], 'XScale', 'log', ...
+            'XTick', [1 3 10 30 100])
+        xlabel('# of center cones');
+        if (eccIndex == 1)
+            ylabel('visual gain attenuation');
+        else
+            set(gca, 'YTickLabel', {})
+        end
+        
+   end
+               
+end
+
+
+
+
+
+
+
+function old()
     eccTested = deconvolutionModel.tabulatedEccentricities;
     subjectIDs = deconvolutionModel.opticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
     quadrants = deconvolutionModel.opticsParams.quadrantsToAverage;

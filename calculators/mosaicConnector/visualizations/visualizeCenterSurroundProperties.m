@@ -4,15 +4,14 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
     switch (dataSet)
         case 'visual'
             rfParams = synthesizedRFParams.visual;
-        case 'retinal'
-             rfParams = synthesizedRFParams.retinal;
+      
         otherwise
-            error('Unknown dataSet: ''%s''.', dataSet)
+            error('Can only visualize params of the visual dataset. dataSet: ''%s''.', dataSet)
     end
-    eccDegs = synthesizedRFParams.eccDegs;
+    rfEccRadiusDegs = synthesizedRFParams.rfEccRadiusDegs;
     
-    
-    hFig = figure(figNo);
+
+    hFig = figure(figNo); clf;
     set(hFig, 'Name', sprintf('%s params', dataSet));
     
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
@@ -26,10 +25,10 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
         'topMargin', 0.01);
     
     w = WatsonRGCModel();
-    coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(eccDegs), ...
+    coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(rfEccRadiusDegs), ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
-    coneApertureRadiiNasalRetina = 0.8 * 0.5 * coneRFSpacingsDegs;
+    coneApertureRadiiNasalRetina = 0.7 * 0.5 * coneRFSpacingsDegs;
     
     % The radii correspond to the point at which sensitivity drops to
     % exp(-1). Transform the cone Aperture to the same scale
@@ -38,10 +37,11 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
     
     % Plot the center&surround radii
     theAxes = theAxesGrid{2,1};
-    scatter(theAxes,eccDegs, rfParams.centerRadiiDegs, 'o', 'MarkerEdgeColor', 'none');
+    scatter(theAxes,rfEccRadiusDegs, rfParams.centerCharacteristicRadiiDegs, 'o', 'MarkerEdgeColor', 'none');
     hold(theAxes, 'on');
-    scatter(theAxes, eccDegs,  rfParams.surroundRadiiDegs, 'd', 'MarkerEdgeColor', 'none');
-    scatter(theAxes, eccDegs, coneApertureRadiiNasalRetina, 9, '.', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
+
+    scatter(theAxes, rfEccRadiusDegs,  rfParams.surroundCharacteristicRadiiDegs, 'd', 'MarkerEdgeColor', 'none');
+    scatter(theAxes, rfEccRadiusDegs, coneApertureRadiiNasalRetina, 9, '.', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
     %legend({'center', 'surround'});
     set(theAxes, 'XScale', 'log', 'XLim', [0.01 50], 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30]);
     set(theAxes, 'YScale', 'log', 'YLim', [0.001 1], ...
@@ -49,18 +49,21 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
     xlabel(theAxes,'eccentricity (degs)');
     ylabel(theAxes,'subregion radius (degs)');
     
+
     % Plot the center/surround radius ratios
     theAxes = theAxesGrid{1,1};
-    scatter(theAxes,eccDegs,  rfParams.centerRadiiDegs ./ rfParams.surroundRadiiDegs, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', 'none');
+    scatter(theAxes,rfEccRadiusDegs,  rfParams.centerCharacteristicRadiiDegs ./ rfParams.surroundCharacteristicRadiiDegs, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', 'none');
     set(theAxes, 'XLim', [0 30], 'YLim', [0 0.4], 'YTick', 0:0.05:0.4);
     xlabel(theAxes, 'eccentricity (degs)');
     ylabel(theAxes, 'center radius/surround radius');
-    
+
     % Plot the center & surround peak sensitivities
     theAxes = theAxesGrid{2,2};
-    scatter(theAxes, rfParams.centerRadiiDegs, rfParams.centerPeakSensitivities, 'o', 'MarkerEdgeColor', 'none'); 
+    if (strcmp(dataSet, 'visual'))
+        scatter(theAxes, rfParams.centerCharacteristicRadiiDegs, rfParams.centerPeakSensitivities, 'o', 'MarkerEdgeColor', 'none'); 
+    end
     hold(theAxes, 'on');
-    scatter(theAxes,rfParams.surroundRadiiDegs, rfParams.surroundPeakSensitivities, 'd', 'MarkerEdgeColor', 'none'); 
+    scatter(theAxes,rfParams.surroundCharacteristicRadiiDegs, rfParams.surroundPeakSensitivities, 'd', 'MarkerEdgeColor', 'none'); 
     hL = legend(theAxes, {'center', 'surround'}, 'Location', 'NorthEast');
     set(hL, 'FontSize', 12)
     set(theAxes, 'XScale', 'log', 'XLim', [0.001 10], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30], 'XTickLabel', {'.001', '.003', '.01', '.03', '.1', '.3', '1', '3', '10', '30'});
@@ -69,13 +72,16 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
     ylabel(theAxes,'peak sensitivity');
     
     % Plot the integrated surround/center sensitiy ratios
+    
     theAxes = theAxesGrid{1,2};
     integratedRatios = rfParams.surroundPeakSensitivities ./ rfParams.centerPeakSensitivities .* ...
-                       (rfParams.surroundRadiiDegs ./ rfParams.centerRadiiDegs).^2;
-    scatter(theAxes,synthesizedRFParams.eccDegs, integratedRatios, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', 'none');
+                       (rfParams.surroundCharacteristicRadiiDegs ./ rfParams.centerCharacteristicRadiiDegs).^2;
+    scatter(theAxes,rfEccRadiusDegs, integratedRatios, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', 'none');
     set(theAxes, 'XScale', 'log', 'XLim', [0.006 30], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30], 'YLim', [0 1]);
     xlabel(theAxes, 'eccentricity (degs)');
     ylabel(theAxes, 'integrated sensitivity (surround/center)');
+    
+    
     drawnow;
     
     plotlabOBJ.exportFig(hFig, 'png', sprintf('%s__%s',pdfFileName, dataSet),exportsDir);

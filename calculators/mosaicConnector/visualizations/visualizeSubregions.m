@@ -1,5 +1,5 @@
 function visualizeSubregions(figNo,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, rgcEccDegs, ...
-    rgcCenterPositionMicrons, retinalCenterRadiiDegs, retinalSurroundRadiiDegs, conePositionsMicrons, coneSpacingsMicrons,  coneTypes, plotlabOBJ, pdfFileName,exportsDir)
+    rgcCenterPositionMicrons, retinalSurroundRadiiMicrons, conePositionsMicrons, coneSpacingsMicrons,  coneTypes, plotlabOBJ, pdfFileName,exportsDir)
 
     maxGainDivisor = 500;
 
@@ -48,13 +48,8 @@ function visualizeSubregions(figNo,midgetRGCconnectionMatrixCenter, midgetRGCcon
         surroundWeights = squeeze(full(midgetRGCconnectionMatrixSurround(coneIndicesConnectedToSurround, iRGC)));
         
         
-        % Get radius of RGC center in microns
-        rgcCenterRadiusDegs = retinalCenterRadiiDegs(iRGC);
-        rgcCenterRadiusMicrons = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(rgcCenterRadiusDegs, rgcEccDegs(iRGC));
-        
         % Compute visualized spatial support
-        rgcSurroundRadiusDegs = retinalSurroundRadiiDegs(iRGC);
-        rgcSurroundRadiusMicrons = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(rgcSurroundRadiusDegs, rgcEccDegs(iRGC));
+        rgcSurroundRadiusMicrons = retinalSurroundRadiiMicrons(iRGC);
         % Varied support, scaling with surround
         spatialSupportRangeMicrons = rgcSurroundRadiusMicrons*4; 
         % or fixed support
@@ -68,7 +63,7 @@ function visualizeSubregions(figNo,midgetRGCconnectionMatrixCenter, midgetRGCcon
             conePositionsMicrons(coneIndicesConnectedToCenter,:), ...
             coneSpacingsMicrons(coneIndicesConnectedToCenter), ...
             centerWeights, maxWeightVisualized, ...
-            rgcPositionMicrons, rgcCenterRadiusMicrons, spatialSupportRangeMicrons, 1);
+            rgcPositionMicrons,  spatialSupportRangeMicrons, 1);
         
         % Plot surround weights
         % Only visualize weights up to a fraction of the mean(center). After that saturate to max
@@ -77,43 +72,46 @@ function visualizeSubregions(figNo,midgetRGCconnectionMatrixCenter, midgetRGCcon
             conePositionsMicrons(coneIndicesConnectedToSurround,:), ...
             coneSpacingsMicrons(coneIndicesConnectedToSurround), ...
             surroundWeights,  maxWeightVisualized, ...
-            rgcPositionMicrons, rgcSurroundRadiusMicrons, spatialSupportRangeMicrons, -1);
+            rgcPositionMicrons, spatialSupportRangeMicrons, -1);
         
-        % Plot the center&surround radii
-        theAxes = theAxesGrid{2,1};
-        cla(theAxes);
-        hold(theAxes, 'on');
-        if (~isempty(previousEccDegs))
-             scatter(theAxes, previousEccDegs, previousCenterRadii, 'o');
-             scatter(theAxes, previousEccDegs, previousSurroundRadii, 'd');
-        end
+        if (1==2)
+            % Plot the center&surround radii
+            theAxes = theAxesGrid{2,1};
+            cla(theAxes);
+            hold(theAxes, 'on');
+            if (~isempty(previousEccDegs))
+                 scatter(theAxes, previousEccDegs, previousCenterRadii, 'o');
+                 scatter(theAxes, previousEccDegs, previousSurroundRadii, 'd');
+            end
         
-        scatter(theAxes, rgcEccDegs(iRGC), rgcCenterRadiusDegs, 225,'o', 'MarkerFaceColor', [1 1 1], 'MarkerFaceAlpha', 1.0, 'MarkerEdgeColor', [1 0 0]);
-        scatter(theAxes, rgcEccDegs(iRGC),  rgcSurroundRadiusDegs, 225,'d', 'MarkerFaceColor', [1 1 1], 'MarkerFaceAlpha', 1.0, 'MarkerEdgeColor', [0 0 1]);
-        
-        set(theAxes, 'XScale', 'log', 'XLim', [0.006 30], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30]);
-        set(theAxes, 'YScale', 'log', 'YLim', [0.002 1], ...
-            'YTick', [0.001 0.003 0.01 0.03 0.1 0.3 1 3 10], 'YTickLabel', {'0.001', '0.003', '0.01', '0.03',' 0.1', '0.3', '1', '3', '10'});
-        xlabel(theAxes,'eccentricity (degs)');
-        ylabel(theAxes,'subregion radius (degs)');
-    
-        % Plot integrated sensitivity ratio
-        theAxes = theAxesGrid{2,2};
-        cla(theAxes);
-        hold(theAxes, 'on');
-        if (~isempty(previousEccDegs))
-            scatter(theAxes, previousEccDegs, previousIntegratedSensitivityRatios, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
-        end
-        scatter(theAxes, rgcEccDegs(iRGC), sum(surroundWeights)/sum(centerWeights), 225, 'o', 'MarkerFaceColor', [1 1 1], 'MarkerFaceAlpha', 1.0, 'MarkerEdgeColor', [0 0 0]);
-        
-        set(theAxes, 'XScale', 'log', 'XLim', [0.006 30], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30], 'YLim', [0 1]);
-        xlabel(theAxes, 'eccentricity (degs)');
-        ylabel(theAxes, 'integrated sensitivity (surround/center)');
+           % scatter(theAxes, rgcEccDegs(iRGC), rgcCenterRadiusDegs, 225,'o', 'MarkerFaceColor', [1 1 1], 'MarkerFaceAlpha', 1.0, 'MarkerEdgeColor', [1 0 0]);
+           % scatter(theAxes, rgcEccDegs(iRGC),  rgcSurroundRadiusDegs, 225,'d', 'MarkerFaceColor', [1 1 1], 'MarkerFaceAlpha', 1.0, 'MarkerEdgeColor', [0 0 1]);
 
-        previousEccDegs = cat(2, previousEccDegs, rgcEccDegs(iRGC));
-        previousCenterRadii = cat(2, previousCenterRadii, rgcCenterRadiusDegs);
-        previousSurroundRadii = cat(2, previousSurroundRadii, rgcSurroundRadiusDegs);
-        previousIntegratedSensitivityRatios = cat(2, previousIntegratedSensitivityRatios, sum(surroundWeights)/sum(centerWeights));
+            set(theAxes, 'XScale', 'log', 'XLim', [0.006 30], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30]);
+            set(theAxes, 'YScale', 'log', 'YLim', [0.002 1], ...
+                'YTick', [0.001 0.003 0.01 0.03 0.1 0.3 1 3 10], 'YTickLabel', {'0.001', '0.003', '0.01', '0.03',' 0.1', '0.3', '1', '3', '10'});
+            xlabel(theAxes,'eccentricity (degs)');
+            ylabel(theAxes,'subregion radius (degs)');
+
+            % Plot integrated sensitivity ratio
+            theAxes = theAxesGrid{2,2};
+            cla(theAxes);
+            hold(theAxes, 'on');
+            if (~isempty(previousEccDegs))
+                scatter(theAxes, previousEccDegs, previousIntegratedSensitivityRatios, 'o', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerEdgeColor', [0 0 0]);
+            end
+            scatter(theAxes, rgcEccDegs(iRGC), sum(surroundWeights)/sum(centerWeights), 225, 'o', 'MarkerFaceColor', [1 1 1], 'MarkerFaceAlpha', 1.0, 'MarkerEdgeColor', [0 0 0]);
+
+            set(theAxes, 'XScale', 'log', 'XLim', [0.006 30], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30], 'YLim', [0 1]);
+            xlabel(theAxes, 'eccentricity (degs)');
+            ylabel(theAxes, 'integrated sensitivity (surround/center)');
+
+            previousEccDegs = cat(2, previousEccDegs, rgcEccDegs(iRGC));
+            previousCenterRadii = cat(2, previousCenterRadii, rgcCenterRadiusDegs);
+            previousSurroundRadii = cat(2, previousSurroundRadii, rgcSurroundRadiusDegs);
+            previousIntegratedSensitivityRatios = cat(2, previousIntegratedSensitivityRatios, sum(surroundWeights)/sum(centerWeights));
+        end
+        
         drawnow;
         videoOBJ.writeVideo(getframe(hFig));
          

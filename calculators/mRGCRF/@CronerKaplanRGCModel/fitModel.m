@@ -59,12 +59,10 @@ function usePaperFits(obj)
         obj.centerRadiusParams, obj.centerRadiusParamsSE] = nonLinearFitData(...
         x,yMedian,yIQR,ySamplesNum, obj.centerData('size').initialParams);
     
-    
     % The ecc - surround radius equation from the paper (Figure 4 caption)
     obj.surroundRadiusFunction = @(p,x)(p(1)*x.^p(2));
     obj.surroundRadiusParams = [0.203 0.472];
     obj.surroundRadiusParamsSE = [0 0];
-    
     
     % The radius - center sensitivity equation from the paper (Figure 5 caption)
     obj.centerPeakSensitivityFunction = @(p,x)(p(1)*x.^p(2));
