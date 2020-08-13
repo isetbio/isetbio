@@ -50,8 +50,13 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
         
         OTFs(:,:,wIndex) = fftshift(theWaveOTF);
         PSFs(:,:,wIndex) = theWavePSF;
+        
+        % Also set the PSF stored within theWVF
+        theWVF.psf{wIndex} = theWavePSF;
     end
     
+   
+   
     xMinutes = xGridMinutes(1,:);
     yMinutes = yGridMinutes(:,1);
 end
