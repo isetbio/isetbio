@@ -6,11 +6,13 @@ function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfsAtEccentricity(g
     p = inputParser;
     p.addParameter('noLCA', false, @islogical);
     p.addParameter('noOptics', false, @islogical);
+    p.addParameter('doNotZeroCenterPSF', true, @islogical);
     p.parse(varargin{:});
     
     % See if we will simulate no longitudinal chromatic aberration
     noLCAflag = p.Results.noLCA;
     noOpticsFlag = p.Results.noOptics;
+    doNotZeroCenterPSF = p.Results.doNotZeroCenterPSF;
     
     subtractCentralRefraction = true;
     % Best focus at 550 nm
@@ -43,7 +45,7 @@ function [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfsAtEccentricity(g
            % Generate oi at this eccentricity
            theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, pupilDiamMM, measurementWavelength, ...
                 desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree, ...
-                noLCAflag, noOpticsFlag);
+                noLCAflag, noOpticsFlag, doNotZeroCenterPSF);
             
            % Extract PSF
            for wIndex = 1:numel(wavelengthsListToCompute)
@@ -102,7 +104,7 @@ end
 
 
 function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measPupilDiameterMM, measWavelength, ...
-    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree, noLCAflag, noOpticsFlag)
+    desiredPupilDiamMM, wavelengthsListToCompute, wavefrontSpatialSamples, micronsPerDegree, noLCAflag, noOpticsFlag, doNotZeroCenterPSF)
 
     showTranslation = false;
     
@@ -125,7 +127,7 @@ function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measP
              wavelengthsListToCompute, wavefrontSpatialSamples, ...
              measPupilDiameterMM, desiredPupilDiamMM, ...
              measWavelength, showTranslation, ...
-             'doNotZeroCenterPSF', true, ...
+             'doNotZeroCenterPSF', doNotZeroCenterPSF, ...
              'micronsPerDegree', micronsPerDegree);
         
     for waveIndex = 1:numel(wavelengthsListToCompute)
@@ -140,29 +142,8 @@ function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measP
              theOTF(:,:,waveIndex) = theOTF(:,:,inFocusWindex);
         end
     end
-    
-%     OLD
-%     theOI = oiCreate('wvf human', desiredPupilDiamMM,[],wavelengthsListToCompute, micronsPerDegree);
-%     optics = oiGet(theOI,'optics');
-%     optics = opticsSet(optics, 'wave', wavelengthsListToCompute);
-%     optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
-%     
-%     
-    
-%     % Update optics with new OTF data
-%     xSfCyclesPerMM = 1000*xSfCyclesDeg / micronsPerDegree;
-%     ySfCyclesPerMM = 1000*ySfCyclesDeg / micronsPerDegree;
-%     customOptics = opticsSet(optics,'otf data',theOTF);
-%     customOptics = opticsSet(customOptics, 'otffx',xSfCyclesPerMM);
-%     customOptics = opticsSet(customOptics,'otffy',ySfCyclesPerMM);
-%     
-%     % Update theOI with custom optics
-%     theOI = oiSet(theOI,'optics', customOptics);
-    
-%    END OF OLD
-
+  
     theOI = wvf2oi(theWVF);
-    
 end
 
 function [hEccQ, vEccQ, zCoeffIndices, zMapQ, pupilDiamMM] = getTypicalSubjectZcoeffs(subjectIndex, subtractCentralRefraction, ...

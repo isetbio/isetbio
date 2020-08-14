@@ -39,38 +39,50 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         eccWeights(RGCindex,2) = eccDiffs(1)/sum(eccDiffs);
     end
     
+    % Use the deconvolutionModel.center to determine the center's VISUAL characteristic radius
+    % based on the number of input cones to this cells' RF center
     parfor RGCindex = 1:rgcsNum
-        % Use the deconvolutionModel.center to determine the center's VISUAL characteristic radius
-        % based on the number of input cones to this cells' RF center
         centerVisualCharacteristicRadiiDegs(RGCindex) = ...
             eccWeights(RGCindex,1) * deconvolutionModel.center.visualCharacteristicRadius(targetEccIndices(RGCindex,1), rfCenterInputConesNum(RGCindex)) + ...
             eccWeights(RGCindex,2) * deconvolutionModel.center.visualCharacteristicRadius(targetEccIndices(RGCindex,2), rfCenterInputConesNum(RGCindex));
     end
     
-    % Center radius -> Center peak sensitivity
     % Use the Croner&Kaplan model centerPeakSensitivityFunction() to
-    % compute the center VISUAL peak sensitivity
+    % compute the center VISUAL peak sensitivity from the center's VISUAL
+    % characteristic radius computed previously
     centerVisualPeakSensitivities = obj.centerPeakSensitivityFunction(...
         obj.centerPeakSensitivityParams, centerVisualCharacteristicRadiiDegs);
     
-    % Comute retinal peak sensitivities
+    % Use the deconvolutionModel.center to compute the sensitivity attenuation. Then we determine the 
+    % center's RETINAL peak sensitivity, which is the center's VISUAL peak sensitivity x sensitivity attenuation
     parfor RGCindex = 1:rgcsNum
-        peakSensitivityAttenuation = ...
+        peakSensitivityAttenuation(RGCindex) = ...
             eccWeights(RGCindex,1) * deconvolutionModel.center.visualGainAttenuation(targetEccIndices(RGCindex,1), rfCenterInputConesNum(RGCindex)) + ...
             eccWeights(RGCindex,2) * deconvolutionModel.center.visualGainAttenuation(targetEccIndices(RGCindex,2), rfCenterInputConesNum(RGCindex));
-        
-        centerRetinalPeakSensitivities(RGCindex) = centerVisualPeakSensitivities(RGCindex) * peakSensitivityAttenuation;    
+        %peakSensitivityAttenuation = 1;
+        centerRetinalPeakSensitivities(RGCindex) = centerVisualPeakSensitivities(RGCindex) / peakSensitivityAttenuation(RGCindex);    
     end
 
+    figure(567);
+    subplot(1,2,1);
+    plot(rfCenterInputConesNum, peakSensitivityAttenuation, 'ks');
+    set(gca, 'XLim', [0 5], 'XTick', 0:1:10, 'YLim', [0 1], 'YTick', 0:0.1:1.0);
+    xlabel('# of input cones');
+    ylabel('visual sensitivity attenuation');
     
-    % C/S radius ratio -> Surround radius
+    subplot(1,2,2);
+    plot(rfCenterInputConesNum, centerVisualCharacteristicRadiiDegs, 'ks');
+    set(gca, 'XLim', [0 5], 'XTick', 0:1:10, 'YScale', 'log', 'YLim', [0.001 1], 'YTick', [0.001 0.003 0.01 0.03 0.1 0.3 1]);
+    xlabel('# of input cones');
+    ylabel('visual characteristic radius (degs)');
+    pause
+    
     % Use the Croner&Kaplan model center-to-surround ratio function to
     % compute the surround VISUAL characteristic radius 
     surroundVisualCharacteristicRadiiDegs = ...
         CronerKaplanRGCModel.surroundRadiusFromCenterRadiusDegs(centerVisualCharacteristicRadiiDegs);
 
-    % -------- Surround radius -> Surround peak sensitivity  --------------
-    
+
     % Use the Croner&Kaplan model surround to center integrated
     % sensitivity ratio to compute the surround VISUAL peak sensitivity
     surroundVisualPeakSensitivities = ...
@@ -80,11 +92,11 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     
 
     % NOW WE NEED THE SURROUND DECONVOLUTION MODEL TO COMPUTE the following:
-    % centerRetinalPeakSensitivities
     % surroundRetinalPeakSensitivities
     % surroundRetinalRadiiMicrons
     
-    % Set the surround params to their visual counterparts
+    % FOR NOW et the surround params to their visual counterparts
+    fprintf(2, 'setting surround retinal properties to their visual counterparts. Implement surround deconvolution\n'); 
     surroundRetinalPeakSensitivities = surroundVisualPeakSensitivities;
     surroundRetinalCharacteristicRadiiMicrons = 1e3 * WatsonRGCModel.rhoDegsToMMs(surroundVisualCharacteristicRadiiDegs);
     
@@ -103,8 +115,6 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
              'surroundPeakSensitivities', surroundRetinalPeakSensitivities... 
             )...
          );
-    
-    
     
 end
 

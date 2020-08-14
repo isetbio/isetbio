@@ -137,8 +137,8 @@ classdef CronerKaplanRGCModel < handle
         [theConeMosaic, theConeMosaicMetaData] = generateConeMosaicForDeconvolution(patchEcc, patchSize, varargin);
         
         % Generate Polans optics for performing the deconvolution analysis
-        theOptics = generatePolansOpticsForDeconcolution(PolansSubjectID, imposedRefractionErrorDiopters, ...
-            pupilDiameterMM , wavelengthSampling, micronsPerDegree, patchEcc, varargin);
+        [theOptics, theFullPSF, thePSFsupportDegs] = generatePolansOpticsForDeconcolution(PolansSubjectID, ...
+            imposedRefractionErrorDiopters, pupilDiameterMM , wavelengthSampling, micronsPerDegree, patchEcc, varargin);
         
         % Generate Polans PSF at desired eccentricitiy
         [hEcc, vEcc, thePSFs, thePSFsupportDegs, theOIs] = psfsAtEccentricity(goodSubjects, ...
@@ -148,6 +148,9 @@ classdef CronerKaplanRGCModel < handle
         data = quadrantData(allQuadrantData, quadrantsToAverage, quadrantsComputed, subjectsToAverage, subjectsComputed);
         
         plotDeconvolutionModel(deconvolutionModel);
+        
+        deconvolutionStruct = performDeconvolutionAnalysis(conesNumInRFcenterExamined, ...
+            conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs);
     end
     
     methods (Access=private)

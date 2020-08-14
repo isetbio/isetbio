@@ -1,5 +1,4 @@
-function synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, ...
-    midgetRGCconnectionMatrix, deconvolutionOpticsParams)
+function synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, midgetRGCconnectionMatrix, deconvolutionOpticsParams)
    
     rgcsNum = size(midgetRGCconnectionMatrix,2);
     rfCenterPositionsMicrons = zeros(rgcsNum,2);

@@ -3,7 +3,7 @@ function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOptics
     % Validate the deconvolutionOpticsParams
     obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
     
-    tabulatedEccentricities = [0 0.25 0.5 1 1.5 2:9 11 13:17];
+    tabulatedEccentricities = [0 0.25 0.5 1 1.5 2:25];
     defocusMode = 'subjectDefault';
     if (strcmp(defocusMode, 'subjectDefault'))
         imposedRefractionErrorDiopters = 0; 

@@ -15,7 +15,6 @@ function performPSFConvoComputations(varargin)
     p.addParameter('eccTested', [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25]);
     p.addParameter('quadrantsToCompute', {'horizontal'}); %, @(x)(ismember(x, {'horizontal', 'superior', 'inferior'})));
     p.addParameter('generateNewDeconvolutionFiles', false, @islogical);
-    
     p.parse(varargin{:});
     
     PolansSubjectIDs = p.Results.PolansSubjectIDs;
@@ -32,7 +31,7 @@ function performPSFConvoComputations(varargin)
         deconvolutionOpticsParams = struct(...
             'PolansWavefrontAberrationSubjectIDsToCompute', PolansSubjectIDs ...
             );
-        deconvolutionOpticsParams.quadrantsToCompute =  quadrantsToCompute;
+        deconvolutionOpticsParams.quadrantsToCompute = quadrantsToCompute;
         
         ck.generateDeconvolutionFiles(...
             deconvolutionOpticsParams, ...
@@ -48,8 +47,7 @@ end
 
 function performDeconvolutionTests(PolansSubjectIDs, quadrantsToCompute)
 
-    plotDeconvolutionModel = false;
-    
+    plotDeconvolutionModel =  true;
     ck = CronerKaplanRGCModel(...
         'generateAllFigures', false, ...
         'instantiatePlotLab', false);
