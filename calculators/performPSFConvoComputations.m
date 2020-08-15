@@ -45,13 +45,12 @@ function performPSFConvoComputations(varargin)
     end
     
     
-    performTests = true;
+    visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested);
+    
+    performTests = ~true;
     if (performTests)
-        % Test1: Visualize the deconvolution model
-        visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested);
-        
         % Test2: Synthesize RF params
-        %synthesizeRFparams(deconvolutionOpticsParams);
+        synthesizeRFparams(deconvolutionOpticsParams);
     end
 end
 

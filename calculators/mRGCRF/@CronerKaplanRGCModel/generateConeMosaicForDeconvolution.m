@@ -35,7 +35,7 @@ function [theConeMosaic, patchEccDegs, patchEccMicrons, ...
       conePositionsMicrons, coneSpacingsMicrons, coneAperturesMicrons, coneTypes] = generateRegularHexMosaicPatch(...
       coneMosaicResamplingFactor, patchEcc, patchSize, sizeUnits)
 
-    ck = CronerKaplanRGCModel('generateAllFigures', true);
+    ck = CronerKaplanRGCModel('generateAllFigures', false);
     
     if (strcmp(sizeUnits, 'degrees'))
         % patch eccentricity in degs and microns

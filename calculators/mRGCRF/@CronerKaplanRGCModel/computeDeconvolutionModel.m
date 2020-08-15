@@ -48,7 +48,8 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
         assert((numel(quadrants) == 1) && (strcmp(quadrants{1},deconvolutionQuadrant)), ...
             sprintf('Deconvolution file does not contain quadrant''%s''', deconvolutionQuadrant));
         
-        theData = deconvolutionStruct{1,1}.data;
+        % Load the data for the RFcenter
+        theData = deconvolutionStruct{1,1}.center.data;
         theDataLabels = keys(theData);
         
         for coneInputConfigIndex = 1:numel(theDataLabels)
