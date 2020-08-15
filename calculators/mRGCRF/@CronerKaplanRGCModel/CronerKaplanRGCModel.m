@@ -116,7 +116,7 @@ classdef CronerKaplanRGCModel < handle
 
         % Generate the deconvolution model (operates on the output of
         % performGaussianConvolutionWithPolansPSFanalysis()) - no printing
-        deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams);
+        deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams, eccTested);
         
         % Method to generate retinal RF params given the retinal center radius
         % and eccentricity as inputs. This uses (via computeDeconvolutionModel()),

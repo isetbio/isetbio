@@ -6,8 +6,8 @@ end
 function visualizeCenterDeconvolutionModel(deconvolutionModel)
 
     w = WatsonRGCModel();
-    retinalEccentricitiesDegs = logspace(log10(0.1), log10(30), 100);
-    coneRFSpacingsDegs = w.coneRFSpacingAndDensityAlongMeridian(retinalEccentricitiesDegs, ...
+    retinalNasalEccentricitiesDegs = logspace(log10(0.1), log10(30), 100);
+    coneRFSpacingsDegs = w.coneRFSpacingAndDensityAlongMeridian(retinalNasalEccentricitiesDegs, ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
     coneApertureDiameterDegs = WatsonRGCModel.coneApertureToDiameterRatio * coneRFSpacingsDegs;
@@ -21,7 +21,7 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
     set(hFig, 'Name', figName, 'Position', figPosition);
     
     rowsNum = 2;
-    colsNum = numel(deconvolutionModel.tabulatedEccentricities);
+    colsNum = size(deconvolutionModel.eccDegs,1);
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'rowsNum', rowsNum, ...
        'colsNum', colsNum, ...
@@ -32,8 +32,8 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
        'bottomMargin',   0.04, ...
        'topMargin',      0.02);
    
-    for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricities)
-        [~,idx]  = min(abs(retinalEccentricitiesDegs-deconvolutionModel.tabulatedEccentricities(eccIndex)));
+    for eccIndex = 1:size(deconvolutionModel.eccDegs,1)
+        [~,idx]  = min(abs(retinalNasalEccentricitiesDegs-deconvolutionModel.eccDegs(eccIndex,1)));
         coneCharacteristicRadiusDegsAtClosestEccentricity = coneCharacteristicRadiiDegs(idx);
         % Visual characteristic radius as a function of number of cone in RF center
         subplot('Position', subplotPosVectors(1,eccIndex).v);
@@ -46,7 +46,7 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
             'ks-', 'LineWidth', 1.5);
         plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.retinalCharacteristicRadiusMax(eccIndex,:), ...
             'ks--', 'LineWidth', 1.5);
-        plot(retinalEccentricitiesDegs, retinalEccentricitiesDegs*0 + coneCharacteristicRadiusDegsAtClosestEccentricity, 'k--', 'LineWidth', 1.0);
+        plot(retinalNasalEccentricitiesDegs, retinalNasalEccentricitiesDegs*0 + coneCharacteristicRadiusDegsAtClosestEccentricity, 'b:', 'LineWidth', 1.0);
          
         set(gca, 'XLim', [0.5 101], 'YLim', [0.001 1], ...
             'YTick', [0.003 0.01 0.03 0.1 1], 'YTickLabel', {'0.003', '0.01', '0.03', '0.1', '0.3', '1.0'}, ...

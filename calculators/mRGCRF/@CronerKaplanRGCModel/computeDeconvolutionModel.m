@@ -1,9 +1,9 @@
-function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams)
+function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams, eccTested)
     
+     
     % Validate the deconvolutionOpticsParams
     obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
     
-    tabulatedEccentricities = [0 0.25 0.5 1 1.5 2:25];
     defocusMode = 'subjectDefault';
     if (strcmp(defocusMode, 'subjectDefault'))
         imposedRefractionErrorDiopters = 0; 
@@ -11,58 +11,58 @@ function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOptics
         imposedRefractionErrorDiopters = 0.01; 
     end
     
-    deconvolutionModel.center = computeCenterDeconvolutionModel(obj, tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionOpticsParams);
-    %deconvolutionModel.surround = computeSurroundDeconvolutionModel(obj, tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionOpticsParams);
+    deconvolutionModel.center = computeCenterDeconvolutionModel(obj, eccTested, imposedRefractionErrorDiopters, deconvolutionOpticsParams);
+    %deconvolutionModel.surround = computeSurroundDeconvolutionModel(obj, eccTested, imposedRefractionErrorDiopters, deconvolutionOpticsParams);
 end
 
-function deconvolutionModel = computeCenterDeconvolutionModel(obj, tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionOpticsParams)
+function deconvolutionModel = computeCenterDeconvolutionModel(obj, eccTested, imposedRefractionErrorDiopters, deconvolutionOpticsParams)
     
-    deconvolutionQuadrant = deconvolutionOpticsParams.quadrantsToAverage{1};
-    deconvolutionSubject = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage(1);
+    deconvolutionQuadrant = deconvolutionOpticsParams.quadrantsToCompute{1};
+    deconvolutionSubject = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute(1);
     
     deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrantAndSubject(obj, ...
-        tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionQuadrant, deconvolutionSubject);
+        eccTested, imposedRefractionErrorDiopters, deconvolutionQuadrant, deconvolutionSubject);
 
 end
 
 
 
 function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrantAndSubject(obj, ...
-        tabulatedEccentricities, imposedRefractionErrorDiopters, deconvolutionQuadrant, deconvolutionSubject)
+        eccTested, imposedRefractionErrorDiopters, deconvolutionQuadrant, deconvolutionSubject)
     
     deconvolutionModel.subjectID = deconvolutionSubject;
     deconvolutionModel.quadrant = deconvolutionQuadrant;
-    deconvolutionModel.tabulatedEccentricities = tabulatedEccentricities;
+    deconvolutionModel.eccDegs = [eccTested(:) 0*eccTested(:)];
     
-    for eccIndex = 1:numel(tabulatedEccentricities)
-        % Eccentricity
-        eccDegs(1) = tabulatedEccentricities(eccIndex);
-        eccDegs(2) = 0;
-        deconvolutionModel.eccDegs(eccIndex,:) = eccDegs;
-        
+    for eccIndex = 1:size(deconvolutionModel.eccDegs,1)
+
         % Load deconvolution file for this eccentricity
         dataFileName = fullfile(obj.psfDeconvolutionDir,...
-            sprintf('ecc_-%2.1f_%2.1f_centerDeconvolutions_refractionError_%2.2fD.mat', eccDegs(1), eccDegs(2), imposedRefractionErrorDiopters));
+            sprintf('ecc_-%2.1f_%2.1f_centerDeconvolutions_refractionError_%2.2fD.mat', ...
+            deconvolutionModel.eccDegs(eccIndex,1), deconvolutionModel.eccDegs(eccIndex,2), imposedRefractionErrorDiopters));
         load(dataFileName, 'deconvolutionStruct', 'quadrants', 'subjectIDs');
         
         assert((numel(subjectIDs) == 1) && (subjectIDs == deconvolutionSubject), ...
             sprintf('Deconvolution file does not contain subject %d', deconvolutionSubject));
         
-
         assert((numel(quadrants) == 1) && (strcmp(quadrants{1},deconvolutionQuadrant)), ...
             sprintf('Deconvolution file does not contain quadrant''%s''', deconvolutionQuadrant));
         
-        dataDictionary = deconvolutionStruct{1,1}.data;
-        dataLabels = keys(dataDictionary);
+        theData = deconvolutionStruct{1,1}.data;
+        theDataLabels = keys(theData);
         
-        for coneInputConfigIndex = 1:numel(dataLabels)
-            coneInputConfig = dataLabels{coneInputConfigIndex};
+        for coneInputConfigIndex = 1:numel(theDataLabels)
+            coneInputConfig = theDataLabels{coneInputConfigIndex};
+            decolvolutionData = theData(coneInputConfig);
             coneInputsNum = str2double(strrep(coneInputConfig, '-coneInput', ''));
-            decolvolutionData = dataDictionary(coneInputConfig);
             
             deconvolutionModel.centerConeInputsNum(eccIndex,coneInputsNum) = coneInputsNum;
-            deconvolutionModel.visualGainAttenuation(eccIndex,coneInputsNum) = decolvolutionData.visualGainAttenuation;
-            deconvolutionModel.visualCharacteristicRadius(eccIndex,coneInputsNum) = decolvolutionData.minVisualSigma;
+            deconvolutionModel.visualGain(eccIndex,coneInputsNum) = decolvolutionData.visualGain;
+            deconvolutionModel.retinalGain(eccIndex,coneInputsNum) = decolvolutionData.retinalGain;
+            deconvolutionModel.visualCharacteristicRadiusMin(eccIndex,coneInputsNum) = decolvolutionData.minVisualSigma;
+            deconvolutionModel.visualCharacteristicRadiusMax(eccIndex,coneInputsNum) = decolvolutionData.maxVisualSigma;
+            deconvolutionModel.retinalCharacteristicRadiusMin(eccIndex,coneInputsNum) = decolvolutionData.minRetinalSigma;
+            deconvolutionModel.retinalCharacteristicRadiusMax(eccIndex,coneInputsNum) = decolvolutionData.maxRetinalSigma;
         end
     end
 end

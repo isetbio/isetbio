@@ -1,6 +1,6 @@
 function performPSFConvoComputations(varargin)
 
-    % Polans et al subjects grouped according to different criteria
+% Polans et al subjects grouped according to different criteria
 %     sharpestPSFSubjectIDs = [4 9];
 %     mediumSharpnessPSFSubjectIDs = [5 8 10];
 %     blurriestPSFSubjectIDs = [7];
@@ -12,7 +12,7 @@ function performPSFConvoComputations(varargin)
     % Parse input
     p = inputParser;
     p.addParameter('PolansSubjectIDs', [4], @isnumeric);
-    p.addParameter('eccTested', [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25]);
+    p.addParameter('eccTested', [0 0.2 0.5 1 1.5 2 2.5 3:25]);
     p.addParameter('quadrantsToCompute', {'horizontal'}); %, @(x)(ismember(x, {'horizontal', 'superior', 'inferior'})));
     p.addParameter('generateNewDeconvolutionFiles', false, @islogical);
     p.addParameter('visualizeFits', false, @islogical);
@@ -24,52 +24,55 @@ function performPSFConvoComputations(varargin)
     generateNewDeconvolutionFiles = p.Results.generateNewDeconvolutionFiles;
     visualizeFits = p.Results.visualizeFits;
     
-    ck = CronerKaplanRGCModel(...
-        'generateAllFigures', false, ...
-        'instantiatePlotLab', false);
-     
+    
+    deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute = PolansSubjectIDs;
+    deconvolutionOpticsParams.quadrantsToCompute = quadrantsToCompute;
+        
     % Perform the deconvolution analysis for certain Polans subjects 
     if (generateNewDeconvolutionFiles)
-        deconvolutionOpticsParams = struct(...
-            'PolansWavefrontAberrationSubjectIDsToCompute', PolansSubjectIDs ...
-            );
-        deconvolutionOpticsParams.quadrantsToCompute = quadrantsToCompute;
+      
+        % Instantiate a CronerKaplanRGCModel
+        ck = CronerKaplanRGCModel(...
+            'generateAllFigures', false, ...
+            'instantiatePlotLab', false);
         
-        ck.generateDeconvolutionFiles(...
-            deconvolutionOpticsParams, ...
-            'eccTested', eccTested, ...
-            'visualizeFits', visualizeFits);
+        % Tell it to generate deconvolution files for the desired
+        % eccentricities, and deconvolution parameters (quadrants&subject)
+        ck.generateDeconvolutionFiles(deconvolutionOpticsParams, ...
+            'eccTested', eccTested, ...        
+            'visualizeFits', visualizeFits ...
+            );
     end
     
     
     performTests = true;
     if (performTests)
-        performDeconvolutionTests(PolansSubjectIDs, quadrantsToCompute)
+        % Test1: Visualize the deconvolution model
+        visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested);
+        
+        % Test2: Synthesize RF params
+        %synthesizeRFparams(deconvolutionOpticsParams);
     end
 end
 
-function performDeconvolutionTests(PolansSubjectIDs, quadrantsToCompute)
+function visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested)
 
-    plotDeconvolutionModel =  true;
+    % Instantiate a CronerKaplanRGCModel
     ck = CronerKaplanRGCModel(...
         'generateAllFigures', false, ...
         'instantiatePlotLab', false);
     
-    % TEST1. Compute and plot deconvolution model for only the 'horizontal'meridian
-    deconvolutionOpticsParams = struct(...
-        'PolansWavefrontAberrationSubjectIDsToAverage', PolansSubjectIDs ...
-    );
-    deconvolutionOpticsParams.quadrantsToAverage = quadrantsToCompute;
-  
-    deconvolutionModel = ck.computeDeconvolutionModel(deconvolutionOpticsParams);
+    % Assemble and plot the deconvolution model
+    deconvolutionModel = ck.computeDeconvolutionModel(deconvolutionOpticsParams,  eccTested);
     
-    if (plotDeconvolutionModel)
-        CronerKaplanRGCModel.plotDeconvolutionModel(deconvolutionModel);
-    end
-    
-    % TEST2. Synthesize params 
+    ck.plotDeconvolutionModel(deconvolutionModel);
+end
+
+function synthesizeRFparams(deconvolutionOpticsParams)
+
+     % assume 1 cone input across all eccentricities
     rgcsNum = 30;
-    rfCenterInputConesNum = ones(1, rgcsNum);  % assume 1 cone input across all eccentricities
+    rfCenterInputConesNum = ones(1, rgcsNum); 
     
     minEccDegs = 0.1;
     maxEccDegs = 30;

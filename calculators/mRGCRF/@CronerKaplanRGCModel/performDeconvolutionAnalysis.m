@@ -1,6 +1,27 @@
 function deconvolutionStruct = performDeconvolutionAnalysis(conesNumInRFcenterTested, ...
     conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits)
     
+    deconvolutionStruct.center = performDeconvolutionAnalysisForCenterSubregion(conesNumInRFcenterTested, ...
+        conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
+    
+%     deconvolutionStruct.surround = performDeconvolutionAnalysisForSurroundSubregion(conesNumInRFcenterTested, ...
+%         conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
+
+end
+
+
+function deconvolutionStruct = performDeconvolutionAnalysisForCenterSubregion(conesNumInRFcenterTested, ...
+    conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits)
+
+    % Center radius is about 6-7 times smaller than surround so only analyze central cones
+    eccRadiiDegs = sqrt(sum(conePosDegs.^2,2));
+    maxEccRadius = max(eccRadiiDegs);
+    analyzedEccRadius = 0.3*maxEccRadius;
+    coneIDsIncludedInCenterAnalysis = find(eccRadiiDegs <= analyzedEccRadius);
+    fprintf('Only analyzing %d of the %d cones for the RF center size\n', numel(coneIDsIncludedInCenterAnalysis), numel(eccRadiiDegs));
+    conePosDegs = conePosDegs(coneIDsIncludedInCenterAnalysis,:);
+    coneAperturesDegs = coneAperturesDegs(coneIDsIncludedInCenterAnalysis);
+    
     % Deconvolution data is a container
     deconvolutionStruct.data = containers.Map();  
     
