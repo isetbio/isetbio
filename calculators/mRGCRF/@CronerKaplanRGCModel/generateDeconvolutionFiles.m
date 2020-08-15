@@ -20,19 +20,84 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin)
     imposedRefractionErrorDiopters = 0;
     pupilDiamMM = 3.0;
     
-%     for eccIndex = 1:numel(eccTested)
-%         ecc = eccTested(eccIndex);
-%         doItForTheCenter(obj, ecc, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
-%     end
-    
     for eccIndex = 1:numel(eccTested)
         ecc = eccTested(eccIndex);
-        doItForTheSurround(obj, ecc, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
+        generateDeconvolutionFilesForTheCenter(obj, ecc, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
+        generateDeconvolutionFilesForTheSurround(obj, ecc, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
     end
     
 end
 
-function doItForTheSurround(obj, patchEccRadiusDegs, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits)
+function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits)
+    
+    % Extra deconvolution optics params
+    subjectIDs = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
+    quadrants = deconvolutionOpticsParams.quadrantsToCompute;
+    subjectsNum = numel(subjectIDs);
+    quadrantsNum = numel(quadrants);
+   
+    resetPlotLabOnExit = false;
+    
+    for qIndex = 1:quadrantsNum
+
+        switch (quadrants{qIndex})
+            case 'horizontal'
+                % horizontal meridian (nasal)
+                eccXrange = patchEccRadiusDegs*[1 1];
+                eccYrange = 0*[1 1];
+            case 'superior'
+                % vertical meridian (superior)
+                eccYrange = patchEccRadiusDegs*[1 1];
+                eccXrange = 0*[1 1];
+            case 'inferior'
+                % vertical meridian (inferior)
+                eccYrange = -patchEccRadiusDegs*[1 1];
+                eccXrange = 0*[1 1];
+            otherwise
+                error('Unknown Polans quadrant: ''%s''.', eccQuadrant);
+        end
+        
+        % Generate cone positions appropriate for the eccentricity
+        patchEccDegs = [eccXrange(1), eccYrange(1)];
+        [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] = ...
+            generateConePositionsForPatchAtEccentricity(patchEccDegs, 'coneMosaicResamplingFactor', 1);
+    
+        for sIndex = 1:subjectsNum
+            % Compute the Polans subject PSF at the desired eccentricity
+            PolansSubjectID = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute(sIndex);
+            
+            [thePSF, thePSFsupportDegs] = generatePSFForPatchAtEccentricity(PolansSubjectID, ...
+                imposedRefractionErrorDiopters, pupilDiamMM, wavelengthSampling, ...
+                micronsPerDegree, patchEccDegs, ...
+                'centerPSFatZero', true);
+            
+            if (qIndex == 1) && (sIndex == 1)
+                obj.setupPlotLab(0, 20, 12);
+                resetPlotLabOnExit = true;
+            end
+            
+            % Convolve different retinal pooling regions and compute the visually-mapped pooling region
+            deconvolutionStruct{ qIndex, sIndex} = ...
+                obj.performDeconvolutionAnalysisForRFcenter(conesNumInRFcenterTested, ...
+                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
+        end % sIndex
+    end % qIndex
+    
+    % Save decolvolution struct for the center
+    dataFileName = fullfile(obj.psfDeconvolutionDir, sprintf('ecc_%2.1f_centerDeconvolutions_refractionError_%2.2fD.mat', patchEccRadiusDegs, imposedRefractionErrorDiopters));
+    fprintf('Saving data to %s\n', dataFileName);
+    save(dataFileName, ...
+            'deconvolutionStruct', ...
+            'subjectIDs', 'quadrants');  
+        
+    if (resetPlotLabOnExit)
+        obj.setupPlotLab(-1);
+    end
+    
+end
+
+
+function generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits)
     % Extra deconvolution optics params
     subjectIDs = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
     quadrants = deconvolutionOpticsParams.quadrantsToCompute;
@@ -104,74 +169,6 @@ function doItForTheSurround(obj, patchEccRadiusDegs, conesNumInRFcenterTested, d
     
 end
 
-function doItForTheCenter(obj, patchEccRadiusDegs, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits)
-    
-    % Extra deconvolution optics params
-    subjectIDs = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
-    quadrants = deconvolutionOpticsParams.quadrantsToCompute;
-    subjectsNum = numel(subjectIDs);
-    quadrantsNum = numel(quadrants);
-   
-    resetPlotLabOnExit = false;
-    
-    for qIndex = 1:quadrantsNum
-
-        switch (quadrants{qIndex})
-            case 'horizontal'
-                % horizontal meridian (nasal)
-                eccXrange = patchEccRadiusDegs*[1 1];
-                eccYrange = 0*[1 1];
-            case 'superior'
-                % vertical meridian (superior)
-                eccYrange = patchEccRadiusDegs*[1 1];
-                eccXrange = 0*[1 1];
-            case 'inferior'
-                % vertical meridian (inferior)
-                eccYrange = -patchEccRadiusDegs*[1 1];
-                eccXrange = 0*[1 1];
-            otherwise
-                error('Unknown Polans quadrant: ''%s''.', eccQuadrant);
-        end
-        
-        % Generate cone positions appropriate for the eccentricity
-        patchEccDegs = [eccXrange(1), eccYrange(1)];
-        [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] = ...
-            generateConePositionsForPatchAtEccentricity(patchEccDegs, 'coneMosaicResamplingFactor', 1);
-    
-        for sIndex = 1:subjectsNum
-            % Compute the Polans subject PSF at the desired eccentricity
-            PolansSubjectID = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute(sIndex);
-            
-            [thePSF, thePSFsupportDegs] = generatePSFForPatchAtEccentricity(PolansSubjectID, ...
-                imposedRefractionErrorDiopters, pupilDiamMM, wavelengthSampling, ...
-                micronsPerDegree, patchEccDegs, ...
-                'centerPSFatZero', true);
-            
-            if (qIndex == 1) && (sIndex == 1)
-                obj.setupPlotLab(0, 20, 12);
-                resetPlotLabOnExit = true;
-            end
-            
-            % Convolve different retinal pooling regions and compute the visually-mapped pooling region
-            deconvolutionStruct{ qIndex, sIndex} = ...
-                obj.performDeconvolutionAnalysisForRFcenter(conesNumInRFcenterTested, ...
-                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
-        end % sIndex
-    end % qIndex
-    
-    % Save decolvolution struct for the center
-    dataFileName = fullfile(obj.psfDeconvolutionDir, sprintf('ecc_%2.1f_centerDeconvolutions_refractionError_%2.2fD.mat', patchEccRadiusDegs, imposedRefractionErrorDiopters));
-    fprintf('Saving data to %s\n', dataFileName);
-    save(dataFileName, ...
-            'deconvolutionStruct', ...
-            'subjectIDs', 'quadrants');  
-        
-    if (resetPlotLabOnExit)
-        obj.setupPlotLab(-1);
-    end
-    
-end
-
 
 function [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] = generateConePositionsForPatchAtEccentricity(patchEccDegs, varargin)
 
@@ -199,7 +196,6 @@ function [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] 
     wavelengthSampling = theConeMosaic.pigment.wave;
 end
 
-
 function [thePSFAtASingleWavelength, thePSFsupportDegs] = generatePSFForPatchAtEccentricity(PolansSubjectID, ...
     imposedRefractionErrorDiopters, pupilDiamMM, wavelengthSampling, micronsPerDegree, patchEccDegs, varargin)
 
@@ -220,4 +216,3 @@ function [thePSFAtASingleWavelength, thePSFsupportDegs] = generatePSFForPatchAtE
     targetWavelength = 550;
     thePSFAtASingleWavelength = opticsGet(theOptics,'psf data',targetWavelength);
 end
-
