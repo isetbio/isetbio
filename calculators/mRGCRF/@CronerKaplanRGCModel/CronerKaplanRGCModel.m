@@ -150,7 +150,7 @@ classdef CronerKaplanRGCModel < handle
         plotDeconvolutionModel(deconvolutionModel);
         
         deconvolutionStruct = performDeconvolutionAnalysis(conesNumInRFcenterExamined, ...
-            conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs);
+            conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
     end
     
     methods (Access=private)

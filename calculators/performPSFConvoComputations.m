@@ -15,12 +15,14 @@ function performPSFConvoComputations(varargin)
     p.addParameter('eccTested', [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25]);
     p.addParameter('quadrantsToCompute', {'horizontal'}); %, @(x)(ismember(x, {'horizontal', 'superior', 'inferior'})));
     p.addParameter('generateNewDeconvolutionFiles', false, @islogical);
+    p.addParameter('visualizeFits', false, @islogical);
     p.parse(varargin{:});
     
     PolansSubjectIDs = p.Results.PolansSubjectIDs;
     eccTested = p.Results.eccTested;
     quadrantsToCompute = p.Results.quadrantsToCompute;
     generateNewDeconvolutionFiles = p.Results.generateNewDeconvolutionFiles;
+    visualizeFits = p.Results.visualizeFits;
     
     ck = CronerKaplanRGCModel(...
         'generateAllFigures', false, ...
@@ -35,11 +37,12 @@ function performPSFConvoComputations(varargin)
         
         ck.generateDeconvolutionFiles(...
             deconvolutionOpticsParams, ...
-            'eccTested', eccTested);
+            'eccTested', eccTested, ...
+            'visualizeFits', visualizeFits);
     end
     
     
-    performTests = ~true;
+    performTests = true;
     if (performTests)
         performDeconvolutionTests(PolansSubjectIDs, quadrantsToCompute)
     end
@@ -84,9 +87,9 @@ function performDeconvolutionTests(PolansSubjectIDs, quadrantsToCompute)
     % Plot synthesized params
     figure(3);
     subplot(2,2,1);
-    plot(synthesizedRFParams.eccDegs,  synthesizedRFParams.visual.centerCharacteristicRadiiDegs, ...
+    plot(synthesizedRFParams.rfEccRadiusDegs,  synthesizedRFParams.visual.centerCharacteristicRadiiDegs, ...
         'o-', 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]); hold on;
-    plot(synthesizedRFParams.eccDegs,  synthesizedRFParams.visual.surroundCharacteristicRadiiDegs, ...
+    plot(synthesizedRFParams.rfEccRadiusDegs,  synthesizedRFParams.visual.surroundCharacteristicRadiiDegs, ...
         'o-', 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1]);
     set(gca, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100]);
     set(gca, 'YScale', 'log', 'YLim', [0.003 10], 'YTick', [0.003 0.01 0.03 0.1 0.3 1 3 10]);
@@ -114,7 +117,7 @@ function performDeconvolutionTests(PolansSubjectIDs, quadrantsToCompute)
     
     
     subplot(2,2,3);
-    plot(synthesizedRFParams.eccDegs, synthesizedRFParams.visual.centerCharacteristicRadiiDegs ./ synthesizedRFParams.visual.surroundCharacteristicRadiiDegs, 'ko-');
+    plot(synthesizedRFParams.rfEccRadiusDegs, synthesizedRFParams.visual.centerCharacteristicRadiiDegs ./ synthesizedRFParams.visual.surroundCharacteristicRadiiDegs, 'ko-');
     set(gca, 'XLim', [0 100], 'XTick', 0:10:100);
     set(gca,  'YLim', [0 1], 'YTick', 0:0.1:1);
     axis 'square';
@@ -124,7 +127,7 @@ function performDeconvolutionTests(PolansSubjectIDs, quadrantsToCompute)
     subplot(2,2,4);
     scIntSensRatio = (synthesizedRFParams.visual.surroundPeakSensitivities./synthesizedRFParams.visual.centerPeakSensitivities) .* ...
                      (synthesizedRFParams.visual.surroundCharacteristicRadiiDegs./synthesizedRFParams.visual.centerCharacteristicRadiiDegs).^2;
-    plot(synthesizedRFParams.eccDegs, scIntSensRatio, 'ko-');
+    plot(synthesizedRFParams.rfEccRadiusDegs, scIntSensRatio, 'ko-');
     set(gca, 'XLim', [0 100], 'XTick', 0:10:100);
     set(gca, 'YLim', [0 1], 'YTick', 0:0.1:1);
     xlabel('ecc (degs)');

@@ -5,10 +5,19 @@ end
 
 function visualizeCenterDeconvolutionModel(deconvolutionModel)
 
+    w = WatsonRGCModel();
+    retinalEccentricitiesDegs = logspace(log10(0.1), log10(30), 100);
+    coneRFSpacingsDegs = w.coneRFSpacingAndDensityAlongMeridian(retinalEccentricitiesDegs, ...
+            'nasal meridian','deg', 'deg^2', ...
+            'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
+    coneApertureDiameterDegs = WatsonRGCModel.coneApertureToDiameterRatio * coneRFSpacingsDegs;
+    coneCharacteristicRadiiDegs = 0.5*coneApertureDiameterDegs/3;
+    
+   
     hFig = figure();
     figName = sprintf('RF center deconvolution model for subject %d and ''%s'' quadrant.', ...
         deconvolutionModel.subjectID, deconvolutionModel.quadrant);
-    figPosition = [0 0 2000 1000];
+    figPosition = [0 0 25 15];
     set(hFig, 'Name', figName, 'Position', figPosition);
     
     rowsNum = 2;
@@ -24,23 +33,40 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
        'topMargin',      0.02);
    
     for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricities)
+        [~,idx]  = min(abs(retinalEccentricitiesDegs-deconvolutionModel.tabulatedEccentricities(eccIndex)));
+        coneCharacteristicRadiusDegsAtClosestEccentricity = coneCharacteristicRadiiDegs(idx);
         % Visual characteristic radius as a function of number of cone in RF center
         subplot('Position', subplotPosVectors(1,eccIndex).v);
-        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualCharacteristicRadius(eccIndex,:), 'rs-');
-        set(gca, 'XLim', [1 100], 'YLim', [0.005 1], ...
+        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualCharacteristicRadiusMin(eccIndex,:), ...
+            'rv-', 'MarkerFaceColor', [1 0.5 0.5]);
+        hold('on');
+        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualCharacteristicRadiusMax(eccIndex,:), ...
+            'r^-', 'MarkerFaceColor', [1 0.5 0.5]);
+        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.retinalCharacteristicRadiusMin(eccIndex,:), ...
+            'ks-', 'LineWidth', 1.5);
+        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.retinalCharacteristicRadiusMax(eccIndex,:), ...
+            'ks--', 'LineWidth', 1.5);
+        plot(retinalEccentricitiesDegs, retinalEccentricitiesDegs*0 + coneCharacteristicRadiusDegsAtClosestEccentricity, 'k--', 'LineWidth', 1.0);
+         
+        set(gca, 'XLim', [0.5 101], 'YLim', [0.001 1], ...
+            'YTick', [0.003 0.01 0.03 0.1 1], 'YTickLabel', {'0.003', '0.01', '0.03', '0.1', '0.3', '1.0'}, ...
             'XTick', [1 3 10 30 100], ...
             'XScale', 'log', 'YScale', 'log');
         if (eccIndex == 1)
-            ylabel('visual characteristic radius');
+            ylabel('visual characteristic radius (min/max)');
         else
             set(gca, 'YTickLabel', {})
         end
-        title(sprintf('%2.1f, %2.1f', deconvolutionModel.eccDegs(1), deconvolutionModel.eccDegs(2)));
+        title(sprintf('%2.1f, %2.1f', deconvolutionModel.eccDegs(eccIndex,1), deconvolutionModel.eccDegs(eccIndex,2)));
                 
         % Visual gain attenuation as a function of number of cone in RF center
         subplot('Position', subplotPosVectors(2,eccIndex).v);
-        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualGainAttenuation(eccIndex,:), 'rs-');
-        set(gca, 'XLim', [1 100], 'YLim', [0.1 1.0], 'XScale', 'log', ...
+        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualGain(eccIndex,:), ...
+            'rs-', 'MarkerFaceColor', [1 0.5 0.5]);
+        hold on;
+        plot(deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.retinalGain(eccIndex,:), ...
+            'k-', 'LineWidth', 1.0);
+        set(gca, 'XLim', [1 100], 'YLim', [0 1.04], 'XScale', 'log', ...
             'XTick', [1 3 10 30 100])
         xlabel('# of center cones');
         if (eccIndex == 1)
@@ -48,7 +74,7 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
         else
             set(gca, 'YTickLabel', {})
         end
-        
+        drawnow
    end
                
 end

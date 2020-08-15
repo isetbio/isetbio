@@ -7,7 +7,7 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin)
     p = inputParser;
     p.addParameter('eccTested', defaultEccTested);
     p.addParameter('conesNumInRFcenterTested', defaultCenterConesNumTested);
-            
+    p.addParameter('visualizeFits', false);
     p.parse(varargin{:});
 
     % Validate the deconvolutionOpticsParams
@@ -15,18 +15,19 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin)
     
     eccTested = -(p.Results.eccTested);
     conesNumInRFcenterTested = p.Results.conesNumInRFcenterTested;
+    visualizeFits = p.Results.visualizeFits;
     
     imposedRefractionErrorDiopters = 0;
     pupilDiamMM = 3.0;
     
     for eccIndex = 1:numel(eccTested)
         ecc = eccTested(eccIndex);
-        doIt(obj, ecc, conesNumInRFcenterTested , deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM);
+        doIt(obj, ecc, conesNumInRFcenterTested , deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
     end
     
 end
 
-function doIt(obj, patchEccDegs, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM)
+function doIt(obj, patchEccDegs, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits)
     
     % Extra deconvolution optics params
     subjectIDs = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
@@ -80,7 +81,7 @@ function doIt(obj, patchEccDegs, conesNumInRFcenterTested, deconvolutionOpticsPa
             % Convolve different retinal pooling regions and compute the visually-mapped pooling region
             deconvolutionStruct{ qIndex, sIndex} = ...
                 CronerKaplanRGCModel.performDeconvolutionAnalysis(conesNumInRFcenterTested, ...
-                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs);
+                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
                   
                 
 %                 if (visualizeAnalysis)

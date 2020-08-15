@@ -70,15 +70,14 @@ function f = circular2DGaussian(params,xydata)
     xCenter = params(2);
     yCenter = params(3);
     xSigma = params(4);
-    flatTopLevel = params(5);
-    exponent = params(6);
+    exponent = params(5);
     
     xx = xydata(:,1);
     yy = xydata(:,2);
     xx0 = xCenter;
     yy0 = yCenter;
 
-    f = exp( -(abs(xx-xx0)/xSigma).^exponent) .* exp( -(abs(yy-yy0)/ySigma).^exponent);
+    f = exp( -(abs(xx-xx0)/xSigma).^exponent) .* exp( -(abs(yy-yy0)/xSigma).^exponent);
     f = amplitude * f / max(f(:));
 end
 

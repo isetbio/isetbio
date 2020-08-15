@@ -43,8 +43,8 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % based on the number of input cones to this cells' RF center
     parfor RGCindex = 1:rgcsNum
         centerVisualCharacteristicRadiiDegs(RGCindex) = ...
-            eccWeights(RGCindex,1) * deconvolutionModel.center.visualCharacteristicRadius(targetEccIndices(RGCindex,1), rfCenterInputConesNum(RGCindex)) + ...
-            eccWeights(RGCindex,2) * deconvolutionModel.center.visualCharacteristicRadius(targetEccIndices(RGCindex,2), rfCenterInputConesNum(RGCindex));
+            eccWeights(RGCindex,1) * deconvolutionModel.center.visualCharacteristicRadiusMin(targetEccIndices(RGCindex,1), rfCenterInputConesNum(RGCindex)) + ...
+            eccWeights(RGCindex,2) * deconvolutionModel.center.visualCharacteristicRadiusMin(targetEccIndices(RGCindex,2), rfCenterInputConesNum(RGCindex));
     end
     
     % Use the Croner&Kaplan model centerPeakSensitivityFunction() to
@@ -56,26 +56,12 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % Use the deconvolutionModel.center to compute the sensitivity attenuation. Then we determine the 
     % center's RETINAL peak sensitivity, which is the center's VISUAL peak sensitivity x sensitivity attenuation
     parfor RGCindex = 1:rgcsNum
-        peakSensitivityAttenuation(RGCindex) = ...
-            eccWeights(RGCindex,1) * deconvolutionModel.center.visualGainAttenuation(targetEccIndices(RGCindex,1), rfCenterInputConesNum(RGCindex)) + ...
-            eccWeights(RGCindex,2) * deconvolutionModel.center.visualGainAttenuation(targetEccIndices(RGCindex,2), rfCenterInputConesNum(RGCindex));
+        peakVisualSensitivity(RGCindex) = ...
+            eccWeights(RGCindex,1) * deconvolutionModel.center.visualGain(targetEccIndices(RGCindex,1), rfCenterInputConesNum(RGCindex)) + ...
+            eccWeights(RGCindex,2) * deconvolutionModel.center.visualGain(targetEccIndices(RGCindex,2), rfCenterInputConesNum(RGCindex));
         %peakSensitivityAttenuation = 1;
-        centerRetinalPeakSensitivities(RGCindex) = centerVisualPeakSensitivities(RGCindex) / peakSensitivityAttenuation(RGCindex);    
+        centerRetinalPeakSensitivities(RGCindex) = centerVisualPeakSensitivities(RGCindex) / peakVisualSensitivity(RGCindex);    
     end
-
-    figure(567);
-    subplot(1,2,1);
-    plot(rfCenterInputConesNum, peakSensitivityAttenuation, 'ks');
-    set(gca, 'XLim', [0 5], 'XTick', 0:1:10, 'YLim', [0 1], 'YTick', 0:0.1:1.0);
-    xlabel('# of input cones');
-    ylabel('visual sensitivity attenuation');
-    
-    subplot(1,2,2);
-    plot(rfCenterInputConesNum, centerVisualCharacteristicRadiiDegs, 'ks');
-    set(gca, 'XLim', [0 5], 'XTick', 0:1:10, 'YScale', 'log', 'YLim', [0.001 1], 'YTick', [0.001 0.003 0.01 0.03 0.1 0.3 1]);
-    xlabel('# of input cones');
-    ylabel('visual characteristic radius (degs)');
-    pause
     
     % Use the Croner&Kaplan model center-to-surround ratio function to
     % compute the surround VISUAL characteristic radius 

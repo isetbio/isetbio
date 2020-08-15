@@ -1,5 +1,5 @@
 function deconvolutionStruct = performDeconvolutionAnalysis(conesNumInRFcenterTested, ...
-    conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs)
+    conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits)
     
     % Deconvolution data is a container
     deconvolutionStruct.data = containers.Map();  
@@ -15,9 +15,6 @@ function deconvolutionStruct = performDeconvolutionAnalysis(conesNumInRFcenterTe
     coneMask = generateRetinalConeImage(inputConeIndices, conePosDegs, coneApertureProfile, thePSFsupportDegs);
     coneMask(coneMask>0.0001) = 1;
             
-    % Whether to visualize the fits (for debuging purposes mainly)
-    visualizeFits = ~true;
-    
     for poolingSchemeIndex = 1:numel(rfCenterPoolingSchemes)
         
         inputConeIndicesForAllCombinations = rfCenterPoolingSchemes{poolingSchemeIndex}.inputConeIndices;
@@ -36,22 +33,51 @@ function deconvolutionStruct = performDeconvolutionAnalysis(conesNumInRFcenterTe
             visualConeImage = conv2(retinalConeImage, thePSF, 'same');
             
             % Integrate within cone apertures
-            [retinalConeActivations, visualConeActivations, X, Y] = integrateWithinConeApertures(...
-                retinalConeImage, visualConeImage, coneMask, conePosDegs, coneAperturesDegs, thePSFsupportDegs);
+            [retinalConeActivations, visualConeActivations, ...
+                withinConeAperturesRetinalConeImage, ...
+                withinConeAperturesVisualConeImage , ...
+                withinConeAperturesGrid] = integrateWithinConeApertures(retinalConeImage, visualConeImage, ...
+                                            coneMask, conePosDegs, coneAperturesDegs, thePSFsupportDegs);
 
             % Normalize activations with respect to the retinal domain
             visualConeActivations = visualConeActivations / max(retinalConeActivations(:));
             retinalConeActivations = retinalConeActivations / max(retinalConeActivations(:));
             
+            switch (numel(inputConeIndices))
+                case 1
+                    functionName = 'circular Gaussian';
+                case 3
+                    functionName = 'circular Gaussian';
+                case 7
+                    functionName = 'circular Gaussian';
+                otherwise
+                    functionName = 'elliptical Gaussian';
+            end
             
-            % Fit integraded cone activation maps
-            [rfSigmasRetinal(inputConeCombinationIndex,:), rfGainRetinal(inputConeCombinationIndex),  ...
-                hiResRetinalConeActivationMap, hiResPSFsupportDegs] = ...
-                fitActivationMap(retinalConeActivations, conePosDegs, coneAperturesDegs, thePSFsupportDegs);
-            
-            [rfSigmasVisual(inputConeCombinationIndex,:), rfGainVisual(inputConeCombinationIndex),  ...
-                hiResVisualConeActivationMap] = ...
-                fitActivationMap(visualConeActivations, conePosDegs, coneAperturesDegs, thePSFsupportDegs);
+            fitTheContinuousConeImage = true;
+            if (fitTheContinuousConeImage)
+                % Fit the continous coneImage not the integrated discrete
+                % responses (but only including pixels that are within the
+                % cone apertures)
+                [rfSigmasRetinal(inputConeCombinationIndex,:), rfGainRetinal(inputConeCombinationIndex),  ...
+                    hiResRetinalConeActivationMap, hiResPSFsupportDegs] = ...
+                    fitActivationMap(functionName,  withinConeAperturesRetinalConeImage, withinConeAperturesGrid, ...
+                    coneAperturesDegs, thePSFsupportDegs);
+
+                [rfSigmasVisual(inputConeCombinationIndex,:), rfGainVisual(inputConeCombinationIndex),  ...
+                    hiResVisualConeActivationMap] = ...
+                    fitActivationMap('elliptical Gaussian', withinConeAperturesVisualConeImage, withinConeAperturesGrid, ...
+                    coneAperturesDegs, thePSFsupportDegs);
+            else
+                % Fit the integraded discrete cone activation maps
+                [rfSigmasRetinal(inputConeCombinationIndex,:), rfGainRetinal(inputConeCombinationIndex),  ...
+                    hiResRetinalConeActivationMap, hiResPSFsupportDegs] = ...
+                    fitActivationMap(functionName, retinalConeActivations, conePosDegs, coneAperturesDegs, thePSFsupportDegs);
+
+                [rfSigmasVisual(inputConeCombinationIndex,:), rfGainVisual(inputConeCombinationIndex),  ...
+                    hiResVisualConeActivationMap] = ...
+                    fitActivationMap('elliptical Gaussian', visualConeActivations, conePosDegs, coneAperturesDegs, thePSFsupportDegs);
+            end
             
             % Visualize fits
             if (visualizeFits)
@@ -61,7 +87,6 @@ function deconvolutionStruct = performDeconvolutionAnalysis(conesNumInRFcenterTe
                     hiResPSFsupportDegs, hiResRetinalConeActivationMap, hiResVisualConeActivationMap, ...
                     rfSigmasRetinal(inputConeCombinationIndex,:), rfGainRetinal(inputConeCombinationIndex), ...
                     rfSigmasVisual(inputConeCombinationIndex,:), rfGainVisual(inputConeCombinationIndex));
-                pause
             end
             
         end %inputConeCombination
@@ -87,7 +112,7 @@ function visualizeDeconvolutionFits(inputConeCombinationIndex, thePSFsupportDegs
                 rfSigmasRetinal, rfGainRetinal, rfSigmasVisual, rfGainVisual)
 
     hFig = figure(inputConeCombinationIndex); clf;
-    set(hFig, 'Position', [100 100 14 13], ...
+    set(hFig, 'Position', [100 100 20 18], ...
         'Name', sprintf('Deconvolution fits for input layout #%d', inputConeCombinationIndex));
 
     theAxesGrid = plotlab.axesGrid(hFig, ...
@@ -104,17 +129,18 @@ function visualizeDeconvolutionFits(inputConeCombinationIndex, thePSFsupportDegs
     ax = theAxesGrid{1,1};
     renderConeImage(ax,thePSFsupportDegs, retinalConeImage, thePSF, 'retinal cone image');
 
-    ax = theAxesGrid{1,2};
-    renderConeImage(ax,thePSFsupportDegs, visualConeImage, thePSF, 'visual cone image');
-
     ax = theAxesGrid{2,1};
-    renderConeActivationImage(ax,retinalConeActivations, conePosDegs, ...
+    renderConeActivationImageAndFitAsSurfacePlot(ax,retinalConeActivations, conePosDegs, ...
         hiResPSFsupportDegs, hiResRetinalConeActivationMap, ...
         sprintf('gain: %2.2f, sigmas: (%2.2f'',%2.2f'')', ...
         rfGainRetinal, rfSigmasRetinal(1)*60, rfSigmasRetinal(2)*60));
+    
+    
+    ax = theAxesGrid{1,2};
+    renderConeImage(ax,thePSFsupportDegs, visualConeImage, [], 'visual cone image');
 
     ax = theAxesGrid{2,2};
-    renderConeActivationImage(ax,visualConeActivations, conePosDegs, ...
+    renderConeActivationImageAndFitAsSurfacePlot(ax,visualConeActivations, conePosDegs, ...
         hiResPSFsupportDegs, hiResVisualConeActivationMap, ...
         sprintf('gain: %2.2f, sigmas: (%2.2f'',%2.2f'')', ...
         rfGainVisual, rfSigmasVisual(1)*60, rfSigmasVisual(2)*60));
@@ -124,33 +150,34 @@ end
 function renderConeImage(ax,thePSFsupportDegs, coneImage, thePSF, figTitle)
     imagesc(ax,thePSFsupportDegs, thePSFsupportDegs, coneImage);
     hold(ax, 'on');
-    contour(ax,thePSFsupportDegs, thePSFsupportDegs, thePSF/max(thePSF(:)), 0.2:0.2:1);
+    if (~isempty(thePSF))
+        contour(ax,thePSFsupportDegs, thePSFsupportDegs, thePSF/max(thePSF(:)), 0.2:0.2:1);
+    end
     plot(ax,[-1 1], [0 0], 'r-');
     plot(ax,[0 0],[-1 1], 'r-');
-    set(ax, 'XLim', 0.1*[-1 1], 'YLim', 0.1*[-1 1], 'XTick', (-0.1:0.05:0.1), 'YTick', (-0.1:0.05:0.1));
+    set(ax, 'XLim', 0.06*[-1 1], 'YLim', 0.06*[-1 1], 'XTick', (-0.1:0.02:0.1), 'YTick', (-0.1:0.02:0.1));
     axis(ax, 'square'); axis(ax, 'xy');
     title(ax,figTitle);
 end
 
-function renderConeActivationImage(ax,retinalConeActivations, conePosDegs, ...
+function renderConeActivationImageAndFitAsSurfacePlot(ax,retinalConeActivations, conePosDegs, ...
         hiResPSFsupportDegs, hiResRetinalConeActivationMap, figTitle)
     
     surf(ax,hiResPSFsupportDegs, hiResPSFsupportDegs, hiResRetinalConeActivationMap);
     hold(ax, 'on');
     stem3(ax,conePosDegs(:,1), conePosDegs(:,2),retinalConeActivations, 'filled');
-    set(ax, 'XLim', 0.1*[-1 1], 'YLim', 0.1*[-1 1], 'XTick', (-0.1:0.05:0.1), 'YTick', (-0.1:0.05:0.1), 'CLim', [0 1], 'ZLim', [0 1]);
+    set(ax, 'XLim', 0.06*[-1 1], 'YLim', 0.06*[-1 1], 'XTick', (-0.1:0.02:0.1), 'YTick', (-0.1:0.02:0.1), 'CLim', [0 1], 'ZLim', [0 1]);
     axis(ax,'square');  axis(ax, 'xy');
     title(ax, figTitle);
 end
 
 function [rfSigmas, rfGain, hiResConeActivationMap, hiResPSFsupportDegs] = ...
-    fitActivationMap(coneActivations, conePosDegs, coneAperturesDegs, thePSFsupportDegs)
+    fitActivationMap(functionName, coneActivations, conePosDegs, coneAperturesDegs, thePSFsupportDegs)
 
     deltaX = thePSFsupportDegs(2)-thePSFsupportDegs(1);
     minConeCharacteristicRadiusDegs = 0.5*min(coneAperturesDegs)/3;
     
     % Fit Gaussian to cone activations
-    functionName = 'elliptical Gaussian';
     [fittedParams, rfFunction] = ...
         fitElliptical2DGausianToRF(conePosDegs(:,1), conePosDegs(:,2), coneActivations(:), ...
         deltaX/40, minConeCharacteristicRadiusDegs, [0 0], functionName);
@@ -166,7 +193,7 @@ function [rfSigmas, rfGain, hiResConeActivationMap, hiResPSFsupportDegs] = ...
     
     % Generate a high-res fitted map
     maxPSFsupport = deltaX*100;
-    hiResPSFsupportDegs = -maxPSFsupport:deltaX*2:maxPSFsupport;
+    hiResPSFsupportDegs = -maxPSFsupport:deltaX:maxPSFsupport;
     [XXX,YYY] = meshgrid(hiResPSFsupportDegs, hiResPSFsupportDegs);
     xyData(:,1) = XXX(:);
     xyData(:,2) = YYY(:);
@@ -175,7 +202,8 @@ function [rfSigmas, rfGain, hiResConeActivationMap, hiResPSFsupportDegs] = ...
 end
 
 
-function [retinalConeActivations, visualConeActivations, X, Y] = integrateWithinConeApertures(...
+function [retinalConeActivations, visualConeActivations, ...
+    withinConeAperturesRetinalConeImage, withinConeAperturesVisualConeImage , withinConeAperturesGrid] = integrateWithinConeApertures(...
     retinalConeImage, visualConeImage, coneMask, conePosDegs, coneAperturesDegs, thePSFsupportDegs)
 
     conesNum = size(conePosDegs,1);
@@ -186,11 +214,14 @@ function [retinalConeActivations, visualConeActivations, X, Y] = integrateWithin
     retinalConeImage = retinalConeImage .* coneMask;
     visualConeImage = visualConeImage .* coneMask;
     
+    allPixelsWithinConeApertures = [];
+    
     for iCone = 1:conesNum
         xr = conePosDegs(iCone,1) + coneAperturesDegs(iCone)*0.5*cosd(0:2:360);
         yr = conePosDegs(iCone,2) + coneAperturesDegs(iCone)*0.5*sind(0:2:360);
         [in,on] = inpolygon(X(:), Y(:), xr, yr);
         withinAperturePixelIndices = find((in==true));
+        allPixelsWithinConeApertures = cat(1,allPixelsWithinConeApertures, withinAperturePixelIndices(:));
         if (numel(withinAperturePixelIndices) == 0)
             retinalConeActivations(iCone) = 0;
             visualConeActivations(iCone) = 0;
@@ -202,6 +233,16 @@ function [retinalConeActivations, visualConeActivations, X, Y] = integrateWithin
         end
     end
 
+    
+    withinConeAperturesRetinalConeImage = retinalConeImage(:);
+    withinConeAperturesRetinalConeImage = withinConeAperturesRetinalConeImage(allPixelsWithinConeApertures);
+    
+    withinConeAperturesVisualConeImage = visualConeImage(:);
+    withinConeAperturesVisualConeImage = withinConeAperturesVisualConeImage (allPixelsWithinConeApertures);
+    
+    withinConeAperturesGrid = [X(:) Y(:)];
+    withinConeAperturesGrid = withinConeAperturesGrid(allPixelsWithinConeApertures,:);
+    
 end
 
 function retinalConeImage = generateRetinalConeImage(inputConeIndices, conePosDegs, coneApertureProfile, thePSFsupportDegs)
