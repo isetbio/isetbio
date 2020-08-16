@@ -44,7 +44,6 @@ function performPSFConvoComputations(varargin)
             );
     end
     
-    
     visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested);
     
     performTests = ~true;

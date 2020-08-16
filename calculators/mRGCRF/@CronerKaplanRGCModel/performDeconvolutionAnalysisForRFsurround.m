@@ -33,10 +33,10 @@ function deconvolutionStruct = performDeconvolutionAnalysisForSurroundSubregion(
         
         % Examine a number of retinal RF surround characteristic radii that
         % vary from [0.5 - 1.25] x visualRF surround
-        surroundRetinalCharacteristicRadii = targetSurroundVisualCharacteristicRadius * [0.5 0.75 1.0 1.25];
+        nominalSurroundRetinalCharacteristicRadii = targetSurroundVisualCharacteristicRadius * [0.5 0.75 1.0 1.25];
         
-        for surroundSchemeIndex = 1:numel(surroundRetinalCharacteristicRadii)
-            surroundRetinalCharacteristicRadius = surroundRetinalCharacteristicRadii(surroundSchemeIndex);
+        for surroundSchemeIndex = 1:numel(nominalSurroundRetinalCharacteristicRadii)
+            surroundRetinalCharacteristicRadius = nominalSurroundRetinalCharacteristicRadii(surroundSchemeIndex);
             
             % compute cone weights with a Gaussian falloff
             coneWeights = coneWeightsForSurroundCharacteristicRadius(surroundRetinalCharacteristicRadius, conePosDegs);
@@ -104,6 +104,7 @@ function deconvolutionStruct = performDeconvolutionAnalysisForSurroundSubregion(
         
         % Log data in
         deconvolutionStruct.data(poolingSchemeName) = struct(...
+            'nominalSurroundRetinalCharacteristicRadii', nominalSurroundRetinalCharacteristicRadii, ...
             'retinalGains', surroundRetinalGains, ...
             'visualGains',  surroundVisualGains, ...
             'retinalSigmas', surroundRetinalCharacteristicRadii, ...
