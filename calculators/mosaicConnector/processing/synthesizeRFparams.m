@@ -20,7 +20,10 @@ function synthesizedRFParams = synthesizeRFparams(conePositionsMicrons, midgetRG
     end
     
     % Synthesize RF params
-    ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
+    ck = CronerKaplanRGCModel(...
+        'generateAllFigures', false, ...
+        'instantiatePlotLab', false);
+    
     synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(...
         rfCenterInputConesNum, rfCenterPositionsMicrons, deconvolutionOpticsParams);
     

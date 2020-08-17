@@ -5,6 +5,9 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
         case 'visual'
             rfParams = synthesizedRFParams.visual;
       
+        case 'retinal'
+            rfParams = synthesizedRFParams.retinal;
+            
         otherwise
             error('Can only visualize params of the visual dataset. dataSet: ''%s''.', dataSet)
     end
@@ -28,11 +31,7 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
     coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(rfEccRadiusDegs), ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
-    coneApertureRadiiNasalRetina = 0.7 * 0.5 * coneRFSpacingsDegs;
-    
-    % The radii correspond to the point at which sensitivity drops to
-    % exp(-1). Transform the cone Aperture to the same scale
-    coneApertureRadiiNasalRetina = coneApertureRadiiNasalRetina/3;
+    coneApertureRadiiNasalRetina = WatsonRGCModel.coneApertureToDiameterRatio * 0.5 * coneRFSpacingsDegs;
     
     
     % Plot the center&surround radii
@@ -59,9 +58,7 @@ function visualizeCenterSurroundProperties(figNo, synthesizedRFParams, dataSet, 
 
     % Plot the center & surround peak sensitivities
     theAxes = theAxesGrid{2,2};
-    if (strcmp(dataSet, 'visual'))
-        scatter(theAxes, rfParams.centerCharacteristicRadiiDegs, rfParams.centerPeakSensitivities, 'o', 'MarkerEdgeColor', 'none'); 
-    end
+    scatter(theAxes, rfParams.centerCharacteristicRadiiDegs, rfParams.centerPeakSensitivities, 'o', 'MarkerEdgeColor', 'none'); 
     hold(theAxes, 'on');
     scatter(theAxes,rfParams.surroundCharacteristicRadiiDegs, rfParams.surroundPeakSensitivities, 'd', 'MarkerEdgeColor', 'none'); 
     hL = legend(theAxes, {'center', 'surround'}, 'Location', 'NorthEast');

@@ -11,7 +11,7 @@ function visualizeSurroundDeconvolutionModel(deconvolutionModel)
         deconvolutionModel.subjectID, deconvolutionModel.quadrant));
     
     rowsNum = 2;
-    colsNum = numel(deconvolutionModel.eccDegs);
+    colsNum = numel(deconvolutionModel.tabulatedEccentricityRadii);
     theAxesGrid = plotlab.axesGrid(hFig, ...
             'leftMargin', 0.04, ...
             'bottomMargin', 0.04, ...
@@ -25,43 +25,46 @@ function visualizeSurroundDeconvolutionModel(deconvolutionModel)
     maxSurroundPeakSensitivity = 1; % max([max(deconvolutionModel.visualGain(:)) max(deconvolutionModel.retinalGain(:))]);
     maxSurroundCharacteristicRadius = max([max(deconvolutionModel.visualCharacteristicRadius(:)) max(deconvolutionModel.retinalCharacteristicRadius(:))]);
     
-    for eccIndex = 1:numel(deconvolutionModel.eccDegs)
+    for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricityRadii)
         % Visualize how we estimate the retinal characteristic radius of
         % the surround from the visual characteristic radius of the surround
         ax = theAxesGrid{1, eccIndex};
         scatter(ax, deconvolutionModel.visualCharacteristicRadius(eccIndex,:), ...
                     deconvolutionModel.retinalCharacteristicRadius(eccIndex,:), ...
-                    'ro', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
+                    64, 'ro', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
         hold(ax, 'on');
         plot(ax, [0 1], [0 1], 'k--', 'LineWidth', 1.0);
         set(ax, 'XLim', [0 maxSurroundCharacteristicRadius], 'YLim', [0 maxSurroundCharacteristicRadius]);
         axis(ax, 'square');
         if (eccIndex == 1)
-            ylabel(ax, 'surround retinal characteristic radius');
+            ylabel(ax, 'retinal characteristic radius');
+            xlabel(ax, 'visual characteristic radius');
         else
             set(ax, 'YTickLabel', {})
         end
-        xlabel(ax, 'surround visual characteristic radius');
-        title(ax,sprintf('ecc: %2.1f degs', deconvolutionModel.eccDegs(eccIndex)));
+        xlabel(ax, 'visual characteristic radius');
+        title(ax,sprintf('%2.1f degs', deconvolutionModel.tabulatedEccentricityRadii(eccIndex)));
           
         % Visualize how we estimate the retinal peak sensitivity of the surround 
         % from the visual peak sensitivity of the surround
         ax = theAxesGrid{2, eccIndex};
         scatter(ax, deconvolutionModel.visualGain(eccIndex,:), ...
                     deconvolutionModel.retinalGain(eccIndex,:), ...
-                    'ro', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
+                    64, 'ro', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
         hold(ax, 'on');
         plot(ax, [0 1], [0 1], 'k--', 'LineWidth', 1.0);
         
         set(ax, 'XLim', [0 maxSurroundPeakSensitivity], 'YLim', [0 maxSurroundPeakSensitivity], ...
-            'XTick', 0:0.1:1, 'YTick', 0:0.1:1);
+            'XTick', 0:0.2:1, 'YTick', 0:0.2:1);
         axis(ax, 'square');
         if (eccIndex == 1)
-            ylabel(ax, 'surround retinal peak sensitivity');
+            ylabel(ax, 'retinal peak sensitivity');
+            xlabel(ax, 'visual peak sensitivity');
+            title(ax, 'surround');
         else
             set(ax, 'YTickLabel', {})
         end
-        xlabel(ax, 'surround visual peak sensitivity');
+        
     end
 
         
@@ -85,7 +88,7 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
         deconvolutionModel.subjectID, deconvolutionModel.quadrant));
     
     rowsNum = 2;
-    colsNum = numel(deconvolutionModel.eccDegs);
+    colsNum = numel(deconvolutionModel.tabulatedEccentricityRadii);
     theAxesGrid = plotlab.axesGrid(hFig, ...
             'leftMargin', 0.04, ...
             'bottomMargin', 0.04, ...
@@ -98,19 +101,19 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
         
     maxCenterPeakSensitivity = 1; %max([max(deconvolutionModel.visualGain(:)) max(deconvolutionModel.retinalGain(:))]);
   
-    for eccIndex = 1:numel(deconvolutionModel.eccDegs)
-        [~,idx]  = min(abs(retinalNasalEccentricitiesDegs-deconvolutionModel.eccDegs(eccIndex)));
+    for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricityRadii)
+        [~,idx]  = min(abs(retinalNasalEccentricitiesDegs-deconvolutionModel.tabulatedEccentricityRadii(eccIndex)));
         coneRadiusDegsAtClosestEccentricity = coneRadiiDegs(idx);
         
         % Visualualize how we estimate the visual characteristic radius of the RF center from the # of cone in RF center
         ax = theAxesGrid{1, eccIndex};
         
         scatter(ax,deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualCharacteristicRadiusMin(eccIndex,:), ...
-            'r^', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
+            64, 'r^', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
         hold(ax,'on');
         
         scatter(ax,deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualCharacteristicRadiusMax(eccIndex,:), ...
-            'rv', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
+            64, 'rv', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
         
         % The mean (min+max)/2 characteristic radius of the VISUAL center
         plot(ax,deconvolutionModel.centerConeInputsNum(eccIndex,:), ...
@@ -133,13 +136,13 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
         axis(ax, 'square');
         
         if (eccIndex == 1)
-            ylabel(ax, ['center characteristic radius ({\color{red} visual, \color{blue} retinal})']);
+            ylabel(ax, ['center characteristic radius ({\color{blue} retinal, \color{red} visual})']);
+            xlabel(ax, '# of cones in RF center');
         else
             set(ax, 'YTickLabel', {})
         end
-        xlabel(ax, '# of cones in RF center');
          
-        title(ax,sprintf('ecc: %2.1f degs', deconvolutionModel.eccDegs(eccIndex))); 
+        title(ax,sprintf('%2.1f degs', deconvolutionModel.tabulatedEccentricityRadii(eccIndex))); 
         
         
         % Visualize how we estimate retinal peak sensitivity of the RF
@@ -147,35 +150,21 @@ function visualizeCenterDeconvolutionModel(deconvolutionModel)
         ax = theAxesGrid{2, eccIndex};
         scatter(ax, deconvolutionModel.visualGain(eccIndex,:), ...
                     deconvolutionModel.retinalGain(eccIndex,:), ...
-                    'ro', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
+                    64, 'ro', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [0.8 0.3 0.3]);
         hold(ax, 'on');
         plot(ax, [0 1], [0 1], 'k--', 'LineWidth', 1.0);
         set(ax, 'XLim', [0 maxCenterPeakSensitivity], 'YLim', [0 maxCenterPeakSensitivity], ...
-             'XTick', 0:0.1:1, 'YTick', 0:0.1:1);
+             'XTick', 0:0.2:1, 'YTick', 0:0.2:1);
         axis(ax, 'square');
         if (eccIndex == 1)
-            ylabel(ax, 'center retinal peak sensitivity');
+            ylabel(ax, 'retinal peak sensitivity');
+            xlabel(ax, 'visual peak sensitivity');
+            title(ax, 'center');
         else
             set(ax, 'YTickLabel', {})
         end
-        xlabel(ax, 'center visual peak sensitivity');
         
         
-%         % Visual gain attenuation as a function of number of cone in RF center
-%         ax = theAxesGrid{2, eccIndex};
-%         plot(ax,deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.visualGain(eccIndex,:), ...
-%             'r-', 'MarkerFaceColor', [1 0.5 0.5]);
-%         hold(ax, 'on');
-%         plot(ax,deconvolutionModel.centerConeInputsNum(eccIndex,:), deconvolutionModel.retinalGain(eccIndex,:), ...
-%             'b-', 'LineWidth', 1.5);
-%         set(ax, 'XLim', [0.9 31], 'YLim', [0 1.04], 'XScale', 'log', ...
-%             'XTick', [1 2 3 4 6 10 15 30 100])
-%         xlabel(ax,'# of center cones');
-%         if (eccIndex == 1)
-%             ylabel(ax, ['center peak gain ({\color{red} visual, \color{blue} retinal})']);
-%         else
-%             set(ax, 'YTickLabel', {})
-%         end
         drawnow
    end
                

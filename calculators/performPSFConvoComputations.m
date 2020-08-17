@@ -33,6 +33,7 @@ function performPSFConvoComputations(varargin)
       
         % Instantiate a CronerKaplanRGCModel
         ck = CronerKaplanRGCModel(...
+            'deconvolutionEccs', eccTested, ...
             'generateAllFigures', false, ...
             'instantiatePlotLab', false);
         
@@ -44,12 +45,13 @@ function performPSFConvoComputations(varargin)
             );
     end
     
+    
     visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested);
     
-    performTests = ~true;
+    performTests = true;
     if (performTests)
         % Test2: Synthesize RF params
-        synthesizeRFparams(deconvolutionOpticsParams);
+        synthesizeRFparams(deconvolutionOpticsParams, eccTested);
     end
 end
 
@@ -66,14 +68,22 @@ function visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested)
     ck.plotDeconvolutionModel(deconvolutionModel);
 end
 
-function synthesizeRFparams(deconvolutionOpticsParams)
+function synthesizeRFparams(deconvolutionOpticsParams, eccTested)
 
-     % assume 1 cone input across all eccentricities
+    % Instantiate a CronerKaplanRGCModel
+    ck = CronerKaplanRGCModel(...
+            'generateAllFigures', false, ...
+            'instantiatePlotLab', false);
+        
+    % Number of RGCs to synthesize
     rgcsNum = 30;
-    rfCenterInputConesNum = ones(1, rgcsNum); 
     
-    minEccDegs = 0.1;
-    maxEccDegs = 30;
+    % assume 1 cone input across all eccentricities
+    conesInRFCenter = 1;
+    rfCenterInputConesNum = ones(1, rgcsNum)*conesInRFCenter; 
+    
+    minEccDegs = 0.01;
+    maxEccDegs = 3.0;
     minEccMicrons = WatsonRGCModel.rhoDegsToMMs(minEccDegs)*1e3;
     maxEccMicrons = WatsonRGCModel.rhoDegsToMMs(maxEccDegs)*1e3;
     
@@ -83,54 +93,61 @@ function synthesizeRFparams(deconvolutionOpticsParams)
     
     % Synthesize params
     synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(...
-        rfCenterInputConesNum, rfCenterPositionMicrons, deconvolutionOpticsParams);
+        rfCenterInputConesNum, rfCenterPositionMicrons, deconvolutionOpticsParams, eccTested);
     
     % Plot synthesized params
-    figure(3);
+    figNo = 3;
+    plotSynthesizedParams(figNo, synthesizedRFParams.rfEccRadiusDegs, synthesizedRFParams.visual, 'visual');
+    
+    figNo = 4;
+    plotSynthesizedParams(figNo, synthesizedRFParams.rfEccRadiusDegs, synthesizedRFParams.retinal, 'retinal');
+    
+end
+
+function plotSynthesizedParams(figNo, rfEccRadiusDegs, synthesizedRFParams, domain)
+    figure(figNo); clf;
     subplot(2,2,1);
-    plot(synthesizedRFParams.rfEccRadiusDegs,  synthesizedRFParams.visual.centerCharacteristicRadiiDegs, ...
+    plot(rfEccRadiusDegs,  synthesizedRFParams.centerCharacteristicRadiiDegs, ...
         'o-', 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]); hold on;
-    plot(synthesizedRFParams.rfEccRadiusDegs,  synthesizedRFParams.visual.surroundCharacteristicRadiiDegs, ...
+    plot(rfEccRadiusDegs,  synthesizedRFParams.surroundCharacteristicRadiiDegs, ...
         'o-', 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1]);
     set(gca, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100]);
     set(gca, 'YScale', 'log', 'YLim', [0.003 10], 'YTick', [0.003 0.01 0.03 0.1 0.3 1 3 10]);
     axis 'square';
     xlabel('ecc (degs)');
-    ylabel('radius (degs)');
+    ylabel(sprintf('%s radius (degs)', domain));
     
     subplot(2,2,2);
     yyaxis 'left'
-    plot(synthesizedRFParams.visual.centerCharacteristicRadiiDegs, synthesizedRFParams.visual.centerPeakSensitivities, ...
+    plot(synthesizedRFParams.centerCharacteristicRadiiDegs, synthesizedRFParams.centerPeakSensitivities, ...
         'o-', 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]); hold on;
-    plot(synthesizedRFParams.visual.centerCharacteristicRadiiDegs, synthesizedRFParams.visual.surroundPeakSensitivities, ...
+    plot(synthesizedRFParams.centerCharacteristicRadiiDegs, synthesizedRFParams.surroundPeakSensitivities, ...
         'o-', 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1]);
     set(gca, 'YScale', 'log', 'YLim', [0.003 3000], 'YTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30 100 300 1000 3000]);
     ylabel('peak sensitivity');
     
     yyaxis 'right'
-    plot(synthesizedRFParams.visual.centerCharacteristicRadiiDegs, ...
-        synthesizedRFParams.visual.surroundPeakSensitivities ./ synthesizedRFParams.visual.centerPeakSensitivities, '--');
+    plot(synthesizedRFParams.centerCharacteristicRadiiDegs, ...
+        synthesizedRFParams.surroundPeakSensitivities ./ synthesizedRFParams.centerPeakSensitivities, '--');
     set(gca, 'YScale', 'log', 'YLim', [0.001 1], 'YTick', [0.001 0.003 0.01 0.03 0.1 0.3 1]);
     set(gca, 'XScale', 'log', 'XLim', [0.003 3], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3]);
-    ylabel('surround:center peak sensitivity');
     axis 'square';
-    xlabel('radius (degs)');
+    ylabel(sprintf('%s surround:center peak sensitivity', domain));
     
     
     subplot(2,2,3);
-    plot(synthesizedRFParams.rfEccRadiusDegs, synthesizedRFParams.visual.centerCharacteristicRadiiDegs ./ synthesizedRFParams.visual.surroundCharacteristicRadiiDegs, 'ko-');
-    set(gca, 'XLim', [0 100], 'XTick', 0:10:100);
+    plot(rfEccRadiusDegs, synthesizedRFParams.centerCharacteristicRadiiDegs ./ synthesizedRFParams.surroundCharacteristicRadiiDegs, 'ko-');
+    set(gca, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100]);
     set(gca,  'YLim', [0 1], 'YTick', 0:0.1:1);
-    axis 'square';
     xlabel('ecc (degs)');
-    ylabel('center/surround radius ratio');
+    ylabel(sprintf('%s center/surround radius ratio', domain));
     
     subplot(2,2,4);
-    scIntSensRatio = (synthesizedRFParams.visual.surroundPeakSensitivities./synthesizedRFParams.visual.centerPeakSensitivities) .* ...
-                     (synthesizedRFParams.visual.surroundCharacteristicRadiiDegs./synthesizedRFParams.visual.centerCharacteristicRadiiDegs).^2;
-    plot(synthesizedRFParams.rfEccRadiusDegs, scIntSensRatio, 'ko-');
-    set(gca, 'XLim', [0 100], 'XTick', 0:10:100);
+    scIntSensRatio = (synthesizedRFParams.surroundPeakSensitivities./synthesizedRFParams.centerPeakSensitivities) .* ...
+                     (synthesizedRFParams.surroundCharacteristicRadiiDegs./synthesizedRFParams.centerCharacteristicRadiiDegs).^2;
+    plot(rfEccRadiusDegs, scIntSensRatio, 'ko-');
+    set(gca, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100]);
     set(gca, 'YLim', [0 1], 'YTick', 0:0.1:1);
     xlabel('ecc (degs)');
-    ylabel('surround/center integrated sensitivity ratio');
+    ylabel(sprintf('%s surround/center integrated sensitivity ratio', domain));
 end

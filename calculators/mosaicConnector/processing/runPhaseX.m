@@ -11,10 +11,10 @@ function runPhaseX(runParams)
     
    
     % Load/Recompute connected mosaics and the optics
-    recomputeConeMosaic = ~true;
+    recomputeConeMosaic = true;
     recomputeOptics = true;
     recomputeRGCmosaic = true;
-    visualizeCronerKaplanDeconvolutionModel = true;
+    visualizeCronerKaplanDeconvolutionModel = ~true;
     
      % Compute cone mosaic responses
     recomputeConeMosaicResponses = true;
@@ -87,7 +87,7 @@ function runPhaseX(runParams)
             'saveRetinalStimulusSequence', true);
     else
         visualizeAllSpatialFrequencyTuningCurves = true;
-        visualizeResponseComponents = true;
+        visualizeResponseComponents = ~true;
         visualizeRetinalContrasts = ~true;
         coVisualizeRetinalStimulusWithMosaics = true;
         visualizeMeanConeMosaicResponseAsAMovie = false;

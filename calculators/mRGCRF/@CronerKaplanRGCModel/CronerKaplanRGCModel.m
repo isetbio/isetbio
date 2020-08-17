@@ -45,6 +45,10 @@ classdef CronerKaplanRGCModel < handle
         % Directory with psf deconvolution results
         psfDeconvolutionDir;
         
+        % Eccs for which we conduced deconvolution 
+        % (see obj.generateDeconvolutionFiles())
+        deconvolutionEccs;
+        
         synthesisOptions;
         
         plotlabOBJ;
@@ -72,14 +76,18 @@ classdef CronerKaplanRGCModel < handle
         % Constructor
         function obj = CronerKaplanRGCModel(varargin) 
             % Parse input
+            validDeconvolutionEccs = [0 0.2 0.5 1 1.5 3 4]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
             p = inputParser;
             p.addParameter('generateAllFigures', true, @islogical);
             p.addParameter('instantiatePlotLab', true, @islogical);
+            p.addParameter('deconvolutionEccs', validDeconvolutionEccs, @isnumeric);
             p.addParameter('dataSetToFit', 'medians', @(x)(ismember(x, {'medians', 'raw', 'paperFormulas'})));
             p.parse(varargin{:});
             
             obj.psfDeconvolutionDir = strrep(fileparts(which(mfilename())), ...
                 '@CronerKaplanRGCModel', 'VisualToRetinalCorrectionData/DeconvolutionData');
+            
+            obj.deconvolutionEccs = p.Results.deconvolutionEccs;
             
             obj.loadRawData();
             obj.fitModel('dataset', p.Results.dataSetToFit);
@@ -124,7 +132,7 @@ classdef CronerKaplanRGCModel < handle
         
         % Generate the deconvolution model (operates on the output of
         % performGaussianConvolutionWithPolansPSFanalysis()) - no printing
-        deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams, eccTested);
+        deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOpticsParams);
         
         % Method to generate retinal RF params given the retinal center radius
         % and eccentricity as inputs. This uses (via computeDeconvolutionModel()),

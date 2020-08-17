@@ -1,29 +1,25 @@
 function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin)
 
-    defaultEccTested = [0 0.25 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
-    defaultCenterConesNumTested = 1:30;
-    
     % Parse input
     p = inputParser;
-    p.addParameter('eccTested', defaultEccTested);
-    p.addParameter('conesNumInRFcenterTested', defaultCenterConesNumTested);
+    p.addParameter('conesNumInRFcenterTested', 1:30);
     p.addParameter('visualizeFits', false);
     p.parse(varargin{:});
 
     % Validate the deconvolutionOpticsParams
     obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
     
-    eccTested = -(p.Results.eccTested);
+    deconvolutionEccs = -obj.deconvolutionEccs;
     conesNumInRFcenterTested = p.Results.conesNumInRFcenterTested;
     visualizeFits = p.Results.visualizeFits;
     
     imposedRefractionErrorDiopters = 0;
     pupilDiamMM = 3.0;
     
-    for eccIndex = 1:numel(eccTested)
-        ecc = eccTested(eccIndex);
-        generateDeconvolutionFilesForTheCenter(obj, ecc, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
-        generateDeconvolutionFilesForTheSurround(obj, ecc, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
+    for eccIndex = 1:numel(deconvolutionEccs)
+        patchEccRadiusDegs = deconvolutionEccs(eccIndex);
+        generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
+        generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
     end
     
 end

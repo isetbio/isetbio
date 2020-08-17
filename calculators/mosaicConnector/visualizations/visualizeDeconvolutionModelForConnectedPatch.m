@@ -2,6 +2,7 @@ function  visualizeDeconvolutionModelForConnectedPatch(synthesizedRFParams, figE
     
     plotlabOBJ = setupPlotLab(0, 14, 14);
     visualizeCenterSurroundProperties(300, synthesizedRFParams, 'visual', plotlabOBJ, 'PatchDeconvolutionModel_VisualParams', figExportsDir);
+    visualizeCenterSurroundProperties(301, synthesizedRFParams, 'retinal', plotlabOBJ, 'PatchDeconvolutionModel_RetinalParams', figExportsDir);
    
 end
 

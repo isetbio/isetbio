@@ -107,8 +107,8 @@ function MosaicConnector
 
     % Phase 6: Compute cone weights to mRGC RF subregions
     deconvolutionOpticsParams = struct(...
-        'PolansWavefrontAberrationSubjectIDsToAverage', [4]);        % Deconvolution model: which subject  
-    deconvolutionOpticsParams.quadrantsToAverage = {'horizontal'};   % Deconvolution model: which quadrant to use/average (choose one or more from {'horizontal', 'superior','inferior'}
+        'PolansWavefrontAberrationSubjectIDsToCompute', [4]);        % Deconvolution model: which subject  
+    deconvolutionOpticsParams.quadrantsToCompute = {'horizontal'};   % Deconvolution model: which quadrant to use/average (choose one or more from {'horizontal', 'superior','inferior'}
     
     connector('phase6') = struct( ...
         'run', computeConeWeightsToRGCcentersAndSurrounds, ...
@@ -143,7 +143,7 @@ function MosaicConnector
         'run', wirePartOfMRGCMosaicToConeMosaicPatch, ...
         'runFunction', @runPhaseX, ...
         'inputFile', connector('phase1').outputFile, ...
-        'rgcMosaicPatchEccMicrons', [300 0], ... %[3000 0], ... %[600 0],
+        'rgcMosaicPatchEccMicrons', [0 0], ... %[3000 0], ... %[600 0],
         'rgcMosaicPatchSizeMicrons', 50*[1 1], ... %[200 200], ... %[75 75], 
         'orphanRGCpolicy', 'steal input', ...                  // How to deal with RGCs that have no input
         'maximizeConeSpecificity', 100, ...                    // percent of RGCs for which to attempt cone specific wiring to the RF center

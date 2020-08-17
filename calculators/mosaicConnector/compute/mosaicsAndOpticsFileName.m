@@ -15,7 +15,7 @@ function [mosaicsFilename, opticsFilename, opticsPostFix,  PolansSubjectID] = mo
     
     
     % Extract the Polans subjectID for the optics
-    PolansSubjectID = runParams.deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToAverage;
+    PolansSubjectID = runParams.deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
     if (numel(PolansSubjectID )>1)
         PolansSubjectID = PolansSubjectID(1);
         fprintf(2, 'deconvolutionOpticsParams indicates more than 1 subject being used to derive the deconvolution model. Will generate optics for the first of these subjects\n');
