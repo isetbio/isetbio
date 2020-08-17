@@ -3,7 +3,9 @@
 %{ 
 We begin by running 
 
->> performPSFConvoComputations('generateNewDeconvolutionFiles', true)
+>> generateDeconvolutionFilesForMidgetRGCs(...
+    'generateNewDeconvolutionFiles', true, ...
+    'eccTested', [0 0.2 0.5 1 1.5 2 3 4])
 
 which computes how:
 - the RF center (constructed of 1-N cones, each with a weight of 1),and
@@ -17,6 +19,6 @@ The generated datasets are saved in the CronerKaplanRGCModel.psfDeconvolutionDir
 with a separate file for each of the eccentricities examined.
 
 To visualize an existing dataset, for a subset of the eccentricities, call:
-performPSFConvoComputations('eccTested', [0 0.2 0.5 1 1.5 2 3 4])
+generateDeconvolutionFilesForMidgetRGCs('eccTested', [0 0.2 0.5 1 1.5 2 3 4])
 
 %}

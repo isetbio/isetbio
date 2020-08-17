@@ -76,7 +76,7 @@ classdef CronerKaplanRGCModel < handle
         % Constructor
         function obj = CronerKaplanRGCModel(varargin) 
             % Parse input
-            validDeconvolutionEccs = [0 0.2 0.5 1 1.5 3 4]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
+            validDeconvolutionEccs = [0 0.2 0.5 1 1.5 2 2.5 3 4 5 6]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
             p = inputParser;
             p.addParameter('generateAllFigures', true, @islogical);
             p.addParameter('instantiatePlotLab', true, @islogical);

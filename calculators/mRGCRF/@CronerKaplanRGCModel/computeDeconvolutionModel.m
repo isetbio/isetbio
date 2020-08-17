@@ -11,8 +11,25 @@ function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOptics
         imposedRefractionErrorDiopters = 0.01; 
     end
     
+     % correction factor for a single cone RF
+    x = linspace(-100, 100, 1000);
+    coneApertureDiam = 100;
+    sigma = coneApertureDiam/2/3;
+    y = exp(-(abs(x')/sigma).^2)  * exp(-(abs(x)/sigma).^2);
+    y50 = exp(-(abs(x')/sigma).^50)  * exp(-(abs(x)/sigma).^50);
+    correctionFactorForDifferenceBetweenFlatopAndGaussianArea = ...
+        sum(y50(:))/sum(y(:));
+    
+    deconvolutionModel.correctionFactorForDifferenceBetweenFlatopAndGaussianArea = correctionFactorForDifferenceBetweenFlatopAndGaussianArea;
+    
+    
     deconvolutionModel.center = computeCenterDeconvolutionModel(obj,  imposedRefractionErrorDiopters, deconvolutionOpticsParams);
     deconvolutionModel.surround = computeSurroundDeconvolutionModel(obj,  imposedRefractionErrorDiopters, deconvolutionOpticsParams);
+    
+    
+    
+ 
+    
 end
 
 function deconvolutionModel = computeCenterDeconvolutionModel(obj,  imposedRefractionErrorDiopters, deconvolutionOpticsParams)
@@ -91,6 +108,7 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
     deconvolutionModel.quadrant = deconvolutionQuadrant;
     deconvolutionModel.tabulatedEccentricityRadii = obj.deconvolutionEccs;
     
+      
     for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricityRadii)
 
         % Load deconvolution file for this eccentricity
@@ -113,13 +131,14 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
             coneInputConfig = theDataLabels{coneInputConfigIndex};
             deconvolutionData = theData(coneInputConfig);
             coneInputsNum = str2double(strrep(coneInputConfig, '-coneInput', ''));
-            
+
             deconvolutionModel.centerConeInputsNum(eccIndex,coneInputsNum) = coneInputsNum;
             deconvolutionModel.visualGain(eccIndex,coneInputsNum) = deconvolutionData.visualGain;
             deconvolutionModel.retinalGain(eccIndex,coneInputsNum) = deconvolutionData.retinalGain;
             deconvolutionModel.visualCharacteristicRadiusMin(eccIndex,coneInputsNum) = deconvolutionData.minVisualSigma;
             deconvolutionModel.visualCharacteristicRadiusMax(eccIndex,coneInputsNum) = deconvolutionData.maxVisualSigma;
             deconvolutionModel.retinalCharacteristicRadiusMin(eccIndex,coneInputsNum) = deconvolutionData.minRetinalSigma;
+            deconvolutionModel.retinalCharacteristicRadiusMax(eccIndex,coneInputsNum) = deconvolutionData.maxRetinalSigma;
             deconvolutionModel.retinalCharacteristicRadiusMax(eccIndex,coneInputsNum) = deconvolutionData.maxRetinalSigma;
         end
     end

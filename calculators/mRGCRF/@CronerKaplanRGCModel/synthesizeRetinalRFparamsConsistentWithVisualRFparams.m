@@ -34,6 +34,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     tabulatedEccentricityRadiiDegs = sort(deconvolutionModel.center.tabulatedEccentricityRadii);
     
     parfor RGCindex = 1:rgcsNum
+
         % Determine the model's 2 closest tabulatedEccentricityRadii to this cell's eccentricity. 
         % We will interpolate deconvolution model params from these 2 eccentricities.
         theRGCeccentricityDegs = rfEccRadiusDegs(RGCindex);
@@ -47,9 +48,8 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         
         % Find the index of the tabulated eccentricity that is greater or equal to the cell's eccentricity
         idxNeg = find(tabulatedEccentricityRadiiDegs <= theRGCeccentricityDegs);
-        
-        if (isempty(idxPos))
-            fprintf(2,'Deconvolution data do not extenddown to to ecc of %2.3f degs. Min deconvolution ecc: %2.3f degs.\n', ...
+        if (isempty(idxNeg))
+            fprintf(2,'Deconvolution data do not extend down to to ecc of %2.3f degs. Min deconvolution ecc: %2.3f degs.\n', ...
                 rfEccRadiusDegs(RGCindex), min(tabulatedEccentricityRadiiDegs));
         end
         
@@ -77,7 +77,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     centerRetinalCharacteristicRadiiDegs = zeros(rgcsNum,1);
     centerVisualGainSensitivity = zeros(rgcsNum,1);
     centerRetinalGainSensitivity = zeros(rgcsNum,1);
-    
+    correctionFactors = zeros(rgcsNum,1);
     
     % Use the deconvolutionModel.center to determine the center's VISUAL characteristic radius
     % based on the number of input cones to this cells' RF center, and also
@@ -94,19 +94,28 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         retinalRadiusMin = sum((deconvolutionModel.center.retinalCharacteristicRadiusMin(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
         retinalRadiusMax = sum((deconvolutionModel.center.retinalCharacteristicRadiusMax(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
         % Mean VISUAL characteristic radius of the center
-        centerVisualCharacteristicRadiiDegs(RGCindex) = mean([visualRadiusMin visualRadiusMax]);
+        centerVisualCharacteristicRadiiDegs(RGCindex) = mean([visualRadiusMin visualRadiusMax]); %visualRadiusMax; %mean([visualRadiusMin visualRadiusMax]);
         % Mean RETINAL characteristic radius of the center
-        centerRetinalCharacteristicRadiiDegs(RGCindex) = mean([retinalRadiusMin retinalRadiusMax]);
+        centerRetinalCharacteristicRadiiDegs(RGCindex) = mean([retinalRadiusMin retinalRadiusMax]); % retinalRadiusMax; %mean([retinalRadiusMin retinalRadiusMax]);
         % Mean VISUAL gain sensitivity of the center
         centerVisualGainSensitivity(RGCindex)  = sum((deconvolutionModel.center.visualGain(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
         % Mean RETINAL gain sensitivity of the center
         centerRetinalGainSensitivity(RGCindex) = sum((deconvolutionModel.center.retinalGain(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
+        %if (rfCenterInputConesNum(RGCindex) == 1)
+            correctionFactors(RGCindex) = 1 + (deconvolutionModel.correctionFactorForDifferenceBetweenFlatopAndGaussianArea-1) * 1.0/rfCenterInputConesNum(RGCindex);
+        %else
+        %    correctionFactors(RGCindex) = 1;
+        %end
+        
     end
+
+    centerVisualCharacteristicRadiiDegs = centerVisualCharacteristicRadiiDegs .* correctionFactors;
     
     % Use the Croner&Kaplan model centerPeakSensitivityFunction() to
     % compute the center VISUAL peak sensitivity from the center's VISUAL
     % characteristic radius computed previously
     centerVisualPeakSensitivities = obj.centerPeakSensitivityFunction(obj.centerPeakSensitivityParams, centerVisualCharacteristicRadiiDegs);
+
     
     % Compute peak sensitivity boosting factor. This is determined from
     % fitting flat-top Gaussians to the retinal and visual cone activation
@@ -116,7 +125,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % NOTE. We also multiply by the centerRetinalGain to take into effect any
     % artifacts introduced by the fitting. But maybe we shouldnt be doing
     % this.
-    centerPeakSensitivityBoostingFactor = (1 ./ centerVisualGainSensitivity) .* centerRetinalGainSensitivity;
+    centerPeakSensitivityBoostingFactor = (1 ./ centerVisualGainSensitivity); % .* centerRetinalGainSensitivity;
     
     % Multiply with the corresponding boosting factors 
     centerRetinalPeakSensitivities = centerVisualPeakSensitivities .* centerPeakSensitivityBoostingFactor;
@@ -206,7 +215,8 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % NOTE. We also multiply by the centerRetinalGain to take into effect any
     % artifacts introduced by the fitting. But maybe we shouldnt be doing
     % this.
-    surroundPeakSensitivityBoostingFactor = (1 ./ surroundVisualGainSensitivity) .* surroundRetinalGainSensitivity;
+    surroundPeakSensitivityBoostingFactor = (1 ./ surroundVisualGainSensitivity); % .* surroundRetinalGainSensitivity;
+
     
     % Multiply with the corresponding boosting factors 
     surroundRetinalPeakSensitivities = surroundVisualPeakSensitivities .* surroundPeakSensitivityBoostingFactor;
@@ -215,7 +225,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     surroundRetinalCharacteristicRadiiMicrons = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(surroundRetinalCharacteristicRadiiDegs, rfEccRadiusDegs);
     
     synthesizedRFParams = struct(...
-        'rfEccRadiusDegs', rfEccRadiusDegs, ...                                                   % ecc of RGCs within the target patch  - DONE
+        'rfEccRadiusDegs', rfEccRadiusDegs, ...                                     % ecc of RGCs within the target patch  - DONE
         'rfCenterPositionMicrons', rfCenterPositionMicrons, ...
         'visual', struct(...                                                        % VISUAL RF properties
             'centerCharacteristicRadiiDegs', centerVisualCharacteristicRadiiDegs, ...             
