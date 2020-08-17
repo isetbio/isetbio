@@ -1,4 +1,4 @@
-function performPSFConvoComputations(varargin)
+function generateDeconvolutionFilesForMidgetRGCs(varargin)
 
 % Polans et al subjects grouped according to different criteria
 %     sharpestPSFSubjectIDs = [4 9];
@@ -58,11 +58,12 @@ function visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested)
 
     % Instantiate a CronerKaplanRGCModel
     ck = CronerKaplanRGCModel(...
+        'deconvolutionEccs', eccTested, ...
         'generateAllFigures', false, ...
         'instantiatePlotLab', false);
     
     % Assemble and plot the deconvolution model
-    deconvolutionModel = ck.computeDeconvolutionModel(deconvolutionOpticsParams,  eccTested);
+    deconvolutionModel = ck.computeDeconvolutionModel(deconvolutionOpticsParams);
     
     ck.plotDeconvolutionModel(deconvolutionModel);
 end
