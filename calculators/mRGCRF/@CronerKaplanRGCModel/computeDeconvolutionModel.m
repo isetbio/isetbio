@@ -13,22 +13,16 @@ function deconvolutionModel = computeDeconvolutionModel(obj, deconvolutionOptics
     
      % correction factor for a single cone RF
     x = linspace(-100, 100, 1000);
-    coneApertureDiam = 100;
+    coneApertureDiam = 50;
     sigma = coneApertureDiam/2/3;
-    y = exp(-(abs(x')/sigma).^2)  * exp(-(abs(x)/sigma).^2);
-    y50 = exp(-(abs(x')/sigma).^50)  * exp(-(abs(x)/sigma).^50);
-    correctionFactorForDifferenceBetweenFlatopAndGaussianArea = ...
-        sum(y50(:))/sum(y(:));
-    
-    deconvolutionModel.correctionFactorForDifferenceBetweenFlatopAndGaussianArea = correctionFactorForDifferenceBetweenFlatopAndGaussianArea;
-    
-    
+    gaussianExponent = 2;
+    y = exp(-(abs(x')/sigma).^gaussianExponent ) * exp(-(abs(x)/sigma).^gaussianExponent );
+    flatopGaussianExponent = 50;
+    y50 = exp(-(abs(x')/sigma).^flatopGaussianExponent) * exp(-(abs(x)/sigma).^flatopGaussianExponent);
+    deconvolutionModel.correctionFactorForDifferenceBetweenFlatopAndGaussianArea = sum(y50(:))/sum(y(:));
+ 
     deconvolutionModel.center = computeCenterDeconvolutionModel(obj,  imposedRefractionErrorDiopters, deconvolutionOpticsParams);
     deconvolutionModel.surround = computeSurroundDeconvolutionModel(obj,  imposedRefractionErrorDiopters, deconvolutionOpticsParams);
-    
-    
-    
- 
     
 end
 

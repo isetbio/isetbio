@@ -75,8 +75,11 @@ classdef CronerKaplanRGCModel < handle
     methods
         % Constructor
         function obj = CronerKaplanRGCModel(varargin) 
+            % Eccentricities for which we have generated deconvolution data files
+            % (via generateDeconvolutionFilesForMidgetRGCs() )
+            validDeconvolutionEccs = [0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
+            
             % Parse input
-            validDeconvolutionEccs = [0 0.2 0.5 1 1.5 2 2.5 3 4 5 6]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
             p = inputParser;
             p.addParameter('generateAllFigures', true, @islogical);
             p.addParameter('instantiatePlotLab', true, @islogical);
@@ -124,7 +127,8 @@ classdef CronerKaplanRGCModel < handle
 
         % Perform the Gaussian-PSF deconvolution analysis for the RF center
         deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, conesNumInRFcenterExamined, ...
-            conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
+            conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
+            quadrantName, subjectID, patchEccRadiusDegs);
         
         % Perform the Gaussian-PSF deconvolution analysis for the RF surround
         deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, deconvolutionStructForRFcenter, ...
@@ -157,7 +161,7 @@ classdef CronerKaplanRGCModel < handle
             imposedRefractionErrorDiopters, pupilDiameterMM , wavelengthSampling, micronsPerDegree, patchEcc, varargin);
         
         % Generate the cone aperture profile for the deconvolution analysis
-        coneApertureProfile = generateConeApertureProfileForDeconvolution(thePSFsupportDegs, coneAperturesDegs)
+        [coneApertureProfile,  theConeApertureSupportDegs] = generateConeApertureProfileForDeconvolution(thePSFsupportDegs, coneAperturesDegs);
         
         % Integrate retinal/visual cone image within the apertures of cones for the deconvolution analysis
         [retinalConeActivations, visualConeActivations, ...
@@ -171,6 +175,9 @@ classdef CronerKaplanRGCModel < handle
          hiResConeActivationMap, hiResPSFsupportDegs] = fitActivationMapForDeconvolution(...
                    functionName, coneActivations, conePosDegs, coneAperturesDegs, thePSFsupportDegs);
 
+        % Fit an elliptical 2D Gaussian to a RF
+        [fittedParams,  rfFunction] = fitElliptical2DGausianToRF(functionName, X, Y, RF, deltaX, minSigma, center);
+  
         % Visualize the retinal and visual RF subregion fits for the deconvolution analysis
         visualizeFitsForDeconvolution(inputConeCombinationIndex, thePSFsupportDegs, thePSF, ...
                 conePosDegs, retinalConeImage, visualConeImage, ...

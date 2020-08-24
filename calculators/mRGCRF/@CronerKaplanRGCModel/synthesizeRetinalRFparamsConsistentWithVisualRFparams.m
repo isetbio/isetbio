@@ -22,57 +22,18 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     rfEccRadiusMicrons = (sqrt(sum(rfCenterPositionMicrons.^2,2.0)));
     rfEccRadiusDegs = WatsonRGCModel.rhoMMsToDegs(rfEccRadiusMicrons/1000.0);
     
-    % Compute linear interpolation weights for combining data from the 2
-    % closest tabluated eccentricity radii
-    rgcsNum = size(rfCenterPositionMicrons,1);
-    
     % Find interpolation weights for the center deconvolution
-    interpolationWeights = zeros(rgcsNum,2);
-    interpolationEccIndices = zeros(rgcsNum,2);
-    
     % Sort the tabulated eccentricities
     tabulatedEccentricityRadiiDegs = sort(deconvolutionModel.center.tabulatedEccentricityRadii);
     
-    parfor RGCindex = 1:rgcsNum
-
-        % Determine the model's 2 closest tabulatedEccentricityRadii to this cell's eccentricity. 
-        % We will interpolate deconvolution model params from these 2 eccentricities.
-        theRGCeccentricityDegs = rfEccRadiusDegs(RGCindex);
-        
-        % Find the index of the tabulated eccentricity that is greater or equal to the cell's eccentricity
-        idxPos = find(tabulatedEccentricityRadiiDegs >= theRGCeccentricityDegs);
-        if (isempty(idxPos))
-            fprintf(2,'Deconvolution data do not extend up to ecc of %2.3f degs. Max deconvolution ecc: %2.3f degs.\n', ...
-                rfEccRadiusDegs(RGCindex), max(tabulatedEccentricityRadiiDegs));
-        end
-        
-        % Find the index of the tabulated eccentricity that is greater or equal to the cell's eccentricity
-        idxNeg = find(tabulatedEccentricityRadiiDegs <= theRGCeccentricityDegs);
-        if (isempty(idxNeg))
-            fprintf(2,'Deconvolution data do not extend down to to ecc of %2.3f degs. Min deconvolution ecc: %2.3f degs.\n', ...
-                rfEccRadiusDegs(RGCindex), min(tabulatedEccentricityRadiiDegs));
-        end
-        
-        % Intepolation eccentricity indices for this cell
-        interpolationEccIndices(RGCindex,:) = [idxNeg(end) idxPos(1)];
-        
-        % Compute interpolation weights based on the distance of this cells
-        % ecc to the 2 intepolation eccentricities
-        interpolationEccs = tabulatedEccentricityRadiiDegs(interpolationEccIndices(RGCindex,:));
-        interpolationEccRange = abs(diff(interpolationEccs));
-        
-        eccDiffs = abs(interpolationEccs - theRGCeccentricityDegs);
-        % Interpolation weights
-        interpolationWeights(RGCindex,:) = [eccDiffs(2) eccDiffs(1)]/interpolationEccRange;
-        
-        if (interpolationEccRange == 0)
-            interpolationWeights(RGCindex,:) = [1.0 0.0];
-        end
-            
-    end
-
+    % Compute interpolation indices and weights
+    [interpolationEccIndices, interpolationEccWeights] = computeInterpolationIndices(...
+        'center', 'eccentricities', tabulatedEccentricityRadiiDegs, ...
+        rfEccRadiusDegs);
+    
    
     % Memory allocation
+    rgcsNum = size(rfCenterPositionMicrons,1);
     centerVisualCharacteristicRadiiDegs = zeros(rgcsNum,1);
     centerRetinalCharacteristicRadiiDegs = zeros(rgcsNum,1);
     centerVisualGainSensitivity = zeros(rgcsNum,1);
@@ -83,32 +44,35 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % based on the number of input cones to this cells' RF center, and also
     % the center's visual and retinal gain attenuation factors
     tabulatedRFcenterConeInputsNum = squeeze(deconvolutionModel.center.centerConeInputsNum(1,:));
+
     
     parfor RGCindex = 1:rgcsNum
         neighboringEccIndices = interpolationEccIndices(RGCindex,:);
         coneInputsIndex = find(tabulatedRFcenterConeInputsNum == rfCenterInputConesNum(RGCindex));
         
         % Weighted (according to the neighboring eccentricities) radiusMin and radiusMax
-        visualRadiusMin = sum((deconvolutionModel.center.visualCharacteristicRadiusMin(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
-        visualRadiusMax = sum((deconvolutionModel.center.visualCharacteristicRadiusMax(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
-        retinalRadiusMin = sum((deconvolutionModel.center.retinalCharacteristicRadiusMin(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
-        retinalRadiusMax = sum((deconvolutionModel.center.retinalCharacteristicRadiusMax(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
+        visualRadiusMin = sum((deconvolutionModel.center.visualCharacteristicRadiusMin(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
+        visualRadiusMax = sum((deconvolutionModel.center.visualCharacteristicRadiusMax(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
+        retinalRadiusMin = sum((deconvolutionModel.center.retinalCharacteristicRadiusMin(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
+        retinalRadiusMax = sum((deconvolutionModel.center.retinalCharacteristicRadiusMax(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
+        
         % Mean VISUAL characteristic radius of the center
         centerVisualCharacteristicRadiiDegs(RGCindex) = mean([visualRadiusMin visualRadiusMax]); %visualRadiusMax; %mean([visualRadiusMin visualRadiusMax]);
+       
         % Mean RETINAL characteristic radius of the center
         centerRetinalCharacteristicRadiiDegs(RGCindex) = mean([retinalRadiusMin retinalRadiusMax]); % retinalRadiusMax; %mean([retinalRadiusMin retinalRadiusMax]);
+       
         % Mean VISUAL gain sensitivity of the center
-        centerVisualGainSensitivity(RGCindex)  = sum((deconvolutionModel.center.visualGain(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
-        % Mean RETINAL gain sensitivity of the center
-        centerRetinalGainSensitivity(RGCindex) = sum((deconvolutionModel.center.retinalGain(neighboringEccIndices,coneInputsIndex))' .* interpolationWeights(RGCindex,:),2);
-        %if (rfCenterInputConesNum(RGCindex) == 1)
-            correctionFactors(RGCindex) = 1 + (deconvolutionModel.correctionFactorForDifferenceBetweenFlatopAndGaussianArea-1) * 1.0/rfCenterInputConesNum(RGCindex);
-        %else
-        %    correctionFactors(RGCindex) = 1;
-        %end
+        centerVisualGainSensitivity(RGCindex)  = sum((deconvolutionModel.center.visualGain(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
         
+        % Mean RETINAL gain sensitivity of the center
+        centerRetinalGainSensitivity(RGCindex) = sum((deconvolutionModel.center.retinalGain(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
+        
+        % Correction factor to account for the fact that cones do not have
+        % Gaussian sensitivity profile, but a cylindrical one.
+        correctionFactors(RGCindex) = 1 + (deconvolutionModel.correctionFactorForDifferenceBetweenFlatopAndGaussianArea-1) * 1.0/sqrt(rfCenterInputConesNum(RGCindex));
     end
-
+    correctionFactors
     centerVisualCharacteristicRadiiDegs = centerVisualCharacteristicRadiiDegs .* correctionFactors;
     
     % Use the Croner&Kaplan model centerPeakSensitivityFunction() to
@@ -152,58 +116,34 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     for RGCindex = 1:rgcsNum
         neighboringEccIndices = interpolationEccIndices(RGCindex,:);
         coneInputsIndex = find(tabulatedRFcenterConeInputsNum == rfCenterInputConesNum(RGCindex));
-        for k = 1:2
+        
+        retinalCharacteristicRadiusEstimates = zeros(1,2);
+        visualGainSensitivities = zeros(1,2);
+        retinalGainSensitivities = zeros(1,2);
+        
+        for k = 1:numel(neighboringEccIndices)
+            % determine interpolation weights for 2 closest surround characteristic radii
             examinedVisualCharacteristicRadii = squeeze(deconvolutionModel.surround.visualCharacteristicRadius(neighboringEccIndices(k),coneInputsIndex,:));
+            [interpolationSurroundRadiiIndices, interpolationSurroundRadiiWeights] = computeInterpolationIndices(...
+                'surround', 'radii', examinedVisualCharacteristicRadii, surroundVisualCharacteristicRadiiDegs(RGCindex));
             
-            % Find the index of the tabulated surround radii that is greater or equal to the cell's surround radius
-            idxPos = find(examinedVisualCharacteristicRadii >= surroundVisualCharacteristicRadiiDegs(RGCindex));
-            if (isempty(idxPos))
-                [~,idxPos] = max(examinedVisualCharacteristicRadii);
-                fprintf(2,'Deconvolution data do not extend up to surround radii of %2.3f degs. Max surround radius : %2.3f degs.\n', ...
-                    surroundVisualCharacteristicRadiiDegs(RGCindex), max(examinedVisualCharacteristicRadii));
-               
-            end
-        
-            % Find the index of the tabulated eccentricity that is greater or equal to the cell's eccentricity
-            idxNeg = find(examinedVisualCharacteristicRadii <= surroundVisualCharacteristicRadiiDegs(RGCindex));
-            if (isempty(idxNeg))
-                fprintf(2,'Deconvolution data do not extend down to surround radii of %2.3f degs. Min surround radius : %2.3f degs.\n', ...
-                    surroundVisualCharacteristicRadiiDegs(RGCindex), min(examinedVisualCharacteristicRadii));
-            end
+            examinedRetinalCharacteristicRadii = ...
+                squeeze(deconvolutionModel.surround.retinalCharacteristicRadius(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices));
+            retinalCharacteristicRadiusEstimates(1,k) = sum(examinedRetinalCharacteristicRadii' .* interpolationSurroundRadiiWeights,2);
             
-            % Intepolation eccentricity indices for this cell
-            interpolationSurroundRadiiIndices = [idxNeg(end) idxPos(1)];
-
-            % Compute interpolation weights based on the distance of this cells
-            % ecc to the 2 intepolation eccentricities
-            interpolationRadii = examinedVisualCharacteristicRadii(interpolationSurroundRadiiIndices);
-            interpolationRadiiRange = abs(diff(interpolationRadii));
-        
-            radiiDiffs = abs(interpolationRadii - surroundVisualCharacteristicRadiiDegs(RGCindex));
-            % Interpolation weights
-            interpolationWeights = [radiiDiffs(2) radiiDiffs(1)]/interpolationRadiiRange;
+            examinedVisualGainSensitivities = ...
+                squeeze(deconvolutionModel.surround.visualGain(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices));
+            visualGainSensitivities(1,k) = sum(examinedVisualGainSensitivities' .* interpolationSurroundRadiiWeights,2);
             
-            if (interpolationRadiiRange == 0)
-                interpolationWeights = [1.0 0.0];
-            end
-            
-            retinalCharacteristicRadiusEstimates(k) = ...
-                deconvolutionModel.surround.retinalCharacteristicRadius(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices(1)) * interpolationWeights(1) + ...
-                deconvolutionModel.surround.retinalCharacteristicRadius(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices(2)) * interpolationWeights(2);
-            
-            visualGainSensitivityEstimates(k) = ...
-                deconvolutionModel.surround.visualGain(neighboringEccIndices(k),coneInputsIndex, interpolationSurroundRadiiIndices(1)) * interpolationWeights(1) + ...
-                deconvolutionModel.surround.visualGain(neighboringEccIndices(k),coneInputsIndex, interpolationSurroundRadiiIndices(2)) * interpolationWeights(2);
-            
-            retinalGainSensitivityEstimates(k) = ...
-                deconvolutionModel.surround.retinalGain(neighboringEccIndices(k),coneInputsIndex, interpolationSurroundRadiiIndices(1)) * interpolationWeights(1) + ...
-                deconvolutionModel.surround.retinalGain(neighboringEccIndices(k),coneInputsIndex, interpolationSurroundRadiiIndices(2)) * interpolationWeights(2);
+            examinedRetinalGainSensitivities = ...
+                squeeze(deconvolutionModel.surround.retinalGain(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices));
+            retinalGainSensitivities(1,k) = sum(examinedRetinalGainSensitivities' .* interpolationSurroundRadiiWeights,2);
         end
         
         % Weighted (according to the neighboring eccentricities) estimates
-        surroundRetinalCharacteristicRadiiDegs(RGCindex) = sum(retinalCharacteristicRadiusEstimates .* interpolationWeights,2);
-        surroundRetinalGainSensitivity(RGCindex) = sum(retinalGainSensitivityEstimates .* interpolationWeights,2);
-        surroundVisualGainSensitivity(RGCindex) = sum(visualGainSensitivityEstimates .* interpolationWeights,2); 
+        surroundRetinalCharacteristicRadiiDegs(RGCindex) = sum(retinalCharacteristicRadiusEstimates .* interpolationEccWeights(RGCindex,:),2);
+        surroundRetinalGainSensitivity(RGCindex) = sum(retinalGainSensitivities .* interpolationEccWeights(RGCindex,:),2);
+        surroundVisualGainSensitivity(RGCindex) = sum(visualGainSensitivities .* interpolationEccWeights(RGCindex,:),2); 
     end
     
     
@@ -215,7 +155,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % NOTE. We also multiply by the centerRetinalGain to take into effect any
     % artifacts introduced by the fitting. But maybe we shouldnt be doing
     % this.
-    surroundPeakSensitivityBoostingFactor = (1 ./ surroundVisualGainSensitivity); % .* surroundRetinalGainSensitivity;
+    surroundPeakSensitivityBoostingFactor = (1 ./ surroundVisualGainSensitivity);% .* surroundRetinalGainSensitivity;
 
     
     % Multiply with the corresponding boosting factors 
@@ -243,3 +183,56 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
          ); 
 end
 
+function  [interpolationEccIndices, interpolationWeights] = computeInterpolationIndices(...
+        subregionName, domainName, tabulatedValues, targetValues)
+    
+    % Determine linear interpolation indices and interpolation values
+        
+    targetsNum = numel(targetValues);
+    interpolationEccIndices = zeros(targetsNum,2);
+    interpolationWeights = zeros(targetsNum,2);
+    
+    for targetIndex = 1:targetsNum
+        
+        theRGCeccentricityDegs = targetValues(targetIndex);
+        
+        % Find the index of the tabulated eccentricity that is greater or equal to the cell's eccentricity
+        idxPos = find(tabulatedValues >= theRGCeccentricityDegs);
+        if (isempty(idxPos))
+            fprintf(2,'Deconvolution data for %s do not extend up to %2.3f %s. Max value: %2.3f.\n', ...
+                subregionName, domainName, targetValues(targetIndex), max(tabulatedValues));
+            idxPos = length(tabulatedValues);
+        end
+        
+        % Find the index of the tabulated eccentricity that is greater or equal to the cell's eccentricity
+        idxNeg = find(tabulatedValues <= theRGCeccentricityDegs);
+        if (isempty(idxNeg))
+            fprintf(2,'Deconvolution data for %s  do not extend down to %2.3f %s. Min value: %2.3f.\n', ...
+                subregionName, domainName, targetValues(targetIndex), min(tabulatedValues));
+            idxNeg = 1;
+        end
+        
+        % Intepolation eccentricity indices for this cell
+        interpolationEccIndices(targetIndex,:) = [idxNeg(end) idxPos(1)];
+        
+        % Compute interpolation weights based on the distance of this cells
+        % ecc to the 2 intepolation eccentricities
+        interpolationEccs = tabulatedValues(interpolationEccIndices(targetIndex,:));
+        interpolationEccRange = abs(diff(interpolationEccs));
+        
+        if (interpolationEccIndices(targetIndex,1) == interpolationEccIndices(targetIndex,2))
+            interpolationWeights(targetIndex,:) = [0.5 0.5];
+        else 
+            eccDiffs = abs(interpolationEccs - theRGCeccentricityDegs);
+            % Interpolation weights
+            interpolationWeights(targetIndex,:) = [eccDiffs(2) eccDiffs(1)]/interpolationEccRange;
+        end
+        
+        
+%         fprintf('interpolation: cell at %2.2f, below/above: %2.2f, %2.2f: weights: (%2.2f,%2.2f)  \n', ...
+%             theRGCeccentricityDegs, ...
+%             tabulatedValues(interpolationEccIndices(targetIndex,1)), ...
+%             tabulatedValues(interpolationEccIndices(targetIndex,2)), ...
+%             interpolationWeights(targetIndex,1), interpolationWeights(targetIndex,2));
+    end
+end

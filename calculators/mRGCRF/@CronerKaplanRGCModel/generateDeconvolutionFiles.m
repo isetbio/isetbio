@@ -2,29 +2,36 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin)
 
     % Parse input
     p = inputParser;
-    p.addParameter('conesNumInRFcenterTested', 1:30);
+    p.addParameter('examinedConesNumInRFCenter', 1:30);
     p.addParameter('visualizeFits', false);
+    p.addParameter('exportFig', false);
     p.parse(varargin{:});
 
     % Validate the deconvolutionOpticsParams
     obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
     
-    deconvolutionEccs = -obj.deconvolutionEccs;
-    conesNumInRFcenterTested = p.Results.conesNumInRFcenterTested;
+    examinedConesNumInRFCenter = p.Results.examinedConesNumInRFCenter;
     visualizeFits = p.Results.visualizeFits;
-    
+    exportFig = p.Results.exportFig;
     imposedRefractionErrorDiopters = 0;
     pupilDiamMM = 3.0;
     
-    for eccIndex = 1:numel(deconvolutionEccs)
-        patchEccRadiusDegs = deconvolutionEccs(eccIndex);
-        generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
-        generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
+    deconvolutionEccentricities = obj.deconvolutionEccs;
+    
+    parfor eccIndex = 1:numel(deconvolutionEccentricities)
+        patchEccRadiusDegs = -deconvolutionEccentricities(eccIndex);
+        
+        generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
+            deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
+        
+%         generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, ...
+%             deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
     end
     
 end
 
-function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, conesNumInRFcenterTested, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits)
+function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
+    deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig)
     
     % Extra deconvolution optics params
     subjectIDs = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
@@ -74,13 +81,16 @@ function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, conesNu
             
             % Convolve different retinal pooling regions and compute the visually-mapped pooling region
             deconvolutionStruct{ qIndex, sIndex} = ...
-                obj.performDeconvolutionAnalysisForRFcenter(conesNumInRFcenterTested, ...
-                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
+                obj.performDeconvolutionAnalysisForRFcenter(examinedConesNumInRFCenter, ...
+                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
+                quadrants{qIndex}, PolansSubjectID, patchEccRadiusDegs);
         end % sIndex
     end % qIndex
     
     % Save decolvolution struct for the center
-    dataFileName = fullfile(obj.psfDeconvolutionDir, sprintf('ecc_%2.1f_centerDeconvolutions_refractionError_%2.2fD.mat', patchEccRadiusDegs, imposedRefractionErrorDiopters));
+    dataFileName = fullfile(obj.psfDeconvolutionDir, ...
+        sprintf('EccRadius_%2.1fdegs_RefractionError_%2.2fD_CenterDeconvolution.mat', ...
+        patchEccRadiusDegs, imposedRefractionErrorDiopters));
     fprintf('Saving data to %s\n', dataFileName);
     save(dataFileName, ...
             'deconvolutionStruct', ...
@@ -180,13 +190,12 @@ function [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] 
                 'sizeUnits', 'degrees', ...
                 'mosaicGeometry', 'regular');
             
-    conePosDegs = WatsonRGCModel.rhoMMsToDegs(theConeMosaicMetaData.conePositionsMicrons*1e-3);
     % Subtract the patchCenter because the PSF is also going to be centered at (0,0) for this analysis
-    conePosDegs = bsxfun(@minus, conePosDegs, theConeMosaicMetaData.coneMosaicEccDegs);
+    conePosDegs = bsxfun(@minus, theConeMosaicMetaData.conePositionsDegs, theConeMosaicMetaData.coneMosaicEccDegs);
     % Make sure central-most cone is at (0,0)
     [~,idx] = min(sqrt(sum(conePosDegs.^2,2)));
     conePosDegs = bsxfun(@minus, conePosDegs, conePosDegs(idx,:));
-    coneAperturesDegs = WatsonRGCModel.sizeRetinalMicronsToSizeDegs(theConeMosaicMetaData.coneAperturesMicrons, sqrt(sum((theConeMosaicMetaData.coneMosaicEccMicrons).^2,2)));
+    coneAperturesDegs = theConeMosaicMetaData.coneAperturesDegs;
 
     micronsPerDegree = theConeMosaic.micronsPerDegree;
     wavelengthSampling = theConeMosaic.pigment.wave;

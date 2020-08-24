@@ -3,9 +3,7 @@
 %{ 
 We begin by running 
 
->> generateDeconvolutionFilesForMidgetRGCs(...
-    'generateNewDeconvolutionFiles', true, ...
-    'eccTested', [0 0.2 0.5 1 1.5 2 3 4])
+>> generateDeconvolutionFilesForMidgetRGCs(args)
 
 which computes how:
 - the RF center (constructed of 1-N cones, each with a weight of 1),and
@@ -15,10 +13,5 @@ eccentricities. The change in sigma and amplitude provide the data for the decon
 model which allow us to transform the Croner&Kaplan '94 visual RF parameters 
 (radius and sensitivity) from visual to retinal counterparts and vice-versa.
 
-The generated datasets are saved in the CronerKaplanRGCModel.psfDeconvolutionDir,
-with a separate file for each of the eccentricities examined.
-
-To visualize an existing dataset, for a subset of the eccentricities, call:
-generateDeconvolutionFilesForMidgetRGCs('eccTested', [0 0.2 0.5 1 1.5 2 3 4])
 
 %}

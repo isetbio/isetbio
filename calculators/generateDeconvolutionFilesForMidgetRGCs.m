@@ -1,36 +1,86 @@
 function generateDeconvolutionFilesForMidgetRGCs(varargin)
-
-% Polans et al subjects grouped according to different criteria
-%     sharpestPSFSubjectIDs = [4 9];
-%     mediumSharpnessPSFSubjectIDs = [5 8 10];
+% Generate the deconvolution files for a particular Polans subject and
+% eccentricity quadrant
+%
+% Syntax:
+%   generateDeconvolutionFilesForMidgetRGCs(varargin)
+%
+% Description:
+%    Generates the various deconvolution files which are used to compute the 
+%    characteristic radii and peak sensitivities for retinal/visual mRGC RFs.
+%
+% Outputs:
+%    None. Deconvolution files are written in  isetbio/calculators/mRGCRF/VisualToRetinalCorrectionData/DecolvolutionData
+%
+% Optional key/value pairs:
+%    PolansSubjectIDs               : [1 - 10]. See comments below about the different subjects
+%    eccTested                      : Vector of eccentricities at which to compute the deconvolution data
+%    examinedConesNumInRFCenter     : Vector of number of cones in the RF center
+%    quadrantsToCompute             : 'horizontal', 'superior', 'inferior'
+%    generateNewDeconvolutionFiles  : whether to generate the files or just  visualize stuff
+%    visualizeFits                  : whether to visualize the various fits
+%
+% Notes about the Polans et al subjects:
+%     sharpestPSFSubjectIDs = [4 8 9];
+%     mediumSharpnessPSFSubjectIDs = [5 10];
 %     blurriestPSFSubjectIDs = [7];
 %     noArtifactPSFSubjectIDs = [4 5 7 8 9 10];
 %     someArtifactPSFSubjectIDs = [1 3 6];
 %     largeArtifacPSFSubjectIDs = [2];
+% 
+% Example usages:
+%{
+   % Generate figures for presentation:
 
+   generateDeconvolutionFilesForMidgetRGCs('PolansSubjectID', 10, 'eccTested', 1.5, ...
+        'examinedConesNumInRFCenter', 1, 'generateNewDeconvolutionFiles', true, ...
+        'visualizeFits', true, 'exportFig', true, ...
+        'visualizeDeconvolutionModel', false, ...
+        'synthesizeDemoRFparams', false);
+
+
+   % Generate deconvolution data for subject 4 optics and the default ecc
+     range (i.e., [0 0.1 0.2 0.3 0.4 0.5 0.7 1 1.5 2 2.5 3:20]) and for
+     RF centers containing between 1 and 20 cones, skipping visualization.
+
+   generateDeconvolutionFilesForMidgetRGCs('PolansSubjectID', 4, ...
+        'examinedConesNumInRFCenter', 1:20, 'generateNewDeconvolutionFiles', true, ...
+        'visualizeFits', ~true, 'exportFig', ~true, ...
+        'visualizeDeconvolutionModel', false, ...
+        'synthesizeDemoRFparams', false);
+
+%}
+
+% History:
+%    8/2020  NPC  ISETBIO TEAM, 2020
 
     % Parse input
     p = inputParser;
     p.addParameter('PolansSubjectIDs', [4], @isnumeric);
-    p.addParameter('eccTested', [0 0.2 0.5 1 1.5 2 2.5 3:25]);
+    p.addParameter('eccTested', [0 0.1 0.2 0.3 0.4 0.5 0.7 1 1.5 2 2.5 3:20] );
+    p.addParameter('examinedConesNumInRFCenter', 1:30);
     p.addParameter('quadrantsToCompute', {'horizontal'}); %, @(x)(ismember(x, {'horizontal', 'superior', 'inferior'})));
     p.addParameter('generateNewDeconvolutionFiles', false, @islogical);
     p.addParameter('visualizeFits', false, @islogical);
+    p.addParameter('exportFig', false, @islogical);
+    p.addParameter('visualizeDeconvolutionModel', false, @islogical);
+    p.addParameter('synthesizeDemoRFparams', true, @islogical);
     p.parse(varargin{:});
     
     PolansSubjectIDs = p.Results.PolansSubjectIDs;
     eccTested = p.Results.eccTested;
+    examinedConesNumInRFCenter = p.Results.examinedConesNumInRFCenter;
     quadrantsToCompute = p.Results.quadrantsToCompute;
     generateNewDeconvolutionFiles = p.Results.generateNewDeconvolutionFiles;
     visualizeFits = p.Results.visualizeFits;
-    
-    
+    exportFig = p.Results.exportFig;
+    synthesizeDemoRFparams = p.Results.synthesizeDemoRFparams;
+    visualizeDeconvolutionModel = p.Results.visualizeDeconvolutionModel;
     deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute = PolansSubjectIDs;
     deconvolutionOpticsParams.quadrantsToCompute = quadrantsToCompute;
-        
+    
     % Perform the deconvolution analysis for certain Polans subjects 
     if (generateNewDeconvolutionFiles)
-      
         % Instantiate a CronerKaplanRGCModel
         ck = CronerKaplanRGCModel(...
             'deconvolutionEccs', eccTested, ...
@@ -39,26 +89,28 @@ function generateDeconvolutionFilesForMidgetRGCs(varargin)
         
         % Tell it to generate deconvolution files for the desired
         % eccentricities, and deconvolution parameters (quadrants&subject)
-        ck.generateDeconvolutionFiles(deconvolutionOpticsParams, ...      
-            'visualizeFits', visualizeFits ...
+        ck.generateDeconvolutionFiles(deconvolutionOpticsParams, ...  
+            'examinedConesNumInRFCenter', examinedConesNumInRFCenter, ...
+            'visualizeFits', visualizeFits, ...
+            'exportFig', exportFig...
             );
     end
     
+    if (visualizeDeconvolutionModel)
+        % Compute and visualize the deconvolution model 
+        computeAndVisualizeDeconvolutionModel(deconvolutionOpticsParams);
+    end
     
-    visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested);
-    
-    performTests = true;
-    if (performTests)
-        % Test2: Synthesize RF params
-        synthesizeRFparams(deconvolutionOpticsParams, eccTested);
+    if (synthesizeDemoRFparams)
+        % Synthesize RF params for single cone input RF centers at different eccentricities
+        synthesizeRFparams(deconvolutionOpticsParams);
     end
 end
 
-function visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested)
+function computeAndVisualizeDeconvolutionModel(deconvolutionOpticsParams)
 
     % Instantiate a CronerKaplanRGCModel
     ck = CronerKaplanRGCModel(...
-        'deconvolutionEccs', eccTested, ...
         'generateAllFigures', false, ...
         'instantiatePlotLab', false);
     
@@ -68,7 +120,7 @@ function visualizeDeconvolutionModel(deconvolutionOpticsParams, eccTested)
     ck.plotDeconvolutionModel(deconvolutionModel);
 end
 
-function synthesizeRFparams(deconvolutionOpticsParams, eccTested)
+function synthesizeRFparams(deconvolutionOpticsParams)
 
     % Instantiate a CronerKaplanRGCModel
     ck = CronerKaplanRGCModel(...
@@ -83,7 +135,7 @@ function synthesizeRFparams(deconvolutionOpticsParams, eccTested)
     rfCenterInputConesNum = ones(1, rgcsNum)*conesInRFCenter; 
     
     minEccDegs = 0.01;
-    maxEccDegs = 3.0;
+    maxEccDegs = 5.0;
     minEccMicrons = WatsonRGCModel.rhoDegsToMMs(minEccDegs)*1e3;
     maxEccMicrons = WatsonRGCModel.rhoDegsToMMs(maxEccDegs)*1e3;
     
@@ -93,7 +145,7 @@ function synthesizeRFparams(deconvolutionOpticsParams, eccTested)
     
     % Synthesize params
     synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(...
-        rfCenterInputConesNum, rfCenterPositionMicrons, deconvolutionOpticsParams, eccTested);
+        rfCenterInputConesNum, rfCenterPositionMicrons, deconvolutionOpticsParams);
     
     % Plot synthesized params
     figNo = 3;
