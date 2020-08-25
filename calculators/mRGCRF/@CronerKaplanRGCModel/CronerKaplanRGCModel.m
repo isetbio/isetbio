@@ -132,7 +132,8 @@ classdef CronerKaplanRGCModel < handle
         
         % Perform the Gaussian-PSF deconvolution analysis for the RF surround
         deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, deconvolutionStructForRFcenter, ...
-            conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
+            conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
+            quadrantName, subjectID, patchEccRadiusDegs);
         
         % Generate the deconvolution model (operates on the output of
         % performGaussianConvolutionWithPolansPSFanalysis()) - no printing
@@ -162,6 +163,9 @@ classdef CronerKaplanRGCModel < handle
         
         % Generate the cone aperture profile for the deconvolution analysis
         [coneApertureProfile,  theConeApertureSupportDegs] = generateConeApertureProfileForDeconvolution(thePSFsupportDegs, coneAperturesDegs);
+        
+        % Interpolate and zero-pad the PSF
+        [thePSFHR, thePSFsupportDegsHR] = interpolatePSF(thePSF, thePSFsupportDegs, upsampleFactor, paddingMarginDegs);
         
         % Integrate retinal/visual cone image within the apertures of cones for the deconvolution analysis
         [retinalConeActivations, visualConeActivations, ...
@@ -194,8 +198,6 @@ classdef CronerKaplanRGCModel < handle
         data = quadrantData(allQuadrantData, quadrantsToAverage, quadrantsComputed, subjectsToAverage, subjectsComputed);
         
         plotDeconvolutionModel(deconvolutionModel);
-        
-        
     end
     
     methods (Access=private)

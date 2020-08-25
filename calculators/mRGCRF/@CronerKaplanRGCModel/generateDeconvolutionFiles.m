@@ -19,13 +19,14 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin)
     deconvolutionEccentricities = obj.deconvolutionEccs;
     
     parfor eccIndex = 1:numel(deconvolutionEccentricities)
+    % for eccIndex = 1:numel(deconvolutionEccentricities)
         patchEccRadiusDegs = -deconvolutionEccentricities(eccIndex);
         
-        generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
-            deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
+%         generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
+%             deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
         
-%         generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, ...
-%             deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits);
+        generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
+            deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
     end
     
 end
@@ -40,6 +41,8 @@ function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examine
     quadrantsNum = numel(quadrants);
    
     resetPlotLabOnExit = false;
+    
+    deconvolutionStruct = cell(quadrantsNum, subjectsNum);
     
     for qIndex = 1:quadrantsNum
 
@@ -62,8 +65,9 @@ function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examine
         
         % Generate cone positions appropriate for the eccentricity
         patchEccDegs = [eccXrange(1), eccYrange(1)];
+        extraPatchSizeDegs = 0;
         [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] = ...
-            generateConePositionsForPatchAtEccentricity(patchEccDegs, 'coneMosaicResamplingFactor', 1);
+            generateConePositionsForPatchAtEccentricity(patchEccDegs, extraPatchSizeDegs, 'coneMosaicResamplingFactor', 1);
     
         for sIndex = 1:subjectsNum
             % Compute the Polans subject PSF at the desired eccentricity
@@ -103,7 +107,9 @@ function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examine
 end
 
 
-function generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits)
+function generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
+    deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig)
+
     % Extra deconvolution optics params
     subjectIDs = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
     quadrants = deconvolutionOpticsParams.quadrantsToCompute;
@@ -111,10 +117,15 @@ function generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, decon
     quadrantsNum = numel(quadrants);
     
     % Load deconvolutionStruct for the center
-    dataFileName = fullfile(obj.psfDeconvolutionDir, sprintf('ecc_%2.1f_centerDeconvolutions_refractionError_%2.2fD.mat', patchEccRadiusDegs, imposedRefractionErrorDiopters));
+    dataFileName = fullfile(obj.psfDeconvolutionDir, ...
+        sprintf('EccRadius_%2.1fdegs_RefractionError_%2.2fD_CenterDeconvolution.mat', ...
+        patchEccRadiusDegs, imposedRefractionErrorDiopters));
     fprintf('Loading decolvolution data from the center %s\n', dataFileName);
     load(dataFileName, 'deconvolutionStruct');  
     deconvolutionStructForTheCenter = deconvolutionStruct;
+    clear 'deconvolutionStruct'
+    
+    deconvolutionStruct = cell(quadrantsNum, subjectsNum);
     
     for qIndex = 1:quadrantsNum
 
@@ -137,8 +148,10 @@ function generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, decon
         
         % Generate cone positions appropriate for the eccentricity
         patchEccDegs = [eccXrange(1), eccYrange(1)];
+        extraPatchSizeDegs = 0.5*sqrt(max(examinedConesNumInRFCenter)) * 2 * 3 * obj.surroundRadiusFunction(obj.surroundRadiusParams, sqrt(sum(patchEccDegs.^2,2)));
+        
         [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] = ...
-            generateConePositionsForPatchAtEccentricity(patchEccDegs, 'coneMosaicResamplingFactor', 1);
+            generateConePositionsForPatchAtEccentricity(patchEccDegs, extraPatchSizeDegs, 'coneMosaicResamplingFactor', 1);
     
         for sIndex = 1:subjectsNum
             % Compute the Polans subject PSF at the desired eccentricity
@@ -157,13 +170,16 @@ function generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, decon
             % Convolve different retinal pooling regions and compute the visually-mapped pooling region
             deconvolutionStruct{qIndex, sIndex} = obj.performDeconvolutionAnalysisForRFsurround(...
                 deconvolutionStructForTheCenter{qIndex, sIndex}, ...
-                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits);
+                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
+                quadrants{qIndex}, PolansSubjectID, patchEccRadiusDegs);
             
         end % sIndex
     end % qIndex
     
     % Save deconvolution struct for the surround
-    dataFileName = fullfile(obj.psfDeconvolutionDir, sprintf('ecc_%2.1f_surroundDeconvolutions_refractionError_%2.2fD.mat', patchEccRadiusDegs, imposedRefractionErrorDiopters));
+    dataFileName = fullfile(obj.psfDeconvolutionDir, ...
+        sprintf('EccRadius_%2.1fdegs_RefractionError_%2.2fD_SurroundDeconvolution.mat', ...
+        patchEccRadiusDegs, imposedRefractionErrorDiopters));
     fprintf('Saving data to %s\n', dataFileName);
     save(dataFileName, ...
             'deconvolutionStruct', ...
@@ -176,14 +192,15 @@ function generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, decon
 end
 
 
-function [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] = generateConePositionsForPatchAtEccentricity(patchEccDegs, varargin)
+function [conePosDegs, coneAperturesDegs, micronsPerDegree, wavelengthSampling] = generateConePositionsForPatchAtEccentricity(...
+    patchEccDegs, extraPatchSizeDegs, varargin)
 
     % Parse input
     p = inputParser;
     p.addParameter('coneMosaicResamplingFactor', 9, @isnumeric);
     p.parse(varargin{:});
     
-    patchSizeDegs = [0 0];  % Just the max surround region as computed in mosaicsAndOpticsForEccentricity
+    patchSizeDegs = extraPatchSizeDegs*[1 1]; 
     [theConeMosaic, theConeMosaicMetaData] = CronerKaplanRGCModel.generateConeMosaicForDeconvolution(...
                 patchEccDegs, patchSizeDegs, ...
                 'coneMosaicResamplingFactor', p.Results.coneMosaicResamplingFactor, ...

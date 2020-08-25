@@ -13,10 +13,11 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
             
     % Interpolate PSF by a factor of 3
     upsampleFactor = 3;
-    % Zero pad with a 0.25 degs margin on each size
+    % Zero pad with a 0.0 degs margin on each size
     paddingMarginDegs = 0.0;
     [thePSFHR, thePSFsupportDegsHR] = ...
-        interpolatePSF(thePSF, thePSFsupportDegs, upsampleFactor, paddingMarginDegs);
+        CronerKaplanRGCModel.interpolatePSF(thePSF, thePSFsupportDegs, upsampleFactor, paddingMarginDegs);
+    clear 'thePSFsupportDegs'
     
     % Generate the cone aperture profile
     [coneApertureProfile, ~] = obj.generateConeApertureProfileForDeconvolution(thePSFsupportDegsHR, coneAperturesDegs);
@@ -34,7 +35,6 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
         );
     
     for poolingSchemeIndex = 1:numel(rfCenterPoolingSchemes)
-
         % Retrieve pooling scheme info
         poolingSchemeName = sprintf('%d-coneInput',rfCenterPoolingSchemes{poolingSchemeIndex}.coneInputsNum);
         inputConeIndicesForAllCombinations = rfCenterPoolingSchemes{poolingSchemeIndex}.inputConeIndices;
@@ -90,7 +90,6 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
             visualSpatialFrequencyTuningsMajorAxis(inputConeCombinationIndex,:) = visualSFtuningMajorAxis;
             retinalSpatialFrequencyTuningsMinorAxis(inputConeCombinationIndex,:) = retinalSFtuningMinorAxis;
             visualSpatialFrequencyTuningsMinorAxis(inputConeCombinationIndex,:) = visualSFtuningMinorAxis;
-            
         end % inputConeCombinationIndex
         
         % Mean over input cone combinations
@@ -107,10 +106,8 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
             GaussianSFtuningEnsemble, visualSpatialFrequencyTuningMinorAxis, spatialFrequencySupport, sensitivityRangeOverWhichToMatchSFtuning, ...
             thePSFsupportDegsHR, visualConeImage);
         
-        
         if (visualizeFits)
-            
-             % Fourier Analysis of matching Gaussian
+            % Fourier Analysis of matching Gaussian
             [~, matchingGaussianSFtuning, ~] = analyzeGaussianSubregionEnsemble(...
                 reshape(matchingGaussian, [1 size(matchingGaussian,1), size(matchingGaussian,2)]), ...
                 thePSFsupportDegsHR);
@@ -129,7 +126,6 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
                 GaussianSFtuningEnsemble, spatialFrequencySupportForGaussianSubregions, ...
                 matchingGaussian, matchingGaussianSFtuning, matchingSFrange,  ...
                 overlayMatchingGaussianProfileOnConeImages, exportFig);
-            
         end
         
         % Log data in
@@ -137,9 +133,7 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
             'characteristicRadiusDegs', matchingCharacteristicRadiusDegs, ...
             'peakSensitivity',  matchingPeakSensitivity ...
         );
-    
     end % poolingSchemeIndex
-    
 end
 
 
@@ -156,7 +150,6 @@ function [matchingCharacteristicRadiusDegs,  matchingPeakSensitivity, ...
     % Generate the matching Gaussian
     [matchingGaussian, matchingPeakSensitivity, centerPixelCoords] = ...
         generateMatchingGaussian(matchingCharacteristicRadiusDegs, thePSFsupportDegsHR, visualConeImage);
-       
 end
 
 function [matchingCharacteristicRadiusDegs,  matchingSFrange] = determineMatchingCharacteristicRadius(characteristicRadiiDegsExamined, ...
@@ -244,31 +237,6 @@ function [matchingGaussian, peakSensitivity, centerPixelCoord] = generateMatchin
    matchingGaussian = peakSensitivity * squeeze(matchingGaussian(1,:,:));
 end
         
-
-function [thePSFHR, thePSFsupportDegsHR] = interpolatePSF(thePSF, thePSFsupportDegs, upsampleFactor, paddingMarginDegs)
-    
-    % Upsample the PSF via linear interpolation
-    thePSFsupportDegsHR = linspace(thePSFsupportDegs(1), thePSFsupportDegs(end), numel(thePSFsupportDegs)*upsampleFactor);
-    [X2,Y2] = meshgrid(thePSFsupportDegsHR,thePSFsupportDegsHR);
-    [X,Y] = meshgrid(thePSFsupportDegs, thePSFsupportDegs);
-    thePSFHR = interp2(X,Y, thePSF, X2, Y2);
-    thePSFHR = thePSFHR / sum(thePSFHR(:));
-    
-    % zero pad to minimize edge artifacts
-    sampleSizeDegs = thePSFsupportDegsHR(2)-thePSFsupportDegsHR(1);
-    paddingPixelsNum = round(paddingMarginDegs/sampleSizeDegs);
-    minPSFsupportDegs = thePSFsupportDegs(1)-paddingPixelsNum*sampleSizeDegs;
-    maxPSFsupportDegs = thePSFsupportDegs(end)+paddingPixelsNum*sampleSizeDegs;
-    newPixelsNum = length(thePSFsupportDegsHR) + 2*paddingPixelsNum;
-    
-    % New PSF support
-    thePSFsupportDegsHR = linspace(minPSFsupportDegs, maxPSFsupportDegs, newPixelsNum);
-    
-    % Zero pad
-    tmp = thePSFHR;
-    thePSFHR = zeros(newPixelsNum,newPixelsNum);
-    thePSFHR(paddingPixelsNum+(1:size(tmp,1)), paddingPixelsNum+(1:size(tmp,2))) = tmp;
-end
 
 function [rfSpectra, spatialFrequencyTunings, spatialFrequencySupport] = analyzeGaussianSubregionEnsemble(RFprofiles, thePSFsupportDegsHR)
 

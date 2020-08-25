@@ -41,7 +41,7 @@ function [fittedParams,  rfFunction] = fitElliptical2DGausianToRF(functionName, 
     
     [fittedParams,resnorm,residual,exitflag] = lsqcurvefit(rfFunction, initialParams, xyData, RF,lb,ub);
 
-    doMultiStartSearch = true;
+    doMultiStartSearch = ~true;
     if (doMultiStartSearch)
         problem = createOptimProblem('lsqcurvefit',...
             'x0',fittedParams, ...
