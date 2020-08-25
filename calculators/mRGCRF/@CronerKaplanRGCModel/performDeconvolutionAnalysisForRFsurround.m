@@ -1,5 +1,5 @@
 function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, centerDeconvolutionStruct, ...
-    conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
+    examinedConesNumInRFCenter, conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
             quadrantName, subjectID, patchEccRadiusDegs)
     
     % Interpolate PSF by a factor of 2
@@ -44,9 +44,11 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
     deconvolutionStruct.data = containers.Map();
     
     keyNames = keys(centerDeconvolutionStruct.data);
-    for poolingSchemeIndex = 1:numel(keyNames)
+    for poolingSchemeIndex = 1:numel(examinedConesNumInRFCenter)
         % Get pooling scheme name
-        poolingSchemeName = keyNames{poolingSchemeIndex};
+        poolingSchemeName = sprintf('%d-coneInput',examinedConesNumInRFCenter(poolingSchemeIndex));
+        assert(ismember(poolingSchemeName, keyNames), ...
+            sprintf('''%s'' is not a key in the centerDeconvolutionStruct.data container.', poolingSchemeName));
         
         % Visual RF center characteristic radius for this RF center pooling scheme (1-30 cones)
         centerVisualCharacteristicRadius = ...
@@ -64,8 +66,11 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
         
         fittedPeakSensitivity = zeros(1, numel(nominalSurroundRetinalCharacteristicRadiiDegs));
         fittedCharacteristicRadiusDegs = zeros(1, numel(nominalSurroundRetinalCharacteristicRadiiDegs));
-        
+         
         parfor surroundSizeVariationIndex = 1:numel(nominalSurroundRetinalCharacteristicRadiiDegs)
+            
+            fprintf('Computing surround size variation %d/%d\n',surroundSizeVariationIndex, numel(nominalSurroundRetinalCharacteristicRadiiDegs));
+        
             surroundRetinalCharacteristicRadius = nominalSurroundRetinalCharacteristicRadiiDegs(surroundSizeVariationIndex);
         
             % compute cone weights with a Gaussian falloff
@@ -118,8 +123,8 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
                     surroundRetinalCharacteristicRadius, fittedCharacteristicRadiusDegs(surroundSizeVariationIndex), ...
                     exportFig);
             end
-        end  % surroundSizeVariationIndex
-        fprintf('Finished with %s scheme (%d/%d) at ecc of %2.1f degs\n', poolingSchemeName, poolingSchemeIndex, numel(keyNames), patchEccRadiusDegs);
+        end  % parfor surroundSizeVariationIndex
+        fprintf('Finished with all surround variations for %s scheme (%d/%d) at ecc of %2.1f degs\n', poolingSchemeName, poolingSchemeIndex, numel(examinedConesNumInRFCenter), patchEccRadiusDegs);
         
         % Log data in
         deconvolutionStruct.data(poolingSchemeName) = struct(...
