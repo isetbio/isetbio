@@ -1,5 +1,5 @@
 function theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMosaicMetaData, mRGCmosaicFile, mosaicParams, ...
-    deconvolutionOpticsParams, visualizePatchDeconvolutionModel, outputFile, exportsDir)
+    deconvolutionOpticsParams, visualizeSynthesizedParams, outputFile, exportsDir)
     
     % STEP 1. Retrieve regular hex cone mosaic metadata
     coneMosaicEccDegs = theConeMosaicMetaData.coneMosaicEccDegs;
@@ -31,13 +31,13 @@ function theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMos
                 outputFile,exportsDir);
     end
     
-    % STEP 3. Determine weighted connection to center/surround regions
+    % STEP 3. Compute weighted connections to center/surround regions
     [midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
      synthesizedRFParams] = computeWeightedConeInputsToRGCCenterSurroundSubregions(...
             conePositionsMicrons,  coneTypes, ...
             midgetRGCconnectionMatrix, ...
             mosaicParams.rgcMosaicPatchEccMicrons, mosaicParams.rgcMosaicPatchSizeMicrons, ...
-            deconvolutionOpticsParams, visualizePatchDeconvolutionModel, exportsDir);
+            deconvolutionOpticsParams, visualizeSynthesizedParams, exportsDir);
         
     % Visualize ALL (EXCLUSIVE+SHARED) connections to the RF centers.
     % The Shared cone connections are guided by weigthed connections, which

@@ -97,8 +97,8 @@ function MosaicConnector
         'zLevels', [0.3 1], ...                                     // contour levels
         'whichLevelsToContour', [1], ...                            // Which level to plot the isoresponse contour
         'displayEllipseInsteadOfContour', ~true, ...                // Ellipse fitted to the sum of flat-top gaussians
-        'patchEccMicrons', [4800 0]/16*0, ...                           // Eccenticity of visualized patch
-        'patchSizeMicrons', [100 50]*1.5, ...                         // Size of visualized patch
+        'patchEccMicrons', [1500 0]*3,... % [4800 0]/16*0, ...                           // Eccenticity of visualized patch
+        'patchSizeMicrons', [100 50]*7, ...                         // Size of visualized patch
         'outputFile', sprintf('%s__Visualization', connector('phase4').outputFile),...
         'exportsDir', exportsDir, ...
         'outputDir', tmpDir ...
@@ -143,7 +143,7 @@ function MosaicConnector
         'run', wirePartOfMRGCMosaicToConeMosaicPatch, ...
         'runFunction', @runPhaseX, ...
         'inputFile', connector('phase1').outputFile, ...
-        'rgcMosaicPatchEccMicrons', [0 0], ... %[3000 0], ... %[600 0],
+        'rgcMosaicPatchEccMicrons', [300 0], ... %[3000 0], ... %[600 0],
         'rgcMosaicPatchSizeMicrons', 50*[1 1], ... %[200 200], ... %[75 75], 
         'orphanRGCpolicy', 'steal input', ...                  // How to deal with RGCs that have no input
         'maximizeConeSpecificity', 100, ...                    // percent of RGCs for which to attempt cone specific wiring to the RF center

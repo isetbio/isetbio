@@ -1,6 +1,6 @@
 function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
     mosaicsAndOpticsForEccentricity(runParams, recomputeConeMosaic, recomputeRGCmosaic, recomputeOptics, saveDir, ...
-    visualizeCronerKaplanDeconvolutionModel)
+    visualizeSynthesizedParams)
 
     % Params for the connected mRGC mosaic
     mosaicParams.rgcMosaicPatchEccMicrons = runParams.rgcMosaicPatchEccMicrons;
@@ -40,7 +40,7 @@ function [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSub
 
             % Generate connected mRGC mosaic patch
             theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMosaicMetaData, mRGCmosaicFile, mosaicParams, ...
-                 runParams.deconvolutionOpticsParams, visualizeCronerKaplanDeconvolutionModel, runParams.outputFile, runParams.exportsDir);
+                 runParams.deconvolutionOpticsParams, visualizeSynthesizedParams, runParams.outputFile, runParams.exportsDir);
         else
             theMidgetRGCmosaic = [];
         end

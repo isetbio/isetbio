@@ -76,6 +76,8 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
                 error('UNknown presynaptic signal: ''%s''.', presynapticSignal)
         end
         
+
+        
         % Compute the center and the surround responses
         fprintf('\nComputing RGC responses ...');
         tic
@@ -105,7 +107,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     % Integrated response instance modulations (deviation from background response)
     integratedNullStimulusMeanResponse = centerNullStimulusMeanResponse - surroundNullStimulusMeanResponse;
     
-    coneIsomerizationsDeltaPerSpikePerSecond = 600*1000.0;  % so many R*/sec lead to an RGC response of 1 spikes/sec above baseline
+    coneIsomerizationsDeltaPerSpikePerSecond = 30*1000.0;  % net R*/sec lead to an RGC response of 1 spikes/sec above baseline
     responseTimeBin = responseTimeAxis(2)-responseTimeAxis(1);
     
     % Integrated responses in spikes/sec
@@ -137,7 +139,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     end
     
     maxSpikeRateModulation = 200;
-    maxSpikeRateModulationForComponents = 500;
+    maxSpikeRateModulationForComponents = 50;
     
     % Visualize the center and surround response components for the targeted RGCs
     if (visualizeResponseComponents)
@@ -152,9 +154,12 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     
     % Fit the DoG model to all SF tuning curves
     exportFig = true;
-    [patchDogParams, responseAmplitude, spatialFrequenciesCPDHR, responseAmplitudeHR, responseTimeAxisHR, fittedResponsesHR] = ...
-        computeAndFitDOGmodelToSpatialFrequencyTuningCurves(responseTimeAxis, integratedResponsesMean, integratedResponsesStDev,...
-        maxSpikeRateModulation, stimSpatialParams, stimTemporalParams, spatialFrequenciesCPD, visualizeAllSpatialFrequencyTuningCurves, ...
+    [patchDogParams, responseAmplitude, spatialFrequenciesCPDHR, ...
+     responseAmplitudeHR, responseTimeAxisHR, fittedResponsesHR] = computeAndFitDOGmodelToSpatialFrequencyTuningCurves(responseTimeAxis, ...
+        integratedResponsesMean, integratedResponsesStDev,...
+        maxSpikeRateModulation, stimSpatialParams, stimTemporalParams, ...
+        spatialFrequenciesCPD, visualizeAllSpatialFrequencyTuningCurves, ...
+        targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, ...
         LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir, ...
         'synthParams', theMidgetRGCmosaic.synthesizedRFParams.visual);
     
@@ -202,7 +207,7 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
     tauC = 25/1000;
     surroundIR = exp(-t/tauC);
     surroundIR = surroundIR/sum(surroundIR);
-    
+
     for instanceIndex = 1:instancesNum
         % All presynaptic spatiotemporal responses for this instance
         instancePresynapticResponse = squeeze(presynapticResponses(instanceIndex,:,:));

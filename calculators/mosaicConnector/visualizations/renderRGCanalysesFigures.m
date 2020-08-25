@@ -9,8 +9,10 @@ function renderRGCanalysesFigures(patchDogParams, spatialFrequenciesCPDHR, respo
         % Visualize data to contrast with Cronner and Kaplan data
         RGCpositionsMicrons = determineRGCPositionsFromCenterInputs(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, theMidgetRGCmosaic.centerWeights);
         RGCeccentricityDegs = WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCpositionsMicrons.^2,2))/1000.0);
-        visualizePatchStatsDerivedFromSFcurves(patchDogParams, theMidgetRGCmosaic.synthesizedRFParams, RGCeccentricityDegs, ...
-            LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
+        
+        visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCeccentricityDegs, ...
+            LMScontrast, opticsPostFix, PolansSubjectID, figExportsDir);
+        
     end
     
     labelCells = true;
@@ -68,3 +70,55 @@ function renderRGCanalysesFigures(patchDogParams, spatialFrequenciesCPDHR, respo
         end
     end
 end
+
+function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, patchRGCeccentricityDegs, ...
+        LMScontrast, opticsPostFix, PolansSubjectID, figExportsDir)
+    
+    % Preallocate memory
+    rgcsNum = numel(patchDogModelParams);
+    centerCharacteristicRadii = zeros(1, rgcsNum);
+    surroundCharacteristicRadii = zeros(1, rgcsNum);
+    centerPeakSensitivities = zeros(1, rgcsNum);
+    surroundPeakSensitivities = zeros(1, rgcsNum);
+    
+    % Extract params from the fitted model
+    for iRGC = 1:rgcsNum
+        p = patchDogModelParams{iRGC};
+        centerCharacteristicRadii(iRGC) = p.rC;
+        surroundCharacteristicRadii(iRGC) = p.rS;
+        centerPeakSensitivities(iRGC) = p.kC;
+        surroundPeakSensitivities(iRGC) = p.kS;
+    end
+
+    plotlabOBJ = setupPlotLab(0, 18,10);
+    
+    visualizeRFparamsForConnectedPatch(555, 'ResponseDerivedParams', ...
+        patchRGCeccentricityDegs, ...
+        centerCharacteristicRadii, surroundCharacteristicRadii, ...
+        centerPeakSensitivities, surroundPeakSensitivities, ...
+        sprintf('ResponseDerivedParams_LMS_%0.2f_%0.2f_%0.2f_PolansSID_%d_%s', ...
+            LMScontrast(1), LMScontrast(2), LMScontrast(3), PolansSubjectID, opticsPostFix), ...
+        figExportsDir, plotlabOBJ);
+
+    setupPlotLab(-1);
+end
+
+
+function plotlabOBJ = setupPlotLab(mode, figWidthInches, figHeightInches)
+    if (mode == 0)
+        plotlabOBJ = plotlab();
+        plotlabOBJ.applyRecipe(...
+                'colorOrder', [1 0 0; 0 0 1], ...
+                'axesBox', 'off', ...
+                'axesTickDir', 'in', ...
+                'renderer', 'painters', ...
+                'lineMarkerSize', 8, ...
+                'axesTickLength', [0.01 0.01], ...
+                'legendLocation', 'SouthWest', ...
+                'figureWidthInches', figWidthInches, ...
+                'figureHeightInches', figHeightInches);
+    else
+        pause(2.0);
+        plotlab.resetAllDefaults();
+    end
+end 
