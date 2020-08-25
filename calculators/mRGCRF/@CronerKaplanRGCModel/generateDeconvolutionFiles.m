@@ -1,4 +1,4 @@
-function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin)
+function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, subregion, varargin)
 
     % Parse input
     p = inputParser;
@@ -17,16 +17,17 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin)
     pupilDiamMM = 3.0;
     
     deconvolutionEccentricities = obj.deconvolutionEccs;
-    
     parfor eccIndex = 1:numel(deconvolutionEccentricities)
-    % for eccIndex = 1:numel(deconvolutionEccentricities)
+        
         patchEccRadiusDegs = -deconvolutionEccentricities(eccIndex);
         
-%         generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
-%             deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
-        
-        generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
-            deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
+        if (strcmp(subregion, 'center'))
+            generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
+                deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
+        else
+            generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
+                deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
+        end
     end
     
 end

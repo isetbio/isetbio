@@ -123,7 +123,7 @@ classdef CronerKaplanRGCModel < handle
         simulateCronerKaplanResults(obj, varargin);
         
         % Generate the Gaussian-PSF deconvolution analysis data files
-        generateDeconvolutionFiles(obj, deconvolutionOpticsParams, varargin);
+        generateDeconvolutionFiles(obj, deconvolutionOpticsParams, subregion, varargin);
 
         % Perform the Gaussian-PSF deconvolution analysis for the RF center
         deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, conesNumInRFcenterExamined, ...
