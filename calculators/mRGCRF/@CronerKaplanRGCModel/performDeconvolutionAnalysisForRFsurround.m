@@ -3,7 +3,7 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
             quadrantName, subjectID, patchEccRadiusDegs)
     
     % Interpolate PSF by a factor of 2
-    upsampleFactor = 2;  % 3 for the center
+    upsampleFactor = 1;  % 3 for the center
     % Zero pad with a 0.3 degs margin on each size
     if (abs(patchEccRadiusDegs) > 15)
         paddingMarginDegs = 1.6;           % --> 2.0 degs padding: CHECK IF OK up to 20 cones @ 20 degs of ecc
@@ -58,14 +58,14 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
         
         % Examine a number of retinal RF surround characteristic radii that
         % vary from [0.25 - 2] x visualRF surround
-        surroundSizeVariations = (1:0.2:2);
+        surroundSizeVariations = (1:0.25:2);
         surroundSizeVariations = [1./fliplr(surroundSizeVariations) surroundSizeVariations(2:end)];
         nominalSurroundRetinalCharacteristicRadiiDegs = targetSurroundVisualCharacteristicRadiusDegs * surroundSizeVariations;
         
         fittedPeakSensitivity = zeros(1, numel(nominalSurroundRetinalCharacteristicRadiiDegs));
         fittedCharacteristicRadiusDegs = zeros(1, numel(nominalSurroundRetinalCharacteristicRadiiDegs));
         
-        for surroundSizeVariationIndex = 1:numel(nominalSurroundRetinalCharacteristicRadiiDegs)
+        parfor surroundSizeVariationIndex = 1:numel(nominalSurroundRetinalCharacteristicRadiiDegs)
             surroundRetinalCharacteristicRadius = nominalSurroundRetinalCharacteristicRadiiDegs(surroundSizeVariationIndex);
         
             % compute cone weights with a Gaussian falloff
@@ -86,6 +86,7 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
                 deltaX, minCharacteristicRadiusDegs, [0 0]);
     
             % Compute fitted Gaussian
+            xyData = zeros(numel(thePSFsupportDegsHRXgrid),2);
             xyData(:,1) = thePSFsupportDegsHRXgrid(:);
             xyData(:,2) = thePSFsupportDegsHRYgrid(:);
             N = numel(thePSFsupportDegsHR);
@@ -118,7 +119,7 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
                     exportFig);
             end
         end  % surroundSizeVariationIndex
-        pause
+        fprintf('Finished with %s scheme (%d/%d) at ecc of %2.1f degs\n', poolingSchemeName, poolingSchemeIndex, numel(keyNames), patchEccRadiusDegs);
         
         % Log data in
         deconvolutionStruct.data(poolingSchemeName) = struct(...

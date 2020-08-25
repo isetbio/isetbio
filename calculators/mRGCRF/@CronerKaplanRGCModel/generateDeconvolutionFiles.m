@@ -17,14 +17,18 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, subregion, v
     pupilDiamMM = 3.0;
     
     deconvolutionEccentricities = obj.deconvolutionEccs;
-    parfor eccIndex = 1:numel(deconvolutionEccentricities)
-        
-        patchEccRadiusDegs = -deconvolutionEccentricities(eccIndex);
-        
-        if (strcmp(subregion, 'center'))
+    
+    if (strcmp(subregion, 'center'))
+        % Parfor on the eccentricities
+        parfor eccIndex = 1:numel(deconvolutionEccentricities)
+            patchEccRadiusDegs = -deconvolutionEccentricities(eccIndex);
             generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
                 deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
-        else
+        end
+    else
+        % No parfor on the eccentricities. Parfor is called within generateDeconvolutionFilesForTheSurround
+        for eccIndex = 1:numel(deconvolutionEccentricities)
+            patchEccRadiusDegs = -deconvolutionEccentricities(eccIndex);
             generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
                 deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
         end
