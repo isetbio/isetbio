@@ -35,66 +35,39 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % Memory allocation
     rgcsNum = size(rfCenterPositionMicrons,1);
     centerVisualCharacteristicRadiiDegs = zeros(rgcsNum,1);
-    centerRetinalCharacteristicRadiiDegs = zeros(rgcsNum,1);
-    centerVisualGainSensitivity = zeros(rgcsNum,1);
-    centerRetinalGainSensitivity = zeros(rgcsNum,1);
-    correctionFactors = zeros(rgcsNum,1);
+    centerVisualPeakSensitivityAttenuation = zeros(rgcsNum,1);
     
     % Use the deconvolutionModel.center to determine the center's VISUAL characteristic radius
     % based on the number of input cones to this cells' RF center, and also
-    % the center's visual and retinal gain attenuation factors
+    % the center's visual peak sensitivity attenuation factor
     tabulatedRFcenterConeInputsNum = squeeze(deconvolutionModel.center.centerConeInputsNum(1,:));
-
     
-    parfor RGCindex = 1:rgcsNum
+    %parfor RGCindex = 1:rgcsNum
+    for RGCindex = 1:rgcsNum
         neighboringEccIndices = interpolationEccIndices(RGCindex,:);
         coneInputsIndex = find(tabulatedRFcenterConeInputsNum == rfCenterInputConesNum(RGCindex));
+        assert(~isempty(coneInputsIndex), 'Center subregion deconvolution data for %d cone inputs in the center have not been computed.', rfCenterInputConesNum(RGCindex));
         
-        % Weighted (according to the neighboring eccentricities) radiusMin and radiusMax
-        visualRadiusMin = sum((deconvolutionModel.center.visualCharacteristicRadiusMin(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
-        visualRadiusMax = sum((deconvolutionModel.center.visualCharacteristicRadiusMax(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
-        retinalRadiusMin = sum((deconvolutionModel.center.retinalCharacteristicRadiusMin(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
-        retinalRadiusMax = sum((deconvolutionModel.center.retinalCharacteristicRadiusMax(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
+        characteristicRadiusDegsAtNeihboringEccs = deconvolutionModel.center.characteristicRadiusDegs(neighboringEccIndices,coneInputsIndex);
+        peakSensitivitiesAtNeihboringEccs = deconvolutionModel.center.peakSensitivity(neighboringEccIndices,coneInputsIndex);
+        weightsOfNeighboringEccs = interpolationEccWeights(RGCindex,:);
         
-        % Mean VISUAL characteristic radius of the center
-        centerVisualCharacteristicRadiiDegs(RGCindex) = mean([visualRadiusMin visualRadiusMax]); %visualRadiusMax; %mean([visualRadiusMin visualRadiusMax]);
-       
-        % Mean RETINAL characteristic radius of the center
-        centerRetinalCharacteristicRadiiDegs(RGCindex) = mean([retinalRadiusMin retinalRadiusMax]); % retinalRadiusMax; %mean([retinalRadiusMin retinalRadiusMax]);
-       
-        % Mean VISUAL gain sensitivity of the center
-        centerVisualGainSensitivity(RGCindex)  = sum((deconvolutionModel.center.visualGain(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
-        
-        % Mean RETINAL gain sensitivity of the center
-        centerRetinalGainSensitivity(RGCindex) = sum((deconvolutionModel.center.retinalGain(neighboringEccIndices,coneInputsIndex))' .* interpolationEccWeights(RGCindex,:),2);
-        
-        % Correction factor to account for the fact that cones do not have
-        % Gaussian sensitivity profile, but a cylindrical one.
-        correctionFactors(RGCindex) = 1 + (deconvolutionModel.correctionFactorForDifferenceBetweenFlatopAndGaussianArea-1) * 1.0/sqrt(rfCenterInputConesNum(RGCindex));
+        centerVisualCharacteristicRadiiDegs(RGCindex) = sum(characteristicRadiusDegsAtNeihboringEccs' .* weightsOfNeighboringEccs,2);
+        centerVisualPeakSensitivityAttenuation(RGCindex) = sum(peakSensitivitiesAtNeihboringEccs' .* weightsOfNeighboringEccs,2);
     end
-    correctionFactors
-    centerVisualCharacteristicRadiiDegs = centerVisualCharacteristicRadiiDegs .* correctionFactors;
-    
+
     % Use the Croner&Kaplan model centerPeakSensitivityFunction() to
     % compute the center VISUAL peak sensitivity from the center's VISUAL
-    % characteristic radius computed previously
+    % characteristic radius 
     centerVisualPeakSensitivities = obj.centerPeakSensitivityFunction(obj.centerPeakSensitivityParams, centerVisualCharacteristicRadiiDegs);
 
+    % Compute peak sensitivity boosting factor based on the results of deconvolution
+    centerPeakSensitivityBoostingFactor = (1 ./ centerVisualPeakSensitivityAttenuation);
     
-    % Compute peak sensitivity boosting factor. This is determined from
-    % fitting flat-top Gaussians to the retinal and visual cone activation
-    % maps (see CronerKaplanRGCModel.performDeconvolutionAnalysisForRFcenter()).
-    % Basically we are boosting the center peak sensitivity by the inverse
-    % of the centerVisualGain (which is attenuated due to optical blurring)
-    % NOTE. We also multiply by the centerRetinalGain to take into effect any
-    % artifacts introduced by the fitting. But maybe we shouldnt be doing
-    % this.
-    centerPeakSensitivityBoostingFactor = (1 ./ centerVisualGainSensitivity); % .* centerRetinalGainSensitivity;
-    
-    % Multiply with the corresponding boosting factors 
+    % Multiply the visual peak sensitivity with the peak sensitivity boosting factor
+    % to obtain the equivalent retinal peak sensitivity 
     centerRetinalPeakSensitivities = centerVisualPeakSensitivities .* centerPeakSensitivityBoostingFactor;
     
-
     % Having determined the center VISUAL characteristic radius, we use the Croner&Kaplan model center-to-surround ratio function to
     % compute the surround VISUAL characteristic radius 
     surroundVisualCharacteristicRadiiDegs = CronerKaplanRGCModel.surroundRadiusFromCenterRadiusDegs(centerVisualCharacteristicRadiiDegs);
@@ -106,11 +79,11 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         centerVisualPeakSensitivities ./ ...
         ((surroundVisualCharacteristicRadiiDegs./centerVisualCharacteristicRadiiDegs).^2);
     
+
     % In the final step, we compute the surround RETINAL characteristic radius and peak sensitivity 
     % using the deconvolutionModel.surround
     
     surroundRetinalCharacteristicRadiiDegs = zeros(rgcsNum,1);
-    surroundRetinalGainSensitivity = zeros(rgcsNum,1);
     surroundVisualGainSensitivity = zeros(rgcsNum,1);
     
     for RGCindex = 1:rgcsNum
@@ -119,46 +92,34 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         
         retinalCharacteristicRadiusEstimates = zeros(1,2);
         visualGainSensitivities = zeros(1,2);
-        retinalGainSensitivities = zeros(1,2);
         
         for k = 1:numel(neighboringEccIndices)
             % determine interpolation weights for 2 closest surround characteristic radii
-            examinedVisualCharacteristicRadii = squeeze(deconvolutionModel.surround.visualCharacteristicRadius(neighboringEccIndices(k),coneInputsIndex,:));
+            nonNanIndices = find(~isnan(squeeze(deconvolutionModel.surround.characteristicRadiusDegs(neighboringEccIndices(k),coneInputsIndex,:))));
+            
+            examinedVisualCharacteristicRadii = squeeze(deconvolutionModel.surround.characteristicRadiusDegs(neighboringEccIndices(k),coneInputsIndex,nonNanIndices));
             [interpolationSurroundRadiiIndices, interpolationSurroundRadiiWeights] = computeInterpolationIndices(...
                 'surround', 'radii', examinedVisualCharacteristicRadii, surroundVisualCharacteristicRadiiDegs(RGCindex));
             
             examinedRetinalCharacteristicRadii = ...
-                squeeze(deconvolutionModel.surround.retinalCharacteristicRadius(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices));
+                squeeze(deconvolutionModel.surround.nominalSurroundRetinalCharacteristicRadii(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices));
             retinalCharacteristicRadiusEstimates(1,k) = sum(examinedRetinalCharacteristicRadii' .* interpolationSurroundRadiiWeights,2);
             
-            examinedVisualGainSensitivities = ...
-                squeeze(deconvolutionModel.surround.visualGain(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices));
-            visualGainSensitivities(1,k) = sum(examinedVisualGainSensitivities' .* interpolationSurroundRadiiWeights,2);
-            
-            examinedRetinalGainSensitivities = ...
-                squeeze(deconvolutionModel.surround.retinalGain(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices));
-            retinalGainSensitivities(1,k) = sum(examinedRetinalGainSensitivities' .* interpolationSurroundRadiiWeights,2);
+            examinedVisualPeakSensitivities = ...
+                squeeze(deconvolutionModel.surround.peakSensitivity(neighboringEccIndices(k),coneInputsIndex,interpolationSurroundRadiiIndices));
+            visualGainSensitivities(1,k) = sum(examinedVisualPeakSensitivities' .* interpolationSurroundRadiiWeights,2);
         end
         
         % Weighted (according to the neighboring eccentricities) estimates
         surroundRetinalCharacteristicRadiiDegs(RGCindex) = sum(retinalCharacteristicRadiusEstimates .* interpolationEccWeights(RGCindex,:),2);
-        surroundRetinalGainSensitivity(RGCindex) = sum(retinalGainSensitivities .* interpolationEccWeights(RGCindex,:),2);
         surroundVisualGainSensitivity(RGCindex) = sum(visualGainSensitivities .* interpolationEccWeights(RGCindex,:),2); 
     end
     
-    
-    % Compute peak sensitivity boosting factor. This is determined from
-    % fitting flat-top Gaussians to the retinal and visual cone activation
-    % maps (see CronerKaplanRGCModel.performDeconvolutionAnalysisForRFsurround()).
-    % Basically we are boosting the center peak sensitivity by the inverse
-    % of the centerVisualGain (which is attenuated due to optical blurring)
-    % NOTE. We also multiply by the centerRetinalGain to take into effect any
-    % artifacts introduced by the fitting. But maybe we shouldnt be doing
-    % this.
-    surroundPeakSensitivityBoostingFactor = (1 ./ surroundVisualGainSensitivity);% .* surroundRetinalGainSensitivity;
+    % Compute peak sensitivity boosting factor based on the results of deconvolution
+    surroundPeakSensitivityBoostingFactor = (1 ./ surroundVisualGainSensitivity);
 
-    
-    % Multiply with the corresponding boosting factors 
+    % Multiply the visual peak sensitivity with the peak sensitivity boosting factor
+    % to obtain the equivalent retinal peak sensitivity 
     surroundRetinalPeakSensitivities = surroundVisualPeakSensitivities .* surroundPeakSensitivityBoostingFactor;
     
     % Compute surround radius in retinal microns
@@ -173,14 +134,14 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
             'centerPeakSensitivities', centerVisualPeakSensitivities,...            
             'surroundPeakSensitivities', surroundVisualPeakSensitivities...          
             ), ...
-         'retinal', struct(...                                                      % RETINAL RF properties
-             'centerCharacteristicRadiiDegs', centerRetinalCharacteristicRadiiDegs, ...          
+         'retinal', struct(...                                                      % RETINAL RF properties  
+             'centerCharacteristicRadiiDegs', nan(size(surroundRetinalCharacteristicRadiiDegs)), ...  % there is no retinal center characteristic radius
              'surroundCharacteristicRadiiDegs', surroundRetinalCharacteristicRadiiDegs, ...          
              'surroundCharacteristicRadiiMicrons', surroundRetinalCharacteristicRadiiMicrons, ...
              'centerPeakSensitivities', centerRetinalPeakSensitivities,... 
              'surroundPeakSensitivities', surroundRetinalPeakSensitivities... 
             )...
-         ); 
+         );
 end
 
 function  [interpolationEccIndices, interpolationWeights] = computeInterpolationIndices(...
@@ -200,7 +161,7 @@ function  [interpolationEccIndices, interpolationWeights] = computeInterpolation
         idxPos = find(tabulatedValues >= theRGCeccentricityDegs);
         if (isempty(idxPos))
             fprintf(2,'Deconvolution data for %s do not extend up to %2.3f %s. Max value: %2.3f.\n', ...
-                subregionName, domainName, targetValues(targetIndex), max(tabulatedValues));
+                subregionName,  targetValues(targetIndex), domainName, max(tabulatedValues));
             idxPos = length(tabulatedValues);
         end
         
@@ -208,7 +169,7 @@ function  [interpolationEccIndices, interpolationWeights] = computeInterpolation
         idxNeg = find(tabulatedValues <= theRGCeccentricityDegs);
         if (isempty(idxNeg))
             fprintf(2,'Deconvolution data for %s  do not extend down to %2.3f %s. Min value: %2.3f.\n', ...
-                subregionName, domainName, targetValues(targetIndex), min(tabulatedValues));
+                subregionName, targetValues(targetIndex), domainName, min(tabulatedValues));
             idxNeg = 1;
         end
         

@@ -77,7 +77,7 @@ classdef CronerKaplanRGCModel < handle
         function obj = CronerKaplanRGCModel(varargin) 
             % Eccentricities for which we have generated deconvolution data files
             % (via generateDeconvolutionFilesForMidgetRGCs() )
-            validDeconvolutionEccs = [0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
+            validDeconvolutionEccs = [1]; [0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
             
             % Parse input
             p = inputParser;
@@ -121,6 +121,10 @@ classdef CronerKaplanRGCModel < handle
         
         % Method to simulate the Croner&Kaplan results
         simulateCronerKaplanResults(obj, varargin);
+        
+        % Assemble deconvolution file name
+        dataFileName = deconvolutionDataFileName(obj, patchEccRadiusDegs, ...
+            imposedRefractionErrorDiopters, subregionName);
         
         % Generate the Gaussian-PSF deconvolution analysis data files
         generateDeconvolutionFiles(obj, deconvolutionOpticsParams, subregion, varargin);

@@ -233,8 +233,9 @@ function [matchingGaussian, peakSensitivity, centerPixelCoord] = generateMatchin
        thePSFsupportDegsHR, matchingCharacteristicRadiusDegs, thePSFsupportDegsHR(centerPixelCoord));
    
    % Make the aread of the Gaussian equal to the area of visualConeImage
-   peakSensitivity = sum(visualConeImage(:));
-   matchingGaussian = peakSensitivity * squeeze(matchingGaussian(1,:,:));
+   gain = sum(visualConeImage(:));
+   matchingGaussian = gain * squeeze(matchingGaussian(1,:,:));
+   peakSensitivity = max(matchingGaussian(:));
 end
         
 

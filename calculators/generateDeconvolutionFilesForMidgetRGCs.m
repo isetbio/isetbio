@@ -41,6 +41,7 @@ function generateDeconvolutionFilesForMidgetRGCs(varargin)
         'synthesizeDemoRFparams', false);
 
 
+   
    % Generate CENTER deconvolution data for subject 4 optics and the default ecc
      range (i.e., [0 0.1 0.2 0.3 0.4 0.5 0.7 1 1.5 2 2.5 3:20]) and for
      RF centers containing between 1 and 20 cones, skipping visualization.
@@ -48,6 +49,18 @@ function generateDeconvolutionFilesForMidgetRGCs(varargin)
    generateDeconvolutionFilesForMidgetRGCs('PolansSubjectID', 4, ...
         'subregion', 'center', ...
         'examinedConesNumInRFCenter', 1:20, 'generateNewDeconvolutionFiles', true, ...
+        'visualizeFits', ~true, 'exportFig', ~true, ...
+        'visualizeDeconvolutionModel', false, ...
+        'synthesizeDemoRFparams', false);
+
+
+    % Generate CENTER deconvolution data for subject 4 optics for ecc of 1 deg and for
+     RF centers containing between 1 and 3 cones, skipping visualization.
+
+   generateDeconvolutionFilesForMidgetRGCs('PolansSubjectID', 4, ...
+        'subregion', 'center', ...
+        'eccTested', [1], ...
+        'examinedConesNumInRFCenter', 1:3, 'generateNewDeconvolutionFiles', true, ...
         'visualizeFits', ~true, 'exportFig', ~true, ...
         'visualizeDeconvolutionModel', false, ...
         'synthesizeDemoRFparams', false);
@@ -80,6 +93,17 @@ function generateDeconvolutionFilesForMidgetRGCs(varargin)
         'visualizeFits', ~true, 'exportFig', ~true, ...
         'visualizeDeconvolutionModel', false, ...
         'synthesizeDemoRFparams', false);
+
+
+    % Visualize the deconcolution model
+    generateDeconvolutionFilesForMidgetRGCs('PolansSubjectID', 4, ...
+        'quadrantsToCompute', {'horizontal'}, ...
+        'visualizeDeconvolutionModel', true);
+
+    % Synthesize some RFs 
+    generateDeconvolutionFilesForMidgetRGCs('PolansSubjectID', 4, ...
+        'quadrantsToCompute', {'horizontal'}, ...
+        'synthesizeDemoRFparams', true);
 
 %}
 
@@ -167,8 +191,8 @@ function synthesizeRFparams(deconvolutionOpticsParams)
     conesInRFCenter = 1;
     rfCenterInputConesNum = ones(1, rgcsNum)*conesInRFCenter; 
     
-    minEccDegs = 0.01;
-    maxEccDegs = 5.0;
+    minEccDegs = 0.7;
+    maxEccDegs = 1.2;
     minEccMicrons = WatsonRGCModel.rhoDegsToMMs(minEccDegs)*1e3;
     maxEccMicrons = WatsonRGCModel.rhoDegsToMMs(maxEccDegs)*1e3;
     
@@ -178,7 +202,7 @@ function synthesizeRFparams(deconvolutionOpticsParams)
     
     % Synthesize params
     synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(...
-        rfCenterInputConesNum, rfCenterPositionMicrons, deconvolutionOpticsParams);
+        rfCenterInputConesNum, rfCenterPositionMicrons, deconvolutionOpticsParams)
     
     % Plot synthesized params
     figNo = 3;
@@ -192,8 +216,11 @@ end
 function plotSynthesizedParams(figNo, rfEccRadiusDegs, synthesizedRFParams, domain)
     figure(figNo); clf;
     subplot(2,2,1);
+    % We do not compute a retinal characteristic radius for the center
     plot(rfEccRadiusDegs,  synthesizedRFParams.centerCharacteristicRadiiDegs, ...
-        'o-', 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]); hold on;
+            'o-', 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]); hold on;
+
+    
     plot(rfEccRadiusDegs,  synthesizedRFParams.surroundCharacteristicRadiiDegs, ...
         'o-', 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1]);
     set(gca, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100]);
@@ -210,7 +237,8 @@ function plotSynthesizedParams(figNo, rfEccRadiusDegs, synthesizedRFParams, doma
         'o-', 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1]);
     set(gca, 'YScale', 'log', 'YLim', [0.003 3000], 'YTick', [0.003 0.01 0.03 0.1 0.3 1 3 10 30 100 300 1000 3000]);
     ylabel('peak sensitivity');
-    
+
+
     yyaxis 'right'
     plot(synthesizedRFParams.centerCharacteristicRadiiDegs, ...
         synthesizedRFParams.surroundPeakSensitivities ./ synthesizedRFParams.centerPeakSensitivities, '--');
@@ -218,8 +246,10 @@ function plotSynthesizedParams(figNo, rfEccRadiusDegs, synthesizedRFParams, doma
     set(gca, 'XScale', 'log', 'XLim', [0.003 3], 'XTick', [0.003 0.01 0.03 0.1 0.3 1 3]);
     axis 'square';
     ylabel(sprintf('%s surround:center peak sensitivity', domain));
+
     
     
+    % We do not compute a retinal characteristic radius for the center
     subplot(2,2,3);
     plot(rfEccRadiusDegs, synthesizedRFParams.centerCharacteristicRadiiDegs ./ synthesizedRFParams.surroundCharacteristicRadiiDegs, 'ko-');
     set(gca, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100]);
@@ -235,4 +265,5 @@ function plotSynthesizedParams(figNo, rfEccRadiusDegs, synthesizedRFParams, doma
     set(gca, 'YLim', [0 1], 'YTick', 0:0.1:1);
     xlabel('ecc (degs)');
     ylabel(sprintf('%s surround/center integrated sensitivity ratio', domain));
+    
 end
