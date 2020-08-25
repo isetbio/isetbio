@@ -1,11 +1,6 @@
 function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, conesNumInRFcenterTested, ...
-    conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
+    sensitivityRangeOverWhichToMatchSFtuning, conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
     quadrantName, subjectID, patchEccRadiusDegs)
-    
-    % Amplitude spectrum range over which to match the perfect Gaussian and
-    % the visual cone image SF tuning
-    % Match SF tuning for sensitivities from 50% down to 5% (since the SF tuning is low pass, this means the high spatial frequency regime)
-    sensitivityRangeOverWhichToMatchSFtuning = [0.9 0.05];
     
     % Flag indicating whether to overlay the derived matching Gaussian
     % profile on the retinal and visual cone images

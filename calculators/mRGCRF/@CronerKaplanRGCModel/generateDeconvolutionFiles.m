@@ -3,6 +3,7 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, subregion, v
     % Parse input
     p = inputParser;
     p.addParameter('examinedConesNumInRFCenter', 1:30);
+    p.addParameter('sensitivityRangeOverWhichToMatchSFtuning', [0.9 0.05]);
     p.addParameter('visualizeFits', false);
     p.addParameter('exportFig', false);
     p.parse(varargin{:});
@@ -11,6 +12,7 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, subregion, v
     obj.validateDeconvolutionOpticsParams(deconvolutionOpticsParams);
     
     examinedConesNumInRFCenter = p.Results.examinedConesNumInRFCenter;
+    sensitivityRangeOverWhichToMatchSFtuning = p.Results.sensitivityRangeOverWhichToMatchSFtuning;
     visualizeFits = p.Results.visualizeFits;
     exportFig = p.Results.exportFig;
     imposedRefractionErrorDiopters = 0;
@@ -23,7 +25,7 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, subregion, v
         parfor eccIndex = 1:numel(deconvolutionEccentricities)
             patchEccRadiusDegs = -deconvolutionEccentricities(eccIndex);
             generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
-                deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
+                sensitivityRangeOverWhichToMatchSFtuning, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig);
         end
     else
         % No parfor on the eccentricities. Parfor is called within generateDeconvolutionFilesForTheSurround
@@ -37,7 +39,7 @@ function generateDeconvolutionFiles(obj, deconvolutionOpticsParams, subregion, v
 end
 
 function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examinedConesNumInRFCenter, ...
-    deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig)
+    sensitivityRangeOverWhichToMatchSFtuning, deconvolutionOpticsParams, imposedRefractionErrorDiopters, pupilDiamMM, visualizeFits, exportFig)
     
     % Extra deconvolution optics params
     subjectIDs = deconvolutionOpticsParams.PolansWavefrontAberrationSubjectIDsToCompute;
@@ -91,7 +93,7 @@ function generateDeconvolutionFilesForTheCenter(obj, patchEccRadiusDegs, examine
             % Convolve different retinal pooling regions and compute the visually-mapped pooling region
             deconvolutionStruct{ qIndex, sIndex} = ...
                 obj.performDeconvolutionAnalysisForRFcenter(examinedConesNumInRFCenter, ...
-                conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
+                sensitivityRangeOverWhichToMatchSFtuning, conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
                 quadrants{qIndex}, PolansSubjectID, patchEccRadiusDegs);
         end % sIndex
     end % qIndex
