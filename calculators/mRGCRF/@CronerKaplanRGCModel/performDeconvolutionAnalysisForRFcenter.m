@@ -95,10 +95,13 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
         visualSpatialFrequencyTuningMajorAxis = squeeze(mean(visualSpatialFrequencyTuningsMajorAxis,1));
         visualSpatialFrequencyTuningMinorAxis = squeeze(mean(visualSpatialFrequencyTuningsMinorAxis,1));
 
+        % Match the average tuning of the minor/major axes
+        spatialFrequencyTuningToMatch = 0.5*(visualSpatialFrequencyTuningMinorAxis+visualSpatialFrequencyTuningMajorAxis);
+        
         % Determine the Gaussian whose SF tuning best matches the visualSpatialFrequencyTuningMinorAxis
         [matchingCharacteristicRadiusDegs,  matchingPeakSensitivity, ...
          matchingGaussian, matchingSFrange, ~] = determineMatchingGaussianInFrequencyDomain(characteristicRadiiDegsExamined, ...
-            GaussianSFtuningEnsemble, visualSpatialFrequencyTuningMinorAxis, spatialFrequencySupport, sensitivityRangeOverWhichToMatchSFtuning, ...
+            GaussianSFtuningEnsemble, spatialFrequencyTuningToMatch, spatialFrequencySupport, sensitivityRangeOverWhichToMatchSFtuning, ...
             thePSFsupportDegsHR, visualConeImage);
         
         if (visualizeFits)
