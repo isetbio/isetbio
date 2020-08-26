@@ -77,7 +77,7 @@ classdef CronerKaplanRGCModel < handle
         function obj = CronerKaplanRGCModel(varargin) 
             % Eccentricities for which we have generated deconvolution data files
             % (via generateDeconvolutionFilesForMidgetRGCs() )
-            validDeconvolutionEccs = [1]; [0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
+            validDeconvolutionEccs = [1 2 4]; [0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
             
             % Parse input
             p = inputParser;
@@ -200,6 +200,9 @@ classdef CronerKaplanRGCModel < handle
             micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc, varargin);
         
         data = quadrantData(allQuadrantData, quadrantsToAverage, quadrantsComputed, subjectsToAverage, subjectsComputed);
+        
+        % Print the info contained in a deconvolutionStruct
+        printDeconvolutionStruct(deconvolutionStruct);
         
         plotDeconvolutionModel(deconvolutionModel);
     end

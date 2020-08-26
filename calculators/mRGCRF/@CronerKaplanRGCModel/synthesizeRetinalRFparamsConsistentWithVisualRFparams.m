@@ -31,7 +31,6 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         'center', 'eccentricities', tabulatedEccentricityRadiiDegs, ...
         rfEccRadiusDegs);
     
-   
     % Memory allocation
     rgcsNum = size(rfCenterPositionMicrons,1);
     centerVisualCharacteristicRadiiDegs = zeros(rgcsNum,1);
@@ -42,8 +41,8 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % the center's visual peak sensitivity attenuation factor
     tabulatedRFcenterConeInputsNum = squeeze(deconvolutionModel.center.centerConeInputsNum(1,:));
     
-    %parfor RGCindex = 1:rgcsNum
-    for RGCindex = 1:rgcsNum
+    
+    parfor RGCindex = 1:rgcsNum
         neighboringEccIndices = interpolationEccIndices(RGCindex,:);
         coneInputsIndex = find(tabulatedRFcenterConeInputsNum == rfCenterInputConesNum(RGCindex));
         assert(~isempty(coneInputsIndex), 'Center subregion deconvolution data for %d cone inputs in the center have not been computed.', rfCenterInputConesNum(RGCindex));
@@ -55,7 +54,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         centerVisualCharacteristicRadiiDegs(RGCindex) = sum(characteristicRadiusDegsAtNeihboringEccs' .* weightsOfNeighboringEccs,2);
         centerVisualPeakSensitivityAttenuation(RGCindex) = sum(peakSensitivitiesAtNeihboringEccs' .* weightsOfNeighboringEccs,2);
     end
-
+    
     % Use the Croner&Kaplan model centerPeakSensitivityFunction() to
     % compute the center VISUAL peak sensitivity from the center's VISUAL
     % characteristic radius 
@@ -86,7 +85,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     surroundRetinalCharacteristicRadiiDegs = zeros(rgcsNum,1);
     surroundVisualGainSensitivity = zeros(rgcsNum,1);
     
-    for RGCindex = 1:rgcsNum
+    parfor RGCindex = 1:rgcsNum
         neighboringEccIndices = interpolationEccIndices(RGCindex,:);
         coneInputsIndex = find(tabulatedRFcenterConeInputsNum == rfCenterInputConesNum(RGCindex));
         
@@ -124,6 +123,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     
     % Compute surround radius in retinal microns
     surroundRetinalCharacteristicRadiiMicrons = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(surroundRetinalCharacteristicRadiiDegs, rfEccRadiusDegs);
+    
     
     synthesizedRFParams = struct(...
         'rfEccRadiusDegs', rfEccRadiusDegs, ...                                     % ecc of RGCs within the target patch  - DONE

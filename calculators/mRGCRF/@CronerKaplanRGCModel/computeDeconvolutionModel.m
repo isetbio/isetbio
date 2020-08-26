@@ -40,7 +40,15 @@ function deconvolutionModel = computeSurroundDeconvolutionModelForSpecificQuadra
     deconvolutionModel.subjectID = deconvolutionSubject;
     deconvolutionModel.quadrant = deconvolutionQuadrant;
     deconvolutionModel.tabulatedEccentricityRadii = obj.deconvolutionEccs;
-
+    
+    maxConeInputsNumInRFcenter = 30;
+    maxSurroundVariations = 20;
+    deconvolutionModel.centerConeInputsNum = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
+    deconvolutionModel.nominalSurroundRetinalCharacteristicRadii = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter,maxSurroundVariations);
+    deconvolutionModel.characteristicRadiusDegs = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter,maxSurroundVariations);
+    deconvolutionModel.peakSensitivity = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter,maxSurroundVariations);
+      
+        
     for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricityRadii)
 
         % Load deconvolution file for this eccentricity
@@ -57,13 +65,6 @@ function deconvolutionModel = computeSurroundDeconvolutionModelForSpecificQuadra
         % Load the data for the RFsurround
         theData = deconvolutionStruct{1,1}.data;
         theDataLabels = keys(theData);
-      
-        maxConeInputsNumInRFcenter = 30;
-        maxSurroundVariations = 20;
-        deconvolutionModel.centerConeInputsNum = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
-        deconvolutionModel.nominalSurroundRetinalCharacteristicRadii = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter,maxSurroundVariations);
-        deconvolutionModel.characteristicRadiusDegs = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter,maxSurroundVariations);
-        deconvolutionModel.peakSensitivity = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter,maxSurroundVariations);
         
         for centerConeInputConfigIndex = 1:numel(theDataLabels)
             coneInputConfig = theDataLabels{centerConeInputConfigIndex};
@@ -92,6 +93,11 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
     deconvolutionModel.quadrant = deconvolutionQuadrant;
     deconvolutionModel.tabulatedEccentricityRadii = obj.deconvolutionEccs;
     
+    maxConeInputsNumInRFcenter = 30;
+    deconvolutionModel.centerConeInputsNum = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
+    deconvolutionModel.characteristicRadiusDegs = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
+    deconvolutionModel.peakSensitivity = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
+        
     for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricityRadii)
 
         % Load deconvolution file for this eccentricity
@@ -111,12 +117,7 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
         
         theData = deconvolutionStruct{1,1}.data;
         theDataLabels = keys(theData);
-        
-        maxConeInputsNumInRFcenter = 30;
-        deconvolutionModel.centerConeInputsNum = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
-        deconvolutionModel.characteristicRadiusDegs = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
-        deconvolutionModel.peakSensitivity = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
-        
+
         for coneInputConfigIndex = 1:numel(theDataLabels)
             coneInputConfig = theDataLabels{coneInputConfigIndex};
             deconvolutionData = theData(coneInputConfig);
@@ -125,6 +126,7 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
             deconvolutionModel.centerConeInputsNum(eccIndex,coneInputsNum) = coneInputsNum;
             deconvolutionModel.characteristicRadiusDegs(eccIndex,coneInputsNum) = deconvolutionData.characteristicRadiusDegs;
             deconvolutionModel.peakSensitivity(eccIndex,coneInputsNum) = deconvolutionData.peakSensitivity;
+            
         end
         
         
