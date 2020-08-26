@@ -122,7 +122,7 @@ function generateDeconvolutionFilesForTheSurround(obj, patchEccRadiusDegs, exami
     quadrantsNum = numel(quadrants);
     
     % Load deconvolutionStruct for the center
-    dataFileName = obj.deconvolutionDataFileName(patchEccRadiusDegs, imposedRefractionErrorDiopters, 'surround');
+    dataFileName = obj.deconvolutionDataFileName(patchEccRadiusDegs, imposedRefractionErrorDiopters, 'center');
     fprintf('Loading decolvolution data from the center %s\n', dataFileName);
     load(dataFileName, 'deconvolutionStruct');  
     deconvolutionStructForTheCenter = deconvolutionStruct;

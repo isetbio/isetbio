@@ -107,7 +107,7 @@ function MosaicConnector
 
     % Phase 6: Compute cone weights to mRGC RF subregions
     deconvolutionOpticsParams = struct(...
-        'PolansWavefrontAberrationSubjectIDsToCompute', [4]);        % Deconvolution model: which subject  
+        'PolansWavefrontAberrationSubjectIDsToCompute', [10]);        % Deconvolution model: which subject  
     deconvolutionOpticsParams.quadrantsToCompute = {'horizontal'};   % Deconvolution model: which quadrant to use/average (choose one or more from {'horizontal', 'superior','inferior'}
     
     connector('phase6') = struct( ...
