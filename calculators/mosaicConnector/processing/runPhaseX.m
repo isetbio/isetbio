@@ -14,12 +14,12 @@ function runPhaseX(runParams)
     recomputeOptics = ~true;
     
     % mRGC mosaic: whether to re-generate it
-    recomputeRGCmosaic = true;
+    recomputeRGCmosaic = ~true;
     % mRGC mosaic: whether to visualize the synthesized RF params
     visualizeSynthesizedParams = true;
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = ~true;
+    recomputeConeMosaicResponses = true;
     recomputeNullResponses = ~true;
     
     % Generate the mosaics and the optics
@@ -42,6 +42,8 @@ function runPhaseX(runParams)
     maxSF = 100;
     sfsNum = 15;
     spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),sfsNum);
+    
+    spatialFrequenciesCPD = fliplr(spatialFrequenciesCPD);
     
     stimulusFOVdegs = 2.0;
     minPixelsPerCycle = 8;

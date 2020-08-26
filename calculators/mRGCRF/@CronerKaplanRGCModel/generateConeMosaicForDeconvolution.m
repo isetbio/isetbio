@@ -2,6 +2,7 @@ function [theConeMosaic, theConeMosaicMetaData] = generateConeMosaicForDeconvolu
     % Parse input
     p = inputParser;
     p.addParameter('sizeUnits', 'degrees', @(x)(ismember(x, {'microns', 'degrees'})));
+    p.addParameter('coneDensities', [0.6 0.3 0.1], @(x)((isnumeric(x))&&(numel(x)==3)));
     p.addParameter('mosaicGeometry', 'regular', @(x)(ismember(x, {'regular', 'eccVarying'})));
     p.addParameter('coneMosaicResamplingFactor', 9, @isnumeric);
     p.parse(varargin{:});
@@ -9,12 +10,13 @@ function [theConeMosaic, theConeMosaicMetaData] = generateConeMosaicForDeconvolu
     sizeUnits = p.Results.sizeUnits;
     mosaicGeometry = p.Results.mosaicGeometry; 
     coneMosaicResamplingFactor = p.Results.coneMosaicResamplingFactor;
+    coneDensities = p.Results.coneDensities;
     
     [theConeMosaic, coneMosaicEccDegs, coneMosaicEccMicrons, ...
      coneMosaicSizeDegs, coneMosaicSizeMicrons, extraMicronsForSurroundCones, ...
      conePositionsMicrons, coneSpacingsMicrons, coneAperturesMicrons, coneTypes] = ...
         generateRegularHexMosaicPatch(coneMosaicResamplingFactor, ...
-                patchEcc, patchSize, sizeUnits);
+                patchEcc, patchSize, sizeUnits, coneDensities);
 
     if (strcmp(mosaicGeometry, 'regular'))
         conePositionsDegs = conePositionsMicrons / theConeMosaic.micronsPerDegree;
@@ -45,7 +47,7 @@ end
 function [theConeMosaic, patchEccDegs, patchEccMicrons, ...
       patchSizeDegs, patchSizeMicrons, extraMicronsForSurroundCones, ...
       conePositionsMicrons, coneSpacingsMicrons, coneAperturesMicrons, coneTypes] = generateRegularHexMosaicPatch(...
-      coneMosaicResamplingFactor, patchEcc, patchSize, sizeUnits)
+      coneMosaicResamplingFactor, patchEcc, patchSize, sizeUnits, coneDensities)
 
     ck = CronerKaplanRGCModel('generateAllFigures', false);
     
@@ -84,9 +86,10 @@ function [theConeMosaic, patchEccDegs, patchEccMicrons, ...
     coneApertureMicrons = coneSpacingMicrons * WatsonRGCModel.coneApertureToDiameterRatio;
     
     % Generate reg hex cone mosaic
-    spatialDensity = [0 0.6 0.3 0.1];
+    spatialDensity = [0 coneDensities(1) coneDensities(2) coneDensities(3)];
     sConeFreeRadiusMicrons = 0;
-    fprintf('Generating regular hex cone mosaic at eccentricity of (%2.1f,%2.1f) degs, with a FOV of (%2.1f x %2.1f) degs\n', patchEccDegs(1), patchEccDegs(2), patchSizeDegs(1), patchSizeDegs(2));
+    fprintf('Generating regular hex cone mosaic at eccentricity of (%2.1f,%2.1f) degs,\nwith a FOV of (%2.1f x %2.1f) degs\nand cone densities of %2.2f:%2.2f:%2.2f\n', ...
+        patchEccDegs(1), patchEccDegs(2), patchSizeDegs(1), patchSizeDegs(2), coneDensities(1), coneDensities(2), coneDensities(3));
    
     theConeMosaic = coneMosaicHex(coneMosaicResamplingFactor, ...
         'fovDegs', patchSizeDegs, ...

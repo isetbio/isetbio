@@ -145,6 +145,7 @@ function MosaicConnector
         'inputFile', connector('phase1').outputFile, ...
         'rgcMosaicPatchEccMicrons', [300 0], ... %[3000 0], ... %[600 0],
         'rgcMosaicPatchSizeMicrons', 50*[1 1], ... %[200 200], ... %[75 75], 
+        'coneDensities', [1 0 0], ...                          // L-only mosaic
         'orphanRGCpolicy', 'steal input', ...                  // How to deal with RGCs that have no input
         'maximizeConeSpecificity', 100, ...                    // percent of RGCs for which to attempt cone specific wiring to the RF center
         'deconvolutionOpticsParams', deconvolutionOpticsParams, ...
