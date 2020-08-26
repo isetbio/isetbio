@@ -106,10 +106,10 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
         load(dataFileName, 'deconvolutionStruct', 'quadrants', 'subjectIDs');
         
         assert((numel(subjectIDs) == 1) && (subjectIDs == deconvolutionSubject), ...
-            sprintf('Deconvolution file does not contain subject %d', deconvolutionSubject));
+            sprintf('Deconvolution file ''%s'' does not contain subject %d', dataFileName, deconvolutionSubject));
         
         assert((numel(quadrants) == 1) && (strcmp(quadrants{1},deconvolutionQuadrant)), ...
-            sprintf('Deconvolution file does not contain quadrant''%s''', deconvolutionQuadrant));
+            sprintf('Deconvolution file ''%s'' does not contain quadrant''%s''', dataFileName, deconvolutionQuadrant));
         
 
         % Load the data for the RFcenter

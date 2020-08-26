@@ -7,7 +7,7 @@ function displayPSFs()
     someArtifactPSFSubjects = [1 3 6];
     largeArtifacPSFSubjects = [2];
     
-    visualizedSubjects = 4;
+    visualizedSubjects = 10;
     
     % Compute good subject PSFs along the Y = 0, negative X, with an
     % eccentricity resolution of 1 deg
@@ -22,7 +22,7 @@ function displayPSFs()
      
     if (1==2)
         % Compute the PSFs at the desired eccentricities
-        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(visualizedSubjects, ...
+        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfsAtEccentricity(visualizedSubjects, ...
             imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
 
         % Visualize them
@@ -78,7 +78,7 @@ function displayPSFs()
         wavelengthsListToCompute = [550];
         micronsPerDegree = 300; % for monkey retina
         wavefrontSpatialSamples = 501;
-        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(visualizedSubjects, ...
+        [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfsAtEccentricity(visualizedSubjects, ...
             imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, ...
             micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc);
 

@@ -152,7 +152,7 @@ function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFi
     if (labelCells)
         if (strcmp(xAxisScaling, 'log'))
             xo = 0.12;
-            yo = maxSpikeRate*0.85;
+            yo = maxSpikeRate*0.15;
         else
             xo = xAxisData(1);
             yo = maxSpikeRate*0.85;
@@ -182,7 +182,6 @@ function renderRGCoutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, co
             continue;
         end
         centerWeights = full(squeeze(theMidgetRGCmosaic.centerWeights(:, mRGCindex)));
-        %centerWeights(centerWeights>0) = 1;
         
         % Generate RF centers of RGCs based on cone positions and connection matrix
         switch subregions

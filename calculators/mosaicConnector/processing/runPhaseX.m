@@ -9,31 +9,34 @@ function runPhaseX(runParams)
     % Figure exports dir
     figExportsDir = strrep(fileparts(which(mfilename())), 'processing', 'exports');
     
-   
     % Load/Recompute connected mosaics and the optics
-    recomputeConeMosaic = true;
-    recomputeOptics = true;
+    recomputeConeMosaic = ~true;
+    recomputeOptics = ~true;
+    
+    % mRGC mosaic: whether to re-generate it
     recomputeRGCmosaic = true;
-    visualizeCronerKaplanDeconvolutionModel = ~true;
+    % mRGC mosaic: whether to visualize the synthesized RF params
+    visualizeSynthesizedParams = true;
     
-     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = true;
-    recomputeNullResponses = true;
+    % Compute cone mosaic responses
+    recomputeConeMosaicResponses = ~true;
+    recomputeNullResponses = ~true;
     
-    
+    % Generate the mosaics and the optics
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
         mosaicsAndOpticsForEccentricity(runParams, recomputeConeMosaic, ...
         recomputeRGCmosaic, recomputeOptics, saveDir, ...
-        visualizeCronerKaplanDeconvolutionModel);
+        visualizeSynthesizedParams);
 
-    
+    % Display PSFs
     displayPSFs = ~true;
     if (displayPSFs)
         eccDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*runParams.rgcMosaicPatchEccMicrons);
         visualizePSFs(theOptics, eccDegs(1), eccDegs(2));
     end
     
-    % Stimulation parameters
+    
+    % Visual stimulation parameters
     LMScontrast = [0.1 0.1 0.0];
     minSF = 0.1;
     maxSF = 100;
@@ -48,7 +51,7 @@ function runPhaseX(runParams)
     instancesNum = 64;
     
     % Visualized cells
-    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [43 45 48 57];
+    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [1:4];
     
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...

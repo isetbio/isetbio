@@ -107,7 +107,9 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     % Integrated response instance modulations (deviation from background response)
     integratedNullStimulusMeanResponse = centerNullStimulusMeanResponse - surroundNullStimulusMeanResponse;
     
+
     coneIsomerizationsDeltaPerSpikePerSecond = 30*1000.0;  % net R*/sec lead to an RGC response of 1 spikes/sec above baseline
+    
     responseTimeBin = responseTimeAxis(2)-responseTimeAxis(1);
     
     % Integrated responses in spikes/sec
@@ -135,10 +137,11 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     for iRGC = 1:rgcsNum
         r = squeeze(integratedResponseInstanceSpikesPerSec(:, :, iRGC, :));
         r = squeeze(mean(r,2));
-        fprintf('Max mean integrated response for RGC %d: %2.2f spikes/sec\n', iRGC, max(r(:)));
+        maxResponse(iRGC) = max(r(:));
+        fprintf('Max mean integrated response for RGC %d: %2.2f spikes/sec\n', iRGC, maxResponse(iRGC));
     end
     
-    maxSpikeRateModulation = 200;
+    maxSpikeRateModulation = .7*max(maxResponse);
     maxSpikeRateModulationForComponents = 50;
     
     % Visualize the center and surround response components for the targeted RGCs

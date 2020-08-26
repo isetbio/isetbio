@@ -31,7 +31,8 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
     
     for poolingSchemeIndex = 1:numel(rfCenterPoolingSchemes)
         % Retrieve pooling scheme info
-        poolingSchemeName = sprintf('%d-coneInput',rfCenterPoolingSchemes{poolingSchemeIndex}.coneInputsNum);
+        conesNumInRFcenter = rfCenterPoolingSchemes{poolingSchemeIndex}.coneInputsNum;
+        poolingSchemeName = sprintf('%d-coneInput',conesNumInRFcenter);
         inputConeIndicesForAllCombinations = rfCenterPoolingSchemes{poolingSchemeIndex}.inputConeIndices;
         maxInputConeDistance = rfCenterPoolingSchemes{poolingSchemeIndex}.maxInputConeDistance;
         
@@ -115,7 +116,7 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
             % Visualized SF range (c/deg)
             sfRangeVisualized = [0.5 300];
             
-            visualizeAnalysis(figNo, quadrantName, subjectID, patchEccRadiusDegs, conesNumInRFcenterTested, ...
+            visualizeAnalysis(figNo, quadrantName, subjectID, patchEccRadiusDegs, conesNumInRFcenter, ...
                 spatialFrequencySupport, sfRangeVisualized,...
                 thePSFsupportDegsHR, thePSFHR, retinalConeImage, visualConeImage, ...
                 retinalConeImageSpectrum, visualConeImageSpectrum, ...
@@ -407,7 +408,7 @@ end
 
 % ======= ONLY VISUALIZATION ROUTINES BELOW ======
 
-function visualizeAnalysis(figNo, quadrantName, PolansSubjectID, patchEccRadiusDegs, conesNumInRFcenterTested, spatialFrequencySupport, sfRange, ...
+function visualizeAnalysis(figNo, quadrantName, PolansSubjectID, patchEccRadiusDegs, conesNumInRFcenter, spatialFrequencySupport, sfRange, ...
                 thePSFsupportDegsHR, thePSFHR, retinalConeImage, visualConeImage, ...
                 retinalConeImageSpectrum, visualConeImageSpectrum, ...
                 retinalSpatialFrequencyTuningMajorAxis, retinalSpatialFrequencyTuningMinorAxis, ...
@@ -523,7 +524,7 @@ function visualizeAnalysis(figNo, quadrantName, PolansSubjectID, patchEccRadiusD
         isetbioRootDir = strrep(isetbioPrefs.validationRootDir, 'validation', '');
         exportDir = fullfile(isetbioRootDir, 'calculators/mosaicConnector/exports');
         pdfFileName = sprintf('Deconv_PolansSID_%d_%s_%2.1fdegs_%d-ConeCenter',  ...
-            PolansSubjectID, quadrantName, patchEccRadiusDegs, conesNumInRFcenterTested);
+            PolansSubjectID, quadrantName, patchEccRadiusDegs, conesNumInRFcenter);
         plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, exportDir);
         %setupPlotLab(-1);
     end

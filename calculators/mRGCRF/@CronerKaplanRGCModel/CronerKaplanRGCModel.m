@@ -55,6 +55,11 @@ classdef CronerKaplanRGCModel < handle
     end
     
     properties (Constant)
+        % Eccentricities for which we have generated deconvolution data files
+        % (via generateDeconvolutionFilesForMidgetRGCs() )
+        defaultDeconvolutionEccs = [0 1 2]; %[0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
+            
+            
         % Paper formulas
         % Surround radius from ecc (Figure 4 caption)
         surroundRadiusFromEccDegs = @(eccDegs) (0.203 * abs(eccDegs).^0.472);
@@ -75,15 +80,12 @@ classdef CronerKaplanRGCModel < handle
     methods
         % Constructor
         function obj = CronerKaplanRGCModel(varargin) 
-            % Eccentricities for which we have generated deconvolution data files
-            % (via generateDeconvolutionFilesForMidgetRGCs() )
-            validDeconvolutionEccs = [1 2 4]; [0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
-            
+
             % Parse input
             p = inputParser;
             p.addParameter('generateAllFigures', true, @islogical);
             p.addParameter('instantiatePlotLab', true, @islogical);
-            p.addParameter('deconvolutionEccs', validDeconvolutionEccs, @isnumeric);
+            p.addParameter('deconvolutionEccs', CronerKaplanRGCModel.defaultDeconvolutionEccs, @isnumeric);
             p.addParameter('dataSetToFit', 'medians', @(x)(ismember(x, {'medians', 'raw', 'paperFormulas'})));
             p.parse(varargin{:});
             

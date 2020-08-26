@@ -5,12 +5,17 @@ function renderRGCanalysesFigures(patchDogParams, spatialFrequenciesCPDHR, respo
         targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, coVisualizedRetinalStimulus, ...
         LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir)
     
+    
+    % All RGCs
+    targetRGCindices = 1:size(theMidgetRGCmosaic.centerWeights,2);
+    RGCconeInputInfo = returnConeInputInfoForTargetRGC(targetRGCindices, theMidgetRGCmosaic, theConeMosaic);
+    
     if (visualizePatchStatistics)
         % Visualize data to contrast with Cronner and Kaplan data
         RGCpositionsMicrons = determineRGCPositionsFromCenterInputs(theConeMosaic, runParams.rgcMosaicPatchEccMicrons, theMidgetRGCmosaic.centerWeights);
         RGCeccentricityDegs = WatsonRGCModel.rhoMMsToDegs(sqrt(sum(RGCpositionsMicrons.^2,2))/1000.0);
         
-        visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCeccentricityDegs, ...
+        visualizePatchStatsDerivedFromSFcurves(patchDogParams, RGCconeInputInfo, RGCeccentricityDegs, ...
             LMScontrast, opticsPostFix, PolansSubjectID, figExportsDir);
         
     end
@@ -71,7 +76,7 @@ function renderRGCanalysesFigures(patchDogParams, spatialFrequenciesCPDHR, respo
     end
 end
 
-function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, patchRGCeccentricityDegs, ...
+function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, RGCconeInputInfo, patchRGCeccentricityDegs, ...
         LMScontrast, opticsPostFix, PolansSubjectID, figExportsDir)
     
     % Preallocate memory
@@ -93,6 +98,7 @@ function visualizePatchStatsDerivedFromSFcurves(patchDogModelParams, patchRGCecc
     plotlabOBJ = setupPlotLab(0, 18,10);
     
     visualizeRFparamsForConnectedPatch(555, 'ResponseDerivedParams', ...
+        RGCconeInputInfo, ...
         patchRGCeccentricityDegs, ...
         centerCharacteristicRadii, surroundCharacteristicRadii, ...
         centerPeakSensitivities, surroundPeakSensitivities, ...

@@ -46,8 +46,8 @@ function [patchDogParams, responseAmplitude, spatialFrequenciesCPDHR, responseAm
     
     % Upper and lower values of DoG params
     %               Kc       Rc     kS/kC       Rs/Rc  
-    lowerBounds   = [1     0.0001    1e-5         2  ];
-    upperBounds   = [Inf   2.0       1e0          20 ];
+    lowerBounds   = [1e0     0.0001    1e-4         2  ];
+    upperBounds   = [1e6  2.0       1e6          20 ];
     
     [patchDogParams,spatialFrequenciesCPDHR, responseAmplitudeHR] = ...
         fitDoGmodelToSpatialFrequencyCurve(spatialFrequenciesCPD, responseAmplitude, responseAmplitudeSE, ...
