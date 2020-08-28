@@ -3,24 +3,46 @@ function runPhaseX(runParams)
     global MCONE_ID
     global SCONE_ID
     
-    % Intermediate files directory
-    saveDir = strrep(fileparts(which(mfilename())), 'processing', 'responseFiles');
-    
-    % Figure exports dir
-    figExportsDir = strrep(fileparts(which(mfilename())), 'processing', 'exports');
-    
     % Load/Recompute connected mosaics and the optics
     recomputeConeMosaic = ~true;
     recomputeOptics = ~true;
     
     % mRGC mosaic: whether to re-generate it
-    recomputeRGCmosaic = ~true;
+    recomputeRGCmosaic = true;
     % mRGC mosaic: whether to visualize the synthesized RF params
     visualizeSynthesizedParams = true;
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = true;
+    recomputeConeMosaicResponses = ~true;
     recomputeNullResponses = ~true;
+    
+    % Responses directory
+    saveDir = runParams.responseFilesDir;
+    if (~isfolder(saveDir)) 
+        if ((~recomputeConeMosaicResponses)&&(~recomputeNullResponses))
+            % This directory should exist if we are computing RGC responses
+            error('Could not find cone mosaic responses directory ''%s''.\n', saveDir);
+        end
+        % We are computing cone responses, so we may need to generate the
+        % responses directory. Ask permission to create it.
+        fprintf('Will generate responses saveDir : ''%s''\n', saveDir);
+        fprintf('Hit enter to proceed: ');
+        pause;
+        mkdir(saveDir);
+    end
+    
+    
+    % Figure exports dir
+    figExportsDir = runParams.exportsDir;
+    if (~isfolder(figExportsDir))
+        % Fig exports directory does not exist. Ask permission to
+        % create it.
+        fprintf('Will generate figExportsDir: ''%s''\n', figExportsDir);
+        fprintf('Hit enter to proceed: ');
+        pause;
+        mkdir(figExportsDir);
+    end
+
     
     % Generate the mosaics and the optics
     [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
@@ -42,8 +64,6 @@ function runPhaseX(runParams)
     maxSF = 100;
     sfsNum = 15;
     spatialFrequenciesCPD = logspace(log10(minSF), log10(maxSF),sfsNum);
-    
-    spatialFrequenciesCPD = fliplr(spatialFrequenciesCPD);
     
     stimulusFOVdegs = 2.0;
     minPixelsPerCycle = 8;
@@ -89,12 +109,12 @@ function runPhaseX(runParams)
             opticsPostFix, PolansSubjectID, ...
             saveDir, ...
             'saveCornealStimulusSequence', ~true, ...
-            'saveRetinalStimulusSequence', true);
+            'saveRetinalStimulusSequence', ~true);
     else
         visualizeAllSpatialFrequencyTuningCurves = true;
         visualizeResponseComponents = ~true;
         visualizeRetinalContrasts = ~true;
-        coVisualizeRetinalStimulusWithMosaics = true;
+        coVisualizeRetinalStimulusWithMosaics = ~true;
         visualizeMeanConeMosaicResponseAsAMovie = false;
         visualizeRGCTemporalResponsesAtRGCPositions = ~true;
         visualizeRGCSFTuningsAtRGCPositions = true;

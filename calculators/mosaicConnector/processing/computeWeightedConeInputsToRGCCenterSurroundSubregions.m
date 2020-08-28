@@ -114,8 +114,6 @@ function [rgcIndicesVector, coneIndicesVector, weightsVector, weights, overallGa
         weights(1:numel(connectedConeIndices),1) = 1.0;
         if (isempty(overallGain))
             overallGain = 1.0/numel(connectedConeIndices);
-        else
-            overallGain = overallGain * 1.0/sqrt(numel(connectedConeIndices));
         end
     else
         % This is a surround subregion

@@ -99,6 +99,10 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
         % Match the average tuning of the minor/major axes
         spatialFrequencyTuningToMatch = 0.5*(visualSpatialFrequencyTuningMinorAxis+visualSpatialFrequencyTuningMajorAxis);
         
+        % Match the major axis, which extends to lower SFs, so this will
+        % tend to give larger RF centers with lower peak sensitivity
+        spatialFrequencyTuningToMatch = visualSpatialFrequencyTuningMajorAxis;
+        
         % Determine the Gaussian whose SF tuning best matches the visualSpatialFrequencyTuningMinorAxis
         [matchingCharacteristicRadiusDegs,  matchingPeakSensitivity, ...
          matchingGaussian, matchingSFrange, ~] = determineMatchingGaussianInFrequencyDomain(characteristicRadiiDegsExamined, ...
@@ -289,18 +293,18 @@ function [retinalSpatialFrequencyTuningMajorAxis, visualSpatialFrequencyTuningMa
     retinalSpatialFrequencyTuningMajorAxis = squeeze(retinalConeImageSpectrum(:,idx(1)));
     visualSpatialFrequencyTuningMajorAxis = squeeze(visualConeImageSpectrum(:,idx(1)));
     
-    if (ellipseAxesLengthRatio < 1.1)
-        fprintf('Ellipse axes length ratio < 1.1. Will average minor & major SF tuning functions.\n');
-        % Average the major and minor sf tuning if the ellipse is not elongated
-        retinalSpatialFrequencyTuningMajorAxis = 0.5*(...
-            retinalSpatialFrequencyTuningMinorAxis(:) + retinalSpatialFrequencyTuningMajorAxis(:) ...
-            );
-        visualSpatialFrequencyTuningMajorAxis = 0.5*(...
-            visualSpatialFrequencyTuningMinorAxis(:) + visualSpatialFrequencyTuningMajorAxis(:) ...
-            );
-        retinalSpatialFrequencyTuningMinorAxis = retinalSpatialFrequencyTuningMajorAxis';
-        visualSpatialFrequencyTuningMinorAxis = visualSpatialFrequencyTuningMajorAxis';
-    end
+%     if (ellipseAxesLengthRatio < 1.1)
+%         fprintf('Ellipse axes length ratio < 1.1. Will average minor & major SF tuning functions.\n');
+%         % Average the major and minor sf tuning if the ellipse is not elongated
+%         retinalSpatialFrequencyTuningMajorAxis = 0.5*(...
+%             retinalSpatialFrequencyTuningMinorAxis(:) + retinalSpatialFrequencyTuningMajorAxis(:) ...
+%             );
+%         visualSpatialFrequencyTuningMajorAxis = 0.5*(...
+%             visualSpatialFrequencyTuningMinorAxis(:) + visualSpatialFrequencyTuningMajorAxis(:) ...
+%             );
+%         retinalSpatialFrequencyTuningMinorAxis = retinalSpatialFrequencyTuningMajorAxis';
+%         visualSpatialFrequencyTuningMinorAxis = visualSpatialFrequencyTuningMajorAxis';
+%     end
     
 end
 

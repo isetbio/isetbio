@@ -142,7 +142,7 @@ function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFi
     
     if (strcmp(xAxisScaling, 'log'))
         set(ax, 'XTick', [0.1 0.3 1 3 10 30])
-        set(ax, 'YTick', (0:0.25:1)*maxSpikeRate, 'YLim', [0 maxSpikeRate]);
+        set(ax, 'YTick', 0:50:maxSpikeRate, 'YLim', [0 maxSpikeRate]);
     else
         set(ax, 'YTick', (-1:0.5:1)*maxSpikeRate, 'YLim', [-maxSpikeRate maxSpikeRate]);
         set(ax, 'XTick',linspace(xAxisData(1), xAxisData(end), 5));

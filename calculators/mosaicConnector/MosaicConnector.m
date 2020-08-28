@@ -12,6 +12,7 @@ function MosaicConnector
     rootDir = fileparts(which(mfilename()));
     tmpDir = fullfile(rootDir, 'tmpMatFiles');
     exportsDir = fullfile(rootDir, 'exports');
+    responseFilesDir = fullfile(rootDir, 'responseFiles');
     
     doInitialMosaicCropping = ~true;                        % phase 1 - crop within circular window
     checkMosaicSeparationAndCropAgain = ~true;              % phase 2 - check separation and possibly crop within rectangular window
@@ -137,23 +138,59 @@ function MosaicConnector
     );
 
 
-
+   
+    coneDensities = [0.6 0.3 0.1];
+    %fconeDensities = [1 0 0];
+    noLCA = true;
+    LconeMosaicOnly = ~true;
+    MconeMosaicOnly = ~true;
+    if (coneDensities(1) == 1)
+        LconeMosaicOnly = true;
+    end
+    if (coneDensities(2) == 1)
+        MconeMosaicOnly = true;
+    end
+    
+    
+    rgcMosaicPatchHorizontalEccMicrons = 1500;
+    rgcMosaicPatchSizeMicrons = 100;
+    
+    if (LconeMosaicOnly)
+        responseFilesDir = fullfile(responseFilesDir,'LonlyMosaic');
+        exportsDir = fullfile(exportsDir,'LonlyMosaic');
+    elseif (MconeMosaicOnly)
+        responseFilesDir = fullfile(responseFilesDir,'MonlyMosaic');
+        exportsDir = fullfile(exportsDir,'MonlyMosaic');
+    else
+        responseFilesDir = fullfile(responseFilesDir,'LMSConeMosaic');
+        exportsDir = fullfile(exportsDir,'LMSConeMosaic');
+    end
+    
+    if (noLCA)
+        responseFilesDir = sprintf('%sNoLCA',responseFilesDir);
+        exportsDir = sprintf('%sNoLCA',exportsDir);
+    end
+    
+    % Separate exports depending on LCA and horizontal ecc
+    exportsDir = sprintf('%s_HorizontalEcc_%2.0fmicrons',exportsDir, rgcMosaicPatchHorizontalEccMicrons);
+    
     % PhaseX: Connect RGC mosaic to a patch of a regular hex cone mosaic 
     connector('phaseX') = struct( ...
         'run', wirePartOfMRGCMosaicToConeMosaicPatch, ...
         'runFunction', @runPhaseX, ...
         'inputFile', connector('phase1').outputFile, ...
-        'rgcMosaicPatchEccMicrons', [1500 0], ... %[3000 0], ... %[600 0],
-        'rgcMosaicPatchSizeMicrons', 100*[1 1], ... %[200 200], ... %[75 75],  
-        'coneDensities', [0.6 0.3 0.1], ...                          // LMS mosaic
+        'rgcMosaicPatchEccMicrons', [rgcMosaicPatchHorizontalEccMicrons 0], ... %[3000 0], ... %[600 0],
+        'rgcMosaicPatchSizeMicrons', rgcMosaicPatchSizeMicrons*[1 1], ... %[200 200], ... %[75 75],  
+        'coneDensities', coneDensities, ...                          // LMS mosaic
         'orphanRGCpolicy', 'steal input', ...                  // How to deal with RGCs that have no input
         'maximizeConeSpecificity', 100, ...                    // percent of RGCs for which to attempt cone specific wiring to the RF center
         'deconvolutionOpticsParams', deconvolutionOpticsParams, ...
         'pupilDiamMM', 3.0, ...
-        'noLCA', true, ...                                      // Optics with no longitudinal chromatic aberration
+        'noLCA', noLCA, ...                                      // Optics with no longitudinal chromatic aberration
         'noOptics', ~true, ...                                   // Optics zero Zernike coefficients
         'imposedRefractionErrorDiopters', 0, ...
         'outputFile', 'midgetMosaicConnectedWithConeMosaicPatch', ...
+        'responseFilesDir', responseFilesDir, ...
         'exportsDir', exportsDir, ...
         'outputDir', tmpDir ...
         );
