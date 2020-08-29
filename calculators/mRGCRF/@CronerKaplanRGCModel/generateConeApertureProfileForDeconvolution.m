@@ -2,7 +2,7 @@ function [coneApertureProfile, theConeApertureSupportDegs] = generateConeApertur
     
     % Spatial support for the cone aperture
     spatialSampleSize = thePSFsupportDegs(2)-thePSFsupportDegs(1);
-    theConeApertureSupportDegs = (spatialSampleSize:spatialSampleSize:0.6*max(coneAperturesDegs));
+    theConeApertureSupportDegs = (spatialSampleSize:spatialSampleSize:1.0*max(coneAperturesDegs));
     theConeApertureSupportDegs = [-fliplr(theConeApertureSupportDegs) 0 theConeApertureSupportDegs];
     [Xcone, Ycone] = meshgrid(theConeApertureSupportDegs, theConeApertureSupportDegs);
     
@@ -19,5 +19,12 @@ function [coneApertureProfile, theConeApertureSupportDegs] = generateConeApertur
         nExp = 5;
         coneApertureProfile = (exp(-(abs(Xcone/coneRadiusDegs)).^nExp) .* ...
                                exp(-(abs(Ycone/coneRadiusDegs)).^nExp));
+                           
+    elseif (strcmp(apertureShape, 'Gaussian'))
+        nExp = 2;
+        coneRadiusSigma = coneRadiusDegs/3;
+        coneApertureProfile = (exp(-(abs(Xcone/coneRadiusSigma)).^nExp) .* ...
+                               exp(-(abs(Ycone/coneRadiusSigma)).^nExp));
     end
+    
 end

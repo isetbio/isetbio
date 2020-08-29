@@ -121,6 +121,20 @@ function generateDeconvolutionFilesForMidgetRGCs(varargin)
         'quadrantsToCompute', {'horizontal'}, ...
         'synthesizeDemoRFparams', true);
 
+    % Examine the center deconvolution process
+    generateDeconvolutionFilesForMidgetRGCs('PolansSubjectID', 10, 'subregion', 'center', ...
+      'generateNewDeconvolutionFiles', true,...
+      'eccTested', [0.7 1 1.5], 'sensitivityRangeOverWhichToMatchSFtuning', [1 0.10], ...
+      'examinedConesNumInRFCenter',[1 2], 'visualizeFits', true,...
+      'exportFig',true, 'visualizeDeconvolutionModel', true)
+
+    % Examine the surround deconvolution process
+    generateDeconvolutionFilesForMidgetRGCs('PolansSubjectID', 10, 'subregion', 'surround', ...
+      'generateNewDeconvolutionFiles', true,...
+      'eccTested', [1], 'sensitivityRangeOverWhichToMatchSFtuning', [1 0.01], ...
+      'examinedConesNumInRFCenter',[1], 'visualizeFits', ~true, 'exportFig',~true);
+
+
 %}
 
 % History:
@@ -138,7 +152,7 @@ function generateDeconvolutionFilesForMidgetRGCs(varargin)
     p.addParameter('visualizeFits', false, @islogical);
     p.addParameter('exportFig', false, @islogical);
     p.addParameter('visualizeDeconvolutionModel', false, @islogical);
-    p.addParameter('synthesizeDemoRFparams', true, @islogical);
+    p.addParameter('synthesizeDemoRFparams', false, @islogical);
     p.parse(varargin{:});
     
     PolansSubjectIDs = p.Results.PolansSubjectIDs;
@@ -221,7 +235,7 @@ function synthesizeRFparams(deconvolutionOpticsParams)
     
     % Synthesize params
     synthesizedRFParams = ck.synthesizeRetinalRFparamsConsistentWithVisualRFparams(...
-        rfCenterInputConesNum, rfCenterPositionMicrons, deconvolutionOpticsParams)
+        rfCenterInputConesNum, rfCenterPositionMicrons, deconvolutionOpticsParams);
     
     % Plot synthesized params
     figNo = 3;

@@ -2,6 +2,17 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
     sensitivityRangeOverWhichToMatchSFtuning, conePosDegs, coneAperturesDegs, thePSF, thePSFsupportDegs, visualizeFits, exportFig, ...
     quadrantName, subjectID, patchEccRadiusDegs)
     
+    % Match the major spatial RF axis. This corresponding model will have larger RF centers, and therefore lower peak sensitivity
+    spatialFrequencyAxisToMatch = 'major'; 
+    
+    % Match the minor spatial RF axis. This corresponding model will have smaller RF centers, and therefore higher peak sensitivity
+    spatialFrequencyAxisToMatch = 'minor';
+    
+    % Match the average of the minor & major spatial RF axis.
+    %spatialFrequencyAxisToMatch = 'average';     
+
+    fprintf('>>> RF center deconvolution: estimating visual characteristic radius by matching the **%s** spatial frequency axis.\n', spatialFrequencyAxisToMatch);
+    
     % Flag indicating whether to overlay the derived matching Gaussian
     % profile on the retinal and visual cone images
     overlayMatchingGaussianProfileOnConeImages = true;
@@ -96,12 +107,18 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
         visualSpatialFrequencyTuningMajorAxis = squeeze(mean(visualSpatialFrequencyTuningsMajorAxis,1));
         visualSpatialFrequencyTuningMinorAxis = squeeze(mean(visualSpatialFrequencyTuningsMinorAxis,1));
 
-        % Match the average tuning of the minor/major axes
-        spatialFrequencyTuningToMatch = 0.5*(visualSpatialFrequencyTuningMinorAxis+visualSpatialFrequencyTuningMajorAxis);
+        switch spatialFrequencyAxisToMatch
+            case 'major'
+                % Match the major spatial RF axis. This corresponding model will have larger RF centers, and therefore lower peak sensitivity
+                spatialFrequencyTuningToMatch = visualSpatialFrequencyTuningMajorAxis;
+            case 'minor'
+                % Match the minor spatial RF axis. This corresponding model will have smaller RF centers, and therefore higher peak sensitivity
+                spatialFrequencyTuningToMatch = visualSpatialFrequencyTuningMinorAxis;
+            case 'average'
+                 % Match the average of the minor & major spatial RF axis.
+                spatialFrequencyTuningToMatch = 0.5*(visualSpatialFrequencyTuningMinorAxis+visualSpatialFrequencyTuningMajorAxis);
+        end
         
-        % Match the major axis, which extends to lower SFs, so this will
-        % tend to give larger RF centers with lower peak sensitivity
-        spatialFrequencyTuningToMatch = visualSpatialFrequencyTuningMajorAxis;
         
         % Determine the Gaussian whose SF tuning best matches the visualSpatialFrequencyTuningMinorAxis
         [matchingCharacteristicRadiusDegs,  matchingPeakSensitivity, ...
@@ -164,23 +181,50 @@ function [matchingCharacteristicRadiusDegs,  matchingSFrange] = determineMatchin
     targetSFtuning = targetSFtuning(idx);
     spatialFrequencySupport = spatialFrequencySupport(idx);
     
+    % Find index of spatial frequency at which we are closese to the max
+    % of the selected sensitivity range. This will be at the low-end of the
+    % spatial frequency support
     upperSensitivity = max(sensitivityRange)*max(targetSFtuning);
-    [~,idx] = min(abs(targetSFtuning-upperSensitivity));
-    matchingSFrange(1) = spatialFrequencySupport(idx);
+    [~,idxLow] = min(abs(targetSFtuning-upperSensitivity));
+    matchingSFrange(1) = spatialFrequencySupport(idxLow);
+    
+    % Find index of spatial frequency at which we are closese to the min
+    % of the selected sensitivity range. This will be at the high-end of the
+    % spatial frequency support. We do not look beyond to the first zero crossing
     lowerSensitivity = min(sensitivityRange)*max(targetSFtuning);
-    [~,idx] = min(abs(targetSFtuning-lowerSensitivity));
-    matchingSFrange(2) = spatialFrequencySupport(idx);
-    matchingSFrange = sort(matchingSFrange, 'ascend');
+    minDist = Inf;
+    idx = idxLow;
+    keepGoing = true;
+    while (idx <= numel(targetSFtuning)) && (keepGoing)
+        dist = abs(targetSFtuning(idx)-lowerSensitivity);
+        if (dist < minDist)
+            minDist = dist;
+            idxHigh = idx;
+        end
+        if (targetSFtuning(idx) < 0.02*max(targetSFtuning))
+            keepGoing = false;
+        end
+        idx = idx + 1;
+    end    
+    matchingSFrange(2) = spatialFrequencySupport(idxHigh);
 
-    sampledSpatialFrequencySupport = logspace(log10(matchingSFrange(1)), log10(matchingSFrange(2)), 50);
-    sampledSpatialFrequencySupport = sort(unique(sampledSpatialFrequencySupport), 'ascend');
-    sfIndicesOfInterest = zeros(1,numel(sampledSpatialFrequencySupport));
-    for k = 1:numel(sampledSpatialFrequencySupport)
-        targetSF = sampledSpatialFrequencySupport(k);
-        [~,sfIndicesOfInterest(k)] = min(abs(spatialFrequencySupport-targetSF));
+    logSubSamplingSampling = false;
+    if (logSubSamplingSampling)
+        sampledSpatialFrequencySupport = logspace(log10(matchingSFrange(1)), log10(matchingSFrange(2)), 50);
+        sampledSpatialFrequencySupport = sort(unique(sampledSpatialFrequencySupport), 'ascend');
+
+        sfIndicesOfInterest = zeros(1,numel(sampledSpatialFrequencySupport));
+        for k = 1:numel(sampledSpatialFrequencySupport)
+            targetSF = sampledSpatialFrequencySupport(k);
+            [~,sfIndicesOfInterest(k)] = min(abs(spatialFrequencySupport-targetSF));
+        end
+        sfIndicesOfInterest = sort(unique(sfIndicesOfInterest));
+    else
+        sfIndicesOfInterest = idxLow:idxHigh;
     end
-    sfIndicesOfInterest = sort(unique(sfIndicesOfInterest));
-   
+    
+    
+    
     GaussianSFtuningEnsemble = GaussianSFtuningEnsemble(:,sfIndicesOfInterest);
     targetSFtuning = targetSFtuning(sfIndicesOfInterest);
     
@@ -235,7 +279,7 @@ function [matchingGaussian, peakSensitivity, centerPixelCoord] = generateMatchin
    matchingGaussian = generateGaussiansEnsemble(...
        thePSFsupportDegsHR, matchingCharacteristicRadiusDegs, thePSFsupportDegsHR(centerPixelCoord));
    
-   % Make the aread of the Gaussian equal to the area of visualConeImage
+   % Make the area of the Gaussian equal to the area of visualConeImage
    gain = sum(visualConeImage(:));
    matchingGaussian = gain * squeeze(matchingGaussian(1,:,:));
    peakSensitivity = max(matchingGaussian(:));
