@@ -1,6 +1,7 @@
 function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScaling, plotType, ...
     xAxisData, theMidgetRGCmosaicResponses, ...
     xAxisDataFit, theMidgetRGCmosaicResponsesFit, ...
+    patchDoGParamsForTargetRGC, ...
     eccentricityMicrons, sizeMicrons, ...
     theMidgetRGCmosaic, subregions, maxSpikeRate, ...
     superimposedRetinalStimulus, ...
@@ -49,7 +50,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     
     zLevels = [0.3 1];
     renderMosaicConnectivityPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
-        theMidgetRGCmosaic, xAxis, yAxis, zLevels, subregions, targetRGC);
+        theMidgetRGCmosaic, xAxis, yAxis, zLevels, subregions, targetRGC, patchDoGParamsForTargetRGC);
     drawnow;
     
     xLims = eccentricityMicrons(1)+1.2*sizeMicrons(1)/2.0*[-1 1];
@@ -60,31 +61,34 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     set(theAxes, 'XLim', xLims, 'YLim', yLims, 'FontSize', 14);
 
     if (~isempty(targetRGC))
-        w0 = 0.57;
-        h0 = 0.08;
-        w = 0.4;
-        h = 0.9;
-        axesPosition = [...
-                w0*figWidthInches, ...
-                h0*figHeightInches, ...
-                w*figWidthInches, ...
-                h*figHeightInches];
-            
-        ax = axes('Position', axesPosition, 'Color', [1 1 1]);
-        if strcmp(plotType, 'SFtuning')
-            spatialFrequenciesCPD = xAxisData;
-            theSFtuning = squeeze(theMidgetRGCmosaicResponses(targetRGC,:));
-            theSFtuningSE = theSFtuning*0;
-            spatialFrequenciesCPDHR = xAxisDataFit;
-            responseTuningHR = squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:));
-            patchDogParams = {};
-            visualizeSpatialFrequencyTuning(ax, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRate, ...
-                spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, targetRGC, LMScontrast, opticsPostFix, ...
-                PolansSubjectID, false, '', 'synthParams', theMidgetRGCmosaic.synthesizedRFParams.visual);
-            
-        else
-            renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
-                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  targetRGC, false);
+        
+        if (targetRGC <= size(theMidgetRGCmosaicResponses,1))
+            w0 = 0.57;
+            h0 = 0.08;
+            w = 0.4;
+            h = 0.9;
+            axesPosition = [...
+                    w0*figWidthInches, ...
+                    h0*figHeightInches, ...
+                    w*figWidthInches, ...
+                    h*figHeightInches];
+
+            ax = axes('Position', axesPosition, 'Color', [1 1 1]);
+            if strcmp(plotType, 'SFtuning')
+                spatialFrequenciesCPD = xAxisData;
+                theSFtuning = squeeze(theMidgetRGCmosaicResponses(targetRGC,:));
+                theSFtuningSE = theSFtuning*0;
+                spatialFrequenciesCPDHR = xAxisDataFit;
+                responseTuningHR = squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:));
+                patchDogParams = {};
+                visualizeSpatialFrequencyTuning(ax, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRate, ...
+                    spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, targetRGC, LMScontrast, opticsPostFix, ...
+                    PolansSubjectID, false, '', 'synthParams', theMidgetRGCmosaic.synthesizedRFParams.visual);
+
+            else
+                renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
+                    xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  targetRGC, false);
+            end
         end
         
     else
@@ -162,17 +166,20 @@ function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFi
 end
 
 function renderMosaicConnectivityPlot(theAxes, conePositionsMicrons, coneDiameterMicrons, coneSpacingsMicrons, coneTypes, ...
-    theMidgetRGCmosaic,  xAxis, yAxis, zLevels, subregions, targetRGC)
+    theMidgetRGCmosaic,  xAxis, yAxis, zLevels, subregions, targetRGC, targetRGC_DoGparams)
 
     hold(theAxes, 'on');
     colormap(theAxes, brewermap(512, 'greys'));
     %renderConeConnections(theAxes, theMidgetRGCmosaic, conePositionsMicrons);
     renderCones(theAxes, coneTypes, conePositionsMicrons, coneDiameterMicrons);
-    renderRGCoutlines(theAxes,targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels,xAxis, yAxis);  
+    renderRGCoutlines(theAxes,targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, ...
+        targetRGC_DoGparams, zLevels,xAxis, yAxis);  
     set(theAxes, 'CLim', [0 1]);
 end
 
-function renderRGCoutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, zLevels, xAxis, yAxis)
+function renderRGCoutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, ...
+    targetRGC_DoGparams, zLevels, xAxis, yAxis)
+
     [X,Y] = meshgrid(xAxis,yAxis);
     rgcsNum = size(theMidgetRGCmosaic.centerWeights,2);
     
@@ -186,11 +193,11 @@ function renderRGCoutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, co
         % Generate RF centers of RGCs based on cone positions and connection matrix
         switch subregions
             case 'centers'        
-                theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(...
+                [theRF, theRFcenterMicrons] = generateRGCRFcenterSubregionFromConnectivityMatrix(...
                     centerWeights, conePositionsMicrons, coneSpacingsMicrons, X,Y);
             case 'surrounds'
                 surroundWeights = full(theMidgetRGCmosaic.surroundWeights(:, mRGCindex));
-                theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(...
+                [theRF, theRFcenterMicrons] = generateRGCRFcenterSubregionFromConnectivityMatrix(...
                     surroundWeights, conePositionsMicrons, coneSpacingsMicrons, X,Y);
             otherwise
                 error('Unknown subregion: ''%s''.', subregions)
@@ -203,6 +210,21 @@ function renderRGCoutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, co
         faceAlpha = 0.35;
         edgeAlpha = 0.5;
         fillRFoutline(theAxes, C, zLevels, whichLevelsToContour, fitEllipse, faceAlpha, edgeAlpha);
+        
+        % If the targetRGC_DoGparams is not empty draw center/surround
+        % estimates
+        if (~isempty(targetRGC_DoGparams))
+            theRFcenterEccRadius = sqrt(sum(theRFcenterMicrons.^2,2));
+            theRFcenterEccRadiusDegs = WatsonRGCModel.rhoMMsToDegs(theRFcenterEccRadius*1e-3);
+            RcMicrons = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(targetRGC_DoGparams.rC, theRFcenterEccRadiusDegs);
+            RsMicrons = WatsonRGCModel.sizeDegsToSizeRetinalMicrons(targetRGC_DoGparams.rS, theRFcenterEccRadiusDegs);
+            xx = cosd(0:5:360);
+            yy = sind(0:5:360);
+            line(theAxes, theRFcenterMicrons(1) + xx*RcMicrons,  theRFcenterMicrons(2) + yy*RcMicrons, ...
+                'LineStyle', '-', 'LineWidth', 4.0);
+            line(theAxes, theRFcenterMicrons(1) + xx*RsMicrons,  theRFcenterMicrons(2) + yy*RsMicrons, ...
+                'LineStyle', '--', 'LineWidth', 4.0);
+        end
         
     end % mRGCindex
 end

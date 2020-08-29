@@ -48,30 +48,30 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % Use the deconvolutionModel.center to determine:
     % (a) the center's VISUAL characteristic radius based on the number of input cones to this cells' RF center, and 
     % (b) the center's visual peak sensitivity attenuation factor
-    tabulatedRFcenterConeInputsNum = squeeze(deconvolutionModel.center.centerConeInputsNum(1,:));
-    
     parfor RGCindex = 1:rgcsNum
-        % Find the coneInputIndex corresponding to the # of cones in this RF center
-        coneInputsIndex = find(tabulatedRFcenterConeInputsNum == rfCenterInputConesNum(RGCindex));
-        assert(~isempty(coneInputsIndex), 'Center subregion deconvolution data for %d cone inputs in the center have not been computed.', rfCenterInputConesNum(RGCindex));
-        
+        inputConesNum = rfCenterInputConesNum(RGCindex);
         % Retrieve the interpolation indices and interpolation weights for
         % weighing characteristic radii from the 2 closest eccentricities
         neighboringEccIndices = interpolationEccIndices(RGCindex,:);
         weightsOfNeighboringEccs = interpolationEccWeights(RGCindex,:);
         
-        % Retrieve the characteristic radii  for the 2 nearby eccentricities
-        characteristicRadiusDegsAtNeihboringEccs = deconvolutionModel.center.characteristicRadiusDegs(neighboringEccIndices,coneInputsIndex);
+        % Retrieve the corresponding characteristic radii for the 2 nearby eccentricities
+        characteristicRadiusDegsAtNeihboringEccs = zeros(1,numel(neighboringEccIndices));
+        peakSensitivitiesAtNeihboringEccs = zeros(1,numel(neighboringEccIndices));
+        for k = 1:numel(neighboringEccIndices)
+            % Find the coneInputIndex corresponding to the # of cones in this RF center
+            coneInputsIndex = find(deconvolutionModel.center.centerConeInputsNum(neighboringEccIndices(k),:) == inputConesNum);
+            characteristicRadiusDegsAtNeihboringEccs(k) = deconvolutionModel.center.characteristicRadiusDegs(neighboringEccIndices(k),coneInputsIndex);
+            % Retrieve the peak sensitivities (ratio of retinal-to-visual peak sensitivity) for the 2 nearby eccentricities
+            peakSensitivitiesAtNeihboringEccs(k) = deconvolutionModel.center.peakSensitivity(neighboringEccIndices(k),coneInputsIndex);
+        end
         
         % Set the cell's characteristic radius as the weighted mean of the 2 nearby characteristic radii
-        centerVisualCharacteristicRadiiDegs(RGCindex) = sum(characteristicRadiusDegsAtNeihboringEccs' .* weightsOfNeighboringEccs,2);
-        
-        % Retrieve the peak sensitivities (ratio of retinal-to-visual peak sensitivity) for the 2 nearby eccentricities
-        peakSensitivitiesAtNeihboringEccs = deconvolutionModel.center.peakSensitivity(neighboringEccIndices,coneInputsIndex);
+        centerVisualCharacteristicRadiiDegs(RGCindex) = sum(characteristicRadiusDegsAtNeihboringEccs .* weightsOfNeighboringEccs,2);
         
         % Compute the attenuation in peak sensitivity (due to the low-pass filtering of the optics, 
         % the visual image of a cone has lower peak amplitude than the retinal image of that cone)
-        centerVisualPeakSensitivityAttenuation(RGCindex) = 1 / sum(peakSensitivitiesAtNeihboringEccs' .* weightsOfNeighboringEccs,2);
+        centerVisualPeakSensitivityAttenuation(RGCindex) = 1 / sum(peakSensitivitiesAtNeihboringEccs .* weightsOfNeighboringEccs,2);
     end
     
     % Use the Croner&Kaplan model centerPeakSensitivityFunction() to
@@ -100,9 +100,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     surroundPeakSensitivityAttenuation = zeros(rgcsNum,1);
     
     parfor RGCindex = 1:rgcsNum
-        % Find the coneInputIndex corresponding to the # of cones in this RF center
-        coneInputsIndex = find(tabulatedRFcenterConeInputsNum == rfCenterInputConesNum(RGCindex));
-        
+        inputConesNum = rfCenterInputConesNum(RGCindex);
         % Retrieve the interpolation indices and interpolation weights for
         % weighing characteristic radii from the 2 closest eccentricities
         neighboringEccIndices = interpolationEccIndices(RGCindex,:);
@@ -114,6 +112,9 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
         visualGainSensitivities = zeros(1,2);
         
         for k = 1:numel(neighboringEccIndices)
+            % Find the coneInputIndex corresponding to the # of cones in this RF center
+            coneInputsIndex = find(deconvolutionModel.center.centerConeInputsNum(neighboringEccIndices(k),:) == inputConesNum);
+            
             % determine interpolation weights for 2 closest surround characteristic radii
             nonNanIndices = find(~isnan(squeeze(deconvolutionModel.surround.characteristicRadiusDegs(neighboringEccIndices(k),coneInputsIndex,:))));
             

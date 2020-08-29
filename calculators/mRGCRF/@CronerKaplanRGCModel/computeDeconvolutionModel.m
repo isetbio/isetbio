@@ -99,7 +99,6 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
     deconvolutionModel.peakSensitivity = nan(numel(deconvolutionModel.tabulatedEccentricityRadii),maxConeInputsNumInRFcenter);
         
     for eccIndex = 1:numel(deconvolutionModel.tabulatedEccentricityRadii)
-
         % Load deconvolution file for this eccentricity
         dataFileName = obj.deconvolutionDataFileName(...
             -deconvolutionModel.tabulatedEccentricityRadii(eccIndex), imposedRefractionErrorDiopters, 'center');
@@ -111,10 +110,8 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
         assert((numel(quadrants) == 1) && (strcmp(quadrants{1},deconvolutionQuadrant)), ...
             sprintf('Deconvolution file ''%s'' does not contain quadrant''%s''', dataFileName, deconvolutionQuadrant));
         
-
         % Load the data for the RFcenter
-        deconvolutionModel.metaData = deconvolutionStruct{1,1}.metaData;
-        
+        deconvolutionModel.metaData{eccIndex} = deconvolutionStruct{1,1}.metaData;
         theData = deconvolutionStruct{1,1}.data;
         theDataLabels = keys(theData);
 
@@ -128,7 +125,5 @@ function deconvolutionModel = computeCenterDeconvolutionModelForSpecificQuadrant
             deconvolutionModel.peakSensitivity(eccIndex,coneInputsNum) = deconvolutionData.peakSensitivity;
             
         end
-        
-        
     end
 end

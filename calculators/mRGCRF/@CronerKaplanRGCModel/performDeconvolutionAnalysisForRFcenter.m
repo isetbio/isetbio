@@ -6,7 +6,7 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFcenter(obj, cone
     spatialFrequencyAxisToMatch = 'major'; 
     
     % Match the minor spatial RF axis. This corresponding model will have smaller RF centers, and therefore higher peak sensitivity
-    spatialFrequencyAxisToMatch = 'minor';
+    %spatialFrequencyAxisToMatch = 'minor';
     
     % Match the average of the minor & major spatial RF axis.
     %spatialFrequencyAxisToMatch = 'average';     

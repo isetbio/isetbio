@@ -59,9 +59,15 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
             CronerKaplanRGCModel.surroundRadiusFromCenterRadiusDegs(centerVisualCharacteristicRadius);
         
         % Examine a number of retinal RF surround characteristic radii that
-        % vary from [0.25 - 2] x visualRF surround
-        surroundSizeVariations = (1:0.25:2);
+        % vary from [0.67 - 1.5] x visualRF surround
+        surroundSizeVariations = (1:0.25:2.0);
         surroundSizeVariations = [1./fliplr(surroundSizeVariations) surroundSizeVariations(2:end)];
+        
+        if (visualizeFits)
+            surroundSizeVariations = 1;
+            fprintf(2, 'When visualizing surround deconvolution we only compute 1 surround size\n');
+        end
+        
         nominalSurroundRetinalCharacteristicRadiiDegs = targetSurroundVisualCharacteristicRadiusDegs * surroundSizeVariations;
         
         fittedPeakSensitivity = zeros(1, numel(nominalSurroundRetinalCharacteristicRadiiDegs));
@@ -70,7 +76,6 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
         parfor surroundSizeVariationIndex = 1:numel(nominalSurroundRetinalCharacteristicRadiiDegs)
             
             fprintf('Computing surround size variation %d/%d\n',surroundSizeVariationIndex, numel(nominalSurroundRetinalCharacteristicRadiiDegs));
-        
             surroundRetinalCharacteristicRadius = nominalSurroundRetinalCharacteristicRadiiDegs(surroundSizeVariationIndex);
         
             % compute cone weights with a Gaussian falloff
@@ -89,35 +94,35 @@ function deconvolutionStruct = performDeconvolutionAnalysisForRFsurround(obj, ce
             [fittedParams, rfFunction] = CronerKaplanRGCModel.fitElliptical2DGausianToRF(functionName, ...
                 thePSFsupportDegsHRXgrid(:), thePSFsupportDegsHRYgrid(:), visualConeImage(:), ...
                 deltaX, minCharacteristicRadiusDegs, [0 0]);
-    
+
             % Compute fitted Gaussian
             xyData = zeros(numel(thePSFsupportDegsHRXgrid),2);
             xyData(:,1) = thePSFsupportDegsHRXgrid(:);
             xyData(:,2) = thePSFsupportDegsHRYgrid(:);
             N = numel(thePSFsupportDegsHR);
             fittedGaussian = reshape(rfFunction(fittedParams, xyData), [N N]);
-            
+
             % Compute gain adjustment to match the areas of the
             % visualConeImage and the fittedGaussian
             visualSurroundArea = sum(visualConeImage(:));
             visualSurroundModelArea = sum(fittedGaussian(:));
             surroundGainAdjustmentToMatchAreas = visualSurroundArea/visualSurroundModelArea;
-            
+
             % Adjust fittedGaussian and gain
             fittedGaussian = fittedGaussian * surroundGainAdjustmentToMatchAreas;
             fittedParams(1) = fittedParams(1) * surroundGainAdjustmentToMatchAreas;
-            
+
             % Ensure that volumes match
             v1 = sum(visualConeImage(:));
             v2 = sum(fittedGaussian(:));
             assert(abs(v1-v2)/v1  <  1e-6, 'Volumes do not match');
-            
+
             % Log data in
-            fittedPeakSensitivity(surroundSizeVariationIndex) =  fittedParams(1) * surroundGainAdjustmentToMatchAreas;
+            fittedPeakSensitivity(surroundSizeVariationIndex) =  fittedParams(1);
             fittedCharacteristicRadiusDegs(surroundSizeVariationIndex) = fittedParams(4);
-            
+
             if (visualizeFits)
-                figNo = surroundSizeVariationIndex;
+                figNo = poolingSchemeIndex;
                 visualizeAnalysis(figNo, subjectID, quadrantName, patchEccRadiusDegs, poolingSchemeName, ...
                     retinalConeImage, visualConeImage, fittedGaussian, thePSFsupportDegsHR, ...
                     surroundRetinalCharacteristicRadius, fittedCharacteristicRadiusDegs(surroundSizeVariationIndex), ...

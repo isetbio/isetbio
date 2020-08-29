@@ -115,6 +115,7 @@ function [rgcIndicesVector, coneIndicesVector, weightsVector, weights, overallGa
         if (isempty(overallGain))
             overallGain = 1.0/numel(connectedConeIndices);
         end
+        overallGain = 1;
     else
         % This is a surround subregion
         weights = gaussianConeWeights(conePositionsMicrons, rgcPositionMicrons, synthesizedParams.subregionRadiusMicrons);

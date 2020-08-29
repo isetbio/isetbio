@@ -77,7 +77,6 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         end
         
 
-        
         % Compute the center and the surround responses
         fprintf('\nComputing RGC responses ...');
         tic
@@ -141,7 +140,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         fprintf('Max mean integrated response for RGC %d: %2.2f spikes/sec\n', iRGC, maxResponse(iRGC));
     end
     
-    maxSpikeRateModulation = 250;
+    maxSpikeRateModulation = 300;
     maxSpikeRateModulationForComponents = 50;
     
     % Visualize the center and surround response components for the targeted RGCs

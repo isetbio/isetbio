@@ -57,9 +57,9 @@ classdef CronerKaplanRGCModel < handle
     properties (Constant)
         % Eccentricities for which we have generated deconvolution data files
         % (via generateDeconvolutionFilesForMidgetRGCs() )
-        defaultDeconvolutionEccs = [0 0.1 0.2 0.3 0.5 0.7 1 1.5 2 2.5 3 4 5 6 7]; %[0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
-            
-            
+        %defaultDeconvolutionEccs = [0 0.1 0.2 0.3 0.5 0.7 1 1.5 2 2.5 3 4 5 6 7 8 9]; %[0 0.2 0.5 1 1.5 2 2.5 3:14]; %  [0 0.2 0.5 1 1.5 2 2.5 3:25];
+        defaultDeconvolutionEccs = [0.7 1 1.5 4 5 6];
+        
         % Paper formulas
         % Surround radius from ecc (Figure 4 caption)
         surroundRadiusFromEccDegs = @(eccDegs) (0.203 * abs(eccDegs).^0.472);

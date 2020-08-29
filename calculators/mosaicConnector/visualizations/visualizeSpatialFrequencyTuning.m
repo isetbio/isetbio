@@ -37,7 +37,7 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     % Set the axes
     axis(axesHandle, 'square');
     set(axesHandle, 'XScale', 'log', 'XLim', [0.06 105], 'XTick', [0.03 0.1 0.3 1 3 10 30 100], ...
-        'YTick', [0:50:200], 'YScale', 'linear','YLim', [0 maxSpikeRateModulation]);
+        'YTick', [0:50:500], 'YScale', 'linear','YLim', [0 maxSpikeRateModulation]);
     xlabel(axesHandle,'spatial frequency (c/deg)');
     ylabel(axesHandle, 'response modulation');
             
