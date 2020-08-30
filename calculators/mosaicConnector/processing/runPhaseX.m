@@ -4,17 +4,17 @@ function runPhaseX(runParams)
     global SCONE_ID
     
     % Load/Recompute connected mosaics and the optics
-    recomputeConeMosaic = ~true;
-    recomputeOptics = ~true;
+    recomputeConeMosaic = true;
+    recomputeOptics = true;
     
     % mRGC mosaic: whether to re-generate it
-    recomputeRGCmosaic = true;
+    recomputeRGCmosaic = ~true;
     % mRGC mosaic: whether to visualize the synthesized RF params
     visualizeSynthesizedParams = true;
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = ~true;
-    recomputeNullResponses = ~true;
+    recomputeConeMosaicResponses = true;
+    recomputeNullResponses = true;
     
     % Responses directory
     saveDir = runParams.responseFilesDir;
@@ -73,7 +73,7 @@ function runPhaseX(runParams)
     instancesNum = 64;
     
     % Visualized cells
-    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves = [1:4];
+    targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves =  [20 21 22 23 24]; %[71 80 63 116]; 
     
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...

@@ -140,8 +140,10 @@ function MosaicConnector
 
    
     coneDensities = [0.6 0.3 0.1];
-    %fconeDensities = [1 0 0];
-    noLCA = true;
+    
+   % coneDensities = [0 1 0];
+    
+    noLCA = ~true;
     LconeMosaicOnly = ~true;
     MconeMosaicOnly = ~true;
     if (coneDensities(1) == 1)
@@ -154,6 +156,9 @@ function MosaicConnector
     
     rgcMosaicPatchHorizontalEccMicrons = 1500;
     rgcMosaicPatchSizeMicrons = 100;
+    
+    rgcMosaicPatchHorizontalEccMicrons = 3000;
+    rgcMosaicPatchSizeMicrons = 200;
     
     if (LconeMosaicOnly)
         responseFilesDir = fullfile(responseFilesDir,'LonlyMosaic');
