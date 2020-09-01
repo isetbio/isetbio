@@ -203,7 +203,7 @@ function renderRGCoutlinesAndFittedModelOutlines(theAxes, targetRGC, coneTypes, 
                 error('Unknown subregion: ''%s''.', subregions)
         end
         
-        showCenterConnectionOutline = ~true;
+        showCenterConnectionOutline = true;
         if (showCenterConnectionOutline)
             whichLevelsToContour = 1;
             fitEllipse = false;
