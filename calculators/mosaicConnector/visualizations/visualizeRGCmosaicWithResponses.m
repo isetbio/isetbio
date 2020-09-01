@@ -172,12 +172,12 @@ function renderMosaicConnectivityPlot(theAxes, conePositionsMicrons, coneDiamete
     colormap(theAxes, brewermap(512, 'greys'));
     %renderConeConnections(theAxes, theMidgetRGCmosaic, conePositionsMicrons);
     renderCones(theAxes, coneTypes, conePositionsMicrons, coneDiameterMicrons);
-    renderRGCoutlines(theAxes,targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, ...
+    renderRGCoutlinesAndFittedModelOutlines(theAxes,targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, ...
         targetRGC_DoGparams, zLevels,xAxis, yAxis);  
     set(theAxes, 'CLim', [0 1]);
 end
 
-function renderRGCoutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, ...
+function renderRGCoutlinesAndFittedModelOutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, conePositionsMicrons, coneSpacingsMicrons, subregions, ...
     targetRGC_DoGparams, zLevels, xAxis, yAxis)
 
     [X,Y] = meshgrid(xAxis,yAxis);
@@ -203,13 +203,16 @@ function renderRGCoutlines(theAxes, targetRGC, coneTypes, theMidgetRGCmosaic, co
                 error('Unknown subregion: ''%s''.', subregions)
         end
         
-        whichLevelsToContour = 1;
-        fitEllipse = false;
-        
-        C = contourc(xAxis, yAxis, theRF, zLevels);
-        faceAlpha = 0.35;
-        edgeAlpha = 0.5;
-        fillRFoutline(theAxes, C, zLevels, whichLevelsToContour, fitEllipse, faceAlpha, edgeAlpha);
+        showCenterConnectionOutline = ~true;
+        if (showCenterConnectionOutline)
+            whichLevelsToContour = 1;
+            fitEllipse = false;
+
+            C = contourc(xAxis, yAxis, theRF, zLevels);
+            faceAlpha = 0.35;
+            edgeAlpha = 0.5;
+            fillRFoutline(theAxes, C, zLevels, whichLevelsToContour, fitEllipse, faceAlpha, edgeAlpha);
+        end
         
         % If the targetRGC_DoGparams is not empty draw center/surround
         % estimates

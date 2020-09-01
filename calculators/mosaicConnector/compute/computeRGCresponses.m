@@ -151,21 +151,30 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         fprintf('Max mean integrated response for RGC %d: %2.2f spikes/sec\n', iRGC, maxResponse(iRGC));
     end
     
-    maxAllResponses = max(maxResponse);
-    if (maxAllResponses > 100)
+    % Select SpikeRate max and ticks
+    maxAllResponses = max(integratedResponsesMean(:));
+    
+    if (maxAllResponses > 200)
         maxSpikeRateModulation = ceil(maxAllResponses/50)*50;
-        spikeRateTicks = 0:50:maxSpikeRateModulation;
+        spikeRateTicks = 0:25:maxSpikeRateModulation;
+    elseif (maxAllResponses > 100)
+        maxSpikeRateModulation = ceil(maxAllResponses/40)*40;
+        spikeRateTicks = 0:20:maxSpikeRateModulation;
     elseif (maxAllResponses > 50)
         maxSpikeRateModulation = ceil(maxAllResponses/20)*20;
-        spikeRateTicks = 0:20:maxSpikeRateModulation;
+        spikeRateTicks = 0:10:maxSpikeRateModulation;
     elseif (maxAllResponses > 25)
         maxSpikeRateModulation = ceil(maxAllResponses/10)*10;
-        spikeRateTicks = 0:10:maxSpikeRateModulation;
+        spikeRateTicks = 0:5:maxSpikeRateModulation;
     else
         maxSpikeRateModulation = ceil(maxAllResponses/5)*5;
-        spikeRateTicks = 0:5:maxSpikeRateModulation;
+        spikeRateTicks = 0:2:maxSpikeRateModulation;
     end
 
+
+    maxSpikeRateModulation = 150
+    spikeRateTicks = 0:30:200
+    
     % Visualize the center and surround response components for the targeted RGCs
     if (visualizeResponseComponents)
         exportFig = true;
