@@ -73,7 +73,7 @@ function [theSceneFrames, presentationDisplay, stimSpatialParamsPixelsNum] = gen
 
             % Assert that the scene cone contrasts match the desired ones
             figNo = 1999;
-            assertDisplayContrasts(figNo, sceneLMScontrastsImage, sceneLMScontrastImage);
+            assertDisplayContrasts(figNo, sceneLMScontrastsImage, LMScontrastImage);
 
             % Visualize scene components
             figNo = 2000;

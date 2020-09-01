@@ -26,8 +26,8 @@ function  visualizeResponseComponentsForTargetRGC(targetRGC, responseTimeAxis, c
         ax = theAxesGrid{row,col};
         theMeanCenterResponse = squeeze(centerResponsesMean(sfIndex,targetRGC,:));
         theMeaSurroundResponse = squeeze(surroundResponsesMean(sfIndex,targetRGC,:));
-        line(ax, responseTimeAxis, squeeze(centerResponseInstances(sfIndex, :, targetRGC, :)), 'Color', [1 0.5 0.5], 'LineWidth', 1.0); hold on;
-        line(ax, responseTimeAxis, squeeze(surroundResponseInstances(sfIndex, :, targetRGC, :)), 'Color', [0.2 0.8 1], 'LineWidth', 1.0);
+        %line(ax, responseTimeAxis, squeeze(centerResponseInstances(sfIndex, :, targetRGC, :)), 'Color', [1 0.5 0.5], 'LineWidth', 1.0); hold on;
+        %line(ax, responseTimeAxis, squeeze(surroundResponseInstances(sfIndex, :, targetRGC, :)), 'Color', [0.2 0.8 1], 'LineWidth', 1.0);
         line(ax, responseTimeAxis, theMeanCenterResponse, 'Color', [1 0 0], 'LineWidth', 2); hold on;
         line(ax, responseTimeAxis, theMeaSurroundResponse, 'Color', [0 0 1], 'LineWidth', 2);
         set(ax, 'XLim', [0 0.5], 'YLim', maxSpikeRate*[-1 1], 'XTick', 0:0.1:0.5, 'YTick',(-1:0.5:1)*maxSpikeRate);

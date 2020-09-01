@@ -3,7 +3,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     xAxisDataFit, theMidgetRGCmosaicResponsesFit, ...
     patchDoGParamsForTargetRGC, ...
     eccentricityMicrons, sizeMicrons, ...
-    theMidgetRGCmosaic, subregions, maxSpikeRate, ...
+    theMidgetRGCmosaic, subregions, maxSpikeRate, spikeRateTicks, ...
     superimposedRetinalStimulus, ...
     figureName, LMScontrast, opticsPostFix, PolansSubjectID, ...
     targetRGC, labelCells, ...
@@ -81,13 +81,13 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
                 spatialFrequenciesCPDHR = xAxisDataFit;
                 responseTuningHR = squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:));
                 patchDogParams = {};
-                visualizeSpatialFrequencyTuning(ax, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRate, ...
+                visualizeSpatialFrequencyTuning(ax, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRate, spikeRateTicks, ...
                     spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, targetRGC, LMScontrast, opticsPostFix, ...
                     PolansSubjectID, false, '', 'synthParams', theMidgetRGCmosaic.synthesizedRFParams.visual);
 
             else
                 renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
-                    xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  targetRGC, false);
+                    xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  spikeRateTicks, targetRGC, false);
             end
         end
         
@@ -110,7 +110,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
             
             ax = axes('Position', axesPosition, 'Color', [1 1 1]);
             renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
-                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate, iRGC, labelCells);
+                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate, spikeRateTicks, iRGC, labelCells);
         end
     end
     
@@ -122,7 +122,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     setupPlotLab(-1);
 end
 
-function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate, iRGC, labelCells)
+function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate, spikeRateTicks, iRGC, labelCells)
     
     if (strcmp(xAxisScaling, 'log'))
         markerSize = 169;
@@ -146,7 +146,7 @@ function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFi
     
     if (strcmp(xAxisScaling, 'log'))
         set(ax, 'XTick', [0.1 0.3 1 3 10 30])
-        set(ax, 'YTick', 0:50:maxSpikeRate, 'YLim', [0 maxSpikeRate]);
+        set(ax, 'YTick', spikeRateTicks, 'YLim', [0 maxSpikeRate]);
     else
         set(ax, 'YTick', (-1:0.5:1)*maxSpikeRate, 'YLim', [-maxSpikeRate maxSpikeRate]);
         set(ax, 'XTick',linspace(xAxisData(1), xAxisData(end), 5));

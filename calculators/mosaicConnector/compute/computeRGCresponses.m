@@ -51,11 +51,8 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         otherwise
             error('Unknown presynaptic signal: ''%s''.', presynapticSignal)
     end
-
-    % Compute subregion responses to null stimulus
-    [centerNullStimulusMeanResponse, surroundNullStimulusMeanResponse] = computeSubregionResponses(...
-        theConeMosaic, theMidgetRGCmosaic.centerWeights, theMidgetRGCmosaic.surroundWeights, theNullPresynapticResponses);
-       
+    
+    
     % Compute the RGC responses
     for sfIndex = 1:numel(spatialFrequenciesCPD)
         gaborSpatialFrequencyCPD = spatialFrequenciesCPD(sfIndex);
@@ -75,14 +72,41 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
             otherwise
                 error('UNknown presynaptic signal: ''%s''.', presynapticSignal)
         end
+           
         
-
         % Compute the center and the surround responses
         fprintf('\nComputing RGC responses ...');
         tic
+       
+        % Using Weber response representation ensures that the cone
+        % responses are proportional to cone Weber contrast. 
+        % That way a 10% L+M cone contrast will active L-cone center RGCs
+        % to the same extent as it will activate M-cone center RGCs. If we
+        % do not use this the relative response of L-cone center to M-cone center RGCs
+        % depends on the mean cone response to the background.
+        % Phototransductios does this transformation so that
+        % pulses of same contrast have the same photocurrent modulation
+        % independent on the background activation. But since we are
+        % working on the cone isomerizations signal here, we have to do
+        % this contrast transformation to have RGC activations that are
+        % proportional to stimuls contrast.
+        useWeberResponseRepresentation = true;
+        if (useWeberResponseRepresentation)
+             % Compute the pre-spatial responses as Weber responses (test-null)/null
+             preSpatialIntegrationResponses = bsxfun(@minus, thePresynapticResponses, theNullPresynapticResponses);
+             preSpatialIntegrationResponses = bsxfun(@times, preSpatialIntegrationResponses, 1./(theNullPresynapticResponses+eps));
+             preSpatialIntergrationConversionFactorToSpikePerSecond = 5;
+        else
+            % Compute the pre-spatial integration responses as differential responses (test-null)
+            preSpatialIntegrationResponses = bsxfun(@minus, thePresynapticResponses, theNullPresynapticResponses);
+            % Conversion to spikes/sec
+            responseTimeBin = responseTimeAxis(2)-responseTimeAxis(1);
+            preSpatialIntergrationConversionFactorToSpikePerSecond = 0.7/responseTimeBin;  % net R*/sec lead to an RGC response of 1 spikes/sec above baseline
+        end
         
-        % Compute center and surround subregion responses to the test stimulus
-        [cRtest, sRtest] = computeSubregionResponses(theConeMosaic, theMidgetRGCmosaic.centerWeights, theMidgetRGCmosaic.surroundWeights, thePresynapticResponses);
+        % Spatial intergration using center/surround weights
+        [cRtest, sRtest] = computeSubregionResponses(theConeMosaic, theMidgetRGCmosaic.centerWeights, ...
+            theMidgetRGCmosaic.surroundWeights, preSpatialIntegrationResponses);
             
         % Preallocate memory
         if (sfIndex == 1)
@@ -99,40 +123,27 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         fprintf('Done in %2.1f minutes\n', toc/60);
     end % sfIndex
     
-    
     % Center-surround integrated response instances
     integratedTestStimulusResponseInstances = centerTestStimulusResponseInstances - surroundTestStimulusResponseInstances;
     
-    % Integrated response instance modulations (deviation from background response)
-    integratedNullStimulusMeanResponse = centerNullStimulusMeanResponse - surroundNullStimulusMeanResponse;
-    
-
-    coneIsomerizationsDeltaPerSpikePerSecond = 35*1000.0;  % net R*/sec lead to an RGC response of 1 spikes/sec above baseline
-    
-    responseTimeBin = responseTimeAxis(2)-responseTimeAxis(1);
-    
     % Integrated responses in spikes/sec
-    integratedResponseInstanceSpikesPerSec = isomerizationDeltasToSpikesPerSecond(...
-            integratedTestStimulusResponseInstances, integratedNullStimulusMeanResponse, ...
-            coneIsomerizationsDeltaPerSpikePerSecond, responseTimeBin);
+    integratedResponseInstanceSpikesPerSec = ...
+        integratedTestStimulusResponseInstances / preSpatialIntergrationConversionFactorToSpikePerSecond;
     
-
     % Center responses in spikes/sec
-    centerResponseInstances = isomerizationDeltasToSpikesPerSecond(...
-            centerTestStimulusResponseInstances, centerNullStimulusMeanResponse, ...
-            coneIsomerizationsDeltaPerSpikePerSecond, responseTimeBin);
+    centerResponseInstances = ...
+        centerTestStimulusResponseInstances / preSpatialIntergrationConversionFactorToSpikePerSecond;
         
     % Surround responses in spikes/sec
-    surroundResponseInstances = isomerizationDeltasToSpikesPerSecond(...
-            surroundTestStimulusResponseInstances, surroundNullStimulusMeanResponse, ...
-            coneIsomerizationsDeltaPerSpikePerSecond, responseTimeBin);
+    surroundResponseInstances = ...
+        surroundTestStimulusResponseInstances/ preSpatialIntergrationConversionFactorToSpikePerSecond;
         
     % Mean (over instances) integrated responses in spikes/sec
     integratedResponsesMean = squeeze(mean(integratedResponseInstanceSpikesPerSec,2));
     integratedResponsesStDev = squeeze(std(integratedResponseInstanceSpikesPerSec,0,2));
 
-    
-    % Report spikes per seconds
+    % Report spikes per second for each RGC
+    maxResponse = zeros(1, rgcsNum);
     for iRGC = 1:rgcsNum
         r = squeeze(integratedResponseInstanceSpikesPerSec(:, :, iRGC, :));
         r = squeeze(mean(r,2));
@@ -140,26 +151,37 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         fprintf('Max mean integrated response for RGC %d: %2.2f spikes/sec\n', iRGC, maxResponse(iRGC));
     end
     
-    maxSpikeRateModulation = 300;
-    maxSpikeRateModulationForComponents = 50;
-    
+    maxAllResponses = max(maxResponse);
+    if (maxAllResponses > 100)
+        maxSpikeRateModulation = ceil(maxAllResponses/50)*50;
+        spikeRateTicks = 0:50:maxSpikeRateModulation;
+    elseif (maxAllResponses > 50)
+        maxSpikeRateModulation = ceil(maxAllResponses/20)*20;
+        spikeRateTicks = 0:20:maxSpikeRateModulation;
+    elseif (maxAllResponses > 25)
+        maxSpikeRateModulation = ceil(maxAllResponses/10)*10;
+        spikeRateTicks = 0:10:maxSpikeRateModulation;
+    else
+        maxSpikeRateModulation = ceil(maxAllResponses/5)*5;
+        spikeRateTicks = 0:5:maxSpikeRateModulation;
+    end
+
     % Visualize the center and surround response components for the targeted RGCs
     if (visualizeResponseComponents)
         exportFig = true;
         for iTargetRGC = 1:numel(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves)
              visualizeResponseComponentsForTargetRGC(targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves(iTargetRGC), ...
                  responseTimeAxis, centerResponseInstances, surroundResponseInstances, ...
-                 spatialFrequenciesCPD, maxSpikeRateModulationForComponents, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);  
+                 spatialFrequenciesCPD, maxSpikeRateModulation, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, figExportsDir);  
         end
     end
-    
     
     % Fit the DoG model to all SF tuning curves
     exportFig = true;
     [patchDogParams, responseAmplitude, spatialFrequenciesCPDHR, ...
      responseAmplitudeHR, responseTimeAxisHR, fittedResponsesHR] = computeAndFitDOGmodelToSpatialFrequencyTuningCurves(responseTimeAxis, ...
         integratedResponsesMean, integratedResponsesStDev,...
-        maxSpikeRateModulation, stimSpatialParams, stimTemporalParams, ...
+        maxSpikeRateModulation, spikeRateTicks, stimSpatialParams, stimTemporalParams, ...
         spatialFrequenciesCPD, visualizeAllSpatialFrequencyTuningCurves, ...
         targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, ...
         LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir, ...
@@ -168,34 +190,16 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     % Generate figures showing temporal responses, SF tuning curves, and the DOG parameter statistics for the patch
     renderRGCanalysesFigures(patchDogParams, spatialFrequenciesCPDHR, responseAmplitudeHR, spatialFrequenciesCPD, responseAmplitude, ...
         responseTimeAxis, integratedResponsesMean, responseTimeAxisHR, fittedResponsesHR, ...
-        maxSpikeRateModulation, theConeMosaic, runParams, theMidgetRGCmosaic, ...
+        maxSpikeRateModulation, spikeRateTicks, theConeMosaic, runParams, theMidgetRGCmosaic, ...
         visualizePatchStatistics, visualizeRGCTemporalResponsesAtRGCPositions, visualizeRGCSFTuningsAtRGCPositions, ...
         targetRGCsForWhichToVisualizeSpatialFrequencyTuningCurves, coVisualizedRetinalStimulus, ...
         LMScontrast,  opticsPostFix, PolansSubjectID, exportFig, figExportsDir);
 end
 
-function responseInstanceModulationsSpikesPerSec = isomerizationDeltasToSpikesPerSecond(...
-         responseInstances, nullResponses, ...
-         coneIsomerizationsDeltaPerSpikePerSecond, responseTimeBinSeconds)
-     
-     sfsNum = size(responseInstances,1);
-     instancesNum = size(responseInstances,2);
-     rgcsNum = size(responseInstances,3);
-     timeBins = size(responseInstances,4);
-    
-     % Subtract null responses (last time bin - useful for photocurrent response)
-     nullResponses = reshape(nullResponses, [1 1 rgcsNum timeBins]);
-     responseInstanceModulations = bsxfun(@minus, responseInstances, nullResponses(1,1,:,end));
-     
-     % Transform delta isomerizations/timebin to spikes/sec
-     coneIsomerizationsDeltaPerTimeBin = coneIsomerizationsDeltaPerSpikePerSecond * responseTimeBinSeconds;
-     responseInstanceModulationsSpikesPerSec = responseInstanceModulations / coneIsomerizationsDeltaPerTimeBin;
-end
 
-
-function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, weightsC, weightsS, presynapticResponses)
+function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, weightsC, weightsS, preSpatialIntegrationResponses)
     % Get dimensionalities
-    [instancesNum, conesNum, timeBins] = size(presynapticResponses);
+    [instancesNum, conesNum, timeBins] = size(preSpatialIntegrationResponses);
     rgcsNum = size(weightsC,2);
     
     % Form response matrix
@@ -212,15 +216,15 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
 
     for instanceIndex = 1:instancesNum
         % All presynaptic spatiotemporal responses for this instance
-        instancePresynapticResponse = squeeze(presynapticResponses(instanceIndex,:,:));
+        instancePreSpatialIntegrationResponse = squeeze(preSpatialIntegrationResponses(instanceIndex,:,:));
         for iRGC = 1:rgcsNum
             % The RGC's weights
             iRGCweightsC = (full(squeeze(weightsC(:,iRGC))))';
             iRGCweightsS = (full(squeeze(weightsS(:,iRGC))))';
             
             % The RGC temporal response
-            centerR = iRGCweightsC * instancePresynapticResponse;
-            surroundR = iRGCweightsS * instancePresynapticResponse;
+            centerR = iRGCweightsC * instancePreSpatialIntegrationResponse;
+            surroundR = iRGCweightsS * instancePreSpatialIntegrationResponse;
 %             
 %             centerR = conv(centerR, centerIR);
 %             centerR = centerR(1:timeBins);
