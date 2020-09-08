@@ -6,11 +6,11 @@ function visualizeRFparamsForConnectedPatch(figNo, figName, ...
     pdfFigureFileName, figExportsDir, plotlabOBJ)
 
     % Ranges and ticks
-    eccRange = [0.01 30];
-    eccTicks = [0.01 0.03 0.1 0.3 1 3 10 30];
+    eccRange = [0.1 100];
+    eccTicks = [0.1 0.3 1 3 10 30 100];
     
-    radiusRange = [0.001 1];
-    radiusTicks = [0.01 0.03 0.1 0.3 1 3];
+    radiusRange = [0.003 10];
+    radiusTicks = [0.003 0.01 0.03 0.1 0.3 1 3 10];
     
     peakSensitivityRange = [0.1 3000];
     peakSensitivityTicks = [0.1 0.3 1 3 10 30 100 300 1000 3000 10000 30000 100000];
@@ -120,5 +120,9 @@ function visualizeRFparamsForConnectedPatch(figNo, figName, ...
          plotlabOBJ.exportFig(hFig, 'pdf', pdfFigureFileName, figExportsDir);
     end
     
+    exportDataFile = sprintf('%s.mat', fullfile(figExportsDir, pdfFigureFileName));
+    save(exportDataFile, 'eccRadiusDegs', 'LMconeBalance', ...
+        'centerCharacteristicRadii', 'surroundCharacteristicRadii', ...
+        'centerPeakSensitivities', 'surroundPeakSensitivities');
 end
 

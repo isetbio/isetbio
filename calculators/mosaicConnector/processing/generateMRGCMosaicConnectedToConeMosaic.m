@@ -8,16 +8,17 @@ function theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMos
     coneSpacingsMicrons = theConeMosaicMetaData.coneSpacingsMicrons;
     coneTypes = theConeMosaicMetaData.coneTypes;
     extraMicronsForSurroundCones = theConeMosaicMetaData.extraMicronsForSurroundCones;
-     
+    
+
     % STEP 2. Connect the cone mosaic patch to the centers of the midget RGC mosaic
     orphanRGCpolicy = mosaicParams.orphanRGCpolicy;
     maximizeConeSpecificity = mosaicParams.maximizeConeSpecificity;
     visualizeMosaicsToBeConnected = ~true;
     [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix] = ...
          connectMidgetRGCMosaicToConeMosaic(mRGCmosaicFile, mosaicParams.rgcMosaicPatchSizeMicrons, ...
-         conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+         conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones, ...
          orphanRGCpolicy, maximizeConeSpecificity, visualizeMosaicsToBeConnected);
-     
+
      
     % Visualize EXCLUSIVE connections to the RF centers. These are
     % determined solely by the relationship of the cone/mRGCRF densities
@@ -106,7 +107,7 @@ end
 
 function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix] = ...
     connectMidgetRGCMosaicToConeMosaic(mRGCmosaicFile, rgcMosaicPatchSizeMicrons, conePositionsMicrons, ...
-    coneSpacingsMicrons, coneTypes, orphanRGCpolicy, maximizeConeSpecificity, visualizedMosaics)
+    coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones, orphanRGCpolicy, maximizeConeSpecificity, visualizedMosaics)
 
     % Load mRGC RF data
     load(mRGCmosaicFile, ...
@@ -114,7 +115,7 @@ function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix
 
     % Crop midget mosaic to the size and position of the cone mosaic, leaving enough space for the surround cones
   	mRGCRFroi.center = 0.5*(min(conePositionsMicrons, [], 1) + max(conePositionsMicrons, [], 1));
-    mRGCRFroi.size = max(conePositionsMicrons, [], 1) - min(conePositionsMicrons, [], 1);
+    mRGCRFroi.size = max(conePositionsMicrons, [], 1) - min(conePositionsMicrons, [], 1) - extraMicronsForSurroundCones;
     
     [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios] = ...
         cropRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons,  desiredConesToRGCratios, mRGCRFroi);
