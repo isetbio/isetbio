@@ -8,12 +8,12 @@ function runPhaseX(runParams)
     recomputeOptics = ~true;
     
     % mRGC mosaic: whether to re-generate it
-    recomputeRGCmosaic = true;
+    recomputeRGCmosaic = ~true;
     % mRGC mosaic: whether to visualize the synthesized RF params
     visualizeSynthesizedParams = true;
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = ~true;
+    recomputeConeMosaicResponses = true;
     recomputeNullResponses = ~true;
     
     % Responses directory
@@ -65,7 +65,7 @@ function runPhaseX(runParams)
     targetRGCsForWhichToVisualizeTuningCurves =  [1:4]; %[20 21 22 23 24]; %[71 80 63 116]; 
    
     % Chromatic stimulus params
-    LMScontrast = [0.1 0.1 0.0];
+    LMScontrast = [0.1 0.0 0.0];
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
         'meanLuminanceCdPerM2', 40, ...

@@ -161,20 +161,20 @@ function MosaicConnector
   rgcMosaicPatchHorizontalEccMicrons = 300;
   rgcMosaicPatchSizeMicrons = 50;
   
-  rgcMosaicPatchHorizontalEccMicrons = 600;
-  rgcMosaicPatchSizeMicrons = 60;
-  
-  rgcMosaicPatchHorizontalEccMicrons = 900;
-  rgcMosaicPatchSizeMicrons = 70;
+%   rgcMosaicPatchHorizontalEccMicrons = 600;
+%   rgcMosaicPatchSizeMicrons = 60;
 %   
-  rgcMosaicPatchHorizontalEccMicrons = 1500;
-  rgcMosaicPatchSizeMicrons = 100;
+%   rgcMosaicPatchHorizontalEccMicrons = 900;
+%   rgcMosaicPatchSizeMicrons = 70;
+% %   
+%   rgcMosaicPatchHorizontalEccMicrons = 1500;
+%   rgcMosaicPatchSizeMicrons = 100;
+% %   
+%   rgcMosaicPatchHorizontalEccMicrons = 3000;
+%   rgcMosaicPatchSizeMicrons = 200;
 %   
-  rgcMosaicPatchHorizontalEccMicrons = 3000;
-  rgcMosaicPatchSizeMicrons = 200;
-  
-  rgcMosaicPatchHorizontalEccMicrons = 4500;
-  rgcMosaicPatchSizeMicrons = 250;
+%   rgcMosaicPatchHorizontalEccMicrons = 4500;
+%   rgcMosaicPatchSizeMicrons = 250;
   
 %     rgcMosaicPatchHorizontalEccMicrons = 6000;
 %     rgcMosaicPatchSizeMicrons = 300;
