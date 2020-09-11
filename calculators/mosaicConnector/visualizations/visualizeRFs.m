@@ -1,5 +1,5 @@
 function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityMatrix, RGCRFPositionsMicrons, ...
-    conePositionsMicrons, coneSpacingsMicrons, coneTypes, roi, fitEllipse,  plotlabOBJ, exportFileName, exportsDir)
+    conePositionsMicrons, coneSpacingsMicrons, coneTypes, roi, fitEllipse,  showConnectedConePolygon, plotlabOBJ, exportFileName, exportsDir)
 
     % Define constants
     global LCONE_ID
@@ -66,7 +66,6 @@ function visualizeRFs(patchEccDegs, zLevels, whichLevelsToContour, connectivityM
     
         indicesOfConeInputsToThisRGC = find(connectivityVector>0);
         
-        showConnectedConePolygon = ~true;
         if (showConnectedConePolygon)
             % Connected cones
             displayConnectedConesPolygon(theAxesGrid, indicesOfConeInputsToThisRGC, conePositionsMicrons);

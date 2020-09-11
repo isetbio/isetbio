@@ -1,6 +1,6 @@
-function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
-    presynapticSignal, spatialFrequenciesCPD, LMScontrast, stimSpatialParams, stimTemporalParams, ...
-    saveDir, figExportsDir, ...
+function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidgetRGCmosaic, ...
+    presynapticSignal, LMScontrast, stimSpatialParams, stimTemporalParams, ...
+    useWeberResponseRepresentation, saveDir, figExportsDir, ...
     visualizeRGCTemporalResponsesAtRGCPositions, visualizeRGCSFTuningsAtRGCPositions, ...
     visualizeAllSpatialFrequencyTuningCurves, visualizeResponseComponents, ...
     visualizeRetinalContrasts, visualizeMeanConeMosaicResponseAsAMovie, ...
@@ -14,13 +14,13 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     % Parse input
     p = inputParser;
     p.addParameter('coVisualizeRetinalStimulusWithMosaics', true, @islogical);
-    p.addParameter('coVisualizedRetinalStimulusSpatialFrequency', 30, @isscalar);
+    p.addParameter('coVisualizedRetinalStimulusSpatialFrequencyCPD', 30, @isscalar);
     p.addParameter('coVisualizedRetinalStimulusConeContrast', LCONE_ID, @(x)(ismember(x, [LCONE_ID MCONE_ID SCONE_ID])));
     
     p.parse(varargin{:});
     coVisualizeRetinalStimulusWithMosaics = p.Results.coVisualizeRetinalStimulusWithMosaics;
     coVisualizedRetinalStimulusData = struct(...
-        'spatialFrequency', p.Results.coVisualizedRetinalStimulusSpatialFrequency, ...
+        'spatialFrequency', p.Results.coVisualizedRetinalStimulusSpatialFrequencyCPD, ...
         'coneContrast', p.Results.coVisualizedRetinalStimulusConeContrast, ...
         'frameIndex', 1);
     
@@ -31,6 +31,9 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     % Open data file for read-only
     mFile = matfile(fullfile(saveDir,theNullResponseFileName), 'Writable', false);
     
+    % Extract tested spatial frequencies
+    spatialFrequenciesCPD = stimSpatialParams.testedSpatialFrequenciesCPD;
+     
     % Render retinal stimulus info
     coVisualizedRetinalStimulus = renderRetinalStimFigures(mFile, spatialFrequenciesCPD, ...
         coVisualizeRetinalStimulusWithMosaics, coVisualizedRetinalStimulusData, ...
@@ -90,7 +93,7 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
         % working on the cone isomerizations signal here, we have to do
         % this contrast transformation to have RGC activations that are
         % proportional to stimuls contrast.
-        useWeberResponseRepresentation = true;
+        
         if (useWeberResponseRepresentation)
              % Compute the pre-spatial responses as Weber responses (test-null)/null
              preSpatialIntegrationResponses = bsxfun(@minus, thePresynapticResponses, theNullPresynapticResponses);
@@ -152,28 +155,27 @@ function computeRGCresponses(runParams, theConeMosaic, theMidgetRGCmosaic, ...
     end
     
     % Select SpikeRate max and ticks
-    maxAllResponses = max(integratedResponsesMean(:));
+    maxAllResponses = prctile(integratedResponsesMean(:), 99);
     
-    if (maxAllResponses > 200)
+    if (maxAllResponses > 300)
         maxSpikeRateModulation = ceil(maxAllResponses/50)*50;
-        spikeRateTicks = 0:25:maxSpikeRateModulation;
+        spikeRateTicks = 0:50:maxSpikeRateModulation;
+    elseif (maxAllResponses > 200)
+        maxSpikeRateModulation = 300;
+        spikeRateTicks = 0:50:maxSpikeRateModulation;
     elseif (maxAllResponses > 100)
-        maxSpikeRateModulation = ceil(maxAllResponses/40)*40;
-        spikeRateTicks = 0:20:maxSpikeRateModulation;
+        maxSpikeRateModulation = 200;
+        spikeRateTicks = 0:40:maxSpikeRateModulation;
     elseif (maxAllResponses > 50)
-        maxSpikeRateModulation = ceil(maxAllResponses/20)*20;
-        spikeRateTicks = 0:10:maxSpikeRateModulation;
+        maxSpikeRateModulation = 100;
+        spikeRateTicks = 0:20:maxSpikeRateModulation;
     elseif (maxAllResponses > 25)
-        maxSpikeRateModulation = ceil(maxAllResponses/10)*10;
-        spikeRateTicks = 0:5:maxSpikeRateModulation;
+        maxSpikeRateModulation = 50;
+        spikeRateTicks = 0:10:maxSpikeRateModulation;
     else
-        maxSpikeRateModulation = ceil(maxAllResponses/5)*5;
-        spikeRateTicks = 0:2:maxSpikeRateModulation;
+        maxSpikeRateModulation = 25;
+        spikeRateTicks = 0:5:maxSpikeRateModulation;
     end
-
-
-    maxSpikeRateModulation = 150
-    spikeRateTicks = 0:30:200
     
     % Visualize the center and surround response components for the targeted RGCs
     if (visualizeResponseComponents)
