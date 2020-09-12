@@ -145,6 +145,7 @@ function MosaicConnector
     %coneDensities = [0 1 0];
     
     noLCA = ~true;
+    noOptics = true;
     LconeMosaicOnly = ~true;
     MconeMosaicOnly = ~true;
     if (coneDensities(1) == 1)
@@ -201,7 +202,10 @@ function MosaicConnector
         responseFilesDir = sprintf('%sNoLCA',responseFilesDir);
         exportsDir = sprintf('%sNoLCA',exportsDir);
     end
-    
+    if (noOptics)
+        responseFilesDir = sprintf('%sNoOptics',responseFilesDir);
+        exportsDir = sprintf('%sNoOptics',exportsDir);
+    end
     % Separate exports depending on LCA and horizontal ecc
     exportsDir = sprintf('%s_HorizontalEcc_%2.0fmicrons',exportsDir, rgcMosaicPatchHorizontalEccMicrons);
     
@@ -218,7 +222,7 @@ function MosaicConnector
         'deconvolutionOpticsParams', deconvolutionOpticsParams, ...
         'pupilDiamMM', 3.0, ...
         'noLCA', noLCA, ...                                      // Optics with no longitudinal chromatic aberration
-        'noOptics', ~true, ...                                   // Optics zero Zernike coefficients
+        'noOptics', noOptics, ...                                   // Optics zero Zernike coefficients
         'imposedRefractionErrorDiopters', 0, ...
         'outputFile', 'midgetMosaicConnectedWithConeMosaicPatch', ...
         'responseFilesDir', responseFilesDir, ...
