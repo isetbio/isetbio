@@ -51,21 +51,22 @@ function runPhaseX(runParams)
         visualizeSynthesizedParams);
 
     % Display PSFs
-    displayPSFs = ~true;
+    displayPSFs = true;
     if (displayPSFs)
         eccDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*runParams.rgcMosaicPatchEccMicrons);
         visualizePSFs(theOptics, eccDegs(1), eccDegs(2));
     end
+    pause
     
     % Signal to the RGCs
     rgcInputSignal = 'isomerizations';
     %rgcInputSignal = 'photocurrents';
     
     % Visualized cells
-    targetRGCsForWhichToVisualizeTuningCurves =  [30:50]; %[20 21 22 23 24]; %[71 80 63 116]; 
+    targetRGCsForWhichToVisualizeTuningCurves =  [58 59 69 70 79 80 83 86]
    
     % Chromatic stimulus params
-    LMScontrast = [0.1 0.1 0.0];
+    LMScontrast = [0.0 0.1 0.0];
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
         'meanLuminanceCdPerM2', 40, ...

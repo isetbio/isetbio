@@ -144,8 +144,8 @@ function MosaicConnector
     
     %coneDensities = [0 1 0];
     
-    noLCA = ~true;
-    noOptics = true;
+    noLCA = true;
+    noOptics = ~true;
     LconeMosaicOnly = ~true;
     MconeMosaicOnly = ~true;
     if (coneDensities(1) == 1)
