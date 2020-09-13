@@ -127,7 +127,7 @@ function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidg
     end % sfIndex
     
     % Center-surround integrated response instances
-    integratedTestStimulusResponseInstances = centerTestStimulusResponseInstances - surroundTestStimulusResponseInstances;
+    integratedTestStimulusResponseInstances = centerTestStimulusResponseInstances + surroundTestStimulusResponseInstances;
     
     % Integrated responses in spikes/sec
     integratedResponseInstanceSpikesPerSec = ...
@@ -244,7 +244,7 @@ function [responsesC, responsesS] = computeSubregionResponses(theConeMosaic, wei
 %             surroundR = surroundR(1:timeBins);
             
             responsesC(instanceIndex,iRGC,:) = centerR;
-            responsesS(instanceIndex,iRGC,:) = surroundR;
+            responsesS(instanceIndex,iRGC,:) = -surroundR;
         end % iRGC
         
     end % instanceIndex

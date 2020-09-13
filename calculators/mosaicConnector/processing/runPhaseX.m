@@ -13,7 +13,7 @@ function runPhaseX(runParams)
     visualizeSynthesizedParams = true;
     
     % Compute cone mosaic responses
-    recomputeConeMosaicResponses = ~true;
+    recomputeConeMosaicResponses = true;
     recomputeNullResponses = ~true;
     
     % Responses directory
@@ -51,19 +51,18 @@ function runPhaseX(runParams)
         visualizeSynthesizedParams);
 
     % Display PSFs
-    displayPSFs = true;
+    displayPSFs = ~true;
     if (displayPSFs)
         eccDegs = WatsonRGCModel.rhoMMsToDegs(1e-3*runParams.rgcMosaicPatchEccMicrons);
         visualizePSFs(theOptics, eccDegs(1), eccDegs(2));
     end
-    pause
     
     % Signal to the RGCs
     rgcInputSignal = 'isomerizations';
     %rgcInputSignal = 'photocurrents';
     
     % Visualized cells
-    targetRGCsForWhichToVisualizeTuningCurves =  [58 59 69 70 79 80 83 86]
+    targetRGCsForWhichToVisualizeTuningCurves =  [58 59 69 70 79 80 83 86];
    
     % Chromatic stimulus params
     LMScontrast = [0.0 0.1 0.0];

@@ -8,5 +8,6 @@ function plotQuality(theAxesHandle, rfPositions, triangleIndices, iteration, max
     plot(theAxesHandle, minQualityValue*[1 1], [0 max(histogramData.y)], 'r');
     grid(theAxesHandle, 'on')
     xlabel(theAxesHandle, 'hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex');
-    title(theAxesHandle,sprintf('iteration %d of %d', iteration, maxIterations));
+    ylabel(theAxesHandle, '# of cells');
+    %title(theAxesHandle,sprintf('iteration %d of %d', iteration, maxIterations));
 end

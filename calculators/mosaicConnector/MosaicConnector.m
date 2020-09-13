@@ -144,7 +144,7 @@ function MosaicConnector
     
     %coneDensities = [0 1 0];
     
-    noLCA = true;
+    noLCA = ~true;
     noOptics = ~true;
     LconeMosaicOnly = ~true;
     MconeMosaicOnly = ~true;
@@ -168,8 +168,8 @@ function MosaicConnector
 %   rgcMosaicPatchHorizontalEccMicrons = 900;
 %   rgcMosaicPatchSizeMicrons = 70;
 % %   
-%   rgcMosaicPatchHorizontalEccMicrons = 1500;
-%   rgcMosaicPatchSizeMicrons = 100;
+   rgcMosaicPatchHorizontalEccMicrons = 1500;
+   rgcMosaicPatchSizeMicrons = 100;
 % %   
 %   rgcMosaicPatchHorizontalEccMicrons = 3000;
 %   rgcMosaicPatchSizeMicrons = 200;
