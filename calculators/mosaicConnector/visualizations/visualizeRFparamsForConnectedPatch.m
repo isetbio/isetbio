@@ -6,11 +6,11 @@ function visualizeRFparamsForConnectedPatch(figNo, figName, ...
     pdfFigureFileName, figExportsDir, plotlabOBJ)
 
     % Ranges and ticks
-    eccRange = [0.01 30];
-    eccTicks = [0.01 0.03 0.1 0.3 1 3 10 30];
+    eccRange = [0.3 30];
+    eccTicks = [0.1 0.3 1 3 10 30 100];
     
-    radiusRange = [0.001 1];
-    radiusTicks = [0.01 0.03 0.1 0.3 1 3];
+    radiusRange = [0.003 3];
+    radiusTicks = [0.003 0.01 0.03 0.1 0.3 1 3 10];
     
     peakSensitivityRange = [0.1 3000];
     peakSensitivityTicks = [0.1 0.3 1 3 10 30 100 300 1000 3000 10000 30000 100000];
@@ -20,10 +20,17 @@ function visualizeRFparamsForConnectedPatch(figNo, figName, ...
     
     % Compute cone aperture radius in eccRange
     w = WatsonRGCModel();
-    coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(eccRadiusDegs), ...
+    eccCones = logspace(log10(0.3), log10(30), 100);
+    coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(eccCones, ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
     coneApertureRadiiNasalRetina = WatsonRGCModel.coneApertureToDiameterRatio * 0.5 * coneRFSpacingsDegs;
+    coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(eccCones, ...
+            'superior meridian','deg', 'deg^2', ...
+            'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
+    coneApertureRadiiSuperiorRetina = WatsonRGCModel.coneApertureToDiameterRatio * 0.5 * coneRFSpacingsDegs;
+    
+    ck = CronerKaplanRGCModel('generateAllFigures', false, 'instantiatePlotLab', false);
     
     % Determine RF center cone dominance
     LMconeBalance = determineConeDominance(RGCconeInputInfo);
@@ -55,61 +62,85 @@ function visualizeRFparamsForConnectedPatch(figNo, figName, ...
         markerColorsSurround(:,3) = 0.3;
     end
     
-    % center and surround characteristic radii as a function of eccentricity
-    ax = theAxesGrid{1,1};
-    scatter(ax, eccRadiusDegs, centerCharacteristicRadii, [], markerColorsCenter, 'o', 'MarkerEdgeColor', 'none'); hold(ax, 'on');
-    scatter(ax, eccRadiusDegs, surroundCharacteristicRadii, [], markerColorsSurround, 'd', 'MarkerEdgeColor', 'none');
-    line(ax, eccRadiusDegs, coneApertureRadiiNasalRetina, 'LineStyle', '--', 'Color', [0.2 0.2 0.2], 'LineWidth', 1.5);
+    % The cell eccentricities
+    ax = theAxesGrid{1,1};hold(ax, 'on');
+    scatter(ax, eccRadiusDegs, eccRadiusDegs*0, ...
+        144, 'MarkerFaceAlpha', 0.15, 'MarkerEdgeColor', 'none');
+    scatter(ax, ck.recordedEccentricitiesData(:,1), ck.recordedEccentricitiesData(:,2), 121);
     xlabel(ax, 'eccentricity (degs)');
-    ylabel(ax, 'radius (degs)');
+    ylabel(ax, 'eccentricity (degs)');
+    set(ax, 'XLim', [-30 30] , 'XTick', -30:10:30);
+    set(ax,  'YLim',  [-30 30] , 'YTick', -30:10:30);
+    axis(ax, 'square');
+    
+    % center characteristic radii as a function of eccentricity
+    ax = theAxesGrid{1,2}; hold(ax, 'on');
+    scatter(ax, eccRadiusDegs, centerCharacteristicRadii, ...
+        144, 'MarkerFaceAlpha', 0.15, 'MarkerEdgeColor', 'none'); 
+    scatter(ax, ck.centerData('size').eccDegs, ck.centerData('size').radiusDegs, ...
+        121); 
+    line(ax, eccCones, coneApertureRadiiNasalRetina, 'LineStyle', '--', 'Color', [0.2 0.2 0.2], 'LineWidth', 1.5);
+    line(ax, eccCones, coneApertureRadiiSuperiorRetina, 'LineStyle', ':', 'Color', [0.2 0.2 0.2], 'LineWidth', 1.5);
+    xlabel(ax, 'eccentricity (degs)');
+    ylabel(ax, 'center radius (degs)');
     set(ax, 'XScale', 'log', 'XLim', eccRange , 'XTick', eccTicks);
     set(ax, 'YScale', 'log', 'YLim', radiusRange, 'YTick',radiusTicks);
     axis(ax, 'square');
     
-    % center and surround peak sensitivities as a function of eccentricity
-    ax = theAxesGrid{1,2};
-    scatter(ax, eccRadiusDegs, centerPeakSensitivities, [], markerColorsCenter, 'o', 'MarkerEdgeColor', 'none'); hold(ax, 'on');
-    scatter(ax, eccRadiusDegs, surroundPeakSensitivities, [], markerColorsSurround, 'd', 'MarkerEdgeColor', 'none');
+
+    % surround characteristic radii as a function of eccentricity
+    ax = theAxesGrid{1,3}; hold(ax, 'on');
+    scatter(ax, eccRadiusDegs, surroundCharacteristicRadii, ...
+        144, 'MarkerFaceAlpha', 0.15, 'MarkerEdgeColor', 'none'); 
+    scatter(ax, ck.surroundData('size').eccDegs, ck.surroundData('size').radiusDegs, 121);
+    
+    line(ax, eccCones, coneApertureRadiiNasalRetina, 'LineStyle', '--', 'Color', [0.2 0.2 0.2], 'LineWidth', 1.5);
+    line(ax, eccCones, coneApertureRadiiSuperiorRetina, 'LineStyle', ':', 'Color', [0.2 0.2 0.2], 'LineWidth', 1.5);
     xlabel(ax, 'eccentricity (degs)');
-    ylabel(ax, 'peak sensitivity');
+    ylabel(ax, 'surround radius (degs)');
     set(ax, 'XScale', 'log', 'XLim', eccRange , 'XTick', eccTicks);
-    set(ax, 'YScale', 'log', 'YLim', peakSensitivityRange, 'YTick', peakSensitivityTicks);
+    set(ax, 'YScale', 'log', 'YLim', radiusRange, 'YTick',radiusTicks);
     axis(ax, 'square');
     
-    % center and surround peak sensitivities as a function of respective characteristic radii
-    ax = theAxesGrid{1,3};
-    scatter(ax, centerCharacteristicRadii,  centerPeakSensitivities, [], markerColorsCenter, 'o', 'MarkerEdgeColor', 'none' ); hold(ax, 'on');
-    scatter(ax, surroundCharacteristicRadii, surroundPeakSensitivities, [], markerColorsCenter, 'd', 'MarkerEdgeColor', 'none' );
-    ylabel(ax, 'peak sensitivity');
-    xlabel(ax, 'radius (degs)');
-    set(ax, 'XScale', 'log', 'XLim', radiusRange, 'XTick', radiusTicks);
-    set(ax, 'YScale', 'log', 'YLim', peakSensitivityRange, 'YTick', peakSensitivityTicks);
+    
+    
+     % ratio of characteristic radii (S:C)
+    ax = theAxesGrid{2,1}; hold(ax, 'on');
+    characteristicRadiiRatios = surroundCharacteristicRadii./centerCharacteristicRadii;
+    scatter(ax,eccRadiusDegs, characteristicRadiiRatios,...
+        144, 'MarkerFaceAlpha', 0.15, 'MarkerEdgeColor', 'none'); 
+    scatter(ax, ck.surroundCenterRatiosData('radius').eccDegs, ...
+        ck.surroundCenterRatiosData('radius').ratios, 121);
+
+    xlabel(ax,'eccentricity (degs)');
+    ylabel(ax,'characteristic radius (surround/center)');
+    set(ax, 'XScale', 'log', 'XLim', eccRange, 'XTick', eccTicks);
+    set(ax, 'YScale', 'linear', 'YLim', [0 25], 'YTick', 0:5:25);
     axis(ax, 'square');
     
     % ratio of peak sensitivities (S:C)
-    ax = theAxesGrid{2,1};
+    ax = theAxesGrid{2,2}; hold(ax, 'on');
     peakSensitivityRatios = surroundPeakSensitivities./centerPeakSensitivities;
-    scatter(ax,eccRadiusDegs, peakSensitivityRatios , [], markerColorsCenter, 'MarkerEdgeColor', 'none');
+    scatter(ax,eccRadiusDegs, peakSensitivityRatios, ...
+        144, 'MarkerFaceAlpha', 0.15, 'MarkerEdgeColor', 'none'); 
+    scatter(ax, ck.surroundCenterRatiosData('peak sensitivity').eccDegs, ...
+        ck.surroundCenterRatiosData('peak sensitivity').ratios, 121); 
     xlabel(ax,'eccentricity (degs)');
     ylabel(ax,'peak sensitivity (surround/center)');
     set(ax, 'XScale', 'log', 'XLim', eccRange, 'XTick', eccTicks);
     set(ax, 'YScale', 'log', 'YLim', peakSensitivityRatioRange, 'YTick', peakSensitivityRatioTicks);
     axis(ax, 'square');
     
-    % ratio of characteristic radii (S:C)
-    ax = theAxesGrid{2,2};
-    characteristicRadiiRatios = surroundCharacteristicRadii./centerCharacteristicRadii;
-    scatter(ax,eccRadiusDegs, characteristicRadiiRatios, [], markerColorsCenter, 'MarkerEdgeColor', 'none');
-    xlabel(ax,'eccentricity (degs)');
-    ylabel(ax,'characteristic radius (surround/center)');
-    set(ax, 'XScale', 'log', 'XLim', eccRange, 'XTick', eccTicks);
-    set(ax, 'YScale', 'linear', 'YLim', [0 10], 'YTick', 0:2:10);
-    axis(ax, 'square');
+   
     
     % ratio of integrated sensitivities (S:C)
-    ax = theAxesGrid{2,3};
+    ax = theAxesGrid{2,3}; hold(ax, 'on');
     integratedSensitivityRatios = (surroundCharacteristicRadii./centerCharacteristicRadii).^2 .* (surroundPeakSensitivities./centerPeakSensitivities);
-    scatter(ax, eccRadiusDegs, integratedSensitivityRatios, [], markerColorsCenter, 'MarkerEdgeColor', 'none');
+    scatter(ax, eccRadiusDegs, integratedSensitivityRatios, ...
+        144, 'MarkerEdgeColor', 'none');
+    scatter(ax, ck.surroundCenterRatiosData('integrated sensitivity').eccDegs, ...
+        ck.surroundCenterRatiosData('integrated sensitivity').ratios, 121);
+    
     xlabel(ax, 'eccentricity (degs)');
     ylabel(ax, 'integrated sensitivity (surround/center)');
     set(ax, 'XScale', 'log', 'XLim', eccRange, 'XTick', eccTicks);
@@ -120,5 +151,9 @@ function visualizeRFparamsForConnectedPatch(figNo, figName, ...
          plotlabOBJ.exportFig(hFig, 'pdf', pdfFigureFileName, figExportsDir);
     end
     
+    exportDataFile = sprintf('%s.mat', fullfile(figExportsDir, pdfFigureFileName));
+    save(exportDataFile, 'eccRadiusDegs', 'LMconeBalance', ...
+        'centerCharacteristicRadii', 'surroundCharacteristicRadii', ...
+        'centerPeakSensitivities', 'surroundPeakSensitivities');
 end
 

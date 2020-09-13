@@ -37,10 +37,11 @@ function runPhase5(runParams)
 
          subregionMidgetRGCconnectionMatrix = midgetRGCconnectionMatrix(:,subregionRGCidx);
          subregionRGCRFPositionsMicrons = RGCRFPositionsMicrons(subregionRGCidx,:);
-
+        
          visualizeRFs(patchEccDegs, runParams.zLevels, runParams.whichLevelsToContour, ...
              subregionMidgetRGCconnectionMatrix, subregionRGCRFPositionsMicrons,...
              conePositionsMicrons, coneSpacingsMicrons, coneTypes, subregion, ...
-             runParams.displayEllipseInsteadOfContour, plotlabOBJ, runParams.outputFile,runParams.exportsDir);
+             runParams.displayEllipseInsteadOfContour, runParams.showConnectedConePolygon, ...
+             plotlabOBJ, runParams.outputFile,runParams.exportsDir);
     end
 end

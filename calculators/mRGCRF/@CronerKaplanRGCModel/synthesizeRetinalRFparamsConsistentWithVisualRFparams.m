@@ -48,7 +48,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     % Use the deconvolutionModel.center to determine:
     % (a) the center's VISUAL characteristic radius based on the number of input cones to this cells' RF center, and 
     % (b) the center's visual peak sensitivity attenuation factor
-    parfor RGCindex = 1:rgcsNum
+    for RGCindex = 1:rgcsNum
         inputConesNum = rfCenterInputConesNum(RGCindex);
         % Retrieve the interpolation indices and interpolation weights for
         % weighing characteristic radii from the 2 closest eccentricities
@@ -99,7 +99,7 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
     surroundRetinalCharacteristicRadiiDegs = zeros(rgcsNum,1);
     surroundPeakSensitivityAttenuation = zeros(rgcsNum,1);
     
-    parfor RGCindex = 1:rgcsNum
+    for RGCindex = 1:rgcsNum
         inputConesNum = rfCenterInputConesNum(RGCindex);
         % Retrieve the interpolation indices and interpolation weights for
         % weighing characteristic radii from the 2 closest eccentricities
@@ -117,6 +117,9 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
             
             % determine interpolation weights for 2 closest surround characteristic radii
             nonNanIndices = find(~isnan(squeeze(deconvolutionModel.surround.characteristicRadiusDegs(neighboringEccIndices(k),coneInputsIndex,:))));
+            if (isempty(nonNanIndices))
+                error('We have no surround data for centers with %d cone inputs', inputConesNum);
+            end
             
             % The surround radii that were examined in the deconvolution model
             examinedVisualCharacteristicRadii = squeeze(deconvolutionModel.surround.characteristicRadiusDegs(neighboringEccIndices(k),coneInputsIndex,nonNanIndices));
@@ -170,29 +173,29 @@ function synthesizedRFParams = synthesizeRetinalRFparamsConsistentWithVisualRFpa
          );
 end
 
-function  [interpolationEccIndices, interpolationWeights] = computeInterpolationIndices(...
+function  [interpolationIndices, interpolationWeights] = computeInterpolationIndices(...
         subregionName, domainName, tabulatedValues, targetValues)
     
+
     % Determine linear interpolation indices and interpolation values
         
     targetsNum = numel(targetValues);
-    interpolationEccIndices = zeros(targetsNum,2);
     interpolationWeights = zeros(targetsNum,2);
+    interpolationIndices = zeros(targetsNum,2);
     
     for targetIndex = 1:targetsNum
         
-        theRGCeccentricityDegs = targetValues(targetIndex);
-        
-        % Find the index of the tabulated eccentricity that is greater or equal to the cell's eccentricity
-        idxPos = find(tabulatedValues >= theRGCeccentricityDegs);
+        % Find the index of the tabulated values that is greater or equal to the target value
+        targetValue = targetValues(targetIndex);
+        idxPos = find(tabulatedValues >= targetValue);
         if (isempty(idxPos))
             fprintf(2,'Deconvolution data for %s do not extend up to %2.3f %s. Max value: %2.3f.\n', ...
                 subregionName,  targetValues(targetIndex), domainName, max(tabulatedValues));
             idxPos = length(tabulatedValues);
         end
         
-        % Find the index of the tabulated eccentricity that is greater or equal to the cell's eccentricity
-        idxNeg = find(tabulatedValues <= theRGCeccentricityDegs);
+        % Find the index of the tabulated values that is greater or equal to the target value
+        idxNeg = find(tabulatedValues <= targetValue);
         if (isempty(idxNeg))
             fprintf(2,'Deconvolution data for %s  do not extend down to %2.3f %s. Min value: %2.3f.\n', ...
                 subregionName, targetValues(targetIndex), domainName, min(tabulatedValues));
@@ -200,26 +203,26 @@ function  [interpolationEccIndices, interpolationWeights] = computeInterpolation
         end
         
         % Intepolation eccentricity indices for this cell
-        interpolationEccIndices(targetIndex,:) = [idxNeg(end) idxPos(1)];
+        interpolationIndices(targetIndex,:) = [idxNeg(end) idxPos(1)];
         
-        % Compute interpolation weights based on the distance of this cells
-        % ecc to the 2 intepolation eccentricities
-        interpolationEccs = tabulatedValues(interpolationEccIndices(targetIndex,:));
-        interpolationEccRange = abs(diff(interpolationEccs));
+        % Compute interpolation weights based on the distance of the target
+        % value to the 2 intepolation values
+        interpolationValues = tabulatedValues(interpolationIndices(targetIndex,:));
+        interpolationValueRange = abs(diff(interpolationValues));
         
-        if (interpolationEccIndices(targetIndex,1) == interpolationEccIndices(targetIndex,2))
+        if (interpolationIndices(targetIndex,1) == interpolationIndices(targetIndex,2))
             interpolationWeights(targetIndex,:) = [0.5 0.5];
         else 
-            eccDiffs = abs(interpolationEccs - theRGCeccentricityDegs);
+            eccDiffs = abs(interpolationValues - targetValue);
             % Interpolation weights
-            interpolationWeights(targetIndex,:) = [eccDiffs(2) eccDiffs(1)]/interpolationEccRange;
+            interpolationWeights(targetIndex,:) = [eccDiffs(2) eccDiffs(1)]/interpolationValueRange;
         end
         
         
 %         fprintf('interpolation: cell at %2.2f, below/above: %2.2f, %2.2f: weights: (%2.2f,%2.2f)  \n', ...
-%             theRGCeccentricityDegs, ...
-%             tabulatedValues(interpolationEccIndices(targetIndex,1)), ...
-%             tabulatedValues(interpolationEccIndices(targetIndex,2)), ...
+%             targetValue, ...
+%             tabulatedValues(interpolationIndices(targetIndex,1)), ...
+%             tabulatedValues(interpolationIndices(targetIndex,2)), ...
 %             interpolationWeights(targetIndex,1), interpolationWeights(targetIndex,2));
     end
 end

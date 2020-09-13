@@ -13,6 +13,12 @@ classdef CronerKaplanRGCModel < handle
         centerData;
         surroundData;
         
+        % Digitized data from Figures 4,6 & 11
+        surroundCenterRatiosData;
+        
+        % Digitized data form Figure 3
+        recordedEccentricitiesData;
+        
         % Synthesized data
         synthesizedData;
         

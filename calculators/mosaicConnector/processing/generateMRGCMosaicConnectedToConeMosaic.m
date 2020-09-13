@@ -8,16 +8,17 @@ function theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMos
     coneSpacingsMicrons = theConeMosaicMetaData.coneSpacingsMicrons;
     coneTypes = theConeMosaicMetaData.coneTypes;
     extraMicronsForSurroundCones = theConeMosaicMetaData.extraMicronsForSurroundCones;
-     
+    
+
     % STEP 2. Connect the cone mosaic patch to the centers of the midget RGC mosaic
     orphanRGCpolicy = mosaicParams.orphanRGCpolicy;
     maximizeConeSpecificity = mosaicParams.maximizeConeSpecificity;
     visualizeMosaicsToBeConnected = ~true;
     [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix] = ...
          connectMidgetRGCMosaicToConeMosaic(mRGCmosaicFile, mosaicParams.rgcMosaicPatchSizeMicrons, ...
-         conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+         conePositionsMicrons, coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones, ...
          orphanRGCpolicy, maximizeConeSpecificity, visualizeMosaicsToBeConnected);
-     
+
      
     % Visualize EXCLUSIVE connections to the RF centers. These are
     % determined solely by the relationship of the cone/mRGCRF densities
@@ -65,7 +66,7 @@ function theMidgetRGCmosaic = generateMRGCMosaicConnectedToConeMosaic(theConeMos
     if (visualizeRFs)
         % Visualize the generated retinal 2D RFs (video)
         plotlabOBJ = setupPlotLab();
-        synthesizedRFParams.retinal
+        
         outputFile = sprintf('%s_RFexamples',outputFile);
         visualizeSubregions(1,midgetRGCconnectionMatrixCenter, midgetRGCconnectionMatrixSurround, ...
             synthesizedRFParams.rfEccRadiusDegs, ...
@@ -96,34 +97,32 @@ function visualizeCenterConnections(midgetRGCconnectionMatrix, RGCRFPositionsMic
                 'figureWidthInches', figHeightInches/(subregionToVisualize.size(2))*(subregionToVisualize.size(1)), ...
                 'figureHeightInches', figHeightInches);
 
+    showConnectedConePolygon = ~true;
     visualizeRFs(coneMosaicEccDegs, zLevels, whichLevelsToContour, ...
              midgetRGCconnectionMatrix, RGCRFPositionsMicrons,...
              conePositionsMicrons, coneSpacingsMicrons, coneTypes, subregionToVisualize, ...
-             displayEllipseInsteadOfContour, plotlabOBJ,  outputFile, exportsDir);
+             displayEllipseInsteadOfContour, showConnectedConePolygon, plotlabOBJ,  outputFile, exportsDir);
          
 end
 
 
 function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix] = ...
     connectMidgetRGCMosaicToConeMosaic(mRGCmosaicFile, rgcMosaicPatchSizeMicrons, conePositionsMicrons, ...
-    coneSpacingsMicrons, coneTypes, orphanRGCpolicy, maximizeConeSpecificity, visualizedMosaics)
+    coneSpacingsMicrons, coneTypes, extraMicronsForSurroundCones, orphanRGCpolicy, maximizeConeSpecificity, visualizedMosaics)
 
     % Load mRGC RF data
     load(mRGCmosaicFile, ...
         'RGCRFPositionsMicrons', 'RGCRFSpacingsMicrons', 'desiredConesToRGCratios');
 
-    % Crop midget mosaic to the size and position of the cone mosaic, leaving enough space for the surround cones
+    % Crop midget mosaic to the size and position of the cone mosaic
   	mRGCRFroi.center = 0.5*(min(conePositionsMicrons, [], 1) + max(conePositionsMicrons, [], 1));
     mRGCRFroi.size = max(conePositionsMicrons, [], 1) - min(conePositionsMicrons, [], 1);
+    
     
     [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, desiredConesToRGCratios] = ...
         cropRGCmosaic(RGCRFPositionsMicrons, RGCRFSpacingsMicrons,  desiredConesToRGCratios, mRGCRFroi);
     
-    % Visualize mosaics to be connected
-    if (visualizedMosaics)
-        visualizeMosaicPatchesToBeConnected(conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, mRGCRFroi.center)
-    end
+    
     
     % Compute inputs to RGC RF centers
     visualizeConnectionProcess = ~true;
@@ -142,11 +141,21 @@ function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix
         RGCRFPositionsMicronsFromConnectivity(iRGC,:) = mean(conePositionsMicrons(centerIndices,:),1);
     end
     
-    % Only keep RGCs within mRGCRFroi.center +/- 0.5*rgcMosaicPatchSizeMicrons
+    % Only keep RGCs within mRGCRFroi.center +/-
+    % 0.5*rgcMosaicPatchSizeMicrons AND allowing space for surround cones
+    minConePosition = min(conePositionsMicrons, [], 1);
+    maxConePosition = max(conePositionsMicrons, [], 1);
+
     finalRGCindices = [];
     for rgcIndex = 1:size(RGCRFPositionsMicrons,1)
         distanceVector = abs(RGCRFPositionsMicronsFromConnectivity(rgcIndex,:) - mRGCRFroi.center);
-        if (distanceVector(1) <= 0.5*rgcMosaicPatchSizeMicrons(1)) && (distanceVector(2) <= 0.5*rgcMosaicPatchSizeMicrons(2))
+        if ( ...
+           (distanceVector(1) <= 0.5*rgcMosaicPatchSizeMicrons(1)) && (distanceVector(2) <= 0.5*rgcMosaicPatchSizeMicrons(2)) && ...
+           (RGCRFPositionsMicronsFromConnectivity(rgcIndex,1)-extraMicronsForSurroundCones/2 >= minConePosition(1)) && ...
+           (RGCRFPositionsMicronsFromConnectivity(rgcIndex,1)+extraMicronsForSurroundCones/2 <= maxConePosition(1)) && ...
+           (RGCRFPositionsMicronsFromConnectivity(rgcIndex,2)-extraMicronsForSurroundCones/2 >= minConePosition(2)) && ...
+           (RGCRFPositionsMicronsFromConnectivity(rgcIndex,2)+extraMicronsForSurroundCones/2 <= maxConePosition(2)) ...
+           )
             finalRGCindices = cat(2, finalRGCindices, rgcIndex);
         end
     end
@@ -154,6 +163,12 @@ function [RGCRFPositionsMicrons, RGCRFSpacingsMicrons, midgetRGCconnectionMatrix
     midgetRGCconnectionMatrix = midgetRGCconnectionMatrix(:, finalRGCindices);
     RGCRFPositionsMicrons = RGCRFPositionsMicronsFromConnectivity(finalRGCindices,:);
     RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(finalRGCindices);
+    
+    % Visualize connected mosaics
+    if (visualizedMosaics)
+        visualizeMosaicPatchesToBeConnected(conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, mRGCRFroi.center)
+    end
 end
 
 function visualizeMosaicPatchesToBeConnected(conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...

@@ -139,7 +139,12 @@ function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measP
         inFocusWindex = find(wavelengthsListToCompute == measWavelength);
         assert(~isempty(inFocusWindex), 'In focus wavelength is not in the list of wavelenghts to compute');
         for waveIndex = 1:numel(wavelengthsListToCompute)
-             theOTF(:,:,waveIndex) = theOTF(:,:,inFocusWindex);
+            theWaveOTF = theOTF(:,:,inFocusWindex);
+            theWavePSF = thePSF(:,:,inFocusWindex);
+            
+            theOTF(:,:,waveIndex) = theWaveOTF;
+            % Also set the PSF stored within theWVF
+            theWVF.psf{waveIndex} = theWavePSF;
         end
     end
   

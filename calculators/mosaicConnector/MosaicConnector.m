@@ -98,8 +98,9 @@ function MosaicConnector
         'zLevels', [0.3 1], ...                                     // contour levels
         'whichLevelsToContour', [1], ...                            // Which level to plot the isoresponse contour
         'displayEllipseInsteadOfContour', ~true, ...                // Ellipse fitted to the sum of flat-top gaussians
-        'patchEccMicrons', [1500 0]*3,... % [4800 0]/16*0, ...                           // Eccenticity of visualized patch
-        'patchSizeMicrons', [100 50]*7, ...                         // Size of visualized patch
+        'showConnectedConePolygon', true, ...
+        'patchEccMicrons', [0 0],... % [4800 0]/16*0, ...                           // Eccenticity of visualized patch
+        'patchSizeMicrons', [100 50], ...                         // Size of visualized patch
         'outputFile', sprintf('%s__Visualization', connector('phase4').outputFile),...
         'exportsDir', exportsDir, ...
         'outputDir', tmpDir ...
@@ -141,9 +142,10 @@ function MosaicConnector
    
     coneDensities = [0.6 0.3 0.1];
     
-   % coneDensities = [0 1 0];
+    %coneDensities = [0 1 0];
     
     noLCA = ~true;
+    noOptics = ~true;
     LconeMosaicOnly = ~true;
     MconeMosaicOnly = ~true;
     if (coneDensities(1) == 1)
@@ -154,11 +156,36 @@ function MosaicConnector
     end
     
     
-    rgcMosaicPatchHorizontalEccMicrons = 1500;
-    rgcMosaicPatchSizeMicrons = 100;
+   rgcMosaicPatchHorizontalEccMicrons = 150;
+   rgcMosaicPatchSizeMicrons = 30;
+  
+  rgcMosaicPatchHorizontalEccMicrons = 300;
+  rgcMosaicPatchSizeMicrons = 50;
+  
+%   rgcMosaicPatchHorizontalEccMicrons = 600;
+%   rgcMosaicPatchSizeMicrons = 60;
+%   
+%   rgcMosaicPatchHorizontalEccMicrons = 900;
+%   rgcMosaicPatchSizeMicrons = 70;
+% %   
+   rgcMosaicPatchHorizontalEccMicrons = 1500;
+   rgcMosaicPatchSizeMicrons = 100;
+% %   
+%   rgcMosaicPatchHorizontalEccMicrons = 3000;
+%   rgcMosaicPatchSizeMicrons = 200;
+%   
+%   rgcMosaicPatchHorizontalEccMicrons = 4500;
+%   rgcMosaicPatchSizeMicrons = 250;
+  
+%     rgcMosaicPatchHorizontalEccMicrons = 6000;
+%     rgcMosaicPatchSizeMicrons = 300;
+%   
     
-    rgcMosaicPatchHorizontalEccMicrons = 3000;
-    rgcMosaicPatchSizeMicrons = 200;
+%     rgcMosaicPatchHorizontalEccMicrons = 300*10;
+%     rgcMosaicPatchSizeMicrons = 200;
+%     
+%     rgcMosaicPatchHorizontalEccMicrons = 300*20;
+%     rgcMosaicPatchSizeMicrons = 300;
     
     if (LconeMosaicOnly)
         responseFilesDir = fullfile(responseFilesDir,'LonlyMosaic');
@@ -175,7 +202,10 @@ function MosaicConnector
         responseFilesDir = sprintf('%sNoLCA',responseFilesDir);
         exportsDir = sprintf('%sNoLCA',exportsDir);
     end
-    
+    if (noOptics)
+        responseFilesDir = sprintf('%sNoOptics',responseFilesDir);
+        exportsDir = sprintf('%sNoOptics',exportsDir);
+    end
     % Separate exports depending on LCA and horizontal ecc
     exportsDir = sprintf('%s_HorizontalEcc_%2.0fmicrons',exportsDir, rgcMosaicPatchHorizontalEccMicrons);
     
@@ -192,7 +222,7 @@ function MosaicConnector
         'deconvolutionOpticsParams', deconvolutionOpticsParams, ...
         'pupilDiamMM', 3.0, ...
         'noLCA', noLCA, ...                                      // Optics with no longitudinal chromatic aberration
-        'noOptics', ~true, ...                                   // Optics zero Zernike coefficients
+        'noOptics', noOptics, ...                                   // Optics zero Zernike coefficients
         'imposedRefractionErrorDiopters', 0, ...
         'outputFile', 'midgetMosaicConnectedWithConeMosaicPatch', ...
         'responseFilesDir', responseFilesDir, ...
