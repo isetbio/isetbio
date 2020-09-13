@@ -144,7 +144,7 @@ function theOI = makeCustomOIFromPolansSubjectZernikeCoefficients(zCoeffs, measP
             
             theOTF(:,:,waveIndex) = theWaveOTF;
             % Also set the PSF stored within theWVF
-            theWVF.psf{wIndex} = theWavePSF;
+            theWVF.psf{waveIndex} = theWavePSF;
         end
     end
   
