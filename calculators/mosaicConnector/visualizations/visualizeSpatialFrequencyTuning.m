@@ -1,5 +1,5 @@
 function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRateModulation, ...
-    spikeRateTicks, spatialFrequenciesCPDHR, responseTuningHR, modelParams, targetRGC, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir, varargin)
+    spikeRateTicks, spatialFrequenciesCPDHR, responseTuningHR, modelParams, modelFitted, targetRGC, LMScontrast, opticsPostFix, PolansSubjectID, exportFig, exportDir, varargin)
 
     % Parse input
     p = inputParser;
@@ -29,7 +29,7 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     % Plot the mean points
     scatter(axesHandle, spatialFrequenciesCPD, theSFtuning, 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
     
-    if (~isempty(synthParams))
+    if (~isempty(synthParams)) && (strcmp(modelFitted, 'DifferenceOfGaussians'))
         responseGain = max(theSFtuning);
         visualizeSFTuningOfUnderlyingModel(axesHandle, targetRGC, synthParams, responseGain, spatialFrequenciesCPDHR, max(responseTuningHR));
     end
@@ -46,8 +46,14 @@ function visualizeSpatialFrequencyTuning(axesHandle, spatialFrequenciesCPD, theS
     
     % Show the params of the fitted model
     if (~isempty(modelParams))
-        text(axesHandle, 0.1, maxSpikeRateModulation*0.85, sprintf('K_c: %2.0f\nK_s: %2.1f\nR_c: %2.1f arcmin\nR_s: %2.1f arcmin', ...
-            modelParams.kC, modelParams.kS, modelParams.rC*60, modelParams.rS*60), 'FontSize', 12, 'FontName', 'Source Code Pro', 'BackgroundColor', [1 1 1]);
+        if (strcmp(modelFitted, 'DifferenceOfGaussians'))
+            theText = sprintf('K_c: %2.0f\nK_s: %2.1f\nR_c: %2.1f arcmin\nR_s: %2.1f arcmin', modelParams.kC, modelParams.kS, modelParams.rC*60, modelParams.rS*60);
+        else
+            theText = sprintf('K_c: %2.0f\nR_c: %2.1f arcmin', modelParams.kC,  modelParams.rC*60);
+        end
+        
+        text(axesHandle, 0.1, maxSpikeRateModulation*0.85, theText, ...
+             'FontSize', 12, 'FontName', 'Source Code Pro', 'BackgroundColor', [1 1 1]);
     end
     
     drawnow;

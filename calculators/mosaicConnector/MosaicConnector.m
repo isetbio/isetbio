@@ -171,8 +171,8 @@ function MosaicConnector
    rgcMosaicPatchHorizontalEccMicrons = 1500;
    rgcMosaicPatchSizeMicrons = 100;
 % %   
-   rgcMosaicPatchHorizontalEccMicrons = 3000;
-   rgcMosaicPatchSizeMicrons = 200;
+%    rgcMosaicPatchHorizontalEccMicrons = 3000;
+%    rgcMosaicPatchSizeMicrons = 200;
 %   
 %   rgcMosaicPatchHorizontalEccMicrons = 4500;
 %   rgcMosaicPatchSizeMicrons = 250;

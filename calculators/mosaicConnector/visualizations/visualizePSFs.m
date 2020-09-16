@@ -21,7 +21,7 @@ function visualizePSFs(theOI, eccX, eccY)
     hFig = figure(1); clf;
     set(hFig,  'Color', [1 1 1]);
     colsNum = 3;
-    rowsNum = 1;
+    rowsNum = 2;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                'rowsNum', rowsNum, ...
                'colsNum', colsNum, ...
@@ -33,7 +33,7 @@ function visualizePSFs(theOI, eccX, eccY)
                'topMargin',      0.02);
            
     maxPSF = max(thePSFs(:));
-    sampledWavelengths = [500 550 600];
+    sampledWavelengths = [450 500 550 600 650 700];
     for k = 1:numel(sampledWavelengths)
         [~,sampledWindices(k)] = min(abs(wavelengthSupport-sampledWavelengths(k)));
     end
@@ -61,7 +61,7 @@ function visualizePSFs(theOI, eccX, eccY)
         thePSF = squeeze(thePSFs(:,:,wIndex));
         imagesc(spatialSupport, spatialSupport, thePSF);
         hold on
-        contour(spatialSupport, spatialSupport, squeeze(thePSFs(:,:,wIndex)), [0.1:0.1:0.9]*maxPSF, 'cyan', 'LineWidth', 0.7);
+        contour(spatialSupport, spatialSupport, squeeze(thePSFs(:,:,wIndex)), [0.1:0.1:0.9]*maxPSF, 'black', 'LineWidth', 0.7);
         axis 'square'
         set(gca, 'XLim', xRange, 'YLim', xRange, 'CLim', [0 maxPSF], 'ZLim', [0 maxPSF]);
         set(gca, 'XTick', spatialTicks, 'YTick', spatialTicks);
@@ -73,7 +73,7 @@ function visualizePSFs(theOI, eccX, eccY)
             set(gca, 'XTickLabel', {}, 'YTickLabel', {})
         end
         grid 'on'
-        colormap(brewermap(1024, '*greys'));
+        colormap(brewermap(1024, 'greys'));
         drawnow;
     end
     
