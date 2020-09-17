@@ -65,7 +65,7 @@ function runPhaseX(runParams)
     targetRGCsForWhichToVisualizeTuningCurves =  [30:50]; %[58 59 69 70 79 80 83 86];
    
     % Chromatic stimulus params
-    LMScontrast = [0.0 0.1 0.0];
+    LMScontrast = [-0.1 0.1 0.0];
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
         'meanLuminanceCdPerM2', 40, ...
@@ -77,8 +77,8 @@ function runPhaseX(runParams)
     [stimTemporalParams, stimSpatialParams] = generateSpatioTemporalStimulationParams(stimulusType);
     
     % Visualization options
-    visualizeAllTuningCurves = true;
-    visualizeResponseComponents = true;
+    visualizeAllTuningCurves = ~true;
+    visualizeResponseComponents = ~true;
     visualizeRetinalContrasts = ~true;
     coVisualizeRetinalStimulusWithMosaics = ~true;
     visualizeMeanConeMosaicResponseAsAMovie = false;
@@ -117,7 +117,7 @@ function runPhaseX(runParams)
         
         switch stimulusType
             case 'drifting gratings'
-                [spatialFrequenciesCPD, responseAmplitude] = computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidgetRGCmosaic, ...
+                computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidgetRGCmosaic, ...
                     rgcInputSignal, LMScontrast, ...
                     stimSpatialParams, stimTemporalParams, ...
                     useWeberResponseRepresentation, ...

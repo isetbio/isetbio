@@ -84,7 +84,10 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
                 visualizeSpatialFrequencyTuning(ax, spatialFrequenciesCPD, theSFtuning, theSFtuningSE, maxSpikeRate, spikeRateTicks, ...
                     spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, modelFitted, targetRGC, LMScontrast, opticsPostFix, ...
                     PolansSubjectID, false, '', 'synthParams', theMidgetRGCmosaic.synthesizedRFParams.visual);
-
+            elseif (strcmp(plotType, 'LMplaneTuning'))
+                markerSize = 144;
+                visualizeLMplaneTuning(ax, squeeze(xAxisData(targetRGC,:)), squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
+                    squeeze(xAxisDataFit(targetRGC,:)), squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  spikeRateTicks, targetRGC, markerSize, false);
             else
                 renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
                     xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  spikeRateTicks, targetRGC, false);
@@ -109,8 +112,15 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
                 h*figHeightInches];
             
             ax = axes('Position', axesPosition, 'Color', [1 1 1]);
-            renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
-                xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate, spikeRateTicks, iRGC, labelCells);
+            if (strcmp(plotType, 'LMplaneTuning'))
+                markerSize = 32;
+                visualizeLMplaneTuning(ax, squeeze(xAxisData(iRGC,:)), squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
+                    squeeze(xAxisDataFit(iRGC,:)), squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate,  spikeRateTicks, targetRGC, markerSize, labelCells);
+            else
+                
+                renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
+                    xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate, spikeRateTicks, iRGC, labelCells);
+            end
         end
     end
     
@@ -121,6 +131,42 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
             
     setupPlotLab(-1);
 end
+
+function visualizeLMplaneTuning(ax, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate,  spikeRateTicks, targetRGC, markerSize, labelCells)
+     
+     if (markerSize < 100)
+         lineWidth = 1.5;
+     else
+         lineWidth = 2.0;
+     end
+     
+     hold(ax, 'on')
+     if (all(isnan(xAxisDataFit)))
+        xAxisData(end+1) = xAxisData(1);
+        yAxisData(end+1) = yAxisData(1);
+        line(ax, xAxisData , yAxisData , 'Color', [0 0 0], 'LineWidth', lineWidth);
+     else
+        line(ax, xAxisDataFit, yAxisDataFit, 'Color', [0 0 0], 'LineWidth', lineWidth);
+     end
+     scatter(ax, xAxisData, yAxisData, markerSize, 'LineWidth', lineWidth);
+     
+     box(ax, 'on'); grid(ax, 'on');
+     axis(ax, 'square')
+     set(ax, 'YTick', (-1:0.5:1)*maxSpikeRate, 'YLim', [-maxSpikeRate maxSpikeRate]);
+     set(ax, 'XTick', (-1:0.5:1)*maxSpikeRate, 'XLim', [-maxSpikeRate maxSpikeRate]);
+     
+     
+     if (labelCells)
+        xo = maxSpikeRate*0.85;
+        yo = maxSpikeRate*0.85;
+        text(ax, xo,yo, sprintf('%d', iRGC), 'FontSize',10);
+        set(ax, 'XColor', 'none', 'YColor', 'none');
+     else
+         set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+     end
+    
+end
+
 
 function  renderResponsePlot(ax, xAxisScaling, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate, spikeRateTicks, iRGC, labelCells)
     
