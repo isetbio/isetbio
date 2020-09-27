@@ -2,7 +2,7 @@ function [uData, h] = plot(os, pType, varargin)
 % Plot for the outersegment base class
 %
 % Syntax:
-%   [uData, h] = plots(os, pType, [varargin])
+%   [uData, h] = plot(os, pType, [varargin])
 %
 % Description:
 %    Some special cases of plot are managed in osLinear, osBioPhys. General
