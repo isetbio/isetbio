@@ -85,9 +85,9 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
                     spatialFrequenciesCPDHR, responseTuningHR, patchDogParams, modelFitted, targetRGC, LMScontrast, opticsPostFix, ...
                     PolansSubjectID, false, '', 'synthParams', theMidgetRGCmosaic.synthesizedRFParams.visual);
             elseif (strcmp(plotType, 'LMplaneTuning'))
-                markerSize = 144;
+                markerSize = 25^2;
                 visualizeLMplaneTuning(ax, squeeze(xAxisData(targetRGC,:)), squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
-                    squeeze(xAxisDataFit(targetRGC,:)), squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  spikeRateTicks, targetRGC, markerSize, false);
+                    squeeze(xAxisDataFit(targetRGC,:)), squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), targetRGC, markerSize, false);
             else
                 renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(targetRGC,:)), ...
                     xAxisDataFit, squeeze(theMidgetRGCmosaicResponsesFit(targetRGC,:)), maxSpikeRate,  spikeRateTicks, targetRGC, false);
@@ -113,9 +113,9 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
             
             ax = axes('Position', axesPosition, 'Color', [1 1 1]);
             if (strcmp(plotType, 'LMplaneTuning'))
-                markerSize = 32;
+                markerSize = 128/size(xAxisData,2);
                 visualizeLMplaneTuning(ax, squeeze(xAxisData(iRGC,:)), squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
-                    squeeze(xAxisDataFit(iRGC,:)), squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), maxSpikeRate,  spikeRateTicks, targetRGC, markerSize, labelCells);
+                    squeeze(xAxisDataFit(iRGC,:)), squeeze(theMidgetRGCmosaicResponsesFit(iRGC,:)), targetRGC, markerSize, labelCells);
             else
                 
                 renderResponsePlot(ax, xAxisScaling, xAxisData, squeeze(theMidgetRGCmosaicResponses(iRGC,:)), ...
@@ -132,7 +132,7 @@ function hFig = visualizeRGCmosaicWithResponses(figNo,theConeMosaic, xAxisScalin
     setupPlotLab(-1);
 end
 
-function visualizeLMplaneTuning(ax, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, maxSpikeRate,  spikeRateTicks, targetRGC, markerSize, labelCells)
+function visualizeLMplaneTuning(ax, xAxisData, yAxisData, xAxisDataFit, yAxisDataFit, targetRGC, markerSize, labelCells)
      
      if (markerSize < 100)
          lineWidth = 1.5;
@@ -152,6 +152,10 @@ function visualizeLMplaneTuning(ax, xAxisData, yAxisData, xAxisDataFit, yAxisDat
      
      box(ax, 'on'); grid(ax, 'on');
      axis(ax, 'square')
+     maxData = max([max(abs(xAxisData)) max(abs(yAxisData))]);
+     maxFit = max([max(abs(xAxisDataFit)) max(abs(yAxisDataFit))]);
+     
+     maxSpikeRate = maxData * 1.25; % max([max(maxData) max(maxFit)]);
      set(ax, 'YTick', (-1:0.5:1)*maxSpikeRate, 'YLim', [-maxSpikeRate maxSpikeRate]);
      set(ax, 'XTick', (-1:0.5:1)*maxSpikeRate, 'XLim', [-maxSpikeRate maxSpikeRate]);
      
