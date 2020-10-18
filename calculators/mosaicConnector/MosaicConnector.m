@@ -23,8 +23,8 @@ function MosaicConnector
     computeConeWeightsToRGCcentersAndSurrounds = ~true;      % phase 6 - compute cone weights to RGC RF center/surrounds
     visualizeConeWeightsToRGCcentersAndSurrounds = ~true;   % phase 7 - visualize cone weights to RGC RF center/surrounds
     
-    wirePartOfMRGCMosaicToConeMosaicPatchAndComputeResponses = ~true;           % phase X - wire part of a full RGC mosaic to a small cone mosaic
-    visualizeResponseTuning = true;
+    wirePartOfMRGCMosaicToConeMosaicPatchAndComputeResponses = ~true;     % Phase X - wire part of a full RGC mosaic to a small cone mosaic
+    visualizeResponseTuning = true;                                      % Phase XI
     
     coVisualizeRFsizeWithDendriticFieldSize = ~true;        % Phase 10
     
@@ -143,7 +143,7 @@ function MosaicConnector
    
     coneDensities = [0.6 0.3 0.1];
     
-    %coneDensities = [0 1 0];
+   % coneDensities = [0 1 0];
     
     noLCA = ~true;
     noOptics = ~true;
@@ -169,14 +169,14 @@ function MosaicConnector
 %   rgcMosaicPatchHorizontalEccMicrons = 900;
 %   rgcMosaicPatchSizeMicrons = 70;
 % %   
-   rgcMosaicPatchHorizontalEccMicrons = 1500;
-   rgcMosaicPatchSizeMicrons = 100;
+%   rgcMosaicPatchHorizontalEccMicrons = 1500;
+%   rgcMosaicPatchSizeMicrons = 100;
 % %   
 %    rgcMosaicPatchHorizontalEccMicrons = 3000;
 %    rgcMosaicPatchSizeMicrons = 200;
 %   
-%   rgcMosaicPatchHorizontalEccMicrons = 4500;
-%   rgcMosaicPatchSizeMicrons = 250;
+%  rgcMosaicPatchHorizontalEccMicrons = 4500;
+%  rgcMosaicPatchSizeMicrons = 250;
   
 %     rgcMosaicPatchHorizontalEccMicrons = 6000;
 %     rgcMosaicPatchSizeMicrons = 300;
@@ -187,6 +187,10 @@ function MosaicConnector
 %     
 %     rgcMosaicPatchHorizontalEccMicrons = 300*20;
 %     rgcMosaicPatchSizeMicrons = 300;
+    
+
+    rgcInputSignal = 'isomerizations';  % choose between {'isomerizations', 'photocurrents'}
+    testStimulusLMScontrast = [0.1 0.0 0.0];
     
     if (LconeMosaicOnly)
         responseFilesDir = fullfile(responseFilesDir,'LonlyMosaic');
@@ -226,6 +230,9 @@ function MosaicConnector
         'noLCA', noLCA, ...                                      
         'noOptics', noOptics, ...                                
         'imposedRefractionErrorDiopters', 0, ...
+        'testStimulusLMScontrast', testStimulusLMScontrast, ...
+        'rgcInputSignal', rgcInputSignal, ...
+        'targetRGCsForWhichToVisualizeTuningCurves', [1], ... 
         'outputFile', 'midgetMosaicConnectedWithConeMosaicPatch', ...
         'responseFilesDir', responseFilesDir, ...
         'exportsDir', exportsDir, ...

@@ -8,7 +8,7 @@ function runPhaseX(runParams)
     recomputeOptics = ~true;
     
     % mRGC mosaic: whether to re-generate it
-    recomputeRGCmosaic = ~true;
+    recomputeRGCmosaic = true;
     % mRGC mosaic: whether to visualize the synthesized RF params
     visualizeSynthesizedParams = true;
     
@@ -45,7 +45,7 @@ function runPhaseX(runParams)
 
     
     % Generate the mosaics and the optics
-    [theConeMosaic, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
+    [theConeMosaic, theConeMosaicMetaData, theMidgetRGCmosaic, theOptics, opticsPostFix, PolansSubjectID] = ...
         mosaicsAndOpticsForEccentricity(runParams, recomputeConeMosaic, ...
         recomputeRGCmosaic, recomputeOptics, saveDir, ...
         visualizeSynthesizedParams);
@@ -58,14 +58,13 @@ function runPhaseX(runParams)
     end
     
     % Signal to the RGCs
-    rgcInputSignal = 'isomerizations';
-    %rgcInputSignal = 'photocurrents';
+    rgcInputSignal = runParams.rgcInputSignal;
     
     % Visualized cells
-    targetRGCsForWhichToVisualizeTuningCurves =  [30:50]; %[58 59 69 70 79 80 83 86];
+    targetRGCsForWhichToVisualizeTuningCurves =  runParams.targetRGCsForWhichToVisualizeTuningCurves;
    
     % Chromatic stimulus params
-    LMScontrast = [-0.1 0.1 0.0];
+    LMScontrast = runParams.testStimulusLMScontrast;
     stimColor = struct(...
         'backgroundChroma', [0.3, 0.31], ...
         'meanLuminanceCdPerM2', 40, ...
@@ -78,7 +77,7 @@ function runPhaseX(runParams)
     
     % Visualization options
     visualizeAllTuningCurves = ~true;
-    visualizeResponseComponents = ~true;
+    visualizeResponseComponents = true;
     visualizeRetinalContrasts = ~true;
     coVisualizeRetinalStimulusWithMosaics = ~true;
     visualizeMeanConeMosaicResponseAsAMovie = false;
@@ -101,26 +100,15 @@ function runPhaseX(runParams)
         
     else  
         
-        % Using Weber response representation ensures that the cone
-        % responses are proportional to cone Weber contrast. 
-        % That way a 10% L+M cone contrast will active L-cone center RGCs
-        % to the same extent as it will activate M-cone center RGCs. If we
-        % do not use this the relative response of L-cone center to M-cone center RGCs
-        % depends on the mean cone response to the background.
-        % Phototransductios does this transformation so that
-        % pulses of same contrast have the same photocurrent modulation
-        % independent on the background activation. But since we are
-        % working on the cone isomerizations signal here, we have to do
-        % this contrast transformation to have RGC activations that are
-        % proportional to stimuls contrast.
-        useWeberResponseRepresentation = true;
-        
+        % Recompute the photocurrent using the ecc-based IRs
+        recomputeEccBasedPhotocurrentResponses = true;
+       
         switch stimulusType
             case 'drifting gratings'
-                computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidgetRGCmosaic, ...
+                computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theConeMosaicMetaData, theMidgetRGCmosaic, ...
                     rgcInputSignal, LMScontrast, ...
                     stimSpatialParams, stimTemporalParams, ...
-                    useWeberResponseRepresentation, ...
+                    recomputeEccBasedPhotocurrentResponses, ...
                     saveDir, figExportsDir, ...
                     visualizeRGCTemporalResponsesAtRGCPositions, visualizeTuningAtRGCPositions, ...
                     visualizeAllTuningCurves, visualizeResponseComponents, ...

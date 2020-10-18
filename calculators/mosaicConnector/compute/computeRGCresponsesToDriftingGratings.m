@@ -1,6 +1,7 @@
-function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidgetRGCmosaic, ...
+function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theConeMosaicMetaData, theMidgetRGCmosaic, ...
     presynapticSignal, LMScontrast, stimSpatialParams, stimTemporalParams, ...
-    useWeberResponseRepresentation, saveDir, figExportsDir, ...
+    recomputeEccBasedPhotocurrentResponses, ...
+    saveDir, figExportsDir, ...
     visualizeRGCTemporalResponsesAtRGCPositions, visualizeRGCSFTuningsAtRGCPositions, ...
     visualizeAllSpatialFrequencyTuningCurves, visualizeResponseComponents, ...
     visualizeRetinalContrasts, visualizeMeanConeMosaicResponseAsAMovie, ...
@@ -47,14 +48,23 @@ function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidg
     stimulusTimeAxis = mFile.stimulusTimeAxis;
     
     % Retrieve the null presynaptic responses
+    theIsomerizationsNull = mFile.isomerizationsNull;
+    
     switch presynapticSignal
         case 'isomerizations'
             theNullPresynapticResponses = mFile.isomerizationsNull;
         case   'photocurrents'
-            theNullPresynapticResponses = mFile.photocurrentsNull;
+            if (recomputeEccBasedPhotocurrentResponses)
+                theNullPresynapticResponses = computeEccBasedPhotocurrentsFromIsomerizations(...
+                        theConeMosaic, theConeMosaicMetaData, mFile.isomerizationsNull, theIsomerizationsNull, runParams.rgcMosaicPatchEccMicrons);
+            else
+                theNullPresynapticResponses = mFile.photocurrentsNull;
+            end
+            
         otherwise
             error('Unknown presynaptic signal: ''%s''.', presynapticSignal)
     end
+    
     
     
     % Compute the RGC responses
@@ -70,9 +80,34 @@ function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidg
         % Load the presynaptic input signals
         switch presynapticSignal
             case 'isomerizations'
+                    % Using Weber response representation ensures that the cone
+                    % responses are proportional to cone Weber contrast. 
+                    % That way a 10% L+M cone contrast will active L-cone center RGCs
+                    % to the same extent as it will activate M-cone center RGCs. If we
+                    % do not use this the relative response of L-cone center to M-cone center RGCs
+                    % depends on the mean cone response to the background.
+                    % Phototransductios does this transformation so that
+                    % pulses of same contrast have the same photocurrent modulation
+                    % independent on the background activation. But since we are
+                    % working on the cone isomerizations signal here, we have to do
+                    % this contrast transformation to have RGC activations that are
+                    % proportional to stimuls contrast.
+                useWeberResponseRepresentation = true;
                 thePresynapticResponses = mFile.isomerizations;
-            case   'photocurrents'
-                thePresynapticResponses = mFile.photocurrents;
+                
+            case 'photocurrents'
+                useWeberResponseRepresentation = ~true;
+                if (recomputeEccBasedPhotocurrentResponses)
+                    fprintf('\nComputing photocurrent responses ...');
+                    tic
+                    thePresynapticResponses = computeEccBasedPhotocurrentsFromIsomerizations(...
+                        theConeMosaic, theConeMosaicMetaData, mFile.isomerizations, theIsomerizationsNull, runParams.rgcMosaicPatchEccMicrons);
+                    fprintf('Done in %2.1f minutes\n', toc/60);
+                else
+                    thePresynapticResponses = mFile.photocurrents;
+                    % Subtract the steady state background photocurrents
+                    thePresynapticResponses = bsxfun(@minus, thePresynapticResponses, theNullPresynapticResponses(1,:,end));
+                end
             otherwise
                 error('UNknown presynaptic signal: ''%s''.', presynapticSignal)
         end
@@ -81,20 +116,6 @@ function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidg
         % Compute the center and the surround responses
         fprintf('\nComputing RGC responses ...');
         tic
-       
-        % Using Weber response representation ensures that the cone
-        % responses are proportional to cone Weber contrast. 
-        % That way a 10% L+M cone contrast will active L-cone center RGCs
-        % to the same extent as it will activate M-cone center RGCs. If we
-        % do not use this the relative response of L-cone center to M-cone center RGCs
-        % depends on the mean cone response to the background.
-        % Phototransductios does this transformation so that
-        % pulses of same contrast have the same photocurrent modulation
-        % independent on the background activation. But since we are
-        % working on the cone isomerizations signal here, we have to do
-        % this contrast transformation to have RGC activations that are
-        % proportional to stimuls contrast.
-        
         if (useWeberResponseRepresentation)
              % Compute the pre-spatial responses as Weber responses (test-null)/null
              preSpatialIntegrationResponses = bsxfun(@minus, thePresynapticResponses, theNullPresynapticResponses);
@@ -102,10 +123,9 @@ function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidg
              preSpatialIntergrationConversionFactorToSpikePerSecond = 5;
         else
             % Compute the pre-spatial integration responses as differential responses (test-null)
-            preSpatialIntegrationResponses = bsxfun(@minus, thePresynapticResponses, theNullPresynapticResponses);
+            preSpatialIntegrationResponses = thePresynapticResponses;
             % Conversion to spikes/sec
-            responseTimeBin = responseTimeAxis(2)-responseTimeAxis(1);
-            preSpatialIntergrationConversionFactorToSpikePerSecond = 0.7/responseTimeBin;  % net R*/sec lead to an RGC response of 1 spikes/sec above baseline
+            preSpatialIntergrationConversionFactorToSpikePerSecond = 10.0;
         end
         
         % Spatial intergration using center/surround weights
@@ -157,7 +177,7 @@ function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidg
     
     % Select SpikeRate max and ticks
     maxAllResponses = prctile(integratedResponsesMean(:), 99);
-    
+   
     if (maxAllResponses > 300)
         maxSpikeRateModulation = ceil(maxAllResponses/50)*50;
         spikeRateTicks = 0:50:maxSpikeRateModulation;
@@ -177,7 +197,7 @@ function computeRGCresponsesToDriftingGratings(runParams, theConeMosaic, theMidg
         maxSpikeRateModulation = 25;
         spikeRateTicks = 0:5:maxSpikeRateModulation;
     end
-    
+
     % Visualize the center and surround response components for the targeted RGCs
     if (visualizeResponseComponents)
         exportFig = true;
