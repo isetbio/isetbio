@@ -51,7 +51,7 @@ function [oType, p] = ieParameterOtype(param)
 %%
 if ~exist('param', 'var') || isempty(param), error('Param required.'); end
 
-%% If the param is simply one of the objects, return it as the oType
+%% If the param is one of the objects, return the object string as the oType
 
 p = [];
 switch ieParamFormat(param)
@@ -63,10 +63,6 @@ switch ieParamFormat(param)
         oType = 'optics'; return;
     case 'lens'
         oType = 'lens'; return;
-        %     case 'macular'  % Should delete, I think.  Part of cone
-        %         oType = 'macular'; return;
-        %     case 'cone'     % Should delete, I think.
-        %         oType = 'cone'; return
     case {'em', 'eyemove', 'eyemovement'}
         oType = 'em'; return;
 end
