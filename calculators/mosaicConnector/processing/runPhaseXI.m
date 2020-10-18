@@ -6,12 +6,15 @@ function runPhaseXI(runParams)
     stimulusType = 'drifting gratings';
     switch stimulusType
         case 'drifting gratings'
-            plotChromaticTuning(runParams, figExportsDir );
+            visualizedSet = 'data and fit';
+            plotChromaticTuning(runParams, figExportsDir,visualizedSet );
+            visualizedSet = 'fit and isoresponse';
+            plotChromaticTuning(runParams, figExportsDir, visualizedSet );
     end
 end
 
 
-function plotChromaticTuning(runParams, figExportsDir)
+function plotChromaticTuning(runParams, figExportsDir, visualizedSet)
 
     % Responses directory
     saveDir = runParams.responseFilesDir;
@@ -44,19 +47,21 @@ function plotChromaticTuning(runParams, figExportsDir)
         % Scale tuning by the RMS cone contrast
         LMtuning(iAngle, :,:) = responseAmplitude / (norm(LMScontrast)*100);
     end % iAngle
-              
-    visualizedSet = 'data and fit';
-    %visualizedSet = 'fit and isoresponse';
+             
     
     [~,rgcsNum, sfsNum] = size(LMtuning);
     
     % Which SF to use for the chromatic tuning
     targetSFindex = 1;
     
+    % isoresponse thresholds to attain 50% of max response
+    isoResponseLevelPercentOfMax = 0.2;
+    
+    
     for iRGC = 1:rgcsNum
         
-        [xFullData, yFullData, xCosineFit, yCosineFit, xIsoResponseFit, yIsoResponseFit, phaseDegs, peakResponse, baserate] = ...
-            fitCosineToLMplaneResponses(squeeze(LMtuning(:,iRGC, targetSFindex)), LMangles);
+        [xFullData, yFullData, xCosineFit, yCosineFit, xIsoResponseFit, yIsoResponseFit, phaseDegs(iRGC), peakResponse, baserate] = ...
+            fitCosineToLMplaneResponses(squeeze(LMtuning(:,iRGC, targetSFindex)), LMangles, isoResponseLevelPercentOfMax);
         
         switch visualizedSet
             case 'data and fit'
@@ -64,18 +69,31 @@ function plotChromaticTuning(runParams, figExportsDir)
                 LMplane.y(iRGC,:) = yFullData;
                 LMplane.xFit(iRGC,:) = xCosineFit;
                 LMplane.yFit(iRGC,:) = yCosineFit;
-            
+                figureName = 'LMplaneTuningAll_Response';
+                
             case 'fit and isoresponse'
                 LMplane.x(iRGC,:) = xCosineFit;
                 LMplane.y(iRGC,:) = yCosineFit;
                 LMplane.xFit(iRGC,:) = xIsoResponseFit;
                 LMplane.yFit(iRGC,:) = yIsoResponseFit;
+                figureName = 'LMplaneTuningAll_IsoResponseContrast';
                 
             otherwise
                 error('Unknown data set');
         end
     end
     
+    hFig = figure(100);
+    set(hFig, 'Color', [1 1 1]);
+    phaseDegs = mod(phaseDegs+360,180);
+    histogram(phaseDegs,0:5:180);
+    axis 'square'
+    set(gca, 'XTick', 0:30:180, 'XLim', [0 180]);
+    grid on;
+    xlabel('LM angle');
+    ylabel('count');
+    set(gca, 'FontSize', 20);
+    pause
     
     plotXaxisScaling = 'linear';
     plotType = 'LMplaneTuning';
@@ -86,8 +104,8 @@ function plotChromaticTuning(runParams, figExportsDir)
     spikeRateTicks = 2:2:20;
     coVisualizedRetinalStimulus = [];
     exportFig = true;
-    figureName = 'LMplaneTuningAll';
     
+    % All RGCs
     visualizeRGCmosaicWithResponses(1000, theConeMosaic, plotXaxisScaling, plotType, ...
                         LMplane.x,LMplane.y, ...
                         LMplane.xFit,  LMplane.yFit, ...
@@ -99,7 +117,12 @@ function plotChromaticTuning(runParams, figExportsDir)
                         [], false, ...
                         exportFig, figExportsDir);
                     
-    for targetRGC = 1:rgcsNum
+    % Target RGCs
+    
+    for iRGC = 1:numel(runParams.targetRGCsForWhichToVisualizeTuningCurves)
+        
+        targetRGC = runParams.targetRGCsForWhichToVisualizeTuningCurves(iRGC);
+        
         figureName = sprintf('LMplaneTuning%d', targetRGC);
 
         visualizeRGCmosaicWithResponses(1000+targetRGC, theConeMosaic, plotXaxisScaling, plotType, ...

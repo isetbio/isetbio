@@ -1,6 +1,6 @@
 function [xFullData, yFullData, xFit, yFit, xIsoResponseContrast, yIsoResponseContrast, ...
     phaseDegs, peakModulation, baserate] = ...
-    fitCosineToLMplaneResponses(LMresponseMagnitude, LMangles)
+    fitCosineToLMplaneResponses(LMresponseMagnitude, LMangles, isoResponseLevelPercentOfMax)
 
     x = LMresponseMagnitude .* cosd(LMangles(:));
     y = LMresponseMagnitude .* sind(LMangles(:));
@@ -52,7 +52,7 @@ function [xFullData, yFullData, xFit, yFit, xIsoResponseContrast, yIsoResponseCo
    yFit = (responseFit .* sind(angleFit));    
     
    % Find iso-response contrast for some response level
-   isoResponseLevel = 0.7*max(responseFit);
+   isoResponseLevel = isoResponseLevelPercentOfMax*max(responseFit);
    constrastBoostToReachIsoResponseLevel = (isoResponseLevel-baserate)./(responseFit-baserate);
     
    gain = max(responseFit);
