@@ -27,7 +27,7 @@ function filename = arizonaWrite(thisR)
 
 % Examples:
 %{
-if (exist('sceneEye','file'))
+if (exist('piRecipeDefault','file'))
     myScene = sceneEye('slantedBar','human eye','arizona');
     thisR = myScene.get('recipe');
     arizonaWrite(thisR);

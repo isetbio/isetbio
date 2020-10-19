@@ -30,7 +30,7 @@ function filename = navarroWrite(thisR)
 
 % Examples:
 %{
-if (exist('sceneEye','file'))
+if (exist('piRecipeDefault','file'))
     myScene = sceneEye('slantedBar');
     thisR = myScene.recipe;
     navarroWrite(thisR);
