@@ -210,7 +210,10 @@ switch ieParamFormat(plotType)
         axisData = get(gca,'UserData'); % Main axis in window
 
         % Image of mean absorptions per integration period
-        if isempty(obj.absorptions), error('no absorption data'); end
+        if isempty(obj.absorptions)
+            warning('no absorption data');
+            return;
+        end
 
         % Show the data, with the gamma from the window.
         axisData.data = mean(obj.absorptions, 3);

@@ -1,5 +1,7 @@
 function writeNavarroLensFile(A, filename)
-% Write out the Navarro lens file for a given accomodation
+% Deprecated:  Write out the Navarro lens file for a given accomodation
+%
+%    DEPRECATED:  Use the navarro* methods
 %
 % Syntax:
 %   writeNavarroLensFile(A, filename)
@@ -17,6 +19,8 @@ function writeNavarroLensFile(A, filename)
 % Optional key/value pairs:
 %    None.
 %
+% See also
+%   
 
 % These equations are from Table 4 in Navarro's paper.
 anteriorRadius = 10.2 - 1.75 * log(A + 1);

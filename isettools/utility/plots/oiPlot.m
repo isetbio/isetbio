@@ -657,12 +657,11 @@ switch (pType)
             close(g);
             error('No depth map')
         else
-            imagesc(dmap);
-            colormap(flipud(gray))
+            imagesc(dmap); colormap(flipud(gray))
             namestr = sprintf('Depth map (max = %.1f)', max(dmap(:)));
-            axis off;
-            set(g, 'Name', namestr);
+            axis off; axis image; set(g, 'Name', namestr);
         end
+        colorbar;
         udata.dmap = dmap;
 
     case {'depthmapcontour', 'depthcontour'}

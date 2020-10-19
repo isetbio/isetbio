@@ -100,6 +100,8 @@ function val = opticsGet(optics, parm, varargin)
 %                                 method to use.
 %           {'cos4th method'}   - default cos4th method
 %           {'cos4th data'}     - Matrix. place to store cos4th data
+%           {'vignetting'}      - Deprecated.  Left from old sceneEye code
+%
 %        OTF information - Used for shift-invariant calculations
 %           {'otf data'}     - Matrix. the optical transfer function data
 %           {'otf size'}     - Vector. 1x2 of x and y sizes.

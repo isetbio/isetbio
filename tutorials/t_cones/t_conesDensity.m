@@ -16,15 +16,19 @@
 ieInit;
 
 %% Set range
-pos = logspace(-5,-2,50);
-ang = (0:.02:1.02) * 2 * pi;  % Angle around all 360 deg (plus a little)
+
+pos = logspace(-5,-2,40);     % Spatial positions from fovea out (mm)
+ang = (0:.05:1.02) * 2 * pi;  % Angle around all 360 deg (plus a little)
 
 %% Fill up a matrix with cone density
 coneDensity = zeros(length(pos), length(ang));
 for jj = 1:length(ang)
     for ii = 1:length(pos)
-        coneDensity(ii, jj) = coneDensityReadData('eccentricity', ...
-            pos(ii), 'angle', ang(jj), 'whichEye', 'left');
+        coneDensity(ii, jj) = coneDensityReadData(...
+            'eccentricity', pos(ii), 'eccentricityUnits', 'm',...
+            'angle', ang(jj), 'angleUnits','deg', ...
+            'coneDensitySource','Curcio1990',...
+            'whichEye', 'left');
     end
 end
 
@@ -38,15 +42,14 @@ end
 %}
 
 %% But the surface plot looks snazzy
+ieNewGraphWin;
 [A, T] = meshgrid(ang, pos);
 [X, Y] = pol2cart(A, T);
-surf(X * 1e3, Y * 1e3, log10(coneDensity))
-colormap(hsv)
-xlabel('Position (mm)')
-ylabel('Position (mm)')
+surf(X * 1e3, Y * 1e3, log10(coneDensity)); colormap(hsv)
+xlabel('Position (mm)'); ylabel('Position (mm)'); 
 zlabel('log_{10} Cones / mm^2 ')
 
-%%
+%% END
 
 
 
