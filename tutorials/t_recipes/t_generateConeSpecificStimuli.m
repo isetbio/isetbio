@@ -6,9 +6,7 @@ function t_generateConeSpecificStimuli
 %
 % Description:
 %    Simple script that demonstrates how to generate scenes depicting 
-%    various cone-specific stimuli on specific background. The script uses 
-%    plotlab,for plotting the results. 
-%    Plotlab is freely available at: https://github.com/npcottaris/plotlab
+%    various superimposed cone-specific stimuli on a specific background.
 %
 % Inputs:
 %    None.
