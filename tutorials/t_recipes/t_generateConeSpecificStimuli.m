@@ -171,6 +171,7 @@ end
 function visualizeDisplayImage(figNo, RGBimage, LMSimage, presentationDisplay)
 
     hFig = figure(figNo);
+    set(hFig, 'Position', [400 10 560 850]);
     % Generate axes in a [2x2] layout
     posVectors =  NicePlot.getSubPlotPosVectors(...
         'rowsNum', 2, 'colsNum', 2, ...
@@ -241,7 +242,7 @@ function visualizeContrastImages(figNo, outputLMScontrastImage, inputLMScontrast
         ]) * [-1 1];
     
     hFig = figure(figNo); clf;
-    
+    set(hFig, 'Position', [1000 10 560 850]);
     % Generate axes in a [3x3] layout
     posVectors =  NicePlot.getSubPlotPosVectors(...
         'rowsNum', 3, 'colsNum', 3, ...
@@ -276,7 +277,7 @@ function visualizeContrastImages(figNo, outputLMScontrastImage, inputLMScontrast
         theCurrentAxes = subplot('position', posVectors(3,k).v);
         plot(theCurrentAxes,x, squeeze(inputLMScontrastImage(m,:,k)), 'k-', 'LineWidth', 3);
         hold(theCurrentAxes, 'on');
-        plot(theCurrentAxes,x, squeeze(outputLMScontrastImage(m,:,k)), 'r:');
+        plot(theCurrentAxes,x, squeeze(outputLMScontrastImage(m,:,k)), 'g--', 'LineWidth', 2);
         if (k == 3)
             legend(theCurrentAxes, {'input', 'achieved'}, 'Location', 'North', 'Orientation', 'horizontal');
         end
