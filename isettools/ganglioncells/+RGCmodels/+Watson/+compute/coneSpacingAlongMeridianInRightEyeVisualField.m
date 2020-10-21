@@ -1,7 +1,10 @@
 function [coneSpacingDegs, coneSpacingMMs, coneDensityDegs2, coneDensityMMs2] = coneSpacingAlongMeridianInRightEyeVisualField(eccDegs, rightEyeVisualFieldMeridianName)
 % Compute cone spacing&density for desired cone positions (specified in visual degrees) along a meridian on the right eye visual field
 
-    % Determine the isetbio angle (in the right eye) that corresponds to the passed rightEyeVisualFieldMeridianName
+    % Ensure all eccentricities are positive
+    assert(all(eccDegs>=0), sprintf('Eccentrity vector must not include any negative values'));
+    
+    % Determine the isetbio angle (in the right eye) that corresponds to the rightEyeVisualFieldMeridianName
     isetbioAngle = RGCmodels.Watson.convert.rightEyeVisualFieldMeridianToISETBioAngleInRightEye(rightEyeVisualFieldMeridianName);
     
     % Convert eccDegs to eccMMs so that we don't go through the baked-in
