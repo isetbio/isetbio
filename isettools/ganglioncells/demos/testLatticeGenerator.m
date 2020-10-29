@@ -1,16 +1,17 @@
 function testLatticeGenerator
     fovDegs = 2;
-    neuronType = 'midget ganglion cells';
     whichEye = 'right eye';
-    patchSaveFileName = sprintf('%s_%s_%1.0fdeg_mosaic_progress', ...
-        strrep(whichEye, ' ', '_'), strrep(neuronType, ' ', '_'), fovDegs);
-    
-    generateNewPatch = ~false;
+    neuronType = 'midget ganglion cells';
+
+    generateNewPatch = ~true;
     
     if (generateNewPatch)
-        retinalattice.generatePatch(fovDegs, neuronType, whichEye, patchSaveFileName);
+        neuronType = 'cones';
+        retinalattice.generatePatch(fovDegs, neuronType, whichEye);
+        neuronType = 'midget ganglion cells';
+        retinalattice.generatePatch(fovDegs, neuronType, whichEye);
     else
-        retinalattice.inspectPatch(patchSaveFileName);
+        retinalattice.inspectPatch(fovDegs, neuronType, whichEye);
     end
     
 end

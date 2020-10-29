@@ -1,10 +1,17 @@
-function p = configure(neuronType)
+function p = configure(fovDegs, neuronType, whichEye)
+    
+    % Lattice gallery directory
+    p.latticeGalleryDir = sprintf('%s/%s/%s', isetbioRootPath, 'isettools/ganglioncells/latticegallery');
+
+    % Patch filename
+    p.patchSaveFileName = sprintf('%s_%s_%1.0fdeg_mosaic_progress', ...
+        strrep(whichEye, ' ', '_'), strrep(neuronType, ' ', '_'), fovDegs);
     
     % Radnom number generator seed
     p.rng = 1;
     
     % Max number of iterations
-    p.maxIterations = 1000;
+    p.maxIterations = 3*1000;
     
     % Save positions every 5 iterations
     p.iterationIntervalForSavingPositions = 5;
@@ -12,8 +19,11 @@ function p = configure(neuronType)
     % Terminate iterative method if we achieve at least this mesh quality level
     p.minHexQualityForTermination = 0.84;
     
+    % Percetile of q-distribution that we track for convergence
+    p.qDistPercentile = 0.8;
+    
     % How often to query user whether to terminate iterations
-    p.queryUserIntervalMinutes = 60*12;
+    % p.queryUserIntervalMinutes = 60*12;
     
     % Tolerance for moving point back to elliptical domain
     p.lambdaMinMicrons = 2;

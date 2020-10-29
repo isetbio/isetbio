@@ -25,7 +25,6 @@ function [rfSpacingDegs, rfSpacingMMs, rfDensityDegs2, rfDensityMMs2] = ...
     
     for meridianIndex = 1:numel(indexedMeridians)
         rightEyeVisualFieldMeridianName = indexedMeridians{meridianIndex};
-        fprintf('meridian %d for %s: %s\n', meridianIndex, whichEye, rightEyeVisualFieldMeridianName);
         
         switch (neuronType)
             case 'cones'

@@ -1,28 +1,12 @@
 function [rfPositionsMicrons, radiusMicrons] = initialize(fovDegs, whichEye, params, tStart)
     % Regular hex grid with minimal lambda
-    rfPositionsMicrons = generateInitialRFpositions(fovDegs*1.1, params.lambdaMinMicrons);
+    rfPositionsMicrons = generateInitialRFpositions(fovDegs*1.33, params.lambdaMinMicrons);
     
-    visualize = false;
-    if (visualize)
-        figure(10); clf
-        subplot(1,2,1)
-        plot(rfPositionsMicrons(:,1), rfPositionsMicrons(:,2), 'k.');
-        axis 'equal'
-    drawnow;
-    end
-    
+    % Probabilistic sampling according to local RF density
     [rfPositionsMicrons, radiusMicrons] = downSampleInitialRFpositions(rfPositionsMicrons, whichEye, params, tStart);
-    if (visualize)
-        subplot(1,2,2)
-        plot(rfPositionsMicrons(:,1), rfPositionsMicrons(:,2), 'k.');
-        axis 'equal'
-        drawnow;
-    end
-    
 end
 
 function [rfPositions, radius] = downSampleInitialRFpositions(rfPositions, whichEye, params,  tStart)
-    
     % Set rng seed
     rng(params.rng);
     
