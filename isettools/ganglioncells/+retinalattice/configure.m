@@ -1,5 +1,11 @@
 function p = configure(fovDegs, neuronType, whichEye)
     
+    % Validate input
+    validNeuronTypes = retinalattice.validvalues.neuronTypes;
+    validEyes = retinalattice.validvalues.eyes; 
+    assert(ismember(neuronType, validNeuronTypes), sprintf('Unknown neuron type: ''%s''.', neuronType));
+    assert(ismember(whichEye, validEyes), sprintf('Unknown eye: ''%s''.', whichEye));
+    
     % Lattice gallery directory
     p.latticeGalleryDir = sprintf('%s/%s/%s', isetbioRootPath, 'isettools/ganglioncells/latticegallery');
 

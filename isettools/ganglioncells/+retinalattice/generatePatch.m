@@ -30,8 +30,8 @@ end
 
 
 function validateInput(fovDegs, neuronType, whichEye)
-    validNeuronTypes = {'cones', 'midget ganglion cells'};
-    validEyes = {'left eye', 'right eye'};
+    validNeuronTypes = retinalattice.validvalues.neuronTypes;
+    validEyes = retinalattice.validvalues.eyes; 
     assert(ismember(neuronType, validNeuronTypes), sprintf('Unknown neuron type: ''%s''.', neuronType));
     assert(ismember(whichEye, validEyes), sprintf('Unknown eye: ''%s''.', whichEye));
     assert(isscalar(fovDegs), sprintf('fovDegs must be a scalar'));
