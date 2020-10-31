@@ -1,16 +1,16 @@
-function [theConeMosaic, theConeMosaicMetaData] = generateInputConeMosaic(generationMode, eccDegs, sizeDegs, coneRFpositionsMicronsInSpatiallyVaryingLattice)
+function [theConeMosaic, theConeMosaicMetaData] = generateInputConeMosaic(generationMode, eccDegs, sizeDegs,  extraDegsForRGCSurround, coneRFpositionsMicronsInSpatiallyVaryingLattice)
     switch (generationMode)
         case 'equivalent regular hex'
             [theConeMosaic, theConeMosaicMetaData] = generateEquivalentRegularHexConeMosaic(...
-                eccDegs, sizeDegs, coneRFpositionsMicronsInSpatiallyVaryingLattice);
+                eccDegs, sizeDegs,  extraDegsForRGCSurround, coneRFpositionsMicronsInSpatiallyVaryingLattice);
         otherwise
             error('Unknown generation mode (''%s'') for input cone mosaic', generationMode);
     end
 end
 
-function [theConeMosaic, theConeMosaicMetaData] = generateEquivalentRegularHexConeMosaic(eccDegs, sizeDegs, coneRFpositionsMicronsInSpatiallyVaryingLattice)
+function [theConeMosaic, theConeMosaicMetaData] = generateEquivalentRegularHexConeMosaic(eccDegs, sizeDegs,  extraDegsForRGCSurround, coneRFpositionsMicronsInSpatiallyVaryingLattice)
     
-    % Determine the mean spacing of the imported cone positions
+    % Determine the mean spacing of the imported cone positions.
     allPairWiseConeDistancesMicrons = pdist2(...
         coneRFpositionsMicronsInSpatiallyVaryingLattice, ...
         coneRFpositionsMicronsInSpatiallyVaryingLattice, ...
@@ -32,9 +32,10 @@ function [theConeMosaic, theConeMosaicMetaData] = generateEquivalentRegularHexCo
     integrationTime = 5/1000;
     sConeFreeRadiusMicrons = 0;
     
-    % Generate the regular cone mosaic
+    % Generate the regular cone mosaic, with a larger fov than the RGC  mosaic
+    % allowing for cones to cover the surrounds of the most distant mRGC   
     theConeMosaic = coneMosaicHex(coneMosaicResamplingFactor, ...
-        'fovDegs', sizeDegs, ...
+        'fovDegs', sizeDegs + 2 * extraDegsForRGCSurround, ...
         'micronsPerDegree', micronsPerDegree, ...
         'integrationTime', integrationTime, ...
         'customLambda', coneSpacingMicrons, ...

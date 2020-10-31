@@ -48,14 +48,15 @@ classdef mRGCmosaic < handle
                 % macular pigment appropriate for the eccentricityDegs
                 generationMode = 'equivalent regular hex';
                 [obj.inputConeMosaic, obj.inputConeMosaicMetaData] = mRGCmosaic.generateInputConeMosaic(generationMode, ...
-                    eccentricityDegs, 0.8*(sizeDegs+2*extraDegsForRGCSurround), coneRFpositionsMicrons);
+                    eccentricityDegs, sizeDegs, extraDegsForRGCSurround, coneRFpositionsMicrons);
                 
                 plotPositions = true;
                 if (plotPositions)
-                    maxPosDegsX = max(coneRFpositionsDegs(:,1));
-                    minPosDegsX = min(coneRFpositionsDegs(:,1));
-                    maxPosDegsY = max(coneRFpositionsDegs(:,2));
-                    minPosDegsY = min(coneRFpositionsDegs(:,2));
+                    coneRFpositionsDegsInRegHexMosaic = RGCmodels.Watson.convert.rhoMMsToDegs(obj.inputConeMosaicMetaData.conePositionsMicrons*1e-3);
+                    maxPosDegsX = max(coneRFpositionsDegsInRegHexMosaic(:,1));
+                    minPosDegsX = min(coneRFpositionsDegsInRegHexMosaic(:,1));
+                    maxPosDegsY = max(coneRFpositionsDegsInRegHexMosaic(:,2));
+                    minPosDegsY = min(coneRFpositionsDegsInRegHexMosaic(:,2));
                     figure(1);
                     clf;
                     subplot(1,2,1);
@@ -67,7 +68,7 @@ classdef mRGCmosaic < handle
                     title('imported cone positions');
                     
                     subplot(1,2,2);
-                    coneRFpositionsDegsInRegHexMosaic = RGCmodels.Watson.convert.rhoMMsToDegs(obj.inputConeMosaicMetaData.conePositionsMicrons*1e-3);
+                   
                     plot(coneRFpositionsDegsInRegHexMosaic(:,1), coneRFpositionsDegsInRegHexMosaic(:,2), 'k.');
                     hold on;
                     plot(rgcRFpositionsDegs(:,1), rgcRFpositionsDegs(:,2),'ro');
@@ -88,7 +89,7 @@ classdef mRGCmosaic < handle
          rgcRFpositionsMicrons,  rgcRFpositionsDegs, extraDegsForRGCSurround] = importConeAndRGCpositions(eccentricityDegs, sizeDegs, whichEye);
         
         % Static method to generate a cone mosaic from the imported cone positions
-        [theConeMosaic, theConeMosaicMetaData] = generateInputConeMosaic(generationMode, eccentricityDegs, sizeDegs, coneRFpositionsMicrons);
+        [theConeMosaic, theConeMosaicMetaData] = generateInputConeMosaic(generationMode, eccentricityDegs, sizeDegs, extraDegsForRGCSurround, coneRFpositionsMicrons);
     end
 end
 
