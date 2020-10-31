@@ -28,7 +28,13 @@ function cmStruct = geometryStruct(obj)
     cmStruct.coneTypes = obj.coneTypesHexGrid;
     
     % cone aperture in degrees
-    cmStruct.coneApertures = (obj.computeApertureDiametersHexGrid()/obj.micronsPerDegree)';
+    if (obj.eccBasedConeDensity)
+        % ecc-varying aperture
+        cmStruct.coneApertures = (obj.computeApertureDiametersHexGrid()/obj.micronsPerDegree)';
+    else
+        % non ecc-varying aperture
+        cmStruct.coneApertures = obj.customInnerSegmentDiameter * (ones(size(obj.computeApertureDiametersHexGrid()))/obj.micronsPerDegree)';
+    end
     
     % Delaunayn triangularization
     xHex = cmStruct.coneLocs(:,1);

@@ -3,7 +3,7 @@ classdef WatsonRGCModel
     %
     %
     % Syntax:
-    %   cMosaic = WatsonRGCModel('generateAllFigures', false);
+    %   w = WatsonRGCModel('generateAllFigures', false);
     %
     % Usage:
     % - Compute peak cone density:
@@ -77,20 +77,23 @@ classdef WatsonRGCModel
         % Peak cone density (cones/deg^2) at 0 deg eccentricity (page 3, dc(0), Also in Appendix 4)
         dc0 = 14804.6;
         
+        % Linear approximatio of microns/deg on the retina
+        micronsPerDegreeLinearApproximation = 268;
+            
         % Conversion factor, rho, of retinal distance deg->mm as as a function of eccentricity in
         % degs (Equation A5)
-        rhoDegsToMMs = @(eccDegs) ...
-            0.268         * eccDegs + ...
-            0.0003427     * eccDegs .^2 + ...
-           -8.3309 * 1e-6 * eccDegs .^3;
+        rhoDegsToMMs = @(eccDegs) sign(eccDegs) .* (...
+            0.268         * abs(eccDegs) + ...
+            0.0003427     * abs(eccDegs) .^2 + ...
+           -8.3309 * 1e-6 * abs(eccDegs) .^3);
         
         % Conversion factor, rho, of retinal distance mm->deg as as a function of eccentricity in
         % degs (Equation A6)
-        rhoMMsToDegs = @(eccMM) ...
-            3.556     * eccMM + ...
-            0.05993   * eccMM .^2 + ...
-           -0.007358  * eccMM .^3 + ...
-            0.0003027 * eccMM .^4;
+        rhoMMsToDegs = @(eccMM) sign(eccMM) .* (...
+            3.556     * abs(eccMM) + ...
+            0.05993   * abs(eccMM) .^2 + ...
+           -0.007358  * abs(eccMM) .^3 + ...
+            0.0003027 * abs(eccMM) .^4);
        
         % Conversion factor of size in visual degress at a given eccentricity in degrees to size in retinal microns 
         sizeDegsToSizeRetinalMicrons = @(sizeDegs, eccDegs) ...
@@ -103,9 +106,9 @@ classdef WatsonRGCModel
         % Conversion factor, alpha, of retinal area mm^2 -> deg^2 as a function of eccentricity in
         % degs (Equation A7)
         alpha = @(eccDegs) 0.0752 + ...
-                    5.846 * 1e-5 * eccDegs    + ...
-                   -1.064 * 1e-5 * eccDegs.^2 + ...
-                    4.116 * 1e-8 * eccDegs.^3;
+                    5.846 * 1e-5 * abs(eccDegs)    + ...
+                   -1.064 * 1e-5 * abs(eccDegs).^2 + ...
+                    4.116 * 1e-8 * abs(eccDegs).^3;
         
         % Convert density to spacing in a perfect hex mosaic. This is equation (A4) in the Watson (2014) paper.
         spacingFromDensity = @(density) sqrt(2.0./(sqrt(3.0)*density));
@@ -126,6 +129,8 @@ classdef WatsonRGCModel
         rightEyeRetina = 'right eye retina';
         leftEyeRetina = 'left eye retina';
         
+        % Ratio of cone aperture to cone-diameter, set to 0.7 in ISETBIO
+        coneApertureToDiameterRatio = 0.7;
     end % Constant properties
     
     % Constant properties related to figure generation
@@ -191,7 +196,12 @@ classdef WatsonRGCModel
             
             % Generate figures
             if (generateAllFigures)
-                obj.generateAndDockAllFigures();
+                plotlabOBJ = WatsonRGCModel.unitTestFigure1('plotlabOBJ', []);
+                plotlabOBJ = WatsonRGCModel.unitTestFigure5('plotlabOBJ', plotlabOBJ);
+                plotlabOBJ = WatsonRGCModel.unitTestFigure9('plotlabOBJ', plotlabOBJ);
+                plotlabOBJ = WatsonRGCModel.unitTestFigure10('plotlabOBJ', plotlabOBJ);
+                plotlabOBJ = WatsonRGCModel.unitTestFigure11('plotlabOBJ', plotlabOBJ);
+                plotlabOBJ = WatsonRGCModel.unitTestFigure14('plotlabOBJ', plotlabOBJ);
             end
         end % Constructor
         
@@ -224,7 +234,7 @@ classdef WatsonRGCModel
         % Compute 2D mRGC RF density map for eccentricities specified in the right eye visual space
         [mRGCRFDensity, spatialSupport, xLabelString, yLabelString, ...
             meridianDensities, densityLabelString, eccUnits, densityUnits] = ...
-            compute2DmRGCRFDensity(obj, eccDegsInREVisualSpace,  theReturnedView);
+            compute2DmRGCRFDensity(obj, eccDegsInREVisualSpace,  theReturnedView, varargin);
         
         % Compute 2D cone to mRGC RF ratio map for eccentricities specified in the right eye visual space
         [conesToMRGCratio, spatialSupport,xLabelString, yLabelString, ratioLabel, ...
@@ -255,12 +265,14 @@ classdef WatsonRGCModel
     % Unit tests
     methods (Static)
         plotLabOBJ = setUpPlotLab();
-        unitTestFigure1(varargin);
-        unitTestFigure5(varargin);
-        unitTestFigure9(varargin);
-        unitTestFigure10(varargin);
-        unitTestFigure11(varargin);
-        unitTestFigure14(varargin);
+        plotlabOBJ = unitTestFigure1(varargin);
+        plotlabOBJ = unitTestFigure5(varargin);
+        plotlabOBJ = unitTestFigure9(varargin);
+        plotlabOBJ = unitTestFigure10(varargin);
+        plotlabOBJ = unitTestFigure11(varargin);
+        plotlabOBJ = unitTestFigure14(varargin);
+        plotlabOBJ = unitTestFigureA1(varargin);
+        plotlabOBJ = unitTestRetinalSizeToVisualSize(varargin);
         unitTestRFConeDensity2D();
         unitTestRFDensity2D();
         unitTestSmoothGrid();

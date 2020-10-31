@@ -6,9 +6,7 @@ function t_generateConeSpecificStimuli
 %
 % Description:
 %    Simple script that demonstrates how to generate scenes depicting 
-%    various cone-specific stimuli on specific background. The script uses 
-%    plotlab,for plotting the results. 
-%    Plotlab is freely available at: https://github.com/npcottaris/plotlab
+%    various superimposed cone-specific stimuli on a specific background.
 %
 % Inputs:
 %    None.
@@ -88,15 +86,7 @@ function t_generateConeSpecificStimuli
     
     %% Compute the LMS cone contrasts of the emitted radiance image
     test.achievedLMScontrastImage = computeLMScontrastImage(emittedRadianceImage, coneFundamentals);
-    
-    %% Visualize resuts
-    % Instantiate a plotlab object
-    plotlabOBJ = plotlab();
-    % Apply the default recipe with some overrides
-    plotlabOBJ.applyRecipe(...
-        'figureWidthInches',10, ...
-        'figureHeightInches', 10);
-    
+
     %% Visualize the L-cone, M-cone, S-cone components as well as the composite stimulus
     visualizeDisplayImage(1, test.RGBimage, test.LMSexcitationImage, presentationDisplay);
     
@@ -179,8 +169,9 @@ end
 function visualizeDisplayImage(figNo, RGBimage, LMSimage, presentationDisplay)
 
     hFig = figure(figNo);
-    % Generate axes in a [1x2] layout
-    theAxesGrid = plotlab.axesGrid(hFig, ...
+    set(hFig, 'Position', [400 10 560 850]);
+    % Generate axes in a [2x2] layout
+    posVectors =  NicePlot.getSubPlotPosVectors(...
         'rowsNum', 2, 'colsNum', 2, ...
         'rightMargin', 0.00, ...
         'leftMargin', 0.01, ...
@@ -214,28 +205,28 @@ function visualizeDisplayImage(figNo, RGBimage, LMSimage, presentationDisplay)
     SexcitationRGBimage = imageLinearTransform(tmp, inv(displayGet(presentationDisplay, 'rgb2lms')));
     
     % Plot the L-cone component
-    theCurrentAxes = theAxesGrid{1,1};
+    theCurrentAxes = subplot('position', posVectors(1,1).v);
     image(theCurrentAxes, lrgb2srgb(LexcitationRGBimage));
     axis(theCurrentAxes, 'square');
     set(theCurrentAxes, 'XTick', [], 'YTick', []);
     title(theCurrentAxes, 'L-cone stimulus component');
     
     % Plot the M-cone component
-    theCurrentAxes = theAxesGrid{1,2};
+    theCurrentAxes = subplot('position', posVectors(1,2).v);
     image(theCurrentAxes, lrgb2srgb(MexcitationRGBimage));
     axis(theCurrentAxes, 'square');
     set(theCurrentAxes, 'XTick', [], 'YTick', []);
     title(theCurrentAxes, 'M-cone stimulus component');
     
     % Plot the S-cone component
-    theCurrentAxes = theAxesGrid{2,1};
+    theCurrentAxes = subplot('position', posVectors(2,1).v);
     image(theCurrentAxes, lrgb2srgb(SexcitationRGBimage));
     axis(theCurrentAxes, 'square');
     set(theCurrentAxes, 'XTick', [], 'YTick', []);
     title(theCurrentAxes, 'S-cone stimulus component');
     
     % Plot the composite stimulus
-    theCurrentAxes = theAxesGrid{2,2};
+    theCurrentAxes = subplot('position', posVectors(2,2).v);
     image(theCurrentAxes, lrgb2srgb(RGBimage));
     axis(theCurrentAxes, 'square')
     set(theCurrentAxes, 'XTick', [], 'YTick', []);
@@ -249,26 +240,22 @@ function visualizeContrastImages(figNo, outputLMScontrastImage, inputLMScontrast
         ]) * [-1 1];
     
     hFig = figure(figNo); clf;
-    
-    % Generate axes in a [1x2] layout
-    theAxesGrid = plotlab.axesGrid(hFig, ...
+    set(hFig, 'Position', [1000 10 560 850]);
+    % Generate axes in a [3x3] layout
+    posVectors =  NicePlot.getSubPlotPosVectors(...
         'rowsNum', 3, 'colsNum', 3, ...
         'rightMargin', 0.00, ...
-        'leftMargin', 0.06, ...
-        'widthMargin', 0.02, ...
+        'leftMargin', 0.01, ...
+        'widthMargin', 0.01, ...
         'heightMargin', 0.05, ...
-        'bottomMargin', 0.09, ...
-        'topMargin', 0.05);
+        'bottomMargin', 0.02, ...
+        'topMargin', 0.03);
     
     theConeNames = {'L', 'M', 'S'};
     x = linspace(-fieldOfViewDegs/2,fieldOfViewDegs/2,size(inputLMScontrastImage,1));
     for k = 1:numel(theConeNames)
-        theCurrentAxes = theAxesGrid{1,k};
+        theCurrentAxes = subplot('position', posVectors(1,k).v);
         imagesc(theCurrentAxes, x,x,squeeze(inputLMScontrastImage(:,:,k)), CLims); 
-        plotlab.crossHairs2D(theCurrentAxes, ...
-            'xRange', fieldOfViewDegs*[-1 1], 'yRange', fieldOfViewDegs*[-1 1], ...
-            'LineWidth', 1.0, 'LineStyle', '-', ...
-            'LineColor', [0 0 0]);
         axis(theCurrentAxes, 'square');
         set(theCurrentAxes, 'XTick', [], 'YTick', []);
         title(theCurrentAxes,sprintf('input %s-cone contrast', theConeNames{k}));
@@ -276,12 +263,8 @@ function visualizeContrastImages(figNo, outputLMScontrastImage, inputLMScontrast
     colormap(gray(1024))
     
     for k = 1:numel(theConeNames)
-    	theCurrentAxes = theAxesGrid{2,k};
+    	theCurrentAxes = subplot('position', posVectors(2,k).v);
         imagesc(theCurrentAxes, x, x, squeeze(outputLMScontrastImage(:,:,k)), CLims);
-        plotlab.crossHairs2D(theCurrentAxes, ...
-            'xRange', fieldOfViewDegs*[-1 1], 'yRange', fieldOfViewDegs*[-1 1], ...
-            'LineWidth', 1.0, 'LineStyle', '-', ...
-            'LineColor', [0 0 0]);
         axis(theCurrentAxes, 'square');
         set(theCurrentAxes, 'XTick', [], 'YTick', []);
         title(theCurrentAxes,sprintf('achieved %s-cone contrast', theConeNames{k}));
@@ -289,17 +272,13 @@ function visualizeContrastImages(figNo, outputLMScontrastImage, inputLMScontrast
     
     m = (size(outputLMScontrastImage,1))/2+1;
     for k = 1:numel(theConeNames)
-        theCurrentAxes = theAxesGrid{3,k};
+        theCurrentAxes = subplot('position', posVectors(3,k).v);
         plot(theCurrentAxes,x, squeeze(inputLMScontrastImage(m,:,k)), 'k-', 'LineWidth', 3);
         hold(theCurrentAxes, 'on');
-        plot(theCurrentAxes,x, squeeze(outputLMScontrastImage(m,:,k)), 'r:');
+        plot(theCurrentAxes,x, squeeze(outputLMScontrastImage(m,:,k)), 'g--', 'LineWidth', 2);
         if (k == 3)
             legend(theCurrentAxes, {'input', 'achieved'}, 'Location', 'North', 'Orientation', 'horizontal');
         end
-        plotlab.crossHairs2D(theCurrentAxes, ...
-            'xRange', fieldOfViewDegs*[-1 1], 'yRange', [-1 1], ...
-            'LineWidth', 1.0, 'LineStyle', '-', ...
-            'LineColor', [0 0 0]);
         axis(theCurrentAxes, 'square');
         if (k > 1)
             set(theCurrentAxes, 'YTickLabel', {});
@@ -308,7 +287,6 @@ function visualizeContrastImages(figNo, outputLMScontrastImage, inputLMScontrast
         end
         set(theCurrentAxes, 'XLim', [x(1) x(end)], 'XTick', [-5:1:5], 'YLim', CLims, 'YTick', -1:0.2:1, 'YLim', [-1 1]);
         box(theCurrentAxes, 'off');
-        plotlab.offsetAxes(theCurrentAxes);
         xlabel(theCurrentAxes, 'space (deg)');
     end
     

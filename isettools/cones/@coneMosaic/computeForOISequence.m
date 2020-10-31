@@ -108,7 +108,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 
 %% Parse inputs
 p = inputParser;
-p.addRequired('oiSequence', @(x)isa(x, 'oiSequence'));
+p.addRequired('oiSequence', @(x)( (isa(x, 'oiSequence')) || (isa(x, 'oiArbitrarySequence')) ));
 p.addParameter('emPaths', [], @isnumeric);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('interpFilters', [], @isnumeric);

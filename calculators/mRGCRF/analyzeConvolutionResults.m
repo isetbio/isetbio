@@ -1,18 +1,27 @@
-function analyzeConvolutionResults
+function analyzeConvolutionResults(obj,varargin)
     rootDir = fileparts(which(mfilename));
-    quandrantsToInclude =   'both';   % choose from {'horizontal', 'vertical', 'both'}
-    subjectsToInclude = [1:10]; %[4 8 9];
+    
+    eccTested = [0 0.5 1 1.5 2.0 2.5 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25];
+    
+    % Parse input
+    p = inputParser;
+    p.addParameter('PolansWavefrontAberrationSubjectIDToAverage', 1:10);
+    p.addParameter('quadrantsToAverage', [1 2 3]);
+    p.addParameter('modelPrefix', 'allQuadrants_allSubjects');
+    p.parse(varargin{:});
+    
+    quadrantsToAverage = p.Results.quadrantsToAverage;
+    subjectsToAverage = p.Results.PolansWavefrontAberrationSubjectIDToAverage;
+    modelPrefix = p.Results.modelPrefix;
     
     defocusMode = 'subjectDefault';
-    
     if (strcmp(defocusMode, 'subjectDefault'))
         imposedRefractionErrorDiopters = 0; 
     else
         imposedRefractionErrorDiopters =  0.01; 
     end
   
-    eccTested = -[0 0.25 0.5 1 1.5 2:25];
-              
+ 
     plotlabOBJ = setupPlotLab([26 14], 'both');
     
     % Display the visual radius data
@@ -32,11 +41,11 @@ function analyzeConvolutionResults
     coneRFSpacingsDegs  = w.coneRFSpacingAndDensityAlongMeridian(abs(eccTested), ...
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio', false);
-    coneApertureRadii = 0.8*0.5*coneRFSpacingsDegs;
+    coneApertureRadii = WatsonRGCModel.coneApertureToDiameterRatio * 0.5 * coneRFSpacingsDegs;
     
     for eccIndex = 1:numel(eccTested)
         eccDegs = eccTested(eccIndex);
-        dataFileName = fullfile(rootDir,'VisualToRetinalCorrectionData',sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', eccDegs, imposedRefractionErrorDiopters));
+        dataFileName = fullfile(rootDir,'VisualToRetinalCorrectionData/DeconvolutionData',sprintf('ecc_-%2.1f_deconvolutions_refractionError_%2.2fD.mat', eccDegs, imposedRefractionErrorDiopters));
         load(dataFileName, 'retinalPoolingRadii', 'visualRadius', 'subjectIDs', 'quadrants');
         
         if (eccDegs == 0)
@@ -45,7 +54,7 @@ function analyzeConvolutionResults
             'nasal meridian','deg', 'deg^2', ...
             'correctForMismatchInFovealConeDensityBetweenWatsonAndISETBio',false);
             % min retinal radius = 0.5 * cone spacing at 0 deg  
-            minRetinalRadius = 0.8*0.5*coneRFSpacingDeg;
+            minRetinalRadius = WatsonRGCModel.coneApertureToDiameterRatio * 0.5 * coneRFSpacingDeg;
             % Find closest retinal pooling radius
             [dd,idx] = sort(abs(minRetinalRadius-retinalPoolingRadii));
             minRetinalRadius = retinalPoolingRadii(idx(1));
@@ -56,7 +65,7 @@ function analyzeConvolutionResults
         end
         
         % Get data for the quadrant of interest
-        visualRadius = quadrantData(visualRadius, quandrantsToInclude, quadrants);
+        visualRadius = quadrantData(visualRadius, quadrantsToAverage, quadrants, subjectsToAverage, subjectIDs);
         
         % Only include points for retinal pooling radii > = cone aperture
         idx = find(retinalPoolingRadii >= coneApertureRadii(eccIndex));
@@ -66,10 +75,10 @@ function analyzeConvolutionResults
         row = floor((eccIndex-1)/plotCols)+1;
         col = mod(eccIndex-1, plotCols)+1;
 
-        % median over subjects/ecc quadrants
-        visualRadius = visualRadius(subjectsToInclude,:);
+        % median over included subjects/ecc quadrants
         medianVisualRadius = (median(visualRadius,1, 'omitnan'))';
-
+        
+        
         % Extend the visual radius data to 1.5
         medianVisualRadiusExtended = [medianVisualRadius; [0.7 0.8 1 1.5]'];
         retinalPoolingRadiiExtended = [retinalPoolingRadii [0.7 0.8 1 1.5]]';
@@ -90,13 +99,13 @@ function analyzeConvolutionResults
                 row==plotRows, col==1, imposedRefractionErrorDiopters, yLims, showIdentityLine, coneApertureRadii(eccIndex), 'visual pooling radius');
         end
     end
-    
+           
     if (strcmp(defocusMode, 'subjectDefault'))
-        pdfFileName = sprintf('defocusDefault_radius');
+        pdfFileName = sprintf('%s_defocusDefault_radius_', modelPrefix);
     else
-        pdfFileName = sprintf('defocus%2.2fD_radius', imposedRefractionErrorDiopters);
+        pdfFileName = sprintf('%s_defocus%2.2fD_radius_', modelPrefix, imposedRefractionErrorDiopters);
     end
-            
+    
     plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, pwd());
     
     
@@ -114,12 +123,12 @@ function analyzeConvolutionResults
         
     for eccIndex = 1:numel(eccTested)
         eccDegs = eccTested(eccIndex);
-        dataFileName = sprintf('cellEcc_%2.1f_cellRefractionError_%2.2fD_VisualGain.mat', eccDegs, imposedRefractionErrorDiopters);
+        dataFileName = sprintf('ecc_-%2.1f_deconvolutions_refractionError_%2.2fD.mat', eccDegs, imposedRefractionErrorDiopters);
         load(dataFileName, 'retinalPoolingRadii',  'visualGain', 'subjectIDs', 'quadrants');
         retinalPoolingRadiiOriginal = retinalPoolingRadii;
         
         % Get data for the quadrant of interest
-        visualGain = quadrantData(visualGain, quandrantsToInclude, quadrants);
+        visualGain = quadrantData(visualGain, quadrantsToAverage, quadrants, subjectsToAverage, subjectIDs);
         
         % Only include points for retinal pooling radii > = cone aperture
         idx = find(retinalPoolingRadii >= 0.5*coneApertureRadii(eccIndex));
@@ -130,7 +139,6 @@ function analyzeConvolutionResults
         col = mod(eccIndex-1, plotCols)+1;
         
         % Median over all subjects/ecc quadrants
-        visualGain = visualGain(subjectsToInclude,:);
         medianVisualGain = (median(visualGain,1, 'omitnan'))';
         
         % Extend the visual gain data 
@@ -153,13 +161,12 @@ function analyzeConvolutionResults
                 row==plotRows, col==1, imposedRefractionErrorDiopters, yLims, showIdentityLine, ...
                 coneApertureRadii(eccIndex), 'peak sensitivity attenuation');
         end
-        
     end
     
     if (strcmp(defocusMode, 'subjectDefault'))
-        pdfFileName = sprintf('defocusDefault_gain');
+        pdfFileName = sprintf('%s_defocusDefault_gain_', modelPrefix);
     else
-        pdfFileName = sprintf('defocus%2.2fD_gain', imposedRefractionErrorDiopters);
+        pdfFileName = sprintf('%s_defocus%2.2fD_gain_', modelPrefix, imposedRefractionErrorDiopters);
     end
             
     plotlabOBJ.exportFig(hFig, 'pdf', pdfFileName, pwd());
@@ -361,19 +368,34 @@ function plotlabOBJ = setupPlotLabForFittedModel(figSize, tickDir, colorOrder)
 end
 
  
- function data = quadrantData(allQuadrantData, quandrantsToInclude, quadrants)
-     switch (quandrantsToInclude)
-         case  'horizontal'
-             % Use horizontal eccs only
-             data = squeeze(allQuadrantData(:, 1, :));
-         case 'vertical'
-             % Use vertical eccs only
-             data =  [squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
-         case 'both'
-             data = [squeeze(allQuadrantData(:, 1, :))  squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
-         otherwise
-             error('quandrantsToInclude has an invalid value')
-     end
+ function data = quadrantData(allQuadrantData, quadrantsToAverage, quadrantsComputed, subjectsToAverage, subjectsComputed)
+ 
+    data = [];
+    retinalPoolingRadiiNum = size(allQuadrantData,1);
+    quadrantsNum = size(allQuadrantData,2);
+    subjectsNum = size(allQuadrantData,3);
+    for k = 1:quadrantsNum
+        if (ismember(quadrantsComputed(k), quadrantsToAverage))
+            for s = 1:subjectsNum
+                if (ismember(subjectsComputed(s), subjectsToAverage))
+                    data = cat(2,data,squeeze(allQuadrantData(1:retinalPoolingRadiiNum, k, s)));
+                end
+            end
+        end
+    end
+    
+%      switch (quandrantsToInclude)
+%          case  'horizontal'
+%              % Use horizontal eccs only
+%              data = squeeze(allQuadrantData(:, 1, :));
+%          case 'vertical'
+%              % Use vertical eccs only
+%              data =  [squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
+%          case 'both'
+%              data = [squeeze(allQuadrantData(:, 1, :))  squeeze(allQuadrantData(:, 2, :)) squeeze(allQuadrantData(:, 3, :))];
+%          otherwise
+%              error('quandrantsToInclude has an invalid value')
+%      end
      data = data';
  end
  

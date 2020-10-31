@@ -4,11 +4,12 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     
     p = inputParser;
     p.addParameter('doNotZeroCenterPSF', false, @islogical);
+    p.addParameter('micronsPerDegree', 300, @isscalar);
     p.parse(varargin{:});
     doNotZeroCenterPSF = p.Results.doNotZeroCenterPSF;
+    umPerDegree = p.Results.micronsPerDegree;
     
     %% Compute WVF
-    umPerDegree = 300;
     theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, measWavelength, wavelengthsListToCompute, ...
             measPupilDiamMM, targetPupilDiamMM, umPerDegree, '');
     
@@ -49,8 +50,13 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
         
         OTFs(:,:,wIndex) = fftshift(theWaveOTF);
         PSFs(:,:,wIndex) = theWavePSF;
+        
+        % Also set the PSF stored within theWVF
+        theWVF.psf{wIndex} = theWavePSF;
     end
     
+   
+   
     xMinutes = xGridMinutes(1,:);
     yMinutes = yGridMinutes(:,1);
 end

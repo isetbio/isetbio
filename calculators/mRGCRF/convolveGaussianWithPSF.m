@@ -44,11 +44,17 @@ function doIt(rootDir,cellEcc, imposedRefractionErrorDiopters, retinalPoolingRad
         end
         deltaEcc = 1;
             
+        wavefrontSpatialSamples = 1001;
+        pupilDiameterMM = 3.0;
+        wavelengthsListToCompute = [550];
+        micronsPerDegree = 300; % for monkey retina
+            
         for sIndex = 1:numel(subjectIDs)
             subjectID = subjectIDs(sIndex);
             % Compute the subject PSF at the desired eccentricity
             [hEcc, vEcc, thePSFs, thePSFsupportDegs] = CronerKaplanRGCModel.psfAtEccentricity(subjectID, ...
-                imposedRefractionErrorDiopters, eccXrange, eccYrange, deltaEcc);
+                imposedRefractionErrorDiopters, pupilDiameterMM, wavelengthsListToCompute, ...
+                micronsPerDegree, wavefrontSpatialSamples, eccXrange, eccYrange, deltaEcc);
             
             % Make a large PSF (via zero padding to be used to convolve with
             % the largest stimuli)

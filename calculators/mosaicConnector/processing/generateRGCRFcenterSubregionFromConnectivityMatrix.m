@@ -1,8 +1,10 @@
-function theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(connectivityVectorForRGC, conePositions, coneSpacings,  X,Y)
+function [theRF, theRFcenter] = generateRGCRFcenterSubregionFromConnectivityMatrix(connectivityVectorForRGC, conePositions, coneSpacings,  X,Y)
     
     theRF = [];
     connectedConeIDs = find(connectivityVectorForRGC>0);
-    flatTopZ = 0.4;
+    flatTopZ = 0.45;
+
+    theRFcenter = mean(conePositions(connectedConeIDs,:),1);
     
     for k = 1:numel(connectedConeIDs)
         coneIndex = connectedConeIDs(k);
@@ -16,6 +18,7 @@ function theRF = generateRGCRFcenterSubregionFromConnectivityMatrix(connectivity
             theRF = theRF + coneProfile * connectivityVectorForRGC(coneIndex);
         end 
     end
-    theRF = theRF/max(theRF(:));
-        
+    if (~isempty(theRF))
+        theRF = theRF/max(theRF(:));
+    end
 end

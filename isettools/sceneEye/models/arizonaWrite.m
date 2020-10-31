@@ -22,11 +22,18 @@ function filename = arizonaWrite(thisR)
 % Check with TL about the IOR files for the Arizona Eye Model
 %
 
+% History:
+%   10/19/20  dhb Example checks for required iset3d function
+
 % Examples:
 %{
-  myScene = sceneEye('slantedBar','human eye','arizona');
-  thisR = myScene.get('recipe');
-  arizonaWrite(thisR);
+if (exist('piRecipeDefault','file'))
+    myScene = sceneEye('slantedBar','human eye','arizona');
+    thisR = myScene.get('recipe');
+    arizonaWrite(thisR);
+else
+    fprintf('This example requires iset3d on your path as well as isetbio\n');
+end
 %}
 
 %% Get the parameters given the accommodation

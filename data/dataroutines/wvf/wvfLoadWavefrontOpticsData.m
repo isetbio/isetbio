@@ -74,7 +74,10 @@ function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
 %                           or 'left' eye (default 'right').
 %    'eccentricity'       - Vector. A 1x2 vector of integers. The first
 %                           integer represents the horizontal eccentricity,
-%                           and the second the vertical eccentricity.
+%                           and the second the vertical eccentricity.  If
+%                           only a single value is passed, it is assumed to
+%                           be horizontal eccentricity and vertical
+%                           eccentricity is taken to be 0.
 %                           (Default is [0, 0]).
 %               HORIZONTAL: Integer between -40 and 40 (deg), steps of 1, 
 %                           indicating for which eccentricity to compute
@@ -148,12 +151,17 @@ function [wvf, oi] = wvfLoadWavefrontOpticsData(varargin)
 %    05/05/18  dhb      Cosmetic.
 %    09/26/18  jnm      Formatting. Add catch for single eccentricity
 %                       value, note that examples are BROKEN, added TODO.
+%    10/19/20  dhb      Added comment that if only a single eccentricity is
+%                       passed, it is taken to be the horizontal eccentricity with vertical
+%                       eccentricity as 0.  Removed warning for this case,
+%                       but print a message if verbose is true.
+%                       Fixed examples not to pass a single number for eccentricity.
 
 % Examples:
 %{
     [wvf, oi] = wvfLoadWavefrontOpticsData(...
         'wvfZcoefsSource', 'JaekenArtal2012', 'jIndex', 0:14, ...
-        'whichEye', 'left', 'eccentricity', 4, ...
+        'whichEye', 'left', 'eccentricity', [4 0], ...
         'whichGroup', 'emmetropes', 'verbose', true);
 %}
 %{
@@ -299,10 +307,12 @@ end
 theseZCoef = wvfOSAIndexToVectorIndex(params.jIndex);
 eyeIdx = strcmp(params.whichEye, {'right', 'left'});
 
-% [Note: JNM - Adding check if eccentricity is a single value]
+% Check if eccentricity is a single value, fill in vertical as zero if so.
 if length(params.eccentricity) < 2
     params.eccentricity = [params.eccentricity, 0];
-    warning('Only a single value for eccentricity supplied. Assuming vertical eccentricity is 0');
+    if (params.verbose)
+        fprintf('Only a single value for eccentricity supplied. Assuming vertical eccentricity is 0');
+    end
 end
 
 % Horizontal followed by Vertical

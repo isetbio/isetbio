@@ -25,11 +25,18 @@ function filename = navarroWrite(thisR)
 % See also
 %   navarroLensCreate, navarroRefractiveIndices
 
+% History:
+%   10/19/20  dhb Example checks for required iset3d function
+
 % Examples:
 %{
-  myScene = sceneEye('slantedBar');
-  thisR = myScene.recipe;
-  navarroWrite(thisR);
+if (exist('piRecipeDefault','file'))
+    myScene = sceneEye('slantedBar');
+    thisR = myScene.recipe;
+    navarroWrite(thisR);
+else
+    fprintf('This example requires iset3d on your path as well as isetbio\n');
+end
 %}
 
 

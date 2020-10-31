@@ -22,11 +22,18 @@ function thisR = legrandWrite(thisR)
 % See also
 %   navarroWrite
 
+% History:
+%   10/19/20  dhb Example checks for required iset3d function
+
 % Examples:
 %{
-  thisR = piRecipeDefault;
-  thisR.camera = piCameraCreate('humaneye','lens file','legrand.dat');
-  legrandWrite(thisR);
+if (exist('piRecipeDefault','file'))
+    thisR = piRecipeDefault;
+    thisR.camera = piCameraCreate('humaneye','lens file','legrand.dat');
+    legrandWrite(thisR);
+else
+    fprintf('This example requires iset3d on your path as well as isetbio\n');
+end
 %}
 %% Parameters
 

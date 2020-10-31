@@ -1,6 +1,6 @@
 function visualizeWeigtedConeInputsToRGCSubregion(theAxes, coneTypes, ...
     conePositionsMicrons, coneSpacingsMicrons, connectionWeights,  maxWeightVisualized, ...
-    rgcPositionMicrons, rgcSubregionRadiusMicrons,  spatialSupportRangeMicrons, polarity)
+    rgcPositionMicrons,  spatialSupportRangeMicrons, polarity)
 
     xx = cosd(0:5:360);
     yy = sind(0:5:360);
@@ -49,14 +49,14 @@ function visualizeWeigtedConeInputsToRGCSubregion(theAxes, coneTypes, ...
     area(theAxes, rgcPositionMicrons(1)+x, y, baseline, 'FaceColor',[ 0.5 0.5 0.5] + polarity*[0.3 0.3 0.3], 'EdgeAlpha', 0.2);
     
     % Plot the outline of the subregion
-    plotSubregionOutline = true;
-    if (plotSubregionOutline)
-        rgcSubregionOutline(:,1) = rgcPositionMicrons(1) + rgcSubregionRadiusMicrons * xx;
-        rgcSubregionOutline(:,2) = rgcPositionMicrons(2) + rgcSubregionRadiusMicrons * yy;
-
-        patch(theAxes,'faces', 1:size(rgcSubregionOutline,1), 'Vertices', rgcSubregionOutline, ...
-                'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.0, 'EdgeColor', [0.3 0.3 0.3], 'EdgeAlpha', 0.3);
-    end
+%     plotSubregionOutline = true;
+%     if (plotSubregionOutline)
+%         rgcSubregionOutline(:,1) = rgcPositionMicrons(1) + rgcSubregionRadiusMicrons * xx;
+%         rgcSubregionOutline(:,2) = rgcPositionMicrons(2) + rgcSubregionRadiusMicrons * yy;
+% 
+%         patch(theAxes,'faces', 1:size(rgcSubregionOutline,1), 'Vertices', rgcSubregionOutline, ...
+%                 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.0, 'EdgeColor', [0.3 0.3 0.3], 'EdgeAlpha', 0.3);
+%     end
     grid(theAxes, 'off');
     set(theAxes, 'XLim', rgcPositionMicrons(1) + spatialSupportRangeMicrons*[-1 1], ...
                  'YLim', rgcPositionMicrons(2) + spatialSupportRangeMicrons*[-1 1], ...
