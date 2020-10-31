@@ -32,6 +32,13 @@ function val = vcNewObjectValue(objType)
 %}
 
 object = vcGetObjects(objType);
+
+% It seems that ieInit was not run.  So return and tell the user.
+if isempty(object)
+    val = [];
+    return;
+end
+
 if isempty(object{1}), val = 1; else, val = length(object) + 1; end
 
 return;

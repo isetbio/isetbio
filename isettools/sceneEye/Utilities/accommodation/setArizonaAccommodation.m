@@ -1,6 +1,8 @@
 function renderRecipe = setArizonaAccommodation(...
     renderRecipe, accommodation, workingFolder)
-% Change renderRecipe to match the accommodation for the Arizona eye
+% DEPRECATED Change renderRecipe to match the accommodation for the Arizona eye
+%
+%   Deprecated:  Now part of the arizona* methods
 %
 % Syntax:
 %   renderRecipe = setArizonaAccommodation(..

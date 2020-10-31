@@ -1,8 +1,10 @@
 function renderRecipe = writeLegrandLensFile(renderRecipe, workingFolder)
-% Write out the Le Grand lens file.
+% DEPRECATED:  Write out the LeGrand lens file.
 %
+%    DEPRECATED:  Use the legrand* methods
+
 % Syntax:
-%   writeLegrandLensFile(filename)
+%   writeLegrandLensFile(renderRecipe, workingFolder)
 %
 % Description:
 %    Write out the Le Grand theoreticl eye lens file. These values are
@@ -11,15 +13,30 @@ function renderRecipe = writeLegrandLensFile(renderRecipe, workingFolder)
 %    implement here.)
 %
 % Inputs:
-%    filename      - String. The filename to write to.
+%    renderRecipe  - ISET3d render @recipe
 %    workingFolder - String. The working directory file path.
-%
-% Outputs:
-%    renderRecipe  - Struct. The Recipe structure for the object.
 %
 % Optional key/value pairs:
 %    None.
 %
+% Outputs:
+%    renderRecipe  - The modified Recipe
+%
+% See also
+%  (BW fixed a lot of comments.  Started to add an example)
+
+% History:
+%   10/19/20  dhb Example checks for required iset3d function
+
+% Examples:
+%{
+if (exist('piRecipeDefault','file'))
+    thisR = piRecipeDefault;
+    writeLegrandLensFile(thisR,thisR.get('output dir'));
+else
+    fprintf('This example requires iset3d on your path as well as isetbio\n');
+end
+%}
 
 % Columns are: radiusX, radiusY, thickness, materialIndex, semiDiameter,
 % conicConstantX, and conicConstantY

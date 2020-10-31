@@ -31,6 +31,7 @@ function cmStructSerialized = geometryStructAlignedWithSerializedConeMosaicRespo
     [~, idx] = pdist2(coneLocsHexGrid, cmStruct.coneLocs, 'euclidean', 'Smallest', 1);
     
     cmStructSerialized.coneLocs = cmStruct.coneLocs(idx,:);
+    cmStructSerialized.coneLocsMicrons =  cmStructSerialized.coneLocs * obj.micronsPerDegree;
     cmStructSerialized.coneApertures = cmStruct.coneApertures(idx);
     
     if (isempty(cmStruct.coneTypes))

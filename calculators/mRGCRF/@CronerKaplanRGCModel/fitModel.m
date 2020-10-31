@@ -24,15 +24,16 @@ function fitRawData(obj)
 
     x = obj.centerData('size').eccDegs;
     y = obj.centerData('size').radiusDegs;
+    obj.centerRadiusThreshold = min(obj.centerData('size').radiusDegs);
     [obj.centerRadiusFunction, obj.centerRadiusParams, obj.centerRadiusParamsSE] = ...
-        nonLinearFitData(x,y,[],[], obj.centerData('size').initialParams);
-    
+        nonLinearFitDataWithThreshold(x,y, obj.centerRadiusThreshold, [],[], obj.centerData('size').initialParams);
 
     x = obj.surroundData('size').eccDegs;
     y = obj.surroundData('size').radiusDegs;
+    obj.surroundRadiusThreshold = min(obj.surroundData('size').radiusDegs);
     [obj.surroundRadiusFunction, ...
         obj.surroundRadiusParams, obj.surroundRadiusParamsSE] = ...
-        nonLinearFitData(x,y,[],[], obj.surroundData('size').initialParams);
+        nonLinearFitDataWithThreshold(x,y,obj.surroundRadiusThreshold,[],[], obj.surroundData('size').initialParams);
     
     x = obj.centerData('sensitivity').radiusDegs;
     y = obj.centerData('sensitivity').peakSensitivity;
@@ -58,12 +59,10 @@ function usePaperFits(obj)
         obj.centerRadiusParams, obj.centerRadiusParamsSE] = nonLinearFitData(...
         x,yMedian,yIQR,ySamplesNum, obj.centerData('size').initialParams);
     
-    
     % The ecc - surround radius equation from the paper (Figure 4 caption)
     obj.surroundRadiusFunction = @(p,x)(p(1)*x.^p(2));
     obj.surroundRadiusParams = [0.203 0.472];
     obj.surroundRadiusParamsSE = [0 0];
-    
     
     % The radius - center sensitivity equation from the paper (Figure 5 caption)
     obj.centerPeakSensitivityFunction = @(p,x)(p(1)*x.^p(2));
@@ -82,18 +81,20 @@ function fitMedianData(obj)
     yMedian = obj.centerData('size').radiusDegsMedianTable;
     yIQR = obj.centerData('size').radiusDegsIQRTable;
     ySamplesNum = obj.centerData('size').samplesTable;
+    obj.centerRadiusThreshold = min(obj.centerData('size').radiusDegs);
     [obj.centerRadiusFunction, ...
-        obj.centerRadiusParams, obj.centerRadiusParamsSE] = nonLinearFitData(...
-        x,yMedian,yIQR,ySamplesNum, obj.centerData('size').initialParams);
+        obj.centerRadiusParams, obj.centerRadiusParamsSE] = nonLinearFitDataWithThreshold(...
+        x, yMedian, obj.centerRadiusThreshold, yIQR,ySamplesNum, obj.centerData('size').initialParams);
     
     % Fit the ecc - surround radius data
     x = obj.surroundData('size').eccDegsTable;
     yMedian = obj.surroundData('size').radiusDegsMedianTable;
     yIQR = obj.surroundData('size').radiusDegsIQRTable;
     ySamplesNum = obj.surroundData('size').samplesTable;
+    obj.surroundRadiusThreshold = min(obj.surroundData('size').radiusDegs);
     [obj.surroundRadiusFunction, ...
-        obj.surroundRadiusParams, obj.surroundRadiusParamsSE] = nonLinearFitData(...
-        x,yMedian,yIQR,ySamplesNum, obj.surroundData('size').initialParams);
+        obj.surroundRadiusParams, obj.surroundRadiusParamsSE] = nonLinearFitDataWithThreshold(...
+        x,yMedian, obj.surroundRadiusThreshold, yIQR,ySamplesNum, obj.surroundData('size').initialParams);
 
     
     % Fit the radius - center sensitivity data
@@ -139,3 +140,27 @@ function [powerFunction, fittedParams, fittedParamsSE] = nonLinearFitData(x,y, y
     % make it standard deviation
     %fittedParamsSE = fittedParamsSE * sqrt(mean(ySamplesNum));
 end
+
+function [powerFunction,  fittedParams, fittedParamsSE] = nonLinearFitDataWithThreshold(x,y, threshold, yIQR,ySamplesNum,initialParams)
+    powerFunction = @(p, x)( max(threshold*ones(size(x)), p(1)*(abs(x)).^p(2)) );  % Objective Function
+    opts.RobustWgtFun = 'talwar';
+    if (~isempty(yIQR))
+        xx = [];
+        yy = [];
+        for k = 1:numel(y)
+            ySamples = normrnd(y(k), yIQR(k)/1.35, [1 ySamplesNum(k)]);
+            yy = cat(2, yy, ySamples);
+            xx = cat(2, xx, repmat(x(k), [1 ySamplesNum(k)]));
+        end
+        y = yy;
+        x = xx;
+    end
+    [fittedParams,~,~,varCovarianceMatrix,~] = nlinfit(x,y,powerFunction,initialParams, opts);
+    % standard error of the mean
+    fittedParamsSE = sqrt(diag(varCovarianceMatrix));
+    fittedParamsSE = fittedParamsSE';
+   
+    % make it standard deviation
+    %fittedParamsSE = fittedParamsSE * sqrt(mean(ySamplesNum));
+end
+

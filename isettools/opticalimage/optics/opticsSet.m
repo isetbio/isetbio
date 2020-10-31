@@ -72,6 +72,8 @@ function optics = opticsSet(optics, parm, val, varargin)
 %           {'off axis method'} - String. Options for this are: 'Skip' to
 %                                 turn off or 'cos4th'.
 %           {'cos4thdata'}      - Matrix. The cached cos4th data.
+%           {'vignetting'}      - Deprecated.  True/false
+%
 %    val      - VARIES. The value to assign to the parameter, following the
 %               form specified by the parameter examples above.
 %    varargin - (Optional) VARIES. Additional arguments that may be
@@ -209,8 +211,8 @@ switch parm
         if isfield(optics, 'transmittance')
             optics.transmittance.wave = val;
         else
-            fprintf('Set transmittance only for diffraction');
-            fprintf('Set lens density for human case')
+            fprintf('Set transmittance only for diffraction\n');
+            fprintf('Set lens density for human case\n')
             fprintf('Optics name: %s', optics.name);
         end
 
@@ -242,7 +244,11 @@ switch parm
     case {'cos4th', 'cos4thdata', 'cos4thvalue'}
         % Numerical values. Should change field to data from value.
         optics.cos4th.value = val;
-
+        
+    case 'vignetting'
+        % Deprecated left from old sceneEye code.
+        optics.vignetting = val;
+        
     % ---- OTF information for shift-invariant calculations
     case {'otffunction', 'otfmethod'}
         % This should probably not be here.
@@ -272,7 +278,7 @@ switch parm
         optics.OTF.wave = val;
 
     otherwise
-        error('Unknown parameter')
+        error('Unknown parameter %s\n',param);
 end
 
 end

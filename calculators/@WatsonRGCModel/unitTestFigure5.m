@@ -1,4 +1,7 @@
-function unitTestFigure5(varargin)
+function plotlabOBJ = unitTestFigure5(varargin)
+% Generate Figure 5 of Watson (2014) which plots total RGC RF density as a function
+% of eccentricity.
+
     % Parse input
     p = inputParser;
     p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
@@ -25,7 +28,7 @@ function doIt(obj, eccentricities, eccUnits, densityUnits, meridianLabeling, fig
 
     exportFigure = false;
         
-    hFig = figure(); clf;
+    hFig = figure(5); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.16, ...
             'bottomMargin', 0.18, ...
@@ -60,6 +63,10 @@ function doIt(obj, eccentricities, eccUnits, densityUnits, meridianLabeling, fig
     else
         xLims = [0.05 100];
         xTicks = [0.1 0.3 1 3 10 30 100];
+        totalConesAtFovea = obj.dc0;
+        midgetFractionAtFovea = 1/obj.f0;
+        totalRGCsAtFovea = totalConesAtFovea * 2 / midgetFractionAtFovea;
+        plot(theAxesGrid, xLims(1), totalRGCsAtFovea, 'ko');
         xLabelString = sprintf('eccentricity (%s)', strrep(eccUnits, 'visual', ''));
     end
     

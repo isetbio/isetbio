@@ -19,7 +19,7 @@ function unitTestSmoothGrid()
     
     % Samples of eccentricities to tabulate spacing on
     % Precompute cone spacing for a grid of [eccentricitySamplesNum x eccentricitySamplesNum] covering the range of rfPositions
-    eccentricitySamplesNum = 32;
+    eccentricitySamplesNum = 48;
     
     % Set a random seed
     theRandomSeed = 1;
@@ -32,7 +32,7 @@ function unitTestSmoothGrid()
     maxIterations = 3000;
     
     % 3. Trigger Delayun triangularization if rfmovement exceeds this number
-    maxMovementPercentile = 20;
+    maxMovementPercentile = 30;
     
     
     % 4. Do not trigger Delayun triangularization if less than minIterationsBeforeRetriangulation have passed since last one

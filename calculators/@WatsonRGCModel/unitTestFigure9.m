@@ -1,4 +1,7 @@
-function unitTestFigure9(varargin)
+function plotlabOBJ = unitTestFigure9(varargin)
+% Generate Figure 9 of Watson (2014) which plots the mRGC RF density as a function
+% of eccentricity.
+
     % Parse input
     p = inputParser;
     p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
@@ -25,7 +28,7 @@ function doIt(obj, eccentricities, eccUnits, densityUnits, meridianLabeling, fig
     
     exportFigure = false;
     
-    hFig = figure(); clf;
+    hFig = figure(9); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.18, ...
             'bottomMargin', 0.18, ...
@@ -41,7 +44,8 @@ function doIt(obj, eccentricities, eccUnits, densityUnits, meridianLabeling, fig
     for k = 1:numel(meridianNames)
         % Compute the data
         rightEyeVisualFieldMeridianName = meridianNames{k};
-        [mRGCRFSpacing, mRGCRFDensity] = obj.mRGCRFSpacingAndDensityAlongMeridian(eccentricities, rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
+        [mRGCRFSpacing, mRGCRFDensity] = obj.mRGCRFSpacingAndDensityAlongMeridian(eccentricities, ...
+            rightEyeVisualFieldMeridianName, eccUnits, densityUnits);
         
         plot(theAxesGrid, eccentricities, mRGCRFDensity);
         if (strcmp(meridianLabeling, 'retinal'))
@@ -60,6 +64,9 @@ function doIt(obj, eccentricities, eccUnits, densityUnits, meridianLabeling, fig
     else
         xLims = [0.05 100];
         xTicks = [0.1 0.3 1 3 10 30 100];
+        totalConesAtFovea = obj.dc0;
+        totalmRGCRFsAtFovea = totalConesAtFovea * 2;
+        plot(theAxesGrid, xLims(1), totalmRGCRFsAtFovea, 'ko');
         xLabelString = sprintf('eccentricity (%s)', strrep(eccUnits, 'visual', ''));
     end
     

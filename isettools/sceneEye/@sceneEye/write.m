@@ -15,7 +15,7 @@ function objNew = write(obj, varargin)
 %    will be run within the render function.
 %
 % Inputs:
-%    obj   - Object. The scene3D object to render.
+%    obj   - The sceneEye object to render.  It contains the render recipe.
 %
 % Outputs:
 %   objNew - Object. The object may have been modified in the processing
@@ -40,6 +40,7 @@ function objNew = write(obj, varargin)
 %
 
 %% Make a copy of the current object
+%
 % We will render this copy, since we may make changes to certain parameters
 % before rendering (i.e. in th eccentricity calculations) but we don't want
 % these changes to show up original object given by the user.
@@ -47,6 +48,7 @@ objNew = copy(obj);
 objNew.recipe = copy(obj.recipe);
 
 %% Make some eccentricity calculations
+
 % To render an image centered at a certain eccentricity without having
 % change PBRT, we do the following:
 % 1. Change the film size and resolution so that renders a larger image
@@ -66,39 +68,42 @@ if(ecc ~= [0, 0])
 end
 
 %% Given the sceneEye object, make all adjustments needed to the recipe
-recipe = objNew.recipe;
+thisR = objNew.recipe;
 
 % Depending on the eye model, set the lens file appropriately
-switch objNew.modelName
-    case {'Navarro', 'navarro'}
+switch ieParamFormat(objNew.modelName)
+    case {'navarro'}
+        %{
         % Apply any accommodation changes
         if(isempty(objNew.accommodation))
             objNew.accommodation = 5;
             warning('No accommodation! Setting to 5 diopters.');
         end
-
+        %}
+        navarroWrite(objNew.recipe);
+        
         % This function also writes out the Navarro lens file
-        recipe = setNavarroAccommodation(recipe, objNew.accommodation, ...
-            objNew.workingDir);
+        % recipe = setNavarroAccommodation(recipe, objNew.accommodation, ...
+        %     objNew.workingDir);
 
-    case {'LeGrand', 'legrand', 'le grand'}
+    case {'legrand'}
         % Le Grand eye does not have accommodation (not yet at least).
-        recipe = writeLegrandLensFile(recipe, objNew.workingDir); 
+        thisR = writeLegrandLensFile(thisR, objNew.workingDir); 
 
-    case{'Arizona', 'arizona'}
+    case{'arizona'}
         if(isempty(objNew.accommodation))
             objNew.accommodation = 5;
             warning('No accommodation! Setting to 5 diopters.');
         end
 
         % This function also writes out the Arizona lens file.
-        recipe = setArizonaAccommodation(recipe, objNew.accommodation, ...
+        thisR = setArizonaAccommodation(thisR, objNew.accommodation, ...
             objNew.workingDir);
 
-    case{'Custom', 'custom'}
+    case{'custom'}
         
         % Run this first to generate the IOR files.
-        setNavarroAccommodation(recipe, 0, objNew.workingDir);
+        setNavarroAccommodation(thisR, 0, objNew.workingDir);
 
         % Copy the lens file given over
         if(isempty(obj.lensFile))
@@ -110,110 +115,77 @@ switch objNew.modelName
             [~, n, e] = fileparts(obj.lensFile);
 
             if(success)
-                recipe.camera.lensfile.value = ...
+                thisR.camera.lensfile.value = ...
                     fullfile(objNew.workingDir, [n e]);
-                recipe.camera.lensfile.type = 'string';
+                thisR.camera.lensfile.type = 'string';
             else
                 error('Error copying lens file. Err message: %s', message);
             end
         end
+    case {'perspective'}
+        % Probably in debug mode.  So let it go through, though you might
+        % check debug mode.
+    otherwise
+        error('Unknown human eye model %s\n',modelName);
 
 end
 
-% Film parameters
-recipe.film.xresolution.value = objNew.resolution;
-recipe.film.yresolution.value = objNew.resolution;
-
-% Camera parameters
-if(objNew.debugMode)
-    % Use a perspective camera with matching FOV instead of an eye.
-    fov = struct('value', objNew.fov, 'type', 'float');
-    recipe.camera = struct('type', 'Camera', 'subtype', 'perspective', ...
-        'fov', fov);
-    if(objNew.accommodation ~= 0)
-        warning(['Setting perspective camera focal distance to %0.2f ' ...
-            'dpt and lens radius to %0.2f mm'], ...
-            objNew.accommodation, objNew.pupilDiameter);
-        recipe.camera.focaldistance.value = 1/objNew.accommodation;
-        recipe.camera.focaldistance.type = 'float';
-
-        recipe.camera.lensradius.value = ...
-            (objNew.pupilDiameter / 2) * 10 ^ -3;
-        recipe.camera.lensradius.type = 'float';
-    end
-else
-    recipe.camera.retinaDistance.value = objNew.retinaDistance;
-    recipe.camera.pupilDiameter.value = objNew.pupilDiameter;
-    recipe.camera.retinaDistance.value = objNew.retinaDistance;
-    recipe.camera.retinaRadius.value = objNew.retinaRadius;
-    recipe.camera.retinaSemiDiam.value = objNew.retinaDistance * ...
-        tand(objNew.fov / 2);
-    if(strcmp(objNew.sceneUnits, 'm'))
-        recipe.camera.mmUnits.value = 'false';
-        recipe.camera.mmUnits.type = 'bool';
-    end
-    if(objNew.diffractionEnabled)
-        recipe.camera.diffractionEnabled.value = 'true';
-        recipe.camera.diffractionEnabled.type = 'bool';
-    end
+% semidiam = objNew.retinaDistance * tand(objNew.fov / 2);
+if ~obj.debugMode
+    % I am suspicious about the units here (mm vs m)
+    semidiam = thisR.get('retina Distance') * tand(objNew.fov / 2);  % Looks like mm now
+    thisR.set('retina semidiam',semidiam);  % Which makes this mm, too.
 end
 
-% Sampler
-recipe.sampler.pixelsamples.value = objNew.numRays;
+% recipe.camera.retinaSemiDiam.value = objNew.retinaDistance * ...
+%    tand(objNew.fov / 2);
 
-% Integrator
-recipe.integrator.maxdepth.value = objNew.numBounces;
-recipe.integrator.maxdepth.type = 'integer';
-
-% Renderer
-if(objNew.numCABands == 0 || objNew.numCABands == 1 || objNew.debugMode)
-    % No spectral rendering
-    recipe.integrator.subtype = 'path';
-else
-    % Spectral rendering
-    numCABands = struct('value', objNew.numCABands, 'type', 'integer');
-    recipe.integrator = struct('type', 'Integrator', ...
-        'subtype', 'spectralpath', 'numCABands', numCABands);
-end
-
-% Look At
-if(isempty(objNew.eyePos) || isempty(objNew.eyeTo) || ...
-        isempty(objNew.eyeUp))
-    error('Eye location missing!');
-else
-    recipe.lookAt = struct('from', objNew.eyePos, 'to', objNew.eyeTo, ...
-        'up', objNew.eyeUp);
-end
-
-% If there was a crop window, we have to update the angular support that
-% comes with sceneEye
-% We can't do this right now because the angular support is a dependent
-% variable. How to overcome this?
 %{
-currAngSupport = obj.angularSupport;
-cropWindow = recipe.get('cropwindow');
-cropWindowR = cropWindow.*obj.resolution;
-cropWindowR = [cropWindowR(1) cropWindowR(3) ...
-    cropWindowR(2)-cropWindowR(1) cropWindowR(4)-cropWindowR(3)];
-[X, Y] = meshgrid(currAngSupport, currAngSupport);
-X = imcrop(X, cropWindowR);
-Y = imcrop(Y, cropWindowR);
-% Assume square optical image for now, but we should probably change
-% angularSupport to have both x and y direction.
-objNew.angularSupport = X(1, :); 
+if(strcmp(objNew.mmUnits, 'meters'))
+    % We have some scenes that are in millimeters, not meters.  In that
+    % case we set this flag to be true, indicating that mmUnits are true.
+    thisR.camera.mmUnits.value = 'false';
+    thisR.camera.mmUnits.type = 'bool';
+end
 %}
 
+if(objNew.diffractionEnabled)
+    % We should never get here.  Diffraction should always be set as
+    % below.
+    warning('Why am I here in diffraction enabled?');
+    thisR.set('diffraction',true);
+    % recipe.camera.diffractionEnabled.value = 'true';
+    % recipe.camera.diffractionEnabled.type = 'bool';
+end
+
+% Renderer
+numCABands = obj.recipe.get('num ca bands');
+if(numCABands == 0 || numCABands == 1 || objNew.debugMode)
+    % No spectral chromab rendering
+    thisR.set('integrator subtype','path');
+else
+    numCABands = struct('value', objNew.numCABands, 'type', 'integer');
+    thisR.set('integrator subtype','spectralpath');
+    thisR.set('integrator num ca bands',numCABands);
+end
+
 %% Write out the adjusted recipe into a PBRT file
+piWrite(thisR);
+
+%{
 pbrtFile = fullfile(objNew.workingDir, strcat(objNew.name, '.pbrt'));
 recipe.set('outputFile', pbrtFile);
 if(strcmp(recipe.exporter, 'C4D'))
-    piWrite(recipe, 'overwritepbrtfile', true, ...
+    piWrite(recipe,  ...
         'overwritelensfile', false, 'overwriteresources', false, ...
         'creatematerials', true);
 else
-    piWrite(recipe, 'overwritepbrtfile', true, ...
+    piWrite(recipe,  ...
         'overwritelensfile', false, 'overwriteresources', false);
 end
-obj.recipe = recipe; % Update the recipe.
+%}
+
+% Not sure about any changes to recipe.  We should check carefully.
+obj.recipe = thisR; 
 
 end

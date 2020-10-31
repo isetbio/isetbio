@@ -1,6 +1,8 @@
 function writeArizonaLensFile(A, filename)
-% Write out the Arizona lens file for a given accomodation
+% DEPRECATED:  Write out the Arizona lens file for a given accomodation
 %
+%    DEPRECATED for the arizonaWrite
+%  
 % Syntax:
 %   writeArizonaLensFile(A, filename)
 %

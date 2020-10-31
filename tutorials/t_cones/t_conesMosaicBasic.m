@@ -1,19 +1,15 @@
 %% Introduction to the cone mosaic object.
 %
 % Description:
-%    Show how to create a cone mosaic object and compute cone
-%    isomerizatoins across a set of small eye movements. This lets you look
-%    at the result in the coneMosaic window.
+%    Create a cone mosaic object and compute cone isomerizatoins across a
+%    set of small eye movements. 
 %
-% Notes:
-%    * [Note: DHB - Either we should show how to access fields of the
-%      mosaic programatically here, or we should point to a different
-%      tutorial that does so.]
+%    Visualize the results in coneMosaic window.
 %
+% See also
+%   t_cones*
 
 %% Initialize and clear
-clear;
-close all;
 ieInit;
 
 %% Build a simple scene and oi (retinal image) for computing
@@ -59,3 +55,5 @@ cMosaic.window;
 
 % cMosaic.plot('Cone mosaic');
 % cMosaic.plot('meanabsorptions');
+
+%% END

@@ -39,12 +39,20 @@ function t_linearFilters
 %    11/07/18  JNM  Formatting
 
 % Define the time axis for the simulation
-stimulusSamplingInterval = 10 / 1000;
+%
+% Shorten stimulusSamplingInterval for cleaner plots
+stimulusSamplingInterval = 5 / 1000;
 oiTimeAxis = -0.5:stimulusSamplingInterval:1;
 
 % Define background luminace levels examined & the pedestal step (cd/m2)
+% Spectrum is equal quantal
 backgroundLuminances = [25 50 100 200 400];
-lumStep = 20;
+lumSteps = [20 20 20 20 20];
+
+% Try these to compensate for the gain control in the photocurrrent
+% response.
+backgroundLuminances = [25 50 100 200];
+lumSteps = [20 30 45 70];
 
 % Generate optics
 noOptics = false;
@@ -80,7 +88,7 @@ for iLum = 1:numel(backgroundLuminances)
     % Step stimulus modulation function
     modulationFunction{iLum} = zeros(1, numel(oiTimeAxis));
     modulationFunction{iLum}(oiTimeAxis > 0.2 & oiTimeAxis < 0.6) = ...
-        lumStep / backgroundLuminances(iLum);
+        lumSteps(iLum) / backgroundLuminances(iLum);
     theOIsequence = oiSequence(oiBackground, oiModulated, oiTimeAxis, ...
         modulationFunction{iLum});
 

@@ -1,4 +1,7 @@
-function unitTestFigure10(varargin)
+function plotlabOBJ = unitTestFigure10(varargin)
+% Generate Figure 10 of Watson (2014) which plots the mRGC RF spacing as a function
+% of eccentricity.
+
     % Parse input
     p = inputParser;
     p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
@@ -24,7 +27,7 @@ end
 function doIt(obj, eccentricities, eccUnits, spacingUnits, meridianLabeling, figureName, theFileName, plotlabOBJ)
     exportFigure = false;
     
-    hFig = figure(); clf;
+    hFig = figure(10); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.16, ...
             'bottomMargin', 0.18, ...

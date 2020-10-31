@@ -1,6 +1,6 @@
 function [coneSpacings, coneDensities] = coneRFSpacingAndDensityAtRetinalPositions(obj, rfPositions, whichEye, posUnits, densityUnits, varargin)
 % Return cone RF spacing (in mm) and densities (in units per retinal mm^2, at each of the input
-% retinal positions (specified in retinal mm, for either the left or the
+% retinal positions (specified in retinal mm), for either the left or the
 % right eye.
 
      % Parse input

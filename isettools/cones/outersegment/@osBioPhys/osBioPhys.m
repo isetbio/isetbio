@@ -43,25 +43,28 @@ classdef osBioPhys < outerSegment
 % History:
 %    xx/xx/16  JRG/HJ/BW  ISETBIO Team, 2016
 %
-%    08/05/17  dhb        Add eccentricityDegs key/value pair, and comments
-%                         about it. This had been suggested previously in
-%                         the comments as required. I did it in a backwards
-%                         compatiable fashion.
-%              dhb        Deprecate 'osType' and change 'eccentricityDegs'
-%                         to 'eccentricity'.
-%    02/14/18  jnm        Formatting
+%    08/05/17   dhb         Add eccentricityDegs key/value pair, and comments
+%                           about it. This had been suggested previously in
+%                           the comments as required. I did it in a backwards
+%                           compatiable fashion.
+%               dhb         Deprecate 'osType' and change 'eccentricityDegs'
+%                           to 'eccentricity'.
+%    02/14/18   jnm         Formatting
+%    10/19/2020 npc         Made fovealPeripheralCutoffDegs a constant
 
-    properties(Access = private)
-        %STATE  Biophysics parameter state
-        state; 
-
-        %FOVEALPERIPHERALCUTOFFDEGS  Eccentricity in degrees beyond which
+    properties (Constant)
+         %FOVEALPERIPHERALCUTOFFDEGS  Eccentricity in degrees beyond which
         %   we switch from foveal to peripheral parameters.
         %
         %   The 10 degrees value comes from Fred Rieke. Soon we will have
         %   intermediate eccentricity dynamics (3-5 degrees) so this will
         %   change.
         fovealPeripheralCutoffDegs = 10;
+    end
+    
+    properties(Access = private)
+        %STATE  Biophysics parameter state
+        state; 
     end
 
     properties(SetAccess = protected, GetAccess = public)

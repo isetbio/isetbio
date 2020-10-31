@@ -901,6 +901,7 @@ switch lower(pType)
             % Far is dark, close is light
             colormap(flipud(gray));
         end
+        colorbar;
         udata = dmap;
 
     case {'depthmapcontour'}
