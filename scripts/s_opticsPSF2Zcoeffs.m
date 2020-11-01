@@ -1,10 +1,7 @@
 %% s_opticsPSF2Zcoeffs
 %
-% Star with a target PSF and estimate the Zernike coefficients that
-% would produce that target PSF.
-%
-% It is possible there is an analytical solution to this, which I am
-% too lazy to figure out. I will check with someone over coffee.
+% Start with a target PSF and estimate the Zernike coefficients that
+% produce that target PSF.
 %
 % Note this good Watson tutorial.  But it has no units, wavelength,
 % and such.
@@ -12,17 +9,19 @@
 %    http://jov.arvojournals.org/article.aspx?articleid=2213266
 %
 % Current status - 
-%    Works for small values, but not for even moderately big ones.
-%    The search doesn't get close.  Not sure about which coefficients
-%    are better or worse.
+%  Works for small values, but not for even moderately big ones.
+%  The search doesn't get close.  Not sure about which coefficients
+%  are better or worse.
 %
 % BW, Vistasoft team, 2018
 
 %% This works well in ISETCAM but not in ISETBio
 %
-% The wvf structure and sets/gets in ISETBio are simplified so that I can
+% The wvf structure and sets/gets in ISETCam are simplified so that I can
 % understand them.  In ISETBio, there are measured, calc, as well as
-% different spatial sampling domains. Somewhere
+% different spatial sampling domains.
+
+ieInit
 
 %% Create a wavefront object with some coefficients
 
@@ -39,6 +38,7 @@ wvf = wvfSet(wvf,'measured pupil diameter',8);
 % [D,V] = meshgrid( 0.3:0.4:0.7, 0.2:.1:.3);
 [D,V] = meshgrid( 0.3:0.4:1.0, 0);
 
+%%
 pList = [D(:),V(:)];
 for ii=1:size(pList,1)
     wvf = wvfSet(wvf,'zcoeffs',pList(ii,1),'defocus');
