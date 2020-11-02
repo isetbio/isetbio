@@ -38,7 +38,7 @@ function [rfPositions, radius] = downSampleInitialRFpositions(rfPositions, which
 
     % sample probabilistically according to coneSpacingFunction
     fprintf('\nProbabilistic sampling ...');
-    densityP = RGCmodels.Watson.convert.spacingToDensity(rfSpacingMicrons);
+    densityP = RGCmodels.Watson.convert.spacingToDensityForHexGrid(rfSpacingMicrons);
     densityP = densityP / max(densityP(:));
     
     % Remove cones accordingly
