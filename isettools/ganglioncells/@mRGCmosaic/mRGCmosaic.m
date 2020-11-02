@@ -83,7 +83,8 @@ classdef mRGCmosaic < handle
             if (isempty(varargin))
                 % An actual cone mosaic was not passed in varargin, so generate one that is appropriate for the eccentricity and size of the mRGC mosaic 
                 % Compute cone and mRGC RF positions
-                [coneRFpositionsMicrons, coneRFpositionsDegs, rgcRFpositionsMicrons, rgcRFpositionsDegs, extraDegsForRGCSurround] = ...
+                [coneRFpositionsMicrons, coneRFpositionsDegs, ...
+                 rgcRFpositionsMicrons, rgcRFpositionsDegs, extraDegsForRGCSurround] = ...
                     mRGCmosaic.importConeAndRGCpositions(obj.sourceLatticeSizeDegs, eccentricityDegs, sizeDegs, whichEye);
                
                 % Generate a regular hex mosaic to serve as the
@@ -95,31 +96,11 @@ classdef mRGCmosaic < handle
                 [obj.inputConeMosaic, obj.inputConeMosaicMetaData] = mRGCmosaic.generateInputConeMosaic(generationMode, ...
                     eccentricityDegs, sizeDegs, extraDegsForRGCSurround, coneRFpositionsMicrons);
                 
-                plotPositions = true;
-                if (plotPositions)
+                % Plot the imported positions
+                plotInputPositions = true;
+                if (plotInputPositions)
                     coneRFpositionsDegsInRegHexMosaic = RGCmodels.Watson.convert.rhoMMsToDegs(obj.inputConeMosaicMetaData.conePositionsMicrons*1e-3);
-                    maxPosDegsX = max(coneRFpositionsDegsInRegHexMosaic(:,1));
-                    minPosDegsX = min(coneRFpositionsDegsInRegHexMosaic(:,1));
-                    maxPosDegsY = max(coneRFpositionsDegsInRegHexMosaic(:,2));
-                    minPosDegsY = min(coneRFpositionsDegsInRegHexMosaic(:,2));
-                    figure(1);
-                    clf;
-                    subplot(1,2,1);
-                    plot(coneRFpositionsDegs(:,1), coneRFpositionsDegs(:,2), 'k.');
-                    hold on;
-                    plot(rgcRFpositionsDegs(:,1), rgcRFpositionsDegs(:,2),'ro');
-                    set(gca, 'XLim', [minPosDegsX maxPosDegsX], 'YLim', [minPosDegsY maxPosDegsY]);
-                    axis 'equal';
-                    title('imported cone positions');
-                    
-                    subplot(1,2,2);
-                   
-                    plot(coneRFpositionsDegsInRegHexMosaic(:,1), coneRFpositionsDegsInRegHexMosaic(:,2), 'k.');
-                    hold on;
-                    plot(rgcRFpositionsDegs(:,1), rgcRFpositionsDegs(:,2),'ro');
-                    set(gca, 'XLim', [minPosDegsX maxPosDegsX], 'YLim', [minPosDegsY maxPosDegsY]);
-                    axis 'equal';
-                    title('regular hex mosaic cone positions');
+                    mRGCmosaic.visualizeInputPositions(coneRFpositionsDegs, rgcRFpositionsDegs, coneRFpositionsDegsInRegHexMosaic);
                 end
             end
             
@@ -165,6 +146,9 @@ classdef mRGCmosaic < handle
             wireInputConeMosaicToRGCcenters(rgcRFpositionsDegs, rgcRFpositionsMicrons, ...
             conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
             indicesOfConesNotConnectingToRGCcenters, coneSpecificityLevel);
+        
+        % Static method to visualize the input cone and RGC positions
+        visualizeInputPositions(coneRFpositionsDegs, rgcRFpositionsDegs, coneRFpositionsDegsInRegHexMosaic)
     end
 end
 
