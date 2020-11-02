@@ -1,6 +1,6 @@
 {
-	"serverUrl": "https://brainard-archiva.psych.upenn.edu/",
-    "repositoryUrl": "https://brainard-archiva.psych.upenn.edu/repository/isetbio/",
+	"serverUrl": "http://brainard-archiva.psych.upenn.edu/",
+    "repositoryUrl": "http://brainard-archiva.psych.upenn.edu/repository/isetbio/",
 	"username": "guest",
 	"password": "",
     "repositoryName": "isetbio"
