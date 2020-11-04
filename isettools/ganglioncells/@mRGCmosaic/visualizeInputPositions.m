@@ -53,9 +53,9 @@ function plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, coneSpacings, rgc
     title(ax, plotTitle);
 end
 
-function patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceColor, edgeColor, faceAlpha, edgeAlpha)
-    v = [xRGCEnsembleOutline(:) yRGCEnsembleOutline(:)];
-    f = 1:numel(xRGCEnsembleOutline);
+function patchContour(theAxes, xOutline, yOutline, faceColor, edgeColor, faceAlpha, edgeAlpha)
+    v = [xOutline(:) yOutline(:)];
+    f = 1:numel(xOutline);
     patch(theAxes, 'Faces', f, 'Vertices', v, 'FaceColor', faceColor, ...
             'FaceAlpha', faceAlpha, 'EdgeColor', edgeColor, ... 
            'EdgeAlpha', edgeAlpha, 'LineWidth', 1.5);

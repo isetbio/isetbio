@@ -7,7 +7,7 @@ function p = configure(fovDegs, neuronType, whichEye)
     assert(ismember(whichEye, validEyes), sprintf('Unknown eye: ''%s''.', whichEye));
     
     % Lattice gallery directory
-    p.latticeGalleryDir = sprintf('%s/%s/%s', isetbioRootPath, 'isettools/ganglioncells/latticegallery');
+    p.latticeGalleryDir = sprintf('%s/%s/%s', isetbioRootPath, 'isettools/ganglioncells/data/lattices');
 
     % Patch filename
     p.patchSaveFileName = sprintf('%s_%s_%1.0fdeg_mosaic_progress', ...
