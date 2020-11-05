@@ -44,7 +44,7 @@ function [coneWeights, rgcPositionsDegsFromConnectivity, synthesizedRFparams] = 
         synthParams = struct(...
             'subregionPeakSensivity', synthesizedRFparams.retinal.centerPeakSensitivities(RGCindex) ...
             );
-        [rgcIndicesVectorC, coneIndicesVectorC, weightsVectorC, centerWeightsForThisRGC] = computeSubregionConeWeights( ...
+        [rgcIndicesVectorC, coneIndicesVectorC, weightsVectorC, centerWeightsForThisRGC, centerWeightsCorrectionIndices] = computeSubregionConeWeights( ...
             'center', RGCindex, coneTypes, conePositionsDegs,  ...
             rgcPositionsDegsFromConnectivity(RGCindex,:), ... 
             exclusiveConnectionsVector, synthParams, ...
@@ -64,6 +64,22 @@ function [coneWeights, rgcPositionsDegsFromConnectivity, synthesizedRFparams] = 
             exclusiveConnectionsVector, synthParams, ...
             rgcIndicesVectorS, coneIndicesVectorS, weightsVectorS);
         
+        % Compute the S/C ratio of integrated sensitivity from the retinal weights
+        surroundToCenterIntegratedSensitivityRatioFromWeights = sum(surroundWeightsForThisRGC)/sum(centerWeightsForThisRGC);
+        
+        % Desired ratio at the cell's eccentricity
+        cellEccRadiusDegs = sqrt(sum(rgcPositionsDegsFromConnectivity(RGCindex,:).^2,2));
+        surroundToCenterIntegratedSensitivityRatioDesired = ...
+            RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(cellEccRadiusDegs);
+        
+        adjustCenterWeightsToAchieveDesiredIntegratedSensitivityRatio = true;
+        if (adjustCenterWeightsToAchieveDesiredIntegratedSensitivityRatio)
+            % Adjust the center weights to match the desired ratio
+            gain = surroundToCenterIntegratedSensitivityRatioFromWeights / surroundToCenterIntegratedSensitivityRatioDesired;
+            centerWeightsForThisRGC = centerWeightsForThisRGC * gain;
+            weightsVectorC(centerWeightsCorrectionIndices) = centerWeightsForThisRGC;
+        end
+        
         surroundToCenterIntegratedSensitivityRatioFromWeights = sum(surroundWeightsForThisRGC)/sum(centerWeightsForThisRGC);
         fprintf('Retinal surround/center integrated sensitivity ratio from weights: %2.2f\n', surroundToCenterIntegratedSensitivityRatioFromWeights);
     end % RGCindex
@@ -76,7 +92,7 @@ function [coneWeights, rgcPositionsDegsFromConnectivity, synthesizedRFparams] = 
     coneWeights.center = sparse(coneIndicesVectorC', rgcIndicesVectorC', weightsVectorC', sparseMatrixRows, sparseMatrixCols);
 end
 
-function [rgcIndicesVector, coneIndicesVector, weightsVector, weights] = computeSubregionConeWeights( ...
+function [rgcIndicesVector, coneIndicesVector, weightsVector, weights, updatedWeightsVectorIndices] = computeSubregionConeWeights( ...
             subregionName, RGCindex, coneTypes, conePositionsMicrons, rgcPositionMicrons, ...
             exclusiveConnectionsVector, synthesizedParams, ...
             rgcIndicesVector, coneIndicesVector, weightsVector)
@@ -103,10 +119,11 @@ function [rgcIndicesVector, coneIndicesVector, weightsVector, weights] = compute
     % Multiply with subregion peak sensitivity
     weights = weights * synthesizedParams.subregionPeakSensivity;
 
-    % Acummulate sparse matrix indices for the surround
+    % Acummulate sparse matrix indices
     rgcIndicesVector = cat(1, rgcIndicesVector, repmat(RGCindex, [numel(connectedConeIndices) 1]));
     coneIndicesVector = cat(1, coneIndicesVector, connectedConeIndices);
     weightsVector = cat(1, weightsVector, weights);
+    updatedWeightsVectorIndices = numel(weightsVector) + (-numel(weights)+1:0);
 end
 
 function weights = gaussianConeWeights(conePositions, rgcPosition, rgcSubregionRadius)

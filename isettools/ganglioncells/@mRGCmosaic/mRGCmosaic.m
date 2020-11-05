@@ -7,6 +7,13 @@ classdef mRGCmosaic < handle
         SCONE_ID = 4;
     end
     
+    % Public properties
+    properties
+        % 'noiseFlag'     - String. Default 'random'. Add Gaussian noise
+        %                 (default) or not. Valid values are {'random', 'frozen', 'none'}.
+        noiseFlag = 'random';
+    end
+    
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
         
@@ -88,6 +95,8 @@ classdef mRGCmosaic < handle
             %
             
             if (isempty(varargin))
+                fprintf('Generating input cone mosaic. Please wait ...\n');
+                
                 % An actual cone mosaic was not passed in varargin, so generate one that is appropriate for the eccentricity and size of the mRGC mosaic 
                 % Compute cone and mRGC RF positions
                 [coneRFpositionsMicrons, coneRFpositionsDegs, ...
@@ -142,8 +151,8 @@ classdef mRGCmosaic < handle
             obj.rgcRFspacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(obj.rgcRFpositionsMicrons);
         end
         
-        % Method to compute the response of the mosaic
-        compute(obj);
+        % Method to compute the response of the RGC mosaic for the passed cone mosaic response
+        [mRGCresponses, temporalSupportSeconds] = compute(obj, coneMosaicResponses, timeAxis, varargin);
         
         % Method to visualize the tesselation of the input cone mosaic by
         % the RF centers of the RGC mosaic

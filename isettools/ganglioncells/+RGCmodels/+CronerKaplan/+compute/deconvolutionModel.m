@@ -27,6 +27,7 @@ function model = deconvolutionModel()
         else
             model.surround.centerConeInputsNum = nan(numel(model.tabulatedEccRadiiDegs), maxConeInputsNumInRFcenter);
             model.surround.characteristicRadiusDegs = nan(numel(model.tabulatedEccRadiiDegs), maxConeInputsNumInRFcenter, maxSurroundVariations);
+            model.surround.peakSensitivity = nan(numel(model.tabulatedEccRadiiDegs), maxConeInputsNumInRFcenter, maxSurroundVariations);
         end
         
         
@@ -37,35 +38,35 @@ function model = deconvolutionModel()
                 'deconvolutionStruct', 'quadrants', 'subjectIDs');
            
             % Get the deconvolution data
-            d = deconvolutionStruct{1,1}.data;
+            theData = deconvolutionStruct{1,1}.data;
             
             % Parse the deconvolution data for all center cone input configs
-            coneInputConfigLabels = keys(d);
+            coneInputConfigLabels = keys(theData);
 
             for coneInputConfigIndex = 1:numel(coneInputConfigLabels)
                 
                 % Load data for this cone input config
                 coneInputConfigLabel = coneInputConfigLabels{coneInputConfigIndex};
-                theData = d(coneInputConfigLabel);
+                deconvolutionData = theData(coneInputConfigLabel);
                 coneInputsNum = str2double(strrep(coneInputConfigLabel, '-coneInput', ''));
                 
                 % Assemble model
                 if (strcmpi(subregionName, 'center'))
                     % Update center model
                     model.center.coneInputsNum(eccIndex,coneInputsNum) = coneInputsNum;
-                    model.center.characteristicRadiusDegs(eccIndex,coneInputsNum) = theData.characteristicRadiusDegs;
-                    model.center.peakSensitivity(eccIndex,coneInputsNum) = theData.peakSensitivity;
+                    model.center.characteristicRadiusDegs(eccIndex,coneInputsNum) = deconvolutionData.characteristicRadiusDegs;
+                    model.center.peakSensitivity(eccIndex,coneInputsNum) = deconvolutionData.peakSensitivity;
                 else
                     % Update surround model
                     % Retrieve number of computed surround variations
-                    surroundVariations = numel(theData.nominalSurroundRetinalCharacteristicRadii);
+                    surroundVariations = numel(deconvolutionData.nominalSurroundRetinalCharacteristicRadii);
                     
                     model.surround.nominalSurroundRetinalCharacteristicRadii(eccIndex,coneInputsNum,1:surroundVariations) = ...
-                        theData.nominalSurroundRetinalCharacteristicRadii;
+                        deconvolutionData.nominalSurroundRetinalCharacteristicRadii;
                     model.surround.characteristicRadiusDegs(eccIndex,coneInputsNum,1:surroundVariations) = ...
-                        theData.characteristicRadiusDegs;
+                        deconvolutionData.characteristicRadiusDegs;
                     model.surround.peakSensitivity(eccIndex,coneInputsNum,1:surroundVariations) = ...
-                        theData.peakSensitivity;
+                        deconvolutionData.peakSensitivity;
                 end
                 
             end % coneInputConfigIndex 

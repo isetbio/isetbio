@@ -1,7 +1,11 @@
 function visualizeConeWeights(obj)
 
     xRange = []; yRange = [];
-    for RGCindex = 1:numel(obj.rgcRFspacingsDegs)
+    rgcsNum = numel(obj.rgcRFspacingsDegs);
+    visualizedRGCindices = linspace(1,rgcsNum,3);
+    
+    for iRGC = 1:numel(visualizedRGCindices)
+        RGCindex = visualizedRGCindices(iRGC);
         % RGC data
         rgcSpacing = obj.rgcRFspacingsDegs(RGCindex);
         rgcPosition = obj.rgcRFpositionsDegs(RGCindex,:);
@@ -21,20 +25,24 @@ function visualizeConeWeights(obj)
         surround.coneSpacings = obj.inputConeMosaicMetaData.coneSpacingsDegs(coneIndicesConnectedToSurround);
 
         % Plot
-        [xRange, yRange] = plotRGCandConeWeights(1000+RGCindex, rgcPosition, rgcSpacing, center, surround, ...
+        [xRange, yRange] = plotRGCandConeWeights(1000+iRGC, RGCindex, rgcPosition, rgcSpacing, center, surround, ...
             obj.synthesizedRFparams.visual.centerCharacteristicRadiiDegs(RGCindex), ...
+            obj.synthesizedRFparams.visual.centerPeakSensitivities(RGCindex), ...
             obj.synthesizedRFparams.visual.surroundCharacteristicRadiiDegs(RGCindex), ...
+            obj.synthesizedRFparams.visual.surroundPeakSensitivities(RGCindex), ...
             obj.synthesizedRFparams.retinal.surroundCharacteristicRadiiDegs(RGCindex), ...
             xRange, yRange);
     end
 end
 
-function [xRange, yRange] = plotRGCandConeWeights(figNo, rgcPosition, rgcSpacing, center, surround, ...
+function [xRange, yRange] = plotRGCandConeWeights(figNo, RGCindex, rgcPosition, rgcSpacing, center, surround, ...
     deconvModelCenterVisualCharacteristicRadius, ...
+    deconvModelCenterVisualPeakSensitivity, ...
     deconvModelSurroundVisualCharacteristicRadius, ...
+    deconvModelSurroundVisualPeakSensitivity, ...
     deconvModelSurroundRetinalCharacteristicRadius, xRange, yRange)
 
-    edgeAlpha = 0.8;
+    edgeAlpha = 0.0;
     xOutline = cosd(0:60:360);
     yOutline = sind(0:60:360);
     
@@ -45,7 +53,7 @@ function [xRange, yRange] = plotRGCandConeWeights(figNo, rgcPosition, rgcSpacing
         xRange = [...
             min(surround.conePositions(:,1))-mean(surround.coneSpacings(:)) ...
             max(surround.conePositions(:,1))+mean(surround.coneSpacings(:))];
-        xRange = mean(xRange) + 0.3*diff(xRange)*[-1 1];
+        xRange = mean(xRange) + 0.5*diff(xRange)*[-1 1];
 
         yRange = [...
             min(surround.conePositions(:,2))-mean(surround.coneSpacings(:)) ...
@@ -54,9 +62,19 @@ function [xRange, yRange] = plotRGCandConeWeights(figNo, rgcPosition, rgcSpacing
     end
     
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 1400 700]);
+    set(hFig, 'Position', [10 10 1400 700], 'Name', sprintf('RGC #%d', RGCindex));
     ax = subplot('Position', [0.05 0.05 0.40 0.90]);
     hold(ax, 'on');
+    
+    % The cones feeding into the surround
+    edgeColor = [0 0 1];
+    faceColor = [0 0 1];
+    for iCone = 1:numel(surround.coneWeights)
+        coneOutlineX = xOutline * surround.coneSpacings(iCone) * 0.5 + surround.conePositions(iCone,1);
+        coneOutlineY = yOutline * surround.coneSpacings(iCone) * 0.5 + surround.conePositions(iCone,2);
+        faceAlpha = min([1 3*surround.coneWeights(iCone)/max(center.coneWeights)]);
+        patchContour(ax, coneOutlineX, coneOutlineY, faceColor, edgeColor, faceAlpha, edgeAlpha);
+    end
     
     % The cones feeding into the center
     edgeColor = [1 0 0];
@@ -64,13 +82,21 @@ function [xRange, yRange] = plotRGCandConeWeights(figNo, rgcPosition, rgcSpacing
     for iCone = 1:numel(center.coneWeights)
         coneOutlineX = xOutline * center.coneSpacings(iCone) * 0.5 + center.conePositions(iCone,1);
         coneOutlineY = yOutline * center.coneSpacings(iCone) * 0.5 + center.conePositions(iCone,2);
-        faceAlpha = center.coneWeights(iCone)/max(center.coneWeights);
+        faceAlpha = min([1 3*center.coneWeights(iCone)/max(center.coneWeights)]);
         patchContour(ax, coneOutlineX, coneOutlineY, faceColor, edgeColor, faceAlpha, edgeAlpha);
     end
     
     % The corresponding visual characteristic radius
     plot(xOutline2 * deconvModelCenterVisualCharacteristicRadius * 0.5 + rgcPosition(1), ...
          yOutline2 * deconvModelCenterVisualCharacteristicRadius * 0.5 + rgcPosition(2), 'k--', 'LineWidth', 1.5);
+    
+    % The visual RF profile for the center
+    gain = 0.95*(yRange(end)-yRange(1)) / deconvModelCenterVisualPeakSensitivity;
+    xx = linspace(xRange(1), xRange(end), 100);
+    plot(xx,  yRange(1) + gain*deconvModelCenterVisualPeakSensitivity*exp(-((xx-rgcPosition(1))/deconvModelCenterVisualCharacteristicRadius).^2), ...
+        'r-', 'LineWidth', 1.5);
+    plot(xx,  yRange(1) + gain*deconvModelSurroundVisualPeakSensitivity*exp(-((xx-rgcPosition(1))/deconvModelSurroundVisualCharacteristicRadius).^2), ...
+        'b-', 'LineWidth', 1.5);
     
     % The RGC center outline
     edgeColor = [0 0 0];
