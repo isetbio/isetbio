@@ -1,7 +1,7 @@
 function testLatticeGenerator
-    fovDegs = 2;
+    fovDegs = 45;
     whichEye = 'right eye';
-    neuronType = 'midget ganglion cells';
+    neuronType = 'cones'; %'midget ganglion cells';
 
     generateNewPatch = ~true;
     
@@ -11,7 +11,8 @@ function testLatticeGenerator
         neuronType = 'midget ganglion cells';
         retinalattice.generatePatch(fovDegs, neuronType, whichEye);
     else
-        retinalattice.inspectPatch(fovDegs, neuronType, whichEye);
+        retinalattice.savePositionsAtIteration(fovDegs, neuronType, whichEye);
+        %retinalattice.inspectPatch(fovDegs, neuronType, whichEye);
     end
     
 end

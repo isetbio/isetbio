@@ -13,7 +13,5 @@ function [rfPositionsMicrons, rfPositionsDegs] = mRGCPositions(sourceLatticeSize
     
     % Convert positions to degs
     rfPositionsDegs = RGCmodels.Watson.convert.rhoMMsToDegs(rfPositionsMicrons*1e-3);
-    
-   
 end
 

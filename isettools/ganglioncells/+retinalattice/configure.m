@@ -9,9 +9,12 @@ function p = configure(fovDegs, neuronType, whichEye)
     % Lattice gallery directory
     p.latticeGalleryDir = sprintf('%s/%s/%s', isetbioRootPath, 'isettools/ganglioncells/data/lattices');
 
-    % Patch filename
+    % Patch filename (history of positions)
     p.patchSaveFileName = sprintf('%s_%s_%1.0fdeg_mosaic_progress', ...
         strrep(whichEye, ' ', '_'), strrep(neuronType, ' ', '_'), fovDegs);
+    
+    % Patch filename (final positions only)
+    p.patchFinalPositionsSaveFileName = strrep(p.patchSaveFileName, '_progress', '');
     
     % Radnom number generator seed
     p.rng = 1;

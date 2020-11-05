@@ -1,12 +1,9 @@
 function  [mRGCresponses, temporalSupport] = compute(obj, coneMosaicResponses, timeAxis, varargin)
         p = inputParser;
         p.addParameter('seed', [], @isnumeric);
-        p.addParameter('noiseFlag', 'random', @(x)(ismember(lower(x), {'random', 'none', 'frozen'})));
         p.parse(varargin{:});
         
-        % Set the noise flag
-        obj.noiseFlag = p.Results.noiseFlag;
-        
+
         % Apply the seed
         seed = p.Results.seed;
         if (~isempty(seed)), rng(seed); end
@@ -64,6 +61,7 @@ function  [mRGCresponses, temporalSupport] = compute(obj, coneMosaicResponses, t
        
         % Noise
         if (~(strcmp(obj.noiseFlag, 'none'))) && (instancesNum>1)
+            %fprintf(2,'Adding post-summation mRGC response noise (noiseFlag =''%s'').\n', obj.noiseFlag);
             % Mean over instances
             meanResponses = mean(mRGCresponses,1);
             % Max responses over time
@@ -76,6 +74,8 @@ function  [mRGCresponses, temporalSupport] = compute(obj, coneMosaicResponses, t
                     meanResponses(:, RGCindex,:) + ...
                     randn(instancesNum,1,nTimeBins) * sigma;
             end
+        else
+            %fprintf(2,'No post-summation mRGC response noise (noiseFlag =''%s'').', obj.noiseFlag);
         end
         
 end

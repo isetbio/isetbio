@@ -35,8 +35,6 @@ function [coneWeights, rgcPositionsDegsFromConnectivity, synthesizedRFparams] = 
     weightsVectorS = [];
     
     for RGCindex  = 1:rgcsNum
-        fprintf('Generating weights for RGC %d of %d\n', RGCindex, rgcsNum);
-        
         %
         % CENTER WEIGHTS
         %
@@ -64,24 +62,26 @@ function [coneWeights, rgcPositionsDegsFromConnectivity, synthesizedRFparams] = 
             exclusiveConnectionsVector, synthParams, ...
             rgcIndicesVectorS, coneIndicesVectorS, weightsVectorS);
         
-        % Compute the S/C ratio of integrated sensitivity from the retinal weights
-        surroundToCenterIntegratedSensitivityRatioFromWeights = sum(surroundWeightsForThisRGC)/sum(centerWeightsForThisRGC);
-        
-        % Desired ratio at the cell's eccentricity
-        cellEccRadiusDegs = sqrt(sum(rgcPositionsDegsFromConnectivity(RGCindex,:).^2,2));
-        surroundToCenterIntegratedSensitivityRatioDesired = ...
-            RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(cellEccRadiusDegs);
-        
         adjustCenterWeightsToAchieveDesiredIntegratedSensitivityRatio = true;
         if (adjustCenterWeightsToAchieveDesiredIntegratedSensitivityRatio)
-            % Adjust the center weights to match the desired ratio
+            % Compute the S/C ratio of integrated sensitivity from the
+            % retinal weights (retinal domain)
+            surroundToCenterIntegratedSensitivityRatioFromWeights = sum(surroundWeightsForThisRGC)/sum(centerWeightsForThisRGC);
+        
+            % Compute desired S/C ratio of integrated sensitivity (visual domain
+            cellEccRadiusDegs = sqrt(sum(rgcPositionsDegsFromConnectivity(RGCindex,:).^2,2));
+            surroundToCenterIntegratedSensitivityRatioDesired = ...
+            RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(cellEccRadiusDegs);
+        
+            % Adjust the center weights so as to achieve retinal surround/center integrated sensivity
+            % that matches the visual surround/center integrated sensivity ratio
             gain = surroundToCenterIntegratedSensitivityRatioFromWeights / surroundToCenterIntegratedSensitivityRatioDesired;
             centerWeightsForThisRGC = centerWeightsForThisRGC * gain;
             weightsVectorC(centerWeightsCorrectionIndices) = centerWeightsForThisRGC;
         end
         
-        surroundToCenterIntegratedSensitivityRatioFromWeights = sum(surroundWeightsForThisRGC)/sum(centerWeightsForThisRGC);
-        fprintf('Retinal surround/center integrated sensitivity ratio from weights: %2.2f\n', surroundToCenterIntegratedSensitivityRatioFromWeights);
+        %surroundToCenterIntegratedSensitivityRatioFromWeights = sum(surroundWeightsForThisRGC)/sum(centerWeightsForThisRGC);
+        %fprintf('Retinal surround/center integrated sensitivity ratio from weights: %2.2f\n', surroundToCenterIntegratedSensitivityRatioFromWeights);
     end % RGCindex
     
     % Form coneWeights struct containing sparse matrices with cone weights
