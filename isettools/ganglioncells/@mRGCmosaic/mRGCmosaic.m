@@ -69,55 +69,33 @@ classdef mRGCmosaic < handle
     methods
         % Constructor
         function obj = mRGCmosaic(eccentricityDegs, sizeDegs, whichEye, varargin)
-            % Parse input
-            switch (nargin)
-                case 0
-                    eccentricityDegs = 0;
-                    sizeDegs = 0.2;
-                    whichEye = 'right';
-                case 1
-                    sizeDegs = 0.5;
-                    whichEye = 'right';
-                case 2
-                    % do nothing
-                    whichEye = 'right';
-                otherwise
-                    % Parse varargin
-            end
-            
             % Set properties
             obj.eccentricityDegs = eccentricityDegs;
             obj.sizeDegs = sizeDegs;
             obj.whichEye = whichEye;
             
-            % 
-            % To do: parse varargin, which could contain an actual cone mosaic
-            %
-            
-            if (isempty(varargin))
-                fprintf('Generating input cone mosaic. Please wait ...\n');
+            fprintf('Generating input cone mosaic. Please wait ...\n');
                 
-                % An actual cone mosaic was not passed in varargin, so generate one that is appropriate for the eccentricity and size of the mRGC mosaic 
-                % Compute cone and mRGC RF positions
-                [coneRFpositionsMicrons, coneRFpositionsDegs, ...
-                 rgcRFpositionsMicrons, rgcRFpositionsDegs, extraDegsForRGCSurround] = ...
-                    mRGCmosaic.importConeAndRGCpositions(obj.sourceLatticeSizeDegs, eccentricityDegs, sizeDegs, whichEye);
-               
-                % Generate a regular hex mosaic to serve as the
-                % input cone mosaic with a custom mean cone spacing 
-                % (equal to the median spacing within the
-                % coneRFpositionsMicrons) and custom quantal efficiency and
-                % macular pigment appropriate for the eccentricityDegs
-                generationMode = 'equivalent regular hex';
-                [obj.inputConeMosaic, obj.inputConeMosaicMetaData] = mRGCmosaic.generateInputConeMosaic(generationMode, ...
-                    eccentricityDegs, sizeDegs, extraDegsForRGCSurround, coneRFpositionsMicrons);
-                
-                % Plot the imported positions
-                plotInputPositions = true;
-                if (plotInputPositions)
-                    coneRFpositionsDegsInRegHexMosaic = RGCmodels.Watson.convert.rhoMMsToDegs(obj.inputConeMosaicMetaData.conePositionsMicrons*1e-3);
-                    mRGCmosaic.visualizeInputPositions(coneRFpositionsDegs, rgcRFpositionsDegs, coneRFpositionsDegsInRegHexMosaic);
-                end
+            % An actual cone mosaic was not passed in varargin, so generate one that is appropriate for the eccentricity and size of the mRGC mosaic 
+            % Compute cone and mRGC RF positions
+            [coneRFpositionsMicrons, coneRFpositionsDegs, ...
+             rgcRFpositionsMicrons, rgcRFpositionsDegs, extraDegsForRGCSurround] = ...
+                mRGCmosaic.importConeAndRGCpositions(obj.sourceLatticeSizeDegs, eccentricityDegs, sizeDegs, whichEye);
+
+            % Generate a regular hex mosaic to serve as the
+            % input cone mosaic with a custom mean cone spacing 
+            % (equal to the median spacing within the
+            % coneRFpositionsMicrons) and custom quantal efficiency and
+            % macular pigment appropriate for the eccentricityDegs
+            generationMode = 'equivalent regular hex';
+            [obj.inputConeMosaic, obj.inputConeMosaicMetaData] = mRGCmosaic.generateInputConeMosaic(generationMode, ...
+                eccentricityDegs, sizeDegs, extraDegsForRGCSurround, coneRFpositionsMicrons, varargin{:});
+
+            % Plot the imported positions
+            plotInputPositions = ~true;
+            if (plotInputPositions)
+                coneRFpositionsDegsInRegHexMosaic = RGCmodels.Watson.convert.rhoMMsToDegs(obj.inputConeMosaicMetaData.conePositionsMicrons*1e-3);
+                mRGCmosaic.visualizeInputPositions(coneRFpositionsDegs, rgcRFpositionsDegs, coneRFpositionsDegsInRegHexMosaic);
             end
             
             % Wire cones to RGC center subregions with a cone specificity level
@@ -175,7 +153,8 @@ classdef mRGCmosaic < handle
         
         % Static method to generate a cone mosaic from the imported cone positions
         [theConeMosaic, theConeMosaicMetaData] = ...
-            generateInputConeMosaic(generationMode, eccentricityDegs, sizeDegs, extraDegsForRGCSurround, coneRFpositionsMicrons); 
+            generateInputConeMosaic(generationMode, eccentricityDegs, sizeDegs, ...
+            extraDegsForRGCSurround, coneRFpositionsMicrons, varargin); 
         
         % Static method to wire cones to the RGC RF centers
         [connectivityMatrix, rgcRFpositionsDegs, rgcRFpositionsMicrons, rgcRFspacingsDegs, rgcRFspacingsMicrons] = ...

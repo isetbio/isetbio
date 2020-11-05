@@ -162,7 +162,7 @@ function [connectionMatrix, numberOfConeInputs] = performPass1(...
        
         maxDistanceBetweenConeAndRGC = 3.0*RGCRFSpacingsMicrons(closestRGCIndex);
         if (d > maxDistanceBetweenConeAndRGC)
-            fprintf('Cone is too far from nearest RGC. Will not get connected to any RGC.\n');
+            %fprintf('Cone is too far from nearest RGC. Will not get connected to any RGC.\n');
             continue
         end
         
