@@ -1,24 +1,44 @@
-function visualizeInputPositions(coneRFpositionsDegsEccVaryingMosaic, rgcRFpositionsDegs, coneRFpositionsDegsInRegHexMosaic)
-          
+function visualizeInputPositions(obj)
+% Visualize mRGC positions together with cone positions
+%
+% Syntax:
+%   visualizeInputPositions(obj)
+%
+% Description:
+%   Visualize mRGC positions together with imported ecc-varying cone positions
+%   and together with cone positions in the equivalent employed reg-hex mosaic
+%
+% Inputs:
+%    obj  - An instantiated @mRGCmosaic object
+%
+% Outputs:
+%    none
+%
+% Optional key/value pairs:
+%    none
+
+% History:
+%    11/06/2020  NPC   Wrote it
+  
     % Compute xyRanges
     xRange = [...
-         min(rgcRFpositionsDegs(:,1))-0.05
-         max(rgcRFpositionsDegs(:,1))+0.05];
+         min(obj.importedData.rgcRFpositionsDegs(:,1))-0.05
+         max(obj.importedData.rgcRFpositionsDegs(:,1))+0.05];
     yRange = [...
-         min(rgcRFpositionsDegs(:,2))-0.05
-         max(rgcRFpositionsDegs(:,2))+0.05];
+         min(obj.importedData.rgcRFpositionsDegs(:,2))-0.05
+         max(obj.importedData.rgcRFpositionsDegs(:,2))+0.05];
      
-    hFig = figure(1); clf;
+    hFig = figure(); clf;
     set(hFig, 'Color', [1 1 1]);
     
     % Plot the cone positions in the ecc-varying cone mosaic together with the mRGC positions
     ax = subplot(1,2,1);
-    plotData(ax, coneRFpositionsDegsEccVaryingMosaic, rgcRFpositionsDegs, ...
+    plotData(ax, obj.importedData.coneRFpositionsDegs, obj.importedData.rgcRFpositionsDegs, ...
         xRange, yRange, 'imported cone positions')
 
     % Plot the cone positions in the regular hex cone mosaic together with the mRGC positions
     ax = subplot(1,2,2);
-    plotData(ax, coneRFpositionsDegsInRegHexMosaic, rgcRFpositionsDegs, ...
+    plotData(ax, obj.inputConeMosaicMetaData.conePositionsDegs, obj.importedData.rgcRFpositionsDegs, ...
         xRange, yRange, 'regular hex mosaic cone positions')
 end
 

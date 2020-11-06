@@ -41,9 +41,6 @@ function [coneRFpositionsMicrons, ...
 % Optional key/value pairs:
 %    none
 %
-% See Also:
-%    coneMosaic, computeForOISequence, emGenSequence, t_simplePhotocurrentComputation.
-%
 
 % History:
 %    11/06/2020  NPC   Wrote it

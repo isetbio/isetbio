@@ -1,9 +1,13 @@
 function testMRGCmosaic
-    % Instantiate a [0.4 x 0.4] deg wide midget RGC mosaic positioned 
-    % at an eccentricity of [-2 0] degs 
-    theMidgetRGCmosaic = mRGCmosaic([-2 0], [0.2 0.2]);
+    % Instantiate a [0.3 x 0.3] deg wide midget RGC mosaic positioned 
+    % at an eccentricity of [-5 0] degs , in the right eye
+    theMidgetRGCmosaic = mRGCmosaic([-5 0], [0.3 0.3], 'right');
     
-    % Visualize the mosaic.
+    % Visualize mRGC positions together with imported ecc-varying cone positions
+    % and together with cone positions in the equivalent employed reg-hex mosaic
+    theMidgetRGCmosaic.visualizeInputPositions();
+    
+    % Visualize connections of cones to mRGC RF centers
     theMidgetRGCmosaic.visualizeConeMosaicTesselation('degrees');
     
     theMidgetRGCmosaic.visualizeSynthesizedParams();
