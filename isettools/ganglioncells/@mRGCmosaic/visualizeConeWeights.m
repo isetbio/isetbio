@@ -2,7 +2,7 @@ function visualizeConeWeights(obj)
 
     xRange = []; yRange = [];
     rgcsNum = numel(obj.rgcRFspacingsDegs);
-    visualizedRGCindices = linspace(1,rgcsNum,3);
+    visualizedRGCindices = round(rgcsNum/2) +[-5 0 5];
     
     for iRGC = 1:numel(visualizedRGCindices)
         RGCindex = visualizedRGCindices(iRGC);
