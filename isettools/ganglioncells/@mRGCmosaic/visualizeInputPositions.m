@@ -1,4 +1,4 @@
-function visualizeInputPositions(coneRFpositionsDegs, rgcRFpositionsDegs, coneRFpositionsDegsInRegHexMosaic)
+function visualizeInputPositions(coneRFpositionsDegsEccVaryingMosaic, rgcRFpositionsDegs, coneRFpositionsDegsInRegHexMosaic)
           
     % Compute xyRanges
     xRange = [...
@@ -8,23 +8,22 @@ function visualizeInputPositions(coneRFpositionsDegs, rgcRFpositionsDegs, coneRF
          min(rgcRFpositionsDegs(:,2))-0.05
          max(rgcRFpositionsDegs(:,2))+0.05];
      
-    % Compute spacing from positions
-    coneSpacingHexRegMosaic = RGCmodels.Watson.convert.positionsToSpacings(coneRFpositionsDegsInRegHexMosaic);
-    coneSpacing = RGCmodels.Watson.convert.positionsToSpacings(coneRFpositionsDegs);
-    rgcSpacing = RGCmodels.Watson.convert.positionsToSpacings(rgcRFpositionsDegs);
-    
     hFig = figure(1); clf;
     set(hFig, 'Color', [1 1 1]);
     
+    % Plot the cone positions in the ecc-varying cone mosaic together with the mRGC positions
     ax = subplot(1,2,1);
-    plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, coneSpacing, rgcSpacing, xRange, yRange, 'imported cone positions')
+    plotData(ax, coneRFpositionsDegsEccVaryingMosaic, rgcRFpositionsDegs, ...
+        xRange, yRange, 'imported cone positions')
 
+    % Plot the cone positions in the regular hex cone mosaic together with the mRGC positions
     ax = subplot(1,2,2);
-    plotData(ax, coneRFpositionsDegsInRegHexMosaic, rgcRFpositionsDegs, coneSpacingHexRegMosaic, rgcSpacing, xRange, yRange, 'regular hex mosaic cone positions')
+    plotData(ax, coneRFpositionsDegsInRegHexMosaic, rgcRFpositionsDegs, ...
+        xRange, yRange, 'regular hex mosaic cone positions')
 end
 
 
-function plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, coneSpacings, rgcSpacings, xRange, yRange, plotTitle)
+function plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, xRange, yRange, plotTitle)
     xOutline = cosd(0:15:360);
     yOutline = sind(0:15:360);
     
@@ -34,8 +33,9 @@ function plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, coneSpacings, rgc
     faceAlpha = 0.8;
     edgeAlpha = 0.7;
     
-    coneRadii = 0.48 * coneSpacings;
-    rgcRadii = 0.48 * rgcSpacings;
+    % Compute radii of RFs based on their spacings, which are computed from their positions
+    coneRadii = 0.48 * RGCmodels.Watson.convert.positionsToSpacings(coneRFpositionsDegs);
+    rgcRadii = 0.48 * RGCmodels.Watson.convert.positionsToSpacings(rgcRFpositionsDegs);
     
     hold(ax, 'on');
     for k = 1:size(coneRFpositionsDegs,1)
