@@ -1,6 +1,10 @@
+% History:
+%   11/06/20  dhb  Added noiseFactor key/value pair.
+
 function  [mRGCresponses, temporalSupport] = compute(obj, coneMosaicResponses, timeAxis, varargin)
         p = inputParser;
         p.addParameter('seed', [], @isnumeric);
+        p.addParameter('noiseFactor',0.5,@isnumeric);
         p.parse(varargin{:});
         
 
@@ -67,9 +71,9 @@ function  [mRGCresponses, temporalSupport] = compute(obj, coneMosaicResponses, t
             % Max responses over time
             maxResponses = squeeze(max(meanResponses,3));
             
-            % Add Gaussian noise with sigma = 0.5 * max response
+            % Add Gaussian noise with sigma = p.Results.noiseFactor * max response
             for RGCindex = 1:rgcsNum
-                sigma = maxResponses(RGCindex)*0.5;
+                sigma = maxResponses(RGCindex)*p.Results.noiseFactor;
                 mRGCresponses(:, RGCindex,:) = ...
                     meanResponses(:, RGCindex,:) + ...
                     randn(instancesNum,1,nTimeBins) * sigma;
