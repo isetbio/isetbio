@@ -50,7 +50,7 @@ function visualizeConeMosaicTesselation(obj, domain)
         
     hFig = figure(2); clf;
     set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.02 0.02 0.95 0.95]);
+    ax = subplot('Position', [0.05 0.06 0.93 0.93]);
     hold(ax, 'on');
     
     for RGCindex = 1:rgcsNum    
@@ -102,7 +102,9 @@ function visualizeConeMosaicTesselation(obj, domain)
     
     % Finish plot
     axis(ax, 'equal');
-    set(ax, 'XLim', xRange, 'YLim', yRange);
+    set(ax, 'XLim', xRange, 'YLim', yRange, 'FontSize', 18);
+    xlabel(ax, sprintf('space (%s)', domain));
+    box(ax, 'on');
     set(hFig, 'Name', sprintf('Single cone: %2.1f%%, 2-cone:  %2.1f%%, 3-cone:  %2.1f%%, 4-cone:  %2.1f%%, 5-cone:  %2.1f%%, 6+ cones:  %2.1f%%', ...
         100*stats.coneInputsPerRGC(1)/sum(stats.coneInputsPerRGC), ...
         100*stats.coneInputsPerRGC(2)/sum(stats.coneInputsPerRGC), ...

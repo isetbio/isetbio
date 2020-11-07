@@ -1,30 +1,49 @@
-function visualizeInputPositions(coneRFpositionsDegs, rgcRFpositionsDegs, coneRFpositionsDegsInRegHexMosaic)
-          
+function visualizeInputPositions(obj)
+% Visualize mRGC positions together with cone positions
+%
+% Syntax:
+%   visualizeInputPositions(obj)
+%
+% Description:
+%   Visualize mRGC positions together with imported ecc-varying cone positions
+%   and together with cone positions in the equivalent employed reg-hex mosaic
+%
+% Inputs:
+%    obj  - An instantiated @mRGCmosaic object
+%
+% Outputs:
+%    none
+%
+% Optional key/value pairs:
+%    none
+
+% History:
+%    11/06/2020  NPC   Wrote it
+  
     % Compute xyRanges
     xRange = [...
-         min(rgcRFpositionsDegs(:,1))-0.05
-         max(rgcRFpositionsDegs(:,1))+0.05];
+         min(obj.importedData.rgcRFpositionsDegs(:,1))-0.05
+         max(obj.importedData.rgcRFpositionsDegs(:,1))+0.05];
     yRange = [...
-         min(rgcRFpositionsDegs(:,2))-0.05
-         max(rgcRFpositionsDegs(:,2))+0.05];
+         min(obj.importedData.rgcRFpositionsDegs(:,2))-0.05
+         max(obj.importedData.rgcRFpositionsDegs(:,2))+0.05];
      
-    % Compute spacing from positions
-    coneSpacingHexRegMosaic = RGCmodels.Watson.convert.positionsToSpacings(coneRFpositionsDegsInRegHexMosaic);
-    coneSpacing = RGCmodels.Watson.convert.positionsToSpacings(coneRFpositionsDegs);
-    rgcSpacing = RGCmodels.Watson.convert.positionsToSpacings(rgcRFpositionsDegs);
-    
-    hFig = figure(1); clf;
+    hFig = figure(); clf;
     set(hFig, 'Color', [1 1 1]);
     
+    % Plot the cone positions in the ecc-varying cone mosaic together with the mRGC positions
     ax = subplot(1,2,1);
-    plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, coneSpacing, rgcSpacing, xRange, yRange, 'imported cone positions')
+    plotData(ax, obj.importedData.coneRFpositionsDegs, obj.importedData.rgcRFpositionsDegs, ...
+        xRange, yRange, 'imported cone positions')
 
+    % Plot the cone positions in the regular hex cone mosaic together with the mRGC positions
     ax = subplot(1,2,2);
-    plotData(ax, coneRFpositionsDegsInRegHexMosaic, rgcRFpositionsDegs, coneSpacingHexRegMosaic, rgcSpacing, xRange, yRange, 'regular hex mosaic cone positions')
+    plotData(ax, obj.inputConeMosaicMetaData.conePositionsDegs, obj.importedData.rgcRFpositionsDegs, ...
+        xRange, yRange, 'regular hex mosaic cone positions')
 end
 
 
-function plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, coneSpacings, rgcSpacings, xRange, yRange, plotTitle)
+function plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, xRange, yRange, plotTitle)
     xOutline = cosd(0:15:360);
     yOutline = sind(0:15:360);
     
@@ -34,8 +53,9 @@ function plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, coneSpacings, rgc
     faceAlpha = 0.8;
     edgeAlpha = 0.7;
     
-    coneRadii = 0.48 * coneSpacings;
-    rgcRadii = 0.48 * rgcSpacings;
+    % Compute radii of RFs based on their spacings, which are computed from their positions
+    coneRadii = 0.48 * RGCmodels.Watson.convert.positionsToSpacings(coneRFpositionsDegs);
+    rgcRadii = 0.48 * RGCmodels.Watson.convert.positionsToSpacings(rgcRFpositionsDegs);
     
     hold(ax, 'on');
     for k = 1:size(coneRFpositionsDegs,1)
@@ -53,9 +73,9 @@ function plotData(ax, coneRFpositionsDegs, rgcRFpositionsDegs, coneSpacings, rgc
     title(ax, plotTitle);
 end
 
-function patchContour(theAxes, xRGCEnsembleOutline, yRGCEnsembleOutline, faceColor, edgeColor, faceAlpha, edgeAlpha)
-    v = [xRGCEnsembleOutline(:) yRGCEnsembleOutline(:)];
-    f = 1:numel(xRGCEnsembleOutline);
+function patchContour(theAxes, xOutline, yOutline, faceColor, edgeColor, faceAlpha, edgeAlpha)
+    v = [xOutline(:) yOutline(:)];
+    f = 1:numel(xOutline);
     patch(theAxes, 'Faces', f, 'Vertices', v, 'FaceColor', faceColor, ...
             'FaceAlpha', faceAlpha, 'EdgeColor', edgeColor, ... 
            'EdgeAlpha', edgeAlpha, 'LineWidth', 1.5);
