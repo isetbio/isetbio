@@ -153,6 +153,12 @@ classdef mRGCmosaic < handle
         
         % Method to visualize the cone weights to each RGC
         visualizeConeWeights(obj);
+        
+        % Visualize the mosaic activation
+        visualizeActivationMap(obj, axesHandle, activation, varargin);
+        
+        % Method to visualize mRGC mosaic responses
+        visualizeResponses(obj, temporalSupportSeconds, mRGCMosaicResponse, varargin);
     end
     
     % Static methods
@@ -179,6 +185,8 @@ classdef mRGCmosaic < handle
         [coneWeights, rgcPositionsDegsFromConnectivity, synthesizedRFparams] = computeConeWeights(conePositionsDegs, ...
             coneTypes, connectivityMatrix, eccentricityDegs, sizeDegs);
     
+        % Static method to render the map of how RGC centers tesellate cones
+        renderTesselationMap(figNo, axesHandle, coneRFpositions, coneRFspacings, coneTypes, rgcRFpositions, rgcRFspacings, coneConnectivityMatrix, domain);
     end
 end
 

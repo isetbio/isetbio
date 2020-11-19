@@ -33,13 +33,19 @@ function [theConeMosaic, theConeMosaicMetaData] = generateEquivalentRegularHexCo
     % Compute cone spacings in the spatially-varying lattice
     eccVaryingConeSpacings = RGCmodels.Watson.convert.positionsToSpacings(coneRFpositionsMicronsInSpatiallyVaryingLattice);
     
-    % Compute mean cone spacing within the central region of the spatially-varying lattice
-    mosaicCenterPosMicrons = mean(coneRFpositionsMicronsInSpatiallyVaryingLattice,1);
+    % Find center of cone patch
+    xRangeMicrons = prctile(coneRFpositionsMicronsInSpatiallyVaryingLattice(:,1), [5 95]);
+    yRangeMicrons = prctile(coneRFpositionsMicronsInSpatiallyVaryingLattice(:,2), [5 95]);
+    mosaicCenterPosMicrons = [mean(xRangeMicrons) mean(yRangeMicrons)];
+
+    % Compute distances of cones from the center
     d = sqrt(sum((bsxfun(@minus,coneRFpositionsMicronsInSpatiallyVaryingLattice, mosaicCenterPosMicrons)).^2,2));
+    
+    % Find indices pf cones near the center
     centralRegionRadius = max(d)/4;
     coneIndicesAtPatchCenter = find(d<=centralRegionRadius);
     
-    % Set the cone spacing
+    % Compute mean cone spacing within the central region of the spatially-varying lattice
     coneSpacingMicronsHexRegMosaic = mean(eccVaryingConeSpacings(coneIndicesAtPatchCenter));
     
     % Set the cone aperture

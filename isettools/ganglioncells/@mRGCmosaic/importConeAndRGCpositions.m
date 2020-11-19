@@ -56,7 +56,12 @@ function [coneRFpositionsMicrons, ...
     
     % Import cone RF positions, for passed eccentricity, size, and eye
     [coneRFpositionsMicrons, coneRFpositionsDegs] = retinalattice.import.finalConePositions(...
-        sourceLatticeSizeDegs, targetEccentricityDegs, targetSizeDegs, whichEye);                
+        sourceLatticeSizeDegs, targetEccentricityDegs, targetSizeDegs, whichEye);   
+    
+    fprintf('Imported %d cone and %d RGC positions covering an area of %2.1f x %2.1f degs at ecc = (%2.1f,%2.1f) degs\n', ...
+         size(coneRFpositionsMicrons,1), size(rgcRFpositionsMicrons,1), ...
+         targetSizeDegs(1), targetSizeDegs(2), targetEccentricityDegs(1), targetEccentricityDegs(2));
+
 end
 
 
