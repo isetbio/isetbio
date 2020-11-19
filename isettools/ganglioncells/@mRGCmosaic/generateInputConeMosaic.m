@@ -6,10 +6,16 @@ function [theConeMosaic, theConeMosaicMetaData] = generateInputConeMosaic(genera
     p.addParameter('coneMosaicResamplingFactor', 5, @isnumeric);
     p.addParameter('coneMosaicSpatialDensity', [0.6 0.3 0.1], @(x)(isnumeric(x) && numel(x) == 3));
     p.addParameter('coneMosaicIntegrationTime', 5/1000, @isnumeric);
+    
+    % Some parameters are for the mRGCmosaic class,
+    % so do not throw an error if we encounter unmatched key-value pairs
+    p.KeepUnmatched = true;
     p.parse(varargin{:});
+    
     coneMosaicResamplingFactor = p.Results.coneMosaicResamplingFactor;
     coneMosaicSpatialDensity = [0 p.Results.coneMosaicSpatialDensity(1) p.Results.coneMosaicSpatialDensity(2) p.Results.coneMosaicSpatialDensity(3)];
     coneMosaicIntegrationTime = p.Results.coneMosaicIntegrationTime;
+    
     switch (generationMode)
         case 'equivalent regular hex'
             [theConeMosaic, theConeMosaicMetaData] = generateEquivalentRegularHexConeMosaic(...

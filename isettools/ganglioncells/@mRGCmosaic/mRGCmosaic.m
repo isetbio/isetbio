@@ -72,7 +72,35 @@ classdef mRGCmosaic < handle
     methods
         % Constructor
         function obj = mRGCmosaic(eccentricityDegs, sizeDegs, whichEye, varargin)
+            
+            p = inputParser;
+            p.addRequired('eccentricityDegs', @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addRequired('sizeDegs', @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addRequired('whichEye', @(x)(ischar(x) && (ismember(x, {'left', 'right'}))));
+            p.addParameter('viewTesselationMaps', false, @islogical);
+            p.addParameter('coneSpecificityLevel', 100, @(x)(isscalar(x) && (x>=0) && (x<=100)));
+            
+            % Allow unmatched key-value pairs. These are to be used by
+            % cone mosaic.
+            p.KeepUnmatched = true;
+            p.parse(eccentricityDegs, sizeDegs, whichEye, varargin{:});
+    
+            % Make sure any unmatched key-value pairs are valid
+            unmatchedParameterNames = fieldnames(p.Unmatched);
+            validUnmatchedParameterNames = {...
+                'coneMosaicResamplingFactor' ...
+                'coneMosaicSpatialDensity' ...
+                'coneMosaicIntegrationTime' };
+            
+            for iUnmatched = 1:numel(unmatchedParameterNames)
+                assert(ismember(unmatchedParameterNames{iUnmatched}, validUnmatchedParameterNames), ...
+                    fprintf('Parameter ''%'' is unexpected.', unmatchedParameterNames{iUnmatched}));
+            end
+            
             % Set properties
+            viewTesselationMaps = p.Results.viewTesselationMaps;
+            coneSpecificityLevel = p.Results.coneSpecificityLevel;
+            
             obj.eccentricityDegs = eccentricityDegs;
             obj.sizeDegs = sizeDegs;
             obj.whichEye = whichEye;
@@ -106,9 +134,6 @@ classdef mRGCmosaic < handle
                         obj.importedData.coneRFpositionsMicrons, ...
                         varargin{:});
             
-            % Wire cones to RGC center subregions with a cone specificity level
-            coneSpecificityLevel = 100;
-            
             % Wire cones to RGC centers, computing the cone-to-RGC-center
             % connectivity matrix, and the resulting RGC RF positions and
             % spacings
@@ -121,7 +146,7 @@ classdef mRGCmosaic < handle
                 obj.inputConeMosaicMetaData.coneSpacingsMicrons, ...
                 obj.inputConeMosaicMetaData.coneTypes, ...
                 obj.inputConeMosaicMetaData.indicesOfConesNotConnectingToRGCcenters, ...
-                coneSpecificityLevel);
+                coneSpecificityLevel, viewTesselationMaps);
             
             % Compute weights of connections between cones and RGC
             % center/surround subregions, and update tge RGC RF positions
@@ -178,7 +203,7 @@ classdef mRGCmosaic < handle
         [connectivityMatrix, rgcRFpositionsDegs, rgcRFpositionsMicrons, rgcRFspacingsDegs, rgcRFspacingsMicrons] = ...
             wireInputConeMosaicToRGCcenters(rgcRFpositionsDegs, rgcRFpositionsMicrons, ...
             conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            indicesOfConesNotConnectingToRGCcenters, coneSpecificityLevel);
+            indicesOfConesNotConnectingToRGCcenters, coneSpecificityLevel, viewTesselationMaps);
         
         % Static method to compute weights of connections b/n cones and
         % center-surround RF subregions. Also update RGC RF positions

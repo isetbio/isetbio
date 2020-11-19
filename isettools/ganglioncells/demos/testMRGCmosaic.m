@@ -21,6 +21,9 @@ function testMRGCmosaic
         % How motion is sampled, 45 degs = 8 spatial phases/period
         spatialPhaseAdvanceDegs = 45;    
 
+        frameDurationSeconds = 1.0/(360/spatialPhaseAdvanceDegs*temporalFrequencyHz)
+        pause
+        
         % Spatial frequency 
         spatialFrequencyCPD = 1.0;
 
@@ -58,7 +61,10 @@ function testMRGCmosaic
         theOIsequence = oiArbitrarySequence(theListOfOpticalImages, theStimulusTemporalSupportSeconds);
 
         % Generate a midget RGC mosaic
-        theMidgetRGCmosaic = mRGCmosaic(mosaicEccDegs, mosaicSizeDegs, whichEye);
+        theMidgetRGCmosaic = mRGCmosaic(mosaicEccDegs, mosaicSizeDegs, whichEye, ...
+            'coneSpecificityLevel', 100, ...
+            'viewTesselationMaps', ~true, ...
+            'coneMosaicIntegrationTime', frameDurationSeconds);
 
         % Visualize mRGC positions together with imported ecc-varying cone positions
         % and together with cone positions in the equivalent employed reg-hex mosaic

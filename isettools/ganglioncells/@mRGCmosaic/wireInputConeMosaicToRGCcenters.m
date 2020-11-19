@@ -2,7 +2,7 @@ function [coneConnectivityMatrix, rgcRFpositionsDegs, ...
     rgcRFpositionsMicrons, rgcRFspacingsDegs, rgcRFspacingsMicrons] = wireInputConeMosaicToRGCcenters(...
     rgcRFpositionsDegs, rgcRFpositionsMicrons,...
     conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-    indicesOfConesNotConnectingToRGCcenters, coneSpecificityLevel)
+    indicesOfConesNotConnectingToRGCcenters, coneSpecificityLevel, viewTesselationMaps)
 
             
     % Ensure that cones outside the fov of RGCmosaic do not get connected
@@ -39,11 +39,12 @@ function [coneConnectivityMatrix, rgcRFpositionsDegs, ...
          conesToRGCratios, visualizeProcess);
     
      % Step 2. Connect L and M cones to midget RGC centers.
-     [coneConnectivityMatrix, rgcRFpositionsDegs, rgcRFpositionsMicrons, ...
-        rgcRFspacingsDegs, rgcRFspacingsMicrons] = connectConesToMidgetRGCRFcenters(...
-        conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-        rgcRFpositionsDegs, rgcRFpositionsMicrons, rgcRFspacingsMicrons, ...
-        coneSpecificityLevel, indicesOfConesNotConnectingToRGCcenters);
+     [coneConnectivityMatrix, rgcRFpositionsDegs, ...
+      rgcRFpositionsMicrons, rgcRFspacingsDegs, rgcRFspacingsMicrons] = connectConesToMidgetRGCRFcenters(...
+            conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+            rgcRFpositionsDegs, rgcRFpositionsMicrons, rgcRFspacingsMicrons, ...
+            coneSpecificityLevel, indicesOfConesNotConnectingToRGCcenters, ...
+            viewTesselationMaps);
 
 end
 
@@ -51,32 +52,34 @@ end
 function [coneConnectivityMatrix, RGCRFPositionsDegs, RGCRFPositionsMicrons, ...
     RGCRFSpacingsDegs, RGCRFSpacingsMicrons] = ...
     connectConesToMidgetRGCRFcenters(conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes,...
-        RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, coneSpecificityLevel, indicesOfConesNotConnectingToRGCcenters)
+        RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, coneSpecificityLevel, indicesOfConesNotConnectingToRGCcenters, viewTesselationMaps)
     
     
     % First pass. Connect each cone to its closest RGC. Since there are more cones than RGCs, some
     % RGCs will receive inputs from more than 1 cone in this pass.
     [coneConnectivityMatrix, numberOfConeInputs] = ...
-        performPass1(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons);
+        performPass1(conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+        RGCRFPositionsMicrons, RGCRFSpacingsMicrons, viewTesselationMaps);
     
     % Second pass - Maximize the frequency by which cones to 2-input RGCs have matched types
     [coneConnectivityMatrix, numberOfConeInputs, RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
         performPass2(conePositionsDegs, conePositionsMicrons,coneSpacingsMicrons, coneTypes, ...
         RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        coneConnectivityMatrix, numberOfConeInputs, coneSpecificityLevel);
+        coneConnectivityMatrix, numberOfConeInputs, coneSpecificityLevel, viewTesselationMaps);
     
     % Third pass. For RGCs with several (>=3) cone inputs, see if we can
     % assign some of the inputs to nearby RGCs with less cone inputs
     [coneConnectivityMatrix, numberOfConeInputs, RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
-        performPass3(conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        coneConnectivityMatrix, numberOfConeInputs);
+        performPass3(conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+        RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        coneConnectivityMatrix, numberOfConeInputs, viewTesselationMaps);
 
 
     % Fourth pass For RGCs with several (> 5) cone inputs, see if we can
     % assign some of the most distant inputs to nearby RGCs with less cone inputs
     [coneConnectivityMatrix, numberOfConeInputs] = ...
         performPass4(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        coneConnectivityMatrix, numberOfConeInputs);
+        coneConnectivityMatrix, numberOfConeInputs, viewTesselationMaps);
     
 
     % Remove all remaining orphan RGCs
@@ -124,7 +127,8 @@ function checkConnectivityMatrix(connectionMatrix, coneTypes, conePositionsMicro
 end
 
 function [connectionMatrix, numberOfConeInputs] = performPass1(...
-    conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons)
+    conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+    RGCRFPositionsMicrons, RGCRFSpacingsMicrons, viewTesselationMaps)
     
     conesNum = size(conePositionsMicrons,1);
     rgcsNum = size(RGCRFPositionsMicrons,1);
@@ -170,9 +174,11 @@ function [connectionMatrix, numberOfConeInputs] = performPass1(...
     connectionMatrix = sparse(nonSconeIndices, closestRGCindices, ones([1 numel(nonSconeIndices)]), conesNum, rgcsNum);  % connections
 
     % View tesselation
-    mRGCmosaic.renderTesselationMap(101, [], conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-        RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
-
+    if (viewTesselationMaps)
+        figNo = 101;
+        mRGCmosaic.renderTesselationMap(figNo, [], conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+    end
     fprintf('\nCompleted successfully in %f minutes\n',  toc/60);
 end
 
@@ -181,7 +187,7 @@ end
 function [connectionMatrix, numberOfConeInputs, RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
         performPass2(conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
         RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        connectionMatrix, numberOfConeInputs, coneSpecificityLevel)
+        connectionMatrix, numberOfConeInputs, coneSpecificityLevel, viewTesselationMaps)
     
     [rgcIDsWithTwoMismatchedConeInputs, indicesOfMismatchedCones] = findRGCsWithTwoMismatchedConeInputs(connectionMatrix, RGCRFPositionsMicrons,coneTypes);
     
@@ -189,14 +195,16 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsDegs, RGCRFPositio
         fprintf('\n -PASS 2: Nothing to do. No RGCs with 2 mismatched cone inputs. \n');
     else
         
-        % Clear figure
-        figNo = 102;
-        figure(figNo); clf;
+        if (viewTesselationMaps)
+            % Clear figure
+            figNo = 102;
+            figure(figNo); clf;
+
+             % View tesselation befor this step
+            mRGCmosaic.renderTesselationMap(figNo, 1, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+                RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+        end
         
-         % View tesselation befor this step
-        mRGCmosaic.renderTesselationMap(figNo, 1, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
-    
         fprintf('\n -PASS 2: reassigning cones in %d RGCs with 2 mismatched cone inputs to neighboring RGCs with 1 or 0 cone inputs ...',  numel(rgcIDsWithTwoMismatchedConeInputs));
         tic
     
@@ -280,16 +288,18 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsDegs, RGCRFPositio
     RGCRFSpacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(RGCRFPositionsMicrons);
     
     % View tesselation
-    if (numel(rgcIDsWithTwoMismatchedConeInputs) > 0)
-        mRGCmosaic.renderTesselationMap(figNo, 2, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+    if (viewTesselationMaps)
+        if (numel(rgcIDsWithTwoMismatchedConeInputs) > 0)
+            mRGCmosaic.renderTesselationMap(figNo, 2, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+                RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+        end
     end
-   
 end
 
 function [connectionMatrix, numberOfConeInputs, RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons] = ...
-        performPass3(conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        connectionMatrix, numberOfConeInputs)
+        performPass3(conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+        RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+        connectionMatrix, numberOfConeInputs, viewTesselationMaps)
     
     % Second pass. For RGCs with several (> 4) cone inputs, see if we can
     % assign some of the inputs to nearby RGCs with less cone inputs
@@ -302,14 +312,16 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsDegs, RGCRFPositio
         fprintf('\n -PASS 3: Nothing to do (no RGCs with >= 3 cone inputs).\n');
     else
         
-        % Clear figure
-        figNo = 103;
-        figure(figNo); clf;
+        if (viewTesselationMaps)
+            % Clear figure
+            figNo = 103;
+            figure(figNo); clf;
+
+            % View tesselation before this step
+            mRGCmosaic.renderTesselationMap(figNo, 1, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+                RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+        end
         
-        % View tesselation before this step
-        mRGCmosaic.renderTesselationMap(figNo, 1, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
-    
         fprintf('\n -PASS 3: Reassigning cone inputs of %d multi-input RGCs (>=3  cone inputs) to nearby RGCs with fewer cone inputs ...', numel(rgcIDsWithSeveralConeInputs));
         tic
     
@@ -389,18 +401,20 @@ function [connectionMatrix, numberOfConeInputs, RGCRFPositionsDegs, RGCRFPositio
     % Compute updated local spacings from updated positions
     RGCRFSpacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(RGCRFPositionsMicrons);
                
-    if (numel(rgcIDsWithSeveralConeInputs) > 0)
-        % View tesselation after this step
-        mRGCmosaic.renderTesselationMap(figNo, 2, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+    if (viewTesselationMaps)
+        if (numel(rgcIDsWithSeveralConeInputs) > 0)
+            % View tesselation after this step
+            mRGCmosaic.renderTesselationMap(figNo, 2, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+                RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+        end
     end
-    pause
     
 end
 
 function [connectionMatrix, numberOfConeInputs] = ...
-        performPass4(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
-        connectionMatrix, numberOfConeInputs)
+        performPass4(conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
+            connectionMatrix, numberOfConeInputs, viewTesselationMaps)
     
     % Final phase. For RGCs with several (>=4) cone inputs, see if we can
     % assign some of the most distant inputs to nearby RGCs with less cone inputs
@@ -413,14 +427,16 @@ function [connectionMatrix, numberOfConeInputs] = ...
          fprintf('\n -PASS 4: Nothing to do. No RGCs with 4+ cone inputs.\n');
     else
         
-        % Clear figure
-        figNo = 104;
-        figure(figNo); clf;
+        if (viewTesselationMaps)
+            % Clear figure
+            figNo = 104;
+            figure(figNo); clf;
+
+            % View tesselation before this step
+            mRGCmosaic.renderTesselationMap(figNo, 1, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+                    RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+        end
         
-        % View tesselation before this step
-        mRGCmosaic.renderTesselationMap(figNo, 1, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-                RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
-    
         fprintf('\n -PASS 4: Reassigning farthest cone input of %d multi-input RGCs (>=4 cone inputs) to the closest RGCs with fewer cone inputs ...', numel(rgcIDsWithSeveralConeInputs));
         tic
 
@@ -480,12 +496,13 @@ function [connectionMatrix, numberOfConeInputs] = ...
         fprintf('\nCompleted successfully for %d multi (>=4) -input RGCs in %f minutes\n', sum(conesReassignedInPhase), toc/60);
     end
     
-    % View tesselation after this step
-    if (numel(rgcIDsWithSeveralConeInputs) > 0)
-        mRGCmosaic.renderTesselationMap(figNo, 2, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+    if (viewTesselationMaps)
+        % View tesselation after this step
+        if (numel(rgcIDsWithSeveralConeInputs) > 0)
+            mRGCmosaic.renderTesselationMap(figNo, 2, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
+                RGCRFPositionsMicrons, RGCRFSpacingsMicrons, connectionMatrix, 'microns');
+        end
     end
-    pause
     
 end
 
