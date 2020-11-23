@@ -1,13 +1,19 @@
-function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY] = oiForSubjectAtEccentricity(ecc, subjectID, ...
+function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY] = oiForSubjectAtEccentricity(subjectID, ecc, ...
     pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin)
+
     % Parse input
     p = inputParser;
+    p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=1)&&(x<=10)));
+    p.addRequired('ecc', @(x)(isnumeric(x)&&(numel(x) == 2)));
+    p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=4)));
+    p.addRequired('wavelengthsListToCompute', @(x)(isnumeric(x)));
+    p.addRequired('micronsPerDegree', @(x)(isscalar(x)));
     p.addParameter('inFocusWavelength', 550, @isscalar);
     p.addParameter('wavefrontSpatialSamples', 801, @isscalar)
     p.addParameter('subtractCentralRefraction', true, @islogical);
     p.addParameter('noLCA', false, @islogical);
+    p.parse(subjectID, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
     
-    p.parse(varargin{:});
     inFocusWavelength = p.Results.inFocusWavelength;
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
