@@ -57,7 +57,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     
     axis(axesHandle, 'equal');
     set(axesHandle, 'XLim', xyRange*[-1 1], 'YLim', xyRange*[-1 1], 'Color', contourLineColor);
-    set(axesHandle, 'XTick', -10:2:10, 'YTick', -10:2:10);
+    set(axesHandle, 'XTick', -8:2:8, 'YTick', -8:2:8);
 end
 
 function renderConeApertures(axesHandle, conePositionsArcMin, coneAperturesArcMin, color)
