@@ -25,15 +25,19 @@ function visualizeConeWeights(obj)
         surround.coneSpacings = obj.inputConeMosaicMetaData.coneSpacingsDegs(coneIndicesConnectedToSurround);
 
         % Plot
-        [xRange, yRange] = plotRGCandConeWeights(1000+iRGC, RGCindex, rgcPosition, rgcSpacing, center, surround, ...
+        [xRange, yRange] = plotRGCandConeWeights(10000+iRGC, RGCindex, rgcPosition, rgcSpacing, center, surround, ...
             obj.synthesizedRFparams.visual.centerCharacteristicRadiiDegs(RGCindex), ...
             obj.synthesizedRFparams.visual.centerPeakSensitivities(RGCindex), ...
             obj.synthesizedRFparams.visual.surroundCharacteristicRadiiDegs(RGCindex), ...
             obj.synthesizedRFparams.visual.surroundPeakSensitivities(RGCindex), ...
             obj.synthesizedRFparams.retinal.surroundCharacteristicRadiiDegs(RGCindex), ...
             xRange, yRange);
+        
+
     end
 end
+
+
 
 function [xRange, yRange] = plotRGCandConeWeights(figNo, RGCindex, rgcPosition, rgcSpacing, center, surround, ...
     deconvModelCenterVisualCharacteristicRadius, ...
@@ -62,8 +66,8 @@ function [xRange, yRange] = plotRGCandConeWeights(figNo, RGCindex, rgcPosition, 
     end
     
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 1400 700], 'Name', sprintf('RGC #%d', RGCindex));
-    ax = subplot('Position', [0.05 0.05 0.40 0.90]);
+    set(hFig, 'Position', [10 10 1800 500], 'Name', sprintf('RGC #%d', RGCindex));
+    ax = subplot('Position', [0.03 0.05 0.27 0.90]);
     hold(ax, 'on');
     
     % The cones feeding into the surround
@@ -87,8 +91,8 @@ function [xRange, yRange] = plotRGCandConeWeights(figNo, RGCindex, rgcPosition, 
     end
     
     % The corresponding visual characteristic radius
-    plot(xOutline2 * deconvModelCenterVisualCharacteristicRadius * 0.5 + rgcPosition(1), ...
-         yOutline2 * deconvModelCenterVisualCharacteristicRadius * 0.5 + rgcPosition(2), 'k--', 'LineWidth', 1.5);
+    plot(xOutline2 * deconvModelCenterVisualCharacteristicRadius + rgcPosition(1), ...
+         yOutline2 * deconvModelCenterVisualCharacteristicRadius + rgcPosition(2), 'k--', 'LineWidth', 1.5);
     
     % The visual RF profile for the center
     gain = 0.95*(yRange(end)-yRange(1)) / deconvModelCenterVisualPeakSensitivity;
@@ -110,7 +114,7 @@ function [xRange, yRange] = plotRGCandConeWeights(figNo, RGCindex, rgcPosition, 
     axis(ax, 'equal');
     set(ax, 'XLim', xRange, 'YLim', yRange);
     
-    ax = subplot('Position', [0.55 0.05 0.40 0.90]);
+    ax = subplot('Position', [0.36 0.05 0.27 0.90]);
     hold(ax, 'on');
     % The cones feeding into the surround
     edgeColor = [0 0 1];
@@ -122,11 +126,11 @@ function [xRange, yRange] = plotRGCandConeWeights(figNo, RGCindex, rgcPosition, 
         patchContour(ax, coneOutlineX, coneOutlineY, faceColor, edgeColor, faceAlpha, edgeAlpha);
     end
     
-    plot(xOutline2 * deconvModelSurroundRetinalCharacteristicRadius* 0.5 + rgcPosition(1), ...
-         yOutline2 * deconvModelSurroundRetinalCharacteristicRadius* 0.5 + rgcPosition(2), 'g-', 'LineWidth', 1.5);
+    plot(xOutline2 * deconvModelSurroundRetinalCharacteristicRadius + rgcPosition(1), ...
+         yOutline2 * deconvModelSurroundRetinalCharacteristicRadius + rgcPosition(2), 'g-', 'LineWidth', 1.5);
      
-    plot(xOutline2 * deconvModelSurroundVisualCharacteristicRadius * 0.5 + rgcPosition(1), ...
-         yOutline2 * deconvModelSurroundVisualCharacteristicRadius * 0.5 + rgcPosition(2), 'k--', 'LineWidth', 1.5);
+    plot(xOutline2 * deconvModelSurroundVisualCharacteristicRadius + rgcPosition(1), ...
+         yOutline2 * deconvModelSurroundVisualCharacteristicRadius + rgcPosition(2), 'k--', 'LineWidth', 1.5);
      
     % The RGC center outline
     edgeColor = [0 0 0];
@@ -139,6 +143,19 @@ function [xRange, yRange] = plotRGCandConeWeights(figNo, RGCindex, rgcPosition, 
     % Finish plot
     axis(ax, 'equal');
     set(ax, 'XLim', xRange, 'YLim', yRange);
+    
+    
+    % The actual weights
+    ax = subplot('Position', [0.71 0.05 0.27 0.90]);
+    hold(ax, 'on');
+    for iCone = 1:numel(center.coneWeights)
+        stem(ax,center.conePositions(iCone,1), center.coneWeights(iCone), 'LineWidth', 1.5, 'MarkerSize', 10);
+    end
+    for iCone = 1:numel(surround.coneWeights)
+        scatter(ax,surround.conePositions(iCone,1),  -surround.coneWeights(iCone), 100);
+    end
+    set(ax, 'XLim', xRange, 'YLim', [-max(surround.coneWeights)*1.2, max(surround.coneWeights)*20])
+    drawnow;
 end
 
 

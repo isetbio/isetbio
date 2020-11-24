@@ -4,15 +4,20 @@
 function  [mRGCresponses, temporalSupport] = compute(obj, coneMosaicResponses, timeAxis, varargin)
         p = inputParser;
         p.addParameter('seed', [], @isnumeric);
-        p.addParameter('noiseFactor',0.5,@isnumeric);
+        p.addParameter('noiseFactor', [],@isnumeric);
         p.parse(varargin{:});
         
-
         % Apply the seed
         seed = p.Results.seed;
         if (~isempty(seed)), rng(seed); end
         
-
+        % Set the noise factor
+        if (~isempty(p.Results.noiseFactor))
+            noiseFactor = p.Results.noiseFactor;
+        else
+            noiseFactor = obj.noiseFactor;
+        end
+        
         % Retrieve dimensions
         instancesNum = size(coneMosaicResponses,1);
         conesNum = size(coneMosaicResponses,2);
@@ -71,9 +76,9 @@ function  [mRGCresponses, temporalSupport] = compute(obj, coneMosaicResponses, t
             % Max responses over time
             maxResponses = squeeze(max(meanResponses,3));
             
-            % Add Gaussian noise with sigma = p.Results.noiseFactor * max response
+            % Add Gaussian noise with sigma = noiseFactor * max response
             for RGCindex = 1:rgcsNum
-                sigma = maxResponses(RGCindex)*p.Results.noiseFactor;
+                sigma = maxResponses(RGCindex)*noiseFactor;
                 mRGCresponses(:, RGCindex,:) = ...
                     meanResponses(:, RGCindex,:) + ...
                     randn(instancesNum,1,nTimeBins) * sigma;
