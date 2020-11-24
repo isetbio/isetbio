@@ -20,12 +20,14 @@ function [A,Ainv,Q] = EllipsoidMatricesGenerate(ellParams,varargin)
 %     last three entries are the coordinates of the center of the ellipsoid.
 % 
 %     The matrix D stretches the x, y, and z axes in the coordinate system of the unit sphere,
-%     producing the three princple axes of the ellipsoid aligned to x, y, z.
+%     producing the three princple axes of the ellipsoid aligned to x, y,
+%     z.  The larger the entry of D, the smaller the axis.
 % 
 %     The rotation matrix R rotates these axes to their desired orientations.
 % 
 %     Q is given as A'*A, and has the property that for points x on the ellipsoid,
-%     x'*Q*x = 1.
+%     x'*Q*x = k.  The constant determines the scale of the
+%     ellipsoid/ellipse.
 % 
 %     The Euler angles are passed to eul2rotm and interpretted in its default
 %     'ZYX' order.  Thus the Euler angles are in radians.
@@ -51,6 +53,8 @@ function [A,Ainv,Q] = EllipsoidMatricesGenerate(ellParams,varargin)
 %   11/20/18  dhb  Remove transpose from scalar arg to deg2rotm.
 %   11/24/18  dhb  Flip convention of V, V' to match intuition about
 %                  angles.  Checked for two-dimensional case.
+%   11/19/20  dhb  Remove transpose from definition of V.  We now think
+%                  that should not have been there.
 
 % Examples:
 %{
@@ -71,13 +75,13 @@ p.parse(ellParams,varargin{:});
 switch(p.Results.dimension)
     case 2
         S = diag(ellParams(1:2));
-        V = deg2rotm(ellParams(3))';  
+        V = deg2rotm(ellParams(3));  
         if (length(ellParams) == 5)
             error('Translation not yet implemented');
         end
     case 3
         S = diag(ellParams(1:3));
-        V = eul2rotm(deg2rad(ellParams(4:6)'))';  
+        V = eul2rotm(deg2rad(ellParams(4:6)'));  
         if (length(ellParams) == 9)
             error('Translation not yet implemented')
         end
