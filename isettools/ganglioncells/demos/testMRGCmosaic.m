@@ -1,7 +1,7 @@
 function testMRGCmosaic
     
     % RGC mosaic ecc and size
-    mosaicEccDegs = [3 0]; mosaicSizeDegs = 0.2*[1 1]; whichEye = 'right';
+    mosaicEccDegs = [5 0]; mosaicSizeDegs = 0.2*[1 1]; whichEye = 'right';
         
     % Chromatic direction examined
     chromaDir = [1.0, 1.0, 0.0]';
@@ -22,7 +22,7 @@ function testMRGCmosaic
             chromaDir(1), chromaDir(2), mosaicEccDegs(1)));
         
     % Compute spatial transfer function
-    recomputeReponses = true;
+    recomputeReponses = ~true;
     
     
     if (recomputeReponses)    
@@ -240,8 +240,18 @@ function plotSpatialTransferFunction(theMidgetRGCmosaic, neuralPipelineResponses
         end
     end % iSF
     
+    spatialTransferFunctionsGain = squeeze(spatialTransferFunctionMatrix(:,:,1));
+    spatialTransferFunctionsPhase = squeeze(spatialTransferFunctionMatrix(:,:,2));
+    
+    fittedSpatialTransferFunctionData.x = logspace(log10(examinedSFs(1)), log10(examinedSFs(end)), 60);
+    [mappedDoGmodelParams, fittedSpatialTransferFunctionData.y] = fit.spatialTransferFunction(...
+        examinedSFs, spatialTransferFunctionsGain, fittedSpatialTransferFunctionData.x);
+    
     % Visualize the spatial tranfer function gains
-    theMidgetRGCmosaic.visualizeResponseMatrix(examinedSFs, squeeze(spatialTransferFunctionMatrix(:,:,1)));
+    theMidgetRGCmosaic.visualizeResponseMatrix(examinedSFs, spatialTransferFunctionsGain, ...
+        'fittedResponses', fittedSpatialTransferFunctionData);
+    
+    theMidgetRGCmosaic.visualizeCorrespondenceBetweenMappedAndSynthesizedModelParams(mappedDoGmodelParams);
     
 end
 

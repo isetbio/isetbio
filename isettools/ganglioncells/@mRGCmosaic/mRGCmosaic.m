@@ -189,7 +189,9 @@ classdef mRGCmosaic < handle
         visualizeResponses(obj, temporalSupportSeconds, mRGCMosaicResponse, varargin);
         
         % Method to visualize mRGC responses in a matrix matching the RGC positions
-        visualizeResponseMatrix(obj, independentVariable, responseMatrix);
+        visualizeResponseMatrix(obj, independentVariable, responseMatrix, varargin);
+        
+        visualizeCorrespondenceBetweenMappedAndSynthesizedModelParams(obj, visuallyMappedModelParams);
         
         % Method to generate axes positions for visualizing mRGC responses in a matrix matching the RGC positions 
         axPos = axesMatrixPosition(obj);
@@ -221,8 +223,6 @@ classdef mRGCmosaic < handle
     
         % Static method to render the map of how RGC centers tesellate cones
         renderTesselationMap(figNo, axesHandle, coneRFpositions, coneRFspacings, coneTypes, rgcRFpositions, rgcRFspacings, coneConnectivityMatrix, domain);
-        
-        % Static function to fit a sinusoid 
     end
 end
 
