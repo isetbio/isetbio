@@ -91,8 +91,8 @@ if (p.Results.lockAngleAt0)
 % If angle is free, enforce major axis longer.  Length (radius) is
 % reciprocal of parameter, so we enforce major axis parameter smaller.
 else
-    vlbVec = [1/ratioMax 1/ratioMax -90];
-    vubVec = [ratioMax ratioMax 90];
+    vlbVec = [1/ratioMax 1/ratioMax -90.2];
+    vubVec = [ratioMax ratioMax 90.2];
     AConstraint = [1 -1 0];
     bConstraint = 0;
 end
@@ -280,13 +280,16 @@ function ellParams = ellParamsCanonical(ellParams)
 % swapping axis length parameters and rotating by 90 degrees.
 if (ellParams(1) > ellParams(2))
     temp = ellParams(1); ellParams(1) = ellParams(2); ellParams(2) = temp;
-    ellParams(3) = ellParams(3) + 90;
-    
-    % Put angle into desired range.  Assumes we were in range -90 to 90
-    % before we added 90 in the flip.
-    if (ellParams(3) > 90)
-        ellParams(3) = ellParam0(3) - 180;
-    end
+    ellParams(3) = ellParams(3) + 90;   
+end
+
+% Put angle into desired range.  Assumes we were in nearly in range -90 to
+% 90 before we added 90 in case of flip.
+if (ellParams(3) > 90)
+    ellParams(3) = ellParams(3) - 180;
+end
+if (ellParams(3) < -90)
+    ellParams(3) = ellParams(3) + 180;
 end
 
 end
