@@ -12,6 +12,9 @@ classdef mRGCmosaic < handle
         % 'noiseFlag'     - String. Default 'random'. Add Gaussian noise
         %                 (default) or not. Valid values are {'random', 'frozen', 'none'}.
         noiseFlag = 'random';
+        
+        % 'noiseFactor'   - Float. Default 0.2. Sigma of Gaussian noise = noiseFactor * max(noiseFreeResponse)
+        noiseFactor = 0.2;
     end
     
     % Read-only properties
@@ -179,11 +182,19 @@ classdef mRGCmosaic < handle
         % Method to visualize the cone weights to each RGC
         visualizeConeWeights(obj);
         
-        % Visualize the mosaic activation
+        % Method to visualize the mosaic activation
         visualizeActivationMap(obj, axesHandle, activation, varargin);
         
         % Method to visualize mRGC mosaic responses
         visualizeResponses(obj, temporalSupportSeconds, mRGCMosaicResponse, varargin);
+        
+        % Method to visualize mRGC responses in a matrix matching the RGC positions
+        visualizeResponseMatrix(obj, independentVariable, responseMatrix, varargin);
+        
+        visualizeCorrespondenceBetweenMappedAndSynthesizedModelParams(obj, visuallyMappedModelParams);
+        
+        % Method to generate axes positions for visualizing mRGC responses in a matrix matching the RGC positions 
+        axPos = axesMatrixPosition(obj);
     end
     
     % Static methods

@@ -325,7 +325,7 @@ if (isfield(photoreceptors,'lensDensity'))
             photoreceptors.lensDensity.transmittance(photoreceptors.lensDensity.transmittance > 1) = 1;
         end
     else
-        if (~isfield(photoreceptors.lensDensity.transmittance))
+        if (~isfield(photoreceptors.lensDensity,'transmittance'))
             error('photoreceptors.lensDensity field passed, but without source or transmittance');
         end
     end

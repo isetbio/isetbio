@@ -66,6 +66,7 @@ function [coneConnectivityMatrix, RGCRFPositionsDegs, RGCRFPositionsMicrons, ...
         performPass2(conePositionsDegs, conePositionsMicrons,coneSpacingsMicrons, coneTypes, ...
         RGCRFPositionsDegs, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
         coneConnectivityMatrix, numberOfConeInputs, coneSpecificityLevel, viewTesselationMaps);
+
     
     % Third pass. For RGCs with several (>=3) cone inputs, see if we can
     % assign some of the inputs to nearby RGCs with less cone inputs
@@ -80,7 +81,7 @@ function [coneConnectivityMatrix, RGCRFPositionsDegs, RGCRFPositionsMicrons, ...
     [coneConnectivityMatrix, numberOfConeInputs] = ...
         performPass4(conePositionsMicrons, coneSpacingsMicrons, coneTypes, RGCRFPositionsMicrons, RGCRFSpacingsMicrons, ...
         coneConnectivityMatrix, numberOfConeInputs, viewTesselationMaps);
-    
+
 
     % Remove all remaining orphan RGCs
     orphanRGCindices = find(numberOfConeInputs == 0);
@@ -101,10 +102,13 @@ function [coneConnectivityMatrix, RGCRFPositionsDegs, RGCRFPositionsMicrons, ...
     RGCRFSpacingsMicrons = RGCRFSpacingsMicrons(RGCindicesToKeep);
     RGCRFPositionsDegs = RGCRFPositionsDegs(RGCindicesToKeep,:);
     RGCRFSpacingsDegs = RGCmodels.Watson.convert.positionsToSpacings(RGCRFPositionsDegs);
-    
     coneConnectivityMatrix = coneConnectivityMatrix(:,RGCindicesToKeep);
             
+
     fprintf('Checking connectivity matrix\n');
+    assert(size(coneConnectivityMatrix,2) == size(RGCRFPositionsMicrons,1), ...
+        'connectivity matrix size does not match size of positions');
+    
     conesNum = size(conePositionsDegs,1);
     indicesOfConesConnectingToRGCcenters = setdiff(1:conesNum,indicesOfConesNotConnectingToRGCcenters);
     parfor iCone = 1:numel(indicesOfConesConnectingToRGCcenters)

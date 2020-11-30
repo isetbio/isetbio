@@ -8,11 +8,11 @@ function RFparams = synthesizedMidgetRGCRFparams(rgcPositionsDegs, rgcCenterCone
     % Compute ecc radii in degrees. NOTE: Here we are using only the horizontal eccentricity component
     % because the deconvolution files are computed along the horizontal meridian only (for now)
     rgcEccRadiiDegsToUseForDeconvolution = abs(rgcPositionsDegs(:,1));
-    rgcEccRadiiDegsToUseForDeconvolution = sqrt(sum(rgcPositionsDegs.^2,2));
+    %rgcEccRadiiDegsToUseForDeconvolution = sqrt(sum(rgcPositionsDegs.^2,2));
     
     % Compute deconvolution model
     deconvolutionModel = RGCmodels.CronerKaplan.compute.deconvolutionModel();
-    
+
     % Compute interpolation indices and weights from tabulated data in nearby eccentricities.
     [interpolationEccIndices, interpolationEccWeights] = computeInterpolationIndices(...
         deconvolutionModel.tabulatedEccRadiiDegs, rgcEccRadiiDegsToUseForDeconvolution, 'center', 'eccentricities');
@@ -119,6 +119,7 @@ function RFparams = synthesizedMidgetRGCRFparams(rgcPositionsDegs, rgcCenterCone
         surroundVisualPeakSensitivityAttenuation(RGCindex) = 1 / sum(visualGainSensitivities .* weightsOfNeighboringEccs,2); 
     end % RGCindex
     
+
     % To extract the RETINAL peak sensitivity, multiply the Croner&Kaplan estimate of the visual peak sensitivity
     % by the surround VisualPeakSensitivityAttenuation (estimated by the deconvolution model)
     surroundRetinalPeakSensitivities = surroundVisualPeakSensitivities .* surroundVisualPeakSensitivityAttenuation;
