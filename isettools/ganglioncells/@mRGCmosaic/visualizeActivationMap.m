@@ -9,7 +9,7 @@ function visualizeActivationMap(obj, axesHandle, activation, varargin)
     p.addParameter('visualizedFOV', [], @(x)(isnumeric(x) && (numel(x) == 2)));
     p.addParameter('backgroundColor', [0 0 0], @(x)(isnumeric(x) && (numel(x) == 3)));
     
-    p.addParameter('fontSize', 14, @isnumeric);
+    p.addParameter('fontSize', 18, @isnumeric);
     p.parse(axesHandle, activation, varargin{:});
     
     domain = p.Results.domain;
@@ -70,5 +70,5 @@ function visualizeActivationMap(obj, axesHandle, activation, varargin)
     
     % Finalize plot
     axis(axesHandle, 'equal');
-    set(axesHandle, 'XLim', xRange, 'YLim', yRange, 'Color', backgroundColor, 'FontSize', fontSize);
+    set(axesHandle, 'XLim', xRange, 'YLim', yRange, 'XTick',-10:0.25:10, 'YTick', -10:0.25:10, 'Color', backgroundColor, 'FontSize', fontSize);
 end

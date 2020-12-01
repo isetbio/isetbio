@@ -4,6 +4,7 @@ function visualizeResponses(obj, responseTemporalSupportSeconds, mRGCMosaicRespo
     p.addParameter('stimulusSceneSequence',[], @(x)(isempty(x) || iscell(x)));
     p.addParameter('opticalSequence',[], @(x)(isempty(x) || isa(x, 'oiSequence') || (isa(x, 'oiArbitrarySequence'))));
     p.addParameter('coneMosaicResponse', []);
+    p.addParameter('coneMosaicResponseType', 'excitations', @(x)(ischar(x) && (ismember(x, {'excitations', 'photocurrents'})) ));
     p.addParameter('coneMosaicResponseTemporalSupportSeconds', []);
     p.parse(varargin{:});  
     
@@ -11,6 +12,7 @@ function visualizeResponses(obj, responseTemporalSupportSeconds, mRGCMosaicRespo
     stimulusSequence = p.Results.stimulusSceneSequence;
     opticalSequence = p.Results.opticalSequence;
     coneMosaicResponse = p.Results.coneMosaicResponse;
+    coneMosaicResponseType = p.Results.coneMosaicResponseType;
     coneMosaicResponseTemporalSupportSeconds = p.Results.coneMosaicResponseTemporalSupportSeconds;
     
     % Validate inputs
@@ -35,20 +37,29 @@ function visualizeResponses(obj, responseTemporalSupportSeconds, mRGCMosaicRespo
     meanMRGCResponse = squeeze(mean(mRGCMosaicResponse,1));
     
     hFig = figure(100);
-    set(hFig, 'Position', [10 10 800 1300]);
-    stimAxes = subplot(3,2,1);
-    coneMosaicAxes = subplot(3,2,3);
-    mRGCMosaicAxes = subplot(3,2,5);
-    stimTracesAxes = subplot(3,2,2);
-    coneTraceAxes = subplot(3,2,4);
-    mRGCTraceAxes = subplot(3,2,6);
+    if (isempty(coneMosaicResponse))
+        set(hFig, 'Position', [10 10 800 900]);
+        stimAxes = subplot(2,2,1);
+        stimLuminanceTracesAxes = subplot(2,2,2);
+        mRGCMosaicAxes = subplot(2,2,3);
+        mRGCTraceAxes = subplot(2,2,4);
+        coneMosaicAxes = [];
+        coneTraceAxes = [];
+    else
+        set(hFig, 'Position', [10 10 800 1300]);
+        stimAxes = subplot(3,2,1);
+        stimLuminanceTracesAxes = subplot(3,2,2);
+        coneMosaicAxes = subplot(3,2,3);
+        coneTraceAxes = subplot(3,2,4);
+        mRGCMosaicAxes = subplot(3,2,5);
+        mRGCTraceAxes = subplot(3,2,6);
+    end
     
-    stimTrace = zeros(1,numel(stimulusTemporalSupportSeconds));
+    stimLuminanceTrace = zeros(1,numel(stimulusTemporalSupportSeconds));
     coneTrace = zeros(1, numel(responseTemporalSupportSeconds));
     mRGCTrace = zeros(1, numel(responseTemporalSupportSeconds));
     
-    tracedPositionDegs = [0 0];
-    
+
     stimFrameInterval = stimulusTemporalSupportSeconds(2)-stimulusTemporalSupportSeconds(1);
     coneResponseRange = prctile(meanConeMosaicResponse(:), [5 95]);
     mRGCResponseRange = [min(meanMRGCResponse(:)) max(meanMRGCResponse(:))];
@@ -56,31 +67,57 @@ function visualizeResponses(obj, responseTemporalSupportSeconds, mRGCMosaicRespo
     for tBin = 1:numel(responseTemporalSupportSeconds)
         time = responseTemporalSupportSeconds(tBin);
         stimulusTimeBin = floor(time/stimFrameInterval)+1;
-        stimTrace(tBin) = renderCurrestStimulus(stimAxes, stimulusSequence{stimulusTimeBin}, time, tracedPositionDegs);
-        coneTrace(tBin) = renderCurrentConeMosaicActivation(coneMosaicAxes, obj, squeeze(meanConeMosaicResponse(:, tBin)), coneResponseRange, tracedPositionDegs);
-        mRGCTrace(tBin) = renderCurrentMRGCMosaicActivation(mRGCMosaicAxes, obj, squeeze(meanMRGCResponse(:, tBin)), mRGCResponseRange, tracedPositionDegs);
-        subplot(3,2,2);
-        plot(responseTemporalSupportSeconds(1:tBin)*1000, stimTrace(1:tBin), 'ks-');
-        set(gca, 'XTick', 0:50:1000);
-        subplot(3,2,4);
-        plot(responseTemporalSupportSeconds(1:tBin)*1000, coneTrace(1:tBin), 'ks-');
-         set(gca, 'XTick', 0:50:1000);
-        subplot(3,2,6);
-        plot(responseTemporalSupportSeconds(1:tBin)*1000, mRGCTrace(1:tBin), 'ks-');
-         set(gca, 'XTick', 0:50:1000);
+        
+        % Update the current stimulus
+        stimLuminanceTrace(tBin) = renderCurrestStimulus(stimAxes, stimulusSequence{stimulusTimeBin}, time);
+        
+        % Update the stimulus luminance trace plot
+        plot(stimLuminanceTracesAxes, responseTemporalSupportSeconds(1:tBin)*1000, stimLuminanceTrace(1:tBin), 'ks-');
+        set(stimLuminanceTracesAxes, 'XTick', 0:100:1000, 'FontSize', 18);
+        axis(stimLuminanceTracesAxes, 'square');
+        title(stimLuminanceTracesAxes,'Stimulus luminance')
+        xlabel(stimLuminanceTracesAxes, 'time (msec)');
+        ylabel(stimLuminanceTracesAxes,'Cd/m2');
+        
+        if (~isempty(coneMosaicAxes))
+            % Update the cone mosaic response plot
+            coneTrace(tBin) = renderCurrentConeMosaicActivation(coneMosaicAxes, obj, squeeze(meanConeMosaicResponse(:, tBin)), ...
+                coneResponseRange, coneMosaicResponseType);
+            % Update the cone response trace plot
+            plot(coneTraceAxes, responseTemporalSupportSeconds(1:tBin)*1000, coneTrace(1:tBin), 'ks-');
+            set(coneTraceAxes, 'XTick', 0:100:1000, 'FontSize', 18);
+            title(coneTraceAxes, 'Single cone response');
+            xlabel(coneTraceAxes, 'time (msec)');
+            switch (coneMosaicResponseType)
+                case 'excitations'
+                    ylabel(coneTraceAxes, 'R*/sec');
+                case 'photocurrents'
+                    ylabel(coneTraceAxes, 'pAmps');
+            end
+        end
+        
+        % Update the mRGC mosaic plot
+        mRGCTrace(tBin) = renderCurrentMRGCMosaicActivation(mRGCMosaicAxes, obj, squeeze(meanMRGCResponse(:, tBin)), mRGCResponseRange);
+
+        % Update the mRGC response trace plot
+        plot(mRGCTraceAxes, responseTemporalSupportSeconds(1:tBin)*1000, mRGCTrace(1:tBin), 'ks-');
+        set(mRGCTraceAxes , 'XTick', 0:100:1000, 'FontSize', 18);
+        axis(mRGCTraceAxes, 'square');
+        title(mRGCTraceAxes, 'Single mRGC response');
+        xlabel(mRGCTraceAxes, 'time (msec)');
         drawnow;
     end
     
     
-    figure(1000);
-    
+    hFig = figure(1000);
+    set(hFig, 'Name', 'spatiotemporal cone and mRGC mosaic responses');
     if (~isempty(coneMosaicResponse))
         % Plot the mean cone spatiotemporal response
         subplot(2,1,1);
         imagesc(coneMosaicResponseTemporalSupportSeconds, 1:conesNum, meanConeMosaicResponse);
         title('cone mosaic response');
         xlabel('time (seconds)');
-        ylabel('cone index');
+        ylabel('cone number');
     end
      
     % Plot the mean mRGC spatiotemporal response
@@ -88,34 +125,54 @@ function visualizeResponses(obj, responseTemporalSupportSeconds, mRGCMosaicRespo
     imagesc(responseTemporalSupportSeconds, 1:rgcsNum, meanMRGCResponse);
     title('mRGC mosaic response');
     xlabel('time (seconds)');
-    ylabel('mRGC index');
+    ylabel('mRGC cell number');
+    colormap(gray(1024));
 end
 
-function stimTrace = renderCurrestStimulus(ax, stimulusScene, time, tracedPositionDegs)
+function luminanceTrace = renderCurrestStimulus(ax, stimulusScene, time)
     cla(ax);
     lumImage = sceneGet(stimulusScene, 'luminance');
     m = floor(size(lumImage,1)/2);
     n = floor(size(lumImage,2)/2);
-    stimTrace = lumImage(m,n);
-    imagesc(ax, sceneGet(stimulusScene, 'rgbimage'));
+    luminanceTrace = lumImage(m,n);
+    stimSize = sceneGet(stimulusScene, 'size');
+    xFOVdegs = sceneGet(stimulusScene, 'wAngular');
+    yFOVdegs = sceneGet(stimulusScene, 'hAngular');
+    xDegs = linspace(0,xFOVdegs,stimSize(2));
+    yDegs = linspace(0,yFOVdegs,stimSize(1));
+    xDegs = xDegs - mean(xDegs);
+    yDegs = yDegs - mean(yDegs);
+    imagesc(ax, xDegs, yDegs, sceneGet(stimulusScene, 'rgbimage'));
+    xlabel(ax, 'space (degs)');
+    ylabel(ax, 'space (degs)');
     axis(ax, 'image');
-    set(ax, 'XTick', [], 'YTick', []);
-    title(ax, sprintf('%d msec', time*1000));
+    set(ax, 'XTick', -10:0.25:10, 'YTick', -10:0.25:10, 'FontSize', 18);
+    title(ax, sprintf('scene @ %2.0f msec', time*1000));
 end
 
-function coneTrace = renderCurrentConeMosaicActivation(ax, mRGCMosaicOBJ, coneMosaicResponse, signalRange, tracedPositionDegs)
+function coneTrace = renderCurrentConeMosaicActivation(ax, mRGCMosaicOBJ, coneMosaicResponse, signalRange, signalType)
     cla(ax)
-    coneTrace = 0;
+    tracedPositionDegs = [0 0];
+    cmStruct = mRGCMosaicOBJ.inputConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
+    [~, tracedConeIndex] = min(sum((bsxfun(@minus, cmStruct.coneLocs, tracedPositionDegs)).^2,2));
+    switch signalType
+        case 'excitations'
+            coneTrace = coneMosaicResponse(tracedConeIndex,:) / mRGCMosaicOBJ.inputConeMosaic.integrationTime;
+        case 'photocurrents'
+            coneTrace = coneMosaicResponse(tracedConeIndex,:);
+    end
+    
     mRGCMosaicOBJ.inputConeMosaic.renderActivationMap(ax, coneMosaicResponse, ...
         'signalRange', signalRange, ...
         'visualizedFOV', 1.0, ...
         'mapType', 'modulated disks', ...
 	    'backgroundColor', [0 0 0]);
-    
+    title(ax, 'Cone mosaic activation');
 end
 
-function mRGCTrace = renderCurrentMRGCMosaicActivation(ax, mRGCMosaicOBJ, mRGCMosaicResponse, signalRange, tracedPositionDegs)
+function mRGCTrace = renderCurrentMRGCMosaicActivation(ax, mRGCMosaicOBJ, mRGCMosaicResponse, signalRange)
     
+    tracedPositionDegs = [0 0];
     center = mean(mRGCMosaicOBJ.rgcRFpositionsDegs,1);
     targetPos = tracedPositionDegs+center;
     diffs = bsxfun(@minus, mRGCMosaicOBJ.rgcRFpositionsDegs, targetPos);
@@ -128,7 +185,7 @@ function mRGCTrace = renderCurrentMRGCMosaicActivation(ax, mRGCMosaicOBJ, mRGCMo
         'signalRange', signalRange, ...
         'domain', 'degs', ...
         'visualizedFOV', [1 1]);
-
+    title(ax, 'mRGC mosaic activation');
 
 end
 
