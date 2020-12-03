@@ -1,9 +1,10 @@
-function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY] = oiForSubjectAtEccentricity(subjectID, ecc, ...
+function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY] = oiForSubjectAtEccentricity(subjectID, whichEye, ecc, ...
     pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin)
 
     % Parse input
     p = inputParser;
     p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=1)&&(x<=10)));
+    p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{PolansOptics.constants.leftEye, PolansOptics.constants.rightEye}))));
     p.addRequired('ecc', @(x)(isnumeric(x)&&(numel(x) == 2)));
     p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=4)));
     p.addRequired('wavelengthsListToCompute', @(x)(isnumeric(x)));
@@ -12,13 +13,19 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY] = oiForSubjectA
     p.addParameter('wavefrontSpatialSamples', 801, @isscalar)
     p.addParameter('subtractCentralRefraction', true, @islogical);
     p.addParameter('noLCA', false, @islogical);
-    p.parse(subjectID, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
+    p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
     
     inFocusWavelength = p.Results.inFocusWavelength;
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
     noLCA = p.Results.noLCA;
    
+
+    if (strcmp(whichEye, PolansOptics.constants.leftEye))
+        % Flip horizontal ecc sign because Z-coeffs correspond to retinal
+        % eccentricities on the right eye
+        ecc(1) = -ecc(1);
+    end
     
     % Obtain z-coeffs at desired eccentricity
     zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction);
@@ -62,10 +69,12 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
     for zIndex = 1:zCoeffsNum
          % Retrieve the XY map for this z-coeff
          zz = squeeze(zMap(:,:,zIndex));
+         
          % The 4-th z-coeff is defocus. Subtract central defocus from all
          % spatial positions
          if ((zCoeffIndices(zIndex) == 4) && (subtractCentralRefraction))
              idx = find((X==0) & (Y==0));
+             fprintf('Z(%d) = %f\n', zIndex, zz(idx));
              zz = zz - zz(idx);
          end
          % Interpolate the XY map at the desired eccentricity
