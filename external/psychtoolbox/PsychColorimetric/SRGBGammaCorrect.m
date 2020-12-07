@@ -25,7 +25,9 @@ function RGB = SRGBGammaCorrect(rgb,SCALE)
 %
 % 5/1/04    dhb             Wrote it.
 % 7/8/10    dhb             Updated to match standard I can now find on the web.
-% 6/15/11   dhb, ms         Clarify input output range issues in comment.
+% 6/15/11   dhb, ms         Clarify input output range issues in comment
+% 07/31/20  dhb             Get rid of spurious call to clear, which is slow.
+%                           More efficient truncation into range.
 
 % Set SCALE if not passed.
 if (nargin < 2 || isempty(SCALE))
@@ -36,17 +38,11 @@ end
 if (SCALE)
 	rgb = rgb/max(rgb(:));
 else
-	index = find(rgb > 1);
-	if (~isempty(index))
-		rgb(index) = 1;
-	end
+    rgb(rgb > 1) = 1;
 end
 
 % Truncate negative values to 0.
-index = find(rgb < 0);
-if (~isempty(index))
-	rgb(index) = 0;
-end
+rgb(rgb < 0) = 0;
 
 % Cutoff value
 % Value in old routines was 0.0031308, which I actually think
@@ -64,7 +60,6 @@ index = find(rgb >= cutoff);
 if (~isempty(index))
 	rgbprime(index) = 1.055*(rgb(index).^(1/2.4))-0.055;
 end
-clear rgb;
 
 % Quantize to 8 bits.
 RGB = round(255*rgbprime);

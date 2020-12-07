@@ -25,10 +25,17 @@ function renderRecipe = writeLegrandLensFile(renderRecipe, workingFolder)
 % See also
 %  (BW fixed a lot of comments.  Started to add an example)
 
+% History:
+%   10/19/20  dhb Example checks for required iset3d function
+
 % Examples:
 %{
-thisR = piRecipeDefault;
-writeLegrandLensFile(thisR,thisR.get('output dir'));
+if (exist('piRecipeDefault','file'))
+    thisR = piRecipeDefault;
+    writeLegrandLensFile(thisR,thisR.get('output dir'));
+else
+    fprintf('This example requires iset3d on your path as well as isetbio\n');
+end
 %}
 
 % Columns are: radiusX, radiusY, thickness, materialIndex, semiDiameter,

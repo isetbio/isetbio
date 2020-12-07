@@ -38,17 +38,24 @@ function analyzeLattice
 end
 
 function displayLatticeProgressionHistory(figNo, rfPositionsHistory, maxMovements, visualizationParams)
+
+    
     hFig = figure(figNo);
     theAxesGrid = plotlab.axesGrid(hFig, ...
             'rowsNum', 2, ...
             'colsNum', 4, ...
             'leftMargin', 0.02, ...
             'rightMargin', 0.01, ...
-            'widthMargin', 0.05, ...
+            'widthMargin', 0.03, ...
             'heightMargin', 0.06, ...
             'bottomMargin', 0.05, ...
             'topMargin', 0.00);
         
+    videoOBJ = VideoWriter('mosaicEvolution', 'MPEG-4'); % H264 format
+    videoOBJ.FrameRate = 10;
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+    
     iterationsNum = size(rfPositionsHistory,1);
     for iteration = 1:iterationsNum
         % Clear axes
@@ -86,6 +93,7 @@ function displayLatticeProgressionHistory(figNo, rfPositionsHistory, maxMovement
         triangleIndices = delaunayn(rfPositions);
         plotQuality(theAxesGrid{2,4}, rfPositions, triangleIndices, iteration, iterationsNum);
         drawnow;
+        videoOBJ.writeVideo(getframe(hFig));
         
         displaySpacingDeviations = false;
         if (displaySpacingDeviations)
@@ -97,6 +105,8 @@ function displayLatticeProgressionHistory(figNo, rfPositionsHistory, maxMovement
             plotSpacingDeviationsMap(theAxesGrid{1,2}, rfPositions(idx,:), spacingDeviations(idx), visualizationParams.visualizedFOVMicrons);
         end
     end
+    videoOBJ.close();
+    
 end
 
 function displayDesiredAndAchievedDensities(figNo, positions, whichEye, plotCorrespondenceAndMap, plotlabOBJ)

@@ -157,7 +157,7 @@ methods (Abstract, Access=public)
     compute(obj, pRate, coneType, varargin);
 
     % see osLinearPlot, osBioPhysPlot
-    plot(obj, plotType);
+    % plot(obj, plotType);
 
 end
 

@@ -1,4 +1,7 @@
-function unitTestFigure1(varargin)
+function plotlabOBJ = unitTestFigure1(varargin)
+% Generate Figure 1 of Watson (2014) which plots cone density as a function
+% of eccentricity using Curcio's 1990 data.
+
     % Parse input
     p = inputParser;
     p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
@@ -25,7 +28,7 @@ function doIt(obj, eccentricities, eccUnits, densityUnits, meridianLabeling, fig
     
     exportFigure = false;
     
-    hFig = figure(); clf;
+    hFig = figure(1); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.16, ...
             'bottomMargin', 0.18, ...

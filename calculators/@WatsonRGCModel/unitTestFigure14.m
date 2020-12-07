@@ -1,4 +1,7 @@
-function unitTestFigure14(varargin)
+function plotlabOBJ = unitTestFigure14(varargin)
+% Generate Figure 14 of Watson (2014) which plots the ratio of mRGC RFs to cones
+% as a function of eccentricity.
+
     % Parse input
     p = inputParser;
     p.addParameter('plotlabOBJ', [], @(x)(isempty(x) || isa(x, 'plotlab')));
@@ -24,7 +27,7 @@ function doIt(obj,eccentricities, eccUnits, densityUnits, meridianLabeling, figu
 
     exportFigure = false;
         
-    hFig = figure(1); clf;
+    hFig = figure(14); clf;
     theAxesGrid = plotlabOBJ.axesGrid(hFig, ...
             'leftMargin', 0.12, ...
             'bottomMargin', 0.18, ...

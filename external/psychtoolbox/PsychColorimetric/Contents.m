@@ -23,8 +23,9 @@
 %   ConeIncToDKL        - Convert from cone increments to DKL.
 %   ContrastToExcitation - Convert contrast to excitation coordinate.
 %   ContrastToIncrement - Convert contrast to incremental coordinates.
+%   ConvertRGBSourceToRGBTargetColorSpace - Convert an image from a RGB source colorspace to a RGB target colorspace.
 %   DKLToConeInc        - Convert from DKL to cone increments.
-%   drawChromaticity -    Plot chromaticity diagram w spectrum locus (provided by Danny Garside).
+%   DrawChromaticity -    Plot chromaticity diagram w spectrum locus (provided by Danny Garside).
 %   EffectiveTrolandsFromLum - Compute effective trolands from luminance.
 %   EnergyToCones       - Convert monochromatic energy to cone excitations.
 %   ExcitationToContrast - Convert excitation coordinates to contrast.
@@ -61,6 +62,7 @@
 %   PupilDiameterFromLum - Estimate pupil diameter from luminance.
 %   PsychMunsell        - Munsell renotation to xyY conversion.
 %   RetIrradianceToIsoRecSec - Convert retinal irradiance (power units) to iso. per receptor per second.
+%   RGBToXYZMatrix      - Build a 3x3 CSC matrix for converting some RGB color space to XYZ space.
 %   SampleCircle        - Sample points on a circle.
 %   SampleSphere        - Sample points on a sphere.
 %   ShiftSpectra        - Shift a spectral function along the wavelength axis.
@@ -89,11 +91,12 @@
 %   XYZToLab            - Convert between XYZ and Lab.
 %   XYZToLjg            - Convert between XYZ (10 degree) and OSA UCS Ljg.
 %   XYZToLuv            - Convert between XYZ and Luv.
+%   XYZToRGBMatrix      - Build a 3x3 CSC matrix for converting XYZ space to some RGB color space.
 %   XYZToSRGBPrimary    - Convert between XYZ and sRGB primary coordinates.
 %   XYZTouv             - Compute uv chromaticities from XYZ.
 %   XYZTouvY            - Convert between XYZ and u'v'Y.
 %   XYZToxyY            - Convert between XYZ and xyY.
   
-% Copyright (c) 1996-2013 by David Brainard, Denis Pelli, & Mario Kleiner
+% Copyright (c) 1996-2020 by David Brainard, Denis Pelli, & Mario Kleiner
 
 
