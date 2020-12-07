@@ -1,4 +1,4 @@
-function wvf = wvfComputePSF(wvf, showBar)
+function wvf = wvfComputePSF(wvf, showBar, varargin)
 % Compute the psf for the wvf object. 
 %
 % Syntax:
@@ -50,6 +50,17 @@ function wvf = wvfComputePSF(wvf, showBar)
     wvf = wvfComputePSF(wvf)
 %}
 
+%% Input parses
+%
+% Run ieParamFormat over varargin before passing to the parser,
+% so that keys are put into standard format
+p = inputParser;
+p.addParameter('nolca',false,@islogical);
+ieVarargin = ieParamFormat(varargin);
+ieVarargin = wvfKeySynonyms(ieVarargin);
+p.parse(ieVarargin{:});
+
+%% 
 if notDefined('showBar'), showBar = false; end
 
 % Only calculate if we need to -- PSF might already be computed and stored
@@ -64,7 +75,7 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
 
     % Make sure pupil function is computed. This function incorporates the
     % chromatic aberration of the human eye.
-    wvf = wvfComputePupilFunction(wvf, showBar);
+    wvf = wvfComputePupilFunction(wvf, showBar,'nolca',p.Results.nolca);
     
     % wave = wvfGet(wvf, 'wave');
     psf = cell(nWave, 1);
