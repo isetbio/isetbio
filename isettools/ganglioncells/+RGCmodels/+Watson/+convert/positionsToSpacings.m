@@ -4,6 +4,6 @@ function spacings = positionsToSpacings(positions)
    allPairWiseDistances = pdist2(positions, positions, ...
     	'euclidean','Smallest',6);
    % Mean spacing removing the first point which is 0 (distance to itself)
-   spacings = mean(allPairWiseDistances(2:end,:),1);
+   spacings = median(allPairWiseDistances(2:end,:),1);
 end
 
