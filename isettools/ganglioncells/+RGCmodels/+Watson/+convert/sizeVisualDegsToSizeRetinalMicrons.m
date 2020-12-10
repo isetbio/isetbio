@@ -1,6 +1,10 @@
 function sizeMicrons = sizeVisualDegsToSizeRetinalMicrons(sizeVisualDegs, eccDegs)
 % Convert a retinal size in visual degrees at given ecc (also in degs) to its
 % equivalent linear size in retinal microns
+%
+% Syntax:
+%   sizeMicrons = sizeVisualDegsToSizeRetinalMicrons(sizeVisualDegs, eccDegs)
+%
     
     if (numel(eccDegs) == 2) && (numel(sizeVisualDegs) > 1)
         % Treat eccDegs as a vector of (x,y) eccs

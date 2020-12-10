@@ -1,16 +1,17 @@
 function testEccVaryingOpticsAndConeMosaic
-    eccDegs = [10 0];
+    eccDegs = [30 0];
     subjectID = 10;
     pupilDiamMM = 3.0;
+    whichEye = 'right eye';
     
-    [theConeMosaic, thePSF, wavelengthSupport, spatialSupport] = eccVaryingOpticsAndConeMosaic(eccDegs, subjectID, pupilDiamMM);
+    [theConeMosaic, thePSF, wavelengthSupport, spatialSupport] = eccVaryingOpticsAndConeMosaic(eccDegs, whichEye, subjectID, pupilDiamMM);
     
     % Visualize PSF and cone mosaic
     cMap = brewermap(1024, '*blues');
     zLevels = logspace(log10(0.01), log10(1), 6);
     psfRangeArcMin = 4;
     
-    figure(14); clf;
+    figure(); clf;
     for k = 1:numel(wavelengthSupport)
         theWavePSF = squeeze(thePSF(:,:,k)) / max(thePSF(:));
         ax = subplot(3,4,k);
@@ -23,7 +24,7 @@ function testEccVaryingOpticsAndConeMosaic
     
 end
 
-function [theConeMosaic, thePSF, wavelengthSupport, psfSupportX] = eccVaryingOpticsAndConeMosaic(eccDegs, subjectID, pupilDiamMM)
+function [theConeMosaic, thePSF, wavelengthSupport, psfSupportX] = eccVaryingOpticsAndConeMosaic(eccDegs, whichEye, subjectID, pupilDiamMM)
     
     wavelengthSupport = 450:25:700;
     
@@ -47,7 +48,7 @@ function [theConeMosaic, thePSF, wavelengthSupport, psfSupportX] = eccVaryingOpt
     );
     
     % Compute optics for eccentricity  based on the Polans data
-    [theOI, thePSF, psfSupportX, psfSupportY] = PolansOptics.oiForSubjectAtEccentricity(eccDegs, subjectID, ...
+    [theOI, thePSF, psfSupportX, psfSupportY] = PolansOptics.oiForSubjectAtEccentricity(subjectID, whichEye, eccDegs, ...
         pupilDiamMM, wavelengthSupport, micronsPerDegree, ...
         'wavefrontSpatialSamples', 301, ...
         'noLCA', ~true, ...

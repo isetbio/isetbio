@@ -97,7 +97,7 @@ classdef mRGCmosaic < handle
             
             for iUnmatched = 1:numel(unmatchedParameterNames)
                 assert(ismember(unmatchedParameterNames{iUnmatched}, validUnmatchedParameterNames), ...
-                    fprintf('Parameter ''%'' is unexpected.', unmatchedParameterNames{iUnmatched}));
+                    sprintf('mRGCmosaic instantion: Parameter ''%s'' is unexpected.', unmatchedParameterNames{iUnmatched}));
             end
             
             % Set properties

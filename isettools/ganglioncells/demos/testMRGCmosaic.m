@@ -1,17 +1,17 @@
 function testMRGCmosaic
     
     % RGC mosaic ecc and size
-    mosaicEccDegs = [5 0]; mosaicSizeDegs = 0.2*[1 1]; whichEye = 'right';
+    mosaicEccDegs = [1 0]; mosaicSizeDegs = 0.5*[1 1]; whichEye = 'right';
         
     % Chromatic direction examined
-    chromaDir = [1.0, 1.0, 0.0]';
+    chromaDir = [0.8 0.8 0.8]';
     
     % Simulate no Poisson noise in the cone mosaic
     coneNoise = 'none';
     
     % Simulate Gaussian noise in mRGCs with sigma = 0.1 x max(response)
     mRGCnoise = 'random';
-    mRGCnoiseFactor = 0.1;
+    mRGCnoiseFactor = 0.2;
     
     % Save directory
     datasaveDir = '/Volumes/SSDdisk/SpatialTransferData';
@@ -22,8 +22,16 @@ function testMRGCmosaic
             chromaDir(1), chromaDir(2), mosaicEccDegs(1)));
         
     % Compute spatial transfer function
-    recomputeReponses = ~true;
+    recomputeReponses = true;
     
+    visualize = struct(...
+        'theMosaicInputPositions', true, ...
+        'theMosaicTesselation', true, ...
+        'theSynthesizedParams', true, ...
+        'theMRGConeWeights', true, ...
+        'theScene', true, ...
+        'theMRCresponses', true, ...
+        'theSpatialTransferFunctions', true);
     
     if (recomputeReponses)    
         % Examined spatial frequencies (c/deg)
@@ -46,16 +54,10 @@ function testMRGCmosaic
         % How motion is sampled, 45 degs = 8 spatial phases/period
         spatialPhaseAdvanceDegs = 360 * frameDurationSeconds * temporalFrequencyHz;
 
-        % Generate a drifting grating sequence with 70% contrast
-        stimContrast = 0.1;
+        % Generate a drifting grating sequence with 100% modulation of the
+        % chromatic direction
+        stimContrast = 1.0;
           
-       
-         % Stimulus size: cover all of the cone mosaic
-        maxEccDegs = max(mosaicEccDegs) + max(0.5*mosaicEccDegs);
-        extraDegsForRGCSurround = 2.0 * ...
-            RGCmodels.CronerKaplan.constants.surroundCharacteristicRadiusFromFitToPandMcells(maxEccDegs);
-        stimFOVdegs = max(mosaicSizeDegs) + extraDegsForRGCSurround;
-        
     
         % Compute responses
         instancesNum = 64;
@@ -84,15 +86,23 @@ function testMRGCmosaic
         
         % Visualize mRGC positions together with imported ecc-varying cone positions
         % and together with cone positions in the equivalent employed reg-hex mosaic
-        %theMidgetRGCmosaic.visualizeInputPositions();
-
+        if (visualize.theMosaicInputPositions)
+            theMidgetRGCmosaic.visualizeInputPositions();
+        end
+        
         % Visualize connections of cones to mRGC RF centers
-        %theMidgetRGCmosaic.visualizeConeMosaicTesselation('degrees');
-
-        %theMidgetRGCmosaic.visualizeSynthesizedParams();
-        %
-        %theMidgetRGCmosaic.visualizeConeWeights();
-
+        if (visualize.theMosaicTesselation)
+            theMidgetRGCmosaic.visualizeConeMosaicTesselation('degrees');
+        end
+        
+        if (visualize.theSynthesizedParams)
+            theMidgetRGCmosaic.visualizeSynthesizedParams();
+        end
+        
+        if (visualize.theMRGConeWeights)
+            theMidgetRGCmosaic.visualizeConeWeights();
+        end
+        
         optics = 'polans';
         if (strcmp(optics, 'default'))
             % Generate default optics
@@ -108,11 +118,17 @@ function testMRGCmosaic
                     'noLCA', ~true, ...
                     'subtractCentralRefraction', true);
         end
-        
+            
         for iSF = 1:numel(examinedSFs)
-        
             fprintf('Computing spatial frequency data %d of %d\n', iSF, numel(examinedSFs));
-   
+            
+            % Stimulus size: cover a little more than the cone mosaic
+            maxEccDegs = max(mosaicEccDegs ) + max(0.5*mosaicSizeDegs);
+            extraDegsForRGCSurround = 2.0 * ...
+                RGCmodels.CronerKaplan.constants.surroundCharacteristicRadiusFromFitToPandMcells(maxEccDegs);
+            stimFOVdegs = max(mosaicSizeDegs) + 2.0*extraDegsForRGCSurround;
+    
+    
             % Instantiate a scene engine for drifting gratings
             driftingGratingSceneEngine = createGratingScene(chromaDir, examinedSFs(iSF), ...
                 'duration', stimulusDurationSeconds, ...
@@ -129,7 +145,9 @@ function testMRGCmosaic
             [theDriftingGratingSequence, theStimulusTemporalSupportSeconds] = driftingGratingSceneEngine.compute(stimContrast);
 
             % Visualize the drifting grating sequence
-            driftingGratingSceneEngine.visualizeSceneSequence(theDriftingGratingSequence, theStimulusTemporalSupportSeconds);
+            if (visualize.theScene)
+                driftingGratingSceneEngine.visualizeSceneSequence(theDriftingGratingSequence, theStimulusTemporalSupportSeconds);
+            end
             
             % Compute the sequence of optical images corresponding to the drifting grating
             framesNum = numel(theDriftingGratingSequence);
@@ -146,11 +164,17 @@ function testMRGCmosaic
             emPaths = zeros(instancesNum, eyeMovementsNum, 2);
         
             % Compute cone mosaic responses
+            currentFlag = false;
             theConeMosaicResponses = theConeMosaic.computeForOISequence(theOIsequence, ...
                 'emPaths', emPaths, ...   % the emPaths
-                'currentFlag', false ...  % no photocurrent
+                'currentFlag', currentFlag ...  % no photocurrent
             );
-    
+            if (currentFlag == false)
+                coneMosaicResponseType = 'excitations';
+            else
+                coneMosaicResponseType = 'photocurrents';
+            end
+            
             % Compute the mRGC mosaic responses
             [theMRGCMosaicResponses, temporalSupportSeconds] = theMidgetRGCmosaic.compute( ...
                     theConeMosaicResponses, theConeMosaic.timeAxis);
@@ -164,12 +188,16 @@ function testMRGCmosaic
                 );
             
             % Visualize responses
-%             theMidgetRGCmosaic.visualizeResponses(temporalSupportSeconds, ...
-%                 theMRGCMosaicResponses, ...
-%                 'stimulusTemporalSupportSeconds', theStimulusTemporalSupportSeconds,...
-%                 'stimulusSceneSequence', theDriftingGratingSequence, ...
-%                 'opticalSequence', theOIsequence, ...
-%                 'coneMosaicResponse', theConeMosaicResponses);
+            if (visualize.theMRCresponses)
+                theMidgetRGCmosaic.visualizeResponses(temporalSupportSeconds, ...
+                    theMRGCMosaicResponses, ...
+                    'stimulusTemporalSupportSeconds', theStimulusTemporalSupportSeconds,...
+                    'stimulusSceneSequence', theDriftingGratingSequence, ...
+                    'opticalSequence', theOIsequence, ...
+                    'coneMosaicResponse', theConeMosaicResponses, ...
+                    'coneMosaicResponseType', coneMosaicResponseType);
+            end
+            
     
         end % iSF
         
@@ -187,9 +215,13 @@ function testMRGCmosaic
             'chromaDir', 'stimContrast', ...
             'neuralPipelineResponses');
         % Plot results
-        plotSpatialTransferFunction(theMidgetRGCmosaic, neuralPipelineResponses, ...
-                examinedSFs, temporalFrequencyHz, ...
-                chromaDir, stimContrast);
+        
+        if (visualize.theSpatialTransferFunctions)
+            plotSpatialTransferFunction(theMidgetRGCmosaic, neuralPipelineResponses, ...
+                    examinedSFs, temporalFrequencyHz, ...
+                    chromaDir, stimContrast);
+        end
+        
     end
 end
 
