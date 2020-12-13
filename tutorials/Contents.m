@@ -3,6 +3,7 @@
 % Tutorial scripes for isetbio. These are intended to be one our main forms of documentation.
 % They illustrate how to do key things in isetbio.
 %
+% t_adaptiveOptics              - Show how to do some things needed for modeling AO experiments
 % t_bipolar                     - Bipolar cell models.
 % t_code                        - Illustrate how to code some basic things in Matlab, not directly related biological modeling. 
 % t_color                       - Colorimetric calculations.              
