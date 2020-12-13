@@ -8,14 +8,14 @@
 %   way, spectral corneal irradiance is computed (and then just summed over
 %   wavelength).
 %
-% Require
-%   tbUse('Psychtoolbox-3');
+% Require:
+%   tbUse('Psychtoolbox-3') or tbUse('isetbio')
 
 % History:
 %    12/13/20  dhb  Added some comments.
 
 % Clear
-clear all;
+clear; close all;
 
 % Define wavelength spacing.  Use 1 nm spacing
 % so that values are per nm.
