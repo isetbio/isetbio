@@ -18,8 +18,9 @@ classdef Macular < hiddenHandle
 %    This should help to keep the relationship between entities straight.
 %
 %    Density is the estimated (average) peak density of the pigment across
-%    a variety of observers.  They estimate the average (across observers)
-%    peak density to be 0.28, with a range of 0.17 to 0.48.
+%    a variety of observers.  One estimate of the average (across
+%    observers) peak density to be 0.28, with a range of 0.17 to 0.48.  Our
+%    default is 0.35, matching that of the underlying data file from CVRL.
 %
 %    Useful formulae
 %       Absorbance spectra are normalized to a peak value of 1.
@@ -44,6 +45,10 @@ classdef Macular < hiddenHandle
 % History:
 %    xx/xx/16  HJ   ISETBIO TEAM, 2016
 %    02/15/18  jnm  Formatting
+%    12/13/20  dhb  Fix code for specifying custom density.  Need to save
+%                   its wavelength support and need to store in variable
+%                   with unitDensity_, not unitDensity as was written.
+%                   Improve comments as well.
 
 % Examples:
 %{
@@ -102,8 +107,15 @@ methods  % public methods
         %    obj - The created photo pigment object
         %
         % Optional key/value pairs:
-        %    None.
-        %
+        %    wave        - Vector. The wavelengths. Default 400:10:700.
+        %    density     - Numeric. The density. Default 1. unitDensity -
+        %    unitDensity - Numeric. The unit density. Default [], which reads the
+        %                  densities from lensDensity.mat.  If this is passed,
+        %                  should be on same wavelength support as wave.  (We
+        %                  could adjust code to allow the two wavelength
+        %                  supports to to differ, if there was a need to.)
+        %    name        - String. The lens name. Default 'human lens'.
+            
         p = inputParser;
         p.addParameter('wave', 400:10:700, @isnumeric);
         p.addParameter('density', 0.35, @isscalar);
@@ -113,14 +125,21 @@ methods  % public methods
 
         % set properties
         obj.wave = p.Results.wave(:);
-        obj.wave_ = (390:830)';
         obj.density = p.Results.density;
 
         if isempty(p.Results.unitDensity)
+            % The magic number 0.3521 is the maximum value in the file
+            % being read, so dividing it out gives normalized ("unit")
+            % density in the private variable we compute from.  This gets
+            % put back when we compute "spectral" density, as the default
+            % value for that is 0.35.  (Well, we lose the 0.0021 through
+            % all this, but OK.)
+            obj.wave_ = (390:830)';
             obj.unitDensity_ = ieReadSpectra('macularPigment.mat', ...
                 obj.wave_) / 0.3521;
         else
-            obj.unitDensity = p.Results.unitDensity;
+            obj.wave_ = p.Results.wave;
+            obj.unitDensity_ = p.Results.unitDensity;
         end
     end
 

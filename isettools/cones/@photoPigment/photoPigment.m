@@ -155,7 +155,6 @@ methods  % public methods
 
         % set object properties
         obj.wave = p.Results.wave(:);
-        obj.wave_ = (390:830)';
         obj.opticalDensity = p.Results.opticalDensity(:);
         obj.peakEfficiency = p.Results.peakEfficiency(:);
 
@@ -167,10 +166,12 @@ methods  % public methods
         % If absorbance is not specified, we obtain it using the defaults
         % of coneAbsorbanceReadData. 
         if isempty(p.Results.absorbance)
+            obj.wave_ = (390:830)';
             obj.absorbance_ = coneAbsorbanceReadData(p.Unmatched, ...
                 'wave', obj.wave_);
         else
-            obj.absorbance = p.Results.absorbance;
+            obj.wave_ = p.Results.wave;
+            obj.absorbance_ = p.Results.absorbance;
         end
     end
 
@@ -350,27 +351,51 @@ methods  % public methods
     end
 
     % set method for dependent variable
-    function set.absorbance(obj, val)
+    function set.absorbance(obj, val, varargin)
         % Set the photo pigment object's absorbance value
         %
         % Syntax:
         %   obj = set.absorbance(obj, val)
         %
         % Description:
-        %    Set the photo pigment's absorbance value
+        %    Set the photo pigment's absorbance spectrum.  Setting this
+        %    overrides 
         %
         % Inputs:
         %    obj - The photoPigment object
-        %    val - The absorbance value to set
+        %    val - The absorbance value to set.  Should be on
+        %          same wavelength spacing as the object's wavelength
+        %          sampling (wave, not wave_).  Could add a key value pair
+        %          to allow passing of the wavelength support being passed.
+        %          The passed values are clipped to range 0 to 1.
         %
         % Outputs:
         %    None.
         %
         % Optional key/value pairs:
-        %    None.
+        %    'wave'     - Wavelength support of passed absorbance.  If not
+        %                 passed, this is assumed to be the objects 'wave' 
+        %                 support, and the absorbance is interpolated to the object's
+        %                 'wave_' support.  This is set when the object is
+        %                 created, and by default is 390:830. If it is
+        %                 passed, then the object's 'wave_' support is
+        %                 changed to the passed value.
         %
-        obj.absorbance_ = interp1(obj.wave, val, obj.wave_, ...
-            'linear', 'extrap');
+        
+        p = inputParser;
+        p.KeepUnmatched = true;
+        p.addParameter('wave', [], @isnumeric);
+        p.parse(varargin{:});
+        
+        if (isempty(p.Results.wave))
+            obj.absorbance_ = interp1(obj.wave, val, obj.wave_, ...
+                'linear', 'extrap');
+        else
+            obj.absorbance = val;
+            obj.wave_ = p.Results.wave;
+        end
+        
+        % Clip into reasonable range
         obj.absorbance_ = ieClip(obj.absorbance_, 0, 1);
     end
 end
