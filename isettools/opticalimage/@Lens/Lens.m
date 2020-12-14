@@ -48,6 +48,10 @@ classdef Lens < handle
 %    xx/xx/13  HJ/BW  ISETBIO Team 2013.
 %    03/05/18  jnm    Formatting
 %    07/02/19  JNM    Formatting update
+%    12/13/20  dhb    Fix code for specifying custom density.  Need to save
+%                     its wavelength support and need to store in variable
+%                     with unitDensity_, not unitDensity as was written.
+%                     Improve comments as well.
 
 % Examples:
 %{
@@ -119,8 +123,12 @@ methods  % public methods
     %
     % Optional key/value pairs:
     %    wave        - Vector. The wavelengths. Default 400:10:700.
-    %    density     - Numeric. The density. Default 1.
-    %    unitDensity - Numeric. The unit density. Default [].
+    %    density     - Numeric. The density. Default 1. unitDensity -
+    %    unitDensity - Numeric. The unit density. Default [], which reads the
+    %                  densities from lensDensity.mat.  If this is passed,
+    %                  should be on same wavelength support as wave.  (We
+    %                  could adjust code to allow the two wavelength
+    %                  supports to to differ, if there was a need to..
     %    name        - String. The lens name. Default 'human lens'.
     %
 
@@ -137,14 +145,15 @@ methods  % public methods
 
     % set properties
     obj.wave = p.Results.wave(:);
-    obj.wave_ = (390:830)';
     obj.density = p.Results.density;
 
     if isempty(p.Results.unitDensity)
+        obj.wave_ = (390:830)';
         obj.unitDensity_ = ieReadSpectra('lensDensity.mat', ...
             obj.wave_);
     else
-        obj.unitDensity = p.Results.unitDensity;
+        obj.wave_ = p.Results.wave;
+        obj.unitDensity_ = p.Results.unitDensity;
     end
     end
 
