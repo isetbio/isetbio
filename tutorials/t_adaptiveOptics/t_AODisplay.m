@@ -31,10 +31,10 @@ testWlNm = 830;                             % Wavelenght of monochromatic test s
 % If you have instead corneal irradiance in UW/mm^2 and this fills or overfills
 % the pupil, then multiply by pupil area in mm^2 to get the power entering the eye. 
 %
-% This code assumes that the power for both background is spread out over
-% the background area. This is because typically we measure power for the
-% whole raster, and then in an experiment switch it off for part of the
-% time to make the spatial pattern we want.
+% This code assumes that the power for both background and test is spread
+% out over the background area. This is because typically for an AOSLO we
+% measure power for the whole raster, and then in an experiment switch it
+% off for part of the time to make the spatial pattern we want.
 %
 % The test should be specified as the amount of power added to
 % the background (its incremental power).  This is what you'll get if
@@ -133,6 +133,22 @@ wvfP = wvfComputePSF(wvfP);
 % Generate optical image object from the wavefront object
 theOI = wvf2oi(wvfP);
 
+
+% You could adjust lens density if you don't like the default values for
+% the very long wavelengths used here.  But, the default density at long
+% wavelengths is zero, which is probably what you want. Change the values
+% in variables lensUnitDensity0 and lensPeakDensity0 to do this to do this.
+% The values in the unit density variable are multiplied by the scalar in
+% the density variable to get the spectral density, and from thence the
+% transmittance.
+%
+% Note that this code is not highly tested, but it runs without crashing.
+lens0 = oiGet(theOI,'lens');
+lensUnitDensity0 = lens0.unitDensity;
+lensDensity0 = lens0.density;
+lens1 = Lens('wave',wls,'unitDensity',lensUnitDensity0,'density',lensDensity0);
+theOI = oiSet(theOI,'lens',lens1);
+
 % Set some properties of the object, mainly to show how we
 % extract, set, and put this back.
 opticsP = oiGet(theOI, 'optics');
@@ -166,6 +182,21 @@ cMosaic = coneMosaicHex(resamplingFactor , ...
     'maxGridAdjustmentIterations',200, ...
     'integrationTime', integrationTimeSecs, ...
     'fovDegs', [1.2*backgroundSizeDegs 1.2*backgroundSizeDegs]);
+
+% Adjust components that determine cone spectral sensitivity
+%
+% Macular density.  Parallels adjustment of lens density in the optical
+% image above.  See comments there.
+macular0 = cMosaic.macular;
+macularUnitDensity0 = macular0.unitDensity; 
+macularDensity0 = macular0.density;
+macular1 = Macular('wave',wls','unitDensity',macularUnitDensity0,'density',macularDensity0);
+cMosaic.macular = macular1;
+
+% Adjust photopigment densities
+photopigment0 = cMosaic.pigment;
+absorbance0 = photopigment0.absorbance;
+peakOpticalDensity0 = photopigment0.opticalDensity;
 
 % Eye movement path.  Here, just one time point and no motion.
 nTrialsNum = 1;
