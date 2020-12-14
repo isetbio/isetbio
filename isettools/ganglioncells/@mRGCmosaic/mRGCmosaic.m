@@ -79,7 +79,7 @@ classdef mRGCmosaic < handle
             p = inputParser;
             p.addRequired('eccentricityDegs', @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addRequired('sizeDegs', @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addRequired('whichEye', @(x)(ischar(x) && (ismember(x, {'left', 'right'}))));
+            p.addRequired('whichEye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('viewTesselationMaps', false, @islogical);
             p.addParameter('coneSpecificityLevel', 100, @(x)(isscalar(x) && (x>=0) && (x<=100)));
             
