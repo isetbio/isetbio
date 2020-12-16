@@ -2,18 +2,20 @@ function density = eccDensity(eccDeg)
 % Compute macular pigment optical density as function of eccentricity
 %
 % Syntax:
-%	density = macularDensity(eccDeg);
+%	density = eccDensity(eccDeg);
 %
 % Description:
 %    Compute the macular pigment's peak optical density as a function of
 %    its eccentricity.
 %
+%    This currently has foveal peak optical density hard coded at 0.35.
+%
 % Inputs:
 %    eccDeg   - eccentricity in degrees.  May be a vector.
 %
 % Outputs:
-%	 density  - macular pigment optical density, one entry for every entry
-%	            of the input.
+%	 density  - macular pigment peak optical density, one entry for every
+%	            entry of the input.
 %
 % Notes:
 %   1) Macular pigment density is roughly symmetric and thus we
@@ -29,10 +31,20 @@ function density = eccDensity(eccDeg)
 %   241-245.
 %
 
+% History:
+%   xx/xx/xx  npc  Wrote it.
+%   12/15/20  dhb  Moved into its own file so we can get help on it.
+
+% Examples:
+%{
+    Macular.eccDensity(5)
+%}
+
 % Compute density with the lorentz function 
 % 
 % Here, we force the model to be symmetric and have 0 density
-% at infinite eccentricity
+% at infinite eccentricity. The peak density is taken according to the
+% current default value in Macular object, 0.35.
 density = 0.35 * 3.6028 ./ (eccDeg .^ 2 + 3.6028);
 
-end
+
