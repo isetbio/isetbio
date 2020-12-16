@@ -8,19 +8,18 @@ classdef photoPigment < hiddenHandle
 %    This class contains properties for the photopigment absorption
 %    properties of a single cone cell. 
 %
-%    For the full cone mosaic, see the coneMosaic class
+%    For the full cone mosaic, see the coneMosaic and coneMosaicHex
+%    classes.
 %
 %    Most of the terms represented here are descriptions of the
 %    photopigment itself. In addition, there are a few terms the
 %    capture the effective optical size of the photopigment absorption.
 %
 %    Default parameters are determined by underlying routines that get
-%    the required data types. Unmatched key/value pairs passed to
-%    photoPigment are passed on to the underlying routines and can be
+%    the required data. Unmatched key/value pairs passed to
+%    photoPigment are passed on to some underlying routines and can be
 %    used to adjust the parameters obtained. See help for each routine
 %    for what the available key/value pairs are.
-%
-%         absorbance    coneAbsorbanceReadData
 %
 % Input:
 %	 None required.
@@ -30,7 +29,7 @@ classdef photoPigment < hiddenHandle
 %   
 % Optional key/value pairs:
 %	 'wave'           - Vector of wavelengths in nm (400:10:31).
-%    'opticalDensity' - Three vector of optical densities for L, M and
+%    'opticalDensity' - Three vector of peak optical densities for L, M and
 %                       S cone photopigment. Default: [0.5 0.5 0.4].
 %    'absorbance'     - L, M and S cone absorbance spectra. Default
 %                       empty, in which case these are obtained through
@@ -50,7 +49,7 @@ classdef photoPigment < hiddenHandle
 %      to have both.]
 %
 % See Also:
-%    t_conePhotoPigment, coneMosaic, Macular, lens
+%    t_conePhotoPigment, cPhotoPigment, coneMosaic, Macular, Lens
 %
 
 % History:
@@ -119,27 +118,6 @@ end
 methods  % public methods
     % constructor
     function obj = photoPigment(varargin)
-        % Initialize defaults for photoPigments parameters
-        %
-        % Syntax:
-        %   obj = photoPigment([varargin]);
-        %
-        % Description:
-        %    Initialize the default values for the public properties: wave
-        %    (400:10:700), opticalDensity ([.5 .5 .4]), absorbance ([]),
-        %    peakEfficiency ([2 2 2]/3), width (2e-6), height (2e-6),
-        %    pdWidth (2e-6), and pdHeight (2e-6). And then for the
-        %    dependent and private object properties.
-        %
-        % Inputs:
-        %    None required.
-        %
-        % Outputs:
-        %    obj - The created photo pigment object
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
         p = inputParser;
         p.KeepUnmatched = true;
         p.addParameter('wave', 400:10:700, @isnumeric);
@@ -150,7 +128,6 @@ methods  % public methods
         p.addParameter('height', 2e-6, @isnumeric);
         p.addParameter('pdWidth', 2e-6, @isnumeric);
         p.addParameter('pdHeight', 2e-6, @isnumeric);
-
         p.parse(varargin{:});
 
         % set object properties
@@ -365,38 +342,19 @@ methods  % public methods
         %    obj - The photoPigment object
         %    val - The absorbance value to set.  Should be on
         %          same wavelength spacing as the object's wavelength
-        %          sampling (wave, not wave_).  Could add a key value pair
-        %          to allow passing of the wavelength support being passed.
-        %          The passed values are clipped to range 0 to 1.
+        %          sampling (wave, not wave_). The passed values are
+        %          clipped to range 0 to 1.
         %
         % Outputs:
         %    None.
         %
         % Optional key/value pairs:
-        %    'wave'     - Wavelength support of passed absorbance.  If not
-        %                 passed, this is assumed to be the objects 'wave' 
-        %                 support, and the absorbance is interpolated to the object's
-        %                 'wave_' support.  This is set when the object is
-        %                 created, and by default is 390:830. If it is
-        %                 passed, then the object's 'wave_' support is
-        %                 changed to the passed value.
+        %    None.
         %
         
-        p = inputParser;
-        p.KeepUnmatched = true;
-        p.addParameter('wave', [], @isnumeric);
-        p.parse(varargin{:});
-        
-        if (isempty(p.Results.wave))
-            obj.absorbance_ = interp1(obj.wave, val, obj.wave_, ...
-                'linear', 'extrap');
-        else
-            obj.absorbance = val;
-            obj.wave_ = p.Results.wave;
-        end
-        
-        % Clip into reasonable range
-        obj.absorbance_ = ieClip(obj.absorbance_, 0, 1);
+        % Set
+        obj.absorbance_ = val;
+        obj.wave_ = p.Results.wave;
     end
 end
 

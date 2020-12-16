@@ -19,11 +19,9 @@ classdef cPhotoPigment < hiddenHandle
 %
 %    Default parameters are determined by underlying routines that get
 %    the required data types. Unmatched key/value pairs passed to
-%    photoPigment are passed on to the underlying routines and can be
+%    photoPigment are passed on to some underlying routines and can be
 %    used to adjust the parameters obtained. See help for each routine
 %    for what the available key/value pairs are.
-%
-%         absorbance    coneAbsorbanceReadData
 %
 % Input:
 %	 None required.
@@ -43,7 +41,7 @@ classdef cPhotoPigment < hiddenHandle
 %    'diameter'       - Diameter of the light collecting aperture Default 2e-6.
 %
 % See Also:
-%   cMosaic, Macular, lens
+%   photoPigment, cMosaic, Macular, Lens
 %
 
 % History:
@@ -93,25 +91,7 @@ end
 methods  % public methods
     % constructor
     function obj = cPhotoPigment(varargin)
-        % Initialize defaults for photoPigments parameters
-        %
-        % Syntax:
-        %   obj = photoPigment([varargin]);
-        %
-        % Description:
-        %    Initialize the default values for the public properties: wave
-        %    (400:10:700), opticalDensity ([.5 .5 .4]), absorbance ([]),
-        %    peakEfficiency ([2 2 2]/3), diameter (2e-6)
-        %
-        % Inputs:
-        %    None required.
-        %
-        % Outputs:
-        %    obj - The created photo pigment object
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
+
         p = inputParser;
         p.KeepUnmatched = true;
         p.addParameter('wave', 400:10:700, @isnumeric);
@@ -282,6 +262,7 @@ methods  % public methods
         % Optional key/value pairs:
         %    None.
         %
+        
         obj.absorbance_ = interp1(obj.wave, val, obj.wave_, ...
             'linear', 'extrap');
         obj.absorbance_ = ieClip(obj.absorbance_, 0, 1);

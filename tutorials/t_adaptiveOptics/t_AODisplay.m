@@ -139,11 +139,14 @@ theOI = wvf2oi(wvfP);
 % wavelengths is zero, which is probably what you want. Change the values
 % in variables lensUnitDensity0 and lensPeakDensity0 to do this to do this.
 % The values in the unit density variable are multiplied by the scalar in
-% the density variable to get the spectral density, and from thence the
-% transmittance.
+% the density variable to get the overall spectral density, and from thence the
+% transmittance.  See "help Lens".
 %
 % Note that this code is not highly tested, but it runs without crashing.
 lens0 = oiGet(theOI,'lens');
+if (any(lens0.wave ~= wls))
+    error('Wavelengths in Lens object are not as expected');
+end
 lensUnitDensity0 = lens0.unitDensity;
 lensDensity0 = lens0.density;
 lens1 = Lens('wave',wls,'unitDensity',lensUnitDensity0,'density',lensDensity0);
@@ -186,8 +189,11 @@ cMosaic = coneMosaicHex(resamplingFactor , ...
 % Adjust components that determine cone spectral sensitivity
 %
 % Macular density.  Parallels adjustment of lens density in the optical
-% image above.  See comments there.
+% image above.  See comments there and also "help Macular".
 macular0 = cMosaic.macular;
+if (any(macular0.wave ~= wls))
+    error('Wavelengths in Macular object are not as expected');
+end
 macularUnitDensity0 = macular0.unitDensity; 
 macularDensity0 = macular0.density;
 macular1 = Macular('wave',wls','unitDensity',macularUnitDensity0,'density',macularDensity0);

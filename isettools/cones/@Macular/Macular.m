@@ -98,10 +98,9 @@ classdef Macular < hiddenHandle
     peripheralDensity = macobj.eccDensity(5);
 %}
 %{
-    % Plot the underlying absorbance used to interpolate out to wavelength
-    % support in property wave.
+    % Get and plot macular absorbance
     macobj = Macular;
-    figure; plot(macobj.wave_,macobj.unitDensity_);
+    figure; plot(macobj.wave,macobj.unitDensity);
 
     % Set macular pigment absorbance to all ones. 
     % This gets set on the underlying wave
@@ -190,7 +189,7 @@ methods  % public methods
             % wavelength spacing in the wave_ property, and store it on
             % this spacing for splining out on read.
             obj.wave_ = obj.wave;
-            obj.unitDensity_ = p.Results.unitDensity_;
+            obj.unitDensity_ = p.Results.unitDensity;
         end
     end
 
@@ -323,7 +322,7 @@ methods  % public methods
         % This would be better clipping to 0,1 after tighter checks above,
         % but not doing so to avoid breaking validtion files.
         val = max(val,0);
-        obj.unitDensity_ = minterp1(...
+        obj.unitDensity_ = interp1(...
                 obj.wave, val, obj.wave_, 'pchip');
     end
     
