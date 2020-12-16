@@ -2,30 +2,56 @@ classdef Lens < handle
 % Class for human lens pigment properties
 %
 % Syntax:
-%   lens = LENS()
+%   obj = Lens;
 %
 % Description:
-%    Creates a lens object whose public properties are the name, wave, and
-%    lens pigment density.
+%    Creates a lens object to describe absrobance etc. properties of the
+%    human lens.
 %
-%    The lens object stores the calibrated lens pigment density values in
-%    private variables (obj.wave_ and obj.unitDensity_). These values are
-%    taken from the PsychToolbox and/or the Stockman site. Go to
-%    http://cvision.ucsd.edu, then click on Prereceptoral filters.
+%    The lens object stores the lens pigment density values in
+%    private variables (obj.wave_ and obj.unitDensity_).
 %
-%    Other values, such as absorbance, absorptance and transmittance, are
-%    derived from the stored wave_ and unitDensity_ parameters.
+%    obj.density is the peak optical density (sometimes just called optical
+%    density).  This number multiplies the unit density (absorbance)
+%    property when either is used, so the two quantities need to be
+%    interpretted together. Often one follows the convention that unit
+%    density is normalized to a max of 1, but that is not done everywhere
+%    and is not done in this object for historical reasons.
 %
-%    Useful factoids:
-%     * Absorbance spectra are normalized to a peak value of 1.
-%     * Absorptance spectra are the proportion of quanta actually absorbed.
+%    obj.unitDensity is the absorbance spectrum, normalized to a peak value
+%    of 1. It is called unit density for historical reasons.
 %
-%    Equations:
-%         absorptanceSpectra = 1 - 10 .^ (-OD * absorbanceSpectra)
-%         transmittance      = 1 - absorptance
+%    obj.absorbtance is the absorbtance spectrum.
 %
-%    There are examples contained in the code. To access, type 'edit
-%    lens.m' into the Command Window.
+%    obj.transmittance is the transmission spectrum.
+%
+%    The absorbance data that drive this routine are stored on wavelength
+%    support in property wave_ in property unitDensity_.  Typically this is set to a
+%    large wavelength support and then interpolated onto the support in
+%    propety wave.  You can set unitDensity_ after the object is
+%    instantiaed, but you can't change wave_.  When you set unitDensity_,
+%    it should be on wavelength support wave_.
+%
+%    Useful formulae:
+%       Absorbance spectra are normalized to a peak value of 1. In this
+%       routine, for historical reasons, absorbance is called unitDensity.
+%
+%       Absorptance spectra are the proportion of quanta actually absorbed.
+%       This is the term used in this routine.
+%       
+%       Equation: absorptance = 1 - 10.^(-opticalDensity * absorbance).  In
+%       this routine, again for historical reasons, opticalDensity is just
+%       called density.  In the literature, this is sometimes called peak
+%       optical density.
+%
+%       Transmittance is 1-absorbtance, the amount of light that passes
+%       through the pigment.  Alternately, you can compute
+%       transmittance = 10.^(-opticalDensity * absorbance) and
+%       absorbtance as = 1-transmittance.
+%
+%    The default macular density absorbance was obtained from an old Stockman
+%    site, but should match that at the new Stockman site (cvrl.org) and
+%    those in the Psychtoolbox.
 %
 % Inputs:
 %    None required.
@@ -37,8 +63,11 @@ classdef Lens < handle
 %    name        - String. The name for this object, default 'human lens'.
 %    wave        - Vector. The wavelength samples.
 %    density     - Numeric. The lens pigment density, default 1.
-%    unitDensity - File. The lens pigment spectral density. Default is from
-%                  Stockman, saved in the file 'lensDensity.mat'.
+%    unitDensity - Numeric. The unit density. Default [], which reads the
+%                  densities from lensDensity.mat and sets wave_ to the native
+%                  wavelenght support of that file, 390:830. If passed,
+%                  should be on same wavelength support as wave, and the
+%                  wave_ property is set to wave.
 %
 % See Also:
 %   opticsGet, opticsSet
@@ -48,20 +77,17 @@ classdef Lens < handle
 %    xx/xx/13  HJ/BW  ISETBIO Team 2013.
 %    03/05/18  jnm    Formatting
 %    07/02/19  JNM    Formatting update
-%    12/13/20  dhb    Fix code for specifying custom density.  Need to save
-%                     its wavelength support and need to store in variable
-%                     with unitDensity_, not unitDensity as was written.
-%                     Improve comments as well.
+%    12/13/20  dhb    Comments and code cleaning.
 
 % Examples:
 %{
-    lens = Lens();
+    lens = Lens;
 %}
 %{
     thisLens = Lens('wave', 400:10:700, 'density', 1, 'name', 'my lens');
 %}
 %{
-    lens = Lens();
+    lens = Lens;
     t = lens.transmittance;
     a = lens.absorptance;
     vcNewGraphWin;
@@ -108,42 +134,17 @@ methods  % public methods
     % constructor
     function obj = Lens(varargin)
     % Lens constructor. See above for more information.
-    %
-    % Syntax:
-    %   obj = Lens([varargin])
-    %
-    % Description:
-    %    The lens constructor. See the Header comment for information.
-    %
-    % Inputs:
-    %    None required.
-    %
-    % Outputs:
-    %    obj         - Object. A Lens object.
-    %
-    % Optional key/value pairs:
-    %    wave        - Vector. The wavelengths. Default 400:10:700.
-    %    density     - Numeric. The density. Default 1. unitDensity -
-    %    unitDensity - Numeric. The unit density. Default [], which reads the
-    %                  densities from lensDensity.mat.  If this is passed,
-    %                  should be on same wavelength support as wave.  (We
-    %                  could adjust code to allow the two wavelength
-    %                  supports to to differ, if there was a need to..
-    %    name        - String. The lens name. Default 'human lens'.
-    %
-
+    
     % parse input
     p = inputParser;
     p.addParameter('wave', 400:10:700, @isnumeric);
     p.addParameter('density', 1, @isscalar);
     p.addParameter('unitDensity', [], @isnumeric);
     p.addParameter('name', 'human lens', @isstr);
-
     p.parse(varargin{:});
 
-    obj.name = p.Results.name;
-
     % set properties
+    obj.name = p.Results.name;
     obj.wave = p.Results.wave(:);
     obj.density = p.Results.density;
 
