@@ -6,20 +6,96 @@ classdef photoPigment < hiddenHandle
 %
 % Description:
 %    This class contains properties for the photopigment absorption
-%    properties of a single cone cell. 
+%    properties of a single cone cell. For the full cone mosaic, see the
+%    coneMosaic and coneMosaicHex classes.
 %
-%    For the full cone mosaic, see the coneMosaic and coneMosaicHex
-%    classes.
+%    Our understanding of the terminology and best conventions for
+%    describing this type of data has evolved over time, and the property
+%    names differ somewhat from the conventions we would adopt today.
+%    Changing tne names in the code will produce backwards compatibility
+%    issues, however, so we have done our best to comment and explain here.
 %
 %    Most of the terms represented here are descriptions of the
 %    photopigment itself. In addition, there are a few terms the
 %    capture the effective optical size of the photopigment absorption.
 %
-%    Default parameters are determined by underlying routines that get
-%    the required data. Unmatched key/value pairs passed to
-%    photoPigment are passed on to some underlying routines and can be
-%    used to adjust the parameters obtained. See help for each routine
-%    for what the available key/value pairs are.
+%    obj.absorbance is the absorbance spectra of the L, M, and S cones, each
+%    normalized to a peak value of 1. Values are in the columns, with a separate
+%    column for L, M and S. The column-wise arrangement applies to this and to 
+%    the other L, M, and S spectra below. This quantity is called obj.unitDensity
+%    in the Lens and Macular objects, and in the Lens object it is not normalized.
+%    The normalization to peak of 1 is just a convention, the quantity that
+%    matters is the product obj.opticalDensity*ojb.absorbance, and there are
+%    those who might call that product the absorbance.
+%
+%    obj.opticalDensity is the peak optical density (sometimes just called optical
+%    density). The interpretation as peak optical density depends on the
+%    convention followed here of normlizing obj.absorbance to a peak of 1.
+%    There are three entries to this vector, one each for the L, M, and S
+%    cones.
+%
+%    obj.peakEfficiency is the probability that a photopigment absorption leads
+%    to an isomerization.  There are three entries to this vector, one each for the L,
+%    M, and S cones.  This property is unfortunatley named, as is it isn't the
+%    peak of anything.
+%
+%    obj.absorptance is the absorptance spectrum.  This tells us the
+%    probability that a photon of a given wavelength is absorbed as it
+%    passes through a layer of photopigment with total absorbance given
+%    by obj.opticalDensity*ojb.absorbance.
+%
+%    obj.quantalEfficiency. These are the actual quantal efficiences with
+%    which an incident photon causes an isomerization.  Obtained by
+%    multiplying obj.absorptance by the quantal efficiency
+%    obj.peakEfficiency.  These are at the cone, and do not take into
+%    account effect of lens or macular pigment, nor of cone collecting
+%    area.  This is true of the fundamentals below.
+% 
+%    obj.quantaFundamentals are nomalized (each to a peak of 1) fundamentals
+%    of the L, M, and S cones, in quantal units. These really shouldn't be
+%    used for anything other than perhaps making a plot of the relative
+%    shapes of the photopigment action spectra expressed in quantal units.
+%    The term cone fundamentals usually is takent to mean cone
+%    sensitivities expressed relative to light entering the eye ("at the
+%    cornea"), which these are not.  They are also not in any useful units,
+%    because of the normalization.
+%
+%    obj.energyFundamentals. Same as obj.quantaFundamentals, but in energy
+%    units. As with obj.quantaFundamentals, these are not in useful units
+%    because they begin with the normalized obj.quantaFundamentals.  So,
+%    possibly of interest for seeing the shape of the function, but not
+%    anything one should be encouraged to use.
+%
+%    Useful formulae:
+%       Absorbance spectra here are normalized to a peak value of 1, and
+%       then scaled by optical density to get the not normalized
+%       absorbance.
+%
+%       Absorptance spectra are the proportion of quanta actually absorbed.
+%       This is the term used in this routine.
+%       
+%       Equation: absorptance = 1 - 10.^(-opticalDensity * absorbance).  In
+%       this routine, again for historical reasons, opticalDensity is just
+%       called density.  In the literature, this is sometimes called peak
+%       optical density.
+%
+%       The absorptance
+%
+%    The absorbance data that drive this routine are stored on wavelength
+%    support in property wave_ in property absorbance.  Typically wave_ is
+%    set to a large wavelength support and then interpolated onto the
+%    support in propety wave.  You can set absorbance after the object is
+%    instantiated, but you can't change wave_.  When you set absorbance, it
+%    should be on wavelength support wave, and it is splined onto the
+%    wavelength support in wave_ before being stored in obj.absorbance.
+%    Note that this design does not prevent you from setting absorbance on
+%    wavelength support very different from that being previously used to
+%    store the data, which could lead to extrapolation errors.  To avoid
+%    this, if you want to use custom data, you may be better off creating
+%    the object with the desired data on the wavelength support you intend
+%    to use. That said, the default values are read in and stored on wave_
+%    support of 390:830 at 1 nm spacing, which is good for most
+%    applications.
 %
 % Input:
 %	 None required.
@@ -34,7 +110,7 @@ classdef photoPigment < hiddenHandle
 %    'absorbance'     - L, M and S cone absorbance spectra. Default
 %                       empty, in which case these are obtained through
 %                       routine coneAbsorbanceReadData.
-%    'peakEfficiency' - Peak quantal efficiency for isomerizations for
+%    'peakEfficiency' - Quantal efficiency for isomerizations for
 %                       L, M and S cones. Default [2 2 2]/3.
 %    'width'          - Cone width (including gap between cones) in
 %                       meters. Default 2e-6.
@@ -55,6 +131,7 @@ classdef photoPigment < hiddenHandle
 % History:
 %    xx/xx/16  HJ   ISETBIO Team, 2016
 %    02/15/18  jnm  Formatting
+%    12/18/20  dhb  Comments.  Add quantalEfficiency property.
 
 properties  % public properties
     % opticalDensity - photopigment optical densities for L, M, S
@@ -88,11 +165,21 @@ properties (Dependent)
     % absorptance - cone absorptance without ocular media
     absorptance;
 
-    % quantaFundamentals - normalized cone absorptance
+    % quantaFundamentals - normalized cone absorptance. Because of the
+    % normalization, not useful for actual calculation, only for examining
+    % the relative shape.
     quantaFundamentals;
 
-    % energyFundamentals - normalized cone absorption in energy units
+    % energyFundamentals - normalized cone absorptance converrted
+    % to energy units from the normalized obj.quantaFundamentals.
+    % Useful only for shape, because of the normalization.
     energyFundamentals;
+    
+    % quantalEfficiency - actual probability of isomerization in real
+    % quantal units. Gives the probability that an incident photon
+    % isomerizes photopigment. These are actually useful.  Does not take
+    % into account effect of inert pigments (lens, macular pigment).
+    quantalEfficiency;
 
     % area - The area of the object. Calculated by width * height
     area;
@@ -197,6 +284,27 @@ methods  % public methods
         val = 1 - 10 .^ (-obj.absorbance * diag(obj.opticalDensity));
     end
 
+    function val = get.quantalEfficiency(obj) % compute absorptance
+        % Retrieve photo pigment object's isomerization efficiency.
+        %
+        % Syntax:
+        %   obj = get.quantalEfficiency(obj)
+        %
+        % Description:
+        %    Retrieve the quantal efficiency from the photoPigment object obj
+        %
+        % Inputs:
+        %    obj - The photoPigment object
+        %
+        % Outputs:
+        %    val - The LMS quantal efficiencies for obj
+        %
+        % Optional key/value pairs:
+        %    None.
+        %
+        val = obj.absorptance*diag(obj.peakEfficiency);
+    end
+             
     function val = get.quantaFundamentals(obj)
         % compute and return quanta fundamentals
         %

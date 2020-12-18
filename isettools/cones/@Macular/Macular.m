@@ -10,34 +10,46 @@ classdef Macular < hiddenHandle
 %    than others. The pigment varies in density from central vision, where
 %    it is highest, to increasingly peripheral vision.
 %
-%    This class manages several measures of the macular pigment
-%    wavelength properties as a function of macular pigment density. 
-%
-%    The returned class object includes a variety of derived terms.
-%    This should help to keep the relationship between entities straight.
-%
-%    obj.density is the peak optical density (sometimes just called optical
-%    density) One estimate of the average (across observers) peak density
-%    ise 0.28, with a range of 0.17 to 0.48. Our default is 0.35, matching
-%    that of the underlying data file from CVRL.
+%    This class manages several measures of the macular pigment wavelength
+%    properties as a function of macular pigment density. Our understanding
+%    of the terminology and best conventions for describing this type of
+%    data has evolved over time, and the property names differ somewhat
+%    from the conventions we would adopt today. Changing tne names in the
+%    code will produce backwards compatibility issues, however, so we have
+%    done our best to comment and explain here.
 %
 %    obj.unitDensity is the absorbance spectrum, normalized to a peak value
 %    of 1. It is called unitDensity for historical reasons.  The
 %    normalization to peak of 1 is just a convention, the quantity that
-%    matters is the product density*unitDensity. We follow that convention
-%    approximately here.
+%    matters is the product obj.density*ojb.unitDensity.  Note that in
+%    other similar routines (e.g., Lens), we do not normalize the
+%    obj.unitDensity to a peak of 1.
 %
-%    obj.absorbtance is the absorbtance spectrum.
+%    obj.density is the peak optical density (sometimes just called optical
+%    density). The interpretation as peak optical density depends on the
+%    convention followed here of normlizing obj.unitDensity to a peak of 1.
+%    One estimate of the average (across observers) peak density ise 0.28,
+%    with a range of 0.17 to 0.48. Our default is 0.35, matching that of
+%    the underlying data file from CVRL.
+%
+%    obj.absorptance is the absorptance spectrum.
 %
 %    obj.transmittance is the transmission spectrum.
 %
 %    The absorbance data that drive this routine are stored on wavelength
-%    support in property wave_ in property unitDensity_. These are private
-%    properties. Typically wave_ is set to a large wavelength support and
-%    then interpolated onto the support in propety wave.  You can set
-%    unitDensity after the object is instantiaed, but you can't change
-%    wave_.  When you set unitDensity, it should be on wavelength support
-%    wave, and it is interpolated for storage onto wave_.
+%    support in property wave_ in property unitDensity_.  Typically this is
+%    set to a large wavelength support and then interpolated onto the
+%    support in propety wave.  You can set unitDensity_ after the object is
+%    instantiated, but you can't change wave_.  When you set unitDensity,
+%    it should be on wavelength support wave, and it is splined onto
+%    the wavelength support in wave_ before being stored in unitDensity_.
+%    Note that this design does not prevent you from setting unitDensity on
+%    wavelength support very different from that being used to store the
+%    data, which could lead to extrapolation errors.  To avoid this, if you
+%    want to use custom data, you may be better off creating the object
+%    with the desired data on the wavelength support you intend to use.
+%    That said, the default values are read in and stored on wave_ support
+%    of 390:830 at 1 nm spacing, which is good for most applications.
 %
 %    Useful formulae:
 %       Absorbance spectra are normalized to a peak value of 1. In this
@@ -51,10 +63,10 @@ classdef Macular < hiddenHandle
 %       called density.  In the literature, this is sometimes called peak
 %       optical density.
 %
-%       Transmittance is 1-absorbtance, the amount of light that passes
+%       Transmittance is 1-absorptance, the amount of light that passes
 %       through the pigment.  Alternately, you can compute
 %       transmittance = 10.^(-opticalDensity * absorbance) and
-%       absorbtance as = 1-transmittance.
+%       absorptance as = 1-transmittance.
 %
 %    The default macular density absorbance was obtained from an old Stockman
 %    site, but should match that at the new Stockman site (cvrl.org) and
@@ -90,6 +102,7 @@ classdef Macular < hiddenHandle
 %    02/15/18  jnm  Formatting
 %    12/16/20  dhb  Mostly comments, but also changed name of set to allows
 %                   setting of unitDensity_, not unitDensity. 
+%    12/18/20  dhb  More comments.
 
 % Examples:
 %{
@@ -228,7 +241,7 @@ methods  % public methods
         %    This is the absorbance scaled by the peak optical density.
         %
         %    This is not standard terminology, as far as we know, and this
-        %    quanity less likely to be useful than the absorbtance or
+        %    quanity less likely to be useful than the absorptance or
         %    transmittance.
         %
         % Inputs:

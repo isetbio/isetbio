@@ -13,15 +13,8 @@ classdef cPhotoPigment < hiddenHandle
 %
 %    For the full cone mosaic, see the @cMosaic class
 %
-%    Most of the terms represented here are descriptions of the
-%    photopigment itself. In addition, there are a few terms the
-%    capture the effective optical size of the photopigment absorption.
-%
-%    Default parameters are determined by underlying routines that get
-%    the required data types. Unmatched key/value pairs passed to
-%    photoPigment are passed on to some underlying routines and can be
-%    used to adjust the parameters obtained. See help for each routine
-%    for what the available key/value pairs are.
+%    See extensive header comments in the photoPigment class for more
+%    information.
 %
 % Input:
 %	 None required.
@@ -36,7 +29,7 @@ classdef cPhotoPigment < hiddenHandle
 %    'absorbance'     - L, M and S cone absorbance spectra. Default
 %                       empty, in which case these are obtained through
 %                       routine coneAbsorbanceReadData.
-%    'peakEfficiency' - Peak quantal efficiency for isomerizations for
+%    'peakEfficiency' - Quantal efficiency for isomerizations for
 %                       L, M and S cones. Default [2 2 2]/3.
 %    'diameter'       - Diameter of the light collecting aperture Default 2e-6.
 %
@@ -46,6 +39,7 @@ classdef cPhotoPigment < hiddenHandle
 
 % History:
 %    12/07/20  NPC Wrote it by adapting photoPigment
+%    12/18/20  dhb Add quantalEfficiency property and get.  Comments.
 
 properties  % public properties
     % opticalDensity - photopigment optical densities for cones
@@ -172,6 +166,27 @@ methods  % public methods
         %    None.
         %
         val = 1 - 10 .^ (-obj.absorbance * diag(obj.opticalDensity));
+    end
+    
+    function val = get.quantalEfficiency(obj) % compute absorptance
+        % Retrieve photo pigment object's isomerization efficiency.
+        %
+        % Syntax:
+        %   obj = get.quantalEfficiency(obj)
+        %
+        % Description:
+        %    Retrieve the quantal efficiency from the photoPigment object obj
+        %
+        % Inputs:
+        %    obj - The photoPigment object
+        %
+        % Outputs:
+        %    val - The LMS quantal efficiencies for obj
+        %
+        % Optional key/value pairs:
+        %    None.
+        %
+        val = obj.absorptance*diag(obj.peakEfficiency);
     end
 
     function val = get.quantaFundamentals(obj)

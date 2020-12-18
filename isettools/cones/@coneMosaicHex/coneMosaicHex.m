@@ -1,4 +1,4 @@
-classdef coneMosaicHex < coneMosaic
+.qclassdef coneMosaicHex < coneMosaic
 % Create a hexagonal cone mosaic class
 %
 % Syntax:

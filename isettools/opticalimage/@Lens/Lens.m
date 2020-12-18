@@ -5,32 +5,53 @@ classdef Lens < handle
 %   obj = Lens;
 %
 % Description:
-%    Creates a lens object to describe absrobance etc. properties of the
+%    Creates a lens object to describe absorbance properties of the
 %    human lens.
 %
-%    The lens object stores the lens pigment density values in
-%    private variables (obj.wave_ and obj.unitDensity_).
+%    Our understanding of the terminology and best conventions for
+%    describing this type of data has evolved over time, and the property
+%    names differ somewhat from the conventions we would adopt today.
+%    Changing tne names in the code will produce backwards compatibility
+%    issues, however, so we have done our best to comment and explain here.
 %
-%    obj.density is the peak optical density (sometimes just called optical
-%    density).  This number multiplies the unit density (absorbance)
-%    property when either is used, so the two quantities need to be
-%    interpretted together. Often one follows the convention that unit
-%    density is normalized to a max of 1, but that is not done everywhere
-%    and is not done in this object for historical reasons.
+%    obj.unitDensity is the lens absorbance spectrum. It is called unit
+%    density for historical reasons.  We multiply this by a scalar
+%    (obj.density), described just below before using this to compute. It
+%    might be better to call the product the absorbance spectrum, how this
+%    nomenclature works seems to vary in the literature. Note that in other
+%    similar classes (e.g., Macular), the absorbance in obj.unitDensity is
+%    normalized to a peak of 1, but not here.
 %
-%    obj.unitDensity is the absorbance spectrum, normalized to a peak value
-%    of 1. It is called unit density for historical reasons.
+%    obj.density is a scalar applied to the absorbance stored in the
+%    unitDensity property. Because this number multiplies the unit density
+%    property when either is used, the two quantities need to be
+%    interpretted together to give the actual absorbance. Often one follows
+%    the convention that unit density is normalized to a max of 1, but that
+%    is not done here, and indeed given the data we read in for unit
+%    density and the fact that we don't scale it, the default value for
+%    obj.density in this routine is 1. This is in contrast to the way the
+%    very similar Macular and photoPigment objects are coded, where the
+%    unit density is scaled to a maximum of 1 and the obj.density parameter
+%    is interpretted as the peak optical density.
 %
-%    obj.absorbtance is the absorbtance spectrum.
+%    obj.absorptance is the absorptance spectrum.
 %
 %    obj.transmittance is the transmission spectrum.
 %
 %    The absorbance data that drive this routine are stored on wavelength
-%    support in property wave_ in property unitDensity_.  Typically this is set to a
-%    large wavelength support and then interpolated onto the support in
-%    propety wave.  You can set unitDensity_ after the object is
-%    instantiaed, but you can't change wave_.  When you set unitDensity_,
-%    it should be on wavelength support wave_.
+%    support in property wave_ in property unitDensity_.  Typically this is
+%    set to a large wavelength support and then interpolated onto the
+%    support in propety wave.  You can set unitDensity_ after the object is
+%    instantiated, but you can't change wave_.  When you set unitDensity,
+%    it should be on wavelength support wave, and it is splined onto
+%    the wavelength support in wave_ before being stored in unitDensity_.
+%    Note that this design does not prevent you from setting unitDensity on
+%    wavelength support very different from that being used to store the
+%    data, which could lead to extrapolation errors.  To avoid this, if you
+%    want to use custom data, you may be better off creating the object
+%    with the desired data on the wavelength support you intend to use.
+%    That said, the default values are read in and stored on wave_ support
+%    of 390:830 at 1 nm spacing, which is good for most applications.
 %
 %    Useful formulae:
 %       Absorbance spectra are normalized to a peak value of 1. In this
@@ -44,10 +65,10 @@ classdef Lens < handle
 %       called density.  In the literature, this is sometimes called peak
 %       optical density.
 %
-%       Transmittance is 1-absorbtance, the amount of light that passes
+%       Transmittance is 1-absorptance, the amount of light that passes
 %       through the pigment.  Alternately, you can compute
 %       transmittance = 10.^(-opticalDensity * absorbance) and
-%       absorbtance as = 1-transmittance.
+%       absorptance as = 1-transmittance.
 %
 %    The default macular density absorbance was obtained from an old Stockman
 %    site, but should match that at the new Stockman site (cvrl.org) and
@@ -63,14 +84,14 @@ classdef Lens < handle
 %    name        - String. The name for this object, default 'human lens'.
 %    wave        - Vector. The wavelength samples.
 %    density     - Numeric. The lens pigment density, default 1.
-%    unitDensity - Numeric. The unit density. Default [], which reads the
-%                  densities from lensDensity.mat and sets wave_ to the native
-%                  wavelenght support of that file, 390:830. If passed,
-%                  should be on same wavelength support as wave, and the
-%                  wave_ property is set to wave.
+%    unitDensity - Numeric. The unit density. Default [], which causes the
+%                  routine to reads the densities from lensDensity.mat and
+%                  sets wave_ to the native wavelenght support of that
+%                  file, 390:830. If passed, should be on same wavelength
+%                  support as wave, and the wave_ property is set to wave.
 %
 % See Also:
-%   opticsGet, opticsSet
+%   opticsGet, opticsSet, Macular, photoPigment
 %
 
 % History:
@@ -78,15 +99,19 @@ classdef Lens < handle
 %    03/05/18  jnm    Formatting
 %    07/02/19  JNM    Formatting update
 %    12/13/20  dhb    Comments and code cleaning.
+%    12/18/20  dhb    More comments.
 
 % Examples:
 %{
     lens = Lens;
 %}
 %{
-    thisLens = Lens('wave', 400:10:700, 'density', 1, 'name', 'my lens');
+    % Specify an observer with lens absorbance 20% higher than the default
+    % value.
+    thisLens = Lens('wave', 400:10:700, 'density', 1.2, 'name', 'my aging lens');
 %}
 %{
+    % Show that abosrbtance and transmission sum to 1.
     lens = Lens;
     t = lens.transmittance;
     a = lens.absorptance;

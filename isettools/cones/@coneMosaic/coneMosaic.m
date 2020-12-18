@@ -95,6 +95,7 @@ classdef coneMosaic < hiddenHandle
     %    02/26/18  jnm        Formatting
     %    06/16/18  NPC        Function to determine whether a mosaic can
     %                         support ecc-based cone efficiency corrections
+    %    12/18/20  dhb        Use new quantalEfficiency property of photoPigment.
     
     properties (GetAccess=public, SetAccess=public)
         %name - The name of the object
@@ -750,9 +751,12 @@ classdef coneMosaic < hiddenHandle
             % Optional key/value pairs:
             %    None.
             %
-            val = bsxfun(@times, obj.pigment.absorptance, ...
-                obj.macular.transmittance) * ...
-                diag(obj.pigment.peakEfficiency);
+            
+            % val = bsxfun(@times, obj.pigment.absorptance, ...
+            %    obj.macular.transmittance) * ...
+            %    diag(obj.pigment.peakEfficiency);
+            val = bsxfun(@times, obj.pigment.quantalEfficiency, ...
+                obj.macular.transmittance) ;
         end
 
         function val = get.spatialDensity(obj)

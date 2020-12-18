@@ -31,6 +31,8 @@ classdef cMosaic < handle
     %
     % History:
     %    12/../2020  NPC  Wrote it
+    %    12/18/20  dhb    Use new quantalEfficiency property of photoPigment.
+
     
     properties (Constant)
         % Cone types
@@ -207,9 +209,10 @@ classdef cMosaic < handle
         % Getter/Setter methods for dependent variables
         % QE
         function val = get.qe(obj)
-            % Compute the quantal efficiency of the cones
-            val = bsxfun(@times, obj.pigment.absorptance, obj.macular.transmittance) * ...
-                  diag(obj.pigment.peakEfficiency);
+            % Compute the quantal efficiency of the cones, incorporating
+            % macular pigment.      
+            val = bsxfun(@times, obj.pigment.quantalEfficiency, ...
+                obj.macular.transmittance) ;
         end
         
         % WAVE - getter
