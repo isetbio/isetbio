@@ -67,16 +67,8 @@ opticsWithLca = opticsSet(opticsWithLca, 'name', 'human-wvf-withlca');
 theOIWithLca = oiSet(theOIWithLca,'optics',opticsWithLca);
 
 %% Get a scene.
-% presentationDisplay = displayCreate('AOSim-Seattle');
-
-% Kludge to normalize LEds that were subjectively adjusted -- change photon
-% rate for each gun?
-% presentationDisplay.spd(:,1)=presentationDisplay.spd(:,1)*1.0;
-% presentationDisplay.spd(:,2)=presentationDisplay.spd(:,2)*4.0;
-
-% Generate TwoLine Scene
-% scene = generateTwoLineScene(presentationDisplay, 1, 6); % 1=RG
-scene = generateTwoLineScene(display.CRT12BitDisplay, 1, 6); % 1=RG
+presentationDisplay = displayCreate('CRT12BitDisplay');
+scene = generateTwoLineScene(presentationDisplay, 1, 6); % 1=RG
 scene = sceneSet(scene, 'fov', 0.5);
 visualizeScene(scene);
 
