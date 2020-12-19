@@ -194,7 +194,7 @@ properties (Dependent)
     gapHeight;
 end
 
-properties(Access = private)  % private properties
+properties (SetAccess=private)
     % wave_ - The internal wavelength samples
     wave_;
 
@@ -436,7 +436,7 @@ methods  % public methods
     end
 
     % set method for dependent variable
-    function set.absorbance(obj, val, varargin)
+    function set.absorbance(obj, val)
         % Set the photo pigment object's absorbance value
         %
         % Syntax:
@@ -461,8 +461,9 @@ methods  % public methods
         %
         
         % Set
-        obj.absorbance_ = val;
-        obj.wave_ = p.Results.wave;
+        obj.absorbance_ = interp1(obj.wave, val, obj.wave_, ...
+            'linear', 'extrap');
+        obj.absorbance_ = ieClip(obj.absorbance_, 0, 1);
     end
 end
 

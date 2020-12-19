@@ -121,6 +121,24 @@ classdef Macular < hiddenHandle
     macobj.unitDensity = ones(size(macobj.wave));
     figure; plot(macobj.wave,macobj.unitDensity);
 %}
+%{
+    % Create the object
+    macobj = Macular;
+    
+    % Get and plot underlying macular absorbance on its wavelenght support.
+    % This is splined onto the user's wavelength support when getting the
+    % various properties that this object supports.
+    figure; hold on; plot(macobj.wave_,macobj.unitDensity_,'r','LineWidth',1);
+
+    % Get and plot macular absorbance as used on the 
+    % users wavelength support, and for deriving other
+    % properties.
+    plot(macobj.wave,macobj.unitDensity,'ko','MarkerFaceColor','k','MarkerSize',4);
+
+    % Set another wavelength support
+    macobj.wave = 505:10:805;
+    plot(macobj.wave,macobj.unitDensity,'go','MarkerFaceColor','g','MarkerSize',4);
+%}
 
 properties  % public properties
     % name - Name of this particular macular pigment object
@@ -135,7 +153,7 @@ properties (SetObservable, AbortSet)
     wave;
 end
 
-properties (Access=private)
+properties (SetAccess=private)
     %wave_ - The internal wavelength samples
     wave_;
     

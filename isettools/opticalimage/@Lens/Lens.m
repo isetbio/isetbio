@@ -133,7 +133,7 @@ properties  % public properties
     wave;
 end
 
-properties (Access=private)
+properties (SetAccess=private)
     % wave_ - internal wavelength samples
     wave_;
 

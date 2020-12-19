@@ -74,7 +74,7 @@ properties (Dependent)
     area;
 end
 
-properties(Access = private)  % private properties
+properties(SetAccess = private)
     % wave_ - The internal wavelength samples
     wave_;
 
@@ -256,20 +256,23 @@ methods  % public methods
         val = pi * (0.5*obj.diameter)^2;
     end
 
-
     % set method for dependent variable
     function set.absorbance(obj, val)
-        % Set the the absorbance values
+        % Set the photo pigment object's absorbance value
         %
         % Syntax:
         %   obj = set.absorbance(obj, val)
         %
         % Description:
-        %    Set the absorbance value
+        %    Set the photo pigment's absorbance spectrum.  Setting this
+        %    overrides 
         %
         % Inputs:
-        %    obj - The cPhotoPigment object
-        %    val - The absorbance value to set
+        %    obj - The photoPigment object
+        %    val - The absorbance value to set.  Should be on
+        %          same wavelength spacing as the object's wavelength
+        %          sampling (wave, not wave_). The passed values are
+        %          clipped to range 0 to 1.
         %
         % Outputs:
         %    None.
@@ -278,9 +281,11 @@ methods  % public methods
         %    None.
         %
         
+        % Set
         obj.absorbance_ = interp1(obj.wave, val, obj.wave_, ...
             'linear', 'extrap');
         obj.absorbance_ = ieClip(obj.absorbance_, 0, 1);
+    end
     end
 end
 

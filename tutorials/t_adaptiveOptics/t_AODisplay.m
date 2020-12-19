@@ -199,10 +199,17 @@ macularDensity0 = macular0.density;
 macular1 = Macular('wave',wls','unitDensity',macularUnitDensity0,'density',macularDensity0);
 cMosaic.macular = macular1;
 
-% Adjust photopigment densities
+% Adjust photopigment properties
 photopigment0 = cMosaic.pigment;
+if (any(photopigment0.wave ~= wls))
+    error('Wavelengths in Macular object are not as expected');
+end
 absorbance0 = photopigment0.absorbance;
 peakOpticalDensity0 = photopigment0.opticalDensity;
+quantalEfficiency0 = photopigment0.peakEfficiency;
+photopigment1 = photoPigment('wave',wls,'opticalDensity',peakOpticalDensity0, ...
+    'peakEfficiency',quantalEfficiency0,'absorbance',absorbance0);
+cMosaci.pigment = photopigment1;
 
 % Eye movement path.  Here, just one time point and no motion.
 nTrialsNum = 1;
