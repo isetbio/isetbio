@@ -88,7 +88,7 @@ function [theConeMosaic, theConeMosaicMetaData] = generateEquivalentRegularHexCo
     
     % Set the macular pigment density to be appropriate for the mosaic's
     % eccentricity, mosaicEccRadiusDegs
-    theConeMosaic.macular.density = Macular.eccDensity(mosaicEccRadiusDegs);
+    theConeMosaic.macular.density = theConeMosaic.macular.eccDensity(mosaicEccRadiusDegs);
     
     % Retrieve cone positions (microns), cone spacings, and cone types
     cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();

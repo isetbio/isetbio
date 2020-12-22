@@ -103,7 +103,7 @@ classdef Macular < hiddenHandle
 %    12/16/20  dhb  Mostly comments, but also changed name of set to allows
 %                   setting of unitDensity_, not unitDensity. 
 %    12/18/20  dhb  More comments.
-
+%    12/20/20  npc  Made eccDensity an object method.
 % Examples:
 %{
     macobj = Macular;
@@ -357,12 +357,11 @@ methods  % public methods
                 obj.wave, val, obj.wave_, 'pchip');
     end
     
+    % Method for computing macular pigment density as a function of
+    % eccentricity
+    density = eccDensity(obj, eccDeg);
 end
     
-% Static method for getting eccentricity. Declared here but in its own
-% file so you can get help on it.
-methods (Static)
-    density = eccDensity(eccDeg);
-end
+
 
 end

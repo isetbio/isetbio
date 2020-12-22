@@ -75,7 +75,7 @@ if (isa(obj, 'coneMosaicHex')) && (obj.eccBasedMacularPigment)
     defaultMacularPigmentTransmittance = obj.macular.transmittance;
     
     % Compute ecc-based MP optical densities
-    eccBasedMacularPigmentDensities = Macular.eccDensity(eccDegs);
+    eccBasedMacularPigmentDensities = obj.macular.eccDensity(eccDegs);
     % And corresponding transmittances
     eccBasedMacularPigmentTransmittances = 10.^(-eccBasedMacularPigmentDensities * obj.macular.unitDensity');
 
