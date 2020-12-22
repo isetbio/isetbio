@@ -1,4 +1,4 @@
-classdef cPhotoPigment < hiddenHandle
+classdef cPhotoPigment < receptorPigment
 % Class for single cone photopigment and related properties
 %
 % Syntax:
@@ -7,13 +7,13 @@ classdef cPhotoPigment < hiddenHandle
 % Description:
 %    This class contains properties for the photopigment absorption
 %    properties of a single cone cell. This class is derived from the 
-%    @photoPigment, which assumes a rectangular shaped cone, as does the
-%    @coneMosaic class. @cPhotoPigment assumes a circular shaped cone and
-%    is supposed to work with the @cMosaic class.
+%    @photoPigment, which handles all the spectral properties. The main
+%    function of the @cPhotoPigment class is to handle geometry for a
+%    disk-shaped cone aperture. It is to be used with the (new) @cMosaic class.
 %
 %    For the full cone mosaic, see the @cMosaic class
 %
-%    See extensive header comments in the photoPigment class for more
+%    See extensive header comments in the @receptorPigment class for more
 %    information.
 %
 % Input:
@@ -31,61 +31,30 @@ classdef cPhotoPigment < hiddenHandle
 %                       routine coneAbsorbanceReadData.
 %    'peakEfficiency' - Quantal efficiency for isomerizations for
 %                       L, M and S cones. Default [2 2 2]/3.
-%    'diameter'       - Diameter of the light collecting aperture Default 2e-6.
+%    'diameter'       - Diameter of the disk-shaped light collecting aperture. Default 4.0/sqrt(pi))*1e-6.
 %
 % See Also:
 %   photoPigment, cMosaic, Macular, Lens
 %
 
 % History:
-%    12/07/20  NPC Wrote it by adapting photoPigment
-%    12/18/20  dhb Add quantalEfficiency property and get.  Comments.
+%    12/07/20  NPC Wrote it
 
-properties  % public properties
-    % opticalDensity - photopigment optical densities for cones
-    opticalDensity;
-
-    % peakEfficiency - peak absorptance efficiency
-    peakEfficiency;
-
+properties  % public properties related to the geometry of the cone aperture
     % diameter of the light collecting cone aperture in meters
     diameter;
 end
 
-properties (SetObservable, AbortSet)
-    % wave - wavelength samples
-    wave;
-end
 
 properties (Dependent)
-    % absorbance - spectral absorbance of the cones
-    absorbance;
-
-    % absorptance - cone absorptance without ocular media
-    absorptance;
-
-    % quantaFundamentals - normalized cone absorptance
-    quantaFundamentals;
-
-    % energyFundamentals - normalized cone absorption in energy units
-    energyFundamentals;
-
     % area - The area of the light collecting aperture.
     area;
 end
 
-properties(SetAccess = private)
-    % wave_ - The internal wavelength samples
-    wave_;
-
-    % absorbance_ - The absorbance data sampled at wave_
-    absorbance_;
-end
 
 methods  % public methods
     % constructor
     function obj = cPhotoPigment(varargin)
-
         p = inputParser;
         p.KeepUnmatched = true;
         p.addParameter('wave', 400:10:700, @isnumeric);
@@ -95,25 +64,19 @@ methods  % public methods
         p.addParameter('diameter', (4.0/sqrt(pi))*1e-6, @isnumeric);
         p.parse(varargin{:});
 
+        % Call the super-class constructor.
+        obj = obj@receptorPigment(...
+            'wave', p.Results.wave(:), ...
+            'opticalDensity', p.Results.opticalDensity, ...
+            'absorbance', p.Results.absorbance, ...
+            'peakEfficiency', p.Results.peakEfficiency);
+        
         % set object properties
-        obj.wave = p.Results.wave(:);
-        obj.wave_ = (390:830)';
-        obj.opticalDensity = p.Results.opticalDensity(:);
-        obj.peakEfficiency = p.Results.peakEfficiency(:);
         obj.diameter = p.Results.diameter;
         
         % Assert that property dimensions are consistent
         assert(numel(obj.opticalDensity) == numel(obj.peakEfficiency), ...
             sprintf('optical density dimensionality does not match that of peak efficiency'));
-
-        % If absorbance is not specified, we obtain it using the defaults
-        % of coneAbsorbanceReadData. 
-        if isempty(p.Results.absorbance)
-            obj.absorbance_ = coneAbsorbanceReadData(p.Unmatched, ...
-                'wave', obj.wave_);
-        else
-            obj.absorbance = p.Results.absorbance;
-        end
         
         % Assert that property dimensions are consistent
         if (~isempty(p.Results.absorbance))
@@ -123,117 +86,6 @@ methods  % public methods
         
     end
 
-    % get method for dependent variable
-    function val = get.absorbance(obj) % interpolate for absorbance
-        % Retrieve photo pigment object's absorbance value
-        %
-        % Syntax:
-        %   obj = get.absorbance(obj)
-        %
-        % Description:
-        %    Retrieve the absorbance from the photoPigment object obj
-        %
-        % Inputs:
-        %    obj - The photoPigment object
-        %
-        % Outputs:
-        %    val - The absorbance value for obj
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
-        val = interp1(obj.wave_, obj.absorbance_, obj.wave, ...
-            'linear', 'extrap');
-        val = ieClip(val, 0, 1);
-    end
-
-    function val = get.absorptance(obj)
-        % Compute the absorptances
-        %
-        % Syntax:
-        %   obj = get.absorptance(obj)
-        %
-        % Description:
-        %    Compute the absorptances
-        %
-        % Inputs:
-        %    obj - The cPhotoPigment object
-        %
-        % Outputs:
-        %    val - The absorptance value for obj
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
-        val = 1 - 10 .^ (-obj.absorbance * diag(obj.opticalDensity));
-    end
-    
-    function val = get.quantalEfficiency(obj) % compute absorptance
-        % Retrieve photo pigment object's isomerization efficiency.
-        %
-        % Syntax:
-        %   obj = get.quantalEfficiency(obj)
-        %
-        % Description:
-        %    Retrieve the quantal efficiency from the photoPigment object obj
-        %
-        % Inputs:
-        %    obj - The photoPigment object
-        %
-        % Outputs:
-        %    val - The LMS quantal efficiencies for obj
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
-        val = obj.absorptance*diag(obj.peakEfficiency);
-    end
-
-    function val = get.quantaFundamentals(obj)
-        % Compute the quanta fundamentals
-        %
-        % Syntax:
-        %   obj = get.quantaFundamentals(obj)
-        %
-        % Description:
-        %    Compute and return the quanta fundamentals for the photo
-        %    pigment object obj.
-        %
-        % Inputs:
-        %    obj - The cPhotoPigment object
-        %
-        % Outputs:
-        %    val - The quanta fundamentals for obj
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
-        val = bsxfun(@rdivide, obj.absorptance, max(obj.absorptance));
-    end
-
-    function val = get.energyFundamentals(obj)
-        % Compute the energy fundamentals
-        %
-        % Syntax:
-        %   obj = get.energyFundamentals(obj)
-        %
-        % Description:
-        %    Retrieve the energy fundamentals from the cPhotoPigment object
-        %
-        % Inputs:
-        %    obj - The cPhotoPigment object
-        %
-        % Outputs:
-        %    val - The energy fundamentls for obj
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
-        h = vcConstants('planck');
-        c = vcConstants('speed of light');
-        val = 1e-9 * bsxfun(@times, obj.quantaFundamentals / h / c, ...
-            obj.wave);
-    end
 
     function val = get.area(obj)
         % Compute  the light-collecting area 
@@ -256,37 +108,6 @@ methods  % public methods
         val = pi * (0.5*obj.diameter)^2;
     end
 
-    % set method for dependent variable
-    function set.absorbance(obj, val)
-        % Set the photo pigment object's absorbance value
-        %
-        % Syntax:
-        %   obj = set.absorbance(obj, val)
-        %
-        % Description:
-        %    Set the photo pigment's absorbance spectrum.  Setting this
-        %    overrides 
-        %
-        % Inputs:
-        %    obj - The photoPigment object
-        %    val - The absorbance value to set.  Should be on
-        %          same wavelength spacing as the object's wavelength
-        %          sampling (wave, not wave_). The passed values are
-        %          clipped to range 0 to 1.
-        %
-        % Outputs:
-        %    None.
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
-        
-        % Set
-        obj.absorbance_ = interp1(obj.wave, val, obj.wave_, ...
-            'linear', 'extrap');
-        obj.absorbance_ = ieClip(obj.absorbance_, 0, 1);
-    end
-    end
 end
 
 methods (Static)
