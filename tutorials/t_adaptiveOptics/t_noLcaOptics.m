@@ -66,9 +66,39 @@ opticsWithLca = opticsSet(opticsWithLca, 'model', 'shift invariant');
 opticsWithLca = opticsSet(opticsWithLca, 'name', 'human-wvf-withlca');
 theOIWithLca = oiSet(theOIWithLca,'optics',opticsWithLca);
 
-%% Get a scene.
+%% Make a scene with two lines
+%
+% Read a display
 presentationDisplay = displayCreate('CRT12BitDisplay');
-scene = generateTwoLineScene(presentationDisplay, 1, 6); % 1=RG
+
+% Value to put in each gun as background (on 0-1 scale)
+background_level=0.1;
+
+% Image spatial properties, in pixels
+imageSize=140;
+spacing = 6;
+line_thickness=4;
+line_height=20;
+
+% Build two line image with separate red and green lines.
+%
+% First build separate red and green image planes
+img_center = floor([imageSize/2,imageSize/2]);
+img        = ones(imageSize)*background_level;
+img_red    = img;
+img_red(img_center - line_height/2:img_center + line_height/2,...
+    img_center - spacing/2 - line_thickness : img_center - spacing/2-1) = 1;
+img_green  = img;
+img_green(img_center - line_height/2:img_center + line_height/2,...
+    img_center + spacing/2 : img_center + spacing/2 + line_thickness-1) = 1;
+ 
+% Now put image planes into a fresh image
+twoLineImage=zeros(imageSize,imageSize,3);
+twoLineImage(:, :, 1) = img_red;
+twoLineImage(:, :, 2) = img_green;
+
+% Convert image to ISETBio scene
+scene = sceneFromFile(twoLineImage, 'rgb', [], presentationDisplay);
 scene = sceneSet(scene, 'fov', 0.5);
 visualizeScene(scene);
 
@@ -81,11 +111,3 @@ theOIWithLca = oiCompute(theOIWithLca, scene);
 visualizeOpticalImage(theOIWithLca, 'displayRadianceMaps', false, ...
     'displayRetinalContrastProfiles', false);
 
-% Experimental findings:
-%
-% These scenes should be distinct in space (clearly 2 lines), but colors are all the same:
-% scene = generateTwoLineScene(presentationDisplay,1,20); % RG
-% scene = generateTwoLineScene(presentationDisplay,2,20); % GR
-% scene = generateTwoLineScene(presentationDisplay,3,20); % YY
-%
-% Color is only reliable at much greater spacings (>50 pixels)
