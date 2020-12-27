@@ -4,7 +4,11 @@
 %   ISETBio's wavefront optics normally includes wavelength-dependent
 %   defocus to model longitudinal chromatic aberration (LCA). This tutorial shows
 %   how to construct an optical image object that does not do that.  Useful
-%   for modeling experiments where LCA has been corrected for.
+%   for modeling experiments where LCA has been corrected.
+%
+%   The option for turning off LCA is implemented fairly far down the set
+%   of structures that manage the optics, and this tutorial shows how to
+%   access the right level.
 %
 %   Retinal images are produced for diffraction limited seeing, with and
 %   without LCA.  For the case with, stimuli at the accommodated wavelength
@@ -14,9 +18,17 @@
 %   You can adjust the accommodated wavelength and see the effect of LCA in
 %   one of the computed retinal images and not the other.  The test scene
 %   used employs wavelengths of 530 and 660.
+%
+%   The diffraction limited PSF does depend on wavelength, but that effect
+%   is small compared to LCA, and is hard to see here.
+%
+%   You could explore adding higher order aberrations to the
+%   wavefront function and looking at how they effect PSF with wavelength.
 
 % History:
 %  05/01/19  dhb  Version with LCA defeated.
+%  12/xx/20  dhb  Made this self-contained and moved from where it was
+%                 tucked away into ISETBio itself.
 
 %% Initialize
 close all;
@@ -28,7 +40,7 @@ close all;
 % and a few other things.
 pupilDiameterMm = 6;
 wave = (400:10:700)';
-accommodatedWavelength = 530;
+accommodatedWavelength = 800;
 zCoeffs = zeros(66,1);
 
 %% Set up wavefront optics object
