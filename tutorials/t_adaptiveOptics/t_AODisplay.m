@@ -210,7 +210,7 @@ sceneWindow;
 %
 % Assume observer is accommodated to the test wavelength.
 % You have the option here of turning off LCA, if that is the
-% way your AO system is set up.
+% way your AO system is set up.  It is left on by default.
 defocusAmount = 0.1;
 pupilDiameterMm = 7;
 accommodatedWl = testWl;
