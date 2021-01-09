@@ -138,6 +138,7 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
 %          dhb  Reorganized some code relative to source switch statement. Because
 %               there was only one case this didn't matter, but now I think it
 %               is right if more cases.
+% 01/09/21 dhb  Finish off adding kinetics.
 
 % Examples:
 %{
@@ -158,19 +159,24 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
 %}
 %{
     % Running this example should produce a pigment recovery plot that
-    % with a red cuvers looks like Figure 6.2 in Boynton (first edition),
-    % except flipped vertically.  The red curve is for rods.  The blue
+    % with a red curves looks like Figure 6.2 in Boynton (first edition),
+    % Note that the righthand scale for that figure is flipped with 0 
+    % at the top and 1 at the bottom.  We plot fraction bleached rather
+    % than fraction unbleached, so our plot looks like this but has scale
+    % in the conventional order. The red curve is for rods.  The blue
     % is for cones and is faster as expected.
     clear; close all;
     timeSec = (1:60*40) - 1;
     timeMinutes = timeSec/(60);
     irradiance = zeros(60*40,1);
-    initialFraction = 0;
-    fractionBleached = ComputePhotopigmentBleaching(irradiance,'rods','trolands','Boynton',initialFraction,'sec');
-    fractionBleached1 = ComputePhotopigmentBleaching(irradiance,'cones','isomerizations','Boynton',initialFraction,'sec');
+    initialFractionBleached = 1;
+    fractionBleached = ComputePhotopigmentBleaching(irradiance,'rods','trolands','Boynton',initialFractionBleached,'sec');
+    fractionBleached1 = ComputePhotopigmentBleaching(irradiance,'cones','isomerizations','Boynton',initialFractionBleached,'sec');
     figure; clf; hold on;
     plot(timeMinutes,fractionBleached,'r','LineWidth',6);
     plot(timeMinutes,fractionBleached1,'b','LineWidth',6);
+    xlabel('Time (min)');  
+    ylabel('Fraction bleached');
 %}
 %{
     % This example shows that the steady state calculation (red) matches the
@@ -182,10 +188,10 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
     trolands = 10^4.3;
     irradiance = trolands*ones(60*10,1);
     fractionBleachedSteady = ComputePhotopigmentBleaching(trolands,'cones','trolands','Boynton');
-    initialFraction = 0;
-    fractionBleached0 = ComputePhotopigmentBleaching(irradiance,'cones','trolands','Boynton',initialFraction,'sec');
-    initialFraction = 1;
-    fractionBleached1 = ComputePhotopigmentBleaching(irradiance,'cones','trolands','Boynton',initialFraction,'sec');
+    initialFractionBleached = 0;
+    fractionBleached0 = ComputePhotopigmentBleaching(irradiance,'cones','trolands','Boynton',initialFractionBleached,'sec');
+    initialFractionBleached = 1;
+    fractionBleached1 = ComputePhotopigmentBleaching(irradiance,'cones','trolands','Boynton',initialFractionBleached,'sec');
     figure; clf; hold on;
     plot(timeMinutes,fractionBleachedSteady*ones(size(timeMinutes)),'r','LineWidth',6);
     plot(timeMinutes,fractionBleached0,'g','LineWidth',4);
@@ -311,7 +317,7 @@ end
         %
         % This is Eqn. 6.5 from Boynton Human Color Vision
         % (first edition) and gives the change in fraction
-        % bleached (p) over time.
+        % unbleached (p) over time.
         dp_dt = @(p, I) (( (1-p)./N ) - ( (I.*p)./ (N.*Izero) ));
         
         % Need to get half-bleach constants for rods before we can
@@ -321,14 +327,18 @@ end
             end
         end
         
-        % Set up fraction bleached over simulation time
-        fractionBleached = zeros(size(irradiance));
-        fractionBleached(1) = initialFraction;
+        % Set up fraction bleached over simulation time.  Note conversion
+        % of passed fraction bleached to fraction unbleached form here.
+        fractionUnbleached = zeros(size(irradiance));
+        fractionUnbleached(1) = 1-initialFraction;
         
         for t=2:length(irradiance)
-            fractionBleached(t) = fractionBleached(t-1) + ...
-                dp_dt(fractionBleached(t-1),irradiance(t-1))*timeStep;
+            fractionUnbleached(t) = fractionUnbleached(t-1) + ...
+                dp_dt(fractionUnbleached(t-1),irradiance(t-1))*timeStep;
         end
+        
+        % Convert back to fraction bleached
+        fractionBleached = 1 - fractionUnbleached;
         
     end
 end
