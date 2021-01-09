@@ -275,7 +275,7 @@ else
 end
 
 if (~isfield(params,'absorbance'))
-    if (length(params.lambdaMax) ~= 3 & length(params.lambdaMax) ~= 1)
+    if (length(params.lambdaMax) ~= 3 && length(params.lambdaMax) ~= 1)
         CHECK_FOR_AGREEMENT = false;
     end
 end

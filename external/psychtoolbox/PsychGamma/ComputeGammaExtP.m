@@ -1,5 +1,5 @@
-function output = ComputeGammaExpP(x,input)
-% output = ComputeGammaExpP(x,input)
+function output = ComputeGammaExtP(x,input)
+% output = ComputeGammaExtP(x,input)
 %
 % Compute the gamma table using an extended power function.
 % See Brainard, Pelli, & Robson (2001).
@@ -22,16 +22,14 @@ if (thePow < minPow)
   thePow = minPow;
 end
 if (theOffset < 0)
-	theOffset = 0;
+    theOffset = 0;
 end
 if (theOffset > maxInput)
-	theOffset = maxInput;
+    theOffset = maxInput;
 end
 
 output = zeros(size(input));
 index = find(input > theOffset);
 if (~isempty(index))
-	output(index) = ((input(index)-theOffset)/(maxInput-theOffset)).^thePow;
+    output(index) = ((input(index)-theOffset)/(maxInput-theOffset)).^thePow;
 end
-
-

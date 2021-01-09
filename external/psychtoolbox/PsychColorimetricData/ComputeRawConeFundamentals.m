@@ -126,10 +126,10 @@ end
 if (~isfield(params,'extraMac'))
     params.extraMac = 0;
 end
-if (params.extraLens ~= 0 & params.indDiffParams.dlens ~= 0)
+if (params.extraLens ~= 0 && params.indDiffParams.dlens ~= 0)
     error('Cannot specify lens density adjustment two ways');
 end
-if (params.extraMac ~= 0 & params.indDiffParams.dmac ~= 0)
+if (params.extraMac ~= 0 && params.indDiffParams.dmac ~= 0)
     error('Cannot specify macular pigment density adjustment two ways');
 end
 OLDLENSWAY = true;
