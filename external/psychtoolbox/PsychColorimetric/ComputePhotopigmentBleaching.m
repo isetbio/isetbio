@@ -185,7 +185,7 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
     clear; close all;
     timeSec = (1:60*10) - 1;
     timeMinutes = timeSec/(60);
-    trolands = 10^4.3;
+    trolands = 10^5;
     irradiance = trolands*ones(60*10,1);
     fractionBleachedSteady = ComputePhotopigmentBleaching(trolands,'cones','trolands','Boynton');
     initialFractionBleached = 0;
@@ -196,6 +196,8 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
     plot(timeMinutes,fractionBleachedSteady*ones(size(timeMinutes)),'r','LineWidth',6);
     plot(timeMinutes,fractionBleached0,'g','LineWidth',4);
     plot(timeMinutes,fractionBleached1,'b','LineWidth',4);
+    xlabel('Time (min)');  
+    ylabel('Fraction bleached');
 %}
 
 %% Specify receptor type
