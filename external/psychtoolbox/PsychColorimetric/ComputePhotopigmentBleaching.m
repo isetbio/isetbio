@@ -26,7 +26,15 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
 % I am pretty sure that the Rushton and Henry measurements were made for
 % 560 nm light, and they give (see their Figure 2) a half-bleach constant
 % of 4.3 log10 trolands (20,000 td). This number is also given in Boynton
-% and Kaiser, Human Color Vision, 2nd edition, pp 211 and following.
+% and Kaiser, Human Color Vision, 2nd edition, pp 211 and following.  This
+% is the number you get here if you specify 'Boynton' as the source for the
+% cone bleaching data.
+%
+% Elsewhere in the same paper, Rushton and Henry use another method and
+% come up with 29167 td) as the half-bleach constant.  You can get this
+% number by specifying 'RushtonHenryAlt' as the source for the cone
+% constants.  If you use isomemerizations here, the constant is scaled up
+% from the one derived above by the ratio (29167/(10^4.3)).
 %
 % It's probably fine to compute bleaching for L and M cones given retinal
 % illuminance in trolands, given that these are effects that matter over
@@ -111,7 +119,9 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
 %
 % source        -- source of underlying data
 %   'Boynton'      Boynton and Kaiser, Human Color Vision, 2nd edition,
-%                  pp. 211 and following.  [Default]
+%                  pp. 211 and following. See intro text above. [Default]
+%   'RushtonHenryAlt' - Rushton and Henry's other half-bleach constant.
+%                  Only available for 'cones'.
 %
 % initialFraction -- fraction of input bleached at time zero. If
 %                 empty, steady state fraction bleached is
@@ -139,6 +149,8 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
 %               there was only one case this didn't matter, but now I think it
 %               is right if more cases.
 % 01/09/21 dhb  Finish off adding kinetics.
+% 01/12/21 dhb  Add in the alternate Rushton & Henry half-bleach constant
+%               for cones.
 
 % Examples:
 %{
@@ -236,6 +248,18 @@ switch (receptortype)
                         N = 120;          % Recovery time constant (seconds)
                     case 'isomerizations'
                         Izero = 10^6.4;   % In L/M cone isomerizations/sec
+                        N = 120;          % Recovery time constant (seconds)
+                    otherwise
+                        error('Unkown input units specified');
+                end
+                
+            case 'RushtonHenryAlt'
+                switch (units)
+                    case 'trolands'
+                        Izero = 29167;    % In Td, stimulus intensity that bleaches at the rate of 1/N
+                        N = 120;          % Recovery time constant (seconds)
+                    case 'isomerizations'
+                        Izero = (29167/(10^4.3))*10^6.4; % In L/M cone isomerizations/sec
                         N = 120;          % Recovery time constant (seconds)
                     otherwise
                         error('Unkown input units specified');
