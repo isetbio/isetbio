@@ -2,7 +2,7 @@ classdef Macular < hiddenHandle
 % Class for macular pigment properties
 %
 % Syntax:
-%	macular = Macular('wave', wave)
+%   obj = Macular;
 %
 % Description:
 %    The human retina contains a pigment that covers the central (macular)
@@ -10,48 +10,141 @@ classdef Macular < hiddenHandle
 %    than others. The pigment varies in density from central vision, where
 %    it is highest, to increasingly peripheral vision.
 %
-%    This function returns several measures of the macular pigment
-%    wavelength properties as a function of macular pigment density (high
-%    in the fovea, lower in the near fovea).
+%    This class manages several measures of the macular pigment wavelength
+%    properties as a function of macular pigment density. Our understanding
+%    of the terminology and best conventions for describing this type of
+%    data has evolved over time, and the property names differ somewhat
+%    from the conventions we would adopt today. Changing tne names in the
+%    code will produce backwards compatibility issues, however, so we have
+%    done our best to comment and explain here.
 %
-%    The returned class object includes a variety of derived terms.
-%    This should help to keep the relationship between entities straight.
+%    obj.unitDensity is the absorbance spectrum, normalized to a peak value
+%    of 1. It is called unitDensity for historical reasons.  The
+%    normalization to peak of 1 is just a convention, the quantity that
+%    matters is the product obj.density*ojb.unitDensity.  Note that in
+%    other similar routines (e.g., Lens), we do not normalize the
+%    obj.unitDensity to a peak of 1.
 %
-%    Density is the estimated (average) peak density of the pigment across
-%    a variety of observers.  They estimate the average (across observers)
-%    peak density to be 0.28, with a range of 0.17 to 0.48.
+%    obj.density is the peak optical density (sometimes just called optical
+%    density). The interpretation as peak optical density depends on the
+%    convention followed here of normlizing obj.unitDensity to a peak of 1.
+%    One estimate of the average (across observers) peak density ise 0.28,
+%    with a range of 0.17 to 0.48. Our default is 0.35, matching that of
+%    the underlying data file from CVRL.
 %
-%    Useful formulae
-%       Absorbance spectra are normalized to a peak value of 1.
+%    obj.absorptance is the absorptance spectrum.
+%
+%    obj.transmittance is the transmission spectrum.
+%
+%    The absorbance data that drive this routine are stored on wavelength
+%    support in property wave_ in property unitDensity_.  Typically this is
+%    set to a large wavelength support and then interpolated onto the
+%    support in propety wave.  You can set unitDensity_ after the object is
+%    instantiated, but you can't change wave_.  When you set unitDensity,
+%    it should be on wavelength support wave, and it is splined onto
+%    the wavelength support in wave_ before being stored in unitDensity_.
+%    Note that this design does not prevent you from setting unitDensity on
+%    wavelength support very different from that being used to store the
+%    data, which could lead to extrapolation errors.  To avoid this, if you
+%    want to use custom data, you may be better off creating the object
+%    with the desired data on the wavelength support you intend to use.
+%    That said, the default values are read in and stored on wave_ support
+%    of 390:830 at 1 nm spacing, which is good for most applications.
+%
+%    Useful formulae:
+%       Absorbance spectra are normalized to a peak value of 1. In this
+%       routine, for historical reasons, absorbance is called unitDensity.
+%
 %       Absorptance spectra are the proportion of quanta actually absorbed.
-%       Equation: absorptanceSpectra = 1 - 10.^(-OD * absorbanceSpectra)
+%       This is the term used in this routine.
+%       
+%       Equation: absorptance = 1 - 10.^(-opticalDensity * absorbance).  In
+%       this routine, again for historical reasons, opticalDensity is just
+%       called density.  In the literature, this is sometimes called peak
+%       optical density.
+%
+%       Transmittance is 1-absorptance, the amount of light that passes
+%       through the pigment.  Alternately, you can compute
+%       transmittance = 10.^(-opticalDensity * absorbance) and
+%       absorptance as = 1-transmittance.
+%
+%    The default macular density absorbance was obtained from an old Stockman
+%    site, but should match that at the new Stockman site (cvrl.org) and
+%    those in the Psychtoolbox.
+%
+%    Macular pigment peak optical density varies across the retina. Use the
+%    eccDensity method to obtain peak optical density across the human
+%    retina.
 %
 % Inputs:
-%    None required.
-%
-% Outputs:
-%    The created macular pigment object
-%
-% Optional key/value pairs:
 %    None.
 %
-% References:
-%    * The original macular densities values were taken from the Stockman
-%      site. Go to http://cvision.ucsd.edu, then click on Prereceptoral
-%      filters.  At this point in time, I think the Psychtoolbox and the
-%      new Stockman site are authoritative.
+% Outputs:
+%    obj - The created macular pigment object
+%
+% Optional key/value pairs:
+%    name        - String. The object name. Default 'human macular'.
+%    wave        - Vector. The wavelength support of returned functions.
+%                  Default (400:10:700).
+%    density     - Numeric. The peak optical density. Default 0.35. 
+%    unitDensity - Vector. Underlying stored absorbance.  Should be normalized
+%                  to a maximum of 1. Default is read in from ISETBio file
+%                  macularPigment.mat, and normalized to max of 1. This
+%                  combined with the default value for density leads to
+%                  standard estimates. If this is passed, it should be on
+%                  the same wavelength support as the wave (not wave_)
+%                  property. If you set this when object is instantiated,
+%                  the wave_ property is set to wave.
+%
 
 % History:
 %    xx/xx/16  HJ   ISETBIO TEAM, 2016
 %    02/15/18  jnm  Formatting
-
+%    12/16/20  dhb  Mostly comments, but also changed name of set to allows
+%                   setting of unitDensity_, not unitDensity. 
+%    12/18/20  dhb  More comments.
+%    12/20/20  npc  Made eccDensity an object method.
 % Examples:
 %{
-    macular = Macular();
+    macobj = Macular;
+    figure; plot(macobj.wave,macobj.transmittance);
+    peripheralDensity = macobj.eccDensity(5);
+%}
+%{
+    % Get and plot macular absorbance
+    macobj = Macular;
+    figure; plot(macobj.wave,macobj.unitDensity);
+
+    % Set macular pigment absorbance to all ones. 
+    % This gets set on the underlying wave
+    % support.
+    macobj.unitDensity = ones(size(macobj.wave));
+    figure; plot(macobj.wave,macobj.unitDensity);
+%}
+%{
+    % Create the object
+    macobj = Macular;
+    
+    % Get and plot underlying macular absorbance on its wavelenght support.
+    % This is splined onto the user's wavelength support when getting the
+    % various properties that this object supports.
+    figure; hold on; plot(macobj.wave_,macobj.unitDensity_,'r','LineWidth',1);
+
+    % Get and plot macular absorbance as used on the 
+    % users wavelength support, and for deriving other
+    % properties.
+    plot(macobj.wave,macobj.unitDensity,'ko','MarkerFaceColor','k','MarkerSize',4);
+
+    % Set another wavelength support
+    macobj.wave = 505:10:805;
+    plot(macobj.wave,macobj.unitDensity,'go','MarkerFaceColor','g','MarkerSize',4);
 %}
 
 properties  % public properties
-    %density - macular pigment density
+    % name - Name of this particular macular pigment object
+    name;
+    
+    %density - macular pigment peak optical density
     density;
 end
 
@@ -60,19 +153,23 @@ properties (SetObservable, AbortSet)
     wave;
 end
 
-properties (Access=private)
+properties (SetAccess=private)
     %wave_ - The internal wavelength samples
     wave_;
-
-    %unitDensity_ - unit density absorbance sampled with wave_
+    
+    %unitDensity_ - unit density absorbance sampled with wave_ (this is
+    %               usually just called absorbance). These values are
+    %               interpolated to wave when a get is done on unitDensity.
     unitDensity_;
 end
 
 properties (Dependent)
-    %unitDensity - spectral absorbance with unit pigment density
+    %unitDensity - spectral absorbance with unit pigment density (this is
+    %              usually called just absorbance).
     unitDensity;
 
-    %spectralDesnity - unitDensity scaled by obj.density
+    %spectralDensity - unitDensity scaled by obj.density (this quantity
+    %                  doesn't typically have its own name.
     spectralDensity;
 
     %transmittance - proportion of quanta transmitted
@@ -84,43 +181,46 @@ end
 
 methods  % public methods
     % constructor
-    function obj = Macular(varargin)
-        % Initialize defaults for Macular parameters
-        %
-        % Syntax:
-        %   obj = Macular([varargin]);
-        %
-        % Description:
-        %    Initialize the default values for the public properties: wave
-        %    (400:10:700), density (.35), and unitDensity ([]). And then
-        %    for the dependent and private object properties.
-        %
-        % Inputs:
-        %    None required.
-        %
-        % Outputs:
-        %    obj - The created photo pigment object
-        %
-        % Optional key/value pairs:
-        %    None.
-        %
+    function obj = Macular(varargin)    
         p = inputParser;
         p.addParameter('wave', 400:10:700, @isnumeric);
         p.addParameter('density', 0.35, @isscalar);
         p.addParameter('unitDensity', [], @isnumeric);
-
+        p.addParameter('name', 'human lens', @isstr);
         p.parse(varargin{:});
 
         % set properties
+        obj.name = p.Results.name;
         obj.wave = p.Results.wave(:);
-        obj.wave_ = (390:830)';
         obj.density = p.Results.density;
 
         if isempty(p.Results.unitDensity)
-            obj.unitDensity_ = ieReadSpectra('macularPigment.mat', ...
-                obj.wave_) / 0.3521;
+            % Read and store default macular absorbance from file at its native
+            % wavelength spacing of 390 to 830 nm.  This is splined onto the
+            % wavelength support in the wave property upon get.
+            %
+            % The magic number 0.3521 below the maximum value in the file
+            % being read, so dividing it out gives normalized ("unit")
+            % density in the private variable we compute from.  This gets
+            % put back when we compute "spectral" density, as the default
+            % value for that is 0.35.  (Well, we lose the 0.0021 through
+            % all this, but OK.)
+            obj.wave_ = (390:830)';
+            temp = ieReadSpectra('macularPigment.mat', ...
+                obj.wave_);
+            
+            % You might think we would just normalize to the max of temp,
+            % which is close to 0.3521.  But doing that will break our
+            % validations because 0.3521 isn't exactly the max.  This then
+            % produces small numerical differences in the validation checks
+            % that we'd have to address, and that is a pain.
+            obj.unitDensity_ = temp/0.3521;
         else
-            obj.unitDensity = p.Results.unitDensity;
+            % Store the passed unit density.  We assume it is on the
+            % wavelength spacing in the wave_ property, and store it on
+            % this spacing for splining out on read.
+            obj.wave_ = obj.wave;
+            obj.unitDensity_ = p.Results.unitDensity;
         end
     end
 
@@ -132,17 +232,18 @@ methods  % public methods
         %   val = get.unitDensity(obj);
         %
         % Description:
-        %    Retrieve the macular pigment object's unit density
+        %    Retrieve the macular pigment object's unit density (aka
+        %    absorbance)
         %
         % Inputs:
         %    obj - The macular pigment object
         %
         % Outputs:
-        %    val - The unit Density value
+        %    val - The unit density value
         %
         % Optional key/value pairs:
         %    None.
-        %
+        
         val = interp1(obj.wave_, obj.unitDensity_, obj.wave, 'pchip');
         val = max(val, 0);
     end
@@ -155,6 +256,11 @@ methods  % public methods
         %
         % Description:
         %    Retrieve the macular pigments object's spectral density.
+        %    This is the absorbance scaled by the peak optical density.
+        %
+        %    This is not standard terminology, as far as we know, and this
+        %    quanity less likely to be useful than the absorptance or
+        %    transmittance.
         %
         % Inputs:
         %    obj - The macular pigment object
@@ -164,7 +270,7 @@ methods  % public methods
         %
         % Optional key/value pairs:
         %    None.
-        %
+
         val = obj.unitDensity * obj.density;
     end
 
@@ -185,12 +291,12 @@ methods  % public methods
         %
         % Optional key/value pairs:
         %    None.
-        %
+       
         val = 10 .^ (-obj.spectralDensity);
     end
 
     function val = get.absorptance(obj)
-        % comptue proportion of quanta absorbed
+        % compute proportion of quanta absorbed
         %
         % Syntax:
         %   val = get.absorptance(obj);
@@ -206,20 +312,21 @@ methods  % public methods
         %
         % Optional key/value pairs:
         %    None.
-        %
+
         val = 1 - obj.transmittance;
     end
-
-
+    
     % set methods for dependent variables
     function set.unitDensity(obj, val)
-        % interpolate for wavelength samples
+        % Set underlying macular pigment absorbance.
         %
         % Syntax:
         %   set.unitDensity(obj, val)
         %
         % Description:
-        %    Interpolate for the wavelength samples
+        %    Set the underlying macular pigment absorbance.  This should be
+        %    on the wavelength spacing specified in property wave, not
+        %    wave_.  But it is splined to obj.wave_ when it is stored.
         %
         % Inputs:
         %    obj - The Macular object
@@ -230,48 +337,31 @@ methods  % public methods
         %
         % Optional key/value pairs:
         %    None.
-        %
-        obj.unitDensity_ = interp1(obj.wave, val,obj.wave_, 'pchip');
-        obj.unitDensity_ = max(obj.unitDensity_, 0);
-    end
-end
 
-methods (Static)
-    function density = eccDensity(eccDeg)
-        % Compute macular pigment optical density as funct. of eccentricity
-        %
-        % Syntax:
-        %	density = macularDensity(eccDeg);
-        %
-        % Description:
-        %    Compute the macular pigment's optical density as a function of
-        %    its eccentricity.
-        %
-        % Inputs:
-        %    eccDeg   - eccentricity in degrees
-        %
-        % Outputs:
-        %	 density  - macular pigment optical density
-        %
-        % Notes:
-        %   1) Macular pigment density is roughly symmetric and thus we
-        %      approximate the 2D position by 1D eccentricity
-        %   2) The lorentzian function is fitted from data grabbed from
-        %      figure 2(B) in the reference paper. The data is stored
-        %      in macularDensity.mat
-        %
-        % References:
-        %   Putnam, C. M., & Bland, P. J. (2014). Macular pigment
-        %   optical density spatial distribution measured in a subject
-        %   with oculocutaneous albinism. Journal of Optometry, 7(4),
-        %   241-245.
-        %
-
-        % Compute density with the lorentz function 
-        % 
-        % Here, we force the model to be symmetric and have 0 density
-        % at infinite eccentricity
-        density = 0.35 * 3.6028 ./ (eccDeg .^ 2 + 3.6028);
+        if (length(val) ~= length(obj.wave))
+            error('Must set absorbance (aka unitDensity) on wavelengths support of obj.wave_');
+        end
+        if (abs(max(val)-1) > 1e-2)
+            % Can only check to precision of 1e-2 because of the values in
+            % our historical validation files.
+            error('Absorbance (aka unitDensity) should be normalized to a maximum of 1');
+        end
+        if (min(val) < -1e-4)
+            error('Absorbance (aka unitDensity) should be be all positive');
+        end
+        
+        % This would be better clipping to 0,1 after tighter checks above,
+        % but not doing so to avoid breaking validtion files.
+        val = max(val,0);
+        obj.unitDensity_ = interp1(...
+                obj.wave, val, obj.wave_, 'pchip');
     end
+    
+    % Method for computing macular pigment density as a function of
+    % eccentricity
+    density = eccDensity(obj, eccDeg);
 end
+    
+
+
 end

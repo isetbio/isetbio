@@ -30,6 +30,10 @@
 %   sceneToFile             - Write scene data in the hyperspectral and multispectralfile format
 %   sceneWBCreate           - Create a directory of waveband scene images in separate files  
 %
+% ADATPIVEOPTICS (subdir adaptiveOptics)
+%   AOMonochromaticCornealPowerToRadiance - Convert power at cornea to
+%   equivalent radiance.
+%
 % ILLUMINATION (subdir illumination) isetbio scene illumination functions
 %   illumination/blackbody           - Generate the spectral power distribution of a blackbody radiator
 %   illumination/illuminantCreate    - Create an illuminant (light source) structure. 

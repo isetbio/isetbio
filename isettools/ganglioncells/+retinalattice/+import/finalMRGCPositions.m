@@ -5,7 +5,7 @@ function [rfPositionsMicrons, rfPositionsDegs] = finalMRGCPositions(sourceLattic
     sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(sizeDegs, sqrt(sum(eccDegs.^2,2)));
     
     % Load mRGC RF positions
-    p = retinalattice.configure(sourceLatticeSizeDegs, 'midget ganglion cells', sprintf('%s eye',whichEye));
+    p = retinalattice.configure(sourceLatticeSizeDegs, 'midget ganglion cells', whichEye);
     
     load(fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName), 'rfPositions');
     rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));

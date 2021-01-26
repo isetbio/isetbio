@@ -5,7 +5,7 @@ function [rfPositionsMicrons, rfPositionsDegs] = finalConePositions(sourceLattic
     sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(sizeDegs, sqrt(sum(eccDegs.^2,2)));
 
     % Load final cone positions
-    p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', sprintf('%s eye',whichEye));
+    p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
     load(fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName), 'rfPositions');
     rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));
     

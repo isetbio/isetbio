@@ -40,7 +40,6 @@
 %   IsomerizationsFromAbsorbptions - Compute isomerization rate from absorption rate.
 %   LabToXYZ            - Convert from Lab to XYZ.
 %   LjgToXYZ            - Convert from OSA UCS Ljg to XYZ (10 degree).
-%   LjgToXYZFun         - Error function for LjgToXYZ numerical optimization.
 %   LumToRadiance       - Get spectral radiance from luminance and relative spectrum of source.
 %   LumToTrolands       - Convert luminance (cd/m2) to trolands.
 %   LuvToXYZ            - Convert from Luv to XYZ.
@@ -77,7 +76,6 @@
 %   SRGBGammaCorrect    - Convert between sRGB primary coordinates and 8-bit RGB values.
 %   SRGBGammaUncorrect   - Convert between sRGB 8-bit RGB values and primary coordinates.
 %   SToWls              - Convert S wavelength sampling spec to wls format.
-%   TestLxx             - Test routine for Lab/Luv calculations.
 %   TriToMetSPD         - Compute metamer from tristimulus coordinates.
 %   WattsToRetIrradiance - Get absolute retinal irradiance (power units) from rel. spectrum and watts/area.
 %   uvTols              - Convert between CIE u'v' and a cone based (ls) chromaticity.

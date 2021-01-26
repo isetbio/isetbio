@@ -1,15 +1,38 @@
 function [params,fitFundamentals,fitError] = FitConeFundamentalsWithNomogram(T_targetQuantal,staticParams,params0)
 % [fitFundamentals,params,fitError] = FitConeFundamentalsWithNomogram(T_targetQuantal,staticParams,params0)
 %
-% Find underlying parameters that fit the passed corneal cone fundamentals
+% Find underlying parameters that fit the passed corneal cone fundamentals.
 %
-% 8/4/03  dhb  Wrote it.
+% Needs the Matlab optimization toolbox, or GNU/Octave version 6 or later with
+% the Octave Forge 'optim' package v1.6.0 or later.
+%
 
-% Doesn't work on octave due to lack of function 'fmincon' from the
-% Matlab Optimization toolbox (see https://savannah.gnu.org/bugs/?35333)
-% and due to use of nested function FitConesFun():
+% 8/4/03   dhb  Wrote it.
+% 12/4/20  mk  Add Octave support.
+
+% On Octave we need the 'optim' package v1.6.0 or later for fmincon() support,
+% and Octave 6 or later for support for handles to nested functions like @FitConesFun below:
 if IsOctave
-    error('Sorry, this function does not yet work on GNU/Octave.');
+    v = version;
+    if str2num(v(1)) < 6
+        error('For use with Octave, you need at least Octave version 6.');
+    end
+
+    try
+        % Try loading the optim package with the optimization functions:
+        pkg load optim;
+    catch
+        error('For use with Octave, you must install the ''optim'' package from Octave Forge. See ''help pkg''.');
+    end
+
+    % Got optim package loaded. Does it support fmincon()?
+    if ~exist('fmincon')
+        error('For use with Octave, you need at least version 1.6.0 of the ''optim'' package from Octave Forge.');
+    end
+else
+    if ~exist('fmincon')
+        error('For use with Matlab, you need the optimization toolbox.');
+    end
 end
 
 % Convert initial parameter struct to parameter list
@@ -18,18 +41,18 @@ x0 = FitConesParamsToList(params0);
 % Set bounds on search parameters
 % Length 4, we're handling Ser/Ala polymorphism
 if (length(x0) == 4)
-    vlb(1:4) = 0;
-    vub(1:4) = 800;
+    vlb = [0 ; 0; 0; 0];
+    vub = [800; 800; 800; 800];
 elseif (length(x0) == 3)
-    vlb(1:3) = 0;
-    vub(1:3) = 800;
+    vlb = [0 ; 0; 0];
+    vub = [800; 800; 800];
 else
     error('Unexpected length for parameter vector');
 end
 
 % Search to find best fit
 options = optimset('fmincon');
-options = optimset(options,'Diagnostics','off','Display','off','LargeScale','off','Algorithm','active-set');
+options = optimset(options,'Display','off','Algorithm','active-set');
 if (exist('IsCluster') && IsCluster && matlabpool('size') > 1) %#ok<EXIST>
     options = optimset(options,'UseParallel','always');
 end

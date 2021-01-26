@@ -37,7 +37,8 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY] = oiForSubjectA
              PolansOptics.constants.measurementPupilDiamMM, ...
              pupilDiamMM, inFocusWavelength, false, ...
              'doNotZeroCenterPSF', true, ...
-             'micronsPerDegree', micronsPerDegree);
+             'micronsPerDegree', micronsPerDegree, ...
+             'name', sprintf('Polans subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
     
     % Remove wavelength-dependent defocus if noLCA is set
     if (noLCA)
@@ -74,7 +75,6 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
          % spatial positions
          if ((zCoeffIndices(zIndex) == 4) && (subtractCentralRefraction))
              idx = find((X==0) & (Y==0));
-             fprintf('Z(%d) = %f\n', zIndex, zz(idx));
              zz = zz - zz(idx);
          end
          % Interpolate the XY map at the desired eccentricity

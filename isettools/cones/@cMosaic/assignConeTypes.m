@@ -1,14 +1,26 @@
-function assignConeTypes(obj)
-
-    % Ensure densities sum up to 1.0
+function assignConeTypes(obj, varargin)
+    p = inputParser;
+    p.addParameter('coneDensities', [], @(x)(isempty(x) || ((numel(x) == 3)||(numel(x)==4))));
+    p.parse(varargin{:});
+    
+    % Update cone densities
+    if (~isempty(p.Results.coneDensities))
+        obj.coneDensities = p.Results.coneDensities;
+    end
+    
+    % Deal with missing 4-th cone density
     if (numel(obj.coneDensities) == 3)
         obj.coneDensities = [obj.coneDensities 0];
     end
-    remaining = 1-obj.coneDensities(obj.SCONE_ID);
-    f = 1/remaining;
-    obj.coneDensities(obj.LCONE_ID) = obj.coneDensities(obj.LCONE_ID) * f;
-    obj.coneDensities(obj.MCONE_ID) = obj.coneDensities(obj.MCONE_ID) * f;
-    obj.coneDensities(obj.KCONE_ID) = obj.coneDensities(obj.KCONE_ID) * f;
+    
+    % Ensure densities sum up to 1.0
+    if (round(sum(obj.coneDensities)*100) ~= 100)
+        remaining = 1-obj.coneDensities(obj.SCONE_ID);
+        f = 1/remaining;
+        obj.coneDensities(obj.LCONE_ID) = obj.coneDensities(obj.LCONE_ID) * f;
+        obj.coneDensities(obj.MCONE_ID) = obj.coneDensities(obj.MCONE_ID) * f;
+        obj.coneDensities(obj.KCONE_ID) = obj.coneDensities(obj.KCONE_ID) * f;
+    end
     
     % Reserve all cones within the tritanopic area to be either L or M
     ecc = sqrt(sum(obj.coneRFpositionsDegs.^2,2));
@@ -27,7 +39,7 @@ function assignConeTypes(obj)
     % All LM cone indices
     allLMconeIndices = [fovealLMconeIndices(:); peripheralLMConeIndices(:)];
     
-    % Assing L and M-cone indices based on relative ratio of L:M cone density
+    % Assign L and M-cone indices based on relative ratio of L:M cone density
     LMratio = obj.coneDensities(obj.LCONE_ID) / obj.coneDensities(obj.MCONE_ID);
     
     p = rand(1,numel(allLMconeIndices));
@@ -41,19 +53,22 @@ function assignConeTypes(obj)
     obj.mConeIndices = setdiff(allLMconeIndices, obj.lConeIndices);
     obj.sConeIndices = setdiff(1:conesNum, allLMconeIndices);
     
-    % k-cones: randomized positions
-    randomIndices = randperm(numel(allLMconeIndices));
-    kConesNum = round(obj.coneDensities(obj.KCONE_ID) * conesNum);
+    if (obj.coneDensities(obj.KCONE_ID) > 0)
+        % k-cones: randomized positions
+        randomIndices = randperm(numel(allLMconeIndices));
+        kConesNum = round(obj.coneDensities(obj.KCONE_ID) * conesNum);
+
+        % These LM cones will be reassigned to k-cones
+        kConeIDs = allLMconeIndices(randomIndices(1:kConesNum));
+
+        % Remove them from the list of L-cones
+        obj.lConeIndices = setdiff(obj.lConeIndices, kConeIDs);
+        % Remove them from the list of M-cones
+        obj.mConeIndices = setdiff(obj.mConeIndices, kConeIDs);
+        % Add them to the list of K-cones
+        obj.kConeIndices = kConeIDs;
+    end
     
-    % These LM cones will be reassigned to k-cones
-    kConeIDs = allLMconeIndices(randomIndices(1:kConesNum));
-    
-    % Remove them from the list of L-cones
-    obj.lConeIndices = setdiff(obj.lConeIndices, kConeIDs);
-    % Remove them from the list of M-cones
-    obj.mConeIndices = setdiff(obj.mConeIndices, kConeIDs);
-    % Add them to the list of K-cones
-    obj.kConeIndices = kConeIDs;
     
    
     % Make sure all cones have been assigned an ID
@@ -73,18 +88,18 @@ function assignConeTypes(obj)
     obj.sConeIndices = reshape(obj.sConeIndices, [numel(obj.sConeIndices) 1]);
     obj.kConeIndices = reshape(obj.kConeIndices, [numel(obj.kConeIndices) 1]);
     
-    % Update cone densities with achieved ones
-    obj.coneDensities = [...
+    % Compute achieved cone densities
+    achievedConeDensities = [...
         numel(obj.lConeIndices)/conesNum ...
         numel(obj.mConeIndices)/conesNum ...
         numel(obj.sConeIndices)/conesNum ...
         numel(obj.kConeIndices)/conesNum];
     
     fprintf('Achieved cone densities: L (%2.3f), M (%2.3f), S (%2.3f), K (%2.3f)\n', ...
-        obj.coneDensities(1), ...
-        obj.coneDensities(2), ...
-        obj.coneDensities(3), ...
-        obj.coneDensities(4));
+        achievedConeDensities(1), ...
+        achievedConeDensities(2), ...
+        achievedConeDensities(3), ...
+        achievedConeDensities(4));
     
 end
 
@@ -103,7 +118,7 @@ function LMconeIndices = determineLMconeIndices(conePositions, coneSpacings, des
     % Compute ecc of all cones
     ecc = sqrt(sum(conePositions.^2,2));
     
-    % Compute distances between each cone and its closest 100 cones
+    % Compute distances between each cone and its closest 200 cones
     [d, i] = pdist2(conePositions, conePositions, 'euclidean', 'smallest', 200);
     
     % Remove the distance to the cone itself
