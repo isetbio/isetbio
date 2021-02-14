@@ -446,7 +446,7 @@ classdef coneMosaicHex < coneMosaic
 
         % Using the passed axesHandle, render (draw) an activation map for
         % the hex mosaic
-        renderActivationMap(obj, axesHandle, activation, varargin);
+        activationMetaData = renderActivationMap(obj, axesHandle, activation, varargin);
 
         % the coneLocsHexGrid ordered so they correspond to the serialized 1D response
         coneLocsHexGrid = coneLocsHexGridAlignedWithSerializedConeMosaicResponse(obj);
@@ -492,6 +492,8 @@ classdef coneMosaicHex < coneMosaic
         % obj.coneLocsHexGrid and the obj.coneTypesHexGrid
         apertureDiametersMicrons = computeApertureDiametersHexGrid(obj);
         
+        mosaicMetaData = coneData(obj);
+        
         % Return a struct with the mosaic geometry (cone positions,
         % Delaunay triangles, and cone aperture sizes)
         cmStruct = geometryStruct(obj);
@@ -522,7 +524,7 @@ classdef coneMosaicHex < coneMosaic
             meshFaceColor, meshFaceAlpha, meshEdgeAlpha, lineStyle);
         correctionFactors = computeConeEfficiencyCorrectionFactors(...
             aConeMosaicHexObject, triggerFunctionName, varargin);
-        [innerApertureOutline, outerApertureOutline, maxApertureMeters] = ...
+        [innerApertureOutline, outerApertureOutline, maxApertureMeters, aperturesMeters] = ...
             computeApertureSizes(dxInner, dxOuter, innerApertureOutline,...
             outerApertureOutline, xCoords, yCoords);
     end % Static methods
