@@ -100,19 +100,21 @@ function mosaicMetaData = coneData(obj)
     mosaicMetaData.positions = lConeCoords * 1e6;
     mosaicMetaData.types = ones(size(lConeCoords,1),1);
     mosaicMetaData.apertures = lConeApertures'*1e6;
-    mosaicMetaData.outerSegmentLengthAttenationFactors = lConeOuterSegmentLengthAttenationFactors';
-            
+    mosaicMetaData.outerSegmentLengthAttenationFactors = lConeOuterSegmentLengthAttenationFactors(:);
+    mosaicMetaData.totalAttenationFactors = lConeTotalCorrectionFactors(:);
+ 
     % add the M-cones
     mosaicMetaData.positions = cat(1, mosaicMetaData.positions, mConeCoords * 1e6);
     mosaicMetaData.types = cat(1, mosaicMetaData.types, 2*ones(size(mConeCoords,1),1));
     mosaicMetaData.apertures = cat(1, mosaicMetaData.apertures, mConeApertures'*1e6);
-    mosaicMetaData.outerSegmentLengthAttenationFactors = cat(1, mosaicMetaData.outerSegmentLengthAttenationFactors, mConeOuterSegmentLengthAttenationFactors');
-            
+    mosaicMetaData.outerSegmentLengthAttenationFactors = cat(1, mosaicMetaData.outerSegmentLengthAttenationFactors, mConeOuterSegmentLengthAttenationFactors(:));
+    mosaicMetaData.totalAttenationFactors = cat(1, mosaicMetaData.totalAttenationFactors, mConeTotalCorrectionFactors(:));
+    
     % add the S-cones
     mosaicMetaData.positions = cat(1, mosaicMetaData.positions, sConeCoords * 1e6);
     mosaicMetaData.types = cat(1, mosaicMetaData.types, 3*ones(size(sConeCoords,1),1));
     mosaicMetaData.apertures = cat(1, mosaicMetaData.apertures, sConeApertures'*1e6);
-    mosaicMetaData.outerSegmentLengthAttenationFactors = cat(1, mosaicMetaData.outerSegmentLengthAttenationFactors, sConeOuterSegmentLengthAttenationFactors');
-     
+    mosaicMetaData.outerSegmentLengthAttenationFactors = cat(1, mosaicMetaData.outerSegmentLengthAttenationFactors, sConeOuterSegmentLengthAttenationFactors(:));
+    mosaicMetaData.totalAttenationFactors = cat(1, mosaicMetaData.totalAttenationFactors, sConeTotalCorrectionFactors(:));
 end
 
