@@ -1,4 +1,4 @@
-function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName, varargin)
+function [correctionFactors, outerSegmentLengthAttenationFactors] = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName, varargin)
 % Static method for computing ecc-based absorption correction factors
 %
 % Syntax:
@@ -52,6 +52,9 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, trigger
     end
     
     correctionFactors = zeros(obj.rows, obj.cols);
+    sensitivityChangeDueToInnerSegmentDiam = correctionFactors;
+    outerSegmentLengthAttenationFactors = correctionFactors;
+    
     for coneTypeIndex = 1:3
         coneIndices = find(obj.pattern == coneTypeIndex+1);
         % Compute cone eccentricities in meters
@@ -73,7 +76,8 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, trigger
         % Compute outer segment length for each cone based on its eccentricity
         [osLengthMicrons, osLengthAtZeroEcc] = outerSegmentLengthFromEccentricity(coneEccentricitiesInDegs);
         
-        correctionFactors(coneIndices) = computeAbsorptionCorrectionFactors(...
+        [correctionFactors(coneIndices), sensitivityChangeDueToInnerSegmentDiam(coneIndices), outerSegmentLengthAttenationFactors(coneIndices)] = ...
+            computeAbsorptionCorrectionFactors(...
               apertureMeters/apertureMetersAtZeroEcc, ...
               osLengthMicrons/osLengthAtZeroEcc, coneTypeIndex);
         
@@ -84,7 +88,7 @@ function correctionFactors = computeConeEfficiencyCorrectionFactors(obj, trigger
     end  
 end
 
-function correctionFactors = computeAbsorptionCorrectionFactors(...
+function [correctionFactors, sensitivityChangeDueToInnerSegmentDiam, sensitivityChangeDueToOuterSegmentLength]= computeAbsorptionCorrectionFactors(...
     apertureChangeWithRespectToZeroEcc, osChangeWithRespectToZeroEcc, coneTypeIndex)
     
     % Sensitivity change due to change in aperture diameter (A = r^2);
