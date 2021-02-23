@@ -1,17 +1,13 @@
 function mosaicMetaData = coneData(obj)
-
-     % Account for the fact mismatch between obj.pigment.pdArea and the
-     % actual area at 0,0 degs
-    [~,apertureMetersAtZeroEcc, ~] = coneSizeReadData(...
-            'eccentricity', 0.0,...
-            'angle', 0.0);
         
     mosaicMetaData.positionUnits = 'microns';
-    mosaicMetaData.boostDueToMismatchBetweenConeAreaAtZeroEccAndPigmentPDarea = obj.pigment.pdArea / (pi*(apertureMetersAtZeroEcc/2).^2);
+    mosaicMetaData.boostDueToMismatchBetweenConeAreaAtZeroEccAndPigmentPDarea = 1;
        
     sampledHexMosaicXaxis = obj.patternSupport(1, :, 1);
     sampledHexMosaicYaxis = obj.patternSupport(:, 1, 2);
 
+    sampledHexMosaicXaxis = sampledHexMosaicXaxis - mean(sampledHexMosaicXaxis);
+    sampledHexMosaicYaxis = sampledHexMosaicYaxis - mean(sampledHexMosaicYaxis);
 
     [correctionFactors, outerSegmentLengthAttenationFactors] = coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, 'coneData');
     
@@ -21,6 +17,7 @@ function mosaicMetaData = coneData(obj)
     coneXcoords = sampledHexMosaicXaxis(iCols);
     coneYcoords = sampledHexMosaicYaxis(iRows);
     lConeCoords = [coneXcoords(:) coneYcoords(:)];
+
     
     if (obj.shouldCorrectAbsorptionsWithEccentricity())
         [~, ~, ~, lConeApertures] = coneMosaicHex.computeApertureSizes(...
@@ -28,11 +25,11 @@ function mosaicMetaData = coneData(obj)
             [],[], ...
             coneXcoords, coneYcoords ...
         );
+  
     else
-        [~, apertureMeters, ~] = coneSizeReadData(...
-        'eccentricity',0, 'angle',0);
-        lConeApertures = apertureMeters * ones(1, size(lConeCoords,1)); 
+        lConeApertures = sqrt(obj.pigment.pdArea / pi)*2 * ones(1, size(lConeCoords,1)); 
     end
+
     if (obj.eccBasedConeQuantalEfficiency)
         lConeOuterSegmentLengthAttenationFactors = outerSegmentLengthAttenationFactors(idx);
         lConeTotalCorrectionFactors = correctionFactors(idx);
@@ -40,7 +37,6 @@ function mosaicMetaData = coneData(obj)
         lConeOuterSegmentLengthAttenationFactors = ones(1, size(lConeCoords,1));
         lConeTotalCorrectionFactors = ones(1, size(lConeCoords,1));
     end
-    
     
     % M-cones
     idx = find(obj.pattern == 3);
@@ -56,9 +52,7 @@ function mosaicMetaData = coneData(obj)
             coneXcoords, coneYcoords ...
         );
     else
-        [~, apertureMeters, ~] = coneSizeReadData(...
-        'eccentricity',0, 'angle',0);
-        mConeApertures = apertureMeters * ones(1, size(mConeCoords,1)); 
+        mConeApertures = sqrt(obj.pigment.pdArea / pi)*2  * ones(1, size(mConeCoords,1)); 
     end
     if (obj.eccBasedConeQuantalEfficiency)
         mConeOuterSegmentLengthAttenationFactors = outerSegmentLengthAttenationFactors(idx);
@@ -82,9 +76,7 @@ function mosaicMetaData = coneData(obj)
             coneXcoords, coneYcoords ...
         );
     else
-        [~, apertureMeters, ~] = coneSizeReadData(...
-        'eccentricity',0, 'angle',0);
-        sConeApertures = apertureMeters * ones(1, size(sConeCoords,1)); 
+        sConeApertures = sqrt(obj.pigment.pdArea / pi)*2  * ones(1, size(sConeCoords,1)); 
     end
     if (obj.eccBasedConeQuantalEfficiency)
         sConeOuterSegmentLengthAttenationFactors = outerSegmentLengthAttenationFactors(idx);
