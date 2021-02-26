@@ -105,7 +105,7 @@ function doIt(env, varyMPdensity, varyApertureAndOSlength)
   
     nTrials = 1; % 30000
     nRepeats = 1;
-    
+    noisyResponseInstancesNum = 10;
     
     emPath = zeros(nTrials, 1, 2);
     if (strcmp(env, 'old'))
@@ -116,20 +116,45 @@ function doIt(env, varyMPdensity, varyApertureAndOSlength)
         activationMap = squeeze(coneExcitations(1,:,:));
         fprintf(2,'Old mosaic compute time: %2.2f seconds, max response: %f\n', toc, max(activationMap(:)));
         
-        
-        
+        % Also compute 10 noisy response instances
+        theOldConeMosaic.noiseFlag = 'random';
+        noisyConeExcitationInstances = theOldConeMosaic.compute(theOI, ...
+            'emPath', zeros(noisyResponseInstancesNum, 1, 2), ...
+            'seed', 12345);
+        lConeIndices = find(theOldConeMosaic.pattern == 2);
+        mConeIndices = find(theOldConeMosaic.pattern == 3);
+        sConeIndices = find(theOldConeMosaic.pattern == 4);
+        conesNum = numel(lConeIndices) + numel(mConeIndices) + numel(sConeIndices);
+        activationMetaDataOld.noisyConeExcitationInstances = zeros(noisyResponseInstancesNum, conesNum);
+        for instanceNo = 1:noisyResponseInstancesNum
+            tmp = squeeze(noisyConeExcitationInstances(instanceNo, :,:));
+            idx = 1:numel(lConeIndices);
+            activationMetaDataOld.noisyConeExcitationInstances(instanceNo,idx) = tmp(lConeIndices);
+            activationMetaDataOld.lConeActivations = activationMap(lConeIndices);
+            idx = 1:numel(mConeIndices);
+            activationMetaDataOld.noisyConeExcitationInstances(instanceNo,numel(lConeIndices)+idx) = tmp(mConeIndices);
+            activationMetaDataOld.mConeActivations = activationMap(mConeIndices);
+            idx = 1:numel(sConeIndices);
+            activationMetaDataOld.noisyConeExcitationInstances(instanceNo,numel(lConeIndices)+numel(mConeIndices)+idx) = tmp(sConeIndices);
+            activationMetaDataOld.sConeActivations = activationMap(sConeIndices);
+        end
+
         % Visualize old  mosaic response
         hFig = figure(2);
         ax = subplot(1,3,1);
         cla(ax)
-        activationMetaDataOld = theOldConeMosaic.renderActivationMap(ax, activationMap, ...
+        activationMetaDataOld.meanResponses = theOldConeMosaic.renderActivationMap(ax, activationMap, ...
                 'visualizedConeAperture', 'geometricArea', 'mapType', 'modulated disks');
         save(fullfile(dataPath, 'oldMosaicActivationMetaData.mat'), 'activationMetaDataOld');
     else
         tic
+        theNewConeMosaic.noiseFlag = 'random';
         for k = 1:nRepeats
-            coneExcitations = theNewConeMosaic.compute(theOI);
+            [coneExcitations, noisyConeExcitationInstances] = theNewConeMosaic.compute(theOI, ...
+                'seed', 12345, ...
+                'nTrials', noisyResponseInstancesNum);
         end
+
         activationMap = squeeze(coneExcitations(1,1,:));
         fprintf(2,'New mosaic compute time: %2.2f seconds, max response: %f\n', toc, max(activationMap(:)));
         
@@ -173,11 +198,21 @@ function doIt(env, varyMPdensity, varyApertureAndOSlength)
             
         % Load old activation data
         load(fullfile(dataPath, 'oldMosaicActivationMetaData.mat'), 'activationMetaDataOld');
-
+        
         % Compare activations old vs new mosaic
         activationMetaDataNew.lConeActivations = activationMap(theNewConeMosaic.lConeIndices);
         activationMetaDataNew.mConeActivations = activationMap(theNewConeMosaic.mConeIndices);
         activationMetaDataNew.sConeActivations = activationMap(theNewConeMosaic.sConeIndices);
+        
+        % Contrast noise response instances
+        hFig = figure(4); clf;
+        size(activationMetaDataOld.noisyConeExcitationInstances)
+        size(noisyConeExcitationInstances)
+        pause
+        plot(activationMetaDataOld.noisyConeExcitationInstances(:), noisyConeExcitationInstances(:), 'k.');
+        xlabel('old mosaic');
+        ylabel('new mosaic');
+        title('noisy response instances');
         
         % Contrast activations
         hFig = figure(3); clf;

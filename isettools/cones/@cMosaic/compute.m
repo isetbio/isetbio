@@ -25,6 +25,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     p.addParameter('withFixationalEyeMovements', false, @islogical);
     p.addParameter('nTimePoints', [], @isscalar);
     p.addParameter('nTrials', [], @isscalar);
+    p.addParameter('seed', 1, @isnumeric);
     p.addParameter('verbosityLevel', 'none', @(x)ismember(x, {'default', 'min', 'max'}));
     p.parse(varargin{:});
     
@@ -40,7 +41,8 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     
     nTimePoints = p.Results.nTimePoints;
     nTrials = p.Results.nTrials;
-
+    noiseSeed = p.Results.seed;
+    
     % emPaths/nTrials validation
     replicateResponseToFirstEMpath = false;
     if (p.Results.withFixationalEyeMovements)
@@ -209,7 +211,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
             %fprintf('Replicating trial %d from first trial.\n', iTrial);
             noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
         end
-        %fprintf('Replicating mean response for %d trials count took %f seconds.\n', nTrials, etime(clock, t2));
+       %fprintf('Replicating mean response for %d trials count took %f seconds.\n', nTrials, etime(clock, t2));
         
     else 
         
@@ -258,21 +260,24 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     end
     %fprintf('Tile lapsed to compute mean response: %2.2f seconds\n', etime(clock, tStart));
 
+
+    if (strcmp(obj.noiseFlag, 'none'))
+        noisyAbsorptionInstances = [];
+    else
+        % Add photon noise here.
+        if (isempty(noiseSeed))
+            noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount);
+        else
+            noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount, 'seed', noiseSeed);
+        end
+        %fprintf('Tile lapsed to compute Poisson noise for %d trials: %2.2f seconds\n', nTrials, etime(clock, tStart));
+    end
+    
     % If we have no eye movements, just return the first noise free absorptions count
     if ((isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0)) && (nTrials > 1))
         %fprintf('Returning only the first noise free absorptions response, because there is no eye movement data\n');
         noiseFreeAbsorptionsCount = noiseFreeAbsorptionsCount(1,:,:);
     end
-    
-    if (strcmp(obj.noiseFlag, 'none'))
-        noisyAbsorptionInstances = [];
-    else
-        % Add photon noise here.
-        tStart = clock();
-        noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount);
-        %fprintf('Tile lapsed to compute Poisson noise for %d trials: %2.2f seconds\n', nTrials, etime(clock, tStart));
-    end
-    
     
     fprintf(2, 'No photocurrent computed\n');
     photoCurrents = [];
