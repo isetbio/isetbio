@@ -161,12 +161,12 @@ properties (SetAccess = private)
     emPosArcMin = [];
 
     % emPosMicrons - Matrix. Matrix of eye positions in microns. Truncated.
-    % Matrix dimensions: nTrials x emPath length x 2. Default []. The
-    % matrix is truncated to cone mosaic pattern size.
+    % Matrix dimensions: nTrials x emPath length x 2. Default []. 
     emPosMicrons  = [];
-
+    
     % emPos - Matrix. Matrix of eye pos. in cone mosaic pattern size units.
     % Matrix dimensions: nTrials x emPath length x 2.
+    % Note:  not set if we are computing for the new @cMosaic
     emPos = [];
 end
 
