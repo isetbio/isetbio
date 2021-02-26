@@ -58,9 +58,6 @@ classdef cMosaic < handle
         % Macular pigment object for mosaic
         macular;
         
-        % Whether to use 300 microns/degree
-        use300MicronsPerDegApproximation = false;
-
         % Boolean indicating whether to account for the increased photon
         % capture due to the increase in cone aperture with eccentricity
         eccVaryingConeAperture;
@@ -154,7 +151,6 @@ classdef cMosaic < handle
         
         % User-settable microns per degree
         micronsPerDegreeApproximation = [];
-        
     end
     
     % Dependent properties

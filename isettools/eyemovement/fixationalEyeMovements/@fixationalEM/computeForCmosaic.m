@@ -62,10 +62,10 @@ compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, ...
     computeVelocitySignal, 'centerPaths', centerPaths, 'useParfor', useParfor);
 
 % Also return the path in units of microns
-if (isempty(cMosaic.micronsPerDegApproximation))
+if (isempty(cMosaic.micronsPerDegreeApproximation))
     obj.emPosMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(obj.emPosArcMin / 60);
 else
-    obj.emPosMicrons = obj.emPosArcMin / 60 * cMosaic.micronsPerDegApproximation;
+    obj.emPosMicrons = obj.emPosArcMin / 60 * cMosaic.micronsPerDegreeApproximation;
 end
 
 if (computeVelocitySignal)
