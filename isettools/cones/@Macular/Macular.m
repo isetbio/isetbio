@@ -359,7 +359,7 @@ methods  % public methods
     
     % Method for computing macular pigment density as a function of
     % eccentricity
-    density = eccDensity(obj, eccDeg);
+    density = eccDensity(obj, eccDeg, varargin);
 end
     
 
