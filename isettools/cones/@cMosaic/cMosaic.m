@@ -216,7 +216,7 @@ classdef cMosaic < handle
             p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.2 0.2], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
-            p.addParameter('micronsPerDegreeApproximation', [], @(x)(isempty(x) || (isscalar(x))));
+            p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
             p.addParameter('eccVaryingConeAperture', true, @islogical);
             p.addParameter('eccVaryingConeBlur', false, @islogical);
             p.addParameter('eccVaryingOuterSegmentLength', true, @islogical);
@@ -239,7 +239,7 @@ classdef cMosaic < handle
             obj.sizeDegs = p.Results.sizeDegs;
             obj.whichEye = p.Results.whichEye;
 
-            obj.micronsPerDegreeApproximation = p.Results.micronsPerDegreeApproximation;
+            obj.micronsPerDegreeApproximation = p.Results.micronsPerDegree;
             obj.eccVaryingConeAperture = p.Results.eccVaryingConeAperture;
             obj.eccVaryingOuterSegmentLength = p.Results.eccVaryingOuterSegmentLength;
             obj.eccVaryingMacularPigmentDensity = p.Results.eccVaryingMacularPigmentDensity;
