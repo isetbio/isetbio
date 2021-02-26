@@ -13,7 +13,7 @@ function doIt(env, varyMPdensity, varyApertureAndOSlength)
     integrationTime = 1000/1000;
     
     % Set data path
-    dataPath = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/demos';
+    dataPath = fullfile(isetRootPath, 'ganglioncells/demos');
     
     % Compute the oi to the test scene. Also get microns per degree from
     % the oi so we can set it to the cone mosaics.
