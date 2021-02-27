@@ -1,4 +1,4 @@
-function absorptionsDensity = compute(obj, oi, varargin)
+function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, photoCurrentInstances] = compute(obj, oi, varargin)
 % Compute the cone absorptions, possibly for multiple instances
 %
 % Syntax:
@@ -17,10 +17,64 @@ function absorptionsDensity = compute(obj, oi, varargin)
 % Outputs:
 %
 % Optional key/value pairs:
-%    'emPath'            - Eye movement path (Nx2 matrix). Default is [0 0].
-%                          N controls the number of response instances
-%                          generated.
+%    'emPaths'           - Eye movement paths. Either empty or a matrix of [nTrials x N x 2]. Default is [].
+%                          
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('withFixationalEyeMovements', false, @islogical);
+    p.addParameter('nTimePoints', [], @isscalar);
+    p.addParameter('nTrials', [], @isscalar);
+    p.addParameter('seed', 1, @isnumeric);
+    p.addParameter('verbosityLevel', 'none', @(x)ismember(x, {'default', 'min', 'max'}));
+    p.parse(varargin{:});
+    
+    %verbosityLevel = p.Results.verbosityLevel;
+    
+    %tStart = clock();
+    
+    % Validate optional inputs
+    if (p.Results.withFixationalEyeMovements) && (isempty(obj.fixEMobj))
+        error('cMosaic.emGenSequence() has not been called yet to generate eye movements.');
+    end
+    
+    
+    nTimePoints = p.Results.nTimePoints;
+    nTrials = p.Results.nTrials;
+    noiseSeed = p.Results.seed;
+    
+    % emPaths/nTrials validation
+    replicateResponseToFirstEMpath = false;
+    if (p.Results.withFixationalEyeMovements)
+        % Full blown simulation. This is going to be the slowest scenario.
+        % Extract the emPaths
+        emPathsMicrons = obj.fixEMobj.emPosMicrons;
+    	emPathsDegs = obj.fixEMobj.emPosArcMin/60;
+        assert(size(emPathsMicrons,3) == 2, sprintf('The third dimension of an emPath must be 2.'));
+        if (~isempty(nTrials))
+           % fprintf(2,'Overiding nTrials from the attached ''fixationalEyeMovementsOBJ'' (%d). Will generate %d response instances all driven by the first emPath', ...
+           %     size(emPathsMicrons,1), nTrials);
+            emPathsMicrons = repmat(emPathsMicrons(1,:,:), [nTrials 1 1]);
+            emPathsDegs = repmat(emPathsDegs(1,:,:), [nTrials 1 1]);
+            replicateResponseToFirstEMpath = true;
+        end
+        if (~isempty(nTimePoints))
+            error('Cannot set''nTimePoints'' when  ''withFixationalEyeMovements'' is set to true.');
+        end
+        nTrials = size(emPathsMicrons,1);
+        nTimePoints = size(emPathsMicrons,2);
+    else
+        % No emPaths passed
+        if (isempty(nTimePoints))
+            nTimePoints = 1;
+        end
+        if (isempty(nTrials))
+            nTrials = 1;
+        end
+        emPathsMicrons = zeros(nTrials,nTimePoints,2);
+        emPathsDegs = zeros(nTrials,nTimePoints,2);
+    end
+    
     % Match the wavelength support of the object to that of the input optical image
     % First save the current value so we can restore it once we are done
     % with this computation
@@ -31,288 +85,219 @@ function absorptionsDensity = compute(obj, oi, varargin)
     % properties
     obj.wave = oiGet(oi, 'wave');
     
-    % Adjust retinal irradiance to account for ecc-based variations in
-    % macular pigment density
-    [photons, r, c] = photonsAdjustedForEccVariationInMacularPigment(obj,oi);
-    
-    
     % Compute wavelength-spacing scaled quantal efficiencies
     scaledQE = obj.qe * oiGet(oi, 'bin width');
     
-    % Compute density of cone absosprions, by integrating photons over
-    % wavelength. This is a rectangular contiguous representation of
-    % aborptions with spatial sampling equal to that of the optical image
-    % The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
-    absorptionsDensity = XW2RGBFormat(photons *  scaledQE, r, c);
+    % Retrieve oiRes and oiSize
+    oiSize  = oiGet(oi, 'size');
     
-    % Cones integrate photons over their aperture. This is equivalent to
-    % blurring. Physically, this operation occurs as the light is gathered by the cone, 
-    % before integrating over wavelength. We treat the cone aperature as
-    % independent of wavelength, however, so the convolution commutes with the
-    % summation over wavelength used above to get the isomerization density for
-    % each class of cone. It's faster to convolve here, since there are fewer
-    % bands (equal to the number of cone types) to deal with. The optical
-    % image is typically sampled at 30+ wavelengths
-    meanLevelForRendering = absorptionsDensity(1,1,1);
-    absorptionsDensity = blurByConeAperture(obj, oi, absorptionsDensity);
+    if (1==1)
+        oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
+        
+        oiYPosMicrons = (1:oiSize(1))*oiResMicrons;
+        oiXPosMicrons = (1:oiSize(2))*oiResMicrons;
+        oiXPosMicrons = oiXPosMicrons - mean(oiXPosMicrons);
+        oiYPosMicrons = oiYPosMicrons - mean(oiYPosMicrons);
+
+        if (~isempty(obj.micronsPerDegreeApproximation))
+            oiXPosDegrees = oiXPosMicrons/obj.micronsPerDegreeApproximation;  
+            oiYPosDegrees = oiYPosMicrons/obj.micronsPerDegreeApproximation;
+        else
+            oiXPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiXPosMicrons*1e-3);
+            oiYPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiYPosMicrons*1e-3);
+        end
+        
+        %oiResDegs = oiXPosDegrees(2)-oiXPosDegrees(1);
+        [oiPositionsDegsX, oiPositionsDegsY] = meshgrid(oiXPosDegrees, oiYPosDegrees);
+        oiPositionsDegs = [oiPositionsDegsX(:), oiPositionsDegsY(:)];
+    else
+        
+        
+        % Compute x,y positions for all oi pixels in microns/degs
+        oiXPosDegrees = oiResDegs * (1:oiSize(2));
+        oiXPosDegrees = oiXPosDegrees - mean(oiXPosDegrees(:));
+        oiYPosDegrees = oiResDegs * (1:oiSize(1));
+        oiYPosDegrees = oiYPosDegrees - mean(oiYPosDegrees(:));
+
+         if (~isempty(obj.micronsPerDegreeApproximation))
+            oiXPosMicrons = oiXPosDegrees * obj.micronsPerDegreeApproximation;  
+            oiYPosMicrons = oiYPosDegrees * obj.micronsPerDegreeApproximation;  
+        else
+            oiXPosMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(oiXPosDegrees);
+            oiYPosMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(oiYPosDegrees);
+        end
+
+        oiResMicrons = oiXPosMicrons(2)-oiXPosMicrons(1);
+        [oiPositionsDegsX, oiPositionsDegsY] = meshgrid(oiXPosDegrees, oiYPosDegrees);
+        oiPositionsDegs = [oiPositionsDegsX(:), oiPositionsDegsY(:)];
+    end
+
     
+    % Compute cone aperture diameters based on their local spacing
+    coneApertureDiametersMicrons = obj.coneRFspacingsMicrons * obj.coneApertureToDiameterRatio;
+    conesNum = numel(coneApertureDiametersMicrons);
+    
+    if (obj.eccVaryingConeAperture)
+        if (obj.eccVaryingConeBlur)
+            %tStart = clock;
+            % Kernel aperture blur - variable with eccentricity
+            % Partition cones into zones based on their aperture size.
+            [blurApertureDiameterMicronsZones, ...  % the median cone aperture in this zone band
+            coneIndicesInZones  ...                 % the IDs of cones in this zone band
+            ] = obj.coneZonesFromApertureSizeAndOIresolution(coneApertureDiametersMicrons, oiResMicrons);
+            %fprintf('Cone zoning based on aperture size took %f seconds.\n', etime(clock, tStart));
+        else
+            % Kernel aperture blur - single aperture for all eccentricities
+            if (isempty(obj.importedBlurDiameterMicrons))
+                blurApertureDiameterMicronsZones(1) = median(coneApertureDiametersMicrons);
+            else
+                blurApertureDiameterMicronsZones(1) = obj.importedBlurDiameterMicrons;
+            end
+            coneIndicesInZones{1} = 1:conesNum; 
+        end
+    else
+        % Kernel aperture blur - single aperture for all eccentricities
+        if (isempty(obj.importedBlurDiameterMicrons))
+            blurApertureDiameterMicronsZones(1) = median(coneApertureDiametersMicrons);
+        else
+            blurApertureDiameterMicronsZones(1) = obj.importedBlurDiameterMicrons;
+        end
+        coneApertureDiametersMicrons = coneApertureDiametersMicrons*0 + blurApertureDiameterMicronsZones(1);
+        coneIndicesInZones{1} = 1:conesNum;
+    end
+    
+    % Set the object's blurApertureDiameterMicronsZones property
+    obj.blurApertureDiameterMicronsZones = blurApertureDiameterMicronsZones;
+    
+    % Retrieve retinal irradiance in photons
+    photons = oiGet(oi, 'photons');
+   
+    % Reshape the photons for efficient computations
+    [photons, oiRowsNum, oiColsNum] = RGB2XWFormat(photons);
+    
+    % Compute boost factors by which photons have to be multiplied so as
+    % the account for MP density decrease with ecc
+    %t1 = clock;
+    currentEMposDegs = [emPathsDegs(1, 1,1) emPathsDegs(1,1,2)];
+    macularPigmentDensityBoostFactors = ...
+        updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiSize, oiResMicrons);
+    
+    %fprintf('Computing ecc-based MP boosting factors took %f seconds.\n', etime(clock, t1));
+        
+    % Allocate memory for noiseFreeAbsorptionsCount
+    nConesNum = size(obj.coneRFpositionsMicrons,1);
+    noiseFreeAbsorptionsCount = zeros(nTrials, nTimePoints, nConesNum);
+        
+    if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
+        % No emPath, so compute a single shot
+        
+        % Compute density of cone absosprions, by integrating photons over
+        % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
+        absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
+
+        % Compute absorptions
+        %t1 = clock;
+        noiseFreeAbsorptionsCount(1,1,:) = obj.integrationTime *  ...
+                obj.computeAbsorptionRate(...
+                    emPathsMicrons(1,1,:), ...
+                    [oiXPosMicrons(:) oiYPosMicrons(:)], ...
+                    absorptionsDensityFullMap, ...
+                    oiResMicrons, coneApertureDiametersMicrons, ...
+                    coneIndicesInZones);
+        %fprintf('Computing mean absorptions count took %f seconds.\n', etime(clock, t1));
+        %t2 = clock;
+        % Replicate single shot for all trials and time points
+        for iTrial = 2:nTrials
+            %fprintf('Replicating trial %d from first trial.\n', iTrial);
+            noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
+        end
+       %fprintf('Replicating mean response for %d trials count took %f seconds.\n', nTrials, etime(clock, t2));
+        
+    else 
+        
+        % Compute for emPath
+        for iTrial = 1:nTrials
+            if (replicateResponseToFirstEMpath) && (iTrial > 1)
+                % Ideantical emPaths across trials, differing just in noise
+                %fprintf('Replicating response (%d) to first trial.\n', iTrial);
+                noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
+            else
+                % Different emPath for each trial
+                for timePoint = 1:nTimePoints
+                    
+                    fprintf('\n(%s) Computing absorptions count for %d/%d time point ...', datestr(now), timePoint, nTimePoints);
+                    %t1 = clock;
+                    
+                    % Compute boost factors by which photons have to be multiplied so as
+                    % the account for MP density decrease with ecc
+                    if (obj.eccVaryingMacularPigmentDensityDynamic)
+                        currentEMposDegs = [emPathsDegs(iTrial, timePoint,1) emPathsDegs(iTrial, timePoint,2)];
+                        macularPigmentDensityBoostFactors = ...
+                            updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiSize, oiResMicrons);
+                    end
+   
+                    %fprintf('Computed MPBoostFactors in %2.2f seconds\n', etime(clock, t1));
+                    
+                    % Compute density of cone absosprions, by integrating photons over
+                    % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
+                    absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
+                    
+                    %t1 = clock;
+                    % Compute absorptions
+                    noiseFreeAbsorptionsCount(iTrial, timePoint, :) = obj.integrationTime * ...
+                        obj.computeAbsorptionRate(...
+                        emPathsMicrons(iTrial, timePoint,:), ...
+                        [oiXPosMicrons(:) oiYPosMicrons(:)], ...
+                        absorptionsDensityFullMap, ...
+                        oiResMicrons, coneApertureDiametersMicrons, ...
+                        coneIndicesInZones);
+                    %fprintf('Computed absorptionRate in %2.2f seconds\n', etime(clock, t1));
+                    
+                    %fprintf(' in %f seconds.\n', etime(clock, t1));
+                end % timePoint
+            end
+        end % iTrial
+    end
+    %fprintf('Tile lapsed to compute mean response: %2.2f seconds\n', etime(clock, tStart));
+
+
+    if (strcmp(obj.noiseFlag, 'none'))
+        noisyAbsorptionInstances = [];
+    else
+        % Add photon noise here.
+        if (isempty(noiseSeed))
+            noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount);
+        else
+            noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount, 'seed', noiseSeed);
+        end
+        %fprintf('Tile lapsed to compute Poisson noise for %d trials: %2.2f seconds\n', nTrials, etime(clock, tStart));
+    end
+    
+    % If we have no eye movements, just return the first noise free absorptions count
+    if ((isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0)) && (nTrials > 1))
+        %fprintf('Returning only the first noise free absorptions response, because there is no eye movement data\n');
+        noiseFreeAbsorptionsCount = noiseFreeAbsorptionsCount(1,:,:);
+    end
+    
+    fprintf(2, 'No photocurrent computed\n');
+    photoCurrents = [];
+    photoCurrentInstances = [];
 
     % All done. Restore original values
     obj.wave = originalValues.wave;
-
-end
-
-function  displayAbsorptionsDensity(ax, oi,absorptionsDensity, meanLevel)
-    
-    oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
-    oiSize = oiGet(oi, 'size');
-    % Remove 10% (5% on each size to avoid edge artifacts)
-    removedMargin = round(0.5*oiSize(1)*0.1);
-    absorptionsDensity= absorptionsDensity(removedMargin:end-removedMargin-1, removedMargin:end-removedMargin-1,:);
-    oiSize = oiSize - 2*removedMargin;
-    
-    oiSpatialSupportX = (1:oiSize(2));
-    oiSpatialSupportX = (oiSpatialSupportX - mean(oiSpatialSupportX))*oiResMicrons;
-    
-    oiSpatialSupportY = (1:oiSize(1));
-    oiSpatialSupportY = (oiSpatialSupportY - mean(oiSpatialSupportY))*oiResMicrons;
-    
-    
-    contrastImage = (absorptionsDensity - meanLevel)/meanLevel;
-
-    
-    % Render
-    imagesc(ax, oiSpatialSupportX, oiSpatialSupportY,contrastImage);
-    set(ax, 'CLim', [-1 1], 'FontSize', 16);
-    ylabel('space (microns)');
-    axis(ax, 'xy');
-    axis(ax, 'square');
-    colormap(ax,gray(1024));
-    drawnow;
 end
 
 
-function absorptionsDensityConvolutionImage = blurByConeAperture(obj, oi, absorptionsDensityImage)
-
-    % Determine resolution of optical image
-    oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
-    oiSize = oiGet(oi, 'size');
-    
-    % Compute cone apertures and their range
-    coneApertureDiametersMicrons = obj.coneRFspacingsMicrons * obj.coneApertureToDiameterRatio;
-    
-    if (obj.eccVaryingConeBlur) && (sum(obj.eccentricityDegs) ~= 0)
-        fprintf(2, 'eccVaryingConeBlur not performed for off axis cMosaics. Will blur using median cone aperture.\n');
-        % Convolve using the median cone aperture across the mosaic
-        absorptionsDensityConvolutionImage = ...
-                convolveWithAperture(absorptionsDensityImage, median(coneApertureDiametersMicrons), oiResMicrons);
-        return;
+function macularPigmentDensityBoostFactors = updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiSize, oiResMicrons)
+    if (obj.eccVaryingMacularPigmentDensity)
+        % Separate boost factors for each oiPixel
+        macularPigmentDensityBoostFactors = obj.computeMPBoostFactors(oiPositionsDegs, currentEMposDegs, oiSize, oiResMicrons);
+    else
+        % Single boost factor for the center of the mosaic
+        macularPigmentDensityBoostFactor = obj.computeMPBoostFactors(obj.eccentricityDegs, currentEMposDegs, oiSize, oiResMicrons);
+        % Replicate for all oiPixels
+        macularPigmentDensityBoostFactors = bsxfun(@plus, zeros(size(oiPositionsDegs,1), numel(macularPigmentDensityBoostFactor)), macularPigmentDensityBoostFactor);
     end
     
-    if (obj.eccVaryingConeBlur == false)
-        % Convolve using the median cone aperture across the mosaic
-        absorptionsDensityConvolutionImage = ...
-                convolveWithAperture(absorptionsDensityImage, median(coneApertureDiametersMicrons), oiResMicrons);
-        return;
-    end
-    
-    tic
-    % Partition optical image to subergions that correspond to different zones of cone
-    % aperture size.  First define the zones by discritizing cone aperture size.
-    coneApertureMicronsStepSize = 0.02;
-    [coneApertureDiameterMicronsZones, ...  % the median cone aperture in this zone
-        coneIndicesInZones, ...             % the IDs of cones in this zone
-        nearestConeIndexTable ...           % vector storing the code ID that is nearest to each pixel of the OI
-    ] = partitionOpticalImageInZones(obj.coneRFpositionsMicrons, ...
-                                        coneApertureDiametersMicrons, ...
-                                        coneApertureMicronsStepSize, ...
-                                        oiResMicrons, oiSize);
-    fprintf('Paritioning took %2.2f minutes\n', toc/60);
-    
-    % Allocate memory for the merged absorptions density image 
-    nRows = size(absorptionsDensityImage,1);
-    mCols = size(absorptionsDensityImage,2);
-    absorptionsDensityMergedConvolutionsImage = bsxfun(@plus, ...
-                zeros(nRows*mCols, size(absorptionsDensityImage,3)), 0*absorptionsDensityImage(1,1,:));
-    
-
-    % Perform separate convolutions with kernels based on each of
-    % the discritized cone aperture zones
-    for zoneIndex = 1:numel(coneApertureDiameterMicronsZones)
-        fprintf('Computing blur in zone %d of %d\n', zoneIndex, numel(coneApertureDiameterMicronsZones));
-        % Retrieve IDs of cones in this aperture zone
-        coneIDsInZone = coneIndicesInZones{zoneIndex};
-        % Retrieve median aperture of cones in this partition
-        coneApertureMicronsInZone = coneApertureDiameterMicronsZones(zoneIndex);
-        
-        tic
-        % See if we need to perform a convolution. 
-        if (coneApertureDiameterMicronsZones(zoneIndex) > oiResMicrons)
-            % Blur with cone aperture
-            absorptionsDensityConvolutionImage = ...
-                convolveWithAperture(absorptionsDensityImage, coneApertureMicronsInZone, oiResMicrons);
-        else
-            % Since oiResMicrons is > cone aperture, skip blurring with cone aperture
-            fprintf(2,'Cone aperture is smaller that oiRes. Will not convolve with cone aperture.\n');
-            absorptionsDensityConvolutionImage = absorptionsDensityImage;
-        end
-        fprintf('Colvolution took %2.3f seconds', toc)
-        
-        tic
-        % Determine which pixels in the OI should receive this blur. These
-        % are pixels that lie the closest than all other pixels to the cones in  this zone
-        affectedOIpixels = [];
-        for iCone = 1:numel(coneIDsInZone)
-            affectedOIpixels = cat(2, affectedOIpixels, find(nearestConeIndexTable == coneIDsInZone(iCone)));
-        end
-
-        meanLevel = absorptionsDensityImage(1,1,1);
-        % Assign these pixels from this blurred image to the final oiImage
-        for coneType = 1:size(absorptionsDensityImage,3)
-            channelImage = squeeze(absorptionsDensityConvolutionImage(:,:,coneType));
-            absorptionsDensityMergedConvolutionsImage(affectedOIpixels, coneType) = channelImage(affectedOIpixels);
-        end  
-        
-        fprintf('Pixel assignment took %2.2f seconds\n', toc);
-        
-        if (1==2)
-            figure(100+zoneIndex);
-            tmp = squeeze(absorptionsDensityMergedConvolutionsImage(:, 1));
-            ax = subplot('Position', [0.04 0.04 0.95 0.95]);
-            displayAbsorptionsDensity(ax,oi,reshape(tmp, [nRows mCols]), meanLevel);
-        end
-        
-    end % zoneIndex
-    
-    % Reshape the merged convolutions image
-    absorptionsDensityConvolutionImage = 0*absorptionsDensityImage;
-    for coneType = 1:size(absorptionsDensityImage,3)
-       absorptionsDensityVector = squeeze(absorptionsDensityMergedConvolutionsImage(:, coneType));
-       absorptionsDensityConvolutionImage(:,:,coneType) = reshape(absorptionsDensityVector, [nRows mCols 1]);
-    end
-end
-
-function  [coneApertureDiameterMicronsZones, coneIndicesInZones, nearestConeIndexTable] = ...
-    partitionOpticalImageInZones(coneRFpositionsMicrons, coneApertureDiametersMicrons, coneApertureMicronsStepSize, oiResMicrons, oiSize)
-        
-    % Since optical images are always zero centered, compute center the cone
-    % positions by subtracting the center of the cone mosaic
-    conePosMicronsCenteredOnOpticalImage = ...
-        bsxfun(@minus,coneRFpositionsMicrons, mean(coneRFpositionsMicrons,1));
-    
-    % Compute nearestOIpixel for each cone and 
-    % nearestConeIndex for each optical image pixel
-    % This operation is computationally expensive. See if we can cache the
-    % computed table and reuse when the 
-    %   - conePosMicronsCenteredOnOpticalImage, - oiResMicrons, - oiSize 
-    % are all unchanged
-    nearestConeIndexTable = ...
-        opticalImagePixelsInProximityToConePositions(conePosMicronsCenteredOnOpticalImage, oiResMicrons, oiSize);
-    
-    % Discritize cone apertures range in zones with minimum
-    % separation equal to coneApertureMicronsStepSize 
-    prctileRange = prctile(coneApertureDiametersMicrons, [1 99]);
-    nStepsMax = round((prctileRange(2)-prctileRange(1))/coneApertureMicronsStepSize);
-    for nStepsTested = 2:nStepsMax
-        coneApertureDiscritization = logspace(log10(prctileRange(1)),log10(prctileRange(2)), nStepsTested);
-        firstStep = coneApertureDiscritization(2)-coneApertureDiscritization(1);
-        d(nStepsTested-1) = abs(firstStep-coneApertureMicronsStepSize);
-    end
-    [~, idx] = min(d);
-    nSteps = idx+1;
-   
-    coneApertureDiscritization = logspace(log10(prctileRange(1)),log10(prctileRange(2)), nSteps);
-    fprintf('To achieve min cone aperture step of %2.3f (%d), we will discretized with %d steps\n', ...
-        coneApertureMicronsStepSize, coneApertureDiscritization(2)-coneApertureDiscritization(1), nSteps);
-    
-    coneApertureDiscritization = cat(2, min(coneApertureDiametersMicrons), coneApertureDiscritization);
-    coneApertureDiscritization = cat(2, coneApertureDiscritization, 1.01*max(coneApertureDiametersMicrons));
-    
-    % Determine indices of cones for each aperture zone
-    coneApertureDiameterMicronsZones = zeros(1,numel(coneApertureDiscritization)-1);
-    coneIndicesInZones = cell(1, numel(coneApertureDiscritization)-1);
-    for i = 1:numel(coneApertureDiameterMicronsZones)
-        coneApertureDiameterMicronsZones(i) = 0.5*(coneApertureDiscritization(i)+coneApertureDiscritization(i+1));
-        coneIndicesInZones{i} = find(...
-            (coneApertureDiametersMicrons >= coneApertureDiscritization(i)) & ...
-            (coneApertureDiametersMicrons < coneApertureDiscritization(i+1)));
-        coneApertureDiameterMicronsZones(i) = median(coneApertureDiametersMicrons(coneIndicesInZones{i}));
-    end
-end
-
-
-function nearestConeIndex = opticalImagePixelsInProximityToConePositions(conePositionsMicrons, oiResMicrons, oiSize)
-
-    oiYPosMicrons = (1:oiSize(1))*oiResMicrons;
-    oiXPosMicrons = (1:oiSize(2))*oiResMicrons;
-    [oiPositionsMicronsX, oiPositionsMicronsY] = ...
-        meshgrid(oiXPosMicrons - mean(oiXPosMicrons), oiYPosMicrons - mean(oiYPosMicrons));
-    
-    oiPositionsMicrons = [oiPositionsMicronsX(:) oiPositionsMicronsY(:)];
-    
-    % Compute the nearest OIpixel for each cone
-    %[~,nearestOIpixelIndex] = pdist2(oiPositionsMicrons, conePositionsMicrons, 'euclidean','Smallest',1);
-    %assert(numel(nearestOIpixelIndex) == size(conePositionsMicrons,1), ...
-    %    sprintf('Did not compute nearest OI pixel for all cones'));
-    
-    % Compute the nearest cone index for each OI pixel
-    [~,nearestConeIndex] = pdist2(conePositionsMicrons, oiPositionsMicrons, 'euclidean','Smallest',1);
-    assert(numel(nearestConeIndex) == prod(oiSize), ...
-        sprintf('Did not compute nearest cone for all OI pixels'));
-end
-
-function absorptionsDensity = convolveWithAperture(absorptionsDensity, coneApertureDiameterMicrons, oiResMicrons)
-    % Compute convolution kernel size in pixels
-    apertureSamples = ceil(coneApertureDiameterMicrons / oiResMicrons);
-    
-    % Make sure it is odd
-    if (mod(apertureSamples, 2) == 0)
-        apertureSamples = apertureSamples + 1;
-    end
-    
-    % Generate aperture kernel: pillnox with unit volume
-    apertureKernel = zeros(apertureSamples, apertureSamples);
-    [xx,yy] = sample2space(1:apertureSamples, 1:apertureSamples, oiResMicrons, oiResMicrons);
-    [apertureRows, apertureCols] = meshgrid(xx,yy);
-    apertureRadii = sqrt(apertureRows .^ 2 + apertureCols .^ 2);
-    apertureKernel(apertureRadii <= 0.5*coneApertureDiameterMicrons) = 1;
-    apertureKernel = apertureKernel ./ sum(apertureKernel(:));
-    
-    % Do the convolution for each cone type.
-    for iCone = 1:size(absorptionsDensity,3)
-        absorptionsDensity(:, :, iCone) = conv2(absorptionsDensity(:, :, iCone), apertureKernel, 'same');
-    end 
-
-end
-
-
-function [photons, r, c] = photonsAdjustedForEccVariationInMacularPigment(obj,oi)
-    % Retrieve retinal irradiance in photons
-    photons = oiGet(oi, 'photons');
-    
-    % Reshape the photons for efficient computations
-    [photons, r, c] = RGB2XWFormat(photons);
-    
-    xDegs = (0:(c-1))/c * oiGet(oi, 'h fov');
-    yDegs = (0:(r-1))/r * oiGet(oi, 'v fov');
-    xDegs = xDegs-mean(xDegs); yDegs = yDegs-mean(yDegs);
-    [X,Y] = meshgrid(xDegs,yDegs); X = X(:); Y = Y(:); 
-    eccDegs = sqrt(X.^2+Y.^2);
-    
-    % Extract default MP transmittance
-    defaultMacularPigmentTransmittance = obj.macular.transmittance;
-    
-    % Compute ecc-based MP optical densities
-    eccBasedMacularPigmentDensities = obj.macular.eccDensity(eccDegs);
-    % And corresponding transmittances
-    eccBasedMacularPigmentTransmittances = 10.^(-eccBasedMacularPigmentDensities * obj.macular.unitDensity');
-
-    % Compute boost factor for optical image photons so as to counteract the
-    % increased transmittance through the macular pigment at increasing eccentricities 
-    % due to the reduction in the MP density with eccentricity
-    opticalImageBoostFactor = bsxfun(@rdivide, eccBasedMacularPigmentTransmittances, defaultMacularPigmentTransmittance');
-    
-    % Boost retinal image photons 
-    photons = photons .* opticalImageBoostFactor;
 end
 

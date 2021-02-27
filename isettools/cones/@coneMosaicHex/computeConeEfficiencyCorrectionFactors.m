@@ -1,4 +1,4 @@
-function [correctionFactors, outerSegmentLengthAttenationFactors] = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName, varargin)
+function [correctionFactors, outerSegmentLengthAttenationFactors, innerSegmentDiameterBoostFactors] = computeConeEfficiencyCorrectionFactors(obj, triggerFunctionName, varargin)
 % Static method for computing ecc-based absorption correction factors
 %
 % Syntax:
@@ -52,7 +52,7 @@ function [correctionFactors, outerSegmentLengthAttenationFactors] = computeConeE
     end
     
     correctionFactors = zeros(obj.rows, obj.cols);
-    sensitivityChangeDueToInnerSegmentDiam = correctionFactors;
+    innerSegmentDiameterBoostFactors = correctionFactors;
     outerSegmentLengthAttenationFactors = correctionFactors;
     
     for coneTypeIndex = 1:3
@@ -76,7 +76,7 @@ function [correctionFactors, outerSegmentLengthAttenationFactors] = computeConeE
         % Compute outer segment length for each cone based on its eccentricity
         [osLengthMicrons, osLengthAtZeroEcc] = outerSegmentLengthFromEccentricity(coneEccentricitiesInDegs);
         
-        [correctionFactors(coneIndices), sensitivityChangeDueToInnerSegmentDiam(coneIndices), outerSegmentLengthAttenationFactors(coneIndices)] = ...
+        [correctionFactors(coneIndices), innerSegmentDiameterBoostFactors(coneIndices), outerSegmentLengthAttenationFactors(coneIndices)] = ...
             computeAbsorptionCorrectionFactors(...
               apertureMeters/apertureMetersAtZeroEcc, ...
               osLengthMicrons/osLengthAtZeroEcc, coneTypeIndex);

@@ -24,7 +24,7 @@ function assignConeTypes(obj, varargin)
     
     % Reserve all cones within the tritanopic area to be either L or M
     ecc = sqrt(sum(obj.coneRFpositionsDegs.^2,2));
-    fovealLMconeIndices = find(ecc <= 0.5*obj.tritanopicRadiusDegs);
+    fovealLMconeIndices = find(ecc <= obj.tritanopicRadiusDegs);
     
     % Determine non-foveal LM cone indices, leaving room for regularly
     % spaced S-cones with density = obj.coneDensities(obj.SCONE_ID)
@@ -94,6 +94,9 @@ function assignConeTypes(obj, varargin)
         numel(obj.mConeIndices)/conesNum ...
         numel(obj.sConeIndices)/conesNum ...
         numel(obj.kConeIndices)/conesNum];
+    
+    % Update coneDensities
+    obj.coneDensities = achievedConeDensities;
     
     fprintf('Achieved cone densities: L (%2.3f), M (%2.3f), S (%2.3f), K (%2.3f)\n', ...
         achievedConeDensities(1), ...
