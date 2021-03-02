@@ -2,10 +2,12 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     % Parse input
     p = inputParser;
     p.addParameter('superimposedConeMosaic', [], @(x)(isempty(x)||isa(x, 'coneMosaicHex')));
-    p.addParameter('fontSize', 12, @isnumeric);
+    p.addParameter('fontSize', 14, @isnumeric);
+    p.addParameter('plotTitle', '', @ischar);
     p.parse(varargin{:});
     theConeMosaic = p.Results.superimposedConeMosaic;
     fontSize = p.Results.fontSize;
+    plotTitle = p.Results.plotTitle;
     
     if (~isempty(theConeMosaic))
         % Retrieve cone positions (microns), cone spacings, and cone types
@@ -56,11 +58,20 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
                   'FaceColor', 'none', 'EdgeColor', contourLineColor);
         startPoint = startPoint + theLevelVerticesNum+1;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
     end
-    
+    xlabel(axesHandle, 'arc min');
+    ylabel(axesHandle, 'arc min');
     axis(axesHandle, 'equal');
-    set(axesHandle, 'XLim', xyRange*[-1 1], 'YLim', xyRange*[-1 1], 'Color', contourLineColor);
-    set(axesHandle, 'XTick', -8:2:8, 'YTick', -8:2:8);
+    grid(axesHandle, 'on');
+    box(axesHandle, 'on');
+    set(axesHandle, 'XLim', xyRange*[-1 1], 'YLim', xyRange*[-1 1], 'Color', [1 1 1]);
+    set(axesHandle, 'XTick', -8:1:8, 'YTick', -8:1:8);
     set(axesHandle, 'FontSize', fontSize);
+    
+    if (~isempty(plotTitle))
+        title(axesHandle,plotTitle);
+    end
+    
+    drawnow;
 end
 
 function renderConeApertures(axesHandle, conePositionsArcMin, coneAperturesArcMin, color)
