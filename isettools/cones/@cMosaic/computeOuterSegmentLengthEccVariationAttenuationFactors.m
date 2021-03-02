@@ -1,5 +1,11 @@
-function computeOuterSegmentLengthEccVariationAttenuationFactors(obj)
+function computeOuterSegmentLengthEccVariationAttenuationFactors(obj, varargin)
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('useParfor', true, @islogical);
+    p.parse(varargin{:});
+    useParfor = p.Results.useParfor;
+    
     % Compute radial eccDegs of all cones
     coneEccentricityDegs = sqrt((obj.coneRFpositionsDegs(:,1)).^2 + (obj.coneRFpositionsDegs(:,2)).^2);
     
@@ -31,12 +37,22 @@ function computeOuterSegmentLengthEccVariationAttenuationFactors(obj)
     
     conesNum = size(obj.coneRFpositionsDegs,1);
     attenuationFactors = ones(1, conesNum);
-    parfor coneIndex = 1:conesNum
-        eccDependentLconeAbsorptanceSpectrum = 1 - 10 .^ (-LconeAbsorbanceSpectrum * eccDependentAxialOpticalDensities(coneIndex));
-        photonAbsorptionChange = eccDependentLconeAbsorptanceSpectrum ./ fovealLconeAbsorptanceSpectrum;
-        % take the mean sensitivity change across all wavelengths
-        attenuationFactors(coneIndex) = mean(photonAbsorptionChange);
+    if (useParfor)
+        parfor coneIndex = 1:conesNum
+            eccDependentLconeAbsorptanceSpectrum = 1 - 10 .^ (-LconeAbsorbanceSpectrum * eccDependentAxialOpticalDensities(coneIndex));
+            photonAbsorptionChange = eccDependentLconeAbsorptanceSpectrum ./ fovealLconeAbsorptanceSpectrum;
+            % take the mean sensitivity change across all wavelengths
+            attenuationFactors(coneIndex) = mean(photonAbsorptionChange);
+        end
+    else
+        for coneIndex = 1:conesNum
+            eccDependentLconeAbsorptanceSpectrum = 1 - 10 .^ (-LconeAbsorbanceSpectrum * eccDependentAxialOpticalDensities(coneIndex));
+            photonAbsorptionChange = eccDependentLconeAbsorptanceSpectrum ./ fovealLconeAbsorptanceSpectrum;
+            % take the mean sensitivity change across all wavelengths
+            attenuationFactors(coneIndex) = mean(photonAbsorptionChange);
+        end
     end
+    
     obj.outerSegmentLengthEccVariationAttenuationFactors = attenuationFactors;
 end
 

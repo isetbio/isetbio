@@ -77,9 +77,9 @@ function [rfSpacingMicrons, eccentricitiesMicrons] = midgetRGCSpacingFunction(rf
     eccentricitiesMicrons = sqrt(sum(rfPosMicrons .^ 2, 2));
 end
 
-function [rfSpacingMicrons, eccentricitiesMicrons] = coneSpacingFunction(rfPosMicrons, whichEye)
+function [rfSpacingMicrons, eccentricitiesMicrons] = coneSpacingFunction(rfPosMicrons, whichEye, useParfor)
     [~, rfSpacingMMs] = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(...
-        whichEye, rfPosMicrons, 'cones');
+        whichEye, rfPosMicrons, 'cones', useParfor);
     
     rfSpacingMicrons = 1e3 * rfSpacingMMs(:); 
     eccentricitiesMicrons = sqrt(sum(rfPosMicrons .^ 2, 2));

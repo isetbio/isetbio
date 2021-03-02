@@ -1,5 +1,5 @@
 function [tabulatedRFspacingMicrons, tabulatedEccXYMicrons] = ...
-    rfSpacingLookUpTables(rfPositionsMicrons, whichEye, rfSpacingExactFunction, lookUpTableSamplesNum)
+    rfSpacingLookUpTables(rfPositionsMicrons, whichEye, useParfor, rfSpacingExactFunction, lookUpTableSamplesNum)
     
     % Compute radial sampling vector of retinal positions that we need to compute spacings for
     eccMicrons = logSamplingVectorFromScatteredXYPositions(rfPositionsMicrons, lookUpTableSamplesNum);
@@ -7,7 +7,7 @@ function [tabulatedRFspacingMicrons, tabulatedEccXYMicrons] = ...
     [X,Y] = meshgrid(eccMicrons);
     tabulatedEccXYMicrons = [X(:) Y(:)];
     
-    rfSpacingMicrons  = rfSpacingExactFunction(tabulatedEccXYMicrons, whichEye);
+    rfSpacingMicrons  = rfSpacingExactFunction(tabulatedEccXYMicrons, whichEye, useParfor);
     tabulatedRFspacingMicrons = rfSpacingMicrons;
 end
 

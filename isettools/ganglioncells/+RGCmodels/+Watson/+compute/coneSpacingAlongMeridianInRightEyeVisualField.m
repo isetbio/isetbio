@@ -1,5 +1,6 @@
-function [coneSpacingDegs, coneSpacingMMs, coneDensityDegs2, coneDensityMMs2] = coneSpacingAlongMeridianInRightEyeVisualField(eccDegs, rightEyeVisualFieldMeridianName)
-% Compute cone spacing&density for desired cone positions (specified in visual degrees) along a meridian on the right eye visual field
+function [coneSpacingDegs, coneSpacingMMs, coneDensityDegs2, coneDensityMMs2] = ...
+    coneSpacingAlongMeridianInRightEyeVisualField(eccDegs, rightEyeVisualFieldMeridianName, useParfor)
+    % Compute cone spacing&density for desired cone positions (specified in visual degrees) along a meridian on the right eye visual field
 
     % Ensure all eccentricities are positive
     assert(all(eccDegs>=0), sprintf('Eccentrity vector must not include any negative values'));
@@ -17,7 +18,7 @@ function [coneSpacingDegs, coneSpacingMMs, coneDensityDegs2, coneDensityMMs2] = 
                                         'eccentricityUnits', 'mm', ...
                                         'angleUnits','deg', ...
                                         'whichEye', 'right', ...
-                                        'useParfor', true);
+                                        'useParfor', useParfor);
                
 
     % Apply connection for ISETBio foveal cone density being a bit higher (18,800 cones/deg2 vs 14,804 in Watson)                                

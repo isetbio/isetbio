@@ -1,6 +1,7 @@
 function [rfSpacingDegs, rfSpacingMMs, rfDensityDegs2, rfDensityMMs2] = ...
-    rfSpacingAtRetinalPositions(whichEye, rfPosMicrons, neuronType)
-% Compute rf spacing for specific neuron types and densities for arbitrary retinal positions in either eye.
+    rfSpacingAtRetinalPositions(whichEye, rfPosMicrons, neuronType, useParfor)
+    
+    % Compute rf spacing for specific neuron types and densities for arbitrary retinal positions in either eye.
 
     % Check size of input
     assert(size(rfPosMicrons,2) == 2, sprintf('conePosMicrons must be an N x 2 matrix of (x,y) positions'));
@@ -29,13 +30,13 @@ function [rfSpacingDegs, rfSpacingMMs, rfDensityDegs2, rfDensityMMs2] = ...
         switch (neuronType)
             case 'cones'
                 [~,~, ~,meridianDensitiesMMs2(meridianIndex,:)] = ...
-                    RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName);
+                    RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName, useParfor);
             case 'all ganglion cells'
                 [~,~, ~,meridianDensitiesMMs2(meridianIndex,:)] = ...
-                    RGCmodels.Watson.compute.totalRGCRFSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName);
+                    RGCmodels.Watson.compute.totalRGCRFSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName, useParfor);
             case 'midget ganglion cells'
                 [~,~, ~,meridianDensitiesMMs2(meridianIndex,:)] = ...
-                    RGCmodels.Watson.compute.midgetRGCRFSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName);
+                    RGCmodels.Watson.compute.midgetRGCRFSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName, userParfor);
             otherwise
                 error('Unknown neuronType: ''%s''.', neuronType);
         end
@@ -45,7 +46,7 @@ function [rfSpacingDegs, rfSpacingMMs, rfDensityDegs2, rfDensityMMs2] = ...
     % Interpolate densities from the meridian densities
     interpolationMethod = 'makima'; % 'linear'; % 'spline'; % 'linear'
     rfDensityMMs2 = RGCmodels.Watson.compute.radiallyInterpolated2DMapFromMeridianValues(...
-        meridianDensitiesMMs2, rightEyeEccVisualAngles, interpolationMethod);
+        meridianDensitiesMMs2, rightEyeEccVisualAngles, interpolationMethod, useParfor);
     
     % Convert density per mm^2 to density per deg^2
     rfDensityDegs2 = RGCmodels.Watson.convert.densityMMs2ToDegs2(rfDensityMMs2, eccRadiiDegs);

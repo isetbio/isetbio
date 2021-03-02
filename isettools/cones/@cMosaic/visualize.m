@@ -4,6 +4,8 @@ function visualize(obj, varargin)
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('activation', []);
+    p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
+    p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
     p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
     p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.addParameter('horizontalActivationColorBar', false, @islogical);
@@ -17,6 +19,7 @@ function visualize(obj, varargin)
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('fontSize', 14, @isscalar);
     p.addParameter('backgroundColor', [1 1 1]);
+    p.addParameter('plotTitle', '', @ischar);
     p.parse(varargin{:});
     
     domain = p.Results.domain;
@@ -35,7 +38,10 @@ function visualize(obj, varargin)
     verticalColorBar = p.Results.verticalActivationColorBar;
     horizontalColorBar = p.Results.horizontalActivationColorBar;
     colorBarTickLabelPostFix = p.Results.colorBarTickLabelPostFix;
+    horizontalActivationSliceEccentricity = p.Results.horizontalActivationSliceEccentricity;
+    verticalActivationSliceEccentricity = p.Results.verticalActivationSliceEccentricity;
     backgroundColor = p.Results.backgroundColor;
+    plotTitle = p.Results.plotTitle;
 
     % Determine what eye movement data have to be displayed
     if (isstruct(displayedEyeMovementData))
@@ -66,6 +72,7 @@ function visualize(obj, varargin)
         case 'degrees'
             rfPositions = obj.coneRFpositionsDegs;
             rfSpacings = obj.coneRFspacingsDegs;
+            rfProximityThreshold = 1/270;
             if (isstruct(displayedEyeMovementData))
                 emPath = 1/60*obj.fixEMobj.emPosArcMin(displayedTrials,displayedTimePoints,:);
             else
@@ -74,6 +81,7 @@ function visualize(obj, varargin)
         case 'microns'
             rfPositions = obj.coneRFpositionsMicrons;
             rfSpacings = obj.coneRFspacingsMicrons;
+            rfProximityThreshold = 1;
             if (isstruct(displayedEyeMovementData))
                 emPath = obj.fixEMobj.emPosMicrons(displayedTrials,displayedTimePoints,:);
             else
@@ -125,7 +133,7 @@ function visualize(obj, varargin)
     if (isempty(figureHandle))
         figureHandle = figure(); clf;
         set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-        axesHandle = subplot('Position', [0.05 0.05 0.94 0.94]);
+        axesHandle = subplot('Position', [0.09 0.07 0.90 0.92]);
     else
         %figure(figureHandle);
         if (isempty(axesHandle))
@@ -185,6 +193,16 @@ function visualize(obj, varargin)
         % Plot K-cone activations
         renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.kConeIndices)*0.5, ...
             rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1);
+        
+        if (~isempty(verticalActivationSliceEccentricity))
+            d = abs(rfPositions(:,2)-verticalActivationSliceEccentricity);
+            idx = find(d < rfProximityThreshold);
+            activationSlice = squeeze(activation(idx));
+            h = stem(rfPositions(idx,1), rfPositions(idx,2) + activationSlice*0.2*(yRange(2)-yRange(1)), ...
+                'filled',  'g-', 'LineWidth', 1.5);
+            h.BaseValue = verticalActivationSliceEccentricity;
+        end
+        
     end
     
     % Add crosshairs
@@ -244,6 +262,7 @@ function visualize(obj, varargin)
         if (isempty(cMap))
             cMap = gray(numel(obj.coneRFspacingsDegs)); %brewermap(numel(obj.coneRFspacingsDegs), '*greys');
         end
+        backgroundColor = squeeze(cMap(1,:));
         if (ischar(backgroundColor) && strcmp(backgroundColor, 'mean of color map'))
             midRow = round(size(cMap,1)/2);
             backgroundColor = squeeze(cMap(midRow,:));
@@ -276,15 +295,17 @@ function visualize(obj, varargin)
     end
     
     % Finalize plot
-    axis(axesHandle, 'equal');
-    axis(axesHandle, 'xy');
     set(axesHandle, 'Color', backgroundColor);
+    axis(axesHandle, 'xy');
+    axis(axesHandle, 'equal');
     set(axesHandle, 'XLim', xRange, 'YLim', yRange, 'CLim', [0 1], 'FontSize', fontSize);        
     if (~isempty(domainVisualizationTicks))
         set(axesHandle, 'XTick', domainVisualizationTicks.x, ...
                         'YTick', domainVisualizationTicks.y);
     end
     
+    
+     
     box(axesHandle, 'on');
     set(figureHandle, 'Color', [1 1 1]);
     
@@ -296,11 +317,15 @@ function visualize(obj, varargin)
             xlabel(axesHandle, 'space (microns)');
             ylabel(axesHandle, 'space (microns)');
     end
-    title(sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%)\n', ...
-        100*obj.coneDensities(1), ...
-        100*obj.coneDensities(2), ...
-        100*obj.coneDensities(3), ...
-        100*obj.coneDensities(4)));
+    if (isempty(plotTitle))
+        title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%)\n', ...
+            100*obj.coneDensities(1), ...
+            100*obj.coneDensities(2), ...
+            100*obj.coneDensities(3), ...
+            100*obj.coneDensities(4)));
+    else
+        title(axesHandle,plotTitle);
+    end
     drawnow;
 end
 
