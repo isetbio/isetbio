@@ -17,8 +17,8 @@ function visualize(obj, varargin)
     p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
-    p.addParameter('fontSize', 14, @isscalar);
-    p.addParameter('backgroundColor', [1 1 1]);
+    p.addParameter('fontSize', 16, @isscalar);
+    p.addParameter('backgroundColor', [0.7 0.7 0.7]);
     p.addParameter('plotTitle', '', @ischar);
     p.parse(varargin{:});
     

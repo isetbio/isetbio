@@ -279,7 +279,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         noiseFreeAbsorptionsCount = noiseFreeAbsorptionsCount(1,:,:);
     end
     
-    fprintf(2, 'No photocurrent computed\n');
     photoCurrents = [];
     photoCurrentInstances = [];
 

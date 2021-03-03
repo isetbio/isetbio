@@ -206,9 +206,6 @@ function doIt(env, varyMPdensity, varyApertureAndOSlength)
         
         % Contrast noise response instances
         hFig = figure(4); clf;
-        size(activationMetaDataOld.noisyConeExcitationInstances)
-        size(noisyConeExcitationInstances)
-        pause
         plot(activationMetaDataOld.noisyConeExcitationInstances(:), noisyConeExcitationInstances(:), 'k.');
         xlabel('old mosaic');
         ylabel('new mosaic');
