@@ -61,6 +61,8 @@ theNewConeMosaic.visualize(...
     'plotTitle', '@cMosaic');
             
 %% Compute cone excitation responses for the 2 mosaics
+profile off
+profile('-memory','on')
 repeatsNum = 100;
 tic
 for k = 1:repeatsNum
@@ -68,13 +70,31 @@ for k = 1:repeatsNum
 end
 computeTimeOldConeMosaic = toc;
 
+% Find allocated memory
+p1 = profile('info');
+for fIndex = 1:numel(p1.FunctionTable)
+    if (strcmp(p1.FunctionTable(fIndex).FunctionName, 'coneMosaic.compute'))
+        memAllocatedOldConeMosaic = p1.FunctionTable(fIndex).TotalMemAllocated;
+    end
+end
+
+profile off
+profile('-memory','on')
 tic
 for k = 1:repeatsNum
     newConeMosaicExcitations = theNewConeMosaic.compute(oi);
 end
 computeTimeNewConeMosaic = toc;
-  
-        
+
+% Find allocated memory
+p2 = profile('info');
+for fIndex = 1:numel(p2.FunctionTable)
+    if (strcmp(p2.FunctionTable(fIndex).FunctionName, 'cMosaic.compute'))
+        memAllocatedNewConeMosaic = p2.FunctionTable(fIndex).TotalMemAllocated;
+    end
+end
+       
+
 %% Visualize responses
 activationRange = [min(newConeMosaicExcitations(:)), max(newConeMosaicExcitations(:))];
 ax = subplot(2,2,3);
@@ -104,8 +124,8 @@ newMosaicMConeResponses = newConeMosaicExcitations(theNewConeMosaic.mConeIndices
 newMosaicSConeResponses = newConeMosaicExcitations(theNewConeMosaic.sConeIndices);  
 
 hFig = figure(2); clf;
-set(hFig, 'Position', [10 500 1500 400]);
-ax = subplot(1,4,1);
+set(hFig, 'Position', [10 500 1200 400]);
+ax = subplot(1,3,1);
 plot(ax,activationRange, activationRange, 'k-'); hold(ax, 'on');
 plot(ax,oldMosaicLconeResponses(:), newMosaicLConeResponses(:), 'r.');
 set(ax, 'XLim', activationRange, 'YLim', activationRange, 'FontSize', 16);
@@ -116,7 +136,7 @@ xlabel(ax, 'excitations (@coneMosaicHex)');
 ylabel(ax, 'excitations (@cMosaic)');
 title('L-cones');
 
-ax = subplot(1,4,2);
+ax = subplot(1,3,2);
 plot(ax,activationRange, activationRange, 'k-'); hold(ax, 'on');
 plot(ax,oldMosaicMconeResponses(:), newMosaicMConeResponses(:), 'g.');
 set(ax, 'XLim', activationRange, 'YLim', activationRange, 'FontSize', 16);
@@ -126,7 +146,7 @@ grid(ax, 'on');
 xlabel(ax, 'excitations (@coneMosaicHex)');
 title('M-cones');
 
-ax = subplot(1,4,3);
+ax = subplot(1,3,3);
 plot(ax,activationRange, activationRange, 'k-'); hold(ax, 'on');
 plot(ax,oldMosaicSconeResponses(:), newMosaicSConeResponses(:), 'c.');
 set(ax, 'XLim', activationRange, 'YLim', activationRange, 'FontSize', 16);
@@ -136,17 +156,35 @@ grid(ax, 'on');
 xlabel(ax, 'excitations (@coneMosaicHex)');
 title('S-cones');
 
-ax = subplot(1,4,4);
+hFig = figure(3); clf;
+set(hFig, 'Position', [10 500 800 400]);
+ax = subplot(1,2,1);
 computeTimes = [computeTimeOldConeMosaic computeTimeNewConeMosaic];
 b = bar([1 2], computeTimes);
 b.FaceColor = 'flat';
 b.CData(1,:) = [.4 .4 .4];
 b.CData(2,:) = [1 .2 .4];
-set(ax, 'XLim', [0.5 2.5], 'YLim', [0 ceil(max(computeTimes)/5)*5], 'FontSize', 16);
+set(ax, 'XLim', [0.5 2.5], 'YLim', [0 (ceil(max(computeTimes)/10)+1)*10], 'FontSize', 16);
 set(ax, 'XTick', [1 2], 'XTickLabel', {'@coneMosaicHex', '@cMosaic'});
-set(ax, 'YTick', 0:5:ceil(max(computeTimes)/5)*5);
+set(ax, 'YTick', 0:10:ceil(max(computeTimes)/10)*10);
 axis(ax, 'square');
 grid(ax, 'on');
 xlabel(ax, 'compute engine');
 ylabel(ax, 'compute time (sec)');
-title(sprintf('compute speed-up: x %2.1f', computeTimeOldConeMosaic/computeTimeNewConeMosaic));
+title(sprintf('compute time speed-up: x %2.1f', computeTimeOldConeMosaic/computeTimeNewConeMosaic));
+
+ax = subplot(1,2,2);
+allocatedGBytes = [memAllocatedOldConeMosaic memAllocatedNewConeMosaic]/(1024*1024*1024);
+b = bar([1 2], allocatedGBytes);
+b.FaceColor = 'flat';
+b.CData(1,:) = [.4 .4 .4];
+b.CData(2,:) = [1 .2 .4];
+set(ax, 'XLim', [0.5 2.5], 'YLim', [0 (ceil(max(allocatedGBytes)/10)+1)*10], 'FontSize', 16);
+set(ax, 'XTick', [1 2], 'XTickLabel', {'@coneMosaicHex', '@cMosaic'});
+set(ax, 'YTick', 0:10:ceil(max(allocatedGBytes)/10)*10);
+axis(ax, 'square');
+grid(ax, 'on');
+xlabel(ax, 'compute engine');
+ylabel(ax, 'allocated memory (GB)');
+title(sprintf('memory reduction: x %2.1f', allocatedGBytes(1)/allocatedGBytes(2)));
+
