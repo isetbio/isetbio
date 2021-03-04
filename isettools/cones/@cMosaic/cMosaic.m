@@ -202,6 +202,10 @@ classdef cMosaic < handle
         
         % Whether to use parfor in computations
         useParfor = true;
+        
+        % Min and max cone positions
+        minRFpositionMicrons;
+        maxRFpositionMicrons;
     end
     
     % Public methods
@@ -307,6 +311,10 @@ classdef cMosaic < handle
                     rng(obj.randomSeed);
                 end
             end
+            
+            % Save min and max cone position
+            obj.minRFpositionMicrons = squeeze(min(obj.coneRFpositionsMicrons,[],1));
+            obj.maxRFpositionMicrons = squeeze(max(obj.coneRFpositionsMicrons,[],1));
             
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.

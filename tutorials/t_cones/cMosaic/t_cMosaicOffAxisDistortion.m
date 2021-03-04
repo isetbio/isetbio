@@ -4,7 +4,8 @@
 %    Shows how to generate and use the new cone mosaic class, @cMosaic.
 %    Here, we generate off-axis (located at different eccentricities)
 %    cMosaic objects and corresponding optics, and compute mosaic responses
-%    to a grid stimulus so at to reveal distortions introduced by the optics
+%    to a grid stimulus so at to reveal that distortions introduced by the 
+%    optics at different eccentricities
 %
 % See Also:
 %   t_cMosaicBasic
@@ -21,7 +22,7 @@ ieInit;
 clear;
 close all;
 
-%% Generate the ring rays stimulus
+%% Generate the linegrid stimulus
 scene = sceneCreate('distortiongrid', 512, 10, 'ep');
 scene = sceneSet(scene, 'fov', 8.0);
 

@@ -42,9 +42,12 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         % Interpolate from oiPositions to conePositions at current emPos
         shiftedConePositions = bsxfun(@plus, obj.coneRFpositionsMicrons(coneIDsInZone,:),reshape(currentEMposMicrons, [1 2]));
         
+        interpolationMethod = 'linear';
+        extrapolationMethod = 'nearest';
         for coneTypeIndex = 1:coneTypesNum
             fullImage = squeeze(absorptionsDensityImageFiltered(:,:,coneTypeIndex));
-            F = griddedInterpolant({oiPositionsMicrons(:,1), oiPositionsMicrons(:,2)}, fullImage', 'linear');
+            F = griddedInterpolant({oiPositionsMicrons(:,1), oiPositionsMicrons(:,2)}, fullImage', ...
+                interpolationMethod, extrapolationMethod);
             vq = F([shiftedConePositions(:,1) shiftedConePositions(:,2)]);
             absorptionsRateAllConeTypes(coneIDsInZone, coneTypeIndex) = vq .* apertureAreasMetersSquared;
         end

@@ -262,10 +262,12 @@ function visualize(obj, varargin)
         if (isempty(cMap))
             cMap = gray(numel(obj.coneRFspacingsDegs)); %brewermap(numel(obj.coneRFspacingsDegs), '*greys');
         end
-        backgroundColor = squeeze(cMap(1,:));
+
         if (ischar(backgroundColor) && strcmp(backgroundColor, 'mean of color map'))
             midRow = round(size(cMap,1)/2);
             backgroundColor = squeeze(cMap(midRow,:));
+        else
+            backgroundColor = squeeze(cMap(1,:));
         end
     end
     colormap(axesHandle, cMap);

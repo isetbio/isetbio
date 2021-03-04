@@ -90,48 +90,43 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     
     % Retrieve oiRes and oiSize
     oiSize  = oiGet(oi, 'size');
+    oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
     
-    if (1==1)
-        oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
-        
-        oiYPosMicrons = (1:oiSize(1))*oiResMicrons;
-        oiXPosMicrons = (1:oiSize(2))*oiResMicrons;
-        oiXPosMicrons = oiXPosMicrons - mean(oiXPosMicrons);
-        oiYPosMicrons = oiYPosMicrons - mean(oiYPosMicrons);
-
-        if (~isempty(obj.micronsPerDegreeApproximation))
-            oiXPosDegrees = oiXPosMicrons/obj.micronsPerDegreeApproximation;  
-            oiYPosDegrees = oiYPosMicrons/obj.micronsPerDegreeApproximation;
-        else
-            oiXPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiXPosMicrons*1e-3);
-            oiYPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiYPosMicrons*1e-3);
-        end
-        
-        %oiResDegs = oiXPosDegrees(2)-oiXPosDegrees(1);
-        [oiPositionsDegsX, oiPositionsDegsY] = meshgrid(oiXPosDegrees, oiYPosDegrees);
-        oiPositionsDegs = [oiPositionsDegsX(:), oiPositionsDegsY(:)];
-    else
-        
-        
-        % Compute x,y positions for all oi pixels in microns/degs
-        oiXPosDegrees = oiResDegs * (1:oiSize(2));
-        oiXPosDegrees = oiXPosDegrees - mean(oiXPosDegrees(:));
-        oiYPosDegrees = oiResDegs * (1:oiSize(1));
-        oiYPosDegrees = oiYPosDegrees - mean(oiYPosDegrees(:));
-
-         if (~isempty(obj.micronsPerDegreeApproximation))
-            oiXPosMicrons = oiXPosDegrees * obj.micronsPerDegreeApproximation;  
-            oiYPosMicrons = oiYPosDegrees * obj.micronsPerDegreeApproximation;  
-        else
-            oiXPosMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(oiXPosDegrees);
-            oiYPosMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(oiYPosDegrees);
-        end
-
-        oiResMicrons = oiXPosMicrons(2)-oiXPosMicrons(1);
-        [oiPositionsDegsX, oiPositionsDegsY] = meshgrid(oiXPosDegrees, oiYPosDegrees);
-        oiPositionsDegs = [oiPositionsDegsX(:), oiPositionsDegsY(:)];
+    % Generate oiPositions
+    oiYPosMicrons = (1:oiSize(1))*oiResMicrons;
+    oiXPosMicrons = (1:oiSize(2))*oiResMicrons;
+    oiXPosMicrons = oiXPosMicrons - mean(oiXPosMicrons);
+    oiYPosMicrons = oiYPosMicrons - mean(oiYPosMicrons);
+    
+    minEMpos = squeeze(min(emPathsMicrons,[],1));
+    maxEMpos = squeeze(max(emPathsMicrons,[],1));
+    
+    if (obj.minRFpositionMicrons(1)+minEMpos(1) < min(oiXPosMicrons))
+        fprintf(2,'Left side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+    end
+    if (obj.minRFpositionMicrons(2)+minEMpos(2) < min(oiYPosMicrons))
+        fprintf(2,'Bottom side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+    end
+    
+    
+    if (obj.maxRFpositionMicrons(1)+maxEMpos(1) > max(oiXPosMicrons))
+        fprintf(2,'Right side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+    end
+    if (obj.maxRFpositionMicrons(2)+maxEMpos(2) > max(oiYPosMicrons))
+        fprintf(2, 'Top side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
 
+    
+    if (~isempty(obj.micronsPerDegreeApproximation))
+        oiXPosDegrees = oiXPosMicrons/obj.micronsPerDegreeApproximation;  
+        oiYPosDegrees = oiYPosMicrons/obj.micronsPerDegreeApproximation;
+    else
+        oiXPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiXPosMicrons*1e-3);
+        oiYPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiYPosMicrons*1e-3);
+    end
+
+    [oiPositionsDegsX, oiPositionsDegsY] = meshgrid(oiXPosDegrees, oiYPosDegrees);
+    oiPositionsDegs = [oiPositionsDegsX(:), oiPositionsDegsY(:)];
     
     % Compute cone aperture diameters based on their local spacing
     coneApertureDiametersMicrons = obj.coneRFspacingsMicrons * obj.coneApertureToDiameterRatio;

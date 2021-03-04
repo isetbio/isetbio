@@ -4,10 +4,11 @@
 %    Shows how to generate and use the new cone mosaic class, @cMosaic.
 %    Here, we generate an on-axis (zero eccentricity) cMosaic object and
 %    compute a number of noisy response instances to a static stimulus with
-%    no fixational eye movements. In other words, the response instances
+%    no fixational eye movements, so the computed responses
 %    consist of a single time point.
 %
 % See Also:
+%   t_cMosaicCapabilities
 %   t_cMosaicBenchMark
 %   t_cMosaicOffAxis
 %   t_cMosaicFromConeMosaicHex
