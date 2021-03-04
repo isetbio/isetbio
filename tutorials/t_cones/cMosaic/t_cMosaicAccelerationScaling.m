@@ -2,7 +2,8 @@
 %
 % Description:
 %    Examine compute times for @cMosaic vs @coneMosaicHex, as a function of
-%    mosaic field of view. This one takes a while to run.
+%    mosaic field of view. This one takes a long time to run and requires at
+%    least 32 GB RAM to run.
 %
 % See Also:
 %   t_cMosaicBasic
@@ -18,15 +19,15 @@ ieInit;
 clear;
 close all;
 
-scalingFactors = [0.25 0.5 1 2 4 8];
-computeTimesOldConeMosaic = zeros(1, numel(scalingFactors));
-computeTimesNewConeMosaic = zeros(1, numel(scalingFactors));
+% Mosaic sizes to examine
+examinedMosaicFOVs = [0.25 0.5 1 2];
+computeTimesOldConeMosaic = zeros(1, numel(examinedMosaicFOVs));
+computeTimesNewConeMosaic = zeros(1, numel(examinedMosaicFOVs));
 
 %% Generate the ring rays stimulus
-for iScale = 1:numel(scalingFactors)
-    sFactor = scalingFactors(iScale);
+for iScale = numel(examinedMosaicFOVs):-1:1
     scene = sceneCreate('radial lines', 512);
-    scene = sceneSet(scene, 'fov', 1.5*sFactor);
+    scene = sceneSet(scene, 'fov', 1.5*examinedMosaicFOVs(iScale));
 
     %% Compute the optical image
     oi = oiCreate;
@@ -34,7 +35,7 @@ for iScale = 1:numel(scalingFactors)
 
     %% Generate the old-style cone mosaic with an FOV of 1 x 1 deg
     theOldConeMosaic = coneMosaicHex(7, ...
-            'fovDegs', 1.0*sFactor, ...
+            'fovDegs', examinedMosaicFOVs(iScale), ...
             'eccBasedConeDensity', true, ...
             'eccBasedConeQuantalEfficiency', true, ...
             'eccBasedMacularPigment', true, ...
@@ -66,13 +67,12 @@ end
   
         
 %% Visualize results
-
 hFig = figure(1); clf;
 set(hFig, 'Position', [10 500 1000 400]);
 ax = subplot(1,2,1);
-plot(ax,scalingFactors, computeTimesOldConeMosaic, 'ks-', 'LineWidth', 1.5); hold(ax, 'on');
-plot(ax,scalingFactors, computeTimesNewConeMosaic, 'rs-','LineWidth', 1.5); hold(ax, 'on');
-set(ax, 'XLim', [0.1 5], 'XScale', 'log', 'YLim', [2.5 max(computeTimesOldConeMosaic)]*1.2, 'YScale', 'log','FontSize', 16);
+plot(ax,examinedMosaicFOVs, computeTimesOldConeMosaic, 'ko-', 'LineWidth', 1.5, 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 0.7]); hold(ax, 'on');
+plot(ax,examinedMosaicFOVs, computeTimesNewConeMosaic, 'ro-','LineWidth', 1.5, 'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5]); hold(ax, 'on');
+set(ax, 'XLim', [0.1 10], 'XScale', 'log', 'YScale', 'log','FontSize', 16);
 set(ax, 'XTick', [0.25 0.5 1 2 4 8], 'XTickLabel', {'0.25', '0.5', '1.0', '2.0', '4.0', '8.0'}, 'YTick', [1 3 10 30 100 300]);
 axis(ax, 'square');
 grid(ax, 'on');
@@ -81,10 +81,10 @@ ylabel(ax, 'compute time (sec)');
 legend(ax, {'@coneMosaicHex', '@cMosaic'}, 'Location','northwest');
 
 ax = subplot(1,2,2);
-plot(ax,scalingFactors, computeTimesOldConeMosaic./computeTimesNewConeMosaic, 'ks-', 'LineWidth', 1.5); hold(ax, 'on');
-set(ax, 'XLim', [0.1 5], 'XScale', 'log',  'FontSize', 16, 'XTick', 1:100);
+plot(ax,examinedMosaicFOVs, computeTimesOldConeMosaic./computeTimesNewConeMosaic, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.5); hold(ax, 'on');
+set(ax, 'XLim', [0.1 10], 'XScale', 'log',  'FontSize', 16, 'XTick', 1:100);
 set(ax, 'XTick', [0.25 0.5 1 2 4 8], 'XTickLabel', {'0.25', '0.5', '1.0', '2.0', '4.0', '8.0'});
 axis(ax, 'square');
 grid(ax, 'on');
 xlabel(ax, 'mosaic FOV (degs)');
-ylabel(ax, 'speed-up factor (x)');
+ylabel(ax, 'speeding-up factor (x)');

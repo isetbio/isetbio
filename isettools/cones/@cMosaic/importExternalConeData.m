@@ -66,19 +66,9 @@ function importExternalConeData(obj, coneData)
     minEccDegs = min(obj.coneRFpositionsDegs, [], 1);
     maxEccDegs = max(obj.coneRFpositionsDegs, [], 1);
     
-    fprintf(2, '===========================================================\n');
-    fprintf(2, 'Overriding mosaic''s ''eccentricityDegs'' and ''sizeDegs'' based on the external cone data.\n');
-    fprintf(2, 'Previous ''eccentricityDegs'': %2.2f %2.2f\n', obj.eccentricityDegs(1), obj.eccentricityDegs(2));
-    fprintf(2, 'Previous ''sizeDegs'': %2.2f %2.2f\n', obj.sizeDegs(1), obj.sizeDegs(2));
-    
     % Set new eccentricity and size properties
     obj.eccentricityDegs = mean(obj.coneRFpositionsDegs,1);
     obj.sizeDegs = maxEccDegs - minEccDegs;
-
-    
-    fprintf(2, 'Current  ''eccentricityDegs'': %2.2f %2.2f\n', obj.eccentricityDegs(1), obj.eccentricityDegs(2));
-    fprintf(2, 'Current  ''sizeDegs'': %2.2f %2.2f\n', obj.sizeDegs(1), obj.sizeDegs(2));
-    fprintf(2, '===========================================================\n');
 
     % Now import cone types
     obj.coneTypes = reshape(coneData.types, [conesNum 1]);
@@ -90,7 +80,6 @@ function importExternalConeData(obj, coneData)
     obj.kConeIndices = find(obj.coneTypes == cMosaic.KCONE_ID);
     
     % Make sure all cones have been assigned an ID
-    
     assert(conesNum==numel(obj.lConeIndices)+numel(obj.mConeIndices)+numel(obj.sConeIndices)+numel(obj.kConeIndices), ...
         'loadExternalConeData():: indices do not sum up to total cones');
     
