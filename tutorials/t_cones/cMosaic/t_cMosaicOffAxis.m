@@ -50,7 +50,6 @@ for yOffset = 1:3
     cm = cMosaic(...
         'sizeDegs', [1 1]*0.7, ...          % SIZE: 0.7 degs (x) 0.7 degs (y)
         'eccentricityDegs', mosaicEcc, ...  % ECC: varying
-        'useParfor', false...
         );
 
     % Generate standard human optics

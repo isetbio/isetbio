@@ -60,8 +60,7 @@ for yOffset = 1:3
     % Generate mosaic centered at target eccentricity
     cm = cMosaic(...
         'sizeDegs', [1 1]*0.7, ...          % SIZE: 0.7 degs (x) 0.7 degs (y)
-        'eccentricityDegs', mosaicEcc, ...  % ECC: varying
-        'useParfor', false...
+        'eccentricityDegs', mosaicEcc ...  % ECC: varying
         );
 
     % Generate optics appropriate for the mosaic's eccentricity

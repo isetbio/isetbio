@@ -1,14 +1,15 @@
 % Demo basic usage of the new @cMosaic object
 %
 % Description:
-%    Shows how to generate and use the new cone mosaic class, @cMosaic.
+%    Shows basic usage of the new cone mosaic class, @cMosaic.
 %    Here, we generate an on-axis (zero eccentricity) cMosaic object and
 %    compute a number of noisy response instances to a static stimulus with
 %    no fixational eye movements, so the computed responses
 %    consist of a single time point.
 %
 % See Also:
-%   t_cMosaicCapabilities
+%   t_cMosaicGenerate
+%   t_cMosaicEccDependentAbsorptionEfficacy
 %   t_cMosaicBenchMark
 %   t_cMosaicOffAxis
 %   t_cMosaicFromConeMosaicHex
