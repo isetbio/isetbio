@@ -48,6 +48,7 @@ instancesNum = 8;
 
 %% Visualize responses
 hFig = figure(); clf;
+set(hFig, 'Position', [100 300 1500 650]);
 activationRange = prctile(noisyExcitationResponseInstances(:), [1 99]);
 
 % Noise-free response
