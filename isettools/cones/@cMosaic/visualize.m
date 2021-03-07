@@ -3,6 +3,7 @@ function visualize(obj, varargin)
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
     p.addParameter('activation', []);
     p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
     p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
@@ -14,6 +15,7 @@ function visualize(obj, varargin)
     p.addParameter('displayedEyeMovementData', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('currentEMposition', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
+    p.addParameter('crossHairsOnFovea', false, @islogical);
     p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
@@ -25,6 +27,7 @@ function visualize(obj, varargin)
     domain = p.Results.domain;
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
+    visualizedConeAperture = p.Results.visualizedConeAperture;
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
     activation = p.Results.activation;
@@ -32,6 +35,7 @@ function visualize(obj, varargin)
     currentEMposition = p.Results.currentEMposition;
     crossHairsOnMosaicCenter = p.Results.crossHairsOnMosaicCenter;
     crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
+    crossHairsOnFovea = p.Results.crossHairsOnFovea;
     displayedEyeMovementData = p.Results.displayedEyeMovementData;
     fontSize = p.Results.fontSize;
     cMap = p.Results.activationColorMap;
@@ -142,29 +146,56 @@ function visualize(obj, varargin)
             axesHandle = subplot('Position', [0.07 0.07 0.92 0.92]);
         end
     end
-     
+    
+    % Number of cones
+    conesNum = numel(rfSpacings);
+    
     % Aperture shape (disk)
-    iTheta = (0:15:360) / 180 * pi;
+    if (conesNum > 10000)
+        deltaAngle = 60;
+    elseif (conesNum > 5000)
+        deltaAngle = 45;
+    elseif (conesNum > 1000)
+       deltaAngle = 30;
+    elseif (conesNum > 500)
+        deltaAngle = 20;
+    elseif (conesNum > 250)
+        deltaAngle = 15;
+    elseif (conesNum > 100)
+        deltaAngle = 10;
+    else
+        deltaAngle = 5;
+    end
+    iTheta = (0:deltaAngle:360) / 180 * pi;
     coneApertureShape.x = cos(iTheta);
     coneApertureShape.y = sin(iTheta);
    
     
     cla(axesHandle);
     hold(axesHandle, 'on');
+    
+    % Visualize cone aperture multiplier
+    if (strcmp(visualizedConeAperture', 'geometricArea'))
+       visualizeApertureMultiplier = 1.0;
+    else
+       visualizeApertureMultiplier = obj.coneApertureToDiameterRatio;
+    end
+        
     if (isempty(activation))
         % Visualize cone types
         % Plot L-cones
-        renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.lConeIndices)*0.5, ...
+
+        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
             rfPositions(obj.lConeIndices,:), 1/4*0.9, 'none', 1.0);
    
         % Plot M-cones
-        renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.mConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
             rfPositions(obj.mConeIndices,:), 2/4*0.9, 'none', 1.0);
         % Plot S-cones
-        renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.sConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
             rfPositions(obj.sConeIndices,:), 3/4*0.9, 'none', 1.0);
         % Plot K-cones
-        renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.kConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
             rfPositions(obj.kConeIndices,:), 4/4*0.9, 'none', 1.0);
     else
         if (isempty(activationRange))
@@ -182,16 +213,16 @@ function visualize(obj, varargin)
         
         % Visualize activations
         % Plot L-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.lConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
             rfPositions(obj.lConeIndices,:), activation(obj.lConeIndices), [0 0 0], 0.1);
         % Plot M-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.mConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
             rfPositions(obj.mConeIndices,:), activation(obj.mConeIndices), [0 0 0], 0.1);
         % Plot S-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.sConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
             rfPositions(obj.sConeIndices,:), activation(obj.sConeIndices), [0 0 0], 0.1);
         % Plot K-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, rfSpacings(obj.kConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
             rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1);
         
         if (~isempty(verticalActivationSliceEccentricity))
@@ -206,7 +237,7 @@ function visualize(obj, varargin)
     end
     
     % Add crosshairs
-    if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter)
+    if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
         if (isempty('withActivation'))
             crossHairsColor = [0 0 0];
         else
@@ -218,6 +249,12 @@ function visualize(obj, varargin)
             xx1 = [xRange(1) xRange(2)];
             yy1 = mean(yRange)*[1 1];
             xx2 = mean(xRange)*[1 1];
+            yy2 = [yRange(1) yRange(2)];
+        elseif (crossHairsOnFovea)
+            % Crosshairs centered on [0 0]
+            xx1 = [xRange(1) xRange(2)];
+            yy1 = [0 0];
+            xx2 = [0 0];
             yy2 = [yRange(1) yRange(2)];
         else
             % Crosshairs centered on the middle of the optical image, i.e.,
@@ -301,12 +338,34 @@ function visualize(obj, varargin)
     axis(axesHandle, 'xy');
     axis(axesHandle, 'equal');
     set(axesHandle, 'XLim', xRange, 'YLim', yRange, 'CLim', [0 1], 'FontSize', fontSize);        
-    if (~isempty(domainVisualizationTicks))
-        set(axesHandle, 'XTick', domainVisualizationTicks.x, ...
-                        'YTick', domainVisualizationTicks.y);
+    
+    if (isempty(domainVisualizationTicks))
+        xo = (xRange(1)+xRange(2))/2;
+        xx = xRange(2)-xRange(1);
+        yo = (yRange(1)+yRange(2))/2;
+        yy = yRange(2)-yRange(1);
+        ticksX = xo + xx*0.5*[-0.75 0 0.75];
+        ticksY = yo + yy*0.5*[-0.75 0 0.75];
+        
+        if (xx > 10)
+            domainVisualizationTicks.x = round(ticksX);
+        elseif (xx > 1)
+            domainVisualizationTicks.x = round(ticksX*100)/100;
+        else
+            domainVisualizationTicks.x = round(ticksX*1000)/1000;
+        end
+        if (yy > 10)
+            domainVisualizationTicks.y = round(ticksY);
+        elseif (yy > 1)
+            domainVisualizationTicks.y = round(ticksY*100)/100;
+        else
+            domainVisualizationTicks.y = round(ticksY*1000)/1000;
+        end
+
     end
     
-    
+    set(axesHandle, 'XTick', domainVisualizationTicks.x, ...
+                    'YTick', domainVisualizationTicks.y);
      
     box(axesHandle, 'on');
     set(figureHandle, 'Color', [1 1 1]);
@@ -320,11 +379,12 @@ function visualize(obj, varargin)
             ylabel(axesHandle, 'space (microns)');
     end
     if (isempty(plotTitle))
-        title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%)\n', ...
+        title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
             100*obj.coneDensities(1), ...
             100*obj.coneDensities(2), ...
             100*obj.coneDensities(3), ...
-            100*obj.coneDensities(4)));
+            100*obj.coneDensities(4), ...
+            conesNum));
     else
         title(axesHandle,plotTitle);
     end
