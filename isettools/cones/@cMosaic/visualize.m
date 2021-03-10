@@ -258,10 +258,16 @@ function visualize(obj, varargin)
             yy2 = [yRange(1) yRange(2)];
         elseif (crossHairsOnFovea)
             % Crosshairs centered on [0 0]
-            xx1 = [xRange(1) xRange(2)];
+            switch (domain)
+                case 'degrees'
+                    xx1 = [-20 20];
+                    yy2 = [-20 20];
+                case 'microns'
+                    xx1 = [-20 20]*300;
+                    yy2 = [-20 20]*300;
+            end
             yy1 = [0 0];
             xx2 = [0 0];
-            yy2 = [yRange(1) yRange(2)];
         else
             % Crosshairs centered on the middle of the optical image, i.e.,
             % (0,0) or current em position, if that is passed in
