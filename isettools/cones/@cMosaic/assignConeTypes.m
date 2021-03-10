@@ -68,8 +68,6 @@ function assignConeTypes(obj, varargin)
         % Add them to the list of K-cones
         obj.kConeIndices = kConeIDs;
     end
-    
-    
    
     % Make sure all cones have been assigned an ID
     assert(conesNum==numel(obj.lConeIndices)+numel(obj.mConeIndices)+numel(obj.sConeIndices)+numel(obj.kConeIndices), ...
@@ -97,13 +95,6 @@ function assignConeTypes(obj, varargin)
     
     % Update coneDensities
     obj.coneDensities = achievedConeDensities;
-    
-    fprintf('Achieved cone densities: L (%2.3f), M (%2.3f), S (%2.3f), K (%2.3f)\n', ...
-        achievedConeDensities(1), ...
-        achievedConeDensities(2), ...
-        achievedConeDensities(3), ...
-        achievedConeDensities(4));
-    
 end
 
 

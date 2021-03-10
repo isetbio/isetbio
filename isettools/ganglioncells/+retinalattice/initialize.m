@@ -1,12 +1,12 @@
-function [rfPositionsMicrons, radiusMicrons] = initialize(fovDegs, whichEye, params, tStart)
+function [rfPositionsMicrons, radiusMicrons] = initialize(fovDegs, whichEye, params, useParfor, tStart)
     % Regular hex grid with minimal lambda
     rfPositionsMicrons = generateInitialRFpositions(fovDegs*1.33, params.lambdaMinMicrons);
     
     % Probabilistic sampling according to local RF density
-    [rfPositionsMicrons, radiusMicrons] = downSampleInitialRFpositions(rfPositionsMicrons, whichEye, params, tStart);
+    [rfPositionsMicrons, radiusMicrons] = downSampleInitialRFpositions(rfPositionsMicrons, whichEye, params, useParfor, tStart);
 end
 
-function [rfPositions, radius] = downSampleInitialRFpositions(rfPositions, whichEye, params,  tStart)
+function [rfPositions, radius] = downSampleInitialRFpositions(rfPositions, whichEye, params,  useParfor, tStart)
     % Set rng seed
     rng(params.rng);
     
@@ -32,7 +32,7 @@ function [rfPositions, radius] = downSampleInitialRFpositions(rfPositions, which
     else
         fprintf('Computing separations for %2.1f thousand nodes ...', rfsNum/1000);
     end
-    [rfSpacingMicrons, eccentricitiesMicrons] = params.rfSpacingExactFunction(rfPositions, whichEye);
+    [rfSpacingMicrons, eccentricitiesMicrons] = params.rfSpacingExactFunction(rfPositions, whichEye, useParfor);
 
     fprintf('... time lapsed: %f minutes.',  toc(tStart)/60);
 

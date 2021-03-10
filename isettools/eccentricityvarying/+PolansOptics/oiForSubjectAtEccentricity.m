@@ -1,4 +1,4 @@
-function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY] = oiForSubjectAtEccentricity(subjectID, whichEye, ecc, ...
+function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength] = oiForSubjectAtEccentricity(subjectID, whichEye, ecc, ...
     pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin)
 
     % Parse input
@@ -53,6 +53,8 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY] = oiForSubjectA
     
     % Generate the OI from the wavefront map
     theOI = wvf2oi(theWVF);
+    
+    psfSupportWavelength = wavelengthsListToCompute;
 end
 
 function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction)

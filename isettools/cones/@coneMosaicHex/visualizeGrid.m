@@ -84,6 +84,7 @@ p.addParameter('tickInc', [], @isnumeric);
 p.addParameter('noXaxisLabel', false, @islogical);
 p.addParameter('noYaxisLabel', false, @islogical);
 p.addParameter('scaleBarLengthMicrons', [], @(x)(isnumeric(x)));
+p.addParameter('plotTitle', '', @ischar);
 p.parse(varargin{:});
 
 showCorrespondingRectangularMosaicInstead = ...
@@ -112,6 +113,7 @@ if (p.Results.overlayContourLabels)
 else
     overlayContourLabels = 'off';
 end
+plotTitle = p.Results.plotTitle;
 
 %% Set up cone coordinates and outline
 sampledHexMosaicXaxis = obj.patternSupport(1, :, 1) + obj.center(1);
@@ -638,5 +640,8 @@ end
 box(axesHandle, 'on'); grid(axesHandle, 'off');
 set(axesHandle, 'FontSize', 18, 'LineWidth', 1.0);
 
-    
+if (~isempty(plotTitle))
+    title(axesHandle, plotTitle);
+end
+
 end

@@ -1,6 +1,11 @@
 function dataOut = smoothGrid(rfPositions, ...
-        tabulatedEcc, tabulatedRFspacing, params, tStart)
+        tabulatedEcc, tabulatedRFspacing, params, visualizeConvergence, tStart, varargin)
 
+    p = inputParser;
+    p.addParameter('useParfor', false, @islogical);
+    p.parse(varargin{:});
+    useParfor = p.Results.useParfor;
+    
     % Turn off Delaunay triangularization warning
     warning('off', 'MATLAB:qhullmx:InternalWarning');
     
@@ -12,6 +17,7 @@ function dataOut = smoothGrid(rfPositions, ...
     rfPositionsHistory = [];
     histogramWidths = [];
     reTriangulationIterations = [];
+    qualityHistory = [];
     
     % Iterative controls
     iteration = 0;
@@ -28,6 +34,7 @@ function dataOut = smoothGrid(rfPositions, ...
             (~terminateNowDueToReductionInLatticeQuality))
         
         iteration = iteration + 1;
+        
         
         % Decide it triangulatization is needed
         [reTriangulationIsNeeded, triangularizationTriggerEvent] = ...
@@ -53,7 +60,7 @@ function dataOut = smoothGrid(rfPositions, ...
             rfPositions, tabulatedEcc, tabulatedRFspacing, ...
             springs, springIndices, desiredSpringLengths, ...
             params.rfSpacingFastFunction, ...
-            reTriangulationIsNeeded);
+            reTriangulationIsNeeded, useParfor);
         
         % Compute updated rf positions using the updated truss forces
         rfPositions = rfPositions + deltaT * netForceVectors;
@@ -87,15 +94,20 @@ function dataOut = smoothGrid(rfPositions, ...
         
             if (isempty(rfPositionsHistory))
                 rfPositionsHistory(1,:,:) = single(oldRFPositions);
+                qualityHistory(1) = checkedBins(1);
                 iterationsHistory = iteration;
             else
                 rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(oldRFPositions), [1 size(oldRFPositions,1) size(oldRFPositions,2)]));
+                qualityHistory = cat(2, qualityHistory, checkedBins(1));
                 iterationsHistory = cat(2, iterationsHistory, iteration);
             end
             
-            retinalattice.plot.movementSequence([],maxMovements, params.dTolerance)
-            subplotIndex = retinalattice.plot.meshQuality([],subplotIndex, histogramData, checkedBins, iterationsHistory);
-        
+            if (visualizeConvergence)
+                retinalattice.plot.movementSequence([],maxMovements, params.dTolerance)
+                subplotIndex = retinalattice.plot.meshQuality([],subplotIndex, histogramData, checkedBins, iterationsHistory);
+            end
+            
+            
             if (terminateNowDueToReductionInLatticeQuality)
                 terminationReason = sprintf('Achieved min hex mesh quality.');
             end
@@ -105,9 +117,11 @@ function dataOut = smoothGrid(rfPositions, ...
         if (mod(iteration,params.iterationIntervalForSavingPositions)==0)
             if (isempty(rfPositionsHistory))
                 rfPositionsHistory(1,:,:) = single(rfPositions);
+                qualityHistory(1) = checkedBins(1);
                 iterationsHistory = iteration;
             else
                 rfPositionsHistory = cat(1, rfPositionsHistory, reshape(single(rfPositions), [1 size(rfPositions,1) size(rfPositions,2)]));
+                qualityHistory = cat(2, qualityHistory, checkedBins(1));
                 iterationsHistory = cat(2, iterationsHistory, iteration);
             end
         end
@@ -116,11 +130,14 @@ function dataOut = smoothGrid(rfPositions, ...
             exceededMaxIterations = true;
             terminationReason = sprintf('Exceeded max iterations (%d).', params.maxIterations);
         end
+        
+        fprintf('Iteration %d, movement: %2.3f, quality: %2.3f\n', iteration, maxMovements(end), qualityHistory(end));
     end % while
     
     % Assemble data struct
     dataOut.rfPositions = rfPositions;
     dataOut.rfPositionsHistory = rfPositionsHistory;
+    dataOut.qualityHistory = qualityHistory;
     dataOut.iterationsHistory = iterationsHistory;
     dataOut.maxMovements = maxMovements;
     dataOut.reTriangulationIterations = reTriangulationIterations;

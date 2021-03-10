@@ -3,7 +3,7 @@ function initializeConePositions(obj)
     % eye. Get a little larger retion and crop after we compute the
     % cone spacing below
     [obj.coneRFpositionsMicrons, obj.coneRFpositionsDegs] = retinalattice.import.finalConePositions(...
-        obj.sourceLatticeSizeDegs, obj.eccentricityDegs*1.1, obj.sizeDegs*1.3, obj.whichEye);   
+        obj.sourceLatticeSizeDegs, obj.eccentricityDegs, obj.sizeDegs*2.0, obj.whichEye);   
 
     % Compute cone spacings from positions
     obj.coneRFspacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(obj.coneRFpositionsMicrons);

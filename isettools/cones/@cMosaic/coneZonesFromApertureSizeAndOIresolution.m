@@ -18,6 +18,14 @@ function [coneApertureDiameterMicronsZoneBands, ...     % the median cone apertu
     % Discritize cone apertures range in zones with minimum
     % separation equal to coneApertureMicronsStepSize 
     prctileRange = prctile(coneApertureDiametersMicrons, [1 99]);
+    
+    if (oiResMicrons > 2*prctileRange(1))
+        fprintf(2,'ecc-dependent blur requested but the optical image resolution is too low for this.');
+        fprintf(2,'Min cone aperture: %2.2f um, max: %2.2f um, oiRes: %2.2f  microns\n', ...
+            prctileRange(1), prctileRange(2), oiResMicrons);
+        fprintf(2,'Suggested action: increase the number of pixels in the scene.\n');
+    end
+
     coneApertureMicronsStepSize = 0.02;
     nStepsMax = round((prctileRange(2)-prctileRange(1))/coneApertureMicronsStepSize);
     for nStepsTested = 2:nStepsMax

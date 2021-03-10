@@ -1,4 +1,4 @@
-function interpolatedValues = radiallyInterpolated2DMapFromMeridianValues(meridianValues, angles, interpolationMethod)
+function interpolatedValues = radiallyInterpolated2DMapFromMeridianValues(meridianValues, angles, interpolationMethod, useParfor)
 % Compute radially interpolated map from meridian map
 
    % Make sure all angles are > 0
@@ -12,9 +12,14 @@ function interpolatedValues = radiallyInterpolated2DMapFromMeridianValues(meridi
    
    % Do angular interpolation
    interpolatedValues = zeros(size(angles));
-   parfor aa = 1:length(angles)
-        interpolatedValues(aa) = interp1(meridianAngles, meridianValues(:,aa), angles(aa), interpolationMethod);
+   if (useParfor)
+       parfor aa = 1:length(angles)
+            interpolatedValues(aa) = interp1(meridianAngles, meridianValues(:,aa), angles(aa), interpolationMethod);
+       end
+   else
+       for aa = 1:length(angles)
+            interpolatedValues(aa) = interp1(meridianAngles, meridianValues(:,aa), angles(aa), interpolationMethod);
+       end
    end
-   
 end
 

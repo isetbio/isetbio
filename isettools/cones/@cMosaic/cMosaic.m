@@ -98,9 +98,9 @@ classdef cMosaic < handle
         randomSeed;
         
         % Color for cone rendering in mosaic visualization
-        lConeColor = [1 0.5 0.6];
-        mConeColor = [0.2 1 0.5];
-        sConeColor = [0.5 0.1 1];
+        lConeColor = [1 0.2 0.3];
+        mConeColor = [0.2 1 0.4];
+        sConeColor = [0.3 0.1 1];
         kConeColor = [0.9 0.9 0.2];
     end
     
@@ -199,6 +199,13 @@ classdef cMosaic < handle
         
         % cone aperture blur (only used when importing coneData)
         importedBlurDiameterMicrons = [];
+        
+        % Whether to use parfor in computations
+        useParfor = true;
+        
+        % Min and max cone positions
+        minRFpositionMicrons;
+        maxRFpositionMicrons;
     end
     
     % Public methods
@@ -214,7 +221,9 @@ classdef cMosaic < handle
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
             p.addParameter('coneData', [], @(x)(isempty(x) || (isstruct(x))));
             p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('sizeDegs', [0.2 0.2], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('computeMeshFromScratch', false, @islogical);
+            p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
             p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
             p.addParameter('eccVaryingConeAperture', true, @islogical);
@@ -227,6 +236,7 @@ classdef cMosaic < handle
             p.addParameter('noiseFlag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
             p.addParameter('randomSeed', [], @isscalar);
             p.addParameter('integrationTime', 5/1000, @isscalar);
+            p.addParameter('useParfor', true, @islogical);
             
             p.parse(varargin{:});
             
@@ -255,6 +265,9 @@ classdef cMosaic < handle
             obj.randomSeed = p.Results.randomSeed;
             obj.integrationTime = p.Results.integrationTime;
             
+            % Parallel computations
+            obj.useParfor = p.Results.useParfor;
+            
             % Assert that we have appropriate pigment if we have more than
             % 3 cone types
             if (numel(obj.coneDensities)>3) && (any(obj.coneDensities(4:end)>0.0))
@@ -268,9 +281,16 @@ classdef cMosaic < handle
             addlistener(obj.macular, 'wave', 'PostSet', @obj.matchWaveInAttachedPhotopigment);
             
             if (isempty(p.Results.coneData))
-                % Initialize positions
-                obj.initializeConePositions();
-
+                
+                if (p.Results.computeMeshFromScratch)
+                    % Re-generate lattice
+                    visualizeConvergence = false; exportHistoryToFile = false;
+                    obj.regenerateConePositions(p.Results.maxMeshIterations,  visualizeConvergence, exportHistoryToFile);
+                else
+                    % Import positions by cropping a large pre-computed patch
+                    obj.initializeConePositions();
+                end
+                
                 % Set random seed
                 if (isempty(obj.randomSeed))
                     rng('shuffle');
@@ -292,9 +312,13 @@ classdef cMosaic < handle
                 end
             end
             
+            % Save min and max cone position
+            obj.minRFpositionMicrons = squeeze(min(obj.coneRFpositionsMicrons,[],1));
+            obj.maxRFpositionMicrons = squeeze(max(obj.coneRFpositionsMicrons,[],1));
+            
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
-            obj.computeOuterSegmentLengthEccVariationAttenuationFactors();
+            obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
         end
         
         % Method to assign cone types
@@ -307,7 +331,7 @@ classdef cMosaic < handle
         emGenSequence(obj, durationSeconds, varargin);
         
         % Method to generate an ensemble of OIs for the mosaic
-        oiEnsemble = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
+        [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
         
         % Method to compute the mosaic response
         [absorptionsCount, noisyAbsorptionInstances, ...
@@ -353,7 +377,11 @@ classdef cMosaic < handle
     
     methods (Access=private)
         
+        % Initialize cone positions by importing them from a large previously-computed mesh
         initializeConePositions(obj);
+        
+        % Initialize cone positions by regenerating a new mesh. Can be slow.
+        regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile);
         
         % Method to partition cones into zones based on cone
         % aperture size and current optical image resolution

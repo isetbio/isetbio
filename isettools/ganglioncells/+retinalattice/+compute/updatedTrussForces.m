@@ -1,4 +1,4 @@
-function [netForceVectors, desiredSpringLengths] = updatedTrussForces(rfPositions, tabulatedEcc, tabulatedRFspacing, springs, springIndices, desiredSpringLengths, rfSpacingFunctionFast, reTriangulationIsNeeded)
+function [netForceVectors, desiredSpringLengths] = updatedTrussForces(rfPositions, tabulatedEcc, tabulatedRFspacing, springs, springIndices, desiredSpringLengths, rfSpacingFunctionFast, reTriangulationIsNeeded, useParfor)
     % Compute spring vectors
     springVectors =  rfPositions(springs(:, 1), :) - rfPositions(springs(:, 2), :);
     % their centers
@@ -26,10 +26,18 @@ function [netForceVectors, desiredSpringLengths] = updatedTrussForces(rfPosition
     rfsNum = size(rfPositions,1);
     netForceVectors = zeros(rfsNum, 2);
 
-    parfor rfIndex = 1:rfsNum
-       % compute net force from all connected springs
-       deltaPos = -bsxfun(@minus, springCenters(springIndices{rfIndex}, :), rfPositions(rfIndex, :));
-       netForceVectors(rfIndex, :) = sum(sign(deltaPos) .* springForceXYcomponents(springIndices{rfIndex}, :), 1);
+    if (useParfor)
+        parfor rfIndex = 1:rfsNum
+           % compute net force from all connected springs
+           deltaPos = -bsxfun(@minus, springCenters(springIndices{rfIndex}, :), rfPositions(rfIndex, :));
+           netForceVectors(rfIndex, :) = sum(sign(deltaPos) .* springForceXYcomponents(springIndices{rfIndex}, :), 1);
+        end
+    else
+        for rfIndex = 1:rfsNum
+           % compute net force from all connected springs
+           deltaPos = -bsxfun(@minus, springCenters(springIndices{rfIndex}, :), rfPositions(rfIndex, :));
+           netForceVectors(rfIndex, :) = sum(sign(deltaPos) .* springForceXYcomponents(springIndices{rfIndex}, :), 1);
+        end
     end
         
 end
