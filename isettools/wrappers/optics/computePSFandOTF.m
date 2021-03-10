@@ -20,22 +20,24 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     ySfCyclesDeg = xSfCyclesDeg;
     [xSfGridCyclesDegGrid,ySfGridCyclesDegGrid] = meshgrid(xSfCyclesDeg, ySfCyclesDeg);
     
-    if (~isempty(measWavelength))
-        % Retrieve OTF at the measurement wavelength
-        theCenteringOTF = wvfGet(theWVF, 'otf', measWavelength);
-        theCenteringPSF = wvfGet(theWVF, 'psf', measWavelength);
-        translationVector = []; showTranslation = false;
-        [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(...
-                    theCenteringOTF, theCenteringPSF, ...
-                    translationVector, xSfGridCyclesDegGrid,ySfGridCyclesDegGrid, ...
-                    showTranslation);
-    else
-        translationVector = [0 0];
-    end
-    
+
     if (doNotZeroCenterPSF)
         translationVector = [0 0];
+    else
+        if (~isempty(measWavelength))
+            % Retrieve OTF at the measurement wavelength
+            theCenteringOTF = wvfGet(theWVF, 'otf', measWavelength);
+            theCenteringPSF = wvfGet(theWVF, 'psf', measWavelength);
+            translationVector = []; showTranslation = false;
+            [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(...
+                        theCenteringOTF, theCenteringPSF, ...
+                        translationVector, xSfGridCyclesDegGrid,ySfGridCyclesDegGrid, ...
+                        showTranslation);
+        else
+            translationVector = [0 0];
+        end
     end
+    
     
     for wIndex = 1:numel(wavelengthsListToCompute)
         theWaveOTF = wvfGet(theWVF, 'otf', wavelengthsListToCompute(wIndex));
@@ -57,7 +59,6 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
         theWVF.psf{wIndex} = theWavePSF;
     end
     
-   
    
     xMinutes = xGridMinutes(1,:);
     yMinutes = yGridMinutes(:,1);

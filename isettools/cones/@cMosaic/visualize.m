@@ -17,6 +17,9 @@ function visualize(obj, varargin)
     p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
     p.addParameter('crossHairsOnFovea', false, @islogical);
     p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
+    p.addParameter('labelCones', true, @islogical);
+    p.addParameter('noXLabel', false, @islogical);
+    p.addParameter('noYLabel', false, @islogical);
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('fontSize', 16, @isscalar);
@@ -35,7 +38,10 @@ function visualize(obj, varargin)
     currentEMposition = p.Results.currentEMposition;
     crossHairsOnMosaicCenter = p.Results.crossHairsOnMosaicCenter;
     crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
+    labelCones = p.Results.labelCones;
     crossHairsOnFovea = p.Results.crossHairsOnFovea;
+    noXlabel = p.Results.noXLabel;
+    noYlabel = p.Results.noYLabel;
     displayedEyeMovementData = p.Results.displayedEyeMovementData;
     fontSize = p.Results.fontSize;
     cMap = p.Results.activationColorMap;
@@ -293,7 +299,11 @@ function visualize(obj, varargin)
     % Set appropriate colormap
     if (isempty(activation))
         % Colormap for visualization of cone types
-        cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor];
+        if (labelCones)
+            cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor];
+        else
+            cMap = 0.4*ones(4,3);
+        end
     else
         % Colormap for visualization of activity
         if (isempty(cMap))
@@ -372,11 +382,23 @@ function visualize(obj, varargin)
     
     switch (domain)
         case 'degrees'
-            xlabel(axesHandle, 'space (degrees)');
-            ylabel(axesHandle, 'space (degrees)');
+            if (~noXlabel)
+                xlabel(axesHandle, 'space (degrees)');
+            end
+            if (~noYlabel)
+                ylabel(axesHandle, 'space (degrees)');
+            end
+            set(axesHandle, 'XTickLabel', sprintf('%1.3f\n', domainVisualizationTicks.x), ...
+                            'YTickLabel', sprintf('%1.3f\n', domainVisualizationTicks.y));
         case 'microns'
-            xlabel(axesHandle, 'space (microns)');
-            ylabel(axesHandle, 'space (microns)');
+            if (~noXlabel)
+                xlabel(axesHandle, 'space (microns)');
+            end
+            if (~noYlabel)
+                ylabel(axesHandle, 'space (microns)');
+            end
+            set(axesHandle, 'XTickLabel', sprintf('%d\n', domainVisualizationTicks.x), ...
+                            'YTickLabel', sprintf('%d\n', domainVisualizationTicks.y));
     end
     if (isempty(plotTitle))
         title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
