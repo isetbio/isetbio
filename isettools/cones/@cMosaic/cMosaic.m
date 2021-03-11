@@ -30,7 +30,7 @@ classdef cMosaic < handle
     %    cPhotoPigment
     %
     % History:
-    %    12/../2020  NPC  Wrote it
+    %    December 2020  NPC  Wrote it
     
     properties (Constant)
         % Cone types
@@ -44,7 +44,7 @@ classdef cMosaic < handle
         % coneMosaicHex, .e.g.: 
         % c = coneMosaicHex(3);
         % c.pigment.pdWidth/c.pigment.width, which gives 0.7899
-        coneApertureToDiameterRatio = 0.7977;
+        coneApertureToDiameterRatio = 0.79;
     end
     
     % Public properties
