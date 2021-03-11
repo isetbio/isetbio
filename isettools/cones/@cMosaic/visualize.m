@@ -394,8 +394,8 @@ function visualize(obj, varargin)
             if (~noYlabel)
                 ylabel(axesHandle, 'space (degrees)');
             end
-            set(axesHandle, 'XTickLabel', sprintf('%1.3f\n', domainVisualizationTicks.x), ...
-                            'YTickLabel', sprintf('%1.3f\n', domainVisualizationTicks.y));
+            set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
+                            'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
         case 'microns'
             if (~noXlabel)
                 xlabel(axesHandle, 'space (microns)');
