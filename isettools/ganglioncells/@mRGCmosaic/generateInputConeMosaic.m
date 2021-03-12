@@ -136,6 +136,6 @@ function peripheralOpticalDensities = eccBasedPhotpigmentOpticalDensities(theCon
     % Given these specific densities, compute peripheral optical density
     % at the desired eccentricity;
     peripheralOuterSegmentLengthMicrons = interp1(eccDegsBanksSekulerAnderson, ...
-        osLengthMicronsBanksSekulerAnderson, mosaicEccDegs, 'phip');
+        osLengthMicronsBanksSekulerAnderson, mosaicEccDegs, 'pchip');
     peripheralOpticalDensities = specificDensities * peripheralOuterSegmentLengthMicrons;
 end
