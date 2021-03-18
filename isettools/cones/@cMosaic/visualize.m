@@ -181,7 +181,7 @@ function visualize(obj, varargin)
     hold(axesHandle, 'on');
     
     % Visualize cone aperture multiplier
-    if (strcmp(visualizedConeAperture', 'geometricArea'))
+    if (strcmp(visualizedConeAperture, 'geometricArea'))
        visualizeApertureMultiplier = 1.0;
     else
        visualizeApertureMultiplier = obj.coneApertureToDiameterRatio;

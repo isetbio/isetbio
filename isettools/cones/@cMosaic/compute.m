@@ -125,8 +125,13 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         oiYPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiYPosMicrons*1e-3);
     end
 
-    [oiPositionsDegsX, oiPositionsDegsY] = meshgrid(oiXPosDegrees, oiYPosDegrees);
-    oiPositionsDegs = [oiPositionsDegsX(:), oiPositionsDegsY(:)];
+    [oiPosMicronsXgrid, oiPosMicronsYgrid] = meshgrid(oiXPosMicrons, oiYPosMicrons);
+    oiPositionsMicrons{1} = oiPosMicronsXgrid;
+    oiPositionsMicrons{2} = oiPosMicronsYgrid;
+    
+    [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(oiXPosDegrees, oiYPosDegrees);
+    oiPositionsDegs = [oiPositionsDegsXgrid(:), oiPositionsDegsYgrid(:)];
+    
     
     % Compute cone aperture diameters based on their local spacing
     coneApertureDiametersMicrons = obj.coneRFspacingsMicrons * obj.coneApertureToDiameterRatio;
@@ -195,7 +200,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         noiseFreeAbsorptionsCount(1,1,:) = obj.integrationTime *  ...
                 obj.computeAbsorptionRate(...
                     emPathsMicrons(1,1,:), ...
-                    [oiXPosMicrons(:) oiYPosMicrons(:)], ...
+                    oiPositionsMicrons, ...
                     absorptionsDensityFullMap, ...
                     oiResMicrons, coneApertureDiametersMicrons, ...
                     coneIndicesInZones);
@@ -209,7 +214,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
        %fprintf('Replicating mean response for %d trials count took %f seconds.\n', nTrials, etime(clock, t2));
         
     else 
-        
         % Compute for emPath
         for iTrial = 1:nTrials
             if (replicateResponseToFirstEMpath) && (iTrial > 1)
@@ -242,7 +246,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
                     noiseFreeAbsorptionsCount(iTrial, timePoint, :) = obj.integrationTime * ...
                         obj.computeAbsorptionRate(...
                         emPathsMicrons(iTrial, timePoint,:), ...
-                        [oiXPosMicrons(:) oiYPosMicrons(:)], ...
+                        oiPositionsMicrons, ...
                         absorptionsDensityFullMap, ...
                         oiResMicrons, coneApertureDiametersMicrons, ...
                         coneIndicesInZones);
@@ -283,8 +287,12 @@ end
 
 
 function macularPigmentDensityBoostFactors = updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiSize, oiResMicrons)
+    
     if (obj.eccVaryingMacularPigmentDensity)
         % Separate boost factors for each oiPixel
+        % Invert y-coord of oiPositions because y coord in image incrases
+        % from top to bottom
+        oiPositionsDegs(2,:) = -oiPositionsDegs(2,:);
         macularPigmentDensityBoostFactors = obj.computeMPBoostFactors(oiPositionsDegs, currentEMposDegs, oiSize, oiResMicrons);
     else
         % Single boost factor for the center of the mosaic

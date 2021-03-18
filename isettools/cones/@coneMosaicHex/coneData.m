@@ -17,7 +17,7 @@ function mosaicMetaData = coneData(obj)
     idx = find(obj.pattern == 2);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows+1);
     lConeCoords = [coneXcoords(:) coneYcoords(:)];
     if (obj.shouldCorrectAbsorptionsWithEccentricity())
         lConeApertures = 2*sqrt(obj.pigment.pdArea / pi * innerSegmentDiameterBoostFactors(idx));
@@ -37,7 +37,7 @@ function mosaicMetaData = coneData(obj)
     idx = find(obj.pattern == 3);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows+1);
     mConeCoords = [coneXcoords(:) coneYcoords(:)];
     if (obj.shouldCorrectAbsorptionsWithEccentricity())
         mConeApertures = 2*sqrt(obj.pigment.pdArea / pi * innerSegmentDiameterBoostFactors(idx));
@@ -56,7 +56,7 @@ function mosaicMetaData = coneData(obj)
     idx = find(obj.pattern == 4);
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords = sampledHexMosaicYaxis(end-iRows+1);
     sConeCoords = [coneXcoords(:) coneYcoords(:)];
     if (obj.shouldCorrectAbsorptionsWithEccentricity())
         sConeApertures = 2*sqrt(obj.pigment.pdArea / pi * innerSegmentDiameterBoostFactors(idx));

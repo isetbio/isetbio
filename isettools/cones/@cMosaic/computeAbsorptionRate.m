@@ -7,7 +7,6 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
     zonesNum = numel(obj.blurApertureDiameterMicronsZones);
     
     % Alocate memory
-    absorptionsDensityImageFiltered = absorptionsDensityImage * 0;
     absorptionsRateAllConeTypes = zeros(conesNum, size(absorptionsDensityImage,3));
     
     for zoneIndex = 1:zonesNum
@@ -27,12 +26,6 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
             apertureKernel = cMosaic.generateApertureKernel(blurApertureDiameterMicrons, oiResMicrons);
         end
         
-
-        % Do the convolution
-        for coneType = 1:coneTypesNum
-            absorptionsDensityImageFiltered(:, :, coneType) = conv2(squeeze(absorptionsDensityImage(:, :, coneType)), apertureKernel, 'same');
-        end
-            
         % Determine which cones should receive this blur.
         coneIDsInZone = coneIndicesInZones{zoneIndex};
         
@@ -44,12 +37,21 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         
         interpolationMethod = 'linear';
         extrapolationMethod = 'nearest';
+
         for coneTypeIndex = 1:coneTypesNum
-            fullImage = squeeze(absorptionsDensityImageFiltered(:,:,coneTypeIndex));
-            F = griddedInterpolant({oiPositionsMicrons(:,1), oiPositionsMicrons(:,2)}, fullImage', ...
-                interpolationMethod, extrapolationMethod);
-            vq = F([shiftedConePositions(:,1) shiftedConePositions(:,2)]);
-            absorptionsRateAllConeTypes(coneIDsInZone, coneTypeIndex) = vq .* apertureAreasMetersSquared;
+            % Convolve with the cone aperture
+            % Flip the optical image upside-down because the y-coords in the
+            % oiPositionsMicrons vectors increase from top -> bottom (y-coords in an image)
+            absorptionsDensityImageFiltered = flipud(conv2(squeeze(absorptionsDensityImage(:, :, coneTypeIndex)), apertureKernel, 'same'));
+
+            % Compute gridded interpolant for the original cone positions
+            F = griddedInterpolant(oiPositionsMicrons{2}, oiPositionsMicrons{1}, ...
+                absorptionsDensityImageFiltered, interpolationMethod, extrapolationMethod);
+            
+            % Interpolate at current cone positions using gridded
+            % interpolant, F, and multiply by aperture area
+            absorptionsRateAllConeTypes(coneIDsInZone, coneTypeIndex) = ...
+                F([shiftedConePositions(:,2) shiftedConePositions(:,1)]) .* apertureAreasMetersSquared;
         end
     end  % zoneIndex
     

@@ -251,7 +251,7 @@ if (~showCorrespondingRectangularMosaicInstead)
         edgeColor = [0.4 0.4 0.4];
         faceColor = 'none';
         coneMosaicHex.renderPatchArray(axesHandle, pixelOutline, ...
-            sampledHexMosaicXaxis(iCols), sampledHexMosaicYaxis(iRows), ...
+            sampledHexMosaicXaxis(iCols),  sampledHexMosaicYaxis(end-iRows+1), ...
             edgeColor, faceColor, lineStyle, lineWidth);
     end
     
@@ -264,7 +264,7 @@ if (~showCorrespondingRectangularMosaicInstead)
 
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords =  sampledHexMosaicYaxis(end-iRows+1);
     
     edgeColor = 'none'; % [1 0 0];
     if (labelConeTypes)
@@ -315,7 +315,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     end
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords =  sampledHexMosaicYaxis(end-iRows+1);
     
     edgeColor = 'none';  % = [0 0.7 0];
     if (labelConeTypes)
@@ -369,7 +369,7 @@ if (~showCorrespondingRectangularMosaicInstead)
     end
     [iRows, iCols] = ind2sub(size(obj.pattern), idx);
     coneXcoords = sampledHexMosaicXaxis(iCols);
-    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneYcoords =  sampledHexMosaicYaxis(end-iRows+1);
     
     edgeColor = 'none';  % = [0 0 1];
     if (labelConeTypes)
