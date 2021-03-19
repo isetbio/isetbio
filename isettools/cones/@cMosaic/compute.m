@@ -92,11 +92,15 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     oiSize  = oiGet(oi, 'size');
     oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
     
+    % Retrieve wavelength support
+    oiWave = oiGet(oi, 'wave');
+    
     % Generate oiPositions
     oiYPosMicrons = (1:oiSize(1))*oiResMicrons;
     oiXPosMicrons = (1:oiSize(2))*oiResMicrons;
     oiXPosMicrons = oiXPosMicrons - mean(oiXPosMicrons);
     oiYPosMicrons = oiYPosMicrons - mean(oiYPosMicrons);
+    oiPositionsVectorsMicrons = {oiYPosMicrons(:), oiXPosMicrons(:)};
     
     minEMpos = squeeze(min(emPathsMicrons,[],1));
     maxEMpos = squeeze(max(emPathsMicrons,[],1));
@@ -116,7 +120,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         fprintf(2, 'Top side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
 
-    
+
     if (~isempty(obj.micronsPerDegreeApproximation))
         oiXPosDegrees = oiXPosMicrons/obj.micronsPerDegreeApproximation;  
         oiYPosDegrees = oiYPosMicrons/obj.micronsPerDegreeApproximation;
@@ -124,10 +128,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         oiXPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiXPosMicrons*1e-3);
         oiYPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiYPosMicrons*1e-3);
     end
-
-    [oiPosMicronsXgrid, oiPosMicronsYgrid] = meshgrid(oiXPosMicrons, oiYPosMicrons);
-    oiPositionsMicrons{1} = oiPosMicronsXgrid;
-    oiPositionsMicrons{2} = oiPosMicronsYgrid;
     
     [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(oiXPosDegrees, oiYPosDegrees);
     oiPositionsDegs = [oiPositionsDegsXgrid(:), oiPositionsDegsYgrid(:)];
@@ -180,7 +180,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     %t1 = clock;
     currentEMposDegs = [emPathsDegs(1, 1,1) emPathsDegs(1,1,2)];
     macularPigmentDensityBoostFactors = ...
-        updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiSize, oiResMicrons);
+        updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
     
     %fprintf('Computing ecc-based MP boosting factors took %f seconds.\n', etime(clock, t1));
         
@@ -200,7 +200,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         noiseFreeAbsorptionsCount(1,1,:) = obj.integrationTime *  ...
                 obj.computeAbsorptionRate(...
                     emPathsMicrons(1,1,:), ...
-                    oiPositionsMicrons, ...
+                    oiPositionsVectorsMicrons, ...
                     absorptionsDensityFullMap, ...
                     oiResMicrons, coneApertureDiametersMicrons, ...
                     coneIndicesInZones);
@@ -232,7 +232,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
                     if (obj.eccVaryingMacularPigmentDensityDynamic)
                         currentEMposDegs = [emPathsDegs(iTrial, timePoint,1) emPathsDegs(iTrial, timePoint,2)];
                         macularPigmentDensityBoostFactors = ...
-                            updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiSize, oiResMicrons);
+                            updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
                     end
    
                     %fprintf('Computed MPBoostFactors in %2.2f seconds\n', etime(clock, t1));
@@ -246,7 +246,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
                     noiseFreeAbsorptionsCount(iTrial, timePoint, :) = obj.integrationTime * ...
                         obj.computeAbsorptionRate(...
                         emPathsMicrons(iTrial, timePoint,:), ...
-                        oiPositionsMicrons, ...
+                        oiPositionsVectorsMicrons, ...
                         absorptionsDensityFullMap, ...
                         oiResMicrons, coneApertureDiametersMicrons, ...
                         coneIndicesInZones);
@@ -286,14 +286,11 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
 end
 
 
-function macularPigmentDensityBoostFactors = updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiSize, oiResMicrons)
+function macularPigmentDensityBoostFactors = updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons)
     
     if (obj.eccVaryingMacularPigmentDensity)
         % Separate boost factors for each oiPixel
-        % Invert y-coord of oiPositions because y coord in image incrases
-        % from top to bottom
-        oiPositionsDegs(2,:) = -oiPositionsDegs(2,:);
-        macularPigmentDensityBoostFactors = obj.computeMPBoostFactors(oiPositionsDegs, currentEMposDegs, oiSize, oiResMicrons);
+        macularPigmentDensityBoostFactors = obj.computeMPBoostFactors(oiPositionsDegs, currentEMposDegs, oiWave, oiSize, oiResMicrons);
     else
         % Single boost factor for the center of the mosaic
         macularPigmentDensityBoostFactor = obj.computeMPBoostFactors(obj.eccentricityDegs, currentEMposDegs, oiSize, oiResMicrons);

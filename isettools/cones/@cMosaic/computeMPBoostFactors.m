@@ -1,14 +1,15 @@
 % Since this correction is applied on the optical image we need to compute
 % correction factors at each emPosition because the relative position
-% between the optical image and the mosaic varies durint the emPath
-function macularPigmentDensityBoostFactors = computeMPBoostFactors(obj, oiPositionsDegs, emPositionDegs, oiSize, oiResMicrons)
+% between the optical image and the mosaic varies during the emPath
+function macularPigmentDensityBoostFactors = computeMPBoostFactors(obj, oiPositionsDegs, emPositionDegs, oiWave, oiSize, oiResMicrons)
 
-    if (cachedMacularPigmentDensityBoostFactorsIsValid(obj, oiSize, oiResMicrons, emPositionDegs))
-        %fprintf('No change in oiSize, oiResMicrons, and same emPosition, so will use cached macularPigmentDensityBoostFactors.\n');
+    if (cachedMacularPigmentDensityBoostFactorsIsValid(obj, oiWave, oiSize, oiResMicrons, emPositionDegs))
+        fprintf('No change in oiWave, oiSize, oiResMicrons, and same emPosition, so will use cached macularPigmentDensityBoostFactors.\n');
         macularPigmentDensityBoostFactors = obj.cachedMacularPigmentDensityBoostFactors.macularPigmentDensityBoostFactors; 
         return;
     end
     
+    fprintf('Computing new MP density boost factors\n');
     % Adjust oiPositionsDegs to take into account the current eye position
     oiPositionsDegs = bsxfun(@minus, oiPositionsDegs, emPositionDegs);
     
@@ -26,11 +27,12 @@ function macularPigmentDensityBoostFactors = computeMPBoostFactors(obj, oiPositi
     obj.cachedMacularPigmentDensityBoostFactors.macularPigmentDensityBoostFactors = macularPigmentDensityBoostFactors;
     obj.cachedMacularPigmentDensityBoostFactors.oiResMicrons = oiResMicrons;
     obj.cachedMacularPigmentDensityBoostFactors.oiSize = oiSize;
+    obj.cachedMacularPigmentDensityBoostFactors.oiWave = oiWave;
     obj.cachedMacularPigmentDensityBoostFactors.emPositionDegs = emPositionDegs;
 end
 
 
-function isValid =  cachedMacularPigmentDensityBoostFactorsIsValid(obj, oiSize, oiResMicrons, emPositionDegs)
+function isValid =  cachedMacularPigmentDensityBoostFactorsIsValid(obj, oiWave, oiSize, oiResMicrons, emPositionDegs)
     if (isempty(obj.cachedMacularPigmentDensityBoostFactors))
         isValid = false;
     else
@@ -38,6 +40,8 @@ function isValid =  cachedMacularPigmentDensityBoostFactorsIsValid(obj, oiSize, 
             (oiResMicrons == obj.cachedMacularPigmentDensityBoostFactors.oiResMicrons) && ...
             (oiSize(1) == obj.cachedMacularPigmentDensityBoostFactors.oiSize(1)) && ...
             (oiSize(2) == obj.cachedMacularPigmentDensityBoostFactors.oiSize(2)) && ...
+            (numel(oiWave) == numel(obj.cachedMacularPigmentDensityBoostFactors.oiWave)) && ...
+            all(oiWave == obj.cachedMacularPigmentDensityBoostFactors.oiWave) && ...
             (emPositionDegs(1) == obj.cachedMacularPigmentDensityBoostFactors.emPositionDegs(1)) && ...
             (emPositionDegs(2) == obj.cachedMacularPigmentDensityBoostFactors.emPositionDegs(2)) && ...
             (obj.eccVaryingMacularPigmentDensity == obj.cachedMacularPigmentDensityBoostFactors.eccVaryingMacularPigmentDensity);

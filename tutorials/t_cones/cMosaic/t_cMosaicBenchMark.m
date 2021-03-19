@@ -22,24 +22,32 @@ close all;
 % Set to true to examine memory allocation between old and new mosaics
 % If set to true, the compute time measurements may not be as accurate as
 % when set to false, because the memory profiler takes resources
-benchtestMemoryAllocation = true;
+benchtestMemoryAllocation = ~true;
 
 % Repeat 100 times so as to get an accurate estimate of compute time
 repeatsNum = 10;
 
 %% Generate test scenes
+% Letter A
 fontSize = 20;
 dotsPerInch = 96;
 display = 'LCD-Apple';
 sceneFOVDegs = 2.0;
 font = fontCreate('A', 'Georgia', fontSize, dotsPerInch);
-scene1  = sceneCreate('letter', font, display);
-scene1  = sceneSet(scene1,'fov',sceneFOVDegs);
+scene0  = sceneCreate('letter', font, display);
+scene0  = sceneSet(scene0,'fov',sceneFOVDegs);
 
-%scene1 = sceneCreate('radial lines', 512);
-%scene1 = sceneSet(scene1, 'fov', sceneFOVDegs);
+% A sinusoid
+params.freq = 10;
+params.row = 900;
+params.col = 900;
+spectrum = 400:2:700;
+%scene1 = sceneCreate('Harmonic', params, spectrum);
+scene1 = sceneCreate('Harmonic', params);
+scene1 = sceneSet(scene1, 'fov', sceneFOVDegs);
 
-scene2 = sceneCreate('distortion grid', 512);
+% A distortion grid
+scene2 = sceneCreate('distortion grid', 900);
 scene2 = sceneSet(scene2, 'fov', sceneFOVDegs);
 
 %% Compute optical images
@@ -49,6 +57,13 @@ oi1 = oiCompute(scene1, oi1);
 oi2 = oiCreate;
 oi2 = oiCompute(scene2, oi2);
 
+%% Compute microns per degree
+micronsPerDegFromOpticalImageH = 1e6*oiGet(oi1, 'hspatial resolution')/oiGet(oi1, 'hangular resolution');
+micronsPerDegFromOpticalImageW = 1e6*oiGet(oi1, 'wspatial resolution')/oiGet(oi1, 'wangular resolution');
+micronsPerDegreeApproximation = 0.5*(micronsPerDegFromOpticalImageH + micronsPerDegFromOpticalImageW);
+fprintf('Microns per deg from optical image: %f\n', micronsPerDegreeApproximation);
+
+    
 %% Generate the old-style cone mosaic with an FOV of 1 x 1 deg
 fprintf('\nGenerating coneMosaicHex ...');
 regenerateMosaic = ~true;
@@ -74,6 +89,7 @@ fprintf(' Done. \n');
 %% properties) matching the old cone mosaic object. 
 theNewConeMosaic = cMosaic(...
             'coneData', theOldConeMosaic.coneData(), ... % coneData from old mosaic
+            'micronsPerDegree', micronsPerDegreeApproximation, ...
             'integrationTime', 100/1000, ...
             'noiseFlag', 'none');
 
@@ -108,10 +124,19 @@ end
 fprintf('Computing using @coneMosaicHex\n');
 tic
 for k = 1:repeatsNum
-    oldConeMosaicExcitations1 = theOldConeMosaic.compute(oi1);
-    oldConeMosaicExcitations2 = theOldConeMosaic.compute(oi2);
+    oldConeMosaicExcitations1a = theOldConeMosaic.compute(oi1);
 end
-computeTimeOldConeMosaic = toc;
+for k = 1:repeatsNum
+    oldConeMosaicExcitations2a = theOldConeMosaic.compute(oi2);
+end
+computeTimeOldConeMosaicNonInterleaved = toc;
+
+tic
+for k = 1:repeatsNum
+    oldConeMosaicExcitations1b = theOldConeMosaic.compute(oi1);
+    oldConeMosaicExcitations2b = theOldConeMosaic.compute(oi2);
+end
+computeTimeOldConeMosaicInterleaved = toc;
 
 
 %% Find allocated memory
@@ -130,12 +155,25 @@ end
 
 %% Compute cone excitation responses (new mosaic) to the 2 scenes
 fprintf('Computing using @cMosaic\n');
+
 tic
 for k = 1:repeatsNum
-    newConeMosaicExcitations1 = theNewConeMosaic.compute(oi1);
-    newConeMosaicExcitations2 = theNewConeMosaic.compute(oi2);
+    newConeMosaicExcitations1a = theNewConeMosaic.compute(oi1);
 end
-computeTimeNewConeMosaic = toc;
+for k = 1:repeatsNum
+    newConeMosaicExcitations2a = theNewConeMosaic.compute(oi2);
+end
+computeTimeNewConeMosaicNonInterleaved = toc;
+
+tic
+for k = 1:repeatsNum
+    newConeMosaicExcitations1b = theNewConeMosaic.compute(oi1);
+    newConeMosaicExcitations2b = theNewConeMosaic.compute(oi2);
+end
+computeTimeNewConeMosaicInterleaved = toc;
+
+
+
 
 
 %% Find allocated memory
@@ -150,9 +188,9 @@ end
 
 
 %% Visualize responses
-activationRange = [min(newConeMosaicExcitations1(:)), max(newConeMosaicExcitations1(:))];
+activationRange = [min(newConeMosaicExcitations1a(:)), max(newConeMosaicExcitations1a(:))];
 ax = subplot(3,2,3);
-theOldConeMosaic.renderActivationMap(ax, oldConeMosaicExcitations1, ...
+theOldConeMosaic.renderActivationMap(ax, oldConeMosaicExcitations1a, ...
             'signalRange', activationRange, ...
             'visualizedConeAperture', 'geometricArea', ...
             'mapType', 'modulated disks', ...
@@ -160,14 +198,14 @@ theOldConeMosaic.renderActivationMap(ax, oldConeMosaicExcitations1, ...
          
 ax = subplot(3,2,4);
 theNewConeMosaic.visualize('figureHandle', hFig, 'axesHandle', ax, ...
-             'activation', newConeMosaicExcitations1, ...
+             'activation', newConeMosaicExcitations1a, ...
              'visualizedConeAperture',  'geometricArea', ...
              'activationRange', activationRange, ...
              'plotTitle',  ' ');
 
-activationRange = [min(newConeMosaicExcitations2(:)), max(newConeMosaicExcitations2(:))];
+activationRange = [min(newConeMosaicExcitations2a(:)), max(newConeMosaicExcitations2a(:))];
 ax = subplot(3,2,5);
-theOldConeMosaic.renderActivationMap(ax, oldConeMosaicExcitations2, ...
+theOldConeMosaic.renderActivationMap(ax, oldConeMosaicExcitations2a, ...
             'signalRange', activationRange, ...
             'visualizedConeAperture', 'geometricArea', ...
             'mapType', 'modulated disks', ...
@@ -175,7 +213,7 @@ theOldConeMosaic.renderActivationMap(ax, oldConeMosaicExcitations2, ...
          
 ax = subplot(3,2,6);
 theNewConeMosaic.visualize('figureHandle', hFig, 'axesHandle', ax, ...
-             'activation', newConeMosaicExcitations2, ...
+             'activation', newConeMosaicExcitations2a, ...
              'visualizedConeAperture',  'geometricArea', ...
              'activationRange', activationRange, ...
              'plotTitle',  ' ');
@@ -185,57 +223,107 @@ theNewConeMosaic.visualize('figureHandle', hFig, 'axesHandle', ax, ...
 lConeIndices = find(theOldConeMosaic.pattern == 2);
 mConeIndices = find(theOldConeMosaic.pattern == 3);
 sConeIndices = find(theOldConeMosaic.pattern == 4);
-oldMosaicLconeResponses = oldConeMosaicExcitations1(lConeIndices);
-oldMosaicLconeResponses = cat(1, oldMosaicLconeResponses, oldConeMosaicExcitations2(lConeIndices));
-oldMosaicMconeResponses = oldConeMosaicExcitations1(mConeIndices);
-oldMosaicMconeResponses = cat(1, oldMosaicMconeResponses, oldConeMosaicExcitations2(mConeIndices));
-oldMosaicSconeResponses = oldConeMosaicExcitations1(sConeIndices);
-oldMosaicSconeResponses = cat(1, oldMosaicSconeResponses, oldConeMosaicExcitations2(sConeIndices));
+oldMosaicLconeResponsesA = oldConeMosaicExcitations1a(lConeIndices);
+oldMosaicLconeResponsesA = cat(1, oldMosaicLconeResponsesA, oldConeMosaicExcitations2a(lConeIndices));
+oldMosaicMconeResponsesA = oldConeMosaicExcitations1a(mConeIndices);
+oldMosaicMconeResponsesA = cat(1, oldMosaicMconeResponsesA, oldConeMosaicExcitations2a(mConeIndices));
+oldMosaicSconeResponsesA = oldConeMosaicExcitations1a(sConeIndices);
+oldMosaicSconeResponsesA = cat(1, oldMosaicSconeResponsesA, oldConeMosaicExcitations2a(sConeIndices));
+
+oldMosaicLconeResponsesB = oldConeMosaicExcitations1b(lConeIndices);
+oldMosaicLconeResponsesB = cat(1, oldMosaicLconeResponsesB, oldConeMosaicExcitations2b(lConeIndices));
+oldMosaicMconeResponsesB = oldConeMosaicExcitations1b(mConeIndices);
+oldMosaicMconeResponsesB = cat(1, oldMosaicMconeResponsesB, oldConeMosaicExcitations2b(mConeIndices));
+oldMosaicSconeResponsesB = oldConeMosaicExcitations1b(sConeIndices);
+oldMosaicSconeResponsesB = cat(1, oldMosaicSconeResponsesB, oldConeMosaicExcitations2b(sConeIndices));
 
 % Concatenate responses of the new mosaic to the two scenes
 lConeIndices = theNewConeMosaic.lConeIndices;
 mConeIndices = theNewConeMosaic.mConeIndices;
 sConeIndices = theNewConeMosaic.sConeIndices;
-newMosaicLconeResponses = reshape(newConeMosaicExcitations1(lConeIndices), [numel(lConeIndices) 1]);
-newMosaicLconeResponses = cat(1, newMosaicLconeResponses, reshape(newConeMosaicExcitations2(lConeIndices), [numel(lConeIndices) 1]));
-newMosaicMconeResponses = reshape(newConeMosaicExcitations1(mConeIndices), [numel(mConeIndices) 1]);
-newMosaicMconeResponses = cat(1, newMosaicMconeResponses, reshape(newConeMosaicExcitations2(mConeIndices), [numel(mConeIndices) 1]));
-newMosaicSconeResponses = reshape(newConeMosaicExcitations1(sConeIndices), [numel(sConeIndices) 1]);
-newMosaicSconeResponses = cat(1, newMosaicSconeResponses, reshape(newConeMosaicExcitations2(sConeIndices), [numel(sConeIndices) 1]));
+newMosaicLconeResponsesA = reshape(newConeMosaicExcitations1a(lConeIndices), [numel(lConeIndices) 1]);
+newMosaicLconeResponsesA = cat(1, newMosaicLconeResponsesA, reshape(newConeMosaicExcitations2a(lConeIndices), [numel(lConeIndices) 1]));
+newMosaicMconeResponsesA = reshape(newConeMosaicExcitations1a(mConeIndices), [numel(mConeIndices) 1]);
+newMosaicMconeResponsesA = cat(1, newMosaicMconeResponsesA, reshape(newConeMosaicExcitations2a(mConeIndices), [numel(mConeIndices) 1]));
+newMosaicSconeResponsesA = reshape(newConeMosaicExcitations1a(sConeIndices), [numel(sConeIndices) 1]);
+newMosaicSconeResponsesA = cat(1, newMosaicSconeResponsesA, reshape(newConeMosaicExcitations2a(sConeIndices), [numel(sConeIndices) 1]));
+
+newMosaicLconeResponsesB= reshape(newConeMosaicExcitations1b(lConeIndices), [numel(lConeIndices) 1]);
+newMosaicLconeResponsesB = cat(1, newMosaicLconeResponsesB, reshape(newConeMosaicExcitations2b(lConeIndices), [numel(lConeIndices) 1]));
+newMosaicMconeResponsesB = reshape(newConeMosaicExcitations1b(mConeIndices), [numel(mConeIndices) 1]);
+newMosaicMconeResponsesB = cat(1, newMosaicMconeResponsesB, reshape(newConeMosaicExcitations2b(mConeIndices), [numel(mConeIndices) 1]));
+newMosaicSconeResponsesB = reshape(newConeMosaicExcitations1b(sConeIndices), [numel(sConeIndices) 1]);
+newMosaicSconeResponsesB = cat(1, newMosaicSconeResponsesB, reshape(newConeMosaicExcitations2b(sConeIndices), [numel(sConeIndices) 1]));
 
 %% Plot correspondence of responses
 hFig = figure(2); clf;
 set(hFig, 'Position', [10 500 1200 400]);
 % L-cones
-ax = subplot(1,3,1);
-plot(ax,activationRange, activationRange, 'k-'); hold(ax, 'on');
-plot(ax,oldMosaicLconeResponses(:), newMosaicLconeResponses(:), 'r.');
-set(ax, 'XLim', activationRange, 'YLim', activationRange, 'FontSize', 16);
-set(ax, 'XScale', 'log', 'YScale', 'log', 'XTick', [0.1 0.3 1 3 10 30 100 300 1000], 'YTick', [0.1 0.3 1 3 10 30 100 300 1000]);
+ax = subplot(2,3,1);
+plot(ax,activationRange, activationRange*0, 'k-'); hold(ax, 'on');
+plot(ax,oldMosaicLconeResponsesA(:), (newMosaicLconeResponsesA(:)-oldMosaicLconeResponsesA(:))./oldMosaicLconeResponsesA(:)*100, 'r.');
+set(ax, 'XLim', activationRange, 'YLim', [-1 1], 'FontSize', 16);
+set(ax, 'XScale', 'log', 'YScale', 'linear', 'XTick', [0.1 0.3 1 3 10 30 100 300 1000]);
 axis(ax, 'square');
 grid(ax, 'on');
 xlabel(ax, 'excitations (@coneMosaicHex)');
-ylabel(ax, 'excitations (@cMosaic)');
+ylabel(ax, 'error (%)');
 title('L-cones');
 
 % M-cones
-ax = subplot(1,3,2);
-plot(ax,activationRange, activationRange, 'k-'); hold(ax, 'on');
-plot(ax,oldMosaicMconeResponses(:), newMosaicMconeResponses(:), 'g.');
-set(ax, 'XLim', activationRange, 'YLim', activationRange, 'FontSize', 16);
-set(ax, 'XScale', 'log', 'YScale', 'log', 'XTick', [0.1 0.3 1 3 10 30 100 300 1000], 'YTick', [0.1 0.3 1 3 10 30 100 300 1000]);
+ax = subplot(2,3,2);
+plot(ax,activationRange, activationRange*0, 'k-'); hold(ax, 'on');
+plot(ax,oldMosaicMconeResponsesA(:), (newMosaicMconeResponsesA(:)-oldMosaicMconeResponsesA(:))./oldMosaicMconeResponsesA(:)*100, 'g.');
+set(ax, 'XLim', activationRange, 'YLim', [-1 1], 'FontSize', 16);
+set(ax, 'XScale', 'log', 'YScale', 'linear', 'XTick', [0.1 0.3 1 3 10 30 100 300 1000]);
 axis(ax, 'square');
 grid(ax, 'on');
 xlabel(ax, 'excitations (@coneMosaicHex)');
 title('M-cones');
 
 % S-cones
-ax = subplot(1,3,3);
-plot(ax,activationRange, activationRange, 'k-'); hold(ax, 'on');
-plot(ax,oldMosaicSconeResponses(:), newMosaicSconeResponses(:), 'c.');
-set(ax, 'XLim', activationRange, 'YLim', activationRange, 'FontSize', 16);
-set(ax, 'XScale', 'log', 'YScale', 'log');
-set(ax, 'XTick', [0.1 0.3 1 3 10 30 100 300 1000 3000 10000], 'YTick', [0.1 0.3 1 3 10 30 100 300 1000]);
+ax = subplot(2,3,3);
+plot(ax,activationRange, activationRange*0, 'k-'); hold(ax, 'on');
+plot(ax,oldMosaicSconeResponsesA(:), (newMosaicSconeResponsesA(:)-oldMosaicSconeResponsesA(:))./oldMosaicSconeResponsesA(:)*100, 'c.');
+set(ax, 'XLim', activationRange, 'YLim', [-1 1], 'FontSize', 16);
+set(ax, 'XScale', 'log', 'YScale', 'linear');
+set(ax, 'XTick', [0.1 0.3 1 3 10 30 100 300 1000 3000 10000]);
+axis(ax, 'square');
+grid(ax, 'on');
+xlabel(ax, 'excitations (@coneMosaicHex)');
+title('S-cones');
+
+
+% L-cones
+ax = subplot(2,3,4);
+plot(ax,activationRange, activationRange*0, 'k-'); hold(ax, 'on');
+plot(ax,oldMosaicLconeResponsesB(:), (newMosaicLconeResponsesB(:)-oldMosaicLconeResponsesB(:))./oldMosaicLconeResponsesB(:)*100, 'r.');
+set(ax, 'XLim', activationRange, 'YLim', [-1 1], 'FontSize', 16);
+set(ax, 'XScale', 'log', 'YScale', 'linear', 'XTick', [0.1 0.3 1 3 10 30 100 300 1000]);
+axis(ax, 'square');
+grid(ax, 'on');
+xlabel(ax, 'excitations (@coneMosaicHex)');
+ylabel(ax, 'error(%)');
+title('L-cones');
+
+% M-cones
+ax = subplot(2,3,5);
+plot(ax,activationRange, activationRange*0, 'k-'); hold(ax, 'on');
+plot(ax,oldMosaicMconeResponsesB(:), (newMosaicMconeResponsesB(:)-oldMosaicMconeResponsesB(:))./oldMosaicMconeResponsesB(:)*100, 'g.');
+set(ax, 'XLim', activationRange, 'YLim', [-1 1], 'FontSize', 16);
+set(ax, 'XScale', 'log', 'YScale', 'linear', 'XTick', [0.1 0.3 1 3 10 30 100 300 1000]);
+axis(ax, 'square');
+grid(ax, 'on');
+xlabel(ax, 'excitations (@coneMosaicHex)');
+title('M-cones');
+
+% S-cones
+ax = subplot(2,3,6);
+plot(ax,activationRange, activationRange*0, 'k-'); hold(ax, 'on');
+plot(ax,oldMosaicSconeResponsesB(:), (newMosaicSconeResponsesB(:)-oldMosaicSconeResponsesB(:)) ./ oldMosaicSconeResponsesB(:)*100, 'c.');
+set(ax, 'XLim', activationRange, 'YLim', [-1 1], 'FontSize', 16);
+set(ax, 'XScale', 'log', 'YScale', 'linear');
+set(ax, 'XTick', [0.1 0.3 1 3 10 30 100 300 1000 3000 10000]);
 axis(ax, 'square');
 grid(ax, 'on');
 xlabel(ax, 'excitations (@coneMosaicHex)');
@@ -246,9 +334,9 @@ title('S-cones');
 hFig = figure(3); clf;
 set(hFig, 'Position', [10 500 800 400]);
 
-% The compute time plot
-ax = subplot(1,2,1);
-computeTimes = [computeTimeOldConeMosaic computeTimeNewConeMosaic];
+% The inteleaved compute time plot
+ax = subplot(1,3,1);
+computeTimes = [computeTimeOldConeMosaicInterleaved computeTimeNewConeMosaicInterleaved];
 b = bar([1 2], computeTimes);
 b.FaceColor = 'flat';
 b.CData(1,:) = [.4 .4 .4];
@@ -260,11 +348,27 @@ axis(ax, 'square');
 grid(ax, 'on');
 xlabel(ax, 'compute engine');
 ylabel(ax, 'compute time (sec)');
-title(sprintf('compute time speed-up: x %2.1f', computeTimeOldConeMosaic/computeTimeNewConeMosaic));
+title(sprintf('compute time (interleaved) speed-up: x %2.1f', computeTimeOldConeMosaicInterleaved/computeTimeNewConeMosaicInterleaved));
+
+% The non-inteleaved compute time plot
+ax = subplot(1,3,2);
+computeTimes = [computeTimeOldConeMosaicNonInterleaved computeTimeNewConeMosaicNonInterleaved];
+b = bar([1 2], computeTimes);
+b.FaceColor = 'flat';
+b.CData(1,:) = [.4 .4 .4];
+b.CData(2,:) = [1 .2 .4];
+set(ax, 'XLim', [0.5 2.5], 'YLim', [0 (ceil(max(computeTimes)/10)+1)*10], 'FontSize', 16);
+set(ax, 'XTick', [1 2], 'XTickLabel', {'@coneMosaicHex', '@cMosaic'});
+set(ax, 'YTick', 0:10:ceil(max(computeTimes)/10)*10);
+axis(ax, 'square');
+grid(ax, 'on');
+xlabel(ax, 'compute engine');
+ylabel(ax, 'compute time(sec)');
+title(sprintf('compute time speed-up (non-inteleaved): x %2.1f', computeTimeOldConeMosaicNonInterleaved/computeTimeNewConeMosaicNonInterleaved));
 
 % The memory allocation plot
 if (benchtestMemoryAllocation)
-    ax = subplot(1,2,2);
+    ax = subplot(1,3,3);
     allocatedGBytes = [memAllocatedOldConeMosaic memAllocatedNewConeMosaic]/(1024*1024*1024);
     b = bar([1 2], allocatedGBytes);
     b.FaceColor = 'flat';
