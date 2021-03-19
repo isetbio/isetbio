@@ -175,22 +175,19 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     % Reshape the photons for efficient computations
     [photons, oiRowsNum, oiColsNum] = RGB2XWFormat(photons);
     
-    % Compute boost factors by which photons have to be multiplied so as
-    % the account for MP density decrease with ecc
-    %t1 = clock;
-    currentEMposDegs = [emPathsDegs(1, 1,1) emPathsDegs(1,1,2)];
-    macularPigmentDensityBoostFactors = ...
-        updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
     
-    %fprintf('Computing ecc-based MP boosting factors took %f seconds.\n', etime(clock, t1));
-        
     % Allocate memory for noiseFreeAbsorptionsCount
     nConesNum = size(obj.coneRFpositionsMicrons,1);
     noiseFreeAbsorptionsCount = zeros(nTrials, nTimePoints, nConesNum);
         
     if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
         % No emPath, so compute a single shot
-        
+        % Compute boost factors by which photons have to be multiplied so as
+        % the account for MP density decrease with ecc
+        macularPigmentDensityBoostFactors = ...
+            updateMPBoostFactorsForCurrentEMpos(obj, [0 0], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+    
+    
         % Compute density of cone absosprions, by integrating photons over
         % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
         absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
@@ -214,6 +211,15 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
        %fprintf('Replicating mean response for %d trials count took %f seconds.\n', nTrials, etime(clock, t2));
         
     else 
+        if (~obj.eccVaryingMacularPigmentDensityDynamic)
+            % No dynamic adjustment of MP density, so compute MP boost factors for the mean  eye movement position
+            % across all time points and all instances. Alternatively, we
+            % could do mean over all time points separately for each instance
+            meanEMPosDegs = mean(mean(emPathsDegs,1),2);
+            macularPigmentDensityBoostFactors = ...
+                            updateMPBoostFactorsForCurrentEMpos(obj, [meanEMPosDegs(1) meanEMPosDegs(2)], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+        end
+        
         % Compute for emPath
         for iTrial = 1:nTrials
             if (replicateResponseToFirstEMpath) && (iTrial > 1)
@@ -227,9 +233,8 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
                     fprintf('\n(%s) Computing absorptions count for %d/%d time point ...', datestr(now), timePoint, nTimePoints);
                     %t1 = clock;
                     
-                    % Compute boost factors by which photons have to be multiplied so as
-                    % the account for MP density decrease with ecc
                     if (obj.eccVaryingMacularPigmentDensityDynamic)
+                        % Recompute MP boost factors for current eye movement position
                         currentEMposDegs = [emPathsDegs(iTrial, timePoint,1) emPathsDegs(iTrial, timePoint,2)];
                         macularPigmentDensityBoostFactors = ...
                             updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
