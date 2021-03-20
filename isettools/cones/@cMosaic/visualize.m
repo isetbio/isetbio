@@ -1,4 +1,37 @@
-function visualize(obj, varargin)
+function params = visualize(obj, varargin)
+% Visualize the cones and potentially the cone activations
+%
+% Synopsis
+%   params = visualize(obj, varargin)
+%   cm.visualize(varargin);
+% 
+% Inputs
+%
+% Optional key/val pairs
+%
+% Outputs
+%  params
+%
+% Description
+%
+%
+% See also
+%
+
+%% If cm.visualize('params'), we return the params
+params = '';
+if isequal(varargin{1},'params')
+    % User wants to return a list of parameters
+    params.domain = 'degrees';
+    params.domainVisualizationLimit = [];
+    params.domainVisualizationTicks = [];
+    params.visualizedConeAperture = 'lightCollectingArea';
+    params.activation = [];
+    params.plotTitle = '';
+    % MORE TO ADD
+    return;
+end
+
     p = inputParser;
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));

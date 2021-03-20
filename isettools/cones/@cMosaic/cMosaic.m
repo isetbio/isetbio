@@ -325,7 +325,7 @@ classdef cMosaic < handle
         assignConeTypes(obj, varargin);
         
         % Method to visualize the cone mosaic
-        visualize(obj, varargin);
+        params = visualize(obj, varargin);
         
         % Method to generate an eye movement sequence
         emGenSequence(obj, durationSeconds, varargin);

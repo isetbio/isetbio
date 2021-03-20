@@ -60,7 +60,7 @@ for yOffset = 1:3
  
     % Compute the noise-free excitation response
     noiseFreeExcitationResponse = cm.compute(oi);
-
+    
     % Visualize mosaic response
     cm.visualize('figureHandle', hFig, ...
         'axesHandle', subplot('Position', sv(end-yOffset+1,xOffset).v), ...
