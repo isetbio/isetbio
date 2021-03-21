@@ -23,15 +23,34 @@ params = '';
 if isequal(varargin{1},'params')
     % User wants to return a list of parameters
     params.domain = 'degrees';
-    params.domainVisualizationLimit = [];
+    params.domainVisualizationLimits = [];
     params.domainVisualizationTicks = [];
     params.visualizedConeAperture = 'lightCollectingArea';
     params.activation = [];
+    params.horizontalActivationSliceEccentricity = [];
+    params.activationRange = [];
+    params.activationColorMap = [];
+    params.horizontalActivationColorBar = false;
+    params.verticalActivationColorBar = false;
+    params.colorBarTickLabelPostFix = '';
+    params.displayedEyeMovementData = [];
+    params.currentEMposition = [];
+    params.crossHairsOnMosaicCenter = false;
+    params.crossHairsOnFovea = false;
+    params.crossHairsOnOpticalImageCenter = false;
+    params.labelCones = true;
+    params.noXLabel = false;
+    params.noYLabel = false;
+    params.figureHandle = [];
+    params.axesHandle = [];
+    params.fontSize = 16;
+    params.backgroundColor = [0.7 0.7 0.7];
     params.plotTitle = '';
     % MORE TO ADD
     return;
 end
 
+%%
     p = inputParser;
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
