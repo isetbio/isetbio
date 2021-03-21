@@ -20,7 +20,7 @@
 %    03/01/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 
 
-%%Initialize
+%% Initialize
 ieInit;
 clear;
 close all;
@@ -123,6 +123,7 @@ figNo = figNo + 1;
 mosaicEcc = [0 0];
 runItWithEyeMovements(oi, mosaicSize, mosaicEcc, cond1Struct, cond2Struct, figNo, 'macular pigment dynamic');
 
+%% END SCRIPT
 
 
 function runItWithEyeMovements(oi, mosaicSize, mosaicEcc, cond1Struct, cond2Struct, figNo, plotTitle)
@@ -176,7 +177,7 @@ function runItWithEyeMovements(oi, mosaicSize, mosaicEcc, cond1Struct, cond2Stru
     end
 end
 
-
+%%
 function runIt(oi, mosaicSize, mosaicEcc, cond1Struct, cond2Struct, figNo, plotTitle)
     cm = cMosaic(...
         'sizeDegs', mosaicSize, ...      
@@ -205,7 +206,7 @@ function runIt(oi, mosaicSize, mosaicEcc, cond1Struct, cond2Struct, figNo, plotT
 
 end
 
-
+%%
 function hFig = visualizeResponses(cm, r1, r2, emStruct, t1, t2, figNo, figName)
    sv = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 1, ...
@@ -261,3 +262,5 @@ function hFig = visualizeResponses(cm, r1, r2, emStruct, t1, t2, figNo, figName)
                  'plotTitle', '100*(r1-r2)/r1');
              
 end
+
+%% END FUNCTIONS

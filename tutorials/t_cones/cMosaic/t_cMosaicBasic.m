@@ -25,7 +25,7 @@ close all;
 
 %% Generate the ring rays stimulus
 scene = sceneCreate('rings rays');
-scene = sceneSet(scene, 'fov', 2.0);
+scene = sceneSet(scene, 'fov', 6.0);
 
 %% Compute the optical image
 oi = oiCreate;
@@ -33,17 +33,17 @@ oi = oiCompute(scene, oi);
 
 %% Generate the mosaic
 cm = cMosaic(...
-    'sizeDegs', [0.7 0.5], ...     % SIZE: 0.7 degs (x) 0.5 degs (y)
-    'eccentricityDegs', [0 0] ...  % ECC: (0,0)
+    'sizeDegs', [0.7 0.5]*2, ...     % SIZE: 0.7 degs (x) 0.5 degs (y)
+    'eccentricityDegs', [0 0] + [1 1]*0 ...  % ECC: (0,0)
     );
 
 %% Visualize the mosaic
 cm.visualize();
 
-
 %% Compute 8 noisy response instances of cone excitation response
 instancesNum = 8;
-[noiseFreeExcitationResponse, noisyExcitationResponseInstances] = cm.compute(oi, ...
+[noiseFreeExcitationResponse, noisyExcitationResponseInstances] = ...
+    cm.compute(oi, ...
     'nTrials', instancesNum);
 
 %% Visualize responses
@@ -71,3 +71,5 @@ for k = 1:instancesNum
                  'plotTitle', sprintf('noisy response instance (#%d)', k));
 end
 
+
+%% END

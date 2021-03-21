@@ -15,15 +15,19 @@
 
 %%
 ieInit;
+clear;
+close all;
 
 %% Create a letter on a display
 
 % family, size, dpi
-sceneFOV = 1;
+sceneFOV = 0.5;
 font = fontCreate('A', 'Georgia', 10, 96);
 display = 'LCD-Apple';
 scene = sceneCreate('letter', font, display);
 scene = sceneSet(scene,'wangular',sceneFOV);
+scene = sceneCombine(scene,scene,'direction','horizontal');
+scene = sceneCombine(scene,scene,'direction','vertical');
 
 % We should pad the scene so the eye movements do not move the scene beyond
 % the array
@@ -33,7 +37,7 @@ sceneWindow(scene);
 
 %% Push the scene through human optics
 
-oi = oiCreate;
+oi = oiCreate('wvf human');
 oi = oiCompute(oi,scene);
 oiWindow(oi);
 
@@ -71,7 +75,8 @@ mosaicEcc = [0 0];
    cm = cMosaic(cmP);         % We call cMosaic with the struct
 %}
 
-cm = cMosaic('sizeDegs', [sceneFOV,sceneFOV], ...
+fov = sceneGet(scene,'fov');
+cm = cMosaic('sizeDegs', [fov,fov], ...
     'eccentricityDegs', mosaicEcc); 
  
 noiseFreeExcitationResponse = cm.compute(oi);   %% Error here
@@ -84,23 +89,4 @@ cm.visualize( ...
     'activation', noiseFreeExcitationResponse, ...
     'plotTitle',  sprintf('ecc: %2.1f, %2.1f degs', mosaicEcc(1), mosaicEcc(2)));
 
-%%  Now image it on the cone mosaic with some fixational eye movements
-%{
-cones = coneMosaic;
-cones.setSizeToFOV(1.3*sceneGet(scene,'fov'));
-cones.emGenSequence(50);
-cones.compute(oi);
-cones.window;
-%}
 
-%% For a hex mosaic now
-
-% Set up the parameters and make this version work, next.
-%
-%{
- resampleFactor = 4;
- conesH = coneMosaicHex(resampleFactor,'fovDegs',0.5);
- conesH.emGenSequence(50);
- conesH.compute(oi);
- conesH.window;
-%}

@@ -121,10 +121,14 @@ function [scene, parms] = sceneCreate(sceneName, varargin)
 %    Depends on the type of scene being created.
 %    *Section needs to be expanded*
 %
+% Copyright ImagEval Consultants, LLC, 2003.
+%
+% Examples:
+%    ieExamplesPrint('sceneCreate');
+%
 % See Also:
 %    sceneFromFile
 %
-% Copyright ImagEval Consultants, LLC, 2003.
 
 % History:
 %   04/07/18  dhb  Fixed one broken example, deleted another.
