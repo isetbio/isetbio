@@ -303,7 +303,7 @@ classdef cMosaic < handle
             else
                 % Load cone positions and cone types from passed struct
                 obj.importExternalConeData(p.Results.coneData);
-                
+
                 % Set random seed
                 if (isempty(obj.randomSeed))
                     rng('shuffle');
@@ -390,7 +390,7 @@ classdef cMosaic < handle
             coneZonesFromApertureSizeAndOIresolution(obj, coneApertureDiametersMicrons, oiResMicrons);
         
         % Method to compute boost factors for correction 
-        macularPigmentDensityBoostFactors = computeMPBoostFactors(obj, oiPositionsDegs, emPositionDegs, oiSize, oiResMicrons)
+        macularPigmentDensityBoostFactors = computeMPBoostFactors(obj, oiPositionsDegs, emPositionDegs, oiWave, oiSize, oiResMicrons)
         
         % Compute absorption rate
         absorptionsRates = computeAbsorptionRate(obj, currentEMposMicrons, ...

@@ -9,30 +9,30 @@ close all
 %
 nRays    = 10;
 nSamples = 256;
-fov      = 3;   % Total cone fov will be is fov/2 + fov
+fov      = 2;
 
 %% Make three copies of rings and rays
 
-scene0 = sceneCreate('ringsrays', nRays, nSamples);
-scene0 = sceneSet(scene0, 'fov', fov);
-scene00 = sceneCombine(scene0,scene0);
-scene = sceneCombine(scene00, scene0,'direction','horizontal');
+scene = sceneCreate('ringsrays', nRays, nSamples);
+scene = sceneSet(scene, 'fov', fov);
+scene = sceneCombine(scene, scene,'direction','centered');
 sceneWindow(scene);
-drawnow;
 
 %% Onward to oi and coneMosaic
 %
 oi = oiCompute(scene, oi);
 % oiWindow(oi);
-drawnow;
 
 %% Generate mosaic centered at target eccentricity
 hfov = sceneGet(scene,'hfov');
 vfov = sceneGet(scene,'vfov');
+fprintf('Creating cone mosaic %d by %d\n',hfov,vfov);
+tic
 cm = cMosaic(...
     'sizeDegs', [hfov vfov], ...   % (x,y)
     'eccentricityDegs', [0 0] ... 
     );
+toc
 
 % Compute the noise-free excitation response
 noiseFreeExcitationResponse = cm.compute(oi);
