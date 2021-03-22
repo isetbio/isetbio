@@ -17,43 +17,31 @@ ieInit;
 clear;
 close all;
 
-%% Setup plotting
-sv = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 2, ...
-       'colsNum', 2, ...
-       'heightMargin',  0.09, ...
-       'widthMargin',    0.09, ...
-       'leftMargin',     0.07, ...
-       'rightMargin',    0.01, ...
-       'bottomMargin',   0.06, ...
-       'topMargin',      0.02);
-   
-hFig = figure(1);
-set(hFig, 'Position', [10 10 2000 1000]);
-
-
+% Generate left mosaic
 cmLeft = cMosaic(...
     'whichEye', 'left eye', ...                     % Generate mosaic for the left eye
     'sizeDegs', [1 1], ...                          % SIZE: x=1 degs, y=1 degs
     'eccentricityDegs', [0 0], ...                  % ECC:  x=0.0 degs, y= 0.0 degs
     'computeMeshFromScratch', true, ...             % generate mesh on-line, will take some time
     'maxMeshIterations', 300, ...                   % stop iterative procedure after this many iterations
-    'visualizeMeshConvergence', true, ...
-    'exportMeshConvergenceHistoryToFile', true ...
+    'visualizeMeshConvergence', true ...            % visualize the convergence
     );
 
+% Generate right mosaic
 cmRight= cMosaic(...
     'whichEye', 'right eye', ...                    % Generate mosaic for the right eye
     'sizeDegs', [1 1], ...                          % SIZE: x=1 degs, y=1 degs
     'eccentricityDegs', [0 0], ...                  % ECC:  x=0.0 degs, y= 0.0 degs
     'computeMeshFromScratch', true, ...             % generate mesh on-line, will take some time
     'maxMeshIterations', 300, ...                   % stop iterative procedure after this many iterations
-    'visualizeMeshConvergence', true, ...
-    'exportMeshConvergenceHistoryToFile', true ...
+    'visualizeMeshConvergence', true ...            % visualize the convergence
     );
 
 
-%% Visualize it
+%% Visualize mosaics
+hFig = figure(1000);
+set(hFig, 'Position', [10 10 1300 1030]);
+
 % Visualize the meridian labeling convention
 ax = subplot('Position', [0.25 0.45 0.55 0.6]);
 A = imread('MeridianLabelingConvention.png');
