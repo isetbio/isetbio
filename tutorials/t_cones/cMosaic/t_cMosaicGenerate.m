@@ -6,6 +6,7 @@
 %
 % See Also:
 %   t_cMosaicBasic
+%   t_cMosaicStereoPair
 
 % History:
 %    03/01/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.

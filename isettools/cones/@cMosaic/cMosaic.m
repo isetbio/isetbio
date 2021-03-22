@@ -223,6 +223,8 @@ classdef cMosaic < handle
             p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('computeMeshFromScratch', false, @islogical);
+            p.addParameter('visualizeMeshConvergence', false, @islogical);
+            p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
             p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
             p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
@@ -281,11 +283,12 @@ classdef cMosaic < handle
             addlistener(obj.macular, 'wave', 'PostSet', @obj.matchWaveInAttachedPhotopigment);
             
             if (isempty(p.Results.coneData))
-                
                 if (p.Results.computeMeshFromScratch)
                     % Re-generate lattice
-                    visualizeConvergence = false; exportHistoryToFile = false;
-                    obj.regenerateConePositions(p.Results.maxMeshIterations,  visualizeConvergence, exportHistoryToFile);
+                    visualizeMeshConvergence = p.Results.visualizeMeshConvergence; 
+                    exportMeshConvergenceHistoryToFile = p.Results.exportMeshConvergenceHistoryToFile;
+                    obj.regenerateConePositions(p.Results.maxMeshIterations,  ...
+                        visualizeMeshConvergence, exportMeshConvergenceHistoryToFile);
                 else
                     % Import positions by cropping a large pre-computed patch
                     obj.initializeConePositions();
