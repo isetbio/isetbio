@@ -3,7 +3,7 @@
 % Description:
 %    Shows how to generate a stereo pair of @cMosaic objects, and
 %    also demonstrates our convention for labelling visual field & retinal
-%    meridians.
+%    meridians, which can be a bit confusing.
 %
 % See Also:
 %   t_cMosaicBasic
@@ -40,7 +40,7 @@ cmRight= cMosaic(...
 
 %% Visualize mosaics
 hFig = figure(1000);
-set(hFig, 'Position', [10 10 1300 1030]);
+set(hFig, 'Position', [10 10 1300 1200]);
 
 % Visualize the meridian labeling convention
 ax = subplot('Position', [0.25 0.45 0.55 0.6]);
@@ -49,7 +49,8 @@ image(ax, A);
 set(ax, 'XTick', [], 'YTick', []);
 axis(ax, 'image');
 
-% Visualize the left mosaic
+% Visualize the left mosaic with the corresponding contour density plot
+% superimposed.
 ax = subplot('Position', [0.1 0.05 0.4 0.4]);
 cmLeft.visualize(...
     'figureHandle', hFig, ...
@@ -60,7 +61,8 @@ cmLeft.visualize(...
     'labelRetinalMeridians', true, ...
     'plotTitle', cmLeft.whichEye);
 
-% Visualize the right mosaic
+% Visualize the right mosaic with the corresponding contour density plot
+% superimposed.
 ax = subplot('Position', [0.55 0.05 0.4 0.4]);
 cmRight.visualize(...
     'figureHandle', hFig, ...
