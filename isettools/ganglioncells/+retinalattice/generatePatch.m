@@ -26,7 +26,7 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
         
     % Return positions corresponding to max lattice quality
     [~, idx] = max(dataOut.qualityHistory);
-    bestQualityRFpositions = squeeze(dataOut.rfPositionsHistory(idx,:,:));
+    bestQualityRFpositions = double(squeeze(dataOut.rfPositionsHistory(idx,:,:)));
     
     % Report back
     fprintf('Lattice generation finished with status: ''%s''.\n', dataOut.terminationReason);

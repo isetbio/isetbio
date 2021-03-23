@@ -35,7 +35,7 @@ function p = configure(fovDegs, neuronType, whichEye)
     % p.queryUserIntervalMinutes = 60*12;
     
     % Tolerance for moving point back to elliptical domain
-    p.lambdaMinMicrons = 2;
+    p.lambdaMinMicrons = 2.15; % This will give peak density of 250,000 cones/mm2
     p.borderTolerance = 0.001 * p.lambdaMinMicrons;
     
     % Terminate loop if rfs move less than this positional tolerance 
