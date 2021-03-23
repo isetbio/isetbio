@@ -5,6 +5,8 @@ function visualize(obj, varargin)
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
     p.addParameter('densityContourOverlay', false, @islogical);
+    p.addParameter('densityContourLevels', [], @isnumeric);
+    p.addParameter('densityContourLevelLabelsDisplay', false, @islogical);
     p.addParameter('activation', []);
     p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
     p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
@@ -36,6 +38,8 @@ function visualize(obj, varargin)
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
     densityContourOverlay = p.Results.densityContourOverlay;
+    densityContourLevels = p.Results.densityContourLevels;
+    densityContourLevelLabelsDisplay = p.Results.densityContourLevelLabelsDisplay;
     activation = p.Results.activation;
     activationRange = p.Results.activationRange;
     currentEMposition = p.Results.currentEMposition;
@@ -233,21 +237,22 @@ function visualize(obj, varargin)
 
              
             % Smooth
-            kernelSize = 15;
+            kernelSize = 11;
             kernelSigma = 0.33*(kernelSize-1)/2;
             smoothingKernel = fspecial('gaussian', kernelSize, kernelSigma);
             density2DMap = conv2(density2DMap, smoothingKernel, 'same');
             density2DMap = density2DMap / max(density2DMap(:)) * max(rfDensities(:));
             
             % Render contour map
-            contourLevels = round(prctile(rfDensities, [1 5 15 30 50 70 85 95 99])/100)*100;
-            overlayContourLabels = true;
+            if (isempty(densityContourLevels))
+                densityContourLevels = 1e3*(50:25:250); %round(prctile(rfDensities, [1 5 15 30 50 70 85 95 99])/100)*100;
+            end
             contourLabelSpacing = 4000;
             [cH, hH] = contour(axesHandle, densityContourX, densityContourY, ...
-                density2DMap, contourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
-                'ShowText', overlayContourLabels, 'LabelSpacing', contourLabelSpacing);
+                density2DMap, densityContourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
+                'ShowText', densityContourLevelLabelsDisplay, 'LabelSpacing', contourLabelSpacing);
             clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
-                'Color', [1 0 0], 'BackgroundColor', [1 1 1]);
+                'Color', [0 0 0], 'BackgroundColor', 'none');
         end
         
     else
@@ -438,7 +443,7 @@ function visualize(obj, varargin)
         case 'degrees'
             if (~noXlabel)
                 if (labelRetinalMeridians)
-                    if (strcmp(obj.whichEye, 'left eye'))
+                    if (strcmp(obj.whichEye, 'right eye'))
                         leftMeridianName = 'temporal retina';
                         rightMeridianName = 'nasal retina';
                     else
@@ -464,7 +469,7 @@ function visualize(obj, varargin)
         case 'microns'
             if (~noXlabel)
                 if (labelRetinalMeridians)
-                    if (strcmp(obj.whichEye, 'left eye'))
+                    if (strcmp(obj.whichEye, 'right eye'))
                         leftMeridianName = '(temporal)';
                         rightMeridianName = '(nasal)';
                     else
