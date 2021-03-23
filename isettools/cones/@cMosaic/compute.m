@@ -97,38 +97,38 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     
     % Generate oiPositions
     spatialSupportMeters = oiGet(oi, 'spatial support');
-    spatialSupportX = squeeze(spatialSupportMeters(1,1:end,1)) * 1e6;
-    spatialSupportY = squeeze(spatialSupportMeters(1:end,1,2)) * 1e6;
-    oiPositionsVectorsMicrons = {spatialSupportY(:), spatialSupportX(:)};
+    spatialSupportXMicrons = squeeze(spatialSupportMeters(1,1:end,1)) * 1e6;
+    spatialSupportYMicrons = squeeze(spatialSupportMeters(1:end,1,2)) * 1e6;
+    oiPositionsVectorsMicrons = {spatialSupportYMicrons(:), spatialSupportXMicrons(:)};
     
     minEMpos = squeeze(min(emPathsMicrons,[],1));
     maxEMpos = squeeze(max(emPathsMicrons,[],1));
     
-    if (obj.minRFpositionMicrons(1)+minEMpos(1) < min(spatialSupportX))
+    if (obj.minRFpositionMicrons(1)+minEMpos(1) < min(spatialSupportXMicrons))
         fprintf(2,'Left side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
-    if (obj.minRFpositionMicrons(2)+minEMpos(2) < min(spatialSupportY))
+    if (obj.minRFpositionMicrons(2)+minEMpos(2) < min(spatialSupportYMicrons))
         fprintf(2,'Bottom side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
     
     
-    if (obj.maxRFpositionMicrons(1)+maxEMpos(1) > max(spatialSupportX))
+    if (obj.maxRFpositionMicrons(1)+maxEMpos(1) > max(spatialSupportXMicrons))
         fprintf(2,'Right side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
-    if (obj.maxRFpositionMicrons(2)+maxEMpos(2) > max(spatialSupportY))
+    if (obj.maxRFpositionMicrons(2)+maxEMpos(2) > max(spatialSupportYMicrons))
         fprintf(2, 'Top side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
 
 
     if (~isempty(obj.micronsPerDegreeApproximation))
-        oiXPosDegrees = oiXPosMicrons/obj.micronsPerDegreeApproximation;  
-        oiYPosDegrees = oiYPosMicrons/obj.micronsPerDegreeApproximation;
+        spatialSupportXDegrees = spatialSupportXMicrons/obj.micronsPerDegreeApproximation;  
+        spatialSupportYDegrees = spatialSupportYMicrons/obj.micronsPerDegreeApproximation;
     else
-        oiXPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportX*1e-3);
-        oiYPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportY*1e-3);
+        spatialSupportXDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportXMicrons*1e-3);
+        spatialSupportYDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportYMicrons*1e-3);
     end
     
-    [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(oiXPosDegrees, oiYPosDegrees);
+    [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(spatialSupportXDegrees, spatialSupportYDegrees);
     oiPositionsDegs = [oiPositionsDegsXgrid(:), oiPositionsDegsYgrid(:)];
     
     
