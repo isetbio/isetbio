@@ -1,4 +1,4 @@
-function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, photoCurrentInstances] = compute(obj, oi, varargin)
+function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, photoCurrentInstances, responseTemporalSupport] = compute(obj, oi, varargin)
 % Compute the cone absorptions, possibly for multiple instances
 %
 % Syntax:
@@ -270,6 +270,8 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     %fprintf('Tile lapsed to compute mean response: %2.2f seconds\n', etime(clock, tStart));
 
 
+    responseTemporalSupport = (0:(size(noiseFreeAbsorptionsCount,2)-1)) * obj.integrationTime;
+    
     if (strcmp(obj.noiseFlag, 'none'))
         noisyAbsorptionInstances = [];
     else

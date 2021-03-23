@@ -338,7 +338,7 @@ classdef cMosaic < handle
         
         % Method to compute the mosaic response
         [absorptionsCount, noisyAbsorptionInstances, ...
-            photoCurrents, photoCurrentInstances]  = compute(obj, oi, varargin);
+            photoCurrents, photoCurrentInstances, responseTemporalSupport]  = compute(obj, oi, varargin);
         
         % Method for suggesting a minimal pixel size (in degrees) for the input scene
         % depending on the aperture size of the mosaic's cones and whether
