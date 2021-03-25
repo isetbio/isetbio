@@ -36,6 +36,7 @@ cm = cMosaic(...
 toc
 
 %% Compute the noise-free excitation response
+
 [noiseFreeExcitations, noisyExcitations] = cm.compute(oi);
 
 %% Have a look
@@ -63,6 +64,16 @@ cm.visualize(vParams);
   cm.get('excitations',noiseFreeExcitations,roi);
 %}
 
+% Maybe an ROI class
+%{
+thisROI = roi(roiType);
+switch roiType
+case 'circle'
+case 'line'
+otherwise
+end
+
+%}
 % Define a circular ROI
 roi = struct('center', [0 0], 'radius', 0.1);
 
@@ -94,7 +105,6 @@ lConeResponses = noiseFreeExcitations(cm.lConeIndices);
 ieNewGraphWin; histogram(lConeResponses);
 
 %% Define a linear ROI
-% Define a circular ROI
 
 roi = struct('upperleft', [0 0], 'lowerleft', 0.05, 'lowerrightt',1);
 
@@ -102,12 +112,6 @@ roi = struct('upperleft', [0 0], 'lowerleft', 0.05, 'lowerrightt',1);
 rect = [0 -1 0.02 2];
 roiBorderX = [rect(1), rect(1) + rect(3), rect(1) + rect(3), rect(1)];
 roiBorderY = [rect(2), rect(2), rect(2) + rect(4), rect(2) + rect(4)];
-
-% Compute border of ROI
-% roiBorderX = roi.center(1) + roi.radius*cosd(0:10:360);
-% roiBorderY = roi.center(2) + roi.radius*sind(0:10:360);
-% ieNewGraphWin; plot(roiBorderX,roiBorderY); 
-% set(gca,'ylim',[-0.5 0.5], 'xlim',[-2 2])
 
 % Find indices of cones within the ROI border
 [in,on] = inpolygon(cm.coneRFpositionsDegs(:,1),cm.coneRFpositionsDegs(:,2),roiBorderX,roiBorderY);
@@ -117,6 +121,7 @@ indicesOfConesWithinROI = in | on;
 % response. This lets us call the the visualize
 roiResponse = 0*noiseFreeExcitations;
 roiResponse(indicesOfConesWithinROI) = noiseFreeExcitations(indicesOfConesWithinROI);
+
 % Visualize response vector
 cm.visualize('activation', roiResponse, ...
     'domain', 'degrees', ...

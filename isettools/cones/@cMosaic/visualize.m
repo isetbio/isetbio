@@ -6,17 +6,24 @@ function params = visualize(obj, varargin)
 %   cm.visualize(varargin);
 % 
 % Inputs
+%   obj - a cMosaic
 %
 % Optional key/val pairs
+%   Use cm.visualize('params') to have a returned struct with the params.
 %
 % Outputs
 %  params
 %
 % Description
-%
+%  Visualization utility for the cone mosaic
 %
 % See also
+%  cMosaic, cMosaic.compute
 %
+
+% Examples:
+%{
+%}
 
 %% If cm.visualize('params'), we return the params
 params = '';
