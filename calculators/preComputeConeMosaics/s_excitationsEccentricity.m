@@ -1,10 +1,15 @@
 %% Count excitations as different eccentricities
 
-thisFOV = 3;
+thisFOV = 1;
 fname = sprintf('cm-%ddeg-22-Mar-2021.mat',thisFOV);
 fname = fullfile(isetRootPath,'local',fname);
 foo = load(fname);
 cm = foo.cm;
+cm.visualize;
+
+vParams = cm.visualize('params');
+cm.visualize(vParams);
+cm.visualize;
 
 scene = sceneCreate('uniform');
 scene = sceneSet(scene,'fov',6);

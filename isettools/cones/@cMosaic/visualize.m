@@ -27,7 +27,7 @@ function params = visualize(obj, varargin)
 
 %% If cm.visualize('params'), we return the params
 params = '';
-if isequal(varargin{1},'params')
+if ~isempty(varargin) && isequal(varargin{1},'params')
     % User wants to return a list of parameters
     params.domain = 'degrees';
     params.domainVisualizationLimits = [];
