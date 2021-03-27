@@ -26,7 +26,7 @@ thisR = thisEye.get('recipe');
 if isempty(thisR), disp('No rendering recipe found'); return; end
 
 renderMode = 'optical image';
-if thisEye.get('use pinhole'), renderMode = 'scene'; end
+if thisEye.get('use pinhole'), renderMode = 'scene'; disp('In pinhole mode'), end
 
 %% Basic information printed for now
 
@@ -43,9 +43,12 @@ txt = addText(txt,sprintf('Input: %s \n',thisR.get('input basename')));
 txt = addText(txt,sprintf('Docker dir: %s \n',thisR.get('output dir')));
 txt = addText(txt,delimit);
 
-focaldist = thisR.get('focal distance','m');
-txt = addText(txt,sprintf('\nFocal distance: %0.2f (m), %0.2f (diopters)\n',focaldist,1/focaldist));
-txt = addText(txt,sprintf('Pupil diameter: %0.1f mm\n',thisR.get('pupil diameter','mm')));
+if ~thisEye.usePinhole
+    focaldist = thisR.get('focal distance','m');
+    txt = addText(txt,sprintf('\nFocal distance: %0.2f (m), %0.2f (diopters)\n',focaldist,1/focaldist));
+    txt = addText(txt,sprintf('Pupil diameter: %0.1f mm\n',thisR.get('pupil diameter','mm')));
+end
+
 txt = addText(txt,sprintf('FOV: %0.1f deg\n',thisR.get('fov')));
 txt = addText(txt,sprintf('Spatial samples: %d %d\n',thisR.get('spatial resolution')));
 txt = addText(txt,sprintf('Lens pigment density: %0.1f \n',thisEye.get('lens density')));
