@@ -29,8 +29,8 @@ function localFile = ieWebGet(varargin)
 %   Stanford resource, cardinal.stanford.edu/~SOMEONE.  This routine is a
 %   gateway that allows us to download the files (using fetch).
 %
-%   The types of resources are listed above.  To see the names of the
-%   resources, use the 'list' operation.
+%   The types of resources are listed above.  To see the remote web site or
+%   the names of the resources, use the 'list' or 'browse' operations.
 %
 % See also: 
 %    webImageBrowser_mlapp
@@ -40,6 +40,16 @@ function localFile = ieWebGet(varargin)
 %{
 % NOTE: pbrt scenes default to being stored under iset3d/data/v3/ if available, other
 % scenes default to being stored under isetcam/local/scenes/<resourcetype>/.
+%}
+%{
+% Browse the remote site
+ieWebGet('browse');
+%}
+%{
+ieWebGet('list')
+%}
+%{
+ localFile = ieWebGet('resource name','veach-ajar');
 %}
 %{
     localFile       = ieWebGet('resourcename', 'ChessSet', 'resourcetype', 'pbrt')
@@ -53,12 +63,32 @@ function localFile = ieWebGet(varargin)
 	data = ieWebGet('op', 'read', 'resource type', 'hyperspectral', 'resource name', arrayOfResourceFiles{ii});
 %}
 
-%% Decode key/val args
+%% Decode special arguments
 
-varargin = ieParamFormat(varargin);
+baseURL = 'http://stanford.edu/~wandell/data/pbrt/';
+
+if isequal(ieParamFormat(varargin{1}),'browse')
+    % assume for now that means we are listing
+    web(baseURL);
+    localFile = '';
+    return;
+elseif isequal(ieParamFormat(varargin{1}),'list')
+    % simply read the pre-loaded list of resources
+    try
+        localFile = webread(strcat(baseURL, 'resourcelist.json'));
+    catch
+        % We should find a better way to do this
+        warning("Unable to load resource list from remote site. Returning webread data");  
+        localFile = webread(baseURL);
+    end
+    return;
+end
+
+%%  Decode key/val args
+varargin = ieParamFormat(varargin);          
 
 p = inputParser;
-vFunc = @(x)(ismember(x,{'fetch','read','list','browse'}));
+vFunc = @(x)(ismember(x,{'fetch','read','list'}));
 p.addParameter('op','fetch',vFunc);
 p.addParameter('resourcename', '', @ischar);
 vFunc = @(x)(ismember(x,{'pbrt', 'hyperspectral', 'multispectral', 'hdr','pbrt','v3'}));
@@ -96,7 +126,6 @@ switch resourceType
             error("Need to have either iset3D or isetCam Root set");
         end
         
-        baseURL = 'http://stanford.edu/~wandell/data/pbrt/';
         switch op
             case 'fetch'
                 % for now we only support v3 pbrt files
@@ -131,18 +160,7 @@ switch resourceType
                     warning("Unable to retrieve: %s", resourceURL);
                     localFile = '';
                 end
-            case 'browse'
-                % assume for now that means we are listing
-                web(baseURL);
-                localFile = '';
-            case 'list'
-                % simply read the pre-loaded list of resources
-                try
-                    localFile = webread(strcat(baseURL, 'resourcelist.json'));
-                catch
-                    warning("Unable to load resource list");
-                    localFile = '';
-                end
+
         end
     case {'hyperspectral', 'multispectral', 'hdr'}
         
