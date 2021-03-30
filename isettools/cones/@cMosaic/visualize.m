@@ -245,7 +245,7 @@ function visualize(obj, varargin)
             
             % Render contour map
             if (isempty(densityContourLevels))
-                densityContourLevels = 1e3*(50:25:250); %round(prctile(rfDensities, [1 5 15 30 50 70 85 95 99])/100)*100;
+                densityContourLevels = round(prctile(rfDensities, [1 5 15 30 50 70 85 95 99])/100)*100;
             end
             contourLabelSpacing = 4000;
             [cH, hH] = contour(axesHandle, densityContourX, densityContourY, ...

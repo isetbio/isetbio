@@ -184,7 +184,7 @@ classdef cMosaic < handle
     properties (GetAccess=private, SetAccess=private)
         % Size (in degs) of source lattice from which to crop positions for
         % the desired eccentricity
-        sourceLatticeSizeDegs = 45;
+        sourceLatticeSizeDegs = 58; %45;
         
         % Struct containing information related to the current cone partition
         % into zones based on their aperture size
@@ -226,7 +226,7 @@ classdef cMosaic < handle
             p.addParameter('visualizeMeshConvergence', false, @islogical);
             p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
             p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
-            p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
+            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
             p.addParameter('eccVaryingConeAperture', true, @islogical);
             p.addParameter('eccVaryingConeBlur', false, @islogical);
