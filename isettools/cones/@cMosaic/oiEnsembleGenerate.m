@@ -28,8 +28,8 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
         case 'Polans2015'
             % Polans optics
             for oiIndex = 1:oiNum
-                fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
-                    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
+                %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
+                %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
                 % determine average microns-per-deg for this eccentricity here
                 [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength] = PolansOptics.oiForSubjectAtEccentricity(subjectID, ...
                     obj.whichEye, oiSamplingGridDegs(oiIndex,:), pupilDiamMM, obj.wave, obj.micronsPerDegree);
