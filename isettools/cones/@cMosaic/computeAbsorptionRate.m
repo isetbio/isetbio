@@ -36,7 +36,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         shiftedConePositions = bsxfun(@plus, obj.coneRFpositionsMicrons(coneIDsInZone,:),reshape(currentEMposMicrons, [1 2]));
         
         interpolationMethod = 'linear';
-        extrapolationMethod = 'nearest';
+        extrapolationMethod = 'none';
 
         for coneTypeIndex = 1:coneTypesNum
             % Convolve with the cone aperture
@@ -73,7 +73,10 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         end
         absorptionsRate(coneIndicesForSubmosaic) = absorptionsRateAllConeTypes(coneIndicesForSubmosaic, coneTypeIndex);
     end
-
+    
+    % Replane nan with zeros
+    absorptionsRate(isnan(absorptionsRate)) = 0;
+    
     % Account for decrease in outer segment length with eccentricity
     if (isempty(obj.importedOSLengthAttenuationFactors))
         if (obj.eccVaryingOuterSegmentLength)
