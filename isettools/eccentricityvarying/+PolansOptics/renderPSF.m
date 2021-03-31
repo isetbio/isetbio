@@ -4,8 +4,11 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     p.addParameter('superimposedConeMosaic', [], @(x)(isempty(x)||isa(x, 'coneMosaicHex')));
     p.addParameter('fontSize', 14, @isnumeric);
     p.addParameter('plotTitle', '', @ischar);
+    p.addParameter('xyTicks', -8:1:8, @isnumeric);
+    
     p.parse(varargin{:});
     theConeMosaic = p.Results.superimposedConeMosaic;
+    xyTicks = p.Results.xyTicks;
     fontSize = p.Results.fontSize;
     plotTitle = p.Results.plotTitle;
     
@@ -63,8 +66,8 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     axis(axesHandle, 'equal');
     grid(axesHandle, 'on');
     box(axesHandle, 'on');
-    set(axesHandle, 'XLim', xyRange*[-1 1], 'YLim', xyRange*[-1 1], 'Color', [1 1 1]);
-    set(axesHandle, 'XTick', -8:1:8, 'YTick', -8:1:8);
+    set(axesHandle, 'XLim', xyRange, 'YLim', xyRange, 'Color', [1 1 1]);
+    set(axesHandle, 'XTick', xyTicks, 'YTick', xyTicks);
     set(axesHandle, 'FontSize', fontSize);
     
     if (~isempty(plotTitle))
