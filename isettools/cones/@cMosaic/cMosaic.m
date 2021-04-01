@@ -40,7 +40,7 @@ classdef cMosaic < handle
         KCONE_ID = 4;
         
         % Cone aperture (light collecting disk) has a diameter that 
-        % is 0.8 x cone spacing. We chose this to be consistent with
+        % is 0.79 x cone spacing. We chose this to be consistent with
         % coneMosaicHex, .e.g.: 
         % c = coneMosaicHex(3);
         % c.pigment.pdWidth/c.pigment.width, which gives 0.7899
