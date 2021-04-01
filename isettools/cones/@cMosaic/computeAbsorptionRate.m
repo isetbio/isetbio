@@ -36,7 +36,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         shiftedConePositions = bsxfun(@plus, obj.coneRFpositionsMicrons(coneIDsInZone,:),reshape(currentEMposMicrons, [1 2]));
         
         interpolationMethod = 'linear';
-        extrapolationMethod = 'none';
+        extrapolationMethod = 'nearest';
 
         for coneTypeIndex = 1:coneTypesNum
             % Convolve with the cone aperture
