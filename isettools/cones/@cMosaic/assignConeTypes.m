@@ -3,9 +3,10 @@ function assignConeTypes(obj, varargin)
     p.addParameter('coneDensities', [], @(x)(isempty(x) || ((numel(x) == 3)||(numel(x)==4))));
     p.parse(varargin{:});
     
-    % Update cone densities
+    % Ensure densities sum up to 1.0
     if (~isempty(p.Results.coneDensities))
-        obj.coneDensities = p.Results.coneDensities;
+        obj.coneDensities = abs(p.Results.coneDensities);
+        obj.coneDensities = obj.coneDensities / sum(obj.coneDensities);
     end
     
     % Deal with missing 4-th cone density
@@ -13,28 +14,34 @@ function assignConeTypes(obj, varargin)
         obj.coneDensities = [obj.coneDensities 0];
     end
     
-    % Ensure densities sum up to 1.0
-    if (round(sum(obj.coneDensities)*100) ~= 100)
-        remaining = 1-obj.coneDensities(obj.SCONE_ID);
-        f = 1/remaining;
-        obj.coneDensities(obj.LCONE_ID) = obj.coneDensities(obj.LCONE_ID) * f;
-        obj.coneDensities(obj.MCONE_ID) = obj.coneDensities(obj.MCONE_ID) * f;
-        obj.coneDensities(obj.KCONE_ID) = obj.coneDensities(obj.KCONE_ID) * f;
-    end
-    
     % Reserve all cones within the tritanopic area to be either L or M
     ecc = sqrt(sum(obj.coneRFpositionsDegs.^2,2));
     fovealLMconeIndices = find(ecc <= obj.tritanopicRadiusDegs);
+    conesNum = numel(ecc);
     
-    % Determine non-foveal LM cone indices, leaving room for regularly
-    % spaced S-cones with density = obj.coneDensities(obj.SCONE_ID)
-    conesNum = size(obj.coneRFpositionsDegs,1);
+    % See how to assign S-cones outside the tritanopic area
+    desiredSconesNum = round(obj.coneDensities(obj.SCONE_ID)*conesNum);
     peripheralConeIndices = setdiff(1:conesNum, fovealLMconeIndices);
-    idx = determineLMconeIndices(...
-        obj.coneRFpositionsDegs(peripheralConeIndices,:), ...
-        obj.coneRFspacingsDegs (peripheralConeIndices), ...
-        obj.coneDensities(obj.SCONE_ID));
-    peripheralLMConeIndices = peripheralConeIndices(idx);
+
+    if (obj.coneDensities(obj.SCONE_ID) > 0) && (obj.coneDensities(obj.SCONE_ID) <= 0.5)
+        % Determine non-foveal LM cone indices, leaving room for regularly
+        % spaced S-cones with density = obj.coneDensities(obj.SCONE_ID)
+        idx = determineLMconeIndices(...
+            obj.coneRFpositionsDegs(peripheralConeIndices,:), ...
+            obj.coneRFspacingsDegs (peripheralConeIndices), ...
+            obj.coneDensities(obj.SCONE_ID), desiredSconesNum);
+        peripheralLMConeIndices = peripheralConeIndices(idx);
+    else
+        % S-cone density either 0 or too high, so no regularity
+        idx = randperm(numel(peripheralConeIndices));
+        if (desiredSconesNum >= numel(peripheralConeIndices))
+            LMconeIndices = [];
+        else
+            LMconesNum = numel(peripheralConeIndices) - desiredSconesNum;
+            LMconeIndices = idx(1:LMconesNum);
+        end
+        peripheralLMConeIndices = peripheralConeIndices(LMconeIndices);
+    end
     
     % All LM cone indices
     allLMconeIndices = [fovealLMconeIndices(:); peripheralLMConeIndices(:)];
@@ -45,6 +52,8 @@ function assignConeTypes(obj, varargin)
     p = rand(1,numel(allLMconeIndices));
     if (isinf(LMratio))
         idx = 1:numel(allLMconeIndices);
+    elseif LMratio == 0
+        idx = [];
     else
         idx = find(p<LMratio/(1+LMratio));
     end
@@ -98,17 +107,17 @@ function assignConeTypes(obj, varargin)
 end
 
 
-function LMconeIndices = determineLMconeIndices(conePositions, coneSpacings, desiredSconeDensity)
+function LMconeIndices = determineLMconeIndices(conePositions, coneSpacings, desiredSconeDensity, desiredSconesNum)
 
-    % Determine relative S-cone spacing from S-cone density
-    testSconeSpacing = 1.5:0.1:10;
-    sConeDensityFromNormalizedSconeSpacing = 0.01*(1 + 30*exp(-0.8*(testSconeSpacing-1).^0.9));
-    [~,idx] = min(abs(desiredSconeDensity-sConeDensityFromNormalizedSconeSpacing));
-    relativeSconeSpacing = testSconeSpacing(idx);
-    
     % All cones num
     conesNum = size(conePositions,1);
     
+    % Determine relative S-cone spacing from S-cone density
+    testSconeSpacing = 1.1:0.01:10;
+    sConeDensityFromNormalizedSconeSpacing = 0.01*(1 + 30*exp(-0.8*(testSconeSpacing-1).^0.9));
+    [~,idx] = min(abs(desiredSconeDensity-sConeDensityFromNormalizedSconeSpacing));
+    relativeSconeSpacing = testSconeSpacing(idx);
+
     % Compute ecc of all cones
     ecc = sqrt(sum(conePositions.^2,2));
     
@@ -142,4 +151,14 @@ function LMconeIndices = determineLMconeIndices(conePositions, coneSpacings, des
         coneIndex = remainingConeIndices(idx);
     end
     LMconeIndices = unique(LMconeIndices);
+    if (numel(SconeIndices) > desiredSconesNum)
+        SconeIndices = SconeIndices(randperm(numel(SconeIndices)));
+        SconeIndices = SconeIndices(1:desiredSconesNum);
+        LMconeIndices = setdiff(1:conesNum, SconeIndices);
+    elseif (numel(SconeIndices) < desiredSconesNum)
+        LMconeIndices = LMconeIndices(randperm(numel(LMconeIndices)));
+        desiredLMconesNum = conesNum - desiredSconesNum;
+        LMconeIndices = LMconeIndices(1:desiredLMconesNum);
+        SconeIndices = setdiff(1:conesNum, LMconeIndices);
+    end
 end

@@ -40,7 +40,7 @@ classdef cMosaic < handle
         KCONE_ID = 4;
         
         % Cone aperture (light collecting disk) has a diameter that 
-        % is 0.8 x cone spacing. We chose this to be consistent with
+        % is 0.79 x cone spacing. We chose this to be consistent with
         % coneMosaicHex, .e.g.: 
         % c = coneMosaicHex(3);
         % c.pigment.pdWidth/c.pigment.width, which gives 0.7899
@@ -184,7 +184,7 @@ classdef cMosaic < handle
     properties (GetAccess=private, SetAccess=private)
         % Size (in degs) of source lattice from which to crop positions for
         % the desired eccentricity
-        sourceLatticeSizeDegs = 45;
+        sourceLatticeSizeDegs = 58; %45;
         
         % Struct containing information related to the current cone partition
         % into zones based on their aperture size
@@ -223,8 +223,10 @@ classdef cMosaic < handle
             p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('computeMeshFromScratch', false, @islogical);
+            p.addParameter('visualizeMeshConvergence', false, @islogical);
+            p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
             p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
-            p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
+            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
             p.addParameter('eccVaryingConeAperture', true, @islogical);
             p.addParameter('eccVaryingConeBlur', false, @islogical);
@@ -281,11 +283,12 @@ classdef cMosaic < handle
             addlistener(obj.macular, 'wave', 'PostSet', @obj.matchWaveInAttachedPhotopigment);
             
             if (isempty(p.Results.coneData))
-                
                 if (p.Results.computeMeshFromScratch)
                     % Re-generate lattice
-                    visualizeConvergence = false; exportHistoryToFile = false;
-                    obj.regenerateConePositions(p.Results.maxMeshIterations,  visualizeConvergence, exportHistoryToFile);
+                    visualizeMeshConvergence = p.Results.visualizeMeshConvergence; 
+                    exportMeshConvergenceHistoryToFile = p.Results.exportMeshConvergenceHistoryToFile;
+                    obj.regenerateConePositions(p.Results.maxMeshIterations,  ...
+                        visualizeMeshConvergence, exportMeshConvergenceHistoryToFile);
                 else
                     % Import positions by cropping a large pre-computed patch
                     obj.initializeConePositions();
@@ -335,7 +338,7 @@ classdef cMosaic < handle
         
         % Method to compute the mosaic response
         [absorptionsCount, noisyAbsorptionInstances, ...
-            photoCurrents, photoCurrentInstances]  = compute(obj, oi, varargin);
+            photoCurrents, photoCurrentInstances, responseTemporalSupport]  = compute(obj, oi, varargin);
         
         % Method for suggesting a minimal pixel size (in degrees) for the input scene
         % depending on the aperture size of the mosaic's cones and whether

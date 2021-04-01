@@ -40,9 +40,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
 
         for coneTypeIndex = 1:coneTypesNum
             % Convolve with the cone aperture
-            % Flip the optical image upside-down because the y-coords in the
-            % oiPositionsMicrons vectors increase from top -> bottom (y-coords in an image)
-            absorptionsDensityImageFiltered = flipud(conv2(squeeze(absorptionsDensityImage(:, :, coneTypeIndex)), apertureKernel, 'same'));
+            absorptionsDensityImageFiltered = conv2(squeeze(absorptionsDensityImage(:, :, coneTypeIndex)), apertureKernel, 'same');
 
             % Compute gridded interpolant for the original cone positions
             F = griddedInterpolant(oiPositionsVectorsMicrons, ...
@@ -75,7 +73,10 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         end
         absorptionsRate(coneIndicesForSubmosaic) = absorptionsRateAllConeTypes(coneIndicesForSubmosaic, coneTypeIndex);
     end
-
+    
+    % Replane nan with zeros
+    absorptionsRate(isnan(absorptionsRate)) = 0;
+    
     % Account for decrease in outer segment length with eccentricity
     if (isempty(obj.importedOSLengthAttenuationFactors))
         if (obj.eccVaryingOuterSegmentLength)

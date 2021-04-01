@@ -1,4 +1,4 @@
-function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, photoCurrentInstances] = compute(obj, oi, varargin)
+function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, photoCurrentInstances, responseTemporalSupport] = compute(obj, oi, varargin)
 % Compute the cone absorptions, possibly for multiple instances
 %
 % Syntax:
@@ -96,40 +96,41 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     oiWave = oiGet(oi, 'wave');
     
     % Generate oiPositions
-    oiYPosMicrons = (1:oiSize(1))*oiResMicrons;
-    oiXPosMicrons = (1:oiSize(2))*oiResMicrons;
-    oiXPosMicrons = oiXPosMicrons - mean(oiXPosMicrons);
-    oiYPosMicrons = oiYPosMicrons - mean(oiYPosMicrons);
-    oiPositionsVectorsMicrons = {oiYPosMicrons(:), oiXPosMicrons(:)};
+    spatialSupportMeters = oiGet(oi, 'spatial support');
+    spatialSupportXMicrons = squeeze(spatialSupportMeters(1,1:end,1)) * 1e6;
+    spatialSupportYMicrons = squeeze(spatialSupportMeters(1:end,1,2)) * 1e6;
+    dx = spatialSupportXMicrons(2)-spatialSupportXMicrons(1);
+    dy = spatialSupportYMicrons(2)-spatialSupportYMicrons(1);
+    oiPositionsVectorsMicrons = {spatialSupportYMicrons(:)-2*dx, spatialSupportXMicrons(:)-2*dy};
     
     minEMpos = squeeze(min(emPathsMicrons,[],1));
     maxEMpos = squeeze(max(emPathsMicrons,[],1));
     
-    if (obj.minRFpositionMicrons(1)+minEMpos(1) < min(oiXPosMicrons))
+    if (obj.minRFpositionMicrons(1)+minEMpos(1) < min(spatialSupportXMicrons))
         fprintf(2,'Left side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
-    if (obj.minRFpositionMicrons(2)+minEMpos(2) < min(oiYPosMicrons))
+    if (obj.minRFpositionMicrons(2)+minEMpos(2) < min(spatialSupportYMicrons))
         fprintf(2,'Bottom side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
     
     
-    if (obj.maxRFpositionMicrons(1)+maxEMpos(1) > max(oiXPosMicrons))
+    if (obj.maxRFpositionMicrons(1)+maxEMpos(1) > max(spatialSupportXMicrons))
         fprintf(2,'Right side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
-    if (obj.maxRFpositionMicrons(2)+maxEMpos(2) > max(oiYPosMicrons))
+    if (obj.maxRFpositionMicrons(2)+maxEMpos(2) > max(spatialSupportYMicrons))
         fprintf(2, 'Top side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
     end
 
 
     if (~isempty(obj.micronsPerDegreeApproximation))
-        oiXPosDegrees = oiXPosMicrons/obj.micronsPerDegreeApproximation;  
-        oiYPosDegrees = oiYPosMicrons/obj.micronsPerDegreeApproximation;
+        spatialSupportXDegrees = spatialSupportXMicrons/obj.micronsPerDegreeApproximation;  
+        spatialSupportYDegrees = spatialSupportYMicrons/obj.micronsPerDegreeApproximation;
     else
-        oiXPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiXPosMicrons*1e-3);
-        oiYPosDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(oiYPosMicrons*1e-3);
+        spatialSupportXDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportXMicrons*1e-3);
+        spatialSupportYDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportYMicrons*1e-3);
     end
     
-    [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(oiXPosDegrees, oiYPosDegrees);
+    [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(spatialSupportXDegrees, spatialSupportYDegrees);
     oiPositionsDegs = [oiPositionsDegsXgrid(:), oiPositionsDegsYgrid(:)];
     
     
@@ -172,9 +173,15 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     % Retrieve retinal irradiance in photons
     photons = oiGet(oi, 'photons');
    
+    % Flip the optical image upside-down because the y-coords in the
+    % oi spatial support vectors increase from top -> bottom (y-coords in an image)
+    % whereas cone y-positions increase from bottom -> top 
+    for k = 1:size(photons,3)
+        photons(:,:,k) = flipud(squeeze(photons(:,:,k)));
+    end
+    
     % Reshape the photons for efficient computations
     [photons, oiRowsNum, oiColsNum] = RGB2XWFormat(photons);
-    
     
     % Allocate memory for noiseFreeAbsorptionsCount
     nConesNum = size(obj.coneRFpositionsMicrons,1);
@@ -265,6 +272,8 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     %fprintf('Tile lapsed to compute mean response: %2.2f seconds\n', etime(clock, tStart));
 
 
+    responseTemporalSupport = (0:(size(noiseFreeAbsorptionsCount,2)-1)) * obj.integrationTime;
+    
     if (strcmp(obj.noiseFlag, 'none'))
         noisyAbsorptionInstances = [];
     else

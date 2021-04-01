@@ -63,6 +63,9 @@ end
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
+    p.addParameter('densityContourOverlay', false, @islogical);
+    p.addParameter('densityContourLevels', [], @isnumeric);
+    p.addParameter('densityContourLevelLabelsDisplay', false, @islogical);
     p.addParameter('activation', []);
     p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
     p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
@@ -77,6 +80,7 @@ end
     p.addParameter('crossHairsOnFovea', false, @islogical);
     p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
     p.addParameter('labelCones', true, @islogical);
+    p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
@@ -92,12 +96,16 @@ end
     visualizedConeAperture = p.Results.visualizedConeAperture;
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
+    densityContourOverlay = p.Results.densityContourOverlay;
+    densityContourLevels = p.Results.densityContourLevels;
+    densityContourLevelLabelsDisplay = p.Results.densityContourLevelLabelsDisplay;
     activation = p.Results.activation;
     activationRange = p.Results.activationRange;
     currentEMposition = p.Results.currentEMposition;
     crossHairsOnMosaicCenter = p.Results.crossHairsOnMosaicCenter;
     crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
     labelCones = p.Results.labelCones;
+    labelRetinalMeridians = p.Results.labelRetinalMeridians;
     crossHairsOnFovea = p.Results.crossHairsOnFovea;
     noXlabel = p.Results.noXLabel;
     noYlabel = p.Results.noYLabel;
@@ -241,27 +249,71 @@ end
     
     % Visualize cone aperture multiplier
     if (strcmp(visualizedConeAperture, 'geometricArea'))
-       visualizeApertureMultiplier = 1.0;
+       visualizedApertureMultiplier = 1.0;
     else
-       visualizeApertureMultiplier = obj.coneApertureToDiameterRatio;
+       visualizedApertureMultiplier = obj.coneApertureToDiameterRatio;
     end
         
     if (isempty(activation))
         % Visualize cone types
+        if (densityContourOverlay)
+            faceAlpha = 0.2;
+        else
+        	faceAlpha = 1.0;
+        end
         % Plot L-cones
-
-        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
-            rfPositions(obj.lConeIndices,:), 1/4*0.9, 'none', 1.0);
-   
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
+            rfPositions(obj.lConeIndices,:), 1/4*0.9, 'none', 1.0, faceAlpha);
         % Plot M-cones
-        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
-            rfPositions(obj.mConeIndices,:), 2/4*0.9, 'none', 1.0);
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
+            rfPositions(obj.mConeIndices,:), 2/4*0.9, 'none', 1.0, faceAlpha);
         % Plot S-cones
-        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
-            rfPositions(obj.sConeIndices,:), 3/4*0.9, 'none', 1.0);
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
+            rfPositions(obj.sConeIndices,:), 3/4*0.9, 'none', 1.0, faceAlpha);
         % Plot K-cones
-        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
-            rfPositions(obj.kConeIndices,:), 4/4*0.9, 'none', 1.0);
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
+            rfPositions(obj.kConeIndices,:), 4/4*0.9, 'none', 1.0, faceAlpha);
+            
+        if (densityContourOverlay)
+            % Convert spacing to density
+            if (strcmp(domain, 'microns'))
+                % Convert to mm, so we report density in cones / mm^2
+                rfDensities = RGCmodels.Watson.convert.spacingToDensityForHexGrid(rfSpacings/1e3);
+            else
+                rfDensities = RGCmodels.Watson.convert.spacingToDensityForHexGrid(rfSpacings);
+            end
+
+            % Generate scattered interpolant
+            interpolant = scatteredInterpolant(rfPositions(:,1), rfPositions(:,2), rfDensities(:));
+            interpolant.Method = 'linear';
+            interpolant.ExtrapolationMethod = 'none';
+
+            % Compute dense 2D map
+            densityContourSpatialSupportX = linspace(xRange(1), xRange(2), 128);
+            densityContourSpatialSupportY = linspace(yRange(1), yRange(2), 128);
+            [densityContourX,densityContourY] = meshgrid(densityContourSpatialSupportX, densityContourSpatialSupportY);
+            density2DMap = interpolant(densityContourX,densityContourY);
+
+             
+            % Smooth
+            kernelSize = 11;
+            kernelSigma = 0.33*(kernelSize-1)/2;
+            smoothingKernel = fspecial('gaussian', kernelSize, kernelSigma);
+            density2DMap = conv2(density2DMap, smoothingKernel, 'same');
+            density2DMap = density2DMap / max(density2DMap(:)) * max(rfDensities(:));
+            
+            % Render contour map
+            if (isempty(densityContourLevels))
+                densityContourLevels = round(prctile(rfDensities, [1 5 15 30 50 70 85 95 99])/100)*100;
+            end
+            contourLabelSpacing = 4000;
+            [cH, hH] = contour(axesHandle, densityContourX, densityContourY, ...
+                density2DMap, densityContourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
+                'ShowText', densityContourLevelLabelsDisplay, 'LabelSpacing', contourLabelSpacing);
+            clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
+                'Color', [0 0 0], 'BackgroundColor', 'none');
+        end
+        
     else
         if (isempty(activationRange))
             activationRange(1) = min(activation(:));
@@ -277,18 +329,19 @@ end
         activation(activation>1) = 1;
         
         % Visualize activations
+        faceAlpha = 1.0;
         % Plot L-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
-            rfPositions(obj.lConeIndices,:), activation(obj.lConeIndices), [0 0 0], 0.1);
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
+            rfPositions(obj.lConeIndices,:), activation(obj.lConeIndices), [0 0 0], 0.1, faceAlpha);
         % Plot M-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
-            rfPositions(obj.mConeIndices,:), activation(obj.mConeIndices), [0 0 0], 0.1);
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
+            rfPositions(obj.mConeIndices,:), activation(obj.mConeIndices), [0 0 0], 0.1, faceAlpha);
         % Plot S-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
-            rfPositions(obj.sConeIndices,:), activation(obj.sConeIndices), [0 0 0], 0.1);
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
+            rfPositions(obj.sConeIndices,:), activation(obj.sConeIndices), [0 0 0], 0.1, faceAlpha);
         % Plot K-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, visualizeApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
-            rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1);
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
+            rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1, faceAlpha);
         
         if (~isempty(verticalActivationSliceEccentricity))
             d = abs(rfPositions(:,2)-verticalActivationSliceEccentricity);
@@ -300,6 +353,7 @@ end
         end
         
     end
+    
     
     % Add crosshairs
     if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
@@ -444,27 +498,63 @@ end
      
     box(axesHandle, 'on');
     set(figureHandle, 'Color', [1 1 1]);
-    
     switch (domain)
         case 'degrees'
             if (~noXlabel)
-                xlabel(axesHandle, 'space (degrees)');
+                if (labelRetinalMeridians)
+                    if (strcmp(obj.whichEye, 'right eye'))
+                        leftMeridianName = 'temporal retina';
+                        rightMeridianName = 'nasal retina';
+                    else
+                        leftMeridianName = 'nasal retina';
+                        rightMeridianName = 'temporal retina';
+                    end
+                    xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} retinal space (degrees)    \\color[rgb]{0 0.7 0} %s', ...
+                            leftMeridianName, rightMeridianName));
+                else
+                    xlabel(axesHandle, 'space (degrees)');
+                end
             end
             if (~noYlabel)
-                ylabel(axesHandle, 'space (degrees)');
+                if (labelRetinalMeridians)
+                    ylabel(axesHandle, sprintf('%s  < = = = = = |     space (degrees)    | = = = = =  > %s', ...
+                        'superior retina', 'inferior retina'));
+                else
+                    ylabel(axesHandle, 'space (degrees)');
+                end
             end
             set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
                             'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
         case 'microns'
             if (~noXlabel)
-                xlabel(axesHandle, 'space (microns)');
+                if (labelRetinalMeridians)
+                    if (strcmp(obj.whichEye, 'right eye'))
+                        leftMeridianName = '(temporal)';
+                        rightMeridianName = '(nasal)';
+                    else
+                        leftMeridianName = '(nasal)';
+                        rightMeridianName = '(temporal)';
+                    end
+                    xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} retinal space (microns)    \\color[rgb]{0 0.7 0} %s', ...
+                            leftMeridianName, rightMeridianName));
+                else
+                    xlabel(axesHandle, 'retinal space (microns)');
+                end
             end
             if (~noYlabel)
-                ylabel(axesHandle, 'space (microns)');
+                if (labelRetinalMeridians)
+                    upperMeridianName = '(inferior)';
+                    lowerMeridianName = '(superior)';
+                    ylabel(axesHandle, sprintf('\\color{blue}%s    \\color{black} retinal space (microns)    \\color[rgb]{0.6 0.6 0.4} %s', ...
+                            lowerMeridianName, upperMeridianName));
+                else
+                    ylabel(axesHandle, 'space (microns)');
+                end
             end
             set(axesHandle, 'XTickLabel', sprintf('%d\n', domainVisualizationTicks.x), ...
                             'YTickLabel', sprintf('%d\n', domainVisualizationTicks.y));
     end
+    
     if (isempty(plotTitle))
         title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
             100*obj.coneDensities(1), ...
@@ -479,7 +569,7 @@ end
 end
 
 function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ...
-    faceColors, edgeColor, lineWidth)
+    faceColors, edgeColor, lineWidth, faceAlpha)
 
     conesNum = numel(apertureRadii);
     if (conesNum == 0)
@@ -512,7 +602,7 @@ function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ..
     S.FaceVertexCData = colors;
     S.FaceColor = 'flat';
     S.EdgeColor = edgeColor;
-    S.FaceAlpha = 1.0;
+    S.FaceAlpha = faceAlpha;
     S.LineWidth = lineWidth;
     patch(S, 'Parent', axesHandle);
 end
