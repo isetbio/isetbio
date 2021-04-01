@@ -20,9 +20,9 @@ function assignConeTypes(obj, varargin)
     conesNum = numel(ecc);
     
     % See how to assign S-cones outside the tritanopic area
-    desiredSconesNum = round(obj.coneDensities(obj.SCONE_ID)*conesNum);
     peripheralConeIndices = setdiff(1:conesNum, fovealLMconeIndices);
-
+    desiredSconesNum = round(obj.coneDensities(obj.SCONE_ID)*numel(peripheralConeIndices));
+    
     if (obj.coneDensities(obj.SCONE_ID) > 0) && (obj.coneDensities(obj.SCONE_ID) <= 0.5)
         % Determine non-foveal LM cone indices, leaving room for regularly
         % spaced S-cones with density = obj.coneDensities(obj.SCONE_ID)
@@ -151,6 +151,7 @@ function LMconeIndices = determineLMconeIndices(conePositions, coneSpacings, des
         coneIndex = remainingConeIndices(idx);
     end
     LMconeIndices = unique(LMconeIndices);
+    
     if (numel(SconeIndices) > desiredSconesNum)
         SconeIndices = SconeIndices(randperm(numel(SconeIndices)));
         SconeIndices = SconeIndices(1:desiredSconesNum);
