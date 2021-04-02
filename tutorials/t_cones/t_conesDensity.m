@@ -20,6 +20,8 @@
 pos = logspace(-5,-2,40);     % Spatial positions from fovea out (m)
 ang = (0:.05:1.02) * 2 * pi;  % Angle around all 360 deg (plus a little)
 
+% posDeg = logspace(-2, 1.5, 40);
+
 %% Fill up a matrix with cone density
 
 % This is cones per square millimeter
@@ -60,13 +62,7 @@ surf(X * 1e3, Y * 1e3, coneDensity); colormap(hsv)
 xlabel('Position (mm)'); ylabel('Position (mm)'); 
 zlabel('Cones / mm^2 ')
 
-%%  Add a surface where the mouse density is
 
-hold on;
-mouse = 12*1e3*ones(size(coneDensity));
-mSurf = surf(X * 1e3, Y * 1e3, mouse); 
-mSurf.AlphaData = 0.3;
-mSurf.FaceColor
 %% END
 
 
