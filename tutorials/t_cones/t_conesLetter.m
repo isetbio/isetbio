@@ -15,13 +15,11 @@
 
 %%
 ieInit;
-clear;
-close all;
 
 %% Create a letter on a display
 
 % family, size, dpi
-sceneFOV = 0.5;
+sceneFOV = 3;
 font = fontCreate('A', 'Georgia', 10, 96);
 display = 'LCD-Apple';
 scene = sceneCreate('letter', font, display);

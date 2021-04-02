@@ -225,7 +225,7 @@ classdef cMosaic < handle
             
             % Parse input.  A struct of params is returned.
             if ~isempty(varargin) && isequal(varargin{1},'params')
-                return;
+                varargin = varargin(2:end);
             end
             
             % Maybe we replace the params here with the return from
