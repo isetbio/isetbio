@@ -357,10 +357,10 @@ end
     
     % Add crosshairs
     if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
-        if (isempty('withActivation'))
+        if (isempty(activation))
             crossHairsColor = [0 0 0];
         else
-            crossHairsColor = [0 0 0];
+            crossHairsColor = [1 0 0];
         end
         
         if (crossHairsOnMosaicCenter)

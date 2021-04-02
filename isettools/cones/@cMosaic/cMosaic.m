@@ -82,11 +82,7 @@ classdef cMosaic < handle
         % movements
         eccVaryingMacularPigmentDensityDynamic;
         
-        % 3- or 4-element vector containing relative cone densities
-        coneDensities;
         
-        % Radius of S-cone free area around (0,0)
-        tritanopicRadiusDegs;
         
         % Poisson noise flag for cone excitations 
         noiseFlag;
@@ -102,6 +98,16 @@ classdef cMosaic < handle
         mConeColor = [0.2 1 0.4];
         sConeColor = [0.3 0.1 1];
         kConeColor = [0.9 0.9 0.2];
+    end
+    
+    
+    properties (SetObservable, AbortSet)
+        % These properties trigger the assignConeTypes() method
+        % 3- or 4-element vector containing relative cone densities
+        coneDensities;
+        
+        % Radius of S-cone free area around (0,0)
+        tritanopicRadiusDegs;
     end
     
     % Read-only properties
@@ -151,6 +157,9 @@ classdef cMosaic < handle
         
         % User-settable microns per degree
         micronsPerDegreeApproximation = [];
+        
+        % Achieved cone densities
+        achievedConeDensities;
     end
     
     % Dependent properties
@@ -282,6 +291,13 @@ classdef cMosaic < handle
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.matchWaveInAttachedMacular);
             addlistener(obj.macular, 'wave', 'PostSet', @obj.matchWaveInAttachedPhotopigment);
             
+            
+            % These listeners trigger the assignConeTypes() method when the
+            % coneDensities or the tritanopicRadiusDegs properties are
+            % assigned by the user.
+            addlistener(obj, 'coneDensities','PostSet', @obj.assignConeTypes);
+            addlistener(obj, 'tritanopicRadiusDegs', 'PostSet', @obj.assignConeTypes);
+            
             if (isempty(p.Results.coneData))
                 if (p.Results.computeMeshFromScratch)
                     % Re-generate lattice
@@ -324,9 +340,6 @@ classdef cMosaic < handle
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
         end
         
-        % Method to assign cone types
-        assignConeTypes(obj, varargin);
-        
         % Method to visualize the cone mosaic
         params = visualize(obj, varargin);
         
@@ -362,7 +375,7 @@ classdef cMosaic < handle
             obj.pigment.wave = val(:);
             obj.macular.wave = val(:);
         end
-        
+            
         % MICRONSPERDEGREE
         function val = get.micronsPerDegree(obj)
             val = (max(obj.coneRFpositionsMicrons,[],1) - min(obj.coneRFpositionsMicrons,[],1)) / ...
@@ -401,6 +414,10 @@ classdef cMosaic < handle
             oiResMicrons, coneApertureDiametersMicrons, ...
             coneIndicesInZones);
 
+        % Called automatically after either the coneDensity of the tritanopicRadiusDegs are set
+        assignConeTypes(obj, src, ~);
+        
+        
         % Called when the wave property in the attached photopigment object is changed
         function matchWaveInAttachedMacular(obj, src,~)
             % Set the wave property in the attached macular
