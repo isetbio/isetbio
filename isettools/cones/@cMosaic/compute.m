@@ -99,9 +99,12 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     spatialSupportMeters = oiGet(oi, 'spatial support');
     spatialSupportXMicrons = squeeze(spatialSupportMeters(1,1:end,1)) * 1e6;
     spatialSupportYMicrons = squeeze(spatialSupportMeters(1:end,1,2)) * 1e6;
+    spatialSupportXMicrons = spatialSupportXMicrons - mean(spatialSupportXMicrons);
+    spatialSupportYMicrons = spatialSupportYMicrons - mean(spatialSupportYMicrons);
+    
     dx = spatialSupportXMicrons(2)-spatialSupportXMicrons(1);
     dy = spatialSupportYMicrons(2)-spatialSupportYMicrons(1);
-    oiPositionsVectorsMicrons = {spatialSupportYMicrons(:)-2*dx, spatialSupportXMicrons(:)-2*dy};
+    oiPositionsVectorsMicrons = {spatialSupportYMicrons(:)-0*dx, spatialSupportXMicrons(:)-0*dy};
     
     minEMpos = squeeze(min(emPathsMicrons,[],1));
     maxEMpos = squeeze(max(emPathsMicrons,[],1));
