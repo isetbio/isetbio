@@ -221,8 +221,16 @@ classdef cMosaic < handle
     methods
         
         % Constructor
-        function obj = cMosaic(varargin)
-            % Parse input
+        function [obj, params] = cMosaic(varargin)
+            
+            % Parse input.  A struct of params is returned.
+            if ~isempty(varargin) && isequal(varargin{1},'params')
+                return;
+            end
+            
+            % Maybe we replace the params here with the return from
+            % defaultParams. That will mean we keep the defaults in only
+            % one place.
             p = inputParser;
             p.addParameter('name', 'cone mosaic', @ischar);
             p.addParameter('wave', 400:10:700, @isnumeric);
@@ -245,7 +253,7 @@ classdef cMosaic < handle
             p.addParameter('coneDensities', [0.6 0.3 0.1 0.0], @(x)(isnumeric(x) && ((numel(x) == 3)||(numel(x)==4))));
             p.addParameter('tritanopicRadiusDegs', 0.15, @isscalar);
             p.addParameter('noiseFlag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
-            p.addParameter('randomSeed', [], @isscalar);
+            p.addParameter('randomSeed', [], @(x)(isscalar(x) || isempty(x)));
             p.addParameter('integrationTime', 5/1000, @isscalar);
             p.addParameter('useParfor', true, @islogical);
             
@@ -285,7 +293,7 @@ classdef cMosaic < handle
                 assert(numel(obj.coneDensities) == size(obj.pigment.absorptance,3), ...
                     sprintf('cPhotoPigment is not initialized for %d types of cones', numel(obj.coneDensities)));
             end
-            
+                        
             % These listeners make sure the wavelength support
             % in obj.pigment and obj.macular match the wave property
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.matchWaveInAttachedMacular);
@@ -338,6 +346,9 @@ classdef cMosaic < handle
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
+            
+            params = obj.defaultParams;
+
         end
         
         % Method to visualize the cone mosaic
@@ -388,6 +399,7 @@ classdef cMosaic < handle
             xyMin = min(obj.coneRFpositionsMicrons,[],1);
             val = xyMax - xyMin;
         end
+        
     end
     
     
