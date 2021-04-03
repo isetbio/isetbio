@@ -347,7 +347,7 @@ function opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj
         opticalImagePositionMicrons = obj.eccentricityMicrons;
     elseif ((isnumeric(opticalImagePositionDegs))&&(numel(opticalImagePositionDegs)==2))
         if (~isempty(obj.micronsPerDegreeApproximation))
-            opticalImagePositionMicrons = opticalImagePositionDegs * obj.micronsPerDegreeApproximation;  
+            opticalImagePositionMicrons = opticalImagePositionDegs * obj.micronsPerDegreeApproximation;
         else
             opticalImagePositionMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(opticalImagePositionDegs);
         end
