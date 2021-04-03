@@ -12,12 +12,14 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
     p.addParameter('zernikeDataBase', 'Polans2015', @(x)(ismember(x, {'Polans2015'})));
     p.addParameter('subjectID', 6, @isscalar);
     p.addParameter('pupilDiameterMM', 3.0, @isscalar);
+    p.addParameter('subtractCentralRefraction', false, @islogical);
     p.parse(obj, oiSamplingGridDegs, varargin{:});
 
     oiSamplingGridDegs = p.Results.oiSamplingGridDegs;
     zernikeDataBase = p.Results.zernikeDataBase;
     pupilDiamMM = p.Results.pupilDiameterMM;
     subjectID = p.Results.subjectID;
+    subtractCentralRefraction = p.Results.subtractCentralRefraction;
     
     % Generate the oiEnsemble
     oiNum = size(oiSamplingGridDegs,1);
@@ -34,7 +36,7 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
                 [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength] = PolansOptics.oiForSubjectAtEccentricity(subjectID, ...
                     obj.whichEye, oiSamplingGridDegs(oiIndex,:), pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
                     'wavefrontSpatialSamples', 301, ...
-                    'subtractCentralRefraction', false);
+                    'subtractCentralRefraction', subtractCentralRefraction);
                 
                 oiEnsemble{oiIndex} = theOI;
                 psfEnsemble{oiIndex} = struct(...

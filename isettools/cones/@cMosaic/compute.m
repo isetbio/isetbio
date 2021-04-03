@@ -23,57 +23,26 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     % Parse input
     p = inputParser;
     p.addParameter('withFixationalEyeMovements', false, @islogical);
+    p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
     p.addParameter('nTimePoints', [], @isscalar);
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('seed', 1, @isnumeric);
     p.addParameter('verbosityLevel', 'none', @(x)ismember(x, {'default', 'min', 'max'}));
     p.parse(varargin{:});
     
-    %verbosityLevel = p.Results.verbosityLevel;
-    
-    %tStart = clock();
-    
-    % Validate optional inputs
-    if (p.Results.withFixationalEyeMovements) && (isempty(obj.fixEMobj))
-        error('cMosaic.emGenSequence() has not been called yet to generate eye movements.');
-    end
-    
-    
+
+    % Parse optional inputs
     nTimePoints = p.Results.nTimePoints;
     nTrials = p.Results.nTrials;
     noiseSeed = p.Results.seed;
+    verbosityLevel = p.Results.verbosityLevel;
     
-    % emPaths/nTrials validation
-    replicateResponseToFirstEMpath = false;
-    if (p.Results.withFixationalEyeMovements)
-        % Full blown simulation. This is going to be the slowest scenario.
-        % Extract the emPaths
-        emPathsMicrons = obj.fixEMobj.emPosMicrons;
-    	emPathsDegs = obj.fixEMobj.emPosArcMin/60;
-        assert(size(emPathsMicrons,3) == 2, sprintf('The third dimension of an emPath must be 2.'));
-        if (~isempty(nTrials))
-           % fprintf(2,'Overiding nTrials from the attached ''fixationalEyeMovementsOBJ'' (%d). Will generate %d response instances all driven by the first emPath', ...
-           %     size(emPathsMicrons,1), nTrials);
-            emPathsMicrons = repmat(emPathsMicrons(1,:,:), [nTrials 1 1]);
-            emPathsDegs = repmat(emPathsDegs(1,:,:), [nTrials 1 1]);
-            replicateResponseToFirstEMpath = true;
-        end
-        if (~isempty(nTimePoints))
-            error('Cannot set''nTimePoints'' when  ''withFixationalEyeMovements'' is set to true.');
-        end
-        nTrials = size(emPathsMicrons,1);
-        nTimePoints = size(emPathsMicrons,2);
-    else
-        % No emPaths passed
-        if (isempty(nTimePoints))
-            nTimePoints = 1;
-        end
-        if (isempty(nTrials))
-            nTrials = 1;
-        end
-        emPathsMicrons = zeros(nTrials,nTimePoints,2);
-        emPathsDegs = zeros(nTrials,nTimePoints,2);
-    end
+    % Validate and decode fixational eye movement optional input
+    [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
+        validateAndDecodeFixationalEyeMovements(obj, p.Results.withFixationalEyeMovements, nTrials, nTimePoints);
+    
+    % Decode and decode opticalImagePositionDegs optional input
+    opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj,p.Results.opticalImagePositionDegs);
     
     % Match the wavelength support of the object to that of the input optical image
     % First save the current value so we can restore it once we are done
@@ -88,8 +57,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     % Compute wavelength-spacing scaled quantal efficiencies
     scaledQE = obj.qe * oiGet(oi, 'bin width');
     
-    % Retrieve oiRes and oiSize
-    oiSize  = oiGet(oi, 'size');
+    % Retrieve oiRes
     oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
     
     % Retrieve wavelength support
@@ -102,29 +70,62 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     spatialSupportXMicrons = spatialSupportXMicrons - mean(spatialSupportXMicrons);
     spatialSupportYMicrons = spatialSupportYMicrons - mean(spatialSupportYMicrons);
     
+    % Translate oi spatial support 
+    spatialSupportXMicrons = spatialSupportXMicrons + opticalImagePositionMicrons(1);
+    spatialSupportYMicrons = spatialSupportYMicrons + opticalImagePositionMicrons(2);
+    
     dx = spatialSupportXMicrons(2)-spatialSupportXMicrons(1);
     dy = spatialSupportYMicrons(2)-spatialSupportYMicrons(1);
-    oiPositionsVectorsMicrons = {spatialSupportYMicrons(:)-0*dx, spatialSupportXMicrons(:)-0*dy};
     
     minEMpos = squeeze(min(emPathsMicrons,[],1));
     maxEMpos = squeeze(max(emPathsMicrons,[],1));
     
+    % Determine if an extention of spatial support is needed so that the optical image
+    % extends over the entire cone mosaic
+    additionalPixelsXLeft = 0;
     if (obj.minRFpositionMicrons(1)+minEMpos(1) < min(spatialSupportXMicrons))
-        fprintf(2,'Left side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+        %fprintf(2,'Left side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+        additionalPixelsXLeft = round((min(spatialSupportXMicrons) - (obj.minRFpositionMicrons(1)+minEMpos(1)))/dx);
     end
+    
+    additionalPixelsYBottom = 0;
     if (obj.minRFpositionMicrons(2)+minEMpos(2) < min(spatialSupportYMicrons))
-        fprintf(2,'Bottom side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+        %fprintf(2,'Bottom side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+        additionalPixelsYBottom = round((min(spatialSupportYMicrons) - (obj.minRFpositionMicrons(2)+minEMpos(2)))/dy);
     end
     
-    
+    additionalPixelsXRight = 0;
     if (obj.maxRFpositionMicrons(1)+maxEMpos(1) > max(spatialSupportXMicrons))
-        fprintf(2,'Right side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+        %fprintf(2,'Right side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+        additionalPixelsXRight = round((obj.maxRFpositionMicrons(1)+maxEMpos(1) - max(spatialSupportXMicrons))/dx);
     end
+    
+    additionalPixelsYTop = 0;
     if (obj.maxRFpositionMicrons(2)+maxEMpos(2) > max(spatialSupportYMicrons))
-        fprintf(2, 'Top side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+        %fprintf(2, 'Top side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
+        additionalPixelsYTop = round((obj.maxRFpositionMicrons(2)+maxEMpos(2) - max(spatialSupportYMicrons))/dy);
     end
-
-
+    
+    % Extend spatial support vectors as needed
+    if (additionalPixelsXLeft > 0)
+        extraXPos = -fliplr((1:additionalPixelsXLeft)*dx);
+        spatialSupportXMicrons = cat(2, extraXPos+spatialSupportXMicrons(1), spatialSupportXMicrons); 
+    end
+    if (additionalPixelsXRight > 0)
+        extraXPos = (1:additionalPixelsXRight)*dx;
+        spatialSupportXMicrons = cat(2, spatialSupportXMicrons, extraXPos+spatialSupportXMicrons(end)); 
+    end
+    
+    if (additionalPixelsYBottom > 0)
+        extraYPos = -fliplr((1:additionalPixelsYBottom)*dy);
+        spatialSupportYMicrons = cat(1, extraYPos'+spatialSupportYMicrons(1), spatialSupportYMicrons);
+    end
+    if (additionalPixelsYTop > 0)
+        extraYPos = (1:additionalPixelsYTop)*dy;
+        spatialSupportYMicrons = cat(1,  spatialSupportYMicrons, extraYPos'+spatialSupportYMicrons(end));
+    end
+    
+    
     if (~isempty(obj.micronsPerDegreeApproximation))
         spatialSupportXDegrees = spatialSupportXMicrons/obj.micronsPerDegreeApproximation;  
         spatialSupportYDegrees = spatialSupportYMicrons/obj.micronsPerDegreeApproximation;
@@ -133,9 +134,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         spatialSupportYDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportYMicrons*1e-3);
     end
     
+    
     [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(spatialSupportXDegrees, spatialSupportYDegrees);
     oiPositionsDegs = [oiPositionsDegsXgrid(:), oiPositionsDegsYgrid(:)];
-    
+    oiPositionsVectorsMicrons = {spatialSupportYMicrons(:), spatialSupportXMicrons(:)};
     
     % Compute cone aperture diameters based on their local spacing
     coneApertureDiametersMicrons = obj.coneRFspacingsMicrons * obj.coneApertureToDiameterRatio;
@@ -183,6 +185,29 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         photons(:,:,k) = flipud(squeeze(photons(:,:,k)));
     end
     
+    % Extend photons field as needed
+    if ((additionalPixelsXLeft > 0) || (additionalPixelsXRight > 0) || (additionalPixelsYBottom > 0) || (additionalPixelsYTop > 0))
+        originalPhotons = photons;
+        originalXpixelsNum = size(photons,2);
+        originalYpixelsNum = size(photons,1);
+        newXpixelsNum = originalXpixelsNum + additionalPixelsXLeft + additionalPixelsXRight;
+        newYpixelsNum = originalYpixelsNum + additionalPixelsYBottom + additionalPixelsYTop;
+        % mean-padded photons
+        photons = zeros(newYpixelsNum, newXpixelsNum, size(photons,3));
+        meanPadValues = originalPhotons(1,1,:);
+        xOffset = additionalPixelsXLeft;
+        yOffset = additionalPixelsYBottom;
+        for k = 1:size(photons,3)
+            photons(:,:,k) = meanPadValues(k);
+            photons(yOffset+(1:originalYpixelsNum), xOffset+(1:originalXpixelsNum),k) = originalPhotons(:,:,k);
+        end
+    end
+    clear 'originalPhotons';
+    
+    % Update oiSize
+    oiSize = size(photons);
+    oiSize = oiSize(1:2);
+    
     % Reshape the photons for efficient computations
     [photons, oiRowsNum, oiColsNum] = RGB2XWFormat(photons);
     
@@ -196,7 +221,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         % the account for MP density decrease with ecc
         macularPigmentDensityBoostFactors = ...
             updateMPBoostFactorsForCurrentEMpos(obj, [0 0], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
-    
     
         % Compute density of cone absosprions, by integrating photons over
         % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
@@ -310,10 +334,67 @@ function macularPigmentDensityBoostFactors = updateMPBoostFactorsForCurrentEMpos
         macularPigmentDensityBoostFactors = obj.computeMPBoostFactors(oiPositionsDegs, currentEMposDegs, oiWave, oiSize, oiResMicrons);
     else
         % Single boost factor for the center of the mosaic
-        macularPigmentDensityBoostFactor = obj.computeMPBoostFactors(obj.eccentricityDegs, currentEMposDegs, oiSize, oiResMicrons);
+        macularPigmentDensityBoostFactor = obj.computeMPBoostFactors(obj.eccentricityDegs, currentEMposDegs, oiWave, oiSize, oiResMicrons);
         % Replicate for all oiPixels
         macularPigmentDensityBoostFactors = bsxfun(@plus, zeros(size(oiPositionsDegs,1), numel(macularPigmentDensityBoostFactor)), macularPigmentDensityBoostFactor);
     end
     
 end
 
+% Method for the validation and decoding for optional argument 'opticalImagePositionDegs'
+function opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj, opticalImagePositionDegs)
+    if ((ischar(opticalImagePositionDegs))&&(strcmp(opticalImagePositionDegs, 'mosaic-centered')))
+        opticalImagePositionMicrons = obj.eccentricityMicrons;
+    elseif ((isnumeric(opticalImagePositionDegs))&&(numel(opticalImagePositionDegs)==2))
+        if (~isempty(obj.micronsPerDegreeApproximation))
+            opticalImagePositionMicrons = opticalImagePositionDegs * obj.micronsPerDegreeApproximation;  
+        else
+            opticalImagePositionMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(opticalImagePositionDegs);
+        end
+    else
+        error('''opticalImagePositionDegs'' must be set to either ''mosaic-centered'' or to a 2-element vector.');
+    end
+end
+    
+% Method for the validation and decoding for optional argument 'withFixationalEyeMovements'
+function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
+        validateAndDecodeFixationalEyeMovements(obj, withFixationalEyeMovements, nTrials, nTimePoints)
+    
+     if (withFixationalEyeMovements) && (isempty(obj.fixEMobj))
+        error('cMosaic.emGenSequence() has not been called yet to generate eye movements.');
+     end
+    
+     % emPaths/nTrials validation
+    replicateResponseToFirstEMpath = false;
+    if (withFixationalEyeMovements)
+        % Full blown simulation. This is going to be the slowest scenario.
+        % Extract the emPaths
+        emPathsMicrons = obj.fixEMobj.emPosMicrons;
+    	emPathsDegs = obj.fixEMobj.emPosArcMin/60;
+        assert(size(emPathsMicrons,3) == 2, sprintf('The third dimension of an emPath must be 2.'));
+        if (~isempty(nTrials))
+           % fprintf(2,'Overiding nTrials from the attached ''fixationalEyeMovementsOBJ'' (%d). Will generate %d response instances all driven by the first emPath', ...
+           %     size(emPathsMicrons,1), nTrials);
+            emPathsMicrons = repmat(emPathsMicrons(1,:,:), [nTrials 1 1]);
+            emPathsDegs = repmat(emPathsDegs(1,:,:), [nTrials 1 1]);
+            replicateResponseToFirstEMpath = true;
+        end
+        if (~isempty(nTimePoints))
+            error('Cannot set''nTimePoints'' when  ''withFixationalEyeMovements'' is set to true.');
+        end
+        nTrials = size(emPathsMicrons,1);
+        nTimePoints = size(emPathsMicrons,2);
+    else
+        % No emPaths passed
+        if (isempty(nTimePoints))
+            nTimePoints = 1;
+        end
+        if (isempty(nTrials))
+            nTrials = 1;
+        end
+        emPathsMicrons = zeros(nTrials,nTimePoints,2);
+        emPathsDegs = zeros(nTrials,nTimePoints,2);
+    end
+    
+    
+end
