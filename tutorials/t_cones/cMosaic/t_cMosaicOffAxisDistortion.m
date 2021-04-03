@@ -22,9 +22,12 @@ ieInit;
 clear;
 close all;
 
+%% Mosaic size
+mosaicSizeDegs = [1 1]*0.7;
+
 %% Generate the linegrid stimulus
-scene = sceneCreate('distortiongrid', 512, 10, 'ep');
-scene = sceneSet(scene, 'fov', 8.0);
+scene = sceneCreate('distortiongrid', 512, 100, 'ep');
+scene = sceneSet(scene, 'fov', max(mosaicSizeDegs)*1.1);
 
 %% Set up figures and subfigs
 hFig1 = figure(1);
@@ -59,21 +62,22 @@ for yOffset = 1:3
     
     % Generate mosaic centered at target eccentricity
     cm = cMosaic(...
-        'sizeDegs', [1 1]*0.7, ...          % SIZE: 0.7 degs (x) 0.7 degs (y)
-        'eccentricityDegs', mosaicEcc ...  % ECC: varying
+        'sizeDegs', mosaicSizeDegs, ...    % SIZE in degs
+        'eccentricityDegs', mosaicEcc ...  % ECC in degs
         );
 
     % Generate optics appropriate for the mosaic's eccentricity
     [oiEnsemble, psfEnsemble] = cm.oiEnsembleGenerate(mosaicEcc, ...
         'zernikeDataBase', 'Polans2015', ...
         'subjectID', PolansSubject, ...
-        'pupilDiameterMM', 3.0);
+        'pupilDiameterMM', 3.0, ...
+        'subtractCentralRefraction', true);
     
     % Compute the optical image of the scene
     oi = oiCompute(scene, oiEnsemble{1});
  
     % Compute the noise-free excitation response
-    noiseFreeExcitationResponse = cm.compute(oi);
+    noiseFreeExcitationResponse = cm.compute(oi, 'opticalImagePositionDegs', 'mosaic-centered');
 
     % Visualize optics
     figure(1);
@@ -81,7 +85,7 @@ for yOffset = 1:3
     [~, wIdx] = min(abs(thePSF.supportWavelength-550));
     wavePSF = squeeze(thePSF.data(:,:,wIdx));
     zLevels = 0.1:0.1:0.9;
-    xyRangeArcMin = 3;
+    xyRangeArcMin = 5*[-1 1];
     PolansOptics.renderPSF(subplot('Position', sv(end-yOffset+1,xOffset).v), ...
         thePSF.supportX, thePSF.supportY, wavePSF/max(wavePSF(:)), ...
         xyRangeArcMin, zLevels,  gray(1024), [0 0 0], ...

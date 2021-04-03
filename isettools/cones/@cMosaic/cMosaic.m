@@ -82,8 +82,6 @@ classdef cMosaic < handle
         % movements
         eccVaryingMacularPigmentDensityDynamic;
         
-        
-        
         % Poisson noise flag for cone excitations 
         noiseFlag;
         
@@ -136,8 +134,11 @@ classdef cMosaic < handle
         % indices of K-cones
         kConeIndices;
         
-        % Eccentricity [x,y] of the center of the cone mosaic 
+        % Eccentricity [x,y] of the center of the cone mosaic (degs)
         eccentricityDegs;
+        
+        % Eccentricity [x,y] of the center of the cone mosaic (microns)
+        eccentricityMicrons; 
         
         % Size of the cone mosaic [width, height]
         sizeDegs;
@@ -342,6 +343,8 @@ classdef cMosaic < handle
             % Save min and max cone position
             obj.minRFpositionMicrons = squeeze(min(obj.coneRFpositionsMicrons,[],1));
             obj.maxRFpositionMicrons = squeeze(max(obj.coneRFpositionsMicrons,[],1));
+            obj.eccentricityMicrons = mean(obj.coneRFpositionsMicrons,1);
+            %fprintf('ecc microns: %f\n', obj.eccentricityMicrons(1), obj.eccentricityMicrons(2));
             
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
