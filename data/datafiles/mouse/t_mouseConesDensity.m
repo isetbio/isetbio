@@ -1,19 +1,19 @@
 %% t_mouseConesDensity
 %
+% Create some graphs comparing the density of the mouse cone photoreceptors
+% with human.
+%
 % The mouse peak is about equal to the density at +/- 5 deg in human,
-% around 16K or 18K cones/mm2
+% around 16K or 18K cones/mm2. (% Number and Distribution of Mouse Retinal
+% Cone Photoreceptors: Differences between an Albino (Swiss) and a
+% Pigmented (C57/BL6) Strain)
 %
-% Number and Distribution of Mouse Retinal Cone Photoreceptors: Differences
-% between an Albino (Swiss) and a Pigmented (C57/BL6) Strain  
+% From the paper Geng et al. "Adaptive optics retinal imaging in the living
+% mouse eye", every degree of visual angle corresponds to approximately 34
+% µm for this model. In the human this is about 285 um.
 %
-% From the paper Geng et al. Adaptive optics retinal imaging in the living
-% mouse eye, every degree of visual angle corresponds to approximately 34
-% µm for this model.
-%
-% In the human this is about 285 um.
-%
-% So for equivalent stimulus (input referred) resolution the mouse would
-% need to have nearly 100x as high a cone density.
+% So for the equivalent stimulus (input referred) cone density of the mouse
+% would need to have nearly 10x as high a cone density (linear).
 %
 %% Initialize
 % ieInit;

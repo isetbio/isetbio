@@ -3,6 +3,9 @@
 % Cone apertures increase, but the total number of cones decrease.  What is
 % the next tradeoff as we measure at increasing eccentricities?
 %
+% This script also includes a method for extracting data from a region of
+% interest in the cone mosaic.  See t_conesPerifovea.m for more examples.
+%
 % BW/DHB
 %
 % See also
@@ -10,19 +13,35 @@
 
 
 %% Build a uniform scene
-thisFOV = 9;
+thisFOV = 1;
 
 scene = sceneCreate('uniform');
-scene = sceneSet(scene,'fov',thisFOV + 0.5);
+scene = sceneSet(scene,'fov',thisFOV);
 oi = oiCreate; oi = oiCompute(oi,scene);
 
-%% Count excitations as different eccentricities
+%% Count excitations at different eccentricities
 
+ecc = [0 0.5 1 3 9 20];
+fov = [1 1];
+
+% [~,params] = cMosaic('params');
+for ii=1:numel(ecc)
+    cm = cMosaic('sizeDegs',fov,'eccentricityDegs',[ecc(ii),ecc(ii)]);
+    cm.visualize;
+    
+    noiseFreeMosaicCentered = cm.compute(oi, 'opticalImagePositionDegs', 'mosaic-centered');
+    sum(noiseFreeMosaicCentered(:))
+
+end
+
+%%
+%{
 fname = sprintf('cm-%ddeg-22-Mar-2021.mat',thisFOV);
 fname = fullfile(isetRootPath,'local',fname);
 foo = load(fname);
 cm = foo.cm;
 cm.integrationTime = 50e-3;
+%}
 % cm.visualize;
 
 
@@ -35,8 +54,9 @@ vParams.activationRange = [0 max(noiseFree(:))];
 cm.visualize(vParams);
 %}
 
-%%
+%% Region of interest!!!  See t_conesPerifovea.m for more.
 
+% Some different central regions
 c = 0:.5:(thisFOV-0.1);
 centers = zeros(numel(c),2);
 for ii=1:numel(c)
