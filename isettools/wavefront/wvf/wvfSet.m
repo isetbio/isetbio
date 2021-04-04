@@ -62,7 +62,7 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %                                   to synthesize the pupil function in
 %                                   microns, and should therefore be passed
 %                                   in those units.
-%       'calc pupil size'         - Pupil size for calculation (mm, *)
+%       'calc pupil size'         - Pupil size diameter for calculation (mm, *)
 %       'calc optical axis'       - Optical axis to compute for (deg)
 %       'calc observer accommodation' -
 %                                   Observer accommodation at calculation
