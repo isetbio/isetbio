@@ -14,6 +14,8 @@ function visualize(obj, varargin)
     p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.addParameter('horizontalActivationColorBar', false, @islogical);
     p.addParameter('verticalActivationColorBar', false, @islogical);
+    p.addParameter('horizontalActivationColorBarInside', false, @islogical);
+    p.addParameter('verticalActivationColorBarInside', false, @islogical);
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
     p.addParameter('displayedEyeMovementData', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('currentEMposition', [], @(x)(isempty(x)||(numel(x)==2)));
@@ -55,6 +57,8 @@ function visualize(obj, varargin)
     cMap = p.Results.activationColorMap;
     verticalColorBar = p.Results.verticalActivationColorBar;
     horizontalColorBar = p.Results.horizontalActivationColorBar;
+    verticalColorBarInside = p.Results.verticalActivationColorBarInside;
+    horizontalColorBarInside = p.Results.horizontalActivationColorBarInside;
     colorBarTickLabelPostFix = p.Results.colorBarTickLabelPostFix;
     horizontalActivationSliceEccentricity = p.Results.horizontalActivationSliceEccentricity;
     verticalActivationSliceEccentricity = p.Results.verticalActivationSliceEccentricity;
@@ -153,12 +157,12 @@ function visualize(obj, varargin)
         set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
         axesHandle = subplot('Position', [0.09 0.07 0.90 0.92]);
     else
-        %figure(figureHandle);
         if (isempty(axesHandle))
             clf;
             set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
             axesHandle = subplot('Position', [0.07 0.07 0.92 0.92]);
         end
+        cla(axesHandle);
     end
     
     % Number of cones
@@ -379,28 +383,40 @@ function visualize(obj, varargin)
     end
     colormap(axesHandle, cMap);
     
-    if (verticalColorBar) || (horizontalColorBar)
-        colorBarTicks = [0 0.25 0.5 0.75 1];
-        colorBarTickLabels = cell(1, numel(colorBarTicks));
-        colorBarTickLevels = activationRange(1) + (activationRange(2)-activationRange(1)) * colorBarTicks;
+    if (~isempty(activation))
+        if (verticalColorBar) || (horizontalColorBar) || (verticalColorBarInside) || (horizontalColorBarInside)
+            colorBarTicks = [0.01 0.25 0.5 0.75 0.99];
+            colorBarTickLabels = cell(1, numel(colorBarTicks));
+            colorBarTickLevels = activationRange(1) + (activationRange(2)-activationRange(1)) * colorBarTicks;
 
-        for k = 1:numel(colorBarTicks)
-            if (max(abs(colorBarTickLevels)) >= 10)
-                    colorBarTickLabels{k} = sprintf('%2.0f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
-                elseif (max(abs(colorBarTickLevels)) >= 1)
-                    colorBarTickLabels{k} = sprintf('%2.1f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
-                elseif (max(abs(colorBarTickLevels)) >= 0.1)
-                    colorBarTickLabels{k} = sprintf('%2.2f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
-                else
-                    colorBarTickLabels{k} = sprintf('%2.3f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
+            for k = 1:numel(colorBarTicks)
+                if (max(abs(colorBarTickLevels)) >= 10)
+                        colorBarTickLabels{k} = sprintf('%2.0f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
+                    elseif (max(abs(colorBarTickLevels)) >= 1)
+                        colorBarTickLabels{k} = sprintf('%2.1f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
+                    elseif (max(abs(colorBarTickLevels)) >= 0.1)
+                        colorBarTickLabels{k} = sprintf('%2.2f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
+                    else
+                        colorBarTickLabels{k} = sprintf('%2.3f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
+                end
             end
-        end
 
-        if (verticalColorBar)
-            colorbar('eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
-        elseif (horizontalColorBar)
-            colorbar('northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
+            if (verticalColorBar)
+                colorbar(axesHandle, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
+            elseif (verticalColorBarInside)
+                colorbar(axesHandle, 'east', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
+                    'Color', [.9 .6 0.2], 'FontWeight', 'Bold', 'FontSize', fontSize+2);
+            elseif (horizontalColorBar)
+                colorbar(axesHandle,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
+            elseif (horizontalColorBarInside)
+                colorbar(axesHandle,'north', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
+                    'Color', [0.9 .6 0.2], 'FontWeight', 'Bold', 'FontSize', fontSize+2);
+            end
+        else
+            colorbar(axesHandle, 'off');
         end
+    else
+        colorbar(axesHandle, 'off');
     end
     
     % Finalize plot
