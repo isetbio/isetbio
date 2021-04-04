@@ -1,4 +1,4 @@
-%% t_conesDensityMouse
+%% t_mouseConesDensity
 %
 % The mouse peak is about equal to the density at +/- 5 deg in human,
 % around 16K or 18K cones/mm2
