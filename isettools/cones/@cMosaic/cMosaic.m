@@ -224,7 +224,8 @@ classdef cMosaic < handle
         % Constructor
         function [obj, params] = cMosaic(varargin)
             
-            % Parse input.  A struct of params is returned.
+            % Parse input.  A struct of params is returned in the second
+            % argument so the user can see all the settable parameters.
             if ~isempty(varargin) && isequal(varargin{1},'params')
                 varargin = varargin(2:end);
             end
@@ -350,6 +351,7 @@ classdef cMosaic < handle
             % the decrease in outer segment legth with ecc.
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
             
+            % The second returned argument.
             params = obj.defaultParams;
 
         end
