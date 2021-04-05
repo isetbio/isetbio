@@ -94,15 +94,14 @@ function renderConeApertures(axesHandle, conePositionsArcMin, coneAperturesArcMi
   
     xOutline = cosd(0:30:360);
     yOutline = sind(0:30:360);
-    apertureShape.x = cosd(0:30:360)
     for iCone = 1:size(conePositionsArcMin,1)
         r = 0.5*coneAperturesArcMin(iCone);
         plot(axesHandle, xOutline*r +  conePositionsArcMin(iCone,1), ...
                          yOutline*r +  conePositionsArcMin(iCone,2), ...
                          'k-', 'Color', color, 'LineWidth', 1.0);
-                     if (iCone > 1)
-                         hold(axesHandle, 'on');
-                     end
+         if (iCone > 1)
+             hold(axesHandle, 'on');
+         end
     end
                  
 end
