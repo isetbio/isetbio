@@ -644,12 +644,23 @@ switch parm
         end
     case {'distperdeg', 'distanceperdegree'}
         % This routine should call
-        % opticsGet(optics, 'dist per deg', unit) rather than compute it
-        % here.
-        val = oiGet(oi, 'width') / oiGet(oi, 'fov');
+        % Maybe we should do this.  They are similar but the fov shouldn't
+        % really matter
+        %
+        %  micronsPerDegree = 1e6 * focalLengthMeters * (2 * tand(0.5));
+        %
+        val = oiGet(oi,'optics focal length')*2*tand(0.5);  % Meters
+        %{
+        % We did this for a long time.  
+        % I (BW) am worried about changing.  It is numerically close, but
+        % logically not exactly right. 
+          val = oiGet(oi, 'width') / oiGet(oi, 'fov');
+        %}
+        
         if ~isempty(varargin)
             val = val * ieUnitScaleFactor(varargin{1});
         end
+
     case {'degreesperdistance', 'degperdist'}
         % oiGet(oi, 'degrees per distance')
         % oiGet(oi, 'degPerDist', 'micron')
