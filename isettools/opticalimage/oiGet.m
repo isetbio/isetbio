@@ -830,6 +830,11 @@ switch parm
         % original data. When there is no depthMap in the scene, these are
         % all logically '1' (true).
         if checkfields(oi, 'depthMap'), val = oi.depthMap; end
+    case {'depthrange'}
+        % Range is the min to max difference.
+        % Maybe we want a vector of closest, furthest
+        mp = oiGet(oi,'depth map');
+        val = [min(mp(:)),max(mp(:))];
     case {'logicaldepthmap'}
         % Boolean values indicating locations computed from
         val = logical(oiGet(oi, 'depth map'));
