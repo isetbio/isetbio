@@ -341,11 +341,12 @@ classdef cMosaic < handle
                 end
             end
             
-            % Save min and max cone position
+            % Compute min and max cone position
             obj.minRFpositionMicrons = squeeze(min(obj.coneRFpositionsMicrons,[],1));
             obj.maxRFpositionMicrons = squeeze(max(obj.coneRFpositionsMicrons,[],1));
-            obj.eccentricityMicrons = mean(obj.coneRFpositionsMicrons,1);
-            %fprintf('ecc microns: %f\n', obj.eccentricityMicrons(1), obj.eccentricityMicrons(2));
+            
+            % Compute ecc in microns
+            obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
             
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
