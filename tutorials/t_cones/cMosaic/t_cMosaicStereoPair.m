@@ -17,8 +17,8 @@ ieInit;
 clear;
 close all;
 
-if (1==1)
-    mosaicFOV = [3 3];
+if (true)
+    mosaicFOV = [1 1];
 
     % Generate left mosaic
     cmLeft = cMosaic(...
@@ -30,7 +30,7 @@ if (1==1)
         'visualizeMeshConvergence', ~true ...           % visualize the convergence
         );
 
-    % Generate right mosaic
+    % Geounerate right mosaic
     cmRight= cMosaic(...
         'whichEye', 'right eye', ...                    % Generate mosaic for the right eye
         'sizeDegs', mosaicFOV, ...                      % SIZE: x,y in degs

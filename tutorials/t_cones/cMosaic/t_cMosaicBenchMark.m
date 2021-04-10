@@ -22,18 +22,22 @@ close all;
 % Set to true to examine memory allocation between old and new mosaics
 % If set to true, the compute time measurements may not be as accurate as
 % when set to false, because the memory profiler takes resources
-benchtestMemoryAllocation = false;
+benchtestMemoryAllocation = true;
 
-% Repeat 100 times so as to get an accurate estimate of compute time
-repeatsNum = 100;
+% Repeat so as to get an accurate estimate of compute time.  Increase
+% this number if you are interested in more accurate timing
+repeatsNum = 1;
 
 %% Generate test scenes
+%
+% Can increase FOV and row/col dimensions to get more dramatic timing
+% difference effects, but run time for this tutorial will slow down.
 fprintf('Computing scenes ...\n');
-sceneFOVDegs = 2.0;
+sceneFOVDegs = 1.0;
 % A sinusoid
 params.freq = 10;
-params.row = 512;
-params.col = 512;
+params.row = 256;
+params.col = 256;
 spectrum = 400:2:700;
 scene1 = sceneCreate('Harmonic', params, spectrum);
 %scene1 = sceneCreate('Harmonic', params);
@@ -144,8 +148,7 @@ if (benchtestMemoryAllocation)
         if (strcmp(p1.FunctionTable(fIndex).FunctionName, 'coneMosaic.compute'))
             memAllocatedOldConeMosaic = p1.FunctionTable(fIndex).TotalMemAllocated;
         end
-    end  
-    
+    end    
     % Restart profiler
     profile('off')
     profile('-memory','on')
