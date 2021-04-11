@@ -1,0 +1,39 @@
+% CSFapp support m  ethod to generate the gratingSceneEngine and test/null stimuli.
+function [theScene, theNullStimulusScene, statusReport, theGratingSceneEngine] = computeStimulusSceneEngine(sParams, theGratingSceneEngine)
+    if (isempty(theGratingSceneEngine))
+    
+       theGratingSceneEngine = createGratingScene(sParams.chromaDir, sParams.sf, ...
+             'fovDegs', sParams.fovDegs, ...
+             'orientation', sParams.orientation, ...
+             'spatialEnvelope', sParams.spatialEnvelope, ...
+             'spatialEnvelopeRadiusDegs', sParams.spatialEnvelopeRadiusDegs, ...
+             'spatialPhase', sParams.spatialPhase, ...
+             'pixelsNum', sParams.pixelsNum, ...
+             'minPixelsNumPerCycle', sParams.minPixelsNumPerCycle, ...
+             'spectralSupport', sParams.spectralSupport, ...
+             'presentationMode', sParams.presentationMode, ...
+             'duration', sParams.duration, ...
+             'warningInsteadOfErrorOnOutOfGamut', sParams.warningInsteadOfErrorOnOutOfGamut);
+    end
+    
+    % Compute test and null stimulus as well
+    if (isfield(sParams, 'contrast')) && (~isempty(sParams.contrast))
+        % Compute the stimulus sequence with max contrast
+        [theSceneSequence, ~, statusReport] = theGratingSceneEngine.compute(sParams.contrast);
+
+        % Set the stimulus demo scene to the first frame of the scene sequence
+        theScene = theSceneSequence{1};
+
+        % Compute the null stimulus scene (zero contrast)
+        theNullSceneSequence = theGratingSceneEngine.compute(0.0);
+        theNullStimulusScene = theNullSceneSequence{1};
+    else
+        theScene = [];
+        theNullStimulusScene = [];
+        statusReport = [];
+    end
+    
+end
+            
+            
+            
