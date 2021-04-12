@@ -1,5 +1,10 @@
-function csf = computeCSF(sfSupport, stimParams, pipelineParams)
+function csf = computeCSF(sfSupport, stimParams, pipelineParams, varargin)
 
+    p = inputParser;
+    p.addParameter('visualizeAllComponents', false, @islogical);
+    p.parse(varargin{:});
+    visualizeAllComponents = p.Results.visualizeAllComponents;
+    
     % Generate neural and classifier engines
     [theNeuralEngine, theClassifierEngine] = CSFgenerator.generateNeuralAndClassifierEngines(pipelineParams);
     
@@ -8,12 +13,11 @@ function csf = computeCSF(sfSupport, stimParams, pipelineParams)
         % Some feedback
         fprintf('Computing sensitivity to %2.1f c/deg\n', sfSupport(idx));
         
-        % Call the external CSFgenerator.computeStimulusSceneEngine method to
-        % generate the gratingSceneEngine
+        % Generate the gratingSceneEngine
         sParams = stimParams;
         sParams.sf = sfSupport(idx);
         [~, ~, ~, gratingSceneEngine] = CSFgenerator.computeStimulusSceneEngine(sParams, []);
-              
+
         % Compute the threshold for this grating  using the imported neural
         % and classifier engines and params
         logThresholdData = computeThresholdTAFC(...
@@ -21,6 +25,7 @@ function csf = computeCSF(sfSupport, stimParams, pipelineParams)
             pipelineParams.classifierEngineParams, ...
             pipelineParams.thresholdParams, ...
             pipelineParams.questEngineParams, ...
+            'visualizeAllComponents', visualizeAllComponents, ...
             'beVerbose', false);
                 
         csf(idx) = 10^(-logThresholdData); 
