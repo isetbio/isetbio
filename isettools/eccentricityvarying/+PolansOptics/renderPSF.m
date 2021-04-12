@@ -37,7 +37,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     
 
     % Render the semi-transparent plot of the RGC RF
-    cMap = brewermap(1024, 'blues');
+    cMap = brewermap(1024, 'reds');
     alpha = 0.3;
     semiTransparentContourPlot(axesHandle, xSupport, ySupport, thePSF, zLevels, cMap, alpha, contourLineColor);
     axis(axesHandle, 'equal')
