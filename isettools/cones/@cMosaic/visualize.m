@@ -31,6 +31,7 @@ function visualize(obj, varargin)
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('backgroundColor', [0.7 0.7 0.7]);
     p.addParameter('plotTitle', '', @ischar);
+    p.addParameter('textDisplay', '', @ischar);
     p.parse(varargin{:});
     
     domain = p.Results.domain;
@@ -64,7 +65,8 @@ function visualize(obj, varargin)
     verticalActivationSliceEccentricity = p.Results.verticalActivationSliceEccentricity;
     backgroundColor = p.Results.backgroundColor;
     plotTitle = p.Results.plotTitle;
-
+    textDisplay = p.Results.textDisplay;
+    
     % Determine what eye movement data have to be displayed
     if (isstruct(displayedEyeMovementData))
        if (ischar(displayedEyeMovementData.trial))
@@ -530,6 +532,13 @@ function visualize(obj, varargin)
     else
         title(axesHandle,plotTitle);
     end
+    
+    if (~isempty(textDisplay))
+        dx = 0.47*(xRange(2)-xRange(1));
+        dy = 0.02*(yRange(2)-yRange(1));
+        text(axesHandle, xRange(1)+dx, yRange(1)+dy, textDisplay, 'FontSize', 12, 'Color', 1-backgroundColor);
+    end
+    
     drawnow;
 end
 

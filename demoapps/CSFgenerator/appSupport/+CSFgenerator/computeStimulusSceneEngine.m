@@ -1,8 +1,7 @@
 % CSFapp support m  ethod to generate the gratingSceneEngine and test/null stimuli.
 function [theScene, theNullStimulusScene, statusReport, theGratingSceneEngine] = computeStimulusSceneEngine(sParams, theGratingSceneEngine)
     if (isempty(theGratingSceneEngine))
-    
-        sParams
+
        theGratingSceneEngine = createGratingScene(sParams.chromaDir, sParams.sf, ...
              'meanLuminanceCdPerM2', sParams.meanLuminanceCdPerM2, ...
              'fovDegs', sParams.fovDegs, ...
