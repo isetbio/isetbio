@@ -649,16 +649,16 @@ switch parm
         % the lens.
         %
         % 1 deg of visual angle is
-        %   tan(opp / (1 / D0)) = 1             (deg)
-        %   opp / (1 / D0) = atand(1)           (1 / rad)
-        %   opp = atand(1) * (1 / D0)           (1 / rad * meter)
-        %   1 / opp = 1 / (atand(1) * (1 / D0)) (rad / meter)
+        %   atan(opp / (1 / D0)) = 1             (deg)
+        %   opp / (1 / D0) = tand(1)           (1 / rad)
+        %   opp = tand(1) * (1 / D0)           (1 / rad * meter)
+        %   1 / opp = 1 / (tand(1) * (1 / D0)) (rad / meter)
         %
         % The conversion: (cycles / rad) * (rad / meter) = cycles / meter
         units = 'm';
         if ~isempty(varargin), units = varargin{1}; end
         D0 = opticsGet(optics, 'power', units);
-        val = 1 /(1 / D0 * atand(1));
+        val = 1 /(1 / D0 * tand(1));
 
     case {'distperdeg', 'distanceperdegree'}
         units = 'm';
