@@ -1,23 +1,21 @@
 function runCSFdemo()
 
-    % Load pipeline data exported from the CSF app
-    load('CSFappExportWithCSF.mat', 'exportedData');
+    % Load stimulus, pipeline and CSF data exported from the CSF app
+    load('CSFappExport.mat', 'exportedData');
    
     % Extract the csf data computed by the app
     [sfOriginal, csfOriginal] = extractImportedCSFdata(exportedData.csfData);
 
     % Extract the stimulus data from the app
     stimData = exportedData.stimData;
-    
 
-    % Recompute the same csf 
+    % Replicate the csf computed by the app (for comparison)
     csfRepeat = CSFgenerator.computeCSF(sfOriginal, stimData, exportedData.pipeline, ...
         'visualizeAllComponents', false);
     
-    % Increase stimulus size to 1.5 degs
+    % Increase the stimulus size to 1.5 degs
     stimData.fovDegs = 1.5;
     stimData.spatialEnvelopeRadiusDegs = stimData.fovDegs/2;
-    stimData.spatialEnvelope = 'rect';
     
     % Recompute CSF at these spatial frequencies
     examinedSpatialFrequencies = [2 4 8 16 32 64];
