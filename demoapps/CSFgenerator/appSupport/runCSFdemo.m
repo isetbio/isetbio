@@ -1,14 +1,14 @@
 function runCSFdemo()
 
     % Load stimulus, pipeline and CSF data exported from the CSF app
-    load('CSFappExport.mat', 'exportedData');
+    load('CSFappExportOne.mat', 'exportedData');
    
     % Extract the csf data computed by the app
     [sfOriginal, csfOriginal] = extractImportedCSFdata(exportedData.csfData);
 
     % Extract the stimulus data from the app
     stimData = exportedData.stimData;
-
+    
     % Replicate the csf computed by the app (for comparison)
     csfRepeat = CSFgenerator.computeCSF(sfOriginal, stimData, exportedData.pipeline, ...
         'visualizeAllComponents', false);
