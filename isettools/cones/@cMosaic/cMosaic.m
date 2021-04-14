@@ -146,9 +146,6 @@ classdef cMosaic < handle
         % Either 'right eye' or 'left eye'
         whichEye;
         
-        % Photon absorption attenuation factors to account for decrease in 
-        % outer segment length with eccentricity
-        outerSegmentLengthEccVariationAttenuationFactors = [];
         
         % Fixational eye movement object for the mosaic
         fixEMobj = [];
@@ -206,6 +203,10 @@ classdef cMosaic < handle
         
         % OSLength attenuation factors (only used when importing coneData)
         importedOSLengthAttenuationFactors = [];
+        
+        % Photon absorption attenuation factors to account for decrease in 
+        % outer segment length with eccentricity
+        outerSegmentLengthEccVariationAttenuationFactors = [];
         
         % cone aperture blur (only used when importing coneData)
         importedBlurDiameterMicrons = [];
