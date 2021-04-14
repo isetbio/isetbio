@@ -248,8 +248,8 @@ wvfP = wvfComputePSF(wvfP);
 theOI = wvf2oi(wvfP);
 
 % Set the fNumber to correspond to the pupil size
-focalLengthMM = oiGet(theOptics,'focal length')*1000;
-theOptics = oiSet(theOptics, 'optics fnumber', focalLengthMM/neuralResponseParamsStruct.opticsParams.pupilDiameterMM);
+focalLengthMM = oiGet(theOI,'focal length')*1000;
+theOI = oiSet(theOI, 'optics fnumber', focalLengthMM/pupilDiameterMm);
 
 % You could adjust lens density if you don't like the default values for
 % the very long wavelengths used here.  But, the default density at long
