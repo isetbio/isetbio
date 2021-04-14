@@ -51,6 +51,7 @@ function oi = wvf2oi(wvf)
 %              dhb  Check for need to interpolate, skip if not.
 %    01/11/18  jnm  Formatting update to match Wiki
 %    04/14/21  dhb  Set fNumber to correspond to wvf calc pupil size.
+%                   Previously this was the oi default of 3 mm pupil.
 
 % Examples:
 %{
