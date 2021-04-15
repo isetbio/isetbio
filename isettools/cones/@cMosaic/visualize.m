@@ -320,11 +320,11 @@ function visualize(obj, varargin)
             % Crosshairs centered on [0 0]
             switch (domain)
                 case 'degrees'
-                    xx1 = [-20 20];
-                    yy2 = [-20 20];
+                    xx1 = 30*[-1 1];
+                    yy2 = 30*[-1 1];
                 case 'microns'
-                    xx1 = [-20 20]*300;
-                    yy2 = [-20 20]*300;
+                    xx1 = 30*[-1 1]*300;
+                    yy2 = 30*[-1 1]*300;
             end
             yy1 = [0 0];
             xx2 = [0 0];
