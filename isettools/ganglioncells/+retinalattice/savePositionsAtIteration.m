@@ -1,3 +1,5 @@
+% Visualizes the progression of the mosaic (quality and max movement) and
+% saves the lattice positions at the desired iteration
 function savePositionsAtIteration(fovDegs, neuronType, whichEye)
 
     % Configure algorithm params
@@ -6,11 +8,16 @@ function savePositionsAtIteration(fovDegs, neuronType, whichEye)
     mosaicFinalFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
     % Load patch generation data
     load(mosaicProgressFileName, 'dataOut', 'params', 'fovDegs', 'neuronType', 'whichEye');
-             
+
     allIterations = 1:size(dataOut.maxMovements,2);
     figure(); clf;
+    subplot(1,2,1);
     plot(allIterations, dataOut.maxMovements, 'ko-');
+    ylabel('max movement');
     set(gca, 'YScale', 'log');
+    subplot(1,2,2);
+    plot(dataOut.iterationsHistory, dataOut.qualityHistory, 'ko-');
+    ylabel('quality');
     drawnow;
     
     % Query user about iteration no.
