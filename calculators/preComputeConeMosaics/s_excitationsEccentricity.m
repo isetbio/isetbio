@@ -9,7 +9,7 @@
 % BW/DHB
 %
 % See also
-%  s_preComputeMosaics
+%  s_preComputeMosaics, t_cmosaic*, s_excitationsEccentricity
 
 
 %% Build a uniform scene

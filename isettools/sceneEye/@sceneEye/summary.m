@@ -31,7 +31,7 @@ if thisEye.get('use pinhole'), renderMode = 'scene'; disp('In pinhole mode'), en
 %% Basic information printed for now
 
 delimit = '---------------';
-txt = addText(delimit,sprintf('\nEye Model: %s\n',thisR.get('camera subtype')));
+txt = addText(delimit,sprintf('\nHuman Eye Model: %s\n',thisR.get('camera subtype')));
 txt = addText(txt,sprintf('Lens: %s\n',thisR.get('lens basename')));
 txt = addText(txt,sprintf('Rays per pixel: %d \n',thisR.get('rays per pixel')));
 txt = addText(txt,sprintf('Ray bounces: %d \n',thisR.get('n bounces')));
@@ -44,8 +44,8 @@ txt = addText(txt,sprintf('Docker dir: %s \n',thisR.get('output dir')));
 txt = addText(txt,delimit);
 
 if ~thisEye.usePinhole
-    focaldist = thisR.get('focal distance','m');
-    txt = addText(txt,sprintf('\nFocal distance: %0.2f (m), %0.2f (diopters)\n',focaldist,1/focaldist));
+    focallength = thisR.get('film distance')*1e-3;  % Convert to meters
+    txt = addText(txt,sprintf('\nFocal length: %0.2f (m), %0.2f (diopters)\n',focallength,1/focallength));
     txt = addText(txt,sprintf('Pupil diameter: %0.1f mm\n',thisR.get('pupil diameter','mm')));
 end
 

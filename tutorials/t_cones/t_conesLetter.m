@@ -10,7 +10,7 @@
 % Wandell, 2019
 %
 % See also
-%   sceneCreate('letter', ...), displayCreate, ....
+%   sceneCreate('letter', ...), displayCreate, .... t_cones*, t_cmosaic*
 %
 
 %%
