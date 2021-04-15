@@ -353,7 +353,16 @@ classdef cMosaic < handle
             obj.maxRFpositionMicrons = squeeze(max(obj.coneRFpositionsMicrons,[],1));
             
             % Compute ecc in microns
-            obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
+            if (isempty(obj.minRFpositionMicrons))
+                % No cones, set value differently
+                if (~isempty(obj.micronsPerDegreeApproximation))
+                    obj.eccentricityMicrons = obj.eccentricityDegs * obj.micronsPerDegreeApproximation;
+                else
+                    obj.eccentricityMicrons = obj.eccentricityDegs *  300;
+                end
+            else
+                obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
+            end
             
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
@@ -401,8 +410,17 @@ classdef cMosaic < handle
             
         % MICRONSPERDEGREE
         function val = get.micronsPerDegree(obj)
-            val = (max(obj.coneRFpositionsMicrons,[],1) - min(obj.coneRFpositionsMicrons,[],1)) / ...
-                  (max(obj.coneRFpositionsDegs,[],1)    - min(obj.coneRFpositionsDegs,[],1));
+            if (isempty(obj.coneRFpositionsMicrons))
+                % No cones in the current patch. Select some value
+                if (~isempty(obj.micronsPerDegreeApproximation))
+                    val = obj.micronsPerDegreeApproximation;
+                else
+                    val = 300;
+                end
+            else
+                val = (max(obj.coneRFpositionsMicrons,[],1) - min(obj.coneRFpositionsMicrons,[],1)) / ...
+                      (max(obj.coneRFpositionsDegs,[],1)    - min(obj.coneRFpositionsDegs,[],1));
+            end
         end
         
         % SIZEMICRONS

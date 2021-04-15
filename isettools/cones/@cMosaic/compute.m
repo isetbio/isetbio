@@ -31,6 +31,15 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     p.parse(varargin{:});
     
 
+    if (isempty(obj.minRFpositionMicrons))
+        noiseFreeAbsorptionsCount = [];
+        noisyAbsorptionInstances = []; 
+        photoCurrents = []; 
+        photoCurrentInstances = [];
+        responseTemporalSupport = [];
+        return;
+    end
+     
     % Parse optional inputs
     nTimePoints = p.Results.nTimePoints;
     nTrials = p.Results.nTrials;
@@ -71,6 +80,8 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     spatialSupportYMicrons = spatialSupportYMicrons - mean(spatialSupportYMicrons);
     
     % Translate oi spatial support 
+    opticalImagePositionMicrons
+
     spatialSupportXMicrons = spatialSupportXMicrons + opticalImagePositionMicrons(1);
     spatialSupportYMicrons = spatialSupportYMicrons + opticalImagePositionMicrons(2);
     

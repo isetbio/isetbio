@@ -1,5 +1,6 @@
 function visualize(obj, varargin)
     p = inputParser;
+    p.addParameter('visualizationView', 'REVF', @(x)(ischar(x) && (ismember(x, {'REVF', 'retinal view'}))));
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
@@ -34,6 +35,7 @@ function visualize(obj, varargin)
     p.addParameter('textDisplay', '', @ischar);
     p.parse(varargin{:});
     
+    visualizationView = p.Results.visualizationView;
     domain = p.Results.domain;
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
@@ -241,7 +243,6 @@ function visualize(obj, varargin)
             [densityContourX,densityContourY] = meshgrid(densityContourSpatialSupportX, densityContourSpatialSupportY);
             density2DMap = interpolant(densityContourX,densityContourY);
 
-             
             % Smooth
             kernelSize = 11;
             kernelSigma = 0.33*(kernelSize-1)/2;
