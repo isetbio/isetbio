@@ -390,6 +390,9 @@ classdef cMosaic < handle
         % Method to return indices of cones within an ROI
         coneIndices = indicesOfConesWithinROI(obj, roi);
         
+        % Generate struct representing the optical disk
+        [odStructMicrons, odStructDegs] = odStruct(obj);
+        
         % Getter/Setter methods for dependent variables
         % QE
         function val = get.qe(obj)

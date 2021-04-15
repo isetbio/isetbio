@@ -80,41 +80,38 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     spatialSupportYMicrons = spatialSupportYMicrons - mean(spatialSupportYMicrons);
     
     % Translate oi spatial support 
-    opticalImagePositionMicrons
-
     spatialSupportXMicrons = spatialSupportXMicrons + opticalImagePositionMicrons(1);
     spatialSupportYMicrons = spatialSupportYMicrons + opticalImagePositionMicrons(2);
     
+    % Determine if spatial support needs to be expanded so that the optical image
+    % extends over the entire cone mosaic
     dx = spatialSupportXMicrons(2)-spatialSupportXMicrons(1);
     dy = spatialSupportYMicrons(2)-spatialSupportYMicrons(1);
-    
     minEMpos = squeeze(min(emPathsMicrons,[],1));
     maxEMpos = squeeze(max(emPathsMicrons,[],1));
     
-    % Determine if an extention of spatial support is needed so that the optical image
-    % extends over the entire cone mosaic
-    additionalPixelsXLeft = 0;
     if (obj.minRFpositionMicrons(1)+minEMpos(1) < min(spatialSupportXMicrons))
-        %fprintf(2,'Left side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
         additionalPixelsXLeft = round((min(spatialSupportXMicrons) - (obj.minRFpositionMicrons(1)+minEMpos(1)))/dx);
+    else
+        additionalPixelsXLeft = 0;
     end
     
-    additionalPixelsYBottom = 0;
     if (obj.minRFpositionMicrons(2)+minEMpos(2) < min(spatialSupportYMicrons))
-        %fprintf(2,'Bottom side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
         additionalPixelsYBottom = round((min(spatialSupportYMicrons) - (obj.minRFpositionMicrons(2)+minEMpos(2)))/dy);
+    else
+        additionalPixelsYBottom = 0;
     end
     
-    additionalPixelsXRight = 0;
     if (obj.maxRFpositionMicrons(1)+maxEMpos(1) > max(spatialSupportXMicrons))
-        %fprintf(2,'Right side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
         additionalPixelsXRight = round((obj.maxRFpositionMicrons(1)+maxEMpos(1) - max(spatialSupportXMicrons))/dx);
+    else
+        additionalPixelsXRight = 0;
     end
     
-    additionalPixelsYTop = 0;
     if (obj.maxRFpositionMicrons(2)+maxEMpos(2) > max(spatialSupportYMicrons))
-        %fprintf(2, 'Top side of mosaic extends beyond the optical image. \nExpect artifacts there. Increase optical image size to avoid these.\n');
         additionalPixelsYTop = round((obj.maxRFpositionMicrons(2)+maxEMpos(2) - max(spatialSupportYMicrons))/dy);
+    else
+        additionalPixelsYTop = 0;
     end
     
     % Extend spatial support vectors as needed
@@ -406,6 +403,4 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
         emPathsMicrons = zeros(nTrials,nTimePoints,2);
         emPathsDegs = zeros(nTrials,nTimePoints,2);
     end
-    
-    
 end
