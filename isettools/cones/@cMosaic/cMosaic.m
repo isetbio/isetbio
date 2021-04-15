@@ -45,6 +45,18 @@ classdef cMosaic < handle
         % c = coneMosaicHex(3);
         % c.pigment.pdWidth/c.pigment.width, which gives 0.7899
         coneApertureToDiameterRatio = 0.79;
+        
+        % OD size is from "The Size and Shape of the Optic Disc in Normal Human Eyes"
+        %                  Harry A. Quigley, MD; Andrew E. Brown; John D. Morrison, MD; et al Stephen M. Drance, MD
+        %                  Arch Ophthalmol. 1990;108(1):51-57. doi:10.1001/archopht.1990.01070030057028
+        %
+        % OD location is from "Determination of the Location of the Fovea on the Fundus".
+        %                  Invest. Ophthalmol. Vis. Sci. 2004;45(9):3257-3258. doi: https://doi.org/10.1167/iovs.03-1157.
+        % These are both specified in retinal coordinates
+        opticDisk = struct(...
+            'centerDegs', [15.5, -1.5], ...
+        	'horizontalDiameterMM', 1.77, ...
+        	'verticalDiameterMM', 1.88);
     end
     
     % Public properties
@@ -312,6 +324,9 @@ classdef cMosaic < handle
                     obj.initializeConePositions();
                 end
                 
+                % Remove cones within the optic disk
+                obj.removeConesWithinOpticNerveHead();
+                
                 % Set random seed
                 if (isempty(obj.randomSeed))
                     rng('shuffle');
@@ -363,6 +378,9 @@ classdef cMosaic < handle
         % the computation is done using ecc-dependent blur mode
         scenePixelSizeDegs = suggestedScenePixelSizeDegs(obj, eccVaryingConeBlur);
         
+        % Method to return indices of cones within an ROI
+        coneIndices = indicesOfConesWithinROI(obj, roi);
+        
         % Getter/Setter methods for dependent variables
         % QE
         function val = get.qe(obj)
@@ -403,6 +421,9 @@ classdef cMosaic < handle
         
         % Initialize cone positions by regenerating a new mesh. Can be slow.
         regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile);
+        
+        % Remove cones located within the optic disk
+        removeConesWithinOpticNerveHead(obj);
         
         % Method to partition cones into zones based on cone
         % aperture size and current optical image resolution
