@@ -235,6 +235,15 @@ function val = opticsGet(optics, parm, varargin)
     vcNewGraphWin;
     mesh(otfSupport{1}, otfSupport{2}, fftshift(abs(otf450)))
 %}
+%{
+    % Check that dist per deg computation is correct.
+    oi = oiCreate('human');
+    distPerDeg = oiGet(oi,'optics dist per deg')*10^3; % mm/deg
+    degPerDist = oiGet(oi,'optics deg per dist')*10^-3; % deg/mm
+    % Check these values
+    assert(abs(distPerDeg-0.3)<0.1); % close to 0.3 mm/deg
+    assert(abs(degPerDist-3.3)<0.1); % close to 3.3 deg/mm
+%}
 
 %% Control some printout
 RESPECT_THE_COMMAND_WINDOW = true;
@@ -649,16 +658,16 @@ switch parm
         % the lens.
         %
         % 1 deg of visual angle is
-        %   tan(opp / (1 / D0)) = 1             (deg)
-        %   opp / (1 / D0) = atand(1)           (1 / rad)
-        %   opp = atand(1) * (1 / D0)           (1 / rad * meter)
-        %   1 / opp = 1 / (atand(1) * (1 / D0)) (rad / meter)
+        %   atan(opp / (1 / D0)) = 1             (deg)
+        %   opp / (1 / D0) = tand(1)           (1 / rad)
+        %   opp = tand(1) * (1 / D0)           (1 / rad * meter)
+        %   1 / opp = 1 / (tand(1) * (1 / D0)) (rad / meter)
         %
         % The conversion: (cycles / rad) * (rad / meter) = cycles / meter
         units = 'm';
         if ~isempty(varargin), units = varargin{1}; end
         D0 = opticsGet(optics, 'power', units);
-        val = 1 /(1 / D0 * atand(1));
+        val = 1 /(1 / D0 * tand(1));
 
     case {'distperdeg', 'distanceperdegree'}
         units = 'm';
