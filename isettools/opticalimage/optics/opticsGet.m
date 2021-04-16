@@ -235,6 +235,15 @@ function val = opticsGet(optics, parm, varargin)
     vcNewGraphWin;
     mesh(otfSupport{1}, otfSupport{2}, fftshift(abs(otf450)))
 %}
+%{
+    % Check that dist per deg computation is correct.
+    oi = oiCreate('human');
+    distPerDeg = oiGet(oi,'optics dist per deg')*10^3; % mm/deg
+    degPerDist = oiGet(oi,'optics deg per dist')*10^-3; % deg/mm
+    % Check these values
+    assert(abs(distPerDeg-0.3)<0.1); % close to 0.3 mm/deg
+    assert(abs(degPerDist-3.3)<0.1); % close to 3.3 deg/mm
+%}
 
 %% Control some printout
 RESPECT_THE_COMMAND_WINDOW = true;
