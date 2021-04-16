@@ -2,7 +2,7 @@ The Image System Engineering Toolbox for Biology - ISETBIO - is a Matlab toolbox
 
 This repository includes a [WIKI](https://github.com/isetbio/isetbio/wiki) that describes the software as well as many examples of how to perform computations to calculate the visual encoding of light in the eye.  The [WIKI](https://github.com/isetbio/isetbio/wiki) also describes tools to view and and analyze the information contained the information at different neural stages.  Finally, we describe the methods we use to validate and test our code. 
 
-### History
+### History 
 
 The ISETBIO code includes a portion of Image Systems Engineering Toolbox (ISET) that is sold by [Imageval Consulting, LLC](http://www.imageval.com).  That code is designed to help industrial partners design novel image sensors. The ISETBIO portion of the ISET code is freely distributed for use in modeling image formation in biological systems. 
 
