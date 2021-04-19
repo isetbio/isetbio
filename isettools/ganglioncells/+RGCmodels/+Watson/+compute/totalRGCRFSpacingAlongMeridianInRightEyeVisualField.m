@@ -7,7 +7,7 @@ function [rgcSpacingDegs, rgcSpacingMMs, rgcDensityDegs2, rgcDensityMMs2] = tota
     % Compute peak cone density in Degs2 and MMs2
     [~,~, coneDensityDegs2Peak, coneDensityMMs2Peak] = ...
         RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(...
-        0.0,rightEyeVisualFieldMeridianName);
+        0.0,rightEyeVisualFieldMeridianName, false);
 
     % The foveal density of midget RGC RFs is twice the cone density
     % because in the fovea each cone connects to exactly 2 midget RGCs (one

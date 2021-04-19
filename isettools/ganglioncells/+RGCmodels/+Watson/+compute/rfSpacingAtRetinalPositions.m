@@ -33,10 +33,10 @@ function [rfSpacingDegs, rfSpacingMMs, rfDensityDegs2, rfDensityMMs2] = ...
                     RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName, useParfor);
             case 'all ganglion cells'
                 [~,~, ~,meridianDensitiesMMs2(meridianIndex,:)] = ...
-                    RGCmodels.Watson.compute.totalRGCRFSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName, useParfor);
+                    RGCmodels.Watson.compute.totalRGCRFSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName);
             case 'midget ganglion cells'
                 [~,~, ~,meridianDensitiesMMs2(meridianIndex,:)] = ...
-                    RGCmodels.Watson.compute.midgetRGCRFSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName, userParfor);
+                    RGCmodels.Watson.compute.midgetRGCRFSpacingAlongMeridianInRightEyeVisualField(eccRadiiDegs, rightEyeVisualFieldMeridianName);
             otherwise
                 error('Unknown neuronType: ''%s''.', neuronType);
         end

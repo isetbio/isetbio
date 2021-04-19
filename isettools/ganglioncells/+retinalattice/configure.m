@@ -69,9 +69,9 @@ function p = configure(fovDegs, neuronType, whichEye)
 end
 
 
-function [rfSpacingMicrons, eccentricitiesMicrons] = midgetRGCSpacingFunction(rfPosMicrons, whichEye)
+function [rfSpacingMicrons, eccentricitiesMicrons] = midgetRGCSpacingFunction(rfPosMicrons, whichEye, useParfor)
     [~, rfSpacingMMs] = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(...
-        whichEye, rfPosMicrons, 'midget ganglion cells');
+        whichEye, rfPosMicrons, 'midget ganglion cells', useParfor);
     
     rfSpacingMicrons = 1e3 * rfSpacingMMs(:); 
     eccentricitiesMicrons = sqrt(sum(rfPosMicrons .^ 2, 2));
