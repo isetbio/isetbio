@@ -123,10 +123,10 @@ classdef cMosaic < handle
     
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
-        % [n x 2] matrix of RGC positions, in microns
+        % [n x 2] matrix of cone positions, in microns
         coneRFpositionsMicrons;
         
-        % [n x 2] matrix of RGC positions, in degrees
+        % [n x 2] matrix of cone positions, in degrees
         coneRFpositionsDegs;
         
         % [n x 1] vector of cone spacings, in degrees
@@ -158,7 +158,6 @@ classdef cMosaic < handle
         
         % Either 'right eye' or 'left eye'
         whichEye;
-        
         
         % Fixational eye movement object for the mosaic
         fixEMobj = [];
@@ -204,7 +203,7 @@ classdef cMosaic < handle
     properties (GetAccess=private, SetAccess=private)
         % Size (in degs) of source lattice from which to crop positions for
         % the desired eccentricity
-        sourceLatticeSizeDegs = 58; %45;
+        sourceLatticeSizeDegs = 58;
         
         % Struct containing information related to the current cone partition
         % into zones based on their aperture size
@@ -246,11 +245,11 @@ classdef cMosaic < handle
             p.addParameter('coneData', [], @(x)(isempty(x) || (isstruct(x))));
             p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('computeMeshFromScratch', false, @islogical);
             p.addParameter('visualizeMeshConvergence', false, @islogical);
             p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
             p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
-            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
             p.addParameter('eccVaryingConeAperture', true, @islogical);
             p.addParameter('eccVaryingConeBlur', false, @islogical);
@@ -263,7 +262,6 @@ classdef cMosaic < handle
             p.addParameter('randomSeed', [], @isscalar);
             p.addParameter('integrationTime', 5/1000, @isscalar);
             p.addParameter('useParfor', true, @islogical);
-            
             p.parse(varargin{:});
             
             obj.name = p.Results.name;
@@ -316,10 +314,10 @@ classdef cMosaic < handle
             if (isempty(p.Results.coneData))
                 if (p.Results.computeMeshFromScratch)
                     % Re-generate lattice
-                    visualizeMeshConvergence = p.Results.visualizeMeshConvergence; 
-                    exportMeshConvergenceHistoryToFile = p.Results.exportMeshConvergenceHistoryToFile;
-                    obj.regenerateConePositions(p.Results.maxMeshIterations,  ...
-                        visualizeMeshConvergence, exportMeshConvergenceHistoryToFile);
+                    obj.regenerateConePositions(...
+                        p.Results.maxMeshIterations,  ...
+                        p.Results.visualizeMeshConvergence, ...
+                        p.Results.exportMeshConvergenceHistoryToFile);
                 else
                     % Import positions by cropping a large pre-computed patch
                     obj.initializeConePositions();
@@ -437,7 +435,6 @@ classdef cMosaic < handle
     
     
     methods (Access=private)
-        
         % Initialize cone positions by importing them from a large previously-computed mesh
         initializeConePositions(obj);
         
@@ -482,9 +479,19 @@ classdef cMosaic < handle
     methods (Static)
         % Static method to generate cone aprture blur kernel
         apertureKernel = generateApertureKernel(coneApertureDiameterMicrons, oiResMicrons);
+        
         % Static method to generate noisy absorption response instances
         % from the mean absorption responses
         noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin);
+        
+        % Static method to validate an ROI struct
+        validateROI(roi);
+    
+        % Static method to generate an ROI outline from an ROIstruct
+        roiOutline = generateOutline(roi);
+    
+        % Static method to convert an ROIoutline in degs to an ROIoutline in microns
+        roiOutlineMicrons = convertOutlineToMicrons(roiOutlineDegs,micronsPerDegreeApproximation)
     end
 end
 
