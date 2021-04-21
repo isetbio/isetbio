@@ -1,228 +1,170 @@
-classdef mRGCmosaic < handle
-% Create a midget RGC mosaic connected to a cone mosaic
+classdef mRGCMosaic < handle
+% Create a midget RGC mosaic connected to a @cMosaic
 
-    properties (Constant)
-        LCONE_ID = 2;
-        MCONE_ID = 3;
-        SCONE_ID = 4;
-    end
-    
     % Public properties
-    properties
-        % 'noiseFlag'     - String. Default 'random'. Add Gaussian noise
-        %                 (default) or not. Valid values are {'random', 'frozen', 'none'}.
-        noiseFlag = 'random';
+    properties  (GetAccess=public, SetAccess=public)
+        % Name of the mosaic
+        name;
         
-        % 'noiseFactor'   - Float. Default 0.2. Sigma of Gaussian noise = noiseFactor * max(noiseFreeResponse)
-        noiseFactor = 0.2;
+        % Poisson noise flag for cone excitations 
+        noiseFlag;
+        
+        % Random seed
+        randomSeed;
     end
     
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
-        
-        % The eccentricity of the mosaic, in degrees
-        eccentricityDegs;
-        
-        % The size of the mosaic, in degrees
-        sizeDegs;
-        
-        % Eye, left or right
-        whichEye;
-        
-        % The input cone mosaic
-        inputConeMosaic;
-        
-        % Sparse matrix [nCones x mRGC] storing the exclusive connections
-        % between the n-th cone to m-th RGC center subregion 
-        % (1==connected, 0==disconencted)
-        coneConnectivityMatrix;
-        
-        % Struct containing sparse matrices with weights of cone connections
-        % to the RGC center & surround subregions
-        coneWeights;
-        
-        % [m x 2] matrix of RGC positions, in microns
+        % [n x 2] matrix of RGC positions, in microns
         rgcRFpositionsMicrons;
         
-        % [m x 2] matrix of RGC positions, in degrees
+        % [n x 2] matrix of RGC positions, in degrees
         rgcRFpositionsDegs;
+        
+        % [n x 1] vector of RGC spacings, in degrees
+        rgcRFspacingsDegs;
+        
+        % [n x 1] vector of rRGC spacings, in microns
+        rgcRFspacingsMicrons;
+        
+        % Eccentricity [x,y] of the center of the RGC mosaic (degs)
+        eccentricityDegs;
+        
+        % Eccentricity [x,y] of the center of the RGC mosaic (microns)
+        eccentricityMicrons; 
+        
+        % Size of the RGC mosaic [width, height]
+        sizeDegs;
+        
+        % Either 'right eye' or 'left eye'
+        whichEye;
+        
+        % Generated input cone mosaic
+        inputConeMosaic;
+        
+        % Passed from input cone mosaic
+        micronsPerDegreeApproximation;
     end
     
     % Private properties
     properties (GetAccess=private, SetAccess=private)
-        % The metadata of the input cone mosaic (used for connecting cones 
-        % to the subregions of the mRGC cell receptive fields.
-        inputConeMosaicMetaData;
-        
         % Size (in degs) of source lattice from which to crop positions for
         % the desired eccentricity
-        sourceLatticeSizeDegs = 45;
+        sourceLatticeSizeDegs = 58;
         
-        % [m x 1] matrix of local spacing for each RGC, in microns
-        rgcRFspacingsMicrons;
+        % Whether to use parfor in computations
+        useParfor = true;
         
-        % [m x 1] matrix of local spacing for each RGC, in degs
-        rgcRFspacingsDegs;
-        
-        % Synthesized RGC RF params
-        synthesizedRFparams;
-        
-        % Imported cone and mRGC positions
-        importedData;
+        % Min and max cone positions
+        minRFpositionMicrons;
+        maxRFpositionMicrons;
     end
     
     % Public methods
     methods
         % Constructor
-        function obj = mRGCmosaic(eccentricityDegs, sizeDegs, whichEye, varargin)
-            
+        function obj = mRGCMosaic(varargin)
+            % Parse input
             p = inputParser;
-            p.addRequired('eccentricityDegs', @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addRequired('sizeDegs', @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addRequired('whichEye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
-            p.addParameter('viewTesselationMaps', false, @islogical);
-            p.addParameter('coneSpecificityLevel', 100, @(x)(isscalar(x) && (x>=0) && (x<=100)));
+            p.addParameter('name', 'mRGC mosaic', @ischar);
+            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
+            p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('computeMeshFromScratch', false, @islogical);
+            p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
+            p.addParameter('visualizeMeshConvergence', false, @islogical);
+            p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
+            p.addParameter('inputConeMosaic', [], @(x)(isempty(x) || isa(x, 'cMosaic')));
+            p.addParameter('noiseFlag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
+            p.addParameter('randomSeed', [], @isscalar);
+            p.parse(varargin{:});
             
-            % Allow unmatched key-value pairs. These are to be used by
-            % cone mosaic.
-            p.KeepUnmatched = true;
-            p.parse(eccentricityDegs, sizeDegs, whichEye, varargin{:});
-    
-            % Make sure any unmatched key-value pairs are valid
-            unmatchedParameterNames = fieldnames(p.Unmatched);
-            validUnmatchedParameterNames = {...
-                'coneMosaicResamplingFactor' ...
-                'coneMosaicSpatialDensity' ...
-                'coneMosaicIntegrationTime' };
+            obj.name = p.Results.name;
+            obj.eccentricityDegs = p.Results.eccentricityDegs;
+            obj.sizeDegs = p.Results.sizeDegs;
+            obj.whichEye = p.Results.whichEye;
             
-            for iUnmatched = 1:numel(unmatchedParameterNames)
-                assert(ismember(unmatchedParameterNames{iUnmatched}, validUnmatchedParameterNames), ...
-                    sprintf('mRGCmosaic instantion: Parameter ''%s'' is unexpected.', unmatchedParameterNames{iUnmatched}));
+            obj.noiseFlag = p.Results.noiseFlag;
+            obj.randomSeed = p.Results.randomSeed;
+            
+            % Set the inputConeMosaic
+            if (isempty(p.Results.inputConeMosaic))
+                % Generate input cone mosaic (make a bit larger so we have
+                % enough cones for the surrounds of the most eccentric RGCs)
+                maxEccentricityDegs = sqrt(sum((obj.eccentricityDegs + 0.5*obj.sizeDegs).^2,2));
+                extraDegsForRGCSurround = 2.0 * RGCmodels.CronerKaplan.constants.surroundCharacteristicRadiusFromFitToPandMcells(maxEccentricityDegs);
+
+                obj.inputConeMosaic = cMosaic(...
+                    'sizeDegs', obj.sizeDegs + 2* extraDegsForRGCSurround, ...
+                    'eccentricityDegs', obj.eccentricityDegs, ...
+                    'whichEye', obj.whichEye);
+            else
+                obj.inputConeMosaic = p.Results.inputConeMosaic;
+            end
+            % Set the microns per deg approximation
+            obj.micronsPerDegreeApproximation = obj.inputConeMosaic.micronsPerDegreeApproximation;
+            
+            
+            if (p.Results.computeMeshFromScratch)
+                % Re-generate lattice
+                obj.regenerateRFPositions(...
+                        p.Results.maxMeshIterations,  ...
+                        p.Results.visualizeMeshConvergence, ...
+                        p.Results.exportMeshConvergenceHistoryToFile);
+            else
+                % Import positions by cropping a large pre-computed patch
+                obj.initializeRFPositions();
             end
             
-            % Set properties
-            viewTesselationMaps = p.Results.viewTesselationMaps;
-            coneSpecificityLevel = p.Results.coneSpecificityLevel;
-            
-            obj.eccentricityDegs = eccentricityDegs;
-            obj.sizeDegs = sizeDegs;
-            obj.whichEye = whichEye;
-            
-            fprintf('Generating input cone mosaic. Please wait ...\n');
+            % Remove RFs within the optic disk
+            obj.removeRFsWithinOpticNerveHead();
                 
-            % Import cone and mRGC RF positions by cropping large
-            % eccentricity-varying cone and mRGC lattices
-            [obj.importedData.coneRFpositionsMicrons, ...
-             obj.importedData.coneRFpositionsDegs, ...
-             obj.importedData.rgcRFpositionsMicrons, ...
-             obj.importedData.rgcRFpositionsDegs, ...
-             extraDegsForRGCSurround] =  mRGCmosaic.importConeAndRGCpositions(...
-                        obj.sourceLatticeSizeDegs, ...
-                        eccentricityDegs, ...
-                        sizeDegs, ...
-                        whichEye);
+            % Set random seed
+            if (isempty(obj.randomSeed))
+               rng('shuffle');
+            else
+               rng(obj.randomSeed);
+            end
 
-            % Generate a regular hex mosaic to serve as the
-            % input cone mosaic with a custom mean cone spacing 
-            % (equal to the median spacing within the imported
-            % coneRFpositionsMicrons) and custom optical density and
-            % macular pigment appropriate for the eccentricityDegs
-            generationMode = 'equivalent regular hex';
-            [obj.inputConeMosaic, ...
-             obj.inputConeMosaicMetaData] = mRGCmosaic.generateInputConeMosaic(...
-                        generationMode, ...
-                        eccentricityDegs, ...
-                        sizeDegs, ...
-                        extraDegsForRGCSurround, ...
-                        obj.importedData.coneRFpositionsMicrons, ...
-                        varargin{:});
+            % Compute min and max cone position
+            obj.minRFpositionMicrons = squeeze(min(obj.rgcRFpositionsMicrons,[],1));
+            obj.maxRFpositionMicrons = squeeze(max(obj.rgcRFpositionsMicrons,[],1));
             
-            % Wire cones to RGC centers, computing the cone-to-RGC-center
-            % connectivity matrix, and the resulting RGC RF positions and
-            % spacings
-            [obj.coneConnectivityMatrix, ...
-             obj.rgcRFpositionsDegs, obj.rgcRFpositionsMicrons, ...
-             obj.rgcRFspacingsDegs, obj.rgcRFspacingsMicrons] = mRGCmosaic.wireInputConeMosaicToRGCcenters(...
-                obj.importedData.rgcRFpositionsDegs, obj.importedData.rgcRFpositionsMicrons,  ...
-                obj.inputConeMosaicMetaData.conePositionsDegs, ...
-                obj.inputConeMosaicMetaData.conePositionsMicrons, ...
-                obj.inputConeMosaicMetaData.coneSpacingsMicrons, ...
-                obj.inputConeMosaicMetaData.coneTypes, ...
-                obj.inputConeMosaicMetaData.indicesOfConesNotConnectingToRGCcenters, ...
-                coneSpecificityLevel, viewTesselationMaps);
+            % Compute ecc in microns
+            if (isempty(obj.minRFpositionMicrons))
+                % No rgcs, set value differently
+                if (~isempty(obj.micronsPerDegreeApproximation))
+                    obj.eccentricityMicrons = obj.eccentricityDegs * obj.micronsPerDegreeApproximation;
+                else
+                    obj.eccentricityMicrons = obj.eccentricityDegs *  300;
+                end
+            else
+                obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
+            end
             
-            % Compute weights of connections between cones and RGC
-            % center/surround subregions, and update tge RGC RF positions
-            % based on the connectivity
-            [obj.coneWeights, obj.rgcRFpositionsDegs, obj.synthesizedRFparams] = mRGCmosaic.computeConeWeights(...
-                obj.inputConeMosaicMetaData.conePositionsDegs, ...
-                obj.inputConeMosaicMetaData.coneTypes, ...
-                obj.coneConnectivityMatrix);
             
-            % Update RGCRF positions and spacings
-            obj.rgcRFpositionsMicrons = 1e3*RGCmodels.Watson.convert.rhoDegsToMMs(obj.rgcRFpositionsDegs);
-            obj.rgcRFspacingsDegs = RGCmodels.Watson.convert.positionsToSpacings(obj.rgcRFpositionsDegs);
-            obj.rgcRFspacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(obj.rgcRFpositionsMicrons);
+            % Wire mRGCs RF centers to cones of the input cone mosaic
+            obj.wireRFcentersToInputCones();
+            
         end
         
-        % Method to compute the response of the RGC mosaic for the passed cone mosaic response
-        [mRGCresponses, temporalSupportSeconds] = compute(obj, coneMosaicResponses, timeAxis, varargin);
-        
-        % Visualize mRGC positions together with imported ecc-varying cone positions
-        % and together with cone positions in the equivalent employed reg-hex mosaic
-        visualizeInputPositions(obj);
-        
-        % Method to visualize the tesselation of the input cone mosaic by
-        % the RF centers of the RGC mosaic
-        visualizeConeMosaicTesselation(obj, domain);
-        
-        % Method to visualize the synthesized RF params, retinal and visual
-        visualizeSynthesizedParams(obj);
-        
-        % Method to visualize the cone weights to each RGC
-        visualizeConeWeights(obj);
-        
-        % Method to visualize the mosaic activation
-        visualizeActivationMap(obj, axesHandle, activation, varargin);
-        
-        % Method to visualize mRGC mosaic responses
-        visualizeResponses(obj, temporalSupportSeconds, mRGCMosaicResponse, varargin);
-        
-        % Method to visualize mRGC responses in a matrix matching the RGC positions
-        visualizeResponseMatrix(obj, independentVariable, responseMatrix, varargin);
-        
-        visualizeCorrespondenceBetweenMappedAndSynthesizedModelParams(obj, visuallyMappedModelParams);
-        
-        % Method to generate axes positions for visualizing mRGC responses in a matrix matching the RGC positions 
-        axPos = axesMatrixPosition(obj);
+        % Method to return indices of RFs within an ROI
+        rfIndices = indicesOfRFsWithinROI(obj, roi);
     end
     
-    % Static methods
-    methods (Static)
-        % Static method to import cone and mRGC positions from pre-computed
-        % lattices that have the desired size and are centered at the desired eccentricity in the desired eye
-        [coneRFpositionsMicrons, coneRFpositionsDegs, ...
-         rgcRFpositionsMicrons,  rgcRFpositionsDegs, extraDegsForRGCSurround] = ...
-            importConeAndRGCpositions(sourceLatticeSizeDegs, eccentricityDegs, sizeDegs, whichEye);
+    methods (Access=private)
+        % Initialize RF positions by importing them from a large previously-computed mesh
+        initializeRFPositions(obj);
         
-        % Static method to generate a cone mosaic from the imported cone positions
-        [theConeMosaic, theConeMosaicMetaData] = ...
-            generateInputConeMosaic(generationMode, eccentricityDegs, sizeDegs, ...
-            extraDegsForRGCSurround, coneRFpositionsMicrons, varargin); 
+        % Initialize RF positions by regenerating a new mesh. Can be slow.
+        regenerateRFPositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile);
         
-        % Static method to wire cones to the RGC RF centers
-        [connectivityMatrix, rgcRFpositionsDegs, rgcRFpositionsMicrons, rgcRFspacingsDegs, rgcRFspacingsMicrons] = ...
-            wireInputConeMosaicToRGCcenters(rgcRFpositionsDegs, rgcRFpositionsMicrons, ...
-            conePositionsDegs, conePositionsMicrons, coneSpacingsMicrons, coneTypes, ...
-            indicesOfConesNotConnectingToRGCcenters, coneSpecificityLevel, viewTesselationMaps);
+        % Remove RFs located within the optic disk
+        removeRFsWithinOpticNerveHead(obj);
         
-        % Static method to compute weights of connections b/n cones and
-        % center-surround RF subregions. Also update RGC RF positions
-        [coneWeights, rgcPositionsDegsFromConnectivity, synthesizedRFparams] = computeConeWeights(conePositionsDegs, ...
-            coneTypes, connectivityMatrix, eccentricityDegs, sizeDegs);
-    
-        % Static method to render the map of how RGC centers tesellate cones
-        renderTesselationMap(figNo, axesHandle, coneRFpositions, coneRFspacings, coneTypes, rgcRFpositions, rgcRFspacings, coneConnectivityMatrix, domain);
+        % Wire RF centers to cones of the input cone mosaic
+        wireRFcentersToInputCones(obj);
     end
+    
 end
 
