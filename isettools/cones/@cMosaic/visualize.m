@@ -5,6 +5,7 @@ function visualize(obj, varargin)
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
+    p.addParameter('visualizeConeApertureThetaSamples', [], @isscalar);
     p.addParameter('densityContourOverlay', false, @islogical);
     p.addParameter('densityContourLevels', [], @isnumeric);
     p.addParameter('densityContourLevelLabelsDisplay', false, @islogical);
@@ -40,6 +41,7 @@ function visualize(obj, varargin)
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     visualizedConeAperture = p.Results.visualizedConeAperture;
+    visualizeConeApertureThetaSamples = p.Results.visualizeConeApertureThetaSamples;
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
     densityContourOverlay = p.Results.densityContourOverlay;
@@ -172,21 +174,25 @@ function visualize(obj, varargin)
     % Number of cones
     conesNum = numel(rfSpacings);
     
-    % Aperture shape (disk)
-    if (conesNum > 10000)
-        deltaAngle = 60;
-    elseif (conesNum > 5000)
-        deltaAngle = 45;
-    elseif (conesNum > 1000)
-       deltaAngle = 30;
-    elseif (conesNum > 500)
-        deltaAngle = 20;
-    elseif (conesNum > 250)
-        deltaAngle = 15;
-    elseif (conesNum > 100)
-        deltaAngle = 10;
+     % Aperture shape (disk)
+    if (isempty(visualizeConeApertureThetaSamples))
+        if (conesNum > 10000)
+            deltaAngle = 60;
+        elseif (conesNum > 5000)
+            deltaAngle = 45;
+        elseif (conesNum > 1000)
+           deltaAngle = 30;
+        elseif (conesNum > 500)
+            deltaAngle = 20;
+        elseif (conesNum > 250)
+            deltaAngle = 15;
+        elseif (conesNum > 100)
+            deltaAngle = 10;
+        else
+            deltaAngle = 5;
+        end
     else
-        deltaAngle = 5;
+        deltaAngle = 360/visualizeConeApertureThetaSamples;
     end
     iTheta = (0:deltaAngle:360) / 180 * pi;
     coneApertureShape.x = cos(iTheta);

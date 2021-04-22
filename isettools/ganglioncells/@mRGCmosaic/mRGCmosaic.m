@@ -148,6 +148,9 @@ classdef mRGCMosaic < handle
             
         end
         
+        % Method to visualize the mRGCmosaic
+        visualize(obj, varargin);
+        
         % Method to return indices of RFs within an ROI
         rfIndices = indicesOfRFsWithinROI(obj, roi);
     end

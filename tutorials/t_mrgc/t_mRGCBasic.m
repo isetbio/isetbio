@@ -19,9 +19,13 @@ close all;
 
 %% Generate the mosaic
 onMRGCmosaic = mRGCMosaic(...
-    'whichEye', 'right eye', ...
-    'sizeDegs', [1.0 1.5], ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
+    'whichEye', 'left eye', ...
+    'sizeDegs', [.5 .5], ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
     'eccentricityDegs', [0 0] ...  % ECC: (0,0)
     );
 
-onMRGCmosaic.inputConeMosaic.visualize()
+xyLims = [-1 1 -1 1];
+onMRGCmosaic.visualize(...
+    'domainVisualizationLimits', xyLims, ...
+    'covisualizeInputConeMosaic', true);
+
