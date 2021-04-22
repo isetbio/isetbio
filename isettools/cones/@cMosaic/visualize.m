@@ -230,31 +230,19 @@ function visualize(obj, varargin)
             rfPositions(obj.kConeIndices,:), 4/4*0.9, 'none', 1.0, faceAlpha);
             
         if (densityContourOverlay)
+            % Compute dense 2D map
+            sampledPositions{1} = linspace(xRange(1), xRange(2), 16);
+            sampledPositions{2} = linspace(yRange(1), yRange(2), 16);
+            
             % Convert spacing to density
             if (strcmp(domain, 'microns'))
                 % Convert to mm, so we report density in cones / mm^2
-                rfDensities = RGCmodels.Watson.convert.spacingToDensityForHexGrid(rfSpacings/1e3);
+                density2DMap = cMosaic.densityMap(rfPositions, rfSpacings/1e3, sampledPositions);
             else
-                rfDensities = RGCmodels.Watson.convert.spacingToDensityForHexGrid(rfSpacings);
+                density2DMap = cMosaic.densityMap(rfPositions, rfSpacings, sampledPositions);
             end
 
-            % Generate scattered interpolant
-            interpolant = scatteredInterpolant(rfPositions(:,1), rfPositions(:,2), rfDensities(:));
-            interpolant.Method = 'linear';
-            interpolant.ExtrapolationMethod = 'none';
-
-            % Compute dense 2D map
-            densityContourSpatialSupportX = linspace(xRange(1), xRange(2), 128);
-            densityContourSpatialSupportY = linspace(yRange(1), yRange(2), 128);
-            [densityContourX,densityContourY] = meshgrid(densityContourSpatialSupportX, densityContourSpatialSupportY);
-            density2DMap = interpolant(densityContourX,densityContourY);
-
-            % Smooth
-            kernelSize = 11;
-            kernelSigma = 0.33*(kernelSize-1)/2;
-            smoothingKernel = fspecial('gaussian', kernelSize, kernelSigma);
-            density2DMap = conv2(density2DMap, smoothingKernel, 'same');
-            density2DMap = density2DMap / max(density2DMap(:)) * max(rfDensities(:));
+            [densityContourX,densityContourY] = meshgrid(sampledPositions{1}, sampledPositions{2});
             
             % Render contour map
             if (isempty(densityContourLevels))

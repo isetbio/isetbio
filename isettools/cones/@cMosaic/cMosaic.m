@@ -491,7 +491,10 @@ classdef cMosaic < handle
         roiOutline = generateOutline(roi);
     
         % Static method to convert an ROIoutline in degs to an ROIoutline in microns
-        roiOutlineMicrons = convertOutlineToMicrons(roiOutlineDegs,micronsPerDegreeApproximation)
+        roiOutlineMicrons = convertOutlineToMicrons(roiOutlineDegs,micronsPerDegreeApproximation);
+        
+        % Compute a 2D cone density map
+        coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);
     end
 end
 
