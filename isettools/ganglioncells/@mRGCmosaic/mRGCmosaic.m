@@ -153,6 +153,9 @@ classdef mRGCMosaic < handle
         
         % Method to return indices of RFs within an ROI
         rfIndices = indicesOfRFsWithinROI(obj, roi);
+        
+        % Method to return the cone-to-RGC density ratio for all RGCs
+        densityRatios = coneToRGCDensityRatios(obj);
     end
     
     methods (Access=private)
@@ -165,8 +168,12 @@ classdef mRGCMosaic < handle
         % Remove RFs located within the optic disk
         removeRFsWithinOpticNerveHead(obj);
         
-        % Wire RF centers to cones of the input cone mosaic
+        % Method to wire RF centers to cones of the input cone mosaic
         wireRFcentersToInputCones(obj);
+        
+        % Method to align RGC RFs to cones in the central retina.
+        % Called by obj.wireRFcenterToInputCones()
+        alignRGCs(obj, coneRFpositionsMicrons, coneRFpositionsDegs, visualizeAlignment)
     end
     
 end

@@ -20,10 +20,53 @@ close all;
 %% Generate the mosaic
 onMRGCmosaic = mRGCMosaic(...
     'whichEye', 'left eye', ...
-    'sizeDegs', [.5 .5], ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
-    'eccentricityDegs', [0 0] ...  % ECC: (0,0)
+    'sizeDegs', 0.5*[1 1], ...     
+    'eccentricityDegs', [0.0 0] ...
     );
 
+pause
+
+rfPos = onMRGCmosaic.inputConeMosaic.coneRFpositionsDegs;
+rfSpacings = onMRGCmosaic.inputConeMosaic.coneRFspacingsDegs;
+sampledPositions{1} = -5:0.2:5;
+sampledPositions{2} = -5:0.2:5;
+densityMapCones = cMosaic.densityMap(rfPos, rfSpacings, sampledPositions);
+
+
+rfPos = onMRGCmosaic.rgcRFpositionsDegs;
+rfSpacings = onMRGCmosaic.rgcRFspacingsDegs;
+densityMapRGCs = cMosaic.densityMap(rfPos, rfSpacings, sampledPositions);
+
+
+figure(10);
+subplot(1,3,1);
+contourLabelSpacing = 4000;
+densityContourLevels = 10;
+[cH, hH] = contour(sampledPositions{1} , sampledPositions{2} , ...
+                densityMapCones, densityContourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
+                'ShowText', 'on', 'LabelSpacing', contourLabelSpacing);
+clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
+                'Color', [0 0 0], 'BackgroundColor', 'none');
+axis 'equal'      
+            
+subplot(1,3,2);
+
+[cH, hH] = contour(sampledPositions{1} , sampledPositions{2} , ...
+                densityMapRGCs, densityContourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
+                'ShowText', 'on', 'LabelSpacing', contourLabelSpacing);
+clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
+                'Color', [0 0 0], 'BackgroundColor', 'none');
+axis 'equal'            
+
+subplot(1,3,3);
+densityContourLevels = 0.5:0.1:1.0;
+[cH, hH] = contour(sampledPositions{1} , sampledPositions{2} , ...
+                densityMapCones./densityMapRGCs, densityContourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
+                'ShowText', 'on', 'LabelSpacing', contourLabelSpacing);
+clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
+                'Color', [0 0 0], 'BackgroundColor', 'none');
+axis 'equal'                  
+pause
 xyLims = [-1 1 -1 1];
 onMRGCmosaic.visualize(...
     'domainVisualizationLimits', xyLims, ...

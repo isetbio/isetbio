@@ -13,6 +13,7 @@ function visualize(obj, varargin)
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('backgroundColor', [0.7 0.7 0.7]);
+    p.addParameter('plotTitle', '', @ischar);
     p.parse(varargin{:});
     
     domain = p.Results.domain;
@@ -28,6 +29,7 @@ function visualize(obj, varargin)
     axesHandle = p.Results.axesHandle;
     fontSize = p.Results.fontSize;
     backgroundColor = p.Results.backgroundColor;
+    plotTitle = p.Results.plotTitle;
     
     % Determine displayed domain (degs or microns)
     switch (domain)
@@ -242,6 +244,10 @@ function visualize(obj, varargin)
             end
             set(axesHandle, 'XTickLabel', sprintf('%d\n', domainVisualizationTicks.x), ...
                             'YTickLabel', sprintf('%d\n', domainVisualizationTicks.y));
+    end
+    
+    if (~isempty(plotTitle))
+        title(axesHandle,plotTitle);
     end
     
 end
