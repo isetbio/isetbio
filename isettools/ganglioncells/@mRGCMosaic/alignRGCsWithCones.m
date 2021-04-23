@@ -1,6 +1,6 @@
 % Method to align RGC RFs to cones in the central retina.
 % Called by obj.wireRFcenterToInputCones()
-function alignRGCs(obj, coneRFpositionsMicrons, coneRFpositionsDegs, visualizeAlignment)
+function alignRGCsWithCones(obj, coneRFpositionsMicrons, coneRFpositionsDegs, visualizeAlignment)
 
     if (visualizeAlignment)
         % Plot the mosaic before alignment

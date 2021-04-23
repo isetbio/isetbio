@@ -1,18 +1,20 @@
-function wireRFcentersToInputCones(obj)
+function wireRFcentersToInputCones(obj, visualizeAlignment, visualizeConnection)
 
-
-    % Exclude cones outside the FOV of the RGC mosaic
-    [coneRFpositionsDegs, coneRFpositionsMicrons, ...
-     coneRFspacingsDegs, coneRFspacingsMicrons] = conesWithinTheRGCmosaic(obj);
+    % Extract positions and spacings of cones lying within the FOV of the RGC mosaic
+    % There are cones located outside the FOV of the RGC mosaic which feed to
+    % the surrounds of the peripheral RGCs
+    [coneRFPositionsDegs, coneRFPositionsMicrons, ...
+     coneRFSpacingsDegs, coneRFSpacingsMicrons] = conesWithinTheRGCmosaic(obj);
  
     
     % Step1. Align each RGC with its nearest cone. 
     % Alignment occurs only for RGCs for which the cone-to-RGC ratio < 2. 
     % This ensures that all RGC's in central retina are connected to at least one cone. 
     % Since cones are more numerous than RGCs, some cones will not connect to an RGC at this step. 
-    visualizeAlignment = true;
-    alignRGCs(obj, coneRFpositionsMicrons, coneRFpositionsDegs, visualizeAlignment);
+    obj.alignRGCsWithCones(coneRFPositionsMicrons, coneRFPositionsDegs, visualizeAlignment);
 
+    % Step 2. Connect L and M cones to RGC centers
+    obj.connectConesToRGCcenters(coneRFPositionsMicrons, coneRFPositionsDegs, coneRFSpacingsMicrons, visualizeConnection);
     
 end
 

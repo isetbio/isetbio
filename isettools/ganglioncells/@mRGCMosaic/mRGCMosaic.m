@@ -58,6 +58,13 @@ classdef mRGCMosaic < handle
         % Min and max cone positions
         minRFpositionMicrons;
         maxRFpositionMicrons;
+        
+        % Sparse [conesNum x rgcsNum] sparse  connectivity matrix 
+        % of cone -> rgc. 
+        % To find which cones are connected to a target RGC:
+        %  connectivityVector = full(squeeze(obj.coneConnectivityMatrix(:, targetRGC)));
+        %  inputConeIDs = find(connectivityVector > 0.01);
+        coneConnectivityMatrix;
     end
     
     % Public methods
@@ -144,18 +151,28 @@ classdef mRGCMosaic < handle
             
             
             % Wire mRGCs RF centers to cones of the input cone mosaic
-            obj.wireRFcentersToInputCones();
+            visualizeAlignment = false; visualizeConnection = true;
+            obj.wireRFcentersToInputCones(visualizeAlignment, visualizeConnection);
             
         end
-        
-        % Method to visualize the mRGCmosaic
-        visualize(obj, varargin);
         
         % Method to return indices of RFs within an ROI
         rfIndices = indicesOfRFsWithinROI(obj, roi);
         
         % Method to return the cone-to-RGC density ratio for all RGCs
         densityRatios = coneToRGCDensityRatios(obj);
+        
+        % Method to visualize the mRGCmosaic
+        visualize(obj, varargin);
+        
+        % Method to visualize how the cone mosaic is tesselated by the RGC RF centers
+        visualizeConeMosaicTesselation(obj, figNo, axesHandle, ...
+            coneRFpositions, coneRFspacings, ...
+            rgcRFpositions, rgcRFspacings, ...
+            showConnectedCones, domain, plotTitle);
+        
+        % Method to report the distribution of cones / RF center
+        connectivityStats(obj, figNo);
     end
     
     methods (Access=private)
@@ -169,11 +186,16 @@ classdef mRGCMosaic < handle
         removeRFsWithinOpticNerveHead(obj);
         
         % Method to wire RF centers to cones of the input cone mosaic
-        wireRFcentersToInputCones(obj);
+        wireRFcentersToInputCones(obj, visualizeAlignment, visualizeConnection);
         
         % Method to align RGC RFs to cones in the central retina.
         % Called by obj.wireRFcenterToInputCones()
-        alignRGCs(obj, coneRFpositionsMicrons, coneRFpositionsDegs, visualizeAlignment)
+        alignRGCsWithCones(obj, coneRFpositionsMicrons, coneRFpositionsDegs, visualizeAlignment)
+    
+        % Method to connect cones to RGC RF centers
+        % Called by obj.wireRFcenterToInputCones()
+        connectConesToRGCcenters(obj, coneRFPositionsMicrons, coneRFPositionsDegs, coneRFSpacingsMicrons, visualizeConnection)
+    
     end
     
 end
