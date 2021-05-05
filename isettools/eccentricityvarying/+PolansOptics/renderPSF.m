@@ -6,6 +6,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     p.addParameter('fontSize', 14, @isnumeric);
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('xyTicks', -8:1:8, @isnumeric);
+    p.addParameter('alpha', 0.3, @isscalar);
     
     p.parse(varargin{:});
     theConeMosaic = p.Results.superimposedConeMosaic;
@@ -13,6 +14,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     xyTicks = p.Results.xyTicks;
     fontSize = p.Results.fontSize;
     plotTitle = p.Results.plotTitle;
+    alpha = p.Results.alpha;
     
     smallTitle = true;
     if (~isempty(theConeData))
@@ -38,7 +40,6 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
 
     % Render the semi-transparent plot of the RGC RF
     cMap = brewermap(1024, 'reds');
-    alpha = 0.3;
     semiTransparentContourPlot(axesHandle, xSupport, ySupport, thePSF, zLevels, cMap, alpha, contourLineColor);
     axis(axesHandle, 'equal')
     box(axesHandle, 'on');
