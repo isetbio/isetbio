@@ -1,4 +1,4 @@
-function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cmap, contourLineColor, varargin)
+function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMap, contourLineColor, varargin)
     % Parse input
     p = inputParser;
     p.addParameter('superimposedConeMosaic', [], @(x)(isempty(x)||isa(x, 'coneMosaicHex')));
@@ -20,7 +20,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     if (~isempty(theConeData))
         conePositionsArcMin = theConeData.conePositionsArcMin;
         coneAperturesArcMin = theConeData.coneAperturesArcMin;
-        faceColors = [0.7 0.7 0.9];
+        faceColors = [0.9 0.9 0.9];
         faceAlpha = 0.32;
         lineWidth = 1.0;
         edgeColor = [0.6 0.6 0.6];
@@ -39,7 +39,9 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     
 
     % Render the semi-transparent plot of the RGC RF
-    cMap = brewermap(1024, 'reds');
+    if (isempty(cMap))
+        cMap = brewermap(1024, 'reds');
+    end
     semiTransparentContourPlot(axesHandle, xSupport, ySupport, thePSF, zLevels, cMap, alpha, contourLineColor);
     axis(axesHandle, 'equal')
     box(axesHandle, 'on');
@@ -50,7 +52,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     axis(axesHandle, 'equal');
     grid(axesHandle, 'on');
     box(axesHandle, 'on');
-    set(axesHandle, 'XLim', xyRange, 'YLim', xyRange, 'Color', [1 1 1]);
+    set(axesHandle, 'XLim', xyRange, 'YLim', xyRange, 'CLim', [0 1], 'Color', [1 1 1]);
     set(axesHandle, 'XTick', xyTicks, 'YTick', xyTicks);
     set(axesHandle, 'FontSize', fontSize);
     if (~isempty(plotTitle))
