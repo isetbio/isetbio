@@ -229,6 +229,10 @@ classdef cMosaic < handle
         % Min and max cone positions
         minRFpositionMicrons;
         maxRFpositionMicrons;
+        
+        % Full absorptions density map
+        absorptionsDensityFullMap;
+        absorptionsDensitySpatialSupportMicrons;
     end
     
     % Public methods
@@ -370,6 +374,10 @@ classdef cMosaic < handle
         
         % Method to visualize the cone mosaic
         visualize(obj, varargin);
+        
+        % Method to visualize the full absorptions density and the cone
+        % positions
+        visualizeFullAbsorptionsDensity(obj, figNo);
         
         % Method to generate an eye movement sequence
         emGenSequence(obj, durationSeconds, varargin);

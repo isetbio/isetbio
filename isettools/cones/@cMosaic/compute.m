@@ -330,6 +330,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     photoCurrents = [];
     photoCurrentInstances = [];
 
+    % Save last absorptionsDensityFullMap, oiPositionsVectorsMicrons
+    obj.absorptionsDensityFullMap = absorptionsDensityFullMap;
+    obj.absorptionsDensitySpatialSupportMicrons = oiPositionsVectorsMicrons;
+    
     % All done. Restore original values
     obj.wave = originalValues.wave;
 end
