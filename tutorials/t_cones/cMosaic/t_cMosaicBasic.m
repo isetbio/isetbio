@@ -9,6 +9,8 @@
 %
 % See Also:
 %   t_cMosaicGenerate
+%   t_cMosaicSingleEyeMovementPath
+%   t_cMosaicMultipleEyeMovementPaths
 %   t_cMosaicEccDependentAbsorptionEfficacy
 %   t_cMosaicBenchMark
 %   t_cMosaicOffAxis
