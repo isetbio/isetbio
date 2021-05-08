@@ -25,6 +25,11 @@ function emGenSequence(obj, durationSeconds, varargin)
     % Compute number of eye movements
     nEyeMovements = round(p.Results.durationSeconds / obj.integrationTime);
     
+    if (nEyeMovements < 1)
+        error('Zero eye movements. Either increase the eye movement duration (current: %2.0f msec) or decrease the integration time of the cone mosaic (current: %2.0 msec).\n', ...
+            p.Results.durationSeconds*1000, obj.integrationTime*1000);
+    end
+    
     % Instantiate fixationaEM object and attach it to the cMosaic object
     obj.fixEMobj = fixationalEM();
     obj.fixEMobj.microSaccadeType = p.Results.microsaccadeType;

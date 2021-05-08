@@ -50,6 +50,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
         validateAndDecodeFixationalEyeMovements(obj, p.Results.withFixationalEyeMovements, nTrials, nTimePoints);
     
+    
     % Decode and decode opticalImagePositionDegs optional input
     opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj,p.Results.opticalImagePositionDegs);
     
@@ -271,24 +272,18 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
             else
                 % Different emPath for each trial
                 for timePoint = 1:nTimePoints
-                    
-                    fprintf('\n(%s) Computing absorptions count for %d/%d time point ...', datestr(now), timePoint, nTimePoints);
-                    %t1 = clock;
-                    
+  
                     if (obj.eccVaryingMacularPigmentDensityDynamic)
                         % Recompute MP boost factors for current eye movement position
                         currentEMposDegs = [emPathsDegs(iTrial, timePoint,1) emPathsDegs(iTrial, timePoint,2)];
                         macularPigmentDensityBoostFactors = ...
                             updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
                     end
-   
-                    %fprintf('Computed MPBoostFactors in %2.2f seconds\n', etime(clock, t1));
-                    
+
                     % Compute density of cone absosprions, by integrating photons over
                     % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
                     absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
                     
-                    %t1 = clock;
                     % Compute absorptions
                     noiseFreeAbsorptionsCount(iTrial, timePoint, :) = obj.integrationTime * ...
                         obj.computeAbsorptionRate(...
@@ -297,15 +292,12 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
                         absorptionsDensityFullMap, ...
                         oiResMicrons, coneApertureDiametersMicrons, ...
                         coneIndicesInZones);
-                    %fprintf('Computed absorptionRate in %2.2f seconds\n', etime(clock, t1));
-                    
-                    %fprintf(' in %f seconds.\n', etime(clock, t1));
+
                 end % timePoint
             end
         end % iTrial
+        
     end
-    %fprintf('Tile lapsed to compute mean response: %2.2f seconds\n', etime(clock, tStart));
-
 
     responseTemporalSupport = (0:(size(noiseFreeAbsorptionsCount,2)-1)) * obj.integrationTime;
     

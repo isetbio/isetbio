@@ -102,7 +102,7 @@ function visualize(obj, varargin)
             rfSpacings = obj.coneRFspacingsDegs;
             rfProximityThreshold = 1/270;
             if (isstruct(displayedEyeMovementData))
-                emPath = 1/60*obj.fixEMobj.emPosArcMin(displayedTrials,displayedTimePoints,:);
+                emPath = -1/60*obj.fixEMobj.emPosArcMin(displayedTrials,displayedTimePoints,:);
             else
                 emPath = [];
             end
@@ -111,7 +111,7 @@ function visualize(obj, varargin)
             rfSpacings = obj.coneRFspacingsMicrons;
             rfProximityThreshold = 1;
             if (isstruct(displayedEyeMovementData))
-                emPath = obj.fixEMobj.emPosMicrons(displayedTrials,displayedTimePoints,:);
+                emPath = -obj.fixEMobj.emPosMicrons(displayedTrials,displayedTimePoints,:);
             else
                 emPath = [];
             end
