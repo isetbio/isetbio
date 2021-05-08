@@ -60,7 +60,8 @@ cm = cMosaic(...
     'sizeDegs', [0.5 0.5], ...            % SIZE: x=0.5 degs, y=0.5 degs
     'eccentricityDegs', [1.0 0], ...      % ECC:  x=1.0 degs, y= 0.0 degs
     'computeMeshFromScratch', true, ...   % generate mesh on-line, will take some time
-    'maxMeshIterations', 80 ...          % stop iterative procedure after this many iterations
+    'randomSeed', randi(9999999), ...     % set the random seed, so at to generate a different mosaic each time
+    'maxMeshIterations', 80 ...           % stop iterative procedure after this many iterations
     );
 
 %% Visualize it
