@@ -71,8 +71,6 @@ cm.visualize();
 
 figure(2); clf;
 % Plot the time series response for individual instances
-size(timeAxis)
-size(squeeze(noisyExcitationResponseInstances(:,:,targetConeID)))
 plot(timeAxis, squeeze(noisyExcitationResponseInstances(:,:,targetConeID)), 'k.');
 hold on;
 % Plot the time series response for the mean of the individual instances
