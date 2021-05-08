@@ -4,7 +4,8 @@ function regenerateConePositions(obj, maxIterations, visualizeConvergence, expor
     fovDegs = sqrt(sum(obj.eccentricityDegs.^2,2)) + max(obj.sizeDegs)*1.3;
 
     obj.coneRFpositionsMicrons = retinalattice.generatePatch(fovDegs, ...
-        'cones', obj.whichEye, exportHistoryToFile, visualizeConvergence, obj.useParfor, maxIterations);
+        'cones', obj.whichEye, exportHistoryToFile, visualizeConvergence, obj.useParfor, maxIterations, ...
+        'randomSeed', obj.randomSeed);
     
     % Convert to degs
     obj.coneRFpositionsDegs = RGCmodels.Watson.convert.rhoMMsToDegs(obj.coneRFpositionsMicrons*1e-3);
