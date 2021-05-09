@@ -296,8 +296,7 @@ classdef cMosaic < handle
             % Parallel computations
             obj.useParfor = p.Results.useParfor;
             
-            % Assert that we have appropriate pigment if we have more than
-            % 3 cone types
+            % Assert that we have appropriate pigment if we have more than 3 cone types
             if (numel(obj.coneDensities)>3) && (any(obj.coneDensities(4:end)>0.0))
                 assert(numel(obj.coneDensities) == size(obj.pigment.absorptance,3), ...
                     sprintf('cPhotoPigment is not initialized for %d types of cones', numel(obj.coneDensities)));
@@ -372,14 +371,13 @@ classdef cMosaic < handle
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
         end
         
-        % Method to visualize the cone mosaic
+        % Method to visualize the cone mosaic and its activation
         visualize(obj, varargin);
         
-        % Method to visualize the full absorptions density and the cone
-        % positions
+        % Method to visualize the continuous, full absorptions density and the actual cone positions
         visualizeFullAbsorptionsDensity(obj, figNo);
         
-        % Method to generate an eye movement sequence
+        % Method to generate eye movement sequences
         emGenSequence(obj, durationSeconds, varargin);
         
         % Method to generate an ensemble of OIs for the mosaic
