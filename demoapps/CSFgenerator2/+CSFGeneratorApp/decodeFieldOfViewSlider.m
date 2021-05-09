@@ -7,7 +7,6 @@ function decodeFieldOfViewSlider(app, direction, value)
             if (value == 0)
                 app.visualFieldParams.fieldOfViewDegs = 0.1;
             end
-            app.coneMosaicParams.sizeDegs = app.visualFieldParams.fieldOfViewDegs * [1 1];
         otherwise
             error('Unknown FieldOfViewSlider.direction; ''%s''.'\n', direction);
     end
@@ -21,4 +20,6 @@ function decodeFieldOfViewSlider(app, direction, value)
         app.fieldofviewdegsLabel.Text = sprintf('field of view (degs): %2.0f', app.visualFieldParams.fieldOfViewDegs);
     end
 
+    % Set the associated coneMosaicParam
+    app.coneMosaicParams.sizeDegs = app.visualFieldParams.fieldOfViewDegs * [1 1];
 end

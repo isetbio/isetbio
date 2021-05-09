@@ -13,11 +13,6 @@ function decodeRadialEccentricitySlider(app, direction, value)
         case 'sliderToValue'
             app.visualFieldParams.radialEccentricityDegs = ...
                 interp1(0:(numel(actualValues)-1), actualValues, value);
-            app.coneMosaicParams.eccentricityDegs(1) = ...
-                app.visualFieldParams.radialEccentricityDegs * cosd(app.visualFieldParams.polarEccentricityDegs);
-            app.coneMosaicParams.eccentricityDegs(2) = ...
-                app.visualFieldParams.radialEccentricityDegs * sind(app.visualFieldParams.polarEccentricityDegs);
-
         otherwise
             error('Unknown decodeRadialEccentricitySlider.direction; ''%s''.'\n', direction);
     end
@@ -30,5 +25,10 @@ function decodeRadialEccentricitySlider(app, direction, value)
     else
         app.radialeccentricitydegsLabel.Text = sprintf('radial eccentricity (degs): %2.0f', app.visualFieldParams.radialEccentricityDegs);
     end
-            
+    
+    % Set the associated coneMosaicParam
+    app.coneMosaicParams.eccentricityDegs(1) = ...
+        app.visualFieldParams.radialEccentricityDegs * cosd(app.visualFieldParams.polarEccentricityDegs);
+    app.coneMosaicParams.eccentricityDegs(2) = ...
+        app.visualFieldParams.radialEccentricityDegs * sind(app.visualFieldParams.polarEccentricityDegs);       
 end

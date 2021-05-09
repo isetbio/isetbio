@@ -5,7 +5,7 @@ function initializeGUIComponents(app)
     initializeRadialEccentricityGUIComponents(app);
     initializeFieldOfViewGUIComponents(app);
     
-    app.visualFieldEyeSwitch.Value = app.visualFieldParams.eye;
+    CSFGeneratorApp.decodeEyeSwitch(app, 'valueToSlider', app.visualFieldParams.whichEye);
     app.visualFieldMagnificationFactorEditField.Value = app.visualFieldParams.magnificationFactorMicronsPerDeg;
 end
 
