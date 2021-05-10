@@ -1,4 +1,4 @@
-function decodePolarEccentricitySlider(app, direction, value)
+function polarEccentricitySlider(app, direction, value)
     switch direction
         case 'valueToSlider'
             app.visualFieldPolarEccentricityKnob.Value = 360-value;

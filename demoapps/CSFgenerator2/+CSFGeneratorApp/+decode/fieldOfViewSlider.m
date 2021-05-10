@@ -1,4 +1,4 @@
-function decodeFieldOfViewSlider(app, direction, value)
+function fieldOfViewSlider(app, direction, value)
     switch direction
         case 'valueToSlider'
             app.visualFieldFieldOfViewSlider.Value = value;

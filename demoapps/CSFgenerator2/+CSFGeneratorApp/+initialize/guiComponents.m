@@ -1,11 +1,11 @@
-function initializeGUIComponents(app)
+function guiComponents(app)
 
     % Initialize the visualField GUI components
     initializePolarEccentricityGUIComponents(app);
     initializeRadialEccentricityGUIComponents(app);
     initializeFieldOfViewGUIComponents(app);
     
-    CSFGeneratorApp.decodeEyeSwitch(app, 'valueToSlider', app.visualFieldParams.whichEye);
+    CSFGeneratorApp.decode.eyeSwitch(app, 'valueToSlider', app.visualFieldParams.whichEye);
     app.visualFieldMagnificationFactorEditField.Value = app.visualFieldParams.magnificationFactorMicronsPerDeg;
 end
 
@@ -19,7 +19,7 @@ function initializeFieldOfViewGUIComponents(app)
     app.visualFieldFieldOfViewSlider.Value = app.visualFieldParams.fieldOfViewDegs;
     app.visualFieldMagnificationFactorEditField.Value = app.visualFieldParams.magnificationFactorMicronsPerDeg;
     
-    CSFGeneratorApp.decodeFieldOfViewSlider(app, 'valueToSlider', app.visualFieldParams.fieldOfViewDegs);
+    CSFGeneratorApp.decode.fieldOfViewSlider(app, 'valueToSlider', app.visualFieldParams.fieldOfViewDegs);
 end
 
 
@@ -29,7 +29,7 @@ function initializePolarEccentricityGUIComponents(app)
     app.visualFieldPolarEccentricityKnob.MajorTickLabels = {'360', '315', '270', '225', '180', '135',  '90',  '45', '0'};
     app.visualFieldPolarEccentricityKnob.MinorTicks = 0:15:360;
     
-    CSFGeneratorApp.decodePolarEccentricitySlider(app, 'valueToSlider', app.visualFieldParams.polarEccentricityDegs);
+    CSFGeneratorApp.decode.polarEccentricitySlider(app, 'valueToSlider', app.visualFieldParams.polarEccentricityDegs);
 end
 
 
@@ -52,5 +52,6 @@ function initializeRadialEccentricityGUIComponents(app)
         end
     end
 
-    CSFGeneratorApp.decodeRadialEccentricitySlider(app, 'valueToSlider', app.visualFieldParams.radialEccentricityDegs);
+    app.visualFieldParams.maxEcc = radialEccSliderTickValues(end);
+    CSFGeneratorApp.decode.radialEccentricitySlider(app, 'valueToSlider', app.visualFieldParams.radialEccentricityDegs);
 end

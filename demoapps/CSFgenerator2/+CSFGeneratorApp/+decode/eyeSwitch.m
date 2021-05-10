@@ -1,4 +1,4 @@
-function decodeEyeSwitch(app, direction, value)
+function eyeSwitch(app, direction, value)
     switch direction
         case 'valueToSlider'
             app.visualFieldEyeSwitch.Value = value;

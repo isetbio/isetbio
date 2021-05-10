@@ -1,4 +1,4 @@
-function initializeSimulationParams(app)
+function simulationParams(app)
 
     % visual field params
     app.visualFieldParams = struct(...
