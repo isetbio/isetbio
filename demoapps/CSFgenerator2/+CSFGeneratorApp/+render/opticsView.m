@@ -1,0 +1,79 @@
+function opticsView(app, mode)
+
+    switch (mode)
+        case 'initialize'
+            initializeOpticsView(app);
+        case 'update'
+            updateOpticsViewWithNewData(app);
+    end
+end
+
+function initializeOpticsView(app)
+    cMap = brewermap(512, 'greys');
+    colormap(app.opticsView, cMap);
+    
+    app.psfDensityPlotHandle = imagesc(app.opticsView, [0 1], [0 1], [1 1; 1 1], [0 1]);
+    hold(app.opticsView, 'on');
+    for k = 1:app.centralConeOutlinesNum
+        app.coneOutlineOnPSFPlotHandles(k) = patch(app.opticsView, [0 0],[0 0], [0.2 0.8 0.9], 'FaceAlpha', 0.2, 'EdgeColor', [0.2 0.7 0.7], 'EdgeAlpha', 1.0, 'LineWidth', 1.0);
+    end
+
+    plot(app.opticsView, [0 0], [-20 20], 'k-', 'LineWidth', 1.0);
+    plot(app.opticsView, [-20 20], [0 0], 'k-', 'LineWidth', 1.0);
+    hold(app.opticsView, 'off');
+    axis(app.opticsView, 'equal');
+    axis(app.opticsView, 'xy');
+    box(app.opticsView, 'off');
+    
+    xlabel(app.opticsView, 'arc min.');
+    set(app.opticsView, 'CLim', [0 0.9], 'XColor', [0.3 0.3 0.3], 'YColor', 'none');
+    
+    set(app.opticsView, ...
+        'XLim', 11*[-1 1], ...
+        'YLim', 11*[-1 1], ...
+        'XTick', -20:2:20, 'YTick', []);
+    
+    % Do not show the interactions toolbax
+    app.opticsView.Toolbar.Visible = 'off';
+            
+    % Only allow zooming
+    app.opticsView.Interactions = [panInteraction zoomInteraction];
+            
+    % Add listener to zoom-events
+    addlistener(app.opticsView, {'XLim', 'YLim'}, 'PostSet', @app.handleOpticsZoomEvent);
+end
+
+
+function updateOpticsViewWithNewData(app)
+    % Find index of visualized wavelength
+    [~, wIdx] = min(abs(app.components.psf.supportWavelength-app.opticsParams.visualizedWavelength));
+    
+    % Extract PSF at the desired wavelength
+    wavePSF = real(squeeze(app.components.psf.data(:,:,wIdx)));
+       
+    % Normalize to unit amplitude
+    wavePSF = wavePSF/max(wavePSF(:));
+        
+    set(app.psfDensityPlotHandle, ...
+        'XData', app.components.psf.supportX, ...
+        'YData', app.components.psf.supportY, ...
+        'CData', wavePSF, ...
+        'AlphaData', wavePSF^0.5);
+    
+    for k = 1:size(app.centralConeOutlinesArcMin,1)
+        set(app.coneOutlineOnPSFPlotHandles(k), ...
+            'XData', app.centralConeOutlinesArcMin(k,1,:), ...
+            'YData', app.centralConeOutlinesArcMin(k,2,:));
+    end
+    
+    if (~isempty(app.opticsViewLimsArcMin))
+        set(app.opticsView, ...
+            'XLim', app.opticsViewLimsArcMin, ...
+            'YLim', app.opticsViewLimsArcMin);
+    end
+    
+end
+
+
+
+        

@@ -4,9 +4,18 @@ function guiComponents(app)
     initializePolarEccentricityGUIComponents(app);
     initializeRadialEccentricityGUIComponents(app);
     initializeFieldOfViewGUIComponents(app);
+    initializeOpticsGUIComponents(app);
     
     CSFGeneratorApp.decode.eyeSwitch(app, 'valueToSlider', app.visualFieldParams.whichEye);
     app.visualFieldMagnificationFactorEditField.Value = app.visualFieldParams.magnificationFactorMicronsPerDeg;
+end
+
+function initializeOpticsGUIComponents(app)
+    app.opticsVisualizedWavelengthSlider.Limits = [400 750];
+    app.opticsVisualizedWavelengthSlider.MajorTicks = 400:50:750;
+    app.opticsVisualizedWavelengthSlider.MinorTicks = 400:10:750;
+    
+    CSFGeneratorApp.decode.opticsWavelengthSlider(app, 'valueToSlider', app.opticsParams.visualizedWavelength);
 end
 
 function initializeFieldOfViewGUIComponents(app)
@@ -16,7 +25,6 @@ function initializeFieldOfViewGUIComponents(app)
     app.visualFieldFieldOfViewSlider.MajorTickLabels = {'0.1', '1', '2', '3', '4', '5', '6','7', '8', '9', '10'};
     app.visualFieldFieldOfViewSlider.MinorTicks = [];
     
-    app.visualFieldFieldOfViewSlider.Value = app.visualFieldParams.fieldOfViewDegs;
     app.visualFieldMagnificationFactorEditField.Value = app.visualFieldParams.magnificationFactorMicronsPerDeg;
     
     CSFGeneratorApp.decode.fieldOfViewSlider(app, 'valueToSlider', app.visualFieldParams.fieldOfViewDegs);

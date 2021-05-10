@@ -1,15 +1,27 @@
 function coneMosaic(app)
 
     % Generate cone mosaic with new params
-    fprintf('Generating new cone mosaic (eye: ''%s'') (%2.1f x %2.1f) degs located at (%2.1f, %2.1f)\n', ...
-        app.coneMosaicParams.whichEye, ...
-        app.coneMosaicParams.sizeDegs(1), app.coneMosaicParams.sizeDegs(2), ...
-        app.coneMosaicParams.eccentricityDegs(1), app.coneMosaicParams.eccentricityDegs(2));
-    
     app.components.coneMosaic = cMosaic(...
         'whichEye', app.coneMosaicParams.whichEye, ...
         'sizeDegs', app.coneMosaicParams.sizeDegs, ...
         'eccentricityDegs', app.coneMosaicParams.eccentricityDegs);
+    
+    conePos = bsxfun(@minus, app.components.coneMosaic.coneRFpositionsDegs, app.components.coneMosaic.eccentricityDegs);
+    coneEccArcMin = 60*sqrt(sum(conePos.^2,2));
+    [~, idx] = sort(coneEccArcMin);
+    centralCone = idx(1);
+    conePos = bsxfun(@minus, app.components.coneMosaic.coneRFpositionsDegs, app.components.coneMosaic.coneRFpositionsDegs(centralCone,:));
+    coneEccArcMin = 60*sqrt(sum(conePos.^2,2));
+    [~, idx] = sort(coneEccArcMin);
+    
+    % Extract the centralConeOutlinesArcMin 
+    for k = 1:app.centralConeOutlinesNum
+        coneIndex = idx(k);
+        radius = 0.5*app.components.coneMosaic.coneRFspacingsDegs(coneIndex)*60*app.components.coneMosaic.coneApertureToDiameterRatio;
+        app.centralConeOutlinesArcMin(k,1,:) = (conePos(coneIndex,1)-conePos(centralCone,1))*60 + radius * cosd(0:5:360);
+        app.centralConeOutlinesArcMin(k,2,:) = (conePos(coneIndex,2)-conePos(centralCone,2))*60 + radius * sind(0:5:360);
+    end
+    
     
     
 %     , ...
@@ -24,27 +36,14 @@ function coneMosaic(app)
 %         'eccVaryingMacularPigmentDensityDynamic', false ...
 
 
-    domain = 'degrees';
-    domainVisualizationLimits = [];
-    mosaicVisualizationView = 'retinal view';
+    %   Visualize the cone mosaic
+    CSFGeneratorApp.render.coneMosaicView(app);
     
-%   Visualize the cone mosaic
-    app.components.coneMosaic.visualize(...
-        'figureHandle', app.mainView, ...
-        'axesHandle', app.coneMosaicView, ...
-        'visualizationView', mosaicVisualizationView, ...
-        'labelCones', true, ...
-        'crossHairsOnFovea', true, ...
-        'visualizedConeAperture', 'geometricArea', ...
-        'domain', domain, ...
-        'domainVisualizationLimits', domainVisualizationLimits, ...
-        'noYLabel', ~true, ...
-        'fontSize', 14, ...
-        'plotTitle',  ' ');
+
+    %   Set the microns-per-deg field
+    app.visualFieldMagnificationFactorEditField.Value = app.components.coneMosaic.micronsPerDegree;   
                 
-                
-%   Set the microns-per-deg field
-    app.visualFieldMagnificationFactorEditField.Value = app.components.coneMosaic.micronsPerDegree;
+
     
 end
 
