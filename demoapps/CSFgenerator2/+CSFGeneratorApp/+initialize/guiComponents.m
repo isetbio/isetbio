@@ -45,7 +45,7 @@ function initializeRadialEccentricityGUIComponents(app)
 
     radialEccentricitySliderTicksNum = 10;
     radialEccentricitySliderMin = 0.5;
-    radialEccentricitySliderMax = 59;
+    radialEccentricitySliderMax = 40;
     radialEccSliderTickValues = round(logspace(log10(radialEccentricitySliderMin),log10(radialEccentricitySliderMax), radialEccentricitySliderTicksNum)*100)/100;
     radialEccSliderTickValues = [0 radialEccSliderTickValues(1:end-1)];
     

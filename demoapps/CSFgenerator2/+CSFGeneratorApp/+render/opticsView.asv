@@ -55,8 +55,8 @@ function updateOpticsViewWithNewData(app)
     wavePSF = wavePSF/max(wavePSF(:));
         
     mask = ones(size(wavePSF));
-    for k = 9:-1:0
-        idx = find(wavePSF(:)<(k+1)/100);
+    for k = 10:-1:1
+        idx = find(wavePSF(:)<k/100);
         mask(idx) = k/10;
     end
     

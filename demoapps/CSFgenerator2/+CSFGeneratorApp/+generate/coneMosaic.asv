@@ -7,7 +7,7 @@ function coneMosaic(app)
         'eccentricityDegs', app.coneMosaicParams.eccentricityDegs);
     
     % Generate outlines for central cones (used when plotting the PSF)
-    if (~isempty(app.components.coneMosaic.coneRFpositionsDegs))
+    if (~isempt(app.components.coneMosaic.coneRFpositionsDegs))
         conePos = bsxfun(@minus, app.components.coneMosaic.coneRFpositionsDegs, app.components.coneMosaic.eccentricityDegs);
         coneEccArcMin = 60*sqrt(sum(conePos.^2,2));
         [~, idx] = sort(coneEccArcMin);
@@ -18,20 +18,15 @@ function coneMosaic(app)
 
         % Extract the centralConeOutlinesArcMin 
         for k = 1:app.centralConeOutlinesNum
-            if (k <= numel(idx))
-                coneIndex = idx(k);
-                radius = 0.5*app.components.coneMosaic.coneRFspacingsDegs(coneIndex)*60*app.components.coneMosaic.coneApertureToDiameterRatio;
-                app.centralConeOutlinesArcMin(k,1,:) = (conePos(coneIndex,1)-conePos(centralCone,1))*60 + radius * cosd(0:5:360);
-                app.centralConeOutlinesArcMin(k,2,:) = (conePos(coneIndex,2)-conePos(centralCone,2))*60 + radius * sind(0:5:360);
-            else
-                app.centralConeOutlinesArcMin(k,1,:) = nan;
-                app.centralConeOutlinesArcMin(k,2,:) = nan;
-            end
+            coneIndex = idx(k);
+            radius = 0.5*app.components.coneMosaic.coneRFspacingsDegs(coneIndex)*60*app.components.coneMosaic.coneApertureToDiameterRatio;
+            app.centralConeOutlinesArcMin(k,1,:) = (conePos(coneIndex,1)-conePos(centralCone,1))*60 + radius * cosd(0:5:360);
+            app.centralConeOutlinesArcMin(k,2,:) = (conePos(coneIndex,2)-conePos(centralCone,2))*60 + radius * sind(0:5:360);
         end
     else
         for k = 1:app.centralConeOutlinesNum
             app.centralConeOutlinesArcMin(k,1,:) = nan;
-            app.centralConeOutlinesArcMin(k,2,:) = nan;
+            
         end
     end
         
