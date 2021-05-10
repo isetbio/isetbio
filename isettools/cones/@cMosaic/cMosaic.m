@@ -15,16 +15,38 @@ classdef cMosaic < handle
     %    creates the cone mosaic object. Optional parameter name/value
     %    pairs are listed below.
     %
-    %    ...
-    %
     % Inputs:
     %    None required.
     %
     % Outputs:
-    %    cMosaic           The created coneMosaic object.
+    %    cMosaic           The created cMosaic object.
     %
     % Optional key/value pairs:
-    %    'name'             - String. Mosaic name. Default 'cone mosaic'.
+    %    'name'                             - String. Mosaic name. Default 'cone mosaic'.
+    %    'wave'                             - Vector. Wavalength support. Default is: 400:10:700.
+    %    'pigment'                          - @cPhotoPigment. Custom cPhotoPigment object.
+    %    'macular'                          - @Macular(). Custom Macular object.
+    %    'coneData',                        - Struct. Struct with custom cone data, usually exported from a @coneMosaicHex.
+    %    'eccentricityDegs'                 - [x,y]. Center of the mosaic, in degrees. Default: [0 0]
+    %    'sizeDegs'                         - [sx, sy]. Width and height of the mosaic, in degrees. Default: [0.4 0.4]
+    %    'whichEye'                         - Which eye. Valid options are: {'left eye', 'right eye'}. Default: 'left eye'.
+    %    'computeMeshFromScratch'           - Logical, indicating whether to recompute the mesh from scratch. Default: false
+    %    'visualizeMeshConvergence'         - Logical, indicating whether to visualize the convergence of the mesh. Default: false 
+    %    'exportMeshConvergenceHistoryToFile' - Logical, indicating whether to save the convergence of the mesh. Default:false
+    %    'maxMeshIterations'                - Scalar. Max number of iterations for the mesh generation. Default: 100.
+    %    'micronsPerDegree'                 - Scalar. A custom retinal magnification factor, microns/deg
+    %    'eccVaryingConeAperture'           - Logical, indicating whether to allow the cone aperture (light collecting area) to vary with eccentricity. Default: true 
+    %    'eccVaryingConeBlur'               - Logical, indicating whether to allow the cone aperture (spatial blur) to vary with eccentricity.  Default: false 
+    %    'eccVaryingOuterSegmentLength'     - Logical, indicating whether to allow the outer segment (light collecting area) to vary with eccentricity. Default: true
+    %    'eccVaryingMacularPigmentDensity'  - Logical, indicating whether to allow the macular pigment density to vary with eccentricity. Default: true
+    %    'eccVaryingMacularPigmentDensityDynamic',- Logical, indicating whether to correct the macular pigment density in the presence of eye movements. Default: false
+    %    'coneDensities'                    - Vector, with 3 or 4 densities for L-, M-, S-, and possibly a 4th cone. Default: [0.6 0.3 0.1 0.0]
+    %    'tritanopicRadiusDegs'             - Scalar. Radius of S-cone free region. Default: 0.15 degs
+    %    'noiseFlag'                        - String. Indicating whether to compute with random noise, frozen noise or no-noise. Valid options are {'random', 'frozen', 'none'}
+    %    'randomSeed'                       - Random seed for the noise.
+    %    'integrationTime'                  - Scalar. Integration time in seconds. Default is: 5/1000
+    %    'useParfor'                        - Logical, indicating whether to use parfor. Default: true.
+    %
     %
     % See Also:
     %    cPhotoPigment
