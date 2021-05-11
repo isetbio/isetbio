@@ -8,7 +8,7 @@ function fieldOfViewSlider(app, direction, value)
                 app.visualFieldParams.fieldOfViewDegs = 0.1;
             end
         otherwise
-            error('Unknown FieldOfViewSlider.direction; ''%s''.'\n', direction);
+            error('Unknown direction; ''%s''.'\n', direction);
     end
 
     % Update the text

@@ -11,11 +11,23 @@ function guiComponents(app)
 end
 
 function initializeOpticsGUIComponents(app)
+    % The visualized wavelength slider
     app.opticsVisualizedWavelengthSlider.Limits = [400 750];
     app.opticsVisualizedWavelengthSlider.MajorTicks = 400:50:750;
     app.opticsVisualizedWavelengthSlider.MinorTicks = 400:10:750;
-    
     CSFGeneratorApp.decode.opticsWavelengthSlider(app, 'valueToSlider', app.opticsParams.visualizedWavelength);
+    
+    % The subject dataset
+    CSFGeneratorApp.decode.opticsSubjectDataBaseDropdown(app, 'valueToSlider', app.opticsParams.subjectDataset);
+    
+    % The subject ID
+    CSFGeneratorApp.decode.opticsSubjectIDSpinner(app, 'valueToSlider', app.opticsParams.subjectID);
+    
+    % The pupil size
+    CSFGeneratorApp.decode.opticsPupilSizeSpinner(app, 'valueToSlider', app.opticsParams.pupilDiameterMM);
+    
+    % The central refraction subtraction
+    CSFGeneratorApp.decode.opticsSubtractCentralRefractionCheckBox(app, 'valueToSlider', app.opticsParams.subtractCentralRefraction);
 end
 
 function initializeFieldOfViewGUIComponents(app)

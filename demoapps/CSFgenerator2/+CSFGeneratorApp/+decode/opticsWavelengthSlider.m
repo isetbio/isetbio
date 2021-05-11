@@ -6,7 +6,7 @@ function opticsWavelengthSlider(app, direction, value)
             app.opticsParams.visualizedWavelength = value;
             
         otherwise
-            error('Unknown opticsWavelengthSlider.direction; ''%s''.'\n', direction);
+            error('Unknown direction; ''%s''.'\n', direction);
     end
 end
 

@@ -6,7 +6,7 @@ function polarEccentricitySlider(app, direction, value)
             app.visualFieldParams.polarEccentricityDegs = 360-value;
              
         otherwise
-            error('Unknown decodePolarEccentricitySlider.direction; ''%s''.'\n', direction);
+            error('Unknown direction; ''%s''.'\n', direction);
     end
     
     % Update the text

@@ -14,7 +14,7 @@ function radialEccentricitySlider(app, direction, value)
             app.visualFieldParams.radialEccentricityDegs = ...
                 interp1(0:(numel(actualValues)-1), actualValues, value);
         otherwise
-            error('Unknown decodeRadialEccentricitySlider.direction; ''%s''.'\n', direction);
+            error('Unknown direction; ''%s''.'\n', direction);
     end
     
     % Update the text
