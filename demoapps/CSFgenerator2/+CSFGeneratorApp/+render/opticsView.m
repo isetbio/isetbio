@@ -9,6 +9,8 @@ function opticsView(app, mode)
 end
 
 function initializeOpticsView(app)
+
+    cla(app.opticsView);
     cMap = brewermap(512, '*spectral');
     colormap(app.opticsView, cMap);
     
@@ -41,6 +43,26 @@ function initializeOpticsView(app)
             
     % Add listener to zoom-events
     addlistener(app.opticsView, {'XLim', 'YLim'}, 'PostSet', @app.handleOpticsZoomEvent);
+    
+    
+    % opticsViewPSFGrid initialization
+    cla(app.opticsViewPSFGrid);
+    hold(app.opticsViewPSFGrid, 'on');
+    for xo = -1:1
+    for yo = -1:1
+        plot(app.opticsViewPSFGrid, xo + 0.4*[-1 1], [yo yo], 'k-');
+        plot(app.opticsViewPSFGrid, [xo xo], yo + 0.4*[-1 1], 'k-');
+    end
+    end
+    hold(app.opticsViewPSFGrid, 'off');
+    set(app.opticsViewPSFGrid, 'XLim', [-1.5 1.5], 'YLim', [-1.5 1.5]);
+    set(app.opticsViewPSFGrid, 'XColor', 'none', 'YColor', 'none', 'Color', 'none');
+    
+    % Do not show the interactions toolbax
+    app.opticsViewPSFGrid.Toolbar.Visible = 'off';
+            
+    % No interactions
+    app.opticsViewPSFGrid.Interactions = [];
 end
 
 
@@ -54,6 +76,7 @@ function updateOpticsViewWithNewData(app)
     % Normalize to unit amplitude
     wavePSF = wavePSF/max(wavePSF(:));
         
+    % Alpha mask
     mask = ones(size(wavePSF));
     for k = 9:-1:0
         idx = find(wavePSF(:)<(k+1)/100);
@@ -72,10 +95,10 @@ function updateOpticsViewWithNewData(app)
             'YData', app.centralConeOutlinesArcMin(k,2,:));
     end
     
-    if (~isempty(app.opticsViewLimsArcMin))
+    if (~isempty(app.opticsViewXLimsArcMin))
         set(app.opticsView, ...
-            'XLim', app.opticsViewLimsArcMin, ...
-            'YLim', app.opticsViewLimsArcMin);
+            'XLim', app.opticsViewXLimsArcMin, ...
+            'YLim', app.opticsViewYLimsArcMin);
     end
     
 end

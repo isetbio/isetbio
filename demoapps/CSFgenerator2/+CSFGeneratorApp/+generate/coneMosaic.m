@@ -6,6 +6,20 @@ function coneMosaic(app)
         'sizeDegs', app.coneMosaicParams.sizeDegs, ...
         'eccentricityDegs', app.coneMosaicParams.eccentricityDegs);
     
+    % Reset view limits
+    app.coneMosaicViewXLimsDegs = app.coneMosaicParams.eccentricityDegs(1) + 0.5*app.coneMosaicParams.sizeDegs(1)*[-1 1];
+    app.coneMosaicViewYLimsDegs = app.coneMosaicParams.eccentricityDegs(2) + 0.5*app.coneMosaicParams.sizeDegs(2)*[-1 1];
+    
+    if (~isempty(app.components.coneMosaic.micronsPerDegreeApproximation))
+       app.coneMosaicViewXLimsMicrons = app.coneMosaicViewXLimsDegs * app.components.coneMosaic.micronsPerDegreeApproximation; 
+       app.coneMosaicViewYLimsMicrons = app.coneMosaicViewYLimsDegs * app.components.coneMosaic.micronsPerDegreeApproximation;
+    else
+        for k = 1:2
+            app.coneMosaicViewXLimsMicrons(k) = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(app.coneMosaicViewXLimsDegs(k));
+            app.coneMosaicViewYLimsMicrons(k) = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(app.coneMosaicViewYLimsDegs(k));
+        end
+    end
+            
     % Generate outlines for central cones (used when plotting the PSF)
     if (~isempty(app.components.coneMosaic.coneRFpositionsDegs))
         conePos = bsxfun(@minus, app.components.coneMosaic.coneRFpositionsDegs, app.components.coneMosaic.eccentricityDegs);
@@ -51,13 +65,9 @@ function coneMosaic(app)
 
 
     %   Visualize the cone mosaic
-    CSFGeneratorApp.render.coneMosaicView(app);
+    CSFGeneratorApp.render.coneMosaicView(app, 'update');
     
-
     %   Set the microns-per-deg field
     app.visualFieldMagnificationFactorEditField.Value = app.components.coneMosaic.micronsPerDegree;   
-                
-
-    
 end
 

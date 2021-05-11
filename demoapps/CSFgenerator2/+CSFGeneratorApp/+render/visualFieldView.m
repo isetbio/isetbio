@@ -25,7 +25,7 @@ function initializeVisualFieldView(app)
     % Plot the optic disk location
     odOutline.x = nan;
     odOutline.y = nan;
-    odColor = [1 0.5 0];
+    odColor = [1 0.3 0];
     app.odOnVisualFieldPlotHandle = patch(app.visualFieldView, odOutline.x, odOutline.y, odColor, 'FaceAlpha', 0.5, 'EdgeColor', 'none');
 
     % Plot the mosaic outline
@@ -51,6 +51,10 @@ end
 
 function updateVisualFieldViewWithNewData(app)
 
+    % Update the OD
+    [xx,yy] = generateOpticDiskOutline(app);
+    set(app.odOnVisualFieldPlotHandle, 'XData', xx, 'YData', yy);
+        
     % Update the mosaic outline
     mosaicOutline = generateMosaicOutlineForRetinalPatchView(app);
     set(app.mosaicOnVisualFieldPlotHandle, ...
@@ -59,6 +63,22 @@ function updateVisualFieldViewWithNewData(app)
                 
 end
 
+
+function [xx,yy] = generateOpticDiskOutline(app)
+    [~,odStructDegs] = app.components.coneMosaic.odStruct();
+    a = 0.5*odStructDegs.minorAxisDiameter; 
+    b = 0.5*odStructDegs.majorAxisDiameter; 
+    c = odStructDegs.center;
+    cosOutline = cosd(0:10:360);
+    sinOutline = sind(0:10:360);
+    x = c(1) + a*cosOutline*cosd(odStructDegs.rotation) - b*sinOutline*sind(odStructDegs.rotation);
+    y = c(2) + b*sinOutline*cosd(odStructDegs.rotation) + a*cosOutline*sind(odStructDegs.rotation);
+    r = sqrt(x.^2+y.^2);
+    r = app.visualFieldParams.maxEcc * log10(1+r)/log10(1+app.visualFieldParams.maxEcc);
+    theta = atan2(y,x);
+    xx = r .* cos(theta);
+    yy = r .* sin(theta);
+end
 
 function mosaicOutline = generateMosaicOutlineForRetinalPatchView(app)
     x = app.coneMosaicParams.eccentricityDegs(1) + 0.5*app.coneMosaicParams.sizeDegs(1) * [-1 -1 1 1 -1];
