@@ -76,7 +76,7 @@ classdef cMosaic < handle
         %                  Invest. Ophthalmol. Vis. Sci. 2004;45(9):3257-3258. doi: https://doi.org/10.1167/iovs.03-1157.
         % These are both specified in retinal coordinates
         opticDisk = struct(...
-            'centerDegs', [15.5, -1.5], ...
+            'centerDegs', [15.5, 1.5], ...
         	'horizontalDiameterMM', 1.77, ...
         	'verticalDiameterMM', 1.88, ...
             'rotationDegs', 6.0);
@@ -127,9 +127,9 @@ classdef cMosaic < handle
         randomSeed;
         
         % Color for cone rendering in mosaic visualization
-        lConeColor = [1 0.2 0.3];
-        mConeColor = [0.2 1 0.4];
-        sConeColor = [0.3 0.1 1];
+        lConeColor = [1 0.3 0.5];
+        mConeColor = [0.1 1 0.5];
+        sConeColor = [0.6 0.1 1];
         kConeColor = [0.9 0.9 0.2];
     end
     

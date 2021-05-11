@@ -176,7 +176,7 @@ function visualize(obj, varargin)
     
      % Aperture shape (disk)
     if (isempty(visualizeConeApertureThetaSamples))
-        if (conesNum > 10000)
+        if (conesNum > 50000)
             deltaAngle = 60;
         elseif (conesNum > 5000)
             deltaAngle = 45;
@@ -218,16 +218,16 @@ function visualize(obj, varargin)
         end
         % Plot L-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
-            rfPositions(obj.lConeIndices,:), 1/4*0.9, 'none', 1.0, faceAlpha);
+            rfPositions(obj.lConeIndices,:), 1/4*0.9, [1 0 0], 0.5, faceAlpha);
         % Plot M-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
-            rfPositions(obj.mConeIndices,:), 2/4*0.9, 'none', 1.0, faceAlpha);
+            rfPositions(obj.mConeIndices,:), 2/4*0.9, [0 1 0], 0.5, faceAlpha);
         % Plot S-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
-            rfPositions(obj.sConeIndices,:), 3/4*0.9, 'none', 1.0, faceAlpha);
+            rfPositions(obj.sConeIndices,:), 3/4*0.9, [0 0 1], 0.5, faceAlpha);
         % Plot K-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
-            rfPositions(obj.kConeIndices,:), 4/4*0.9, 'none', 1.0, faceAlpha);
+            rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], 0.5, faceAlpha);
             
         if (densityContourOverlay)
             % Compute dense 2D map
@@ -300,7 +300,11 @@ function visualize(obj, varargin)
     % Add crosshairs
     if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
         if (isempty(activation))
-            crossHairsColor = [0 0 0];
+            if (strcmp(backgroundColor, 'none'))
+                crossHairsColor = [0 0 0];
+            else
+                crossHairsColor = 1-backgroundColor;
+            end
         else
             crossHairsColor = [1 0 0];
         end
