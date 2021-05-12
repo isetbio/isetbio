@@ -176,20 +176,20 @@ function visualize(obj, varargin)
     
      % Aperture shape (disk)
     if (isempty(visualizeConeApertureThetaSamples))
-        if (conesNum > 50000)
-            deltaAngle = 60;
-        elseif (conesNum > 5000)
-            deltaAngle = 45;
-        elseif (conesNum > 1000)
-           deltaAngle = 30;
-        elseif (conesNum > 500)
-            deltaAngle = 20;
-        elseif (conesNum > 250)
-            deltaAngle = 15;
-        elseif (conesNum > 100)
-            deltaAngle = 10;
-        else
+        if (conesNum < 100)
             deltaAngle = 5;
+        elseif (conesNum < 500)
+            deltaAngle = 10;
+        elseif (conesNum < 1000)
+            deltaAngle = 15;
+        elseif (conesNum < 3000)
+           deltaAngle = 20;
+        elseif (conesNum < 10000)
+            deltaAngle = 30;
+        elseif (conesNum < 30000)
+            deltaAngle = 45;
+        else
+            deltaAngle = 60;
         end
     else
         deltaAngle = 360/visualizeConeApertureThetaSamples;
@@ -214,20 +214,21 @@ function visualize(obj, varargin)
         if (densityContourOverlay)
             faceAlpha = 0.2;
         else
-        	faceAlpha = 1.0;
+        	faceAlpha = 0.9;
         end
+        lineWidth = 0.5;
         % Plot L-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
-            rfPositions(obj.lConeIndices,:), 1/4*0.9, [1 0 0], 0.5, faceAlpha);
+            rfPositions(obj.lConeIndices,:), 1/4*0.9, [0.8 0 0], lineWidth, faceAlpha);
         % Plot M-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
-            rfPositions(obj.mConeIndices,:), 2/4*0.9, [0 1 0], 0.5, faceAlpha);
+            rfPositions(obj.mConeIndices,:), 2/4*0.9, [0 0.7 0], lineWidth, faceAlpha);
         % Plot S-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
-            rfPositions(obj.sConeIndices,:), 3/4*0.9, [0 0 1], 0.5, faceAlpha);
+            rfPositions(obj.sConeIndices,:), 3/4*0.9, [0 0 1], lineWidth, faceAlpha);
         % Plot K-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
-            rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], 0.5, faceAlpha);
+            rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], lineWidth, faceAlpha);
             
         if (densityContourOverlay)
             % Compute dense 2D map

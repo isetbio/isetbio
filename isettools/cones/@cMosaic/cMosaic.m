@@ -127,7 +127,7 @@ classdef cMosaic < handle
         randomSeed;
         
         % Color for cone rendering in mosaic visualization
-        lConeColor = [1 0.3 0.5];
+        lConeColor = [1 0.1 0.5];
         mConeColor = [0.1 1 0.5];
         sConeColor = [0.6 0.1 1];
         kConeColor = [0.9 0.9 0.2];

@@ -8,10 +8,11 @@ function processingPipeline(app)
                 'Message',sprintf('This app requires MATLAB 2020b or later, and that (i) isetbio, (ii) ISETBioCSFGenerator, and (iii) mQuestPlus, available at: \n\t-https://github.com/isetbio/isetbio\n\t-https://github.com/isetbio/ISETBioCSFGenerator.git\n\t-https://github.com/BrainardLab/mQUESTPlus.git \nare on the user''s path.\n\nWaiting for parallel pool engine to wake up...'));
      
      dialogBox.Value = 0.2; 
-     pause(.01)
+     
      poolobj = gcp('nocreate'); 
      if isempty(poolobj)
-                parpool('local');
+         pause(.1)
+         parpool('local');
      end
                 
     dialogBox.Value = 0.5; 
