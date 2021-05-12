@@ -1,13 +1,5 @@
-function coneMosaic(app, dialog)
+function coneMosaic(app)
 
-    deleteProgressBar = isempty(dialog);
-    if (deleteProgressBar)
-        % Open progressbar
-        dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
-                    'Message','Generating cone mosaic ...');
-        dialogBox.Value = 0.2; 
-    end
-    
     % Generate cone mosaic with new params
     app.components.coneMosaic = cMosaic(...
         'whichEye', app.coneMosaicParams.whichEye, ...
@@ -79,19 +71,13 @@ function coneMosaic(app, dialog)
     app.visualFieldMagnificationFactorEditField.Value = app.components.coneMosaic.micronsPerDegree;   
 
     % Update status for 'cone mosaic'
-    conesNum = size(app.components.coneMosaic.coneRFpositionsDegs,1);
-    app.statusMessages('cone mosaic')  = struct(...
-        'text', sprintf('Generated cone mosaic with %d cones.', conesNum), ...
-        'fontColor', app.colors('good message foreground'), ...
-        'backgroundColor', app.colors('good message background'), ...
-        'fontWeight', 'normal');
+    app.statusMessages('stimulus')  = struct(...
+        'text', statusReportText, ...
+        'fontColor', statusFontColor, ...
+        'backgroundColor', statusBackgroundColor, ...
+        'fontWeight', statusFontWeight);
     
-    % Render the status on the status field of tab B
-    CSFGeneratorApp.render.statusField(app,'B', 'cone mosaic'); 
-    
-    if (deleteProgressBar)
-        % Close progressbar
-        close(dialogBox);
-    end
+    % Render the status on the  status field
+    app.render.statusField(app,'B', app.statusMessages('cone mosaic')); 
 end
 

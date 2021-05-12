@@ -5,8 +5,6 @@ function opticsPupilSizeSpinner(app, direction, value)
             app.opticsPupilSizeSpinner.Value = value;
         case 'sliderToValue'
             app.opticsParams.pupilDiameterMM = value;
-            % Compute new optics
-            CSFGeneratorApp.generate.optics(app);
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
     end

@@ -1,13 +1,5 @@
-function optics(app, dialog)
+function optics(app)
 
-    deleteProgressBar = isempty(dialog);
-    if (deleteProgressBar)
-        % Open progressbar
-        dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
-                    'Message','Generating optics ...');
-        dialogBox.Value = 0.2; 
-    end
-    
     switch (app.opticsParams.subjectDataset)
         case 'Polans2015'
             zernikeDataBase = 'Polans2015';
@@ -43,16 +35,11 @@ function optics(app, dialog)
      
      % Update status for 'optics'
     app.statusMessages('optics')  = struct(...
-        'text', sprintf('Generated optics.'), ...
-        'fontColor', app.colors('good message foreground'), ...
-        'backgroundColor', app.colors('good message background'), ...
-        'fontWeight', 'normal');
+        'text', sprintf('Generated optics ', conesNum), ...
+        'fontColor', statusFontColor, ...
+        'backgroundColor', statusBackgroundColor, ...
+        'fontWeight', statusFontWeight);
     
     % Render the status on the status field of tab B
-    CSFGeneratorApp.render.statusField(app,'B', 'optics'); 
-    
-    if (deleteProgressBar)
-        % Close progressbar
-        close(dialogBox);
-    end
+    app.render.statusField(app,'B', app.statusMessages('optics')); 
 end

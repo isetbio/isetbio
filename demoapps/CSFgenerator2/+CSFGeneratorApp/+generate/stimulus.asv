@@ -1,23 +1,13 @@
-function stimulus(app, dialog)
-
-    deleteProgressBar = isempty(dialog);
-    if (deleteProgressBar)
-        % Open progressbar
-        dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
-                    'Message','Generating stimulus ...');
-        dialogBox.Value = 0.2; 
-    end
-    
+function stimulus(app)
     % Form sParams struct
+    
     switch (app.stimParams.spatialEnvelope)
         case 'disk'
-            app.stimParams.spatialEnvelopeRadiusDegs = app.stimParams.sizeDegs/2;
+            app.stimParams.spatialEnvelopeRadiusDegs = app.stimSizeDegs/2;
         case 'rect'
-            app.stimParams.spatialEnvelopeRadiusDegs = app.stimParams.sizeDegs/(2*sqrt(2.0));
+            app.stimParams.spatialEnvelopeRadiusDegs = app.stimSizeDegs/(2*sqrt(2.0));
         case 'soft'
-            app.stimParams.spatialEnvelopeRadiusDegs = app.stimParams.sizeDegs/6;  
-        otherwise
-            error('Unknown spatial envelope: ''%s''.', app.stimParams.spatialEnvelope);
+            app.stimParams.spatialEnvelopeRadiusDegs = app.stimSizeDegs/6;           
     end
             
     sParams = struct(...
@@ -40,19 +30,13 @@ function stimulus(app, dialog)
             
      % Call the external CSFgenerator.computeStimulusSceneEngine method to
      % generate the stimulus scene
-     [app.products.demoStimulusSceneSequence, app.products.nullStimulusScene, statusReport] = ...
-         CSFGeneratorApp.generate.stimulusSceneEngine(sParams, []);
+     [app.products.demoStimulusScene, app.products.nullStimulusScene, statusReport] = CSFGeneratorApp.generate.stimulusSceneEngine(sParams, []);
             
-     % Visualize the stimulus
-     CSFGeneratorApp.render.stimulusView(app, 'update');
-      
+     % Update the stimulus view
+     
      % Update the status for the tab
      setStatusMessage(app, statusReport);
      
-     if (deleteProgressBar)
-        % Close progressbar
-        close(dialogBox);
-     end
 end
 
 function setStatusMessage(app, statusReport)
@@ -63,24 +47,26 @@ function setStatusMessage(app, statusReport)
         for k = 1:numel(flagNames)
             statusReportText = sprintf('%s - %s', statusReportText,flagNames{k});
         end
-        statusReportText = sprintf('%s -',statusReportText);
+        statusReportText.Value = sprintf('%s -',statusReportText.Value);
+        statusFontColor = [1 1 1];
         statusFontWeight = 'Bold';
-        statusFontColor = app.colors('problem message foreground');
-        statusBackgroundColor = app.colors('problem message background');
+        statusBackgroundColor = [1 0 0];
     else
-        statusReportText = sprintf('Stimulus is realizable. Generated stimulus sequence with %d frame(s).', numel(app.products.demoStimulusSceneSequence));
+        statusReportText = 'stimulus is realizable';
         statusFontWeight = 'Normal';
-        statusFontColor = app.colors('good message foreground');
-        statusBackgroundColor = app.colors('good message background');
+        statusFontColor = [0 0 0];
+        statusBackgroundColor= [1 1 1];
     end
-      
-    % Update status for 'stimulus'
-    app.statusMessages('stimulus')  = struct(...
-        'text', statusReportText, ...
+            
+    app.statusMessages('stimulus') = struct(...
+        'test', statusReportText, ...
         'fontColor', statusFontColor, ...
         'backgroundColor', statusBackgroundColor, ...
         'fontWeight', statusFontWeight);
     
-    % Render the status on the  status field of tab A
-    CSFGeneratorApp.render.statusField(app,'A', 'stimulus');            
+    app.tabGstimulusGenerationStatusReport.Value = 'stimulus is realizable';
+    app.stimulusGenerationStatusReport.FontWeight = 'Normal';
+    app.stimulusGenerationStatusReport.FontColor = [0 0 0];
+    app.stimulusGenerationStatusReport.BackgroundColor = [1 1 1];
+                
 end
