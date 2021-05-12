@@ -1,4 +1,4 @@
-function radialEccentricitySlider(app, direction, value)
+function roiRadialEccentricitySlider(app, direction, value)
 
     tickLabels = app.visualFieldRadialEccentricitySlider.MajorTickLabels;
     actualValues = zeros(1, numel(tickLabels));

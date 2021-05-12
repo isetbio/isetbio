@@ -1,4 +1,4 @@
-function polarEccentricitySlider(app, direction, value)
+function roiPolarEccentricitySlider(app, direction, value)
     switch direction
         case 'valueToSlider'
             app.visualFieldPolarEccentricityKnob.Value = 360-value;

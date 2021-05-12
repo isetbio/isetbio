@@ -14,7 +14,7 @@ function initializeOpticsView(app)
     cMap = brewermap(512, '*spectral');
     colormap(app.opticsView, cMap);
     
-    app.psfDensityPlotHandle = imagesc(app.opticsView, [0 1], [0 1], [1 1; 1 1], [0 1]);
+    app.psfDensityPlotHandle = imagesc(app.opticsView, [-0.01 0.01], [-0.01 0.01], [1 1; 1 1], [0 1]);
     hold(app.opticsView, 'on');
     for k = 1:app.centralConeOutlinesNum
         app.coneOutlineOnPSFPlotHandles(k) = patch(app.opticsView, [0 0],[0 0], [0.5 0.5 0.1], 'FaceAlpha', 0.2, 'EdgeColor', [.3 .3 0.1], 'EdgeAlpha', 1.0, 'LineWidth', 1.0);
@@ -31,8 +31,8 @@ function initializeOpticsView(app)
     set(app.opticsView, 'CLim', [0 0.9], 'XColor', [0.3 0.3 0.3], 'YColor', 'none');
     
     set(app.opticsView, ...
-        'XLim', 11*[-1 1], ...
-        'YLim', 11*[-1 1], ...
+        'XLim', 7*[-1 1], ...
+        'YLim', 7*[-1 1], ...
         'XTick', -20:2:20, 'YTick', []);
     
     % Do not show the interactions toolbax

@@ -1,4 +1,4 @@
-function fieldOfViewSlider(app, direction, value)
+function roiFieldOfViewSlider(app, direction, value)
     switch direction
         case 'valueToSlider'
             app.visualFieldFieldOfViewSlider.Value = value;

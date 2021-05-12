@@ -1,4 +1,4 @@
-function eyeSwitch(app, direction, value)
+function roiEyeSwitch(app, direction, value)
     switch direction
         case 'valueToSlider'
             app.visualFieldEyeSwitch.Value = value;
