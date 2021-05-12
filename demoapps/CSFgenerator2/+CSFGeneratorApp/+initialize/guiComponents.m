@@ -14,7 +14,12 @@ function guiComponents(app)
     
     % Initialize the optics GUI components
     initializeOpticsGUIComponents(app);
+    
+    % Initialize the cone mosaic GUI components
+    initializeConeMosaicGUIComponents(app);
 end
+
+
 
 function initializeColors(app)
     
@@ -102,6 +107,14 @@ function initializeOpticsGUIComponents(app)
     % The central refraction subtraction
     CSFGeneratorApp.decode.opticsSubtractCentralRefractionCheckBox(app, 'valueToSlider', app.opticsParams.subtractCentralRefraction);
 end
+
+function initializeConeMosaicGUIComponents(app)
+
+    % The view mode
+    CSFGeneratorApp.decode.coneMosaicViewModeKnob(app, 'valueToSlider', app.viewModes.coneMosaic);
+    
+end
+
 
 function initializeRegionOfInterestGUIComponents(app)
     

@@ -70,10 +70,6 @@ function coneMosaic(app, dialog)
 %         'eccVaryingConeBlur', app.mosaicEccVaryingConeBlur, ...
 %         'eccVaryingMacularPigmentDensity', app.mosaicEccVaryingMacularPigmentDensity, ...
 %         'eccVaryingMacularPigmentDensityDynamic', false ...
-
-
-    % Visualize the cone mosaic
-    CSFGeneratorApp.render.coneMosaicView(app, 'update');
     
     % Set the microns-per-deg field
     app.visualFieldMagnificationFactorEditField.Value = app.components.coneMosaic.micronsPerDegree;   

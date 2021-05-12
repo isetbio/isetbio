@@ -14,29 +14,22 @@ function processingPipeline(app, headerMessage)
          pause(.1)
          parpool('local');
      end
-         
-    % Generate the cone mosaic
+                
     dialogBox.Value = 0.5; 
     dialogBox.Message = 'Generating cone mosaic. Please wait ...';
     CSFGeneratorApp.generate.coneMosaic(app, dialogBox);
     
-    % Generate the optics
     dialogBox.Value = 0.6; 
     dialogBox.Message = 'Generating optics. Please wait ...';        
     CSFGeneratorApp.generate.optics(app, dialogBox);
     
-    % Compute the stimulus
     dialogBox.Value = 0.7; 
     dialogBox.Message = 'Generating stimulus. Please wait ...';
     CSFGeneratorApp.generate.stimulus(app, dialogBox);
     
-    % Compute the cone mosaic activation
     dialogBox.Value = 0.8; 
     dialogBox.Message = 'Computing cone mosaic response. Please wait ...';
     CSFGeneratorApp.compute.coneMosaicActivation(app, dialogBox);
-    
-    % Visualize the cone mosaic
-    CSFGeneratorApp.render.coneMosaicView(app, 'update');
     
     close(dialogBox);
 end
