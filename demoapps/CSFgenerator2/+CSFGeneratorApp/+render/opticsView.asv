@@ -22,7 +22,7 @@ function initializeOpticsView(app)
 
     % Plot the cross hairs
     plot(app.opticsView, [0 0], [-20 20], 'k-', 'LineWidth', 1.5, 'Color', [0.5 0.5 0.5]);
-    plot(app.opticsView, [-20 20], [0 0], 'k-', 'LineWidth', 1.5, 'Color', [0.5 0.5 0.5]);
+    plot(app.opticsView, [-20 20], [0 0], 'k-', 'LineWidth', 1.5);
     hold(app.opticsView, 'off');
     axis(app.opticsView, 'equal');
     axis(app.opticsView, 'xy');
@@ -51,9 +51,8 @@ function initializeOpticsView(app)
     hold(app.opticsViewPSFGrid, 'on');
     for xo = -1:1
     for yo = -1:1
-        % Plot the cross-hairs
-        plot(app.opticsViewPSFGrid, xo + 0.4*[-1 1], [yo yo], 'k-', 'LineWidth', 1.0, 'Color', [0.5 0.5 0.5]);
-        plot(app.opticsViewPSFGrid, [xo xo], yo + 0.4*[-1 1], 'k-', 'LineWidth', 1.0, 'Color', [0.5 0.5 0.5]);
+        plot(app.opticsViewPSFGrid, xo + 0.4*[-1 1], [yo yo], 'k-');
+        plot(app.opticsViewPSFGrid, [xo xo], yo + 0.4*[-1 1], 'k-');
     end
     end
     hold(app.opticsViewPSFGrid, 'off');
