@@ -7,7 +7,7 @@ function guiComponents(app)
     initializeStatusFields(app);
 
     % Initialize the region of interest GUI components
-    initializeRegionOfInterestGUIComponents(app);
+    initializeROIGUIComponents(app);
     
     % Initialize the stimulus GUI components
     initializeStimulusGUIComponents(app);
@@ -116,55 +116,38 @@ function initializeConeMosaicGUIComponents(app)
 end
 
 
-function initializeRegionOfInterestGUIComponents(app)
+function initializeROIGUIComponents(app)
     
     initializeFieldOfView(app);
     initializePolarEccentricity(app);
-    initializeRadialEccentricity(app);
+    if (strcmp(app.roiParams.radialEccentricityScaling, 'log'))
+        CSFGeneratorApp.initialize.radialEccentricityWithLogScaling(app);
+    else
+        CSFGeneratorApp.initialize.radialEccentricityWithLinearScaling(app);
+    end
     
-    CSFGeneratorApp.decode.roiEyeSwitch(app, 'valueToSlider', app.visualFieldParams.whichEye);
-    CSFGeneratorApp.decode.roiRadialEccentricitySlider(app, 'valueToSlider', app.visualFieldParams.radialEccentricityDegs);
-    CSFGeneratorApp.decode.roiPolarEccentricitySlider(app, 'valueToSlider', app.visualFieldParams.polarEccentricityDegs);
-    CSFGeneratorApp.decode.roiFieldOfViewSlider(app, 'valueToSlider', app.visualFieldParams.fieldOfViewDegs);
+    CSFGeneratorApp.decode.roiEyeSwitch(app, 'valueToSlider', app.roiParams.whichEye);
+    CSFGeneratorApp.decode.roiRadialEccentricitySlider(app, 'valueToSlider', app.roiParams.radialEccentricityDegs);
+    CSFGeneratorApp.decode.roiRadialEccentricityScalingSwitch(app, 'valueToSlider', app.roiParams.radialEccentricityScaling);
+    CSFGeneratorApp.decode.roiPolarEccentricitySlider(app, 'valueToSlider', app.roiParams.polarEccentricityDegs);
+    CSFGeneratorApp.decode.roiFieldOfViewSlider(app, 'valueToSlider', app.roiParams.fieldOfViewDegs);
     
-    app.visualFieldMagnificationFactorEditField.Value = app.visualFieldParams.magnificationFactorMicronsPerDeg;
+    app.roiMagnificationFactorEditField.Value = app.roiParams.magnificationFactorMicronsPerDeg;
 
     function initializeFieldOfView(app)
-        app.visualFieldFieldOfViewSlider.Limits = [0.0 10];
-        app.visualFieldFieldOfViewSlider.MajorTicks = 0:1:10;
-        app.visualFieldFieldOfViewSlider.MajorTickLabels = {'0.1', '1', '2', '3', '4', '5', '6','7', '8', '9', '10'};
-        app.visualFieldFieldOfViewSlider.MinorTicks = [];
+        app.roiFieldOfViewSlider.Limits = [0.0 10];
+        app.roiFieldOfViewSlider.MajorTicks = 0:1:10;
+        app.roiFieldOfViewSlider.MajorTickLabels = {'0.1', '1', '2', '3', '4', '5', '6','7', '8', '9', '10'};
+        app.roiFieldOfViewSlider.MinorTicks = [];
     end
 
     function initializePolarEccentricity(app)
-        app.visualFieldPolarEccentricityKnob.Limits = [0 360];
-        app.visualFieldPolarEccentricityKnob.MajorTicks = 0:45:360;
-        app.visualFieldPolarEccentricityKnob.MajorTickLabels = {'360', '315', '270', '225', '180', '135',  '90',  '45', '0'};
-        app.visualFieldPolarEccentricityKnob.MinorTicks = 0:15:360;
+        app.roiPolarEccentricityKnob.Limits = [0 360];
+        app.roiPolarEccentricityKnob.MajorTicks = 0:45:360;
+        app.roiPolarEccentricityKnob.MajorTickLabels = {'360', '315', '270', '225', '180', '135',  '90',  '45', '0'};
+        app.roiPolarEccentricityKnob.MinorTicks = 0:15:360;
 
-        CSFGeneratorApp.decode.roiPolarEccentricitySlider(app, 'valueToSlider', app.visualFieldParams.polarEccentricityDegs);
-    end
-
-    function initializeRadialEccentricity(app)
-        radialEccentricitySliderTicksNum = 10;
-        radialEccentricitySliderMin = 0.5;
-        radialEccentricitySliderMax = 40;
-        radialEccSliderTickValues = round(logspace(log10(radialEccentricitySliderMin),log10(radialEccentricitySliderMax), radialEccentricitySliderTicksNum)*100)/100;
-        radialEccSliderTickValues = [0 radialEccSliderTickValues(1:end-1)];
-
-        app.visualFieldRadialEccentricitySlider.Limits = [0 radialEccentricitySliderTicksNum-1];
-        app.visualFieldRadialEccentricitySlider.MajorTicks = 0:(radialEccentricitySliderTicksNum-1);
-        app.visualFieldRadialEccentricitySlider.MinorTicks = [];
-        for k = 1:numel(app.visualFieldRadialEccentricitySlider.MajorTicks)
-            if (radialEccSliderTickValues(k) < 1.0)
-                app.visualFieldRadialEccentricitySlider.MajorTickLabels{k} = sprintf('%2.1f', radialEccSliderTickValues(k));
-            else
-                app.visualFieldRadialEccentricitySlider.MajorTickLabels{k} = sprintf('%2.0f', radialEccSliderTickValues(k));
-            end
-        end
-
-        app.visualFieldParams.maxEcc = radialEccSliderTickValues(end);
-        CSFGeneratorApp.decode.roiRadialEccentricitySlider(app, 'valueToSlider', app.visualFieldParams.radialEccentricityDegs);
+        CSFGeneratorApp.decode.roiPolarEccentricitySlider(app, 'valueToSlider', app.roiParams.polarEccentricityDegs);
     end
 end
 

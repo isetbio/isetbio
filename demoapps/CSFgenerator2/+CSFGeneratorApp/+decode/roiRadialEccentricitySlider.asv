@@ -1,5 +1,16 @@
 function roiRadialEccentricitySlider(app, direction, value)
 
+    switch direction
+        case 'valueToSlider'
+            scaling = calue
+        case 'sliderToValue'
+        otherwise
+            error('Unknown direction; ''%s''.'\n', direction);
+    end
+    
+end
+
+function setLogScalingRadialEccentricityTicks(app, direction, value)
     tickLabels = app.roiRadialEccentricitySlider.MajorTickLabels;
     actualValues = zeros(1, numel(tickLabels));
     for k = 1:numel(tickLabels)

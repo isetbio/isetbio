@@ -1,9 +1,9 @@
 function roiEyeSwitch(app, direction, value)
     switch direction
         case 'valueToSlider'
-            app.visualFieldEyeSwitch.Value = value;
+            app.roiEyeSwitch.Value = value;
         case 'sliderToValue'
-            app.visualFieldParams.whichEye = value;
+            app.roiParams.whichEye = value;
             
         otherwise
             error('Unknown FieldOfViewSlider.direction; ''%s''.'\n', direction);

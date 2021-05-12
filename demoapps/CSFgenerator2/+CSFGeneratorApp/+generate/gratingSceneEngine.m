@@ -1,5 +1,5 @@
-% CSFapp support m  ethod to generate the gratingSceneEngine and test/null stimuli.
-function [theSceneSequence, theNullStimulusScene, statusReport, theGratingSceneEngine] = stimulusSceneEngine(sParams, theGratingSceneEngine)
+% CSFapp support method to generate the gratingSceneEngine and test/null stimuli.
+function [theSceneSequence, theNullStimulusScene, statusReport, theGratingSceneEngine] = gratingSceneEngine(sParams, theGratingSceneEngine)
     if (isempty(theGratingSceneEngine))
 
        theGratingSceneEngine = createGratingScene(sParams.chromaDir, sParams.sf, ...

@@ -41,7 +41,7 @@ function stimulus(app, dialog)
      % Call the external CSFgenerator.computeStimulusSceneEngine method to
      % generate the stimulus scene
      [app.products.demoStimulusSceneSequence, app.products.nullStimulusScene, statusReport] = ...
-         CSFGeneratorApp.generate.stimulusSceneEngine(sParams, []);
+         CSFGeneratorApp.generate.gratingSceneEngine(sParams, []);
             
      % Visualize the stimulus
      CSFGeneratorApp.render.stimulusView(app, 'update');
