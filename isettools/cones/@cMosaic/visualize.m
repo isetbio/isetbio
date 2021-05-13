@@ -24,6 +24,7 @@ function visualize(obj, varargin)
     p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
     p.addParameter('crossHairsOnFovea', false, @islogical);
     p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
+    p.addParameter('crossHairsColor', [], @isnumeric);
     p.addParameter('labelCones', true, @islogical);
     p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('noXLabel', false, @islogical);
@@ -34,6 +35,7 @@ function visualize(obj, varargin)
     p.addParameter('backgroundColor', [0.7 0.7 0.7]);
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('textDisplay', '', @ischar);
+    p.addParameter('textDisplayColor', [], @isnumeric);
     p.parse(varargin{:});
     
     visualizationView = p.Results.visualizationView;
@@ -55,6 +57,7 @@ function visualize(obj, varargin)
     labelCones = p.Results.labelCones;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
     crossHairsOnFovea = p.Results.crossHairsOnFovea;
+    crossHairsColor = p.Results.crossHairsColor;
     noXlabel = p.Results.noXLabel;
     noYlabel = p.Results.noYLabel;
     displayedEyeMovementData = p.Results.displayedEyeMovementData;
@@ -70,6 +73,7 @@ function visualize(obj, varargin)
     backgroundColor = p.Results.backgroundColor;
     plotTitle = p.Results.plotTitle;
     textDisplay = p.Results.textDisplay;
+    textDisplayColor = p.Results.textDisplayColor;
     
     % Determine what eye movement data have to be displayed
     if (isstruct(displayedEyeMovementData))
@@ -300,14 +304,17 @@ function visualize(obj, varargin)
     
     % Add crosshairs
     if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
-        if (isempty(activation))
-            if (strcmp(backgroundColor, 'none'))
-                crossHairsColor = [0 0 0];
+        
+        if (isempty(crossHairsColor))
+            if (isempty(activation))
+                if (strcmp(backgroundColor, 'none'))
+                    crossHairsColor = [0 0 0];
+                else
+                    crossHairsColor = 1-backgroundColor;
+                end
             else
-                crossHairsColor = 1-backgroundColor;
+                crossHairsColor = [1 0 0];
             end
-        else
-            crossHairsColor = [1 0 0];
         end
         
         if (crossHairsOnMosaicCenter)
@@ -534,9 +541,13 @@ function visualize(obj, varargin)
     end
     
     if (~isempty(textDisplay))
-        dx = 0.47*(xRange(2)-xRange(1));
-        dy = 0.02*(yRange(2)-yRange(1));
-        text(axesHandle, xRange(1)+dx, yRange(1)+dy, textDisplay, 'FontSize', 12, 'Color', 1-backgroundColor);
+        dx = 0.45*(xRange(2)-xRange(1));
+        dy = 0.04*(yRange(2)-yRange(1));
+        if (isempty(textDisplayColor))
+            textDisplayColor = 1-backgroundColor;
+        end
+        text(axesHandle, xRange(1)+dx, yRange(1)+dy, textDisplay, ...
+            'FontSize', 16, 'Color', textDisplayColor, 'BackgroundColor', backgroundColor);
     end
     
     drawnow;
