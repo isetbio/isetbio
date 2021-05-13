@@ -15,8 +15,8 @@ function coneMosaic(app, dialog)
         'eccentricityDegs', app.coneMosaicParams.eccentricityDegs);
     
     % Reset view limits
-    app.coneMosaicViewXLimsDegs = app.coneMosaicParams.eccentricityDegs(1) + 0.5*app.coneMosaicParams.sizeDegs(1)*[-1 1];
-    app.coneMosaicViewYLimsDegs = app.coneMosaicParams.eccentricityDegs(2) + 0.5*app.coneMosaicParams.sizeDegs(2)*[-1 1];
+    app.coneMosaicViewXLimsDegs = app.coneMosaicParams.eccentricityDegs(1) + 0.55*app.coneMosaicParams.sizeDegs(1)*[-1 1];
+    app.coneMosaicViewYLimsDegs = app.coneMosaicParams.eccentricityDegs(2) + 0.55*app.coneMosaicParams.sizeDegs(2)*[-1 1];
     
     if (~isempty(app.components.coneMosaic.micronsPerDegreeApproximation))
        app.coneMosaicViewXLimsMicrons = app.coneMosaicViewXLimsDegs * app.components.coneMosaic.micronsPerDegreeApproximation; 

@@ -8,12 +8,7 @@ function coneMosaicActivation(app, dialog)
         dialogBox.Value = 0.2; 
     end
     
-    % Compute response to first frame only
-    theScene = app.products.demoStimulusSceneSequence{1};
     
-    % Compute optical image
-    app.components.optics = oiCompute(theScene, app.components.optics);
-        
     % Check where to position the optical image
     if (app.stimParams.mosaicCenteredPosition)
         opticalImagePositionDegs = 'mosaic-centered';
@@ -21,37 +16,41 @@ function coneMosaicActivation(app, dialog)
         opticalImagePositionDegs = app.stimParams.positionDegs;
     end
        
-    visualizedResponseType = 'noise-free';
-    if (strcmp(visualizedResponseType,'noise-free'))
-        % Compute mean response
-        app.products.noiseFreeConeMosaicActivation = app.components.coneMosaic.compute(app.components.optics, ...
-            'opticalImagePositionDegs', opticalImagePositionDegs);
+    % Compute the activation to the null stimulus 
+    nullActivation = app.components.coneMosaic.compute(...
+        oiCompute(app.products.nullStimulusScene, app.components.optics), ...
+        'opticalImagePositionDegs', opticalImagePositionDegs);
+    
+    % Compute response to first stimulus frame only
+    theScene = app.products.demoStimulusSceneSequence{1};
+    
+    % Compute nInstances noisy response instances
+    nInstances = 4;
+    [app.products.noiseFreeConeMosaicActivation, ...
+     app.products.noisyConeMosaicActivationInstances] = app.components.coneMosaic.compute(...
+        oiCompute(theScene, app.components.optics), ...
+        'opticalImagePositionDegs', opticalImagePositionDegs, 'nTrials', nInstances);
+    
+    % Compute noise-free modulation 
+    app.products.noiseFreeConeMosaicModulation = ...
+        100*(app.products.noiseFreeConeMosaicActivation - nullActivation)./nullActivation;
+    
+    % Compute noisy modulations
+    app.products.noisyConeMosaicModulationInstances = ...
+        100*(app.products.noisyConeMosaicActivationInstances - nullActivation)./nullActivation;
+   
+    % Compute the residual activation
+    if (isfield(app.products,'lastNoiseFreeConeMosaicActivation')) && ...
+       (numel(app.products.lastNoiseFreeConeMosaicActivation) == numel(app.products.noiseFreeConeMosaicActivation))
+        app.products.residualConeMosaicActivation = 100 * ...
+            (app.products.noiseFreeConeMosaicActivation-app.products.lastNoiseFreeConeMosaicActivation) ./ ...
+            app.products.noiseFreeConeMosaicActivation;
     else
-        % Compute noisy response instance
-        [app.products.noiseFreeConeMosaicActivation, app.products.noisyConeMosaicActivationInstances] = ...
-            app.components.coneMosaic.compute(app.components.optics, ...
-            'opticalImagePositionDegs', opticalImagePositionDegs, 'nTrials', 10);
+        app.products.residualConeMosaicActivation = 0*app.products.noiseFreeConeMosaicActivation;
     end
-        
-
-%     if strcmp(app.mosaicDisplayMode, 'modulation')
-%                 % Compute response to null (zero contrast) stimulus
-%                 nullActivation = app.components.coneMosaic.compute(oiCompute(app.nullStimulusScene, app.components.optics), ...
-%                     'opticalImagePositionDegs', opticalImagePositionDegs);
-%                 app.demoMosaicActivation = testActivation - nullActivation;
-%             elseif strcmp(app.mosaicDisplayMode, 'residual, (c-p)/p')
-%                 if (~isempty(app.lastMeanActivation))
-%                     app.demoMosaicActivation = 100.0*(testActivation - app.lastMeanActivation)./app.lastMeanActivation;
-%                 else
-%                     app.demoMosaicActivation = 0*testActivation;
-%                 end
-%             else % activation
-%                 % Current activation
-%                 app.demoMosaicActivation = testActivation;
-%             end
-%             
-%             app.lastMeanActivation = meanActivation;
-%             
+    
+    % Save the last mean activation
+    app.products.lastNoiseFreeConeMosaicActivation = app.products.noiseFreeConeMosaicActivation;
 
 
     if (deleteProgressBar)

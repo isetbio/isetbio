@@ -35,9 +35,6 @@ function processingPipeline(app, headerMessage)
     dialogBox.Message = 'Computing cone mosaic response. Please wait ...';
     CSFGeneratorApp.compute.coneMosaicActivation(app, dialogBox);
     
-    % Visualize the cone mosaic
-    CSFGeneratorApp.render.coneMosaicView(app, 'update');
-    
     close(dialogBox);
 end
 

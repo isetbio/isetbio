@@ -109,10 +109,14 @@ function initializeOpticsGUIComponents(app)
 end
 
 function initializeConeMosaicGUIComponents(app)
-
     % The view mode
     CSFGeneratorApp.decode.coneMosaicViewModeKnob(app, 'valueToSlider', app.viewModes.coneMosaic);
     
+    % The activation type
+    CSFGeneratorApp.decode.coneMosaicActivationTypeSwitch(app, 'valueToSlider', app.viewModes.coneMosaicActivationType);
+    
+    % The visualization domain
+    CSFGeneratorApp.decode.coneMosaicVisualizationDomainSwitch(app, 'valueToSlider', app.viewModes.coneMosaicVisualizationDomain);
 end
 
 

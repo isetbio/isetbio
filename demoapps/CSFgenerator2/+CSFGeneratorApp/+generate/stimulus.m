@@ -46,15 +46,6 @@ function stimulus(app, dialog)
      % Visualize the stimulus
      CSFGeneratorApp.render.stimulusView(app, 'update');
      
-     dialogBox.Value = 0.8; 
-     dialogBox.Message = 'Computing cone mosaic response. Please wait ...';
-    
-     % Compute the cone mosaic activation
-     CSFGeneratorApp.compute.coneMosaicActivation(app, dialogBox);
-     
-     % Visualize the cone mosaic
-     CSFGeneratorApp.render.coneMosaicView(app, 'update');
-    
      % Update the status for the tab
      setStatusMessage(app, statusReport);
      
@@ -62,6 +53,7 @@ function stimulus(app, dialog)
         % Close progressbar
         close(dialogBox);
      end
+     
 end
 
 function setStatusMessage(app, statusReport)
