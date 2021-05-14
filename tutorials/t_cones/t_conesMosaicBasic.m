@@ -1,8 +1,8 @@
 %% Introduction to the cone mosaic object.
 %
 % Description:
-%    Create a cone mosaic object and compute cone isomerizatoins across a
-%    set of small eye movements. 
+%    Create a rectangular cone mosaic object and compute cone
+%    isomerizatoins across a set of small eye movements.
 %
 %    Visualize the results in coneMosaic window.
 %
