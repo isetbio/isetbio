@@ -32,17 +32,27 @@ function initializeROIView(app)
     % Plot the mosaic outline
     mosaicOutline.x = nan;
     mosaicOutline.y = nan;
+    mosaicColor = [0.1 0.95 0.7];
     app.mosaicOnROIPlotHandle = patch(app.roiView, mosaicOutline.x, mosaicOutline.y, ...
-        [0.1 0.95 0.7], 'FaceAlpha', 0.5, 'EdgeColor', [0.1 0.95 0.7]*0.8, 'LineWidth', 1.0);
+        mosaicColor, 'FaceAlpha', 0.5, 'EdgeColor', mosaicColor*0.8, 'LineWidth', 1.0);
             
     % Plot the stimulus outline
     stimulusOutline.x = nan;
     stimulusOutline.y = nan;
+    stimulusColor = [0.8 0.2 0.9];
     app.stimulusOnROIPlotHandle = patch(app.roiView, stimulusOutline.x, stimulusOutline.y, ...
-        [0.8 0.2 0.9], 'FaceAlpha', 0.5, 'EdgeColor', [0.8 0.2 0.9]*0.8, 'LineWidth', 1.0);
+        stimulusColor, 'FaceAlpha', 0.5, 'EdgeColor', stimulusColor*0.8, 'LineWidth', 1.0);
+    
+    text(app.roiView, app.roiParams.maxEcc-7, app.roiParams.maxEcc, 'cone mosaic', ...
+        'FontSize', 16, 'FontSize', 16, 'Color', mosaicColor*0.8);
+    text(app.roiView, app.roiParams.maxEcc-4, app.roiParams.maxEcc-3, 'stimulus', ...
+        'FontSize', 16, 'FontSize', 16, 'Color', stimulusColor*0.8);
+    text(app.roiView, app.roiParams.maxEcc-5, app.roiParams.maxEcc-6, 'optic disk', ...
+        'FontSize', 16, 'FontSize', 16, 'Color',odColor*0.8);
     
     hold(app.roiView, 'off');
-    set(app.roiView, 'XTick', 0, 'YTick', 0, 'XLim', (app.roiParams.maxEcc+2)*[-1 1], 'YLim', (app.roiParams.maxEcc+2)*[-1 1], 'FontSize', 14);
+    set(app.roiView, 'XTick', 0, 'YTick', 0, ...
+        'XLim', (app.roiParams.maxEcc+2)*[-1 1], 'YLim', (app.roiParams.maxEcc+2)*[-1 1], 'FontSize', 1);
     set(app.roiView, 'Color', 'none', 'XColor', 'none', 'YColor', 'none');
     set(app.roiView, 'XTickLabel', '0');
     set(app.roiView, 'YTickLabel', '0');
