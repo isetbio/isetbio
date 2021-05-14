@@ -106,6 +106,9 @@ function initializeOpticsGUIComponents(app)
     
     % The central refraction subtraction
     CSFGeneratorApp.decode.opticsSubtractCentralRefractionCheckBox(app, 'valueToSlider', app.opticsParams.subtractCentralRefraction);
+    
+    % The central refraction subtraction
+    CSFGeneratorApp.decode.opticsKeepConeMosaicActivationInSyncCheckBox(app, 'valueToSlider', app.viewModes.opticsKeepConeMosaicActivationInSync);
 end
 
 function initializeConeMosaicGUIComponents(app)

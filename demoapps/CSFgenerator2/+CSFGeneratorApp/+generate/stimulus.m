@@ -69,7 +69,7 @@ function setStatusMessage(app, statusReport)
         statusFontColor = app.colors('problem message foreground');
         statusBackgroundColor = app.colors('problem message background');
     else
-        statusReportText = sprintf('Stimulus is realizable. Generated stimulus sequence with %d frame(s).', numel(app.products.demoStimulusSceneSequence));
+        statusReportText = sprintf('Stimulus is realizable. Stimulus sequence contains %d frame(s).', numel(app.products.demoStimulusSceneSequence));
         statusFontWeight = 'Normal';
         statusFontColor = app.colors('good message foreground');
         statusBackgroundColor = app.colors('good message background');
