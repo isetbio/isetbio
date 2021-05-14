@@ -1,4 +1,4 @@
-function processingPipeline(app, headerMessage)
+function processingPipeline(app, headerMessage, varargin)
     
      % Determine whether we will show any more progress bars
      %app.showsProgressBar = getpref('ISET','waitbar');
