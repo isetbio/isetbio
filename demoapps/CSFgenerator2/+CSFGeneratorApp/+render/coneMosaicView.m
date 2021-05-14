@@ -38,15 +38,18 @@ function updateConeMosaicViewWithNewData(app)
     end
     
     mosaicVisualizationView = 'retinal view';
-    
+    conesNumThresholdForShowingProgressBar = 10000;
+     
     if (~isempty(app.components.coneMosaic.coneRFpositionsDegs))
-        
-        % Open progressbar
+
         conesNum = size(app.components.coneMosaic.coneRFpositionsMicrons,1);
-        dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
+        if (conesNum >  conesNumThresholdForShowingProgressBar)
+            % Open progressbar
+            dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
                  'Message', sprintf('Rendering cone mosaic with %d cones...', conesNum));
-        dialogBox.Value = 0.2; 
-    
+            dialogBox.Value = 0.2; 
+        end
+        
         switch (app.viewModes.coneMosaic)
             case {'cone types', 'cones+retinal image'}
                 app.components.coneMosaic.visualize(...
@@ -216,8 +219,9 @@ function updateConeMosaicViewWithNewData(app)
             otherwise
                 error('Dont know how to interpret view mode: ''%s''.', app.viewModes.coneMosaic);
         end
-        
-        close(dialogBox);
+        if (conesNum > conesNumThresholdForShowingProgressBar)
+            close(dialogBox);
+        end
     else
         cla(app.coneMosaicView)
     end
