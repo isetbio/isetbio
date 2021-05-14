@@ -2,7 +2,7 @@
 %
 % Description:
 %    Illustrate the noise spectrum from the outer segment biophysical model
-%    we use for converting photon absorptions to photo current.
+%    we use for converting photon absorptions to photocurrent.
 %
 %    Notes from Fred Rieke on obtaining the noise frequency response
 %    amplitude. The formula used is for the noise frequency response
@@ -23,6 +23,7 @@
 %    10/19/18  JNM  Formatting
 
 %%  Show that the mean is near zero
+
 % We are putting in absorption rate of zero for a 10 x 10 array of cones,
 % over the nSamp sample times. 
 nSamp = 10000;

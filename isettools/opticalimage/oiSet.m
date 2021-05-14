@@ -304,7 +304,7 @@ switch parm
                 p = oiGet(oi, 'photons');
                 if ~isempty(p)
                     [p, r, c] = RGB2XWFormat(p); % switch to XW format
-                    p = interp1(oldWave, p', val, 'linear*', 0);
+                    p = interp1(oldWave, p', val, 'linear', 0);
                     p = XW2RGBFormat(p', r, c);
                     oi = oiSet(oi, 'photons', p);
                 end

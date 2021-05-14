@@ -50,6 +50,8 @@ function oi = wvf2oi(wvf)
 %    01/01/18  dhb  Set name and oi wavelength from wvf.
 %              dhb  Check for need to interpolate, skip if not.
 %    01/11/18  jnm  Formatting update to match Wiki
+%    04/14/21  dhb  Set fNumber to correspond to wvf calc pupil size.
+%                   Previously this was the oi default of 3 mm pupil.
 
 % Examples:
 %{
@@ -141,5 +143,10 @@ oi = oiSet(oi, 'optics OTF fy', fy);
 oi = oiSet(oi, 'optics otfdata', otf);
 oi = oiSet(oi, 'optics OTF wave', wave);
 oi = oiSet(oi, 'wave', wave);
+
+% Set the pupil size
+% Set the fNumber to correspond to the pupil size
+focalLengthMM = oiGet(oi,'focal length')*1000;
+oi = oiSet(oi, 'optics fnumber', focalLengthMM/wvfGet(wvf,'calc pupil size'));
 
 end

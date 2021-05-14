@@ -20,8 +20,8 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
 %    'emPaths'           - Eye movement paths. Either empty or a matrix of [nTrials x N x 2]. Default is [].
 %
 
-% If the user sends in 'params' for the oi, we return the settable
-% parameters.
+%% If the user sends in the string 'params' 
+%  for the oi, we return the settable parameters.
 if strcmpi(oi,'params')
     % cmComputeParams;
     params.withFixationalEyeMovements = false;
@@ -34,7 +34,7 @@ if strcmpi(oi,'params')
     return;
 end
 
-% Parse input
+%% Moving on. Parse input
 p = inputParser;
 p.addParameter('withFixationalEyeMovements', false, @islogical);
 p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
@@ -163,7 +163,7 @@ if (obj.eccVaryingConeAperture)
         % Kernel aperture blur - variable with eccentricity
         % Partition cones into zones based on their aperture size.
         [blurApertureDiameterMicronsZones, ...  % the median cone aperture in this zone band
-            coneIndicesInZones  ...                 % the IDs of cones in this zone band
+            coneIndicesInZones  ...             % the IDs of cones in this zone band
             ] = obj.coneZonesFromApertureSizeAndOIresolution(coneApertureDiametersMicrons, oiResMicrons);
         %fprintf('Cone zoning based on aperture size took %f seconds.\n', etime(clock, tStart));
     else
@@ -313,6 +313,7 @@ end
 %fprintf('Tile lapsed to compute mean response: %2.2f seconds\n', etime(clock, tStart));
 
 
+
 responseTemporalSupport = (0:(size(noiseFreeAbsorptionsCount,2)-1)) * obj.integrationTime;
 
 if (strcmp(obj.noiseFlag, 'none'))
@@ -326,6 +327,7 @@ else
     end
     %fprintf('Tile lapsed to compute Poisson noise for %d trials: %2.2f seconds\n', nTrials, etime(clock, tStart));
 end
+
 
 % If we have no eye movements, just return the first noise free absorptions count
 if ((isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0)) && (nTrials > 1))
@@ -412,3 +414,4 @@ end
 
 
 end
+

@@ -27,6 +27,9 @@
 % History:
 %   12/03/20  dhb  Added comments.
 %   12/27/20  dhb  Lots of tune-up and comments.
+%   04/11/21  dhb  Correctly set pupil size in optical image structure.
+%                  This was not happening, because it isn't done in
+%                  wvf2oi().
 
 %% Initialize
 close all; clear; ieInit;
@@ -243,6 +246,10 @@ wvfP = wvfComputePSF(wvfP);
 
 % Generate optical image object from the wavefront object
 theOI = wvf2oi(wvfP);
+
+% Set the fNumber to correspond to the pupil size
+focalLengthMM = oiGet(theOI,'focal length')*1000;
+theOI = oiSet(theOI, 'optics fnumber', focalLengthMM/pupilDiameterMm);
 
 % You could adjust lens density if you don't like the default values for
 % the very long wavelengths used here.  But, the default density at long

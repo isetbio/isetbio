@@ -1,5 +1,7 @@
+% Function to either generate a lattice or save the lattice at some point
+% in its progression.
 function testLatticeGenerator
-    fovDegs = 45;
+    fovDegs = 58;
     whichEye = 'right eye';
     neuronType = 'cones'; %'midget ganglion cells';
 

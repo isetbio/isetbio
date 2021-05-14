@@ -9,6 +9,8 @@
 %
 % See Also:
 %   t_cMosaicGenerate
+%   t_cMosaicSingleEyeMovementPath
+%   t_cMosaicMultipleEyeMovementPaths
 %   t_cMosaicEccDependentAbsorptionEfficacy
 %   t_cMosaicBenchMark
 %   t_cMosaicOffAxis
@@ -33,7 +35,7 @@ oi = oiCompute(scene, oi);
 
 %% Generate the mosaic
 cm = cMosaic(...
-    'sizeDegs', [1.0 1.5], ...     % SIZE: 0.7 degs (x) 0.5 degs (y)
+    'sizeDegs', [1.0 1.5], ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
     'eccentricityDegs', [0 0] ...  % ECC: (0,0)
     );
 

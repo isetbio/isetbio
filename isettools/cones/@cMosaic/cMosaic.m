@@ -15,16 +15,38 @@ classdef cMosaic < handle
     %    creates the cone mosaic object. Optional parameter name/value
     %    pairs are listed below.
     %
-    %    ...
-    %
     % Inputs:
     %    None required.
     %
     % Outputs:
-    %    cMosaic           The created coneMosaic object.
+    %    cMosaic           The created cMosaic object.
     %
     % Optional key/value pairs:
-    %    'name'             - String. Mosaic name. Default 'cone mosaic'.
+    %    'name'                             - String. Mosaic name. Default 'cone mosaic'.
+    %    'wave'                             - Vector. Wavalength support. Default is: 400:10:700.
+    %    'pigment'                          - @cPhotoPigment. Custom cPhotoPigment object.
+    %    'macular'                          - @Macular(). Custom Macular object.
+    %    'coneData',                        - Struct. Struct with custom cone data, usually exported from a @coneMosaicHex.
+    %    'eccentricityDegs'                 - [x,y]. Center of the mosaic, in degrees. Default: [0 0]
+    %    'sizeDegs'                         - [sx, sy]. Width and height of the mosaic, in degrees. Default: [0.4 0.4]
+    %    'whichEye'                         - Which eye. Valid options are: {'left eye', 'right eye'}. Default: 'left eye'.
+    %    'computeMeshFromScratch'           - Logical, indicating whether to recompute the mesh from scratch. Default: false
+    %    'visualizeMeshConvergence'         - Logical, indicating whether to visualize the convergence of the mesh. Default: false 
+    %    'exportMeshConvergenceHistoryToFile' - Logical, indicating whether to save the convergence of the mesh. Default:false
+    %    'maxMeshIterations'                - Scalar. Max number of iterations for the mesh generation. Default: 100.
+    %    'micronsPerDegree'                 - Scalar. A custom retinal magnification factor, microns/deg
+    %    'eccVaryingConeAperture'           - Logical, indicating whether to allow the cone aperture (light collecting area) to vary with eccentricity. Default: true 
+    %    'eccVaryingConeBlur'               - Logical, indicating whether to allow the cone aperture (spatial blur) to vary with eccentricity.  Default: false 
+    %    'eccVaryingOuterSegmentLength'     - Logical, indicating whether to allow the outer segment (light collecting area) to vary with eccentricity. Default: true
+    %    'eccVaryingMacularPigmentDensity'  - Logical, indicating whether to allow the macular pigment density to vary with eccentricity. Default: true
+    %    'eccVaryingMacularPigmentDensityDynamic',- Logical, indicating whether to correct the macular pigment density in the presence of eye movements. Default: false
+    %    'coneDensities'                    - Vector, with 3 or 4 densities for L-, M-, S-, and possibly a 4th cone. Default: [0.6 0.3 0.1 0.0]
+    %    'tritanopicRadiusDegs'             - Scalar. Radius of S-cone free region. Default: 0.15 degs
+    %    'noiseFlag'                        - String. Indicating whether to compute with random noise, frozen noise or no-noise. Valid options are {'random', 'frozen', 'none'}
+    %    'randomSeed'                       - Random seed for the noise.
+    %    'integrationTime'                  - Scalar. Integration time in seconds. Default is: 5/1000
+    %    'useParfor'                        - Logical, indicating whether to use parfor. Default: true.
+    %
     %
     % See Also:
     %    cPhotoPigment
@@ -45,6 +67,19 @@ classdef cMosaic < handle
         % c = coneMosaicHex(3);
         % c.pigment.pdWidth/c.pigment.width, which gives 0.7899
         coneApertureToDiameterRatio = 0.79;
+        
+        % OD size is from "The Size and Shape of the Optic Disc in Normal Human Eyes"
+        %                  Harry A. Quigley, MD; Andrew E. Brown; John D. Morrison, MD; et al Stephen M. Drance, MD
+        %                  Arch Ophthalmol. 1990;108(1):51-57. doi:10.1001/archopht.1990.01070030057028
+        %
+        % OD location is from "Determination of the Location of the Fovea on the Fundus".
+        %                  Invest. Ophthalmol. Vis. Sci. 2004;45(9):3257-3258. doi: https://doi.org/10.1167/iovs.03-1157.
+        % These are both specified in retinal coordinates
+        opticDisk = struct(...
+            'centerDegs', [15.5, 1.5], ...
+        	'horizontalDiameterMM', 1.77, ...
+        	'verticalDiameterMM', 1.88, ...
+            'rotationDegs', 6.0);
     end
     
     % Public properties
@@ -92,9 +127,9 @@ classdef cMosaic < handle
         randomSeed;
         
         % Color for cone rendering in mosaic visualization
-        lConeColor = [1 0.2 0.3];
-        mConeColor = [0.2 1 0.4];
-        sConeColor = [0.3 0.1 1];
+        lConeColor = [1 0.1 0.5];
+        mConeColor = [0.1 1 0.5];
+        sConeColor = [0.6 0.1 1];
         kConeColor = [0.9 0.9 0.2];
     end
     
@@ -110,10 +145,10 @@ classdef cMosaic < handle
     
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
-        % [n x 2] matrix of RGC positions, in microns
+        % [n x 2] matrix of cone positions, in microns
         coneRFpositionsMicrons;
         
-        % [n x 2] matrix of RGC positions, in degrees
+        % [n x 2] matrix of cone positions, in degrees
         coneRFpositionsDegs;
         
         % [n x 1] vector of cone spacings, in degrees
@@ -145,10 +180,6 @@ classdef cMosaic < handle
         
         % Either 'right eye' or 'left eye'
         whichEye;
-        
-        % Photon absorption attenuation factors to account for decrease in 
-        % outer segment length with eccentricity
-        outerSegmentLengthEccVariationAttenuationFactors = [];
         
         % Fixational eye movement object for the mosaic
         fixEMobj = [];
@@ -194,7 +225,7 @@ classdef cMosaic < handle
     properties (GetAccess=private, SetAccess=private)
         % Size (in degs) of source lattice from which to crop positions for
         % the desired eccentricity
-        sourceLatticeSizeDegs = 58; %45;
+        sourceLatticeSizeDegs = 58;
         
         % Struct containing information related to the current cone partition
         % into zones based on their aperture size
@@ -207,6 +238,10 @@ classdef cMosaic < handle
         % OSLength attenuation factors (only used when importing coneData)
         importedOSLengthAttenuationFactors = [];
         
+        % Photon absorption attenuation factors to account for decrease in 
+        % outer segment length with eccentricity
+        outerSegmentLengthEccVariationAttenuationFactors = [];
+        
         % cone aperture blur (only used when importing coneData)
         importedBlurDiameterMicrons = [];
         
@@ -216,6 +251,10 @@ classdef cMosaic < handle
         % Min and max cone positions
         minRFpositionMicrons;
         maxRFpositionMicrons;
+        
+        % Full absorptions density map
+        absorptionsDensityFullMap;
+        absorptionsDensitySpatialSupportMicrons;
     end
     
     % Public methods
@@ -241,11 +280,11 @@ classdef cMosaic < handle
             p.addParameter('coneData', [], @(x)(isempty(x) || (isstruct(x))));
             p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('computeMeshFromScratch', false, @islogical);
             p.addParameter('visualizeMeshConvergence', false, @islogical);
             p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
             p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
-            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
             p.addParameter('eccVaryingConeAperture', true, @islogical);
             p.addParameter('eccVaryingConeBlur', false, @islogical);
@@ -258,7 +297,6 @@ classdef cMosaic < handle
             p.addParameter('randomSeed', [], @(x)(isscalar(x) || isempty(x)));
             p.addParameter('integrationTime', 5/1000, @isscalar);
             p.addParameter('useParfor', true, @islogical);
-            
             p.parse(varargin{:});
             
             obj.name = p.Results.name;
@@ -289,8 +327,7 @@ classdef cMosaic < handle
             % Parallel computations
             obj.useParfor = p.Results.useParfor;
             
-            % Assert that we have appropriate pigment if we have more than
-            % 3 cone types
+            % Assert that we have appropriate pigment if we have more than 3 cone types
             if (numel(obj.coneDensities)>3) && (any(obj.coneDensities(4:end)>0.0))
                 assert(numel(obj.coneDensities) == size(obj.pigment.absorptance,3), ...
                     sprintf('cPhotoPigment is not initialized for %d types of cones', numel(obj.coneDensities)));
@@ -311,14 +348,17 @@ classdef cMosaic < handle
             if (isempty(p.Results.coneData))
                 if (p.Results.computeMeshFromScratch)
                     % Re-generate lattice
-                    visualizeMeshConvergence = p.Results.visualizeMeshConvergence; 
-                    exportMeshConvergenceHistoryToFile = p.Results.exportMeshConvergenceHistoryToFile;
-                    obj.regenerateConePositions(p.Results.maxMeshIterations,  ...
-                        visualizeMeshConvergence, exportMeshConvergenceHistoryToFile);
+                    obj.regenerateConePositions(...
+                        p.Results.maxMeshIterations,  ...
+                        p.Results.visualizeMeshConvergence, ...
+                        p.Results.exportMeshConvergenceHistoryToFile);
                 else
                     % Import positions by cropping a large pre-computed patch
                     obj.initializeConePositions();
                 end
+                
+                % Remove cones within the optic disk
+                obj.removeConesWithinOpticNerveHead();
                 
                 % Set random seed
                 if (isempty(obj.randomSeed))
@@ -346,7 +386,16 @@ classdef cMosaic < handle
             obj.maxRFpositionMicrons = squeeze(max(obj.coneRFpositionsMicrons,[],1));
             
             % Compute ecc in microns
-            obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
+            if (isempty(obj.minRFpositionMicrons))
+                % No cones, set value differently
+                if (~isempty(obj.micronsPerDegreeApproximation))
+                    obj.eccentricityMicrons = obj.eccentricityDegs * obj.micronsPerDegreeApproximation;
+                else
+                    obj.eccentricityMicrons = obj.eccentricityDegs *  300;
+                end
+            else
+                obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
+            end
             
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
@@ -360,7 +409,10 @@ classdef cMosaic < handle
         % Method to visualize the cone mosaic
         params = visualize(obj, varargin);
         
-        % Method to generate an eye movement sequence
+        % Method to visualize the continuous, full absorptions density and the actual cone positions
+        visualizeFullAbsorptionsDensity(obj, figNo);
+        
+        % Method to generate eye movement sequences
         emGenSequence(obj, durationSeconds, varargin);
         
         % Method to generate an ensemble of OIs for the mosaic
@@ -374,6 +426,12 @@ classdef cMosaic < handle
         % depending on the aperture size of the mosaic's cones and whether
         % the computation is done using ecc-dependent blur mode
         scenePixelSizeDegs = suggestedScenePixelSizeDegs(obj, eccVaryingConeBlur);
+        
+        % Method to return indices of cones within an ROI
+        coneIndices = indicesOfConesWithinROI(obj, roi);
+        
+        % Generate struct representing the optical disk
+        [odStructMicrons, odStructDegs] = odStruct(obj);
         
         % Getter/Setter methods for dependent variables
         % QE
@@ -395,8 +453,17 @@ classdef cMosaic < handle
             
         % MICRONSPERDEGREE
         function val = get.micronsPerDegree(obj)
-            val = (max(obj.coneRFpositionsMicrons,[],1) - min(obj.coneRFpositionsMicrons,[],1)) / ...
-                  (max(obj.coneRFpositionsDegs,[],1)    - min(obj.coneRFpositionsDegs,[],1));
+            if (isempty(obj.coneRFpositionsMicrons))
+                % No cones in the current patch. Select some value
+                if (~isempty(obj.micronsPerDegreeApproximation))
+                    val = obj.micronsPerDegreeApproximation;
+                else
+                    val = 300;
+                end
+            else
+                val = (max(obj.coneRFpositionsMicrons,[],1) - min(obj.coneRFpositionsMicrons,[],1)) / ...
+                      (max(obj.coneRFpositionsDegs,[],1)    - min(obj.coneRFpositionsDegs,[],1));
+            end
         end
         
         % SIZEMICRONS
@@ -410,12 +477,14 @@ classdef cMosaic < handle
     
     
     methods (Access=private)
-        
         % Initialize cone positions by importing them from a large previously-computed mesh
         initializeConePositions(obj);
         
         % Initialize cone positions by regenerating a new mesh. Can be slow.
         regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile);
+        
+        % Remove cones located within the optic disk
+        removeConesWithinOpticNerveHead(obj);
         
         % Method to partition cones into zones based on cone
         % aperture size and current optical image resolution
@@ -452,9 +521,22 @@ classdef cMosaic < handle
     methods (Static)
         % Static method to generate cone aprture blur kernel
         apertureKernel = generateApertureKernel(coneApertureDiameterMicrons, oiResMicrons);
+        
         % Static method to generate noisy absorption response instances
         % from the mean absorption responses
         noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin);
+        
+        % Static method to validate an ROI struct
+        validateROI(roi);
+    
+        % Static method to generate an ROI outline from an ROIstruct
+        roiOutline = generateOutline(roi);
+    
+        % Static method to convert an ROIoutline in degs to an ROIoutline in microns
+        roiOutlineMicrons = convertOutlineToMicrons(roiOutlineDegs,micronsPerDegreeApproximation);
+        
+        % Compute a 2D cone density map
+        coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);
     end
 end
 

@@ -74,7 +74,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         absorptionsRate(coneIndicesForSubmosaic) = absorptionsRateAllConeTypes(coneIndicesForSubmosaic, coneTypeIndex);
     end
     
-    % Replane nan with zeros
+    % Replace nan with zeros
     absorptionsRate(isnan(absorptionsRate)) = 0;
     
     % Account for decrease in outer segment length with eccentricity

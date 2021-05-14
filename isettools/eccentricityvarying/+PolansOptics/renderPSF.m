@@ -1,4 +1,4 @@
-function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cmap, contourLineColor, varargin)
+function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMap, contourLineColor, varargin)
     % Parse input
     p = inputParser;
     p.addParameter('superimposedConeMosaic', [], @(x)(isempty(x)||isa(x, 'coneMosaicHex')));
@@ -6,6 +6,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     p.addParameter('fontSize', 14, @isnumeric);
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('xyTicks', -8:1:8, @isnumeric);
+    p.addParameter('alpha', 0.3, @isscalar);
     
     p.parse(varargin{:});
     theConeMosaic = p.Results.superimposedConeMosaic;
@@ -13,81 +14,60 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cma
     xyTicks = p.Results.xyTicks;
     fontSize = p.Results.fontSize;
     plotTitle = p.Results.plotTitle;
+    alpha = p.Results.alpha;
     
+    smallTitle = true;
     if (~isempty(theConeData))
         conePositionsArcMin = theConeData.conePositionsArcMin;
         coneAperturesArcMin = theConeData.coneAperturesArcMin;
-        faceColors = [0.7 0.7 0.9];
+        faceColors = [0.9 0.9 0.9];
         faceAlpha = 0.32;
         lineWidth = 1.0;
-        edgeColor = [0.3 0.3 0.9];
+        edgeColor = [0.6 0.6 0.6];
         renderPatchArray(axesHandle, coneAperturesArcMin, conePositionsArcMin, ...
-    faceColors, edgeColor, lineWidth, faceAlpha)
+    faceColors, edgeColor, lineWidth, faceAlpha);
+        smallTitle = true;
 
     elseif (~isempty(theConeMosaic))
         % Retrieve cone positions (microns), cone spacings, and cone types
         cmStruct = theConeMosaic.geometryStructAlignedWithSerializedConeMosaicResponse();
         conePositionsArcMin = cmStruct.coneLocs * 60;
         coneAperturesArcMin = cmStruct.coneApertures * 60;
-        renderConeApertures(axesHandle, conePositionsArcMin, coneAperturesArcMin, [1 0 0]);
+        renderConeApertures(axesHandle, conePositionsArcMin, coneAperturesArcMin, [.2 0.2 0.2]);
+        smallTitle = false;
     end
     
-    
-    C = contourc(xSupport, ySupport, thePSF, zLevels);
-    dataPoints = size(C,2);
-    
-    cmapLength = size(cmap,1);
-    minZ = 0;
-    maxZ = 1;
-    
-    hold(axesHandle, 'on');
-    
-    % Faces for all zLevels
-    startPoint = 1;
-    while (startPoint < dataPoints)
-        theLevel = C(1,startPoint);
-        theCMapIndex = round((theLevel-minZ)/(maxZ-minZ)*cmapLength);
-        theCMapIndex = min([cmapLength max([1 theCMapIndex])]);
-        theLevelVerticesNum = C(2,startPoint);
-        x = C(1,startPoint+(1:theLevelVerticesNum));
-        y = C(2,startPoint+(1:theLevelVerticesNum));
-        v = [x(:) y(:)];
-        f = 1:numel(x);
-        patch(axesHandle, 'Faces', f, 'Vertices', v, ...
-                'FaceColor', cmap(theCMapIndex,:), ...
-                'FaceAlpha', 0.5, ...
-                'EdgeColor', 'none');
-        
-        startPoint = startPoint + theLevelVerticesNum+1;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
+    % Render the semi-transparent plot of the RGC RF
+    if (isempty(cMap))
+        cMap = brewermap(1024, 'reds');
     end
+    semiTransparentContourPlot(axesHandle, xSupport, ySupport, thePSF, zLevels, cMap, alpha, contourLineColor);
+    axis(axesHandle, 'equal')
+    box(axesHandle, 'on');
+    set(axesHandle, 'XTick', [], 'YTick', [], 'Color', [0.8 0.85 0.85]);
     
-   % Edges for the outlined levels only
-    startPoint = 1;
-    while (startPoint < dataPoints)
-        theLevelVerticesNum = C(2,startPoint);
-        x = C(1,startPoint+(1:theLevelVerticesNum));
-        y = C(2,startPoint+(1:theLevelVerticesNum));
-        v = [x(:) y(:)];
-        f = 1:numel(x);
-        patch(axesHandle, 'Faces', f, 'Vertices', v, ...
-                  'FaceColor', 'none', 'EdgeColor', contourLineColor);
-        startPoint = startPoint + theLevelVerticesNum+1;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-    end
     xlabel(axesHandle, 'arc min');
     ylabel(axesHandle, 'arc min');
     axis(axesHandle, 'equal');
     grid(axesHandle, 'on');
     box(axesHandle, 'on');
-    set(axesHandle, 'XLim', xyRange, 'YLim', xyRange, 'Color', [1 1 1]);
+    set(axesHandle, 'XLim', xyRange, 'YLim', xyRange, 'CLim', [0 1], 'Color', [1 1 1]);
     set(axesHandle, 'XTick', xyTicks, 'YTick', xyTicks);
     set(axesHandle, 'FontSize', fontSize);
-    
     if (~isempty(plotTitle))
-        title(axesHandle,plotTitle);
+        if (smallTitle)
+            xx = xyRange(1) + 0.1*(xyRange(2)-xyRange(1));
+            yy = xyRange(2) - 0.1*(xyRange(2)-xyRange(1));
+            title(axesHandle,plotTitle, 'FontSize', 12, 'FontWeight', 'normal', 'Color', [.5 .2 1], 'FontName', 'Menlo');
+        else
+            title(axesHandle,plotTitle);
+        end
     end
     
     hold(axesHandle, 'off');
     drawnow;
+    
 end
 
 function renderConeApertures(axesHandle, conePositionsArcMin, coneAperturesArcMin, color)
@@ -147,4 +127,37 @@ function renderPatchArray(axesHandle, apertureRadii, rfCoords, ...
     S.FaceAlpha = faceAlpha;
     S.LineWidth = lineWidth;
     patch(S, 'Parent', axesHandle);
+    hold(axesHandle, 'on');
 end
+
+
+
+ 
+% Function to generate a semitransparent controur plot
+function semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor)
+    % Compute contours at desired Z-level
+    C = contourc(xSupport, ySupport, zData, zLevels);
+    % Go through the contour matrix and plot each contour separately
+    dataPoints = size(C,2);
+    startPoint = 1;
+    hold(axesHandle, 'on');
+    while (startPoint < dataPoints)
+        theLevel = C(1,startPoint);
+        theNormalizedLevel = (theLevel-min(zLevels))/(max(zLevels)-min(zLevels));
+        theLevelVerticesNum = C(2,startPoint);
+        x = C(1,startPoint+(1:theLevelVerticesNum));
+        y = C(2,startPoint+(1:theLevelVerticesNum));
+        v = [x(:) y(:)];
+        f = 1:numel(x);
+
+        lutIndex = 1+round(theNormalizedLevel*(size(cmap,1)-1));
+        patch('Faces', f, 'Vertices', v, 'EdgeColor', [0 0 0], ...
+            'FaceColor', cmap(lutIndex,:), ...
+            'FaceAlpha', alpha, ...
+            'EdgeColor', contourLineColor, ...
+            'LineStyle', '-', 'LineWidth', 1.0, ...
+        'Parent', axesHandle);
+        startPoint = startPoint + theLevelVerticesNum+1;
+    end
+end
+ 
