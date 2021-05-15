@@ -45,6 +45,7 @@ function initializeStatusFields(app)
     app.statusMessages('fixational eye movements') = s;
     app.statusMessages('mRGC mosaic') = s;
     app.statusMessages('pRGC mosaic') = s;
+    app.statusMessages('computational observer') = s;
     
     CSFGeneratorApp.render.statusField(app,'A', 'region of interest (visual field)');
     CSFGeneratorApp.render.statusField(app,'B', 'optics'); 
