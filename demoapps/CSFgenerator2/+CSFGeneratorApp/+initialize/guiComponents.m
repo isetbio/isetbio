@@ -78,9 +78,10 @@ function initializeStimulusGUIComponents(app)
     CSFGeneratorApp.decode.stimulusResolutionSpinner(app, 'valueToSlider', app.stimParams.resolutionPixels);
     CSFGeneratorApp.decode.stimulusSizeSpinner(app, 'valueToSlider', app.stimParams.sizeDegs);
     
-    % Stimulus spatial envelope, orientation, and spatial frequency
+    % Stimulus spatial envelope, orientation, spatial frequency and spatial phase
     CSFGeneratorApp.decode.stimulusSpatialEnvelopeDropDown(app, 'valueToSlider', app.stimParams.spatialEnvelope);
     CSFGeneratorApp.decode.stimulusSpatialFrequencySpinner(app, 'valueToSlider', app.stimParams.spatialFrequencyCPD);
+    CSFGeneratorApp.decode.stimulusSpatialPhaseSpinner(app, 'valueToSlider', app.stimParams.spatialPhaseDegs);
     CSFGeneratorApp.decode.stimulusOrientationSpinner(app, 'valueToSlider', app.stimParams.orientationDegs);
 end
 

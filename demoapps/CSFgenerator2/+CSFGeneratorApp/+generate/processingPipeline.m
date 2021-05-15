@@ -1,5 +1,15 @@
 function processingPipeline(app, headerMessage, varargin)
     
+     p = inputParser;
+     p.addParameter('doNotRegenerateConeMosaic', false, @islogical);
+     p.addParameter('doNotRegenerateOptics', false, @islogical);
+     p.addParameter('doNotRegenerateStimulus', false, @islogical);
+     p.parse(varargin{:});
+     
+     regenerateConeMosaic = ~p.Results.doNotRegenerateConeMosaic;
+     regenerateOptics = ~p.Results.doNotRegenerateOptics;
+     regenerateStimulus = ~p.Results.doNotRegenerateStimulus;
+     
      % Determine whether we will show any more progress bars
      %app.showsProgressBar = getpref('ISET','waitbar');
             
@@ -15,20 +25,26 @@ function processingPipeline(app, headerMessage, varargin)
          parpool('local');
      end
          
-    % Generate the cone mosaic
-    dialogBox.Value = 0.5; 
-    dialogBox.Message = 'Generating cone mosaic. Please wait ...';
-    CSFGeneratorApp.generate.coneMosaic(app, dialogBox);
+    if (regenerateConeMosaic)
+        % Generate the cone mosaic
+        dialogBox.Value = 0.5; 
+        dialogBox.Message = 'Generating cone mosaic. Please wait ...';
+        CSFGeneratorApp.generate.coneMosaic(app, dialogBox);
+    end
     
-    % Generate the optics
-    dialogBox.Value = 0.6; 
-    dialogBox.Message = 'Generating optics. Please wait ...';        
-    CSFGeneratorApp.generate.optics(app, dialogBox);
+    if (regenerateOptics)
+        % Generate the optics
+        dialogBox.Value = 0.6; 
+        dialogBox.Message = 'Generating optics. Please wait ...';        
+        CSFGeneratorApp.generate.optics(app, dialogBox);
+    end
     
-    % Compute the stimulus
-    dialogBox.Value = 0.7; 
-    dialogBox.Message = 'Generating stimulus. Please wait ...';
-    CSFGeneratorApp.generate.stimulus(app, dialogBox);
+    if (regenerateStimulus)
+        % Compute the stimulus
+        dialogBox.Value = 0.7; 
+        dialogBox.Message = 'Generating stimulus. Please wait ...';
+        CSFGeneratorApp.generate.stimulus(app, dialogBox);
+    end
     
     % Compute the cone mosaic activation
     dialogBox.Value = 0.8; 

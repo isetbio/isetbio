@@ -44,7 +44,7 @@ function coneMosaicActivation(app, dialog)
        (numel(app.products.lastNoiseFreeConeMosaicActivation) == numel(app.products.noiseFreeConeMosaicActivation))
         app.products.residualConeMosaicActivation = 100 * ...
             (app.products.noiseFreeConeMosaicActivation-app.products.lastNoiseFreeConeMosaicActivation) ./ ...
-            app.products.noiseFreeConeMosaicActivation;
+             app.products.noiseFreeConeMosaicActivation;
     else
         app.products.residualConeMosaicActivation = 0*app.products.noiseFreeConeMosaicActivation;
     end
