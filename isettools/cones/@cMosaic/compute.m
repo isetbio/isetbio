@@ -23,7 +23,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     % Parse input
     p = inputParser;
     p.addParameter('withFixationalEyeMovements', false, @islogical);
-    p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
+    p.addParameter('opticalImagePositionDegs', obj.opticalImagePositionDegs, @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
     p.addParameter('nTimePoints', [], @isscalar);
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('seed', 1, @isnumeric);

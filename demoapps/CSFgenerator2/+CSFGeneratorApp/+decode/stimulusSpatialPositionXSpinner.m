@@ -7,4 +7,9 @@ function stimulusSpatialPositionXSpinner(app, direction, value)
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
     end
+    
+    % Update thex-position of the 'opticalImagePositionDegs' property of the cMosaic
+    if (~app.stimParams.mosaicCenteredPosition) 
+        app.components.coneMosaic.opticalImagePositionDegs(1) = value;
+    end
 end
