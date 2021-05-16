@@ -21,7 +21,8 @@ function processingPipeline(app, headerMessage, varargin)
      
      poolobj = gcp('nocreate'); 
      if isempty(poolobj)
-         pause(.1)
+         drawnow;
+         pause(0.5)
          parpool('local');
      end
          
