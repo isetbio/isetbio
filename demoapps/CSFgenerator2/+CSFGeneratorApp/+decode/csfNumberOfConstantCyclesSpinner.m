@@ -1,9 +1,9 @@
-function stimulusSizeSpinner(app, direction, value)
+function csfNumberOfConstantCyclesSpinner(app, direction, value)
     switch direction
         case 'valueToSlider'
-            app.stimulusSizeSpinner.Value = value;
+            app.csfNumberOfConstantCyclesSpinner.Value = value;
         case 'sliderToValue'
-            app.stimParams.sizeDegs = value;
+           app.csfParams.numberOfConstantCycles = value;
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
     end

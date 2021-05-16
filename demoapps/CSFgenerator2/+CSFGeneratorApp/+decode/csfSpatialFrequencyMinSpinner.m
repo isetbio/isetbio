@@ -1,9 +1,9 @@
-function stimulusSizeSpinner(app, direction, value)
+function csfSpatialFrequencyMinSpinner(app, direction, value)
     switch direction
         case 'valueToSlider'
-            app.stimulusSizeSpinner.Value = value;
+            app.csfSpatialFrequencyMinSpinner.Value = value;
         case 'sliderToValue'
-            app.stimParams.sizeDegs = value;
+           app.csfParams.spatialFrequencyMin = value;
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
     end

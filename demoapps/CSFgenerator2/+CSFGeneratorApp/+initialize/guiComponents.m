@@ -44,6 +44,7 @@ function initializeStatusFields(app)
     app.statusMessages = containers.Map();
     app.statusMessages('region of interest (visual field)') = s;
     app.statusMessages('stimulus') = s;
+    app.statusMessages('tasks') = s;
     app.statusMessages('performance assessment') = s;
     app.statusMessages('optics') = s;
     app.statusMessages('cone mosaic') = s;
@@ -201,6 +202,13 @@ function initializeComputationalObserverGUIComponents(app)
     CSFGeneratorApp.decode.psychometricFunctionEstimationMethodSwitch(app, 'valueToSlider', app.psychometricFunctionParams.estimationMethod);
     
     % The CSF components
+    CSFGeneratorApp.decode.csfSpatialFrequencyMinSpinner(app, 'valueToSlider', app.csfParams.spatialFrequencyMin);
+    CSFGeneratorApp.decode.csfSpatialFrequencyMaxSpinner(app, 'valueToSlider', app.csfParams.spatialFrequencyMax);
+    CSFGeneratorApp.decode.csfSpatialFrequencySamplesSpinner(app, 'valueToSlider', app.csfParams.spatialFrequencySamples);
+    CSFGeneratorApp.decode.csfConstantParameterSwitch(app, 'valueToSlider', app.csfParams.constantParameter);
+    CSFGeneratorApp.decode.csfNumberOfConstantCyclesSpinner(app, 'valueToSlider', app.csfParams.numberOfConstantCycles);
+    CSFGeneratorApp.decode.csfSourceSignalKnob(app, 'valueToSlider', app.csfParams.sourceSignal);
+    
 end
 
 

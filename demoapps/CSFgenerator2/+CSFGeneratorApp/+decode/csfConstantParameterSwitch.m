@@ -1,11 +1,17 @@
-function stimulusSizeSpinner(app, direction, value)
+function csfConstantParameterSwitch(app, direction, value)
     switch direction
         case 'valueToSlider'
-            app.stimulusSizeSpinner.Value = value;
+            app.csfConstantParameterSwitch.Value = value;
         case 'sliderToValue'
-            app.stimParams.sizeDegs = value;
+           app.csfParams.constantParameter = value;
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
+    end
+    
+    if (strcmp(value, 'constant size'))
+        app.csfNumberOfConstantCyclesSpinner.Enable = 'off';
+    else
+        app.csfNumberOfConstantCyclesSpinner.Enable = 'on';
     end
     
     % Update stimulus size at lowest spatial frequency
