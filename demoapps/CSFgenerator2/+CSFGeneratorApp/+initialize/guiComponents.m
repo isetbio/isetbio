@@ -17,6 +17,11 @@ function guiComponents(app)
     
     % Initialize the cone mosaic GUI components
     initializeConeMosaicGUIComponents(app);
+    
+    % Initialize the computational observer GUI components
+    initializeComputationalObserverGUIComponents(app);
+    
+    
 end
 
 function initializeColors(app)
@@ -179,5 +184,24 @@ function initializeROIGUIComponents(app)
         CSFGeneratorApp.decode.roiPolarEccentricitySlider(app, 'valueToSlider', app.roiParams.polarEccentricityDegs);
     end
 end
+
+function initializeComputationalObserverGUIComponents(app)
+
+    % The psychometric function estimation components
+    CSFGeneratorApp.decode.psychometricFunctionClassifierTypeDropDown(app, 'valueToSlider', app.psychometricFunctionParams.classifierType);
+    CSFGeneratorApp.decode.psychometricFunctionClassifierTrainingTrialsSpinner(app, 'valueToSlider', app.psychometricFunctionParams.trainingTrials);
+    CSFGeneratorApp.decode.psychometricFunctionClassifierTestTrialsSpinner(app, 'valueToSlider', app.psychometricFunctionParams.testTrials);
+    CSFGeneratorApp.decode.psychometricFunctionContrastLevelsSpinner(app, 'valueToSlider', app.psychometricFunctionParams.contrastLevels);
+    CSFGeneratorApp.decode.psychometricFunctionLog10ContrastMinSpinner(app, 'valueToSlider', app.psychometricFunctionParams.log10ContrastMin);
+    CSFGeneratorApp.decode.psychometricFunctionLog10ContrastMaxSpinner(app, 'valueToSlider', app.psychometricFunctionParams.log10ContrastMax);
+    CSFGeneratorApp.decode.psychometricFunctionLog10ContrastDeltaSpinner(app, 'valueToSlider', app.psychometricFunctionParams.log10ContrastDelta);
+    CSFGeneratorApp.decode.psychometricFunctionSlopeMinSpinner(app, 'valueToSlider', app.psychometricFunctionParams.slopeMin);
+    CSFGeneratorApp.decode.psychometricFunctionSlopeMaxSpinner(app, 'valueToSlider', app.psychometricFunctionParams.slopeMax);
+    CSFGeneratorApp.decode.psychometricFunctionSlopeDeltaSpinner(app, 'valueToSlider', app.psychometricFunctionParams.slopeDelta);
+    CSFGeneratorApp.decode.psychometricFunctionEstimationMethodSwitch(app, 'valueToSlider', app.psychometricFunctionParams.estimationMethod);
+    
+    % The CSF components
+end
+
 
 
