@@ -1,18 +1,17 @@
-function contrastSensitivityFunction = contrastSensitivityFunction(app, varargin)
+function csfData = contrastSensitivityFunction(app, varargin)
     
     p = inputParser;
     p.addParameter('appIsParams', false, @islogical);
     p.parse(varargin{:});
     
     % Form output struct
-    contrastSensitivityFunction = struct(....
+    csfData = struct(....
         'spatialFrequencySupport', logspace(...
                                         log10(app.csfParams.spatialFrequencyMin), ...
                                         log10(app.csfParams.spatialFrequencyMax), ...
                                         app.csfParams.spatialFrequencySamples), ...
         'sensitivity', zeros(1, app.csfParams.spatialFrequencySamples));
     
-
 
     theNeuralEngine = neuralResponseEngine(@nrePhotopigmentExcitationsCmosaicSingleShot);
     theNeuralEngine.customNeuralPipeline(struct(...
@@ -46,10 +45,10 @@ function contrastSensitivityFunction = contrastSensitivityFunction(app, varargin
             
     % Generate stimParams for gratingSceneEngine
     fixedStimParamsStruct = CSFGeneratorApp.generate.stimParamsStructForGratingSceneEngine(app.stimParams);
-          
+        
+    tic
     % Go through each spatial frequency and estimate the psychometric function
-    for idx = 1:length(contrastSensitivityFunction.spatialFrequencySupport) 
-
+    for iSF = 1:length(csfData.spatialFrequencySupport) 
         % Contrast will be varied by mQuest
         fixedStimParamsStruct.contrast = [];
         
@@ -57,27 +56,57 @@ function contrastSensitivityFunction = contrastSensitivityFunction(app, varargin
         fixedStimParamsStruct.warningInsteadOfErrorOnOutOfGamut = false;
         
         % Spatial frequency examined
-        fixedStimParamsStruct.sf = contrastSensitivityFunction.spatialFrequencySupport(idx);
+        fixedStimParamsStruct.sf = csfData.spatialFrequencySupport(iSF);
+        
+        % Some feecback
+        app.statusMessages('computational observer')  = struct(...
+            'text', sprintf('Computing psychometric function for %2.1f c/deg\n', fixedStimParamsStruct.sf), ...
+            'fontColor', app.colors('good message foreground'), ...
+            'backgroundColor', app.colors('good message background'), ...
+            'fontWeight', 'normal');
+        
+        % Render the status on the status field of tab B
+        CSFGeneratorApp.render.statusField(app,'B', 'computational observer'); 
         
         % Generate the stimulus scene engine
         [~, ~, ~, gratingSceneEngine] = CSFGeneratorApp.generate.gratingSceneEngine(fixedStimParamsStruct, []);
         
-        % Some feedback
-        fprintf('Computing psychometric function for %2.1f c/deg\n', fixedStimParamsStruct.sf);
-        
         % Compute the threshold for this grating  using the imported neural
         % and classifier engines and params
-        logThresholdData = computeThresholdTAFC(...
+        [logThresholdData, questOBJ] = computeThresholdTAFC(...
             gratingSceneEngine, theNeuralEngine, theClassifierEngine, ...
             classifierEngineParams, ...
             thresholdParams, ...
             questEngineParams, ...
             'visualizeAllComponents', false, ...
             'beVerbose', false);
-                
-        contrastSensitivityFunction.sensitivity(idx) = 10^(-logThresholdData); 
-    end % idx
+        
+        % Call the thresholdMLE() method of the questOBJ to update
+        % the current psychometric function data
+        [~, ~, psychometricFunctionData{iSF}] = questOBJ.thresholdMLE(...
+                    'showPlot',  false, 'newFigure', false, ...
+                    'returnData', true);
+               
+        % Plot the estimated psychometric function for this spatial frequency
+        CSFGeneratorApp.render.psychometricFunctionView(app, 'update', ...
+            'withData', psychometricFunctionData);
+        
+        % Save data
+        csfData.sensitivity(iSF) = 10^(-logThresholdData); 
+    end % iSF
     
+    % Display the computed CSF
+    CSFGeneratorApp.render.csfView(app, 'update', 'withData', csfData);
+        
+    % Some feecback
+    app.statusMessages('computational observer')  = struct(...
+            'text', sprintf('Contrast sensitivity function computation completed in %2.1f minutes.', toc/60),...
+            'fontColor', app.colors('good message foreground'), ...
+            'backgroundColor', app.colors('good message background'), ...
+            'fontWeight', 'normal');
+        
+    % Render the status on the status field of tab B
+    CSFGeneratorApp.render.statusField(app,'B', 'computational observer'); 
 end
         
             

@@ -4,6 +4,7 @@ function psychometricFunctionSlopeMaxSpinner(app, direction, value)
             app.psychometricFunctionSlopeMaxSpinner.Value = value;
         case 'sliderToValue'
            app.psychometricFunctionParams.slopeMax = value;
+           CSFGeneratorApp.render.psychometricFunctionView(app, 'update');
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
     end

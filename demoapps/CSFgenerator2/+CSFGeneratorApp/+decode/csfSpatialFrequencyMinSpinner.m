@@ -4,6 +4,7 @@ function csfSpatialFrequencyMinSpinner(app, direction, value)
             app.csfSpatialFrequencyMinSpinner.Value = value;
         case 'sliderToValue'
            app.csfParams.spatialFrequencyMin = value;
+           CSFGeneratorApp.render.csfView(app, 'update');
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
     end

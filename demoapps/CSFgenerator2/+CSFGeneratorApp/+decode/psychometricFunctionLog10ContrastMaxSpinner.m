@@ -4,6 +4,7 @@ function psychometricFunctionLog10ContrastMaxSpinner(app, direction, value)
             app.psychometricFunctionLog10ContrastMaxSpinner.Value = value;
         case 'sliderToValue'
            app.psychometricFunctionParams.log10ContrastMax = value;
+           CSFGeneratorApp.render.psychometricFunctionView(app, 'update');
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
     end

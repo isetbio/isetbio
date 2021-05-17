@@ -18,4 +18,6 @@ function statusField(app,tabGroupID, tabTitle)
                 app.tabGroupBStatusField.BackgroundColor = s.backgroundColor;
             end
     end
+    drawnow;
+%    pause(0.1);
 end

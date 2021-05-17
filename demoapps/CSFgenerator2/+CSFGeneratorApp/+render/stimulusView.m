@@ -24,8 +24,7 @@ end
 
 function updateStimulusViewWithNewData(app)
     frames = numel(app.products.demoStimulusSceneSequence);
-    
-    
+
     for iFrame = 1:numel(frames)
         theCurrentScene = app.products.demoStimulusSceneSequence{iFrame};
         rgbImage = sceneGet(theCurrentScene, 'rgb');
