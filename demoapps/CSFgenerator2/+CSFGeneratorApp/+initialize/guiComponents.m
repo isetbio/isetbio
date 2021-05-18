@@ -1,7 +1,7 @@
 function guiComponents(app)
-
+    
     % Initialize colors for different aspects of the app
-    initializeColors(app)
+    initializeColors(app);
     
     % Initialize the status fields
     initializeStatusFields(app);
@@ -20,9 +20,8 @@ function guiComponents(app)
     
     % Initialize the computational observer GUI components
     initializeComputationalObserverGUIComponents(app);
-    
-    
 end
+
 
 function initializeColors(app)
     app.colors = containers.Map();

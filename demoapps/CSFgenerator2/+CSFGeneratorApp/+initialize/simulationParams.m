@@ -1,5 +1,9 @@
 function simulationParams(app)
 
+    % Where to export data
+    app.exportDirectoryName = fullfile(strrep(sprintf('%s', isetRootPath), 'isettools', ''), ...
+        'demoApps/CSFGenerator2/CSFGeneratorApp');
+
     % Region of interest params
     app.roiParams = struct(...
         'fieldOfViewDegs', 1.5, ...

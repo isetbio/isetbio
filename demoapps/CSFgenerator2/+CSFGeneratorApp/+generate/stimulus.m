@@ -9,7 +9,7 @@ function stimulus(app, dialog)
     end
 
     % Generate stimParams struct fot gratingSceneEngine
-    sParams = CSFGeneratorApp.generate.stimParamsStructForGratingSceneEngine(app.stimParams);
+    sParams = CSFGeneratorApp.generate.stimParamsStructForGratingSceneEngine(app, app.stimParams.spatialFrequencyCPD);
 
     % Generate the stimulus scene engine
     [app.products.demoStimulusSceneSequence, app.products.nullStimulusScene, statusReport] = ...
