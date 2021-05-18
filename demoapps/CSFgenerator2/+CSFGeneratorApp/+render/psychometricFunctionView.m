@@ -38,7 +38,7 @@ function updatePsychometricFunctionViewWithNewData(app, psychometricData)
         [0.5 0.5 1], 'FaceAlpha', 0.15, 'EdgeAlpha', 0.35, 'EdgeColor', [0 0 1], 'LineWidth', 0.5);
     
     % Also change the XLims
-    set(app.psychometricFunctionView, 'XLim', [app.psychometricFunctionParams.log10ContrastMin-0.25 min([0 app.psychometricFunctionParams.log10ContrastMax+0.25])] );   
+    set(app.psychometricFunctionView, 'XLim', [app.psychometricFunctionParams.log10ContrastMin min([0 app.psychometricFunctionParams.log10ContrastMax])] );   
             
     if (~isempty(psychometricData))
         % Plot the psychometric functions up to this point

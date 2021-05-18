@@ -1,4 +1,4 @@
-function [csfData, psychometricFunctionData] = contrastSensitivityFunction(app, varargin)
+function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunction(app, varargin)
     
     if (isa(app, 'ISETBioCSFGenerator'))
         appCall = true;
@@ -67,10 +67,16 @@ function [csfData, psychometricFunctionData] = contrastSensitivityFunction(app, 
         end
     end
     
+    app.resetButtonPressed = false;
+    stopRun = false;
     
     tic
     % Go through each spatial frequency and estimate the psychometric function
     for iSF = 1:length(csfData.spatialFrequencySupport) 
+        
+        if (stopRun)
+            continue;
+        end
         
         % Spatial frequency examined
         [fixedStimParamsStruct, coneMosaicIsTooSmall] = CSFGeneratorApp.generate.stimParamsStructForGratingSceneEngine(app, csfData.spatialFrequencySupport(iSF));
@@ -90,6 +96,10 @@ function [csfData, psychometricFunctionData] = contrastSensitivityFunction(app, 
         % Some feedback
         message = sprintf('Computing psychometric function for %2.1f c/deg\n', fixedStimParamsStruct.sf);
         if (appCall)
+            if (app.resetButtonPressed)
+                message = 'Run aborted';
+                stopRun = true;
+            end
             % Some feecback
             app.statusMessages('computational observer')  = struct(...
                 'text', message, ...
@@ -97,7 +107,7 @@ function [csfData, psychometricFunctionData] = contrastSensitivityFunction(app, 
                 'backgroundColor', app.colors('good message background'), ...
                 'fontWeight', 'normal');
             % Render the status on the status field of tab B
-            CSFGeneratorApp.render.statusField(app,'B', 'computational observer'); 
+            CSFGeneratorApp.render.statusField(app,'B', 'computational observer');
         else
             fprintf('%s\n', message);
         end
@@ -123,6 +133,7 @@ function [csfData, psychometricFunctionData] = contrastSensitivityFunction(app, 
                     'showPlot',  false, 'newFigure', false, ...
                     'returnData', true);
                
+        
         if (appCall)
             % Plot the estimated psychometric function for this spatial frequency
             CSFGeneratorApp.render.psychometricFunctionView(app, 'update', ...
@@ -133,13 +144,20 @@ function [csfData, psychometricFunctionData] = contrastSensitivityFunction(app, 
         csfData.sensitivity(iSF) = 10^(-logThresholdData); 
     end % iSF
     
+    app.resetButtonPressed = false;
+    
     if (appCall)
         % Display the computed CSF
         CSFGeneratorApp.render.csfView(app, 'update', 'withData', csfData);
 
+        if (stopRun)
+            message = 'Run aborted by user';
+        else
+            message = sprintf('Contrast sensitivity function computation completed in %2.1f minutes.', toc/60);
+        end
         % Some feecback
         app.statusMessages('computational observer')  = struct(...
-                'text', sprintf('Contrast sensitivity function computation completed in %2.1f minutes.', toc/60),...
+                'text', message,...
                 'fontColor', app.colors('good message foreground'), ...
                 'backgroundColor', app.colors('good message background'), ...
                 'fontWeight', 'normal');

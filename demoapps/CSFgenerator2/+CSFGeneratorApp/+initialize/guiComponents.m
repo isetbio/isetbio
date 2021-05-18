@@ -1,5 +1,4 @@
 function guiComponents(app)
-    
     % Initialize colors for different aspects of the app
     initializeColors(app);
     
