@@ -1,14 +1,14 @@
 function runCSFGenerator
 
     % Load params exported by the app
-    load('CSFGeneratorAppExportNick.mat', 'params');
+    load('CSFGeneratorAppExport.mat', 'params');
         
-    % Display the params struct
+    % Display the entire params struct
     CSFGeneratorApp.render.paramsStructTree(params);
     pause
     
     % Modify params here
-    
+    ...
     
     % Build the non-gui part of the app
     app = params;
@@ -18,13 +18,12 @@ function runCSFGenerator
     app.components.optics = CSFGeneratorApp.generate.optics(app, []);
     
     % Compute the CSF
-    [csfData, psychometricFunctionData] = ...
-         CSFGeneratorApp.compute.contrastSensitivityFunction(app);
+    csfData = CSFGeneratorApp.compute.contrastSensitivityFunction(app);
      
-     % Display the CSF
-     figure(1);
-     plot(csfData.spatialFrequencySupport, csfData.sensitivity, 'ko-');
-     set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 100], 'FontSize', 16);
+    % Display the computed CSF
+    figure(1);
+    plot(csfData.spatialFrequencySupport, csfData.sensitivity, 'ko-');
+    set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 100], 'FontSize', 16);
 end
 
 
