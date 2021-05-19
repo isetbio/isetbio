@@ -15,11 +15,14 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
         'sensitivity', zeros(1, app.csfParams.spatialFrequencySamples));
     
 
+    % Instantiate a neural response engine using the
+    % @nrePhotopigmentExcitationsCmosaicSingleShot compute function
     theNeuralEngine = neuralResponseEngine(@nrePhotopigmentExcitationsCmosaicSingleShot);
     theNeuralEngine.customNeuralPipeline(struct(...
           'coneMosaic', app.components.coneMosaic, ...
           'optics', app.components.optics));
       
+    % Instantiate a response classifier engine using the @rcePoissonTAFC
     theClassifierEngine = responseClassifierEngine(@rcePoissonTAFC);
       
     % Classifier engine params
@@ -120,13 +123,11 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
             'visualizeAllComponents', app.debugParams.visualizeConeMosaicActivationComponents, ...
             'beVerbose', false);
         
-        
         % Call the thresholdMLE() method of the questOBJ to update
         % the current psychometric function data
         [~, ~, psychometricFunctionData{iSF}] = questOBJ.thresholdMLE(...
                     'showPlot',  false, 'newFigure', false, ...
                     'returnData', true);
-               
         
         if (appCall)
             % Plot the estimated psychometric function for this spatial frequency
@@ -160,5 +161,3 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
         CSFGeneratorApp.render.statusField(app,'B', 'computational observer'); 
     end
 end
-        
-            
