@@ -49,7 +49,7 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
     [fixedStimParamsStruct, coneMosaicIsTooSmall] = CSFGeneratorApp.generate.stimParamsStructForGratingSceneEngine(app, app.stimParams.spatialFrequencyCPD);
     
     if (coneMosaicIsTooSmall)
-        message = sprintf('Cone mosaic (%2.1f x %2.1f degs) does not extend over the stimulus (%2.1f degs). Increase size of cone mosaic or decrease size of stimulus.\n', ...
+        message = sprintf('Cone mosaic (%2.2f x %2.2f degs) does not extend over the stimulus (%2.2f degs). Increase size of cone mosaic or decrease size of stimulus.\n', ...
             app.coneMosaicParams.sizeDegs(1), app.coneMosaicParams.sizeDegs(2), CSFGeneratorApp.compute.stimulusSizeAtLowestSpatialFrequency(app));
         if (appCall)
             % Some feecback
@@ -87,12 +87,6 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
         % Throw an error if stimulus is out of Gamut
         fixedStimParamsStruct.warningInsteadOfErrorOnOutOfGamut = false;
 
-        if (strcmp(app.csfParams.constantParameter, 'constant cycles'))
-            % Change the 'fovDegs' param accordingly
-            spatialPeriodDegs = 1.0/fixedStimParamsStruct.sf;
-            fixedStimParamsStruct.fovDegs = app.csfParams.numberOfConstantCycles * spatialPeriodDegs;
-        end
-        
         % Some feedback
         message = sprintf('Computing psychometric function for %2.1f c/deg\n', fixedStimParamsStruct.sf);
         if (appCall)
@@ -123,7 +117,7 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
             classifierEngineParams, ...
             thresholdParams, ...
             questEngineParams, ...
-            'visualizeAllComponents', false, ...
+            'visualizeAllComponents', app.debugParams.visualizeConeMosaicActivationComponents, ...
             'beVerbose', false);
         
         

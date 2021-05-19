@@ -63,7 +63,9 @@ end
 
 function initializeCSFView(app)
     for iSF = 1:numel(app.csfDataPointHandles)
-        set(app.csfDataPointHandles(iSF), 'HandleVisibility', 'on');
+        if (ishandle(app.csfDataPointHandles(iSF)))
+            set(app.csfDataPointHandles(iSF), 'HandleVisibility', 'on');
+        end
     end
     cla(app.csfView);
     set(app.csfView, 'XLim', [0.5 100], 'YLim', [1 1000], ...

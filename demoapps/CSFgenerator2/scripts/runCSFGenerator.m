@@ -8,6 +8,15 @@ function runCSFGenerator
     pause
     
     % Modify params here
+    params.stimParams.sizeDegs = 1;
+    params.stimParams.mosaicCenteredPosition = true;
+    params.csfParams.constantParameter = 'constant size';
+    params.coneMosaicParams.sizeDegs = [1.2 1.2];
+    params.coneMosaicParams.eccentricityDegs = [0 0];
+    params.debugParams.visualizeConeMosaicActivationComponents = ~true;
+    
+   % params.csfParams.constantParameter = 'constant cycles';
+   % params.csfParams.numberOfConstantCycles = 0.56;
     ...
     
     % Build the non-gui part of the app
@@ -21,9 +30,9 @@ function runCSFGenerator
     csfData = CSFGeneratorApp.compute.contrastSensitivityFunction(app);
      
     % Display the computed CSF
-    figure(1);
-    plot(csfData.spatialFrequencySupport, csfData.sensitivity, 'ko-');
-    set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 100], 'FontSize', 16);
+    figure(1); hold on
+    plot(csfData.spatialFrequencySupport, log10(csfData.sensitivity), 'ro-', 'MarkerSize', 16, 'LineWidth', 1.0);
+    set(gca, 'XScale', 'linear', 'YScale', 'linear', 'XLim', [0 40], 'YLim', [0 4], 'FontSize', 16);
 end
 
 

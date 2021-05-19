@@ -16,31 +16,21 @@ function [sParams, coneMosaicIsTooSmall] = stimParamsStructForGratingSceneEngine
                 'duration', app.stimParams.durationSec, ...
                 'warningInsteadOfErrorOnOutOfGamut', true ...
      );
- 
-     spatialPeriodDegs = 1.0/currentSpatialFrequency;
-     if (strcmp(app.csfParams.constantParameter, 'constant cycles'))
-        stimSizeDegs = app.csfParams.numberOfConstantCycles * spatialPeriodDegs;
-     else
-        stimSizeDegs = app.stimParams.sizeDegs;
-     end
-        
+
      switch (app.stimParams.spatialEnvelope)
             case 'disk'
-                sParams.spatialEnvelopeRadiusDegs = stimSizeDegs/2;
+                sParams.spatialEnvelopeRadiusDegs = app.stimParams.sizeDegs/2;
             case 'rect'
-                sParams.spatialEnvelopeRadiusDegs = stimSizeDegs/2;
+                sParams.spatialEnvelopeRadiusDegs = app.stimParams.sizeDegs/2;
             case 'soft'
-                % In this case, where the stimulus is a Gabor,
-                % spatialEnvelopeRadiusDegs represents 1 sigma.
-                
+                % In this case, the stimulus is a Gabor, and spatialEnvelopeRadiusDegs represents 1 sigma.
                 if (strcmp(app.csfParams.constantParameter, 'constant cycles'))
-                    bandwidthOctaves = 2/app.csfParams.numberOfConstantCycles;
-                else
-                    bandwidthOctaves = 2/(stimSizeDegs * currentSpatialFrequency);
+                    sigmaDegs = app.csfParams.numberOfConstantCycles*1/currentSpatialFrequency;
+                    bandwidthOctaves = bandwidthOctavesFromSigma(sigmaDegs , currentSpatialFrequency);
+                elseif (strcmp(app.csfParams.constantParameter, 'constant size'))
+                    sigmaDegs = app.stimParams.sizeDegs/6;
                 end
-                sigma = sqrt(log(2))*(2^bandwidthOctaves + 1)/(sqrt(2)*pi*currentSpatialFrequency*(2^bandwidthOctaves-1));
-                sigmaCycles = sigma / spatialPeriodDegs;
-                sParams.spatialEnvelopeRadiusDegs = sigma; 
+                sParams.spatialEnvelopeRadiusDegs = sigmaDegs; 
             otherwise
                 error('Unknown spatial envelope: ''%s''.', app.stimParams.spatialEnvelope);
      end
@@ -52,5 +42,15 @@ function [sParams, coneMosaicIsTooSmall] = stimParamsStructForGratingSceneEngine
         coneMosaicIsTooSmall = true;
      end
             
+end
+
+function sigma = sigmaFromBandwidthOctaves(b, sf)
+    sigma = 1.0/(sf *pi) * sqrt(log(2)/2) * (2^b+1)/(2^b-1);
+end
+
+function b = bandwidthOctavesFromSigma(s, sf)
+    n = s*sf*pi+sqrt(log(2)/2);
+    d = s*sf*pi-sqrt(log(2)/2);
+    b = log2(n/d);
 end
 

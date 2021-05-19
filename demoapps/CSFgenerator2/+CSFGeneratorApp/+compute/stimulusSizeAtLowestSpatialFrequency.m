@@ -4,6 +4,6 @@ function stimSizeDegs = stimulusSizeAtLowestSpatialFrequency(app)
         stimSizeDegs = app.stimParams.sizeDegs;
     else
         spatialPeriodDegs = 1.0/app.csfParams.spatialFrequencyMin;
-        stimSizeDegs = spatialPeriodDegs * app.csfParams.numberOfConstantCycles;
+        stimSizeDegs = spatialPeriodDegs * app.csfParams.numberOfConstantCycles*6;
     end
 end
