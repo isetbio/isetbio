@@ -10,10 +10,10 @@ function runCSFGenerator
     params.csfParams.constantParameter = 'constant size';
     params.csfParams.spatialFrequencyMin = 3;
     params.csfParams.spatialFrequencyMax = 60;
-    params.csfParams.spatialFrequencySamples = 7;
+    params.csfParams.spatialFrequencySamples = 10;
     
     params.stimParams.sizeDegs = 2.5;
-    params.stimParams.resolutionPixels = 400;
+    params.stimParams.resolutionPixels = 1000;
     
     params.stimParams.meanLuminanceCdM2 = 30;
     params.coneMosaicParams.integrationTime = 125/1000;
@@ -48,23 +48,29 @@ function runCSFGenerator
     [sfSupport, constantCyclesWatsonPyradidOfVisbility] = WatsonData(app, 'CCG');
     
     % Display the computed CSF
-    figure(1); clf;
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [100 100 600 700], 'Color', [1 1 1]);
+    
     plot(csfDataConstantSize.spatialFrequencySupport, csfDataConstantSize.sensitivity, ...
-        'bo-', 'MarkerSize', 16, 'LineWidth', 1.5);
+        'bo-', 'MarkerSize', 14, 'MarkerFaceColor', [0.5 0.5 1.0], 'LineWidth', 1.5);
     hold on
     plot(csfDataConstantCycles.spatialFrequencySupport, csfDataConstantCycles.sensitivity, ...
-        'ro-', 'MarkerSize', 16, 'LineWidth', 1.5);
+        'ro-', 'MarkerSize', 14, 'MarkerFaceColor', [1 0.5 0.5],'LineWidth', 1.5);
    
     % Superimpose Watson's pyradid of visibility data for constant size and
     % constant cycles
     plot(sfSupport, constantSizeWatsonPyradidOfVisbility, ...
-        'b--', 'MarkerSize', 16, 'LineWidth', 1.5);
+        'b--', 'LineWidth', 1.5);
     plot(sfSupport, constantCyclesWatsonPyradidOfVisbility, ...
-        'r--', 'MarkerSize', 16, 'LineWidth', 1.5);
-    set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', [0 40], 'YLim', [0 2000], 'FontSize', 16);
-    set(gca, 'XTick', [3 10 30], 'YTick', [1 3 10 30 100 300 1000 3000]);
+        'r--', 'LineWidth', 1.5);
+    set(gca, 'XScale', 'linear', 'YScale', 'log', ...
+        'XLim', [2 70], 'YLim', [1 300], 'FontSize', 16);
+    set(gca, 'XTick', [2 3 5 10 20 30 50], ...
+        'YTick', [1 3 10 30 100 300 1000 3000]);
+    xlabel('spatial frequency (c/deg)');
+    ylabel('sensitivity');
     grid on;
-    legend({'ISETBio constant size', 'ISETBio constant cycles', 'Watson constant size', 'Watson constant cycles'});
+    legend({'ISETBio constant size', 'ISETBio constant cycles', 'Watson''s PofV constant size', 'Watson''s PoV constant cycles'});
     
 end
 
