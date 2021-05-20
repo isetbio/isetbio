@@ -136,7 +136,14 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
         end
         
         % Save data
-        csfData.sensitivity(iSF) = 10^(-logThresholdData); 
+        thePsychometricFunction = psychometricFunctionData{iSF};
+        thresholdPCorrect = 0.81;
+        if (max(thePsychometricFunction.pCorrect) > thresholdPCorrect)
+            csfData.sensitivity(iSF) = 10^(-logThresholdData); 
+        else
+            csfData.sensitivity(iSF) = nan;
+        end
+        
     end % iSF
     
     app.resetButtonPressed = false;

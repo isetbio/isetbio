@@ -56,7 +56,7 @@ function  updateCSFViewWithNewData(app, csfData)
             S = 10.^logS;
             plot(app.csfView, sfSupportHiRes, S, 'k--', 'LineWidth', 1.5);
          end
-         legend(app.csfView, {'isetbio', 'Watson 2018'});
+         legend(app.csfView, {sprintf('ISETbio (%s @ %2.1f degs)', app.csfParams.sourceSignal, app.roiParams.radialEccentricityDegs), 'Watson''s foveal Pyramid of Visibility'});
     end
     
 end
