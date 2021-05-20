@@ -29,47 +29,49 @@ function  updateCSFViewWithNewData(app, csfData)
             hold(app.csfView, 'on');
         end
     else
-        % Plot the computed CSF
+         % Plot Watson's pyramid of visibility for data of Watson 1987
+         [sfSupport, WatsonPyramidOfVisibilitySensitivity] = ...
+             CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(...
+                    csfData.spatialFrequencySupport(1), ...
+                    csfData.spatialFrequencySupport(end), ...
+                    app.stimParams.meanLuminanceCdM2, ...
+                    app.csfParams.constantParameter);
+        
+         % Plot Watson's pyramid of visibility
+         plot(app.csfView, sfSupport, WatsonPyramidOfVisibilitySensitivity, 'k--', 'LineWidth', 1.5);
+         hold(app.csfView, 'on');
+         
+         % Plot the computed CSF
          plot(app.csfView, csfData.spatialFrequencySupport, csfData.sensitivity, 'k-', ...
              'Color', [0.3 0.3 0.3], 'LineWidth', 2);
-         hold(app.csfView, 'on');
+         
+         
+         % Plot the data points
          for iSF = 1:numel(csfData.spatialFrequencySupport)
              app.csfDataPointHandles(iSF) = scatter(app.csfView, ...
                 csfData.spatialFrequencySupport(iSF),  csfData.sensitivity(iSF), 14*14, 'o',  ...
                 'MarkerEdgeColor', [0.3 0.3 0.3], ...
                 'MarkerFaceColor', squeeze(app.csfLineColors(iSF,:)), ...
-                'MarkerFaceAlpha', 0.9, 'LineWidth', 2, ...
-                'HandleVisibility','off' ... % do not show legends
+                'MarkerFaceAlpha', 0.9, 'LineWidth', 2 ...
                 );
          end    
          
-         % Plot Watson's pyramid of visibility for data of Watson 1987
-         if (strcmp(app.csfParams.constantParameter, 'constant cycles'))
-            temporalFrequency = 0.0; cW = 0;
-            logLuminanceNits = log10(app.stimParams.meanLuminanceCdM2);
-            % Table 1, of Watson 2018, "The Field of View, the Field of Resolution and the Field of Contrast Sensitivity" (Luminance, CCG)
-            cF = -0.091;
-            cL = 0.391;
-            c0 = 1.380;
-            sfSupportHiRes = 3:1:60;
-            logS = c0 + cW*temporalFrequency + cF*sfSupportHiRes + cL*logLuminanceNits;
-            S = 10.^logS;
-            plot(app.csfView, sfSupportHiRes, S, 'k--', 'LineWidth', 1.5);
-         end
-         legend(app.csfView, {sprintf('ISETbio (%s @ %2.1f degs)', app.csfParams.sourceSignal, app.roiParams.radialEccentricityDegs), 'Watson''s foveal Pyramid of Visibility'});
+         set(app.csfView, 'YLim', [1 max([1000 (round(csfData.sensitivity/1000)+1)*1000])]);
+         lHandle = legend(app.csfView, {...
+                                sprintf('Watson''s foveal PoV (%s)', app.csfParams.constantParameter)...
+                                sprintf('ISETbio (%s @ %2.1f degs)', app.csfParams.sourceSignal, app.roiParams.radialEccentricityDegs) ...
+             },'Location', 'SouthWest');
+         set(lHandle,'Box','off')
     end
     
 end
 
 function initializeCSFView(app)
-    for iSF = 1:numel(app.csfDataPointHandles)
-        if (ishandle(app.csfDataPointHandles(iSF)))
-            set(app.csfDataPointHandles(iSF), 'HandleVisibility', 'on');
-        end
-    end
     cla(app.csfView);
-    set(app.csfView, 'XLim', [0.5 100], 'YLim', [1 1000], ...
-                'XTick', [1 3 10 30 60 100], 'YTick', [1 3 10 30 100 300 1000 3000 10000], ...
+    set(app.csfView, 'XLim', [0.5 90], 'YLim', [1 2000], ...
+                'XTick', [1 3 10 30 60 100], ...
+                'YTick', [1 3 10 30 100 300 1000 3000 10000], ...
+                'YTickLabel', {'1', '3', '10', '30', '100', '300', '1k', '3k', '10k'}, ...
                 'XScale', 'log', 'YScale', 'log', 'FontSize', 14);
     box(app.csfView, 'on');
     grid(app.csfView, 'on');

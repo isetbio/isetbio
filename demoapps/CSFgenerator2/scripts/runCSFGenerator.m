@@ -5,6 +5,7 @@ function runCSFGenerator
         
     % Display the entire params struct
     CSFGeneratorApp.render.paramsStructTree(params);
+    pause;
     
     % Modify params here to run a constant-size stimulus
     params.csfParams.constantParameter = 'constant size';
@@ -42,10 +43,10 @@ function runCSFGenerator
     csfDataConstantCycles = CSFGeneratorApp.compute.contrastSensitivityFunction(app);
     
     % Generate Watson's Pyramid of Visibility curve for constant size
-    [sfSupport, constantSizeWatsonPyradidOfVisbility] = WatsonData(app, 'CDG');
+    [sfSupport, constantSizeWatsonPyramidOfVisibility] = CSFGeneratorApp.generateWatsonPyramidOfVisibilityData(app.stimParams.meanLuminanceCdM2, 'constant size');
     
     % Generate Watson's Pyramid of Visibility curve for constant cycles
-    [sfSupport, constantCyclesWatsonPyradidOfVisbility] = WatsonData(app, 'CCG');
+    [sfSupport, constantCyclesWatsonPyramidOfVisibility] = CSFGeneratorApp.generateWatsonPyramidOfVisibilityData(app.stimParams.meanLuminanceCdM2, 'constant cycles');
     
     % Display the computed CSF
     hFig = figure(1); clf;
@@ -59,9 +60,9 @@ function runCSFGenerator
    
     % Superimpose Watson's pyradid of visibility data for constant size and
     % constant cycles
-    plot(sfSupport, constantSizeWatsonPyradidOfVisbility, ...
+    plot(sfSupport, constantSizeWatsonPyramidOfVisibility, ...
         'b--', 'LineWidth', 1.5);
-    plot(sfSupport, constantCyclesWatsonPyradidOfVisbility, ...
+    plot(sfSupport, constantCyclesWatsonPyramidOfVisibility, ...
         'r--', 'LineWidth', 1.5);
     set(gca, 'XScale', 'linear', 'YScale', 'log', ...
         'XLim', [2 70], 'YLim', [1 300], 'FontSize', 16);
@@ -74,21 +75,4 @@ function runCSFGenerator
     
 end
 
-
-function [sfSupport, S] = WatsonData(app, stimSize)
-    temporalFrequency = 0.0; cW = 0;
-    logLuminanceNits = log10(app.stimParams.meanLuminanceCdM2);
-    % Table 1, of Watson 2018, "The Field of View, the Field of Resolution and the 
-    %       Field of Contrast Sensitivity" (Luminance)
-    switch (stimSize)
-        case 'CDG'
-            c0 = 1.739; cF = -0.060; cL = 0.391;
-        case 'CCG'
-            c0 = 1.380; cF = -0.091; cL = 0.391;
-    end
-    
-    sfSupport = 3:1:60;
-    logS = c0 + cW*temporalFrequency + cF*sfSupport + cL*logLuminanceNits;
-    S = 10.^logS;
-end
 

@@ -129,12 +129,6 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
                     'showPlot',  false, 'newFigure', false, ...
                     'returnData', true);
         
-        if (appCall)
-            % Plot the estimated psychometric function for this spatial frequency
-            CSFGeneratorApp.render.psychometricFunctionView(app, 'update', ...
-                'withData', psychometricFunctionData);
-        end
-        
         % Save data
         thePsychometricFunction = psychometricFunctionData{iSF};
         thresholdPCorrect = 0.81;
@@ -144,6 +138,15 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
             csfData.sensitivity(iSF) = nan;
         end
         
+        if (appCall)
+            % Plot the estimated psychometric function for this spatial frequency
+            CSFGeneratorApp.render.psychometricFunctionView(app, 'update', ...
+                'withData', psychometricFunctionData);
+            
+            % Display the computed CSF
+            CSFGeneratorApp.render.csfView(app, 'update', 'withData', csfData);
+
+        end
     end % iSF
     
     app.resetButtonPressed = false;
@@ -167,4 +170,8 @@ function [csfData, psychometricFunctionData, stopRun] = contrastSensitivityFunct
         % Render the status on the status field of tab B
         CSFGeneratorApp.render.statusField(app,'B', 'computational observer'); 
     end
+    
+    % Save the data
+    app.products.psychometricFunctionData = psychometricFunctionData;
+    app.products.csfData = csfData;
 end

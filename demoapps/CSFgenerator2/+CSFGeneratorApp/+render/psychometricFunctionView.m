@@ -16,11 +16,14 @@ function updatePsychometricFunctionViewWithNewData(app, psychometricData)
 
     % Compute ranges of psychometric functions
     lapse = 0; guess = 0.5;
-    log10Contrast = -5:0.01:0;
+    log10Contrast = -6:0.01:0;
     log10ContrastMax = app.psychometricFunctionParams.log10ContrastMax;
     log10ContrastMin = app.psychometricFunctionParams.log10ContrastMin;
     minSlope = app.psychometricFunctionParams.slopeMin;
     maxSlope = app.psychometricFunctionParams.slopeMax;
+    log10ContrastMean = 0.5*(log10ContrastMin+log10ContrastMax);
+    pCorrectMaxSlope = 1 - (lapse - (guess + lapse - 1)*exp(-10.^(maxSlope*(log10Contrast - log10ContrastMean)/20)));
+    pCorrectMinSlope = 1 - (lapse - (guess + lapse - 1)*exp(-10.^(minSlope*(log10Contrast - log10ContrastMean)/20)));
     pCorrectMaxSlopeMaxThreshold = 1 - (lapse - (guess + lapse - 1)*exp(-10.^(maxSlope*(log10Contrast - log10ContrastMax)/20)));
     pCorrectMinSlopeMaxThreshold = 1 - (lapse - (guess + lapse - 1)*exp(-10.^(minSlope*(log10Contrast - log10ContrastMax)/20)));
     pCorrectMaxSlopeMinThreshold = 1 - (lapse - (guess + lapse - 1)*exp(-10.^(maxSlope*(log10Contrast - log10ContrastMin)/20)));
@@ -36,10 +39,14 @@ function updatePsychometricFunctionViewWithNewData(app, psychometricData)
     hold(app.psychometricFunctionView, 'on');
     fill(app.psychometricFunctionView, log10CthresholdCoords, inBetweenPCorrectMinSlopeCoords, ...
         [0.5 0.5 1], 'FaceAlpha', 0.15, 'EdgeAlpha', 0.35, 'EdgeColor', [0 0 1], 'LineWidth', 0.5);
+    if (isempty(psychometricData))
+        plot(app.psychometricFunctionView, log10Contrast, pCorrectMaxSlope, 'r-', 'LineWidth', 1.5);
+        plot(app.psychometricFunctionView, log10Contrast, pCorrectMinSlope, 'b-', 'LineWidth', 1.5);
+    end
     
     % Also change the XLims
-    set(app.psychometricFunctionView, 'XLim', [app.psychometricFunctionParams.log10ContrastMin min([0 app.psychometricFunctionParams.log10ContrastMax])] );   
-            
+    %set(app.psychometricFunctionView, 'XLim', [app.psychometricFunctionParams.log10ContrastMin min([0 app.psychometricFunctionParams.log10ContrastMax])]);   
+    set(app.psychometricFunctionView, 'XLim', [-6 0]);           
     if (~isempty(psychometricData))
         % Plot the psychometric functions up to this point
         for iSF = 1:numel(psychometricData)
@@ -62,8 +69,8 @@ function updatePsychometricFunctionViewWithNewData(app, psychometricData)
 end
 
 function initializePsychometricFunctionView(app)
-    set(app.psychometricFunctionView, 'XLim', [-5 0], 'YLim', [0.49 1.01], 'XScale', 'linear');
-    set(app.psychometricFunctionView, 'XTick', [-5 -4 -3 -2 -1 0], 'FontSize', 14);
+    set(app.psychometricFunctionView, 'XLim', [-6 0.5], 'YLim', [0.49 1.01], 'XScale', 'linear');
+    set(app.psychometricFunctionView, 'XTick', [-6 -5 -4 -3 -2 -1 0], 'YTick', 0.5:0.1:1, 'FontSize', 14);
     xlabel(app.psychometricFunctionView, 'log10(contrast)');
     ylabel(app.psychometricFunctionView, 'pCorrect');
     grid(app.psychometricFunctionView, 'on');
