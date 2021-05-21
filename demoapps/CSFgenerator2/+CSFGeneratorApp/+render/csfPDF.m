@@ -1,7 +1,7 @@
 function csfPDF(app)
 
     if (isfield(app.products, 'csfData'))
-        hFig = figure(); clf;
+        hFig = figure('Visible','off'); clf;
         set(hFig, 'Position', [10 10 500 700], 'Color', [1 1 1]);
         ax = subplot('Position', [0.13 0.08 0.83 0.89]);
 
