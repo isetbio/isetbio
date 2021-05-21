@@ -92,9 +92,9 @@ end
 
 function initializeOpticsGUIComponents(app)
     % The visualized wavelength slider
-    app.opticsVisualizedWavelengthSlider.Limits = [400 750];
-    app.opticsVisualizedWavelengthSlider.MajorTicks = 400:50:750;
-    app.opticsVisualizedWavelengthSlider.MinorTicks = 400:10:750;
+    app.opticsVisualizedWavelengthSlider.Limits = [400 700];
+    app.opticsVisualizedWavelengthSlider.MajorTicks = 400:50:700;
+    app.opticsVisualizedWavelengthSlider.MinorTicks = 400:10:700;
     CSFGeneratorApp.decode.opticsWavelengthSlider(app, 'valueToSlider', app.opticsParams.visualizedWavelength);
     
     % The subject dataset

@@ -10,16 +10,17 @@ function runCSFGenerator
     % Modify params here to run a constant-size stimulus
     params.csfParams.constantParameter = 'constant size';
     params.csfParams.spatialFrequencyMin = 3;
-    params.csfParams.spatialFrequencyMax = 60;
-    params.csfParams.spatialFrequencySamples = 10;
+    params.csfParams.spatialFrequencyMax = 40;
+    params.csfParams.spatialFrequencySamples = 6;
     
-    params.stimParams.sizeDegs = 2.5;
-    params.stimParams.resolutionPixels = 1000;
+    params.stimParams.sizeDegs = 2.0;
+    params.stimParams.resolutionPixels = 300;
     
     params.stimParams.meanLuminanceCdM2 = 30;
     params.coneMosaicParams.integrationTime = 125/1000;
     
-    params.coneMosaicParams.sizeDegs = [2.5 2.5];
+    % Generate a 2x2 cone mosaic
+    params.coneMosaicParams.sizeDegs = [2.0 2.0];
     params.coneMosaicParams.eccentricityDegs = [0 0];
     
     params.psychometricFunctionParams.testTrials = 512;
@@ -43,10 +44,10 @@ function runCSFGenerator
     csfDataConstantCycles = CSFGeneratorApp.compute.contrastSensitivityFunction(app);
     
     % Generate Watson's Pyramid of Visibility curve for constant size
-    [sfSupport, constantSizeWatsonPyramidOfVisibility] = CSFGeneratorApp.generateWatsonPyramidOfVisibilityData(app.stimParams.meanLuminanceCdM2, 'constant size');
+    [sfSupport, constantSizeWatsonPyramidOfVisibility] = CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(app.stimParams.meanLuminanceCdM2, 'constant size');
     
     % Generate Watson's Pyramid of Visibility curve for constant cycles
-    [sfSupport, constantCyclesWatsonPyramidOfVisibility] = CSFGeneratorApp.generateWatsonPyramidOfVisibilityData(app.stimParams.meanLuminanceCdM2, 'constant cycles');
+    [sfSupport, constantCyclesWatsonPyramidOfVisibility] = CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(app.stimParams.meanLuminanceCdM2, 'constant cycles');
     
     % Display the computed CSF
     hFig = figure(1); clf;

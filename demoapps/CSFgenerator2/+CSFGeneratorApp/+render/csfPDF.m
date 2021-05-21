@@ -21,7 +21,7 @@ function csfPDF(app)
              
         lHandle = legend(ax, {...
                         sprintf('Watson''s foveal PoV (%s)', app.csfParams.constantParameter)
-                        sprintf('ISETbio (%s @ %2.1f degs)', app.csfParams.sourceSignal, app.roiParams.radialEccentricityDegs)
+                        sprintf('ISETbio (%s @ %2.1f degs, stimSize: %2.1f degs)', app.csfParams.sourceSignal, app.roiParams.radialEccentricityDegs, app.stimParams.sizeDegs)
                         ...
                         }, 'location', 'NorthOutside');
         set(lHandle,'Box','off');
