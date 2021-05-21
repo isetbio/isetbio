@@ -44,10 +44,14 @@ function runCSFGenerator
     csfDataConstantCycles = CSFGeneratorApp.compute.contrastSensitivityFunction(app);
     
     % Generate Watson's Pyramid of Visibility curve for constant size
-    [sfSupport, constantSizeWatsonPyramidOfVisibility] = CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(app.stimParams.meanLuminanceCdM2, 'constant size');
+    [sfSupport, constantSizeWatsonPyramidOfVisibility] = CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(...
+        params.csfParams.spatialFrequencyMin,  params.csfParams.spatialFrequencyMax, ...
+        app.stimParams.meanLuminanceCdM2, 'constant size');
     
     % Generate Watson's Pyramid of Visibility curve for constant cycles
-    [sfSupport, constantCyclesWatsonPyramidOfVisibility] = CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(app.stimParams.meanLuminanceCdM2, 'constant cycles');
+    [sfSupport, constantCyclesWatsonPyramidOfVisibility] = CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(...
+        params.csfParams.spatialFrequencyMin,  params.csfParams.spatialFrequencyMax, ...
+        app.stimParams.meanLuminanceCdM2, 'constant cycles');
     
     % Display the computed CSF
     hFig = figure(1); clf;

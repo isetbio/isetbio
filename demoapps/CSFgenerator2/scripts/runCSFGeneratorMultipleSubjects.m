@@ -102,16 +102,16 @@ function computeCSF()
         params.csfParams.spatialFrequencyMax = 40;
         params.csfParams.spatialFrequencySamples = 7;
 
-        params.stimParams.sizeDegs = 2.5;
+        params.stimParams.sizeDegs = 2.0;
         params.stimParams.resolutionPixels = 300;
         
         params.stimParams.meanLuminanceCdM2 = 30;
         params.coneMosaicParams.integrationTime = 125/1000;
 
-        params.coneMosaicParams.sizeDegs = [2.5 2.5];
+        params.coneMosaicParams.sizeDegs = [2.0 2.0];
         params.coneMosaicParams.eccentricityDegs = [0 0];
 
-        params.psychometricFunctionParams.testTrials = 512;
+        params.psychometricFunctionParams.testTrials = 300;
         params.debugParams.visualizeConeMosaicActivationComponents = ~true;
 
         % Build the non-gui part of the app
@@ -139,10 +139,15 @@ function computeCSF()
     end
 
     % Generate Watson's Pyramid of Visibility curve for constant size
-    [sfSupport, constantSizeWatsonPyradidOfVisbility] = WatsonData(app, 'CDG');
+    [sfSupport, constantSizeWatsonPyramidOfVisibility] = CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(...
+        app.params.csfParams.spatialFrequencyMin,  app.params.csfParams.spatialFrequencyMax, ...
+        app.stimParams.meanLuminanceCdM2, 'constant size');
     
     % Generate Watson's Pyramid of Visibility curve for constant cycles
-    [sfSupport, constantCyclesWatsonPyradidOfVisbility] = WatsonData(app, 'CCG');
+    [sfSupport, constantCyclesWatsonPyramidOfVisibility] = CSFGeneratorApp.generate.WatsonPyramidOfVisibilityData(...
+        app.params.csfParams.spatialFrequencyMin,  app.params.csfParams.spatialFrequencyMax, ...
+        app.stimParams.meanLuminanceCdM2, 'constant cycles');
+    
     
     save('subjectsData.mat', 'sfSupport', ...
         'constantSizeWatsonPyradidOfVisbility', ...
@@ -153,21 +158,4 @@ function computeCSF()
 end
 
 
-
-function [sfSupport, S] = WatsonData(app, stimSize)
-    temporalFrequency = 0.0; cW = 0;
-    logLuminanceNits = log10(app.stimParams.meanLuminanceCdM2);
-    % Table 1, of Watson 2018, "The Field of View, the Field of Resolution and the 
-    %       Field of Contrast Sensitivity" (Luminance)
-    switch (stimSize)
-        case 'CDG'
-            c0 = 1.739; cF = -0.060; cL = 0.391;
-        case 'CCG'
-            c0 = 1.380; cF = -0.091; cL = 0.391;
-    end
-    
-    sfSupport = 3:1:60;
-    logS = c0 + cW*temporalFrequency + cF*sfSupport + cL*logLuminanceNits;
-    S = 10.^logS;
-end
 
