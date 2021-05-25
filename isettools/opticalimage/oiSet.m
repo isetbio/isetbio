@@ -66,11 +66,6 @@ function oi = oiSet(oi, parm, val, varargin)
 %                    The proper data must be loaded to run oiCompute.
 %             {'diffuser method'}   - 'blur', 'birefringent' or 'skip'
 %             {'diffuser blur'}     - FWHM blur amount (meters)
-%             {'psfstruct'}         - Entire PSF structure (shift-variant)
-%                 {'sampled RT psf'}: Precomputed shift-variant psfs
-%                 {'psf sample angles'}: Vector of sample angle
-%                 {'psf image heights'}: Vector of sampled image heights
-%                 {'rayTrace optics name'}
 %                                   - Optics for deriving shift-variant psf
 %             {'depth map'}         - Distance of original scene pixel (m)
 %        Auxiliary
@@ -237,15 +232,7 @@ switch parm
         end
 
         % Clear out derivative luminance/illuminance computations
-        oi = oiSet(oi, 'illuminance', []);
-
-    % case {'datamin', 'dmin'}
-    %    error('datamin and datamax are not used anymore');
-    %    oi.data.dmin = val;
-    %
-    % case {'datamax', 'dmax'}
-    %    error('datamin and datamax are not used anymore');
-    %    % oi.data.dmax = val;
+        oi = oiSet(oi, 'illuminance', []);    
 
     case 'bitdepth'
         % Only used to control space allocated to photons (single or
@@ -336,37 +323,7 @@ switch parm
         % The value for birefringent could come from here, too.
         oi.diffuser.blur = val;
 
-        %{
-        % Should be able to delete this - and the comments at the top
-        %
-        % This was used for the shift variant calculations (ray trace).
-        % It is not used any more here.  It is still retained in ISETCAM.
-        % Precomputed shift-variant (sv) psf and related parameters
-    case {'psfstruct', 'shiftvariantstructure'}
-        % This structure
-        oi.psf = val;
-
-    case {'svpsf', 'sampledrtpsf', 'shiftvariantpsf'}
-        % The precomputed shift-variant psfs
-        oi.psf.psf = val;
-
-    case {'psfanglestep', 'psfsampleangles'}
-        % Vector of sample angles
-        oi.psf.sampAngles = val;
-
-    case {'psfopticsname', 'raytraceopticsname'}
-        % Name of the optics data are derived from
-        oi.psf.opticsName =val;
-
-    case 'psfimageheights'
-        % Vector of sample image heights
-        oi.psf.imgHeight = val;
-
-    case 'psfwavelength'
-        % Wavelengths for this calculation. Should match the optics, I
-        % think. Not sure why it is duplicated.
-        oi.psf.wavelength = val;
-        %}
+        
 
     case 'depthmap'
         % Depth map, usuaully inherited from scene, in meters
