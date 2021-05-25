@@ -12,6 +12,7 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
     p.addParameter('zernikeDataBase', 'Polans2015', @(x)(ismember(x, {'Polans2015'})));
     p.addParameter('subjectID', 6, @isscalar);
     p.addParameter('pupilDiameterMM', 3.0, @isscalar);
+    p.addParameter('wavefrontSpatialSamples', 301, @isscalar);
     p.addParameter('subtractCentralRefraction', false, @islogical);
     p.parse(obj, oiSamplingGridDegs, varargin{:});
 
@@ -20,6 +21,7 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
     pupilDiamMM = p.Results.pupilDiameterMM;
     subjectID = p.Results.subjectID;
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
+    wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     
     % Generate the oiEnsemble
     oiNum = size(oiSamplingGridDegs,1);
@@ -32,10 +34,13 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
             for oiIndex = 1:oiNum
                 %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
                 %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
-                % determine average microns-per-deg for this eccentricity here
+                
+                % Note that in PolansOptics, eccentricities are in retinal coordinates so we need to
+                % flip the signs of the ecc because the mosaic's eccentricity is in the visual field coordinates
+                targetEcc = -oiSamplingGridDegs(oiIndex,:);
                 [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength] = PolansOptics.oiForSubjectAtEccentricity(subjectID, ...
-                    obj.whichEye, oiSamplingGridDegs(oiIndex,:), pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
-                    'wavefrontSpatialSamples', 301, ...
+                    obj.whichEye, targetEcc, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
+                    'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                     'subtractCentralRefraction', subtractCentralRefraction);
                 
                 oiEnsemble{oiIndex} = theOI;
