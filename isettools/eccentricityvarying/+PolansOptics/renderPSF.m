@@ -16,6 +16,10 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
     plotTitle = p.Results.plotTitle;
     alpha = p.Results.alpha;
     
+    image(axesHandle, xSupport, ySupport, ones(size(thePSF,1), size(thePSF,2),3));
+    axis(axesHandle, 'image');
+    hold(axesHandle, 'on');
+    
     smallTitle = true;
     if (~isempty(theConeData))
         conePositionsArcMin = theConeData.conePositionsArcMin;
@@ -43,15 +47,14 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
         cMap = brewermap(1024, 'reds');
     end
     semiTransparentContourPlot(axesHandle, xSupport, ySupport, thePSF, zLevels, cMap, alpha, contourLineColor);
-    axis(axesHandle, 'equal')
-    box(axesHandle, 'on');
-    set(axesHandle, 'XTick', [], 'YTick', [], 'Color', [0.8 0.85 0.85]);
+    
     
     xlabel(axesHandle, 'arc min');
     ylabel(axesHandle, 'arc min');
-    axis(axesHandle, 'equal');
     grid(axesHandle, 'on');
+  
     box(axesHandle, 'on');
+    set(axesHandle, 'Color', [0.8 0.85 0.85]);
     set(axesHandle, 'XLim', xyRange, 'YLim', xyRange, 'CLim', [0 1], 'Color', [1 1 1]);
     set(axesHandle, 'XTick', xyTicks, 'YTick', xyTicks);
     set(axesHandle, 'FontSize', fontSize);
@@ -64,10 +67,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
             title(axesHandle,plotTitle);
         end
     end
-    
-    hold(axesHandle, 'off');
-    drawnow;
-    
+
 end
 
 function renderConeApertures(axesHandle, conePositionsArcMin, coneAperturesArcMin, color)
