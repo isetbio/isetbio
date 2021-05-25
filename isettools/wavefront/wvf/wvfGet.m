@@ -427,6 +427,8 @@ switch (parm)
         % time (diopters)
         val = wvf.measObserverAcommodationDiopters;
         
+    case {'flippsfupsidedown'}
+        val = wvf.flipPSFUpsideDown;
     otherwise
         isMeas = false;
 end

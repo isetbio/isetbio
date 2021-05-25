@@ -71,11 +71,14 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
     % Initialize parameters. These are calc wave.
     wList = wvfGet(wvf, 'calc wave');
     nWave = wvfGet(wvf, 'calc nwave');
+    flipPSFUpsideDown = wvfGet(wvf, 'flippsfupsidedown');
     pupilfunc = cell(nWave, 1);
 
     % Make sure pupil function is computed. This function incorporates the
     % chromatic aberration of the human eye.
     wvf = wvfComputePupilFunction(wvf, showBar,'nolca',p.Results.nolca);
+    
+    
     
     % wave = wvfGet(wvf, 'wave');
     psf = cell(nWave, 1);
@@ -126,6 +129,11 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
         
         % Make sure psf sums to unit volume.
         psf{wl} = psf{wl} / sum(sum(psf{wl}));
+
+        if (flipPSFUpsideDown)
+            psf{wl} = flipud(psf{wl});
+        end
+        
     end
     
     wvf.psf = psf;
