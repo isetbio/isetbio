@@ -30,5 +30,9 @@ function roiRadialEccentricitySlider(app, direction, value)
     app.coneMosaicParams.eccentricityDegs(1) = ...
         app.roiParams.radialEccentricityDegs * cosd(app.roiParams.polarEccentricityDegs);
     app.coneMosaicParams.eccentricityDegs(2) = ...
-        app.roiParams.radialEccentricityDegs * sind(app.roiParams.polarEccentricityDegs);       
+        app.roiParams.radialEccentricityDegs * sind(app.roiParams.polarEccentricityDegs);  
+    
+    % Update the x,y eccentricity on the GUI
+    app.roiEccentricityX.Value = app.coneMosaicParams.eccentricityDegs(1);
+    app.roiEccentricityY.Value = app.coneMosaicParams.eccentricityDegs(2);
 end

@@ -33,8 +33,8 @@ function visualizeFullAbsorptionsDensity(obj, figNo)
             col = mod((coneTypeIndex-1),2)+1;
             ax = subplot('Position', subplotPosVectors(row,col).v);
             
-            imagesc(ax,obj.absorptionsDensitySpatialSupportMicrons{1}, ...
-                    obj.absorptionsDensitySpatialSupportMicrons{2}, ...
+            imagesc(ax,obj.absorptionsDensitySpatialSupportMicrons{2}, ...
+                    obj.absorptionsDensitySpatialSupportMicrons{1}, ...
                     squeeze(obj.absorptionsDensityFullMap(:,:,coneTypeIndex)));
             hold(ax, 'on');
             switch(coneTypeIndex)
@@ -54,7 +54,11 @@ function visualizeFullAbsorptionsDensity(obj, figNo)
             end
         
             hold(ax, 'off');
-            axis(ax,'image');
+            axis(ax,'xy');
+            axis(ax,'equal');
+            minXY = min(obj.coneRFpositionsMicrons,[],1);
+            maxXY = max(obj.coneRFpositionsMicrons,[],1);
+            set(ax, 'XLim', [minXY(1) maxXY(1)], 'YLim', [minXY(2) maxXY(2)]);
         end
 
 end

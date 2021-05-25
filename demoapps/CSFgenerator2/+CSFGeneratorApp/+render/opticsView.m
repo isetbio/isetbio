@@ -27,6 +27,7 @@ function initializeOpticsView(app)
     axis(app.opticsView, 'equal');
     axis(app.opticsView, 'xy');
     box(app.opticsView, 'off');
+    title(app.opticsView, 'PSF and cone apertures', 'FontSize', 14, 'FontWeight', 'Normal', 'Color', [0.4 0.4 0.4]);
     
     xlabel(app.opticsView, 'arc min.');
     set(app.opticsView, 'CLim', [0 0.9], 'XColor', [0.3 0.3 0.3], 'YColor', 'none');
@@ -59,6 +60,8 @@ function initializeOpticsView(app)
     hold(app.opticsViewPSFGrid, 'off');
     set(app.opticsViewPSFGrid, 'XLim', [-1.5 1.5], 'YLim', [-1.5 1.5]);
     set(app.opticsViewPSFGrid, 'XColor', 'none', 'YColor', 'none', 'Color', 'none');
+    title(app.opticsViewPSFGrid, 'PSF spatial grid', 'FontSize', 14, 'FontWeight', 'Normal', 'Color', [0.4 0.4 0.4]);
+    
     
     % Do not show the interactions toolbax
     app.opticsViewPSFGrid.Toolbar.Visible = 'off';

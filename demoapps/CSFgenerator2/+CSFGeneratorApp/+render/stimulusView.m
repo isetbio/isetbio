@@ -11,7 +11,7 @@ end
 function initializeStimulusView(app)
     app.stimulusPlotHandle = image(app.stimulusView, [-0.01 0.01], [-0.01 0.01], [1 1; 1 1]);
     app.stimulusTextHandle = text(app.stimulusView, 0, 0, '', 'FontSize', 14);
-    set(app.stimulusView, 'XTick', [], 'YTick', [], 'XColor', 'none', 'YColor', 'none', 'FontSize', 16);
+    set(app.stimulusView, 'XTick', [], 'YTick', [], 'XColor', 'none', 'YColor', 'none', 'FontSize', 1);
     axis(app.stimulusView, 'image');
     
     % Do not show the interactions toolbax
@@ -24,8 +24,7 @@ end
 
 function updateStimulusViewWithNewData(app)
     frames = numel(app.products.demoStimulusSceneSequence);
-    
-    
+
     for iFrame = 1:numel(frames)
         theCurrentScene = app.products.demoStimulusSceneSequence{iFrame};
         rgbImage = sceneGet(theCurrentScene, 'rgb');

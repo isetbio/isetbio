@@ -90,10 +90,10 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
         PolansOptics.constants.measurementHorizontalEccentricities, ...
         PolansOptics.constants.measurementVerticalEccentricities);
     
+    % index of coeffs at ecc = (0,0)
+    indexOfZeroEcc = (X==0) & (Y==0);
+    
     interpolatedZcoeffs = zeros(1, 30);
-    
-    psfIndexAtZeroEcc = (X==0) & (Y==0);
-    
     for zIndex = 1:zCoeffsNum
          % Retrieve the XY spatial map for this z-coeff
          z2Dmap = squeeze(zMap(:,:,zIndex));
@@ -101,9 +101,9 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
          % The 4-th z-coeff is defocus. Subtract central defocus from all
          % spatial positions
          if ((zCoeffIndices(zIndex) == 4) && (subtractCentralRefraction))
-             z2Dmap = z2Dmap - z2Dmap(psfIndexAtZeroEcc);
+             z2Dmap = z2Dmap - z2Dmap(indexOfZeroEcc);
          end
-         % Interpolate the XY map at the desired eccentricity
+         % Interpolate the XY map at the desired eccentricity.
          interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp2(X,Y,z2Dmap, ecc(1), ecc(2));
      end
 end

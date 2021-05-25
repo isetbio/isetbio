@@ -7,4 +7,9 @@ function stimulusSpatialPositionYSpinner(app, direction, value)
         otherwise
             error('Unknown direction; ''%s''.'\n', direction);
     end
+    
+    % Update the y-position of the 'opticalImagePositionDegs' property of the cMosaic
+    if (~app.stimParams.mosaicCenteredPosition) 
+        app.components.coneMosaic.opticalImagePositionDegs(2) = value;
+    end
 end

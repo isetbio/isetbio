@@ -63,7 +63,8 @@ for yOffset = 1:3
     % Generate mosaic centered at target eccentricity
     cm = cMosaic(...
         'sizeDegs', mosaicSizeDegs, ...    % SIZE in degs
-        'eccentricityDegs', mosaicEcc ...  % ECC in degs
+        'eccentricityDegs', mosaicEcc, ...  % ECC in degs
+        'opticalImagePositionDegs', 'mosaic-centered' ...
         );
 
     % Generate optics appropriate for the mosaic's eccentricity
@@ -77,7 +78,7 @@ for yOffset = 1:3
     oi = oiCompute(scene, oiEnsemble{1});
  
     % Compute the noise-free excitation response
-    noiseFreeExcitationResponse = cm.compute(oi, 'opticalImagePositionDegs', 'mosaic-centered');
+    noiseFreeExcitationResponse = cm.compute(oi);
 
     % Visualize optics
     figure(1);

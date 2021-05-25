@@ -26,7 +26,7 @@ function [theSceneSequence, theNullStimulusScene, statusReport, theGratingSceneE
         theNullSceneSequence = theGratingSceneEngine.compute(0.0);
         theNullStimulusScene = theNullSceneSequence{1};
     else
-        theScene = [];
+        theSceneSequence = [];
         theNullStimulusScene = [];
         statusReport = [];
     end

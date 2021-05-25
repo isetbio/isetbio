@@ -1,18 +1,43 @@
-function coneMosaic(app, dialog)
+function theConeMosaic = coneMosaic(app, dialog)
 
-    deleteProgressBar = isempty(dialog);
-    if (deleteProgressBar)
-        % Open progressbar
-        dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
-                    'Message','Generating cone mosaic ...');
-        dialogBox.Value = 0.2; 
+    if (isa(app, 'ISETBioCSFGenerator'))
+        appCall = true;
+    else
+        appCall = false;
     end
     
+    if (appCall)
+        deleteProgressBar = isempty(dialog);
+        if (deleteProgressBar)
+            % Open progressbar
+            dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
+                        'Message','Generating cone mosaic ...');
+            dialogBox.Value = 0.2; 
+        end
+    end
+    
+    
     % Generate cone mosaic with new params
+    coneDensities = [app.coneMosaicParams.lConeRatio  app.coneMosaicParams.mConeRatio  app.coneMosaicParams.sConeRatio];
+    wavelengths = app.stimParams.wavelengthSupportMin:app.stimParams.wavelengthSupportStepSize:app.stimParams.wavelengthSupportMax;
     app.components.coneMosaic = cMosaic(...
+        'wave', wavelengths, ...
         'whichEye', app.coneMosaicParams.whichEye, ...
         'sizeDegs', app.coneMosaicParams.sizeDegs, ...
-        'eccentricityDegs', app.coneMosaicParams.eccentricityDegs);
+        'eccentricityDegs', app.coneMosaicParams.eccentricityDegs, ...
+        'coneDensities', coneDensities/sum(coneDensities), ...
+        'tritanopicRadiusDegs', app.coneMosaicParams.tritanopicRadiusDegs, ...
+        'integrationTime', app.coneMosaicParams.integrationTimeSeconds, ...
+        'eccVaryingConeAperture', app.coneMosaicParams.eccVaryingConeAperture, ...
+        'eccVaryingOuterSegmentLength', app.coneMosaicParams.eccVaryingOuterSegmentLength, ...
+        'eccVaryingConeBlur', app.coneMosaicParams.eccVaryingConeApertureBlur, ...
+        'eccVaryingMacularPigmentDensity', app.coneMosaicParams.eccVaryingMacularPigmentDensity, ...
+        'eccVaryingMacularPigmentDensityDynamic', app.coneMosaicParams.eccVaryingMacularPigmentDynamic);
+    
+    if (~appCall)
+        theConeMosaic = app.components.coneMosaic;
+        return;
+    end
     
     % Reset view limits
     app.coneMosaicViewXLimsDegs = app.coneMosaicParams.eccentricityDegs(1) + 0.55*app.coneMosaicParams.sizeDegs(1)*[-1 1];

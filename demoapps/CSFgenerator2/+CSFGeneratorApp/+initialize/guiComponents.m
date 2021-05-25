@@ -1,7 +1,6 @@
 function guiComponents(app)
-
     % Initialize colors for different aspects of the app
-    initializeColors(app)
+    initializeColors(app);
     
     % Initialize the status fields
     initializeStatusFields(app);
@@ -17,18 +16,18 @@ function guiComponents(app)
     
     % Initialize the cone mosaic GUI components
     initializeConeMosaicGUIComponents(app);
+    
+    % Initialize the computational observer GUI components
+    initializeComputationalObserverGUIComponents(app);
 end
 
 
-
 function initializeColors(app)
-    
     app.colors = containers.Map();
     app.colors('good message background') = [0.2 0.3 0.7];
     app.colors('good message foreground') = [1 1 1];
     app.colors('problem message background') = [1 0 0];
     app.colors('problem message foreground') = [1 1 1];
-    
 end
 
 
@@ -43,12 +42,14 @@ function initializeStatusFields(app)
     app.statusMessages = containers.Map();
     app.statusMessages('region of interest (visual field)') = s;
     app.statusMessages('stimulus') = s;
+    app.statusMessages('tasks') = s;
     app.statusMessages('performance assessment') = s;
     app.statusMessages('optics') = s;
     app.statusMessages('cone mosaic') = s;
     app.statusMessages('fixational eye movements') = s;
     app.statusMessages('mRGC mosaic') = s;
     app.statusMessages('pRGC mosaic') = s;
+    app.statusMessages('computational observer') = s;
     
     CSFGeneratorApp.render.statusField(app,'A', 'region of interest (visual field)');
     CSFGeneratorApp.render.statusField(app,'B', 'optics'); 
@@ -82,17 +83,18 @@ function initializeStimulusGUIComponents(app)
     CSFGeneratorApp.decode.stimulusResolutionSpinner(app, 'valueToSlider', app.stimParams.resolutionPixels);
     CSFGeneratorApp.decode.stimulusSizeSpinner(app, 'valueToSlider', app.stimParams.sizeDegs);
     
-    % Stimulus spatial envelope, orientation, and spatial frequency
+    % Stimulus spatial envelope, orientation, spatial frequency and spatial phase
     CSFGeneratorApp.decode.stimulusSpatialEnvelopeDropDown(app, 'valueToSlider', app.stimParams.spatialEnvelope);
     CSFGeneratorApp.decode.stimulusSpatialFrequencySpinner(app, 'valueToSlider', app.stimParams.spatialFrequencyCPD);
+    CSFGeneratorApp.decode.stimulusSpatialPhaseSpinner(app, 'valueToSlider', app.stimParams.spatialPhaseDegs);
     CSFGeneratorApp.decode.stimulusOrientationSpinner(app, 'valueToSlider', app.stimParams.orientationDegs);
 end
 
 function initializeOpticsGUIComponents(app)
     % The visualized wavelength slider
-    app.opticsVisualizedWavelengthSlider.Limits = [400 750];
-    app.opticsVisualizedWavelengthSlider.MajorTicks = 400:50:750;
-    app.opticsVisualizedWavelengthSlider.MinorTicks = 400:10:750;
+    app.opticsVisualizedWavelengthSlider.Limits = [400 700];
+    app.opticsVisualizedWavelengthSlider.MajorTicks = 400:50:700;
+    app.opticsVisualizedWavelengthSlider.MinorTicks = 400:10:700;
     CSFGeneratorApp.decode.opticsWavelengthSlider(app, 'valueToSlider', app.opticsParams.visualizedWavelength);
     
     % The subject dataset
@@ -106,17 +108,44 @@ function initializeOpticsGUIComponents(app)
     
     % The central refraction subtraction
     CSFGeneratorApp.decode.opticsSubtractCentralRefractionCheckBox(app, 'valueToSlider', app.opticsParams.subtractCentralRefraction);
+    
+    % The central refraction subtraction
+    CSFGeneratorApp.decode.opticsKeepConeMosaicActivationInSyncCheckBox(app, 'valueToSlider', app.viewModes.opticsKeepConeMosaicActivationInSync);
 end
 
 function initializeConeMosaicGUIComponents(app)
-    % The view mode
+    % The view mode - conetypes, cones + retinal image, activation, modulation, or redisual
     CSFGeneratorApp.decode.coneMosaicViewModeKnob(app, 'valueToSlider', app.viewModes.coneMosaic);
-    
-    % The activation type
-    CSFGeneratorApp.decode.coneMosaicActivationTypeSwitch(app, 'valueToSlider', app.viewModes.coneMosaicActivationType);
     
     % The visualization domain
     CSFGeneratorApp.decode.coneMosaicVisualizationDomainSwitch(app, 'valueToSlider', app.viewModes.coneMosaicVisualizationDomain);
+
+    % The activation type - noise-free or noisy response instances
+    CSFGeneratorApp.decode.coneMosaicActivationTypeSwitch(app, 'valueToSlider', app.viewModes.coneMosaicActivationType);
+    
+    % The activation signal - excitations or photocurrents
+    CSFGeneratorApp.decode.coneMosaicActivationSignalSwitch(app, 'valueToSlider', app.viewModes.coneMosaicActivationSignal);
+
+    % The activation dimensionality - 2D space or space-time
+    CSFGeneratorApp.decode.coneMosaicActivationDimensionalitySwitch(app, 'valueToSlider', app.viewModes.coneMosaicActivationDimensionality);
+
+    % The ecc-varying options
+    CSFGeneratorApp.decode.coneMosaicEccVaryingMacularPigmentDensityCheckBox(app, 'valueToSlider', app.coneMosaicParams.eccVaryingMacularPigmentDensity);
+    CSFGeneratorApp.decode.coneMosaicEccVaryingConeApertureCheckBox(app, 'valueToSlider', app.coneMosaicParams.eccVaryingConeAperture);
+    CSFGeneratorApp.decode.coneMosaicEccVaryingConeApertureBlurCheckBox(app, 'valueToSlider', app.coneMosaicParams.eccVaryingConeApertureBlur);
+    CSFGeneratorApp.decode.coneMosaicEccVaryingOuterSegmentLengthCheckBox(app, 'valueToSlider', app.coneMosaicParams.eccVaryingOuterSegmentLength);
+    CSFGeneratorApp.decode.coneMosaicEccVaryingMacularPigmentDynamicCheckBox(app, 'valueToSlider', app.coneMosaicParams.eccVaryingMacularPigmentDynamic);
+
+    % The integration time
+    CSFGeneratorApp.decode.coneMosaicIntegrationTimeSpinner(app, 'valueToSlider', app.coneMosaicParams.integrationTimeSeconds);
+    
+    % The LMS cone ratios
+    CSFGeneratorApp.decode.coneMosaicLconeRatioSpinner(app, 'valueToSlider', app.coneMosaicParams.lConeRatio);
+    CSFGeneratorApp.decode.coneMosaicMconeRatioSpinner(app, 'valueToSlider', app.coneMosaicParams.mConeRatio);
+    CSFGeneratorApp.decode.coneMosaicSconeRatioSpinner(app, 'valueToSlider', app.coneMosaicParams.sConeRatio);
+    
+    % The tritanopic radius
+    CSFGeneratorApp.decode.coneMosaicTritanopicRadiusSpinner(app, 'valueToSlider', app.coneMosaicParams.tritanopicRadiusDegs);
 end
 
 
@@ -154,5 +183,31 @@ function initializeROIGUIComponents(app)
         CSFGeneratorApp.decode.roiPolarEccentricitySlider(app, 'valueToSlider', app.roiParams.polarEccentricityDegs);
     end
 end
+
+function initializeComputationalObserverGUIComponents(app)
+
+    % The psychometric function estimation components
+    CSFGeneratorApp.decode.psychometricFunctionClassifierTypeDropDown(app, 'valueToSlider', app.psychometricFunctionParams.classifierType);
+    CSFGeneratorApp.decode.psychometricFunctionClassifierTrainingTrialsSpinner(app, 'valueToSlider', app.psychometricFunctionParams.trainingTrials);
+    CSFGeneratorApp.decode.psychometricFunctionClassifierTestTrialsSpinner(app, 'valueToSlider', app.psychometricFunctionParams.testTrials);
+    CSFGeneratorApp.decode.psychometricFunctionContrastLevelsSpinner(app, 'valueToSlider', app.psychometricFunctionParams.contrastLevels);
+    CSFGeneratorApp.decode.psychometricFunctionLog10ContrastMinSpinner(app, 'valueToSlider', app.psychometricFunctionParams.log10ContrastMin);
+    CSFGeneratorApp.decode.psychometricFunctionLog10ContrastMaxSpinner(app, 'valueToSlider', app.psychometricFunctionParams.log10ContrastMax);
+    CSFGeneratorApp.decode.psychometricFunctionLog10ContrastDeltaSpinner(app, 'valueToSlider', app.psychometricFunctionParams.log10ContrastDelta);
+    CSFGeneratorApp.decode.psychometricFunctionSlopeMinSpinner(app, 'valueToSlider', app.psychometricFunctionParams.slopeMin);
+    CSFGeneratorApp.decode.psychometricFunctionSlopeMaxSpinner(app, 'valueToSlider', app.psychometricFunctionParams.slopeMax);
+    CSFGeneratorApp.decode.psychometricFunctionSlopeDeltaSpinner(app, 'valueToSlider', app.psychometricFunctionParams.slopeDelta);
+    CSFGeneratorApp.decode.psychometricFunctionEstimationMethodSwitch(app, 'valueToSlider', app.psychometricFunctionParams.estimationMethod);
+    
+    % The CSF components
+    CSFGeneratorApp.decode.csfSpatialFrequencyMinSpinner(app, 'valueToSlider', app.csfParams.spatialFrequencyMin);
+    CSFGeneratorApp.decode.csfSpatialFrequencyMaxSpinner(app, 'valueToSlider', app.csfParams.spatialFrequencyMax);
+    CSFGeneratorApp.decode.csfSpatialFrequencySamplesSpinner(app, 'valueToSlider', app.csfParams.spatialFrequencySamples);
+    CSFGeneratorApp.decode.csfConstantParameterSwitch(app, 'valueToSlider', app.csfParams.constantParameter);
+    CSFGeneratorApp.decode.csfNumberOfConstantCyclesSpinner(app, 'valueToSlider', app.csfParams.numberOfConstantCycles);
+    CSFGeneratorApp.decode.csfSourceSignalKnob(app, 'valueToSlider', app.csfParams.sourceSignal);
+    
+end
+
 
 

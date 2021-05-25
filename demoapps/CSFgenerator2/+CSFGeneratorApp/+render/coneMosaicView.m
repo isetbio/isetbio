@@ -38,15 +38,18 @@ function updateConeMosaicViewWithNewData(app)
     end
     
     mosaicVisualizationView = 'retinal view';
-    
+    conesNumThresholdForShowingProgressBar = 10000;
+     
     if (~isempty(app.components.coneMosaic.coneRFpositionsDegs))
-        
-        % Open progressbar
+
         conesNum = size(app.components.coneMosaic.coneRFpositionsMicrons,1);
-        dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
+        if (conesNum >  conesNumThresholdForShowingProgressBar)
+            % Open progressbar
+            dialogBox = uiprogressdlg(app.mainView,'Title','Please Wait',...
                  'Message', sprintf('Rendering cone mosaic with %d cones...', conesNum));
-        dialogBox.Value = 0.2; 
-    
+            dialogBox.Value = 0.2; 
+        end
+        
         switch (app.viewModes.coneMosaic)
             case {'cone types', 'cones+retinal image'}
                 app.components.coneMosaic.visualize(...
@@ -192,8 +195,27 @@ function updateConeMosaicViewWithNewData(app)
                 
                 case 'residual'
                     colorbarTickPostfix = '%';
-                    cMapForActivation = brewermap(1024, '*spectral');
-                    activationRange = max(abs(app.products.residualConeMosaicActivation(:)))*[-1 1];
+                    cMapForActivation = brewermap(1024, '*RdBu');
+                    
+                    % Find cones that do not lie within the stimulus borders
+                    if (app.stimParams.mosaicCenteredPosition)
+                        roiStruct = struct(...
+                            'units', 'degs', ...
+                            'shape', 'rect', ...
+                            'center', app.components.coneMosaic.eccentricityDegs, ...
+                            'width',  app.stimParams.sizeDegs*0.9, ...
+                            'height', app.stimParams.sizeDegs*0.9);
+                    else
+                        roiStruct = struct(...
+                            'units', 'degs', ...
+                            'shape', 'rect', ...
+                            'center', app.stimParams.positionDegs, ...
+                            'width',  app.stimParams.sizeDegs(1)*0.9, ...
+                            'height', app.stimParams.sizeDegs(2)*0.9);
+                    end
+                    coneIndices = app.components.coneMosaic.indicesOfConesWithinROI(roiStruct);
+                    activationRange = max(abs(app.products.residualConeMosaicActivation(coneIndices)))*[-1 1];
+                    
                     app.components.coneMosaic.visualize(...
                         'figureHandle', app.mainView, ...
                         'axesHandle', app.coneMosaicView, ...
@@ -216,8 +238,9 @@ function updateConeMosaicViewWithNewData(app)
             otherwise
                 error('Dont know how to interpret view mode: ''%s''.', app.viewModes.coneMosaic);
         end
-        
-        close(dialogBox);
+        if (conesNum > conesNumThresholdForShowingProgressBar)
+            close(dialogBox);
+        end
     else
         cla(app.coneMosaicView)
     end

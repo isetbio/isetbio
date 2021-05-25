@@ -126,6 +126,10 @@ classdef cMosaic < handle
         % Random seed
         randomSeed;
         
+        % Default optical image position degs. This can be overriden by
+        % passing a ('opticalImagePositionDegs', something) key/value pair during the cMosaic.compute() call.
+        opticalImagePositionDegs;
+        
         % Color for cone rendering in mosaic visualization
         lConeColor = [1 0.1 0.5];
         mConeColor = [0.1 1 0.5];
@@ -296,6 +300,7 @@ classdef cMosaic < handle
             p.addParameter('noiseFlag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
             p.addParameter('randomSeed', [], @(x)(isscalar(x) || isempty(x)));
             p.addParameter('integrationTime', 5/1000, @isscalar);
+            p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
             p.addParameter('useParfor', true, @islogical);
             p.parse(varargin{:});
             
@@ -323,6 +328,7 @@ classdef cMosaic < handle
             obj.noiseFlag = p.Results.noiseFlag;
             obj.randomSeed = p.Results.randomSeed;
             obj.integrationTime = p.Results.integrationTime;
+            obj.opticalImagePositionDegs = p.Results.opticalImagePositionDegs;
             
             % Parallel computations
             obj.useParfor = p.Results.useParfor;
