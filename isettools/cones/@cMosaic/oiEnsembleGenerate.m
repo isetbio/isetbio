@@ -14,6 +14,8 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
     p.addParameter('pupilDiameterMM', 3.0, @isscalar);
     p.addParameter('wavefrontSpatialSamples', 301, @isscalar);
     p.addParameter('subtractCentralRefraction', false, @islogical);
+    p.addParameter('zeroCenterPSF', true, @islogical);
+    p.addParameter('flipPSFUpsideDown', true, @islogical);
     p.parse(obj, oiSamplingGridDegs, varargin{:});
 
     oiSamplingGridDegs = p.Results.oiSamplingGridDegs;
@@ -22,6 +24,8 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
     subjectID = p.Results.subjectID;
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
+    zeroCenterPSF = p.Results.zeroCenterPSF;
+    flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     
     % Generate the oiEnsemble
     oiNum = size(oiSamplingGridDegs,1);
@@ -36,12 +40,15 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
                 %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
                 
                 % Note that in PolansOptics, eccentricities are in retinal coordinates so we need to
-                % flip the signs of the ecc because the mosaic's eccentricity is in the visual field coordinates
+                % flip the signs of the ecc because the mosaic's eccentricity is in visual field coordinates.
                 targetEcc = -oiSamplingGridDegs(oiIndex,:);
+                
                 [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength] = PolansOptics.oiForSubjectAtEccentricity(subjectID, ...
                     obj.whichEye, targetEcc, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
                     'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
-                    'subtractCentralRefraction', subtractCentralRefraction);
+                    'subtractCentralRefraction', subtractCentralRefraction, ...
+                    'zeroCenterPSF', zeroCenterPSF, ...
+                    'flipPSFUpsideDown', flipPSFUpsideDown);
                 
                 oiEnsemble{oiIndex} = theOI;
                 psfEnsemble{oiIndex} = struct(...
