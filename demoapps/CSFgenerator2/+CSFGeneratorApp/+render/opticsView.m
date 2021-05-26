@@ -23,9 +23,7 @@ function initializeOpticsView(app)
     % Plot the cross hairs
     plot(app.opticsView, [0 0], [-20 20], 'k-', 'LineWidth', 1.5, 'Color', [0.5 0.5 0.5]);
     plot(app.opticsView, [-20 20], [0 0], 'k-', 'LineWidth', 1.5, 'Color', [0.5 0.5 0.5]);
-    hold(app.opticsView, 'off');
-    axis(app.opticsView, 'equal');
-    axis(app.opticsView, 'xy');
+    hold(app.opticsView, 'off');   
     box(app.opticsView, 'off');
     title(app.opticsView, 'PSF and cone apertures', 'FontSize', 14, 'FontWeight', 'Normal', 'Color', [0.4 0.4 0.4]);
     
@@ -37,6 +35,8 @@ function initializeOpticsView(app)
         'YLim', 7*[-1 1], ...
         'XTick', -20:2:20, 'YTick', []);
     
+    axis(app.opticsView, 'image');
+     
     % Do not show the interactions toolbax
     app.opticsView.Toolbar.Visible = 'off';
             
