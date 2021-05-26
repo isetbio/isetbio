@@ -443,6 +443,9 @@ switch parm
         wvf.sceParams = val;
         wvf.PUPILFUNCTION_STALE = true;
         
+    case {'flippsfupsidedown'}
+        wvf.flipPSFUpsideDown = val;
+        
     otherwise
         error('Unknown parameter %s\n', parm);
 

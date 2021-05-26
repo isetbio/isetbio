@@ -108,6 +108,9 @@ p.addParameter('sceparams',sceCreate([],'none'), @isstruct);
 % Cone PSF information
 p.addParameter('calcconepsfinfo',conePsfInfoCreate,@isstruct);
 
+% Whether to flip the PSF upside/down
+p.addParameter('flipPSFUpsideDown', false, @islogical);
+
 % Massage varargin and parse
 ieVarargin = ieParamFormat(varargin);
 ieVarargin = wvfKeySynonyms(ieVarargin);
@@ -154,4 +157,6 @@ wvf = wvfSet(wvf, 'sce params', p.Results.sceparams);
 % Cone PSF information
 wvf = wvfSet(wvf, 'calc cone psf info', p.Results.calcconepsfinfo);
 
+% Flip PSF upside down
+wvf = wvfSet(wvf, 'flipPSFUpsideDown', p.Results.flipPSFUpsideDown);
 end

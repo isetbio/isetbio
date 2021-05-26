@@ -4,7 +4,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     % Parse input
     p = inputParser;
     p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=1)&&(x<=10)));
-    p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{PolansOptics.constants.leftEye, PolansOptics.constants.rightEye}))));
+    p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{PolansOptics.constants.rightEye}))));  % allow only right eye data - the paper does not have left eye data
     p.addRequired('ecc', @(x)(isnumeric(x)&&(numel(x) == 2)));
     p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=4)));
     p.addRequired('wavelengthsListToCompute', @(x)(isnumeric(x)));
@@ -12,21 +12,20 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('inFocusWavelength', 550, @isscalar);
     p.addParameter('wavefrontSpatialSamples', 801, @isscalar)
     p.addParameter('subtractCentralRefraction', true, @islogical);
+    p.addParameter('zeroCenterPSF', false, @islogical);
+    p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('noLCA', false, @islogical);
     p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
     
     inFocusWavelength = p.Results.inFocusWavelength;
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
+    zeroCenterPSF = p.Results.zeroCenterPSF;
+    flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     noLCA = p.Results.noLCA;
-   
-
-    if (strcmp(whichEye, PolansOptics.constants.leftEye))
-        % Flip horizontal ecc sign because Z-coeffs correspond to retinal
-        % eccentricities on the right eye
-        ecc(1) = -ecc(1);
-    end
     
+    
+    % Flip vertical eccentricity
     % Obtain z-coeffs at desired eccentricity
     zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction);
     
@@ -36,8 +35,9 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
              wavelengthsListToCompute, wavefrontSpatialSamples, ...
              PolansOptics.constants.measurementPupilDiamMM, ...
              pupilDiamMM, inFocusWavelength, false, ...
-             'doNotZeroCenterPSF', true, ...
+             'doNotZeroCenterPSF', ~zeroCenterPSF, ...
              'micronsPerDegree', micronsPerDegree, ...
+             'flipPSFUpsideDown', flipPSFUpsideDown, ...
              'name', sprintf('Polans subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
     
     % Remove wavelength-dependent defocus if noLCA is set
@@ -105,5 +105,6 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
          end
          % Interpolate the XY map at the desired eccentricity.
          interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp2(X,Y,z2Dmap, ecc(1), ecc(2));
-     end
+    end
+     
 end

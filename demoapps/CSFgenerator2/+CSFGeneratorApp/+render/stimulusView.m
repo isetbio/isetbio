@@ -36,6 +36,7 @@ function updateStimulusViewWithNewData(app)
             'CData', rgbImage);
         set(app.stimulusTextHandle, 'Position', [xAxis(1+round(0.02*numel(xAxis))), yAxis(1+round(0.03*numel(yAxis)))]);
         set(app.stimulusTextHandle, 'String', sprintf('frame %d/%d', iFrame, numel(frames)), 'FontSize', 14);
+        axis(app.stimulusView, 'image');
         drawnow;
     end
     

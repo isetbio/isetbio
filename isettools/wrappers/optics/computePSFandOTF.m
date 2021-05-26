@@ -5,15 +5,20 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     p = inputParser;
     p.addParameter('doNotZeroCenterPSF', false, @islogical);
     p.addParameter('micronsPerDegree', 300, @isscalar);
+    p.addParameter('flipPSFUpsideDown', false, @islogical);
+    
     p.addParameter('name', 'noname', @ischar);
     p.parse(varargin{:});
     doNotZeroCenterPSF = p.Results.doNotZeroCenterPSF;
+    flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
+    
     umPerDegree = p.Results.micronsPerDegree;
     name = p.Results.name;
     
     %% Compute WVF
     theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, measWavelength, wavelengthsListToCompute, ...
-            measPupilDiamMM, targetPupilDiamMM, umPerDegree, name);
+            measPupilDiamMM, targetPupilDiamMM, umPerDegree, name, ...
+            'flipPSFUpsideDown', flipPSFUpsideDown);
     
     xSfCyclesPerRetinalMicron = wvfGet(theWVF, 'otf support', 'um', wavelengthsListToCompute(1));
     xSfCyclesDeg = xSfCyclesPerRetinalMicron * wvfGet(theWVF,'um per degree');

@@ -106,10 +106,23 @@ function initializeOpticsGUIComponents(app)
     % The pupil size
     CSFGeneratorApp.decode.opticsPupilSizeSpinner(app, 'valueToSlider', app.opticsParams.pupilDiameterMM);
     
+    % The wavefront spatial samples
+    CSFGeneratorApp.decode.opticsWavefrontSpatialSamplesSpinner(app, 'valueToSlider', app.opticsParams.wavefrontSpatialSamples);
+    
+    % The zero-center PSF option
+    CSFGeneratorApp.decode.opticsZeroCenterPSFCheckBox(app, 'valueToSlider', app.opticsParams.zeroCenterPSF);
+    
+    % The flipPSFUpsideDown option
+    CSFGeneratorApp.decode.opticsFlipPSFUpsideDownCheckBox(app, 'valueToSlider', app.opticsParams.flipPSFUpsideDown);
+    
+    % The central refraction subtraction option
+    CSFGeneratorApp.decode.opticsSubtractCentralRefractionCheckBox(app, 'valueToSlider', app.opticsParams.subtractCentralRefraction);
+    
+    
     % The central refraction subtraction
     CSFGeneratorApp.decode.opticsSubtractCentralRefractionCheckBox(app, 'valueToSlider', app.opticsParams.subtractCentralRefraction);
     
-    % The central refraction subtraction
+    % The keep optics in sycn with cone mosaic
     CSFGeneratorApp.decode.opticsKeepConeMosaicActivationInSyncCheckBox(app, 'valueToSlider', app.viewModes.opticsKeepConeMosaicActivationInSync);
 end
 
