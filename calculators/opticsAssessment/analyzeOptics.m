@@ -12,12 +12,16 @@ function analyzeOptics()
     
    %%% s#86613002
     
+%     [centralRefraction, emmetropes, myopes, group] = wvfSortSubjectDataJaekenArtal2012();
+%     subjectIDs = emmetropes.RE;
+%     opticsParams.subjectID = subjectIDs(10);
+%     
     
-    horizontalEcc = -8:0; % :25;
+    horizontalEcc = -25:25;
     verticalEcc = horizontalEcc*0 + 0;
     whichEyes = {'right eye'}; % {'left eye', 'right eye'};
     
-    plotEachPosition = true;
+    plotEachPosition = ~true;
     
     for eyeIndex = 1:numel(whichEyes)
     for subjectID = 7:7 % 1:10
@@ -192,18 +196,34 @@ function [psfImage, coneMosaicImage, psfSupportArcMin] = psfAndConeImage(mosaicE
         );
     
     wavelength = 550;
-    [oiEnsemble, psfEnsemble] = ...
-            cm.oiEnsembleGenerate(mosaicEcc, ...
-            'zernikeDataBase', opticsParams.zernikeDataBase, ...
-            'subjectID', opticsParams.subjectID, ...
-            'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
-            'subtractCentralRefraction', opticsParams.subtractCentralRefraction, ...
-            'wavefrontSpatialSamples', 701, ...
-            'zeroCenterPSF', opticsParams.zeroCenterPSF, ...
-            'flipPSFUpsideDown', opticsParams.flipPSFUpsideDown);
-        
-    % Make PSF image
-    psf = psfEnsemble{1};
+    if (strcmp(opticsParams.zernikeDataBase, 'Artal'))
+        zIndices = 0:14; 
+        [wvf, oi] = wvfLoadWavefrontOpticsData('source', 'JaekenArtal2012', ...
+            'jIndex', zIndices, 'whichEye', strrep(opticsParams.whichEye, ' eye', ''),...
+            'eccentricity', mosaicEcc, 'whichGroup', opticsParams.subjectID, 'verbose', false);
+        psf.supportX = wvfGet(wvf, 'spatial Support', 'um');
+        psf.supportWavelength = wavelength;
+        centeredPSF = [wvf.psf{1}(101:end,:); wvf.psf{1}(1:100,:)];
+        centeredPSFNormalized = centeredPSF./sum(centeredPSF);
+        psf.data = centeredPSFNormalized;
+        mosaicEcc
+        size(psf.data)
+    else
+        [oiEnsemble, psfEnsemble] = ...
+                cm.oiEnsembleGenerate(mosaicEcc, ...
+                'zernikeDataBase', opticsParams.zernikeDataBase, ...
+                'subjectID', opticsParams.subjectID, ...
+                'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
+                'subtractCentralRefraction', opticsParams.subtractCentralRefraction, ...
+                'wavefrontSpatialSamples', 701, ...
+                'zeroCenterPSF', opticsParams.zeroCenterPSF, ...
+                'flipPSFUpsideDown', opticsParams.flipPSFUpsideDown);
+
+        % Make PSF image
+        psf = psfEnsemble{1};
+    end
+    
+    
     [~,idx] = min(abs(psf.supportWavelength-wavelength));
     psfImage = squeeze(psf.data(:,:,idx));
      

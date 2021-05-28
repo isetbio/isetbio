@@ -38,10 +38,10 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
             for oiIndex = 1:oiNum
                 %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
                 %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
+                targetEcc = oiSamplingGridDegs(oiIndex,:);
                 
-                % Note that in PolansOptics, eccentricities are in retinal coordinates so we need to
-                % flip the signs of the ecc because the mosaic's eccentricity is in visual field coordinates.
-                targetEcc = -oiSamplingGridDegs(oiIndex,:);
+                % Flip y-coord
+                %targetEcc(2) = -targetEcc(2);
                 
                 [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength] = PolansOptics.oiForSubjectAtEccentricity(subjectID, ...
                     obj.whichEye, targetEcc, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
