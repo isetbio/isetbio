@@ -132,7 +132,7 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
 
         if (flipPSFUpsideDown)
             % Flip PSF left right 
-            psf{wl} = fliplr(psf{wl});
+            psf{wl} = flipud(psf{wl});
         end
         
     end
