@@ -3,8 +3,8 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
 
     % Parse input
     p = inputParser;
-    p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=1)&&(x<=10)));
-    p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{PolansOptics.constants.rightEye}))));  % allow only right eye data - the paper does not have left eye data
+    p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=1)&&(x<=130)));
+    p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{ArtalOptics.constants.rightEye, ArtalOptics.constants.leftEye}))));
     p.addRequired('ecc', @(x)(isnumeric(x)&&(numel(x) == 2)));
     p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=4)));
     p.addRequired('wavelengthsListToCompute', @(x)(isnumeric(x)));
@@ -13,7 +13,6 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('wavefrontSpatialSamples', 801, @isscalar)
     p.addParameter('subtractCentralRefraction', true, @islogical);
     p.addParameter('zeroCenterPSF', false, @islogical);
-    p.addParameter('deNoisedZernikeCoefficients', false, @islogical);
     p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('noLCA', false, @islogical);
     p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
@@ -24,22 +23,22 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     zeroCenterPSF = p.Results.zeroCenterPSF;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     noLCA = p.Results.noLCA;
-    deNoisedZernikeCoefficients = p.Results.deNoisedZernikeCoefficients;
+    
     
     % Flip vertical eccentricity
     % Obtain z-coeffs at desired eccentricity
-    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, deNoisedZernikeCoefficients);
+    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc(1), subtractCentralRefraction);
     
     % Compute PSF and WVF from z-Coeffs for the desired pupil and wavelenghts
     [thePSF, ~, ~,~, psfSupportMinutesX, psfSupportMinutesY, theWVF] = ...
         computePSFandOTF(zCoeffs, ...
              wavelengthsListToCompute, wavefrontSpatialSamples, ...
-             PolansOptics.constants.measurementPupilDiamMM, ...
+             ArtalOptics.constants.measurementPupilDiamMM, ...
              pupilDiamMM, inFocusWavelength, false, ...
              'doNotZeroCenterPSF', ~zeroCenterPSF, ...
              'micronsPerDegree', micronsPerDegree, ...
              'flipPSFUpsideDown', flipPSFUpsideDown, ...
-             'name', sprintf('Polans subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
+             'name', sprintf('Artal subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
     
     % Remove wavelength-dependent defocus if noLCA is set
     if (noLCA)
@@ -80,36 +79,19 @@ function theOI = wvf2oiSpecial(theWVF, umPerDegree, pupilDiameterMM)
 end
 
 
-function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, deNoisedCoeffs)
+function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc, subtractCentralRefraction)
 
     % Get original z-coeffs at all measured eccentricities
-    if (deNoisedCoeffs)
-        % The following 2 parameters determine the degree of smoothing in Z coefficients
-        % Threshold for detecting outlier data points (in units of standard deviation of the data)
-        sigmaMultiplier = 3.0;
-        % Window size for moving window
-        movingMeanWindowSize = 5;
-        
-        [zMapRaw, zCoeffIndicesRaw] = PolansOptics.constants.ZernikeCoefficientsMap(subjectID);
-        [zMap, zCoeffIndices] = PolansOptics.constants.deNoisedZernikeCoefficientsMap(subjectID, movingMeanWindowSize, sigmaMultiplier);
-    else
-        [zMap, zCoeffIndices] = PolansOptics.constants.ZernikeCoefficientsMap(subjectID);
-    end
+    [zMap, zCoeffIndices] = ArtalOptics.constants.ZernikeCoefficientsMap(subjectID, whichEye);
+    zCoeffsNum = size(zMap,2);
     
-    zCoeffsNum = size(zMap,3);
-    
-    % Interpolate zMap at desired ecc
-    [X,Y] = meshgrid(...
-        PolansOptics.constants.measurementHorizontalEccentricities, ...
-        PolansOptics.constants.measurementVerticalEccentricities);
-    
-    % index of coeffs at ecc = (0,0)
-    indexOfZeroEcc = (X==0) & (Y==0);
+    % Index of coeffs at ecc = (0,0)
+    indexOfZeroEcc = find(ArtalOptics.constants.measurementHorizontalEccentricities==0);
     
     interpolatedZcoeffs = zeros(1, 30);
     for zIndex = 1:zCoeffsNum
          % Retrieve the XY spatial map for this z-coeff
-         z2Dmap = squeeze(zMap(:,:,zIndex));
+         z2Dmap = squeeze(zMap(:,zIndex));
          
          % The 4-th z-coeff is defocus. Subtract central defocus from all
          % spatial positions
@@ -117,7 +99,7 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
              z2Dmap = z2Dmap - z2Dmap(indexOfZeroEcc);
          end
          % Interpolate the XY map at the desired eccentricity.
-         interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp2(X,Y,z2Dmap, ecc(1), ecc(2));
+         interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp1(ArtalOptics.constants.measurementHorizontalEccentricities,z2Dmap, ecc(1));
     end
      
 end
