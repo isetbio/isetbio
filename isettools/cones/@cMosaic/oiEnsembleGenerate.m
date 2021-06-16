@@ -15,6 +15,7 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
     p.addParameter('wavefrontSpatialSamples', 301, @isscalar);
     p.addParameter('subtractCentralRefraction', false, @islogical);
     p.addParameter('zeroCenterPSF', true, @islogical);
+    p.addParameter('deNoisedZernikeCoefficients', false, @islogical);
     p.addParameter('flipPSFUpsideDown', true, @islogical);
     p.parse(obj, oiSamplingGridDegs, varargin{:});
 
@@ -25,6 +26,7 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     zeroCenterPSF = p.Results.zeroCenterPSF;
+    deNoisedZernikeCoefficients = p.Results.deNoisedZernikeCoefficients;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     
     % Generate the oiEnsemble
@@ -47,6 +49,7 @@ function [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs,
                     obj.whichEye, targetEcc, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
                     'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                     'subtractCentralRefraction', subtractCentralRefraction, ...
+                    'deNoisedZernikeCoefficients', deNoisedZernikeCoefficients, ...
                     'zeroCenterPSF', zeroCenterPSF, ...
                     'flipPSFUpsideDown', flipPSFUpsideDown);
                 
