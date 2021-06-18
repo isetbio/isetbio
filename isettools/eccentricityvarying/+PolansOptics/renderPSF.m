@@ -5,7 +5,7 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
     p.addParameter('withConeData', [],  @(x)(isempty(x)||isstruct(x)));
     p.addParameter('fontSize', 14, @isnumeric);
     p.addParameter('plotTitle', '', @ischar);
-    p.addParameter('xyTicks', -8:1:8, @isnumeric);
+    p.addParameter('xyTicks', -20:2:20, @isnumeric);
     p.addParameter('alpha', 0.3, @isscalar);
     
     p.parse(varargin{:});
@@ -47,7 +47,9 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
         cMap = brewermap(1024, 'reds');
     end
     semiTransparentContourPlot(axesHandle, xSupport, ySupport, thePSF, zLevels, cMap, alpha, contourLineColor);
-    
+    imagesc(axesHandle, xSupport, ySupport, thePSF);
+    colormap(axesHandle, brewermap(1024, '*spectral'));
+    hold(axesHandle, 'on');
     
     xlabel(axesHandle, 'arc min');
     ylabel(axesHandle, 'arc min');

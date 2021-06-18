@@ -87,6 +87,122 @@ classdef constants
                 end
             end
         end
+        
+        function [zMapDeNoised, zCoeffIndices, outlierPointsMap] = deNoisedZernikeCoefficientsMap(subjectIndex, movingMeanWindowSize, sigmaMultiplier)
+            % Obtain raw data set
+            [zMap, zCoeffIndices] = PolansOptics.constants.ZernikeCoefficientsMap(subjectIndex);
+            zMapDeNoised = zMap*0;
+            outlierPointsMap = zMap*0;
+            
+            fprintf('DeNoised Zcoeffs: moving window size = %d, sigmaMultipiler = %2.2f\n', movingMeanWindowSize, sigmaMultiplier);
+            for eccYindex = 1:numel(PolansOptics.constants.measurementVerticalEccentricities)
+            for eccXindex = 1:numel(PolansOptics.constants.measurementHorizontalEccentricities)
+                zCoeffs = squeeze(zMap(eccYindex,eccXindex,:));
+                if (all(zCoeffs == 0))
+                    zMap(eccYindex,eccXindex,:) = nan;
+                end
+            end
+            end
+        
+            % Fit polynomials to obtain smooth Zernike coefficients for all eccentricities
+            for zCoeffIndex = 1:size(zMap,3)
+                for eccYindex = 1:numel(PolansOptics.constants.measurementVerticalEccentricities)
+
+                    % Raw z-coeffs
+                    zCoeffs = squeeze(zMap(eccYindex,:, zCoeffIndex));
+                    
+                    % Find the trend of z-coeffs using a moving average window
+                    trend = movmean(zCoeffs,movingMeanWindowSize, 'omitnan');
+                    
+                    % Remove the trend to find outliers
+                    detrendedZCoeffs = zCoeffs - trend;
+                    
+                    % Indices of outliers (far away from the trend
+                    % (sigmaMultiplier * std) or having nan
+                    idx = (abs(detrendedZCoeffs) > sigmaMultiplier * std(detrendedZCoeffs, 'omitnan')) | isnan(zCoeffs);
+                    
+                    % Keep track of outlier points (useful for plotting them)
+                    outlierPointsMap(eccYindex, :, zCoeffIndex) = idx;
+
+                    % Indices to use for polynomial fit (all except the outliers)
+                    indicesForPolynomialFit = find(idx == 0);
+
+                    % Source data (excluding noisy data points)
+                    rawDataX = PolansOptics.constants.measurementHorizontalEccentricities(indicesForPolynomialFit);
+                    rawDataY = zMap(eccYindex,indicesForPolynomialFit, zCoeffIndex);
+                    
+                    % Find bet fit polynomial up
+                    maxOrder = 4;
+                    if (zCoeffIndex > 3)
+                        maxOrder = 6;
+                    end
+                    examinedOrders = 2:maxOrder;
+                    residuals = inf(1,maxOrder);
+                    p = cell(1,  maxOrder);
+
+                    for k = 1:numel(examinedOrders)
+                        theOrder = examinedOrders(k);
+                        p{k} = polyfit(rawDataX, rawDataY,theOrder); 
+                        defocusCoeffsMicronsInterpolated = polyval(p{k} ,PolansOptics.constants.measurementHorizontalEccentricities);
+                        differences = zMap(eccYindex,indicesForPolynomialFit, zCoeffIndex) - defocusCoeffsMicronsInterpolated(indicesForPolynomialFit);
+                        residuals(k) = sum(differences.^2);
+                    end
+                    
+                    % Find the minimum error and the corresponding polynomial order
+                    [~,theBestK] = min(residuals);
+                    
+                    % Polynomial fit for all eccentricities
+                    intepolatedZoeffs = polyval(p{theBestK}, PolansOptics.constants.measurementHorizontalEccentricities);
+                    
+                    
+                    figure(100); clf;
+                    plot(PolansOptics.constants.measurementHorizontalEccentricities, zCoeffs, 'ks', 'MarkerSize', 12);
+                    hold on;
+                    plot(PolansOptics.constants.measurementHorizontalEccentricities, intepolatedZoeffs, 'r-', 'LineWidth', 1.5);
+                    drawnow;
+                    title(sprintf('Z%d', zCoeffIndex));
+                    pause(1.0)
+                    
+                    doSecondPass = false;
+                    if (doSecondPass) 
+                        % Second pass
+                        residuals = zCoeffs - intepolatedZoeffs;
+                        indicesForPolynomialFit = find((abs(residuals) < sigmaMultiplier * std(residuals, 'omitnan')) &  (~isnan(zCoeffs)));
+
+
+                        % Source data (excluding noisy data points)
+                        rawDataX = PolansOptics.constants.measurementHorizontalEccentricities(indicesForPolynomialFit);
+                        rawDataY = zMap(eccYindex,indicesForPolynomialFit, zCoeffIndex);
+
+                        % Find best fit polynomial up to order maxOrder
+                        examinedOrders = 2:maxOrder;
+                        residuals = inf(1,maxOrder);
+                        p = cell(1,  maxOrder);
+
+                        for k = 1:numel(examinedOrders)
+                            theOrder = examinedOrders(k);
+                            p{k} = polyfit(rawDataX, rawDataY,theOrder); 
+                            defocusCoeffsMicronsInterpolated = polyval(p{k} ,PolansOptics.constants.measurementHorizontalEccentricities);
+                            differences = zMap(eccYindex,indicesForPolynomialFit, zCoeffIndex) - defocusCoeffsMicronsInterpolated(indicesForPolynomialFit);
+                            residuals(k) = sum(differences.^2);
+                        end
+
+                        % Find the minimum error, and the corresponding
+                        % polynomial order
+                        [~,theBestK]= min(residuals);
+
+                        % Polynomial fit for all eccentricities
+                        intepolatedZoeffs = polyval(p{theBestK}, PolansOptics.constants.measurementHorizontalEccentricities);
+                        end
+
+                        % Denoised coeffs
+                        zMapDeNoised(eccYindex,:, zCoeffIndex) = intepolatedZoeffs;
+                end % eccYindex
+            end % zCoeffIndex
+        end
+        
+        
+        
     end % Static methods
     
 end
