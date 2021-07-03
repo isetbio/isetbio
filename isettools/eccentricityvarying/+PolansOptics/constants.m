@@ -80,12 +80,49 @@ classdef constants
                 numel(zCoeffIndices));
             
             xyIndex = 0;
+            x = [];
+            y = [];
+            v = [];
+            xq = [];
+            yq = [];
             for vEccIndex = 1:size(zMap,1)
                 for hEccIndex = 1:size(zMap,2)
+                    % Special cases to exclude raw data and interpolate
+                    % from neighboring data
+                    % Subject 2
+                    inBadPointsSet1OfSubject2 = ...
+                        (subjectIndex == 2) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-7 -6 -5 -4  -2 -1 0 1]));
+                    inBadPointsSet2OfSubject2 = ...
+                        (subjectIndex == 2) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -5) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-1 1 2 3]));
+                    
                     xyIndex = xyIndex+1;
-                    zMap(vEccIndex, hEccIndex,:) = zCoeffs(xyIndex,:);
+                    theCoeffs = zCoeffs(xyIndex,:);
+                    zMap(vEccIndex, hEccIndex,:) = theCoeffs;
+                    % Keep the good (x,y) points
+                    if (~all(theCoeffs == 0)) && ((~inBadPointsSet1OfSubject2)) && ((~inBadPointsSet2OfSubject2))
+                        x = cat(2, x, PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex));
+                        y = cat(2, y, PolansOptics.constants.measurementVerticalEccentricities(vEccIndex));
+                        v = cat(2, v, theCoeffs');
+                    end
+                    xq = cat(2, xq, PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex));
+                    yq = cat(2, yq, PolansOptics.constants.measurementVerticalEccentricities(vEccIndex));
                 end
             end
+            
+            
+            for z = 1:size(zMap,3)
+                % Fill in all-zero entries
+                F = scatteredInterpolant(x',y',(v(z,:))');
+                tmp = F(xq,yq);
+                zMapFilled(:,:,z) = (reshape(tmp, [size(zMap,2), size(zMap,1)]))';
+            end
+
+            % Override with filled zmap
+            zMap = zMapFilled;
         end
         
         function [zMapDeNoised, zCoeffIndices, outlierPointsMap] = deNoisedZernikeCoefficientsMap(subjectIndex, movingMeanWindowSize, sigmaMultiplier)
