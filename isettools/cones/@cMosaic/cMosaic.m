@@ -1,7 +1,7 @@
 classdef cMosaic < handle
     % Create an optimized cone mosaic object
     %
-    
+    %
     % Syntax:
     %   theConeMosaic = cMosaic;
     %   theConeMosaic = cMosaic('pigment', pp);

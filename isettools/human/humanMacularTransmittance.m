@@ -36,4 +36,4 @@ t = macular(dens, wave);
 optics = opticsSet(optics, 'transmittance', t.transmittance);
 oi = oiSet(oi, 'optics', optics);
 
-return;
+end
