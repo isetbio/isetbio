@@ -1,5 +1,5 @@
 function params = visualize(obj, varargin)
-% Visualize the cones and potentially the cone activations
+% Visualize the cones and different cone excitations or photocurrent 
 %
 % Synopsis
 %   params = visualize(obj, varargin)
@@ -9,16 +9,17 @@ function params = visualize(obj, varargin)
 %   obj - a cMosaic
 %
 % Optional key/val pairs
-%   Use cm.visualize('params') to have a returned struct with the params.
+%   Use cm.visualize('help') to return a struct with the set of possible
+%      params. 
 %
 % Outputs
-%  params
+%   params - struct with parameters used by this function
 %
 % Description
-%  Visualization utility for the cone mosaic
+%  Visualization utility for the new, fast, cone mosaic
 %
 % See also
-%  cMosaic, cMosaic.compute
+%  cMosaic, cMosaic.compute (old rect cone mosaic)
 %
 
 % Examples:
@@ -27,7 +28,7 @@ function params = visualize(obj, varargin)
 
 %% If cm.visualize('params'), we return the params
 params = '';
-if ~isempty(varargin) && isequal(varargin{1},'params')
+if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
     % User wants to return a list of parameters
     params.domain = 'degrees';
     params.domainVisualizationLimits = [];
@@ -59,6 +60,7 @@ end
 
 %%
     p = inputParser;
+    
     p.addParameter('visualizationView', 'REVF', @(x)(ischar(x) && (ismember(x, {'REVF', 'retinal view'}))));
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
