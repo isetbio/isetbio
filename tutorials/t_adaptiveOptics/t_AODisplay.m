@@ -367,3 +367,5 @@ emPath = zeros(nTrialsNum, 1, 2);
 % Compute isomerizations for each eye position.
 cMosaic.compute(theOI);
 cMosaic.window;
+
+%% END
