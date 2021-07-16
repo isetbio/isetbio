@@ -1,4 +1,4 @@
-function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength] = oiForSubjectAtEccentricity(subjectID, whichEye, ecc, ...
+function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = oiForSubjectAtEccentricity(subjectID, whichEye, ecc, ...
     pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin)
 
     % Parse input
@@ -26,7 +26,6 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     noLCA = p.Results.noLCA;
     deNoisedZernikeCoefficients = p.Results.deNoisedZernikeCoefficients;
     
-    % Flip vertical eccentricity
     % Obtain z-coeffs at desired eccentricity
     zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, deNoisedZernikeCoefficients);
     

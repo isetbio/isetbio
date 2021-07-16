@@ -1,11 +1,11 @@
-function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength] = oiForSubjectAtEccentricity(subjectID, whichEye, ecc, ...
+function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = oiForSubjectAtEccentricity(subjectID, whichEye, ecc, ...
     pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin)
 
     % Parse input
     p = inputParser;
     p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=1)&&(x<=130)));
     p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{ArtalOptics.constants.rightEye, ArtalOptics.constants.leftEye}))));
-    p.addRequired('ecc', @(x)(isnumeric(x)&&(numel(x) == 2)));
+    p.addRequired('ecc', @(x)(isnumeric(x)&&((numel(x) == 1)||(numel(x) == 2))));
     p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=4)));
     p.addRequired('wavelengthsListToCompute', @(x)(isnumeric(x)));
     p.addRequired('micronsPerDegree', @(x)(isscalar(x)));
@@ -25,9 +25,17 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     noLCA = p.Results.noLCA;
     
     
-    % Flip vertical eccentricity
     % Obtain z-coeffs at desired eccentricity
     zCoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc(1), subtractCentralRefraction);
+    
+    if (isempty(zCoeffs))
+        theOI = [];
+        thePSF = []; 
+        psfSupportMinutesX = []; 
+        psfSupportMinutesY = [];
+        psfSupportWavelength = [];
+        return;
+    end
     
     % Compute PSF and WVF from z-Coeffs for the desired pupil and wavelenghts
     [thePSF, ~, ~,~, psfSupportMinutesX, psfSupportMinutesY, theWVF] = ...
@@ -38,7 +46,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
              'doNotZeroCenterPSF', ~zeroCenterPSF, ...
              'micronsPerDegree', micronsPerDegree, ...
              'flipPSFUpsideDown', flipPSFUpsideDown, ...
-             'name', sprintf('Artal subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
+             'name', sprintf('Artal subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), 0));
     
     % Remove wavelength-dependent defocus if noLCA is set
     if (noLCA)
@@ -83,6 +91,18 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
 
     % Get original z-coeffs at all measured eccentricities
     [zMap, zCoeffIndices] = ArtalOptics.constants.ZernikeCoefficientsMap(subjectID, whichEye);
+    
+    % Check that the coefficients do not contain NaNs
+    atLeastOneNaNCoefficient = any(isnan(zMap(:)));
+    
+    % Check that the coefficients are not all 0
+    allZeroCoefficients = (sum(abs(zMap(:))) == 0);
+    
+    if (atLeastOneNaNCoefficient || allZeroCoefficients)
+        interpolatedZcoeffs = [];
+        return;
+    end
+    
     zCoeffsNum = size(zMap,2);
     
     % Index of coeffs at ecc = (0,0)
@@ -90,7 +110,7 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
     
     interpolatedZcoeffs = zeros(1, 30);
     for zIndex = 1:zCoeffsNum
-         % Retrieve the XY spatial map for this z-coeff
+         % Retrieve the X spatial map for this z-coeff
          z2Dmap = squeeze(zMap(:,zIndex));
          
          % The 4-th z-coeff is defocus. Subtract central defocus from all
@@ -99,7 +119,7 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
              z2Dmap = z2Dmap - z2Dmap(indexOfZeroEcc);
          end
          % Interpolate the XY map at the desired eccentricity.
-         interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp1(ArtalOptics.constants.measurementHorizontalEccentricities,z2Dmap, ecc(1));
+         interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp1(ArtalOptics.constants.measurementHorizontalEccentricities, z2Dmap, ecc(1));
     end
      
 end
