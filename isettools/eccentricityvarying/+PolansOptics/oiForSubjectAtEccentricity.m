@@ -13,7 +13,6 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('wavefrontSpatialSamples', 801, @isscalar)
     p.addParameter('subtractCentralRefraction', true, @islogical);
     p.addParameter('zeroCenterPSF', false, @islogical);
-    p.addParameter('deNoisedZernikeCoefficients', false, @islogical);
     p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('noLCA', false, @islogical);
     p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
@@ -24,10 +23,9 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     zeroCenterPSF = p.Results.zeroCenterPSF;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     noLCA = p.Results.noLCA;
-    deNoisedZernikeCoefficients = p.Results.deNoisedZernikeCoefficients;
     
     % Obtain z-coeffs at desired eccentricity
-    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, deNoisedZernikeCoefficients);
+    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction);
     
     % Compute PSF and WVF from z-Coeffs for the desired pupil and wavelenghts
     [thePSF, ~, ~,~, psfSupportMinutesX, psfSupportMinutesY, theWVF] = ...
@@ -79,23 +77,10 @@ function theOI = wvf2oiSpecial(theWVF, umPerDegree, pupilDiameterMM)
 end
 
 
-function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, deNoisedCoeffs)
+function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction)
 
     % Get original z-coeffs at all measured eccentricities
-    if (deNoisedCoeffs)
-        % The following 2 parameters determine the degree of smoothing in Z coefficients
-        % Threshold for detecting outlier data points (in units of standard deviation of the data)
-        sigmaMultiplier = 3.0;
-        % Window size for moving window
-        movingMeanWindowSize = 5;
-        
-        [zMapRaw, zCoeffIndicesRaw] = PolansOptics.constants.ZernikeCoefficientsMap(subjectID);
-        [zMap, zCoeffIndices] = PolansOptics.constants.deNoisedZernikeCoefficientsMap(subjectID, movingMeanWindowSize, sigmaMultiplier);
-    else
-        [zMap, zCoeffIndices] = PolansOptics.constants.ZernikeCoefficientsMap(subjectID);
-    end
-    
-    zCoeffsNum = size(zMap,3);
+    [zMap, zCoeffIndices] = PolansOptics.constants.ZernikeCoefficientsMap(subjectID);
     
     % Interpolate zMap at desired ecc
     [X,Y] = meshgrid(...
@@ -106,6 +91,7 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
     indexOfZeroEcc = (X==0) & (Y==0);
     
     interpolatedZcoeffs = zeros(1, 30);
+    zCoeffsNum = size(zMap,3);
     for zIndex = 1:zCoeffsNum
          % Retrieve the XY spatial map for this z-coeff
          z2Dmap = squeeze(zMap(:,:,zIndex));

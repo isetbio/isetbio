@@ -64,6 +64,12 @@ classdef constants
             retinalQuadrantName{2} = verticalMeridianName;
         end
         
+        function flag = subjectRequiresCentralRefractionCorrection(subjectID) 
+            subjectsRequiringCentralRefractionCorrection = setdiff(1:10, [1 2 4 7]);
+            flag = ismember(subjectID, subjectsRequiringCentralRefractionCorrection);
+        end
+        
+        
         function [zMap, zCoeffIndices] = ZernikeCoefficientsMap(subjectIndex)
             % Import raw data
             allData = rawDataReadData('zCoefsPolans2015', 'datatype', 'isetbiomatfileonpath');
@@ -98,12 +104,69 @@ classdef constants
                         (subjectIndex == 2) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -5) && ...
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-1 1 2 3]));
+                    inBadPointsSetOfSubject2 = inBadPointsSet1OfSubject2 | inBadPointsSet1OfSubject2;
+                    
+                    % Subject 3
+                    inBadPointsSetOfSubject3= ...
+                        (subjectIndex == 3) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-1]));
+                    
+                    % Subject 5
+                    inBadPointsSet1OfSubject5= ...
+                        (subjectIndex == 5) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -5) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-7 -6 -5]));
+                    
+                    inBadPointsSet2OfSubject5= ...
+                        (subjectIndex == 5) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -10) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-15]));
+                    inBadPointsSetOfSubject5 = inBadPointsSet1OfSubject5 | inBadPointsSet2OfSubject5;
+                   
+                    
+                    % Subject 6
+                    inBadPointsSet1OfSubject6 = ...
+                        (subjectIndex == 6) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-9 -8 -7 -6]));
+                    
+                    inBadPointsSet2OfSubject6 = ...
+                        (subjectIndex == 6) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -5) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-9 -7 -6 7]));
+                    
+                    inBadPointsSet3OfSubject6 = ...
+                        (subjectIndex == 6) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -10) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-9 -7 -6 7]));
+                    inBadPointsSetOfSubject6 = inBadPointsSet1OfSubject6 | inBadPointsSet2OfSubject6 | inBadPointsSet3OfSubject6;
+                    
+                    % Subject 9
+                    inBadPointsSet1OfSubject9 = ...
+                        (subjectIndex == 9) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -15) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-5]));
+                    
+                    inBadPointsSet2OfSubject9 = ...
+                        (subjectIndex == 9) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 5) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [10]));
+                    inBadPointsSetOfSubject9 = inBadPointsSet1OfSubject9 | inBadPointsSet2OfSubject9;
+                    
+                    % Subject 10
+                    inBadPointsSetOfSubject10 = ...
+                        (subjectIndex == 10) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -10) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [0 1 2 3 4]));
                     
                     xyIndex = xyIndex+1;
                     theCoeffs = zCoeffs(xyIndex,:);
                     zMap(vEccIndex, hEccIndex,:) = theCoeffs;
                     % Keep the good (x,y) points
-                    if (~all(theCoeffs == 0)) && ((~inBadPointsSet1OfSubject2)) && ((~inBadPointsSet2OfSubject2))
+                    if ((~all(theCoeffs == 0)) && (~inBadPointsSetOfSubject2) && (~inBadPointsSetOfSubject3) && ...
+                            (~inBadPointsSetOfSubject5) && (~inBadPointsSetOfSubject6) && (~inBadPointsSetOfSubject9) && ...
+                            (~inBadPointsSetOfSubject10))
                         x = cat(2, x, PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex));
                         y = cat(2, y, PolansOptics.constants.measurementVerticalEccentricities(vEccIndex));
                         v = cat(2, v, theCoeffs');
@@ -125,121 +188,7 @@ classdef constants
             zMap = zMapFilled;
         end
         
-        function [zMapDeNoised, zCoeffIndices, outlierPointsMap] = deNoisedZernikeCoefficientsMap(subjectIndex, movingMeanWindowSize, sigmaMultiplier)
-            % Obtain raw data set
-            [zMap, zCoeffIndices] = PolansOptics.constants.ZernikeCoefficientsMap(subjectIndex);
-            zMapDeNoised = zMap*0;
-            outlierPointsMap = zMap*0;
-            
-            fprintf('DeNoised Zcoeffs: moving window size = %d, sigmaMultipiler = %2.2f\n', movingMeanWindowSize, sigmaMultiplier);
-            for eccYindex = 1:numel(PolansOptics.constants.measurementVerticalEccentricities)
-            for eccXindex = 1:numel(PolansOptics.constants.measurementHorizontalEccentricities)
-                zCoeffs = squeeze(zMap(eccYindex,eccXindex,:));
-                if (all(zCoeffs == 0))
-                    zMap(eccYindex,eccXindex,:) = nan;
-                end
-            end
-            end
-        
-            % Fit polynomials to obtain smooth Zernike coefficients for all eccentricities
-            for zCoeffIndex = 1:size(zMap,3)
-                for eccYindex = 1:numel(PolansOptics.constants.measurementVerticalEccentricities)
 
-                    % Raw z-coeffs
-                    zCoeffs = squeeze(zMap(eccYindex,:, zCoeffIndex));
-                    
-                    % Find the trend of z-coeffs using a moving average window
-                    trend = movmean(zCoeffs,movingMeanWindowSize, 'omitnan');
-                    
-                    % Remove the trend to find outliers
-                    detrendedZCoeffs = zCoeffs - trend;
-                    
-                    % Indices of outliers (far away from the trend
-                    % (sigmaMultiplier * std) or having nan
-                    idx = (abs(detrendedZCoeffs) > sigmaMultiplier * std(detrendedZCoeffs, 'omitnan')) | isnan(zCoeffs);
-                    
-                    % Keep track of outlier points (useful for plotting them)
-                    outlierPointsMap(eccYindex, :, zCoeffIndex) = idx;
-
-                    % Indices to use for polynomial fit (all except the outliers)
-                    indicesForPolynomialFit = find(idx == 0);
-
-                    % Source data (excluding noisy data points)
-                    rawDataX = PolansOptics.constants.measurementHorizontalEccentricities(indicesForPolynomialFit);
-                    rawDataY = zMap(eccYindex,indicesForPolynomialFit, zCoeffIndex);
-                    
-                    % Find bet fit polynomial up
-                    maxOrder = 4;
-                    if (zCoeffIndex > 3)
-                        maxOrder = 6;
-                    end
-                    examinedOrders = 2:maxOrder;
-                    residuals = inf(1,maxOrder);
-                    p = cell(1,  maxOrder);
-
-                    for k = 1:numel(examinedOrders)
-                        theOrder = examinedOrders(k);
-                        p{k} = polyfit(rawDataX, rawDataY,theOrder); 
-                        defocusCoeffsMicronsInterpolated = polyval(p{k} ,PolansOptics.constants.measurementHorizontalEccentricities);
-                        differences = zMap(eccYindex,indicesForPolynomialFit, zCoeffIndex) - defocusCoeffsMicronsInterpolated(indicesForPolynomialFit);
-                        residuals(k) = sum(differences.^2);
-                    end
-                    
-                    % Find the minimum error and the corresponding polynomial order
-                    [~,theBestK] = min(residuals);
-                    
-                    % Polynomial fit for all eccentricities
-                    intepolatedZoeffs = polyval(p{theBestK}, PolansOptics.constants.measurementHorizontalEccentricities);
-                    
-                    
-                    figure(100); clf;
-                    plot(PolansOptics.constants.measurementHorizontalEccentricities, zCoeffs, 'ks', 'MarkerSize', 12);
-                    hold on;
-                    plot(PolansOptics.constants.measurementHorizontalEccentricities, intepolatedZoeffs, 'r-', 'LineWidth', 1.5);
-                    drawnow;
-                    title(sprintf('Z%d', zCoeffIndex));
-                    pause(1.0)
-                    
-                    doSecondPass = false;
-                    if (doSecondPass) 
-                        % Second pass
-                        residuals = zCoeffs - intepolatedZoeffs;
-                        indicesForPolynomialFit = find((abs(residuals) < sigmaMultiplier * std(residuals, 'omitnan')) &  (~isnan(zCoeffs)));
-
-
-                        % Source data (excluding noisy data points)
-                        rawDataX = PolansOptics.constants.measurementHorizontalEccentricities(indicesForPolynomialFit);
-                        rawDataY = zMap(eccYindex,indicesForPolynomialFit, zCoeffIndex);
-
-                        % Find best fit polynomial up to order maxOrder
-                        examinedOrders = 2:maxOrder;
-                        residuals = inf(1,maxOrder);
-                        p = cell(1,  maxOrder);
-
-                        for k = 1:numel(examinedOrders)
-                            theOrder = examinedOrders(k);
-                            p{k} = polyfit(rawDataX, rawDataY,theOrder); 
-                            defocusCoeffsMicronsInterpolated = polyval(p{k} ,PolansOptics.constants.measurementHorizontalEccentricities);
-                            differences = zMap(eccYindex,indicesForPolynomialFit, zCoeffIndex) - defocusCoeffsMicronsInterpolated(indicesForPolynomialFit);
-                            residuals(k) = sum(differences.^2);
-                        end
-
-                        % Find the minimum error, and the corresponding
-                        % polynomial order
-                        [~,theBestK]= min(residuals);
-
-                        % Polynomial fit for all eccentricities
-                        intepolatedZoeffs = polyval(p{theBestK}, PolansOptics.constants.measurementHorizontalEccentricities);
-                        end
-
-                        % Denoised coeffs
-                        zMapDeNoised(eccYindex,:, zCoeffIndex) = intepolatedZoeffs;
-                end % eccYindex
-            end % zCoeffIndex
-        end
-        
-        
-        
     end % Static methods
     
 end
