@@ -1,6 +1,6 @@
 function demoConeMosaicAliasing()
 
-    % Get direct
+    % Get directory
     [directory,~] = fileparts(which(mfilename()));
     exportsDir = fullfile(directory, 'exports');
     
