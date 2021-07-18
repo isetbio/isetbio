@@ -21,6 +21,25 @@ classdef constants
      
      
      methods (Static)
+         
+         function flag = subjectRequiresCentralRefractionCorrection(whichEye, subjectID) 
+             
+            lowResLeftEyeSubjects = [2     5    15    27    31    32    33    52    56    57    68    73    90   108   127   130];
+            lowResRightEyeSubjects = [6     9    11    12    15    22    27    31    32    41    43    47    49    51    53    56    68    78    84    97    99   101   111   125];
+            
+            switch (whichEye)
+                case 'left eye'
+                    flag = ismember(subjectID, lowResLeftEyeSubjects);
+                case 'right eye'
+                    flag = ismember(subjectID, lowResRightEyeSubjects);
+            end
+            
+            if (flag)
+                fprintf('Subject %d from %s requires central refraction correction\n', subjectID, whichEye);
+            end
+            
+         end
+        
          function [zMap, zCoeffIndices] = ZernikeCoefficientsMap(subjectIndex, whichEye)
             % Import raw data
             allData = rawDataReadData('zCoefsJaekenArtal2012', 'datatype', 'isetbiomatfileonpath');
