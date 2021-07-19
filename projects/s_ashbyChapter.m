@@ -123,13 +123,30 @@ title('10 deg eccentricity');
 
 % Apparently, we can load the objects and parameters in.
 chdir(fullfile(isetbioRootPath,'projects'));
-foo = load('oiData');
+% foo = load('oiData');
 
-[X,Y] = foo.obj.oiEnsembleGenerate(foo.oiSamplingGridDegs,foo.varargin{:});
+% [X,Y] = foo.obj.oiEnsembleGenerate(foo.oiSamplingGridDegs,foo.varargin{:});
 
 % Then this runs
 load('oiData','obj','oiSamplingGridDegs','varargin');
-[oiEnsemble, psfEnsemble] = obj.oiEnsembleGenerate(oiSamplingGridDegs,varargin{:});
+% [oiEnsemble, psfEnsemble] = obj.oiEnsembleGenerate(oiSamplingGridDegs,varargin{:});
+
+% centerPos = oiSamplingGridDegs;
+centerPos = [ 1 20];
+% Convert the varargin to a struct that we can edit
+args = struct;
+for ii=1:2:numel(varargin)
+    args.(varargin{ii}) = varargin{ii+1};
+end
+[oiEnsemble, psfEnsemble] = obj.oiEnsembleGenerate(centerPos,args);
+thisPSF = psfEnsemble{1};
+
+ieNewGraphWin;
+thisW = 7;
+h = mesh(thisPSF.supportX,thisPSF.supportY,thisPSF.data(:,:,thisW)/max2(thisPSF.data(:,:,thisW)));
+tMarks  = [-20:10:20];
+set(gca,'xtick',tMarks);
+set(gca,'ytick',tMarks);
 
 % To see the code and learn more, 
 %    edit cMosaic.oiEnsembleGenerate
