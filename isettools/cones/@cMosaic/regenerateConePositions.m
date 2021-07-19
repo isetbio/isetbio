@@ -1,7 +1,7 @@
 function regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile)
 
     % Regenerate lattice whose FOV is large enough to encopass the desired size at the desired eccentricity
-    fovDegs = sqrt(sum(obj.eccentricityDegs.^2,2)) + max(obj.sizeDegs)*1.3;
+    fovDegs = (sqrt(sum(obj.eccentricityDegs.^2,2)) + max(obj.sizeDegs))*1.3;
 
     obj.coneRFpositionsMicrons = retinalattice.generatePatch(fovDegs, ...
         'cones', obj.whichEye, exportHistoryToFile, visualizeConvergence, obj.useParfor, maxIterations, ...
