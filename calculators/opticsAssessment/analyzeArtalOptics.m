@@ -4,25 +4,140 @@ function analyzeArtalOptics()
     [directory,~] = fileparts(which(mfilename()));
     exportsDir = fullfile(directory, 'exports');
     
-    reAnalyzeData = true;
+    reAnalyzeData = ~true;
     plotEachPosition = ~true;
-    whichEye = 'right eye';
     
     if (reAnalyzeData)
-        reAnalyze('right eye', plotEachPosition, exportsDir);
         reAnalyze('left eye', plotEachPosition, exportsDir);
+        reAnalyze('right eye', plotEachPosition, exportsDir);
     else
-        plotSummary(whichEye, exportsDir );
+        % Plot ranked subject data for the left eye
+        whichEye = 'left eye';
+        rankedLeftEyeSubjectIDs = rankSubjects(exportsDir, whichEye)
+        plotRankedSubjects(exportsDir, rankedLeftEyeSubjectIDs, whichEye);
+        % Plot ranked subject data for the right eye
+        whichEye = 'right eye';
+        rankedRightEyeSubjectIDs = rankSubjects(exportsDir, whichEye)
+        plotRankedSubjects(exportsDir, rankedRightEyeSubjectIDs, whichEye);
+        
+        plotSummary(exportsDir);
     end
 end
 
-function plotSummary(whichEye, exportsDir )
+function plotRankedSubjects(exportsDir, rankedSubjectIDs, whichEye)
+    dataFile = fullfile(exportsDir, sprintf('ArtalOpticsAnalysis_%s.mat', whichEye));
+    load(dataFile, 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
+    
+    subjectIDs = [];
+    for includedSubjectCount = 1:numel(subjectPSFData)
+        d = subjectPSFData{includedSubjectCount};
+        horizontalEcc = d.horizontalEcc;
+        psfXCutoffSF(includedSubjectCount,:) = d.psfXCutoffSF;
+        psfYCutoffSF(includedSubjectCount,:) = d.psfYCutoffSF;
+        subjectIDs = cat(2, subjectIDs, d.subjectID);
+    end
+    meanPSFXCutoffSF = mean(psfXCutoffSF,1);
+    
+    rowsNum = 3;
+    colsNum = 4;
+    sv = NicePlot.getSubPlotPosVectors(...
+           'colsNum', colsNum, ...
+           'rowsNum', rowsNum, ...
+           'heightMargin',  0.04, ...
+           'widthMargin',    0.01, ...
+           'leftMargin',     0.02, ...
+           'rightMargin',    0.00, ...
+           'bottomMargin',   0.04, ...
+           'topMargin',      0.01); 
+     
+    subjectGroup = 0;
+    for includedSubjectCount = 1:numel(rankedSubjectIDs)
+        
+        subjectID = rankedSubjectIDs(includedSubjectCount);
+        index = find(subjectIDs == rankedSubjectIDs(includedSubjectCount));
+        
+        if (mod(includedSubjectCount-1,12) == 0)
+            subjectGroup = subjectGroup + 1;
+            hFig = figure();
+            clf;
+            set(hFig, 'Position', [10 10 2000 1400], 'Color', [1 1 1]);
+        end
+         
+        r = floor((includedSubjectCount-1)/colsNum);
+        r = mod(r,rowsNum)+1;
+        c = mod(includedSubjectCount-1,colsNum)+1;
+        subplot('Position', sv(r,c).v);
+        
+        plot(horizontalEcc, mosaicNyquistFrequencyCPD, 'k-', 'LineWidth', 3.0); hold on;
+        plot(horizontalEcc, mosaicNyquistFrequencyCPD, 'g--', 'LineWidth', 1.0);
+        plot(horizontalEcc, meanPSFXCutoffSF, 'm-', 'LineWidth', 1.5);
+        plot(horizontalEcc, psfXCutoffSF(index,:), 'bo-', 'MarkerFaceColor', [0.5 0.5 1], 'LineWidth', 1.5);
+        plot(horizontalEcc, psfYCutoffSF(index,:), 'ro-', 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.5);
+        title(sprintf('%s - subjectID: %d, rank: %d/%d', whichEye, subjectID, includedSubjectCount,numel(rankedSubjectIDs)));
+        
+        axis 'square';
+        grid on;
+        set(gca, 'FontSize', 14, 'XLim', [-21 21], 'YLim', [0 70], 'XTick', -20:5:20, 'YTick', 0:5:70);
+        drawnow;
+        
+        if (mod(includedSubjectCount-1,12) == 11)
+            figTitle = sprintf('Ranked_ARTAL_Group%d_%s', subjectGroup, whichEye);
+            NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('%s.pdf', figTitle)), hFig, 300);
+        end
+        
+    end
+    
+end
+
+
+function rankedSubjectIDs = rankSubjects(exportsDir, whichEye)
+    dataFile = fullfile(exportsDir, sprintf('ArtalOpticsAnalysis_%s.mat', whichEye));
+    load(dataFile, 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
+    subjectIDs = [];
+    for includedSubjectCount = 1:numel(subjectPSFData)
+        d = subjectPSFData{includedSubjectCount};
+        horizontalEcc = d.horizontalEcc;
+        psfXCutoffSF(includedSubjectCount,:) = d.psfXCutoffSF;
+        psfYCutoffSF(includedSubjectCount,:) = d.psfYCutoffSF; 
+        subjectIDs = cat(2, subjectIDs, d.subjectID);
+    end
+    
+    idx = find(abs(horizontalEcc)<=10);
+    psfXCutoffSF = psfXCutoffSF(:,idx);
+    psfYCutoffSF = psfYCutoffSF(:,idx);
+    meanPSFXCutoffSF = mean(psfXCutoffSF,1);
+    meanPSFYCutoffSF = mean(psfYCutoffSF,1);
+   
+    % Rank according to correlation coeff in [-10 10]
+    r = corr(meanPSFXCutoffSF', psfXCutoffSF');
+    
+    %r = corr([meanPSFXCutoffSF'; meanPSFYCutoffSF'], [psfXCutoffSF'; psfYCutoffSF']);
+    
+    [r,sortedSubjectIndices] = sort(r, 'descend');
+    rankedSubjectIDs = subjectIDs(sortedSubjectIndices);
+    
+    hFig = figure();
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 2200 800]);
+    plot(1:numel(rankedSubjectIDs), r, 'bo-', 'MarkerFaceColor', [0.5 0.5 1], 'MarkerSize', 12, 'LineWidth', 1.5);
+    xlabel(sprintf('subject ID (%s)', whichEye));
+    ylabel('correlation coefficient');
+    set(gca, 'FontSize', 16, 'XLim',[0 numel(rankedSubjectIDs)+1], 'YLim', [-1 1], 'XTick', 1:numel(rankedSubjectIDs), 'XTickLabel', rankedSubjectIDs);
+    grid on
+    NicePlot.exportFigToPDF(fullfile(exportsDir, sprintf('ArtalSubjectsRanked_%s', whichEye)), hFig, 300);
+end
+
+
+function plotSummary(exportsDir)
     dataFile = fullfile(exportsDir, sprintf('ArtalOpticsAnalysis_%s.mat', 'left eye'));
     load(dataFile, 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
     
+    fovealEccX = [];
     for includedSubjectCount = 1:numel(subjectPSFData)
         d = subjectPSFData{includedSubjectCount};
         horizontalEcc = fliplr(d.horizontalEcc);
+        if (isempty(fovealEccX))
+            fovealEccX = find(horizontalEcc == 0);
+        end
         psfXCutoffSF(includedSubjectCount,:) = fliplr(d.psfXCutoffSF);
         psfYCutoffSF(includedSubjectCount,:) = fliplr(d.psfYCutoffSF);
         zCoeffs(includedSubjectCount,:,:) = d.zCoeffs;
@@ -31,6 +146,8 @@ function plotSummary(whichEye, exportsDir )
         sfCutoff(includedSubjectCount) = maxSF;
     end
     
+
+
     dataFile = fullfile(exportsDir, sprintf('ArtalOpticsAnalysis_%s.mat', 'right eye'));
     load(dataFile, 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
     
@@ -39,17 +156,14 @@ function plotSummary(whichEye, exportsDir )
         horizontalEcc = d.horizontalEcc;
         psfXCutoffSF(includedSubjectCount+numel(subjectPSFData),:) = d.psfXCutoffSF;
         psfYCutoffSF(includedSubjectCount+numel(subjectPSFData),:) = d.psfYCutoffSF;
-        
         [maxSF,idx] = max(d.psfXCutoffSF);
         bestEcc(includedSubjectCount+numel(subjectPSFData)) = horizontalEcc(idx);
         sfCutoff(includedSubjectCount+numel(subjectPSFData)) = maxSF;
         zCoeffs(includedSubjectCount+numel(subjectPSFData),:,:) = d.zCoeffs;
     end
-    
+
     
     % Plot distribution of Z3,Z4,Z5 at the fovea
-    fovealEccX = find(horizontalEcc == 0);
-    
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1300 510], 'Color', [1 1 1]);
     subplot(1,3,1);
@@ -69,6 +183,7 @@ function plotSummary(whichEye, exportsDir )
     xlabel('z5 (vertical astigmatism)'); 
     axis 'square'; grid on
     set(gca, 'XTick', -1:0.2:1, 'YLim', [0 40], 'YTick', 0:10:50);
+    NicePlot.exportFigToPDF(fullfile(exportsDir,'ArtalCoeffs.pdf'), hFig, 300);
     
     
         
@@ -119,7 +234,7 @@ function plotSummary(whichEye, exportsDir )
             set(gca, 'Color', 'none', 'XColor', [0.3 0.3 0.3], 'YColor', [0.3 0.3 0.3]);
         %end
         
-        NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('Artal.pdf')), hFig, 300);
+        NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('ArtalMeanAcrossHorizontalEccentricity.pdf')), hFig, 300);
     end
     
     
@@ -157,7 +272,7 @@ function plotSummary(whichEye, exportsDir )
     axis 'square';  grid 'on'; box 'off'
     set(gca, 'XLim', [-20 20], 'YLim', [0 70], 'XTick', -20:5:20, 'YTick', 0:5:100, 'FontSize', 16);
     set(gca, 'XColor', [0.3 0.3 0.3], 'YColor', [0.3 0.3 0.3], 'LineWidth', 1.0);
-    NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('ArtalBoth.pdf')), hFig, 300);
+    NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('ArtalAcrossHorizontalEccentricity.pdf')), hFig, 300);
 end
 
 function h = shadeAreaBetweenCyrves(ax, x, curve1, curve2, shadeColor, alphaValue)
@@ -175,7 +290,7 @@ function reAnalyze(whichEye, plotEachPosition, exportsDir)
     opticsParams = struct(...
         'zernikeDataBase',  'Artal2012', ...
         'subjectID',1, ...
-        'subtractCentralRefraction', true, ...
+        'subtractCentralRefraction', false, ...
         'zeroCenterPSF', true, ...
         'flipPSFUpsideDown', true, ...
         'whichEye', 'right eye', ...
@@ -201,14 +316,13 @@ function reAnalyze(whichEye, plotEachPosition, exportsDir)
     subjectGroup = 0;
     includedSubjects = ArtalOptics.subjectsWithFullDataSets(whichEyes{1});
     
-    subtractCentralRefraction = 0;
     eyeIndex = 1;
     
     for includedSubjectCount = 1:numel(includedSubjects)
         
         subjectID = includedSubjects(includedSubjectCount);
         if (mod(includedSubjectCount-1,12) == 0)
-            subjectGroup = subjectGroup + 1
+            subjectGroup = subjectGroup + 1;
             hFig = figure(subjectGroup);
             clf;
             set(hFig, 'Position', [10 10 2000 1400]);
@@ -217,7 +331,7 @@ function reAnalyze(whichEye, plotEachPosition, exportsDir)
         
         opticsParams.subjectID = subjectID;
         opticsParams.whichEye = whichEyes{eyeIndex};
-        opticsParams.subtractCentralRefraction = (subtractCentralRefraction==1);
+        opticsParams.subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(opticsParams.whichEye, opticsParams.subjectID);
         
         if (plotEachPosition)
             videoFileName = fullfile(exportsDir,sprintf('%s_Subject%d_%s_Pupil%3.2fmm_SubtractCentralRefraction', ...
@@ -292,7 +406,7 @@ function reAnalyze(whichEye, plotEachPosition, exportsDir)
         r = floor((includedSubjectCount-1)/colsNum);
         r = mod(r,rowsNum)+1;
         c = mod(includedSubjectCount-1,colsNum)+1;
-        fprintf(' subject %d (index:%d (r:%d, c:%d)), subtract central refraction: %d\n', subjectID, includedSubjectCount, r,c,subtractCentralRefraction);
+        fprintf(' subject %d (index:%d (r:%d, c:%d)), subtract central refraction: %d\n', subjectID, includedSubjectCount, r,c,opticsParams.subtractCentralRefraction);
         
         hFig = figure(subjectGroup);
         subplot('Position', sv(r,c).v);
@@ -309,7 +423,11 @@ function reAnalyze(whichEye, plotEachPosition, exportsDir)
         if (c == 1)
             ylabel('spatial frequency cutoff (-3dB), c/deg');
         end
-        title(sprintf('subject ID: %d', opticsParams.subjectID));
+        if (opticsParams.subtractCentralRefraction)
+            title(sprintf('subject ID: %d (-central refraction)', opticsParams.subjectID));
+        else
+            title(sprintf('subject ID: %d (original)', opticsParams.subjectID));
+        end
         legend([h1 h2 h3], {'mosaic Nyquist freq.', 'psf_x cutoff (-15dB)', 'psf_y cutoff (-15dB)'});
         
         axis 'square';
@@ -318,14 +436,8 @@ function reAnalyze(whichEye, plotEachPosition, exportsDir)
         drawnow;
         
         if (mod(includedSubjectCount-1,12) == 11)
-            if (opticsParams.subtractCentralRefraction)
-                figTitle = sprintf('%s_Group%d_%s_Pupil%3.2fmm_SubtractCentralRefraction', ...
+            figTitle = sprintf('%s_Group%d_%s_Pupil%3.2fmm', ...
                     opticsParams.zernikeDataBase, subjectGroup, opticsParams.whichEye, opticsParams.pupilDiameterMM);
-            else
-                figTitle = sprintf('%s_Group%d_%s_Pupil%3.2fmm_DoNotSubtractCentralRefraction', ...
-                    opticsParams.zernikeDataBase, subjectGroup, opticsParams.whichEye, opticsParams.pupilDiameterMM);
-            end
-            
             NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('%s.pdf', figTitle)), hFig, 300);
         end
         

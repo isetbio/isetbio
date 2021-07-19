@@ -37,12 +37,12 @@ function [psfImageSpectrum, psfImageSpectrumRoatated, coneImageSpectrum, ...
     [maxPSF,maxPoint] = max(psfImageSpectrumRoatated(:),[], 1);
     [maxPoint(1), maxPoint(2)] = ind2sub(size(psfImageSpectrumRoatated), maxPoint);
 
-    if (midPoint(1) ~= maxPoint(1))
-        fprintf('midPoint (%d) differs from maxPointY (%d)\n', midPoint(1),maxPoint(1));
-    end
-    if (midPoint(2) ~= maxPoint(2))
-        fprintf('midPoint (%d) differs from maxPointX (%d)\n', midPoint(1),maxPoint(2));
-    end
+%     if (midPoint(1) ~= maxPoint(1))
+%         fprintf('midPoint (%d) differs from maxPointY (%d)\n', midPoint(1),maxPoint(1));
+%     end
+%     if (midPoint(2) ~= maxPoint(2))
+%         fprintf('midPoint (%d) differs from maxPointX (%d)\n', midPoint(1),maxPoint(2));
+%     end
     %midPoint = maxPoint;
     
 

@@ -8,9 +8,119 @@ function analyzePolansOptics()
     if (reAnalyzeData)
         reAnalyze(exportsDir);
     else
+        % Plot ranked subject data
+        rankedSubjectIDs = rankSubjects(exportsDir);
+        plotRankedSubjects(exportsDir, rankedSubjectIDs);
+        
         plotSummary(exportsDir);
     end
 end
+
+function plotRankedSubjects(exportsDir, rankedSubjectIDs, whichEye)
+    load(fullfile(exportsDir,'PolansOpticsAnalysis.mat'), 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
+    
+    subjectIDs = [];
+    for includedSubjectCount = 1:numel(subjectPSFData)
+        d = subjectPSFData{includedSubjectCount};
+        horizontalEcc = d.horizontalEcc;
+        verticalEcc = d.verticalEcc;
+        subjectID = d.subjectID;
+        psfXCutoffSF(includedSubjectCount,:,:) = d.psfXCutoffSF;
+        psfYCutoffSF(includedSubjectCount,:,:) = d.psfYCutoffSF;
+        subjectIDs = cat(2, subjectIDs, d.subjectID);
+    end
+    
+    fovealEccY = find(verticalEcc == 0);
+    psfXCutoffSF = squeeze(psfXCutoffSF(:,fovealEccY,:));
+    psfYCutoffSF = squeeze(psfYCutoffSF(:,fovealEccY,:));
+    meanPSFXCutoffSF = mean(psfXCutoffSF,1);
+    
+    rowsNum = 3;
+    colsNum = 4;
+    sv = NicePlot.getSubPlotPosVectors(...
+           'colsNum', colsNum, ...
+           'rowsNum', rowsNum, ...
+           'heightMargin',  0.04, ...
+           'widthMargin',    0.01, ...
+           'leftMargin',     0.02, ...
+           'rightMargin',    0.00, ...
+           'bottomMargin',   0.04, ...
+           'topMargin',      0.01); 
+       
+     hFig = figure();
+     clf;
+     set(hFig, 'Position', [10 10 2000 1400], 'Color', [1 1 1]);
+     
+     for includedSubjectCount = 1:numel(rankedSubjectIDs)
+         
+        subjectID = rankedSubjectIDs(includedSubjectCount);
+        index = find(subjectIDs == rankedSubjectIDs(includedSubjectCount));
+        
+        r = floor((includedSubjectCount-1)/colsNum);
+        r = mod(r,rowsNum)+1;
+        c = mod(includedSubjectCount-1,colsNum)+1;
+
+        subplot('Position', sv(r,c).v);
+        
+        plot(horizontalEcc, mosaicNyquistFrequencyCPD(fovealEccY,:), 'k-', 'LineWidth', 3.0); hold on;
+        plot(horizontalEcc, mosaicNyquistFrequencyCPD(fovealEccY,:), 'g--', 'LineWidth', 1.0);
+        plot(horizontalEcc, meanPSFXCutoffSF, 'm-', 'LineWidth', 1.5);
+        plot(horizontalEcc, psfXCutoffSF(index,:), 'bo-', 'MarkerFaceColor', [0.5 0.5 1], 'LineWidth', 1.5);
+        plot(horizontalEcc, psfYCutoffSF(index,:), 'ro-', 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.5);
+        title(sprintf('subjectID: %d, rank: %d/%d', subjectID, includedSubjectCount,numel(rankedSubjectIDs)));
+        
+        axis 'square';
+        grid on;
+        set(gca, 'FontSize', 14, 'XLim', [-21 21], 'YLim', [0 70], 'XTick', -20:5:20, 'YTick', 0:5:70);
+        
+     end
+     
+     figTitle = sprintf('Ranked_POLANS');
+     NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('%s.pdf', figTitle)), hFig, 300);
+            
+     
+end
+
+
+function rankedSubjectIDs = rankSubjects(exportsDir)
+
+    load(fullfile(exportsDir,'PolansOpticsAnalysis.mat'), 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
+    
+    subjectIDs = [];
+    for includedSubjectCount = 1:numel(subjectPSFData)
+        d = subjectPSFData{includedSubjectCount};
+        horizontalEcc = d.horizontalEcc;
+        verticalEcc = d.verticalEcc;
+        subjectID = d.subjectID;
+        psfXCutoffSF(includedSubjectCount,:,:) = d.psfXCutoffSF;
+        psfYCutoffSF(includedSubjectCount,:,:) = d.psfYCutoffSF;
+        subjectIDs = cat(2, subjectIDs, d.subjectID);
+    end
+
+    idx = find(abs(horizontalEcc)<=10);
+    fovealEccY = find(verticalEcc == 0);
+    psfXCutoffSF = squeeze(psfXCutoffSF(:,fovealEccY,idx));
+    psfYCutoffSF = squeeze(psfYCutoffSF(:,fovealEccY,idx));
+    meanPSFXCutoffSF = mean(psfXCutoffSF,1);
+    meanPSFYCutoffSF = mean(psfYCutoffSF,1);
+    
+    % Rank according to correlation coeff in [-10 10]
+    r = corr(meanPSFXCutoffSF', psfXCutoffSF');
+    
+    [r,sortedSubjectIndices] = sort(r, 'descend');
+    rankedSubjectIDs = subjectIDs(sortedSubjectIndices);
+    
+    hFig = figure();
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1200 800]);
+    plot(1:numel(rankedSubjectIDs), r, 'bo-', 'MarkerFaceColor', [0.5 0.5 1], 'MarkerSize', 12, 'LineWidth', 1.5);
+    xlabel(sprintf('subject ID'));
+    ylabel('correlation coefficient');
+    set(gca, 'FontSize', 16, 'XLim',[0 numel(rankedSubjectIDs)+1], 'YLim', [-1 1], 'XTick', 1:numel(rankedSubjectIDs), 'XTickLabel', rankedSubjectIDs);
+    grid on
+    NicePlot.exportFigToPDF(fullfile(exportsDir, 'PolansSubjectsRanked'), hFig, 300);
+       
+end
+
 
 function plotSummary(exportsDir)
     load(fullfile(exportsDir,'PolansOpticsAnalysis.mat'), 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
@@ -32,52 +142,52 @@ function plotSummary(exportsDir)
         sfCutoff(includedSubjectCount,:) = maxSF;
     end
     
-    if (1==1)
-        fovealEccX = find(horizontalEcc == 0);
-        fovealEccY = find(verticalEcc == 0);
-
-        hFig = figure(1); clf;
-        set(hFig, 'Position', [10 10 1300 510], 'Color', [1 1 1]);
-        subplot(1,3,1);
-        histogram(squeeze(zCoeffs(:,fovealEccY,fovealEccX, 4)), -1:0.1:1);
-        xlabel('z3 (oblique astigmatism)'); 
-        axis 'square'
-        set(gca, 'XTick', -1:0.2:1, 'YLim', [0 6], 'YTick', [0:5]);
-
-        subplot(1,3,2);
-        histogram(squeeze(zCoeffs(:,fovealEccY,fovealEccX, 5)), -1:0.1:1);
-        xlabel('z4 (defocus)'); 
-        axis 'square'
-        set(gca, 'XTick', -1:0.2:1, 'YLim', [0 6], 'YTick', [0:5]);
-
-        subplot(1,3,3);
-        histogram(squeeze(zCoeffs(:,fovealEccY,fovealEccX, 6)), -1:0.1:1);
-        xlabel('z5 (vertical astigmatism)'); 
-        axis 'square'
-        set(gca, 'XTick', -1:0.2:1, 'YLim', [0 6], 'YTick', [0:5]);
-      
     
+    fovealEccX = find(horizontalEcc == 0);
+    fovealEccY = find(verticalEcc == 0);
     
-        hFig = figure(2); clf;
-        set(hFig, 'Position', [10 10 950 410], 'Color', [1 1 1]);
-        subplot(1,2,1);
-        histogram(bestEcc, (-20:1:20)-0.5);
-        text(14, 3, 'OD', 'FontSize', 12, 'FontWeight', 'Bold');
-        xlabel('horizontal eccentricity of peak SF cutoff (degs)');
-        ylabel('count');  
-        set(gca, 'FontSize', 12, 'XTick', -20:5:20, 'XLim', [-21 21]);
-        axis 'square'
-
-        subplot(1,2,2);
-        plot(bestEcc, sfCutoff, 'k.');
-        hold on;
-        xlabel('horizontal eccentricity of peak SF cutoff(degs)');
-        ylabel('peak SF cutoff (-3dB) (c/deg)');
-        set(gca, 'FontSize', 12, 'XTick', -20:5:20, 'XLim', [-21 21], 'YLim', [0 65]);
-        text(14, 2, 'OD', 'FontSize', 12, 'FontWeight', 'Bold');
-        axis 'square'
-        NicePlot.exportFigToPDF('PolansBestEcc.pdf', hFig, 300);
-    end
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [10 10 1300 510], 'Color', [1 1 1]);
+    subplot(1,3,1);
+    histogram(squeeze(zCoeffs(:,fovealEccY,fovealEccX, 4)), -1:0.1:1);
+    xlabel('z3 (oblique astigmatism)');
+    axis 'square'
+    set(gca, 'XTick', -1:0.2:1, 'YLim', [0 6], 'YTick', [0:5]);
+    
+    subplot(1,3,2);
+    histogram(squeeze(zCoeffs(:,fovealEccY,fovealEccX, 5)), -1:0.1:1);
+    xlabel('z4 (defocus)');
+    axis 'square'
+    set(gca, 'XTick', -1:0.2:1, 'YLim', [0 6], 'YTick', [0:5]);
+    
+    subplot(1,3,3);
+    histogram(squeeze(zCoeffs(:,fovealEccY,fovealEccX, 6)), -1:0.1:1);
+    xlabel('z5 (vertical astigmatism)');
+    axis 'square'
+    set(gca, 'XTick', -1:0.2:1, 'YLim', [0 6], 'YTick', [0:5]);
+    NicePlot.exportFigToPDF(fullfile(exportsDir,'PolansCoeffs.pdf'), hFig, 300);
+    
+    % Plot the position of best resolution
+    hFig = figure(2); clf;
+    set(hFig, 'Position', [10 10 950 410], 'Color', [1 1 1]);
+    subplot(1,2,1);
+    histogram(bestEcc, (-20:1:20)-0.5);
+    text(14, 0.3, 'OD', 'FontSize', 12, 'FontWeight', 'Bold');
+    xlabel('horizontal eccentricity of peak SF cutoff (degs)');
+    ylabel('count');
+    set(gca, 'FontSize', 12, 'XTick', -20:5:20, 'XLim', [-21 21]);
+    axis 'square'
+    
+    subplot(1,2,2);
+    plot(bestEcc, sfCutoff, 'k.');
+    hold on;
+    xlabel('horizontal eccentricity of peak SF cutoff(degs)');
+    ylabel('peak SF cutoff (-3dB) (c/deg)');
+    set(gca, 'FontSize', 12, 'XTick', -20:5:20, 'XLim', [-21 21], 'YLim', [0 65]);
+    text(14, 4, 'OD', 'FontSize', 12, 'FontWeight', 'Bold');
+    axis 'square'
+    NicePlot.exportFigToPDF(fullfile(exportsDir,'PolansBestEcc.pdf'), hFig, 300);
+    
     
     
     rowsNum = 3;
@@ -130,8 +240,7 @@ function plotSummary(exportsDir)
         
         
     end
-    NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('Polans.pdf')), hFig, 300);
-    pause
+    NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('PolansAcrossAllEccentricities.pdf')), hFig, 300);
     
     
     vIndex = find(verticalEcc == 0);
@@ -143,8 +252,8 @@ function plotSummary(exportsDir)
     h1 = plot(ax, horizontalEcc, mosaicNyquistFrequencyCPD(vIndex,:), 'k-', 'LineWidth', 3);
     hold(ax, 'on');
     h2 = plot(ax,horizontalEcc, mosaicNyquistFrequencyCPD(vIndex,:), 'g--', 'LineWidth', 1.5);
-    h3 = plot(ax,horizontalEcc, squeeze(mean(psfXCutoffSF(:, vIndex,:),1)), 'r-', 'LineWidth', 1.5);
-    h4 = shadeAreaBetweenCyrves(ax, horizontalEcc, squeeze(max(psfXCutoffSF(:, vIndex,:),[],1)), squeeze(min(psfXCutoffSF(:, vIndex,:),[],1)), [1 0.5 0.5], 0.5);
+    h3 = plot(ax,horizontalEcc, squeeze(mean(psfXCutoffSF(:, vIndex,:),1)), 'b-', 'LineWidth', 1.5);
+    h4 = shadeAreaBetweenCyrves(ax, horizontalEcc, squeeze(max(psfXCutoffSF(:, vIndex,:),[],1)), squeeze(min(psfXCutoffSF(:, vIndex,:),[],1)), [0.5 0.5 1], 0.5);
     legend([h1 h3], {'mosaic Nyquist freq.', 'PSF cutoff (mean)'});
     xlabel('horizontal eccentricity (deg)');
     ylabel('spatial frequency cutoff, -15dB (c/deg)');
@@ -157,8 +266,8 @@ function plotSummary(exportsDir)
     h1 = plot(ax,horizontalEcc, mosaicNyquistFrequencyCPD(vIndex,:), 'k-', 'LineWidth', 3);
     hold(ax, 'on');
     h2 = plot(ax,horizontalEcc, mosaicNyquistFrequencyCPD(vIndex,:), 'g--', 'LineWidth', 1.5);
-    h3 = plot(ax,horizontalEcc, squeeze(mean(psfYCutoffSF(:, vIndex,:),1)), 'b-', 'LineWidth', 1.5);
-    h4 = shadeAreaBetweenCyrves(ax, horizontalEcc, squeeze(max(psfYCutoffSF(:, vIndex,:),[],1)), squeeze(min(psfYCutoffSF(:, vIndex,:),[],1)), [0.5 0.5 1], 0.5);
+    h3 = plot(ax,horizontalEcc, squeeze(mean(psfYCutoffSF(:, vIndex,:),1)), 'r-', 'LineWidth', 1.5);
+    h4 = shadeAreaBetweenCyrves(ax, horizontalEcc, squeeze(max(psfYCutoffSF(:, vIndex,:),[],1)), squeeze(min(psfYCutoffSF(:, vIndex,:),[],1)), [1 0.5 0.5], 0.5);
     legend([h1 h3], {'mosaic Nyquist freq.', 'PSF cutoff (mean)'});
     xlabel('horizontal eccentricity (deg)');
     ylabel('spatial frequency cutoff, -15dB (c/deg)');
@@ -166,7 +275,7 @@ function plotSummary(exportsDir)
     axis 'square';  grid 'on'; box 'off'
     set(gca, 'XLim', [-20 20], 'YLim', [0 70], 'XTick', -20:5:20, 'YTick', 0:5:100, 'FontSize', 16);
     set(gca, 'XColor', [0.3 0.3 0.3], 'YColor', [0.3 0.3 0.3], 'LineWidth', 1.0)
-    
+    NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('PolansAcrossHorizontalEccentricity.pdf')), hFig, 300);
 end
 
 function h = shadeAreaBetweenCyrves(ax, x, curve1, curve2, shadeColor, alphaValue)
@@ -339,6 +448,7 @@ function reAnalyze(exportsDir)
         end
         NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('%s.pdf', figTitle)), hFig, 300);
     end
+    
     
     % Export data
     save(fullfile(exportsDir,'PolansOpticsAnalysis.mat'), 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
