@@ -33,7 +33,7 @@ cm = cMosaic(...
         );
     
 %% Generate optics appropriate for the mosaic's eccentricity  
-opticsZernikeCoefficientsDataBase = 'Polans2015';             % choose between {'Polans2015', and 'Artal2012'}
+opticsZernikeCoefficientsDataBase = 'Artal2012';             % choose between {'Polans2015', and 'Artal2012'}
 
 hFig = figure(1); clf;
 set(hFig, 'Position', [10 10 1500 800], 'Color', [1 1 1]);
@@ -49,9 +49,19 @@ sv = NicePlot.getSubPlotPosVectors(...
        'bottomMargin',   0.04, ...
        'topMargin',      0.01); 
        
-% Select the first subject (highest resolving PSF)
-for subjectRankOrder = 1:10
+% Generate and plot foveal PSF for ranked subjects
+ switch (opticsZernikeCoefficientsDataBase)
+     case 'Polans2015'
+         subjectRankOrderList = 1:10;
+     case 'Artal2012'
+         subjectRankOrderList = 1:5:50;
+ end
+ 
+ 
+for subjectRankOrderIndex = 1:numel(subjectRankOrderList)
 
+    subjectRankOrder = subjectRankOrderList(subjectRankOrderIndex);
+    
     switch (opticsZernikeCoefficientsDataBase)
         case 'Polans2015'
             % Obtain subject IDs ranking in decreasing foveal resolution
@@ -63,7 +73,7 @@ for subjectRankOrder = 1:10
 
         case 'Artal2012'
             % Obtain subject IDs ranking in decreasing foveal resolution
-            rankedSujectIDs = ArtalOptics.constants.subjectRanking;
+            rankedSujectIDs = ArtalOptics.constants.subjectRanking(whichEye);
             testSubjectID = rankedSujectIDs(subjectRankOrder);
 
             % Determine if we need to subtract the subject's central refraction to
@@ -81,7 +91,7 @@ for subjectRankOrder = 1:10
                     'wavefrontSpatialSamples', 501);
     thePSFData = psfEnsemble{1};       
 
-    % Visualized PSF
+    % Visualize PSF
     targetWavelength = 550;
     [~,idx] = min(abs(thePSFData.supportWavelength-targetWavelength));
     psf = squeeze(thePSFData.data(:,:,idx));
@@ -90,9 +100,9 @@ for subjectRankOrder = 1:10
     domainUnits = 'microns';
     domainVisualizationTicks = struct('x',  [-20:10:20], 'y', []);
      
-    r = floor((subjectRankOrder-1)/colsNum);
+    r = floor((subjectRankOrderIndex-1)/colsNum);
     r = mod(r,rowsNum)+1;
-    c = mod(subjectRankOrder-1,colsNum)+1;
+    c = mod(subjectRankOrderIndex-1,colsNum)+1;
     ax = subplot('Position', sv(r,c).v);
         
     cm.visualize('figureHandle', hFig, ...
@@ -109,4 +119,4 @@ for subjectRankOrder = 1:10
     cMosaic.semiTransparentContourPlot(ax, psfSupportMicrons, psfSupportMicrons, psf, 0.05:0.1:0.95, cmap, alpha, contourLineColor);
 end
 
-    
+NicePlot.exportFigToPDF(sprintf('%s_rankedPSFs.pdf',opticsZernikeCoefficientsDataBase), hFig, 300);
