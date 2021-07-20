@@ -529,6 +529,9 @@ classdef cMosaic < handle
         
         % Compute a 2D cone density map
         coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);
+        
+        % Function to generate a semitransparent controur plot
+        semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor);
     end
 end
 
