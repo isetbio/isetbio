@@ -32,6 +32,19 @@ classdef constants
     end
    
     methods (Static)
+       
+        % Return subject ranking according to the PSF resolution at the
+        % fovea. In this ranking, the higest resolving subjects appear
+        % first. Ranking is computed by a call to analyzePolansOptics(true)
+        % found in isetbio/calculators/opticsAssessment
+        function  ranking = subjectRanking
+            ranking = [...
+                6      9     2   ...
+                10     8     1  ...
+                4      3     7   ...
+                5];
+        end
+        
         function retinalQuadrantName = retinalQuadrantFromEcc(ecc, whichEye)
             assert(numel(ecc) == 2, 'Eccentricity must be a 2-element vector (x,y)');
             assert(ismember(whichEye, {PolansOptics.constants.leftEye, PolansOptics.constants.leftEye}));
@@ -95,6 +108,14 @@ classdef constants
                 for hEccIndex = 1:size(zMap,2)
                     % Special cases to exclude raw data and interpolate
                     % from neighboring data
+                    
+                    % Subject 1
+                    inBadPointsSetOfSubject1 = ...
+                        (subjectIndex == 1) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-15 -14 -13 -12 -11 -9 -8 -7 -6]));
+                  
+                    
                     % Subject 2
                     inBadPointsSet1OfSubject2 = ...
                         (subjectIndex == 2) && ...
@@ -104,7 +125,7 @@ classdef constants
                         (subjectIndex == 2) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -5) && ...
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-1 1 2 3]));
-                    inBadPointsSetOfSubject2 = inBadPointsSet1OfSubject2 | inBadPointsSet1OfSubject2;
+                    inBadPointsSetOfSubject2 = inBadPointsSet1OfSubject2 | inBadPointsSet2OfSubject2;
                     
                     % Subject 3
                     inBadPointsSetOfSubject3= ...
@@ -122,7 +143,15 @@ classdef constants
                         (subjectIndex == 5) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -10) && ...
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-15]));
-                    inBadPointsSetOfSubject5 = inBadPointsSet1OfSubject5 | inBadPointsSet2OfSubject5;
+                    
+                    inBadPointsSet3OfSubject5= ...
+                        (subjectIndex == 5) && ...
+                        (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
+                        (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-9 -10]));
+                    
+                    inBadPointsSetOfSubject5 = inBadPointsSet1OfSubject5 | inBadPointsSet2OfSubject5 | inBadPointsSet3OfSubject5;
+                    
+                    
                    
                     
                     % Subject 6
@@ -172,7 +201,7 @@ classdef constants
                     theCoeffs = zCoeffs(xyIndex,:);
                     zMap(vEccIndex, hEccIndex,:) = theCoeffs;
                     % Keep the good (x,y) points
-                    if ((~all(theCoeffs == 0)) && (~inBadPointsSetOfSubject2) && (~inBadPointsSetOfSubject3) && ...
+                    if ((~all(theCoeffs == 0)) && (~inBadPointsSetOfSubject1) && (~inBadPointsSetOfSubject2) && (~inBadPointsSetOfSubject3) && ...
                             (~inBadPointsSetOfSubject5) && (~inBadPointsSetOfSubject6) && (~inBadPointsSetOfSubject9) && ...
                             (~inBadPointsSetOfSubject10))
                         x = cat(2, x, PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex));
