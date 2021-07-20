@@ -176,13 +176,15 @@ else
         padCols = round((theExpandedMosaic.cols - obj.cols) / 2);
     end
 
-    % Compute full-frame absorptions
+    % Compute full-frame absorptions.  No noise yet.
     absorptions = theExpandedMosaic.computeSingleFrame(oi, ...
-            'fullLMS', true);
-        
-    % Deal with eye movements
+        'fullLMS', true);
+    % ieNewGraphWin; imagescRGB(absorptions);
+    
+    % Deal with eye movements.  Seems noisy yere.
     absorptions = obj.applyEMPath(absorptions, 'emPath', emPath, ...
         'padRows', padRows, 'padCols', padCols);
+    % ieNewGraphWin; imagesc(absorptions);
     
     % Determine if we need to apply eccentricity-dependent corrections to 
     % the absorptions, and if so do it here.                
