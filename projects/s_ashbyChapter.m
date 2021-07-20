@@ -171,3 +171,60 @@ varargin =
 
     {[301]}
 %}
+
+
+%% Make an additive Gaussian noise and stimulus dependent noise
+
+% scene = sceneCreate('linear intensity ramp');
+scene = sceneCreate('lstar');
+
+scene = sceneSet(scene,'fov',5);
+
+oi = oiCreate;
+oi = oiCompute(oi,scene);
+
+%%  Photon noise
+eTime = 0.002;
+cDensity = [0 0 1 0];
+fov = 6;
+
+cmP = coneMosaic;
+cmP.setSizeToFOV(fov);
+% All M cones
+cmP.spatialDensity = cDensity;
+cmP.integrationTime = eTime;   % 10 ms
+cmP.compute(oi);
+
+photonNoise = cmP.absorptions;
+mx = max(photonNoise(:));
+ieNewGraphWin; imagesc(photonNoise,[0 mx]); 
+axis image; colormap(hot(128));
+title('Poisson');brighten(0.3);
+
+cmP.name = 'photon';
+% cmP.window;
+
+%%
+cmG = coneMosaic;
+cmG.setSizeToFOV(fov);
+cmG.spatialDensity = cDensity;
+cmG.integrationTime = eTime;  
+cmG.noiseFlag = 'none';
+cmG.compute(oi);
+
+noNoise = cmG.absorptions;
+
+mn = max(noNoise(:));
+equivNoise = randn(size(noNoise))*sqrt(mn);
+
+gaussNoise = noNoise + equivNoise;
+gaussNoise(gaussNoise<0) = 0;
+mx = max(gaussNoise(:));
+
+ieNewGraphWin; imagesc(gaussNoise,[0 mx]); 
+axis image; colormap(hot(128));
+title('Gaussian'); brighten(0.3);
+
+cmG.absorptions = gaussNoise;
+cmG.name = 'gaussian';
+% cmG.window;
