@@ -75,6 +75,7 @@ function visualize(obj, varargin)
     textDisplay = p.Results.textDisplay;
     textDisplayColor = p.Results.textDisplayColor;
     
+
     % Determine what eye movement data have to be displayed
     if (isstruct(displayedEyeMovementData))
        if (ischar(displayedEyeMovementData.trial))
@@ -222,14 +223,30 @@ function visualize(obj, varargin)
         end
         lineWidth = 0.5;
         % Plot L-cones
+        if (labelCones)
+            edgeColor = [0.8 0 0];
+        else
+            edgeColor = [0.5 0.5 0.5];
+        end
+        
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
-            rfPositions(obj.lConeIndices,:), 1/4*0.9, [0.8 0 0], lineWidth, faceAlpha);
+            rfPositions(obj.lConeIndices,:), 1/4*0.9, edgeColor, lineWidth, faceAlpha);
         % Plot M-cones
+        if (labelCones)
+            edgeColor = [0 0.7 0];
+        else
+            edgeColor = [0.5 0.5 0.5];
+        end
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
-            rfPositions(obj.mConeIndices,:), 2/4*0.9, [0 0.7 0], lineWidth, faceAlpha);
+            rfPositions(obj.mConeIndices,:), 2/4*0.9, edgeColor, lineWidth, faceAlpha);
         % Plot S-cones
+        if (labelCones)
+            edgeColor = [0 0 1];
+        else
+            edgeColor = [0.5 0.5 0.5];
+        end
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
-            rfPositions(obj.sConeIndices,:), 3/4*0.9, [0 0 1], lineWidth, faceAlpha);
+            rfPositions(obj.sConeIndices,:), 3/4*0.9, edgeColor, lineWidth, faceAlpha);
         % Plot K-cones
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
             rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], lineWidth, faceAlpha);
@@ -519,6 +536,7 @@ function visualize(obj, varargin)
             end
             set(axesHandle, 'XTickLabel', sprintf('%d\n', domainVisualizationTicks.x), ...
                             'YTickLabel', sprintf('%d\n', domainVisualizationTicks.y));
+                     
     end
     
     if (isempty(plotTitle))
