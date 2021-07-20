@@ -1,22 +1,31 @@
-function analyzePolansOptics()
+function analyzePolansOptics(reAnalyzeData)
 
     % Get directory
     [directory,~] = fileparts(which(mfilename()));
     exportsDir = fullfile(directory, 'exports');
     
-    reAnalyzeData = ~true;
     if (reAnalyzeData)
         reAnalyze(exportsDir);
+         % Rank subjects  
+         rankStrategy = 'peak resolution'; %  Choose from {'peak resolution', 'correlation coefficient 10 degs'}
+         rankedSubjectIDs = rankSubjects(exportsDir, rankStrategy)
+         % Plot ranked subject data
+         plotRankedSubjects(exportsDir, rankedSubjectIDs, rankStrategy);
+        
     else
-        % Plot ranked subject data
-        rankedSubjectIDs = rankSubjects(exportsDir);
-        plotRankedSubjects(exportsDir, rankedSubjectIDs);
+        doRankAnalysis = true;
+        if (doRankAnalysis)
+            % Plot ranked subject data
+            rankStrategy = 'peak resolution'; %  Choose from {'peak resolution', 'correlation coefficient 10 degs'}
+            rankedSubjectIDs = rankSubjects(exportsDir, rankStrategy)
+            plotRankedSubjects(exportsDir, rankedSubjectIDs, rankStrategy);
+        end
         
         plotSummary(exportsDir);
     end
 end
 
-function plotRankedSubjects(exportsDir, rankedSubjectIDs, whichEye)
+function plotRankedSubjects(exportsDir, rankedSubjectIDs, rankStrategy)
     load(fullfile(exportsDir,'PolansOpticsAnalysis.mat'), 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
     
     subjectIDs = [];
@@ -64,7 +73,9 @@ function plotRankedSubjects(exportsDir, rankedSubjectIDs, whichEye)
         
         plot(horizontalEcc, mosaicNyquistFrequencyCPD(fovealEccY,:), 'k-', 'LineWidth', 3.0); hold on;
         plot(horizontalEcc, mosaicNyquistFrequencyCPD(fovealEccY,:), 'g--', 'LineWidth', 1.0);
-        plot(horizontalEcc, meanPSFXCutoffSF, 'm-', 'LineWidth', 1.5);
+        if (strcmp(rankStrategy, 'correlation coefficient 10 degs'))
+            plot(horizontalEcc, meanPSFXCutoffSF, 'm-', 'LineWidth', 1.5);
+        end
         plot(horizontalEcc, psfXCutoffSF(index,:), 'bo-', 'MarkerFaceColor', [0.5 0.5 1], 'LineWidth', 1.5);
         plot(horizontalEcc, psfYCutoffSF(index,:), 'ro-', 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.5);
         title(sprintf('subjectID: %d, rank: %d/%d', subjectID, includedSubjectCount,numel(rankedSubjectIDs)));
@@ -77,12 +88,10 @@ function plotRankedSubjects(exportsDir, rankedSubjectIDs, whichEye)
      
      figTitle = sprintf('Ranked_POLANS');
      NicePlot.exportFigToPDF(fullfile(exportsDir,sprintf('%s.pdf', figTitle)), hFig, 300);
-            
-     
 end
 
 
-function rankedSubjectIDs = rankSubjects(exportsDir)
+function rankedSubjectIDs = rankSubjects(exportsDir, rankStrategy)
 
     load(fullfile(exportsDir,'PolansOpticsAnalysis.mat'), 'subjectPSFData', 'coneCutoffSF', 'mosaicNyquistFrequencyCPD');
     
@@ -97,15 +106,26 @@ function rankedSubjectIDs = rankSubjects(exportsDir)
         subjectIDs = cat(2, subjectIDs, d.subjectID);
     end
 
-    idx = find(abs(horizontalEcc)<=10);
-    fovealEccY = find(verticalEcc == 0);
-    psfXCutoffSF = squeeze(psfXCutoffSF(:,fovealEccY,idx));
-    psfYCutoffSF = squeeze(psfYCutoffSF(:,fovealEccY,idx));
-    meanPSFXCutoffSF = mean(psfXCutoffSF,1);
-    meanPSFYCutoffSF = mean(psfYCutoffSF,1);
     
-    % Rank according to correlation coeff in [-10 10]
-    r = corr(meanPSFXCutoffSF', psfXCutoffSF');
+    
+    switch (rankStrategy)
+        case 'correlation coefficient 10 degs'
+            % Rank according to correlation coeff in [-10 10]
+            idx = find(abs(horizontalEcc)<=10);
+            fovealEccY = find(verticalEcc == 0);
+            psfXCutoffSF = squeeze(psfXCutoffSF(:,fovealEccY,idx));
+            psfYCutoffSF = squeeze(psfYCutoffSF(:,fovealEccY,idx));
+            meanPSFXCutoffSF = mean(psfXCutoffSF,1);
+            meanPSFYCutoffSF = mean(psfYCutoffSF,1);
+            r = corr(meanPSFXCutoffSF', psfXCutoffSF');
+        case 'peak resolution'
+            fovealEccX = find(horizontalEcc == 0);
+            fovealEccY = find(verticalEcc == 0);
+            r = psfXCutoffSF(:,fovealEccY,fovealEccX);
+            
+        otherwise
+            error('Unknown rankStrategy')
+    end
     
     [r,sortedSubjectIndices] = sort(r, 'descend');
     rankedSubjectIDs = subjectIDs(sortedSubjectIndices);
@@ -114,8 +134,15 @@ function rankedSubjectIDs = rankSubjects(exportsDir)
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1200 800]);
     plot(1:numel(rankedSubjectIDs), r, 'bo-', 'MarkerFaceColor', [0.5 0.5 1], 'MarkerSize', 12, 'LineWidth', 1.5);
     xlabel(sprintf('subject ID'));
-    ylabel('correlation coefficient');
-    set(gca, 'FontSize', 16, 'XLim',[0 numel(rankedSubjectIDs)+1], 'YLim', [-1 1], 'XTick', 1:numel(rankedSubjectIDs), 'XTickLabel', rankedSubjectIDs);
+    switch (rankStrategy)
+        case 'correlation coefficient 10 degs'
+            ylabel('correlation coefficient');
+            set(gca, 'YLim', [-1 1]);
+        case 'peak resolution'
+            ylabel('foveal resolution (c/deg)');
+            set(gca, 'YLim', [0 65]);
+    end
+    set(gca, 'FontSize', 16, 'XLim',[0 numel(rankedSubjectIDs)+1], 'XTick', 1:numel(rankedSubjectIDs), 'XTickLabel', rankedSubjectIDs); 
     grid on
     NicePlot.exportFigToPDF(fullfile(exportsDir, 'PolansSubjectsRanked'), hFig, 300);
        
@@ -145,6 +172,50 @@ function plotSummary(exportsDir)
     
     fovealEccX = find(horizontalEcc == 0);
     fovealEccY = find(verticalEcc == 0);
+    
+    
+    rowsNum = 3;
+    colsNum = 4;
+    sv = NicePlot.getSubPlotPosVectors(...
+           'colsNum', colsNum, ...
+           'rowsNum', rowsNum, ...
+           'heightMargin',  0.05, ...
+           'widthMargin',    0.02, ...
+           'leftMargin',     0.02, ...
+           'rightMargin',    0.00, ...
+           'bottomMargin',   0.04, ...
+           'topMargin',      0.01); 
+       
+    theZs = squeeze(zCoeffs(:,fovealEccY,:,:));
+    idx = find((horizontalEcc >= 13) & (horizontalEcc <= 18));
+    theZs(:,idx,:) = nan;
+  
+    hFig = figure(111); clf;
+    set(hFig, 'Position', [10 10 1400 975], 'Color', [1 1 1]);
+    for zCoeffIndex = 4:15
+        kk = zCoeffIndex-3;
+        r = floor((kk-1)/colsNum);
+        r = mod(r,rowsNum)+1;
+        c = mod(kk-1,colsNum)+1;
+        subplot('Position', sv(r,c).v);
+        theZ2s = squeeze(theZs(:,:,zCoeffIndex));
+        plot(horizontalEcc, theZ2s, 'bs-', 'LineWidth', 1.0);
+        ylabel(sprintf('Z%d', zCoeffIndex-1));
+        axis 'square';
+        grid on;
+        maxZamp = max([0.41 max(abs(theZ2s(:)))]);
+        set(gca, 'FontSize', 12, 'YLim', maxZamp*[-1 1], 'XLim', [-21 21], 'XTick', -20:5:20);
+        if (zCoeffIndex == 5)
+            ylabel(sprintf('Z%d (defocus)', zCoeffIndex-1));
+        elseif (zCoeffIndex == 4)
+            ylabel(sprintf('Z%d (oblique astigmatism)', zCoeffIndex-1));
+        elseif (zCoeffIndex == 6)
+            ylabel(sprintf('Z%d (vertical astigmatism)', zCoeffIndex-1));
+        end
+        xlabel('eccentricity (degs)');
+    end
+    pause
+    
     
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1300 510], 'Color', [1 1 1]);
