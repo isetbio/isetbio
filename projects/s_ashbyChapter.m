@@ -71,7 +71,7 @@ title('Normal');
 xlabel('Counts');
 ylabel('Probability density')
 
-%% Calculate cone fundamentals
+%% Cone fundamentals
 
 % Draft of an app
 
@@ -114,63 +114,82 @@ ylabel('Absorptance')
 grid on;
 title('10 deg eccentricity');
 
-%% PSFs ...???
+%% PSFs using the ISETBIOCsfGenerator methods
 
-% I stopped the ISETBioCSFGenerator inside the cMosaic.oiEnsembleGenerate
-% function and saved the key variables in the 'projects' directory.
+% I stopped the ISETBioCSFGenerator inside the 
+%
+%     cMosaic.oiEnsembleGenerate
+%
+% method.  While there, I saved the key optics variables in the 'projects'
+% directory. 
 %
 % save('oiData','obj','oiSamplingGridDegs','varargin');
 
-% Apparently, we can load the objects and parameters in.
+% We can load the objects and parameters.
 chdir(fullfile(isetbioRootPath,'projects'));
-% foo = load('oiData');
 
-% [X,Y] = foo.obj.oiEnsembleGenerate(foo.oiSamplingGridDegs,foo.varargin{:});
-
-% Then this runs
+% Load the variables
 load('oiData','obj','oiSamplingGridDegs','varargin');
-% [oiEnsemble, psfEnsemble] = obj.oiEnsembleGenerate(oiSamplingGridDegs,varargin{:});
 
-% centerPos = oiSamplingGridDegs;
-centerPos = [ 1 20];
+% The key variable is obj, the ISETBio cMosaic
+%
+% obj.oiEnsembleGenerate runs to create the psfs given the parameters
+%
+% edit cMosaic.oiEnsembleGenerate 
+%
+%  brings you to the code
+%
+% The meaning of the parameters is:
+%    centerPos = oiSamplingGridDegs;
+%{
+varargin =
+    {'zernikeDataBase'}    {'Polans2015'}    
+    {'subjectID'}            {[10]}    
+    {'pupilDiameterMM'}      {[3]}    
+    {'subtractCentral…'}     {[0]}    
+    {'zeroCenterPSF'}        {[1]}    
+    {'flipPSFUpsideDown'}    {[1]}    
+    {'wavefrontSpatia…'}    {[301]}
 % Convert the varargin to a struct that we can edit
 args = struct;
 for ii=1:2:numel(varargin)
     args.(varargin{ii}) = varargin{ii+1};
 end
+%}
+
+% Choose Artalright eye, subject 1?? 74, 26.  or 85
+centerPos = [0,1];
+
+args.zernikeDataBase = 'Polans2015';
+
+args.zernikeDataBase = 'Artal2012';
+args.subjectID       = 26;
+args.pupilDiameterMM = 3;
+args.subtractCentralRefraction = false;
+args.zeroCenterPSF = true;
+args.flipPSFUpsideDown = true;
+% args.deNoisedZernikeCoefficients = false;
+args.wavefrontSpatialSamples = 301;
+
 [oiEnsemble, psfEnsemble] = obj.oiEnsembleGenerate(centerPos,args);
 thisPSF = psfEnsemble{1};
 
-ieNewGraphWin;
-thisW = 7;
+ieNewGraphWin;  
+thisW = 7;   % Select a wavelength, % 3 is 450 nm, 7 is 550 nm 
 h = mesh(thisPSF.supportX,thisPSF.supportY,thisPSF.data(:,:,thisW)/max2(thisPSF.data(:,:,thisW)));
-tMarks  = [-20:10:20];
-set(gca,'xtick',tMarks);
+tMarks  = [-15:5:15]; mn = -5; mx = 5;
+set(gca,'xtick',tMarks,'xlim',[mn mx],'ylim',[mn mx]);
 set(gca,'ytick',tMarks);
+xlabel('Pos (microns)');
+ylabel('Pos (microns)');
+zlabel('Relative intensity');
 
-% To see the code and learn more, 
-%    edit cMosaic.oiEnsembleGenerate
-%
-% The wavelengths and images are in the psfEnsemble variable that is
-% returned.
+title(sprintf('Wave %d Sub %d',thisPSF.supportWavelength(thisW),args.subjectID));
 
-%{
-varargin =
+%% To get cone diameter as a function of eccentricity
 
-  1×14 cell array
-
-  Columns 1 through 6
-
-    {'zernikeDataBase'}    {'Polans2015'}    {'subjectID'}    {[10]}    {'pupilDiameterMM'}    {[3]}
-
-  Columns 7 through 13
-
-    {'subtractCentral…'}    {[0]}    {'zeroCenterPSF'}    {[1]}    {'flipPSFUpsideDown'}    {[1]}    {'wavefrontSpatia…'}
-
-  Column 14
-
-    {[301]}
-%}
+ecc = (0.1:0.2:20);
+sz  = 
 
 
 %% Make an additive Gaussian noise and stimulus dependent noise

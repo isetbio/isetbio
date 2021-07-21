@@ -1,4 +1,21 @@
 function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin)
+% Create an ensemble of optical images and psfs based on the parameters
+% mainly specified in varargin
+%
+% Optional key/val
+%    zernikeDataBase
+%    subjectID
+%    pupilDiameterMM
+%    wavefrontSpatialSamples
+%    subtractCentralRefraction
+%    zeroCenterPSF
+%    deNoisedZernikeCoefficients
+%    flipPSFUpsideDown
+%
+% See also
+%   cMosaic
+%
+
     % Help
     if (ischar(oiSamplingGridDegs)) && (strcmp(oiSamplingGridDegs,'help'))
         doc('cMosaic.oiEnsembleGenerate');
