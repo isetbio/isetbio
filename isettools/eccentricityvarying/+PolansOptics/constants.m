@@ -106,17 +106,16 @@ classdef constants
             yq = [];
             for vEccIndex = 1:size(zMap,1)
                 for hEccIndex = 1:size(zMap,2)
-                    % Special cases to exclude raw data and interpolate
-                    % from neighboring data
+                    % Outliers: exclude raw data and interpolate from neighboring data
                     
-                    % Subject 1
+                   % ------ Subject 1 outliers ------ 
                     inBadPointsSetOfSubject1 = ...
                         (subjectIndex == 1) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-15 -14 -13 -12 -11 -9 -8 -7 -6]));
                   
                     
-                    % Subject 2
+                    % ------ Subject 2 outliers ------ 
                     inBadPointsSet1OfSubject2 = ...
                         (subjectIndex == 2) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
@@ -127,13 +126,15 @@ classdef constants
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-1 1 2 3]));
                     inBadPointsSetOfSubject2 = inBadPointsSet1OfSubject2 | inBadPointsSet2OfSubject2;
                     
-                    % Subject 3
+                    
+                    % ------ Subject 3 outliers ------ 
                     inBadPointsSetOfSubject3= ...
                         (subjectIndex == 3) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-1]));
                     
-                    % Subject 5
+                    
+                    % ------ Subject 5 outliers ------ 
                     inBadPointsSet1OfSubject5= ...
                         (subjectIndex == 5) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -5) && ...
@@ -150,11 +151,9 @@ classdef constants
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-9 -10]));
                     
                     inBadPointsSetOfSubject5 = inBadPointsSet1OfSubject5 | inBadPointsSet2OfSubject5 | inBadPointsSet3OfSubject5;
-                    
-                    
                    
                     
-                    % Subject 6
+                    % ------ Subject 6 outliers ------ 
                     inBadPointsSet1OfSubject6 = ...
                         (subjectIndex == 6) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 0) && ...
@@ -174,12 +173,10 @@ classdef constants
                         (subjectIndex == 6) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == 5) && ...
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [-10 -12]));
-                 
-                    
                     inBadPointsSetOfSubject6 = inBadPointsSet1OfSubject6 | inBadPointsSet2OfSubject6 | inBadPointsSet3OfSubject6 | inBadPointsSet4OfSubject6;
                     
                     
-                    % Subject 9
+                    % ------ Subject 9 outliers ------ 
                     inBadPointsSet1OfSubject9 = ...
                         (subjectIndex == 9) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -15) && ...
@@ -191,11 +188,13 @@ classdef constants
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [10]));
                     inBadPointsSetOfSubject9 = inBadPointsSet1OfSubject9 | inBadPointsSet2OfSubject9;
                     
-                    % Subject 10
+                    
+                    % ------ Subject 10 outliers ------ 
                     inBadPointsSetOfSubject10 = ...
                         (subjectIndex == 10) && ...
                         (PolansOptics.constants.measurementVerticalEccentricities(vEccIndex) == -10) && ...
                         (ismember(PolansOptics.constants.measurementHorizontalEccentricities(hEccIndex), [0 1 2 3 4]));
+                    
                     
                     xyIndex = xyIndex+1;
                     theCoeffs = zCoeffs(xyIndex,:);
