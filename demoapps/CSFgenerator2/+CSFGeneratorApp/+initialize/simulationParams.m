@@ -1,5 +1,11 @@
 function simulationParams(app)
 
+    % vcSESSION
+    global vcSESSION
+    if (isempty(vcSESSION))
+        ieInitSession;
+    end
+    
     % Where to export data
     app.exportDirectoryName = fullfile(strrep(sprintf('%s', isetRootPath), 'isettools', ''), ...
         'demoApps/CSFGenerator2/scripts/exportedPipelines');

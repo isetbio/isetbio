@@ -422,7 +422,7 @@ classdef cMosaic < handle
         emGenSequence(obj, durationSeconds, varargin);
         
         % Method to generate an ensemble of OIs for the mosaic
-        [oiEnsemble, psfEnsemble] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
+        [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
         
         % Method to compute the mosaic response
         [absorptionsCount, noisyAbsorptionInstances, ...
@@ -543,6 +543,9 @@ classdef cMosaic < handle
         
         % Compute a 2D cone density map
         coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);
+        
+        % Function to generate a semitransparent controur plot
+        semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor);
     end
 end
 
