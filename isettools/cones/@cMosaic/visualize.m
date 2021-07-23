@@ -19,6 +19,7 @@ function visualize(obj, varargin)
     p.addParameter('horizontalActivationColorBarInside', false, @islogical);
     p.addParameter('verticalActivationColorBarInside', false, @islogical);
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
+    p.addParameter('colorbarTickLabelColor',  [.9 .6 0.2]);
     p.addParameter('displayedEyeMovementData', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('currentEMposition', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
@@ -64,6 +65,7 @@ function visualize(obj, varargin)
     fontSize = p.Results.fontSize;
     cMap = p.Results.activationColorMap;
     verticalColorBar = p.Results.verticalActivationColorBar;
+    colorbarTickLabelColor = p.Results.colorbarTickLabelColor;
     horizontalColorBar = p.Results.horizontalActivationColorBar;
     verticalColorBarInside = p.Results.verticalActivationColorBarInside;
     horizontalColorBarInside = p.Results.horizontalActivationColorBarInside;
@@ -288,6 +290,7 @@ function visualize(obj, varargin)
             activationRange(2) = activationRange(2)+0.1;
         end
             
+       
         activation = (activation - activationRange(1))/(activationRange(2)-activationRange(1));
         activation(activation<0) = 0;
         activation(activation>1) = 1;
@@ -403,15 +406,16 @@ function visualize(obj, varargin)
         if (ischar(backgroundColor) && strcmp(backgroundColor, 'mean of color map'))
             midRow = round(size(cMap,1)/2);
             backgroundColor = squeeze(cMap(midRow,:));
-        else
+        elseif (isempty(backgroundColor))
             backgroundColor = squeeze(cMap(1,:));
         end
     end
     colormap(axesHandle, cMap);
     
+ 
     if (~isempty(activation))
         if (verticalColorBar) || (horizontalColorBar) || (verticalColorBarInside) || (horizontalColorBarInside)
-            colorBarTicks = [0.01 0.25 0.5 0.75 0.99];
+            colorBarTicks = [0.00 0.25 0.5 0.75 1.0];
             colorBarTickLabels = cell(1, numel(colorBarTicks));
             colorBarTickLevels = activationRange(1) + (activationRange(2)-activationRange(1)) * colorBarTicks;
 
@@ -431,12 +435,12 @@ function visualize(obj, varargin)
                 colorbar(axesHandle, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
             elseif (verticalColorBarInside)
                 colorbar(axesHandle, 'east', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                    'Color', [.9 .6 0.2], 'FontWeight', 'Bold', 'FontSize', fontSize+2);
+                    'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize, 'FontName', 'Spot mono');
             elseif (horizontalColorBar)
                 colorbar(axesHandle,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
             elseif (horizontalColorBarInside)
                 colorbar(axesHandle,'north', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                    'Color', [0.9 .6 0.2], 'FontWeight', 'Bold', 'FontSize', fontSize+2);
+                    'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize, 'FontName', 'Spot mono');
             end
         else
             colorbar(axesHandle, 'off');
@@ -445,6 +449,7 @@ function visualize(obj, varargin)
         colorbar(axesHandle, 'off');
     end
     
+     
     % Finalize plot
     set(axesHandle, 'Color', backgroundColor);
     axis(axesHandle, 'xy');
@@ -570,6 +575,7 @@ function visualize(obj, varargin)
     
     drawnow;
 end
+
 
 function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ...
     faceColors, edgeColor, lineWidth, faceAlpha)
