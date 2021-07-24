@@ -101,7 +101,7 @@ function initializeOpticsGUIComponents(app)
     CSFGeneratorApp.decode.opticsSubjectDataBaseDropdown(app, 'valueToSlider', app.opticsParams.subjectDataset);
     
     % The subject ID
-    CSFGeneratorApp.decode.opticsSubjectIDSpinner(app, 'valueToSlider', app.opticsParams.subjectID);
+    CSFGeneratorApp.decode.opticsSubjectRankSpinner(app, 'valueToSlider', app.opticsParams.subjectRank);
     
     % The pupil size
     CSFGeneratorApp.decode.opticsPupilSizeSpinner(app, 'valueToSlider', app.opticsParams.pupilDiameterMM);
@@ -114,13 +114,6 @@ function initializeOpticsGUIComponents(app)
     
     % The flipPSFUpsideDown option
     CSFGeneratorApp.decode.opticsFlipPSFUpsideDownCheckBox(app, 'valueToSlider', app.opticsParams.flipPSFUpsideDown);
-    
-    % The central refraction subtraction option
-    CSFGeneratorApp.decode.opticsSubtractCentralRefractionCheckBox(app, 'valueToSlider', app.opticsParams.subtractCentralRefraction);
-    
-    
-    % The central refraction subtraction
-    CSFGeneratorApp.decode.opticsSubtractCentralRefractionCheckBox(app, 'valueToSlider', app.opticsParams.subtractCentralRefraction);
     
     % The keep optics in sycn with cone mosaic
     CSFGeneratorApp.decode.opticsKeepConeMosaicActivationInSyncCheckBox(app, 'valueToSlider', app.viewModes.opticsKeepConeMosaicActivationInSync);
@@ -173,6 +166,9 @@ function initializeROIGUIComponents(app)
     end
     
     CSFGeneratorApp.decode.roiEyeSwitch(app, 'valueToSlider', app.roiParams.whichEye);
+    % Since we are starting with Polans optics, disable the eye switch
+    app.roiEyeSwitch.Enable = 'off';
+    
     CSFGeneratorApp.decode.roiRadialEccentricitySlider(app, 'valueToSlider', app.roiParams.radialEccentricityDegs);
     CSFGeneratorApp.decode.roiRadialEccentricityScalingSwitch(app, 'valueToSlider', app.roiParams.radialEccentricityScaling);
     CSFGeneratorApp.decode.roiPolarEccentricitySlider(app, 'valueToSlider', app.roiParams.polarEccentricityDegs);
