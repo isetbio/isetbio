@@ -41,6 +41,12 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
                 %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
                 targetEcc = oiSamplingGridDegs(oiIndex,:);
                 
+
+                if (targetEcc(2) ~= 0)
+                    fprintf(2,'Artal optics not available off the horizontal meridian. Computing for vEcc = 0\n');
+                    targetEcc(2) = 0;
+                end
+                
                 [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = ArtalOptics.oiForSubjectAtEccentricity(subjectID, ...
                     obj.whichEye, targetEcc, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
                     'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
