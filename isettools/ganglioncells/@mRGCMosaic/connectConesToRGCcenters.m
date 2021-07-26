@@ -246,6 +246,35 @@ function optimizeSubregion(obj, searchRadiusFactor, oprhanSearchRadiusFactor, ra
     updateRGCpositionsBasedOnCurrentInputs(obj);
     
     
+    
+    % Repeat pass 2
+    % Find all RGCs with 3-cone inputs
+    [threeConeInputRGCs, coneInputIDs] = RGCsWithNConeInputs(obj, rangeDegs, 3); 
+    
+    % Minimize their frequency by donating one cone to a nearby single-cone
+    % RGC (with cone input matching the donated cone)
+    donatedConeMustMatch = true;
+    successfullReallocations = minimizeFrequencyOf3InputRGCSByDonatingOneConeToNearbyRGC(obj, ...
+        searchRadiusFactor, threeConeInputRGCs, coneInputIDs, donatedConeMustMatch);
+    fprintf('\t %d/%d (3 cone RGC -> 1 cone RGC with matched cone type) reassignments (REPEAT).\n', successfullReallocations(1), successfullReallocations(2));
+   
+    % Update RGC positions based on their current inputs
+    updateRGCpositionsBasedOnCurrentInputs(obj);
+    
+    
+    % Pass 2b Minimize the frequency of remaining 3-cone input RGCs by donating one cone to a nearby single-cone
+    % RGC (now, without matching cone input to the donated cone)
+    donatedConeMustMatch = ~true;
+    % Find remaining 3-cone RGCs
+    [threeConeInputRGCs, coneInputIDs] = RGCsWithNConeInputs(obj, rangeDegs, 3); 
+    successfullReallocations = minimizeFrequencyOf3InputRGCSByDonatingOneConeToNearbyRGC(obj, ...
+        searchRadiusFactor, threeConeInputRGCs, coneInputIDs, donatedConeMustMatch);
+    fprintf('\t %d/%d (3 cone RGC -> 1 cone RGC with unmatched cone type) reassignments (REPEAT).\n', successfullReallocations(1), successfullReallocations(2));
+   
+    % Update RGC positions based on their current inputs
+    updateRGCpositionsBasedOnCurrentInputs(obj);
+    
+    
 end
 
 function updateRGCpositionsBasedOnCurrentInputs(obj)
