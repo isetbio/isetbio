@@ -1,10 +1,10 @@
-function wireRFcentersToInputCones(obj, visualizeAlignment, visualizeConnection)
+function wireRFcentersToInputCones(obj, visualizeAlignment, visualizeWiringStages)
 
     % Extract positions and spacings of cones lying within the FOV of the RGC mosaic
-    % There are cones located outside the FOV of the RGC mosaic which feed to
+    % Note that there are cones located outside the FOV of the RGC mosaic which feed to
     % the surrounds of the peripheral RGCs
     [coneRFPositionsDegs, coneRFPositionsMicrons, ...
-     coneRFSpacingsDegs, coneRFSpacingsMicrons] = conesWithinTheRGCmosaic(obj);
+     coneRFSpacingsDegs, coneRFSpacingsMicrons, idxConesInsideRGCmosaic] = conesWithinTheRGCmosaic(obj);
  
     
     % Step1. Align each RGC with its nearest cone. 
@@ -14,12 +14,12 @@ function wireRFcentersToInputCones(obj, visualizeAlignment, visualizeConnection)
     obj.alignRGCsWithCones(coneRFPositionsMicrons, coneRFPositionsDegs, visualizeAlignment);
 
     % Step 2. Connect L and M cones to RGC centers
-    obj.connectConesToRGCcenters(coneRFPositionsMicrons, coneRFPositionsDegs, coneRFSpacingsMicrons, visualizeConnection);
+    obj.connectConesToRGCcenters(idxConesInsideRGCmosaic, visualizeWiringStages);
     
 end
 
 function [coneRFpositionsDegs, coneRFpositionsMicrons, ...
-     coneRFspacingsDegs, coneRFspacingsMicrons] = conesWithinTheRGCmosaic(obj)
+     coneRFspacingsDegs, coneRFspacingsMicrons, idxConesToBeConnected] = conesWithinTheRGCmosaic(obj)
 
     % Indices of cones to be connected to the centers of RGCs
     idxConesToBeConnected = find(...
