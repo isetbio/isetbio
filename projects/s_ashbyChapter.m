@@ -17,7 +17,7 @@ rgb = cell(nBands,1);
 for ii=1:nBands
     newWave = (450:10:470) + (ii-1)*20;
     tmp = sceneSet(scene,'wave',newWave);
-   rgb{ii} = sceneGet(tmp,'rgb');
+    rgb{ii} = sceneGet(tmp,'rgb');
 end
 
 for ii=1:nBands
@@ -40,7 +40,7 @@ end
 h = histogram(val(:,1),'Normalization','pdf'); hold on;
 h.BinLimits = [-5 40]; h.BinWidth = 1; % h.FaceColor = [0.8 0.8 0.8];
 
-h = histogram(val(:,2),'Normalization','pdf'); 
+h = histogram(val(:,2),'Normalization','pdf');
 h.BinLimits = [-5 40]; h.BinWidth = 1; % h.FaceColor = [0.5 0.5 0.5];
 
 h = histogram(val(:,3),'Normalization','pdf');
@@ -62,7 +62,7 @@ end
 
 h = histogram(val(:,1),'Normalization','pdf'); hold on;
 h.BinLimits = [-5 40]; h.BinWidth = 1; % h.FaceColor = [0.8 0.8 0.8];
-h = histogram(val(:,2),'Normalization','pdf'); 
+h = histogram(val(:,2),'Normalization','pdf');
 h.BinLimits = [-5 40]; h.BinWidth = 1; % h.FaceColor = [0.5 0.5 0.5];
 h = histogram(val(:,3),'Normalization','pdf');
 h.BinLimits = [-5 40]; h.BinWidth = 1; % h.FaceColor = [0.2 0.2 0.2];
@@ -85,7 +85,7 @@ theCones.macular.density = 0.35; % 0.35 is Default
 theCones.macular.eccDensity(0:1:15)
 theLens.density = 1; % 1 is default
 
-%% 
+%%
 % ieNewGraphWin;
 % plot(wave,theCones.pigment.quantaFundamentals);
 
@@ -116,12 +116,12 @@ title('10 deg eccentricity');
 
 %% PSFs using the ISETBIOCsfGenerator methods
 
-% I stopped the ISETBioCSFGenerator inside the 
+% I stopped the ISETBioCSFGenerator inside the
 %
 %     cMosaic.oiEnsembleGenerate
 %
 % method.  While there, I saved the key optics variables in the 'projects'
-% directory. 
+% directory.
 %
 % save('oiData','obj','oiSamplingGridDegs','varargin');
 
@@ -135,7 +135,7 @@ load('oiData','obj','oiSamplingGridDegs','varargin');
 %
 % obj.oiEnsembleGenerate runs to create the psfs given the parameters
 %
-% edit cMosaic.oiEnsembleGenerate 
+% edit cMosaic.oiEnsembleGenerate
 %
 %  brings you to the code
 %
@@ -143,12 +143,12 @@ load('oiData','obj','oiSamplingGridDegs','varargin');
 %    centerPos = oiSamplingGridDegs;
 %{
 varargin =
-    {'zernikeDataBase'}    {'Polans2015'}    
-    {'subjectID'}            {[10]}    
-    {'pupilDiameterMM'}      {[3]}    
-    {'subtractCentral…'}     {[0]}    
-    {'zeroCenterPSF'}        {[1]}    
-    {'flipPSFUpsideDown'}    {[1]}    
+    {'zernikeDataBase'}    {'Polans2015'}
+    {'subjectID'}            {[10]}
+    {'pupilDiameterMM'}      {[3]}
+    {'subtractCentral…'}     {[0]}
+    {'zeroCenterPSF'}        {[1]}
+    {'flipPSFUpsideDown'}    {[1]}
     {'wavefrontSpatia…'}    {[301]}
 % Convert the varargin to a struct that we can edit
 args = struct;
@@ -157,39 +157,52 @@ for ii=1:2:numel(varargin)
 end
 %}
 
+mp = parula(256);
+mp(1:4,:) = repmat([0.5 0.5 0.5],[4,1]);
+
+%%
 % Choose Artalright eye, subject 1?? 74, 26.  or 85
-centerPos = [0,1];
+centers = [2,0; 8,0; 20,0];
+theW = [7 3];
+kk = 1;
+ieNewGraphWin([],'wide');
 
-args.zernikeDataBase = 'Polans2015';
+for jj=1:numel(theW)
+    for ii=1:size(centers,1)
+        
+        centerPos = centers(ii,:);
+        
+        args.zernikeDataBase = 'Artal2012'; % args.zernikeDataBase = 'Polans2015';
+        args.subjectID       = 26;
+        args.pupilDiameterMM = 4;
+        args.subtractCentralRefraction = false;
+        args.zeroCenterPSF = true;
+        args.flipPSFUpsideDown = true;
+        args.wavefrontSpatialSamples = 301;
+        
+        [oiEnsemble, psfEnsemble] = obj.oiEnsembleGenerate(centerPos,args);
+        thisPSF = psfEnsemble{1};
+        
+        thisW = theW(jj);   % Select a wavelength, % 3 is 450 nm, 7 is 550 nm
+        % h = mesh(thisPSF.supportX,thisPSF.supportY,thisPSF.data(:,:,thisW)/max2(thisPSF.data(:,:,thisW)));
+        subplot(2,3,kk);
+        imagesc(thisPSF.supportX,thisPSF.supportY,thisPSF.data(:,:,thisW)/max2(thisPSF.data(:,:,thisW)));
+        axis image; colormap(mp);
+        tMarks  = (-15:5:15); mn = -8; mx = 8;
+        set(gca,'xtick',tMarks,'xlim',[mn mx],'ylim',[mn mx]);
+        set(gca,'ytick',tMarks);
+        xlabel('Pos (microns)');
+        ylabel('Pos (microns)');
+        zlabel('Relative intensity');
+        kk = kk + 1;
+        % title(sprintf('Wave %d Sub %d',thisPSF.supportWavelength(thisW),args.subjectID));
+    end
+end
 
-args.zernikeDataBase = 'Artal2012';
-args.subjectID       = 26;
-args.pupilDiameterMM = 3;
-args.subtractCentralRefraction = false;
-args.zeroCenterPSF = true;
-args.flipPSFUpsideDown = true;
-% args.deNoisedZernikeCoefficients = false;
-args.wavefrontSpatialSamples = 301;
-
-[oiEnsemble, psfEnsemble] = obj.oiEnsembleGenerate(centerPos,args);
-thisPSF = psfEnsemble{1};
-
-ieNewGraphWin;  
-thisW = 7;   % Select a wavelength, % 3 is 450 nm, 7 is 550 nm 
-h = mesh(thisPSF.supportX,thisPSF.supportY,thisPSF.data(:,:,thisW)/max2(thisPSF.data(:,:,thisW)));
-tMarks  = [-15:5:15]; mn = -5; mx = 5;
-set(gca,'xtick',tMarks,'xlim',[mn mx],'ylim',[mn mx]);
-set(gca,'ytick',tMarks);
-xlabel('Pos (microns)');
-ylabel('Pos (microns)');
-zlabel('Relative intensity');
-
-title(sprintf('Wave %d Sub %d',thisPSF.supportWavelength(thisW),args.subjectID));
 
 %% To get cone diameter as a function of eccentricity
 
 ecc = (0.1:0.2:20);
-sz  = 
 
 
 %% Make an additive Gaussian noise and stimulus dependent noise
@@ -216,9 +229,16 @@ cmP.compute(oi);
 
 photonNoise = cmP.absorptions;
 mx = max(photonNoise(:));
-ieNewGraphWin; imagesc(photonNoise,[0 mx]); 
+ieNewGraphWin; imagesc(photonNoise,[0 mx]);
 axis image; colormap(hot(128));
 title('Poisson');brighten(0.3);
+
+ieNewGraphWin; 
+thisRow = photonNoise(400,:);
+p = plot(thisRow,'LineWidth',1,'Color',[1 1 1]);
+set(gca,'Color','k');
+
+ylabel('Excitations'); xlabel('Position'); grid on;
 
 cmP.name = 'photon';
 % cmP.window;
@@ -227,7 +247,7 @@ cmP.name = 'photon';
 cmG = coneMosaic;
 cmG.setSizeToFOV(fov);
 cmG.spatialDensity = cDensity;
-cmG.integrationTime = eTime;  
+cmG.integrationTime = eTime;
 cmG.noiseFlag = 'none';
 cmG.compute(oi);
 
@@ -240,9 +260,16 @@ gaussNoise = noNoise + equivNoise;
 gaussNoise(gaussNoise<0) = 0;
 mx = max(gaussNoise(:));
 
-ieNewGraphWin; imagesc(gaussNoise,[0 mx]); 
+ieNewGraphWin; imagesc(gaussNoise,[0 mx]);
 axis image; colormap(hot(128));
 title('Gaussian'); brighten(0.3);
+
+ieNewGraphWin; 
+thisRow = gaussNoise(400,:);
+p = plot(thisRow,'LineWidth',1,'Color',[1 1 1]);
+ylabel('Excitations'); xlabel('Position'); grid on;
+set(gca,'Color','k');
+
 
 cmG.absorptions = gaussNoise;
 cmG.name = 'gaussian';
