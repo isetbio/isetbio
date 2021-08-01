@@ -203,6 +203,10 @@ function visualize(obj, varargin)
         deltaAngle = 360/visualizeConeApertureThetaSamples;
     end
     
+    % Generate cone aperture shape
+    iTheta = (0:deltaAngle:360) / 180 * pi;
+    coneApertureShape.x = cos(iTheta);
+    coneApertureShape.y = sin(iTheta);
    
     
     cla(axesHandle);
