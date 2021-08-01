@@ -1,4 +1,6 @@
-function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, photoCurrentInstances, responseTemporalSupport] = compute(obj, oi, varargin)
+function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
+    photoCurrents, photoCurrentInstances, responseTemporalSupport] = ...
+    compute(obj, oi, varargin)
 % Compute the cone absorptions, possibly for multiple instances
 %
 % Syntax:
@@ -15,7 +17,11 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
 %    oi                  - An optical image, or oiSequence. 
 %
 % Outputs:
-%
+%    noiseFreeAbsorptionsCount - [nTrials, nTimePoints, nConesNum] matrix
+%                                 with noise-free cone excitations
+%    noisyAbsorptionInstances - [nTrials, nTimePoints, nConesNum] matrix
+%                                 with noisy cone excitation instances
+
 % Optional key/value pairs:
 %    'emPaths'           - Eye movement paths. Either empty or a matrix of [nTrials x N x 2]. Default is [].
 %                          
@@ -51,7 +57,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
         validateAndDecodeFixationalEyeMovements(obj, p.Results.withFixationalEyeMovements, nTrials, nTimePoints);
     
     
-    % Decode and decode opticalImagePositionDegs optional input
+    % Decode the opticalImagePositionDegs optional input
     opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj,p.Results.opticalImagePositionDegs);
     
     % Match the wavelength support of the object to that of the input optical image
@@ -59,7 +65,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, photoCurrents, ph
     % with this computation
     originalValues.wave = obj.wave;
     
-    % Set the new wavelength support. The cMosaic object has listeners on wave
+    % Set the new wavelength. The cMosaic object has listeners on wave
     % that set the wavelength support of the attached pigment and macular
     % properties
     obj.wave = oiGet(oi, 'wave');

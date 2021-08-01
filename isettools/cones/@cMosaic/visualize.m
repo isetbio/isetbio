@@ -202,9 +202,7 @@ function visualize(obj, varargin)
     else
         deltaAngle = 360/visualizeConeApertureThetaSamples;
     end
-    iTheta = (0:deltaAngle:360) / 180 * pi;
-    coneApertureShape.x = cos(iTheta);
-    coneApertureShape.y = sin(iTheta);
+    
    
     
     cla(axesHandle);
@@ -601,7 +599,7 @@ function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ..
         idx = (coneIndex - 1) * verticesPerCone + (1:verticesPerCone);
         verticesList(idx, 1) = apertureShape.x*apertureRadii(coneIndex) + rfCoords(coneIndex,1);
         verticesList(idx, 2) = apertureShape.y*apertureRadii(coneIndex) + rfCoords(coneIndex,2);
-        if (numel(faceColors) == conesNum)
+        if ((numel(faceColors) == conesNum)&& (conesNum > 1))
             colors = cat(1, colors, repmat(faceColors(coneIndex), [verticesPerCone 1]));
         end
         facesList = cat(1, facesList, idx);
