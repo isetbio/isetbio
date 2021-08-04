@@ -8,7 +8,7 @@ function generateConeMosaicResponsesToDriftingSinewaves
     % Eccentricities examined
     mosaicEccentricities = [...
         0 0; ...
-        0.5 0; ...
+        0.2 0; ...
         1.0 0];
     
     % Corresponding mosaic sizes
@@ -25,7 +25,7 @@ function generateConeMosaicResponsesToDriftingSinewaves
     dataSourceDir = strrep(isetRootPath, 'isettools','demoapps/RGCSFTuningSimulator/Resources');
     
     % Action !
-    for mosaicEccIndex = 1:1 % size(mosaicEccentricities,1)
+    for mosaicEccIndex = 2:2 % size(mosaicEccentricities,1)
         
         mosaicEcc = mosaicEccentricities(mosaicEccIndex,:);
         mosaicSizeDegs = mosaicSizes(mosaicEccIndex) * [1 1];
@@ -34,7 +34,7 @@ function generateConeMosaicResponsesToDriftingSinewaves
         theConeMosaic = [];
         coneMosaicSpatiotemporalActivation = single([]);
         
-        for subjectRankOrder = 2:10
+        for subjectRankOrder = 0:10
             % Generate optics
             theOptics = [];
             
