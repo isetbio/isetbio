@@ -25,7 +25,7 @@ function generateConeMosaicResponsesToDriftingSinewaves
     dataSourceDir = strrep(isetRootPath, 'isettools','demoapps/RGCSFTuningSimulator/Resources');
     
     % Action !
-    for mosaicEccIndex = 2:2 % size(mosaicEccentricities,1)
+    for mosaicEccIndex = 1:1 % size(mosaicEccentricities,1)
         
         mosaicEcc = mosaicEccentricities(mosaicEccIndex,:);
         mosaicSizeDegs = mosaicSizes(mosaicEccIndex) * [1 1];
@@ -34,7 +34,7 @@ function generateConeMosaicResponsesToDriftingSinewaves
         theConeMosaic = [];
         coneMosaicSpatiotemporalActivation = single([]);
         
-        for subjectRankOrder = 0:10
+        for subjectRankOrder = -1:10
             % Generate optics
             theOptics = [];
             
@@ -164,26 +164,32 @@ function [coneMosaicSpatiotemporalActivation, baserateActivation, ...
     
     if (isempty(theOptics))
         fprintf('\t Computing optics\n');
-        %% Select ranking of displayed subject
-        if (subjectRankOrder > 0)
-            rankedSujectIDs = PolansOptics.constants.subjectRanking;
-            testSubjectID = rankedSujectIDs(subjectRankOrder);
-            subtractCentralRefraction = ...
-                PolansOptics.constants.subjectRequiresCentralRefractionCorrection(testSubjectID);
+        pupilDiameterMM = 3.0;
+        if (subjectRankOrder == -1)
+            theOI = oiCreate('wvf human', pupilDiameterMM,[],[], theConeMosaic.micronsPerDegree);
+            theOptics = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DeltaFunction');
         else
-            testSubjectID = 0;
-            subtractCentralRefraction = false;
-        end
-        
-        % Generate optics appropriate for the mosaic's eccentricity
-        oiEnsemble = theConeMosaic.oiEnsembleGenerate(mosaicEcc, ...
-                'zernikeDataBase', 'Polans2015', ...
-                'subjectID', testSubjectID, ...
-                'pupilDiameterMM', 3.0, ...
-                'subtractCentralRefraction', subtractCentralRefraction);
+            %% Select ranking of displayed subject
+            if (subjectRankOrder > 0)
+                rankedSujectIDs = PolansOptics.constants.subjectRanking;
+                testSubjectID = rankedSujectIDs(subjectRankOrder);
+                subtractCentralRefraction = ...
+                    PolansOptics.constants.subjectRequiresCentralRefractionCorrection(testSubjectID);
+            else
+                testSubjectID = 0;
+                subtractCentralRefraction = false;
+            end
 
-        % Extract the optics
-        theOptics = oiEnsemble{1};
+            % Generate optics appropriate for the mosaic's eccentricity
+            oiEnsemble = theConeMosaic.oiEnsembleGenerate(mosaicEcc, ...
+                    'zernikeDataBase', 'Polans2015', ...
+                    'subjectID', testSubjectID, ...
+                    'pupilDiameterMM', pupilDiameterMM, ...
+                    'subtractCentralRefraction', subtractCentralRefraction);
+
+            % Extract the optics
+            theOptics = oiEnsemble{1};
+        end
     end
     
     
