@@ -3,7 +3,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
 
     % Parse input
     p = inputParser;
-    p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=1)&&(x<=130)));
+    p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=0)&&(x<=130)));
     p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{ArtalOptics.constants.rightEye, ArtalOptics.constants.leftEye}))));
     p.addRequired('ecc', @(x)(isnumeric(x)&&((numel(x) == 1)||(numel(x) == 2))));
     p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=4)));
@@ -26,7 +26,12 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     
     
     % Obtain z-coeffs at desired eccentricity
-    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc(1), subtractCentralRefraction);
+    if (subjectID == 0)
+        zCoeffs = zCoeffsForSubjectAtEcc(1, whichEye, ecc(1), subtractCentralRefraction);
+        zCoeffs = 0*zCoeffs;
+    else
+        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc(1), subtractCentralRefraction);
+    end
     
     if (isempty(zCoeffs))
         theOI = [];
@@ -90,7 +95,11 @@ end
 function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc, subtractCentralRefraction)
 
     % Get original z-coeffs at all measured eccentricities
-    [zMap, zCoeffIndices] = ArtalOptics.constants.ZernikeCoefficientsMap(subjectID, whichEye);
+    if (subjectID == 0)
+        [zMap, zCoeffIndices] = ArtalOptics.constants.ZernikeCoefficientsMap(1, whichEye);
+    else
+        [zMap, zCoeffIndices] = ArtalOptics.constants.ZernikeCoefficientsMap(subjectID, whichEye);
+    end
     
     % Check that the coefficients do not contain NaNs
     atLeastOneNaNCoefficient = any(isnan(zMap(:)));
@@ -122,4 +131,8 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
          interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp1(ArtalOptics.constants.measurementHorizontalEccentricities, z2Dmap, ecc(1));
     end
      
+    if (subjectID == 0)
+        interpolatedZcoeffs = 0*interpolatedZcoeffs;
+    end
+    
 end
