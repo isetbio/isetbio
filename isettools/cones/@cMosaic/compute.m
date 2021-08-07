@@ -28,13 +28,14 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
 
     % Parse input
     p = inputParser;
+    p.addRequired('oi', @(x)((isa(x, 'struct')) || (isa(x, 'oiSequence')) || (isa(x, 'oiArbitrarySequence'))))
     p.addParameter('withFixationalEyeMovements', false, @islogical);
     p.addParameter('opticalImagePositionDegs', obj.opticalImagePositionDegs, @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
     p.addParameter('nTimePoints', [], @isscalar);
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('seed', 1, @isnumeric);
     p.addParameter('verbosityLevel', 'none', @(x)ismember(x, {'default', 'min', 'max'}));
-    p.parse(varargin{:});
+    p.parse(oi,varargin{:});
     
 
     if (isempty(obj.minRFpositionMicrons))
@@ -53,9 +54,13 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     verbosityLevel = p.Results.verbosityLevel;
     
     % Validate and decode fixational eye movement optional input
-    [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
-        validateAndDecodeFixationalEyeMovements(obj, p.Results.withFixationalEyeMovements, nTrials, nTimePoints);
-    
+    if (isa(oi, 'struct'))
+        [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
+            validateAndDecodeFixationalEyeMovementsForSingleOI(obj, p.Results.withFixationalEyeMovements, nTrials, nTimePoints);
+    else
+        [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
+            validateAndDecodeFixationalEyeMovementsForOISequence(obj, p.Results.withFixationalEyeMovements, nTrials, nTimePoints, oi);
+    end
     
     % Decode the opticalImagePositionDegs optional input
     opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj,p.Results.opticalImagePositionDegs);
@@ -65,22 +70,34 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     % with this computation
     originalValues.wave = obj.wave;
     
-    % Set the new wavelength. The cMosaic object has listeners on wave
-    % that set the wavelength support of the attached pigment and macular
-    % properties
-    obj.wave = oiGet(oi, 'wave');
-    
-    % Compute wavelength-spacing scaled quantal efficiencies
-    scaledQE = obj.qe * oiGet(oi, 'bin width');
-    
-    % Retrieve oiRes
-    oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
-    
-    % Retrieve wavelength support
-    oiWave = oiGet(oi, 'wave');
+    if (isa(oi, 'struct'))
+        % Set the new wavelength. The cMosaic object has listeners on wave
+        % that set the wavelength support of the attached pigment and macular
+        % properties
+        obj.wave = oiGet(oi, 'wave');
+
+        % Compute wavelength-spacing scaled quantal efficiencies
+        scaledQE = obj.qe * oiGet(oi, 'bin width');
+
+        % Retrieve oiRes
+        oiResMicrons = oiGet(oi, 'height spatial resolution')*1e6;
+
+        % Retrieve wavelength support
+        oiWave = oiGet(oi, 'wave');
+        
+        % Retrieve spatial support in meters
+        spatialSupportMeters = oiGet(oi, 'spatial support');
+    else
+        % An oiSequence, so do as above using the first OI frame
+        firstOI = oi.frameAtIndex(1);
+        obj.wave = oiGet(firstOI, 'wave');
+        scaledQE = obj.qe * oiGet(firstOI, 'bin width');
+        oiResMicrons = oiGet(firstOI, 'height spatial resolution')*1e6;
+        oiWave = oiGet(firstOI, 'wave');
+        spatialSupportMeters = oiGet(firstOI, 'spatial support');
+    end
     
     % Generate oiPositions
-    spatialSupportMeters = oiGet(oi, 'spatial support');
     spatialSupportXMicrons = squeeze(spatialSupportMeters(1,1:end,1)) * 1e6;
     spatialSupportYMicrons = squeeze(spatialSupportMeters(1:end,1,2)) * 1e6;
     spatialSupportXMicrons = spatialSupportXMicrons - mean(spatialSupportXMicrons);
@@ -98,45 +115,45 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     maxEMpos = squeeze(max(emPathsMicrons,[],1));
     
     if (obj.minRFpositionMicrons(1)+minEMpos(1) < min(spatialSupportXMicrons))
-        additionalPixelsXLeft = round((min(spatialSupportXMicrons) - (obj.minRFpositionMicrons(1)+minEMpos(1)))/dx);
+        additionalPixels.xLeft = round((min(spatialSupportXMicrons) - (obj.minRFpositionMicrons(1)+minEMpos(1)))/dx);
     else
-        additionalPixelsXLeft = 0;
+        additionalPixels.xLeft = 0;
     end
     
     if (obj.minRFpositionMicrons(2)+minEMpos(2) < min(spatialSupportYMicrons))
-        additionalPixelsYBottom = round((min(spatialSupportYMicrons) - (obj.minRFpositionMicrons(2)+minEMpos(2)))/dy);
+        additionalPixels.yBottom = round((min(spatialSupportYMicrons) - (obj.minRFpositionMicrons(2)+minEMpos(2)))/dy);
     else
-        additionalPixelsYBottom = 0;
+        additionalPixels.yBottom = 0;
     end
     
     if (obj.maxRFpositionMicrons(1)+maxEMpos(1) > max(spatialSupportXMicrons))
-        additionalPixelsXRight = round((obj.maxRFpositionMicrons(1)+maxEMpos(1) - max(spatialSupportXMicrons))/dx);
+        additionalPixels.xRight = round((obj.maxRFpositionMicrons(1)+maxEMpos(1) - max(spatialSupportXMicrons))/dx);
     else
-        additionalPixelsXRight = 0;
+        additionalPixels.xRight = 0;
     end
     
     if (obj.maxRFpositionMicrons(2)+maxEMpos(2) > max(spatialSupportYMicrons))
-        additionalPixelsYTop = round((obj.maxRFpositionMicrons(2)+maxEMpos(2) - max(spatialSupportYMicrons))/dy);
+        additionalPixels.yTop = round((obj.maxRFpositionMicrons(2)+maxEMpos(2) - max(spatialSupportYMicrons))/dy);
     else
-        additionalPixelsYTop = 0;
+        additionalPixels.yTop = 0;
     end
     
     % Extend spatial support vectors as needed
-    if (additionalPixelsXLeft > 0)
-        extraXPos = -fliplr((1:additionalPixelsXLeft)*dx);
+    if (additionalPixels.xLeft > 0)
+        extraXPos = -fliplr((1:additionalPixels.xLeft)*dx);
         spatialSupportXMicrons = cat(2, extraXPos+spatialSupportXMicrons(1), spatialSupportXMicrons); 
     end
-    if (additionalPixelsXRight > 0)
-        extraXPos = (1:additionalPixelsXRight)*dx;
+    if (additionalPixels.xRight > 0)
+        extraXPos = (1:additionalPixels.xRight)*dx;
         spatialSupportXMicrons = cat(2, spatialSupportXMicrons, extraXPos+spatialSupportXMicrons(end)); 
     end
     
-    if (additionalPixelsYBottom > 0)
-        extraYPos = -fliplr((1:additionalPixelsYBottom)*dy);
+    if (additionalPixels.yBottom > 0)
+        extraYPos = -fliplr((1:additionalPixels.yBottom)*dy);
         spatialSupportYMicrons = cat(1, extraYPos'+spatialSupportYMicrons(1), spatialSupportYMicrons);
     end
-    if (additionalPixelsYTop > 0)
-        extraYPos = (1:additionalPixelsYTop)*dy;
+    if (additionalPixels.yTop > 0)
+        extraYPos = (1:additionalPixels.yTop)*dy;
         spatialSupportYMicrons = cat(1,  spatialSupportYMicrons, extraYPos'+spatialSupportYMicrons(end));
     end
     
@@ -190,122 +207,166 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     % Set the object's blurApertureDiameterMicronsZones property
     obj.blurApertureDiameterMicronsZones = blurApertureDiameterMicronsZones;
     
-    % Retrieve retinal irradiance in photons
-    photons = oiGet(oi, 'photons');
-   
-    % Flip the optical image upside-down because the y-coords in the
-    % oi spatial support vectors increase from top -> bottom (y-coords in an image)
-    % whereas cone y-positions increase from bottom -> top 
-    for k = 1:size(photons,3)
-        photons(:,:,k) = flipud(squeeze(photons(:,:,k)));
-    end
-    
-    % Extend photons field as needed
-    if ((additionalPixelsXLeft > 0) || (additionalPixelsXRight > 0) || (additionalPixelsYBottom > 0) || (additionalPixelsYTop > 0))
-        originalPhotons = photons;
-        originalXpixelsNum = size(photons,2);
-        originalYpixelsNum = size(photons,1);
-        newXpixelsNum = originalXpixelsNum + additionalPixelsXLeft + additionalPixelsXRight;
-        newYpixelsNum = originalYpixelsNum + additionalPixelsYBottom + additionalPixelsYTop;
-        % mean-padded photons
-        photons = zeros(newYpixelsNum, newXpixelsNum, size(photons,3));
-        meanPadValues = originalPhotons(1,1,:);
-        xOffset = additionalPixelsXLeft;
-        yOffset = additionalPixelsYBottom;
-        for k = 1:size(photons,3)
-            photons(:,:,k) = meanPadValues(k);
-            photons(yOffset+(1:originalYpixelsNum), xOffset+(1:originalXpixelsNum),k) = originalPhotons(:,:,k);
-        end
-    end
-    clear 'originalPhotons';
-    
-    % Update oiSize
-    oiSize = size(photons);
-    oiSize = oiSize(1:2);
-    
-    % Reshape the photons for efficient computations
-    [photons, oiRowsNum, oiColsNum] = RGB2XWFormat(photons);
+    % Retrieve number of cones
+    nConesNum = size(obj.coneRFpositionsMicrons,1);
     
     % Allocate memory for noiseFreeAbsorptionsCount
-    nConesNum = size(obj.coneRFpositionsMicrons,1);
     noiseFreeAbsorptionsCount = zeros(nTrials, nTimePoints, nConesNum);
-        
-    if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
-        % No emPath, so compute a single shot
-        % Compute boost factors by which photons have to be multiplied so as
-        % the account for MP density decrease with ecc
-        macularPigmentDensityBoostFactors = ...
-            updateMPBoostFactorsForCurrentEMpos(obj, [0 0], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
     
-        % Compute density of cone absosprions, by integrating photons over
-        % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
-        absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
+    % Form responseTemporalSupport
+    responseTemporalSupport = (0:(size(noiseFreeAbsorptionsCount,2)-1)) * obj.integrationTime;
+    
+    % Parse time
+    if (isa(oi, 'struct'))
+        oiTimeAxis = [0];
+    else
+        oiTimeAxis = oi.timeAxis;
+    end
+    oiFramesNum = numel(oiTimeAxis);
+    
+            
+    for oiFrame = 1:oiFramesNum
+        
+        if (isa(oi, 'struct'))
+            % Retrieve retinal irradiance in photons
+            photons = oiGet(oi, 'photons');
 
-        % Compute absorptions
-        %t1 = clock;
-        noiseFreeAbsorptionsCount(1,1,:) = obj.integrationTime *  ...
-                obj.computeAbsorptionRate(...
+        else
+            % Retrieve retinal irradiance in photons
+            photons = oiGet(oi.frameAtIndex(oiFrame), 'photons');
+        end
+
+
+        % Flip the optical image upside-down because the y-coords in the
+        % oi spatial support vectors increase from top -> bottom (y-coords in an image)
+        % whereas cone y-positions increase from bottom -> top 
+        for k = 1:size(photons,3)
+            photons(:,:,k) = flipud(squeeze(photons(:,:,k)));
+        end
+
+        % Phad photons field as needed to accomodate eye movements
+        photons = padPhotons(photons, additionalPixels);
+    
+        % Update oiSize
+        oiSize = size(photons);
+        oiSize = oiSize(1:2);
+
+        % Reshape the photons for efficient computations
+        [photons, oiRowsNum, oiColsNum] = RGB2XWFormat(photons);
+
+        % Single OI
+        if (isa(oi, 'struct'))
+            
+            if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
+                % No emPath, so compute a single shot
+                % Compute boost factors by which photons have to be multiplied so as
+                % the account for MP density decrease with ecc
+                macularPigmentDensityBoostFactors = ...
+                    updateMPBoostFactorsForCurrentEMpos(obj, [0 0], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                
+                % Compute density of cone absosprions, by integrating photons over
+                % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
+                absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
+                 
+                % Compute absorptions
+                noiseFreeAbsorptionsCount(1,1,:) = obj.integrationTime *  ...
+                    obj.computeAbsorptionRate(...
                     emPathsMicrons(1,1,:), ...
                     oiPositionsVectorsMicrons, ...
                     absorptionsDensityFullMap, ...
                     oiResMicrons, coneApertureDiametersMicrons, ...
                     coneIndicesInZones);
-        %fprintf('Computing mean absorptions count took %f seconds.\n', etime(clock, t1));
-        %t2 = clock;
-        % Replicate single shot for all trials and time points
-        for iTrial = 2:nTrials
-            %fprintf('Replicating trial %d from first trial.\n', iTrial);
-            noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
-        end
-       %fprintf('Replicating mean response for %d trials count took %f seconds.\n', nTrials, etime(clock, t2));
-        
-    else 
-        if (~obj.eccVaryingMacularPigmentDensityDynamic)
-            % No dynamic adjustment of MP density, so compute MP boost factors for the mean  eye movement position
-            % across all time points and all instances. Alternatively, we
-            % could do mean over all time points separately for each instance
-            meanEMPosDegs = mean(mean(emPathsDegs,1),2);
-            macularPigmentDensityBoostFactors = ...
-                            updateMPBoostFactorsForCurrentEMpos(obj, [meanEMPosDegs(1) meanEMPosDegs(2)], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
-        end
-        
-        % Compute for emPath
-        for iTrial = 1:nTrials
-            if (replicateResponseToFirstEMpath) && (iTrial > 1)
-                % Ideantical emPaths across trials, differing just in noise
-                %fprintf('Replicating response (%d) to first trial.\n', iTrial);
-                noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
+
+                % Replicate single shot for all trials and time points
+                for iTrial = 2:nTrials
+                    %fprintf('Replicating trial %d from first trial.\n', iTrial);
+                    noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
+                end
+
             else
-                % Different emPath for each trial
-                for timePoint = 1:nTimePoints
-  
-                    if (obj.eccVaryingMacularPigmentDensityDynamic)
-                        % Recompute MP boost factors for current eye movement position
-                        currentEMposDegs = [emPathsDegs(iTrial, timePoint,1) emPathsDegs(iTrial, timePoint,2)];
-                        macularPigmentDensityBoostFactors = ...
-                            updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                if (~obj.eccVaryingMacularPigmentDensityDynamic)
+                    % No dynamic adjustment of MP density, so compute MP boost factors for the mean  eye movement position
+                    % across all time points and all instances. Alternatively, we
+                    % could do mean over all time points separately for each instance
+                    meanEMPosDegs = mean(mean(emPathsDegs,1),2);
+                    macularPigmentDensityBoostFactors = ...
+                        updateMPBoostFactorsForCurrentEMpos(obj, [meanEMPosDegs(1) meanEMPosDegs(2)], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                end
+                
+                % Compute for emPath
+                for iTrial = 1:nTrials
+                    if (replicateResponseToFirstEMpath) && (iTrial > 1)
+                        % Ideantical emPaths across trials, differing just in noise
+                        %fprintf('Replicating response (%d) to first trial.\n', iTrial);
+                        noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
+                    else
+                        % Different emPath for each trial
+                        for timePoint = 1:nTimePoints
+                            
+                            if (obj.eccVaryingMacularPigmentDensityDynamic)
+                                % Recompute MP boost factors for current eye movement position
+                                currentEMposDegs = [emPathsDegs(iTrial, timePoint,1) emPathsDegs(iTrial, timePoint,2)];
+                                macularPigmentDensityBoostFactors = ...
+                                    updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                            end
+                            
+                            % Compute density of cone absosprions, by integrating photons over
+                            % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
+                            absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
+                            
+     
+                
+                            % Compute absorptions
+                            noiseFreeAbsorptionsCount(iTrial, timePoint, :) = obj.integrationTime * ...
+                                obj.computeAbsorptionRate(...
+                                emPathsMicrons(iTrial, timePoint,:), ...
+                                oiPositionsVectorsMicrons, ...
+                                absorptionsDensityFullMap, ...
+                                oiResMicrons, coneApertureDiametersMicrons, ...
+                                coneIndicesInZones);
+                            
+                        end % timePoint
                     end
-
-                    % Compute density of cone absosprions, by integrating photons over
-                    % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
-                    absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
-                    
-                    % Compute absorptions
-                    noiseFreeAbsorptionsCount(iTrial, timePoint, :) = obj.integrationTime * ...
-                        obj.computeAbsorptionRate(...
-                        emPathsMicrons(iTrial, timePoint,:), ...
-                        oiPositionsVectorsMicrons, ...
-                        absorptionsDensityFullMap, ...
-                        oiResMicrons, coneApertureDiametersMicrons, ...
-                        coneIndicesInZones);
-
-                end % timePoint
+                end % iTrial
+                
             end
-        end % iTrial
-        
-    end
+            
+        % OISequence
+        else
+            if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
+                % No emPath
+                
+                if (oiFrame == 1)
+                    % Compute boost factors by which photons have to be multiplied so as
+                    % the account for MP density decrease with ecc. This
+                    % needs to be done only once (we do it for the first frame only)
+                    macularPigmentDensityBoostFactors = ...
+                        updateMPBoostFactorsForCurrentEMpos(obj, [0 0], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                end
+                
+                % Compute density of cone absosprions, by integrating photons over
+                % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
+                absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);  
+                
+                % Compute absorptions for this frame
+                noiseFreeAbsorptionsCount(1,oiFrame,:) = obj.integrationTime *  ...
+                    obj.computeAbsorptionRate(...
+                    emPathsMicrons(1,1,:), ...
+                    oiPositionsVectorsMicrons, ...
+                    absorptionsDensityFullMap, ...
+                    oiResMicrons, coneApertureDiametersMicrons, ...
+                    coneIndicesInZones);
 
-    responseTemporalSupport = (0:(size(noiseFreeAbsorptionsCount,2)-1)) * obj.integrationTime;
+                % Replicate this frame for all trials
+                for iTrial = 2:nTrials
+                    noiseFreeAbsorptionsCount(iTrial, oiFrame, :) = noiseFreeAbsorptionsCount(1,oiFrame,:);
+                end
+            end
+            
+        end  % oiSequence
+    end % for oiFrame
+    
+    
     
     if (strcmp(obj.noiseFlag, 'none'))
         noisyAbsorptionInstances = [];
@@ -334,6 +395,28 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     
     % All done. Restore original values
     obj.wave = originalValues.wave;
+end
+
+
+function photons = padPhotons(photons, additionalPixels)
+    if ((additionalPixels.xLeft > 0) || (additionalPixels.xRight > 0) || ...
+        (additionalPixels.yBottom > 0) || (additionalPixels.yTop > 0))
+        originalPhotons = photons;
+        originalXpixelsNum = size(photons,2);
+        originalYpixelsNum = size(photons,1);
+        newXpixelsNum = originalXpixelsNum + additionalPixels.xLeft + additionalPixels.xRight;
+        newYpixelsNum = originalYpixelsNum + additionalPixels.yBottom + additionalPixels.yTop;
+        % mean-padded photons
+        photons = zeros(newYpixelsNum, newXpixelsNum, size(photons,3));
+        meanPadValues = originalPhotons(1,1,:);
+        xOffset = additionalPixels.xLeft;
+        yOffset = additionalPixels.yBottom;
+        for k = 1:size(photons,3)
+            photons(:,:,k) = meanPadValues(k);
+            photons(yOffset+(1:originalYpixelsNum), xOffset+(1:originalXpixelsNum),k) = originalPhotons(:,:,k);
+        end
+    end
+    clear 'originalPhotons';
 end
 
 
@@ -366,15 +449,55 @@ function opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj
     end
 end
     
-% Method for the validation and decoding for optional argument 'withFixationalEyeMovements'
+
+% Method for the validation and decoding for optional argument
+% 'withFixationalEyeMovements' when we are dealing with an OIsequence
 function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
-        validateAndDecodeFixationalEyeMovements(obj, withFixationalEyeMovements, nTrials, nTimePoints)
+            validateAndDecodeFixationalEyeMovementsForOISequence(obj, withFixationalEyeMovements, nTrials, nTimePoints, oiSequence)
+        
+    if (withFixationalEyeMovements) && (isempty(obj.fixEMobj))
+        error('cMosaic.emGenSequence() has not been called yet to generate eye movements.');
+    end
+     
+    % Get the time axis of the oiSequence
+    timeAxis = oiSequence.timeAxis;
+        
+    replicateResponseToFirstEMpath = false;
+    if (withFixationalEyeMovements)
+        error('cMosaic.compute(): We have not yet implemented this method for fixationalEyeMovements with an OIsequence');
+    else
+        if (~isempty(nTimePoints))
+            fprintf('cMosaic.compute() with oiSequence: ignoring ''nTimePoints'' (set to %d) parameter, and setting it to the length of the oiSequence.', nTimePoints);
+        end
+        % No emPaths passed: make the nTimePoints = legth of oiSequence
+        nTimePoints = numel(timeAxis);
+        % Also ensure that the cone mosaic's integrationTime matches the
+        % oiSequence frame duration
+        if (numel(timeAxis) > 1)
+            assert(obj.integrationTime == timeAxis(2)-timeAxis(1), 'cMosaic.compute() with oiSequence: integrationTime does not match oiSequence.frame duration.')
+        end
+        
+        if (isempty(nTrials))
+            nTrials = 1;
+        end
+        emPathsMicrons = zeros(nTrials,nTimePoints,2);
+        emPathsDegs = zeros(nTrials,nTimePoints,2);
+    end
+    
+end
+
+
+        
+% Method for the validation and decoding for optional argument
+% 'withFixationalEyeMovements' when we are dealing with a singleOI
+function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
+        validateAndDecodeFixationalEyeMovementsForSingleOI(obj, withFixationalEyeMovements, nTrials, nTimePoints)
     
      if (withFixationalEyeMovements) && (isempty(obj.fixEMobj))
         error('cMosaic.emGenSequence() has not been called yet to generate eye movements.');
      end
     
-     % emPaths/nTrials validation
+    % emPaths/nTrials validation
     replicateResponseToFirstEMpath = false;
     if (withFixationalEyeMovements)
         % Full blown simulation. This is going to be the slowest scenario.
