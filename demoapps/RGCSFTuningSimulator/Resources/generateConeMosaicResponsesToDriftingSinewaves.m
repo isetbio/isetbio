@@ -214,25 +214,14 @@ function [coneMosaicSpatiotemporalActivation, baserateActivation, ...
     end
 
     
-    
     % Generate an @oiSequence object from the list of computed optical images
     theOIsequence = oiArbitrarySequence(theListOfOpticalImages, theStimulusTemporalSupportSeconds);
 
-    % Preallocate memory to save the spatiotemporal mosaic activation
-    conesNum = size(theConeMosaic.coneRFpositionsDegs,1);
-    coneMosaicSpatiotemporalActivation = zeros(theOIsequence.length, conesNum);
-        
-    % Loop over all optical images and compute the noise-free response
-    for oiIndex = 1:theOIsequence.length
-        % Compute the cone mosaic activation to this optical image frame
-        currentOI = theOIsequence.frameAtIndex(oiIndex);
-        noiseFreeActivation = theConeMosaic.compute(currentOI);
-
-        % Assemble spatiotemporal frame
-        coneMosaicSpatiotemporalActivation(oiIndex,:) = ...
-            squeeze(noiseFreeActivation(1,1,:));
-    end
-    temporalSupportSeconds = theOIsequence.timeAxis;
+    % Compute the spatiotemporal cone-mosaic activation
+    [coneMosaicSpatiotemporalActivation, ~, ~, ~, temporalSupportSeconds] = ...
+        theConeMosaic.compute(theOIsequence);
+    
+    % Single precision to save space
     coneMosaicSpatiotemporalActivation = single(coneMosaicSpatiotemporalActivation);
 end
 
