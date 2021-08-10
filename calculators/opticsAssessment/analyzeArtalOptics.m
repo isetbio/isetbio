@@ -11,7 +11,7 @@ function analyzeArtalOptics(reAnalyzeData)
         reAnalyze('right eye', plotEachPosition, exportsDir);
         
         % Rank subjects 
-        rankStrategy = 'peak resolution'; %  Choose from {'peak resolution', 'correlation coefficient 10 degs'}
+        rankStrategy = 'resolution'; %  Choose from {'resolution', 'peak resolution', 'correlation coefficient 10 degs'}
         % left eye
         whichEye = 'left eye';
         rankedLeftEyeSubjectIDs = rankSubjects(exportsDir, whichEye, rankStrategy)
@@ -26,7 +26,7 @@ function analyzeArtalOptics(reAnalyzeData)
     else
         doRankAnalysis = true;
         if (doRankAnalysis)
-            rankStrategy = 'peak resolution'; %  Choose from {'peak resolution', 'correlation coefficient 10 degs'}
+            rankStrategy = 'resolution'; %  Choose from {'resolution', 'peak resolution', 'correlation coefficient 10 degs'}
             % Plot ranked subject data for the left eye
             whichEye = 'left eye';
             rankedLeftEyeSubjectIDs = rankSubjects(exportsDir, whichEye, rankStrategy)
@@ -133,9 +133,14 @@ function rankedSubjectIDs = rankSubjects(exportsDir, whichEye, rankStrategy)
 
             % Rank according to correlation coeff in [-10 10]
             r = corr(meanPSFXCutoffSF', psfXCutoffSF');
+            
         case 'peak resolution'
             fovealEccX = find(horizontalEcc == 0);
             r = psfXCutoffSF(:,fovealEccX);
+            
+        case 'resolution'
+            fovealEccX = find(horizontalEcc == 0);
+            r = sqrt(psfXCutoffSF(:,fovealEccX) .* psfYCutoffSF(:,fovealEccX));
             
         otherwise
             error('Unknown rankStrategy')

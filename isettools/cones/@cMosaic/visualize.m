@@ -80,6 +80,7 @@ end
     p.addParameter('horizontalActivationColorBarInside', false, @islogical);
     p.addParameter('verticalActivationColorBarInside', false, @islogical);
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
+    p.addParameter('colorbarTickLabelColor',  [.9 .6 0.2]);
     p.addParameter('displayedEyeMovementData', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('currentEMposition', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
@@ -125,6 +126,7 @@ end
     fontSize = p.Results.fontSize;
     cMap = p.Results.activationColorMap;
     verticalColorBar = p.Results.verticalActivationColorBar;
+    colorbarTickLabelColor = p.Results.colorbarTickLabelColor;
     horizontalColorBar = p.Results.horizontalActivationColorBar;
     verticalColorBarInside = p.Results.verticalActivationColorBarInside;
     horizontalColorBarInside = p.Results.horizontalActivationColorBarInside;
@@ -230,6 +232,7 @@ end
         axesHandle = subplot('Position', [0.09 0.07 0.90 0.92]);
     else
         if (isempty(axesHandle))
+            figure(figureHandle);
             clf;
             set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
             axesHandle = subplot('Position', [0.07 0.07 0.92 0.92]);
@@ -260,6 +263,8 @@ end
     else
         deltaAngle = 360/visualizeConeApertureThetaSamples;
     end
+    
+    % Generate cone aperture shape
     iTheta = (0:deltaAngle:360) / 180 * pi;
     coneApertureShape.x = cos(iTheta);
     coneApertureShape.y = sin(iTheta);
@@ -329,7 +334,7 @@ end
             
             % Render contour map
             if (isempty(densityContourLevels))
-                densityContourLevels = round(prctile(rfDensities, [1 5 15 30 50 70 85 95 99])/100)*100;
+                densityContourLevels = round(prctile(density2DMap(:), [1 5 15 30 50 70 85 95 99])/100)*100;
             end
             contourLabelSpacing = 4000;
             [cH, hH] = contour(axesHandle, densityContourX, densityContourY, ...
@@ -349,6 +354,7 @@ end
             activationRange(2) = activationRange(2)+0.1;
         end
             
+       
         activation = (activation - activationRange(1))/(activationRange(2)-activationRange(1));
         activation(activation<0) = 0;
         activation(activation>1) = 1;
@@ -464,15 +470,16 @@ end
         if (ischar(backgroundColor) && strcmp(backgroundColor, 'mean of color map'))
             midRow = round(size(cMap,1)/2);
             backgroundColor = squeeze(cMap(midRow,:));
-        else
+        elseif (isempty(backgroundColor))
             backgroundColor = squeeze(cMap(1,:));
         end
     end
     colormap(axesHandle, cMap);
     
+ 
     if (~isempty(activation))
         if (verticalColorBar) || (horizontalColorBar) || (verticalColorBarInside) || (horizontalColorBarInside)
-            colorBarTicks = [0.01 0.25 0.5 0.75 0.99];
+            colorBarTicks = [0.00 0.25 0.5 0.75 1.0];
             colorBarTickLabels = cell(1, numel(colorBarTicks));
             colorBarTickLevels = activationRange(1) + (activationRange(2)-activationRange(1)) * colorBarTicks;
 
@@ -492,12 +499,12 @@ end
                 colorbar(axesHandle, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
             elseif (verticalColorBarInside)
                 colorbar(axesHandle, 'east', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                    'Color', [.9 .6 0.2], 'FontWeight', 'Bold', 'FontSize', fontSize+2);
+                    'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize, 'FontName', 'Spot mono');
             elseif (horizontalColorBar)
                 colorbar(axesHandle,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
             elseif (horizontalColorBarInside)
                 colorbar(axesHandle,'north', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                    'Color', [0.9 .6 0.2], 'FontWeight', 'Bold', 'FontSize', fontSize+2);
+                    'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize, 'FontName', 'Spot mono');
             end
         else
             colorbar(axesHandle, 'off');
@@ -506,6 +513,7 @@ end
         colorbar(axesHandle, 'off');
     end
     
+     
     % Finalize plot
     set(axesHandle, 'Color', backgroundColor);
     axis(axesHandle, 'xy');
@@ -632,6 +640,7 @@ end
     drawnow;
 end
 
+
 function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ...
     faceColors, edgeColor, lineWidth, faceAlpha)
 
@@ -655,7 +664,7 @@ function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ..
         idx = (coneIndex - 1) * verticesPerCone + (1:verticesPerCone);
         verticesList(idx, 1) = apertureShape.x*apertureRadii(coneIndex) + rfCoords(coneIndex,1);
         verticesList(idx, 2) = apertureShape.y*apertureRadii(coneIndex) + rfCoords(coneIndex,2);
-        if (numel(faceColors) == conesNum)
+        if ((numel(faceColors) == conesNum)&& (conesNum > 1))
             colors = cat(1, colors, repmat(faceColors(coneIndex), [verticesPerCone 1]));
         end
         facesList = cat(1, facesList, idx);

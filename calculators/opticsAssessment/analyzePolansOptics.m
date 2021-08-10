@@ -7,7 +7,7 @@ function analyzePolansOptics(reAnalyzeData)
     if (reAnalyzeData)
         reAnalyze(exportsDir);
          % Rank subjects  
-         rankStrategy = 'peak resolution'; %  Choose from {'peak resolution', 'correlation coefficient 10 degs'}
+         rankStrategy = 'resolution'; %  Choose from {'resolution', 'peak resolution', 'correlation coefficient 10 degs'}
          rankedSubjectIDs = rankSubjects(exportsDir, rankStrategy)
          % Plot ranked subject data
          plotRankedSubjects(exportsDir, rankedSubjectIDs, rankStrategy);
@@ -16,7 +16,7 @@ function analyzePolansOptics(reAnalyzeData)
         doRankAnalysis = true;
         if (doRankAnalysis)
             % Plot ranked subject data
-            rankStrategy = 'peak resolution'; %  Choose from {'peak resolution', 'correlation coefficient 10 degs'}
+            rankStrategy = 'resolution'; %  Choose from {'resolution', 'peak resolution', 'correlation coefficient 10 degs'}
             rankedSubjectIDs = rankSubjects(exportsDir, rankStrategy)
             plotRankedSubjects(exportsDir, rankedSubjectIDs, rankStrategy);
         end
@@ -118,10 +118,16 @@ function rankedSubjectIDs = rankSubjects(exportsDir, rankStrategy)
             meanPSFXCutoffSF = mean(psfXCutoffSF,1);
             meanPSFYCutoffSF = mean(psfYCutoffSF,1);
             r = corr(meanPSFXCutoffSF', psfXCutoffSF');
+            
         case 'peak resolution'
             fovealEccX = find(horizontalEcc == 0);
             fovealEccY = find(verticalEcc == 0);
             r = psfXCutoffSF(:,fovealEccY,fovealEccX);
+            
+        case 'resolution'
+            fovealEccX = find(horizontalEcc == 0);
+            fovealEccY = find(verticalEcc == 0);
+            r = sqrt(psfXCutoffSF(:,fovealEccY,fovealEccX) .* psfYCutoffSF(:,fovealEccY,fovealEccX));
             
         otherwise
             error('Unknown rankStrategy')

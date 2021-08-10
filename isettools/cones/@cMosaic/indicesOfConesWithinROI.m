@@ -16,10 +16,10 @@ function coneIndices = indicesOfConesWithinROI(obj, roi)
 %
 % Outputs:                 Indices of cones within the region of interest
 
-    % Validate the roi
+    % Validate the roi by calling the static method validateROI() of @cMosaic
     cMosaic.validateROI(roi);
     
-    % Generate the roi outline
+    % Generate the roi outline by calling the static method generateOutline() of @cMosaic
     roiOutline = cMosaic.generateOutline(roi);
     
     % Convert roiOutline to microns

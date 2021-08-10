@@ -102,15 +102,16 @@ classdef mRGCMosaic < handle
                 extraDegsForRGCSurround = 2.0 * RGCmodels.CronerKaplan.constants.surroundCharacteristicRadiusFromFitToPandMcells(maxEccentricityDegs);
 
                 obj.inputConeMosaic = cMosaic(...
-                    'sizeDegs', obj.sizeDegs + 2* extraDegsForRGCSurround, ...
+                    'whichEye', obj.whichEye, ...
+                    'sizeDegs', obj.sizeDegs + 2 * extraDegsForRGCSurround, ...
                     'eccentricityDegs', obj.eccentricityDegs, ...
-                    'whichEye', obj.whichEye);
+                    'opticalImagePositionDegs', 'mosaic-centered');
             else
                 obj.inputConeMosaic = p.Results.inputConeMosaic;
             end
+            
             % Set the microns per deg approximation
             obj.micronsPerDegreeApproximation = obj.inputConeMosaic.micronsPerDegreeApproximation;
-            
             
             if (p.Results.computeMeshFromScratch)
                 % Re-generate lattice
@@ -149,11 +150,10 @@ classdef mRGCMosaic < handle
                 obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
             end
             
-            
             % Wire mRGCs RF centers to cones of the input cone mosaic
-            visualizeAlignment = false; visualizeConnection = true;
-            obj.wireRFcentersToInputCones(visualizeAlignment, visualizeConnection);
-            
+            visualizeAlignment = false; 
+            visualizeWiringStages = false;
+            obj.wireRFcentersToInputCones(visualizeAlignment, visualizeWiringStages);
         end
         
         % Method to return indices of RFs within an ROI
@@ -166,10 +166,10 @@ classdef mRGCMosaic < handle
         visualize(obj, varargin);
         
         % Method to visualize how the cone mosaic is tesselated by the RGC RF centers
-        visualizeConeMosaicTesselation(obj, figNo, axesHandle, ...
+        visualizeConeMosaicTesselation(obj, ...
             coneRFpositions, coneRFspacings, ...
             rgcRFpositions, rgcRFspacings, ...
-            showConnectedCones, domain, plotTitle);
+            domain, varargin);
         
         % Method to report the distribution of cones / RF center
         connectivityStats(obj, figNo);
@@ -186,7 +186,7 @@ classdef mRGCMosaic < handle
         removeRFsWithinOpticNerveHead(obj);
         
         % Method to wire RF centers to cones of the input cone mosaic
-        wireRFcentersToInputCones(obj, visualizeAlignment, visualizeConnection);
+        wireRFcentersToInputCones(obj, visualizeAlignment, visualizeWiringStages);
         
         % Method to align RGC RFs to cones in the central retina.
         % Called by obj.wireRFcenterToInputCones()
@@ -194,7 +194,7 @@ classdef mRGCMosaic < handle
     
         % Method to connect cones to RGC RF centers
         % Called by obj.wireRFcenterToInputCones()
-        connectConesToRGCcenters(obj, coneRFPositionsMicrons, coneRFPositionsDegs, coneRFSpacingsMicrons, visualizeConnection)
+        connectConesToRGCcenters(obj, idxConesInsideRGCmosaic, visualizeConnection)
     
     end
     

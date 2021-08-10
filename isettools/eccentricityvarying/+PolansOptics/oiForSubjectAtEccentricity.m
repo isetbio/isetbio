@@ -3,7 +3,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
 
     % Parse input
     p = inputParser;
-    p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=1)&&(x<=10)));
+    p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=0)&&(x<=10)));
     p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{PolansOptics.constants.rightEye}))));  % allow only right eye data - the paper does not have left eye data
     p.addRequired('ecc', @(x)(isnumeric(x)&&(numel(x) == 2)));
     p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=4)));
@@ -25,7 +25,12 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     noLCA = p.Results.noLCA;
     
     % Obtain z-coeffs at desired eccentricity
-    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction);
+    if (subjectID == 0)
+        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction);
+        zCoeffs = 0*zCoeffs;
+    else
+        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction);
+    end
     
     % Compute PSF and WVF from z-Coeffs for the desired pupil and wavelenghts
     [thePSF, ~, ~,~, psfSupportMinutesX, psfSupportMinutesY, theWVF] = ...
@@ -80,7 +85,11 @@ end
 function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction)
 
     % Get original z-coeffs at all measured eccentricities
-    [zMap, zCoeffIndices] = PolansOptics.constants.ZernikeCoefficientsMap(subjectID);
+    if (subjectID == 0)
+        [zMap, zCoeffIndices] = PolansOptics.constants.ZernikeCoefficientsMap(1);
+    else
+        [zMap, zCoeffIndices] = PolansOptics.constants.ZernikeCoefficientsMap(subjectID);
+    end
     
     % Interpolate zMap at desired ecc
     [X,Y] = meshgrid(...
@@ -104,5 +113,9 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
          % Interpolate the XY map at the desired eccentricity.
          interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp2(X,Y,z2Dmap, ecc(1), ecc(2));
     end
-     
+    
+    if (subjectID == 0)
+        interpolatedZcoeffs = 0*interpolatedZcoeffs;
+    end
+    
 end

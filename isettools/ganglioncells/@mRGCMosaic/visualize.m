@@ -4,6 +4,7 @@ function visualize(obj, varargin)
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('covisualizeInputConeMosaic', false, @islogical);
+    p.addParameter('covisualizeInputConeMosaicConnectivity', false, @islogical);
     p.addParameter('activation', []);
     p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
     p.addParameter('labelRetinalMeridians', false, @islogical);
@@ -20,6 +21,7 @@ function visualize(obj, varargin)
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     covisualizeInputConeMosaic = p.Results.covisualizeInputConeMosaic;
+    covisualizeInputConeMosaicConnectivity = p.Results.covisualizeInputConeMosaicConnectivity;
     activation = p.Results.activation;
     activationRange = p.Results.activationRange;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
@@ -36,11 +38,13 @@ function visualize(obj, varargin)
         case 'degrees'
             rfPositions = obj.rgcRFpositionsDegs;
             rfSpacings = obj.rgcRFspacingsDegs;
+            coneRFpositions = obj.inputConeMosaic.coneRFpositionsDegs;
             rfProximityThreshold = 1/270;
 
         case 'microns'
             rfPositions = obj.coneRFpositionsMicrons;
             rfSpacings = obj.coneRFspacingsMicrons;
+            coneRFPositions = obj.inputConeMosaic.coneRFpositionsMicrons;
             rfProximityThreshold = 1;
 
     end
@@ -84,12 +88,13 @@ function visualize(obj, varargin)
     if (isempty(figureHandle))
         figureHandle = figure(); clf;
         set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-        axesHandle = subplot('Position', [0.09 0.07 0.90 0.92]);
+        axesHandle = subplot('Position', [0.05 0.05 0.94 0.94]);
     else
         if (isempty(axesHandle))
+            figure(figureHandle);
             clf;
             set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-            axesHandle = subplot('Position', [0.07 0.07 0.92 0.92]);
+            axesHandle = subplot('Position', [0.05 0.05 0.94 0.94]);
         end
         cla(axesHandle);
     end
@@ -119,6 +124,7 @@ function visualize(obj, varargin)
     rfCenterShape.y = sin(iTheta);
     
     
+    
     if (covisualizeInputConeMosaic)
         domainVisualizationTicks.x = [];
         domainVisualizationTicks.y = [];
@@ -139,17 +145,54 @@ function visualize(obj, varargin)
     
     hold(axesHandle, 'on');
     
-    if (isempty(activation))
-        faceAlpha = 0.5;
-        lineWidth = 1.0;
-        edgeColor = [0.3 0.3 0.3];
-        faceColor = [0.7 0.7 0.7];
-        renderPatchArray(axesHandle, rfCenterShape, rfSpacings*0.5, ...
-            rfPositions, faceColor, edgeColor, lineWidth, faceAlpha);
+    
+    % Only visualize connectivity for RGCs within the domainVisualizationLimits
+    indicesWithinVisualizationLimits = find(... 
+            (rfPositions(:,1) >= xRange(1)) & ...
+            (rfPositions(:,1) <= xRange(2)) & ...
+            (rfPositions(:,2) >= yRange(1)) & ...
+            (rfPositions(:,2) <= yRange(2)) ...
+            );
         
+    % Plot the RGC mosaic (either positions, or activation)
+    if (isempty(activation))
+        % Only visualize mRGC positions if we do not show connectivity
+        %if (~covisualizeInputConeMosaicConnectivity)
+            % Plot mRGC positions as white, semitransparent disks
+            faceAlpha = 0.5;
+            lineWidth = 1.0;
+            edgeColor = [0.3 0.3 0.3];
+            faceColor = [0.7 0.7 0.7];
+            renderPatchArray(axesHandle, rfCenterShape, rfSpacings(indicesWithinVisualizationLimits)*0.5, ...
+                rfPositions(indicesWithinVisualizationLimits,:), faceColor, edgeColor, lineWidth, faceAlpha);
+       % end
     else
+        % Plot mRGC activations
     end
     
+    % Visualize connectivity
+    if (covisualizeInputConeMosaicConnectivity)  
+        for iRGC = 1:numel(indicesWithinVisualizationLimits)   
+            RGCindex = indicesWithinVisualizationLimits(iRGC);
+            % Find cones which are connected to this RGC
+            connectivityVector = full(squeeze(obj.coneConnectivityMatrix(:, RGCindex)));
+            inputConeIDs = find(connectivityVector > 1e-5);
+
+            % Plot a line connecting this RGC to each of its input cones
+            for iCone = 1:numel(inputConeIDs)
+                plot(axesHandle, ...
+                    [rfPositions(RGCindex,1) coneRFpositions(inputConeIDs(iCone), 1)], ...
+                    [rfPositions(RGCindex,2) coneRFpositions(inputConeIDs(iCone), 2)], ...
+                    'k-', 'MarkerFaceColor', [0 0 0], 'MarkerSize', 5, 'MarkerEdgeColor', [0 0 0], 'LineWidth', 1.0);
+            end
+            % Plot a dot on each of the input cones
+            plot(axesHandle, ...
+                    coneRFpositions(inputConeIDs, 1), ...
+                    coneRFpositions(inputConeIDs, 2), ...
+                    'ko', 'MarkerSize', 6,'LineWidth', 1.0);
+        end
+    end
+        
     hold(axesHandle, 'off');
     
     % Finalize plot

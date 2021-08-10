@@ -29,7 +29,7 @@ classdef cMosaic < handle
     %    'coneData',                        - Struct. Struct with custom cone data, usually exported from a @coneMosaicHex.
     %    'eccentricityDegs'                 - [x,y]. Center of the mosaic, in degrees. Default: [0 0]
     %    'sizeDegs'                         - [sx, sy]. Width and height of the mosaic, in degrees. Default: [0.4 0.4]
-    %    'whichEye'                         - Which eye. Valid options are: {'left eye', 'right eye'}. Default: 'left eye'.
+    %    'whichEye'                         - Which eye. Valid options are: {'left eye', 'right eye'}. Default: 'right eye'.
     %    'computeMeshFromScratch'           - Logical, indicating whether to recompute the mesh from scratch. Default: false
     %    'visualizeMeshConvergence'         - Logical, indicating whether to visualize the convergence of the mesh. Default: false 
     %    'exportMeshConvergenceHistoryToFile' - Logical, indicating whether to save the convergence of the mesh. Default:false
@@ -284,7 +284,7 @@ classdef cMosaic < handle
             p.addParameter('coneData', [], @(x)(isempty(x) || (isstruct(x))));
             p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
+            p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('computeMeshFromScratch', false, @islogical);
             p.addParameter('visualizeMeshConvergence', false, @islogical);
             p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);

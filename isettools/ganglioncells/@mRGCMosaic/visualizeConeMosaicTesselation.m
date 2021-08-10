@@ -1,10 +1,60 @@
 % Method to visualize how the cone mosaic is tesselated by the RGC RF centers
-function visualizeConeMosaicTesselation(obj, figNo, axesHandle, ...
+function visualizeConeMosaicTesselation(obj, ...
     coneRFpositions, coneRFspacings, ...
-    rgcRFpositions, rgcRFspacings, ...
-    showConnectedCones, domain, plotTitle)
+    rgcRFpositions, rgcRFspacings, domain, ...
+    varargin)
 
+    p = inputParser;
+    p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+    p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+    p.addParameter('showConnectedCones', true, @islogical);
+    p.addParameter('fontSize', 16, @isscalar);
+    p.addParameter('backgroundColor', [0.7 0.7 0.7]);
+    p.addParameter('plotTitle', '', @ischar);
+    p.addParameter('visualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
+    p.parse(varargin{:});
+    
+    figureHandle = p.Results.figureHandle;
+    axesHandle = p.Results.axesHandle;
+    visualizationLimits = p.Results.visualizationLimits;
+    showConnectedCones = p.Results.showConnectedCones;
+    fontSize = p.Results.fontSize;
+    backgroundColor = p.Results.backgroundColor;
+    plotTitle = p.Results.plotTitle;
+    
 
+    % Set figure size
+    if (isempty(figureHandle))
+        figureHandle = figure(); clf;
+        set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
+        axesHandle = subplot('Position', [0.09 0.07 0.90 0.92]);
+    else
+        if (isempty(axesHandle))
+            clf;
+            set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
+            axesHandle = subplot('Position', [0.07 0.07 0.92 0.92]);
+        end
+        cla(axesHandle);
+    end
+    
+    if (~isempty(visualizationLimits))
+       idx = find( ...
+           (rgcRFpositions(:,1) >= visualizationLimits(1)) & ...
+           (rgcRFpositions(:,1) <= visualizationLimits(2)) & ...
+           (rgcRFpositions(:,2) >= visualizationLimits(3)) & ...
+           (rgcRFpositions(:,2) <= visualizationLimits(4)) );
+       rgcRFpositions = rgcRFpositions(idx,:);
+       rgcRFspacings = rgcRFspacings(idx);
+       coneConnectivityMatrix = obj.coneConnectivityMatrix(:, idx);
+    else
+       coneConnectivityMatrix = obj.coneConnectivityMatrix;
+    end
+    
+    if (isempty(rgcRFpositions))
+        fprintf('No RGCs within visualizationLimits. Skipping visualization.\n');
+        return;
+    end
+    
     % xRange
     [m, idx] = min(rgcRFpositions(:,1));
     xRange(1) = m - rgcRFspacings(idx);
@@ -16,7 +66,8 @@ function visualizeConeMosaicTesselation(obj, figNo, axesHandle, ...
     yRange(1) = m - rgcRFspacings(idx);
     [m, idx] = max(rgcRFpositions(:,2));
     yRange(2) = m + rgcRFspacings(idx);
-            
+        
+        
     % Spatial support
     nSamples = 200;
     xAxis = linspace(xRange(1), xRange(2), nSamples);
@@ -31,34 +82,21 @@ function visualizeConeMosaicTesselation(obj, figNo, axesHandle, ...
     whichLevelsToContour = [1];
         
     % Plot
-    if (isempty(figNo))
-        hFig = figure(); clf;
-        axesHandle = subplot('Position', [0.05 0.05 0.93 0.92]);
-        set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
-    else
-        hFig = figure(figNo); 
-        if (isempty(axesHandle))
-            clf;
-            set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
-            axesHandle = subplot('Position', [0.05 0.05 0.93 0.92]);
-        else
-            set(hFig, 'Position', [10 10 2100 1100], 'Color', [1 1 1]);
-            if (axesHandle == 1)
-                axesHandle = subplot('Position', [0.05 0.05 0.45 0.92]);
-            else
-                axesHandle = subplot('Position', [0.52 0.05 0.45 0.92]);
-            end
-        end
-    end
     axis(axesHandle, 'equal');
     set(axesHandle, 'XLim', xRange, 'YLim', yRange, 'FontSize', 18);
     hold(axesHandle, 'on');
     
-    rgcsNum = size(obj.coneConnectivityMatrix,2);
-    for RGCindex = 1:rgcsNum    
+    % Plot them according to their ecc
+    rgcRadialEcc = sum(rgcRFpositions.^2, 2);
+    [~,sortedRGCindices] = sort(rgcRadialEcc);
+    rgcsNum = numel(sortedRGCindices);
+    
+    for iRGC = 1:rgcsNum    
+        
+        RGCindex = sortedRGCindices(iRGC);
         
         % Find cones which are connected to this RGC
-        connectivityVector = full(squeeze(obj.coneConnectivityMatrix(:, RGCindex)));
+        connectivityVector = full(squeeze(coneConnectivityMatrix(:, RGCindex)));
         inputConeIDs = find(connectivityVector > 0.01);
         inputsNum = numel(inputConeIDs);
         
@@ -85,31 +123,37 @@ function visualizeConeMosaicTesselation(obj, figNo, axesHandle, ...
         
     end % RGCindex
     
-    % Display cones
-    LconeIndices = find(obj.inputConeMosaic.coneTypes == cMosaic.LCONE_ID);
-    MconeIndices = find(obj.inputConeMosaic.coneTypes == cMosaic.MCONE_ID);
-    SconeIndices = find(obj.inputConeMosaic.coneTypes == cMosaic.SCONE_ID);
-    scatter(axesHandle,coneRFpositions(LconeIndices,1), coneRFpositions(LconeIndices,2), 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
-    scatter(axesHandle,coneRFpositions(MconeIndices,1), coneRFpositions(MconeIndices,2), 'MarkerEdgeColor', [0 0.7 0], 'MarkerFaceColor', [0.5 0.9 0.5]);
-    scatter(axesHandle,coneRFpositions(SconeIndices,1), coneRFpositions(SconeIndices,2), 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1.0]);
+    % Display L-cones
+    idx = find( ...
+        (coneRFpositions(obj.inputConeMosaic.lConeIndices,1) >= xRange(1)) & ...
+        (coneRFpositions(obj.inputConeMosaic.lConeIndices,1) <= xRange(2)) & ...
+        (coneRFpositions(obj.inputConeMosaic.lConeIndices,2) >= yRange(1)) & ...
+        (coneRFpositions(obj.inputConeMosaic.lConeIndices,2) <= yRange(2)));
+    scatter(axesHandle,coneRFpositions(obj.inputConeMosaic.lConeIndices(idx),1), coneRFpositions(obj.inputConeMosaic.lConeIndices(idx),2), 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 0.5 0.5]);
+    
+    % Display M-cones
+    idx = find( ...
+        (coneRFpositions(obj.inputConeMosaic.mConeIndices,1) >= xRange(1)) & ...
+        (coneRFpositions(obj.inputConeMosaic.mConeIndices,1) <= xRange(2)) & ...
+        (coneRFpositions(obj.inputConeMosaic.mConeIndices,2) >= yRange(1)) & ...
+        (coneRFpositions(obj.inputConeMosaic.mConeIndices,2) <= yRange(2)));
+    scatter(axesHandle,coneRFpositions(obj.inputConeMosaic.mConeIndices(idx),1), coneRFpositions(obj.inputConeMosaic.mConeIndices(idx),2), 'MarkerEdgeColor', [0 0.7 0], 'MarkerFaceColor', [0.5 0.9 0.5]);
+    
+    
+    % Display S-cones
+    idx = find( ...
+        (coneRFpositions(obj.inputConeMosaic.sConeIndices,1) >= xRange(1)) & ...
+        (coneRFpositions(obj.inputConeMosaic.sConeIndices,1) <= xRange(2)) & ...
+        (coneRFpositions(obj.inputConeMosaic.sConeIndices,2) >= yRange(1)) & ...
+        (coneRFpositions(obj.inputConeMosaic.sConeIndices,2) <= yRange(2)));
+    scatter(axesHandle,coneRFpositions(obj.inputConeMosaic.sConeIndices(idx),1), coneRFpositions(obj.inputConeMosaic.sConeIndices(idx),2), 'MarkerEdgeColor', [0 0 1], 'MarkerFaceColor', [0.5 0.5 1.0]);
+    
     
     % Finish plot
     xlabel(axesHandle, sprintf('space (%s)', domain));
     box(axesHandle, 'on');
     title(plotTitle);
-    
-    % Print stats in figure name
-    stats = obj.connectivityStats();
-    set(hFig, 'Name', sprintf('cones:%d, mRGCs:%d \nOrphan RFs: %2.1f%%, Single cone RF: %2.1f%%, 2-cone:  %2.1f%%, 3-cone:  %2.1f%%, 4-cone:  %2.1f%%, 5-cone:  %2.1f%%, mixed cone types:  %2.1f%%', ...
-        stats.conesNum, stats.rgcsNum, ...
-        100*stats.orphanRGCsNum/stats.rgcsNum, ...
-        100*stats.coneInputsPerRGC(1)/stats.rgcsNum, ...
-        100*stats.coneInputsPerRGC(2)/stats.rgcsNum, ...
-        100*stats.coneInputsPerRGC(3)/stats.rgcsNum, ...
-        100*stats.coneInputsPerRGC(4)/stats.rgcsNum, ...
-        100*stats.coneInputsPerRGC(5)/stats.rgcsNum, ...
-        100*stats.mixedInputRGCs/stats.rgcsNum ...
-        ));
+
 end
 
 

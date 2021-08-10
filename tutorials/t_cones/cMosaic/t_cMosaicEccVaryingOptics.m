@@ -39,18 +39,18 @@ subjectRankOrder = 1;
 
 %% Setup figure
 hFig = figure(1); clf;
-set(hFig, 'Position', [10 10 2100 900], 'Color', [1 1 1]);
+set(hFig, 'Position', [10 10 2100 1100], 'Color', [1 1 1]);
 rowsNum = 4;
 colsNum = 10;
 sv = NicePlot.getSubPlotPosVectors(...
        'colsNum', colsNum, ...
        'rowsNum', rowsNum, ...
-       'heightMargin',  0.04, ...
+       'heightMargin',  0.08, ...
        'widthMargin',    0.01, ...
-       'leftMargin',     0.02, ...
+       'leftMargin',     0.01, ...
        'rightMargin',    0.00, ...
        'bottomMargin',   0.04, ...
-       'topMargin',      0.01);
+       'topMargin',      0.02);
    
 %% Generate eccentricity mesh
 [X,Y] = meshgrid(mosaicEccDegsX, mosaicEccDegsY);
@@ -79,8 +79,8 @@ for iEcc = 1:numel(R)
             subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(whichEye, testSubjectID);
     end
     
-    % Mosaic size: 8 cones across
-    conesAcrossMosaic = 8;
+    % Mosaic size: 20 cones across
+    conesAcrossMosaic = 20;
     mosaicEccMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs([X(iEcc) Y(iEcc)]);
     coneSpacingDegs = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(whichEye, mosaicEccMicrons, 'cones', false);
     sizeDegs = coneSpacingDegs*conesAcrossMosaic*[1 1];
@@ -112,22 +112,32 @@ for iEcc = 1:numel(R)
     psfSupportMicrons = cm.micronsPerDegree * thePSFData.supportX/60;
     psfSupportMicronsX = psfSupportMicrons + cm.eccentricityMicrons(1);
     psfSupportMicronsY = psfSupportMicrons + cm.eccentricityMicrons(2);
-    domainUnits = 'microns';
-    domainVisualizationTicks = struct('x',  [-20:10:20], 'y', []);
+    
     
     r = floor((iEcc-1)/colsNum);
     r = mod(r,rowsNum)+1;
     c = mod(iEcc-1,colsNum)+1;
     ax = subplot('Position', sv(r,c).v);
         
+    % Ticks and visualization limits
+    domainUnits = 'microns';
+    domainVisualizationTicks = struct('x',  [nan], 'y', [nan]);
+    % Visualize half of the mosaic
+    visualizedFraction = 0.3;
+    w = cm.sizeDegs(1)*cm.micronsPerDegree;
+    domainVisualizationLims(1:2) = cm.eccentricityMicrons(1) + visualizedFraction*w/2*[-1 1];
+    domainVisualizationLims(3:4) = cm.eccentricityMicrons(2) + visualizedFraction*w/2*[-1 1];
+    
     cm.visualize('figureHandle', hFig, ...
         'axesHandle', ax, ...
         'domain', domainUnits, ...
+        'domainVisualizationLimits', domainVisualizationLims, ...
         'domainVisualizationTicks', domainVisualizationTicks, ...
         'labelCones', false, ...
         'noYLabel', true, ...
         'noXlabel', true, ...
-        'plotTitle', sprintf('ecc: %d,%d', X(iEcc), Y(iEcc)));
+        'plotTitle', sprintf('ecc: %d,%d degs\n(spatial support: %2.1f arc min.)', X(iEcc), Y(iEcc), visualizedFraction*sizeDegs(1)*60), ...
+        'fontSize', 12);
     hold(ax, 'on');
     cmap = brewermap(1024,'reds');
     alpha = 0.5;
