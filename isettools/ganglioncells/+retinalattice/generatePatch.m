@@ -2,14 +2,22 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
    
     p = inputParser;
     p.addParameter('randomSeed', [],  @(x)(isempty(x) || isscalar(x)));
+    p.addParameter('customDegsToMMsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
+    p.addParameter('customRFspacingFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
     p.parse(varargin{:});
     randomSeed = p.Results.randomSeed;
+    customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
+    customRFspacingFunction = p.Results.customRFspacingFunction;
     
     % Validate input
     validateInput(fovDegs, neuronType, whichEye);
     
     % Configure algorithm params
     params = retinalattice.configure(fovDegs, neuronType, whichEye);
+    
+    if (~isempty(customRFspacingFunction))
+        params.rfSpacingExactFunction = customRFspacingFunction;
+    end
     
     if (~isempty(maxIterations))
         params.maxIterations = maxIterations;
@@ -23,7 +31,8 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
     tStart = tic;
     
     % Generate initial RF positions and downsample according to the density
-    [rfPositionsMicrons, params.radius] = retinalattice.initialize(fovDegs, whichEye, params, useParfor, tStart);
+    [rfPositionsMicrons, params.radius] = retinalattice.initialize(fovDegs, whichEye, params, useParfor, tStart, ...
+        'customDegsToMMsConversionFunction', customDegsToMMsConversionFunction);
     
     % Compute RF spacing look-up tables
     [tabulatedRFspacingMicrons, tabulatedEccMicrons] = retinalattice.compute.rfSpacingLookUpTables(...
