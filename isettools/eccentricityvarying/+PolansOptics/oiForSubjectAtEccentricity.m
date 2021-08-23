@@ -25,7 +25,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     noLCA = p.Results.noLCA;
     refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
-    refractiveErrorMicrons = refractiveErrorDiopters * (pupilDiamMM^2) / (16 * sqrt(3));
+    refractiveErrorMicrons = wvfDefocusDioptersToMicrons(refractiveErrorDiopters, pupilDiamMM);
     
     % Obtain z-coeffs at desired eccentricity
     if (subjectID == 0)
