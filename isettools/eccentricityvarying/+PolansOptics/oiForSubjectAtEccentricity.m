@@ -15,6 +15,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('zeroCenterPSF', false, @islogical);
     p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('noLCA', false, @islogical);
+    p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
     p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
     
     inFocusWavelength = p.Results.inFocusWavelength;
@@ -23,13 +24,15 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     zeroCenterPSF = p.Results.zeroCenterPSF;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     noLCA = p.Results.noLCA;
+    refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
+    refractiveErrorMicrons = refractiveErrorDiopters * (pupilDiamMM^2) / (16 * sqrt(3));
     
     % Obtain z-coeffs at desired eccentricity
     if (subjectID == 0)
-        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction);
+        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
         zCoeffs = 0*zCoeffs;
     else
-        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction);
+        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
     end
     
     % Compute PSF and WVF from z-Coeffs for the desired pupil and wavelenghts
@@ -82,7 +85,7 @@ function theOI = wvf2oiSpecial(theWVF, umPerDegree, pupilDiameterMM)
 end
 
 
-function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction)
+function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons)
 
     % Get original z-coeffs at all measured eccentricities
     if (subjectID == 0)
@@ -110,6 +113,12 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
          if ((zCoeffIndices(zIndex) == 4) && (subtractCentralRefraction))
              z2Dmap = z2Dmap - z2Dmap(indexOfZeroEcc);
          end
+         
+         % Add refractive error
+         if (zCoeffIndices(zIndex) == 4)
+             z2Dmap = z2Dmap + refractiveErrorMicrons;
+         end
+         
          % Interpolate the XY map at the desired eccentricity.
          interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp2(X,Y,z2Dmap, ecc(1), ecc(2));
     end
