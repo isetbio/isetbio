@@ -17,7 +17,7 @@ function t_cMosaicSpatioTemporalStimulation
 % *************************************************************************
 
 % History:
-%    03/01/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
+%    08/08/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 
     % Mosaic size and eccentricity
     mosaicSizeDegs = [1 1]*0.5;

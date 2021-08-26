@@ -1,9 +1,15 @@
-function [rfPositionsMicrons, radiusMicrons] = initialize(fovDegs, whichEye, params, useParfor, tStart)
+function [rfPositionsMicrons, radiusMicrons] = initialize(fovDegs, whichEye, params, useParfor, tStart, varargin)
+    p = inputParser;
+    p.addParameter('customDegsToMMsConversionFunction', [],  @(x)(isempty(x) || isa(x,'function_handle')));
+    p.parse(varargin{:});
+    customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
+    
     % Regular hex grid with minimal lambda
-    rfPositionsMicrons = generateInitialRFpositions(fovDegs*1.33, params.lambdaMinMicrons);
+    rfPositionsMicrons = generateInitialRFpositions(fovDegs*1.33, params.lambdaMinMicrons, customDegsToMMsConversionFunction);
     
     % Probabilistic sampling according to local RF density
     [rfPositionsMicrons, radiusMicrons] = downSampleInitialRFpositions(rfPositionsMicrons, whichEye, params, useParfor, tStart);
+    
 end
 
 function [rfPositions, radius] = downSampleInitialRFpositions(rfPositions, whichEye, params,  useParfor, tStart)
@@ -53,8 +59,13 @@ function [rfPositions, radius] = downSampleInitialRFpositions(rfPositions, which
 end
     
 
-function rfPositions = generateInitialRFpositions(fovDegs, lambdaMinMicrons)
-    radiusMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(fovDegs/2);
+function rfPositions = generateInitialRFpositions(fovDegs, lambdaMinMicrons, customDegsToMMsConversionFunction)
+    if (isempty(customDegsToMMsConversionFunction))
+        radiusMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(fovDegs/2);
+
+    else
+        radiusMicrons = 1e3 * customDegsToMMsConversionFunction(fovDegs/2);
+    end
     rows = 2 * radiusMicrons;
     cols = rows;
     rfPositions = computeHexGrid(rows, cols, lambdaMinMicrons);

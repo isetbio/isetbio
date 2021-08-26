@@ -70,11 +70,13 @@ end
     p.addParameter('densityContourOverlay', false, @islogical);
     p.addParameter('densityContourLevels', [], @isnumeric);
     p.addParameter('densityContourLevelLabelsDisplay', false, @islogical);
+    p.addParameter('densityColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.addParameter('activation', []);
     p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
     p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
     p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
     p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
+    p.addParameter('verticalDensityColorBar', false, @islogical);
     p.addParameter('horizontalActivationColorBar', false, @islogical);
     p.addParameter('verticalActivationColorBar', false, @islogical);
     p.addParameter('horizontalActivationColorBarInside', false, @islogical);
@@ -108,9 +110,11 @@ end
     visualizeConeApertureThetaSamples = p.Results.visualizeConeApertureThetaSamples;
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
+    verticalDensityColorBar = p.Results.verticalDensityColorBar;
     densityContourOverlay = p.Results.densityContourOverlay;
     densityContourLevels = p.Results.densityContourLevels;
     densityContourLevelLabelsDisplay = p.Results.densityContourLevelLabelsDisplay;
+    densityColorMap = p.Results.densityColorMap;
     activation = p.Results.activation;
     activationRange = p.Results.activationRange;
     currentEMposition = p.Results.currentEMposition;
@@ -319,8 +323,8 @@ end
             
         if (densityContourOverlay)
             % Compute dense 2D map
-            sampledPositions{1} = linspace(xRange(1), xRange(2), 16);
-            sampledPositions{2} = linspace(yRange(1), yRange(2), 16);
+            sampledPositions{1} = linspace(xRange(1), xRange(2), 24);
+            sampledPositions{2} = linspace(yRange(1), yRange(2), 24);
             
             % Convert spacing to density
             if (strcmp(domain, 'microns'))
@@ -337,11 +341,20 @@ end
                 densityContourLevels = round(prctile(density2DMap(:), [1 5 15 30 50 70 85 95 99])/100)*100;
             end
             contourLabelSpacing = 4000;
-            [cH, hH] = contour(axesHandle, densityContourX, densityContourY, ...
-                density2DMap, densityContourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
-                'ShowText', densityContourLevelLabelsDisplay, 'LabelSpacing', contourLabelSpacing);
-            clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
-                'Color', [0 0 0], 'BackgroundColor', 'none');
+            if (isempty(densityColorMap))
+                [cH, hH] = contour(axesHandle, densityContourX, densityContourY, ...
+                    density2DMap, densityContourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
+                    'ShowText', densityContourLevelLabelsDisplay, 'LabelSpacing', contourLabelSpacing);
+                clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
+                    'Color', [0 0 0], 'BackgroundColor', 'none');
+            else
+                [cH, hH] = contourf(axesHandle, densityContourX, densityContourY, ...
+                    density2DMap, densityContourLevels, 'LineColor', 'k', 'LineWidth', 2.0, ...
+                    'ShowText', densityContourLevelLabelsDisplay, 'LabelSpacing', contourLabelSpacing);
+                clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
+                    'Color', [1 1 1], 'BackgroundColor', 'none');
+            end
+            
         end
         
     else
@@ -474,9 +487,8 @@ end
             backgroundColor = squeeze(cMap(1,:));
         end
     end
-    colormap(axesHandle, cMap);
     
- 
+    
     if (~isempty(activation))
         if (verticalColorBar) || (horizontalColorBar) || (verticalColorBarInside) || (horizontalColorBarInside)
             colorBarTicks = [0.00 0.25 0.5 0.75 1.0];
@@ -510,7 +522,13 @@ end
             colorbar(axesHandle, 'off');
         end
     else
-        colorbar(axesHandle, 'off');
+        if (verticalDensityColorBar)
+            colorBarTicks = densityContourLevels;
+            colorBarTickLabels = colorBarTicks;
+            colorbar(axesHandle, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
+        else
+            colorbar(axesHandle, 'off');
+        end
     end
     
      
@@ -518,7 +536,16 @@ end
     set(axesHandle, 'Color', backgroundColor);
     axis(axesHandle, 'xy');
     axis(axesHandle, 'equal');
-    set(axesHandle, 'XLim', xRange, 'YLim', yRange, 'CLim', [0 1], 'FontSize', fontSize);        
+    set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize);        
+    
+    if (~isempty(densityColorMap)) && (densityContourOverlay)
+        colormap(axesHandle, densityColorMap);
+        set(axesHandle, 'CLim', [min(densityContourLevels(:)) max(densityContourLevels(:))]);
+    else
+        colormap(axesHandle, cMap);
+        set(axesHandle, 'CLim', [0 1]);
+    end
+    
     
     if (isempty(domainVisualizationTicks))
         xo = (xRange(1)+xRange(2))/2;
