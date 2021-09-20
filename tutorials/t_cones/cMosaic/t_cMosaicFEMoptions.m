@@ -2,8 +2,7 @@
 %
 % Description:
 %    Shows how to change fEM properties with the new cone mosaic class,
-%    @cMosaic, and how to center the generated fEM paths at a specific 
-%    point in time.
+%    @cMosaic, and different ways to center the generated fEM paths.
 %
 % See Also:
 %   t_cMosaicSingleEyeMovementPaths
@@ -38,20 +37,25 @@ cm = cMosaic(...
 %% Generate 1 eye movement path lasting for 400 msec
 eyeMovementDurationSeconds = 400/1000;
 
-% Change some fEM parameter
+% Change some fEM parameter (increase the positional noise)
 defaultFEM = fixationalEM();
-driftModelPositionNoiseStd = 0.85 * defaultFEM.positionNoiseStd;
+driftModelPositionNoiseStd = 1.2 * defaultFEM.positionNoiseStd;
 
 
 t1Msec = 300;
-t2Msec = 400;  
+t2Msec = 320;  
+
+nTrials = 10;
+randomSeed = 12354;
 
 hFig = figure(1);
 ax = subplot(1,2,1);
 cm.emGenSequence(eyeMovementDurationSeconds, ...
         'microsaccadeType', 'none', ...
+        'centerPaths', true, ...
         'driftModelPositionNoiseStd', driftModelPositionNoiseStd, ...
-        'nTrials', 1);
+        'nTrials', nTrials, ...
+        'randomSeed', randomSeed);
 
 temporalSupportMsec = 1000*cm.fixEMobj.timeAxis;
 [~,timePoint1] = min(abs(temporalSupportMsec-t1Msec));
@@ -60,8 +64,8 @@ t1Msec = temporalSupportMsec(timePoint1);
 t2Msec = temporalSupportMsec(timePoint2);
 cm.visualize('figureHandle', hFig, 'axesHandle', ax, ...
     'crossHairsOnMosaicCenter', true, ...
-    'displayedEyeMovementData', struct('trial', 1, 'timePoints', timePoint1:timePoint2), ...
-    'plotTitle', sprintf('fEM data: %2.0f - %2.0f msec\n(non-centered)', t1Msec, t2Msec));
+    'displayedEyeMovementData', struct('trial', 1:nTrials, 'timePoints', timePoint1:timePoint2), ...
+    'plotTitle', sprintf('fEM data: %2.0f - %2.0f msec\n(centered paths)', t1Msec, t2Msec));
 
 ax = subplot(1,2,2);
 % Center fEM paths at t = 300 msec
@@ -70,10 +74,11 @@ cm.emGenSequence(eyeMovementDurationSeconds, ...
         'microsaccadeType', 'none', ...
         'driftModelPositionNoiseStd', driftModelPositionNoiseStd, ...
         'centerPathsAtSpecificTimeMsec', centerFEMPathAtMsec, ...
-        'nTrials', 1);
+        'nTrials', nTrials, ...
+        'randomSeed', randomSeed);
 
 cm.visualize('figureHandle', hFig, 'axesHandle', ax, ...
     'crossHairsOnMosaicCenter', true, ...
-    'displayedEyeMovementData', struct('trial', 1, 'timePoints', timePoint1:timePoint2), ...
-    'plotTitle', sprintf('fEM data: %2.0f - %2.0f msec\n(centered at %2.0f msec)', t1Msec, t2Msec, centerFEMPathAtMsec));
+    'displayedEyeMovementData', struct('trial', 1:nTrials, 'timePoints', timePoint1:timePoint2), ...
+    'plotTitle', sprintf('fEM data: %2.0f - %2.0f msec\n(paths centered at %2.0f msec)', t1Msec, t2Msec, centerFEMPathAtMsec));
 
