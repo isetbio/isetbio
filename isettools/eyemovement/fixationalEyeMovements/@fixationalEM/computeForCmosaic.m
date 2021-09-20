@@ -21,6 +21,9 @@ function computeForCmosaic(obj, cMosaic, eyeMovementsPerTrial, varargin)
 % Optional key/value pairs:
 %    'nTrials'            - Numeric. The number of trials. Default 1.
 %    'centerPaths'        - Logical. Whether to center the eye movement paths
+%    'centerPathsAtSpecificTimeMsec - Numeric. When a non-empty time is passed
+%                            the emPaths at that specific time are at (0,0)
+%                           Default: empty, i.e. dont center.
 %    'computeVelocity'    - Boolean. Whether should calculate the velocity.
 %                           Default false.
 %    'rSeed'              - Numeric. Random seed. Empty causes rng to be inititialized
@@ -39,6 +42,7 @@ p.addRequired('cMosaic', @(x)(isa(x, 'cMosaic')));
 p.addRequired('eyeMovementsPerTrial', @isscalar);
 p.addParameter('nTrials', 1, @isscalar);
 p.addParameter('centerPaths', false, @islogical);
+p.addParameter('centerPathsAtSpecificTimeMsec', [], @isnumeric);
 p.addParameter('computeVelocity', false, @islogical);
 p.addParameter('rSeed', [], @(x) (isempty(x) | isscalar(x)));
 p.addParameter('useParfor', false, @islogical);
@@ -48,6 +52,7 @@ p.parse(cMosaic, eyeMovementsPerTrial, varargin{:});
 obj.randomSeed = p.Results.rSeed;
 nTrials = p.Results.nTrials;
 centerPaths = p.Results.centerPaths;
+centerPathsAtSpecificTimeMsec = p.Results.centerPathsAtSpecificTimeMsec;
 computeVelocitySignal = p.Results.computeVelocity;
 useParfor = p.Results.useParfor;
 
@@ -59,7 +64,8 @@ emDurationSeconds = eyeMovementsPerTrial * sampleDurationSeconds;
 
 % Generate fixational eye movements (thie generates obj.emPosArcMin)
 compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, ...
-    computeVelocitySignal, 'centerPaths', centerPaths, 'useParfor', useParfor);
+    computeVelocitySignal, 'useParfor', useParfor, ...
+    'centerPaths', centerPaths, 'centerPathsAtSpecificTimeMsec', centerPathsAtSpecificTimeMsec);
 
 % Also return the path in units of microns
 if (isempty(cMosaic.micronsPerDegreeApproximation))
