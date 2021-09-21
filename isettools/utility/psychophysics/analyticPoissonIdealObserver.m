@@ -9,8 +9,7 @@ function [fractionCorrect,dPrime] = analyticPoissonIdealObserver(alphaMeanRespon
 %    Also returns dPrime.  Indeed, the Geisler formula returns dPrime and
 %    this routine then converts to TAFC percent correct by numerically
 %    integrating the area under the ROC curve for that dPrime, assuming
-%    normal distributions
-%     with equal variance in the conversion.
+%    normal distributions with equal variance in the conversion.
 %
 %    The two input arguments should all be vectors of the same length, and
 %    give the mean of the Poisson distributed responses for the two

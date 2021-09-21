@@ -34,20 +34,42 @@ function pCorrect = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedT
     % of base to see the former.  Using nSimulatedTrials = 1000 gives a
     % quick answer that is a little noisy - increase for more precision.
     clear; close all;
-    base = 10;
+    base = 100;
     deltas = [0 1 2 5 10 20 40 80];
     nSimulatedTrials = 1000;
     for i = 1:length(deltas)
-    meanResponses = [ [base+deltas(i) base base base]', [base base+deltas(i) base base]', [base base base+deltas(i) base]', [base base base base+deltas(i) ]'];
-    pCorrects(i) = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials);
-    fprintf('Four alternative FC, base = %d, delta = %d, pCorrect = %0.2g\n', base, deltas(i), pCorrects(i));
+        meanResponses = [ [base+deltas(i) base base base]', [base base+deltas(i) base base]', [base base base+deltas(i) base]', [base base base base+deltas(i) ]'];
+        pCorrects(i) = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials);
+        fprintf('Four alternative FC, base = %d, delta = %d, pCorrect = %0.2g\n', base, deltas(i), pCorrects(i));
     end
     figure; clf; hold on;
-    plot(deltas,pCorrects,'ro','MarkerFaceColor','r','MarkerSize',12);
-    plot(deltas,pCorrects,'r');
+    plot(deltas,pCorrects,'ro-','MarkerFaceColor','r','MarkerSize',12);
     xlabel('Delta');
     ylabel('pCorrect');
     xlim([0 100]); ylim([0 1]);
+    title(sprintf('4AFC Poisson Ideal Observer, base = %d',base));
+%}
+%{
+    % Compare to analytic ideal observer for TAFC, where the normal
+    % approximation to the decision variable is used.  Clearly doing
+    % about the same thing, but not exactly the same.
+    clear; close all;
+    base = 1000;
+    deltas = [0 1 2 5 10 20 40 80];
+    nSimulatedTrials = 10000;
+    for i = 1:length(deltas)
+        meanResponses = [ [base+deltas(i) base base base]', [base base+deltas(i) base base]'];
+        pCorrects(i) = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials);
+        pCorrects1(i) = analyticPoissonIdealObserver(meanResponses(:,1),meanResponses(:,2));
+    end
+    figure; clf; hold on;
+    plot(deltas,pCorrects,'ro-','MarkerFaceColor','r','MarkerSize',12);
+    plot(deltas,pCorrects1,'bo-','MarkerFaceColor','b','MarkerSize',10);
+    xlabel('Delta');
+    ylabel('pCorrect');
+    xlim([0 100]); ylim([0 1]);
+    legend({'Monte Carlo','Analytic Approx.'},'Location','NorthWest');
+    title(sprintf('TAFC Poisson Ideal Observer, base = %d',base));
 %}
 
 
