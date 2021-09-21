@@ -1,8 +1,8 @@
-function pCorrect = IdealObserverNAlternativeFC(meanResponses,nSimulatedTrials)
+function pCorrect = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials)
 % Monte-Carlo simulation of probability correct for N-alternative forced choice
 %
 % Synopsis:
-%    probCorrect = IdealObserverNAlternativeFC(meanResponses,nSimulatedTrials)
+%    probCorrect = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials)
 %
 % Description:
 %
@@ -39,7 +39,7 @@ function pCorrect = IdealObserverNAlternativeFC(meanResponses,nSimulatedTrials)
     nSimulatedTrials = 1000;
     for i = 1:length(deltas)
     meanResponses = [ [base+deltas(i) base base base]', [base base+deltas(i) base base]', [base base base+deltas(i) base]', [base base base base+deltas(i) ]'];
-    pCorrects(i) = IdealObserverNAlternativeFC(meanResponses,nSimulatedTrials);
+    pCorrects(i) = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials);
     fprintf('Four alternative FC, base = %d, delta = %d, pCorrect = %0.2g\n', base, deltas(i), pCorrects(i));
     end
     figure; clf; hold on;
