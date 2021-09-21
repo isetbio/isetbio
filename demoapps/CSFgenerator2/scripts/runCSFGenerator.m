@@ -17,10 +17,14 @@ function runCSFGenerator
     params.stimParams.resolutionPixels = 300;
     
     params.stimParams.meanLuminanceCdM2 = 30;
+    
+    % 125 msec integration time: single-shot, no eye movements
     params.coneMosaicParams.integrationTime = 125/1000;
     
     % Generate a 2x2 cone mosaic
     params.coneMosaicParams.sizeDegs = [2.0 2.0];
+    
+    % Centered at the origin
     params.coneMosaicParams.eccentricityDegs = [0 0];
     
     params.psychometricFunctionParams.testTrials = 512;
@@ -33,14 +37,13 @@ function runCSFGenerator
     app.components.coneMosaic = CSFGeneratorApp.generate.coneMosaic(params, []);
     app.components.optics = CSFGeneratorApp.generate.optics(app, []);
     
-    % Compute the CSF
+    % Compute the CSF for constant size stimuli
+    app.csfParams.constantParameter = 'constant size';
     csfDataConstantSize = CSFGeneratorApp.compute.contrastSensitivityFunction(app);
      
-    % Modify params to run a constant cycles stimulus
+    % % Compute the CSF for constant cycles stimuli
     app.csfParams.constantParameter = 'constant cycles';
     app.csfParams.numberOfConstantCycles = 0.56; % 0.56 cycles/sigma -> 1 octave bandwidth
-
-    % Compute the CSF
     csfDataConstantCycles = CSFGeneratorApp.compute.contrastSensitivityFunction(app);
     
     % Generate Watson's Pyramid of Visibility curve for constant size
