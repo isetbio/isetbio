@@ -22,8 +22,8 @@ function pCorrect = SupportVectorMachineObserverNAlternativeFC(meanResponses, nT
 
 % History
 %    09/21/21   NPC  Wrote it.
-% Examples:
 
+% Examples:
 %{
     % Computes probability correct versus delta for 4AFC, where the alternatives
     % have mean vectors with all entries but 1 equal to base, and with one entry
@@ -54,7 +54,6 @@ function pCorrect = SupportVectorMachineObserverNAlternativeFC(meanResponses, nT
     legend({'Monte Carlo','multi-class SVM'},'Location','NorthWest');
     title(sprintf('4AFC Poisson Ideal Observer, base = %d',base));
 %}
-
 %{
     % Compare to analytic ideal observer for TAFC, where the normal
     % approximation to the decision variable is used.  Clearly doing
