@@ -23,6 +23,38 @@ function pCorrect = SupportVectorMachineObserverNAlternativeFC(meanResponses, nT
 % History
 %    09/21/21   NPC  Wrote it.
 % Examples:
+
+%{
+    % Computes probability correct versus delta for 4AFC, where the alternatives
+    % have mean vectors with all entries but 1 equal to base, and with one entry
+    % equal to base plus delta.  Each alternative has a different entry
+    % perturbed by delta.  As expected for Poisson noise, the task gets
+    % harder for fixed delta as base increases, and easier for fixed base
+    % delta increasess.  The plot shows the latter effect.  Vary the value
+    % of base to see the former.  Using nSimulatedTrials = 1000 gives a
+    % quick answer that is a little noisy - increase for more precision.
+    clear; close all;
+    base = 100;
+    deltas = [0 1 2 5 10 20 40 80];
+    nSimulatedTrials = 1000;
+    for i = 1:length(deltas)
+        meanResponses = [ [base+deltas(i) base base base]', [base base+deltas(i) base base]', [base base base+deltas(i) base]', [base base base base+deltas(i) ]'];
+        pCorrects(i) = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials);
+        pCorrects2(i) = SupportVectorMachineObserverNAlternativeFC(meanResponses,nSimulatedTrials);
+        fprintf('Four alternative FC, base = %d, delta = %d, pCorrect = %0.2g\n', base, deltas(i), pCorrects(i));
+    end
+    figure; clf; hold on;
+    plot(deltas,pCorrects,'ro-','MarkerFaceColor','r','MarkerSize',12);
+    plot(deltas,pCorrects2,'ks-','MarkerFaceColor',[0.7 0.7 0.7],'MarkerSize',10);
+    xlabel('Delta');
+    ylabel('pCorrect');
+    xlim([0 80]); ylim([0.2 1]);
+    set(gca, 'FontSize', 14);
+    grid on; box on;
+    legend({'Monte Carlo','multi-class SVM'},'Location','NorthWest');
+    title(sprintf('4AFC Poisson Ideal Observer, base = %d',base));
+%}
+
 %{
     % Compare to analytic ideal observer for TAFC, where the normal
     % approximation to the decision variable is used.  Clearly doing
