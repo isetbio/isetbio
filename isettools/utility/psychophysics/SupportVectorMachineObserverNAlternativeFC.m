@@ -59,13 +59,21 @@ function pCorrect = SupportVectorMachineObserverNAlternativeFC(meanResponses, nT
     % approximation to the decision variable is used.  Clearly doing
     % about the same thing, but not exactly the same.
     clear; close all;
-    base = 1000;
-    deltas = [0 1 2 5 10 20 40 80];
-    nSimulatedTrials = 10000;
+    dimension = 10;
+    base = 10;
+    deltas = 0.04*[0 1 2 5 10 25 50 100];
+    nSimulatedTrials = 2000;
     for i = 1:length(deltas)
-        meanResponses = [ [base+deltas(i) base base base]', [base base+deltas(i) base base]'];
-        pCorrects(i) = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials);
-        pCorrects1(i) = analyticPoissonIdealObserver(meanResponses(:,1),meanResponses(:,2));
+        %meanResponses = [ [base+deltas(i) base base base]', [base base+deltas(i) base base]'];
+        % Set up mean resopnses for each stimulus
+        meanResponse1 = base*ones(dimension, 1);
+        meanResponse2 = meanResponse1 + deltas(i)*ones(dimension,1);
+
+        % Concatenate for TAFC where both stimuli are presented on each trial.
+        meanResponses = [[meanResponse1 ; meanResponse2] , [meanResponse2 ; meanResponse1]];
+
+        pCorrects(i) = PoissonIdealObserverNAlternativeFC(meanResponses,nSimulatedTrials, false);
+        pCorrects1(i) = analyticPoissonIdealObserver(meanResponse1,meanResponse2);
         pCorrects2(i) = SupportVectorMachineObserverNAlternativeFC(meanResponses,nSimulatedTrials);
     end
     figure; clf; hold on;
@@ -74,7 +82,7 @@ function pCorrect = SupportVectorMachineObserverNAlternativeFC(meanResponses, nT
     plot(deltas,pCorrects2,'ks-','MarkerFaceColor',[0.7 0.7 0.7],'MarkerSize',10);
     xlabel('Delta');
     ylabel('pCorrect');
-    xlim([0 80]); ylim([0.4 1]);
+    xlim([0 max(deltas)]); ylim([0.4 1]);
     set(gca, 'FontSize', 14);
     grid on; box on;
     legend({'Monte Carlo','Analytic Approx.', 'SVM'},'Location','NorthWest');
