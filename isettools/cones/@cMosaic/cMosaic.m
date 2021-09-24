@@ -280,6 +280,7 @@ classdef cMosaic < handle
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('computeMeshFromScratch', false, @islogical);
+            p.addParameter('customMinRFspacing', [], @(x) (isempty(x) || isscalar(x)));
             p.addParameter('customRFspacingFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('customDegsToMMsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('customMMsToDegsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
@@ -331,6 +332,7 @@ classdef cMosaic < handle
             obj.useParfor = p.Results.useParfor;
             
             % Custom mesh generation function 
+            customMinRFspacing = p.Results.customMinRFspacing;
             customRFspacingFunction = p.Results.customRFspacingFunction;
             customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
             customMMsToDegsConversionFunction = p.Results.customMMsToDegsConversionFunction;
@@ -360,6 +362,7 @@ classdef cMosaic < handle
                         p.Results.maxMeshIterations,  ...
                         p.Results.visualizeMeshConvergence, ...
                         p.Results.exportMeshConvergenceHistoryToFile, ...
+                        'customMinRFspacing', customMinRFspacing, ...
                         'customDegsToMMsConversionFunction', customDegsToMMsConversionFunction, ...
                         'customMMsToDegsConversionFunction', customMMsToDegsConversionFunction, ...
                         'customRFspacingFunction', customRFspacingFunction);
