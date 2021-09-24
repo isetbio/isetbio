@@ -4,10 +4,13 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
     p.addParameter('randomSeed', [],  @(x)(isempty(x) || isscalar(x)));
     p.addParameter('customDegsToMMsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
     p.addParameter('customRFspacingFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
+    p.addParameter('customMinRFspacing', [], @(x) (isempty(x) || isscalar(x)));
     p.parse(varargin{:});
+    
     randomSeed = p.Results.randomSeed;
     customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
     customRFspacingFunction = p.Results.customRFspacingFunction;
+    customMinRFspacing = p.Results.customMinRFspacing;
     
     % Validate input
     validateInput(fovDegs, neuronType, whichEye);
@@ -17,6 +20,10 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
     
     if (~isempty(customRFspacingFunction))
         params.rfSpacingExactFunction = customRFspacingFunction;
+    end
+    
+    if (~isempty(customMinRFspacing))
+        params.lambdaMinMicrons = customMinRFspacing;
     end
     
     if (~isempty(maxIterations))
@@ -47,7 +54,7 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
     bestQualityRFpositions = double(squeeze(dataOut.rfPositionsHistory(idx,:,:)));
     
     % Report back
-    fprintf('Lattice generation finished with status: ''%s''.\n', dataOut.terminationReason);
+    fprintf('Lattice generation finished with status: ''%s'' with quality %2.4f at iteration %d.\n', dataOut.terminationReason, dataOut.qualityHistory(idx), idx);
     
     % Save lattice generation data
     if (exportHistoryToFile)
