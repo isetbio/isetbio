@@ -172,13 +172,13 @@ function visualize(obj, varargin)
     if (isempty(figureHandle))
         figureHandle = figure(); clf;
         set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-        axesHandle = subplot('Position', [0.09 0.07 0.90 0.92]);
+        axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
     else
         if (isempty(axesHandle))
             figure(figureHandle);
             clf;
             set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-            axesHandle = subplot('Position', [0.07 0.07 0.92 0.92]);
+            axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
         end
         cla(axesHandle);
     end
