@@ -22,24 +22,29 @@ p = inputParser;
 p.addParameter('defaultTolerance', 0, @isnumeric);
 p.addParameter('customTolerances', containers.Map());
 p.addParameter('graphMismatchedData', true);
+p.addParameter('failOnMissingFields', false);
+p.addParameter('verbosityLevel', 1);
 p.parse(varargin{:});
 defaultTolerance = p.Results.defaultTolerance;
 customTolerances = p.Results.customTolerances;
 graphMismatchedData = p.Results.graphMismatchedData;
- 
+failOnMissingFields = p.Results.failOnMissingFields;
+verbosityLevel = p.Results.verbosityLevel;
 % Go
 [result, resultOperations, ~, ~, ~] = doRecursion(...
     struct1Name, struct1, struct2Name, struct2, ...
     defaultTolerance, customTolerances, {}, {}, {}, ...
-    [], [], struct2Name, graphMismatchedData);
+    [], [], struct2Name, graphMismatchedData, failOnMissingFields, verbosityLevel);
 
 % Print the results
-if (isempty(result))
-    %fprintf('\n<strong>Structs comparison results: structs are identical.</strong>\n');
-else
-    fprintf('\n<strong>Structs comparison results: structs are NOT identical. </strong>\n');
-    for k = 1:numel(result)
-        fprintf('\t[%d]. %s\n', k, result{k});
+if (verbosityLevel > 0)
+    if (isempty(result))
+        %fprintf('\n<strong>Structs comparison results: structs are identical.</strong>\n');
+    else
+        fprintf('\n<strong>Structs comparison results: structs are NOT identical. </strong>\n');
+        for k = 1:numel(result)
+            fprintf('\t[%d]. %s\n', k, result{k});
+        end
     end
 end
 
@@ -64,7 +69,7 @@ end
 function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames] = doRecursion(...
     struct1Name, struct1, struct2Name, struct2, ...
     tolerance, customTolerances, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames, ...
-    oldResult, oldResultOperations, topLevelStruct2Name, graphMismatchedData)
+    oldResult, oldResultOperations, topLevelStruct2Name, graphMismatchedData, failOnMissingFields, verbosityLevel)
 
     result = oldResult;
     resultOperations = oldResultOperations;
@@ -97,14 +102,23 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
 
         if (numel(struct1FieldNames) ~= numel(struct2FieldNames))
             fprintf(2,'** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames))
+            if (failOnMissingFields)
+                result{numel(result)+1} = sprintf('** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames));
+                continue;
+            end
         end
         
         for fieldIndex = 1:numel(struct1FieldNames)
             theFieldName = struct1FieldNames{fieldIndex};
             fullFieldName1 = sprintf('%s.%s', struct1FullName,theFieldName);
             if (~isfield(struct2, theFieldName))
-                fprintf(2, '**** Field ''%ss'' not found in struct ''%s''. Skipping this field.\n', theFieldName, struct2FullName);
-                continue;
+                if (failOnMissingFields)
+                    result{numel(result)+1} = sprintf('*** Field ''%ss'' not found in struct ''%s''. Skipping this field.\n', theFieldName, struct2FullName);
+                    continue;
+                else
+                    fprintf(2, '**** Field ''%ss'' not found in struct ''%s''. Skipping this field.\n', theFieldName, struct2FullName);
+                    continue;
+                end
             end
             
             fullFieldName2 = sprintf('%s.%s', struct2FullName,theFieldName);
