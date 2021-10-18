@@ -1,9 +1,15 @@
 % Illustrate photoPigment object
 %
 % Description:
-%    The photoPigment object represents the data needed to calculate the
-%    capture of light by cones. This tutorial illustrates how it works.
+%    The photoPigment object represents the spectral responsivity of
+%    the cone photopigments.  These values are needed to calculate the
+%    capture of light by cones, along with the oi spectral irradiance
+%    and the other inert pigments (lens, macular). 
 %
+%    This tutorial illustrates how it works.
+%
+% See also
+%    
 
 %% Initialize
 ieInit;
@@ -24,8 +30,11 @@ pp = photoPigment('wave', 400:5:700);
 % Absorbance is sometimes called optical density.
 %
 % The peak absorbance is 1 by convention in how the values are tabulated.
-vcNewGraphWin;
+ieNewGraphWin;
 plot(pp.wave, pp.absorbance)
+grid on;
+xlabel('Wavelength (nm)');
+ylabel('Relative sensitivity');
 
 %% Geometry
 % See coneDensityReadData for explanation of retinal coordinate system.
@@ -34,3 +43,5 @@ angle = 0;
 
 % Spacing (um), aperture (um), density (cones/mm2)
 [s, a, d] = coneSizeReadData('eccentricity', eccentricity, 'angle', angle)
+
+%%

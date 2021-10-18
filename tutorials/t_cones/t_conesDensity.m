@@ -6,6 +6,9 @@
 %    The plot shows different angles and up to an eccentricity of 10 mm,
 %    which is about +/-30 deg.
 %
+% See also
+%   t_conesPhotopigment, t_lensTransmittance
+%
 
 % History:
 %    xx/xx/17  BW   ISETBIO Team, 2017
