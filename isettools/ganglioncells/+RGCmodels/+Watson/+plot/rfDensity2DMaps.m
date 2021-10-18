@@ -7,10 +7,10 @@ function rfDensity2DMaps(figNo, neuronType, varargin)
     p = inputParser;
     p.addRequired('figNo', @isnumeric);
     p.addRequired('neuronType', @ischar);
-    p.addParameter('spatialSupport', @isstruct);
-    p.addParameter('spatialSupportUnits', @(x)(ischar(x) && (ismember(x, validSpatialSupportUnits))));
-    p.addParameter('densityRange', @isnumeric);
-    p.addParameter('densityUnits', @(x)(ischar(x) && (ismember(x, validDensityUnits))));
+    p.addParameter('spatialSupport', struct('maxEcc', 3, 'eccSamples', 50), @isstruct);
+    p.addParameter('spatialSupportUnits', 'degs', @(x)(ischar(x) && (ismember(x, validSpatialSupportUnits))));
+    p.addParameter('densityRange', [100 20*1000], @isnumeric);
+    p.addParameter('densityUnits', 'deg^2', @(x)(ischar(x) && (ismember(x, validDensityUnits))));
     
  
     % Parse input
@@ -26,10 +26,12 @@ function rfDensity2DMaps(figNo, neuronType, varargin)
             ; % do nothing
         case 'degs'
             % Transform from degs to microns
-            spatialSupport.maxEcc = RGCmodels.Watson.convert.rhoDegsToMMs(spatialSupport.maxEcc)*1e3;
+            maxEcc = RGCmodels.Watson.convert.rhoDegsToMMs(spatialSupport.maxEcc)*1e3;
+            spatialSupport.maxEcc = maxEcc;
         case 'mm'
             % Transform from mm to microns
-            spatialSupport.maxEcc = spatialSupport.maxEcc * 1e3;
+            maxEcc = spatialSupport.maxEcc * 1e3;
+            spatialSupport.maxEcc = maxEcc;
     end
     
     
@@ -46,7 +48,9 @@ function rfDensity2DMaps(figNo, neuronType, varargin)
     % Compute density at spatial sampling grid
     % Left eye
     whichEye = RGCmodels.Watson.constants.leftEye;
-    [~, ~, leftRetinaDensityMapDegs2, leftRetinaDensityMapMMs2] = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(whichEye, rfPosMicrons, neuronType);
+    useParfor = true;
+    [~, ~, leftRetinaDensityMapDegs2, leftRetinaDensityMapMMs2] = ...
+        RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(whichEye, rfPosMicrons, neuronType, useParfor);
     switch (densityUnits)
         case 'deg^2'
              leftRetinaDensityMap = reshape(leftRetinaDensityMapDegs2, size(X));
@@ -57,7 +61,8 @@ function rfDensity2DMaps(figNo, neuronType, varargin)
     
     % Right eye
     whichEye = RGCmodels.Watson.constants.rightEye;
-    [~, ~, rightRetinaDensityMapDegs2, rightRetinaDensityMapMMs2] = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(whichEye, rfPosMicrons, neuronType);
+    [~, ~, rightRetinaDensityMapDegs2, rightRetinaDensityMapMMs2] = ...
+        RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(whichEye, rfPosMicrons, neuronType, useParfor);
     switch (densityUnits)
         case 'deg^2'
              rightRetinaDensityMap = reshape(rightRetinaDensityMapDegs2, size(X));
