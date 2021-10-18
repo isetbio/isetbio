@@ -11,6 +11,10 @@ function sizeMicrons = sizeVisualDegsToSizeRetinalMicrons(sizeVisualDegs, eccDeg
         eccDegs = sqrt(sum(eccDegs.^2,2));
     elseif (numel(eccDegs) == 1) || (numel(sizeVisualDegs) == 1)
         % Do nothing
+    elseif (size(sizeVisualDegs,1) == size(eccDegs,1)) &&  (size(sizeVisualDegs,2)*size(eccDegs,2) == 1)
+        % Do nothing
+    elseif (size(sizeVisualDegs,2) == size(eccDegs,2)) &&  (size(sizeVisualDegs,1)*size(eccDegs,1) == 1)
+        % Do nothing
     else
         error('dont know how to treat the passed dimensions');
     end

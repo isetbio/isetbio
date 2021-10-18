@@ -8,10 +8,11 @@ function figure1()
     examinedMeridians = RGCmodels.Watson.constants.indexedMeridians;
     
     % Compute cone density along each meridian
+    useParfor = true;
     coneDensityDegs2 = zeros(numel(examinedMeridians), numel(eccDegs));
     for k = 1:numel(examinedMeridians)
         [~,~, coneDensityDegs2(k,:)] = ...
-            RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccDegs, examinedMeridians{k});
+            RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccDegs, examinedMeridians{k}, useParfor);
     end
     
     % Generate figure
