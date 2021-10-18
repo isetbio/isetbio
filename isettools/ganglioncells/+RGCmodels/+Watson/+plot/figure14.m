@@ -9,9 +9,10 @@ function figure14()
     
     % Compute cone density along each meridian
     midgetRGCtoConeRatio = zeros(numel(examinedMeridians), numel(eccDegs));
+    useParfor = true;
     for k = 1:numel(examinedMeridians)
          [~,~, coneDensityDegs2] = ...
-            RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccDegs, examinedMeridians{k});
+            RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccDegs, examinedMeridians{k}, useParfor);
         [~,~, midgetRGCRFDensityDegs2] = ...
             RGCmodels.Watson.compute.midgetRGCRFSpacingAlongMeridianInRightEyeVisualField(eccDegs, examinedMeridians{k});
         midgetRGCtoConeRatio(k,:) = midgetRGCRFDensityDegs2 ./ coneDensityDegs2;

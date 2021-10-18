@@ -4,6 +4,7 @@ function regenerateConePositions(obj, maxIterations, visualizeConvergence, expor
     p.addParameter('customDegsToMMsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
     p.addParameter('customMMsToDegsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
     p.addParameter('customRFspacingFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
+    p.addParameter('customMinRFspacing', [], @(x) (isempty(x) || isscalar(x)));
     p.parse(varargin{:});
     
     % Regenerate lattice whose FOV is large enough to encopass the desired size at the desired eccentricity
@@ -13,7 +14,8 @@ function regenerateConePositions(obj, maxIterations, visualizeConvergence, expor
         'cones', obj.whichEye, exportHistoryToFile, visualizeConvergence, obj.useParfor, maxIterations, ...
         'randomSeed', obj.randomSeed, ...
         'customDegsToMMsConversionFunction', p.Results.customDegsToMMsConversionFunction, ...
-        'customRFspacingFunction', p.Results.customRFspacingFunction);
+        'customRFspacingFunction', p.Results.customRFspacingFunction, ...
+        'customMinRFspacing', p.Results.customMinRFspacing);
     
     % Convert to degs
     if (~isempty(p.Results.customMMsToDegsConversionFunction))

@@ -289,6 +289,7 @@ classdef cMosaic < handle
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('computeMeshFromScratch', false, @islogical);
+            p.addParameter('customMinRFspacing', [], @(x) (isempty(x) || isscalar(x)));
             p.addParameter('customRFspacingFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('customDegsToMMsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('customMMsToDegsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
@@ -340,6 +341,7 @@ classdef cMosaic < handle
             obj.useParfor = p.Results.useParfor;
             
             % Custom mesh generation function 
+            customMinRFspacing = p.Results.customMinRFspacing;
             customRFspacingFunction = p.Results.customRFspacingFunction;
             customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
             customMMsToDegsConversionFunction = p.Results.customMMsToDegsConversionFunction;
@@ -361,42 +363,6 @@ classdef cMosaic < handle
             % assigned by the user.
             addlistener(obj, 'coneDensities','PostSet', @obj.assignConeTypes);
             addlistener(obj, 'tritanopicRadiusDegs', 'PostSet', @obj.assignConeTypes);
-            
-%             if (~isempty(customConePositionGeneratingFunction))
-%                 % Generate cone positions using custom mesh function
-%                 obj.coneRFpositionsMicrons = customConePositionGeneratingFunction();
-%                 if (~isempty(obj.micronsPerDegreeApproximation))
-%                     obj.coneRFpositionsDegs = obj.coneRFpositionsMicrons / obj.micronsPerDegreeApproximation;
-%                 else
-%                     obj.coneRFpositionsDegs = obj.coneRFpositionsMicrons /  300;
-%                 end
-%                 
-%                 % Convert to degs
-%                 obj.coneRFpositionsDegs = RGCmodels.Watson.convert.rhoMMsToDegs(obj.coneRFpositionsMicrons*1e-3);
-% 
-%                 % Compute spacings (which determine apertures)
-%                 obj.coneRFspacingsDegs = RGCmodels.Watson.convert.positionsToSpacings(obj.coneRFpositionsDegs);
-%                 obj.coneRFspacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(obj.coneRFpositionsMicrons);
-% 
-%                 % Crop to desired ROI in degs
-%                 diff = abs(bsxfun(@minus, obj.coneRFpositionsDegs, obj.eccentricityDegs));
-%                 idx = find((diff(:,1) <= 0.5*obj.sizeDegs(1)) & (diff(:,2) <= 0.5*obj.sizeDegs(2)));
-%                 obj.coneRFpositionsDegs = obj.coneRFpositionsDegs(idx,:);
-%                 obj.coneRFpositionsMicrons = obj.coneRFpositionsMicrons(idx,:);
-%                 obj.coneRFspacingsDegs = obj.coneRFspacingsDegs(idx);
-%                 obj.coneRFspacingsMicrons = obj.coneRFspacingsMicrons(idx);
-%     
-%                 
-%                 % Set random seed
-%                 if (isempty(obj.randomSeed))
-%                     rng('shuffle');
-%                 else
-%                     rng(obj.randomSeed);
-%                 end
-% 
-%                 % Assign cone types
-%                 obj.assignConeTypes();
-%             end
                 
             if (isempty(p.Results.coneData))
                 if (p.Results.computeMeshFromScratch)
@@ -405,6 +371,7 @@ classdef cMosaic < handle
                         p.Results.maxMeshIterations,  ...
                         p.Results.visualizeMeshConvergence, ...
                         p.Results.exportMeshConvergenceHistoryToFile, ...
+                        'customMinRFspacing', customMinRFspacing, ...
                         'customDegsToMMsConversionFunction', customDegsToMMsConversionFunction, ...
                         'customMMsToDegsConversionFunction', customMMsToDegsConversionFunction, ...
                         'customRFspacingFunction', customRFspacingFunction);

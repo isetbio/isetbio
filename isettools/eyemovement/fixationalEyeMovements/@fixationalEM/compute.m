@@ -29,7 +29,13 @@ function compute(obj, emDurationSeconds, sampleDurationSeconds, ...
 %                            loop (to take advantage of multiple processors)
 %                            of to use a single processor. Default false,
 %                            i.e., use a single processor.
-%
+%    'centerPaths'         - Boolean. Whether to center the entire path so 
+%                            that its mean is at (0,0). Default false, 
+%                            i.e., don't center
+%    'centerPathsAtSpecificTimeMsec - Numeric. When a non-empty time is passed
+%                            the emPaths at that specific time are at (0,0)
+%                            Default: empty, i.e. dont center.
+
 % For usage see:
 %  t_fixationalEyeMovementsTypes
 %
@@ -47,6 +53,7 @@ p.addRequired('nTrials', @isnumeric);
 p.addRequired('computeVelocity', @islogical);
 p.addParameter('useParfor', false, @islogical);
 p.addParameter('centerPaths', false, @islogical);
+p.addParameter('centerPathsAtSpecificTimeMsec', [], @isnumeric);
 p.parse(emDurationSeconds, sampleDurationSeconds, ...
     nTrials, computeVelocity, varargin{:});
 
@@ -111,11 +118,16 @@ else
     end
 end
 
-% Center all paths on the origin
+% Path centering
 if (p.Results.centerPaths)
     centers = mean(allTrialsEmPosArcMin,2);
     allTrialsEmPosArcMin = bsxfun(@minus, allTrialsEmPosArcMin, centers);
+elseif (~isempty(p.Results.centerPathsAtSpecificTimeMsec))
+    [~, idx] = min(abs(1000*obj.timeAxis - p.Results.centerPathsAtSpecificTimeMsec));
+    positionsAtTheSpecificTime = allTrialsEmPosArcMin(:,idx,:);
+    allTrialsEmPosArcMin = bsxfun(@minus, allTrialsEmPosArcMin, positionsAtTheSpecificTime);
 end
+
 
 obj.emPosArcMin = allTrialsEmPosArcMin;
 if (computeVelocity), obj.velocityArcMin = allTrialsVelocityArcMin; end

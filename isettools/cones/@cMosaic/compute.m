@@ -278,10 +278,17 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                     coneIndicesInZones);
 
                 % Replicate single shot for all trials and time points
+                for timePoint = 1:nTimePoints
+                    noiseFreeAbsorptionsCount(1, timePoint, :) = noiseFreeAbsorptionsCount(1,1,:);
+                end
+                
                 for iTrial = 2:nTrials
                     %fprintf('Replicating trial %d from first trial.\n', iTrial);
                     noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
                 end
+                
+               
+                
 
             else
                 if (~obj.eccVaryingMacularPigmentDensityDynamic)

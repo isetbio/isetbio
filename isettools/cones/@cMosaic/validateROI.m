@@ -14,6 +14,9 @@ function validateROI(roi)
     % roi must have a 'center' field
     assert(isfield(roi, 'center'), 'roi struct must have a ''center'' field.');
     
+    % roi.center must have 2 elements (x,y)
+    assert(numel(roi.center) == 2, 'roi.center must be a 2-element vector');
+    
     if (strcmp(roi.shape, 'rect'))
         % rect roi must have 'width' and 'height' fields
         assert(isfield(roi, 'width'), 'roi struct must have a ''width'' field.');
@@ -22,6 +25,6 @@ function validateROI(roi)
         % ellipse roi must have 'rotation', 'minorAxisDiameter' and 'majorAxisDiameter' fields
         assert(isfield(roi, 'rotation'), 'roi struct must have a ''rotation'' field.');
         assert(isfield(roi, 'minorAxisDiameter'), 'roi struct must have a ''minorAxisDiameter'' field.');
-        assert(isfield(roi, 'minorAxisDiameter'), 'roi struct must have a ''majorAxisDiameter'' field.');
+        assert(isfield(roi, 'majorAxisDiameter'), 'roi struct must have a ''majorAxisDiameter'' field.');
     end
 end
