@@ -8,7 +8,8 @@
 
 ISETBioCSFGenerator
 
-%%
+%% Spectral band RGB images
+
 scene = sceneFromFile;
 sceneWindow(scene);
 
@@ -215,7 +216,8 @@ scene = sceneSet(scene,'fov',5);
 oi = oiCreate;
 oi = oiCompute(oi,scene);
 
-%%  Photon noise
+%%  Photon noise using the old coneMosaic code.
+
 eTime = 0.002;
 cDensity = [0 0 1 0];
 fov = 6;

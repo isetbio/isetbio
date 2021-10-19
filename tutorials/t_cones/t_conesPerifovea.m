@@ -1,5 +1,12 @@
 % Resolution in the perifovea region
 %
+% Extracts an ROI from the optimized cone mosaic, I think
+%
+% Extracts isomerizations from an irregular set of positions in the
+% mosaic using inpolygon.
+%
+% Wandell
+%
 
 %%
 ieInit;

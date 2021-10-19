@@ -1,5 +1,7 @@
 % Demo different ways of generating a @cMosaic object
 %
+% Warning:  This script takes a while (few minutes) to run
+%
 % Description:
 %    Shows 3 different ways of generating a @cMosaic object. Also shows how
 %    to visualize the generated mosaic.
