@@ -87,7 +87,8 @@ roi = struct('center', [0 0], 'radius', 0.1);
 % Compute border of ROI
 roiBorderX = roi.center(1) + roi.radius*cosd(0:10:360);
 roiBorderY = roi.center(2) + roi.radius*sind(0:10:360);
-% ieNewGraphWin; plot(roiBorderX,roiBorderY)
+% ieNewGraphWin; plot(roiBorderX,roiBorderY); 
+% set(gca,'xlim',[min(roiBorderX) - 0.01, max(roiBorderX) + 0.01],'ylim',[-1.1 1.1]);
 
 % Find indices of cones within the ROI border
 [in,on] = inpolygon(cm.coneRFpositionsDegs(:,1),cm.coneRFpositionsDegs(:,2),roiBorderX,roiBorderY);
@@ -106,10 +107,14 @@ cm.visualize('activation', roiResponse, ...
 %% S-cone or L-cone responses only
 
 sConeResponses = noiseFreeExcitations(cm.sConeIndices);
-ieNewGraphWin; histogram(sConeResponses);
+ieNewGraphWin; histogram(sConeResponses,'FaceColor','b');
+xlabel('Excitations'); ylabel('Number of S cones');
+fprintf('%d S cones\n',numel(sConeResponses));
 
 lConeResponses = noiseFreeExcitations(cm.lConeIndices);
 ieNewGraphWin; histogram(lConeResponses);
+xlabel('Excitations'); ylabel('Number of L cones');
+fprintf('%d L cones\n',numel(lConeResponses));
 
 %% Define a linear ROI
 
