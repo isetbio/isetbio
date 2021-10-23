@@ -1,5 +1,5 @@
 classdef coneMosaic < hiddenHandle
-    % Create a cone mosaic object
+    % Create a cone mosaic object - to be deprecated and replaced by cMosaic
     %
     
     % Syntax:
