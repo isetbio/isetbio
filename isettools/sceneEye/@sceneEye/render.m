@@ -55,13 +55,15 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
+p.addParameter('dockerimagename','pbrt-V3-spectral:latest',@ischar);
 
 rTypes = {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'};
 p.addParameter('rendertype','both',@(x)(ismember(ieParamFormat(x),rTypes)));
 
 p.parse(obj, varargin{:});
-renderType = p.Results.rendertype;
+renderType       = p.Results.rendertype;
 scaleIlluminance = p.Results.scaleilluminance;
+dockerimage      = p.Results.dockerimagename;
 
 %% Get the render recipe
 
@@ -90,7 +92,7 @@ piWrite(thisR);
 
 %% Render the pbrt file using docker
 
-[ieObject, terminalOutput] = piRender(thisR,'render type',renderType);
+[ieObject, terminalOutput] = piRender(thisR,'render type',renderType,'dockerimagename',dockerimage);
 
 %% Fix up the returned object
 
