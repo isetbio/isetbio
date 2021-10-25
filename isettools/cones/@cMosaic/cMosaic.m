@@ -419,7 +419,7 @@ classdef cMosaic < handle
         end
         
         % Method to visualize the cone mosaic and its activation
-        visualize(obj, varargin);
+        params = visualize(obj, varargin);
         
         % Method to visualize the continuous, full absorptions density and the actual cone positions
         visualizeFullAbsorptionsDensity(obj, figNo);

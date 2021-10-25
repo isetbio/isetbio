@@ -17,13 +17,16 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %    obj       - Object. The scene3D object to render.  This object
 %                has a slot for an iset3d render recipe.
 %
+% Optional key/value pairs:
+%    render type - One of
+%      {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'}; 
+%      Default is 'both'
+%    scaleIlluminance - Boolean. Whether or not to calculate the scale
+%                       illuminance of the scene.
+%
 % Outputs:
 %    ieObject         - Object. The Optical Image object.
 %    terminalOutput   - String. Terminal output.
-%
-% Optional key/value pairs:
-%    scaleIlluminance - Boolean. Whether or not to calculate the scale
-%                       illuminance of the scene.
 %
 % Description:
 %

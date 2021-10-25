@@ -1,4 +1,50 @@
-function visualize(obj, varargin)
+function params = visualize(obj, varargin)
+%% If cm.visualize('params'), we return most settable params
+%
+%
+% Examples
+%    cm.visualize(); - The cone mosaic
+%    cm.visualize(params) - The parameter structure 
+%
+% Notes:
+%   I needed the programming help to remember the parameter names.
+%   To permit a return of the params, I had to change the definition of
+%   cMosaic in the main class (BW).
+%
+% See also
+%
+params = '';
+   if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
+    % User wants to return a struct with a list of parameters
+    % This can be set and passed in as the varargin.
+    params.domain = 'degrees';
+    params.domainVisualizationLimits = [];
+    params.domainVisualizationTicks = [];
+    params.visualizedConeAperture = 'lightCollectingArea';
+    params.activation = [];
+    params.horizontalActivationSliceEccentricity = [];
+    params.activationRange = [];
+    params.activationColorMap = [];
+    params.horizontalActivationColorBar = false;
+    params.verticalActivationColorBar = false;
+    params.colorBarTickLabelPostFix = '';
+    params.displayedEyeMovementData = [];
+    params.currentEMposition = [];
+    params.crossHairsOnMosaicCenter = false;
+    params.crossHairsOnFovea = false;
+    params.crossHairsOnOpticalImageCenter = false;
+    params.labelCones = true;
+    params.noXLabel = false;
+    params.noYLabel = false;
+    params.figureHandle = [];
+    params.axesHandle = [];
+    params.fontSize = 16;
+    params.backgroundColor = [0.7 0.7 0.7];
+    params.plotTitle = '';
+    % MORE TO ADD
+    return;
+   end
+%%
     p = inputParser;
     p.addParameter('visualizationView', 'REVF', @(x)(ischar(x) && (ismember(x, {'REVF', 'retinal view'}))));
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
