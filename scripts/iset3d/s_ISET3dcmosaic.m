@@ -20,7 +20,7 @@ thisSE = sceneEye('chess set pieces','human eye','navarro');
 
 %% Rendering parameters
 
-thisSE.set('rays per pixel',256);  % 32 is Pretty quick, but not high quality
+thisSE.set('rays per pixel',32);  % 32 is Pretty quick, but not high quality
 
 %% Eye parameters:  position, focal distance and field of view
 
