@@ -649,13 +649,14 @@ switch parm
         %
         %  micronsPerDegree = 1e6 * focalLengthMeters * (2 * tand(0.5));
         %
-        val = oiGet(oi,'optics focal length')*2*tand(0.5);  % Meters
+
         %{
-        % We did this for a long time.  
-        % I (BW) am worried about changing.  It is numerically close, but
-        % logically not exactly right. 
-          val = oiGet(oi, 'width') / oiGet(oi, 'fov');
+        % NOTE:  This formula is more correct.  
+        % But changing causes the validations start to fail by small,
+        % but annoying, amounts.
+          val = oiGet(oi,'optics focal length')*2*tand(0.5);  % Meters
         %}
+        val = oiGet(oi, 'width') / oiGet(oi, 'fov');
         
         if ~isempty(varargin)
             val = val * ieUnitScaleFactor(varargin{1});
