@@ -3,7 +3,7 @@
 %
 % TODO:
 %   Write a routine that takes the outline of the letter and superimposes
-%   it on the color image of the cones.
+%   it on the color image of the cm.
 %
 %   Implement this for the hex mosaic.
 %
@@ -28,29 +28,61 @@ scene = sceneSet(scene,'wangular',0.6);
 % the array
 
 % Here is the scene
-sceneWindow(scene);
+% sceneWindow(scene);
 
 %% Push the scene through human optics
 
 oi = oiCreate;
 oi = oiCompute(oi,scene);
-oiWindow(oi);
+%oiWindow(oi);
 %%  Now image it on the cone mosaic with some fixational eye movements
 
-cones = coneMosaic;
-cones.setSizeToFOV(1.3*sceneGet(scene,'fov'));
-cones.emGenSequence(50);
-cones.compute(oi);
-cones.window;
+cm = cMosaic('sizeDegs',[0.5, 0.5],'eccentricityDegs',[0,0]);
+cm.visualize();
 
-%% For a hex mosaic now
+%% Illustrate the cone excitations
 
-% Set up the parameters and make this version work, next.
-%
-%{
- resampleFactor = 4;
- conesH = coneMosaicHex(resampleFactor,'fovDegs',0.5);
- conesH.emGenSequence(50);
- conesH.compute(oi);
- conesH.window;
-%}
+cm.compute(oi);
+cm.integrationTime = 5/1000;  % 5 ms
+excitations = cm.compute(oi);
+
+params = cm.visualize('params');
+
+params.activation = excitations.^0.5;
+params.activationColorMap = hot(1024);
+cm.visualize(params);
+
+%% Add eye movements
+eyeMovementDurationSeconds = 100/1000;
+cm.emGenSequence(eyeMovementDurationSeconds, ...
+        'microsaccadeType', 'none', ...
+        'nTrials', 1, ...
+        'randomSeed', 10);
+    
+%% Compute 128 noisy response instances of cone excitation response to the same eye movement path
+instancesNum = 128;
+[excitationsInstances, noisyExcitationResponseInstances, ~,~,timeAxis] = cm.compute(oi, ...
+    'withFixationalEyeMovements', true, ...
+    'nTrials', instancesNum);
+
+%% Visualize time-series response of a singe cone
+% Lets plot responses for the cone with max noise-free response
+[~,idx] = max(excitationsInstances(:));
+[~,~,targetConeID] = ind2sub(size(excitationsInstances), idx);
+
+figure(2); clf;
+% Plot the time series response for individual instances
+plot(timeAxis, squeeze(noisyExcitationResponseInstances(:,:,targetConeID)), 'k.');
+hold on;
+% Plot the time series response for the mean of the individual instances
+plot(timeAxis, squeeze(mean(noisyExcitationResponseInstances(:,:,targetConeID),1)), 'g-', 'LineWidth', 2.0);
+
+% Plot the noise-free time series response in red
+plot(timeAxis, squeeze(excitationsInstances(:,:,targetConeID)), 'r', 'LineWidth', 1.5);
+xlabel('time (seconds)');
+ylabel('excitations per integration time');
+set(gca, 'FontSize', 16);
+
+
+%%
+
