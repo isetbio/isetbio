@@ -1,15 +1,15 @@
 classdef cMosaic < handle
     % Create an optimized cone mosaic object
     %
-    %
     % Syntax:
     %   theConeMosaic = cMosaic;
     %   theConeMosaic = cMosaic('pigment', pp);
+    %   theConeMosaic = cMosaic('sizeDegs',[5,5],'eccentricityDegs',[0,0]);
     %
     % Description:
-    %    An object of the @cMosaic class defines parameters of the
-    %    retinal cone mosaic, and enables computation of cone
-    %    isomerizations and photocurrent response in an array of cones.
+    %    An object of the @cMosaic class contains parameters to create a
+    %    retinal cone mosaic and enable computation of cone excitations and
+    %    photocurrent response.
     %
     %    theConeMosaic =  cMosaic(..., 'PARAM1', val1, 'PARAM2', val2, ...)
     %    creates the cone mosaic object. Optional parameter name/value
@@ -431,7 +431,7 @@ classdef cMosaic < handle
 
         end
         
-        % Method to visualize the cone mosaic
+        % Method to visualize the cone mosaic and its activation
         params = visualize(obj, varargin);
         
         % Method to visualize the continuous, full absorptions density and the actual cone positions

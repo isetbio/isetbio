@@ -1,10 +1,9 @@
-% Demo basic usage of the new @cMosaic object with eye movements
+% Eye movements with the @cMosaic object
 %
 % Description:
-%    Shows basic usage of the new cone mosaic class, @cMosaic with eye
-%    movements. Here, we generate an on-axis (zero eccentricity) cMosaic object and
-%    compute N noisy response instances to a static stimulus
-%    under a single fixational eye movement path.
+%    We generate an on-axis (zero eccentricity) cMosaic object and
+%    compute N noisy response instances to a static stimulus under a
+%    single fixational eye movement path.
 %
 % See Also:
 %   t_cMosaicMultipleEyeMovementPaths

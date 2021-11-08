@@ -17,13 +17,16 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %    obj       - Object. The scene3D object to render.  This object
 %                has a slot for an iset3d render recipe.
 %
+% Optional key/value pairs:
+%    render type - One of
+%      {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'}; 
+%      Default is 'both'
+%    scaleIlluminance - Boolean. Whether or not to calculate the scale
+%                       illuminance of the scene.
+%
 % Outputs:
 %    ieObject         - Object. The Optical Image object.
 %    terminalOutput   - String. Terminal output.
-%
-% Optional key/value pairs:
-%    scaleIlluminance - Boolean. Whether or not to calculate the scale
-%                       illuminance of the scene.
 %
 % Description:
 %
@@ -52,13 +55,15 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
+p.addParameter('dockerimagename','pbrt-V3-spectral:latest',@ischar);
 
 rTypes = {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'};
 p.addParameter('rendertype','both',@(x)(ismember(ieParamFormat(x),rTypes)));
 
 p.parse(obj, varargin{:});
-renderType = p.Results.rendertype;
+renderType       = p.Results.rendertype;
 scaleIlluminance = p.Results.scaleilluminance;
+dockerimage      = p.Results.dockerimagename;
 
 %% Get the render recipe
 
@@ -87,7 +92,7 @@ piWrite(thisR);
 
 %% Render the pbrt file using docker
 
-[ieObject, terminalOutput] = piRender(thisR,'render type',renderType);
+[ieObject, terminalOutput] = piRender(thisR,'render type',renderType,'dockerimagename',dockerimage);
 
 %% Fix up the returned object
 
