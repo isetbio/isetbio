@@ -75,7 +75,7 @@ p.addParameter('angle',0, @isnumeric);
 p.addParameter('whichEye','left',@(x)(ismember(x,{'left','right'})));
 p.addParameter('eccentricityUnits','m',@ischar);
 p.addParameter('angleUnits','deg',@ischar);
-p.addParameter('useParfor', false, @(x)((islogical(x))||(isempty(x))));
+p.addParameter('useParfor', false, @(x)(((isempty(x))||islogical(x))));
 p.parse(varargin{:});
 
 %% Set up params return.

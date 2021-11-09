@@ -4,7 +4,7 @@ function runCSFGenerator
     load('CSFGeneratorAppExport.mat', 'params');
         
     % Display the entire params struct
-    CSFGeneratorApp.render.paramsStructTree(params);
+    visualizeParamsStructTree(params, 'CSFgeneratorParams');
     pause;
     
     % Modify params here to run a constant-size stimulus

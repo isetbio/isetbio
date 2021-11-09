@@ -36,12 +36,12 @@ oi = oiCompute(scene, oi);
 %% Generate the mosaic
 cm = cMosaic(...
     'sizeDegs', [1.0 1.5], ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
-    'eccentricityDegs', [0 0] ...  % ECC: (0,0)
+    'eccentricityDegs', [0 0], ...  % ECC: (0,0)
+    'eccVaryingConeBlur', true ...
     );
 
 %% Visualize the mosaic
 cm.visualize();
-
 
 %% Compute 8 noisy response instances of cone excitation response
 instancesNum = 8;

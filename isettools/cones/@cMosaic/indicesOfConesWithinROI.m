@@ -24,7 +24,7 @@ function coneIndices = indicesOfConesWithinROI(obj, roi)
     
     % Convert roiOutline to microns
     if (strcmp(roi.units, 'degs'))
-        roiOutlineMicrons = cMosaic.convertOutlineToMicrons(roiOutline,obj.micronsPerDegreeApproximation);
+        roiOutlineMicrons = obj.convertOutlineToMicrons(roiOutline);
     else
         roiOutlineMicrons = roiOutline;
     end

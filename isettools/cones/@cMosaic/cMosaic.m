@@ -127,25 +127,6 @@ classdef cMosaic < handle
         % 2.3/2.8 = 0.821
         coneDiameterToSpacingRatio = 1.0;
         
-        % Cone aperture (light collecting disk) has a diameter that 
-        % is 0.79 x cone diameter. We chose this to be consistent with
-        % coneMosaicHex, .e.g.: 
-        % c = coneMosaicHex(3);
-        % c.pigment.pdWidth/c.pigment.width, which gives 0.7899.
-        %
-        % Note. The coneApertureToDiameterRatio is overriden when a
-        % coneApertureModifier struct is passed (see below) with a
-        % a 'shape' field that is set to 'Gaussian'. In that case
-        % it becomes equal to 1 (cMosaic.computeConeApertures.m, line 30)
-        
-        %coneApertureToDiameterRatio = 0.79;
-        
-        % If we want the pillbox aperture to have an integral that matches 
-        % the integral of Gaussian area with sigma = 0.204 * aperture,
-        % (as in 'Serial Spatial Filters in Vision', by Chen, Makous and Williams, 1993) 
-        % set this to 2*sqrt(2)*0.204 = 0.577
-        coneApertureToDiameterRatio = 2*sqrt(2)*0.204;
-        
         % Custom cone aperture params (struct)
         coneApertureModifiers = [];
         
@@ -225,6 +206,9 @@ classdef cMosaic < handle
         % Cone aperture diameter (summation) for each cone
         coneApertureDiametersMicrons = [];
         coneApertureDiametersDegs = [];
+        
+        % This depends on the value of the apertureModifier
+        coneApertureToDiameterRatio = [];
         
         % Resolution with which zoning is performed
         oiResMicronsForZoning = [];
@@ -621,10 +605,42 @@ classdef cMosaic < handle
         function set.coneApertureModifiers(obj, val)
             % Validate fields
             fNames = fieldnames(val);
-            validFieldNames = {'smoothLocalVariations', 'shape', 'sigma'};
+            validFieldNames = {'smoothLocalVariations', 'shape', 'sigma', 'PillboxApertureIntegrationMatching'};
             for k = 1:numel(fNames)
                 assert(ismember(fNames{k}, validFieldNames), ...
                     sprintf('Unknown field ''%s'' in coneApertureModifier struct', fNames{k}));
+            end
+            
+            % Cone aperture (light collecting disk) has a diameter that 
+            % is 0.79 x cone diameter. We chose this to be consistent with
+            % coneMosaicHex, .e.g.: 
+            % c = coneMosaicHex(3);
+            % c.pigment.pdWidth/c.pigment.width, which gives 0.7899.
+            %
+            % Note. The coneApertureToDiameterRatio is overriden when a
+            % coneApertureModifier struct is passed (see below) with a
+            % a 'shape' field that is set to 'Gaussian'. In that case
+            % it becomes equal to 1 (cMosaic.computeConeApertures.m, line 30)
+            % and the Gaussian sigma parameter is set to control the aperture
+            pillboxConeApertureToDiameterRatioToMatchConeMosaixHexAperture = 0.79;
+        
+            % If we want the pillbox aperture to have an integral that matches 
+            % the integral of Gaussian area with sigma = 0.204 * aperture,
+            % (as in 'Serial Spatial Filters in Vision', by Chen, Makous and Williams, 1993) 
+            % set this to 2*sqrt(2)*0.204 = 0.577
+            pillboxConeApertureToDiameterRatioToMatchCMW1993Aperture = 2*sqrt(2)*0.204;
+            
+            % If we have a Pillbox aperture shape, or if there is no
+            % aperture shape parameter, determine the value of obj.coneApertureToDiameterRatio
+            if (isfield(val, 'shape')) && (strcmp(val.shape,'Pillbox')) && (isfield(val, 'PillboxApertureIntegrationMatching'))
+                switch (val.PillboxApertureIntegrationMatching)
+                    case 'ChenMakousWilliams1993'
+                        obj.coneApertureToDiameterRatio = pillboxConeApertureToDiameterRatioToMatchCMW1993Aperture;
+                    case 'ConeMosaicHex'
+                        obj.coneApertureToDiameterRatio = pillboxConeApertureToDiameterRatioToMatchConeMosaixHexAperture;
+                end
+            else
+                obj.coneApertureToDiameterRatio = pillboxConeApertureToDiameterRatioToMatchConeMosaixHexAperture;
             end
             
             obj.coneApertureModifiers = val;

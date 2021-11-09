@@ -19,11 +19,9 @@ function removeConesWithinOpticNerveHead(obj)
     idxInside = obj.indicesOfConesWithinROI(odStructMicrons);
     
     % Find indices of cones outside the optic disk
-    idxOutside = setdiff(1:size(obj.coneRFpositionsDegs,1), idxInside);
+    idxOutsideOpticDisk = setdiff(1:size(obj.coneRFpositionsDegs,1), idxInside);
 
-    obj.coneRFpositionsDegs = obj.coneRFpositionsDegs(idxOutside,:);
-    obj.coneRFpositionsMicrons = obj.coneRFpositionsMicrons(idxOutside,:);
-    obj.coneRFspacingsDegs = obj.coneRFspacingsDegs(idxOutside);
-    obj.coneRFspacingsMicrons = obj.coneRFspacingsMicrons(idxOutside);
+    % Update state
+    obj.updateStateGivenKeptConeIndices(idxOutsideOpticDisk);
 end
                   

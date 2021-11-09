@@ -87,11 +87,6 @@ cmRight.visualize(...
     'plotTitle', cmRight.whichEye);
 
 
-
-
-pause
-
-
 % Generate scene (sinusoid)
 sceneFOVDegs = 4;
 params.freq = 10;

@@ -157,60 +157,17 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
         spatialSupportYMicrons = cat(1,  spatialSupportYMicrons, extraYPos'+spatialSupportYMicrons(end));
     end
     
-    
-    if (~isempty(obj.micronsPerDegreeApproximation))
-        spatialSupportXDegrees = spatialSupportXMicrons/obj.micronsPerDegreeApproximation;  
-        spatialSupportYDegrees = spatialSupportYMicrons/obj.micronsPerDegreeApproximation;
-    else
-        spatialSupportXDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportXMicrons*1e-3);
-        spatialSupportYDegrees = RGCmodels.Watson.convert.rhoMMsToDegs(spatialSupportYMicrons*1e-3);
-    end
+    spatialSupportXDegrees = obj.distanceMicronsToDistanceDegreesForCmosaic(spatialSupportXMicrons);
+    spatialSupportYDegrees = obj.distanceMicronsToDistanceDegreesForCmosaic(spatialSupportYMicrons);
     
     
     [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(spatialSupportXDegrees, spatialSupportYDegrees);
     oiPositionsDegs = [oiPositionsDegsXgrid(:), oiPositionsDegsYgrid(:)];
     oiPositionsVectorsMicrons = {spatialSupportYMicrons(:), spatialSupportXMicrons(:)};
     
-    % Compute cone aperture diameters based on their local spacing
-    coneApertureDiametersMicrons = obj.coneRFspacingsMicrons * obj.coneApertureToDiameterRatio;
-    conesNum = numel(coneApertureDiametersMicrons);
-    
-    if (obj.eccVaryingConeAperture)
-        if (obj.eccVaryingConeBlur)
-            %tStart = clock;
-            % Kernel aperture blur - variable with eccentricity
-            % Partition cones into zones based on their aperture size.
-            [blurApertureDiameterMicronsZones, ...  % the median cone aperture in this zone band
-            coneIndicesInZones  ...                 % the IDs of cones in this zone band
-            ] = obj.coneZonesFromApertureSizeAndOIresolution(coneApertureDiametersMicrons, oiResMicrons);
-            %fprintf('Cone zoning based on aperture size took %f seconds.\n', etime(clock, tStart));
-        else
-            % Kernel aperture blur - single aperture for all eccentricities
-            if (isempty(obj.importedBlurDiameterMicrons))
-                blurApertureDiameterMicronsZones(1) = median(coneApertureDiametersMicrons);
-            else
-                blurApertureDiameterMicronsZones(1) = obj.importedBlurDiameterMicrons;
-            end
-            coneIndicesInZones{1} = 1:conesNum; 
-        end
-    else
-        % Kernel aperture blur - single aperture for all eccentricities
-        if (isempty(obj.importedBlurDiameterMicrons))
-            blurApertureDiameterMicronsZones(1) = median(coneApertureDiametersMicrons);
-        else
-            blurApertureDiameterMicronsZones(1) = obj.importedBlurDiameterMicrons;
-        end
-        coneApertureDiametersMicrons = coneApertureDiametersMicrons*0 + blurApertureDiameterMicronsZones(1);
-        coneIndicesInZones{1} = 1:conesNum;
-    end
-    
-    % Set the object's blurApertureDiameterMicronsZones property
-    obj.blurApertureDiameterMicronsZones = blurApertureDiameterMicronsZones;
-    
-    % Retrieve number of cones
-    nConesNum = size(obj.coneRFpositionsMicrons,1);
-    
+
     % Allocate memory for noiseFreeAbsorptionsCount
+    nConesNum = size(obj.coneRFpositionsMicrons,1);
     noiseFreeAbsorptionsCount = zeros(nTrials, nTimePoints, nConesNum);
     
     % Form responseTemporalSupport
@@ -270,12 +227,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                  
                 % Compute absorptions
                 noiseFreeAbsorptionsCount(1,1,:) = obj.integrationTime *  ...
-                    obj.computeAbsorptionRate(...
-                    emPathsMicrons(1,1,:), ...
-                    oiPositionsVectorsMicrons, ...
-                    absorptionsDensityFullMap, ...
-                    oiResMicrons, coneApertureDiametersMicrons, ...
-                    coneIndicesInZones);
+                    obj.computeAbsorptionRate(emPathsMicrons(1,1,:), ...
+                                              oiPositionsVectorsMicrons, ...
+                                              absorptionsDensityFullMap, ...
+                                              oiResMicrons);
 
                 % Replicate single shot for all trials and time points
                 for timePoint = 1:nTimePoints
@@ -287,9 +242,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                     noiseFreeAbsorptionsCount(iTrial, :, :) = noiseFreeAbsorptionsCount(1, :, :);
                 end
                 
-               
-                
-
             else
                 if (~obj.eccVaryingMacularPigmentDensityDynamic)
                     % No dynamic adjustment of MP density, so compute MP boost factors for the mean  eye movement position
@@ -321,16 +273,12 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                             % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
                             absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
                             
-     
-                
                             % Compute absorptions
                             noiseFreeAbsorptionsCount(iTrial, timePoint, :) = obj.integrationTime * ...
-                                obj.computeAbsorptionRate(...
-                                emPathsMicrons(iTrial, timePoint,:), ...
-                                oiPositionsVectorsMicrons, ...
-                                absorptionsDensityFullMap, ...
-                                oiResMicrons, coneApertureDiametersMicrons, ...
-                                coneIndicesInZones);
+                                obj.computeAbsorptionRate(emPathsMicrons(iTrial, timePoint,:), ...
+                                                          oiPositionsVectorsMicrons, ...
+                                                          absorptionsDensityFullMap, ...
+                                                          oiResMicrons);
                             
                         end % timePoint
                     end
@@ -357,12 +305,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                 
                 % Compute absorptions for this frame
                 noiseFreeAbsorptionsCount(1,oiFrame,:) = obj.integrationTime *  ...
-                    obj.computeAbsorptionRate(...
-                    emPathsMicrons(1,1,:), ...
-                    oiPositionsVectorsMicrons, ...
-                    absorptionsDensityFullMap, ...
-                    oiResMicrons, coneApertureDiametersMicrons, ...
-                    coneIndicesInZones);
+                    obj.computeAbsorptionRate(emPathsMicrons(1,1,:), ...
+                                              oiPositionsVectorsMicrons, ...
+                                              absorptionsDensityFullMap, ...
+                                              oiResMicrons);
 
                 % Replicate this frame for all trials
                 for iTrial = 2:nTrials
@@ -373,6 +319,12 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
         end  % oiSequence
     end % for oiFrame
     
+    
+    % Perform cone coupling at the level of cone excitations, if specified
+    if (~isempty(obj.coneCouplingLambda)) && (abs(obj.coneCouplingLambda)>0)
+        fprintf(2, 'Electrically coupling cone responses at the level of CONE EXCITATIONS with lambda factor = %2.3f\n', obj.coneCouplingLambda);
+        noiseFreeAbsorptionsCount = obj.electricallyCoupleConeResponses(noiseFreeAbsorptionsCount);
+    end
     
     
     if (strcmp(obj.noiseFlag, 'none'))
@@ -446,11 +398,7 @@ function opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj
     if ((ischar(opticalImagePositionDegs))&&(strcmp(opticalImagePositionDegs, 'mosaic-centered')))
         opticalImagePositionMicrons = obj.eccentricityMicrons;
     elseif ((isnumeric(opticalImagePositionDegs))&&(numel(opticalImagePositionDegs)==2))
-        if (~isempty(obj.micronsPerDegreeApproximation))
-            opticalImagePositionMicrons = opticalImagePositionDegs * obj.micronsPerDegreeApproximation;
-        else
-            opticalImagePositionMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(opticalImagePositionDegs);
-        end
+        opticalImagePositionMicrons = obj.distanceDegreesToDistanceMicronsForCmosaic(opticalImagePositionDegs);
     else
         error('''opticalImagePositionDegs'' must be set to either ''mosaic-centered'' or to a 2-element vector.');
     end
