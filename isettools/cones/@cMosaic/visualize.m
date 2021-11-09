@@ -1,57 +1,37 @@
-function params = visualize(obj, varargin)
-%% If cm.visualize('params'), we return most settable params
+function visualizationParams = visualize(obj, varargin)
+% Visualize different aspects of a @cMosaic or its activation
 %
+% Syntax:
+%   % Visualize the mosaic
+%   cm = cMosaic(); cm.visualize();
 %
-% Examples
-%    cm.visualize(); - The cone mosaic
-%    cm.visualize(params) - The parameter structure 
+%   % Return the various settable params
+%   pStruct = cm.visualize('params')
 %
-% Notes:
-%   I needed the programming help to remember the parameter names.
-%   To permit a return of the params, I had to change the definition of
-%   cMosaic in the main class (BW).
+%   % Display the various settable params and info about them
+%   cm.visualize('help');
 %
-% See also
+%  Examples
+%    cm.visualize();        - Visualize the cone mosaic
+%    pStruct = cm.visualize('params') - Retrieve the visualization parameter structure 
 %
-params = '';
-   if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
-    % User wants to return a struct with a list of parameters
-    % This can be set and passed in as the varargin.
-    params.domain = 'degrees';
-    params.domainVisualizationLimits = [];
-    params.domainVisualizationTicks = [];
-    params.visualizedConeAperture = 'lightCollectingArea';
-    params.activation = [];
-    params.horizontalActivationSliceEccentricity = [];
-    params.activationRange = [];
-    params.activationColorMap = [];
-    params.horizontalActivationColorBar = false;
-    params.verticalActivationColorBar = false;
-    params.colorBarTickLabelPostFix = '';
-    params.displayedEyeMovementData = [];
-    params.currentEMposition = [];
-    params.crossHairsOnMosaicCenter = false;
-    params.crossHairsOnFovea = false;
-    params.crossHairsOnOpticalImageCenter = false;
-    params.labelCones = true;
-    params.noXLabel = false;
-    params.noYLabel = false;
-    params.figureHandle = [];
-    params.axesHandle = [];
-    params.fontSize = 16;
-    params.backgroundColor = [0.7 0.7 0.7];
-    params.plotTitle = '';
-    % MORE TO ADD
-    return;
-   end
-%%
+%  See also. Tutorials in tutorials/t_cones/cMosaic
+%
 
+    if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
+        visualizationParams = returnVisualizationParams(varargin{1});
+        return;
+    else
+        visualizationParams = '';
+    end
+        
+    % Parse input
     p = inputParser;
     p.addParameter('visualizationView', 'REVF', @(x)(ischar(x) && (ismember(x, {'REVF', 'retinal view'}))));
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
-    p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, ...
+    p.addParameter('visualizedConeAperture', 'geometricArea', @(x)ismember(x, ...
         {'lightCollectingArea', 'geometricArea', 'coneSpacing', ...
         'lightCollectingAreaCharacteristicDiameter', 'lightCollectingArea2sigma', 'lightCollectingArea4sigma', 'lightCollectingArea5sigma', 'lightCollectingArea6sigma'}));
     p.addParameter('visualizeConeApertureThetaSamples', [], @isscalar);
@@ -818,3 +798,65 @@ function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ..
     S.LineWidth = lineWidth;
     patch(S, 'Parent', axesHandle);
 end
+
+
+function params = returnVisualizationParams(mode)
+    % User wants to return a struct with a list of parameters
+    % This can be set and passed in as the varargin.
+    
+    visualizationParamsStruct.domain = struct(...
+        'default', 'degrees', ...
+        'docString', 'Choose between {''degrees'', ''microns''}');
+    
+    visualizationParamsStruct.domainVisualizationLimits = struct(...
+        'default', [], ...
+        'docString', 'Limits for visualization. Either [], or a 4-element vector, [xMin xMax yMin yMax]' ...
+        );
+    
+    visualizationParamsStruct.domainVisualizationTicks = struct(...
+        'default', [], ...
+        'docString', 'Ticks for visualization. Either [], or a struct with the following content, struct(''x'', -10:1:10, ''y'', -5:1:5)' ...
+        );
+    
+    visualizationParamsStruct.visualizedConeAperture = struct(...
+        'default', 'geometricArea', ...
+        'docStringA', 'For pillbox apertures, choose between {''lightCollectingArea'', ''geometricArea'', ''coneSpacing''}', ...
+        'docStringB', 'For Gaussian apertures, choose between {''geometricArea'', ''coneSpacing'', ''lightCollectingAreaCharacteristicDiameter'', ''lightCollectingArea2sigma'', ''lightCollectingArea4sigma'', ''lightCollectingArea5sigma'', ''lightCollectingArea6sigma''}' ...
+    );
+    
+    visualizationParamsStruct.activation = [];
+    visualizationParamsStruct.horizontalActivationSliceEccentricity = [];
+    visualizationParamsStruct.activationRange = [];
+    visualizationParamsStruct.activationColorMap = [];
+    visualizationParamsStruct.horizontalActivationColorBar = false;
+    visualizationParamsStruct.verticalActivationColorBar = false;
+    visualizationParamsStruct.colorBarTickLabelPostFix = '';
+    visualizationParamsStruct.displayedEyeMovementData = [];
+    visualizationParamsStruct.currentEMposition = [];
+    visualizationParamsStruct.crossHairsOnMosaicCenter = false;
+    visualizationParamsStruct.crossHairsOnFovea = false;
+    visualizationParamsStruct.crossHairsOnOpticalImageCenter = false;
+    visualizationParamsStruct.labelCones = true;
+    visualizationParamsStruct.noXLabel = false;
+    visualizationParamsStruct.noYLabel = false;
+    visualizationParamsStruct.figureHandle = [];
+    visualizationParamsStruct.axesHandle = [];
+    visualizationParamsStruct.fontSize = 16;
+    visualizationParamsStruct.backgroundColor = [0.7 0.7 0.7];
+    visualizationParamsStruct.plotTitle = '';
+
+    switch (mode)
+        case 'params'
+            % Return the params struct
+            fNames = fieldnames(visualizationParamsStruct);
+            for k = 1:numel(fNames)
+                params.(fNames{k}) = visualizationParamsStruct.(fNames{k});
+            end
+            
+        case 'help'
+            % Display the params struct along with information for each param
+            visualizeParamsStructTree(visualizationParamsStruct, 'visualizationParams');
+            params = '';
+    end
+end
+   
