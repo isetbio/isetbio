@@ -1,10 +1,59 @@
-function visualize(obj, varargin)
+function params = visualize(obj, varargin)
+%% If cm.visualize('params'), we return most settable params
+%
+%
+% Examples
+%    cm.visualize(); - The cone mosaic
+%    cm.visualize(params) - The parameter structure 
+%
+% Notes:
+%   I needed the programming help to remember the parameter names.
+%   To permit a return of the params, I had to change the definition of
+%   cMosaic in the main class (BW).
+%
+% See also
+%
+params = '';
+   if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
+    % User wants to return a struct with a list of parameters
+    % This can be set and passed in as the varargin.
+    params.domain = 'degrees';
+    params.domainVisualizationLimits = [];
+    params.domainVisualizationTicks = [];
+    params.visualizedConeAperture = 'lightCollectingArea';
+    params.activation = [];
+    params.horizontalActivationSliceEccentricity = [];
+    params.activationRange = [];
+    params.activationColorMap = [];
+    params.horizontalActivationColorBar = false;
+    params.verticalActivationColorBar = false;
+    params.colorBarTickLabelPostFix = '';
+    params.displayedEyeMovementData = [];
+    params.currentEMposition = [];
+    params.crossHairsOnMosaicCenter = false;
+    params.crossHairsOnFovea = false;
+    params.crossHairsOnOpticalImageCenter = false;
+    params.labelCones = true;
+    params.noXLabel = false;
+    params.noYLabel = false;
+    params.figureHandle = [];
+    params.axesHandle = [];
+    params.fontSize = 16;
+    params.backgroundColor = [0.7 0.7 0.7];
+    params.plotTitle = '';
+    % MORE TO ADD
+    return;
+   end
+%%
+
     p = inputParser;
     p.addParameter('visualizationView', 'REVF', @(x)(ischar(x) && (ismember(x, {'REVF', 'retinal view'}))));
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
-    p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x))));
-    p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, {'lightCollectingArea', 'geometricArea'}));
+    p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
+    p.addParameter('visualizedConeAperture', 'lightCollectingArea', @(x)ismember(x, ...
+        {'lightCollectingArea', 'geometricArea', 'coneSpacing', ...
+        'lightCollectingAreaCharacteristicDiameter', 'lightCollectingArea2sigma', 'lightCollectingArea4sigma', 'lightCollectingArea5sigma', 'lightCollectingArea6sigma'}));
     p.addParameter('visualizeConeApertureThetaSamples', [], @isscalar);
     p.addParameter('densityContourOverlay', false, @islogical);
     p.addParameter('densityContourLevels', [], @isnumeric);
@@ -28,7 +77,9 @@ function visualize(obj, varargin)
     p.addParameter('crossHairsOnFovea', false, @islogical);
     p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
     p.addParameter('crossHairsColor', [], @isnumeric);
+    p.addParameter('visualizeCones', true, @islogical);
     p.addParameter('labelCones', true, @islogical);
+    p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
@@ -59,7 +110,9 @@ function visualize(obj, varargin)
     currentEMposition = p.Results.currentEMposition;
     crossHairsOnMosaicCenter = p.Results.crossHairsOnMosaicCenter;
     crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
+    visualizeCones = p.Results.visualizeCones;
     labelCones = p.Results.labelCones;
+    labelConesWithIndices = p.Results.labelConesWithIndices;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
     crossHairsOnFovea = p.Results.crossHairsOnFovea;
     crossHairsColor = p.Results.crossHairsColor;
@@ -81,7 +134,10 @@ function visualize(obj, varargin)
     textDisplay = p.Results.textDisplay;
     textDisplayColor = p.Results.textDisplayColor;
     
-
+    if (~isempty(labelConesWithIndices))
+        labelCones = false;
+    end
+    
     % Determine what eye movement data have to be displayed
     if (isstruct(displayedEyeMovementData))
        if (ischar(displayedEyeMovementData.trial))
@@ -111,6 +167,9 @@ function visualize(obj, varargin)
         case 'degrees'
             rfPositions = obj.coneRFpositionsDegs;
             rfSpacings = obj.coneRFspacingsDegs;
+            rfApertureDiameters = obj.coneApertureDiametersDegs;
+            rfDiameters = rfApertureDiameters/obj.coneApertureToDiameterRatio;
+            
             rfProximityThreshold = 1/270;
             if (isstruct(displayedEyeMovementData))
                 emPath = -1/60*obj.fixEMobj.emPosArcMin(displayedTrials,displayedTimePoints,:);
@@ -120,6 +179,9 @@ function visualize(obj, varargin)
         case 'microns'
             rfPositions = obj.coneRFpositionsMicrons;
             rfSpacings = obj.coneRFspacingsMicrons;
+            rfApertureDiameters = obj.coneApertureDiametersMicrons;
+            rfDiameters = rfApertureDiameters/obj.coneApertureToDiameterRatio;
+            
             rfProximityThreshold = 1;
             if (isstruct(displayedEyeMovementData))
                 emPath = -obj.fixEMobj.emPosMicrons(displayedTrials,displayedTimePoints,:);
@@ -216,50 +278,160 @@ function visualize(obj, varargin)
     cla(axesHandle);
     hold(axesHandle, 'on');
     
-    % Visualize cone aperture multiplier
-    if (strcmp(visualizedConeAperture, 'geometricArea'))
-       visualizedApertureMultiplier = 1.0;
-    else
-       visualizedApertureMultiplier = obj.coneApertureToDiameterRatio;
+    
+    % Visualize cone apertures
+    switch (visualizedConeAperture)
+        case 'coneSpacing'
+            visualizedApertures = rfSpacings;
+            
+        case 'geometricArea'
+            visualizedApertures = rfDiameters;
+            
+        case 'lightCollectingArea'
+            visualizedApertures = rfApertureDiameters;
+            
+        case 'lightCollectingAreaCharacteristicDiameter'
+            if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
+                gaussianSigma = obj.coneApertureModifiers.sigma;
+                visualizedApertures = 2*sqrt(2)*gaussianSigma*rfApertureDiameters;
+            else
+                fprintf(2,'cone aperture is not Gaussian, so cannot visualize characteristic radius. Visualizing the diameter\n');
+                visualizedApertures = rfApertureDiameters;
+            end
+            
+        case 'lightCollectingArea2sigma'
+            if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
+                gaussianSigma = obj.coneApertureModifiers.sigma;
+                visualizedApertures = 2*gaussianSigma*rfApertureDiameters;
+            else
+                fprintf(2,'cone aperture is not Gaussian, so cannot visualize 2xsigma. Visualizing the diameter\n');
+                visualizedApertures = rfApertureDiameters;
+            end
+            
+        case 'lightCollectingArea4sigma'
+            if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
+                gaussianSigma = obj.coneApertureModifiers.sigma;
+                visualizedApertures = 4*gaussianSigma*rfApertureDiameters;
+            else
+                fprintf(2,'cone aperture is not Gaussian, so cannot visualize 4xsigma. Visualizing the diameter\n');
+                visualizedApertures = rfApertureDiameters;
+            end
+            
+        case 'lightCollectingArea5sigma'
+            if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
+                gaussianSigma = obj.coneApertureModifiers.sigma;
+                visualizedApertures = 5*gaussianSigma*rfApertureDiameters;
+            else
+                fprintf(2,'cone aperture is not Gaussian, so cannot visualize 5xsigma. Visualizing the diameter\n');
+                visualizedApertures = rfApertureDiameters;
+            end
+            
+        case 'lightCollectingArea6sigma'
+            if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
+                gaussianSigma = obj.coneApertureModifiers.sigma;
+                visualizedApertures = 6*gaussianSigma*rfApertureDiameters;
+            else
+                visualizedApertures = rfApertureDiameters;
+                fprintf(2,'cone aperture is not Gaussian, so cannot visualize 6xsigma. Visualizing the diameter\n');
+            end
+            
+        otherwise
+            error('Unknown visualizedConeAperture (%s)', visualizedConeAperture);
     end
         
+    
     if (isempty(activation))
-        % Visualize cone types
-        if (densityContourOverlay)
-            faceAlpha = 0.2;
-        else
-        	faceAlpha = 0.9;
-        end
-        lineWidth = 0.5;
-        % Plot L-cones
-        if (labelCones)
-            edgeColor = [0.8 0 0];
-        else
-            edgeColor = [0.5 0.5 0.5];
-        end
         
-        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
-            rfPositions(obj.lConeIndices,:), 1/4*0.9, edgeColor, lineWidth, faceAlpha);
-        % Plot M-cones
-        if (labelCones)
-            edgeColor = [0 0.7 0];
-        else
-            edgeColor = [0.5 0.5 0.5];
-        end
-        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
-            rfPositions(obj.mConeIndices,:), 2/4*0.9, edgeColor, lineWidth, faceAlpha);
-        % Plot S-cones
-        if (labelCones)
-            edgeColor = [0 0 1];
-        else
-            edgeColor = [0.5 0.5 0.5];
-        end
-        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
-            rfPositions(obj.sConeIndices,:), 3/4*0.9, edgeColor, lineWidth, faceAlpha);
-        % Plot K-cones
-        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
-            rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], lineWidth, faceAlpha);
+        if (visualizeCones)
+            % Visualize cone types
+            if (densityContourOverlay)
+                faceAlpha = 0.2;
+            else
+                if (strcmp(visualizedConeAperture, 'lightCollectingArea6sigma'))
+                    faceAlpha = 0.6;
+                else
+                    faceAlpha = 0.9;
+                end
+            end
+            lineWidth = 0.5;
+            % Plot L-cones
+            if (labelCones) || (~isempty(labelConesWithIndices))
+                edgeColor = [0.8 0 0];
+            else
+                edgeColor = [0.5 0.5 0.5];
+            end
+
+            if (labelCones)
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.lConeIndices)*0.5, ...
+                    rfPositions(obj.lConeIndices,:), 1/4*0.9, edgeColor, lineWidth, faceAlpha);
+            elseif (~isempty(labelConesWithIndices))
+                includedLconeIndices = intersect(obj.lConeIndices, labelConesWithIndices);
+                excludedLconeIndices = setdiff(obj.lConeIndices, includedLconeIndices);
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedLconeIndices)*0.5, ...
+                    rfPositions(includedLconeIndices,:), 1/5*0.9, edgeColor, lineWidth, faceAlpha);
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedLconeIndices)*0.5, ...
+                    rfPositions(excludedLconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
+            end
             
+            % Plot M-cones
+            if (labelCones) || (~isempty(labelConesWithIndices))
+                edgeColor = [0 0.7 0];
+            else
+                edgeColor = [0.5 0.5 0.5];
+            end
+            
+            if (labelCones)
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.mConeIndices)*0.5, ...
+                    rfPositions(obj.mConeIndices,:), 2/4*0.9, edgeColor, lineWidth, faceAlpha);
+            elseif (~isempty(labelConesWithIndices))
+                includedMconeIndices = intersect(obj.mConeIndices, labelConesWithIndices);
+                excludedMconeIndices = setdiff(obj.mConeIndices, includedMconeIndices);
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedMconeIndices)*0.5, ...
+                    rfPositions(includedMconeIndices,:), 2/5*0.9, edgeColor, lineWidth, faceAlpha);
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedMconeIndices)*0.5, ...
+                    rfPositions(excludedMconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
+            end
+            
+            
+            
+            % Plot S-cones
+            if (labelCones)  || (~isempty(labelConesWithIndices))
+                edgeColor = [0 0 1];
+            else
+                edgeColor = [0.5 0.5 0.5];
+            end
+            if (labelCones)
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.sConeIndices)*0.5, ...
+                    rfPositions(obj.sConeIndices,:), 3/4*0.9, edgeColor, lineWidth, faceAlpha);
+            elseif (~isempty(labelConesWithIndices))
+                includedSconeIndices = intersect(obj.sConeIndices, labelConesWithIndices);
+                excludedSconeIndices = setdiff(obj.sConeIndices, includedSconeIndices);
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedSconeIndices)*0.5, ...
+                    rfPositions(includedSconeIndices,:), 3/5*0.9, edgeColor, lineWidth, faceAlpha);
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedSconeIndices)*0.5, ...
+                    rfPositions(excludedSconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
+            end
+                
+                
+            % Plot K-cones
+            if (labelCones)  || (~isempty(labelConesWithIndices))
+                edgeColor = [1 1 0];
+            else
+                edgeColor = [0.5 0.5 0.5];
+            end
+            if (labelCones)
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.kConeIndices)*0.5, ...
+                    rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], lineWidth, faceAlpha);
+            elseif (~isempty(labelConesWithIndices))
+                includedKconeIndices = intersect(obj.kConeIndices, labelConesWithIndices);
+                excludedKconeIndices = setdiff(obj.kConeIndices, includedKconeIndices);
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedKconeIndices)*0.5, ...
+                    rfPositions(includedKconeIndices,:), 4/5*0.9, edgeColor, lineWidth, faceAlpha);
+                renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedKconeIndices)*0.5, ...
+                    rfPositions(excludedKconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
+            end    
+        end % visualizeCones
+        
         if (densityContourOverlay)
             % Compute dense 2D map
             sampledPositions{1} = linspace(xRange(1), xRange(2), 24);
@@ -314,16 +486,16 @@ function visualize(obj, varargin)
         % Visualize activations
         faceAlpha = 1.0;
         % Plot L-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.lConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.lConeIndices)*0.5, ...
             rfPositions(obj.lConeIndices,:), activation(obj.lConeIndices), [0 0 0], 0.1, faceAlpha);
         % Plot M-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.mConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.mConeIndices)*0.5, ...
             rfPositions(obj.mConeIndices,:), activation(obj.mConeIndices), [0 0 0], 0.1, faceAlpha);
         % Plot S-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.sConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.sConeIndices)*0.5, ...
             rfPositions(obj.sConeIndices,:), activation(obj.sConeIndices), [0 0 0], 0.1, faceAlpha);
         % Plot K-cone activations
-        renderPatchArray(axesHandle, coneApertureShape, visualizedApertureMultiplier*rfSpacings(obj.kConeIndices)*0.5, ...
+        renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.kConeIndices)*0.5, ...
             rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1, faceAlpha);
         
         if (~isempty(verticalActivationSliceEccentricity))
@@ -336,7 +508,6 @@ function visualize(obj, varargin)
         end
         
     end
-    
     
     % Add crosshairs
     if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
@@ -410,6 +581,8 @@ function visualize(obj, varargin)
         % Colormap for visualization of cone types
         if (labelCones)
             cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor];
+        elseif (~isempty(labelConesWithIndices))
+            cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor; [0.5 0.5 0.5]];    
         else
             cMap = 0.4*ones(4,3);
         end
@@ -530,7 +703,7 @@ function visualize(obj, varargin)
                     xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} retinal space (degrees)    \\color[rgb]{0 0.7 0} %s', ...
                             leftMeridianName, rightMeridianName));
                 else
-                    xlabel(axesHandle, 'space (degrees)');
+                    xlabel(axesHandle, 'retinal space (degrees)');
                 end
             end
             if (~noYlabel)
@@ -538,7 +711,7 @@ function visualize(obj, varargin)
                     ylabel(axesHandle, sprintf('%s  < = = = = = |     space (degrees)    | = = = = =  > %s', ...
                         'superior retina', 'inferior retina'));
                 else
-                    ylabel(axesHandle, 'space (degrees)');
+                    ylabel(axesHandle, 'retinal space (degrees)');
                 end
             end
             set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
@@ -566,7 +739,7 @@ function visualize(obj, varargin)
                     ylabel(axesHandle, sprintf('\\color{blue}%s    \\color{black} retinal space (microns)    \\color[rgb]{0.6 0.6 0.4} %s', ...
                             lowerMeridianName, upperMeridianName));
                 else
-                    ylabel(axesHandle, 'space (microns)');
+                    ylabel(axesHandle, 'retinal space (microns)');
                 end
             end
             set(axesHandle, 'XTickLabel', sprintf('%d\n', domainVisualizationTicks.x), ...
