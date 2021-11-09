@@ -31,17 +31,22 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
+    
     p.addParameter('visualizedConeAperture', 'geometricArea', @(x)ismember(x, ...
         {'lightCollectingArea', 'geometricArea', 'coneSpacing', ...
         'lightCollectingAreaCharacteristicDiameter', 'lightCollectingArea2sigma', 'lightCollectingArea4sigma', 'lightCollectingArea5sigma', 'lightCollectingArea6sigma'}));
-    p.addParameter('visualizeConeApertureThetaSamples', [], @isscalar);
+    p.addParameter('visualizedConeApertureThetaSamples', [], @isscalar);
+    
+    p.addParameter('visualizeCones', true, @islogical);
+    p.addParameter('labelCones', true, @islogical);
+    p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
+    
     p.addParameter('densityContourOverlay', false, @islogical);
     p.addParameter('densityContourLevels', [], @isnumeric);
     p.addParameter('densityContourLevelLabelsDisplay', false, @islogical);
     p.addParameter('densityColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
+    
     p.addParameter('activation', []);
-    p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
-    p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
     p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
     p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.addParameter('verticalDensityColorBar', false, @islogical);
@@ -49,17 +54,21 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('verticalActivationColorBar', false, @islogical);
     p.addParameter('horizontalActivationColorBarInside', false, @islogical);
     p.addParameter('verticalActivationColorBarInside', false, @islogical);
+    
+    p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
+    p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
+    
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
     p.addParameter('colorbarTickLabelColor',  [.9 .6 0.2]);
+    
     p.addParameter('displayedEyeMovementData', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('currentEMposition', [], @(x)(isempty(x)||(numel(x)==2)));
+    
     p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
     p.addParameter('crossHairsOnFovea', false, @islogical);
     p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
     p.addParameter('crossHairsColor', [], @isnumeric);
-    p.addParameter('visualizeCones', true, @islogical);
-    p.addParameter('labelCones', true, @islogical);
-    p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
+    
     p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
@@ -70,6 +79,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('textDisplay', '', @ischar);
     p.addParameter('textDisplayColor', [], @isnumeric);
+    
     p.parse(varargin{:});
     
     visualizationView = p.Results.visualizationView;
@@ -77,7 +87,7 @@ function visualizationParams = visualize(obj, varargin)
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     visualizedConeAperture = p.Results.visualizedConeAperture;
-    visualizeConeApertureThetaSamples = p.Results.visualizeConeApertureThetaSamples;
+    visualizedConeApertureThetaSamples = p.Results.visualizedConeApertureThetaSamples;
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
     verticalDensityColorBar = p.Results.verticalDensityColorBar;
@@ -229,7 +239,7 @@ function visualizationParams = visualize(obj, varargin)
     conesNum = numel(rfSpacings);
     
      % Aperture shape (disk)
-    if (isempty(visualizeConeApertureThetaSamples))
+    if (isempty(visualizedConeApertureThetaSamples))
         if (conesNum < 100)
             deltaAngle = 5;
         elseif (conesNum < 500)
@@ -246,7 +256,7 @@ function visualizationParams = visualize(obj, varargin)
             deltaAngle = 60;
         end
     else
-        deltaAngle = 360/visualizeConeApertureThetaSamples;
+        deltaAngle = 360/visualizedConeApertureThetaSamples;
     end
     
     % Generate cone aperture shape
@@ -824,6 +834,26 @@ function params = returnVisualizationParams(mode)
         'docStringB', 'For Gaussian apertures, choose between {''geometricArea'', ''coneSpacing'', ''lightCollectingAreaCharacteristicDiameter'', ''lightCollectingArea2sigma'', ''lightCollectingArea4sigma'', ''lightCollectingArea5sigma'', ''lightCollectingArea6sigma''}' ...
     );
     
+    visualizationParamsStruct.visualizedConeApertureThetaSamples = struct(...
+        'default', [], ...
+        'docString', 'Number of angular samples to represent the visualized cone aperture, e.g., 6 for a hexagonal-shaped aperture' ...
+        );
+
+    visualizationParamsStruct.visualizeCones = struct(...
+        'default', true, ...
+        'docString', 'Flag indicating whether to visual cones. You can set it to false when visualizing the cone density' ...
+        );
+    
+    visualizationParamsStruct.labelCones = struct(...
+        'default', true, ...
+        'docString', 'Flag indicating whether to color-code the visualized cones according to the their type: L, M, S etc' ...
+        );
+    
+    visualizationParamsStruct.labelConesWithIndices = struct(...
+        'default', [], ...
+        'docString', 'Either [], in which case all cones are labeled, or a list of indices specifying the cones to be labeled according to their type' ...
+        );
+    
     visualizationParamsStruct.activation = [];
     visualizationParamsStruct.horizontalActivationSliceEccentricity = [];
     visualizationParamsStruct.activationRange = [];
@@ -836,7 +866,7 @@ function params = returnVisualizationParams(mode)
     visualizationParamsStruct.crossHairsOnMosaicCenter = false;
     visualizationParamsStruct.crossHairsOnFovea = false;
     visualizationParamsStruct.crossHairsOnOpticalImageCenter = false;
-    visualizationParamsStruct.labelCones = true;
+
     visualizationParamsStruct.noXLabel = false;
     visualizationParamsStruct.noYLabel = false;
     visualizationParamsStruct.figureHandle = [];
