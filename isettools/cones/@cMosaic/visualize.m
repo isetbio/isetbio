@@ -246,11 +246,11 @@ function visualizationParams = visualize(obj, varargin)
             deltaAngle = 10;
         elseif (conesNum < 1000)
             deltaAngle = 15;
-        elseif (conesNum < 3000)
+        elseif (conesNum < 2000)
            deltaAngle = 20;
-        elseif (conesNum < 10000)
+        elseif (conesNum < 40000)
             deltaAngle = 30;
-        elseif (conesNum < 30000)
+        elseif (conesNum < 60000)
             deltaAngle = 45;
         else
             deltaAngle = 60;

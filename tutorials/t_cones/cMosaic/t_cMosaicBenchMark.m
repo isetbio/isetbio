@@ -25,7 +25,7 @@ close all;
 benchtestMemoryAllocation = false;
 
 % Repeat 100 times so as to get an accurate estimate of compute time
-repeatsNum = 2 %100;
+repeatsNum = 2; %100;
 
 %% Generate test scenes
 fprintf('Computing scenes ...\n');
