@@ -854,33 +854,33 @@ function params = returnVisualizationParams(mode)
         'docString', 'Either [], in which case all cones are labeled, or a list of indices specifying the cones to be labeled according to their type' ...
         );
     
-    visualizationParamsStruct.activation = [];
-    visualizationParamsStruct.horizontalActivationSliceEccentricity = [];
-    visualizationParamsStruct.activationRange = [];
-    visualizationParamsStruct.activationColorMap = [];
-    visualizationParamsStruct.horizontalActivationColorBar = false;
-    visualizationParamsStruct.verticalActivationColorBar = false;
-    visualizationParamsStruct.colorBarTickLabelPostFix = '';
-    visualizationParamsStruct.displayedEyeMovementData = [];
-    visualizationParamsStruct.currentEMposition = [];
-    visualizationParamsStruct.crossHairsOnMosaicCenter = false;
-    visualizationParamsStruct.crossHairsOnFovea = false;
-    visualizationParamsStruct.crossHairsOnOpticalImageCenter = false;
-
-    visualizationParamsStruct.noXLabel = false;
-    visualizationParamsStruct.noYLabel = false;
-    visualizationParamsStruct.figureHandle = [];
-    visualizationParamsStruct.axesHandle = [];
-    visualizationParamsStruct.fontSize = 16;
-    visualizationParamsStruct.backgroundColor = [0.7 0.7 0.7];
-    visualizationParamsStruct.plotTitle = '';
+%     visualizationParamsStruct.activation = [];
+%     visualizationParamsStruct.horizontalActivationSliceEccentricity = [];
+%     visualizationParamsStruct.activationRange = [];
+%     visualizationParamsStruct.activationColorMap = [];
+%     visualizationParamsStruct.horizontalActivationColorBar = false;
+%     visualizationParamsStruct.verticalActivationColorBar = false;
+%     visualizationParamsStruct.colorBarTickLabelPostFix = '';
+%     visualizationParamsStruct.displayedEyeMovementData = [];
+%     visualizationParamsStruct.currentEMposition = [];
+%     visualizationParamsStruct.crossHairsOnMosaicCenter = false;
+%     visualizationParamsStruct.crossHairsOnFovea = false;
+%     visualizationParamsStruct.crossHairsOnOpticalImageCenter = false;
+% 
+%     visualizationParamsStruct.noXLabel = false;
+%     visualizationParamsStruct.noYLabel = false;
+%     visualizationParamsStruct.figureHandle = [];
+%     visualizationParamsStruct.axesHandle = [];
+%     visualizationParamsStruct.fontSize = 16;
+%     visualizationParamsStruct.backgroundColor = [0.7 0.7 0.7];
+%     visualizationParamsStruct.plotTitle = '';
 
     switch (mode)
         case 'params'
             % Return the params struct
             fNames = fieldnames(visualizationParamsStruct);
             for k = 1:numel(fNames)
-                params.(fNames{k}) = visualizationParamsStruct.(fNames{k});
+                params.(fNames{k}) = visualizationParamsStruct.(fNames{k}).default;
             end
             
         case 'help'
