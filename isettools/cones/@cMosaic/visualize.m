@@ -55,7 +55,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('horizontalActivationColorBarInside', false, @islogical);
     p.addParameter('verticalActivationColorBarInside', false, @islogical);
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
-    p.addParameter('colorbarTickLabelColor',  @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('colorbarTickLabelColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
     
     p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
     p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
@@ -75,7 +75,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('fontSize', 16, @isscalar);
-    p.addParameter('backgroundColor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('textDisplay', '', @ischar);
     p.addParameter('textDisplayColor', [], @isnumeric);
@@ -839,7 +839,7 @@ function params = returnVisualizationParams(mode)
     
     visualizationParamsStruct.visualizedConeAperture = struct(...
         'default', 'geometricArea', ...
-        'docStringA', 'For pillbox apertures, choose between {''lightCollectingArea'', ''geometricArea'', ''coneSpacing''}', ...
+        'docStringA', 'For pillbox apertures,  choose between {''geometricArea'', ''coneSpacing'', ''lightCollectingArea''}', ...
         'docStringB', 'For Gaussian apertures, choose between {''geometricArea'', ''coneSpacing'', ''lightCollectingAreaCharacteristicDiameter'', ''lightCollectingArea2sigma'', ''lightCollectingArea4sigma'', ''lightCollectingArea5sigma'', ''lightCollectingArea6sigma''}' ...
     );
     
@@ -1007,7 +1007,7 @@ function params = returnVisualizationParams(mode)
     
     visualizationParamsStruct.backgroundColor = struct(...
         'default', [], ...
-        'docString', 'Either [], or a [1x3] vector of RGB values for the axes background color' ...
+        'docString', 'Either [], ''none'', or a [1x3] vector of RGB values for the axes background color' ...
         );
     
     visualizationParamsStruct.plotTitle = struct(...

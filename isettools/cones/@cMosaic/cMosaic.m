@@ -491,9 +491,7 @@ classdef cMosaic < handle
         sizeMicrons = sizeDegreesToSizeMicronsForCmosaic(obj, sizeDegrees, eccentricityDegrees);
     
         % Method for generating the cone aperture blur kernel
-        [apertureKernel, theoreticalAreaMetersSquared, theoreticalAreaMicronsSquared, actualAreaMicronsSquared] = ...
-            generateApertureKernel(obj, coneApertureDiameterMicrons, oiResMicrons);
-        
+        apertureKernel = generateApertureKernel(obj, coneApertureDiameterMicrons, oiResMicrons);
         
         % Blur sigma (in microns) of a cone with index theConeIndex, from its blur zone
         % Only for Gaussian aperture modifier

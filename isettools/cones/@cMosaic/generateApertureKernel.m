@@ -1,17 +1,16 @@
-function [apertureKernel, theoreticalAreaMetersSquared, theoreticalAreaMicronsSquared, actualAreaMicronsSquared] = ...
-    generateApertureKernel(obj, blurApertureDiameterMicrons, oiResMicrons)
+function apertureKernel = generateApertureKernel(obj, blurApertureDiameterMicrons, oiResMicrons)
 
     % Compute convolution kernel size in pixels - make it big here, we'll
     % trim at the end
     apertureSamples = ceil(blurApertureDiameterMicrons*2 / oiResMicrons);
     
     if (apertureSamples < 3)
-        error('The retinal image resolution (%2.2f microns) is too low relative to the cone aperture (%2.2f microns) for accurate computation of cone blur. Increase the # of pixels in the stimulus or decrease the stimulus FOV.', oiResMicrons, blurApertureDiameterMicrons);
+        fprintf(2, 'Warning: The retinal image resolution (%2.2f microns) is too low relative to the cone aperture (%2.2f microns) for accurate computation of cone blur.\n\tSkipping blur by cone aperture.\n\tConsider increasing the # of pixels in the stimulus or decrease the stimulus FOV.\n', oiResMicrons, blurApertureDiameterMicrons);
+        % Return delta function aperture
+        apertureKernel = 1;
+        return;
     end
     
-    if (apertureSamples < 5)
-        fprintf(2, 'Warning: The retinal image resolution (%2.2f microns) is low relative to the cone aperture (%2.2f microns)  for accurate computation of cone blur. Consider increasing the # of pixels in the stimulus or decrease the stimulus FOV.\n', oiResMicrons, blurApertureDiameterMicrons);
-    end
     
     % Make sure it is odd
     if (mod(apertureSamples, 2) == 0)
