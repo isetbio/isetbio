@@ -7,18 +7,10 @@ function importExternalConeData(obj, coneData)
     switch (coneData.positionUnits)
         case 'microns'
             obj.coneRFpositionsMicrons = coneData.positions;
-            if (~isempty(obj.micronsPerDegreeApproximation))
-                obj.coneRFpositionsDegs = obj.coneRFpositionsMicrons/obj.micronsPerDegreeApproximation;
-            else
-                obj.coneRFpositionsDegs = RGCmodels.Watson.convert.rhoMMsToDegs(obj.coneRFpositionsMicrons * 1e-3);
-            end
+            obj.coneRFpositionsDegs = obj.distanceMicronsToDistanceDegreesForCmosaic(obj.coneRFpositionsMicrons);
         case 'degrees'
             obj.coneRFpositionsDegs = coneData.positions;
-            if (~isempty(obj.micronsPerDegreeApproximation))
-                obj.coneRFpositionsMicrons = obj.coneRFpositionsDegs*obj.micronsPerDegreeApproximation;
-            else
-                obj.coneRFpositionsMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(obj.coneRFpositionsDegs);
-            end
+            obj.coneRFpositionsMicrons = obj.distanceDegreesToDistanceMicronsForCmosaic(obj.coneRFpositionsDegs);
     end
     conesNum = size(obj.coneRFpositionsMicrons,1);
     
@@ -32,33 +24,33 @@ function importExternalConeData(obj, coneData)
         % Compute cone spacings from lightGatheringApertureDiameters
         coneApertures = reshape(coneData.lightGatheringApertureDiameters, [1 conesNum]);
         coneSpacings = coneApertures / obj.coneApertureToDiameterRatio;
+        eccRadiiMicrons = (sqrt(sum(obj.coneRFpositionsMicrons.^2,2)))';
+        eccRadiiDegs = (sqrt(sum(obj.coneRFpositionsDegs.^2,2)))';
+        
         switch (coneData.positionUnits)
             case 'microns' 
+                obj.coneApertureDiametersMicrons = coneApertures;
                 obj.coneRFspacingsMicrons = coneSpacings;
-                if (~isempty(obj.micronsPerDegreeApproximation))
-                    obj.coneRFspacingsDegs = obj.coneRFspacingsMicrons / obj.micronsPerDegreeApproximation;
-                else
-                    eccMicrons = mean(sqrt(sum(obj.coneRFpositionsMicrons.^2,2)));
-                    obj.coneRFspacingsDegs = RGCmodels.Watson.convert.sizeRetinalMicronsToSizeVisualDegs(obj.coneRFspacingsMicrons, eccMicrons);
-                end
+                obj.coneRFspacingsDegs = obj.sizeMicronsToSizeDegreesForCmosaic(obj.coneRFspacingsMicrons, eccRadiiMicrons);
 
             case 'degrees'
+                obj.coneApertureDiametersDegs = coneApertures;
                 obj.coneRFspacingsDegs = coneSpacings;
-                if (~isempty(obj.micronsPerDegreeApproximation))
-                    obj.coneRFspacingsMicrons = obj.coneRFspacingsDegs * obj.micronsPerDegreeApproximation; 
-                else
-                    eccDegs = mean(sqrt(sum(obj.coneRFpositionsDegs.^2,2)));
-                    obj.coneRFspacingsMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(obj.coneRFspacingsDegs, eccDegs);
-                end
+                obj.coneRFspacingsMicrons = obj.sizeDegreesToSizeMicronsForCmosaic(obj.coneRFspacingsDegs, eccRadiiDegs);
         end
+    end
+   
+    obj.coneIndicesInZones{1} = 1:conesNum;
+    eccZones = sqrt(sum((mean(obj.coneRFpositionsMicrons, 1)).^2));
+    
+    if (isfield(coneData, 'blurApertureDiameterMicrons'))
+        obj.importedBlurDiameterMicrons = coneData.blurApertureDiameterMicrons;
+        obj.blurApertureDiameterMicronsZones(1) = coneData.blurApertureDiameterMicrons;
+        obj.blurApertureDiameterDegsZones(1) = obj.sizeMicronsToSizeDegreesForCmosaic(obj.blurApertureDiameterMicronsZones(1), eccZones);
     end
     
     if (isfield(coneData, 'outerSegmentLengthAttenationFactors'))
         obj.importedOSLengthAttenuationFactors = reshape(coneData.outerSegmentLengthAttenationFactors, [1 conesNum]);
-    end
-    
-    if (isfield(coneData, 'blurApertureDiameterMicrons'))
-        obj.importedBlurDiameterMicrons = coneData.blurApertureDiameterMicrons;
     end
     
     
@@ -83,16 +75,10 @@ function importExternalConeData(obj, coneData)
     assert(conesNum==numel(obj.lConeIndices)+numel(obj.mConeIndices)+numel(obj.sConeIndices)+numel(obj.kConeIndices), ...
         'loadExternalConeData():: indices do not sum up to total cones');
     
+    
     % Compute achieved cone densities
-    achievedConeDensities = [...
-        numel(obj.lConeIndices)/conesNum ...
-        numel(obj.mConeIndices)/conesNum ...
-        numel(obj.sConeIndices)/conesNum ...
-        numel(obj.kConeIndices)/conesNum];
-    
-    % Update coneDensities
-    obj.coneDensities = achievedConeDensities;
-    
+    achievedConeDensities = obj.coneDensities;
+
     fprintf('Achieved cone densities: L (%2.3f), M (%2.3f), S (%2.3f), K (%2.3f)\n', ...
         achievedConeDensities(1), ...
         achievedConeDensities(2), ...

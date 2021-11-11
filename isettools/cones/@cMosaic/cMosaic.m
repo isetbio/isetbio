@@ -64,13 +64,6 @@ classdef cMosaic < handle
         SCONE_ID = 3;
         KCONE_ID = 4;
         
-        % Cone aperture (light collecting disk) has a diameter that 
-        % is 0.79 x cone spacing. We chose this to be consistent with
-        % coneMosaicHex, .e.g.: 
-        % c = coneMosaicHex(3);
-        % c.pigment.pdWidth/c.pigment.width, which gives 0.7899
-        coneApertureToDiameterRatio = 0.79;
-        
         % OD size is from "The Size and Shape of the Optic Disc in Normal Human Eyes"
         %                  Harry A. Quigley, MD; Andrew E. Brown; John D. Morrison, MD; et al Stephen M. Drance, MD
         %                  Arch Ophthalmol. 1990;108(1):51-57. doi:10.1001/archopht.1990.01070030057028
@@ -126,6 +119,21 @@ classdef cMosaic < handle
         % Integration time (seconds)
         integrationTime;
         
+        % Cone diameter to cone spacing ratio (1.0 for compatibility with
+        % old cone mosaics). But this should be < 1.0 to allow
+        % for rod spacing. According to Chen et al (1993), Figure 4, cone
+        % spacing is 2.8 microns and cone inner segment diameter is 2.3, so an
+        % appropriate value for this coneDiameterToSpacingRatio would be
+        % 2.3/2.8 = 0.821
+        coneDiameterToSpacingRatio = 1.0;
+        
+        % Custom cone aperture params (struct)
+        coneApertureModifiers = [];
+        
+        % Factor for cone coupling (the spatial constant of cone coupling
+        % will equal this factor x cone diameter
+        coneCouplingLambda;
+        
         % Random seed
         randomSeed;
         
@@ -164,6 +172,10 @@ classdef cMosaic < handle
         % [n x 1] vector of cone spacings, in microns
         coneRFspacingsMicrons;
         
+        % coupling weights - computed the first time compute() is called
+        coneCouplingWeights;
+        neighboringCoupledConeIndices;
+        
         % [n x 1] vector of cone types
         coneTypes;
         
@@ -191,12 +203,30 @@ classdef cMosaic < handle
         % Fixational eye movement object for the mosaic
         fixEMobj = [];
         
+        % Cone aperture diameter (summation) for each cone
+        coneApertureDiametersMicrons = [];
+        coneApertureDiametersDegs = [];
+        
+        % This depends on the value of the apertureModifier
+        coneApertureToDiameterRatio = [];
+        
+        % Resolution with which zoning is performed
+        oiResMicronsForZoning = [];
+        
+        % Indices of cones in each zone
+        coneIndicesInZones = [];
+        
         % Blur diameter for the different zones of cones
         blurApertureDiameterMicronsZones = [];
+        blurApertureDiameterDegsZones = []; 
         
         % User-settable microns per degree
         micronsPerDegreeApproximation = [];
         
+        % Custom degs <-> mm conversions
+        customDegsToMMsConversionFunction = [];
+        customMMsToDegsConversionFunction = [];
+            
         % Achieved cone densities
         achievedConeDensities;
     end
@@ -262,23 +292,17 @@ classdef cMosaic < handle
         % Full absorptions density map
         absorptionsDensityFullMap;
         absorptionsDensitySpatialSupportMicrons;
+        
+        % The theoretical cone densities
+        theoreticalConeDensities;
     end
     
     % Public methods
     methods
         
         % Constructor
-        function [obj, params] = cMosaic(varargin)
-            
-            % Parse input.  A struct of params is returned in the second
-            % argument so the user can see all the settable parameters.
-            if ~isempty(varargin) && isequal(varargin{1},'params')
-                varargin = varargin(2:end);
-            end
-            
-            % Maybe we replace the params here with the return from
-            % defaultParams. That will mean we keep the defaults in only
-            % one place.
+        function obj = cMosaic(varargin)
+            % Parse input
             p = inputParser;
             p.addParameter('name', 'cone mosaic', @ischar);
             p.addParameter('wave', 400:10:700, @isnumeric);
@@ -302,10 +326,13 @@ classdef cMosaic < handle
             p.addParameter('eccVaryingOuterSegmentLength', true, @islogical);
             p.addParameter('eccVaryingMacularPigmentDensity', true, @islogical);
             p.addParameter('eccVaryingMacularPigmentDensityDynamic', false, @islogical);
+            p.addParameter('coneCouplingLambda', [], @(x)(isempty(x)||isscalar(x)));
+            p.addParameter('coneApertureModifiers', struct('smoothLocalVariations', true), @isstruct);
+            p.addParameter('coneDiameterToSpacingRatio', 1.0,  @(x)(isscalar(x)&&(x<=1.0)));
             p.addParameter('coneDensities', [0.6 0.3 0.1 0.0], @(x)(isnumeric(x) && ((numel(x) == 3)||(numel(x)==4))));
             p.addParameter('tritanopicRadiusDegs', 0.15, @isscalar);
             p.addParameter('noiseFlag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
-            p.addParameter('randomSeed', [], @(x)(isscalar(x) || isempty(x)));
+            p.addParameter('randomSeed', [], @isscalar);
             p.addParameter('integrationTime', 5/1000, @isscalar);
             p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
             p.addParameter('useParfor', true, @islogical);
@@ -320,17 +347,20 @@ classdef cMosaic < handle
             obj.sizeDegs = p.Results.sizeDegs;
             obj.whichEye = p.Results.whichEye;
 
-            obj.micronsPerDegreeApproximation = p.Results.micronsPerDegree;
+            
             obj.eccVaryingConeAperture = p.Results.eccVaryingConeAperture;
             obj.eccVaryingOuterSegmentLength = p.Results.eccVaryingOuterSegmentLength;
             obj.eccVaryingMacularPigmentDensity = p.Results.eccVaryingMacularPigmentDensity;
             
-            % New capabilities for more realistic but slower simulation
             obj.eccVaryingConeBlur = p.Results.eccVaryingConeBlur;
             obj.eccVaryingMacularPigmentDensityDynamic  = p.Results.eccVaryingMacularPigmentDensityDynamic;
             
+            obj.coneCouplingLambda = p.Results.coneCouplingLambda;
+            
             obj.coneDensities = p.Results.coneDensities;
             obj.tritanopicRadiusDegs = p.Results.tritanopicRadiusDegs;
+            obj.coneApertureModifiers = p.Results.coneApertureModifiers;
+            obj.coneDiameterToSpacingRatio = p.Results.coneDiameterToSpacingRatio;
             
             obj.noiseFlag = p.Results.noiseFlag;
             obj.randomSeed = p.Results.randomSeed;
@@ -340,18 +370,35 @@ classdef cMosaic < handle
             % Parallel computations
             obj.useParfor = p.Results.useParfor;
             
-            % Custom mesh generation function 
-            customMinRFspacing = p.Results.customMinRFspacing;
-            customRFspacingFunction = p.Results.customRFspacingFunction;
-            customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
-            customMMsToDegsConversionFunction = p.Results.customMMsToDegsConversionFunction;
+            % Custom mm/deg conversion factors
+            obj.customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
+            obj.customMMsToDegsConversionFunction = p.Results.customMMsToDegsConversionFunction;
+            obj.micronsPerDegreeApproximation = p.Results.micronsPerDegree;
+            
+            % Assert that only one microns/deg conversion has been specified
+            if (...
+               (~isempty(obj.micronsPerDegreeApproximation)) && ...
+               ((~isempty(obj.customDegsToMMsConversionFunction)) || (~isempty(obj.customMMsToDegsConversionFunction)))...
+               )
+               error('A custom ''micronsPerDegree'' and a deg <-> MM conversion function cannot be both specified.');
+            end
+            
+            % Assert that if one conversion function is specified its
+            % reverse is also specified
+            if ((isempty(obj.customDegsToMMsConversionFunction)) && (~isempty(obj.customMMsToDegsConversionFunction)))
+               error('A ''customMMsToDegsConversionFunction'' was specified but not its inverse');
+            end
+            
+            if ((~isempty(obj.customDegsToMMsConversionFunction)) && (isempty(obj.customMMsToDegsConversionFunction)))
+               error('A ''customDegsToMMsConversionFunction'' was specified but not its inverse');
+            end
             
             % Assert that we have appropriate pigment if we have more than 3 cone types
             if (numel(obj.coneDensities)>3) && (any(obj.coneDensities(4:end)>0.0))
                 assert(numel(obj.coneDensities) == size(obj.pigment.absorptance,3), ...
                     sprintf('cPhotoPigment is not initialized for %d types of cones', numel(obj.coneDensities)));
             end
-                        
+            
             % These listeners make sure the wavelength support
             % in obj.pigment and obj.macular match the wave property
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.matchWaveInAttachedMacular);
@@ -366,14 +413,17 @@ classdef cMosaic < handle
                 
             if (isempty(p.Results.coneData))
                 if (p.Results.computeMeshFromScratch)
+                    
+                    % Custom mesh generation function 
+                    customMinRFspacing = p.Results.customMinRFspacing;
+                    customRFspacingFunction = p.Results.customRFspacingFunction;
+            
                     % Re-generate lattice
                     obj.regenerateConePositions(...
                         p.Results.maxMeshIterations,  ...
                         p.Results.visualizeMeshConvergence, ...
                         p.Results.exportMeshConvergenceHistoryToFile, ...
                         'customMinRFspacing', customMinRFspacing, ...
-                        'customDegsToMMsConversionFunction', customDegsToMMsConversionFunction, ...
-                        'customMMsToDegsConversionFunction', customMMsToDegsConversionFunction, ...
                         'customRFspacingFunction', customRFspacingFunction);
                 else
                     % Import positions by cropping a large pre-computed patch
@@ -412,24 +462,42 @@ classdef cMosaic < handle
             % Compute ecc in microns
             if (isempty(obj.minRFpositionMicrons))
                 % No cones, set value differently
-                if (~isempty(obj.micronsPerDegreeApproximation))
-                    obj.eccentricityMicrons = obj.eccentricityDegs * obj.micronsPerDegreeApproximation;
-                else
-                    obj.eccentricityMicrons = obj.eccentricityDegs *  300;
-                end
+                obj.eccentricityMicrons = obj.degreesToMicronsForCmosaic(obj.eccentricityDegs);
             else
                 obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
             end
             
-    
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
-            
-            % The second returned argument.
-            params = obj.defaultParams;
-
         end
+        
+        % Method to transform a distance specified in units of retinal
+        % microns to a distance specified in units of visual degrees based on the @cMosaic configuration
+        microns = distanceDegreesToDistanceMicronsForCmosaic(obj, degrees);
+        
+        % Method to transform a distance specified in units of visual
+        % degrees to a distance specified in units of retinal microns based on the @cMosaic configuration
+        degrees = distanceMicronsToDistanceDegreesForCmosaic(obj, microns);
+        
+        % Method to transform a SIZE specified in units of retinal microns at a
+        % given eccentricity (also specified in microns) to a SIZE in units of 
+        % visual degrees based on the @cMosaic configuration
+        sizeDegrees = sizeMicronsToSizeDegreesForCmosaic(obj, sizeMicrons, eccentricityMicrons);
+
+        % Method to transform a SIZE specified in units of visual degrees at a
+        % given eccentricity (also specified in degrees) to a SIZE in units of 
+        % retinal microns based on the @cMosaic configuration
+        sizeMicrons = sizeDegreesToSizeMicronsForCmosaic(obj, sizeDegrees, eccentricityDegrees);
+    
+        % Method for generating the cone aperture blur kernel
+        [apertureKernel, theoreticalAreaMetersSquared, theoreticalAreaMicronsSquared, actualAreaMicronsSquared] = ...
+            generateApertureKernel(obj, coneApertureDiameterMicrons, oiResMicrons);
+        
+        
+        % Blur sigma (in microns) of a cone with index theConeIndex, from its blur zone
+        % Only for Gaussian aperture modifier
+        apertureBlurSigmaMicrons = apertureBlurSigmaMicronsOfConeFromItsBlurZone(obj, theConeIndex);
         
         % Method to visualize the cone mosaic and its activation
         params = visualize(obj, varargin);
@@ -457,6 +525,9 @@ classdef cMosaic < handle
         
         % Generate struct representing the optical disk
         [odStructMicrons, odStructDegs] = odStruct(obj);
+        
+        % Method to convert an ROIoutline in degs to an ROIoutline in microns
+        roiOutlineMicrons = convertOutlineToMicrons(obj,roiOutlineDegs);
         
         % Getter/Setter methods for dependent variables
         % QE
@@ -497,6 +568,104 @@ classdef cMosaic < handle
             xyMin = min(obj.coneRFpositionsMicrons,[],1);
             val = xyMax - xyMin;
         end
+
+        function set.coneDensities(obj, val)
+            obj.theoreticalConeDensities = val;
+        end
+        
+        function val = get.coneDensities(obj)
+            if (isempty(obj.lConeIndices))
+                val = obj.theoreticalConeDensities;
+            else
+                % Return actual densities
+                conesNum = size(obj.coneRFpositionsMicrons,1);
+                val = [...
+                    numel(obj.lConeIndices)/conesNum ...
+                    numel(obj.mConeIndices)/conesNum ...
+                    numel(obj.sConeIndices)/conesNum ...
+                    numel(obj.kConeIndices)/conesNum];
+            end
+        end
+        
+        function set.eccVaryingConeAperture(obj, val)
+            obj.eccVaryingConeAperture = val;
+            if (~isempty(obj.coneRFpositionsMicrons))
+                obj.computeConeApertures();
+            end
+        end
+        
+        function set.eccVaryingConeBlur(obj, val)
+            obj.eccVaryingConeBlur = val;
+            if (~isempty(obj.coneRFpositionsMicrons))
+                obj.computeConeApertures();
+            end
+        end
+        
+        
+        function set.coneApertureModifiers(obj, val)
+            % Validate fields
+            fNames = fieldnames(val);
+            validFieldNames = {'smoothLocalVariations', 'shape', 'sigma', 'PillboxApertureIntegrationMatching'};
+            for k = 1:numel(fNames)
+                assert(ismember(fNames{k}, validFieldNames), ...
+                    sprintf('Unknown field ''%s'' in coneApertureModifier struct', fNames{k}));
+            end
+            
+            % Cone aperture (light collecting disk) has a diameter that 
+            % is 0.79 x cone diameter. We chose this to be consistent with
+            % coneMosaicHex, .e.g.: 
+            % c = coneMosaicHex(3);
+            % c.pigment.pdWidth/c.pigment.width, which gives 0.7899.
+            %
+            % Note. The coneApertureToDiameterRatio is overriden when a
+            % coneApertureModifier struct is passed (see below) with a
+            % a 'shape' field that is set to 'Gaussian'. In that case
+            % it becomes equal to 1 (cMosaic.computeConeApertures.m, line 30)
+            % and the Gaussian sigma parameter is set to control the aperture
+            pillboxConeApertureToDiameterRatioToMatchConeMosaixHexAperture = 0.79;
+        
+            % If we want the pillbox aperture to have an integral that matches 
+            % the integral of Gaussian area with sigma = 0.204 * aperture,
+            % (as in 'Serial Spatial Filters in Vision', by Chen, Makous and Williams, 1993) 
+            % set this to 2*sqrt(2)*0.204 = 0.577
+            pillboxConeApertureToDiameterRatioToMatchCMW1993Aperture = 2*sqrt(2)*0.204;
+            
+            % If we have a Pillbox aperture shape, or if there is no
+            % aperture shape parameter, determine the value of obj.coneApertureToDiameterRatio
+            if (isfield(val, 'shape')) && (strcmp(val.shape,'Pillbox')) && (isfield(val, 'PillboxApertureIntegrationMatching'))
+                switch (val.PillboxApertureIntegrationMatching)
+                    case 'ChenMakousWilliams1993'
+                        obj.coneApertureToDiameterRatio = pillboxConeApertureToDiameterRatioToMatchCMW1993Aperture;
+                    case 'ConeMosaicHex'
+                        obj.coneApertureToDiameterRatio = pillboxConeApertureToDiameterRatioToMatchConeMosaixHexAperture;
+                end
+            else
+                obj.coneApertureToDiameterRatio = pillboxConeApertureToDiameterRatioToMatchConeMosaixHexAperture;
+            end
+            
+            obj.coneApertureModifiers = val;
+            if (~isempty(obj.coneRFpositionsMicrons))
+                obj.computeConeApertures();
+            end
+        end
+        
+        function set.coneDiameterToSpacingRatio(obj,val)
+            if (val <= 1.0)
+                obj.coneDiameterToSpacingRatio = val;
+                if (~isempty(obj.coneRFpositionsMicrons))
+                    obj.computeConeApertures();
+                end
+            else
+                error('coneSpacingToconeDiameterRation must be <= 1.0.');
+            end
+        end
+        
+        function set.coneCouplingLambda(obj, val)
+            obj.coneCouplingLambda = val;
+            obj.coneCouplingWeights = [];
+            obj.neighboringCoupledConeIndices = [];
+        end
+        
         
     end
     
@@ -504,18 +673,24 @@ classdef cMosaic < handle
     methods (Access=private)
         % Initialize cone positions by importing them from a large previously-computed mesh
         initializeConePositions(obj);
-        
+
         % Initialize cone positions by regenerating a new mesh. Can be slow.
         regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile, varargin);
         
         % Remove cones located within the optic disk
         removeConesWithinOpticNerveHead(obj);
         
-        % Method to partition cones into zones based on cone
-        % aperture size and current optical image resolution
-        [coneApertureDiameterMicronsZoneBands, ...     % the median cone aperture in this zone band
-         coneIndicesInZones] =  ...                    % the IDs of cones in this zone band
-            coneZonesFromApertureSizeAndOIresolution(obj, coneApertureDiametersMicrons, oiResMicrons);
+        % Crop data for desired ROI
+        cropMosaicDataForDesiredROI(obj);
+        
+        % Update state of cMosaic given kept cone indices
+        updateStateGivenKeptConeIndices(obj, keptConeIndices);
+        
+        % Function to re-compute the cone apertures
+        computeConeApertures(obj);
+     
+        % Method to electrically couple cone responses
+        coupledResponses = electricallyCoupleConeResponses(obj, responses);
         
         % Method to compute boost factors for correction 
         macularPigmentDensityBoostFactors = computeMPBoostFactors(obj, oiPositionsDegs, emPositionDegs, oiWave, oiSize, oiResMicrons)
@@ -544,9 +719,6 @@ classdef cMosaic < handle
     end
     
     methods (Static)
-        % Static method to generate cone aprture blur kernel
-        apertureKernel = generateApertureKernel(coneApertureDiameterMicrons, oiResMicrons);
-        
         % Static method to generate noisy absorption response instances
         % from the mean absorption responses
         noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin);
@@ -556,9 +728,6 @@ classdef cMosaic < handle
     
         % Static method to generate an ROI outline from an ROIstruct
         roiOutline = generateOutline(roi);
-    
-        % Static method to convert an ROIoutline in degs to an ROIoutline in microns
-        roiOutlineMicrons = convertOutlineToMicrons(roiOutlineDegs,micronsPerDegreeApproximation);
         
         % Compute a 2D cone density map
         coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);

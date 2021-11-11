@@ -1,12 +1,6 @@
 function [odStructMicrons, odStructDegs] = odStruct(obj)
     % Convert OD center from degs to microns
-    if (~isempty(obj.micronsPerDegreeApproximation))
-        % Convert outline from degs to microns using the passed
-        % microns/deg approximation
-        centerMicrons = obj.opticDisk.centerDegs * obj.micronsPerDegreeApproximation;
-    else
-        centerMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(obj.opticDisk.centerDegs);
-    end
+    centerMicrons = obj.distanceDegreesToDistanceMicronsForCmosaic(obj.opticDisk.centerDegs);
         
     % The optic disk is located in the nasal retinas. In terms of the RE
     % visual field, this corresponds to a negative x-coord for the left eye
@@ -28,15 +22,8 @@ function [odStructMicrons, odStructDegs] = odStruct(obj)
     
     % Construct optic disk ROI struct in degs
     % Convert OD size from mm to degs
-    if (~isempty(obj.micronsPerDegreeApproximation))
-        % Convert outline from degs to microns using the passed
-        % microns/deg approximation
-        minorAxisDiameterDegs = 1e3 * obj.opticDisk.horizontalDiameterMM / obj.micronsPerDegreeApproximation;
-        majorAxisDiameterDegs = 1e3 * obj.opticDisk.verticalDiameterMM / obj.micronsPerDegreeApproximation;
-    else
-        minorAxisDiameterDegs = RGCmodels.Watson.convert.rhoMMsToDegs(obj.opticDisk.horizontalDiameterMM);
-        majorAxisDiameterDegs = RGCmodels.Watson.convert.rhoMMsToDegs(obj.opticDisk.verticalDiameterMM);
-    end
+    minorAxisDiameterDegs = obj.distanceMicronsToDistanceDegreesForCmosaic(1e3 * obj.opticDisk.horizontalDiameterMM);
+    majorAxisDiameterDegs = obj.distanceMicronsToDistanceDegreesForCmosaic(1e3 * obj.opticDisk.verticalDiameterMM);
     
     centerDegs = obj.opticDisk.centerDegs(1);
     if (strcmp(obj.whichEye, 'left eye'))

@@ -1,8 +1,14 @@
 function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPositionsVectorsMicrons, absorptionsDensityImage,  ...
-    oiResMicrons, coneApertureDiametersMicrons, ...
-    coneIndicesInZones)
-
-    conesNum = numel(coneApertureDiametersMicrons);
+    oiResMicrons)
+    
+    if (isempty(obj.oiResMicronsForZoning) || (oiResMicrons ~= obj.oiResMicronsForZoning))
+        % Recompute cone apertures for current oiRes
+        obj.oiResMicronsForZoning = oiResMicrons;
+        obj.computeConeApertures();
+    end
+    
+    
+    conesNum = numel(obj.coneApertureDiametersMicrons);
     coneTypesNum = size(absorptionsDensityImage,3);
     zonesNum = numel(obj.blurApertureDiameterMicronsZones);
     
@@ -14,34 +20,45 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         blurApertureDiameterMicrons = obj.blurApertureDiameterMicronsZones(zoneIndex);
         
         % Compute aperture kernel
-        if (numel(obj.blurApertureDiameterMicronsZones) == 1)
-            % Do not include the effect of spatial filtering via
-            % ecc-dependent cone aperture. Instead do a single concolution
-            % with the median cone aperture.
-            apertureKernel = cMosaic.generateApertureKernel(blurApertureDiameterMicrons(1), oiResMicrons);
-            
-        else
-            % Include the effect of spatial filtering via
-            % ecc-dependent cone aperture, different aperture for each zone
-            apertureKernel = cMosaic.generateApertureKernel(blurApertureDiameterMicrons, oiResMicrons);
-        end
-        
-        % Determine which cones should receive this blur.
-        coneIDsInZone = coneIndicesInZones{zoneIndex};
-        
-        % Determine aperture area for these cones
-        apertureAreasMetersSquared = ((pi * (0.5*coneApertureDiametersMicrons(coneIDsInZone)*1e-6).^2))';
+        apertureKernel = obj.generateApertureKernel(blurApertureDiameterMicrons(1), oiResMicrons);
 
+        % Determine which cones should receive this blur.
+        coneIDsInZone = obj.coneIndicesInZones{zoneIndex};
+
+        
+        % Determine aperture area
+        coneApertureDiametersMicrons = obj.coneApertureDiametersMicrons(coneIDsInZone);
+        if (~obj.eccVaryingConeAperture)
+            coneApertureDiametersMicrons = coneApertureDiametersMicrons*0 + median(coneApertureDiametersMicrons);
+        end
+        if (isfield(obj.coneApertureModifiers, 'shape'))
+            switch (obj.coneApertureModifiers.shape)
+                case 'Gaussian'
+                    gaussianSigmaMicrons =  obj.coneApertureModifiers.sigma * coneApertureDiametersMicrons;
+                    characteristicRadiusMicrons = gaussianSigmaMicrons  * sqrt(2.0);
+                    apertureAreasMetersSquared = ((pi * (characteristicRadiusMicrons*1e-6).^2))';
+                case 'Pillbox'
+                    apertureAreasMetersSquared = ((pi * (0.5*coneApertureDiametersMicrons*1e-6).^2))';
+                otherwise
+                    error('Do not know how to generate a ''%s'' aperture.', obj.coneApertureModifiers.apertureShape)
+            end
+        else
+            % By default we are using the pillbox aperture area
+            apertureAreasMetersSquared = ((pi * (0.5*obj.coneApertureDiametersMicrons(coneIDsInZone)*1e-6).^2))';
+        end
+
+        
         % Interpolate from oiPositions to conePositions at current emPos
         shiftedConePositions = bsxfun(@plus, obj.coneRFpositionsMicrons(coneIDsInZone,:),reshape(currentEMposMicrons, [1 2]));
         
         interpolationMethod = 'linear';
         extrapolationMethod = 'nearest';
 
+        
         for coneTypeIndex = 1:coneTypesNum
             % Convolve with the cone aperture
             absorptionsDensityImageFiltered = conv2(squeeze(absorptionsDensityImage(:, :, coneTypeIndex)), apertureKernel, 'same');
-
+           
             % Compute gridded interpolant for the original cone positions
             F = griddedInterpolant(oiPositionsVectorsMicrons, ...
                 absorptionsDensityImageFiltered, interpolationMethod, extrapolationMethod);
@@ -71,6 +88,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
             case obj.KCONE_ID
                 coneIndicesForSubmosaic = obj.kConeIndices;
         end
+        
         absorptionsRate(coneIndicesForSubmosaic) = absorptionsRateAllConeTypes(coneIndicesForSubmosaic, coneTypeIndex);
     end
     

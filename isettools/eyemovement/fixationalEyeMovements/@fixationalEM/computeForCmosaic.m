@@ -1,16 +1,16 @@
-function computeForCmosaic(obj, cMosaic, eyeMovementsPerTrial, varargin)
+function computeForCmosaic(obj, cMosaicOBJ, eyeMovementsPerTrial, varargin)
 % Compute fixational eye movement for a @cMosaic cone mosaic
 %
 % Syntax:
-%   computeForCmosaic(obj, cMosaic, eyeMovementsPerTrial, [varargin])
-%   obj.computeForCmosaic(cMosaic, eyeMovementsPerTrial, [varargin])
+%   computeForCmosaic(obj, cMosaicOBJ, eyeMovementsPerTrial, [varargin])
+%   obj.computeForCmosaic(cMosaicOBJ, eyeMovementsPerTrial, [varargin])
 %
 % Description:
 %    Compute the fixational eye movement for a provided cone mosaic.
 %
 % Inputs:
 %    obj                  - Object. The fixationalEM object.
-%    cMosaic              - Object. A cMosaic object.
+%    cMosaicOBJ           - Object. A cMosaic object.
 %    eyeMovementsPerTrial - Numeric. The number of eye movements per trial.
 %    varargin             - (Optional) Additional arguments as desired, see
 %                           the optional key/values section.
@@ -38,7 +38,7 @@ function computeForCmosaic(obj, cMosaic, eyeMovementsPerTrial, varargin)
 %   6/04/19  npc      Added centerPaths key/value pair
 
 p = inputParser;
-p.addRequired('cMosaic', @(x)(isa(x, 'cMosaic')));
+p.addRequired('cMosaicOBJ', @(x)(isa(x, 'cMosaic')));
 p.addRequired('eyeMovementsPerTrial', @isscalar);
 p.addParameter('nTrials', 1, @isscalar);
 p.addParameter('centerPaths', false, @islogical);
@@ -46,7 +46,7 @@ p.addParameter('centerPathsAtSpecificTimeMsec', [], @isnumeric);
 p.addParameter('computeVelocity', false, @islogical);
 p.addParameter('rSeed', [], @(x) (isempty(x) | isscalar(x)));
 p.addParameter('useParfor', false, @islogical);
-p.parse(cMosaic, eyeMovementsPerTrial, varargin{:});
+p.parse(cMosaicOBJ, eyeMovementsPerTrial, varargin{:});
 
 % Set optional parameters based on input
 obj.randomSeed = p.Results.rSeed;
@@ -57,7 +57,7 @@ computeVelocitySignal = p.Results.computeVelocity;
 useParfor = p.Results.useParfor;
 
 % Extract sampleDuration from cMosaic's integration time
-sampleDurationSeconds = cMosaic.integrationTime;
+sampleDurationSeconds = cMosaicOBJ.integrationTime;
 
 % Compute emDurationSeconds
 emDurationSeconds = eyeMovementsPerTrial * sampleDurationSeconds;
@@ -68,11 +68,7 @@ compute(obj, emDurationSeconds, sampleDurationSeconds, nTrials, ...
     'centerPaths', centerPaths, 'centerPathsAtSpecificTimeMsec', centerPathsAtSpecificTimeMsec);
 
 % Also return the path in units of microns
-if (isempty(cMosaic.micronsPerDegreeApproximation))
-    obj.emPosMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(obj.emPosArcMin / 60);
-else
-    obj.emPosMicrons = obj.emPosArcMin / 60 * cMosaic.micronsPerDegreeApproximation;
-end
+obj.emPosMicrons = cMosaicOBJ.distanceDegreesToDistanceMicronsForCmosaic(obj.emPosArcMin / 60);
 
 if (computeVelocitySignal)
     iTrial = 1;

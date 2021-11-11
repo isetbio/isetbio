@@ -1,6 +1,6 @@
 % Method to display all subfields of the params struct
-function paramsStructTree(params)
-    displayStruct(params, 'params', '', 60)
+function visualizeParamsStructTree(params, structName)
+    displayStruct(params, structName, '', 60)
 end
 
 function s = displayStruct(datum, datumName, s, maxFieldWidth)

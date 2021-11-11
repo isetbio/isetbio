@@ -22,22 +22,18 @@ close all;
 % Set to true to examine memory allocation between old and new mosaics
 % If set to true, the compute time measurements may not be as accurate as
 % when set to false, because the memory profiler takes resources
-benchtestMemoryAllocation = true;
+benchtestMemoryAllocation = false;
 
-% Repeat so as to get an accurate estimate of compute time.  Increase
-% this number if you are interested in more accurate timing
-repeatsNum = 1;
+% Repeat 100 times so as to get an accurate estimate of compute time
+repeatsNum = 2; %100;
 
 %% Generate test scenes
-%
-% Can increase FOV and row/col dimensions to get more dramatic timing
-% difference effects, but run time for this tutorial will slow down.
 fprintf('Computing scenes ...\n');
-sceneFOVDegs = 1.0;
+sceneFOVDegs = 2.0;
 % A sinusoid
 params.freq = 10;
-params.row = 256;
-params.col = 256;
+params.row = 512;
+params.col = 512;
 spectrum = 400:2:700;
 scene1 = sceneCreate('Harmonic', params, spectrum);
 %scene1 = sceneCreate('Harmonic', params);
@@ -61,13 +57,13 @@ fprintf('Computing mosaics ...\n');
 regenerateMosaic = true;
 resourcesDir = fullfile(strrep(isetRootPath, 'isettools', 'tutorials'), 't_cones', 'resources');
 if (regenerateMosaic)
-    mosaicFOVDegs = sceneFOVDegs*0.8;
+    mosaicFOVDegs = sceneFOVDegs*0.6;
     theOldConeMosaic = coneMosaicHex(7, ...
                 'fovDegs', mosaicFOVDegs, ...
                 'eccBasedConeDensity', true, ...
                 'eccBasedConeQuantalEfficiency', true, ...
                 'eccBasedMacularPigment', true, ...
-                'maxGridAdjustmentIterations', 20, ...
+                'maxGridAdjustmentIterations', 10, ...
                 'integrationTime', 100/1000, ...
                 'noiseFlag', 'none' ...
             );
@@ -112,6 +108,7 @@ theNewConeMosaic.visualize(...
     'figureHandle', hFig, ...
     'axesHandle', ax, ...
     'domain', 'microns', ...
+    'visualizedConeAperture', 'geometricArea', ...
     'domainVisualizationTicks', struct('x', -200:50:200, 'y', -200:50:200), ...
     'plotTitle', '@cMosaic');
             
@@ -148,7 +145,8 @@ if (benchtestMemoryAllocation)
         if (strcmp(p1.FunctionTable(fIndex).FunctionName, 'coneMosaic.compute'))
             memAllocatedOldConeMosaic = p1.FunctionTable(fIndex).TotalMemAllocated;
         end
-    end    
+    end  
+    
     % Restart profiler
     profile('off')
     profile('-memory','on')
@@ -199,6 +197,8 @@ ax = subplot(2,2,4);
 theNewConeMosaic.visualize('figureHandle', hFig, 'axesHandle', ax, ...
              'activation', newConeMosaicExcitations1Interleaved, ...
              'activationRange', activationRange, ...
+             'visualizedConeAperture', 'geometricArea', ...
+             'backgroundColor', [0 0 0], ...
              'plotTitle',  ' ');
 
 %% Compare responses cone-by-cone
@@ -352,6 +352,3 @@ function plotCorrespondences(ax1, ax2, activationRange, oldMosaicResponse, newMo
     xlabel(ax2, 'excitations (@coneMosaicHex)');
     ylabel(ax2, 'error (%)');
 end
-
-
-
