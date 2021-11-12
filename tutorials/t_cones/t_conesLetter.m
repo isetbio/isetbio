@@ -47,6 +47,8 @@ cm.integrationTime = 5/1000;  % 5 ms
 excitations = cm.compute(oi);
 
 params = cm.visualize('params');
+% cm.visualize('help');
+
 
 params.activation = excitations.^0.5;
 params.activationColorMap = hot(1024);
