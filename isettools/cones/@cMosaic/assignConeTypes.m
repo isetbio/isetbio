@@ -1,5 +1,17 @@
-function assignConeTypes(obj, src,~)
-    
+function assignConeTypes(obj, src, ~)
+% Needs comments from NC.  Not sure why 'src' is here.
+%
+% Called by the cMosaic constructor
+% Looks like the cone positions are calculated by
+% regenerateConePositions or initializeConePositions
+%
+% This routine then 'colors' each of the positions with a cone type.
+% 
+% See also
+%   cMosaic.regenerateConePositions, cMosaic.initializeConePositions,
+%   cMosaic.removeConesWithinOpticNerveHead
+%
+
     coneDensities = obj.coneDensities;
     
     coneDensities = abs(coneDensities);
