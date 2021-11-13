@@ -41,28 +41,29 @@ switch ieParamFormat(plotType)
         xlabel('Wavelength (nm)'); ylabel('Quantal efficiency'); grid on;
         
     case 'spectralqe'
-        % The lens transmittance should come from the OI or be passed in.
-        % We handle various other cases here.
+        % The spectral QE includes the lens, macular and photo pigments.
+        %
+        % The lens is not part of the cMosaic, which makes this plot a
+        % challenge. In principle, it should come from the OI or be passed
+        % in. We handle various cases here.
         if isempty(p.Results.lens)
-            oi = vcGetObject('oi');
-            if isempty(oi), thisLens = Lens('wave',cm.wave);
-            else,           thisLens = oiGet(oi,'lens');
-            end
+            thisLens = Lens('wave',cm.wave);            
         else
+            % The user passed the lens in. So use it.
             thisLens = p.Results.lens;
+            thisLens.wave = cm.wave;
         end
         
-        lensT      = thisLens.transmittance;
-        macularT   = cm.macular.transmittance;
-        spectralQE = diag(lensT.*macularT)*cm.pigment.quantalEfficiency;
-        plot(cm.wave,spectralQE,'LineWidth',2);
-        xlabel('Wavelength (nm)'); ylabel('Spectral quantal efficiency'); grid on;
-    case 'qe'
-        thisLens = Lens('wave',cm.wave);
-        lensT      = thisLens.transmittance;
-
-        plot(cm.wave,diag(lensT)*cm.qe,'LineWidth',2);
-        xlabel('Wavelength (nm)'); ylabel('Spectral quantal efficiency'); grid on;
+        % Match the lens to the cMosaic wave
+        lensT      = thisLens.transmittance;        
+        % ieNewGraphWin; plot(cm.wave,lensT);
+        
+        % The cMosaic qe is derived from macular and pigment information.
+        % But it now seems it is not updated when I change the pigment
+        % absorbance.
+        plot(cm.wave,diag(lensT) * cm.qe,'LineWidth',2);
+        xlabel('Wavelength (nm)'); ylabel('Spectral quantal efficiency'); grid on; 
+        
     otherwise
         error('Unknown plotType %s\n',plotType);
 end

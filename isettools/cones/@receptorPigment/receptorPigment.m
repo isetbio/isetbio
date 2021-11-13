@@ -126,11 +126,12 @@ properties
 
     % peakEfficiency - peak absorptance efficiency
     peakEfficiency;
+    
+    % absorbance - spectral absorbance of the cones
+    absorbance;
 end
 
 properties (Dependent)
-    % absorbance - spectral absorbance of the cones
-    absorbance;
 
     % absorptance - cone absorptance without ocular media
     absorptance;
