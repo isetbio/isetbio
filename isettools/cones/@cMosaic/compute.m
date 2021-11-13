@@ -216,8 +216,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
             
             if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
                 % No emPath, so compute a single shot
-                % Compute boost factors by which photons have to be multiplied so as
-                % the account for MP density decrease with ecc
+                %
+                % Compute boost factors by which photons have to be
+                % multiplied so as to account for MP density decrease with
+                % eccentricity
                 macularPigmentDensityBoostFactors = ...
                     updateMPBoostFactorsForCurrentEMpos(obj, [0 0], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
                 
