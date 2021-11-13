@@ -127,12 +127,13 @@ properties
     % peakEfficiency - peak absorptance efficiency
     peakEfficiency;
     
-    % absorbance - spectral absorbance of the cones
-    absorbance;
 end
 
 properties (Dependent)
 
+    % absorbance - spectral absorbance of the cones
+    absorbance;
+    
     % absorptance - cone absorptance without ocular media
     absorptance;
 
@@ -167,7 +168,11 @@ properties (SetObservable, AbortSet)
     wave;
 end
 
-properties (SetAccess = private)
+properties (SetAccess = public)
+    % I made these public so I could change them from a script.  But NC may
+    % want us to do this a different way with set operations.
+    %
+    
     % wave_ - The internal wavelength samples
     wave_;
 

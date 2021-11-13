@@ -61,7 +61,7 @@ switch ieParamFormat(plotType)
         % The cMosaic qe is derived from macular and pigment information.
         % But it now seems it is not updated when I change the pigment
         % absorbance.
-        plot(cm.wave,diag(lensT) * cm.qe,'LineWidth',2);
+        plot(cm.wave,diag(lensT) * cm.pigment.quantalEfficiency,'LineWidth',2);
         xlabel('Wavelength (nm)'); ylabel('Spectral quantal efficiency'); grid on; 
         
     otherwise
