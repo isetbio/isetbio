@@ -11,6 +11,29 @@
 % History:
 %    11/16/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 
+% BW Notes
+%
+%   1. Typing regionOfInterest should return a proper ROI (the default)
+%   2. Typing regionOfInterest('help') should return a useful list or
+%       some documentation.
+%   3. I don’t think we should require the input to be a struct. I prefer the
+%      key/val pairs. It seems to me that the ability to write like this is useful:
+%
+%            thisROI = regionOfInterest('shape','ellipse');
+%            thisROI = regionOfInterest('shape','ellipse','minor axis diameter',1);
+%
+%      For a tutorial, this is an easier way to introduce the basic idea, and then 
+%     buil uild up from  there.  Then we can adjust the properties
+%  
+%            thisROI.set('minor axis diameter',1);
+%  
+%      This method allows you to submit as a struct, too.  But requiring the 
+%      struct() means you have to know the upper/lower case and 
+%      the words precisely in order to make the struct.
+%  
+%
+
+
 % Instantiate an elliptical ROI
 opticDiskROI = regionOfInterest(...
     struct(...
