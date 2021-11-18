@@ -88,7 +88,8 @@ indicesOfPointsOutsideOpticDiskROI = opticDiskROI.indicesOfPointsOutside(randomP
 
 % Compute the indices of the random points that lie around the opticDiskROI outline
 maxDistance = 0.5;
-indicesOfPointsAroundOpticDiskROI = opticDiskROI.indicesOfPointsAround(randomPoints, maxDistance);
+samplingPoints = 1000;
+indicesOfPointsAroundOpticDiskROI = opticDiskROI.indicesOfPointsAround(randomPoints, maxDistance, samplingPoints);
 
 
 % Compute the indices of the random points that lie within the stimulusROI
@@ -99,13 +100,13 @@ indicesOfPointsOutsideStimulusROI = stimulusROI.indicesOfPointsOutside(randomPoi
 
 % Compute the indices of the random points that lie outside of the stimulusROI
 maxDistance = 0.1;
-indicesOfPointsAroundStimulusROI = stimulusROI.indicesOfPointsAround(randomPoints, maxDistance);
+indicesOfPointsAroundStimulusROI = stimulusROI.indicesOfPointsAround(randomPoints, maxDistance, samplingPoints);
 
 
 % Compute the indices of the random points that lie within the lineROI
 maxDistance = 0.5;
-indicesOfPointsAlongLineROI1 = lineROI1.indicesOfPointsAround(randomPoints, maxDistance);
-indicesOfPointsAlongLineROI2 = lineROI2.indicesOfPointsAround(randomPoints, maxDistance);
+indicesOfPointsAlongLineROI1 = lineROI1.indicesOfPointsAround(randomPoints, maxDistance, samplingPoints);
+indicesOfPointsAlongLineROI2 = lineROI2.indicesOfPointsAround(randomPoints, maxDistance, samplingPoints);
 
 
 
