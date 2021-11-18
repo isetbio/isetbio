@@ -25,6 +25,7 @@ function outline = generateOutline(obj)
                 );
             
         case 'line'
+            obj.geometryStruct
             rotation = atan2d((obj.geometryStruct.to(2)-obj.geometryStruct.from(2)),...
                               (obj.geometryStruct.to(1)-obj.geometryStruct.from(1)));
             width = 0.1;

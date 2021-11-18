@@ -12,7 +12,7 @@ function visualize(obj, varargin)
     
     fillColor = p.Results.fillColor;
     if (isempty(fillColor))
-        fillColor = [0.8 0.8 0.8];
+        fillColor = [0.3 0.6 0.9];
     end
     
     % Set figure size
@@ -37,7 +37,14 @@ function visualize(obj, varargin)
     hold(axesHandle, 'on');
     patch(axesHandle, roiOutline.x, roiOutline.y, ...
         fillColor, 'FaceAlpha', 0.5, 'EdgeColor', fillColor*0.5, 'LineWidth', 1.0);
+    dx = 0.1*(max(roiOutline.x)-min(roiOutline.x));
+    dy = 0.1*(max(roiOutline.y)-min(roiOutline.y));
+    dx = max([dx dy]);
     axis(axesHandle, 'image');
+    set(axesHandle, 'XLim', [min(roiOutline.x)-dx max(roiOutline.x)+dx], ...
+                    'YLim', [min(roiOutline.y)-dx max(roiOutline.y)+dx]);
+    xlabel(sprintf('%s', obj.geometryStruct.units));
+    ylabel(sprintf('%s', obj.geometryStruct.units));
     set(axesHandle, 'FontSize', 14);
     grid(axesHandle, 'on');
     box(axesHandle, 'on');

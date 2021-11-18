@@ -5,11 +5,11 @@ function validateGeometry(obj, geoStruct)
     
     % geoStruct must have a 'shape' field which is set to either 'rect' or 'ellipse'
     assert(isfield(geoStruct, 'shape'), 'geoStruct struct must have a ''shape'' field.');
-    assert(ismember(geoStruct.shape, {'rect', 'ellipse', 'line'}),'geoStruct.shape can be either ''rect'', ''ellipse'' or ''line''.');
+    assert(ismember(geoStruct.shape, obj.validShapes),'geoStruct.shape can be either ''rect'', ''ellipse'' or ''line''.');
     
     % geoStruct must have a 'units' field which is set to either 'degs' or 'microns'
     assert(isfield(geoStruct, 'units'), 'geoStruct struct must have a ''units'' field.');
-    assert(ismember(geoStruct.units, {'degs', 'microns'}),'geoStruct.units can be either ''degs'' or ''microns''.');
+    assert(ismember(geoStruct.units, obj.validUnits),'geoStruct.units can be either ''degs'' or ''microns''.');
     
     if (ismember(geoStruct.shape, {'rect', 'ellipse'}))
         % geoStruct must have a 'center' field
