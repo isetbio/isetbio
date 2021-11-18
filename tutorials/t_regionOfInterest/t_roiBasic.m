@@ -40,8 +40,8 @@ opticDiskROI = regionOfInterest(...
         'units', 'degs', ...
         'shape', 'ellipse', ...
         'center', [15.5, 1.5], ...
-        'minorAxisDiameter', 5.3, ...
-        'majorAxisDiameter', 6.7, ...
+        'minorAxisDiameter', 10, ...
+        'majorAxisDiameter', 5, ...
         'rotation', 13.0...
     ));
 
@@ -56,95 +56,160 @@ stimulusROI = regionOfInterest(...
     'rotation', 30.0...
 ));
 
-% Generate random points
-randomPoints = bsxfun(@plus, [14 2], randn(100,2)*3);
 
-% Compute the indices of the random points that lie within the stimulusROI
-indicesOfPointsInsideStimulusROI = stimulusROI.indicesOfPointsInside(randomPoints);
+% Instantiate a line ROI
+lineROI1 = regionOfInterest(...
+    struct(...
+    'units', 'degs', ...
+    'shape', 'line', ...
+    'from', [10 -1], ...
+    'to', [20 2] ...
+));
+
+% And another lineROI
+lineROI2 = regionOfInterest(...
+    struct(...
+    'units', 'degs', ...
+    'shape', 'line', ...
+    'from', [6 9], ...
+    'to', [17 -2] ...
+));
+
+
+% Generate random points
+randomPoints = bsxfun(@plus, [14 2], randn(600,2)*3);
+
 
 % Compute the indices of the random points that lie within the opticDiskROI
 indicesOfPointsInsideOpticDiskROI = opticDiskROI.indicesOfPointsInside(randomPoints);
 
-% Compute the indices of the random points that lie outside of the stimulusROI
-indicesOfPointsOutsideStimulusROI = stimulusROI.indicesOfPointsOutside(randomPoints);
-
 % Compute the indices of the random points that lie outside of the opticDiskROI
 indicesOfPointsOutsideOpticDiskROI = opticDiskROI.indicesOfPointsOutside(randomPoints);
 
+% Compute the indices of the random points that lie around the opticDiskROI outline
+maxDistance = 0.5;
+indicesOfPointsAroundOpticDiskROI = opticDiskROI.indicesOfPointsAround(randomPoints, maxDistance);
+
+
+% Compute the indices of the random points that lie within the stimulusROI
+indicesOfPointsInsideStimulusROI = stimulusROI.indicesOfPointsInside(randomPoints);
+
+% Compute the indices of the random points that lie outside of the stimulusROI
+indicesOfPointsOutsideStimulusROI = stimulusROI.indicesOfPointsOutside(randomPoints);
+
+% Compute the indices of the random points that lie outside of the stimulusROI
+maxDistance = 0.1;
+indicesOfPointsAroundStimulusROI = stimulusROI.indicesOfPointsAround(randomPoints, maxDistance);
+
+
+% Compute the indices of the random points that lie within the lineROI
+maxDistance = 0.5;
+indicesOfPointsAlongLineROI1 = lineROI1.indicesOfPointsAround(randomPoints, maxDistance);
+indicesOfPointsAlongLineROI2 = lineROI2.indicesOfPointsAround(randomPoints, maxDistance);
+
+
+
 % Visualize everything
+sv = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 2, ...
+       'colsNum', 3, ...
+       'heightMargin',  0.07, ...
+       'widthMargin',    0.03, ...
+       'leftMargin',     0.03, ...
+       'rightMargin',    0.03, ...
+       'bottomMargin',   0.03, ...
+       'topMargin',      0.03);
+
 hFig = figure(1); clf;
-set(hFig, 'Position', [10 10 1100 1000]);
+set(hFig, 'Position', [10 10 2000 1100]);
 
 % Render the opticDiskROI and label the random points that lie within it
-ax = subplot(2,3,1);
-opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax);
+ax = subplot('Position', sv(1,1).v);
+opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0.9 0.9 0]);
 
 % Plot all points
 scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0]);
+    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
 
 % Plot points inside the opticDiskROI in red
 scatter(ax, randomPoints(indicesOfPointsInsideOpticDiskROI,1), randomPoints(indicesOfPointsInsideOpticDiskROI,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [1 0 0]);
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.5);
 title(ax, 'points inside ellipse ROI');
 
 % Render the opticDiskROI and label the random points that lie outside
-ax = subplot(2,3,4);
-opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax);
+ax = subplot('Position', sv(1,2).v);
+opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0.9 0.9 0]);
 
 % Plot all points
 scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0]);
+    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
 
 % Plot points outside the opticDiskROI in red
 scatter(ax, randomPoints(indicesOfPointsOutsideOpticDiskROI,1), randomPoints(indicesOfPointsOutsideOpticDiskROI,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [1 0 0]);
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.5);
 title(ax, 'points outside ellipse ROI');
+
+
+% Render the opticDiskROI and label the random points that lie outside
+ax = subplot('Position', sv(1,3).v);
+opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0.9 0.9 0]);
+
+% Plot all points
+scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
+
+% Plot points around the opticDiskROI in red
+scatter(ax, randomPoints(indicesOfPointsAroundOpticDiskROI,1), randomPoints(indicesOfPointsAroundOpticDiskROI,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.5);
+title(ax, 'points along ellipse ROI outline');
+
+
 
 
 
 % Render the stimulusROI and label the random points that lie within it
-ax = subplot(2,3,2);
-stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax);
+ax = subplot('Position', sv(2,1).v);
+stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0.9 0.9 0]);
 
 % Plot all points
 scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0]);
+    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
 
-% Plot points inside the stimulusROI in blue
+% Plot points inside the stimulusROI in red
 scatter(ax, randomPoints(indicesOfPointsInsideStimulusROI,1), randomPoints(indicesOfPointsInsideStimulusROI,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.9], 'MarkerEdgeColor', [0 0 1]);
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.5);
 title(ax, 'points inside rect ROI');
-
-
-% Render the stimulusROI and label the random points that lie outside
-ax = subplot(2,3,5);
-stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax);
-
-% Plot all points
-scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0]);
-
-% Plot points inside the stimulusROI in blue
-scatter(ax, randomPoints(indicesOfPointsOutsideStimulusROI,1), randomPoints(indicesOfPointsOutsideStimulusROI,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.9], 'MarkerEdgeColor', [0 0 1]);
-title(ax, 'points outside rect ROI');
 
 
 
 % Render the 2 ROIs superimposed
-ax = subplot(2,3,3);
+ax = subplot('Position', sv(2,2).v);
 opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [1 1 0]);
 stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0 1 1]);
 title(ax, 'rect ROI & ellipse ROI superimposed');
-
-ax = subplot(2,3,6);
-opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [1 1 0]);
-stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0 1 1]);
 
 % Plot points inside both the stimulusROI and the opticDiskROI
 idx = intersect(indicesOfPointsInsideStimulusROI,indicesOfPointsInsideOpticDiskROI);
 scatter(ax, randomPoints(idx,1), randomPoints(idx,2), 64, ...
     'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.9], 'MarkerEdgeColor', [1 0 1]);
 title(ax, 'points inside both rect ROI & ellipse ROI');
+
+% Render the 2 lineROIs
+ax = subplot('Position', sv(2,3).v);
+lineROI1.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [1 0 0]);
+lineROI2.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0 1 1]);
+
+% Plot all points
+scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
+
+% Plot points along the lineROI in red
+scatter(ax, randomPoints(indicesOfPointsAlongLineROI1,1), randomPoints(indicesOfPointsAlongLineROI1,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
+
+scatter(ax, randomPoints(indicesOfPointsAlongLineROI2,1), randomPoints(indicesOfPointsAlongLineROI2,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.3 0.9 0.9], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
+
+title(ax, 'points along line ROI1 and line ROI2');
+
 

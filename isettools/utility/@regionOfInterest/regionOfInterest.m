@@ -73,6 +73,9 @@ classdef regionOfInterest < handle
         % Method to return the indices of the points that lie outside of the ROI
         idx = indicesOfPointsOutside(obj, points)
         
+        % Method to return the indices of the points that lie on the perimeter of the ROI
+        idx = indicesOfPointsAround(obj, points, maxDistance)
+        
         % Getter for outline
         function val = get.outline(obj)
             val = generateOutline(obj);
