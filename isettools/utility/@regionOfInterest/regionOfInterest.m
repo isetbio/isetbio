@@ -127,11 +127,14 @@ classdef regionOfInterest < handle
         
         % Global setter
         function set(obj, varargin)
+            %
+            % Note:  For circle height is diameter, right?
+            %
             settableParams = fieldnames(obj.defaultGeometryStruct);
             settableParams{numel(settableParams)+1} = 'geometryStruct';
             for k = 1:2:numel(varargin)-1
                 if (~ismember(varargin{k}, settableParams))
-                    fprintf(2,'Field ''%s'' does not exis and is therefore not settable. Ignoring it.\n', varargin{k});
+                    fprintf(2,'Field ''%s'' does not exist. Skipping.\n', varargin{k});
                 else
                     obj.(varargin{k}) = varargin{k+1};
                 end

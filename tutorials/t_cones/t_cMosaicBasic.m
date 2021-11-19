@@ -35,7 +35,7 @@ oi = oiCompute(scene, oi);
 
 %% Generate the mosaic
 cm = cMosaic(...
-    'sizeDegs', [1.0 1.5], ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
+    'sizeDegs', [1.0 1.5]*2, ...    % SIZE: 1.0 degs (x) 0.5 degs (y)
     'eccentricityDegs', [0 0], ...  % ECC: (0,0)
     'eccVaryingConeBlur', true ...
     );
@@ -44,9 +44,39 @@ cm = cMosaic(...
 cm.visualize();
 
 %% Compute 8 noisy response instances of cone excitation response
-instancesNum = 8;
+instancesNum = 2;
 [noiseFreeExcitationResponse, noisyExcitationResponseInstances] = cm.compute(oi, ...
     'nTrials', instancesNum);
+
+%% First, print out some examples using the 'help' method
+
+regionOfInterest('help');
+
+%% Now choose a small circular ROI
+
+roiCircle = regionOfInterest('shape','ellipse',...
+    'center',[0 0],...
+    'majorAxisDiameter',0.2,...
+    'minorAxisDiameter',0.2);
+
+% Find indices of the cones whose positions are within the ROI
+idx = roiCircle.indicesOfPointsInside(cm.coneRFpositionsDegs);
+
+% Find the excitations at those positions
+excitations = noiseFreeExcitationResponse(idx);
+
+size(noiseFreeExcitationResponse)
+size(excitations)
+
+%% Or a line
+
+roiLine = regionOfInterest('shape','line',...
+    'from',[-0.5 0],...
+    'to',[ 0.5,0]);
+   
+idx = roiLine.indicesOfPointsInside(cm.coneRFpositionsDegs);
+
+
 
 %% Visualize responses
 hFig = figure(); clf;
@@ -73,3 +103,4 @@ for k = 1:instancesNum
                  'plotTitle', sprintf('noisy response instance (#%d)', k));
 end
 
+%%

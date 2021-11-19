@@ -35,7 +35,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('visualizedConeAperture', 'geometricArea', @(x)ismember(x, ...
         {'lightCollectingArea', 'geometricArea', 'coneSpacing', ...
         'lightCollectingAreaCharacteristicDiameter', 'lightCollectingArea2sigma', 'lightCollectingArea4sigma', 'lightCollectingArea5sigma', 'lightCollectingArea6sigma'}));
-    p.addParameter('visualizedConeApertureThetaSamples', [], @isscalar);
+    p.addParameter('visualizedConeApertureThetaSamples', [], @(x)(isempty(x) || isscalar(x)));
     
     p.addParameter('visualizeCones', true, @islogical);
     p.addParameter('labelCones', true, @islogical);
@@ -76,8 +76,8 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
-    p.addParameter('plotTitle', '', @ischar);
-    p.addParameter('textDisplay', '', @ischar);
+    p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x)));
+    p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
     p.addParameter('textDisplayColor', [], @isnumeric);
     
     p.parse(varargin{:});
