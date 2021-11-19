@@ -246,7 +246,7 @@ classdef regionOfInterest < handle
             fprintf('\n\t d = regionOfInterest(); d.visualize();');
             
             fprintf(2,'\n\n2. Generate default ROI with some modifications and visualize it:');
-            fprintf('\n\t d = regionOfInterest(''center'', [3 5], ''width'', 3); d.visualize();');
+            fprintf('\n\t d = regionOfInterest(''center'', [3 5], ''width'', 3, ''rotation'', 30); d.visualize();');
             
             fprintf(2,'\n\n3. Alter some params of an existing ROI and visualize it:');
             fprintf('\n\t d.set(''center'', [-3 -5], ''height'', 5); d.visualize();');
