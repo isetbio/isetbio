@@ -269,10 +269,14 @@ classdef regionOfInterest < handle
             fprintf('\n\t idxPointsOutside = d.indicesOfPointsOutside(randomPoints);');
             
             fprintf(2,'\n\n7. Compute the indices of points that lie near the perimeter of an ROI:');
-            fprintf('\n\t maxDistanceFromPerimeter = 0.3; perimeterSamplingPoints = 1000;');
-            fprintf('\n\t idx = d.indicesOfPointsAround(randomPoints, maxDistanceFromPerimeter, perimeterSamplingPoints);');
+            fprintf('\n\t samplingPoints = 1000; %% sample the perimeter of the ROI along 1000 points');
+            fprintf('\n\t pointsPerSample = 30;  %% return up to 30 points for each sample along the perimeter');
+            fprintf('\n\t maxDistance = 0.5;     %% points must be no further than 0.5 units away from the closest perimeter sample');
+            fprintf('\n\t idx = d.indicesOfPointsAround(randomPoints, pointsPerSample, samplingPoints, maxDistance);');
             fprintf('\n---------------------------\n');
             
+
+
         end
     end
     
