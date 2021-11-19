@@ -274,9 +274,6 @@ classdef regionOfInterest < handle
             fprintf('\n\t maxDistance = 0.5;     %% points must be no further than 0.5 units away from the closest perimeter sample');
             fprintf('\n\t idx = d.indicesOfPointsAround(randomPoints, pointsPerSample, samplingPoints, maxDistance);');
             fprintf('\n---------------------------\n');
-            
-
-
         end
     end
     
