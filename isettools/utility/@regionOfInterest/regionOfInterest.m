@@ -2,7 +2,7 @@ classdef regionOfInterest < handle
     % Create an regionOfInterest object
     %
     % Syntax:
-    %   rectangularROI = regionOfInterest(...
+    %   rectangularROI = regionOfInterest('geometryStruct', ...
     %       struct(...
     %           'units', 'degs', ...
     %           'shape', 'rect', ...
@@ -12,15 +12,8 @@ classdef regionOfInterest < handle
     %           'rotation', 30.0...
     %       ));
     %
-    %   ellipticalROI = regionOfInterest(...
-    %       struct(...
-    %           'units', 'degs', ...
-    %           'shape', 'ellipse', ...
-    %           'center', [14, 2], ...
-    %           'majorAxisDiameter', 10, ...
-    %           'minorAxisDiameter', 5, ...
-    %           'rotation', 30.0...
-    %       ));
+    %    regionOfInterest('help');
+    %    regionOfInterest('params');
     %
     % Description:
     %    A @regionOfInterest object handles the geometry of an ROI and
@@ -94,6 +87,8 @@ classdef regionOfInterest < handle
                 switch (mode)
                     case 'help'
                         regionOfInterest.displayHelp();
+                    case 'params'
+                        visualizeParamsStructTree(obj.defaultGeometryStruct, 'default params');
                     otherwise
                         fprintf(2,'Incorrect instantiation. See below for ways to instantiate a @regionOfInterest.\n');
                         regionOfInterest.displayHelp();
@@ -196,7 +191,6 @@ classdef regionOfInterest < handle
         function set.geometryStruct(obj,val)
             fNames = fieldnames(val);
             for k = 1:numel(fNames)
-                fprintf('Setting ''%s''\n', fNames{k});
                 obj.(fNames{k}) = val.(fNames{k});
             end
         end
@@ -235,7 +229,7 @@ classdef regionOfInterest < handle
         
         % Method to return the indices of the points that lie up to maxDistance from
         % the perimeter of the ROI, with the perimeter outline sampled using nSamples
-        idx = indicesOfPointsAround(obj, points, maxDistance, nSamples);
+        idx = indicesOfPointsAround(obj, points, pointsPerSmaple, samplingPoints, maxDistance);
     end
     
     
@@ -244,10 +238,39 @@ classdef regionOfInterest < handle
             fprintf('---------------------------');
             fprintf('\n@regionOfInterest: A class to manage a region of interest.');
             fprintf('\nUsage patterns:');
-            fprintf('\n0. Print some documentation:');
+            
+            fprintf(2,'\n\n0. Print some documentation:');
             fprintf('\n\t regionOfInterest(''help'')');
-            fprintf('\n1. Return the default region of interest and visualize it:');
+            
+            fprintf(2,'\n\n1. Generate the default ROI and visualize it:');
             fprintf('\n\t d = regionOfInterest(); d.visualize();');
+            
+            fprintf(2,'\n\n2. Generate default ROI with some modifications and visualize it:');
+            fprintf('\n\t d = regionOfInterest(''center'', [3 5], ''width'', 3); d.visualize();');
+            
+            fprintf(2,'\n\n3. Alter some params of an existing ROI and visualize it:');
+            fprintf('\n\t d.set(''center'', [-3 -5], ''height'', 5); d.visualize();');
+            
+            fprintf(2,'\n\n4. Generate a completely custom ROI and visualize it:');
+            fprintf('\n\t d.set(''geometryStruct'', struct(...');
+            fprintf('\n\t\t ''units'', ''degs'', ...');
+            fprintf('\n\t\t ''shape'', ''ellipse'', ...');
+            fprintf('\n\t\t ''center'', [15.5, 1.5], ...');
+            fprintf('\n\t\t ''minorAxisDiameter'', 10, ...');
+            fprintf('\n\t\t ''majorAxisDiameter'', 5, ...');
+            fprintf('\n\t\t ''rotation'', 13.0));');
+            fprintf('\n\t d.visualize();');
+
+            fprintf(2,'\n\n5. Compute the indices of points that lie inside an ROI:');
+            fprintf('\n\t randomPoints = bsxfun(@plus, [14 2], randn(600,2)*3);');
+            fprintf('\n\t idxPointsInside = d.indicesOfPointsInside(randomPoints);');
+            
+            fprintf(2,'\n\n6. Compute the indices of points that lie outside an ROI:');
+            fprintf('\n\t idxPointsOutside = d.indicesOfPointsOutside(randomPoints);');
+            
+            fprintf(2,'\n\n7. Compute the indices of points that lie near the perimeter of an ROI:');
+            fprintf('\n\t maxDistanceFromPerimeter = 0.3; perimeterSamplingPoints = 1000;');
+            fprintf('\n\t idx = d.indicesOfPointsAround(randomPoints, maxDistanceFromPerimeter, perimeterSamplingPoints);');
             fprintf('\n---------------------------\n');
             
         end

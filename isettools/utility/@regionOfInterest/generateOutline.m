@@ -28,7 +28,7 @@ function outline = generateOutline(obj)
             obj.geometryStruct
             rotation = atan2d((obj.geometryStruct.to(2)-obj.geometryStruct.from(2)),...
                               (obj.geometryStruct.to(1)-obj.geometryStruct.from(1)));
-            width = 0.1;
+            width = 0.001;
             length = sqrt(sum((obj.geometryStruct.from - obj.geometryStruct.to).^2));
             center = (obj.geometryStruct.from + obj.geometryStruct.to)/2;
             a = 0.5;
