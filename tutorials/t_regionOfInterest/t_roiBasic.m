@@ -48,23 +48,29 @@ theROI = regionOfInterest(...
         'majorAxisDiameter', 5, ...
         'rotation', 13.0...
     ));
+% Visualize it
 theROI.visualize()
 
+% Change the shape from 'ellipse' to 'rect', and also change the center, width & height
 theROI.set('shape', 'rect', 'center', [-3 4], 'width', 10, 'height', 2);
 theROI.visualize()
 
+% Change the shape to 'line'
 theROI.shape = 'line';
+
+% Set the 'from', and 'to' params for the 'line' ROI
 theROI.set('from', [-4 3], 'to', [2 2]);
+% Visualize it
 theROI.visualize();
 
 
 % Generate random points
 randomPoints = bsxfun(@plus, [0 2], randn(2000,2)*1);
 
-% Compute the indices of the random points that lie within the opticDiskROI
+% Compute the indices of the random points that lie within theROI
 indicesOfPointsInside = theROI.indicesOfPointsInside(randomPoints);
 
-% Compute the indices of the random points that lie outside of the opticDiskROI
+% Compute the indices of the random points that lie outside of theROI
 indicesOfPointsOutside  = theROI.indicesOfPointsOutside(randomPoints);
 
 % Compute the indices of the random points that lie around theROI
