@@ -64,9 +64,36 @@ idx = roiCircle.indicesOfPointsInside(cm.coneRFpositionsDegs);
 
 % Find the excitations at those positions
 excitations = noiseFreeExcitationResponse(idx);
+mean(excitations)
 
-size(noiseFreeExcitationResponse)
-size(excitations)
+in = ismember(idx,cm.lConeIndices);
+idxL = idx(in);
+mean(noiseFreeExcitationResponse(idxL))
+
+% M
+in = ismember(idx,cm.mConeIndices);
+idxM = idx(in);
+mean(noiseFreeExcitationResponse(idxM))
+
+% Good, really.  No S-cones.
+in = ismember(idx,cm.sConeIndices);
+idxS = idx(in);
+mean(noiseFreeExcitationResponse(idxS))
+
+% Show the region of the extraction.
+testActivation = noiseFreeExcitationResponse;
+testActivation(idx) = 1000;
+
+% This is the region the data come from
+params = cm.visualize('params');
+params.activation = testActivation;
+params.verticalActivationColorBar = true;
+cm.visualize(params);
+
+params.activation = noiseFreeExcitationResponse;
+cm.visualize(params);
+
+
 
 %% Or a line
 
@@ -75,6 +102,7 @@ roiLine = regionOfInterest('shape','line',...
     'to',[ 0.5,0]);
    
 idx = roiLine.indicesOfPointsInside(cm.coneRFpositionsDegs);
+excitations = noiseFreeExcitationResponse(idx);
 
 
 
