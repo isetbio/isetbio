@@ -35,7 +35,7 @@ oi = oiCompute(scene, oi);
 
 %% Generate the mosaic
 cm = cMosaic(...
-    'sizeDegs', [4.0 1.0], ...    % SIZE: 1.0 degs (x) 0.5 degs (y)
+    'sizeDegs', [2.0 1.0], ...    % SIZE: 1.0 degs (x) 0.5 degs (y)
     'eccentricityDegs', [0 0], ...  % ECC: (0,0)
     'eccVaryingConeBlur', true ...
     );
@@ -55,32 +55,25 @@ regionOfInterest('help');
 %% Now choose a small circular ROI
 
 roiCircle = regionOfInterest('shape','ellipse',...
-    'center',[0 0],...
+    'center',[1 0],...
     'majorAxisDiameter',0.2,...
     'minorAxisDiameter',0.2);
 
-% Find indices of the cones whose positions are within the ROI
-idx = roiCircle.indicesOfPointsInside(cm.coneRFpositionsDegs);
+allExcitations = cm.excitations('oi',oi);
 
-% Find the excitations at those positions
-excitations = noiseFreeExcitationResponse(idx);
-mean(excitations)
+roiE = cm.excitations('roi',roiCircle,'all excitations',allExcitations);
+roiLE = cm.excitations('roi',roiCircle,...
+    'all excitations',allExcitations, ...
+    'cone type','L');
+mean(roiLE)
 
-in = ismember(idx,cm.lConeIndices);
-idxL = idx(in);
-mean(noiseFreeExcitationResponse(idxL))
+% Fewer and lower excitations of S-cones.
+roiSE = cm.excitations('roi',roiCircle,...
+    'all excitations',allExcitations, ...
+    'cone type','S');
+mean(roiSE)
 
-% M
-in = ismember(idx,cm.mConeIndices);
-idxM = idx(in);
-mean(noiseFreeExcitationResponse(idxM))
-
-% Good, really.  No S-cones.
-in = ismember(idx,cm.sConeIndices);
-idxS = idx(in);
-mean(noiseFreeExcitationResponse(idxS))
-
-% Show the region of the extraction.
+%% Show the region of the extraction.
 testActivation = noiseFreeExcitationResponse;
 testActivation(idx) = 1000;
 
