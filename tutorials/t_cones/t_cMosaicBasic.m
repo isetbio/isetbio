@@ -35,7 +35,7 @@ oi = oiCompute(scene, oi);
 
 %% Generate the mosaic
 cm = cMosaic(...
-    'sizeDegs', [1.0 1.5]*2, ...    % SIZE: 1.0 degs (x) 0.5 degs (y)
+    'sizeDegs', [4.0 1.0], ...    % SIZE: 1.0 degs (x) 0.5 degs (y)
     'eccentricityDegs', [0 0], ...  % ECC: (0,0)
     'eccVaryingConeBlur', true ...
     );
@@ -44,7 +44,7 @@ cm = cMosaic(...
 cm.visualize();
 
 %% Compute 8 noisy response instances of cone excitation response
-instancesNum = 2;
+instancesNum = 1;
 [noiseFreeExcitationResponse, noisyExcitationResponseInstances] = cm.compute(oi, ...
     'nTrials', instancesNum);
 
@@ -95,14 +95,31 @@ cm.visualize(params);
 
 
 
-%% Or a line
+%% Or a line.  Maybe we should always use a rect for a line?  But then
+% We would not be able to change the orientation easily.
+% Do we want to be able to rotate a rect and an ellipse?
+
 
 roiLine = regionOfInterest('shape','line',...
-    'from',[-0.5 0],...
-    'to',[ 0.5,0]);
+    'from',[-2 0],...
+    'to',[ 2,0]);
    
+cm.visualize();
+
+% Would this be good?
+% cm.plot('excitations','line',roiLine,'cone type','L');
+
 idx = roiLine.indicesOfPointsInside(cm.coneRFpositionsDegs);
+in = ismember(idx,cm.sConeIndices);
+idx = idx(in);
 excitations = noiseFreeExcitationResponse(idx);
+pos = cm.coneRFpositionsDegs(idx);
+ieNewGraphWin;
+plot(pos,squeeze(excitations),'-ro');
+xlabel('Position (deg)'); ylabel('Excitations');
+grid on;
+
+
 
 
 

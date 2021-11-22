@@ -559,7 +559,7 @@ classdef cMosaic < handle
                       (max(obj.coneRFpositionsDegs,[],1)    - min(obj.coneRFpositionsDegs,[],1));
             end
         end
-        
+                
         % SIZEMICRONS
         function val = get.sizeMicrons(obj)
             xyMax = max(obj.coneRFpositionsMicrons,[],1);
