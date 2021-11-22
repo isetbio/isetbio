@@ -40,6 +40,11 @@ cm = cMosaic(...
     'eccVaryingConeBlur', true ...
     );
 
+% To get an OI appropriate for this location, use
+% 
+%     cm.oiEnsembleGenerate
+
+
 %% Visualize the mosaic
 cm.visualize();
 
@@ -47,6 +52,22 @@ cm.visualize();
 instancesNum = 1;
 [noiseFreeExcitationResponse, noisyExcitationResponseInstances] = cm.compute(oi, ...
     'nTrials', instancesNum);
+
+cm.save(filename,'include data',true)
+
+% What is stored?
+[noiseFreeExcitations, noisyFreeExcitations] = cm.compute(oi);
+
+[~,noisyExcitations] = cm.compute(oi);
+noisyExcitations = cm.compute(oi,'noise flag','on');
+
+
+noiseFreeExcitations = cm.compute(oi,'noise flag','off');
+noisyExcitations = cm.addNoise('nSamples',8);  % Check noise flag as part of this
+
+
+cm.compute(oi,'compute type',cellArray)
+possibleState = cm.compute('params')
 
 %% First, print out some examples using the 'help' method
 
@@ -59,30 +80,38 @@ roiCircle = regionOfInterest('shape','ellipse',...
     'majorAxisDiameter',0.2,...
     'minorAxisDiameter',0.2);
 
-allExcitations = cm.excitations('oi',oi);
+allExcitations = cm.compute(oi);
+% [~,~,allExcitations] = cm.excitations('oi',oi);
 
 roiE = cm.excitations('roi',roiCircle,'all excitations',allExcitations);
+mean(roiE)
+
 roiLE = cm.excitations('roi',roiCircle,...
     'all excitations',allExcitations, ...
     'cone type','L');
 mean(roiLE)
 
+cm.get('excitations',varargin)
+cm.get('excitations','roi',roiCircle)
+
+
 % Fewer and lower excitations of S-cones.
-roiSE = cm.excitations('roi',roiCircle,...
+[roiSE, roiSIdx] = cm.excitations('roi',roiCircle,...
     'all excitations',allExcitations, ...
     'cone type','S');
 mean(roiSE)
 
-%% Show the region of the extraction.
-testActivation = noiseFreeExcitationResponse;
-testActivation(idx) = 1000;
+[roiE, roiIdx, allE] = cm.excitations('roi',roiCircle,'visualize',true,'all excitations',allExcitations);
 
-% This is the region the data come from
-params = cm.visualize('params');
-params.activation = testActivation;
-params.verticalActivationColorBar = true;
-cm.visualize(params);
+%%
+roiLine = regionOfInterest('shape','line',...
+    'from',[-1 0],...
+    'to',[ 1,0]);
 
+[roiE, roiIdx, allE] = cm.excitations('roi',roiLine,'visualize',true,'all excitations',allExcitations);
+
+
+%%
 params.activation = noiseFreeExcitationResponse;
 cm.visualize(params);
 

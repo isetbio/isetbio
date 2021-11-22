@@ -1,13 +1,16 @@
-function [roiExcitations, allExcitations] = excitations(cm,varargin)
-% Return the excitations within an roi of the cMosaic
+function [roiExcitations, roiIdx, allExcitations] = excitations(cm,varargin)
+% Return the excitations within a cMosaic ROI
 %
 % Synopsis
 %   cMosaic.excitations(roi,varargin);
-%   cMosaic.excitations('roi',roi,'all excitations',allE);
-%   [roiE, allE] = cMosaic.excitations('roi',roi,'oi',oi);
+%   [roiE, roiIdx] = cMosaic.excitations('roi',roi,'all excitations',allE);
+%   [roiE, roiIdx, allE] = cMosaic.excitations('roi',roi,'oi',oi);
 %
 % Brief description
-%   Method to get cone excitations from an ROI
+%   Method to read cone excitations from an ROI.  Typically, the
+%   excitations are already computed and included as a parameter
+%   (allE).  The returns are the excitations within the roi as well as
+%   the indices (idx) used to extract data from allE.
 %
 % Inputs
 %   cm - cMosaic object
@@ -17,10 +20,12 @@ function [roiExcitations, allExcitations] = excitations(cm,varargin)
 %   allExcitations - Pre-computed excitations
 %   oi  - Optical image
 %   cone type - {L,M,S}
+%   visualize -  Show the ROI as bright spots on the excitations
 %
 % Outputs
 %   roiExcitations - The excitations within the ROI
 %   allExcitations - Excitations of the entire mosaic
+%   roiIdx         - Indices of the ROI w.r.t allExcitations
 %
 % See also
 %   cMosaic.compute(oi);
@@ -35,6 +40,7 @@ p.addParameter('roi',[],@(x)(isa(x,'regionOfInterest')));
 p.addParameter('allexcitations',[],@isnumeric);
 p.addParameter('oi',[],@(x)(isstruct(x) && isequal(x.type,'opticalimage')));
 p.addParameter('conetype','',@ischar);
+p.addParameter('visualize',false,@islogical);
 
 p.parse(cm,varargin{:});
 
@@ -48,7 +54,9 @@ if isempty(allExcitations)
 end
 
 if isempty(roi)
+    % This is no different than cMosaic.compute;
     roiExcitations = allExcitations;
+    roiIdx = 1:size(allExcitations,3);
     return;
 end
 
@@ -56,26 +64,49 @@ end
 %% Find indices 
 
 % Here are all the indices of the cones whose positions are within the ROI
-idx = roi.indicesOfPointsInside(cm.coneRFpositionsDegs);
+switch(roi.shape)
+    case 'line'
+        samplingPoints = 500; % sample the perimeter using 1000 points
+        pointsPerSample = 10;  % up to 30 points for each sample along the perimeter
+        maxDistance = 0.2;     % up to 0.5 units aray from the closest point on the perimeter
+        idx = roi.indicesOfPointsAround(cm.coneRFpositionsDegs, pointsPerSample, samplingPoints, maxDistance);
+        % idx = roi.indicesOfPointsAround(cm.coneRFpositionsDegs);
+    otherwise
+        idx = roi.indicesOfPointsInside(cm.coneRFpositionsDegs);
+end
 
 % Restrict to a cone type 
 switch ieParamFormat(coneType)
     case 'l'
         in = ismember(idx,cm.lConeIndices);
-        idx = idx(in);
+        roiIdx = idx(in);
     case 'm'        
         in = ismember(idx,cm.mConeIndices);
-        idx = idx(in);
+        roiIdx = idx(in);
     case 's'
         in = ismember(idx,cm.sConeIndices);
-        idx = idx(in);
+        roiIdx = idx(in);
     case ''
         % All assumed
+        roiIdx = idx;
     otherwise
         error('Unknown cone type %s\n',coneType);
 end
 
-roiExcitations = allExcitations(idx);
+roiExcitations = allExcitations(roiIdx);
+
+%% Show it if requested
+
+if p.Results.visualize
+    imgROI = allExcitations;
+    imgROI(roiIdx) = max(imgROI(:))*1.5;
+    
+    % This is the region the data come from
+    params = cm.visualize('params');
+    params.activation = imgROI;
+    params.verticalActivationColorBar = true;
+    cm.visualize(params);
+end
 
 end
 
