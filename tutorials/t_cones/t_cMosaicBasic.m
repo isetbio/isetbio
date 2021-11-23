@@ -27,7 +27,7 @@ close all;
 
 %% Generate the ring rays stimulus
 scene = sceneCreate('rings rays');
-scene = sceneSet(scene, 'fov', 0.5);
+scene = sceneSet(scene, 'fov', 1);
 
 %% Compute the optical image
 oi = oiCreate;
@@ -36,10 +36,16 @@ oi = oiCompute(scene, oi);
 %% Generate the mosaic
 cm = cMosaic(...
     'sizeDegs', [2.0 1.0], ...    % SIZE: 1.0 degs (x) 0.5 degs (y)
-    'eccentricityDegs', [0 0], ...  % ECC: (0,0)
+    'positionDegs', [1 0], ...  % ECC: (0,0)
     'eccVaryingConeBlur', true ...
     );
 
+% fname = fullfile(isetRootPath,'local','testmosaic');
+% overwrite = false;
+% ofile = cm.save(fname,overwrite)
+
+
+%
 % To get an OI appropriate for this location, use
 % 
 %     cm.oiEnsembleGenerate
@@ -49,11 +55,11 @@ cm = cMosaic(...
 cm.visualize();
 
 %% Compute 8 noisy response instances of cone excitation response
-instancesNum = 1;
+instancesNum = 2;
 [noiseFreeExcitationResponse, noisyExcitationResponseInstances] = cm.compute(oi, ...
     'nTrials', instancesNum);
 
-cm.save(filename,'include data',true)
+
 
 % What is stored?
 [noiseFreeExcitations, noisyFreeExcitations] = cm.compute(oi);

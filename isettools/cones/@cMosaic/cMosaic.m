@@ -188,10 +188,12 @@ classdef cMosaic < handle
         % indices of K-cones
         kConeIndices;
         
-        % Eccentricity [x,y] of the center of the cone mosaic (degs)
+        % Position [x,y] of the center of the cone mosaic (degs)
+        % The variable should be renamed positionDegs, but ...
         eccentricityDegs;
         
         % Eccentricity [x,y] of the center of the cone mosaic (microns)
+        % Should be positionMicrons
         eccentricityMicrons; 
         
         % Size of the cone mosaic [width, height]
@@ -309,7 +311,12 @@ classdef cMosaic < handle
             p.addParameter('pigment', cPhotoPigment(), @(x) isa(x, 'cPhotoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
             p.addParameter('coneData', [], @(x)(isempty(x) || (isstruct(x))));
-            p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
+            
+            % These are synonyms.  If positionDegs is sent in, it
+            % overwrites eccentricityDegs
+            p.addParameter('eccentricityDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('positionDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('computeMeshFromScratch', false, @islogical);
@@ -343,10 +350,21 @@ classdef cMosaic < handle
             obj.pigment = p.Results.pigment;
             obj.wave = p.Results.wave;
             
-            obj.eccentricityDegs = p.Results.eccentricityDegs;
+            % Because BW wants to be able to use positionDegs
+            if ~isempty(p.Results.eccentricityDegs)
+                % Always wins for historical reasons
+                obj.eccentricityDegs = p.Results.eccentricityDegs;
+            elseif ~isempty(p.Results.positionDegs)
+                % Use positionDegs if available but no
+                % eccentricityDegs
+                obj.eccentricityDegs = p.Results.positionDegs;
+            else                
+                % Default
+                obj.eccentricityDegs = [0,0];
+            end
+                
             obj.sizeDegs = p.Results.sizeDegs;
             obj.whichEye = p.Results.whichEye;
-
             
             obj.eccVaryingConeAperture = p.Results.eccVaryingConeAperture;
             obj.eccVaryingOuterSegmentLength = p.Results.eccVaryingOuterSegmentLength;
@@ -662,8 +680,7 @@ classdef cMosaic < handle
             obj.coneCouplingLambda = val;
             obj.coneCouplingWeights = [];
             obj.neighboringCoupledConeIndices = [];
-        end
-        
+        end                
         
     end
     
