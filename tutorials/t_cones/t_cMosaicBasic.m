@@ -54,14 +54,14 @@ cm = cMosaic(...
 %% Visualize the mosaic
 cm.visualize();
 
-%% Compute 8 noisy response instances of cone excitation response
+%% Compute multiple noisy response instances of cone excitation response
+
 instancesNum = 2;
 [noiseFreeExcitationResponse, noisyExcitationResponseInstances] = cm.compute(oi, ...
     'nTrials', instancesNum);
 
-
-
-% What is stored?
+%% What is stored?
+%{
 [noiseFreeExcitations, noisyFreeExcitations] = cm.compute(oi);
 
 [~,noisyExcitations] = cm.compute(oi);
@@ -74,6 +74,7 @@ noisyExcitations = cm.addNoise('nSamples',8);  % Check noise flag as part of thi
 
 cm.compute(oi,'compute type',cellArray)
 possibleState = cm.compute('params')
+%}
 
 %% First, print out some examples using the 'help' method
 
@@ -110,9 +111,9 @@ mean(roiSE)
 [roiE, roiIdx, allE] = cm.excitations('roi',roiCircle,'visualize',true,'all excitations',allExcitations);
 
 %%
-roiLine = regionOfInterest('shape','line',...
-    'from',[-1 0],...
-    'to',[ 1,0]);
+roiLine = regionOfInterest('shape', 'line', ...
+    'from', [-1 0], 'to', [ 1,0], ...
+    'thickness', 0.1);
 
 [roiE, roiIdx, allE] = cm.excitations('roi',roiLine,'visualize',true,'all excitations',allExcitations);
 

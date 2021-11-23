@@ -66,11 +66,14 @@ end
 % Here are all the indices of the cones whose positions are within the ROI
 switch(roi.shape)
     case 'line'
+        idx = roi.indicesOfPointsInside(cm.coneRFpositionsDegs);
+        %{
         samplingPoints = 500; % sample the perimeter using 1000 points
         pointsPerSample = 10;  % up to 30 points for each sample along the perimeter
         maxDistance = 0.2;     % up to 0.5 units aray from the closest point on the perimeter
         idx = roi.indicesOfPointsAround(cm.coneRFpositionsDegs, pointsPerSample, samplingPoints, maxDistance);
         % idx = roi.indicesOfPointsAround(cm.coneRFpositionsDegs);
+        %}
     otherwise
         idx = roi.indicesOfPointsInside(cm.coneRFpositionsDegs);
 end
