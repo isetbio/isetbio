@@ -52,6 +52,7 @@ classdef regionOfInterest < handle
                     'majorAxisDiameter', 1, ...
                     'from', [-1 0], ...
                     'to', [1 0], ...
+                    'thickness', 0.001, ...
                     'rotation', 0.0...
                     );     
     end
@@ -67,6 +68,7 @@ classdef regionOfInterest < handle
         majorAxisDiameter
         from
         to
+        thickness
         rotation
     end
     
@@ -109,6 +111,8 @@ classdef regionOfInterest < handle
             p.addParameter('majorAxisDiameter', obj.defaultGeometryStruct.majorAxisDiameter, @isscalar);
             p.addParameter('from',    obj.defaultGeometryStruct.from, @(x)(isnumeric(x) && ((numel(x) == 2))));
             p.addParameter('to',      obj.defaultGeometryStruct.to, @(x)(isnumeric(x) && ((numel(x) == 2))));
+            p.addParameter('thickness',      obj.defaultGeometryStruct.thickness, @(x)(isscalar(x) && ((x>0))));
+            
             p.addParameter('geometryStruct', []);
             p.parse(varargin{:});
             
@@ -160,6 +164,11 @@ classdef regionOfInterest < handle
                     if (isempty(obj.to))
                         obj.to = obj.defaultGeometryStruct.to;
                     end
+                    
+                    if (isempty(obj.thickness))
+                        obj.thickness = obj.defaultGeometryStruct.thickness;
+                    end
+                    
 
                 case 'ellipse'
                     % Ansure that 'rotation', 'minorAxisDiameter' and 'majorAxisDiameter' are not-empty, and if
@@ -211,6 +220,7 @@ classdef regionOfInterest < handle
                 'majorAxisDiameter', obj.majorAxisDiameter, ...
                 'from', obj.from, ...
                 'to', obj.to, ...
+                'thickness', obj.thickness, ...
                 'rotation', obj.rotation...
                 );
         end

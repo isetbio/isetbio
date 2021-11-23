@@ -40,6 +40,9 @@ theROI.set('from', [-4 3], 'to', [2 2]);
 theROI.visualize();
 
 
+theThickLineROI = regionOfInterest('shape', 'line', 'from', [-4 3], 'to', [2 2], 'thickness', 0.1);
+theThickLineROI.visualize();
+
 % Generate random points
 randomPoints = bsxfun(@plus, [0 2], randn(2000,2)*1);
 
@@ -56,11 +59,13 @@ maxDistance = 0.5;     % up to 0.5 units aray from the closest point on the peri
 indicesOfPointsNearROI = theROI.indicesOfPointsAround(randomPoints, pointsPerSample, samplingPoints, maxDistance);
 indicesOfClosestPointsNearROI = theROI.indicesOfPointsAround(randomPoints, 1, samplingPoints, maxDistance);
 
+% Compute the indices of the random points that lie around theThickLineROI
+indicesOfPointsWithinThickLineROI = theThickLineROI.indicesOfPointsInside(randomPoints);
 
 % Visualize
 hFig = figure();
 
-ax = subplot(2,1,1);
+ax = subplot(3,1,1);
 % Visualize the lineROI
 theROI.visualize('figureHandle', hFig, 'axesHandle', ax);
 % Plot all points
@@ -71,7 +76,7 @@ scatter(ax,randomPoints(indicesOfPointsNearROI,1), randomPoints(indicesOfPointsN
     'o', 'filled', 'MarkerFaceColor', [1 0.3 0.0], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.1);
 legend({'roi', 'all points', 'lots of points near ROI outline'}); 
 
-ax = subplot(2,1,2);
+ax = subplot(3,1,2);
 % Visualize the lineROI
 theROI.visualize('figureHandle', hFig, 'axesHandle', ax);
 % Plot all points
@@ -81,3 +86,16 @@ scatter(ax,randomPoints(:,1), randomPoints(:,2), 64, ...
 scatter(ax,randomPoints(indicesOfClosestPointsNearROI,1), randomPoints(indicesOfClosestPointsNearROI,2), 64, ...
     'o', 'filled', 'MarkerFaceColor', [1 0.3 0.0], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3);
 legend({'roi', 'all points', 'closest points near ROI outline'}); 
+
+ax = subplot(3,1,3);
+% Visualize theThickLineROI
+theThickLineROI.visualize('figureHandle', hFig, 'axesHandle', ax);
+% Plot all points
+scatter(ax,randomPoints(:,1), randomPoints(:,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.9 0.9], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
+% Label points  with a large distance from the lineROI
+scatter(ax,randomPoints(indicesOfPointsWithinThickLineROI,1), randomPoints(indicesOfPointsWithinThickLineROI,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [1 0.3 0.0], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3);
+legend({'roi', 'all points', 'points inside thick line ROI'}); 
+
+
