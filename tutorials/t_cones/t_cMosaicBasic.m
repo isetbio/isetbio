@@ -44,51 +44,69 @@ cm = cMosaic(...
 % overwrite = false;
 % ofile = cm.save(fname,overwrite)
 
-
 %
 % To get an OI appropriate for this location, use
 % 
 %     cm.oiEnsembleGenerate
-
+%
 
 %% Visualize the mosaic
-cm.visualize();
+vParms = cm.visualize();
 
 %% Compute multiple noisy response instances of cone excitation response
 
 instancesNum = 2;
 [allE, allNoisyE] = cm.compute(oi, 'nTrials', instancesNum);
 
-%% What is stored?
-%{
-[noiseFreeExcitations, noisyFreeExcitations] = cm.compute(oi);
-
-[~,noisyExcitations] = cm.compute(oi);
-noisyExcitations = cm.compute(oi,'noise flag','on');
-
-
-noiseFreeExcitations = cm.compute(oi,'noise flag','off');
-noisyExcitations = cm.addNoise('nSamples',8);  % Check noise flag as part of this
-
-
-cm.compute(oi,'compute type',cellArray)
-possibleState = cm.compute('params')
-%}
-
 %% First, print out some examples using the 'help' method
 
-regionOfInterest('help');
+% regionOfInterest('help');
 
-%% Now choose a small circular ROI
+%% Illustrate line plots
 
+allE = cm.compute(oi);
+
+% Create an image of the excitations
+cm.plot('excitations',allE);
+
+% Plot the excitations along a horizontal line
+cm.plot('excitations horizontal line',allE, 'y deg',0.3);
+cm.plot('excitations horizontal line',allE, 'y deg',0.0);
+
+% Set the thickness of the horizontal line
+cm.plot('excitations horizontal line',allE, 'y deg',0.3,'thickness',0.05);
+
+cm.plot('excitations horizontal line',allE, 'y deg',0.3,'thickness',0.05, 'conetype','m');
+cm.plot('excitations horizontal line',allE, 'y deg',0.3,'thickness',0.05, 'conetype','s');
+
+%% Make a line ROI and show it on the activations
+
+roiLine = regionOfInterest('shape', 'line', ...
+    'from', [.5 0.2], 'to', [1.5,-0.2], ...
+    'thickness', 0.1);
+
+% Show the ROI on top of the activations
+cm.plot('roi',allE, 'roi',roiLine);
+
+% Now choose a small circular ROI
 roiCircle = regionOfInterest('shape','ellipse',...
-    'center',[1 0],...
+    'center',[1.3 0],...
     'majorAxisDiameter',0.2,...
     'minorAxisDiameter',0.2);
 
-allE = cm.compute(oi);
-% [~,~,allExcitations] = cm.excitations('oi',oi);
+cm.plot('roi',allE, 'roi',roiCircle);
 
+%% Show the activations in a line ROI
+
+cm.plot('excitations roi',allE, 'roi',roiLine);
+
+% Plot just one type of cone activations from the line
+cm.plot('excitations roi',allE, 'cone type',{'m'},'roi',roiLine);
+cm.plot('excitations roi',allE, 'cone type','s','roi',roiLine);
+
+
+
+%%
 roiE = cm.excitations('roi',roiCircle,'all excitations',allE);
 mean(roiE)
 
@@ -109,28 +127,6 @@ mean(roiSE)
 
 [roiE, roiIdx, allE] = cm.excitations('roi',roiCircle,'visualize',true,'all excitations',allE);
 
-%% Illustrate some plots
-
-allE = cm.compute(oi);
-params = cm.visualize('params');
-params.activation = allE;
-cm.visualize(params);
-
-cm.plot('horizontal line',allE, 'y deg',0.3);
-cm.plot('horizontal line',allE, 'y deg',0.0);
-cm.plot('horizontal line',allE, 'y deg',0.3,'thickness',0.05);
-
-% Make a specific ROI
-roiLine = regionOfInterest('shape', 'line', ...
-    'from', [.5 .2], 'to', [1.5,.2], ...
-    'thickness', 0.1);
-cm.plot('horizontal line',allE, 'roi',roiLine);
-
-% Just the M cones
-roiLine = regionOfInterest('shape', 'line', ...
-    'from', [.5 .3], 'to', [1.5,.3], ...
-    'thickness', 0.1);
-cm.plot('horizontal line',allE, 'cone type','m','roi',roiLine);
 
 %%
 
@@ -190,4 +186,18 @@ for k = 1:instancesNum
                  'plotTitle', sprintf('noisy response instance (#%d)', k));
 end
 
-%%
+%% What is stored?
+%{
+[noiseFreeExcitations, noisyFreeExcitations] = cm.compute(oi);
+
+[~,noisyExcitations] = cm.compute(oi);
+noisyExcitations = cm.compute(oi,'noise flag','on');
+
+
+noiseFreeExcitations = cm.compute(oi,'noise flag','off');
+noisyExcitations = cm.addNoise('nSamples',8);  % Check noise flag as part of this
+
+
+cm.compute(oi,'compute type',cellArray)
+possibleState = cm.compute('params')
+%}
