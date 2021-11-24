@@ -35,7 +35,7 @@ oi = oiCompute(scene, oi);
 
 %% Generate the mosaic
 cm = cMosaic(...
-    'sizeDegs', [2.0 1.0], ...    % SIZE: 1.0 degs (x) 0.5 degs (y)
+    'sizeDegs', [1.0 1.0], ...    % SIZE: 1.0 degs (x) 0.5 degs (y)
     'positionDegs', [1 0], ...  % ECC: (0,0)
     'eccVaryingConeBlur', true ...
     );
@@ -57,8 +57,7 @@ cm.visualize();
 %% Compute multiple noisy response instances of cone excitation response
 
 instancesNum = 2;
-[noiseFreeExcitationResponse, noisyExcitationResponseInstances] = cm.compute(oi, ...
-    'nTrials', instancesNum);
+[allE, allNoisyE] = cm.compute(oi, 'nTrials', instancesNum);
 
 %% What is stored?
 %{
@@ -87,14 +86,14 @@ roiCircle = regionOfInterest('shape','ellipse',...
     'majorAxisDiameter',0.2,...
     'minorAxisDiameter',0.2);
 
-allExcitations = cm.compute(oi);
+allE = cm.compute(oi);
 % [~,~,allExcitations] = cm.excitations('oi',oi);
 
-roiE = cm.excitations('roi',roiCircle,'all excitations',allExcitations);
+roiE = cm.excitations('roi',roiCircle,'all excitations',allE);
 mean(roiE)
 
 roiLE = cm.excitations('roi',roiCircle,...
-    'all excitations',allExcitations, ...
+    'all excitations',allE, ...
     'cone type','L');
 mean(roiLE)
 
@@ -104,23 +103,37 @@ cm.get('excitations','roi',roiCircle)
 
 % Fewer and lower excitations of S-cones.
 [roiSE, roiSIdx] = cm.excitations('roi',roiCircle,...
-    'all excitations',allExcitations, ...
+    'all excitations',allE, ...
     'cone type','S');
 mean(roiSE)
 
-[roiE, roiIdx, allE] = cm.excitations('roi',roiCircle,'visualize',true,'all excitations',allExcitations);
+[roiE, roiIdx, allE] = cm.excitations('roi',roiCircle,'visualize',true,'all excitations',allE);
 
-%%
-roiLine = regionOfInterest('shape', 'line', ...
-    'from', [-1 0], 'to', [ 1,0], ...
-    'thickness', 0.1);
+%% Illustrate some plots
 
-[roiE, roiIdx, allE] = cm.excitations('roi',roiLine,'visualize',true,'all excitations',allExcitations);
-
-
-%%
-params.activation = noiseFreeExcitationResponse;
+allE = cm.compute(oi);
+params = cm.visualize('params');
+params.activation = allE;
 cm.visualize(params);
+
+cm.plot('horizontal line',allE, 'y deg',0.3);
+cm.plot('horizontal line',allE, 'y deg',0.0);
+cm.plot('horizontal line',allE, 'y deg',0.3,'thickness',0.05);
+
+% Make a specific ROI
+roiLine = regionOfInterest('shape', 'line', ...
+    'from', [.5 .2], 'to', [1.5,.2], ...
+    'thickness', 0.1);
+cm.plot('horizontal line',allE, 'roi',roiLine);
+
+% Just the M cones
+roiLine = regionOfInterest('shape', 'line', ...
+    'from', [.5 .3], 'to', [1.5,.3], ...
+    'thickness', 0.1);
+cm.plot('horizontal line',allE, 'cone type','m','roi',roiLine);
+
+%%
+
 
 
 
