@@ -19,12 +19,12 @@ function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
 % Plot types
 %
 %    excitations - pull out excitations of various types
-%       horizontal line
-%       vertical line (TBD)
-%       roi - Does something for a line, rect or ellipse
+%       cmosaic.plot('excitations',allE) 
+%       cmosaic.plot('excitations horizontal line',allE,'ydeg')
+%       cmosaic.plot('roi',allE,'cone type',conetype)
 %
-%    roi - show the ROI superimposed on the axis
-%
+%    roi - show the ROI superimposed on the excitation image
+%        cmosaic.plot('roi',allE,'roi',regionOfInterest)
 %
 %
 % See also
@@ -45,6 +45,7 @@ p.addParameter('conetype',{'l','m','s'},@(x)(ischar(x) || iscell(x)));
 p.addParameter('roi',[],@(x)(isa(x,'regionOfInterest')));
 
 % Horizontal line key val pairs
+p.addParameter('xdeg',0,@isnumeric);
 p.addParameter('ydeg',0,@isnumeric);
 p.addParameter('thickness',0.1,@isnumeric);
 
@@ -63,8 +64,11 @@ switch ieParamFormat(plotType)
         % We should choose one - excitations or activations - for
         % consistency. 
 
+        % Maybe we want to select out by conetype also?
+        
         params = cmosaic.visualize('params');
         params.activation = allE;
+        params.verticalActivationColorBar = true;
         
         % Return
         tmp = cmosaic.visualize(params);
@@ -106,6 +110,46 @@ switch ieParamFormat(plotType)
         xlabel('Horizontal position (deg)'); ylabel(str); 
         
         uData.pos = pos;
+        uData.roi = roi;
+        uData.roiE = roiE;
+        uData.roiIdx = roiIdx;
+        
+    case {'excitationsverticalline'}
+        % Plot the excitations along an entire vertical line in the
+        % excitations
+        %
+        % You can select a single cone type.  Otherwise all three
+        % are plotted in RGB colors.
+        yminDeg = cmosaic.eccentricityDegs(2) - cmosaic.sizeDegs(2)/2;
+        ymaxDeg = cmosaic.eccentricityDegs(2) + cmosaic.sizeDegs(2)/2;
+        xDeg = p.Results.xdeg;
+        
+        if isempty(p.Results.roi)
+            roi = regionOfInterest('shape', 'line', ...
+                'from', [xDeg,yminDeg], 'to', [xDeg,ymaxDeg], ...
+                'thickness', p.Results.thickness);
+        else
+            roi = p.Results.roi;
+        end
+        
+        hdl = ieNewGraphWin;        
+        for ii = 1:numel(conetype)
+            [roiE, roiIdx] = cmosaic.excitations('roi',roi,...
+                'conetype',conetype{ii},...
+                'all excitations',allE);
+            
+            % The positions of the cones in the ROI
+            pos = cmosaic.coneRFpositionsDegs(roiIdx,:);
+            hold on;
+            plot(pos(:,2),squeeze(roiE),[coneColor(conetype{ii}),'o']);
+        end
+        
+        hold off; grid on
+        str = sprintf('Excitations (%.1f ms)',cmosaic.integrationTime*1e3);
+        xlabel('Vertical position (deg)'); ylabel(str); 
+        
+        uData.pos = pos;
+        uData.roi = roi;
         uData.roiE = roiE;
         uData.roiIdx = roiIdx;
         
@@ -136,9 +180,19 @@ switch ieParamFormat(plotType)
             case 'rect'
                 disp('Rect NYI')
             case 'ellipse'
-                % Histogram of L,M,S???
-                % 3d plot of L,M,S ???
-                disp('ellipse NYI')
+                hdl = ieNewGraphWin;
+                for ii=1:numel(conetype)
+                    roiE = cmosaic.excitations('roi',roi,...
+                        'conetype',conetype{ii},...
+                        'all excitations',allE);
+                    histogram(roiE,'FaceColor',coneColor(conetype{ii}),...
+                        'EdgeColor',coneColor(conetype{ii}), ...
+                        'NumBins',20);
+                    hold on;
+                end
+                xlabel('Excitations'); ylabel('Number of cones'); 
+                grid on;
+                
             case 'line'
                 hdl = ieNewGraphWin;
 

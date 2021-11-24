@@ -2,17 +2,19 @@ function ofile = save(cmosaic,fname,overwrite)
 % Save the cMosaic into a file with the variable name cmosaic
 %
 % Inputs
-%    cmosaic
-%    fname  - Can be just a filename or a full path
-%    overwrite - What to do about overwriting
+%    cmosaic -   cMosaic object
+%    fname  -    A filename or a full path
+%    overwrite - By default, no overwrite.
 %
 % Output
-%    ofile - Full path to the output file
+%    ofile - Full path to the output file. Returns empty if user
+%            cancels.
 %
 % See also
 %
+%
 
-% NOTE:
+% TODO:
 % We might decide to clear the excitation data before
 % saving, if we store the excitation data in here.
 
@@ -28,6 +30,11 @@ if exist(ofile,'file')
         save(ofile,'cmosaic');
     else
         ofile = uiputfile('*.mat','Select a file',fname);
+        if isequal(ofile,0)
+            disp('User canceled');
+            ofile = '';
+            return;
+        end
         save(ofile,'cmosaic');
     end
 else

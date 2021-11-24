@@ -1,6 +1,14 @@
 function [roiExcitations, roiIdx, allExcitations] = excitations(cm,varargin)
 % Return the excitations within a cMosaic ROI
 %
+%  N.B.  This method will likely be deprecated as we store the
+%  excitations within the cMosaic object.  In the future we will be
+%  using something like
+%
+%     cMosaic.get('excitations', varargin)
+%
+%  as a replacement
+%
 % Synopsis
 %   cMosaic.excitations(roi,varargin);
 %   [roiE, roiIdx] = cMosaic.excitations('roi',roi,'all excitations',allE);
@@ -20,7 +28,7 @@ function [roiExcitations, roiIdx, allExcitations] = excitations(cm,varargin)
 %   allExcitations - Pre-computed excitations
 %   oi  - Optical image
 %   cone type - {L,M,S}
-%   visualize -  Show the ROI as bright spots on the excitations
+%   visualize -  Show the ROI overlaid on all the excitations
 %
 % Outputs
 %   roiExcitations - The excitations within the ROI
@@ -98,22 +106,11 @@ end
 
 roiExcitations = allExcitations(roiIdx);
 
-%% Show it if requested
+%% Show the ROI if requested
 
 if p.Results.visualize
-    imgROI = allExcitations;
-    imgROI(roiIdx) = max(imgROI(:))*1.5;
-    
-    % This is the region the data come from
-    params = cm.visualize('params');
-    params.activation = imgROI;
-    params.verticalActivationColorBar = true;
-    cm.visualize(params);
+    cm.plot('roi',allExcitations,'roi',roi);
 end
 
 end
-
-% in = ismember(idx,cm.lConeIndices);
-% idxL = idx(in);
-% mean(allExcitations(idxL))
 
