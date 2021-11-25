@@ -55,7 +55,7 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
-p.addParameter('dockerimagename','pbrt-V3-spectral:latest',@ischar);
+p.addParameter('dockerimagename','vistalab/pbrt-v3-spectral',@ischar);
 
 rTypes = {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'};
 p.addParameter('rendertype','both',@(x)(ismember(ieParamFormat(x),rTypes)));
