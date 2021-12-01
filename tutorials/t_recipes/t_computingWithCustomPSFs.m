@@ -1,5 +1,5 @@
 function t_computingWithCustomPSFs()
-% Illustrate how to generate optics using custom PSFs
+% Illustrate generate optics using custom PSFs
 %
 % Syntax:
 %   t_computingWithCustomPSFs
@@ -7,7 +7,8 @@ function t_computingWithCustomPSFs()
 % Description:
 %    Script that demonstrates how to compute cone excitations using optics
 %    derived from a set of custom PSFs measured/computed at a set of wavelengths
-%
+%    Also illustrates how to compute a text scene realized on a custom display.
+% 
 % Inputs:
 %    None.
 %
@@ -23,8 +24,7 @@ function t_computingWithCustomPSFs()
 
     
     % Here we are synthesizing arbitary PSFs.
-    % Alternatively we could be importing PSFs measured at a set of
-    % wavelengths.
+    % Alternatively we could be importing PSFs measured at a set of wavelengths.
     [thePSFensemble, opticsParams] = synthesizePSFs();
     
     % Generate optics from the synthesized PSFs
@@ -37,7 +37,7 @@ function t_computingWithCustomPSFs()
         visualizePSFsamples(theOI, sampledWavelengths);
     end
     
-    %% Generate a model of the experimental display
+    %% Generate a custom experimental display
     % Optional settable key-value pairs are:
     % 'dotsPerInch'                                             - scalar
     % 'viewingDistanceMeters'                                   - scalar
@@ -54,6 +54,7 @@ function t_computingWithCustomPSFs()
     
     %% Select stimulus chromaticity specification
     chromaSpecificationType = 'RGBsettings';  % choose between {'RGBsettings', 'chromaLumaLMScontrasts'}
+    
     % gamma uncorrected values
     switch (chromaSpecificationType)
         case 'RGBsettings'
@@ -70,21 +71,20 @@ function t_computingWithCustomPSFs()
         chromaSpecification = struct(...
                'type', chromaSpecificationType, ...
                'backgroundChromaLuma', [0.31 0.32 40], ...
-               'foregroundLMSConeContrasts', [-0.5 -0.5 0.0]);
-           
-        end
+               'foregroundLMSConeContrasts', [-0.5 -0.5 0.0]); 
+    end
     
     % Stimulus params
     theString = 'Hello ISETBio world ! ';
     textSceneParams = struct(...
-        'textString', theString, ...                  % Text to display
-        'textRotation', 0, ...                        % Rotation (0,90,180,270 only)
-        'rowsNum', 60, ...                            % Pixels along the vertical (y) dimension
-        'colsNum', 400, ...                           % Pixels along the horizontal (x) dimension
-        'targetRow', 20, ...                          % Stimulus Y-pixel offset 
-        'targetCol', 20, ...                          % Stimulus X-pixel offset 
-        'chromaSpecification', chromaSpecification... % background and stimulus chromaticity
-        );
+        'textString', theString, ...                   % Text to display
+        'textRotation', 0, ...                         % Rotation (0,90,180,270 only)
+        'rowsNum', 60, ...                             % Pixels along the vertical (y) dimension
+        'colsNum', 400, ...                            % Pixels along the horizontal (x) dimension
+        'targetRow', 20, ...                           % Stimulus Y-pixel offset 
+        'targetCol', 20, ...                           % Stimulus X-pixel offset 
+        'chromaSpecification', chromaSpecification ... % Background and stimulus chromaticity
+    );
             
     % Generate the scene
     visualizeScene = true;
@@ -215,15 +215,16 @@ function visualizeEverything(theScene, theOI, theConeMosaic, coneExcitations, ..
             'spatialSupportInDegs', true, ...
             'crossHairsAtOrigin', true, ...
             'displayRadianceMaps', false);
+    set(ax, 'XLim', 0.5*fovDegreesWidth*[-1 1], 'YLim', 0.5*fovDegreesHeight*[-1 1]);
     drawnow;
     
     ax = subplot('Position', subplotPosVectors(2,1).v);
     visualizeOpticalImage(theOI, 'axesHandle', ax, 'crossHairsAtOrigin', true, 'displayRadianceMaps', false);
+    set(ax, 'XLim', 0.5*fovDegreesWidth*[-1 1], 'YLim', 0.5*fovDegreesHeight*[-1 1]);
     drawnow;
     
     ax = subplot('Position', subplotPosVectors(3,1).v);
-  
-     
+
     for iTrial = 1:size(coneExcitations,1)
         for tBin = 1:size(coneExcitations,2)
         theConeMosaic.visualize(...
