@@ -63,12 +63,7 @@ function t_computingWithCustomPSFs()
                 'type', chromaSpecificationType, ...
                 'backgroundRGB', [0.5 0.5 0.5], ...
                 'foregroundRGB',  [1 1 1]);
-            
-        % Title for scene display
-        theSceneTitle = sprintf('backgroundRGB: (%2.2f %2.2f %2.2f), stimRGB: (%2.2f %2.2f %2.2f)', ...
-            chromaSpecification.backgroundRGB(1), chromaSpecification.backgroundRGB(2), chromaSpecification.backgroundRGB(3), ...
-            chromaSpecification.foregroundRGB(1), chromaSpecification.foregroundRGB(2), chromaSpecification.foregroundRGB(3));
-        
+                    
         case 'chromaLumaLMScontrasts'
         % Specify background in terms of cie-31 (x,y) and luminance (cd/m2)
         % and stimulus in terms of nominal LMS cone contrasts
@@ -77,11 +72,7 @@ function t_computingWithCustomPSFs()
                'backgroundChromaLuma', [0.31 0.32 40], ...
                'foregroundLMSConeContrasts', [-0.5 -0.5 0.0]);
            
-        % Title for scene display
-        theSceneTitle = sprintf('background: (%2.2f %2.2f) @ %2.2f cd/m2, stimLMScontrasts: (%2.2f %2.2f %2.2f)', ...
-            chromaSpecification.backgroundChromaLuma(1), chromaSpecification.backgroundChromaLuma(2), chromaSpecification.backgroundChromaLuma(3), ...
-            chromaSpecification.foregroundLMSConeContrasts(1), chromaSpecification.foregroundLMSConeContrasts(2), chromaSpecification.foregroundLMSConeContrasts(3)); 
-    end
+        end
     
     % Stimulus params
     theString = 'Hello ISETBio world ! ';
@@ -137,7 +128,7 @@ function t_computingWithCustomPSFs()
     
     % Visualize the scene, the optical image and the cone mosaic activation together
     visualizeEverything(theScene, theOI, theConeMosaic, coneExcitations, ...
-        fovDegreesWidth, fovDegreesHeight, theSceneTitle);
+        fovDegreesWidth, fovDegreesHeight);
 end
 
 
@@ -201,7 +192,7 @@ function [thePSFensemble, opticsParams] = synthesizePSFs()
 end
 
 function visualizeEverything(theScene, theOI, theConeMosaic, coneExcitations, ...
-    fovDegreesWidth, fovDegreesHeight, theSceneTitle)
+    fovDegreesWidth, fovDegreesHeight)
 
     % Visualize scene and optical image
     hFig = figure(100); clf;
@@ -231,10 +222,7 @@ function visualizeEverything(theScene, theOI, theConeMosaic, coneExcitations, ..
     drawnow;
     
     ax = subplot('Position', subplotPosVectors(3,1).v);
-    videoOBJ = VideoWriter('Hello', 'MPEG-4');
-    videoOBJ.FrameRate = 10;
-    videoOBJ.Quality = 100;
-    videoOBJ.open();   
+  
      
     for iTrial = 1:size(coneExcitations,1)
         for tBin = 1:size(coneExcitations,2)
@@ -252,10 +240,8 @@ function visualizeEverything(theScene, theOI, theConeMosaic, coneExcitations, ..
             'plotTitle', sprintf('the cone mosaic activation (time: %2.0f msec)', ...
                 (tBin-1) * theConeMosaic.integrationTime*1000));
         drawnow;
-        videoOBJ.writeVideo(getframe(hFig));
         end
     end
-    videoOBJ.close();
 end
 
 
