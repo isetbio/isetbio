@@ -31,7 +31,7 @@ function t_computingWithCustomPSFs()
     theOI = oiFromPSF(thePSFensemble, opticsParams.wavelengthSupport, ...
         opticsParams.spatialSupportArcMin, opticsParams.pupilDiameterMM, opticsParams.umPerDegree);
     
-    visualizeThePSFs = ~true;
+    visualizeThePSFs = true;
     if (visualizeThePSFs)
         sampledWavelengths = 375:25:700;
         visualizePSFsamples(theOI, sampledWavelengths);
