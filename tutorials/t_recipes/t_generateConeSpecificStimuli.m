@@ -71,7 +71,7 @@ function t_generateConeSpecificStimuli
     % gamma table to get RGB settings values
     test.RGBimageGammaCorrected = ieLUTLinear(test.RGBimage, ...
         displayGet(presentationDisplay, 'inverse gamma'));
-    test.RGBimageGammaCorrected = test.RGBimageGammaCorrected / max(test.RGBimageGammaCorrected(:));
+    test.RGBimageGammaCorrected = test.RGBimageGammaCorrected /displayGet(presentationDisplay, 'nlevels');
 
     %% Generate scene corresponding to the test stimulus on the presentation display
     theScene = sceneFromFile(test.RGBimageGammaCorrected,'rgb',background.luminance, presentationDisplay);
@@ -85,7 +85,7 @@ function t_generateConeSpecificStimuli
     coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayGet(presentationDisplay, 'wave'));
     
     %% Compute the LMS cone contrasts of the emitted radiance image
-    test.achievedLMScontrastImage = computeLMScontrastImage(emittedRadianceImage, coneFundamentals);
+    test.achievedLMScontrastImage = computeLMScontrastImage(emittedRadianceImage, coneFundamentals, []);
 
     %% Visualize the L-cone, M-cone, S-cone components as well as the composite stimulus
     visualizeDisplayImage(1, test.RGBimage, test.LMSexcitationImage, presentationDisplay);
@@ -94,15 +94,18 @@ function t_generateConeSpecificStimuli
     visualizeContrastImages(2, test.achievedLMScontrastImage, test.LMScontrastImage, fieldOfViewDegs);
 end
 
-function LMScontrastImage = computeLMScontrastImage(radianceImage, coneFundamentals)
+function LMScontrastImage = computeLMScontrastImage(radianceImage, coneFundamentals, coneExcitationsBackground)
     rowsNum = size(radianceImage,1);
     colsNum = size(radianceImage,2);
     wavelengthsNum = size(radianceImage, 3);
     radianceImage = reshape(radianceImage, [rowsNum*colsNum wavelengthsNum]);
         
     coneExcitationsImage = radianceImage * coneFundamentals;
-    coneExcitationsBackground = coneExcitationsImage(1,:);
-
+    if (isempty(coneExcitationsBackground))
+        % Assuming the top-left pixel has 0 cone contrast, i.e. equal to the background
+        coneExcitationsBackground = coneExcitationsImage(1,:);
+    end
+    
     LMScontrastImage = bsxfun(@times, ...
         bsxfun(@minus, coneExcitationsImage, coneExcitationsBackground), ...
         1./coneExcitationsBackground);
