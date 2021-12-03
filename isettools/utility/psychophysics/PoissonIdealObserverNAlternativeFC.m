@@ -56,10 +56,13 @@ function [pCorrect,predCorrect,whichAlternatives,decisionVariables, ...
 % Optional Key-Value Pairs
 %    None.
 %
-% See also: analyticPoissonIdealObserver, SupportVectorMachineObserverNAlternativeFC
+% See also: analyticPoissonIdealObserver, SupportVectorMachineObserverNAlternativeFC,
+%           PoissonDecisionLogLikelihood.
 
 % History
 %    09/21/21   dhb  Wrote it.
+%    12/03/21   dhb  Remove internal function that computed decision
+%                    likelihood, and call new isetbio function.
 
 % Examples:
 %{
@@ -212,7 +215,7 @@ for ii = 1:nSimulatedTrials
     % Compute log likelihood of each response
     logLikelihoodCompare = zeros(1,nAlternatives);
     for jj = 1:nAlternatives
-        logLikelihoodCompare(jj) = PoissonLogLikelihoodCompare(theResponses,meanResponses(:,jj));
+        logLikelihoodCompare(jj) = PoissonDecisionLogLikelihoood(theResponses,meanResponses(:,jj));
     end
 
     % Find max
@@ -270,17 +273,3 @@ end
 
 end
 
-% Compute the part of the Poisson log likelihood that depends on the mean
-% responses.  It's very slow to the term ln(theRespones!), which is needed for
-% the full log likelihood, but we only need to compare across the various
-% choices of mean responses, and thus don't need this term.  
-%
-% To derive this for each entry, take the log of the probability mass function 
-% and drop the term -ln(theResponses!).  The note that the joint liklihood of
-% all the entries is the product of the individual entry likelihoods and that
-% the log turns this into the sum of the individual log likihoods.
-function logLikelihoodCompare = PoissonLogLikelihoodCompare(theResponses,meanResponses)
-
-logLikelihoodCompare = sum(-meanResponses + log(meanResponses).*theResponses);
-
-end
