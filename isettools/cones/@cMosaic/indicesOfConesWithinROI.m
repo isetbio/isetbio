@@ -1,27 +1,24 @@
-function coneIndices = indicesOfConesWithinROI(obj, roi)
-% Method to return the indices of cones within a region of interest
+function coneIndices = indicesOfConesWithinROI(obj, geometryStruct)
+% Method to return the indices of cones within a geometryStruct
 %
 % Syntax:
-%   coneIndices = obj.indicesOfConesWithinROI(roi)
+%   coneIndices = obj.indicesOfConesWithinROI(geometryStruct)
 %
 % Description:
-%    return the indices of cones within a region of interest. The input
-%    argument roi is a struct which specified either a rectangle or an
-%    ellipse.
+%    return the indices of cones within a geometryStruct appropriate for @regionOfInterest
 %
 % Inputs:
 %    obj                 - A @cMosaic object
-%    roi                 - A struct specifiying either a rectangle or an
-%                          ellipse
+%    geometryStruct      - A geometry struct appropriate for @regionOfInterest
 %
 % Outputs:                 Indices of cones within the region of interest
 
-    opticDiskROI = regionOfInterest('geometryStruct', roi);
+    theROI = regionOfInterest('geometryStruct', geometryStruct);
 
-    switch (opticDiskROI.units)
+    switch (theROI.units)
         case 'microns'
-            coneIndices = opticDiskROI.indicesOfPointsInside(obj.coneRFpositionsMicrons);
+            coneIndices = theROI.indicesOfPointsInside(obj.coneRFpositionsMicrons);
         otherwise
-            coneIndices = opticDiskROI.indicesOfPointsInside(obj.coneRFpositionsDegs);
+            coneIndices = theROI.indicesOfPointsInside(obj.coneRFpositionsDegs);
     end
 end

@@ -182,7 +182,7 @@ classdef mRGCMosaic < handle
 
             % Remove RFs within the optic disk
             obj.removeRFsWithinOpticNerveHead();
-            
+
         end % Constructor
 
         % Convert a retinal size in visual degrees at given ecc (also in degs) to its
@@ -192,6 +192,10 @@ classdef mRGCMosaic < handle
         % Convert a retinal size in microns at given ecc (also in microns) to its
         % equivalent angular size in visual degrees
         sizeDegs = sizeRetinalMicronsToSizeVisualDegs(obj, sizeRetinalMicrons, eccMicrons);
+    
+        % Return the indices of mRGC RFs within a geometry struct appropriate for @regionOfInterest
+        rfIndices = indicesOfRFsWithinROI(obj, geometryStruct);
+
     end % Public methods
 
     methods (Access=private)

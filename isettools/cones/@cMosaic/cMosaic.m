@@ -536,14 +536,11 @@ classdef cMosaic < handle
         % the computation is done using ecc-dependent blur mode
         scenePixelSizeDegs = suggestedScenePixelSizeDegs(obj, eccVaryingConeBlur);
         
-        % Method to return indices of cones within an ROI
-        coneIndices = indicesOfConesWithinROI(obj, roi);
+        % Method to return indices of cones within a geometry struct appropriate for @regionOfInterest
+        coneIndices = indicesOfConesWithinROI(obj, geometryStruct);
         
         % Generate struct representing the optical disk
         [odStructMicrons, odStructDegs] = odStruct(obj);
-        
-        % Method to convert an ROIoutline in degs to an ROIoutline in microns
-        roiOutlineMicrons = convertOutlineToMicrons(obj,roiOutlineDegs);
         
         % Getter/Setter methods for dependent variables
         % QE
@@ -682,7 +679,7 @@ classdef cMosaic < handle
             obj.neighboringCoupledConeIndices = [];
         end                
         
-    end
+    end % Public methods
     
     
     methods (Access=private)
