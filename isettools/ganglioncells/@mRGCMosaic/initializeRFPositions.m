@@ -1,19 +1,15 @@
 function initializeRFPositions(obj)
-    % Import mRGC RF positions, for passed eccentricity, size, and
-    % eye. Get a little larger retion and crop after we compute the
-    % cone spacing below
-    [obj.rgcRFpositionsMicrons, obj.rgcRFpositionsDegs] = retinalattice.import.finalMRGCPositions(...
-        obj.sourceLatticeSizeDegs, obj.eccentricityDegs, obj.sizeDegs*2.0, obj.whichEye);   
-    
-    
-    if (~isempty(obj.micronsPerDegreeApproximation))
-        % Convert positions from degs to microns using the passed
-        % microns/deg approximation
-        obj.rgcRFpositionsMicrons = obj.rgcRFpositionsDegs * obj.micronsPerDegreeApproximation;
-    end
 
-    
-    % First crop area that is 10% wider than the desired area
+    % Convert degs to retinal microns
+    eccMicrons  = 1e3 * obj.customDegsToMMsConversionFunction(obj.eccentricityDegs); %RGCmodels.Watson.convert.rhoDegsToMMs(eccDegs);
+    sizeMicrons = obj.sizeVisualDegsToSizeRetinalMicrons(obj.sizeDegs*2.0, sqrt(sum(obj.eccentricityDegs.^2,2)));
+   
+    % Import RF positions from pre-generated lattice
+    [obj.rgcRFpositionsMicrons, obj.rgcRFpositionsDegs] = retinalattice.import.finalMRGCPositions(...
+        obj.sourceLatticeSizeDegs, eccMicrons, sizeMicrons, obj.whichEye, ...
+        obj.customMMsToDegsConversionFunction);  
+
+    % Crop area that is 10% wider than the desired area
     diff = abs(bsxfun(@minus, obj.rgcRFpositionsDegs, obj.eccentricityDegs));
     idx = find((diff(:,1) <= 0.55*obj.sizeDegs(1)) & (diff(:,2) <= 0.55*obj.sizeDegs(2)));
     obj.rgcRFpositionsMicrons = obj.rgcRFpositionsMicrons(idx,:);
@@ -30,4 +26,5 @@ function initializeRFPositions(obj)
     obj.rgcRFpositionsMicrons = obj.rgcRFpositionsMicrons(idx,:);
     obj.rgcRFspacingsDegs = obj.rgcRFspacingsDegs(idx);
     obj.rgcRFspacingsMicrons = obj.rgcRFspacingsMicrons(idx);
+
 end

@@ -1,9 +1,7 @@
-function [rfPositionsMicrons, rfPositionsDegs] = finalMRGCPositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye)
+function [rfPositionsMicrons, rfPositionsDegs] = finalMRGCPositions(...
+    sourceLatticeSizeDegs, eccMicrons, sizeMicrons, whichEye, ...
+    MMsToDegsConversionFunction)
 
-    % Convert degs to retinal microns
-    eccMicrons  = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs(eccDegs);
-    sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(sizeDegs, sqrt(sum(eccDegs.^2,2)));
-    
     % Load mRGC RF positions
     p = retinalattice.configure(sourceLatticeSizeDegs, 'midget ganglion cells', whichEye);
     
@@ -11,6 +9,6 @@ function [rfPositionsMicrons, rfPositionsDegs] = finalMRGCPositions(sourceLattic
     rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));
     
     % Convert positions to degs
-    rfPositionsDegs = RGCmodels.Watson.convert.rhoMMsToDegs(rfPositionsMicrons*1e-3);
+    rfPositionsDegs = MMsToDegsConversionFunction(rfPositionsMicrons*1e-3);
 end
 

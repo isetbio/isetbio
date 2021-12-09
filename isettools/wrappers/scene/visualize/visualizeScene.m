@@ -4,13 +4,16 @@ p.addParameter('displayContrastProfiles', false, @islogical);
 p.addParameter('displayRadianceMaps', true, @islogical);
 p.addParameter('spatialSupportInDegs', false, @islogical);
 p.addParameter('roiRectDegs', struct(), @isstruct);
-
+p.addParameter('crossHairsAtOrigin', false, @islogical);
+p.addParameter('axesHandle', []);
 % Parse input
 p.parse(varargin{:});
+
 displayContrastProfiles = p.Results.displayContrastProfiles;
 displayRadianceMaps = p.Results.displayRadianceMaps;
 spatialSupportInDegs = p.Results.spatialSupportInDegs;
 roiRectDegs = p.Results.roiRectDegs;
+crossHairsAtOrigin = p.Results.crossHairsAtOrigin;
 
 % retrieve the spatial support of the scene(in millimeters)
 spatialSupportMilliMeters = sceneGet(scene, 'spatial support', 'mm');
@@ -38,8 +41,9 @@ else
 end
 
 % visualize the scene as RGB
-visualizeSceneRGB(spatialSupport, spatialSupportUnits, sceneRGBsettings, ...
-    meanLuminance, meanChromaticity, sceneGet(scene, 'name'));
+ax = visualizeSceneRGB(spatialSupport, spatialSupportUnits, sceneRGBsettings, ...
+    meanLuminance, meanChromaticity, sceneGet(scene, 'name'), 'axesHandle', p.Results.axesHandle);
+
 
 % Add ROI
 if (~isempty(fieldnames(roiRectDegs))) && (spatialSupportInDegs)
@@ -57,9 +61,17 @@ if (~isempty(fieldnames(roiRectDegs))) && (spatialSupportInDegs)
         roiRectDegs.yo + roiRectDegs.height/2*(-1), ...
         roiRectDegs.yo + roiRectDegs.height/2*(-1) ...
         ];
-    plot(xRect,yRect, 'r-', 'LineWidth', 1.5);
+    hold(ax, 'on');
+    plot(ax, xRect,yRect, 'r-', 'LineWidth', 1.5);
 end
 
+if (crossHairsAtOrigin)
+    spatialSupportX = squeeze(spatialSupport(1,:,1));
+    spatialSupportY = squeeze(spatialSupport(:,1,2));
+    hold(ax, 'on');
+    plot(ax,[spatialSupportX(1) spatialSupportX(end)], [0 0], 'k-');
+    plot(ax,[0 0], [spatialSupportY(1) spatialSupportY(end)],  'k-');
+end
 
 if (displayRadianceMaps)
     % retrieve the radiance of the scene as emitted photon rate 

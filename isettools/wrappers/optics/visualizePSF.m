@@ -9,6 +9,7 @@ p.addParameter('includePupilAndInFocusWavelengthInTitle', true, @islogical);
 
 % Parse input
 p.parse(varargin{:});
+contourLevels = p.Results.contourLevels;
 axesHandle = p.Results.axesHandle;
 theMosaic = p.Results.withSuperimposedMosaic;
 figureTitle = p.Results.figureTitle;
@@ -102,8 +103,7 @@ end
 
 
 cmap = brewermap(1024, 'greys');
-cmap = brewermap(1024, 'YlGnBu');
-colormap(axesHandle, cmap);
+colormap(cmap);
 
 if (~isempty(theMosaic))
     transparentContourPlot(axesHandle, xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), ...
@@ -111,12 +111,12 @@ if (~isempty(theMosaic))
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.1 0.3 0.3], 'LineWidth', 4.0);
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.3 0.99 0.99], 'LineWidth', 2);
 else
-    %contourf(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
-    %    'Color', [0 0 0], 'LineWidth', 1.5);
-    imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
-    hold on;
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
-    plot(xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
+    contourf(axesHandle,xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
+        'Color', [0 0 0], 'LineWidth', 1.5);
+    %imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
+    hold(axesHandle, 'on');
+    plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
+    plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
 
 end
 

@@ -3,10 +3,14 @@ function visualizeOpticalImage(opticalImage, varargin)
 p = inputParser;
 p.addParameter('displayRetinalContrastProfiles', false, @islogical);
 p.addParameter('displayRadianceMaps', true, @islogical);
+p.addParameter('axesHandle', []);
+p.addParameter('crossHairsAtOrigin', false, @islogical);
+
 % Parse input
 p.parse(varargin{:});
 displayRetinalContrastProfiles = p.Results.displayRetinalContrastProfiles;
 displayRadianceMaps = p.Results.displayRadianceMaps;
+crossHairsAtOrigin = p.Results.crossHairsAtOrigin;
 
 % retrieve the spatial support of the scene(in millimeters)
 spatialSupportMM = oiGet(opticalImage, 'spatial support', 'mm');
@@ -27,8 +31,25 @@ yMap = squeeze(XYZmap(:,:,2))./sum(XYZmap,3);
 meanChromaticity = [mean(xMap(:)) mean(yMap(:))];
 optics = oiGet(opticalImage, 'optics');
 opticsName = opticsGet(optics, 'name');
-visualizeSceneRGB(spatialSupportDegs, 'degs', rgbImage, ...
-    [], meanChromaticity, sprintf('retinal image using ''%s''', opticsName));
+ax = visualizeSceneRGB(spatialSupportDegs, 'degs', rgbImage, ...
+    [], meanChromaticity, ' ', 'axesHandle', p.Results.axesHandle);
+
+if (crossHairsAtOrigin)
+    % Obtain spatial support in mm
+    spatialSupportMM = oiGet(opticalImage, 'spatial support', 'mm');
+    % Compute mm/deg conversion factor
+    optics = oiGet(opticalImage, 'optics');
+    focalLength = opticsGet(optics, 'focal length');
+    mmPerDegree = focalLength*tand(1)*1e3;
+      
+    % Convert to degs
+    spatialSupportDegs = spatialSupportMM/mmPerDegree;
+    spatialSupportX = spatialSupportDegs(1,:,1);
+    spatialSupportY = spatialSupportDegs(:,1,2);
+    hold(ax, 'on');
+    plot(ax,[spatialSupportX(1) spatialSupportX(end)], [0 0], 'k-');
+    plot(ax,[0 0], [spatialSupportY(1) spatialSupportY(end)],  'k-');
+end
 
 if (displayRadianceMaps)
     % retrieve the retinal irradiance (photon rate in photons/pixel/sec/nm)
