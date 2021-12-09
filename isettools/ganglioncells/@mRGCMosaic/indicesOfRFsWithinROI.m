@@ -17,8 +17,8 @@ function rfIndices = indicesOfRFsWithinROI(obj, geometryStruct)
 
     switch (theROI.units)
         case 'microns'
-            rfIndices = theROI.indicesOfPointsInside(obj.coneRFpositionsMicrons);
+            rfIndices = theROI.indicesOfPointsInside(obj.rgcRFpositionsMicrons);
         otherwise
-            rfIndices = theROI.indicesOfPointsInside(obj.coneRFpositionsDegs);
+            rfIndices = theROI.indicesOfPointsInside(obj.rgcRFpositionsDegs);
     end
 end
