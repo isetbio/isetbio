@@ -16,23 +16,12 @@ function coneIndices = indicesOfConesWithinROI(obj, roi)
 %
 % Outputs:                 Indices of cones within the region of interest
 
-    % Validate the roi by calling the static method validateROI() of @cMosaic
-    cMosaic.validateROI(roi);
-    
-    % Generate the roi outline by calling the static method generateOutline() of @cMosaic
-    roiOutline = cMosaic.generateOutline(roi);
-    
-    % Convert roiOutline to microns
-    if (strcmp(roi.units, 'degs'))
-        roiOutlineMicrons = obj.convertOutlineToMicrons(roiOutline);
-    else
-        roiOutlineMicrons = roiOutline;
+    opticDiskROI = regionOfInterest('geometryStruct', roi);
+
+    switch (opticDiskROI.units)
+        case 'microns'
+            coneIndices = opticDiskROI.indicesOfPointsInside(obj.coneRFpositionsMicrons);
+        otherwise
+            coneIndices = opticDiskROI.indicesOfPointsInside(obj.coneRFpositionsDegs);
     end
-    
-    
-    % Find indices of cones within the ROI border
-    [in,on] = inpolygon( obj.coneRFpositionsMicrons(:,1), obj.coneRFpositionsMicrons(:,2),...
-                         roiOutlineMicrons.x, roiOutlineMicrons.y);
-    coneIndices = find((in|on));
-    
 end

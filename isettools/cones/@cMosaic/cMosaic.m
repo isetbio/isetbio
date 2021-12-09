@@ -738,12 +738,6 @@ classdef cMosaic < handle
         % from the mean absorption responses
         noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin);
         
-        % Static method to validate an ROI struct
-        validateROI(roi);
-    
-        % Static method to generate an ROI outline from an ROIstruct
-        roiOutline = generateOutline(roi);
-        
         % Compute a 2D cone density map
         coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);
         
