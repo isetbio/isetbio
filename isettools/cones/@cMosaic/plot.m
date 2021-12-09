@@ -33,6 +33,8 @@ function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
 
 %% Input parser
 
+if ~exist('allE','var'), allE = []; end
+
 varargin = ieParamFormat(varargin);
 
 p = inputParser;
@@ -43,6 +45,8 @@ p.addRequired('allE',@isnumeric);
 % Excitations if precomputed
 p.addParameter('conetype',{'l','m','s'},@(x)(ischar(x) || iscell(x)));
 p.addParameter('roi',[],@(x)(isa(x,'regionOfInterest')));
+
+p.addParameter('lens',[],@(x)(isa(x,'Lens')));
 
 % Horizontal line key val pairs
 p.addParameter('xdeg',0,@isnumeric);
@@ -219,6 +223,26 @@ switch ieParamFormat(plotType)
             otherwise
                 error('Unknown roi shape %s\n',roi.shape);
         end
+        
+    case {'spectralqe'}
+        % The cMosaic does not ordinarily have a lens.  If the user
+        % does not send in a lens, we use the default human lens.
+        hdl = ieNewGraphWin;
+        if isempty(p.Results.lens)
+            thisLens = Lens('wave',cmosaic.wave);
+        else
+            thisLens = p.Results.lens;
+            thisLens.wave = cmosaic.wave;
+        end
+        lensT = thisLens.transmittance;
+        plot(cmosaic.wave,diag(lensT)*cmosaic.pigment.quantalEfficiency,'LineWidth',2);
+        xlabel('Wavelength (nm)'); ylabel('Spectral quantum efficiency');
+        
+        
+    case {'pigmentquantalefficiency'}
+        hdl = ieNewGraphWin;
+        plot(cmosaic.wave,cmosaic.pigment.quantalEfficiency,'LineWidth',2);
+        xlabel('Wavelength (nm)'); ylabel('Quantal efficiency');
         
     otherwise
         error('Unknown plot type %s\n',plotType);
