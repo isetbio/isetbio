@@ -7,21 +7,21 @@ function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
 % Inputs
 %    cmosaic   - cMosaic class
 %    plotType  - See below.  Many.
-%
+%    
 % Optional key/val pairs
 %    roi 
 %    cone type
 %
 % Output
-%    uData - Struct with the plot data
+%    uData - Struct with the plot data including the ROI
 %    hdl   - Plot figure handle.  Use get(hdl,'CurrentAxes') for axis
 %
 % Plot types
 %
 %    excitations - pull out excitations of various types
 %       cmosaic.plot('excitations',allE) 
-%       cmosaic.plot('excitations horizontal line',allE,'ydeg')
-%       cmosaic.plot('roi',allE,'cone type',conetype)
+%       cmosaic.plot('excitations horizontal line',allE,'ydeg',0)
+%       cmosaic.plot('excitations roi',allE,'cone type',conetype)
 %
 %    roi - show the ROI superimposed on the excitation image
 %        cmosaic.plot('roi',allE,'roi',regionOfInterest)
@@ -106,7 +106,8 @@ switch ieParamFormat(plotType)
             % The positions of the cones in the ROI
             pos = cmosaic.coneRFpositionsDegs(roiIdx,:);
             hold on;
-            plot(pos(:,1),squeeze(roiE),[coneColor(conetype{ii}),'o']);
+            thisP = plot(pos(:,1),squeeze(roiE),[coneColor(conetype{ii}),'o']);
+            set(thisP,'MarkerFaceColor',coneColor(conetype{ii}));
         end
         
         hold off; grid on
@@ -145,7 +146,8 @@ switch ieParamFormat(plotType)
             % The positions of the cones in the ROI
             pos = cmosaic.coneRFpositionsDegs(roiIdx,:);
             hold on;
-            plot(pos(:,2),squeeze(roiE),[coneColor(conetype{ii}),'o']);
+            thisP = plot(pos(:,2),squeeze(roiE),[coneColor(conetype{ii}),'o']);
+            set(thisP,'MarkerFaceColor',coneColor(conetype{ii}));
         end
         
         hold off; grid on

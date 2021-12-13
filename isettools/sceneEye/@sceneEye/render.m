@@ -18,11 +18,16 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %                has a slot for an iset3d render recipe.
 %
 % Optional key/value pairs:
-%    render type - One of
-%      {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'}; 
-%      Default is 'both'
-%    scaleIlluminance - Boolean. Whether or not to calculate the scale
-%                       illuminance of the scene.
+%    render type - One of these types of renders.
+%      {'radiance','depth','both','all', 
+%       'coordinates','material','mesh', 'illuminant','illuminantonly'};  
+%         Default is 'both', meaning radiance and depth.
+%
+%    scaleIlluminance - Boolean. Whether or not to scale the oi
+%                       illuminance.
+%    write - Typically, we call piWrite() to make sure the pbrt file is
+%            updated.  But for debugging we sometimes suppress the piWrite.
+%
 %
 % Outputs:
 %    ieObject         - Object. The Optical Image object.
@@ -56,6 +61,7 @@ p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
 p.addParameter('dockerimagename','vistalab/pbrt-v3-spectral',@ischar);
+p.addParameter('write',true,@islogical);
 
 rTypes = {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'};
 p.addParameter('rendertype','both',@(x)(ismember(ieParamFormat(x),rTypes)));
@@ -82,13 +88,10 @@ end
 
 %% Write out into a pbrt file
 
-% Can this just be piWrite(thisR)?  Or does write() do a lot of stuff?
-
-% objNew = obj.write();
-% thisR = objNew.recipe; % Update the recipe within the sceneEye object.
-
-% Write the PBRT files
-piWrite(thisR);
+if p.Results.write
+    % For debugging, we sometimes just render.
+    piWrite(thisR);
+end
 
 %% Render the pbrt file using docker
 

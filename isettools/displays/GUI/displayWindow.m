@@ -95,6 +95,25 @@ function displayWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 % Optional key/value pairs:
 %    **NEEDS TO BE ADDED**
 %
+
+% Update handles structure
+% Not yet properly implemented for the display.
+%
+% handles.output = hObject;
+% guidata(hObject, handles);
+% vcSetFigureHandles('DISPLAY',hObject,eventdata,handles);
+%
+
+%  Check the preferences for ISET and adjust the font size.
+ieFontInit(hObject);
+
+if ~isempty(varargin)
+    thisDisplay = varargin{1};
+    if strcmp(thisDisplay.type,'display'), ieAddObject(thisDisplay);
+    else, warning('Unexpected variable input.\n');
+    end
+end
+
 handles.output = hObject;
 
 % Refresh handles structure

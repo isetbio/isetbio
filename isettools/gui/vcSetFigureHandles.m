@@ -41,7 +41,7 @@ switch lower(figType)
 
     case {'oi', 'opticalimage'}
         ieSessionSet('oiwindow', hObject, eventdata, handles);
-
+        
     case {'conemosaic'}
         ieSessionSet('conemosaicwindow', hObject, eventdata, handles);
 
