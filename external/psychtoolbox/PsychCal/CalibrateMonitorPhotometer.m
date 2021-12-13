@@ -89,7 +89,7 @@ global inputV;
         psychrethrow(psychlasterror);
     end
 
-    displayRange = range(vals);
+    displayRange = psychrange(vals);
     displayBaseline = min(vals);
     
     %Normalize values

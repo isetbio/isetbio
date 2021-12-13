@@ -38,10 +38,6 @@ end
 % Check for needed optimization toolbox, and version.
 if (exist('fmincon') == 2)
     % Search options
-    if (~IsOctave && verLessThan('optim','4.1'))
-        error('Your version of the optimization toolbox is too old.  Update it.');
-    end
-
     options = optimset('fmincon');
     options = optimset(options, 'Display', 'off', 'Algorithm', 'active-set');
 

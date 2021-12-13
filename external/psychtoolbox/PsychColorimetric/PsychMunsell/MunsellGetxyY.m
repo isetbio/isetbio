@@ -4,7 +4,7 @@ function [xyY,Xx,trix,vx,Xy,triy,vy,XY,triY,vY] = MunsellGetxyY(angle,value,chro
 % Get the xyY coordinates of a specified Munsell renotation by
 % interpolating the passed table.
 %
-% The table should have 6 columns: angle, vaue, chroma, x, y, Y.
+% The table should have 6 columns: angle, value, chroma, x, y, Y.
 %
 % For chroma below 2.0, we interpolate x,y,Y for chroma of 2, and
 % then adjust x,y by linear interpolation between chroma 0 and 2,

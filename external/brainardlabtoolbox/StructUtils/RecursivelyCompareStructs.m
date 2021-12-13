@@ -101,7 +101,8 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
         struct2FieldNames = sort(fieldnames(struct2));
 
         if (numel(struct1FieldNames) ~= numel(struct2FieldNames))
-           if (failOnMissingFields)
+            fprintf(2,'** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames))
+            if (failOnMissingFields)
                 result{numel(result)+1} = sprintf('** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames));
                 continue;
             end
