@@ -1,5 +1,5 @@
 function outContainer = combineContainers(theCellArrayOfContainers)
-% Consolidate container/cell arrays.
+% Consolidate cell array of containers into a container of a cell array.
 % 
 % Syntax:
 %    outContainer = combineContainers(theCellArrayOfContainers)
@@ -21,7 +21,7 @@ function outContainer = combineContainers(theCellArrayOfContainers)
 % Optional key/value pairs:
 %    None
 %
-% See also:
+% See also: combineContainersMat
 %
 
 % History:
@@ -93,13 +93,6 @@ function outContainer = combineContainers(theCellArrayOfContainers)
         outContainer(theKey) = theKeyValuesAcrossAllContainers;
     end
 end
-
-function test
-    
-    
-end
-
-
 
 function validateContainerKeys(theCellArrayOfContainers)
 % Ensure that all containers have the same flags
