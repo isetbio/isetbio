@@ -448,6 +448,33 @@ classdef cMosaic < handle
                     obj.initializeConePositions();
                 end
 
+               if (1==2)
+                    % Determine overlaping cone RFs
+                    maxSeparationForDeclaringOverlap = 0.4;
+                    [rfsToKeep, rfsToBeEliminated, overlappingOtherRFs] = cMosaic.identifyOverlappingRFs(0,0, ...
+                 RFpositionsMicrons, RFspacingsMicrons, maxSeparationForDeclaringOverlap);
+    
+                    % Replace the position/spacing of the other overlapping RF with the
+                    % average position/spacing of the iRF and the otherRF
+                    rfsNum = size(RFpositionsMicrons,1);
+                    for iRF = 1:rfsNum-1
+                        otherRFs = overlappingOtherRFs{iRF};
+                        if (~isempty(otherRFs))
+                            otherRF = otherRFs(1);
+                            RFpositionsMicrons(otherRF,:) = 0.5*(RFpositionsMicrons(otherRF,:) + RFpositionsMicrons(iRF,:));
+                            RFspacingsMicrons(otherRF) = 0.5*(RFspacingsMicrons(otherRF) + RFspacingsMicrons(iRF));
+                        end
+                    end
+                    
+                    % Only keep the rfs that are non-overlapping
+                    RFpositionsMicrons = RFpositionsMicrons(rfsToKeep,:);
+                    RFspacingsMicrons = RFspacingsMicrons(rfsToKeep);
+    
+                    % Need to do the same for positionDegs and spacingsDegs
+               end
+
+
+
                 % Remove cones within the optic disk
                 obj.removeConesWithinOpticNerveHead();
 
@@ -740,6 +767,10 @@ classdef cMosaic < handle
         
         % Function to generate a semitransparent controur plot
         semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor);
+    
+        % Function for identifying overlapping RFs
+        [rfsToKeep, rfsToBeEliminated, overlappingOtherRFs] = identifyOverlappingRFs(xPos, yPos, ...
+             RFpositionsMicrons, RFspacingsMicrons, maxSeparationForDeclaringOverlap);
     end
 end
 

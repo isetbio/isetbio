@@ -40,7 +40,7 @@ p.addParameter('visualizedConeApertureThetaSamples', [], @(x)(isempty(x) || issc
 p.addParameter('visualizeCones', true, @islogical);
 p.addParameter('labelCones', true, @islogical);
 p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
-
+p.addParameter('outlinedConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
 p.addParameter('densityContourOverlay', false, @islogical);
 p.addParameter('densityContourLevels', [], @isnumeric);
 p.addParameter('densityContourLevelLabelsDisplay', false, @islogical);
@@ -103,6 +103,7 @@ crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
 visualizeCones = p.Results.visualizeCones;
 labelCones = p.Results.labelCones;
 labelConesWithIndices = p.Results.labelConesWithIndices;
+outlinedConesWithIndices = p.Results.outlinedConesWithIndices;
 labelRetinalMeridians = p.Results.labelRetinalMeridians;
 crossHairsOnFovea = p.Results.crossHairsOnFovea;
 crossHairsColor = p.Results.crossHairsColor;
@@ -430,6 +431,19 @@ if (isempty(activation))
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedKconeIndices)*0.5, ...
                 rfPositions(excludedKconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
         end
+
+        if (~isempty(outlinedConesWithIndices))
+            for iOutlinedCone = 1:numel(outlinedConesWithIndices)
+                theOutlinedConePos = rfPositions(outlinedConesWithIndices(iOutlinedCone),:);
+                theOutlinedConeRectWidth = rfDiameters(outlinedConesWithIndices(iOutlinedCone));
+                xx = theOutlinedConePos(1) + 0.5*theOutlinedConeRectWidth*[-1  1 1 -1 -1];
+                yy = theOutlinedConePos(2) + 0.5*theOutlinedConeRectWidth*[-1 -1 1  1 -1];
+                plot(axesHandle, xx, yy, 'k-', 'LineWidth', 2.0);
+                plot(axesHandle, xx, yy, 'y--', 'LineWidth', 1.0);
+            end
+        end
+
+
     end % visualizeCones
     
     if (densityContourOverlay)

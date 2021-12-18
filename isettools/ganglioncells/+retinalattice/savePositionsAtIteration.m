@@ -19,11 +19,11 @@ function savePositionsAtIteration(fovDegs, neuronType, whichEye)
     plot(dataOut.iterationsHistory, dataOut.qualityHistory, 'ko-');
     ylabel('quality');
     drawnow;
-    
+    savedIterations = dataOut.iterationsHistory
     % Query user about iteration no.
-    iter = input('Iteration to save: ');
+    iter = input(sprintf('Iteration to save]: '));
     ii = find((dataOut.iterationsHistory-iter)<=0);
-    targetIteration = ii(end);
+    targetIteration = ii(end)
 
     % Extract rfPositions from history
     rfPositions = squeeze(dataOut.rfPositionsHistory(targetIteration,:,:));

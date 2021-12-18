@@ -6,7 +6,8 @@ function [rfPositionsMicrons, rfPositionsDegs] = finalConePositions(sourceLattic
 
     % Load final cone positions
     p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
-    load(fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName), 'rfPositions');
+    theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
+    load(theMosaicFileName, 'rfPositions');
     rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));
     
      % Convert positions to degs
