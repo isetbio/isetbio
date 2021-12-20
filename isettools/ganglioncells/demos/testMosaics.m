@@ -30,11 +30,19 @@ function testMosaics
         rfPositions = rfPositions(rfsToKeep,:);
         save(theMosaicFileName, 'fovDegs', 'neuronType', 'params', 'whichEye', 'rfPositions');
     else
-        sizeDegs = [2 2];
-        for xPos = -10:1:10
-            for yPos = -10:1:10
+        sizeDegs = [4 4];
+        for xPos = 0 %-16:2:16
+            for yPos = 0% -16:2:16
+                fprintf('Testing mosaic at %2.0f %2.1f\n', xPos, yPos);
                 c = cMosaic('eccentricityDegs', [xPos yPos], 'sizeDegs', sizeDegs);
-                cMosaic.identifyOverlappingRFs(xPos, yPos, c.coneRFpositionsMicrons, c.coneRFspacingsMicrons, maxSeparationForDeclaringOverlap);
+                [~, rfsToBeEliminated, ~] = cMosaic.identifyOverlappingRFs(...
+                    xPos, yPos, c.coneRFpositionsMicrons, c.coneRFspacingsMicrons, ...
+                    maxSeparationForDeclaringOverlap);
+                fprintf('\tPost initialization test: Found %2.0f overlapping elements\n\n', numel(rfsToBeEliminated));
+                if (~isempty(rfsToBeEliminated))
+                    c.visualize('outlinedConesWithIndices', rfsToBeEliminated);
+                    fprintf('Found %d overlapping cones.\n', numel(rfsToBeEliminated));
+                end
             end
         end
     end
