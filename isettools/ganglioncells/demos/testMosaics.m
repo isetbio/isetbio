@@ -3,7 +3,7 @@ function testMosaics
     % The higher this overlap the more false alarms
     maxSeparationForDeclaringOverlap = 0.4;
 
-    doEntireMosaic = ~true;
+    doEntireMosaic = true;
     if (doEntireMosaic)
         whichEye = 'right eye';
         sourceLatticeSizeDegs = 58;
@@ -12,25 +12,46 @@ function testMosaics
         fprintf('Importing data from %s\n', theMosaicFileName);
         load(theMosaicFileName, 'fovDegs', 'neuronType', 'params', 'whichEye', 'rfPositions');
         fprintf('Computing spacings for %d cones', size(rfPositions,1));
-        rfSpacings = RGCmodels.Watson.convert.positionsToSpacings(rfPositions);
-        [rfsToKeep, rfsToBeEliminated, overlappingOtherRFs] = cMosaic.identifyOverlappingRFs(0,0, rfPositions, rfSpacings, maxSeparationForDeclaringOverlap);
 
-        % Replace the position/spacing of the other overlapping RF with the
-        % average position/spacing of the iRF and the otherRF
-        rfsNum = size(rfPositions,1);
-        for iRF = 1:rfsNum-1
-             otherRFs = overlappingOtherRFs{iRF};
-             if (~isempty(otherRFs))
-                otherRF = otherRFs(1);
-                rfPositions(otherRF,:) = 0.5*(rfPositions(otherRF,:) + rfPositions(iRF,:));
-             end
-        end
         
-        fprintf('Saving %d out of %d cone positions to %s\n', numel(rfsToKeep), size(rfPositions,1),theMosaicFileName);
-        rfPositions = rfPositions(rfsToKeep,:);
+        for pass = 1:3
+            fprintf('Checking for overlapping elements within a population of %2.0f elements (PASS #%d)...\n', ...
+                size(rfPositions,1), pass);
+            tic
+    
+            % Compute spacings
+            rfSpacings = RGCmodels.Watson.convert.positionsToSpacings(rfPositions);
+    
+            % Check for overlapping elements
+            maxSeparationForDeclaringOverlap = 0.4;
+            
+            % Identify elements that overlap
+            [rfsToKeep, rfsToBeEliminated, overlapingRFindex] = cMosaic.identifyOverlappingRFs(0,0, ...
+                rfPositions, rfSpacings, maxSeparationForDeclaringOverlap);
+    
+            % Replace the position/spacing of the other overlapping RF with the
+            % average position/spacing of the iRF and the otherRF
+            for k = 1:numel(rfsToBeEliminated)
+                iRF = rfsToBeEliminated(k);
+                pos1 = rfPositions(iRF,:);
+                overlappingRF = overlapingRFindex(iRF);
+                pos2 = rfPositions(overlappingRF,:);
+                rfPositions(overlappingRF,:) = 0.5*(pos1+pos2);
+            end
+        
+            % Only keep the rfs that are non-overlapping
+            rfPositions = rfPositions(rfsToKeep,:);
+            fprintf('Overlapping element detection  took %2.1f seconds\n',toc);
+            if (numel(rfsToBeEliminated)>0)
+                fprintf(2, 'Eliminated %2.0f overlapping elements during PASS #%d.\n', ...
+                    numel(rfsToBeEliminated), pass);
+            end
+        end % pass
+
+        fprintf('Saving non-overlapping data out to %s\n', theMosaicFileName);
         save(theMosaicFileName, 'fovDegs', 'neuronType', 'params', 'whichEye', 'rfPositions');
     else
-        sizeDegs = [4 4];
+        sizeDegs = [6 6];
         for xPos = 0 %-16:2:16
             for yPos = 0% -16:2:16
                 fprintf('Testing mosaic at %2.0f %2.1f\n', xPos, yPos);
