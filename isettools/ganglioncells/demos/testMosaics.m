@@ -1,7 +1,7 @@
 function testMosaics
 
     % The higher this overlap the more false alarms
-    maxSeparationForDeclaringOverlap = 0.4;
+    maxSeparationForDeclaringOverlap = 0.5;
 
     doEntireMosaic = true;
     if (doEntireMosaic)
@@ -13,17 +13,18 @@ function testMosaics
         load(theMosaicFileName, 'fovDegs', 'neuronType', 'params', 'whichEye', 'rfPositions');
         fprintf('Computing spacings for %d cones', size(rfPositions,1));
 
+        % Initialize
+        maxPassesNum = 4; pass = 0;
+        rfsToKeep = []; previousRFsNum = size(rfPositions,1);
         
-        for pass = 1:3
+        while (pass < maxPassesNum) && (numel(rfsToKeep) < previousRFsNum)
+            pass = pass + 1;
             fprintf('Checking for overlapping elements within a population of %2.0f elements (PASS #%d)...\n', ...
                 size(rfPositions,1), pass);
             tic
     
             % Compute spacings
             rfSpacings = RGCmodels.Watson.convert.positionsToSpacings(rfPositions);
-    
-            % Check for overlapping elements
-            maxSeparationForDeclaringOverlap = 0.4;
             
             % Identify elements that overlap
             [rfsToKeep, rfsToBeEliminated, overlapingRFindex] = cMosaic.identifyOverlappingRFs(0,0, ...
@@ -51,9 +52,9 @@ function testMosaics
         fprintf('Saving non-overlapping data out to %s\n', theMosaicFileName);
         save(theMosaicFileName, 'fovDegs', 'neuronType', 'params', 'whichEye', 'rfPositions');
     else
-        sizeDegs = [6 6];
-        for xPos = 0 %-16:2:16
-            for yPos = 0% -16:2:16
+        sizeDegs = 4*[1 1];
+        for xPos = -15:3:15
+            for yPos = -15:3:15
                 fprintf('Testing mosaic at %2.0f %2.1f\n', xPos, yPos);
                 c = cMosaic('eccentricityDegs', [xPos yPos], 'sizeDegs', sizeDegs);
                 [~, rfsToBeEliminated, ~] = cMosaic.identifyOverlappingRFs(...
