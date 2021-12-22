@@ -9,7 +9,7 @@ function [rfsToKeep, rfsToBeEliminated, overlapingRFindex] = identifyOverlapping
         dd = sqrt(sum((RFpositionsMicrons(iRF,:)-RFpositionsMicrons(otherIndices,:)).^2,2));
         [minDistance, idx] = min(dd);
         otherRF = otherIndices(idx);
-        meanSpacing = mean([RFspacingsMicrons(iRF) RFspacingsMicrons(otherRF)]);
+        meanSpacing = max([RFspacingsMicrons(iRF) RFspacingsMicrons(otherRF)]);
         if (minDistance < meanSpacing*maxSeparationForDeclaringOverlap)
             overlapingRFindex(iRF) = otherRF;
         end
