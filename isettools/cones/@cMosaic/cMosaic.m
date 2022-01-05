@@ -444,8 +444,10 @@ classdef cMosaic < handle
                         'customMinRFspacing', customMinRFspacing, ...
                         'customRFspacingFunction', customRFspacingFunction);
                 else
+                    % Do not check for overlapping elements
+                    eliminateOvelappingElements = ~true;
                     % Import positions by cropping a large pre-computed patch
-                    obj.initializeConePositions();
+                    obj.initializeConePositions(eliminateOvelappingElements);
                 end
 
                 % Remove cones within the optic disk
@@ -684,7 +686,7 @@ classdef cMosaic < handle
     
     methods (Access=private)
         % Initialize cone positions by importing them from a large previously-computed mesh
-        initializeConePositions(obj);
+        initializeConePositions(obj, eliminateOvelappingElements);
 
         % Initialize cone positions by regenerating a new mesh. Can be slow.
         regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile, varargin);

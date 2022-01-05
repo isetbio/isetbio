@@ -82,7 +82,7 @@ classdef mRGCMosaic < handle
             p = inputParser;
             p.addParameter('name', 'mRGC mosaic', @ischar);
             p.addParameter('centerPolarity', 'ON', @(x)(ischar(x) && (ismember(x, {'ON', 'OFF'}))));
-            p.addParameter('whichEye', 'left eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
+            p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('computeMeshFromScratch', false, @islogical);
@@ -102,8 +102,8 @@ classdef mRGCMosaic < handle
             
             % Set the inputConeMosaic
             if (isempty(p.Results.inputConeMosaic))
-                % If an inputConeMosaic is not passed during instantiation,
-                % we generate one here. The size of the generated cone
+                % An inputConeMosaic was not passed during instantiation,
+                % so generate one here. The size of the generated cone
                 % mosaic is a little bit larger than the size of the mRGC
                 % mosaic so as to allow even the most peripheral mRGCs
                 % to have inputs from cones in their surround regions
@@ -124,10 +124,13 @@ classdef mRGCMosaic < handle
                   obj.customMMsToDegsConversionFunction = @(x) RGCmodels.Watson.convert.rhoMMsToDegs(x);
 
             else
-                % Set the input cone mosaic to the one passed during
-                % instantiation
+                % An input cone mosaic was passed during instantiation
+                % Set the input cone mosaic property to it
                 obj.inputConeMosaic = p.Results.inputConeMosaic;
                 
+                % Match the eccentricity of the mRGCMosaic to that of the input cone mosaic
+                obj.eccentricityDegs = obj.inputConeMosaic.eccentricityDegs;
+
                 % Match mm <-> degs conversion functions to those of the inputConeMosaic
                 if (~isempty(obj.inputConeMosaic.micronsPerDegreeApproximation))
                     % Generate conversion functions based on the inputConeMosaic.micronsPerDegreeApproximation
@@ -149,20 +152,15 @@ classdef mRGCMosaic < handle
                 % that the size of the mRGC mosaic is a little bit smaller
                 % than the cone mosaic, so as to allow even the most peripheral mRGCs
                 % to have inputs from cones in their surround regions
-                maxEccentricityDegs = sqrt(sum((obj.eccentricityDegs + 0.5*obj.sizeDegs).^2,2));
+                maxEccentricityDegs = sqrt(sum((obj.eccentricityDegs + 0.5*obj.inputConeMosaic.sizeDegs).^2,2));
                 maxSurroundSigmaDegs = 1/sqrt(2.0) * RGCmodels.CronerKaplan.constants.surroundCharacteristicRadiusFromFitToPandMcells(maxEccentricityDegs);
                 % At 2.145 x sigma, a 2D Gaussian is at 1% of the peak
                 extraDegsForRGCSurround = 2.146 * maxSurroundSigmaDegs;
-                maxSizeDegs = obj.inputConeMosaic.sizeDegs - extraDegsForRGCSurround;
 
-                for k = 1:2
-                    newSizeDegs = min([obj.sizeDegs(k) maxSizeDegs(k)]);
-                    if (newSizeDegs ~= obj.sizeDegs(k))
-                        fprintf(2, 'mRGCmosaic size (dim.%d) decreased from %2.1f to %2.1f to interface with input cone mosaic\n', ...
-                            k, obj.sizeDegs(k), newSizeDegs);
-                        obj.sizeDegs(k) = newSizeDegs;
-                    end
-                end
+                oldSizeDegs = obj.sizeDegs;
+                obj.sizeDegs = obj.inputConeMosaic.sizeDegs - 2 * extraDegsForRGCSurround;
+                fprintf(2, 'mRGCmosaic size changed from %2.1f degs to %2.1f degs to interface with input cone mosaic\n', ...
+                    max(oldSizeDegs), max(obj.sizeDegs));
             end
 
             % Set the whichEye from the input cone mosaic

@@ -1,4 +1,4 @@
-function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye)
+function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye, eliminateOvelappingElements)
 
     % Convert degs to retinal microns
     eccMicrons  = 1000*RGCmodels.Watson.convert.rhoDegsToMMs(eccDegs);
@@ -10,11 +10,11 @@ function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs,
     load(theMosaicFileName, 'rfPositions');
     rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));
 
-    eliminateOvelappingElements = true;
     if (eliminateOvelappingElements)
         % Check for overlapping elements within this max separation
         maxSeparationForDeclaringOverlap = 0.5;
-            
+        fprintf('Will check and eliminate overlapping cones (threshold: %2.2f)\n', maxSeparationForDeclaringOverlap);
+           
         % Initialize
         maxPassesNum = 4; pass = 0;
         rfsToKeep = []; previousRFsNum = size(rfPositionsMicrons,1);
