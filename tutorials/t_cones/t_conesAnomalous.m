@@ -3,9 +3,18 @@
 % How to shift the photopigment absorbance
 %
 % Built on PsychToolbox and Asano/Lamb pigment shifts
-
-% The photopigment properties are derived from the absorbance_, and density
-% terms   
+%
+% Notes:
+%   The photopigment properties are derived from the internal
+%   'absorbance_' and 'wave_' variables.  When the public 'wave'
+%   variable is changed, the available 'absorbance' variable is
+%   re-interpolated.
+%
+%   I am not sure this is a great approach.  It could be that we
+%   should have 'absorbance_' be specified by a file on disk that is
+%   re-interpolated when 'wave' is changed.
+% 
+% 
 
 %%
 cm = cMosaic;
