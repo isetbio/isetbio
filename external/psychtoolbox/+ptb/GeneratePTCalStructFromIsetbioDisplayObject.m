@@ -36,8 +36,10 @@ function PTBcal = updateSpectralParams(oldPTBcal, display)
     PTBcal.P_device     = spd;
     PTBcal.P_ambient    = displayGet(display,'ambient spd');
     PTBcal.T_ambient    = eye(spectralSamples);
-    PTBcal.T_device     = eye(spectralSamples);
-    
+    PTBcal.T_device     = eye(spectralSamples); 
+
+    % For an ISETBio display, this is always 1.
+    PTBcal.nPrimaryBases = 1;
 end
 
 function PTBcal = updateDisplayDescription(oldPTBcal,display)   
