@@ -113,9 +113,6 @@ classdef cMosaic < handle
         % movements
         eccVaryingMacularPigmentDensityDynamic;
         
-        % Poisson noise flag for cone excitations 
-        noiseFlag;
-        
         % Integration time (seconds)
         integrationTime;
         
@@ -134,6 +131,9 @@ classdef cMosaic < handle
         % will equal this factor x cone diameter
         coneCouplingLambda;
         
+        % Poisson noise flag for cone excitations 
+        noiseFlag;
+
         % Random seed
         randomSeed;
         

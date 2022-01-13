@@ -660,6 +660,7 @@ end
 
 
 % Finalize plot
+xtickangle(axesHandle, 0);
 set(axesHandle, 'Color', backgroundColor);
 axis(axesHandle, 'xy');
 axis(axesHandle, 'equal');
