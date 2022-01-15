@@ -1,8 +1,8 @@
-function [oi, psf, support, zCoeffs, subjID] = oiPosition(zCoeffDatabase, positionDegs, pupilDiamMM, subjectRankOrder, whichEye)
+function [oi, psf, support, zCoeffs, subjID] = oiPosition(zCoeffDatabase, varargin)
 % Return the oi appropriate for a visual field position
 %
 % Synopsis
-%   [oi, psf, support, zCoeffs,subjID]  = oiPosition(zCoeffDatabase, positionDegs,  pupilDiamMM, subjectRankOrder, whichEye);
+%   [oi, psf, support, zCoeffs, subjID]  = oiPosition(zCoeffDatabase, varargin);
 %
 % Brief description
 %   We compute an OI that is appropriate for different visual field
@@ -10,13 +10,13 @@ function [oi, psf, support, zCoeffs, subjID] = oiPosition(zCoeffDatabase, positi
 %
 % Inputs
 %   zCoeffDatabase   = {'Polans2015','Artal2012'}
-%   subjectRankOrder = 3;
-%   whichEye         ='right eye';
-%   positionDegs     = [-10 0];
-%   pupilDiamMM      = 3.0;
 %
 % Optional key/val pairs
-%    N/A
+%   subjectRank      = 3;
+%   whichEye         ='right eye';
+%   positionDegs     = [-10 0];
+%   pupilDiamMM      = 3.0;%
+%   center psf       = true;
 %
 % Returns
 %   oi - an Optical image that can be used to compute for a local scene
@@ -33,47 +33,73 @@ function [oi, psf, support, zCoeffs, subjID] = oiPosition(zCoeffDatabase, positi
 
 % Examples:
 %{
-% Plot the PSF
  zCoeffDatabase   = 'Polans2015';
- subjectRankOrder = 3;
- whichEye         = 'right eye';
- positionDegs     = [0 10];
+ subjectRank = 3;
+ eyeside          = 'right';
+ positionDegs     = [0 4];
  pupilDiamMM      = 3.0;
+ centerpsf        = true;
 
- [oi, psf, support, zCoeffs, subjID]  = oiPosition(zCoeffDatabase, positionDegs , pupilDiamMM, subjectRankOrder, whichEye);
+ [oi, psf, support, zCoeffs, subjID]  = ...
+    oiPosition(zCoeffDatabase, 'position',positionDegs, ...
+      'pupil diameter', pupilDiamMM, 'subject rank', subjectRank, ...
+      'eye side', eyeside,'center psf',false);
+
  ieNewGraphWin;
- idx = find(support.w == 550);
+ idx = find(support.w == 650);
  imagesc(support.x, support.y, squeeze(psf(:,:,idx)));
  axis 'square'; colormap(gray); xlabel('arc min'); ylabel('arc min');
- set(gca, 'FontSize', 14);
- title(sprintf('%s, subject #%d', zCoeffDatabase, subjID));
+ set(gca, 'FontSize', 14); set(gca,'xlim',[-5 5],'ylim',[-5 5]);
+ title(sprintf('subject #%d', subjID));
+
+ scene = sceneCreate('gridlines',256,64);
+ scene = sceneSet(scene,'fov',1);
+ oi = oiCompute(oi,scene);
+ % oi = oiCrop(oi,'border');
+ oiWindow(oi);
+
 %}
 %{
- [oi, psf, support, zCoeffs, subjID]  = oiPosition();
+% Simpler, with default values
+ [oi, psf, support, zCoeffs, subjID]  = oiPosition('Artal2012');
  ieNewGraphWin;
- idx = find(support.w == 550);
+ idx = find(support.w == 650);
  imagesc(support.x, support.y, squeeze(psf(:,:,idx)));
  axis 'square'; colormap(gray); xlabel('arc min'); ylabel('arc min');
  set(gca, 'FontSize', 14);
- title(sprintf('%s, subject #%d', zCoeffDatabase, subjID));
+ title(sprintf('subject #%d', subjID));
 %}
 
 
 %% Read parameters
 
-if notDefined('zCoeffDatabase'), zCoeffDatabase = 'Polans2015'; end
-if notDefined('positionDegs'), positionDegs = [0 0]; end
-if notDefined('pupilDiamMM'), pupilDiamMM = 3.0; end
-if notDefined('subjectRankOrder'), subjectRankOrder = 1; end
-if notDefined('whichEye'), whichEye = 'right eye'; end
+varargin = ieParamFormat(varargin);
 
+p = inputParser;
+validData = {'Polans2015','Artal2012'};
+p.addRequired('zCoeffDatabase',@(x)(ismember(x,validData)));
 
-% Hard parameters.  Hmm.  I guess we need to call this from an object that
-% has this information?
+p.addParameter('position',[0 0], @isvector);
+p.addParameter('pupildiameter',3,@isscalar);
+p.addParameter('subjectrank',1,@isscalar);
 
-wave = 400:10:750;
+validEye = {'left','right'};
+p.addParameter('eyeside','right',@(x)(ismember(x,validEye)));
+
+p.addParameter('centerpsf',true,@islogical);
+
+p.parse(zCoeffDatabase,varargin{:});
+
+positionDegs = p.Results.position;
+pupilDiamMM  = p.Results.pupildiameter;
+subjectRank  = p.Results.subjectrank;
+eyeSide      = p.Results.eyeside;  
+eyeSide = [eyeSide,' eye'];
+centerPSF        = p.Results.centerpsf;
+
+% Hard parameters.  Hmm.  We can add these to the parameters
+wave             = 400:10:750;
 micronsPerDegree = 290;
-zeroCenterPSF = true;
 wavefrontSpatialSamples = 201;
 
 %%
@@ -81,16 +107,16 @@ switch (zCoeffDatabase)
     case 'Polans2015'
         % Obtain subject IDs ranking in decreasing foveal resolution
         rankedSujectIDs = PolansOptics.constants.subjectRanking;
-        subjID = rankedSujectIDs(min([numel(rankedSujectIDs) subjectRankOrder]));
+        subjID = rankedSujectIDs(min([numel(rankedSujectIDs) subjectRank]));
         
         % Determine if we need to subtract the subject's central refraction
         subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(subjID);
         [oi, psf, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = ...
             PolansOptics.oiForSubjectAtEccentricity(subjID, ...
-            whichEye, positionDegs, pupilDiamMM, wave, micronsPerDegree, ...
+            eyeSide, positionDegs, pupilDiamMM, wave, micronsPerDegree, ...
             'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
             'subtractCentralRefraction', subtractCentralRefraction, ...
-            'zeroCenterPSF', zeroCenterPSF);
+            'zeroCenterPSF', centerPSF);
         
         support.x = psfSupportMinutesX;
         support.y = psfSupportMinutesY;
@@ -99,11 +125,11 @@ switch (zCoeffDatabase)
         
     case 'Artal2012'
         % Obtain subject IDs ranking in decreasing foveal resolution
-        rankedSujectIDs = ArtalOptics.constants.subjectRanking(whichEye);
-        subjID = rankedSujectIDs(min([numel(rankedSujectIDs) subjectRankOrder]));
+        rankedSujectIDs = ArtalOptics.constants.subjectRanking(eyeSide);
+        subjID = rankedSujectIDs(min([numel(rankedSujectIDs) subjectRank]));
         
         % Determine if we need to subtract the subject's central refraction
-        subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(whichEye, subjID);
+        subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(eyeSide, subjID);
         if (positionDegs(2) ~= 0)
             fprintf(2,'Artal optics not available off the horizontal meridian. Computing for vEcc = 0\n');
             positionDegs(2) = 0;
@@ -111,10 +137,10 @@ switch (zCoeffDatabase)
         
         [oi, psf, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = ...
             ArtalOptics.oiForSubjectAtEccentricity(subjID, ...
-            whichEye, positionDegs, pupilDiamMM, wave, micronsPerDegree, ...
+            eyeSide, positionDegs, pupilDiamMM, wave, micronsPerDegree, ...
             'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
             'subtractCentralRefraction', subtractCentralRefraction, ...
-            'zeroCenterPSF', zeroCenterPSF);
+            'zeroCenterPSF', centerPSF);
         
         if (isempty(oi))
             error('Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye', obj.whichEye, subjectID);
