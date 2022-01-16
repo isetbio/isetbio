@@ -13,6 +13,14 @@ function d = generateCustomDisplay(varargin)
 %    - ambient SPD
 %    - gammaTable
 %
+%    If you are starting with a PTB calibration file, note that the PTB
+%    power units convention is WattsPerSteradianM2WavelengthBand, so that
+%    you should divide by the wavelength spacing if you're starting with
+%    spectra in a PTB calibration file, or as measured by PTB routine
+%    MeasSpd. Here we are starting with an ISETBio default display so that
+%    we are inside the ISETBio world where power is specified per nanometer
+%    rather than per wavelength band.
+%
 % Inputs:
 %    None.
 %
@@ -28,6 +36,9 @@ function d = generateCustomDisplay(varargin)
 %    'ambientSPDWattsPerSteradianM2NanoMeter'                - [nWaves x 1] matrix of the ambient SPD
 %    'gammaTable'                                            - [mValues x 3] matrix of LUTs
 %    'plotCharacteristics'                                   - Flag indicating whether to plot the display characteristics
+%
+% See also: ptb.GenerateIsetbioDisplayObjectFromPTBCalStruct,
+%           ptb.GeneratePTCalStructFromIsetbioDisplayObject
 
 % History:
 %    12/01/21  npc  Wrote it.
