@@ -82,6 +82,10 @@ p.addRequired('zCoeffDatabase',@(x)(ismember(x,validData)));
 p.addParameter('position',[0 0], @isvector);
 p.addParameter('pupildiameter',3,@isscalar);
 p.addParameter('subjectrank',1,@isscalar);
+p.addParameter('wave',(400:10:750),@isvector);
+
+% See below
+% p.addParameter('correctrefraction',true,@islogical);
 
 validEye = {'left','right'};
 p.addParameter('eyeside','right',@(x)(ismember(x,validEye)));
@@ -96,9 +100,13 @@ subjectRank  = p.Results.subjectrank;
 eyeSide      = p.Results.eyeside;  
 eyeSide = [eyeSide,' eye'];
 centerPSF        = p.Results.centerpsf;
+wave             = p.Results.wave;
+
+% We could over-ride the specification in the future
+% subtractCentralRefraction = p.Results.correctrefraction;
+
 
 % Hard parameters.  Hmm.  We can add these to the parameters
-wave             = 400:10:750;
 micronsPerDegree = 290;
 wavefrontSpatialSamples = 201;
 
