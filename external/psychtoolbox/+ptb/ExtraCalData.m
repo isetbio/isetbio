@@ -3,11 +3,12 @@ classdef ExtraCalData
 % that is not contained in Brainard Lab calibration files
 % 
 %   Currently, the only data present is the distance with default value
-%   of 0.5
-%
-% 3/2/2015   xd    wrote file
-% 4/15/2015  npc   Added subSamplingSvector. If empty no subsampling is
-%                  performed
+%   of 0.5 and an optional wavelength subsampling vector in S format.
+
+% History:
+%   3/2/2015   xd    Wrote file
+%   4/15/2015  npc   Added subSamplingSvector. If empty no subsampling is
+%                    performed
     
     properties
         distance = 0.5;

@@ -1,8 +1,43 @@
-% PTBcal = GeneratePTCalStructFromIsetbioDisplayObject(display)
-%
 % Generate a PTB calibration structure from an ISETBIO display object.
+% 
+% Synopsis:
+%    PTBcal = ptb.GeneratePTCalStructFromIsetbioDisplayObject(display)
 %
-% 6/25/15  dhb  Modify to get display size out of ISETBIO object and use it.
+% Description:
+%    Produce a PTB calibration struct from an ISETBio display object.
+%
+%    Note that the PTB power units convention is power per wavelength band, 
+%    while ISETBio is power per nm. This routine does the conversion as it extracts
+%    spectra from ISETBio and puts them into the PTB calibration structure.
+%    The inverse routine, ptb.GenerateIsetbioDisplayObjectFromPTBCalStruct,
+%    does the same conversion in the other direction. 
+%
+%    This routine assumes that the display object is describing a 3 primary
+%    device. If there are additional primary spectra in the display object, they
+%    are ignored.
+%
+%    Note unfortunate choice of PT rather than PTB in the name of this
+%    function. But changing it now will likely break extant code and
+%    doesn't seem worth it.
+%
+% Inputs:
+%    display           - The ISETBio display object.
+%
+% Outputs:
+%    PTBCal            - The PTB calibration structure.
+%
+% Optional key/value pairs:
+%   None.
+%
+% See also: ptb.GenerateIsetbioDisplayObjectFromPTBCalStruct,
+%           ptb.GeneratePsychToolboxCalStruct, ptb.GenerateEmptyPTBStruct,
+%           generateCustomDisplay.
+%
+
+% History:
+%   6/25/15  dhb  Modify to get display size out of ISETBIO object and use it.
+%   1/16/22  dhb  Do the ISETBio -> PTB power unit convention conversion.
+%                 And add some comments.
 
 function PTBcal = GeneratePTCalStructFromIsetbioDisplayObject(display)
 
@@ -10,14 +45,13 @@ function PTBcal = GeneratePTCalStructFromIsetbioDisplayObject(display)
     PTBcal = ptb.GenerateEmptyPTBcalStruct();
     
     % Update key properties
-    PTBcal = updateDisplayDescription(PTBcal,display);
+    PTBcal = updateDisplayDescription(PTBcal, display);
     PTBcal = updateSpectralParams(PTBcal, display);
     PTBcal = updateGammaParams(PTBcal, display);  
 end
     
 function PTBcal = updateGammaParams(oldPTBcal, display)
     [gammaTable, gammaInput] = retrieveGammaTable(display);
-    
     
     PTBcal = oldPTBcal;
     PTBcal.gammaInput = gammaInput';
@@ -33,8 +67,8 @@ function PTBcal = updateSpectralParams(oldPTBcal, display)
     PTBcal = oldPTBcal;
     PTBcal.describe.S   = WlsToS(wave);
     PTBcal.S_ambient    = PTBcal.describe.S;
-    PTBcal.P_device     = spd;
-    PTBcal.P_ambient    = displayGet(display,'ambient spd');
+    PTBcal.P_device     = spd*PTBcal.describe.S(2);
+    PTBcal.P_ambient    = displayGet(display,'ambient spd')*PTBcal.describe.S(2);
     PTBcal.T_ambient    = eye(spectralSamples);
     PTBcal.T_device     = eye(spectralSamples); 
 
