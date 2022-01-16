@@ -1,10 +1,50 @@
 % Method to generate a PTB CalStruct for a display with given properties
 %
-% 4/11/15  dhb  Change default gamma type to crtLinear.  This doesn't use
-%               optimization toolbox, and is more like what isetbio does.
+% Synopsis cal = ptb.GeneratePsychToolboxCalStruct;
 %
-function cal = GeneratePsychToolboxCalStruct(varargin)
+% Description:
+%    Generate a PTB calibration structure with default properties.  Allows
+%    passing in of some key properties as key value pairs. 
+%
+%    Note that PTB expects power in units of power per wavelength band, not
+%    power per nanometer. These are the units (per wavelength band)
+%    returned by routine MeasSpd in the PTB, for example. If you've got
+%    power per nm, multiply by the wavelength sample spacing (which needs
+%    to be equally spaced in PTB land).
+%
+% Optional key/value pairs:
+%    'name'         -  String to go into the calibration structure.
+%    'dotsPerMeter' -  Pixels per meter.  Used to compute screen size in mm
+%                      for the calibration structure describe field, from
+%                      the screen size in pixels.
+%    'gammaInput'   -  Input values on which the sample gamma table is
+%                      specified. Column vector.
+%    'gammaTable'   -  Gamma table values for each primary, in columns of a
+%                      matrix. If you specify this, better specify
+%                      gammaInput as well.
+%    'wave'         -  Wavelength spacing for spectra. Can be a column
+%                      vector of equally spaced sampled wavelengths, or a 3
+%                      by 1 S vector with entries [startWl deltaWl
+%                      nWlSamples].
+%    'spd'          -  Matrix of device primaries in the columns of a
+%                      matrix. Should have power in units of power per
+%                      wavelength band, not power per nm.
+%    'ambientSpd'   -  Vector with ambient spectrum (aka black spectrum).
+%                      Should have power in units of power per wavelength
+%                      band, not power per nm.
+%    'screenSizeInPixels - Row vector with number of pixels, [h v].
+%
+% See also ptb.GenerateIsetbioDisplayObjectFromPTBCalStruct,
+%          ptb.GeneratePTCalstructFromIsetbioDisplayObject.
 
+% History:
+%   4/11/15  dhb  Change default gamma type to crtLinear.  This doesn't use
+%                 optimization toolbox, and is more like what isetbio does.
+%   1/16/21  dhb  Header comments.  And allow wave to be in S format as well
+%                 as list of wavelengths.
+
+function cal = GeneratePsychToolboxCalStruct(varargin)
+    % Parse inputs
     parser = inputParser;
     parser.addParamValue('name', [], @ischar);
     parser.addParamValue('dotsPerMeter', [], @isscalar);
@@ -45,7 +85,7 @@ function cal = GeneratePsychToolboxCalStruct(varargin)
         );
     
     describeStruct = struct( ...
-                     'S', WlsToS(wave), ...
+                     'S', MakeItS(wave), ...
       'blankOtherScreen', 1, ...
          'blankSettings', [], ...
             'boxOffsetX', 0, ...
