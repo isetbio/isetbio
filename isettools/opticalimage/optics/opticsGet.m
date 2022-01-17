@@ -426,6 +426,11 @@ switch parm
         if checkfields(optics, 'spectrum', 'wave')
             val = optics.spectrum.wave;
         end
+        if (isempty(val))
+            if (checkfields(optics, 'OTF', 'wave'))
+                val = optics.OTF.wave;
+            end
+        end
         if isempty(val)
             scene = vcGetObject('scene'); val = sceneGet(scene, 'wave');
             if ~isempty(val)
