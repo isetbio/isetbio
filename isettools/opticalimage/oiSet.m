@@ -111,7 +111,14 @@ if isequal(oType, 'optics')
     if isempty(parm)
         % oi = oiSet(oi, 'optics', optics);
         oi.optics = val;
-        oi.spectrum.wave = opticsGet(val,'wave');
+
+        % DHB; I thought perhaps I should be setting this too,
+        % but doing so breaks a number of validations. I think
+        % that is because having oiGet(oi,'wave') return empty 
+        % triggers matching the oi wavelength sampling to the scene,
+        % in oiCompute.  But I am not totally sure.
+        %
+        % oi.spectrum.wave = opticsGet(val,'wave');
         return;
     else
         % Allows multiple additional arguments

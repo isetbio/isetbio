@@ -14,7 +14,28 @@
 %% Initialize
 ieInit; clear; close all;
 
- e 
+%% Set wavelength support
+wls = (400:5:700)';
+
+%% Generate the ring rays stimulus
+radialFrequency = 8;
+pixelSize = 256;
+scene = sceneCreate('rings rays',radialFrequency,pixelSize,wls);
+scene = sceneSet(scene, 'fov', 0.5);
+
+%% Compute the retinal image
+%
+% First create the optical image object.
+pupilDiamterMm = 3;
+oi = oiCreate('wvf human', pupilDiamterMm , [], wls);
+
+% The lens density in the oi object affect the cone fundamentals.  This
+% code shows how to adjust lens density.
+
+% The values in the unit density variable are multiplied by the scalar in
+% the density variable to get the overall spectral density, and from thence the
+% transmittance.  See "help Lens".
+lens0 = oiGet(oi,'lens');
 lensUnitDensity1 = lens0.unitDensity;
 lensPeakDensity1 = lens0.density;
 lens1 = Lens('wave',wls,'unitDensity',lensUnitDensity1,'density',lensPeakDensity1);
