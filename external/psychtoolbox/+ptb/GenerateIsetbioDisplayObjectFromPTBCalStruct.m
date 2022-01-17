@@ -38,7 +38,9 @@ function displayObject = GenerateIsetbioDisplayObjectFromPTBCalStruct(displayNam
 %
 % Optional key/value pairs:
 %   None. But it might be clever to add a 'lowPassSigmaInNanometers' key
-%   value pair as the default of 4 nm won't always be the best choice.
+%   value pair as the default of 4 nm won't always be the best choice. An
+%   alternative approach would be to add a property to the ExtraCalData
+%   class and use that.
 %
 % See also: ptb.ExtraCalData, ptb.SubSampleSPDs, 
 %           ptb.GeneratePTCalStructFromIsetbioDisplayObject,
