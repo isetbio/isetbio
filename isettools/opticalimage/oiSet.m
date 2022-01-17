@@ -111,6 +111,7 @@ if isequal(oType, 'optics')
     if isempty(parm)
         % oi = oiSet(oi, 'optics', optics);
         oi.optics = val;
+        oi.wave = opticsGet(val,'wave');
         return;
     else
         % Allows multiple additional arguments
