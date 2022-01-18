@@ -27,7 +27,11 @@ scene = sceneSet(scene, 'fov', 0.5);
 %
 % First create the optical image object.
 pupilDiamterMm = 3;
-oi = oiCreate('wvf human', pupilDiamterMm , [], wls);
+%oi = oiCreate('wvf human', pupilDiamterMm , [], wls);
+oi = oiCreate('wvf human', pupilDiamterMm);
+
+% Compute the optical image
+oi = oiCompute(scene, oi);
 
 % The lens density in the oi object affect the cone fundamentals.  This
 % code shows how to adjust lens density.
@@ -39,10 +43,9 @@ lens0 = oiGet(oi,'lens');
 lensUnitDensity1 = lens0.unitDensity;
 lensPeakDensity1 = lens0.density;
 lens1 = Lens('wave',wls,'unitDensity',lensUnitDensity1,'density',lensPeakDensity1);
-theOI = oiSet(theOI,'lens',lens1);
+oi = oiSet(oi,'lens',lens1);
 
-% Compute the optical image
-oi = oiCompute(scene, oi);
+
 
 %% Generate the mosaic
 cm = cMosaic(...
