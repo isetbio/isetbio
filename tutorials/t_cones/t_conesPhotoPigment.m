@@ -79,10 +79,10 @@ coneAreaUm2 = pi*(coneApertureDiamUm/2)^2;
 T_quantalExcitationIrradiance = T_quantalExcitationProb*coneAreaUm2;
 
 % Plot
-figure; clf; hold on;
-plot(wls,T_quantalExcitationIrradiance(1,:),'r','LineWidth',4);
-plot(wls,T_quantalExcitationIrradiance(2,:),'g','LineWidth',4);
-plot(wls,T_quantalExcitationIrradiance(3,:),'b','LineWidth',4);
+fundamentalsFig = figure; clf; hold on;
+plot(wls,T_quantalExcitationIrradiance(1,:),'r','LineWidth',6);
+plot(wls,T_quantalExcitationIrradiance(2,:),'g','LineWidth',6);
+plot(wls,T_quantalExcitationIrradiance(3,:),'b','LineWidth',6);
 xlabel('Wavelength (nm)');
 ylabel('Fundamental');
 
@@ -172,6 +172,13 @@ for cc = 1:3
     T_quantalAbsorptionProbFromPieces(cc,:) = lensTransmittance .* macTransmittance .* photopigmentAbsorptance(cc,:);
     T_quantalExcitationProbFromPieces(cc,:) = T_quantalAbsorptionProbFromPieces(cc,:) * cieStaticParams.quantalEfficiency(cc);
 end
+
+% Numerical check. For some reason there is a small numerical difference
+% between what we compute here and what was computed in the subroutine.
+% Might have to do with order of operations and/or some difference
+% between what Matlab does in a script versus a function. So here and below
+% we don't check for exact equality but instead agreement to better than
+% one part in 10^12, referenced to mean value.
 if (max(abs(T_quantalAbsorptionProbFromPieces(:) - T_quantalAbsorptionProb(:)))/mean(T_quantalAbsorptionProb(:)) > 1e-12)
     error('Fail to compute quantal absorption probability same way twice');
 end
@@ -180,52 +187,133 @@ end
 T_quantalExcitationIrradianceFromPieces = T_quantalExcitationProbFromPieces*coneAreaUm2;
 
 % Add to plot and check numerically
-plot(wls,T_quantalExcitationIrradianceFromPieces(1,:),'k','LineWidth',2);
-plot(wls,T_quantalExcitationIrradianceFromPieces(2,:),'k','LineWidth',2);
-plot(wls,T_quantalExcitationIrradianceFromPieces(3,:),'k','LineWidth',2);
+figure(fundamentalsFig);
+plot(wls,T_quantalExcitationIrradianceFromPieces(1,:),'k','LineWidth',4);
+plot(wls,T_quantalExcitationIrradianceFromPieces(2,:),'k','LineWidth',4);
+plot(wls,T_quantalExcitationIrradianceFromPieces(3,:),'k','LineWidth',4);
 if (max(abs(T_quantalExcitationProbFromPieces(:) - T_quantalExcitationProb(:)))/mean(T_quantalExcitationProb(:)) > 1e-12)
     error('Fail to compute quantal excitation probability same way twice');
 end
 
-%% Generate the ring rays stimulus
-radialFrequency = 8;
-pixelSize = 256;
-scene = sceneCreate('rings rays',radialFrequency,pixelSize,wls);
-scene = sceneSet(scene, 'fov', 0.5);
-
-%% Compute the retinal image
+%% Set up object for computing retinal image
 %
 % First create the optical image object.
 pupilDiamterMm = 3;
-oi = oiCreate('wvf human', pupilDiamterMm , [], wls);
+oiBaseline = oiCreate('wvf human', pupilDiamterMm , [], wls);
 
-% Compute the optical image
-oi = oiCompute(scene, oi);
+% The Lens object in the oi object determines the lens transmittance used
+% inthe ISETBio computations. The code here shows how to set the lens
+% density/transmittance to match the above.
+%
+% The spectral values in the unit density variable are multiplied by the
+% scalar in the density variable to get the overall spectral density, and
+% from thence the transmittance.  See "help Lens". This is
+% overparameterized, but such parameterization is conventional so that the
+% scalar density is separated from the absorbance (normalized to peak of
+% 1).
+% 
+% Given the parameterization, the easiest way to adjust lens density is to
+% set the unit density to the density we computed above and the density to
+% 1. This makes a mockery of the convention that we separate absorbance
+% from the scalar optical density.  One could normalize the density and use
+% normalization factor to comptue the scalar optical density, and get the
+% same answer.
+lensObject = Lens('wave',wls,'unitDensity',-log10(lensTransmittance),'density',1);
+oiBaseline = oiSet(oiBaseline,'lens',lensObject);
 
-% The lens density in the oi object affect the cone fundamentals.  This
-% code shows how to adjust lens density.
+% Set up macular pigment object.  See comments where we set up lens object
+% above.
+macObject = Macular('wave',wls,'unitDensity',-log10(macTransmittance),'density',1);
+cm.macular = macObject;
 
-% The values in the unit density variable are multiplied by the scalar in
-% the density variable to get the overall spectral density, and from thence the
-% transmittance.  See "help Lens".
-lens0 = oiGet(oi,'lens');
-lensUnitDensity1 = lens0.unitDensity;
-lensPeakDensity1 = lens0.density;
-lens1 = Lens('wave',wls,'unitDensity',lensUnitDensity1,'density',lensPeakDensity1);
-oi = oiSet(oi,'lens',lens1);
+% Set up photopigment object
+%
+% This is based on the axialDensity (parameter name 'opticalDensity'),
+% absorbance (parameter name 'absorbance'), and quantalEfficiency
+% (parameter name 'peakEfficiency'). Someday we will rewrite so that naming 
+% conventions are consistent across different places we implement them, perhaps.
+% 
+% ISETBio wants absorbance in columns, while PTB wants it in rows, so we
+% also need to transposes.
+photopigmentObject = cPhotoPigment('wave', wls,...
+    'opticalDensity',axialDensity,'absorbance',photopigmentAbsorbance', ...
+    'peakEfficiency',cieStaticParams.quantalEfficiency );
 
-%% Generate the mosaic
+%% Generate the mosaic object, with custom pigments
+%
+% This should now compute with the photoreceptor properties we defined
+% above, which we will attempt to verify below.
 cm = cMosaic(...
     'wave', wls, ...                % wavelength sampling
     'sizeDegs', [0.5 0.5], ...      % x,y size in degrees
     'eccentricityDegs', [0 0], ...  % eccentricity
-    'eccVaryingConeBlur', false ... % for purposes here, keep cones the same size
+    'macular', macObject, ...       % custom macular pigment object
+    'pigment', photopigmentObject, ... % custom photopigment object
+    'eccVaryingConeAperture', false, ... % for purposes here, keep cones the same size, etc.
+    'eccVaryingConeBlur', false, ...      
+    'eccVaryingMacularPigmentDensity', false, ...
+    'eccVaryingMacularPigmentDensityDynamic', false ...
     );
+LConeIndices = find(cm.coneTypes == 1);
+MConeIndices = find(cm.coneTypes == 2);
+SConeIndices = find(cm.coneTypes == 3);
 
-%% Create photoPigment object
+%% Generate the baseline stimuli
 %
-% Plot spacing at 5 nm looks a little nicer than the default spacing.
-pp = photoPigment('wave', wls);
+% A set of monochromatic images at each sample wavelength.  The photon
+% level is scene irradiance in photons/sr-m2-nm-sec.
+pixelSize = 64;
+photonLevel = 100000;
+for ww = 1:length(wls)
+    % Set up a dummy scene. Spatially uniform with a black body
+    % spectrum of 5000 degK.  We'll replace the scene contents just below.
+    scene{ww} = sceneCreate('uniform bb',pixelSize,5000,wls);
+
+    % Use small field of view to minimize effects of eccentricity, and also
+    % so we don't need too many pixels (for efficiency in this demo).
+    fovDegrees = 0.1;
+    scene{ww} = sceneSet(scene{ww},'fov',fovDegrees);
+
+    % Get photons and rewrite to be monochromatic constant power in
+    % photons/sec-nm.
+    photons = sceneGet(scene{ww},'photons');
+    photons = zeros(size(photons));
+    photons(:,:,ww) = photonLevel*ones(pixelSize,pixelSize);
+    scene{ww} = sceneSet(scene{ww},'photons',photons);
+end
+
+%% Compute the retinal image and cone excitations for each scene
+%
+% Use this to get the cone fundamental that ISETBio is effectively
+% using.
+T_quantalExcitationIrradianceISETBioRelative = zeros(size(T_quantalExcitationIrradiance));
+for ww = 1:length(wls)
+    % Compute retinal image
+    oiComputed{ww} = oiCompute(scene{ww}, oiBaseline);
+
+    % Compute noise free cone excitations
+    coneExcitations{ww} = cm.compute(oiComputed{ww},'nTrials', 1);
+
+    % Find L, M and S cone excitations at this wavelength.  This is
+    % accomplished by extracting the mean response of each cone type from
+    % the excitations computed just above and diviting by the input power
+    % in the scene.
+    %
+    % We expect the answer to be proportional to the fundamentals we
+    % computed above, because we have not (yet) accounted for the geometry
+    % between radiance in the scene and retinal irradiance, nor the cone
+    % integration time.
+    T_quantalExcitationIrradianceISETBioRelative(1,ww) = mean(coneExcitations{ww}(LConeIndices))/photonLevel;
+    T_quantalExcitationIrradianceISETBioRelative(2,ww) = mean(coneExcitations{ww}(MConeIndices))/photonLevel;
+    T_quantalExcitationIrradianceISETBioRelative(3,ww) = mean(coneExcitations{ww}(SConeIndices))/photonLevel;
+end
+
+% Scale and plot what we get
+scaleFactor = T_quantalExcitationIrradianceISETBioRelative(:)\T_quantalExcitationIrradiance(:);
+figure(fundamentalsFig);
+plot(wls,scaleFactor*T_quantalExcitationIrradianceISETBioRelative(1,:),'y:','LineWidth',2);
+plot(wls,scaleFactor*T_quantalExcitationIrradianceISETBioRelative(2,:),'y:','LineWidth',2);
+plot(wls,scaleFactor*T_quantalExcitationIrradianceISETBioRelative(3,:),'y:','LineWidth',2);
 
 %% Absorbance
 % The cone absorbance function used by default is obtained via data routine
@@ -234,12 +322,8 @@ pp = photoPigment('wave', wls);
 % Absorbance is sometimes called optical density.
 %
 % The peak absorbance is 1 by convention in how the values are tabulated.
-ieNewGraphWin;
-plot(pp.wave, pp.absorbance)
-grid on;
-xlabel('Wavelength (nm)');
-ylabel('Relative sensitivity');
-
-
-
-%%
+% ieNewGraphWin;
+% plot(pp.wave, pp.absorbance)
+% grid on;
+% xlabel('Wavelength (nm)');
+% ylabel('Relative sensitivity');
