@@ -3,7 +3,7 @@ function testMosaics
     % The higher this overlap the more false alarms
     maxSeparationForDeclaringOverlap = 0.5;
 
-    doEntireMosaic = true;
+    doEntireMosaic = ~true;
     if (doEntireMosaic)
         whichEye = 'right eye';
         sourceLatticeSizeDegs = 58;

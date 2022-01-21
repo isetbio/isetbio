@@ -28,6 +28,12 @@ classdef mRGCMosaic < handle
     properties  (GetAccess=public, SetAccess=public)
         % Name of the mosaic
         name;
+
+        % Noise flag for RGCs
+        noiseFlag;
+        
+        % Random seed
+        randomSeed;
     end
 
     % Read-only properties
@@ -47,6 +53,9 @@ classdef mRGCMosaic < handle
 
         % Eccentricity [x,y] of the center of the mRGC mosaic (degs)
         eccentricityDegs;
+
+        % Eccentricity [x,y] of the center of the mRGC mosaic (microns)
+        eccentricityMicrons;
 
         % Size of the mRGC mosaic [width, height]
         sizeDegs;
@@ -71,6 +80,10 @@ classdef mRGCMosaic < handle
 
          % Whether to use parfor in computations
         useParfor = true;
+
+        % Min and max cone positions
+        minRFpositionMicrons;
+        maxRFpositionMicrons;
     end
 
     % Public methods
@@ -91,15 +104,18 @@ classdef mRGCMosaic < handle
             p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
             p.addParameter('inputConeMosaic', [], @(x)(isempty(x) || isa(x, 'cMosaic')));
             p.addParameter('useParfor', true, @islogical);
+            p.addParameter('randomSeed', [], @isscalar);
             p.parse(varargin{:});
 
             obj.name = p.Results.name;
             obj.eccentricityDegs = p.Results.eccentricityDegs;
             obj.sizeDegs = p.Results.sizeDegs;
-            
+            obj.randomSeed = p.Results.randomSeed;
+
             % Parallel computations
             obj.useParfor = p.Results.useParfor;
             
+
             % Set the inputConeMosaic
             if (isempty(p.Results.inputConeMosaic))
                 % An inputConeMosaic was not passed during instantiation,
@@ -129,7 +145,10 @@ classdef mRGCMosaic < handle
                 obj.inputConeMosaic = p.Results.inputConeMosaic;
                 
                 % Match the eccentricity of the mRGCMosaic to that of the input cone mosaic
+                oldEccentricityDegs = obj.eccentricityDegs;
                 obj.eccentricityDegs = obj.inputConeMosaic.eccentricityDegs;
+                fprintf(2, 'mRGCmosaic eccentricity changed from (%2.1f, %2.1f) degs to (%2.1f, %2.1f) degs to interface with input cone mosaic\n', ...
+                    oldEccentricityDegs(1), oldEccentricityDegs(2), obj.eccentricityDegs(1), obj.eccentricityDegs(2));
 
                 % Match mm <-> degs conversion functions to those of the inputConeMosaic
                 if (~isempty(obj.inputConeMosaic.micronsPerDegreeApproximation))
@@ -181,6 +200,22 @@ classdef mRGCMosaic < handle
             % Remove RFs within the optic disk
             obj.removeRFsWithinOpticNerveHead();
 
+            % Set random seed
+            if (isempty(obj.randomSeed))
+               rng('shuffle');
+            else
+               rng(obj.randomSeed);
+            end
+
+            % Compute ecc in microns
+            obj.eccentricityMicrons = 1e3 * obj.customDegsToMMsConversionFunction(obj.eccentricityDegs);
+
+            % Compute min and max cone position
+            obj.minRFpositionMicrons = squeeze(min(obj.rgcRFpositionsMicrons,[],1));
+            obj.maxRFpositionMicrons = squeeze(max(obj.rgcRFpositionsMicrons,[],1));
+            
+            % Wire cones to the RGC RF centers
+            obj.wireConesToRFcenters();
         end % Constructor
 
         % Convert a retinal size in visual degrees at given ecc (also in degs) to its
@@ -205,6 +240,10 @@ classdef mRGCMosaic < handle
         
         % Remove RFs located within the optic disk
         removeRFsWithinOpticNerveHead(obj);
+
+        % Wire cones to the RGC RF centers
+        wireConesToRFcenters(obj);
+
     end % Private methods
 
 end
