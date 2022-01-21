@@ -33,6 +33,7 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
     p.addParameter('subtractCentralRefraction', false, @islogical);
     p.addParameter('zeroCenterPSF', true, @islogical);
     p.addParameter('flipPSFUpsideDown', true, @islogical);
+    p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
     p.parse(obj, oiSamplingGridDegs, varargin{:});
 
     oiSamplingGridDegs = p.Results.oiSamplingGridDegs;
@@ -43,7 +44,8 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     zeroCenterPSF = p.Results.zeroCenterPSF;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
-    
+    upsampleFactor = p.Results.upsampleFactor;
+
     % Generate the oiEnsemble
     oiNum = size(oiSamplingGridDegs,1);
     oiEnsemble = cell(1, oiNum);
@@ -95,7 +97,8 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
                     'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                     'subtractCentralRefraction', subtractCentralRefraction, ...
                     'zeroCenterPSF', zeroCenterPSF, ...
-                    'flipPSFUpsideDown', flipPSFUpsideDown);
+                    'flipPSFUpsideDown', flipPSFUpsideDown, ...
+                    'upsampleFactor', upsampleFactor);
                 
                 oiEnsemble{oiIndex} = theOI;
                 psfEnsemble{oiIndex} = struct(...

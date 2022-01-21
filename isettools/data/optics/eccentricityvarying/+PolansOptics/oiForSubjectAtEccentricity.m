@@ -14,6 +14,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('subtractCentralRefraction', true, @islogical);
     p.addParameter('zeroCenterPSF', false, @islogical);
     p.addParameter('flipPSFUpsideDown', false, @islogical);
+    p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
     p.addParameter('noLCA', false, @islogical);
     p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
     p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
@@ -23,6 +24,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
     zeroCenterPSF = p.Results.zeroCenterPSF;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
+    upsampleFactor = p.Results.upsampleFactor;
     noLCA = p.Results.noLCA;
     refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
     refractiveErrorMicrons = wvfDefocusDioptersToMicrons(refractiveErrorDiopters, pupilDiamMM);
@@ -44,6 +46,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
              'doNotZeroCenterPSF', ~zeroCenterPSF, ...
              'micronsPerDegree', micronsPerDegree, ...
              'flipPSFUpsideDown', flipPSFUpsideDown, ...
+             'upsampleFactor', upsampleFactor, ...
              'name', sprintf('Polans subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
     
     % Remove wavelength-dependent defocus if noLCA is set
