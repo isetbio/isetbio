@@ -212,6 +212,8 @@ function val = opticsGet(optics, parm, varargin)
 %                   default. This fixes a broken example.
 %              dhb  Deleted a pile of commented out code.
 %    06/26/19  JNM  Documentation update & some formatting fixes.
+%    01/17/22  dhb  Return wavelength sampling as that in optics.OTF.wave
+%                   if that field exists.
 
 % Examples:
 %{
@@ -425,6 +427,18 @@ switch parm
         %
         if checkfields(optics, 'spectrum', 'wave')
             val = optics.spectrum.wave;
+        end
+
+        % DHB: 2022-01-17. If there isn't a value in the
+        % optics.spectrum.wave field, use the value in optics.OTF.wave, if
+        % it is there. I think optics.spectrum.wave is deprecated. Adding
+        % this code in fixes a consistency issue between the Lens object
+        % and the OTF in opticsCreate, but it's possible it will cause
+        % other problems.
+        if (isempty(val))
+            if (checkfields(optics, 'OTF', 'wave'))
+                val = optics.OTF.wave;
+            end
         end
         if isempty(val)
             scene = vcGetObject('scene'); val = sceneGet(scene, 'wave');

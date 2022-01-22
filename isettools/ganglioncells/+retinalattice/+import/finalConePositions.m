@@ -1,4 +1,4 @@
-function [rfPositionsMicrons, rfPositionsDegs] = finalConePositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye)
+function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye, eliminateOvelappingElements)
 
     % Convert degs to retinal microns
     eccMicrons  = 1000*RGCmodels.Watson.convert.rhoDegsToMMs(eccDegs);
@@ -6,10 +6,54 @@ function [rfPositionsMicrons, rfPositionsDegs] = finalConePositions(sourceLattic
 
     % Load final cone positions
     p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
-    load(fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName), 'rfPositions');
+    theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
+    load(theMosaicFileName, 'rfPositions');
     rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));
+
+    if (eliminateOvelappingElements)
+        % Check for overlapping elements within this max separation
+        maxSeparationForDeclaringOverlap = 0.5;
+        fprintf('Will check and eliminate overlapping cones (threshold: %2.2f)\n', maxSeparationForDeclaringOverlap);
+           
+        % Initialize
+        maxPassesNum = 4; pass = 0;
+        rfsToKeep = []; previousRFsNum = size(rfPositionsMicrons,1);
+        
+        while (pass < maxPassesNum) && (numel(rfsToKeep) < previousRFsNum)
+            
+        	pass = pass + 1;
+            fprintf('Checking for overlapping elements within a population of %2.0f elements (PASS #%d)...\n', ...
+                size(rfPositionsMicrons,1), pass);
+            tic
     
-     % Convert positions to degs
-    rfPositionsDegs = RGCmodels.Watson.convert.rhoMMsToDegs(rfPositionsMicrons*1e-3);
+            % Compute spacings
+            rfSpacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(rfPositionsMicrons);
+            
+            % Identify elements that overlap
+            [rfsToKeep, rfsToBeEliminated, overlapingRFindex] = cMosaic.identifyOverlappingRFs(0,0, ...
+                rfPositionsMicrons, rfSpacingsMicrons, maxSeparationForDeclaringOverlap);
+    
+            % Replace the position/spacing of the other overlapping RF with the
+            % average position/spacing of the iRF and the otherRF
+            for k = 1:numel(rfsToBeEliminated)
+                iRF = rfsToBeEliminated(k);
+                pos1 = rfPositionsMicrons(iRF,:);
+                overlappingRF = overlapingRFindex(iRF);
+                pos2 = rfPositionsMicrons(overlappingRF,:);
+                rfPositionsMicrons(overlappingRF,:) = 0.5*(pos1+pos2);
+            end
+        
+            % Only keep the rfs that are non-overlapping
+            previousRFsNum = size(rfPositionsMicrons,1);
+            rfPositionsMicrons = rfPositionsMicrons(rfsToKeep,:);
+            fprintf('Overlapping element detection  took %2.1f seconds\n',toc);
+            if (numel(rfsToBeEliminated)>0)
+                fprintf(2, 'Eliminated %2.0f overlapping elements during PASS #%d.\n', ...
+                    numel(rfsToBeEliminated), pass);
+            end
+
+        end % pass
+    end
+
 end
 

@@ -103,6 +103,7 @@ if notDefined('oiType'), oiType = 'human'; end
 % Default is to use the diffraction limited calculation
 oi.type = 'opticalimage';
 oi.name = vcNewObjectName('opticalimage');  % Get a fresh name
+
 % Set depth to single precision. Perhaps no longer needed?
 oi = oiSet(oi, 'bit depth', 32);
 

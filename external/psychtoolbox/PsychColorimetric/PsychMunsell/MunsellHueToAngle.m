@@ -7,7 +7,7 @@ function angle = MunsellHueToAngle(H1,H2)
 % (e.g. 2.5, 5, 7.5, 10) and a symbolic hue name.
 %
 % We convert these to angle using the convention specified
-% on page 509 of Wyszecki and Stiles, 2cd edition.  Angle
+% on page 509 of Wyszecki and Stiles, 2nd edition.  Angle
 % is in degrees increasing counterclockwise form the positive
 % x-axis in the diagram.
 %

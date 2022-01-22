@@ -113,9 +113,9 @@ classdef cMosaic < handle
         % movements
         eccVaryingMacularPigmentDensityDynamic;
         
-        % Poisson noise flag for cone excitations 
-        noiseFlag;
-        
+        % No ecc-varying correction for any parameter
+        anchorAllEccVaryingParamsToTheirFovealValues;
+
         % Integration time (seconds)
         integrationTime;
         
@@ -134,6 +134,9 @@ classdef cMosaic < handle
         % will equal this factor x cone diameter
         coneCouplingLambda;
         
+        % Poisson noise flag for cone excitations 
+        noiseFlag;
+
         % Random seed
         randomSeed;
         
@@ -333,6 +336,7 @@ classdef cMosaic < handle
             p.addParameter('eccVaryingOuterSegmentLength', true, @islogical);
             p.addParameter('eccVaryingMacularPigmentDensity', true, @islogical);
             p.addParameter('eccVaryingMacularPigmentDensityDynamic', false, @islogical);
+            p.addParameter('anchorAllEccVaryingParamsToTheirFovealValues', false, @islogical);
             p.addParameter('coneCouplingLambda', [], @(x)(isempty(x)||isscalar(x)));
             p.addParameter('coneApertureModifiers', struct('smoothLocalVariations', true), @isstruct);
             p.addParameter('coneDiameterToSpacingRatio', 1.0,  @(x)(isscalar(x)&&(x<=1.0)));
@@ -369,10 +373,10 @@ classdef cMosaic < handle
             obj.eccVaryingConeAperture = p.Results.eccVaryingConeAperture;
             obj.eccVaryingOuterSegmentLength = p.Results.eccVaryingOuterSegmentLength;
             obj.eccVaryingMacularPigmentDensity = p.Results.eccVaryingMacularPigmentDensity;
-            
             obj.eccVaryingConeBlur = p.Results.eccVaryingConeBlur;
             obj.eccVaryingMacularPigmentDensityDynamic  = p.Results.eccVaryingMacularPigmentDensityDynamic;
-            
+            obj.anchorAllEccVaryingParamsToTheirFovealValues = p.Results.anchorAllEccVaryingParamsToTheirFovealValues;
+
             obj.coneCouplingLambda = p.Results.coneCouplingLambda;
             
             obj.coneDensities = p.Results.coneDensities;
@@ -416,6 +420,22 @@ classdef cMosaic < handle
                 assert(numel(obj.coneDensities) == size(obj.pigment.absorptance,3), ...
                     sprintf('cPhotoPigment is not initialized for %d types of cones', numel(obj.coneDensities)));
             end
+
+            % Assert that if anchorAllEccVaryingParamsToTheirFovealValues
+            % is set, all ecc-dependent flag are off
+            if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+                assert(obj.eccVaryingConeAperture == false, ...
+                    sprintf('Can not have both ''anchorAllEccVaryingParamsToTheirFovealValues'' and ''eccVaryingConeAperture'' set to true.'));
+                assert(obj.eccVaryingOuterSegmentLength == false, ...
+                    sprintf('Can not have both ''anchorAllEccVaryingParamsToTheirFovealValues'' and ''eccVaryingOuterSegmentLength'' set to true.'));
+                assert(obj.eccVaryingMacularPigmentDensity == false, ...
+                    sprintf('Can not have both ''anchorAllEccVaryingParamsToTheirFovealValues'' and ''eccVaryingMacularPigmentDensity'' set to true.'));
+                assert(obj.eccVaryingMacularPigmentDensityDynamic == false, ...
+                    sprintf('Can not have both ''anchorAllEccVaryingParamsToTheirFovealValues'' and ''eccVaryingMacularPigmentDensityDynamic'' set to true.'));
+                assert(obj.eccVaryingConeBlur == false, ...
+                    sprintf('Can not have both ''anchorAllEccVaryingParamsToTheirFovealValues'' and ''eccVaryingConeBlur'' set to true.'));
+            end
+            
             
             % These listeners make sure the wavelength support
             % in obj.pigment and obj.macular match the wave property
@@ -444,8 +464,10 @@ classdef cMosaic < handle
                         'customMinRFspacing', customMinRFspacing, ...
                         'customRFspacingFunction', customRFspacingFunction);
                 else
+                    % Do not check for overlapping elements
+                    eliminateOvelappingElements = ~true;
                     % Import positions by cropping a large pre-computed patch
-                    obj.initializeConePositions();
+                    obj.initializeConePositions(eliminateOvelappingElements);
                 end
 
                 % Remove cones within the optic disk
@@ -684,7 +706,7 @@ classdef cMosaic < handle
     
     methods (Access=private)
         % Initialize cone positions by importing them from a large previously-computed mesh
-        initializeConePositions(obj);
+        initializeConePositions(obj, eliminateOvelappingElements);
 
         % Initialize cone positions by regenerating a new mesh. Can be slow.
         regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile, varargin);
@@ -740,6 +762,10 @@ classdef cMosaic < handle
         
         % Function to generate a semitransparent controur plot
         semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor);
+    
+        % Function for identifying overlapping RFs
+        [rfsToKeep, rfsToBeEliminated, overlappingOtherRFs] = identifyOverlappingRFs(xPos, yPos, ...
+             RFpositionsMicrons, RFspacingsMicrons, maxSeparationForDeclaringOverlap);
     end
 end
 

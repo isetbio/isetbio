@@ -6,19 +6,22 @@ function computeConeApertures(obj)
     % Retrieve number of cones
     nConesNum = size(obj.coneRFpositionsMicrons,1);
         
-    if (isfield(obj.coneApertureModifiers, 'smoothLocalVariations')) && (obj.coneApertureModifiers.smoothLocalVariations)
-        % Smooth variations in cone apertures
-        coneRFspacingsMicronsTmp = 0*obj.coneRFspacingsMicrons;
-        unsmoothedRFspacingsMicrons = obj.coneRFspacingsMicrons;
-        parfor coneIndex = 1:nConesNum
-            coneRFspacingsMicronsTmp(coneIndex) = median(unsmoothedRFspacingsMicrons(nearbyConeIndices(:,coneIndex)));
+
+    if (~obj.anchorAllEccVaryingParamsToTheirFovealValues)
+        if (isfield(obj.coneApertureModifiers, 'smoothLocalVariations')) && (obj.coneApertureModifiers.smoothLocalVariations)
+            % Smooth variations in cone apertures
+            coneRFspacingsMicronsTmp = 0*obj.coneRFspacingsMicrons;
+            unsmoothedRFspacingsMicrons = obj.coneRFspacingsMicrons;
+            parfor coneIndex = 1:nConesNum
+                coneRFspacingsMicronsTmp(coneIndex) = median(unsmoothedRFspacingsMicrons(nearbyConeIndices(:,coneIndex)));
+            end
+            obj.coneRFspacingsMicrons = coneRFspacingsMicronsTmp;
+            clear 'coneRFspacingsMicronsTmp'
+        else
+            %fprintf(2, 'Will NOT smooth local variations in cone aperture/spacing\n');
         end
-        obj.coneRFspacingsMicrons = coneRFspacingsMicronsTmp;
-        clear 'coneRFspacingsMicronsTmp'
-    else
-        %fprintf(2, 'Will NOT smooth local variations in cone aperture/spacing\n');
     end
-    
+
     
     if (...
             (isfield(obj.coneApertureModifiers, 'shape')) && ...
@@ -69,7 +72,11 @@ function computeConeApertures(obj)
     else
         % Kernel aperture blur - single aperture for all eccentricities
         if (isempty(obj.importedBlurDiameterMicrons))
-            blurApertureDiameterMicronsZones(1) = median(coneAperturesMicrons);
+            if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+                blurApertureDiameterMicronsZones(1) = min(coneAperturesMicrons);
+            else
+                blurApertureDiameterMicronsZones(1) = median(coneAperturesMicrons);
+            end
         else
             % Override both blur diameter & summation aperture with imported value
             blurApertureDiameterMicronsZones(1) = obj.importedBlurDiameterMicrons;
@@ -84,9 +91,19 @@ function computeConeApertures(obj)
     end
     
     % Attach to cMosaic object
-    obj.coneApertureDiametersMicrons = coneAperturesMicrons;
-    obj.blurApertureDiameterMicronsZones = blurApertureDiameterMicronsZones;
-    obj.coneIndicesInZones = coneIndicesInZones;
+    if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+        obj.coneApertureDiametersMicrons = coneAperturesMicrons*0 + min(coneAperturesMicrons);
+        obj.blurApertureDiameterMicronsZones = blurApertureDiameterMicronsZones*0 + min(coneAperturesMicrons);
+        fprintf('cone aperture diameter set to %f microns for all cones\n', min(coneAperturesMicrons));
+        fprintf('cone aperture blur diameter set to %f microns for all cones\n', min(blurApertureDiameterMicronsZones));
+        obj.coneIndicesInZones{1} = 1:nConesNum;
+    else
+        obj.coneApertureDiametersMicrons = coneAperturesMicrons;
+        obj.blurApertureDiameterMicronsZones = blurApertureDiameterMicronsZones;
+        fprintf('min cone aperture diameter = %f microns\n', min(obj.coneApertureDiametersMicrons))
+        obj.coneIndicesInZones = coneIndicesInZones;
+    end
+
     
     % Convert to degs
     eccRadiiMicrons = (sqrt(sum(obj.coneRFpositionsMicrons.^2,2)))';

@@ -216,13 +216,15 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
             
             if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
                 % No emPath, so compute a single shot
-                %
-                % Compute boost factors by which photons have to be
-                % multiplied so as to account for MP density decrease with
-                % eccentricity
+                % Compute boost factors by which photons have to be multiplied so as
+                % the account for MP density decrease with ecc
                 macularPigmentDensityBoostFactors = ...
                     updateMPBoostFactorsForCurrentEMpos(obj, [0 0], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
                 
+                if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+                    macularPigmentDensityBoostFactors = 1 + 0*macularPigmentDensityBoostFactors;
+                end
+
                 % Compute density of cone absosprions, by integrating photons over
                 % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
                 absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
@@ -252,6 +254,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                     meanEMPosDegs = mean(mean(emPathsDegs,1),2);
                     macularPigmentDensityBoostFactors = ...
                         updateMPBoostFactorsForCurrentEMpos(obj, [meanEMPosDegs(1) meanEMPosDegs(2)], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                
+                    if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+                        macularPigmentDensityBoostFactors = 1 + 0*macularPigmentDensityBoostFactors;
+                    end
                 end
                 
                 % Compute for emPath
@@ -269,6 +275,11 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                                 currentEMposDegs = [emPathsDegs(iTrial, timePoint,1) emPathsDegs(iTrial, timePoint,2)];
                                 macularPigmentDensityBoostFactors = ...
                                     updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                            
+                                if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+                                    macularPigmentDensityBoostFactors = 1 + 0*macularPigmentDensityBoostFactors;
+                                end
+
                             end
                             
                             % Compute density of cone absosprions, by integrating photons over
@@ -299,6 +310,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                     % needs to be done only once (we do it for the first frame only)
                     macularPigmentDensityBoostFactors = ...
                         updateMPBoostFactorsForCurrentEMpos(obj, [0 0], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                
+                    if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+                        macularPigmentDensityBoostFactors = 1 + 0*macularPigmentDensityBoostFactors;
+                    end
                 end
                 
                 % Compute density of cone absosprions, by integrating photons over
