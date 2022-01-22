@@ -31,6 +31,12 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         if (~obj.eccVaryingConeAperture)
             coneApertureDiametersMicrons = coneApertureDiametersMicrons*0 + median(coneApertureDiametersMicrons);
         end
+
+        if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+            % Foveal value of cone aperture
+            coneApertureDiametersMicrons = coneApertureDiametersMicrons*0 + min(obj.coneApertureDiametersMicrons(:));
+        end
+
         if (isfield(obj.coneApertureModifiers, 'shape'))
             switch (obj.coneApertureModifiers.shape)
                 case 'Gaussian'
@@ -44,7 +50,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
             end
         else
             % By default we are using the pillbox aperture area
-            apertureAreasMetersSquared = ((pi * (0.5*obj.coneApertureDiametersMicrons(coneIDsInZone)*1e-6).^2))';
+            apertureAreasMetersSquared = ((pi * (0.5*coneApertureDiametersMicrons*1e-6).^2))';
         end
 
         
@@ -96,18 +102,21 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
     absorptionsRate(isnan(absorptionsRate)) = 0;
     
     % Account for decrease in outer segment length with eccentricity
-    if (isempty(obj.importedOSLengthAttenuationFactors))
-        if (obj.eccVaryingOuterSegmentLength)
-            % Do it for each cone separately based  on its eccentricity
-            absorptionsRate = absorptionsRate .* obj.outerSegmentLengthEccVariationAttenuationFactors;
+    if (~obj.anchorAllEccVaryingParamsToTheirFovealValues)
+        if (isempty(obj.importedOSLengthAttenuationFactors))
+            if (obj.eccVaryingOuterSegmentLength)
+                % Do it for each cone separately based  on its eccentricity
+                absorptionsRate = absorptionsRate .* obj.outerSegmentLengthEccVariationAttenuationFactors;
+            else
+                % Do it for alls cones based on the median attenuation factor 
+                absorptionsRate = absorptionsRate * median(obj.outerSegmentLengthEccVariationAttenuationFactors);
+            end
         else
-            % Do it for alls cones based on the median attenuation factor 
-            absorptionsRate = absorptionsRate * median(obj.outerSegmentLengthEccVariationAttenuationFactors);
-        end
-    else
-        if (obj.eccVaryingOuterSegmentLength)
-            absorptionsRate = absorptionsRate .* obj.importedOSLengthAttenuationFactors;
+            if (obj.eccVaryingOuterSegmentLength)
+                absorptionsRate = absorptionsRate .* obj.importedOSLengthAttenuationFactors;
+            end
         end
     end
+
     
 end
