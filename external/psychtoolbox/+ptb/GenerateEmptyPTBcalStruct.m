@@ -1,4 +1,29 @@
 function PTBcal = GenerateEmptyPTBcalStruct
+% Generate an empty PTB calibration structure
+%
+% Synopsis:
+%   PTBcal = ptb.GenerateEmptyPTBcalStruct
+%
+% Description:
+%   Generate an empty PTB calibration structure.
+%
+% Inputs:
+%    None.
+%
+% Outputs:
+%    PTBCal    - The PTB calibration struct.
+%
+% Optional key/value pairs:
+%    None.
+%
+% See also: ptb.GenerateIsetbioDisplayObjectFromPTBCalStruct,
+%           ptb.GeneratePTCalStructFromIsetbioDisplayObject,
+%           ptb.GeneratePsychToolboxCalStruct, ptb.GenerateEmptyPTBStruct,
+%           generateCustomDisplay.
+%
+
+% History:
+%  1/16/22 dhb Added comments.
 
 displayDescriptionStruct = struct( ...
      'screenSizeMM', [], ...

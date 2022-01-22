@@ -6,17 +6,16 @@ function photoreceptors = DefaultPhotoreceptors(kind)
 %
 % Available kinds
 %   LivingHumanFovea (Default) - Human foveal cones in the eye
-%   LivingHumanMelanopsinTsujimura2010 - Estimate of melanopsin gc spectral sensitivity in living eye
+%   CIE2Deg - Leads to CIE 2-Deg fundamentals
+%   CIE10Deg - Leads to CIE 10-Deg fundamentals
+%   LivingHumanMelanopsin - Most recent melanopsin spectral sensitivity in living eye.
+%   LivingHumanMelanopsinTsujimura2010 - Older estimate of melanopsin gc spectral sensitivity in living eye
 %   LivingDog - Canine
 %   GuineaPig - Guinea pig in dish
 %
 % See also:  FillInPhotoreceptors, PrintPhotoreceptors, RetIrradianceToIsoRecSec
 %  IsomerizationsInEyeDemo, IsomerizationsInDishDemo, ComputeCIEConeFundamentals,
 %  RodFundamentalTest, MelanopsinFundamentalTest.
-%
-% NOTES: Should probably update the parameters for LivingHumanFovea so that
-% they produce the Stockman-Sharpe fundamentals.  This should be pretty
-% straightforward, now that all the pieces are implemented as via ComputeCIEConeFundamentals. 
 %
 % 7/25/03  dhb  Wrote it.
 % 12/04/07 dhb  Added dog parameters
@@ -27,6 +26,7 @@ function photoreceptors = DefaultPhotoreceptors(kind)
 % 8/12/13  dhb  Change field order to make printouts look nicer.
 % 11/13/13 dhb  Add 'LivingHumanRod' and 'LivingHumanMelanopsin' options.
 % 5/26/14  dhb  Add pupilDimater.value = [] to fix FillInPhotoreceptors.
+% 1/11/21  dhb  Comment tuning.
 
 % Default
 if (nargin < 1 || isempty(kind))
@@ -35,6 +35,7 @@ end
 
 % Fill it in
 switch (kind)
+    % CIE 2-Deg fundamentals
     case 'CIE2Deg'
         photoreceptors.species = 'Human';
         photoreceptors.types = {'FovealLCone' 'FovealMCone' 'FovealSCone'};
@@ -52,7 +53,8 @@ switch (kind)
         photoreceptors.absorbance = 'log10coneabsorbance_ss';
 		photoreceptors.lensDensity.source = 'CIE';
         photoreceptors.macularPigmentDensity.source = 'CIE';
-        
+    
+    % CIE 10-Deg fundamentals
     case 'CIE10Deg'
         photoreceptors.species = 'Human';
         photoreceptors.types = {'LCone' 'MCone' 'SCone'};
@@ -130,11 +132,11 @@ switch (kind)
    % photoreceptors to polychromatic lights. J Biol Rhythms 26(4), 314-23.
    % doi: 10.1177/0748730411409719
    %
-   % Brown, T, Allen, A, Al-Enezi, J., Wynne, J., Schlangen, L., Hommes, V. & Lucas, R. (2013).
+   % [2] Brown, T, Allen, A, Al-Enezi, J., Wynne, J., Schlangen, L., Hommes, V. & Lucas, R. (2013).
    % The Melanopic Sensitivity Function Accounts for Melanopsin-Driven Responses in Mice under
    % Diverse Lighting Conditions. PLoS One, 8(1), e53583. doi: 10.1371/journal.pone.0053583.
    %
-   % Vienot, F., Brettel, H., Dang, T.V., Le Rohellec, J. (2012). Domain of metamers exciting
+   % [3] Vienot, F., Brettel, H., Dang, T.V., Le Rohellec, J. (2012). Domain of metamers exciting
    % intrinsically photosensitive retinal ganglion cells (ipRGCs) and rods. J Opt Soc Am A Opt
    % Image Sci Vis. 29(2): A366-76. doi: 10.1364/JOSAA.29.00A366.
     case 'LivingHumanMelanopsin'

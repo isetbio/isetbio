@@ -44,8 +44,7 @@ function t_computingWithCustomPSFs()
     % 'gammaTable'                                              - [mValues x 3] matrix of LUTs
     % 'wavelengthSupportNanoMeters'                             - [nWaves x 1] matrix of wavelengths
     % 'ambientSPDWattsPerSteradianM2NanoMeter'                  - [nWaves x 1] matrix of the ambient SPD
-    % 'spectralPowerDistributionWattsPerSteradianM2NanoMeter'   - [nWaves x 3] matrix of the RGB guns SPDs
-    
+    % 'spectralPowerDistributionWattsPerSteradianM2NanoMeter'   - [nWaves x 3] matrix of the RGB guns SPDs   
     presentationDisplay = generateCustomDisplay(...
         'dotsPerInch', 220, ...
         'viewingDistanceMeters', 1.00, ...
