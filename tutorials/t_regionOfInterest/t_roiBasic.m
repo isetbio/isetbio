@@ -11,117 +11,91 @@
 % History:
 %    11/16/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 
+regionOfInterest('help');
+regionOfInterest('params');
+
 % Instantiate an elliptical ROI
-opticDiskROI = regionOfInterest(...
-    struct(...
+theROI = regionOfInterest(...
+    'geometryStruct', struct(...
         'units', 'degs', ...
         'shape', 'ellipse', ...
         'center', [15.5, 1.5], ...
-        'minorAxisDiameter', 5.3, ...
-        'majorAxisDiameter', 6.7, ...
+        'minorAxisDiameter', 10, ...
+        'majorAxisDiameter', 5, ...
         'rotation', 13.0...
     ));
+% Visualize it
+theROI.visualize()
 
-% Instantiate a rectangular ROI
-stimulusROI = regionOfInterest(...
-    struct(...
-    'units', 'degs', ...
-    'shape', 'rect', ...
-    'center', [14, 1], ...
-    'width', 10, ...
-    'height', 5, ...
-    'rotation', 30.0...
-));
+% Change the shape from 'ellipse' to 'rect', and also change the center, width & height
+theROI.set('shape', 'rect', 'center', [-3 4], 'width', 10, 'height', 2);
+theROI.visualize()
+
+% Change the shape to 'line'
+theROI.shape = 'line';
+
+% Set the 'from', and 'to' params for the 'line' ROI
+theROI.set('from', [-4 3], 'to', [2 2]);
+% Visualize it
+theROI.visualize();
+
+
+theThickLineROI = regionOfInterest('shape', 'line', 'from', [-4 3], 'to', [2 2], 'thickness', 0.1);
+theThickLineROI.visualize();
 
 % Generate random points
-randomPoints = bsxfun(@plus, [14 2], randn(100,2)*3);
+randomPoints = bsxfun(@plus, [0 2], randn(2000,2)*1);
 
-% Compute the indices of the random points that lie within the stimulusROI
-indicesOfPointsInsideStimulusROI = stimulusROI.indicesOfPointsInside(randomPoints);
+% Compute the indices of the random points that lie within theROI
+indicesOfPointsInside = theROI.indicesOfPointsInside(randomPoints);
 
-% Compute the indices of the random points that lie within the opticDiskROI
-indicesOfPointsInsideOpticDiskROI = opticDiskROI.indicesOfPointsInside(randomPoints);
+% Compute the indices of the random points that lie outside of theROI
+indicesOfPointsOutside  = theROI.indicesOfPointsOutside(randomPoints);
 
-% Compute the indices of the random points that lie outside of the stimulusROI
-indicesOfPointsOutsideStimulusROI = stimulusROI.indicesOfPointsOutside(randomPoints);
+% Compute the indices of the random points that lie around theROI
+samplingPoints = 1000; % sample the perimeter using 1000 points
+pointsPerSample = 30;  % up to 30 points for each sample along the perimeter
+maxDistance = 0.5;     % up to 0.5 units aray from the closest point on the perimeter
+indicesOfPointsNearROI = theROI.indicesOfPointsAround(randomPoints, pointsPerSample, samplingPoints, maxDistance);
+indicesOfClosestPointsNearROI = theROI.indicesOfPointsAround(randomPoints, 1, samplingPoints, maxDistance);
 
-% Compute the indices of the random points that lie outside of the opticDiskROI
-indicesOfPointsOutsideOpticDiskROI = opticDiskROI.indicesOfPointsOutside(randomPoints);
+% Compute the indices of the random points that lie around theThickLineROI
+indicesOfPointsWithinThickLineROI = theThickLineROI.indicesOfPointsInside(randomPoints);
 
-% Visualize everything
-hFig = figure(1); clf;
-set(hFig, 'Position', [10 10 1100 1000]);
+% Visualize
+hFig = figure();
 
-% Render the opticDiskROI and label the random points that lie within it
-ax = subplot(2,3,1);
-opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax);
-
+ax = subplot(3,1,1);
+% Visualize the lineROI
+theROI.visualize('figureHandle', hFig, 'axesHandle', ax);
 % Plot all points
-scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0]);
+scatter(ax,randomPoints(:,1), randomPoints(:,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.9 0.9], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
+% Label points  with a small distance from the lineROI
+scatter(ax,randomPoints(indicesOfPointsNearROI,1), randomPoints(indicesOfPointsNearROI,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [1 0.3 0.0], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.1);
+legend({'roi', 'all points', 'lots of points near ROI outline'}); 
 
-% Plot points inside the opticDiskROI in red
-scatter(ax, randomPoints(indicesOfPointsInsideOpticDiskROI,1), randomPoints(indicesOfPointsInsideOpticDiskROI,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [1 0 0]);
-title(ax, 'points inside ellipse ROI');
-
-% Render the opticDiskROI and label the random points that lie outside
-ax = subplot(2,3,4);
-opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax);
-
+ax = subplot(3,1,2);
+% Visualize the lineROI
+theROI.visualize('figureHandle', hFig, 'axesHandle', ax);
 % Plot all points
-scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0]);
+scatter(ax,randomPoints(:,1), randomPoints(:,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.9 0.9], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
+% Label points  with a large distance from the lineROI
+scatter(ax,randomPoints(indicesOfClosestPointsNearROI,1), randomPoints(indicesOfClosestPointsNearROI,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [1 0.3 0.0], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3);
+legend({'roi', 'all points', 'closest points near ROI outline'}); 
 
-% Plot points outside the opticDiskROI in red
-scatter(ax, randomPoints(indicesOfPointsOutsideOpticDiskROI,1), randomPoints(indicesOfPointsOutsideOpticDiskROI,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.3], 'MarkerEdgeColor', [1 0 0]);
-title(ax, 'points outside ellipse ROI');
-
-
-
-% Render the stimulusROI and label the random points that lie within it
-ax = subplot(2,3,2);
-stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax);
-
+ax = subplot(3,1,3);
+% Visualize theThickLineROI
+theThickLineROI.visualize('figureHandle', hFig, 'axesHandle', ax);
 % Plot all points
-scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0]);
+scatter(ax,randomPoints(:,1), randomPoints(:,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [0.9 0.9 0.9], 'MarkerEdgeColor', [0 0 0], 'MarkerFaceAlpha', 0.5);
+% Label points  with a large distance from the lineROI
+scatter(ax,randomPoints(indicesOfPointsWithinThickLineROI,1), randomPoints(indicesOfPointsWithinThickLineROI,2), 64, ...
+    'o', 'filled', 'MarkerFaceColor', [1 0.3 0.0], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3);
+legend({'roi', 'all points', 'points inside thick line ROI'}); 
 
-% Plot points inside the stimulusROI in blue
-scatter(ax, randomPoints(indicesOfPointsInsideStimulusROI,1), randomPoints(indicesOfPointsInsideStimulusROI,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.9], 'MarkerEdgeColor', [0 0 1]);
-title(ax, 'points inside rect ROI');
-
-
-% Render the stimulusROI and label the random points that lie outside
-ax = subplot(2,3,5);
-stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax);
-
-% Plot all points
-scatter(ax, randomPoints(:,1), randomPoints(:,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.3], 'MarkerEdgeColor', [0 0 0]);
-
-% Plot points inside the stimulusROI in blue
-scatter(ax, randomPoints(indicesOfPointsOutsideStimulusROI,1), randomPoints(indicesOfPointsOutsideStimulusROI,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.3 0.3 0.9], 'MarkerEdgeColor', [0 0 1]);
-title(ax, 'points outside rect ROI');
-
-
-
-% Render the 2 ROIs superimposed
-ax = subplot(2,3,3);
-opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [1 1 0]);
-stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0 1 1]);
-title(ax, 'rect ROI & ellipse ROI superimposed');
-
-ax = subplot(2,3,6);
-opticDiskROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [1 1 0]);
-stimulusROI.visualize('figureHandle', hFig, 'axesHandle', ax, 'fillColor', [0 1 1]);
-
-% Plot points inside both the stimulusROI and the opticDiskROI
-idx = intersect(indicesOfPointsInsideStimulusROI,indicesOfPointsInsideOpticDiskROI);
-scatter(ax, randomPoints(idx,1), randomPoints(idx,2), 64, ...
-    'o', 'filled', 'MarkerFaceColor', [0.9 0.3 0.9], 'MarkerEdgeColor', [1 0 1]);
-title(ax, 'points inside both rect ROI & ellipse ROI');
 

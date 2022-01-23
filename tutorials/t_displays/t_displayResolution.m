@@ -35,15 +35,13 @@ ieInit;
 %}
 %  Calibration files are stored in data/displays/
 d = displayCreate('OLED-Samsung');
-vcAddObject(d);
-displayWindow;
+displayWindow(d);
 
 %% Create scene
 % Create a low resolution colorful scene
 scene = sceneCreate;
 scene = sceneInterpolate(scene, [0.25 0.25]);
-vcAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
 
 %% Subpixel rendering
 % Render with subpixel structure
@@ -66,26 +64,23 @@ illum = [];
 % Render. This might take a while.
 scene = sceneFromFile(I_small, 'rgb', meanLum, d, wave, doSub, illum);
 scene = sceneSet(scene, 'Name', 'Full sampling');
-vcAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
 
 %%  Reduce the sampling rate
 % This will take less time
 sz = displayGet(d, 'dixel size') / 4;
 scene = sceneFromFile(I_small, 'rgb', meanLum, d, wave, doSub, illum, sz);
 scene = sceneSet(scene, 'Name', 'Quarter sampling');
-vcAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
 
 %% RGBW display
 % This section creates a four primary display and simulates display of an
 % image on it.
 I = 'eagle.jpg';
 d = displayCreate('LCD-Samsung-RGBW');
-vcAddObject(d);
-displayWindow;
+displayWindow(d);
+
 scene = sceneFromFile(I, 'rgb', [], d);
-vcAddObject(scene);
-sceneWindow;
+sceneWindow(scene);
 
 %% End

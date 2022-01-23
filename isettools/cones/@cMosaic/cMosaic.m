@@ -116,9 +116,6 @@ classdef cMosaic < handle
         % No ecc-varying correction for any parameter
         anchorAllEccVaryingParamsToTheirFovealValues;
 
-        % Poisson noise flag for cone excitations 
-        noiseFlag;
-        
         % Integration time (seconds)
         integrationTime;
         
@@ -137,6 +134,9 @@ classdef cMosaic < handle
         % will equal this factor x cone diameter
         coneCouplingLambda;
         
+        % Poisson noise flag for cone excitations 
+        noiseFlag;
+
         % Random seed
         randomSeed;
         
@@ -191,10 +191,12 @@ classdef cMosaic < handle
         % indices of K-cones
         kConeIndices;
         
-        % Eccentricity [x,y] of the center of the cone mosaic (degs)
+        % Position [x,y] of the center of the cone mosaic (degs)
+        % The variable should be renamed positionDegs, but ...
         eccentricityDegs;
         
         % Eccentricity [x,y] of the center of the cone mosaic (microns)
+        % Should be positionMicrons
         eccentricityMicrons; 
         
         % Size of the cone mosaic [width, height]
@@ -312,7 +314,12 @@ classdef cMosaic < handle
             p.addParameter('pigment', cPhotoPigment(), @(x) isa(x, 'cPhotoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
             p.addParameter('coneData', [], @(x)(isempty(x) || (isstruct(x))));
-            p.addParameter('eccentricityDegs', [0 0], @(x)(isnumeric(x) && (numel(x) == 2)));
+            
+            % These are synonyms.  If positionDegs is sent in, it
+            % overwrites eccentricityDegs
+            p.addParameter('eccentricityDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('positionDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.addParameter('computeMeshFromScratch', false, @islogical);
@@ -347,18 +354,27 @@ classdef cMosaic < handle
             obj.pigment = p.Results.pigment;
             obj.wave = p.Results.wave;
             
-            obj.eccentricityDegs = p.Results.eccentricityDegs;
+            % Because BW wants to be able to use positionDegs
+            if ~isempty(p.Results.eccentricityDegs)
+                % Always wins for historical reasons
+                obj.eccentricityDegs = p.Results.eccentricityDegs;
+            elseif ~isempty(p.Results.positionDegs)
+                % Use positionDegs if available but no
+                % eccentricityDegs
+                obj.eccentricityDegs = p.Results.positionDegs;
+            else                
+                % Default
+                obj.eccentricityDegs = [0,0];
+            end
+                
             obj.sizeDegs = p.Results.sizeDegs;
             obj.whichEye = p.Results.whichEye;
-
             
             obj.eccVaryingConeAperture = p.Results.eccVaryingConeAperture;
             obj.eccVaryingOuterSegmentLength = p.Results.eccVaryingOuterSegmentLength;
             obj.eccVaryingMacularPigmentDensity = p.Results.eccVaryingMacularPigmentDensity;
-            
             obj.eccVaryingConeBlur = p.Results.eccVaryingConeBlur;
             obj.eccVaryingMacularPigmentDensityDynamic  = p.Results.eccVaryingMacularPigmentDensityDynamic;
-            
             obj.anchorAllEccVaryingParamsToTheirFovealValues = p.Results.anchorAllEccVaryingParamsToTheirFovealValues;
 
             obj.coneCouplingLambda = p.Results.coneCouplingLambda;
@@ -404,7 +420,7 @@ classdef cMosaic < handle
                 assert(numel(obj.coneDensities) == size(obj.pigment.absorptance,3), ...
                     sprintf('cPhotoPigment is not initialized for %d types of cones', numel(obj.coneDensities)));
             end
-            
+
             % Assert that if anchorAllEccVaryingParamsToTheirFovealValues
             % is set, all ecc-dependent flag are off
             if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
@@ -419,8 +435,8 @@ classdef cMosaic < handle
                 assert(obj.eccVaryingConeBlur == false, ...
                     sprintf('Can not have both ''anchorAllEccVaryingParamsToTheirFovealValues'' and ''eccVaryingConeBlur'' set to true.'));
             end
-
-
+            
+            
             % These listeners make sure the wavelength support
             % in obj.pigment and obj.macular match the wave property
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.matchWaveInAttachedMacular);
@@ -448,8 +464,10 @@ classdef cMosaic < handle
                         'customMinRFspacing', customMinRFspacing, ...
                         'customRFspacingFunction', customRFspacingFunction);
                 else
+                    % Do not check for overlapping elements
+                    eliminateOvelappingElements = ~true;
                     % Import positions by cropping a large pre-computed patch
-                    obj.initializeConePositions();
+                    obj.initializeConePositions(eliminateOvelappingElements);
                 end
 
                 % Remove cones within the optic disk
@@ -540,14 +558,11 @@ classdef cMosaic < handle
         % the computation is done using ecc-dependent blur mode
         scenePixelSizeDegs = suggestedScenePixelSizeDegs(obj, eccVaryingConeBlur);
         
-        % Method to return indices of cones within an ROI
-        coneIndices = indicesOfConesWithinROI(obj, roi);
+        % Method to return indices of cones within a geometry struct appropriate for @regionOfInterest
+        coneIndices = indicesOfConesWithinROI(obj, geometryStruct);
         
         % Generate struct representing the optical disk
         [odStructMicrons, odStructDegs] = odStruct(obj);
-        
-        % Method to convert an ROIoutline in degs to an ROIoutline in microns
-        roiOutlineMicrons = convertOutlineToMicrons(obj,roiOutlineDegs);
         
         % Getter/Setter methods for dependent variables
         % QE
@@ -581,7 +596,7 @@ classdef cMosaic < handle
                       (max(obj.coneRFpositionsDegs,[],1)    - min(obj.coneRFpositionsDegs,[],1));
             end
         end
-        
+                
         % SIZEMICRONS
         function val = get.sizeMicrons(obj)
             xyMax = max(obj.coneRFpositionsMicrons,[],1);
@@ -684,15 +699,14 @@ classdef cMosaic < handle
             obj.coneCouplingLambda = val;
             obj.coneCouplingWeights = [];
             obj.neighboringCoupledConeIndices = [];
-        end
+        end                
         
-        
-    end
+    end % Public methods
     
     
     methods (Access=private)
         % Initialize cone positions by importing them from a large previously-computed mesh
-        initializeConePositions(obj);
+        initializeConePositions(obj, eliminateOvelappingElements);
 
         % Initialize cone positions by regenerating a new mesh. Can be slow.
         regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile, varargin);
@@ -743,17 +757,15 @@ classdef cMosaic < handle
         % from the mean absorption responses
         noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin);
         
-        % Static method to validate an ROI struct
-        validateROI(roi);
-    
-        % Static method to generate an ROI outline from an ROIstruct
-        roiOutline = generateOutline(roi);
-        
         % Compute a 2D cone density map
         coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);
         
         % Function to generate a semitransparent controur plot
         semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor);
+    
+        % Function for identifying overlapping RFs
+        [rfsToKeep, rfsToBeEliminated, overlappingOtherRFs] = identifyOverlappingRFs(xPos, yPos, ...
+             RFpositionsMicrons, RFspacingsMicrons, maxSeparationForDeclaringOverlap);
     end
 end
 

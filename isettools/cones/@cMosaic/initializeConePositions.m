@@ -1,11 +1,11 @@
-function initializeConePositions(obj)
-
+function initializeConePositions(obj, eliminateOvelappingElements)
 
     % Import cone RF positions, for passed eccentricity, size, and
     % eye. Get a little larger region and crop after we compute the
     % cone spacing below
     obj.coneRFpositionsMicrons = retinalattice.import.finalConePositions(...
-        obj.sourceLatticeSizeDegs, obj.eccentricityDegs, obj.sizeDegs*2.0, obj.whichEye);   
+        obj.sourceLatticeSizeDegs, obj.eccentricityDegs, obj.sizeDegs*2.0, obj.whichEye, ...
+        eliminateOvelappingElements); 
     
     % Compute positions in degrees
     obj.coneRFpositionsDegs = obj.distanceMicronsToDistanceDegreesForCmosaic(obj.coneRFpositionsMicrons);

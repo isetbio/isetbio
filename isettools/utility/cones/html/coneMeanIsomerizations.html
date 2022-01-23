@@ -1,0 +1,261 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ConeMeanIsomerizations</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-10-23"><meta name="DC.source" content="coneMeanIsomerizations.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>ConeMeanIsomerizations</h1><!--introduction--><p>Calculate spatial mean photon rate(R*/sec) for the 3 cone types in mosaic</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Syntax:</a></li><li><a href="#3">Description:</a></li><li><a href="#4">Input:</a></li><li><a href="#5">Output:</a></li><li><a href="#6">Optional key/value pairs:</a></li><li><a href="#7">Notes:</a></li><li><a href="#8">See Also:</a></li><li><a href="#9">History:</a></li><li><a href="#10">Example:</a></li><li><a href="#11">Validate and parse input parameters</a></li><li><a href="#12">Default values to return for null case, namely 0 all the way.</a></li><li><a href="#13">Locations of each cone type</a></li><li><a href="#14">Compute</a></li><li><a href="#17">Get the individual cones</a></li><li><a href="#18">Compute means for the given integration time</a></li><li><a href="#19">Correct so returned units are absorptions per second or per time bin</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> meanRate = coneMeanIsomerizations(cMosaic,varargin)
+</pre><h2 id="2">Syntax:</h2><pre class="language-matlab">meanRate = coneMeanIsomerizations(cMosaic);
+</pre><h2 id="3">Description:</h2><p>Calculate the spatial mean photon rate (R*/sec by default) for the 3 cone types in a mosaic.</p><h2 id="4">Input:</h2><pre>  cMosaic  - coneMosaic object</pre><h2 id="5">Output:</h2><pre>  meanRate - Three vector absorption rates for the L, M, and S cones in
+             R*/sec.</pre><h2 id="6">Optional key/value pairs:</h2><pre>  perSample              - Normally the returned rate is mean per sec.
+                           Setting 'perSample' to true  makes the mean
+                           rate per temporal sample bins (default false)</pre><pre>  absorptionssInXWFormat - If empty (default), works on absorptions in
+                           cMosaic.absorptions. If this is passed, it
+                           acts on what is passed as this parameter,
+                           which is taken to be the absorptions in XW
+                           format. See RGB2XWFormat for a description
+                           of XW format.</pre><h2 id="7">Notes:</h2><div><ul><li>[DHB NOTE: I can't figure out just from the code here whether this can    act on a time sequence or works just one frame at at time. There is a    key comment that says "Reshape from 3D (x,y,t) to space x nCones" that    is very confusing, because by the description time on the left has    turned into cones on the right. This comment needs to be expanded/    fixed and then this description needs to make clear whether or not a    time sequence is involved in the input and output, both for the normal    case and for when the absorptions are passed in as a parameter via the    keyword absorptionsInXWFormat.]</li></ul></div><h2 id="8">See Also:</h2><pre class="language-matlab">RGB2XWFormat
+</pre><h2 id="9">History:</h2><pre>  11/2016   JRG  (c) Isetbio team
+  08/06/17  dhb  Comment cleaning pass.
+                 Added notes where I could not figure it out.</pre><h2 id="10">Example:</h2><pre class="codeinput"><span class="comment">%{
+</span><span class="comment">   meanRate = coneMeanIsomerizations(cMosaic)
+</span><span class="comment">%}</span>
+</pre><h2 id="11">Validate and parse input parameters</h2><pre class="codeinput">p = inputParser;
+p.addRequired(<span class="string">'cMosaic'</span>, @(x) isa(x, <span class="string">'coneMosaic'</span>));
+p.addParameter(<span class="string">'perSample'</span>,false,@islogical);
+p.addParameter(<span class="string">'absorptionsInXWFormat'</span>, [], @isnumeric);
+p.parse(cMosaic,varargin{:});
+cMosaic    = p.Results.cMosaic;
+perSample  = p.Results.perSample;
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in coneMeanIsomerizations (line 60)
+p.parse(cMosaic,varargin{:});
+</pre><h2 id="12">Default values to return for null case, namely 0 all the way.</h2><pre class="codeinput">lMean = 0; mMean = 0; sMean = 0;
+meanRate = [lMean, mMean, sMean];
+</pre><h2 id="13">Locations of each cone type</h2><pre class="codeinput">coneType = cMosaic.pattern;
+</pre><h2 id="14">Compute</h2><pre class="codeinput"><span class="keyword">if</span> (~isempty(p.Results.absorptionsInXWFormat))
+</pre><p>[DHB NOTE: A commment here about the format would be great.]</p><pre class="codeinput">    pRateXW = p.Results.absorptionsInXWFormat;
+    nonNullConeIndices = find(cMosaic.pattern &gt; 1);
+    nonNullConeTypes = coneType(nonNullConeIndices);
+    lConeIndices = find(nonNullConeTypes == 2);
+    mConeIndices = find(nonNullConeTypes == 3);
+    sConeIndices = find(nonNullConeTypes == 4);
+<span class="keyword">else</span>
+</pre><p>Reshape from 3D (x,y,t) to space x nCones [DHB NOTE: This comment does not parse for me - how does time turn into cones?]</p><pre class="codeinput">    pRate = cMosaic.absorptions;             <span class="comment">% Absorptions per sample</span>
+    <span class="keyword">if</span> isempty(pRate), <span class="keyword">return</span>; <span class="keyword">end</span>           <span class="comment">% Return 0 when no absorptions</span>
+    pRateXW = RGB2XWFormat(pRate);
+    lConeIndices = find(coneType == 2);
+    mConeIndices = find(coneType == 3);
+    sConeIndices = find(coneType == 4);
+<span class="keyword">end</span>
+</pre><h2 id="17">Get the individual cones</h2><pre class="codeinput">lConeAbsorptions = pRateXW(lConeIndices,:); <span class="comment">%#ok&lt;FNDSB&gt;</span>
+mConeAbsorptions = pRateXW(mConeIndices,:); <span class="comment">%#ok&lt;FNDSB&gt;</span>
+sConeAbsorptions = pRateXW(sConeIndices,:); <span class="comment">%#ok&lt;FNDSB&gt;</span>
+</pre><h2 id="18">Compute means for the given integration time</h2><pre class="codeinput"><span class="keyword">if</span> ~isempty(lConeAbsorptions), lMean = mean(lConeAbsorptions(:));
+<span class="keyword">else</span>                           lMean = 0;
+<span class="keyword">end</span>;
+
+<span class="keyword">if</span> ~isempty(mConeAbsorptions), mMean = mean(mConeAbsorptions(:));
+<span class="keyword">else</span>                           mMean = 0;
+<span class="keyword">end</span>;
+
+<span class="keyword">if</span> ~isempty(sConeAbsorptions), sMean = mean(sConeAbsorptions(:));
+<span class="keyword">else</span>                           sMean = 0;
+<span class="keyword">end</span>
+</pre><h2 id="19">Correct so returned units are absorptions per second or per time bin</h2><pre class="codeinput"><span class="keyword">if</span> (perSample)
+</pre><p>Return mean number of absorptions per temporal sample</p><pre class="codeinput">    meanRate = [lMean, mMean, sMean];
+<span class="keyword">else</span>
+</pre><p>Convert to R*/sec.  This is the default</p><pre class="codeinput">    meanRate = [lMean, mMean, sMean]/cMosaic.integrationTime;
+<span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% ConeMeanIsomerizations
+% Calculate spatial mean photon rate(R*/sec) for the 3 cone types in mosaic
+%%%
+function meanRate = coneMeanIsomerizations(cMosaic,varargin)
+%% Syntax:
+%   meanRate = coneMeanIsomerizations(cMosaic);
+%
+%% Description:
+% Calculate the spatial mean photon rate (R*/sec by default) for the 3
+% cone types in a mosaic.
+%    
+%% Input:
+%    cMosaic  - coneMosaic object
+%
+%% Output:
+%    meanRate - Three vector absorption rates for the L, M, and S cones in
+%               R*/sec.
+%
+%% Optional key/value pairs:
+%    perSample              - Normally the returned rate is mean per sec.
+%                             Setting 'perSample' to true  makes the mean
+%                             rate per temporal sample bins (default false)
+%
+%    absorptionssInXWFormat - If empty (default), works on absorptions in
+%                             cMosaic.absorptions. If this is passed, it
+%                             acts on what is passed as this parameter,
+%                             which is taken to be the absorptions in XW
+%                             format. See RGB2XWFormat for a description
+%                             of XW format.
+%
+%% Notes:
+% * [DHB NOTE: I can't figure out just from the code here whether this can
+%    act on a time sequence or works just one frame at at time. There is a
+%    key comment that says "Reshape from 3D (x,y,t) to space x nCones" that
+%    is very confusing, because by the description time on the left has
+%    turned into cones on the right. This comment needs to be expanded/ 
+%    fixed and then this description needs to make clear whether or not a
+%    time sequence is involved in the input and output, both for the normal
+%    case and for when the absorptions are passed in as a parameter via the
+%    keyword absorptionsInXWFormat.]
+%
+%% See Also:
+%   RGB2XWFormat
+%
+%% History:
+%    11/2016   JRG  (c) Isetbio team
+%    08/06/17  dhb  Comment cleaning pass.
+%                   Added notes where I could not figure it out.
+
+%% Example:
+%{
+   meanRate = coneMeanIsomerizations(cMosaic)
+%}
+
+%% Validate and parse input parameters
+p = inputParser; 
+p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+p.addParameter('perSample',false,@islogical);
+p.addParameter('absorptionsInXWFormat', [], @isnumeric);
+p.parse(cMosaic,varargin{:});
+cMosaic    = p.Results.cMosaic;
+perSample  = p.Results.perSample;
+
+%% Default values to return for null case, namely 0 all the way.
+lMean = 0; mMean = 0; sMean = 0;
+meanRate = [lMean, mMean, sMean];
+
+%% Locations of each cone type
+coneType = cMosaic.pattern;
+
+%% Compute
+if (~isempty(p.Results.absorptionsInXWFormat))
+    %%%
+    % [DHB NOTE: A commment here about the format would be great.]
+    pRateXW = p.Results.absorptionsInXWFormat;
+    nonNullConeIndices = find(cMosaic.pattern > 1);
+    nonNullConeTypes = coneType(nonNullConeIndices);
+    lConeIndices = find(nonNullConeTypes == 2);
+    mConeIndices = find(nonNullConeTypes == 3);
+    sConeIndices = find(nonNullConeTypes == 4);
+else
+    %%%
+    % Reshape from 3D (x,y,t) to space x nCones
+    % [DHB NOTE: This comment does not parse for me - how does time turn
+    % into cones?]
+    pRate = cMosaic.absorptions;             % Absorptions per sample
+    if isempty(pRate), return; end           % Return 0 when no absorptions
+    pRateXW = RGB2XWFormat(pRate);
+    lConeIndices = find(coneType == 2);
+    mConeIndices = find(coneType == 3);
+    sConeIndices = find(coneType == 4);
+end
+
+%% Get the individual cones
+lConeAbsorptions = pRateXW(lConeIndices,:); %#ok<FNDSB>
+mConeAbsorptions = pRateXW(mConeIndices,:); %#ok<FNDSB>
+sConeAbsorptions = pRateXW(sConeIndices,:); %#ok<FNDSB>
+
+%% Compute means for the given integration time
+if ~isempty(lConeAbsorptions), lMean = mean(lConeAbsorptions(:));  
+else                           lMean = 0;
+end;
+
+if ~isempty(mConeAbsorptions), mMean = mean(mConeAbsorptions(:)); 
+else                           mMean = 0;
+end;
+
+if ~isempty(sConeAbsorptions), sMean = mean(sConeAbsorptions(:)); 
+else                           sMean = 0;
+end
+
+%% Correct so returned units are absorptions per second or per time bin
+if (perSample)
+    %%%
+    % Return mean number of absorptions per temporal sample
+    meanRate = [lMean, mMean, sMean];    
+else
+    %%%
+    % Convert to R*/sec.  This is the default
+    meanRate = [lMean, mMean, sMean]/cMosaic.integrationTime;
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>

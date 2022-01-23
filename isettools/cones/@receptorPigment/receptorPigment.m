@@ -1,51 +1,50 @@
 classdef receptorPigment < hiddenHandle
-% Abstract class (interface) for all pigment-type objects:
-% All subclasses of @receptorPigment inherit their spectral properties and
-% methods from @receptorPigment but must define their own aperture geometrical properties
-% and methods. For example, the old  @photoPigment has rectangular-shaped aperture 
-% whereas the new @cConePhotopigment has disk-shaped aperture.  By using 
-% this abstract superclass scheme, we  enfore consistency amongst all subclasses in terms 
-% of how they handle  spectral properties. 
+% Abstract class (interface) for photopigment objects:
+%
+% This class contains properties for the photopigment absorption properties
+% of a single cone cell. For the full cone mosaic, see the cMosaic class.
+%
+% Subclasses of @receptorPigment inherit spectral properties and methods
+% from @receptorPigment.  Using this superclass scheme, enforces
+% consistency amongst all subclasses in terms of how they handle spectral
+% properties.
+% 
+% The subclasses define their own aperture geometrical properties and
+% methods. For example, the old  @photoPigment has rectangular-shaped
+% aperture whereas the new @cPhotopigment has disk-shaped aperture.
 %
 % Description:
-%    This class contains properties for the photopigment absorption
-%    properties of a single cone cell. For the full cone mosaic, see the
-%    coneMosaic and coneMosaicHex classes.
-%
 %    Our understanding of the terminology and best conventions for
 %    describing this type of data has evolved over time, and the property
 %    names differ somewhat from the conventions we would adopt today.
-%    Changing tne names in the code will produce backwards compatibility
-%    issues, however, so we have done our best to comment and explain here.
+%    Changing the names in the code will not be backwards compatibile, so
+%    we have done our best to comment and explain here.
 %
-%    Most of the terms represented here are descriptions of the
-%    photopigment itself. In addition, there are a few terms the
-%    capture the effective optical size of the photopigment absorption.
+%    obj.absorbance  - the absorbance spectra of the L, M, and S cones,
+%    each normalized to a peak value of 1. Values are in the columns, with
+%    a separate column for L, M and S. The column-wise arrangement applies
+%    to this and to the other L, M, and S spectra below. This quantity is
+%    called obj.unitDensity in the Lens and Macular objects, and in the
+%    Lens object it is not normalized. The normalization to peak of 1 is
+%    just a convention, the quantity that matters is the product
+%    obj.opticalDensity*ojb.absorbance, and there are those who might call
+%    that product the absorbance.
 %
-%    obj.absorbance is the absorbance spectra of the L, M, and S cones, each
-%    normalized to a peak value of 1. Values are in the columns, with a separate
-%    column for L, M and S. The column-wise arrangement applies to this and to 
-%    the other L, M, and S spectra below. This quantity is called obj.unitDensity
-%    in the Lens and Macular objects, and in the Lens object it is not normalized.
-%    The normalization to peak of 1 is just a convention, the quantity that
-%    matters is the product obj.opticalDensity*ojb.absorbance, and there are
-%    those who might call that product the absorbance.
+%    obj.opticalDensity - the peak optical density (sometimes just called
+%    optical density). The interpretation as peak optical density depends
+%    on the convention followed here of normlizing obj.absorbance to a peak
+%    of 1. There are three entries to this vector, one each for the L, M,
+%    and S cones.
 %
-%    obj.opticalDensity is the peak optical density (sometimes just called optical
-%    density). The interpretation as peak optical density depends on the
-%    convention followed here of normlizing obj.absorbance to a peak of 1.
-%    There are three entries to this vector, one each for the L, M, and S
-%    cones.
-%
-%    obj.peakEfficiency is the probability that a photopigment absorption leads
-%    to an isomerization.  There are three entries to this vector, one each for the L,
-%    M, and S cones.  This property is unfortunatley named, as is it isn't the
-%    peak of anything.
+%    obj.peakEfficiency is the probability that a photopigment absorption
+%    leads to an isomerization.  There are three entries to this vector,
+%    one each for the L, M, and S cones.  This property is unfortunately
+%    named, as is it isn't the peak of anything.
 %
 %    obj.absorptance is the absorptance spectrum.  This tells us the
 %    probability that a photon of a given wavelength is absorbed as it
 %    passes through a layer of photopigment with total absorbance given
-%    by obj.opticalDensity*ojb.absorbance.
+%    by obj.opticalDensity*obj.absorbance.
 %
 %    obj.quantalEfficiency. These are the actual quantal efficiences with
 %    which an incident photon causes an isomerization.  Obtained by
@@ -70,19 +69,18 @@ classdef receptorPigment < hiddenHandle
 %    anything one should be encouraged to use.
 %
 %    Useful formulae:
-%       Absorbance spectra here are normalized to a peak value of 1, and
-%       then scaled by optical density to get the not normalized
-%       absorbance.
+%       
+%           absorptance = 1 - 10.^(-opticalDensity * absorbance). 
+%
+%       Absorbance spectra are normalized to a peak value of 1, and then
+%       scaled by optical density to get the not normalized absorbance.
 %
 %       Absorptance spectra are the proportion of quanta actually absorbed.
 %       This is the term used in this routine.
 %       
-%       Equation: absorptance = 1 - 10.^(-opticalDensity * absorbance).  In
-%       this routine, again for historical reasons, opticalDensity is just
-%       called density.  In the literature, this is sometimes called peak
-%       optical density.
-%
-%       The absorptance
+%       In this routine, again for historical reasons, opticalDensity is
+%       just called density.  In the literature, this is sometimes called
+%       peak optical density.       
 %
 %    The absorbance data that drive this routine are stored on wavelength
 %    support in property wave_ in property absorbance.  Typically wave_ is
@@ -91,14 +89,14 @@ classdef receptorPigment < hiddenHandle
 %    instantiated, but you can't change wave_.  When you set absorbance, it
 %    should be on wavelength support wave, and it is splined onto the
 %    wavelength support in wave_ before being stored in obj.absorbance.
-%    Note that this design does not prevent you from setting absorbance on
-%    wavelength support very different from that being previously used to
-%    store the data, which could lead to extrapolation errors.  To avoid
-%    this, if you want to use custom data, you may be better off creating
-%    the object with the desired data on the wavelength support you intend
-%    to use. That said, the default values are read in and stored on wave_
-%    support of 390:830 at 1 nm spacing, which is good for most
-%    applications.
+%
+%    This design does not prevent you from setting absorbance on wavelength
+%    support very different from that being previously used to store the
+%    data, which could lead to extrapolation errors.  To avoid this, if you
+%    want to use custom data, you may be better off creating the object
+%    with the desired data on the wavelength support you intend to use.
+%    That said, the default values are read in and stored on wave_ support
+%    of 390:830 at 1 nm spacing, which is good for most applications.
 %
 % Input:
 %	 None required.
@@ -128,12 +126,14 @@ properties
 
     % peakEfficiency - peak absorptance efficiency
     peakEfficiency;
+    
 end
 
 properties (Dependent)
+
     % absorbance - spectral absorbance of the cones
     absorbance;
-
+    
     % absorptance - cone absorptance without ocular media
     absorptance;
 
@@ -147,10 +147,10 @@ properties (Dependent)
     % Useful only for shape, because of the normalization.
     energyFundamentals;
     
-    % quantalEfficiency - actual probability of isomerization in real
-    % quantal units. Gives the probability that an incident photon
-    % isomerizes photopigment. These are actually useful.  Does not take
-    % into account effect of inert pigments (lens, macular pigment).
+    % quantalEfficiency - probability of isomerization in quantal units.
+    % Gives the probability that an incident photon isomerizes
+    % photopigment. These are actually useful.  Does not take into account
+    % effect of inert pigments (lens, macular pigment).
     quantalEfficiency;
 end
 
@@ -168,7 +168,11 @@ properties (SetObservable, AbortSet)
     wave;
 end
 
-properties (SetAccess = private)
+properties (SetAccess = public)
+    % I made these public so I could change them from a script.  But NC may
+    % want us to do this a different way with set operations.
+    %
+    
     % wave_ - The internal wavelength samples
     wave_;
 
@@ -201,7 +205,8 @@ methods
         obj.peakEfficiency = p.Results.peakEfficiency(:);
 
         % If absorbance is not specified, we obtain it using the defaults
-        % of coneAbsorbanceReadData. 
+        % of coneAbsorbanceReadData.
+        % 
         if isempty(p.Results.absorbance)
             obj.wave_ = (390:830)';
             obj.absorbance_ = coneAbsorbanceReadData(p.Unmatched, ...

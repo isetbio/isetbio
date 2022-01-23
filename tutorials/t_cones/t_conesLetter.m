@@ -43,13 +43,16 @@ cm.visualize();
 %% Illustrate the cone excitations
 
 cm.compute(oi);
-cm.integrationTime = 5/1000;  % 5 ms
+cm.integrationTime = 50/1000;  % 50 ms
 excitations = cm.compute(oi);
 
 params = cm.visualize('params');
+% cm.visualize('help');
+
 
 params.activation = excitations.^0.5;
 params.activationColorMap = hot(1024);
+params.verticalActivationColorBar = true;
 cm.visualize(params);
 
 %% Add eye movements
@@ -78,6 +81,7 @@ hold on;
 plot(timeAxis, squeeze(mean(noisyExcitationResponseInstances(:,:,targetConeID),1)), 'g-', 'LineWidth', 2.0);
 
 % Plot the noise-free time series response in red
+figure(3);
 plot(timeAxis, squeeze(excitationsInstances(:,:,targetConeID)), 'r', 'LineWidth', 1.5);
 xlabel('time (seconds)');
 ylabel('excitations per integration time');

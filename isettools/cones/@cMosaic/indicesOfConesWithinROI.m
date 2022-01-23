@@ -1,38 +1,24 @@
-function coneIndices = indicesOfConesWithinROI(obj, roi)
-% Method to return the indices of cones within a region of interest
+function coneIndices = indicesOfConesWithinROI(obj, geometryStruct)
+% Method to return the indices of cones within a geometryStruct
 %
 % Syntax:
-%   coneIndices = obj.indicesOfConesWithinROI(roi)
+%   coneIndices = obj.indicesOfConesWithinROI(geometryStruct)
 %
 % Description:
-%    return the indices of cones within a region of interest. The input
-%    argument roi is a struct which specified either a rectangle or an
-%    ellipse.
+%    return the indices of cones within a geometryStruct appropriate for @regionOfInterest
 %
 % Inputs:
 %    obj                 - A @cMosaic object
-%    roi                 - A struct specifiying either a rectangle or an
-%                          ellipse
+%    geometryStruct      - A geometry struct appropriate for @regionOfInterest
 %
 % Outputs:                 Indices of cones within the region of interest
 
-    % Validate the roi by calling the static method validateROI() of @cMosaic
-    cMosaic.validateROI(roi);
-    
-    % Generate the roi outline by calling the static method generateOutline() of @cMosaic
-    roiOutline = cMosaic.generateOutline(roi);
-    
-    % Convert roiOutline to microns
-    if (strcmp(roi.units, 'degs'))
-        roiOutlineMicrons = obj.convertOutlineToMicrons(roiOutline);
-    else
-        roiOutlineMicrons = roiOutline;
+    theROI = regionOfInterest('geometryStruct', geometryStruct);
+
+    switch (theROI.units)
+        case 'microns'
+            coneIndices = theROI.indicesOfPointsInside(obj.coneRFpositionsMicrons);
+        otherwise
+            coneIndices = theROI.indicesOfPointsInside(obj.coneRFpositionsDegs);
     end
-    
-    
-    % Find indices of cones within the ROI border
-    [in,on] = inpolygon( obj.coneRFpositionsMicrons(:,1), obj.coneRFpositionsMicrons(:,2),...
-                         roiOutlineMicrons.x, roiOutlineMicrons.y);
-    coneIndices = find((in|on));
-    
 end

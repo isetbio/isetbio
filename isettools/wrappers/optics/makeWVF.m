@@ -5,10 +5,12 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffs, measWavelength, wave
     p = inputParser;
     p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
+    p.addParameter('noLCA',false,@islogical);
     p.parse(varargin{:});
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     upsampleFactor = p.Results.upsampleFactor;
-    
+    noLCA = p.Results.noLCA;
+
     theWVF = wvfCreate(...
     			'umPerDegree', umPerDegree, ...
                 'calc wavelengths',wavelengthsToCompute,...
@@ -26,5 +28,5 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffs, measWavelength, wave
     end
     
     % Now compute the PSF
-    theWVF = wvfComputePSF(theWVF);
+    theWVF = wvfComputePSF(theWVF, false, 'nolca', noLCA);
 end

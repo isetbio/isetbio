@@ -14,7 +14,8 @@ function removeConesWithinOpticNerveHead(obj)
 
     % Generate OD struct in microns
     [odStructMicrons, ~] = obj.odStruct();
-    
+
+
     % Find indices of cones lying inside the optic disk ellipsoid
     idxInside = obj.indicesOfConesWithinROI(odStructMicrons);
     
