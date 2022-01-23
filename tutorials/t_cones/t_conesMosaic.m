@@ -1,10 +1,10 @@
-%% Introduction to the cone mosaic object.
+%% Introduction to the cone mosaic (cMosaic) object.
 %
 % Description:
-%    Create a rectangular cone mosaic object and compute cone
-%    isomerizatoins across a set of small eye movements.
+%    Create a cone mosaic object and compute cone isomerizations.
+%    No eye movements.
 %
-%    Visualize the results in coneMosaic window.
+%    Visualize the results with a plot.
 %
 % See also
 %   t_cones*
@@ -25,7 +25,7 @@ oi = oiCompute(oi, s);
 %% Build a default cone mosaic and compute isomerizatoins
 
 % Get the default set of cone mosaic parameters.
-[~,cmParams] = cMosaic('params');
+cmParams = cMosaicParams;
 
 % Generate off-axis mosaic
 cmParams.eccentricityDegs = [0 0];   % The size of the cones out here is about the same as the mouse?
@@ -44,19 +44,5 @@ vParams.activationColorMap = gray(512);
 vParams.verticalActivationColorBar = true;
 vParams.activationRange = [0 max(noiseFree(:))];
 cm.visualize(vParams);
-
-%% Bring up a window so that we can look at things.
-%
-% Using the pull down in the window, you can look at
-% the mosaic, the isomerizations for one fixation, or
-% the movie of fixations.
-cMosaic.window;
-
-%% Plot things individually
-% Instead of using the cone mosaic window, you can call the plot function
-% directly. 
-
-% cMosaic.plot('Cone mosaic');
-% cMosaic.plot('meanabsorptions');
 
 %% END

@@ -306,7 +306,10 @@ classdef cMosaic < handle
     methods
         
         % Constructor
-        function obj = cMosaic(varargin)
+        function [obj, cmParams] = cMosaic(varargin)
+            
+            cmParams = cMosaicParams;  % Default.  Updated at the end
+            
             % Parse input
             p = inputParser;
             p.addParameter('name', 'cone mosaic', @ischar);
@@ -473,25 +476,38 @@ classdef cMosaic < handle
                 % Remove cones within the optic disk
                 obj.removeConesWithinOpticNerveHead();
 
-                % Set random seed
+                % Set random seed - Puzzled by the logic of setting the
+                % seed twice here.  Once before assigning cone types (first
+                % code block) and once after importing the data (second
+                % code block).
                 if (isempty(obj.randomSeed))
-                    rng('shuffle');
+                    rng('shuffle');   % Initialize rng with current time
+                    
+                    % Remember the seed in case we freeze the noise next
+                    % round.
+                    obj.randomSeed = randi(1e4);
                 else
-                    rng(obj.randomSeed);
+                    disp(obj.randomSeed)
                 end
+                rng(obj.randomSeed);
 
                 % Assign cone types
                 obj.assignConeTypes();
             else
                 % Load cone positions and cone types from passed struct
                 obj.importExternalConeData(p.Results.coneData);
-
+                
                 % Set random seed
                 if (isempty(obj.randomSeed))
-                    rng('shuffle');
+                    rng('shuffle');   % Initialize rng with current time
+                    
+                    % Remember the seed in case we freeze the noise next
+                    % round.
+                    obj.randomSeed = randi(1e4);
                 else
-                    rng(obj.randomSeed);
+                    disp(obj.randomSeed)
                 end
+                rng(obj.randomSeed);
             end
             
 
@@ -510,6 +526,36 @@ classdef cMosaic < handle
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
+            
+            if nargout > 1
+                % Return a struct with the parameters from this object.
+                % If you want the default, use
+                %   cmParams = cMosaicParams;
+                cmParams = p.Results;
+                if isempty(cmParams.eccentricityDegs)
+                    % When positionDegs is set, we convert
+                    cmParams.eccentricityDegs = obj.eccentricityDegs;
+                    cmParams = rmfield(cmParams,'positionDegs');
+                end
+                
+                % Frozen or random noise apply to computations, not mosaic
+                % creation, I think.  Here, I am trying to deal with the
+                % rng for creating the mosaic.  Logic does not yet seem
+                % right.  I am using the frozen for the computation to deal
+                % with the mosaic (BW). I am leaving this here just as a
+                % reminder to check with NC about how to handle it. I sent
+                % him an email.
+                cmParams.randomSeed = obj.randomSeed;
+                switch cmParams.noiseFlag
+                    case 'random'
+                        % Clear the field
+                        cmParams = rmfield(cmParams,'randomSeed'); 
+                    case 'frozen'
+                        % Save the seed
+                        cmParams.randomSeed = obj.randomSeed;
+                end
+            end
+            
         end
         
         % Method to transform a distance specified in units of retinal

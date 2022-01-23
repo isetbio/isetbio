@@ -75,6 +75,8 @@ classdef coneMosaic < hiddenHandle
     %    'noiseFlag'        - String. Default 'random'. Add photon noise
     %                         (default) or not. Valid values are 'random', 
     %                         'frozen', or 'none'.
+    %    'eccentricityunits' - 'm' or 'deg'
+    %    'useParfor'
     %
     % Notes:
     %    * TODO: We should take eccentricity and angle as an input
@@ -299,11 +301,11 @@ classdef coneMosaic < hiddenHandle
 
     methods
         % Constructor
-        function obj = coneMosaic(varargin)
+        function [obj, cmParams] = coneMosaic(varargin)
             % Initialize the cone mosaic class
             %
             % Syntax:
-            %	obj =  coneMosaic([varargin])
+            %	[obj, cmParams] =  coneMosaic([varargin])
             %
             % Description:
             %    Initialize the cone mosaic class.
@@ -313,6 +315,7 @@ classdef coneMosaic < hiddenHandle
             %
             % Outputs:
             %    obj - The created cone mosaic object.
+            %    cmParams - Struct with the params for this object
             %
             % Optional key/value pairs:
             %    Listed above.
@@ -337,7 +340,8 @@ classdef coneMosaic < hiddenHandle
                 @(x)(isempty(x) || isa(x, 'outerSegment')));
             p.addParameter('center', [0 0], @(x)(numel(x) == 2));
             
-            p.addParameter('eccentricityunits', 'm', @ischar); % Should check for valid
+            % Should check for valid.  Maybe meters or degrees?  Microns?
+            p.addParameter('eccentricityunits', 'm', @ischar); 
 
             p.addParameter('whichEye', 'left', ...
                 @(x) ismember(x, {'left', 'right'}));
@@ -354,6 +358,7 @@ classdef coneMosaic < hiddenHandle
             p.addParameter('useParfor', false, @islogical);
             p.parse(varargin{:});
 
+            
             % Set properties
             obj.name    = p.Results.name;
             obj.pigment = p.Results.pigment;
@@ -432,6 +437,33 @@ classdef coneMosaic < hiddenHandle
             % in obj.pigment and obj.macular match
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
             addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
+            
+            % Return parameters if asked
+            if nargout > 1
+                % Return a struct with the parameters from this object.
+                % If you want the default use
+                %
+                %   cmParams = coneMosaicRectP;
+                
+                cmParams.name    = obj.name;
+                cmParams.pigment = obj.pigment; 
+                cmParams.macular = obj.macular; 
+                cmParams.os      = obj.os;
+                cmParams.center  = obj.center;
+                cmParams.wave    = obj.wave;
+                cmParams.pattern = obj.pattern;
+                cmParams.spatialDensity = obj.spatialDensity;
+                cmParams.size    = obj.size;
+                cmParams.integrationTime  = obj.integrationTime;
+                cmParams.micronsPerDegree = obj.micronsPerDegree;
+                cmParams.emPositions      = obj.emPositions;
+                cmParams.apertureBlur     = obj.apertureBlur;
+                cmParams.noiseFlag        = obj.noiseFlag; 
+                cmParams.eccentricityunits = p.Results.eccentricityunits; 
+                cmParams.whichEye = obj.whichEye; 
+                cmParams.useParFor = obj.useParfor;            
+            end
+            
         end
 
         %% Get methods for dependent variables
