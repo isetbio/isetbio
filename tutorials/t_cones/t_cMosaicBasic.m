@@ -123,7 +123,7 @@ mean(roiLE)
     'cone type','S');
 mean(roiSE)
 
-%% Get the excitationa dn visualize in one call
+%% Get the excitations and visualize in one call
 
 [roiE, roiIdx, allE] = cm.excitations('roi',roiCircle,'visualize',true,'all excitations',allE);
 
