@@ -2,10 +2,19 @@
 %
 % Description:
 %    Shows basic usage of the new cone mosaic class, @cMosaic.
-%    Here, we generate an on-axis (zero eccentricity) cMosaic object and
+%
+%    We first generate an on-axis (zero eccentricity) cMosaic object and
 %    compute a number of noisy response instances to a static stimulus with
 %    no fixational eye movements, so the computed responses
 %    consist of a single time point.
+%
+%    We also illustrate how to see the mosaic with the visualize function
+%    and to see the computed cone excitations with the plot function.
+%
+%    At the end we illustrate how get akk the parameters from the cMosaic
+%    constructor so you can reliably create the same cMosaic.  Or create a
+%    second cMosaic with the same parameters and use it to measure a
+%    different stimulus.
 %
 % See Also:
 %   tls_cMosaicPlots
@@ -19,6 +28,7 @@
 %   t_cMosaicFromConeMosaicHex
 
 % History:
+%    01/24/22  BW did stuff.
 %    03/01/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 
 
@@ -154,3 +164,63 @@ for k = 1:instancesNum
     pause(1);
 end
 
+%% Making a reproducible cMosaic
+
+% For some calculations you would like to re-generate a repeatable, rather
+% than random, cone mosaic.  You can use the randomSeed slot for that.
+
+% Here is the first mosaic.  The second argument is the list of parameters
+% used to create the mosaic.
+[cm1, cm1P] = cMosaic(...
+  'sizeDegs', [1.0 1.0], ...% SIZE: 1.0 degs (x) 0.5 degs (y)
+  'positionDegs', [1 0], ...% ECC: (0,0)
+  'eccVaryingConeBlur', true, ...
+  'randomSeed', 12 ...
+  );
+
+% Here is the second one, same random seed, so it matches
+[cm2, cm2P] = cMosaic(...
+  'sizeDegs', [1.0 1.0], ...% SIZE: 1.0 degs (x) 0.5 degs (y)
+  'positionDegs', [1 0], ...% ECC: (0,0)
+  'eccVaryingConeBlur', true, ...
+  'randomSeed', 12 ...
+  );
+
+% The parameters are equal because, well, we sent in the same parameters.
+isequal(cm1P,cm2P)
+
+% You can see the two mosaics are the same this way:
+cm1.visualize;
+cm2.visualize;
+
+%% To create the mosaic from specifying the parameters, you can do this
+
+% Sometimes you just want to control all the parameters.  So using the
+% parameter list from above, we can create a mosaic this way.
+[cm3, cm3P] = cMosaic(cm1P);
+
+% Check that the parameters remained equal.
+isequal(cm1P,cm3P)
+
+% Have a look to see they are equal.
+cm3.visualize;
+
+%% You can change a parameter this way and see that it is different.
+cm3P.randomSeed = 11;
+cm4 = cMosaic(cm3P);
+cm4.visualize;
+
+%% You can also get the default set of parameters this way
+
+% This creates a random mosaic.
+cmP = cMosaicParams;
+[cm, cmP1] = cMosaic(cmP);
+cm.visualize;
+
+% The random seed is returned.  So if you use the parameters again, you
+% will get the same mosaic.
+cmP1.randomSeed
+
+
+
+%% END

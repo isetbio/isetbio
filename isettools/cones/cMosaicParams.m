@@ -40,8 +40,8 @@ cmParams.coneDiameterToSpacingRatio =  1.0;
 cmParams.coneDensities =  [0.6 0.3 0.1 0.0];
 cmParams.tritanopicRadiusDegs =  0.15;
 cmParams.noiseFlag =  'random';  % Or frozen
+cmParams.randomSeed = [];
 cmParams.integrationTime =  5/1000;
 cmParams.opticalImagePositionDegs =  'mosaic-centered';
 cmParams.useParfor =  true;
-
 end
