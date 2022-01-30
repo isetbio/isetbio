@@ -53,6 +53,8 @@ p.addParameter('xdeg',0,@isnumeric);
 p.addParameter('ydeg',0,@isnumeric);
 p.addParameter('thickness',0.1,@isnumeric);
 
+p.addParameter('plottitle','',@ischar)
+
 p.parse(cmosaic,plotType,allE,varargin{:});
 
 % Force cone type to a cell array
