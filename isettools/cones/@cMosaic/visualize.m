@@ -638,12 +638,12 @@ if (~isempty(activation))
             colorbar(axesHandle, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
         elseif (verticalColorBarInside)
             colorbar(axesHandle, 'east', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize, 'FontName', 'Spot mono');
+                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize/2, 'FontName', 'Spot mono');
         elseif (horizontalColorBar)
             colorbar(axesHandle,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
         elseif (horizontalColorBarInside)
             colorbar(axesHandle,'north', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize, 'FontName', 'Spot mono');
+                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize/2, 'FontName', 'Spot mono');
         end
     else
         colorbar(axesHandle, 'off');
