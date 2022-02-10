@@ -61,6 +61,7 @@ p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(
 p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
 
 p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
+p.addParameter('crossHairsAtPosition', [], @(x)((isempty(x))||(numel(x)==2)));
 p.addParameter('crossHairsOnFovea', false, @islogical);
 p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
 p.addParameter('crossHairsColor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
@@ -100,6 +101,7 @@ activationRange = p.Results.activationRange;
 currentEMposition = p.Results.currentEMposition;
 crossHairsOnMosaicCenter = p.Results.crossHairsOnMosaicCenter;
 crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
+crossHairsAtPosition = p.Results.crossHairsAtPosition;
 visualizeCones = p.Results.visualizeCones;
 labelCones = p.Results.labelCones;
 labelConesWithIndices = p.Results.labelConesWithIndices;
@@ -524,6 +526,17 @@ else
 end
 
 % Add crosshairs
+if (~isempty(crossHairsAtPosition))
+    crossHairsColor = [0 0 0];
+    % Crosshairs centered on the middle of the mosaic
+    xx1 = [xRange(1) xRange(2)];
+    yy1 = crossHairsAtPosition(2)*[1 1];
+    xx2 = crossHairsAtPosition(1)*[1 1];
+    yy2 = [yRange(1) yRange(2)];
+    plot(axesHandle, xx1, yy1, '-', 'Color', crossHairsColor, 'LineWidth', 1.5);
+    plot(axesHandle, xx2, yy2,  '-', 'Color', crossHairsColor,'LineWidth', 1.5); 
+end
+
 if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
     
     if (isempty(crossHairsColor))
