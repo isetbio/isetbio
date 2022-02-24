@@ -1,4 +1,4 @@
-function xaxisLine(ax)
+function p = xaxisLine(ax)
 % Draw a dark line along the x-axis of a graph
 %
 % Synopsis
@@ -15,7 +15,7 @@ xaxisLine(gca);
 %}
 
 %%
-if ieNotDefined('ax'), ax = gca; end
+if notDefined('ax'), ax = gca; end
 
 %%
 xlim = get(ax, 'xlim');
