@@ -1,6 +1,6 @@
 function varargout = v_cmosaic(varargin)
 %
-% Simple cone mosaic calculation.
+% Simple rectangular cone mosaic calculation.
 %
 % We will systematically change parameters and see that the results are stable. 
 %

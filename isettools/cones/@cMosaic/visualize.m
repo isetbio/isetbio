@@ -76,7 +76,7 @@ p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('fontSize', 16, @isscalar);
 p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
-p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x)));
+p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
 p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
 p.addParameter('textDisplayColor', [], @isnumeric);
 
@@ -638,12 +638,12 @@ if (~isempty(activation))
             colorbar(axesHandle, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
         elseif (verticalColorBarInside)
             colorbar(axesHandle, 'east', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize, 'FontName', 'Spot mono');
+                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize/2, 'FontName', 'Spot mono');
         elseif (horizontalColorBar)
             colorbar(axesHandle,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
         elseif (horizontalColorBarInside)
             colorbar(axesHandle,'north', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize, 'FontName', 'Spot mono');
+                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize/2, 'FontName', 'Spot mono');
         end
     else
         colorbar(axesHandle, 'off');
@@ -763,23 +763,27 @@ switch (domain)
         
 end
 
-if (isempty(plotTitle))
-    if (numel(obj.coneDensities) == 4)
-        title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
-            100*obj.coneDensities(1), ...
-            100*obj.coneDensities(2), ...
-            100*obj.coneDensities(3), ...
-            100*obj.coneDensities(4), ...
-            conesNum));
+% User can set plotTitle to false.  Then we skip.  Used in
+% cMosaic.plot
+if plotTitle    
+    if (isempty(plotTitle))
+        if (numel(obj.coneDensities) == 4)
+            title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
+                100*obj.coneDensities(1), ...
+                100*obj.coneDensities(2), ...
+                100*obj.coneDensities(3), ...
+                100*obj.coneDensities(4), ...
+                conesNum));
+        else
+            title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
+                100*obj.coneDensities(1), ...
+                100*obj.coneDensities(2), ...
+                100*obj.coneDensities(3), ...
+                conesNum));
+        end
     else
-        title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
-            100*obj.coneDensities(1), ...
-            100*obj.coneDensities(2), ...
-            100*obj.coneDensities(3), ...
-            conesNum));
+        title(axesHandle,plotTitle);
     end
-else
-    title(axesHandle,plotTitle);
 end
 
 if (~isempty(textDisplay))

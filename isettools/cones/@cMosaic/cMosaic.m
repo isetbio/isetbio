@@ -306,7 +306,10 @@ classdef cMosaic < handle
     methods
         
         % Constructor
-        function obj = cMosaic(varargin)
+        function [obj, cmParams] = cMosaic(varargin)
+            
+            cmParams = cMosaicParams;  % Default.  Updated at the end
+            
             % Parse input
             p = inputParser;
             p.addParameter('name', 'cone mosaic', @ischar);
@@ -342,24 +345,32 @@ classdef cMosaic < handle
             p.addParameter('coneDiameterToSpacingRatio', 1.0,  @(x)(isscalar(x)&&(x<=1.0)));
             p.addParameter('coneDensities', [0.6 0.3 0.1 0.0], @(x)(isnumeric(x) && ((numel(x) == 3)||(numel(x)==4))));
             p.addParameter('tritanopicRadiusDegs', 0.15, @isscalar);
-            p.addParameter('noiseFlag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
-            p.addParameter('randomSeed', [], @isscalar);
             p.addParameter('integrationTime', 5/1000, @isscalar);
             p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
             p.addParameter('useParfor', true, @islogical);
+            
+            % Can we have frozen noise without a randomseed? And, if we
+            % have a seed, perhaps we intend frozen noise? So we agree on
+            % what we want and deal with it here and then below around line
+            % 490.
+            p.addParameter('noiseFlag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
+            p.addParameter('randomSeed', [], @(x)(isempty(x) || isscalar(x)));
+
             p.parse(varargin{:});
             
-            obj.name = p.Results.name;
+            obj.name    = p.Results.name;
             obj.macular = p.Results.macular;
             obj.pigment = p.Results.pigment;
-            obj.wave = p.Results.wave;
+            obj.wave    = p.Results.wave;
             
-            % Because BW wants to be able to use positionDegs
+            % BW wants to use positionDegs rather than eccentricity.  For
+            % teaching purposes.
             if ~isempty(p.Results.eccentricityDegs)
-                % Always wins for historical reasons
+                % eccentricityDegs is always used if present, for
+                % historical reasons 
                 obj.eccentricityDegs = p.Results.eccentricityDegs;
             elseif ~isempty(p.Results.positionDegs)
-                % Use positionDegs if available but no
+                % Use positionDegs if available but there is not
                 % eccentricityDegs
                 obj.eccentricityDegs = p.Results.positionDegs;
             else                
@@ -384,7 +395,7 @@ classdef cMosaic < handle
             obj.coneApertureModifiers = p.Results.coneApertureModifiers;
             obj.coneDiameterToSpacingRatio = p.Results.coneDiameterToSpacingRatio;
             
-            obj.noiseFlag = p.Results.noiseFlag;
+            obj.noiseFlag  = p.Results.noiseFlag;
             obj.randomSeed = p.Results.randomSeed;
             obj.integrationTime = p.Results.integrationTime;
             obj.opticalImagePositionDegs = p.Results.opticalImagePositionDegs;
@@ -473,25 +484,42 @@ classdef cMosaic < handle
                 % Remove cones within the optic disk
                 obj.removeConesWithinOpticNerveHead();
 
-                % Set random seed
-                if (isempty(obj.randomSeed))
-                    rng('shuffle');
-                else
-                    rng(obj.randomSeed);
+                % Set random seed - Puzzled by the logic of setting the
+                % seed twice here.  Once before assigning cone types (first
+                % code block) and once after importing the data (second
+                % code block).
+                if isequal(obj.noiseFlag,'random')
+                    % Make a noise seed and store it.  One in a million.
+                    obj.randomSeed = randi(1e6);
+
+                    % 'shuffle' did not have a specific seed I could read.
+                    % it used the time of day.  So I made a random seed
+                    % instead and returned it.
+                    %
+                    %   rng('shuffle');   % Initialize rng with current time
+                    
+                elseif isequal(obj.noiseFlag,'frozen') && isempty(obj.randomSeed)
+                    error('Frozen noise but no seed provided.');
                 end
+                rng(obj.randomSeed);
 
                 % Assign cone types
                 obj.assignConeTypes();
             else
                 % Load cone positions and cone types from passed struct
                 obj.importExternalConeData(p.Results.coneData);
-
+                
                 % Set random seed
                 if (isempty(obj.randomSeed))
-                    rng('shuffle');
+                    rng('shuffle');   % Initialize rng with current time
+                    
+                    % Remember the seed in case we freeze the noise next
+                    % round.
+                    obj.randomSeed = randi(1e4);
                 else
-                    rng(obj.randomSeed);
+                    disp(obj.randomSeed)
                 end
+                rng(obj.randomSeed);
             end
             
 
@@ -510,6 +538,27 @@ classdef cMosaic < handle
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
+            
+            if nargout > 1
+                % Return a struct with all the Results parameters from this
+                % object. If you want the default, use
+                %
+                %   cmParams = cMosaicParams;
+                %
+                % But that needs people to update if they change the
+                % parameters in this routine.
+                cmParams = p.Results;
+                
+                % Sometimes people send in positionDegs instead of
+                % eccentricityDegs (BW).  But eccentricityDeg cannot be
+                % empty.  So we fill it here.
+                cmParams.eccentricityDegs = obj.eccentricityDegs;
+                
+                % A random seed was used.  We store it in the return in
+                % case we want it in the future
+                cmParams.randomSeed = obj.randomSeed;
+            end
+            
         end
         
         % Method to transform a distance specified in units of retinal

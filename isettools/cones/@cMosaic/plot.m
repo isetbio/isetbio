@@ -26,6 +26,7 @@ function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
 %    roi - show the ROI superimposed on the excitation image
 %        cmosaic.plot('roi',allE,'roi',regionOfInterest)
 %
+%    plot title - Logical.  Show the title or not.
 %
 % See also
 %   t_cMosaicBasic
@@ -45,6 +46,7 @@ p.addRequired('allE',@isnumeric);
 % Excitations if precomputed
 p.addParameter('conetype',{'l','m','s'},@(x)(ischar(x) || iscell(x)));
 p.addParameter('roi',[],@(x)(isa(x,'regionOfInterest')));
+p.addParameter('plottitle',false,@islogical);
 
 p.addParameter('lens',[],@(x)(isa(x,'Lens')));
 
@@ -72,6 +74,7 @@ switch ieParamFormat(plotType)
         
         params = cmosaic.visualize('params');
         params.activation = allE;
+        if ~p.Results.plottitle, params.plotTitle = ''; end
         params.verticalActivationColorBar = true;
         
         % Return

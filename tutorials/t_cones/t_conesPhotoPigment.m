@@ -55,7 +55,7 @@ coneParams.indDiffParams.lambdaMaxShift = [-5 2 -0.5]';
 % This determines the size of the scene and cone mosaic we work with, but
 % not cone properties because as we will see below we are setting those
 % explicitly in this script.
-fovDegreesISETBio = 0.012;
+fovDegreesISETBio = 0.2;
 
 % Compute the quantal sensitivity as probability of excitation given a
 % photon of different wavelengths passing through the cone's entrance
@@ -233,13 +233,15 @@ cm = cMosaic(...
     'wave', wls, ...                % wavelength sampling
     'sizeDegs', [fovDegreesISETBio fovDegreesISETBio], ... % x,y size in degrees
     'eccentricityDegs', [0 0], ...  % eccentricity
+    'tritanopicRadiusDegs', 0, ...  % Want some S cones and don't care about space in this example
     'macular', macObject, ...       % custom macular pigment object
     'pigment', photopigmentObject, ... % custom photopigment object
     'eccVaryingConeAperture', false, ... % for purposes here, keep cones the same size, etc.
     'eccVaryingConeBlur', false, ..., 
     'eccVaryingOuterSegmentLength', false, ...
     'eccVaryingMacularPigmentDensity', false, ...
-    'eccVaryingMacularPigmentDensityDynamic', false ...
+    'eccVaryingMacularPigmentDensityDynamic', false, ...
+    'anchorAllEccVaryingParamsToTheirFovealValues', true ...
     );
 LConeIndices = find(cm.coneTypes == 1);
 MConeIndices = find(cm.coneTypes == 2);
@@ -250,7 +252,6 @@ coneDiameterListUM = cm.coneApertureDiametersMicrons;
 if any(diff(coneDiameterListUM) ~= 0)
     error('cm cone diameters do not all have the same size');
 end
-%coneApertureDiamUM = coneDiameterListUM(1)*cm.coneApertureToDiameterRatio;
 coneApertureDiamUM = coneDiameterListUM(1);
 coneAreaUM2 = pi*(coneApertureDiamUM/2)^2;
 
@@ -324,7 +325,7 @@ plot(wls,T_quantalExcitationISETBioCM(1,:) .* lensTransmittance,'b:','LineWidth'
 plot(wls,T_quantalExcitationISETBioCM(2,:) .* lensTransmittance,'b:','LineWidth',1.5);
 plot(wls,T_quantalExcitationISETBioCM(3,:) .* lensTransmittance,'b:','LineWidth',1.5);
 
-%% Work out actual retinal irradiance from scene radiance
+%% Get parameters needed for Retinal irradiance from scene radiance in PTB
 %
 % Start by getting parameters we need from the optics.
 opticsBaseline = oiGet(oiBaseline,'optics');
@@ -332,61 +333,83 @@ if (opticsGet(opticsBaseline,'pupil diameter','mm') ~= coneParams.pupilDiamMM)
     error('Baseline optics does not have expected pupil diameter');
 end
 focalLengthMM = opticsGet(opticsBaseline,'focal length','mm');
-
-% Convert radiance of source to retinal irradiance.
-%
-% This does not incorporate lens transmittance, just the geometry.
 pupilAreaMM2 = pi*(coneParams.pupilDiamMM/2)^2;
-radiancePhotonsPerSecM2Sr = photonsPerSrM2NMSec*ones(size(wls));
-irradiancePhotonsPerSecUM2 = RadianceToRetIrradiance(radiancePhotonsPerSecM2Sr,wls, ...
-    pupilAreaMM2,focalLengthMM);
 
-% Correct irradiance in the same way that ISETBio does. 
+% Also get rradiance correction factor between PTB and ISETBio
 %
 % See function for oiCalculateIrradiance for where this happens in ISETBio
 % and some info on why. This correctrion applied in that routine remains
 % mysterious to some of us, but for our purposes here we just match the calculation.
+%
+% This is what ISETBio does:
+%     irradiance = pi / (1 + 4 * fN ^ 2 * (1 + abs(m)) ^ 2) * radiance;
+% This is what PTB does:
+%     irradiance = pupilArea/(eyeLength^2) * radiance;
+%                = (pi/4)*(pupilDiam/eyeLength)^2 * radiance
+%                = pi/(4 * fN ^ 2)
+% because fN = eyeLength/pupilDiam.
+fN = focalLengthMM/coneParams.pupilDiamMM;
 m = opticsGet(opticsBaseline,'magnification',sceneGet(scene{1},'distance'));
-irradiancePhotonsPerSecUM2Corrected = irradiancePhotonsPerSecUM2/((1+abs(m))^2);
+irradianceCorrectionFactorPTBToISETBio = (4*fN^2)/(1 + 4 * fN^2 * (1 + abs(m)) ^ 2);
 
-% Compare with ISETBio irradiance calculation
+%% Convert radiance of source to retinal irradiance and then to cone excitations.
+%
+% excitations, using PTB method.  Do this at each wavelength, so that we
+% can then compare to the same calculation done in ISETBio above.
+excitationsConePTBMono = zeros(size(excitationsConeISETBioMono));
+for ww = 1:length(wls)
+
+    % Set up monochromatic radiance and convert to irradiance in ISETBio
+    radiancePhotonsPerSecM2Sr = zeros(size(wls));
+    radiancePhotonsPerSecM2Sr(ww) = photonsPerSrM2NMSec;
+    irradiancePhotonsPerSecUM2 = RadianceToRetIrradiance(radiancePhotonsPerSecM2Sr,wls, ...
+        pupilAreaMM2,focalLengthMM);
+
+    % Correct irradiance to match what ISETBio does.
+    irradiancePhotonsPerSecUM2Corrected = irradiancePhotonsPerSecUM2*irradianceCorrectionFactorPTBToISETBio;
+    irradiancePhotonsPerSecM2CorrectedChk(ww) = sum(irradiancePhotonsPerSecUM2Corrected .* lensTransmittance' * 1e12);
+
+    % Get cone exciations from retinal irradiance.  The approximation to
+    % the integral here more or less matches the way it is done in ISETBio. 
+    for cc = 1:3
+        excitationsConeSec(cc) = T_quantalExcitationProb(cc,:)*irradiancePhotonsPerSecUM2Corrected*coneAreaUM2*(wls(2)-wls(1));
+        excitationsConePTBMono(cc,ww) = excitationsConeSec(cc)*integrationTimeSec;
+    end
+end
+
+%% Plot and compare with ISETBio
+excitationsFig = figure; clf;
+subplot(1,2,1); hold on;
+plot(wls,excitationsConePTBMono(1,:),'r','LineWidth',6);
+plot(wls,excitationsConePTBMono(2,:),'g','LineWidth',6);
+plot(wls,excitationsConePTBMono(3,:),'b','LineWidth',6);
+plot(wls,excitationsConeISETBioMono(1,:),'k','LineWidth',2);
+plot(wls,excitationsConeISETBioMono(2,:),'k','LineWidth',2);
+plot(wls,excitationsConeISETBioMono(3,:),'k','LineWidth',2);
+xlabel('Wavelength (nm)');
+ylabel('Excitations/Cone-Integration Time');
+if (max(abs(excitationsConePTBMono(:) - excitationsConeISETBioMono(:))) ...
+        /mean(excitationsConePTBMono(:)) > 1e-6)
+    error('Fail to compute excitations same way in ISETBio and PTB, after correction');
+end
+
+% Compare PTB with ISETBio irradiance calculation
 %
 % Be sure to convert from UM2 to M2 and take lens transmittance into
-% account.
+% account.  The version of the PTB calculation here corrects for the known
+% difference in how ISETBio does this calculation.
 irradianceFig = figure; clf; hold on;
-plot(wls,irradiancePhotonsPerSecUM2Corrected .* lensTransmittance' * 1e12,'k','LineWidth',4);
-irradiancePhotonsPerSecondUM2ISETBio = zeros(size(irradiancePhotonsPerSecUM2Corrected));
+plot(wls,irradiancePhotonsPerSecM2CorrectedChk ,'k','LineWidth',4);
+irradiancePhotonsPerSecM2ISETBio = zeros(size(irradiancePhotonsPerSecUM2Corrected));
 for ww = 1:length(wls)
     temp = oiGet(oiComputed{ww},'photons');
-    irradiancePhotonsPerSecondUM2ISETBio(ww) = mean(mean(temp(:,:,ww)));
-    plot(wls(ww),irradiancePhotonsPerSecondUM2ISETBio(ww),'ro','MarkerFaceColor','r','MarkerSize',10);
+    irradiancePhotonsPerSecM2ISETBio(ww) = mean(mean(temp(:,:,ww)));
+    plot(wls(ww),irradiancePhotonsPerSecM2ISETBio(ww),'ro','MarkerFaceColor','r','MarkerSize',10);
 end
 xlabel('Wavelength (nm)'); ylabel('Retinal Irradiance (photons/sec-m2)');
-
-%% Get excitations/cone-sec from ret irradiance and fundamentals
-% 
-% We are using ISETBio conventions where we think of spectra in units of
-% power per nm, so we integrate with trapz which takes the delta wavelength
-% into account.
-%
-% The excitations per cone variable should match up with ISETBio calc from
-% above, in variable excitationsConeISETBio.
-excitationsConeSec = zeros(3,1);
-excitationsCone = zeros(3,1);
-for cc = 1:3
-    excitationsConeSec(cc) = trapz(wls,irradiancePhotonsPerSecUM2Corrected .* T_quantalExcitationProb(cc,:)')*coneAreaUM2;
-    excitationsCone(cc) = excitationsConeSec(cc)*integrationTimeSec;
+if (max(abs(irradiancePhotonsPerSecM2CorrectedChk(:) - irradiancePhotonsPerSecM2ISETBio(:))) ...
+        /mean(irradiancePhotonsPerSecM2ISETBio(:)) > 1e-6)
+    error('Fail to compute retinal irradiance same way in ISETBio and PTB, after correction');
 end
+
     
-% % Irradiance version
-% T_quantalExcitationIrradiance = T_quantalExcitationProb*coneAreaUM2;
-% 
-% %% Get fundamentals taking cone aperture into account
-% %
-% % These express the cone excitation rate when retinal irradiance is in units
-% % of photons/um^2-sec, but expressed at the cornea (i.e. not including lens
-% % transmittance).
-% %
-% % Below we'll build these up from parts to illustrate the calculations in
-% % more detail.
-% T_quantalExcitationIrradiance = T_quantalExcitationProb*coneAreaUm2;
