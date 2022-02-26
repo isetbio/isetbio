@@ -749,7 +749,7 @@ classdef cMosaic < handle
             obj.coneCouplingWeights = [];
             obj.neighboringCoupledConeIndices = [];
         end                
-        
+
     end % Public methods
     
     

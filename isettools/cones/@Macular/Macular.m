@@ -316,6 +316,11 @@ methods  % public methods
         val = 1 - obj.transmittance;
     end
     
+    % Current wavelength
+    function val = get.wave(obj)
+        val = obj.wave;
+    end
+    
     % set methods for dependent variables
     function set.unitDensity(obj, val)
         % Set underlying macular pigment absorbance.

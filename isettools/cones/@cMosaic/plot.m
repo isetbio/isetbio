@@ -11,6 +11,8 @@ function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
 % Optional key/val pairs
 %    roi 
 %    cone type
+%    hdl - Figure handle (matlab.ui.Figure).  Used for overlaying
+%           curves.
 %
 % Output
 %    uData - Struct with the plot data including the ROI
@@ -54,8 +56,11 @@ p.addParameter('lens',[],@(x)(isa(x,'Lens')));
 p.addParameter('xdeg',0,@isnumeric);
 p.addParameter('ydeg',0,@isnumeric);
 p.addParameter('thickness',0.1,@isnumeric);
+p.addParameter('hdl',[],@(x)(isa(x,'matlab.ui.Figure') || isempty(x)));
 
 p.parse(cmosaic,plotType,allE,varargin{:});
+
+hdl = p.Results.hdl;
 
 % Force cone type to a cell array
 conetype = p.Results.conetype;
@@ -232,7 +237,10 @@ switch ieParamFormat(plotType)
     case {'spectralqe'}
         % The cMosaic does not ordinarily have a lens.  If the user
         % does not send in a lens, we use the default human lens.
-        hdl = ieNewGraphWin;
+        if isempty(hdl), hdl = ieNewGraphWin;
+        else, figure(hdl);
+        end
+
         if isempty(p.Results.lens)
             thisLens = Lens('wave',cmosaic.wave);
         else
@@ -240,9 +248,12 @@ switch ieParamFormat(plotType)
             thisLens.wave = cmosaic.wave;
         end
         lensT = thisLens.transmittance;
-        plot(cmosaic.wave,diag(lensT)*cmosaic.pigment.quantalEfficiency,'LineWidth',2);
-        xlabel('Wavelength (nm)'); ylabel('Spectral quantum efficiency');
         
+        % The qe incorporates the macular pigment density
+        uData = diag(lensT)*cmosaic.qe;
+        plot(cmosaic.wave,uData,'LineWidth',2);
+        xlabel('Wavelength (nm)'); ylabel('Spectral quantum efficiency'); 
+        grid on;
         
     case {'pigmentquantalefficiency'}
         hdl = ieNewGraphWin;
