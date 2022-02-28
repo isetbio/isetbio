@@ -729,10 +729,10 @@ switch (domain)
                     leftMeridianName = 'nasal retina';
                     rightMeridianName = 'temporal retina';
                 end
-                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} retinal space (degrees)    \\color[rgb]{0 0.7 0} %s', ...
+                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} space (degrees)    \\color[rgb]{0 0.7 0} %s', ...
                     leftMeridianName, rightMeridianName));
             else
-                xlabel(axesHandle, 'retinal space (degrees)');
+                xlabel(axesHandle, 'space (degrees)');
             end
         end
         if (~noYlabel)
@@ -740,7 +740,7 @@ switch (domain)
                 ylabel(axesHandle, sprintf('%s  < = = = = = |     space (degrees)    | = = = = =  > %s', ...
                     'superior retina', 'inferior retina'));
             else
-                ylabel(axesHandle, 'retinal space (degrees)');
+                ylabel(axesHandle, 'space (degrees)');
             end
         end
         set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
@@ -755,20 +755,20 @@ switch (domain)
                     leftMeridianName = '(nasal)';
                     rightMeridianName = '(temporal)';
                 end
-                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} retinal space (microns)    \\color[rgb]{0 0.7 0} %s', ...
+                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} space (microns)    \\color[rgb]{0 0.7 0} %s', ...
                     leftMeridianName, rightMeridianName));
             else
-                xlabel(axesHandle, 'retinal space (microns)');
+                xlabel(axesHandle, 'space (microns)');
             end
         end
         if (~noYlabel)
             if (labelRetinalMeridians)
                 upperMeridianName = '(inferior)';
                 lowerMeridianName = '(superior)';
-                ylabel(axesHandle, sprintf('\\color{blue}%s    \\color{black} retinal space (microns)    \\color[rgb]{0.6 0.6 0.4} %s', ...
+                ylabel(axesHandle, sprintf('\\color{blue}%s    \\color{black} space (microns)    \\color[rgb]{0.6 0.6 0.4} %s', ...
                     lowerMeridianName, upperMeridianName));
             else
-                ylabel(axesHandle, 'retinal space (microns)');
+                ylabel(axesHandle, 'space (microns)');
             end
         end
         set(axesHandle, 'XTickLabel', sprintf('%d\n', domainVisualizationTicks.x), ...
