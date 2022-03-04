@@ -1,13 +1,21 @@
 % From the CIE spread sheet provided by Lucas' group
 %
-% After running this script, three variables are set.
+% After running this script, three variables are set
+%   wave, melanopsinEnergy, melanopsinPhotons
 %
 % ieNewGraphWin; plot(wave,melanopsinEnergy);
 % ieNewGraphWin; plot(wave,melanopsinPhotons);
 % ieNewGraphWin; plot(wave,melanopsinPhotons./melanopsinEnergy);
 %
-fname = fullfile(isetRootPath,'data','human','melanopsin','melanopsinEnergy');
+
+%% Run the cell below this first to set the variables
+
+% Here we just save the variabless
+fname = fullfile(isetRootPath,'data','human','melanopsinEnergy.mat');
 ieSaveSpectralFile(wave,melanopsinEnergy,'From the CIE spreadsheet',fname);
+
+fname = fullfile(isetRootPath,'data','human','melanopsinQuanta.mat');
+ieSaveSpectralFile(wave,melanopsinPhotons,'From the CIE spreadsheet',fname);
 
 
 %% Set the variables  - Run this first.
