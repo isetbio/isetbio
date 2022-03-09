@@ -1,21 +1,35 @@
 % From the CIE spread sheet provided by Lucas' group
 %
 % After running this script, three variables are set
-%   wave, melanopsinEnergy, melanopsinPhotons
+%
+%   wave, melanopsinEnergy, melanopsinQuanta
 %
 % ieNewGraphWin; plot(wave,melanopsinEnergy);
-% ieNewGraphWin; plot(wave,melanopsinPhotons);
-% ieNewGraphWin; plot(wave,melanopsinPhotons./melanopsinEnergy);
+% ieNewGraphWin; plot(wave,melanopsinQuanta);
+% ieNewGraphWin; plot(wave,melanopsinQuanta./melanopsinEnergy);
 %
+% We create both to make it simpler for the user to know which curve
+% to use when computing with energy or with quanta.  Specifically,
+% when the user has a stimulus expressed in units of energy, we use 
+%
+%    <stimEnergy, melanopsinEnergy> - A relative amount of energy
+%    absorbed
+%
+% And when the stimulus is in quanta (photons) we use
+%
+%    <stimQuanta, melanopsinQuanta> - A relative number of photons
+%    absorbed.
+%
+% Wandell
 
 %% Run the cell below this first to set the variables
 
-% Here we just save the variabless
+% Here we just save the variables
 fname = fullfile(isetRootPath,'data','human','melanopsinEnergy.mat');
 ieSaveSpectralFile(wave,melanopsinEnergy,'From the CIE spreadsheet',fname);
 
 fname = fullfile(isetRootPath,'data','human','melanopsinQuanta.mat');
-ieSaveSpectralFile(wave,melanopsinPhotons,'From the CIE spreadsheet',fname);
+ieSaveSpectralFile(wave,melanopsinQuanta,'From the CIE spreadsheet',fname);
 
 
 %% Set the variables  - Run this first.
@@ -827,7 +841,7 @@ melanopsinEnergy = [ ...
 ];
 
 
-melanopsinPhotons = [...
+melanopsinQuanta = [...
     1.18E-03
 1.34E-03
 1.51E-03
