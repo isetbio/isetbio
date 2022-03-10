@@ -46,6 +46,7 @@ function d = generateCustomDisplay(varargin)
 % History:
 %    12/01/21  npc  Wrote it.
 %    01/16/22  dhb  More comments.
+%    03/10/22  npc  Now setting custom wavelength support
 
     % Generate the default display
     defaultDisplay = displayCreate;
@@ -74,9 +75,11 @@ function d = generateCustomDisplay(varargin)
     d = displaySet(d, 'name', p.Results.name);
     d = displaySet(d, 'dpi', p.Results.dotsPerInch);
     d = displaySet(d, 'viewing distance', p.Results.viewingDistanceMeters);
+    d = displaySet(d, 'wave', p.Results.wavelengthSupportNanoMeters);
     d = displaySet(d, 'spd', p.Results.spectralPowerDistributionWattsPerSteradianM2NanoMeter);
     d = displaySet(d, 'gamma', p.Results.gammaTable);
     d = displaySet(d, 'ambient spd', p.Results.ambientSPDWattsPerSteradianM2NanoMeter);
+    
     
     if (p.Results.plotCharacteristics)
         w = displayGet(d, 'wave');
