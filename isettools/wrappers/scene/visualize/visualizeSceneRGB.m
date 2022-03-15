@@ -13,7 +13,7 @@ spatialSupportY = squeeze(spatialSupport(:,1,2));
 
 if (isempty(p.Results.axesHandle))
     figure(); clf;
-    ax = subplot('Position', [0.05 0.05 0.94 0.94]);
+    ax = subplot(1,1,1);
 else
     ax = p.Results.axesHandle;
 end
@@ -23,8 +23,8 @@ axis(ax, 'image');
 xtickformat('%0.2f'); ytickformat('%0.2f');
 set(ax, 'XTick', max(spatialSupportX)*[-1 -0.5 0 0.5 1]);
 set(ax, 'YTick', max(spatialSupportY)*[-1 -0.5 0 0.5 1]);
-xlabel(ax,sprintf('\\it space (%s)', spatialSupportUnits));
-ylabel(ax,sprintf('\\it space (%s)', spatialSupportUnits));
+xlabel(ax,sprintf('space (%s)', spatialSupportUnits));
+ylabel(ax,sprintf('space (%s)', spatialSupportUnits));
 
 % Label plot
 if (isempty(meanLuminance))

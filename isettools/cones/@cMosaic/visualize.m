@@ -76,6 +76,7 @@ p.addParameter('noYLabel', false, @islogical);
 p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('fontSize', 16, @isscalar);
+p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
 p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
 p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x)));
 p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
@@ -113,6 +114,7 @@ noXlabel = p.Results.noXLabel;
 noYlabel = p.Results.noYLabel;
 displayedEyeMovementData = p.Results.displayedEyeMovementData;
 fontSize = p.Results.fontSize;
+colorbarFontSize = p.Results.colorbarFontSize;
 cMap = p.Results.activationColorMap;
 verticalColorBar = p.Results.verticalActivationColorBar;
 colorbarTickLabelColor = p.Results.colorbarTickLabelColor;
@@ -647,16 +649,20 @@ if (~isempty(activation))
             end
         end
         
+        if (isempty(colorbarFontSize))
+            colorbarFontSize = fontSize/2;
+        end
+
         if (verticalColorBar)
             colorbar(axesHandle, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
         elseif (verticalColorBarInside)
             colorbar(axesHandle, 'east', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize/2, 'FontName', 'Spot mono');
+                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', colorbarFontSize, 'FontName', 'Spot mono');
         elseif (horizontalColorBar)
             colorbar(axesHandle,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
         elseif (horizontalColorBarInside)
             colorbar(axesHandle,'north', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize/2, 'FontName', 'Spot mono');
+                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', colorbarFontSize, 'FontName', 'Spot mono');
         end
     else
         colorbar(axesHandle, 'off');
