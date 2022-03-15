@@ -82,8 +82,8 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     assert(...
         isinteger(textSceneParams.upSampleFactor) && ...
         isscalar(textSceneParams.upSampleFactor) && ...
-        textSceneParams.upSampleFactor >= 1, ...
-        sprintf('textSceneParams.upSampleFactor must be an integer >= 1.'));
+        (textSceneParams.upSampleFactor >= 1), ...
+        sprintf('textSceneParams.upSampleFactor must be a uint8, >= 1. It is %g.', textSceneParams.upSampleFactor));
 
     % Generate the rgb settings pattern 
     for rgbChannel = 1:3
@@ -124,7 +124,7 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
         end
     end
     
-    upSampledDPI = textSceneParams.upSampleFactor * displayGet(presentationDisplay, 'dpi');
+    upSampledDPI = double(textSceneParams.upSampleFactor) * displayGet(presentationDisplay, 'dpi');
     presentationDisplay = displaySet(presentationDisplay, 'dpi', upSampledDPI);
     theScene = sceneFromFile(gammaUncorrectedRGBimageUpSampled,'rgb', [], presentationDisplay);
 end
