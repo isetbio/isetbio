@@ -43,7 +43,9 @@ function theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textS
 %         'colsNum', 400, ...                               % Pixels along the horizontal (x) dimension
 %         'targetRow', 20, ...                              % Stimulus Y-pixel offset 
 %         'targetCol', 20, ...                              % Stimulus X-pixel offset 
-%         'chromaSpecification', chromaSpecificationRGB...  % background and stimulus chromaticity
+%         'upSampleFactor', 1, ...                          % Upsample factor to increase the retinal image resolution            
+%         'chromaSpecification', chromaSpecificationRGB, ...% background and stimulus chromaticity
+%         'horizontalFOVDegs', 0.4 ...
 %         );
 %
 %   theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textSceneParams, visualizeScene);
@@ -76,6 +78,13 @@ end
 
 function theScene = textSceneFromRGBSettings(textSceneParams, presentationDisplay) 
     
+    % Assert that the upSampleFactor is an integer >= 1
+    assert(...
+        isinteger(textSceneParams.upSampleFactor) && ...
+        isscalar(textSceneParams.upSampleFactor) && ...
+        textSceneParams.upSampleFactor >= 1, ...
+        sprintf('textSceneParams.upSampleFactor must be an integer >= 1.'));
+
     % Generate the rgb settings pattern 
     for rgbChannel = 1:3
        linearRGBimage(:,:,rgbChannel) = rotatedTextStringBitMapPattern(...
@@ -95,7 +104,29 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     gammaUncorrectedRGBimage = ieLUTLinear(linearRGBimage, inverseGammaTable);
     
     % Generate the scene on the presentation display
-    theScene = sceneFromFile(gammaUncorrectedRGBimage,'rgb', [], presentationDisplay);
+    [rows,cols,channelsNum] = size(gammaUncorrectedRGBimage);
+    
+    gammaUncorrectedRGBimageUpSampled = zeros(...
+        rows*textSceneParams.upSampleFactor, ...
+        cols*textSceneParams.upSampleFactor, ...
+        channelsNum);
+    % Upsample gammaUncorrectedRGBimage
+    for i = 1:rows
+        for j = 1:cols
+            thePixelRGB = gammaUncorrectedRGBimage(i,j,:);
+            for ii = 0:(textSceneParams.upSampleFactor-1)
+                iii = (i-1)*textSceneParams.upSampleFactor+1;
+                for jj = 0:(textSceneParams.upSampleFactor-1)
+                    jjj = (j-1)*textSceneParams.upSampleFactor+1;
+                    gammaUncorrectedRGBimageUpSampled(iii+ii,jjj+jj,:) = thePixelRGB;
+                end
+            end
+        end
+    end
+    
+    upSampledDPI = textSceneParams.upSampleFactor * displayGet(presentationDisplay, 'dpi');
+    presentationDisplay = displaySet(presentationDisplay, 'dpi', upSampledDPI);
+    theScene = sceneFromFile(gammaUncorrectedRGBimageUpSampled,'rgb', [], presentationDisplay);
 end
 
 
@@ -1625,23 +1656,23 @@ function bitmapTextImage = textTo20x18BitmapFontImage(text)
         elseif code==69
             TxtIm=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
                 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
-                1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
                 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
         elseif code==70
             TxtIm=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
