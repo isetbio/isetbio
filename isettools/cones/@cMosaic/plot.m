@@ -48,7 +48,7 @@ p.addRequired('allE',@isnumeric);
 % Excitations if precomputed
 p.addParameter('conetype',{'l','m','s'},@(x)(ischar(x) || iscell(x)));
 p.addParameter('roi',[],@(x)(isa(x,'regionOfInterest')));
-p.addParameter('plottitle',false,@islogical);
+p.addParameter('plottitle','',@ischar);
 
 p.addParameter('lens',[],@(x)(isa(x,'Lens')));
 
@@ -60,7 +60,8 @@ p.addParameter('hdl',[],@(x)(isa(x,'matlab.ui.Figure') || isempty(x)));
 
 p.parse(cmosaic,plotType,allE,varargin{:});
 
-hdl = p.Results.hdl;
+hdl    = p.Results.hdl;
+pTitle = p.Results.plottitle;
 
 % Force cone type to a cell array
 conetype = p.Results.conetype;
@@ -79,7 +80,7 @@ switch ieParamFormat(plotType)
         
         params = cmosaic.visualize('params');
         params.activation = allE;
-        if ~p.Results.plottitle, params.plotTitle = ''; end
+        params.plotTitle = pTitle;
         params.verticalActivationColorBar = true;
         
         % Return
@@ -105,24 +106,30 @@ switch ieParamFormat(plotType)
             roi = p.Results.roi;
         end
         
-        hdl = ieNewGraphWin;        
+        hdl = ieNewGraphWin;
+        roiE = cell(numel(conetype),1);
+        roiIdx = cell(numel(conetype),1);
         for ii = 1:numel(conetype)
-            [roiE, roiIdx] = cmosaic.excitations('roi',roi,...
+            [roiE{ii}, roiIdx{ii}] = cmosaic.excitations('roi',roi,...
                 'conetype',conetype{ii},...
                 'all excitations',allE);
             
             % The positions of the cones in the ROI
-            pos = cmosaic.coneRFpositionsDegs(roiIdx,:);
+            pos = cmosaic.coneRFpositionsDegs(roiIdx{ii},:);
             hold on;
-            thisP = plot(pos(:,1),squeeze(roiE),[coneColor(conetype{ii}),'o']);
+            thisP = plot(pos(:,1),squeeze(roiE{ii}),[coneColor(conetype{ii}),'o']);
             set(thisP,'MarkerFaceColor',coneColor(conetype{ii}));
         end
         
         hold off; grid on
         str = sprintf('Excitations (%.1f ms)',cmosaic.integrationTime*1e3);
         xlabel('Horizontal position (deg)'); ylabel(str); 
+        if ~isempty(pTitle), title(pTitle); end
         
-        uData.pos = pos;
+        % See how to get pos and roiE from above.
+        for ii=1:3
+            uData.pos{ii} = cmosaic.coneRFpositionsDegs(roiIdx{ii});
+        end
         uData.roi = roi;
         uData.roiE = roiE;
         uData.roiIdx = roiIdx;
@@ -145,24 +152,30 @@ switch ieParamFormat(plotType)
             roi = p.Results.roi;
         end
         
-        hdl = ieNewGraphWin;        
+        hdl = ieNewGraphWin;
+        roiE = cell(numel(conetype),1);
+        roiIdx = cell(numel(conetype),1);
         for ii = 1:numel(conetype)
-            [roiE, roiIdx] = cmosaic.excitations('roi',roi,...
+            [roiE{ii}, roiIdx{ii}] = cmosaic.excitations('roi',roi,...
                 'conetype',conetype{ii},...
                 'all excitations',allE);
             
             % The positions of the cones in the ROI
-            pos = cmosaic.coneRFpositionsDegs(roiIdx,:);
+            pos = cmosaic.coneRFpositionsDegs(roiIdx{ii},:);
             hold on;
-            thisP = plot(pos(:,2),squeeze(roiE),[coneColor(conetype{ii}),'o']);
+            thisP = plot(pos(:,2),squeeze(roiE{ii}),[coneColor(conetype{ii}),'o']);
             set(thisP,'MarkerFaceColor',coneColor(conetype{ii}));
         end
         
         hold off; grid on
         str = sprintf('Excitations (%.1f ms)',cmosaic.integrationTime*1e3);
         xlabel('Vertical position (deg)'); ylabel(str); 
-        
-        uData.pos = pos;
+        if ~isempty(pTitle), title(pTitle); end
+
+        % See how to get pos and roiE from above.
+        for ii=1:3
+            uData.pos{ii} = cmosaic.coneRFpositionsDegs(roiIdx{ii});
+        end
         uData.roi = roi;
         uData.roiE = roiE;
         uData.roiIdx = roiIdx;
@@ -252,14 +265,17 @@ switch ieParamFormat(plotType)
         % The qe incorporates the macular pigment density
         uData = diag(lensT)*cmosaic.qe;
         plot(cmosaic.wave,uData,'LineWidth',2);
-        xlabel('Wavelength (nm)'); ylabel('Spectral quantum efficiency'); 
+        xlabel('Wavelength (nm)'); ylabel('Spectral quantum efficiency');
+        if ~isempty(pTitle), title(pTitle); end
+
         grid on;
         
     case {'pigmentquantalefficiency'}
         hdl = ieNewGraphWin;
         plot(cmosaic.wave,cmosaic.pigment.quantalEfficiency,'LineWidth',2);
         xlabel('Wavelength (nm)'); ylabel('Quantal efficiency');
-        
+        if ~isempty(pTitle), title(pTitle); end
+
     otherwise
         error('Unknown plot type %s\n',plotType);
 end
