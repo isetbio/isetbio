@@ -70,16 +70,16 @@ for subjectRankOrderIndex = 1:numel(subjectRankOrderList)
     switch (opticsZernikeCoefficientsDataBase)
         case 'Polans2015'
             % Obtain subject IDs ranking in decreasing foveal resolution
-            rankedSujectIDs = PolansOptics.constants.subjectRanking;
-            testSubjectID = rankedSujectIDs(subjectRankOrder);
+            rankedSubjectIDs = PolansOptics.constants.subjectRanking;
+            testSubjectID = rankedSubjectIDs(subjectRankOrder);
 
             % Determine if we need to subtract the subject's central refraction to
             subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(testSubjectID);
 
         case 'Artal2012'
             % Obtain subject IDs ranking in decreasing foveal resolution
-            rankedSujectIDs = ArtalOptics.constants.subjectRanking(whichEye);
-            testSubjectID = rankedSujectIDs(subjectRankOrder);
+            rankedSubjectIDs = ArtalOptics.constants.subjectRanking(whichEye);
+            testSubjectID = rankedSubjectIDs(subjectRankOrder);
 
             % Determine if we need to subtract the subject's central refraction to
             subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(whichEye, testSubjectID);
@@ -125,3 +125,5 @@ for subjectRankOrderIndex = 1:numel(subjectRankOrderList)
 end
 
 NicePlot.exportFigToPDF(sprintf('%s_rankedPSFs.pdf',opticsZernikeCoefficientsDataBase), hFig, 300);
+
+%%
