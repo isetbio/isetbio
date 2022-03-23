@@ -4,10 +4,12 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelengt
     % Parse input
     p = inputParser;
     p.addParameter('flipPSFUpsideDown', false, @islogical);
+    p.addParameter('rotatePSF90degs', false, @islogical);
     p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
     p.addParameter('noLCA',false,@islogical);
     p.parse(varargin{:});
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
+    rotatePSF90degs = p.Results.rotatePSF90degs;
     upsampleFactor = p.Results.upsampleFactor;
     noLCA = p.Results.noLCA;
 
@@ -20,7 +22,8 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelengt
                 'zcoeffs', zcoeffsMicrons,...
                 'measured wl', measWavelength, ...
                 'name', name, ...
-                'flipPSFUpsideDown', flipPSFUpsideDown);
+                'flipPSFUpsideDown', flipPSFUpsideDown, ...
+                'rotatePSF90degs', rotatePSF90degs);
     
     if (~isempty(upsampleFactor))
         arcminPerSample = wvfGet(theWVF,'psf angle per sample','min',measWavelength);

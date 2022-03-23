@@ -6,12 +6,14 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     p.addParameter('doNotZeroCenterPSF', false, @islogical);
     p.addParameter('micronsPerDegree', 300, @isscalar);
     p.addParameter('flipPSFUpsideDown', false, @islogical);
+    p.addParameter('rotatePSF90degs', false, @islogical);
     p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
     p.addParameter('noLCA',false,@islogical);
     p.addParameter('name', 'noname', @ischar);
     p.parse(varargin{:});
     doNotZeroCenterPSF = p.Results.doNotZeroCenterPSF;
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
+    rotatePSF90degs = p.Results.rotatePSF90degs;
     upsampleFactor = p.Results.upsampleFactor;
     umPerDegree = p.Results.micronsPerDegree;
     noLCA = p.Results.noLCA;
@@ -22,6 +24,7 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
             measPupilDiamMM, targetPupilDiamMM, umPerDegree, name, ...
             'upsampleFactor', upsampleFactor, ...
             'flipPSFUpsideDown', flipPSFUpsideDown, ...
+            'rotatePSF90degs', rotatePSF90degs , ...
             'noLCA', noLCA);
     
     xSfCyclesPerRetinalMicron = wvfGet(theWVF, 'otf support', 'um', wavelengthsListToCompute(1));

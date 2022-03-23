@@ -110,6 +110,7 @@ p.addParameter('calcconepsfinfo',conePsfInfoCreate,@isstruct);
 
 % Whether to flip the PSF upside/down
 p.addParameter('flipPSFUpsideDown', false, @islogical);
+p.addParameter('rotatePSF90degs', false, @islogical);
 
 % Massage varargin and parse
 ieVarargin = ieParamFormat(varargin);
@@ -159,4 +160,6 @@ wvf = wvfSet(wvf, 'calc cone psf info', p.Results.calcconepsfinfo);
 
 % Flip PSF upside down
 wvf = wvfSet(wvf, 'flipPSFUpsideDown', p.Results.flipPSFUpsideDown);
+wvf = wvfSet(wvf, 'rotatePSF90degs', p.Results.rotatePSF90degs);
+
 end

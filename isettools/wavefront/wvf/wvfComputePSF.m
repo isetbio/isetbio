@@ -72,6 +72,7 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
     wList = wvfGet(wvf, 'calc wave');
     nWave = wvfGet(wvf, 'calc nwave');
     flipPSFUpsideDown = wvfGet(wvf, 'flippsfupsidedown');
+    rotatePSF90degs = wvfGet(wvf, 'rotatepsf90degs');
     pupilfunc = cell(nWave, 1);
 
     % Make sure pupil function is computed. This function incorporates the
@@ -133,6 +134,11 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
         if (flipPSFUpsideDown)
             % Flip PSF left right 
             psf{wl} = fliplr(psf{wl});
+        end
+        
+        if (rotatePSF90degs)
+            % Flip PSF left right 
+            psf{wl} = rot90(psf{wl});
         end
         
     end

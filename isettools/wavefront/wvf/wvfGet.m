@@ -429,6 +429,10 @@ switch (parm)
         
     case {'flippsfupsidedown'}
         val = wvf.flipPSFUpsideDown;
+        
+    case {'rotatepsf90degs'}
+        val = wvf.rotatePSF90degs;
+        
     otherwise
         isMeas = false;
 end

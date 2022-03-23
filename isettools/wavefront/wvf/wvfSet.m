@@ -442,9 +442,13 @@ switch parm
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
         wvf.PUPILFUNCTION_STALE = true;
-        
+            
     case {'flippsfupsidedown'}
         wvf.flipPSFUpsideDown = val;
+        
+    case {'rotatepsf90degs'}
+        wvf.rotatePSF90degs = val;
+        
         
     otherwise
         error('Unknown parameter %s\n', parm);
