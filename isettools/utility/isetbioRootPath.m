@@ -54,4 +54,4 @@ rootPath = fileparts(fileparts(fileparts(pathToMe)));
 % rootPath = which('isetbio/Contents');
 % [rootPath,~,~] = fileparts(rootPath);
 
-return
+end

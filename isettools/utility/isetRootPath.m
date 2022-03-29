@@ -22,4 +22,4 @@ function rootPath = isetRootPath()
 %% This is easy
 rootPath = fullfile(isetbioRootPath, 'isettools', []);
 
-return
+end
