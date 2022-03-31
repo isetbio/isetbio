@@ -4,15 +4,15 @@
 %  of the display is to create a scene radiance and illuminant from the
 %  input sRGB image so that
 %
-%   * The illuminant is D65
-%   * The scene radiance values correspond to a reflectance within the
-%     first three natural reflectance function bases, reflectanceBasis.mat
+%   * The illuminant is the mean CIE Daylight
+%   * The scene reflectances are within the first three natural reflectance
+%     function bases, reflectanceBasis.mat 
 %
 % Description:
 %  
 %   This is how we create the (theoretical) display.
 %
-%   * The display radiance must be within the space spanned by the D65
+%   * The display radiance must be within the space spanned by the Daylight
 %   light times each of the three natural reflectance bases.  That way,
 %   when we divide out by the light, we are left with a reflectance in the
 %   natural reflectance database.
@@ -23,7 +23,7 @@
 %   display are the same as if we had put the image up on an sRGB display.
 %
 %   This script can be used to write out the reflectance-basis display, but
-%   that code is commented out below.
+%   the writing code is commented out below.
 %
 %   From the logic, you might notice that we could build a theoretical
 %   display for other lights or surface basis functions.
@@ -38,11 +38,15 @@ basis = ieReadSpectra('reflectanceBasis.mat',wave);
 basis(:,1) = -1*basis(:,1);
 % plotReflectance(wave,basis(:,1:3));
 
-%% Load the D65 illuminant
+%% Load the standard CIE daylight illuminant
 
 % Loaded as energy.
-d65 = ieReadSpectra('D65.mat',wave);
-% plotRadiance(wave,d65);
+illEnergy = ieReadSpectra('cieDaylightBasis.mat',wave);
+% plotRadiance(wave,data);
+
+% Loaded as energy.
+% d65 = ieReadSpectra('D65.mat',wave);
+% plotRadiance(wave,data);
 
 %% Radiance basis - 3D
 %
@@ -50,7 +54,7 @@ d65 = ieReadSpectra('D65.mat',wave);
 % is D65 and the surfaces are within the space spanned by the first three
 % natural reflectance function bases.
 
-radianceBasis = diag(d65)*basis(:,1:3);
+radianceBasis = diag(illEnergy(:,1))*basis(:,1:3);
 % plotRadiance(wave,radianceBasis);
 
 %% Find the sRGB XYZ values
@@ -91,7 +95,7 @@ rgbPrimaries = radianceBasis*T;
 % radiance values for any natural image will be all positive because
 % natural scenes never have [1,0,0] and the like.  If they do, then the
 % image data are outside of the range of the natural reflectances under
-% D65!
+% mean daylight illuminant.
 plotRadiance(wave,rgbPrimaries);
 
 %% Create the display

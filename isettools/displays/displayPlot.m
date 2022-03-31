@@ -48,7 +48,7 @@ if notDefined('d'), error('Display required'); end
 param = ieParamFormat(param);
 
 switch param
-    case 'spd' % Plot spectral power distribution of the display
+    case {'spd','primaries'} % Plot spectral power distribution of the display
         spd = displayGet(d, 'spd primaries');
         wave = displayGet(d, 'wave');
         g = vcNewGraphWin;

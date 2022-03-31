@@ -501,8 +501,8 @@ switch parm
         if isfield(d, 'ambient')
             val = d.ambient;
         else
-            warning(['black (ambient) SPD is not set for display, ' ...
-                'return 0']);
+           %  warning(['black (ambient) SPD is not set for display, ' ...
+           %      'return 0']);
             val = zeros(size(wave));
         end
 
