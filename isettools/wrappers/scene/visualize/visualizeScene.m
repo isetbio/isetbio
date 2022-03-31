@@ -8,8 +8,7 @@ function visualizeScene(scene, varargin)
     p.addParameter('axesHandle', []);
     % Parse input
     p.parse(varargin{:});
-    fprintf('In visualize scene');
-    pause
+    
     displayContrastProfiles = p.Results.displayContrastProfiles;
     displayRadianceMaps = p.Results.displayRadianceMaps;
     spatialSupportInDegs = p.Results.spatialSupportInDegs;
