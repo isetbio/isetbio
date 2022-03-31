@@ -501,7 +501,10 @@ classdef cMosaic < handle
                 elseif isequal(obj.noiseFlag,'frozen') && isempty(obj.randomSeed)
                     error('Frozen noise but no seed provided.');
                 end
-                rng(obj.randomSeed);
+
+                if (~isempty(obj.randomSeed))
+                    rng(obj.randomSeed);
+                end
 
                 % Assign cone types
                 obj.assignConeTypes();
@@ -519,7 +522,9 @@ classdef cMosaic < handle
                 else
                     disp(obj.randomSeed)
                 end
-                rng(obj.randomSeed);
+                if (~isempty(obj.randomSeed))
+                    rng(obj.randomSeed);
+                end
             end
             
 
