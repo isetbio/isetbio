@@ -84,6 +84,8 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
         isscalar(textSceneParams.upSampleFactor) && ...
         textSceneParams.upSampleFactor >= 1, ...
         sprintf('textSceneParams.upSampleFactor must be an integer >= 1.'));
+    % It is, now make it double
+    textSceneParams.upSampleFactor = double(textSceneParams.upSampleFactor);
 
     % Generate the rgb settings pattern 
     for rgbChannel = 1:3
