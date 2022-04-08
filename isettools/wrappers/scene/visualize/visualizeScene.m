@@ -6,6 +6,7 @@ function visualizeScene(scene, varargin)
     p.addParameter('roiRectDegs', struct(), @isstruct);
     p.addParameter('crossHairsAtOrigin', false, @islogical);
     p.addParameter('axesHandle', []);
+    p.addParameter('noTitle', false, @islogical);
     % Parse input
     p.parse(varargin{:});
     
@@ -42,7 +43,9 @@ function visualizeScene(scene, varargin)
     
     % visualize the scene as RGB
     ax = visualizeSceneRGB(spatialSupport, spatialSupportUnits, sceneRGBsettings, ...
-        meanLuminance, meanChromaticity, sceneGet(scene, 'name'), 'axesHandle', p.Results.axesHandle);
+        meanLuminance, meanChromaticity, sceneGet(scene, 'name'), ...
+        'axesHandle', p.Results.axesHandle, ...
+        'noTitle', p.Results.noTitle);
     
     
     % Add ROI
