@@ -3,6 +3,7 @@ function ax = visualizeSceneRGB(spatialSupport, spatialSupportUnits, ...
 p = inputParser;
 p.addParameter('axesHandle', []);
 p.addParameter('noTitle', false, @islogical);
+p.addParameter('avoidAutomaticRGBscaling', false, @islogical);
 % Parse input
 p.parse(varargin{:});
 
@@ -19,7 +20,15 @@ else
     ax = p.Results.axesHandle;
 end
 
+if (p.Results.avoidAutomaticRGBscaling)
+    % Add a white and a black pixel to aid in rendering 
+    RGBsettings = 0.5*(RGBsettings / max(RGBsettings(:)));
+    RGBsettings(1,1,1:3) = 0;
+    RGBsettings(end,end,1:3) = 1.0;
+end
+
 image(ax,spatialSupportX, spatialSupportY, RGBsettings);
+
 axis(ax, 'image');
 xtickformat('%0.2f'); ytickformat('%0.2f');
 set(ax, 'XTick', max(spatialSupportX)*[-1 -0.5 0 0.5 1]);

@@ -111,7 +111,7 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     
     % Center RGC image
     gammaUncorrectedRGBimageCentered = centerImage(gammaUncorrectedRGBimageUpSampled);
-
+    
     % Set the DPI of the presentationDisplay to reflect the upsampling factor
     upSampledDPI = double(textSceneParams.upSampleFactor) * displayGet(presentationDisplay, 'dpi');
     presentationDisplay = displaySet(presentationDisplay, 'dpi', upSampledDPI);

@@ -3,6 +3,7 @@ function visualizeScene(scene, varargin)
     p.addParameter('displayContrastProfiles', false, @islogical);
     p.addParameter('displayRadianceMaps', true, @islogical);
     p.addParameter('spatialSupportInDegs', false, @islogical);
+    p.addParameter('avoidAutomaticRGBscaling', false, @islogical);
     p.addParameter('roiRectDegs', struct(), @isstruct);
     p.addParameter('crossHairsAtOrigin', false, @islogical);
     p.addParameter('axesHandle', []);
@@ -15,6 +16,7 @@ function visualizeScene(scene, varargin)
     spatialSupportInDegs = p.Results.spatialSupportInDegs;
     roiRectDegs = p.Results.roiRectDegs;
     crossHairsAtOrigin = p.Results.crossHairsAtOrigin;
+    avoidAutomaticRGBscaling = p.Results.avoidAutomaticRGBscaling;
     
     % retrieve the spatial support of the scene(in millimeters)
     spatialSupportMilliMeters = sceneGet(scene, 'spatial support', 'mm');
@@ -44,6 +46,7 @@ function visualizeScene(scene, varargin)
     % visualize the scene as RGB
     ax = visualizeSceneRGB(spatialSupport, spatialSupportUnits, sceneRGBsettings, ...
         meanLuminance, meanChromaticity, sceneGet(scene, 'name'), ...
+        'avoidAutomaticRGBscaling', avoidAutomaticRGBscaling, ...
         'axesHandle', p.Results.axesHandle, ...
         'noTitle', p.Results.noTitle);
     
