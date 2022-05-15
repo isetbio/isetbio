@@ -21,10 +21,18 @@ function centroids = centroidsFromConeInputs(RGCRFinputs, RGCRFweights, coneRFpo
 %   5/11/2022       NPC     Wrote it
 %
 
-    centroids = zeros(numel(RGCRFweights),2);
-    parfor iRGC = 1:numel(RGCRFweights)
+    centroids = zeros(numel(RGCRFinputs),2);
+    parfor iRGC = 1:size(centroids,1)
         inputConePositions = coneRFpos(RGCRFinputs{iRGC},:);
-        inputConeWeights = RGCRFweights{iRGC};
+        if (isempty(RGCRFweights))
+            inputConeWeights = ones(1,numel(RGCRFinputs{iRGC}));
+        else
+            inputConeWeights = RGCRFweights{iRGC};
+            if (isempty(inputConeWeights))
+                inputConeWeights = ones(1,numel(RGCRFinputs{iRGC}));
+            end
+        end
+
         [~, centroids(iRGC,:)] = var(inputConePositions,inputConeWeights,1);
     end    
 
