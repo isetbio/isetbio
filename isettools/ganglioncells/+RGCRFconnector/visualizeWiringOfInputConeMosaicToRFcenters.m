@@ -1,12 +1,11 @@
 function [hFig, ax, XLims, YLims] = visualizeWiringOfInputConeMosaicToRFcenters(...
-    RGCRFinputs, RGCRFweights, allConePositions, allConeSpacings, allConeTypes, varargin)
+    RGCRFinputs, RGCRFweights, theInputConeMosaic, varargin)
 % Visualize the wiring of the inputConeMosaic to the RGC RF centers
 %
 % Syntax:
 %   [hFig, ax, XLims, YLims] =
 %   RGCRFconnector.visualizeWiringOfInputConeMosaicToRFcenters(...
-%      RGCRFinputs, RGCRFweights, allConePositions, allConeSpacings, ...
-%      allConeTypes, varargin);
+%      RGCRFinputs, RGCRFweights, theInputConeMosaic, varargin);
 %
 % Description:
 %   Visualize the wiring of the inputConeMosaic to the RGC RF centers
@@ -14,9 +13,7 @@ function [hFig, ax, XLims, YLims] = visualizeWiringOfInputConeMosaicToRFcenters(
 % Inputs:
 %    RGCRFinputs        - Cell array with indices of the input cones, one cell per each target RGC RF center
 %    RGCRFweights       - Cell array with weights of the input cones, one cell per each target RGC RF center 
-%    allConePositions   - [N x 2] matrix of (x,y) positions of the N cones in the mosaic
-%    allConeSpacings    - [N x 1] vector of spacings of the N cones in the mosaic
-%    allConeTypes       - [N x 1] vector of types of the N cones in the mosaic
+%    theInputConeMosaic - The input cone mosaic
 %
 % Outputs:
 %    hFig               - The figure handle
@@ -52,6 +49,7 @@ function [hFig, ax, XLims, YLims] = visualizeWiringOfInputConeMosaicToRFcenters(
     p.addParameter('YLims', [], @isnumeric);
     p.parse(varargin{:});
 
+  
     hFig = p.Results.figureHandle;
     ax = p.Results.axesHandle;
     titleString = p.Results.titleString;
@@ -68,7 +66,11 @@ function [hFig, ax, XLims, YLims] = visualizeWiringOfInputConeMosaicToRFcenters(
     thetas = linspace(0,360,thetaSamples);
     diskOutline = 0.5*[cosd(thetas); sind(thetas)]';
 
-
+    % Unpack inputs
+    allConePositions = theInputConeMosaic.coneRFpositionsMicrons;
+    allConeSpacings = theInputConeMosaic.coneRFspacingsMicrons;
+    allConeTypes = theInputConeMosaic.coneTypes;
+    
     % Initialize figure
     if (isempty(ax))
         if (isempty(hFig))
@@ -80,13 +82,13 @@ function [hFig, ax, XLims, YLims] = visualizeWiringOfInputConeMosaicToRFcenters(
 
     % Render cones
     hold(ax, 'on');
-    coneTypes = [cMosaic.LCONE_ID cMosaic.MCONE_ID cMosaic.SCONE_ID];
+    theConeTypes = [cMosaic.LCONE_ID cMosaic.MCONE_ID cMosaic.SCONE_ID];
     coneColors = [1 0 0.2; ...
                   0 0.8 0.2; ...
                   0 0.5 1];
         
-    for iConeType = 1:numel(coneTypes)
-        idx = find(allConeTypes == coneTypes(iConeType));
+    for iConeType = 1:numel(theConeTypes)
+        idx = find(allConeTypes == theConeTypes(iConeType));
         [f,v] = facesAndVertices(allConePositions(idx,:), 1.5*0.204*sqrt(2.0)*allConeSpacings(idx), diskOutline);
         theColor = squeeze(coneColors(iConeType,:));
         patch(ax,'Faces', f, 'Vertices', v, 'LineWidth', 0.5, 'FaceColor', theColor, 'EdgeColor', theColor*0.5);
@@ -162,7 +164,7 @@ function [hFig, ax, XLims, YLims] = visualizeWiringOfInputConeMosaicToRFcenters(
     end
 
     % Finalize figure
-    axis 'equal';
+    axis(ax, 'equal');
 
     dd = max(allConeSpacings);
     if (isempty(XLims))
@@ -171,10 +173,12 @@ function [hFig, ax, XLims, YLims] = visualizeWiringOfInputConeMosaicToRFcenters(
     if (isempty(YLims))
         YLims = [min(allConePositions(:,2))-dd max(allConePositions(:,2))+dd];
     end
+  
     set(ax, 'XLim', XLims, 'YLim', YLims, 'FontSize', 16);
     title(ax, titleString);
 
     drawnow;
+    
     if (~isempty(videoOBJ))
         videoOBJ.writeVideo(getframe(hFig));
     end

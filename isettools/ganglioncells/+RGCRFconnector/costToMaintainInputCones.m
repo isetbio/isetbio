@@ -83,11 +83,11 @@ function [cost, rfCentroid, spatialVarianceCost, chromaticVarianceCost] = costTo
 
     lConeSignal = sum(inputConeWeights(lConeIndices));
     mConeSignal = sum(inputConeWeights(mConeIndices));
-
+    totalLMConeSignal = lConeSignal + mConeSignal;
     if (lConeSignal <= mConeSignal)
-        chromaticVarianceCost = lConeSignal/mConeSignal;
+        chromaticVarianceCost = lConeSignal/totalLMConeSignal;
     else
-        chromaticVarianceCost = mConeSignal/lConeSignal;
+        chromaticVarianceCost = mConeSignal/totalLMConeSignal;
     end
 
     % Total cost
