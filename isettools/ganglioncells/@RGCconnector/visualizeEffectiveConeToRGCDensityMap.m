@@ -1,6 +1,5 @@
 function visualizeEffectiveConeToRGCDensityMap(obj)
 
-    
     % Compute the spatial support for the map
     X = obj.RGCRFpositionsMicrons(:,1);
     Y = obj.RGCRFpositionsMicrons(:,2);

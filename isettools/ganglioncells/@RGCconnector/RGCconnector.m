@@ -18,10 +18,20 @@ classdef RGCconnector < handle
 
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
+        % The input cone mosaic
         inputConeMosaic;
+
+        % RGC RF positions in microns
         RGCRFpositionsMicrons;
+
+        % RGC RF spacings in microns
         RGCRFspacingsMicrons;
+
+        % Compute struct for computing local cone-to-RGC density ratios
         coneToRGCDensityRatioComputeStruct;
+
+        % Cell array with cone indices connected to each RGC
+        RGCRFinputs;
     end
 
     properties (Constant)
@@ -77,6 +87,8 @@ classdef RGCconnector < handle
             % Crop positions to lie within the inputConeMosaic
             obj.cropLattice(RGCRFposMicrons);
 
+
+            % VISUALIZE INPUT DATA
             % Visualize the input mosaics
             obj.visualizeInputMosaics();
 
@@ -86,16 +98,24 @@ classdef RGCconnector < handle
             % Visualize effective lattice and cone to RGC density map
             obj.visualizeEffectiveConeToRGCDensityMap();
 
+
+
+            % STEP1.
+            obj.connectRGCsToConesBasedOnLocalDensities();
+
         end % Constructor
 
         % Visualization of input cone mosaics (before any connections are made)
-        [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
+        [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin);
 
-        % Visualization of cone-to-RGC density map
+        % Visualization of the continuous cone-to-RGC density map
         visualizeInputConeToRGCDensityMap(obj);
 
+        % Visualization of the cone-to-RGC density ratios at the positions of the RGCs
         visualizeEffectiveConeToRGCDensityMap(obj);
-        
+
+        % Visualization of the connectivity between cones and RGCRFs
+        [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin);
     end % Public methods
 
 
@@ -113,10 +133,28 @@ classdef RGCconnector < handle
 
         % Compute the obj.coneToRGCDensityRatioComputeStruct. This is done once, just before cropping.
         computeConeToRGCDensityRatioComputeStruct(obj, RGCRFposMicrons, samplingIntervalMicrons);
+
+        % Employ the obj.coneToRGCDensityRatioComputeStruct to compute the
+        % local cone-to-RGC density ratios at the current RGC RF positions
+        densityRatiosMap = coneToRGCDensityRatiosMap(obj);
+
+        % Connect RGCs to cones strictly based on local cone-RGC densities
+        connectRGCsToConesBasedOnLocalDensities(obj);
+
+        % Visualize the cones of the input cone mosaic using a custom shape
+        % cone outline
+        visualizeConePositions(obj, ax, shapeOutline);
     end
 
 
     methods (Static)
+        % Compute methods
+        [D,idx] = pdist2(A, B, varargin);
+
+        % Visualization methods
+        transparentContourPlot(axesHandle, spatialSupportXY, zData, ...
+          zLevels, faceAlpha, cmap, lineStyle, lineWidth);
+
         [f,v] = facesAndVertices(positions, spacings, diskOutline);
     end
 end

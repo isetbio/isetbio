@@ -1,21 +1,5 @@
-function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
-% Outputs:
-%    hFig               - The figure handle
-%    ax                 - The axes handle
-%    XLims, YLims       - The limits [min max] of the x- and y-axes
-%
-% Optional key/value pairs
-%   'figureHandle'      - The figure handle on which to render the figure
-%   'axesHandle'        - The axes handle on which to render the figure
-%   'inputConeMosaic'   - The input cone mosaic
-%   'XLims', 'YLims'    - The limits [min max] of the x- and y-axes
-%   'titleString'       - A title string
-%   'thetaSamples'      - How many samples to use for rendering the RF disk
-%
-% History:
-%   5/11/2022       NPC     Wrote it
-%
-
+function [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin)
+    
     p = inputParser;
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
@@ -32,10 +16,6 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     XLims = p.Results.XLims;
     YLims = p.Results.YLims;
 
-    % Generate disk outline
-    thetas = linspace(0,360,thetaSamples);
-    diskOutline = 0.5*[cosd(thetas); sind(thetas)]';
-
     if (isempty(ax))
         if (isempty(hFig))
             hFig = figure(); clf;
@@ -46,14 +26,12 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     
     hold(ax, 'on')
 
-    % Plot the cones
-    obj.visualizeConePositions(ax, diskOutline);
-  
-    % Plot the RGCs
-    [f,v] = RGCconnector.facesAndVertices(obj.RGCRFpositionsMicrons, obj.RGCRFspacingsMicrons, diskOutline);
-    patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.75 0.75 0.75], 'EdgeColor', [0 0 0], ...
-        'FaceAlpha', 0.35, 'LineWidth', 2.0);
+    % Generate the cone outline
+    thetas = linspace(0,360,thetaSamples);
+    coneOutline = 0.5*[cosd(thetas); sind(thetas)]';
 
+    % Plot the cones
+    obj.visualizeConePositions(ax, coneOutline);
 
     % Finalize
     axis(ax, 'equal');
@@ -86,4 +64,5 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     xlabel(ax, 'microns'); 
     ylabel(ax, 'microns');
     drawnow;
+    
 end

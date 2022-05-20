@@ -1,14 +1,16 @@
 function cropLattice(obj, RGCRFposMicrons)
     
+    % Crop the MRC mosaic so that we have enough space for the surround
+    % cones
+    maxRsRcRatio = 7;
+    maxSpacing = 0.25*maxRsRcRatio*max(obj.RGCRFspacingsMicrons);
+    
     allConePositions = obj.inputConeMosaic.coneRFpositionsMicrons;
     minConePosX = min(allConePositions(:,1));
     minConePosY = min(allConePositions(:,2));
     maxConePosX = max(allConePositions(:,1));
     maxConePosY = max(allConePositions(:,2));
 
-    maxRsRcRatio = 7;
-    maxSpacing = 0.25*maxRsRcRatio*max(obj.RGCRFspacingsMicrons);
-    
     idx = find(...
         (RGCRFposMicrons(:,1) >= minConePosX+maxSpacing) & ...
         (RGCRFposMicrons(:,1) <= maxConePosX-maxSpacing) & ...
