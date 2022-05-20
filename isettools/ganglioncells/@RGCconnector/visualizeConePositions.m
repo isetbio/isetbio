@@ -13,5 +13,6 @@ function visualizeConePositions(obj, ax, coneOutline)
         [f,v] = RGCconnector.facesAndVertices(allConeRFpositionsMicrons, allConeRFspacingsMicrons, coneOutline);
         theColor = squeeze(coneColors(iConeType,:));
         patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', theColor, 'EdgeColor', theColor*0.5);
+        hold(ax, 'on')
     end
 end

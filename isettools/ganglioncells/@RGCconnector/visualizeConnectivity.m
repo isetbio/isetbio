@@ -24,11 +24,11 @@ function [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin)
         ax = subplot('Position', [0.05 0.07 0.93 0.9]);
     end
     
-    hold(ax, 'on')
+    hold(ax, 'off')
 
     % Generate the cone outline
     thetas = linspace(0,360,thetaSamples);
-    coneOutline = 0.5*[cosd(thetas); sind(thetas)]';
+    coneOutline = 0.25*[cosd(thetas); sind(thetas)]';
 
     % Plot the cones
     obj.visualizeConePositions(ax, coneOutline);
@@ -40,11 +40,14 @@ function [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin)
     minConeXY = min(obj.inputConeMosaic.coneRFpositionsMicrons,[],1);
     minX = min([minConeXY(1) minRGCXY(1)]);
     minY = min([minConeXY(2) minRGCXY(2)]);
-
+    
     maxRGCXY = max(obj.RGCRFpositionsMicrons,[],1);
     maxConeXY = max(obj.inputConeMosaic.coneRFpositionsMicrons,[],1);
     maxX = max([maxConeXY(1) maxRGCXY(1)]);
     maxY = max([maxConeXY(2) maxRGCXY(2)]);
+
+    minX = minRGCXY(1); maxX = maxRGCXY(1);
+    minY = minRGCXY(2); maxY = maxRGCXY(2);
 
     maxSpacing = 0.5*max(obj.RGCRFspacingsMicrons);
     if (isempty(XLims))
@@ -64,5 +67,10 @@ function [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin)
     xlabel(ax, 'microns'); 
     ylabel(ax, 'microns');
     drawnow;
-    
+
+    cMap = brewermap(1024, '*greys');
+    obj.visualizeRGCinputs(ax, 'cMap', cMap);
+    drawnow;
+
+
 end

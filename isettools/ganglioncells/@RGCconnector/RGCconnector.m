@@ -32,6 +32,9 @@ classdef RGCconnector < handle
 
         % Cell array with cone indices connected to each RGC
         RGCRFinputs;
+
+        % Cell array with weights for each cone connected to each RGC
+        RGCRFweights;
     end
 
     properties (Constant)
@@ -88,20 +91,23 @@ classdef RGCconnector < handle
             obj.cropLattice(RGCRFposMicrons);
 
 
-            % VISUALIZE INPUT DATA
+            
             % Visualize the input mosaics
-            obj.visualizeInputMosaics();
+            if (1==2)
+                obj.visualizeInputMosaics();
 
-            % Visualize the cone-to-RGC code density map
-            obj.visualizeInputConeToRGCDensityMap();
+                % Visualize the cone-to-RGC code density map
+                obj.visualizeInputConeToRGCDensityMap();
+            end
 
-            % Visualize effective lattice and cone to RGC density map
-            obj.visualizeEffectiveConeToRGCDensityMap();
+    
+                % Visualize effective lattice and cone to RGC density map
+                obj.visualizeEffectiveConeToRGCDensityMap();
+            
 
-
-
-            % STEP1.
+            % STEP1. Connect cones based on local density
             obj.connectRGCsToConesBasedOnLocalDensities();
+
 
         end % Constructor
 
@@ -144,6 +150,9 @@ classdef RGCconnector < handle
         % Visualize the cones of the input cone mosaic using a custom shape
         % cone outline
         visualizeConePositions(obj, ax, shapeOutline);
+
+        % Visualize the input cones to each RGC
+        visualizeRGCinputs(obj, ax, varargin);
     end
 
 

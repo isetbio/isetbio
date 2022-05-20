@@ -2,12 +2,12 @@ function testRGCconnector
 
     rng(1);
     theInputConeMosaic = cMosaic(...
-        'sizeDegs', 2*[0.5 0.5], ...
-        'eccentricityDegs', [2 0]+10, ...
+        'sizeDegs', 2*[1.0 0.2], ...
+        'eccentricityDegs', [2 0], ...
         'coneDensities', [0.6 0.3 0.1]);
 
-    instantiationMode = 'default'
-    instantiationMode = 'custom cone-to-RGC density';
+    instantiationMode = 'default';
+    %instantiationMode = 'custom cone-to-RGC density';
     %instantiationMode = 'custom RGC position matrix';
 
     switch (instantiationMode)
@@ -17,7 +17,7 @@ function testRGCconnector
 
         case 'custom cone-to-RGC density'
             % Set desired cone-RGC density
-            coneToRGCDensityRatio = 1.8;
+            coneToRGCDensityRatio = 5;
 
             % Instantiation with custom density regular hex RGC mosaic
             rc = RGCconnector(theInputConeMosaic, ...

@@ -39,7 +39,7 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     if (isempty(ax))
         if (isempty(hFig))
             hFig = figure(); clf;
-            set(hFig, 'Color', [1 1 1], 'Position', [10 10 850 800]);
+            set(hFig, 'Color', [1 1 1], 'Position', [10 10 1700 500]);
         end
         ax = subplot('Position', [0.05 0.07 0.93 0.9]);
     end
@@ -68,6 +68,10 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     maxX = max([maxConeXY(1) maxRGCXY(1)]);
     maxY = max([maxConeXY(2) maxRGCXY(2)]);
 
+    minX = minRGCXY(1); maxX = maxRGCXY(1);
+    minY = minRGCXY(2); maxY = maxRGCXY(2);
+
+    
     maxSpacing = 0.5*max(obj.RGCRFspacingsMicrons);
     if (isempty(XLims))
         XLims = [minX-maxSpacing maxX+maxSpacing];
