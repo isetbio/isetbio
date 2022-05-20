@@ -1,12 +1,14 @@
 function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
-    connectEachConeToItsNearestRGC(theInputConeMosaic, RGCRFpos, ...
-                                    wiringParams, visualizationParams)
+                connectEachConeToItsNearestRGC(theInputConeMosaic, RGCRFpos, ...
+                        localConeToRGCDensityRatioStruct, ...
+                        wiringParams, visualizationParams)
 % Connect each of a set of input cones (L- or M-) to a set of RGC RF centers
 %
 % Syntax:
 %   [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
 %        RGCRFconnector.connectEachConeToItsNearestRGC(...
 %                    theInputConeMosaic, RGCRFpos, ...
+%                    localConeToRGCDensityRatioStruct, ...
 %                    wiringParams, visualizationParams)
 %
 % Description:
@@ -15,14 +17,15 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
 % Inputs:
 %    theInputConeMosaic                 - the input cone mosaic
 %    RGCRFposMicrons                    - [M x 2] matrix of (x,y) positions (in microns) of M target RGC RF centers
+%    localConeToRGCDensityRatioStruct   - Struct with info to compute the cone/RGC density ratio at any (x,y) position
 %    wiringParams                       - Struct with the following wiring params
 %       chromaticSpatialVarianceTradeoff   - Chromatic-SpatialVariance tradefoff
 %       sequentialConeTypeWiring           - Logical. Whether to wire cone types sequentially or not
 %       maxNearbyRGCsNum                   - Scalar. Max number of nearby RGCs to look for assignment, if a cone cannot
 %                                         be assigned to its closest RGC because that RGC already has one input cone
 %    visualizationParams                 - Struct with the following visualization params
-%       generateProgressionVideo           - Boolean. Whether to generate a video showning the different stages of the wiring
-%
+%       generateProgressionVideo           - Boolean. Whether to generate a video showning the different wiring steps
+%       exportStagesAsPDF                  - Boolean. Whether to generate a PDF at the end of each wiring stage
 %
 % Outputs:
 %    RGCRFinputs                - Cell array with indices of the input cones, one cell per each target RGC RF center
@@ -41,28 +44,17 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
     allConeSpacings = theInputConeMosaic.coneRFspacingsMicrons;
     allConeTypes = theInputConeMosaic.coneTypes;
 
-    % Sort cones according to distance from the center of the cone mosaic
-    mosaicCenter = mean(allConePositions,1);
-    d = sum((bsxfun(@minus, allConePositions, mosaicCenter)).^2, 2);
-    [~,sortedConeIndices] = sort(d);
-
-    % Find the closest RGC to each cone
-    [~,closestMRGCIndices] = pdist2(RGCRFpos, allConePositions, '', 'smallest', 1);
-
-    % Store the cone inputs in a temporary array
-    tmpRGCRFinputs = cell(1,size(RGCRFpos,1));
     
-    % Stage 1A. Only connect a cone to its nearest RGC if and only if that
-    % RGC has 0 inputs. Also, keep a track of cone indices that were not 
-    % connected because the nearest RGC was already connected to another cone
-    unconnectedConeIndices = [];
+    % Stage 1A. Connect each RGC to M single cones: the closest ones. Also, keep a track of 
+    % cone indices that were not connected.
+    connectedConeIndices = [];
     
     if ((visualizationParams.exportStagesAsPDF) || (visualizationParams.generateProgressionVideo))
         % PDFfilename
         if (wiringParams.sequentialConeTypeWiring)
-            PDFfilename = sprintf('WiringSteps_W%1.2f_SequentialConeTypeWiring', wiringParams.chromaticSpatialVarianceTradeoff);
+            PDFfilename = sprintf('WiringSteps_W%1.2f_SequentialConeTypeWiring_Stage1', wiringParams.chromaticSpatialVarianceTradeoff);
         else
-            PDFfilename = sprintf('WiringSteps_W%1.2f_NonSequentialConeTypeWiring', wiringParams.chromaticSpatialVarianceTradeoff);
+            PDFfilename = sprintf('WiringSteps_W%1.2f_NonSequentialConeTypeWiring_Stage1', wiringParams.chromaticSpatialVarianceTradeoff);
         end
     
         % Video setup
@@ -81,29 +73,49 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
         ax = subplot('Position', [0.1 0.1 0.8 0.8]);
     end
 
+    % Store the cone inputs in a temporary array
+    tmpRGCRFinputs = cell(1,size(RGCRFpos,1));
+
+    % Compute the local code/RGC density ratios for all RGS
+    localConeToRGCDensityRatios = RGCRFconnector.localConeToRGCDensityRatiosAtScatteredPositions(...
+                    localConeToRGCDensityRatioStruct,...
+                    RGCRFpos);
+
     if (wiringParams.sequentialConeTypeWiring)
         % Connect the M-cones during the first pass
         targetConeTypes = [cMosaic.MCONE_ID];
-        [RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices] = DoIt(...
-            RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices, ...
-            closestMRGCIndices, allConePositions, sortedConeIndices, ...
-            allConeTypes, targetConeTypes);
+        [RGCRFpos, tmpRGCRFinputs, connectedConeIndices] = DoIt(...
+           RGCRFpos, tmpRGCRFinputs, ...
+           localConeToRGCDensityRatios, ...
+           connectedConeIndices, ...
+           allConePositions,  ...
+           allConeTypes, targetConeTypes);
     
         % Connect the L-cones during the second pass
         targetConeTypes = [cMosaic.LCONE_ID];
-        [RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices] = DoIt(...
-            RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices, ...
-            closestMRGCIndices, allConePositions, sortedConeIndices, ...
-            allConeTypes, targetConeTypes);
+        [RGCRFpos, tmpRGCRFinputs, connectedConeIndices] = DoIt(...
+           RGCRFpos, tmpRGCRFinputs, ...
+           localConeToRGCDensityRatios, ...
+           connectedConeIndices, ...
+           allConePositions,  ...
+           allConeTypes, targetConeTypes);
+
     else
         % Connect both L and M-cones at the same pass
         targetConeTypes = [cMosaic.LCONE_ID cMosaic.MCONE_ID];
-        [RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices] = DoIt(...
-            RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices, ...
-            closestMRGCIndices, allConePositions, sortedConeIndices, ...
-            allConeTypes, targetConeTypes);
+        [RGCRFpos, tmpRGCRFinputs, connectedConeIndices] = DoIt(...
+           RGCRFpos, tmpRGCRFinputs, ...
+           localConeToRGCDensityRatios, ...
+           connectedConeIndices, ...
+           allConePositions,  ...
+           allConeTypes, targetConeTypes);
     end
 
+
+
+    % List of unconnected cone indices
+    unconnectedConeIndices = setdiff(1:size(allConePositions,1), connectedConeIndices);
+    unconnectedConeIndices = setdiff(unconnectedConeIndices, theInputConeMosaic.sConeIndices);
 
     if ((visualizationParams.exportStagesAsPDF) || (visualizationParams.generateProgressionVideo))
         stageName = 'Stage-1A';
@@ -122,15 +134,22 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
         if (visualizationParams.exportStagesAsPDF)
             NicePlot.exportFigToPDF(sprintf('%s-Stage1A.pdf', PDFfilename), hFig, 300);
         end
+        pause
     end
 
     
-    fprintf('%d out of %d L/M cones could not be connected to their closest RGC because the closest RGC already had one L/M cone attached\n', ...
+    fprintf('%d out of %d L/M cones could not be connected to their closest RGC because the closest RGC already had the expected L/M cone attached\n', ...
         numel(unconnectedConeIndices), numel((allConeTypes ~= cMosaic.SCONE_ID)));
     fprintf('Trying to connect them to nearby RGCs, minimizing the cost\n');
     
 
-    % Stage 1B. Deal with unconnected cone indices
+    % Sort unconnected cone indices according to their distance from the
+    % center of the mosaic
+    d = sum((bsxfun(@minus, allConePositions(unconnectedConeIndices,:), theInputConeMosaic.eccentricityMicrons)).^2,2);
+    [~,idx] = sort(d, 'ascend');
+    unconnectedConeIndices = unconnectedConeIndices(idx);
+
+    % Stage 1B. Deal with the unconnected cone indices
     for iCone = 1:numel(unconnectedConeIndices)
         theConeIndex = unconnectedConeIndices(iCone);
         theConeRFPosition = allConePositions(theConeIndex,:);
@@ -162,6 +181,14 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
             % Compute the cost of assigning this cone to each of these RGCs
             projectedCosts = zeros(1,numel(nearestRGCindices));
     
+            % Compute the theoretical cone/RGC density ratios at the
+            % positions of the RGCs
+            localConeToRGCDensityRatios = ...
+                RGCRFconnector.localConeToRGCDensityRatiosAtScatteredPositions(...
+                    localConeToRGCDensityRatioStruct,...
+                    RGCRFpos(nearestRGCindices,:));
+            
+
             for iRGC = 1:numel(nearestRGCindices)
                 % Retrieve this cell's cone inputs
                 theRGCindex = nearestRGCindices(iRGC);
@@ -178,10 +205,11 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
                 projectedCosts(iRGC) = RGCRFconnector.costToMaintainInputCones(...
                     wiringParams.chromaticSpatialVarianceTradeoff, ...
                     inputConePositions, inputConeSpacings, ...
-                    inputConeTypes, inputConeWeights);
+                    inputConeTypes, inputConeWeights, ...
+                    localConeToRGCDensityRatios(iRGC));
             end % iRGC
 
-            % Find the min projected cost
+            % Find the RGCs with the min projected cost
             minCost = min(projectedCosts);
             idx = find(projectedCosts == minCost);
             candidateTargetRGCindices = nearestRGCindices(idx);
@@ -242,6 +270,7 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
                 'figureHandle', hFig, ...
                 'videoOBJ', videoOBJ, ...
                 'axesHandle', ax);
+            pause
         end
 
     end % iCone
@@ -314,7 +343,7 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
             'figureHandle', hFig, ...
             'videoOBJ', videoOBJ, ...
             'axesHandle', ax);
-         NicePlot.exportFigToPDF(sprintf('%s-Stage1.pdf', PDFfilename), hFig, 300);
+         NicePlot.exportFigToPDF(sprintf('%s.pdf', PDFfilename), hFig, 300);
 
          if (visualizationParams.generateProgressionVideo)
             % Close video stream
@@ -325,8 +354,39 @@ function  [RGCRFinputs, RGCRFweights, availableZeroInputRGCsNum] = ...
 end
 
 
+function [RGCRFpos, tmpRGCRFinputs, connectedConeIndices] = DoIt(...
+        RGCRFpos, tmpRGCRFinputs, ...
+        localConeToRGCDensityRatios, ...
+        connectedConeIndices, ...
+        allConePositions,  ...
+        coneTypes, targetConeTypes)
 
-function[RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices] = DoIt(...
+    for iRGC = 1:size(RGCRFpos,1)
+
+        % Find the localConeToRGCDensityRatios closest cones to each RGCRF
+        [~,closestConeIndices] = pdist2(allConePositions, RGCRFpos(iRGC,:), ...
+            '', 'smallest', floor(localConeToRGCDensityRatios(iRGC)));
+
+        % Find which of these cones are of the accepted type and not
+        % already connected
+        idx = find(...
+            (ismember(coneTypes(closestConeIndices), targetConeTypes)) & ...
+            (~ismember(closestConeIndices, connectedConeIndices)));
+     
+        coneIndicesToConnectToThisRGC = closestConeIndices(idx);
+
+        % Update the inputs and the position of this RGC
+        tmpRGCRFinputs{iRGC} = coneIndicesToConnectToThisRGC;
+        RGCRFpos(iRGC,:) = mean(allConePositions(coneIndicesToConnectToThisRGC,:),1);
+
+        % Keep track of connected cone indices in this stage
+        connectedConeIndices = cat(1, connectedConeIndices, coneIndicesToConnectToThisRGC);
+    end
+
+end
+
+
+function[RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices] = DoItOLD(...
         RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices, ...
         closestMRGCIndices, allConePositions, sortedConeIndices, ...
         coneTypes, targetConeTypes)
@@ -362,6 +422,10 @@ function[RGCRFpos, tmpRGCRFinputs, unconnectedConeIndices] = DoIt(...
         end
     end
 end
+
+
+
+
 
 function [hFig, ax] = setupFigure(FigureTitle)
     hFig = figure(100); clf;

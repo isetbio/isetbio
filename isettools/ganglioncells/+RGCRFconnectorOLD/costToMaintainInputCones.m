@@ -1,12 +1,14 @@
 function [cost, rfCentroid, spatialVarianceCost, chromaticVarianceCost] = costToMaintainInputCones(w, ...
     inputConePositions, inputConeSpacings, ...
-    inputConeTypes, inputConeWeights)
+    inputConeTypes, inputConeWeights, ...
+    localConeToRGCDensityRatio)
 % Compute the cost of maintaining a set of cone inputs 
 %
 % Syntax:
 %   [cost, rfCentroid] = RGCRFconnector.costToMaintainInputCones(w, ...
 %    inputConePositions, inputConeSpacings, ...
-%    inputConeTypes, inputConeWeights)
+%    inputConeTypes, inputConeWeights, ...
+%    localConeToRGCDensityRatio);
 %
 % Description:
 %     Compute the cost of maintaining a set of cone inputs. The cost is a function
@@ -58,18 +60,26 @@ function [cost, rfCentroid, spatialVarianceCost, chromaticVarianceCost] = costTo
     end
 
     % SPATIAL VARIANCE COST
-    measure = 'max distance';
+    [spatialVariance, rfCentroid] = var(inputConePositions,inputConeWeights,1);
+
     measure = 'weighted variance';
+    measure = 'total distance from centroid';
+    measure = 'ratio of actual to theoretical number of cone inputs';
+
     switch (measure)
-        case 'max distance'
-            allDistances = pdist2(inputConePositions, inputConePositions);
-            spatialVarianceCost = max(allDistances(:))/mean(inputConeSpacings);
-            [~, rfCentroid] = var(inputConePositions,inputConeWeights,1);
+        case 'ratio of actual to theoretical number of cone inputs'
+            actualConeInputsNo = size(inputConePositions,1);
+            ratio = actualConeInputsNo/localConeToRGCDensityRatio - 1.0;
+            spatialVarianceCost = max([0 ratio]);
+
+        case 'total distance from centroid'
+            % the sum of all cone distances from their centroid position
+            allDistances = pdist2(inputConePositions, rfCentroid)/mean(inputConeSpacings);
+            spatialVarianceCost = sum(allDistances(:));
 
         case 'weighted variance'
             % Compute weighted variance
-            [spatialVarianceCost, rfCentroid] = var(inputConePositions,inputConeWeights,1);
-            spatialVarianceCost = sqrt(mean(spatialVarianceCost))/mean(inputConeSpacings);
+            spatialVarianceCost = sqrt(mean(spatialVariance))/mean(inputConeSpacings);
 
         otherwise
             error('unknown measure')

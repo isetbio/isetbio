@@ -1,4 +1,4 @@
-function centroids = centroidsFromConeInputs(RGCRFinputs, RGCRFweights, coneRFpos)
+function [centroids, coneInputsNum] = centroidsFromConeInputs(RGCRFinputs, RGCRFweights, coneRFpos)
 % Compute centroids of RGC RFs fron their cone inputs
 %
 % Syntax:
@@ -13,6 +13,7 @@ function centroids = centroidsFromConeInputs(RGCRFinputs, RGCRFweights, coneRFpo
 %
 % Outputs:
 %    centroids          - [N x 2] matrix of (x,y) centroids of the RGC RF centers 
+%    coneInputsNum      - [N x1] vector of # of cone inputs for each RGC
 %
 % Optional key/value pairs
 %   none
@@ -21,8 +22,13 @@ function centroids = centroidsFromConeInputs(RGCRFinputs, RGCRFweights, coneRFpo
 %   5/11/2022       NPC     Wrote it
 %
 
-    centroids = zeros(numel(RGCRFinputs),2);
-    parfor iRGC = 1:size(centroids,1)
+    rgcsNum = numel(RGCRFinputs);
+    centroids = zeros(rgcsNum,2);
+    coneInputsNum = zeros(numel(RGCRFinputs),1);
+    
+
+    parfor iRGC = 1:rgcsNum
+        coneInputsNum(iRGC) = numel(RGCRFinputs{iRGC});
         inputConePositions = coneRFpos(RGCRFinputs{iRGC},:);
         if (isempty(RGCRFweights))
             inputConeWeights = ones(1,numel(RGCRFinputs{iRGC}));
