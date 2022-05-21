@@ -7,7 +7,7 @@ function testRGCconnector
         'coneDensities', [0.6 0.3 0.1]);
 
     instantiationMode = 'default';
-    %instantiationMode = 'custom cone-to-RGC density';
+    instantiationMode = 'custom cone-to-RGC density';
     %instantiationMode = 'custom RGC position matrix';
 
     switch (instantiationMode)

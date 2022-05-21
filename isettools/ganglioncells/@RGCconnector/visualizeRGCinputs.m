@@ -12,20 +12,32 @@ function visualizeRGCinputs(obj, ax, varargin)
     displayRGCID = p.Results.displayRGCID;
     cMap = p.Results.cMap;
 
+    % Find all 0-, 1-, and 2-input RGCs
+    zeroInputRGCindices = numel(find(squeeze(sum(obj.coneConnectivityMatrix,1)) == 0))
+    oneInputRGCindices = numel(find(squeeze(sum(obj.coneConnectivityMatrix,1)) == 1))
+    twoInputRGCindices = numel(find(squeeze(sum(obj.coneConnectivityMatrix,1)) == 2))
+    
 
-    rgcsNum = numel(obj.RGCRFinputs);
+    rgcsNum = size(obj.coneConnectivityMatrix,2);
     for iRGC = 1:rgcsNum
-        connectedConeIndices = obj.RGCRFinputs{iRGC};
+        % Retrieve connection data
+        % Indices of cones connected to this RGC
+        connectedConeIndices = find(squeeze(obj.coneConnectivityMatrix(:, iRGC))>0);
+        % Weights of these input cones
+        inputConeWeights = full(obj.coneConnectivityMatrix(connectedConeIndices, iRGC));
+
+        % Positions and spacings of these input cones
+        inputConePositions = obj.inputConeMosaic.coneRFpositionsMicrons(connectedConeIndices,:);
+        inputConeSpacings = obj.inputConeMosaic.coneRFspacingsMicrons(connectedConeIndices);
 
         if (isempty(connectedConeIndices))
-            fprintf(2,'Skip rendering RGC %d which has 0 inputs.\n', iRGC);
+            fprintf(2,'Skip rendering RGC %d which has 0 inputs. Drawing an X at its initial position (%2.0f,%2.0f).\n', ...
+                iRGC, obj.RGCRFpositionsMicrons(iRGC,1), obj.RGCRFpositionsMicrons(iRGC,2));
+            plot(ax, obj.RGCRFpositionsMicrons(iRGC,1), obj.RGCRFpositionsMicrons(iRGC,2), ...
+                'h', 'MarkerFaceColor', [0 0 0], 'MarkerEdgeColor', [0 0 0], 'MarkerSize', 16, 'LineWidth', 1);
             continue;
         end
 
-        % Retrieve connection data
-        inputConePositions = obj.inputConeMosaic.coneRFpositionsMicrons(connectedConeIndices,:);
-        inputConeSpacings = obj.inputConeMosaic.coneRFspacingsMicrons(connectedConeIndices);
-        inputConeWeights = obj.RGCRFweights{iRGC};
         
         % Generation RF visualization struct
         rfVisualizationStruct = rfFromConeInputs(...
@@ -46,8 +58,7 @@ function visualizeRGCinputs(obj, ax, varargin)
 
         if (superimposeConeInputWiring)
             if (numel(inputConeWeights)>1)
-                % Compute centroid from cone inputs
-                [~, centroid] = var(inputConePositions,inputConeWeights,1);
+                centroid = obj.RGCRFcentroidsFromInputs(iRGC,:);
                 if (displayRGCID)
                     text(ax, centroid(1), centroid(2), sprintf('%d', iRGC), 'Color', [0 1 0], 'FontSize', 12, 'BackgroundColor', [0 0 0]);
                 end

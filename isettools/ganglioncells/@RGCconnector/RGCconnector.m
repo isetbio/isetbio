@@ -30,11 +30,15 @@ classdef RGCconnector < handle
         % Compute struct for computing local cone-to-RGC density ratios
         coneToRGCDensityRatioComputeStruct;
 
-        % Cell array with cone indices connected to each RGC
-        RGCRFinputs;
+        % Sparse [conesNum x rgcsNum] sparse  connectivity matrix 
+        % of cone -> rgc. 
+        % To find which cones are connected to a target RGC:
+        %  connectivityVector = full(squeeze(obj.coneConnectivityMatrix(:, targetRGC)));
+        %  inputConeIDs = find(connectivityVector > 0.01);
+        coneConnectivityMatrix;
 
-        % Cell array with weights for each cone connected to each RGC
-        RGCRFweights;
+        % Centroids of RGC RFs based on the current cone inputs
+        RGCRFcentroidsFromInputs
     end
 
     properties (Constant)
@@ -101,8 +105,8 @@ classdef RGCconnector < handle
             end
 
     
-                % Visualize effective lattice and cone to RGC density map
-                obj.visualizeEffectiveConeToRGCDensityMap();
+            % Visualize effective lattice and cone to RGC density map
+            obj.visualizeEffectiveConeToRGCDensityMap();
             
 
             % STEP1. Connect cones based on local density
@@ -146,6 +150,14 @@ classdef RGCconnector < handle
 
         % Connect RGCs to cones strictly based on local cone-RGC densities
         connectRGCsToConesBasedOnLocalDensities(obj);
+
+        % Update the connectivityMatrix, by disconnecting
+        %   indexOfConeToBeReassigned  FROM  rgcIndex
+        % and connecting 
+        %   indexOfConeToBeReassigned  to theTargetRGCindex
+        reassignConeFromSourceRGCToDestinationRGC(obj, ...
+             indexOfConeToBeReassigned, sourceRGCIndex, destinationRGCindex);
+
 
         % Visualize the cones of the input cone mosaic using a custom shape
         % cone outline

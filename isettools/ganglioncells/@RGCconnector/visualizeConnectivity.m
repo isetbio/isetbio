@@ -33,6 +33,10 @@ function [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin)
     % Plot the cones
     obj.visualizeConePositions(ax, coneOutline);
 
+    % Visualize the connections
+    cMap = brewermap(1024, '*greys');
+    obj.visualizeRGCinputs(ax, 'cMap', cMap);
+
     % Finalize
     axis(ax, 'equal');
 
@@ -68,8 +72,7 @@ function [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin)
     ylabel(ax, 'microns');
     drawnow;
 
-    cMap = brewermap(1024, '*greys');
-    obj.visualizeRGCinputs(ax, 'cMap', cMap);
+    
     drawnow;
 
 

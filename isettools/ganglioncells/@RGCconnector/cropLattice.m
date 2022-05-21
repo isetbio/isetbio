@@ -29,4 +29,7 @@ function cropLattice(obj, RGCRFposMicrons)
        
     % Update spacings
     obj.RGCRFspacingsMicrons = obj.RGCRFspacingsMicrons(idx);
+
+    % Initialize centroids
+    obj.RGCRFcentroidsFromInputs = nan(numel(idx),2);
 end
