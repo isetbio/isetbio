@@ -1,4 +1,4 @@
-function visualizeEffectiveConeToRGCDensityMap(obj)
+function visualizeEffectiveConeToRGCDensityMap(obj, figNo)
 
     % Compute the spatial support for the map
     X = obj.RGCRFpositionsMicrons(:,1);
@@ -28,7 +28,7 @@ function visualizeEffectiveConeToRGCDensityMap(obj)
        'bottomMargin',   0.05, ...
        'topMargin',      0.0);
 
-    hFig = figure(998); clf;
+    hFig = figure(figNo); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1650 1000]);
 
     ax = subplot('Position', subplotPosVectors(1,1).v);

@@ -1,77 +1,61 @@
 function connectRGCsToConesBasedOnLocalDensities(obj)
+% For each RGC try to connect to N cones that are not further than 1
+% RGC separation away and that are not already connected to another RGC
+% N is the local cone-to-RGC density ratio. The obj.coneConnectivityMatrix 
+% sparse matrix is initialized here with the connections established at this
+% step.
 
     % Compute the cone-to-RGC density ratios map at the current RGCRFpos
-    densityRatiosMap = coneToRGCDensityRatiosMap(obj);
+    densityRatiosAllRGCs = coneToRGCDensityRatiosMap(obj);
 
     % Indices for constructing the coneConnectivityMatrix sparse matrix
     nearestRGCindices = [];
     connectedConeIndices = [];
 
     activatedCones = [obj.inputConeMosaic.mConeIndices(:); obj.inputConeMosaic.lConeIndices(:)];
-    [connectedConeIndices, nearestRGCindices] = connectCones(obj, ...
-        activatedCones,  densityRatiosMap, connectedConeIndices, nearestRGCindices);
+    [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
+        activatedCones,  densityRatiosAllRGCs, connectedConeIndices, nearestRGCindices);
     
     % Generate [conesNum x rgcsNum] sparse connectivity matrix
     conesNum = size(obj.inputConeMosaic.coneRFpositionsMicrons,1);
     rgcsNum = size(obj.RGCRFpositionsMicrons,1);
     weights = ones([1 numel(connectedConeIndices)]);
-
     obj.coneConnectivityMatrix = sparse(...
         connectedConeIndices, nearestRGCindices, weights, ...
         conesNum, rgcsNum);
 
-
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 2, ...
-       'colsNum', 1, ...
-       'heightMargin',  0.03, ...
-       'widthMargin',    0.05, ...
-       'leftMargin',     0.05, ...
-       'rightMargin',    0.00, ...
-       'bottomMargin',   0.05, ...
-       'topMargin',      0.0);
-
-    % Visualize current connectivity
-    hFig = figure(997); clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1650 1000]);
-
-    ax = subplot('Position', subplotPosVectors(1,1).v);
-    [~,~,XLims, YLims] = obj.visualizeInputMosaics(...
-        'figureHandle', hFig, ...
-        'axesHandle', ax, ...
-        'thetaSamples', 30, ...
-        'titleString', 'starting positions');
-    set(ax, 'FontSize', 16)
-
-    ax = subplot('Position', subplotPosVectors(2,1).v);
-    obj.visualizeConnectivity(...
-        'figureHandle', hFig, ...
-        'axesHandle', ax, ...
-        'XLims', XLims, ...
-        'YLims', YLims);
-
+    % Update centroids
+    obj.updateCentroidsFromInputs(unique(nearestRGCindices));
+    
 end
 
-function [connectedConeIndices, nearestRGCindices] = connectCones(obj, ...
-        activatedConeIndices,  densityRatiosMap, connectedConeIndices, nearestRGCindices)
+
+
+function [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
+        activatedConeIndices,  densityRatiosAllRGCs, connectedConeIndices, nearestRGCindices)
 
     rgcsNum = size(obj.RGCRFpositionsMicrons,1);
     
     for iRGC = 1:rgcsNum
+
         % Find the localConeToRGCDensityRatios closest cones to each RGCRF
-        [~, idx] = RGCconnector.pdist2(...
+        [distances, idx] = RGCconnector.pdist2(...
             obj.inputConeMosaic.coneRFpositionsMicrons(activatedConeIndices,:), ...
             obj.RGCRFpositionsMicrons(iRGC,:), ...
             '', ...
-            'smallest', floor(densityRatiosMap(iRGC)));
+            'smallest', floor(densityRatiosAllRGCs(iRGC)));
 
         closestConeIndices = activatedConeIndices(idx);
         if (isempty(closestConeIndices))
             continue;
         end
 
-        % Find which of these closest cones are and not already connected
-        idx = find(~ismember(closestConeIndices, connectedConeIndices));
+        % Find which of these closest cones are not already connected to
+        % another RGC and also not more than 1.0 x local RGC separation
+        idx = find(...
+            (~ismember(closestConeIndices, connectedConeIndices)) & ...
+            (distances <= obj.RGCRFspacingsMicrons(iRGC)));
+
         if (isempty(idx))
             continue;
         end
@@ -84,6 +68,6 @@ function [connectedConeIndices, nearestRGCindices] = connectCones(obj, ...
         % Update the RGC's centroid based on its inputs and weights = 1
         inputConePositions = obj.inputConeMosaic.coneRFpositionsMicrons(closestConeIndices,:);
         inputConeWeights = ones(numel(closestConeIndices),1);
-        [~, obj.RGCRFcentroidsFromInputs(iRGC,:)] = var(inputConePositions,inputConeWeights,1);
-    end
+       
+    end % iRGC
 end

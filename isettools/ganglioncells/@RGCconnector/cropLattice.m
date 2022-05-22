@@ -31,5 +31,5 @@ function cropLattice(obj, RGCRFposMicrons)
     obj.RGCRFspacingsMicrons = obj.RGCRFspacingsMicrons(idx);
 
     % Initialize centroids
-    obj.RGCRFcentroidsFromInputs = nan(numel(idx),2);
+    obj.RGCRFcentroidsFromInputs = obj.RGCRFpositionsMicrons;
 end

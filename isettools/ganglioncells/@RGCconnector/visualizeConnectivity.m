@@ -70,10 +70,6 @@ function [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin)
     box(ax, 'on')
     xlabel(ax, 'microns'); 
     ylabel(ax, 'microns');
-    drawnow;
-
     
     drawnow;
-
-
 end

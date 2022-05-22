@@ -1,5 +1,6 @@
 function visualizeRGCinputs(obj, ax, varargin)
-% % Visualize the input cones to each RGC
+% Visualize the input cones to each RGC
+
 
     % Parse input
     p = inputParser;
@@ -11,12 +12,6 @@ function visualizeRGCinputs(obj, ax, varargin)
     superimposeConeInputWiring = p.Results.superimposeConeInputWiring;
     displayRGCID = p.Results.displayRGCID;
     cMap = p.Results.cMap;
-
-    % Find all 0-, 1-, and 2-input RGCs
-    zeroInputRGCindices = numel(find(squeeze(sum(obj.coneConnectivityMatrix,1)) == 0))
-    oneInputRGCindices = numel(find(squeeze(sum(obj.coneConnectivityMatrix,1)) == 1))
-    twoInputRGCindices = numel(find(squeeze(sum(obj.coneConnectivityMatrix,1)) == 2))
-    
 
     rgcsNum = size(obj.coneConnectivityMatrix,2);
     for iRGC = 1:rgcsNum
@@ -31,18 +26,16 @@ function visualizeRGCinputs(obj, ax, varargin)
         inputConeSpacings = obj.inputConeMosaic.coneRFspacingsMicrons(connectedConeIndices);
 
         if (isempty(connectedConeIndices))
-            fprintf(2,'Skip rendering RGC %d which has 0 inputs. Drawing an X at its initial position (%2.0f,%2.0f).\n', ...
+            fprintf(2,'Skip rendering RGC %d which has 0 inputs. Drawing an star at its initial position (%2.0f,%2.0f).\n', ...
                 iRGC, obj.RGCRFpositionsMicrons(iRGC,1), obj.RGCRFpositionsMicrons(iRGC,2));
             plot(ax, obj.RGCRFpositionsMicrons(iRGC,1), obj.RGCRFpositionsMicrons(iRGC,2), ...
                 'h', 'MarkerFaceColor', [0 0 0], 'MarkerEdgeColor', [0 0 0], 'MarkerSize', 16, 'LineWidth', 1);
             continue;
         end
 
-        
         % Generation RF visualization struct
         rfVisualizationStruct = rfFromConeInputs(...
                 inputConePositions, inputConeSpacings, inputConeWeights);
-        
 
         % Plot contour of RF
         zLevels(1) = 0.05*min(inputConeWeights);

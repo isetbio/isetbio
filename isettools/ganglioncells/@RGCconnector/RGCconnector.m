@@ -38,7 +38,7 @@ classdef RGCconnector < handle
         coneConnectivityMatrix;
 
         % Centroids of RGC RFs based on the current cone inputs
-        RGCRFcentroidsFromInputs
+        RGCRFcentroidsFromInputs;
     end
 
     properties (Constant)
@@ -93,8 +93,6 @@ classdef RGCconnector < handle
 
             % Crop positions to lie within the inputConeMosaic
             obj.cropLattice(RGCRFposMicrons);
-
-
             
             % Visualize the input mosaics
             if (1==2)
@@ -104,13 +102,20 @@ classdef RGCconnector < handle
                 obj.visualizeInputConeToRGCDensityMap();
             end
 
-    
             % Visualize effective lattice and cone to RGC density map
-            obj.visualizeEffectiveConeToRGCDensityMap();
+            obj.visualizeEffectiveConeToRGCDensityMap(900);
             
-
-            % STEP1. Connect cones based on local density
+            % STEP1. Connect cones based on local density.
             obj.connectRGCsToConesBasedOnLocalDensities();
+
+            % Visualize current connectivity
+            obj.visualizeCurrentConnectivityState(1000);
+
+            % STEP2. Connect unconnected cones to nearby RGCs
+            obj.connectUnconnectedConesToNearbyRGCs();
+
+            % Visualize current connectivity
+            obj.visualizeCurrentConnectivityState(1001);
 
 
         end % Constructor
@@ -118,14 +123,9 @@ classdef RGCconnector < handle
         % Visualization of input cone mosaics (before any connections are made)
         [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin);
 
-        % Visualization of the continuous cone-to-RGC density map
-        visualizeInputConeToRGCDensityMap(obj);
-
-        % Visualization of the cone-to-RGC density ratios at the positions of the RGCs
-        visualizeEffectiveConeToRGCDensityMap(obj);
-
-        % Visualization of the connectivity between cones and RGCRFs
-        [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin);
+        % Visualize the current connections between the 2 mosaics
+        hFig = visualizeCurrentConnectivityState(obj, figNo);
+                
     end % Public methods
 
 
@@ -148,8 +148,11 @@ classdef RGCconnector < handle
         % local cone-to-RGC density ratios at the current RGC RF positions
         densityRatiosMap = coneToRGCDensityRatiosMap(obj);
 
-        % Connect RGCs to cones strictly based on local cone-RGC densities
+        % STEP1. Connect RGCs to cones strictly based on local cone-RGC densities
         connectRGCsToConesBasedOnLocalDensities(obj);
+
+        % STEP1. Connect unconnected cones to nearby RGCs
+        connectUnconnectedConesToNearbyRGCs(obj);
 
         % Update the connectivityMatrix, by disconnecting
         %   indexOfConeToBeReassigned  FROM  rgcIndex
@@ -158,6 +161,8 @@ classdef RGCconnector < handle
         reassignConeFromSourceRGCToDestinationRGC(obj, ...
              indexOfConeToBeReassigned, sourceRGCIndex, destinationRGCindex);
 
+        % Update the centroids of all RGCs in the RGClist
+        updateCentroidsFromInputs(obj, RGClist);
 
         % Visualize the cones of the input cone mosaic using a custom shape
         % cone outline
@@ -165,6 +170,17 @@ classdef RGCconnector < handle
 
         % Visualize the input cones to each RGC
         visualizeRGCinputs(obj, ax, varargin);
+
+        % Visualization of the cone-to-RGC density ratios at the positions of the RGCs
+        visualizeEffectiveConeToRGCDensityMap(obj, figNo);
+
+        % Visualization of the continuous cone-to-RGC density map
+        visualizeInputConeToRGCDensityMap(obj);
+
+        % Visualization of the connectivity between cones and RGCRFs
+        [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin);
+
+
     end
 
 
