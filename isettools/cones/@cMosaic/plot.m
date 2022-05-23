@@ -127,7 +127,7 @@ switch ieParamFormat(plotType)
         if ~isempty(pTitle), title(pTitle); end
         
         % See how to get pos and roiE from above.
-        for ii=1:3
+        for ii=1:numel(conetype)
             uData.pos{ii} = cmosaic.coneRFpositionsDegs(roiIdx{ii});
         end
         uData.roi = roi;
