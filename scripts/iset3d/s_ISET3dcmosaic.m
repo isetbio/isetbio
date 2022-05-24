@@ -1,15 +1,15 @@
 %% Integrating iset3d and isetbio
 %
-% These calculations were useful for explaining ISETBio to some new
-% graduate students.  Mainly, they show how simple it is to set up a scene
-% and calculate the cone excitations.
+% These calculations show how to set up a scene and calculate the cone
+% excitations for a 3D scene and a human eye model.
 %
 % We load the Chess Set Pieces and a human eye model (navarro).
 %
 % We can adjust the viewing situation, the size of the retina, and then
 % calculate a cone mosaic and cone excitations
 %
-% 
+% See also
+%   ISET3d/tutorials/sceneEye/t_eye*
 
 %%
 ieInit;
