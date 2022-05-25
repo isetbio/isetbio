@@ -10,14 +10,19 @@ function updateCentroidsFromInputs(obj, RGClist)
         theRGCindex = RGClist(iRGC);
         connectedConeIndices = find(squeeze(cm(:, theRGCindex))>0);
 
-        % Weights of these input cones
-        inputConeWeights = full(cm(connectedConeIndices, theRGCindex));
+        if (isempty(connectedConeIndices))
+            centroids(iRGC,:) = inf(1,2);
+        else
 
-        % Positions and spacings of these input cones
-        inputConePositions = allConePosMicrons(connectedConeIndices,:);
+            % Weights of these input cones
+            inputConeWeights = full(cm(connectedConeIndices, theRGCindex));
     
-        % Compute centroids
-        [~, centroids(iRGC,:)] = var(inputConePositions,inputConeWeights,1);
+            % Positions and spacings of these input cones
+            inputConePositions = allConePosMicrons(connectedConeIndices,:);
+        
+            % Compute centroids
+            [~, centroids(iRGC,:)] = var(inputConePositions,inputConeWeights,1);
+        end
     end
 
     obj.RGCRFcentroidsFromInputs(RGClist,:) = centroids;

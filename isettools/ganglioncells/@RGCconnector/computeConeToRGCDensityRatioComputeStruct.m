@@ -1,6 +1,6 @@
 function computeConeToRGCDensityRatioComputeStruct(obj, RGCRFposMicrons, samplingIntervalMicrons)
  
-    % Compute RGCRF spacings from their positions
+    % Compute RGCRF spacings from their initial positions
     obj.RGCRFspacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(RGCRFposMicrons);
 
     % Compute RGC densities from their positions

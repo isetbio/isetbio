@@ -35,10 +35,14 @@ classdef RGCconnector < handle
         % To find which cones are connected to a target RGC:
         %  connectivityVector = full(squeeze(obj.coneConnectivityMatrix(:, targetRGC)));
         %  inputConeIDs = find(connectivityVector > 0.01);
-        coneConnectivityMatrix;
+        coneConnectivityMatrix = [];
 
         % Centroids of RGC RFs based on the current cone inputs
         RGCRFcentroidsFromInputs;
+
+        % Params defining wiring pareferences
+        wiringParams;
+
     end
 
     properties (Constant)
@@ -46,6 +50,14 @@ classdef RGCconnector < handle
             'Watson-midgetRGC' ...
             'Watson-parasolRGC' ...
             };
+
+        defaultWiringParams = struct(...
+                'chromaticSpatialVarianceTradeoff', 1.0, ...     % [0: minimize chromatic variance 1: minimize spatial variance]
+                'spatialVarianceMetric', 'spatial variance', ... % choose between {'maximal interinput distance', 'spatial variance'}
+                'maxNeighborsNum', 6, ...
+                'maxNeighborNormDistance', 1.5 ...                % max distance to search for neighbors
+        );
+
     end % Constant properties
 
 
@@ -62,15 +74,24 @@ classdef RGCconnector < handle
             p = inputParser;
             p.addParameter('RGCRFpositionsMicrons', [], @(x)((isempty(x)) || (isnumeric(x)&&(size(x,2)==2))));
             p.addParameter('coneToRGCDensityRatio', [], @(x)((isempty(x)) || isnumeric(x)));
+            p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
+            p.addParameter('maxNeighborNormDistance', 1.5, @isscalar);
+            p.addParameter('visualizeIntermediateConnectivityStages', false, @islogical);
             p.parse(varargin{:});
             
             RGCRFposMicrons = p.Results.RGCRFpositionsMicrons;
             coneToRGCDensityRatio = p.Results.coneToRGCDensityRatio;
+            visualizeIntermediateConnectivityStages = p.Results.visualizeIntermediateConnectivityStages;
+
+            % Update wiringParams struct
+            obj.wiringParams = RGCconnector.defaultWiringParams;
+            obj.wiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
+            obj.wiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
 
             if (isempty(RGCRFposMicrons)) && (isempty(coneToRGCDensityRatio))
                 % Nothing was specified, so we initialize with a precomputed RGC lattice (Watson's model)
                 modelRGC = 'Watson-midgetRGC';
-                fprintf('Instantiating using ''%s'' mRGC lattice', modelRGC);
+                fprintf('Instantiating using ''%s'' mRGC lattice\n', modelRGC);
                 RGCRFposMicrons = obj.initializeWithPrecomputedLattice(modelRGC);
 
             elseif (isempty(RGCRFposMicrons)) && (~isempty(coneToRGCDensityRatio))
@@ -103,20 +124,67 @@ classdef RGCconnector < handle
             end
 
             % Visualize effective lattice and cone to RGC density map
-            obj.visualizeEffectiveConeToRGCDensityMap(900);
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeEffectiveConeToRGCDensityMap(900);
+            end
             
+
+
             % STEP1. Connect cones based on local density.
             obj.connectRGCsToConesBasedOnLocalDensities();
 
             % Visualize current connectivity
-            obj.visualizeCurrentConnectivityState(1000);
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeCurrentConnectivityState(1000);
+            end
+
+
 
             % STEP2. Connect unconnected cones to nearby RGCs
-            obj.connectUnconnectedConesToNearbyRGCs();
+            obj.connectUnconnectedConesToNearbyRGCs(...
+                'generateProgressVideo', false);
 
             % Visualize current connectivity
-            obj.visualizeCurrentConnectivityState(1001);
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeCurrentConnectivityState(1001);
+            end
 
+
+            % STEP3. Reassign cones in neirboring RGCS with greatly
+            % mismatched # of inputs, e.g., RGC1 having more that N+1
+            % inputs, where N = input of RGC2.
+            % This is the first stage where we fine tune the wiring using
+            % params set in the user-supplied wiringParams struct
+
+            obj.transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(...
+                'generateProgressVideo', ~true);
+
+            % Visualize current connectivity
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeCurrentConnectivityState(1002);
+            end
+
+
+            % STEP4. Transfer half of the cones from the most populous multi-input RGCs
+            % to zero-input RGCs
+            obj.transferConesFromMultiInputRGCsToZeroInputRGCs(...
+                'optimizationCenter', 'visualFieldCenter', ...
+                'generateProgressVideo', ~true);
+
+            % Visualize current connectivity
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeCurrentConnectivityState(1008);
+            end
+
+            
+
+            % Final step of non-overlapping wiring. Remove RGCs on the edges of the patch
+            obj.removeRGCsOnPatchPerimeter();
+
+            % Visualize current connectivity
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeCurrentConnectivityState(1009);
+            end
 
         end % Constructor
 
@@ -148,25 +216,55 @@ classdef RGCconnector < handle
         % local cone-to-RGC density ratios at the current RGC RF positions
         densityRatiosMap = coneToRGCDensityRatiosMap(obj);
 
+        % Find indices of nearby RGCs
+        nearbyRGCindices = neihboringRGCindices(obj, theRGCindex);
+
         % STEP1. Connect RGCs to cones strictly based on local cone-RGC densities
         connectRGCsToConesBasedOnLocalDensities(obj);
 
-        % STEP1. Connect unconnected cones to nearby RGCs
-        connectUnconnectedConesToNearbyRGCs(obj);
+        % STEP2. Connect unconnected cones to nearby RGCs
+        connectUnconnectedConesToNearbyRGCs(obj, varargin);
 
+        % STEP3. Reassign cone input in nearby RGCs with unbalanced inputs
+        transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(obj, varargin);
+
+        % STEP4. Transfer half of the cones from the most populous multi-input RGCs to zero-input RGCs
+        transferConesFromMultiInputRGCsToZeroInputRGCs(obj, varargin);
+
+        % Final step of non-overlapping wiring. Remove RGCs on the edges of the patch
+        removeRGCsOnPatchPerimeter(obj);
+
+        % Optimize how many and which of theSourceRGCinputConeIndices will
+        % be transfered to one of the neighboringRGCindices
+        optimizeTransferOfConeInputs(obj, ...
+           theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, ...
+           theNeighboringRGCindices, allNeighboringRGCsInputConeIndices, allNeighboringRGCsInputConeWeights);
+
+        % Optimize how many and which of theSourceRGCinputConeIndices will
+        % be transfered to a zero input RGC
+        optimizeTransferOfConeInputsToZeroInputRGC(obj,...
+             theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, destinationRGCindex);
+        
         % Update the connectivityMatrix, by disconnecting
         %   indexOfConeToBeReassigned  FROM  rgcIndex
         % and connecting 
         %   indexOfConeToBeReassigned  to theTargetRGCindex
-        reassignConeFromSourceRGCToDestinationRGC(obj, ...
+        transferConeFromSourceRGCToDestinationRGC(obj, ...
              indexOfConeToBeReassigned, sourceRGCIndex, destinationRGCindex);
+
+        % Compute the cost for an RGC to maintain its cone inputs
+        [cost, spatialCostComponent, chromaticCostComponent] = ...
+            costToMaintainInputs(obj, inputConeIndices, inputConeWeights, targetRGCSpacingMicrons);
 
         % Update the centroids of all RGCs in the RGClist
         updateCentroidsFromInputs(obj, RGClist);
 
+        % Update RGCRFspacings for all RGCs beased on their current centroids
+        updateRGCRFspacingsBasedOnCurrentCentroids(obj);
+
         % Visualize the cones of the input cone mosaic using a custom shape
         % cone outline
-        visualizeConePositions(obj, ax, shapeOutline);
+        visualizeConePositions(obj, ax, shapeOutline, varargin);
 
         % Visualize the input cones to each RGC
         visualizeRGCinputs(obj, ax, varargin);
@@ -180,13 +278,22 @@ classdef RGCconnector < handle
         % Visualization of the connectivity between cones and RGCRFs
         [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin);
 
+        % Visualize spatial variance cost statistics
+        visualizeSpatialVarianceCostStatistics(obj, axSpatial, spatialVarianceCost);
 
+        % Visualize chromatic variance cost statistics
+        visualizeChromaticVarianceCostStatistics(obj, axChromatic, chromaticVarianceCost);
     end
 
 
     methods (Static)
         % Compute methods
         [D,idx] = pdist2(A, B, varargin);
+        d = maximalInterInputDistance(coneRFpos);
+    
+        % Indices of points are inside & on the boundary defined by a select subset of points
+        [insideBoundaryPointIndices, onBoundaryPointIndices] = ...
+            pointsInsideBoundaryDefinedBySelectedPoints(allPointPositions, selectedPointIndices);
 
         % Visualization methods
         transparentContourPlot(axesHandle, spatialSupportXY, zData, ...

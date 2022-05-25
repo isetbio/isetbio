@@ -26,8 +26,6 @@ function visualizeRGCinputs(obj, ax, varargin)
         inputConeSpacings = obj.inputConeMosaic.coneRFspacingsMicrons(connectedConeIndices);
 
         if (isempty(connectedConeIndices))
-            fprintf(2,'Skip rendering RGC %d which has 0 inputs. Drawing an star at its initial position (%2.0f,%2.0f).\n', ...
-                iRGC, obj.RGCRFpositionsMicrons(iRGC,1), obj.RGCRFpositionsMicrons(iRGC,2));
             plot(ax, obj.RGCRFpositionsMicrons(iRGC,1), obj.RGCRFpositionsMicrons(iRGC,2), ...
                 'h', 'MarkerFaceColor', [0 0 0], 'MarkerEdgeColor', [0 0 0], 'MarkerSize', 16, 'LineWidth', 1);
             continue;

@@ -20,17 +20,26 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('titleString', '', @(x)(isempty(x) || (ischar(x))));
+    p.addParameter('identifiedConeIndicesSetA', [], @(x)(isempty(x)||isnumeric(x)));
+    p.addParameter('identifiedConeIndicesSetB', [], @(x)(isempty(x)||isnumeric(x)));
+    p.addParameter('displayOnlyTheConeMosaic', false, @islogical);
+    p.addParameter('displayOnlyTheRGCMosaic', false, @islogical);
     p.addParameter('thetaSamples', 20, @isnumeric);
     p.addParameter('XLims', [], @isnumeric);
     p.addParameter('YLims', [], @isnumeric);
     p.parse(varargin{:});
-    
+   
+
     hFig = p.Results.figureHandle;
     ax = p.Results.axesHandle;
     titleString = p.Results.titleString;
     thetaSamples = p.Results.thetaSamples;
     XLims = p.Results.XLims;
     YLims = p.Results.YLims;
+    identifiedConeIndicesSetA = p.Results.identifiedConeIndicesSetA;
+    identifiedConeIndicesSetB = p.Results.identifiedConeIndicesSetB;
+    displayOnlyTheConeMosaic = p.Results.displayOnlyTheConeMosaic;
+    displayOnlyTheRGCMosaic = p.Results.displayOnlyTheRGCMosaic;
 
     % Generate disk outline
     thetas = linspace(0,360,thetaSamples);
@@ -47,12 +56,18 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     hold(ax, 'on')
 
     % Plot the cones
-    obj.visualizeConePositions(ax, diskOutline);
-  
+    if (~displayOnlyTheRGCMosaic)
+        obj.visualizeConePositions(ax, diskOutline, ...
+            'identifiedConeIndicesSetA', identifiedConeIndicesSetA, ...
+            'identifiedConeIndicesSetB', identifiedConeIndicesSetB);
+    end
+
     % Plot the RGCs
-    [f,v] = RGCconnector.facesAndVertices(obj.RGCRFpositionsMicrons, obj.RGCRFspacingsMicrons, diskOutline);
-    patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.75 0.75 0.75], 'EdgeColor', [0 0 0], ...
-        'FaceAlpha', 0.35, 'LineWidth', 2.0);
+    if (~displayOnlyTheConeMosaic)
+        [f,v] = RGCconnector.facesAndVertices(obj.RGCRFpositionsMicrons, obj.RGCRFspacingsMicrons, diskOutline);
+        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.75 0.75 0.75], 'EdgeColor', [0 0 0], ...
+            'FaceAlpha', 0.35, 'LineWidth', 2.0);
+    end
 
 
     % Finalize
@@ -68,9 +83,8 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     maxX = max([maxConeXY(1) maxRGCXY(1)]);
     maxY = max([maxConeXY(2) maxRGCXY(2)]);
 
-    minX = minRGCXY(1); maxX = maxRGCXY(1);
-    minY = minRGCXY(2); maxY = maxRGCXY(2);
-
+    minX = minConeXY(1); maxX = maxConeXY(1);
+    minY = minConeXY(2); maxY = maxConeXY(2);
     
     maxSpacing = 0.5*max(obj.RGCRFspacingsMicrons);
     if (isempty(XLims))

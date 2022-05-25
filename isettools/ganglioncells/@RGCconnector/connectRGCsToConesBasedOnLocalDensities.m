@@ -26,7 +26,11 @@ function connectRGCsToConesBasedOnLocalDensities(obj)
 
     % Update centroids
     obj.updateCentroidsFromInputs(unique(nearestRGCindices));
-    
+
+    % Also set the centroids of all zero-input RGCs
+    ss = squeeze(sum(obj.coneConnectivityMatrix,1));
+    zeroInputRGCindices = find(ss == 0);
+    obj.updateCentroidsFromInputs(zeroInputRGCindices);
 end
 
 
@@ -43,7 +47,7 @@ function [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
             obj.inputConeMosaic.coneRFpositionsMicrons(activatedConeIndices,:), ...
             obj.RGCRFpositionsMicrons(iRGC,:), ...
             '', ...
-            'smallest', floor(densityRatiosAllRGCs(iRGC)));
+            'smallest', max([1 floor(densityRatiosAllRGCs(iRGC))]));
 
         closestConeIndices = activatedConeIndices(idx);
         if (isempty(closestConeIndices))
@@ -54,7 +58,7 @@ function [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
         % another RGC and also not more than 1.0 x local RGC separation
         idx = find(...
             (~ismember(closestConeIndices, connectedConeIndices)) & ...
-            (distances <= obj.RGCRFspacingsMicrons(iRGC)));
+            (distances <= 1.0*obj.RGCRFspacingsMicrons(iRGC)));
 
         if (isempty(idx))
             continue;

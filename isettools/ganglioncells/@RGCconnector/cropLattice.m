@@ -3,8 +3,9 @@ function cropLattice(obj, RGCRFposMicrons)
     % Crop the MRC mosaic so that we have enough space for the surround
     % cones
     maxRsRcRatio = 7;
-    maxSpacing = 0.25*maxRsRcRatio*max(obj.RGCRFspacingsMicrons);
-    
+    maxSurroundDiameter = maxRsRcRatio*prctile(obj.RGCRFspacingsMicrons,95);
+    maxSurroundRadius = 0.5*maxSurroundDiameter;
+
     allConePositions = obj.inputConeMosaic.coneRFpositionsMicrons;
     minConePosX = min(allConePositions(:,1));
     minConePosY = min(allConePositions(:,2));
@@ -12,10 +13,10 @@ function cropLattice(obj, RGCRFposMicrons)
     maxConePosY = max(allConePositions(:,2));
 
     idx = find(...
-        (RGCRFposMicrons(:,1) >= minConePosX+maxSpacing) & ...
-        (RGCRFposMicrons(:,1) <= maxConePosX-maxSpacing) & ...
-        (RGCRFposMicrons(:,2) >= minConePosY+maxSpacing) & ...
-        (RGCRFposMicrons(:,2) <= maxConePosY-maxSpacing));
+        (RGCRFposMicrons(:,1) >= minConePosX+maxSurroundRadius) & ...
+        (RGCRFposMicrons(:,1) <= maxConePosX-maxSurroundRadius) & ...
+        (RGCRFposMicrons(:,2) >= minConePosY+maxSurroundRadius) & ...
+        (RGCRFposMicrons(:,2) <= maxConePosY-maxSurroundRadius));
 
     if (numel(idx) < 7)
         fprintf(2, 'Consider increasing the size of input cone mosaic\n');
