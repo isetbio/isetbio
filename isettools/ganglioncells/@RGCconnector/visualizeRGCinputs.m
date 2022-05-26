@@ -56,7 +56,7 @@ function visualizeRGCinputs(obj, ax, varargin)
                 for iInputCone = 1:numel(inputConeWeights)
                     xx = [centroid(1) inputConePositions(iInputCone,1)];
                     yy = [centroid(2) inputConePositions(iInputCone,2)];
-                    plot(ax, xx, yy, 'k-', 'LineWidth', inputConeWeights(iInputCone)/max(inputConeWeights)*3);
+                    plot(ax, xx, yy, 'k-', 'LineWidth', inputConeWeights(iInputCone)/max(inputConeWeights)*2.5);
                 end
             end
         end

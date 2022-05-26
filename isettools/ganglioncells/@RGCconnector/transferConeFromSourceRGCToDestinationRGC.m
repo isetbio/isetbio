@@ -2,9 +2,9 @@ function transferConeFromSourceRGCToDestinationRGC(obj, ...
     indexOfConeToBeReassigned, sourceRGCIndex, destinationRGCindex)
 %
 % Update the connectivityMatrix, by disconnecting
-%   indexOfConeToBeReassigned  FROM  rgcIndex
+%   indexOfConeToBeReassigned  FROM  sourceRGCindex
 % and connecting 
-%   indexOfConeToBeReassigned  to theTargetRGCindex:
+%   indexOfConeToBeReassigned  to the destinationRGCindex
 %
 % USAGE:
 %           obj.reassignConeFromSourceRGCToDestinationRGC( ...

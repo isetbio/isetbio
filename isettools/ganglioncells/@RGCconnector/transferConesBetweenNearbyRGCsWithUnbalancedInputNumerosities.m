@@ -52,50 +52,49 @@ function transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(obj, vara
         
     
         for iRGC = 1:numel(sortedRGCindices)
-            % Find the indices of cone inputs to this RGC
             theSourceRGCindex = sortedRGCindices(iRGC);
+            
+            % Find up to N neigboring RGCs that are no farther than k x RGC separation
+            nearbyRGCindices = obj.neihboringRGCindices(theSourceRGCindex);
+            if (isempty(nearbyRGCindices))
+                continue;
+            end
+
+            % Find the indices and weights of cone inputs to this RGC
             theSourceRGCinputConeIndices = find(squeeze(obj.coneConnectivityMatrix(:,theSourceRGCindex))>0);
             theSourceRGCinputConesNum = numel(theSourceRGCinputConeIndices);
             theSourceRGCinputConeWeights = full(obj.coneConnectivityMatrix(theSourceRGCinputConeIndices,theSourceRGCindex));
     
-            % Find up to N neigboring RGCs that are no farther than k x RGC separation
-            nearbyRGCindices = obj.neihboringRGCindices(theSourceRGCindex);
-    
-            if (~isempty(nearbyRGCindices))
-                % Find the difference in # of input cones between source RGC and neigboring RGCs
-                inputConeIndicesAllNeighboringRGCs = cell(1,numel(nearbyRGCindices));
-                inputConeWeightsAllNeighboringRGCs = cell(1,numel(nearbyRGCindices));
-                inputConeTypesAllNeighboringRGCs = cell(1,numel(nearbyRGCindices));
-    
-                differenceInConeInputs = zeros(1,numel(nearbyRGCindices));
-                for iNearbyRGC = 1:numel(nearbyRGCindices)
-                    theNearbyRGCindex = nearbyRGCindices(iNearbyRGC);
-                    inputConeIndicesAllNeighboringRGCs{iNearbyRGC} = find(obj.coneConnectivityMatrix(:,theNearbyRGCindex)>0);
-                    inputConeWeightsAllNeighboringRGCs{iNearbyRGC} = full(obj.coneConnectivityMatrix(inputConeIndicesAllNeighboringRGCs{iNearbyRGC},theNearbyRGCindex));
-                    inputConeTypesAllNeighboringRGCs{iNearbyRGC} = obj.inputConeMosaic.coneTypes(inputConeIndicesAllNeighboringRGCs{iNearbyRGC});
-                    differenceInConeInputs(iNearbyRGC) = theSourceRGCinputConesNum - numel(inputConeIndicesAllNeighboringRGCs{iNearbyRGC});
-                end % iNearbyRGC
-     
-                % Find nearby RGCs whose # of input cones is at least 2 less
-                maxDiff = max(differenceInConeInputs);
-                if (maxDiff >= 2)
-                    tranfersInCurrentPass = tranfersInCurrentPass + 1;
-                    idx = find(differenceInConeInputs == maxDiff);
-                    allNeighboringRGCsInputConeIndices = inputConeIndicesAllNeighboringRGCs(idx);
-                    allNeighboringRGCsInputConeWeights = inputConeWeightsAllNeighboringRGCs(idx);
-                    theNeighboringRGCindices = nearbyRGCindices(idx);
-                    obj.optimizeTransferOfConeInputs(...
-                        theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, ...
-                        theNeighboringRGCindices, allNeighboringRGCsInputConeIndices, allNeighboringRGCsInputConeWeights);
-                    
-                    if (generateProgressVideo)
-                          % Visualize current connectivity
-                            hFig = obj.visualizeCurrentConnectivityState(1002);
-                            videoOBJ.writeVideo(getframe(hFig));
-                    end
-    
+            % Find the difference in # of input cones between source RGC and neigboring RGCs
+            inputConeIndicesAllNeighboringRGCs = cell(1,numel(nearbyRGCindices));
+            inputConeWeightsAllNeighboringRGCs = cell(1,numel(nearbyRGCindices));
+            differenceInConeInputs = zeros(1,numel(nearbyRGCindices));
+            for iNearbyRGC = 1:numel(nearbyRGCindices)
+                theNearbyRGCindex = nearbyRGCindices(iNearbyRGC);
+                inputConeIndicesAllNeighboringRGCs{iNearbyRGC} = find(obj.coneConnectivityMatrix(:,theNearbyRGCindex)>0);
+                inputConeWeightsAllNeighboringRGCs{iNearbyRGC} = full(obj.coneConnectivityMatrix(inputConeIndicesAllNeighboringRGCs{iNearbyRGC},theNearbyRGCindex));
+                differenceInConeInputs(iNearbyRGC) = theSourceRGCinputConesNum - numel(inputConeIndicesAllNeighboringRGCs{iNearbyRGC});
+            end % iNearbyRGC
+
+
+            % Find nearby RGCs whose # of input cones is at least 2 less
+            maxDiff = max(differenceInConeInputs);
+            if (maxDiff >= 2)
+                tranfersInCurrentPass = tranfersInCurrentPass + 1;
+                idx = find(differenceInConeInputs == maxDiff);
+                allNeighboringRGCsInputConeIndices = inputConeIndicesAllNeighboringRGCs(idx);
+                allNeighboringRGCsInputConeWeights = inputConeWeightsAllNeighboringRGCs(idx);
+                theNeighboringRGCindices = nearbyRGCindices(idx);
+                obj.optimizeTransferOfConeInputs(...
+                    theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, ...
+                    theNeighboringRGCindices, allNeighboringRGCsInputConeIndices, allNeighboringRGCsInputConeWeights);
+
+                if (generateProgressVideo)
+                    % Visualize current connectivity
+                    hFig = obj.visualizeCurrentConnectivityState(1002);
+                    videoOBJ.writeVideo(getframe(hFig));
                 end
-            end % (~isempty(nearbyRGCindices))
+            end %if (maxDiff >= 2)
         end % iRGC
 
         if (tranfersInCurrentPass>0)
@@ -104,7 +103,7 @@ function transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(obj, vara
             fprintf('No need to do more than #%d passes.\n', currentPass);
         end
 
-    end % pass
+    end % while loop
 
     if (generateProgressVideo)
         videoOBJ.close();

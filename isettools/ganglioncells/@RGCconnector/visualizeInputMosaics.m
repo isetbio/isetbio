@@ -83,8 +83,10 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     maxX = max([maxConeXY(1) maxRGCXY(1)]);
     maxY = max([maxConeXY(2) maxRGCXY(2)]);
 
-    minX = minConeXY(1); maxX = maxConeXY(1);
-    minY = minConeXY(2); maxY = maxConeXY(2);
+    minX = 0.1*minConeXY(1) + 0.9*minRGCXY(1); 
+    maxX = 0.1*maxConeXY(1) + 0.9* maxRGCXY(1);
+    minY = 0.1*minConeXY(2) + 0.9* minRGCXY(2);
+    maxY = 0.1*maxConeXY(2) + 0.9* maxRGCXY(2);
     
     maxSpacing = 0.5*max(obj.RGCRFspacingsMicrons);
     if (isempty(XLims))

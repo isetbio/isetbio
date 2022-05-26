@@ -55,6 +55,7 @@ classdef RGCconnector < handle
                 'chromaticSpatialVarianceTradeoff', 1.0, ...     % [0: minimize chromatic variance 1: minimize spatial variance]
                 'spatialVarianceMetric', 'spatial variance', ... % choose between {'maximal interinput distance', 'spatial variance'}
                 'maxNeighborsNum', 6, ...
+                'maxSwapPassesNum', 10, ...
                 'maxNeighborNormDistance', 1.5 ...                % max distance to search for neighbors
         );
 
@@ -74,8 +75,9 @@ classdef RGCconnector < handle
             p = inputParser;
             p.addParameter('RGCRFpositionsMicrons', [], @(x)((isempty(x)) || (isnumeric(x)&&(size(x,2)==2))));
             p.addParameter('coneToRGCDensityRatio', [], @(x)((isempty(x)) || isnumeric(x)));
-            p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
-            p.addParameter('maxNeighborNormDistance', 1.5, @isscalar);
+            p.addParameter('chromaticSpatialVarianceTradeoff', RGCconnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
+            p.addParameter('maxNeighborNormDistance', RGCconnector.defaultWiringParams.maxNeighborNormDistance, @isscalar);
+            p.addParameter('maxSwapPassesNum', RGCconnector.defaultWiringParams.maxSwapPassesNum, @(x)(isscalar(x)&&(x>=1)));
             p.addParameter('visualizeIntermediateConnectivityStages', false, @islogical);
             p.parse(varargin{:});
             
@@ -87,6 +89,7 @@ classdef RGCconnector < handle
             obj.wiringParams = RGCconnector.defaultWiringParams;
             obj.wiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
             obj.wiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
+            obj.wiringParams.maxSwapPassesNum = p.Results.maxSwapPassesNum;
 
             if (isempty(RGCRFposMicrons)) && (isempty(coneToRGCDensityRatio))
                 % Nothing was specified, so we initialize with a precomputed RGC lattice (Watson's model)
@@ -135,7 +138,7 @@ classdef RGCconnector < handle
 
             % Visualize current connectivity
             if (visualizeIntermediateConnectivityStages)
-                obj.visualizeCurrentConnectivityState(1000);
+                obj.visualizeCurrentConnectivityState(1001);
             end
 
 
@@ -146,37 +149,47 @@ classdef RGCconnector < handle
 
             % Visualize current connectivity
             if (visualizeIntermediateConnectivityStages)
-                obj.visualizeCurrentConnectivityState(1001);
+                obj.visualizeCurrentConnectivityState(1002);
             end
 
 
-            % STEP3. Reassign cones in neirboring RGCS with greatly
-            % mismatched # of inputs, e.g., RGC1 having more that N+1
-            % inputs, where N = input of RGC2.
+            % STEP3. Transfer 1 cone from RGC1 to a neirboring RGC (RGC2)
+            % where the RGC1 has at least N+2inputs, where N = # of inputs in 
+            % RGC2, so as to minimize the combined cost.
             % This is the first stage where we fine tune the wiring using
             % params set in the user-supplied wiringParams struct
-
             obj.transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(...
                 'generateProgressVideo', ~true);
 
             % Visualize current connectivity
             if (visualizeIntermediateConnectivityStages)
-                obj.visualizeCurrentConnectivityState(1002);
+                obj.visualizeCurrentConnectivityState(1003);
             end
 
 
-            % STEP4. Transfer half of the cones from the most populous multi-input RGCs
-            % to zero-input RGCs
+            % STEP 4. Transfer half of the cones from the most populous multi-input RGCs
+            % to zero-input RGCs. Here we are utilizing RGCs with 0 inputs
             obj.transferConesFromMultiInputRGCsToZeroInputRGCs(...
                 'optimizationCenter', 'visualFieldCenter', ...
                 'generateProgressVideo', ~true);
 
             % Visualize current connectivity
             if (visualizeIntermediateConnectivityStages)
-                obj.visualizeCurrentConnectivityState(1008);
+                obj.visualizeCurrentConnectivityState(1004);
             end
 
-            
+
+            % STEP 5. Swap 1 or more cones  of RGC1 with the same # of cones 
+            % in a neighboring RGC2 so at to minimize the combined cost
+            obj.swapConesBetweenNearbyRGCs(...
+                'optimizationCenter', 'visualFieldCenter', ...
+                'generateProgressVideo', ~true);
+
+            % Visualize current connectivity
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeCurrentConnectivityState(1005);
+            end
+
 
             % Final step of non-overlapping wiring. Remove RGCs on the edges of the patch
             obj.removeRGCsOnPatchPerimeter();
@@ -231,6 +244,10 @@ classdef RGCconnector < handle
         % STEP4. Transfer half of the cones from the most populous multi-input RGCs to zero-input RGCs
         transferConesFromMultiInputRGCsToZeroInputRGCs(obj, varargin);
 
+        % STEP 5 Swap 1 or more cones  of RGC1 with the same # of cones 
+        % in a neighboring RGC2 so at to minimize the combined cost
+        swapConesBetweenNearbyRGCs(obj, varargin);
+
         % Final step of non-overlapping wiring. Remove RGCs on the edges of the patch
         removeRGCsOnPatchPerimeter(obj);
 
@@ -245,12 +262,27 @@ classdef RGCconnector < handle
         optimizeTransferOfConeInputsToZeroInputRGC(obj,...
              theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, destinationRGCindex);
         
+        % Optimize how many and which of theSourceRGCinputConeIndices will
+        % be swapped with cones to one of the neighboringRGCindices
+        beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
+            theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, ...
+            theNeighboringRGCindices, allNeighboringRGCsInputConeIndices, allNeighboringRGCsInputConeWeights);
+
         % Update the connectivityMatrix, by disconnecting
-        %   indexOfConeToBeReassigned  FROM  rgcIndex
+        %   indexOfConeToBeReassigned  FROM  sourceRGCindex
         % and connecting 
-        %   indexOfConeToBeReassigned  to theTargetRGCindex
+        %   indexOfConeToBeReassigned  to the destinationRGCindex
         transferConeFromSourceRGCToDestinationRGC(obj, ...
              indexOfConeToBeReassigned, sourceRGCIndex, destinationRGCindex);
+
+        % Update the connectivityMatrix by swapping cones
+        %       sourceRGCconeIndicesToBeSwapped from sourceRGCindex
+        % with cones
+        %       destinationRGCconeIndicesToBeSwapped form destinationRGCindex
+        swapConesFromSourceRGCWithConesOfDestinationRGC(obj, ...
+            sourceRGCconeIndicesToBeSwapped, sourceRGCindex, ...
+            destinationRGCconeIndicesToBeSwapped, destinationRGCindex)
+    
 
         % Compute the cost for an RGC to maintain its cone inputs
         [cost, spatialCostComponent, chromaticCostComponent] = ...
