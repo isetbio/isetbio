@@ -71,9 +71,10 @@ function testRGCconnector
     %instantiationMode = 'custom RGC position matrix';
 
     % [0: minimize chromatic variance, 1: minimize spatial variance]
-    chromaticSpatialVarianceTradeoff = 0.5;
-    maxNeighborNormDistance = 1.2;
+    chromaticSpatialVarianceTradeoff = 0.;
+    maxNeighborNormDistance = 1.0;
     maxSwapPassesNum = 10;
+    maxNumberOfConesToSwap = 6;
     visualizeIntermediateConnectivityStages = true;
     
 

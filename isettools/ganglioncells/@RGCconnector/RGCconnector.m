@@ -55,6 +55,7 @@ classdef RGCconnector < handle
                 'chromaticSpatialVarianceTradeoff', 1.0, ...     % [0: minimize chromatic variance 1: minimize spatial variance]
                 'spatialVarianceMetric', 'spatial variance', ... % choose between {'maximal interinput distance', 'spatial variance'}
                 'maxNeighborsNum', 6, ...
+                'maxNumberOfConesToSwap', 3, ...
                 'maxSwapPassesNum', 10, ...
                 'maxNeighborNormDistance', 1.5 ...                % max distance to search for neighbors
         );
@@ -77,6 +78,7 @@ classdef RGCconnector < handle
             p.addParameter('coneToRGCDensityRatio', [], @(x)((isempty(x)) || isnumeric(x)));
             p.addParameter('chromaticSpatialVarianceTradeoff', RGCconnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
             p.addParameter('maxNeighborNormDistance', RGCconnector.defaultWiringParams.maxNeighborNormDistance, @isscalar);
+            p.addParameter('maxNumberOfConesToSwap', RGCconnector.defaultWiringParams.maxNumberOfConesToSwap,@(x)(isscalar(x)&&(x>=1)));
             p.addParameter('maxSwapPassesNum', RGCconnector.defaultWiringParams.maxSwapPassesNum, @(x)(isscalar(x)&&(x>=1)));
             p.addParameter('visualizeIntermediateConnectivityStages', false, @islogical);
             p.parse(varargin{:});
@@ -90,6 +92,7 @@ classdef RGCconnector < handle
             obj.wiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
             obj.wiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
             obj.wiringParams.maxSwapPassesNum = p.Results.maxSwapPassesNum;
+            obj.wiringParams.maxNumberOfConesToSwap = p.Results.maxNumberOfConesToSwap;
 
             if (isempty(RGCRFposMicrons)) && (isempty(coneToRGCDensityRatio))
                 % Nothing was specified, so we initialize with a precomputed RGC lattice (Watson's model)

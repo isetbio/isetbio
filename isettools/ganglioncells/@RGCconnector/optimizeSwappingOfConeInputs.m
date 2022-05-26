@@ -11,7 +11,7 @@ function beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
     maxSourceRGCconesNumSwapped = max([1 floor(sourceRGCconeInputsNum/2)]);
 
     % Cost for all combinations of nearby RGCs and # of cones to be swapped
-    maxNumberOfConesToSwap = 3;
+    maxNumberOfConesToSwap = obj.wiringParams.maxNumberOfConesToSwap;
     optimalProjectedCosts = inf(numel(neighboringRGCindices), 100);
     optimalSourceConeCombination = cell(numel(neighboringRGCindices), 100);
     optimalNeighboringConeCombination = cell(numel(neighboringRGCindices), 100);
