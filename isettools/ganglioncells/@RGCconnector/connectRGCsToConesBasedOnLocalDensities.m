@@ -12,6 +12,7 @@ function connectRGCsToConesBasedOnLocalDensities(obj)
     nearestRGCindices = [];
     connectedConeIndices = [];
 
+    % connect to L+M cones only
     activatedCones = [obj.inputConeMosaic.mConeIndices(:); obj.inputConeMosaic.lConeIndices(:)];
     [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
         activatedCones,  densityRatiosAllRGCs, connectedConeIndices, nearestRGCindices);
@@ -55,10 +56,10 @@ function [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
         end
 
         % Find which of these closest cones are not already connected to
-        % another RGC and also not more than 1.0 x local RGC separation
+        % another RGC and also not more than 0.6 x local RGC separation
         idx = find(...
             (~ismember(closestConeIndices, connectedConeIndices)) & ...
-            (distances <= 1.0*obj.RGCRFspacingsMicrons(iRGC)));
+            (distances <= 0.6*obj.RGCRFspacingsMicrons(iRGC)));
 
         if (isempty(idx))
             continue;
@@ -68,10 +69,5 @@ function [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
         % Accumulate indices for sparse array construction 
         connectedConeIndices = cat(1, connectedConeIndices, closestConeIndices);
         nearestRGCindices = cat(1, nearestRGCindices, iRGC*ones(numel(closestConeIndices),1));
-
-        % Update the RGC's centroid based on its inputs and weights = 1
-        inputConePositions = obj.inputConeMosaic.coneRFpositionsMicrons(closestConeIndices,:);
-        inputConeWeights = ones(numel(closestConeIndices),1);
-       
     end % iRGC
 end

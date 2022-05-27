@@ -1,5 +1,6 @@
 function optimizeTransferOfConeInputsToZeroInputRGC(obj,...
-             theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, theDestinationRGCindex)
+             theSourceRGCindex, theSourceRGCinputConeIndices, ...
+             theSourceRGCinputConeWeights, theDestinationRGCindex)
 
     % Optimize how many and which of theSourceRGCinputConeIndices will be transfered to a zero input RGC
     
@@ -21,7 +22,7 @@ function optimizeTransferOfConeInputsToZeroInputRGC(obj,...
         % Compute projected cost for the source RGC
         projectedCostsSourceRGC(iSourceConeComboIndex) = obj.costToMaintainInputs(...
             newSourceRGCinputConeIndices, newSourceRGCinputConeWeights, ...
-            obj.RGCRFspacingsMicrons(theSourceRGCindex));
+            obj.localRGCRFspacingsMicrons(theSourceRGCindex));
     end
 
     % Find the (iSourceConeIndex, iNearbyRGCindex) pair that minimizes the total cost

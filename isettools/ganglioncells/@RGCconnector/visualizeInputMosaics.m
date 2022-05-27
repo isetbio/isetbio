@@ -44,6 +44,8 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     % Generate disk outline
     thetas = linspace(0,360,thetaSamples);
     diskOutline = 0.5*[cosd(thetas); sind(thetas)]';
+    thetas60 = linspace(0,360,7);
+    hexOutline = 0.5*[cosd(thetas60); sind(thetas60)]';
 
     if (isempty(ax))
         if (isempty(hFig))
@@ -56,17 +58,37 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     hold(ax, 'on')
 
     % Plot the cones
-    if (~displayOnlyTheRGCMosaic)
-        obj.visualizeConePositions(ax, diskOutline, ...
-            'identifiedConeIndicesSetA', identifiedConeIndicesSetA, ...
-            'identifiedConeIndicesSetB', identifiedConeIndicesSetB);
-    end
+%     if (~displayOnlyTheRGCMosaic)
+%         obj.visualizeConePositions(ax, diskOutline, ...
+%             'identifiedConeIndicesSetA', identifiedConeIndicesSetA, ...
+%             'identifiedConeIndicesSetB', identifiedConeIndicesSetB);
+%     end
 
     % Plot the RGCs
     if (~displayOnlyTheConeMosaic)
-        [f,v] = RGCconnector.facesAndVertices(obj.RGCRFpositionsMicrons, obj.RGCRFspacingsMicrons, diskOutline);
-        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.75 0.75 0.75], 'EdgeColor', [0 0 0], ...
-            'FaceAlpha', 0.35, 'LineWidth', 2.0);
+        % Plot original RGCRF positions if no input and show this using
+        % dashed outlines
+        [f,v] = RGCconnector.facesAndVertices(...
+            obj.RGCRFpositionsMicrons, ...
+            obj.RGCRFspacingsMicrons, hexOutline);
+        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.25 0.25], 'EdgeColor', [0 0 0], ...
+            'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
+
+        
+        % Plot the centroid positions for RGCs with cone inputs
+        idx = find(obj.RGCRFcentroidsFromInputs(:,1) ~= Inf);
+        [f,v] = RGCconnector.facesAndVertices(...
+            obj.RGCRFcentroidsFromInputs(idx,:), ...
+            obj.RGCRFspacingsMicrons(idx), diskOutline);
+        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.75 0.75], 'EdgeColor', [0 0 0], ...
+            'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
+
+        idx = find(obj.RGCRFcentroidsFromInputs(:,1) == Inf);
+        [f,v] = RGCconnector.facesAndVertices(...
+            obj.RGCRFcentroidsFromInputs(idx,:), ...
+            obj.RGCRFspacingsMicrons(idx), diskOutline);
+        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.25 0.25], 'EdgeColor', [0 0 0], ...
+            'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
     end
 
 
@@ -102,6 +124,7 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
         title(ax, titleString);
     end
 
+    title('hexagons: original RF lattice, disks: cone-input based RF lattice')
     box(ax, 'on')
     xlabel(ax, 'microns'); 
     ylabel(ax, 'microns');

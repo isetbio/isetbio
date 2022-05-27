@@ -56,7 +56,8 @@ function transferConesFromMultiInputRGCsToZeroInputRGCs(obj, varargin)
             zeroInputRGCindices = doIt(obj, targetedRGCindices, zeroInputRGCindices, allRGCsConeInputsNum, videoOBJ);
         end % (~isempty(zeroInputRGCindices))
 
-    end
+
+    end % iGroup
    
 
     if (generateProgressVideo)
@@ -104,4 +105,7 @@ function zeroInputRGCindices = doIt(obj, targetedRGCindices, zeroInputRGCindices
         end % (~isempty(zeroInputRGCindices))
 
     end % iRGC
+
+    % Update the local RGCRFspacings
+    obj.updateLocalRGCRFspacingsBasedOnCurrentCentroids();
 end

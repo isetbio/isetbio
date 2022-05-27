@@ -14,6 +14,9 @@ function nearbyRGCindices = neihboringRGCindices(obj, theRGCindex)
     distancesToNearbyRGCs = distancesToNearbyRGCs(ia);
 
     % Exclude nearbyRGCs that are further than a maxDistance
-    maxDistance = maxNormDistance * obj.RGCRFspacingsMicrons(theRGCindex);
+    if (isinf(obj.localRGCRFspacingsMicrons(theRGCindex)))
+        error('local spacing should not be inf here')
+    end
+    maxDistance = maxNormDistance * obj.localRGCRFspacingsMicrons(theRGCindex);
     nearbyRGCindices = nearbyRGCindices(find(distancesToNearbyRGCs <= maxDistance));
 end

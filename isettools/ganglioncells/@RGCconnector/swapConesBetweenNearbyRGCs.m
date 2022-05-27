@@ -17,11 +17,19 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
         videoOBJ.open();
     end
 
-    maxPassesNum = obj.wiringParams.maxSwapPassesNum;
     currentPass = 0;
     swapsInCurrentPass = 1;
-    
-    while (currentPass < maxPassesNum) && (swapsInCurrentPass>0)
+    convergenceAchieved = false;
+
+    [totalCosts, spatialCosts, chromaticCosts] = obj.computeInputMaintenanceCostAcrossEntireMosaic();
+
+    % Net cost across all RGCs (Initial)
+    netTotalCostInitial = mean(totalCosts);
+    netSpatialCostInitial = mean(spatialCosts(spatialCosts>=0));
+    netChromaticCostInitial = mean(chromaticCosts(chromaticCosts>=0));
+           
+
+    while (currentPass < obj.wiringParams.maxPassesNum) && (swapsInCurrentPass>0) && (~convergenceAchieved)
         % Update pass number
         currentPass = currentPass + 1;
         swapsInCurrentPass = 0;
@@ -46,7 +54,7 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
 
             % Update progress bar
             waitbar(iRGC/numel(sortedRGCindices), hProgressBar, ...
-                sprintf('RGC #%d/%d (PASS %d/%d)', iRGC,numel(sortedRGCindices), currentPass, maxPassesNum));
+                sprintf('RGC #%d/%d (PASS %d/%d)', iRGC,numel(sortedRGCindices), currentPass, obj.wiringParams.maxPassesNum));
 
             % Find up to N neigboring RGCs that are no farther than k x RGC separation
             theNeighboringRGCindices = obj.neihboringRGCindices(theSourceRGCindex);
@@ -58,8 +66,9 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
             theSourceRGCinputConeIndices = find(squeeze(obj.coneConnectivityMatrix(:,theSourceRGCindex))>0);
             theSourceRGCinputConeWeights = full(obj.coneConnectivityMatrix(theSourceRGCinputConeIndices,theSourceRGCindex));
     
-            if (numel(theSourceRGCinputConeIndices)==1)
+            if (numel(theSourceRGCinputConeIndices)==1) || (numel(theSourceRGCinputConeIndices)>obj.wiringParams.maxNumberOfConesToSwap)
                 % Dont do anything if the source has a single cone input
+                % of if the source has more than 7 cone inputs
                 continue;
             end
 
@@ -78,6 +87,7 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
                     theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, ...
                     theNeighboringRGCindices, allNeighboringRGCsInputConeIndices, allNeighboringRGCsInputConeWeights);
 
+            
             if (beneficialSwapWasFound)
                 swapsInCurrentPass = swapsInCurrentPass + 1;
                 if (generateProgressVideo)
@@ -89,15 +99,32 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
 
         end % iRGC
 
-        if (swapsInCurrentPass>0)
-            fprintf('*** There were %d cone swaps during pass %d. Going for another pass.\n', swapsInCurrentPass, currentPass);
-        else
-            fprintf('No need to do more than #%d passes.\n', currentPass);
-        end
+        % Update the local RGCRFspacings based on updated connectivity
+        obj.updateLocalRGCRFspacingsBasedOnCurrentCentroids();
+
+
+        % Compute the current costs for all RGCs to maintain their current cone inputs
+        [totalCosts, spatialCosts, chromaticCosts] = obj.computeInputMaintenanceCostAcrossEntireMosaic();
+        netSwaps(currentPass) = swapsInCurrentPass;
+
+        % Net cost across all RGCs
+        netTotalCost(currentPass) = mean(totalCosts);
+        netSpatialCost(currentPass) = mean(spatialCosts(spatialCosts>=0));
+        netChromaticCost(currentPass) = mean(chromaticCosts(chromaticCosts>=0));
+        
+
+        % Visualize convergence
+        RGCconnector.visualizeConvergence(currentPass, netTotalCostInitial, netTotalCost, ...
+                                          netSpatialCostInitial, netSpatialCost, ...
+                                          netChromaticCostInitial, netChromaticCost, ...
+                                          netSwaps, obj.wiringParams.maxPassesNum);
+
+        % Determine whether convergence was achieved
+        netTotalCostSequence = [netTotalCostInitial netTotalCost];
+        convergenceAchieved = RGCconnector.convergenceAchieved(netTotalCostSequence);
 
         close(hProgressBar);
-
-    end % while loop
+    end % while pass loop
 
     if (generateProgressVideo)
         videoOBJ.close();

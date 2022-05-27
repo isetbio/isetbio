@@ -1,5 +1,9 @@
 function [cost, spatialVarianceCost, chromaticVarianceCost] = costToMaintainInputs(...
-    obj, inputConeIndices, inputConeWeights, targetRGCSpacingMicrons)
+    obj, inputConeIndices, inputConeWeights, localRGCRFSpacingMicrons)
+
+    if (isempty(localRGCRFSpacingMicrons))
+        error('LocalRGCRFSpacingsMicrons has not been computed yet.')
+    end
 
     if (isempty(inputConeIndices))
         fprintf(2,'\t\t* * * * - - - > Cost to maintain 0 cone indices: -99\n');
@@ -22,12 +26,13 @@ function [cost, spatialVarianceCost, chromaticVarianceCost] = costToMaintainInpu
                 spatialVarianceCost = RGCconnector.maximalInterInputDistance(inputConePositions);
             case 'spatial variance'
                 varianceXY = var(inputConePositions,inputConeWeights,1);
-                spatialVarianceCost = mean(sqrt(varianceXY(:)));
+                spatialVarianceXY = varianceXY(:);
+                spatialVarianceCost = sqrt(spatialVarianceXY(1)+spatialVarianceXY(2));
             otherwise
                 error('Unknown spatialVarianceMetric: ''%s''.', obj.wiringParams.spatialVarianceMetric);
         end
 
-        spatialVarianceCost = spatialVarianceCost / targetRGCSpacingMicrons;
+        spatialVarianceCost = spatialVarianceCost / localRGCRFSpacingMicrons;
 
         lConeIndices = find(inputConeTypes == cMosaic.LCONE_ID);
         mConeIndices = find(inputConeTypes == cMosaic.MCONE_ID);

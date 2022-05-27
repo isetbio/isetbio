@@ -5,13 +5,13 @@ function beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
     % Compute cost for the source RGC to maintain its current inputs
     sourceRGCcost = obj.costToMaintainInputs(...
                 theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, ...
-                obj.RGCRFspacingsMicrons(sourceRGCindex));
+                obj.localRGCRFspacingsMicrons(sourceRGCindex));
 
+    % Only swap up to a max of the input cones -1
     sourceRGCconeInputsNum = numel(theSourceRGCinputConeIndices);
-    maxSourceRGCconesNumSwapped = max([1 floor(sourceRGCconeInputsNum/2)]);
+    maxSourceRGCconesNumSwapped = sourceRGCconeInputsNum-1; % max([1 floor(sourceRGCconeInputsNum/2)]);
 
     % Cost for all combinations of nearby RGCs and # of cones to be swapped
-    maxNumberOfConesToSwap = obj.wiringParams.maxNumberOfConesToSwap;
     optimalProjectedCosts = inf(numel(neighboringRGCindices), 100);
     optimalSourceConeCombination = cell(numel(neighboringRGCindices), 100);
     optimalNeighboringConeCombination = cell(numel(neighboringRGCindices), 100);
@@ -25,21 +25,19 @@ function beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
         neigboringRGCindex = neighboringRGCindices(iNearbyRGC);
         costsBeforeSwapping(iNearbyRGC) = sourceRGCcost + obj.costToMaintainInputs(...
                 allNeighboringRGCsInputConeIndices{iNearbyRGC}, allNeighboringRGCsInputConeWeights{iNearbyRGC}, ...
-                obj.RGCRFspacingsMicrons(neigboringRGCindex));
+                obj.localRGCRFspacingsMicrons(neigboringRGCindex));
 
-        % Determine max cones to be swapped
+        % Only swap up to a max of the input cones -1
         neigboringRGCconeInputsNum = numel(allNeighboringRGCsInputConeIndices{iNearbyRGC});
-        maxNeigboringRGCconesNumSwapped = max([1 floor(neigboringRGCconeInputsNum/2)]);
-        maxConesNumSwapped = min([maxSourceRGCconesNumSwapped maxNeigboringRGCconesNumSwapped]);
+        maxNeigboringRGCconesNumSwapped = neigboringRGCconeInputsNum-1; %max([1 floor(neigboringRGCconeInputsNum/2)]);
 
-        if (maxConesNumSwapped > maxNumberOfConesToSwap)
-            fprintf('Not doing more than %d input cone-swapping. Will not test cone swapping ...\n', maxNumberOfConesToSwap);
-            continue;
-        end
+        % Final max cones to be swapped
+        maxConesNumSwapped = min([...
+            maxSourceRGCconesNumSwapped ...
+            maxNeigboringRGCconesNumSwapped ...
+            obj.wiringParams.maxNumberOfConesToSwap]);
 
-    %    fprintf('Source has %d cones, nearby has %d cones, max cones to swap: %d\n',...
-    %        sourceRGCconeInputsNum, neigboringRGCconeInputsNum, maxConesNumSwapped);
-        
+
         for conesNumSwapped = 1:maxConesNumSwapped
             % Compute all conesNumSwapped permutations for the source RGC cone inputs
             sourceConeCombinations = nchoosek(1:sourceRGCconeInputsNum, conesNumSwapped);
@@ -86,13 +84,13 @@ function beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
                     % Compute projected cost for sourceRGC
                     projectedCostForSourceRGC = obj.costToMaintainInputs(...
                         sourceRGCconeIndicesAfterSwap, sourceRGCconeWeightsAfterSwap, ...
-                        obj.RGCRFspacingsMicrons(sourceRGCindex));
+                        obj.localRGCRFspacingsMicrons(sourceRGCindex));
                     
                     
                     % Compute projected cost for neighborRGC
                     projectedCostForNeighboringRGC = obj.costToMaintainInputs(...
                         neighboringRGCconeIndicesAfterSwap, neighboringRGCconeWeightsAfterSwap, ...
-                        obj.RGCRFspacingsMicrons(neigboringRGCindex));
+                        obj.localRGCRFspacingsMicrons(neigboringRGCindex));
 
 
                     % Total cost

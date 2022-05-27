@@ -61,17 +61,17 @@ function connectUnconnectedConesToNearbyRGCs(obj, varargin)
 
             if (generateProgressVideo)
                 % Visualize current connectivity
-                hFig = obj.visualizeCurrentConnectivityState(1001);
+                hFig = obj.visualizeCurrentConnectivityState(1002);
                 videoOBJ.writeVideo(getframe(hFig));
             end
         end
     end % iCone
 
-    % Update spacings based on new centroids
-    obj.updateRGCRFspacingsBasedOnCurrentCentroids();
-
     if (generateProgressVideo)
         videoOBJ.close();
     end
+
+    % Update spacings based on new centroids
+    obj.updateLocalRGCRFspacingsBasedOnCurrentCentroids();
 
 end

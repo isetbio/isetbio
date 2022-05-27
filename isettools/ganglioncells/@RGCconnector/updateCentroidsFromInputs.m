@@ -1,19 +1,17 @@
 function updateCentroidsFromInputs(obj, RGClist)
-% Update the centroids of all RGCs in the RGClist
+% Update the centroids of all RGCs in the RGClist. If an RGC has 0 inputs
+% its centroid is set to Inf
         
     cm = obj.coneConnectivityMatrix;
     allConePosMicrons = obj.inputConeMosaic.coneRFpositionsMicrons;
     
-    centroids = zeros(numel(RGClist),2);
+    centroids = inf(numel(RGClist),2);
 
     parfor iRGC = 1:numel(RGClist)
         theRGCindex = RGClist(iRGC);
         connectedConeIndices = find(squeeze(cm(:, theRGCindex))>0);
 
-        if (isempty(connectedConeIndices))
-            centroids(iRGC,:) = inf(1,2);
-        else
-
+        if (~isempty(connectedConeIndices))
             % Weights of these input cones
             inputConeWeights = full(cm(connectedConeIndices, theRGCindex));
     

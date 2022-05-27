@@ -21,7 +21,8 @@ function visualizeChromaticVarianceCostStatistics(obj, axChromatic, chromaticVar
 
     maxCount = max(countsChromaPercentage);
     maxCount = (floor(maxCount/10)+1)*10;
-
+    maxCount = 100;
+    
     width = 0.2;
 
     bar(axChromatic,1:(numel(edgesChroma)-1), countsChromaPercentage, 1, 'FaceColor',[1 0.75 0.75],'EdgeColor',[1 0 0], 'LineWidth', 1.0);

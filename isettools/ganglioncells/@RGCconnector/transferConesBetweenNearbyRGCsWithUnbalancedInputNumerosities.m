@@ -9,7 +9,7 @@ function transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(obj, vara
     optimizationCenter = p.Results.optimizationCenter;
 
     minConeInputsNum = 3;
-    maxConeInputsNum = 5;
+    maxConeInputsNum = 6;
 
     % Video setup
     if (generateProgressVideo)
@@ -19,11 +19,20 @@ function transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(obj, vara
         videoOBJ.open();
     end
 
-    maxPassesNum = 10;
+
     currentPass = 0;
     tranfersInCurrentPass = 1;
-    
-    while (currentPass < maxPassesNum) && (tranfersInCurrentPass>0)
+    convergenceAchieved = false;
+
+    % Compute the current costs for all RGCs to maintain their current cone inputs 
+    [totalCosts, spatialCosts, chromaticCosts] = obj.computeInputMaintenanceCostAcrossEntireMosaic();
+
+    % Net cost across all RGCs (Initial)
+    netTotalCostInitial = mean(totalCosts);
+    netSpatialCostInitial = mean(spatialCosts(spatialCosts>=0));
+    netChromaticCostInitial = mean(chromaticCosts(chromaticCosts>=0));
+
+    while (currentPass < obj.wiringParams.maxPassesNum) && (tranfersInCurrentPass>0) && (~convergenceAchieved)
 
         % Update pass number
         currentPass = currentPass + 1;
@@ -36,10 +45,10 @@ function transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(obj, vara
             continue;
         end
 
-        % Retrieve their centroids
+        % Retrieve the centroids of the targered RGCs
         targetedRGCCentroids = obj.RGCRFcentroidsFromInputs(targetedRGCindices,:);
     
-        % Sort RGCs according to their ecc
+        % Sort targeted RGCs according to their ecc
         switch (optimizationCenter)
             case 'visualFieldCenter'
                 ecc = sum(targetedRGCCentroids.^2,2);
@@ -65,6 +74,8 @@ function transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(obj, vara
             theSourceRGCinputConesNum = numel(theSourceRGCinputConeIndices);
             theSourceRGCinputConeWeights = full(obj.coneConnectivityMatrix(theSourceRGCinputConeIndices,theSourceRGCindex));
     
+            
+
             % Find the difference in # of input cones between source RGC and neigboring RGCs
             inputConeIndicesAllNeighboringRGCs = cell(1,numel(nearbyRGCindices));
             inputConeWeightsAllNeighboringRGCs = cell(1,numel(nearbyRGCindices));
@@ -97,11 +108,40 @@ function transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(obj, vara
             end %if (maxDiff >= 2)
         end % iRGC
 
-        if (tranfersInCurrentPass>0)
-            fprintf('*** There were %d cone transfers during pass %d. Going for another pass.\n', tranfersInCurrentPass, currentPass);
+        % Update the local RGCRFspacings based on updated connectivity
+        obj.updateLocalRGCRFspacingsBasedOnCurrentCentroids();
+
+        % Compute the current costs for all RGCs to maintain their current cone inputs 
+        [totalCosts, spatialCosts, chromaticCosts] = obj.computeInputMaintenanceCostAcrossEntireMosaic();
+
+        netTransfers(currentPass) = tranfersInCurrentPass;
+
+        % Net cost across all RGCs
+        netTotalCost(currentPass) = mean(totalCosts);
+        netSpatialCost(currentPass) = mean(spatialCosts(spatialCosts>=0));
+        netChromaticCost(currentPass) = mean(chromaticCosts(chromaticCosts>=0));
+        
+        % Check delta in netTotalCost for convergence
+        if (currentPass == 1)
+            lastTotalCost = netTotalCostInitial;
         else
-            fprintf('No need to do more than #%d passes.\n', currentPass);
+            lastTotalCost = netTotalCost(currentPass-1);
         end
+
+        netTotalCostSequence = [netTotalCostInitial netTotalCost];
+
+
+        
+        % Visualize convergence
+        RGCconnector.visualizeConvergence(currentPass, netTotalCostInitial, netTotalCost, ...
+                                          netSpatialCostInitial, netSpatialCost, ...
+                                          netChromaticCostInitial, netChromaticCost, ...
+                                          netTransfers, obj.wiringParams.maxPassesNum);
+
+        
+        % Determine whether convergence was achieved
+        netTotalCostSequence = [netTotalCostInitial netTotalCost];
+        convergenceAchieved = RGCconnector.convergenceAchieved(netTotalCostSequence);
 
     end % while loop
 

@@ -28,7 +28,7 @@ function [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin)
 
     % Generate the cone outline
     thetas = linspace(0,360,thetaSamples);
-    coneOutline = 0.25*[cosd(thetas); sind(thetas)]';
+    coneOutline = 0.3*[cosd(thetas); sind(thetas)]';
 
     % Plot the cones
     obj.visualizeConePositions(ax, coneOutline);

@@ -27,6 +27,9 @@ classdef RGCconnector < handle
         % RGC RF spacings in microns
         RGCRFspacingsMicrons;
 
+        % Locally-averaged RGCRFspacingsMicrons;
+        localRGCRFspacingsMicrons;
+
         % Compute struct for computing local cone-to-RGC density ratios
         coneToRGCDensityRatioComputeStruct;
 
@@ -55,9 +58,9 @@ classdef RGCconnector < handle
                 'chromaticSpatialVarianceTradeoff', 1.0, ...     % [0: minimize chromatic variance 1: minimize spatial variance]
                 'spatialVarianceMetric', 'spatial variance', ... % choose between {'maximal interinput distance', 'spatial variance'}
                 'maxNeighborsNum', 6, ...
-                'maxNumberOfConesToSwap', 3, ...
-                'maxSwapPassesNum', 10, ...
-                'maxNeighborNormDistance', 1.5 ...                % max distance to search for neighbors
+                'maxNumberOfConesToSwap', 8, ...
+                'maxPassesNum', 50, ...
+                'maxNeighborNormDistance', 0.75 ...                % max distance to search for neighbors
         );
 
     end % Constant properties
@@ -79,7 +82,7 @@ classdef RGCconnector < handle
             p.addParameter('chromaticSpatialVarianceTradeoff', RGCconnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
             p.addParameter('maxNeighborNormDistance', RGCconnector.defaultWiringParams.maxNeighborNormDistance, @isscalar);
             p.addParameter('maxNumberOfConesToSwap', RGCconnector.defaultWiringParams.maxNumberOfConesToSwap,@(x)(isscalar(x)&&(x>=1)));
-            p.addParameter('maxSwapPassesNum', RGCconnector.defaultWiringParams.maxSwapPassesNum, @(x)(isscalar(x)&&(x>=1)));
+            p.addParameter('maxPassesNum', RGCconnector.defaultWiringParams.maxPassesNum, @(x)(isscalar(x)&&(x>=1)));
             p.addParameter('visualizeIntermediateConnectivityStages', false, @islogical);
             p.parse(varargin{:});
             
@@ -91,7 +94,7 @@ classdef RGCconnector < handle
             obj.wiringParams = RGCconnector.defaultWiringParams;
             obj.wiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
             obj.wiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
-            obj.wiringParams.maxSwapPassesNum = p.Results.maxSwapPassesNum;
+            obj.wiringParams.maxPassesNum = p.Results.maxPassesNum;
             obj.wiringParams.maxNumberOfConesToSwap = p.Results.maxNumberOfConesToSwap;
 
             if (isempty(RGCRFposMicrons)) && (isempty(coneToRGCDensityRatio))
@@ -135,16 +138,10 @@ classdef RGCconnector < handle
             end
             
 
-
             % STEP1. Connect cones based on local density.
             obj.connectRGCsToConesBasedOnLocalDensities();
-
-            % Visualize current connectivity
-            if (visualizeIntermediateConnectivityStages)
-                obj.visualizeCurrentConnectivityState(1001);
-            end
-
-
+            
+          
 
             % STEP2. Connect unconnected cones to nearby RGCs
             obj.connectUnconnectedConesToNearbyRGCs(...
@@ -154,21 +151,22 @@ classdef RGCconnector < handle
             if (visualizeIntermediateConnectivityStages)
                 obj.visualizeCurrentConnectivityState(1002);
             end
+            
 
-
-            % STEP3. Transfer 1 cone from RGC1 to a neirboring RGC (RGC2)
+            % STEP3. Transfer cones (1 at a time) from RGC1 to a neirboring RGC (RGC2)
             % where the RGC1 has at least N+2inputs, where N = # of inputs in 
-            % RGC2, so as to minimize the combined cost.
+            % RGC2, so as to minimize the combined cost for RGC1+RGC2.
             % This is the first stage where we fine tune the wiring using
             % params set in the user-supplied wiringParams struct
             obj.transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(...
                 'generateProgressVideo', ~true);
 
+      
             % Visualize current connectivity
             if (visualizeIntermediateConnectivityStages)
                 obj.visualizeCurrentConnectivityState(1003);
             end
-
+            
 
             % STEP 4. Transfer half of the cones from the most populous multi-input RGCs
             % to zero-input RGCs. Here we are utilizing RGCs with 0 inputs
@@ -193,15 +191,6 @@ classdef RGCconnector < handle
                 obj.visualizeCurrentConnectivityState(1005);
             end
 
-
-            % Final step of non-overlapping wiring. Remove RGCs on the edges of the patch
-            obj.removeRGCsOnPatchPerimeter();
-
-            % Visualize current connectivity
-            if (visualizeIntermediateConnectivityStages)
-                obj.visualizeCurrentConnectivityState(1009);
-            end
-
         end % Constructor
 
         % Visualization of input cone mosaics (before any connections are made)
@@ -209,7 +198,9 @@ classdef RGCconnector < handle
 
         % Visualize the current connections between the 2 mosaics
         hFig = visualizeCurrentConnectivityState(obj, figNo);
-                
+         
+        % Compute input maintenance costs across entire RGC mosaic
+        [totalCost, spatialCost, chromaticCost] = computeInputMaintenanceCostAcrossEntireMosaic(obj);
     end % Public methods
 
 
@@ -289,13 +280,13 @@ classdef RGCconnector < handle
 
         % Compute the cost for an RGC to maintain its cone inputs
         [cost, spatialCostComponent, chromaticCostComponent] = ...
-            costToMaintainInputs(obj, inputConeIndices, inputConeWeights, targetRGCSpacingMicrons);
+            costToMaintainInputs(obj, inputConeIndices, inputConeWeights, localRGCSpacingMicrons);
 
         % Update the centroids of all RGCs in the RGClist
         updateCentroidsFromInputs(obj, RGClist);
 
         % Update RGCRFspacings for all RGCs beased on their current centroids
-        updateRGCRFspacingsBasedOnCurrentCentroids(obj);
+        updateLocalRGCRFspacingsBasedOnCurrentCentroids(obj);
 
         % Visualize the cones of the input cone mosaic using a custom shape
         % cone outline
@@ -330,7 +321,15 @@ classdef RGCconnector < handle
         [insideBoundaryPointIndices, onBoundaryPointIndices] = ...
             pointsInsideBoundaryDefinedBySelectedPoints(allPointPositions, selectedPointIndices);
 
+        % Determine whether convergece is achieved
+        convergenceIsAchieved = convergenceAchieved(netTotalCostSequence);
+
         % Visualization methods
+        visualizeConvergence(currentPass, netTotalCostInitial, netTotalCost, ...
+            netSpatialCostInitial, netSpatialCost, ...
+            netChromaticCostInitial, netChromaticCost, ...
+            netReassignments, maxPassesNum);
+
         transparentContourPlot(axesHandle, spatialSupportXY, zData, ...
           zLevels, faceAlpha, cmap, lineStyle, lineWidth);
 

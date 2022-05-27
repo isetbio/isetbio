@@ -21,8 +21,8 @@ function cropLattice(obj, RGCRFposMicrons)
     if (numel(idx) < 7)
         fprintf(2, 'Consider increasing the size of input cone mosaic\n');
         % Select the center most RGC
-        d = sort(sum((bsxfun(@minus, RGCRFposMicrons, mean(allConePositions))).^2,2));
-        idx = d(1:7);
+        [d,idx] = sort(sum((bsxfun(@minus, RGCRFposMicrons, mean(allConePositions))).^2,2));
+        idx = idx(1);
     end
 
     % Crop positions
@@ -31,6 +31,7 @@ function cropLattice(obj, RGCRFposMicrons)
     % Update spacings
     obj.RGCRFspacingsMicrons = obj.RGCRFspacingsMicrons(idx);
 
-    % Initialize centroids
-    obj.RGCRFcentroidsFromInputs = obj.RGCRFpositionsMicrons;
+    % Initialize centroids. No inputs so set them all to inf
+    rgcsNum = numel(idx);
+    obj.RGCRFcentroidsFromInputs = inf(rgcsNum,2);
 end
