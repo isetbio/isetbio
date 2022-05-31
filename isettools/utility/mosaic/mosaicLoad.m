@@ -22,21 +22,38 @@ function cmosaic = mosaicLoad(sizeDeg,positionDeg)
 %{
 cm = mosaicLoad([1 1],[1 0]);
 %}
+
+%% Answer a call for help.
 if isequal(sizeDeg,'help')
     lst = dir(fullfile(isetRootPath,'data','cones','*.mat'));
     fprintf('\n\nSize and Positions available in the cone mosaic library.\n\n')
-    fprintf('\n\n  Size   \t   Pos   \n-------------------------\n')
+    fprintf('\n\n            Name  \t\t\t   Size \t   Pos   \n---------------------------------------------------------------------\n')
     for ii=1:numel(lst)
         thisName = lst(ii).name;
         nameParts = split(thisName,'_');
         sz  = cell2mat(textscan(strrep(nameParts{2},'-',' '),'%.1f %.1f')); 
         pos = cell2mat(textscan(strrep(nameParts{3},'-',' '),'%.1f %.1f'));
-        fprintf('%2.3f %2.3f\t%2.3f %2.3f\n',sz,pos);
+        fprintf('%s\t\t%2.3f %2.3f\t%2.3f %2.3f\n',thisName,sz,pos);
     end
     return;
 end
 
-%%
+%%  Maybe the user sent in just a name.
+if ischar(sizeDeg) 
+    % See if it has a .mat extension
+    tmp = strsplit(sizeDeg,'.');
+    if ~isequal(tmp{end},'mat'), fname = [sizeDeg, '.mat'];
+    else, fname = sizeDeg; 
+    end
+    if exist(fname, 'file')
+        load(fname,'cmosaic');
+        return;
+    else
+        error('Could not find %s\n',fname);
+    end
+end
+
+%% Maybe the user sent in both size and position request
 fname = mosaicName(sizeDeg,positionDeg);
 if exist(fname,'file')
     load(fname,'cmosaic');
