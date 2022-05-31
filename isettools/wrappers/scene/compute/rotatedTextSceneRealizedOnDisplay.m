@@ -43,7 +43,9 @@ function theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textS
 %         'colsNum', 400, ...                               % Pixels along the horizontal (x) dimension
 %         'targetRow', 20, ...                              % Stimulus Y-pixel offset 
 %         'targetCol', 20, ...                              % Stimulus X-pixel offset 
-%         'chromaSpecification', chromaSpecificationRGB...  % background and stimulus chromaticity
+%         'upSampleFactor', 1, ...                          % Upsample factor to increase the retinal image resolution            
+%         'chromaSpecification', chromaSpecificationRGB, ...% background and stimulus chromaticity
+%         'horizontalFOVDegs', 0.4 ...
 %         );
 %
 %   theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textSceneParams, visualizeScene);
@@ -76,6 +78,16 @@ end
 
 function theScene = textSceneFromRGBSettings(textSceneParams, presentationDisplay) 
     
+    % Assert that the upSampleFactor is an integer >= 1
+    assert(...
+        isinteger(textSceneParams.upSampleFactor) && ...
+        isscalar(textSceneParams.upSampleFactor) && ...
+        (textSceneParams.upSampleFactor >= 1), ...
+        sprintf('textSceneParams.upSampleFactor must be a uint8, >= 1. It is %g.', textSceneParams.upSampleFactor));
+
+    % It is, now make it double
+    textSceneParams.upSampleFactor = double(textSceneParams.upSampleFactor);
+
     % Generate the rgb settings pattern 
     for rgbChannel = 1:3
        linearRGBimage(:,:,rgbChannel) = rotatedTextStringBitMapPattern(...
@@ -94,8 +106,70 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     % through the display's gamma table we get back the desired linear RGB values
     gammaUncorrectedRGBimage = ieLUTLinear(linearRGBimage, inverseGammaTable);
     
+    % Upsample RGB image
+    gammaUncorrectedRGBimageUpSampled = upSampleImage(gammaUncorrectedRGBimage, textSceneParams.upSampleFactor);
+    
+    % Center RGC image
+    gammaUncorrectedRGBimageCentered = centerImage(gammaUncorrectedRGBimageUpSampled);
+    
+    % Set the DPI of the presentationDisplay to reflect the upsampling factor
+    upSampledDPI = double(textSceneParams.upSampleFactor) * displayGet(presentationDisplay, 'dpi');
+    presentationDisplay = displaySet(presentationDisplay, 'dpi', upSampledDPI);
+
+    % Create scene from the centered,upsampled RGBimage on the presentation display
+    theScene = sceneFromFile(gammaUncorrectedRGBimageCentered,'rgb', [], presentationDisplay);
+end
+
+function RGBimageUpSampled = upSampleImage(RGBimage, upSampleFactor)
     % Generate the scene on the presentation display
-    theScene = sceneFromFile(gammaUncorrectedRGBimage,'rgb', [], presentationDisplay);
+    [rows,cols,channelsNum] = size(RGBimage);
+    
+    RGBimageUpSampled = zeros(...
+        rows*upSampleFactor, ...
+        cols*upSampleFactor, ...
+        channelsNum);
+
+    % Upsample gammaUncorrectedRGBimage
+    for i = 1:rows
+        for j = 1:cols
+            thePixelRGB = RGBimage(i,j,:);
+            for ii = 0:(upSampleFactor-1)
+                iii = (i-1)*upSampleFactor+1;
+                for jj = 0:(upSampleFactor-1)
+                    jjj = (j-1)*upSampleFactor+1;
+                    RGBimageUpSampled(iii+ii,jjj+jj,:) = thePixelRGB;
+                end
+            end
+        end
+    end
+end
+
+
+function RGBimage = centerImage(RGBimage)
+    % Center image
+    binaryImage = squeeze(RGBimage(:,:,1));
+    minB = min(binaryImage(:));
+    maxB = max(binaryImage(:));
+    nMin = numel(find(binaryImage(:) == minB));
+    nMax = numel(find(binaryImage(:) == maxB));
+    if (nMin < nMax)
+        tmp = binaryImage*0;
+        tmp(find(binaryImage(:) == minB)) = 1;
+        binaryImage = tmp;
+    else
+        tmp = binaryImage*0;
+        tmp(find(binaryImage(:) == maxB)) = 1;
+        binaryImage = tmp;
+    end
+    s = regionprops(binaryImage,'centroid');
+    centroid = s.Centroid;
+    dx = round(centroid(1)-0.5*size(binaryImage,2));
+    dy = round(centroid(2)-0.5*size(binaryImage,1));
+    for iChannel = 1:3
+        tmp = squeeze(RGBimage(:,:,iChannel));
+        tmp = circshift(tmp,[-dy -dx]);
+        RGBimage(:,:,iChannel) = tmp;
+    end
 end
 
 
@@ -1625,22 +1699,22 @@ function bitmapTextImage = textTo20x18BitmapFontImage(text)
         elseif code==69
             TxtIm=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
                 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1;
+                1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
+                1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1;
                 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1;
                 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
         elseif code==70

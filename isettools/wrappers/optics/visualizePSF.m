@@ -113,6 +113,7 @@ if (~isempty(theMosaic))
 else
     contourf(axesHandle,xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
         'Color', [0 0 0], 'LineWidth', 1.5);
+
     %imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
     hold(axesHandle, 'on');
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
@@ -158,7 +159,7 @@ function transparentContourPlot(axesHandle, xSupportMinutes, ySupportMinutes, zD
         f = 1:numel(x);
         patch(axesHandle, 'Faces', f, 'Vertices', v, 'EdgeColor', 0.5*(1-theLevel)*[1 1 1], ...
             'FaceColor', cmap(round(theLevel*size(cmap,1)),:), ...
-            'FaceAlpha', min([1 0.3+theLevel]), ...
+            'FaceAlpha', 0.4, ... %min([1 0.3+theLevel]), ...
             'LineStyle', '-', 'LineWidth', 1.0);
         startPoint = startPoint + theLevelVerticesNum+1;
     end

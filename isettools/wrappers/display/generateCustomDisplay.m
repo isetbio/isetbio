@@ -46,6 +46,7 @@ function d = generateCustomDisplay(varargin)
 % History:
 %    12/01/21  npc  Wrote it.
 %    01/16/22  dhb  More comments.
+%    03/10/22  npc  Now setting custom wavelength support
 
     % Generate the default display
     defaultDisplay = displayCreate;
@@ -74,9 +75,11 @@ function d = generateCustomDisplay(varargin)
     d = displaySet(d, 'name', p.Results.name);
     d = displaySet(d, 'dpi', p.Results.dotsPerInch);
     d = displaySet(d, 'viewing distance', p.Results.viewingDistanceMeters);
+    d = displaySet(d, 'wave', p.Results.wavelengthSupportNanoMeters);
     d = displaySet(d, 'spd', p.Results.spectralPowerDistributionWattsPerSteradianM2NanoMeter);
     d = displaySet(d, 'gamma', p.Results.gammaTable);
     d = displaySet(d, 'ambient spd', p.Results.ambientSPDWattsPerSteradianM2NanoMeter);
+    
     
     if (p.Results.plotCharacteristics)
         w = displayGet(d, 'wave');
@@ -89,12 +92,26 @@ function d = generateCustomDisplay(varargin)
         stairs(w, spd(:,2)*1e3, 'g-','LineWidth', 1.5);
         stairs(w, spd(:,3)*1e3, 'b-','LineWidth', 1.5);
         stairs(w, ambientSPD*1e3, 'k--', 'LineWidth', 1.5);
+        maxSPD  = max(spd(:)*1e3);
+        if (maxSPD < 0.1)
+            yTicks = 0:0.01:maxSPD;
+        elseif (maxSPD < 5)
+            yTicks = 0:0.05:maxSPD;
+        elseif (maxSPD < 1)
+            yTicks = 0:0.1:maxSPD;
+        elseif (maxSPD < 5)
+            yTicks = 0:0.5:maxSPD;
+        elseif (maxSPD < 10)
+            yTicks = 0:1:maxSPD;
+        else
+            yTicks = 0:10:maxSPD;
+        end
         legend({'R', 'G', 'B', 'ambient'})
         xlabel('wavelength (nm)');
         ylabel('power (milliWatts/Sr/m2/nm)');
         title(sprintf('peak luminance: %2.1f cd/m2\ndark luminance: %2.3f cd/m2', displayGet(d, 'peak luminance'), displayGet(d, 'dark luminance')));
         axis 'square';
-        set(gca, 'XTick', 300:50:900, 'YTick', 0:1:10,'FontSize', 14);
+        set(gca, 'XTick', 300:50:900, 'YTick', yTicks,'FontSize', 14);
         grid on;
         box on;
         

@@ -61,6 +61,7 @@ p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(
 p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
 
 p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
+p.addParameter('crossHairsAtPosition', [], @(x)((isempty(x))||(numel(x)==2)));
 p.addParameter('crossHairsOnFovea', false, @islogical);
 p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
 p.addParameter('crossHairsColor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
@@ -75,6 +76,7 @@ p.addParameter('noYLabel', false, @islogical);
 p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('fontSize', 16, @isscalar);
+p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
 p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
 p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
 p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
@@ -100,6 +102,7 @@ activationRange = p.Results.activationRange;
 currentEMposition = p.Results.currentEMposition;
 crossHairsOnMosaicCenter = p.Results.crossHairsOnMosaicCenter;
 crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
+crossHairsAtPosition = p.Results.crossHairsAtPosition;
 visualizeCones = p.Results.visualizeCones;
 labelCones = p.Results.labelCones;
 labelConesWithIndices = p.Results.labelConesWithIndices;
@@ -111,6 +114,7 @@ noXlabel = p.Results.noXLabel;
 noYlabel = p.Results.noYLabel;
 displayedEyeMovementData = p.Results.displayedEyeMovementData;
 fontSize = p.Results.fontSize;
+colorbarFontSize = p.Results.colorbarFontSize;
 cMap = p.Results.activationColorMap;
 verticalColorBar = p.Results.verticalActivationColorBar;
 colorbarTickLabelColor = p.Results.colorbarTickLabelColor;
@@ -524,6 +528,17 @@ else
 end
 
 % Add crosshairs
+if (~isempty(crossHairsAtPosition))
+    crossHairsColor = [0 0 0];
+    % Crosshairs centered on the middle of the mosaic
+    xx1 = [xRange(1) xRange(2)];
+    yy1 = crossHairsAtPosition(2)*[1 1];
+    xx2 = crossHairsAtPosition(1)*[1 1];
+    yy2 = [yRange(1) yRange(2)];
+    plot(axesHandle, xx1, yy1, '-', 'Color', crossHairsColor, 'LineWidth', 1.5);
+    plot(axesHandle, xx2, yy2,  '-', 'Color', crossHairsColor,'LineWidth', 1.5); 
+end
+
 if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
     
     if (isempty(crossHairsColor))
@@ -634,16 +649,20 @@ if (~isempty(activation))
             end
         end
         
+        if (isempty(colorbarFontSize))
+            colorbarFontSize = fontSize/2;
+        end
+
         if (verticalColorBar)
             colorbar(axesHandle, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
         elseif (verticalColorBarInside)
             colorbar(axesHandle, 'east', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize/2, 'FontName', 'Spot mono');
+                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', colorbarFontSize, 'FontName', 'Spot mono');
         elseif (horizontalColorBar)
             colorbar(axesHandle,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
         elseif (horizontalColorBarInside)
             colorbar(axesHandle,'north', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
-                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', fontSize/2, 'FontName', 'Spot mono');
+                'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', colorbarFontSize, 'FontName', 'Spot mono');
         end
     else
         colorbar(axesHandle, 'off');
@@ -716,10 +735,10 @@ switch (domain)
                     leftMeridianName = 'nasal retina';
                     rightMeridianName = 'temporal retina';
                 end
-                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} retinal space (degrees)    \\color[rgb]{0 0.7 0} %s', ...
+                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} space (degrees)    \\color[rgb]{0 0.7 0} %s', ...
                     leftMeridianName, rightMeridianName));
             else
-                xlabel(axesHandle, 'retinal space (degrees)');
+                xlabel(axesHandle, 'space (degrees)');
             end
         end
         if (~noYlabel)
@@ -727,7 +746,7 @@ switch (domain)
                 ylabel(axesHandle, sprintf('%s  < = = = = = |     space (degrees)    | = = = = =  > %s', ...
                     'superior retina', 'inferior retina'));
             else
-                ylabel(axesHandle, 'retinal space (degrees)');
+                ylabel(axesHandle, 'space (degrees)');
             end
         end
         set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
@@ -742,20 +761,20 @@ switch (domain)
                     leftMeridianName = '(nasal)';
                     rightMeridianName = '(temporal)';
                 end
-                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} retinal space (microns)    \\color[rgb]{0 0.7 0} %s', ...
+                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} space (microns)    \\color[rgb]{0 0.7 0} %s', ...
                     leftMeridianName, rightMeridianName));
             else
-                xlabel(axesHandle, 'retinal space (microns)');
+                xlabel(axesHandle, 'space (microns)');
             end
         end
         if (~noYlabel)
             if (labelRetinalMeridians)
                 upperMeridianName = '(inferior)';
                 lowerMeridianName = '(superior)';
-                ylabel(axesHandle, sprintf('\\color{blue}%s    \\color{black} retinal space (microns)    \\color[rgb]{0.6 0.6 0.4} %s', ...
+                ylabel(axesHandle, sprintf('\\color{blue}%s    \\color{black} space (microns)    \\color[rgb]{0.6 0.6 0.4} %s', ...
                     lowerMeridianName, upperMeridianName));
             else
-                ylabel(axesHandle, 'retinal space (microns)');
+                ylabel(axesHandle, 'space (microns)');
             end
         end
         set(axesHandle, 'XTickLabel', sprintf('%d\n', domainVisualizationTicks.x), ...
