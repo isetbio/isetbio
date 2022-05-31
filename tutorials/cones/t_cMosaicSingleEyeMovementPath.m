@@ -54,6 +54,9 @@ cm.emGenSequence(eyeMovementDurationSeconds, ...
     
 %% Compute 128 noisy response instances of cone excitation response to the same eye movement path
 instancesNum = 128;
+
+% responses are
+% (Instances, Time Samples, Cone index)
 [noiseFreeExcitationResponseInstances, noisyExcitationResponseInstances, ~,~,timeAxis] = cm.compute(oi, ...
         'withFixationalEyeMovements', true, ...
         'nTrials', instancesNum);
@@ -64,11 +67,12 @@ instancesNum = 128;
 cm.visualize();
 
 %% Visualize time-series response of a singe cone
-% Lets plot responses for the cone with max noise-free response
+
+% Lets plot responses for the cone with the largest noise-free response
 [~,idx] = max(noiseFreeExcitationResponseInstances(:));
 [~,~,targetConeID] = ind2sub(size(noiseFreeExcitationResponseInstances), idx);
 
-figure(2); clf;
+ieNewGraphWin; 
 % Plot the time series response for individual instances
 plot(timeAxis, squeeze(noisyExcitationResponseInstances(:,:,targetConeID)), 'k.');
 hold on;
@@ -80,13 +84,11 @@ xlabel('time (seconds)');
 ylabel('excitations per integration time');
 set(gca, 'FontSize', 16);
 
-
-
 %% Visualize time series cone mosaic response (noise-free)
 % Extract the eye movement path to visualize
 emPathsDegs = cm.fixEMobj.emPosArcMin/60;
 
-hFig = figure(3); clf;
+hFig = ieNewGraphWin;
 set(hFig, 'Position', [100 300 1120 1060]);
 activationRange = prctile(noiseFreeExcitationResponseInstances(:), [1 99]);
 
@@ -117,3 +119,4 @@ for timePoint = 1:size(noiseFreeExcitationResponseInstances,2)
     
 end
 
+%% END

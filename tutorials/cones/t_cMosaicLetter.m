@@ -36,19 +36,17 @@ oi = oiCreate;
 oi = oiCompute(oi,scene);
 %oiWindow(oi);
 %%  Now image it on the cone mosaic with some fixational eye movements
-
-cm = cMosaic('sizeDegs',[0.5, 0.5],'eccentricityDegs',[0,0]);
+cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat');
+% cm = cMosaic('sizeDegs',[0.5, 0.5],'eccentricityDegs',[0,0]);
 cm.visualize();
 
 %% Illustrate the cone excitations
 
-cm.compute(oi);
-cm.integrationTime = 50/1000;  % 50 ms
+cm.integrationTime = 5/1000;  % 5 ms
 excitations = cm.compute(oi);
 
 params = cm.visualize('params');
 % cm.visualize('help');
-
 
 params.activation = excitations.^0.5;
 params.activationColorMap = hot(1024);
@@ -64,29 +62,46 @@ cm.emGenSequence(eyeMovementDurationSeconds, ...
     
 %% Compute 128 noisy response instances of cone excitation response to the same eye movement path
 instancesNum = 128;
+% (Instances, Time Samples, Cone index)
 [excitationsInstances, noisyExcitationResponseInstances, ~,~,timeAxis] = cm.compute(oi, ...
     'withFixationalEyeMovements', true, ...
     'nTrials', instancesNum);
 
-%% Visualize time-series response of a singe cone
-% Lets plot responses for the cone with max noise-free response
+%% Visualize time-series response of a single cone
+
+% Find the cone with max noise-free response
 [~,idx] = max(excitationsInstances(:));
 [~,~,targetConeID] = ind2sub(size(excitationsInstances), idx);
 
-figure(2); clf;
-% Plot the time series response for individual instances
+
+ieNewGraphWin;
+
+% Plot the time series response for individual trials
 plot(timeAxis, squeeze(noisyExcitationResponseInstances(:,:,targetConeID)), 'k.');
 hold on;
+
 % Plot the time series response for the mean of the individual instances
 plot(timeAxis, squeeze(mean(noisyExcitationResponseInstances(:,:,targetConeID),1)), 'g-', 'LineWidth', 2.0);
+hold on;
 
-% Plot the noise-free time series response in red
-figure(3);
+% Overlay the noise-free time series response in red
 plot(timeAxis, squeeze(excitationsInstances(:,:,targetConeID)), 'r', 'LineWidth', 1.5);
 xlabel('time (seconds)');
 ylabel('excitations per integration time');
 set(gca, 'FontSize', 16);
 
+%% Plot a movie of the excitations
 
-%%
+% You can play this video with VLC
+vidfile = VideoWriter('testmovie.mp4','MPEG-4');
+open(vidfile);
+for ii=1:numel(timeAxis)
+    [~,hdl] = cm.plot('excitations',excitationsInstances(1,ii,:));
+    drawnow
+    thisImg = getframe(gcf);
+    writeVideo(vidfile,thisImg);
+end
+close(vidfile)
+
+%% END
 

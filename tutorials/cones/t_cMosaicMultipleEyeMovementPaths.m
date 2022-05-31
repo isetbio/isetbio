@@ -99,3 +99,5 @@ for instanceIndex = 1:instancesNum
     end
     title(sprintf('instance %d', instanceIndex));
 end
+
+%% END
