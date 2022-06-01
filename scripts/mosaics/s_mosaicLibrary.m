@@ -4,11 +4,16 @@
 % library of a few mosaics with different sizes at different visual
 % field positions
 %
+% We need to rerun this script every time we make a basic change to the
+% @cMosaic class.  The saved mosaic may not know about the proper methods.
+%
+% See also
+%   mosaicLoad
 
 %% Sample sizes and positions
 
-sizeDegs     = [0.5  0.5; 1.0 1.0; 2 2; 4 4;  8 8];    %
-positionDegs = [0.0  0.0; 1.0 0.0; 2 0; 4 0; 10 0];
+sizeDegs     = [0.5  0.5; 1.0 1.0; 2 2; 4 4;  8 8];  % multiple sizes
+positionDegs = [0.0  0.0; 1.0 0.0; 2 0; 4 0; 10 0];  % Locations along the x-axis
 
 dataDir = fullfile(isetRootPath,'data','cones');
 
@@ -28,3 +33,5 @@ for ii=1:size(sizeDegs,1)
         disp(fname)
     end
 end
+
+%% END

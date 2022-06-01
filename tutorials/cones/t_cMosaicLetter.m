@@ -43,7 +43,7 @@ cm.visualize();
 %% Illustrate the cone excitations
 
 cm.integrationTime = 5/1000;  % 5 ms
-excitations = cm.compute(oi);
+[~,excitations] = cm.compute(oi);
 
 params = cm.visualize('params');
 % cm.visualize('help');
@@ -63,25 +63,25 @@ cm.emGenSequence(eyeMovementDurationSeconds, ...
 %% Compute 128 noisy response instances of cone excitation response to the same eye movement path
 instancesNum = 128;
 % (Instances, Time Samples, Cone index)
-[excitationsInstances, noisyExcitationResponseInstances, ~,~,timeAxis] = cm.compute(oi, ...
+[~, excitations, current,~,timeAxis] = cm.compute(oi, ...
     'withFixationalEyeMovements', true, ...
     'nTrials', instancesNum);
 
 %% Visualize time-series response of a single cone
 
 % Find the cone with max noise-free response
-[~,idx] = max(excitationsInstances(:));
-[~,~,targetConeID] = ind2sub(size(excitationsInstances), idx);
+[~,idx] = max(excitations(:));
+[~,~,targetConeID] = ind2sub(size(excitations), idx);
 
 
 ieNewGraphWin;
 
 % Plot the time series response for individual trials
-plot(timeAxis, squeeze(noisyExcitationResponseInstances(:,:,targetConeID)), 'k.');
+plot(timeAxis, squeeze(excitations(:,:,targetConeID)), 'k--');
 hold on;
 
 % Plot the time series response for the mean of the individual instances
-plot(timeAxis, squeeze(mean(noisyExcitationResponseInstances(:,:,targetConeID),1)), 'g-', 'LineWidth', 2.0);
+plot(timeAxis, squeeze(mean(excitations(:,:,targetConeID),1)), 'g-', 'LineWidth', 2.0);
 hold on;
 
 % Overlay the noise-free time series response in red
@@ -92,16 +92,18 @@ set(gca, 'FontSize', 16);
 
 %% Plot a movie of the excitations
 
-% You can play this video with VLC
-vidfile = VideoWriter('testmovie.mp4','MPEG-4');
-open(vidfile);
-for ii=1:numel(timeAxis)
-    [~,hdl] = cm.plot('excitations',excitationsInstances(1,ii,:));
-    drawnow
-    thisImg = getframe(gcf);
-    writeVideo(vidfile,thisImg);
-end
-close(vidfile)
+mp4File = cm.movie(timeAxis,excitations);
+
+%
+% implay(mp4File);
+% You can also import the file into PowerPoint or use VLC
+%
+% For the coneMosaic we used to be able to do this.
+%
+%  thisOS = osBioPhys;
+%  current = thisOS.osCompute(cMosaic);
+%
+% Not sure what NC intends for the cMosaic class.
 
 %% END
 

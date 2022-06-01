@@ -820,6 +820,7 @@ classdef cMosaic < handle
         % Function for identifying overlapping RFs
         [rfsToKeep, rfsToBeEliminated, overlappingOtherRFs] = identifyOverlappingRFs(xPos, yPos, ...
              RFpositionsMicrons, RFspacingsMicrons, maxSeparationForDeclaringOverlap);
+
     end
 end
 
