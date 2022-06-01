@@ -184,7 +184,7 @@ classdef RGCconnector < handle
             % in a neighboring RGC2 so at to minimize the combined cost
             obj.swapConesBetweenNearbyRGCs(...
                 'optimizationCenter', 'visualFieldCenter', ...
-                'generateProgressVideo', ~true);
+                'generateProgressVideo', true);
 
             % Visualize current connectivity
             if (visualizeIntermediateConnectivityStages)
@@ -197,7 +197,7 @@ classdef RGCconnector < handle
         [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin);
 
         % Visualize the current connections between the 2 mosaics
-        hFig = visualizeCurrentConnectivityState(obj, figNo);
+        hFig = visualizeCurrentConnectivityState(obj, figNo, varargin);
          
         % Compute input maintenance costs across entire RGC mosaic
         [totalCost, spatialCost, chromaticCost] = computeInputMaintenanceCostAcrossEntireMosaic(obj);
@@ -258,9 +258,9 @@ classdef RGCconnector < handle
         
         % Optimize how many and which of theSourceRGCinputConeIndices will
         % be swapped with cones to one of the neighboringRGCindices
-        beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
+        [beneficialSwapWasFound, costReduction] = optimizeSwappingOfConeInputs(obj, ...
             theSourceRGCindex, theSourceRGCinputConeIndices, theSourceRGCinputConeWeights, ...
-            theNeighboringRGCindices, allNeighboringRGCsInputConeIndices, allNeighboringRGCsInputConeWeights);
+            theNeighboringRGCindices, allNeighboringRGCsInputConeIndices, allNeighboringRGCsInputConeWeights, dryRunOnly);
 
         % Update the connectivityMatrix, by disconnecting
         %   indexOfConeToBeReassigned  FROM  sourceRGCindex
@@ -281,6 +281,10 @@ classdef RGCconnector < handle
         % Compute the cost for an RGC to maintain its cone inputs
         [cost, spatialCostComponent, chromaticCostComponent] = ...
             costToMaintainInputs(obj, inputConeIndices, inputConeWeights, localRGCSpacingMicrons);
+
+        projectedCostFromOverlap = costToMaintainOverlappingInputs(obj, ...
+           neighboringRGCindex, neighboringRGCconeIndices, neighboringRGCconeWeights, ...
+           sourceRGCindex, sourceRGCconeIndices, sourceRGCconeWeights);
 
         % Update the centroids of all RGCs in the RGClist
         updateCentroidsFromInputs(obj, RGClist);

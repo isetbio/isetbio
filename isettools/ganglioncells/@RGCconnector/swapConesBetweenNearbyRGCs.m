@@ -11,7 +11,7 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
 
     % Video setup
     if (generateProgressVideo)
-        videoOBJ = VideoWriter('Step5', 'MPEG-4');
+        videoOBJ = VideoWriter(sprintf('Step5_w%2.3f', obj.wiringParams.chromaticSpatialVarianceTradeoff), 'MPEG-4');
         videoOBJ.FrameRate = 10;
         videoOBJ.Quality = 100;
         videoOBJ.open();
@@ -68,7 +68,7 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
     
             if (numel(theSourceRGCinputConeIndices)==1) || (numel(theSourceRGCinputConeIndices)>obj.wiringParams.maxNumberOfConesToSwap)
                 % Dont do anything if the source has a single cone input
-                % of if the source has more than 7 cone inputs
+                % of if the source has more than a user-specified max # of cone inputs
                 continue;
             end
 
@@ -92,7 +92,8 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
                 swapsInCurrentPass = swapsInCurrentPass + 1;
                 if (generateProgressVideo)
                     % Visualize current connectivity
-                    hFig = obj.visualizeCurrentConnectivityState(1005);
+                    hFig = obj.visualizeCurrentConnectivityState(1005, ...
+                        'titleString', sprintf('Cone swapping phase (PASS:%d, RGC:%d/%d)', currentPass, iRGC, numel(sortedRGCindices)));
                     videoOBJ.writeVideo(getframe(hFig));
                 end
             end

@@ -33,7 +33,7 @@ function visualizeConePositions(obj, ax, coneOutline, varargin)
         identifiedConeRFspacingsMicrons = obj.inputConeMosaic.coneRFspacingsMicrons(identifiedConeIndicesSetA);
         [f,v] = RGCconnector.facesAndVertices(identifiedConeRFpositionsMicrons, identifiedConeRFspacingsMicrons, coneOutline);
         theColor = squeeze(coneColors(iConeType,:));
-        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', 'none', 'EdgeColor', theColor*0.5, 'LineWidth', 4.0);
+        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', 'none', 'EdgeColor', theColor*0.5, 'LineWidth', 2.0);
     end
 
     if (~isempty(identifiedConeIndicesSetB))
@@ -44,7 +44,7 @@ function visualizeConePositions(obj, ax, coneOutline, varargin)
         identifiedConeRFspacingsMicrons = obj.inputConeMosaic.coneRFspacingsMicrons(identifiedConeIndicesSetB);
         [f,v] = RGCconnector.facesAndVertices(identifiedConeRFpositionsMicrons, identifiedConeRFspacingsMicrons, squareOutline);
         theColor = squeeze(coneColors(iConeType,:));
-        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0 0 0], 'EdgeColor', theColor*0.5, 'LineWidth', 4.0);
+        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', 'none', 'EdgeColor', theColor*0.5, 'LineWidth', 2.0);
 
     end
 

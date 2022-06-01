@@ -20,8 +20,6 @@ function updateLocalRGCRFspacingsBasedOnCurrentCentroids(obj)
         localRGCRFspacingsMicrons(idx) = obj.RGCRFspacingsMicrons(idx);
     end
 
-    
-
     for iRGC = 1:numel(obj.RGCRFspacingsMicrons)
          nearbyRGCindicesForThisRGC = nearbyRGCindices(:,iRGC);
          distancesToNearbyRGCsForThisRGC = distancesToNearbyRGCs(:,iRGC);

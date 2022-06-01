@@ -7,9 +7,7 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
 % Optional key/value pairs
 %   'figureHandle'      - The figure handle on which to render the figure
 %   'axesHandle'        - The axes handle on which to render the figure
-%   'inputConeMosaic'   - The input cone mosaic
 %   'XLims', 'YLims'    - The limits [min max] of the x- and y-axes
-%   'titleString'       - A title string
 %   'thetaSamples'      - How many samples to use for rendering the RF disk
 %
 % History:
@@ -20,10 +18,6 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('titleString', '', @(x)(isempty(x) || (ischar(x))));
-    p.addParameter('identifiedConeIndicesSetA', [], @(x)(isempty(x)||isnumeric(x)));
-    p.addParameter('identifiedConeIndicesSetB', [], @(x)(isempty(x)||isnumeric(x)));
-    p.addParameter('displayOnlyTheConeMosaic', false, @islogical);
-    p.addParameter('displayOnlyTheRGCMosaic', false, @islogical);
     p.addParameter('thetaSamples', 20, @isnumeric);
     p.addParameter('XLims', [], @isnumeric);
     p.addParameter('YLims', [], @isnumeric);
@@ -32,14 +26,10 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
 
     hFig = p.Results.figureHandle;
     ax = p.Results.axesHandle;
-    titleString = p.Results.titleString;
     thetaSamples = p.Results.thetaSamples;
+    titleString = p.Results.titleString;
     XLims = p.Results.XLims;
     YLims = p.Results.YLims;
-    identifiedConeIndicesSetA = p.Results.identifiedConeIndicesSetA;
-    identifiedConeIndicesSetB = p.Results.identifiedConeIndicesSetB;
-    displayOnlyTheConeMosaic = p.Results.displayOnlyTheConeMosaic;
-    displayOnlyTheRGCMosaic = p.Results.displayOnlyTheRGCMosaic;
 
     % Generate disk outline
     thetas = linspace(0,360,thetaSamples);
@@ -57,39 +47,29 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
     
     hold(ax, 'on')
 
-    % Plot the cones
-%     if (~displayOnlyTheRGCMosaic)
-%         obj.visualizeConePositions(ax, diskOutline, ...
-%             'identifiedConeIndicesSetA', identifiedConeIndicesSetA, ...
-%             'identifiedConeIndicesSetB', identifiedConeIndicesSetB);
-%     end
+    % Plot original RGCRF positions in gray hegagons
+    [f,v] = RGCconnector.facesAndVertices(...
+        obj.RGCRFpositionsMicrons, ...
+        obj.RGCRFspacingsMicrons, hexOutline);
+    patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.25 0.25], 'EdgeColor', [0 0 0], ...
+        'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
 
-    % Plot the RGCs
-    if (~displayOnlyTheConeMosaic)
-        % Plot original RGCRF positions if no input and show this using
-        % dashed outlines
-        [f,v] = RGCconnector.facesAndVertices(...
-            obj.RGCRFpositionsMicrons, ...
-            obj.RGCRFspacingsMicrons, hexOutline);
-        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.25 0.25], 'EdgeColor', [0 0 0], ...
-            'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
+    
+    % Plot the centroid positions of RGCs with cone inputs in cyan disks
+    idx = find(obj.RGCRFcentroidsFromInputs(:,1) ~= Inf);
+    [f,v] = RGCconnector.facesAndVertices(...
+        obj.RGCRFcentroidsFromInputs(idx,:), ...
+        obj.RGCRFspacingsMicrons(idx), diskOutline);
+    patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.75 0.75], 'EdgeColor', [0 0 0], ...
+        'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
 
-        
-        % Plot the centroid positions for RGCs with cone inputs
-        idx = find(obj.RGCRFcentroidsFromInputs(:,1) ~= Inf);
-        [f,v] = RGCconnector.facesAndVertices(...
-            obj.RGCRFcentroidsFromInputs(idx,:), ...
-            obj.RGCRFspacingsMicrons(idx), diskOutline);
-        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.75 0.75], 'EdgeColor', [0 0 0], ...
-            'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
+    idx = find(obj.RGCRFcentroidsFromInputs(:,1) == Inf);
+    [f,v] = RGCconnector.facesAndVertices(...
+        obj.RGCRFcentroidsFromInputs(idx,:), ...
+        obj.RGCRFspacingsMicrons(idx), diskOutline);
+    patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.25 0.25], 'EdgeColor', [0 0 0], ...
+        'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
 
-        idx = find(obj.RGCRFcentroidsFromInputs(:,1) == Inf);
-        [f,v] = RGCconnector.facesAndVertices(...
-            obj.RGCRFcentroidsFromInputs(idx,:), ...
-            obj.RGCRFspacingsMicrons(idx), diskOutline);
-        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.25 0.25], 'EdgeColor', [0 0 0], ...
-            'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
-    end
 
 
     % Finalize
@@ -97,13 +77,9 @@ function [hFig, ax, XLims, YLims] = visualizeInputMosaics(obj, varargin)
 
     minRGCXY = min(obj.RGCRFpositionsMicrons,[],1);
     minConeXY = min(obj.inputConeMosaic.coneRFpositionsMicrons,[],1);
-    minX = min([minConeXY(1) minRGCXY(1)]);
-    minY = min([minConeXY(2) minRGCXY(2)]);
 
     maxRGCXY = max(obj.RGCRFpositionsMicrons,[],1);
     maxConeXY = max(obj.inputConeMosaic.coneRFpositionsMicrons,[],1);
-    maxX = max([maxConeXY(1) maxRGCXY(1)]);
-    maxY = max([maxConeXY(2) maxRGCXY(2)]);
 
     minX = 0.1*minConeXY(1) + 0.9*minRGCXY(1); 
     maxX = 0.1*maxConeXY(1) + 0.9* maxRGCXY(1);

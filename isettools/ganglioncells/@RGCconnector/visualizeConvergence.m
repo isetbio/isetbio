@@ -5,6 +5,7 @@ function visualizeConvergence(currentPass, netTotalCostInitial, netTotalCost, ..
 
     % Visualize convergence
         hFig = figure(222); clf;
+        set(hFig, 'Position', [100 100 1000 800]);
         subplot(2,2,1);
         plot(0:currentPass, [netTotalCostInitial netTotalCost], 'bo-', 'MarkerFaceColor', [0.5 0.8 0.9], 'MarkerSize', 14, 'LineWidth', 1.5);
         set(gca, 'YLim', [0 0.5], 'XLim', [0 currentPass+1], 'FontSize', 16);
@@ -14,16 +15,18 @@ function visualizeConvergence(currentPass, netTotalCostInitial, netTotalCost, ..
         xlabel('iteration no');
 
         subplot(2,2,2);
-        plot(0:currentPass, [netSpatialCostInitial netSpatialCost], 'bo-', 'MarkerFaceColor', [0.5 0.8 0.9], 'MarkerSize', 14, 'LineWidth', 1.5);
-        set(gca, 'YLim', [0 0.5], 'XLim', [0 currentPass+1], 'FontSize', 16);
+        spatialCostSequence = [netSpatialCostInitial netSpatialCost];
+        plot(0:currentPass, spatialCostSequence, 'bo-', 'MarkerFaceColor', [0.5 0.8 0.9], 'MarkerSize', 14, 'LineWidth', 1.5);
+        set(gca, 'YLim', [0 max(spatialCostSequence)], 'XLim', [0 currentPass+1], 'FontSize', 16);
         set(gca, 'YTick', 0:0.1:0.5, 'XTick', 0:2:maxPassesNum);
         grid on
         ylabel('net spatial cost');
         xlabel('iteration no');
 
         subplot(2,2,3);
-        plot(0:currentPass, [netChromaticCostInitial netChromaticCost], 'bo-', 'MarkerFaceColor', [0.5 0.8 0.9], 'MarkerSize', 14, 'LineWidth', 1.5);
-        set(gca, 'YLim', [0 0.5], 'XLim', [0 currentPass+1], 'FontSize', 16);
+        chromaCostSequence = [netChromaticCostInitial netChromaticCost];
+        plot(0:currentPass, chromaCostSequence, 'bo-', 'MarkerFaceColor', [0.5 0.8 0.9], 'MarkerSize', 14, 'LineWidth', 1.5);
+        set(gca, 'YLim', [0 max(chromaCostSequence)], 'XLim', [0 currentPass+1], 'FontSize', 16);
         set(gca, 'YTick', 0:0.1:0.5, 'XTick', 0:2:maxPassesNum);
         grid on
         xlabel('iteration no');

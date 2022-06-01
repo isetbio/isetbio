@@ -70,18 +70,16 @@ function testRGCconnector
     %instantiationMode = 'custom cone-to-RGC density';
     %instantiationMode = 'custom RGC position matrix';
 
-    % [0: minimize chromatic variance, 1: minimize spatial variance]
-    chromaticSpatialVarianceTradeoff = 0.5;
-    maxNeighborNormDistance = 1.0;
-    
+
     % Cone swapping phase params
     maxPassesNum = 30;
-    maxNumberOfConesToSwap = 6;
+    maxNumberOfConesToSwap = 10;
 
-    visualizeIntermediateConnectivityStages = true;
+    visualizeIntermediateConnectivityStages = ~true;
     
     tic
 
+    % [0: minimize chromatic variance, 1: minimize spatial variance]
     wList = [0.0 0.2 0.5 0.8 1.0];
     searchRadiiList = [0.6 0.8 1.0];
 
