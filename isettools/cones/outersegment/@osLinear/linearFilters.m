@@ -85,9 +85,11 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
     
     % Interpolate filters and mean currents based on ecc from 0 degs up to osBioPhys.fovealPeripheralCutoffDegs
     % For ecc > osBioPhys.fovealPeripheralCutoffDegs degs, we use the peripheral data
-    linearMixingFactor = 1-min([1 eccentricityDegs/osBioPhys.fovealPeripheralCutoffDegs]);
+    %
+    % Seems unused now
+    % linearMixingFactor = 1-min([1 eccentricityDegs/osBioPhys.fovealPeripheralCutoffDegs]);
     
-    % Compute density-based intepolation factors across eccentricities
+    % Compute density-based interpolation factors across eccentricities
     obj = WatsonRGCModel();
     eccDegs = logspace(log10(0.1), log10(osBioPhys.fovealPeripheralCutoffDegs), 64);
     eccUnits = 'deg';

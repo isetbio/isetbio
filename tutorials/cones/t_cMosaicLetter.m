@@ -107,3 +107,63 @@ mp4File = cm.movie(timeAxis,excitations);
 
 %% END
 
+% {
+  foo = squeeze(mean(excitations(:,:,cm.lConeIndices),1));
+  L = mean(foo(:))/cm.integrationTime 
+  foo = squeeze(mean(excitations(:,:,cm.mConeIndices),1));
+  M = mean(foo(:))/cm.integrationTime 
+  foo = squeeze(mean(excitations(:,:,cm.sConeIndices),1));
+  S = mean(foo(:))/cm.integrationTime   
+
+% 
+
+cMosaic = coneMosaic('os', osLinear, 'pattern', [2 2 2]);
+cMosaic.integrationTime = cm.integrationTime;
+
+%% Setup background levels
+% Mean of isomerization stimulus in R*/sec (scaled by time step to be
+% placed in bins of photons). The mean rate affects the magnitude of the
+% impulse response due to adaptation.
+%
+% For this tutorial, background rates are the same for all classes of cone.
+% Results for the L cones are plotted.
+meanIsoArray = [L M S] * cMosaic.integrationTime;
+
+%% Allocate space for the impulse responses
+% A litte ugly, we get an impulse response and find its size.
+nTimeSamples = size(cMosaic.os.linearFilters(cMosaic), 1);
+fovea = zeros(nTimeSamples, length(meanIsoArray));
+periphery = zeros(nTimeSamples, length(meanIsoArray));
+
+%%  Loop on different background rates and and compute
+os = cMosaic.os;
+for ii = 1:length(meanIsoArray)
+    % Set mean background for start of current output
+    cMosaic.absorptions = repmat(meanIsoArray(ii), 1, 3);
+
+    % Compute outer segment currents for the fovea. Do this by pulling out
+    % the first column of return, corresponding to the L cones.
+    tmp = os.linearFilters(cMosaic, 'eccentricity', 0);
+    fovea(:, ii) = tmp(:, 1);
+
+    % Do it for the periphery
+    tmp = os.linearFilters(cMosaic, 'eccentricity', 15);
+    periphery(:, ii) = tmp(:, 1);
+
+end
+
+timeAxis = cMosaic.os.timeAxis;
+
+ieNewGraphWin;
+plot(timeAxis,fovea);
+xlabel('Time (s)');
+ylabel('A.U.');
+grid on;
+
+ieNewGraphWin;
+plot(timeAxis,periphery);
+xlabel('Time (s)');
+ylabel('A.U.');
+grid on;
+
+%}

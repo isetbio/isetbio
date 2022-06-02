@@ -64,12 +64,12 @@ if nargin == 1
     % Only im sent in. Default is [0, 1]
     lowerBound = 0;
     upperBound = 1;
-    fprintf('ieClip:  Setting range to 0 1');
+    fprintf('ieClip:  Setting range to 0 1\n');
 elseif nargin == 2
     % Reads this as [-l, l]
     lowerBound = -abs(lowerBound);
     upperBound = abs(lowerBound);
-    fprintf('ieClip:  Setting range to [%.3e, %.3e]', lowerBound, ...
+    fprintf('ieClip:  Setting range to [%.3e, %.3e]\n', lowerBound, ...
         upperBound);
 end
 

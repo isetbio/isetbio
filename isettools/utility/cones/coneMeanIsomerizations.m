@@ -100,7 +100,9 @@ coneType = cMosaic.pattern;
 
 %% Compute
 if (~isempty(p.Results.absorptionsInXWFormat))
-    % [NOTE: DHB - A commment here about the format would be great.]
+    % The rows are spatial position.  The columns are the time points.  So
+    % XW is a misnomer here.  It is really XT.
+    % The action performed here should really be a 'get' method.
     pRateXW = p.Results.absorptionsInXWFormat;
     nonNullConeIndices = find(cMosaic.pattern > 1);
     nonNullConeTypes = coneType(nonNullConeIndices);
@@ -108,9 +110,11 @@ if (~isempty(p.Results.absorptionsInXWFormat))
     mConeIndices = find(nonNullConeTypes == 3);
     sConeIndices = find(nonNullConeTypes == 4);
 else
-    % Reshape from 3D (x, y, t) to space x nCones
     % [NOTE: DHB - This comment does not parse for me - how does time turn
     % into cones?]
+    % Response to DHB:  This appears to convert (x, y, t) to (space x time)
+    % Then we pull out the spatial locations for each cone type separately
+    % and average them.
     pRate = cMosaic.absorptions;     % Absorptions per sample
     if isempty(pRate), return; end   % Return 0 when no absorptions
     pRateXW = RGB2XWFormat(pRate);

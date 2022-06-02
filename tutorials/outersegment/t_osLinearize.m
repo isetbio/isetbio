@@ -61,7 +61,7 @@ for ii = 1:length(meanIsoArray)
 end
 
 %% Plot
-vcNewGraphWin([], 'wide');
+ieNewGraphWin([], 'wide');
 timeAxis = os.timeAxis;
 
 % Fovea

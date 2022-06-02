@@ -4,6 +4,17 @@ function [current, interpFilters, meanCur] = osCompute(obj, cMosaic, varargin)
 % Syntax:
 %	[current, interpFilters, meanCur] = osCompute(obj, cMosaic, varargin)
 %
+% Inputs
+%   cMosaic - coneMosaic class (old)
+%
+% Optional key/val pairs
+%
+%
+% Returns
+%   current       - 
+%   interpFilters -
+%   meanCur       -
+%
 % Description:
 %    We use  osLinear.osCompute (linear model) for experiments with a
 %    uniform background, as we often find in psychophysical experiments.
