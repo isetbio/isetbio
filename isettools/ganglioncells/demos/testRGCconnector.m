@@ -6,7 +6,7 @@ function testRGCconnector
     eccentricity = 'high';
     %eccentricity = 'medium high';
     %eccentricity = 'medium';   % DONE
-    eccentricity = 'medium low';
+    %eccentricity = 'medium low';
     %eccentricity = 'low';
     %eccentricity = 'very low';
     %eccentricity = 'foveal';
@@ -84,8 +84,8 @@ function testRGCconnector
     wList = [0.0 0.2 0.5 0.8 1.0];
     searchRadiiList = [0.6 0.8 1.0];
 
-    wList = 0.5;
-    searchRadiiList = 0.9;
+    wList = [0.5 0.8 1.0];
+    searchRadiiList = [0.8 1.0];
     
     for iTradeOffIndex = 1:numel(wList)
         for iSearchIndex = 1:numel(searchRadiiList)
@@ -155,7 +155,10 @@ function testRGCconnector
            
             pfdFileName = sprintf('Ecc_%s_MaxNeighborDist_%2.2f_ChromaSpatialVarianceTradeoff_%2.2f.pdf',eccentricity, maxNeighborNormDistance, chromaticSpatialVarianceTradeoff);
             NicePlot.exportFigToPDF(pfdFileName, hFig, 300);
-        end
-    end
+            
+            clear 'rc';
+            
+        end % iSearchIndex
+    end % iTradeOff
 end
 
