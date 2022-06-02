@@ -12,22 +12,18 @@ function updateLocalRGCRFspacingsBasedOnCurrentCentroids(obj)
             'smallest', maxNeighborsNum+1);
 
     % Compute RGCRF spacings from their current centroids 
+    obj.localRGCRFspacingsMicrons = inf(1,size(obj.RGCRFcentroidsFromInputs,1));
+    
+    nonZeroInputRGCIDs = find(~isinf(obj.RGCRFcentroidsFromInputs(:,1)));
     localRGCRFspacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(obj.RGCRFcentroidsFromInputs);
 
-    idx = find(isinf(localRGCRFspacingsMicrons));
-    if (~isempty(idx))
-        error('Inf local spacing found')
-        localRGCRFspacingsMicrons(idx) = obj.RGCRFspacingsMicrons(idx);
-    end
-
-    for iRGC = 1:numel(obj.RGCRFspacingsMicrons)
+    for iiiRGC = 1:numel(nonZeroInputRGCIDs)
+         iRGC = nonZeroInputRGCIDs(iiiRGC);
          nearbyRGCindicesForThisRGC = nearbyRGCindices(:,iRGC);
          distancesToNearbyRGCsForThisRGC = distancesToNearbyRGCs(:,iRGC);
          % Exclude nearbyRGCs that are further than a maxDistance
          maxDistance = maxNormDistance * localRGCRFspacingsMicrons(iRGC);
-         nearbyRGCindicesForThisRGC = nearbyRGCindicesForThisRGC(find(distancesToNearbyRGCsForThisRGC <= maxDistance));
+         nearbyRGCindicesForThisRGC = nearbyRGCindicesForThisRGC(find(distancesToNearbyRGCsForThisRGC < maxDistance));
          obj.localRGCRFspacingsMicrons(iRGC) = mean(localRGCRFspacingsMicrons(nearbyRGCindicesForThisRGC));
-     end
-
-
+    end
 end

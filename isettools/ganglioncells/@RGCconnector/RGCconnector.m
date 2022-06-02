@@ -56,6 +56,7 @@ classdef RGCconnector < handle
 
         defaultWiringParams = struct(...
                 'chromaticSpatialVarianceTradeoff', 1.0, ...     % [0: minimize chromatic variance 1: minimize spatial variance]
+                'rfOverlapFactor', 0.0, ...                      % overlap of RFs
                 'spatialVarianceMetric', 'spatial variance', ... % choose between {'maximal interinput distance', 'spatial variance'}
                 'maxNeighborsNum', 6, ...
                 'maxNumberOfConesToSwap', 8, ...
@@ -79,6 +80,7 @@ classdef RGCconnector < handle
             p = inputParser;
             p.addParameter('RGCRFpositionsMicrons', [], @(x)((isempty(x)) || (isnumeric(x)&&(size(x,2)==2))));
             p.addParameter('coneToRGCDensityRatio', [], @(x)((isempty(x)) || isnumeric(x)));
+            p.addParameter('rfOverlapFactor', 0, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
             p.addParameter('chromaticSpatialVarianceTradeoff', RGCconnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
             p.addParameter('maxNeighborNormDistance', RGCconnector.defaultWiringParams.maxNeighborNormDistance, @isscalar);
             p.addParameter('maxNumberOfConesToSwap', RGCconnector.defaultWiringParams.maxNumberOfConesToSwap,@(x)(isscalar(x)&&(x>=1)));
@@ -88,6 +90,7 @@ classdef RGCconnector < handle
             
             RGCRFposMicrons = p.Results.RGCRFpositionsMicrons;
             coneToRGCDensityRatio = p.Results.coneToRGCDensityRatio;
+            
             visualizeIntermediateConnectivityStages = p.Results.visualizeIntermediateConnectivityStages;
 
             % Update wiringParams struct
@@ -96,7 +99,7 @@ classdef RGCconnector < handle
             obj.wiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
             obj.wiringParams.maxPassesNum = p.Results.maxPassesNum;
             obj.wiringParams.maxNumberOfConesToSwap = p.Results.maxNumberOfConesToSwap;
-
+            obj.wiringParams.rfOverlapFactor = p.Results.rfOverlapFactor;
             if (isempty(RGCRFposMicrons)) && (isempty(coneToRGCDensityRatio))
                 % Nothing was specified, so we initialize with a precomputed RGC lattice (Watson's model)
                 modelRGC = 'Watson-midgetRGC';
@@ -180,7 +183,7 @@ classdef RGCconnector < handle
             end
 
 
-            % STEP 5. Swap 1 or more cones  of RGC1 with the same # of cones 
+            % STEP 5. Swap 1 or more cones of RGC1 with the same # of cones 
             % in a neighboring RGC2 so at to minimize the combined cost
             obj.swapConesBetweenNearbyRGCs(...
                 'optimizationCenter', 'visualFieldCenter', ...
@@ -191,6 +194,13 @@ classdef RGCconnector < handle
                 obj.visualizeCurrentConnectivityState(1005);
             end
 
+            % STEP 6. Allow for overlapping of cone inputs
+            obj.expandRFToOverlappingCones();
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeCurrentConnectivityState(1006);
+            end
+            
+            
         end % Constructor
 
         % Visualization of input cone mosaics (before any connections are made)
@@ -242,7 +252,10 @@ classdef RGCconnector < handle
         % in a neighboring RGC2 so at to minimize the combined cost
         swapConesBetweenNearbyRGCs(obj, varargin);
 
-        % Final step of non-overlapping wiring. Remove RGCs on the edges of the patch
+        % STEP 6. Expand RFs to include cones assigned to nearby RGCs (creating RF overlap)
+        expandRFToOverlappingCones(obj, varargin);
+        
+        % Remove RGCs on the edges of the patch
         removeRGCsOnPatchPerimeter(obj);
 
         % Optimize how many and which of theSourceRGCinputConeIndices will
@@ -320,6 +333,8 @@ classdef RGCconnector < handle
         % Compute methods
         [D,idx] = pdist2(A, B, varargin);
         d = maximalInterInputDistance(coneRFpos);
+        c = weightedMean(data, weights);
+     
     
         % Indices of points are inside & on the boundary defined by a select subset of points
         [insideBoundaryPointIndices, onBoundaryPointIndices] = ...

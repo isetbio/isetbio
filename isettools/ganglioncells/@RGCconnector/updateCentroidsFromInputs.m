@@ -19,7 +19,19 @@ function updateCentroidsFromInputs(obj, RGClist)
             inputConePositions = allConePosMicrons(connectedConeIndices,:);
         
             % Compute centroids
-            [~, centroids(iRGC,:)] = var(inputConePositions,inputConeWeights,1);
+            % [~, centroids(iRGC,:)] = var(inputConePositions,inputConeWeights,1);
+           
+            p1 = any(isinf(inputConePositions(:)));
+            p2 = any(isinf(inputConeWeights));
+            if (p1 || p2)
+                error('Oh oh');
+            end
+            
+            if (sum(inputConeWeights(:)) == 0)
+                error('inputConeWeights = 0')
+            end
+            
+            centroids(iRGC,:) = RGCconnector.weightedMean(inputConePositions, inputConeWeights);
         end
     end
 

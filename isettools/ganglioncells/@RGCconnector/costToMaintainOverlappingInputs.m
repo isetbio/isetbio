@@ -5,8 +5,8 @@ function projectedCostFromOverlap = costToMaintainOverlappingInputs(obj, neighbo
     neighboringRGCconePositions = obj.inputConeMosaic.coneRFpositionsMicrons(neighboringRGCconeIndices,:);
     
     % compute projected centroid from inputs
-    [~, sourceRGCCentroidFromInputs] = var(sourceRGCConePositions,sourceRGCconeWeights,1);
-    [~, neighborRGCCentroidFromInputs] = var(neighboringRGCconePositions,neighboringRGCconeWeights,1);
+    sourceRGCCentroidFromInputs = RGCconnector.weightedMean(sourceRGCConePositions,sourceRGCconeWeights);
+    neighborRGCCentroidFromInputs = RGCconnector.weightedMean(neighboringRGCconePositions,neighboringRGCconeWeights);
 
     % The more the overlap, the higher the cost
     localSpacing = 0.5*(obj.localRGCRFspacingsMicrons(neighboringRGCindex) + obj.localRGCRFspacingsMicrons(sourceRGCindex));

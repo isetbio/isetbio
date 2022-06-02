@@ -14,6 +14,9 @@ function [totalCost, spatialCost, chromaticCost] = computeInputMaintenanceCostAc
     parfor iRGC = 1:rgcsNum
         % Indices of input cones
         connectedConeIndices = find(squeeze(obj.coneConnectivityMatrix(:, iRGC))>0);
+        if (isempty(connectedConeIndices))
+            continue;
+        end
         % Weights of input cones
         inputConeWeights = full(obj.coneConnectivityMatrix(connectedConeIndices, iRGC));
         % Compute the costs
