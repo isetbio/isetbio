@@ -19,42 +19,39 @@ ieInit;
 %% Create a letter on a display
 
 % family, size, dpi
-font = fontCreate('A', 'Georgia', 14, 96);
+font = fontCreate('A', 'Georgia', 18, 96);
 display = 'LCD-Apple';
 scene = sceneCreate('letter', font, display);
-scene = sceneSet(scene,'wangular',0.4);
+scene = sceneSet(scene,'wangular',0.5);
+
+%{
+% family, size, dpi
 scene = sceneCrop(scene,[96 1 sz(2)-97 sz(1)-1]);
 sz = sceneGet(scene,'size');
-% {
-% family, size, dpi
-font = fontCreate('B', 'Georgia', 14, 96);
+
+font = fontCreate('B', 'Georgia', 18, 96);
 display = 'LCD-Apple';
 scene2 = sceneCreate('letter', font, display);
-scene2 = sceneSet(scene2,'wangular',0.4);
+scene2 = sceneSet(scene2,'wangular',0.5);
 scene2 = sceneCrop(scene2,[96 1 sz(2)-65 sz(1)-1]);
-
 scene = sceneCombine(scene,scene2,'direction','horizontal');
-sceneWindow(scene);
-
 %}
-% We should pad the scene so the eye movements do not move the scene beyond
-% the array
 
-% Here is the scene
+sceneWindow(scene);
 
 %% Push the scene through human optics
 
 oi = oiCreate;
 oi = oiCompute(oi,scene);
 %oiWindow(oi);
+
 %%  Now image it on the cone mosaic with some fixational eye movements
 
 % cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat'); ecc = 0;
-% cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
+cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
 
 % cm = mosaicLoad('cmosaic_1.0-1.0_0.0-0.0.mat'); ecc = 0;
-
-cm = mosaicLoad('cmosaic_1.0-1.0_10.0-0.0.mat'); ecc = 10;
+% cm = mosaicLoad('cmosaic_1.0-1.0_10.0-0.0.mat'); ecc = 10;
 cm.visualize();
 
 %% Illustrate the cone excitations
@@ -85,11 +82,10 @@ instancesNum = 1;
     'nTrials', instancesNum);
 
 %% Visualize time-series response of a single cone
-
+%{
 % Find the cone with max noise-free response
 [~,idx] = max(excitations(:));
 [~,~,targetConeID] = ind2sub(size(excitations), idx);
-
 
 ieNewGraphWin;
 
@@ -105,6 +101,7 @@ xlabel('Time (seconds)');
 ylabel('Excitations per integration time');
 set(gca, 'FontSize', 16);
 grid on;
+%}
 
 %% Plot a movie of the excitations
 fname = sprintf('%s-ecc-%d.mp4',fullfile(isetRootPath,'local','excitations'),ecc);
@@ -130,7 +127,7 @@ implay(fname);
 meanIso = cm.meanIsomerizations(excitations);
 
 % Mean isomerizations per temporal sampling bin
-irf = currentIRF([L,M,S]*cm.integrationTime,ecc,timeAxis);
+irf = currentIRF(meanIso*cm.integrationTime,ecc,timeAxis);
 
 % Convolution.
 current = cm.current(excitations,irf,timeAxis);
