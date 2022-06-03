@@ -36,8 +36,9 @@ oi = oiCreate;
 oi = oiCompute(oi,scene);
 %oiWindow(oi);
 %%  Now image it on the cone mosaic with some fixational eye movements
-cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat');
-% cm = cMosaic('sizeDegs',[0.5, 0.5],'eccentricityDegs',[0,0]);
+
+% cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat'); ecc = 0;
+cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
 cm.visualize();
 
 %% Illustrate the cone excitations
@@ -63,7 +64,7 @@ cm.emGenSequence(eyeMovementDurationSeconds, ...
 %% Compute 128 noisy response instances of cone excitation response to the same eye movement path
 instancesNum = 8;
 % (Instances, Time Samples, Cone index)
-[~, excitations, current,~,timeAxis] = cm.compute(oi, ...
+[~, excitations, ~,~,timeAxis] = cm.compute(oi, ...
     'withFixationalEyeMovements', true, ...
     'nTrials', instancesNum);
 
@@ -92,8 +93,9 @@ grid on;
 %% Plot a movie of the excitations
 
 mp4File = cm.movie(timeAxis,excitations);
+implay(mp4File);
 
-% Figure this out.
+% TODO:  Figure this out.
 %
 % cmd = sprintf('vlc %s',mp4File);
 % [s,r] = system(cmd)
@@ -112,7 +114,7 @@ mp4File = cm.movie(timeAxis,excitations);
 [meanIso, timeSamples] = cm.meanIsomerizations(excitations);
 
 % Mean isomerizations per temporal sampling bin
-irf = currentIRF([L,M,S]*cm.integrationTime,0,timeSamples);
+irf = currentIRF([L,M,S]*cm.integrationTime,ecc,timeSamples);
 
 % Convolution.
 current = cm.current(excitations,irf,timeAxis);

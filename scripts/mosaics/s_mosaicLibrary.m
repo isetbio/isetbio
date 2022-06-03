@@ -22,13 +22,13 @@ dataDir = fullfile(isetRootPath,'data','cones');
 for ii=1:size(sizeDegs,1)
     for jj=1:size(positionDegs,1)
 
-        cm = cMosaic(...
+        cm = cMosaic( ...
             'sizeDegs',     sizeDegs(ii,:), ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
-            'positionDegs', positionDegs(ii,:), ... % ECC: (0,0)
+            'positionDegs', positionDegs(jj,:), ... % ECC: (0,0)
             'eccVaryingConeBlur', true ...
             );
 
-        fname = mosaicName(sizeDegs,positionDegs);
+        fname = mosaicName(sizeDegs(ii,:),positionDegs(jj,:));
         cm.save(fname,true);
         disp(fname)
     end
