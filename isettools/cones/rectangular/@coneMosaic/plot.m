@@ -126,7 +126,7 @@ validPlots = cellfun(@(x)(ieParamFormat(x)), validPlots, ...
 p.addRequired('pType', @(x) any(validatestring(ieParamFormat(x), ...
     validPlots)));
 
-p.addParameter('hf', []);             % Figure handle
+p.addParameter('hf', [],@(x)(isa(x,'matlab.ui.Figure'))); % Figure handle
 p.addParameter('oi', [], @isstruct);  % Used for spectral qe
 p.addParameter('x', [], @isscalar);   % x axis value
 p.addParameter('y', [], @isscalar);   % y axis value

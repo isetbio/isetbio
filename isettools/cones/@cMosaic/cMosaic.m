@@ -618,6 +618,12 @@ classdef cMosaic < handle
         % Generate struct representing the optical disk
         [odStructMicrons, odStructDegs] = odStruct(obj);
         
+        % Mean isomerizations per section
+        [val,timeSamples] = meanIsomerizations(obj,excitations);
+
+        % Linear photocurrent approximation
+        result = current(obj,excitations,irf,timeAxis);
+
         % Getter/Setter methods for dependent variables
         % QE
         function val = get.qe(obj)

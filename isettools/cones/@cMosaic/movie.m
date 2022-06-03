@@ -31,6 +31,7 @@ p.addRequired('signal',@(x)(ndims(x)==3));
 
 p.addParameter('filename',fullfile(isetRootPath,'local','tmp.mp4'),@ischar);
 p.addParameter('photocurrent',false);
+p.addParameter('sample',1,@isinteger);
 
 p.parse(obj,timeAxis,signal,varargin{:})
 
@@ -47,7 +48,11 @@ open(vidfile);
 % You can play this video with VLC
 for ii=1:numel(timeAxis)
     % Maybe this should be plot 'photocurrent' ....
-    obj.plot('excitations',signal(1,ii,:));
+    if ii == 1
+        [~,hdl] = obj.plot('excitations',signal(p.Results.sample,ii,:));
+    else
+        obj.plot('excitations',signal(p.Results.sample,ii,:),'hdl',hdl);
+    end
     drawnow
     thisImg = getframe(gcf);
     writeVideo(vidfile,thisImg);

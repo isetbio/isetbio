@@ -109,16 +109,17 @@ mp4File = cm.movie(timeAxis,excitations);
 %  thisOS = osBioPhys;
 %  current = thisOS.osCompute(cMosaic);
 %
-foo = squeeze(mean(excitations(:,:,cm.lConeIndices),1));
-L = mean(foo(:))/cm.integrationTime;
-foo = squeeze(mean(excitations(:,:,cm.mConeIndices),1));
-M = mean(foo(:))/cm.integrationTime;
-foo = squeeze(mean(excitations(:,:,cm.sConeIndices),1));
-S = mean(foo(:))/cm.integrationTime;
-timeSamples = (1:size(excitations,2))*cm.integrationTime;
+[meanIso, timeSamples] = cm.meanIsomerizations(excitations);
+
+% Mean isomerizations per temporal sampling bin
 irf = currentIRF([L,M,S]*cm.integrationTime,0,timeSamples);
 
+% Convolution.
+current = cm.current(excitations,irf,timeAxis);
 
+mp4File = cm.movie(timeAxis,current);
+
+implay(mp4File);
 
 %% END
 

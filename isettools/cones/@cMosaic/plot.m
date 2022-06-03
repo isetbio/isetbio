@@ -82,6 +82,7 @@ switch ieParamFormat(plotType)
         params.activation = allE;
         params.plotTitle = pTitle;
         params.verticalActivationColorBar = true;
+        params.figureHandle = hdl;
         
         % Return
         tmp = cmosaic.visualize(params);
