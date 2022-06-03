@@ -25,7 +25,7 @@ function testRGCconnector
 
         case 'medium high'
             theInputConeMosaic = cMosaic(...
-                'sizeDegs', 0.6*5*[0.6 0.4], ...
+                'sizeDegs', 0.7*5*[0.6 0.4], ...
                 'eccentricityDegs', [8 7], ...
                 'coneDensities', [0.6 0.3 0.1]);
         case 'medium'
@@ -81,12 +81,11 @@ function testRGCconnector
     tic
 
     % [0: minimize chromatic variance, 1: minimize spatial variance]
-    wList = [0.0 0.2 0.5 0.8 1.0];
-    searchRadiiList = [0.6 0.8 1.0];
-
-    wList = [0.5 0.8 1.0];
-    searchRadiiList = [0.8 1.0];
+    wList = [0.0 0.2 0.3 0.4 0.5 0.7 1.0];
+    searchRadiiList = [1.0];
     
+    loadPreviouslyGeneratedRGCconnector = ~true;
+
     for iTradeOffIndex = 1:numel(wList)
         for iSearchIndex = 1:numel(searchRadiiList)
 
@@ -94,10 +93,38 @@ function testRGCconnector
             chromaticSpatialVarianceTradeoff = wList(iTradeOffIndex);
             maxNeighborNormDistance = searchRadiiList(iSearchIndex);
 
+            if (loadPreviouslyGeneratedRGCconnector)
+
+                pfdFileName = sprintf('Ecc_%s_MaxNeighborDist_%2.2f_ChromaSpatialVarianceTradeoff_%2.2f.pdf',eccentricity, maxNeighborNormDistance, chromaticSpatialVarianceTradeoff);
+                theRGCconnectorFileName = strrep(pfdFileName, '.pdf', '.mat');
+                load(theRGCconnectorFileName, 'theRGCconnectorOBJ');
+                fprintf('\nLoaded previously generated @RGCconnectorOBJ from %s\n', theRGCconnectorFileName);
+        
+                % Apply overlap factor
+                rfOverlapFactor = 0.35;
+                theRGCconnectorOBJ.expandRFsToOverlappingCones(...
+                    'rfOverlapFactor', rfOverlapFactor ...
+                    );
+
+                % Visualize RFs with non-overlapping cones
+                rgcsNum = size(theRGCconnectorOBJ.coneConnectivityMatrix,2);
+                for iRGC = 1:rgcsNum
+                    nonOverlappingConeIndices = find(squeeze(theRGCconnectorOBJ.coneConnectivityMatrix(:, iRGC))>0);
+                    if (numel(nonOverlappingConeIndices)>1)
+                        theRGCconnectorOBJ.visualizeConePoolingWithinRFcenter(iRGC);
+                        pause
+                    end
+                end
+
+                pfdFileName = strrep(pfdFileName, '.pdf', '');
+                pfdFileName = sprintf('%s_rfOverlap_%2.2f.pdf', pfdFileName, rfOverlapFactor);
+                continue;
+            end
+
             switch (instantiationMode)
                 case 'default'
                     % Default instantiation, using mRGC mosaic
-                    rc = RGCconnector(theInputConeMosaic, ...
+                    theRGCconnectorOBJ = RGCconnector(theInputConeMosaic, ...
                             'rfOverlapFactor', rfOverlapFactor, ...
                             'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
                             'maxNeighborNormDistance', maxNeighborNormDistance, ...
@@ -110,7 +137,7 @@ function testRGCconnector
                     coneToRGCDensityRatio = 5;
         
                     % Instantiation with custom density regular hex RGC mosaic
-                    rc = RGCconnector(theInputConeMosaic, ...
+                    theRGCconnectorOBJ = RGCconnector(theInputConeMosaic, ...
                         'coneToRGCDensityRatio', coneToRGCDensityRatio, ...
                         'rfOverlapFactor', rfOverlapFactor, ...
                         'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
@@ -137,7 +164,7 @@ function testRGCconnector
                     end
             
                     % Instantiation with custom RGC lattice positions
-                    rc = RGCconnector(theInputConeMosaic, ...
+                    theRGCconnectorOBJ = RGCconnector(theInputConeMosaic, ...
                         'RGCRFpositionsMicrons', testRGCpositionsMicrons, ...
                         'rfOverlapFactor', rfOverlapFactor, ...
                         'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
@@ -150,14 +177,18 @@ function testRGCconnector
             toc
         
             % Export final connectivity
-            hFig = rc.visualizeCurrentConnectivityState(9999);
+            hFig = theRGCconnectorOBJ.visualizeCurrentConnectivityState(9999);
             drawnow
            
             pfdFileName = sprintf('Ecc_%s_MaxNeighborDist_%2.2f_ChromaSpatialVarianceTradeoff_%2.2f.pdf',eccentricity, maxNeighborNormDistance, chromaticSpatialVarianceTradeoff);
             NicePlot.exportFigToPDF(pfdFileName, hFig, 300);
             
-            clear 'rc';
-            
+            % Export the generated @RGCconnector object
+            theRGCconnectorFileName = strrep(pfdFileName, '.pdf', '.mat');
+            save(theRGCconnectorFileName, 'theRGCconnectorOBJ', '-v7.3');
+            fprintf('\nGenerated @RGCconnectorOBJ saved in %s\n', theRGCconnectorFileName);
+        
+        
         end % iSearchIndex
     end % iTradeOff
 end

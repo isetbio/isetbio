@@ -187,20 +187,21 @@ classdef RGCconnector < handle
             % in a neighboring RGC2 so at to minimize the combined cost
             obj.swapConesBetweenNearbyRGCs(...
                 'optimizationCenter', 'visualFieldCenter', ...
-                'generateProgressVideo', true);
+                'generateProgressVideo', ~true);
 
             % Visualize current connectivity
             if (visualizeIntermediateConnectivityStages)
                 obj.visualizeCurrentConnectivityState(1005);
             end
 
-            % STEP 6. Allow for overlapping of cone inputs
-            obj.expandRFToOverlappingCones();
+            % STEP 6. Remove RFs on perimeter
+            %obj.removeRGCsOnPatchPerimeter();
+
+            % Allow for overlapping of cone inputs
+            obj.expandRFsToOverlappingCones();
             if (visualizeIntermediateConnectivityStages)
                 obj.visualizeCurrentConnectivityState(1006);
             end
-            
-            
         end % Constructor
 
         % Visualization of input cone mosaics (before any connections are made)
@@ -209,8 +210,17 @@ classdef RGCconnector < handle
         % Visualize the current connections between the 2 mosaics
         hFig = visualizeCurrentConnectivityState(obj, figNo, varargin);
          
+        % Visualize the full connectivity of a single RGC
+        visualizeConePoolingWithinRFcenter(obj, iRGC);
+
         % Compute input maintenance costs across entire RGC mosaic
         [totalCost, spatialCost, chromaticCost] = computeInputMaintenanceCostAcrossEntireMosaic(obj);
+
+        % Expand RFs to include cones assigned to nearby RGCs (creating RF overlap)
+        expandRFsToOverlappingCones(obj, varargin);
+
+        
+
     end % Public methods
 
 
@@ -252,9 +262,7 @@ classdef RGCconnector < handle
         % in a neighboring RGC2 so at to minimize the combined cost
         swapConesBetweenNearbyRGCs(obj, varargin);
 
-        % STEP 6. Expand RFs to include cones assigned to nearby RGCs (creating RF overlap)
-        expandRFToOverlappingCones(obj, varargin);
-        
+
         % Remove RGCs on the edges of the patch
         removeRGCsOnPatchPerimeter(obj);
 

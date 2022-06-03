@@ -9,7 +9,7 @@ function beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
 
     % Only swap up to a max of the input cones -1
     sourceRGCconeInputsNum = numel(theSourceRGCinputConeIndices);
-    maxSourceRGCconesNumSwapped = sourceRGCconeInputsNum-1; % max([1 floor(sourceRGCconeInputsNum/2)]);
+    maxSourceRGCconesNumSwapped = max([1 sourceRGCconeInputsNum-1]);
 
     % Cost for all combinations of nearby RGCs and # of cones to be swapped
     optimalProjectedCosts = inf(numel(neighboringRGCindices), 100);
@@ -34,9 +34,9 @@ function beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
                                          theSourceRGCinputConeIndices, ...
                                          theSourceRGCinputConeWeights);
 
-        % Only swap up to a max of the input cones -1
+        % Here swap up to all the cones
         neigboringRGCconeInputsNum = numel(allNeighboringRGCsInputConeIndices{iNearbyRGC});
-        maxNeigboringRGCconesNumSwapped = neigboringRGCconeInputsNum-1; %max([1 floor(neigboringRGCconeInputsNum/2)]);
+        maxNeigboringRGCconesNumSwapped = max([1 neigboringRGCconeInputsNum]);
 
         % Final max cones to be swapped
         maxConesNumSwapped = min([...

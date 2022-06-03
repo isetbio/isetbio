@@ -20,9 +20,9 @@ function visualizeConePositions(obj, ax, coneOutline, varargin)
         [f,v] = RGCconnector.facesAndVertices(allConeRFpositionsMicrons, allConeRFspacingsMicrons, coneOutline);
         theColor = squeeze(coneColors(iConeType,:));
         if ((~isempty(identifiedConeIndicesSetA)) || (~isempty(identifiedConeIndicesSetB)))
-            patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', theColor, 'EdgeColor', theColor*0.5, 'FaceAlpha', 0.3);
+            patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', theColor*0.75, 'EdgeColor', theColor, 'FaceAlpha', 0.3, 'LineWidth', 1.5);
         else
-            patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', theColor, 'EdgeColor', theColor*0.5);
+            patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', theColor*0.75, 'EdgeColor', theColor, 'LineWidth', 1.5);
         end
         hold(ax, 'on')
     end
@@ -33,7 +33,7 @@ function visualizeConePositions(obj, ax, coneOutline, varargin)
         identifiedConeRFspacingsMicrons = obj.inputConeMosaic.coneRFspacingsMicrons(identifiedConeIndicesSetA);
         [f,v] = RGCconnector.facesAndVertices(identifiedConeRFpositionsMicrons, identifiedConeRFspacingsMicrons, coneOutline);
         theColor = squeeze(coneColors(iConeType,:));
-        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', 'none', 'EdgeColor', theColor*0.5, 'LineWidth', 2.0);
+        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', 'none', 'EdgeColor', theColor, 'LineWidth', 2.0);
     end
 
     if (~isempty(identifiedConeIndicesSetB))
@@ -44,8 +44,7 @@ function visualizeConePositions(obj, ax, coneOutline, varargin)
         identifiedConeRFspacingsMicrons = obj.inputConeMosaic.coneRFspacingsMicrons(identifiedConeIndicesSetB);
         [f,v] = RGCconnector.facesAndVertices(identifiedConeRFpositionsMicrons, identifiedConeRFspacingsMicrons, squareOutline);
         theColor = squeeze(coneColors(iConeType,:));
-        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', 'none', 'EdgeColor', theColor*0.5, 'LineWidth', 2.0);
-
+        patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', 'none', 'EdgeColor', theColor, 'LineWidth', 2.0);
     end
 
 
