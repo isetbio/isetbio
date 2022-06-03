@@ -18,5 +18,12 @@ function nearbyRGCindices = neihboringRGCindices(obj, theRGCindex)
         error('local spacing should not be inf here')
     end
     maxDistance = maxNormDistance * obj.localRGCRFspacingsMicrons(theRGCindex);
-    nearbyRGCindices = nearbyRGCindices(find(distancesToNearbyRGCs <= maxDistance));
+    
+    idx = find(distancesToNearbyRGCs <= maxDistance);
+    nearbyRGCindices = nearbyRGCindices(idx);
+    distancesToNearbyRGCs = distancesToNearbyRGCs(idx);
+    
+    % Sort them according to distance to the RGCindex
+    [~,idx] = sort(distancesToNearbyRGCs, 'ascend');
+    nearbyRGCindices = nearbyRGCindices(idx);
 end

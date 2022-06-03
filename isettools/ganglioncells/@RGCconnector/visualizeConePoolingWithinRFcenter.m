@@ -1,4 +1,10 @@
-function visualizeConePoolingWithinRFcenter(obj, iRGC)
+function hFig = visualizeConePoolingWithinRFcenter(obj, iRGC, varargin)
+    
+     % Parse input
+    p = inputParser;
+    p.addParameter('visualizedFieldOfViewMicrons', [], @(x)((isempty(x))||(isscalar(x))));
+    p.parse(varargin{:});
+    visualizedFieldOfViewMicrons = p.Results.visualizedFieldOfViewMicrons;
     
     % Set-up figure
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -27,7 +33,7 @@ function visualizeConePoolingWithinRFcenter(obj, iRGC)
     % Plot the main RGC wiring
     [xSupport, ySupport, rfProfile2DmainRGC, xTicks, yTicks] = ...
         plotWiring(obj, iRGC, axConeWiringMain, axConeAperturesMain, ...
-        [], [], [], []);
+        [], [], [], [], visualizedFieldOfViewMicrons, 'black');
 
     % Find the closest neighboring RGC
     nearbyRGCindices = obj.neihboringRGCindices(iRGC);
@@ -35,17 +41,23 @@ function visualizeConePoolingWithinRFcenter(obj, iRGC)
     if (isempty(nearbyRGCindices))
         return;
     end
-
+    
     theNearbyRGC = nearbyRGCindices(1);
 
+    % Compute the overlap coefficient
+    weightsRGC = abs(full(obj.coneConnectivityMatrix(:, iRGC)));
+    weightsNearbyRGC = abs(full(obj.coneConnectivityMatrix(:, theNearbyRGC)));
+    overlapOfWeights = RGCconnector.overlap(weightsRGC, weightsNearbyRGC);
+    
+    
     % Plot the nearby RGC wiring
     [~, ~, rfProfile2DnearbyRGC, ~, ~] = ...
         plotWiring(obj, theNearbyRGC, axConeWiringNearby, axConeAperturesNearby,  ...
-        xSupport, ySupport, xTicks, yTicks);
+        xSupport, ySupport, xTicks, yTicks, visualizedFieldOfViewMicrons, 'red');
 
     % Plot overlap between main and nearby RGC
     plotRFoverlaps2D(obj, iRGC, theNearbyRGC, rfProfile2DmainRGC, rfProfile2DnearbyRGC, ... 
-        xSupport, ySupport, xTicks, yTicks, axRFOverlapPair2D)
+        xSupport, ySupport, xTicks, yTicks, axRFOverlapPair2D);
 
 
     % The horizontal and vertical line spread functions (integrated over
@@ -74,10 +86,18 @@ function renderLineSpreadDiagrams(ax, spatialSupport, rfProfile1DmainRGC, rfProf
     shadedAreaPlot(ax,spatialSupport, rfProfile1DnearbyRGC, 0, [1 0 0], [1 0 0]*0.5, 0.5, 1.5, '-'); 
     legend(ax,theLegends);
 
+    overlapCoeff = RGCconnector.overlap(rfProfile1DmainRGC, rfProfile1DnearbyRGC);
+
     % Finalize plot
     axis(ax,'square');
     set(ax, 'XLim', [spatialSupport(1) spatialSupport(end)], 'YLim', [0 maxY], 'FontSize', 15);
     set(ax, 'XTick', xyTicks);
+    if (contains(xLabelString, 'x'))
+        title(ax, sprintf('1D-overlap across y-integrated RF: %2.0f%%', overlapCoeff*100));
+    else
+        title(ax, sprintf('1D-overlap across x-integrated RF: %2.0f%%', overlapCoeff*100));
+
+    end
     box(ax, 'on'); grid(ax, 'on'); 
     xlabel(ax, xLabelString);
     ylabel(ax, 'sensitivity');
@@ -100,24 +120,29 @@ function plotRFoverlaps2D(obj, iRGC, nearbyRGCindex, ...
     hold(axRFOverlap2D, 'on');
 
 
-    zData = (rfProfile2DmainRGC/max(rfProfile2DmainRGC(:))).^0.5;
+    zData1 = (rfProfile2DmainRGC/max(rfProfile2DmainRGC(:))).^0.5;
     cMosaic.semiTransparentContourPlot(axRFOverlap2D, xSupport, ySupport, ...
-        zData, zLevels, cmapMain, alphaMain, contourLineColorMain, ...
+        zData1, zLevels, cmapMain, alphaMain, contourLineColorMain, ...
         'lineWidth', 2.0);
     
 
-    zData = (rfProfile2DnearbyRGC/max(rfProfile2DnearbyRGC(:))).^0.5;
+    zData2 = (rfProfile2DnearbyRGC/max(rfProfile2DnearbyRGC(:))).^0.5;
     cMosaic.semiTransparentContourPlot(axRFOverlap2D, xSupport, ySupport, ...
-              zData, zLevels, cmapNearby, alphaNearby, contourLineColorNearby, ...
+              zData2, zLevels, cmapNearby, alphaNearby, contourLineColorNearby, ...
               'lineWidth', 2.0);
 
+    % Compute the overlap coefficient
+    overlapCoeff = RGCconnector.overlap(zData1(:), zData2(:));
+    
+    
     % Finalize plot
     axis(axRFOverlap2D,'equal');
     set(axRFOverlap2D, 'XLim', [xSupport(1) xSupport(end)], 'YLim', [ySupport(1) ySupport(end)], 'FontSize', 15);
     set(axRFOverlap2D, 'XTick', xTicks, 'YTick', yTicks);
     box(axRFOverlap2D, 'on'); grid(axRFOverlap2D, 'on');
-    title(axRFOverlap2D, sprintf('RGC #%d (grey) + RGC #%d (red)', iRGC, nearbyRGCindex));
-    %xlabel(axRFOverlap2D, 'space, x (microns)');
+    title(axRFOverlap2D, sprintf('Rc/RGCsep: %1.2f, 2D-overlap: %2.0f%%', ...
+        obj.wiringParams.RcToRGCseparationRatio, 100*overlapCoeff));
+    xlabel(axRFOverlap2D, 'space, x (microns)');
     ylabel(axRFOverlap2D, 'space, y (microns)');
 
 end
@@ -126,7 +151,7 @@ end
 
 function [xSupport, ySupport, rfProfile2D, xTicks, yTicks] = ...
     plotWiring(obj, iRGC, axConeWiring, axConeApertures, ...
-    xSupport, ySupport, xTicks, yTicks)
+    xSupport, ySupport, xTicks, yTicks, visualizedFieldOfViewMicrons, colorString)
 
     % Indices and weights of non-overlapping & overlapping input cones
     connectedNonOverlappingConeIndices = find(squeeze(obj.coneConnectivityMatrix(:, iRGC))>0);
@@ -172,7 +197,8 @@ function [xSupport, ySupport, rfProfile2D, xTicks, yTicks] = ...
         connectedNonOverlappingConeWeights, ...
        -connectedOverlappingConeWeights, ...
         coneOutline, ...
-        xSupport, ySupport ...
+        xSupport, ySupport, ...
+        visualizedFieldOfViewMicrons ...
         );
 
     % Compute the 2D profile
@@ -200,8 +226,18 @@ function [xSupport, ySupport, rfProfile2D, xTicks, yTicks] = ...
 
     % Finalize plot
     if (isempty(xTicks))
-        xTicks = round(theRGCCentroidMicrons(1)/10)*10+(-100:5:100);
-        yTicks = round(theRGCCentroidMicrons(2)/10)*10+(-100:5:100);
+        if (visualizedFieldOfViewMicrons < 30)
+            deltaTick = 5;
+        elseif (visualizedFieldOfViewMicrons < 60)
+            deltaTick = 10;
+        elseif (visualizedFieldOfViewMicrons < 100)
+            deltaTick = 20;
+        else
+            deltaTick = 40;
+        end
+        
+        xTicks = round(theRGCCentroidMicrons(1)/10)*10+(-visualizedFieldOfViewMicrons:deltaTick:visualizedFieldOfViewMicrons);
+        yTicks = round(theRGCCentroidMicrons(2)/10)*10+(-visualizedFieldOfViewMicrons:deltaTick:visualizedFieldOfViewMicrons);
     end
 
     axis(axConeWiring,'equal');
@@ -209,9 +245,10 @@ function [xSupport, ySupport, rfProfile2D, xTicks, yTicks] = ...
     set(axConeWiring, 'XTick', xTicks, ...
             'YTick', yTicks);
     box(axConeWiring, 'on'); grid(axConeWiring, 'on');
-    title(axConeWiring, sprintf('RGC #%d (connected cones)', iRGC));   
+    title(axConeWiring, sprintf('\\color{%s} RGC #%d (connected cones)', colorString, iRGC));   
+    xlabel(axConeWiring, 'space, x (microns)');
     ylabel(axConeWiring, 'space, y (microns)');
-
+    
     % The weighted cone apertures
     hold(axConeApertures, 'on');
     renderWeightedConeAperturesDiagram(axConeApertures, ...
@@ -227,11 +264,11 @@ function [xSupport, ySupport, rfProfile2D, xTicks, yTicks] = ...
 
     % Finalize plot
     axis(axConeApertures,'square');
-    set(axConeApertures, 'XLim', [xSupport(1) xSupport(end)], 'YLim', [0 1], 'FontSize', 15);
+    set(axConeApertures, 'XLim', [xSupport(1) xSupport(end)], 'YLim', [0 1.02], 'FontSize', 15);
     set(axConeApertures, 'XTick', xTicks, ...
             'YTick', 0:0.1:1.0);
     box(axConeApertures, 'on'); grid(axConeApertures, 'on');
-    title(axConeApertures, sprintf('RGC #%d (weighted cone apertures)', iRGC)); 
+    title(axConeApertures, sprintf('\\color{%s} RGC #%d (weighted cone apertures)', colorString, iRGC)); 
     xlabel(axConeApertures, 'space, x (microns)');
     ylabel(axConeApertures, 'pooling weight');
 end
@@ -341,7 +378,8 @@ function [xSupport, ySupport] = renderPooledConesDiagram(ax, ...
         connectedNonOverlappingConeWeights, ...
         connectedOverlappingConeWeights, ...
         coneOutline, ...
-        xSupport, ySupport ...
+        xSupport, ySupport, ...
+        visualizedFieldOfViewMicrons ...
         )
     
     allInputConePositions = [...
@@ -352,8 +390,12 @@ function [xSupport, ySupport] = renderPooledConesDiagram(ax, ...
     minXY = min(allInputConePositions,[],1);
     maxXY = max(allInputConePositions,[],1);
     rangeXY = maxXY-minXY;
-    halfWidthMicrons = 1.25*(round(max(rangeXY(:))/2+meanConeSpacing));
-
+    if (isempty(visualizedFieldOfViewMicrons))
+        halfWidthMicrons = 1.25*(round(max(rangeXY(:))/2+meanConeSpacing));
+    else
+        halfWidthMicrons = 0.5*visualizedFieldOfViewMicrons;
+    end
+    
     % Spatial support
     if (isempty(xSupport))
         xSupport = linspace(theRGCCentroidMicrons(1)-halfWidthMicrons, theRGCCentroidMicrons(1)+halfWidthMicrons, 201);
@@ -394,24 +436,45 @@ function [xSupport, ySupport] = renderPooledConesDiagram(ax, ...
     % The pooling weights (text)
     renderPoolingWeightText(ax, theRGCCentroidMicrons, ...
         connectedNonOverlappingConeRFpositionsMicrons, ...
-        connectedNonOverlappingConeWeights, meanConeSpacing);
+        connectedNonOverlappingConeWeights, meanConeSpacing, ...
+        xSupport, ySupport);
     renderPoolingWeightText(ax, theRGCCentroidMicrons, ...
         connectedOverlappingConeRFpositionsMicrons, ...
-        connectedOverlappingConeWeights, meanConeSpacing);
+        connectedOverlappingConeWeights, meanConeSpacing, ...
+        xSupport, ySupport);
 
     drawnow;
 end
 
-function renderPoolingWeightText(ax, centroidPosition, coneRFpositions, coneWeights, meanConeSpacing)
-    dd = meanConeSpacing/8;
+function renderPoolingWeightText(ax, centroidPosition, coneRFpositions, coneWeights, meanConeSpacing, xSupport, ySupport)
+    
     
     for iCone = 1:size(coneRFpositions,1)
         dy = (centroidPosition(2)-coneRFpositions(iCone,2));
         dx = (centroidPosition(1)-coneRFpositions(iCone,1));
         theta = atan2d(dy,dx);
-        text(ax, coneRFpositions(iCone,1)-dd*cosd(theta), coneRFpositions(iCone,2)-dd*sind(theta), ...
-            sprintf('%0.2f', coneWeights(iCone)), 'FontSize', 15, 'FontWeight', 'bold', 'Color', [0 0 0]); %, 'BackgroundColor', [0.2 0.2 0.2]);
-  
+        
+        if (coneWeights(iCone) > 0.999)
+          theText = sprintf('1');
+          dd = meanConeSpacing/6;
+        elseif (coneWeights(iCone)>0.1)
+          theText = sprintf('%.1f', coneWeights(iCone));
+          dd = meanConeSpacing/4;
+        else
+           dd = meanConeSpacing/6;
+           theText =  sprintf('%.2f', coneWeights(iCone));
+        end
+        xx = coneRFpositions(iCone,1)-dd;
+        yy = coneRFpositions(iCone,2);
+        
+        if ( ...
+            (xx > xSupport(1)) && ...
+            (xx < xSupport(end)) && ...
+            (yy > ySupport(1)) && ...
+            (yy < ySupport(end)))
+            text(ax, xx, yy, theText, 'FontSize', 14, 'FontWeight', 'bold', 'Color', [0 0 0]); %, 'BackgroundColor', [0.2 0.2 0.2]);
+        end
+        
     end
 end
 

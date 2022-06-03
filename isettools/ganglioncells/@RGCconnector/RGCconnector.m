@@ -56,7 +56,7 @@ classdef RGCconnector < handle
 
         defaultWiringParams = struct(...
                 'chromaticSpatialVarianceTradeoff', 1.0, ...     % [0: minimize chromatic variance 1: minimize spatial variance]
-                'rfOverlapFactor', 0.0, ...                      % overlap of RFs
+                'RcToRGCseparationRatio', 1.0, ...               % overlap of RFs (1 = no overlap)
                 'spatialVarianceMetric', 'spatial variance', ... % choose between {'maximal interinput distance', 'spatial variance'}
                 'maxNeighborsNum', 6, ...
                 'maxNumberOfConesToSwap', 8, ...
@@ -80,7 +80,7 @@ classdef RGCconnector < handle
             p = inputParser;
             p.addParameter('RGCRFpositionsMicrons', [], @(x)((isempty(x)) || (isnumeric(x)&&(size(x,2)==2))));
             p.addParameter('coneToRGCDensityRatio', [], @(x)((isempty(x)) || isnumeric(x)));
-            p.addParameter('rfOverlapFactor', 0, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
+            p.addParameter('RcToRGCseparationRatio', 0, @(x)(isscalar(x)&&(x>=1)));
             p.addParameter('chromaticSpatialVarianceTradeoff', RGCconnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
             p.addParameter('maxNeighborNormDistance', RGCconnector.defaultWiringParams.maxNeighborNormDistance, @isscalar);
             p.addParameter('maxNumberOfConesToSwap', RGCconnector.defaultWiringParams.maxNumberOfConesToSwap,@(x)(isscalar(x)&&(x>=1)));
@@ -99,7 +99,8 @@ classdef RGCconnector < handle
             obj.wiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
             obj.wiringParams.maxPassesNum = p.Results.maxPassesNum;
             obj.wiringParams.maxNumberOfConesToSwap = p.Results.maxNumberOfConesToSwap;
-            obj.wiringParams.rfOverlapFactor = p.Results.rfOverlapFactor;
+            obj.wiringParams.RcToRGCseparationRatio = p.Results.RcToRGCseparationRatio;
+            
             if (isempty(RGCRFposMicrons)) && (isempty(coneToRGCDensityRatio))
                 % Nothing was specified, so we initialize with a precomputed RGC lattice (Watson's model)
                 modelRGC = 'Watson-midgetRGC';
@@ -211,7 +212,7 @@ classdef RGCconnector < handle
         hFig = visualizeCurrentConnectivityState(obj, figNo, varargin);
          
         % Visualize the full connectivity of a single RGC
-        visualizeConePoolingWithinRFcenter(obj, iRGC);
+        hFig = visualizeConePoolingWithinRFcenter(obj, iRGC, varargin);
 
         % Compute input maintenance costs across entire RGC mosaic
         [totalCost, spatialCost, chromaticCost] = computeInputMaintenanceCostAcrossEntireMosaic(obj);
@@ -342,7 +343,7 @@ classdef RGCconnector < handle
         [D,idx] = pdist2(A, B, varargin);
         d = maximalInterInputDistance(coneRFpos);
         c = weightedMean(data, weights);
-     
+        overlapCoeff = overlap(weights1, weights2);
     
         % Indices of points are inside & on the boundary defined by a select subset of points
         [insideBoundaryPointIndices, onBoundaryPointIndices] = ...

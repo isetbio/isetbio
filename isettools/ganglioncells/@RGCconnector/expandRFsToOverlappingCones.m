@@ -2,21 +2,23 @@ function expandRFsToOverlappingCones(obj, varargin)
 
     % Parse input
     p = inputParser;
-    p.addParameter('rfOverlapFactor', [], @(x)((isempty(x))||(isscalar(x)&&(x>=0)&&(x<=1))));
+    p.addParameter('RcToRGCseparationRatio', [], @(x)((isempty(x))||(isscalar(x)&&(x>=1))));
     p.parse(varargin{:});
     
     % Remove any negative weights (which indicate overlapping cone weights)
     obj.coneConnectivityMatrix(obj.coneConnectivityMatrix<0) = 0;
 
-    if (~isempty(p.Results.rfOverlapFactor))
-        obj.wiringParams.rfOverlapFactor = p.Results.rfOverlapFactor;
+    if (~isempty(p.Results.RcToRGCseparationRatio))
+        obj.wiringParams.RcToRGCseparationRatio = p.Results.RcToRGCseparationRatio;
     end
 
-    if (obj.wiringParams.rfOverlapFactor <= 0)
+    if (obj.wiringParams.RcToRGCseparationRatio == 1.0)
         return;
     end
 
-    rgcsNum = size(obj.RGCRFcentroidsFromInputs,1);
+    rgcsNum = size(obj.coneConnectivityMatrix,2);
+    conesNum = size(obj.coneConnectivityMatrix,1);
+    
     allConePositions = obj.inputConeMosaic.coneRFpositionsMicrons;
     
     activatedConeIndices = [obj.inputConeMosaic.mConeIndices(:); obj.inputConeMosaic.lConeIndices(:)];
@@ -27,34 +29,35 @@ function expandRFsToOverlappingCones(obj, varargin)
         theRGCCentroid = obj.RGCRFcentroidsFromInputs(iRGC,:);
         
         % Indices of non-overlapping input cones
-        connectedConeIndices = find(squeeze(obj.coneConnectivityMatrix(:, iRGC))>0);
+        inputConeIndices = find(squeeze(obj.coneConnectivityMatrix(:, iRGC))>0);
         % Weights of non-overlapping input cones
-        inputConeWeights = full(obj.coneConnectivityMatrix(connectedConeIndices, iRGC));
+        inputConeWeights = full(obj.coneConnectivityMatrix(inputConeIndices, iRGC));
      
         % The pooling radius of the RGC
-        meanInputConeSpacing = mean(obj.inputConeMosaic.coneRFspacingsMicrons(connectedConeIndices));
-        overlapSigma = meanInputConeSpacing * obj.wiringParams.rfOverlapFactor;
-        overlapRadius = overlapSigma * 3.0;
+        % meanInputConeSpacing = mean(obj.inputConeMosaic.coneRFspacingsMicrons(inputConeIndices));
+        
+        overlapCharacteristicRadius = 0.204*sqrt(2.0)*obj.localRGCRFspacingsMicrons(iRGC) * (obj.wiringParams.RcToRGCseparationRatio);
+        overlapRadius = 0.7*obj.localRGCRFspacingsMicrons(iRGC) * obj.wiringParams.RcToRGCseparationRatio;
         
         % Find cone indices within pooling radius distance from centroid
         distances = RGCconnector.pdist2(allConePositions(activatedConeIndices,:), theRGCCentroid);
         
         % Find the indices of the overlapping cones
-        idx = find(distances < overlapRadius);
+        idx = find(distances <= overlapRadius);
         coneIndicesWithinOverlapRadius = activatedConeIndices(idx);
         coneDistancesWithinOverlapRadius = distances(idx);
-        coneWeightsWithinOverlapRadius = exp(-0.5*(coneDistancesWithinOverlapRadius/overlapSigma).^2);
+        coneWeightsWithinOverlapRadius = exp(-(coneDistancesWithinOverlapRadius/overlapCharacteristicRadius).^2);
 
         % Find which of the coneIndicesWithinPoolingRadius are the main (non-overlapping cones)
-        [isMainCone, ia] = ismember(coneIndicesWithinOverlapRadius, connectedConeIndices);
+        [isMainCone, ia] = ismember(coneIndicesWithinOverlapRadius, inputConeIndices);
         
         % Find the max Gaussian weight that would have been assigned to the non-overlapping  cones
-        [overlappingConesFound,ib] = ismember(connectedConeIndices, coneIndicesWithinOverlapRadius);
+        [overlappingConesFound,ib] = ismember(inputConeIndices, coneIndicesWithinOverlapRadius);
 
          
         if (~any(overlappingConesFound))
             % No cones exist that are overlapping and non main ones
-            theFullConnectivityMatrix{iRGC}{1} = connectedConeIndices;
+            theFullConnectivityMatrix{iRGC}{1} = inputConeIndices;
             theFullConnectivityMatrix{iRGC}{2} = inputConeWeights ;
             continue;
         end
@@ -83,11 +86,23 @@ function expandRFsToOverlappingCones(obj, varargin)
     
     % Finalize connectivity matrix
     for iRGC = 1:rgcsNum
-        connectedConeIndices = theFullConnectivityMatrix{iRGC}{1};
-        connectedConeWeights = theFullConnectivityMatrix{iRGC}{2};
-        obj.coneConnectivityMatrix(connectedConeIndices, iRGC) = connectedConeWeights;
+        inputConeIndices = theFullConnectivityMatrix{iRGC}{1};
+        inputConeWeights = theFullConnectivityMatrix{iRGC}{2};
+        if (sum(inputConeWeights(:)) == 0)
+            error('How can this be?')
+        end
+        obj.coneConnectivityMatrix(inputConeIndices, iRGC) = inputConeWeights;
     end
 
 
+    connectedConeIndices = find(sum(abs(obj.coneConnectivityMatrix),2)>0);
+    
+    fprintf('There are %d cones (%d of which are connected to %d RGCs\n', conesNum, numel(connectedConeIndices), rgcsNum);
+    totalInputForEachRGC = sum(abs(obj.coneConnectivityMatrix(connectedConeIndices,:)),1);
+    totalOutputForEachCone = sum(abs(obj.coneConnectivityMatrix(connectedConeIndices,:)),2);
+    fprintf('max input across all %d RGCs: %f\n', numel(totalInputForEachRGC), max(full(totalInputForEachRGC)));
+    fprintf('min input across all %d RGCs: %f\n', numel(totalInputForEachRGC), min(full(totalInputForEachRGC)));
+    fprintf('max output across all %d cones: %f\n', numel(totalOutputForEachCone), max(full(totalOutputForEachCone)));
+    fprintf('min output across all %d cones: %f\n', numel(totalOutputForEachCone), min(full(totalOutputForEachCone)));
 end
 
