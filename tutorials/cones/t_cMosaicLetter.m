@@ -22,13 +22,25 @@ ieInit;
 font = fontCreate('A', 'Georgia', 14, 96);
 display = 'LCD-Apple';
 scene = sceneCreate('letter', font, display);
-scene = sceneSet(scene,'wangular',0.6);
+scene = sceneSet(scene,'wangular',0.4);
+scene = sceneCrop(scene,[96 1 sz(2)-97 sz(1)-1]);
+sz = sceneGet(scene,'size');
+% {
+% family, size, dpi
+font = fontCreate('B', 'Georgia', 14, 96);
+display = 'LCD-Apple';
+scene2 = sceneCreate('letter', font, display);
+scene2 = sceneSet(scene2,'wangular',0.4);
+scene2 = sceneCrop(scene2,[96 1 sz(2)-65 sz(1)-1]);
 
+scene = sceneCombine(scene,scene2,'direction','horizontal');
+sceneWindow(scene);
+
+%}
 % We should pad the scene so the eye movements do not move the scene beyond
 % the array
 
 % Here is the scene
-% sceneWindow(scene);
 
 %% Push the scene through human optics
 
@@ -38,7 +50,11 @@ oi = oiCompute(oi,scene);
 %%  Now image it on the cone mosaic with some fixational eye movements
 
 % cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat'); ecc = 0;
-cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
+% cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
+
+% cm = mosaicLoad('cmosaic_1.0-1.0_0.0-0.0.mat'); ecc = 0;
+
+cm = mosaicLoad('cmosaic_1.0-1.0_10.0-0.0.mat'); ecc = 10;
 cm.visualize();
 
 %% Illustrate the cone excitations
@@ -55,14 +71,14 @@ params.verticalActivationColorBar = true;
 cm.visualize(params);
 
 %% Add eye movements
-eyeMovementDurationSeconds = 200/1000;
+eyeMovementDurationSeconds = 400/1000;
 cm.emGenSequence(eyeMovementDurationSeconds, ...
         'microsaccadeType', 'none', ...
         'nTrials', 1, ...
         'randomSeed', 10);
     
-%% Compute 128 noisy response instances of cone excitation response to the same eye movement path
-instancesNum = 8;
+%% Compute noisy response instances of cone excitation response to the same eye movement path
+instancesNum = 1;
 % (Instances, Time Samples, Cone index)
 [~, excitations, ~,~,timeAxis] = cm.compute(oi, ...
     'withFixationalEyeMovements', true, ...
@@ -85,15 +101,15 @@ hold on;
 plot(timeAxis, squeeze(mean(excitations(:,:,targetConeID),1)), 'k-', 'LineWidth', 2.0);
 hold on;
 
-xlabel('time (seconds)');
-ylabel('excitations per integration time');
+xlabel('Time (seconds)');
+ylabel('Excitations per integration time');
 set(gca, 'FontSize', 16);
 grid on;
 
 %% Plot a movie of the excitations
-
-mp4File = cm.movie(timeAxis,excitations);
-implay(mp4File);
+fname = sprintf('%s-ecc-%d.mp4',fullfile(isetRootPath,'local','excitations'),ecc);
+cm.movie(timeAxis,excitations,'filename',fname);
+implay(fname);
 
 % TODO:  Figure this out.
 %
@@ -111,17 +127,17 @@ implay(mp4File);
 %  thisOS = osBioPhys;
 %  current = thisOS.osCompute(cMosaic);
 %
-[meanIso, timeSamples] = cm.meanIsomerizations(excitations);
+meanIso = cm.meanIsomerizations(excitations);
 
 % Mean isomerizations per temporal sampling bin
-irf = currentIRF([L,M,S]*cm.integrationTime,ecc,timeSamples);
+irf = currentIRF([L,M,S]*cm.integrationTime,ecc,timeAxis);
 
 % Convolution.
 current = cm.current(excitations,irf,timeAxis);
 
-mp4File = cm.movie(timeAxis,current);
-
-implay(mp4File);
+fname = sprintf('%s-ecc-%d.mp4',fullfile(isetRootPath,'local','current'),ecc);
+cm.movie(timeAxis,current,'filename',fname);
+implay(fname);
 
 %% END
 
