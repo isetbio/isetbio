@@ -144,8 +144,11 @@ classdef RGCconnector < handle
 
             % STEP1. Connect cones based on local density.
             obj.connectRGCsToConesBasedOnLocalDensities();
-            
-          
+            % Visualize current connectivity
+            if (visualizeIntermediateConnectivityStages)
+                obj.visualizeCurrentConnectivityState(1001);
+            end
+           
 
             % STEP2. Connect unconnected cones to nearby RGCs
             obj.connectUnconnectedConesToNearbyRGCs(...
@@ -161,6 +164,7 @@ classdef RGCconnector < handle
             % where the RGC1 has at least N+2inputs, where N = # of inputs in 
             % RGC2, so as to minimize the combined cost for RGC1+RGC2.
             % This is the first stage where we fine tune the wiring using
+            
             % params set in the user-supplied wiringParams struct
             obj.transferConesBetweenNearbyRGCsWithUnbalancedInputNumerosities(...
                 'generateProgressVideo', ~true);
