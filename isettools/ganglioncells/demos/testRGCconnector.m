@@ -2,10 +2,10 @@ function testRGCconnector
 
     rng(1);
 
-    %eccentricity = 'very high';
+    eccentricity = 'very high';
     %eccentricity = 'high';
-    eccentricity = 'medium high';
-    eccentricity = 'medium';   % DONE
+    %eccentricity = 'medium high';
+    %eccentricity = 'medium';   % DONE
     %eccentricity = 'medium low';
     %eccentricity = 'low';
     %eccentricity = 'very low';
@@ -14,7 +14,7 @@ function testRGCconnector
     switch (eccentricity)
         case 'very high'
             theInputConeMosaic = cMosaic(...
-                'sizeDegs', 0.425*15*[0.6 0.4], ...
+                'sizeDegs', 0.475*15*[0.6 0.4], ...
                 'eccentricityDegs', [17 18], ...
                 'coneDensities', [0.6 0.3 0.1]);
         case 'high'
@@ -80,7 +80,7 @@ function testRGCconnector
     tic
 
     % [0: minimize chromatic variance, 1: minimize spatial variance]
-    wList = [0]; %[0.0 0.2 0.3 0.4 0.5 0.7 1.0];
+    wList = [0.2]; %[0.0 0.2 0.3 0.4 0.5 0.7 1.0];
     searchRadiiList = [1.0];
     
     
