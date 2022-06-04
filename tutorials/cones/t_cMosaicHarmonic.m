@@ -33,8 +33,8 @@ oi = oiCompute(oi,scene);
 
 %%  Now image it on the cone mosaic with some fixational eye movements
 
-cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat'); ecc = 0;
-% cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
+% cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat'); ecc = 0;
+cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
 
 % cm = mosaicLoad('cmosaic_1.0-1.0_0.0-0.0.mat'); ecc = 0;
 % cm = mosaicLoad('cmosaic_1.0-1.0_10.0-0.0.mat'); ecc = 10;
