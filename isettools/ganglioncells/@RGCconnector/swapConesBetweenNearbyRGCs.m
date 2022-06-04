@@ -66,9 +66,8 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
             theSourceRGCinputConeIndices = find(squeeze(obj.coneConnectivityMatrix(:,theSourceRGCindex))>0);
             theSourceRGCinputConeWeights = full(obj.coneConnectivityMatrix(theSourceRGCinputConeIndices,theSourceRGCindex));
     
-            if (numel(theSourceRGCinputConeIndices)==1) || (numel(theSourceRGCinputConeIndices)>obj.wiringParams.maxNumberOfConesToSwap)
+            if (numel(theSourceRGCinputConeIndices)==1)
                 % Dont do anything if the source has a single cone input
-                % of if the source has more than a user-specified max # of cone inputs
                 continue;
             end
 
