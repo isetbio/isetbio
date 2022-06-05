@@ -55,13 +55,13 @@ classdef RGCconnector < handle
             };
 
         defaultWiringParams = struct(...
-                'chromaticSpatialVarianceTradeoff', 1.0, ...     % [0: minimize chromatic variance 1: minimize spatial variance]
-                'RcToRGCseparationRatio', 1.0, ...               % overlap of RFs (1 = no overlap)
-                'spatialVarianceMetric', 'spatial variance', ... % choose between {'maximal interinput distance', 'spatial variance'}
-                'maxNeighborsNum', 6, ...                        % max numboer of neighboring RGCs
-                'maxNeighborNormDistance', 1.2, ...                % max distance to search for neighboring RGCs
-                'maxNumberOfConesToSwap', 6, ...                  % Only swap up to this many cones
-                'maxMeanConeInputsPerRGCToConsiderSwapping', 10, ...  % Do cone swapping only if the mean cones/RGC is up to this number
+                'chromaticSpatialVarianceTradeoff', 1.0, ...          % [0: minimize chromatic variance 1: minimize spatial variance]
+                'RcToRGCseparationRatio', 1.0, ...                    % overlap of RFs (1 = no overlap)
+                'spatialVarianceMetric', 'spatial variance', ...      % choose between {'maximal interinput distance', 'spatial variance'}
+                'maxNeighborsNum', 6, ...                             % max numboer of neighboring RGCs
+                'maxNeighborNormDistance', 1.2, ...                   % max distance to search for neighboring RGCs
+                'maxMeanConeInputsPerRGCToConsiderSwapping', 10, ...  % Do cone swapping only if the mean cones/RGC less than or equal to this number
+                'maxNumberOfConesToSwap', 6, ...                      % Only swap up to this many cones
                 'maxPassesNum', 50 ...     
         );
 

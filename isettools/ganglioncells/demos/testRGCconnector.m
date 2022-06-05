@@ -3,7 +3,7 @@ function testRGCconnector
     rng(1);
 
     eccentricity = 'very high';
-    %eccentricity = 'high';
+    eccentricity = 'high';
     %eccentricity = 'medium high';
     %eccentricity = 'medium';   % DONE
     %eccentricity = 'medium low';
@@ -73,15 +73,16 @@ function testRGCconnector
 
     % Cone swapping phase params
     maxPassesNum = 30;
-    maxNumberOfConesToSwap = 10;
+    maxNumberOfConesToSwap = 8;
+    maxMeanConeInputsPerRGCToConsiderSwapping = 10;
 
     visualizeIntermediateConnectivityStages = true;
     
     tic
 
     % [0: minimize chromatic variance, 1: minimize spatial variance]
-    wList = [0.2]; %[0.0 0.2 0.3 0.4 0.5 0.7 1.0];
-    searchRadiiList = [1.0];
+    wList = [0.0]; %[0.0 0.2 0.3 0.4 0.5 0.7 1.0];
+    searchRadiiList = [1.2];
     
     
 
@@ -110,8 +111,11 @@ function testRGCconnector
                 
                 switch (eccentricity)
                     case  'very high'
+                        visualizedFieldOfViewMicrons = 50;
                     case 'high'
+                        visualizedFieldOfViewMicrons = 50;
                     case 'medium high'
+                        visualizedFieldOfViewMicrons = 50;
                     case 'medium'
                         visualizedFieldOfViewMicrons = 50;
                     case 'medium low'
@@ -163,6 +167,7 @@ function testRGCconnector
                             'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
                             'maxNeighborNormDistance', maxNeighborNormDistance, ...
                             'maxPassesNum', maxPassesNum, ...
+                            'maxMeanConeInputsPerRGCToConsiderSwapping', maxMeanConeInputsPerRGCToConsiderSwapping, ...
                             'maxNumberOfConesToSwap', maxNumberOfConesToSwap, ...
                             'visualizeIntermediateConnectivityStages', visualizeIntermediateConnectivityStages);
         
@@ -176,6 +181,7 @@ function testRGCconnector
                         'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
                         'maxNeighborNormDistance', maxNeighborNormDistance, ...
                         'maxPassesNum', maxPassesNum, ...
+                         'maxMeanConeInputsPerRGCToConsiderSwapping', maxMeanConeInputsPerRGCToConsiderSwapping, ...
                         'maxNumberOfConesToSwap', maxNumberOfConesToSwap, ...
                         'visualizeIntermediateConnectivityStages', visualizeIntermediateConnectivityStages);
         
@@ -202,6 +208,7 @@ function testRGCconnector
                         'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
                         'maxNeighborNormDistance', maxNeighborNormDistance, ...
                         'maxPassesNum', maxPassesNum, ...
+                         'maxMeanConeInputsPerRGCToConsiderSwapping', maxMeanConeInputsPerRGCToConsiderSwapping, ...
                         'maxNumberOfConesToSwap', maxNumberOfConesToSwap, ...
                         'visualizeIntermediateConnectivityStages', visualizeIntermediateConnectivityStages);
             end % switch
