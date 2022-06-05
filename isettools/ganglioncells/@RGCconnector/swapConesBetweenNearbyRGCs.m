@@ -75,11 +75,25 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
             allNeighboringRGCsInputConeIndices = cell(1,numel(theNeighboringRGCindices));
             allNeighboringRGCsInputConeWeights= cell(1,numel(theNeighboringRGCindices));
 
+            meanConeInputsNum = numel(theSourceRGCinputConeIndices);
+
             for iNearbyRGC = 1:numel(theNeighboringRGCindices)
                 theNearbyRGCindex = theNeighboringRGCindices(iNearbyRGC);
                 allNeighboringRGCsInputConeIndices{iNearbyRGC} = find(obj.coneConnectivityMatrix(:,theNearbyRGCindex)>0);
                 allNeighboringRGCsInputConeWeights{iNearbyRGC} = full(obj.coneConnectivityMatrix(allNeighboringRGCsInputConeIndices{iNearbyRGC},theNearbyRGCindex));
+                meanConeInputsNum = meanConeInputsNum + numel(allNeighboringRGCsInputConeIndices{iNearbyRGC});
             end % iNearbyRGC
+
+
+            % Check whether the mean # of cone inputs < obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping)
+            meanConeInputsNum = meanConeInputsNum / (1+numel(theNeighboringRGCindices));
+            
+
+            if (meanConeInputsNum > obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping)
+                fprintf('No swapping for RGC %d of %d. Neighborhood RGCs have an average of %2.1f cone inputs. Max for swapping: %d.\n', ...
+                    iRGC, numel(sortedRGCindices), meanConeInputsNum, obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping);
+                continue;
+            end
 
             % See if there is a beneficial swap
             beneficialSwapWasFound = obj.optimizeSwappingOfConeInputs(...

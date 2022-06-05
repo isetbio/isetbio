@@ -55,32 +55,19 @@ function beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
             % Allocate memory to store all the projected costs
             sourceCombinationsNum = size(sourceConeCombinations,1);
             destinationCombinationsNum = size(neighboringConeCombinations,1);
-            projectedCombinedCostsForThisCombo = zeros(sourceCombinationsNum*destinationCombinationsNum,1);
-            allCombos = zeros(sourceCombinationsNum*destinationCombinationsNum,2);
-            
-            iComboIndex = 0;
-            for iSourceComboIndex = 1:sourceCombinationsNum
-                for iNeighborComboIndex = 1:destinationCombinationsNum
-                    iComboIndex = iComboIndex+1;
-                    allCombos(iComboIndex,1) = iSourceComboIndex;
-                    allCombos(iComboIndex,2) = iNeighborComboIndex;
-                    projectedCombinedCostsForThisCombo(iComboIndex) = 0;
-                end
-            end
-            
+            projectedCombinedCostsForThisCombo = zeros(sourceCombinationsNum, destinationCombinationsNum);
+
             % Compute projected costs
-            fprintf('\n\t Parfor on %d combinations of %d source cones ( x serial on %d combinations of destination cones) ...', sourceCombinationsNum, conesNumSwapped, destinationCombinationsNum)
-            tic
-            parfor iComboIndex = 1:size(allCombos,1)
-                iSourceComboIndex = allCombos(iComboIndex,1);
-                iNeighborComboIndex = allCombos(iComboIndex,2);
-                
+            parfor iSourceComboIndex = 1:sourceCombinationsNum
                 % Compute the projected cost for the source RGC after the swap
+
                 % Remove the cone(s) to be swapped out
                 sourceRGCconeIndicesToBeSwappedOut = theSourceRGCinputConeIndices(sourceConeCombinations(iSourceComboIndex,:));
                 [sourceRGCconeIndicesAfterSwap,ia] = setdiff(theSourceRGCinputConeIndices, sourceRGCconeIndicesToBeSwappedOut); 
                 sourceRGCconeWeightsAfterSwap = theSourceRGCinputConeWeights(ia);
-                
+
+                for iNeighborComboIndex = 1:destinationCombinationsNum
+
                     % Determine cones to be swapped out
                     neighboringRGCconeIndicesBeforeSwap = allNeighboringRGCsInputConeIndices{iNearbyRGC};
                     neighboringRGCconeIndicesToBeSwappedOut = neighboringRGCconeIndicesBeforeSwap(neighboringConeCombinations(iNeighborComboIndex,:));
@@ -123,20 +110,17 @@ function beneficialSwapWasFound = optimizeSwappingOfConeInputs(obj, ...
                               sourceRGCconeWeightsAfterSwap);
 
                     % Total cost
-                    projectedCombinedCostsForThisCombo(iComboIndex) = ...
+                    projectedCombinedCostsForThisCombo(iSourceComboIndex, iNeighborComboIndex) = ...
                         projectedCostForSourceRGC + ...
                         projectedCostForNeighboringRGC + ...
                         projectedCostDueToRFoverlap;
 
-            end % iComboIndex
-            
-            fprintf(' took %2.1f minutes.\n', toc/60);
+                end % iNeighborComboIndex
+            end % iSourceComboIndex
 
-            projectedCombinedCostsForThisCombo = (reshape(projectedCombinedCostsForThisCombo, [destinationCombinationsNum sourceCombinationsNum]))';
-            
             % Find the (iSourceComboIndex, iNeighborComboIndex) pair that minimizes the projected costs
             [minCost,idx] = min(projectedCombinedCostsForThisCombo(:));
-            [iSourceComboIndexOptimal, iNeighborComboIndexOptimal] = ind2sub([sourceCombinationsNum destinationCombinationsNum],idx);
+            [iSourceComboIndexOptimal, iNeighborComboIndexOptimal] = ind2sub(size(projectedCombinedCostsForThisCombo),idx);
 
             % Store the optimal cone combinations for this nearbyRGC and #
             % of swapped cones and the corresponding cost

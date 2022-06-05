@@ -58,10 +58,11 @@ classdef RGCconnector < handle
                 'chromaticSpatialVarianceTradeoff', 1.0, ...     % [0: minimize chromatic variance 1: minimize spatial variance]
                 'RcToRGCseparationRatio', 1.0, ...               % overlap of RFs (1 = no overlap)
                 'spatialVarianceMetric', 'spatial variance', ... % choose between {'maximal interinput distance', 'spatial variance'}
-                'maxNeighborsNum', 6, ...
-                'maxNumberOfConesToSwap', 8, ...
-                'maxPassesNum', 50, ...
-                'maxNeighborNormDistance', 0.75 ...                % max distance to search for neighbors
+                'maxNeighborsNum', 6, ...                        % max numboer of neighboring RGCs
+                'maxNeighborNormDistance', 1.2, ...                % max distance to search for neighboring RGCs
+                'maxNumberOfConesToSwap', 6, ...                  % Only swap up to this many cones
+                'maxMeanConeInputsPerRGCToConsiderSwapping', 10, ...  % Do cone swapping only if the mean cones/RGC is up to this number
+                'maxPassesNum', 50 ...     
         );
 
     end % Constant properties
@@ -84,6 +85,7 @@ classdef RGCconnector < handle
             p.addParameter('chromaticSpatialVarianceTradeoff', RGCconnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
             p.addParameter('maxNeighborNormDistance', RGCconnector.defaultWiringParams.maxNeighborNormDistance, @isscalar);
             p.addParameter('maxNumberOfConesToSwap', RGCconnector.defaultWiringParams.maxNumberOfConesToSwap,@(x)(isscalar(x)&&(x>=1)));
+            p.addParameter('maxMeanConeInputsPerRGCToConsiderSwapping', RGCconnector.defaultWiringParams.maxMeanConeInputsPerRGCToConsiderSwapping, @(x)(isscalar(x)&&(x>=1)));
             p.addParameter('maxPassesNum', RGCconnector.defaultWiringParams.maxPassesNum, @(x)(isscalar(x)&&(x>=1)));
             p.addParameter('visualizeIntermediateConnectivityStages', false, @islogical);
             p.parse(varargin{:});
@@ -99,6 +101,7 @@ classdef RGCconnector < handle
             obj.wiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
             obj.wiringParams.maxPassesNum = p.Results.maxPassesNum;
             obj.wiringParams.maxNumberOfConesToSwap = p.Results.maxNumberOfConesToSwap;
+            obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping = p.Results.maxMeanConeInputsPerRGCToConsiderSwapping;
             obj.wiringParams.RcToRGCseparationRatio = p.Results.RcToRGCseparationRatio;
             
             if (isempty(RGCRFposMicrons)) && (isempty(coneToRGCDensityRatio))
