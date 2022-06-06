@@ -1,7 +1,18 @@
-function nearbyRGCindices = neihboringRGCindices(obj, theRGCindex)
+function nearbyRGCindices = neihboringRGCindices(obj, theRGCindex, varargin)
        
-    maxNeighborsNum = obj.wiringParams.maxNeighborsNum;
-    maxNormDistance = obj.wiringParams.maxNeighborNormDistance;
+    p = inputParser;
+    p.addParameter('maxNeighborsNum', [], @(x)((isempty(x))||(isscalar(x))));
+    p.parse(varargin{:});
+    
+    if (isempty(p.Results.maxNeighborsNum))
+        maxNeighborsNum = obj.wiringParams.maxNeighborsNum;
+        maxNormDistance = obj.wiringParams.maxNeighborNormDistance;
+    else
+        fprintf(2,'**** Overriding wiringParams.maxNeighborsNum and wiringParams.maxNeighborNormDistance');
+        maxNeighborsNum = p.Results.maxNeighborsNum;
+        maxNormDistance = inf;
+    end
+    
 
     % Find the indices of its neirboring RGCs
     [distancesToNearbyRGCs, nearbyRGCindices] = RGCconnector.pdist2(...

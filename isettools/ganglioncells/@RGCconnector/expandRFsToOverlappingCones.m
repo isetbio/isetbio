@@ -62,7 +62,7 @@ function expandRFsToOverlappingCones(obj, varargin)
             continue;
         end
 
-        scalingFactor = max(coneWeightsWithinOverlapRadius(ib));
+        scalingFactor = max(coneWeightsWithinOverlapRadius(ib(ib>0)));
         
         for iCone = 1:numel(coneIndicesWithinOverlapRadius)
             if (isMainCone(iCone))

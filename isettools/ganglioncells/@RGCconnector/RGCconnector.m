@@ -221,12 +221,17 @@ classdef RGCconnector < handle
         % Visualize the full connectivity of a single RGC
         hFig = visualizeConePoolingWithinRFcenter(obj, iRGC, varargin);
 
+        % Visualize the cone pooling & overlap within RGCs nearby an RGC
+        [hFig,visualizedNeighborsNum] = visualizeConePoolingWithinNeighboringRGCs(obj, iRGC, varargin);
+        
         % Compute input maintenance costs across entire RGC mosaic
         [totalCost, spatialCost, chromaticCost] = computeInputMaintenanceCostAcrossEntireMosaic(obj);
 
         % Expand RFs to include cones assigned to nearby RGCs (creating RF overlap)
         expandRFsToOverlappingCones(obj, varargin);
 
+        % Return indices of nearby RGCs
+        nearbyRGCindices = neihboringRGCindices(obj, theRGCindex, varargin);
         
 
     end % Public methods
@@ -251,8 +256,6 @@ classdef RGCconnector < handle
         % local cone-to-RGC density ratios at the current RGC RF positions
         densityRatiosMap = coneToRGCDensityRatiosMap(obj);
 
-        % Find indices of nearby RGCs
-        nearbyRGCindices = neihboringRGCindices(obj, theRGCindex);
 
         % STEP1. Connect RGCs to cones strictly based on local cone-RGC densities
         connectRGCsToConesBasedOnLocalDensities(obj);
@@ -337,6 +340,16 @@ classdef RGCconnector < handle
         % Visualization of the connectivity between cones and RGCRFs
         [hFig, ax, XLims, YLims] = visualizeConnectivity(obj, varargin);
 
+        % Visualize the pooled cone apertures of a single RGC
+        [xSupport, ySupport, rfProfile2D, xTicks, yTicks] = ...
+            visualizeConeAperturePooling(obj, iRGC, axConeWiring, axConeApertures, ...
+            xSupport, ySupport, xTicks, yTicks, visualizedFieldOfViewMicrons, visualizedConesNum, colorString)
+
+        % Visualize the 2D overlap between 2 RGC RFs
+        visualizeRFoverlap2D(obj, iRGC, nearbyRGCindex, ...
+            rfProfile2DmainRGC, rfProfile2DnearbyRGC, ...
+            xSupport, ySupport, xTicks, yTicks, axRFOverlap2D);
+        
         % Visualize spatial variance cost statistics
         visualizeSpatialVarianceCostStatistics(obj, axSpatial, spatialVarianceCost);
 
@@ -368,6 +381,8 @@ classdef RGCconnector < handle
         transparentContourPlot(axesHandle, spatialSupportXY, zData, ...
           zLevels, faceAlpha, cmap, lineStyle, lineWidth);
 
+        shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
+    
         [f,v] = facesAndVertices(positions, spacings, diskOutline);
     end
 end
