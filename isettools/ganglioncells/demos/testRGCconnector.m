@@ -4,8 +4,8 @@ function testRGCconnector
 
     eccentricity = 'very high';
     eccentricity = 'high';
-    %eccentricity = 'medium high';
-    %eccentricity = 'medium';   % DONE
+    eccentricity = 'medium high';
+    eccentricity = 'medium';   % DONE
     %eccentricity = 'medium low';
     %eccentricity = 'low';
     %eccentricity = 'very low';
@@ -81,8 +81,8 @@ function testRGCconnector
     tic
 
     % [0: minimize chromatic variance, 1: minimize spatial variance]
-    wList = [0.2 0.35 0.5 0.65 0.8];
-    maxNeighborNormDistanceList = [1.5];
+    wList = [0.0 0.2 0.35 0.5 0.65 0.8];
+    maxNeighborNormDistanceList = [1.2 1.5];
     
     
 
@@ -101,8 +101,8 @@ function testRGCconnector
                 fprintf('\nLoaded previously generated @RGCconnectorOBJ from %s\n', theRGCconnectorFileName);
         
                 % Apply overlap factor
-                RcToRGCseparationRatio = 1.0;
-                theRGCconnectorOBJ.expandRFsToOverlappingCones(...
+                RcToRGCseparationRatio = 1.5;
+                theRGCconnectorOBJ.divergeConeOutputsToMultipleNearbyRGCs(...
                     'RcToRGCseparationRatio', RcToRGCseparationRatio ...
                     );
 
@@ -116,8 +116,8 @@ function testRGCconnector
                         visualizedFieldOfViewMicrons = 150;
                         visualizedConesNum = 600;
                     case 'medium high'
-                        visualizedFieldOfViewMicrons = 50;
-                        visualizedConesNum = 150;
+                        visualizedFieldOfViewMicrons = 100;
+                        visualizedConesNum = 400;
                     case 'medium'
                         visualizedFieldOfViewMicrons = 50;
                         visualizedConesNum = 100;
@@ -137,18 +137,27 @@ function testRGCconnector
                 
     
                 % Visualize the center-most RGC RF
-                ecc = sum((bsxfun(@minus, theRGCconnectorOBJ.RGCRFcentroidsFromInputs, theRGCconnectorOBJ.inputConeMosaic.eccentricityMicrons)).^2,2);
-                [~,theCenterMostRGCindex] = find(min(ecc));
-                for iNeighbor = 1:6
-                    hFig = theRGCconnectorOBJ.visualizeConePoolingWithinRFcenter(theCenterMostRGCindex, ...
-                            'visualizedFieldOfViewMicrons', visualizedFieldOfViewMicrons, ...
-                            'visualizedConesNum', visualizedConesNum, ...
-                            'visualizedNeighbor', iNeighbor);
-
-                    pdfFileNameFinal = sprintf('%s_RcToRGCseparationRatio_%2.2f_Neighbor_%d.pdf',...
-                        pfdFileName, RcToRGCseparationRatio, iNeighbor);
+                ecc = sqrt(sum((bsxfun(@minus, theRGCconnectorOBJ.RGCRFcentroidsFromInputs, mean(theRGCconnectorOBJ.RGCRFcentroidsFromInputs,1))).^2,2));
+                [~,theCenterMostRGCindex] = min(ecc);
                 
-                    NicePlot.exportFigToPDF(pdfFileNameFinal, hFig, 300);
+                [hFig,visualizedNeighbors] = theRGCconnectorOBJ.visualizeConePoolingWithinNeighboringRGCs(theCenterMostRGCindex, ...
+                            'visualizedFieldOfViewMicrons', visualizedFieldOfViewMicrons, ...
+                            'visualizedConesNum', visualizedConesNum);
+                
+                visualize1Doverlap = true;
+                if (visualize1Doverlap)
+    
+                    for iNeighbor = 1:visualizedNeighbors
+                        hFig = theRGCconnectorOBJ.visualizeConePoolingWithinRFcenter(theCenterMostRGCindex, ...
+                                'visualizedFieldOfViewMicrons', visualizedFieldOfViewMicrons, ...
+                                'visualizedConesNum', visualizedConesNum, ...
+                                'visualizedNeighbor', iNeighbor);
+
+                        pdfFileNameFinal = sprintf('%s_RcToRGCseparationRatio_%2.2f_Neighbor_%d.pdf',...
+                            pfdFileName, RcToRGCseparationRatio, iNeighbor);
+
+                        NicePlot.exportFigToPDF(pdfFileNameFinal, hFig, 300);
+                    end
                 end
                 
                 % Visualize all RGCRFs

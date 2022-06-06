@@ -1,4 +1,4 @@
-function expandRFsToOverlappingCones(obj, varargin)
+function divergeConeOutputsToMultipleNearbyRGCs(obj, varargin)
 
     % Parse input
     p = inputParser;
@@ -94,15 +94,23 @@ function expandRFsToOverlappingCones(obj, varargin)
         obj.coneConnectivityMatrix(inputConeIndices, iRGC) = inputConeWeights;
     end
 
-
+    
+    % Find indices of cones that are connected to RGCs
     connectedConeIndices = find(sum(abs(obj.coneConnectivityMatrix),2)>0);
+    
+    % Sum of the output of each cone to all RGCs must equal 1.0;
+    totalOutputForEachConnectedCone = sum(abs(obj.coneConnectivityMatrix(connectedConeIndices,:)),2);
+    obj.coneConnectivityMatrix(connectedConeIndices,:) = ...
+        bsxfun(@times, ...
+        obj.coneConnectivityMatrix(connectedConeIndices,:), ...
+        1./totalOutputForEachConnectedCone);
     
     fprintf('There are %d cones (%d of which are connected to %d RGCs\n', conesNum, numel(connectedConeIndices), rgcsNum);
     totalInputForEachRGC = sum(abs(obj.coneConnectivityMatrix(connectedConeIndices,:)),1);
-    totalOutputForEachCone = sum(abs(obj.coneConnectivityMatrix(connectedConeIndices,:)),2);
+    totalOutputForEachConnectedCone = sum(abs(obj.coneConnectivityMatrix(connectedConeIndices,:)),2);
     fprintf('max input across all %d RGCs: %f\n', numel(totalInputForEachRGC), max(full(totalInputForEachRGC)));
     fprintf('min input across all %d RGCs: %f\n', numel(totalInputForEachRGC), min(full(totalInputForEachRGC)));
-    fprintf('max output across all %d cones: %f\n', numel(totalOutputForEachCone), max(full(totalOutputForEachCone)));
-    fprintf('min output across all %d cones: %f\n', numel(totalOutputForEachCone), min(full(totalOutputForEachCone)));
+    fprintf('max output across all %d connected cones: %f\n', numel(totalOutputForEachConnectedCone), max(full(totalOutputForEachConnectedCone)));
+    fprintf('min output across all %d connected cones: %f\n', numel(totalOutputForEachConnectedCone), min(full(totalOutputForEachConnectedCone)));
 end
 

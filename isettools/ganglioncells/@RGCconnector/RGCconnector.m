@@ -227,8 +227,8 @@ classdef RGCconnector < handle
         % Compute input maintenance costs across entire RGC mosaic
         [totalCost, spatialCost, chromaticCost] = computeInputMaintenanceCostAcrossEntireMosaic(obj);
 
-        % Expand RFs to include cones assigned to nearby RGCs (creating RF overlap)
-        expandRFsToOverlappingCones(obj, varargin);
+        % Diverge cone outputs to multiple nearby RGCs (creating RF overlap)
+        divergeConeOutputsToMultipleNearbyRGCs(obj, varargin);
 
         % Return indices of nearby RGCs
         nearbyRGCindices = neihboringRGCindices(obj, theRGCindex, varargin);
