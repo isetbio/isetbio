@@ -81,17 +81,17 @@ function testRGCconnector
     tic
 
     % [0: minimize chromatic variance, 1: minimize spatial variance]
-    wList = [0.0]; %[0.0 0.2 0.3 0.4 0.5 0.7 1.0];
-    searchRadiiList = [1.2];
+    wList = [0.2 0.35 0.5 0.65 0.8];
+    maxNeighborNormDistanceList = [1.5];
     
     
 
     for iTradeOffIndex = 1:numel(wList)
-        for iSearchIndex = 1:numel(searchRadiiList)
+        for iSearchIndex = 1:numel(maxNeighborNormDistanceList)
 
             close all
             chromaticSpatialVarianceTradeoff = wList(iTradeOffIndex);
-            maxNeighborNormDistance = searchRadiiList(iSearchIndex);
+            maxNeighborNormDistance = maxNeighborNormDistanceList(iSearchIndex);
 
             if (loadPreviouslyGeneratedRGCconnector)
 
@@ -101,40 +101,55 @@ function testRGCconnector
                 fprintf('\nLoaded previously generated @RGCconnectorOBJ from %s\n', theRGCconnectorFileName);
         
                 % Apply overlap factor
-                RcToRGCseparationRatio = 1.5;
+                RcToRGCseparationRatio = 1.0;
                 theRGCconnectorOBJ.expandRFsToOverlappingCones(...
                     'RcToRGCseparationRatio', RcToRGCseparationRatio ...
                     );
 
                 pfdFileName = strrep(pfdFileName, '.pdf', '');
-                pdfFileName = sprintf('%s_RcToRGCseparationRatio_%2.2f.pdf', pfdFileName, RcToRGCseparationRatio);
                 
+                visualizedConesNum = [];
                 switch (eccentricity)
                     case  'very high'
                         visualizedFieldOfViewMicrons = 50;
                     case 'high'
-                        visualizedFieldOfViewMicrons = 50;
+                        visualizedFieldOfViewMicrons = 150;
+                        visualizedConesNum = 600;
                     case 'medium high'
                         visualizedFieldOfViewMicrons = 50;
+                        visualizedConesNum = 150;
                     case 'medium'
                         visualizedFieldOfViewMicrons = 50;
+                        visualizedConesNum = 100;
                     case 'medium low'
                         visualizedFieldOfViewMicrons = 30;
+                        visualizedConesNum = 100;
                     case 'low'
                         visualizedFieldOfViewMicrons = 30;
+                        visualizedConesNum = 100;
                     case 'very low'
                         visualizedFieldOfViewMicrons = 30;
+                        visualizedConesNum = 100;
                     case'foveal'
                         visualizedFieldOfViewMicrons = 30;
+                        visualizedConesNum = 100;
                 end
                 
     
                 % Visualize the center-most RGC RF
                 ecc = sum((bsxfun(@minus, theRGCconnectorOBJ.RGCRFcentroidsFromInputs, theRGCconnectorOBJ.inputConeMosaic.eccentricityMicrons)).^2,2);
                 [~,theCenterMostRGCindex] = find(min(ecc));
-                hFig = theRGCconnectorOBJ.visualizeConePoolingWithinRFcenter(theCenterMostRGCindex, ...
-                            'visualizedFieldOfViewMicrons', visualizedFieldOfViewMicrons );
-                NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+                for iNeighbor = 1:6
+                    hFig = theRGCconnectorOBJ.visualizeConePoolingWithinRFcenter(theCenterMostRGCindex, ...
+                            'visualizedFieldOfViewMicrons', visualizedFieldOfViewMicrons, ...
+                            'visualizedConesNum', visualizedConesNum, ...
+                            'visualizedNeighbor', iNeighbor);
+
+                    pdfFileNameFinal = sprintf('%s_RcToRGCseparationRatio_%2.2f_Neighbor_%d.pdf',...
+                        pfdFileName, RcToRGCseparationRatio, iNeighbor);
+                
+                    NicePlot.exportFigToPDF(pdfFileNameFinal, hFig, 300);
+                end
                 
                 % Visualize all RGCRFs
                 generateVideoShowingAllRGCs = false;
@@ -148,7 +163,8 @@ function testRGCconnector
                     rgcsNum = size(theRGCconnectorOBJ.coneConnectivityMatrix,2);
                     for iRGC = 1:rgcsNum
                         hFig = theRGCconnectorOBJ.visualizeConePoolingWithinRFcenter(iRGC, ...
-                            'visualizedFieldOfViewMicrons', visualizedFieldOfViewMicrons );
+                            'visualizedFieldOfViewMicrons', visualizedFieldOfViewMicrons, ...
+                            'visualizedConesNum', visualizedConesNum);
                         drawnow;
                         videoOBJ.writeVideo(getframe(hFig));
                     end

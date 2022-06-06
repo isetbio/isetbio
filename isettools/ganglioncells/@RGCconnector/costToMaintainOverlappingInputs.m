@@ -18,8 +18,4 @@ function projectedCostFromOverlap = costToMaintainOverlappingInputs(obj, neighbo
 
     % In 0-1 range
     projectedCostFromOverlap = 2*(overlap-0.5);
-
-    %w = obj.wiringParams.chromaticSpatialVarianceTradeoff;
-    %projectedCostFromOverlap = w * projectedCostFromOverlap;
-
 end

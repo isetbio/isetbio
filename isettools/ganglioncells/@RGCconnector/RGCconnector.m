@@ -59,7 +59,7 @@ classdef RGCconnector < handle
                 'RcToRGCseparationRatio', 1.0, ...                    % overlap of RFs (1 = no overlap)
                 'spatialVarianceMetric', 'spatial variance', ...      % choose between {'maximal interinput distance', 'spatial variance'}
                 'maxNeighborsNum', 6, ...                             % max numboer of neighboring RGCs
-                'maxNeighborNormDistance', 1.2, ...                   % max distance to search for neighboring RGCs
+                'maxNeighborNormDistance', 1.5, ...                   % max distance to search for neighboring RGCs
                 'maxMeanConeInputsPerRGCToConsiderSwapping', 10, ...  % Do cone swapping only if the mean cones/RGC less than or equal to this number
                 'maxNumberOfConesToSwap', 6, ...                      % Only swap up to this many cones
                 'maxPassesNum', 50 ...     

@@ -3,9 +3,13 @@ function hFig = visualizeConePoolingWithinRFcenter(obj, iRGC, varargin)
      % Parse input
     p = inputParser;
     p.addParameter('visualizedFieldOfViewMicrons', [], @(x)((isempty(x))||(isscalar(x))));
+    p.addParameter('visualizedConesNum', [], @(x)((isempty(x))||(isscalar(x))));
+    p.addParameter('visualizedNeighbor', [], @(x)((isempty(x))||(isscalar(x)&&(x>0))));
     p.parse(varargin{:});
     visualizedFieldOfViewMicrons = p.Results.visualizedFieldOfViewMicrons;
-    
+    visualizedConesNum = p.Results.visualizedConesNum;
+    visualizedNeighbor = p.Results.visualizedNeighbor;
+
     % Set-up figure
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'colsNum', 3, ...
@@ -17,7 +21,7 @@ function hFig = visualizeConePoolingWithinRFcenter(obj, iRGC, varargin)
        'bottomMargin',   0.05, ...
        'topMargin',      0.02);
 
-    hFig = figure(1000); clf;
+    hFig = figure(); clf;
     set(hFig, 'Position', [10 10 1100 1000], 'Color', [1 1 1]);
 
     axConeWiringMain = subplot('Position', subplotPosVectors(1,1).v);
@@ -33,16 +37,15 @@ function hFig = visualizeConePoolingWithinRFcenter(obj, iRGC, varargin)
     % Plot the main RGC wiring
     [xSupport, ySupport, rfProfile2DmainRGC, xTicks, yTicks] = ...
         plotWiring(obj, iRGC, axConeWiringMain, axConeAperturesMain, ...
-        [], [], [], [], visualizedFieldOfViewMicrons, 'black');
+        [], [], [], [], visualizedFieldOfViewMicrons, visualizedConesNum, 'black');
 
     % Find the closest neighboring RGC
     nearbyRGCindices = obj.neihboringRGCindices(iRGC);
-    nearbyRGCindices = nearbyRGCindices(1:min([3 numel(nearbyRGCindices)]));
     if (isempty(nearbyRGCindices))
         return;
     end
     
-    theNearbyRGC = nearbyRGCindices(1);
+    theNearbyRGC = nearbyRGCindices(min([visualizedNeighbor  numel(nearbyRGCindices)]));
 
     % Compute the overlap coefficient
     weightsRGC = abs(full(obj.coneConnectivityMatrix(:, iRGC)));
@@ -53,7 +56,7 @@ function hFig = visualizeConePoolingWithinRFcenter(obj, iRGC, varargin)
     % Plot the nearby RGC wiring
     [~, ~, rfProfile2DnearbyRGC, ~, ~] = ...
         plotWiring(obj, theNearbyRGC, axConeWiringNearby, axConeAperturesNearby,  ...
-        xSupport, ySupport, xTicks, yTicks, visualizedFieldOfViewMicrons, 'red');
+        xSupport, ySupport, xTicks, yTicks, visualizedFieldOfViewMicrons, visualizedConesNum, 'red');
 
     % Plot overlap between main and nearby RGC
     plotRFoverlaps2D(obj, iRGC, theNearbyRGC, rfProfile2DmainRGC, rfProfile2DnearbyRGC, ... 
@@ -151,7 +154,7 @@ end
 
 function [xSupport, ySupport, rfProfile2D, xTicks, yTicks] = ...
     plotWiring(obj, iRGC, axConeWiring, axConeApertures, ...
-    xSupport, ySupport, xTicks, yTicks, visualizedFieldOfViewMicrons, colorString)
+    xSupport, ySupport, xTicks, yTicks, visualizedFieldOfViewMicrons, visualizedConesNum, colorString)
 
     % Indices and weights of non-overlapping & overlapping input cones
     connectedNonOverlappingConeIndices = find(squeeze(obj.coneConnectivityMatrix(:, iRGC))>0);
@@ -163,11 +166,11 @@ function [xSupport, ySupport, rfProfile2D, xTicks, yTicks] = ...
     theRGCCentroidMicrons = obj.RGCRFcentroidsFromInputs(iRGC,:);
 
 
-    % Find 100 neigboring cones that are not-connected to this RGC
+    % Find neigboring cones 
     [~, nearbyConeIndices] = RGCconnector.pdist2(...
             obj.inputConeMosaic.coneRFpositionsMicrons, ...
             theRGCCentroidMicrons, '', ...
-            'smallest', 100);
+            'smallest', visualizedConesNum);
 
     allConnectedConeIndices = [ ...
         connectedNonOverlappingConeIndices(:); ...
