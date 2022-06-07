@@ -53,7 +53,7 @@ function swapConesBetweenNearbyRGCs(obj, varargin)
 
 
         for iRGC = 1:numel(sortedRGCindices)
-            fprintf('[cone swapping phase (pass #%d)]:: evaluating benefits for RGC %d/%d\n', currentPass, iRGC, numel(sortedRGCindices));
+            fprintf('[cone swapping phase (pass #%d)]:: evaluating swap costs for RGC %d/%d\n', currentPass, iRGC, numel(sortedRGCindices));
 
             % Find up to N neigboring RGCs that are no farther than k x RGC separation
             theSourceRGCindex = sortedRGCindices(iRGC);

@@ -60,4 +60,5 @@ function hFig = visualizeCurrentConnectivityState(obj, figNo, varargin)
         end
     end
     drawnow;
+    pause(0.4);
 end

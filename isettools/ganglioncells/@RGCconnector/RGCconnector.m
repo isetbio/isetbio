@@ -131,6 +131,14 @@ classdef RGCconnector < handle
             % Crop positions to lie within the inputConeMosaic
             obj.cropLattice(RGCRFposMicrons);
             
+            if (1==2)
+                [hFig, ax, XLims, YLims] = obj.visualizeInputMosaics();
+                obj.visualizeConnectivity('figureHandle', hFig, 'axesHandle', ax, 'XLims', XLims, 'YLims', YLims);
+                set(hFig, 'Position', [ 10 10 1030 700]);
+                NicePlot.exportFigToPDF('mosaics.pdf', hFig, 300);
+            end
+            
+            
             % Visualize the input mosaics
             if (1==2)
                 obj.visualizeInputMosaics();
@@ -206,7 +214,7 @@ classdef RGCconnector < handle
             %obj.removeRGCsOnPatchPerimeter();
 
             % Allow for overlapping of cone inputs
-            obj.expandRFsToOverlappingCones();
+            obj.divergeConeOutputsToMultipleNearbyRGCs();
             if (visualizeIntermediateConnectivityStages)
                 obj.visualizeCurrentConnectivityState(1006);
             end
