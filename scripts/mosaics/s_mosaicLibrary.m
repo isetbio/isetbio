@@ -34,4 +34,32 @@ for ii=1:size(sizeDegs,1)
     end
 end
 
+%% A few special cases might go here.
+
+thisSize = [9,2];
+thisPos = [4,0];
+cm = cMosaic( ...
+    'sizeDegs',     thisSize, ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
+    'positionDegs', thisPos , ... % ECC: (0,0)
+    'eccVaryingConeBlur', true ...
+    );
+
+fname = mosaicName(thisSize,thisPos);
+cm.save(fname,true);
+disp(fname)
+
+%%  Really big
+
+thisSize = [18,18];
+thisPos = [0,0];
+cm = cMosaic( ...
+    'sizeDegs',     thisSize, ...     % SIZE: 1.0 degs (x) 0.5 degs (y)
+    'positionDegs', thisPos , ... % ECC: (0,0)
+    'eccVaryingConeBlur', true ...
+    );
+
+fname = mosaicName(thisSize,thisPos);
+cm.save(fname,true);
+disp(fname)
+
 %% END
