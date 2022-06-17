@@ -815,7 +815,7 @@ classdef cMosaic < handle
         coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);
         
         % Function to generate a semitransparent controur plot
-        semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor);
+        semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor, varargin);
     
         % Function for identifying overlapping RFs
         [rfsToKeep, rfsToBeEliminated, overlappingOtherRFs] = identifyOverlappingRFs(xPos, yPos, ...

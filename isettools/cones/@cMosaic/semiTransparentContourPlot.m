@@ -1,6 +1,10 @@
 % Function to generate a semitransparent controur plot
-function semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor)
+function semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor, varargin)
     
+    p = inputParser;
+    p.addParameter('lineWidth', 1.0, @isscalar);
+    p.parse(varargin{:});
+    lineWidth = p.Results.lineWidth;
 
     % Compute contours at desired Z-level
     C = contourc(xSupport, ySupport, zData, zLevels);
@@ -44,7 +48,7 @@ function semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLeve
             'FaceAlpha', theAlpha, ...
             'EdgeAlpha', 0.5, ...
             'EdgeColor', contourLineColor, ...
-            'LineStyle', '-', 'LineWidth', 1.0, ...
+            'LineStyle', '-', 'LineWidth', lineWidth, ...
             'Parent', axesHandle);
     end
 
