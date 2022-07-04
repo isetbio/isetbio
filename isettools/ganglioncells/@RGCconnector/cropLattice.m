@@ -4,6 +4,7 @@ function cropLattice(obj, RGCRFposMicrons)
     % cones
     maxRsRcRatio = 7;
     maxSurroundDiameter = maxRsRcRatio*prctile(obj.RGCRFspacingsMicrons,95);
+    
     maxSurroundRadius = 0.5*maxSurroundDiameter;
 
     allConePositions = obj.inputConeMosaic.coneRFpositionsMicrons;
@@ -18,12 +19,12 @@ function cropLattice(obj, RGCRFposMicrons)
         (RGCRFposMicrons(:,2) >= minConePosY+maxSurroundRadius) & ...
         (RGCRFposMicrons(:,2) <= maxConePosY-maxSurroundRadius));
 
-    if (numel(idx) < 7)
-        fprintf(2, 'Consider increasing the size of input cone mosaic\n');
-        % Select the center most RGC
-        [d,idx] = sort(sum((bsxfun(@minus, RGCRFposMicrons, mean(allConePositions))).^2,2));
-        idx = idx(1);
-    end
+%     if (numel(idx) < 7)
+%         fprintf(2, 'Consider increasing the size of input cone mosaic\n');
+%         % Select the center most RGC
+%         [d,idx] = sort(sum((bsxfun(@minus, RGCRFposMicrons, mean(allConePositions))).^2,2));
+%         idx = idx(1);
+%     end
 
     % Crop positions
     obj.RGCRFpositionsMicrons = RGCRFposMicrons(idx,:);

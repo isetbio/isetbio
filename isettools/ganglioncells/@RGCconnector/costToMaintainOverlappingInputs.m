@@ -16,6 +16,9 @@ function projectedCostFromOverlap = costToMaintainOverlappingInputs(obj, neighbo
     normalizedSeparation = min([1 separationBetweenSourceAndDestinationRGCcentroids/localSpacing]);
     overlap = 1/(1+normalizedSeparation);
 
-    % In 0-1 range
-    projectedCostFromOverlap = 2*(overlap-0.5);
+    % In 0-0.5 range
+    projectedCostFromOverlap = (overlap-0.5);
+
+    % Apply rfCentroidOverlapPenalty
+    projectedCostFromOverlap = obj.wiringParams.rfCentroidOverlapPenaltyFactor * projectedCostFromOverlap;
 end

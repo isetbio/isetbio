@@ -1,9 +1,18 @@
-function computeConeToRGCDensityRatioComputeStruct(obj, RGCRFposMicrons, samplingIntervalMicrons)
+function computeConeToRGCDensityRatioComputeStruct(obj, RGCRFposMicrons, RGCRFspacingsMicrons, samplingIntervalMicrons)
  
-    % Compute RGCRF spacings from their initial positions
-    obj.RGCRFspacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(RGCRFposMicrons);
+    
+    if (isempty(RGCRFspacingsMicrons))
+        % Compute RGCRF spacings from their initial positions
+        obj.RGCRFspacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(RGCRFposMicrons);
+    else
+        % Use supplied spacings
+        assert(numel(RGCRFspacingsMicrons) == size(RGCRFposMicrons,1), ...
+            'size of RGCRFspacings (%d) is incosistent with RGCRFposMicrons (%d)', numel(RGCRFspacingsMicrons), size(RGCRFposMicrons,1));
+        
+        obj.RGCRFspacingsMicrons = reshape(RGCRFspacingsMicrons, [1 size(RGCRFposMicrons,1)]);
+    end
 
-    % Compute RGC densities from their positions
+    % Compute RGC densities from their spacings
     RGCdensities = RGCmodels.Watson.convert.spacingToDensityForHexGrid(obj.RGCRFspacingsMicrons);
     
     % Compute cone densities from their positions

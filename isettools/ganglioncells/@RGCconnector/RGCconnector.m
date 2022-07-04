@@ -56,6 +56,7 @@ classdef RGCconnector < handle
 
         defaultWiringParams = struct(...
                 'chromaticSpatialVarianceTradeoff', 1.0, ...          % [0: minimize chromatic variance 1: minimize spatial variance]
+                'rfCentroidOverlapPenaltyFactor', 1, ...                      % Penalty for overlapping centroids
                 'RcToRGCseparationRatio', 1.0, ...                    % overlap of RFs (1 = no overlap)
                 'spatialVarianceMetric', 'spatial variance', ...      % choose between {'maximal interinput distance', 'spatial variance'}
                 'maxNeighborsNum', 6, ...                             % max numboer of neighboring RGCs
@@ -80,9 +81,11 @@ classdef RGCconnector < handle
             % Parse optional input
             p = inputParser;
             p.addParameter('RGCRFpositionsMicrons', [], @(x)((isempty(x)) || (isnumeric(x)&&(size(x,2)==2))));
+            p.addParameter('RGCRFspacingsMicrons', [], @(x)((isempty(x)) || (isnumeric(x))));
             p.addParameter('coneToRGCDensityRatio', [], @(x)((isempty(x)) || isnumeric(x)));
             p.addParameter('RcToRGCseparationRatio', 0, @(x)(isscalar(x)&&(x>=1)));
             p.addParameter('chromaticSpatialVarianceTradeoff', RGCconnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
+            p.addParameter('rfCentroidOverlapPenaltyFactor', 1, @(x)(isscalar(x)&&(x>=0)));
             p.addParameter('maxNeighborNormDistance', RGCconnector.defaultWiringParams.maxNeighborNormDistance, @isscalar);
             p.addParameter('maxNumberOfConesToSwap', RGCconnector.defaultWiringParams.maxNumberOfConesToSwap,@(x)(isscalar(x)&&(x>=1)));
             p.addParameter('maxMeanConeInputsPerRGCToConsiderSwapping', RGCconnector.defaultWiringParams.maxMeanConeInputsPerRGCToConsiderSwapping, @(x)(isscalar(x)&&(x>=1)));
@@ -91,6 +94,7 @@ classdef RGCconnector < handle
             p.parse(varargin{:});
             
             RGCRFposMicrons = p.Results.RGCRFpositionsMicrons;
+            RGCRFspacingsMicrons = p.Results.RGCRFspacingsMicrons;
             coneToRGCDensityRatio = p.Results.coneToRGCDensityRatio;
             
             visualizeIntermediateConnectivityStages = p.Results.visualizeIntermediateConnectivityStages;
@@ -98,6 +102,7 @@ classdef RGCconnector < handle
             % Update wiringParams struct
             obj.wiringParams = RGCconnector.defaultWiringParams;
             obj.wiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
+            obj.wiringParams.rfCentroidOverlapPenaltyFactor = p.Results.rfCentroidOverlapPenaltyFactor;
             obj.wiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
             obj.wiringParams.maxPassesNum = p.Results.maxPassesNum;
             obj.wiringParams.maxNumberOfConesToSwap = p.Results.maxNumberOfConesToSwap;
@@ -126,7 +131,7 @@ classdef RGCconnector < handle
 
             % Before cropping compute the local cone to RGC density struct
             samplingIntervalMicrons = 3;
-            obj.computeConeToRGCDensityRatioComputeStruct(RGCRFposMicrons, samplingIntervalMicrons);
+            obj.computeConeToRGCDensityRatioComputeStruct(RGCRFposMicrons, RGCRFspacingsMicrons,samplingIntervalMicrons);
 
             % Crop positions to lie within the inputConeMosaic
             obj.cropLattice(RGCRFposMicrons);
@@ -258,7 +263,7 @@ classdef RGCconnector < handle
         cropLattice(obj, RGCRFposMicrons);
 
         % Compute the obj.coneToRGCDensityRatioComputeStruct. This is done once, just before cropping.
-        computeConeToRGCDensityRatioComputeStruct(obj, RGCRFposMicrons, samplingIntervalMicrons);
+        computeConeToRGCDensityRatioComputeStruct(obj, RGCRFposMicrons, RGCRFspacingsMicrons, samplingIntervalMicrons);
 
         % Employ the obj.coneToRGCDensityRatioComputeStruct to compute the
         % local cone-to-RGC density ratios at the current RGC RF positions
@@ -373,6 +378,8 @@ classdef RGCconnector < handle
         c = weightedMean(data, weights);
         overlapCoeff = overlap(weights1, weights2);
     
+        shiftedPositions();
+        
         % Indices of points are inside & on the boundary defined by a select subset of points
         [insideBoundaryPointIndices, onBoundaryPointIndices] = ...
             pointsInsideBoundaryDefinedBySelectedPoints(allPointPositions, selectedPointIndices);

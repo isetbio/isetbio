@@ -68,7 +68,7 @@ function testRGCconnector
     loadPreviouslyGeneratedRGCconnector = ~true;
     
     instantiationMode = 'default';
-    %instantiationMode = 'custom cone-to-RGC density';
+    instantiationMode = 'custom cone-to-RGC density';
     %instantiationMode = 'custom RGC position matrix';
 
     % Cone swapping phase params
@@ -81,10 +81,11 @@ function testRGCconnector
     tic
 
     % [0: minimize chromatic variance, 1: minimize spatial variance]
-    wList = [0.0 0.2 0.35 0.5 0.65 0.8];
-    maxNeighborNormDistanceList = [1.2 1.5];
+    wList = [0.0]; %[0.0 0.2 0.35 0.5 0.65 0.8];
+    maxNeighborNormDistanceList = [1.5];
+    rfCentroidOverlapPenaltyFactor = 3;
     
-    
+    RcToRGCseparationRatio = 1.5;
 
     for iTradeOffIndex = 1:numel(wList)
         for iSearchIndex = 1:numel(maxNeighborNormDistanceList)
@@ -95,13 +96,13 @@ function testRGCconnector
 
             if (loadPreviouslyGeneratedRGCconnector)
 
-                pfdFileName = sprintf('Ecc_%s_MaxNeighborDist_%2.2f_ChromaSpatialVarianceTradeoff_%2.2f.pdf',eccentricity, maxNeighborNormDistance, chromaticSpatialVarianceTradeoff);
+                pfdFileName = sprintf('Ecc_%s_MaxNeighborDist_%2.2f_ChromaSpatialVarianceTradeoff_%2.2f_centroidOverlapPenalty_%2.2f.pdf',eccentricity, maxNeighborNormDistance, chromaticSpatialVarianceTradeoff, rfCentroidOverlapPenaltyFactor);
+           
                 theRGCconnectorFileName = strrep(pfdFileName, '.pdf', '.mat');
                 load(theRGCconnectorFileName, 'theRGCconnectorOBJ');
                 fprintf('\nLoaded previously generated @RGCconnectorOBJ from %s\n', theRGCconnectorFileName);
         
                 % Apply overlap factor
-                RcToRGCseparationRatio = 1.5;
                 theRGCconnectorOBJ.divergeConeOutputsToMultipleNearbyRGCs(...
                     'RcToRGCseparationRatio', RcToRGCseparationRatio ...
                     );
@@ -190,6 +191,7 @@ function testRGCconnector
                     % Default instantiation, using mRGC mosaic
                     theRGCconnectorOBJ = RGCconnector(theInputConeMosaic, ...
                             'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
+                            'rfCentroidOverlapPenaltyFactor', rfCentroidOverlapPenaltyFactor, ...
                             'maxNeighborNormDistance', maxNeighborNormDistance, ...
                             'maxPassesNum', maxPassesNum, ...
                             'maxMeanConeInputsPerRGCToConsiderSwapping', maxMeanConeInputsPerRGCToConsiderSwapping, ...
@@ -204,6 +206,7 @@ function testRGCconnector
                     theRGCconnectorOBJ = RGCconnector(theInputConeMosaic, ...
                         'coneToRGCDensityRatio', coneToRGCDensityRatio, ...
                         'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
+                        'rfCentroidOverlapPenaltyFactor', rfCentroidOverlapPenaltyFactor, ...
                         'maxNeighborNormDistance', maxNeighborNormDistance, ...
                         'maxPassesNum', maxPassesNum, ...
                          'maxMeanConeInputsPerRGCToConsiderSwapping', maxMeanConeInputsPerRGCToConsiderSwapping, ...
@@ -213,24 +216,24 @@ function testRGCconnector
                 case 'custom RGC position matrix'
                     % Generate test RGC positions
                     center = theInputConeMosaic.eccentricityMicrons;
+                    RFdiameterMicrons = 15;
                     testRGCpositionsMicrons = [];
-                    for iCell = 0:6
-                        if (iCell == 0)
-                            radius = 0;
-                        else
-                            radius = 20;
+                    for k = 1:3
+                        for l = 1:3
+                            kk = size(testRGCpositionsMicrons,1)+1;
+                            testRGCpositionsMicrons(kk,1) = center(1) + (k-1)*RFdiameterMicrons;
+                            testRGCpositionsMicrons(kk,2) = center(2) + (l-1)*RFdiameterMicrons;
                         end
-                        testRGCpositionsMicrons(size(testRGCpositionsMicrons,1)+1,:) = center + radius*[cosd(iCell*60) sind(iCell*60)];
                     end
-                    for iCell = 1:6
-                        radius = 50;
-                        testRGCpositionsMicrons(size(testRGCpositionsMicrons,1)+1,:) = center + radius*[cosd(iCell*60) sind(iCell*60)];
-                    end
-            
+
+                    testRGCspacingsMicrons = zeros(size(testRGCpositionsMicrons,1),1) + RFdiameterMicrons;
+
                     % Instantiation with custom RGC lattice positions
                     theRGCconnectorOBJ = RGCconnector(theInputConeMosaic, ...
                         'RGCRFpositionsMicrons', testRGCpositionsMicrons, ...
+                        'RGCRFspacingsMicrons', testRGCspacingsMicrons, ...
                         'chromaticSpatialVarianceTradeoff', chromaticSpatialVarianceTradeoff, ...
+                        'rfCentroidOverlapPenaltyFactor', rfCentroidOverlapPenaltyFactor, ...
                         'maxNeighborNormDistance', maxNeighborNormDistance, ...
                         'maxPassesNum', maxPassesNum, ...
                          'maxMeanConeInputsPerRGCToConsiderSwapping', maxMeanConeInputsPerRGCToConsiderSwapping, ...
@@ -244,7 +247,7 @@ function testRGCconnector
             hFig = theRGCconnectorOBJ.visualizeCurrentConnectivityState(9999);
             drawnow
            
-            pfdFileName = sprintf('Ecc_%s_MaxNeighborDist_%2.2f_ChromaSpatialVarianceTradeoff_%2.2f.pdf',eccentricity, maxNeighborNormDistance, chromaticSpatialVarianceTradeoff);
+            pfdFileName = sprintf('Ecc_%s_MaxNeighborDist_%2.2f_ChromaSpatialVarianceTradeoff_%2.2f_centroidOverlapPenalty_%2.2f.pdf',eccentricity, maxNeighborNormDistance, chromaticSpatialVarianceTradeoff, rfCentroidOverlapPenaltyFactor);
             NicePlot.exportFigToPDF(pfdFileName, hFig, 300);
             
             % Export the generated @RGCconnector object

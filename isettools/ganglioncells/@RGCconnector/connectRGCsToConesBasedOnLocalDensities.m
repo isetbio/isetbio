@@ -13,9 +13,9 @@ function connectRGCsToConesBasedOnLocalDensities(obj)
     connectedConeIndices = [];
 
     % connect to L+M cones only
-    activatedCones = [obj.inputConeMosaic.mConeIndices(:); obj.inputConeMosaic.lConeIndices(:)];
+    consideredConeIndices = [obj.inputConeMosaic.mConeIndices(:); obj.inputConeMosaic.lConeIndices(:)];
     [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
-        activatedCones,  densityRatiosAllRGCs, connectedConeIndices, nearestRGCindices);
+        consideredConeIndices,  densityRatiosAllRGCs, connectedConeIndices, nearestRGCindices);
     
     % Generate [conesNum x rgcsNum] sparse connectivity matrix
     conesNum = size(obj.inputConeMosaic.coneRFpositionsMicrons,1);
@@ -37,7 +37,7 @@ end
 
 
 function [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
-        activatedConeIndices,  densityRatiosAllRGCs, connectedConeIndices, nearestRGCindices)
+        consideredConeIndices,  densityRatiosAllRGCs, connectedConeIndices, nearestRGCindices)
 
     rgcsNum = size(obj.RGCRFpositionsMicrons,1);
     
@@ -45,12 +45,12 @@ function [connectedConeIndices, nearestRGCindices] = doIt(obj, ...
 
         % Find the localConeToRGCDensityRatios closest cones to each RGCRF
         [distances, idx] = RGCconnector.pdist2(...
-            obj.inputConeMosaic.coneRFpositionsMicrons(activatedConeIndices,:), ...
+            obj.inputConeMosaic.coneRFpositionsMicrons(consideredConeIndices,:), ...
             obj.RGCRFpositionsMicrons(iRGC,:), ...
             '', ...
             'smallest', max([1 floor(densityRatiosAllRGCs(iRGC))]));
 
-        closestConeIndices = activatedConeIndices(idx);
+        closestConeIndices = consideredConeIndices(idx);
         if (isempty(closestConeIndices))
             continue;
         end
