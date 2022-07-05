@@ -45,6 +45,7 @@ function [optics, wvfP] = opticsCreate(opticsType, varargin)
 %                       wvfLoadThibosVirtualEyes.
 %        wave:          Vector. Wavelengths. Default 400:10:700.
 %        umPerDegree:   Retinal parameter, microns per degree. Default 300.
+%        customLCA:      A function handle specifying a custom LCA function
 %
 % Outputs:
 %    optics     - Struct. The created optics structure.
@@ -126,6 +127,7 @@ switch lower(opticsType)
         wave = 400:10:700;
         wave = wave(:);
         umPerDegree = 300;
+        customLCA = [];
 
         if (~isempty(varargin) && ~isempty(varargin{1}))
             pupilDiameterMM = varargin{1};
@@ -140,12 +142,16 @@ switch lower(opticsType)
         if (length(varargin) > 3 && ~isempty(varargin{4}))
             umPerDegree = varargin{4};
         end
+        if (length(varargin) > 4 && ~isempty(varargin{5}))
+            customLCA = varargin{5};
+        end
 
         % Create wavefront parameters. Be sure to set both measured and
         % calc pupil size.
         wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoefs, ...
             'name', sprintf('human-%d', pupilDiameterMM), ...
-            'umPerDegree', umPerDegree);
+            'umPerDegree', umPerDegree, ...
+            'customLCA', customLCA);
         wvfP = wvfSet(wvfP, 'measured pupil size', pupilDiameterMM);
         wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMM);
         wvfP = wvfComputePSF(wvfP);
