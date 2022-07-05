@@ -203,6 +203,7 @@ function val = wvfGet(wvf, parm, varargin)
 %                   keep everything working.
 %              dhb  Broke out into multiple switches to start to organize.
 %                   Worked on help text.
+%    07/05/22  npc  Custom LCA
 
 % Examples:
 %{
@@ -271,6 +272,9 @@ switch (parm)
     case {'umperdegree'}
         % Conversion factor between um on retina & visual angle in degreees
         val = wvf.umPerDegree;
+        
+    case {'customlca'}
+        val = wvf.customLCA;
         
     otherwise
         isBookkeeping = false;

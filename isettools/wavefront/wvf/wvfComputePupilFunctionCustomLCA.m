@@ -1,4 +1,4 @@
-function wvf = wvfComputePupilFunction(wvf, showBar, varargin)
+function wvf = wvfComputePupilFunctionCustomLCA(wvf, showBar, varargin)
 % Compute the pupil fuction given the wvf object.
 %
 % Syntax:
@@ -80,7 +80,6 @@ function wvf = wvfComputePupilFunction(wvf, showBar, varargin)
 %    01/18/18  jnm  Formatting update to match Wiki.
 %    04/29/19  dhb  Add 'nolca' key/value pair and force lca values to zero
 %                   in this case.
-%    07/05/22  npc  Custom LCA
 
 % Examples:
 %{
@@ -138,6 +137,7 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
     defocusCorrectionMicrons = wvfDefocusDioptersToMicrons(...
         defocusCorrectionDiopters, measPupilSizeMM);
     
+    
     % Convert wavelengths in nanometers to wavelengths in microns
     waveUM = wvfGet(wvf, 'calc wavelengths', 'um');
     waveNM = wvfGet(wvf, 'calc wavelengths', 'nm');
@@ -154,9 +154,9 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
     areapixapod = zeros(nWavelengths, 1);
     wavefrontaberrations = cell(nWavelengths, 1);
     
-    % Check whether if we are using a custom LCA
-    customLCAfunction = wvfGet(wvf, 'custom lca');
-
+    x.w = [];
+    x.lca = [];
+            
     for ii = 1:nWavelengths
         thisWave = waveNM(ii);
         if showBar
@@ -213,13 +213,10 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
             lcaDiopters = 0;
             lcaMicrons = 0;
         else
-            if (isempty(customLCAfunction))
-                lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf, ...
-                    'measured wavelength', 'nm'), thisWave);
-            else
-                lcaDiopters = customLCAfunction(wvfGet(wvf, ...
-                    'measured wavelength', 'nm'), thisWave);
-            end
+            lcaDiopters = 5*wvfLCAFromWavelengthDifference(wvfGet(wvf, ...
+                'measured wavelength', 'nm'), thisWave);
+            x.w = [x.w thisWave];
+            x.lca = [x.lca lcaDiopters]; 
             lcaMicrons = wvfDefocusDioptersToMicrons(-lcaDiopters, ...
                 measPupilSizeMM);
         end
@@ -299,6 +296,8 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         end
     end
     
+    figure();
+    plot(x.w, x.lca, 'rs-');
     if showBar, close(wBar); end
     
     wvf.wavefrontaberrations = wavefrontaberrations;

@@ -65,6 +65,7 @@ function wvf = wvfCreate(varargin)
 %                   used to be hard coded in the wvf calculations. The
 %                   difference messed up comparison with oi based
 %                   calculation
+%    07/05/22  npc  Custom LCA
 
 % Examples:
 %{
@@ -151,6 +152,9 @@ wvf = wvfSet(wvf, 'calc observer focus correction', ...
 
 % Conversion between degrees of visual angle and mm
 wvf = wvfSet(wvf, 'um per degree',p.Results.umperdegree);
+
+% Custom LCA function handle
+wvf = wvfSet(wvf, 'custom lca',p.Results.customlca);
 
 % Stiles Crawford Effect parameters
 wvf = wvfSet(wvf, 'sce params', p.Results.sceparams);
