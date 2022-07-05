@@ -62,7 +62,7 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %                                   to synthesize the pupil function in
 %                                   microns, and should therefore be passed
 %                                   in those units.
-%       'calc pupil size'         - Pupil size diameter for calculation (mm, *)
+%       'calc pupil size'         - Pupil size for calculation (mm, *)
 %       'calc optical axis'       - Optical axis to compute for (deg)
 %       'calc observer accommodation' -
 %                                   Observer accommodation at calculation
@@ -76,6 +76,9 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %    Retinal scale
 %       'um per degree'           - Conversion factor degree of visual angle
 %                                   and um on retina
+%    Custom LCA
+%       'custom lca'              - function handle for a custom LCA
+%
 %    Stiles Crawford Effect
 %       'sce params'              - The Stiles-Crawford Effect structure
 %
@@ -106,7 +109,8 @@ function wvf = wvfSet(wvf, parm, val, varargin)
 %    xx/xx/11  DHB/BW  (c) Wavefront Toolbox Team 2011, 2012
 %    11/01/17  jnm     Comments & formatting
 %    01/18/18  jnm     Formatting update to match Wiki.
-%    01/16/18 dhb       Make example work.
+%    01/16/18  dhb     Make example work.
+%    07/05/22  npc     Custom LCA
 
 % Examples:
 %{
@@ -432,6 +436,9 @@ switch parm
         wvf.umPerDegree = val;
         wvf.PUPILFUNCTION_STALE = true;
         
+    case {'customlca'}
+        wvf.customLCA = val;
+        
     case {'sceparams', 'stilescrawford'}
         % Stiles-Crawford Effect structure.
         %
@@ -442,14 +449,13 @@ switch parm
         % The structure of sce is defined in sceCreate
         wvf.sceParams = val;
         wvf.PUPILFUNCTION_STALE = true;
-            
+        
     case {'flippsfupsidedown'}
         wvf.flipPSFUpsideDown = val;
         
     case {'rotatepsf90degs'}
         wvf.rotatePSF90degs = val;
-        
-        
+
     otherwise
         error('Unknown parameter %s\n', parm);
 
