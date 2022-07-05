@@ -103,6 +103,9 @@ p.addParameter('calcobserverfocuscorrection', 0, @isscalar);
 % Retinal parameters
 p.addParameter('umperdegree', 300, @isscalar);
 
+% Custom lca
+p.addParameter('customlca', [], @(x)( (isempty(x)) || (isa(x, 'function_handle')) ));
+
 % SCE parameters
 p.addParameter('sceparams',sceCreate([],'none'), @isstruct);
 
