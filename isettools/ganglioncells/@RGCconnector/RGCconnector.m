@@ -48,6 +48,7 @@ classdef RGCconnector < handle
 
     end
 
+    % Constant properties
     properties (Constant)
         validRGClatticeModels = {...
             'Watson-midgetRGC' ...
@@ -368,7 +369,7 @@ classdef RGCconnector < handle
 
         % Visualize chromatic variance cost statistics
         visualizeChromaticVarianceCostStatistics(obj, axChromatic, chromaticVarianceCost);
-    end
+    end % Private methods
 
 
     methods (Static)
@@ -399,6 +400,6 @@ classdef RGCconnector < handle
         shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
     
         [f,v] = facesAndVertices(positions, spacings, diskOutline);
-    end
+    end % Static methods
 end
 
