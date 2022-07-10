@@ -535,7 +535,14 @@ classdef cMosaic < handle
             % Compute ecc in microns
             if (isempty(obj.minRFpositionMicrons))
                 % No cones, set value differently
-                obj.eccentricityMicrons = obj.degreesToMicronsForCmosaic(obj.eccentricityDegs);
+                if (~isempty(obj.micronsPerDegreeApproximation))
+                    obj.eccentricityMicrons = obj.eccentricityDegs * obj.micronsPerDegreeApproximation;
+                elseif (~isempty(obj.customDegsToMMsConversionFunction))
+                    obj.eccentricityMicrons = obj.customDegsToMMsConversionFunction(obj.eccentricityDegs)*1e3;
+                else
+                    error('The cMosaic has no cones, no specification for ''micronsPerDegreeApproximation'' and no specification for ''obj.customDegsToMMsConversionFunction''. Unable to determine eccentricity in microns.')
+                end
+
             else
                 obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
             end

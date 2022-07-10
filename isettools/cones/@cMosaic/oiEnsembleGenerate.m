@@ -43,6 +43,7 @@ p = inputParser;
 p.addRequired('obj', @(x)(isa(x,'cMosaic')));
 p.addRequired('oiSamplingGridDegs', @(x)(isnumeric(x) && (size(x,2) == 2) && (all(isreal(x)))));
 p.addParameter('zernikeDataBase', 'Polans2015', @(x)(ismember(x, {'Polans2015', 'Artal2012'})));
+p.addParameter('warningInsteadOfErrorForBadZernikeCoeffs', false, @islogical);
 p.addParameter('subjectID', 6, @isscalar);
 p.addParameter('pupilDiameterMM', 3.0, @isscalar);
 p.addParameter('wavefrontSpatialSamples', 301, @isscalar);
@@ -59,6 +60,7 @@ subtractCentralRefraction = p.Results.subtractCentralRefraction;
 wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
 zeroCenterPSF = p.Results.zeroCenterPSF;
 flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
+warningInsteadOfErrorForBadZernikeCoeffs = p.Results.warningInsteadOfErrorForBadZernikeCoeffs;
 
 % Generate the oiEnsemble
 oiNum = size(oiSamplingGridDegs,1);
@@ -88,7 +90,17 @@ switch (zernikeDataBase)
                 'flipPSFUpsideDown', flipPSFUpsideDown);
             
             if (isempty(theOI))
-                error('Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye', obj.whichEye, subjectID);
+                if (warningInsteadOfErrorForBadZernikeCoeffs)
+                    fprintf(2,'Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye\n', obj.whichEye, subjectID);
+              
+                    oiEnsemble = [];
+                    psfEnsemble = []; 
+                    zCoeffs = [];
+                    return;
+                else
+                    error('Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye', obj.whichEye, subjectID);
+                end
+                
             end
             
             oiEnsemble{oiIndex} = theOI;
@@ -96,7 +108,8 @@ switch (zernikeDataBase)
                 'data', thePSF, ...
                 'supportX', psfSupportMinutesX, ...
                 'supportY', psfSupportMinutesY, ...
-                'supportWavelength', psfSupportWavelength);
+                'supportWavelength', psfSupportWavelength, ...
+                'zCoeffs', zCoeffs);
         end
         
     case 'Polans2015'
@@ -119,7 +132,8 @@ switch (zernikeDataBase)
                 'data', thePSF, ...
                 'supportX', psfSupportMinutesX, ...
                 'supportY', psfSupportMinutesY, ...
-                'supportWavelength', psfSupportWavelength);
+                'supportWavelength', psfSupportWavelength, ...
+                'zCoeffs', zCoeffs);
         end
 end
 
