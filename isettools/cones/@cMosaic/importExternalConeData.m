@@ -30,11 +30,15 @@ function importExternalConeData(obj, coneData)
         switch (coneData.positionUnits)
             case 'microns' 
                 obj.coneApertureDiametersMicrons = coneApertures;
+                obj.coneApertureDiametersDegs = obj.sizeMicronsToSizeDegreesForCmosaic(coneApertures, eccRadiiMicrons);
+
                 obj.coneRFspacingsMicrons = coneSpacings;
                 obj.coneRFspacingsDegs = obj.sizeMicronsToSizeDegreesForCmosaic(obj.coneRFspacingsMicrons, eccRadiiMicrons);
 
             case 'degrees'
                 obj.coneApertureDiametersDegs = coneApertures;
+                obj.coneApertureDiametersMicrons = obj.sizeDegreesToSizeMicronsForCmosaic(coneApertures, eccRadiiDegs);
+
                 obj.coneRFspacingsDegs = coneSpacings;
                 obj.coneRFspacingsMicrons = obj.sizeDegreesToSizeMicronsForCmosaic(obj.coneRFspacingsDegs, eccRadiiDegs);
         end
