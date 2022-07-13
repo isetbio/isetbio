@@ -69,9 +69,9 @@ function t_cMosaicCustomConeData()
          'axesHandle', ax, ...
          'crossHairsAtOrigin', true, ...
          'displayRadianceMaps', false);
-
      set(ax, 'XLim', [-0.5 0.5], 'XTick', [-0.5 0 0.5], ...
              'YLim', [-0.5 0.5], 'YTick', [-0.5 0 0.5]);
+     title(ax, 'optical image');
 
      ax = subplot(1,3,2);
      % Visualize the cone mosaic
