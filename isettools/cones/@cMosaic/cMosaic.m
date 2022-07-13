@@ -234,6 +234,9 @@ classdef cMosaic < handle
             
         % Achieved cone densities
         achievedConeDensities;
+
+        % Flag indicating whether the cMosaic is based on i mported conedata
+        employsImportedConeData = false;
     end
     
     % Dependent properties

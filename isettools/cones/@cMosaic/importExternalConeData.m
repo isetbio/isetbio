@@ -3,6 +3,9 @@ function importExternalConeData(obj, coneData)
     % Validate coneData struct
     validateInput(coneData);
 
+    % Flag indicating that the mosaic was generated via imported cone data
+    obj.employsImportedConeData = true;
+
     % Import cone positions
     switch (coneData.positionUnits)
         case 'microns'
@@ -30,15 +33,13 @@ function importExternalConeData(obj, coneData)
         switch (coneData.positionUnits)
             case 'microns' 
                 obj.coneApertureDiametersMicrons = coneApertures;
-                obj.coneApertureDiametersDegs = obj.sizeMicronsToSizeDegreesForCmosaic(coneApertures, eccRadiiMicrons);
-
+                obj.coneApertureDiametersDegs = obj.sizeMicronsToSizeDegreesForCmosaic(coneApertures,eccRadiiMicrons);
                 obj.coneRFspacingsMicrons = coneSpacings;
                 obj.coneRFspacingsDegs = obj.sizeMicronsToSizeDegreesForCmosaic(obj.coneRFspacingsMicrons, eccRadiiMicrons);
 
             case 'degrees'
                 obj.coneApertureDiametersDegs = coneApertures;
                 obj.coneApertureDiametersMicrons = obj.sizeDegreesToSizeMicronsForCmosaic(coneApertures, eccRadiiDegs);
-
                 obj.coneRFspacingsDegs = coneSpacings;
                 obj.coneRFspacingsMicrons = obj.sizeDegreesToSizeMicronsForCmosaic(obj.coneRFspacingsDegs, eccRadiiDegs);
         end
@@ -51,12 +52,16 @@ function importExternalConeData(obj, coneData)
         obj.importedBlurDiameterMicrons = coneData.blurApertureDiameterMicrons;
         obj.blurApertureDiameterMicronsZones(1) = coneData.blurApertureDiameterMicrons;
         obj.blurApertureDiameterDegsZones(1) = obj.sizeMicronsToSizeDegreesForCmosaic(obj.blurApertureDiameterMicronsZones(1), eccZones);
+    else
+        obj.blurApertureDiameterMicronsZones(1) = mean(coneData.lightGatheringApertureDiameters);
+        obj.blurApertureDiameterDegsZones(1) = obj.sizeMicronsToSizeDegreesForCmosaic(obj.blurApertureDiameterMicronsZones(1), eccZones);
     end
     
     if (isfield(coneData, 'outerSegmentLengthAttenationFactors'))
         obj.importedOSLengthAttenuationFactors = reshape(coneData.outerSegmentLengthAttenationFactors, [1 conesNum]);
     end
     
+   
     
     % Compute min and max cone positions in degrees
     minEccDegs = min(obj.coneRFpositionsDegs, [], 1);

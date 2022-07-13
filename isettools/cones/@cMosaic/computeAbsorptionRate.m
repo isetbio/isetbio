@@ -1,12 +1,13 @@
 function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPositionsVectorsMicrons, absorptionsDensityImage,  ...
     oiResMicrons)
     
-    if (isempty(obj.oiResMicronsForZoning) || (oiResMicrons ~= obj.oiResMicronsForZoning))
-        % Recompute cone apertures for current oiRes
-        obj.oiResMicronsForZoning = oiResMicrons;
-        obj.computeConeApertures();
+    if (~obj.employsImportedConeData)
+        if (isempty(obj.oiResMicronsForZoning) || (oiResMicrons ~= obj.oiResMicronsForZoning))
+            % Recompute cone apertures for current oiRes
+            obj.oiResMicronsForZoning = oiResMicrons;
+            obj.computeConeApertures();
+        end
     end
-    
     
     conesNum = numel(obj.coneApertureDiametersMicrons);
     coneTypesNum = size(absorptionsDensityImage,3);
