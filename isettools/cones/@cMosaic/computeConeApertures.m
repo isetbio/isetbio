@@ -1,5 +1,5 @@
 function computeConeApertures(obj)
-      
+
     % Compute unsmoothed spacings from positions
     [obj.coneRFspacingsMicrons, nearbyConeIndices] = RGCmodels.Watson.convert.positionsToSpacings(obj.coneRFpositionsMicrons);
     
@@ -33,12 +33,30 @@ function computeConeApertures(obj)
     
     % Compute cone aperture diameters based on their local spacing and the coneDiameterToSpacingRatio
     coneAperturesMicrons = obj.coneRFspacingsMicrons * ...
-                           obj.coneDiameterToSpacingRatio * ...
+                           obj.coneDiameterToSpacingRatio * ... 
                            obj.coneApertureToDiameterRatio;
 
     reportZonesUsed = false;
   
     if (obj.eccVaryingConeAperture)
+
+        % Rod intrusion adjustment
+        if (islogical(obj.rodIntrusionAdjustedConeAperture))
+            if (obj.rodIntrusionAdjustedConeAperture)
+                if (isempty(obj.coneApertureRodIntrusionInducedShrinkageFactors))
+                    % Compute coneApertureRodIntrusionInducedShrinkageFactors to
+                    % account for progressive rod intrusion with eccentricity which
+                    % shrinks the apertures of cones (relative to cone spacing)
+                    obj.computeConeApertureRodIntrusionInducedShrinkageFactors();
+                end
+                coneAperturesMicrons = coneAperturesMicrons .* obj.coneApertureRodIntrusionInducedShrinkageFactors;
+            end
+        else
+            if (obj.rodIntrusionAdjustedConeAperture < 1)
+                coneAperturesMicrons = coneAperturesMicrons * obj.rodIntrusionAdjustedConeAperture;
+            end
+        end
+
         if (obj.eccVaryingConeBlur)
             % oiResMicrons: The lower this is the more finely
             % cone apertures will be zoned, but compute time will increase

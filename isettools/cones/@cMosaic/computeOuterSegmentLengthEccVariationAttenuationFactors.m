@@ -57,7 +57,7 @@ function computeOuterSegmentLengthEccVariationAttenuationFactors(obj, varargin)
 end
 
 function relativeWithRespectToFoveaOuterSegmentLength = outerSegmentLengthFromEccentricity(eccDegs)
-    % scanned data (eccentricity, osLength in microns) from Figure 1 (right panel)
+    % Scanned data (eccentricity, osLength in microns) from Figure 1 (right panel)
     % Banks, Sekuler and Anderson (1991). Peripher spatial vision: limits
     % imposed by optics, photoreceptors and receptor pooling
     s = [ ...

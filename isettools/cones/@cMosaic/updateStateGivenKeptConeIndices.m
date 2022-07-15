@@ -9,6 +9,9 @@ function updateStateGivenKeptConeIndices(obj, keptConeIndices)
     obj.coneApertureDiametersMicrons = obj.coneApertureDiametersMicrons(keptConeIndices);
     obj.coneApertureDiametersDegs = obj.coneApertureDiametersDegs(keptConeIndices);
     
+    if (~isempty(obj.coneApertureRodIntrusionInducedShrinkageFactors))
+        obj.coneApertureRodIntrusionInducedShrinkageFactors = obj.coneApertureRodIntrusionInducedShrinkageFactors(keptConeIndices);
+    end
     keptConeIndices = keptConeIndices(:);
     theConeIndices = obj.coneIndicesInZones;
     parfor zoneBandIndex = 1:numel(theConeIndices)
