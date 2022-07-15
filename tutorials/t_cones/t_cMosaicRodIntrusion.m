@@ -1,4 +1,14 @@
-% t_cMosaicRodIntrusion
+% Demo usage of rodIntrusionAdjustedConeAperture flag in new @cMosaic object
+%
+% Description:
+%    Shows how to generate @cMosaics in which the cone aperture takes into
+%    account rod intrusion as a function of eccentricity. Also compares the
+%    generated mosaics with those of Curcio 1990. (Fig 3).
+%
+
+% History:
+%    07/15/22  NPC  ISETBIO Team, Copyright 2021 Wrote it.
+
 function t_cMosaicRodIntrusion()
 
     % Load Figure 3 of Curcio 1990 
