@@ -53,6 +53,9 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
     [~, idx] = max(dataOut.qualityHistory);
     bestQualityRFpositions = double(squeeze(dataOut.rfPositionsHistory(idx,:,:)));
     
+    % Reverse the polarity
+    bestQualityRFpositions = -bestQualityRFpositions;
+
     % Report back
     fprintf('Lattice generation finished with status: ''%s'' with quality %2.4f at iteration %d.\n', dataOut.terminationReason, dataOut.qualityHistory(idx), idx);
     
