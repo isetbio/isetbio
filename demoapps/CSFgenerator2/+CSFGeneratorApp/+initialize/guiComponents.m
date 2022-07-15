@@ -142,6 +142,10 @@ function initializeConeMosaicGUIComponents(app)
     CSFGeneratorApp.decode.coneMosaicEccVaryingOuterSegmentLengthCheckBox(app, 'valueToSlider', app.coneMosaicParams.eccVaryingOuterSegmentLength);
     CSFGeneratorApp.decode.coneMosaicEccVaryingMacularPigmentDynamicCheckBox(app, 'valueToSlider', app.coneMosaicParams.eccVaryingMacularPigmentDynamic);
 
+    % Rod intrusion
+    CSFGeneratorApp.decode.coneMosaicRodIntrusionAdjustedConeApertureCheckBox(app, 'valueToSlider', app.coneMosaicParams.rodIntrusionAdjustedConeAperture);
+    
+
     % The integration time
     CSFGeneratorApp.decode.coneMosaicIntegrationTimeSpinner(app, 'valueToSlider', app.coneMosaicParams.integrationTimeSeconds);
     

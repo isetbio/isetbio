@@ -38,6 +38,7 @@ classdef cMosaic < handle
     %    'customDegsToMMsConversionFunction'- Empty [], of a handle to a function that returns eccentricity in degs of visual angle for eccentricities specified in to retinal mms - used only when generating a mesh from scratch
     %    'customMMsToDegsConversionFunction'- Empty [], of a handle to a function that returns eccentricity in retinal mms for eccentricities specified in to degrees of visual angle   - used only when generating a mesh from scratch        
     %    'micronsPerDegree'                 - Scalar. A custom retinal magnification factor, microns/deg
+    %    'rodIntrusionAdjustedConeAperture' - Logical, indicating whether to adjust the cone aperture (light collecting area), or scalar in (0..1], to account for rods. Default: false 
     %    'eccVaryingConeAperture'           - Logical, indicating whether to allow the cone aperture (light collecting area) to vary with eccentricity. Default: true 
     %    'eccVaryingConeBlur'               - Logical, indicating whether to allow the cone aperture (spatial blur) to vary with eccentricity.  Default: false 
     %    'eccVaryingOuterSegmentLength'     - Logical, indicating whether to allow the outer segment (light collecting area) to vary with eccentricity. Default: true
@@ -89,6 +90,10 @@ classdef cMosaic < handle
         % Macular pigment object for mosaic
         macular;
         
+        % Boolean indicating whether to adjust cone aperture to account for
+        % rod intrusion - in effect only if eccVaryingConeAperture is true
+        rodIntrusionAdjustedConeAperture;
+
         % Boolean indicating whether to account for the increased photon
         % capture due to the increase in cone aperture with eccentricity
         eccVaryingConeAperture;
@@ -234,6 +239,9 @@ classdef cMosaic < handle
             
         % Achieved cone densities
         achievedConeDensities;
+
+        % Flag indicating whether the cMosaic is based on i mported conedata
+        employsImportedConeData = false;
     end
     
     % Dependent properties
@@ -284,6 +292,10 @@ classdef cMosaic < handle
         % outer segment length with eccentricity
         outerSegmentLengthEccVariationAttenuationFactors = [];
         
+        % Cone aperture shrinkage factors due to progressive rod intrusion 
+        % with eccentricity
+        coneApertureRodIntrusionInducedShrinkageFactors = [];
+
         % cone aperture blur (only used when importing coneData)
         importedBlurDiameterMicrons = [];
         
@@ -334,6 +346,7 @@ classdef cMosaic < handle
             p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
             p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
             p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
+            p.addParameter('rodIntrusionAdjustedConeAperture', false, @(x) ((islogical(x))||((isscalar(x))&&((x>0)&&(x<=1)))));
             p.addParameter('eccVaryingConeAperture', true, @islogical);
             p.addParameter('eccVaryingConeBlur', false, @islogical);
             p.addParameter('eccVaryingOuterSegmentLength', true, @islogical);
@@ -381,6 +394,7 @@ classdef cMosaic < handle
             obj.sizeDegs = p.Results.sizeDegs;
             obj.whichEye = p.Results.whichEye;
             
+            obj.rodIntrusionAdjustedConeAperture = p.Results.rodIntrusionAdjustedConeAperture;
             obj.eccVaryingConeAperture = p.Results.eccVaryingConeAperture;
             obj.eccVaryingOuterSegmentLength = p.Results.eccVaryingOuterSegmentLength;
             obj.eccVaryingMacularPigmentDensity = p.Results.eccVaryingMacularPigmentDensity;
@@ -477,6 +491,7 @@ classdef cMosaic < handle
                 else
                     % Do not check for overlapping elements
                     eliminateOvelappingElements = ~true;
+                    
                     % Import positions by cropping a large pre-computed patch
                     obj.initializeConePositions(eliminateOvelappingElements);
                 end
@@ -535,7 +550,14 @@ classdef cMosaic < handle
             % Compute ecc in microns
             if (isempty(obj.minRFpositionMicrons))
                 % No cones, set value differently
-                obj.eccentricityMicrons = obj.degreesToMicronsForCmosaic(obj.eccentricityDegs);
+                if (~isempty(obj.micronsPerDegreeApproximation))
+                    obj.eccentricityMicrons = obj.eccentricityDegs * obj.micronsPerDegreeApproximation;
+                elseif (~isempty(obj.customDegsToMMsConversionFunction))
+                    obj.eccentricityMicrons = obj.customDegsToMMsConversionFunction(obj.eccentricityDegs)*1e3;
+                else
+                    error('The cMosaic has no cones, no specification for ''micronsPerDegreeApproximation'' and no specification for ''obj.customDegsToMMsConversionFunction''. Unable to determine eccentricity in microns.')
+                end
+
             else
                 obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
             end
@@ -543,6 +565,7 @@ classdef cMosaic < handle
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
+            
             
             if nargout > 1
                 % Return a struct with all the Results parameters from this
@@ -689,6 +712,13 @@ classdef cMosaic < handle
             end
         end
         
+        function set.rodIntrusionAdjustedConeAperture(obj,val)
+            obj.rodIntrusionAdjustedConeAperture = val;
+            if (~isempty(obj.coneRFpositionsMicrons))
+                obj.computeConeApertures();
+            end
+        end
+
         function set.eccVaryingConeBlur(obj, val)
             obj.eccVaryingConeBlur = val;
             if (~isempty(obj.coneRFpositionsMicrons))
@@ -751,7 +781,7 @@ classdef cMosaic < handle
                     obj.computeConeApertures();
                 end
             else
-                error('coneSpacingToconeDiameterRation must be <= 1.0.');
+                error('coneDiameterToSpacingRatio must be <= 1.0.');
             end
         end
         
@@ -821,7 +851,7 @@ classdef cMosaic < handle
         coneDensityMap = densityMap(rfPositions,rfSpacings, sampledPositions);
         
         % Function to generate a semitransparent controur plot
-        semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor);
+        semiTransparentContourPlot(axesHandle, xSupport, ySupport, zData, zLevels, cmap, alpha, contourLineColor, varargin);
     
         % Function for identifying overlapping RFs
         [rfsToKeep, rfsToBeEliminated, overlappingOtherRFs] = identifyOverlappingRFs(xPos, yPos, ...

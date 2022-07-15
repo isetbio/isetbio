@@ -80,6 +80,7 @@ function wvf = wvfComputePupilFunction(wvf, showBar, varargin)
 %    01/18/18  jnm  Formatting update to match Wiki.
 %    04/29/19  dhb  Add 'nolca' key/value pair and force lca values to zero
 %                   in this case.
+%    07/05/22  npc  Custom LCA
 
 % Examples:
 %{
@@ -153,6 +154,9 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
     areapixapod = zeros(nWavelengths, 1);
     wavefrontaberrations = cell(nWavelengths, 1);
     
+    % Check whether if we are using a custom LCA
+    customLCAfunction = wvfGet(wvf, 'custom lca');
+
     for ii = 1:nWavelengths
         thisWave = waveNM(ii);
         if showBar
@@ -209,8 +213,13 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
             lcaDiopters = 0;
             lcaMicrons = 0;
         else
-            lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf, ...
-                'measured wavelength', 'nm'), thisWave);
+            if (isempty(customLCAfunction))
+                lcaDiopters = wvfLCAFromWavelengthDifference(wvfGet(wvf, ...
+                    'measured wavelength', 'nm'), thisWave);
+            else
+                lcaDiopters = customLCAfunction(wvfGet(wvf, ...
+                    'measured wavelength', 'nm'), thisWave);
+            end
             lcaMicrons = wvfDefocusDioptersToMicrons(-lcaDiopters, ...
                 measPupilSizeMM);
         end

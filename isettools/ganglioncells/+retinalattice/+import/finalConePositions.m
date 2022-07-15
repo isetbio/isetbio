@@ -8,6 +8,10 @@ function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs,
     p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
     theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
     load(theMosaicFileName, 'rfPositions');
+
+    % Reverse the polarity
+    rfPositions = -rfPositions;
+
     rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));
 
     if (eliminateOvelappingElements)
