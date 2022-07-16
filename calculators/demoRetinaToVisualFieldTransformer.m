@@ -3,8 +3,7 @@ function demoRetinaToVisualFieldTransformer()
     
     xFormer = RetinaToVisualFieldTransformer('ZernikeDataBase', 'Artal2012');
 
-    
-    analyzedRetinalQuadrant = RetinaToVisualFieldTransformer.nasalRetinaQuadrant;
+    analyzedRetinalQuadrant = RetinaToVisualFieldTransformer.temporalRetinaQuadrant;
     subjectRankingEye = RetinaToVisualFieldTransformer.rightEye;
     analyzedEye = RetinaToVisualFieldTransformer.rightEye;
     pupilDiameterMM = 3.0;
@@ -77,6 +76,7 @@ function demoRetinaToVisualFieldTransformer()
             conesNumInPatch(iEcc) = dStruct.conesNumInRetinalPatch;
             anatomicalConeCharacteristicRadiusDegs(iEcc) = dStruct.anatomicalConeCharacteristicRadiusDegs;
             visualConeCharacteristicRadiusDegs(iSubj,iEcc) = dStruct.visualConeCharacteristicRadiusDegs;
+            visualToAnatomicalRadiiRatios(iSubj,iEcc) = visualConeCharacteristicRadiusDegs(iSubj,iEcc) / anatomicalConeCharacteristicRadiusDegs(iEcc);
         end %iEcc
 
         if (~isempty(videoOBJ))
@@ -97,19 +97,21 @@ function demoRetinaToVisualFieldTransformer()
             analyzedRetinalQuadrant, analyzedEye);
 
         % Mean over subjects data
-        visualToAnatomicalRcRatioMeanOverSubjects = mean(visualConeCharacteristicRadiusDegs,1, 'omitnan') ./ anatomicalConeCharacteristicRadiusDegs(1,:);
-        visualToAnatomicalRcRatioSTDOverSubjects = std(visualConeCharacteristicRadiusDegs,0,1, 'omitnan') ./ anatomicalConeCharacteristicRadiusDegs(1,:);
         
+
+        visualToAnatomicalRcRatioMeanOverSubjects = mean(visualToAnatomicalRadiiRatios,1, 'omitnan'); % mean(visualConeCharacteristicRadiusDegs,1, 'omitnan') ./ anatomicalConeCharacteristicRadiusDegs(1,:);
+        visualToAnatomicalRcRatioPrcTilesOverSubjects = prctile(visualToAnatomicalRadiiRatios, [5 95 25 75], 1); %; %std(visualConeCharacteristicRadiusDegs,0,1, 'omitnan') ./ anatomicalConeCharacteristicRadiusDegs(1,:);
         
+
         pdfFileName = fullfile(p.generatedDataDir, 'coneApertureBackingOut', sprintf('%s_Summary_%dSubjects.pdf',dataFileName, iSubj));
         plotData(1000+subjectRankOrder, pdfFileName, eccDegsForPlotting, conesNumInPatch, ...
-            visualToAnatomicalRcRatioMeanOverSubjects, visualToAnatomicalRcRatioSTDOverSubjects, ...
+            visualToAnatomicalRcRatioMeanOverSubjects, visualToAnatomicalRcRatioPrcTilesOverSubjects, ...
             analyzedRetinalQuadrant, analyzedEye);
 
     end %iSubj
 end
 
-function plotData(figNo, pdfFilename, eccDegsForPlotting, conesNumInPatch,  visualToAnatomicalRcRatio, visualToAnatomicalRcRatioSTD, analyzedRetinalQuadrant, analyzedEye)
+function plotData(figNo, pdfFilename, eccDegsForPlotting, conesNumInPatch,  visualToAnatomicalRcRatio, visualToAnatomicalRcRatioPrcTilesOverSubjects, analyzedRetinalQuadrant, analyzedEye)
     
     % Plot data
     hFig = figure(figNo); clf;
@@ -128,54 +130,62 @@ function plotData(figNo, pdfFilename, eccDegsForPlotting, conesNumInPatch,  visu
     set(ax, 'FontSize', 16)
 
     ax = subplot(1,2,2);
-    if (~isempty(visualToAnatomicalRcRatioSTD))
+    if (~isempty(visualToAnatomicalRcRatioPrcTilesOverSubjects))
         if (strcmp(analyzedRetinalQuadrant, RetinaToVisualFieldTransformer.nasalRetinaQuadrant))
             n1 = 14;
-            patch1 = patchCoordsFromXYmeanYstd(eccDegsForPlotting(1:n1), visualToAnatomicalRcRatio(1:n1), visualToAnatomicalRcRatioSTD(1:n1));
+            patch1 = patchCoordsFromXYmeanYstd(eccDegsForPlotting(1:n1), visualToAnatomicalRcRatioPrcTilesOverSubjects(1:2,1:n1));
+            patch1A = patchCoordsFromXYmeanYstd(eccDegsForPlotting(1:n1), visualToAnatomicalRcRatioPrcTilesOverSubjects(3:4,1:n1));
 
             n2 = 19;
-            patch2 = patchCoordsFromXYmeanYstd(eccDegsForPlotting(n2:end), visualToAnatomicalRcRatio(n2:end), visualToAnatomicalRcRatioSTD(n2:end));
+            patch2 = patchCoordsFromXYmeanYstd(eccDegsForPlotting(n2:end), visualToAnatomicalRcRatioPrcTilesOverSubjects(1:2,n2:end));
+            patch2A = patchCoordsFromXYmeanYstd(eccDegsForPlotting(n2:end), visualToAnatomicalRcRatioPrcTilesOverSubjects(3:4,n2:end));
         else
-            patch1 = patchCoordsFromXYmeanYstd(eccDegsForPlotting, visualToAnatomicalRcRatio, visualToAnatomicalRcRatioSTD);
+            patch1 = patchCoordsFromXYmeanYstd(eccDegsForPlotting, visualToAnatomicalRcRatioPrcTilesOverSubjects(1:2,:));
+            patch1A = patchCoordsFromXYmeanYstd(eccDegsForPlotting, visualToAnatomicalRcRatioPrcTilesOverSubjects(3:4,:));
             patch2 = [];
+            patch2A = [];
         end
 
-        patch(ax, patch1.x, patch1.y, 0*patch1.y, [1 0 0], 'FaceColor', [1 0.5 0.5], 'FaceAlpha', 0.5);
+        patch(ax, patch1.x, patch1.y, 0*patch1.y, [1 0 0], 'FaceColor', [1 0.75 0.75], 'EdgeColor', 'none', 'FaceAlpha', 0.5);
+        patch(ax, patch1A.x, patch1A.y, 0*patch1A.y, [1 0 0], 'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none', 'FaceAlpha', 0.5);
         if (~isempty(patch2))
-            patch(ax, patch2.x, patch2.y, 0*patch2.y, [1 0 0], 'FaceColor', [1 0.5 0.5], 'FaceAlpha', 0.5);
+            patch(ax, patch2.x, patch2.y, 0*patch2.y, [1 0 0], 'FaceColor', [1 0.75 0.75], 'EdgeColor', 'none','FaceAlpha', 0.5);
+            patch(ax, patch2A.x, patch2A.y, 0*patch2A.y, [1 0 0], 'FaceColor', [1 0.5 0.5], 'EdgeColor', 'none','FaceAlpha', 0.5);
         end
         hold(ax, 'on');
     end
 
     plot(ax, eccDegsForPlotting, visualToAnatomicalRcRatio, 'ro-', 'MarkerSize', 10, 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]); hold on
     
-    set(ax, 'XLim', [-1 31], 'XTick', 0:2:30, 'YLim', [0 16], 'YTick', 0:2:20);
+    set(ax, 'XLim', [-1 31], 'XTick', 0:2:30, 'YLim', [0 10], 'YTick', 0:1:10);
     xtickangle(ax, 0);
     if (strcmp(analyzedRetinalQuadrant, RetinaToVisualFieldTransformer.temporalRetinaQuadrant))
         set(ax, 'XDir', 'reverse')
     end
 
     grid(ax, 'on');
-    legend(ax,{analyzedEye}, 'Location', 'northeast')
+
     ylabel(ax,'visual cone Rc/anatomical cone Rc')
     xlabel(ax, sprintf('eccentricity, %s (degs)', analyzedRetinalQuadrant));
     set(ax, 'FontSize', 16)
     drawnow;
 
     NicePlot.exportFigToPDF(pdfFilename, hFig, 300);
-
+    close(hFig);
 end
 
-function thePatch = patchCoordsFromXYmeanYstd(x, yMean, ySTD)
+function thePatch = patchCoordsFromXYmeanYstd(x, prctiles)
+    minPrcTile = prctiles(1,:);
+    maxPrcTile = prctiles(2,:);
     thePatch.x(1) = x(1);
-    thePatch.y(1) = yMean(1)-ySTD(1);
+    thePatch.y(1) = minPrcTile(1);
 
     thePatch.x(1+(1:numel(x))) = x;
-    thePatch.y(1+(1:numel(x))) = yMean + ySTD;
+    thePatch.y(1+(1:numel(x))) = maxPrcTile;
 
     thePatch.x(numel(thePatch.x)+1) = thePatch.x(numel(thePatch.x));
-    thePatch.y(numel(thePatch.y)+1) = yMean(end) - ySTD(end);
+    thePatch.y(numel(thePatch.y)+1) = minPrcTile(end);
 
     thePatch.x(numel(thePatch.x)+(1:numel(x))) = fliplr(x);
-    thePatch.y(numel(thePatch.y)+(1:numel(x))) = fliplr(yMean - ySTD);
+    thePatch.y(numel(thePatch.y)+(1:numel(x))) = fliplr(minPrcTile);
 end
