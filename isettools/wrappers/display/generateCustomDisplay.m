@@ -95,7 +95,7 @@ function d = generateCustomDisplay(varargin)
         maxSPD  = max(spd(:)*1e3);
         if (maxSPD < 0.1)
             yTicks = 0:0.01:maxSPD;
-        elseif (maxSPD < 5)
+        elseif (maxSPD < 0.5)
             yTicks = 0:0.05:maxSPD;
         elseif (maxSPD < 1)
             yTicks = 0:0.1:maxSPD;
@@ -109,20 +109,26 @@ function d = generateCustomDisplay(varargin)
         legend({'R', 'G', 'B', 'ambient'})
         xlabel('wavelength (nm)');
         ylabel('power (milliWatts/Sr/m2/nm)');
-        title(sprintf('peak luminance: %2.1f cd/m2\ndark luminance: %2.3f cd/m2', displayGet(d, 'peak luminance'), displayGet(d, 'dark luminance')));
+        title(sprintf('peak luminance (R=G=B=1): %2.1f cd/m2\ndark luminance (R=G=B=0): %2.2f cd/m2', displayGet(d, 'peak luminance'), displayGet(d, 'dark luminance')));
         axis 'square';
         set(gca, 'XTick', 300:50:900, 'YTick', yTicks,'FontSize', 14);
         grid on;
         box on;
-        
+        xtickangle(0);
+
         colors = [1 0 0; 0 1 0; 0 0 1];
         for k = 1:3
             subplot(1,4,1+k);
             theGamma = displayGet(d, 'gamma');
             plot((1:size(theGamma,1))/size(theGamma,1), theGamma(:,k), 'r-', 'Color', colors(k,:), 'LineWidth', 1.5);
-            set(gca, 'XLim', [0 1], 'XTick', 0:0.1:1, 'YLim', [0 1], 'YTick', 0:0.2:1);
+            set(gca, 'XLim', [0 1], 'XTick', 0:0.2:1, 'YLim', [0 1], 'YTick', 0:0.2:1, 'FontSize', 14);
+            xlabel('settings value');
+            if (k == 1)
+                ylabel('primary value');
+            end
             axis 'square';
             grid on
+            xtickangle(0);
         end
     end
     
