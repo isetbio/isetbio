@@ -1,4 +1,4 @@
-% isetbio/tutorials/t_cones
+% isetbio/tutorials/cones
 %
 % Illustrates cone mosaic object and computation of cone isomerizations.
 %
