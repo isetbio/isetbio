@@ -3,9 +3,9 @@ function demoRetinaToVisualFieldTransformer()
     
     xFormer = RetinaToVisualFieldTransformer('ZernikeDataBase', 'Artal2012');
 
-    analyzedRetinaMeridian = 'nasal meridian';
-    subjectRankingEye = 'left eye';
-    analyzedEye = 'left eye';
+    analyzedRetinaMeridian = 'temporal meridian';
+    subjectRankingEye = 'right eye';
+    analyzedEye = 'right eye';
     pupilDiameterMM = 3.0;
 
     % All subjects
@@ -16,14 +16,9 @@ function demoRetinaToVisualFieldTransformer()
     % Remove some subjects which increase the
     examinedSubjectRankOrders = setdiff(examinedSubjectRankOrders, [5 16 20 23 31 34 36 37]);
 
-     examinedSubjectRankOrders = 1:10;
 
-    % Get the range of eccentricities for this retinal quadrant
-%     maxEccDegs = 30;
-%     [horizontalEccDegs, verticalEccDegs, radialEccDegs] = ...
-%          RetinaToVisualFieldTransformer.eccentricitiesForQuadrant(...
-%                 analyzedRetinaMeridian, analyzedEye, maxEccDegs);
-
+    % Get the horizontal and vertical eccs corresponding to the target radial ecc at the
+    % analyzed retinal meridian and eye
     radialEccDegs = 0:1:30;
     [horizontalEccDegs, verticalEccDegs] = cMosaic.eccentricitiesForRetinaMeridianInEye(...
             radialEccDegs, analyzedRetinaMeridian, analyzedEye);
@@ -60,7 +55,7 @@ function demoRetinaToVisualFieldTransformer()
         end
 
         
-        parfor iEcc = 1:numel(horizontalEccDegs)
+       parfor iEcc = 1:numel(horizontalEccDegs)
             if (generateFigsAndVideos)
                 hFig = figure(10); clf;
                 set(hFig, 'Color', [1 1 1], 'Position', [10 10 1600 400]);
@@ -124,7 +119,7 @@ function plotData(figNo, pdfFilename, radialEccDegs, conesNumInPatch,  visualToA
     ax = subplot(1,2,1);
     plot(ax, radialEccDegs, conesNumInPatch, 'rs-', 'MarkerSize', 10, 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.5); 
     set(ax, 'XLim', [-1 31], 'XTick', 0:2:30);
-    if (strcmp(analyzedRetinaMeridian, RetinaToVisualFieldTransformer.temporalRetinaQuadrant))
+    if (strcmp(analyzedRetinaMeridian,'temporal meridian'))
         set(ax, 'XDir', 'reverse')
     end
     xtickangle(ax, 0);
@@ -137,7 +132,7 @@ function plotData(figNo, pdfFilename, radialEccDegs, conesNumInPatch,  visualToA
     ax = subplot(1,2,2);
     hold(ax, 'on');
     if (~isempty(visualToAnatomicalRcRatioPrcTilesOverSubjects))
-        if (strcmp(analyzedRetinaMeridian, RetinaToVisualFieldTransformer.nasalRetinaQuadrant))
+        if (strcmp(analyzedRetinaMeridian, 'nasal meridian'))
             disp('nasal')
             n1 = 14;
             patch1 = patchCoordsFromXYmeanYstd(radialEccDegs(1:n1), visualToAnatomicalRcRatioPrcTilesOverSubjects(1:2,1:n1));
@@ -169,9 +164,9 @@ function plotData(figNo, pdfFilename, radialEccDegs, conesNumInPatch,  visualToA
         plot(ax, radialEccDegs, visualToAnatomicalRcRatioPrcTilesOverSubjects, 'k-');
     end
 
-    set(ax, 'XLim', [-1 31], 'XTick', 0:2:30, 'YLim', [0 10], 'YTick', 0:1:10);
+    set(ax, 'XLim', [-1 31], 'XTick', 0:2:30, 'YLim', [0 20], 'YTick', 0:1:30);
     xtickangle(ax, 0);
-    if (strcmp(analyzedRetinaMeridian, RetinaToVisualFieldTransformer.temporalRetinaQuadrant))
+    if (strcmp(analyzedRetinaMeridian, 'temporal meridian'))
         set(ax, 'XDir', 'reverse')
     end
 
@@ -183,7 +178,7 @@ function plotData(figNo, pdfFilename, radialEccDegs, conesNumInPatch,  visualToA
     drawnow;
 
     NicePlot.exportFigToPDF(pdfFilename, hFig, 300);
-    %close(hFig);
+    close(hFig);
 end
 
 function thePatch = patchCoordsFromXYmeanYstd(x, prctiles)

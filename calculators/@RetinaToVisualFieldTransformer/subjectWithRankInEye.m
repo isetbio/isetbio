@@ -1,7 +1,7 @@
 function testSubjectID = subjectWithRankInEye(obj, subjectRankOrder, whichEye)
 
     % Ensure we have a valid eye specification
-    assert(ismember(whichEye, RetinaToVisualFieldTransformer.validEyes), ...
+    assert(ismember(whichEye, {'left eye','right eye'}), ...
         'Wrong eye specification: ''%s''.', whichEye);
 
     switch (obj.ZernikeDataBase)
@@ -9,7 +9,7 @@ function testSubjectID = subjectWithRankInEye(obj, subjectRankOrder, whichEye)
             rankedSujectIDs = ArtalOptics.constants.subjectRanking(whichEye);
             testSubjectID = rankedSujectIDs(subjectRankOrder);
         case RetinaToVisualFieldTransformer.Polans
-            if (~strcmp(whichEye, RetinaToVisualFieldTransformer.rightEye))
+            if (~strcmp(whichEye, 'right eye'))
                 error('Polans measurements exist only for the right eye.');
             end
             rankedSujectIDs = PolansOptics.constants.subjectRanking();

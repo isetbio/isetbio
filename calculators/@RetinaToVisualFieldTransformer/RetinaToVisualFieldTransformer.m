@@ -10,12 +10,6 @@ classdef RetinaToVisualFieldTransformer
     properties (Constant, Hidden)
         Artal = 'Artal2012';
         Polans = 'Polans2015';
-        temporalRetinaQuadrant = 'temporal retina';
-        nasalRetinaQuadrant = 'nasal retina';
-        inferiorRetinaQuadrant = 'inferior retina';
-        superiorRetinaQuadrant = 'superior retina';
-        leftEye = 'left eye';
-        rightEye = 'right eye';
     end
 
     properties (Constant)
@@ -25,17 +19,6 @@ classdef RetinaToVisualFieldTransformer
             RetinaToVisualFieldTransformer.Polans ...
             };
 
-        validRetinalQuadrants = { ...
-            RetinaToVisualFieldTransformer.temporalRetinaQuadrant ...
-            RetinaToVisualFieldTransformer.nasalRetinaQuadrant ...
-            RetinaToVisualFieldTransformer.inferiorRetinaQuadrant ...
-            RetinaToVisualFieldTransformer.superiorRetinaQuadrant ...
-            };
-
-        validEyes = {...
-            RetinaToVisualFieldTransformer.leftEye ...
-            RetinaToVisualFieldTransformer.rightEye ...
-            };
 
         ArtalSubjectsNum = 54;
         PolansSubjectsNum = 10;
@@ -55,6 +38,8 @@ classdef RetinaToVisualFieldTransformer
         % Return the ID of a subject with a specific rank order for a given eye
         testSubjectID = subjectWithRankInEye(obj, subjectRankOrder, retinalQuadrant, whichEye);
 
+        [theOTFData, thePSFData] = vLambdaWeightedPSFandOTF(obj, cm, testSubjectID, pupilDiameterMM);
+
         % Estimate the characteristic radius of the mean cone at the center of a
         % cone mosaic centered at a given (x,y) eccentricity in degrees
         % as projected on to visual space using optics at the same eccentricity
@@ -62,6 +47,12 @@ classdef RetinaToVisualFieldTransformer
             whichEye, eccDegs, testSubjectID, pupilDiameterMM, ...
             dataFileName, varargin);
 
+        % Deconvole the visualRF based on V-lambda weighted optics at a
+        % given eccentricity, subject, and pupil size
+        deconvolvedVisualRFdata = deconvolveVisualRFgivenOptics(obj, ...
+            visualRFdata, conesNumPooledByTheRFcenter, eccDegs, ...
+            whichEye, testSubjectID, pupilDiameterMM, ...
+            regularizationAlpha, varargin);
 
     end % Public methods
 
@@ -71,10 +62,22 @@ classdef RetinaToVisualFieldTransformer
 
     % Class methods
     methods (Static)
-        % Method to return the range of horizontal and vertical
-        % eccentricites for a retinal quadrant and eye
-        [horizontalEccDegs, verticalEccDegs, eccDegsForPlotting] = ...
-                eccentricitiesForQuadrant(retinalQuadrant, whichEye, maxEcc);
+        % Method to return the centroid (in pixels) and in 
+        % units of the support and the rotation in degrees of the zData
+        [theCentroid, RcX, RcY, theRotationAngle] = ...
+        estimateGeometry(supportX, supportY, zData);
+        
+        theCircularPSF = circularlySymmetricPSF(thePSF, mode);
+
+        data = centerAndRotatePSF(data);
+
+        visualConeCharacteristicRadiusDegs = analyzeEffectOfPSFonConeAperture(...
+            anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
+            hFig, videoOBJ, pdfFileName);
+
+        [theFittedGaussianCharacteristicRadiusDegs, visualConeCharacteristicMinorMajorRadiiDegs, ...
+            theFitted2DGaussian, XYcenter, XRange, YRange] = ...
+            fitGaussianEllipsoid(supportX, supportY, theRF);
 
     end
 
