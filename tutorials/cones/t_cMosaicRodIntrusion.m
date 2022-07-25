@@ -29,9 +29,7 @@ function t_cMosaicRodIntrusion()
     eccMM = [1.35 5.0 8.0];
 
     % Transform to degrees
-    eccDegs = RGCmodels.Watson.convert.rhoMMsToDegs(eccMM)
-
-    
+    eccDegs = RGCmodels.Watson.convert.rhoMMsToDegs(eccMM);   
 
     % Positions for the various subplots
     sv = NicePlot.getSubPlotPosVectors(...
