@@ -39,7 +39,7 @@ function appendFigAsSeparatePageInPDFdoc(pdfFileName,figHandle,dpi)
         tmpFileName = sprintf('tmpPDF.pdf');
         mergedFileName = sprintf('mergedPDF.pdf');
         print(figHandle,'-dpdf', tmpFileName,sprintf('-r%d',dpi));
-        status = system(sprintf('/usr/local/bin/pdfunite %s %s %s', pdfFileName, tmpFileName, mergedFileName));
+        status = system(sprintf('/opt/homebrew/bin/pdfunite %s %s %s', pdfFileName, tmpFileName, mergedFileName));
         if (status ~= 0)
             fprintf('Error during pdfunite. Have you installed poppler (''brew install poppler'')?');
             system(sprintf('rm %s', tmpFileName));

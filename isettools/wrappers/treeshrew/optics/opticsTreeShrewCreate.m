@@ -109,15 +109,15 @@ function optics = opticsFromTreeShrewZCoefs(pupilDiameterMM, wavelengthSupport, 
 
 end
 
-function lcaDiopters = treeShrewLCA(wl1NM, wl2NM)
+function lcaDiopters = treeShrewLCAOLD(measuredWavelength, thisWavelength)
     % We dont have a model LCA for tree shrew yet.
     % Here we model is as the human LCA x 5
     % This creates an LCA difference between 840nm and 550nm of -4.5D
     % as per Sadjak et al (2019), "Noninvasive imaging of the tree shrew eye:
     % Wavefront analysis and retinal imaging with correlative histology"
     
-    constant = 1.8859 - (0.63346 ./ (0.001 .* wl1NM - 0.2141));
-    lcaDiopters = 1.8859 - constant - (0.63346 ./ (0.001 * wl2NM - 0.2141));
+    constant = 1.8859 - (0.63346 ./ (0.001 .* measuredWavelength - 0.2141));
+    lcaDiopters = 1.8859 - constant - (0.63346 ./ (0.001 * thisWavelength - 0.2141));
     lcaDiopters = 5.15 * lcaDiopters;
 end
 
