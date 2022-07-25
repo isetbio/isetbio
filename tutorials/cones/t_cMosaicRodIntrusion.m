@@ -12,7 +12,7 @@
 function t_cMosaicRodIntrusion()
 
     % Load Figure 3 of Curcio 1990 
-    resourcesDir = strrep(isetRootPath, 'isettools', 'tutorials/t_cones/resources');
+    resourcesDir = strrep(isetRootPath, 'isettools', 'tutorials/cones/resources');
     load(fullfile(resourcesDir, 'CurcioConesRods.mat'), 'CurcioConesRods');
 
     hFig = figure(1);clf;

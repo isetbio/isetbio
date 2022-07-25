@@ -28,20 +28,27 @@ cmParams.visualizeMeshConvergence =  false;
 cmParams.exportMeshConvergenceHistoryToFile =  false;
 cmParams.maxMeshIterations =  100;
 cmParams.micronsPerDegree =  [];
+
+% Eccentricity related
 cmParams.eccVaryingConeAperture =  true;
 cmParams.eccVaryingConeBlur =  false;
 cmParams.eccVaryingOuterSegmentLength =  true;
 cmParams.eccVaryingMacularPigmentDensity =  true;
 cmParams.eccVaryingMacularPigmentDensityDynamic =  false;
 cmParams.anchorAllEccVaryingParamsToTheirFovealValues =  false;
+cmParams.rodIntrusionAdjustedConeAperture = 0.6;
+
 cmParams.coneCouplingLambda =  [];
 cmParams.coneApertureModifiers =  struct('smoothLocalVariations',true);
 cmParams.coneDiameterToSpacingRatio =  1.0;
 cmParams.coneDensities =  [0.6 0.3 0.1 0.0];
 cmParams.tritanopicRadiusDegs =  0.15;
-cmParams.noiseFlag =  'random';  % Or frozen
-cmParams.randomSeed = [];
 cmParams.integrationTime =  5/1000;
 cmParams.opticalImagePositionDegs =  'mosaic-centered';
+
+% Compute reltaed
+cmParams.noiseFlag =  'random';  % Or frozen
+cmParams.randomSeed = [];
 cmParams.useParfor =  true;
+
 end
