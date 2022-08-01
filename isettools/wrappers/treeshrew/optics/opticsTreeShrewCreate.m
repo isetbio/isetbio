@@ -2,8 +2,39 @@ function optics = opticsTreeShrewCreate(varargin)
 % Create an optics structure for the TreeShrew eye
 %
 % Syntax:
-%   [optics, wvf] = OPTICSTREESHREWCREATE(varargin)
+%    [optics, wvf] = opticsTreeShrew;
 %
+% Description:
+%    Set up an ISETBio tree shrew optics object (and wavefront optics
+%    object).
+%
+% Inputs:
+%   None.
+%
+% Outputs:
+%   optics           - The optics object
+%   wvf              - The wavefront object
+%
+% Optional key/value pairs.
+%   'name'           - String.  Name to give the object. Default empty.
+%   'opticsType'     - String. What type of optics
+%                      'gaussian psf' - Use a Gaussian PSF
+%                      'wvf' - PSF from Zernike coefficients
+%   'whichShew'      - If wvf optics, which tree shrew data to use. 
+%   'inFocusPSFsigmaMicrons' - If Gaussian PSF, sigma of PSF in microns.
+%   'focalLengthMM'  - Focal length of tree shrew eye in mm.
+%   'pupilDiameterMM' - Pupil diameter of tree shrew eye we're modeling in mm.  
+%   'wavelengthSupport' - Wavelength support for the calculations
+%   'maxSF'          - Maximum spatial frequency.  Used in Gaussian PSF calculations
+%                      to determine support for OTF calc that in the end
+%                      drives everything. Default 20.
+%   'deltaSF'        - Delta spatial frequency, also used in Gaussian PSF
+%                      calcs. Default 0.1.
+%
+%   Default values for parameters not specified are set by
+%   opticsTreeShrewDefaultParams.
+% 
+% See also: opticsTreeShrewDefaultParams.
 
 % Get the default tree-shrew optics params
 defaultParams = opticsTreeShrewDefaultParams();
@@ -11,6 +42,7 @@ defaultParams = opticsTreeShrewDefaultParams();
 p = inputParser;
 p.addParameter('name', '', @ischar);
 p.addParameter('opticsType', defaultParams.opticsType, @ischar);
+p.addParameter('whichShrew', defaultParams.whichShrew, @iscalar);
 p.addParameter('inFocusPSFsigmaMicrons', defaultParams.inFocusPSFsigmaMicrons, @isnumeric);
 p.addParameter('focalLengthMM', defaultParams.focalLengthMM, @isnumeric);
 p.addParameter('pupilDiameterMM', defaultParams.pupilDiameterMM, @isnumeric);
@@ -27,6 +59,7 @@ inFocusPSFsigmaMicrons = p.Results.inFocusPSFsigmaMicrons;
 pupilDiameterMM = p.Results.pupilDiameterMM;
 wavelengthSupport = p.Results.wavelengthSupport;
 opticsType = p.Results.opticsType;
+whichShrew = p.Results.whichShrew;
 deltaSF = p.Results.deltaSF;
 maxSF = p.Results.maxSF;
 focalLengthMM= p.Results.focalLengthMM;
@@ -45,7 +78,7 @@ switch lower(opticsType)
         optics = opticsUpdateOTFUsingGaussianPSF(optics, inFocusPSFsigmaMicrons, ...
             maxSF, deltaSF, wavelengthSupport);
     case {'wvf'}
-        optics = opticsFromTreeShrewZCoefs(pupilDiameterMM, wavelengthSupport, micronsPerDegree);
+        optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelengthSupport, micronsPerDegree);
     otherwise
         error('Unknown optics type: ''%s''.', opticsType)
 end % switch lower(opticsType)
@@ -66,32 +99,29 @@ optics = opticsSet(optics, 'offAxisMethod', 'cos4th');
 optics.vignetting =  0;
 end
 
-function optics = opticsFromTreeShrewZCoefs(pupilDiameterMM, wavelengthSupport, micronsPerDegree)
+function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelengthSupport, micronsPerDegree)
 
     % Reference: "Noninvasive imaging of the tree shrew eye: Wavefront
     % analysis and retinal imaging with correlative histology", Sajdak et
     % al 2019
+    
     % 4 mm pupil used in measurements of Sajdak et al 2019
     measuredDiameterMM_TreeShrew = 4.0;
     
-    % 840 nm light used in measurements of Sajdak et al 2019 (section 2.2)
-    measuredWavelenth = 840;
+    % 840 nm light used in measurements of Sajdak et al 2019 (section 2.2).
+    % However, we've set the defocus term in the table below to be best
+    % focus, which we are going to take as 550 nm.  So we set
+    % measuredWavelength to 550.  LCA calculations are then done relative
+    % to this and should come out right.
+    measuredWavelenth = 550;
     
-    % Defocusm with coefficient #4, (#5 in Matlab' indexing) is by far the dominant Zcoeffs in measurents of Sajdak et al 2019
-    % So we are setting all the other coeffs to 0.
-    % The data here are from Figure 2 of Sajdak et al 2019
-    zCoeffs_TreeShrew = randn(1,20)*0.0;
-    %zCoeffs_TreeShrew(4) = -0.15;
-    zCoeffs_TreeShrew(5) = -2.75;
-    %zCoeffs_TreeShrew(6) = -0.2;
-    %zCoeffs_TreeShrew(7) = 0.08;
-    %zCoeffs_TreeShrew(8) = 0.05;
-    %zCoeffs_TreeShrew(9) = -0.04;
-    %zCoeffs_TreeShrew(10) = -0.5;
-    %zCoeffs_TreeShrew(15) = -0.02;
-    %zCoeffs_TreeShrew(18) = -0.08;
-    
-
+    % We have the tabulated ZCoeffs provided by Roorda from the paper
+    % above.  Read those in here.
+    zCoeffsFile = fullfile(isetbioRootPath,'data','datafiles','treeshrew','SajdakEtAlTreeShrewZernikes.xlsx');
+    zCoeffsAll = cell2mat(readcell(zCoeffsFile,'Range','B2:L66'));
+    zCoeffs_TreeShrew = zCoeffsAll(:,whichShrew);
+   
+    % Create the wavefront object
     wvfP = wvfCreate(...
         'spatialsamples', 1001, ...
         'measured wl', measuredWavelenth, ... 
@@ -100,11 +130,18 @@ function optics = opticsFromTreeShrewZCoefs(pupilDiameterMM, wavelengthSupport, 
         'name', sprintf('treeshrew-%d', pupilDiameterMM), ...
         'umPerDegree', micronsPerDegree, ...
         'customLCA', @treeShrewLCA);
-    
+
+    % Check pupil diameter OK and then set
+    if (pupilDiameterMM > measuredDiameterMM_TreeShrew)
+        error('Requested pupil diameter greated than measured diameter');
+    end
     wvfP = wvfSet(wvfP, 'measured pupil size', measuredDiameterMM_TreeShrew);
     wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMM);
+
+    % Compute the PSF using the wavefront code
     wvfP = wvfComputePSF(wvfP);
-        
+    
+    % Create the corresponding optics object
     optics = oiGet(wvf2oi(wvfP), 'optics');
 
 end
