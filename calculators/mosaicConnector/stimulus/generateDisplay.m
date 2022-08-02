@@ -1,4 +1,4 @@
-function presentationDisplay = generatePresentationDisplay(varargin)
+function presentationDisplay = generateDisplay(varargin)
     % Parse input
     p = inputParser;
     p.addParameter('viewingDistance', 0.57, @isscalar);  % 1 cm at 57 cm occupies 1 degree of visual space

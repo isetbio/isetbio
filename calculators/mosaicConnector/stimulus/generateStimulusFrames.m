@@ -1,7 +1,7 @@
 function [theSceneFrames, presentationDisplay, stimSpatialParamsPixelsNum] = generateStimulusFrames(stimColor, stimSpatialParams, wavelengthSampling)
 
     % Generate the presentation display
-    presentationDisplay = generatePresentationDisplay('wave', wavelengthSampling);
+    presentationDisplay = generateDisplay('wave', wavelengthSampling);
 
     % Background chromaticity and mean luminance vector
     xyY = [stimColor.backgroundChroma(1) stimColor.backgroundChroma(2) stimColor.meanLuminanceCdPerM2];
