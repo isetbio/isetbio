@@ -1,4 +1,6 @@
-function [theOTFData, thePSFData] = vLambdaWeightedPSFandOTF(obj, cm, testSubjectID, pupilDiameterMM)
+function [thePSFData, theCircularPSFData] = vLambdaWeightedPSFandOTF(obj, cm, ...
+    testSubjectID, pupilDiameterMM, wavefrontSpatialSamples, maxSpatialSupportDegs, circularSymmetryGenerationMode)
+    
     % Generate optics for this eye, eccentricity, subject, and pupil size
     switch (obj.ZernikeDataBase)
         % Artal
@@ -17,7 +19,7 @@ function [theOTFData, thePSFData] = vLambdaWeightedPSFandOTF(obj, cm, testSubjec
                     'pupilDiameterMM', pupilDiameterMM, ...
                     'zeroCenterPSF', true, ...
                     'subtractCentralRefraction', subtractCentralRefraction, ...
-                    'wavefrontSpatialSamples', 701, ...
+                    'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                     'warningInsteadOfErrorForBadZernikeCoeffs', true);
 
     if (isempty(oiEnsemble))
@@ -53,6 +55,25 @@ function [theOTFData, thePSFData] = vLambdaWeightedPSFandOTF(obj, cm, testSubjec
     theOTFData = rmfield(theOTFData, 'supportWavelength');
     thePSFData = rmfield(thePSFData, 'supportWavelength');
     thePSFData = rmfield(thePSFData, 'zCoeffs');
+
+
+    % Now generate the circular PSF
+    theCircularPSFData = thePSFData;
+    theCircularPSFData.data = RetinaToVisualFieldTransformer.circularlySymmetricPSF(thePSFData.data, circularSymmetryGenerationMode); 
+
+    % Finally, Reduce spatial support to decrease compute time
+    
+    idx = find(abs(thePSFData.supportX) < maxSpatialSupportDegs*60);
+    idy = find(abs(thePSFData.supportY) < maxSpatialSupportDegs*60);
+
+    thePSFData.supportX = thePSFData.supportX(idx);
+    thePSFData.supportY = thePSFData.supportY(idy);
+    thePSFData.data = thePSFData.data(idy,idx);
+
+    theCircularPSFData.supportX = theCircularPSFData.supportX(idx);
+    theCircularPSFData.supportY = theCircularPSFData.supportY(idy);
+    theCircularPSFData.data = theCircularPSFData.data(idy,idx);
+
 end
 
 

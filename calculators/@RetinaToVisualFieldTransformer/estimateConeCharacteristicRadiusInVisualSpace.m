@@ -100,14 +100,20 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj,...
     thePSFData.data = squeeze(thePSFData.data(:,:,wIndex));
 
 
-    p = getpref('ISETMacaque');
-    pdfFileName = fullfile(p.generatedDataDir, 'coneApertureBackingOut', ...
-            sprintf('%s_ecc_%2.0f_%2.0f.pdf',dataFileName, cm.eccentricityDegs(1), cm.eccentricityDegs(2)));
+    if (~isempty(dataFileName))
+        p = getpref('ISETMacaque');
+        pdfFileName = fullfile(p.generatedDataDir, 'coneApertureBackingOut', ...
+                sprintf('%s_ecc_%2.0f_%2.0f.pdf',dataFileName, cm.eccentricityDegs(1), cm.eccentricityDegs(2)));
+    else
+        pdfFileName = 'tmp';
+    end
 
     % Compute the visually-projected cone aperture given this PSF
     visualConeCharacteristicRadiusDegs = RetinaToVisualFieldTransformer.analyzeEffectOfPSFonConeAperture(...
-                    anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
-                    hFig, videoOBJ, pdfFileName);
+                        anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
+                        hFig, videoOBJ, pdfFileName)
+    
+
 
     % Return struct
     dStruct.conesNumInRetinalPatch = conesNumInRetinalPatch;

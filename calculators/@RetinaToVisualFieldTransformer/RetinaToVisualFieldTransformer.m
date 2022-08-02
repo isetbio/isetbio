@@ -38,7 +38,9 @@ classdef RetinaToVisualFieldTransformer
         % Return the ID of a subject with a specific rank order for a given eye
         testSubjectID = subjectWithRankInEye(obj, subjectRankOrder, retinalQuadrant, whichEye);
 
-        [theOTFData, thePSFData] = vLambdaWeightedPSFandOTF(obj, cm, testSubjectID, pupilDiameterMM);
+        % Generate vLambda-weighted PSF
+        [thePSFData, theCircularPSFData] = vLambdaWeightedPSFandOTF(obj, cm, testSubjectID, ...
+            pupilDiameterMM, wavefrontSpatialSamples, maxSpatialSupportDegs, circularSymmetryGenerationMode);
 
         % Estimate the characteristic radius of the mean cone at the center of a
         % cone mosaic centered at a given (x,y) eccentricity in degrees
@@ -48,11 +50,11 @@ classdef RetinaToVisualFieldTransformer
             dataFileName, varargin);
 
         % Deconvole the visualRF based on V-lambda weighted optics at a
-        % given eccentricity, subject, and pupil size
-        deconvolvedVisualRFdata = deconvolveVisualRFgivenOptics(obj, ...
-            visualRFdata, conesNumPooledByTheRFcenter, eccDegs, ...
-            whichEye, testSubjectID, pupilDiameterMM, ...
-            regularizationAlpha, varargin);
+        % given eccentricity, subject, and pupil size to extrace the
+        % retinal cone pooling weights for the center/surround mechanisms
+        [retinalRFparams, weightsComputeFunctionHandle, targetVisualRF, theCircularPSFData] = retinalRFparamsForTargetVisualRF(obj, ...
+          visualRFDoGparams, eccDegs, ...
+          subjectEye, subjectID, subjectPupilDiameterMM, varargin);
 
     end % Public methods
 
@@ -75,9 +77,50 @@ classdef RetinaToVisualFieldTransformer
             anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
             hFig, videoOBJ, pdfFileName);
 
+        [RcDegs,visualRFcenterConeMap, retinalRFcenterConeMap, anatomicalConeCharacteristicRadiusDegs] = estimateVisualRcFromNumberOfConesInRFcenter(cm, ...
+            conesNumPooledByTheRFcenter, theCircularPSFData);
+
+        [RFcenterRcDegs, RF2D] = computeRetinalRFRcDegsFromItsPooledConeInputs(coneRcDegs, ...
+            conePosDegs, spatialSupportDegs);
+    
         [theFittedGaussianCharacteristicRadiusDegs, visualConeCharacteristicMinorMajorRadiiDegs, ...
             theFitted2DGaussian, XYcenter, XRange, YRange] = ...
             fitGaussianEllipsoid(supportX, supportY, theRF);
+
+
+        [theFittedGaussianCharacteristicRadiusDegs, theFittedGaussianEllpsoid, ...
+            XYcenter, XRange, YRange, theFittedGaussianCharacteristicRadiiDegs] = ...
+            fitGaussianToPooledConeApertures(supportX, supportY, theRF, initialParams, lowerBounds, upperBounds);
+        RF2F = gaussian2D(params,xydata);
+
+        paramsVector = paramsStructToParamsVector(paramsStruct, retinalConePoolingModel);
+        paramsStruct = paramsVectorToParamsStruct(paramsVector, retinalConePoolingModel);
+
+        [theFittedRFparamsStruct, theFittedRF] = fitDoGModelToRF(spatialSupportDegs, RF, RcDegs);
+        RF2D = diffOfGaussiansRF(p, spatialSupportDegs);
+
+        [theFittedRFparamsStruct, theFittedRF] = fitDiffOfGaussianCenterAndDoubleExponentSurroundModelToRF(spatialSupportDegs, RF, RcDegs);
+        RF2D = diffOfGaussianCenterAndDoubleExponentSurround(p, spatialSupportDegs);
+
+        [retinalRFparams, weightsComputeFunctionHandle, theFittedVisualRF, ...
+         theFittedRetinalRFcenter, theFittedRetinalRFsurround] = fitVisualRFByAdjustingRetinalPoolingParameters(...
+                modelConstants, theVisualRF)
+
+        pooledConeIndicesAndWeightsStruct = retinalConeWeightsFromDoGDEmodelParameters(retinalRFDoGDEparams, ...
+            conesNumPooledByTheRFcenter, spatialSupportX, spatialSupportY, cm);
+
+        pooledConeIndicesAndWeightsStruct = retinalConeWeightsFromDoGmodelParameters(retinalRFDoGparams, ...
+            conesNumPooledByTheRFcenter, spatialSupportX, spatialSupportY, cm);
+
+        retinalRF = computeRetinalRFfromWeightsAndApertures(consideredConeIndices, coneIndices, coneWeights, ...
+            coneApertureDiametersDegs, coneRFpositionsDegs, Xdegs, Ydegs, RFcenter, minConeWeight);
+
+        [retinalRFcenter2D, retinalRFsurround2D] = generateRFsubregionMapsFromPooledCones(...
+            spatialSupportX, spatialSupportY, cm, pooledConeIndicesAndWeightsStruct);
+
+        generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
+            visualRFparams, retinalRFparams, achievedVisualRFparams, ...
+            eccDegs, testSubjectID, maxSpatialSupportDegs, figNo);
 
     end
 

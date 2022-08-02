@@ -1,8 +1,9 @@
-function demoRetinaToVisualFieldTransformer()
+function demoVisualProjectionOfConeApertureUsingEccVaryingOptics()
 
-    
+    % Intantiate RetinaToVisualFieldTrasformer with the Artal database
     xFormer = RetinaToVisualFieldTransformer('ZernikeDataBase', 'Artal2012');
 
+    % Analyze along the temporal meridian
     analyzedRetinaMeridian = 'temporal meridian';
     subjectRankingEye = 'right eye';
     analyzedEye = 'right eye';
