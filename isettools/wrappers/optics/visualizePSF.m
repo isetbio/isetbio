@@ -127,7 +127,7 @@ grid(axesHandle, 'on'); box(axesHandle,  'on');
 set(axesHandle, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1], 'CLim', [0 1], ...
             'XTick', psfTicks, 'YTick', psfTicks, 'XTickLabel', psfTickLabels, 'YTickLabel', psfTickLabels);
 set(axesHandle, 'XColor', [0 0 0], 'YColor', [0 0 0]);
-xlabel(axesHandle,'\it space (arc min)');
+xlabel(axesHandle,'space (arc min)');
 ylabel(axesHandle, '');
 set(axesHandle, 'FontSize', fontSize);
 
