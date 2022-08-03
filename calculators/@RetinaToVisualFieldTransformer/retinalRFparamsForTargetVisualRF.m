@@ -48,9 +48,11 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
     psfCircularSymmetryMode = p.Results.psfCircularSymmetryMode;
 
     % Generate a @cMosaic object located at the target eccentricity and eye
+    fprintf(2,'Cone mosaic size: %2.3f degs \n', max([0.5 maxSpatialSupportDegs]));
+    pause(1);
     cm = cMosaic(...
         'whichEye', subjectEye, ...
-        'sizeDegs', [0.5 0.5], ...
+        'sizeDegs', [1 1] * max([0.5 maxSpatialSupportDegs]), ...
         'eccentricityDegs', eccDegs, ...
         'rodIntrusionAdjustedConeAperture', true, ...
         'customDegsToMMsConversionFunction', @RGCmodels.Watson.convert.rhoDegsToMMs, ...
@@ -206,8 +208,16 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
 
             switch (retinalConePoolingModel)
                 case 'GaussianCenterGaussianSurroundBased'
+                    % ******* Here we must adjust the S/C integrated ratio for the fact that these params
+                    % are derived from the Gaussian cone apertures. So to
+                    % use them for the continuous model we must account for
+                    % the difference in coverage, 
                     RF2DData.retinalRF = RetinaToVisualFieldTransformer.diffOfGaussiansRF(retinalRFparamsVector, spatialSupportDegs);
                 case 'GaussianCenterDoubleExponentSurroundBased'
+                    % ******** Here we must adjust the S/C integrated ratio for the fact that these params
+                    % are derived from the Gaussian cone apertures. So to
+                    % use them for the continuous model we must account for
+                    % the difference in coverage,
                     RF2DData.retinalRF = RetinaToVisualFieldTransformer.diffOfGaussianCenterAndDoubleExponentSurround(retinalRFparamsVector, spatialSupportDegs);
             end
 

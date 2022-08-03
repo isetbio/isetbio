@@ -11,13 +11,14 @@ function batchGenerateRetinalParamsDataFilesForTargetVisualRF
     % Number of cones in RF center
     conesNumPooledByTheRFcenter = 1;
 
-    
+    analyzedEye = 'right eye';
+    subjectRankingEye = 'right eye';
 
-
-    analysisFileName = sprintf('%s_subjRankOrder_%d_%s_pupilDiamMM_%2.2f_conesNumPooledByRFcenter%d.mat', ...
+    analysisFileName = sprintf('%s_subjRankOrder_%d_%s_%s_pupilDiamMM_%2.2f_conesNumPooledByRFcenter%d.mat', ...
         ZernikeDataBase, examinedSubjectRankOrder, ...
+        strrep(analyzedEye, ' ', '_'), ...
         strrep(analyzedRetinaMeridian, ' ', '_'), ...
-        pupilDiameterMM, conesNumPooledByTheRFcenter);
+        pupilDiameterMM, conesNumPooledByTheRFcenter)
  
     regenerateData = true;
     if (regenerateData)
@@ -25,11 +26,19 @@ function batchGenerateRetinalParamsDataFilesForTargetVisualRF
         % Sampling the eccentricity range. We sample very fine initially to
         % account for the fast reduction in cone density in the center. The
         % optics do not vary so fast.
-        analyzedRadialEccDegs = round(100*(logspace(log10(0.001),log10(100000),64)).^0.3)/100;
-        analyzedRadialEccDegs = analyzedRadialEccDegs - analyzedRadialEccDegs(1);
+        analyzedRadialEccDegs = [0];
+        step = 0.1;
+        while (analyzedRadialEccDegs(end) < 30)
+            analyzedRadialEccDegs(numel(analyzedRadialEccDegs)+1) = ...
+                analyzedRadialEccDegs(end) + step;
+            step = step * 1.05;
+            if (step>0.5)
+                analyzedRadialEccDegs(end) = round(2*analyzedRadialEccDegs(end))/2;
+                step = 0.5;
+            end
+        end
+
         
-        analyzedEye = 'left eye';
-        subjectRankingEye = 'left eye';
 
         % From Croner & Kaplan '95 (Figure 4c and text)
         % "P surrounds were on average 6.7 times wider than the centers of 

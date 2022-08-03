@@ -50,35 +50,49 @@ function generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
 
     % The retinal RF center cone map
     ax = subplot(3,4,3);
-    plotRF(ax, thePSFData, RF2DData.retinalRFcenterConeMap, maxRFcenterConeMap, maxRFcenterConeMap, visualizedProfile, maxSpatialSupportDegs, 'retinal RF center');
+    if (visualRFparams.conesNumPooledByTheRFcenter == 1)
+        plotTitle = sprintf('retinal RF center (%d cone)', visualRFparams.conesNumPooledByTheRFcenter);
+    else
+        plotTitle = sprintf('retinal RF center (%d cones)', visualRFparams.conesNumPooledByTheRFcenter);
+    end
+
+    plotRF(ax, thePSFData, RF2DData.retinalRFcenterConeMap, maxRFcenterConeMap, ...
+        maxRFcenterConeMap, visualizedProfile, maxSpatialSupportDegs, ...
+        plotTitle);
 
 
     % The visual RF center cone map
     ax = subplot(3,4,4);
-    plotRF(ax, thePSFData, RF2DData.visualRFcenterConeMap, maxRFcenterConeMap, maxRFcenterConeMap, visualizedProfile, maxSpatialSupportDegs, 'visual RF center');
+    plotRF(ax, thePSFData, RF2DData.visualRFcenterConeMap, maxRFcenterConeMap, ...
+        maxRFcenterConeMap, visualizedProfile, maxSpatialSupportDegs, 'visual RF center');
 
     
     % The visual RF
     ax = subplot(3,4,5);
-    plotRF(ax, thePSFData, RF2DData.visualRF, maxRF, maxProfile, visualizedProfile, maxSpatialSupportDegs, 'visual RF (target)');
+    plotRF(ax, thePSFData, RF2DData.visualRF, maxRF, maxProfile, ...
+        visualizedProfile, maxSpatialSupportDegs, 'visual RF (target)');
 
 
     % The retinal RF (via deconvolution of the visual RF
     ax = subplot(3,4,6);
-    plotRF(ax, thePSFData, RF2DData.retinalRF, maxRF, maxProfile, visualizedProfile, maxSpatialSupportDegs, 'retinal RF (continuous)');
+    plotRF(ax, thePSFData, RF2DData.retinalRF, maxRF, maxProfile, visualizedProfile, ...
+        maxSpatialSupportDegs, 'retinal RF (continuous)');
 
     % The cone pooling RF 
     ax = subplot(3,4,7);
-    plotRF(ax, thePSFData, RF2DData.retinalConePoolingRF, maxRF, maxProfile, visualizedProfile, maxSpatialSupportDegs, 'retinal RF (cone pooling)');
+    plotRF(ax, thePSFData, RF2DData.retinalConePoolingRF, maxRF, maxProfile, ...
+        visualizedProfile, maxSpatialSupportDegs, 'retinal RF (cone pooling)');
 
 
     % The visual RF from the cone pooling retinal RF
     ax = subplot(3,4,8);
-    plotRF(ax, thePSFData, RF2DData.visualRFcorrespondingToRetinalConePoolingRF, maxRF, maxProfile, visualizedProfile, maxSpatialSupportDegs, 'visual RF (achieved)');
+    plotRF(ax, thePSFData, RF2DData.visualRFcorrespondingToRetinalConePoolingRF,...
+        maxRF, maxProfile, visualizedProfile, maxSpatialSupportDegs, 'visual RF (achieved)');
 
     % Comparison of target visual and obtained visual RF
     ax = subplot(3,4,9);
-    plotProfiles(ax, thePSFData, RF2DData.visualRF, RF2DData.visualRFcorrespondingToRetinalConePoolingRF, visualizedProfile, maxSpatialSupportDegs, 'target vs. achieved visual RF');
+    plotProfiles(ax, thePSFData, RF2DData.visualRF, RF2DData.visualRFcorrespondingToRetinalConePoolingRF, ...
+        visualizedProfile, maxSpatialSupportDegs, 'target vs. achieved visual RF');
 
    
     % The DoG params
@@ -92,12 +106,14 @@ function generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
         'ks', 'MarkerSize', 12, 'MarkerFaceColor', [.5 1 .5], ...
         'LineWidth', 1.0);
     
+
     plot(ax, XYLims, XYLims, 'k-');
     axis(ax, 'square');
     set(ax, 'XLim', XYLims, 'YLim', XYLims, ...
-            'XTick', [0.06 0.1 0.3 0.6 1 3 6], 'YTick', [0.06 0.1 0.3 0.6 1 3 6], ...
+            'XTick', [0.1 0.3 0.6 1 3 6], 'YTick', [0.1 0.3 0.6 1 3 6], ...
             'YScale', 'log', 'XScale', 'log', 'FontSize', 14);
     grid(ax, 'on')
+    xtickangle(ax, 0);
     legend(ax,[h1 h2], {'target', 'achieved'}, 'Location', 'NorthOutside', 'NumColumns', 2);
     xlabel(ax, 'visual Rc (arc min)');
     ylabel(ax, 'retinal Rc (arc  min)');
@@ -153,7 +169,8 @@ function generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
     end
     
 
-    NicePlot.exportFigToPDF('deconvAnalysis.pdf', hFig, 300);
+    NicePlot.exportFigToPDF(sprintf('retinalConePoolingParamsEcc_%2.3f_%2.3f_degs_%dconesInRFCenter.pdf', ...
+        eccDegs(1), eccDegs(2), visualRFparams.conesNumPooledByTheRFcenter), hFig, 300);
 end
 
 function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, testSubjectID)
@@ -167,7 +184,7 @@ function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, testSub
         'XTick', -0.5:0.05:0.5, 'YTick', -0.5:0.05:0.5, 'CLim', [0 1], 'FontSize', 14);
     grid(ax, 'on');
     xlabel(ax,'degrees');
-    title(ax, sprintf('PSF @(%2.0f,%2.0f) degs, subj: %d', eccDegs(1), eccDegs(2), testSubjectID));
+    title(ax, sprintf('PSF (%2.2f, %2.2f degs), subj: %d', eccDegs(1), eccDegs(2), testSubjectID));
     colormap(ax,brewermap(1024, 'greys'));
 end
 
@@ -191,6 +208,7 @@ function plotRF(ax, thePSFData, RF, maxRF, maxProfile, visualizedProfile, maxSpa
     set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', maxSpatialSupportDegs*[-1 1], ...
         'XTick', -0.5:0.05:0.5, 'YTick', -0.5:0.05:0.5, 'CLim', 0.01*[-1 1], 'FontSize', 14);
     grid(ax, 'on');
+    xtickangle(ax, 0);
     colormap(ax,brewermap(1024, '*RdBu'));
     xlabel(ax,'degrees');
     title(ax, titleString);
@@ -216,10 +234,11 @@ function plotProfiles(ax, thePSFData, RF1, RF2, visualizedProfile, maxSpatialSup
     hold(ax, 'on');
     plot(ax, thePSFData.supportX/60, theProfile2, 'r--', 'LineWidth', 1.5);
     plot(ax, thePSFData.supportX/60, theProfile1-theProfile2, 'b-', 'LineWidth', 1.0);
-    set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', [-0.5 1], ...
+    set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', [-0.2 1], ...
             'XTick', -0.5:0.05:0.5, 'YTick', -0.6:0.1:1, 'FontSize', 14);
     axis(ax, 'square');
     grid(ax, 'on');
+    xtickangle(ax, 0);
     legend({'target', 'achieved', 'residual'});
     minV = max(abs(RF1(:)))*0.01;
     idx = find(abs(RF1(:))>minV);
