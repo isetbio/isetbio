@@ -1,4 +1,4 @@
-function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, theCircularPSFData] = retinalRFparamsForTargetVisualRF(obj, ...
+function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, spatialSupportDegs, theCircularPSFData] = retinalRFparamsForTargetVisualRF(obj, ...
     visualRFDoGparams, eccDegs, subjectEye, subjectID, subjectPupilDiameterMM, varargin)
 % Estimate retinal RF params to achieve a target visual RF
 %
@@ -71,23 +71,6 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
     pause(1);
 
 
-    % If an RcDegs is not specified, compute it from the conesNumPooledByTheRFcenter
-    % and the optics
-    if (isempty(visualRFDoGparams.RcDegs))
-        [visualRFDoGparams.RcDegs, visualRFcenterConeMap, ...
-         retinalRFcenterConeMap, anatomicalConeCharacteristicRadiusDegs] = ...
-            RetinaToVisualFieldTransformer.estimateVisualRcFromNumberOfConesInRFcenter(...
-                cm, visualRFDoGparams.conesNumPooledByTheRFcenter, theCircularPSFData);
-        
-        % The following 2 cone maps are only used when generating the summary figure
-        RF2DData.visualRFcenterConeMap = visualRFcenterConeMap;
-        RF2DData.retinalRFcenterConeMap = retinalRFcenterConeMap;
-    end
-
-
-    % Generate the target visual RF (DoG with visualRFDoGparams and with RF center being the visual projection of the input cones)
-    
-    %spatialSupportDegs = [thePSFData.supportX(:) thePSFData.supportY(:)]/60;
     dxDegs = (thePSFData.supportX(2)-thePSFData.supportX(1))/60;
     x = 0:dxDegs:(2*maxSpatialSupportDegs);
     if (mod(numel(x),2) == 0)
@@ -98,9 +81,27 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
     rfSupportY = rfSupportX;
     spatialSupportDegs = [rfSupportX(:) rfSupportY(:)];
 
-    paramsVector = RetinaToVisualFieldTransformer.paramsStructToParamsVector(visualRFDoGparams, retinalConePoolingModel);
+    % If an RcDegs is not specified, compute it from the conesNumPooledByTheRFcenter
+    % and the optics
+    if (isempty(visualRFDoGparams.RcDegs))
+        [visualRFDoGparams.RcDegs, visualRFcenterConeMap, ...
+         retinalRFcenterConeMap, anatomicalConeCharacteristicRadiusDegs] = ...
+            RetinaToVisualFieldTransformer.estimateVisualRcFromNumberOfConesInRFcenter(...
+                cm, visualRFDoGparams.conesNumPooledByTheRFcenter, ...
+                theCircularPSFData, spatialSupportDegs);
+        
+        % The following 2 cone maps are only used when generating the summary figure
+        RF2DData.visualRFcenterConeMap = visualRFcenterConeMap;
+        RF2DData.retinalRFcenterConeMap = retinalRFcenterConeMap;
+    end
 
-    RF2DData.visualRF = RetinaToVisualFieldTransformer.diffOfGaussiansRF(paramsVector,  spatialSupportDegs);
+
+    % Generate the target visual RF (DoG with visualRFDoGparams and with RF center being the visual projection of the input cones)
+    paramsVector = RetinaToVisualFieldTransformer.paramsStructToParamsVector(...
+        visualRFDoGparams, retinalConePoolingModel);
+
+    RF2DData.visualRF = RetinaToVisualFieldTransformer.diffOfGaussiansRF(...
+        paramsVector,  spatialSupportDegs);
     targetVisualRF = RF2DData.visualRF;
 
     switch (minimizationDomain)

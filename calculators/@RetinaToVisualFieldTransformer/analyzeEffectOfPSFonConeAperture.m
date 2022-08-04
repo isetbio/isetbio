@@ -12,13 +12,13 @@ function visualConeCharacteristicRadiusDegs = analyzeEffectOfPSFonConeAperture(.
                              exp(-(((Yarcmin-theCentroid(2))/60)/anatomicalConeCharacteristicRadiusDegs).^2);
 
     % Convolve cone aperture with the PSF
-    theVisuallyProjectedConeAperture = conv2(thePSFData.data, anatomicalConeAperture, 'same');
+    theVisuallyProjectedConeAperture = conv2( anatomicalConeAperture, thePSFData.data, 'same');
     theVisuallyProjectedConeAperture = theVisuallyProjectedConeAperture  / max(theVisuallyProjectedConeAperture(:));
 
     % Fit a 2D Gaussian to the visually projected cone aperture and extract
     % the characteristic radius of that Gaussian
     [visualConeCharacteristicRadiusDegs, visualConeCharacteristicMinorMajorRadiiDegs, theVisuallyProjectedConeApertureFittedGaussian, XYcenter] = ...
-        RetinaToVisualFieldTransformer.fitGaussianEllipsoid(thePSFData.supportX, thePSFData.supportY, ...
+        RetinaToVisualFieldTransformer.fitGaussianEllipsoid(thePSFData.supportX/60, thePSFData.supportY/60, ...
         theVisuallyProjectedConeAperture);
 
     if (isempty(hFig))   

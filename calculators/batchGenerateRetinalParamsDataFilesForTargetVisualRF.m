@@ -9,7 +9,7 @@ function batchGenerateRetinalParamsDataFilesForTargetVisualRF
     analyzedRetinaMeridian = 'nasal meridian';
     
     % Number of cones in RF center
-    conesNumPooledByTheRFcenter = 1;
+    conesNumPooledByTheRFcenter = 2;
 
     switch (conesNumPooledByTheRFcenter)
         case 1
@@ -144,7 +144,8 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
                    targetVisualRFDoGparams.surroundToCenterRcRatio) * 100.0)/100;
 
         % Call retinalRFparamsForTargetVisualRF() to estimate etinalRFparamsStruct
-        [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, theCircularPSFData] = xFormer.retinalRFparamsForTargetVisualRF(...
+        [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
+         targetVisualRF, spatialSupportDegs, theCircularPSFData] = xFormer.retinalRFparamsForTargetVisualRF(...
             targetVisualRFDoGparams, eccDegs, opticsParams.analyzedEye, subjID, opticsParams.pupilDiameterMM, ...
             'wavelengthSupportForVLambdaPSF', 550, ...
             'maxSpatialSupportDegs', maxSpatialSupportDegs, ...
@@ -159,6 +160,7 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
         s.retinalRFparamsStruct = retinalRFparamsStruct;
         s.weightsComputeFunctionHandle = weightsComputeFunctionHandle;
         s.targetVisualRF = targetVisualRF;
+        s.targetVisualRFspatialSupportDegs = spatialSupportDegs;
         s.maxSpatialSupportDegs = maxSpatialSupportDegs;
         s.theEmployedCircularPSFData = theCircularPSFData;
         retinalRFparamsDictionary(eccLabel) = s;
@@ -190,6 +192,7 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
     retinalRFparamsStruct = s.retinalRFparamsStruct;
     weightsComputeFunctionHandle = s.weightsComputeFunctionHandle;
     targetVisualRF = s.targetVisualRF;
+    rfSpatialSupportDegs = s.targetVisualRFspatialSupportDegs;
     maxSpatialSupportDegs = s.maxSpatialSupportDegs;
     theEmployedPSFData = s.theEmployedCircularPSFData;
     clear 's';
@@ -248,8 +251,11 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
 
     % Compute the retinalRF by summing the weighted cone apertures in the
     % center and surround as specified in the computed pooledConeIndicesAndWeightsStruct
+    rfSupportX = rfSpatialSupportDegs(:,1);
+    rfSupportY = rfSpatialSupportDegs(:,2);
+   
     [theRetinalRFcenter, theRetinalRFsurround] = RetinaToVisualFieldTransformer.generateRFsubregionMapsFromPooledCones(...
-            thePSFData.supportX, thePSFData.supportY, targetConeMosaic, pooledConeIndicesAndWeightsStruct);
+       rfSupportX,rfSupportY, targetConeMosaic, pooledConeIndicesAndWeightsStruct);
 
     % And the full cone-pooling based retinal RF
     theRetinalRF = theRetinalRFcenter - theRetinalRFsurround;
@@ -284,17 +290,17 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
 
 
         ax = subplot(3,2,1);
-        plotRF(ax, thePSFData, targetVisualRF, [], maxRF, maxProfile, ...
+        plotRF(ax, rfSupportX, rfSupportY, targetVisualRF, [], maxRF, maxProfile, ...
             visualizedProfile, true, maxSpatialSupportDegs, ...
             sprintf('target visual RF'), true, true);
 
         ax = subplot(3,2,3);
-        plotRF(ax, thePSFData, theWaveVisualRF, [], maxRF, ...
+        plotRF(ax, rfSupportX, rfSupportY, theWaveVisualRF, [], maxRF, ...
             maxProfile, visualizedProfile, true, maxSpatialSupportDegs, ...
             sprintf('achieved @%2.0fnm', visualizationWavelength), true, true);
 
         ax = subplot(3,2,5);
-        plotRF(ax, thePSFData, theRetinalRF, [], maxRF, maxProfile, ...
+        plotRF(ax, rfSupportX, rfSupportY, theRetinalRF, [], maxRF, maxProfile, ...
             visualizedProfile, true, maxSpatialSupportDegs, ...
             sprintf('retinal RF\n(derived from V-lambda weighted-\nPSF and target visual RF)'), true, true);
 
@@ -338,13 +344,13 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
         theWaveVisualRF = conv2(theRetinalRF, theWavePSF, 'same');
 
         ax = subplot('Position', subplotPosVectors(1, i).v);
-        plotRF(ax, thePSFData, theWaveVisualRF, targetVisualRF, maxRF, ...
+        plotRF(ax, rfSupportX, rfSupportY, theWaveVisualRF, targetVisualRF, maxRF, ...
             maxProfile, visualizedProfile, false, maxSpatialSupportDegs, ...
             sprintf('red: visual RF (%2.0fnm)\nblue: target RF', thePSFData.supportWavelength(iWave)), true, false, ...
             [1 0 0], [0 0 1]);
 
         ax = subplot('Position', subplotPosVectors(2, i).v);
-        plotRF(ax, thePSFData, targetVisualRF-theWaveVisualRF, [], maxRF, ...
+        plotRF(ax, rfSupportX, rfSupportY, targetVisualRF-theWaveVisualRF, [], maxRF, ...
             maxProfile, visualizedProfile, false, maxSpatialSupportDegs, ...
             sprintf('residual RF\ntarget-achieved (%2.0fnm)', thePSFData.supportWavelength(iWave)), true, false, ...
             [0 0 0], [0 0 0]);
@@ -375,8 +381,20 @@ function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, iWave)
     midRow = (size(thePSFData.data,1)-1)/2+1;
     plot(ax, thePSFData.supportX/60, -maxSpatialSupportDegs*0.75 + 1.7*theWavePSF(midRow,:)/maxPSF*maxSpatialSupportDegs, 'r-', 'LineWidth', 1.5);
     axis(ax,'image'); axis 'xy';
+
+
+    if (maxSpatialSupportDegs < 0.2)
+        tickSeparationDegs = 0.05;
+    elseif (maxSpatialSupportDegs < 0.4)
+        tickSeparationDegs = 0.1;
+    elseif (maxSpatialSupportDegs < 0.6)
+        tickSeparationDegs = 0.15;
+    else
+        tickSeparationDegs = 0.2;
+    end
+
     set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', maxSpatialSupportDegs*[-1 1], ...
-        'XTick', -0.5:0.05:0.5, 'YTick', -0.5:0.05:0.5, 'CLim', [0 1], 'FontSize', 14);
+        'XTick', -5:tickSeparationDegs:5, 'YTick', -5:tickSeparationDegs:5, 'CLim', [0 1], 'FontSize', 14);
     set(ax, 'XTickLabel', {}, 'YTickLabel', {});
     grid(ax, 'on');
     xlabel(ax,sprintf('%2.2fdegs', 2*maxSpatialSupportDegs));
@@ -384,15 +402,15 @@ function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, iWave)
     colormap(ax,brewermap(1024, 'greys'));
 end
 
-function plotRF(ax, thePSFData, RF, targetRF, maxRF, maxProfile, visualizedProfile, ...
+function plotRF(ax, rfSupportX, rfSupportY, RF, targetRF, maxRF, maxProfile, visualizedProfile, ...
     renderContourPlot, maxSpatialSupportDegs, titleString, noTickLabels, showColorBar, ...
     achievedRFprofileColor, targetRFprofileColor)
    
     if (renderContourPlot)  
         rfZLevels = -0.91:0.02:0.91;
-        contourf(ax,thePSFData.supportX/60, thePSFData.supportY/60, RF/maxRF, rfZLevels, 'LineColor', 'none');
+        contourf(ax,rfSupportX, rfSupportY, RF/maxRF, rfZLevels, 'LineColor', 'none');
     else
-        imagesc(ax, thePSFData.supportX/60, thePSFData.supportY/60, RF/maxRF);
+        imagesc(ax, rfSupportX, rfSupportY, RF/maxRF);
         hold on;
         switch visualizedProfile
             case 'midRow'
@@ -409,23 +427,32 @@ function plotRF(ax, thePSFData, RF, targetRF, maxRF, maxProfile, visualizedProfi
         end
 
     
-        plot(ax, thePSFData.supportX/60, -maxSpatialSupportDegs*0.5 + 1.0*theProfile*maxSpatialSupportDegs, '-', 'Color', achievedRFprofileColor, 'LineWidth', 1.5);
+        plot(ax, rfSupportX, -maxSpatialSupportDegs*0.5 + 1.0*theProfile*maxSpatialSupportDegs, '-', 'Color', achievedRFprofileColor, 'LineWidth', 1.5);
         if (~isempty(targetRF))
-            plot(ax, thePSFData.supportX/60, -maxSpatialSupportDegs*0.5 + 1.0*theTargetProfile*maxSpatialSupportDegs, '-', 'Color', targetRFprofileColor, 'LineWidth', 1.0);
+            plot(ax, rfSupportX, -maxSpatialSupportDegs*0.5 + 1.0*theTargetProfile*maxSpatialSupportDegs, '-', 'Color', targetRFprofileColor, 'LineWidth', 1.0);
         end
-        plot(ax, thePSFData.supportX/60, -maxSpatialSupportDegs*0.5 + thePSFData.supportX*0, 'k-');
+        plot(ax, rfSupportX, -maxSpatialSupportDegs*0.5 + rfSupportX*0, 'k-');
     
     end
 
-    
+    if (maxSpatialSupportDegs < 0.2)
+        tickSeparationDegs = 0.05;
+    elseif (maxSpatialSupportDegs < 0.4)
+        tickSeparationDegs = 0.1;
+    elseif (maxSpatialSupportDegs < 0.6)
+        tickSeparationDegs = 0.15;
+    else
+        tickSeparationDegs = 0.2;
+    end
+
     axis(ax,'image'); axis 'xy';
     set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', maxSpatialSupportDegs*[-1 1], ...
-        'XTick', -0.5:0.05:0.5, 'YTick', -0.5:0.05:0.5, 'CLim', [-1 1], 'FontSize', 14);
+        'XTick', -5:tickSeparationDegs:5, 'YTick', -5:tickSeparationDegs:5, 'CLim', [-1 1], 'FontSize', 14);
 
     if (noTickLabels)
         set(ax, 'XTickLabel', {}, 'YTickLabel', {});
     end
-    xtickangle(ax, 0);
+    xtickangle(ax, 90);
 
     if (showColorBar)
         colorbar(ax, 'EastOutside');
@@ -439,7 +466,7 @@ function plotRF(ax, thePSFData, RF, targetRF, maxRF, maxProfile, visualizedProfi
 end
 
 
-function plotProfiles(ax, thePSFData, achievedRF, targetRF, retinalRF, visualizedProfile, maxSpatialSupportDegs, achievedLabel)
+function plotProfiles(ax, rfSupportX, achievedRF, targetRF, retinalRF, visualizedProfile, maxSpatialSupportDegs, achievedLabel)
     
     switch visualizedProfile
         case 'midRow'
@@ -463,16 +490,27 @@ function plotProfiles(ax, thePSFData, achievedRF, targetRF, retinalRF, visualize
     faceAlpha = 0.8;
     lineWidth = 1.5;
     lineStyle = '-';
-    shadedAreaPlot(ax,thePSFData.supportX/60, theTargetProfile, 0, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
+    shadedAreaPlot(ax,rfSupportX, theTargetProfile, 0, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
     hold(ax, 'on');
-    plot(ax, thePSFData.supportX/60, theAchievedRFProfile, 'r-', 'LineWidth', 1.5);
+    plot(ax, rfSupportX/60, theAchievedRFProfile, 'r-', 'LineWidth', 1.5);
    
-    plot(ax, thePSFData.supportX/60, theTargetProfile-theAchievedRFProfile, 'k--', 'LineWidth', 1.0);
-    plot(ax, thePSFData.supportX/60, theRetinalProfile, 'k-', 'LineWidth', 1.5);
+    plot(ax, rfSupportX, theTargetProfile-theAchievedRFProfile, 'k--', 'LineWidth', 1.0);
+    plot(ax, rfSupportX0, theRetinalProfile, 'k-', 'LineWidth', 1.5);
+
+    if (maxSpatialSupportDegs < 0.2)
+        tickSeparationDegs = 0.05;
+    elseif (maxSpatialSupportDegs < 0.4)
+        tickSeparationDegs = 0.1;
+    elseif (maxSpatialSupportDegs < 0.6)
+        tickSeparationDegs = 0.15;
+    else
+        tickSeparationDegs = 0.2;
+    end
 
     set(ax, 'XLim', [min(thePSFData.supportX) max(thePSFData.supportX)]/60, 'YLim', [-0.2 1], ...
-            'XTick', -0.5:0.05:0.5, 'YTick', -0.6:0.1:1, 'FontSize', 14);
+            'XTick', -5:tickSeparationDegs:5, 'YTick', -0.6:0.1:1, 'FontSize', 14);
     grid(ax, 'on');
     legend({'target', achievedLabel, sprintf('target - %s', achievedLabel), 'retinal RF'}, 'Location', 'NorthOutside', 'numColumns', 2);
     xlabel(ax,'degrees');
+    xtickangle(ax, 90)
 end

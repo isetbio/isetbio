@@ -10,7 +10,7 @@ function [retinalRFcenter2D, retinalRFsurround2D] = generateRFsubregionMapsFromP
     minConeWeight = 0.001;
 
     % Generate spatial support for computing the RFcenter/surround cone pooling maps
-    [Xdegs,Ydegs] = meshgrid(spatialSupportX/60+RFcenter(1), spatialSupportY/60+RFcenter(2));
+    [Xdegs,Ydegs] = meshgrid(spatialSupportX+RFcenter(1), spatialSupportY+RFcenter(2));
    
     for iCone = 1:numel(centerConeIndices)
         theConeIndex = centerConeIndices(iCone);

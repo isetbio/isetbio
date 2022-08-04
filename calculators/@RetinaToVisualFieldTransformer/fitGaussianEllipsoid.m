@@ -40,9 +40,9 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     theFittedGaussianEllpsoid = gaussian2D(fittedParams,xydata);
 
     % Compute the fitted Gaussian Rc in degs
-    theFittedGaussianCharacteristicRadiusDegs = (sqrt(RcX^2+RcY^2)/sqrt(2))/60;
+    theFittedGaussianCharacteristicRadiusDegs = (sqrt(RcX^2+RcY^2)/sqrt(2));
 
-    theFittedGaussianCharacteristicRadiiDegs = [RcX RcY]/60;
+    theFittedGaussianCharacteristicRadiiDegs = [RcX RcY];
 end
 
 function F = gaussian2D(params,xydata)
