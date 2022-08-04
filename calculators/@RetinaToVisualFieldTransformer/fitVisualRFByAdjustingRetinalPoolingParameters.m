@@ -8,7 +8,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
             %                                          Kc   RcDegs   Rs/Rc integratedS/C
             retinalConePoolingParams.initialValues = [  1    0.05    5     0.5];
             retinalConePoolingParams.lowerBounds   = [ 1e-3  0.1/60  1     0.0];
-            retinalConePoolingParams.upperBounds   = [ 1e2   2       100   100];
+            retinalConePoolingParams.upperBounds   = [ 1e5   2       100   100];
 
             if (modelConstants.conesNumPooledByTheRFcenter == 1)
                 % Fix RcDegs
@@ -65,6 +65,14 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
      multiStartsNum = 8;
      theFittedParamsVector = run(ms, problem, multiStartsNum);
 
+     fprintf('*** Fit results****\n');
+     initialParamValues = retinalConePoolingParams.initialValues 
+     lowerBounds = retinalConePoolingParams.lowerBounds
+     upperBounds = retinalConePoolingParams.upperBounds
+     fittedParamValues = theFittedParamsVector
+     
+     fprintf('*****************\n');
+
      % Compute the fitted visual RF
      [theFittedVisualRF, weightsComputeFunctionHandle, ...
       retinalRFparamsStruct, theFittedRetinalRFcenter, ...
@@ -120,7 +128,7 @@ function [theFittedVisualRF, weightsComputeFunctionHandle, ...
     % Compute the retinalRF by summing the weighted cone apertures in the
     % center and surround as specified in the computed pooledConeIndicesAndWeightsStruct
     [theRetinalRFcenter, theRetinalRFsurround] = RetinaToVisualFieldTransformer.generateRFsubregionMapsFromPooledCones(...
-             modelConstants.thePSF.supportX, modelConstants.thePSF.supportY, modelConstants.theConeMosaic, pooledConeIndicesAndWeightsStruct);
+                       modelConstants.rfSupportX, modelConstants.rfSupportY, modelConstants.theConeMosaic, pooledConeIndicesAndWeightsStruct);
         
     % And the full cone-pooling based retinal RF
     theRetinalRF = theRetinalRFcenter - theRetinalRFsurround;

@@ -120,7 +120,7 @@ classdef RetinaToVisualFieldTransformer
 
         generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
             visualRFparams, retinalRFparams, achievedVisualRFparams, ...
-            eccDegs, testSubjectID, maxSpatialSupportDegs, figNo);
+            eccDegs, testSubjectID, maxSpatialSupportDegs, rfSupportX, rfSupportY, figNo);
 
     end
 

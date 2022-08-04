@@ -11,6 +11,16 @@ function batchGenerateRetinalParamsDataFilesForTargetVisualRF
     % Number of cones in RF center
     conesNumPooledByTheRFcenter = 1;
 
+    switch (conesNumPooledByTheRFcenter)
+        case 1
+            minEccForThisCenterConesNum = 0;
+            maxEccForThisCenterConesNum = 11;
+        case 2
+            minEccForThisCenterConesNum = 0;
+            maxEccForThisCenterConesNum = 11;
+    end
+
+
     analyzedEye = 'right eye';
     subjectRankingEye = 'right eye';
 
@@ -38,7 +48,10 @@ function batchGenerateRetinalParamsDataFilesForTargetVisualRF
             end
         end
 
-        
+        analyzedRadialEccDegs = analyzedRadialEccDegs(...
+            (analyzedRadialEccDegs >= minEccForThisCenterConesNum) & ...
+            (analyzedRadialEccDegs <= maxEccForThisCenterConesNum)...
+            );
 
         % From Croner & Kaplan '95 (Figure 4c and text)
         % "P surrounds were on average 6.7 times wider than the centers of 
@@ -84,10 +97,10 @@ function batchGenerateRetinalParamsDataFilesForTargetVisualRF
             computeRetinalRFparamsAcrossEccentricities(opticsParams, targetVisualRFDoGparams, retinalConePoolingModel);
     
         % Save computed data
-        save(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams');
+        save(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams', 'analyzedRadialEccDegs');
     else
         % Load computed data
-        load(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams');
+        load(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams', 'analyzedRadialEccDegs');
     end
 
     % Evaluate generated RFs at a target eccentricity
@@ -126,7 +139,7 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
                 'videoOBJ', []);
         visualConeCharacteristicRadiusDegs = dStruct.visualConeCharacteristicRadiusDegs;
         maxSpatialSupportDegs = ...
-            round((visualConeCharacteristicRadiusDegs * 2.5 * ...
+            round((visualConeCharacteristicRadiusDegs * 2.0 * ...
                    targetVisualRFDoGparams.conesNumPooledByTheRFcenter * ...
                    targetVisualRFDoGparams.surroundToCenterRcRatio) * 100.0)/100;
 
@@ -183,9 +196,10 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
 
         
     % Generate a @cMosaic object located at the target eccentricity
+    coneMosaicSize = max([0.5 2*maxSpatialSupportDegs]);
     targetConeMosaic = cMosaic(...
             'whichEye', opticsParams.analyzedEye, ...
-            'sizeDegs', [1 1] * max([0.5 maxSpatialSupportDegs]), ...
+            'sizeDegs', [1 1] * coneMosaicSize, ...
             'eccentricityDegs', [targetHorizontalEccDegs targetVerticalEccDegs], ...
             'rodIntrusionAdjustedConeAperture', true, ...
             'customDegsToMMsConversionFunction', @RGCmodels.Watson.convert.rhoDegsToMMs, ...

@@ -1,6 +1,6 @@
 function generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
     visualRFparams, retinalRFparams, achievedVisualRFparams, ...
-    eccDegs, testSubjectID, maxSpatialSupportDegs, figNo)
+    eccDegs, testSubjectID, maxSpatialSupportDegs, rfSupportX, rfSupportY, figNo)
 
     maxPSF = max([max(thePSFData.data(:)) max(theCircularPSFData.data(:))]);
 
@@ -56,42 +56,42 @@ function generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
         plotTitle = sprintf('retinal RF center (%d cones)', visualRFparams.conesNumPooledByTheRFcenter);
     end
 
-    plotRF(ax, thePSFData, RF2DData.retinalRFcenterConeMap, maxRFcenterConeMap, ...
+    plotRF(ax, rfSupportX, rfSupportY, RF2DData.retinalRFcenterConeMap, maxRFcenterConeMap, ...
         maxRFcenterConeMap, visualizedProfile, maxSpatialSupportDegs, ...
         plotTitle);
 
 
     % The visual RF center cone map
     ax = subplot(3,4,4);
-    plotRF(ax, thePSFData, RF2DData.visualRFcenterConeMap, maxRFcenterConeMap, ...
+    plotRF(ax, rfSupportX, rfSupportY, RF2DData.visualRFcenterConeMap, maxRFcenterConeMap, ...
         maxRFcenterConeMap, visualizedProfile, maxSpatialSupportDegs, 'visual RF center');
 
     
     % The visual RF
     ax = subplot(3,4,5);
-    plotRF(ax, thePSFData, RF2DData.visualRF, maxRF, maxProfile, ...
+    plotRF(ax, rfSupportX, rfSupportY, RF2DData.visualRF, maxRF, maxProfile, ...
         visualizedProfile, maxSpatialSupportDegs, 'visual RF (target)');
 
 
     % The retinal RF (via deconvolution of the visual RF
     ax = subplot(3,4,6);
-    plotRF(ax, thePSFData, RF2DData.retinalRF, maxRF, maxProfile, visualizedProfile, ...
+    plotRF(ax, rfSupportX, rfSupportY, RF2DData.retinalRF, maxRF, maxProfile, visualizedProfile, ...
         maxSpatialSupportDegs, 'retinal RF (continuous)');
 
     % The cone pooling RF 
     ax = subplot(3,4,7);
-    plotRF(ax, thePSFData, RF2DData.retinalConePoolingRF, maxRF, maxProfile, ...
+    plotRF(ax, rfSupportX, rfSupportY, RF2DData.retinalConePoolingRF, maxRF, maxProfile, ...
         visualizedProfile, maxSpatialSupportDegs, 'retinal RF (cone pooling)');
 
 
     % The visual RF from the cone pooling retinal RF
     ax = subplot(3,4,8);
-    plotRF(ax, thePSFData, RF2DData.visualRFcorrespondingToRetinalConePoolingRF,...
+    plotRF(ax, rfSupportX, rfSupportY, RF2DData.visualRFcorrespondingToRetinalConePoolingRF,...
         maxRF, maxProfile, visualizedProfile, maxSpatialSupportDegs, 'visual RF (achieved)');
 
     % Comparison of target visual and obtained visual RF
     ax = subplot(3,4,9);
-    plotProfiles(ax, thePSFData, RF2DData.visualRF, RF2DData.visualRFcorrespondingToRetinalConePoolingRF, ...
+    plotProfiles(ax, rfSupportX, RF2DData.visualRF, RF2DData.visualRFcorrespondingToRetinalConePoolingRF, ...
         visualizedProfile, maxSpatialSupportDegs, 'target vs. achieved visual RF');
 
    
@@ -99,11 +99,11 @@ function generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
     ax = subplot(3,4,10);
     XYLims = [0.06 6];
     h1 = plot(ax,visualRFparams.RcDegs*60, retinalRFparams.RcDegs*60, ...
-        'ro', 'MarkerSize', 16, 'MarkerFaceColor', [1 0.5 0.5], ...
+        'ks', 'MarkerSize', 16, 'MarkerFaceColor', [0.8 0.8 0.8], ...
         'LineWidth', 1.0);
     hold(ax, 'on');
     h2 = plot(ax,achievedVisualRFparams.RcDegs*60, retinalRFparams.RcDegs*60, ...
-        'ks', 'MarkerSize', 12, 'MarkerFaceColor', [.5 1 .5], ...
+        'ro', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 .5], ...
         'LineWidth', 1.0);
     
 
@@ -124,12 +124,12 @@ function generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
         XYLims = [0.5 15];
         h1 = plot(ax,visualRFparams.surroundToCenterRcRatio, ...
             retinalRFparams.surroundToCenterRcRatio, ...
-            'ro', 'MarkerSize', 16, 'MarkerFaceColor', [1 0.5 0.5], ...
+            'ks', 'MarkerSize', 16, 'MarkerFaceColor', [0.8 0.8 0.8], ...
             'LineWidth', 1.0);
         hold(ax, 'on');
         h2 = plot(ax,achievedVisualRFparams.surroundToCenterRcRatio, ...
             retinalRFparams.surroundToCenterRcRatio, ...
-            'ks', 'MarkerSize', 12, 'MarkerFaceColor', [.5 1 .5], ...
+            'ro', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 .5], ...
             'LineWidth', 1.0);
         plot(ax, XYLims, XYLims, 'k-');
         legend(ax,[h1 h2], {'target', 'achieved'}, 'Location', 'NorthOutside', 'NumColumns', 2);
@@ -149,13 +149,13 @@ function generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
     
         h1 = plot(ax,visualRFparams.surroundToCenterIntegratedRatio, ...
             retinalRFparams.surroundToCenterIntegratedRatio, ...
-            'ro', 'MarkerSize', 16, 'MarkerFaceColor', [1 0.5 0.5], ...
+            'ks', 'MarkerSize', 16, 'MarkerFaceColor', [0.8 0.8 0.8], ...
             'LineWidth', 1.0);
     
         hold(ax, 'on');
         h2 = plot(ax,achievedVisualRFparams.surroundToCenterIntegratedRatio, ...
             retinalRFparams.surroundToCenterIntegratedRatio, ...
-            'ks', 'MarkerSize', 12, 'MarkerFaceColor', [.5 1 .5], ...
+            'ro', 'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 .5], ...
             'LineWidth', 1.0);
         plot(ax, XYLims, XYLims, 'k-');
         legend(ax,[h1 h2], {'target', 'achieved'}, 'Location', 'NorthOutside', 'NumColumns', 2);
@@ -180,19 +180,30 @@ function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, testSub
     midRow = (size(thePSFData.data,1)-1)/2+1;
     plot(ax, thePSFData.supportX/60, -maxSpatialSupportDegs*0.75 + 1.7*thePSFData.data(midRow,:)/maxPSF*maxSpatialSupportDegs, 'r-', 'LineWidth', 1.5);
     axis(ax,'image'); axis 'xy';
+    if (maxSpatialSupportDegs < 0.2)
+        tickSeparationDegs = 0.05;
+    elseif (maxSpatialSupportDegs < 0.4)
+        tickSeparationDegs = 0.1;
+    elseif (maxSpatialSupportDegs < 0.6)
+        tickSeparationDegs = 0.15;
+    else
+        tickSeparationDegs = 0.2;
+    end
+
     set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', maxSpatialSupportDegs*[-1 1], ...
-        'XTick', -0.5:0.05:0.5, 'YTick', -0.5:0.05:0.5, 'CLim', [0 1], 'FontSize', 14);
+        'XTick', -5:tickSeparationDegs:5, 'YTick', -5:tickSeparationDegs:5, 'CLim', [0 1], 'FontSize', 14);
     grid(ax, 'on');
+    xtickangle(ax, 90);
     xlabel(ax,'degrees');
     title(ax, sprintf('PSF (%2.2f, %2.2f degs), subj: %d', eccDegs(1), eccDegs(2), testSubjectID));
     colormap(ax,brewermap(1024, 'greys'));
 end
 
 
-function plotRF(ax, thePSFData, RF, maxRF, maxProfile, visualizedProfile, maxSpatialSupportDegs, titleString)
+function plotRF(ax, rfSupportX, rfSupportY, RF, maxRF, maxProfile, visualizedProfile, maxSpatialSupportDegs, titleString)
     %rfZLevels = -0.9:0.1:0.9;
-    %contourf(ax,thePSFData.supportX/60, thePSFData.supportY/60, RF/maxRF, rfZLevels);
-    imagesc(ax, thePSFData.supportX/60, thePSFData.supportY/60, RF/maxRF);
+    %contourf(ax,rfSupportX, rfSupportY, RF/maxRF, rfZLevels);
+    imagesc(ax, rfSupportX, rfSupportY, RF/maxRF);
     hold on;
     switch visualizedProfile
         case 'midRow'
@@ -202,19 +213,29 @@ function plotRF(ax, thePSFData, RF, maxRF, maxProfile, visualizedProfile, maxSpa
             theProfile = sum(RF,1)/maxProfile;
     end
 
-    plot(ax, thePSFData.supportX/60, -maxSpatialSupportDegs*0.5 + 1.5*theProfile*maxSpatialSupportDegs, 'r-', 'LineWidth', 1.5);
-    plot(ax, thePSFData.supportX/60, -maxSpatialSupportDegs*0.5 + thePSFData.supportX*0, 'k-');
+    plot(ax, rfSupportX, -maxSpatialSupportDegs*0.5 + 1.5*theProfile*maxSpatialSupportDegs, 'r-', 'LineWidth', 1.5);
+    plot(ax, rfSupportX, -maxSpatialSupportDegs*0.5 + thePSFData.supportX*0, 'k-');
     axis(ax,'image'); axis 'xy';
+    if (maxSpatialSupportDegs < 0.2)
+        tickSeparationDegs = 0.05;
+    elseif (maxSpatialSupportDegs < 0.4)
+        tickSeparationDegs = 0.1;
+    elseif (maxSpatialSupportDegs < 0.6)
+        tickSeparationDegs = 0.15;
+    else
+        tickSeparationDegs = 0.2;
+    end
+
     set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', maxSpatialSupportDegs*[-1 1], ...
-        'XTick', -0.5:0.05:0.5, 'YTick', -0.5:0.05:0.5, 'CLim', 0.01*[-1 1], 'FontSize', 14);
+        'XTick', -5:tickSeparationDegs:5, 'YTick', -5:tickSeparationDegs:5, 'CLim', 0.01*[-1 1], 'FontSize', 14);
     grid(ax, 'on');
-    xtickangle(ax, 0);
+    xtickangle(ax, 90);
     colormap(ax,brewermap(1024, '*RdBu'));
     xlabel(ax,'degrees');
     title(ax, titleString);
 end
 
-function plotProfiles(ax, thePSFData, RF1, RF2, visualizedProfile, maxSpatialSupportDegs, titleString)
+function plotProfiles(ax, rfSupportX, RF1, RF2, visualizedProfile, maxSpatialSupportDegs, titleString)
     
     switch visualizedProfile
         case 'midRow'
@@ -230,19 +251,29 @@ function plotProfiles(ax, thePSFData, RF1, RF2, visualizedProfile, maxSpatialSup
     theProfile1 = theProfile1 / maxProfile;
     theProfile2 = theProfile2 / maxProfile;
 
-    plot(ax, thePSFData.supportX/60, theProfile1, 'k-', 'LineWidth', 1.5);
+    plot(ax, rfSupportX, theProfile1, 'k-', 'LineWidth', 1.5);
     hold(ax, 'on');
-    plot(ax, thePSFData.supportX/60, theProfile2, 'r--', 'LineWidth', 1.5);
-    plot(ax, thePSFData.supportX/60, theProfile1-theProfile2, 'b-', 'LineWidth', 1.0);
+    plot(ax, rfSupportX, theProfile2, 'r--', 'LineWidth', 1.5);
+    plot(ax, rfSupportX, theProfile1-theProfile2, 'b-', 'LineWidth', 1.0);
+    
+    if (maxSpatialSupportDegs < 0.2)
+        tickSeparationDegs = 0.05;
+    elseif (maxSpatialSupportDegs < 0.4)
+        tickSeparationDegs = 0.1;
+    elseif (maxSpatialSupportDegs < 0.6)
+        tickSeparationDegs = 0.15;
+    else
+        tickSeparationDegs = 0.2;
+    end
+
+
     set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', [-0.2 1], ...
-            'XTick', -0.5:0.05:0.5, 'YTick', -0.6:0.1:1, 'FontSize', 14);
+            'XTick', -5:tickSeparationDegs:5, 'YTick', -0.6:0.1:1, 'FontSize', 14);
     axis(ax, 'square');
     grid(ax, 'on');
-    xtickangle(ax, 0);
+    xtickangle(ax, 90);
     legend({'target', 'achieved', 'residual'});
-    minV = max(abs(RF1(:)))*0.01;
-    idx = find(abs(RF1(:))>minV);
-    RMSE = 100*sqrt(mean(((RF1(idx)-RF2(idx))./RF1(idx)).^2));
-    title(sprintf('RMSE: %2.1f%%',RMSE));
+    RMSE = 100*sqrt(mean(((RF1(:)-RF2(:))).^2));
+    title(sprintf('RMSE: %2.1f',RMSE));
     xlabel(ax,'degrees');
 end

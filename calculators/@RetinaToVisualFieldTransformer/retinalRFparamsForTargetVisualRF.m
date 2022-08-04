@@ -48,11 +48,10 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
     psfCircularSymmetryMode = p.Results.psfCircularSymmetryMode;
 
     % Generate a @cMosaic object located at the target eccentricity and eye
-    fprintf(2,'Cone mosaic size: %2.3f degs \n', max([0.5 maxSpatialSupportDegs]));
-    pause(1);
+    coneMosaicSize = max([0.5 2*maxSpatialSupportDegs]);
     cm = cMosaic(...
         'whichEye', subjectEye, ...
-        'sizeDegs', [1 1] * max([0.5 maxSpatialSupportDegs]), ...
+        'sizeDegs', [1 1] * coneMosaicSize, ...
         'eccentricityDegs', eccDegs, ...
         'rodIntrusionAdjustedConeAperture', true, ...
         'customDegsToMMsConversionFunction', @RGCmodels.Watson.convert.rhoDegsToMMs, ...
@@ -65,6 +64,12 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
     [thePSFData, theCircularPSFData] = obj.vLambdaWeightedPSFandOTF(cm, subjectID, ...
         subjectPupilDiameterMM, wavefrontSpatialSamples, maxSpatialSupportDegs, psfCircularSymmetryMode);
     
+
+    
+    fprintf(2,'Cone mosaic size: %2.3f degs \n', coneMosaicSize);
+    fprintf(2, 'PSF size: %2.3f degs\n', (max(thePSFData.supportX)-min(thePSFData.supportX))/60)
+    pause(1);
+
 
     % If an RcDegs is not specified, compute it from the conesNumPooledByTheRFcenter
     % and the optics
@@ -81,7 +86,18 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
 
 
     % Generate the target visual RF (DoG with visualRFDoGparams and with RF center being the visual projection of the input cones)
-    spatialSupportDegs = [thePSFData.supportX(:) thePSFData.supportY(:)]/60;
+    
+    %spatialSupportDegs = [thePSFData.supportX(:) thePSFData.supportY(:)]/60;
+    dxDegs = (thePSFData.supportX(2)-thePSFData.supportX(1))/60;
+    x = 0:dxDegs:(2*maxSpatialSupportDegs);
+    if (mod(numel(x),2) == 0)
+        x(numel(x)+1) = x(end)+dxDegs;
+    end
+    
+    rfSupportX = x - mean(x);
+    rfSupportY = rfSupportX;
+    spatialSupportDegs = [rfSupportX(:) rfSupportY(:)];
+
     paramsVector = RetinaToVisualFieldTransformer.paramsStructToParamsVector(visualRFDoGparams, retinalConePoolingModel);
 
     RF2DData.visualRF = RetinaToVisualFieldTransformer.diffOfGaussiansRF(paramsVector,  spatialSupportDegs);
@@ -122,7 +138,8 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
                     end
 
                     [retinalRFparamsStruct, RF2DData.fittedRetinalRF] = ...
-                        RetinaToVisualFieldTransformer.fitDoGModelToRF(spatialSupportDegs, RF2DData.retinalRF, theFixedRetinalRcDegs);
+                        RetinaToVisualFieldTransformer.fitDoGModelToRF(...
+                            spatialSupportDegs, RF2DData.retinalRF, theFixedRetinalRcDegs);
                    
                     % Return a handle to the function that will take the
                     % retinal RF params and produce cone weights for a
@@ -134,7 +151,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
                     pooledConeIndicesAndWeightsStruct = weightsComputeFunctionHandle(...
                                         retinalRFparamsStruct, ...
                                         visualRFDoGparams.conesNumPooledByTheRFcenter, ...
-                                        thePSFData.supportX, thePSFData.supportY, cm);
+                                        rfSupportX, rfSupportY, cm);
         
                     retinalRFparamsForComparisonToVisual = retinalRFparamsStruct;
 
@@ -158,7 +175,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
                     pooledConeIndicesAndWeightsStruct = weightsComputeFunctionHandle(...
                                         retinalRFparamsStruct, ...
                                         visualRFDoGparams.conesNumPooledByTheRFcenter, ...
-                                        thePSFData.supportX, thePSFData.supportY, cm);
+                                        rfSupportX, rfSupportY, cm);
 
                     % The only parameter that can be compared to its visual counterpart is RcDegs
                     retinalRFparamsForComparisonToVisual = struct(...
@@ -171,7 +188,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
     
             % Generate center and surround RF from the computed center/surround cone weights
             [retinalRFcenter2D, retinalRFsurround2D] = RetinaToVisualFieldTransformer.generateRFsubregionMapsFromPooledCones(...
-                thePSFData.supportX, thePSFData.supportY, cm, pooledConeIndicesAndWeightsStruct);
+                rfSupportX, rfSupportY, cm, pooledConeIndicesAndWeightsStruct);
         
             % And the full cone-pooling based retinal RF
             RF2DData.retinalConePoolingRF = retinalRFcenter2D - retinalRFsurround2D;
@@ -189,6 +206,8 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
             modelConstants = struct();
             modelConstants.theConeMosaic = cm;
             modelConstants.thePSF = theCircularPSFData;
+            modelConstants.rfSupportX = rfSupportX;
+            modelConstants.rfSupportY = rfSupportY;
             modelConstants.retinalConePoolingModel = retinalConePoolingModel;
             modelConstants.conesNumPooledByTheRFcenter = visualRFDoGparams.conesNumPooledByTheRFcenter;
             modelConstants.centerConeRcDegs = anatomicalConeCharacteristicRadiusDegs;
@@ -252,5 +271,5 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, t
     % Generate results figure
     RetinaToVisualFieldTransformer.generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
         visualRFDoGparams, retinalRFparamsForComparisonToVisual, achievedVisualRFDoGparams, ...
-        eccDegs, subjectID, maxSpatialSupportDegs, 1);
+        eccDegs, subjectID, maxSpatialSupportDegs, rfSupportX, rfSupportY, 1);
 end
