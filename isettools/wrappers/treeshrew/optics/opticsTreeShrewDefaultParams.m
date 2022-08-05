@@ -17,8 +17,15 @@ function defaultParams = opticsTreeShrewDefaultParams
 %     anteriorFocalLengthMM = 4.35;
 %     posteriorNodalDistanceMM = posteriorFocalPoint - posteriorNodalPoint = 7.84-3.49 = 4.35;
 %
+%   If you change these values, please change corresponding comments that
+%   state the defaults in opticsTreeShrewCreate.
+%
 % See also: opticsTreeShewCreate.
 %
+
+% History:
+%   08/06/22 dhb, eem  Change default for pupil size to 4 mm, to match
+%                      Sadjak measurements.
 
 % The other option for optics type is 'gaussian psf'.
 defaultParams = struct(...
@@ -26,7 +33,7 @@ defaultParams = struct(...
     'whichShrew', 1, ...
     'inFocusPSFsigmaMicrons', 6.0, ...
     'focalLengthMM', 4.35, ...
-    'pupilDiameterMM', 3.0 ...
+    'pupilDiameterMM', 4.0 ...
     );
 
 end
