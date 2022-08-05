@@ -41,7 +41,7 @@ function pooledConeIndicesAndWeightsStruct = retinalConeWeightsFromDoGmodelParam
     
     if (~isempty(spatialSupportX))
         % Generate spatial support for computing the RFcenter/surround cone pooling maps
-        [Xdegs,Ydegs] = meshgrid(spatialSupportX/60, spatialSupportY/60);
+        [Xdegs,Ydegs] = meshgrid(spatialSupportX, spatialSupportY);
         Rdegs = sqrt(Xdegs.^2+Ydegs.^2);
 
         % Compute continous center and surround weights

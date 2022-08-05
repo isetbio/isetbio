@@ -98,7 +98,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, s
 
     % Generate the target visual RF (DoG with visualRFDoGparams and with RF center being the visual projection of the input cones)
     paramsVector = RetinaToVisualFieldTransformer.paramsStructToParamsVector(...
-        visualRFDoGparams, retinalConePoolingModel);
+        visualRFDoGparams, 'GaussianCenterGaussianSurroundBased');
 
     RF2DData.visualRF = RetinaToVisualFieldTransformer.diffOfGaussiansRF(...
         paramsVector,  spatialSupportDegs);
@@ -214,9 +214,11 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, s
             modelConstants.centerConeRcDegs = anatomicalConeCharacteristicRadiusDegs;
            
             % Fit the visual RF by adjusting retinal cone pooling parameters
-            [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
+            [retinalRFparamsStruct, ...
+             weightsComputeFunctionHandle, ...
              RF2DData.visualRFcorrespondingToRetinalConePoolingRF, ...
-             retinalRFcenter2D, retinalRFsurround2D] = RetinaToVisualFieldTransformer.fitVisualRFByAdjustingRetinalPoolingParameters(...
+             retinalRFcenter2D, ...
+             retinalRFsurround2D] = RetinaToVisualFieldTransformer.fitVisualRFByAdjustingRetinalPoolingParameters(...
                 modelConstants, RF2DData.visualRF);
 
             RF2DData.retinalConePoolingRF = retinalRFcenter2D - retinalRFsurround2D;
@@ -232,13 +234,13 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, s
                     % are derived from the Gaussian cone apertures. So to
                     % use them for the continuous model we must account for
                     % the difference in coverage, 
-                    RF2DData.retinalRF = RetinaToVisualFieldTransformer.diffOfGaussiansRF(retinalRFparamsVector, spatialSupportDegs);
+                    RF2DData.retinalRF = 0*RetinaToVisualFieldTransformer.diffOfGaussiansRF(retinalRFparamsVector, spatialSupportDegs);
                 case 'GaussianCenterDoubleExponentSurroundBased'
                     % ******** Here we must adjust the S/C integrated ratio for the fact that these params
                     % are derived from the Gaussian cone apertures. So to
                     % use them for the continuous model we must account for
                     % the difference in coverage,
-                    RF2DData.retinalRF = RetinaToVisualFieldTransformer.diffOfGaussianCenterAndDoubleExponentSurround(retinalRFparamsVector, spatialSupportDegs);
+                    RF2DData.retinalRF = 0*RetinaToVisualFieldTransformer.diffOfGaussianCenterAndDoubleExponentSurround(retinalRFparamsVector, spatialSupportDegs);
             end
 
         otherwise

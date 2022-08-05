@@ -1,14 +1,14 @@
 function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
           theFittedVisualRF, theFittedRetinalRFcenter, ...
-          theFittedRetinalRFsurround] = fitVisualRFByAdjustingRetinalPoolingParameters(modelConstants, theVisualRF)
+          theFittedRetinalRFsurround] = fitVisualRFByAdjustingRetinalPoolingParameters(modelConstants, theTargetVisualRF)
 
     
     switch (modelConstants.retinalConePoolingModel)
         case 'GaussianCenterGaussianSurroundBased'
             %                                          Kc   RcDegs   Rs/Rc integratedS/C
             retinalConePoolingParams.initialValues = [  1    0.05    5     0.5];
-            retinalConePoolingParams.lowerBounds   = [ 1e-3  0.1/60  1     0.0];
-            retinalConePoolingParams.upperBounds   = [ 1e5   2       100   100];
+            retinalConePoolingParams.lowerBounds   = [ 1e-1  0.1/60  1     0.0];
+            retinalConePoolingParams.upperBounds   = [ 1e3   2       30    20];
 
             if (modelConstants.conesNumPooledByTheRFcenter == 1)
                 % Fix RcDegs
@@ -35,9 +35,15 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
     end
 
 
-    % The optimization objective
-    objective = @(retinalPoolingParams) sum((visualRFfromRetinalPooling(retinalPoolingParams, modelConstants) - theVisualRF).^2, 'all');
+     decrementsIndices = find(theTargetVisualRF(:)<0);
+     theDecrementsTargetVisualRF = theTargetVisualRF(decrementsIndices);
+% 
+     profile1 = sum(theTargetVisualRF,1);
+     profile2 = sum(theTargetVisualRF,2);
+     maxTargetRF = 0.5*(max(profile1(profile1>0)) + max(profile2(profile2>0)));
+     maxDecrementsTargetRF = max(abs(profile1(profile1<0)));
 
+    
     % Ready to fit
     options = optimset(...
             'Display', 'off', ...
@@ -49,7 +55,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
         
      % Multi-start
      problem = createOptimProblem('fmincon',...
-          'objective', objective, ...
+          'objective', @rfObjective, ...
           'x0', retinalConePoolingParams.initialValues, ...
           'lb', retinalConePoolingParams.lowerBounds, ...
           'ub', retinalConePoolingParams.upperBounds, ...
@@ -77,11 +83,22 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
      [theFittedVisualRF, weightsComputeFunctionHandle, ...
       retinalRFparamsStruct, theFittedRetinalRFcenter, ...
       theFittedRetinalRFsurround] = visualRFfromRetinalPooling(theFittedParamsVector, modelConstants);
+
+
+     % Nested function rfObjective
+     function rmse = rfObjective(retinalPoolingParams)
+        fittedVisualRF = visualRFfromRetinalPooling(retinalPoolingParams, modelConstants);
+        fullRMSE = ((fittedVisualRF(:) - theTargetVisualRF(:))/maxTargetRF).^2;
+        decrRMSE = ((fittedVisualRF(decrementsIndices) - theDecrementsTargetVisualRF)/maxDecrementsTargetRF).^2;
+        rmse =  sqrt(mean(fullRMSE,1)) + 0.02*sqrt(mean(decrRMSE,1));
+      end
+
 end
 
 
 function [theFittedVisualRF, weightsComputeFunctionHandle, ...
-          retinalRFparamsStruct, theRetinalRFcenter, theRetinalRFsurround] = visualRFfromRetinalPooling(retinalPoolingParamsVector, modelConstants)
+          retinalRFparamsStruct, theRetinalRFcenter, theRetinalRFsurround] = ...
+          visualRFfromRetinalPooling(retinalPoolingParamsVector, modelConstants)
     
     retinalRFparamsStruct = RetinaToVisualFieldTransformer.paramsVectorToParamsStruct(...
         retinalPoolingParamsVector, modelConstants.retinalConePoolingModel);

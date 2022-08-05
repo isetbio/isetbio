@@ -38,7 +38,7 @@ function [theRetinalRFparamsStruct, theFittedRF] = fitDiffOfGaussianCenterAndDou
           'UseParallel', true);
       
      % Run the multi-start
-     multiStartsNum = 64;
+     multiStartsNum = 8;
      theFittedParamsVector = run(ms, problem, multiStartsNum);
 
      % Generate the fitted RF

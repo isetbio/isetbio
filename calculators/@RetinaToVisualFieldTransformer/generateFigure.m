@@ -274,7 +274,7 @@ function plotProfiles(ax, rfSupportX, RF1, RF2, visualizedProfile, maxSpatialSup
     grid(ax, 'on');
     xtickangle(ax, 90);
     legend({'target', 'achieved', 'residual'});
-    RMSE = 100*sqrt(mean(((RF1(:)-RF2(:))).^2));
-    title(sprintf('RMSE: %2.1f',RMSE));
+    RMSE = sqrt(mean(((RF1(:)-RF2(:))).^2));
+    title(sprintf('RMSE: %2.3f',RMSE));
     xlabel(ax,'degrees');
 end
