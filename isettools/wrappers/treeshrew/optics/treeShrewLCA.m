@@ -4,6 +4,24 @@ function lcaDiopters = treeShrewLCA(measuredWavelength, thisWavelength)
 % Syntax:
 %   lcaDiopters = treeShrewLCA(measuredWavelength, thisWavelength)
 %
+% Description:
+%   Returns tabulated LCA estimate for tree shrew, tabulated data provided
+%   by Austin Roorda.
+%
+% Inputs:
+%   measuredWavelength   - Wavelength assumed to be in focus
+%   thisWavelength       - Wavelength we are interested in now
+%
+% Outputs:
+%   lcaDiopters          - LCA difference in diopters (measured-this)
+%
+% Optional key/value pairs
+%   None.
+%
+% See also: opticsTreeShrewCreate
+
+% History:
+%   08/xx/22  ncp  Wrote it.
 
 
     threeShrewPowerFromRoordaExcelFile = [ ...
