@@ -25,6 +25,12 @@ function optics = opticsTreeShrewCreate(varargin)
 %   'focalLengthMM'  - Focal length of tree shrew eye in mm.
 %   'pupilDiameterMM' - Pupil diameter of tree shrew eye we're modeling in mm. Default 4 mm. 
 %   'wavelengthSupport' - Wavelength support for the calculations
+%   'measuredWavelength' - 840 nm light used in measurements of Sajdak et al 2019 (section 2.2).   
+%                        However, we've set the defocus term in the table
+%                        below to be best focus, which we are going to take
+%                        as 550 nm.  So we set measuredWavelength to 550 by
+%                        default.  LCA calculations are then done relative
+%                        to this and should come out right.
 %   'spatialSamples' - Linear number of pixels in representation of PSF.
 %                      Default 801.
 %   'psfSamplesPerMinute' - Linear pixel sampling density for the PSF.
@@ -53,11 +59,12 @@ defaultParams = opticsTreeShrewDefaultParams();
 p = inputParser;
 p.addParameter('name', '', @ischar);
 p.addParameter('opticsType', defaultParams.opticsType, @ischar);
-p.addParameter('whichShrew', defaultParams.whichShrew, @iscalar);
+p.addParameter('whichShrew', defaultParams.whichShrew, @isnumeric);
 p.addParameter('inFocusPSFsigmaMicrons', defaultParams.inFocusPSFsigmaMicrons, @isnumeric);
 p.addParameter('focalLengthMM', defaultParams.focalLengthMM, @isnumeric);
 p.addParameter('pupilDiameterMM', defaultParams.pupilDiameterMM, @isnumeric);
 p.addParameter('wavelengthSupport', 400:10:700, @isnumeric);
+p.addParameter('measuredWavelength',550, @isnumeric);
 p.addParameter('spatialSamples', 801, @isnumeric);
 p.addParameter('psfSamplesPerMinute', 0.05, @isnumeric);
 p.addParameter('maxSF', 20.0, @isnumeric);
@@ -71,13 +78,14 @@ opticsName = p.Results.name;
 inFocusPSFsigmaMicrons = p.Results.inFocusPSFsigmaMicrons;
 pupilDiameterMM = p.Results.pupilDiameterMM;
 wavelengthSupport = p.Results.wavelengthSupport;
+measuredWavelength = p.Results.measuredWavelength;
 spatialSamples = p.Results.spatialSamples;
 psfSamplesPerMinute = p.Results.psfSamplesPerMinute;
 opticsType = p.Results.opticsType;
 whichShrew = p.Results.whichShrew;
 deltaSF = p.Results.deltaSF;
 maxSF = p.Results.maxSF;
-focalLengthMM= p.Results.focalLengthMM;
+focalLengthMM = p.Results.focalLengthMM;
 
 % Compute microns per degree
 focalLengthMeters = focalLengthMM / 1000;
@@ -93,7 +101,8 @@ switch lower(opticsType)
         optics = opticsUpdateOTFUsingGaussianPSF(optics, inFocusPSFsigmaMicrons, ...
             maxSF, deltaSF, wavelengthSupport);
     case {'wvf'}
-        optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelengthSupport, micronsPerDegree, spatialSamples, psfSamplesPerMinute);
+        optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelengthSupport, measuredWavelength, ...
+            micronsPerDegree, spatialSamples, psfSamplesPerMinute);
     otherwise
         error('Unknown optics type: ''%s''.', opticsType)
 end % switch lower(opticsType)
@@ -114,7 +123,7 @@ optics = opticsSet(optics, 'offAxisMethod', 'cos4th');
 optics.vignetting =  0;
 end
 
-function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelengthSupport, micronsPerDegree, spatialSamples, psfSamplesPerMinute)
+function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelengthSupport, measuredWavelength, micronsPerDegree, spatialSamples, psfSamplesPerMinute)
 
     % Reference: "Noninvasive imaging of the tree shrew eye: Wavefront
     % analysis and retinal imaging with correlative histology", Sajdak et
@@ -122,14 +131,7 @@ function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelen
     
     % 4 mm pupil used in measurements of Sajdak et al 2019
     measuredDiameterMM_TreeShrew = 4.0;
-    
-    % 840 nm light used in measurements of Sajdak et al 2019 (section 2.2).
-    % However, we've set the defocus term in the table below to be best
-    % focus, which we are going to take as 550 nm.  So we set
-    % measuredWavelength to 550.  LCA calculations are then done relative
-    % to this and should come out right.
-    measuredWavelenth = 550;
-    
+ 
     % We have the tabulated ZCoeffs provided by Roorda from the paper
     % above.  Read those in here.
     %
@@ -142,7 +144,7 @@ function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelen
     % Create the wavefront object
     wvfP = wvfCreate(...
         'spatialsamples', spatialSamples, ...
-        'measured wl', measuredWavelenth, ... 
+        'measured wl', measuredWavelength, ... 
         'calc wavelengths', wavelengthSupport, ...
         'zcoeffs', zCoeffs_TreeShrew, ...
         'name', sprintf('treeshrew-%d', pupilDiameterMM), ...
