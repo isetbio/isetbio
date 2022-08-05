@@ -17,9 +17,9 @@ function batchGenerateRetinalParamsDataFilesForTargetVisualRF
             maxEccForThisCenterConesNum = 11;
         case 2
             minEccForThisCenterConesNum = 0;
-            maxEccForThisCenterConesNum = 11;
+            maxEccForThisCenterConesNum = 12;
     end
-
+    
 
     analyzedEye = 'right eye';
     subjectRankingEye = 'right eye';
@@ -79,7 +79,7 @@ function batchGenerateRetinalParamsDataFilesForTargetVisualRF
             'conesNumPooledByTheRFcenter', conesNumPooledByTheRFcenter, ...
             'surroundToCenterRcRatio', surroundToCenterRcRatio, ...
             'surroundToCenterIntegratedRatio', surroundToCenterIntegratedRatio);
-    
+
         % Struct with the various optics params
         opticsParams = struct(...
             'radialEccDegs', analyzedRadialEccDegs, ...
@@ -127,7 +127,7 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
 
     retinalRFparamsDictionary = containers.Map();
 
-    for iEcc = 1:numel(horizontalEccDegs)
+    for iEcc = numel(horizontalEccDegs):-1:1
         % Analyze effect of optics at this eccentricity
         eccDegs = [horizontalEccDegs(iEcc) verticalEccDegs(iEcc)];
 
@@ -139,7 +139,7 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
                 'videoOBJ', []);
         visualConeCharacteristicRadiusDegs = dStruct.visualConeCharacteristicRadiusDegs;
         maxSpatialSupportDegs = ...
-            round((visualConeCharacteristicRadiusDegs * 2.0 * ...
+            round((visualConeCharacteristicRadiusDegs * 1.5 * ...
                    targetVisualRFDoGparams.conesNumPooledByTheRFcenter * ...
                    targetVisualRFDoGparams.surroundToCenterRcRatio) * 100.0)/100;
 
@@ -306,7 +306,7 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
 
 
         ax = subplot(3,2,[2 4 6]);
-        plotProfiles(ax, thePSFData, theWaveVisualRF, targetVisualRF, ...
+        plotProfiles(ax, rfSupportX, theWaveVisualRF, targetVisualRF, ...
             theRetinalRF, visualizedProfile, maxSpatialSupportDegs, ...
             sprintf('achieved @%2.0fnm', visualizationWavelength));
 
@@ -492,10 +492,10 @@ function plotProfiles(ax, rfSupportX, achievedRF, targetRF, retinalRF, visualize
     lineStyle = '-';
     shadedAreaPlot(ax,rfSupportX, theTargetProfile, 0, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
     hold(ax, 'on');
-    plot(ax, rfSupportX/60, theAchievedRFProfile, 'r-', 'LineWidth', 1.5);
+    plot(ax, rfSupportX, theAchievedRFProfile, 'r-', 'LineWidth', 1.5);
    
     plot(ax, rfSupportX, theTargetProfile-theAchievedRFProfile, 'k--', 'LineWidth', 1.0);
-    plot(ax, rfSupportX0, theRetinalProfile, 'k-', 'LineWidth', 1.5);
+    plot(ax, rfSupportX, theRetinalProfile, 'k-', 'LineWidth', 1.5);
 
     if (maxSpatialSupportDegs < 0.2)
         tickSeparationDegs = 0.05;
@@ -507,7 +507,7 @@ function plotProfiles(ax, rfSupportX, achievedRF, targetRF, retinalRF, visualize
         tickSeparationDegs = 0.2;
     end
 
-    set(ax, 'XLim', [min(thePSFData.supportX) max(thePSFData.supportX)]/60, 'YLim', [-0.2 1], ...
+    set(ax, 'XLim', [min(rfSupportX) max(rfSupportX)], 'YLim', [-0.2 1], ...
             'XTick', -5:tickSeparationDegs:5, 'YTick', -0.6:0.1:1, 'FontSize', 14);
     grid(ax, 'on');
     legend({'target', achievedLabel, sprintf('target - %s', achievedLabel), 'retinal RF'}, 'Location', 'NorthOutside', 'numColumns', 2);
