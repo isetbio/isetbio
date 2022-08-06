@@ -1,4 +1,4 @@
-function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye, eliminateOvelappingElements)
+function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye, overlappingConeFractionForElimination)
 
     % Convert degs to retinal microns
     eccMicrons  = 1000*RGCmodels.Watson.convert.rhoDegsToMMs(eccDegs);
@@ -7,6 +7,7 @@ function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs,
     % Load final cone positions
     p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
     theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
+    fprintf('Loading cone mosaic data from %s.\n', theMosaicFileName);
     load(theMosaicFileName, 'rfPositions');
 
     % Reverse the polarity
@@ -14,9 +15,9 @@ function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs,
 
     rfPositionsMicrons = double(retinalattice.compute.croppedPositions(rfPositions, eccMicrons, sizeMicrons));
 
-    if (eliminateOvelappingElements)
+    if (~isempty(overlappingConeFractionForElimination))
         % Check for overlapping elements within this max separation
-        maxSeparationForDeclaringOverlap = 0.5;
+        maxSeparationForDeclaringOverlap = overlappingConeFractionForElimination;
         fprintf('Will check and eliminate overlapping cones (threshold: %2.2f)\n', maxSeparationForDeclaringOverlap);
            
         % Initialize

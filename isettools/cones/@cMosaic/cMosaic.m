@@ -277,6 +277,15 @@ classdef cMosaic < handle
         % the desired eccentricity
         sourceLatticeSizeDegs = 58;
         
+        % Scalar or empty, indicating whether to check and eliminate cones that are
+        % too close to each other (overlap = overlappingConeFractionForElimination). 
+        % Cone overlap is rare, but it happens at
+        % some positions within the pre-computed mosaic. If this flag is
+        % enabled during instantiation, we search for overlapping cones and
+        % eliminate them. Depending on the size of the mosaic, this process
+        % may take a while.
+        overlappingConeFractionForElimination = [];
+
         % Struct containing information related to the current cone partition
         % into zones based on their aperture size
         cachedConePartition = [];
@@ -325,6 +334,8 @@ classdef cMosaic < handle
             % Parse input
             p = inputParser;
             p.addParameter('name', 'cone mosaic', @ischar);
+            p.addParameter('sourceLatticeSizeDegs', 58, @isscalar);
+            p.addParameter('overlappingConeFractionForElimination', [], @(x)( (isempty(x)) || (isscalar(x)&&(x<=1.0)&&(x>0))));
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('pigment', cPhotoPigment(), @(x) isa(x, 'cPhotoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
@@ -372,6 +383,8 @@ classdef cMosaic < handle
             p.parse(varargin{:});
             
             obj.name    = p.Results.name;
+            obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
+            obj.overlappingConeFractionForElimination = p.Results.overlappingConeFractionForElimination;
             obj.macular = p.Results.macular;
             obj.pigment = p.Results.pigment;
             obj.wave    = p.Results.wave;
@@ -489,11 +502,8 @@ classdef cMosaic < handle
                         'customMinRFspacing', customMinRFspacing, ...
                         'customRFspacingFunction', customRFspacingFunction);
                 else
-                    % Do not check for overlapping elements
-                    eliminateOvelappingElements = ~true;
-                    
                     % Import positions by cropping a large pre-computed patch
-                    obj.initializeConePositions(eliminateOvelappingElements);
+                    obj.initializeConePositions(obj.overlappingConeFractionForElimination);
                 end
 
                 % Remove cones within the optic disk
@@ -790,7 +800,7 @@ classdef cMosaic < handle
     
     methods (Access=private)
         % Initialize cone positions by importing them from a large previously-computed mesh
-        initializeConePositions(obj, eliminateOvelappingElements);
+        initializeConePositions(obj, overlappingConeFractionForElimination);
 
         % Initialize cone positions by regenerating a new mesh. Can be slow.
         regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile, varargin);
