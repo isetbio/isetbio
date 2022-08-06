@@ -1,4 +1,4 @@
-function MosaicConnector
+function MosaicConnectorOLD
 
     % Define constants
     global LCONE_ID
