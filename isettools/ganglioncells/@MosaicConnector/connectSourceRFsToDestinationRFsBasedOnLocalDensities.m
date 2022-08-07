@@ -5,10 +5,14 @@ function connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj)
 % The obj.connectivityMatrix sparse matrix is initialized here with the connections 
 % established at this step.
 
+    % Initialize centroids. No inputs so set them all to inf
+    sourceRFsNum = size(obj.sourceLattice.RFpositionsMicrons,1);
+    destinationRFsNum = size(obj.destinationLattice.RFpositionsMicrons,1);
+    obj.destinationRFcentroidsFromInputs = inf(destinationRFsNum,2);
+
     % Compute the source-to-destination density ratio map at the current
     % RFpos of the destination lattice
     densityRatioMapAtAllDestinationRFpos = obj.sourceToDestinationDensityRatioMap();
-
 
     % Indices for constructing the coneConnectivityMatrix sparse matrix
     nearestDestinationRFIndices = [];
@@ -18,21 +22,27 @@ function connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj)
         densityRatioMapAtAllDestinationRFpos, connectedSourceRFIndices, nearestDestinationRFIndices);
     
 
-    % Generate [sourceRFsNum x destinationRFsNum] sparse connectivity matrix
-    sourceRFsNum = size(obj.sourceLattice.RFpositionsMicrons,1);
-    destinationRFsNum = size(obj.destinationLattice.RFpositionsMicrons,1);
+    % Initialize the [sourceRFsNum x destinationRFsNum] sparse connectivity matrix
     weights = ones([1 numel(connectedSourceRFIndices)]);
     obj.connectivityMatrix = sparse(...
         connectedSourceRFIndices, nearestDestinationRFIndices, weights, ...
         sourceRFsNum, destinationRFsNum);
 
-    % Update centroids
+    % Update the input-based destination RF centroids
     obj.updateDestinationCentroidsFromInputs(unique(nearestDestinationRFIndices));
 
-    % Also set the centroids of all zero-input destination RFs
-    ss = squeeze(sum(obj.connectivityMatrix,1));
-    zeroInputDestinationRFIndices = find(ss == 0);
-    obj.updateDestinationCentroidsFromInputs(zeroInputDestinationRFIndices);
+    % Some destination RFs have zero inputs at this point. Set their
+    % centroids to inf. This is non needed as the obj.destinationRFcentroidsFromInputs
+    % is initialized with infs. So we commented it out below.
+    %ss = squeeze(sum(obj.connectivityMatrix,1));
+    %zeroInputDestinationRFIndices = find(ss == 0);
+    %obj.updateDestinationCentroidsFromInputs(zeroInputDestinationRFIndices);
+
+    % Visualize connectivity
+    if (obj.visualizeConnectivityAtIntermediateStages)
+        obj.visualizeCurrentConnectivity(1001);
+    end
+
 end
 
 

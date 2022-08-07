@@ -34,6 +34,7 @@ function [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin)
     % Generate disk outline
     thetas = linspace(0,360,thetaSamples);
     diskOutline = 0.5*[cosd(thetas); sind(thetas)]';
+
     thetas = linspace(0,360,4);
     triangleOutline = 0.5*[cosd(thetas); sind(thetas)]';
 
@@ -89,7 +90,8 @@ function [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin)
         title(ax, titleString);
     end
 
-    title('hexagons: dest RF lattice, triangles: source RF lattice')
+    title(sprintf('cyan hexagons: %s, gray triangles: %s', ...
+        obj.destinationLattice.name, obj.sourceLattice.name));
     box(ax, 'on')
     xlabel(ax, 'microns'); 
     ylabel(ax, 'microns');

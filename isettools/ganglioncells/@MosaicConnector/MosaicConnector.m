@@ -10,7 +10,7 @@ classdef MosaicConnector < handle
 % subclasses and also collect all common methods here. 
 % 
 %
-% 3/27/2014  npc   Wrote it.
+% 8/07/2022  npc   Wrote it.
 %
     % Public access.
     properties
@@ -44,7 +44,13 @@ classdef MosaicConnector < handle
         %  inputSourceRFIDs = find(connectivityVector > 0.01);
         connectivityMatrix = [];
 
+        % Flag indicating whether to visualize connectivity as each stage
+        visualizeConnectivityAtIntermediateStages;
 
+        % Flags indicating whether to smooth the spacing noise( due to local positional jitter)
+        % of the source and destination lattices
+        smoothSourceLatticeSpacings;
+        smoothDestinationLatticeSpacings;
     end % Write-protected 
 
     % The MosaicConnector subclass has no need to access these properties 
@@ -68,6 +74,10 @@ classdef MosaicConnector < handle
         % beyoind the edges of the RGC mosaic, to allow for surround inputs
         % to those RGCs at the edges of the RGC mosaic
         cropDestinationLattice(obj);
+
+        % Subclass- specific method to visualize the source lattice RFs
+        visualizeSourceLatticeRFs(obj);
+
     end % Abstract methods
 
     % Public methods
@@ -79,31 +89,21 @@ classdef MosaicConnector < handle
             p.addParameter('verbosity', 1);
             p.addParameter('densityRatioMapSamplingIntervalMicrons', 3, @isscalar);
             p.addParameter('connectableSourceRFindices', []);
+            p.addParameter('visualizeConnectivityAtIntermediateStages', false, @islogical);
+            p.addParameter('smoothSourceLatticeSpacings', true, @islogical);
+            p.addParameter('smoothDestinationLatticeSpacings', true, @islogical);
+
             % Execute the parser
             p.parse(varargin{:});
-
             obj.connectableSourceRFindices = p.Results.connectableSourceRFindices;
             obj.verbosity = p.Results.verbosity;
-
-            % Assign and validate source and destination lattices
-            obj.sourceLattice = sourceLattice;
-            [obj.sourceLattice.RFspacingsMicrons, ...
-             obj.sourceLattice.nearbyRFindices] = RGCmodels.Watson.convert.positionsToSpacings(obj.sourceLattice.RFpositionsMicrons);
-            % Smooth source lattice spacings
-            obj.sourceLattice.RFspacingsMicrons = MosaicConnector.smoothSpacings(...
-                obj.sourceLattice.RFspacingsMicrons, ...
-                obj.sourceLattice.nearbyRFindices);
-
-            obj.destinationLattice = destinationLattice;
-            [obj.destinationLattice.RFspacingsMicrons, ...
-             obj.destinationLattice.nearbyRFindices] = RGCmodels.Watson.convert.positionsToSpacings(obj.destinationLattice.RFpositionsMicrons);
-            % Smooth destination lattice spacings
-            obj.destinationLattice.RFspacingsMicrons = MosaicConnector.smoothSpacings(...
-                obj.destinationLattice.RFspacingsMicrons, ...
-                obj.destinationLattice.nearbyRFindices);
-
-            obj.validateInputLattice(obj.sourceLattice, 'source');
-            obj.validateInputLattice(obj.destinationLattice, 'destination');
+            obj.visualizeConnectivityAtIntermediateStages = p.Results.visualizeConnectivityAtIntermediateStages;
+            obj.smoothSourceLatticeSpacings = p.Results.smoothSourceLatticeSpacings;
+            obj.smoothDestinationLatticeSpacings = p.Results.smoothDestinationLatticeSpacings;
+            
+            % Validate source and destination lattices
+            obj.validateInputLattice(sourceLattice, 'source');
+            obj.validateInputLattice(destinationLattice, 'destination');
 
             % Generate the sourceToDestinationDensityRatioComputeStruct
             obj.generateSourceToDestinationDensityRatioComputeStruct(p.Results.densityRatioMapSamplingIntervalMicrons);
@@ -115,15 +115,15 @@ classdef MosaicConnector < handle
             obj.cropSourceLattice();
 
             % Step1. Connect mosaics based on the sourceToDestinationDensityRatio
-            
-            % Initialize centroids. No inputs so set them all to inf
-            destinationRFsNum = size(obj.destinationLattice.RFpositionsMicrons,1);
-            obj.destinationRFcentroidsFromInputs = inf(destinationRFsNum,2);
-
             obj.connectSourceRFsToDestinationRFsBasedOnLocalDensities();
-            
+         
         end % Constructor
 
+        % Visualization methods
+        visualizeCurrentConnectivity(obj, figNo);
+        visualizeDestinationLatticePooling(obj, varargin);
+        [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin);
+        
 
         function set.sourceLattice(obj, s)
             obj.sourceLattice = s;
@@ -164,39 +164,14 @@ classdef MosaicConnector < handle
         updateDestinationCentroidsFromInputs(obj, nearestDestinationRFIndices);
 
         % Input lattice validation method
-        function validateInputLattice(~, theLattice, latticeName)
-            % Must be a struct
-            assert(isstruct(theLattice), 'The %s lattice must be a struct.', latticeName);
-            
-            % Must have fields
-            assert(isfield(theLattice, 'DegsToMMsConversionFunction')&&(isa(theLattice.DegsToMMsConversionFunction,'function_handle')), 'The %s lattice must have a ''DegsToMMsConversionFunction'' function handle field.', latticeName);
-            assert(isfield(theLattice, 'MMsToDegsConversionFunction')&&(isa(theLattice.MMsToDegsConversionFunction,'function_handle')), 'The %s lattice must have a ''MMsToDegsConversionFunction'' function handle field.', latticeName);
-
-
-            assert(isfield(theLattice, 'RFpositionsMicrons'), 'The %s lattice must have an ''RFpositionsMicrons'' field.', latticeName);
-            assert(isfield(theLattice, 'RFspacingsMicrons'), 'The %s lattice must have an ''RFspacingsMicrons'' field.', latticeName);
-            
-            % Matrix dimensions must be valid
-            [nPos,dimensions] = size(theLattice.RFpositionsMicrons);
-
-            assert(dimensions == 2, ...
-                'The ''RFpositionsMicrons'' field of the %s lattice must be an N x 2 matrix. The passed data is %d x %d', latticeName, nPos, dimensions);
-            [nPos2,dimensions2] = size(theLattice.RFspacingsMicrons);
-            if (nPos2 == 1) 
-                theLattice.RFspacingsMicrons = theLattice.RFspacingsMicrons(:);
-                [nPos2,dimensions2] = size(theLattice.RFspacingsMicrons);
-            end
-
-            assert(dimensions2 == 1, ...
-                'The ''RFspacingsMicrons'' field of the %s lattice must be an N x 1 matrix. The passed data is %d x %d', latticeName, nPos2, dimensions2);
-            assert(nPos == nPos2, 'The ''RFpositionsMicrons'' field of the %s lattice does not have the same rows (%d) as the ''RFspacingsMicrons'' field (%d)', latticeName,nPos, nPos2); 
-        end
-           
+        validateInputLattice(obj, theLattice, latticeName);
     end
 
     % Static methods
     methods (Static)
         [f,v] = facesAndVertices(positions, spacings, shapeOutline);
+        transparentContourPlot(axesHandle, spatialSupportXY, zData, ...
+                                zLevels, faceAlpha, cmap, lineStyle, lineWidth);
         theSmoothedSpacings = smoothSpacings(rfSpacings, nearbyRFindices);
         [D,idx] = pdist2(A, B, varargin);
     end
