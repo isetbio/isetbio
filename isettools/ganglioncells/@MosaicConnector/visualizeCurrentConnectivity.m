@@ -30,6 +30,5 @@ function visualizeCurrentConnectivity(obj, figNo)
         'YLims', YLims);
 
 
-
 end
 

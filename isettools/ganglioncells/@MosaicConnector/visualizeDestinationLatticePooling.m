@@ -32,13 +32,12 @@ function visualizeDestinationLatticePooling(obj, varargin)
     hold(ax, 'off')
 
     % Generate the cone outline
-    thetas = linspace(0,360,6);
+    thetas = linspace(0,360,4);
     % Small source RF outline so we can see the pooling better
     sourceRFoutline = 0.3*[cosd(thetas); sind(thetas)]';
 
     
     % Visualize the pooling of source lattice RFs by the destination lattice RFs
-    cMap = brewermap(1024, '*blues');
     cMap = [1 0.9 0.8; 0 0 0];
     destinationRFsNum = size(obj.connectivityMatrix,2);
     for iDestinationRF = 1:destinationRFsNum
@@ -82,7 +81,6 @@ function visualizeDestinationLatticePooling(obj, varargin)
 
 
 
-
     if (connectPooledSourceRFs)
         for iDestinationRF = 1:destinationRFsNum
 
@@ -94,25 +92,26 @@ function visualizeDestinationLatticePooling(obj, varargin)
             positionsOfConnectedSourceRFs = obj.sourceLattice.RFpositionsMicrons(indicesOfConnectedSourceRFs,:);
             weightsOfConnectedSourceRFs = full(obj.connectivityMatrix(indicesOfConnectedSourceRFs, iDestinationRF));
 
+            centroid = obj.destinationRFcentroidsFromInputs(iDestinationRF,:);
+            if (displayDestinationRFID)
+               text(ax, centroid(1), centroid(2), sprintf('%d', iDestinationRF), 'Color', [0 1 0], 'FontSize', 12, 'BackgroundColor', [0 0 0]);
+            end
+
             if (numel(indicesOfConnectedSourceRFs)>1)
-                centroid = obj.destinationRFcentroidsFromInputs(iDestinationRF,:);
-                if (displayDestinationRFID)
-                    text(ax, centroid(1), centroid(2), sprintf('%d', iDestinationRF), 'Color', [0 1 0], 'FontSize', 12, 'BackgroundColor', [0 0 0]);
-                end
                 for inputIndex = 1:numel(indicesOfConnectedSourceRFs)
                     xx = [centroid(1) positionsOfConnectedSourceRFs(inputIndex ,1)];
                     yy = [centroid(2) positionsOfConnectedSourceRFs(inputIndex ,2)];
-                    plot(ax, xx, yy, 'k-', 'LineWidth', weightsOfConnectedSourceRFs(inputIndex)/max(weightsOfConnectedSourceRFs)*2.5);
+                    plot(ax, xx, yy, 'k-', 'LineWidth', weightsOfConnectedSourceRFs(inputIndex)/max(weightsOfConnectedSourceRFs)*2.0);
                 end
+            elseif (numel(indicesOfConnectedSourceRFs) == 1)
+                plot(ax, centroid(1), centroid(2), 'k.');
             end
+
         end % iDestinationRF
     end
 
-
     % Plot the source lattice RFs
     obj.visualizeSourceLatticeRFs(ax, sourceRFoutline);
-
-
 
     % Finalize
     axis(ax, 'equal');

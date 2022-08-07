@@ -21,7 +21,6 @@ function connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj)
     [connectedSourceRFIndices, nearestDestinationRFIndices] = doIt(obj, ...
         densityRatioMapAtAllDestinationRFpos, connectedSourceRFIndices, nearestDestinationRFIndices);
     
-
     % Initialize the [sourceRFsNum x destinationRFsNum] sparse connectivity matrix
     weights = ones([1 numel(connectedSourceRFIndices)]);
     obj.connectivityMatrix = sparse(...
@@ -30,13 +29,6 @@ function connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj)
 
     % Update the input-based destination RF centroids
     obj.updateDestinationCentroidsFromInputs(unique(nearestDestinationRFIndices));
-
-    % Some destination RFs have zero inputs at this point. Set their
-    % centroids to inf. This is non needed as the obj.destinationRFcentroidsFromInputs
-    % is initialized with infs. So we commented it out below.
-    %ss = squeeze(sum(obj.connectivityMatrix,1));
-    %zeroInputDestinationRFIndices = find(ss == 0);
-    %obj.updateDestinationCentroidsFromInputs(zeroInputDestinationRFIndices);
 
     % Visualize connectivity
     if (obj.visualizeConnectivityAtIntermediateStages)

@@ -7,7 +7,7 @@ function cropDestinationLattice(obj)
     fprintf(2, 'Arbitrarily setting this to 20 microns\n');
     fprintf(2, '********************************\n')
 
-    maxSurroundDiameterMicrons = 20;
+    maxSurroundDiameterMicrons = 30;
     maxSurroundRadiusMicrons = 0.5*maxSurroundDiameterMicrons;
 
     minConePosXY = min(obj.sourceLattice.RFpositionsMicrons,[],1);

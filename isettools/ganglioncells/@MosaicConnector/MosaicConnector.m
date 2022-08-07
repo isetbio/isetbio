@@ -35,8 +35,12 @@ classdef MosaicConnector < handle
         % Indices of source RFs that are allowed to connect to a destination RF
         connectableSourceRFindices;
 
-        % Centroids of destination RFs based on the current source RF inputs
+        % Centroids of destination RFs based on their current source RF inputs
         destinationRFcentroidsFromInputs;
+
+        % Spacings of destination RFs based on their current centroids
+        % (i.e., destinationRFcentroidsFromInputs), which are in turn based on their source RF inputs
+        destinationRFspacingsFromCentroids = [];
 
         % Sparse [sourceRFsNum x destinationRFsNum] sparse  connectivity matrix 
         % To find which source RFs are connected to a targetDestinationRF:
@@ -51,6 +55,11 @@ classdef MosaicConnector < handle
         % of the source and destination lattices
         smoothSourceLatticeSpacings;
         smoothDestinationLatticeSpacings;
+
+        % Neirboring params
+        maxNeighborNormDistance;
+        maxNeighborsNum;
+
     end % Write-protected 
 
     % The MosaicConnector subclass has no need to access these properties 
@@ -92,7 +101,10 @@ classdef MosaicConnector < handle
             p.addParameter('visualizeConnectivityAtIntermediateStages', false, @islogical);
             p.addParameter('smoothSourceLatticeSpacings', true, @islogical);
             p.addParameter('smoothDestinationLatticeSpacings', true, @islogical);
+            p.addParameter('maxNeighborNormDistance', 1.5, @isscalar);
+            p.addParameter('maxNeighborsNum', 6, @isscalar);
 
+            
             % Execute the parser
             p.parse(varargin{:});
             obj.connectableSourceRFindices = p.Results.connectableSourceRFindices;
@@ -100,7 +112,9 @@ classdef MosaicConnector < handle
             obj.visualizeConnectivityAtIntermediateStages = p.Results.visualizeConnectivityAtIntermediateStages;
             obj.smoothSourceLatticeSpacings = p.Results.smoothSourceLatticeSpacings;
             obj.smoothDestinationLatticeSpacings = p.Results.smoothDestinationLatticeSpacings;
-            
+            obj.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
+            obj.maxNeighborsNum = p.Results.maxNeighborsNum;
+
             % Validate source and destination lattices
             obj.validateInputLattice(sourceLattice, 'source');
             obj.validateInputLattice(destinationLattice, 'destination');
@@ -117,6 +131,9 @@ classdef MosaicConnector < handle
             % Step1. Connect mosaics based on the sourceToDestinationDensityRatio
             obj.connectSourceRFsToDestinationRFsBasedOnLocalDensities();
          
+            % Step2. Connect unconnected sourceRFs to their closest destination RF
+            obj.connectUnconnectedSourceRFsToClosestDestinationRF();
+
         end % Constructor
 
         % Visualization methods
@@ -161,7 +178,13 @@ classdef MosaicConnector < handle
 
         % Stage1 connection methods
         connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj);
-        updateDestinationCentroidsFromInputs(obj, nearestDestinationRFIndices);
+
+        % Book-keeping methods
+        % Update the destination RF centroids based on their inputs
+        updateDestinationCentroidsFromInputs(obj, destinationRFList);
+
+        % Update the destination RF spacings based on their centroids
+        updateDestinationRFspacingsBasedOnCentroids(obj);
 
         % Input lattice validation method
         validateInputLattice(obj, theLattice, latticeName);
@@ -170,10 +193,16 @@ classdef MosaicConnector < handle
     % Static methods
     methods (Static)
         [f,v] = facesAndVertices(positions, spacings, shapeOutline);
+
         transparentContourPlot(axesHandle, spatialSupportXY, zData, ...
                                 zLevels, faceAlpha, cmap, lineStyle, lineWidth);
+
         theSmoothedSpacings = smoothSpacings(rfSpacings, nearbyRFindices);
+
         [D,idx] = pdist2(A, B, varargin);
+
+        [insideBoundaryPointIndices, onBoundaryPointIndices] = ...
+            pointsInsideBoundaryDefinedBySelectedPoints(allPointPositions, selectedPointIndices);
     end
 
 end

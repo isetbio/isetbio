@@ -1,14 +1,12 @@
 function updateDestinationCentroidsFromInputs(obj, destinationRFList)
 
-    % Update the centroids of all destination RFs in the destinationRFList. 
-    % If a destination RF has 0 inputs its centroid is set to Inf
-        
     cm = obj.connectivityMatrix;
     sourceRFpositionsMicrons = obj.sourceLattice.RFpositionsMicrons;
     
     % Initialize the centroids
-    centroids = inf(numel(destinationRFList),2);
-
+    centroids = inf(numel(destinationRFList),2);  
+    
+    % Update the centroids of all destination RFs in the destinationRFList. 
     parfor iDestinationRF = 1:numel(destinationRFList)
         theDestinationRFindex = destinationRFList(iDestinationRF);
         connectedSourceRFIndices = find(squeeze(cm(:, theDestinationRFindex))>0);
