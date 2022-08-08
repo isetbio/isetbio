@@ -107,6 +107,7 @@ switch lower(opticsType)
         error('Unknown optics type: ''%s''.', opticsType)
 end % switch lower(opticsType)
 
+
 % Set the optics name
 optics.name = opticsName;
 
@@ -121,9 +122,12 @@ optics = opticsSet(optics, 'offAxisMethod', 'cos4th');
 
 % Pixel vignetting is off
 optics.vignetting =  0;
+
 end
 
-function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelengthSupport, measuredWavelength, micronsPerDegree, spatialSamples, psfSamplesPerMinute)
+function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, ...
+    wavelengthSupport, measuredWavelength, micronsPerDegree, spatialSamples, ...
+    psfSamplesPerMinute)
 
     % Reference: "Noninvasive imaging of the tree shrew eye: Wavefront
     % analysis and retinal imaging with correlative histology", Sajdak et
@@ -164,6 +168,8 @@ function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, wavelen
     % Create the corresponding optics object
     optics = oiGet(wvf2oi(wvfP), 'optics');
 
+    % Set the microns per degree in the optics as well
+    optics.micronsPerDegree = micronsPerDegree;
 end
 
 function lcaDiopters = treeShrewLCAOLD(measuredWavelength, thisWavelength)
