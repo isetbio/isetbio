@@ -6,8 +6,7 @@ function test_ConeToMRGCMosaicConnector()
 
 
     % Generate the input cone mosaic (the source)
-    eccDegs = [0 0]; sizeDegs = 0.5*[0.5 0.35];
-    %eccDegs = [5 4]; sizeDegs = 1.5*[0.5 0.35];
+    eccDegs = [-20 0]; sizeDegs = 0.4+abs(eccDegs(1))*0.2*[0.6 0.2];
 
     theInputConeMosaic = cMosaic(...
        'sourceLatticeSizeDegs', sourceLatticeSizeDegs, ...
@@ -19,11 +18,13 @@ function test_ConeToMRGCMosaicConnector()
        'coneApertureModifiers', struct('smoothLocalVariations', true));
 
     
-    % Source lattice (i.e. cone mosaic lattice) meta data, here cone aperture size and cone types
-    metaData.coneApertureDiametersMicrons = theInputConeMosaic.coneApertureDiametersMicrons;    
-    metaData.coneTypes = theInputConeMosaic.coneTypes;
-    metaData.coneTypeIDs = [theInputConeMosaic.LCONE_ID theInputConeMosaic.MCONE_ID theInputConeMosaic.SCONE_ID];
-    metaData.coneColors = [theInputConeMosaic.lConeColor; theInputConeMosaic.mConeColor; theInputConeMosaic.sConeColor];
+    % Source lattice (i.e. cone mosaic lattice) meta data, here cone types
+    % If the cone types are not passed in the metaData, the @coneToMidgetRGCConnector
+    % will not use be able to bias toward cone-specific wiring in RGCs with
+    % multiple inputs
+    metaDataStruct.coneTypes = theInputConeMosaic.coneTypes;
+    metaDataStruct.coneTypeIDs = [theInputConeMosaic.LCONE_ID theInputConeMosaic.MCONE_ID theInputConeMosaic.SCONE_ID];
+    metaDataStruct.coneColors = [theInputConeMosaic.lConeColor; theInputConeMosaic.mConeColor; theInputConeMosaic.sConeColor];
     
     % Source lattice (i.e. cone mosaic lattice) struct
     sourceLatticeStruct = struct(...
@@ -31,7 +32,7 @@ function test_ConeToMRGCMosaicConnector()
         'DegsToMMsConversionFunction', customDegsToMMsConversionFunction, ...
         'MMsToDegsConversionFunction', customMMsToDegsConversionFunction, ...
         'RFpositionsMicrons', theInputConeMosaic.coneRFpositionsMicrons, ...
-        'metaData', metaData ...
+        'metaData', metaDataStruct ...
         ); 
     
 

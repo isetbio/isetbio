@@ -4,6 +4,7 @@ function visualizeDestinationLatticePooling(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('titleString', '', @(x)(isempty(x) || (ischar(x))));
+    p.addParameter('titleWithPoolingStats', false, @islogical);
     p.addParameter('thetaSamples', 20, @isnumeric);
     p.addParameter('connectPooledSourceRFs', true, @islogical);
     p.addParameter('displayDestinationRFID', false, @islogical);
@@ -14,6 +15,7 @@ function visualizeDestinationLatticePooling(obj, varargin)
     hFig = p.Results.figureHandle;
     ax = p.Results.axesHandle;
     titleString = p.Results.titleString;
+    titleWithPoolingStats = p.Results.titleWithPoolingStats;
     thetaSamples = p.Results.thetaSamples;
     connectPooledSourceRFs = p.Results.connectPooledSourceRFs;
     displayDestinationRFID = p.Results.displayDestinationRFID;
@@ -40,21 +42,25 @@ function visualizeDestinationLatticePooling(obj, varargin)
     % Visualize the pooling of source lattice RFs by the destination lattice RFs
     cMap = [1 0.9 0.8; 0 0 0];
     destinationRFsNum = size(obj.connectivityMatrix,2);
+    inputsPerDestinationRF = nan(1, destinationRFsNum);
+
     for iDestinationRF = 1:destinationRFsNum
         % Retrieve connection data
         % Indices of source lattice RFs pooled by this destination RF
         indicesOfConnectedSourceRFs = find(squeeze(obj.connectivityMatrix(:, iDestinationRF))>0);
+        
 
         if (isempty(indicesOfConnectedSourceRFs))
-            % No sourceRFs pooled by this destination RF. Identify with a
-            % black star
+            % No sourceRFs pooled by this destination RF. Identify with a black star
             plot(ax, obj.destinationLattice.RFpositionsMicrons(iDestinationRF,1), ...
                      obj.destinationLattice.RFpositionsMicrons(iDestinationRF,2), ...
                      'h', 'MarkerFaceColor', [0 0 0], 'MarkerEdgeColor', [0 0 0], 'MarkerSize', 16, 'LineWidth', 1);
             continue;
         end
 
-       
+        % Update inputsPerDestinationRF
+        inputsPerDestinationRF(iDestinationRF) = numel(indicesOfConnectedSourceRFs);
+
         % Positions and spacings of these pooled source lattice RFs
         positionsOfConnectedSourceRFs = obj.sourceLattice.RFpositionsMicrons(indicesOfConnectedSourceRFs,:);
         spacingsOfConnectedSourceRFs = obj.sourceLattice.RFspacingsMicrons(indicesOfConnectedSourceRFs);
@@ -120,6 +126,14 @@ function visualizeDestinationLatticePooling(obj, varargin)
         set(ax, 'XLim', XLims, 'YLim', YLims);
     end
     set(ax, 'FontSize', 16);
+
+    if (titleWithPoolingStats)
+        poolingStatsString = sprintf('inputs/destination RF: min:%d, max:%d, mean:%2.2f', ...
+            min(inputsPerDestinationRF, [], 'omitnan'), ...
+            max(inputsPerDestinationRF, [], 'omitnan'), ...
+            mean(inputsPerDestinationRF, 'omitnan'));
+        titleString = sprintf('%s\n%s', titleString, poolingStatsString);
+    end
 
     if (~isempty(titleString))
         title(ax, titleString);

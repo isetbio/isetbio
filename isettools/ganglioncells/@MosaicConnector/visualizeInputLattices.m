@@ -38,7 +38,7 @@ function [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin)
     thetas = linspace(0,360,4);
     triangleOutline = 0.5*[cosd(thetas); sind(thetas)]';
 
-    thetas60 = linspace(0,360,7);
+    thetas60 = linspace(0,360,17);
     hexOutline = 0.5*[cosd(thetas60); sind(thetas60)]';
 
     if (isempty(ax))
@@ -78,10 +78,10 @@ function [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin)
 
     maxDestSpacing = max(obj.destinationLattice.RFspacingsMicrons);
     if (isempty(XLims))
-        XLims = [minXYsrc(1) maxXYsrc(1)] + maxDestSpacing*[-1 1];
+        XLims = [minXYsrc(1) maxXYsrc(1)] + 0.1*maxDestSpacing*[-1 1];
     end
     if (isempty(YLims))
-        YLims = [minXYsrc(2) maxXYsrc(2)] + maxDestSpacing*[-1 1];
+        YLims = [minXYsrc(2) maxXYsrc(2)] + 0.1*maxDestSpacing*[-1 1];
     end
 
     set(ax, 'XLim', XLims, 'YLim', YLims, 'FontSize', 16);
