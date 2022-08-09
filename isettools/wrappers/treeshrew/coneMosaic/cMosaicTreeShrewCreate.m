@@ -10,7 +10,7 @@ function theCMosaic = cMosaicTreeShrewCreate(varargin)
 %   generates the equivalent @cMosaic object
 %
     p = inputParser;
-    p.addParameter('fovDegs', [2 2], @isnumeric);
+    p.addParameter('fovDegs', [2 1], @isnumeric);
     p.addParameter('spatialDensity', [0 0.5 0 0.5], @isnumeric);
     p.addParameter('customLambda', 6.2, @isnumeric);
     p.addParameter('customInnerSegmentDiameter', 6.0, @isnumeric);
@@ -35,10 +35,10 @@ function theCMosaic = cMosaicTreeShrewCreate(varargin)
         'sConeMinDistanceFactor', p.Results.sConeMinDistanceFactor);
     
 
-    % Generate a @cPigment object for the tree tree shrew
+    % Generate a treeshrew @cPigment object for the tree tree shrew
     thePhotopigment = treeShrewCPhotopigment();
 
-    % Generate a @Macula object for the three shrew
+    % Generate a treeshrew @Macula object for the three shrew
     theMacularPigment = macularPigmentTreeShrewCreate(thePhotopigment.wave);
 
     % Generate a @cMosaic object for the tree shrew
@@ -47,6 +47,5 @@ function theCMosaic = cMosaicTreeShrewCreate(varargin)
         'micronsPerDegree', theConeMosaicHex.micronsPerDegree, ...
         'integrationTime', theConeMosaicHex.integrationTime, ...
         'pigment', thePhotopigment ,...
-        'macular', theMacularPigment ...
-        );
+        'macular', theMacularPigment);
 end
