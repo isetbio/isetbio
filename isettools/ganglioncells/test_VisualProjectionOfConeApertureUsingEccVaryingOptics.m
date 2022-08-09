@@ -1,4 +1,4 @@
-function demoVisualProjectionOfConeApertureUsingEccVaryingOptics()
+function test_VisualProjectionOfConeApertureUsingEccVaryingOptics()
 
     % Intantiate RetinaToVisualFieldTrasformer with the Artal database
     xFormer = RetinaToVisualFieldTransformer('ZernikeDataBase', 'Artal2012');

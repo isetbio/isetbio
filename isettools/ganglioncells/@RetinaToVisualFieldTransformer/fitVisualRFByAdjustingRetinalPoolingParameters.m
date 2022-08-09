@@ -90,7 +90,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
         fittedVisualRF = visualRFfromRetinalPooling(retinalPoolingParams, modelConstants);
         fullRMSE = ((fittedVisualRF(:) - theTargetVisualRF(:))/maxTargetRF).^2;
         decrRMSE = ((fittedVisualRF(decrementsIndices) - theDecrementsTargetVisualRF)/maxDecrementsTargetRF).^2;
-        rmse =  sqrt(mean(fullRMSE,1)) + 0.02*sqrt(mean(decrRMSE,1));
+        rmse =  sqrt(mean(fullRMSE,1)) + 0.03*sqrt(mean(decrRMSE,1));
       end
 
 end
