@@ -9,7 +9,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
     analyzedRetinaMeridian = 'nasal meridian';
     
     % Number of cones in RF center
-    conesNumPooledByTheRFcenter = 1;
+    conesNumPooledByTheRFcenter = 2;
 
     % Weight to be applied to matching the negative portion of the RF
     % in the objective function of
@@ -25,6 +25,9 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
             maxEccForThisCenterConesNum = 11;
         case 3
             minEccForThisCenterConesNum = 1;
+            maxEccForThisCenterConesNum = 11;
+        case 4
+            minEccForThisCenterConesNum = 2;
             maxEccForThisCenterConesNum = 11;
     end
     
