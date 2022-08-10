@@ -84,13 +84,13 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
       retinalRFparamsStruct, theFittedRetinalRFcenter, ...
       theFittedRetinalRFsurround] = visualRFfromRetinalPooling(theFittedParamsVector, modelConstants);
 
-
+     
      % Nested function rfObjective
      function rmse = rfObjective(retinalPoolingParams)
         fittedVisualRF = visualRFfromRetinalPooling(retinalPoolingParams, modelConstants);
         fullRMSE = ((fittedVisualRF(:) - theTargetVisualRF(:))/maxTargetRF).^2;
         decrRMSE = ((fittedVisualRF(decrementsIndices) - theDecrementsTargetVisualRF)/maxDecrementsTargetRF).^2;
-        rmse =  sqrt(mean(fullRMSE,1)) + 0.03*sqrt(mean(decrRMSE,1));
+        rmse =  sqrt(mean(fullRMSE,1)) + modelConstants.surroundWeightBias*sqrt(mean(decrRMSE,1));
       end
 
 end

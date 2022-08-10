@@ -9,7 +9,12 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
     analyzedRetinaMeridian = 'nasal meridian';
     
     % Number of cones in RF center
-    conesNumPooledByTheRFcenter = 3;
+    conesNumPooledByTheRFcenter = 1;
+
+    % Weight to be applied to matching the negative portion of the RF
+    % in the objective function of
+    % @RetinaToVisualFieldTransformer.fitVisualRFByAdjustingRetinalPoolingParameters()
+    surroundWeightBias = 0.05;
 
     switch (conesNumPooledByTheRFcenter)
         case 1
@@ -17,10 +22,10 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
             maxEccForThisCenterConesNum = 11;
         case 2
             minEccForThisCenterConesNum = 0;
-            maxEccForThisCenterConesNum = 12;
+            maxEccForThisCenterConesNum = 11;
         case 3
             minEccForThisCenterConesNum = 1;
-            maxEccForThisCenterConesNum = 20;
+            maxEccForThisCenterConesNum = 11;
     end
     
 
@@ -31,7 +36,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
         ZernikeDataBase, examinedSubjectRankOrder, ...
         strrep(analyzedEye, ' ', '_'), ...
         strrep(analyzedRetinaMeridian, ' ', '_'), ...
-        pupilDiameterMM, conesNumPooledByTheRFcenter)
+        pupilDiameterMM, conesNumPooledByTheRFcenter);
  
     regenerateData = true;
     if (regenerateData)
@@ -57,7 +62,6 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
             (analyzedRadialEccDegs <= maxEccForThisCenterConesNum)...
             );
 
-        analyzedRadialEccDegs = 1
 
         % From Croner & Kaplan '95 (Figure 4c and text)
         % "P surrounds were on average 6.7 times wider than the centers of 
@@ -100,7 +104,8 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
 
         % Go !
         [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ...
-            computeRetinalRFparamsAcrossEccentricities(opticsParams, targetVisualRFDoGparams, retinalConePoolingModel);
+            computeRetinalRFparamsAcrossEccentricities(opticsParams, targetVisualRFDoGparams, ...
+            retinalConePoolingModel, surroundWeightBias);
     
         % Save computed data
         save(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams', 'analyzedRadialEccDegs');
@@ -116,7 +121,8 @@ end
 
 
 function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ...
-    computeRetinalRFparamsAcrossEccentricities(opticsParams, targetVisualRFDoGparams, retinalConePoolingModel)
+    computeRetinalRFparamsAcrossEccentricities(opticsParams, targetVisualRFDoGparams, ...
+            retinalConePoolingModel, surroundWeightBias)
 
     % Instantiate the RetinaToVisualFieldTransformer
     xFormer = RetinaToVisualFieldTransformer('ZernikeDataBase', opticsParams.ZernikeDataBase);
@@ -158,6 +164,7 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
             'maxSpatialSupportDegs', maxSpatialSupportDegs, ...
             'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
             'retinalConePoolingModel', retinalConePoolingModel, ... 
+            'surroundWeightBias', surroundWeightBias, ...
             'minimizationDomain', 'visual' ...  % Select between 'retinal' (involves deconvolution) and 'visual'
             );
 
@@ -285,12 +292,13 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
     visualizationWavelengths = [450 500 550 600 650];
 
     for i = 1:numel(visualizationWavelengths)
+        
         visualizationWavelength = visualizationWavelengths(i);
-
+        [~,iWave] = min(abs(visualizationWavelength-thePSFData.supportWavelength));
+        
         hFig = figure(1000+i); clf;
         set(hFig, 'Color', [1 1 1], 'Position', [10 10 1200 950]);
-        [~,iWave] = min(abs(visualizationWavelength-thePSFData.supportWavelength));
-
+        
         % Select which PSF to use
         theWavePSF = squeeze(thePSFData.data(:,:,iWave));
         %theWavePSF = theEmployedPSFData.data;

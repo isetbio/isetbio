@@ -35,6 +35,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, s
     p.addParameter('wavefrontSpatialSamples', 401, @isscalar);
     p.addParameter('psfCircularSymmetryMode', 'average', @(x)(ischar(x) && (ismember(x, {'average', 'best', 'worse'}))));
     p.addParameter('deconvolutionMethod', 'Regularized', @(x)(ischar(x) && (ismember(x, {'Regularized', 'Wiener'}))));
+    p.addParameter('surroundWeightBias', 0.03, @isscalar);
     p.addParameter('retinalConePoolingModel', 'GaussianCenterGaussianSurroundBased',  @(x)(ischar(x) && (ismember(x, {'GaussianCenterDoubleExponentSurroundBased', 'GaussianCenterGaussianSurroundBased'})))); 
     p.addParameter('minimizationDomain', 'visual', @(x)(ischar(x) && (ismember(x, {'retinal', 'visual'}))));
     p.parse(varargin{:});
@@ -46,6 +47,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, s
     retinalConePoolingModel = p.Results.retinalConePoolingModel;
     minimizationDomain = p.Results.minimizationDomain;
     psfCircularSymmetryMode = p.Results.psfCircularSymmetryMode;
+    surroundWeightBias = p.Results.surroundWeightBias;
 
     % Generate a @cMosaic object located at the target eccentricity and eye
     coneMosaicSize = max([0.5 2*maxSpatialSupportDegs]);
@@ -212,7 +214,8 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, targetVisualRF, s
             modelConstants.retinalConePoolingModel = retinalConePoolingModel;
             modelConstants.conesNumPooledByTheRFcenter = visualRFDoGparams.conesNumPooledByTheRFcenter;
             modelConstants.centerConeRcDegs = anatomicalConeCharacteristicRadiusDegs;
-           
+            modelConstants.surroundWeightBias = surroundWeightBias;
+            
             % Fit the visual RF by adjusting retinal cone pooling parameters
             [retinalRFparamsStruct, ...
              weightsComputeFunctionHandle, ...

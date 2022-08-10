@@ -9,7 +9,7 @@ function dryRunRFgeneration()
     analyzedRetinaMeridian = 'nasal meridian';
     
     % Number of cones in RF center
-    conesNumPooledByTheRFcenter = 2;
+    conesNumPooledByTheRFcenter = 1;
 
     analyzedEye = 'right eye';
     subjectRankingEye = 'right eye';
@@ -26,77 +26,107 @@ function dryRunRFgeneration()
         'opticsParams', ...
         'targetVisualRFDoGparams');
 
-    % Evaluate generated RFs at a target mosaic eccentricity
-    mosaicRadialEccDegs = 0.9;
+    videoOBJ = VideoWriter(sprintf('ConesNumRFcenter_%d',conesNumPooledByTheRFcenter), 'MPEG-4');
+    videoOBJ.FrameRate = 10;
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
 
-    % Compute mosaic ecc degs
-    [mosaicHorizontalEccDegs, mosaicVerticalEccDegs] = ...
-        cMosaic.eccentricitiesForRetinaMeridianInEye(...
-            mosaicRadialEccDegs, ...
-            analyzedRetinaMeridian, ...
-            analyzedEye);
-    mosaicEccDegs = [mosaicHorizontalEccDegs mosaicVerticalEccDegs];
+    mosaicRadialEccentricities = [0 0.1 0.25 0.5 0.75 1 1.25 1.5 2 2.5 3 3.5 4 4.5 5:11];
+    
+    for iEcc = 1:numel(mosaicRadialEccentricities)
+        % Evaluate generated RFs at a target mosaic eccentricity
+        mosaicRadialEccDegs = mosaicRadialEccentricities(iEcc);
 
-    % Retrieve retinal RF params from the saved dictionary at the
-    % eccentricity that is closest to the mosaicEcc
-    [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
-     targetVisualRF, rfSpatialSupportDegs] = dictionaryDataForMosaicEcc(...
-        retinalRFparamsDictionary,  opticsParams, mosaicEccDegs);
+        % Compute mosaic ecc degs
+        [mosaicHorizontalEccDegs, mosaicVerticalEccDegs] = ...
+            cMosaic.eccentricitiesForRetinaMeridianInEye(...
+                mosaicRadialEccDegs, ...
+                analyzedRetinaMeridian, ...
+                analyzedEye);
+        mosaicEccDegs = [mosaicHorizontalEccDegs mosaicVerticalEccDegs];
+    
+        % Retrieve retinal RF params from the saved dictionary at the
+        % eccentricity that is closest to the mosaicEcc
+        [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
+         targetVisualRF, rfSpatialSupportDegs, theEmployedPSFData] = dictionaryDataForMosaicEcc(...
+            retinalRFparamsDictionary,  opticsParams, mosaicEccDegs);
+    
+    
+        mosaicSizeDegs = mosaicRadialEccDegs*0.4 + 0.4*[1 1];
+        theConeMosaic = generateMosaic(analyzedEye, mosaicEccDegs, mosaicSizeDegs);
+    
+        targetRFpositionDegs = mosaicEccDegs+0*[0.1 0.3];
+        distances = sum((bsxfun(@minus, theConeMosaic.coneRFpositionsDegs, targetRFpositionDegs)).^2,2);
+        [~,idx] = sort(distances, 'ascend');
+    
+        targetRFCenterConesIndices = idx(1:conesNumPooledByTheRFcenter);
+    
+        if (isequal(weightsComputeFunctionHandle,@RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGmodelParameters))
+            pooledConeIndicesAndWeightsStruct = RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGmodelParametersForTargetRFCenterCones(...
+                retinalRFparamsStruct, ...
+                theConeMosaic, ...
+                targetRFCenterConesIndices);
+        elseif (isequal(weightsComputeFunctionHandle,@RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGDEmodelParameters))
+            error('Implent this')
+        else
+            error('Uknown function handle');
+        end
+    
+    
+        % Compute visual RF
+        theEmployedPSFData = [];
+        hFig = computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic, opticsParams, ...
+            theEmployedPSFData, targetVisualRF, rfSpatialSupportDegs);
 
-
-    mosaicSizeDegs = [1 1];
-    theConeMosaic = generateMosaic(analyzedEye, mosaicEccDegs, mosaicSizeDegs);
-
-    targetRFpositionDegs = mosaicEccDegs+0*[0.1 0.3];
-    distances = sum((bsxfun(@minus, theConeMosaic.coneRFpositionsDegs, targetRFpositionDegs)).^2,2);
-    [~,idx] = sort(distances, 'ascend');
-
-    targetRFCenterConesIndices = idx(1:2);
-
-    if (isequal(weightsComputeFunctionHandle,@RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGmodelParameters))
-        pooledConeIndicesAndWeightsStruct = RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGmodelParametersForTargetRFCenterCones(...
-            retinalRFparamsStruct, ...
-            theConeMosaic, ...
-            targetRFCenterConesIndices);
-    elseif (isequal(weightsComputeFunctionHandle,@RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGDEmodelParameters))
-        error('Implent this')
-    else
-        error('Uknown function handle');
+        drawnow;
+        videoOBJ.writeVideo(getframe(hFig));
+        %NicePlot.exportFigToPDF(sprintf('analysisEcc%4.3f.pdf', mosaicRadialEccDegs), hFig, 300);
     end
+    videoOBJ.close();
 
-
-    % Compute visual RF
-    computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic, opticsParams, targetVisualRF, rfSpatialSupportDegs)
+        
 
 end
 
 
-function computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic, opticsParams, targetVisualRF, rfSpatialSupportDegs)
-    % Generate optics for the targetConeMosaic
-    switch (opticsParams.ZernikeDataBase)
-            % Artal
-            case RetinaToVisualFieldTransformer.Artal
-                subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
-                    theConeMosaic.whichEye, opticsParams.subjID);
-                % Polans
-            case RetinaToVisualFieldTransformer.Polans
-                subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(...
-                    theConeMosaic.whichEye, opticsParams.subjID);
+function hFig = computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic, opticsParams, theEmployedPSFData, targetVisualRF, rfSpatialSupportDegs)
+    
+    if isempty(theEmployedPSFData)
+    
+        % Generate optics for the targetConeMosaic
+        switch (opticsParams.ZernikeDataBase)
+                % Artal
+                case RetinaToVisualFieldTransformer.Artal
+                    subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
+                        theConeMosaic.whichEye, opticsParams.subjID);
+                    % Polans
+                case RetinaToVisualFieldTransformer.Polans
+                    subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(...
+                        theConeMosaic.whichEye, opticsParams.subjID);
+        end
+    
+        [oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(...
+                theConeMosaic.eccentricityDegs, ...
+                'zernikeDataBase', opticsParams.ZernikeDataBase, ...
+                'subjectID', opticsParams.subjID, ...
+                'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
+                'zeroCenterPSF', true, ...
+                'subtractCentralRefraction', subtractCentralRefraction, ...
+                'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
+                'warningInsteadOfErrorForBadZernikeCoeffs', true);
+    
+    
+        theOI = oiEnsemble{1};
+        thePSFData = psfEnsemble{1};
+    
+        % Wavelengths to visualize
+        visualizationWavelength = 550;
+        [~,iWave] = min(abs(visualizationWavelength-thePSFData.supportWavelength));
+        theWavePSF = squeeze(thePSFData.data(:,:,iWave));
+    else
+        theWavePSF = theEmployedPSFData.data;
     end
 
-    [oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(...
-            theConeMosaic.eccentricityDegs, ...
-            'zernikeDataBase', opticsParams.ZernikeDataBase, ...
-            'subjectID', opticsParams.subjID, ...
-            'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
-            'zeroCenterPSF', true, ...
-            'subtractCentralRefraction', subtractCentralRefraction, ...
-            'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
-            'warningInsteadOfErrorForBadZernikeCoeffs', true);
-
-
-    theOI = oiEnsemble{1};
-    thePSFData = psfEnsemble{1};
 
 
     % Compute the retinalRF by summing the weighted cone apertures in the
@@ -107,52 +137,93 @@ function computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic, optic
     [theRetinalRFcenter, theRetinalRFsurround] = RetinaToVisualFieldTransformer.generateRFsubregionMapsFromPooledCones(...
        rfSupportX, rfSupportY, theConeMosaic, pooledConeIndicesAndWeightsStruct);
 
+    
     % And the full cone-pooling based retinal RF
     theRetinalRF = theRetinalRFcenter - theRetinalRFsurround;
 
-
-    % Wavelengths to visualize
-    visualizationWavelengths = [450 500 550 600 650];
-
-    figure(1000); clf;
-    gain = 1/(abs(max(targetVisualRF(:))));
     
+    theVisualRF = conv2(theRetinalRF, theWavePSF, 'same');
+
+    theRetinalRFprofileX = sum(theRetinalRF,1);
+    theRetinalRFprofileY = sum(theRetinalRF,2);
+    theVisualRFprofileX = sum(theVisualRF,1);
+    theVisualRFprofileY = sum(theVisualRF,2);
+    theTargetVisualRFprofile = sum(targetVisualRF,1);
+    profileRange = [ ...
+        min([min(theVisualRFprofileX) min(theVisualRFprofileY) min(theTargetVisualRFprofile)]) ...
+        max([max(theVisualRFprofileX) max(theVisualRFprofileY) max(theTargetVisualRFprofile)])];
+   
+    profileRangeFull = [ ...
+        min([min(theVisualRFprofileX) min(theVisualRFprofileY) min(theRetinalRFprofileX) min(theRetinalRFprofileY) min(theTargetVisualRFprofile)]) ...
+        max([max(theVisualRFprofileX) max(theVisualRFprofileY) max(theRetinalRFprofileX) max(theRetinalRFprofileY) max(theTargetVisualRFprofile)])];
+    deltaP = 0.02*(profileRange(2)-profileRange(1));
+    profileRange = profileRange + deltaP*[-1 1];
+
+
+    rfSupportX = rfSupportX + theConeMosaic.eccentricityDegs(1);
+
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+        'rowsNum', 2, ...
+        'colsNum', 3, ...
+        'heightMargin',  0.02, ...
+        'widthMargin',    0.03, ...
+        'leftMargin',     0.05, ...
+        'rightMargin',    0.00, ...
+        'bottomMargin',   0.005, ...
+        'topMargin',      0.01);
+
+    hFig = figure(1000); clf;
+    set(hFig, 'Position', [10 10 1000 1000], 'Color', [1 1 1]);
+    ax = subplot('Position', subplotPosVectors(1,1).v);
+    plot(ax, rfSupportX, theTargetVisualRFprofile, 'k-', 'LineWidth', 1.5);
+    hold on;
+    plot(ax, rfSupportX, theTargetVisualRFprofile(:)-0.5*(theVisualRFprofileX(:)+theVisualRFprofileY(:)), 'm--', 'LineWidth', 1.5);
+    grid(ax, 'on');
+    set(ax, 'YLim', profileRange, 'XLim', [min(rfSupportX) max(rfSupportX)], 'FontSize', 16);
+    title(ax, 'target visual RF');
+
+    ax = subplot('Position', subplotPosVectors(2,1).v);
+    imagesc(ax, rfSupportX, rfSupportY, targetVisualRF);
+    axis(ax, 'image');
+    grid(ax, 'on');
+    set(ax, 'CLim', 0.1*[-1 1], 'YTickLabel', {}, 'FontSize', 16);
+
+
+    ax = subplot('Position', subplotPosVectors(1,2).v);
+    plot(ax, rfSupportX, theTargetVisualRFprofile, 'k-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+    hold(ax, 'on')
+    plot(ax, rfSupportX, theVisualRFprofileX, 'r-', 'LineWidth', 1.5);
+    plot(ax, rfSupportX, theVisualRFprofileY, 'b-', 'LineWidth', 1.5);
+    grid(ax, 'on');
+    set(ax, 'YLim', profileRange, 'XLim', [min(rfSupportX) max(rfSupportX)], 'FontSize', 16);
+    title(ax, 'achieved visual RF');
     
-    cMap = brewermap(1024, '*RdBu');
-    for i = 1:numel(visualizationWavelengths)
-        visualizationWavelength = visualizationWavelengths(i);
-        [~,iWave] = min(abs(visualizationWavelength-thePSFData.supportWavelength));
+    ax = subplot('Position', subplotPosVectors(2,2).v);
+    imagesc(ax, rfSupportX, rfSupportY, theVisualRF);
+    axis(ax, 'image');
+    grid(ax, 'on');
+    set(ax, 'CLim', 0.1*[-1 1], 'YTickLabel', {}, 'FontSize', 16);
 
-        % Select which PSF to use
-        theWavePSF = squeeze(thePSFData.data(:,:,iWave));
-        
-        % Compute the visualRF
-        theWaveVisualRF = conv2(theRetinalRF, theWavePSF, 'same');
 
-        ax = subplot(3,numel(visualizationWavelengths), i);
-        imagesc(ax, rfSupportX, rfSupportY, gain*theWaveVisualRF/max(abs(targetVisualRF(:))));
-        set(ax, 'CLim', [-1 1])
-        axis(ax, 'image');
-        title(ax, sprintf('%d nm', visualizationWavelength));
+    ax = subplot('Position', subplotPosVectors(1,3).v);
+    plot(ax, rfSupportX, theRetinalRFprofileX, 'r-', 'LineWidth', 1.5);
+    hold(ax, 'on')
+    plot(ax, rfSupportX, theRetinalRFprofileY, 'b-', 'LineWidth', 1.5);
+    grid(ax, 'on');
+    set(ax, 'YLim', profileRangeFull, 'XLim', [min(rfSupportX) max(rfSupportX)], 'FontSize', 16);
+    title(ax, 'retinal RF');
 
-        ax = subplot(3,numel(visualizationWavelengths), i + numel(visualizationWavelengths));
-        imagesc(ax, rfSupportX, rfSupportY, gain*targetVisualRF/max(abs(targetVisualRF(:))));
-        set(ax, 'CLim', [-1 1])
-        axis(ax, 'image');
-        
-
-        ax = subplot(3,numel(visualizationWavelengths), i + 2*numel(visualizationWavelengths));
-        imagesc(ax, rfSupportX, rfSupportY, gain*(theWaveVisualRF-targetVisualRF)/max(abs(targetVisualRF(:))));
-        set(ax, 'CLim', [-1 1])
-        axis(ax, 'image');
-        colormap(cMap);
-    end
+    ax = subplot('Position', subplotPosVectors(2,3).v);
+    imagesc(ax, rfSupportX, rfSupportY, theRetinalRF);
+    axis(ax, 'image');
+    grid(ax, 'on');
+    set(ax, 'CLim', 0.1*[-1 1], 'YTickLabel', {}, 'FontSize', 16);
 
 end
 
 
 function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
-          targetVisualRF, rfSpatialSupportDegs] = ...
+          targetVisualRF, rfSpatialSupportDegs, theEmployedPSFData] = ...
     dictionaryDataForMosaicEcc(retinalRFparamsDictionary, sourceOpticsParams, mosaicEccDegs)
 
     [sourceHorizontalEccDegs, sourceVerticalEccDegs] = ...
