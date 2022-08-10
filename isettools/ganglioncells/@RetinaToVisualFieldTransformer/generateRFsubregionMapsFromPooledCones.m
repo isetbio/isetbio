@@ -20,7 +20,7 @@ function [retinalRFcenter2D, retinalRFsurround2D] = generateRFsubregionMapsFromP
         xx = (Xdegs-cm.coneRFpositionsDegs(theConeIndex,1))/coneRcDegs;
         yy = (Ydegs-cm.coneRFpositionsDegs(theConeIndex,2))/coneRcDegs;
         theConeApertureRF = exp(-(xx.^2 + yy.^2));
-        theConeApertureRF(theConeApertureRF<minConeWeight) = 0;
+        %theConeApertureRF(theConeApertureRF<minConeWeight) = 0;
 
         if (iCone == 1)
             retinalRFcenter2D = theConeApertureRF * centerConeWeights(iCone);
@@ -29,7 +29,7 @@ function [retinalRFcenter2D, retinalRFsurround2D] = generateRFsubregionMapsFromP
         end
     end
 
-
+  
     for iCone = 1:numel(surroundConeIndices)
         theConeIndex = surroundConeIndices(iCone);
         coneRcDegs = 0.204 * sqrt(2.0) * cm.coneApertureDiametersDegs(theConeIndex);
@@ -38,7 +38,7 @@ function [retinalRFcenter2D, retinalRFsurround2D] = generateRFsubregionMapsFromP
         xx = (Xdegs-cm.coneRFpositionsDegs(theConeIndex,1))/coneRcDegs;
         yy = (Ydegs-cm.coneRFpositionsDegs(theConeIndex,2))/coneRcDegs;
         theConeApertureRF = exp(-(xx.^2 + yy.^2));
-        theConeApertureRF(theConeApertureRF<minConeWeight) = 0;
+        %theConeApertureRF(theConeApertureRF<minConeWeight) = 0;
 
         if (iCone == 1)
             retinalRFsurround2D = theConeApertureRF * surroundConeWeights(iCone);

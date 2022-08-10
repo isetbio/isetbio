@@ -9,7 +9,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
     analyzedRetinaMeridian = 'nasal meridian';
     
     % Number of cones in RF center
-    conesNumPooledByTheRFcenter = 2;
+    conesNumPooledByTheRFcenter = 3;
 
     switch (conesNumPooledByTheRFcenter)
         case 1
@@ -18,6 +18,9 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
         case 2
             minEccForThisCenterConesNum = 0;
             maxEccForThisCenterConesNum = 12;
+        case 3
+            minEccForThisCenterConesNum = 1;
+            maxEccForThisCenterConesNum = 20;
     end
     
 
@@ -32,6 +35,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
  
     regenerateData = true;
     if (regenerateData)
+
 
         % Sampling the eccentricity range. We sample very fine initially to
         % account for the fast reduction in cone density in the center. The
@@ -52,6 +56,8 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
             (analyzedRadialEccDegs >= minEccForThisCenterConesNum) & ...
             (analyzedRadialEccDegs <= maxEccForThisCenterConesNum)...
             );
+
+        analyzedRadialEccDegs = 1
 
         % From Croner & Kaplan '95 (Figure 4c and text)
         % "P surrounds were on average 6.7 times wider than the centers of 
@@ -127,6 +133,7 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
 
     retinalRFparamsDictionary = containers.Map();
 
+    
     for iEcc = numel(horizontalEccDegs):-1:1
         % Analyze effect of optics at this eccentricity
         eccDegs = [horizontalEccDegs(iEcc) verticalEccDegs(iEcc)];
@@ -165,6 +172,9 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
         s.theEmployedCircularPSFData = theCircularPSFData;
         retinalRFparamsDictionary(eccLabel) = s;
     end
+
+    
+
 end
 
 function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams, targetRadialEccDegs)
