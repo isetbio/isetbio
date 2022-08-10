@@ -3,7 +3,7 @@ function connectUnconnectedConesToNearbyRGCs(obj, varargin)
 % that is not further than 1 RGC separation away, and update the
 % obj.coneConnectivityMatrix sparse matrix accordingly
     
-     % Parse input
+    % Parse input
     p = inputParser;
     p.addParameter('generateProgressVideo', false, @islogical);
     p.parse(varargin{:});

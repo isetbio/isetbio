@@ -111,6 +111,9 @@ classdef RetinaToVisualFieldTransformer
         pooledConeIndicesAndWeightsStruct = retinalConeWeightsFromDoGDEmodelParameters(retinalRFDoGDEparams, ...
             conesNumPooledByTheRFcenter, spatialSupportX, spatialSupportY, cm);
 
+        pooledConeIndicesAndWeightsStruct = retinalConeWeightsFromDoGmodelParametersForTargetRFCenterCones(...
+           retinalRFDoGparams, cm, targetRFCenterConesIndices);
+
         pooledConeIndicesAndWeightsStruct = retinalConeWeightsFromDoGmodelParameters(retinalRFDoGparams, ...
             conesNumPooledByTheRFcenter, spatialSupportX, spatialSupportY, cm);
 
