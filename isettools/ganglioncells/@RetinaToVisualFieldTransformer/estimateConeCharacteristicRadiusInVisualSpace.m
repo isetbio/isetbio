@@ -111,10 +111,8 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj,...
     % Compute the visually-projected cone aperture given this PSF
     visualConeCharacteristicRadiusDegs = RetinaToVisualFieldTransformer.analyzeEffectOfPSFonConeAperture(...
                         anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
-                        hFig, videoOBJ, pdfFileName)
+                        hFig, videoOBJ, pdfFileName);
     
-
-
     % Return struct
     dStruct.conesNumInRetinalPatch = conesNumInRetinalPatch;
     dStruct.anatomicalConeCharacteristicRadiusDegs = anatomicalConeCharacteristicRadiusDegs;

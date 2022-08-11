@@ -10,8 +10,8 @@ function validateInputLattice(obj, theLattice, latticeName)
     assert(isfield(theLattice, 'RFpositionsMicrons'), 'The %s lattice must have an ''RFpositionsMicrons'' field.', latticeName);
     
     % Compute spacings
-    [theLattice.RFspacingsMicrons, ...
-        theLattice.nearbyRFindices] = RGCmodels.Watson.convert.positionsToSpacings(theLattice.RFpositionsMicrons);
+    [theLattice.RFspacingsMicrons, nearbyRFindices] = RGCmodels.Watson.convert.positionsToSpacings(theLattice.RFpositionsMicrons);
+    theLattice.nearbyRFindices = nearbyRFindices';
 
     assert(isfield(theLattice, 'RFspacingsMicrons'), 'The %s lattice must have an ''RFspacingsMicrons'' field.', latticeName);
     % Matrix dimensions must be valid

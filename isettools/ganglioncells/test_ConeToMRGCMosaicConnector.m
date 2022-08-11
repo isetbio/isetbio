@@ -6,7 +6,7 @@ function test_ConeToMRGCMosaicConnector()
 
 
     % Generate the input cone mosaic (the source)
-    eccDegs = [-20 0]; sizeDegs = 0.4+abs(eccDegs(1))*0.2*[0.6 0.2];
+    eccDegs = [-1 0]; sizeDegs = 0.5+(max(abs(eccDegs))+1)*0.4*[0.5 0.25];
 
     theInputConeMosaic = cMosaic(...
        'sourceLatticeSizeDegs', sourceLatticeSizeDegs, ...

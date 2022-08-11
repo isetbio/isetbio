@@ -4,6 +4,6 @@ function theSmoothedSpacings = smoothSpacings(rfSpacings, nearbyRFindices)
     theSmoothedSpacings = 0*rfSpacings;
     
     parfor rfIndex = 1:numel(rfSpacings)
-        theSmoothedSpacings(rfIndex) = median(rfSpacings(nearbyRFindices(:,rfIndex)));
+        theSmoothedSpacings(rfIndex) = median(rfSpacings(nearbyRFindices(rfIndex,:)));
     end
 end

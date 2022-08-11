@@ -42,6 +42,8 @@ classdef MosaicConnector < handle
         % (i.e., destinationRFcentroidsFromInputs), which are in turn based on their source RF inputs
         destinationRFspacingsFromCentroids = [];
 
+        
+
         % Sparse [sourceRFsNum x destinationRFsNum] sparse  connectivity matrix 
         % To find which source RFs are connected to a targetDestinationRF:
         %  connectivityVector = full(squeeze(obj.connectivityMatrix(:, targetDestinationRF)));

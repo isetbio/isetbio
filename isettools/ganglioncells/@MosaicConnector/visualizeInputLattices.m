@@ -71,19 +71,19 @@ function [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin)
     axis(ax, 'equal');
 
     minXYdest = min(obj.destinationLattice.RFpositionsMicrons,[],1);
-    minXYsrc =  min(obj.sourceLattice.RFpositionsMicrons,[],1);
+    %minXYsrc =  min(obj.sourceLattice.RFpositionsMicrons,[],1);
 
     maxXYdest = max(obj.destinationLattice.RFpositionsMicrons,[],1);
-    maxXYsrc =  max(obj.sourceLattice.RFpositionsMicrons,[],1);
+    %maxXYsrc =  max(obj.sourceLattice.RFpositionsMicrons,[],1);
 
     maxDestSpacing = max(obj.destinationLattice.RFspacingsMicrons);
     if (isempty(XLims))
-        XLims = [minXYsrc(1) maxXYsrc(1)] + 0.1*maxDestSpacing*[-1 1];
+        XLims = [minXYdest(1) maxXYdest(1)] + maxDestSpacing*[-1 1];
     end
     if (isempty(YLims))
-        YLims = [minXYsrc(2) maxXYsrc(2)] + 0.1*maxDestSpacing*[-1 1];
+        YLims = [minXYdest(2) maxXYdest(2)] + maxDestSpacing*[-1 1];
     end
-
+   
     set(ax, 'XLim', XLims, 'YLim', YLims, 'FontSize', 16);
 
     if (~isempty(titleString))
