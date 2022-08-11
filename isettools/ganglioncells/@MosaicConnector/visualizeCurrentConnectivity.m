@@ -1,4 +1,4 @@
-function visualizeCurrentConnectivity(obj, figNo)
+function hFig = visualizeCurrentConnectivity(obj, figNo)
 
     hFig = figure(figNo); clf;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...

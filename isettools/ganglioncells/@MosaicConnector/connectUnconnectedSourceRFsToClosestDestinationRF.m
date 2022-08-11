@@ -33,7 +33,7 @@ function connectUnconnectedSourceRFsToClosestDestinationRF(obj)
 
         normDistance = distance/obj.destinationLattice.RFspacingsMicrons(theTargetDestinationRFindex);
 
-        if (normDistance > obj.maxNeighborNormDistance)
+        if (normDistance > obj.wiringParams.maxNeighborNormDistance)
             error('WIll not connect sourceRF %d to any destination RF. Closest destination RF has a distance of %2.2f\n', theSourceRFindex, normDistance);
         else
             %fprintf('Connecting sourceRF %d to destination RF %d which is %2.2f distance away\n', ...

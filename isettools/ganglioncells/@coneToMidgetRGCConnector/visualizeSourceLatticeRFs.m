@@ -6,7 +6,6 @@ function visualizeSourceLatticeRFs(obj, ax, coneOutline, varargin)
     identifiedConeIndicesSetA = p.Results.identifiedConeIndicesSetA;
     identifiedConeIndicesSetB = p.Results.identifiedConeIndicesSetB;
 
-
     % We have metadata, so plot the types of cones
     if (isfield(obj.sourceLattice, 'metaData')) && ...
            (isfield(obj.sourceLattice.metaData, 'coneTypes')) && ...

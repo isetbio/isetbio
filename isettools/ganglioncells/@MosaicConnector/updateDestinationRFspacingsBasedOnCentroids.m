@@ -5,7 +5,7 @@ function updateDestinationRFspacingsBasedOnCentroids(obj)
         MosaicConnector.pdist2(...
             obj.destinationRFcentroidsFromInputs, ...
             obj.destinationRFcentroidsFromInputs, '', ...
-            'smallest', obj.maxNeighborsNum+1);
+            'smallest', obj.wiringParams.maxNeighborsNum+1);
 
     % Initialize destination RF spacings from their current centroids 
     obj.destinationRFspacingsFromCentroids = inf(1,size(obj.destinationRFcentroidsFromInputs,1));
@@ -13,7 +13,7 @@ function updateDestinationRFspacingsBasedOnCentroids(obj)
     nonZeroInputDestinationRFindices = find(~isinf(obj.destinationRFcentroidsFromInputs(:,1)));
     spacingsMicrons = RGCmodels.Watson.convert.positionsToSpacings(obj.destinationRFcentroidsFromInputs);
 
-    maxNeighborNormDistance = obj.maxNeighborNormDistance;
+    maxNeighborNormDistance = obj.wiringParams.maxNeighborNormDistance;
     destinationRFspacingsFromCentroids = zeros(1,numel(nonZeroInputDestinationRFindices));
 
     % Update the spacings for all destinationRFs with at least 1 input

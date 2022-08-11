@@ -8,9 +8,25 @@ classdef coneToMidgetRGCConnector < MosaicConnector
         
     end
     
-    % --- PRIVATE PROPERTIES ----------------------------------------------
-    properties (Access = private)              
+    % Constant properties
+    properties (Constant)
 
+        defaultWiringParams = struct(...
+            'optimizationCenter', 'patchCenter', ...              % {'patchCenter', 'visualFieldCenter'}
+            'chromaticSpatialVarianceTradeoff', 1.0, ...          % [0: minimize chromatic variance 1: minimize spatial variance]
+            'rfCentroidOverlapPenaltyFactor', 1, ...              % Penalty for overlapping centroids
+            'RcToRGCseparationRatio', 1.0, ...                    % overlap of RFs (1 = no overlap)
+            'spatialVarianceMetric', 'spatial variance', ...      % choose between {'maximal interinput distance', 'spatial variance'}
+            'maxMeanConeInputsPerRGCToConsiderSwapping', 10, ...  % Do cone swapping only if the mean cones/RGC less than or equal to this number
+            'maxNumberOfConesToSwap', 6, ...                      % Only swap up to this many cones
+            'maxPassesNum', 50 ...     
+        );
+
+    end
+
+    % --- PRIVATE PROPERTIES ----------------------------------------------
+    properties (Access = private)            
+        
     end
     % --- END OF PRIVATE PROPERTIES ---------------------------------------
     
@@ -20,6 +36,7 @@ classdef coneToMidgetRGCConnector < MosaicConnector
         % Constructor
         function obj = coneToMidgetRGCConnector(...
                 sourceLattice, destinationLattice, varargin) 
+
             p = inputParser;
             p.addParameter('verbosity', 1);
             p.addParameter('coneIndicesToBeConnected', []);
@@ -27,8 +44,21 @@ classdef coneToMidgetRGCConnector < MosaicConnector
             p.addParameter('smoothSourceLatticeSpacings', true, @islogical);
             p.addParameter('smoothDestinationLatticeSpacings', true, @islogical);
 
+            p.addParameter('maxNeighborNormDistance', MosaicConnector.maxNeighborNormDistance, @isscalar);
+            p.addParameter('maxNeighborsNum', MosaicConnector.maxNeighborsNum, @isscalar);
+            p.addParameter('chromaticSpatialVarianceTradeoff', coneToMidgetRGCConnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));  % [0: minimize chromatic variance 1: minimize spatial variance]
+            p.addParameter('optimizationCenter', coneToMidgetRGCConnector.defaultWiringParams.optimizationCenter, @(x)(ismember(x, {'patchCenter', 'visualFieldCenter'})));
+
             % Execute the parser
             p.parse(varargin{:});
+
+            customWiringParams = coneToMidgetRGCConnector.defaultWiringParams;
+            customWiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
+            customWiringParams.maxNeighborsNum = p.Results.maxNeighborsNum;
+
+            customWiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
+            customWiringParams.optimizationCenter = p.Results.optimizationCenter;
+            
 
 
             % Call the super-class constructor.
@@ -39,7 +69,8 @@ classdef coneToMidgetRGCConnector < MosaicConnector
                 'connectableSourceRFindices', p.Results.coneIndicesToBeConnected, ...
                 'visualizeConnectivityAtIntermediateStages', p.Results.visualizeConnectivityAtIntermediateStages, ...
                 'smoothSourceLatticeSpacings', p.Results.smoothSourceLatticeSpacings, ...
-                'smoothDestinationLatticeSpacings', p.Results.smoothDestinationLatticeSpacings);
+                'smoothDestinationLatticeSpacings', p.Results.smoothDestinationLatticeSpacings, ...
+                'wiringParams', customWiringParams);
 
         end % Constructor
     end % Public methods
@@ -54,6 +85,28 @@ classdef coneToMidgetRGCConnector < MosaicConnector
         % (depending on the source lattice)
         cropDestinationLattice(obj);
 
+
+        % coneToMidgetRGCconnector -specific method for transfering cones between
+        % nearby RGCs that have unbalanced input numerosities.
+        % For example, when connecting a cone mosaic (source) to an RGC mosaic
+        % (destination) we may apply a special cost function that depends on 
+        % the types of cones (sourceRFs).
+        transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, varargin);
+
+
+        % coneToMidgetRGCconnector -specific method to compute the cost
+        % components to maintain a set of inputs (cones)
+        theCostComponents = inputMaintenanceCost(obj, inputIndices, inputWeights, destinationRFspacing);
+
+        % Subclass-secific method for computing the various cost components
+        % to maintain the overlap between two RGCs
+        theCostComponents = overlappingDestinationRFCost(obj, ...
+            theRGCindex, ...
+            theRGCinputIndices, theRGCinputWeights, ...
+            theNearbyRGCindex, ...
+            theNearbyRGCinputIndices, theNearbyRGCinputWeights ...
+            );
+
         % coneToMidgetRGCconnector - specific method to visualize the
         % source lattice RFs (i.e., the cone RFs)
         visualizeSourceLatticeRFs(obj, ax, coneOutline, varargin);
@@ -61,6 +114,7 @@ classdef coneToMidgetRGCConnector < MosaicConnector
     
 
     methods (Access = private) 
+
     end % Private methods 
 
 end

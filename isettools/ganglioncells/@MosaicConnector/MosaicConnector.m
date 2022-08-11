@@ -19,6 +19,12 @@ classdef MosaicConnector < handle
 
     end % Public properties
 
+    % Constant properties
+    properties (Constant)
+        maxNeighborsNum = 6;                           % max number of neighboring destination RF
+        maxNeighborNormDistance = 1.5;                 % max distance to search for neighboring destination RFs   
+    end
+
     % Protected properties. All @MosaicConnector subclasses can read these, 
     % but they cannot set them. 
     properties (SetAccess = protected)
@@ -29,11 +35,14 @@ classdef MosaicConnector < handle
         % The input destination RF lattice
         destinationLattice;
         
-        % Compute struct for computing local source-to-destination density ratios
-        sourceToDestinationDensityRatioComputeStruct;
-
         % Indices of source RFs that are allowed to connect to a destination RF
         connectableSourceRFindices;
+
+        % Wiring params struct
+        customWiringParams;
+
+        % Compute struct for computing local source-to-destination density ratios
+        sourceToDestinationDensityRatioComputeStruct;
 
         % Centroids of destination RFs based on their current source RF inputs
         destinationRFcentroidsFromInputs;
@@ -43,7 +52,6 @@ classdef MosaicConnector < handle
         destinationRFspacingsFromCentroids = [];
 
         
-
         % Sparse [sourceRFsNum x destinationRFsNum] sparse  connectivity matrix 
         % To find which source RFs are connected to a targetDestinationRF:
         %  connectivityVector = full(squeeze(obj.connectivityMatrix(:, targetDestinationRF)));
@@ -58,9 +66,8 @@ classdef MosaicConnector < handle
         smoothSourceLatticeSpacings;
         smoothDestinationLatticeSpacings;
 
-        % Neirboring params
-        maxNeighborNormDistance;
-        maxNeighborsNum;
+        % Struct with wiring params
+        wiringParams;
 
     end % Write-protected 
 
@@ -86,9 +93,30 @@ classdef MosaicConnector < handle
         % to those RGCs at the edges of the RGC mosaic
         cropDestinationLattice(obj);
 
-        % Subclass- specific method to visualize the source lattice RFs
-        visualizeSourceLatticeRFs(obj);
+        % Subclass-specific method for transfering input source RFs between
+        % nearby destination RFs that have unbalanced input numerosities.
+        % For example, when connecting a cone mosaic (source) to an RGC mosaic
+        % (destination) we may apply a special cost function that depends on 
+        % the types of cones (sourceRFs).
+        transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, varargin);
 
+        % Subclass-secific method for computing the various cost components
+        % to maintain a set of input RFs
+        theCostComponents = inputMaintenanceCost(obj, inputIndices, inputWeights, destinationRFspacing);
+
+
+        % Subclass-secific method for computing the various cost components
+        % to maintain the overlap between a destination RF and a nearby
+        % destination RF
+        theCostComponents = overlappingDestinationRFCost(obj, ...
+            destinationRFindex, ...
+            destinationRFinputIndices, destinationRFinputWeights, ...
+            nearbyDestinationRFindex, ...
+            nearbyDestinationRFinputIndices, nearbyDestinationRFinputWeights ...
+            );
+
+        % Subclass-specific method to visualize the source lattice RFs
+        visualizeSourceLatticeRFs(obj);
     end % Abstract methods
 
     % Public methods
@@ -103,9 +131,7 @@ classdef MosaicConnector < handle
             p.addParameter('visualizeConnectivityAtIntermediateStages', false, @islogical);
             p.addParameter('smoothSourceLatticeSpacings', true, @islogical);
             p.addParameter('smoothDestinationLatticeSpacings', true, @islogical);
-            p.addParameter('maxNeighborNormDistance', 1.5, @isscalar);
-            p.addParameter('maxNeighborsNum', 6, @isscalar);
-
+            p.addParameter('wiringParams', [], @(x)(isempty(x)||isstruct(x)));
             
             % Execute the parser
             p.parse(varargin{:});
@@ -114,8 +140,7 @@ classdef MosaicConnector < handle
             obj.visualizeConnectivityAtIntermediateStages = p.Results.visualizeConnectivityAtIntermediateStages;
             obj.smoothSourceLatticeSpacings = p.Results.smoothSourceLatticeSpacings;
             obj.smoothDestinationLatticeSpacings = p.Results.smoothDestinationLatticeSpacings;
-            obj.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
-            obj.maxNeighborsNum = p.Results.maxNeighborsNum;
+            obj.wiringParams = p.Results.wiringParams;
 
             % Validate source and destination lattices
             obj.validateInputLattice(sourceLattice, 'source');
@@ -136,10 +161,20 @@ classdef MosaicConnector < handle
             % Step2. Connect unconnected sourceRFs to their closest destination RF
             obj.connectUnconnectedSourceRFsToClosestDestinationRF();
 
+            % Step 3. Transer input sources from one destinationRF (dRF1) to a
+            % neighboring destination RF (dRF2), where dRF1 has at least
+            % N+2 inputs, where N is the number of inputs to dRF2. This
+            % transfer is done so as to minimize the combined cost for
+            % dRF1+dRF2. The method called here
+            % transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs()
+            % is an abstract method that must be implemented by the
+            % subclass so as to have specialized treatment
+            obj.transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs();
+
         end % Constructor
 
         % Visualization methods
-        visualizeCurrentConnectivity(obj, figNo);
+        hFig = visualizeCurrentConnectivity(obj, figNo);
         visualizeDestinationLatticePooling(obj, varargin);
         [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin);
         
@@ -167,7 +202,25 @@ classdef MosaicConnector < handle
 
     % The class-user has no need to call these methods, but our subclasses may.
     methods (Access = protected)
-        
+        % Compute the cost to maintain the current inputs for all destination RFs
+        theCostComponentsMatrix = totalInputMaintenanceCost(obj);
+
+        % Optimize how many and which of theDestinationRFinputIndices will
+        % be transfered to one of the allNearbyDestinationRFindices
+        optimizeTransferOfInputRFs(obj, ...
+            theDestinationRFindex, theDestinationRFinputIndices, theDestinationRFinputWeights, ...
+            allNearbyDestinationRFindices, allNearbyDestinationRFinputIndices, allNearbyDestinationRFinputWeights);
+
+        % Transfer an inputRF from its current destinationRF to a nearby
+        % destination RF, and update the corresponding centroids
+        transferInputRFFromDestinationRFToNearbyDestinationRF(obj, ...
+            indexOfInputRFToBeReassigned, destinationRFindex, nearbyDestinationRFindex)
+
+        % Update the destination RF centroids based on their inputs
+        updateDestinationCentroidsFromInputs(obj, destinationRFList);
+
+        % Update the destination RF spacings based on their centroids
+        updateDestinationRFspacingsBasedOnCentroids(obj);
     end
     
     methods (Access = private)
@@ -180,13 +233,6 @@ classdef MosaicConnector < handle
 
         % Stage1 connection methods
         connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj);
-
-        % Book-keeping methods
-        % Update the destination RF centroids based on their inputs
-        updateDestinationCentroidsFromInputs(obj, destinationRFList);
-
-        % Update the destination RF spacings based on their centroids
-        updateDestinationRFspacingsBasedOnCentroids(obj);
 
         % Input lattice validation method
         validateInputLattice(obj, theLattice, latticeName);
@@ -203,11 +249,14 @@ classdef MosaicConnector < handle
 
         [D,idx] = pdist2(A, B, varargin);
 
+        d = maximalInterInputDistance(RFpos);
+        
+        c = weightedMean(data, weights);
+        
+        convergenceIsAchieved = convergenceAchieved(netTotalCostSequence);
+
         [insideBoundaryPointIndices, onBoundaryPointIndices] = ...
             pointsInsideBoundaryDefinedBySelectedPoints(allPointPositions, selectedPointIndices);
     end
 
 end
-
-
-
