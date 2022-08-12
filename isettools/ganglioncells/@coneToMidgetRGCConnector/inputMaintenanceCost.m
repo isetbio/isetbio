@@ -21,7 +21,7 @@ function theCostComponents = inputMaintenanceCost(obj, ...
            (isfield(obj.sourceLattice.metaData, 'coneTypeIDs'))
                 inputConeTypes = obj.sourceLattice.metaData.coneTypes(inputIndices);
         else
-                fprintf(2,'No metaData were passed for the cone mosaic. Assuming all L-cones.\n')
+                %fprintf(2,'No metaData were passed for the cone mosaic. Assuming all L-cones.\n')
                 inputConeTypes = cMosaic.LCONE_ID;
         end
 

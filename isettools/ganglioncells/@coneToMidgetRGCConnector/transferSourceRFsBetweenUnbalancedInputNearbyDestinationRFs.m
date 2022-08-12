@@ -2,7 +2,7 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
 
     % Parse input
     p = inputParser;
-    p.addParameter('generateProgressVideo', true, @islogical);
+    p.addParameter('generateProgressVideo', false, @islogical);
     p.parse(varargin{:});
     generateProgressVideo = p.Results.generateProgressVideo;
 
@@ -143,15 +143,22 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
             lastTotalCost = netTotalCost(currentPass-1);
         end
 
-        % Visualize convergence - TO IMPLEMENT THE BELOW
-% % % %         RGCconnector.visualizeConvergence(currentPass, netTotalCostInitial, netTotalCost, ...
-% % % %                                           netSpatialCostInitial, netSpatialCost, ...
-% % % %                                           netChromaticCostInitial, netChromaticCost, ...
-% % % %                                           netTransfers, obj.wiringParams.maxPassesNum);
+        % Accumulate cost sequence
+        netTotalCostSequence = [netTotalCostInitial netTotalCost];
+        netSpatialCostSequence = [netSpatialCostInitial netSpatialCost];
+        netChromaticCostSequence = [netChromaticCostInitial netChromaticCost];
+        
+        % Visualize convergence
+        costsMatrix(:,1) = netTotalCostSequence(:);
+        costsMatrix(:,2) = netSpatialCostSequence(:);
+        costsMatrix(:,3) = netChromaticCostSequence(:);
+        costsNames = {'total cost', 'spatial variance cost', 'chromatic variance cost'};
+        MosaicConnector.visualizeConvergenceSequence(currentPass, ...
+            costsMatrix, costsNames, ...
+            netTransfers, obj.wiringParams.maxPassesNum);
 
 
         % Determine whether convergence was achieved
-        netTotalCostSequence = [netTotalCostInitial netTotalCost];
         convergenceAchieved = MosaicConnector.convergenceAchieved(netTotalCostSequence);
 
     end % while loop

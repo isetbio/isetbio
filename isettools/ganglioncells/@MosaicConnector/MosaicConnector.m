@@ -171,6 +171,7 @@ classdef MosaicConnector < handle
             % subclass so as to have specialized treatment
             obj.transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs();
 
+            
         end % Constructor
 
         % Visualization methods
@@ -257,6 +258,10 @@ classdef MosaicConnector < handle
 
         [insideBoundaryPointIndices, onBoundaryPointIndices] = ...
             pointsInsideBoundaryDefinedBySelectedPoints(allPointPositions, selectedPointIndices);
+    
+        visualizeConvergenceSequence(currentPass, ...
+            costsMatrix, costsNames, ...
+            netTransfers, maxPassesNum);
     end
 
 end
