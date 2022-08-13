@@ -93,17 +93,9 @@ classdef MosaicConnector < handle
         % to those RGCs at the edges of the RGC mosaic
         cropDestinationLattice(obj);
 
-        % Subclass-specific method for transfering input source RFs between
-        % nearby destination RFs that have unbalanced input numerosities.
-        % For example, when connecting a cone mosaic (source) to an RGC mosaic
-        % (destination) we may apply a special cost function that depends on 
-        % the types of cones (sourceRFs).
-        transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, varargin);
-
         % Subclass-secific method for computing the various cost components
         % to maintain a set of input RFs
         theCostComponents = inputMaintenanceCost(obj, inputIndices, inputWeights, destinationRFspacing);
-
 
         % Subclass-secific method for computing the various cost components
         % to maintain the overlap between a destination RF and a nearby
@@ -155,13 +147,13 @@ classdef MosaicConnector < handle
             % Crop the source lattice - subclass specific
             obj.cropSourceLattice();
 
-            % Step1. Connect mosaics based on the sourceToDestinationDensityRatio
+            % Stage 1. Connect mosaics based on the sourceToDestinationDensityRatio
             obj.connectSourceRFsToDestinationRFsBasedOnLocalDensities();
          
-            % Step2. Connect unconnected sourceRFs to their closest destination RF
+            % Stage 2. Connect unconnected sourceRFs to their closest destination RF
             obj.connectUnconnectedSourceRFsToClosestDestinationRF();
 
-            % Step 3. Transer input sources from one destinationRF (dRF1) to a
+            % Stage 3. Transfer input source RFs from one destinationRF (dRF1) to a
             % neighboring destination RF (dRF2), where dRF1 has at least
             % N+2 inputs, where N is the number of inputs to dRF2. This
             % transfer is done so as to minimize the combined cost for
@@ -171,7 +163,14 @@ classdef MosaicConnector < handle
             % subclass so as to have specialized treatment
             obj.transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs();
 
-            
+            % Stage 4. Transfer input source RFs from the highest input numerosity 
+            % destinationRFs to any destination RFs that may have not
+            % received any source RF inputs during steps1+2. 
+            obj.transferSourceRFsToZeroInputDestinationRFs();
+
+            % Stage 5. Swap input source RFs between nearby destination RFs 
+            % of the same input numerosity so at to minimize the combined cost
+            obj.swapSourceRFsBetweenNearbyDestinationRFs();
         end % Constructor
 
         % Visualization methods
@@ -232,8 +231,25 @@ classdef MosaicConnector < handle
         % Method to compute the source:destination density ratio map
         densityRatioMap = sourceToDestinationDensityRatioMap(obj);
 
-        % Stage1 connection methods
+        % Stage 1 connection method
         connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj);
+
+        % Stage 2 connection method
+        connectUnconnectedSourceRFsToClosestDestinationRF(obj);
+
+        % Stage 3 connection method
+        transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, varargin);
+
+        % Stage 4 connection method
+        transferSourceRFsToZeroInputDestinationRFs(obj, varargin);
+
+        % Stage 4 input transfer optimization method
+        optimizeTransferOfInputRFsToZeroInputDestinationRF(obj,...
+                 theMultiInputDestinationRFindex, theMultiInputDestinationRFinputIndices, ...
+                 theMultiInputDestinationRFinputWeights, theZeroInputDestinationRF);
+                  
+        % Stage 5 connection method
+        swapSourceRFsBetweenNearbyDestinationRFs(obj);
 
         % Input lattice validation method
         validateInputLattice(obj, theLattice, latticeName);

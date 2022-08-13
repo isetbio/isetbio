@@ -85,15 +85,6 @@ classdef coneToMidgetRGCConnector < MosaicConnector
         % (depending on the source lattice)
         cropDestinationLattice(obj);
 
-
-        % coneToMidgetRGCconnector -specific method for transfering cones between
-        % nearby RGCs that have unbalanced input numerosities.
-        % For example, when connecting a cone mosaic (source) to an RGC mosaic
-        % (destination) we may apply a special cost function that depends on 
-        % the types of cones (sourceRFs).
-        transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, varargin);
-
-
         % coneToMidgetRGCconnector -specific method to compute the cost
         % components to maintain a set of inputs (cones)
         theCostComponents = inputMaintenanceCost(obj, inputIndices, inputWeights, destinationRFspacing);
