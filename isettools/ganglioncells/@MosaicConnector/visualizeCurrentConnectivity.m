@@ -1,4 +1,10 @@
-function hFig = visualizeCurrentConnectivity(obj, figNo)
+function hFig = visualizeCurrentConnectivity(obj, figNo, varargin)
+    % Parse input
+    p = inputParser;
+    p.addParameter('titleString', '', @ischar);
+    p.parse(varargin{:});
+    titleString = p.Results.titleString;
+
 
     hFig = figure(figNo); clf;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -20,12 +26,16 @@ function hFig = visualizeCurrentConnectivity(obj, figNo)
         'thetaSamples', 30);
     set(ax, 'FontSize', 16);
 
+    if (isempty(titleString))
+        titleString = 'lattice wiring (stars: destination RFs with 0 inputs)';
+    end
+
     % The connectivity (pooling of destination lattice RFs) in the bottom-right plot
     ax = subplot('Position', subplotPosVectors(1,2).v);
     obj.visualizeDestinationLatticePooling(...
         'figureHandle', hFig, ...
         'axesHandle', ax, ...
-        'titleString', 'lattice wiring (stars: destination RFs with 0 inputs)', ...
+        'titleString', titleString, ...
         'titleWithPoolingStats', true, ...
         'XLims', XLims, ...
         'YLims', YLims);
