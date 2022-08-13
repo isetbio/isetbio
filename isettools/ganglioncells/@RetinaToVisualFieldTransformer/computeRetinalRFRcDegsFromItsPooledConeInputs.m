@@ -45,8 +45,8 @@ function [RFcenterRcDegs, RF2D] = computeRetinalRFRcDegsFromItsPooledConeInputs(
         RetinaToVisualFieldTransformer.fitGaussianToPooledConeApertures(spatialSupportDegs(:,1), spatialSupportDegs(:,2), RF2D, ...
         initialParams, lowerBounds, upperBounds);
 
-    % Return the max of the 2 characteristic radii
-    RFcenterRcDegs = max(theFittedGaussianCharacteristicRadiiDegs); %theFittedGaussianCharacteristicRadiusDegs; % min(theFittedGaussianCharacteristicRadiiDegs);
+    % Return the mean of the 2 characteristic radii
+    RFcenterRcDegs = mean(theFittedGaussianCharacteristicRadiiDegs);
 
     debugFitGaussianToPooledConeApertures = false;
     if (debugFitGaussianToPooledConeApertures)
