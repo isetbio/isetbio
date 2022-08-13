@@ -17,6 +17,7 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
 %  zeroCenterPSF             - Default true
 %  deNoisedZernikeCoefficients - Seems deprecated to me (BW).
 %  flipPSFUpsideDown         - Default true (aligns with image)
+%  defocusMicrons            - Add this value to defocus zcoeff
 %
 % Outputs:
 %   oiEnsemble   -  Cell array of OIs
@@ -50,6 +51,7 @@ p.addParameter('wavefrontSpatialSamples', 301, @isscalar);
 p.addParameter('subtractCentralRefraction', false, @islogical);
 p.addParameter('zeroCenterPSF', true, @islogical);
 p.addParameter('flipPSFUpsideDown', true, @islogical);
+p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
 p.parse(obj, oiSamplingGridDegs, varargin{:});
 
 oiSamplingGridDegs = p.Results.oiSamplingGridDegs;
@@ -70,6 +72,13 @@ psfEnsemble = cell(1, oiNum);
 switch (zernikeDataBase)
     
     case 'Artal2012'
+        % Make sure refractive error is zero, because Artal version of
+        % oiForSubjectAtEccentricity doesn't understand the
+        % 'refractiveErrorMicrons' key/value pair.
+        if (p.Results.refractiveErrorDiopters ~= 0)
+            error('Artal optics does not currently accept refractiveErrorDiopters key/value pair');
+        end
+
         % Artal optics
         for oiIndex = 1:oiNum
             %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
@@ -88,6 +97,7 @@ switch (zernikeDataBase)
                 'subtractCentralRefraction', subtractCentralRefraction, ...
                 'zeroCenterPSF', zeroCenterPSF, ...
                 'flipPSFUpsideDown', flipPSFUpsideDown);
+            
             
             if (isempty(theOI))
                 if (warningInsteadOfErrorForBadZernikeCoeffs)
@@ -125,7 +135,8 @@ switch (zernikeDataBase)
                 'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                 'subtractCentralRefraction', subtractCentralRefraction, ...
                 'zeroCenterPSF', zeroCenterPSF, ...
-                'flipPSFUpsideDown', flipPSFUpsideDown);
+                'flipPSFUpsideDown', flipPSFUpsideDown, ...
+                'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
             
             oiEnsemble{oiIndex} = theOI;
             psfEnsemble{oiIndex} = struct(...
