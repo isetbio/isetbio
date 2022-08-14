@@ -6,7 +6,7 @@ function test_ConeToMRGCMosaicConnector()
 
 
     % Generate the input cone mosaic (the source)
-    eccDegs = [-1 0]; sizeDegs = 0.5+(max(abs(eccDegs))+1)*0.4*[0.5 0.25];
+    eccDegs = [-4 0]; sizeDegs = 0.5+(max(abs(eccDegs))+1)*0.4*[0.5 0.25];
 
     theInputConeMosaic = cMosaic(...
        'sourceLatticeSizeDegs', sourceLatticeSizeDegs, ...
@@ -59,12 +59,18 @@ function test_ConeToMRGCMosaicConnector()
         theInputConeMosaic.lConeIndices(:); ...
         theInputConeMosaic.mConeIndices(:)];
 
+    chromaticSpatialVarianceTradeoff = 0.75;
     theMidgetRGCconnectorOBJ = coneToMidgetRGCConnector(...
         sourceLatticeStruct, destinationLatticeStruct, ...
         'coneIndicesToBeConnected', lmConeIndices, ...
         'visualizeConnectivityAtIntermediateStages', true, ...
-        'chromaticSpatialVarianceTradeoff',0.0);
+        'chromaticSpatialVarianceTradeoff',chromaticSpatialVarianceTradeoff);
   
 
+    figNo = 999;
+    hFig = theMidgetRGCconnectorOBJ.visualizeCurrentConnectivity(figNo);
+    pdfFileName = sprintf('ConnectedMosaicEccDegs_%2.1f_%2.1f_ChromaticSpatialVariance_%2.2f.pdf',...
+        eccDegs(1), eccDegs(2), chromaticSpatialVarianceTradeoff);
+    NicePlot.exportFigToPDF(pdfFileName,hFig, 300);
 end
 
