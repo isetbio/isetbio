@@ -120,10 +120,8 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
         netCostSequences = cat(1, netCostSequences, mean(theCostComponentsMatrix,1));
 
         % Visualize convergence
-        costComponentNames = {'total cost', 'spatial variance cost', 'chromatic variance cost'};
-
         MosaicConnector.visualizeConvergenceSequence(currentPass, ...
-            netCostSequences, costComponentNames, ...
+            netCostSequences, obj.costComponentNames(), ...
             netSwaps, obj.wiringParams.maxPassesNum);
 
         % Determine whether convergence was achieved

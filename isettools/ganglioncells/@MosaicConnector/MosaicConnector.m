@@ -97,6 +97,9 @@ classdef MosaicConnector < handle
         % to maintain a set of input RFs
         theCostComponents = inputMaintenanceCost(obj, inputIndices, inputWeights, destinationRFspacing);
 
+        % Subclass-secific method for returning the names of the different cost components
+        costComponentNames = costComponentNames(obj);
+
         % Subclass-secific method for computing the various cost components
         % to maintain the overlap between a destination RF and a nearby
         % destination RF
@@ -109,6 +112,10 @@ classdef MosaicConnector < handle
 
         % Subclass-specific method to visualize the source lattice RFs
         visualizeSourceLatticeRFs(obj);
+
+        % Subclass-specific method to visualize the statistic of the different cost components
+        visualizeCostComponentStatistics(obj, ax1, ax2, theCostComponentsMatrix);
+
     end % Abstract methods
 
     % Public methods
@@ -214,7 +221,6 @@ classdef MosaicConnector < handle
     end
     
     methods (Access = private)
-
         % Method to generate the sourceToDestinationDensityRatioComputeStruct
         generateSourceToDestinationDensityRatioComputeStruct(obj, samplingIntervalMicrons);
 
