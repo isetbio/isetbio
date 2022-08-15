@@ -9,7 +9,7 @@ function dryRunRFgeneration()
     analyzedRetinaMeridian = 'nasal meridian';
     
     % Number of cones in RF center
-    conesNumPooledByTheRFcenter = 1;
+    conesNumPooledByTheRFcenter = 3;
 
     analyzedEye = 'right eye';
     subjectRankingEye = 'right eye';
@@ -55,31 +55,34 @@ function dryRunRFgeneration()
         mosaicSizeDegs = mosaicRadialEccDegs*0.4 + 0.4*[1 1];
         theConeMosaic = generateMosaic(analyzedEye, mosaicEccDegs, mosaicSizeDegs);
     
-        targetRFpositionDegs = mosaicEccDegs+0*[0.1 0.3];
-        distances = sum((bsxfun(@minus, theConeMosaic.coneRFpositionsDegs, targetRFpositionDegs)).^2,2);
-        [~,idx] = sort(distances, 'ascend');
+        for iPosition = 1:10
+            targetRFpositionDegs = mosaicEccDegs+randn(1,2)*0.15*max(mosaicSizeDegs);
+            distances = sum((bsxfun(@minus, theConeMosaic.coneRFpositionsDegs, targetRFpositionDegs)).^2,2);
+            [~,idx] = sort(distances, 'ascend');
+        
+            targetRFCenterConesIndices = idx(1:conesNumPooledByTheRFcenter);
+        
+            if (isequal(weightsComputeFunctionHandle,@RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGmodelParameters))
+                pooledConeIndicesAndWeightsStruct = RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGmodelParametersForTargetRFCenterCones(...
+                    retinalRFparamsStruct, ...
+                    theConeMosaic, ...
+                    targetRFCenterConesIndices);
+            elseif (isequal(weightsComputeFunctionHandle,@RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGDEmodelParameters))
+                error('Implent this')
+            else
+                error('Uknown function handle');
+            end
     
-        targetRFCenterConesIndices = idx(1:conesNumPooledByTheRFcenter);
     
-        if (isequal(weightsComputeFunctionHandle,@RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGmodelParameters))
-            pooledConeIndicesAndWeightsStruct = RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGmodelParametersForTargetRFCenterCones(...
-                retinalRFparamsStruct, ...
-                theConeMosaic, ...
-                targetRFCenterConesIndices);
-        elseif (isequal(weightsComputeFunctionHandle,@RetinaToVisualFieldTransformer.retinalConeWeightsFromDoGDEmodelParameters))
-            error('Implent this')
-        else
-            error('Uknown function handle');
-        end
-    
-    
-        % Compute visual RF
-        theEmployedPSFData = [];
-        hFig = computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic, opticsParams, ...
-            theEmployedPSFData, targetVisualRF, rfSpatialSupportDegs);
+            % Compute visual RF
+            theEmployedPSFData = [];
+            hFig = computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic, opticsParams, ...
+                theEmployedPSFData, targetVisualRF, rfSpatialSupportDegs);
 
-        drawnow;
-        videoOBJ.writeVideo(getframe(hFig));
+            drawnow;
+            videoOBJ.writeVideo(getframe(hFig));
+        end % iPOsition
+
         %NicePlot.exportFigToPDF(sprintf('analysisEcc%4.3f.pdf', mosaicRadialEccDegs), hFig, 300);
     end
     videoOBJ.close();
@@ -159,8 +162,16 @@ function hFig = computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic
     deltaP = 0.02*(profileRange(2)-profileRange(1));
     profileRange = profileRange + deltaP*[-1 1];
 
+    idx = find(abs(rfSupportX) < max(rfSupportX)*0.5);
+    idy = find(abs(rfSupportY) < max(rfSupportY)*0.5);
 
     rfSupportX = rfSupportX + theConeMosaic.eccentricityDegs(1);
+    rfSupportY = rfSupportY + theConeMosaic.eccentricityDegs(2);
+
+    xRange = rfSupportX(idx);
+    xRange = [min(xRange) max(xRange)];
+    yRange = rfSupportY(idy);
+    yRange = [min(yRange) max(yRange)];
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
         'rowsNum', 2, ...
@@ -179,14 +190,14 @@ function hFig = computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic
     hold on;
     plot(ax, rfSupportX, theTargetVisualRFprofile(:)-0.5*(theVisualRFprofileX(:)+theVisualRFprofileY(:)), 'm--', 'LineWidth', 1.5);
     grid(ax, 'on');
-    set(ax, 'YLim', profileRange, 'XLim', [min(rfSupportX) max(rfSupportX)], 'FontSize', 16);
+    set(ax, 'YLim', profileRange, 'XLim', xRange, 'FontSize', 16);
     title(ax, 'target visual RF');
 
     ax = subplot('Position', subplotPosVectors(2,1).v);
     imagesc(ax, rfSupportX, rfSupportY, targetVisualRF);
     axis(ax, 'image');
     grid(ax, 'on');
-    set(ax, 'CLim', 0.1*[-1 1], 'YTickLabel', {}, 'FontSize', 16);
+    set(ax, 'CLim', 1*[-1 1], 'XLim', xRange, 'YLim', yRange, 'YTickLabel', {}, 'FontSize', 16);
 
 
     ax = subplot('Position', subplotPosVectors(1,2).v);
@@ -195,14 +206,14 @@ function hFig = computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic
     plot(ax, rfSupportX, theVisualRFprofileX, 'r-', 'LineWidth', 1.5);
     plot(ax, rfSupportX, theVisualRFprofileY, 'b-', 'LineWidth', 1.5);
     grid(ax, 'on');
-    set(ax, 'YLim', profileRange, 'XLim', [min(rfSupportX) max(rfSupportX)], 'FontSize', 16);
+    set(ax, 'YLim', profileRange, 'XLim', xRange, 'FontSize', 16);
     title(ax, 'achieved visual RF');
     
     ax = subplot('Position', subplotPosVectors(2,2).v);
     imagesc(ax, rfSupportX, rfSupportY, theVisualRF);
     axis(ax, 'image');
     grid(ax, 'on');
-    set(ax, 'CLim', 0.1*[-1 1], 'YTickLabel', {}, 'FontSize', 16);
+    set(ax, 'CLim', 1*[-1 1], 'XLim', xRange, 'YLim', yRange, 'YTickLabel', {}, 'FontSize', 16);
 
 
     ax = subplot('Position', subplotPosVectors(1,3).v);
@@ -210,14 +221,14 @@ function hFig = computeVisualRF(pooledConeIndicesAndWeightsStruct, theConeMosaic
     hold(ax, 'on')
     plot(ax, rfSupportX, theRetinalRFprofileY, 'b-', 'LineWidth', 1.5);
     grid(ax, 'on');
-    set(ax, 'YLim', profileRangeFull, 'XLim', [min(rfSupportX) max(rfSupportX)], 'FontSize', 16);
+    set(ax, 'YLim', profileRangeFull, 'XLim', xRange, 'FontSize', 16);
     title(ax, 'retinal RF');
 
     ax = subplot('Position', subplotPosVectors(2,3).v);
     imagesc(ax, rfSupportX, rfSupportY, theRetinalRF);
     axis(ax, 'image');
     grid(ax, 'on');
-    set(ax, 'CLim', 0.1*[-1 1], 'YTickLabel', {}, 'FontSize', 16);
+    set(ax, 'CLim', 1*[-1 1], 'XLim', xRange, 'YLim', yRange, 'YTickLabel', {}, 'FontSize', 16);
 
 end
 

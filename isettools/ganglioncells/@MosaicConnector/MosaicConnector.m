@@ -22,7 +22,7 @@ classdef MosaicConnector < handle
     % Constant properties
     properties (Constant)
         maxNeighborsNum = 6;                           % max number of neighboring destination RF
-        maxNeighborNormDistance = 1.5;                 % max distance to search for neighboring destination RFs   
+        maxNeighborNormDistance = 1.1;                 % max distance to search for neighboring destination RFs   
     end
 
     % Protected properties. All @MosaicConnector subclasses can read these, 
@@ -97,6 +97,9 @@ classdef MosaicConnector < handle
         % to maintain a set of input RFs
         theCostComponents = inputMaintenanceCost(obj, inputIndices, inputWeights, destinationRFspacing);
 
+        % Subclass-secific method for returning the names of the different cost components
+        costComponentNames = costComponentNames(obj);
+
         % Subclass-secific method for computing the various cost components
         % to maintain the overlap between a destination RF and a nearby
         % destination RF
@@ -109,6 +112,10 @@ classdef MosaicConnector < handle
 
         % Subclass-specific method to visualize the source lattice RFs
         visualizeSourceLatticeRFs(obj);
+
+        % Subclass-specific method to visualize the statistic of the different cost components
+        visualizeCostComponentStatistics(obj, ax1, ax2, theCostComponentsMatrix);
+
     end % Abstract methods
 
     % Public methods
@@ -174,7 +181,7 @@ classdef MosaicConnector < handle
         end % Constructor
 
         % Visualization methods
-        hFig = visualizeCurrentConnectivity(obj, figNo);
+        hFig = visualizeCurrentConnectivity(obj, figNo, varargin);
         visualizeDestinationLatticePooling(obj, varargin);
         [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin);
         
@@ -205,17 +212,7 @@ classdef MosaicConnector < handle
         % Compute the cost to maintain the current inputs for all destination RFs
         theCostComponentsMatrix = totalInputMaintenanceCost(obj);
 
-        % Optimize how many and which of theDestinationRFinputIndices will
-        % be transfered to one of the allNearbyDestinationRFindices
-        optimizeTransferOfInputRFs(obj, ...
-            theDestinationRFindex, theDestinationRFinputIndices, theDestinationRFinputWeights, ...
-            allNearbyDestinationRFindices, allNearbyDestinationRFinputIndices, allNearbyDestinationRFinputWeights);
-
-        % Transfer an inputRF from its current destinationRF to a nearby
-        % destination RF, and update the corresponding centroids
-        transferInputRFFromDestinationRFToNearbyDestinationRF(obj, ...
-            indexOfInputRFToBeReassigned, destinationRFindex, nearbyDestinationRFindex)
-
+        
         % Update the destination RF centroids based on their inputs
         updateDestinationCentroidsFromInputs(obj, destinationRFList);
 
@@ -224,7 +221,6 @@ classdef MosaicConnector < handle
     end
     
     methods (Access = private)
-
         % Method to generate the sourceToDestinationDensityRatioComputeStruct
         generateSourceToDestinationDensityRatioComputeStruct(obj, samplingIntervalMicrons);
 
@@ -240,6 +236,14 @@ classdef MosaicConnector < handle
         % Stage 3 connection method
         transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, varargin);
 
+        % Stage 3 input transfer optimization. 
+        % Optimize how many and which of theDestinationRFinputIndices will
+        % be transfered to one of the allNearbyDestinationRFindices
+        optimizeTransferOfInputRFs(obj, ...
+            theDestinationRFindex, theDestinationRFinputIndices, theDestinationRFinputWeights, ...
+            allNearbyDestinationRFindices, allNearbyDestinationRFinputIndices, allNearbyDestinationRFinputWeights);
+
+
         % Stage 4 connection method
         transferSourceRFsToZeroInputDestinationRFs(obj, varargin);
 
@@ -247,9 +251,26 @@ classdef MosaicConnector < handle
         optimizeTransferOfInputRFsToZeroInputDestinationRF(obj,...
                  theMultiInputDestinationRFindex, theMultiInputDestinationRFinputIndices, ...
                  theMultiInputDestinationRFinputWeights, theZeroInputDestinationRF);
-                  
+                     
+
         % Stage 5 connection method
         swapSourceRFsBetweenNearbyDestinationRFs(obj);
+
+        % Stage 5 input swap optimization. Optimize swapping of inputs from one destinationRF to its nearby destination RFs
+        beneficialSwapWasFound = optimizeSwappingOfInputRFs(obj,...
+            theDestinationRFindex, theDestinationRFinputIndices, theDestinationRFinputWeights, ...
+            allNearbyDestinationRFindices, allNearbyDestinationRFinputIndices, allNearbyDestinationRFinputWeights);
+
+
+        % Transfer an inputRF from its current destinationRF to a nearby
+        % destination RF, and update the corresponding centroids
+        transferInputRFFromDestinationRFToNearbyDestinationRF(obj, ...
+            indexOfInputRFToBeReassigned, destinationRFindex, nearbyDestinationRFindex)
+
+        % Swap input RFs from one destinationRF to a nearby destinationRF
+        swapInputsFromDestinationRFWithInputsOfNearbyDestinationRF(obj, ...
+            destinationRFinputIndicesToBeSwapped, theDestinationRFindex, ...
+            nearbyDestinationRFinputIndicesToBeSwapped, theNearbyDestinationRFindex);  
 
         % Input lattice validation method
         validateInputLattice(obj, theLattice, latticeName);

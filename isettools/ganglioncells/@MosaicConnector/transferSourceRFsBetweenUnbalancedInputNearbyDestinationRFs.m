@@ -35,6 +35,8 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
     % Compute the current costs for all destination RF to maintain their current inputs 
     % theCostComponents is an [nDestinationRFs x cost components]  matrix
     theCostComponentsMatrix = obj.totalInputMaintenanceCost();
+    
+    % The different cost component sequences
     netCostSequences = mean(theCostComponentsMatrix,1);
 
 
@@ -57,6 +59,7 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
         % Retrieve the centroids of the targeted destination RFs
         targetedDestinationRFCentroids = obj.destinationRFcentroidsFromInputs(targetedDestinationRFindices,:);
     
+        % Sort destinationRFs according to the optimization center
         switch (obj.wiringParams.optimizationCenter)
             case 'visualFieldCenter'
                 ecc = sum(targetedDestinationRFCentroids.^2,2);
@@ -77,10 +80,10 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
                 continue;
             end
 
-            % Find the indices and weights of cone inputs to this RGC
+            % Find the indices and weights of cone inputs to this destination RF
             theSourceDestinationRFinputIndices = find(squeeze(obj.connectivityMatrix(:,theSourceDestinationRFindex))>0);
             theSourceDestinationRFinputConesNum = numel(theSourceDestinationRFinputIndices);
-            theSourceDestinationRFinputConeWeights = full(obj.connectivityMatrix(theSourceDestinationRFinputIndices,theSourceDestinationRFindex));
+            theSourceDestinationRFinputWeights = full(obj.connectivityMatrix(theSourceDestinationRFinputIndices,theSourceDestinationRFindex));
     
             % Find the difference in # of inputs between source
             % destinationRF and nearby destinationRFs
@@ -103,7 +106,7 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
                 theNearbyDestinationRFInputWeights = inputWeightsAllNearbyDestinationRFs(idx);
                 theNearbyDestinationRFindex = nearbyDestinationRFindices(idx);
                 obj.optimizeTransferOfInputRFs(...
-                    theSourceDestinationRFindex, theSourceDestinationRFinputIndices, theSourceDestinationRFinputConeWeights, ...
+                    theSourceDestinationRFindex, theSourceDestinationRFinputIndices, theSourceDestinationRFinputWeights, ...
                     theNearbyDestinationRFindex, theNearbyDestinationRFInputIndices, theNearbyDestinationRFInputWeights);
 
                 if (generateProgressVideo)
@@ -128,10 +131,8 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
         netCostSequences = cat(1, netCostSequences, mean(theCostComponentsMatrix,1));
         
         % Visualize convergence
-        costComponentNames = {'total cost', 'spatial variance cost', 'chromatic variance cost'};
-
         MosaicConnector.visualizeConvergenceSequence(currentPass, ...
-            netCostSequences, costComponentNames, ...
+            netCostSequences, obj.costComponentNames(), ...
             netTransfers, obj.wiringParams.maxPassesNum);
 
         % Determine whether convergence was achieved

@@ -89,6 +89,11 @@ classdef coneToMidgetRGCConnector < MosaicConnector
         % components to maintain a set of inputs (cones)
         theCostComponents = inputMaintenanceCost(obj, inputIndices, inputWeights, destinationRFspacing);
 
+        % Return names of the different cost components
+        costComponentNames = costComponentNames(obj);
+
+        
+
         % Subclass-secific method for computing the various cost components
         % to maintain the overlap between two RGCs
         theCostComponents = overlappingDestinationRFCost(obj, ...
@@ -101,6 +106,11 @@ classdef coneToMidgetRGCConnector < MosaicConnector
         % coneToMidgetRGCconnector - specific method to visualize the
         % source lattice RFs (i.e., the cone RFs)
         visualizeSourceLatticeRFs(obj, ax, coneOutline, varargin);
+
+        % coneToMidgetRGCconnector - specific method to visualize the
+        % statistic of the different cost components
+        visualizeCostComponentStatistics(obj, ax1, ax2, theCostComponentsMatrix);
+
     end % Implementations of required -- Public -- Abstract methods defined in the MosaicConnector interface
     
 

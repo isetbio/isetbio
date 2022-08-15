@@ -116,10 +116,6 @@ function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZe
     end % iRGC
 
 
-    if (~isempty(videoOBJ))
-        videoOBJ.close();
-    end
-
     % Update the destinationRF spacings based on the updated connectivity
     obj.updateDestinationRFspacingsBasedOnCentroids();
 
