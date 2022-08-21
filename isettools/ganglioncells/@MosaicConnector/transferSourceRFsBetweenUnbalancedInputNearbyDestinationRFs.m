@@ -20,9 +20,6 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
         return;
     end
 
-    if (strcmp(obj.wiringParams.optimizationCenter, 'patchCenter'))
-        sourceLatticeCenter = mean(obj.sourceLattice.RFpositionsMicrons,1);
-    end
 
     % Video setup
     if (generateProgressVideo)
@@ -56,19 +53,9 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
             continue;
         end
 
-        % Retrieve the centroids of the targeted destination RFs
-        targetedDestinationRFCentroids = obj.destinationRFcentroidsFromInputs(targetedDestinationRFindices,:);
-    
-        % Sort destinationRFs according to the optimization center
-        switch (obj.wiringParams.optimizationCenter)
-            case 'visualFieldCenter'
-                ecc = sum(targetedDestinationRFCentroids.^2,2);
-            case 'patchCenter'
-                diff = bsxfun(@minus, targetedDestinationRFCentroids, sourceLatticeCenter);
-                ecc = sum(diff.^2,2);
-        end % switch
-
-        [~, idx] = sort(ecc, 'ascend');
+        % Sort targetedDestinationRF indices (based on their eccentricity &
+        % optimization center)
+        idx = obj.sortDestinationRFsBasedOnOptimizationCenter(targetedDestinationRFindices);
         sortedDestinationRFindices = targetedDestinationRFindices(idx);
 
         for iDestinationRF = 1:numel(sortedDestinationRFindices)

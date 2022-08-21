@@ -51,7 +51,9 @@ classdef MosaicConnector < handle
         % (i.e., destinationRFcentroidsFromInputs), which are in turn based on their source RF inputs
         destinationRFspacingsFromCentroids = [];
 
-        
+        % Center of the source lattice
+        sourceLatticeCenter = [];
+
         % Sparse [sourceRFsNum x destinationRFsNum] sparse  connectivity matrix 
         % To find which source RFs are connected to a targetDestinationRF:
         %  connectivityVector = full(squeeze(obj.connectivityMatrix(:, targetDestinationRF)));
@@ -271,6 +273,10 @@ classdef MosaicConnector < handle
         swapInputsFromDestinationRFWithInputsOfNearbyDestinationRF(obj, ...
             destinationRFinputIndicesToBeSwapped, theDestinationRFindex, ...
             nearbyDestinationRFinputIndicesToBeSwapped, theNearbyDestinationRFindex);  
+
+        % Method to compute sorted indices of destiation RFs based on their eccentricity &
+        % optimization center
+        sortedIndices = sortDestinationRFsBasedOnOptimizationCenter(obj,unsortedIndices);
 
         % Input lattice validation method
         validateInputLattice(obj, theLattice, latticeName);

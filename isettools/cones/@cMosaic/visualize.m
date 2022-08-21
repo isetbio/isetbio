@@ -749,8 +749,13 @@ switch (domain)
                 ylabel(axesHandle, 'space (degrees)');
             end
         end
-        set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
-            'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
+        if (xRange(2)-xRange(1) > 0.5)
+            set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
+                'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
+        else
+            set(axesHandle, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
+                'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
+        end
     case 'microns'
         if (~noXlabel)
             if (labelRetinalMeridians)

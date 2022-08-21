@@ -36,8 +36,7 @@ function optimizeTransferOfInputRFsToZeroInputDestinationRF(obj,...
     theInputRFindices = theMultiInputDestinationRFinputIndices(C(iBestConeCombo,:));
 
     % Reassign the selected inputRFs from theMultiInputDestinationRFindex to theZeroInputDestinationRF
-    fprintf('Transfering % input RFs to a zero input destination RF\n', numel(theInputRFindices));
-     
+
     % DISCONNECT theInputRFindices from theMultiInputDestinationRFindex
     obj.connectivityMatrix(theInputRFindices, theMultiInputDestinationRFindex) = 0;
 

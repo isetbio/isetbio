@@ -1,7 +1,7 @@
 function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
      % Parse input
     p = inputParser;
-    p.addParameter('generateProgressVideo', true, @islogical);
+    p.addParameter('generateProgressVideo', false, @islogical);
     p.parse(varargin{:});
     generateProgressVideo = p.Results.generateProgressVideo;
 
@@ -14,11 +14,6 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
         videoOBJ.open();
     end
 
-
-    if (strcmp(obj.wiringParams.optimizationCenter, 'patchCenter'))
-        sourceLatticeCenter = mean(obj.sourceLattice.RFpositionsMicrons,1);
-    end
-
     % Compute the current costs for all destination RF to maintain their current inputs 
     % theCostComponents is an [nDestinationRFs x cost components]  matrix
     theCostComponentsMatrix = obj.totalInputMaintenanceCost();
@@ -26,27 +21,15 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
     % The different cost component sequences
     netCostSequences = mean(theCostComponentsMatrix,1);
 
-
+    
     currentPass = 0;  swapsInCurrentPass = 1; convergenceAchieved = false;
     while (currentPass < obj.wiringParams.maxPassesNum) && (swapsInCurrentPass>0) && (~convergenceAchieved)
         % Update pass number
         currentPass = currentPass + 1;
         swapsInCurrentPass = 0;
 
-
-        % Retrieve the centroids of all destination RFs
-        destinationRFCentroids = obj.destinationRFcentroidsFromInputs;
-    
-              % Sort destinationRFs according to the optimization center
-        switch (obj.wiringParams.optimizationCenter)
-            case 'visualFieldCenter'
-                ecc = sum(destinationRFCentroids.^2,2);
-            case 'patchCenter'
-                diff = bsxfun(@minus, destinationRFCentroids, sourceLatticeCenter);
-                ecc = sum(diff.^2,2);
-        end % switch
-
-        [~, sortedDestinationRFindices] = sort(ecc, 'ascend');
+        allDestinationRFindices = 1:size(obj.destinationRFcentroidsFromInputs,1);
+        sortedDestinationRFindices = obj.sortDestinationRFsBasedOnOptimizationCenter(allDestinationRFindices);
 
         for iDestinationRF = 1:numel(sortedDestinationRFindices)
             theSourceDestinationRFindex = sortedDestinationRFindices(iDestinationRF);
@@ -128,7 +111,7 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
         convergenceAchieved = MosaicConnector.convergenceAchieved(netCostSequences(:,1));
 
     end % while
-
+    
 
     if (generateProgressVideo)
         videoOBJ.close();

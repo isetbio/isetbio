@@ -2,7 +2,7 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
 
     % Parse input
     p = inputParser;
-    p.addParameter('generateProgressVideo', true, @islogical);
+    p.addParameter('generateProgressVideo', false, @islogical);
     p.parse(varargin{:});
     generateProgressVideo = p.Results.generateProgressVideo;
 
@@ -27,10 +27,6 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
         videoOBJ = [];
     end
 
-    if (strcmp(obj.wiringParams.optimizationCenter, 'patchCenter'))
-        sourceLatticeCenter = mean(obj.sourceLattice.RFpositionsMicrons,1);
-    end
-
     % Group destination RFs based on their # of inputs
     inputNumerosityGroups = unique(inputsNumToAllDestinationRFs);
     inputNumerosityGroups = sort(inputNumerosityGroups, 'descend');
@@ -42,19 +38,10 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
             % All destination RFs that have the same # of inputs
             indicesOfDestinationRFsInThisGroup = ...
                 find(inputsNumToAllDestinationRFs == inputNumerosityGroups(iGroup));
-            centroidsOfDestinationRFsInThisGroup = ...
-                obj.destinationRFcentroidsFromInputs(indicesOfDestinationRFsInThisGroup,:);
 
-            switch (obj.wiringParams.optimizationCenter)
-                case 'visualFieldCenter'
-                    ecc = sum(centroidsOfDestinationRFsInThisGroup.^2,2);
-                case 'patchCenter'
-                    diff = bsxfun(@minus, centroidsOfDestinationRFsInThisGroup, sourceLatticeCenter);
-                    ecc = sum(diff.^2,2);
-            end % switch
-
-            % Sort destination RFs according to their ecc
-            [~, idx] = sort(ecc, 'ascend');
+            % Sort destinationRF indices (based on their eccentricity &
+            % optimization center)
+            idx = obj.sortDestinationRFsBasedOnOptimizationCenter(indicesOfDestinationRFsInThisGroup);
             indicesOfDestinationRFsInThisGroup = indicesOfDestinationRFsInThisGroup(idx);
     
             % Transfer inputs to any remaining zero input destination RFs
