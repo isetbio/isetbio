@@ -1,10 +1,11 @@
 function updateDestinationCentroidsFromInputs(obj, destinationRFList)
 
     cm = obj.connectivityMatrix;
-    sourceRFpositionsMicrons = obj.sourceLattice.RFpositionsMicrons;
+    sourceRFpositions = obj.sourceLattice.RFpositionsMicrons;
     
     % Initialize the centroids
     centroids = inf(numel(destinationRFList),2);  
+    
     
     % Update the centroids of all destination RFs in the destinationRFList. 
     parfor iDestinationRF = 1:numel(destinationRFList)
@@ -16,7 +17,7 @@ function updateDestinationCentroidsFromInputs(obj, destinationRFList)
             inputSourceRFweights = full(cm(connectedSourceRFIndices, theDestinationRFindex));
     
             % Positions and spacings of these input source RFs
-            inputSourceRFpositions = sourceRFpositionsMicrons(connectedSourceRFIndices,:);
+            inputSourceRFpositions = sourceRFpositions(connectedSourceRFIndices,:);
         
             p1 = any(isinf(inputSourceRFpositions(:)));
             p2 = any(isinf(inputSourceRFweights));
@@ -28,7 +29,9 @@ function updateDestinationCentroidsFromInputs(obj, destinationRFList)
                 error('inputSourceRFweights = 0')
             end
             
-            centroids(iDestinationRF,:) = RGCconnector.weightedMean(inputSourceRFpositions, inputSourceRFweights);
+            centroids(iDestinationRF,:) = MosaicConnector.weightedMean(inputSourceRFpositions, inputSourceRFweights);
+        else
+            error('No connectedSourceRFIndices');
         end
     end
 

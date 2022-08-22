@@ -15,6 +15,10 @@ function cropDestinationLattice(obj)
         (obj.destinationLattice.RFpositionsMicrons(:,2) <= maxConePosXY(2) - maxSurroundRadiusMicrons));
 
 
+    if (isempty(idx))
+        error('Zero destination RFs left after cropping the RGC lattice to account for the surround radius. Increase size.')
+    end
+
     % Crop RGC positions
     obj.destinationLattice.RFpositionsMicrons = obj.destinationLattice.RFpositionsMicrons(idx,:);
     

@@ -69,6 +69,8 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
 
     % If there are zero-input destination RFs still available, remove them
     % Find out how many destination RFs have zero-inputs
+    
+    inputsNumToAllDestinationRFs = squeeze(sum(obj.connectivityMatrix,1));
     indicesOfZeroInputDestinationRFs = find(inputsNumToAllDestinationRFs == 0);
     if ~isempty(indicesOfZeroInputDestinationRFs)
         fprintf('There are STILL %d destination RFs with zero inputs. Will remove them.\n', numel(indicesOfZeroInputDestinationRFs));
