@@ -155,31 +155,6 @@ classdef MosaicConnector < handle
 
             % Crop the source lattice - subclass specific
             obj.cropSourceLattice();
-
-            % Stage 1. Connect mosaics based on the sourceToDestinationDensityRatio
-            obj.connectSourceRFsToDestinationRFsBasedOnLocalDensities();
-         
-            % Stage 2. Connect unconnected sourceRFs to their closest destination RF
-            obj.connectUnconnectedSourceRFsToClosestDestinationRF();
-
-            % Stage 3. Transfer input source RFs from one destinationRF (dRF1) to a
-            % neighboring destination RF (dRF2), where dRF1 has at least
-            % N+2 inputs, where N is the number of inputs to dRF2. This
-            % transfer is done so as to minimize the combined cost for
-            % dRF1+dRF2. The method called here
-            % transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs()
-            % is an abstract method that must be implemented by the
-            % subclass so as to have specialized treatment
-            obj.transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs();
-
-            % Stage 4. Transfer input source RFs from the highest input numerosity 
-            % destinationRFs to any destination RFs that may have not
-            % received any source RF inputs during steps1+2. 
-            obj.transferSourceRFsToZeroInputDestinationRFs();
-
-            % Stage 5. Swap input source RFs between nearby destination RFs 
-            % of the same input numerosity so at to minimize the combined cost
-            obj.swapSourceRFsBetweenNearbyDestinationRFs();
         end % Constructor
 
         % Visualization methods
@@ -187,7 +162,6 @@ classdef MosaicConnector < handle
         visualizeDestinationLatticePooling(obj, varargin);
         [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin);
         
-
         function set.sourceLattice(obj, s)
             obj.sourceLattice = s;
         end
@@ -209,12 +183,16 @@ classdef MosaicConnector < handle
 
     end % public methods
 
-    % The class-user has no need to call these methods, but our subclasses may.
+    % Methods implemented in @MosaicConnector, which may be called its
+    % subclasses, but are otherwise private
     methods (Access = protected)
+
+        % Multi-step connection method
+        connect(obj, varargin);
+
         % Compute the cost to maintain the current inputs for all destination RFs
         theCostComponentsMatrix = totalInputMaintenanceCost(obj);
 
-        
         % Update the destination RF centroids based on their inputs
         updateDestinationCentroidsFromInputs(obj, destinationRFList);
 
@@ -253,10 +231,12 @@ classdef MosaicConnector < handle
         optimizeTransferOfInputRFsToZeroInputDestinationRF(obj,...
                  theMultiInputDestinationRFindex, theMultiInputDestinationRFinputIndices, ...
                  theMultiInputDestinationRFinputWeights, theZeroInputDestinationRF);
-                     
-
+        
+        % Stage 4 removal of zero input destination RFs
+        removeZeroInputDestinationRFs(obj, indicesOfZeroInputDestinationRFs);
+        
         % Stage 5 connection method
-        swapSourceRFsBetweenNearbyDestinationRFs(obj);
+        swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin);
 
         % Stage 5 input swap optimization. Optimize swapping of inputs from one destinationRF to its nearby destination RFs
         beneficialSwapWasFound = optimizeSwappingOfInputRFs(obj,...
@@ -267,7 +247,7 @@ classdef MosaicConnector < handle
         % Transfer an inputRF from its current destinationRF to a nearby
         % destination RF, and update the corresponding centroids
         transferInputRFFromDestinationRFToNearbyDestinationRF(obj, ...
-            indexOfInputRFToBeReassigned, destinationRFindex, nearbyDestinationRFindex)
+            indexOfInputRFToBeReassigned, destinationRFindex, nearbyDestinationRFindex, varargin)
 
         % Swap input RFs from one destinationRF to a nearby destinationRF
         swapInputsFromDestinationRFWithInputsOfNearbyDestinationRF(obj, ...
@@ -304,7 +284,7 @@ classdef MosaicConnector < handle
     
         visualizeConvergenceSequence(currentPass, ...
             costsMatrix, costsNames, ...
-            netTransfers, maxPassesNum);
+            netTransfers, maxPassesNum, plotTitle, figNo);
     end
 
 end

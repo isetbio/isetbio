@@ -2,7 +2,7 @@ function theCostComponents = inputMaintenanceCost(obj, ...
     inputIndices, inputWeights, destinationRFspacing)
     
     if (isempty(inputIndices))
-        fprintf(2,'\t\t* * * * - - - > Cost to maintain 0 inputs: -99\n');
+        %fprintf(2,'\t\t* * * * - - - > Cost to maintain 0 inputs: -99\n');
         theCostComponents = [-99 -99 -99];
         return;
     end
@@ -16,13 +16,11 @@ function theCostComponents = inputMaintenanceCost(obj, ...
         inputPositions = obj.sourceLattice.RFpositionsMicrons(inputIndices,:);
 
         % Retrieve the input cone types
-        if (isfield(obj.sourceLattice, 'metaData')) && ...
-           (isfield(obj.sourceLattice.metaData, 'coneTypes')) && ...
-           (isfield(obj.sourceLattice.metaData, 'coneTypeIDs'))
-                inputConeTypes = obj.sourceLattice.metaData.coneTypes(inputIndices);
+        if (obj.coneTypeInfoIsAvailable)
+           inputConeTypes = obj.sourceLattice.metaData.coneTypes(inputIndices);
         else
-                %fprintf(2,'No metaData were passed for the cone mosaic. Assuming all L-cones.\n')
-                inputConeTypes = cMosaic.LCONE_ID;
+            %fprintf(2,'No metaData were passed for the cone mosaic. Assuming all L-cones.\n')
+            inputConeTypes = cMosaic.LCONE_ID;
         end
 
         switch (obj.wiringParams.spatialVarianceMetric)

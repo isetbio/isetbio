@@ -12,21 +12,21 @@ classdef coneToMidgetRGCConnector < MosaicConnector
     properties (Constant)
 
         defaultWiringParams = struct(...
-            'optimizationCenter', 'patchCenter', ...              % {'patchCenter', 'visualFieldCenter'}
+            'optimizationCenter', 'latticeCenter', ...            % {'latticeCenter', 'origin'}
             'chromaticSpatialVarianceTradeoff', 1.0, ...          % [0: minimize chromatic variance 1: minimize spatial variance]
             'rfCentroidOverlapPenaltyFactor', 1, ...              % Penalty for overlapping centroids
             'RcToRGCseparationRatio', 1.0, ...                    % overlap of RFs (1 = no overlap)
             'spatialVarianceMetric', 'spatial variance', ...      % choose between {'maximal interinput distance', 'spatial variance'}
-            'maxMeanConeInputsPerRGCToConsiderSwapping', 10, ...  % Do cone swapping only if the mean cones/RGC less than or equal to this number
-            'maxNumberOfConesToSwap', 6, ...                      % Only swap up to this many cones
-            'maxPassesNum', 50 ...     
+            'maxMeanConeInputsPerRGCToConsiderSwapping', 7, ...   % Do cone swapping only if the mean cones/RGC less than or equal to this number
+            'maxNumberOfConesToSwap', 4, ...                      % Only swap up to this many cones
+            'maxPassesNum', 15 ...     
         );
 
     end
 
     % --- PRIVATE PROPERTIES ----------------------------------------------
     properties (Access = private)            
-        
+        coneTypeInfoIsAvailable = false;
     end
     % --- END OF PRIVATE PROPERTIES ---------------------------------------
     
@@ -39,6 +39,7 @@ classdef coneToMidgetRGCConnector < MosaicConnector
 
             p = inputParser;
             p.addParameter('verbosity', 1);
+            p.addParameter('generateProgressVideo', false, @islogical);
             p.addParameter('coneIndicesToBeConnected', []);
             p.addParameter('visualizeConnectivityAtIntermediateStages', false, @islogical);
             p.addParameter('smoothSourceLatticeSpacings', true, @islogical);
@@ -47,21 +48,21 @@ classdef coneToMidgetRGCConnector < MosaicConnector
             p.addParameter('maxNeighborNormDistance', MosaicConnector.maxNeighborNormDistance, @isscalar);
             p.addParameter('maxNeighborsNum', MosaicConnector.maxNeighborsNum, @isscalar);
             p.addParameter('chromaticSpatialVarianceTradeoff', coneToMidgetRGCConnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));  % [0: minimize chromatic variance 1: minimize spatial variance]
-            p.addParameter('optimizationCenter', coneToMidgetRGCConnector.defaultWiringParams.optimizationCenter, @(x)(ismember(x, {'patchCenter', 'visualFieldCenter'})));
+            p.addParameter('optimizationCenter', coneToMidgetRGCConnector.defaultWiringParams.optimizationCenter, @(x)(ismember(x, {'patchCenter', 'origin'})));
 
             % Execute the parser
             p.parse(varargin{:});
-
+            
             customWiringParams = coneToMidgetRGCConnector.defaultWiringParams;
             customWiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
             customWiringParams.maxNeighborsNum = p.Results.maxNeighborsNum;
 
             customWiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
             customWiringParams.optimizationCenter = p.Results.optimizationCenter;
-            
+           
+            generateProgressVideo = p.Results.generateProgressVideo;
 
-
-            % Call the super-class constructor.
+            % Initialize the super-class constructor.
             obj = obj@MosaicConnector(...
                 sourceLattice, ...
                 destinationLattice, ...
@@ -72,7 +73,18 @@ classdef coneToMidgetRGCConnector < MosaicConnector
                 'smoothDestinationLatticeSpacings', p.Results.smoothDestinationLatticeSpacings, ...
                 'wiringParams', customWiringParams);
 
+            % Update our own variables
+            if (isfield(sourceLattice, 'metaData')) && ...
+                (isfield(sourceLattice.metaData, 'coneTypes')) && ...
+                (isfield(sourceLattice.metaData, 'coneTypeIDs'))
+                    obj.coneTypeInfoIsAvailable = true;
+            end
+
+            % Connect the 2 mosaics
+            obj.connect('generateProgressVideo', generateProgressVideo);
         end % Constructor
+
+
     end % Public methods
 
     % Implementations of required -- Public -- Abstract methods defined in the MosaicConnector interface   

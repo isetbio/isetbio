@@ -8,11 +8,16 @@ function connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj)
     % Initialize centroids. No inputs so set them all to inf
     sourceRFsNum = size(obj.sourceLattice.RFpositionsMicrons,1);
     destinationRFsNum = size(obj.destinationLattice.RFpositionsMicrons,1);
+   
     obj.destinationRFcentroidsFromInputs = inf(destinationRFsNum,2);
 
     % Compute the source-to-destination density ratio map at the current
     % RFpos of the destination lattice
     densityRatioMapAtAllDestinationRFpos = obj.sourceToDestinationDensityRatioMap();
+
+    fprintf('Will connect %d input RFs to %d destination RFs with input:destination density ratios in the range [%1.2f - %1.2f]\n', ...
+        sourceRFsNum, destinationRFsNum, ...
+        min(densityRatioMapAtAllDestinationRFpos(:)), max(densityRatioMapAtAllDestinationRFpos(:)));
 
     % Indices for constructing the coneConnectivityMatrix sparse matrix
     nearestDestinationRFIndices = [];

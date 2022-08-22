@@ -31,6 +31,7 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
         allDestinationRFindices = 1:size(obj.destinationRFcentroidsFromInputs,1);
         sortedDestinationRFindices = obj.sortDestinationRFsBasedOnOptimizationCenter(allDestinationRFindices);
 
+        
         for iDestinationRF = 1:numel(sortedDestinationRFindices)
             theSourceDestinationRFindex = sortedDestinationRFindices(iDestinationRF);
          
@@ -88,7 +89,8 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
                 end
             end
         end % for iDestinationRF
-
+        
+        
         % Update the destinationRF spacings based on the updated connectivity
         obj.updateDestinationRFspacingsBasedOnCentroids();
 
@@ -105,7 +107,8 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
         % Visualize convergence
         MosaicConnector.visualizeConvergenceSequence(currentPass, ...
             netCostSequences, obj.costComponentNames(), ...
-            netSwaps, obj.wiringParams.maxPassesNum);
+            netSwaps, obj.wiringParams.maxPassesNum, ...
+            'input swaps', 5060);
 
         % Determine whether convergence was achieved
         convergenceAchieved = MosaicConnector.convergenceAchieved(netCostSequences(:,1));

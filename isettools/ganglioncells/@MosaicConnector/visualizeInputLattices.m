@@ -39,7 +39,7 @@ function [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin)
     triangleOutline = 0.5*[cosd(thetas); sind(thetas)]';
 
     thetas60 = linspace(0,360,17);
-    hexOutline = 0.5*[cosd(thetas60); sind(thetas60)]';
+    diskOutline = 0.5*[cosd(thetas60); sind(thetas60)]';
 
     if (isempty(ax))
         if (isempty(hFig))
@@ -59,12 +59,24 @@ function [hFig, ax, XLims, YLims] = visualizeInputLattices(obj, varargin)
         'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
 
 
-    % Plot destination lattice positions in gray hegagons
-    [f,v] = MosaicConnector.facesAndVertices(...
-        obj.destinationLattice.RFpositionsMicrons, ...
-        obj.destinationLattice.RFspacingsMicrons, hexOutline);
-    patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', [0.25 0.85 0.99], 'EdgeColor', [0 0 0], ...
-        'FaceAlpha', 0.7, 'LineWidth', 2.0, 'LineStyle', '-');
+    if (isempty(obj.destinationRFspacingsFromCentroids))
+        % Plot original destination lattice positions in cyan disks
+        [f,v] = MosaicConnector.facesAndVertices(...
+            obj.destinationLattice.RFpositionsMicrons, ...
+            obj.destinationLattice.RFspacingsMicrons, diskOutline);
+        faceColor = [0.99 0.55 0.65];
+        edgeColor = faceColor*0.5;
+    else
+        % Plot the inputRF-based destination RF positions in orange disks
+        [f,v] = MosaicConnector.facesAndVertices(...
+            obj.destinationRFcentroidsFromInputs, ...
+            obj.destinationRFspacingsFromCentroids, diskOutline);
+        faceColor = [0.25 0.85 0.99];
+        edgeColor = faceColor*0.5;
+    end
+
+    patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', faceColor, 'EdgeColor', edgeColor, ...
+        'FaceAlpha', 0.75, 'LineWidth', 2.0, 'LineStyle', '-');
 
 
     % Finalize

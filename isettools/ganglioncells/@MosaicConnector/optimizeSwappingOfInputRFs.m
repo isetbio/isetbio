@@ -10,7 +10,7 @@ function beneficialSwapWasFound = optimizeSwappingOfInputRFs(obj,...
     
     % Only swap up to a max of the inputs -1
     theDestinationRFinputsNum = numel(theDestinationRFinputIndices);
-    maxDestinationInputsNumSwapped = max([1 theDestinationRFinputsNum-1]);
+    maxDestinationInputsNumSwapped = max([1 ceil(theDestinationRFinputsNum/2)]);
 
     % Cost for all combinations of nearby destination RFs and # of inputs to be swapped
     optimalProjectedCosts = inf(numel(allNearbyDestinationRFindices), 100);
@@ -21,8 +21,6 @@ function beneficialSwapWasFound = optimizeSwappingOfInputRFs(obj,...
     costsBeforeSwapping = zeros(1, numel(allNearbyDestinationRFindices));
  
     for iNearbyDestinationRF = 1:numel(allNearbyDestinationRFindices)
-
-       % fprintf('Evaluating swaps with nearby RGC %d / %d\n',iNearbyDestinationRF, numel(allNearbyDestinationRFindices));
 
         % Compute combined source + neighbor RGC cost before swapping
         theNearbyDestinationRFindex = allNearbyDestinationRFindices(iNearbyDestinationRF);
@@ -45,18 +43,16 @@ function beneficialSwapWasFound = optimizeSwappingOfInputRFs(obj,...
                                          theDestinationRFinputIndices, ...
                                          theDestinationRFinputWeights);
 
-        % Find max # of cones to be swapped
+        % Find max # of input RFs to be swapped
         nearbyDestinationRFinputsNum = numel(theNearbyDestinationRFinputIndices);
-        maxNearbyDestinationInputsNumSwapped = max([1 nearbyDestinationRFinputsNum]);
+        maxNearbyDestinationInputsNumSwapped = max([1 ceil(nearbyDestinationRFinputsNum/2)]);
 
         maxInputsNumSwapped = min([...
             maxDestinationInputsNumSwapped ...
             maxNearbyDestinationInputsNumSwapped ...
             obj.wiringParams.maxNumberOfConesToSwap]);
 
-
-        parfor inputsNumSwapped = 1:maxInputsNumSwapped
-            
+        for inputsNumSwapped = 1:maxInputsNumSwapped
             % Compute all inputsNumSwapped permutations for the source RGC cone inputs
             destinationRFinputCombinations = nchoosek(1:theDestinationRFinputsNum, inputsNumSwapped);
 

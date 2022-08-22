@@ -40,7 +40,7 @@ function visualizeDestinationLatticePooling(obj, varargin)
 
     
     % Visualize the pooling of source lattice RFs by the destination lattice RFs
-    cMap = [1 0.9 0.8; 0 0 0];
+    cMap = [0.7 0.85 0.99; 0 0 0];
     destinationRFsNum = size(obj.connectivityMatrix,2);
     inputsPerDestinationRF = nan(1, destinationRFsNum);
 
@@ -49,7 +49,6 @@ function visualizeDestinationLatticePooling(obj, varargin)
         % Indices of source lattice RFs pooled by this destination RF
         indicesOfConnectedSourceRFs = find(squeeze(obj.connectivityMatrix(:, iDestinationRF))>0);
         
-
         if (isempty(indicesOfConnectedSourceRFs))
             % No sourceRFs pooled by this destination RF. Identify with a black star
             plot(ax, obj.destinationLattice.RFpositionsMicrons(iDestinationRF,1), ...

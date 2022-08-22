@@ -17,6 +17,10 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
         return;
     end
 
+    % Sort the zero input destinationRFs according to their position in the destinationRF lattice
+    idx = sortZeroInputDestinationRFsBasedOnOptimizationCenter(obj,indicesOfZeroInputDestinationRFs);
+    indicesOfZeroInputDestinationRFs = indicesOfZeroInputDestinationRFs(idx);
+
     % Video setup
     if (generateProgressVideo)
         videoOBJ = VideoWriter('Step4', 'MPEG-4');
@@ -30,9 +34,16 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
     % Group destination RFs based on their # of inputs
     inputNumerosityGroups = unique(inputsNumToAllDestinationRFs);
     inputNumerosityGroups = sort(inputNumerosityGroups, 'descend');
+    
 
     % Start from most populous group going down to least populous group
     for iGroup = 1:numel(inputNumerosityGroups)
+
+        if (inputNumerosityGroups(iGroup) == 1)
+            % We dont do anything with a 1-input destination RF
+            continue
+        end
+
         if (~isempty(indicesOfZeroInputDestinationRFs))
 
             % All destination RFs that have the same # of inputs
@@ -55,6 +66,16 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
     if (generateProgressVideo)
         videoOBJ.close();
     end
+
+    % If there are zero-input destination RFs still available, remove them
+    % Find out how many destination RFs have zero-inputs
+    indicesOfZeroInputDestinationRFs = find(inputsNumToAllDestinationRFs == 0);
+    if ~isempty(indicesOfZeroInputDestinationRFs)
+        fprintf('There are STILL %d destination RFs with zero inputs. Will remove them.\n', numel(indicesOfZeroInputDestinationRFs));
+        obj.removeZeroInputDestinationRFs(indicesOfZeroInputDestinationRFs);
+    end
+    
+
 end
 
 
@@ -63,6 +84,7 @@ function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZe
     inputsNumToAllDestinationRFs, videoOBJ)
 
     for iRGC = 1:numel(indicesOfDestinationRFs)
+        
         if (~isempty(indicesOfZeroInputDestinationRFs))
             % The multi-input destination RF 
             theMultiInputDestinationRFindex = indicesOfDestinationRFs(iRGC);
@@ -73,6 +95,7 @@ function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZe
             
             % Must be at least 2 inputs
             if (theInputNumerosity < 2)
+                error('How can this be? Less than 2 inputs. No transfer to zero input')
                 continue;
             end
 
@@ -81,6 +104,7 @@ function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZe
                 error('mismatch here')
             end
     
+            
             % Find zero-input destination RF to use
             theZeroInputDestinationRF = indicesOfZeroInputDestinationRFs(1);
 
@@ -110,4 +134,27 @@ function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZe
     if (obj.visualizeConnectivityAtIntermediateStages)
         obj.visualizeCurrentConnectivity(1004);
     end
+end
+
+
+function sortedIndices = sortZeroInputDestinationRFsBasedOnOptimizationCenter(obj,unsortedIndices)
+
+    centroidsOfDestinationRFsInThisGroup = ...
+        obj.destinationLattice.RFpositionsMicrons(unsortedIndices,:);
+
+    switch (obj.wiringParams.optimizationCenter)
+        case 'origin'
+            ecc = sum(centroidsOfDestinationRFsInThisGroup.^2,2);
+        case 'latticeCenter'
+            if (isempty(obj.sourceLatticeCenter))
+                obj.sourceLatticeCenter = mean(obj.sourceLattice.RFpositionsMicrons,1);
+            end
+
+            diff = bsxfun(@minus, centroidsOfDestinationRFsInThisGroup, obj.sourceLatticeCenter);
+            ecc = sum(diff.^2,2);
+    end % switch
+
+   % Compute sorted indices of destination RFs in increasing eccentricity
+   [~, sortedIndices] = sort(ecc, 'ascend');
+
 end

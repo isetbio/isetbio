@@ -8,7 +8,7 @@ function  c = weightedMean(data, weights)
     w = weights(:);
     ss = sum(w);
     
-    parfor iDim = 1:dimensionsNum
+    for iDim = 1:dimensionsNum
         c(:, iDim) = dot(data(:, iDim), w,1)/ss;
     end
 end

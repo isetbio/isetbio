@@ -120,7 +120,8 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
         % Visualize convergence
         MosaicConnector.visualizeConvergenceSequence(currentPass, ...
             netCostSequences, obj.costComponentNames(), ...
-            netTransfers, obj.wiringParams.maxPassesNum);
+            netTransfers, obj.wiringParams.maxPassesNum, ...
+            'input transfers', 5050);
 
         % Determine whether convergence was achieved
         convergenceAchieved = MosaicConnector.convergenceAchieved(netCostSequences(:,1));

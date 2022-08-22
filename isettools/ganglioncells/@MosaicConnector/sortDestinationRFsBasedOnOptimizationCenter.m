@@ -4,9 +4,9 @@ function sortedIndices = sortDestinationRFsBasedOnOptimizationCenter(obj,unsorte
         obj.destinationRFcentroidsFromInputs(unsortedIndices,:);
 
     switch (obj.wiringParams.optimizationCenter)
-        case 'visualFieldCenter'
+        case 'origin'
             ecc = sum(centroidsOfDestinationRFsInThisGroup.^2,2);
-        case 'patchCenter'
+        case 'latticeCenter'
             if (isempty(obj.sourceLatticeCenter))
                 obj.sourceLatticeCenter = mean(obj.sourceLattice.RFpositionsMicrons,1);
             end
