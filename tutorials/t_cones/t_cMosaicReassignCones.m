@@ -31,13 +31,13 @@ for iCone = 1:6
 end
 
 
-% Let cones [2 and 4] to be S-cones
+% Let cones [2 and 4] be S-cones
 c.reassignTypeOfCones([2 4], cMosaic.SCONE_ID);
 
-% Let cone 1 to be an M-cone
+% Let cone 1 be an M-cone
 c.reassignTypeOfCones(1, cMosaic.MCONE_ID);
 
-% Let cones [3 and 5] to be L-cones
+% Let cones [3 and 5] be L-cones
 c.reassignTypeOfCones([3 5], cMosaic.LCONE_ID);
 
 hFig = figure(2); clf;
