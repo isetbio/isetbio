@@ -648,6 +648,10 @@ classdef cMosaic < handle
         % Method to return indices of cones within a geometry struct appropriate for @regionOfInterest
         coneIndices = indicesOfConesWithinROI(obj, geometryStruct);
         
+        % Method to reassigne the type of any set of cones, specified by
+        % their cone index
+        reassignTypeOfCones(obj, coneIndices, newConeType);
+
         % Generate struct representing the optical disk
         [odStructMicrons, odStructDegs] = odStruct(obj);
         

@@ -411,6 +411,7 @@ if (isempty(activation))
         elseif (~isempty(labelConesWithIndices))
             includedSconeIndices = intersect(obj.sConeIndices, labelConesWithIndices);
             excludedSconeIndices = setdiff(obj.sConeIndices, includedSconeIndices);
+
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedSconeIndices)*0.5, ...
                 rfPositions(includedSconeIndices,:), 3/5*0.9, edgeColor, lineWidth, faceAlpha);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedSconeIndices)*0.5, ...
@@ -756,6 +757,7 @@ switch (domain)
             set(axesHandle, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
                 'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
         end
+        
     case 'microns'
         if (~noXlabel)
             if (labelRetinalMeridians)
@@ -782,8 +784,13 @@ switch (domain)
                 ylabel(axesHandle, 'space (microns)');
             end
         end
-        set(axesHandle, 'XTickLabel', sprintf('%d\n', domainVisualizationTicks.x), ...
-            'YTickLabel', sprintf('%d\n', domainVisualizationTicks.y));
+        if (xRange(2)-xRange(1) > 0.5)
+            set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
+                'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
+        else
+            set(axesHandle, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
+                'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
+        end
         
 end
 
