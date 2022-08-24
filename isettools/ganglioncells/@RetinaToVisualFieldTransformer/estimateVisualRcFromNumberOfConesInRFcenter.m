@@ -14,12 +14,20 @@ function [RcDegs, visualRFcenterConeMap, retinalRFcenterConeMap, anatomicalConeC
         anatomicalConeCharacteristicRadiusDegs = 0.204 * sqrt(2.0) * meanConeApertureDegsInMosaicCenter;
 
         % Compute the retinal RF center cone map
-        rfCenterPooledConeIndices = idx(1:conesNumPooledByTheRFcenter);
-        meanRFCenterConePos = mean(cm.coneRFpositionsDegs(rfCenterPooledConeIndices,:),1);
-        conePosDegsRelativeToCenter = bsxfun(@minus, cm.coneRFpositionsDegs(rfCenterPooledConeIndices,:), meanRFCenterConePos);
-        
-        [~, retinalRFcenterConeMap] = RetinaToVisualFieldTransformer.computeRetinalRFRcDegsFromItsPooledConeInputs(...
-            anatomicalConeCharacteristicRadiusDegs, conePosDegsRelativeToCenter, spatialSupportDegs);
+        oldWayOfComputingRetinalRFcenterConeMap = false;
+        if (oldWayOfComputingRetinalRFcenterConeMap)
+            rfCenterPooledConeIndices = idx(1:conesNumPooledByTheRFcenter);
+            meanRFCenterConePos = mean(cm.coneRFpositionsDegs(rfCenterPooledConeIndices,:),1);
+            conePosDegsRelativeToCenter = bsxfun(@minus, cm.coneRFpositionsDegs(rfCenterPooledConeIndices,:), meanRFCenterConePos);
+            
+            [~, retinalRFcenterConeMap] = RetinaToVisualFieldTransformer.computeRetinalRFRcDegsFromItsPooledConeInputs(...
+                anatomicalConeCharacteristicRadiusDegs, conePosDegsRelativeToCenter, spatialSupportDegs);
+        else
+            conePosDegsRelativeToCenter = [0 0];
+            [~, retinalRFcenterConeMap] = RetinaToVisualFieldTransformer.computeRetinalRFRcDegsFromItsPooledConeInputs(...
+                sqrt(conesNumPooledByTheRFcenter) * anatomicalConeCharacteristicRadiusDegs, conePosDegsRelativeToCenter, spatialSupportDegs);
+     
+        end
 
         % Convolve the retinal RF center cone map with the PSF
         visualRFcenterConeMap = conv2(retinalRFcenterConeMap, theCircularPSFData.data, 'same');
