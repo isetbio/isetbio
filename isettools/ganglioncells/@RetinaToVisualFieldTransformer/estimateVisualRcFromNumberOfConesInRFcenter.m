@@ -10,8 +10,8 @@ function [RcDegs, visualRFcenterConeMap, retinalRFcenterConeMap, anatomicalConeC
 
         % Estimate mean anatomical cone aperture in the mosaic'c center
         sourceConesIndices = idx(1:6);
-        meanConeApertureDegsInMosaicCenter = mean(cm.coneApertureDiametersDegs(sourceConesIndices));
-        anatomicalConeCharacteristicRadiusDegs = 0.204 * sqrt(2.0) * meanConeApertureDegsInMosaicCenter;
+        maxConeApertureDegsInMosaicCenter = max(cm.coneApertureDiametersDegs(sourceConesIndices));
+        anatomicalConeCharacteristicRadiusDegs = 0.204 * sqrt(2.0) * maxConeApertureDegsInMosaicCenter;
 
         % Compute the retinal RF center cone map
         oldWayOfComputingRetinalRFcenterConeMap = false;
