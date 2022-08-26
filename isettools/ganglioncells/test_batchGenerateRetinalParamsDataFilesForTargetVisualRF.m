@@ -202,6 +202,7 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
     end
 
 
+    pdfPage = 0;
     for iPosition = 1:numel(targetHorizontalEccDegsList)
         targetHorizontalEccDegs = targetHorizontalEccDegsList(iPosition);
         targetVerticalEccDegs =  targetVerticalEccDegsList(iPosition);
@@ -221,7 +222,9 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
         weightsComputeFunctionHandle = s.weightsComputeFunctionHandle;
         targetVisualRF = s.targetVisualRF;
         rfSpatialSupportDegs = s.targetVisualRFspatialSupportDegs;
-        maxSpatialSupportDegs = s.maxSpatialSupportDegs;
+        if (iPosition == 1)
+            maxSpatialSupportDegs = s.maxSpatialSupportDegs;
+        end
         theEmployedPSFData = s.theEmployedCircularPSFData;
         clear 's';
 
@@ -297,9 +300,15 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
             max(sum(targetVisualRF,1))...
             ]);
     
+        showPlotTitle = false;
         if (mod(iPosition-1,4) == 0)
+            if (iPosition > 1)
+                NicePlot.exportFigToPDF(sprintf('Page%d.pdf', pdfPage), hFig, 300);
+            end
             hFig = figure(); clf;
-            set(hFig, 'Color', [1 1 1], 'Position', [10 10 1060 1100]);
+            set(hFig, 'Color', [1 1 1], 'Position', [10 10 1650 950]);
+            pdfPage = pdfPage + 1;
+            showPlotTitle = true;
         end
         subplotRow = mod(iPosition-1,4)+1;
 
@@ -312,41 +321,86 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
         
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
             'rowsNum', 4, ...
-            'colsNum', 5, ...
-            'heightMargin',  0.08, ...
+            'colsNum', 7, ...
+            'heightMargin',  0.05, ...
             'widthMargin',    0.02, ...
             'leftMargin',     0.01, ...
             'rightMargin',    0.00, ...
             'bottomMargin',   0.04, ...
-            'topMargin',      0.01);
+            'topMargin',      0.03);
     
          maxRF = 0.03*max(targetVisualRF(:));
-    
+         maxRetinalRF = 0.03*max(theRetinalRFcenter(:));
+
          ax = subplot('Position', subplotPosVectors(subplotRow, 1).v);
-         plotNormalizedRF(ax, rfSupportX, rfSupportY, theWaveVisualRF, maxRF, ...
-                maxSpatialSupportDegs, ...
-                sprintf('visual RF', thePSFData.supportWavelength(iWave)), true, false);
+         if (showPlotTitle)
+             plotTitle = 'target RF';
+         else
+             plotTitle = '';
+         end
+         plotNormalizedRF(ax, rfSupportX, rfSupportY, targetVisualRF, maxRF, ...
+                maxSpatialSupportDegs, plotTitle, true, false);
+
 
          ax = subplot('Position', subplotPosVectors(subplotRow, 2).v);
-         plotNormalizedRF(ax, rfSupportX, rfSupportY, targetVisualRF, maxRF, ...
+         if (showPlotTitle)
+             plotTitle = 'achieved RF';
+         else
+             plotTitle = '';
+         end
+         plotNormalizedRF(ax, rfSupportX, rfSupportY, theWaveVisualRF, maxRF, ...
                 maxSpatialSupportDegs, ...
-                sprintf('target RF', thePSFData.supportWavelength(iWave)), true, false);
+                plotTitle, true, false);
 
+        
          ax = subplot('Position', subplotPosVectors(subplotRow, 3).v);
+         if (showPlotTitle)
+             plotTitle = sprintf('achieved RF (red)\n target RF (blue)');
+         else
+             plotTitle = '';
+         end
          plotRF(ax, rfSupportX, rfSupportY, theWaveVisualRF, targetVisualRF, maxRF, ...
                 maxProfile, visualizedProfile, false, maxSpatialSupportDegs, ...
-                sprintf('red: visual RF (%2.0fnm) blue: target RF', thePSFData.supportWavelength(iWave)), true, false, ...
+                plotTitle, false, true, false, ...
                 [1 0 0], [0 0 1]);
     
          ax = subplot('Position', subplotPosVectors(subplotRow,4).v);
+         if (showPlotTitle)
+             plotTitle = 'residual RF';
+         else
+             plotTitle = '';
+         end
          plotRF(ax, rfSupportX, rfSupportY, targetVisualRF-theWaveVisualRF, [], maxRF, ...
                 maxProfile, visualizedProfile, false, maxSpatialSupportDegs, ...
-                sprintf('residual RF', thePSFData.supportWavelength(iWave)), true, false, ...
+                plotTitle, true, true, false, ...
                 [0 0 0], [0 0 0]);
     
          ax = subplot('Position', subplotPosVectors(subplotRow,5).v);
-         plotPSF(ax, thePSFData, max(thePSFData.data(:)), maxSpatialSupportDegs, iWave);
-         title(ax, sprintf('Ecc: %2.3f, %2.3f degs', sourceEccDegs(1), sourceEccDegs(2)));
+         plotTitle = sprintf('PSF\n(%2.3f, %2.3f degs)', sourceEccDegs(1), sourceEccDegs(2));
+         plotPSF(ax, thePSFData, max(thePSFData.data(:)), maxSpatialSupportDegs, iWave, plotTitle);
+         
+         ax = subplot('Position', subplotPosVectors(subplotRow,6).v);
+         if (showPlotTitle)
+             plotTitle = 'retinal RF (center)';
+         else
+             plotTitle = '';
+         end
+         
+         plotNormalizedRF(ax, rfSupportX, rfSupportY, theRetinalRFcenter, maxRetinalRF, ...
+                maxSpatialSupportDegs, ...
+                plotTitle, true, false);
+
+         ax = subplot('Position', subplotPosVectors(subplotRow,7).v);
+         if (showPlotTitle)
+             plotTitle = 'retinal RF (surround)';
+         else
+             plotTitle = '';
+         end
+  
+         plotNormalizedRF(ax, rfSupportX, rfSupportY, -theRetinalRFsurround, maxRetinalRF, ...
+                maxSpatialSupportDegs, ...
+                plotTitle, true, false);
+
          drawnow;
     end % iPosition
 
@@ -363,7 +417,7 @@ function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineW
 end
 
 
-function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, iWave)
+function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, iWave, plotTitle)
     psfZLevels = 0.05:0.1:0.95;
     theWavePSF = thePSFData.data(:,:,iWave);
     contourf(ax,thePSFData.supportX/60, thePSFData.supportY/60, theWavePSF/max(theWavePSF(:)), psfZLevels);
@@ -387,12 +441,12 @@ function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, iWave)
         'XTick', -5:tickSeparationDegs:5, 'YTick', -5:tickSeparationDegs:5, 'CLim', [0 1], 'FontSize', 14);
     set(ax, 'XTickLabel', {}, 'YTickLabel', {});
     grid(ax, 'on');
-    xlabel(ax,sprintf('%2.2fdegs', 2*maxSpatialSupportDegs));
-    title(ax, sprintf('PSF (%2.0fnm)', thePSFData.supportWavelength(iWave)), 'FontWeight','normal');
+    title(ax, plotTitle, 'FontWeight','normal');
+    
     colormap(ax,brewermap(1024, 'greys'));
 end
 
-function plotNormalizedRF(ax, rfSupportX, rfSupportY, RF, maxRF, maxSpatialSupportDegs, titleString, noTickLabels, showColorBar)
+function plotNormalizedRF(ax, rfSupportX, rfSupportY, RF, maxRF, maxSpatialSupportDegs, plotTitle, noTickLabels, showColorBar)
    
     imagesc(ax,rfSupportX, rfSupportY, RF/maxRF);
 
@@ -423,19 +477,28 @@ function plotNormalizedRF(ax, rfSupportX, rfSupportY, RF, maxRF, maxSpatialSuppo
     grid(ax, 'on');
     colormap(ax,brewermap(1024, '*RdBu'));
     xlabel(ax,sprintf('space (%2.2fdegs)', 2*maxSpatialSupportDegs));
-    title(ax, titleString, 'FontWeight','normal');
-
+    if (~isempty(plotTitle))
+        title(ax, plotTitle, 'FontWeight','normal');
+    end
 end
 
-function plotRF(ax, rfSupportX, rfSupportY, RF, targetRF, maxRF, maxProfile, visualizedProfile, ...
-    renderContourPlot, maxSpatialSupportDegs, titleString, noTickLabels, showColorBar, ...
+function plotRF(ax, rfSupportX, rfSupportY, RF, targetRF, maxRF, maxProfile,  visualizedProfile, ...
+    renderContourPlot, maxSpatialSupportDegs, plotTitle, visualizeRF, noTickLabels, showColorBar, ...
     achievedRFprofileColor, targetRFprofileColor)
    
     if (renderContourPlot)  
-        rfZLevels = -0.91:0.02:0.91;
-        contourf(ax,rfSupportX, rfSupportY, RF/maxRF, rfZLevels, 'LineColor', 'none');
+        if (visualizeRF)
+            rfZLevels = -0.91:0.02:0.91;
+            contourf(ax,rfSupportX, rfSupportY, RF/maxRF, rfZLevels, 'LineColor', 'none');
+        end
     else
-        imagesc(ax, rfSupportX, rfSupportY, RF/maxRF);
+        if (visualizeRF)
+            gain = 1;
+        else
+            gain = 0;
+        end
+        imagesc(ax, rfSupportX, rfSupportY, gain*RF/maxRF);
+        
         hold on;
         switch visualizedProfile
             case 'midRow'
@@ -493,7 +556,9 @@ function plotRF(ax, rfSupportX, rfSupportY, RF, targetRF, maxRF, maxProfile, vis
     grid(ax, 'on');
     colormap(ax,brewermap(1024, '*RdBu'));
     xlabel(ax,sprintf('space (%2.2fdegs)', 2*maxSpatialSupportDegs));
-    title(ax, titleString, 'FontWeight','normal');
+    if (~isempty(plotTitle))
+        title(ax, plotTitle, 'FontWeight','normal');
+    end
 end
 
 

@@ -1,8 +1,15 @@
 % Method to fit a 2D Gaussian to the visually projected cone aperture
 function [theFittedGaussianCharacteristicRadiusDegs, ...
     theFittedGaussianCharacteristicRadiiDegs, ...
+    theFittedGaussianRotationDegs, ...
+    theFittedGaussianFlatTopExponent, ...
     theFittedGaussianEllpsoid, XYcenter, XRange, YRange] = ...
-    fitGaussianEllipsoid(supportX, supportY, theRF)
+    fitGaussianEllipsoid(supportX, supportY, theRF, varargin)
+
+    p = inputParser;
+    p.addParameter('flatTopGaussian', false, @islogical);
+    p.parse(varargin{:});
+    flatTopGaussian = p.Results.flatTopGaussian;
 
     [X,Y] = meshgrid(supportX, supportY);
     xydata(:,:,1) = X;
@@ -25,6 +32,16 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     lb = [ 0 min(supportX) 0*(max(supportX)-min(supportX))    min(supportY) 0*(max(supportY)-min(supportY))  theRotationAngle-90];
     ub = [ 1 max(supportX)    max(supportX)-min(supportX)     max(supportY)    max(supportY)-min(supportY)   theRotationAngle+90];
 
+    if (flatTopGaussian)
+        p0(numel(p0)+1) = 0.6;
+        lb(numel(lb)+1) = 0.25;
+        ub(numel(ub)+1) = 1.0;
+    else
+        p0(numel(p0)+1) = 1.0;
+        lb(numel(lb)+1) = 1.0;
+        ub(numel(ub)+1) = 1.0;
+    end
+
     % Do the fitting
     [fittedParams,resnorm,residual,exitflag] = lsqcurvefit(@gaussian2D,p0,xydata,theRF,lb,ub);
 
@@ -43,6 +60,9 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     theFittedGaussianCharacteristicRadiusDegs = (sqrt(RcX^2+RcY^2)/sqrt(2));
 
     theFittedGaussianCharacteristicRadiiDegs = [RcX RcY];
+    theFittedGaussianRotationDegs = fittedParams(6);
+    theFittedGaussianFlatTopExponent = fittedParams(7);
+    
 end
 
 function F = gaussian2D(params,xydata)
@@ -57,6 +77,7 @@ function F = gaussian2D(params,xydata)
     RcX = params(3);
     RcY = params(5);
     rotationAngle = params(6);
+    flatTopGaussianExponent = params(7);
 
     % Apply axes rotation
     Xrot = X * cosd(rotationAngle) -  Y*sind(rotationAngle);
@@ -65,5 +86,5 @@ function F = gaussian2D(params,xydata)
     yorot = xo * sind(rotationAngle) +  yo*cosd(rotationAngle);
 
     % Compute 2D Gaussian
-    F = gain * exp(-((Xrot-xorot)/RcX).^2) .* exp(-((Yrot-yorot)/RcY).^2);
+    F = gain * (exp(-((Xrot-xorot)/RcX).^2) .* exp(-((Yrot-yorot)/RcY).^2)).^flatTopGaussianExponent;
 end

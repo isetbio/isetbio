@@ -1,4 +1,4 @@
-function [RFcenterRcDegs, RF2D] = computeRetinalRFRcDegsFromItsPooledConeInputs(coneRcDegs, conePosDegs, spatialSupportDegs)
+function [theFittedGaussianCharacteristicRadiiDegs, RF2D] = computeRetinalRFRcDegsFromItsPooledConeInputs(coneRcDegs, conePosDegs, spatialSupportDegs)
     
     [Xdegs,Ydegs] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
 
@@ -41,13 +41,13 @@ function [RFcenterRcDegs, RF2D] = computeRetinalRFRcDegsFromItsPooledConeInputs(
         coneRcDegs*conesNumPooledByRFcenter, ...
         360];
 
-    [theFittedGaussianCharacteristicRadiusDegs, theFittedGaussianEllpsoid, XYcenter, XRange, YRange, theFittedGaussianCharacteristicRadiiDegs] = ...
-        RetinaToVisualFieldTransformer.fitGaussianToPooledConeApertures(spatialSupportDegs(:,1), spatialSupportDegs(:,2), RF2D, ...
-        initialParams, lowerBounds, upperBounds);
+    [theFittedGaussianCharacteristicRadiusDegs, theFittedGaussianEllpsoid, ...
+        XYcenter, XRange, YRange, ...
+        theFittedGaussianCharacteristicRadiiDegs] = RetinaToVisualFieldTransformer.fitGaussianToPooledConeApertures(...
+                spatialSupportDegs(:,1), spatialSupportDegs(:,2), RF2D, ...
+                initialParams, lowerBounds, upperBounds);
 
-    % Return the mean of the 2 characteristic radii
-    RFcenterRcDegs = mean(theFittedGaussianCharacteristicRadiiDegs);
-
+    
     debugFitGaussianToPooledConeApertures = false;
     if (debugFitGaussianToPooledConeApertures)
         figure(234); clf;

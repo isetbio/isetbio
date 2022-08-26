@@ -21,8 +21,8 @@ function [theCentroid, RcX, RcY, theRotationAngle] = estimateGeometry(supportX, 
     yy(1) = max([1 yy(1)]);
     yy(2) = min([numel(supportY) yy(2)]);
 
-    RcY = (supportY(yy(2)) - supportY(yy(1)))/5.0;
-    RcX = (supportX(xx(2)) - supportX(xx(1)))/5.0;
+    RcY = (supportY(yy(2)) - supportY(yy(1)))/3.0;
+    RcX = (supportX(xx(2)) - supportX(xx(1)))/3.0;
     theCentroid(1) = supportX(round(theCentroid(1)));
     theCentroid(2) = supportY(round(theCentroid(2)));
 end

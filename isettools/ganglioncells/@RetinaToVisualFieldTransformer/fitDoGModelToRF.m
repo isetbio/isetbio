@@ -1,4 +1,4 @@
-function [theRetinalRFparamsStruct, theFittedRF] = fitDoGModelToRF(spatialSupportDegs, RF, RcDegs)  
+function [theRetinalRFparamsStruct, theFittedRF] = fitDoGModelToRF(spatialSupportDegs, RF, rotationDegs, RcDegs)  
     %                             Kc   RcDegs   Rs/Rc integratedS/C
     DoGRFparams.initialValues = [  1    0.05    5     0.5];
     DoGRFparams.lowerBounds   = [ 1e-3  0.1/60  1     0.0];
@@ -10,8 +10,10 @@ function [theRetinalRFparamsStruct, theFittedRF] = fitDoGModelToRF(spatialSuppor
         DoGRFparams.upperBounds(2) = RcDegs;
     end
 
+    unrotatedRF = imrotate(RF, -(rotationDegs+90), "bilinear", "crop");
+
     % The optimization objective
-    objective = @(p) sum((RetinaToVisualFieldTransformer.diffOfGaussiansRF(p, spatialSupportDegs) - RF).^2, 'all');
+    objective = @(p) sum((RetinaToVisualFieldTransformer.diffOfGaussiansRF(p, spatialSupportDegs) - unrotatedRF).^2, 'all');
 
     % Ready to fit
     options = optimset(...
