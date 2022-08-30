@@ -94,6 +94,20 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
                 theCircularPSFData, spatialSupportDegs);
         
         if (numel(visualRFDoGparams.RcDegs) == 2)
+            
+            if (visualRFDoGparams.conesNumPooledByTheRFcenter == 2)
+                % If 2 cones dont let the ratio of minor/major axis be >
+                % 1.6
+                if (visualRFDoGparams.RcDegs(1) < visualRFDoGparams.RcDegs(2))
+                    ratio = min([1.6 visualRFDoGparams.RcDegs(2)/visualRFDoGparams.RcDegs(1)]);
+                    visualRFDoGparams.RcDegs(2) = ratio * visualRFDoGparams.RcDegs(1);
+                else
+                    ratio = min([1.6 visualRFDoGparams.RcDegs(1)/visualRFDoGparams.RcDegs(2)]);
+                    visualRFDoGparams.RcDegs(1) = ratio * visualRFDoGparams.RcDegs(2);
+                end
+
+            end
+
             % encode 2 radii as a complex number
             visualRFDoGparams.RcDegs = visualRFDoGparams.RcDegs(1) + 1j * visualRFDoGparams.RcDegs(2);
         end

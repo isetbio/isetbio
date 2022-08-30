@@ -8,8 +8,10 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
 
     p = inputParser;
     p.addParameter('flatTopGaussian', false, @islogical);
+    p.addParameter('forcedOrientationDegs', [], @(x)(isempty(x) || isscalar(x)));
     p.parse(varargin{:});
     flatTopGaussian = p.Results.flatTopGaussian;
+    forcedOrientationDegs = p.Results.forcedOrientationDegs;
 
     [X,Y] = meshgrid(supportX, supportY);
     xydata(:,:,1) = X;
@@ -18,6 +20,10 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     maxRF = max(theRF(:));
     theRF = theRF / maxRF;
     [theCentroid, RcX, RcY, theRotationAngle] = RetinaToVisualFieldTransformer.estimateGeometry(supportX, supportY, theRF);
+
+    if (~isempty(forcedOrientationDegs))
+        theRotationAngle = forcedOrientationDegs;
+    end
 
     % Form parameter vector: [gain, xo, RcX, yo, RcY, rotationAngleDegs]
     p0 = [...
@@ -31,6 +37,11 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     % Form lower and upper value vectors
     lb = [ 0 min(supportX) 0*(max(supportX)-min(supportX))    min(supportY) 0*(max(supportY)-min(supportY))  theRotationAngle-90];
     ub = [ 1 max(supportX)    max(supportX)-min(supportX)     max(supportY)    max(supportY)-min(supportY)   theRotationAngle+90];
+
+    if (~isempty(forcedOrientationDegs))
+        lb(end) = forcedOrientationDegs;
+        ub(end) = forcedOrientationDegs;
+    end
 
     if (flatTopGaussian)
         p0(numel(p0)+1) = 0.6;

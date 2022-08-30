@@ -29,10 +29,22 @@ function [RcDegs, rfRotationDegs, flatTopGaussianExponent, ...
         % the characteristic radii of that Gaussian ellipsoid
         rfSupportX = spatialSupportDegs(:,1);
         rfSupportY = spatialSupportDegs(:,2);
+
+        if (conesNumPooledByTheRFcenter == 2)
+            cone1RFpos = cm.coneRFpositionsDegs(rfCenterPooledConeIndices(1),:);
+            cone2RFpos = cm.coneRFpositionsDegs(rfCenterPooledConeIndices(2),:);
+            deltaY = cone2RFpos(2)-cone1RFpos(2);
+            deltaX = cone2RFpos(1)-cone1RFpos(1);
+            forcedOrientationDegs = -atan2d(deltaY, deltaX);
+        else
+            forcedOrientationDegs = [];
+        end
+
         [~,visualConeCharacteristicMinorMajorRadiiDegs, rfRotationDegs, flatTopGaussianExponent] = ...
             RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
                 rfSupportX, rfSupportY, visualRFcenterConeMap, ...
-                'flatTopGaussian', true);
+                'flatTopGaussian', ~true, ...
+                'forcedOrientationDegs', forcedOrientationDegs);
 
         
         RcDegs = visualConeCharacteristicMinorMajorRadiiDegs;
