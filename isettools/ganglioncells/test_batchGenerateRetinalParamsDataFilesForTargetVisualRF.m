@@ -19,10 +19,10 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
     switch (conesNumPooledByTheRFcenter)
         case 1
             minEccForThisCenterConesNum = 0;
-            maxEccForThisCenterConesNum = 11;
+            maxEccForThisCenterConesNum = 10;
         case 2
             minEccForThisCenterConesNum = 0;
-            maxEccForThisCenterConesNum = 11;
+            maxEccForThisCenterConesNum = 10;
         case 3
             minEccForThisCenterConesNum = 1;
             maxEccForThisCenterConesNum = 11;
@@ -112,6 +112,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
         save(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams', 'analyzedRadialEccDegs');
     else
         % Load computed data
+        analysisFileName = strrep(analysisFileName, 'center2', 'center2_no1.4')
         load(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams', 'analyzedRadialEccDegs');
     end
 
