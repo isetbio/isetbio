@@ -9,9 +9,11 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     p = inputParser;
     p.addParameter('flatTopGaussian', false, @islogical);
     p.addParameter('forcedOrientationDegs', [], @(x)(isempty(x) || isscalar(x)));
+    p.addParameter('globalSearch', false, @islogical);
     p.parse(varargin{:});
     flatTopGaussian = p.Results.flatTopGaussian;
     forcedOrientationDegs = p.Results.forcedOrientationDegs;
+    globalSearch = p.Results.globalSearch;
 
     [X,Y] = meshgrid(supportX, supportY);
     xydata(:,:,1) = X;
@@ -26,7 +28,7 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     end
 
     % Form parameter vector: [gain, xo, RcX, yo, RcY, rotationAngleDegs]
-    p0 = [...
+    params.initialValues = [...
         max(theRF(:)), ...
         theCentroid(1), ...
         RcX, ...
@@ -35,26 +37,60 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
         theRotationAngle];
 
     % Form lower and upper value vectors
-    lb = [ 0 min(supportX) 0*(max(supportX)-min(supportX))    min(supportY) 0*(max(supportY)-min(supportY))  theRotationAngle-90];
-    ub = [ 1 max(supportX)    max(supportX)-min(supportX)     max(supportY)    max(supportY)-min(supportY)   theRotationAngle+90];
+    params.lowerBounds = [ 0 min(supportX) 0*(max(supportX)-min(supportX))    min(supportY) 0*(max(supportY)-min(supportY))  theRotationAngle-90];
+    params.upperBounds = [ 1 max(supportX)    max(supportX)-min(supportX)     max(supportY)    max(supportY)-min(supportY)   theRotationAngle+90];
 
     if (~isempty(forcedOrientationDegs))
-        lb(end) = forcedOrientationDegs;
-        ub(end) = forcedOrientationDegs;
+        params.lowerBounds(end) = forcedOrientationDegs;
+        params.upperBounds(end) = forcedOrientationDegs;
     end
 
     if (flatTopGaussian)
-        p0(numel(p0)+1) = 0.6;
-        lb(numel(lb)+1) = 0.25;
-        ub(numel(ub)+1) = 1.0;
+        params.initialValues(numel(params.initialValues)+1) = 0.6;
+        params.lowerBounds(numel(params.lowerBounds)+1) = 0.25;
+        params.upperBounds(numel(params.upperBounds)+1) = 1.0;
     else
-        p0(numel(p0)+1) = 1.0;
-        lb(numel(lb)+1) = 1.0;
-        ub(numel(ub)+1) = 1.0;
+        params.initialValues(numel(params.initialValues)+1) = 1.0;
+        params.lowerBounds(numel(params.lowerBounds)+1) = 1.0;
+        params.upperBounds(numel(params.upperBounds)+1) = 1.0;
     end
 
     % Do the fitting
-    [fittedParams,resnorm,residual,exitflag] = lsqcurvefit(@gaussian2D,p0,xydata,theRF,lb,ub);
+    if (globalSearch)
+
+        % Ready to fit
+        options = optimset(...
+            'Display', 'off', ...
+            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
+            'GradObj', 'off', ...
+            'DerivativeCheck', 'off', ...
+            'MaxFunEvals', 10^5, ...
+            'MaxIter', 10^3);
+
+        % Multi-start
+        problem = createOptimProblem('fmincon',...
+              'objective', @gaussian2DObjective, ...
+              'x0', params.initialValues, ...
+              'lb', params.lowerBounds, ...
+              'ub', params.upperBounds, ...
+              'options', options...
+          );
+
+         ms = MultiStart(...
+              'Display', 'off', ...
+              'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
+              'UseParallel', true);
+      
+         % Run the multi-start
+         multiStartsNum = 32;
+         fittedParams = run(ms, problem, multiStartsNum);
+    else
+        % Local search
+        [fittedParams,resnorm,residual,exitflag] = lsqcurvefit(@gaussian2D,params.initialValues,xydata,theRF,params.lowerBounds,params.upperBounds);
+    end
+
+
+
 
     xo = fittedParams(2);
     yo = fittedParams(4);
@@ -74,6 +110,13 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     theFittedGaussianRotationDegs = fittedParams(6);
     theFittedGaussianFlatTopExponent = fittedParams(7);
     
+    % Nested function gaussian2DObjective
+     function rmse = gaussian2DObjective(params)
+        fittedRF = gaussian2D(params, xydata);
+        fullRMSE = ((fittedRF(:) - theRF(:))).^2;
+        rmse =  sqrt(mean(fullRMSE,1));
+     end
+
 end
 
 function F = gaussian2D(params,xydata)

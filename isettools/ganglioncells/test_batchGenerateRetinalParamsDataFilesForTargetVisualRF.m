@@ -22,7 +22,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
             maxEccForThisCenterConesNum = 10;
         case 2
             minEccForThisCenterConesNum = 0;
-            maxEccForThisCenterConesNum = 10;
+            maxEccForThisCenterConesNum = 11.0;
         case 3
             minEccForThisCenterConesNum = 1;
             maxEccForThisCenterConesNum = 11;
@@ -41,7 +41,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
         strrep(analyzedRetinaMeridian, ' ', '_'), ...
         pupilDiameterMM, conesNumPooledByTheRFcenter);
  
-    regenerateData = true;
+    regenerateData = ~true;
     if (regenerateData)
         % Sampling the eccentricity range. We sample very fine initially to
         % account for the fast reduction in cone density in the center. The
@@ -112,7 +112,6 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
         save(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams', 'analyzedRadialEccDegs');
     else
         % Load computed data
-        analysisFileName = strrep(analysisFileName, 'center2', 'center2_no1.4')
         load(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams', 'analyzedRadialEccDegs');
     end
 
@@ -213,8 +212,8 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
         [~,iEcc] = min(d(:));
         sourceEccDegs = [horizontalEccDegs(iEcc) verticalEccDegs(iEcc)];
     
-        fprintf('Will use the (%2.3f,%2.3f degs) dataset which is closest to the target radial eccentricity (%2.3f degs)\n', ...
-            sourceEccDegs(1), sourceEccDegs(2), targetRadialEccDegs);
+        fprintf('Will use the (%2.3f,%2.3f degs) dataset which is closest to the target radial eccentricity (%2.3f, %2.3f degs)\n', ...
+            sourceEccDegs(1), sourceEccDegs(2), targetHorizontalEccDegs, targetVerticalEccDegs);
     
         % Retrieve computed data for the source ecc
         eccLabel = sprintf('Ecc_%2.3f_%2.3f', sourceEccDegs(1), sourceEccDegs(2));

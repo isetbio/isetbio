@@ -96,13 +96,13 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
         if (numel(visualRFDoGparams.RcDegs) == 2)
             
             if (visualRFDoGparams.conesNumPooledByTheRFcenter == 2)
-                % If 2 cones dont let the ratio of minor/major axis be >
-                % 1.6
+                % If 2 cones dont let the ratio of minor/major axis be > maxRatio
+                maxRxRyRatio = 2.0;
                 if (visualRFDoGparams.RcDegs(1) < visualRFDoGparams.RcDegs(2))
-                    ratio = min([1.6 visualRFDoGparams.RcDegs(2)/visualRFDoGparams.RcDegs(1)]);
+                    ratio = min([maxRxRyRatio visualRFDoGparams.RcDegs(2)/visualRFDoGparams.RcDegs(1)]);
                     visualRFDoGparams.RcDegs(2) = ratio * visualRFDoGparams.RcDegs(1);
                 else
-                    ratio = min([1.6 visualRFDoGparams.RcDegs(1)/visualRFDoGparams.RcDegs(2)]);
+                    ratio = min([maxRxRyRatio visualRFDoGparams.RcDegs(1)/visualRFDoGparams.RcDegs(2)]);
                     visualRFDoGparams.RcDegs(1) = ratio * visualRFDoGparams.RcDegs(2);
                 end
 

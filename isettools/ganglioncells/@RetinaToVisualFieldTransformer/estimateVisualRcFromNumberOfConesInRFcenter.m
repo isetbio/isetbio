@@ -36,15 +36,18 @@ function [RcDegs, rfRotationDegs, flatTopGaussianExponent, ...
             deltaY = cone2RFpos(2)-cone1RFpos(2);
             deltaX = cone2RFpos(1)-cone1RFpos(1);
             forcedOrientationDegs = -atan2d(deltaY, deltaX);
+            globalSearch = true;
         else
             forcedOrientationDegs = [];
+            globalSearch = false;
         end
 
         [~,visualConeCharacteristicMinorMajorRadiiDegs, rfRotationDegs, flatTopGaussianExponent] = ...
             RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
                 rfSupportX, rfSupportY, visualRFcenterConeMap, ...
                 'flatTopGaussian', ~true, ...
-                'forcedOrientationDegs', forcedOrientationDegs);
+                'forcedOrientationDegs', forcedOrientationDegs, ...
+                'globalSearch', globalSearch);
 
         
         RcDegs = visualConeCharacteristicMinorMajorRadiiDegs;
