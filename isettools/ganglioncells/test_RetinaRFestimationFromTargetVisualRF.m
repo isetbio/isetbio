@@ -13,22 +13,24 @@ function test_RetinaRFestimationFromTargetVisualRF
     examinedSubjectRankOrders = 1:38;
     % Remove some subjects which increase the
     examinedSubjectRankOrders = setdiff(examinedSubjectRankOrders, [5 16 20 23 31 34 36 37]);
-    examinedSubjectRankOrder = 2;
+    examinedSubjectRankOrder = 1;
 
     % Define the DoG characteristics of the visualRF
     conesNumPooledByTheRFcenter = 1;
     
-    analysisFileName = sprintf('%s_subjRankOrder_%d_%s_pupilDiamMM_%2.2f_conesNumPooledByRFcenter%d.mat', ...
-        ZernikeDataBase, examinedSubjectRankOrder, ...
+    analyzedEye = 'right eye';
+    subjectRankingEye = 'right eye';
+
+
+    analysisFileName = sprintf('%s_subjRankOrder_%d_%s_%s_pupilDiamMM_%2.2f_conesNumPooledByRFcenter%d.mat', ...
+        ZernikeDataBase, examinedSubjectRankOrder, strrep(analyzedEye, ' ', '_'),...
         strrep(analyzedRetinaMeridian, ' ', '_'), ...
         pupilDiameterMM, conesNumPooledByTheRFcenter);
  
-    regenerateData = true;
+    regenerateData = ~true;
     if (regenerateData)
 
         analyzedRadialEccDegs = [0 0.25 0.5 0.75 1 1.5 2 2.5 3 3.5 4 5];
-        analyzedEye = 'left eye';
-        subjectRankingEye = 'left eye';
 
         surroundToCenterRcRatio = 6;
         surroundToCenterIntegratedRatio = 0.7;
@@ -147,11 +149,12 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
     [~,iEcc] = min(d(:));
     sourceEccDegs = [horizontalEccDegs(iEcc) verticalEccDegs(iEcc)];
 
-    fprintf('Will use the (%2.2f,%2.2f degs) dataset which is closest to the target radial eccentricity (%2.3f degs)\n', ...
+    fprintf('Will use the (%2.3f,%2.3f degs) dataset which is closest to the target radial eccentricity (%2.3f degs)\n', ...
         sourceEccDegs(1), sourceEccDegs(2), targetRadialEccDegs);
 
     % Retrieve computed data for the source ecc
-    eccLabel = sprintf('Ecc_%2.0f_%2.0f', sourceEccDegs(1), sourceEccDegs(2));
+    eccLabel = sprintf('Ecc_%2.3f_%2.3f', sourceEccDegs(1), sourceEccDegs(2));
+
     s = retinalRFparamsDictionary(eccLabel);
     retinalRFparamsStruct = s.retinalRFparamsStruct;
     weightsComputeFunctionHandle = s.weightsComputeFunctionHandle;
