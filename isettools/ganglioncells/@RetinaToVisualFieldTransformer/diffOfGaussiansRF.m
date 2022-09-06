@@ -1,6 +1,6 @@
 function RF2D = diffOfGaussiansRF(p, spatialSupportDegs) 
     % Spatial support mesh
-    [Xdegs,Ydegs] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
+    [Xdegs,Ydegs] = meshgrid(abs(spatialSupportDegs(:,1)), abs(spatialSupportDegs(:,2)));
     Rdegs = sqrt(Xdegs.^2+Ydegs.^2);
 
     % Retrieve center params
@@ -40,8 +40,8 @@ function RF2D = diffOfGaussiansRF(p, spatialSupportDegs)
     end 
 
     % Compute center RF
-    %centerRF = Kc * exp(-(Rdegs/RcDegs).^2);
-    centerRF = Kc * (exp(-(Xdegs/RcDegs).^2) .* exp(-(Ydegs/RcDegsMajor).^2)).^flatTopGaussianExponent;
+    exponent = 2.0 * flatTopGaussianExponent;
+    centerRF = Kc * (exp(-(Xdegs/RcDegs).^exponent) .* exp(-(Ydegs/RcDegsMajor).^exponent));
     centerRF = imrotate(centerRF, rotationDegs+90, "bilinear", "crop");
 
     % Compute surround RF

@@ -9,7 +9,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
     analyzedRetinaMeridian = 'nasal meridian';
     
     % Number of cones in RF center
-    conesNumPooledByTheRFcenter = 2;
+    conesNumPooledByTheRFcenter = 3;
 
     % Weight to be applied to matching the negative portion of the RF
     % in the objective function of
@@ -41,7 +41,7 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
         strrep(analyzedRetinaMeridian, ' ', '_'), ...
         pupilDiameterMM, conesNumPooledByTheRFcenter);
  
-    regenerateData = ~true;
+    regenerateData = true;
     if (regenerateData)
         % Sampling the eccentricity range. We sample very fine initially to
         % account for the fast reduction in cone density in the center. The
@@ -86,7 +86,6 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
         % Struct with DoG model params for the target visual RF
         targetVisualRFDoGparams = struct(...
             'Kc', 1, ...
-            'RcDegs', [], ...  % empty indicates that we should derive the center based on the conesNumPooledByTheRFcenter
             'conesNumPooledByTheRFcenter', conesNumPooledByTheRFcenter, ...
             'surroundToCenterRcRatio', surroundToCenterRcRatio, ...
             'surroundToCenterIntegratedRatio', surroundToCenterIntegratedRatio);
@@ -104,10 +103,12 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
             );
 
         % Go !
+        tic
         [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ...
             computeRetinalRFparamsAcrossEccentricities(opticsParams, targetVisualRFDoGparams, ...
             retinalConePoolingModel, surroundWeightBias);
-    
+        toc
+
         % Save computed data
         save(analysisFileName, 'retinalRFparamsDictionary', 'opticsParams', 'targetVisualRFDoGparams', 'analyzedRadialEccDegs');
     else
@@ -118,7 +119,9 @@ function test_batchGenerateRetinalParamsDataFilesForTargetVisualRF
     % Evaluate generated RFs at a target eccentricity
     targetRadialEccDegs = 0.9;
     targetRadialEccDegs = []; % Empty to visualize all computed RFs
-    evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams, targetRadialEccDegs);
+    employedPSF = 'usedForRFderivation'; % choose betwee { 'actual'; 'usedForRFderivation'}
+
+    evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams, targetRadialEccDegs, employedPSF);
 end
 
 
@@ -152,17 +155,18 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
                 'anatomicalConeCharacteristicRadiusDegs', [], ...
                 'hFig', [], ...
                 'videoOBJ', []);
-        visualConeCharacteristicRadiusDegs = dStruct.visualConeCharacteristicRadiusDegs;
-        maxSpatialSupportDegs = ...
-            round((visualConeCharacteristicRadiusDegs * 1.5 * ...
+
+        maxSpatialSupportDegs = 1/100 * round(100 * ...
+                   dStruct.visualConeCharacteristicRadiusDegs * 1.5 * ...
                    targetVisualRFDoGparams.conesNumPooledByTheRFcenter * ...
-                   targetVisualRFDoGparams.surroundToCenterRcRatio) * 100.0)/100;
+                   targetVisualRFDoGparams.surroundToCenterRcRatio);
 
         % Call retinalRFparamsForTargetVisualRF() to estimate retinalRFparamsStruct
         [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
          targetVisualRF, spatialSupportDegs, theCircularPSFData] = xFormer.retinalRFparamsForTargetVisualRF(...
             targetVisualRFDoGparams, eccDegs, opticsParams.analyzedEye, subjID, opticsParams.pupilDiameterMM, ...
             'wavelengthSupportForVLambdaPSF', 550, ...
+            'psfCircularSymmetryMode', 'bestResolution', ...  % select between {'average', 'bestResolution', 'worstResolution'}
             'maxSpatialSupportDegs', maxSpatialSupportDegs, ...
             'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
             'retinalConePoolingModel', retinalConePoolingModel, ... 
@@ -186,7 +190,7 @@ function [retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams] = ..
 
 end
 
-function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams, targetRadialEccDegs)
+function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams, targetRadialEccDegs, employedPSF)
 
     % Retrieve the horizontal and vertical eccs corresponding to the target
     % radial ecc, retinal meridian and eye
@@ -225,7 +229,7 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
         if (iPosition == 1)
             maxSpatialSupportDegs = s.maxSpatialSupportDegs;
         end
-        theEmployedPSFData = s.theEmployedCircularPSFData;
+        theCircularPSFDataUsedToDeriveTheRFmodel = s.theEmployedCircularPSFData;
         clear 's';
 
         
@@ -260,18 +264,26 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
                     targetConeMosaic.whichEye, opticsParams.subjID);
         end
 
-        [oiEnsemble, psfEnsemble] = targetConeMosaic.oiEnsembleGenerate(...
-                targetConeMosaic.eccentricityDegs, ...
-                'zernikeDataBase', opticsParams.ZernikeDataBase, ...
-                'subjectID', opticsParams.subjID, ...
-                'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
-                'zeroCenterPSF', true, ...
-                'subtractCentralRefraction', subtractCentralRefraction, ...
-                'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
-                'warningInsteadOfErrorForBadZernikeCoeffs', true);
-    
-        theOI = oiEnsemble{1};
-        thePSFData = psfEnsemble{1};
+        switch (employedPSF)
+            case 'actual'
+                [~, psfEnsemble] = targetConeMosaic.oiEnsembleGenerate(...
+                    targetConeMosaic.eccentricityDegs, ...
+                    'zernikeDataBase', opticsParams.ZernikeDataBase, ...
+                    'subjectID', opticsParams.subjID, ...
+                    'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
+                    'zeroCenterPSF', true, ...
+                    'subtractCentralRefraction', subtractCentralRefraction, ...
+                    'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
+                    'warningInsteadOfErrorForBadZernikeCoeffs', true);
+        
+                thePSFData = psfEnsemble{1};
+
+            case 'usedForRFderivation'
+                thePSFData = theCircularPSFDataUsedToDeriveTheRFmodel;
+            otherwise
+                error('Unknown employedPSF: ''%s''.', employedPSF);
+        end
+
 
         % Only keep the maxSpatialSupportDegs portion of the PSF
         idx = find(abs(thePSFData.supportX) < maxSpatialSupportDegs*60);
@@ -312,10 +324,15 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
         end
         subplotRow = mod(iPosition-1,4)+1;
 
-        wavelengthsToExamine = 550;
-        % Convolve the cone-pooling based retinal RF to get the corresponding visual RF
-        [~,iWave] = min(abs(wavelengthsToExamine-thePSFData.supportWavelength));
-        theWavePSF = squeeze(thePSFData.data(:,:,iWave));
+        if (isfield(thePSFData, 'supportWavelength'))
+            wavelengthsToExamine = 550;
+            % Convolve the cone-pooling based retinal RF to get the corresponding visual RF
+            [~,iWave] = min(abs(wavelengthsToExamine-thePSFData.supportWavelength));
+            theWavePSF = squeeze(thePSFData.data(:,:,iWave));
+        else
+            theWavePSF = thePSFData.data;
+        end
+
         theWaveVisualRF = conv2(theRetinalRF, theWavePSF, 'same');
 
         
@@ -377,8 +394,9 @@ function evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisu
     
          ax = subplot('Position', subplotPosVectors(subplotRow,5).v);
          plotTitle = sprintf('PSF\n(%2.3f, %2.3f degs)', sourceEccDegs(1), sourceEccDegs(2));
-         plotPSF(ax, thePSFData, max(thePSFData.data(:)), maxSpatialSupportDegs, iWave, plotTitle);
-         
+         maxPSF = max(theWavePSF(:));
+         plotPSF(ax, theWavePSF, thePSFData.supportX/60, thePSFData.supportY/60, maxPSF, maxSpatialSupportDegs, plotTitle);
+
          ax = subplot('Position', subplotPosVectors(subplotRow,6).v);
          if (showPlotTitle)
              plotTitle = 'retinal RF (center)';
@@ -417,13 +435,13 @@ function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineW
 end
 
 
-function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, iWave, plotTitle)
+function plotPSF(ax, theWavePSF, supportX, supportY, maxPSF, maxSpatialSupportDegs, plotTitle)
     psfZLevels = 0.05:0.1:0.95;
-    theWavePSF = thePSFData.data(:,:,iWave);
-    contourf(ax,thePSFData.supportX/60, thePSFData.supportY/60, theWavePSF/max(theWavePSF(:)), psfZLevels);
+    
+    contourf(ax,supportX, supportY, theWavePSF/max(theWavePSF(:)), psfZLevels);
     hold on;
-    midRow = (size(thePSFData.data,1)-1)/2+1;
-    plot(ax, thePSFData.supportX/60, -maxSpatialSupportDegs*0.75 + 1.7*theWavePSF(midRow,:)/maxPSF*maxSpatialSupportDegs, 'r-', 'LineWidth', 1.5);
+    midRow = (size(theWavePSF,1)-1)/2+1;
+    plot(ax, supportX, -maxSpatialSupportDegs*0.75 + 1.7*theWavePSF(midRow,:)/maxPSF*maxSpatialSupportDegs, 'r-', 'LineWidth', 1.5);
     axis(ax,'image'); axis 'xy';
 
 

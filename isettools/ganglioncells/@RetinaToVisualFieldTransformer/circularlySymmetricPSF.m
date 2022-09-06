@@ -6,7 +6,7 @@ function theCircularPSF = circularlySymmetricPSF(thePSF, mode)
         case 'bestResolution'
             thePSF =  RetinaToVisualFieldTransformer.centerAndRotatePSF(thePSF);
             theCircularPSF = circularFromSlice(thePSF,2);
-        case 'worseResolution'
+        case 'worstResolution'
             thePSF =  RetinaToVisualFieldTransformer.centerAndRotatePSF(thePSF);
             theCircularPSF = circularFromSlice(thePSF,1);
         otherwise

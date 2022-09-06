@@ -34,7 +34,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
     p.addParameter('wavelengthSupportForVLambdaPSF', 550 + 10*(-15:15), @isnumeric);
     p.addParameter('maxSpatialSupportDegs', 0.15, @isscalar);
     p.addParameter('wavefrontSpatialSamples', 401, @isscalar);
-    p.addParameter('psfCircularSymmetryMode', 'average', @(x)(ischar(x) && (ismember(x, {'average', 'best', 'worse'}))));
+    p.addParameter('psfCircularSymmetryMode', 'average', @(x)(ischar(x) && (ismember(x, {'average', 'bestResolution', 'worstResolution'}))));
     p.addParameter('deconvolutionMethod', 'Regularized', @(x)(ischar(x) && (ismember(x, {'Regularized', 'Wiener'}))));
     p.addParameter('surroundWeightBias', 0.03, @isscalar);
     p.addParameter('retinalConePoolingModel', 'GaussianCenterGaussianSurroundBased',  @(x)(ischar(x) && (ismember(x, {'GaussianCenterDoubleExponentSurroundBased', 'GaussianCenterGaussianSurroundBased'})))); 
@@ -81,41 +81,39 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
     rfSupportY = rfSupportX;
     spatialSupportDegs = [rfSupportX(:) rfSupportY(:)];
 
-    % If an RcDegs is not specified, compute it from the conesNumPooledByTheRFcenter
-    % and the optics
-    if (isempty(visualRFDoGparams.RcDegs))
-        [visualRFDoGparams.RcDegs, ...
-         visualRFDoGparams.rotationDegs, ...
-         visualRFDoGparams.flatTopGaussianExponent, ...
-         visualRFcenterConeMap, ...
-         retinalRFcenterConeMap, ...
-         anatomicalConeCharacteristicRadiusDegs] = RetinaToVisualFieldTransformer.estimateVisualRcFromNumberOfConesInRFcenter(...
+    [visualRFDoGparams.RcDegs, ...
+     visualRFDoGparams.rotationDegs, ...
+     visualRFDoGparams.centroidDegs, ...
+     visualRFDoGparams.flatTopGaussianExponent, ...
+     visualRFcenterConeMap, ...
+     retinalRFcenterConeMap, ...
+     anatomicalConeCharacteristicRadiusDegs] = estimateVisualRcFromNumberOfConesInRFcenter(...
                 cm, visualRFDoGparams.conesNumPooledByTheRFcenter, ...
                 theCircularPSFData, spatialSupportDegs);
         
-        if (numel(visualRFDoGparams.RcDegs) == 2)
-            
-            if (visualRFDoGparams.conesNumPooledByTheRFcenter == 2)
-                % If 2 cones dont let the ratio of minor/major axis be > maxRatio
-                maxRxRyRatio = 2.0;
-                if (visualRFDoGparams.RcDegs(1) < visualRFDoGparams.RcDegs(2))
-                    ratio = min([maxRxRyRatio visualRFDoGparams.RcDegs(2)/visualRFDoGparams.RcDegs(1)]);
-                    visualRFDoGparams.RcDegs(2) = ratio * visualRFDoGparams.RcDegs(1);
-                else
-                    ratio = min([maxRxRyRatio visualRFDoGparams.RcDegs(1)/visualRFDoGparams.RcDegs(2)]);
-                    visualRFDoGparams.RcDegs(1) = ratio * visualRFDoGparams.RcDegs(2);
-                end
+    if (numel(visualRFDoGparams.RcDegs) == 2)
 
+        if (visualRFDoGparams.conesNumPooledByTheRFcenter == 2)
+            % If 2 cones dont let the ratio of minor/major axis be > maxRatio
+            maxRxRyRatio = 2.0;
+            if (visualRFDoGparams.RcDegs(1) < visualRFDoGparams.RcDegs(2))
+                ratio = min([maxRxRyRatio visualRFDoGparams.RcDegs(2)/visualRFDoGparams.RcDegs(1)]);
+                visualRFDoGparams.RcDegs(2) = ratio * visualRFDoGparams.RcDegs(1);
+            else
+                ratio = min([maxRxRyRatio visualRFDoGparams.RcDegs(1)/visualRFDoGparams.RcDegs(2)]);
+                visualRFDoGparams.RcDegs(1) = ratio * visualRFDoGparams.RcDegs(2);
             end
 
-            % encode 2 radii as a complex number
-            visualRFDoGparams.RcDegs = visualRFDoGparams.RcDegs(1) + 1j * visualRFDoGparams.RcDegs(2);
         end
 
-        % The following 2 cone maps are only used when generating the summary figure
-        RF2DData.visualRFcenterConeMap = visualRFcenterConeMap;
-        RF2DData.retinalRFcenterConeMap = retinalRFcenterConeMap;
+        % encode 2 radii as a complex number
+        visualRFDoGparams.RcDegs = visualRFDoGparams.RcDegs(1) + 1j * visualRFDoGparams.RcDegs(2);
     end
+
+    % The following 2 cone maps are only used when generating the summary figure
+    RF2DData.visualRFcenterConeMap = visualRFcenterConeMap;
+    RF2DData.retinalRFcenterConeMap = retinalRFcenterConeMap;
+
 
 
     % Generate the target visual RF (DoG with visualRFDoGparams and with RF center being the visual projection of the input cones)
@@ -140,7 +138,7 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
         
                     additiveNoisePower = 0;
                     regularizationAlphaRange = [1e-6 1];
-                    [RF2DData.retinalRF, lagra] = deconvreg(RF2DData.visualRF,...
+                    RF2DData.retinalRF = deconvreg(RF2DData.visualRF,...
                         theCircularPSFData.data, additiveNoisePower, regularizationAlphaRange);
         
                 case 'Wiener'
@@ -299,4 +297,84 @@ function [retinalRFparamsStruct, weightsComputeFunctionHandle, ...
     RetinaToVisualFieldTransformer.generateFigure(thePSFData, theCircularPSFData, RF2DData, ...
         visualRFDoGparams, retinalRFparamsForComparisonToVisual, achievedVisualRFDoGparams, ...
         eccDegs, subjectID, maxSpatialSupportDegs, rfSupportX, rfSupportY, 1);
+end
+
+
+
+
+function [RcDegs, rfRotationDegs, centroidDegs, flatTopGaussianExponent, ...
+    visualRFcenterConeMap, retinalRFcenterConeMap, ...
+    anatomicalConeCharacteristicRadiusDegs] = estimateVisualRcFromNumberOfConesInRFcenter(cm, conesNumPooledByTheRFcenter, theCircularPSFData, spatialSupportDegs)
+
+        % Compute the visual Rc based on the number of cones in the RF center 
+        % their spacing and the PSF, all for the current eccentricity
+
+        % Sort cones according to their distance from the mosaic center
+        coneDistancesFromMosaicCenter = sqrt(sum(bsxfun(@minus, cm.coneRFpositionsDegs, cm.eccentricityDegs).^2,2));
+        [~,idx] = sort(coneDistancesFromMosaicCenter, 'ascend');
+
+        % Estimate mean anatomical cone aperture in the mosaic'c center
+        sourceConesIndices = idx(1:6);
+        maxConeApertureDegsInMosaicCenter = max(cm.coneApertureDiametersDegs(sourceConesIndices));
+        anatomicalConeCharacteristicRadiusDegs = 0.204 * sqrt(2.0) * maxConeApertureDegsInMosaicCenter;
+
+        % Compute the retinal RF center cone map
+        rfCenterPooledConeIndices = idx(1:conesNumPooledByTheRFcenter);
+        meanRFCenterConePos = mean(cm.coneRFpositionsDegs(rfCenterPooledConeIndices,:),1);
+        conePosDegsRelativeToCenter = bsxfun(@minus, cm.coneRFpositionsDegs(rfCenterPooledConeIndices,:), meanRFCenterConePos);    
+        retinalRFcenterConeMap = retinalRFfromPooledConeInputs(...
+                anatomicalConeCharacteristicRadiusDegs, conePosDegsRelativeToCenter, spatialSupportDegs);
+
+
+        % Convolve the retinal RF center cone map with the PSF
+        visualRFcenterConeMap = conv2(retinalRFcenterConeMap, theCircularPSFData.data, 'same');
+
+        % Fit a 2D Gaussian ellipsoid to the visually projected RF center cone map and extract
+        % the characteristic radii of that Gaussian ellipsoid
+        rfSupportX = spatialSupportDegs(:,1);
+        rfSupportY = spatialSupportDegs(:,2);
+
+        if (conesNumPooledByTheRFcenter == 2)
+            % We are using a circularly summetric PSF, so force the
+            % orientation to match the orientation of the 2 cones
+            cone1RFpos = cm.coneRFpositionsDegs(rfCenterPooledConeIndices(1),:);
+            cone2RFpos = cm.coneRFpositionsDegs(rfCenterPooledConeIndices(2),:);
+            deltaY = cone2RFpos(2)-cone1RFpos(2);
+            deltaX = cone2RFpos(1)-cone1RFpos(1);
+            forcedOrientationDegs = -atan2d(deltaY, deltaX);
+            globalSearch = true;
+        else
+            forcedOrientationDegs = [];
+            globalSearch = false;
+        end
+
+
+        % Fit the visual RF center with a flat-top Gaussian ellipsoid
+        [~, RcDegs, rfRotationDegs, flatTopGaussianExponent, ~, centroidDegs] = ...
+            RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
+                rfSupportX, rfSupportY, visualRFcenterConeMap, ...
+                'flatTopGaussian', true, ...
+                'forcedOrientationDegs', forcedOrientationDegs, ...
+                'globalSearch', globalSearch);
+
+end
+
+function RF2D = retinalRFfromPooledConeInputs(coneRcDegs, conePosDegs, spatialSupportDegs)
+    
+    [Xdegs,Ydegs] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
+
+    conesNumPooledByRFcenter = size(conePosDegs,1);
+    for iCone = 1:conesNumPooledByRFcenter
+  
+        theConeApertureRF = exp(-((Xdegs-conePosDegs(iCone,1))/coneRcDegs).^2) .* ...
+                            exp(-((Ydegs-conePosDegs(iCone,2))/coneRcDegs).^2);
+        
+        if (iCone == 1)
+            RF2D = theConeApertureRF;
+        else
+            RF2D = RF2D + theConeApertureRF;
+        end
+    end
+    RF2D = RF2D / max(RF2D(:));
+
 end
