@@ -1,33 +1,38 @@
 function dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, thePSFData, theTargetPositionDegs)
-    
+
     conesNum = numel(theConeMosaic.coneTypes);
     if (conesNum == 0)
         fprintf(2, 'The mosaic contain no cones at this eccentricity, skipping computation of cone aperture in visual space.\n')
-            
+    
         % Return struct
         dStruct.conesNumInRetinalPatch = 0;
         dStruct.anatomicalConeCharacteristicRadiusDegs = nan;
         dStruct.visualConeCharacteristicRadiusDegs = nan;
         return;
     end
-
-    % Sort cones according to their distance from the mosaic center
+    
+    % Sort cones according to their distance to theTargetPosition
     coneDistancesFromTargetPosition = sqrt(sum(bsxfun(@minus, theConeMosaic.coneRFpositionsDegs, theTargetPositionDegs).^2,2));
     [~,idx] = sort(coneDistancesFromTargetPosition, 'ascend');
-
-    % Estimate mean anatomical cone aperture
+    
+    % Estimate mean anatomical cone aperture from the 6 closest (to the target position) cones
     conesNumToUse = min([conesNum 6]);
-    meanConeApertureDegsInMosaicCenter = mean(theConeMosaic.coneApertureDiametersDegs(idx(1:conesNumToUse)));
-    anatomicalConeCharacteristicRadiusDegs = 0.204 * sqrt(2.0) * meanConeApertureDegsInMosaicCenter;
-
-    hFig = [];
-    videoOBJ = [];
-    pdfFileName = '';
+    meanConeApertureDegs = mean(theConeMosaic.coneApertureDiametersDegs(idx(1:conesNumToUse)));
+    if (isfield(theConeMosaic.coneApertureModifiers, 'shape')) && (strcmp(theConeMosaic.coneApertureModifiers.shape, 'Gaussian'))
+        anatomicalConeCharacteristicRadiusDegs = theConeMosaic.coneApertureModifiers.sigma * sqrt(2.0) * meanConeApertureDegs;
+    else
+        anatomicalConeCharacteristicRadiusDegs = 0.204 * sqrt(2.0) * meanConeApertureDegs;
+    end
+    
+    hFig = figure(1); clf;
+    videoOBJ = []; pdfFileName = '';
     visualConeCharacteristicRadiusDegs = RetinaToVisualFieldTransformer.analyzeVisuallyProjectedConeAperture(...
-                 anatomicalConeCharacteristicRadiusDegs, thePSFData, hFig, videoOBJ, pdfFileName);
-
-   % Return struct
-   dStruct.conesNumInRetinalPatch = conesNum;
-   dStruct.anatomicalConeCharacteristicRadiusDegs = anatomicalConeCharacteristicRadiusDegs;
-   dStruct.visualConeCharacteristicRadiusDegs = visualConeCharacteristicRadiusDegs;
+        anatomicalConeCharacteristicRadiusDegs, thePSFData, hFig, videoOBJ, pdfFileName);
+    
+    
+    % Return struct
+    dStruct.conesNumInRetinalPatch = conesNum;
+    dStruct.indicesOfConesSortedWithDistanceToTargetRFposition = idx;
+    dStruct.anatomicalConeCharacteristicRadiusDegs = anatomicalConeCharacteristicRadiusDegs;
+    dStruct.visualConeCharacteristicRadiusDegs = visualConeCharacteristicRadiusDegs;
 end

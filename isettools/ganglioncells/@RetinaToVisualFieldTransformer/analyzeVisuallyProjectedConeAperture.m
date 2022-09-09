@@ -2,85 +2,105 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
                  anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
                  hFig, videoOBJ, pdfFileName)
 
-    
-    theCentroidArcMin = RetinaToVisualFieldTransformer.estimateGeometry(...
-        thePSFData.supportX, thePSFData.supportY, thePSFData.data);
+    % Compute the centroid of the PSF
+    theCentroidDegs = RetinaToVisualFieldTransformer.estimateGeometry(...
+        thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
 
 
-    % Generate anatomical cone aperture (a Gaussian with Rc)
-    anatomicalConeCharacteristicRadiusArcMin = anatomicalConeCharacteristicRadiusDegs * 60;
-    [Xarcmin, Yarcmin] = meshgrid(thePSFData.supportX, thePSFData.supportY);
-    theAnatomicalConeApertureMap = exp(-(((Xarcmin-theCentroidArcMin(1)))/anatomicalConeCharacteristicRadiusArcMin).^2) .* ...
-                                   exp(-(((Yarcmin-theCentroidArcMin(2)))/anatomicalConeCharacteristicRadiusArcMin).^2);
+    % Generate anatomical cone aperture (a Gaussian with Rc) map centered
+    % on the centroid of the PSF
+    [Xdegs, Ydegs] = meshgrid(thePSFData.supportXdegs, thePSFData.supportYdegs);
+    theAnatomicalConeApertureMap = exp(-(((Xdegs-theCentroidDegs(1)))/anatomicalConeCharacteristicRadiusDegs).^2) .* ...
+                                   exp(-(((Ydegs-theCentroidDegs(2)))/anatomicalConeCharacteristicRadiusDegs).^2);
 
     % Convolve cone aperture with the PSF
     theVisuallyProjectedConeApertureMap = conv2(theAnatomicalConeApertureMap, thePSFData.data, 'same');
     theVisuallyProjectedConeApertureMap = theVisuallyProjectedConeApertureMap  / max(theVisuallyProjectedConeApertureMap(:));
 
     
-
     % Fit a 2D Gaussian to the visually projected cone aperture and extract
     % the characteristic radius of that Gaussian
     theFittedGaussian = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
-        thePSFData.supportX, thePSFData.supportY, ...
+        thePSFData.supportXdegs, thePSFData.supportYdegs, ...
         theVisuallyProjectedConeApertureMap);
 
-    visualConeCharacteristicRadiusDegs = 1/60*sum(theFittedGaussian.characteristicRadii.^2,2)/sqrt(2);
+    % Return the characteristic radius in degrees
+    visualConeCharacteristicRadiusDegs = sqrt(sum(theFittedGaussian.characteristicRadii.^2,2))/sqrt(2);
     
     if (isempty(hFig))   
         return;
     end
 
-    figure(2); clf;
+    figure(hFig); clf;
     subplot(2,2,1);
-    imagesc(thePSFData.supportX, thePSFData.supportY, theAnatomicalConeApertureMap);
+    imagesc(thePSFData.supportXdegs*60, thePSFData.supportYdegs*60, theAnatomicalConeApertureMap);
     axis ('image');
-    title('the anatomical cone aperture')
+    set(gca,'XLim', 3*[-1 1], 'YLim', 3*[-1 1], 'XTick', -3:0.5:3, 'YTick', -3:0.5:3);
+    xlabel('arcmin');
+    ylabel('arcmin');
+    title('the anatomical cone aperture');
+
     subplot(2,2,2);
-    imagesc(thePSFData.supportX, thePSFData.supportY, thePSFData.data);
+    imagesc(thePSFData.supportXdegs*60, thePSFData.supportYdegs*60, thePSFData.data);
     axis ('image');
+    set(gca,'XLim', 3*[-1 1], 'YLim', 3*[-1 1], 'XTick', -3:0.5:3, 'YTick', -3:0.5:3);
+    xlabel('arcmin');
+    ylabel('arcmin');
     title('thePSF');
 
     subplot(2,2,3);
-    imagesc(thePSFData.supportX, thePSFData.supportY, theVisuallyProjectedConeApertureMap);
-    title('Visually projected cone aperture')
+    imagesc(thePSFData.supportXdegs*60, thePSFData.supportYdegs*60, theVisuallyProjectedConeApertureMap);
     axis ('image');
+    set(gca,'XLim', 3*[-1 1], 'YLim', 3*[-1 1], 'XTick', -3:0.5:3, 'YTick', -3:0.5:3);
+    xlabel('arcmin');
+    ylabel('arcmin');
+    title('Visually projected cone aperture')
+    
    
     subplot(2,2,4);
-    imagesc(thePSFData.supportX, thePSFData.supportY, theFittedGaussian.ellipsoidMap);
+    imagesc(thePSFData.supportXdegs*60, thePSFData.supportYdegs*60, theFittedGaussian.ellipsoidMap);
     title('Fitted Ellipsoid');
     axis ('image');
-
+    set(gca,'XLim', 3*[-1 1], 'YLim', 3*[-1 1], 'XTick', -3:0.5:3, 'YTick', -3:0.5:3);
+    xlabel('arcmin');
+    ylabel('arcmin');
+    colormap(gray)
    
     m = (size(theAnatomicalConeApertureMap,1)-1)/2+1;
     figure(3); clf;
     subplot(2,2,1);
-    plot(thePSFData.supportX, theAnatomicalConeApertureMap(m,:), 'k-', 'LineWidth', 1.5);
+    plot(thePSFData.supportXdegs*60, theAnatomicalConeApertureMap(m,:), 'k-', 'LineWidth', 1.5);
     axis ('square');
-    set(gca, 'XLim', 5*[-1 1], 'XTick', -5:1:5);
+    set(gca, 'XLim', 3*[-1 1], 'XTick', -5:0.5:5);
     grid on
+    xlabel('arcmin');
     title('the anatomical cone aperture')
 
     subplot(2,2,2);
-    plot(thePSFData.supportX, thePSFData.data(m,:), 'k-', 'LineWidth', 1.5);
+    plot(thePSFData.supportXdegs*60, thePSFData.data(m,:), 'k-', 'LineWidth', 1.5);
     axis ('square');
     title('thePSF');
-    set(gca, 'XLim', 5*[-1 1], 'XTick', -5:1:5);
+    xlabel('arcmin');
+    set(gca, 'XLim', 3*[-1 1], 'XTick', -5:0.5:5);
     grid on
+
     subplot(2,2,3);
-    plot(thePSFData.supportX, theAnatomicalConeApertureMap(m,:), 'k-', 'LineWidth', 1.5); hold on
-    plot(thePSFData.supportX, theVisuallyProjectedConeApertureMap(m,:), 'r-', 'LineWidth', 1.5);
+    plot(thePSFData.supportXdegs*60, theAnatomicalConeApertureMap(m,:), 'k-', 'LineWidth', 1.5); hold on
+    plot(thePSFData.supportXdegs*60, theVisuallyProjectedConeApertureMap(m,:), 'r-', 'LineWidth', 1.5);
     title('Visually & anatomical projected cone aperture')
     axis ('square');
-    set(gca, 'XLim', 5*[-1 1], 'XTick', -5:1:5);
+    xlabel('arcmin');
+    set(gca, 'XLim', 3*[-1 1], 'XTick', -5:0.5:5);
     grid on
+
     subplot(2,2,4);
-    plot(thePSFData.supportX, theVisuallyProjectedConeApertureMap(m,:), 'r-', 'LineWidth', 1.5); hold on
-    plot(thePSFData.supportX, theFittedGaussian.ellipsoidMap(m,:), 'b--', 'LineWidth', 1.5);
-    plot(thePSFData.supportX, theFittedGaussian.ellipsoidMap(m,:)/max(theFittedGaussian.ellipsoidMap(:)), 'b:', 'LineWidth', 1.5);
+    plot(thePSFData.supportXdegs*60, theVisuallyProjectedConeApertureMap(m,:), 'r-', 'LineWidth', 1.5); hold on
+    plot(thePSFData.supportXdegs*60, theFittedGaussian.ellipsoidMap(m,:), 'b--', 'LineWidth', 1.5);
+    plot(thePSFData.supportXdegs*60, theFittedGaussian.ellipsoidMap(m,:)/max(theFittedGaussian.ellipsoidMap(:)), 'b:', 'LineWidth', 1.5);
     
     title('Fitted Ellipsoid');
     axis ('square');
-    set(gca, 'XLim', 5*[-1 1], 'XTick', -5:1:5);
+    xlabel('arcmin');
+    set(gca, 'XLim', 3*[-1 1], 'XTick', -5:0.5:5);
     grid on
 end

@@ -62,11 +62,19 @@ function vLambdaWeightedPSFandOTF(obj)
         end
     end
     thePSFData.data = vLambdaWeightedPSF;
+
+    % Ensure we have a unit volume
     thePSFData.data = thePSFData.data / sum(thePSFData.data(:));
+
+    % Specify support in degs instead of the default arc min
+    thePSFData.supportXdegs = thePSFData.supportX/60;
+    thePSFData.supportYdegs = thePSFData.supportY/60;
 
     % Remove irrelevant fields
     thePSFData = rmfield(thePSFData, 'supportWavelength');
     thePSFData = rmfield(thePSFData, 'zCoeffs');
+    thePSFData = rmfield(thePSFData, 'supportX');
+    thePSFData = rmfield(thePSFData, 'supportY');
 
     % Now generate the circular PSF
     theCircularPSFData = thePSFData;

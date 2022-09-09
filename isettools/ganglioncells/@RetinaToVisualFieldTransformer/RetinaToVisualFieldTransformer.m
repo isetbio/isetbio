@@ -94,7 +94,7 @@ classdef RetinaToVisualFieldTransformer < handle
             end
 
             % Compute maxSpatialSupportDegs based on desired visual RF properties
-            maxSpatialSupportDegs = mean([dStruct.visualConeCharacteristicRadiusDegs dStruct.anatomicalConeCharacteristicRadiusDegs]) * 2.0 * ...
+            maxSpatialSupportDegs = dStruct.visualConeCharacteristicRadiusDegs * 3 * ...
                    sqrt(targetVisualRFDoGparams.conesNumPooledByTheRFcenter) * ...
                    targetVisualRFDoGparams.surroundToCenterRcRatio;
             maxSpatialSupportDegs = round(100*maxSpatialSupportDegs)/100;
@@ -105,11 +105,10 @@ classdef RetinaToVisualFieldTransformer < handle
 
             % Compute retinal cone pooling params to generate the target
             % visual RFs
-
-            STOPED HERE
-            
-           [retinalRFparams, weightsComputeFunctionHandle, ...
-            targetVisualRF, spatialSupportDegs, modelConstants] = obj.retinalRFparamsForTargetVisualRF();
+            indicesOfConesPooledByTheTargetRFcenter = dStruct.indicesOfConesSortedWithDistanceToTargetRFposition(1:targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
+            [retinalRFparams, weightsComputeFunctionHandle, ...
+            targetVisualRF, spatialSupportDegs, modelConstants] = obj.retinalRFparamsForTargetVisualRF(...
+                   indicesOfConesPooledByTheTargetRFcenter, targetVisualRFDoGparams);
 
         end
 
@@ -122,6 +121,12 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Crop the PSFs
         cropPSF(obj,maxSpatialSupportDegs);
+
+        % Obtain the retinal cone pooling params (weights and indices of surround cones) by fitting the target visualRF
+        [retinalRFparams, weightsComputeFunctionHandle, ...
+            targetVisualRF, spatialSupportDegs, modelConstants ] = retinalRFparamsForTargetVisualRF(obj,...
+                   indicesOfConesPooledByTheTargetRFcenter, targetVisualRFDoGparams);
+    
     end
 
     % Class methods
@@ -140,7 +145,17 @@ classdef RetinaToVisualFieldTransformer < handle
         visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeAperture(...
                  anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
                  hFig, videoOBJ, pdfFileName);
-        
+
+        % Method that computes a RF map consisting of a fixed RF center and
+        % a  Gaussian surround
+        theRF = differenceOfArbitraryCenterAndGaussianSurroundRF(...
+           RFcenterConeMap, RFcenterCharacteristicRadiusDegs, paramsVector, spatialSupportDegs);
+
+        % Method that computes a RF map consisting of a gaussian center and surround
+        theRF = differenceOfGaussianCenterAndGaussianSurroundRF(...
+           paramsVector, spatialSupportDegs);
+
+
         % Method to fit a 2D Gaussian ellipsoid
         theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin);
     end
