@@ -857,6 +857,11 @@ classdef cMosaic < handle
         [horizontalEcc, verticalEcc] = eccentricitiesForRetinaMeridianInEye(...
             radialEcc, retinaQuadrant, whichEye);
 
+        % Static method to return retinal meridians corresponding to
+        % signed horizontal and vertical eccentricities in a specified eye
+        [horizontalRetinalMeridian, verticalRetinalMeridian] = ...
+            retinalMeridiansForEccentricityInEye(horizontalEcc, verticalEcc, whichEye);
+
         % Static method to generate noisy absorption response instances
         % from the mean absorption responses
         noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin);
