@@ -1,33 +1,45 @@
-function [thePSFData, theCircularPSFData] = vLambdaWeightedPSFandOTF(obj, cm, ...
-    testSubjectID, pupilDiameterMM, wavefrontSpatialSamples, maxSpatialSupportDegs, circularSymmetryGenerationMode)
+function vLambdaWeightedPSFandOTF(obj)
     
-    % Generate optics for this eye, eccentricity, subject, and pupil size
-    switch (obj.ZernikeDataBase)
-        % Artal
+    % Ensure we have a valid eye specification
+    assert(ismember(obj.opticsParams.analyzedEye, {'left eye','right eye'}), ...
+        'Invalid analyzed eye specification: ''%s''.', obj.opticsParams.analyzedEye);
+
+    assert(ismember(obj.opticsParams.subjectRankingEye, {'left eye','right eye'}), ...
+        'Invalid subject rank eye specification: ''%s''.', obj.opticsParams.subjectRankingEye);
+
+
+    switch (obj.opticsParams.ZernikeDataBase)
         case RetinaToVisualFieldTransformer.Artal
-            subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
-                cm.whichEye, testSubjectID);
-        % Polans
+            rankedSujectIDs = ArtalOptics.constants.subjectRanking(obj.opticsParams.subjectRankingEye);
+            obj.testSubjectID = rankedSujectIDs(obj.opticsParams.examinedSubjectRankOrder);
+            obj.subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
+                obj.opticsParams.analyzedEye, obj.testSubjectID);
+
         case RetinaToVisualFieldTransformer.Polans
-            subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(...
-                cm.whichEye, testSubjectID);
+            if (~strcmp(obj.opticsParams.subjectRankingEye, 'right eye'))
+                error('Polans measurements exist only for the right eye.');
+            end
+            rankedSujectIDs = PolansOptics.constants.subjectRanking();
+            obj.testSubjectID = rankedSujectIDs(obj.opticsParams.examinedSubjectRankOrder);
+            obj.subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(...
+                obj.opticsParams.analyzedEye, obj.testSubjectID);
+
+        otherwise
+            error('Unknown zernike database: ''%ss'.', obj.opticsParams.ZernikeDataBase);
     end
 
-    [oiEnsemble, psfEnsemble] = cm.oiEnsembleGenerate(cm.eccentricityDegs, ...
-                    'zernikeDataBase', obj.ZernikeDataBase, ...
-                    'subjectID', testSubjectID, ...
-                    'pupilDiameterMM', pupilDiameterMM, ...
+    % Compute optics at the rf position
+    [oiEnsemble, psfEnsemble] = obj.theConeMosaic.oiEnsembleGenerate(obj.opticsParams.rfPositionEccDegs, ...
+                    'zernikeDataBase', obj.opticsParams.ZernikeDataBase, ...
+                    'subjectID', obj.testSubjectID, ...
+                    'pupilDiameterMM', obj.opticsParams.pupilDiameterMM, ...
                     'zeroCenterPSF', true, ...
-                    'subtractCentralRefraction', subtractCentralRefraction, ...
-                    'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
+                    'subtractCentralRefraction', obj.subtractCentralRefraction, ...
+                    'wavefrontSpatialSamples', obj.opticsParams.wavefrontSpatialSamples, ...
                     'warningInsteadOfErrorForBadZernikeCoeffs', true);
 
     if (isempty(oiEnsemble))
-        fprintf(2, 'Could not generate optics at this eccentricity.\n');
-        % Return empties
-        theOTFData = []; 
-        thePSFData = [];
-        return;
+        fprintf(2,'Could not generate optics at this eccentricity');
     end
 
     % Extract the OTF & the PSF
@@ -39,45 +51,33 @@ function [thePSFData, theCircularPSFData] = vLambdaWeightedPSFandOTF(obj, cm, ..
     theOTFData.supportWavelength = theOI.optics.OTF.wave;
 
     % Compute v_lambda weights for weigthing the PSF/OTF
-    weights = vLambdaWeigts(cm.wave);
+    weights = vLambdaWeights(obj.theConeMosaic.wave);
 
-    % Compute vLambda weighted OTF and PSF
-    vLambdaWeightedOTF = zeros(size(theOTFData.data,1), size(theOTFData.data,2));
+    % Compute vLambda weighted PSF
     vLambdaWeightedPSF = zeros(size(thePSFData.data,1), size(thePSFData.data,2));
     for iWave = 1:size(theOTFData.data,3)
-        vLambdaWeightedOTF = vLambdaWeightedOTF + theOTFData.data(:,:,iWave) * weights(iWave);
-        vLambdaWeightedPSF = vLambdaWeightedPSF + thePSFData.data(:,:,iWave) * weights(iWave);
+        if (ismember(obj.theConeMosaic.wave(iWave), obj.psfWavelengthSupport)) || ...
+           (isempty(obj.psfWavelengthSupport))
+            vLambdaWeightedPSF = vLambdaWeightedPSF + thePSFData.data(:,:,iWave) * weights(iWave);
+        end
     end
-    theOTFData.data = vLambdaWeightedOTF;
     thePSFData.data = vLambdaWeightedPSF;
+    thePSFData.data = thePSFData.data / sum(thePSFData.data(:));
 
-    % Remove support wavelength
-    theOTFData = rmfield(theOTFData, 'supportWavelength');
+    % Remove irrelevant fields
     thePSFData = rmfield(thePSFData, 'supportWavelength');
     thePSFData = rmfield(thePSFData, 'zCoeffs');
 
-
     % Now generate the circular PSF
     theCircularPSFData = thePSFData;
-    theCircularPSFData.data = RetinaToVisualFieldTransformer.circularlySymmetricPSF(thePSFData.data, circularSymmetryGenerationMode); 
+    theCircularPSFData.data = RetinaToVisualFieldTransformer.circularlySymmetricPSF(...
+        thePSFData.data, obj.psfCircularSymmetryMode);
 
-    % Finally, Reduce spatial support to decrease compute time
-    
-    idx = find(abs(thePSFData.supportX) < maxSpatialSupportDegs*60);
-    idy = find(abs(thePSFData.supportY) < maxSpatialSupportDegs*60);
-
-    thePSFData.supportX = thePSFData.supportX(idx);
-    thePSFData.supportY = thePSFData.supportY(idy);
-    thePSFData.data = thePSFData.data(idy,idx);
-
-    theCircularPSFData.supportX = theCircularPSFData.supportX(idx);
-    theCircularPSFData.supportY = theCircularPSFData.supportY(idy);
-    theCircularPSFData.data = theCircularPSFData.data(idy,idx);
-
+    obj.thePSFData = thePSFData;
+    obj.theCircularPSFData = theCircularPSFData;
 end
 
-
-function w = vLambdaWeigts(wavelengthSupport)
+function w = vLambdaWeights(wavelengthSupport)
     load T_xyz1931;
     S = WlsToS(wavelengthSupport(:));
     T_vLambda = SplineCmf(S_xyz1931,T_xyz1931(2,:),S);

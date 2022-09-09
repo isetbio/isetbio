@@ -1,10 +1,5 @@
-% Method to fit a 2D Gaussian to the visually projected cone aperture
-function [theFittedGaussianCharacteristicRadiusDegs, ...
-    theFittedGaussianCharacteristicRadiiDegs, ...
-    theFittedGaussianRotationDegs, ...
-    theFittedGaussianFlatTopExponent, ...
-    theFittedGaussianEllpsoid, XYcenter, XRange, YRange] = ...
-    fitGaussianEllipsoid(supportX, supportY, theRF, varargin)
+% Method to fit a 2D Gaussian ellipsoid
+function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin)
 
     p = inputParser;
     p.addParameter('flatTopGaussian', false, @islogical);
@@ -21,7 +16,7 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
 
     maxRF = max(theRF(:));
     theRF = theRF / maxRF;
-    [theCentroid, RcX, RcY, theRotationAngle] = RetinaToVisualFieldTransformer.estimateGeometry(supportX, supportY, theRF);
+    [theCentroid, theAxesLengths, theRotationAngle] = RetinaToVisualFieldTransformer.estimateGeometry(supportX, supportY, theRF);
 
     if (~isempty(forcedOrientationDegs))
         theRotationAngle = forcedOrientationDegs;
@@ -31,9 +26,9 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     params.initialValues = [...
         max(theRF(:)), ...
         theCentroid(1), ...
-        RcX, ...
+        theAxesLengths(1)/3, ...
         theCentroid(2), ...
-        RcY, ...
+        theAxesLengths(2)/3, ...
         theRotationAngle];
 
     % Form lower and upper value vectors
@@ -59,13 +54,23 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     end
 
     if (flatTopGaussian)
-        params.initialValues(numel(params.initialValues)+1) = 2.0;
+        params.initialValues(numel(params.initialValues)+1) = 1.5;
         params.lowerBounds(numel(params.lowerBounds)+1) = 1;
-        params.upperBounds(numel(params.upperBounds)+1) = 5;
+        params.upperBounds(numel(params.upperBounds)+1) = 2;
+
+        params.initialValues(numel(params.initialValues)+1) = 1.5;
+        params.lowerBounds(numel(params.lowerBounds)+1) = 1;
+        params.upperBounds(numel(params.upperBounds)+1) = 2;
+
     else
         params.initialValues(numel(params.initialValues)+1) = 1.0;
         params.lowerBounds(numel(params.lowerBounds)+1) = 1.0;
         params.upperBounds(numel(params.upperBounds)+1) = 1.0;
+
+        params.initialValues(numel(params.initialValues)+1) = 1.0;
+        params.lowerBounds(numel(params.lowerBounds)+1) = 1.0;
+        params.upperBounds(numel(params.upperBounds)+1) = 1.0;
+
     end
 
     % Do the fitting
@@ -109,20 +114,16 @@ function [theFittedGaussianCharacteristicRadiusDegs, ...
     yo = fittedParams(4);
     RcX = fittedParams(3);
     RcY = fittedParams(5);
-    XRange = max([RcX RcY])*[-3 3];
-    YRange = max([RcX RcY])*[-3 3];
-    XYcenter = [xo yo]; 
+ 
 
     % Compute the fitted 2D Gaussian
-    theFittedGaussianEllpsoid = gaussian2D(fittedParams,xydata);
-
-    % Compute the fitted Gaussian Rc in degs
-    theFittedGaussianCharacteristicRadiusDegs = (sqrt(RcX^2+RcY^2)/sqrt(2));
-
-    theFittedGaussianCharacteristicRadiiDegs = [RcX RcY];
-    theFittedGaussianRotationDegs = fittedParams(6);
-    theFittedGaussianFlatTopExponent = fittedParams(7);
+    theFittedGaussian.ellipsoidMap = gaussian2D(fittedParams,xydata);
+    theFittedGaussian.characteristicRadii = [RcX RcY];
+    theFittedGaussian.rotationDegs = fittedParams(6);
+    theFittedGaussian.flatTopExponents = [fittedParams(7) fittedParams(8)];
+    theFittedGaussian.xyCenter = [xo yo];
     
+
     % Nested function gaussian2DObjective
      function rmse = gaussian2DObjective(params)
         fittedRF = gaussian2D(params, xydata);
@@ -144,7 +145,8 @@ function F = gaussian2D(params,xydata)
     RcX = params(3);
     RcY = params(5);
     rotationAngle = params(6);
-    flatTopGaussianExponent = params(7);
+    flatTopGaussianExponentX = params(7);
+    flatTopGaussianExponentY = params(8);
 
     % Apply axes rotation
     Xrot = X * cosd(rotationAngle) -  Y*sind(rotationAngle);
@@ -153,10 +155,11 @@ function F = gaussian2D(params,xydata)
     yorot = xo * sind(rotationAngle) +  yo*cosd(rotationAngle);
 
     % Compute 2D Gaussian
-    exponent = 2.0 * flatTopGaussianExponent;
+    exponentX = 2.0 * flatTopGaussianExponentX;
+    exponentY = 2.0 * flatTopGaussianExponentY;
     xx = abs(Xrot-xorot);
     yy = abs(Yrot-yorot);
     F = gain * (...
-        exp(-(xx/RcX).^exponent) .* ...
-        exp(-(yy/RcY).^exponent));
+        exp(-(xx/RcX).^exponentX) .* ...
+        exp(-(yy/RcY).^exponentY));
 end

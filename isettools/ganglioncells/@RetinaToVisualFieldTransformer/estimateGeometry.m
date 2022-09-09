@@ -1,4 +1,4 @@
-function [theCentroid, RcX, RcY, theRotationAngle] = estimateGeometry(supportX, supportY, zData)
+function [theCentroid, theAxesLengths, theRotationAngle] = estimateGeometry(supportX, supportY, zData)
     % Compute orientation, centroid, and major/minor axis lengths
     binaryImage = zData;
     m1 = min(binaryImage(:));
@@ -21,8 +21,8 @@ function [theCentroid, RcX, RcY, theRotationAngle] = estimateGeometry(supportX, 
     yy(1) = max([1 yy(1)]);
     yy(2) = min([numel(supportY) yy(2)]);
 
-    RcY = (supportY(yy(2)) - supportY(yy(1)))/3.0;
-    RcX = (supportX(xx(2)) - supportX(xx(1)))/3.0;
+    theAxesLengths(1) = (supportY(yy(2)) - supportY(yy(1)));
+    theAxesLengths(2) = (supportX(xx(2)) - supportX(xx(1)));
     theCentroid(1) = supportX(round(theCentroid(1)));
     theCentroid(2) = supportY(round(theCentroid(2)));
 end
