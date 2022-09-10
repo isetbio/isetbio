@@ -12,6 +12,9 @@ classdef RetinaToVisualFieldTransformer < handle
        % The @cMosaic object
        theConeMosaic;
 
+       % Conversion factor from aperture diameter to characteristic radius
+       coneCharacteristicRadiusConversionFactor;
+
        % Various optics params
        opticsParams;
 
@@ -63,6 +66,11 @@ classdef RetinaToVisualFieldTransformer < handle
             p.parse(varargin{:});
 
             obj.theConeMosaic = theConeMosaic;
+            if (isfield(theConeMosaic.coneApertureModifiers, 'shape')) && (strcmp(theConeMosaic.coneApertureModifiers.shape, 'Gaussian'))
+                obj.coneCharacteristicRadiusConversionFactor = theConeMosaic.coneApertureModifiers.sigma * sqrt(2.0);
+            else
+                obj.coneCharacteristicRadiusConversionFactor = 0.204 * sqrt(2.0);
+            end
             obj.opticsParams = opticsParams;
             
             obj.psfWavelengthSupport = p.Results.psfWavelengthSupport;
@@ -87,7 +95,8 @@ classdef RetinaToVisualFieldTransformer < handle
             % Estimate the characteristic radius of the mean cone at the cone pooling RF position
             %  as projected on to visual space using the computed PSF
             dStruct = RetinaToVisualFieldTransformer.estimateConeCharacteristicRadiusInVisualSpace(...
-                obj.theConeMosaic, obj.theCircularPSFData, obj.opticsParams.rfPositionEccDegs);
+                obj.theConeMosaic, obj.theCircularPSFData, obj.opticsParams.rfPositionEccDegs, ...
+                obj.coneCharacteristicRadiusConversionFactor);
     
             if (dStruct.conesNumInRetinalPatch==0)
                 error('No cones in cone mosaic')
@@ -103,12 +112,10 @@ classdef RetinaToVisualFieldTransformer < handle
             % Crop the PSFs to maxSpatialSupportDegs to speed up computations
             obj.cropPSF(maxSpatialSupportDegs);
 
-            % Compute retinal cone pooling params to generate the target
-            % visual RFs
-            indicesOfConesPooledByTheTargetRFcenter = dStruct.indicesOfConesSortedWithDistanceToTargetRFposition(1:targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
-            [retinalRFparams, weightsComputeFunctionHandle, ...
-            targetVisualRF, spatialSupportDegs, modelConstants] = obj.retinalRFparamsForTargetVisualRF(...
-                   indicesOfConesPooledByTheTargetRFcenter, targetVisualRFDoGparams);
+            % Compute retinal cone pooling params to generate the target visual RF
+            indicesOfConesPooledByTheRFcenter = dStruct.indicesOfConesSortedWithDistanceToTargetRFposition(1:targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
+            weightsOfConesPooledByTheRFcenter = ones(1,numel(indicesOfConesPooledByTheRFcenter));
+            obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams);
 
         end
 
@@ -122,10 +129,13 @@ classdef RetinaToVisualFieldTransformer < handle
         % Crop the PSFs
         cropPSF(obj,maxSpatialSupportDegs);
 
+        % Method to compute the cone map for the RF center and its
+        % corresponding Gaussian characteristic radius
+        [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs] = analyzeRFcenter(obj, ...
+            indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, spatialSupportDegs);
+
         % Obtain the retinal cone pooling params (weights and indices of surround cones) by fitting the target visualRF
-        [retinalRFparams, weightsComputeFunctionHandle, ...
-            targetVisualRF, spatialSupportDegs, modelConstants ] = retinalRFparamsForTargetVisualRF(obj,...
-                   indicesOfConesPooledByTheTargetRFcenter, targetVisualRFDoGparams);
+        dataOut = retinalRFparamsForTargetVisualRF(obj,indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams);
     
     end
 
@@ -136,7 +146,7 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to estimate the visually-projectected cone Rc given a target
         % position in the mosaic and corresponding PSF data
-        dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, thePSFData, theTargetPositionDegs);
+        dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, thePSFData, theTargetPositionDegs, coneCharacteristicRadiusConversionFactor);
     
         % Method to estimate various aspects of the geometry of a 2D shape
         [theCentroid, theAxesLengths, theRotationAngle] = estimateGeometry(supportX, supportY, zData);
@@ -146,15 +156,24 @@ classdef RetinaToVisualFieldTransformer < handle
                  anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
                  hFig, videoOBJ, pdfFileName);
 
-        % Method that computes a RF map consisting of a fixed RF center and
-        % a  Gaussian surround
+        % visual RF model: arbitrary shape (fixed) RF center and Gaussian surround
         theRF = differenceOfArbitraryCenterAndGaussianSurroundRF(...
-           RFcenterConeMap, RFcenterCharacteristicRadiusDegs, paramsVector, spatialSupportDegs);
+           modelConstants, paramsVector);
 
-        % Method that computes a RF map consisting of a gaussian center and surround
+        % visual RF model: Gaussian center and Gaussian surround
         theRF = differenceOfGaussianCenterAndGaussianSurroundRF(...
-           paramsVector, spatialSupportDegs);
+           modelConstants, paramsVector);
 
+        % retinal cone pooling model: arbitrary center/gaussian surround
+        pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianSurround(...
+            modelConstants, conePoolingParamsVector)
+
+        % Compute the fitted visualRF from the current retinal pooling params
+        theFittedVisualRF = visualRFfromRetinalConePooling(modelConstants, retinalPoolingParams);
+
+        % Method to compute the retinal subregion cone map by summing the
+        % corresponding cone aperture maps
+        retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(coneRc, conePos, coneWeights, spatialSupport);
 
         % Method to fit a 2D Gaussian ellipsoid
         theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin);

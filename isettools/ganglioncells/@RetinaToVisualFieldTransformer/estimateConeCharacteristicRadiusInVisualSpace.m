@@ -1,4 +1,4 @@
-function dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, thePSFData, theTargetPositionDegs)
+function dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, thePSFData, theTargetPositionDegs,coneCharacteristicRadiusConversionFactor)
 
     conesNum = numel(theConeMosaic.coneTypes);
     if (conesNum == 0)
@@ -18,12 +18,8 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, 
     % Estimate mean anatomical cone aperture from the 6 closest (to the target position) cones
     conesNumToUse = min([conesNum 6]);
     meanConeApertureDegs = mean(theConeMosaic.coneApertureDiametersDegs(idx(1:conesNumToUse)));
-    if (isfield(theConeMosaic.coneApertureModifiers, 'shape')) && (strcmp(theConeMosaic.coneApertureModifiers.shape, 'Gaussian'))
-        anatomicalConeCharacteristicRadiusDegs = theConeMosaic.coneApertureModifiers.sigma * sqrt(2.0) * meanConeApertureDegs;
-    else
-        anatomicalConeCharacteristicRadiusDegs = 0.204 * sqrt(2.0) * meanConeApertureDegs;
-    end
-    
+    anatomicalConeCharacteristicRadiusDegs = coneCharacteristicRadiusConversionFactor * meanConeApertureDegs;
+
     hFig = figure(1); clf;
     videoOBJ = []; pdfFileName = '';
     visualConeCharacteristicRadiusDegs = RetinaToVisualFieldTransformer.analyzeVisuallyProjectedConeAperture(...

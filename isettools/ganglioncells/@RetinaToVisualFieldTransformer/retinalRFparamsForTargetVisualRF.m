@@ -1,138 +1,163 @@
-function [retinalRFparams, weightsComputeFunctionHandle, ...
-          targetVisualRFmap, spatialSupportDegs, modelConstants ] = retinalRFparamsForTargetVisualRF(...
-                obj,indicesOfConesPooledByTheTargetRFcenter, targetVisualRFDoGparams)
+function dataOut = retinalRFparamsForTargetVisualRF(obj,indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams)
     
-
+    % Spatial support
     spatialSupportDegs = [obj.thePSFData.supportXdegs(:) obj.thePSFData.supportYdegs(:)];
+    [Xdegs,Ydegs] = meshgrid(obj.thePSFData.supportXdegs(:), obj.thePSFData.supportYdegs(:));
+    Rdegs2 = Xdegs.^2+Ydegs.^2;
 
     % Compute the visual RF center and its characteristic radius
     [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs] = ...
-       analyzeRFcenter(obj, indicesOfConesPooledByTheTargetRFcenter, spatialSupportDegs);
+       obj.analyzeRFcenter(indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, spatialSupportDegs);
+
+    % Target visual RF map model
+    % Choose between {'gaussian center, gaussian surround', and 'arbitrary center, gaussian surround'}
+    targetVisualMapScheme = 'gaussian center, gaussian surround';
+
+    % Retinal cone pooling model
+    retinalConePoolingModel = 'arbitrary center cone weights, gaussian surround weights';
+
+    modelConstants = struct();
+    modelConstants.spatialSupportDegs = spatialSupportDegs;
+    modelConstants.Rdegs2 = Rdegs2;
+    modelConstants.targetVisualMapScheme = targetVisualMapScheme;
+
+    switch (targetVisualMapScheme)
+        case 'arbitrary center, gaussian surround'
+            % The method handle
+            targetRFfunctionHandle = @RetinaToVisualFieldTransformer.differenceOfArbitraryCenterAndGaussianSurroundRF;
+
+            % The method free params
+            visualRFparamsVector(1) = 1;
+            visualRFparamsVector(2) = targetVisualRFDoGparams.surroundToCenterRcRatio;
+            visualRFparamsVector(3) = targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
+
+            % Additional modelConstants for this model
+            modelConstants.visualRFcenterCharacteristicRadiusDegs = visualRFcenterCharacteristicRadiusDegs;
+            modelConstants.visualRFcenterConeMap = visualRFcenterConeMap;
+            
+
+        case 'gaussian center, gaussian surround'
+            % The method handle
+            targetRFfunctionHandle = @RetinaToVisualFieldTransformer.differenceOfGaussianCenterAndGaussianSurroundRF;
+
+            % The method free params
+            visualRFparamsVector(1) = 1;
+            visualRFparamsVector(2) = visualRFcenterCharacteristicRadiusDegs;
+            visualRFparamsVector(3) = targetVisualRFDoGparams.surroundToCenterRcRatio;
+            visualRFparamsVector(4) = targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
+
+        otherwise
+            error('Unknown targetVisualMapScheme: ''%s''.', targetVisualMapScheme);
+            
+    end % switch
+
+
+    % Retinal cone pooling model constants
+    modelConstants.theConeMosaic = obj.theConeMosaic;
+    modelConstants.thePSF = obj.theCircularPSFData.data;
+    
+    switch (retinalConePoolingModel)
+        case 'arbitrary center cone weights, gaussian surround weights'
+            modelConstants.indicesOfCenterCones = indicesOfConesPooledByTheRFcenter;
+            modelConstants.weightsOfCenterCones = weightsOfConesPooledByTheRFcenter;
+            modelConstants.coneCharacteristicRadiusConversionFactor = obj.coneCharacteristicRadiusConversionFactor;
+            modelConstants.weightsComputeFunctionHandle = @RetinaToVisualFieldTransformer.conePoolingCoefficientsForArbitraryCenterGaussianSurround;
+
+            %                                          Ks RsDegs
+            retinalConePoolingParams.initialValues = [0.01 visualRFcenterCharacteristicRadiusDegs*6];
+            retinalConePoolingParams.lowerBounds   = [0   visualRFcenterCharacteristicRadiusDegs/15];
+            retinalConePoolingParams.upperBounds   = [1   visualRFcenterCharacteristicRadiusDegs*15];
+
+        otherwise
+            error('Unknown retinalConePoolingModel: ''%s''.', retinalConePoolingModel);
+    end
+
 
     % Compute the target visual RF map
-    paramsVector(1) = 1;
-    paramsVector(2) = targetVisualRFDoGparams.surroundToCenterRcRatio;
-    paramsVector(3) = targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
-    targetVisualRFmap = RetinaToVisualFieldTransformer.differenceOfArbitraryCenterAndGaussianSurroundRF(...
-       visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs, paramsVector, spatialSupportDegs);
-   
-    % OR
-    paramsVector(1) = 1;
-    paramsVector(2) = visualRFcenterCharacteristicRadiusDegs;
-    paramsVector(3) = targetVisualRFDoGparams.surroundToCenterRcRatio;
-    paramsVector(4) = targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
-  
-    targetVisualRFmapIdeal = RetinaToVisualFieldTransformer.differenceOfGaussianCenterAndGaussianSurroundRF(...
-       paramsVector, spatialSupportDegs);
-   
-
-    figure(11); clf;
-    subplot(2,3,1);
-    imagesc(spatialSupportDegs(:,1)*60, spatialSupportDegs(:,2)*60, visualRFcenterConeMap/max(visualRFcenterConeMap(:)));
-    set(gca, 'CLim', [-1 1])
-    title('cone-input based RF center')
-    axis 'image'
-
-    subplot(2,3,2)
-    imagesc(spatialSupportDegs(:,1), spatialSupportDegs(:,2), targetVisualRFmap);
-    set(gca, 'CLim', [-1 1])
-    axis 'image'
-    title('target RF')
-    colormap(gray)
-
-    subplot(2,3,3)
-    imagesc(spatialSupportDegs(:,1), spatialSupportDegs(:,2), targetVisualRFmapIdeal);
-    set(gca, 'CLim', [-1 1])
-    axis 'image'
-    title('target RF (ideal)')
-    colormap(gray)
-
-    profileCenter = sum(visualRFcenterConeMap,1);
-    profileRF = sum(targetVisualRFmap,1);
-    profileRFideal = sum(targetVisualRFmapIdeal,1);
-    maxProfile = max([max(profileCenter) max(profileRF) max(profileRFideal)]);
-
-    subplot(2,3,4)
-    plot(spatialSupportDegs(:,1), profileCenter/maxProfile, 'r-');
-    set(gca, 'YLim', [-1 1]);
+    targetVisualRFmap = targetRFfunctionHandle(modelConstants, visualRFparamsVector);
     
-    subplot(2,3,5)
-    plot(spatialSupportDegs(:,1),  profileRF/max(profileRF), 'r-'); hold on
-    plot(spatialSupportDegs(:,1),  profileRFideal/max(profileRFideal), 'b-');
-    set(gca, 'YLim', [-1 1]);
-
-    subplot(2,3,6)
-    plot(spatialSupportDegs(:,1),  profileRFideal/maxProfile, 'b-');
-    set(gca, 'YLim', [-1 1]);
-
-
-    retinalRFparams = [];
-    weightsComputeFunctionHandle = [];
-    modelConstants = [];
-end
-
-function [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs] = analyzeRFcenter(obj, ...
-    indicesOfConesPooledByTheTargetRFcenter, spatialSupportDegs)
     
-    % Compute the visual RF center map
-    visualRFcenterConeMap = computeVisualRFcenterMapFromInputConesInArcMinSupport(obj, indicesOfConesPooledByTheTargetRFcenter, spatialSupportDegs);
     
-    % Compute its characteristic radius by fitting a flat top gaussian
-    % ellipsoid to it.
-    if (numel(indicesOfConesPooledByTheTargetRFcenter) == 2)
-       % We are using a circularly summetric PSF, so force the
-       % orientation to match the orientation of the 2 cones
-       cone1RFpos = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheTargetRFcenter(1),:);
-       cone2RFpos = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheTargetRFcenter(2),:);
-       deltaY = cone2RFpos(2)-cone1RFpos(2);
-       deltaX = cone2RFpos(1)-cone1RFpos(1);
-       forcedOrientationDegs = -atan2d(deltaY, deltaX);
-    else
-       forcedOrientationDegs = [];
+    debugMode = ~true;
+    if (debugMode)
+        % Dry run:
+        theInitialFittedVisualRFmap = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, retinalConePoolingParams.initialValues);
+
+        visualizeRF(55, spatialSupportDegs, targetVisualRFmap, 'target RF');
+        visualizeRF(56, spatialSupportDegs, theInitialFittedVisualRFmap, 'target RF');
     end
 
-    flatTopGaussian = true;
-    theFittedGaussian = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(spatialSupportDegs(:,1), spatialSupportDegs(:,2), visualRFcenterConeMap, ...
-        'flatTopGaussian', flatTopGaussian, ...
-        'forcedOrientationDegs', forcedOrientationDegs, ...
-        'globalSearch', false);
 
-    % Return the characteristic radius in degrees
-    visualRFcenterCharacteristicRadiusDegs = sqrt(sum(theFittedGaussian.characteristicRadii.^2,2))/sqrt(2);
-end
+    % Get ready to fit: options
+    options = optimset(...
+            'Display', 'off', ...
+            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
+            'GradObj', 'off', ...
+            'DerivativeCheck', 'off', ...
+            'MaxFunEvals', 10^5, ...
+            'MaxIter', 10^3);
 
-function visualRFcenterConeMap = computeVisualRFcenterMapFromInputConesInArcMinSupport(obj, indicesOfConesPooledByTheTargetRFcenter, spatialSupportDegs)
 
-    % Compute the retinal RF center cone map
-    theConeCharacteristicRadiiDegs = 0.204*sqrt(2.0)*obj.theConeMosaic.coneApertureDiametersDegs(indicesOfConesPooledByTheTargetRFcenter);
-    theConePositionsDegs = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheTargetRFcenter,:);
-    meanConePositionDegs = mean(theConePositionsDegs,1);
-    theConePositionsDegs = bsxfun(@minus, theConePositionsDegs, meanConePositionDegs);
-    retinalRFcenterConeMap = retinalRFcenterConeMapFromPooledConeInputs(theConeCharacteristicRadiiDegs, theConePositionsDegs, spatialSupportDegs);
+    % Multi-start
+    problem = createOptimProblem('fmincon',...
+          'objective', @matchedVisualRFobjective, ...
+          'x0', retinalConePoolingParams.initialValues, ...
+          'lb', retinalConePoolingParams.lowerBounds, ...
+          'ub', retinalConePoolingParams.upperBounds, ...
+          'options', options...
+          );
 
-    % Compute the visual RF center cone map via convolution of the retinalRFcenterConeMap with the PSF
-    visualRFcenterConeMap = conv2(retinalRFcenterConeMap, obj.theCircularPSFData.data, 'same');
+    % Generate multi-start problem
+    ms = MultiStart(...
+          'Display', 'off', ...
+          'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
+          'UseParallel', true);
 
-    % Unit amplitude
-    visualRFcenterConeMap = visualRFcenterConeMap ./ max(visualRFcenterConeMap(:));
-end
+    % Run the multi-start to obtain the optimal retinalRFparamsVector
+    multiStartsNum = 10;
+    retinalConePoolingParams.final = run(ms, problem, multiStartsNum);
 
-function RF2D = retinalRFcenterConeMapFromPooledConeInputs(coneRc, conePos, spatialSupport)
-    
-    [X,Y] = meshgrid(spatialSupport(:,1), spatialSupport(:,2));
 
-    conesNumPooledByRFcenter = size(conePos,1);
-    for iCone = 1:conesNumPooledByRFcenter
-  
-        theConeApertureRF = exp(-((X-conePos(iCone,1))/coneRc(iCone)).^2) .* ...
-                            exp(-((Y-conePos(iCone,2))/coneRc(iCone)).^2);
-        
-        if (iCone == 1)
-            RF2D = theConeApertureRF;
-        else
-            RF2D = RF2D + theConeApertureRF;
-        end
+    % Compute the fitted visual RF
+    theFittedVisualRF = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, retinalConePoolingParams.final);
+
+    visualizeRF(55, spatialSupportDegs, targetVisualRFmap, 'target RF');
+    visualizeRF(56, spatialSupportDegs, theFittedVisualRF, 'fitted RF');
+    visualizeRF(57, spatialSupportDegs, targetVisualRFmap-theFittedVisualRF, 'target -fitted RF');
+
+    % Form output data struct
+    dataOut = struct();
+    dataOut.theFittedVisualRF = theFittedVisualRF;
+    dataOut.retinalConePoolingParams = retinalConePoolingParams.final;
+    dataOut.targetVisualRFmap = targetVisualRFmap;
+    dataOut.modelConstants = modelConstants;
+
+    % Nested function rfObjective
+    function rmse = matchedVisualRFobjective(currentRetinalPoolingParams)
+        fittedVisualRF = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, currentRetinalPoolingParams);
+        fullRMSE = ((fittedVisualRF(:) - targetVisualRFmap(:))).^2;
+        rmse =  sqrt(mean(fullRMSE,1));
     end
-    RF2D = RF2D / max(RF2D(:));
-
 end
+
+
+
+function visualizeRF(figNo, spatialSupportDegs, RFmap, theTitle)
+        figure(figNo); clf;
+        profileRF = sum(RFmap,1);
+
+        subplot(1,2,1)
+        imagesc(spatialSupportDegs(:,1), spatialSupportDegs(:,2), RFmap);
+        set(gca, 'CLim', [-1 1])
+        axis 'image'
+        title(theTitle)
+        colormap(gray)
+    
+        subplot(1,2,2)
+        plot(spatialSupportDegs(:,1),  profileRF, 'r-');
+        axis 'square'
+       
+end
+
+
+
