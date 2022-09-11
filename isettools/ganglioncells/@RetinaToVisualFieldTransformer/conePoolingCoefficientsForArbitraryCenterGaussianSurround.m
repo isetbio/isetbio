@@ -1,12 +1,12 @@
 function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianSurround(...
     modelConstants, conePoolingParamsVector)
 
-    
-    % compute surround cone indices and weights
+    % Retrieve params
     Kc = conePoolingParamsVector(1);
     Ks = conePoolingParamsVector(2);
     RsDegs = conePoolingParamsVector(3);
 
+    % compute center cone indices and weights
     pooledConeIndicesAndWeights.centerConeIndices = modelConstants.indicesOfCenterCones;
     pooledConeIndicesAndWeights.centerConeWeights = Kc * modelConstants.weightsOfCenterCones;
 

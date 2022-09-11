@@ -40,6 +40,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     spatialSupportXdegs = obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1);
     spatialSupportYdegs = obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,2);
 
+    retinalSCratio = sum(obj.rfComputeStruct.theRetinalRFsurroundConeMap(:))/sum(obj.rfComputeStruct.theRetinalRFcenterConeMap(:));
     targetSCratio = sum(obj.rfComputeStruct.targetVisualRFsurroundMap(:))/sum(obj.rfComputeStruct.targetVisualRFcenterMap(:));
     achievedSCratio = sum(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap(:))/sum(obj.rfComputeStruct.theFittedVisualRFcenterConeMap(:));
 
@@ -69,7 +70,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     ax = subplot('Position', subplotPosVectors(1,4).v);
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
         -obj.rfComputeStruct.theRetinalRFsurroundConeMap, maxRetinalRF, maxRetinalRFprofile, ...
-        maxSpatialSupportDegs, 'retinal RF surround', true, true);
+        maxSpatialSupportDegs, sprintf('retinal RF surround, S/Cratio: %2.2f', retinalSCratio), true, true);
 
 
     % The target RF center cone map
@@ -234,10 +235,10 @@ function plotRFprofiles(ax, rfSupportX, achievedRF, targetRF, maxSpatialSupportD
     theProfileY = theProfileY / maxProfile;
     theTargetProfile = theTargetProfile / maxProfile;
     
-    plot(ax, rfSupportX, theProfileX, 'r-', 'LineWidth', 1.5);
+    shadedAreaPlot(ax,rfSupportX, theTargetProfile, 0, [0.8 0.8 0.6], [0.3 0.3 0.1], 0.7, 1, '-');
     hold(ax, 'on');
+    plot(ax, rfSupportX, theProfileX, 'r-', 'LineWidth', 1.5);
     plot(ax, rfSupportX, theProfileY, 'g-', 'Color', [0 0.6 0], 'LineWidth', 1.5);
-    plot(ax, rfSupportX, theTargetProfile, 'k--', 'LineWidth', 1.5);
     plot(ax, rfSupportX, theTargetProfile-theProfileX, 'b-', 'LineWidth', 1.0);
     
     ticks = ticksForSpatialSupport(maxSpatialSupportDegs);
@@ -247,7 +248,7 @@ function plotRFprofiles(ax, rfSupportX, achievedRF, targetRF, maxSpatialSupportD
     
     grid(ax, 'on');
     xtickangle(ax, 90);
-    legend({'X', 'Y', 'target', 'residual'});
+    legend({'target', 'X', 'Y', 'residual'});
     title(sprintf('S/C int. ratio - target: %2.2f\nS/C int. ratio - achieved: %2.2f',targetSCratio, achievedSCratio));
     xlabel(ax,'degrees');
 end
@@ -306,4 +307,14 @@ function ticks = ticksForSpatialSupport(maxSpatialSupportDegs)
 
     ticks = 0:tickSeparationDegs:5;
     ticks = [-fliplr(ticks) ticks(2:end)];
+end
+
+function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
+    x = [x fliplr(x)];
+    y = [y y*0+baseline];
+    px = reshape(x, [1 numel(x)]);
+    py = reshape(y, [1 numel(y)]);
+    pz = -10*eps*ones(size(py)); 
+    patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, ...
+        'FaceAlpha', faceAlpha, 'LineWidth', lineWidth, 'LineStyle', lineStyle);
 end

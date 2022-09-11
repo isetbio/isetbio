@@ -12,7 +12,6 @@ function [theRF, centerRF, surroundRF] = differenceOfEllipsoidalGaussianCenterAn
     rotationDegs = paramsVector(7);
     surroundToCenterCharacteristicRadiiRatio = paramsVector(8);
     surroundToCenterIntegratedSensitivitiesRatio = paramsVector(9);
-    
     RsDegs = surroundToCenterCharacteristicRadiiRatio * sqrt(RcDegsX*RcDegsY);
     Ks = Kc * surroundToCenterIntegratedSensitivitiesRatio/(surroundToCenterCharacteristicRadiiRatio^2);
 

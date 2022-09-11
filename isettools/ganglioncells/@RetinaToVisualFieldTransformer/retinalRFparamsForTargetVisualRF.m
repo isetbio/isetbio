@@ -9,8 +9,10 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     % Compute the visual RF center and its characteristic radius
     [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs, ...
      visualRFcenterCharacteristicRadiiDegs, visualRFcenterFlatTopExponents, ...
-     visualRFcenterXYpos, visualRFcenterOrientationDegs] = ...
-       obj.analyzeRFcenter(indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, spatialSupportDegs);
+     visualRFcenterXYpos, visualRFcenterOrientationDegs] = obj.analyzeRFcenter(...
+               indicesOfConesPooledByTheRFcenter, ...
+               weightsOfConesPooledByTheRFcenter, ...
+               spatialSupportDegs);
 
     
     modelConstants = struct();
@@ -69,6 +71,19 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     modelConstants.thePSF = obj.theCircularPSFData.data;
     
     switch (targetVisualRFDoGparams.retinalConePoolingModel)
+        case 'arbitrary center cone weights, double exponential surround weights'
+            modelConstants.indicesOfCenterCones = indicesOfConesPooledByTheRFcenter;
+            modelConstants.weightsOfCenterCones = weightsOfConesPooledByTheRFcenter;
+            modelConstants.coneCharacteristicRadiusConversionFactor = obj.coneCharacteristicRadiusConversionFactor;
+            modelConstants.weightsComputeFunctionHandle = @RetinaToVisualFieldTransformer.conePoolingCoefficientsForArbitraryCenterDoubleExpSurround;
+
+            %                                         Kc   Ks/KcRatio   narrowToWideFieldVolumeRatio     RwideDegs                           RnarrowToRwideRatio
+            retinalConePoolingParams.names =       {'Kc', 'Ks/KcRatio', 'narrowToWideFieldVolumeRatio', 'RwideDegs',                        'RnarrowToRwideRatio'};
+            retinalConePoolingParams.scaling =     {'log', 'log', 'linear', 'linear', 'linear'};
+            retinalConePoolingParams.initialValues = [1      1e-1       0.6                          visualRFcenterCharacteristicRadiusDegs*6      0.1];
+            retinalConePoolingParams.lowerBounds   = [1e-3   1e-3       0.2                          visualRFcenterCharacteristicRadiusDegs/15     0.01];
+            retinalConePoolingParams.upperBounds   = [1e3    1          1.0                          visualRFcenterCharacteristicRadiusDegs*15     1.0];
+
         case 'arbitrary center cone weights, gaussian surround weights'
             modelConstants.indicesOfCenterCones = indicesOfConesPooledByTheRFcenter;
             modelConstants.weightsOfCenterCones = weightsOfConesPooledByTheRFcenter;
@@ -76,9 +91,11 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             modelConstants.weightsComputeFunctionHandle = @RetinaToVisualFieldTransformer.conePoolingCoefficientsForArbitraryCenterGaussianSurround;
 
             %                                         Kc   Ks    RsDegs
+            retinalConePoolingParams.names = {'Kc', 'Ks', 'RsDegs'};
+            retinalConePoolingParams.scaling = {'log', 'log', 'linear'};
             retinalConePoolingParams.initialValues = [1    1e-2  visualRFcenterCharacteristicRadiusDegs*6];
             retinalConePoolingParams.lowerBounds   = [1e-3 1e-4  visualRFcenterCharacteristicRadiusDegs/15];
-            retinalConePoolingParams.upperBounds   = [1e3  1e-1  visualRFcenterCharacteristicRadiusDegs*15];
+            retinalConePoolingParams.upperBounds   = [1e3  1     visualRFcenterCharacteristicRadiusDegs*15];
 
         case 'arbitrary center cone weights, gaussian surround weights with adjustments'
             modelConstants.indicesOfCenterCones = indicesOfConesPooledByTheRFcenter;
@@ -94,12 +111,19 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             modelConstants.arbitrarySurroundCorrectionRadialSupportDegs = linspace(0, adjustmentRangeDegs, adjustmentSamplesNum);
 
             %                                         Kc   Ks    RsDegs
+            retinalConePoolingParams.names = {'Kc', 'Ks', 'RsDegs'};
+            retinalConePoolingParams.scaling = {'log', 'log', 'linear'};
             retinalConePoolingParams.initialValues = [1    1e-2  visualRFcenterCharacteristicRadiusDegs*6];
             retinalConePoolingParams.lowerBounds   = [1e-3 1e-4  visualRFcenterCharacteristicRadiusDegs/15];
             retinalConePoolingParams.upperBounds   = [1e3  1e-1  visualRFcenterCharacteristicRadiusDegs*15];
 
             % Surround adjustment factors
             nn = 1:numel(modelConstants.arbitrarySurroundCorrectionRadialSupportDegs);
+            for i = 1:numel(modelConstants.arbitrarySurroundCorrectionRadialSupportDegs)
+                retinalConePoolingParams.names{numel(retinalConePoolingParams.names)+1} = sprintf('f-%d', i);
+                retinalConePoolingParams.scaling{numel(retinalConePoolingParams.scaling)+1} = 'linear';
+            end
+
             extraIndices = 3+nn;
             retinalConePoolingParams.initialValues(extraIndices) = 0.00*ones(1,numel(nn));
             retinalConePoolingParams.lowerBounds(extraIndices) = -0.5*ones(1,numel(nn));
@@ -116,16 +140,23 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     
     % Do a dry run to make sure all components are running first
     if (obj.doDryRunFirst)
-        theInitialFittedVisualRFmap = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...\
+        theInitialFittedVisualRFmap = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...
             modelConstants, retinalConePoolingParams.initialValues);
         visualizeRF(55, spatialSupportDegs, targetVisualRFmap, 'target RF');
-        visualizeRF(56, spatialSupportDegs, theInitialFittedVisualRFmap, 'target RF');
+        visualizeRF(56, spatialSupportDegs, theInitialFittedVisualRFmap, 'initial fitted RF');
         pause();
     end
 
-
-    % Get ready to fit: options
-    options = optimset(...
+    if (obj.multiStartsNum == 1)
+        % Local search
+        retinalConePoolingParams.finalValues = lsqcurvefit(RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling, ...
+            retinalConePoolingParams.initialValues, ...
+            modelConstants, targetVisualRFmap, ...
+            pretinalConePoolingParams.lowerBounds,...
+            pretinalConePoolingParams.upperBounds);
+    else
+        % Get ready to fit: options
+        options = optimset(...
             'Display', 'off', ...
             'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
             'GradObj', 'off', ...
@@ -133,9 +164,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             'MaxFunEvals', 10^5, ...
             'MaxIter', 10^3);
 
-
-    % Multi-start
-    problem = createOptimProblem('fmincon',...
+        % Multi-start
+        problem = createOptimProblem('fmincon',...
           'objective', @matchedVisualRFobjective, ...
           'x0', retinalConePoolingParams.initialValues, ...
           'lb', retinalConePoolingParams.lowerBounds, ...
@@ -143,18 +173,23 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
           'options', options...
           );
 
-    % Generate multi-start problem
-    ms = MultiStart(...
+        % Generate multi-start problem
+        ms = MultiStart(...
           'Display', 'off', ...
           'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
           'UseParallel', true);
 
-    % Run the multi-start to obtain the optimal retinalRFparamsVector
-    retinalConePoolingParams.final = run(ms, problem, obj.multiStartsNum);
+        % Run the multi-start to obtain the optimal retinalRFparamsVector
+        retinalConePoolingParams.finalValues = run(ms, problem, obj.multiStartsNum);
+    end
+
+
+    % Visualize the fitted params
+    RetinaToVisualFieldTransformer.visualizeFittedParamValues(retinalConePoolingParams);
 
     % Compute the fitted visual RF
     [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = ...
-        RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, retinalConePoolingParams.final);
+        RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, retinalConePoolingParams.finalValues);
 
     % Form the rfComputeStruct
     obj.rfComputeStruct = struct();
@@ -166,7 +201,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     
     obj.rfComputeStruct.theRetinalRFcenterConeMap = theRetinalRFcenterConeMap;
     obj.rfComputeStruct.theRetinalRFsurroundConeMap = theRetinalRFsurroundConeMap;
-    obj.rfComputeStruct.retinalConePoolingParams = retinalConePoolingParams.final;
+    obj.rfComputeStruct.retinalConePoolingParams = retinalConePoolingParams;
     obj.rfComputeStruct.targetVisualRFMap = targetVisualRFmap;
     obj.rfComputeStruct.targetVisualRFcenterMap = targetVisualRFcenterMap;
     obj.rfComputeStruct.targetVisualRFsurroundMap = targetVisualRFsurroundMap;

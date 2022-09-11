@@ -21,6 +21,10 @@ classdef RetinaToVisualFieldTransformer < handle
        % The target visual params
        targetVisualRFDoGparams;
 
+       % Whether to use a flatop gaussian model for estimating the characteristic
+       % radius of the visual RF center
+       flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation;
+
        % Subject ID for the chosen database and ranking
        testSubjectID;
 
@@ -79,6 +83,7 @@ classdef RetinaToVisualFieldTransformer < handle
             p.addParameter('psfCircularSymmetryMode', ...
                 RetinaToVisualFieldTransformer.psfCircularSymmetryModeBestResolution, ...
                 @(x)(ismember(x, RetinaToVisualFieldTransformer.validPSFcircularSymmetryModes)));
+            p.addParameter('flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation', false, @islogical);
             p.addParameter('multiStartsNum', 10, @isscalar);
             p.addParameter('doDryRunFirst', false, @islogical);
             p.parse(varargin{:});
@@ -94,11 +99,13 @@ classdef RetinaToVisualFieldTransformer < handle
             else
                 obj.coneCharacteristicRadiusConversionFactor = 0.204 * sqrt(2.0);
             end
+
             obj.opticsParams = opticsParams;
             obj.targetVisualRFDoGparams = targetVisualRFDoGparams;
 
             obj.psfWavelengthSupport = p.Results.psfWavelengthSupport;
             obj.psfCircularSymmetryMode = p.Results.psfCircularSymmetryMode;
+            obj.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation = p.Results.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation;
             obj.multiStartsNum = p.Results.multiStartsNum;
             obj.doDryRunFirst = p.Results.doDryRunFirst;
 
@@ -173,7 +180,8 @@ classdef RetinaToVisualFieldTransformer < handle
         [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs, ...
          visualRFcenterCharacteristicRadiiDegs, visualRFcenterFlatTopExponents, ...
          visualRFcenterXYpos, visualRFcenterOrientationDegs] = analyzeRFcenter(obj, ...
-            indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, spatialSupportDegs);
+            indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, ...
+            spatialSupportDegs);
 
 
         % Obtain the retinal cone pooling params (weights and indices of surround cones) by fitting the target visualRF
@@ -210,6 +218,10 @@ classdef RetinaToVisualFieldTransformer < handle
         [theRF, centerRF, surroundRF] = differenceOfEllipsoidalGaussianCenterAndGaussianSurroundRF(...
            modelConstants, paramsVector);
 
+        % retinal cone pooling model: arbitrary center/double exponential surround
+        pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterDoubleExpSurround(...
+            modelConstants, conePoolingParamsVector);
+
         % retinal cone pooling model: arbitrary center/gaussian surround
         pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianSurround(...
             modelConstants, conePoolingParamsVector)
@@ -229,6 +241,9 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to fit a 2D Gaussian ellipsoid
         theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin);
+
+        % Method to visualize the fitter param values
+        visualizeFittedParamValues(retinalConePoolingParams);
 
         % Method to generate the datafilename where the computed object is saved
         dataFileName = computedObjectDataFileName(opticsParams, targetVisualDoGparams);

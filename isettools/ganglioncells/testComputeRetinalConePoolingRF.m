@@ -2,14 +2,27 @@ function testComputeRetinalConePoolingRF(reComputeData)
     
     % Struct with the various optics params
     opticsParams = struct(...
-        'rfPositionEccDegs', [9.5 -0.2], ...  % (x,y) eccentricity for the cone pooling RF, in degrees
+        'rfPositionEccDegs', [0.5 -0.2], ...  % (x,y) eccentricity for the cone pooling RF, in degrees
         'ZernikeDataBase', 'Artal2012', ...
-        'examinedSubjectRankOrder', 1 , ...
+        'examinedSubjectRankOrder', 2 , ...
         'analyzedEye', 'right eye', ...
         'subjectRankingEye', 'right eye', ...
         'pupilDiameterMM', 3.0, ...
         'wavefrontSpatialSamples', 801 ...
         );
+
+    
+    % Visual RF model to match. Choose between: 
+    % {'ellipsoidal gaussian center, gaussian surround', ...
+    %  'gaussian center, gaussian surround', ...
+    %  'arbitrary center, gaussian surround'}
+    visualRFmodel = 'ellipsoidal gaussian center, gaussian surround';
+
+    % Retinal cone pooling model to use. Choose between:
+    % 'arbitrary center cone weights, double exponential surround weights'
+    % 'arbitrary center cone weights, gaussian surround weights'
+    % 'arbitrary center cone weights, gaussian surround weights with adjustments'   % takes a long time - not very beneficial 
+    retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights';
 
     % From Croner & Kaplan '95 (Figure 4c and text)
     % "P surrounds were on average 6.7 times wider than the centers of
@@ -17,26 +30,10 @@ function testComputeRetinalConePoolingRF(reComputeData)
     
     % Also from Croner & Kaplan '95 (Figure 10b)
     % "These mean ratios for P and M cells are not significantly different
-    % (Student's t-test: P = 0.482). The overall mean ratio is 0.55. In
-    % general, then, the surround of a cell is less sensitive to contrast
-    % than is the center, and the ratio of sensitivities is such that the
-    % surround can reduce the center's response by about 55%.
-
-    % Choose between 
-    % {'ellipsoidal gaussian center, gaussian surround', ...
-    % 'gaussian center, gaussian surround', ...
-    % 'arbitrary center, gaussian surround'}
-    visualRFmodel = 'ellipsoidal gaussian center, gaussian surround';
-
-    % Choose between
-    % 'arbitrary center cone weights, gaussian surround weights'
-    % 'arbitrary center cone weights, gaussian surround weights with adjustments'
-
-    %retinalConePoolingModel = 'arbitrary center cone weights, gaussian surround weights with adjustments';  % takes a long time
-    retinalConePoolingModel = 'arbitrary center cone weights, gaussian surround weights';
+    % (Student's t-test: P = 0.482). The overall mean ratio is 0.55.
 
     targetVisualRFDoGparams = struct(...
-        'conesNumPooledByTheRFcenter', 3, ...
+        'conesNumPooledByTheRFcenter', 1, ...  % this will depend on the connectivity betwen cone/mRGC mosaics
         'surroundToCenterRcRatio', 6.7, ...
         'surroundToCenterIntegratedSensitivityRatio', 0.55, ...
         'visualRFmodel', visualRFmodel, ...  

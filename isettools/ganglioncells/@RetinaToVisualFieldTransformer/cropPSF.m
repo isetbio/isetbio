@@ -16,4 +16,8 @@ function cropPSF(obj,maxSpatialSupportDegs)
     obj.theCircularPSFData.supportXdegs = obj.theCircularPSFData.supportXdegs(idx);
     obj.theCircularPSFData.supportYdegs = obj.theCircularPSFData.supportYdegs(idy);
     obj.theCircularPSFData.data = obj.theCircularPSFData.data(idy,idx);
+
+    % Ensure we have unit volume
+    obj.thePSFData.data = obj.thePSFData.data / sum(obj.thePSFData.data(:));
+    obj.theCircularPSFData.data = obj.theCircularPSFData.data / sum(obj.theCircularPSFData.data(:));
 end
