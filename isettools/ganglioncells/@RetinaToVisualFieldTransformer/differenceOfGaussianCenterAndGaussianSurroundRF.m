@@ -1,11 +1,16 @@
-function theRF = differenceOfGaussianCenterAndGaussianSurroundRF(...
+function [theRF, centerRF, surroundRF] = differenceOfGaussianCenterAndGaussianSurroundRF(...
     modelConstants, paramsVector)
 
     % Extract params for the fit
     Kc = paramsVector(1);
     RcDegs = paramsVector(2);
-    surroundToCenterCharacteristicRadiiRatio = paramsVector(3);
-    surroundToCenterIntegratedSensitivitiesRatio = paramsVector(4);
+
+    % offset not taken into account yet
+    xyPos(1) = real(paramsVector(3));
+    xyPos(2) = imag(paramsVector(3));
+
+    surroundToCenterCharacteristicRadiiRatio = paramsVector(4);
+    surroundToCenterIntegratedSensitivitiesRatio = paramsVector(5);
     RsDegs = surroundToCenterCharacteristicRadiiRatio * RcDegs;
     Ks = Kc * surroundToCenterIntegratedSensitivitiesRatio/(surroundToCenterCharacteristicRadiiRatio^2);
 
@@ -17,6 +22,4 @@ function theRF = differenceOfGaussianCenterAndGaussianSurroundRF(...
 
     % Compute the composite RF
     theRF =  centerRF - surroundRF;
-
-    %actualSCintegratedSensitivityRatio = sum(surroundRF(:))/sum(centerRF(:))
 end

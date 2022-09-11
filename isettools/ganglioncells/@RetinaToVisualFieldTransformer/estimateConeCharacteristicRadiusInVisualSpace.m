@@ -20,7 +20,7 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, 
     meanConeApertureDegs = mean(theConeMosaic.coneApertureDiametersDegs(idx(1:conesNumToUse)));
     anatomicalConeCharacteristicRadiusDegs = coneCharacteristicRadiusConversionFactor * meanConeApertureDegs;
 
-    hFig = figure(1); clf;
+    hFig = []; % figure(1); clf;
     videoOBJ = []; pdfFileName = '';
     visualConeCharacteristicRadiusDegs = RetinaToVisualFieldTransformer.analyzeVisuallyProjectedConeAperture(...
         anatomicalConeCharacteristicRadiusDegs, thePSFData, hFig, videoOBJ, pdfFileName);

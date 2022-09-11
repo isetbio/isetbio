@@ -1,4 +1,7 @@
-function [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs] = analyzeRFcenter(obj, ...
+% Method to compute the cone map for the RF center and its corresponding Gaussian characteristic radius
+function [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs, ...
+    visualRFcenterCharacteristicRadiiDegs, visualRFcenterFlatTopExponents, ...
+    visualRFcenterXYpos, visualRFcenterOrientationDegs] = analyzeRFcenter(obj, ...
     indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, spatialSupportDegs)
     
     % Compute the visual RF center map
@@ -26,7 +29,19 @@ function [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs] = analy
         'globalSearch', false);
 
     % Return the characteristic radius in degrees
-    visualRFcenterCharacteristicRadiusDegs = sqrt(sum(theFittedGaussian.characteristicRadii.^2,2))/sqrt(2);
+    % The sum of the 2 radii
+    %visualRFcenterCharacteristicRadiusDegs = sqrt(sum(theFittedGaussian.characteristicRadii.^2,2))/sqrt(2);
+
+    % The min of the 2 radii
+    %visualRFcenterCharacteristicRadiusDegs = min(theFittedGaussian.characteristicRadii)
+    visualRFcenterCharacteristicRadiusDegs = sqrt(prod(theFittedGaussian.characteristicRadii));
+    %visualRFcenterCharacteristicRadiusDegs = mean(theFittedGaussian.characteristicRadii)
+
+    visualRFcenterCharacteristicRadiiDegs = theFittedGaussian.characteristicRadii;
+    visualRFcenterFlatTopExponents = theFittedGaussian.flatTopExponents;
+    visualRFcenterXYpos = theFittedGaussian.xyCenter;
+    visualRFcenterOrientationDegs = theFittedGaussian.rotationDegs;
+   
 end
 
 function visualRFcenterConeMap = computeVisualRFcenterMapFromInputConesInArcMinSupport(obj, ...

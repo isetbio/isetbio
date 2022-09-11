@@ -15,8 +15,11 @@ classdef RetinaToVisualFieldTransformer < handle
        % Conversion factor from aperture diameter to characteristic radius
        coneCharacteristicRadiusConversionFactor;
 
-       % Various optics params
+       % The input optics params
        opticsParams;
+
+       % The target visual params
+       targetVisualRFDoGparams;
 
        % Subject ID for the chosen database and ranking
        testSubjectID;
@@ -27,6 +30,18 @@ classdef RetinaToVisualFieldTransformer < handle
        % The computed (vLambda weighted, or not) PSFs
        thePSFData;
        theCircularPSFData;
+
+       % # of multi-starts
+       multiStartsNum;
+
+       % Whether to do a dry run first
+       doDryRunFirst;
+
+       % The results of the computation
+       rfComputeStruct;
+
+       % The data filename where the computed object is saved
+       computedObjDataFileName;
     end
 
     % Constant properties
@@ -56,14 +71,22 @@ classdef RetinaToVisualFieldTransformer < handle
     % Public methods (class interface)
     methods
         % Constructor
-        function obj = RetinaToVisualFieldTransformer(theConeMosaic, opticsParams, targetVisualRFDoGparams, varargin) 
+        function obj = RetinaToVisualFieldTransformer(theConeMosaic, ...
+                opticsParams, targetVisualRFDoGparams, varargin) 
             % Parse input
             p = inputParser;
             p.addParameter('psfWavelengthSupport', [], @(x)(isvector(x)));
             p.addParameter('psfCircularSymmetryMode', ...
                 RetinaToVisualFieldTransformer.psfCircularSymmetryModeBestResolution, ...
                 @(x)(ismember(x, RetinaToVisualFieldTransformer.validPSFcircularSymmetryModes)));
+            p.addParameter('multiStartsNum', 10, @isscalar);
+            p.addParameter('doDryRunFirst', false, @islogical);
             p.parse(varargin{:});
+
+
+            % Generate filename for saved object
+            obj.computedObjDataFileName = RetinaToVisualFieldTransformer.computedObjectDataFileName(opticsParams, targetVisualRFDoGparams);
+            fprintf('Computed object will be saved to %s\n', obj.computedObjDataFileName);
 
             obj.theConeMosaic = theConeMosaic;
             if (isfield(theConeMosaic.coneApertureModifiers, 'shape')) && (strcmp(theConeMosaic.coneApertureModifiers.shape, 'Gaussian'))
@@ -72,15 +95,18 @@ classdef RetinaToVisualFieldTransformer < handle
                 obj.coneCharacteristicRadiusConversionFactor = 0.204 * sqrt(2.0);
             end
             obj.opticsParams = opticsParams;
-            
+            obj.targetVisualRFDoGparams = targetVisualRFDoGparams;
+
             obj.psfWavelengthSupport = p.Results.psfWavelengthSupport;
             obj.psfCircularSymmetryMode = p.Results.psfCircularSymmetryMode;
+            obj.multiStartsNum = p.Results.multiStartsNum;
+            obj.doDryRunFirst = p.Results.doDryRunFirst;
 
             % Assert that the cone mosaic contains the cone pooling RF position
             % specified in the optical params struct
             coneMosaicOutline.x = theConeMosaic.eccentricityDegs(1) + theConeMosaic.sizeDegs(1)*0.5*[-1  1 1 -1 -1];
             coneMosaicOutline.y = theConeMosaic.eccentricityDegs(2) + theConeMosaic.sizeDegs(2)*0.5*[-1 -1 1  1 -1];
-            [in,on] = inpolygon(obj.opticsParams.rfPositionEccDegs(1), obj.opticsParams.rfPositionEccDegs(2), ...
+            in = inpolygon(obj.opticsParams.rfPositionEccDegs(1), obj.opticsParams.rfPositionEccDegs(2), ...
                 coneMosaicOutline.x, coneMosaicOutline.y);
             assert(in, 'rfPosition (%2.3f,%2.3f) is outside the passed cone mosaic', ...
                 obj.opticsParams.rfPositionEccDegs(1), obj.opticsParams.rfPositionEccDegs(2));
@@ -89,6 +115,7 @@ classdef RetinaToVisualFieldTransformer < handle
             assert(strcmp(theConeMosaic.whichEye, obj.opticsParams.analyzedEye), ...
                 'theConeMosaic and the optics params must having matching eye');
 
+        
             % Generate the PSF to employ
             obj.vLambdaWeightedPSFandOTF();
 
@@ -103,7 +130,7 @@ classdef RetinaToVisualFieldTransformer < handle
             end
 
             % Compute maxSpatialSupportDegs based on desired visual RF properties
-            maxSpatialSupportDegs = dStruct.visualConeCharacteristicRadiusDegs * 3 * ...
+            maxSpatialSupportDegs = dStruct.visualConeCharacteristicRadiusDegs * 2.5 * ...
                    sqrt(targetVisualRFDoGparams.conesNumPooledByTheRFcenter) * ...
                    targetVisualRFDoGparams.surroundToCenterRcRatio;
             maxSpatialSupportDegs = round(100*maxSpatialSupportDegs)/100;
@@ -112,12 +139,24 @@ classdef RetinaToVisualFieldTransformer < handle
             % Crop the PSFs to maxSpatialSupportDegs to speed up computations
             obj.cropPSF(maxSpatialSupportDegs);
 
-            % Compute retinal cone pooling params to generate the target visual RF
+            % Unit weights for center cones
             indicesOfConesPooledByTheRFcenter = dStruct.indicesOfConesSortedWithDistanceToTargetRFposition(1:targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
             weightsOfConesPooledByTheRFcenter = ones(1,numel(indicesOfConesPooledByTheRFcenter));
-            obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams);
 
+            % Compute retinal cone pooling params to generate the target visual RF
+            obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, ...
+                weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams);
+
+            % Save the computed object
+            fprintf('Saving computed object to %s\n', obj.computedObjDataFileName);
+            save(obj.computedObjDataFileName, 'obj');
+
+            % Visualize the results
+            obj.visualizeResults();
         end
+
+        % Method to visualize the results
+        visualizeResults(obj);
 
     end % Public methods
 
@@ -131,8 +170,11 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to compute the cone map for the RF center and its
         % corresponding Gaussian characteristic radius
-        [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs] = analyzeRFcenter(obj, ...
+        [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs, ...
+         visualRFcenterCharacteristicRadiiDegs, visualRFcenterFlatTopExponents, ...
+         visualRFcenterXYpos, visualRFcenterOrientationDegs] = analyzeRFcenter(obj, ...
             indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, spatialSupportDegs);
+
 
         % Obtain the retinal cone pooling params (weights and indices of surround cones) by fitting the target visualRF
         dataOut = retinalRFparamsForTargetVisualRF(obj,indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams);
@@ -157,19 +199,29 @@ classdef RetinaToVisualFieldTransformer < handle
                  hFig, videoOBJ, pdfFileName);
 
         % visual RF model: arbitrary shape (fixed) RF center and Gaussian surround
-        theRF = differenceOfArbitraryCenterAndGaussianSurroundRF(...
+        [theRF, centerRF, surroundRF] = differenceOfArbitraryCenterAndGaussianSurroundRF(...
            modelConstants, paramsVector);
 
         % visual RF model: Gaussian center and Gaussian surround
-        theRF = differenceOfGaussianCenterAndGaussianSurroundRF(...
+        [theRF, centerRF, surroundRF] = differenceOfGaussianCenterAndGaussianSurroundRF(...
+           modelConstants, paramsVector);
+
+        % visual RF model: ellipsoidal Gaussian center and Gaussian surround
+        [theRF, centerRF, surroundRF] = differenceOfEllipsoidalGaussianCenterAndGaussianSurroundRF(...
            modelConstants, paramsVector);
 
         % retinal cone pooling model: arbitrary center/gaussian surround
         pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianSurround(...
             modelConstants, conePoolingParamsVector)
 
+        % retinal cone pooling model: arbitrary center/gaussian surround
+        % with arbitrary adjustments in the surround
+        pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianAdjustSurround(...
+            modelConstants, conePoolingParamsVector)
+
         % Compute the fitted visualRF from the current retinal pooling params
-        theFittedVisualRF = visualRFfromRetinalConePooling(modelConstants, retinalPoolingParams);
+        [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = ...
+            visualRFfromRetinalConePooling(modelConstants, retinalPoolingParams);
 
         % Method to compute the retinal subregion cone map by summing the
         % corresponding cone aperture maps
@@ -177,6 +229,9 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to fit a 2D Gaussian ellipsoid
         theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin);
+
+        % Method to generate the datafilename where the computed object is saved
+        dataFileName = computedObjectDataFileName(opticsParams, targetVisualDoGparams);
     end
 
 

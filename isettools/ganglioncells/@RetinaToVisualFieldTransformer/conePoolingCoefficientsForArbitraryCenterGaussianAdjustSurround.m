@@ -1,4 +1,4 @@
-function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianSurround(...
+function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianAdjustSurround(...
     modelConstants, conePoolingParamsVector)
 
     
@@ -6,6 +6,7 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     Kc = conePoolingParamsVector(1);
     Ks = conePoolingParamsVector(2);
     RsDegs = conePoolingParamsVector(3);
+    surroundRadialAdjustmentsVector = conePoolingParamsVector(4:end);
 
     pooledConeIndicesAndWeights.centerConeIndices = modelConstants.indicesOfCenterCones;
     pooledConeIndicesAndWeights.centerConeWeights = Kc * modelConstants.weightsOfCenterCones;
@@ -19,10 +20,25 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     % Compute surround cone weights
     minConeWeight = 0.001;
     
+    % adjustment for some surround cone weights
+    surroundConeIndicesToReceiveWeightsAdjustments = ...
+        find(coneDistancesFromRFCenterSquared < (max(modelConstants.arbitrarySurroundCorrectionRadialSupportDegs))^2);
+
+    surroundConeRadiiToReceiveWeightsAdjustments = sqrt(coneDistancesFromRFCenterSquared(surroundConeIndicesToReceiveWeightsAdjustments));
+    surroundAdjustmentFactors = interp1(...
+        modelConstants.arbitrarySurroundCorrectionRadialSupportDegs, surroundRadialAdjustmentsVector, surroundConeRadiiToReceiveWeightsAdjustments, ...
+        'linear', 'extrap');
+
+    % Gaussian surround weights
     surroundConeWeights = exp(-coneDistancesFromRFCenterSquared/(RsDegs.^2));
+
+    % Adjust weights in certain surround cones
+    surroundConeWeights(surroundConeIndicesToReceiveWeightsAdjustments) = ...
+        surroundConeWeights(surroundConeIndicesToReceiveWeightsAdjustments) + surroundAdjustmentFactors/Ks;
+
     surroundConeIndices = find(surroundConeWeights>minConeWeight);
     surroundConeWeights = Ks * surroundConeWeights(surroundConeIndices);
-
+   
     pooledConeIndicesAndWeights.surroundConeIndices = surroundConeIndices;
     pooledConeIndicesAndWeights.surroundConeWeights = surroundConeWeights;
 end
