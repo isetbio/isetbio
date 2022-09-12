@@ -15,11 +15,11 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 3, ...
            'colsNum', 4, ...
-           'heightMargin',  0.08, ...
-           'widthMargin',    0.04, ...
-           'leftMargin',     0.03, ...
+           'heightMargin',  0.07, ...
+           'widthMargin',    0.03, ...
+           'leftMargin',     0.04, ...
            'rightMargin',    0.00, ...
-           'bottomMargin',   0.06, ...
+           'bottomMargin',   0.08, ...
            'topMargin',      0.02);
 
     obj.rfComputeStruct.theFittedVisualRFMap = obj.rfComputeStruct.theFittedVisualRFMap/max(obj.rfComputeStruct.theFittedVisualRFMap(:));
@@ -27,13 +27,15 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     
     % Extract needed info
     maxPSF = max([max(obj.thePSFData.data(:)) max(obj.theCircularPSFData.data(:))]);
-    maxRetinalRF  = 3*max(obj.rfComputeStruct.theRetinalRFsurroundConeMap(:));
+    maxRetinalRF  = max(obj.rfComputeStruct.theRetinalRFsurroundConeMap(:));
     maxRetinalRFprofile = 3*max(sum(obj.rfComputeStruct.theRetinalRFsurroundConeMap,1));
 
     maxRF = max(obj.rfComputeStruct.targetVisualRFMap(:));
     maxRFprofile = 0.3*max(sum(obj.rfComputeStruct.targetVisualRFMap,1));
     maxVisualRF  = 3*max(obj.rfComputeStruct.targetVisualRFsurroundMap(:));
     maxVisualRFprofile = 3*max(sum(obj.rfComputeStruct.targetVisualRFsurroundMap,1));
+    maxFittedRF  = 3*max(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap(:));
+    maxFittedRFprofile = 3*max(sum(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap,1));
     conesNumInRFcenter = numel(obj.rfComputeStruct.modelConstants.indicesOfCenterCones);
 
     maxSpatialSupportDegs = max(obj.rfComputeStruct.modelConstants.spatialSupportDegs(:));
@@ -99,13 +101,13 @@ function hFig = visualizeTargetAndFittedRFs(obj)
         plotTitle = sprintf('achieved visual RF center (%d cones)', conesNumInRFcenter);
     end
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        obj.rfComputeStruct.theFittedVisualRFcenterConeMap, maxVisualRF, maxVisualRFprofile, ...
+        obj.rfComputeStruct.theFittedVisualRFcenterConeMap, maxFittedRF, maxFittedRFprofile, ...
         maxSpatialSupportDegs, plotTitle, true, true);
 
     % The achieved RF surround cone map
     ax = subplot('Position', subplotPosVectors(2,4).v);
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        -obj.rfComputeStruct.theFittedVisualRFsurroundConeMap, maxVisualRF, maxVisualRFprofile, ...
+        -obj.rfComputeStruct.theFittedVisualRFsurroundConeMap, maxFittedRF, maxFittedRFprofile, ...
         maxSpatialSupportDegs, 'achieved visual RF surround', true, true);
 
 
@@ -133,7 +135,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
 
     ax = subplot('Position', subplotPosVectors(3,3).v);
     RMSE = sqrt(1/numel(obj.rfComputeStruct.targetVisualRFMap)*sum(((obj.rfComputeStruct.targetVisualRFMap(:)-obj.rfComputeStruct.theFittedVisualRFMap(:))).^2));
-    plotTitle = sprintf('residual, RMSE: %2.2f', 100*RMSE);
+    plotTitle = sprintf('residual, RMSE: %2.3f 1E-3', 1000*RMSE);
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
         obj.rfComputeStruct.targetVisualRFMap-obj.rfComputeStruct.theFittedVisualRFMap, ...
         maxRF, maxRFprofile, ...
@@ -235,15 +237,15 @@ function plotRFprofiles(ax, rfSupportX, achievedRF, targetRF, maxSpatialSupportD
     theProfileY = theProfileY / maxProfile;
     theTargetProfile = theTargetProfile / maxProfile;
     
-    shadedAreaPlot(ax,rfSupportX, theTargetProfile, 0, [0.8 0.8 0.6], [0.3 0.3 0.1], 0.7, 1, '-');
+    shadedAreaPlot(ax,rfSupportX, theTargetProfile, 0, [0.8 0.8 0.8], [0.4 0.4 0.4], 0.7, 1, '-');
     hold(ax, 'on');
     plot(ax, rfSupportX, theProfileX, 'r-', 'LineWidth', 1.5);
-    plot(ax, rfSupportX, theProfileY, 'g-', 'Color', [0 0.6 0], 'LineWidth', 1.5);
-    plot(ax, rfSupportX, theTargetProfile-theProfileX, 'b-', 'LineWidth', 1.0);
+    plot(ax, rfSupportX, theProfileY, 'b-', 'LineWidth', 1.5);
+    plot(ax, rfSupportX, theTargetProfile-theProfileX, 'k--', 'LineWidth', 1.5);
     
     ticks = ticksForSpatialSupport(maxSpatialSupportDegs);
     axis(ax, 'square');
-    set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', [-0.3 1.05], ...
+    set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', [-0.3 1.01], ...
             'XTick', ticks, 'YTick', -1:0.2:1, 'FontSize', 16);
     
     grid(ax, 'on');

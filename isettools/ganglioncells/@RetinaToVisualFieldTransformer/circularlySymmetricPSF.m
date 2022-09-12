@@ -1,14 +1,20 @@
 function theCircularPSF = circularlySymmetricPSF(thePSF, mode)
     
     switch (mode)
-        case 'average'
+        case RetinaToVisualFieldTransformer.psfCircularSymmetryModeNone
+            theCircularPSF = thePSF;
+            
+        case RetinaToVisualFieldTransformer.psfCircularSymmetryModeAverage
             theCircularPSF = circularAverage(thePSF);
-        case 'bestResolution'
+
+        case RetinaToVisualFieldTransformer.psfCircularSymmetryModeBestResolution
             thePSF =  centerAndRotatePSF(thePSF);
             theCircularPSF = circularFromSlice(thePSF,2);
-        case 'worstResolution'
+
+        case RetinaToVisualFieldTransformer.psfCircularSymmetryModeBestResolution
             thePSF =  centerAndRotatePSF(thePSF);
             theCircularPSF = circularFromSlice(thePSF,1);
+
         otherwise
             error('Unknown circular symmetric PSF mode: ''%s''.', mode);
     end

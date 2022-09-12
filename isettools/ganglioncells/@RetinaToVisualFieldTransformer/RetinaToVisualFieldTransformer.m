@@ -52,6 +52,7 @@ classdef RetinaToVisualFieldTransformer < handle
     properties (Constant, Hidden)
         Artal = 'Artal2012';
         Polans = 'Polans2015';
+        psfCircularSymmetryModeNone = 'none';
         psfCircularSymmetryModeAverage = 'average';
         psfCircularSymmetryModeBestResolution = 'bestResolution';
         psfCircularSymmetryModeWorstResolution = 'worstResolution';
@@ -63,6 +64,7 @@ classdef RetinaToVisualFieldTransformer < handle
             RetinaToVisualFieldTransformer.Polans ...
             };
         validPSFcircularSymmetryModes = {...
+            RetinaToVisualFieldTransformer.psfCircularSymmetryModeNone ...
             RetinaToVisualFieldTransformer.psfCircularSymmetryModeAverage ...
             RetinaToVisualFieldTransformer.psfCircularSymmetryModeBestResolution ...
             RetinaToVisualFieldTransformer.psfCircularSymmetryModeWorstResolution ...
@@ -224,7 +226,11 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % retinal cone pooling model: arbitrary center/gaussian surround
         pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianSurround(...
-            modelConstants, conePoolingParamsVector)
+            modelConstants, conePoolingParamsVector);
+
+        % retinal cone pooling model: arbitrary center/double gaussian surround
+        pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterDoubleGaussianSurround(...
+            modelConstants, conePoolingParamsVector);
 
         % retinal cone pooling model: arbitrary center/gaussian surround
         % with arbitrary adjustments in the surround
