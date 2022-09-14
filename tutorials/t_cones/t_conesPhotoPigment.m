@@ -378,8 +378,7 @@ for ww = 1:length(wls)
 end
 
 %% Plot and compare with ISETBio
-excitationsFig = figure; clf;
-subplot(1,2,1); hold on;
+excitationsFig = figure; clf; hold on;
 plot(wls,excitationsConePTBMono(1,:),'r','LineWidth',6);
 plot(wls,excitationsConePTBMono(2,:),'g','LineWidth',6);
 plot(wls,excitationsConePTBMono(3,:),'b','LineWidth',6);
