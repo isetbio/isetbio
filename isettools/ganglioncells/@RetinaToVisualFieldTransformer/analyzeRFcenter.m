@@ -1,52 +1,88 @@
 % Method to compute the cone map for the RF center and its corresponding Gaussian characteristic radius
-function [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs, ...
+function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
     visualRFcenterCharacteristicRadiiDegs, visualRFcenterFlatTopExponents, ...
-    visualRFcenterXYpos, visualRFcenterOrientationDegs] = analyzeRFcenter(obj, ...
+    visualRFcenterXYpos, visualRFcenterOrientationDegs, ...
+    anatomicalRFcenterCharacteristicRadiusDegs] = analyzeRFcenter(obj, ...
         indicesOfConesPooledByTheRFcenter, ...
         weightsOfConesPooledByTheRFcenter, ...
         spatialSupportDegs)
     
-    % Compute the visual RF center map
-    visualRFcenterConeMap = computeVisualRFcenterMapFromInputConesInArcMinSupport(obj, ...
-        indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, spatialSupportDegs);
-    
-    % Compute its characteristic radius by fitting a flat top gaussian
-    % ellipsoid to it.
     if (numel(indicesOfConesPooledByTheRFcenter) == 2)
-       % We are using a circularly summetric PSF, so force the
-       % orientation to match the orientation of the 2 cones
-       cone1RFpos = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter(1),:);
-       cone2RFpos = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter(2),:);
-       deltaY = cone2RFpos(2)-cone1RFpos(2);
-       deltaX = cone2RFpos(1)-cone1RFpos(1);
-       forcedOrientationDegs = -atan2d(deltaY, deltaX);
-    else
-       forcedOrientationDegs = [];
+           % We are using a circularly summetric PSF, so force the
+           % orientation to match the orientation of the 2 cones
+           cone1RFpos = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter(1),:);
+           cone2RFpos = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter(2),:);
+           deltaY = cone2RFpos(2)-cone1RFpos(2);
+           deltaX = cone2RFpos(1)-cone1RFpos(1);
+           forcedOrientationDegs = -atan2d(deltaY, deltaX);
+        else
+           forcedOrientationDegs = [];
     end
 
-    theFittedGaussian = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(spatialSupportDegs(:,1), spatialSupportDegs(:,2), visualRFcenterConeMap, ...
-        'flatTopGaussian', obj.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation, ...
-        'forcedOrientationDegs', forcedOrientationDegs, ...
-        'globalSearch', false);
+    if (numel(indicesOfConesPooledByTheRFcenter) == 1)
+        flatTopGaussian = false;
+    else
+        flatTopGaussian = obj.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation;
+    end
 
-    % Return the characteristic radius in degrees
-    % The sum of the 2 radii
-    %visualRFcenterCharacteristicRadiusDegs = sqrt(sum(theFittedGaussian.characteristicRadii.^2,2))/sqrt(2);
-
-    % The min of the 2 radii
-    %visualRFcenterCharacteristicRadiusDegs = min(theFittedGaussian.characteristicRadii)
-    %visualRFcenterCharacteristicRadiusDegs = mean(theFittedGaussian.characteristicRadii)
-    visualRFcenterCharacteristicRadiusDegs = sqrt(prod(theFittedGaussian.characteristicRadii));
+    % Compute the visual RF center map
+    [retinalRFcenterConeMap, anatomicalRFcenterCharacteristicRadiusDegs] = computeRetinalRFcenterMapFromInputConesInArcMinSupport(obj, ...
+        indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, spatialSupportDegs, ...
+        flatTopGaussian, forcedOrientationDegs);
     
-    visualRFcenterCharacteristicRadiiDegs = theFittedGaussian.characteristicRadii;
-    visualRFcenterFlatTopExponents = theFittedGaussian.flatTopExponents;
-    visualRFcenterXYpos = theFittedGaussian.xyCenter;
-    visualRFcenterOrientationDegs = theFittedGaussian.rotationDegs;
+    
+    % Compute the visual RF center cone map via convolution of the retinalRFcenterConeMap with the PSF
+    visualRFcenterConeMap = conv2(retinalRFcenterConeMap, obj.thePSFData.data, 'same');
+
+   
+    if (obj.simulateCronerKaplanEstimation)
+        % Since RF parameters by Croner&Kaplan were based on gratings, to
+        % approximate this (and to include features of this estimation) we sum
+        % along the y-dimension of the visualluy projected cone aperture map
+        % and subsequently fit a line-weighting function for a Gaussian 
+
+        % Fit a 1D Gaussian line weighting function to the 1D profile 
+        % (integration along the Y-dimension of the 2D visually projected
+        % cone aperture map)
+        visualRFcenterConeMapProfile = sum(visualRFcenterConeMap,1);
+        theFittedGaussianLineWeightingFunction = RetinaToVisualFieldTransformer.fitGaussianLineWeightingFunction(...
+            obj.thePSFData.supportXdegs, visualRFcenterConeMapProfile);
+
+        % Return the characteristic radius in degrees
+        visualRFcenterCharacteristicRadiusDegs = theFittedGaussianLineWeightingFunction.characteristicRadius;
+
+        visualRFcenterCharacteristicRadiiDegs = [];
+        visualRFcenterFlatTopExponents = [];
+        visualRFcenterXYpos = [theFittedGaussianLineWeightingFunction.xo 0];
+        visualRFcenterOrientationDegs = [];
+
+    else
+
+        theFittedGaussian = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
+            spatialSupportDegs(:,1), spatialSupportDegs(:,2), ...
+            visualRFcenterConeMap, ...
+            'flatTopGaussian', flatTopGaussian, ...
+            'forcedOrientationDegs', forcedOrientationDegs, ...
+            'globalSearch', false);
+
+        % Return the characteristic radius in degrees
+        % The sum of the 2 radii
+        %visualRFcenterCharacteristicRadiusDegs = sqrt(sum(theFittedGaussian.characteristicRadii.^2,2))/sqrt(2);
+    
+        % The sqrt(product) of the 2 radii
+        visualRFcenterCharacteristicRadiusDegs = sqrt(prod(theFittedGaussian.characteristicRadii));
+    
+        visualRFcenterCharacteristicRadiiDegs = theFittedGaussian.characteristicRadii;
+        visualRFcenterFlatTopExponents = theFittedGaussian.flatTopExponents;
+        visualRFcenterXYpos = theFittedGaussian.xyCenter;
+        visualRFcenterOrientationDegs = theFittedGaussian.rotationDegs;
+    end
+
    
 end
 
-function visualRFcenterConeMap = computeVisualRFcenterMapFromInputConesInArcMinSupport(obj, ...
-    theConeIndices, theConeWeights, spatialSupportDegs)
+function [retinalRFcenterConeMap, anatomicalRFcenterCharacteristicRadiusDegs] = computeRetinalRFcenterMapFromInputConesInArcMinSupport(obj, ...
+    theConeIndices, theConeWeights, spatialSupportDegs, flatTopGaussian, forcedOrientationDegs)
 
     % Compute the retinal RF center cone map
     theConeCharacteristicRadiiDegs = obj.coneCharacteristicRadiusConversionFactor * obj.theConeMosaic.coneApertureDiametersDegs(theConeIndices);
@@ -56,10 +92,16 @@ function visualRFcenterConeMap = computeVisualRFcenterMapFromInputConesInArcMinS
     retinalRFcenterConeMap = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
         theConeCharacteristicRadiiDegs, theConePositionsDegs, theConeWeights, spatialSupportDegs);
 
-    % Compute the visual RF center cone map via convolution of the retinalRFcenterConeMap with the PSF
-    visualRFcenterConeMap = conv2(retinalRFcenterConeMap, obj.theCircularPSFData.data, 'same');
+    theFittedGaussian = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
+        spatialSupportDegs(:,1), spatialSupportDegs(:,2), retinalRFcenterConeMap, ...
+        'flatTopGaussian', flatTopGaussian, ...
+        'forcedOrientationDegs', forcedOrientationDegs, ...
+        'globalSearch', false);
 
-    % Unit amplitude
-    visualRFcenterConeMap = visualRFcenterConeMap ./ max(visualRFcenterConeMap(:));
+    % The sqrt(product) of the 2 radii
+    anatomicalRFcenterCharacteristicRadiusDegs = sqrt(prod(theFittedGaussian.characteristicRadii));
+
 end
+
+
 

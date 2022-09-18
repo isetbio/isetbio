@@ -6,9 +6,6 @@ classdef RetinaToVisualFieldTransformer < handle
        % The wavelength support for the employed PSF
        psfWavelengthSupport;
 
-       % The PSF circular symmetry mode
-       psfCircularSymmetryMode;
-
        % The @cMosaic object
        theConeMosaic;
 
@@ -20,6 +17,11 @@ classdef RetinaToVisualFieldTransformer < handle
 
        % The target visual params
        targetVisualRFDoGparams;
+
+       % Whether to simulation the Croner&Kaplan estimation (i.e. fit line
+       % weighting Gaussina functions to 1D projections of the visual 2D RF
+       % maps.
+       simulateCronerKaplanEstimation;
 
        % Whether to use a flatop gaussian model for estimating the characteristic
        % radius of the visual RF center
@@ -33,7 +35,6 @@ classdef RetinaToVisualFieldTransformer < handle
 
        % The computed (vLambda weighted, or not) PSFs
        thePSFData;
-       theCircularPSFData;
 
        % # of multi-starts
        multiStartsNum;
@@ -52,22 +53,12 @@ classdef RetinaToVisualFieldTransformer < handle
     properties (Constant, Hidden)
         Artal = 'Artal2012';
         Polans = 'Polans2015';
-        psfCircularSymmetryModeNone = 'none';
-        psfCircularSymmetryModeAverage = 'average';
-        psfCircularSymmetryModeBestResolution = 'bestResolution';
-        psfCircularSymmetryModeWorstResolution = 'worstResolution';
     end
 
     properties (Constant)
         validZernikeDataBases = {...
             RetinaToVisualFieldTransformer.Artal ...
             RetinaToVisualFieldTransformer.Polans ...
-            };
-        validPSFcircularSymmetryModes = {...
-            RetinaToVisualFieldTransformer.psfCircularSymmetryModeNone ...
-            RetinaToVisualFieldTransformer.psfCircularSymmetryModeAverage ...
-            RetinaToVisualFieldTransformer.psfCircularSymmetryModeBestResolution ...
-            RetinaToVisualFieldTransformer.psfCircularSymmetryModeWorstResolution ...
             };
 
         ArtalSubjectsNum = 54;
@@ -82,10 +73,8 @@ classdef RetinaToVisualFieldTransformer < handle
             % Parse input
             p = inputParser;
             p.addParameter('psfWavelengthSupport', [], @(x)(isvector(x)));
-            p.addParameter('psfCircularSymmetryMode', ...
-                RetinaToVisualFieldTransformer.psfCircularSymmetryModeBestResolution, ...
-                @(x)(ismember(x, RetinaToVisualFieldTransformer.validPSFcircularSymmetryModes)));
             p.addParameter('flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation', false, @islogical);
+            p.addParameter('simulateCronerKaplanEstimation', true, @islogical);
             p.addParameter('multiStartsNum', 10, @isscalar);
             p.addParameter('doDryRunFirst', false, @islogical);
             p.parse(varargin{:});
@@ -104,9 +93,8 @@ classdef RetinaToVisualFieldTransformer < handle
 
             obj.opticsParams = opticsParams;
             obj.targetVisualRFDoGparams = targetVisualRFDoGparams;
-
+            obj.simulateCronerKaplanEstimation = p.Results.simulateCronerKaplanEstimation;
             obj.psfWavelengthSupport = p.Results.psfWavelengthSupport;
-            obj.psfCircularSymmetryMode = p.Results.psfCircularSymmetryMode;
             obj.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation = p.Results.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation;
             obj.multiStartsNum = p.Results.multiStartsNum;
             obj.doDryRunFirst = p.Results.doDryRunFirst;
@@ -131,8 +119,9 @@ classdef RetinaToVisualFieldTransformer < handle
             % Estimate the characteristic radius of the mean cone at the cone pooling RF position
             %  as projected on to visual space using the computed PSF
             dStruct = RetinaToVisualFieldTransformer.estimateConeCharacteristicRadiusInVisualSpace(...
-                obj.theConeMosaic, obj.theCircularPSFData, obj.opticsParams.rfPositionEccDegs, ...
-                obj.coneCharacteristicRadiusConversionFactor);
+                obj.theConeMosaic, obj.thePSFData, obj.opticsParams.rfPositionEccDegs, ...
+                obj.coneCharacteristicRadiusConversionFactor, ...
+                obj.simulateCronerKaplanEstimation);
     
             if (dStruct.conesNumInRetinalPatch==0)
                 error('No cones in cone mosaic')
@@ -179,9 +168,10 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to compute the cone map for the RF center and its
         % corresponding Gaussian characteristic radius
-        [visualRFcenterConeMap, visualRFcenterCharacteristicRadiusDegs, ...
+        [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
          visualRFcenterCharacteristicRadiiDegs, visualRFcenterFlatTopExponents, ...
-         visualRFcenterXYpos, visualRFcenterOrientationDegs] = analyzeRFcenter(obj, ...
+         visualRFcenterXYpos, visualRFcenterOrientationDegs, ...
+         anatomicalRFcenterCharacteristicRadiusDegs] = analyzeRFcenter(obj, ...
             indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, ...
             spatialSupportDegs);
 
@@ -196,17 +186,20 @@ classdef RetinaToVisualFieldTransformer < handle
         % Method to generate a circularly symmetric  PSF from a given PSF
         theCircularPSF = circularlySymmetricPSF(thePSF, mode);
 
+        % Center and rotate PSF
+        data = centerAndRotatePSF(data);
+
         % Method to estimate the visually-projectected cone Rc given a target
         % position in the mosaic and corresponding PSF data
-        dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, thePSFData, theTargetPositionDegs, coneCharacteristicRadiusConversionFactor);
+        dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, thePSFData, ...
+            theTargetPositionDegs, coneCharacteristicRadiusConversionFactor, simulateCronerKaplanEstimation);
     
         % Method to estimate various aspects of the geometry of a 2D shape
         [theCentroid, theAxesLengths, theRotationAngle] = estimateGeometry(supportX, supportY, zData);
 
-        % Method to analyze the effect of optics on the anatomical cone characteristic radius 
-        visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeAperture(...
-                 anatomicalConeCharacteristicRadiusDegs, thePSFData, ...
-                 hFig, videoOBJ, pdfFileName);
+
+        % Gaussian line weighting profile
+        theLineWeightingProfile = gaussianLineWeightingProfile(params, spatialSupport);
 
         % visual RF model: arbitrary shape (fixed) RF center and Gaussian surround
         [theRF, centerRF, surroundRF] = differenceOfArbitraryCenterAndGaussianSurroundRF(...
@@ -222,6 +215,10 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % retinal cone pooling model: arbitrary center/double exponential surround
         pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterDoubleExpSurround(...
+            modelConstants, conePoolingParamsVector);
+
+        % retinal cone pooling model: arbitrary center/variable exponential surround
+        pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterVariableExpSurround(...
             modelConstants, conePoolingParamsVector);
 
         % retinal cone pooling model: arbitrary center/gaussian surround
@@ -248,7 +245,14 @@ classdef RetinaToVisualFieldTransformer < handle
         % Method to fit a 2D Gaussian ellipsoid
         theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin);
 
-        % Method to visualize the fitter param values
+        % Method to fit a Gaussian line weight function to a 1D RFmap profile
+        theFittedGaussianLineWeightingFunction = fitGaussianLineWeightingFunction(...
+            supportXdegs, theRFprofile, varargin);
+
+        % Method to compute the one-sided STF from the RF profile
+        [oneSidedSpatialFrequencySupport, oneSidedSTF] = spatialTransferFunction(spatialSupportDegs, theRFprofile);
+
+        % Method to visualize the fitted param values
         visualizeFittedParamValues(retinalConePoolingParams);
 
         % Method to generate the datafilename where the computed object is saved

@@ -125,11 +125,11 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     
 
     % Nested function gaussian2DObjective
-     function rmse = gaussian2DObjective(params)
+    function rmse = gaussian2DObjective(params)
         fittedRF = gaussian2D(params, xydata);
         fullRMSE = ((fittedRF(:) - theRF(:))).^2;
         rmse =  sqrt(mean(fullRMSE,1));
-     end
+    end
 
 end
 

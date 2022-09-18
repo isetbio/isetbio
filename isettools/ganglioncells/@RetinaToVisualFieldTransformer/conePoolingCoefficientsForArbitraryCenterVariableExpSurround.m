@@ -1,15 +1,13 @@
-function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterDoubleGaussianSurround(...
-    modelConstants, conePoolingParamsVector)
+function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterVariableExpSurround(...
+            modelConstants, conePoolingParamsVector)
 
     % Retrieve params
     Kc = conePoolingParamsVector(1);
     Ks = conePoolingParamsVector(2);
-    Kwide = conePoolingParamsVector(3);
-    RWideDegs = conePoolingParamsVector(4);
-    RnarrowToRwideRatio = conePoolingParamsVector(5);
-
-    RNarrowDegs =  RnarrowToRwideRatio * RWideDegs;
-
+    % Params for the variable exponentials
+    RsDegs = conePoolingParamsVector(3);               
+    variableExponent = conePoolingParamsVector(4); 
+    
     % compute center cone indices and weights
     pooledConeIndicesAndWeights.centerConeIndices = modelConstants.indicesOfCenterCones;
     pooledConeIndicesAndWeights.centerConeWeights = Kc * modelConstants.weightsOfCenterCones;
@@ -18,12 +16,12 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     RFcenterPos = mean(modelConstants.theConeMosaic.coneRFpositionsDegs(modelConstants.indicesOfCenterCones,:),1);
 
     % Compute all cone distances from the RF center (squared)
-    coneDistancesFromRFCenterSquared = sum(bsxfun(@minus, modelConstants.theConeMosaic.coneRFpositionsDegs, RFcenterPos).^2,2);
+    coneDistancesFromRFCenter = sqrt(sum(bsxfun(@minus, modelConstants.theConeMosaic.coneRFpositionsDegs, RFcenterPos).^2,2));
 
     % Compute surround cone weights
-    minConeWeight = 0.001*(min([1 Kwide]));
-    
-    surroundConeWeights = exp(-coneDistancesFromRFCenterSquared/(RNarrowDegs.^2)) + Kwide * exp(-coneDistancesFromRFCenterSquared/(RWideDegs.^2));
+    minConeWeight = 0.001;
+
+    surroundConeWeights = exp(-(abs(coneDistancesFromRFCenter/RsDegs)).^variableExponent);
     surroundConeIndices = find(surroundConeWeights>minConeWeight);
     surroundConeWeights = Ks * surroundConeWeights(surroundConeIndices);
 

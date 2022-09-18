@@ -1,5 +1,5 @@
-function visualizeFittedParamValues(retinalConePoolingParams)
-    n = numel(retinalConePoolingParams.initialValues);
+function visualizeFittedParamValues(params)
+    n = numel(params.initialValues);
     if (n < 5)
         rows = 1;
     else
@@ -11,12 +11,12 @@ function visualizeFittedParamValues(retinalConePoolingParams)
     for iParam = 1:n
         ax = subplot(rows,5,iParam);
         visualizeParamRange(ax, ...
-                retinalConePoolingParams.names{iParam}, ...
-                retinalConePoolingParams.scaling{iParam}, ...
-                retinalConePoolingParams.initialValues(iParam), ...
-                retinalConePoolingParams.finalValues(iParam), ...
-                retinalConePoolingParams.lowerBounds(iParam), ...
-                retinalConePoolingParams.upperBounds(iParam) ...
+                params.names{iParam}, ...
+                params.scaling{iParam}, ...
+                params.initialValues(iParam), ...
+                params.finalValues(iParam), ...
+                params.lowerBounds(iParam), ...
+                params.upperBounds(iParam) ...
                 );
     end
 end
@@ -34,7 +34,19 @@ function visualizeParamRange(ax, paramName, paramScaling, initialValue, finalVal
         ticks = linspace(lowerBound, upperBound, 5);
     end
     grid(ax, 'on');
-    set(ax, 'XLim', [-1 1], 'XTick', [], 'YTick', ticks, 'YLim', [lowerBound upperBound], 'YScale', paramScaling);
+    if (lowerBound == upperBound)
+        ticks = lowerBound;
+        if (strcmp(paramScaling, 'linear'))
+            lowerBound = lowerBound-0.5;
+            upperBound = upperBound+0.5;
+        else
+            lowerBound = lowerBound/2;
+            upperBound = upperBound*2;
+        end
+    end
+
+    set(ax, 'XLim', [-1 1], 'XTick', [], 'YTick', ticks, 'YLim', [lowerBound upperBound], ...
+        'YScale', paramScaling);
     set(ax, 'FontSize', 16);
     xlabel(paramName);
 end

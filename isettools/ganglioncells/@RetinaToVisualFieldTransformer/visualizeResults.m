@@ -6,154 +6,301 @@ end
 
 function hFig = visualizeTargetAndFittedRFs(obj)
 
-   
+    % Extract data
+    eccDegs = obj.theConeMosaic.eccentricityDegs;
+    subjectID = obj.testSubjectID;
+    conesNumInRFcenter = numel(obj.rfComputeStruct.modelConstants.indicesOfCenterCones);
 
-    figNo = 1;
+    maxSpatialSupportDegs = 0.15; %max(obj.rfComputeStruct.modelConstants.spatialSupportDegs(:));
+    spatialSupportXdegs = obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1);
+    spatialSupportYdegs = obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,2);
+    
+    switch (obj.targetVisualRFDoGparams.visualRFmodel)
+        case 'gaussian center, gaussian surround'
+            visualRFcenterCharacteristicRadiusDegs = obj.rfComputeStruct.targetVisualRFparamsVector(2);
+
+        case 'ellipsoidal gaussian center, gaussian surround'
+            visualRFcenterCharacteristicRadiusDegs = obj.rfComputeStruct.targetVisualRFparamsVector(2:3);
+
+        case 'arbitrary center, gaussian surround'
+            visualRFcenterCharacteristicRadiusDegs = modelConstants.visualRFcenterCharacteristicRadiusDegs;
+
+        otherwise
+            error('Unknown targetVisualMapScheme: ''%s''.', targetVisualMapScheme);
+    end
+
+
+    retinalProfileColor = [1 0.0 0.2];
+    visualProfileColor  = [0 1.0 0.6];
+    targetProfileColor  = [1 0.8 0];
+
+    figNo = 169;
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [15 15 1350 1000], 'Color', [1 1 1]);
+    set(hFig, 'Position', [15 15 1900 1180], 'Color', 'none');
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 3, ...
-           'colsNum', 4, ...
-           'heightMargin',  0.07, ...
-           'widthMargin',    0.03, ...
-           'leftMargin',     0.04, ...
-           'rightMargin',    0.00, ...
-           'bottomMargin',   0.08, ...
-           'topMargin',      0.02);
+           'colsNum', 5, ...
+           'heightMargin',  0.08, ...
+           'widthMargin',    0.05, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.01, ...
+           'bottomMargin',   0.06, ...
+           'topMargin',      0.03);
 
-    obj.rfComputeStruct.theFittedVisualRFMap = obj.rfComputeStruct.theFittedVisualRFMap/max(obj.rfComputeStruct.theFittedVisualRFMap(:));
-    obj.rfComputeStruct.targetVisualRFMap = obj.rfComputeStruct.targetVisualRFMap / max(obj.rfComputeStruct.targetVisualRFMap(:));
-    
-    % Extract needed info
-    maxPSF = max([max(obj.thePSFData.data(:)) max(obj.theCircularPSFData.data(:))]);
-    maxRetinalRF  = max(obj.rfComputeStruct.theRetinalRFsurroundConeMap(:));
-    maxRetinalRFprofile = 3*max(sum(obj.rfComputeStruct.theRetinalRFsurroundConeMap,1));
-
-    maxRF = max(obj.rfComputeStruct.targetVisualRFMap(:));
-    maxRFprofile = 0.3*max(sum(obj.rfComputeStruct.targetVisualRFMap,1));
-    maxVisualRF  = 3*max(obj.rfComputeStruct.targetVisualRFsurroundMap(:));
-    maxVisualRFprofile = 3*max(sum(obj.rfComputeStruct.targetVisualRFsurroundMap,1));
-    maxFittedRF  = 3*max(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap(:));
-    maxFittedRFprofile = 3*max(sum(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap,1));
-    conesNumInRFcenter = numel(obj.rfComputeStruct.modelConstants.indicesOfCenterCones);
-
-    maxSpatialSupportDegs = max(obj.rfComputeStruct.modelConstants.spatialSupportDegs(:));
-    spatialSupportXdegs = obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1);
-    spatialSupportYdegs = obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,2);
-
-    retinalSCratio = sum(obj.rfComputeStruct.theRetinalRFsurroundConeMap(:))/sum(obj.rfComputeStruct.theRetinalRFcenterConeMap(:));
-    targetSCratio = sum(obj.rfComputeStruct.targetVisualRFsurroundMap(:))/sum(obj.rfComputeStruct.targetVisualRFcenterMap(:));
-    achievedSCratio = sum(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap(:))/sum(obj.rfComputeStruct.theFittedVisualRFcenterConeMap(:));
-
-    eccDegs = obj.theConeMosaic.eccentricityDegs;
-    subjectID = obj.testSubjectID;
-   
-
-    % The original PSF
+    % The PSF
     ax = subplot('Position', subplotPosVectors(1,1).v);
-    plotPSF(ax, obj.thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, subjectID, true, false, '');
+    maxPSF = max(obj.thePSFData.data(:));
+    plotPSF(ax, obj.thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, subjectID, false, false, '');
 
-    ax = subplot('Position', subplotPosVectors(1,2).v);
-    plotPSF(ax, obj.theCircularPSFData, maxPSF, maxSpatialSupportDegs, eccDegs, subjectID, true, true, 'circularly-averaged PSF');
 
     % The retinal RF center cone map
-    ax = subplot('Position', subplotPosVectors(1,3).v);
+    ax = subplot('Position', subplotPosVectors(1,2).v);
     if (conesNumInRFcenter== 1)
-        plotTitle = sprintf('retinal RF center (%d cone)', conesNumInRFcenter);
+        plotTitle = sprintf('retinal RF center\n(%d input cone)', conesNumInRFcenter);
     else
-        plotTitle = sprintf('retinal RF center (%d cones)', conesNumInRFcenter);
+        plotTitle = sprintf('retinal RF center\n(%d input cones)', conesNumInRFcenter);
     end
+    
+    maxRetinalRFprofile = 0.5*max(sum(obj.rfComputeStruct.theRetinalRFcenterConeMap,1));
+
+
+    % First row: center cone maps with a common max center RF
+    maxCenterRetinalRF = 0.1*max(obj.rfComputeStruct.theRetinalRFcenterConeMap(:));
+
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        obj.rfComputeStruct.theRetinalRFcenterConeMap, maxRetinalRF, maxRetinalRFprofile, ...
-        maxSpatialSupportDegs, plotTitle, true, true);
+        obj.rfComputeStruct.theRetinalRFcenterConeMap,  ...
+        maxCenterRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, plotTitle, true, false, ...
+        'profileColor', retinalProfileColor);
+
+    % The achieved visual RF center map
+    ax = subplot('Position', subplotPosVectors(1,3).v);
+    achievedVisualRFcenterMap = obj.rfComputeStruct.theFittedVisualRFcenterConeMap;
+    plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
+        achievedVisualRFcenterMap,  ...
+        maxCenterRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, sprintf('visual RF center\n'), true, true, ...
+        'profileColor', visualProfileColor);
+
+    
+    % The target visual RF center cone map
+    ax = subplot('Position', subplotPosVectors(1,4).v);
+    RcText = sprintf('Rc:%2.2f arcmin', visualRFcenterCharacteristicRadiusDegs*60);
+    plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
+        obj.rfComputeStruct.targetVisualRFcenterMap, ...
+        maxCenterRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, sprintf('target visual RF center (%s)\n(best fit Gaussian line weighting function)', RcText), true, true, ...
+        'profileColor', targetProfileColor);
+    
+   
+    % Second row: The surround cone maps with a common max surround RF
+    maxSurroundRetinalRF = 0.05*max(obj.rfComputeStruct.theRetinalRFsurroundConeMap(:));
+
 
     % The retinal RF surround cone map
-    ax = subplot('Position', subplotPosVectors(1,4).v);
-    plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        -obj.rfComputeStruct.theRetinalRFsurroundConeMap, maxRetinalRF, maxRetinalRFprofile, ...
-        maxSpatialSupportDegs, sprintf('retinal RF surround, S/Cratio: %2.2f', retinalSCratio), true, true);
-
-
-    % The target RF center cone map
-    ax = subplot('Position', subplotPosVectors(2,1).v);
-    if (conesNumInRFcenter== 1)
-        plotTitle = sprintf('target visual RF center (%d cone)', conesNumInRFcenter);
-    else
-        plotTitle = sprintf('target visual RF center (%d cones)', conesNumInRFcenter);
-    end
-    plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        obj.rfComputeStruct.targetVisualRFcenterMap, maxVisualRF, maxVisualRFprofile, ...
-        maxSpatialSupportDegs, plotTitle, true,false);
-
-    % The target RF surround cone map
     ax = subplot('Position', subplotPosVectors(2,2).v);
+    plotTitle = sprintf('retinal RF surround\n(%s)', strrep(obj.targetVisualRFDoGparams.retinalConePoolingModel, 'arbitrary center cone weights,', ''));
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        -obj.rfComputeStruct.targetVisualRFsurroundMap, maxVisualRF, maxVisualRFprofile, ...
-        maxSpatialSupportDegs, 'target visual RF surround', true, true);
+        obj.rfComputeStruct.theRetinalRFsurroundConeMap, ...
+        maxSurroundRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, plotTitle, true,false, ...
+        'profileColor', retinalProfileColor);
 
 
-    % The achieved RF center cone map
+    % The achieved visual RF surround map
     ax = subplot('Position', subplotPosVectors(2,3).v);
-    if (conesNumInRFcenter== 1)
-        plotTitle = sprintf('achieved visual RF center (%d cone)', conesNumInRFcenter);
-    else
-        plotTitle = sprintf('achieved visual RF center (%d cones)', conesNumInRFcenter);
-    end
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        obj.rfComputeStruct.theFittedVisualRFcenterConeMap, maxFittedRF, maxFittedRFprofile, ...
-        maxSpatialSupportDegs, plotTitle, true, true);
+        obj.rfComputeStruct.theFittedVisualRFsurroundConeMap, ...
+        maxSurroundRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, sprintf('visual RF surround\n'), true, true, ...
+        'profileColor', visualProfileColor);
 
-    % The achieved RF surround cone map
+    % The target visual RF surround cone map
     ax = subplot('Position', subplotPosVectors(2,4).v);
+    surroundLabel = sprintf('Rs/Rc:%2.2f, integrated S/C:%2.2f', obj.targetVisualRFDoGparams.surroundToCenterRcRatio, obj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio);
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        -obj.rfComputeStruct.theFittedVisualRFsurroundConeMap, maxFittedRF, maxFittedRFprofile, ...
-        maxSpatialSupportDegs, 'achieved visual RF surround', true, true);
+        obj.rfComputeStruct.targetVisualRFsurroundMap,  ...
+        maxSurroundRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, sprintf('target visual RF surround\n(%s)', surroundLabel), true, true, ...
+        'profileColor', targetProfileColor);
+    
+   
 
+    
+    % Third row: composite RFs
+    
+    retinalCompositeMap = obj.rfComputeStruct.theRetinalRFcenterConeMap-obj.rfComputeStruct.theRetinalRFsurroundConeMap;
+    maxCompositeRetinalRF = 0.2*max(abs(retinalCompositeMap(retinalCompositeMap<0)));
 
-    % The target RF cone map
-    ax = subplot('Position', subplotPosVectors(3,1).v);
-    if (conesNumInRFcenter== 1)
-        plotTitle = sprintf('target visual RF (%d cone)', conesNumInRFcenter);
-    else
-        plotTitle = sprintf('target visual RF (%d cones)', conesNumInRFcenter);
-    end
-    plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        obj.rfComputeStruct.targetVisualRFMap, maxRF, maxRFprofile, ...
-        maxSpatialSupportDegs, plotTitle, false, false);
-
-    % The achieved RF cone map
+    % The retinal RF composite cone map
     ax = subplot('Position', subplotPosVectors(3,2).v);
-    if (conesNumInRFcenter== 1)
-        plotTitle = sprintf('achieved visual RF (%d cone)', conesNumInRFcenter);
-    else
-        plotTitle = sprintf('achieved visual RF (%d cones)', conesNumInRFcenter);
-    end
+    SCintegratedRatio = sum(obj.rfComputeStruct.theRetinalRFsurroundConeMap(:))/sum(obj.rfComputeStruct.theRetinalRFcenterConeMap(:));
+    plotTitle = sprintf('retinal composite RF\n(integrated S/C: %2.2f)', SCintegratedRatio);
+    
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        obj.rfComputeStruct.theFittedVisualRFMap, maxRF, maxRFprofile, ...
-        maxSpatialSupportDegs, plotTitle, false, true);
+        retinalCompositeMap , ...
+        maxCompositeRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, plotTitle, false, false, ...
+        'profileColor', retinalProfileColor, ...
+        'mode', 'composite');
 
+    
+
+    % The achieved visual composite RF map
     ax = subplot('Position', subplotPosVectors(3,3).v);
-    RMSE = sqrt(1/numel(obj.rfComputeStruct.targetVisualRFMap)*sum(((obj.rfComputeStruct.targetVisualRFMap(:)-obj.rfComputeStruct.theFittedVisualRFMap(:))).^2));
-    plotTitle = sprintf('residual, RMSE: %2.3f 1E-3', 1000*RMSE);
+    SCintegratedRatio = sum(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap(:))/sum(obj.rfComputeStruct.theFittedVisualRFcenterConeMap(:));
+    plotTitle = sprintf('visual composite RF\n(integrated S/C: %2.2f)', SCintegratedRatio);
+    achievedVisualCompositeMap = obj.rfComputeStruct.theFittedVisualRFcenterConeMap-obj.rfComputeStruct.theFittedVisualRFsurroundConeMap;
+    %maxNegative = max(abs(achievedVisualCompositeMap(achievedVisualCompositeMap<0)));
     plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
-        obj.rfComputeStruct.targetVisualRFMap-obj.rfComputeStruct.theFittedVisualRFMap, ...
-        maxRF, maxRFprofile, ...
-        maxSpatialSupportDegs, plotTitle, false, true);
+        achievedVisualCompositeMap, ...
+        maxCompositeRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, plotTitle, false, true, ...
+        'profileColor', visualProfileColor, ...
+        'mode', 'composite');
 
+
+    % The target visual composite RF map
     ax = subplot('Position', subplotPosVectors(3,4).v);
-    plotRFprofiles(ax, spatialSupportXdegs, obj.rfComputeStruct.theFittedVisualRFMap, ...
-        obj.rfComputeStruct.targetVisualRFMap, maxSpatialSupportDegs, targetSCratio, achievedSCratio);
+    SCintegratedRatio = sum(obj.rfComputeStruct.targetVisualRFsurroundMap(:))/sum(obj.rfComputeStruct.targetVisualRFcenterMap(:));
+    plotTitle = sprintf('target visual composite RF\n(integrated S/C: %2.2f)', SCintegratedRatio);
+    targetVisualCompositeMap = obj.rfComputeStruct.targetVisualRFcenterMap-obj.rfComputeStruct.targetVisualRFsurroundMap;
+    plotRF(ax, spatialSupportXdegs, spatialSupportYdegs, ...
+        targetVisualCompositeMap, ...
+        maxCompositeRetinalRF, maxRetinalRFprofile, ...
+        maxSpatialSupportDegs, plotTitle, false, true, ...
+        'profileColor', targetProfileColor, ...
+        'secondProfile', sum(achievedVisualCompositeMap,1), ...
+        'secondProfileColor', visualProfileColor, ...
+        'secondProfileLineType', '-', ...
+        'secondProfileIsShaded', true, ...
+        'mode', 'composite');
 
-    % Finally, plot the surround correction factors
-    if (strcmp(obj.targetVisualRFDoGparams.retinalConePoolingModel, ...
-              'arbitrary center cone weights, gaussian surround weights with adjustments'))
-        correctionFactorsSupportDegs = obj.rfComputeStruct.modelConstants.arbitrarySurroundCorrectionRadialSupportDegs;
-        correctionFactors = obj.rfComputeStruct.retinalConePoolingParams(4:end);
-        plotSurroundCorrectionFactors(correctionFactorsSupportDegs, correctionFactors, maxSpatialSupportDegs);
-     end
+
+
+     % Compute the retinal STFs
+    retinalCompositeMap = obj.rfComputeStruct.theRetinalRFcenterConeMap-obj.rfComputeStruct.theRetinalRFsurroundConeMap;
+    [~,retinalSTF.center] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.rfComputeStruct.theRetinalRFcenterConeMap,1));
+    [~,retinalSTF.surround] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.rfComputeStruct.theRetinalRFsurroundConeMap,1));
+    [~,retinalSTF.composite] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(retinalCompositeMap,1));
+
+
+    % Compute the visual STFs
+    visualCompositeMap = obj.rfComputeStruct.theFittedVisualRFcenterConeMap - obj.rfComputeStruct.theFittedVisualRFsurroundConeMap;
+    [~,visualSTF.center] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.rfComputeStruct.theFittedVisualRFcenterConeMap,1));
+    [~,visualSTF.surround] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap,1));
+    [~,visualSTF.composite] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(visualCompositeMap,1));
+
+    % Compute the target STFs
+    targetCompositeMap = obj.rfComputeStruct.targetVisualRFcenterMap - obj.rfComputeStruct.targetVisualRFsurroundMap;
+    [~,targetSTF.center] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.rfComputeStruct.targetVisualRFcenterMap,1));
+    [~,targetSTF.surround] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.rfComputeStruct.targetVisualRFsurroundMap,1));
+    [~,targetSTF.composite] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(targetCompositeMap,1));
+
+    [~,thePSFMTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.thePSFData.data,1));
+
+    maxSTF = max(retinalSTF.center);
+
+    theSTFLabels = {'retinal', 'visual', 'target DoG (visual)'};
+    theSTFs = [...
+        retinalSTF.center; ...
+        visualSTF.center; ...
+        targetSTF.center];
+        
+    theSTFColors = [...
+        retinalProfileColor; ...
+        visualProfileColor; ...
+        targetProfileColor ];
+
+    % Plot the center STFs
+    ax = subplot('Position', subplotPosVectors(1,5).v);
+    plotSTFs(ax, obj.rfComputeStruct.theSTF.support, theSTFs, thePSFMTF, theSTFLabels, theSTFColors, maxSTF, true, false, sprintf('center STFs\n'));
+
+    % Plot the surround STFs
+    ax = subplot('Position', subplotPosVectors(2,5).v);
+    theSTFs = [...
+        retinalSTF.surround; ...
+        visualSTF.surround; ...
+        targetSTF.surround];
+    plotSTFs(ax, obj.rfComputeStruct.theSTF.support, theSTFs, thePSFMTF, {}, theSTFColors, maxSTF, true, false, sprintf('surround STFs\n'));
+
+    % Plot the composite STFs
+    ax = subplot('Position', subplotPosVectors(3,5).v);
+    theSTFs = [...
+        retinalSTF.composite; ...
+        visualSTF.composite; ...
+        targetSTF.composite];
+    stfRMSE = sqrt(1/(numel(obj.rfComputeStruct.theSTF.fitted))*sum((obj.rfComputeStruct.theSTF.fitted - obj.rfComputeStruct.theSTF.target).^2));
+    plotSTFs(ax, obj.rfComputeStruct.theSTF.support, theSTFs, thePSFMTF, {}, theSTFColors, maxSTF, false, false, sprintf('composite STFs (rmse:%2.2f)\n',stfRMSE));
+
+    
+    % The retinal RF surround model parameter values & ranges
+    ax = subplot('Position', subplotPosVectors(3,1).v);
+    plotRetinalSurroundModelParametersAndRanges(ax, ...
+       obj.rfComputeStruct.retinalConePoolingParams, ...
+       obj.rfComputeStruct.allSolutions, ...
+       obj.targetVisualRFDoGparams.retinalConePoolingModel);
 
 end
+
+
+function plotSTFs(ax, spatialFrequencySupport, theSTFs, thePSFMTF, theSTFLabels, theSTFcolors, maxSTF, noXTickLabel, noYTickLabel, plotTitle)
+
+    
+    hold(ax, 'on');
+    for iSTF = 1:size(theSTFs,1)
+        p(iSTF) = plot(ax, spatialFrequencySupport, theSTFs(iSTF,:)/maxSTF, 'o-', 'LineWidth', 1.5, 'MarkerSize', 10, ...
+            'MarkerFaceColor', theSTFcolors(iSTF,:), 'MarkerEdgeColor', theSTFcolors(iSTF,:)*0.5, 'Color', theSTFcolors(iSTF,:)*0.2); 
+    end
+    
+    plot(ax, spatialFrequencySupport, thePSFMTF, '-', 'LineWidth', 4, 'Color', [0.8 0.8 0.8]);
+    p(numel(p)+1) = plot(ax, spatialFrequencySupport, thePSFMTF, 'k--', 'LineWidth', 2);
+    
+    axis(ax, 'square');
+    set(ax, 'XScale', 'log', 'XLim', [0.3 300], 'YLim', [0.0 1.0], 'YScale', 'linear', ...
+            'XTick', [0.1 0.3 1 3 10 30 100 300], ...
+            'XTickLabel', {'0.1', '0.3', '1', '3', '10', '30', '100', '300'}, ...
+            'YTick', 0:0.2:1, 'FontSize', 16);
+    grid(ax, 'on')
+    
+    xtickangle(ax, 0);
+    ytickangle(ax, 0);
+    set(ax.XAxis,'TickDir','both', 'TickLength',[0.02, 0.01]);
+    
+    grid(ax, 'on'); box(ax, 'off');
+
+    if (noXTickLabel)
+    else
+        xlabel('spatial frequency (c/deg)');
+    end
+
+    if (noYTickLabel)
+        set(ax, 'YTickLabel', {});
+    else
+        ylabel('');
+    end
+    set(ax, 'Color', 'none')
+    
+    if (~isempty(theSTFLabels))
+        theSTFLabels = cat(2, theSTFLabels, {'MTF'});
+        hLegend = legend(ax, p, theSTFLabels, 'Location', 'SouthWest');
+        legend boxoff
+    end
+    
+    title(ax, plotTitle, 'Color', [0.3 0.3 0.3]);
+end
+
 
 function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, testSubjectID, noXTickLabel, noYTickLabel, plotTitle)
     psfZLevels = 0.05:0.1:0.95;
@@ -161,13 +308,12 @@ function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, testSub
     contourf(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data/maxPSF, psfZLevels);
     hold on;
     midRow = (size(thePSFData.data,1)-1)/2+1;
-    plot(ax, thePSFData.supportXdegs, -maxSpatialSupportDegs + 1.2*thePSFData.data(midRow,:)/maxPSF*maxSpatialSupportDegs, 'r-', 'LineWidth', 1.5);
+    plot(ax, thePSFData.supportXdegs, -maxSpatialSupportDegs*0.95 + 1.95*thePSFData.data(midRow,:)/maxPSF*maxSpatialSupportDegs, 'k-', 'LineWidth', 1.5);
     axis(ax,'image'); axis 'xy';
     
     ticks = ticksForSpatialSupport(maxSpatialSupportDegs);
     set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', maxSpatialSupportDegs*[-1 1], ...
             'XTick', ticks, 'YTick', ticks, 'CLim', [0 1], 'FontSize', 16);
-    set(ax, 'XTickLabel', {});
 
     if (noXTickLabel)
         set(ax, 'XTickLabel', {});
@@ -185,23 +331,136 @@ function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, testSub
     grid(ax, 'on');
     xtickangle(ax, 90);
     if (isempty(plotTitle))
-        title(ax, sprintf('PSF (%2.2f, %2.2f degs), subj: %d', eccDegs(1), eccDegs(2), testSubjectID));
+        title(ax, sprintf('PSF @ (%2.2f, %2.2f) degs\nsubjID: %d', eccDegs(1), eccDegs(2), testSubjectID), 'Color', [0.3 0.3 0.3]);
     else
-        title(ax, plotTitle);
+        title(ax, plotTitle, 'Color', [0.3 0.3 0.3]);
     end
+    set(ax, 'color', 'none')
     colormap(ax,brewermap(1024, 'greys'));
 end
 
+function plotRetinalSurroundModel(ax, rfSupportX, maxSpatialSupportDegs)
+    
+    ticks = ticksForSpatialSupport(maxSpatialSupportDegs);
+    axis(ax, 'square');
+    set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', [-0.3 1.01], ...
+            'XTick', ticks, 'YTick', -1:0.2:1, 'FontSize', 16);
+    
+    grid(ax, 'on'); box(ax, 'on');
+    xtickangle(ax, 90);
+    %legend({'target', 'X', 'Y', 'residual'});
+    title('surround model');
+    xlabel(ax,'degrees');
 
-function plotRF(ax, rfSupportX, rfSupportY, RF, maxRF, maxProfile, maxSpatialSupportDegs, ...
-    titleString, noXTickLabels, noYTickLabels)
+end
 
+function plotRetinalSurroundModelParametersAndRanges(ax, ...
+    retinalConePoolingParams, allSolutions, retinalConePoolingModel)
+
+    xTicks = 1:numel(retinalConePoolingParams.names);
+    xTickLabels = retinalConePoolingParams.names;
+
+    switch (retinalConePoolingModel)
+        case {'arbitrary center cone weights, double exponential surround weights-free', ...
+              'arbitrary center cone weights, double exponential surround weights-meanVnVwRatio', ...
+              'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio'}
+            
+        case 'arbitrary center cone weights, gaussian surround weights'
+        case 'arbitrary center cone weights, variable exponential surround weights'
+        case 'arbitrary center cone weights, double gaussian surround weights'
+        case 'arbitrary center cone weights, gaussian surround weights with adjustments'
+        otherwise
+            error('Unknown retinalConePoolingModel: ''%s''.', retinalConePoolingModel);
+
+    end
+    hold(ax, 'on');
+
+    for iParam = 1:numel(retinalConePoolingParams.finalValues)
+        
+        plot(ax, iParam * [1 1], [0 1], 'k-', 'Color', [0.7 0.7 0.7], 'LineWidth', 3.0);
+        if (retinalConePoolingParams.lowerBounds(iParam) == retinalConePoolingParams.upperBounds(iParam))
+        else
+
+            if (strcmp(retinalConePoolingParams.scaling, 'log'))
+                fV = log10(retinalConePoolingParams.finalValues(iParam));
+                fI = log10(retinalConePoolingParams.initialValues(iParam));
+                lB = log10(retinalConePoolingParams.lowerBounds(iParam));
+                uB = log10(retinalConePoolingParams.upperBounds(iParam));
+                fValFinal = (fV - lB)/ (uB-lB);
+                fValInitial = (fI - lB)/ (uB-lB);
+            else
+                fValFinal = (retinalConePoolingParams.finalValues(iParam) - retinalConePoolingParams.lowerBounds(iParam))/ ...
+                            (retinalConePoolingParams.upperBounds(iParam)-retinalConePoolingParams.lowerBounds(iParam));
+                fValInitial = (retinalConePoolingParams.initialValues(iParam) - retinalConePoolingParams.lowerBounds(iParam))/ ...
+                            (retinalConePoolingParams.upperBounds(iParam)-retinalConePoolingParams.lowerBounds(iParam));
+            end
+
+            plot(ax, iParam * [1 1], [fValInitial fValFinal], 'r-', 'LineWidth', 3);
+            plot(ax, iParam * [1 1], fValFinal, 'ro', 'MarkerSize', 14, 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.0);
+            text(ax, iParam+0.1, fValFinal, sprintf(' %1.3f', retinalConePoolingParams.finalValues(iParam)), 'FontSize', 13);
+        end
+        
+        text(ax, iParam-0.25, -0.07, sprintf('%1.3f', retinalConePoolingParams.lowerBounds(iParam)), 'FontWeight', 'bold');
+        text(ax, iParam-0.25, 1.05, sprintf('%1.3f', retinalConePoolingParams.upperBounds(iParam)), 'FontWeight', 'bold');
+    end
+    axis(ax, 'square');
+    xtickangle(ax, 45);
+    set(ax, 'XLim', [0.5 numel(retinalConePoolingParams.names)+0.7],  ...
+            'XTick', xTicks, 'XTickLabel', xTickLabels, 'YLim', [-0.1 1.1], ...
+            'YTickLabel', {}, 'FontSize', 14, 'YColor', 'none', 'Color', 'none');
+    
+    ylabel(ax,'parameter value range');
+    title(ax, sprintf('retinal cone pooling parameters\n'), 'FontSize', 16, 'Color', [0.3 0.3 0.3]);
+    
+end
+
+
+function plotRF(ax, rfSupportX, rfSupportY, RF,  maxRF, maxRFprofile, maxSpatialSupportDegs, ...
+    titleString, noXTickLabels, noYTickLabels, varargin)
+
+    p = inputParser;
+    p.addParameter('profileColor', [1 0 0], @isnumeric);
+    p.addParameter('secondProfile', [], @isnumeric);
+    p.addParameter('secondProfileColor', [0 0 0], @isnumeric);
+    p.addParameter('secondProfileLineType', '--');
+    p.addParameter('secondProfileIsShaded', false, @islogical);
+    p.addParameter('mode', 'component', @(x)(ischar(x)&&(ismember(x, {'component','composite'}))));
+    p.parse(varargin{:});
+    profileColor = p.Results.profileColor;
+    secondProfile = p.Results.secondProfile;
+    secondProfileColor = p.Results.secondProfileColor;
+    secondProfileLineType = p.Results.secondProfileLineType;
+    secondProfileIsShaded = p.Results.secondProfileIsShaded;
+    mode = p.Results.mode;
+
+    RFprofile = sum(RF,1);
     imagesc(ax, rfSupportX, rfSupportY, RF/maxRF);
     hold on;
-    theProfile = sum(RF,1)/maxProfile;
     
-    plot(ax, rfSupportX, -maxSpatialSupportDegs*0.75 + 0.5*theProfile*maxSpatialSupportDegs, 'r-', 'LineWidth', 1.5);
-    plot(ax, rfSupportX, -maxSpatialSupportDegs*0.75 + rfSupportX*0, 'k-');
+    if (strcmp(mode, 'component'))
+        scale1 = 0.95;
+        scale2 = 1.95;
+    else
+        scale1 = 0.75;
+        scale2 = 1.75;
+    end
+
+    
+    if (~isempty(secondProfile))
+        if (secondProfileIsShaded)
+            shadedAreaPlot(ax,rfSupportX, ...
+                -maxSpatialSupportDegs*scale1 + scale2*secondProfile/maxRFprofile*maxSpatialSupportDegs, ...
+                -maxSpatialSupportDegs*scale1, secondProfileColor, secondProfileColor*0.5, 1.0, 1.5, '-');
+        else
+            plot(ax, rfSupportX, -maxSpatialSupportDegs*scale1 + scale2*secondProfile/maxRFprofile*maxSpatialSupportDegs, 'k', ...
+                'Color', secondProfileColor, 'LineWidth', 1.5, 'LineStyle', secondProfileLineType);
+        end
+
+    end
+    plot(ax, rfSupportX, -maxSpatialSupportDegs*scale1 + rfSupportX*0, 'k-');
+    plot(ax, rfSupportX, -maxSpatialSupportDegs*scale1 + scale2*RFprofile/maxRFprofile*maxSpatialSupportDegs, 'r-', 'Color', profileColor, 'LineWidth', 1.5);
+    
+
     axis(ax,'image'); axis 'xy';
     
     ticks = ticksForSpatialSupport(maxSpatialSupportDegs);
@@ -219,82 +478,16 @@ function plotRF(ax, rfSupportX, rfSupportY, RF, maxRF, maxProfile, maxSpatialSup
         xlabel(ax,'degrees');
     end
 
+    if (strcmp('mode', 'component'))
+        text(0,0,sprintf(' vol: %2.3f', sum(RF(:))));
+    end
 
     grid(ax, 'on');
     xtickangle(ax, 90);
-    colormap(ax,brewermap(1024, '*RdBu'));
-    title(ax, titleString);
+    colormap(ax,brewermap(1024, 'greys'));
+    title(ax, titleString, 'Color', [0.3 0.3 0.3]);
 end
 
-function plotRFprofiles(ax, rfSupportX, achievedRF, targetRF, maxSpatialSupportDegs, targetSCratio, achievedSCratio)
-    
-    theProfileX = sum(achievedRF,1);
-    theProfileY = sum(achievedRF,2);
-    theTargetProfile = sum(targetRF,1);
-    
-    maxProfile = max([max(abs(theProfileX)) max(abs(theProfileY)) max(abs(theTargetProfile))]);
-    theProfileX = theProfileX / maxProfile;
-    theProfileY = theProfileY / maxProfile;
-    theTargetProfile = theTargetProfile / maxProfile;
-    
-    shadedAreaPlot(ax,rfSupportX, theTargetProfile, 0, [0.8 0.8 0.8], [0.4 0.4 0.4], 0.7, 1, '-');
-    hold(ax, 'on');
-    plot(ax, rfSupportX, theProfileX, 'r-', 'LineWidth', 1.5);
-    plot(ax, rfSupportX, theProfileY, 'b-', 'LineWidth', 1.5);
-    plot(ax, rfSupportX, theTargetProfile-theProfileX, 'k--', 'LineWidth', 1.5);
-    
-    ticks = ticksForSpatialSupport(maxSpatialSupportDegs);
-    axis(ax, 'square');
-    set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', [-0.3 1.01], ...
-            'XTick', ticks, 'YTick', -1:0.2:1, 'FontSize', 16);
-    
-    grid(ax, 'on');
-    xtickangle(ax, 90);
-    legend({'target', 'X', 'Y', 'residual'});
-    title(sprintf('S/C int. ratio - target: %2.2f\nS/C int. ratio - achieved: %2.2f',targetSCratio, achievedSCratio));
-    xlabel(ax,'degrees');
-end
-
-
-function plotSurroundCorrectionFactors(correctionFactorsSupportDegs, correctionFactors, maxSpatialSupportDegs)
-    figNo = 2;
-    hFig = figure(figNo); clf;
-    set(hFig, 'Position', [15 15 1350 1000], 'Color', [1 1 1]);
-
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 3, ...
-           'colsNum', 4, ...
-           'heightMargin',  0.08, ...
-           'widthMargin',    0.04, ...
-           'leftMargin',     0.03, ...
-           'rightMargin',    0.00, ...
-           'bottomMargin',   0.06, ...
-           'topMargin',      0.02);
-
-    ax = subplot('Position', subplotPosVectors(1,1).v);
-        
-    % The surround correction factors
-    x = [-fliplr(correctionFactorsSupportDegs)  correctionFactorsSupportDegs(2:end)];
-    y = [ fliplr(correctionFactors)            correctionFactors(2:end)];
-    stem(ax, x, -y, ...
-        'LineStyle','-',...
-        'MarkerFaceColor',[1 0.5 0.5],...
-        'MarkerEdgeColor',[1 0 0]);
-
-    tickSeparationDegs = 0.05;
-    ticks = 0:tickSeparationDegs:5;
-    ticks = [-fliplr(ticks) ticks(2:end)];
-
-    axis 'square';
-    set(ax, 'XLim', maxSpatialSupportDegs*[-1 1], 'YLim', [-0.3 0.3], 'YTick', -1:0.05:1, ...
-            'XTick', ticks,  'FontSize', 16);
-
-    grid(ax, 'on');
-    xtickangle(ax, 90);
-    xlabel(ax,'degrees');
-    ylabel(ax,'correction');
-    title(ax, 'surround correction factors')
-end
 
 function ticks = ticksForSpatialSupport(maxSpatialSupportDegs)
     if (maxSpatialSupportDegs < 0.2)

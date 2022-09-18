@@ -15,10 +15,13 @@ function [theRF, centerRF, surroundRF] = differenceOfGaussianCenterAndGaussianSu
     Ks = Kc * surroundToCenterIntegratedSensitivitiesRatio/(surroundToCenterCharacteristicRadiiRatio^2);
 
     % Compute the center RF
-    centerRF = Kc * exp(-modelConstants.Rdegs2/RcDegs^2);
-
+    xDegs = modelConstants.spatialSupportDegs(:,1)-xyPos(1);
+    yDegs = modelConstants.spatialSupportDegs(:,2)-xyPos(2);
+    [Xdegs, Ydegs] = meshgrid(xDegs, yDegs);
+    centerRF = Kc * exp(-(Xdegs/RcDegs).^2) .* exp(-(Ydegs/RcDegs).^2);
+   
     % Compute the surround RF
-    surroundRF = Ks * exp(-modelConstants.Rdegs2/RsDegs^2);
+    surroundRF = Ks * exp(-(Xdegs/RsDegs).^2) .* exp(-(Ydegs/RsDegs).^2);
 
     % Compute the composite RF
     theRF =  centerRF - surroundRF;
