@@ -52,7 +52,7 @@ function batchComputeRetinalConePoolingRF(reComputeData)
     comparison = 'acrossSubjects';
     comparison = 'acrossEccentricities';
     comparison = 'acrossNumberOfConesInRFcenter';
-    comparison = 'acrossRFspatialCharacteristics & surround cone pooling models';
+   % comparison = 'acrossRFspatialCharacteristics & surround cone pooling models';
 
 
     switch (comparison)
@@ -86,8 +86,8 @@ function batchComputeRetinalConePoolingRF(reComputeData)
             end
 
         case 'acrossNumberOfConesInRFcenter'
-            examinedHorizontalEccDegs = 2;
-            examinedSubjectRankOrder = 29;
+            examinedHorizontalEccDegs = 0.25;
+            examinedSubjectRankOrder = 2;
 
             surroundToCenterRcRatio = 6.7;
             surroundToCenterIntegratedSensitivityRatio = 0.55;
@@ -107,8 +107,8 @@ function batchComputeRetinalConePoolingRF(reComputeData)
 
             examinedHorizontalEccDegs = 0.25;
             examinedSubjectRankOrder = 2;
-            retinalConePoolingModel = 'arbitrary center cone weights, gaussian surround weights';
 
+            retinalConePoolingModel = 'arbitrary center cone weights, gaussian surround weights';
             for iShape = 1:numel(examinedCSsensitivityRatiosList)
                 surroundToCenterIntegratedSensitivityRatio = examinedCSsensitivityRatiosList(iShape);
                 surroundToCenterRcRatio = examinedRsRcRatiosList(iShape);
@@ -118,7 +118,6 @@ function batchComputeRetinalConePoolingRF(reComputeData)
             end
 
             retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights-free';
-
             for iShape = 1:numel(examinedCSsensitivityRatiosList)
                 surroundToCenterIntegratedSensitivityRatio = examinedCSsensitivityRatiosList(iShape);
                 surroundToCenterRcRatio = examinedRsRcRatiosList(iShape);

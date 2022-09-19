@@ -11,7 +11,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     subjectID = obj.testSubjectID;
     conesNumInRFcenter = numel(obj.rfComputeStruct.modelConstants.indicesOfCenterCones);
 
-    maxSpatialSupportDegs = 0.15; %max(obj.rfComputeStruct.modelConstants.spatialSupportDegs(:));
+    maxSpatialSupportDegs = max(obj.rfComputeStruct.modelConstants.spatialSupportDegs(:));
     spatialSupportXdegs = obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1);
     spatialSupportYdegs = obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,2);
     
@@ -95,7 +95,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     
    
     % Second row: The surround cone maps with a common max surround RF
-    maxSurroundRetinalRF = 0.05*max(obj.rfComputeStruct.theRetinalRFsurroundConeMap(:));
+    maxSurroundRetinalRF = 0.02*maxCenterRetinalRF;
 
 
     % The retinal RF surround cone map
@@ -131,7 +131,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     % Third row: composite RFs
     
     retinalCompositeMap = obj.rfComputeStruct.theRetinalRFcenterConeMap-obj.rfComputeStruct.theRetinalRFsurroundConeMap;
-    maxCompositeRetinalRF = 0.2*max(abs(retinalCompositeMap(retinalCompositeMap<0)));
+    maxCompositeRetinalRF = maxSurroundRetinalRF;
 
     % The retinal RF composite cone map
     ax = subplot('Position', subplotPosVectors(3,2).v);
@@ -191,7 +191,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
 
     % Compute the visual STFs
     visualCompositeMap = obj.rfComputeStruct.theFittedVisualRFcenterConeMap - obj.rfComputeStruct.theFittedVisualRFsurroundConeMap;
-    [~,visualSTF.center] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+    [spatialFrequencySupport,visualSTF.center] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
             obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.rfComputeStruct.theFittedVisualRFcenterConeMap,1));
     [~,visualSTF.surround] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
             obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.rfComputeStruct.theFittedVisualRFsurroundConeMap,1));
@@ -225,7 +225,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
 
     % Plot the center STFs
     ax = subplot('Position', subplotPosVectors(1,5).v);
-    plotSTFs(ax, obj.rfComputeStruct.theSTF.support, theSTFs, thePSFMTF, theSTFLabels, theSTFColors, maxSTF, true, false, sprintf('center STFs\n'));
+    plotSTFs(ax, spatialFrequencySupport, theSTFs, thePSFMTF, theSTFLabels, theSTFColors, maxSTF, true, false, sprintf('center STFs\n'));
 
     % Plot the surround STFs
     ax = subplot('Position', subplotPosVectors(2,5).v);
@@ -233,7 +233,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
         retinalSTF.surround; ...
         visualSTF.surround; ...
         targetSTF.surround];
-    plotSTFs(ax, obj.rfComputeStruct.theSTF.support, theSTFs, thePSFMTF, {}, theSTFColors, maxSTF, true, false, sprintf('surround STFs\n'));
+    plotSTFs(ax, spatialFrequencySupport, theSTFs, thePSFMTF, {}, theSTFColors, maxSTF, true, false, sprintf('surround STFs\n'));
 
     % Plot the composite STFs
     ax = subplot('Position', subplotPosVectors(3,5).v);
@@ -242,7 +242,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
         visualSTF.composite; ...
         targetSTF.composite];
     stfRMSE = sqrt(1/(numel(obj.rfComputeStruct.theSTF.fitted))*sum((obj.rfComputeStruct.theSTF.fitted - obj.rfComputeStruct.theSTF.target).^2));
-    plotSTFs(ax, obj.rfComputeStruct.theSTF.support, theSTFs, thePSFMTF, {}, theSTFColors, maxSTF, false, false, sprintf('composite STFs (rmse:%2.2f)\n',stfRMSE));
+    plotSTFs(ax, spatialFrequencySupport, theSTFs, thePSFMTF, {}, theSTFColors, maxSTF, false, false, sprintf('composite STFs (rmse:%2.2f)\n',stfRMSE));
 
     
     % The retinal RF surround model parameter values & ranges
@@ -481,7 +481,8 @@ function plotRF(ax, rfSupportX, rfSupportY, RF,  maxRF, maxRFprofile, maxSpatial
     if (strcmp('mode', 'component'))
         text(0,0,sprintf(' vol: %2.3f', sum(RF(:))));
     end
-
+    set(ax, 'Color', 'none');
+    
     grid(ax, 'on');
     xtickangle(ax, 90);
     colormap(ax,brewermap(1024, 'greys'));
