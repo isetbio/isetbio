@@ -177,7 +177,7 @@ function rfVisualizationStruct = destinationRFoutlineFromConnectedSourceRFs(...
     theInputLineSpreadFunctionsXY = cell(2, numel(inputWeights));
 
     for inputIndex = 1:numel(inputWeights)
-        % Characteristic radius of the input cone
+        % Characteristic radius of the input RF
         rC = 0.204*sqrt(2.0)*inputSpacings(inputIndex);
         % Compute aperture2D x weight
         XX = X-inputPositions(inputIndex,1);

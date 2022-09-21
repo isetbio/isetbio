@@ -85,11 +85,7 @@ classdef RetinaToVisualFieldTransformer < handle
             fprintf('Computed object will be saved to %s\n', obj.computedObjDataFileName);
 
             obj.theConeMosaic = theConeMosaic;
-            if (isfield(theConeMosaic.coneApertureModifiers, 'shape')) && (strcmp(theConeMosaic.coneApertureModifiers.shape, 'Gaussian'))
-                obj.coneCharacteristicRadiusConversionFactor = theConeMosaic.coneApertureModifiers.sigma * sqrt(2.0);
-            else
-                obj.coneCharacteristicRadiusConversionFactor = 0.204 * sqrt(2.0);
-            end
+            obj.coneCharacteristicRadiusConversionFactor = theConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor;
 
             obj.opticsParams = opticsParams;
             obj.targetVisualRFDoGparams = targetVisualRFDoGparams;
@@ -103,10 +99,10 @@ classdef RetinaToVisualFieldTransformer < handle
             % specified in the optical params struct
             coneMosaicOutline.x = theConeMosaic.eccentricityDegs(1) + theConeMosaic.sizeDegs(1)*0.5*[-1  1 1 -1 -1];
             coneMosaicOutline.y = theConeMosaic.eccentricityDegs(2) + theConeMosaic.sizeDegs(2)*0.5*[-1 -1 1  1 -1];
-            in = inpolygon(obj.opticsParams.rfPositionEccDegs(1), obj.opticsParams.rfPositionEccDegs(2), ...
+            in = inpolygon(obj.opticsParams.positionDegs(1), obj.opticsParams.positionDegs(2), ...
                 coneMosaicOutline.x, coneMosaicOutline.y);
-            assert(in, 'rfPosition (%2.3f,%2.3f) is outside the passed cone mosaic', ...
-                obj.opticsParams.rfPositionEccDegs(1), obj.opticsParams.rfPositionEccDegs(2));
+            assert(in, 'optics position (%2.3f,%2.3f) is outside the passed cone mosaic', ...
+                obj.opticsParams.positionDegs(1), obj.opticsParams.positionDegs(2));
 
             % Assert that theConeMosaic and the optics refer to the same eye
             assert(strcmp(theConeMosaic.whichEye, obj.opticsParams.analyzedEye), ...
@@ -118,10 +114,7 @@ classdef RetinaToVisualFieldTransformer < handle
 
             % Estimate the characteristic radius of the mean cone at the cone pooling RF position
             %  as projected on to visual space using the computed PSF
-            dStruct = RetinaToVisualFieldTransformer.estimateConeCharacteristicRadiusInVisualSpace(...
-                obj.theConeMosaic, obj.thePSFData, obj.opticsParams.rfPositionEccDegs, ...
-                obj.coneCharacteristicRadiusConversionFactor, ...
-                obj.simulateCronerKaplanEstimation);
+            dStruct = obj.estimateConeCharacteristicRadiusInVisualSpace(obj.opticsParams.positionDegs, obj.simulateCronerKaplanEstimation);
     
             if (dStruct.conesNumInRetinalPatch==0)
                 error('No cones in cone mosaic')
@@ -156,6 +149,10 @@ classdef RetinaToVisualFieldTransformer < handle
         % Method to visualize the results
         visualizeResults(obj);
 
+        % Method to estimate the visually-projectected cone Rc given a target
+        % position in the mosaic and corresponding PSF data
+        dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetPositionDegs, simulateCronerKaplanEstimation);
+
     end % Public methods
 
     % Private methods
@@ -189,17 +186,19 @@ classdef RetinaToVisualFieldTransformer < handle
         % Center and rotate PSF
         data = centerAndRotatePSF(data);
 
-        % Method to estimate the visually-projectected cone Rc given a target
-        % position in the mosaic and corresponding PSF data
-        dStruct = estimateConeCharacteristicRadiusInVisualSpace(theConeMosaic, thePSFData, ...
-            theTargetPositionDegs, coneCharacteristicRadiusConversionFactor, simulateCronerKaplanEstimation);
-    
+       
         % Method to estimate various aspects of the geometry of a 2D shape
         [theCentroid, theAxesLengths, theRotationAngle] = estimateGeometry(supportX, supportY, zData);
 
 
         % Gaussian line weighting profile
         theLineWeightingProfile = gaussianLineWeightingProfile(params, spatialSupport);
+
+        visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeAperture(...
+                 anatomicalConeCharacteristicRadiusDegs, thePSFData, simulateCronerKaplanEstimation, hFig);
+
+        [thePSFData, testSubjectID, subtractCentralRefraction] = computeVlambdaWeightedPSF(...
+            opticsParams, theConeMosaic, psfWavelengthSupport);
 
         % visual RF model: arbitrary shape (fixed) RF center and Gaussian surround
         [theRF, centerRF, surroundRF] = differenceOfArbitraryCenterAndGaussianSurroundRF(...
@@ -233,6 +232,12 @@ classdef RetinaToVisualFieldTransformer < handle
         % with arbitrary adjustments in the surround
         pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianAdjustSurround(...
             modelConstants, conePoolingParamsVector)
+
+        % Generate retinal RF from cone weights
+        retinalRF = computeRetinalRFfromWeightsAndApertures(...
+            consideredConeIndices, coneIndices, coneWeights, ...
+            coneCharacteristicRadiiDegs, coneRFpositionsDegs, ...
+            Xdegs, Ydegs, RFcenter, minConeWeight);
 
         % Compute the fitted visualRF from the current retinal pooling params
         [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = ...

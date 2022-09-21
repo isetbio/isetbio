@@ -12,14 +12,37 @@ function test_ConeToMRGCMosaicConnector()
     eccDegs = [2 0]; 
     sizeDegs = 1.4*[1 0.7];
 
+    whichEye = 'right eye';
+
+    theOpticsParams = struct(...
+        'positionDegs', eccDegs, ... 
+        'ZernikeDataBase', 'Artal2012', ...
+        'examinedSubjectRankOrder', 10, ...
+        'refractiveErrorDiopters', 0.0, ... 
+        'analyzedEye', 'right eye', ...
+        'subjectRankingEye', whichEye, ...
+        'pupilDiameterMM', 3.0, ...
+        'wavefrontSpatialSamples', 801 ...
+        );
+
+    % Set cone aperture modifiers
+    % Use a Gaussian cone aperture with
+    % sigma equal to 0.204 x inner segment diameter (cone diameter)
+    sigmaGaussian = 0.204;  % From McMahon et al, 2000
+    coneApertureModifiers = struct(...
+            'smoothLocalVariations', true, ...
+            'sigma',  sigmaGaussian, ...
+            'shape', 'Gaussian');
+
     theInputConeMosaic = cMosaic(...
        'sourceLatticeSizeDegs', sourceLatticeSizeDegs, ...
        'eccentricityDegs', eccDegs, ...
        'sizeDegs', sizeDegs, ...
+       'whichEye', whichEye, ...
        'coneDensities', [0.6 0.3 0.1], ...
        'overlappingConeFractionForElimination', 0.5, ...
        'rodIntrusionAdjustedConeAperture', true, ...
-       'coneApertureModifiers', struct('smoothLocalVariations', true));
+       'coneApertureModifiers', coneApertureModifiers);
 
     
     % Source lattice (i.e. cone mosaic lattice) meta data, here cone types
@@ -29,7 +52,13 @@ function test_ConeToMRGCMosaicConnector()
     metaDataStruct.coneTypes = theInputConeMosaic.coneTypes;
     metaDataStruct.coneTypeIDs = [theInputConeMosaic.LCONE_ID theInputConeMosaic.MCONE_ID theInputConeMosaic.SCONE_ID];
     metaDataStruct.coneColors = [theInputConeMosaic.lConeColor; theInputConeMosaic.mConeColor; theInputConeMosaic.sConeColor];
-    
+
+
+    surroundRadiusDegs = estimateRsAtMaxEccentricity(theInputConeMosaic, theOpticsParams);
+    metaDataStruct.midgetRGCSurroundRadiusMicronsAtMaxEccentricityGivenOptics = ...
+        1e3 * customDegsToMMsConversionFunction(surroundRadiusDegs);
+
+
     % Source lattice (i.e. cone mosaic lattice) struct
     sourceLatticeStruct = struct(...
         'name', 'cone RFs', ...
@@ -70,7 +99,7 @@ function test_ConeToMRGCMosaicConnector()
         'chromaticSpatialVarianceTradeoff',chromaticSpatialVarianceTradeoff, ...
         'coneIndicesToBeConnected', lmConeIndices, ...
         'visualizeConnectivityAtIntermediateStages', true, ...
-        'generateProgressVideo', true);
+        'generateProgressVideo', ~true);
   
 
     figNo = 999;
@@ -80,3 +109,31 @@ function test_ConeToMRGCMosaicConnector()
     NicePlot.exportFigToPDF(pdfFileName,hFig, 300);
 end
 
+
+function surroundRadiusDegs = estimateRsAtMaxEccentricity(theConeMosaic, theOpticsParams)
+
+    psfWavelengthSupport = [];
+    thePSFData = RetinaToVisualFieldTransformer.computeVlambdaWeightedPSF(theOpticsParams, theConeMosaic, psfWavelengthSupport);
+
+    % Sort cones according to their distance to theTargetPosition
+    [~,maxEccConeIdx] = max(sum(theConeMosaic.coneRFpositionsDegs.^2,2));
+    theTargetPositionDegs = theConeMosaic.coneRFpositionsDegs(maxEccConeIdx,:);
+    coneDistancesFromTargetPosition = sqrt(sum(bsxfun(@minus, theConeMosaic.coneRFpositionsDegs, theTargetPositionDegs).^2,2));
+    [~,idx] = sort(coneDistancesFromTargetPosition, 'ascend');
+    
+    % Estimate mean anatomical cone aperture from the 6 closest (to the target position) cones
+    conesNum = numel(idx);
+    conesNumToUse = min([conesNum 6]);
+    meanConeApertureDegs = mean(theConeMosaic.coneApertureDiametersDegs(idx(1:conesNumToUse)));
+    
+    anatomicalConeCharacteristicRadiusDegs = theConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor  * meanConeApertureDegs;
+    simulateCronerKaplanEstimation = false;
+    hFig = figure(1); clf;
+    visualConeCharacteristicRadiusDegs = RetinaToVisualFieldTransformer.analyzeVisuallyProjectedConeAperture(...
+                 anatomicalConeCharacteristicRadiusDegs, thePSFData, simulateCronerKaplanEstimation, hFig);
+
+    RsRcRatio = 6.7;
+    characteristicRadiiLimit = 2;
+    surroundRadiusDegs = characteristicRadiiLimit * (visualConeCharacteristicRadiusDegs*RsRcRatio);
+
+end
