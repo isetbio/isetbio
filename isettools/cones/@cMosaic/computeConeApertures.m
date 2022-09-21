@@ -29,6 +29,9 @@ function computeConeApertures(obj)
             (isfield(obj.coneApertureModifiers, 'sigma')) ...
         )
         obj.coneApertureToDiameterRatio = 1;
+        obj.coneApertureToConeCharacteristicRadiusConversionFactor = obj.coneApertureModifiers.sigma * sqrt(2.0);
+    else
+        obj.coneApertureToConeCharacteristicRadiusConversionFactor = 0.204*sqrt(2.0);
     end
     
     % Compute cone aperture diameters based on their local spacing and the coneDiameterToSpacingRatio

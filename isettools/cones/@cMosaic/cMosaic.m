@@ -220,6 +220,9 @@ classdef cMosaic < handle
         % This depends on the value of the apertureModifier
         coneApertureToDiameterRatio = [];
         
+        % This depends on the value of the apertureModifier
+        coneApertureToConeCharacteristicRadiusConversionFactor = [];
+
         % Resolution with which zoning is performed
         oiResMicronsForZoning = [];
         
@@ -597,7 +600,7 @@ classdef cMosaic < handle
                 cmParams.randomSeed = obj.randomSeed;
             end
             
-        end
+        end % constructor
         
         % Method to transform a distance specified in units of retinal
         % microns to a distance specified in units of visual degrees based on the @cMosaic configuration
