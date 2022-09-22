@@ -95,7 +95,7 @@ classdef RetinaToVisualFieldTransformer < handle
             obj.multiStartsNum = p.Results.multiStartsNum;
             obj.doDryRunFirst = p.Results.doDryRunFirst;
 
-            % Assert that the cone mosaic contains the cone pooling RF position
+            % Assert that the cone mosaic contains the position
             % specified in the optical params struct
             coneMosaicOutline.x = theConeMosaic.eccentricityDegs(1) + theConeMosaic.sizeDegs(1)*0.5*[-1  1 1 -1 -1];
             coneMosaicOutline.y = theConeMosaic.eccentricityDegs(2) + theConeMosaic.sizeDegs(2)*0.5*[-1 -1 1  1 -1];

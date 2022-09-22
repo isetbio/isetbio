@@ -14,14 +14,15 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetP
         dStruct.visualConeCharacteristicRadiusDegs = nan;
         return;
     end
-    
-    % Sort cones according to their distance to theTargetPosition
-    coneDistancesFromTargetPosition = sqrt(sum(bsxfun(@minus, theConeMosaic.coneRFpositionsDegs, theTargetPositionDegs).^2,2));
-    [~,idx] = sort(coneDistancesFromTargetPosition, 'ascend');
+
+    % Find the 6 closest (to the target position) cones
+    [~,idx] = MosaicConnector.pdist2(theConeMosaic.coneRFpositionsDegs, [], ...
+        'fromPosition', theTargetPositionDegs, ...
+        'smallest', 6 ...
+        );
     
     % Estimate mean anatomical cone aperture from the 6 closest (to the target position) cones
-    conesNumToUse = min([conesNum 6]);
-    meanConeApertureDegs = mean(theConeMosaic.coneApertureDiametersDegs(idx(1:conesNumToUse)));
+    meanConeApertureDegs = mean(theConeMosaic.coneApertureDiametersDegs(idx));
     anatomicalConeCharacteristicRadiusDegs = coneCharacteristicRadiusConversionFactor * meanConeApertureDegs;
 
     hFig = figure(1); clf;

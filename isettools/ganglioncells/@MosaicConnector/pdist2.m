@@ -25,33 +25,61 @@ function [D,idx] = pdist2(A, B, varargin)
 %   
 % Example usage:
 %{
-    B = [3 3];
     A = [2 2; 2 3; 4 4; 5 5; 3 2.2];
+    B = [3 3];
     [D, idx] = pdist2(A,B, '', 'smallest', 1);
+
+    A = [2 2; 2 3; 4 4; 5 5; 3 2.2];
+    B = [];
+    [D, idx] = pdist2(A,B, '', 'fromPosition', 'maxAbsPosition');
+
 %} 
 
     assert(size(A,2) == 2, 'A matrix must be an N x 2 matrix');
-    assert(size(B,2) == 2, 'B matrix must be an M x 2 matrix');
+    assert((isempty(B))||(size(B,2) == 2), 'B matrix must be either empty or an M x 2 matrix');
     
     p = inputParser;
-    p.addOptional('method', '', @(x)(isempty(x)||(ischar(x))));
     p.addParameter('smallest', [], @(x)(isempty(x) || (isnumeric(x))));
+    p.addParameter('fromPosition', '', @(x) ((ischar(x) && (ismember(x,{'maxAbsPosition'}))) || ...
+                                             (isnumeric(x)&&(numel(x) == 2)&&(size(x,2) == 2)))  );
     p.parse(varargin{:});
     smallest = p.Results.smallest;
-    method = p.Results.method;
+    fromPosition = p.Results.fromPosition;
 
     % Compute all pairwise distances
-    D = sqrt( bsxfun(@plus,sum(A.^2,2),sum(B.^2,2)') - 2*(A*B') );
+    AA = sum(A.^2,2);
+    if (isempty(B))
+        if (isempty(fromPosition))
+            error('MosaicConnector.pdist2:: if B is empty, the ''fromPosition'' optional argument must be set to a valid value');
+        else
+            if (ischar(fromPosition))
+                switch (fromPosition)
+                    case 'maxAbsPosition'
+                        [~,idx] = max(AA);
+                        B = A(idx,:);
+                    otherwise
+                        error('MosaicConnector.pdist2:: if B is empty, the ''fromPosition'' optional argument must be set to a valid value. ''%s'' is not a valid value',  fromPosition);
+                end
+            else
+                B = fromPosition;
+            end
+        end
+
+    end
+
+    BB = sum(B.^2,2);
+    D2 = bsxfun(@plus,AA,BB') - 2*(A*B');
 
     % Return smallest distances if so desired
     if (~isempty(smallest)) && (smallest > 0)
         dimension = 1;
-        [D,idx] = sort(D, dimension, 'ascend');
-        smallest = min([smallest size(D,1)]);
-        D = D(1:smallest,:);
+        [D2,idx] = sort(D2, dimension, 'ascend');
+        smallest = min([smallest size(D2,1)]);
+        D2 = D2(1:smallest,:);
         idx = idx(1:smallest,:);
     else
         idx = [];
     end
     
+    D = sqrt(D2);
 end
