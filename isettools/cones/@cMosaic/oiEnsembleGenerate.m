@@ -51,6 +51,7 @@ p.addParameter('wavefrontSpatialSamples', 301, @isscalar);
 p.addParameter('subtractCentralRefraction', false, @islogical);
 p.addParameter('zeroCenterPSF', true, @islogical);
 p.addParameter('flipPSFUpsideDown', true, @islogical);
+p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
 p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
 p.parse(obj, oiSamplingGridDegs, varargin{:});
 
@@ -62,6 +63,7 @@ subtractCentralRefraction = p.Results.subtractCentralRefraction;
 wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
 zeroCenterPSF = p.Results.zeroCenterPSF;
 flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
+upSampleFactor = p.Results.upsampleFactor;
 warningInsteadOfErrorForBadZernikeCoeffs = p.Results.warningInsteadOfErrorForBadZernikeCoeffs;
 
 % Generate the oiEnsemble
@@ -96,8 +98,8 @@ switch (zernikeDataBase)
                 'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                 'subtractCentralRefraction', subtractCentralRefraction, ...
                 'zeroCenterPSF', zeroCenterPSF, ...
-                'flipPSFUpsideDown', flipPSFUpsideDown);
-            
+                'flipPSFUpsideDown', flipPSFUpsideDown, ...
+                'upsampleFactor', upSampleFactor);
             
             if (isempty(theOI))
                 if (warningInsteadOfErrorForBadZernikeCoeffs)
