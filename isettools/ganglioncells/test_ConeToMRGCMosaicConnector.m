@@ -4,7 +4,6 @@ function test_ConeToMRGCMosaicConnector()
     customDegsToMMsConversionFunction = @(x)RGCmodels.Watson.convert.rhoDegsToMMs(x);
     customMMsToDegsConversionFunction = @(x)RGCmodels.Watson.convert.rhoMMsToDegs(x);
 
-
     % Generate the input cone mosaic (the source)
     eccDegs = [-4 0]; 
     sizeDegs = 0.5+(max(abs(eccDegs))+1)*0.4*[0.5 0.25];
@@ -39,7 +38,9 @@ function test_ConeToMRGCMosaicConnector()
        'coneDensities', [0.6 0.3 0.1], ...
        'overlappingConeFractionForElimination', 0.5, ...
        'rodIntrusionAdjustedConeAperture', true, ...
-       'coneApertureModifiers', coneApertureModifiers);
+       'coneApertureModifiers', coneApertureModifiers, ...
+       'customDegsToMMsConversionFunction', customDegsToMMsConversionFunction, ...
+       'customMMsToDegsConversionFunction', customMMsToDegsConversionFunction);
 
     
     % Source lattice (i.e. cone mosaic lattice) meta data, here cone types
@@ -50,11 +51,9 @@ function test_ConeToMRGCMosaicConnector()
     metaDataStruct.coneTypeIDs = [theInputConeMosaic.LCONE_ID theInputConeMosaic.MCONE_ID theInputConeMosaic.SCONE_ID];
     metaDataStruct.coneColors = [theInputConeMosaic.lConeColor; theInputConeMosaic.mConeColor; theInputConeMosaic.sConeColor];
 
-
     surroundRadiusDegs = estimateRsAtMaxEccentricity(theInputConeMosaic, theOpticsParams);
     metaDataStruct.midgetRGCSurroundRadiusMicronsAtMaxEccentricityGivenOptics = ...
         1e3 * customDegsToMMsConversionFunction(surroundRadiusDegs);
-
 
     % Source lattice (i.e. cone mosaic lattice) struct
     sourceLatticeStruct = struct(...
