@@ -59,7 +59,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = generateStimulu
         % Generate scene corresponding to the test stimulus on the presentation display
         format = 'rgb';
         meanLuminance = []; % EMPTY, so that mean luminance is determined from the rgb settings values we pass
-        theScene = sceneFromFile(RGBsettings, format, meanLuminance, presentationDisplay);
+        theScene = sceneFromFile(flipud(RGBsettings), format, meanLuminance, presentationDisplay);
 
         % Set the desired FOV 
         theScene = sceneSet(theScene, 'h fov', stimParams.stimSizeDegs);

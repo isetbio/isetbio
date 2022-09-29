@@ -33,9 +33,8 @@ function visualizeDestinationLatticePooling(obj, varargin)
     
     hold(ax, 'off')
 
-    % Generate the cone outline
-    thetas = linspace(0,360,4);
     % Small source RF outline so we can see the pooling better
+    thetas = linspace(0,360,4);
     sourceRFoutline = 0.3*[cosd(thetas); sind(thetas)]';
 
     
@@ -67,7 +66,7 @@ function visualizeDestinationLatticePooling(obj, varargin)
         % Weights of these pooled source lattice RFs
         weightsOfConnectedSourceRFs  = full(obj.connectivityMatrix(indicesOfConnectedSourceRFs, iDestinationRF));
 
-        % Generation RF visualization struct
+        % Generate RF visualization struct
         rfVisualizationStruct = destinationRFoutlineFromConnectedSourceRFs(...
                 positionsOfConnectedSourceRFs, spacingsOfConnectedSourceRFs, weightsOfConnectedSourceRFs);
 
