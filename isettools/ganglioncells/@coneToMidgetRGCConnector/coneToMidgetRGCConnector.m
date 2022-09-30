@@ -15,7 +15,7 @@ classdef coneToMidgetRGCConnector < MosaicConnector
             'optimizationCenter', 'latticeCenter', ...            % {'latticeCenter', 'origin'}
             'chromaticSpatialVarianceTradeoff', 1.0, ...          % [0: minimize chromatic variance 1: minimize spatial variance]
             'rfCentroidOverlapPenaltyFactor', 1, ...              % Penalty for overlapping centroids
-            'RcToRGCseparationRatio', 1.0, ...                    % overlap of RFs (1 = no overlap)
+            'destinationRFoverlapRatio', 0.0, ...                 % overlap of midgetRGCRFs (0 = no overlap)
             'spatialVarianceMetric', 'spatial variance', ...      % choose between {'maximal interinput distance', 'spatial variance'}
             'maxMeanConeInputsPerRGCToConsiderSwapping', 7, ...   % Do cone swapping only if the mean cones/RGC less than or equal to this number
             'maxNumberOfConesToSwap', 4, ...                      % Only swap up to this many cones

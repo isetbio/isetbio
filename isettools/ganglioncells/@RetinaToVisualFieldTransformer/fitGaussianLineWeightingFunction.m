@@ -7,11 +7,11 @@ function theFittedGaussianLineWeightingFunction = fitGaussianLineWeightingFuncti
 
     assert(all(size(spatialSupport) == size(theRFprofile)), 'fitGaussianLineWeightingFunction:: mismatch in dimensions');
     
-    % Form parameter vector: [gain, xo, RcX, yo, RcY, rotationAngleDegs]
+    % Form parameter vector: [gain, xo, Rc]
     params.initialValues = [...
         max(theRFprofile(:)), ...
-        0.0, ...
-        max(spatialSupport)/10];
+        mean(spatialSupport), ...
+        (max(spatialSupport)-min(spatialSupport))/10];
 
     dx = spatialSupport(2)-spatialSupport(1);
     % Form lower and upper value vectors
@@ -23,7 +23,7 @@ function theFittedGaussianLineWeightingFunction = fitGaussianLineWeightingFuncti
     params.upperBounds = [ ...
         max(theRFprofile(:)) * 1e3, ...
         max(spatialSupport), ...
-        max(spatialSupport)];
+        (max(spatialSupport)-min(spatialSupport))];
 
     params.names = {'gain', 'xo', 'Rc'};
     params.scaling = {'log', 'linear', 'log'};

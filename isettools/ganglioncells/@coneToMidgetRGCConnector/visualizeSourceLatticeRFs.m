@@ -21,10 +21,10 @@ function visualizeSourceLatticeRFs(obj, ax, coneOutline, varargin)
             coneRFpositionsMicrons = obj.sourceLattice.RFpositionsMicrons(idx,:);
 
             % The apertures
-            coneRFaperturesMicrons = obj.sourceLattice.RFspacingsMicrons(idx);
+            coneRFspacingsMicrons = obj.sourceLattice.RFspacingsMicrons(idx);
 
             % Generate patch
-            [f,v] = obj.facesAndVertices(coneRFpositionsMicrons, coneRFaperturesMicrons, coneOutline);
+            [f,v] = obj.facesAndVertices(coneRFpositionsMicrons, coneRFspacingsMicrons, coneOutline);
     
             if ((~isempty(identifiedConeIndicesSetA)) || (~isempty(identifiedConeIndicesSetB)))
                 patch(ax,'Faces', f, 'Vertices', v, 'FaceColor', theColor*0.99, 'EdgeColor', theColor*0.7, 'FaceAlpha', 0.3, 'LineWidth', 1.0);

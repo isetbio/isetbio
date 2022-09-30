@@ -4,12 +4,20 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     p = inputParser;
     p.addParameter('flatTopGaussian', false, @islogical);
     p.addParameter('forcedOrientationDegs', [], @(x)(isempty(x) || isscalar(x)));
+    p.addParameter('forcedEllipseRcYRcXratio', [], @(x)(isempty(x) || isscalar(x)));
+    p.addParameter('rangeForEllipseRcYRcXratio', [], @(x)(isempty(x) || (isnumeric(x)&&(numel(x)==2)) ));
+    p.addParameter('forcedCentroidXYpos', [], @(x)(isempty(x) || (isnumeric(x)&&(numel(x)==2)) ));
     p.addParameter('globalSearch', false, @islogical);
+    p.addParameter('multiStartsNum', [], @(x)(isempty(x) || isscalar(x)));
     p.parse(varargin{:});
     flatTopGaussian = p.Results.flatTopGaussian;
+    forcedEllipseRcYRcXratio = p.Results.forcedEllipseRcYRcXratio;
     forcedOrientationDegs = p.Results.forcedOrientationDegs;
+    rangeForEllipseRcYRcXratio = p.Results.rangeForEllipseRcYRcXratio;
+    forcedCentroidXYpos = p.Results.forcedCentroidXYpos;
     globalSearch = p.Results.globalSearch;
-
+    multiStartsNum = p.Results.multiStartsNum;
+    
     [X,Y] = meshgrid(supportX, supportY);
     xydata(:,:,1) = X;
     xydata(:,:,2) = Y;
@@ -22,13 +30,13 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
         theRotationAngle = forcedOrientationDegs;
     end
 
-    % Form parameter vector: [gain, xo, RcX, yo, RcY, rotationAngleDegs]
+    % Form parameter vector: [gain, xo, RcX, yo, RcY/RcX, rotationAngleDegs]
     params.initialValues = [...
         max(theRF(:)), ...
         theCentroid(1), ...
         theAxesLengths(1)/3, ...
         theCentroid(2), ...
-        theAxesLengths(2)/3, ...
+        theAxesLengths(2)/theAxesLengths(1), ...
         theRotationAngle];
 
     % Form lower and upper value vectors
@@ -37,7 +45,7 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
         min(supportX) ...
         0*(max(supportX)-min(supportX)) ...
         min(supportY) ...
-        0*(max(supportY)-min(supportY))  ...
+        1e-2  ...
         theRotationAngle-90];
 
     params.upperBounds = [ ...
@@ -45,8 +53,30 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
         max(supportX) ...
         max(supportX)-min(supportX) ...
         max(supportY) ...
-        max(supportY)-min(supportY) ...
+        1e2 ...
         theRotationAngle+90];
+
+    if (~isempty(forcedEllipseRcYRcXratio))
+        params.initialValues(5) = forcedEllipseRcYRcXratio;
+        params.lowerBounds(5) = forcedEllipseRcYRcXratio;
+        params.upperBounds(5) = forcedEllipseRcYRcXratio;
+    else
+        if (~isempty(rangeForEllipseRcYRcXratio))
+            params.lowerBounds(5) = rangeForEllipseRcYRcXratio(1);
+            params.upperBounds(5) = rangeForEllipseRcYRcXratio(2);
+        end
+
+    end
+
+    if (~isempty(forcedCentroidXYpos))
+        params.initialValues(2) = forcedCentroidXYpos(1);
+        params.lowerBounds(2) = params.initialValues(2);
+        params.upperBounds(2) = params.lowerBounds(2);
+
+        params.initialValues(4) = forcedCentroidXYpos(2);
+        params.lowerBounds(4) = params.initialValues(4);
+        params.upperBounds(4) = params.lowerBounds(4);
+    end
 
     if (~isempty(forcedOrientationDegs))
         params.lowerBounds(end) = forcedOrientationDegs;
@@ -100,7 +130,10 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
               'UseParallel', true);
       
          % Run the multi-start
-         multiStartsNum = 32;
+         if (isempty(multiStartsNum))
+            multiStartsNum = 32;
+         end
+
          fittedParams = run(ms, problem, multiStartsNum);
     else
         % Local search
@@ -113,7 +146,7 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     xo = fittedParams(2);
     yo = fittedParams(4);
     RcX = fittedParams(3);
-    RcY = fittedParams(5);
+    RcY = RcX * fittedParams(5);
  
 
     % Compute the fitted 2D Gaussian
@@ -143,7 +176,7 @@ function F = gaussian2D(params,xydata)
     xo = params(2);
     yo = params(4);
     RcX = params(3);
-    RcY = params(5);
+    RcY = RcX*params(5);
     rotationAngle = params(6);
     flatTopGaussianExponentX = params(7);
     flatTopGaussianExponentY = params(8);

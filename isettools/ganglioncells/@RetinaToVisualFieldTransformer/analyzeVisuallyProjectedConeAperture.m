@@ -38,6 +38,7 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
         end
 
         figure(hFig); clf;
+        spatialSupportXLims = [min(thePSFData.supportXdegs) max(thePSFData.supportXdegs)];
         plot(thePSFData.supportXdegs, theVisuallyProjectedConeApertureMapProfile, 'k-'); hold on
         plot(thePSFData.supportXdegs,theFittedGaussianLineWeightingFunction.profile, 'r-');
         xlabel('space (degs)');
@@ -58,11 +59,13 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
             return;
         end
 
+        spatialSupportXLims = [min(thePSFData.supportXdegs) max(thePSFData.supportXdegs)];
+        spatialSupportYLims = [min(thePSFData.supportYdegs) max(thePSFData.supportYdegs)];
         figure(hFig); clf;
         subplot(2,2,1);
         imagesc(thePSFData.supportXdegs*60, thePSFData.supportYdegs*60, theAnatomicalConeApertureMap);
         axis ('image');
-        set(gca,'XLim', 3*[-1 1], 'YLim', 3*[-1 1], 'XTick', -3:0.5:3, 'YTick', -3:0.5:3);
+        set(gca,'XLim', spatialSupportXLims*60, 'YLim', spatialSupportYLims, 'XTick', -5:1:5, 'YTick', -5:1:5);
         xlabel('arcmin');
         ylabel('arcmin');
         title('the anatomical cone aperture');
@@ -70,7 +73,7 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
         subplot(2,2,2);
         imagesc(thePSFData.supportXdegs*60, thePSFData.supportYdegs*60, thePSFData.data);
         axis ('image');
-        set(gca,'XLim', 3*[-1 1], 'YLim', 3*[-1 1], 'XTick', -3:0.5:3, 'YTick', -3:0.5:3);
+        set(gca,'XLim', spatialSupportXLims*60, 'YLim', spatialSupportYLims, 'XTick', -5:1:5, 'YTick', -5:1:5);
         xlabel('arcmin');
         ylabel('arcmin');
         title('thePSF');
@@ -78,7 +81,7 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
         subplot(2,2,3);
         imagesc(thePSFData.supportXdegs*60, thePSFData.supportYdegs*60, theVisuallyProjectedConeApertureMap);
         axis ('image');
-        set(gca,'XLim', 3*[-1 1], 'YLim', 3*[-1 1], 'XTick', -3:0.5:3, 'YTick', -3:0.5:3);
+        set(gca,'XLim', spatialSupportXLims*60, 'YLim', spatialSupportYLims, 'XTick', -5:1:5, 'YTick', -5:1:5);
         xlabel('arcmin');
         ylabel('arcmin');
         title('Visually projected cone aperture')
@@ -88,17 +91,18 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
         imagesc(thePSFData.supportXdegs*60, thePSFData.supportYdegs*60, theFittedGaussian.ellipsoidMap);
         title('Fitted Ellipsoid');
         axis ('image');
-        set(gca,'XLim', 3*[-1 1], 'YLim', 3*[-1 1], 'XTick', -3:0.5:3, 'YTick', -3:0.5:3);
+        set(gca,'XLim', spatialSupportXLims*60, 'YLim', spatialSupportYLims, 'XTick', -5:1:5, 'YTick', -5:1:5);
         xlabel('arcmin');
         ylabel('arcmin');
         colormap(gray)
        
         m = (size(theAnatomicalConeApertureMap,1)-1)/2+1;
+
         figure(3); clf;
         subplot(2,2,1);
         plot(thePSFData.supportXdegs*60, theAnatomicalConeApertureMap(m,:), 'k-', 'LineWidth', 1.5);
         axis ('square');
-        set(gca, 'XLim', 3*[-1 1], 'XTick', -5:0.5:5);
+        set(gca, 'XLim', spatialSupportXLims*60, 'XTick', -5:1:5);
         grid on
         xlabel('arcmin');
         title('the anatomical cone aperture')
@@ -108,7 +112,7 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
         axis ('square');
         title('thePSF');
         xlabel('arcmin');
-        set(gca, 'XLim', 3*[-1 1], 'XTick', -5:0.5:5);
+        set(gca, 'XLim', spatialSupportXLims*60, 'XTick', -5:1:5);
         grid on
 
         subplot(2,2,3);
@@ -117,7 +121,7 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
         title('Visually & anatomical projected cone aperture')
         axis ('square');
         xlabel('arcmin');
-        set(gca, 'XLim', 3*[-1 1], 'XTick', -5:0.5:5);
+        set(gca, 'XLim', spatialSupportXLims*60, 'XTick', -5:1:5);
         grid on
     
         subplot(2,2,4);
@@ -128,7 +132,7 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
         title('Fitted Ellipsoid');
         axis ('square');
         xlabel('arcmin');
-        set(gca, 'XLim', 3*[-1 1], 'XTick', -5:0.5:5);
+        set(gca, 'XLim', spatialSupportXLims*60, 'XTick', -5:1:5);
         grid on
     end
 end

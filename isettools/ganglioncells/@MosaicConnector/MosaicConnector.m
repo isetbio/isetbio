@@ -157,6 +157,10 @@ classdef MosaicConnector < handle
             obj.cropSourceLattice();
         end % Constructor
 
+        % Method to diverge source RFs to multiple destination RFs
+        divergeSourceRFsToNearbyDestinationRFs(obj, varargin);
+
+
         % Visualization methods
         hFig = visualizeCurrentConnectivity(obj, figNo, varargin);
         visualizeDestinationLatticePooling(obj, varargin);
