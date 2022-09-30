@@ -1,14 +1,77 @@
 function examineMidgetRFcenterSizeVsPSFsize()
 
     % Eccentricity in temporal retina
-    radialEccExamined = [0 1 2 3 4 6 8 12 16 20 24 30];
+    radialEccExamined = [0 1 2 3 4 6 8 12 16 20];% 20 24 30];
+
+    summarizeData = true;
     for iEcc = 1:numel(radialEccExamined)
-        doIt(radialEccExamined(iEcc));
+        d = doIt(radialEccExamined(iEcc), summarizeData);
+        theRcDegs2 = prod(d.midgetRGCRFcenterRadiiDegs,2);
+        idx = find(theRcDegs2>0);
+        midgetRGCRFcenterRadiiDegs(iEcc,:,:) = d.midgetRGCRFcenterRadiiDegs(idx,:);
+        exclusiveCenterConesNum(iEcc,:) = d.exclusiveCenterConesNum;
+        opticalPSFRadiiDegs(iEcc,:,:) = d.opticalPSFRadiiDegs;
     end
+
+    eccRange = [0-0.5 max(radialEccExamined)+0.5];
+    characteristicRadiusRange = [0 3];
+    markerSize = 10;
+
+    hFig = figure(1); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 1000 960 960]);
+    ax = subplot(2,2,2);
+    x = linspace(-1,1,1000);
+    Rc = 0.15;
+    yGauss = exp(-(x/Rc).^2);
+    yGaussPower = exp(-(x/Rc).^4);
+    p1 = plot(ax, x, yGauss, 'k-', 'LineWidth', 1.0);
+    hold(ax, 'on');
+    p2 = plot(ax, x, yGaussPower, 'k-', 'LineWidth', 2, 'Color', [1.0 0.4 0.4]);
+    plot(ax, Rc*[-1 1], exp(-1)*[1 1], 'ro-', 'LineWidth', 1.0, 'MarkerSize', 8, 'MarkerFaceColor', [1 0.3 0.3]);
+    legend(ax, [p1 p2], {'Gaussian', 'super Gaussian (P=2)'}, ...
+        'Location', 'North', 'NumColumns', 2, 'LineWidth', 0.5, 'Color', [0.95 0.95 0.95]);
+    set(ax, 'XLim', [-0.5 0.5], 'YLim', [0 1.0], 'XTick', Rc*(-3:1:3), 'XTickLabel', {'-3Rc', '-2Rc', '-Rc', 0, 'Rc', '2Rc', '3Rc'}, ...
+        'YTick', 0:0.1:1, 'FontSize', 14);
+    axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
+    set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
+    xlabel(ax,'space')
+    ylabel(ax,'sensitivity');
+
+    ax = subplot(2,2,3);
+    plot(ax,radialEccExamined, mean(exclusiveCenterConesNum,2), 'ro-', 'LineWidth', 1.5, ...
+        'MarkerSize', markerSize, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0]);
+    set(ax, 'XLim', eccRange, 'YLim', [0 5], 'XTick', 0:2:30, 'YTick', 0:1:5, 'FontSize', 14);
+    axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
+    set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
+    xlabel(ax,'eccentricity (degs)')
+    ylabel(ax,'# of cones in RF center');
+
+
+    ax = subplot(2,2,4);
+    plot(ax, radialEccExamined, max(mean(midgetRGCRFcenterRadiiDegs(:,:,:),2),[],3)*60, 'ko-', 'LineWidth', 1.5, ...
+        'MarkerSize', markerSize, 'MarkerFaceColor', [0.85 0.85 0.85], 'MarkerEdgeColor', [0 0 0]);
+    hold(ax, 'on');
+    plot(ax,radialEccExamined, min(mean(midgetRGCRFcenterRadiiDegs(:,:,:),2),[],3)*60, 'ko-', 'LineWidth', 1.5, ...
+        'MarkerSize', markerSize, 'MarkerFaceColor', [0.35 0.35 0.35], 'MarkerEdgeColor', [0 0 0]);
+
+    plot(ax,radialEccExamined, max(mean(opticalPSFRadiiDegs(:,:,:),2),[],3)*60, 'ko-', 'LineWidth', 1.5, ...
+        'MarkerSize', markerSize, 'MarkerFaceColor', [1 1 0.5], 'MarkerEdgeColor', [0.5 0.5 0], 'Color', [0.5 0.5 0]);
+    plot(ax,radialEccExamined, min(mean(opticalPSFRadiiDegs(:,:,:),2),[],3)*60, 'ko-', 'LineWidth', 1.5, ...
+        'MarkerSize', markerSize, 'MarkerFaceColor', [1 0.7 0.5], 'MarkerEdgeColor', [0.5 0.25 0], 'Color', [0.5 0.25 0]);
+    hold(ax, 'off');
+    h = legend(ax,{'mRGC RF center (max)', 'mRGC RF center (min)', 'PSF (max)', 'PSF (min)'}, ...
+        'Location', 'NorthWest', 'NumColumns', 2, 'LineWidth', 0.5, 'Color', [0.95 0.95 0.95]);
+    
+    set(ax, 'XLim', eccRange, 'YLim', characteristicRadiusRange, ...
+        'XTick', 0:2:30, 'YTick', 0:0.5:5, 'FontSize', 14);
+    axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
+    set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
+    xlabel(ax,'eccentricity (degs)')
+    ylabel(ax,'characteristic radius (arcmin)');
 
 end
 
-function doIt(radialEcc)
+function summarizedData = doIt(radialEcc, summarizeData)
 
     retinaQuadrant = 'temporal meridian';
     whichEye = 'right eye';
@@ -36,10 +99,23 @@ function doIt(radialEcc)
     destinationRFoverlapRatio = 0.0;
     analyzedCellsNum = 20;
     fName = sprintf('RFcenterPSFanalysis_%2.2fdegs_%2.2fdegs_overlapRatio_%2.2f', horizontalEcc, verticalEcc, destinationRFoverlapRatio);
-    [theMidgetRFcenterRcDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = analyzeMidgetRFcenterAndPSF(theOpticsParams, destinationRFoverlapRatio, analyzedCellsNum, fName);
+    
+    if (summarizeData)
+        % Save computed radii
+        load(sprintf('%s.mat', fName), 'theMidgetRFcenterRcDegs', 'thePSFcharacteristicRadiiDegs', 'exclusiveCenterConesNum', 'opticsDataBase', 'opticsSubjectRankOrder');
+        summarizedData = struct();
+        summarizedData.midgetRGCRFcenterRadiiDegs = theMidgetRFcenterRcDegs;
+        summarizedData.exclusiveCenterConesNum = exclusiveCenterConesNum;
+        summarizedData.opticalPSFRadiiDegs = thePSFcharacteristicRadiiDegs;
+        summarizedData.opticsDataBase = opticsDataBase;
+        summarizedData.opticsSubjectRankOrder = opticsSubjectRankOrder;
+    else
+        [theMidgetRFcenterRcDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = analyzeMidgetRFcenterAndPSF(theOpticsParams, destinationRFoverlapRatio, analyzedCellsNum, fName);
 
-    % Save computed radii
-    save(sprintf('%s.mat', fName), 'theMidgetRFcenterRcDegs', 'thePSFcharacteristicRadiiDegs', 'exclusiveCenterConesNum', 'opticsDataBase', 'opticsSubjectRankOrder');
+        % Save computed radii
+        save(sprintf('%s.mat', fName), 'theMidgetRFcenterRcDegs', 'thePSFcharacteristicRadiiDegs', 'exclusiveCenterConesNum', 'opticsDataBase', 'opticsSubjectRankOrder');
+
+    end
 end
 
 
