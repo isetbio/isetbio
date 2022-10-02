@@ -1,20 +1,83 @@
 function examineMidgetRFcenterSizeVsPSFsize()
 
-    % Eccentricity in temporal retina
-    radialEccExamined = [0 1 2 3 4 6 8 12 16 20];% 20 24 30];
+    % Choose retinal quadrant
+    retinaQuadrant = 'nasal meridian';
+    if (strcmp(retinaQuadrant, 'nasal meridian'))
+        radialEccExamined = [1 2 3 4 6 8 12 19 24 30];
+    else
+        radialEccExamined = [0 1 2 3 4 6 8 12 16 20 24 30];
+    end
 
-    summarizeData = true;
+
+    % Optics subject
+    opticsDataBase = 'Artal2012';
+
+    % When the subject rank order is not empty, we analyze the PSF for that
+    % subject and the midget RGC RF center
+    opticsSubjectRankOrder = 10;
+
+    % When the subject rank order is empty we analyze the PSFs of all
+    % subjects
+    opticsSubjectRankOrder = [];
+
+
+    % RGC overlap ratio (0 = no overlap)
+    destinationRFoverlapRatio = 0.0;
+
+
+    % If summarizeData is false, we analyze PSF and midget RGC data for the chosen eccentricities
+    % If summarizeData is true, we import analyzed PSF and midget RGC data (across the chosen eccentricities) and plot them
+    summarizeData = ~true;
+    
+    % Do it
     for iEcc = 1:numel(radialEccExamined)
-        d = doIt(radialEccExamined(iEcc), summarizeData);
+        doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio);
+    end
+
+    % Plot summarized data
+    if (summarizeData)
+        dListSingleSubjectPSF = cell(1, numel(radialEccExamined));
+        dListAllSubjectPSFs = cell(1, numel(radialEccExamined));
+        for iEcc = 1:numel(radialEccExamined)
+            dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant);
+            dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], retinaQuadrant);
+        end
+    
+        plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubjectPSFs);
+    end
+end
+
+
+
+function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubjectPSFs)
+
+    exclusiveCenterConesNum = zeros(numel(radialEccExamined),1);
+    midgetRGCRFcenterRadiiDegs = zeros(numel(radialEccExamined), 20, 2);
+    opticalPSFRadiiDegs = zeros(numel(radialEccExamined),2);
+    allSubjectsOpticalPSFRadiiDegs = zeros(numel(radialEccExamined),55,2);
+
+    for iEcc = 1:numel(radialEccExamined)
+
+        % Single subject data - use this for the midget info
+        d = dListSingleSubjectPSF{iEcc};
+        
+        % Find cells that were analyzed (20)
         theRcDegs2 = prod(d.midgetRGCRFcenterRadiiDegs,2);
         idx = find(theRcDegs2>0);
         midgetRGCRFcenterRadiiDegs(iEcc,:,:) = d.midgetRGCRFcenterRadiiDegs(idx,:);
+
         exclusiveCenterConesNum(iEcc,:) = d.exclusiveCenterConesNum;
-        opticalPSFRadiiDegs(iEcc,:,:) = d.opticalPSFRadiiDegs;
+
+        % PSF data from the single subject
+        opticalPSFRadiiDegs(iEcc,:) = d.opticalPSFRadiiDegs;
+
+        % PSF data from all subjects
+        d = dListAllSubjectPSFs{iEcc};
+        allSubjectsOpticalPSFRadiiDegs(iEcc,:,:) = d.allSubjectPSFcharacteristicRadiiDegs;
     end
 
     eccRange = [0-0.5 max(radialEccExamined)+0.5];
-    characteristicRadiusRange = [0 3];
+    characteristicRadiusRange = [0 7];
     markerSize = 10;
 
     hFig = figure(1); clf;
@@ -40,7 +103,7 @@ function examineMidgetRFcenterSizeVsPSFsize()
     ax = subplot(2,2,3);
     plot(ax,radialEccExamined, mean(exclusiveCenterConesNum,2), 'ro-', 'LineWidth', 1.5, ...
         'MarkerSize', markerSize, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0]);
-    set(ax, 'XLim', eccRange, 'YLim', [0 5], 'XTick', 0:2:30, 'YTick', 0:1:5, 'FontSize', 14);
+    set(ax, 'XLim', eccRange, 'YLim', [0 8], 'XTick', 0:2:30, 'YTick', 0:1:8, 'FontSize', 14);
     axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
     set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
     xlabel(ax,'eccentricity (degs)')
@@ -48,45 +111,57 @@ function examineMidgetRFcenterSizeVsPSFsize()
 
 
     ax = subplot(2,2,4);
-    plot(ax, radialEccExamined, max(mean(midgetRGCRFcenterRadiiDegs(:,:,:),2),[],3)*60, 'ko-', 'LineWidth', 1.5, ...
-        'MarkerSize', markerSize, 'MarkerFaceColor', [0.85 0.85 0.85], 'MarkerEdgeColor', [0 0 0]);
-    hold(ax, 'on');
-    plot(ax,radialEccExamined, min(mean(midgetRGCRFcenterRadiiDegs(:,:,:),2),[],3)*60, 'ko-', 'LineWidth', 1.5, ...
-        'MarkerSize', markerSize, 'MarkerFaceColor', [0.35 0.35 0.35], 'MarkerEdgeColor', [0 0 0]);
+    
+    allSubjectsMinorCharacteristicRadiiDegs = squeeze(allSubjectsOpticalPSFRadiiDegs(:,:,1));
+    allSubjectsMajorCharacteristicRadiiDegs = squeeze(allSubjectsOpticalPSFRadiiDegs(:,:,2));
 
-    plot(ax,radialEccExamined, max(mean(opticalPSFRadiiDegs(:,:,:),2),[],3)*60, 'ko-', 'LineWidth', 1.5, ...
-        'MarkerSize', markerSize, 'MarkerFaceColor', [1 1 0.5], 'MarkerEdgeColor', [0.5 0.5 0], 'Color', [0.5 0.5 0]);
-    plot(ax,radialEccExamined, min(mean(opticalPSFRadiiDegs(:,:,:),2),[],3)*60, 'ko-', 'LineWidth', 1.5, ...
-        'MarkerSize', markerSize, 'MarkerFaceColor', [1 0.7 0.5], 'MarkerEdgeColor', [0.5 0.25 0], 'Color', [0.5 0.25 0]);
+    shadedAreaBetweenTwoLines(ax,radialEccExamined, ...
+        mean(allSubjectsMinorCharacteristicRadiiDegs,2)'*60, ...
+        mean(allSubjectsMajorCharacteristicRadiiDegs,2)'*60, ...
+        [0.2 1 0.8], [0.1 0.6 0.4], 0.5, 1.0, '-');
+    hold(ax, 'on');
+
+
+%     % Single subject
+%     plot(ax,radialEccExamined, max(opticalPSFRadiiDegs,[],2)*60, 'ko-', 'LineWidth', 1.5, ...
+%         'MarkerSize', markerSize, 'MarkerFaceColor', [1 1 0.5], 'MarkerEdgeColor', [0.5 0.5 0], 'Color', [0.5 0.5 0]);
+%     plot(ax,radialEccExamined, min(opticalPSFRadiiDegs,[],2)*60, 'ko-', 'LineWidth', 1.5, ...
+%         'MarkerSize', markerSize, 'MarkerFaceColor', [1 0.7 0.5], 'MarkerEdgeColor', [0.5 0.25 0], 'Color', [0.5 0.25 0]);
+
+
+    averageRGCsMinorCharacteristicRadiusDegs = mean(midgetRGCRFcenterRadiiDegs(:,:,1),2);
+    averageRGCsMajorCharacteristicRadiusDegs = mean(midgetRGCRFcenterRadiiDegs(:,:,2),2);
+    averageRGCCharacteristicRadiusDegs = 0.5*(averageRGCsMinorCharacteristicRadiusDegs+averageRGCsMajorCharacteristicRadiusDegs);
+
+    plot(ax, radialEccExamined, averageRGCCharacteristicRadiusDegs*60, 'ro-', 'LineWidth', 1.5, ...
+        'MarkerSize', markerSize, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0]);
+   
+
     hold(ax, 'off');
-    h = legend(ax,{'mRGC RF center (max)', 'mRGC RF center (min)', 'PSF (max)', 'PSF (min)'}, ...
-        'Location', 'NorthWest', 'NumColumns', 2, 'LineWidth', 0.5, 'Color', [0.95 0.95 0.95]);
+    h = legend(ax,{sprintf('PSF (mean of %d subjects)', size(allSubjectsOpticalPSFRadiiDegs,2)), 'mRGC RF center'}, ...
+        'Location', 'NorthWest', 'NumColumns', 1, 'LineWidth', 0.5, 'Color', [0.95 0.95 0.95]);
     
     set(ax, 'XLim', eccRange, 'YLim', characteristicRadiusRange, ...
-        'XTick', 0:2:30, 'YTick', 0:0.5:5, 'FontSize', 14);
+        'XTick', 0:2:30, 'YTick', 0:1:7, 'FontSize', 14);
     axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
     set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
     xlabel(ax,'eccentricity (degs)')
     ylabel(ax,'characteristic radius (arcmin)');
-
 end
 
-function summarizedData = doIt(radialEcc, summarizeData)
 
-    retinaQuadrant = 'temporal meridian';
+function summarizedData = doIt(radialEcc, summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio)
+
     whichEye = 'right eye';
     [horizontalEcc, verticalEcc] = cMosaic.eccentricitiesForRetinaMeridianInEye(...
             radialEcc, retinaQuadrant, whichEye);
     eccDegs = [horizontalEcc verticalEcc];
 
-    % Optics subject
-    opticsDataBase = 'Artal2012';
-    opticsSubjectRankOrder = 10;
 
     theOpticsParams = struct(...
         'positionDegs', eccDegs, ... 
-        'ZernikeDataBase', 'Artal2012', ...
-        'examinedSubjectRankOrder', 10, ...
+        'ZernikeDataBase', opticsDataBase, ...
+        'examinedSubjectRankOrder',opticsSubjectRankOrder, ...
         'refractiveErrorDiopters', 0.0, ... 
         'analyzedEye', whichEye, ...
         'subjectRankingEye', 'right eye', ...
@@ -95,40 +170,188 @@ function summarizedData = doIt(radialEcc, summarizeData)
         'wavefrontSpatialSamples', 501 ...
         );
 
+    if (isempty(theOpticsParams.examinedSubjectRankOrder))
+        fName = sprintf('allSubjectsPSFanalysis_%2.2fdegs_%2.2fdegs_%s', horizontalEcc, verticalEcc, retinaQuadrant);
+        if (summarizeData)
+            % Load computed radii 
+            load(sprintf('%s.mat', fName), 'allSubjectPSFcharacteristicRadiiDegs', 'opticsDataBase', 'opticsSubjectRankOrders');
+        else
+            [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
+                analyzeAllSubjectPSFs(theOpticsParams, fName);
+            % Save computed radii
+            save(sprintf('%s.mat', fName), 'allSubjectPSFcharacteristicRadiiDegs', 'opticsDataBase', 'opticsSubjectRankOrders');
+        end
+
+        summarizedData = struct();
+        summarizedData.allSubjectPSFcharacteristicRadiiDegs = allSubjectPSFcharacteristicRadiiDegs;
+        summarizedData.opticsDataBase = opticsDataBase;
+        summarizedData.subjectRankOrders = opticsSubjectRankOrders;
+ 
+        return;
+    end
+
     % Compute midget RF center and PSF for this subject at this eccentricity
-    destinationRFoverlapRatio = 0.0;
     analyzedCellsNum = 20;
-    fName = sprintf('RFcenterPSFanalysis_%2.2fdegs_%2.2fdegs_overlapRatio_%2.2f', horizontalEcc, verticalEcc, destinationRFoverlapRatio);
+    fName = sprintf('RFcenterPSFanalysis_%2.2fdegs_%2.2fdegs_overlapRatio_%2.2f_%s', horizontalEcc, verticalEcc, destinationRFoverlapRatio, retinaQuadrant);
     
     if (summarizeData)
-        % Save computed radii
+        % Load computed radii
         load(sprintf('%s.mat', fName), 'theMidgetRFcenterRcDegs', 'thePSFcharacteristicRadiiDegs', 'exclusiveCenterConesNum', 'opticsDataBase', 'opticsSubjectRankOrder');
-        summarizedData = struct();
-        summarizedData.midgetRGCRFcenterRadiiDegs = theMidgetRFcenterRcDegs;
-        summarizedData.exclusiveCenterConesNum = exclusiveCenterConesNum;
-        summarizedData.opticalPSFRadiiDegs = thePSFcharacteristicRadiiDegs;
-        summarizedData.opticsDataBase = opticsDataBase;
-        summarizedData.opticsSubjectRankOrder = opticsSubjectRankOrder;
     else
-        [theMidgetRFcenterRcDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = analyzeMidgetRFcenterAndPSF(theOpticsParams, destinationRFoverlapRatio, analyzedCellsNum, fName);
-
+        [theMidgetRFcenterRcDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = ...
+            analyzeMidgetRFcenterAndPSF(theOpticsParams, destinationRFoverlapRatio, analyzedCellsNum, fName);
         % Save computed radii
         save(sprintf('%s.mat', fName), 'theMidgetRFcenterRcDegs', 'thePSFcharacteristicRadiiDegs', 'exclusiveCenterConesNum', 'opticsDataBase', 'opticsSubjectRankOrder');
-
     end
+
+    summarizedData = struct();
+    summarizedData.midgetRGCRFcenterRadiiDegs = theMidgetRFcenterRcDegs;
+    summarizedData.exclusiveCenterConesNum = exclusiveCenterConesNum;
+    summarizedData.opticalPSFRadiiDegs = thePSFcharacteristicRadiiDegs;
+    summarizedData.opticsDataBase = opticsDataBase;
+    summarizedData.opticsSubjectRankOrder = opticsSubjectRankOrder;
+
 end
 
+function [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
+                analyzeAllSubjectPSFs(theOpticsParams, fName)
 
-
-function [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = analyzeMidgetRFcenterAndPSF(theOpticsParams, destinationRFoverlapRatio, analyzedCellsNum, fName)
+    opticsSubjectRankOrders = 1:55;
 
     % Generate cone mosaic and source lattice struct at the target eccentricity
     targetEccDegs = theOpticsParams.positionDegs;
     targetSizeDegs = 0.5+(sqrt(sum(targetEccDegs.^2,2))+1)*0.4*[0.5 0.25];
-    maxVisualizedFOVdegs = round(100 * max(targetSizeDegs) / 6)/100
+    maxVisualizedFOVdegs = round(100 * max(targetSizeDegs) / 4)/100;
 
-    [theConeMosaic, sourceLatticeStruct, coneIndicesToBeConnected, thePSFData, theOI] = ...
-        generateConeMosaic(targetEccDegs, targetSizeDegs, theOpticsParams);
+    
+
+    xLims = maxVisualizedFOVdegs * 0.5*[-1 1];
+    yLims = maxVisualizedFOVdegs * 0.5*[-1 1];
+    xTicks = -0.5:0.05:0.5;
+    yTicks = xTicks;
+
+
+    videoOBJ = VideoWriter(fName, 'MPEG-4');
+    videoOBJ.FrameRate = 10;
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+
+
+    hFig = figure(54); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1250 450]);
+
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 1, ...
+           'colsNum', 3, ...
+           'heightMargin',  0.08, ...
+           'widthMargin',    0.07, ...
+           'leftMargin',     0.07, ...
+           'rightMargin',    0.01, ...
+           'bottomMargin',   0.06, ...
+           'topMargin',      0.03);
+
+    allSubjectPSFcharacteristicRadiiDegs = zeros(numel(opticsSubjectRankOrders),2);
+    for iSubj = numel(opticsSubjectRankOrders):-1:1
+
+        % Generate PSF for this subject
+        theOpticsParams.examinedSubjectRankOrder = opticsSubjectRankOrders(iSubj);
+
+        thePSFData = generateVLambdaWeightedPSF(targetEccDegs, targetSizeDegs, theOpticsParams);
+
+        dFitStruct = fitPSF(thePSFData);
+
+        allSubjectPSFcharacteristicRadiiDegs(iSubj,:) = dFitStruct.thePSFcharacteristicRadiiDegs;
+
+        ax1 = subplot('Position', subplotPosVectors(1,1).v);
+        ax2 = subplot('Position', subplotPosVectors(1,2).v);
+        ax3 = subplot('Position', subplotPosVectors(1,3).v);
+    
+
+        visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
+                              xLims, yLims, xTicks, yTicks, theOpticsParams.examinedSubjectRankOrder, targetEccDegs)
+
+        drawnow;
+        videoOBJ.writeVideo(getframe(hFig));
+    end
+
+    videoOBJ.close();
+
+end
+
+
+function visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
+                              xLims, yLims, xTicks, yTicks, examinedSubjectRankOrder, targetEccDegs)
+
+        ax = ax1;
+        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
+        hold(ax, 'on');
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
+        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*dFitStruct.actualPSFProfileX , yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*dFitStruct.actualPSFProfileY, thePSFData.supportYdegs, xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        hold(ax, 'off');
+        axis(ax, 'image'); axis(ax, 'xy');
+        set(ax, 'CLim', dFitStruct.maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {},  'FontSize', 14);
+        title(ax, sprintf('v-Lambda weighted PSF (subj rank: %d)\neccentricity (degs): x=%2.1f, y=%2.1f', examinedSubjectRankOrder, targetEccDegs(1), targetEccDegs(2)));
+        ylabel('space (degs)');
+        grid(ax, 'on');
+
+        ax = ax2;
+        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, dFitStruct.psfGaussianFit);
+        hold(ax, 'on');
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
+        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*dFitStruct.fittedPSFEllipsoidProfileX , yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*dFitStruct.fittedPSFEllipsoidProfileY, thePSFData.supportYdegs, xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        hold(ax, 'off');
+        axis(ax, 'image'); axis(ax, 'xy');
+        set(ax, 'CLim', dFitStruct.maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
+        title(ax, sprintf('Gaussian fit\nRc (arcmin): %2.2f (%2.2f, %2.2f)', ...
+            60*dFitStruct.psfCharacteristicRadiusDegs, 60*dFitStruct.thePSFcharacteristicRadiiDegs(1), 60*dFitStruct.thePSFcharacteristicRadiiDegs(2)));
+        grid(ax, 'on');
+
+        ax = ax3;
+        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data-dFitStruct.psfGaussianFit);
+        hold(ax, 'on');
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
+        plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
+        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.1*(yLims(2)-yLims(1)) + 0.4*(yLims(2)-yLims(1))*dFitStruct.residualPSFProfileX , yLims(1)+0.1*(yLims(2)-yLims(1)), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.1*(xLims(2)-xLims(1))+ 0.4*(xLims(2)-xLims(1))*dFitStruct.residualPSFProfileY, thePSFData.supportYdegs, xLims(1)+0.1*(xLims(2)-xLims(1)), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        hold(ax, 'off');
+        axis(ax, 'image'); axis(ax, 'xy');
+        set(ax, 'CLim', dFitStruct.maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
+        title(ax, sprintf('residual \n'));
+        grid(ax, 'on');
+        colormap(brewermap(1024, '*RdBu'));
+        drawnow;
+end
+
+
+
+
+function [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = ...
+    analyzeMidgetRFcenterAndPSF(theOpticsParams, destinationRFoverlapRatio, analyzedCellsNum, fName)
+
+    % Generate cone mosaic and source lattice struct at the target eccentricity
+    targetEccDegs = theOpticsParams.positionDegs;
+    targetSizeDegs = 0.5+(sqrt(sum(targetEccDegs.^2,2))+1)*0.4*[0.5 0.25];
+    maxVisualizedFOVdegs = round(100 * max(targetSizeDegs) / 4)/100;
+
+    [theConeMosaic, sourceLatticeStruct, coneIndicesToBeConnected, thePSFData] = ...
+        generateConeMosaicPSFandSourceDestinationLattices(targetEccDegs, targetSizeDegs, theOpticsParams);
+
+    if (isempty(theConeMosaic))
+        dFitStruct = fitPSF(thePSFData);
+
+        fprintf('No cones at this eccentricity. Only analyzing PSF data\n');
+        retinalRFcenterCharacteristicRadiiDegs = [];
+        exclusiveCenterConesNum = 0;
+        return;
+
+    end
 
     % Visualize generated cone mosaic
     theConeMosaic.visualize();
@@ -157,25 +380,19 @@ function [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs,
 
     flatTopGaussian = true;
     simulateCronerKaplanEstimation = ~true;
-    [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = analyzeRFcenters(...
-        theMidgetRGCconnectorOBJ, theConeMosaic, thePSFData, ...
+    [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = analyzeRFcentersAndPSF(...
+        theMidgetRGCconnectorOBJ, theConeMosaic, thePSFData, theOpticsParams.examinedSubjectRankOrder, ...
         flatTopGaussian, simulateCronerKaplanEstimation, targetEccDegs, maxVisualizedFOVdegs, analyzedCellsNum, fName);
 
 end
 
-function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = analyzeRFcenters(...
-    theMidgetRGCconnectorOBJ, theConeMosaic, thePSFData, flatTopGaussian, ...
-    simulateCronerKaplanEstimation, targetEccDegs, maxVisualizedFOVdegs, analyzedCellsNum, fName)
 
-    % Compute the center RF sizes for all generated mRGCs
-    figNo = 1000;
-    hFig = theMidgetRGCconnectorOBJ.visualizeCurrentConnectivity(figNo);
-    
+function dFitStruct = fitPSF(thePSFData)
+
     spatialSupportDegs(:,1) = thePSFData.supportXdegs;
     spatialSupportDegs(:,2) = thePSFData.supportYdegs;
 
     multiStartsNum = 16;
-    thePSFData.data = thePSFData.data / max(thePSFData.data(:));
     theFittedGaussianPSF = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
             spatialSupportDegs(:,1), spatialSupportDegs(:,2), thePSFData.data, ...
             'flatTopGaussian', false, ...
@@ -198,8 +415,6 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
     [~,idx] = max(psfGaussianFit(:));
     [midPSFRow, midPSFCol] = ind2sub(size(psfGaussianFit), idx);
 
-    [~,midRow] = min(abs(thePSFData.supportYdegs));
-    [~,midCol] = min(abs(thePSFData.supportXdegs));
 
     fittedPSFEllipsoidProfileX = squeeze(psfGaussianFit(midPSFRow,:))/max(psfGaussianFit(:));
     fittedPSFEllipsoidProfileY = squeeze(psfGaussianFit(:,midPSFCol))/max(psfGaussianFit(:));
@@ -217,6 +432,43 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
 
     fittedPSFEllipsoidOutlineCharacteristicRadius2.x = psfGaussianCenter(1) + thePSFcharacteristicRadiiDegs(2) * cosd(iAngles);
     fittedPSFEllipsoidOutlineCharacteristicRadius2.y = psfGaussianCenter(2) + thePSFcharacteristicRadiiDegs(2) * sind(iAngles);
+
+    % Gather everything in a struct
+    dFitStruct.thePSFcharacteristicRadiiDegs = thePSFcharacteristicRadiiDegs;
+    dFitStruct.psfCharacteristicRadiusDegs = psfCharacteristicRadiusDegs;
+    dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius = fittedPSFEllipsoidOutlineCharacteristicRadius;
+    dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1 = fittedPSFEllipsoidOutlineCharacteristicRadius1;
+    dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2 = fittedPSFEllipsoidOutlineCharacteristicRadius2;
+    dFitStruct.fittedPSFEllipsoidProfileX = fittedPSFEllipsoidProfileX;
+    dFitStruct.fittedPSFEllipsoidProfileY = fittedPSFEllipsoidProfileY;
+    dFitStruct.actualPSFProfileX = actualPSFProfileX;
+    dFitStruct.actualPSFProfileY = actualPSFProfileY;
+    dFitStruct.residualPSFProfileX = residualPSFProfileX;
+    dFitStruct.residualPSFProfileY = residualPSFProfileY;
+    dFitStruct.psfGaussianFit =  psfGaussianFit;
+    dFitStruct.maxPSF = maxPSF;
+
+end
+
+
+function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = analyzeRFcentersAndPSF(...
+    theMidgetRGCconnectorOBJ, theConeMosaic, thePSFData, examinedSubjectRankOrder, flatTopGaussian, ...
+    simulateCronerKaplanEstimation, targetEccDegs, maxVisualizedFOVdegs, analyzedCellsNum, fName)
+
+    % Compute the center RF sizes for all generated mRGCs
+    figNo = 1000;
+    hFig = theMidgetRGCconnectorOBJ.visualizeCurrentConnectivity(figNo);
+    
+    % Fit the PSF data
+    dFitStruct = fitPSF(thePSFData);
+
+    
+    spatialSupportDegs(:,1) = thePSFData.supportXdegs;
+    spatialSupportDegs(:,2) = thePSFData.supportYdegs;
+
+    [~,midRow] = min(abs(thePSFData.supportYdegs));
+    [~,midCol] = min(abs(thePSFData.supportXdegs));
+
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 2, ...
@@ -244,53 +496,11 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1250 900]);
 
     % The PSF
-    ax = subplot('Position', subplotPosVectors(1,1).v);
-    imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
-    hold(ax, 'on');
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius.x, fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius1.x, fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius2.x, fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-    shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*actualPSFProfileX , yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-    shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*actualPSFProfileY, thePSFData.supportYdegs, xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-    hold(ax, 'off');
-    axis(ax, 'image'); axis(ax, 'xy');
-    set(ax, 'CLim', maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {},  'FontSize', 14);
-    title(ax, sprintf('v-Lambda weighted PSF\neccentricity (degs): x=%2.1f, y=%2.1f', targetEccDegs(1), targetEccDegs(2)));
-    ylabel('space (degs)');
-    grid(ax, 'on');
-
-
-    ax = subplot('Position', subplotPosVectors(1,2).v);
-    imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, psfGaussianFit);
-    hold(ax, 'on');
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius.x, fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius1.x, fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius2.x, fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-    shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*fittedPSFEllipsoidProfileX , yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-    shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*fittedPSFEllipsoidProfileY, thePSFData.supportYdegs, xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-    hold(ax, 'off');
-    axis(ax, 'image'); axis(ax, 'xy');
-    set(ax, 'CLim', maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
-    title(ax, sprintf('Gaussian fit\nRc (arcmin): %2.2f (%2.2f, %2.2f)', 60*psfCharacteristicRadiusDegs, 60*thePSFcharacteristicRadiiDegs(1), 60*thePSFcharacteristicRadiiDegs(2)));
-    grid(ax, 'on');
-
-
-    ax = subplot('Position', subplotPosVectors(1,3).v);
-    imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data-psfGaussianFit);
-    hold(ax, 'on');
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius.x, fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius1.x, fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
-    plot(ax, fittedPSFEllipsoidOutlineCharacteristicRadius2.x, fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-    shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.1*(yLims(2)-yLims(1)) + 0.4*(yLims(2)-yLims(1))*residualPSFProfileX , yLims(1)+0.1*(yLims(2)-yLims(1)), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-    shadedAreaPlot(ax,xLims(1)+0.1*(xLims(2)-xLims(1))+ 0.4*(xLims(2)-xLims(1))*residualPSFProfileY, thePSFData.supportYdegs, xLims(1)+0.1*(xLims(2)-xLims(1)), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-    hold(ax, 'off');
-    axis(ax, 'image'); axis(ax, 'xy');
-    set(ax, 'CLim', maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
-    title(ax, sprintf('residual \n'));
-    grid(ax, 'on');
-    colormap(brewermap(1024, '*RdBu'));
-    drawnow;
-
+    ax1 = subplot('Position', subplotPosVectors(1,1).v);
+    ax2 = subplot('Position', subplotPosVectors(1,2).v);
+    ax3 = subplot('Position', subplotPosVectors(1,3).v);
+    visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
+                              xLims, yLims, xTicks, yTicks, examinedSubjectRankOrder, targetEccDegs)
 
 
 
@@ -419,6 +629,16 @@ function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineW
         'FaceAlpha', faceAlpha, 'LineWidth', lineWidth, 'LineStyle', lineStyle);
 end
 
+function shadedAreaBetweenTwoLines(ax,x,y1, y2, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
+    x = [x  x(end)  fliplr(x)  x(1)];
+    y = [y1 y2(end) fliplr(y2) y2(1)];
+    px = reshape(x, [1 numel(x)]);
+    py = reshape(y, [1 numel(y)]);
+    pz = -10*eps*ones(size(py)); 
+    patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, ...
+        'FaceAlpha', faceAlpha, 'LineWidth', lineWidth, 'LineStyle', lineStyle);
+end
+
 
 function [retinalRFcenterConeMap, retinalRFcenterConeMapGaussianFit, retinalRFcenterCharacteristicRadiiDegs, retinalRFcenter, flatTopExponents, meanConePositionDegs] = ...
     computeAnatomicalRF(theConeMosaic, theConeWeights, theConeIndices, spatialSupportDegs, simulateCronerKaplanEstimation, flatTopGaussian)
@@ -505,10 +725,17 @@ function destinationLatticeStruct = generateMRGCMosaicLatticeStruct(sourceLattic
 end
 
 
-function [theInputConeMosaic, sourceLatticeStruct, coneIndicesToBeConnected, thePSFData, theOI] = ...
-              generateConeMosaic(eccDegs, sizeDegs, theOpticsParams)
+function thePSFData = generateVLambdaWeightedPSF(eccDegs, sizeDegs, theOpticsParams)
+    theInputConeMosaic = generateConeMosaic(eccDegs, sizeDegs, theOpticsParams);
 
-    % Set cone aperture modifiers
+    psfWavelengthSupport = [];
+    [thePSFData, ~, ~, theOI] = RetinaToVisualFieldTransformer.computeVlambdaWeightedPSF(theOpticsParams, theInputConeMosaic, psfWavelengthSupport);
+    thePSFData.data = thePSFData.data / max(thePSFData.data(:));
+end
+
+
+function theInputConeMosaic = generateConeMosaic(eccDegs, sizeDegs, theOpticsParams)
+     % Set cone aperture modifiers
     % Use a Gaussian cone aperture with
     % sigma equal to 0.204 x inner segment diameter (cone diameter)
     sigmaGaussian = 0.204;  % From McMahon et al, 2000
@@ -534,21 +761,42 @@ function [theInputConeMosaic, sourceLatticeStruct, coneIndicesToBeConnected, the
        'customDegsToMMsConversionFunction', customDegsToMMsConversionFunction, ...
        'customMMsToDegsConversionFunction', customMMsToDegsConversionFunction);
 
+end
+
+
+function [theInputConeMosaic, sourceLatticeStruct, coneIndicesToBeConnected, thePSFData] = ...
+              generateConeMosaicPSFandSourceDestinationLattices(eccDegs, sizeDegs, theOpticsParams)
+
+    % Generate the input cone mosaic
+    theInputConeMosaic = generateConeMosaic(eccDegs, sizeDegs, theOpticsParams);
+
+    
+    psfWavelengthSupport = [];
+    [thePSFData, ~, ~, theOI] = RetinaToVisualFieldTransformer.computeVlambdaWeightedPSF(theOpticsParams, theInputConeMosaic, psfWavelengthSupport);
+    thePSFData.data = thePSFData.data / max(thePSFData.data(:));
+
+    if (numel(theInputConeMosaic.coneTypes) == 0)
+        theInputConeMosaic = [];
+        sourceLatticeStruct = [];
+        coneIndicesToBeConnected = [];
+        return;
+    end
+
     % Generate sourceLatticeStruct for the @coneToMidgetRGCConnector
     metaDataStruct.coneTypes = theInputConeMosaic.coneTypes;
     metaDataStruct.coneTypeIDs = [theInputConeMosaic.LCONE_ID theInputConeMosaic.MCONE_ID theInputConeMosaic.SCONE_ID];
     metaDataStruct.coneColors = [theInputConeMosaic.lConeColor; theInputConeMosaic.mConeColor; theInputConeMosaic.sConeColor];
 
     % Estimate surround radius degs 
-    [surroundRadiusDegs, thePSFData, theOI] = estimateSurroundRadiusAtMaxEccentricity(theInputConeMosaic, theOpticsParams);
+    surroundRadiusDegs = estimateSurroundRadiusAtMaxEccentricity(theInputConeMosaic, thePSFData);
     metaDataStruct.midgetRGCSurroundRadiusMicronsAtMaxEccentricityGivenOptics = ...
-        1e3 * customDegsToMMsConversionFunction(surroundRadiusDegs);
+        1e3 * theInputConeMosaic.customDegsToMMsConversionFunction(surroundRadiusDegs);
 
     % Source lattice (i.e. cone mosaic lattice) struct
     sourceLatticeStruct = struct(...
         'name', 'cone RFs', ...
-        'DegsToMMsConversionFunction', customDegsToMMsConversionFunction, ...
-        'MMsToDegsConversionFunction', customMMsToDegsConversionFunction, ...
+        'DegsToMMsConversionFunction', theInputConeMosaic.customDegsToMMsConversionFunction, ...
+        'MMsToDegsConversionFunction', theInputConeMosaic.customMMsToDegsConversionFunction, ...
         'RFpositionsMicrons', theInputConeMosaic.coneRFpositionsMicrons, ...
         'metaData', metaDataStruct ...
         ); 
@@ -561,12 +809,9 @@ end
 
 
 
-function [surroundRadiusDegs, thePSFData, theOI] = estimateSurroundRadiusAtMaxEccentricity(theConeMosaic, theOpticsParams)
+function surroundRadiusDegs = estimateSurroundRadiusAtMaxEccentricity(theConeMosaic, thePSFData)
 
-    psfWavelengthSupport = [];
-    [thePSFData, ~, ~, theOI] = RetinaToVisualFieldTransformer.computeVlambdaWeightedPSF(theOpticsParams, theConeMosaic, psfWavelengthSupport);
     
-
     % Estimate mean anatomical cone aperture from the 6 closest (to the
     % cone with the max position.
     [~,idx] = MosaicConnector.pdist2(theConeMosaic.coneRFpositionsDegs, [], ...
