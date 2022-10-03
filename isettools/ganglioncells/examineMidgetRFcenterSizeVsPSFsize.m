@@ -18,7 +18,7 @@ function examineMidgetRFcenterSizeVsPSFsize()
 
     % When the subject rank order is empty we analyze the PSFs of all
     % subjects
-    opticsSubjectRankOrder = [];
+    %opticsSubjectRankOrder = [];
 
 
     % RGC overlap ratio (0 = no overlap)
@@ -155,7 +155,7 @@ function summarizedData = doIt(radialEcc, summarizeData, opticsDataBase, opticsS
     whichEye = 'right eye';
     [horizontalEcc, verticalEcc] = cMosaic.eccentricitiesForRetinaMeridianInEye(...
             radialEcc, retinaQuadrant, whichEye);
-    eccDegs = [horizontalEcc verticalEcc];
+    eccDegs = [horizontalEcc verticalEcc]
 
 
     theOpticsParams = struct(...
@@ -268,7 +268,7 @@ function [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
     
 
         visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
-                              xLims, yLims, xTicks, yTicks, theOpticsParams.examinedSubjectRankOrder, targetEccDegs)
+                              xLims, yLims, xTicks, yTicks, theOpticsParams.examinedSubjectRankOrder, targetEccDegs);
 
         drawnow;
         videoOBJ.writeVideo(getframe(hFig));
@@ -461,6 +461,7 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
     
     % Fit the PSF data
     dFitStruct = fitPSF(thePSFData);
+    thePSFcharacteristicRadiiDegs = dFitStruct.thePSFcharacteristicRadiiDegs;
 
     
     spatialSupportDegs(:,1) = thePSFData.supportXdegs;
@@ -500,7 +501,7 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
     ax2 = subplot('Position', subplotPosVectors(1,2).v);
     ax3 = subplot('Position', subplotPosVectors(1,3).v);
     visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
-                              xLims, yLims, xTicks, yTicks, examinedSubjectRankOrder, targetEccDegs)
+                              xLims, yLims, xTicks, yTicks, examinedSubjectRankOrder, targetEccDegs);
 
 
 
