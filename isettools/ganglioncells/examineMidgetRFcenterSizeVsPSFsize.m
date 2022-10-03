@@ -27,20 +27,20 @@ function examineMidgetRFcenterSizeVsPSFsize()
 
     % If summarizeData is false, we analyze PSF and midget RGC data for the chosen eccentricities
     % If summarizeData is true, we import analyzed PSF and midget RGC data (across the chosen eccentricities) and plot them
-    summarizeData = ~true;
+    summarizeData = true;
     
     % Do it
-    for iEcc = 1:numel(radialEccExamined)
-        doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio);
-    end
+%     for iEcc = 1:numel(radialEccExamined)
+%         doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio);
+%     end
 
     % Plot summarized data
     if (summarizeData)
         dListSingleSubjectPSF = cell(1, numel(radialEccExamined));
         dListAllSubjectPSFs = cell(1, numel(radialEccExamined));
         for iEcc = 1:numel(radialEccExamined)
-            dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant);
-            dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], retinaQuadrant);
+            dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant,  destinationRFoverlapRatio);
+            dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], retinaQuadrant, destinationRFoverlapRatio);
         end
     
         plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubjectPSFs);
@@ -59,14 +59,14 @@ function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubje
     for iEcc = 1:numel(radialEccExamined)
 
         % Single subject data - use this for the midget info
-        d = dListSingleSubjectPSF{iEcc};
-        
+        d = dListSingleSubjectPSF{iEcc}
+        d.exclusiveCenterConesNum
         % Find cells that were analyzed (20)
         theRcDegs2 = prod(d.midgetRGCRFcenterRadiiDegs,2);
         idx = find(theRcDegs2>0);
         midgetRGCRFcenterRadiiDegs(iEcc,:,:) = d.midgetRGCRFcenterRadiiDegs(idx,:);
 
-        exclusiveCenterConesNum(iEcc,:) = d.exclusiveCenterConesNum;
+        exclusiveCenterConesNum(iEcc,:) = mean(d.exclusiveCenterConesNum);
 
         % PSF data from the single subject
         opticalPSFRadiiDegs(iEcc,:) = d.opticalPSFRadiiDegs;
