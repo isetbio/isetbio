@@ -204,6 +204,10 @@ classdef cMosaic < handle
         % Should be positionMicrons
         eccentricityMicrons; 
         
+        % Retinal quadrant (i.e. nasal, temporal, inferior, superior
+        horizontalRetinalMeridian;
+        verticalRetinalMeridian;
+
         % Size of the cone mosaic [width, height]
         sizeDegs;
         
@@ -575,6 +579,11 @@ classdef cMosaic < handle
                 obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
             end
             
+            % Set the corresponding horizontal and vertical retinal meridian 
+            [obj.horizontalRetinalMeridian, obj.verticalRetinalMeridian] = cMosaic.retinalMeridiansForEccentricityInEye(...
+                obj.eccentricityDegs(1), obj.eccentricityDegs(2),  obj.whichEye);
+
+
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
