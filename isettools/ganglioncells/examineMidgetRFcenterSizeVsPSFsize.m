@@ -18,33 +18,35 @@ function examineMidgetRFcenterSizeVsPSFsize()
 
     % When the subject rank order is empty we analyze the PSFs of all
     % subjects
-    %opticsSubjectRankOrder = [];
+    opticsSubjectRankOrder = [];
 
 
     % RGC overlap ratio (0 = no overlap)
     destinationRFoverlapRatio = 0.0;
 
+    includeConeApertureInPSF = true; 
 
     % If summarizeData is false, we analyze PSF and midget RGC data for the chosen eccentricities
     % If summarizeData is true, we import analyzed PSF and midget RGC data (across the chosen eccentricities) and plot them
-    summarizeData = true;
-    
-    % Do it
-%     for iEcc = 1:numel(radialEccExamined)
-%         doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio);
-%     end
+    summarizeData = ~true;
+      
 
     % Plot summarized data
     if (summarizeData)
         dListSingleSubjectPSF = cell(1, numel(radialEccExamined));
         dListAllSubjectPSFs = cell(1, numel(radialEccExamined));
         for iEcc = 1:numel(radialEccExamined)
-            dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant,  destinationRFoverlapRatio);
-            dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], retinaQuadrant, destinationRFoverlapRatio);
+            dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant,  destinationRFoverlapRatio, includeConeApertureInPSF);
+            dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], retinaQuadrant, destinationRFoverlapRatio, includeConeApertureInPSF);
         end
     
         plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubjectPSFs);
+    else
+        for iEcc = 1:numel(radialEccExamined)
+            doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio, includeConeApertureInPSF);
+        end
     end
+
 end
 
 
@@ -59,8 +61,8 @@ function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubje
     for iEcc = 1:numel(radialEccExamined)
 
         % Single subject data - use this for the midget info
-        d = dListSingleSubjectPSF{iEcc}
-        d.exclusiveCenterConesNum
+        d = dListSingleSubjectPSF{iEcc};
+        
         % Find cells that were analyzed (20)
         theRcDegs2 = prod(d.midgetRGCRFcenterRadiiDegs,2);
         idx = find(theRcDegs2>0);
@@ -150,12 +152,12 @@ function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubje
 end
 
 
-function summarizedData = doIt(radialEcc, summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio)
+function summarizedData = doIt(radialEcc, summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio, includeConeApertureInPSF)
 
     whichEye = 'right eye';
     [horizontalEcc, verticalEcc] = cMosaic.eccentricitiesForRetinaMeridianInEye(...
             radialEcc, retinaQuadrant, whichEye);
-    eccDegs = [horizontalEcc verticalEcc]
+    eccDegs = [horizontalEcc verticalEcc];
 
 
     theOpticsParams = struct(...
@@ -163,6 +165,7 @@ function summarizedData = doIt(radialEcc, summarizeData, opticsDataBase, opticsS
         'ZernikeDataBase', opticsDataBase, ...
         'examinedSubjectRankOrder',opticsSubjectRankOrder, ...
         'refractiveErrorDiopters', 0.0, ... 
+        'includeConeApertureInPSF', includeConeApertureInPSF, ...
         'analyzedEye', whichEye, ...
         'subjectRankingEye', 'right eye', ...
         'pupilDiameterMM', 3.0, ...
@@ -171,7 +174,11 @@ function summarizedData = doIt(radialEcc, summarizeData, opticsDataBase, opticsS
         );
 
     if (isempty(theOpticsParams.examinedSubjectRankOrder))
-        fName = sprintf('allSubjectsPSFanalysis_%2.2fdegs_%2.2fdegs_%s', horizontalEcc, verticalEcc, retinaQuadrant);
+        if (includeConeApertureInPSF)
+            fName = sprintf('allSubjectsPSFConeApertureAnalysis_%2.2fdegs_%2.2fdegs_%s', horizontalEcc, verticalEcc, retinaQuadrant);
+        else
+            fName = sprintf('allSubjectsPSFanalysis_%2.2fdegs_%2.2fdegs_%s', horizontalEcc, verticalEcc, retinaQuadrant);
+        end
         if (summarizeData)
             % Load computed radii 
             load(sprintf('%s.mat', fName), 'allSubjectPSFcharacteristicRadiiDegs', 'opticsDataBase', 'opticsSubjectRankOrders');
@@ -223,11 +230,18 @@ function [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
     targetSizeDegs = 0.5+(sqrt(sum(targetEccDegs.^2,2))+1)*0.4*[0.5 0.25];
     maxVisualizedFOVdegs = round(100 * max(targetSizeDegs) / 4)/100;
 
-    
 
     xLims = maxVisualizedFOVdegs * 0.5*[-1 1];
     yLims = maxVisualizedFOVdegs * 0.5*[-1 1];
-    xTicks = -0.5:0.05:0.5;
+
+    if (maxVisualizedFOVdegs < 0.25)
+        xTicks = -0.5:0.05:0.5;
+    elseif ((maxVisualizedFOVdegs) < 0.5)
+        xTicks = -1:0.1:1;
+    else
+        xTicks = -2:0.2:2;
+    end
+
     yTicks = xTicks;
 
 
@@ -251,12 +265,57 @@ function [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
            'topMargin',      0.03);
 
     allSubjectPSFcharacteristicRadiiDegs = zeros(numel(opticsSubjectRankOrders),2);
-    for iSubj = numel(opticsSubjectRankOrders):-1:1
+    theConeAperture = [];
+    theInputConeMosaic = [];
+
+    for iSubj = 1:numel(opticsSubjectRankOrders)
 
         % Generate PSF for this subject
         theOpticsParams.examinedSubjectRankOrder = opticsSubjectRankOrders(iSubj);
+        [thePSFData, theInputConeMosaic] = generateVLambdaWeightedPSF(targetEccDegs, targetSizeDegs, theOpticsParams, theInputConeMosaic);
+        
+        % Convolve with cone aperture 
+        if (theOpticsParams.includeConeApertureInPSF)
+            % Only generate the cone aperture once
+            if (isempty(theConeAperture))
+               
+                meanConePositionDegs = mean(theInputConeMosaic.coneRFpositionsDegs,1);
+                [~,theConeIndex] = min(sum((bsxfun(@minus,theInputConeMosaic.coneRFpositionsDegs,meanConePositionDegs)).^2,2));
+                spatialSupportDegs(:,1) = thePSFData.supportXdegs;
+                spatialSupportDegs(:,2) = thePSFData.supportYdegs;
+                theConeCharacteristicRadiusDegs = theInputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
+                    theInputConeMosaic.coneApertureDiametersDegs(theConeIndex);
+                theConePositionDegs = theInputConeMosaic.coneRFpositionsDegs(theConeIndex,:)-meanConePositionDegs;
+                theConeWeight = 1.0;
+                theConeAperture = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
+                    theConeCharacteristicRadiusDegs, theConePositionDegs, theConeWeight, spatialSupportDegs);
+            
+            
+                figure(222); clf;
+                subplot(1,3,1);
+                imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
+                axis 'image';
+                set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
+    
+                subplot(1,3,2);
+                imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, theConeAperture);
+                axis 'image';
+                set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
+    
+                % Do the convolution with the cone aperture
+                thePSFData.data = conv2(thePSFData.data, theConeAperture, 'same');
+                thePSFData.data = thePSFData.data / max(thePSFData.data(:));
+    
 
-        thePSFData = generateVLambdaWeightedPSF(targetEccDegs, targetSizeDegs, theOpticsParams);
+
+                subplot(1,3,3);
+                imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
+                axis 'image';
+                set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
+                colormap(gray);
+                drawnow;
+            end
+        end
 
         dFitStruct = fitPSF(thePSFData);
 
@@ -281,6 +340,12 @@ end
 
 function visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
                               xLims, yLims, xTicks, yTicks, examinedSubjectRankOrder, targetEccDegs)
+
+        
+        if (max(abs(thePSFData.supportXdegs)) > max(xLims))
+            xLims = max(abs(thePSFData.supportXdegs))*[-1 1];
+        end
+        yLims = xLims;
 
         ax = ax1;
         imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
@@ -328,8 +393,6 @@ function visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
         colormap(brewermap(1024, '*RdBu'));
         drawnow;
 end
-
-
 
 
 function [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs, exclusiveCenterConesNum] = ...
@@ -726,8 +789,12 @@ function destinationLatticeStruct = generateMRGCMosaicLatticeStruct(sourceLattic
 end
 
 
-function thePSFData = generateVLambdaWeightedPSF(eccDegs, sizeDegs, theOpticsParams)
-    theInputConeMosaic = generateConeMosaic(eccDegs, sizeDegs, theOpticsParams);
+function [thePSFData, theInputConeMosaic] = generateVLambdaWeightedPSF(eccDegs, sizeDegs, theOpticsParams, theInputConeMosaic)
+
+    % If we have not generate a cone mosaic yet, do it now
+    if (isempty(theInputConeMosaic))
+        theInputConeMosaic = generateConeMosaic(eccDegs, sizeDegs, theOpticsParams);
+    end
 
     psfWavelengthSupport = [];
     [thePSFData, ~, ~, theOI] = RetinaToVisualFieldTransformer.computeVlambdaWeightedPSF(theOpticsParams, theInputConeMosaic, psfWavelengthSupport);
