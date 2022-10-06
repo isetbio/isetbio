@@ -1,7 +1,7 @@
 function examineMidgetRFcenterSizeVsPSFsize()
 
     % Choose retinal quadrant
-    retinaQuadrant = 'nasal meridian';
+    retinaQuadrant = 'temporal meridian';
     if (strcmp(retinaQuadrant, 'nasal meridian'))
         radialEccExamined = [1 2 3 4 6 8 12 19 24 30];
     else
@@ -118,8 +118,8 @@ function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubje
     allSubjectsMajorCharacteristicRadiiDegs = squeeze(allSubjectsOpticalPSFRadiiDegs(:,:,2));
 
     shadedAreaBetweenTwoLines(ax,radialEccExamined, ...
-        mean(allSubjectsMinorCharacteristicRadiiDegs,2)'*60, ...
-        mean(allSubjectsMajorCharacteristicRadiiDegs,2)'*60, ...
+        median(allSubjectsMinorCharacteristicRadiiDegs,2)'*60, ...
+        median(allSubjectsMajorCharacteristicRadiiDegs,2)'*60, ...
         [0.2 1 0.8], [0.1 0.6 0.4], 0.5, 1.0, '-');
     hold(ax, 'on');
 
@@ -140,7 +140,7 @@ function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubje
    
 
     hold(ax, 'off');
-    h = legend(ax,{sprintf('PSF (mean of %d subjects)', size(allSubjectsOpticalPSFRadiiDegs,2)), 'mRGC RF center'}, ...
+    h = legend(ax,{sprintf('PSF (median of %d subjects)', size(allSubjectsOpticalPSFRadiiDegs,2)), 'mRGC RF center'}, ...
         'Location', 'NorthWest', 'NumColumns', 1, 'LineWidth', 0.5, 'Color', [0.95 0.95 0.95]);
     
     set(ax, 'XLim', eccRange, 'YLim', characteristicRadiusRange, ...
@@ -268,9 +268,12 @@ function [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
     theConeAperture = [];
     theInputConeMosaic = [];
 
+    visualizePSFwithAndWithoutConeAperture = false;
+
     for iSubj = 1:numel(opticsSubjectRankOrders)
 
         % Generate PSF for this subject
+        fprintf('Analyzing PSF at (%2.1f,%2.1f) degs for subject %d of %d.\n', targetEccDegs(1), targetEccDegs(2), iSubj, numel(opticsSubjectRankOrders));
         theOpticsParams.examinedSubjectRankOrder = opticsSubjectRankOrders(iSubj);
         [thePSFData, theInputConeMosaic] = generateVLambdaWeightedPSF(targetEccDegs, targetSizeDegs, theOpticsParams, theInputConeMosaic);
         
@@ -290,30 +293,34 @@ function [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
                 theConeAperture = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
                     theConeCharacteristicRadiusDegs, theConePositionDegs, theConeWeight, spatialSupportDegs);
             
-            
-                figure(222); clf;
-                subplot(1,3,1);
-                imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
-                axis 'image';
-                set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
-    
-                subplot(1,3,2);
-                imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, theConeAperture);
-                axis 'image';
-                set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
-    
-                % Do the convolution with the cone aperture
+                if (visualizePSFwithAndWithoutConeAperture)
+                    thePSFDataBefore = thePSFData.data;
+                end
+
+                % Convolve the PSF with the cone aperture
                 thePSFData.data = conv2(thePSFData.data, theConeAperture, 'same');
                 thePSFData.data = thePSFData.data / max(thePSFData.data(:));
-    
+                
+                if (visualizePSFwithAndWithoutConeAperture)
+                    figure(222); clf;
+                    subplot(1,3,1);
+                    imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFDataBefore);
+                    axis 'image';
+                    set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
+        
+                    subplot(1,3,2);
+                    imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, theConeAperture);
+                    axis 'image';
+                    set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
+        
+                    subplot(1,3,3);
+                    imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
+                    axis 'image';
+                    set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
+                    colormap(gray);
+                    drawnow;
+                end
 
-
-                subplot(1,3,3);
-                imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
-                axis 'image';
-                set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
-                colormap(gray);
-                drawnow;
             end
         end
 
