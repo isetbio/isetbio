@@ -3,7 +3,7 @@ function examineMidgetRFcenterSizeVsPSFsize()
     % Choose retinal quadrant
     retinaQuadrant = 'temporal meridian';
     if (strcmp(retinaQuadrant, 'nasal meridian'))
-        radialEccExamined = [1 2 3 4 6 8 12 19 24 30];
+        radialEccExamined = [0 1 2 3 4 6 8 12 19 24 30];
     else
         radialEccExamined = [0 1 2 3 4 6 8 12 16 20 24 30];
     end
@@ -24,11 +24,11 @@ function examineMidgetRFcenterSizeVsPSFsize()
     % RGC overlap ratio (0 = no overlap)
     destinationRFoverlapRatio = 0.0;
 
-    includeConeApertureInPSF = true; 
+    includeConeApertureInPSF = ~true; 
 
     % If summarizeData is false, we analyze PSF and midget RGC data for the chosen eccentricities
     % If summarizeData is true, we import analyzed PSF and midget RGC data (across the chosen eccentricities) and plot them
-    summarizeData = ~true;
+    summarizeData = true;
       
 
     % Plot summarized data
@@ -36,11 +36,16 @@ function examineMidgetRFcenterSizeVsPSFsize()
         dListSingleSubjectPSF = cell(1, numel(radialEccExamined));
         dListAllSubjectPSFs = cell(1, numel(radialEccExamined));
         for iEcc = 1:numel(radialEccExamined)
-            dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant,  destinationRFoverlapRatio, includeConeApertureInPSF);
-            dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], retinaQuadrant, destinationRFoverlapRatio, includeConeApertureInPSF);
+            if (strcmp(retinaQuadrant, 'nasal meridian')) && (radialEccExamined(iEcc) == 0)
+                dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, 'temporal meridian',  destinationRFoverlapRatio, includeConeApertureInPSF);
+                dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], 'temporal meridian', destinationRFoverlapRatio, includeConeApertureInPSF);
+            else
+                dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant,  destinationRFoverlapRatio, includeConeApertureInPSF);
+                dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], retinaQuadrant, destinationRFoverlapRatio, includeConeApertureInPSF);
+            end
         end
     
-        plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubjectPSFs);
+        plotSummaryData(radialEccExamined, retinaQuadrant, dListSingleSubjectPSF, dListAllSubjectPSFs);
     else
         for iEcc = 1:numel(radialEccExamined)
             doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, opticsSubjectRankOrder, retinaQuadrant, destinationRFoverlapRatio, includeConeApertureInPSF);
@@ -51,7 +56,11 @@ end
 
 
 
-function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubjectPSFs)
+function plotSummaryData(radialEccExamined, retinaQuadrant, dListSingleSubjectPSF, dListAllSubjectPSFs)
+
+    if (strcmp(retinaQuadrant, 'nasal meridian'))
+        radialEccExamined = -radialEccExamined;
+    end
 
     exclusiveCenterConesNum = zeros(numel(radialEccExamined),1);
     midgetRGCRFcenterRadiiDegs = zeros(numel(radialEccExamined), 20, 2);
@@ -78,7 +87,13 @@ function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubje
         allSubjectsOpticalPSFRadiiDegs(iEcc,:,:) = d.allSubjectPSFcharacteristicRadiiDegs;
     end
 
-    eccRange = [0-0.5 max(radialEccExamined)+0.5];
+    eccRange = [0 max(abs(radialEccExamined))+0.5];
+    eccTicks = 0:2:30;
+    if (strcmp(retinaQuadrant, 'nasal meridian'))
+        eccRange = [-eccRange(2) eccRange(1)];
+        eccTicks = (-30):2:0;
+    end
+
     characteristicRadiusRange = [0 7];
     markerSize = 10;
 
@@ -105,7 +120,7 @@ function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubje
     ax = subplot(2,2,3);
     plot(ax,radialEccExamined, mean(exclusiveCenterConesNum,2), 'ro-', 'LineWidth', 1.5, ...
         'MarkerSize', markerSize, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0]);
-    set(ax, 'XLim', eccRange, 'YLim', [0 8], 'XTick', 0:2:30, 'YTick', 0:1:8, 'FontSize', 14);
+    set(ax, 'XLim', eccRange, 'YLim', [0 8], 'XTick', eccTicks, 'YTick', 0:1:8, 'FontSize', 14);
     axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
     set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
     xlabel(ax,'eccentricity (degs)')
@@ -144,7 +159,7 @@ function plotSummaryData(radialEccExamined, dListSingleSubjectPSF, dListAllSubje
         'Location', 'NorthWest', 'NumColumns', 1, 'LineWidth', 0.5, 'Color', [0.95 0.95 0.95]);
     
     set(ax, 'XLim', eccRange, 'YLim', characteristicRadiusRange, ...
-        'XTick', 0:2:30, 'YTick', 0:1:7, 'FontSize', 14);
+        'XTick', eccTicks, 'YTick', 0:1:7, 'FontSize', 14);
     axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
     set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
     xlabel(ax,'eccentricity (degs)')
