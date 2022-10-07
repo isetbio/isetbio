@@ -198,12 +198,21 @@ end
 %% Helper functions
 function [intensities, decIncRatios] = loadMeasuredDecIncRatios()
     dataSource = {'resources/data/cones', 'decIncRatios.mat'};
-    fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
-    % Download neural data from isetbio's repository
-    client = RdtClient('isetbio');
-    client.crp(dataSource{1});
-    [data, decIncRatiosArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
-    fprintf('Done fetching data.\n');
+    p = getpref('isetbio');
+    
+    if (p.useRemoteDataToolbox == false)
+        resourcesDir = strrep(p.alternateFullDataDir,'validationFull', '');
+        dataFile = fullfile(resourcesDir, dataSource{1}, dataSource{2});
+        data = load(dataFile);
+    else
+        fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
+        % Download neural data from isetbio's repository
+        client = RdtClient('isetbio');
+        client.crp(dataSource{1});
+        [data, decIncRatiosArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
+        fprintf('Done fetching data.\n');
+    end
+
     intensities = data.intensities;
     decIncRatios = data.decIncRatios;
 end

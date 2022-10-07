@@ -159,12 +159,21 @@ end
 function [time, measuredOuterSegmentCurrents, stimulusPhotonRates] = loadMeasuredOuterSegmentResponses()
     
     dataSource = {'resources/data/cones', 'stepExample'};
-    fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
-    % Download neural data from isetbio's repository
-    client = RdtClient('isetbio');
-    client.crp(dataSource{1});
-    [stepExample, stepExampleArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
-    fprintf('Done fetching data.\n');
+    p = getpref('isetbio');
+
+    if (p.useRemoteDataToolbox == false)
+        resourcesDir = strrep(p.alternateFullDataDir,'validationFull', '');
+        dataFile = fullfile(resourcesDir, dataSource{1}, dataSource{2});
+        stepExample = load(dataFile);
+    else
+
+        fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
+        % Download neural data from isetbio's repository
+        client = RdtClient('isetbio');
+        client.crp(dataSource{1});
+        [stepExample, stepExampleArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
+        fprintf('Done fetching data.\n');
+    end
 
     % stimulus in isomerizations/sec
     stimulusPhotonRates = stepExample.data.lightLevel;
