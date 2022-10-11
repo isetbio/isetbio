@@ -58,7 +58,12 @@ classdef MosaicConnector < handle
         % To find which source RFs are connected to a targetDestinationRF:
         %  connectivityVector = full(squeeze(obj.connectivityMatrix(:, targetDestinationRF)));
         %  inputSourceRFIDs = find(connectivityVector > 0.01);
+        % This gets modified by the divergeSourceRFsToNearbyDestinationRFs() method
         connectivityMatrix = [];
+
+        % Flag indicating whether the connectivityMatrix has been modified
+        % by the divergeSourceRFsToNearbyDestinationRFs() method
+        connectivityMatrixIsNonExclusiveAnyMore = false;
 
         % Flag indicating whether to visualize connectivity as each stage
         visualizeConnectivityAtIntermediateStages;
@@ -159,7 +164,6 @@ classdef MosaicConnector < handle
 
         % Method to diverge source RFs to multiple destination RFs
         divergeSourceRFsToNearbyDestinationRFs(obj, varargin);
-
 
         % Visualization methods
         hFig = visualizeCurrentConnectivity(obj, figNo, varargin);

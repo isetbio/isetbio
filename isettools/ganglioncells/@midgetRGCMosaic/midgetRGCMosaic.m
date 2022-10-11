@@ -46,11 +46,16 @@ classdef midgetRGCMosaic < handle
         %  inputConeIndices = find(abs(connectivityVector) > 0.0001);
         rgcRFcenterConeConnectivityMatrix;
 
-        % [n x 2] matrix of rgc rf positions, in microns
+        % [n x 2] matrix of rgc rf positions, in microns & degrees
         rgcRFpositionsMicrons;
-        
-        % [n x 1] vector of rgc rf spacings, in microns
+        rgcRFpositionsDegs;
+
+        % [n x 1] vector of rgc rf spacings, in microns & degrees
         rgcRFspacingsMicrons;
+        rgcRFspacingsDegs;
+
+        % The MosaicConnectorOBJ used to connect cones to midget RGCs
+        theMosaicConnectorOBJ;
 
     end % Read-only properties
 
@@ -92,7 +97,6 @@ classdef midgetRGCMosaic < handle
 
             obj.name = p.Results.name;
             obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
-            obj.rfOverlapRatio = p.Results.rfOverlapRatio;
             obj.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
 
 
@@ -112,20 +116,39 @@ classdef midgetRGCMosaic < handle
                 % Set the eccentricity in microns
                 obj.eccentricityMicrons = obj.inputConeMosaic.eccentricityMicrons;
 
-                % Wire the RF centers. This sets the following properties:
-                % - rgcRFcenterConeConnectivityMatrix
-                % - rgcRFpositionsMicrons
-                % - rgcRFspacingsMicrons
+                % Wire the RF centers. This configures and runs theobj.theMosaicConnectorOBJ
+                % which wires cones to midget RGC RF center (no overlap)
                 obj.generateRFpositionsAndWireTheirCenters();
 
+                % Adjust the RF overlap. This sets the following properties:
+                % - rgcRFcenterConeConnectivityMatrix
+                % - rgcRFpositionsMicrons, rgcRFpositionsDegs
+                % - rgcRFspacingsMicrons, rgcRFspacingsDegs
+                % 
+                obj.adjustRFoverlap(p.Results.rfOverlapRatio);
             end
         end % Constructor
+
+        % Method to adjust the midgetRGC RF overlap
+        adjustRFoverlap(obj, overlapRatio);
+
+        
+        % Method to compute the response of the midgetRGCmosaic to an oi
+        [responses, responseTemporalSupport] = compute(obj, oi, varargin);
+
+        % Method to visualize aspects of the retinal RFs
+        visualizeRetinalRFs(obj, varargin);
+
     end % Public methods
 
     % Private methods
     methods (Access=private)
         generateInputConeMosaic(obj, pResults);
         generateRFpositionsAndWireTheirCenters(obj);
+
+        % Method to crop RGCs on the border
+        cropRGCsOnTheBorder(obj);
+
     end % Private methods
 
     % Static methods

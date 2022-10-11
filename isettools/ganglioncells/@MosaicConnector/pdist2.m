@@ -22,16 +22,18 @@ function [D,idx] = pdist2(A, B, varargin)
 % Optional key/value pairs
 %   'smallest' : integer.  Return the smallest number points in A that are
 %                          closest to each point in B
-%   
+%
+
 % Example usage:
+%
 %{
     A = [2 2; 2 3; 4 4; 5 5; 3 2.2];
     B = [3 3];
-    [D, idx] = pdist2(A,B, '', 'smallest', 1);
+    [D, idx] = pdist2(A,B, 'smallest', 1);
 
     A = [2 2; 2 3; 4 4; 5 5; 3 2.2];
     B = [];
-    [D, idx] = pdist2(A,B, '', 'fromPosition', 'maxAbsPosition');
+    [D, idx] = pdist2(A,B, 'fromPosition', 'maxAbsPosition');
 
 %} 
 

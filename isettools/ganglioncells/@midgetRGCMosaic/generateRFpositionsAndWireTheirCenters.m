@@ -41,27 +41,12 @@ function generateRFpositionsAndWireTheirCenters(obj)
         obj.inputConeMosaic.mConeIndices(:)];
 
     % Connect the source and destination lattices
-    theMidgetRGCconnectorOBJ = coneToMidgetRGCConnector(...
+    obj.theMosaicConnectorOBJ = coneToMidgetRGCConnector(...
         sourceLatticeStruct, destinationLatticeStruct, ...
         'optimizationCenter', 'origin', ...
         'chromaticSpatialVarianceTradeoff', obj.chromaticSpatialVarianceTradeoff, ...
         'coneIndicesToBeConnected', coneIndicesToBeConnected, ...
         'visualizeConnectivityAtIntermediateStages', ~true, ...
         'generateProgressVideo', ~true);
-
-    % Diverge input cones to multiple nearby midget RGCs (RF overlap)
-    %obj.theMidgetRGCconnectorOBJ.divergeSourceRFsToNearbyDestinationRFs('destinationRFoverlapRatio', obj.rfOverlapRatio);
-
-    % Set the rf center connectivity matrix
-    obj.rgcRFcenterConeConnectivityMatrix = theMidgetRGCconnectorOBJ.connectivityMatrix;
-                
-    % Set the rf positions, in microns
-    obj.rgcRFpositionsMicrons = theMidgetRGCconnectorOBJ.destinationRFcentroidsFromInputs;
-
-    % Set the rf spacings, in microns
-    obj.rgcRFspacingsMicrons = theMidgetRGCconnectorOBJ.destinationRFspacingsFromCentroids;
-
-    % Clear the connetor to save memory
-    clear('theMidgetRGCconnectorOBJ');
 end
 

@@ -1,4 +1,8 @@
-function [H, lIndices, mIndices] = HartleyModulationPatterns(X,Y,omega)
+function [H, lIndices, mIndices] = HartleyModulationPatterns(omega, stimSizeDegs, pixelSizeDegs)
+
+    pixelsNum  = round(stimSizeDegs / pixelSizeDegs);
+    pixelIndex = 0:(pixelsNum-1);
+    [X,Y] = meshgrid(pixelIndex/pixelsNum, pixelIndex/pixelsNum);
 
     H = zeros((2*omega+1)^2, size(X,1), size(X,2));
     lIndices = zeros((2*omega+1)^2,1);
