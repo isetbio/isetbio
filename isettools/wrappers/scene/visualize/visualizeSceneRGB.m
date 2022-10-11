@@ -24,7 +24,7 @@ end
 
 if (p.Results.avoidAutomaticRGBscaling)
     % Add a white and a black pixel to aid in rendering 
-    RGBsettings = 0.5*(RGBsettings / max(RGBsettings(:)));
+    %RGBsettings = 0.5*(RGBsettings / max(RGBsettings(:)));
     RGBsettings(1,1,1:3) = 0;
     RGBsettings(end,end,1:3) = 1.0;
 end
