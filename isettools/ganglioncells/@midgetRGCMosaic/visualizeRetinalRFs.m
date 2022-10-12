@@ -2,7 +2,7 @@ function visualizeRetinalRFs(obj, varargin)
     % Parse input
     p = inputParser;
     p.addParameter('exportGraphicForEachRF', false, @islogical);
-    p.addParameter('maxExportedGraphs', 25, @isnumeric);
+    p.addParameter('maxExportedGraphs', 15, @isnumeric);
     p.parse(varargin{:});
 
     exportGraphicForEachRF = p.Results.exportGraphicForEachRF;
@@ -13,7 +13,7 @@ function visualizeRetinalRFs(obj, varargin)
     mRGCsNum = size(obj.rgcRFcenterConeConnectivityMatrix,2);
     theRetinalRFmaps = cell(1, mRGCsNum);
 
-    marginDegs = 0.3*min(obj.sizeDegs);
+    marginDegs = min([0.5 0.2*min(obj.sizeDegs)]);
     xLimsVisualized(1) = mRGCmosaicCenterDegs(1)-marginDegs;
     xLimsVisualized(2) = xLimsVisualized(1)+2*marginDegs;
     yLimsVisualized(1) = mRGCmosaicCenterDegs(2)-marginDegs;
@@ -35,13 +35,13 @@ function visualizeRetinalRFs(obj, varargin)
         xRange = maxXY(1)-minXY(1);
         yRange = maxXY(2)-minXY(2);
         xyRange = max([xRange yRange]);
-        x1 = meanXY(1)-xyRange/2-marginDegs;
-        x2 = meanXY(1)+xyRange/2+marginDegs;
-        y1 = meanXY(2)-xyRange/2-marginDegs;
-        y2 = meanXY(2)+xyRange/2+marginDegs;
+        x1 = meanXY(1)-xyRange/2-1.2*marginDegs;
+        x2 = meanXY(1)+xyRange/2+1.2*marginDegs;
+        y1 = meanXY(2)-xyRange/2-1.2*marginDegs;
+        y2 = meanXY(2)+xyRange/2+1.2*marginDegs;
 
-        spatialSupportDegsX = linspace(x1,x2, 128);
-        spatialSupportDegsY = linspace(y1,y2, 128);
+        spatialSupportDegsX = linspace(x1,x2, 200);
+        spatialSupportDegsY = linspace(y1,y2, 200);
         [X,Y] = meshgrid(spatialSupportDegsX, spatialSupportDegsY);
         
         theRFcenterMap = X*0;
@@ -94,6 +94,10 @@ function visualizeRetinalRFs(obj, varargin)
 
     for iRGC = 1:numel(sortedRGCindices)
 
+        if (exportGraphicForEachRF) && (iRGC > maxExportedGraphs)
+            continue;
+        end
+
         targetRGCindex  = sortedRGCindices(iRGC);
         %[D, idx] = MosaicConnector.pdist2(...
         %    obj.rgcRFpositionsDegs, obj.rgcRFpositionsDegs(targetRGCindex,:), 'smallest', 2);
@@ -126,8 +130,6 @@ function visualizeRetinalRFs(obj, varargin)
 
         fittedEllipsoidMapProfileX  = fittedEllipsoidMapProfileX/maxFittedProfile;
         fittedEllipsoidMapProfileY  = fittedEllipsoidMapProfileY/maxFittedProfile;
-        
-
         
 
         zLevels = 0.05:0.1:0.9;
