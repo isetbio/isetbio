@@ -50,8 +50,8 @@ function testRetinaToVisualFieldTransformer(reComputeData)
 %      end
 
     comparison = 'acrossSubjects';
-    comparison = 'acrossEccentricities';
-    comparison = 'acrossNumberOfConesInRFcenter';
+    %comparison = 'acrossEccentricities';
+    %comparison = 'acrossNumberOfConesInRFcenter';
    % comparison = 'acrossRFspatialCharacteristics & surround cone pooling models';
 
 

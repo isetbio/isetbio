@@ -7,7 +7,7 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
     generateProgressVideo = p.Results.generateProgressVideo;
 
     % Compute the # of cone inputs for all destinationRFs
-    inputsNumToAllDestinationRFs = squeeze(sum(obj.connectivityMatrix,1));
+    inputsNumToAllDestinationRFs = squeeze(full(sum(obj.connectivityMatrix,1)));
 
     % Find out how many destination RFs have zero-inputs
     indicesOfZeroInputDestinationRFs = find(inputsNumToAllDestinationRFs == 0);
@@ -35,17 +35,15 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
     inputNumerosityGroups = unique(inputsNumToAllDestinationRFs);
     inputNumerosityGroups = sort(inputNumerosityGroups, 'descend');
     
-
     % Start from most populous group going down to least populous group
     for iGroup = 1:numel(inputNumerosityGroups)
 
-        if (inputNumerosityGroups(iGroup) == 1)
+        if (inputNumerosityGroups(iGroup) < 2)
             % We dont do anything with a 1-input destination RF
             continue
         end
 
         if (~isempty(indicesOfZeroInputDestinationRFs))
-
             % All destination RFs that have the same # of inputs
             indicesOfDestinationRFsInThisGroup = ...
                 find(inputsNumToAllDestinationRFs == inputNumerosityGroups(iGroup));
@@ -97,6 +95,7 @@ function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZe
             
             % Must be at least 2 inputs
             if (theInputNumerosity < 2)
+                theInputNumerosity
                 error('How can this be? Less than 2 inputs. No transfer to zero input')
                 continue;
             end

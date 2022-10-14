@@ -2,7 +2,7 @@ function divergeSourceRFsToNearbyDestinationRFs(obj, varargin)
 
     % Parse input
     p = inputParser;
-    p.addParameter('destinationRFoverlapRatio', [], @(x)((isempty(x))||(isscalar(x)&&(x>=0))));
+    p.addParameter('destinationRFoverlapRatio', [], @(x)((isempty(x))||(isscalar(x)&&(x>=0)&&(x<1))));
     p.parse(varargin{:});
 
     if (obj.connectivityMatrixIsNonExclusiveAnyMore)
@@ -89,7 +89,7 @@ function divergeSourceRFsToNearbyDestinationRFs(obj, varargin)
         % Modify the centroid to move it toward the closestNonExclusiveSourceRFindex
         oldCentroidBias = 0.9;
         if (numel(exclusiveSourceRFIndices) == 1)
-            oldCentroidBias = 0.7;
+            oldCentroidBias = 0.9;
         end
         theUpdatedDestinationRFcentroid = oldCentroidBias     * theDestinationRFcentroid + ...
                                           (1-oldCentroidBias) * allSourceRFPositions(closestNonExclusiveSourceRFindex,:);
@@ -105,6 +105,13 @@ function divergeSourceRFsToNearbyDestinationRFs(obj, varargin)
         idx = idx(1:min([numel(idx) newInputsNum]));
         newlyConnectedSourceRFindices = sourceRFIndicesWithinOverlapRadius(idx);
         newlyConnectedSourceRFweights = weights(idx);
+
+        % Only keep inputs with weight > maxWeight*threshold
+        threshold = 1/100;
+        idx = find(newlyConnectedSourceRFweights > threshold * max(newlyConnectedSourceRFweights(:)));
+        newlyConnectedSourceRFindices = newlyConnectedSourceRFindices(idx);
+        newlyConnectedSourceRFweights = newlyConnectedSourceRFweights(idx);
+
 
         % Update connectivity matrix
         obj.connectivityMatrix(:, iDestinationRF) = 0;

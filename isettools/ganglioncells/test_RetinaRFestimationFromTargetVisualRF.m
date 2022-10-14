@@ -11,7 +11,7 @@ function test_RetinaRFestimationFromTargetVisualRF
     % Human subject rank
     % Only the first 30 subjects
     examinedSubjectRankOrders = 1:38;
-    % Remove some subjects which increase the
+    % Remove some subjects which increase the variance a lot
     examinedSubjectRankOrders = setdiff(examinedSubjectRankOrders, [5 16 20 23 31 34 36 37]);
     examinedSubjectRankOrder = 1;
 

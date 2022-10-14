@@ -33,11 +33,12 @@ classdef midgetRGCMosaic < handle
         % the RF surrounds)
         extraDegsForInputConeMosaic;
 
-        % Overlap of RFs
+        % Overlap of RFs (equivalent to 1/normalizedNearestNeighorDistance)
+        % See: Gauthier et al., 2009, "Uniform Signal Redundancy in Primate Retina" 
         rfOverlapRatio;
 
         % [0: minimize chromatic variance 1: minimize spatial variance]
-        chromaticSpatialVarianceTradeoff = 1.0;
+        chromaticSpatialVarianceTradeoff;
 
         % Computed params
         % Sparse [conesNum x rgcRFsNum] sparse  connectivity matrix 
@@ -89,8 +90,8 @@ classdef midgetRGCMosaic < handle
             p.addParameter('customDegsToMMsConversionFunction', @(x)RGCmodels.Watson.convert.rhoDegsToMMs(x), @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('customMMsToDegsConversionFunction', @(x)RGCmodels.Watson.convert.rhoMMsToDegs(x), @(x) (isempty(x) || isa(x,'function_handle')));
             
-            % RF overlap
-            p.addParameter('rfOverlapRatio', 0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
+            % RF overlap: 0.5 results in a median NNND of around 2.0
+            p.addParameter('rfOverlapRatio', 0.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
             p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
 
             p.parse(varargin{:});
@@ -124,7 +125,6 @@ classdef midgetRGCMosaic < handle
                 % - rgcRFcenterConeConnectivityMatrix
                 % - rgcRFpositionsMicrons, rgcRFpositionsDegs
                 % - rgcRFspacingsMicrons, rgcRFspacingsDegs
-                % 
                 obj.adjustRFoverlap(p.Results.rfOverlapRatio);
             end
         end % Constructor
@@ -132,12 +132,19 @@ classdef midgetRGCMosaic < handle
         % Method to adjust the midgetRGC RF overlap
         adjustRFoverlap(obj, overlapRatio);
 
-        
+        % Method to analyze the stats of the achieved RF overlap and return
+        % the NormalizedNearestNeighborDistances between neighboring pairs of RFs
+        % as per Gauthier, Chichilinsky et al (2009)
+        [NNNDs, NNNDtuplets, RGCdistances, distancesFromMosaicCenterDegs, targetRGCindices] = analyzeRetinalRFoverlap(obj, varargin);
+
         % Method to compute the response of the midgetRGCmosaic to an oi
         [responses, responseTemporalSupport] = compute(obj, oi, varargin);
 
         % Method to visualize aspects of the retinal RFs
         visualizeRetinalRFs(obj, varargin);
+
+        % Visualize the connectivity of the RF center to the cones
+        visualizeRFcenterConnectivity(obj, varargin);
 
     end % Public methods
 
@@ -145,6 +152,10 @@ classdef midgetRGCMosaic < handle
     methods (Access=private)
         generateInputConeMosaic(obj, pResults);
         generateRFpositionsAndWireTheirCenters(obj);
+
+        % Method to compute the retinal RFcenter maps - used for
+        % visualization and RFoverlap analysis
+        retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum);
 
         % Method to crop RGCs on the border
         cropRGCsOnTheBorder(obj);

@@ -1,5 +1,6 @@
-% Method to fit a 2D Gaussian ellipsoid to a continous RF
-function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin)
+% Method to fit a 2D Gaussian ellipsoid to a RF defined by a scatter of
+% inputs with a spatial position and a weight
+function theFittedGaussian = fitScatterGaussianEllipsoid(supportX, supportY, theRF, inputWeights, inputPositions, varargin)
 
     p = inputParser;
     p.addParameter('flatTopGaussian', false, @islogical);
@@ -18,10 +19,11 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     globalSearch = p.Results.globalSearch;
     multiStartsNum = p.Results.multiStartsNum;
     
-    [X,Y] = meshgrid(supportX, supportY);
-    xydata(:,:,1) = X;
-    xydata(:,:,2) = Y;
+    % Retrieve scattered input positions
+    xydata(:,1) = inputPositions(:,1);
+    xydata(:,2) = inputPositions(:,2);
 
+    % Exract some preliminary params from the continous RF
     maxRF = max(theRF(:));
     theRF = theRF / maxRF;
     [theCentroid, theAxesLengths, theRotationAngle] = RetinaToVisualFieldTransformer.estimateGeometry(...
@@ -35,7 +37,7 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     params.initialValues = [...
         max(theRF(:)), ...
         theCentroid(1), ...
-        theAxesLengths(1)/3, ...
+        min(theAxesLengths)/4, ...
         theCentroid(2), ...
         theAxesLengths(end)/theAxesLengths(1), ...
         theRotationAngle];
@@ -44,7 +46,7 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     params.lowerBounds = [ ...
         0 ...
         min(supportX) ...
-        0*(max(supportX)-min(supportX)) ...
+        min(theAxesLengths)/8 ...
         min(supportY) ...
         1e-2  ...
         theRotationAngle-90];
@@ -52,7 +54,7 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     params.upperBounds = [ ...
         1 ...
         max(supportX) ...
-        max(supportX)-min(supportX) ...
+        max(theAxesLengths)*4 ...
         max(supportY) ...
         1e2 ...
         theRotationAngle+90];
@@ -138,12 +140,10 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
          fittedParams = run(ms, problem, multiStartsNum);
     else
         % Local search
-        [fittedParams,resnorm,residual,exitflag] = lsqcurvefit(@gaussian2D,params.initialValues,xydata,theRF,params.lowerBounds,params.upperBounds);
+        [fittedParams,resnorm,residual,exitflag] = lsqcurvefit(@gaussian2D,params.initialValues,xydata,inputWeights,params.lowerBounds,params.upperBounds);
     end
 
-
-
-
+    % Extract fitted params
     xo = fittedParams(2);
     yo = fittedParams(4);
     RcX = fittedParams(3);
@@ -151,7 +151,10 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
  
 
     % Compute the fitted 2D Gaussian
-    theFittedGaussian.ellipsoidMap = gaussian2D(fittedParams,xydata);
+    [X,Y] = meshgrid(supportX, supportY);
+    xydataContinuous(:,:,1) = X;
+    xydataContinuous(:,:,2) = Y;
+    theFittedGaussian.ellipsoidMap = gaussian2D(fittedParams,xydataContinuous);
     theFittedGaussian.characteristicRadii = [RcX RcY];
     theFittedGaussian.rotationDegs = fittedParams(6);
     theFittedGaussian.flatTopExponents = [fittedParams(7) fittedParams(8)];
@@ -161,7 +164,7 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     % Nested function gaussian2DObjective
     function rmse = gaussian2DObjective(params)
         fittedRF = gaussian2D(params, xydata);
-        fullRMSE = ((fittedRF(:) - theRF(:))).^2;
+        fullRMSE = ((fittedRF(:) - inputWeights(:))).^2;
         rmse =  sqrt(mean(fullRMSE,1));
     end
 
@@ -169,8 +172,13 @@ end
 
 function F = gaussian2D(params,xydata)
     % Retrieve spatial support
-    X = squeeze(xydata(:,:,1));
-    Y = squeeze(xydata(:,:,2));
+    if (ndims(xydata) == 2)
+        X = squeeze(xydata(:,1));
+        Y = squeeze(xydata(:,2));
+    else
+        X = squeeze(xydata(:,:,1));
+        Y = squeeze(xydata(:,:,2));
+    end
 
     % Retrieve params
     gain = params(1);

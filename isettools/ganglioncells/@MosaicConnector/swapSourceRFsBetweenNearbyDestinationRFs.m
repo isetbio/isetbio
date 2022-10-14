@@ -64,7 +64,7 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
                 inputWeightsAllNearbyDestinationRFs{iNearbyDestinationRF} = full(obj.connectivityMatrix(inputIndicesAllNearbyDestinationRFs{iNearbyDestinationRF},theNearbyDestinationRFindex));
                 inputsNum(iNearbyDestinationRF) = numel(inputIndicesAllNearbyDestinationRFs{iNearbyDestinationRF});
             end % iNearbyDestinationRF
-            meanInputsNum = mean(inputsNum);
+            meanInputsNum = floor(mean(inputsNum));
 
             % Check whether the mean # of inputs < obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping)
             if (meanInputsNum > obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping)

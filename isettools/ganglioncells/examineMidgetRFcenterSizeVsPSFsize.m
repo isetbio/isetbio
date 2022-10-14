@@ -1,7 +1,7 @@
 function examineMidgetRFcenterSizeVsPSFsize()
 
     % Choose retinal quadrant
-    retinaQuadrant = 'temporal meridian';
+    retinaQuadrant = 'nasal meridian';
     if (strcmp(retinaQuadrant, 'nasal meridian'))
         radialEccExamined = [0 1 2 3 4 6 8 12 19 24 30];
     else
@@ -94,7 +94,7 @@ function plotSummaryData(radialEccExamined, retinaQuadrant, dListSingleSubjectPS
         eccTicks = (-30):2:0;
     end
 
-    characteristicRadiusRange = [0 7];
+    characteristicRadiusRange = [0 8];
     markerSize = 10;
 
     hFig = figure(1); clf;
@@ -120,7 +120,7 @@ function plotSummaryData(radialEccExamined, retinaQuadrant, dListSingleSubjectPS
     ax = subplot(2,2,3);
     plot(ax,radialEccExamined, mean(exclusiveCenterConesNum,2), 'ro-', 'LineWidth', 1.5, ...
         'MarkerSize', markerSize, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0]);
-    set(ax, 'XLim', eccRange, 'YLim', [0 8], 'XTick', eccTicks, 'YTick', 0:1:8, 'FontSize', 14);
+    set(ax, 'XLim', eccRange, 'YLim', [0 20], 'XTick', eccTicks, 'YTick', 0:2:20, 'FontSize', 14);
     axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
     set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
     xlabel(ax,'eccentricity (degs)')
@@ -159,7 +159,7 @@ function plotSummaryData(radialEccExamined, retinaQuadrant, dListSingleSubjectPS
         'Location', 'NorthWest', 'NumColumns', 1, 'LineWidth', 0.5, 'Color', [0.95 0.95 0.95]);
     
     set(ax, 'XLim', eccRange, 'YLim', characteristicRadiusRange, ...
-        'XTick', eccTicks, 'YTick', 0:1:7, 'FontSize', 14);
+        'XTick', eccTicks, 'YTick', 0:1:8, 'FontSize', 14);
     axis(ax, 'square'); grid(ax, 'on'); box(ax, 'off');
     set(ax, 'LineWidth', 1.0, 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2]);
     xlabel(ax,'eccentricity (degs)')
