@@ -6,12 +6,15 @@ function visualizeRetinalRFs(obj, varargin)
     p.addParameter('spatialSupportSamplesNum', 256, @isnumeric);
     p.addParameter('showInputConeMosaic', true, @islogical);
     p.addParameter('showConeWeights', true, @islogical);
+    p.addParameter('showIndividualRFs', false, @islogical);
+
     p.parse(varargin{:});
     exportGraphicForEachRF = p.Results.exportGraphicForEachRF;
     maxExportedGraphs = p.Results.maxExportedGraphs;
     spatialSupportSamplesNum = p.Results.spatialSupportSamplesNum;
     showInputConeMosaic = p.Results.showInputConeMosaic;
     showConeWeights = p.Results.showConeWeights;
+    showIndividualRFs = p.Results.showIndividualRFs;
 
     % Compute additional margin for the spatial support
     mRGCmosaicCenterDegs = mean(obj.rgcRFpositionsDegs,1);
@@ -36,14 +39,17 @@ function visualizeRetinalRFs(obj, varargin)
     % Compute the retinal RFcenter maps
     theRetinalRFcenterMaps = obj.computeRetinalRFcenterMaps(marginDegs, spatialSupportSamplesNum);
 
+    
     % Sort RGCs according to their eccentricity
     ecc = sum((bsxfun(@minus, obj.rgcRFpositionsDegs, mRGCmosaicCenterDegs)).^2,2);
     [~,sortedRGCindices] = sort(ecc, 'ascend');
 
-     % Format figure
-    hFig = figure(1);
-    set(hFig, 'Position', [10 10 880 880], 'Color', [0.8 0.8 0.8]);
-    
+    if (showIndividualRFs)
+        % Format figure
+        hFig = figure(1);
+        set(hFig, 'Position', [10 10 880 880], 'Color', [0.8 0.8 0.8]);
+    end
+
     hFig2 = figure(2); clf;
     set(hFig2, 'Position', [10 10 880 880], 'Color', [1 1 1]);
     ax2 = subplot('Position', [0.09 0.09 0.89 0.89]);
@@ -52,7 +58,7 @@ function visualizeRetinalRFs(obj, varargin)
             'figureHandle', hFig2, ...
             'axesHandle', ax2, ...
             'domain', 'degrees', ...
-            'visualizedConeAperture', 'geometricArea', ...
+            'visualizedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
             'visualizedConeApertureThetaSamples', 30, ...
             'backgroundColor', [1 1 1]);
     end
@@ -115,8 +121,10 @@ function visualizeRetinalRFs(obj, varargin)
         fittedEllipsoidMapProfileX  = fittedEllipsoidMapProfileX/maxFittedProfile;
         fittedEllipsoidMapProfileY  = fittedEllipsoidMapProfileY/maxFittedProfile;
         
-        
-        if (iRGC <= maxExportedGraphs)
+        % Compute ticks
+        [xTicks, yTicks] = computeTicks(obj.sizeDegs, mRGCmosaicCenterDegs);
+
+        if (showIndividualRFs) && (iRGC <= maxExportedGraphs)
             % Clear the figure
             figure(hFig);
             clf;
@@ -132,11 +140,7 @@ function visualizeRetinalRFs(obj, varargin)
     
             % Find the indices of cones in the neighborhood
             plotConesInTheNeighborhood(ax, obj.inputConeMosaic, xLims, yLims)
-    
-            % Compute ticks
-            if (iRGC == 1)
-                [xTicks, yTicks] = computeTicks(obj.sizeDegs, mRGCmosaicCenterDegs);
-            end
+
     
             % Contour of the RF map
             [~,c] = contour(ax,s.spatialSupportDegsX, s.spatialSupportDegsY, theRF, zLevels);
@@ -280,21 +284,32 @@ function visualizeRetinalRFs(obj, varargin)
             'lineWidth', 2.0, ...
             'edgeAlpha', 1.0);
 
-        
-        axis(ax2, 'equal');
-        set(ax2, 'XLim', xLimsVisualizedFull, ...
-                 'YLim', yLimsVisualizedFull, ...
-                 'XTick', xTicks, 'YTick', yTicks, ...
-                 'XTickLabel', sprintf('%2.1f\n', xTicks), 'YTickLabel', sprintf('%2.1f\n', yTicks), ...
-                 'CLim', [0 1]);
-        set(ax2, 'XColor', [0.25 0.25 0.25], 'YColor', [0.25 0.25 0.25], 'FontSize', 20, 'LineWidth', 1.0);
-        grid(ax2, 'on');
-        xlabel(ax2,'eccentricity, x (degs)')
-        ylabel(ax2,'eccentricity, y (degs)')
-        drawnow;
-        
+        if (iRGC == 1)
+            axis(ax2, 'equal');
+            set(ax2, 'XLim', xLimsVisualizedFull, ...
+                     'YLim', yLimsVisualizedFull, ...
+                     'XTick', xTicks, 'YTick', yTicks, ...
+                     'XTickLabel', sprintf('%2.1f\n', xTicks), 'YTickLabel', sprintf('%2.1f\n', yTicks), ...
+                     'CLim', [0 1]);
+            set(ax2, 'XColor', [0.25 0.25 0.25], 'YColor', [0.25 0.25 0.25], 'FontSize', 20, 'LineWidth', 1.0);
+            grid(ax2, 'on');
+            xlabel(ax2,'eccentricity, x (degs)')
+            ylabel(ax2,'eccentricity, y (degs)')
+        end
 
     end
+
+    axis(ax2, 'equal');
+    set(ax2, 'XLim', xLimsVisualizedFull, ...
+        'YLim', yLimsVisualizedFull, ...
+        'XTick', xTicks, 'YTick', yTicks, ...
+        'XTickLabel', sprintf('%2.1f\n', xTicks), 'YTickLabel', sprintf('%2.1f\n', yTicks), ...
+        'CLim', [0 1]);
+    set(ax2, 'XColor', [0.25 0.25 0.25], 'YColor', [0.25 0.25 0.25], 'FontSize', 20, 'LineWidth', 1.0);
+    grid(ax2, 'on');
+    xlabel(ax2,'eccentricity, x (degs)')
+    ylabel(ax2,'eccentricity, y (degs)')
+            drawnow;
 
     if (exportGraphicForEachRF)
         fName = sprintf('allRGCsOneSigmaOutline_Overlap_%2.2f_Ecc_%2.1f_%2.1f.pdf', obj.rfOverlapRatio, mRGCmosaicCenterDegs(1), mRGCmosaicCenterDegs(2));

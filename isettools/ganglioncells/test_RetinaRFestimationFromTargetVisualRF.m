@@ -13,7 +13,7 @@ function test_RetinaRFestimationFromTargetVisualRF
     examinedSubjectRankOrders = 1:38;
     % Remove some subjects which increase the variance a lot
     examinedSubjectRankOrders = setdiff(examinedSubjectRankOrders, [5 16 20 23 31 34 36 37]);
-    examinedSubjectRankOrder = 1;
+    examinedSubjectRankOrder = 10;
 
     % Define the DoG characteristics of the visualRF
     conesNumPooledByTheRFcenter = 1;
@@ -27,17 +27,17 @@ function test_RetinaRFestimationFromTargetVisualRF
         strrep(analyzedRetinaMeridian, ' ', '_'), ...
         pupilDiameterMM, conesNumPooledByTheRFcenter);
  
-    regenerateData = ~true;
+    regenerateData = true;
     if (regenerateData)
 
-        analyzedRadialEccDegs = [0 0.25 0.5 0.75 1 1.5 2 2.5 3 3.5 4 5];
+        analyzedRadialEccDegs = [0]; %[0 0.25 0.5 0.75 1 1.5 2 2.5 3 3.5 4 5];
 
         surroundToCenterRcRatio = 6;
         surroundToCenterIntegratedRatio = 0.7;
         wavefrontSpatialSamples = 401;
 
         % Select between {'GaussianCenterDoubleExponentSurroundBased', 'GaussianCenterGaussianSurroundBased'}
-        retinalConePoolingModel = 'GaussianCenterGaussianSurroundBased';
+        retinalConePoolingModel = 'GaussianCenterDoubleExponentSurroundBased';
 
         % Struct with DoG model params for the target visual RF
         targetVisualRFDoGparams = struct(...
@@ -69,7 +69,7 @@ function test_RetinaRFestimationFromTargetVisualRF
     end
 
     % Evaluate generated RFs at a target eccentricity
-    targetRadialEccDegs = 0.9;
+    targetRadialEccDegs = 0.0;
     evaluteGeneratedRFs(retinalRFparamsDictionary, opticsParams, targetVisualRFDoGparams, targetRadialEccDegs);
 end
 
