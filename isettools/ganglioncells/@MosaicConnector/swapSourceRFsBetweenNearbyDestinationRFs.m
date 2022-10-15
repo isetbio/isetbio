@@ -31,8 +31,18 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
         allDestinationRFindices = 1:size(obj.destinationRFcentroidsFromInputs,1);
         sortedDestinationRFindices = obj.sortDestinationRFsBasedOnOptimizationCenter(allDestinationRFindices);
 
-        
+        % Feedback
+        fprintf('\nEvaluating benefit of swapping inputs with nearby units for %d destination RFs (PASS %d/%d)\n',...
+            numel(sortedDestinationRFindices),currentPass, obj.wiringParams.maxPassesNum);
+
         for iDestinationRF = 1:numel(sortedDestinationRFindices)
+            % Feedback
+            fprintf('.');
+            if (mod((iDestinationRF-1),100) == 99)
+                fprintf('  [%d/%d]\n', iDestinationRF , numel(sortedDestinationRFindices));
+            end
+
+            % Retrieve the destinationRF index 
             theSourceDestinationRFindex = sortedDestinationRFindices(iDestinationRF);
          
             % Find the indicies of the neigboring destinationRFs
@@ -68,8 +78,8 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
 
             % Check whether the mean # of inputs < obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping)
             if (meanInputsNum > obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping)
-                fprintf('No swapping for destination RF %d of %d. Nearby destination RFs have an average of %2.1f inputs. Max for swapping: %d.\n', ...
-                    iDestinationRF, numel(sortedDestinationRFindices), meanInputsNum, obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping);
+                fprintf('\nNo swapping for destination RF #%d Nearby destination RFs have an average of %2.1f inputs. Max for swapping: %d.\n', ...
+                    iDestinationRF, meanInputsNum, obj.wiringParams.maxMeanConeInputsPerRGCToConsiderSwapping);
                 continue;
             end
             
@@ -90,6 +100,8 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
             end
         end % for iDestinationRF
         
+        % Feedback
+        fprintf('  [%d/%d]\n', iDestinationRF , numel(sortedDestinationRFindices));
         
         % Update the destinationRF spacings based on the updated connectivity
         obj.updateDestinationRFspacingsBasedOnCentroids();

@@ -4,10 +4,14 @@ function visualizeRetinalRFs(obj, varargin)
     p.addParameter('exportGraphicForEachRF', false, @islogical);
     p.addParameter('maxExportedGraphs', 15, @isnumeric);
     p.addParameter('spatialSupportSamplesNum', 256, @isnumeric);
+    p.addParameter('showInputConeMosaic', true, @islogical);
+    p.addParameter('showConeWeights', true, @islogical);
     p.parse(varargin{:});
     exportGraphicForEachRF = p.Results.exportGraphicForEachRF;
     maxExportedGraphs = p.Results.maxExportedGraphs;
     spatialSupportSamplesNum = p.Results.spatialSupportSamplesNum;
+    showInputConeMosaic = p.Results.showInputConeMosaic;
+    showConeWeights = p.Results.showConeWeights;
 
     % Compute additional margin for the spatial support
     mRGCmosaicCenterDegs = mean(obj.rgcRFpositionsDegs,1);
@@ -26,8 +30,9 @@ function visualizeRetinalRFs(obj, varargin)
     yLimsVisualizedFull(1) = minXY(2)-max(obj.rgcRFspacingsDegs);
     yLimsVisualizedFull(2) = maxXY(2)+max(obj.rgcRFspacingsDegs);
 
-    xLimsVisualizedFull
-    yLimsVisualizedFull
+    xLimsVisualizedFull = obj.eccentricityDegs(1) + 0.5*obj.sizeDegs(1) * [-1 1];
+    yLimsVisualizedFull = obj.eccentricityDegs(2) + 0.5*obj.sizeDegs(2) * [-1 1];
+
     % Compute the retinal RFcenter maps
     theRetinalRFcenterMaps = obj.computeRetinalRFcenterMaps(marginDegs, spatialSupportSamplesNum);
 
@@ -42,13 +47,16 @@ function visualizeRetinalRFs(obj, varargin)
     hFig2 = figure(2); clf;
     set(hFig2, 'Position', [10 10 880 880], 'Color', [1 1 1]);
     ax2 = subplot('Position', [0.09 0.09 0.89 0.89]);
-    obj.inputConeMosaic.visualize(...
-        'figureHandle', hFig2, ...
-        'axesHandle', ax2, ...
-        'domain', 'degrees', ...
-        'visualizedConeAperture', 'geometricArea', ...
-        'visualizedConeApertureThetaSamples', 30, ...
-        'backgroundColor', [1 1 1]);
+    if (showInputConeMosaic)
+        obj.inputConeMosaic.visualize(...
+            'figureHandle', hFig2, ...
+            'axesHandle', ax2, ...
+            'domain', 'degrees', ...
+            'visualizedConeAperture', 'geometricArea', ...
+            'visualizedConeApertureThetaSamples', 30, ...
+            'backgroundColor', [1 1 1]);
+    end
+
     hold(ax2, 'on');
     drawnow;
 
@@ -81,7 +89,7 @@ function visualizeRetinalRFs(obj, varargin)
                 s.inputConeWeights, obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices,:), ...
                 'flatTopGaussian', ~true, ...
                 'forcedOrientationDegs', [], ...
-                'rangeForEllipseRcYRcXratio', [1/1.4 1.4], ...
+                'rangeForEllipseRcYRcXratio', [1/4 4], ...
                 'forcedCentroidXYpos', obj.rgcRFpositionsDegs(targetRGCindex,:), ...
                 'globalSearch', true, ...
                 'multiStartsNum', 8);
@@ -241,30 +249,36 @@ function visualizeRetinalRFs(obj, varargin)
 
         
         figure(hFig2);
+        
+    
+        hold(ax2, 'on');
+
+        if (showConeWeights)
+            % Lines connecting the centroid with all the inputs with line
+            % darkness indicating weight: the stronger the weight, the darker the line
+            if (numel(s.inputConeIndices)>1)
+                %inputsCentroid = mean(obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices,:),1);
+                inputsCentroid = obj.rgcRFpositionsDegs(targetRGCindex,:);
+                for iInput = 1:numel(s.inputConeIndices)
+                    if (s.inputConeWeights(iInput)>0.01)
+                        plot(ax2,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices(iInput),1)], ...
+                            [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices(iInput),2)], ...
+                            'k-', 'LineWidth', max([0.04 4.0*(s.inputConeWeights(iInput)/max(s.inputConeWeights(:)))]) );
+                    end
+                end
+            end
+        end
+
+
+        % 1 sigma
         oneSigmaLevel = [1 exp(-0.5)];
         cMap = brewermap(128, 'greys');
-        alpha = 0.5;
+        alpha = 0.25;
         contourLineColor = [0 0 0];
         cMosaic.semiTransparentContourPlot(ax2, s.spatialSupportDegsX, s.spatialSupportDegsY, fittedEllipsoidMap/max(fittedEllipsoidMap(:)), ...
             oneSigmaLevel, cMap, alpha, contourLineColor, ...
             'lineWidth', 2.0, ...
             'edgeAlpha', 1.0);
-    
-        hold(ax2, 'on');
-
-
-        % Lines connecting the centroid with all the inputs with line
-        % darkness indicating weight: the stronger the weight, the darker the line
-        if (numel(s.inputConeIndices)>1)
-            inputsCentroid = mean(obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices,:),1);
-            for iInput = 1:numel(s.inputConeIndices)
-                if (s.inputConeWeights(iInput)>0.001)
-                    plot(ax2,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices(iInput),1)], ...
-                        [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices(iInput),2)], ...
-                        'k-', 'LineWidth', 1.0, 'Color', [1 1 1]*(1-s.inputConeWeights(iInput)/max(s.inputConeWeights(:))));
-                end
-            end
-        end
 
         
         axis(ax2, 'equal');

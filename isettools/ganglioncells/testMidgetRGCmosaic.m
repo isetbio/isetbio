@@ -1,16 +1,21 @@
 function testMidgetRGCmosaic
 
-    regenerateMidgetRGCMosaic = true;
+    regenerateMidgetRGCMosaic = ~true;
     analyzeRetinalRFoverlap = true;
     recomputeRetinalRFoverlap = true;
     reMapRFs = ~true;
 
-    rfOverlapRatio = 0.0;
+    % Examined overlap ratio
+    overlapValuesExamined = [0.2 0.35 0.5 0.65];
     horizontalEccsExamined = -[0 1 2 4 6 8 12 16 20 24 30];
-    for iEcc = 1:numel(horizontalEccsExamined)
-        close all
-        eccDegs = [horizontalEccsExamined(iEcc) 0];
-        doIt(eccDegs, regenerateMidgetRGCMosaic, analyzeRetinalRFoverlap, recomputeRetinalRFoverlap, reMapRFs, rfOverlapRatio);
+
+    for iOverlapIndex = 1:numel(overlapValuesExamined)
+        for iEcc = 1:numel(horizontalEccsExamined)
+            close all
+            eccDegs = [horizontalEccsExamined(iEcc) 0];
+            rfOverlapRatio = overlapValuesExamined(iOverlapIndex);
+            doIt(eccDegs, regenerateMidgetRGCMosaic, analyzeRetinalRFoverlap, recomputeRetinalRFoverlap, reMapRFs, rfOverlapRatio);
+        end
     end
 
 end
@@ -37,7 +42,7 @@ function doIt(eccDegs, regenerateMidgetRGCMosaic, analyzeRetinalRFoverlap, recom
     if (analyzeRetinalRFoverlap)
 
         hFig = figure(444);
-        m.visualizeRFcenterConnectivity('figureHandle', hFig);
+        %m.visualizeRFcenterConnectivity('figureHandle', hFig);
         
         nnndFileName = sprintf('NND_%2.2f_Ecc_%2.1f_%2.1f.mat', rfOverlapRatio, eccDegs(1), eccDegs(2));
 
@@ -45,7 +50,10 @@ function doIt(eccDegs, regenerateMidgetRGCMosaic, analyzeRetinalRFoverlap, recom
             m.adjustRFoverlap(rfOverlapRatio);
         
             % Visualize the retinal RFs
-            m.visualizeRetinalRFs('exportGraphicForEachRF', true);
+            m.visualizeRetinalRFs(...
+              'exportGraphicForEachRF', true, ...
+               'showInputConeMosaic', true, ...
+               'showConeWeights', true);
             
             % Analyze the retinal RF overlap
             [NNNDs, NNNDtuplets, RGCdistances, distancesFromMosaicCenterDegs, targetRGCindices] = m.analyzeRetinalRFoverlap();
@@ -56,11 +64,13 @@ function doIt(eccDegs, regenerateMidgetRGCMosaic, analyzeRetinalRFoverlap, recom
         end
 
 
+        % Only analyze the closest neighbor
+        NNNDtuplets = NNNDtuplets(:,1);
 
         hFig = figure(111);
-        set(hFig, 'Color', [1 1 1], 'Position', [300 300 1000 400]);
+        set(hFig, 'Color', [1 1 1], 'Position', [300 300 400 1000]);
         clf;
-        ax = subplot(1,2,1);
+        ax = subplot(2,1,1);
         cMap = [1 0.5 0.5; 0.5 1.0 0.5; 0.5 0.5 1.0];
         cMap2 = [1 0 0; 0 1.0 0; 0 0  1.0];
         for iRGC = 1:size(NNNDtuplets,1)
@@ -78,14 +88,14 @@ function doIt(eccDegs, regenerateMidgetRGCMosaic, analyzeRetinalRFoverlap, recom
         xlabel(ax,'eccentricity (degs)');
         ylabel(ax,'normalized distance');
 
-        ax = subplot(1,2,2);
+        ax = subplot(2,1,2);
         edges = 0:0.2:10;
         h = histogram(ax,squeeze(NNNDtuplets(:,1)), edges);
         h.FaceColor = [1 0.5 0.5];
         h.EdgeColor = [1 0 0];
         set(ax, 'FontSize', 16)
         set(ax, 'XLim', [0 8], 'XTick', 0:8);
-        title(ax,sprintf('median NNND = %2.2f, ecc: (%2.2f,%2.2f)',median(NNNDs), eccDegs(1), eccDegs(2)));
+        title(ax,sprintf('median NNND = %2.2f, ecc: (%2.2f,%2.2f)',median(NNNDtuplets(:)), eccDegs(1), eccDegs(2)));
         xlabel(ax,'normalized nearest neighbor distance');
         ylabel(ax,'cell #');
         NicePlot.exportFigToPDF(strrep(nnndFileName, '.mat', '.pdf'), hFig, 300);

@@ -58,14 +58,10 @@ function divergeSourceRFsToNearbyDestinationRFs(obj, varargin)
 
     allSourceRFPositions = obj.sourceLattice.RFpositionsMicrons;
     for iDestinationRF = 1:destinationRFsNum 
-        % The new number of source RF inputs (based on obj.wiringParams.destinationRFoverlapRatio)
-        newInputsNum = localMeanSourceRFinputsNum(iDestinationRF) * 2 / (1-sqrt(obj.wiringParams.destinationRFoverlapRatio));
-        
-        % The sigma for weighting the updated source RFs 
+
         theDestinationRFspacing = obj.destinationRFspacingsFromCentroids(iDestinationRF);
-        overlapRadius = 0.5*theDestinationRFspacing * sqrt(newInputsNum/localMeanSourceRFinputsNum(iDestinationRF)); 
+        overlapRadius = MosaicConnector.radiusToAchieveOverlap(obj.wiringParams.destinationRFoverlapRatio, theDestinationRFspacing);
         overlapSigma = overlapRadius / 3.0;
-        newInputsNum = round(newInputsNum);
 
         % Find sourceRF indices within overlapRadius distance from centroid
         theDestinationRFcentroid = obj.destinationRFcentroidsFromInputs(iDestinationRF,:);
@@ -100,11 +96,9 @@ function divergeSourceRFsToNearbyDestinationRFs(obj, varargin)
 
         % Updated source RF indices and weights
         weights = exp(-0.5*(distances/overlapSigma).^2);
-        [~,idx] = sort(weights, 'descend');
 
-        idx = idx(1:min([numel(idx) newInputsNum]));
-        newlyConnectedSourceRFindices = sourceRFIndicesWithinOverlapRadius(idx);
-        newlyConnectedSourceRFweights = weights(idx);
+        newlyConnectedSourceRFindices = sourceRFIndicesWithinOverlapRadius;
+        newlyConnectedSourceRFweights = weights;
 
         % Only keep inputs with weight > maxWeight*threshold
         threshold = 1/100;

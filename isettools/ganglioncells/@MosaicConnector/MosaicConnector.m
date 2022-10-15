@@ -281,6 +281,8 @@ classdef MosaicConnector < handle
 
         [D,idx] = pdist2(A, B, varargin);
 
+        radius = radiusToAchieveOverlap(overlap, spacing);
+
         d = maximalInterInputDistance(RFpos);
         
         c = weightedMean(data, weights);
