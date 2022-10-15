@@ -36,6 +36,9 @@ classdef RetinaToVisualFieldTransformer < handle
        % The computed (vLambda weighted, or not) PSFs
        thePSFData;
 
+       % The full optics
+       theOI;
+
        % # of multi-starts
        multiStartsNum;
 
