@@ -58,6 +58,19 @@ classdef midgetRGCMosaic < handle
         % The MosaicConnectorOBJ used to connect cones to midget RGCs
         theMosaicConnectorOBJ;
 
+        % The RetinalToVisualFieldTransformerList cell array which contains 
+        % RTVFT objects for a grid of positions, conesNumInRFcenter,
+        % and visual STF properties:
+        % - optics (position) 
+        % - conesNumInRFcenter
+        % - visual STF properties (C/S radius, C/S int.ratio)
+        theRetinaToVisualFieldTransformerOBJList;
+
+        theOpticsPositionGrid;
+        theConesNumPooledByTheRFcenterGrid;
+        theVisualSTFSurroundToCenterRcRatioGrid;
+        theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
+
     end % Read-only properties
 
 
@@ -128,6 +141,22 @@ classdef midgetRGCMosaic < handle
                 obj.adjustRFoverlap(p.Results.rfOverlapRatio);
             end
         end % Constructor
+
+        % Method to wire inputs to the RF surround based on a passed RTVFT
+        % object(s), which encodes C/S weights to achieve a desired visual STF
+        % for specific optics
+        function wireSurrounds(obj, theRetinaToVisualFieldTransformerOBJList, ...
+            theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
+            theVisualSTFSurroundToCenterRcRatioGrid, ...
+            theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid)
+
+            obj.theRetinaToVisualFieldTransformerOBJList = theRetinaToVisualFieldTransformerOBJList;
+            obj.theOpticsPositionGrid = theOpticsPositionGrid;
+            obj.theConesNumPooledByTheRFcenterGrid = theConesNumPooledByTheRFcenterGrid;
+            obj.theVisualSTFSurroundToCenterRcRatioGrid = theVisualSTFSurroundToCenterRcRatioGrid;
+            obj.theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid = theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
+        end
+
 
         % Method to adjust the midgetRGC RF overlap
         adjustRFoverlap(obj, overlapRatio);
