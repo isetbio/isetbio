@@ -23,10 +23,15 @@ function [responses, responseTemporalSupport] = compute(obj, theScene, varargin)
     % Parse input
     p = inputParser;
     p.addParameter('nTrials', [], @isscalar);
+    p.addParameter('theNullScene', [], @isstruct);
+    p.addParameter('normalizeConeResponsesWithRespectToNullScene', false, @islogical);
     p.parse(varargin{:});
     
 
     nTrials = p.Results.nTrials;
+    theNullScene = p.Results.theNullScene;
+    normalizeConeResponsesWithRespectToNullScene = p.Results.normalizeConeResponsesWithRespectToNullScene;
+
     if (isempty(nTrials))
         nTrials = 1;
     end
@@ -36,21 +41,41 @@ function [responses, responseTemporalSupport] = compute(obj, theScene, varargin)
     % position, we will have to generate multiple optical images
     % more than 1 
     opticalPositionsNum = size(obj.theOpticsPositionGrid,1);
+    opticalPositionIndex = 1;
     if (opticalPositionsNum > 1)
-        error('Computing with multiple optical images is not yet supported');
+        fprintf(2,'Computing with multiple optical images is not yet supported. Using the first one.\n');
     end
 
     % Retrieve the optics from the first RTVFTobj
-    theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{1};
+    theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{opticalPositionIndex};
     theOpticalImage = theRTVFTobj.theOI;
+    clear 'theRTVFTobj';
 
-    % Compute the optical image
+    % Process the null scene
+    if (~isempty(theNullScene))
+        % Compute the optical image of the null scene (0  contrast typically)
+        theOpticalImage = oiCompute(theNullScene, theOpticalImage);
+        % Call the inputConeMosaic.compute() method for the current opticalImage
+        [noiseFreeAbsorptionsCountNull, ~, ...
+         photoCurrentsNull, ~, ~] = ...
+            obj.inputConeMosaic.compute(theOpticalImage, 'nTrials', 1);
+    end
+
+    % Compute the optical image of the test stimulus
     theOpticalImage = oiCompute(theScene, theOpticalImage);
 
     % Call the inputConeMosaic.compute() method for the current opticalImage
-    [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
+    [noiseFreeAbsorptionsCount, noisyAbsorptionsCountInstances, ...
      photoCurrents, photoCurrentInstances, responseTemporalSupport] = ...
         obj.inputConeMosaic.compute(theOpticalImage,'nTrials', nTrials);
+
+    
+    if (~isempty(theNullScene)) && (normalizeConeResponsesWithRespectToNullScene)
+        noiseFreeAbsorptionsCount = ...
+            (bsxfun(@minus, noiseFreeAbsorptionsCount, noiseFreeAbsorptionsCountNull)) ./ noiseFreeAbsorptionsCountNull;
+        noisyAbsorptionsCountInstances = ...
+            (bsxfun(@minus, noisyAbsorptionsCountInstances, noiseFreeAbsorptionsCountNull)) ./ noiseFreeAbsorptionsCountNull;
+    end
 
     nTrials = size(noiseFreeAbsorptionsCount,1);
     nTimePoints = size(noiseFreeAbsorptionsCount,2);

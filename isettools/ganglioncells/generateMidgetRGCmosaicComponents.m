@@ -5,12 +5,14 @@ function generateMidgetRGCmosaicComponents
         'generateMosaic' ...
         'generateRTVFTobjList' ...
         'generateCenterSurroundRFs' ...
-        'computeConeMosaicSTF' ...
+        'computeSTF' ...
         'visualizeResponses' ...
         };
 
     % Operation to compute
-    operations = operations(1:2);
+    operations = {'computeSTF'};
+    %coneContrasts = [0.12 -0.12 0];
+    coneContrasts = [1 1 0];
 
     eccSizeDegsExamined = [...
          0  0.3; ...
@@ -28,20 +30,18 @@ function generateMidgetRGCmosaicComponents
         -25 2.5 ...
        ];
 
-    for iEcc = 3:size(eccSizeDegsExamined,1)
+    for iEcc = 3:3 % 3:size(eccSizeDegsExamined,1)
         fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
         sizeDegs = eccSizeDegsExamined(iEcc,2) * [1 1];
-        doIt(operations, eccDegs, sizeDegs);
+        doIt(operations, eccDegs, sizeDegs, coneContrasts);
     end
 
 end
 
-function doIt(operations, eccDegs, sizeDegs)
+function doIt(operations, eccDegs, sizeDegs, coneContrasts)
 
     fName = sprintf('mRGCmosaicComponents_eccDegs_%2.2f.mat', eccDegs(1));
-
-    
 
     for iOp = 1:numel(operations)
 
@@ -119,39 +119,125 @@ function doIt(operations, eccDegs, sizeDegs)
 
                     save(fName, 'theMidgetRGCmosaic', '-append');
 
-            case 'computeConeMosaicSTF'
+            case 'computeSTF'
                 load(fName, 'theMidgetRGCmosaic');
+                
                 [theMidgetRGCMosaicResponses, spatialFrequenciesTested, spatialPhasesDegs] = ...
-                    computeTheSTF(theMidgetRGCmosaic);
-
+                    computeTheSTF(theMidgetRGCmosaic, coneContrasts);
+                
                 % Save the responses to a separate file
                 fNameResponses = strrep(fName, '.mat', '_Responses.mat');
                 save(fNameResponses, ...
                     'theMidgetRGCMosaicResponses', ...
                     'spatialFrequenciesTested', ...
                     'spatialPhasesDegs', ...
+                    'coneContrasts', ...
                     '-v7.3');
 
             case 'visualizeResponses'
+                load(fName, 'theMidgetRGCmosaic', 'RTVFTobjList');
+                RTVFTobjList{1}
+                RTVFTobjList{1}.rfComputeStruct
+                
+                RTVFTobjList{1}.targetVisualRFDoGparams
+                
                 % Load the responses to a separate file
                 fNameResponses = strrep(fName, '.mat', '_Responses.mat');
                 load(fNameResponses, ...
                     'theMidgetRGCMosaicResponses', ...
                     'spatialFrequenciesTested', ...
-                    'spatialPhasesDegs');
+                    'spatialPhasesDegs', ...
+                    'coneContrasts');
 
-                figure(55);
-                m1 = min(theMidgetRGCMosaicResponses(:));
-                m2 = max(theMidgetRGCMosaicResponses(:));
-                for iFreq = 1:numel(spatialFrequenciesTested)
-                    m = squeeze(theMidgetRGCMosaicResponses(iFreq,:,:));
-                    mm = (m'-m1)/(m2-m1);
-                    imagesc(mm);
-                    set(gca, 'CLim', [0 1]);
-                    title(sprintf('max = %2.3f', max(mm(:))));
-                    colormap(gray(1024));
-                    pause
+                % Sort RGCs according to their eccentricity
+                mRGCmosaicCenterDegs = mean(theMidgetRGCmosaic.rgcRFpositionsDegs,1);
+   
+                ecc = sum((bsxfun(@minus, theMidgetRGCmosaic.rgcRFpositionsDegs, mRGCmosaicCenterDegs)).^2,2);
+                [~,sortedRGCindices] = sort(ecc, 'ascend');
+
+                hFig = figure(66); clf;
+                set(hFig, 'Position', [90 10 855 990], 'Color', [1 1 1]);
+
+                % Video setup
+                fNameVideo = strrep(fName, '.mat', '_Video');
+                videoOBJ = VideoWriter(fNameVideo, 'MPEG-4');
+                videoOBJ.FrameRate = 10;
+                videoOBJ.Quality = 100;
+                videoOBJ.open();
+
+                for iii = 1:numel(sortedRGCindices)
+                    iRGC = sortedRGCindices(iii);
+                    
+                    maxResponse = max(max(abs(squeeze(theMidgetRGCMosaicResponses(:, :, iRGC)))));
+                    minResponse = -maxResponse;
+                    meanResponse = 0;
+
+                    theResponseModulation = zeros(1, numel(spatialFrequenciesTested));
+                    for iSF = 1:numel(spatialFrequenciesTested)
+                        % Retrieve the mRGC response time-series
+
+                        theResponse = squeeze(theMidgetRGCMosaicResponses(iSF, :, iRGC));
+                        % Compute the response modulation for this SF
+                        theResponseModulation(iSF) = max(theResponse)-min(theResponse);
+                        
+                        % Plot the time-series response for this SF
+                        ax = subplot(numel(spatialFrequenciesTested),2,(iSF-1)*2+1);
+                        plot(ax, 1:numel(spatialPhasesDegs), 0*theResponse, 'k-', 'LineWidth', 1.0);
+                        hold(ax, 'on');
+                        plot(ax, 1:numel(spatialPhasesDegs), theResponse, 'bo-', 'MarkerSize', 10, 'MarkerFaceColor', [0.3 0.8 0.8], 'LineWidth', 1.0);
+                        hold(ax, 'off');
+                        set(ax,  'YLim', [minResponse maxResponse], 'XTick', [], ...
+                            'YTick', [minResponse meanResponse maxResponse], ...
+                            'YTickLabel', sprintf('%2.2f\n',[minResponse meanResponse maxResponse]), ...
+                            'XColor', 'none');
+
+                        title(ax, sprintf('%2.1f c/deg', spatialFrequenciesTested(iSF)));
+                        box(ax, 'off');
+                        if (iSF == numel(spatialFrequenciesTested))
+                            xlabel(ax, 'time');
+                        end
+                        ylabel(ax, 'response');
+                    end
+
+                    % Visualize the examined retinal RF
+                    ax = subplot(numel(spatialFrequenciesTested),2, [2 4 6 8]);
+                    theMidgetRGCmosaic.visualizeSingleRetinalRF(iRGC, ...
+                        'plotTitle', sprintf('RGC: %d of %d', iii, numel(sortedRGCindices)), ...
+                        'figureHandle', hFig, ...
+                        'axesHandle', ax);
+
+                    % Visualize the computed STF
+                    ax = subplot(numel(spatialFrequenciesTested),2, ((6:numel(spatialFrequenciesTested))-1)*2+2);
+                    normalizedTargetSTF = RTVFTobjList{1}.rfComputeStruct.theSTF.target;
+                    normVal = max(normalizedTargetSTF);
+                    normalizedTargetSTF = normalizedTargetSTF / normVal;
+
+                    % Plot the target STF
+                    plot(ax, RTVFTobjList{1}.rfComputeStruct.theSTF.support, normalizedTargetSTF, 'r-', 'Color', [1 0.5 0.5], 'LineWidth', 3.0);
+                    hold(ax, 'on')
+                    p1 = plot(ax, RTVFTobjList{1}.rfComputeStruct.theSTF.support, normalizedTargetSTF, 'r-', 'LineWidth', 1.5);
+                    
+                    % Plot the measured STF
+                    p2 = plot(ax,spatialFrequenciesTested, theResponseModulation/max(theResponseModulation), 'ko', ...
+                        'MarkerSize', 14, 'MarkerFaceColor', [0.2 0.9 0.9], 'MarkerEdgeColor', [0 0.4 1], ...
+                        'LineWidth', 1.0);
+
+                    hold(ax, 'on');
+
+                    hold(ax, 'off');
+                    legend([p1, p2], {'target', 'measured'}, 'Location', 'SouthWest');
+                    title(ax, sprintf('stim LMS contrast = < %2.1f, %2.1f, %2.1f >', coneContrasts(1), coneContrasts(2), coneContrasts(3)));
+                    set(ax, 'XLim', [0.3 70], 'XTick', [0.1 0.3 1 3 10 30 100], 'YLim', [0 1.02], 'YTick', 0:0.1:1.0);
+                    xlabel(ax, 'spatial frequency (c/deg)');
+                    ylabel(ax, 'STF');
+                    grid(ax, 'on');
+                    set(ax, 'XLim', [0.1 100], 'XScale', 'Log', 'FontSize', 16);
+                    
+                    drawnow;
+                    videoOBJ.writeVideo(getframe(hFig));
                 end
+                videoOBJ.close();
+
 
             otherwise
                 error('Unknown operation: ''%s''.', operations{iOp});
@@ -161,12 +247,13 @@ end
 
 
 
-function [theMidgetRGCMosaicResponses, spatialFrequenciesTested, spatialPhasesDegs] = computeTheSTF(theMidgetRGCmosaic)
+function [theMidgetRGCMosaicResponses, spatialFrequenciesTested, spatialPhasesDegs] = ...
+    computeTheSTF(theMidgetRGCmosaic, coneContrasts)
 
     sceneFOVdegs = theMidgetRGCmosaic.inputConeMosaic.sizeDegs;
 
     % Generate a presentation display with a desired resolution
-    pixelsNum = 256;
+    pixelsNum = 512;
     retinalImageResolutionDegs = max(sceneFOVdegs)/pixelsNum;
     viewingDistanceMeters = 4;
     theDisplay = rfMappingStimulusGenerator.presentationDisplay(...
@@ -177,7 +264,7 @@ function [theMidgetRGCMosaicResponses, spatialFrequenciesTested, spatialPhasesDe
     stimParams = struct(...
             'backgroundLuminanceCdM2', 50.0, ...
             'backgroundChromaticity', [0.301 0.301], ...
-            'coneContrasts', [1 1 1], ...
+            'coneContrasts', coneContrasts, ...
             'contrast', 0.75, ...
             'spatialFrequencyCPD', [], ...
             'orientationDegs', 0, ...
@@ -189,14 +276,14 @@ function [theMidgetRGCMosaicResponses, spatialFrequenciesTested, spatialPhasesDe
             );
 
     
-    spatialFrequenciesTested = [0.5 1 2 4 8 16 32 64];
+    spatialFrequenciesTested = [0.25 0.5 1 2 4 6 8 10 12 16 24 32 64];
 
     rgcsNum = size(theMidgetRGCmosaic.rgcRFpositionsMicrons,1); 
     
     for iFreq = 1:numel(spatialFrequenciesTested)
    
         stimParams.spatialFrequencyCPD = spatialFrequenciesTested(iFreq);
-        fprintf('Generating scenes for the frames of the %2.1f c/deg pattern.\n', stimParams.spatialFrequencyCPD);
+        fprintf('Generating scenes for the frames of the %2.3f c/deg pattern.\n', stimParams.spatialFrequencyCPD);
 
         [theDriftingGratingSpatialModulationPatterns, spatialPhasesDegs] = ...
             rfMappingStimulusGenerator.driftingGratingFrames(stimParams);
@@ -211,11 +298,18 @@ function [theMidgetRGCMosaicResponses, spatialFrequenciesTested, spatialPhasesDe
                 theDisplay, stimParams, theDriftingGratingSpatialModulationPatterns, ...
                 'validateScenes', false);
    
-    
-        parfor iFrame = 1:numel(theDriftingGratingFrameScenes)
+        % Compute mRGCmosaic responses
+        for iFrame = 1:numel(theDriftingGratingFrameScenes)
             theScene = theDriftingGratingFrameScenes{iFrame};
-            theMidgetRGCMosaicResponses(iFreq, iFrame,:) = theMidgetRGCmosaic.compute(theScene);
+
+            r = theMidgetRGCmosaic.compute(...
+                theScene, ...
+                'nTrials', 1, ...
+                'theNullScene', theNullStimulusScene, ...
+                'normalizeConeResponsesWithRespectToNullScene', true);
+            theMidgetRGCMosaicResponses(iFreq, iFrame,:) = r;
         end
+        
     end
 
 end

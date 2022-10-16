@@ -17,12 +17,4 @@ function [H, spatialPhasesDegs] = driftingGratingFrames(stimParams)
         H(frameIndex,:,:) = cos(a);
     end
 
-    figure(1);
-    for frameIndex = 1:framesNum
-        imagesc(x,y, squeeze(H(frameIndex,:,:)));
-        axis 'image'
-        drawnow
-        pause(0.3);
-    end
-
 end

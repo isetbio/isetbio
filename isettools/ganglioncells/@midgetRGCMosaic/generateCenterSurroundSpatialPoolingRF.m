@@ -17,7 +17,7 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
     obj.rgcRFsurroundConePoolingMatrix = sparse(conesNum, rgcsNum);
   
     for iRGC = 1:rgcsNum
-        fprintf('Computing c/s cone pooling weights for RGC #%d/%d\n', iRGC, rgcsNum);
+        
 
         % Retrieve this cell's center cone indices and weights
         connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
@@ -28,12 +28,18 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
 
         % Retrieve the correct RTVFTobj based on this cells position and
         % #of center cones. For now only checking the centerConesNum
+%         iObj = find(...
+%             (obj.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) & ...  % match the conesNum in the center
+%             (distancesToEccGrid == min(distancesToEccGrid)) ...                     % match to the closest eccGrid position
+%             )
+
         iObj = find(...
-            (obj.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) & ...  % match the conesNum in the center
-            (distancesToEccGrid == min(distancesToEccGrid)) ...                     % match to the closest eccGrid position
+            (obj.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) ...  % match the conesNum in the center
             );
         theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{iObj};
 
+        fprintf('Computing c/s cone pooling weights for RGC %d of %d using the %d RTVFTobj\n', iRGC, rgcsNum, iObj);
+        
         % Extract the retinal cone pooling weights compute function
         theRetinalConePoolingWeightsComputeFunction = theRTVFTobj.rfComputeStruct.modelConstants.weightsComputeFunctionHandle;
     
