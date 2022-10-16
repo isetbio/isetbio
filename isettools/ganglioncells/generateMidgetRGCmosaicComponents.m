@@ -247,7 +247,7 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
         );
 
     ZernikeDataBase = 'Artal2012';
-    subjectRankOrder = 2;
+    subjectRankOrder = 3;
 
     % Struct with the various optics params
     opticsParams = struct(...
@@ -265,7 +265,7 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
     % Extract the cone mosaic from the midgetRGCmosaic
     theConeMosaic = theMidgetRGCmosaic.inputConeMosaic;
 
-    parfor iGridPosition = 1:gridPositionsNum
+    for iGridPosition = 1:gridPositionsNum
         % Copy params structs
         theGridOpticsParams = opticsParams;
         theGridTargetVisualRFDoGparams = targetVisualRFDoGparams;
@@ -286,7 +286,7 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
 
         % Compute the RetinaToVisualFieldTransformer for this grid position
         tic
-        multiStartsNum = 2;
+        multiStartsNum = 16;
         doDryRunFirst = true;
         RTVFTobjList{iGridPosition} = RetinaToVisualFieldTransformer(...
             theConeMosaic, ...
