@@ -41,11 +41,16 @@ classdef midgetRGCMosaic < handle
         chromaticSpatialVarianceTradeoff;
 
         % Computed params
-        % Sparse [conesNum x rgcRFsNum] sparse  connectivity matrix 
+        % Sparse [conesNum x rgcRFsNum]  connectivity matrix 
         % To find which cones are connected to a n rgcRF:
         %  connectivityVector = full(squeeze(rgcRFcenterConeConnectivityMatrix(:, rgcRF)));
         %  inputConeIndices = find(abs(connectivityVector) > 0.0001);
         rgcRFcenterConeConnectivityMatrix;
+
+        % The conePoolingMatrices are sparse [conesNum x rgcRFsNum] matrices 
+        % computed based on the information in theRetinaToVisualFieldTransformerOBJList
+        rgcRFcenterConePoolingMatrix;
+        rgcRFsurroundConePoolingMatrix;
 
         % [n x 2] matrix of rgc rf positions, in microns & degrees
         rgcRFpositionsMicrons;
@@ -142,21 +147,16 @@ classdef midgetRGCMosaic < handle
             end
         end % Constructor
 
-        % Method to wire inputs to the RF surround based on a passed RTVFT
+        % Method to compute the response of the midgetRGCmosaic to a scene
+        [responses, responseTemporalSupport] = compute(obj, theScene, varargin);
+
+        % Method to generate the C/S spatial pooling RF based on a passed RTVFT
         % object(s), which encodes C/S weights to achieve a desired visual STF
-        % for specific optics
-        function wireSurrounds(obj, theRetinaToVisualFieldTransformerOBJList, ...
+        % for specific optics and # of center cones
+        generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTransformerOBJList, ...
             theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
             theVisualSTFSurroundToCenterRcRatioGrid, ...
-            theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid)
-
-            obj.theRetinaToVisualFieldTransformerOBJList = theRetinaToVisualFieldTransformerOBJList;
-            obj.theOpticsPositionGrid = theOpticsPositionGrid;
-            obj.theConesNumPooledByTheRFcenterGrid = theConesNumPooledByTheRFcenterGrid;
-            obj.theVisualSTFSurroundToCenterRcRatioGrid = theVisualSTFSurroundToCenterRcRatioGrid;
-            obj.theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid = theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
-        end
-
+            theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid);
 
         % Method to adjust the midgetRGC RF overlap
         adjustRFoverlap(obj, overlapRatio);
@@ -165,9 +165,6 @@ classdef midgetRGCMosaic < handle
         % the NormalizedNearestNeighborDistances between neighboring pairs of RFs
         % as per Gauthier, Chichilinsky et al (2009)
         [NNNDs, NNNDtuplets, RGCdistances, distancesFromMosaicCenterDegs, targetRGCindices] = analyzeRetinalRFoverlap(obj, varargin);
-
-        % Method to compute the response of the midgetRGCmosaic to an oi
-        [responses, responseTemporalSupport] = compute(obj, oi, varargin);
 
         % Method to visualize aspects of the retinal RFs
         visualizeRetinalRFs(obj, varargin);
