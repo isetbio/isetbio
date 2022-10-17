@@ -305,10 +305,10 @@ end
 function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, testSubjectID, noXTickLabel, noYTickLabel, plotTitle)
     psfZLevels = 0.05:0.1:0.95;
     
-    contourf(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data/maxPSF, psfZLevels);
+    contourf(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.data/maxPSF, psfZLevels);
     hold on;
     midRow = (size(thePSFData.data,1)-1)/2+1;
-    plot(ax, thePSFData.supportXdegs, -maxSpatialSupportDegs*0.95 + 1.95*thePSFData.data(midRow,:)/maxPSF*maxSpatialSupportDegs, 'k-', 'LineWidth', 1.5);
+    plot(ax, thePSFData.psfSupportXdegs, -maxSpatialSupportDegs*0.95 + 1.95*thePSFData.data(midRow,:)/maxPSF*maxSpatialSupportDegs, 'k-', 'LineWidth', 1.5);
     axis(ax,'image'); axis 'xy';
     
     ticks = ticksForSpatialSupport(maxSpatialSupportDegs);

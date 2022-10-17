@@ -24,11 +24,11 @@ function examineMidgetRFcenterSizeVsPSFsize()
     % RGC overlap ratio (0 = no overlap)
     destinationRFoverlapRatio = 0.0;
 
-    includeConeApertureInPSF = ~true; 
+    includeConeApertureInPSF = true; 
 
     % If summarizeData is false, we analyze PSF and midget RGC data for the chosen eccentricities
     % If summarizeData is true, we import analyzed PSF and midget RGC data (across the chosen eccentricities) and plot them
-    summarizeData = true;
+    summarizeData = ~true;
       
 
     % Plot summarized data
@@ -299,8 +299,10 @@ function [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
                
                 meanConePositionDegs = mean(theInputConeMosaic.coneRFpositionsDegs,1);
                 [~,theConeIndex] = min(sum((bsxfun(@minus,theInputConeMosaic.coneRFpositionsDegs,meanConePositionDegs)).^2,2));
-                spatialSupportDegs(:,1) = thePSFData.supportXdegs;
-                spatialSupportDegs(:,2) = thePSFData.supportYdegs;
+                
+                
+                spatialSupportDegs(:,1) = thePSFData.psfSupportXdegs;
+                spatialSupportDegs(:,2) = thePSFData.psfSupportYdegs;
                 theConeCharacteristicRadiusDegs = theInputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
                     theInputConeMosaic.coneApertureDiametersDegs(theConeIndex);
                 theConePositionDegs = theInputConeMosaic.coneRFpositionsDegs(theConeIndex,:)-meanConePositionDegs;
@@ -319,17 +321,17 @@ function [allSubjectPSFcharacteristicRadiiDegs, opticsSubjectRankOrders] = ...
                 if (visualizePSFwithAndWithoutConeAperture)
                     figure(222); clf;
                     subplot(1,3,1);
-                    imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFDataBefore);
+                    imagesc(thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFDataBefore);
                     axis 'image';
                     set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
         
                     subplot(1,3,2);
-                    imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, theConeAperture);
+                    imagesc(thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, theConeAperture);
                     axis 'image';
                     set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
         
                     subplot(1,3,3);
-                    imagesc(thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
+                    imagesc(thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.data);
                     axis 'image';
                     set(gca, 'CLim', [0 1], 'XLim', xLims, 'YLim', yLims);
                     colormap(gray);
@@ -364,19 +366,19 @@ function visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
                               xLims, yLims, xTicks, yTicks, examinedSubjectRankOrder, targetEccDegs)
 
         
-        if (max(abs(thePSFData.supportXdegs)) > max(xLims))
-            xLims = max(abs(thePSFData.supportXdegs))*[-1 1];
+        if (max(abs(thePSFData.psfSupportXdegs)) > max(xLims))
+            xLims = max(abs(thePSFData.psfSupportXdegs))*[-1 1];
         end
         yLims = xLims;
 
         ax = ax1;
-        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
+        imagesc(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.data);
         hold(ax, 'on');
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*dFitStruct.actualPSFProfileX , yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*dFitStruct.actualPSFProfileY, thePSFData.supportYdegs, xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,thePSFData.psfSupportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*dFitStruct.actualPSFProfileX , yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*dFitStruct.actualPSFProfileY, thePSFData.psfSupportYdegs, xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
         set(ax, 'CLim', dFitStruct.maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {},  'FontSize', 14);
@@ -385,13 +387,13 @@ function visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
         grid(ax, 'on');
 
         ax = ax2;
-        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, dFitStruct.psfGaussianFit);
+        imagesc(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, dFitStruct.psfGaussianFit);
         hold(ax, 'on');
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*dFitStruct.fittedPSFEllipsoidProfileX , yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*dFitStruct.fittedPSFEllipsoidProfileY, thePSFData.supportYdegs, xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,thePSFData.psfSupportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*dFitStruct.fittedPSFEllipsoidProfileX , yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*dFitStruct.fittedPSFEllipsoidProfileY, thePSFData.psfSupportYdegs, xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
         set(ax, 'CLim', dFitStruct.maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
@@ -400,13 +402,13 @@ function visualizePSFanalysis(ax1, ax2, ax3, thePSFData, dFitStruct, ...
         grid(ax, 'on');
 
         ax = ax3;
-        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data-dFitStruct.psfGaussianFit);
+        imagesc(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.data-dFitStruct.psfGaussianFit);
         hold(ax, 'on');
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
         plot(ax, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.x, dFitStruct.fittedPSFEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.1*(yLims(2)-yLims(1)) + 0.4*(yLims(2)-yLims(1))*dFitStruct.residualPSFProfileX , yLims(1)+0.1*(yLims(2)-yLims(1)), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-        shadedAreaPlot(ax,xLims(1)+0.1*(xLims(2)-xLims(1))+ 0.4*(xLims(2)-xLims(1))*dFitStruct.residualPSFProfileY, thePSFData.supportYdegs, xLims(1)+0.1*(xLims(2)-xLims(1)), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,thePSFData.psfSupportXdegs,yLims(1)+0.1*(yLims(2)-yLims(1)) + 0.4*(yLims(2)-yLims(1))*dFitStruct.residualPSFProfileX , yLims(1)+0.1*(yLims(2)-yLims(1)), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.1*(xLims(2)-xLims(1))+ 0.4*(xLims(2)-xLims(1))*dFitStruct.residualPSFProfileY, thePSFData.psfSupportYdegs, xLims(1)+0.1*(xLims(2)-xLims(1)), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
         set(ax, 'CLim', dFitStruct.maxPSF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
@@ -474,8 +476,8 @@ end
 
 function dFitStruct = fitPSF(thePSFData)
 
-    spatialSupportDegs(:,1) = thePSFData.supportXdegs;
-    spatialSupportDegs(:,2) = thePSFData.supportYdegs;
+    spatialSupportDegs(:,1) = thePSFData.psfSupportXdegs;
+    spatialSupportDegs(:,2) = thePSFData.psfSupportYdegs;
 
     multiStartsNum = 16;
     theFittedGaussianPSF = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
@@ -549,11 +551,11 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
     thePSFcharacteristicRadiiDegs = dFitStruct.thePSFcharacteristicRadiiDegs;
 
     
-    spatialSupportDegs(:,1) = thePSFData.supportXdegs;
-    spatialSupportDegs(:,2) = thePSFData.supportYdegs;
+    spatialSupportDegs(:,1) = thePSFData.psfSupportXdegs;
+    spatialSupportDegs(:,2) = thePSFData.psfSupportYdegs;
 
-    [~,midRow] = min(abs(thePSFData.supportYdegs));
-    [~,midCol] = min(abs(thePSFData.supportXdegs));
+    [~,midRow] = min(abs(thePSFData.psfSupportYdegs));
+    [~,midCol] = min(abs(thePSFData.psfSupportXdegs));
 
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -645,13 +647,13 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
 
 
         ax = subplot('Position', subplotPosVectors(2,1).v);
-        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, retinalRFcenterConeMap);
+        imagesc(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, retinalRFcenterConeMap);
         hold(ax, 'on');
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius.x, fittedGaussianEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius1.x, fittedGaussianEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius2.x, fittedGaussianEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*fittedGaussianEllipsoidProfileX, yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*fittedGaussianEllipsoidProfileY, thePSFData.supportYdegs,xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,thePSFData.psfSupportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*fittedGaussianEllipsoidProfileX, yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*fittedGaussianEllipsoidProfileY, thePSFData.psfSupportYdegs,xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
         set(ax, 'CLim', maxRF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'FontSize', 14);
@@ -663,13 +665,13 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
         grid(ax, 'on');
 
         ax = subplot('Position', subplotPosVectors(2,2).v);
-        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, retinalRFcenterConeMapGaussianFit);
+        imagesc(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, retinalRFcenterConeMapGaussianFit);
         hold(ax, 'on');
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius.x, fittedGaussianEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius1.x, fittedGaussianEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius2.x, fittedGaussianEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*fittedGaussianEllipsoidProfileX, yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*fittedGaussianEllipsoidProfileY, thePSFData.supportYdegs,xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,thePSFData.psfSupportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*fittedGaussianEllipsoidProfileX, yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*fittedGaussianEllipsoidProfileY, thePSFData.psfSupportYdegs,xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
         set(ax, 'CLim', max(retinalRFcenterConeMapGaussianFit(:))*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'YTickLabel', {}, 'FontSize', 14);
@@ -684,13 +686,13 @@ function  [retinalRFcenterCharacteristicRadiiDegs, thePSFcharacteristicRadiiDegs
         grid(ax, 'on');
 
         ax = subplot('Position', subplotPosVectors(2,3).v);
-        imagesc(ax,thePSFData.supportXdegs, thePSFData.supportYdegs, retinalRFcenterConeMap-retinalRFcenterConeMapGaussianFit);
+        imagesc(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, retinalRFcenterConeMap-retinalRFcenterConeMapGaussianFit);
         hold(ax, 'on');
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius.x, fittedGaussianEllipsoidOutlineCharacteristicRadius.y, 'b-', 'LineWidth', 1.0);
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius1.x, fittedGaussianEllipsoidOutlineCharacteristicRadius1.y, 'k--', 'LineWidth', 1.0);
         plot(ax, fittedGaussianEllipsoidOutlineCharacteristicRadius2.x, fittedGaussianEllipsoidOutlineCharacteristicRadius2.y, 'k--', 'LineWidth', 1.0);
-        shadedAreaPlot(ax,thePSFData.supportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*fittedGaussianEllipsoidProfileX, yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
-        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*fittedGaussianEllipsoidProfileY, thePSFData.supportYdegs,xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,thePSFData.psfSupportXdegs,yLims(1)+0.4*(yLims(2)-yLims(1))*fittedGaussianEllipsoidProfileX, yLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
+        shadedAreaPlot(ax,xLims(1)+0.4*(xLims(2)-xLims(1))*fittedGaussianEllipsoidProfileY, thePSFData.psfSupportYdegs,xLims(1), [0.9 0.9 0.5], [0.5 0.5 0.1], 0.4, 1.0, '--');
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
         set(ax, 'CLim', maxRF*[-1 1], 'XLim', xLims, 'YLim', yLims, 'XTick', xTicks, 'YTick', yTicks, 'YTickLabel', {}, 'FontSize', 14);

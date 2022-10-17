@@ -117,7 +117,10 @@ classdef RetinaToVisualFieldTransformer < handle
 
             % Estimate the characteristic radius of the mean cone at the cone pooling RF position
             %  as projected on to visual space using the computed PSF
-            dStruct = obj.estimateConeCharacteristicRadiusInVisualSpace(obj.opticsParams.positionDegs, obj.simulateCronerKaplanEstimation);
+            dStruct = obj.estimateConeCharacteristicRadiusInVisualSpace(...
+                obj.opticsParams.positionDegs, ...
+                obj.simulateCronerKaplanEstimation, ...
+                targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
     
             if (dStruct.conesNumInRetinalPatch==0)
                 error('No cones in cone mosaic')
@@ -133,7 +136,7 @@ classdef RetinaToVisualFieldTransformer < handle
             % Crop the PSFs to maxSpatialSupportDegs to speed up computations
             obj.cropPSF(maxSpatialSupportDegs);
 
-            % Unit weights for center cones
+            % Unit weights for center cones            
             indicesOfConesPooledByTheRFcenter = dStruct.indicesOfConesSortedWithDistanceToTargetRFposition(1:targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
             weightsOfConesPooledByTheRFcenter = ones(1,numel(indicesOfConesPooledByTheRFcenter));
 
@@ -154,7 +157,8 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to estimate the visually-projectected cone Rc given a target
         % position in the mosaic and corresponding PSF data
-        dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetPositionDegs, simulateCronerKaplanEstimation);
+        dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetPositionDegs, ...
+            simulateCronerKaplanEstimation, neighboringConesNum);
 
     end % Public methods
 

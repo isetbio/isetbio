@@ -2,8 +2,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams)
     
     % Spatial support
-    spatialSupportDegs = [obj.thePSFData.supportXdegs(:) obj.thePSFData.supportYdegs(:)];
-    [Xdegs,Ydegs] = meshgrid(obj.thePSFData.supportXdegs(:), obj.thePSFData.supportYdegs(:));
+    spatialSupportDegs = [obj.thePSFData.spatialSupportForRFmapXdegs(:) obj.thePSFData.spatialSupportForRFmapXdegs(:)];
+    [Xdegs,Ydegs] = meshgrid(obj.thePSFData.spatialSupportForRFmapXdegs(:), obj.thePSFData.spatialSupportForRFmapXdegs(:));
     Rdegs2 = Xdegs.^2+Ydegs.^2;
 
     % Compute the visual RF center and its characteristic radius
@@ -100,9 +100,9 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             %                                        Kc   Ks/KcRatio   narrowToWideFieldVolumeRatio  RwideDegs                         RnarrowToRwideRatio
             retinalConePoolingParams.names =         {'Kc', 'KsKcRatio', 'VnVwRatio',               'RwDegs',                        'RnRwRatio'};
             retinalConePoolingParams.scaling =       {'log', 'log',      'log',                        'linear',                           'log'};
-            retinalConePoolingParams.initialValues = [1      0.05       mean(NWvolumeRatios)         anatomicalRFcenterCharacteristicRadiusDegs*40       mean(RnarrowToRwideRatios)];
+            retinalConePoolingParams.initialValues = [1      0.1       mean(NWvolumeRatios)         anatomicalRFcenterCharacteristicRadiusDegs*100       mean(RnarrowToRwideRatios)];
             retinalConePoolingParams.lowerBounds   = [1e-1   1e-6       min(NWvolumeRatios)          anatomicalRFcenterCharacteristicRadiusDegs          min(RnarrowToRwideRatios)];
-            retinalConePoolingParams.upperBounds   = [10     1e-1         max(NWvolumeRatios)          anatomicalRFcenterCharacteristicRadiusDegs*100      max(RnarrowToRwideRatios)];
+            retinalConePoolingParams.upperBounds   = [10     1e-0         max(NWvolumeRatios)          anatomicalRFcenterCharacteristicRadiusDegs*500      max(RnarrowToRwideRatios)];
 
             if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'meanVnVwRatio')))
                 idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
@@ -228,7 +228,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             subplot(1,2,1);
             plot(spatialSupportDegs(:,1), theTargetRFmeasurement, 'k-');
             hold on;
-             plot(spatialSupportDegs(:,1), theInitialFittedRFmeasurement, 'r-');
+            plot(spatialSupportDegs(:,1), theInitialFittedRFmeasurement, 'r-');
             xlabel('space (degs)');
             
             xlabel('space (degs)');
@@ -243,7 +243,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             set(gca, 'XScale', 'log');
              legend({'target RF', 'initial RF'})
         end
-        pause(1)
+        pause(0.5);
 
     end
 

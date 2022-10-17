@@ -10,7 +10,7 @@ function generateMidgetRGCmosaicComponents
         };
 
     % Operation to compute
-    operations = {'visualizeResponses'};
+    operations = operations(13);
     %coneContrasts = [0.12 -0.12 0];
     coneContrasts = [1 1 0];
 
@@ -30,7 +30,7 @@ function generateMidgetRGCmosaicComponents
         -25 2.5 ...
        ];
 
-    for iEcc = 3:3 % 3:size(eccSizeDegsExamined,1)
+    for iEcc = size(eccSizeDegsExamined,1) %3:3 % 3:size(eccSizeDegsExamined,1)
         fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
         sizeDegs = eccSizeDegsExamined(iEcc,2) * [1 1];
@@ -378,7 +378,7 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
         'subjectRankingEye', 'right eye', ...
         'pupilDiameterMM', 3.0, ...
         'wavefrontSpatialSamples', 701, ...
-        'psfUpsampleFactor', 2 ...
+        'psfUpsampleFactor', [] ...
         );
 
     % Extract the cone mosaic from the midgetRGCmosaic
@@ -393,6 +393,13 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
 
         % Update opticsParams position for this grid position
         theGridOpticsParams.positionDegs = eccDegsGrid(iGridPosition,:);
+
+        if (theGridOpticsParams.positionDegs <= 3)
+            theGridOpticsParams.psfUpsampleFactor = 2;
+        else
+            theGridOpticsParams.psfUpsampleFactor = 1;
+        end
+
 
         % Update targetVisualRFDoGparams conesNum for this grid position
         theGridTargetVisualRFDoGparams.conesNumPooledByTheRFcenter = conesNumPooledByTheRFcenterGrid(iGridPosition);

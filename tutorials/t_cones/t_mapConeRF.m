@@ -53,7 +53,7 @@ function t_mapConeRF
             opticsParams, theConeMosaic, theConeMosaic.wave);
 
     % Generate a presentation display with a desired resolution
-    retinalImageResolutionDegs = thePSFData.supportXdegs(2)-thePSFData.supportXdegs(1);
+    retinalImageResolutionDegs = thePSFData.psfSupportXdegs(2)-thePSFData.psfSupportXdegs(1);
     viewingDistanceMeters = 4;
     theDisplay = rfMappingStimulusGenerator.presentationDisplay(...
         theConeMosaic.wave, retinalImageResolutionDegs, viewingDistanceMeters);
@@ -77,7 +77,7 @@ function t_mapConeRF
     HartleySpatialModulationPatterns = ...
         rfMappingStimulusGenerator.HartleyModulationPatterns(...
         omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs);
-
+    
 
     % Generate scenes for the Hartley patterns
     [theRFMappingStimulusScenes, theNullStimulusScene, spatialSupportDegs] = rfMappingStimulusGenerator.generateStimulusMappingFramesOnPresentationDisplay(...
@@ -92,6 +92,7 @@ function t_mapConeRF
     % Preallocate memory
     conesNum = numel(theConeMosaic.coneTypes);
     nStim = numel(theRFMappingStimulusScenes);
+    pixelsNum = size(HartleySpatialModulationPatterns,2);
     theRFmaps = zeros(conesNum, pixelsNum, pixelsNum);
     theConeMosaicExcitation = zeros(nStim, conesNum);
 
@@ -166,10 +167,10 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
 
 
     ax = subplot(2,3,2);
-    imagesc(ax, thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
+    imagesc(ax, thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.data);
     hold(ax, 'on');
-    plot(ax, [thePSFData.supportXdegs(1) thePSFData.supportXdegs(end)], [0 0], 'g-');
-    plot(ax, [0 0], [thePSFData.supportYdegs(1) thePSFData.supportYdegs(end)], 'g-');
+    plot(ax, [thePSFData.psfSupportXdegs(1) thePSFData.psfSupportXdegs(end)], [0 0], 'g-');
+    plot(ax, [0 0], [thePSFData.psfSupportYdegs(1) thePSFData.psfSupportYdegs(end)], 'g-');
     hold(ax, 'off');
     axis(ax, 'image');
     set(ax, 'XLim', xLims-mosaicCenterPositionDegs(1), 'YLim', yLims-mosaicCenterPositionDegs(2), ...

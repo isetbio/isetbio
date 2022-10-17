@@ -46,7 +46,7 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         % cone aperture map)
         visualRFcenterConeMapProfile = sum(visualRFcenterConeMap,1);
         theFittedGaussianLineWeightingFunction = RetinaToVisualFieldTransformer.fitGaussianLineWeightingFunction(...
-            obj.thePSFData.supportXdegs, visualRFcenterConeMapProfile);
+            obj.thePSFData.spatialSupportForRFmapXdegs, visualRFcenterConeMapProfile);
 
         % Return the characteristic radius in degrees
         visualRFcenterCharacteristicRadiusDegs = theFittedGaussianLineWeightingFunction.characteristicRadius;
@@ -100,7 +100,6 @@ function [retinalRFcenterConeMap, anatomicalRFcenterCharacteristicRadiusDegs] = 
 
     % The sqrt(product) of the 2 radii
     anatomicalRFcenterCharacteristicRadiusDegs = sqrt(prod(theFittedGaussian.characteristicRadii));
-
 end
 
 

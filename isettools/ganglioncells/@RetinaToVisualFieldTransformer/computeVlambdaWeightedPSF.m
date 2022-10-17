@@ -89,8 +89,8 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, theOI] = compute
     thePSFData.data = thePSFData.data / sum(thePSFData.data(:));
 
     % Specify support in degs instead of the default arc min
-    thePSFData.supportXdegs = thePSFData.supportX/60;
-    thePSFData.supportYdegs = thePSFData.supportY/60;
+    thePSFData.psfSupportXdegs = thePSFData.supportX/60;
+    thePSFData.psfSupportYdegs = thePSFData.supportY/60;
 
     % Remove irrelevant fields
     thePSFData = rmfield(thePSFData, 'supportWavelength');
