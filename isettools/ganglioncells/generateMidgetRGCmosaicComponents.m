@@ -10,7 +10,7 @@ function generateMidgetRGCmosaicComponents
         };
 
     % Operation to compute
-    operations = operations(13);
+    operations = operations(1:4);
     %coneContrasts = [0.12 -0.12 0];
     coneContrasts = [1 1 0];
 
@@ -30,18 +30,20 @@ function generateMidgetRGCmosaicComponents
         -25 2.5 ...
        ];
 
-    for iEcc = size(eccSizeDegsExamined,1) %3:3 % 3:size(eccSizeDegsExamined,1)
+    dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio/midgetRGCMosaics';
+
+    for iEcc = size(eccSizeDegsExamined,1):-1:1
         fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
         sizeDegs = eccSizeDegsExamined(iEcc,2) * [1 1];
-        doIt(operations, eccDegs, sizeDegs, coneContrasts);
+        doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir);
     end
 
 end
 
-function doIt(operations, eccDegs, sizeDegs, coneContrasts)
+function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
 
-    fName = sprintf('mRGCmosaicComponents_eccDegs_%2.2f.mat', eccDegs(1));
+    fName = fullfile(dropboxDir, sprintf('mRGCmosaicComponents_eccDegs_%2.2f.mat', eccDegs(1)));
 
     for iOp = 1:numel(operations)
 
