@@ -29,10 +29,21 @@ function generateMidgetRGCmosaicComponents
         -20 2.2; ...
         -25 2.5 ...
        ];
+    
+    % Get dropboxDir location
+    computerInfo = GetComputerInfo();
+    switch (computerInfo.localHostName)
+        case 'Ithaka'
+            dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
+        otherwise
+            if (contains(computerInfo.networkName, 'leviathan'))
+                dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio/midgetRGCMosaics';
+            else
+                error('Could not establish dropbox location')
+            end
+    end
 
-    dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio/midgetRGCMosaics';
-
-    for iEcc = size(eccSizeDegsExamined,1):-1:1
+    for iEcc = 1:3 % size(eccSizeDegsExamined,1):-1:1
         fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
         sizeDegs = eccSizeDegsExamined(iEcc,2) * [1 1];
