@@ -10,7 +10,7 @@ function generateMidgetRGCmosaicComponents
         };
 
     % Operation to compute
-    operations = {'computeSTF'};
+    operations = {'visualizeResponses'};
     %coneContrasts = [0.12 -0.12 0];
     coneContrasts = [1 1 0];
 
@@ -126,7 +126,9 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts)
                     computeTheSTF(theMidgetRGCmosaic, coneContrasts);
                 
                 % Save the responses to a separate file
-                fNameResponses = strrep(fName, '.mat', '_Responses.mat');
+                responsesPostfix = sprintf('_Responses_%2.2f_%2.2f_%2.2f.mat', ...
+                    coneContrasts(1), coneContrasts(2), coneContrasts(3));
+                fNameResponses = strrep(fName, '.mat', responsesPostfix);
                 save(fNameResponses, ...
                     'theMidgetRGCMosaicResponses', ...
                     'spatialFrequenciesTested', ...
@@ -142,7 +144,9 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts)
                 RTVFTobjList{1}.targetVisualRFDoGparams
                 
                 % Load the responses to a separate file
-                fNameResponses = strrep(fName, '.mat', '_Responses.mat');
+                responsesPostfix = sprintf('_Responses_%2.2f_%2.2f_%2.2f.mat', ...
+                    coneContrasts(1), coneContrasts(2), coneContrasts(3));
+                fNameResponses = strrep(fName, '.mat', responsesPostfix);
                 load(fNameResponses, ...
                     'theMidgetRGCMosaicResponses', ...
                     'spatialFrequenciesTested', ...
@@ -155,6 +159,7 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts)
                 ecc = sum((bsxfun(@minus, theMidgetRGCmosaic.rgcRFpositionsDegs, mRGCmosaicCenterDegs)).^2,2);
                 [~,sortedRGCindices] = sort(ecc, 'ascend');
 
+                
                 hFig = figure(66); clf;
                 set(hFig, 'Position', [90 10 855 990], 'Color', [1 1 1]);
 
@@ -168,6 +173,17 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts)
                 for iii = 1:numel(sortedRGCindices)
                     iRGC = sortedRGCindices(iii);
                     
+                    connectivityVector = full(squeeze(theMidgetRGCmosaic.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
+                    indicesOfCenterCones = find(abs(connectivityVector) > 0.0001);
+                    
+                    % Retrieve the correct RTVFTobj based on this cells position and
+                    % #of center cones. For now only checking the centerConesNum
+                    iObj = find(...
+                        (theMidgetRGCmosaic.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) ...  % match the conesNum in the center
+                    );
+                    theRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{iObj};
+
+
                     maxResponse = max(max(abs(squeeze(theMidgetRGCMosaicResponses(:, :, iRGC)))));
                     minResponse = -maxResponse;
                     meanResponse = 0;
@@ -213,9 +229,9 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts)
                     normalizedTargetSTF = normalizedTargetSTF / normVal;
 
                     % Plot the target STF
-                    plot(ax, RTVFTobjList{1}.rfComputeStruct.theSTF.support, normalizedTargetSTF, 'r-', 'Color', [1 0.5 0.5], 'LineWidth', 3.0);
+                    plot(ax, theRTVFTobj.rfComputeStruct.theSTF.support, normalizedTargetSTF, 'r-', 'Color', [1 0.5 0.5], 'LineWidth', 3.0);
                     hold(ax, 'on')
-                    p1 = plot(ax, RTVFTobjList{1}.rfComputeStruct.theSTF.support, normalizedTargetSTF, 'r-', 'LineWidth', 1.5);
+                    p1 = plot(ax, theRTVFTobj.rfComputeStruct.theSTF.support, normalizedTargetSTF, 'r-', 'LineWidth', 1.5);
                     
                     % Plot the measured STF
                     p2 = plot(ax,spatialFrequenciesTested, theResponseModulation/max(theResponseModulation), 'ko', ...
