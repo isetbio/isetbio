@@ -3,6 +3,16 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
             theVisualSTFSurroundToCenterRcRatioGrid, ...
             theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid)
 
+    % Eliminate some fields from theRetinaToVisualFieldTransformerOBJList
+    % which are part of the obj, such as the inputConeMosaic, and the
+    % PSFData, which are not needed from now on
+    for iRTVobj = 1:numel()
+        theRTVobj = theRetinaToVisualFieldTransformerOBJList{iRTVobj};
+        theRTVobj = rmfield(theRTVobj, 'theConeMosaic');
+        theRTVobj = rmfield(theRTVobj, 'thePSFData');
+        theRetinaToVisualFieldTransformerOBJList{iRTVobj} = theRTVobj;
+    end
+
     obj.theRetinaToVisualFieldTransformerOBJList = theRetinaToVisualFieldTransformerOBJList;
     obj.theOpticsPositionGrid = theOpticsPositionGrid;
     obj.theConesNumPooledByTheRFcenterGrid = theConesNumPooledByTheRFcenterGrid;
@@ -18,7 +28,6 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
   
     for iRGC = 1:rgcsNum
         
-
         % Retrieve this cell's center cone indices and weights
         connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
         indicesOfCenterCones = find(abs(connectivityVector) > 0.0001);

@@ -117,7 +117,15 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts)
                         eccDegsGrid, conesNumPooledByTheRFcenterGrid, ...
                         surroundToCenterRcRatioGrid, surroundToCenterIntegratedSensitivityRatioGrid);
 
-                    save(fName, 'theMidgetRGCmosaic', '-append');
+                    % Save the updated midgetRGCmosaic which now includes
+                    % the computed RTVFTobjList
+                    save(fName, ...
+                        'theMidgetRGCmosaic', ...
+                        'eccDegsGrid', ...
+                        'conesNumPooledByTheRFcenterGrid', ...
+                        'surroundToCenterRcRatioGrid', ...
+                        'surroundToCenterIntegratedSensitivityRatioGrid', ...
+                        '-v7.3');
 
             case 'computeSTF'
                 load(fName, 'theMidgetRGCmosaic');
@@ -377,7 +385,7 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
         'analyzedEye', 'right eye', ...
         'subjectRankingEye', 'right eye', ...
         'pupilDiameterMM', 3.0, ...
-        'wavefrontSpatialSamples', 701, ...
+        'wavefrontSpatialSamples', [], ...
         'psfUpsampleFactor', [] ...
         );
 
@@ -394,12 +402,21 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
         % Update opticsParams position for this grid position
         theGridOpticsParams.positionDegs = eccDegsGrid(iGridPosition,:);
 
-        if (theGridOpticsParams.positionDegs <= 3)
+        % Update psf upsample and spatial extend based on the eccentricity
+        if (theGridOpticsParams.positionDegs <= 1)
+            % Cones are tiny, so upsample the spatial resolution
             theGridOpticsParams.psfUpsampleFactor = 2;
+            theGridOpticsParams.wavefrontSpatialSamples = 301;
+        elseif (theGridOpticsParams.positionDegs <= 8)
+            theGridOpticsParams.psfUpsampleFactor = 1;
+            theGridOpticsParams.wavefrontSpatialSamples = 401;
+        elseif (theGridOpticsParams.positionDegs <= 14)
+            theGridOpticsParams.psfUpsampleFactor = 1;
+            theGridOpticsParams.wavefrontSpatialSamples = 601;   
         else
             theGridOpticsParams.psfUpsampleFactor = 1;
+            theGridOpticsParams.wavefrontSpatialSamples = 801;
         end
-
 
         % Update targetVisualRFDoGparams conesNum for this grid position
         theGridTargetVisualRFDoGparams.conesNumPooledByTheRFcenter = conesNumPooledByTheRFcenterGrid(iGridPosition);
