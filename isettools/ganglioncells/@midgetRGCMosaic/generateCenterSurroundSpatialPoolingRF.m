@@ -4,12 +4,11 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
             theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid)
 
     % Eliminate some fields from theRetinaToVisualFieldTransformerOBJList
-    % which are part of the obj, such as the inputConeMosaic, and the
-    % PSFData, which are not needed from now on
+    % which are part of the obj, such as the inputConeMosaic,
+    % which is stored in the midgetRGCMosaic object
     for iRTVobj = 1:numel()
         theRTVobj = theRetinaToVisualFieldTransformerOBJList{iRTVobj};
         theRTVobj = rmfield(theRTVobj, 'theConeMosaic');
-        theRTVobj = rmfield(theRTVobj, 'thePSFData');
         theRetinaToVisualFieldTransformerOBJList{iRTVobj} = theRTVobj;
     end
 
