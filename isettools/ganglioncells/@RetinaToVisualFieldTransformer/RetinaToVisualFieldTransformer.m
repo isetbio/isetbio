@@ -36,9 +36,6 @@ classdef RetinaToVisualFieldTransformer < handle
        % The computed (vLambda weighted, or not) PSFs
        thePSFData;
 
-       % The full optics
-       theOI;
-
        % # of multi-starts
        multiStartsNum;
 
@@ -204,7 +201,7 @@ classdef RetinaToVisualFieldTransformer < handle
         visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeAperture(...
                  anatomicalConeCharacteristicRadiusDegs, thePSFData, simulateCronerKaplanEstimation, hFig);
 
-        [thePSFData, testSubjectID, subtractCentralRefraction, theOI] = computeVlambdaWeightedPSF(...
+        [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams] = computeVlambdaWeightedPSF(...
             opticsParams, theConeMosaic, psfWavelengthSupport);
 
         % visual RF model: arbitrary shape (fixed) RF center and Gaussian surround

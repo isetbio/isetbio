@@ -11,9 +11,13 @@ function generateMidgetRGCmosaicComponents
 
     % Operation to compute
     operations = operations(1:4);
+    % L-M gratings
     %coneContrasts = [0.12 -0.12 0];
+
+    % L+M gratings
     coneContrasts = [1 1 0];
 
+    % Temporal retina (negative x-coords)
     eccSizeDegsExamined = [...
          0  0.5; ...
         -1  0.5; ...
@@ -45,7 +49,7 @@ function generateMidgetRGCmosaicComponents
             end
     end
 
-    for iEcc = 1:3 % size(eccSizeDegsExamined,1):-1:1
+    for iEcc = 3:size(eccSizeDegsExamined,1)
         fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
         sizeDegs = eccSizeDegsExamined(iEcc,2) * [1 1];
@@ -127,10 +131,13 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                     'surroundToCenterRcRatioGrid', ...
                     'surroundToCenterIntegratedSensitivityRatioGrid');
 
-                    % Generate the C/S spatial RF
+                    % Generate C/S spatial RFs for all cells in the
+                    % midgetRGCmosaic
                     theMidgetRGCmosaic.generateCenterSurroundSpatialPoolingRF(RTVFTobjList, ...
                         eccDegsGrid, conesNumPooledByTheRFcenterGrid, ...
                         surroundToCenterRcRatioGrid, surroundToCenterIntegratedSensitivityRatioGrid);
+
+                    clear 'RTVFTobjList';
 
                     % Save the updated midgetRGCmosaic which now includes
                     % the computed RTVFTobjList
@@ -160,11 +167,7 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                     '-v7.3');
 
             case 'visualizeResponses'
-                load(fName, 'theMidgetRGCmosaic', 'RTVFTobjList');
-                RTVFTobjList{1}
-                RTVFTobjList{1}.rfComputeStruct
-                
-                RTVFTobjList{1}.targetVisualRFDoGparams
+                load(fName, 'theMidgetRGCmosaic');
                 
                 % Load the responses to a separate file
                 responsesPostfix = sprintf('_Responses_%2.2f_%2.2f_%2.2f.mat', ...
@@ -247,24 +250,32 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
 
                     % Visualize the computed STF
                     ax = subplot(numel(spatialFrequenciesTested),2, ((6:numel(spatialFrequenciesTested))-1)*2+2);
-                    normalizedTargetSTF = RTVFTobjList{1}.rfComputeStruct.theSTF.target;
+                    
+                    % The target STF
+                    normalizedTargetSTF = theRTVFTobj.rfComputeStruct.theSTF.target;
                     normVal = max(normalizedTargetSTF);
-                    normalizedTargetSTF = normalizedTargetSTF / normVal;
+                    normalizedTargetSTF1 = normalizedTargetSTF / normVal;
+
+                    % The STF achieved by the RTVT - this is what the cone pooling weights are computed from
+                    normalizedTargetSTF = theRTVFTobj.rfComputeStruct.theSTF.fitted;
+                    normVal = max(normalizedTargetSTF);
+                    normalizedTargetSTF2 = normalizedTargetSTF / normVal;
+                    
 
                     % Plot the target STF
-                    plot(ax, theRTVFTobj.rfComputeStruct.theSTF.support, normalizedTargetSTF, 'r-', 'Color', [1 0.5 0.5], 'LineWidth', 3.0);
+                    p1 = plot(ax, theRTVFTobj.rfComputeStruct.theSTF.support, normalizedTargetSTF1, 'r-', 'Color', [1 0.5 0.5], 'LineWidth', 2.0);
                     hold(ax, 'on')
-                    p1 = plot(ax, theRTVFTobj.rfComputeStruct.theSTF.support, normalizedTargetSTF, 'r-', 'LineWidth', 1.5);
+                    p2 = plot(ax, theRTVFTobj.rfComputeStruct.theSTF.support, normalizedTargetSTF2, 'r--', 'LineWidth', 2.0);
                     
                     % Plot the measured STF
-                    p2 = plot(ax,spatialFrequenciesTested, theResponseModulation/max(theResponseModulation), 'ko', ...
+                    p3 = plot(ax,spatialFrequenciesTested, theResponseModulation/max(theResponseModulation), 'ko', ...
                         'MarkerSize', 14, 'MarkerFaceColor', [0.2 0.9 0.9], 'MarkerEdgeColor', [0 0.4 1], ...
                         'LineWidth', 1.0);
 
                     hold(ax, 'on');
 
                     hold(ax, 'off');
-                    legend([p1, p2], {'target', 'measured'}, 'Location', 'SouthWest');
+                    legend([p1, p2, p3], {'target', 'fitted', 'measured'}, 'Location', 'SouthWest');
                     title(ax, sprintf('stim LMS contrast = < %2.1f, %2.1f, %2.1f >', coneContrasts(1), coneContrasts(2), coneContrasts(3)));
                     set(ax, 'XLim', [0.3 70], 'XTick', [0.1 0.3 1 3 10 30 100], 'YLim', [0 1.02], 'YTick', 0:0.1:1.0);
                     xlabel(ax, 'spatial frequency (c/deg)');
@@ -444,8 +455,15 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
 
         % Compute the RetinaToVisualFieldTransformer for this grid position
         tic
-        multiStartsNum = 16;
+        
+        % Select from:
+        % - 1 (Single start run, fastest results), 
+        % - some number (Multi-start), or 
+        % - inf (Global search)
+
+        multiStartsNum = 4;  
         doDryRunFirst = true;
+
         RTVFTobjList{iGridPosition} = RetinaToVisualFieldTransformer(...
             theConeMosaic, ...
             theGridOpticsParams, theGridTargetVisualRFDoGparams, ...

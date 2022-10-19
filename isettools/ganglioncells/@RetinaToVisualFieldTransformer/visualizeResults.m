@@ -249,7 +249,6 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     ax = subplot('Position', subplotPosVectors(3,1).v);
     plotRetinalSurroundModelParametersAndRanges(ax, ...
        obj.rfComputeStruct.retinalConePoolingParams, ...
-       obj.rfComputeStruct.allSolutions, ...
        obj.targetVisualRFDoGparams.retinalConePoolingModel);
 
 end
@@ -355,7 +354,7 @@ function plotRetinalSurroundModel(ax, rfSupportX, maxSpatialSupportDegs)
 end
 
 function plotRetinalSurroundModelParametersAndRanges(ax, ...
-    retinalConePoolingParams, allSolutions, retinalConePoolingModel)
+    retinalConePoolingParams, retinalConePoolingModel)
 
     xTicks = 1:numel(retinalConePoolingParams.names);
     xTickLabels = retinalConePoolingParams.names;

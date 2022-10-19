@@ -1,6 +1,7 @@
 function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter, ...
     weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams)
     
+
     % Spatial support
     spatialSupportDegs = [obj.thePSFData.spatialSupportForRFmapXdegs(:) obj.thePSFData.spatialSupportForRFmapXdegs(:)];
     [Xdegs,Ydegs] = meshgrid(obj.thePSFData.spatialSupportForRFmapXdegs(:), obj.thePSFData.spatialSupportForRFmapXdegs(:));
@@ -94,11 +95,11 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             NWvolumeRatios        = [1.0     0.8     0.3     0.2];
 
             %                                        Kc   Ks/KcRatio   narrowToWideFieldVolumeRatio  RwideDegs                         RnarrowToRwideRatio
-            retinalConePoolingParams.names =         {'Kc', 'KsKcRatio', 'VnVwRatio',               'RwDegs',                        'RnRwRatio'};
-            retinalConePoolingParams.scaling =       {'log', 'log',      'log',                        'linear',                           'log'};
-            retinalConePoolingParams.initialValues = [1      0.1       mean(NWvolumeRatios)         anatomicalRFcenterCharacteristicRadiusDegs*100       mean(RnarrowToRwideRatios)];
-            retinalConePoolingParams.lowerBounds   = [1e-1   1e-6       min(NWvolumeRatios)          anatomicalRFcenterCharacteristicRadiusDegs          min(RnarrowToRwideRatios)];
-            retinalConePoolingParams.upperBounds   = [10     1e-0         max(NWvolumeRatios)          anatomicalRFcenterCharacteristicRadiusDegs*500      max(RnarrowToRwideRatios)];
+            retinalConePoolingParams.names =         {'Kc', 'KsKcRatio', 'VnVwRatio',                'RwDegs',                        'RnRwRatio'};
+            retinalConePoolingParams.scaling =       {'log', 'log',      'log',                      'linear',                           'log'};
+            retinalConePoolingParams.initialValues = [1      0.1          mean(NWvolumeRatios)       anatomicalRFcenterCharacteristicRadiusDegs*100      mean(RnarrowToRwideRatios)];
+            retinalConePoolingParams.lowerBounds   = [0.9      1e-3         min(NWvolumeRatios)        anatomicalRFcenterCharacteristicRadiusDegs          min(RnarrowToRwideRatios)];
+            retinalConePoolingParams.upperBounds   = [10     1e-0         max(NWvolumeRatios)        anatomicalRFcenterCharacteristicRadiusDegs*500      max(RnarrowToRwideRatios)];
 
             if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'meanVnVwRatio')))
                 idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
@@ -199,121 +200,138 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     modelConstants.simulateCronerKaplanEstimation = obj.simulateCronerKaplanEstimation;
     if (modelConstants.simulateCronerKaplanEstimation)
         theTargetRFmeasurement = sum(targetVisualRFmap,1);
-        [stfSupport, theTargetSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+        [stfSupportCPD, theTargetSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
             modelConstants.spatialSupportDegs(:,1),theTargetRFmeasurement);
     else
         theTargetRFmeasurement = targetVisualRFmap(:);
     end
 
     
-
     % Do a dry run to make sure all components are running first
-    if (obj.doDryRunFirst)
-        theInitialFittedVisualRFmap = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...
-            modelConstants, retinalConePoolingParams.initialValues);
-        visualizeRFs(55, spatialSupportDegs, targetVisualRFmap, theInitialFittedVisualRFmap, {'target RF',  'initial fitted RF'});
-        
-        if (modelConstants.simulateCronerKaplanEstimation)
+    theInitialFittedVisualRFmap = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...
+        modelConstants, retinalConePoolingParams.initialValues);
+    visualizeRFs(54, spatialSupportDegs, targetVisualRFmap, theInitialFittedVisualRFmap, {'target RF',  'initial fitted RF'});
 
-            theInitialFittedRFmeasurement = sum(theInitialFittedVisualRFmap,1);
-            [~, theInitialFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
-                    modelConstants.spatialSupportDegs(:,1),theInitialFittedRFmeasurement);
+    if (modelConstants.simulateCronerKaplanEstimation)
+        theInitialFittedRFmeasurement = sum(theInitialFittedVisualRFmap,1);
+        [~, theInitialFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+                modelConstants.spatialSupportDegs(:,1),theInitialFittedRFmeasurement);
 
-            hFig = figure(57); clf;
-            set(hFig, 'Name', 'DryRun');
-            subplot(1,2,1);
-            plot(spatialSupportDegs(:,1), theTargetRFmeasurement, 'k-');
-            hold on;
-            plot(spatialSupportDegs(:,1), theInitialFittedRFmeasurement, 'r-');
-            xlabel('space (degs)');
-            
-            xlabel('space (degs)');
-            legend({'target RF', 'initial RF'})
-
-            subplot(1,2,2);
-            plot(stfSupport, theTargetSTF, 'k-');
-            hold on;
-            plot(stfSupport, theInitialFittedSTF, 'r-');
-
-            xlabel('spatial frequency (c/deg)');
-            set(gca, 'XScale', 'log');
-             legend({'target RF', 'initial RF'})
-        end
-        pause(0.5);
-
+        displaySpatialProfileAndSTF(57, spatialSupportDegs, stfSupportCPD, ...
+            theTargetRFmeasurement, theInitialFittedRFmeasurement, ...
+            theTargetSTF, theInitialFittedSTF, 'initial');
     end
+
+    % Run the single-start fmincon
+    options = optimoptions(...
+                'fmincon',...
+                'Display','iter',...
+                'Algorithm','interior-point', ...
+                'GradObj', 'off', ...
+                'DerivativeCheck', 'off', ...
+                'MaxFunEvals', 10^5, ...
+                'MaxIter', 256 ...
+     );
 
     if (obj.multiStartsNum == 1)
-        % Local search
-        retinalConePoolingParams.finalValues = lsqcurvefit(RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling, ...
-            retinalConePoolingParams.initialValues, ...
-            modelConstants, targetVisualRFmap, ...
-            pretinalConePoolingParams.lowerBounds,...
-            pretinalConePoolingParams.upperBounds);
-    else
-        % Get ready to fit: options
-        options = optimset(...
-            'Display', 'off', ...
-            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
-            'GradObj', 'off', ...
-            'DerivativeCheck', 'off', ...
-            'MaxFunEvals', 10^5, ...
-            'MaxIter', 10^3);
-
-        % Multi-start
-        problem = createOptimProblem('fmincon',...
-          'objective', @matchedVisualRFobjective, ...
-          'x0', retinalConePoolingParams.initialValues, ...
-          'lb', retinalConePoolingParams.lowerBounds, ...
-          'ub', retinalConePoolingParams.upperBounds, ...
-          'options', options...
-          );
-
-        % Generate multi-start problem
-        ms = MultiStart(...
-          'Display', 'off', ...
-          'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
-          'UseParallel', true);
-
-        % Run the multi-start to obtain the optimal retinalRFparamsVector
-        [retinalConePoolingParams.finalValues, ~, ~, ~, allMins] = run(ms, problem, obj.multiStartsNum);
-        allMins
-        allMins(1).X
-        allMins(1).X0
+         problem = createOptimProblem('fmincon',...
+              'objective', @matchedVisualRFobjective, ...
+              'x0', retinalConePoolingParams.initialValues, ...
+              'lb', retinalConePoolingParams.lowerBounds, ...
+              'ub', retinalConePoolingParams.upperBounds, ...
+              'options', options...
+              );
+        
+        retinalConePoolingParams.finalValues = fmincon(problem);
+    
+    
+        % Compute the fitted visual RF
+        [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = ...
+            RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, retinalConePoolingParams.finalValues);
+    
+        if (modelConstants.simulateCronerKaplanEstimation)
+            theFittedRFmeasurement = sum(theFittedVisualRF,1);
+            [~, theFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+                     modelConstants.spatialSupportDegs(:,1),theFittedRFmeasurement);
+    
+            displaySpatialProfileAndSTF(57, spatialSupportDegs, stfSupportCPD, ...
+                theTargetRFmeasurement, theFittedRFmeasurement, ...
+                theTargetSTF, theFittedSTF, 'fitted (single run)');
+        end
     end
 
-    % Gain of retinal cone pooling params must be 1
+
+    if (obj.multiStartsNum ~= 1)
+
+        options.Display = 'final-detailed';
+        % Create problem structure
+        problem = createOptimProblem('fmincon',...
+              'objective', @matchedVisualRFobjective, ...
+              'x0', retinalConePoolingParams.initialValues, ...
+              'lb', retinalConePoolingParams.lowerBounds, ...
+              'ub', retinalConePoolingParams.upperBounds, ...
+              'options', options...
+              );
+
+        if (obj.multiStartsNum > 1) && (~isinf(obj.multiStartsNum))
+            % Generate multi-start problem
+            ms = MultiStart(...
+              'Display', 'final', ...
+              'StartPointsToRun','bounds', ...  % run only initial points that are feasible with respect to bounds
+              'UseParallel', false);
     
+            % Run the multi-start solver
+            [retinalConePoolingParams.finalValues, ~, ~, ~, allMins] = run(ms, problem, obj.multiStartsNum);
+        
+        elseif (isinf(obj.multiStartsNum))
+            % Global solver
+            gs = GlobalSearch(...
+                'Display', 'final', ...
+                'NumStageOnePoints', 500, ...
+                'NumTrialPoints', 2500, ...
+                'StartPointsToRun','bounds' ...  % run only initial points that are feasible with respect to bounds
+                );
+
+            % Run the global search solver
+            retinalConePoolingParams.finalValues = run(gs,problem);
+        end
+
+        % Compute the fitted visual RF
+        [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = ...
+            RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, retinalConePoolingParams.finalValues);
     
+     
+        if (modelConstants.simulateCronerKaplanEstimation)
+            theFittedRFmeasurement = sum(theFittedVisualRF,1);
+            [~, theFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+                     modelConstants.spatialSupportDegs(:,1),theFittedRFmeasurement);
+    
+            displaySpatialProfileAndSTF(57, spatialSupportDegs, stfSupportCPD, ...
+                theTargetRFmeasurement, theFittedRFmeasurement, ...
+                theTargetSTF, theFittedSTF, 'fitted (multi-run)');
+        end
+    end %(obj.multiStartsNum ~= 1)
+
+
     % Visualize the fitted params
     RetinaToVisualFieldTransformer.visualizeFittedParamValues(retinalConePoolingParams);
 
-    % Compute the fitted visual RF
-    [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = ...
-        RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, retinalConePoolingParams.finalValues);
-
-
-    if (modelConstants.simulateCronerKaplanEstimation)
-        theFittedRFmeasurement = sum(theFittedVisualRF,1);
-        [stfSupport, theFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
-                 modelConstants.spatialSupportDegs(:,1),theFittedRFmeasurement);
-
-        theTargetRFmeasurement = sum(targetVisualRFmap,1);
-        [~, theTargetSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
-            modelConstants.spatialSupportDegs(:,1),theTargetRFmeasurement);
-    end
 
     % Form the rfComputeStruct
     obj.rfComputeStruct = struct();
     obj.rfComputeStruct.modelConstants = modelConstants;
 
-    % All solutions
-    obj.rfComputeStruct.allSolutions = allMins;
+    if (obj.multiStartsNum > 1) && (~isinf(obj.multiStartsNum))
+        % All solutions
+        obj.rfComputeStruct.allSolutions = allMins;
+    end
+
+
     obj.rfComputeStruct.retinalConePoolingParams = retinalConePoolingParams;
 
     
     if (modelConstants.simulateCronerKaplanEstimation)
-        obj.rfComputeStruct.theSTF = struct('support', stfSupport, 'fitted', theFittedSTF, 'target', theTargetSTF);
+        obj.rfComputeStruct.theSTF = struct('support', stfSupportCPD, 'fitted', theFittedSTF, 'target', theTargetSTF);
     end
 
     % Convolve the center retinal cone-pooling based retinal RF to get the corresponding visual center RF
@@ -393,8 +411,50 @@ function visualizeRFs(figNo, spatialSupportDegs, RFmap, RFmap2, theTitle)
     subplot(2,3,6)
     plot(spatialSupportDegs(:,1),  profileRF2, 'r-');
     axis 'square'
-
+    drawnow;
 end
 
+function displaySpatialProfileAndSTF(figNo, spatialSupportDegs, stfSupportCPD, ...
+                theTargetRFmeasurement, theFittedRFmeasurement, ...
+                theTargetSTF,  theFittedSTF, theFittedLegend)
+
+    hFig = figure(figNo); clf;
+    set(hFig, 'Position', [100 100 1200 600], 'Color', [1 1 1]);
+    legends = {};
+    ax = subplot(1,2,1);
+    plot(ax, spatialSupportDegs(:,1), theTargetRFmeasurement, 'k-', 'LineWidth', 1.5);
+    legends{1} = 'target';
+    hold(ax, 'on');
+    if (~isempty(theFittedRFmeasurement))
+        plot(ax, spatialSupportDegs(:,1), theFittedRFmeasurement, 'b-', 'LineWidth', 1.5);
+        legends{numel(legends)+1} = theFittedLegend;
+    end
+    set(ax, 'YLim', max(abs(theTargetRFmeasurement(:)))*[-0.5 1.1]);
+    xlabel(ax, 'space (degs)');
+    ylabel(ax, 'sensitivity');
+    set(ax, 'FontSize', 16);
+    grid(ax, 'on');
+    legend(ax,legends);
+    
+
+
+    ax = subplot(1,2,2);
+    plot(ax, stfSupportCPD, theTargetSTF, 'k-', 'LineWidth', 1.5);
+    hold(ax, 'on');
+    if (~isempty(theFittedSTF))
+        plot(ax, stfSupportCPD, theFittedSTF, 'b-', 'LineWidth', 1.5);
+    end
+
+    ylabel(ax, 'STF');
+    xlabel(ax,'spatial frequency (c/deg)');
+    set(ax, 'XScale', 'log', 'YLim', [0 max(theTargetSTF(:))*1.1]);
+    set(ax, 'FontSize', 16);
+    grid(ax, 'on');
+
+    legend(ax,legends);
+
+    drawnow;
+
+end
 
 

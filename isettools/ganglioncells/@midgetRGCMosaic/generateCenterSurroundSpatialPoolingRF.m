@@ -6,11 +6,11 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
     % Eliminate some fields from theRetinaToVisualFieldTransformerOBJList
     % which are part of the obj, such as the inputConeMosaic,
     % which is stored in the midgetRGCMosaic object
-    for iRTVobj = 1:numel()
-        theRTVobj = theRetinaToVisualFieldTransformerOBJList{iRTVobj};
-        theRTVobj = rmfield(theRTVobj, 'theConeMosaic');
-        theRetinaToVisualFieldTransformerOBJList{iRTVobj} = theRTVobj;
-    end
+%     for iRTVobj = 1:numel(theRetinaToVisualFieldTransformerOBJList)
+%         theRTVobj = theRetinaToVisualFieldTransformerOBJList{iRTVobj}
+%         theRTVobj = rmfield(theRTVobj, 'theConeMosaic');
+%         theRetinaToVisualFieldTransformerOBJList{iRTVobj} = theRTVobj;
+%     end
 
     obj.theRetinaToVisualFieldTransformerOBJList = theRetinaToVisualFieldTransformerOBJList;
     obj.theOpticsPositionGrid = theOpticsPositionGrid;
