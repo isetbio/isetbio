@@ -166,6 +166,9 @@ classdef midgetRGCMosaic < handle
         % as per Gauthier, Chichilinsky et al (2009)
         [NNNDs, NNNDtuplets, RGCdistances, distancesFromMosaicCenterDegs, targetRGCindices] = analyzeRetinalRFoverlap(obj, varargin);
 
+        % Method to visualize the mosaic
+        visualize(obj, varargin);
+        
         % Method to visualize the retinal RF of a single RGC
         visualizeSingleRetinalRF(obj,theRGCindex, varargin);
 
