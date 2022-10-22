@@ -4,13 +4,13 @@ function visualize(obj, varargin)
     p = inputParser;
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
-    p.addParameter('maxVisualizedRFs', 7, @isscalar);
+    p.addParameter('maxVisualizedRFs', 18, @isscalar);
     p.addParameter('xLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('yLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('xRangeDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('yRangeDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('fontSize', 16, @isscalar);
-    p.addParameter('retinalMeridianAxesLabeling', false, @islogical);
+    p.addParameter('retinalMeridianAxesLabeling', true, @islogical);
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.parse(varargin{:});
 
@@ -51,7 +51,9 @@ function visualize(obj, varargin)
     % Compute the retinal RFcenter maps
     marginDegs = min([0.5 0.4*min(obj.sizeDegs)]);
     spatialSupportSamplesNum = 256;
-    theRetinalRFcenterMaps = obj.computeRetinalRFcenterMaps(marginDegs, spatialSupportSamplesNum);
+    theRetinalRFcenterMaps = obj.computeRetinalRFcenterMaps(...
+        marginDegs, spatialSupportSamplesNum, ...
+        'forRGCindices', sortedRGCindices(1:min([maxVisualizedRFs numel(sortedRGCindices)])));
 
     % Plot part of the input cone mosaic
     if (isempty(xLimsDegs))
@@ -87,16 +89,16 @@ function visualize(obj, varargin)
     if (retinalMeridianAxesLabeling)
         if (obj.eccentricityDegs(1) ~= 0)
             % Change the x-label to display the horizontal retinal meridian 
-            xlabel(axesHandle, sprintf('%s', strrep(obj.horizontalRetinalMeridian, 'meridian', 'retina')));
+            xlabel(axesHandle, sprintf('%s (degs)', strrep(obj.horizontalRetinalMeridian, 'meridian', 'retina')));
         else
-            xlabel(axesHandle, '\leftarrow nasal retina    \rightarrow temporal retina');
+            xlabel(axesHandle, '\leftarrow temporal retina               (degs)                   nasal retina \rightarrow ');
         end
 
         if (obj.eccentricityDegs(2) ~= 0)
             % Change the y-label to display the vertical retinal meridian 
-            ylabel(axesHandle, sprintf('%s', strrep(obj.verticalRetinalMeridian, 'meridian', 'retina')));
+            ylabel(axesHandle, sprintf('%s (degs)', strrep(obj.verticalRetinalMeridian, 'meridian', 'retina')));
         else
-            ylabel(axesHandle, '\leftarrow inferior retina    \rightarrow superior retina');
+            ylabel(axesHandle, '\leftarrow inferior retina                         (degs)                          superior retina\rightarrow  ');
         end
     end
 
@@ -113,7 +115,7 @@ function visualize(obj, varargin)
         targetRGCindex  = sortedRGCindices(iRGC);
 
         % Retrieve the computed retinal center RF map
-        s = theRetinalRFcenterMaps{targetRGCindex};
+        s = theRetinalRFcenterMaps{iRGC};
         theRF = s.centerRF;
 
         fprintf('Fitting ellipsoid to RF %d of %d. Please wait ...\n', iRGC, maxVisualizedRFs);

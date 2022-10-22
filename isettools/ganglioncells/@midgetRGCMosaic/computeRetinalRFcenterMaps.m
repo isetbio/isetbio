@@ -1,12 +1,23 @@
-function retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum)
+function retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum, varargin)
+
+    % Parse input
+    p = inputParser;
+    p.addParameter('forRGCindices', [], @(x)(isempty(x)||isnumeric(x)));
+    p.parse(varargin{:});
+        
+    % Which RGC indices to compute retinal RFcenter maps for
+    theRGCindices = p.Results.forRGCindices;
 
     % Preallocate memory
-    mRGCsNum = size(obj.rgcRFcenterConeConnectivityMatrix,2);
+    mRGCsNum = numel(theRGCindices);
     retinalRFcenterMaps = cell(1, mRGCsNum);
 
-    parfor iRGC = 1:mRGCsNum
+    parfor iRGCindex = 1:mRGCsNum
+
+        theTargetRGCindex = theRGCindices(iRGCindex);
+
         % Find this RGC's center input cone indices and their weights
-        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
+        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theTargetRGCindex)));
         inputConeIndices = find(connectivityVector > 0.0001);
 
         %if (all(connectivityVector(inputConeIndices)==1))
@@ -44,7 +55,7 @@ function retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spati
         end 
 
         % Save the RF map
-        retinalRFcenterMaps{iRGC} = struct(...
+        retinalRFcenterMaps{iRGCindex} = struct(...
              'centerRF', theRFcenterMap, ...
              'coneApertures', coneApertures, ...
              'inputConeIndices', inputConeIndices, ...
@@ -52,7 +63,7 @@ function retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spati
              'spatialSupportDegsX', spatialSupportDegsX, ...
              'spatialSupportDegsY', spatialSupportDegsY...
              );
-    end % iRGC
+    end % iRGCindex
 end
 
 

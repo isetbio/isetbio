@@ -222,7 +222,7 @@ classdef midgetRGCMosaic < handle
 
         % Method to compute the retinal RFcenter maps - used for
         % visualization and RFoverlap analysis
-        retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum);
+        retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum, varargin);
 
         % Method to crop RGCs on the border
         cropRGCsOnTheBorder(obj);
