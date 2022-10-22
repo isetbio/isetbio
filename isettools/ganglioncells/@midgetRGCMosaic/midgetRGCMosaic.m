@@ -196,11 +196,11 @@ classdef midgetRGCMosaic < handle
 
         % Get the temporal equivalent eccentricity for either the mosaic's
         % ecc or any [Mx2] matrix of eccentricities
-        eccDegs = temporalEquivalentEccentricityFromEccentricity(obj, varargin);
+        eccDegs = temporalEquivalentEccentricityForEccentricity(obj, varargin);
 
         % Getter for dependent property temporalEquivalentEccentricityDegs
         function val = get.temporalEquivalentEccentricityDegs(obj)
-            val = obj.temporalEquivalentEccentricityFromEccentricity();
+            val = obj.temporalEquivalentEccentricityForEccentricity(obj.eccentricityDegs);
         end
 
         % Getter for dependent property horizontalRetinalMeridian

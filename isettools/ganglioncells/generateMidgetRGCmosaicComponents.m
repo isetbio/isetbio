@@ -6,11 +6,16 @@ function generateMidgetRGCmosaicComponents
         'generateRTVFTobjList' ...
         'generateCenterSurroundRFs' ...
         'computeSTF' ...
-        'visualizeResponses' ...
+        'visualizeSTFs' ...
+        'fitSTFs' ...
+        'summarizeSTFfits'
         };
 
     % Operation to compute
-    operations = operations(1:4);
+    %operations = {'fitSTFs'};
+    %operations = {'summarizeSTFfits'};
+    operations = operations(1:2);
+
     % L-M gratings
     %coneContrasts = [0.12 -0.12 0];
 
@@ -49,16 +54,26 @@ function generateMidgetRGCmosaicComponents
             end
     end
 
-    for iEcc = 3:size(eccSizeDegsExamined,1)
+
+    resetSummaryFigure  = true; hFigSummary = [];
+   
+    for iEcc = 8:8 %size(eccSizeDegsExamined,1)
+        
         fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
         sizeDegs = eccSizeDegsExamined(iEcc,2) * [1 1];
-        doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir);
+        hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir, resetSummaryFigure, hFigSummary);
+        resetSummaryFigure = false;
     end
+
+    if (strcmp(operations{1}, 'summarizeSTFfits'))
+        NicePlot.exportFigToPDF('ModelComparisonToCronerKaplan.pdf', hFigSummary, 300);
+    end
+
 
 end
 
-function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
+function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir, resetSummaryFigure, hFigSummary)
 
     fName = fullfile(dropboxDir, sprintf('mRGCmosaicComponents_eccDegs_%2.2f.mat', eccDegs(1)));
 
@@ -91,19 +106,23 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                 for iGridPosition = 1:numel(conesNumPooledByTheRFcenter)
                     % Optics position
                     eccDegsGrid(iGridPosition,:) = eccDegs;
-
+                    
                     % Cones num in RF center
                     conesNumPooledByTheRFcenterGrid(iGridPosition) = conesNumPooledByTheRFcenter(iGridPosition);
 
                     % From Croner & Kaplan '95 (Figure 4c and text)
                     % "P surrounds were on average 6.7 times wider than the centers of
                     % the same cells, or about 45 times larger in area".
-                    surroundToCenterRcRatioGrid(iGridPosition) = 6.7;
+                    surroundToCenterRcRatioGrid(iGridPosition) = RGCmodels.CronerKaplan.constants.surroundToCenterRcRatio;
     
                     % Also from Croner & Kaplan '95 (Figure 10b)
                     % "These mean ratios for P and M cells are not significantly different
                     % (Student's t-test: P = 0.482). The overall mean ratio is 0.55.
-                    surroundToCenterIntegratedSensitivityRatioGrid(iGridPosition) = 0.55;
+                    temporalEquivalentEccDegs = theMidgetRGCmosaic.temporalEquivalentEccentricityForEccentricity(eccDegsGrid(iGridPosition,:));
+                    radialTemporalEquivalentEccDegs = sqrt(sum(temporalEquivalentEccDegs.^2,2));
+                    scIntSensitivity = RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(radialTemporalEquivalentEccDegs);
+                    surroundToCenterIntegratedSensitivityRatioGrid(iGridPosition) = scIntSensitivity;
+                    
                 end
 
 
@@ -166,7 +185,8 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                     'coneContrasts', ...
                     '-v7.3');
 
-            case 'visualizeResponses'
+           
+            case {'visualizeSTFs','fitSTFs'} 
                 load(fName, 'theMidgetRGCmosaic');
                 
                 % Load the responses to a separate file
@@ -190,13 +210,30 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                 set(hFig, 'Position', [90 10 855 990], 'Color', [1 1 1]);
 
                 % Video setup
-                fNameVideo = strrep(fName, '.mat', '_Video');
-                videoOBJ = VideoWriter(fNameVideo, 'MPEG-4');
-                videoOBJ.FrameRate = 10;
-                videoOBJ.Quality = 100;
-                videoOBJ.open();
+                if (strcmp(operations{iOp}, 'visualizeSTFs'))
+                    fNameVideo = strrep(fName, '.mat', '_Video');
+                    videoOBJ = VideoWriter(fNameVideo, 'MPEG-4');
+                    videoOBJ.FrameRate = 10;
+                    videoOBJ.Quality = 100;
+                    videoOBJ.open();
+                end
 
-                for iii = 1:numel(sortedRGCindices)
+                skips = 1;
+                if (strcmp(operations{iOp}, 'fitSTFs'))
+                    
+                    maxFitsNum = 100;
+                    skips = round(numel(sortedRGCindices)/maxFitsNum);
+                    if (skips < 1)
+                        skips = 1;
+                    end
+                    DoGparams = cell(1, numel(1:skips:numel(sortedRGCindices)));
+                    DoGfitResults = cell(1,numel(1:skips:numel(sortedRGCindices)));
+
+                    
+                end
+
+                iFit = 0;
+                for iii = 1:skips:numel(sortedRGCindices)
                     iRGC = sortedRGCindices(iii);
                     
                     connectivityVector = full(squeeze(theMidgetRGCmosaic.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
@@ -208,7 +245,6 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                         (theMidgetRGCmosaic.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) ...  % match the conesNum in the center
                     );
                     theRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{iObj};
-
 
                     maxResponse = max(max(abs(squeeze(theMidgetRGCMosaicResponses(:, :, iRGC)))));
                     minResponse = -maxResponse;
@@ -240,6 +276,7 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                         end
                         ylabel(ax, 'response');
                     end
+                    theMeasuredSTF = theResponseModulation/max(theResponseModulation);
 
                     % Visualize the examined retinal RF
                     ax = subplot(numel(spatialFrequenciesTested),2, [2 4 6 8]);
@@ -268,14 +305,44 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                     p2 = plot(ax, theRTVFTobj.rfComputeStruct.theSTF.support, normalizedTargetSTF2, 'r--', 'LineWidth', 2.0);
                     
                     % Plot the measured STF
-                    p3 = plot(ax,spatialFrequenciesTested, theResponseModulation/max(theResponseModulation), 'ko', ...
+                    p3 = plot(ax,spatialFrequenciesTested, theMeasuredSTF, 'ko', ...
                         'MarkerSize', 14, 'MarkerFaceColor', [0.2 0.9 0.9], 'MarkerEdgeColor', [0 0.4 1], ...
                         'LineWidth', 1.0);
 
-                    hold(ax, 'on');
+                    % Fit the measured STF to extract the DoGparams
+                    if (strcmp(operations{iOp}, 'fitSTFs'))
+                        % Estimate the retinal RF center
+                        conesNumPooledByTheRFcenter = numel(indicesOfCenterCones);
+                        coneRcDegs = mean(theMidgetRGCmosaic.inputConeMosaic.coneApertureDiametersDegs(indicesOfCenterCones)) * ...
+                                          theMidgetRGCmosaic.inputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor;
+                        retinalRFcenterRcDegs = sqrt(conesNumPooledByTheRFcenter)*coneRcDegs;
+
+                        iFit = iFit + 1;
+                        % Fit the DoG model to the measured STF
+                        [DoGparams{iFit}, theFittedSTF] = fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, theMeasuredSTF, retinalRFcenterRcDegs);
+                        
+                        % Save the fit results
+                        DoGfitResults{iFit} = struct(...
+                             'targetRGC', iRGC, ...
+                             'targetRGCeccentricityDegs', theMidgetRGCmosaic.rgcRFpositionsDegs(iRGC,:), ...
+                             'targetVisualRFDoGparams', theRTVFTobj.targetVisualRFDoGparams, ...
+                             'spatialFrequenciesTested', spatialFrequenciesTested, ...
+                             'theMeasuredSTF',theMeasuredSTF, ...
+                             'theFittedSTF', theFittedSTF ...
+                             );
+                        
+                        % Plot the fitted STF
+                        plot(ax, theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, 'k-', 'LineWidth', 3.0);
+                        p4 = plot(ax, theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, 'c-', 'LineWidth', 1.5);
+                    end
 
                     hold(ax, 'off');
-                    legend([p1, p2, p3], {'target', 'fitted', 'measured'}, 'Location', 'SouthWest');
+                    if (strcmp(operations{iOp}, 'fitSTFs'))
+                        legend([p1, p2, p3, p4], {'target', 'fitted', 'measured', 'fitToMeasured'}, 'Location', 'SouthWest');
+                    else
+                        legend([p1, p2, p3], {'target', 'fitted', 'measured'}, 'Location', 'SouthWest');
+                    end
+
                     title(ax, sprintf('stim LMS contrast = < %2.1f, %2.1f, %2.1f >', coneContrasts(1), coneContrasts(2), coneContrasts(3)));
                     set(ax, 'XLim', [0.3 70], 'XTick', [0.1 0.3 1 3 10 30 100], 'YLim', [0 1.02], 'YTick', 0:0.1:1.0);
                     xlabel(ax, 'spatial frequency (c/deg)');
@@ -283,18 +350,272 @@ function doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir)
                     grid(ax, 'on');
                     set(ax, 'XLim', [0.1 100], 'XScale', 'Log', 'FontSize', 16);
                     
-                    drawnow;
-                    videoOBJ.writeVideo(getframe(hFig));
+                    if (strcmp(operations{iOp}, 'visualizeSTFs'))
+                        drawnow;
+                        videoOBJ.writeVideo(getframe(hFig));
+                    end
                 end
-                videoOBJ.close();
 
+                if (strcmp(operations{iOp}, 'visualizeSTFs'))
+                    videoOBJ.close();
+                end
+
+                if (strcmp(operations{iOp}, 'fitSTFs'))
+                    % Save the DoGparams and the fits to a separate file
+                    dogParamsPostfix = sprintf('_fittedDoGmodels_%2.2f_%2.2f_%2.2f.mat', ...
+                        coneContrasts(1), coneContrasts(2), coneContrasts(3));
+                    fNameDoGparams = strrep(fName, '.mat', dogParamsPostfix );
+                    save(fNameDoGparams, 'DoGparams', 'DoGfitResults');
+                end
+
+            case 'summarizeSTFfits'
+                % Load the DoGparams and the fits to a separate file
+                dogParamsPostfix = sprintf('_fittedDoGmodels_%2.2f_%2.2f_%2.2f.mat', ...
+                        coneContrasts(1), coneContrasts(2), coneContrasts(3));
+                fNameDoGparams = strrep(fName, '.mat', dogParamsPostfix );
+                load(fNameDoGparams, 'DoGparams', 'DoGfitResults');
+
+                if (resetSummaryFigure)
+                    hFigSummary = figure(1);
+                    clf;
+                    set(hFigSummary, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
+                end
+
+                addModelData = true;
+                hFigSummary = visualizeSTFfitsSummary(DoGparams, DoGfitResults, addModelData, resetSummaryFigure, hFigSummary);
 
             otherwise
                 error('Unknown operation: ''%s''.', operations{iOp});
         end % Switch
     end
+
+
 end
 
+
+function hFig = visualizeSTFfitsSummary(DoGparams, DoGfitResults, addModelData, reset, hFig)
+
+    ksKcRatio = zeros(numel(DoGparams),1);
+    rcDegs = zeros(numel(DoGparams),1);
+    rsDegs = zeros(numel(DoGparams),1);
+    targetRGCeccentricityDegs = zeros(numel(DoGparams),2);
+    for iii = 1:numel(DoGparams)
+        rcDegs(iii) = DoGparams{iii}.bestFitValues(4);
+        rsDegs(iii) = rcDegs(iii) * DoGparams{iii}.bestFitValues(3);
+        ksKcRatio(iii) = DoGparams{iii}.bestFitValues(2);
+        targetSurroundToCenterRcRatio = DoGfitResults{iii}.targetVisualRFDoGparams.surroundToCenterRcRatio;
+        targetSurroundToCenterIntegratedSensitivityRatio = DoGfitResults{iii}.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
+        targetRGCeccentricityDegs(iii,:) = DoGfitResults{iii}.targetRGCeccentricityDegs;
+    end
+
+    targetRGCeccentricityDegs = sqrt(sum(targetRGCeccentricityDegs.^2,2));
+    rsRcRatio = rsDegs./rcDegs;
+    integratedSCsensitivity = ksKcRatio .* (rsRcRatio.^2);
+
+    targetKsKcRatio = targetSurroundToCenterIntegratedSensitivityRatio / ((targetSurroundToCenterRcRatio)^2);
+
+
+    eccRange = [0 30];
+    eccTicks = 0:5:30;
+
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 2, ...
+       'colsNum', 2, ...
+       'heightMargin',  0.10, ...
+       'widthMargin',    0.05, ...
+       'leftMargin',     0.04, ...
+       'rightMargin',    0.00, ...
+       'bottomMargin',   0.06, ...
+       'topMargin',      0.02);
+
+    % Rc, Rs as a function of eccentricity
+    ax = subplot('Position', subplotPosVectors(1,1).v);
+
+    % The C&K data
+    [eccDegs, RcDegsCronerKaplan] = RGCmodels.CronerKaplan.digitizedData.parvoCenterRadiusAgainstEccentricity();
+    p1 = plot(ax,eccDegs,   RcDegsCronerKaplan,   'ro',  ...
+        'MarkerFaceColor', [0.65 0.65 0.65], 'MarkerEdgeColor', [0.2 0.2 0.2], ...
+        'MarkerSize', 8, 'LineWidth', 1.0);
+    hold(ax, 'on');
+    [eccDegs, RsDegsCronerKaplan] = RGCmodels.CronerKaplan.digitizedData.parvoSurroundRadiusAgainstEccentricity();
+    p2 = plot(ax,eccDegs, RsDegsCronerKaplan, 'rs', ...
+        'MarkerFaceColor', [0.85 0.85 0.85], 'MarkerEdgeColor', [0.2 0.2 0.2], ...
+        'MarkerSize', 10, 'LineWidth', 1.0);
+    
+    % The model data
+    if (addModelData)
+        p3 = scatter(ax,targetRGCeccentricityDegs, rcDegs, 81, ...
+            'MarkerFaceAlpha', 0.45, 'MarkerEdgeAlpha', 0.65, ...
+            'MarkerFaceColor', [1 0.5 0.7],  'MarkerEdgeColor', [0 0 0], ...
+            'LineWidth', 0.75);
+        p4 = scatter(ax,targetRGCeccentricityDegs, rsDegs, 81, 'Marker', 's', ...
+            'MarkerFaceAlpha', 0.45, 'MarkerEdgeAlpha', 0.65, ...
+            'MarkerFaceColor', [0.3 0.8 1],  'MarkerEdgeColor', [0 0 0], ...
+            'LineWidth', 0.75);
+    end
+
+    if (addModelData)
+        legend(ax,[p1,p2,p3,p4], {'C&K centers', 'C&K surrounds', '@mRGCMosaic centers', '@mRGCMosaic surrounds'}, ...
+            'NumColumns', 2, 'Location', 'NorthOutside', 'box', 'off');
+    else
+        legend(ax,[p1,p2], {'C&K centers', 'C&K surrounds'}, ...
+            'NumColumns', 1, 'Location', 'NorthOutside', 'box', 'off');
+    end
+
+    % Finalize plot
+    axis(ax, 'square')
+    grid(ax, 'on');
+    box(ax, 'off');
+    set(ax, 'XLim', [0.03 eccRange(2)], 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], ...
+            'YLim', [0.003 1], 'YTick', [0.001 0.003 0.01 0.03 0.1 0.3 1 3 10], ...
+            'XScale', 'log', 'YScale', 'log', ...
+            'FontSize', 20, 'LineWidth', 1.0, 'TickDir', 'both');
+    
+    xlabel(ax,'eccentricity (degs)');
+    ylabel(ax,'radius (degs)');
+
+
+    % Integrated S/C ratio as a function of eccentricity
+     ax = subplot('Position', subplotPosVectors(1,2).v);
+    p1 = plot(ax,targetRGCeccentricityDegs, integratedSCsensitivity, 'r.', 'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.5]);
+    hold(ax, 'on');
+    box(ax, 'off');
+    % The C&K data
+    %eccCont = linspace(eccRange(1), eccRange(2), 100);
+    %scIntSensCont = 0.466 + 0.007*eccCont; % C&K figure 11
+    %p2 = plot(eccRange, targetSurroundToCenterIntegratedSensitivityRatio*[1 1], 'r-', 'LineWidth', 1.0);
+    %p2 = plot(eccCont, scIntSensCont, 'r-', 'LineWidth', 1.0);
+    
+    [ecc, intSCratioCronerKaplan] = RGCmodels.CronerKaplan.digitizedData.parvoSurroundCenterIntSensisitivityRatioAgainstEccentricity();
+    p2 = plot(ax,ecc, intSCratioCronerKaplan, 'rs',  'MarkerEdgeColor', [0.5 0. 0], 'MarkerFaceColor', [0.85 0.85 0.85], 'MarkerSize', 10, 'LineWidth', 1.0);
+    plot(ax,targetRGCeccentricityDegs, integratedSCsensitivity, 'r.', 'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.5]);
+    legend(ax,[p1,p2], {'@mRGCMosaic', 'C&K'}, 'NumColumns', 2, 'Location', 'NorthOutside', 'box', 'off');
+    
+    axis(ax, 'square')
+    grid(ax, 'on');
+    box(ax, 'off');
+    set(ax, 'YLim', [0 1], 'XLim', eccRange, 'XTick', eccTicks, 'FontSize', 20, 'LineWidth', 1.0, 'TickDir', 'both');
+    xlabel(ax,'eccentricity (degs)');
+    ylabel(ax,'integrated surround/center sensitivity');
+
+
+    % Center/Surround radius as a function of eccentricity
+     ax = subplot('Position', subplotPosVectors(2,1).v);
+    p1=plot(ax,targetRGCeccentricityDegs, 1./rsRcRatio, 'r.', 'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.5]);
+    hold(ax, 'on');
+    % The C&K data
+    %plot(eccRange, 1./targetSurroundToCenterRcRatio*[1 1], 'r-', 'LineWidth', 1.0);
+    [ecc, RcRsRatioCronerKaplan] = RGCmodels.CronerKaplan.digitizedData.parvoCenterSurroundRadiusRatioAgainstEccentricity();
+    p2 = plot(ax,ecc, RcRsRatioCronerKaplan, 'rs',  'MarkerEdgeColor', [0.5 0. 0], 'MarkerFaceColor', [0.85 0.85 0.85], 'MarkerSize', 10, 'LineWidth', 1.0);
+    plot(ax,targetRGCeccentricityDegs, 1./rsRcRatio, 'r.', 'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.5]);
+
+    legend(ax,[p1,p2], {'@mRGCMosaic', 'C&K'}, 'NumColumns', 2, 'Location', 'NorthOutside', 'box', 'off');
+    axis(ax, 'square')
+    grid(ax, 'on');
+    box(ax, 'off');
+    set(ax, 'YLim', [0 0.5], 'YTick', 0:0.1:1.0, 'XLim', eccRange, 'XTick', eccTicks, 'FontSize', 20, 'LineWidth', 1.0, 'TickDir', 'both');
+    xlabel(ax,'eccentricity (degs)');
+    ylabel(ax,'center/surround radius');
+
+    % Ks/Kc as a function of eccentricity
+     ax = subplot('Position', subplotPosVectors(2,2).v);
+    p1 = plot(ax,targetRGCeccentricityDegs, ksKcRatio, 'r.', 'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.5]);
+    hold(ax, 'on');
+    % The C&K data
+    [ecc, ksKcRatioCronerKaplan] = RGCmodels.CronerKaplan.digitizedData.parvoSurroundCenterPeakSensisitivityRatioAgainstEccentricity();
+    p2 = plot(ax,ecc, ksKcRatioCronerKaplan, 'ks',  'MarkerEdgeColor', [0.5 0. 0], 'MarkerFaceColor', [0.85 0.85 0.85], 'MarkerSize', 10, 'LineWidth', 1.0);
+    plot(ax,targetRGCeccentricityDegs, ksKcRatio, 'r.', 'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.5 0.5]);
+    %plot(eccRange, targetKsKcRatio*[1 1], 'r-', 'LineWidth', 1.0);
+    legend(ax,[p1,p2], {'@mRGCMosaic', 'C&K'}, 'NumColumns', 2, 'Location', 'NorthOutside', 'box', 'off');
+    set(ax, 'YLim', [1e-4 1], 'YScale', 'log', 'YTick', [1e-4 1e-3 1e-2 1e-1 1], 'YTickLabel',{'1e-4', '1e-3', '1e-2', '1e-1', '1'}, ...
+        'XLim', eccRange, 'XTick', eccTicks, 'FontSize', 20,  'LineWidth', 1.0, 'TickDir', 'both');
+    axis(ax, 'square')
+    grid(ax, 'on'); box(ax, 'off');
+    xlabel(ax,'eccentricity (degs)');
+    ylabel(ax,'kS/Kc ratio');
+
+end
+
+
+
+function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF, retinalRFcenterRcDegs)
+    % DoG param initial values and limits: center gain, kc
+    Kc = struct(...    
+        'low', 1e-4, ...
+        'high', 1e5, ...
+        'initial', 1);
+
+    % DoG param initial values and limits: Ks/Kc ratio
+    KsToKc = struct(...
+        'low', 1e-6, ...
+        'high', 1, ...
+        'initial', 0.1);
+
+    % DoG param initial values and limits: RsToRc ratio
+    RsToRc = struct(...
+        'low', 1.5, ...
+        'high', 10, ...
+        'initial', 5);
+
+    % DoG param initial values and limits: RcDegs
+    RcDegs = struct(...
+        'low', retinalRFcenterRcDegs/10, ...
+        'high', retinalRFcenterRcDegs*200, ...
+        'initial', retinalRFcenterRcDegs*5);
+    
+     %                          Kc           kS/kC             RsToRc            RcDegs    
+     DoGparams.initialValues = [Kc.initial   KsToKc.initial    RsToRc.initial    RcDegs.initial];
+     DoGparams.lowerBounds   = [Kc.low       KsToKc.low        RsToRc.low        RcDegs.low];
+     DoGparams.upperBounds   = [Kc.high      KsToKc.high       RsToRc.high       RcDegs.high];
+     DoGparams.names         = {'Kc',        'kS/kC',         'RsToRc',         'RcDegs'};
+     DoGparams.scale         = {'log',       'log',           'linear',         'linear'};
+     
+     % The DoG model in the frequency domain
+     DoGSTF = @(params,sf)(...
+                    abs(params(1)       * ( pi * params(4)^2             * exp(-(pi*params(4)*sf).^2) ) - ...
+                    params(1)*params(2) * ( pi * (params(4)*params(3))^2 * exp(-(pi*params(4)*params(3)*sf).^2) )));
+        
+     % The optimization objective
+     objective = @(p) sum((DoGSTF(p, sf) - theMeasuredSTF).^2);
+
+     % Ready to fit
+     options = optimset(...
+            'Display', 'off', ...
+            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
+            'GradObj', 'off', ...
+            'DerivativeCheck', 'off', ...
+            'MaxFunEvals', 10^5, ...
+            'MaxIter', 10^3);
+        
+     % Multi-start
+     problem = createOptimProblem('fmincon',...
+          'objective', objective, ...
+          'x0', DoGparams.initialValues, ...
+          'lb', DoGparams.lowerBounds, ...
+          'ub', DoGparams.upperBounds, ...
+          'options', options...
+          );
+      
+     ms = MultiStart(...
+          'Display', 'off', ...
+          'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
+          'UseParallel', true);
+      
+     % Run the multi-start
+     multiStartsNum = 16;
+     DoGparams.bestFitValues = run(ms, problem, multiStartsNum);
+
+     theFittedSTF.compositeSTF = DoGSTF(DoGparams.bestFitValues, sf);
+     theFittedSTF.centerSTF = DoGparams.bestFitValues(1) * ( pi * DoGparams.bestFitValues(4)^2 * exp(-(pi*DoGparams.bestFitValues(4)*sf).^2) );
+     theFittedSTF.surroundSTF = DoGparams.bestFitValues(1)*DoGparams.bestFitValues(2) * ( pi * (DoGparams.bestFitValues(4)*DoGparams.bestFitValues(3))^2 * exp(-(pi*DoGparams.bestFitValues(4)*DoGparams.bestFitValues(3)*sf).^2) );
+     
+     sfHiRes = logspace(log10(0.1), log10(100), 64);
+     theFittedSTF.sfHiRes = sfHiRes;
+     theFittedSTF.compositeSTFHiRes = DoGSTF(DoGparams.bestFitValues, sfHiRes);
+     theFittedSTF.centerSTFHiRes = DoGparams.bestFitValues(1) * ( pi * DoGparams.bestFitValues(4)^2 * exp(-(pi*DoGparams.bestFitValues(4)*sfHiRes).^2) );
+     theFittedSTF.surroundSTFHiRes = DoGparams.bestFitValues(1)*DoGparams.bestFitValues(2) * ( pi * (DoGparams.bestFitValues(4)*DoGparams.bestFitValues(3))^2 * exp(-(pi*DoGparams.bestFitValues(4)*DoGparams.bestFitValues(3)*sfHiRes).^2) );
+     
+end
 
 
 function [theMidgetRGCMosaicResponses, spatialFrequenciesTested, spatialPhasesDegs] = ...

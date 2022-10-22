@@ -1,20 +1,17 @@
-function eccDegs = temporalEquivalentEccentricityFromEccentricity(obj, varargin)
-    p = inputParser;
-    p.addParameter('forEccDegsMatrix', [], @(x)(isempty(x) || isnumeric(x)));
-    p.parse(varargin{:});
-    eccDegs = p.Results.forEccDegsMatrix;
+function temporalEquivalentEccDegs = temporalEquivalentEccentricityForEccentricity(obj, eccDegs)
 
-    if (isempty(eccDegs))
-        eccDegs = obj.eccentricityDegs;
-    elseif (size(eccDegs,2) ~= 2)
+    if (size(eccDegs,2) ~= 2)
         error('eccDegs must be an N x 2 matrix of (x,y) eccentricities.');
     end
     dataPoints = size(eccDegs,1);
 
+    temporalEquivalentEccDegs = 0*eccDegs;
+    
     for iPoint = 1:dataPoints
         % The vertical ecc
         verticalEcc = eccDegs(iPoint,2);
 
+        obj.temporalEquivantEccentricityFactor
         % The horizontal ecc
         if strcmp(obj.horizontalRetinalMeridian, RGCmodels.Watson.constants.nasalMeridian)
             % On the nasal meridian
@@ -23,8 +20,8 @@ function eccDegs = temporalEquivalentEccentricityFromEccentricity(obj, varargin)
                     % Nasal meridian: multiply by 0.61 - See Watanabe & Rodieck 1989
                     horizontalEcc = 0.61 * eccDegs(iPoint,1);
                 case 'ISETBioMosaicsBased'
-                    % Nasal meridian: multiply by 0.75 - to match our asymmetry
-                    horizontalEcc = 0.72 * eccDegs(iPoint,1);
+                    % Nasal meridian: multiply by 0.70 - to match our asymmetry
+                    horizontalEcc = 0.70 * eccDegs(iPoint,1);
             end
         else
             % We are already on the temporal meridian
@@ -36,6 +33,6 @@ function eccDegs = temporalEquivalentEccentricityFromEccentricity(obj, varargin)
 
         % Compute the vector temporal equivalent eccentricity
         theta = angle(eccDegs(iPoint,1) + 1j*eccDegs(iPoint,2));
-        eccDegs(iPoint,:) = radialEquivalentEccentricity  * [-cos(theta) sin(theta)];
+        temporalEquivalentEccDegs(iPoint,:) = radialEquivalentEccentricity  * [-cos(theta) sin(theta)];
     end % iPoint
 end

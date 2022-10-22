@@ -27,9 +27,9 @@ function generateInputConeMosaic(obj, pResults)
         'shape', 'Gaussian');
     
     % Make the inputConeMosaic a little bit larger than the
-    % midget RGC mosaic to allow for cone inputs to the RF
-    % surrounds
-    obj.extraDegsForInputConeMosaic = midgetRGCMosaic.extraConeMosaicDegsForMidgetRGCSurrounds(obj.eccentricityDegs, obj.sizeDegs);
+    % midget RGC mosaic to allow for cone inputs to the RF surrounds
+    obj.extraDegsForInputConeMosaic = midgetRGCMosaic.extraConeMosaicDegsForMidgetRGCSurrounds(...
+        obj.eccentricityDegs, obj.sizeDegs);
     
     % Generate the input cone mosaic
     obj.inputConeMosaic = cMosaic(...

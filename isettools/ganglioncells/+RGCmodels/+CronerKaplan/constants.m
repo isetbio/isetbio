@@ -14,8 +14,11 @@ classdef constants
         % (Figure 5c caption)
         surroundPeakSensitivityFromCharacteristicRadiusDegsForPcells = @(characteristicRadiusDegs) (0.128 * characteristicRadiusDegs.^(-2.147));
         
+        % Surround / center Rc ratio
+        surroundToCenterRcRatio = 6.7;
+
         % Surround radius from center radius
-        surroundRadiusFromCenterRadiusDegsForPcells = @(centerRadiusDegs) (centerRadiusDegs * 6.7);
+        surroundRadiusFromCenterRadiusDegsForPcells = @(centerRadiusDegs) (centerRadiusDegs * RGCmodels.CronerKaplan.constants.surroundToCenterRcRatio);
         
         % Surround-to-Center integrated sensitivity ratio (Figure 11 caption)
         surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells = @(eccDegs)  (0.466 + 0.007 * abs(eccDegs));
