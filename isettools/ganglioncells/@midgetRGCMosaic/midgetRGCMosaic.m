@@ -60,6 +60,10 @@ classdef midgetRGCMosaic < handle
         rgcRFspacingsMicrons;
         rgcRFspacingsDegs;
 
+        % The factor by which we convert nasal eccentricities to their
+        % temporal equivalents
+        temporalEquivantEccentricityFactor;
+
         % The MosaicConnectorOBJ used to connect cones to midget RGCs
         theMosaicConnectorOBJ;
 
@@ -79,10 +83,22 @@ classdef midgetRGCMosaic < handle
     end % Read-only properties
 
 
+    % Dependent properties
+    properties (Dependent)
+        % The mosaic's temporal equivalent eccentricity.
+        % If the mosaic is on the temporal retinal quadrant this is: sqrt(ecc_x^2 + ecc_y^2)
+        % If the mosaic is on the nasal retinal quadrant this is: sqrt((0.61 * ecc_x)^2 + ecc_y^2)
+        temporalEquivalentEccentricityDegs;
+
+        % Retinal quadrant (i.e. nasal, temporal, inferior, superior)
+        horizontalRetinalMeridian;
+        verticalRetinalMeridian;
+    end
+
+
     % Private properties
     properties (GetAccess=private, SetAccess=private)
     
-        
     end
 
 
@@ -103,7 +119,8 @@ classdef midgetRGCMosaic < handle
             p.addParameter('eccentricityDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('positionDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
-
+            p.addParameter('temporalEquivantEccentricityFactor', 'ISETBioMosaicsBased', @(x)(ischar(x) && (ismember(x, {'ISETBioMosaicsBased', 'WatanabeRodieckBased'}))));
+            
             % Custom Degs <-> MM conversion functions
             p.addParameter('customDegsToMMsConversionFunction', @(x)RGCmodels.Watson.convert.rhoDegsToMMs(x), @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('customMMsToDegsConversionFunction', @(x)RGCmodels.Watson.convert.rhoMMsToDegs(x), @(x) (isempty(x) || isa(x,'function_handle')));
@@ -111,13 +128,12 @@ classdef midgetRGCMosaic < handle
             % RF overlap: 0.5 results in a median NNND of around 2.0
             p.addParameter('rfOverlapRatio', 0.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
             p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
-
             p.parse(varargin{:});
 
             obj.name = p.Results.name;
             obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
             obj.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
-
+            obj.temporalEquivantEccentricityFactor = p.Results.temporalEquivantEccentricityFactor;
 
             % Deal with the input cone mosaic. If an input cMosaic is not specified we generate one here
             if (~isempty(p.Results.inputConeMosaic))
@@ -177,6 +193,25 @@ classdef midgetRGCMosaic < handle
 
         % Visualize the connectivity of the RF center to the cones
         visualizeRFcenterConnectivity(obj, varargin);
+
+        % Get the temporal equivalent eccentricity for either the mosaic's
+        % ecc or any [Mx2] matrix of eccentricities
+        eccDegs = temporalEquivalentEccentricityFromEccentricity(obj, varargin);
+
+        % Getter for dependent property temporalEquivalentEccentricityDegs
+        function val = get.temporalEquivalentEccentricityDegs(obj)
+            val = obj.temporalEquivalentEccentricityFromEccentricity();
+        end
+
+        % Getter for dependent property horizontalRetinalMeridian
+        function val = get.horizontalRetinalMeridian(obj)
+            val = obj.inputConeMosaic.horizontalRetinalMeridian;
+        end
+
+        % Getter for dependent property verticalRetinalMeridian
+        function val = get.verticalRetinalMeridian(obj)
+            val = obj.inputConeMosaic.verticalRetinalMeridian;
+        end
 
     end % Public methods
 

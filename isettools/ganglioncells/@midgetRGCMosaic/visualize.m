@@ -5,17 +5,25 @@ function visualize(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('maxVisualizedRFs', 7, @isscalar);
-    p.addParameter('xLims', [], @(x)(isempty(x)||(numel(x)==2)));
-    p.addParameter('yLims', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('xLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('yLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('xRangeDegs', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('yRangeDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('fontSize', 16, @isscalar);
+    p.addParameter('retinalMeridianAxesLabeling', false, @islogical);
+    p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.parse(varargin{:});
 
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
     maxVisualizedRFs = p.Results.maxVisualizedRFs;
-    xLims  = p.Results.xLims; 
-    yLims  = p.Results.yLims;
+    xLimsDegs  = p.Results.xLimsDegs; 
+    yLimsDegs  = p.Results.yLimsDegs;
+    xRangeDegs = p.Results.xRangeDegs;
+    yRangeDegs = p.Results.yRangeDegs;
     fontSize = p.Results.fontSize;
+    plotTitle = p.Results.plotTitle;
+    retinalMeridianAxesLabeling = p.Results.retinalMeridianAxesLabeling;
 
     % Set figure size
     if (isempty(figureHandle))
@@ -46,13 +54,21 @@ function visualize(obj, varargin)
     theRetinalRFcenterMaps = obj.computeRetinalRFcenterMaps(marginDegs, spatialSupportSamplesNum);
 
     % Plot part of the input cone mosaic
-    if (isempty(xLims))
-        xLims = mRGCmosaicCenterDegs(1) + 0.15*[-1 1];
+    if (isempty(xLimsDegs))
+        xLimsDegs = mRGCmosaicCenterDegs(1) + 0.15*[-1 1];
     end
-    if (isempty(yLims))
-        yLims = mRGCmosaicCenterDegs(2) + 0.5*[-1 1];
+    if (isempty(yLimsDegs))
+        yLimsDegs = mRGCmosaicCenterDegs(2) + 0.15*[-1 1];
     end
     
+    if (~isempty(xRangeDegs))
+        xLimsDegs = mRGCmosaicCenterDegs(1) + xRangeDegs;
+    end
+
+    if (~isempty(yRangeDegs))
+        yLimsDegs = mRGCmosaicCenterDegs(2) + yRangeDegs;
+    end
+
     xTicks = sign(mRGCmosaicCenterDegs(1)) * round(abs(mRGCmosaicCenterDegs(1)*10))/10 + 0.1*(-2:1:2);
     yTicks = sign(mRGCmosaicCenterDegs(2)) * round(abs(mRGCmosaicCenterDegs(2)*10))/10 + 0.1*(-2:1:2);
 
@@ -62,10 +78,27 @@ function visualize(obj, varargin)
             'visualizedConeAperture', 'lightCollectingArea4sigma', ...
             'visualizedConeApertureThetaSamples', 20, ...
             'domain', 'degrees', ...
-            'domainVisualizationLimits', [xLims(1) xLims(2) yLims(1) yLims(2)], ...
+            'domainVisualizationLimits', [xLimsDegs(1) xLimsDegs(2) yLimsDegs(1) yLimsDegs(2)], ...
             'domainVisualizationTicks', struct('x', xTicks, 'y', yTicks), ...
             'backgroundColor', [1 1 1], ...
-            'fontSize', fontSize);
+            'fontSize', fontSize, ...
+            'plotTitle', plotTitle);
+
+    if (retinalMeridianAxesLabeling)
+        if (obj.eccentricityDegs(1) ~= 0)
+            % Change the x-label to display the horizontal retinal meridian 
+            xlabel(axesHandle, sprintf('%s', strrep(obj.horizontalRetinalMeridian, 'meridian', 'retina')));
+        else
+            xlabel(axesHandle, '\leftarrow nasal retina    \rightarrow temporal retina');
+        end
+
+        if (obj.eccentricityDegs(2) ~= 0)
+            % Change the y-label to display the vertical retinal meridian 
+            ylabel(axesHandle, sprintf('%s', strrep(obj.verticalRetinalMeridian, 'meridian', 'retina')));
+        else
+            ylabel(axesHandle, '\leftarrow inferior retina    \rightarrow superior retina');
+        end
+    end
 
     hold(axesHandle, 'on');
 
@@ -83,15 +116,33 @@ function visualize(obj, varargin)
         s = theRetinalRFcenterMaps{targetRGCindex};
         theRF = s.centerRF;
 
-        % Fit the continuous center RF map with an ellipsoidal Gaussian
-        theFittedGaussian = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
-                s.spatialSupportDegsX, s.spatialSupportDegsY, theRF, ...
+        fprintf('Fitting ellipsoid to RF %d of %d. Please wait ...\n', iRGC, maxVisualizedRFs);
+
+        % Fitting the discrete RF center cone map
+        fitTheDiscreteRFcenterMap = true;
+
+        if (fitTheDiscreteRFcenterMap)
+            % Fit the discrete center RF map with an ellipsoidal Gaussian
+            theFittedGaussian = RetinaToVisualFieldTransformer.fitScatterGaussianEllipsoid(...
+                s.spatialSupportDegsX, s.spatialSupportDegsY, theRF,...
+                s.inputConeWeights, obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices,:), ...
                 'flatTopGaussian', ~true, ...
                 'forcedOrientationDegs', [], ...
-                'rangeForEllipseRcYRcXratio', [1/1.4 1.4], ...
+                'rangeForEllipseRcYRcXratio', [1/2 2], ...
                 'forcedCentroidXYpos', obj.rgcRFpositionsDegs(targetRGCindex,:), ...
                 'globalSearch', true, ...
                 'multiStartsNum', 8);
+        else
+            % Fit the continuous center RF map with an ellipsoidal Gaussian
+            theFittedGaussian = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
+                    s.spatialSupportDegsX, s.spatialSupportDegsY, theRF, ...
+                    'flatTopGaussian', ~true, ...
+                    'forcedOrientationDegs', [], ...
+                    'rangeForEllipseRcYRcXratio', [1/1.4 1.4], ...
+                    'forcedCentroidXYpos', obj.rgcRFpositionsDegs(targetRGCindex,:), ...
+                    'globalSearch', true, ...
+                    'multiStartsNum', 4);
+        end
 
 
         % Plot the connection weights
