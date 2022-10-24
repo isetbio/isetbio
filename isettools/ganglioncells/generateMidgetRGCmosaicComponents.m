@@ -150,6 +150,13 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                     'surroundToCenterRcRatioGrid', ...
                     'surroundToCenterIntegratedSensitivityRatioGrid');
 
+                    % If we re-run this step a second time, the
+                    % 'RTVFTobjList' variable does not exist in the file
+                    % but we can get it from the midgetRGCMosaic itself
+                    if (~exist('RTVFTobjList', 'var')) && (~isempty(theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList))
+                        RTVFTobjList = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList;
+                    end
+
                     % Generate C/S spatial RFs for all cells in the
                     % midgetRGCmosaic
                     theMidgetRGCmosaic.generateCenterSurroundSpatialPoolingRF(RTVFTobjList, ...

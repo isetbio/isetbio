@@ -11,7 +11,6 @@ function temporalEquivalentEccDegs = temporalEquivalentEccentricityForEccentrici
         % The vertical ecc
         verticalEcc = eccDegs(iPoint,2);
 
-        obj.temporalEquivantEccentricityFactor
         % The horizontal ecc
         if strcmp(obj.horizontalRetinalMeridian, RGCmodels.Watson.constants.nasalMeridian)
             % On the nasal meridian
