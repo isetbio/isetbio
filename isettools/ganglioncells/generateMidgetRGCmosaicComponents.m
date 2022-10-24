@@ -14,7 +14,7 @@ function generateMidgetRGCmosaicComponents
     % Operation to compute
     %operations = {'fitSTFs'};
     %operations = {'summarizeSTFfits'};
-    operations = operations(1:2);
+    operations = operations(2:2);
 
     % L-M gratings
     %coneContrasts = [0.12 -0.12 0];
@@ -57,7 +57,7 @@ function generateMidgetRGCmosaicComponents
 
     resetSummaryFigure  = true; hFigSummary = [];
    
-    for iEcc = 8:8 %size(eccSizeDegsExamined,1)
+    for iEcc = 1:1 %size(eccSizeDegsExamined,1)
         
         fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
