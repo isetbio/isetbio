@@ -244,7 +244,7 @@ classdef RetinaToVisualFieldTransformer < handle
             Xdegs, Ydegs, RFcenter, minConeWeight);
 
         % Compute the fitted visualRF from the current retinal pooling params
-        [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = ...
+        [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
             visualRFfromRetinalConePooling(modelConstants, retinalPoolingParams);
 
         % Method to compute the retinal subregion cone map by summing the

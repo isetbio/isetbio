@@ -297,7 +297,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
         end
 
         % Compute the fitted visual RF
-        [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = ...
+        [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
             RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(modelConstants, retinalConePoolingParams.finalValues);
     
      
@@ -328,7 +328,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
 
     obj.rfComputeStruct.retinalConePoolingParams = retinalConePoolingParams;
-
+    obj.rfComputeStruct.pooledConeIndicesAndWeights = pooledConeIndicesAndWeights;
     
     if (modelConstants.simulateCronerKaplanEstimation)
         obj.rfComputeStruct.theSTF = struct('support', stfSupportCPD, 'fitted', theFittedSTF, 'target', theTargetSTF);

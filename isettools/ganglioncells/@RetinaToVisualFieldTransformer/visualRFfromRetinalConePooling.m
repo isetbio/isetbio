@@ -1,4 +1,4 @@
-function [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap] = visualRFfromRetinalConePooling(modelConstants, retinalPoolingParams)
+function [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = visualRFfromRetinalConePooling(modelConstants, retinalPoolingParams)
 
     % Compute the indices and retinal weights of cones pooled by the center and the
     % surround mechanism
