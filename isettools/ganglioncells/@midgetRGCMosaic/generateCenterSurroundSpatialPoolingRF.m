@@ -72,22 +72,38 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
 
         if (isnan(totalCenterStrengthForModelRF(iObj)))
             idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights > 0);
-            totalCenterStrengthForModelRF(iObj) = sum(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights(idx));
+            centerConeIndices = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeIndices(idx);
+            relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(centerConeIndices)).^2 ./ ...
+                                           obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices);
+            weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights(idx);
+            totalCenterStrengthForModelRF(iObj) = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
         end
 
         if (isnan(totalSurroundStrengthForModelRF(iObj)))
             idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights > 0);
-            totalSurroundStrengthForModelRF(iObj) = sum(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights(idx));
+            surroundConeIndices = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeIndices(idx);
+            relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(surroundConeIndices)).^2 ./ ...
+                                             obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices);
+            weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights(idx);
+            totalSurroundStrengthForModelRF(iObj) = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
         end
 
         % Center strength correction factor
         idx = find(pooledConeIndicesAndWeights.centerConeWeights > 0);
-        totalCenterStrengthForThisRF = sum(pooledConeIndicesAndWeights.centerConeWeights(idx));
+        centerConeIndices = pooledConeIndicesAndWeights.centerConeIndices(idx);
+        relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(centerConeIndices)).^2 ./ ...
+                                        obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices);
+        weights = pooledConeIndicesAndWeights.centerConeWeights(idx);
+        totalCenterStrengthForThisRF = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
         centerStrengthCorrectionFactor = totalCenterStrengthForModelRF(iObj)/totalCenterStrengthForThisRF;
 
         % Surround strength correction factor
         idx = find(pooledConeIndicesAndWeights.surroundConeWeights > 0);
-        totalSurroundStrengthForThisRF = sum(pooledConeIndicesAndWeights.surroundConeWeights(idx));
+        surroundConeIndices = pooledConeIndicesAndWeights.surroundConeIndices(idx);
+        relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(surroundConeIndices)).^2 ./ ...
+                                         obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices);
+        weights = pooledConeIndicesAndWeights.surroundConeWeights(idx);
+        totalSurroundStrengthForThisRF = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
         surroundStrengthCorrectionFactor = totalSurroundStrengthForModelRF(iObj)/totalSurroundStrengthForThisRF;
 
         % Update theMidgetRGCmosaic.rgcRFcenterConePoolingMatrix and

@@ -217,6 +217,10 @@ classdef cMosaic < handle
         % Fixational eye movement object for the mosaic
         fixEMobj = [];
         
+        % Photon absorption attenuation factors to account for decrease in 
+        % outer segment length with eccentricity
+        outerSegmentLengthEccVariationAttenuationFactors = [];
+
         % Cone aperture diameter (summation) for each cone
         coneApertureDiametersMicrons = [];
         coneApertureDiametersDegs = [];
@@ -303,10 +307,6 @@ classdef cMosaic < handle
         
         % OSLength attenuation factors (only used when importing coneData)
         importedOSLengthAttenuationFactors = [];
-        
-        % Photon absorption attenuation factors to account for decrease in 
-        % outer segment length with eccentricity
-        outerSegmentLengthEccVariationAttenuationFactors = [];
         
         % Cone aperture shrinkage factors due to progressive rod intrusion 
         % with eccentricity
