@@ -57,7 +57,7 @@ function generateMidgetRGCmosaicComponents
 
     resetSummaryFigure  = true; hFigSummary = [];
    
-    for iEcc = 1:1 %size(eccSizeDegsExamined,1)
+    for iEcc = 7:7 %size(eccSizeDegsExamined,1)
         
         fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
@@ -118,11 +118,12 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                     % Also from Croner & Kaplan '95 (Figure 10b)
                     % "These mean ratios for P and M cells are not significantly different
                     % (Student's t-test: P = 0.482). The overall mean ratio is 0.55.
+                    % Here we compute the temporal-equivalent eccentricity
+                    % based SCint sensitivity ratio
                     temporalEquivalentEccDegs = theMidgetRGCmosaic.temporalEquivalentEccentricityForEccentricity(eccDegsGrid(iGridPosition,:));
                     radialTemporalEquivalentEccDegs = sqrt(sum(temporalEquivalentEccDegs.^2,2));
                     scIntSensitivity = RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(radialTemporalEquivalentEccDegs);
                     surroundToCenterIntegratedSensitivityRatioGrid(iGridPosition) = scIntSensitivity;
-                    
                 end
 
 
@@ -561,7 +562,7 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF
     % DoG param initial values and limits: RsToRc ratio
     RsToRc = struct(...
         'low', 1.5, ...
-        'high', 10, ...
+        'high', 100, ...
         'initial', 5);
 
     % DoG param initial values and limits: RcDegs
@@ -609,7 +610,7 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF
           'UseParallel', true);
       
      % Run the multi-start
-     multiStartsNum = 16;
+     multiStartsNum = 24;
      DoGparams.bestFitValues = run(ms, problem, multiStartsNum);
 
      theFittedSTF.compositeSTF = DoGSTF(DoGparams.bestFitValues, sf);
@@ -751,8 +752,6 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
         theGridOpticsParams = opticsParams;
         theGridTargetVisualRFDoGparams = targetVisualRFDoGparams;
         
-        % Update params structs for this grid position
-
         % Update opticsParams position for this grid position
         theGridOpticsParams.positionDegs = eccDegsGrid(iGridPosition,:);
 
@@ -794,7 +793,8 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
 
         RTVFTobjList{iGridPosition} = RetinaToVisualFieldTransformer(...
             theConeMosaic, ...
-            theGridOpticsParams, theGridTargetVisualRFDoGparams, ...
+            theGridOpticsParams, ...
+            theGridTargetVisualRFDoGparams, ...
             'simulateCronerKaplanEstimation', true, ...
             'multiStartsNum', multiStartsNum, ...
             'doDryRunFirst', doDryRunFirst);

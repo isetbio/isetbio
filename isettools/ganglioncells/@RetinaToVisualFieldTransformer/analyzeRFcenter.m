@@ -8,8 +8,6 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         spatialSupportDegs)
     
     if (numel(indicesOfConesPooledByTheRFcenter) == 2)
-           % We are using a circularly summetric PSF, so force the
-           % orientation to match the orientation of the 2 cones
            cone1RFpos = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter(1),:);
            cone2RFpos = obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter(2),:);
            deltaY = cone2RFpos(2)-cone1RFpos(2);
@@ -41,10 +39,16 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         % along the y-dimension of the visualluy projected cone aperture map
         % and subsequently fit a line-weighting function for a Gaussian 
 
+        % Rotate the targetVisualRFmap so as to maximize horizontal resolution and 
+        % retrieve the rotation that maximizes horizontal resolution
+        bestHorizontalResolutionRotationDegs = [];
+        [rotatedVisualRFcenterConeMap, bestHorizontalResolutionRotationDegs] = ...
+            RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(visualRFcenterConeMap, bestHorizontalResolutionRotationDegs);
+
         % Fit a 1D Gaussian line weighting function to the 1D profile 
         % (integration along the Y-dimension of the 2D visually projected
         % cone aperture map)
-        visualRFcenterConeMapProfile = sum(visualRFcenterConeMap,1);
+        visualRFcenterConeMapProfile = sum(rotatedVisualRFcenterConeMap,1);
         theFittedGaussianLineWeightingFunction = RetinaToVisualFieldTransformer.fitGaussianLineWeightingFunction(...
             obj.thePSFData.spatialSupportForRFmapXdegs, visualRFcenterConeMapProfile);
 
@@ -54,7 +58,7 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         visualRFcenterCharacteristicRadiiDegs = [];
         visualRFcenterFlatTopExponents = [];
         visualRFcenterXYpos = [theFittedGaussianLineWeightingFunction.xo 0];
-        visualRFcenterOrientationDegs = [];
+        visualRFcenterOrientationDegs = bestHorizontalResolutionRotationDegs;
 
     else
 
@@ -65,10 +69,6 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
             'forcedOrientationDegs', forcedOrientationDegs, ...
             'globalSearch', false);
 
-        % Return the characteristic radius in degrees
-        % The sum of the 2 radii
-        %visualRFcenterCharacteristicRadiusDegs = sqrt(sum(theFittedGaussian.characteristicRadii.^2,2))/sqrt(2);
-    
         % The sqrt(product) of the 2 radii
         visualRFcenterCharacteristicRadiusDegs = sqrt(prod(theFittedGaussian.characteristicRadii));
     

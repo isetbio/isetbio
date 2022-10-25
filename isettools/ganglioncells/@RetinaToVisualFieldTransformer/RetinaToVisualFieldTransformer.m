@@ -79,7 +79,6 @@ classdef RetinaToVisualFieldTransformer < handle
             p.addParameter('doDryRunFirst', false, @islogical);
             p.parse(varargin{:});
 
-
             % Generate filename for saved object
             obj.computedObjDataFileName = RetinaToVisualFieldTransformer.computedObjectDataFileName(opticsParams, targetVisualRFDoGparams);
             fprintf('Computed object will be saved to %s\n', obj.computedObjDataFileName);
@@ -260,6 +259,11 @@ classdef RetinaToVisualFieldTransformer < handle
         % Method to fit a Gaussian line weight function to a 1D RFmap profile
         theFittedGaussianLineWeightingFunction = fitGaussianLineWeightingFunction(...
             supportXdegs, theRFprofile, varargin);
+
+        % Method to detemine best RF rotation to maximize resolution along
+        % horizontal axis, and rotate the RF according to this angle
+        [theRotatedRF, bestHorizontalResolutionRotationDegs] = ...
+            bestHorizontalResolutionRFmap(theRF, bestHorizontalResolutionRotationDegs);
 
         % Method to compute the one-sided STF from the RF profile
         [oneSidedSpatialFrequencySupport, oneSidedSTF] = spatialTransferFunction(spatialSupportDegs, theRFprofile);
