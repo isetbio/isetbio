@@ -57,9 +57,11 @@ function generateMidgetRGCmosaicComponents
 
     resetSummaryFigure  = true; hFigSummary = [];
    
-    for iEcc = 1:1 %size(eccSizeDegsExamined,1)
+    eccentricityIndices = [1 2 3 4 5 6 8 9 11 12];
+    for ii = 1:numel(eccentricityIndices)
         
-        fprintf('Generating components for mosaic %d of %d\n', iEcc, size(eccSizeDegsExamined,1));
+        iEcc = eccentricityIndices(ii);
+        fprintf('Generating components for mosaic %d of %d\n', iEcc, numel(eccentricityIndices));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
         sizeDegs = eccSizeDegsExamined(iEcc,2) * [1 1];
         hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir, resetSummaryFigure, hFigSummary);
@@ -181,7 +183,7 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                 
                 % Compute responses to a varietry of spatial frequencies and orientations
                 [theMidgetRGCMosaicResponses, orientationsTested, spatialFrequenciesTested, spatialPhasesDegs] = ...
-                    computeTheSTF(theMidgetRGCmosaic, coneContrasts);
+                    computeTheSTFs(theMidgetRGCmosaic, coneContrasts);
                 
                 % Assemble responses savefilename
                 responsesPostfix = sprintf('_Responses_%2.2f_%2.2f_%2.2f.mat', ...
@@ -256,14 +258,14 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                     );
                     theRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{iObj};
 
-                    maxResponse = max(max(abs(squeeze(theMidgetRGCMosaicResponses(:, :, iRGC)))));
+                    maxResponse = max(max(max(abs(squeeze(theMidgetRGCMosaicResponses(:, :, :, iRGC))))));
                     minResponse = -maxResponse;
                     meanResponse = 0;
 
                     % Generate circular LUT
                     oriColorLUT = phasemap(numel(orientationsTested));
 
-                    theResponseModulation = zeros(1, numel(orientationsTested), numel(spatialFrequenciesTested));
+                    theResponseModulation = zeros(numel(orientationsTested), numel(spatialFrequenciesTested));
                     for iSF = 1:numel(spatialFrequenciesTested)
                         for iOri = 1:numel(orientationsTested)
                             % Retrieve the mRGC response time-series
@@ -302,7 +304,7 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                         end % iOri
                     end % iSF
 
-                    theMeasuredSTF = theResponseModulation/max(theResponseModulation);
+                    theMeasuredSTF = theResponseModulation/max(theResponseModulation(:));
 
                     % Visualize the examined retinal RF
                     ax = subplot(numel(spatialFrequenciesTested),2, [2 4 6 8]);
@@ -337,16 +339,17 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                         plot(ax,spatialFrequenciesTested, theSTFatThisOri, '-', ...
                             'Color', oriColorLUT(iOri,:), 'LineWidth', 1.0);
 
-                        % Find spatial frequency at which STF drops to 20% of max
-                        thresholdMag = mag * 0.2;
+                        % Find spatial frequency at which STF drops to 20%
+                        % of max
                         [mag, iSFpeak] = max(theSTFatThisOri);
-                        
+                        thresholdSTF = mag * 0.2;
+
                         ii = iSFpeak;
                         keepGoing = true;
                         iStop = [];
                         while (ii<numel(spatialFrequenciesTested))&&(keepGoing)
                             ii = ii + 1;
-                            if (theSTFatThisOri(ii)>=thresholdMag) && (theSTFatThisOri(ii+1)<thresholdMag)
+                            if (theSTFatThisOri(ii)>=thresholdSTF) && (theSTFatThisOri(ii+1)<thresholdSTF)
                                 keepGoing = false;
                                 iStop = ii;
                             end
@@ -387,6 +390,7 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                         % Plot the fitted STF
                         plot(ax, theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, 'k-', 'LineWidth', 3.0);
                         p4 = plot(ax, theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, 'c-', 'LineWidth', 1.5);
+                        
                     end
 
                     hold(ax, 'off');
@@ -402,7 +406,7 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                     ylabel(ax, 'STF');
                     grid(ax, 'on');
                     set(ax, 'XLim', [0.1 100], 'XScale', 'Log', 'FontSize', 16);
-                    
+                  
                     if (strcmp(operations{iOp}, 'visualizeSTFs'))
                         drawnow;
                         videoOBJ.writeVideo(getframe(hFig));
@@ -672,7 +676,7 @@ end
 
 
 function [theMidgetRGCMosaicResponses, orientationsTested, spatialFrequenciesTested, spatialPhasesDegs] = ...
-    computeTheSTF(theMidgetRGCmosaic, coneContrasts)
+    computeTheSTFs(theMidgetRGCmosaic, coneContrasts)
 
     sceneFOVdegs = theMidgetRGCmosaic.inputConeMosaic.sizeDegs;
 
@@ -705,44 +709,59 @@ function [theMidgetRGCMosaicResponses, orientationsTested, spatialFrequenciesTes
     orientationsTested = 0:30:150;
     spatialFrequenciesTested = [0.25 0.5 1 2 4 6 8 10 12 16 24 32 64];
 
+    % Allocate memory
+    stimParams.orientationDegs = 0;
+    stimParams.spatialFrequencyCPD = spatialFrequenciesTested(1);
+    [~, spatialPhasesDegs] = rfMappingStimulusGenerator.driftingGratingFrames(stimParams);
+    theMidgetRGCMosaicResponses = ...
+        zeros(numel(orientationsTested), numel(spatialFrequenciesTested), numel(spatialPhasesDegs), rgcsNum);
+     
     for iOri = 1:numel(orientationsTested)
-    for iFreq = 1:numel(spatialFrequenciesTested)
-   
-        stimParams.spatialFrequencyCPD = spatialFrequenciesTested(iFreq);
         stimParams.orientationDegs = orientationsTested(iOri);
 
-        fprintf('Generating scenes for the frames of the %2.3f c/deg, %d degs orientation pattern.\n', stimParams.spatialFrequencyCPD, stimParams.orientationDegs);
+        fprintf('Computing STF for the %d degs orientation patterns.\n', ...
+                stimParams.orientationDegs);
+    
+        parfor iFreq = 1:numel(spatialFrequenciesTested)
+            theStimParams = stimParams;
+            theStimParams.spatialFrequencyCPD = spatialFrequenciesTested(iFreq);
+            
+            
+            % Generate spatial modulation patterns
+            theDriftingGratingSpatialModulationPatterns = rfMappingStimulusGenerator.driftingGratingFrames(theStimParams);
+    
+            % Generate scenes for the different spatial phases
+            [theDriftingGratingFrameScenes, theNullStimulusScene] = ...
+                rfMappingStimulusGenerator.generateStimulusMappingFramesOnPresentationDisplay(...
+                    theDisplay, theStimParams, theDriftingGratingSpatialModulationPatterns, ...
+                    'validateScenes', false);
+       
+            % Allocate memory
+            theFrameResponses = zeros(numel(spatialPhasesDegs), rgcsNum);
 
-        [theDriftingGratingSpatialModulationPatterns, spatialPhasesDegs] = ...
-            rfMappingStimulusGenerator.driftingGratingFrames(stimParams);
+            % Compute mRGCmosaic responses
+            for iFrame = 1:numel(spatialPhasesDegs)
+                % Get scene corresponding to this stimulus frame
+                theScene = theDriftingGratingFrameScenes{iFrame};
+    
+                % Compute the mosaic's response to this stimulus frame
+                r = theMidgetRGCmosaic.compute(...
+                    theScene, ...
+                    'nTrials', 1, ...
+                    'theNullScene', theNullStimulusScene, ...
+                    'normalizeConeResponsesWithRespectToNullScene', true);
+    
+                % Store the mosaic's responses
+                theFrameResponses(iFrame,:) = r;
+            end
 
-        if ((iFreq == 1) && (iOri == 1))
-            theMidgetRGCMosaicResponses = zeros(numel(orientationsTested), numel(spatialFrequenciesTested), numel(spatialPhasesDegs), rgcsNum);
-        end
+            % Save memory
+            theDriftingGratingFrameScenes = [];
+            theNullStimulusScene = [];
 
-        % Generate scenes for the different spatial phasaes
-        [theDriftingGratingFrameScenes, theNullStimulusScene, spatialSupportDegs] = ...
-            rfMappingStimulusGenerator.generateStimulusMappingFramesOnPresentationDisplay(...
-                theDisplay, stimParams, theDriftingGratingSpatialModulationPatterns, ...
-                'validateScenes', false);
-   
-        % Compute mRGCmosaic responses
-        for iFrame = 1:numel(theDriftingGratingFrameScenes)
-            % Get scene corresponding to this stimulus frame
-            theScene = theDriftingGratingFrameScenes{iFrame};
-
-            % Compute the mosaic's response to this stimulus frame
-            r = theMidgetRGCmosaic.compute(...
-                theScene, ...
-                'nTrials', 1, ...
-                'theNullScene', theNullStimulusScene, ...
-                'normalizeConeResponsesWithRespectToNullScene', true);
-
-            % Store the mosaic's responses
-            theMidgetRGCMosaicResponses(iOri, iFreq, iFrame,:) = r;
-        end
-        
-    end % iFreq
+            theMidgetRGCMosaicResponses(iOri, iFreq,:,:) = theFrameResponses;
+            
+        end % iFreq
     end % iOri
 
 end
