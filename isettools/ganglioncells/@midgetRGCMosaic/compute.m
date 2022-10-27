@@ -24,46 +24,51 @@ function [responses, responseTemporalSupport] = compute(obj, theScene, varargin)
     p = inputParser;
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('theNullScene', [], @isstruct);
+    p.addParameter('withOptics', [], @isstruct);
     p.addParameter('normalizeConeResponsesWithRespectToNullScene', false, @islogical);
     p.parse(varargin{:});
     
 
     nTrials = p.Results.nTrials;
     theNullScene = p.Results.theNullScene;
+    theOpticalImage = p.Results.withOptics;
     normalizeConeResponsesWithRespectToNullScene = p.Results.normalizeConeResponsesWithRespectToNullScene;
 
     if (isempty(nTrials))
         nTrials = 1;
     end
 
-    % Retrieve the optics
-    % Note: if the obj.theOpticsPositionGrid contains more than one
-    % position, we will have to generate multiple optical images
-    % more than 1 
-    opticalPositionsNum = size(obj.theOpticsPositionGrid,1);
-    opticalPositionIndex = 1;
-    if (opticalPositionsNum > 1)
-        fprintf(2,'Computing with multiple optical images is not yet supported. Using the first one.\n');
+    if (isempty(theOpticalImage))
+        fprintf('No optics were passed. Using the optics used to derive the center/surround pooling weights.')
+        % Retrieve the optics
+        % Note: if the obj.theOpticsPositionGrid contains more than one
+        % position, we will have to generate multiple optical images
+        % more than 1 
+        opticalPositionsNum = size(obj.theOpticsPositionGrid,1);
+        opticalPositionIndex = 1;
+        if (opticalPositionsNum > 1)
+            fprintf(2,'Computing with multiple optical images is not yet supported. Using the first one.\n');
+        end
+    
+        % Retrieve the optics params from the first RTVFTobj
+        theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{opticalPositionIndex};
+        opticsParams = theRTVFTobj.opticsParams;
+    
+        % Generate the OI based on the retrieved opticsParams
+        oiEnsemble = obj.inputConeMosaic.oiEnsembleGenerate(opticsParams.positionDegs, ...
+                        'zernikeDataBase', opticsParams.ZernikeDataBase, ...
+                        'subjectID', opticsParams.testSubjectID, ...
+                        'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
+                        'refractiveErrorDiopters', opticsParams.refractiveErrorDiopters, ...
+                        'zeroCenterPSF', opticsParams.zeroCenterPSF, ...
+                        'subtractCentralRefraction', opticsParams.subtractCentralRefraction, ...
+                        'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
+                        'upsampleFactor', opticsParams.psfUpsampleFactor, ...
+                        'warningInsteadOfErrorForBadZernikeCoeffs', true);
+    
+        theOpticalImage = oiEnsemble{1};
+        clear 'theRTVFTobj';
     end
-
-    % Retrieve the optics params from the first RTVFTobj
-    theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{opticalPositionIndex};
-    opticsParams = theRTVFTobj.opticsParams;
-
-    % Generate the OI based on the retrieved opticsParams
-    oiEnsemble = obj.inputConeMosaic.oiEnsembleGenerate(opticsParams.positionDegs, ...
-                    'zernikeDataBase', opticsParams.ZernikeDataBase, ...
-                    'subjectID', opticsParams.testSubjectID, ...
-                    'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
-                    'refractiveErrorDiopters', opticsParams.refractiveErrorDiopters, ...
-                    'zeroCenterPSF', opticsParams.zeroCenterPSF, ...
-                    'subtractCentralRefraction', opticsParams.subtractCentralRefraction, ...
-                    'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
-                    'upsampleFactor', opticsParams.psfUpsampleFactor, ...
-                    'warningInsteadOfErrorForBadZernikeCoeffs', true);
-
-    theOpticalImage = oiEnsemble{1};
-    clear 'theRTVFTobj';
 
     % Process the null scene
     if (~isempty(theNullScene))
@@ -98,24 +103,43 @@ function [responses, responseTemporalSupport] = compute(obj, theScene, varargin)
     % Allocate memory for the responses
     responses = zeros(nTrials, nTimePoints, mRGCsNum);
 
-    % Compute the response of each mRGC
-    parfor iRGC = 1:mRGCsNum
-        % Retrieve the center cone indices & weights
-        centerConnectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
-        centerConeIndices = find(centerConnectivityVector > 0.0001);
-        centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
+    if (isempty(obj.rgcRFcenterConePoolingMatrix))
+        fprintf(2,'The center and surround cone pooling matrices have not yet been set (no center/surround RF and no overlap) !!\n');
+        fprintf(2,'Using the rgcRFcenterConeConnectivityMatrix (zero overlap) instead to compute RF center responses only !!\n');
 
-        % Retrieve the surround cone indices & weights
-        surroundConnectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix(:, iRGC)));
-        surroundConeIndices = find(surroundConnectivityVector > 0.0001);
-        surroundConeWeights = reshape(surroundConnectivityVector(surroundConeIndices), [1 1 numel(surroundConeIndices)]);
+        % Compute the response of each mRGC
+        parfor iRGC = 1:mRGCsNum
+            % Retrieve the center cone indices & weights
+            centerConnectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
+            centerConeIndices = find(centerConnectivityVector > 0.0001);
+            centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
+    
+            % Sum the weighted cone responses pooled by the RF center only
+            centerActivation = sum(bsxfun(@times, noiseFreeAbsorptionsCount(:,:,centerConeIndices), centerConeWeights),3);
+            responses(:,:,iRGC) = centerActivation;
+        end
 
-        % Sum the weighted cone responses pooled by the RF center and RF surround
-        centerActivation = sum(bsxfun(@times, noiseFreeAbsorptionsCount(:,:,centerConeIndices), centerConeWeights),3);
-        surroundActivation = sum(bsxfun(@times, noiseFreeAbsorptionsCount(:,:,surroundConeIndices), surroundConeWeights),3);
+    else
 
-        % Composite response: centerActivation - surroundActivation
-        responses(:,:,iRGC) = centerActivation - surroundActivation;
+        % Compute the response of each mRGC
+        parfor iRGC = 1:mRGCsNum
+            % Retrieve the center cone indices & weights
+            centerConnectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
+            centerConeIndices = find(centerConnectivityVector > 0.0001);
+            centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
+    
+            % Retrieve the surround cone indices & weights
+            surroundConnectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix(:, iRGC)));
+            surroundConeIndices = find(surroundConnectivityVector > 0.0001);
+            surroundConeWeights = reshape(surroundConnectivityVector(surroundConeIndices), [1 1 numel(surroundConeIndices)]);
+    
+            % Sum the weighted cone responses pooled by the RF center and RF surround
+            centerActivation = sum(bsxfun(@times, noiseFreeAbsorptionsCount(:,:,centerConeIndices), centerConeWeights),3);
+            surroundActivation = sum(bsxfun(@times, noiseFreeAbsorptionsCount(:,:,surroundConeIndices), surroundConeWeights),3);
+    
+            % Composite response: centerActivation - surroundActivation
+            responses(:,:,iRGC) = centerActivation - surroundActivation;
+        end
     end
 
 end

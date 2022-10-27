@@ -1,14 +1,14 @@
-function visualize(obj, varargin)
+function [figureHandle, axesHandle] = visualize(obj, varargin)
 
     % Parse input
     p = inputParser;
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('maxVisualizedRFs', 18, @isscalar);
+    p.addParameter('xRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
+    p.addParameter('yRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
     p.addParameter('xLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('yLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
-    p.addParameter('xRangeDegs', [], @(x)(isempty(x)||(numel(x)==2)));
-    p.addParameter('yRangeDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('retinalMeridianAxesLabeling', true, @islogical);
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
@@ -28,14 +28,14 @@ function visualize(obj, varargin)
     % Set figure size
     if (isempty(figureHandle))
         figureHandle = figure(); clf;
-        set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-        axesHandle = subplot('Position', [0.11 0.07 0.85 0.90]);
+        set(figureHandle, 'Position', [10 10 1250 1280], 'Color', [1 1 1]);
+        axesHandle = subplot('Position', [0.04 0.05 0.95 0.93]);
     else
         if (isempty(axesHandle))
             figure(figureHandle);
             clf;
-            set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
-            axesHandle = subplot('Position', [0.11 0.07 0.85 0.90]);
+            set(figureHandle, 'Position', [10 10 1280 1280], 'Color', [1 1 1]);
+            axesHandle = subplot('Position', [0.04 0.05 0.95 0.93]);
         end
         cla(axesHandle);
     end
@@ -57,22 +57,30 @@ function visualize(obj, varargin)
 
     % Plot part of the input cone mosaic
     if (isempty(xLimsDegs))
-        xLimsDegs = mRGCmosaicCenterDegs(1) + 0.15*[-1 1];
+        xLimsDegs = mRGCmosaicCenterDegs(1) + 0.5*xRangeDegs*[-1 1];
     end
     if (isempty(yLimsDegs))
-        yLimsDegs = mRGCmosaicCenterDegs(2) + 0.15*[-1 1];
+        yLimsDegs = mRGCmosaicCenterDegs(2) + 0.5*yRangeDegs*[-1 1];
     end
     
-    if (~isempty(xRangeDegs))
-        xLimsDegs = mRGCmosaicCenterDegs(1) + xRangeDegs;
+    xyLimsDegs = min([xLimsDegs yLimsDegs]);
+    if (xyLimsDegs < 0.5)
+        xyTicksDegs = 0.1;
+    elseif (xyLimsDegs < 1.0)
+        xyTicksDegs = 0.2;
+    elseif (xyLimsDegs < 2.5)
+        xyTicksDegs = 0.5;
+    elseif (xyLimsDegs < 5.0)
+        xyTicksDegs = 1.0;
+    elseif (xyLimsDegs < 10)
+        xyTicksDegs = 2.0;
+    else
+        xyTicksDegs = 5.0;
     end
 
-    if (~isempty(yRangeDegs))
-        yLimsDegs = mRGCmosaicCenterDegs(2) + yRangeDegs;
-    end
 
-    xTicks = sign(mRGCmosaicCenterDegs(1)) * round(abs(mRGCmosaicCenterDegs(1)*10))/10 + 0.1*(-2:1:2);
-    yTicks = sign(mRGCmosaicCenterDegs(2)) * round(abs(mRGCmosaicCenterDegs(2)*10))/10 + 0.1*(-2:1:2);
+    xTicks = sign(mRGCmosaicCenterDegs(1)) * round(abs(mRGCmosaicCenterDegs(1)*10))/10 + xyTicksDegs*(-10:1:10);
+    yTicks = sign(mRGCmosaicCenterDegs(2)) * round(abs(mRGCmosaicCenterDegs(2)*10))/10 + xyTicksDegs*(-10:1:10);
 
     obj.inputConeMosaic.visualize(...
             'figureHandle', figureHandle, ...
@@ -109,6 +117,10 @@ function visualize(obj, varargin)
 
         if (iRGC > maxVisualizedRFs)
             continue;
+        end
+
+        if (isempty(plotTitle))
+           title(axesHandle, sprintf('visualized RFs: %d of %d', iRGC, numel(sortedRGCindices)));
         end
 
         % Retrieve the RGCindex
@@ -150,26 +162,25 @@ function visualize(obj, varargin)
         % Plot the connection weights
         if (numel(s.inputConeIndices)>1)
             inputsCentroid = obj.rgcRFpositionsDegs(targetRGCindex,:);
-            for iInput = 1:numel(s.inputConeIndices)
-                if (s.inputConeWeights(iInput)>0.01)
-                    switch (obj.inputConeMosaic.coneTypes(s.inputConeIndices(iInput)))
-                        case cMosaic.LCONE_ID
-                            coneColor = obj.inputConeMosaic.lConeColor;
-                        case cMosaic.MCONE_ID
-                            coneColor = obj.inputConeMosaic.mConeColor;
-                        case cMosaic.SCONE_ID
-                            coneColor = obj.inputConeMosaic.sConeColor;
-                    end
-
-                    plot(axesHandle,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices(iInput),1)], ...
-                            [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices(iInput),2)], ...
-                            'k-', 'LineWidth', 3.0, 'Color', coneColor*0.5);
-
-                    plot(axesHandle,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices(iInput),1)], ...
-                            [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(s.inputConeIndices(iInput),2)], ...
-                            'k-', 'LineWidth', 1.5, 'Color', coneColor);
-                    drawnow
+            theCenterConnectedCones = s.inputConeIndices(find(s.inputConeWeights>0.001));
+            for iInput = 1:numel(theCenterConnectedCones)
+                switch (obj.inputConeMosaic.coneTypes(theCenterConnectedCones(iInput)))
+                    case cMosaic.LCONE_ID
+                        coneColor = obj.inputConeMosaic.lConeColor;
+                    case cMosaic.MCONE_ID
+                        coneColor = obj.inputConeMosaic.mConeColor;
+                    case cMosaic.SCONE_ID
+                        coneColor = obj.inputConeMosaic.sConeColor;
                 end
+
+                plot(axesHandle,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),1)], ...
+                    [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),2)], ...
+                    'k-', 'LineWidth', 3.0, 'Color', coneColor*0.5);
+
+                plot(axesHandle,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),1)], ...
+                    [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),2)], ...
+                    'k-', 'LineWidth', 1.5, 'Color', coneColor);
+                drawnow
             end
         end
 
@@ -178,8 +189,14 @@ function visualize(obj, varargin)
 
         % Contour of the fitted ellipsoid at 1 Rc
         oneRcLevel = [1 exp(-1)];
+
+        if (numel(theCenterConnectedCones) == 1)
+            % Single input. Go down to 10%
+            oneRcLevel = [1 0.1];
+        end
+
         cMap = brewermap(256, '*oranges');
-        alpha = 0.25;
+        alpha = 0.15;
         contourLineColor = [0.2 0.2 0.2];
         
         cMosaic.semiTransparentContourPlot(axesHandle, s.spatialSupportDegsX, s.spatialSupportDegsY, fittedEllipsoidMap/max(fittedEllipsoidMap(:)), ...

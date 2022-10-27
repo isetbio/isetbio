@@ -3,6 +3,7 @@ function generateMidgetRGCmosaicComponents
     % Operations
     operations = {...
         'generateMosaic' ...
+        'visualizeMosaic' ...
         'generateRTVFTobjList' ...
         'generateCenterSurroundRFs' ...
         'computeSTF' ...
@@ -14,7 +15,7 @@ function generateMidgetRGCmosaicComponents
     % Operation to compute
     %operations = {'fitSTFs'};
     %operations = {'summarizeSTFfits'};
-    operations = operations([1 2 3 4 6]);
+    operations = operations(2:2);
 
     % L-M gratings
     %coneContrasts = [0.12 -0.12 0];
@@ -57,7 +58,7 @@ function generateMidgetRGCmosaicComponents
 
     resetSummaryFigure  = true; hFigSummary = [];
    
-    eccentricityIndices = [1 2 3 4 5 6 8 9 11 12];
+    eccentricityIndices =  2:8 %[1 2 3 4 5 6 8 9 11 12];
     for ii = 1:numel(eccentricityIndices)
         
         iEcc = eccentricityIndices(ii);
@@ -92,6 +93,18 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                         );
                 save(fName, 'theMidgetRGCmosaic', '-v7.3');
                 fprintf('Exported the computed midgetRGCMosaic to %s\n', fName);
+
+            case 'visualizeMosaic'
+                % Load the midget RGCmosaic
+                load(fName, 'theMidgetRGCmosaic');
+                hFig = theMidgetRGCmosaic.visualize(...
+                    'xRangeDegs', 0.75, ...
+                    'yRangeDegs', 0.75, ...
+                    'maxVisualizedRFs', 512);
+
+                fNameMosaicPDF = strrep(fName, '.mat', '.pdf');
+                NicePlot.exportFigToPDF(fNameMosaicPDF, hFig, 300);
+                fprintf('Saved pdf of mosaic to %s\n', fNameMosaicPDF);
 
             case 'generateRTVFTobjList'
                 fprintf('Generating RTVFTobjList ... \n');
