@@ -24,7 +24,7 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams] = 
             rankedSujectIDs = PolansOptics.constants.subjectRanking();
             testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
             subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(...
-                opticsParams.analyzedEye, testSubjectID);
+                testSubjectID);
 
         otherwise
             error('Unknown zernike database: ''%ss'.', opticsParams.ZernikeDataBase);
