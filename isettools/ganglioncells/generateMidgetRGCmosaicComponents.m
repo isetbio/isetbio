@@ -15,7 +15,7 @@ function generateMidgetRGCmosaicComponents
     % Operation to compute
     %operations = {'fitSTFs'};
     %operations = {'summarizeSTFfits'};
-    operations = operations(2:2);
+    operations = operations(5:5);
 
     % L-M gratings
     %coneContrasts = [0.12 -0.12 0];
@@ -58,7 +58,7 @@ function generateMidgetRGCmosaicComponents
 
     resetSummaryFigure  = true; hFigSummary = [];
    
-    eccentricityIndices =  2:8 %[1 2 3 4 5 6 8 9 11 12];
+    eccentricityIndices =  1;
     for ii = 1:numel(eccentricityIndices)
         
         iEcc = eccentricityIndices(ii);
@@ -814,8 +814,8 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
         'retinalConePoolingModel', retinalConePoolingModel ...
         );
 
-    ZernikeDataBase = 'Artal2012';
-    subjectRankOrder = 3;
+    ZernikeDataBase = 'Polans2015';
+    subjectRankOrder = 9;
 
     % Struct with the various optics params
     opticsParams = struct(...

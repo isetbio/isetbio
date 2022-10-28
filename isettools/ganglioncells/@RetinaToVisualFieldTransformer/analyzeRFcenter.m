@@ -30,7 +30,7 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
     
     
     % Compute the visual RF center cone map via convolution of the retinalRFcenterConeMap with the PSF
-    visualRFcenterConeMap = conv2(retinalRFcenterConeMap, obj.thePSFData.data, 'same');
+    visualRFcenterConeMap = conv2(retinalRFcenterConeMap, obj.theVlambdaWeightedPSFData.vLambdaWeightedData, 'same');
 
    
     if (obj.simulateCronerKaplanEstimation)
@@ -45,12 +45,14 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         [rotatedVisualRFcenterConeMap, bestHorizontalResolutionRotationDegs] = ...
             RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(visualRFcenterConeMap, bestHorizontalResolutionRotationDegs);
 
+        bestHorizontalResolutionRotationDegs
+        disp('jere')
         % Fit a 1D Gaussian line weighting function to the 1D profile 
         % (integration along the Y-dimension of the 2D visually projected
         % cone aperture map)
         visualRFcenterConeMapProfile = sum(rotatedVisualRFcenterConeMap,1);
         theFittedGaussianLineWeightingFunction = RetinaToVisualFieldTransformer.fitGaussianLineWeightingFunction(...
-            obj.thePSFData.spatialSupportForRFmapXdegs, visualRFcenterConeMapProfile);
+            obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, visualRFcenterConeMapProfile);
 
         % Return the characteristic radius in degrees
         visualRFcenterCharacteristicRadiusDegs = theFittedGaussianLineWeightingFunction.characteristicRadius;

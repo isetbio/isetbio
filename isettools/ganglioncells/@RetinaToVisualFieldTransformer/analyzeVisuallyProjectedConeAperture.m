@@ -1,9 +1,9 @@
-function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeAperture(...
+function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs] = analyzeVisuallyProjectedConeAperture(...
                  anatomicalConeCharacteristicRadiusDegs, thePSFData, simulateCronerKaplanEstimation, hFig)
 
     % Compute the centroid of the PSF
     theCentroidDegs = RetinaToVisualFieldTransformer.estimateGeometry(...
-        thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.data);
+        thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.vLambdaWeightedData);
 
 
     % Generate anatomical cone aperture (a Gaussian with Rc) map centered
@@ -18,20 +18,26 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
                                    exp(-(((Ydegs-theCentroidDegs(2)))/anatomicalConeCharacteristicRadiusDegs).^2);
 
     % Convolve cone aperture with the PSF
-    theVisuallyProjectedConeApertureMap = conv2(theAnatomicalConeApertureMap, thePSFData.data, 'same');
+    theVisuallyProjectedConeApertureMap = conv2(theAnatomicalConeApertureMap, thePSFData.vLambdaWeightedData, 'same');
     theVisuallyProjectedConeApertureMap = theVisuallyProjectedConeApertureMap  / max(theVisuallyProjectedConeApertureMap(:));
 
 
+    bestHorizontalResolutionRotationDegs = [];
     if (simulateCronerKaplanEstimation)
         % Since RF parameters by Croner&Kaplan were based on gratings, to
         % approximate this (and to include features of this estimation) we sum
         % along the y-dimension of the visually projected cone aperture map
         % and subsequently fit a line-weighting function for a Gaussian 
 
+        % Rotate theVisuallyProjectedConeApertureMap so as to maximize horizontal resolution
+        [rotatedTargetVisualRFmap,bestHorizontalResolutionRotationDegs] = ...
+            RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(theVisuallyProjectedConeApertureMap, bestHorizontalResolutionRotationDegs);
+
+        
         % Fit a 1D Gaussian line weighting function to the 1D profile 
         % (integration along the Y-dimension of the 2D visually projected
         % cone aperture map)
-        theVisuallyProjectedConeApertureMapProfile = sum(theVisuallyProjectedConeApertureMap,1);
+        theVisuallyProjectedConeApertureMapProfile = sum(rotatedTargetVisualRFmap,1);
         theFittedGaussianLineWeightingFunction = RetinaToVisualFieldTransformer.fitGaussianLineWeightingFunction(...
             spatialSupportXdegs, theVisuallyProjectedConeApertureMapProfile);
 
@@ -76,7 +82,7 @@ function visualConeCharacteristicRadiusDegs = analyzeVisuallyProjectedConeApertu
         title('the anatomical cone aperture');
     
         subplot(2,2,2);
-        imagesc(thePSFData.psfSupportXdegs*60, thePSFData.psfSupportYdegs*60, thePSFData.data);
+        imagesc(thePSFData.psfSupportXdegs*60, thePSFData.psfSupportYdegs*60, thePSFData.thePSFData.vLambdaWeightedData);
         axis ('image');
         set(gca,'XLim', spatialSupportXLims*60, 'YLim', spatialSupportYLims*60, 'XTick', -5:1:5, 'YTick', -5:1:5);
         xlabel('arcmin');

@@ -1,6 +1,5 @@
-function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams] = computeVlambdaWeightedPSF(...
+function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams, theOI] = computeVlambdaWeightedPSF(...
     opticsParams, theConeMosaic, psfWavelengthSupport)
-
 
     % Ensure we have a valid eye specification
     assert(ismember(opticsParams.analyzedEye, {'left eye','right eye'}), ...
@@ -58,6 +57,7 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams] = 
 
     % Extract the OTF & the PSF
     thePSFData = psfEnsemble{1};
+    theOI = oiEnsemble{1};
 
     % Compute v_lambda weights for weigthing the PSF/OTF
     weights = vLambdaWeights(theConeMosaic.wave);
@@ -70,30 +70,20 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams] = 
             vLambdaWeightedPSF = vLambdaWeightedPSF + thePSFData.data(:,:,iWave) * weights(iWave);
         end
     end
-    thePSFData.data = vLambdaWeightedPSF;
 
-    % Center and rotate the PSF
-    thePSFData.data = RetinaToVisualFieldTransformer.centerAndRotatePSF(thePSFData.data);
-
-    % Ensure we have a unit volume
-    thePSFData.data = thePSFData.data / sum(thePSFData.data(:));
+    % The vLambda-weighted data with unit-volume
+    thePSFData.vLambdaWeightedData = vLambdaWeightedPSF/sum(vLambdaWeightedPSF(:));
 
     % Specify support in degs instead of the default arc min
     thePSFData.psfSupportXdegs = thePSFData.supportX/60;
     thePSFData.psfSupportYdegs = thePSFData.supportY/60;
 
     % Remove irrelevant fields
+    thePSFData = rmfield(thePSFData, 'data');
     thePSFData = rmfield(thePSFData, 'supportWavelength');
     thePSFData = rmfield(thePSFData, 'zCoeffs');
     thePSFData = rmfield(thePSFData, 'supportX');
     thePSFData = rmfield(thePSFData, 'supportY');
-
-    % Now generate the circular PSF
-%     theCircularPSFData = thePSFData;
-%     theCircularPSFData.data = RetinaToVisualFieldTransformer.circularlySymmetricPSF(...
-%         thePSFData.data, obj.psfCircularSymmetryMode);
-%     obj.theCircularPSFData = theCircularPSFData;
-
 end
 
 function w = vLambdaWeights(wavelengthSupport)

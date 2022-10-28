@@ -2,8 +2,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams)
     
     % Spatial support
-    spatialSupportDegs = [obj.thePSFData.spatialSupportForRFmapXdegs(:) obj.thePSFData.spatialSupportForRFmapXdegs(:)];
-    [Xdegs,Ydegs] = meshgrid(obj.thePSFData.spatialSupportForRFmapXdegs(:), obj.thePSFData.spatialSupportForRFmapXdegs(:));
+    spatialSupportDegs = [obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:) obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:)];
+    [Xdegs,Ydegs] = meshgrid(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:), obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:));
     Rdegs2 = Xdegs.^2+Ydegs.^2;
 
     % Compute the visual RF center and its characteristic radius
@@ -77,7 +77,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
     % Retinal cone pooling model constants
     modelConstants.theConeMosaic = obj.theConeMosaic;
-    modelConstants.thePSF = obj.thePSFData.data;
+    modelConstants.thePSF = obj.theVlambdaWeightedPSFData.vLambdaWeightedData;
     
     switch (targetVisualRFDoGparams.retinalConePoolingModel)
         case {'arbitrary center cone weights, double exponential surround weights-free', ...

@@ -1,24 +1,24 @@
 function cropPSF(obj,maxSpatialSupportDegs)
 
     % Reduce spatial support of the PSF to decrease compute time
-    idx = find(abs(obj.thePSFData.psfSupportXdegs) < maxSpatialSupportDegs);
-    idy = find(abs(obj.thePSFData.psfSupportXdegs) < maxSpatialSupportDegs);
+    idx = find(abs(obj.theVlambdaWeightedPSFData.psfSupportXdegs) < maxSpatialSupportDegs);
+    idy = find(abs(obj.theVlambdaWeightedPSFData.psfSupportYdegs) < maxSpatialSupportDegs);
 
-    obj.thePSFData.psfSupportXdegs = obj.thePSFData.psfSupportXdegs(idx);
-    obj.thePSFData.psfSupportYdegs = obj.thePSFData.psfSupportXdegs(idy);
-    obj.thePSFData.data = obj.thePSFData.data(idy,idx);
+    obj.theVlambdaWeightedPSFData.psfSupportXdegs = obj.theVlambdaWeightedPSFData.psfSupportXdegs(idx);
+    obj.theVlambdaWeightedPSFData.psfSupportYdegs = obj.theVlambdaWeightedPSFData.psfSupportYdegs(idy);
+    obj.theVlambdaWeightedPSFData.vLambdaWeightedData = obj.theVlambdaWeightedPSFData.vLambdaWeightedData(idy,idx);
 
-    if (max(abs(maxSpatialSupportDegs(:))) > max(obj.thePSFData.psfSupportXdegs))
-        dx = obj.thePSFData.psfSupportXdegs(2)-obj.thePSFData.psfSupportXdegs(1);
+    if (max(abs(maxSpatialSupportDegs(:))) > max(obj.theVlambdaWeightedPSFData.psfSupportXdegs))
+        dx = obj.theVlambdaWeightedPSFData.psfSupportXdegs(2)-obj.theVlambdaWeightedPSFData.psfSupportXdegs(1);
         spatialSupportXdegs = dx:dx:max(abs(maxSpatialSupportDegs(:)));
         spatialSupportXdegs = [-fliplr(spatialSupportXdegs) 0 spatialSupportXdegs];
-        obj.thePSFData.spatialSupportForRFmapXdegs = spatialSupportXdegs;
-        obj.thePSFData.spatialSupportForRFmapYdegs = spatialSupportXdegs;
+        obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs = spatialSupportXdegs;
+        obj.theVlambdaWeightedPSFData.spatialSupportForRFmapYdegs = spatialSupportXdegs;
     else
-        obj.thePSFData.spatialSupportForRFmapXdegs = obj.thePSFData.psfSupportXdegs;
-        obj.thePSFData.spatialSupportForRFmapYdegs = obj.thePSFData.psfSupportXdegs;
+        obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs = obj.theVlambdaWeightedPSFData.psfSupportXdegs;
+        obj.theVlambdaWeightedPSFData.spatialSupportForRFmapYdegs = obj.theVlambdaWeightedPSFData.psfSupportXdegs;
     end
     
     % Ensure we have unit volume
-    obj.thePSFData.data = obj.thePSFData.data / sum(obj.thePSFData.data(:));
+    obj.theVlambdaWeightedPSFData.vLambdaWeightedData = obj.theVlambdaWeightedPSFData.vLambdaWeightedData / sum(obj.theVlambdaWeightedPSFData.vLambdaWeightedData(:));
 end

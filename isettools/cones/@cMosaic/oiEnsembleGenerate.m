@@ -148,6 +148,7 @@ switch (zernikeDataBase)
                 'supportWavelength', psfSupportWavelength, ...
                 'zCoeffs', zCoeffs);
         end
-end
+        
+    end
 
 end

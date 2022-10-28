@@ -166,6 +166,10 @@ classdef midgetRGCMosaic < handle
         % Method to compute the response of the midgetRGCmosaic to a scene
         [responses, responseTemporalSupport] = compute(obj, theScene, varargin);
 
+        % Method to compute the retinal RFcenter maps - used for
+        % visualization and RFoverlap analysis
+        retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum, varargin);
+
         % Method to generate the C/S spatial pooling RF based on a passed RTVFT
         % object(s), which encodes C/S weights to achieve a desired visual STF
         % for specific optics and # of center cones
@@ -220,10 +224,7 @@ classdef midgetRGCMosaic < handle
         generateInputConeMosaic(obj, pResults);
         generateRFpositionsAndWireTheirCenters(obj);
 
-        % Method to compute the retinal RFcenter maps - used for
-        % visualization and RFoverlap analysis
-        retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum, varargin);
-
+        
         % Method to crop RGCs on the border
         cropRGCsOnTheBorder(obj);
 

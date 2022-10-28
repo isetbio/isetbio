@@ -50,8 +50,8 @@ function hFig = visualizeTargetAndFittedRFs(obj)
 
     % The PSF
     ax = subplot('Position', subplotPosVectors(1,1).v);
-    maxPSF = max(obj.thePSFData.data(:));
-    plotPSF(ax, obj.thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, subjectID, false, false, '');
+    maxPSF = max(obj.theVlambdaWeightedPSFData.vLambdaWeightedData(:));
+    plotPSF(ax, obj.theVlambdaWeightedPSFData, maxPSF, maxSpatialSupportDegs, eccDegs, subjectID, false, false, '');
 
 
     % The retinal RF center cone map
@@ -208,7 +208,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
             obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(targetCompositeMap,1));
 
     [~,thePSFMTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
-            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.thePSFData.data,1));
+            obj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1),sum(obj.theVlambdaWeightedPSFData.vLambdaWeightedData,1));
 
     maxSTF = max(retinalSTF.center);
 
@@ -304,10 +304,10 @@ end
 function plotPSF(ax, thePSFData, maxPSF, maxSpatialSupportDegs, eccDegs, testSubjectID, noXTickLabel, noYTickLabel, plotTitle)
     psfZLevels = 0.05:0.1:0.95;
     
-    contourf(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.data/maxPSF, psfZLevels);
+    contourf(ax,thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.vLambdaWeightedData/maxPSF, psfZLevels);
     hold on;
-    midRow = (size(thePSFData.data,1)-1)/2+1;
-    plot(ax, thePSFData.psfSupportXdegs, -maxSpatialSupportDegs*0.95 + 1.95*thePSFData.data(midRow,:)/maxPSF*maxSpatialSupportDegs, 'k-', 'LineWidth', 1.5);
+    midRow = (size(thePSFData.vLambdaWeightedData,1)-1)/2+1;
+    plot(ax, thePSFData.psfSupportXdegs, -maxSpatialSupportDegs*0.95 + 1.95*thePSFData.vLambdaWeightedData(midRow,:)/maxPSF*maxSpatialSupportDegs, 'k-', 'LineWidth', 1.5);
     axis(ax,'image'); axis 'xy';
     
     ticks = ticksForSpatialSupport(maxSpatialSupportDegs);

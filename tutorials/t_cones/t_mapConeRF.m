@@ -10,9 +10,9 @@
 
 function t_mapConeRF
     
-    mosaicEccDegs = [0.5 -1.2];
-    mosaicSizeDegs = [0.1 0.1];
-    stimSizeDegs = 0.15;
+    mosaicEccDegs = [0 -0];
+    mosaicSizeDegs = 0.3*[1 1];
+    stimSizeDegs = 0.3;
 
     whichEye = 'right eye';
 
@@ -38,8 +38,8 @@ function t_mapConeRF
     mosaicCenterPositionDegs = mean(theConeMosaic.coneRFpositionsDegs,1);
     opticsParams = struct(...
         'positionDegs',mosaicCenterPositionDegs, ...  % (x,y) eccentricity for the PSF, in degrees
-        'ZernikeDataBase', 'Artal2012', ...
-        'examinedSubjectRankOrder', 2, ...
+        'ZernikeDataBase', 'Polans2015', ...
+        'examinedSubjectRankOrder', 10, ...
         'refractiveErrorDiopters', 0.0, ...   % use -999 for optics that do not subtract the central refraction
         'analyzedEye', whichEye, ...
         'subjectRankingEye', 'right eye', ...
@@ -49,7 +49,7 @@ function t_mapConeRF
         );
 
     % Generate optics given the optical params
-    [thePSFData, ~, ~, theOI] = RetinaToVisualFieldTransformer.computeVlambdaWeightedPSF(...
+    [thePSFData, ~, ~, ~, theOI] = RetinaToVisualFieldTransformer.computeVlambdaWeightedPSF(...
             opticsParams, theConeMosaic, theConeMosaic.wave);
 
     % Generate a presentation display with a desired resolution
@@ -72,7 +72,7 @@ function t_mapConeRF
 
 
     % Hartley (RF mapping) spatial patterns
-    omega = 11;
+    omega = 9;
     % Compute spatial modulation patterns for the Hartley set
     HartleySpatialModulationPatterns = ...
         rfMappingStimulusGenerator.HartleyModulationPatterns(...
@@ -167,12 +167,12 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
 
 
     ax = subplot(2,3,2);
-    imagesc(ax, thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.data);
+    imagesc(ax, thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.vLambdaWeightedData);
     hold(ax, 'on');
     plot(ax, [thePSFData.psfSupportXdegs(1) thePSFData.psfSupportXdegs(end)], [0 0], 'g-');
     plot(ax, [0 0], [thePSFData.psfSupportYdegs(1) thePSFData.psfSupportYdegs(end)], 'g-');
     hold(ax, 'off');
-    axis(ax, 'image');
+    axis(ax, 'image'); axis(ax, 'xy');
     set(ax, 'XLim', xLims-mosaicCenterPositionDegs(1), 'YLim', yLims-mosaicCenterPositionDegs(2), ...
         'XTick', xTicks-mosaicCenterPositionDegs(1), 'YTick', yTicks-mosaicCenterPositionDegs(2), ...
         'Color', [0 0 0]);
@@ -189,9 +189,9 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
 
 
     for iFrame = 1:numel(theRFMappingStimulusScenes)
-        [~, sceneSRGBimage] = ...
-                sceneRepresentations(theRFMappingStimulusScenes{iFrame}, theDisplay);
-
+       % [~, sceneSRGBimage] = ...
+        %        sceneRepresentations(theRFMappingStimulusScenes{iFrame}, theDisplay);
+        sceneSRGBimage = sceneGet(theRFMappingStimulusScenes{iFrame}, 'RGBimage');
         image(ax1, spatialSupportDegs+mosaicCenterPositionDegs(1), spatialSupportDegs+mosaicCenterPositionDegs(2), sceneSRGBimage);
         axis(ax1, 'image');
         set(ax1, 'XLim', xLims,  'YLim', yLims, 'XTick', [], 'YTick', [], 'Color', sceneSRGBimage(1,1,:));
@@ -248,7 +248,7 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
         %theConeAperture(R <= 0.5*theConeMosaic.coneApertureDiametersDegs(iCone)) = 1;
 
         % The visual cone aperture
-        theVisualConeAperture = conv2(theConeAperture, thePSFData.data, 'same');
+        theVisualConeAperture = conv2(theConeAperture, thePSFData.vLambdaWeightedData, 'same');
 
         [~,maxIndex] = max(theVisualConeAperture(:));
         [row,col] = ind2sub(size(R), maxIndex);
@@ -283,16 +283,13 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
         contourf(ax4, spatialSupportDegs+mosaicCenterPositionDegs(1), ...
                      spatialSupportDegs+mosaicCenterPositionDegs(2), ...
                      squeeze(theRFmaps(iCone,:,:))/maxRFconeType(theConeMosaic.coneTypes(iCone)), zLevels);
-        axis(ax4, 'image');
         hold(ax4, 'on');
-        
-        
         plot(ax4, xCross*[1 1], yCross + Rc *[-1 1], 'b-', 'LineWidth', 1.0);
         plot(ax4, xCross + Rc*[-1 1], yCross*[1 1], 'b-', 'LineWidth', 1.0);
         hold(ax4, 'off');
         set(ax4, 'CLim', [-1 1], 'XLim', xLims, 'YLim', yLims, ...
             'Color', squeeze(cMap(halfLutEntriesNum+1,:)));
-        axis(ax4, 'xy');
+        axis(ax4, 'image'); axis(ax4, 'xy');
         set(ax4, 'XTick', xTicks, 'YTick', yTicks, 'XTickLabels', sprintf('%2.2f\n', xTicks), 'YTickLabels', sprintf('%2.2f\n', yTicks));
         grid(ax4, 'on');
         set(ax4, 'FontSize', fontSize);
@@ -306,6 +303,22 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
         
     end
     videoOBJ.close();
+end
+
+
+function [sceneLRGBimage, sceneSRGBimage, sceneLMScontrastsImage, sceneLMSexcitationsImage] = ...
+    sceneRepresentations(theScene, presentationDisplay)
+
+    emittedRadianceImage = sceneGet(theScene, 'energy');
+    displaySPDs = displayGet(presentationDisplay, 'spd');
+    displayWavelengths = displayGet(presentationDisplay, 'wave');
+    [sceneLRGBimage, sceneSRGBimage] = displayRadianceToDisplayRGB(emittedRadianceImage, displaySPDs);
+        
+    % Load the 2-deg Stockman cone fundamentals on a wavelength support matching the display
+    coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
+
+    % Compute the LMS cone contrasts of the emitted radiance image
+    [sceneLMScontrastsImage, sceneLMSexcitationsImage] = displayRadianceToLMS(emittedRadianceImage, coneFundamentals);
 end
 
 function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
