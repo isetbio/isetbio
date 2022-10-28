@@ -5,6 +5,9 @@ function visualizeSingleRetinalRF(obj,theRGCindex, varargin)
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('plotTitle', '', @ischar);
+    p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
+    p.addParameter('xRangeDegs', 0.1, @isscalar);
+    p.addParameter('yRangeDegs', 0.1, @isscalar);
     p.addParameter('showInputConeMosaic', true, @islogical);
     p.addParameter('showConeWeights', true, @islogical);
     p.parse(varargin{:});
@@ -13,13 +16,16 @@ function visualizeSingleRetinalRF(obj,theRGCindex, varargin)
     ax = p.Results.axesHandle;
     fontSize = p.Results.fontSize;
     plotTitle = p.Results.plotTitle;
+    plotTitleColor = p.Results.plotTitleColor;
+    xRange = p.Results.xRangeDegs;
+    yRange = p.Results.yRangeDegs;
 
     % Find this RGC's center input cone indices and their weights
     connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theRGCindex)));
     inputConeIndices = find(connectivityVector > 0.0001);
 
-    xyCenter = mean(obj.inputConeMosaic.coneRFpositionsDegs,1);
-    xyLims  =[ xyCenter(1)-0.05 xyCenter(1)+0.05 xyCenter(2)-0.05 xyCenter(2)+0.05];
+    xyCenter = mean(obj.inputConeMosaic.coneRFpositionsDegs(inputConeIndices,:),1);
+    xyLims  =[ xyCenter(1)-xRange*0.5 xyCenter(1)+xRange*0.5  xyCenter(2)-yRange*0.5  xyCenter(2)+yRange*0.5];
 
     obj.inputConeMosaic.visualize(...
             'figureHandle', hFig, ...
@@ -31,6 +37,7 @@ function visualizeSingleRetinalRF(obj,theRGCindex, varargin)
             'backgroundColor', [1 1 1], ...
             'domainVisualizationLimits', xyLims, ...
             'plotTitle', plotTitle, ...
+            'plotTitleColor', plotTitleColor, ...
             'noXLabel', true, ...
             'noYLabel', true, ...
             'fontSize', fontSize);

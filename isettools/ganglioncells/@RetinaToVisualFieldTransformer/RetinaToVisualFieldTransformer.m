@@ -234,7 +234,7 @@ classdef RetinaToVisualFieldTransformer < handle
         % retinal cone pooling model: arbitrary center/gaussian surround
         % with arbitrary adjustments in the surround
         pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianAdjustSurround(...
-            modelConstants, conePoolingParamsVector)
+            modelConstants, conePoolingParamsVector);
 
         % Generate retinal RF from cone weights
         retinalRF = computeRetinalRFfromWeightsAndApertures(...
@@ -269,7 +269,7 @@ classdef RetinaToVisualFieldTransformer < handle
         [oneSidedSpatialFrequencySupport, oneSidedSTF] = spatialTransferFunction(spatialSupportDegs, theRFprofile);
 
         % Method to visualize the fitted param values
-        visualizeFittedParamValues(retinalConePoolingParams);
+        visualizeRetinalSurroundModelParametersAndRanges(ax, modelParams);
 
         % Method to generate the datafilename where the computed object is saved
         dataFileName = computedObjectDataFileName(opticsParams, targetVisualDoGparams);

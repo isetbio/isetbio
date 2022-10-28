@@ -79,6 +79,7 @@ p.addParameter('fontSize', 16, @isscalar);
 p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
 p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
 p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
+p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
 p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
 p.addParameter('textDisplayColor', [], @isnumeric);
 
@@ -126,6 +127,7 @@ horizontalActivationSliceEccentricity = p.Results.horizontalActivationSliceEccen
 verticalActivationSliceEccentricity = p.Results.verticalActivationSliceEccentricity;
 backgroundColor = p.Results.backgroundColor;
 plotTitle = p.Results.plotTitle;
+plotTitleColor = p.Results.plotTitleColor;
 textDisplay = p.Results.textDisplay;
 textDisplayColor = p.Results.textDisplayColor;
 
@@ -804,16 +806,16 @@ if plotTitle
                 100*obj.coneDensities(2), ...
                 100*obj.coneDensities(3), ...
                 100*obj.coneDensities(4), ...
-                conesNum));
+                conesNum), 'Color', plotTitleColor);
         else
             title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
                 100*obj.coneDensities(1), ...
                 100*obj.coneDensities(2), ...
                 100*obj.coneDensities(3), ...
-                conesNum));
+                conesNum), 'Color', plotTitleColor);
         end
     else
-        title(axesHandle,plotTitle);
+        title(axesHandle,plotTitle, 'Color', plotTitleColor);
     end
 end
 

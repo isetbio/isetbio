@@ -13,14 +13,10 @@ function generateMidgetRGCmosaicComponents
         };
 
     % Operation to compute
-    %operations = {'fitSTFs'};
-    %operations = {'summarizeSTFfits'};
-    operations = operations(5:5);
+    operations = {'fitSTFs'};
+    operations = {'summarizeSTFfits'};
 
-    % L-M gratings
-    %coneContrasts = [0.12 -0.12 0];
-
-    % L+M gratings
+    % L+M contrast for gratings used to measure the STFs 
     coneContrasts = [1 1 0];
 
     % Temporal retina (negative x-coords)
@@ -40,6 +36,15 @@ function generateMidgetRGCmosaicComponents
         -25 2.5 ...
        ];
     
+    % Which eccentricities to analyze
+    eccentricityIndicesAnalyzed =  1:5;
+
+
+    % What optics to use
+    ZernikeDataBase = 'Polans2015';
+    subjectRankOrder = 8;
+
+
     % Get dropboxDir location
     computerInfo = GetComputerInfo();
     switch (computerInfo.localHostName)
@@ -57,15 +62,13 @@ function generateMidgetRGCmosaicComponents
 
 
     resetSummaryFigure  = true; hFigSummary = [];
-   
-    eccentricityIndices =  1;
-    for ii = 1:numel(eccentricityIndices)
-        
-        iEcc = eccentricityIndices(ii);
-        fprintf('Generating components for mosaic %d of %d\n', iEcc, numel(eccentricityIndices));
+    
+    for ii = 1:numel(eccentricityIndicesAnalyzed)
+        iEcc = eccentricityIndicesAnalyzed(ii);
+        fprintf('Generating components for mosaic %d of %d\n', iEcc, numel(eccentricityIndicesAnalyzed));
         eccDegs  = eccSizeDegsExamined(iEcc,1) * [1 0];
         sizeDegs = eccSizeDegsExamined(iEcc,2) * [1 1];
-        hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir, resetSummaryFigure, hFigSummary);
+        hFigSummary = doIt(operations,  ZernikeDataBase, subjectRankOrder, eccDegs, sizeDegs, coneContrasts, dropboxDir, resetSummaryFigure, hFigSummary);
         resetSummaryFigure = false;
     end
 
@@ -76,7 +79,7 @@ function generateMidgetRGCmosaicComponents
 
 end
 
-function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropboxDir, resetSummaryFigure, hFigSummary)
+function hFigSummary = doIt(operations,  ZernikeDataBase, subjectRankOrder, eccDegs, sizeDegs, coneContrasts, dropboxDir, resetSummaryFigure, hFigSummary)
 
     fName = fullfile(dropboxDir, sprintf('mRGCmosaicComponents_eccDegs_%2.2f.mat', eccDegs(1)));
 
@@ -144,7 +147,7 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
 
                 % Compute a list of RTVFTobj for each of the examined grid positions
                 RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
-                    eccDegsGrid, conesNumPooledByTheRFcenterGrid, ...
+                     ZernikeDataBase, subjectRankOrder, eccDegsGrid, conesNumPooledByTheRFcenterGrid, ...
                     surroundToCenterRcRatioGrid, surroundToCenterIntegratedSensitivityRatioGrid);
 
                 % Save the computed list of RTVFTobj for each of the examined grid positions
@@ -235,7 +238,7 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
 
                 
                 hFig = figure(66); clf;
-                set(hFig, 'Position', [90 10 855 990], 'Color', [1 1 1]);
+                set(hFig, 'Position', [90 10 855 990], 'Color', [1 1 1], 'Name', 'STF analysis');
 
                 % Video setup
                 if (strcmp(operations{iOp}, 'visualizeSTFs'))
@@ -322,12 +325,16 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                     % Visualize the examined retinal RF
                     ax = subplot(numel(spatialFrequenciesTested),2, [2 4 6 8]);
                     theMidgetRGCmosaic.visualizeSingleRetinalRF(iRGC, ...
+                        'xRangeDegs', 0.15, ...
+                        'yRangeDegs', 0.15, ...
+                        'plotTitleColor', [0.3 0.3 0.3], ...
                         'plotTitle', sprintf('RGC: %d of %d', iii, numel(sortedRGCindices)), ...
                         'figureHandle', hFig, ...
                         'axesHandle', ax);
 
-                    % Visualize the computed STF
-                    ax = subplot(numel(spatialFrequenciesTested),2, ((6:numel(spatialFrequenciesTested))-1)*2+2);
+
+                    % Visualize the computed & fitted STFs
+                    ax = subplot(numel(spatialFrequenciesTested),2, ((10:numel(spatialFrequenciesTested))-1)*2+2);
                     
                     % The target STF
                     normalizedTargetSTF = theRTVFTobj.rfComputeStruct.theSTF.target;
@@ -378,6 +385,8 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                         'MarkerSize', 14, 'MarkerFaceColor', [0.2 0.9 0.9], 'MarkerEdgeColor', [0 0.4 1], ...
                         'LineWidth', 1.0);
 
+                    text(ax, 0.35, 0.95, sprintf('%d deg', orientationsTested(iBestOri)), 'Color', [0 0.7 0.7], 'FontSize', 14);
+                    
                     % Fit the measured STF to extract the DoGparams
                     if (strcmp(operations{iOp}, 'fitSTFs'))
                         % Estimate the retinal RF center
@@ -388,7 +397,9 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
 
                         iFit = iFit + 1;
                         % Fit the DoG model to the measured STF
-                        [DoGparams{iFit}, theFittedSTF] = fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, squeeze(theMeasuredSTF(iBestOri,:)), retinalRFcenterRcDegs);
+                        [DoGparams{iFit}, theFittedSTF] = fitDoGmodelToMeasuredSTF(...
+                            spatialFrequenciesTested, squeeze(theMeasuredSTF(iBestOri,:)), ...
+                            retinalRFcenterRcDegs);
                         
                         % Save the fit results
                         DoGfitResults{iFit} = struct(...
@@ -413,13 +424,25 @@ function hFigSummary = doIt(operations, eccDegs, sizeDegs, coneContrasts, dropbo
                         legend([p1, p2, p3], {'target', 'fitted', 'measured'}, 'Location', 'SouthWest');
                     end
 
-                    title(ax, sprintf('stim LMS contrast = < %2.1f, %2.1f, %2.1f >', coneContrasts(1), coneContrasts(2), coneContrasts(3)));
+                    set(ax, 'XLim', [0.1 100], 'XScale', 'Log', 'FontSize', 16);
                     set(ax, 'XLim', [0.3 70], 'XTick', [0.1 0.3 1 3 10 30 100], 'YLim', [0 1.02], 'YTick', 0:0.1:1.0);
+                    title(ax, sprintf('LMS contrast: (%2.2f, %2.2f, %2.2f)', coneContrasts(1), coneContrasts(2), coneContrasts(3)), ...
+                        'Color', [0.3 0.3 0.3],'FontSize', 16);
+                    
                     xlabel(ax, 'spatial frequency (c/deg)');
+                    axis(ax, 'square');
                     ylabel(ax, 'STF');
                     grid(ax, 'on');
-                    set(ax, 'XLim', [0.1 100], 'XScale', 'Log', 'FontSize', 16);
-                  
+                    
+                    xtickangle(ax, 0);
+
+                    if (strcmp(operations{iOp}, 'fitSTFs'))
+                        % Visualize the fitted STF params
+                        ax = subplot(numel(spatialFrequenciesTested),2, [12 14 16]);
+                        RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, DoGparams{iFit});
+                    end
+
+                    
                     if (strcmp(operations{iOp}, 'visualizeSTFs'))
                         drawnow;
                         videoOBJ.writeVideo(getframe(hFig));
@@ -470,9 +493,9 @@ function hFig = visualizeSTFfitsSummary(DoGparams, DoGfitResults, addModelData, 
     rsDegs = zeros(numel(DoGparams),1);
     targetRGCeccentricityDegs = zeros(numel(DoGparams),2);
     for iii = 1:numel(DoGparams)
-        rcDegs(iii) = DoGparams{iii}.bestFitValues(4);
-        rsDegs(iii) = rcDegs(iii) * DoGparams{iii}.bestFitValues(3);
-        ksKcRatio(iii) = DoGparams{iii}.bestFitValues(2);
+        rcDegs(iii) = DoGparams{iii}.finalValues(4);
+        rsDegs(iii) = rcDegs(iii) * DoGparams{iii}.finalValues(3);
+        ksKcRatio(iii) = DoGparams{iii}.finalValues(2);
         targetSurroundToCenterRcRatio = DoGfitResults{iii}.targetVisualRFDoGparams.surroundToCenterRcRatio;
         targetSurroundToCenterIntegratedSensitivityRatio = DoGfitResults{iii}.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
         targetRGCeccentricityDegs(iii,:) = DoGfitResults{iii}.targetRGCeccentricityDegs;
@@ -503,24 +526,24 @@ function hFig = visualizeSTFfitsSummary(DoGparams, DoGfitResults, addModelData, 
 
     % The C&K data
     [eccDegs, RcDegsCronerKaplan] = RGCmodels.CronerKaplan.digitizedData.parvoCenterRadiusAgainstEccentricity();
-    p1 = plot(ax,eccDegs,   RcDegsCronerKaplan,   'ro',  ...
+    p1 = scatter(ax,eccDegs,   RcDegsCronerKaplan,  144,  'o',  ...
         'MarkerFaceColor', [0.65 0.65 0.65], 'MarkerEdgeColor', [0.2 0.2 0.2], ...
-        'MarkerSize', 8, 'LineWidth', 1.0);
+        'MarkerFaceAlpha', 0.1, 'LineWidth', 1.0);
     hold(ax, 'on');
     [eccDegs, RsDegsCronerKaplan] = RGCmodels.CronerKaplan.digitizedData.parvoSurroundRadiusAgainstEccentricity();
-    p2 = plot(ax,eccDegs, RsDegsCronerKaplan, 'rs', ...
+    p2 = scatter(ax,eccDegs, RsDegsCronerKaplan, 169, 's', ...
         'MarkerFaceColor', [0.85 0.85 0.85], 'MarkerEdgeColor', [0.2 0.2 0.2], ...
-        'MarkerSize', 10, 'LineWidth', 1.0);
+        'MarkerFaceAlpha', 0.1, 'LineWidth', 1.0);
     
     % The model data
     if (addModelData)
-        p3 = scatter(ax,targetRGCeccentricityDegs, rcDegs, 81, ...
-            'MarkerFaceAlpha', 0.45, 'MarkerEdgeAlpha', 0.65, ...
-            'MarkerFaceColor', [1 0.5 0.7],  'MarkerEdgeColor', [0 0 0], ...
+        p3 = scatter(ax,targetRGCeccentricityDegs, rcDegs, 32, ...
+            'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 0.65, ...
+            'MarkerFaceColor', [1 0.0 0.0],  'MarkerEdgeColor', [0 0 0], 'MarkerEdgeAlpha', 0.0, ...
             'LineWidth', 0.75);
-        p4 = scatter(ax,targetRGCeccentricityDegs, rsDegs, 81, 'Marker', 's', ...
-            'MarkerFaceAlpha', 0.45, 'MarkerEdgeAlpha', 0.65, ...
-            'MarkerFaceColor', [0.3 0.8 1],  'MarkerEdgeColor', [0 0 0], ...
+        p4 = scatter(ax,targetRGCeccentricityDegs, rsDegs, 32, 'Marker', 's', ...
+            'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 0.65, ...
+            'MarkerFaceColor', [0.0 0.5 1],  'MarkerEdgeColor', [0 0 0], 'MarkerEdgeAlpha', 0.0, ...
             'LineWidth', 0.75);
     end
 
@@ -541,7 +564,7 @@ function hFig = visualizeSTFfitsSummary(DoGparams, DoGfitResults, addModelData, 
             'XScale', 'log', 'YScale', 'log', ...
             'FontSize', 20, 'LineWidth', 1.0, 'TickDir', 'both');
     
-    xlabel(ax,'eccentricity (degs)');
+    xlabel(ax,'temporal equivalent eccentricity (degs)');
     ylabel(ax,'radius (degs)');
 
 
@@ -611,25 +634,25 @@ end
 function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF, retinalRFcenterRcDegs)
     % DoG param initial values and limits: center gain, kc
     Kc = struct(...    
-        'low', 1e-4, ...
-        'high', 1e5, ...
+        'low', 1e-1, ...
+        'high', 1e4, ...
         'initial', 1);
 
     % DoG param initial values and limits: Ks/Kc ratio
     KsToKc = struct(...
         'low', 1e-6, ...
-        'high', 1, ...
+        'high', 1.0, ...
         'initial', 0.1);
 
     % DoG param initial values and limits: RsToRc ratio
     RsToRc = struct(...
         'low', 1.5, ...
-        'high', 100, ...
+        'high', 30, ...
         'initial', 5);
 
     % DoG param initial values and limits: RcDegs
     RcDegs = struct(...
-        'low', retinalRFcenterRcDegs/10, ...
+        'low', retinalRFcenterRcDegs/sqrt(2.0), ...
         'high', retinalRFcenterRcDegs*200, ...
         'initial', retinalRFcenterRcDegs*5);
     
@@ -638,7 +661,7 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF
      DoGparams.lowerBounds   = [Kc.low       KsToKc.low        RsToRc.low        RcDegs.low];
      DoGparams.upperBounds   = [Kc.high      KsToKc.high       RsToRc.high       RcDegs.high];
      DoGparams.names         = {'Kc',        'kS/kC',         'RsToRc',         'RcDegs'};
-     DoGparams.scale         = {'log',       'log',           'linear',         'linear'};
+     DoGparams.scaling       = {'log',       'log',           'linear',         'linear'};
      
      % The DoG model in the frequency domain
      DoGSTF = @(params,sf)(...
@@ -672,18 +695,18 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF
           'UseParallel', true);
       
      % Run the multi-start
-     multiStartsNum = 24;
-     DoGparams.bestFitValues = run(ms, problem, multiStartsNum);
+     multiStartsNum = 32;
+     DoGparams.finalValues = run(ms, problem, multiStartsNum);
 
-     theFittedSTF.compositeSTF = DoGSTF(DoGparams.bestFitValues, sf);
-     theFittedSTF.centerSTF = DoGparams.bestFitValues(1) * ( pi * DoGparams.bestFitValues(4)^2 * exp(-(pi*DoGparams.bestFitValues(4)*sf).^2) );
-     theFittedSTF.surroundSTF = DoGparams.bestFitValues(1)*DoGparams.bestFitValues(2) * ( pi * (DoGparams.bestFitValues(4)*DoGparams.bestFitValues(3))^2 * exp(-(pi*DoGparams.bestFitValues(4)*DoGparams.bestFitValues(3)*sf).^2) );
+     theFittedSTF.compositeSTF = DoGSTF(DoGparams.finalValues, sf);
+     theFittedSTF.centerSTF = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sf).^2) );
+     theFittedSTF.surroundSTF = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sf).^2) );
      
      sfHiRes = logspace(log10(0.1), log10(100), 64);
      theFittedSTF.sfHiRes = sfHiRes;
-     theFittedSTF.compositeSTFHiRes = DoGSTF(DoGparams.bestFitValues, sfHiRes);
-     theFittedSTF.centerSTFHiRes = DoGparams.bestFitValues(1) * ( pi * DoGparams.bestFitValues(4)^2 * exp(-(pi*DoGparams.bestFitValues(4)*sfHiRes).^2) );
-     theFittedSTF.surroundSTFHiRes = DoGparams.bestFitValues(1)*DoGparams.bestFitValues(2) * ( pi * (DoGparams.bestFitValues(4)*DoGparams.bestFitValues(3))^2 * exp(-(pi*DoGparams.bestFitValues(4)*DoGparams.bestFitValues(3)*sfHiRes).^2) );
+     theFittedSTF.compositeSTFHiRes = DoGSTF(DoGparams.finalValues, sfHiRes);
+     theFittedSTF.centerSTFHiRes = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sfHiRes).^2) );
+     theFittedSTF.surroundSTFHiRes = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sfHiRes).^2) );
      
 end
 
@@ -781,7 +804,7 @@ end
 
 
 function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
-    eccDegsGrid, conesNumPooledByTheRFcenterGrid, ...
+     ZernikeDataBase, subjectRankOrder, eccDegsGrid, conesNumPooledByTheRFcenterGrid, ...
     surroundToCenterRcRatioGrid, surroundToCenterIntegratedSensitivityRatioGrid)
 
     gridPositionsNum = size(eccDegsGrid,1);
@@ -813,9 +836,6 @@ function RTVFTobjList = generateRTVFTobjects(theMidgetRGCmosaic, ...
         'visualRFmodel', visualRFmodel, ...  
         'retinalConePoolingModel', retinalConePoolingModel ...
         );
-
-    ZernikeDataBase = 'Polans2015';
-    subjectRankOrder = 9;
 
     % Struct with the various optics params
     opticsParams = struct(...

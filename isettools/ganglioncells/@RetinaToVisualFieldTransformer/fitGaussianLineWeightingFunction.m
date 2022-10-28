@@ -65,7 +65,10 @@ function theFittedGaussianLineWeightingFunction = fitGaussianLineWeightingFuncti
     end
 
 
-    RetinaToVisualFieldTransformer.visualizeFittedParamValues(params);
+    hFig = figure(999); clf;
+    set(hFig, 'Position', [10 10 600 500], 'Color', [1 1 1 ]);
+    ax = subplot('Position', [0.1 0.1 0.9 0.9]);
+    RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, params);
 
     % Compute the fitted Gaussian line weighting function
     theFittedGaussianLineWeightingFunction.profile = RetinaToVisualFieldTransformer.gaussianLineWeightingProfile(params.finalValues, spatialSupport);

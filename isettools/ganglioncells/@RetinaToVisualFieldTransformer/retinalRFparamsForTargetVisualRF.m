@@ -329,8 +329,10 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
 
     % Visualize the fitted params
-    RetinaToVisualFieldTransformer.visualizeFittedParamValues(retinalConePoolingParams);
-
+    hFig = figure(999); clf;
+    set(hFig, 'Position', [10 10 600 500], 'Color', [1 1 1 ]);
+    ax = subplot('Position', [0.1 0.1 0.9 0.9]);
+    RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, retinalConePoolingParams);
 
     % Form the rfComputeStruct
     obj.rfComputeStruct = struct();

@@ -247,7 +247,7 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     
     % The retinal RF surround model parameter values & ranges
     ax = subplot('Position', subplotPosVectors(3,1).v);
-    plotRetinalSurroundModelParametersAndRanges(ax, ...
+    RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, ...
        obj.rfComputeStruct.retinalConePoolingParams, ...
        obj.targetVisualRFDoGparams.retinalConePoolingModel);
 
@@ -353,65 +353,7 @@ function plotRetinalSurroundModel(ax, rfSupportX, maxSpatialSupportDegs)
 
 end
 
-function plotRetinalSurroundModelParametersAndRanges(ax, ...
-    retinalConePoolingParams, retinalConePoolingModel)
 
-    xTicks = 1:numel(retinalConePoolingParams.names);
-    xTickLabels = retinalConePoolingParams.names;
-
-    switch (retinalConePoolingModel)
-        case {'arbitrary center cone weights, double exponential surround weights-free', ...
-              'arbitrary center cone weights, double exponential surround weights-meanVnVwRatio', ...
-              'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio'}
-            
-        case 'arbitrary center cone weights, gaussian surround weights'
-        case 'arbitrary center cone weights, variable exponential surround weights'
-        case 'arbitrary center cone weights, double gaussian surround weights'
-        case 'arbitrary center cone weights, gaussian surround weights with adjustments'
-        otherwise
-            error('Unknown retinalConePoolingModel: ''%s''.', retinalConePoolingModel);
-
-    end
-    hold(ax, 'on');
-
-    for iParam = 1:numel(retinalConePoolingParams.finalValues)
-        
-        plot(ax, iParam * [1 1], [0 1], 'k-', 'Color', [0.7 0.7 0.7], 'LineWidth', 3.0);
-        if (retinalConePoolingParams.lowerBounds(iParam) == retinalConePoolingParams.upperBounds(iParam))
-        else
-
-            if (strcmp(retinalConePoolingParams.scaling, 'log'))
-                fV = log10(retinalConePoolingParams.finalValues(iParam));
-                fI = log10(retinalConePoolingParams.initialValues(iParam));
-                lB = log10(retinalConePoolingParams.lowerBounds(iParam));
-                uB = log10(retinalConePoolingParams.upperBounds(iParam));
-                fValFinal = (fV - lB)/ (uB-lB);
-                fValInitial = (fI - lB)/ (uB-lB);
-            else
-                fValFinal = (retinalConePoolingParams.finalValues(iParam) - retinalConePoolingParams.lowerBounds(iParam))/ ...
-                            (retinalConePoolingParams.upperBounds(iParam)-retinalConePoolingParams.lowerBounds(iParam));
-                fValInitial = (retinalConePoolingParams.initialValues(iParam) - retinalConePoolingParams.lowerBounds(iParam))/ ...
-                            (retinalConePoolingParams.upperBounds(iParam)-retinalConePoolingParams.lowerBounds(iParam));
-            end
-
-            plot(ax, iParam * [1 1], [fValInitial fValFinal], 'r-', 'LineWidth', 3);
-            plot(ax, iParam * [1 1], fValFinal, 'ro', 'MarkerSize', 14, 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.0);
-            text(ax, iParam+0.1, fValFinal, sprintf(' %1.3f', retinalConePoolingParams.finalValues(iParam)), 'FontSize', 13);
-        end
-        
-        text(ax, iParam-0.25, -0.07, sprintf('%1.3f', retinalConePoolingParams.lowerBounds(iParam)), 'FontWeight', 'bold');
-        text(ax, iParam-0.25, 1.05, sprintf('%1.3f', retinalConePoolingParams.upperBounds(iParam)), 'FontWeight', 'bold');
-    end
-    axis(ax, 'square');
-    xtickangle(ax, 45);
-    set(ax, 'XLim', [0.5 numel(retinalConePoolingParams.names)+0.7],  ...
-            'XTick', xTicks, 'XTickLabel', xTickLabels, 'YLim', [-0.1 1.1], ...
-            'YTickLabel', {}, 'FontSize', 14, 'YColor', 'none', 'Color', 'none');
-    
-    ylabel(ax,'parameter value range');
-    title(ax, sprintf('retinal cone pooling parameters\n'), 'FontSize', 16, 'Color', [0.3 0.3 0.3]);
-    
-end
 
 
 function plotRF(ax, rfSupportX, rfSupportY, RF,  maxRF, maxRFprofile, maxSpatialSupportDegs, ...
