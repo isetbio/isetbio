@@ -841,7 +841,7 @@ switch (parm)
         % representation.  Note that this differs from the isetbio
         % optics structure convention, where (0,0) sf is at the upper
         % left, so we then apply ifftshift to put it there.
-        [~,~,val] = PsfToOtf([],[],psf);
+        [~,~,val] = PsfToOtf([],[],fliplr(psf));
         val = ifftshift(val);
         
         % We used to zero out small imaginary values.  This,
