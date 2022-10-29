@@ -6,11 +6,8 @@ function measureMRGCRFcentersAcrossXYeccentricityForDifferentSubjects()
   
 
     % Vertical eccentricities examined
-    eccX = [-25 -20 -16 -12 -10 -8:1:8 10 12 16 20 25];
+    eccX = [-20 -16 -12 -10 -8:1:8 10 12 20];
     eccY = [-8:1:8];
-
-    eccX = [0];
-    eccY = [0];
 
     % Optics
     ZernikeDataBase = 'Polans2015';
@@ -269,7 +266,8 @@ function computeVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, centerMo
                 theMidgetRGCmosaic.inputConeMosaic.visualize(...
                     'figureHandle', hFig, ...
                     'axesHandle', ax, ...
-                    'activation', noiseFreeConeAbsorptionsCount);
+                    'activation', noiseFreeConeAbsorptionsCount, ...
+                    'labelCones', false);
 
                 % Visualize the midgetRCCmosaic with the OI
                 ax = subplot(2,2,3);
