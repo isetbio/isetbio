@@ -419,6 +419,7 @@ function opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj
     else
         error('''opticalImagePositionDegs'' must be set to either ''mosaic-centered'' or to a 2-element vector.');
     end
+    obj.opticalImagePositionDegs = opticalImagePositionDegs;
 end
     
 

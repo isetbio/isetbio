@@ -5,6 +5,8 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('maxVisualizedRFs', 18, @isscalar);
+    p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
+    p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('xRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
     p.addParameter('yRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
     p.addParameter('xLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
@@ -17,6 +19,8 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
     maxVisualizedRFs = p.Results.maxVisualizedRFs;
+    superimposedOpticalImage = p.Results.withSuperimposedOpticalImage;
+    superimposedPSF = p.Results.withSuperimposedPSF;
     xLimsDegs  = p.Results.xLimsDegs; 
     yLimsDegs  = p.Results.yLimsDegs;
     xRangeDegs = p.Results.xRangeDegs;
@@ -87,6 +91,8 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
             'axesHandle', axesHandle, ...
             'visualizedConeAperture', 'lightCollectingArea4sigma', ...
             'visualizedConeApertureThetaSamples', 20, ...
+            'withSuperimposedOpticalImage', superimposedOpticalImage, ...
+            'withSuperimposedPSF', superimposedPSF, ...
             'domain', 'degrees', ...
             'domainVisualizationLimits', [xLimsDegs(1) xLimsDegs(2) yLimsDegs(1) yLimsDegs(2)], ...
             'domainVisualizationTicks', struct('x', xTicks, 'y', yTicks), ...

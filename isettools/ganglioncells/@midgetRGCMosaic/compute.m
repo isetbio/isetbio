@@ -1,4 +1,4 @@
-function [responses, responseTemporalSupport] = compute(obj, theScene, varargin)
+function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpticalImage] = compute(obj, theScene, varargin)
 % Compute the response of a midgetRGCmosaic to a scene
 %
 % Syntax:
@@ -25,6 +25,7 @@ function [responses, responseTemporalSupport] = compute(obj, theScene, varargin)
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('theNullScene', [], @isstruct);
     p.addParameter('withOptics', [], @isstruct);
+    p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
     p.addParameter('normalizeConeResponsesWithRespectToNullScene', false, @islogical);
     p.parse(varargin{:});
     
@@ -32,6 +33,7 @@ function [responses, responseTemporalSupport] = compute(obj, theScene, varargin)
     nTrials = p.Results.nTrials;
     theNullScene = p.Results.theNullScene;
     theOpticalImage = p.Results.withOptics;
+    opticalImagePositionDegs = p.Results.opticalImagePositionDegs;
     normalizeConeResponsesWithRespectToNullScene = p.Results.normalizeConeResponsesWithRespectToNullScene;
 
     if (isempty(nTrials))
@@ -86,7 +88,9 @@ function [responses, responseTemporalSupport] = compute(obj, theScene, varargin)
     % Call the inputConeMosaic.compute() method for the current opticalImage
     [noiseFreeAbsorptionsCount, noisyAbsorptionsCountInstances, ...
      photoCurrents, photoCurrentInstances, responseTemporalSupport] = ...
-        obj.inputConeMosaic.compute(theOpticalImage,'nTrials', nTrials);
+        obj.inputConeMosaic.compute(theOpticalImage, ...
+        'nTrials', nTrials, ...
+        'opticalImagePositionDegs', opticalImagePositionDegs);
 
     
     if (~isempty(theNullScene)) && (normalizeConeResponsesWithRespectToNullScene)

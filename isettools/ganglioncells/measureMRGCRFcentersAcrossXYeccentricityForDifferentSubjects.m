@@ -6,6 +6,10 @@ function measureMRGCRFcentersAcrossXYeccentricityForDifferentSubjects()
   
 
     % Vertical eccentricities examined
+    eccX = [-25 -20 -16 -12 -10 -8:1:8 10 12 16 20 25];
+    eccY = [-8:1:8];
+
+    eccX = [0];
     eccY = [0];
 
     % Optics
@@ -16,7 +20,8 @@ function measureMRGCRFcentersAcrossXYeccentricityForDifferentSubjects()
     %newSubjectRankOrder = 3;
 
     newZernikeDataBase = 'Polans2015';
-    newSubjectRankOrder = 10;
+    newSubjectRankOrder = 6;
+    newPupilDiamMM = 3.5;
 
     maxVisualizedRFs = 32;
 
@@ -30,9 +35,10 @@ function measureMRGCRFcentersAcrossXYeccentricityForDifferentSubjects()
     % Modify the optics
     changeOpticsSubject = true;
     if (changeOpticsSubject)
-        modifyOptics(ZernikeDataBase, subjectRankOrder, newZernikeDataBase, newSubjectRankOrder, eccX, eccY);
+        modifyOptics(ZernikeDataBase, subjectRankOrder, newZernikeDataBase, newSubjectRankOrder, newPupilDiamMM, eccX, eccY);
         visualizeComponents(newZernikeDataBase, newSubjectRankOrder, eccX, eccY, maxVisualizedRFs);
     end
+    
     
     % Compute RF maps (center)
     computeTheVisualRFmaps = true;
@@ -89,7 +95,6 @@ function visualizeComputedRFs(ZernikeDataBase, subjectRankOrder, eccX, eccY)
         xLims = theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(1) + [-0.25 0.25];
         yLims = theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(2) + [-0.25 0.25];
 
-
         for iRGC = 1:numel(rgcIndicesOfAnalyzedRFs)
             r = retinalRFcenterMaps{iRGC};
             
@@ -117,6 +122,11 @@ function computeVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, centerMo
     [eccXGrid, eccYGrid] = meshgrid(eccX, eccY);
     eccXGrid = eccXGrid(:);
     eccYGrid = eccYGrid(:);
+
+    opticalImagePositionDegs = 'mosaic-centered';  % [0.05 -0.03];  %'mosaic-centered'
+
+    visualizedOpticalImageNum = 1;
+
 
     for iPos = 1:numel(eccXGrid)
 
@@ -147,7 +157,7 @@ function computeVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, centerMo
         % Compute visual RF maps using subspace rev corr
         % Generate a presentation display with a desired resolution
         pixelsNum = 256;
-        retinalImageResolutionDegs = 0.5*max(theMidgetRGCmosaic.sizeDegs)/pixelsNum;
+        retinalImageResolutionDegs = max(theMidgetRGCmosaic.sizeDegs)/pixelsNum;
         viewingDistanceMeters = 4;
         theDisplay = rfMappingStimulusGenerator.presentationDisplay(...
             theMidgetRGCmosaic.inputConeMosaic.wave, retinalImageResolutionDegs, ...
@@ -160,14 +170,14 @@ function computeVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, centerMo
             'coneContrasts', [1 1 1], ...
             'contrast', 0.75, ...
             'pixelSizeDegs', retinalImageResolutionDegs, ...
-            'stimSizeDegs', 0.5*max(theMidgetRGCmosaic.sizeDegs), ...  % make the stimulus size = 1/2 * RGC mosaic FoV
+            'stimSizeDegs', max(theMidgetRGCmosaic.sizeDegs), ...  % make the stimulus size = 1/2 * RGC mosaic FoV
             'wavelengthSupport', displayGet(theDisplay, 'wave'), ...
             'viewingDistanceMeters', displayGet(theDisplay, 'viewing distance') ...
             );
 
         % Hartley (RF mapping) spatial patterns
         fprintf('Generating Hartley patterns\n');
-        omega = 9;
+        omega = 11;
         % Compute spatial modulation patterns for the Hartley set
         HartleySpatialModulationPatterns = ...
             rfMappingStimulusGenerator.HartleyModulationPatterns(...
@@ -185,8 +195,7 @@ function computeVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, centerMo
         % Preallocate memory
         nStim = size(HartleySpatialModulationPatterns,1);
         pixelsNum = size(HartleySpatialModulationPatterns,2);
-        theMRGCMosaicResponses = zeros(nStim, numel(rgcIndicesOfAnalyzedRFs));
-        theMRGCMosaicReversePolarityResponse = zeros(nStim, numel(rgcIndicesOfAnalyzedRFs));
+        theVisualRFmaps = zeros(numel(rgcIndicesOfAnalyzedRFs), pixelsNum, pixelsNum, 'single');
 
         % Compute theNullStimulusScene and the visual RF spatial support
         [~, theNullStimulusScene, visualRFspatialSupportDegs] = ...
@@ -194,75 +203,89 @@ function computeVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, centerMo
                     theDisplay, stimParams, HartleySpatialModulationPatterns(1,:,:), ...
                     'validateScenes', false);
 
+
         % Compute the MRGCmosaic responses to the forward polarity stimuli
         fprintf('Computing MRGC responses to the positive polarity stimuli ...\n');
 
-        parfor iFrame = 1:nStim
-            fprintf('Forward polarity stimulus %d/%d\n', iFrame, nStim);
+        for iFrame = 1:nStim
+            fprintf('Computing responses and RFs for stimulus %d/%d\n', iFrame, nStim);
 
-            % Generate scene for the Hartley pattern
+            theHartleyPattern = HartleySpatialModulationPatterns(iFrame,:,:);
+
+            % Generate scene for the forward Hartley pattern
             theRFMappingStimulusFrameScene = ...
                 rfMappingStimulusGenerator.generateStimulusMappingFramesOnPresentationDisplay(...
-                    theDisplay, stimParams, HartleySpatialModulationPatterns(iFrame,:,:), ...
+                    theDisplay, stimParams, theHartleyPattern, ...
                     'validateScenes', false);
 
             % Compute the mosaic's response to the positive polarity frame
-            r = theMidgetRGCmosaic.compute(...
+            [rPlus, ~, noiseFreeConeAbsorptionsCount, theOpticalImage] = theMidgetRGCmosaic.compute(...
                     theRFMappingStimulusFrameScene{1}, ...
                     'withOptics', theSubjectOptics, ...
                     'nTrials', 1, ...
+                    'opticalImagePositionDegs', opticalImagePositionDegs, ...
                     'theNullScene', theNullStimulusScene, ...
                     'normalizeConeResponsesWithRespectToNullScene', true);
 
-            % Save response to this stimulus
-            theMRGCMosaicResponses(iFrame,:) = (squeeze(r(rgcIndicesOfAnalyzedRFs)))';
-        end
-
-
-        % Compute the MRGCmosaic responses to the reverse polarity stimuli
-        fprintf('Computing MRGC responses to the reverse polarity stimuli ...\n');
-
-        parfor iFrame = 1:nStim
-            fprintf('Reverse polarity stimulus %d/%d\n', iFrame, nStim);
-
-            % Generate scene for the Hartley pattern
+            % Generate scene for the inverse Hartley pattern
             theRFMappingStimulusFrameScene = ...
                 rfMappingStimulusGenerator.generateStimulusMappingFramesOnPresentationDisplay(...
-                    theDisplay, stimParams, -HartleySpatialModulationPatterns(iFrame,:,:), ...
+                    theDisplay, stimParams, -theHartleyPattern, ...
                     'validateScenes', false);
 
             % Compute the mosaic's response to the reverse polarity frames
-            r = theMidgetRGCmosaic.compute(...
+            rMinus = theMidgetRGCmosaic.compute(...
                     theRFMappingStimulusFrameScene{1}, ...
                     'withOptics', theSubjectOptics, ...
                     'nTrials', 1, ...
+                    'opticalImagePositionDegs', opticalImagePositionDegs, ...
                     'theNullScene', theNullStimulusScene, ...
                     'normalizeConeResponsesWithRespectToNullScene', true);
 
-             % Save response to this stimulus
-             theMRGCMosaicReversePolarityResponse(iFrame,:) = (squeeze(r(rgcIndicesOfAnalyzedRFs)))';
-        end
+            % Save differentual response to this stimulus frame
+            diffResponse = rPlus-rMinus;
+            diffResponse = squeeze(diffResponse(rgcIndicesOfAnalyzedRFs));
 
-        % Compute forward - reverse polarity responses
-        theMRGCMosaicResponses = theMRGCMosaicResponses - theMRGCMosaicReversePolarityResponse;
-
-        clear 'theMRGCMosaicReversePolarityResponse'
-
-        % Allocate memory for the visual RF maps (single to save space)
-        theVisualRFmaps = zeros(numel(rgcIndicesOfAnalyzedRFs), pixelsNum, pixelsNum, 'single');
-
-        % Also make the Hartley patterns and the responses single
-        theMRGCMosaicResponses = single(theMRGCMosaicResponses);
-
-        % Compute the RFs
-        parfor iRGCindex = 1:numel(rgcIndicesOfAnalyzedRFs)
-            for iFrame = 1:nStim
+            % Accumulate the RFs
+            parfor iRGCindex = 1:numel(rgcIndicesOfAnalyzedRFs)
                 theVisualRFmaps(iRGCindex,:,:) = theVisualRFmaps(iRGCindex,:,:) + ...
-                    HartleySpatialModulationPatterns(iFrame,:,:) * theMRGCMosaicResponses(iFrame,iRGCindex);
+                    theHartleyPattern * diffResponse(iRGCindex);
             end
-        end % iRGCindex
 
-        % Normalize
+            % Visualize first frame
+            if (~isempty(visualizedOpticalImageNum)) && (visualizedOpticalImageNum  == iFrame)
+                
+                hFig = figure(75);
+
+                % Visualize the input cone mosaic with the OI
+                ax = subplot(2,2,1);
+                theMidgetRGCmosaic.inputConeMosaic.visualize(...
+                    'figureHandle', hFig, ...
+                    'axesHandle', ax, ...
+                    'withSuperimposedOpticalImage', theOpticalImage);
+
+                % Visualize the input cone mosaic response to the OI
+                ax = subplot(2,2,2);
+                theMidgetRGCmosaic.inputConeMosaic.visualize(...
+                    'figureHandle', hFig, ...
+                    'axesHandle', ax, ...
+                    'activation', noiseFreeConeAbsorptionsCount);
+
+                % Visualize the midgetRCCmosaic with the OI
+                ax = subplot(2,2,3);
+                theMidgetRGCmosaic.visualize(...
+                    'figureHandle', hFig, ...
+                    'axesHandle', ax, ...
+                    'withSuperimposedOpticalImage', theOpticalImage);
+                drawnow;
+                pause
+            end
+
+            
+        end  % iFrame
+
+
+        % Normalize the RFs
         theVisualRFmaps = 1/(2*nStim)*theVisualRFmaps;
 
         % Compute retinal RFmaps
@@ -272,14 +295,14 @@ function computeVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, centerMo
             marginDegs, spatialSupportSamplesNum, ...
             'forRGCindices', rgcIndicesOfAnalyzedRFs);
 
+        xLims = theMidgetRGCmosaic.eccentricityDegs(1) + theMidgetRGCmosaic.sizeDegs(1)*0.5*[-1 1];
+        yLims = theMidgetRGCmosaic.eccentricityDegs(2) + theMidgetRGCmosaic.sizeDegs(2)*0.5*[-1 1];
+
         for iRGCindex = 1:numel(retinalRFcenterMaps)
             r = retinalRFcenterMaps{iRGCindex};
             retinalRFcenterMap = r.centerRF;
             retinalSpatialSupportDegsX = r.spatialSupportDegsX;
             retinalSpatialSupportDegsY = r.spatialSupportDegsY;
-
-            xLims = [min(retinalSpatialSupportDegsX ) max(retinalSpatialSupportDegsX )];
-            yLims = [min(retinalSpatialSupportDegsY) max(retinalSpatialSupportDegsY)];
 
             cMap = gray(1024);
             hFig = figure(1); clf;
@@ -355,26 +378,18 @@ function  visualizeComponents(ZernikeDataBase, subjectRankOrder, eccX, eccY, max
         c = mod(iPos-1,colsNum)+1;
         ax = subplot('Position', sv(r,c).v);
 
+        psfData.supportXdegs = thePSFData.psfSupportXdegs;
+        psfData.supportYdegs = thePSFData.psfSupportYdegs;
+        psfData.data = thePSFData.vLambdaWeightedData;
+
         theMidgetRGCmosaic.visualize(...
             'figureHandle', hFig, ...
             'axesHandle', ax, ...
             'maxVisualizedRFs', maxVisualizedRFs, ...
+            'withSuperimposedPSF', psfData, ...
             'xRange', 0.75, ...
             'yRange', 0.75, ...
             'fontSize', 20);
-
-        % Overlay the PSF
-        hold(ax, 'on');
-        cmap = brewermap(1024,'greys');
-        alpha = 0.75;
-        contourLineColor = [0 0 0.0];
-        mRGCmosaicCenterDegs = mean(theMidgetRGCmosaic.rgcRFpositionsDegs,1);
-        cMosaic.semiTransparentContourPlot(ax, ...
-            thePSFData.psfSupportXdegs + mRGCmosaicCenterDegs(1), ...
-            thePSFData.psfSupportYdegs + mRGCmosaicCenterDegs(2), ...
-            thePSFData.vLambdaWeightedData/max(thePSFData.vLambdaWeightedData(:)), ...
-            0.05:0.15:0.95, cmap, alpha, contourLineColor, ...
-            'lineWidth', 2.0);
 
         fNamePDF = strrep(fName, '.mat', '.pdf');
         NicePlot.exportFigToPDF(fNamePDF, hFig, 300);
@@ -382,7 +397,7 @@ function  visualizeComponents(ZernikeDataBase, subjectRankOrder, eccX, eccY, max
 
 end
 
-function modifyOptics(ZernikeDataBase, subjectRankOrder, newZernikeDataBase, newSubjectRankOrder, eccX, eccY)
+function modifyOptics(ZernikeDataBase, subjectRankOrder, newZernikeDataBase, newSubjectRankOrder, newPupilDiamMM, eccX, eccY)
     % Struct with the various optics params
     opticsParams = struct(...
         'positionDegs', [], ...           % (x,y) eccentricity for the PSF, in degrees
@@ -391,7 +406,7 @@ function modifyOptics(ZernikeDataBase, subjectRankOrder, newZernikeDataBase, new
         'refractiveErrorDiopters', 0.0, ...    % use -999 for optics that do not subtract the central refraction
         'analyzedEye', 'right eye', ...
         'subjectRankingEye', 'right eye', ...
-        'pupilDiameterMM', 3.0, ...
+        'pupilDiameterMM', newPupilDiamMM, ...
         'wavefrontSpatialSamples', 701, ...
         'psfUpsampleFactor', 1 ...
         );

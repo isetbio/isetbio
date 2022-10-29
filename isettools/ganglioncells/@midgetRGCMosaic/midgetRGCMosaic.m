@@ -164,7 +164,8 @@ classdef midgetRGCMosaic < handle
         end % Constructor
 
         % Method to compute the response of the midgetRGCmosaic to a scene
-        [responses, responseTemporalSupport] = compute(obj, theScene, varargin);
+        [midgetRGCresponses, responseTemporalSupport, ...
+         noiseFreeAbsorptionsCount, theOpticalImage] = compute(obj, theScene, varargin);
 
         % Method to compute the retinal RFcenter maps - used for
         % visualization and RFoverlap analysis
