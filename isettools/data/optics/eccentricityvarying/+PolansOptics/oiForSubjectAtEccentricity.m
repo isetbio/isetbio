@@ -57,18 +57,22 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
              'micronsPerDegree', micronsPerDegree, ...
              'flipPSFUpsideDown', flipPSFUpsideDown, ...
              'upsampleFactor', upsampleFactor, ...
+             'noLCA', noLCA, ...
              'name', sprintf('Polans subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
     
     % Remove wavelength-dependent defocus if noLCA is set
-    if (noLCA)
-        % Set all PSFs to the PSF at the in-focus wavelenth
-        [~,wTarget] = min(abs(wavelengthsListToCompute-inFocusWavelength));
-        targetPSF = thePSF(:,:,wTarget);
-        for waveIndex = 1:numel(wavelengthsListToCompute)
-            theWVF.psf{waveIndex} = targetPSF;
-            thePSF(:,:,waveIndex) = targetPSF;
-        end
-    end
+    %
+    % This also removes a wavelength dependent effect of diffraction,
+    % which I don't think is what we want to do.
+    % if (noLCA)
+    %     % Set all PSFs to the PSF at the in-focus wavelenth
+    %     [~,wTarget] = min(abs(wavelengthsListToCompute-inFocusWavelength));
+    %     targetPSF = thePSF(:,:,wTarget);
+    %     for waveIndex = 1:numel(wavelengthsListToCompute)
+    %         theWVF.psf{waveIndex} = targetPSF;
+    %         thePSF(:,:,waveIndex) = targetPSF;
+    %     end
+    % end
     
     % Generate the OI from the wavefront map
     theOI = wvf2oiSpecial(theWVF, micronsPerDegree, pupilDiamMM);
