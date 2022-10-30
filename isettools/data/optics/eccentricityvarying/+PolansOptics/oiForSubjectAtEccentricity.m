@@ -6,7 +6,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=0)&&(x<=10)));
     p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{PolansOptics.constants.rightEye}))));  % allow only right eye data - the paper does not have left eye data
     p.addRequired('ecc', @(x)(isnumeric(x)&&(numel(x) == 2)));
-    p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=4)));
+    p.addRequired('pupilDiamMM', @(x)(isscalar(x)));
     p.addRequired('wavelengthsListToCompute', @(x)(isnumeric(x)));
     p.addRequired('micronsPerDegree', @(x)(isscalar(x)));
     p.addParameter('inFocusWavelength', 550, @isscalar);
@@ -18,6 +18,14 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.addParameter('noLCA', false, @islogical);
     p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
     p.parse(subjectID, whichEye, ecc, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
+
+    % Check pupil diameter. Setting sujectID to 0 gets diffraction limited
+    % optics so we skip check in that case.
+    if (subjectID ~= 0)
+        if (p.Results.pupilDiamMM < 1 || p.Results.pupilDiamMM > 4)
+            error('Polans pupil diameter must be between 1 and 4 mm');
+        end
+    end
     
     inFocusWavelength = p.Results.inFocusWavelength;
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
@@ -33,15 +41,17 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     if (subjectID == 0)
         zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
         zCoeffs = 0*zCoeffs;
+        measurementPupilDiameterMM = pupilDiamMM;
     else
         zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
+        measurementPupilDiameterMM = PolansOptics.constants.measurementPupilDiamMM;
     end
     
     % Compute PSF and WVF from z-Coeffs for the desired pupil and wavelenghts
     [thePSF, ~, ~,~, psfSupportMinutesX, psfSupportMinutesY, theWVF] = ...
         computePSFandOTF(zCoeffs, ...
              wavelengthsListToCompute, wavefrontSpatialSamples, ...
-             PolansOptics.constants.measurementPupilDiamMM, ...
+             measurementPupilDiameterMM, ...
              pupilDiamMM, inFocusWavelength, false, ...
              'doNotZeroCenterPSF', ~zeroCenterPSF, ...
              'micronsPerDegree', micronsPerDegree, ...
