@@ -28,7 +28,6 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
 %   In which we explain more about the processing parameters.  NC and BW to
 %   do together.
 %
-%
 % See also
 %   cMosaic (main class)
 %
@@ -74,19 +73,21 @@ psfEnsemble = cell(1, oiNum);
 switch (zernikeDataBase)
     
     case 'Artal2012'
-        % Make sure refractive error is zero, because Artal version of
-        % oiForSubjectAtEccentricity doesn't understand the
-        % 'refractiveErrorMicrons' key/value pair.
-        if (p.Results.refractiveErrorDiopters ~= 0)
-            error('Artal optics does not currently accept refractiveErrorDiopters key/value pair');
-        end
+        % Looks like Artal optics now accepts refractive error in diopters.
+        % Commented out this warning. DHB.
+        %
+        % % Make sure refractive error is zero, because Artal version of
+        % % oiForSubjectAtEccentricity doesn't understand the
+        % % 'refractiveErrorMicrons' key/value pair.
+        % if (p.Results.refractiveErrorDiopters ~= 0)
+        %     error('Artal optics does not currently accept refractiveErrorDiopters key/value pair');
+        % end
 
         % Artal optics
         for oiIndex = 1:oiNum
             %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
-            
             
             if (targetEcc(2) ~= 0)
                 fprintf(2,'Artal optics not available off the horizontal meridian. Computing for vEcc = 0\n');
@@ -99,7 +100,8 @@ switch (zernikeDataBase)
                 'subtractCentralRefraction', subtractCentralRefraction, ...
                 'zeroCenterPSF', zeroCenterPSF, ...
                 'flipPSFUpsideDown', flipPSFUpsideDown, ...
-                'upsampleFactor', upSampleFactor);
+                'upsampleFactor', upSampleFactor, ...
+                'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
             
             if (isempty(theOI))
                 if (warningInsteadOfErrorForBadZernikeCoeffs)
