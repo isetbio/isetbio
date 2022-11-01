@@ -9,6 +9,8 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     p.addParameter('forcedCentroidXYpos', [], @(x)(isempty(x) || (isnumeric(x)&&(numel(x)==2)) ));
     p.addParameter('globalSearch', false, @islogical);
     p.addParameter('multiStartsNum', [], @(x)(isempty(x) || isscalar(x)));
+    p.addParameter('useParallel', true, @islogical);
+
     p.parse(varargin{:});
     flatTopGaussian = p.Results.flatTopGaussian;
     forcedEllipseRcYRcXratio = p.Results.forcedEllipseRcYRcXratio;
@@ -17,7 +19,8 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
     forcedCentroidXYpos = p.Results.forcedCentroidXYpos;
     globalSearch = p.Results.globalSearch;
     multiStartsNum = p.Results.multiStartsNum;
-    
+    useParallel = p.Results.useParallel;
+
     [X,Y] = meshgrid(supportX, supportY);
     xydata(:,:,1) = X;
     xydata(:,:,2) = Y;
@@ -128,7 +131,7 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
          ms = MultiStart(...
               'Display', 'off', ...
               'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
-              'UseParallel', true);
+              'UseParallel', useParallel);
       
          % Run the multi-start
          if (isempty(multiStartsNum))

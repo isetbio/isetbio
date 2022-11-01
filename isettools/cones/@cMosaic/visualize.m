@@ -78,6 +78,7 @@ function visualizationParams = visualize(obj, varargin)
     
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+    p.addParameter('clearAxesBeforeDrawing', true, @islogical);
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
@@ -135,7 +136,8 @@ function visualizationParams = visualize(obj, varargin)
     plotTitleColor = p.Results.plotTitleColor;
     textDisplay = p.Results.textDisplay;
     textDisplayColor = p.Results.textDisplayColor;
-    
+    clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
+
     if (isempty(backgroundColor))
         backgroundColor = [0.7 0.7 0.7];
     end
@@ -252,7 +254,9 @@ function visualizationParams = visualize(obj, varargin)
             set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
             axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
         end
-        cla(axesHandle);
+        if (clearAxesBeforeDrawing)
+            cla(axesHandle);
+        end
     end
     visualizationParams.figureHandle = figureHandle;  % Return these.
     visualizationParams.axesHandle   = axesHandle;
@@ -286,8 +290,9 @@ function visualizationParams = visualize(obj, varargin)
     coneApertureShape.x = cos(iTheta);
     coneApertureShape.y = sin(iTheta);
     
-    
-    cla(axesHandle);
+    if (clearAxesBeforeDrawing)
+        cla(axesHandle);
+    end
     hold(axesHandle, 'on');
     
     
@@ -763,6 +768,7 @@ function visualizationParams = visualize(obj, varargin)
     
     box(axesHandle, 'on');
     set(figureHandle, 'Color', [1 1 1]);
+    
     switch (domain)
         case 'degrees'
             if (~noXlabel)

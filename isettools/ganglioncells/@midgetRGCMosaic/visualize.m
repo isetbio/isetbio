@@ -5,12 +5,16 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('maxVisualizedRFs', 18, @isscalar);
+    p.addParameter('withSuperimposedConeMosaic', true, @islogical);
     p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('xRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
     p.addParameter('yRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
     p.addParameter('xLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('yLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
+    p.addParameter('noXLabel', false, @islogical);
+    p.addParameter('noYLabel', false, @islogical);
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('retinalMeridianAxesLabeling', true, @islogical);
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
@@ -21,10 +25,14 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     maxVisualizedRFs = p.Results.maxVisualizedRFs;
     superimposedOpticalImage = p.Results.withSuperimposedOpticalImage;
     superimposedPSF = p.Results.withSuperimposedPSF;
-    xLimsDegs  = p.Results.xLimsDegs; 
-    yLimsDegs  = p.Results.yLimsDegs;
+    superimposedConeMosaic = p.Results.withSuperimposedConeMosaic;
     xRangeDegs = p.Results.xRangeDegs;
     yRangeDegs = p.Results.yRangeDegs;
+    xLimsDegs  = p.Results.xLimsDegs; 
+    yLimsDegs  = p.Results.yLimsDegs;
+    domainVisualizationTicks = p.Results.domainVisualizationTicks;
+    noXLabel = p.Results.noXLabel;
+    noYLabel = p.Results.noYLabel;
     fontSize = p.Results.fontSize;
     plotTitle = p.Results.plotTitle;
     retinalMeridianAxesLabeling = p.Results.retinalMeridianAxesLabeling;
@@ -82,37 +90,45 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         xyTicksDegs = 5.0;
     end
 
+    if (isempty(domainVisualizationTicks))
+        xTicks = sign(mRGCmosaicCenterDegs(1)) * round(abs(mRGCmosaicCenterDegs(1)*10))/10 + xyTicksDegs*(-10:1:10);
+        yTicks = sign(mRGCmosaicCenterDegs(2)) * round(abs(mRGCmosaicCenterDegs(2)*10))/10 + xyTicksDegs*(-10:1:10);
+        domainVisualizationTicks = struct('x', xTicks, 'y', yTicks);
+    end
 
-    xTicks = sign(mRGCmosaicCenterDegs(1)) * round(abs(mRGCmosaicCenterDegs(1)*10))/10 + xyTicksDegs*(-10:1:10);
-    yTicks = sign(mRGCmosaicCenterDegs(2)) * round(abs(mRGCmosaicCenterDegs(2)*10))/10 + xyTicksDegs*(-10:1:10);
-
-    obj.inputConeMosaic.visualize(...
-            'figureHandle', figureHandle, ...
-            'axesHandle', axesHandle, ...
-            'visualizedConeAperture', 'lightCollectingArea4sigma', ...
-            'visualizedConeApertureThetaSamples', 20, ...
-            'withSuperimposedOpticalImage', superimposedOpticalImage, ...
-            'withSuperimposedPSF', superimposedPSF, ...
-            'domain', 'degrees', ...
-            'domainVisualizationLimits', [xLimsDegs(1) xLimsDegs(2) yLimsDegs(1) yLimsDegs(2)], ...
-            'domainVisualizationTicks', struct('x', xTicks, 'y', yTicks), ...
-            'backgroundColor', [1 1 1], ...
-            'fontSize', fontSize, ...
-            'plotTitle', plotTitle);
+%     obj.inputConeMosaic.visualize(...
+%             'figureHandle', figureHandle, ...
+%             'axesHandle', axesHandle, ...
+%             'visualizedConeAperture', 'lightCollectingArea4sigma', ...
+%             'visualizedConeApertureThetaSamples', 20, ...
+%             'withSuperimposedOpticalImage', superimposedOpticalImage, ...
+%             'withSuperimposedPSF', superimposedPSF, ...
+%             'domain', 'degrees', ...
+%             'domainVisualizationLimits', [xLimsDegs(1) xLimsDegs(2) yLimsDegs(1) yLimsDegs(2)], ...
+%             'domainVisualizationTicks', domainVisualizationTicks, ...
+%             'noXLabel', noXLabel, ...
+%             'noYLabel', noYLabel, ...
+%             'backgroundColor', [0.7 0.7 0.7], ...
+%             'fontSize', fontSize, ...
+%             'plotTitle', plotTitle);
 
     if (retinalMeridianAxesLabeling)
-        if (obj.eccentricityDegs(1) ~= 0)
-            % Change the x-label to display the horizontal retinal meridian 
-            xlabel(axesHandle, sprintf('%s (degs)', strrep(obj.horizontalRetinalMeridian, 'meridian', 'retina')));
-        else
-            xlabel(axesHandle, '\leftarrow temporal retina               (degs)                   nasal retina \rightarrow ');
+        if (~noXLabel)
+            if (obj.eccentricityDegs(1) ~= 0)
+                % Change the x-label to display the horizontal retinal meridian 
+                xlabel(axesHandle, sprintf('%s (degs)', strrep(obj.horizontalRetinalMeridian, 'meridian', 'retina')));
+            else
+                xlabel(axesHandle, '\leftarrow temporal retina               (degs)                   nasal retina \rightarrow ');
+            end
         end
 
-        if (obj.eccentricityDegs(2) ~= 0)
-            % Change the y-label to display the vertical retinal meridian 
-            ylabel(axesHandle, sprintf('%s (degs)', strrep(obj.verticalRetinalMeridian, 'meridian', 'retina')));
-        else
-            ylabel(axesHandle, '\leftarrow inferior retina                         (degs)                          superior retina\rightarrow  ');
+        if (~noYLabel)
+            if (obj.eccentricityDegs(2) ~= 0)
+                % Change the y-label to display the vertical retinal meridian 
+                ylabel(axesHandle, sprintf('%s (degs)', strrep(obj.verticalRetinalMeridian, 'meridian', 'retina')));
+            else
+                ylabel(axesHandle, '\leftarrow inferior retina                         (degs)                          superior retina\rightarrow  ');
+            end
         end
     end
 
@@ -123,10 +139,6 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
 
         if (iRGC > maxVisualizedRFs)
             continue;
-        end
-
-        if (isempty(plotTitle))
-           title(axesHandle, sprintf('visualized RFs: %d of %d', iRGC, numel(sortedRGCindices)));
         end
 
         % Retrieve the RGCindex
@@ -186,7 +198,6 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
                 plot(axesHandle,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),1)], ...
                     [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),2)], ...
                     'k-', 'LineWidth', 1.5, 'Color', coneColor);
-                drawnow
             end
         end
 
@@ -209,10 +220,32 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
             oneRcLevel, cMap, alpha, contourLineColor, ...
             'lineWidth', 3.0, ...
             'edgeAlpha', 0.7);
-        drawnow;
+        
+   end % iRGC
+   set(axesHandle, 'XLim', [xLimsDegs(1) xLimsDegs(2)], 'YLim', [yLimsDegs(1) yLimsDegs(2)]);
+   drawnow
 
+
+    if (superimposedConeMosaic)
+        obj.inputConeMosaic.visualize(...
+            'figureHandle', figureHandle, ...
+            'axesHandle', axesHandle, ...
+            'visualizedConeAperture', 'lightCollectingArea4sigma', ...
+            'visualizedConeApertureThetaSamples', 20, ...
+            'withSuperimposedOpticalImage', superimposedOpticalImage, ...
+            'withSuperimposedPSF', superimposedPSF, ...
+            'domain', 'degrees', ...
+            'domainVisualizationLimits', [xLimsDegs(1) xLimsDegs(2) yLimsDegs(1) yLimsDegs(2)], ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'clearAxesBeforeDrawing', false, ...
+            'noXLabel', noXLabel, ...
+            'noYLabel', noYLabel, ...
+            'backgroundColor', 'none', ...
+            'fontSize', fontSize, ...
+            'plotTitle', plotTitle);
     end
 
+    drawnow;
 
 end
 

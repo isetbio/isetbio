@@ -13,23 +13,18 @@ function retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spati
     retinalRFcenterMaps = cell(1, mRGCsNum);
 
     parfor iRGCindex = 1:mRGCsNum
-
         theTargetRGCindex = theRGCindices(iRGCindex);
 
         % Find this RGC's center input cone indices and their weights
         connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theTargetRGCindex)));
         inputConeIndices = find(connectivityVector > 0.0001);
 
-        %if (all(connectivityVector(inputConeIndices)==1))
-            % Add some nearby cone positions with zero weights to help with
-            % fitting purposes
-            centroid = mean(obj.inputConeMosaic.coneRFpositionsDegs(inputConeIndices,:),1);
-            [~, otherConeIndices] = MosaicConnector.pdist2(obj.inputConeMosaic.coneRFpositionsDegs, centroid, ...
+        % Add some nearby cone positions with zero weights to help with fitting purposes
+        centroid = mean(obj.inputConeMosaic.coneRFpositionsDegs(inputConeIndices,:),1);
+        [~, otherConeIndices] = MosaicConnector.pdist2(obj.inputConeMosaic.coneRFpositionsDegs, centroid, ...
                 'smallest', numel(inputConeIndices)+max([7 ceil(2*pi*sqrt(numel(inputConeIndices)))]) );
-            additionalConeIndices = setdiff(otherConeIndices, inputConeIndices);
-            inputConeIndices = [inputConeIndices; additionalConeIndices];
-
-       % end
+        additionalConeIndices = setdiff(otherConeIndices, inputConeIndices);
+        inputConeIndices = [inputConeIndices; additionalConeIndices];
         allInputConeWeights = connectivityVector(inputConeIndices);
 
         % Center input cone positions and characteristic radii
