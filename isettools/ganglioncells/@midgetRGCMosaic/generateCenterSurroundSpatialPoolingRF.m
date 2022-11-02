@@ -73,7 +73,7 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         if (isnan(totalCenterStrengthForModelRF(iObj)))
             idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights > 0);
             centerConeIndices = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeIndices(idx);
-            relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(centerConeIndices)).^2 ./ ...
+            relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(centerConeIndices)).^2 .* ...
                                            obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices);
             weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights(idx);
             totalCenterStrengthForModelRF(iObj) = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
@@ -82,7 +82,7 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         if (isnan(totalSurroundStrengthForModelRF(iObj)))
             idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights > 0);
             surroundConeIndices = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeIndices(idx);
-            relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(surroundConeIndices)).^2 ./ ...
+            relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(surroundConeIndices)).^2 .* ...
                                              obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices);
             weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights(idx);
             totalSurroundStrengthForModelRF(iObj) = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
@@ -91,7 +91,7 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         % Center strength correction factor
         idx = find(pooledConeIndicesAndWeights.centerConeWeights > 0);
         centerConeIndices = pooledConeIndicesAndWeights.centerConeIndices(idx);
-        relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(centerConeIndices)).^2 ./ ...
+        relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(centerConeIndices)).^2 .* ...
                                         obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices);
         weights = pooledConeIndicesAndWeights.centerConeWeights(idx);
         totalCenterStrengthForThisRF = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
@@ -100,7 +100,7 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         % Surround strength correction factor
         idx = find(pooledConeIndicesAndWeights.surroundConeWeights > 0);
         surroundConeIndices = pooledConeIndicesAndWeights.surroundConeIndices(idx);
-        relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(surroundConeIndices)).^2 ./ ...
+        relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(surroundConeIndices)).^2 .* ...
                                          obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices);
         weights = pooledConeIndicesAndWeights.surroundConeWeights(idx);
         totalSurroundStrengthForThisRF = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);

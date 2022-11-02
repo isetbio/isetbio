@@ -5,6 +5,7 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('maxVisualizedRFs', 18, @isscalar);
+    p.addParameter('showConnectionsToCones', true, @islogical);
     p.addParameter('withSuperimposedConeMosaic', true, @islogical);
     p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
@@ -15,6 +16,7 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('contourLineWidth', 3, @isscalar);
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('retinalMeridianAxesLabeling', true, @islogical);
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
@@ -23,6 +25,7 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
     maxVisualizedRFs = p.Results.maxVisualizedRFs;
+    showConnectionsToCones = p.Results.showConnectionsToCones;
     superimposedOpticalImage = p.Results.withSuperimposedOpticalImage;
     superimposedPSF = p.Results.withSuperimposedPSF;
     superimposedConeMosaic = p.Results.withSuperimposedConeMosaic;
@@ -31,6 +34,7 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     xLimsDegs  = p.Results.xLimsDegs; 
     yLimsDegs  = p.Results.yLimsDegs;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
+    contourLineWidth = p.Results.contourLineWidth;
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
     fontSize = p.Results.fontSize;
@@ -96,21 +100,6 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         domainVisualizationTicks = struct('x', xTicks, 'y', yTicks);
     end
 
-%     obj.inputConeMosaic.visualize(...
-%             'figureHandle', figureHandle, ...
-%             'axesHandle', axesHandle, ...
-%             'visualizedConeAperture', 'lightCollectingArea4sigma', ...
-%             'visualizedConeApertureThetaSamples', 20, ...
-%             'withSuperimposedOpticalImage', superimposedOpticalImage, ...
-%             'withSuperimposedPSF', superimposedPSF, ...
-%             'domain', 'degrees', ...
-%             'domainVisualizationLimits', [xLimsDegs(1) xLimsDegs(2) yLimsDegs(1) yLimsDegs(2)], ...
-%             'domainVisualizationTicks', domainVisualizationTicks, ...
-%             'noXLabel', noXLabel, ...
-%             'noYLabel', noYLabel, ...
-%             'backgroundColor', [0.7 0.7 0.7], ...
-%             'fontSize', fontSize, ...
-%             'plotTitle', plotTitle);
 
     if (retinalMeridianAxesLabeling)
         if (~noXLabel)
@@ -178,10 +167,11 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
 
 
         % Plot the connection weights
-        if (numel(s.inputConeIndices)>1)
-            inputsCentroid = obj.rgcRFpositionsDegs(targetRGCindex,:);
-            theCenterConnectedCones = s.inputConeIndices(find(s.inputConeWeights>0.001));
-            for iInput = 1:numel(theCenterConnectedCones)
+        inputsCentroid = obj.rgcRFpositionsDegs(targetRGCindex,:);
+        theCenterConnectedCones = s.inputConeIndices(find(s.inputConeWeights>0.001));
+          
+        if (numel(s.inputConeIndices)>1) && (showConnectionsToCones)
+              for iInput = 1:numel(theCenterConnectedCones)
                 switch (obj.inputConeMosaic.coneTypes(theCenterConnectedCones(iInput)))
                     case cMosaic.LCONE_ID
                         coneColor = obj.inputConeMosaic.lConeColor;
@@ -193,11 +183,11 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
 
                 plot(axesHandle,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),1)], ...
                     [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),2)], ...
-                    'k-', 'LineWidth', 3.0, 'Color', coneColor*0.5);
+                    'k-', 'LineWidth', contourLineWidth, 'Color', coneColor*0.5);
 
                 plot(axesHandle,[inputsCentroid(1) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),1)], ...
                     [inputsCentroid(2) obj.inputConeMosaic.coneRFpositionsDegs(theCenterConnectedCones(iInput),2)], ...
-                    'k-', 'LineWidth', 1.5, 'Color', coneColor);
+                    'k-', 'LineWidth', contourLineWidth*0.5, 'Color', coneColor);
             end
         end
 
@@ -218,20 +208,20 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         
         cMosaic.semiTransparentContourPlot(axesHandle, s.spatialSupportDegsX, s.spatialSupportDegsY, fittedEllipsoidMap/max(fittedEllipsoidMap(:)), ...
             oneRcLevel, cMap, alpha, contourLineColor, ...
-            'lineWidth', 3.0, ...
+            'lineWidth', contourLineWidth, ...
             'edgeAlpha', 0.7);
         
    end % iRGC
-   set(axesHandle, 'XLim', [xLimsDegs(1) xLimsDegs(2)], 'YLim', [yLimsDegs(1) yLimsDegs(2)]);
-   drawnow
+   
 
-
-    if (superimposedConeMosaic)
+   % Superimpose cone mosaic
+   if (superimposedConeMosaic)
         obj.inputConeMosaic.visualize(...
             'figureHandle', figureHandle, ...
             'axesHandle', axesHandle, ...
             'visualizedConeAperture', 'lightCollectingArea4sigma', ...
             'visualizedConeApertureThetaSamples', 20, ...
+            'conesAlpha', 0.5, ...
             'withSuperimposedOpticalImage', superimposedOpticalImage, ...
             'withSuperimposedPSF', superimposedPSF, ...
             'domain', 'degrees', ...
@@ -245,7 +235,7 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
             'plotTitle', plotTitle);
     end
 
+    set(axesHandle, 'XLim', [xLimsDegs(1) xLimsDegs(2)], 'YLim', [yLimsDegs(1) yLimsDegs(2)]);
     drawnow;
-
 end
 

@@ -39,6 +39,7 @@ function visualizationParams = visualize(obj, varargin)
     
     p.addParameter('visualizeCones', true, @islogical);
     p.addParameter('labelCones', true, @islogical);
+    p.addParameter('conesAlpha', 1.0, @isscalar);
     p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('outlinedConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('densityContourOverlay', false, @islogical);
@@ -112,6 +113,7 @@ function visualizationParams = visualize(obj, varargin)
     crossHairsAtPosition = p.Results.crossHairsAtPosition;
     visualizeCones = p.Results.visualizeCones;
     labelCones = p.Results.labelCones;
+    faceAlphaCones = p.Results.conesAlpha;
     labelConesWithIndices = p.Results.labelConesWithIndices;
     outlinedConesWithIndices = p.Results.outlinedConesWithIndices;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
@@ -419,21 +421,21 @@ function visualizationParams = visualize(obj, varargin)
         end
         
         if (~isempty(activation))
-            faceAlpha = 0.0;
+            faceAlphaCones = 0.0;
             edgeColor = [1 0 0];
             lineWidth = 1.5;
         end
 
         if (labelCones)
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.lConeIndices)*0.5, ...
-                rfPositions(obj.lConeIndices,:), 1/4*0.9, edgeColor, lineWidth, faceAlpha);
+                rfPositions(obj.lConeIndices,:), 1/4*0.9, edgeColor, lineWidth, faceAlphaCones);
         elseif (~isempty(labelConesWithIndices))
             includedLconeIndices = intersect(obj.lConeIndices, labelConesWithIndices);
             excludedLconeIndices = setdiff(obj.lConeIndices, includedLconeIndices);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedLconeIndices)*0.5, ...
-                rfPositions(includedLconeIndices,:), 1/5*0.9, edgeColor, lineWidth, faceAlpha);
+                rfPositions(includedLconeIndices,:), 1/5*0.9, edgeColor, lineWidth, faceAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedLconeIndices)*0.5, ...
-                rfPositions(excludedLconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
+                rfPositions(excludedLconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
         end
         
         % Plot M-cones
@@ -444,21 +446,21 @@ function visualizationParams = visualize(obj, varargin)
         end
         
         if (~isempty(activation))
-            faceAlpha = 0.0;
+            faceAlphaCones = 0.0;
             edgeColor = [0 1 0];
             lineWidth = 1.5;
         end
 
         if (labelCones)
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.mConeIndices)*0.5, ...
-                rfPositions(obj.mConeIndices,:), 2/4*0.9, edgeColor, lineWidth, faceAlpha);
+                rfPositions(obj.mConeIndices,:), 2/4*0.9, edgeColor, lineWidth, faceAlphaCones);
         elseif (~isempty(labelConesWithIndices))
             includedMconeIndices = intersect(obj.mConeIndices, labelConesWithIndices);
             excludedMconeIndices = setdiff(obj.mConeIndices, includedMconeIndices);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedMconeIndices)*0.5, ...
-                rfPositions(includedMconeIndices,:), 2/5*0.9, edgeColor, lineWidth, faceAlpha);
+                rfPositions(includedMconeIndices,:), 2/5*0.9, edgeColor, lineWidth, faceAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedMconeIndices)*0.5, ...
-                rfPositions(excludedMconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
+                rfPositions(excludedMconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
         end
         
         
@@ -471,22 +473,22 @@ function visualizationParams = visualize(obj, varargin)
         end
 
         if (~isempty(activation))
-            faceAlpha = 0.0;
+            faceAlphaCones = 0.0;
             edgeColor = [0 0.5 1];
             lineWidth = 1.5;
         end
 
         if (labelCones)
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.sConeIndices)*0.5, ...
-                rfPositions(obj.sConeIndices,:), 3/4*0.9, edgeColor, lineWidth, faceAlpha);
+                rfPositions(obj.sConeIndices,:), 3/4*0.9, edgeColor, lineWidth, faceAlphaCones);
         elseif (~isempty(labelConesWithIndices))
             includedSconeIndices = intersect(obj.sConeIndices, labelConesWithIndices);
             excludedSconeIndices = setdiff(obj.sConeIndices, includedSconeIndices);
 
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedSconeIndices)*0.5, ...
-                rfPositions(includedSconeIndices,:), 3/5*0.9, edgeColor, lineWidth, faceAlpha);
+                rfPositions(includedSconeIndices,:), 3/5*0.9, edgeColor, lineWidth, faceAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedSconeIndices)*0.5, ...
-                rfPositions(excludedSconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
+                rfPositions(excludedSconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
         end
         
         
@@ -498,14 +500,14 @@ function visualizationParams = visualize(obj, varargin)
         end
         if (labelCones)
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.kConeIndices)*0.5, ...
-                rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], lineWidth, faceAlpha);
+                rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
         elseif (~isempty(labelConesWithIndices))
             includedKconeIndices = intersect(obj.kConeIndices, labelConesWithIndices);
             excludedKconeIndices = setdiff(obj.kConeIndices, includedKconeIndices);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedKconeIndices)*0.5, ...
-                rfPositions(includedKconeIndices,:), 4/5*0.9, edgeColor, lineWidth, faceAlpha);
+                rfPositions(includedKconeIndices,:), 4/5*0.9, edgeColor, lineWidth, faceAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedKconeIndices)*0.5, ...
-                rfPositions(excludedKconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlpha);
+                rfPositions(excludedKconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
         end
 
         if (~isempty(outlinedConesWithIndices))
