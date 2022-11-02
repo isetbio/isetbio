@@ -1,4 +1,4 @@
-function measureMRGCRFcentersAcrossXYeccentricityForDifferentSubjects()
+function JohannesEccentricityAnalyses()
 
     % Vertical eccentricities examined
     eccX = [-20 -16 -12 -10 -8:1:8 10 12 20];
@@ -32,10 +32,10 @@ function measureMRGCRFcentersAcrossXYeccentricityForDifferentSubjects()
 
     % Where computed data live
     % in Ithaka
-    mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesData';
+    mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
    
     % In Crete
-    % mappedRFsDir = '/Volumes/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesData';
+    % mappedRFsDir = '/Volumes/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
 
     maxVisualizedRFs = 16;
 
@@ -56,7 +56,7 @@ function measureMRGCRFcentersAcrossXYeccentricityForDifferentSubjects()
     end
     
     % Compute relativePhotonCatch
-    computePhotonCatchMaps = true;
+    computePhotonCatchMaps = ~true;
     if computePhotonCatchMaps
         computeRelativePhotonCatchMaps(newZernikeDataBase, newSubjectRankOrder, ...
             eccX, eccY, maxVisualizedRFs, mappedRFsDir);
@@ -79,7 +79,7 @@ function measureMRGCRFcentersAcrossXYeccentricityForDifferentSubjects()
     end
 
     % Summarize analyses
-    summarizeAnalyses = ~true;
+    summarizeAnalyses = true;
     if (summarizeAnalyses)
         summarizeAnalyzedData(newZernikeDataBase, newSubjectRankOrder, ...
             eccX, eccY, mappedRFsDir);
@@ -91,13 +91,13 @@ function summarizeAnalyzedData(ZernikeDataBase, subjectRankOrder, eccX, eccY, ma
 
     visualizedFOVdegs = 0.15;
 
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
-    maxVisualizedRFs = 16;
-    superimposeConeMosaic = ~true;
-    showGanglionCellPooling = true;
-    plotTheRetinalRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, superimposeConeMosaic , showGanglionCellPooling , hFig);
-    NicePlot.exportFigToPDF('RetinalRFs.pdf', hFig, 300);
+%     hFig = figure(1); clf;
+%     set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
+%     maxVisualizedRFs = 16;
+%     superimposeConeMosaic = ~true;
+%     showGanglionCellPooling = true;
+%     plotTheRetinalRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, superimposeConeMosaic , showGanglionCellPooling , hFig);
+%     NicePlot.exportFigToPDF('RetinalRFs.pdf', hFig, 300);
 
 % 
 %     % The grid of PSFs
@@ -108,12 +108,12 @@ function summarizeAnalyzedData(ZernikeDataBase, subjectRankOrder, eccX, eccY, ma
 % 
 %     
 
-%     hFig = figure(3); clf;
-%     set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
-%     maxVisualizedRFs = 16;
-%     plotTheVisualRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, hFig);
-%     NicePlot.exportFigToPDF('VisualRFs.pdf', hFig, 300);
-% 
+    hFig = figure(3); clf;
+    set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
+    maxVisualizedRFs = 16;
+    plotTheVisualRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, hFig);
+    NicePlot.exportFigToPDF('VisualRFs.pdf', hFig, 300);
+
 %     
 %     hFig = figure(4); clf;
 %     set(hFig, 'Position', [10 10 800 800], 'Color', [1 1 1]);
@@ -149,7 +149,7 @@ function plotTheVisualRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, 
 
 
     % Load the summary data
-    load(fullfile(mappedRFsDir, 'summaryData.mat'), ...
+    load(fullfile(mappedRFsDir, 'JohannesAnalysesSummaryData.mat'), ...
            'visualRc', 'retinalRc', ...
            'theFittedRetinalRFmaps', ...
            'theFittedVisualRFmaps', ...
@@ -473,7 +473,7 @@ end
 function compareISETBioModelRcToCronerKaplanRc(ZernikeDataBase, subjectRankOrder, eccX, eccY, mappedRFsDir)
 
      % Load the summary data
-     load(fullfile(mappedRFsDir, 'summaryData.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc');
+     load(fullfile(mappedRFsDir, 'JohannesAnalysesSummaryData.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc');
 
      minorVisualRc = nan(1,size(mosaicEccDegsGrid,1));
      majorVisualRc = nan(1,size(mosaicEccDegsGrid,1));
@@ -558,7 +558,7 @@ end
 function plotTheRcGrid(mappedRFsDir)
 
      % Load the summary data
-     load(fullfile(mappedRFsDir, 'summaryData.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc');
+     load(fullfile(mappedRFsDir, 'JohannesAnalysesSummaryData.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc');
 
      minorVisualRc = nan(1,size(mosaicEccDegsGrid,1));
      majorVisualRc = nan(1,size(mosaicEccDegsGrid,1));
@@ -903,7 +903,7 @@ function fitTheRetinalAndVisualAchromaticRFmaps(ZernikeDataBase, subjectRankOrde
         theFittedVisualRFmaps{iPos} = theFittedVisualRFmapEllipsoids;
 
         % Save the data
-        save(fullfile(mappedRFsDir, 'summaryData.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc', ...
+        save(fullfile(mappedRFsDir, 'JohannesAnalysesSummaryData.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc', ...
             'theFittedRetinalRFmaps','theFittedVisualRFmaps', 'visualRFspatialSupportDegs');
 
         
