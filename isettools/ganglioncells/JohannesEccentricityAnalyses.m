@@ -9,8 +9,13 @@ function JohannesEccentricityAnalyses()
     eccY = [-6:1:6];
 
     % Remaining computations
-    eccX = [-20 -16 12 12 20];
+    eccX = [-20 -16 -12 12 20];
+
+    % Doing +/- 12 degs
     eccX = [-12 12];
+
+    % Doinf the remaining X
+    eccX = [-20 -16 20];
     eccY = [-6:1:6];
 
 
@@ -56,7 +61,7 @@ function JohannesEccentricityAnalyses()
     end
 
     % Modify the optics
-    changeOpticsSubject = true;
+    changeOpticsSubject = ~true;
     if (changeOpticsSubject)
         modifyOptics(ZernikeDataBase, subjectRankOrder, newZernikeDataBase, ...
             newSubjectRankOrder, newPupilDiamMM, newWavefrontSpatialSamplesNum, eccX, eccY, mappedRFsDir);
@@ -73,14 +78,14 @@ function JohannesEccentricityAnalyses()
     
 
     % Compute visual RF maps (center) using subspace RF mapping stimuli
-    computeTheVisualAchromaticRFmaps = true;
+    computeTheVisualAchromaticRFmaps = ~true;
     if (computeTheVisualAchromaticRFmaps)
         computeSubspaceAchromaticVisualRF(newZernikeDataBase, newSubjectRankOrder, ...
             eccX, eccY, maxVisualizedRFs, mappedRFsDir);
     end
 
     % Fit the retinal and visual achromatic RF maps
-    fitTheRFmaps = true;
+    fitTheRFmaps = ~true;
     if (fitTheRFmaps)
         visualizeFits = ~true;
         fitTheRetinalAndVisualAchromaticRFmaps(newZernikeDataBase, newSubjectRankOrder, ...
@@ -88,7 +93,7 @@ function JohannesEccentricityAnalyses()
     end
 
     % Summarize analyses
-    summarizeAnalyses = ~true;
+    summarizeAnalyses = true;
     if (summarizeAnalyses)
         summarizeAnalyzedData(newZernikeDataBase, newSubjectRankOrder, ...
             eccX, eccY, mappedRFsDir);
@@ -117,11 +122,11 @@ function summarizeAnalyzedData(ZernikeDataBase, subjectRankOrder, eccX, eccY, ma
 % 
 %     
 
-    hFig = figure(3); clf;
-    set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
-    maxVisualizedRFs = 16;
-    plotTheVisualRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, hFig);
-    NicePlot.exportFigToPDF('VisualRFs.pdf', hFig, 300);
+%     hFig = figure(3); clf;
+%     set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
+%     maxVisualizedRFs = 16;
+%     plotTheVisualRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, hFig);
+%     NicePlot.exportFigToPDF('VisualRFs.pdf', hFig, 300);
 
 %     
 %     hFig = figure(4); clf;
@@ -130,7 +135,7 @@ function summarizeAnalyzedData(ZernikeDataBase, subjectRankOrder, eccX, eccY, ma
 %     NicePlot.exportFigToPDF('VisualMinorMajorRcs.pdf', hFig, 300);
 
     hFig = figure(6); clf;
-    set(hFig, 'Position', [10 10 800 800], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 800 1200], 'Color', [1 1 1]);
     compareISETBioModelRcToCronerKaplanRc(ZernikeDataBase, subjectRankOrder, eccX, eccY, mappedRFsDir);
     NicePlot.exportFigToPDF('ISETBioVsCronerKaplan.pdf', hFig, 300);
 
@@ -535,7 +540,7 @@ function compareISETBioModelRcToCronerKaplanRc(ZernikeDataBase, subjectRankOrder
    
      grid 'on'
      set(gca, 'XLim', [0.3 30], 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], ...
-         'YLim', [0 10], 'YTick', 0:1:10, 'FontSize', 16);
+         'YLim', [0 14], 'YTick', 0:1:15, 'FontSize', 16);
      set(gca, 'TickDir', 'both');
      xlabel('temporal equivalent eccentericity (degs)');
      ylabel('Rc (arc min)');
@@ -554,7 +559,7 @@ function compareISETBioModelRcToCronerKaplanRc(ZernikeDataBase, subjectRankOrder
      
      grid 'on'
      set(gca, 'XLim', [0.3 30], 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], ...
-         'YLim', [0 10], 'YTick', 0:1:10, 'FontSize', 16);
+         'YLim', [0 14], 'YTick', 0:1:15, 'FontSize', 16);
      set(gca, 'TickDir', 'both');
      xlabel('temporal equivalent eccentericity (degs)');
      ylabel('Rc (arc min)');
@@ -922,7 +927,8 @@ function fitTheRetinalAndVisualAchromaticRFmaps(ZernikeDataBase, subjectRankOrde
 end
 
 
-function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, centerMostRGCsNumToAnalyze, mappedRFsDir)
+function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, eccX, eccY, ...
+    centerMostRGCsNumToAnalyze, mappedRFsDir)
     [eccXGrid, eccYGrid] = meshgrid(eccX, eccY);
     eccXGrid = eccXGrid(:);
     eccYGrid = eccYGrid(:);
@@ -937,6 +943,8 @@ function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, ec
         % Load the computed components data
         fName = sprintf('mosaicAnd%s_Subject%d_optics_EccXY_%2.2f_%2.2f.mat', ...
             ZernikeDataBase, subjectRankOrder, mosaicEccDegs(1), mosaicEccDegs(2));
+        fName = fullfile(mappedRFsDir, fName);
+
         load(fName, 'theMidgetRGCmosaic', 'opticsParams');
 
         % Compute the selected subject optics using the saved opticsParams
