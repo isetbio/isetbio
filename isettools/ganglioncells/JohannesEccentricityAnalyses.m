@@ -10,7 +10,8 @@ function JohannesEccentricityAnalyses()
 
     % Remaining computations
     eccX = [-20 -16 12 12 20];
-    eccY = [0];
+    eccX = [-12 12];
+    eccY = [-6:1:6];
 
 
 
@@ -26,12 +27,24 @@ function JohannesEccentricityAnalyses()
     newPupilDiamMM = 3.5;
     newWavefrontSpatialSamplesNum = 701;
 
-    % Where computed data live
-    % in Ithaka
-    mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
+    % Get dropboxDir location
+    computerInfo = GetComputerInfo();
+    switch (computerInfo.localHostName)
+        case 'Ithaka'
+            dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
+            mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
    
-    % In Crete
-    % mappedRFsDir = '/Volumes/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
+        case 'Crete'
+            dropboxDir = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
+            mappedRFsDir = '/Volumes/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
+
+        otherwise
+            if (contains(computerInfo.networkName, 'leviathan'))
+                dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio/midgetRGCMosaics';
+            else
+                error('Could not establish dropbox location')
+            end
+    end
 
     maxVisualizedRFs = 16;
 
@@ -71,7 +84,7 @@ function JohannesEccentricityAnalyses()
     if (fitTheRFmaps)
         visualizeFits = ~true;
         fitTheRetinalAndVisualAchromaticRFmaps(newZernikeDataBase, newSubjectRankOrder, ...
-            eccX, eccY, mappedRFsDir, visualizeFits);
+            eccX, eccY, maxVisualizedRFs, mappedRFsDir, visualizeFits);
     end
 
     % Summarize analyses
@@ -747,7 +760,8 @@ function computeRelativePhotonCatchMaps(ZernikeDataBase, subjectRankOrder, ...
 end
 
 
-function fitTheRetinalAndVisualAchromaticRFmaps(ZernikeDataBase, subjectRankOrder, eccX, eccY, mappedRFsDir, visualizeFits)
+function fitTheRetinalAndVisualAchromaticRFmaps(ZernikeDataBase, subjectRankOrder, eccX, eccY, ...
+    maxAnalyzedRFsNum, mappedRFsDir, visualizeFits)
 
     [eccXGrid, eccYGrid] = meshgrid(eccX, eccY);
     eccXGrid = eccXGrid(:);
@@ -802,7 +816,7 @@ function fitTheRetinalAndVisualAchromaticRFmaps(ZernikeDataBase, subjectRankOrde
         end
 
         % Initialize memory
-        maxAnalyzedRFsNum = 16;
+        
         thePositionRetinalRc = zeros(min([maxAnalyzedRFsNum numel(rgcIndicesOfAnalyzedRFs)]),2);
         thePositionVisualRc = zeros(min([maxAnalyzedRFsNum numel(rgcIndicesOfAnalyzedRFs)]),2);
         
