@@ -4,17 +4,13 @@ function JohannesEccentricityAnalyses()
     eccX = [-20 -16 -12 -10 -8:1:8 10 12 20];
     eccY = [-8:1:8];
 
-    % Remaining computations
-    eccX = [12 20];
-    eccY = [-8:1:8];
-
-
-    % Horizontal eccentricities examined
-    eccX = [-7];
-    eccY = [0];
-
+    % Eccs sent in email
     eccX = [-10 -8:1:8 10];
     eccY = [-6:1:6];
+
+    % Remaining computations
+    eccX = [-20 -16 12 12 20];
+    eccY = [0];
 
 
 
@@ -47,7 +43,7 @@ function JohannesEccentricityAnalyses()
     end
 
     % Modify the optics
-    changeOpticsSubject = ~true;
+    changeOpticsSubject = true;
     if (changeOpticsSubject)
         modifyOptics(ZernikeDataBase, subjectRankOrder, newZernikeDataBase, ...
             newSubjectRankOrder, newPupilDiamMM, newWavefrontSpatialSamplesNum, eccX, eccY, mappedRFsDir);
@@ -64,14 +60,14 @@ function JohannesEccentricityAnalyses()
     
 
     % Compute visual RF maps (center) using subspace RF mapping stimuli
-    computeTheVisualAchromaticRFmaps = ~true;
+    computeTheVisualAchromaticRFmaps = true;
     if (computeTheVisualAchromaticRFmaps)
         computeSubspaceAchromaticVisualRF(newZernikeDataBase, newSubjectRankOrder, ...
             eccX, eccY, maxVisualizedRFs, mappedRFsDir);
     end
 
     % Fit the retinal and visual achromatic RF maps
-    fitTheRFmaps = ~true;
+    fitTheRFmaps = true;
     if (fitTheRFmaps)
         visualizeFits = ~true;
         fitTheRetinalAndVisualAchromaticRFmaps(newZernikeDataBase, newSubjectRankOrder, ...
@@ -79,7 +75,7 @@ function JohannesEccentricityAnalyses()
     end
 
     % Summarize analyses
-    summarizeAnalyses = true;
+    summarizeAnalyses = ~true;
     if (summarizeAnalyses)
         summarizeAnalyzedData(newZernikeDataBase, newSubjectRankOrder, ...
             eccX, eccY, mappedRFsDir);
