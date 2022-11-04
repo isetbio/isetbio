@@ -99,7 +99,10 @@ function [retinalRFcenterConeMap, anatomicalRFcenterCharacteristicRadiusDegs] = 
         'globalSearch', false);
 
     % The sqrt(product) of the 2 radii
-    anatomicalRFcenterCharacteristicRadiusDegs = sqrt(prod(theFittedGaussian.characteristicRadii));
+    % anatomicalRFcenterCharacteristicRadiusDegs = sqrt(prod(theFittedGaussian.characteristicRadii));
+
+    % The minimum of the 2 radii
+    anatomicalRFcenterCharacteristicRadiusDegs = min(theFittedGaussian.characteristicRadii);
 end
 
 
