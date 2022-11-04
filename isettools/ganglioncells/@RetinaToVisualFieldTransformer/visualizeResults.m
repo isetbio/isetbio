@@ -247,9 +247,9 @@ function hFig = visualizeTargetAndFittedRFs(obj)
     
     % The retinal RF surround model parameter values & ranges
     ax = subplot('Position', subplotPosVectors(3,1).v);
+    obj.rfComputeStruct.retinalConePoolingParams
     RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, ...
-       obj.rfComputeStruct.retinalConePoolingParams, ...
-       obj.targetVisualRFDoGparams.retinalConePoolingModel);
+       obj.rfComputeStruct.retinalConePoolingParams);
 
 end
 

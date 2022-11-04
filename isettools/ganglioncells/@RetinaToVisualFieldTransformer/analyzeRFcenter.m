@@ -45,8 +45,6 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         [rotatedVisualRFcenterConeMap, bestHorizontalResolutionRotationDegs] = ...
             RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(visualRFcenterConeMap, bestHorizontalResolutionRotationDegs);
 
-        bestHorizontalResolutionRotationDegs
-        disp('jere')
         % Fit a 1D Gaussian line weighting function to the 1D profile 
         % (integration along the Y-dimension of the 2D visually projected
         % cone aperture map)

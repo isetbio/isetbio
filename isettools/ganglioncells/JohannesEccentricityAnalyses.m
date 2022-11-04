@@ -11,10 +11,10 @@ function JohannesEccentricityAnalyses()
     % Remaining computations
     eccX = [-20 -16 -12 12 20];
 
-    % Doing +/- 12 degs
+    % Do the +/- 12 degs
     eccX = [-12 12];
 
-    % Doinf the remaining X
+    % Do the remaining X
     eccX = [-20 -16 20];
     eccY = [-6:1:6];
 
@@ -32,7 +32,7 @@ function JohannesEccentricityAnalyses()
     newPupilDiamMM = 3.5;
     newWavefrontSpatialSamplesNum = 701;
 
-    % Get dropboxDir location
+    % Get dropboxDir & intermediate data files location
     computerInfo = GetComputerInfo();
     switch (computerInfo.localHostName)
         case 'Ithaka'

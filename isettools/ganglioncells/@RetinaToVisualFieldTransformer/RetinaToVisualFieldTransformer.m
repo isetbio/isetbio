@@ -77,11 +77,19 @@ classdef RetinaToVisualFieldTransformer < handle
             p.addParameter('simulateCronerKaplanEstimation', true, @islogical);
             p.addParameter('multiStartsNum', 10, @isscalar);
             p.addParameter('doDryRunFirst', false, @islogical);
+            p.addParameter('computedRTVObjectExportDirectory', '', @(x)(isempty(x)||ischar(x)));
             p.parse(varargin{:});
 
+            computedRTVObjectExportDirectory = p.Results.computedRTVObjectExportDirectory;
+
             % Generate filename for saved object
-            obj.computedObjDataFileName = RetinaToVisualFieldTransformer.computedObjectDataFileName(opticsParams, targetVisualRFDoGparams);
-            fprintf('Computed object will be saved to %s\n', obj.computedObjDataFileName);
+            if (isempty(computedRTVObjectExportDirectory))
+                fprintf('Computed object will NOT be saved to disk\n');
+                obj.computedObjDataFileName = '';
+            else
+                obj.computedObjDataFileName = fullfile(computedRTVObjectExportDirectory, RetinaToVisualFieldTransformer.computedObjectDataFileName(opticsParams, targetVisualRFDoGparams));
+                fprintf('Computed object will be saved to %s\n', obj.computedObjDataFileName);
+            end
 
             obj.theConeMosaic = theConeMosaic;
             obj.coneCharacteristicRadiusConversionFactor = theConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor;
@@ -141,8 +149,10 @@ classdef RetinaToVisualFieldTransformer < handle
                 weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams);
 
             % Save the computed object
-            fprintf('Saving computed object to %s\n', obj.computedObjDataFileName);
-            save(obj.computedObjDataFileName, 'obj');
+            if (~isempty(computedRTVObjectExportDirectory))
+                fprintf('Saving computed object to %s\n', obj.computedObjDataFileName);
+                save(obj.computedObjDataFileName, 'obj');
+            end
 
             % Visualize the results
             obj.visualizeResults();
