@@ -31,7 +31,7 @@ function JohannesEccentricityAnalyses2
     % - 1 (Single start run, fastest results), 
     % - some number (Multi-start), or 
     % - inf (Global search)
-    multiStartsNum = 8
+    multiStartsNum = 3
 
     generateRTVobjects = true;
     if (generateRTVobjects)

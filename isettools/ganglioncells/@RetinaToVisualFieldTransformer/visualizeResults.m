@@ -1,6 +1,11 @@
 function visualizeResults(obj)
     hFig = visualizeTargetAndFittedRFs(obj);
-    pdfFileName = strrep(obj.computedObjDataFileName, '.mat', '.pdf');
+    if (~isempty(obj.computedObjDataFileName))
+        pdfFileName = strrep(obj.computedObjDataFileName, '.mat', '.pdf');
+    else
+        pdfFileName = 'RTVFfitResults.pdf';
+    end
+
     NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
 end
 
