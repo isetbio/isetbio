@@ -26,11 +26,18 @@ function JohannesEccentricityAnalyses2
     % 3 degrees in the temporal retina (negative horizontal ecc)
     mosaicEccDegs = [-3 0];
 
+
+    % multiStartsNum: select from:
+    % - 1 (Single start run, fastest results), 
+    % - some number (Multi-start), or 
+    % - inf (Global search)
+    multiStartsNum = 8
+
     generateRTVobjects = true;
     if (generateRTVobjects)
         for iEcc = 1:size(mosaicEccDegs,1)
             computeTheRTVobjects(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
-                ZernikeDataBase, subjectRankOrder, pupilDiameterMM);
+                ZernikeDataBase, subjectRankOrder, pupilDiameterMM, multiStartsNum);
         end
     end
 
@@ -50,9 +57,9 @@ function JohannesEccentricityAnalyses2
     orientationsTested = 0:deltaOri:(180-deltaOri);
     spatialFrequenciesTested = [0.25 0.5 1 2 4 6 8 12 16 20 24 32 48 64];
 
-    stimulusPixelsNum = 256;
-    orientationsTested = 0:30:150;
-    spatialFrequenciesTested = [0.25 0.5 1 2 4 8 16 32 64];
+%     stimulusPixelsNum = 256;
+%     orientationsTested = 0:30:150;
+%     spatialFrequenciesTested = [0.25 0.5 1 2 4 8 16 32 64];
 
 
     computeTheSTFs = true;
@@ -382,7 +389,7 @@ function generateTheCenterSurroundRFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBa
 
 end
 
-function computeTheRTVobjects(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectRankOrder, pupilDiameterMM)
+function computeTheRTVobjects(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectRankOrder, pupilDiameterMM, multiStartsNum)
    
     fName = fullfile(mappedRFsDir, sprintf('mosaicAnd%s_Subject%d_optics_EccXY_%2.2f_%2.2f.mat', ...
         ZernikeDataBase, subjectRankOrder, mosaicEccDegs(1), mosaicEccDegs(2)));
@@ -393,13 +400,6 @@ function computeTheRTVobjects(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subj
     % positions
     eccXY = mean(theMidgetRGCmosaic.rgcRFpositionsDegs,1);
     eccentricitySamplingGrid(1,:) = [eccXY(1) eccXY(2)];
-    
-    % multiStartsNum: select from:
-    % - 1 (Single start run, fastest results), 
-    % - some number (Multi-start), or 
-    % - inf (Global search)
-    multiStartsNum = 1
-
 
     % Start timer
     tic
