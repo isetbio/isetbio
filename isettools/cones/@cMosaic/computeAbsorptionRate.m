@@ -41,8 +41,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         if (isfield(obj.coneApertureModifiers, 'shape'))
             switch (obj.coneApertureModifiers.shape)
                 case 'Gaussian'
-                    gaussianSigmaMicrons =  obj.coneApertureModifiers.sigma * coneApertureDiametersMicrons;
-                    characteristicRadiusMicrons = gaussianSigmaMicrons  * sqrt(2.0);
+                    characteristicRadiusMicrons =  obj.coneApertureToConeCharacteristicRadiusConversionFactor  * coneApertureDiametersMicrons;
                     apertureAreasMetersSquared = ((pi * (characteristicRadiusMicrons*1e-6).^2))';
                 case 'Pillbox'
                     apertureAreasMetersSquared = ((pi * (0.5*coneApertureDiametersMicrons*1e-6).^2))';
