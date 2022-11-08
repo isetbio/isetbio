@@ -279,6 +279,9 @@ classdef cMosaic < handle
         
         % mosaic size in microns
         sizeMicrons;
+
+        % Number of cones
+        conesNum;
     end
     
     
@@ -705,6 +708,10 @@ classdef cMosaic < handle
             xyMax = max(obj.coneRFpositionsMicrons,[],1);
             xyMin = min(obj.coneRFpositionsMicrons,[],1);
             val = xyMax - xyMin;
+        end
+
+        function val = get.conesNum(obj)
+            val = size(obj.coneRFpositionsMicrons,1);
         end
 
         function set.coneDensities(obj, val)
