@@ -90,6 +90,9 @@ classdef midgetRGCMosaic < handle
         % If the mosaic is on the nasal retinal quadrant this is: sqrt((0.61 * ecc_x)^2 + ecc_y^2)
         temporalEquivalentEccentricityDegs;
 
+        % Number of cells
+        cellsNum;
+
         % Retinal quadrant (i.e. nasal, temporal, inferior, superior)
         horizontalRetinalMeridian;
         verticalRetinalMeridian;
@@ -202,6 +205,11 @@ classdef midgetRGCMosaic < handle
         % Get the temporal equivalent eccentricity for either the mosaic's
         % ecc or any [Mx2] matrix of eccentricities
         eccDegs = temporalEquivalentEccentricityForEccentricity(obj, varargin);
+
+        % Getter for dependent property cellsNum
+        function val = get.cellsNum(obj)
+            val = size(obj.rgcRFpositionsDegs,1);
+        end
 
         % Getter for dependent property temporalEquivalentEccentricityDegs
         function val = get.temporalEquivalentEccentricityDegs(obj)
