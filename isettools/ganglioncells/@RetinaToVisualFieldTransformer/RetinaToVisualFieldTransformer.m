@@ -258,7 +258,7 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to compute the retinal subregion cone map by summing the
         % corresponding cone aperture maps
-        retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(coneRc, conePos, coneWeights, spatialSupport);
+        retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(coneRc, coneDiameter, conePos, coneWeights, spatialSupport);
 
         % Method to fit a 2D Gaussian ellipsoid to a continuous RF map
         theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin);

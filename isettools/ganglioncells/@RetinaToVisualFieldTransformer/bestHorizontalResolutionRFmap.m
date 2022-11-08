@@ -1,17 +1,24 @@
 function [theRotatedRF, rotationDegs] = bestHorizontalResolutionRFmap(theRF, rotationDegs)
 
     if (isempty(rotationDegs))  
+        % Sample the rotation axis (theRF rotation) every 1 degree
         theta = 0:1:179;
+
+        % Do the Radon transform
         [R,xOffset] = radon(theRF,theta);
 
+        % Search only the central offsets
         rowIndices = find(abs(xOffset) < 0.2*max(abs(xOffset)));
-        xOffset = xOffset(rowIndices);
         R = R(rowIndices,:);
 
+        % Find peak of Radon transform 
         [~,idx] = max(R(:));
-        [row, col] = ind2sub(size(R), idx)
+        [~, col] = ind2sub(size(R), idx);
+
+        % Peak rotation is theta(col), so rotate by its negative
         rotationDegs = -theta(col);
 
+        % Debug the radon transform information
         debugRadon = false;
         if (debugRadon)
             theRotatedRF = imrotate(theRF, rotationDegs, 'bilinear', 'crop');
@@ -21,7 +28,8 @@ function [theRotatedRF, rotationDegs] = bestHorizontalResolutionRFmap(theRF, rot
             subplot(2,2,1);
             imagesc(theRF); axis 'image'
         
-            subplot(2,2,2)
+            subplot(2,2,2);
+            xOffset = xOffset(rowIndices);
             imshow(R,[],'Xdata',theta,'Ydata',xOffset,'InitialMagnification','fit')
             set(gca, 'XTick', theta)
             xlabel('\theta (degrees)')

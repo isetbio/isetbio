@@ -32,7 +32,7 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
     % Compute the visual RF center cone map via convolution of the retinalRFcenterConeMap with the PSF
     visualRFcenterConeMap = conv2(retinalRFcenterConeMap, obj.theVlambdaWeightedPSFData.vLambdaWeightedData, 'same');
 
-   
+  
     if (obj.simulateCronerKaplanEstimation)
         % Since RF parameters by Croner&Kaplan were based on gratings, to
         % approximate this (and to include features of this estimation) we sum
@@ -41,10 +41,16 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
 
         % Rotate the targetVisualRFmap so as to maximize horizontal resolution and 
         % retrieve the rotation that maximizes horizontal resolution
+        figure(444)
+        subplot(1,2,1)
+        imagesc(visualRFcenterConeMap)
         bestHorizontalResolutionRotationDegs = [];
         [rotatedVisualRFcenterConeMap, bestHorizontalResolutionRotationDegs] = ...
             RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(visualRFcenterConeMap, bestHorizontalResolutionRotationDegs);
-
+        subplot(1,2,2);
+        imagesc(rotatedVisualRFcenterConeMap)
+        disp('here, in analyzeRFcenter()')
+        
         % Fit a 1D Gaussian line weighting function to the 1D profile 
         % (integration along the Y-dimension of the 2D visually projected
         % cone aperture map)
@@ -78,19 +84,19 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         visualRFcenterOrientationDegs = theFittedGaussian.rotationDegs;
     end
 
-   
 end
 
 function [retinalRFcenterConeMap, anatomicalRFcenterCharacteristicRadiusDegs] = computeRetinalRFcenterMapFromInputConesInArcMinSupport(obj, ...
     theConeIndices, theConeWeights, spatialSupportDegs, flatTopGaussian, forcedOrientationDegs)
 
     % Compute the retinal RF center cone map
-    theConeCharacteristicRadiiDegs = obj.coneCharacteristicRadiusConversionFactor * obj.theConeMosaic.coneApertureDiametersDegs(theConeIndices);
+    theConeApertureDiameterDegs = obj.theConeMosaic.coneApertureDiametersDegs(theConeIndices);
+    theConeCharacteristicRadiiDegs = obj.coneCharacteristicRadiusConversionFactor * theConeApertureDiameterDegs;
     theConePositionsDegs = obj.theConeMosaic.coneRFpositionsDegs(theConeIndices,:);
     meanConePositionDegs = mean(theConePositionsDegs,1);
     theConePositionsDegs = bsxfun(@minus, theConePositionsDegs, meanConePositionDegs);
     retinalRFcenterConeMap = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
-        theConeCharacteristicRadiiDegs, theConePositionsDegs, theConeWeights, spatialSupportDegs);
+        theConeCharacteristicRadiiDegs, theConeApertureDiameterDegs, theConePositionsDegs, theConeWeights, spatialSupportDegs);
 
     theFittedGaussian = RetinaToVisualFieldTransformer.fitGaussianEllipsoid(...
         spatialSupportDegs(:,1), spatialSupportDegs(:,2), retinalRFcenterConeMap, ...
