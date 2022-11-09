@@ -39,6 +39,7 @@ function visualizationParams = visualize(obj, varargin)
     
     p.addParameter('visualizeCones', true, @islogical);
     p.addParameter('labelCones', true, @islogical);
+    p.addParameter('labelConesInActivationMap', false, @islogical);
     p.addParameter('conesAlpha', 1.0, @isscalar);
     p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('outlinedConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
@@ -113,6 +114,7 @@ function visualizationParams = visualize(obj, varargin)
     crossHairsAtPosition = p.Results.crossHairsAtPosition;
     visualizeCones = p.Results.visualizeCones;
     labelCones = p.Results.labelCones;
+    labelConesInActivationMap = p.Results.labelConesInActivationMap;
     faceAlphaCones = p.Results.conesAlpha;
     labelConesWithIndices = p.Results.labelConesWithIndices;
     outlinedConesWithIndices = p.Results.outlinedConesWithIndices;
@@ -139,6 +141,13 @@ function visualizationParams = visualize(obj, varargin)
     textDisplay = p.Results.textDisplay;
     textDisplayColor = p.Results.textDisplayColor;
     clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
+
+    if (~isempty(activation))
+        labelCones = false;
+        if (labelConesInActivationMap)
+            labelCones = true;
+        end
+    end
 
     if (isempty(backgroundColor))
         backgroundColor = [0.7 0.7 0.7];
