@@ -17,7 +17,8 @@ function initializeConePositions(obj, overlappingConeFractionForElimination)
     obj.coneRFpositionsDegs = obj.coneRFpositionsDegs(idx,:);
     
     % Compute cone apertures and spacings
-    obj.computeConeApertures();
+    lowOpticalImageResolutionWarning = true;
+    obj.computeConeApertures(lowOpticalImageResolutionWarning);
     
     % Crop data for desired ROI
     obj.cropMosaicDataForDesiredROI();

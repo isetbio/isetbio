@@ -19,7 +19,8 @@ function regenerateConePositions(obj, maxIterations, visualizeConvergence, expor
     obj.coneRFpositionsDegs = obj.distanceMicronsToDistanceDegreesForCmosaic(obj.coneRFpositionsMicrons);
     
     % Compute cone apertures and spacings
-    obj.computeConeApertures();
+    lowOpticalImageResolutionWarning = true;
+    obj.computeConeApertures(lowOpticalImageResolutionWarning);
     
     % Crop data for desired ROI
     obj.cropMosaicDataForDesiredROI();

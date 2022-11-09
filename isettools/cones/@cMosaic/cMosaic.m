@@ -633,7 +633,7 @@ classdef cMosaic < handle
         sizeMicrons = sizeDegreesToSizeMicronsForCmosaic(obj, sizeDegrees, eccentricityDegrees);
     
         % Method for generating the cone aperture blur kernel
-        apertureKernel = generateApertureKernel(obj, coneApertureDiameterMicrons, oiResMicrons);
+        apertureKernel = generateApertureKernel(obj, coneApertureDiameterMicrons, oiResMicrons, lowOpticalImageResolutionWarning);
         
         % Blur sigma (in microns) of a cone with index theConeIndex, from its blur zone
         % Only for Gaussian aperture modifier
@@ -735,21 +735,24 @@ classdef cMosaic < handle
         function set.eccVaryingConeAperture(obj, val)
             obj.eccVaryingConeAperture = val;
             if (~isempty(obj.coneRFpositionsMicrons))
-                obj.computeConeApertures();
+                lowOpticalImageResolutionWarning = true;
+                obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
         
         function set.rodIntrusionAdjustedConeAperture(obj,val)
             obj.rodIntrusionAdjustedConeAperture = val;
             if (~isempty(obj.coneRFpositionsMicrons))
-                obj.computeConeApertures();
+                lowOpticalImageResolutionWarning = true;
+                obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
 
         function set.eccVaryingConeBlur(obj, val)
             obj.eccVaryingConeBlur = val;
             if (~isempty(obj.coneRFpositionsMicrons))
-                obj.computeConeApertures();
+                lowOpticalImageResolutionWarning = true;
+                obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
         
@@ -797,7 +800,8 @@ classdef cMosaic < handle
             
             obj.coneApertureModifiers = val;
             if (~isempty(obj.coneRFpositionsMicrons))
-                obj.computeConeApertures();
+                lowOpticalImageResolutionWarning = true;
+                obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
         
@@ -805,7 +809,8 @@ classdef cMosaic < handle
             if (val <= 1.0)
                 obj.coneDiameterToSpacingRatio = val;
                 if (~isempty(obj.coneRFpositionsMicrons))
-                    obj.computeConeApertures();
+                    lowOpticalImageResolutionWarning = true;
+                    obj.computeConeApertures(lowOpticalImageResolutionWarning);
                 end
             else
                 error('coneDiameterToSpacingRatio must be <= 1.0.');
@@ -838,7 +843,7 @@ classdef cMosaic < handle
         updateStateGivenKeptConeIndices(obj, keptConeIndices);
         
         % Function to re-compute the cone apertures
-        computeConeApertures(obj);
+        computeConeApertures(obj, lowOpticalImageResolutionWarning);
      
         % Method to electrically couple cone responses
         coupledResponses = electricallyCoupleConeResponses(obj, responses);
