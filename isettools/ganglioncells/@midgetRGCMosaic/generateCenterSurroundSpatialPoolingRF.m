@@ -73,25 +73,51 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         if (isnan(totalCenterStrengthForModelRF(iObj)))
             idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights > 0);
             centerConeIndices = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeIndices(idx);
-            relativeOuterSegmentLengths = 1./obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices);
+            relativeOuterSegmentLengths = obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices);
             relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(centerConeIndices)).^2 .* relativeOuterSegmentLengths;
             weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights(idx);
             totalCenterStrengthForModelRF(iObj) = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
+            
+            % Compute theRetinalRFcenterConeMap
+            theConeAperturesDegs = modelConstants.theConeMosaic.coneApertureDiametersDegs(centerConeIndices);
+    theConeCharacteristicRadiiDegs = ...
+        modelConstants.coneCharacteristicRadiusConversionFactor * theConeAperturesDegs;
+                                     
+    theConePositionsDegs = modelConstants.theConeMosaic.coneRFpositionsDegs(centerConeIndices,:);
+    rfCenterPositionDegs = mean(theConePositionsDegs,1);
+    theConePositionsDegs = bsxfun(@minus, theConePositionsDegs, rfCenterPositionDegs);
+    theRetinalRFcenterConeMap{iObj} = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
+        theConeCharacteristicRadiiDegs, theConeAperturesDegs, theConePositionsDegs, weights, ...
+        modelConstants.spatialSupportDegs);
+
+
         end
 
         if (isnan(totalSurroundStrengthForModelRF(iObj)))
             idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights > 0);
             surroundConeIndices = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeIndices(idx);
-            relativeOuterSegmentLengths = 1./obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices);
+            relativeOuterSegmentLengths = obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices);
             relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(surroundConeIndices)).^2 .* relativeOuterSegmentLengths;                                         
             weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights(idx);
             totalSurroundStrengthForModelRF(iObj) = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
+            surroundConesNumModel(iObj) = numel(idx);
+
+             % Compute theRetinalRFsurroundConeMap
+             theConeAperturesDegs = modelConstants.theConeMosaic.coneApertureDiametersDegs(surroundConeIndices);
+    theConeCharacteristicRadiiDegs = modelConstants.coneCharacteristicRadiusConversionFactor * theConeAperturesDegs;
+                                     
+    theConePositionsDegs = modelConstants.theConeMosaic.coneRFpositionsDegs(surroundConeIndices,:);
+    theConePositionsDegs = bsxfun(@minus, theConePositionsDegs, rfCenterPositionDegs);
+    theRetinalRFsurroundConeMap{iObj} = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
+        theConeCharacteristicRadiiDegs, theConeAperturesDegs, theConePositionsDegs, weights, ...
+        modelConstants.spatialSupportDegs);
+
         end
 
         % Center strength correction factor
         idx = find(pooledConeIndicesAndWeights.centerConeWeights > 0);
         centerConeIndices = pooledConeIndicesAndWeights.centerConeIndices(idx);
-        relativeOuterSegmentLengths = 1./obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices);
+        relativeOuterSegmentLengths = obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices);
         relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(centerConeIndices)).^2 .* relativeOuterSegmentLengths;                      
         weights = pooledConeIndicesAndWeights.centerConeWeights(idx);
         totalCenterStrengthForThisRF = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
@@ -100,7 +126,7 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         % Surround strength correction factor
         idx = find(pooledConeIndicesAndWeights.surroundConeWeights > 0);
         surroundConeIndices = pooledConeIndicesAndWeights.surroundConeIndices(idx);
-        relativeOuterSegmentLengths = 1./obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices);
+        relativeOuterSegmentLengths = obj.inputConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices);
         relativeAbsorptionEfficacies = (obj.inputConeMosaic.coneApertureDiametersDegs(surroundConeIndices)).^2 .* relativeOuterSegmentLengths;                               
         weights = pooledConeIndicesAndWeights.surroundConeWeights(idx);
         totalSurroundStrengthForThisRF = sum(weights(:) .* relativeAbsorptionEfficacies(:),1);
@@ -115,6 +141,10 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         obj.rgcRFcenterConePoolingMatrix(centerIndices,iRGC) = centerWeights;
         obj.rgcRFsurroundConePoolingMatrix(surroundIndices,iRGC) = surroundWeights;
 
+        actualModel = [sum(surroundWeights)/sum(centerWeights) sum(totalSurroundStrengthForModelRF(iObj))/totalCenterStrengthForModelRF(iObj)]
+        contModel = [sum(sum(theRetinalRFsurroundConeMap{iObj}))/sum(sum(theRetinalRFcenterConeMap{iObj}))]
+        [numel(surroundIndices) surroundConesNumModel(iObj) ]
+    
         % Keep track for printing the stats
         centerCorrectionFactors(iRGC) = (centerStrengthCorrectionFactor-1)*100;
         surroundCorrectionFactors(iRGC) = (surroundStrengthCorrectionFactor-1)*100;
