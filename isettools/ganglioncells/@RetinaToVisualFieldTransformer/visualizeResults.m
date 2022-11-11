@@ -1,12 +1,12 @@
 function visualizeResults(obj)
-    hFig = visualizeTargetAndFittedRFs(obj);
-    if (~isempty(obj.computedObjDataFileName))
-        pdfFileName = strrep(obj.computedObjDataFileName, '.mat', '.pdf');
-    else
-        pdfFileName = 'RTVFfitResults.pdf';
-    end
-
-    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+%     hFig = visualizeTargetAndFittedRFs(obj);
+%     if (~isempty(obj.computedObjDataFileName))
+%         pdfFileName = strrep(obj.computedObjDataFileName, '.mat', '.pdf');
+%     else
+%         pdfFileName = 'RTVFfitResults.pdf';
+%     end
+% 
+%     NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
 end
 
 function hFig = visualizeTargetAndFittedRFs(obj)

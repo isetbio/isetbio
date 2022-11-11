@@ -23,10 +23,9 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     % Kwide*(1+volumeRatio/(RnarrowToRwideRatio^2)) = KsToKcPeakRatio * Kc;
     % Kwide = KsToKcPeakRatio * Kc / (1+volumeRatio/(RnarrowToRwideRatio^2));
 
-    
     % Compute parameters
     Kwide = KsToKcPeakRatio * Kc / (1+narrowToWideVolumeRatio/(RnarrowToRwideRatio^2));
-    Knarrow = narrowToWideVolumeRatio * Kwide / (RnarrowToRwideRatio^2);
+    Knarrow = Kwide * narrowToWideVolumeRatio / (RnarrowToRwideRatio^2);
     RnarrowDegs = RwideDegs * RnarrowToRwideRatio;
 
     % compute center cone indices and weights
@@ -40,10 +39,9 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     coneDistancesFromRFCenter = sqrt(sum(bsxfun(@minus, modelConstants.theConeMosaic.coneRFpositionsDegs, RFcenterPos).^2,2));
 
     % Compute surround cone weights
-    minConeWeight = 0.01*(min([Knarrow Kwide]));
-
     surroundConeWeights = Kwide * exp(-2.3*coneDistancesFromRFCenter/RwideDegs) + Knarrow * exp(-2.3*coneDistancesFromRFCenter/RnarrowDegs);
-    surroundConeIndices = find(surroundConeWeights>minConeWeight);
+    minSurroundConeWeight = 1e-3 * (Knarrow+Kwide);
+    surroundConeIndices = find(surroundConeWeights>minSurroundConeWeight);
     surroundConeWeights = surroundConeWeights(surroundConeIndices);
 
     pooledConeIndicesAndWeights.surroundConeIndices = surroundConeIndices;
