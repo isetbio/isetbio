@@ -60,16 +60,17 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
-p.addParameter('dockerimagename','vistalab/pbrt-v3-spectral',@ischar);
+p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper')));
 p.addParameter('write',true,@islogical);
 
-rTypes = {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'};
-p.addParameter('rendertype','both',@(x)(ismember(ieParamFormat(x),rTypes)));
+% Some day, check that the cell array has one of these types.
+% rTypes = {'radiance','depth','both','all','coordinates','material','mesh', 'illuminant','illuminantonly'};
+p.addParameter('rendertype',{'radiance','depth'},@iscell);
 
 p.parse(obj, varargin{:});
-renderType       = p.Results.rendertype;
-scaleIlluminance = p.Results.scaleilluminance;
-dockerimage      = p.Results.dockerimagename;
+renderType        = p.Results.rendertype;
+scaleIlluminance  = p.Results.scaleilluminance;
+thisDockerWrapper = p.Results.dockerwrapper;
 
 %% Get the render recipe
 
@@ -95,7 +96,19 @@ end
 
 %% Render the pbrt file using docker
 
-[ieObject, terminalOutput] = piRender(thisR,'render type',renderType,'dockerimagename',dockerimage);
+% We need a dockerWrapper that works for the human eye when we call
+% this.  That should either be set up in the default by setprefs or by
+% passing in a specific dockerWrapper.
+if isempty(thisDockerWrapper)
+    % We decided not to recreate the docker wrapper because we are concerned
+    % that the creation resets the docker image on the remote machine
+    % and slows things down. If that's false, then it would be fine
+    % to recreate thisDockerWrapper as default dockerWrapper above
+    % when p.addParameter is called.
+    [ieObject, terminalOutput] = piRender(thisR,'render type',renderType);
+else
+    [ieObject, terminalOutput] = piRender(thisR,'render type',renderType,'ourdocker',thisDockerWrapper);
+end
 
 %% Fix up the returned object
 
@@ -108,9 +121,5 @@ else
     thisR.set('camera',cameraSave);
     % sceneWindow(ieObject);
 end
-
-% Not sure why we need to do this, but perhaps something was changed in the
-% recipe and we want to preserve that????
-% obj.recipe = thisR;
 
 end
