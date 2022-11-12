@@ -2,7 +2,7 @@ function oi = oiCompute(scene, oi, opticsModel)
 % Gateway routine for optical image irradiance calculation
 %
 % Syntax:
-%   oi = oiCompute(oi, scene, [opticsModel])
+%   oi = oiCompute(scene, oi, [opticsModel])
 %
 % Description:
 %    The spectral irradiance image, on the sensor plane, just before sensor

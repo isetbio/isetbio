@@ -204,6 +204,10 @@ classdef cMosaic < handle
         % Should be positionMicrons
         eccentricityMicrons; 
         
+        % Retinal quadrant (i.e. nasal, temporal, inferior, superior
+        horizontalRetinalMeridian;
+        verticalRetinalMeridian;
+
         % Size of the cone mosaic [width, height]
         sizeDegs;
         
@@ -213,6 +217,10 @@ classdef cMosaic < handle
         % Fixational eye movement object for the mosaic
         fixEMobj = [];
         
+        % Photon absorption attenuation factors to account for decrease in 
+        % outer segment length with eccentricity
+        outerSegmentLengthEccVariationAttenuationFactors = [];
+
         % Cone aperture diameter (summation) for each cone
         coneApertureDiametersMicrons = [];
         coneApertureDiametersDegs = [];
@@ -220,6 +228,9 @@ classdef cMosaic < handle
         % This depends on the value of the apertureModifier
         coneApertureToDiameterRatio = [];
         
+        % This depends on the value of the apertureModifier
+        coneApertureToConeCharacteristicRadiusConversionFactor = [];
+
         % Resolution with which zoning is performed
         oiResMicronsForZoning = [];
         
@@ -268,6 +279,9 @@ classdef cMosaic < handle
         
         % mosaic size in microns
         sizeMicrons;
+
+        % Number of cones
+        conesNum;
     end
     
     
@@ -277,6 +291,15 @@ classdef cMosaic < handle
         % the desired eccentricity
         sourceLatticeSizeDegs = 58;
         
+        % Scalar or empty, indicating whether to check and eliminate cones that are
+        % too close to each other (overlap = overlappingConeFractionForElimination). 
+        % Cone overlap is rare, but it happens at
+        % some positions within the pre-computed mosaic. If this flag is
+        % enabled during instantiation, we search for overlapping cones and
+        % eliminate them. Depending on the size of the mosaic, this process
+        % may take a while.
+        overlappingConeFractionForElimination = [];
+
         % Struct containing information related to the current cone partition
         % into zones based on their aperture size
         cachedConePartition = [];
@@ -287,10 +310,6 @@ classdef cMosaic < handle
         
         % OSLength attenuation factors (only used when importing coneData)
         importedOSLengthAttenuationFactors = [];
-        
-        % Photon absorption attenuation factors to account for decrease in 
-        % outer segment length with eccentricity
-        outerSegmentLengthEccVariationAttenuationFactors = [];
         
         % Cone aperture shrinkage factors due to progressive rod intrusion 
         % with eccentricity
@@ -325,6 +344,8 @@ classdef cMosaic < handle
             % Parse input
             p = inputParser;
             p.addParameter('name', 'cone mosaic', @ischar);
+            p.addParameter('sourceLatticeSizeDegs', 58, @isscalar);
+            p.addParameter('overlappingConeFractionForElimination', [], @(x)( (isempty(x)) || (isscalar(x)&&(x<=1.0)&&(x>0))));
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('pigment', cPhotoPigment(), @(x) isa(x, 'cPhotoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
@@ -372,6 +393,8 @@ classdef cMosaic < handle
             p.parse(varargin{:});
             
             obj.name    = p.Results.name;
+            obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
+            obj.overlappingConeFractionForElimination = p.Results.overlappingConeFractionForElimination;
             obj.macular = p.Results.macular;
             obj.pigment = p.Results.pigment;
             obj.wave    = p.Results.wave;
@@ -489,11 +512,8 @@ classdef cMosaic < handle
                         'customMinRFspacing', customMinRFspacing, ...
                         'customRFspacingFunction', customRFspacingFunction);
                 else
-                    % Do not check for overlapping elements
-                    eliminateOvelappingElements = ~true;
-                    
                     % Import positions by cropping a large pre-computed patch
-                    obj.initializeConePositions(eliminateOvelappingElements);
+                    obj.initializeConePositions(obj.overlappingConeFractionForElimination);
                 end
 
                 % Remove cones within the optic disk
@@ -562,6 +582,11 @@ classdef cMosaic < handle
                 obj.eccentricityMicrons = 0.5*(obj.minRFpositionMicrons + obj.maxRFpositionMicrons);
             end
             
+            % Set the corresponding horizontal and vertical retinal meridian 
+            [obj.horizontalRetinalMeridian, obj.verticalRetinalMeridian] = cMosaic.retinalMeridiansForEccentricityInEye(...
+                obj.eccentricityDegs(1), obj.eccentricityDegs(2),  obj.whichEye);
+
+
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
             obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
@@ -587,7 +612,7 @@ classdef cMosaic < handle
                 cmParams.randomSeed = obj.randomSeed;
             end
             
-        end
+        end % constructor
         
         % Method to transform a distance specified in units of retinal
         % microns to a distance specified in units of visual degrees based on the @cMosaic configuration
@@ -608,7 +633,7 @@ classdef cMosaic < handle
         sizeMicrons = sizeDegreesToSizeMicronsForCmosaic(obj, sizeDegrees, eccentricityDegrees);
     
         % Method for generating the cone aperture blur kernel
-        apertureKernel = generateApertureKernel(obj, coneApertureDiameterMicrons, oiResMicrons);
+        apertureKernel = generateApertureKernel(obj, coneApertureDiameterMicrons, oiResMicrons, lowOpticalImageResolutionWarning);
         
         % Blur sigma (in microns) of a cone with index theConeIndex, from its blur zone
         % Only for Gaussian aperture modifier
@@ -638,6 +663,10 @@ classdef cMosaic < handle
         % Method to return indices of cones within a geometry struct appropriate for @regionOfInterest
         coneIndices = indicesOfConesWithinROI(obj, geometryStruct);
         
+        % Method to reassigne the type of any set of cones, specified by
+        % their cone index
+        reassignTypeOfCones(obj, coneIndices, newConeType);
+
         % Generate struct representing the optical disk
         [odStructMicrons, odStructDegs] = odStruct(obj);
         
@@ -687,6 +716,10 @@ classdef cMosaic < handle
             val = xyMax - xyMin;
         end
 
+        function val = get.conesNum(obj)
+            val = size(obj.coneRFpositionsMicrons,1);
+        end
+
         function set.coneDensities(obj, val)
             obj.theoreticalConeDensities = val;
         end
@@ -708,21 +741,24 @@ classdef cMosaic < handle
         function set.eccVaryingConeAperture(obj, val)
             obj.eccVaryingConeAperture = val;
             if (~isempty(obj.coneRFpositionsMicrons))
-                obj.computeConeApertures();
+                lowOpticalImageResolutionWarning = true;
+                obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
         
         function set.rodIntrusionAdjustedConeAperture(obj,val)
             obj.rodIntrusionAdjustedConeAperture = val;
             if (~isempty(obj.coneRFpositionsMicrons))
-                obj.computeConeApertures();
+                lowOpticalImageResolutionWarning = true;
+                obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
 
         function set.eccVaryingConeBlur(obj, val)
             obj.eccVaryingConeBlur = val;
             if (~isempty(obj.coneRFpositionsMicrons))
-                obj.computeConeApertures();
+                lowOpticalImageResolutionWarning = true;
+                obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
         
@@ -770,7 +806,8 @@ classdef cMosaic < handle
             
             obj.coneApertureModifiers = val;
             if (~isempty(obj.coneRFpositionsMicrons))
-                obj.computeConeApertures();
+                lowOpticalImageResolutionWarning = true;
+                obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
         
@@ -778,7 +815,8 @@ classdef cMosaic < handle
             if (val <= 1.0)
                 obj.coneDiameterToSpacingRatio = val;
                 if (~isempty(obj.coneRFpositionsMicrons))
-                    obj.computeConeApertures();
+                    lowOpticalImageResolutionWarning = true;
+                    obj.computeConeApertures(lowOpticalImageResolutionWarning);
                 end
             else
                 error('coneDiameterToSpacingRatio must be <= 1.0.');
@@ -796,7 +834,7 @@ classdef cMosaic < handle
     
     methods (Access=private)
         % Initialize cone positions by importing them from a large previously-computed mesh
-        initializeConePositions(obj, eliminateOvelappingElements);
+        initializeConePositions(obj, overlappingConeFractionForElimination);
 
         % Initialize cone positions by regenerating a new mesh. Can be slow.
         regenerateConePositions(obj, maxIterations, visualizeConvergence, exportHistoryToFile, varargin);
@@ -811,7 +849,7 @@ classdef cMosaic < handle
         updateStateGivenKeptConeIndices(obj, keptConeIndices);
         
         % Function to re-compute the cone apertures
-        computeConeApertures(obj);
+        computeConeApertures(obj, lowOpticalImageResolutionWarning);
      
         % Method to electrically couple cone responses
         coupledResponses = electricallyCoupleConeResponses(obj, responses);
@@ -848,6 +886,11 @@ classdef cMosaic < handle
         % on one of the 4 principal retinal meridians and eye
         [horizontalEcc, verticalEcc] = eccentricitiesForRetinaMeridianInEye(...
             radialEcc, retinaQuadrant, whichEye);
+
+        % Static method to return retinal meridians corresponding to
+        % signed horizontal and vertical eccentricities in a specified eye
+        [horizontalRetinalMeridian, verticalRetinalMeridian] = ...
+            retinalMeridiansForEccentricityInEye(horizontalEcc, verticalEcc, whichEye);
 
         % Static method to generate noisy absorption response instances
         % from the mean absorption responses

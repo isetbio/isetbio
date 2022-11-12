@@ -189,7 +189,7 @@ opticsTemp = opticsSet(opticsTemp,'off axis method', 'Skip');
 oiBaseline = oiSet(oiBaseline,'optics',opticsTemp);
 
 % The Lens object in the oi object determines the lens transmittance used
-% inthe ISETBio computations. The code here shows how to set the lens
+% in the ISETBio computations. The code here shows how to set the lens
 % density/transmittance to match the above.
 %
 % The spectral values in the unit density variable are multiplied by the
@@ -318,14 +318,14 @@ plot(wls,scaleFactor*T_quantalExcitationISETBio(1,:),'y-','LineWidth',3);
 plot(wls,scaleFactor*T_quantalExcitationISETBio(2,:),'y-','LineWidth',3);
 plot(wls,scaleFactor*T_quantalExcitationISETBio(3,:),'y-','LineWidth',3);
 
-% This salso matches quantum efficience in the cm object, with lens
+% This also matches quantum efficiency in the cm object, with lens
 % added back in.
 T_quantalExcitationISETBioCM = cm.qe';
 plot(wls,T_quantalExcitationISETBioCM(1,:) .* lensTransmittance,'b:','LineWidth',1.5);
 plot(wls,T_quantalExcitationISETBioCM(2,:) .* lensTransmittance,'b:','LineWidth',1.5);
 plot(wls,T_quantalExcitationISETBioCM(3,:) .* lensTransmittance,'b:','LineWidth',1.5);
 
-%% Get parameters needed for Retinal irradiance from scene radiance in PTB
+%% Get parameters needed for retinal irradiance from scene radiance in PTB
 %
 % Start by getting parameters we need from the optics.
 opticsBaseline = oiGet(oiBaseline,'optics');
@@ -378,8 +378,7 @@ for ww = 1:length(wls)
 end
 
 %% Plot and compare with ISETBio
-excitationsFig = figure; clf;
-subplot(1,2,1); hold on;
+excitationsFig = figure; clf; hold on;
 plot(wls,excitationsConePTBMono(1,:),'r','LineWidth',6);
 plot(wls,excitationsConePTBMono(2,:),'g','LineWidth',6);
 plot(wls,excitationsConePTBMono(3,:),'b','LineWidth',6);

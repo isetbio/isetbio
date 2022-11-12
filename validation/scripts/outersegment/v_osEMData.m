@@ -144,13 +144,21 @@ end
 function [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses()
     
     dataSource = {'resources/data/cones', 'eyeMovementExample'};
-    fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
-    % Download neural data from isetbio's repository
-    client = RdtClient('isetbio');
-    client.crp(dataSource{1});
-    [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
-    fprintf('Done fetching data.\n');
+    p = getpref('isetbio');
     
+    if (p.useRemoteDataToolbox == false)
+        resourcesDir = strrep(p.alternateFullDataDir,'validationFull', '');
+        dataFile = fullfile(resourcesDir, dataSource{1}, dataSource{2});
+        eyeMovementExample = load(dataFile, 'data');
+    else
+        fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
+        % Download neural data from isetbio's repository
+        client = RdtClient('isetbio');
+        client.crp(dataSource{1});
+        [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
+        fprintf('Done fetching data.\n');
+    end
+
     extraTimeForBaselineComputation = 2.0;
     
     % time axis

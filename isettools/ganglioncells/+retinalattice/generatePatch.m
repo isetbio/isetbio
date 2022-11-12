@@ -5,19 +5,26 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
     p.addParameter('customDegsToMMsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
     p.addParameter('customRFspacingFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
     p.addParameter('customMinRFspacing', [], @(x) (isempty(x) || isscalar(x)));
+    p.addParameter('eccentricityLookUpTableSamplesNum', [], @(x)(isempty(x) || isscalar(x)));
     p.parse(varargin{:});
     
     randomSeed = p.Results.randomSeed;
     customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
     customRFspacingFunction = p.Results.customRFspacingFunction;
     customMinRFspacing = p.Results.customMinRFspacing;
-    
+    eccentricityLookUpTableSamplesNum = p.Results.eccentricityLookUpTableSamplesNum;
+
     % Validate input
     validateInput(fovDegs, neuronType, whichEye);
     
     % Configure algorithm params
     params = retinalattice.configure(fovDegs, neuronType, whichEye);
     
+    if (~isempty(eccentricityLookUpTableSamplesNum))
+        params.eccentricityLookUpTableSamplesNum = eccentricityLookUpTableSamplesNum;
+    end
+
+
     if (~isempty(customRFspacingFunction))
         params.rfSpacingExactFunction = customRFspacingFunction;
     end
@@ -33,6 +40,7 @@ function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, e
     if (~isempty(randomSeed))
         params.rng = randomSeed;
     end
+    
     
     % Start timing
     tStart = tic;

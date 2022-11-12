@@ -17,6 +17,7 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
 %  zeroCenterPSF             - Default true
 %  deNoisedZernikeCoefficients - Seems deprecated to me (BW).
 %  flipPSFUpsideDown         - Default true (aligns with image)
+%  defocusMicrons            - Add this value to defocus zcoeff
 %
 % Outputs:
 %   oiEnsemble   -  Cell array of OIs
@@ -26,7 +27,6 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
 % Description:
 %   In which we explain more about the processing parameters.  NC and BW to
 %   do together.
-%
 %
 % See also
 %   cMosaic (main class)
@@ -50,6 +50,9 @@ p.addParameter('wavefrontSpatialSamples', 301, @isscalar);
 p.addParameter('subtractCentralRefraction', false, @islogical);
 p.addParameter('zeroCenterPSF', true, @islogical);
 p.addParameter('flipPSFUpsideDown', true, @islogical);
+p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
+p.addParameter('refractiveErrorDiopters', 0, @isnumeric);
+p.addParameter('noLCA',false,@islogical);
 p.parse(obj, oiSamplingGridDegs, varargin{:});
 
 oiSamplingGridDegs = p.Results.oiSamplingGridDegs;
@@ -60,6 +63,7 @@ subtractCentralRefraction = p.Results.subtractCentralRefraction;
 wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
 zeroCenterPSF = p.Results.zeroCenterPSF;
 flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
+upSampleFactor = p.Results.upsampleFactor;
 warningInsteadOfErrorForBadZernikeCoeffs = p.Results.warningInsteadOfErrorForBadZernikeCoeffs;
 
 % Generate the oiEnsemble
@@ -70,12 +74,21 @@ psfEnsemble = cell(1, oiNum);
 switch (zernikeDataBase)
     
     case 'Artal2012'
+        % Looks like Artal optics now accepts refractive error in diopters.
+        % Commented out this warning. DHB.
+        %
+        % % Make sure refractive error is zero, because Artal version of
+        % % oiForSubjectAtEccentricity doesn't understand the
+        % % 'refractiveErrorMicrons' key/value pair.
+        % if (p.Results.refractiveErrorDiopters ~= 0)
+        %     error('Artal optics does not currently accept refractiveErrorDiopters key/value pair');
+        % end
+
         % Artal optics
         for oiIndex = 1:oiNum
             %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
-            
             
             if (targetEcc(2) ~= 0)
                 fprintf(2,'Artal optics not available off the horizontal meridian. Computing for vEcc = 0\n');
@@ -87,7 +100,10 @@ switch (zernikeDataBase)
                 'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                 'subtractCentralRefraction', subtractCentralRefraction, ...
                 'zeroCenterPSF', zeroCenterPSF, ...
-                'flipPSFUpsideDown', flipPSFUpsideDown);
+                'flipPSFUpsideDown', flipPSFUpsideDown, ...
+                'upsampleFactor', upSampleFactor, ...
+                'noLCA',p.Results.noLCA, ...
+                'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
             
             if (isempty(theOI))
                 if (warningInsteadOfErrorForBadZernikeCoeffs)
@@ -125,7 +141,9 @@ switch (zernikeDataBase)
                 'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
                 'subtractCentralRefraction', subtractCentralRefraction, ...
                 'zeroCenterPSF', zeroCenterPSF, ...
-                'flipPSFUpsideDown', flipPSFUpsideDown);
+                'flipPSFUpsideDown', flipPSFUpsideDown, ...
+                'noLCA',p.Results.noLCA, ...
+                'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
             
             oiEnsemble{oiIndex} = theOI;
             psfEnsemble{oiIndex} = struct(...
@@ -135,6 +153,7 @@ switch (zernikeDataBase)
                 'supportWavelength', psfSupportWavelength, ...
                 'zCoeffs', zCoeffs);
         end
-end
+        
+    end
 
 end

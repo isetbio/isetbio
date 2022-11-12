@@ -1,0 +1,36 @@
+% Return a struct with treeshrew csfData from a particular paper
+function mtfData = mtfTreeShrewFromPaper(paperName)
+
+switch (paperName)
+    case 'SaidakEtAl_2019'
+        mtfData = SaidakEtAl2019MTFdata();
+    otherwise
+        error('Unknown paper: ''%s''.', paperName);
+end
+
+end
+
+% Want to replace this eventually with tabulated data we get from Roorda,
+% if possible.  This is digitized from paper but we don't think it matches
+% the Zernikes there.
+function mtfData = SaidakEtAl2019MTFdata()
+    pts = [...
+    0.000000000000E0	1.006389776358E2; ...
+    1.458333333333E0	7.984890841321E1; ...
+    2.673611111111E0	6.002118832091E1; ...
+    3.576388888889E0	4.531028132765E1; ...
+    5.312500000000E0	2.675219648562E1; ...
+    7.152777777778E0	1.873557862975E1; ...
+    9.513888888889E0	1.390552893149E1; ...
+    1.236111111111E1	1.066515796947E1; ...
+    1.527777777778E1	9.660099396521E0; ...
+    1.756944444444E1	7.706558395456E0; ...
+    1.993055555556E1	7.029863329783E0];
+
+
+    mtfData{1}.sf = squeeze(pts(:,1));
+    mtfData{1}.csf = squeeze(pts(:,2));
+    mtfData{1}.legend = 'Saidak et al (2019)';
+    mtfData{1}.ylabel = 'mtf';
+
+end

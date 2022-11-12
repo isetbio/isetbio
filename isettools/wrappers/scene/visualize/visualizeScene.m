@@ -8,6 +8,8 @@ function visualizeScene(scene, varargin)
     p.addParameter('crossHairsAtOrigin', false, @islogical);
     p.addParameter('axesHandle', []);
     p.addParameter('noTitle', false, @islogical);
+    p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('noYTicks', false, @islogical);
     % Parse input
     p.parse(varargin{:});
     
@@ -48,7 +50,9 @@ function visualizeScene(scene, varargin)
         meanLuminance, meanChromaticity, sceneGet(scene, 'name'), ...
         'avoidAutomaticRGBscaling', avoidAutomaticRGBscaling, ...
         'axesHandle', p.Results.axesHandle, ...
-        'noTitle', p.Results.noTitle);
+        'noTitle', p.Results.noTitle, ...
+        'noYLabel', p.Results.noYLabel, ...
+        'noYTicks', p.Results.noYTicks);
     
     
     % Add ROI

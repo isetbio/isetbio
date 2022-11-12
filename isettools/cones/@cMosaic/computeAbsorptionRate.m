@@ -1,11 +1,12 @@
-function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPositionsVectorsMicrons, absorptionsDensityImage,  ...
-    oiResMicrons)
+function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, ...
+    oiPositionsVectorsMicrons, absorptionsDensityImage,  ...
+    oiResMicrons, lowOpticalImageResolutionWarning)
     
     if (~obj.employsImportedConeData)
         if (isempty(obj.oiResMicronsForZoning) || (oiResMicrons ~= obj.oiResMicronsForZoning))
             % Recompute cone apertures for current oiRes
             obj.oiResMicronsForZoning = oiResMicrons;
-            obj.computeConeApertures();
+            obj.computeConeApertures(lowOpticalImageResolutionWarning);
         end
     end
     
@@ -21,7 +22,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         blurApertureDiameterMicrons = obj.blurApertureDiameterMicronsZones(zoneIndex);
         
         % Compute aperture kernel
-        apertureKernel = obj.generateApertureKernel(blurApertureDiameterMicrons(1), oiResMicrons);
+        apertureKernel = obj.generateApertureKernel(blurApertureDiameterMicrons(1), oiResMicrons, lowOpticalImageResolutionWarning);
 
         % Determine which cones should receive this blur.
         coneIDsInZone = obj.coneIndicesInZones{zoneIndex};
@@ -41,8 +42,7 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, oiPos
         if (isfield(obj.coneApertureModifiers, 'shape'))
             switch (obj.coneApertureModifiers.shape)
                 case 'Gaussian'
-                    gaussianSigmaMicrons =  obj.coneApertureModifiers.sigma * coneApertureDiametersMicrons;
-                    characteristicRadiusMicrons = gaussianSigmaMicrons  * sqrt(2.0);
+                    characteristicRadiusMicrons =  obj.coneApertureToConeCharacteristicRadiusConversionFactor  * coneApertureDiametersMicrons;
                     apertureAreasMetersSquared = ((pi * (characteristicRadiusMicrons*1e-6).^2))';
                 case 'Pillbox'
                     apertureAreasMetersSquared = ((pi * (0.5*coneApertureDiametersMicrons*1e-6).^2))';

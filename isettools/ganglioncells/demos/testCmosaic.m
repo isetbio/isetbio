@@ -131,16 +131,16 @@ function testBenchmark1(theConeMosaic, theOI, trialsNum, outputFileName, runNo)
     clf;
     oiResMicrons = oiGet(theOI, 'height spatial resolution')*1e6;
     oiSize = oiGet(theOI, 'size');
-    
+    lowOpticalImageResolutionWarning = true;
     cMap = colormap(brewermap(1024, '*greys'));
     
     for coneZoneIndex = 1:(numel(theConeMosaic.blurApertureDiameterMicronsZones)+1)
         ax = subplot(2,5,coneZoneIndex);
        
         if (coneZoneIndex > numel(theConeMosaic.blurApertureDiameterMicronsZones))
-            kernel = cMosaic.generateApertureKernel(median(theConeMosaic.blurApertureDiameterMicronsZones), oiResMicrons);
+            kernel = cMosaic.generateApertureKernel(median(theConeMosaic.blurApertureDiameterMicronsZones), oiResMicrons, lowOpticalImageResolutionWarning);
         else
-            kernel = cMosaic.generateApertureKernel(theConeMosaic.blurApertureDiameterMicronsZones(coneZoneIndex), oiResMicrons);
+            kernel = cMosaic.generateApertureKernel(theConeMosaic.blurApertureDiameterMicronsZones(coneZoneIndex), oiResMicrons, lowOpticalImageResolutionWarning);
         end
         
         kernel = kernel / max(kernel(:));

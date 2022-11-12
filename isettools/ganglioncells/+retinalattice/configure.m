@@ -1,4 +1,4 @@
-function p = configure(fovDegs, neuronType, whichEye)
+function p = configure(sourceLatticeSizeDegs, neuronType, whichEye)
     
     % Validate input
     validNeuronTypes = retinalattice.validvalues.neuronTypes;
@@ -10,12 +10,12 @@ function p = configure(fovDegs, neuronType, whichEye)
     p.latticeGalleryDir = sprintf('%s/%s/%s', isetbioRootPath, 'isettools/ganglioncells/data/lattices');
 
     % Patch filename (history of positions)
-    if (fovDegs >= 10)
+    if (sourceLatticeSizeDegs >= 10)
         p.patchSaveFileName = sprintf('%s_%s_%1.0fdeg_mosaic_progress', ...
-            strrep(whichEye, ' ', '_'), strrep(neuronType, ' ', '_'), fovDegs);
+            strrep(whichEye, ' ', '_'), strrep(neuronType, ' ', '_'), sourceLatticeSizeDegs);
     else
         p.patchSaveFileName = sprintf('%s_%s_%1.2fdeg_mosaic_progress', ...
-            strrep(whichEye, ' ', '_'), strrep(neuronType, ' ', '_'), fovDegs);
+            strrep(whichEye, ' ', '_'), strrep(neuronType, ' ', '_'), sourceLatticeSizeDegs);
     end
     
     % Patch filename (final positions only)

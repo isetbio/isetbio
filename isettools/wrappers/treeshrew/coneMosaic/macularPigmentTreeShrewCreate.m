@@ -1,0 +1,6 @@
+function theMacularPigment = macularPigmentTreeShrewCreate(wavelength)
+% Generate threeshrew-specific macular pigment  (absent, so zero density)
+theMacularPigment = Macular(...
+    'wave', wavelength, ...
+    'density', 0);
+end

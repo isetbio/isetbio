@@ -5,6 +5,7 @@ p.addParameter('displayRetinalContrastProfiles', false, @islogical);
 p.addParameter('displayRadianceMaps', true, @islogical);
 p.addParameter('axesHandle', []);
 p.addParameter('crossHairsAtOrigin', false, @islogical);
+p.addParameter('avoidAutomaticRGBscaling', false, @islogical);
 
 % Parse input
 p.parse(varargin{:});
@@ -32,7 +33,8 @@ meanChromaticity = [mean(xMap(:)) mean(yMap(:))];
 optics = oiGet(opticalImage, 'optics');
 opticsName = opticsGet(optics, 'name');
 ax = visualizeSceneRGB(spatialSupportDegs, 'degs', rgbImage, ...
-    [], meanChromaticity, ' ', 'axesHandle', p.Results.axesHandle);
+    [], meanChromaticity, ' ', 'axesHandle', p.Results.axesHandle, ...
+    'avoidAutomaticRGBscaling', p.Results.avoidAutomaticRGBscaling);
 
 if (crossHairsAtOrigin)
     % Obtain spatial support in mm

@@ -1,4 +1,4 @@
-function computeConeApertures(obj)
+function computeConeApertures(obj, lowOpticalImageResolutionWarning)
 
     % Compute unsmoothed spacings from positions
     [obj.coneRFspacingsMicrons, nearbyConeIndices] = RGCmodels.Watson.convert.positionsToSpacings(obj.coneRFpositionsMicrons);
@@ -29,6 +29,9 @@ function computeConeApertures(obj)
             (isfield(obj.coneApertureModifiers, 'sigma')) ...
         )
         obj.coneApertureToDiameterRatio = 1;
+        obj.coneApertureToConeCharacteristicRadiusConversionFactor = obj.coneApertureModifiers.sigma * sqrt(2.0);
+    else
+        obj.coneApertureToConeCharacteristicRadiusConversionFactor = 0.204*sqrt(2.0);
     end
     
     % Compute cone aperture diameters based on their local spacing and the coneDiameterToSpacingRatio
@@ -70,7 +73,7 @@ function computeConeApertures(obj)
             % Partition cones into zones based on their aperture size.
             [blurApertureDiameterMicronsZones, ...  % the median cone aperture in this zone band
             coneIndicesInZones  ...                 % the IDs of cones in this zone band
-            ] = coneZonesFromApertureSizeAndOIresolution(obj, coneAperturesMicrons);
+            ] = coneZonesFromApertureSizeAndOIresolution(obj, coneAperturesMicrons, lowOpticalImageResolutionWarning);
             %fprintf('Cone zoning based on aperture size took %f seconds.\n', etime(clock, tStart));
             for zoneIndex = 1:numel(coneIndicesInZones)
                 eccZones(zoneIndex) = sqrt(sum((mean(obj.coneRFpositionsMicrons(coneIndicesInZones{zoneIndex},:), 1)).^2));
@@ -135,7 +138,7 @@ end
 % aperture size and current optical image resolution
 function [coneApertureDiameterMicronsZoneBands, ...     % the median cone aperture in this zone band
           coneIndicesInZoneBands  ...                   % the IDs of cones in this zone band
-         ] = coneZonesFromApertureSizeAndOIresolution(obj, coneApertureDiametersMicrons)
+         ] = coneZonesFromApertureSizeAndOIresolution(obj, coneApertureDiametersMicrons, lowOpticalImageResolutionWarning)
         
 
     oiResMicrons = obj.oiResMicronsForZoning;
@@ -205,7 +208,8 @@ function [coneApertureDiameterMicronsZoneBands, ...     % the median cone apertu
     zonesNum = numel(coneApertureDiameterMicronsZones);
     apertureKernelsForAllZones = cell(1, zonesNum);
     for zoneIndex = 1:zonesNum
-        theKernel = obj.generateApertureKernel(coneApertureDiameterMicronsZones(zoneIndex), oiResMicrons);
+        theKernel = obj.generateApertureKernel(coneApertureDiameterMicronsZones(zoneIndex), ...
+            oiResMicrons, lowOpticalImageResolutionWarning);
         apertureKernelsForAllZones{zoneIndex} = theKernel;
     end
 

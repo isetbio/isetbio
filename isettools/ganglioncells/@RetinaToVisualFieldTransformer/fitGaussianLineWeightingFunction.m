@@ -1,0 +1,86 @@
+function theFittedGaussianLineWeightingFunction = fitGaussianLineWeightingFunction(spatialSupport, theRFprofile, varargin)
+
+    p = inputParser;
+    p.addParameter('globalSearch', true, @islogical);
+    p.parse(varargin{:});
+    globalSearch = p.Results.globalSearch;
+
+    assert(all(size(spatialSupport) == size(theRFprofile)), 'fitGaussianLineWeightingFunction:: mismatch in dimensions');
+    
+    % Form parameter vector: [gain, xo, Rc]
+    params.initialValues = [...
+        max(theRFprofile(:)), ...
+        mean(spatialSupport), ...
+        (max(spatialSupport)-min(spatialSupport))/10];
+
+    dx = spatialSupport(2)-spatialSupport(1);
+    % Form lower and upper value vectors
+    params.lowerBounds = [ ...
+        max(theRFprofile(:)) * 1e-3, ...
+        min(spatialSupport), ...
+        dx/10];
+
+    params.upperBounds = [ ...
+        max(theRFprofile(:)) * 1e3, ...
+        max(spatialSupport), ...
+        (max(spatialSupport)-min(spatialSupport))];
+
+    params.names = {'gain', 'xo', 'Rc'};
+    params.scaling = {'log', 'linear', 'log'};
+
+    % Do the fitting
+    if (globalSearch)
+
+        % Ready to fit
+        options = optimset(...
+            'Display', 'off', ...
+            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
+            'GradObj', 'off', ...
+            'DerivativeCheck', 'off', ...
+            'MaxFunEvals', 10^5, ...
+            'MaxIter', 10^3);
+
+        % Multi-start
+        problem = createOptimProblem('fmincon',...
+              'objective', @gaussianProfileObjective, ...
+              'x0', params.initialValues, ...
+              'lb', params.lowerBounds, ...
+              'ub', params.upperBounds, ...
+              'options', options...
+          );
+
+         ms = MultiStart(...
+              'Display', 'off', ...
+              'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
+              'UseParallel', true);
+      
+         % Run the multi-start
+         multiStartsNum = 32;
+         params.finalValues = run(ms, problem, multiStartsNum);
+    else
+        % Local search
+        params.finalValues = ...
+            lsqcurvefit(@gaussianProfileObjective, params.initialValues, ...
+                       spatialSupport, theRFprofile, params.lowerBounds, params.upperBounds);
+    end
+
+
+    hFig = figure(999); clf;
+    set(hFig, 'Position', [10 10 600 500], 'Color', [1 1 1 ]);
+    ax = subplot('Position', [0.1 0.1 0.9 0.9]);
+    RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, params);
+
+    % Compute the fitted Gaussian line weighting function
+    theFittedGaussianLineWeightingFunction.profile = RetinaToVisualFieldTransformer.gaussianLineWeightingProfile(params.finalValues, spatialSupport);
+    theFittedGaussianLineWeightingFunction.xo = params.finalValues(2);
+    theFittedGaussianLineWeightingFunction.characteristicRadius = params.finalValues(3);
+
+    % Nested function gaussian2DObjective
+    function rmse = gaussianProfileObjective(params)
+        theFittedLineWeightingProfile = RetinaToVisualFieldTransformer.gaussianLineWeightingProfile(params, spatialSupport);
+        fullRMSE = ((theFittedLineWeightingProfile(:) - theRFprofile(:))).^2;
+        rmse =  sqrt(mean(fullRMSE,1));
+    end
+
+end
+
