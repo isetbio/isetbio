@@ -101,7 +101,7 @@ function [RTVFTobjList, ...
 end
 
 function [psfUpsampleFactor, wavefrontSpatialSamples] = psfAndWavefrontSamples(radialEccDegs)
-    if (radialEccDegs <= 1)
+    if (radialEccDegs <= 0.5)
         % Cones are tiny, so upsample the spatial resolution
         psfUpsampleFactor = 2;
         wavefrontSpatialSamples = 301;
@@ -115,4 +115,5 @@ function [psfUpsampleFactor, wavefrontSpatialSamples] = psfAndWavefrontSamples(r
         psfUpsampleFactor = 1;
         wavefrontSpatialSamples = 701;
     end
+
 end
