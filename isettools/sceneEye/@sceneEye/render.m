@@ -76,7 +76,7 @@ thisDockerWrapper = p.Results.dockerwrapper;
 
 thisR = obj.recipe;
 
-% If debug, switch the camera to pinhole to render a scene
+% For debugging, we sometimes switch the camera to pinhole
 if obj.usePinhole
     % We will render a scene through a pinhole camera.  We try to match the
     % fov for the scene with the fov that was set for the eyeballc ase.
@@ -113,7 +113,7 @@ end
 %% Fix up the returned object
 
 if(~obj.usePinhole)
-    % If we are not in debug mode, set OI parameters.
+    % If we are not in debug mode with a pinhole, set OI parameters.
     ieObject = obj.setOI(ieObject, 'scale illuminance', scaleIlluminance);
     % oiWindow(ieObject);
 else

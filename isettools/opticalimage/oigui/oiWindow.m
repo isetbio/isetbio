@@ -95,7 +95,7 @@ ieFontInit(hObject);
 if ~isempty(varargin)
     oi = varargin{1};
     if strcmp(oi.type,'opticalimage'), ieAddObject(oi);
-    else, warning('Unexpected variable input.\n');
+    else, warning('Input is not an OI.');
     end
 end
 oiRefresh(hObject, eventdata, handles);
