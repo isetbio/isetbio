@@ -3,7 +3,6 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetP
 
     theConeMosaic = obj.theConeMosaic;
     thePSFData = obj.theVlambdaWeightedPSFData;
-    coneCharacteristicRadiusConversionFactor = obj.coneCharacteristicRadiusConversionFactor;
 
     conesNum = numel(theConeMosaic.coneTypes);
     if (conesNum < max([6 neighboringConesNum]))
@@ -24,16 +23,16 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetP
     
     % Estimate mean anatomical cone aperture from the closest (to the target position) cones
     meanConeApertureDegs = mean(theConeMosaic.coneApertureDiametersDegs(idx));
-    anatomicalConeCharacteristicRadiusDegs = coneCharacteristicRadiusConversionFactor * meanConeApertureDegs;
+    anatomicalConeCharacteristicRadiusDegs = theConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * meanConeApertureDegs;
 
     hFig = figure(1); clf;
     [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs] = ...
-        RetinaToVisualFieldTransformer.analyzeVisuallyProjectedConeAperture(...
-            anatomicalConeCharacteristicRadiusDegs, thePSFData, simulateCronerKaplanEstimation, hFig);
+        RetinaToVisualFieldTransformer.analyzeVisuallyProjectedConeAperture(theConeMosaic, ...
+            meanConeApertureDegs, thePSFData, simulateCronerKaplanEstimation, hFig);
     
     % Return struct
     dStruct.conesNumInRetinalPatch = conesNum;
-    dStruct.indicesOfConesSortedWithDistanceToTargetRFposition = idx(1:neighboringConesNum);
+    %dStruct.indicesOfConesSortedWithDistanceToTargetRFposition = idx(1:neighboringConesNum);
     dStruct.anatomicalConeCharacteristicRadiusDegs = anatomicalConeCharacteristicRadiusDegs;
     dStruct.visualConeCharacteristicRadiusDegs = visualConeCharacteristicRadiusDegs;
     dStruct.bestHorizontalResolutionRotationDegs = bestHorizontalResolutionRotationDegs;

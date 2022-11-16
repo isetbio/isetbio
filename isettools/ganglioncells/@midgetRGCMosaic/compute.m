@@ -41,16 +41,16 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpti
     end
 
     if (isempty(theOpticalImage))
-        fprintf('No optics were passed. Using the optics used to derive the center/surround pooling weights.')
+        %fprintf('No optics were passed. Using the optics used to derive the center/surround pooling weights.')
         % Retrieve the optics
         % Note: if the obj.theOpticsPositionGrid contains more than one
         % position, we will have to generate multiple optical images
         % more than 1 
         opticalPositionsNum = size(obj.theOpticsPositionGrid,1);
         opticalPositionIndex = 1;
-        if (opticalPositionsNum > 1)
-            fprintf(2,'Computing with multiple optical images is not yet supported. Using the first one.\n');
-        end
+        %if (opticalPositionsNum > 1)
+        %    fprintf(2,'Computing with multiple optical images is not yet supported. Using the first one.\n');
+        %end
     
         % Retrieve the optics params from the first RTVFTobj
         theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{opticalPositionIndex};

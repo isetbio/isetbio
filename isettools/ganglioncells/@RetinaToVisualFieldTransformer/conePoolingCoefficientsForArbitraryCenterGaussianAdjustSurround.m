@@ -41,4 +41,6 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
    
     pooledConeIndicesAndWeights.surroundConeIndices = surroundConeIndices;
     pooledConeIndicesAndWeights.surroundConeWeights = surroundConeWeights;
+
+    error('This function needs to be updated by calling RetinaToVisualFieldTransformer.connectableSurroundConeIndicesAndWeights and RetinaToVisualFieldTransformer.coneEfficacyAdjustedGains')
 end

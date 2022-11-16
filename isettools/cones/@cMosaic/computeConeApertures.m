@@ -121,7 +121,6 @@ function computeConeApertures(obj, lowOpticalImageResolutionWarning)
     else
         obj.coneApertureDiametersMicrons = coneAperturesMicrons;
         obj.blurApertureDiameterMicronsZones = blurApertureDiameterMicronsZones;
-        fprintf('min cone aperture diameter = %f microns\n', min(obj.coneApertureDiametersMicrons))
         obj.coneIndicesInZones = coneIndicesInZones;
     end
 

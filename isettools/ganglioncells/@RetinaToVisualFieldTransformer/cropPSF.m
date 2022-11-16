@@ -18,7 +18,11 @@ function cropPSF(obj,maxSpatialSupportDegs)
         obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs = obj.theVlambdaWeightedPSFData.psfSupportXdegs;
         obj.theVlambdaWeightedPSFData.spatialSupportForRFmapYdegs = obj.theVlambdaWeightedPSFData.psfSupportXdegs;
     end
-    
+
+    fprintf('RetinaToVisualFieldTransformer: spatial support = [%2.2f ... +%2.2f] degs with %2.4f degs resolution.', ...
+        min(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs), max(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs), dx);
+       
+
     % Ensure we have unit volume
     obj.theVlambdaWeightedPSFData.vLambdaWeightedData = obj.theVlambdaWeightedPSFData.vLambdaWeightedData / sum(obj.theVlambdaWeightedPSFData.vLambdaWeightedData(:));
 end

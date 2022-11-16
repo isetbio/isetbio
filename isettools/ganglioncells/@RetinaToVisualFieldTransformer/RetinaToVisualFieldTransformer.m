@@ -96,6 +96,7 @@ classdef RetinaToVisualFieldTransformer < handle
 
             obj.opticsParams = opticsParams;
             obj.targetVisualRFDoGparams = targetVisualRFDoGparams;
+
             obj.simulateCronerKaplanEstimation = p.Results.simulateCronerKaplanEstimation;
             obj.psfWavelengthSupport = p.Results.psfWavelengthSupport;
             obj.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation = p.Results.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation;
@@ -115,12 +116,28 @@ classdef RetinaToVisualFieldTransformer < handle
             assert(strcmp(theConeMosaic.whichEye, obj.opticsParams.analyzedEye), ...
                 'theConeMosaic and the optics params must having matching eye');
 
-        
+            % Assert that the centerConnectableConeTypes are valid cone types
+            validConeTypes = [cMosaic.LCONE_ID cMosaic.MCONE_ID cMosaic.SCONE_ID];
+            for iConeType = 1:numel(obj.targetVisualRFDoGparams.centerConnectableConeTypes)
+                assert(ismember(obj.targetVisualRFDoGparams.centerConnectableConeTypes(iConeType), validConeTypes), ...
+                       sprintf('Invalid centerConnectableConeType: %d.', obj.targetVisualRFDoGparams.centerConnectableConeTypes(iConeType)));
+            end
+            obj.targetVisualRFDoGparams.centerConnectableConeTypes = unique(obj.targetVisualRFDoGparams.centerConnectableConeTypes);
+
+            % Assert that the surroundConnectableConeTypes are valid cone types
+            validConeTypes = [cMosaic.LCONE_ID cMosaic.MCONE_ID cMosaic.SCONE_ID];
+            for iConeType = 1:numel(obj.targetVisualRFDoGparams.surroundConnectableConeTypes)
+                assert(ismember(obj.targetVisualRFDoGparams.surroundConnectableConeTypes(iConeType), validConeTypes), ...
+                       sprintf('Invalid surroundConnectableConeType: %d.', obj.targetVisualRFDoGparams.surroundConnectableConeTypes(iConeType)));
+            end
+            obj.targetVisualRFDoGparams.surroundConnectableConeTypes = unique(obj.targetVisualRFDoGparams.surroundConnectableConeTypes);
+
+
             % Generate the PSF to employ
             obj.vLambdaWeightedPSFandOTF();
 
             % Estimate the characteristic radius of the mean cone at the cone pooling RF position
-            %  as projected on to visual space using the computed PSF
+            % as projected on to visual space using the computed PSF
             dStruct = obj.estimateConeCharacteristicRadiusInVisualSpace(...
                 obj.opticsParams.positionDegs, ...
                 obj.simulateCronerKaplanEstimation, ...
@@ -131,18 +148,18 @@ classdef RetinaToVisualFieldTransformer < handle
             end
 
             % Compute maxSpatialSupportDegs based on desired visual RF properties
-            maxSpatialSupportDegs = dStruct.visualConeCharacteristicRadiusDegs * 2.5 * ...
+            maxSpatialSupportDegs = dStruct.visualConeCharacteristicRadiusDegs * 6.0 * ...
                    sqrt(targetVisualRFDoGparams.conesNumPooledByTheRFcenter) * ...
                    targetVisualRFDoGparams.surroundToCenterRcRatio;
             maxSpatialSupportDegs = round(100*maxSpatialSupportDegs)/100;
-
+            
             
             % Crop the PSFs to maxSpatialSupportDegs to speed up computations
             obj.cropPSF(maxSpatialSupportDegs);
 
             % Unit weights for center cones            
-            indicesOfConesPooledByTheRFcenter = dStruct.indicesOfConesSortedWithDistanceToTargetRFposition(1:targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
-            weightsOfConesPooledByTheRFcenter = ones(1,numel(indicesOfConesPooledByTheRFcenter));
+            indicesOfConesPooledByTheRFcenter = obj.targetVisualRFDoGparams.indicesOfConesPooledByTheRFcenter;  % dStruct.indicesOfConesSortedWithDistanceToTargetRFposition(1:targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
+            weightsOfConesPooledByTheRFcenter = obj.targetVisualRFDoGparams.weightsOfConesPooledByTheRFcenter;  
 
             % Compute retinal cone pooling params to generate the target visual RF
             obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, ...
@@ -207,8 +224,8 @@ classdef RetinaToVisualFieldTransformer < handle
         % Gaussian line weighting profile
         theLineWeightingProfile = gaussianLineWeightingProfile(params, spatialSupport);
 
-        [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs] = analyzeVisuallyProjectedConeAperture(...
-                 anatomicalConeCharacteristicRadiusDegs, ttheVlambdaWeightedPSFData, simulateCronerKaplanEstimation, hFig);
+        [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs] = analyzeVisuallyProjectedConeAperture(theConeMosaic, ...
+                 anatomicalConeApertureDiameterDegs, thePSFData, simulateCronerKaplanEstimation, hFig);
 
         [theVlambdaWeightedPSFData, testSubjectID, subtractCentralRefraction, opticsParams, theOI] = computeVlambdaWeightedPSF(...
             opticsParams, theConeMosaic, psfWavelengthSupport);
@@ -246,11 +263,15 @@ classdef RetinaToVisualFieldTransformer < handle
         pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterGaussianAdjustSurround(...
             modelConstants, conePoolingParamsVector);
 
-        % Generate retinal RF from cone weights
-        retinalRF = computeRetinalRFfromWeightsAndApertures(...
-            consideredConeIndices, coneIndices, coneWeights, ...
-            coneCharacteristicRadiiDegs, coneRFpositionsDegs, ...
-            Xdegs, Ydegs, RFcenter, minConeWeight);
+        % Method to adjust the cone weights so as to counteract the gain
+        % changes in relative cone efficacy
+        [efficacyAdjustedConeWeights, maxEfficacy] = coneEfficacyAdjustedGains(theConeMosaic, ...
+            coneDiametersDegs, outerSegmentLengthEccVariationAttenuationFactors, coneWeights, maxEfficacy);
+
+        % Method to remove surround cone indices (and weights) for
+        % non-connectable surround cones
+        [surroundConeIndices, surroundConeWeights] = connectableSurroundConeIndicesAndWeights(...
+            surroundConeIndices, surroundConeWeights, modelConstants)
 
         % Compute the fitted visualRF from the current retinal pooling params
         [theFittedVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
@@ -258,7 +279,8 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to compute the retinal subregion cone map by summing the
         % corresponding cone aperture maps
-        retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(coneRc, coneDiameter, conePos, coneWeights, spatialSupport);
+        retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(theConeMosaic, ...
+            conePosDegs, coneWeights, spatialSupportDegs);
 
         % Method to fit a 2D Gaussian ellipsoid to a continuous RF map
         theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, varargin);

@@ -28,10 +28,11 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     Knarrow = Kwide * narrowToWideVolumeRatio / (RnarrowToRwideRatio^2);
     RnarrowDegs = RwideDegs * RnarrowToRwideRatio;
 
-    % compute center cone indices and weights
-    pooledConeIndicesAndWeights.centerConeIndices = modelConstants.indicesOfCenterCones;
-    pooledConeIndicesAndWeights.centerConeWeights = Kc * modelConstants.weightsOfCenterCones;
+    % Compute center cone indices and weights
+    centerConeIndices = modelConstants.indicesOfCenterCones;
+    centerConeWeights = Kc * modelConstants.weightsOfCenterCones;
 
+    
     % Compute the RF center
     RFcenterPos = mean(modelConstants.theConeMosaic.coneRFpositionsDegs(modelConstants.indicesOfCenterCones,:),1);
 
@@ -44,6 +45,31 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     surroundConeIndices = find(surroundConeWeights>minSurroundConeWeight);
     surroundConeWeights = surroundConeWeights(surroundConeIndices);
 
+    % Keep only the connectable surround cones
+    [surroundConeIndices, surroundConeWeights] = RetinaToVisualFieldTransformer.connectableSurroundConeIndicesAndWeights(...
+         surroundConeIndices, surroundConeWeights, modelConstants);
+
+    % The indices of center and surround cones
+    pooledConeIndicesAndWeights.centerConeIndices = centerConeIndices;
     pooledConeIndicesAndWeights.surroundConeIndices = surroundConeIndices;
-    pooledConeIndicesAndWeights.surroundConeWeights = surroundConeWeights;
+
+    % Adjust the center cone weights to counteract the cone efficacy gain
+    [pooledConeIndicesAndWeights.centerConeWeights, maxEfficacy] = RetinaToVisualFieldTransformer.coneEfficacyAdjustedGains(...
+        modelConstants.theConeMosaic, ...
+        modelConstants.theConeMosaic.coneApertureDiametersDegs(centerConeIndices), ...
+        modelConstants.theConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices), ...
+        centerConeWeights, ...
+        []);
+    
+    % Adjust the surround cone weights to counteract the cone efficacy gain
+    pooledConeIndicesAndWeights.surroundConeWeights = RetinaToVisualFieldTransformer.coneEfficacyAdjustedGains(...
+        modelConstants.theConeMosaic, ...
+        modelConstants.theConeMosaic.coneApertureDiametersDegs(surroundConeIndices), ...
+        modelConstants.theConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices), ...
+        surroundConeWeights, ...
+        maxEfficacy);
+    
 end
+
+
+

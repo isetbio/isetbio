@@ -5,10 +5,12 @@ function [RTVFTobjList, ...
           theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = generateRTVFobjects(...
                    ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
                    theMidgetRGCMosaic, eccentricitySamplingGrid, ...
+                   centerConnectableConeTypes, surroundConnectableConeTypes, ...
                    multiStartsNum)
 
     % Find out the range of cones in the RF center
-    conesNumPooledByTheRFcenters = unique(full(sum(theMidgetRGCMosaic.rgcRFcenterConeConnectivityMatrix,1)));
+    allConesNumPooledByTheRFcenters = full(sum(theMidgetRGCMosaic.rgcRFcenterConeConnectivityMatrix,1));
+    conesNumPooledByTheRFcenters = unique(allConesNumPooledByTheRFcenters);
     fprintf('Cones/RF center for this mosaic: %d\n', conesNumPooledByTheRFcenters);
 
     % Generate grid of optical positions x conesNumInRFcenter
@@ -18,7 +20,7 @@ function [RTVFTobjList, ...
 
     % Allocate memory
     RTVTobjectsNum = numel(RTVTConesNumInRFcenterGrid);
-    RTVFTobjList = cell(1, RTVTobjectsNum);
+    RTVFTobjList = cell(RTVTobjectsNum,1);
     theOpticsPositionGrid = zeros(RTVTobjectsNum,2);
     theConesNumPooledByTheRFcenterGrid = zeros(RTVTobjectsNum,1);
     theVisualSTFSurroundToCenterRcRatioGrid = zeros(RTVTobjectsNum,1);
@@ -31,6 +33,45 @@ function [RTVFTobjList, ...
 
         % Cones num in RF center
         conesNumPooled = RTVTConesNumInRFcenterGrid(iRTVobjIndex);
+
+        % Get indices of center cones for the RGC that is closest to the opticsPositionDegs
+        indicesOfRGCsWithThisManyCenterCones  = find(allConesNumPooledByTheRFcenters == conesNumPooled);
+        [~,idx] = min(sum((bsxfun(@minus, theMidgetRGCMosaic.rgcRFpositionsDegs(indicesOfRGCsWithThisManyCenterCones,:), opticsPositionDegs)).^2,2));
+        theTargetRGCindex = indicesOfRGCsWithThisManyCenterCones(idx);
+        indicesOfConesPooledByTheRFcenter = find(theMidgetRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,theTargetRGCindex)> 0);
+        typesOfConesPooledByTheRFcenter = theMidgetRGCMosaic.inputConeMosaic.coneTypes(indicesOfConesPooledByTheRFcenter);
+
+        % Assert that we have the correct number of center cones
+        assert((numel(indicesOfConesPooledByTheRFcenter) == conesNumPooled), ...
+            sprintf('indicesOfConesPooledByTheRFcenter should have %d entries but it has %d.', numel(indicesOfConesPooledByTheRFcenter), conesNumPooled));
+        
+        % Assert that the center cones are all connectable
+        assert(all(ismember(typesOfConesPooledByTheRFcenter, centerConnectableConeTypes)), ...
+            sprintf('indicesOfConesPooledByTheRFcenter are not all connectable'));
+
+        % Report types of cones in the RF center
+        if (conesNumPooled == 1)
+            fprintf('\nCone type in single-cone RF center: ');
+        else
+            fprintf('\nCone types in multi-cone RF center: ');
+        end
+
+        for iInputConeIndex = 1:numel(typesOfConesPooledByTheRFcenter)
+            switch (typesOfConesPooledByTheRFcenter(iInputConeIndex))
+                case cMosaic.LCONE_ID
+                    fprintf('L ');
+                case cMosaic.MCONE_ID
+                    fprintf('M ');
+                case cMosaic.SCONE_ID
+                    fprintf('S ');
+                otherwise
+                    error('not an LMS cone type');
+            end
+        end
+        fprintf('\n');
+
+        % Unit weights for all center cones
+        weightsOfConesPooledByTheRFcenter = ones(1,numel(indicesOfConesPooledByTheRFcenter));
 
         % Rs/Rc ratio
         surroundToCenterRcRatio = RGCmodels.CronerKaplan.constants.surroundToCenterRcRatio;
@@ -77,6 +118,10 @@ function [RTVFTobjList, ...
         theTargetVisualRFDoGparams = struct(...
             'visualRFmodel', visualRFmodel, ... 
             'retinalConePoolingModel', retinalConePoolingModel, ...
+            'centerConnectableConeTypes', centerConnectableConeTypes, ...
+            'surroundConnectableConeTypes', surroundConnectableConeTypes, ...
+            'indicesOfConesPooledByTheRFcenter', indicesOfConesPooledByTheRFcenter, ...
+            'weightsOfConesPooledByTheRFcenter', weightsOfConesPooledByTheRFcenter, ...
             'conesNumPooledByTheRFcenter', conesNumPooled, ...
             'surroundToCenterRcRatio', surroundToCenterRcRatio, ...
             'surroundToCenterIntegratedSensitivityRatio', scIntSensitivity);
