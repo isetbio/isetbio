@@ -202,6 +202,9 @@ classdef midgetRGCMosaic < handle
         % Visualize the connectivity of the RF center to the cones
         visualizeRFcenterConnectivity(obj, varargin);
 
+        % Method to visual the spatial RFs
+        [hFig, allAxes] = visualizeSpatialRFs(obj, varargin);
+        
         % Get the temporal equivalent eccentricity for either the mosaic's
         % ecc or any [Mx2] matrix of eccentricities
         eccDegs = temporalEquivalentEccentricityForEccentricity(obj, varargin);
