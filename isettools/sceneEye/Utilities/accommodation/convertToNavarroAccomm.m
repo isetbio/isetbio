@@ -10,16 +10,15 @@ function navarroAccomm = convertToNavarroAccomm(inputAccomm)
 %    in the scene we wish to accommodate to (for 550 nm).
 %
 %    For example, if we use the 0.4 diopter Navarro model, the point of
-%    best focus for 550 nm would be at 1013 mm, according to Zemax.
-%    However, the user probably wanted the point of best focus to be 1/0.4
-%    diopter = 1500 mm. This discrepancy probably happens because Navarro
-%    fitted the accommodation equations to match 5 and 10 diopters, but not
-%    other accommodation states. Either that, or Navarro is somehow
+%    best focus for 550 nm would be at 1013 mm, according to Zemax (which
+%    we trust). The user probably wanted the point of best focus to be
+%    1/0.4 diopter = 1500 mm. This discrepancy probably happens because
+%    Navarro fitted the accommodation equations to match 5 and 10 diopters,
+%    but not other accommodation states. Either that, or Navarro is somehow
 %    defining accommodation differently than we are here.
 %
-%    Nevertheless, here we use a few sample points to find the Navarro
-%    accommodation state that most closely matches the user's desired point
-%    of best focus.
+%    We use a few sample points to find the Navarro accommodation state
+%    that most closely matches the user's desired point of best focus.
 %
 % Inputs:
 %    inputAccomm   - Numeric. The non-Navarro accommodation. This should be

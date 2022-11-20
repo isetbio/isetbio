@@ -2,7 +2,7 @@ function thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 % Change renderRecipe to match the accommodation
 %
 % Syntax:
-%   thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
+%   thisR = setNavarroAccommodation(thisR, accommodation, [workingFolder])
 %
 % Description:
 %    We change the fields of the thisR to match accommodation. As
@@ -14,14 +14,15 @@ function thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 %    thisR         - Object (Render recipe)
 %    accommodation - Numeric. The accommodation to shape the modified
 %                    thisR by.
+%
+% Optional
 %    workingFolder - String. The file location to write the new
-%                    renderRecipe to.
+%                    renderRecipe to.  By default it is 
+%                    thisR.get('lens output dir')
 %
 % Outputs:
-%    thisR          - Object. The modified render recipe.
+%    thisR          - The modified render recipe.
 %
-% Optional key/value pairs:
-%    None.
 %
 % See also
 %   navarroLensCreate
@@ -34,38 +35,56 @@ function thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 %    05/29/19  JNM  Second documentation pass (minor tweaks)
 
 %% Check and make sure this recipe includes a realisticEye
-if(~strcmp(thisR.camera.subtype, 'realisticEye'))
-    warning('The camera type is not a realisticEye. Returning untouched.');
+subType = lower(thisR.camera.subtype);
+if(~strcmp(subType, 'realisticeye') && ~strcmp(subType,'humaneye'))
+    warning('The camera type is not a human eye model. Returning untouched.');
     return;
 end
 
 %% Check inputs
 if(~(accommodation >= 0 && accommodation <= 10))
+    % This is the scope of the model.  0 diopters means the focus is at
+    % infinity.  10 diopters means the in focus object is at 0.1 meter.
     error('Accommodation must be between 0 and 10 diopters.');
 end
 
+if notDefined('workingFolder'), workingFolder = thisR.get('lens output dir'); end
 if ~exist(workingFolder, 'dir')
     error('Working folder does not exist.');
 end
 
 %% Convert accommodation
+
 % See the function description for more information on why this is needed.
+% Basically, the Navarro units are not a simple match to the focal distance
+% for reasons we explain in the header of this function.
 navarroAccom = convertToNavarroAccomm(accommodation);
 
 %% Write out ocular media spectra files
-% We calculate the dispersion curves of each ocular media. In the lens
-% file, each surface material is linked to an "ior slot" (ior1, 
-% ior2, etc.) When the ray is traveling through that material, it will
-% follow the curve defined by the spectrum in the corresponding slot.
 
-% Our convention (hard coded in writeNavarroLensFile) is always:
-% ior1 --> cornea
-% ior2 --> aqueuous
-% ior3 --> lens
-% ior4 --> vitreous
-wave = (400:10:800); % nm
+% We calculate and write out the index of refraction curves of each ocular
+% media. Each surface boundary is linked to an "ior slot" (ior1, ior2,
+% etc.) When the ray is traveling through that material, it will follow the
+% curve defined by the spectrum in the corresponding interface.
+%
+% Our convention (hard coded in writeNavarroLensFile) is always these
+% interfaces: 
+%
+%   ior1 --> air-cornea
+%   ior2 --> cornea-aqueuous
+%   ior3 --> aqueous-lens
+%   ior4 --> lens-vitreous
+%
+wave = (400:10:800);    % nm
 [cor, aqu, len, vit] = getNavarroRefractiveIndices(wave, accommodation);
 
+% accommodation is 1/focal distance and thus has units of 1/m.
+% 
+% We represent the accommodation into the file name in this format
+%
+%     ior1_X_YY.spd 
+%
+% where X_YY becomes a value of X.YY and a focal distance of 1/(X.YY)
 accStr = sprintf('%0.2f', accommodation);
 accStr = strrep(accStr, '.', '_');
 iorNames = {sprintf('ior1_%sdp.spd', accStr), ...
@@ -73,6 +92,7 @@ iorNames = {sprintf('ior1_%sdp.spd', accStr), ...
     sprintf('ior3_%sdp.spd', accStr), ...
     sprintf('ior4_%sdp.spd', accStr)};
 
+% I think rtb is an older reference to Render Toolbox
 rtbWriteSpectrumFile(wave, cor, fullfile(workingFolder, iorNames{1}));
 rtbWriteSpectrumFile(wave, aqu, fullfile(workingFolder, iorNames{2}));
 rtbWriteSpectrumFile(wave, len, fullfile(workingFolder, iorNames{3}));
@@ -84,8 +104,9 @@ thisR.camera.ior3.value = fullfile(workingFolder, iorNames{3});
 thisR.camera.ior4.value = fullfile(workingFolder, iorNames{4});
 
 %% Attach lens file and set retina radius
-% For navarro, the lens file will change depending on accomodation. Here we
-% can write it out to a file to be read in later.
+
+% For Navarro (and Arizona), the lens file will change depending on
+% accomodation. Here we can write it out to a file to be read in later.
 lensFile = sprintf('navarroAccomodated_%s.dat', accStr);
 writeNavarroLensFile(navarroAccom, fullfile(workingFolder, lensFile));
 fprintf('Wrote out a new lens file: \n')

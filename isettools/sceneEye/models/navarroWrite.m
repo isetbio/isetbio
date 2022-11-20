@@ -5,16 +5,23 @@ function filename = navarroWrite(thisR)
 %     filename = navarroWrite(thisR);
 %
 % Description
-%   The navarro.dat file and associated index of refraction files
+%   
+%   The navarro_X_YY.dat file and associated index of refraction files
 %   (iorX.spd) are written into the lens rendering directory. The navarro
-%   model accounts for accommodation in the ior and lens files.  We use the
-%   'object distance' slot to define the accommodation.  Until the
-%   accommodation is less than 0.5 m, the impact of that factor is very
+%   model accounts for accommodation in the ior and lens files.  
+% 
+%   This is unclear to me.  What is the relationship between accommodation
+%   and object distance?  I need to track this through the code.  But the
+%   original text reads this way:
+%
+%   We use the 'object distance' slot to define the accommodation.  Until
+%   the accommodation is less than 0.5 m, the impact of that factor is very
 %   small on the IOR.
 %
 % Input
-%  thisR:  The rendering recipe.  It should include the accommodation
-%          (1 / focus distance)
+%  thisR:  The rendering recipe.  The accommodation (1 / focus distance)
+%          will be specified in the lens file name.  The default was
+%          navarro.dat. But maybe it should be navarro_X_YY_.dat
 %
 % Optional key/val pairs
 %   N/A
@@ -47,13 +54,16 @@ na    = navarroLensCreate(accom);  % Diopters
 % Build matrix and set focal Length
 lensMatrix = [na.corneaA; na.corneaP; na.pupil; na.lensA; na.lensP];
 
+% accom is in diopters (1/meters).  The base eye power is 60 diopters.  We
+% add the accommodation to the base.
 focalLength = 1 / (60.6061 + accom) * 10 ^ 3; % mm
 
 %% Set up the lens sub-directory
 
 lensDir = thisR.get('lens dir output');
 if ~exist(lensDir,'dir'), mkdir(lensDir); end
-lensFile = fullfile(lensDir,'navarro.dat');
+lensFile = thisR.get('lens file');
+% lensFile = fullfile(lensDir,'navarro.dat');
 
 %% Do the writing
 fid = fopen(lensFile, 'w');

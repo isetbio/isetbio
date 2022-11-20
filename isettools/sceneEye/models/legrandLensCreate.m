@@ -1,8 +1,11 @@
-function [lg, ior] = legrandLensCreate
+function lg = legrandLensCreate
 % Returns parameters of the LeGrand eye model
 %
 % Synopsis:
-%  [lg, ior] = legrandWrite()
+%  lg = legrandWrite()
+%
+% Inputs
+%   N/A
 %
 % Optional key/value pairs
 %   N/A
@@ -12,9 +15,13 @@ function [lg, ior] = legrandLensCreate
 %         and such of the model
 %   ior - Matrix with the indices of refraction
 %
+% Description
+%   The LeGrand eye model does not have a set for accommodation or a model
+%   for how to change the accommodation.  The Arizona eye and the Navarro
+%   eye do have set functions (see below)
 %
 % See also
-%   legrandWrite, navarroWrite
+%   legrandWrite, navarroWrite,setNavarroAccommodation, setArizonaAccommodation
 %
 
 %%  Source

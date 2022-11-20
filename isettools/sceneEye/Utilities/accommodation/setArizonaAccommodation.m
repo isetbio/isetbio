@@ -1,12 +1,11 @@
-function renderRecipe = setArizonaAccommodation(...
-    renderRecipe, accommodation, workingFolder)
+function thisR = setArizonaAccommodation(thisR, accommodation, workingFolder)
 % DEPRECATED Change renderRecipe to match the accommodation for the Arizona eye
 %
 %   Deprecated:  Now part of the arizona* methods
 %
 % Syntax:
-%   renderRecipe = setArizonaAccommodation(..
-%       renderRecipe, accommodation, workingFolder)
+%   thisR = setArizonaAccommodation(..
+%       thisR, accommodation, workingFolder)
 %
 % Description:
 %    We change the fields of the renderRecipe to match accommodation. As
@@ -15,7 +14,7 @@ function renderRecipe = setArizonaAccommodation(...
 %    reference them in the structure.
 %
 % Inputs:
-%    renderRecipe  - Object. The un-modified renderRecipe.
+%    thisR  -  Render Recipe. 
 %    accommodation - Numeric. The accommodation to shape the modified
 %                    renderRecipe by.
 %    workingFolder - String. The file location to write the new
@@ -34,7 +33,7 @@ function renderRecipe = setArizonaAccommodation(...
 %    05/29/19  JNM  Documentation pass
 
 %% Check and make sure this recipe includes a realisticEye
-if(~strcmp(renderRecipe.camera.subtype, 'realisticEye'))
+if(~strcmp(thisR.camera.subtype, 'realisticEye'))
     warning('The camera type is not a realisticEye. Returning untouched.');
     return;
 end
@@ -128,10 +127,10 @@ rtbWriteSpectrumFile(wave, ior{2}, fullfile(workingFolder, iorNames{2}));
 rtbWriteSpectrumFile(wave, ior{3}, fullfile(workingFolder, iorNames{3}));
 rtbWriteSpectrumFile(wave, ior{4}, fullfile(workingFolder, iorNames{4}));
 
-renderRecipe.camera.ior1.value = fullfile(workingFolder, iorNames{1});
-renderRecipe.camera.ior2.value = fullfile(workingFolder, iorNames{2});
-renderRecipe.camera.ior3.value = fullfile(workingFolder, iorNames{3});
-renderRecipe.camera.ior4.value = fullfile(workingFolder, iorNames{4});
+thisR.camera.ior1.value = fullfile(workingFolder, iorNames{1});
+thisR.camera.ior2.value = fullfile(workingFolder, iorNames{2});
+thisR.camera.ior3.value = fullfile(workingFolder, iorNames{3});
+thisR.camera.ior4.value = fullfile(workingFolder, iorNames{4});
 
 %% Attach lens file 
 % The lens file will change depending on accomodation. Here we can write it
@@ -141,7 +140,7 @@ writeArizonaLensFile(accommodation, fullfile(workingFolder, lensFile));
 fprintf('Wrote out a new lens file: \n')
 fprintf('%s \n \n', fullfile(workingFolder, lensFile));
 
-renderRecipe.camera.lensfile.value = fullfile(workingFolder, lensFile);
-renderRecipe.camera.lensfile.type = 'string';
+thisR.camera.lensfile.value = fullfile(workingFolder, lensFile);
+thisR.camera.lensfile.type = 'string';
 
 end
