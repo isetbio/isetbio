@@ -1,4 +1,4 @@
-function JohannesEccentricityAnalyses2
+function performEccentricityComputations
 
     % Get dropboxDir & intermediate data files location
     computerInfo = GetComputerInfo();
@@ -78,6 +78,15 @@ function JohannesEccentricityAnalyses2
           6 0; ...
           8 0];
 
+    % Actions
+    generateRTVobjects =~ true;
+    generateCenterSurroundRFstructure = ~true;
+    visualizeTheFittedRFs = ~true;
+
+    computeTheSTFs = ~true;
+    fitTheSTFs = ~true;
+    inspectTheSyntheticRFsComponents = true;
+
     % multiStartsNum: select from:
     % - 1 (Single start run, fastest results), 
     % - some number (Multi-start), or 
@@ -94,9 +103,9 @@ function JohannesEccentricityAnalyses2
     % variations in cone efficiency
     coneWeightsCompensateForVariationsInConeEfficiency = ~true;
 
-    generateRTVobjects = true;
+    
     if (generateRTVobjects)
-
+        % Multipliers for the 2 Croner&Kaplan target variables
         CronerKaplanMultipliers = struct(...
             'RsRcRatio', 0.7, ...
             'SCintSensRatio', 1.1);
@@ -112,9 +121,7 @@ function JohannesEccentricityAnalyses2
             fprintf('Finished generating RTVF objects for mosaic %d of %d in %2.1f hours.\n', iEcc, size(mosaicEccDegs,1), toc/(60*60));
         end
     end
-
-   
-    generateCenterSurroundRFstructure = true;
+    
     if (generateCenterSurroundRFstructure)
         for iEcc = 1:size(mosaicEccDegs,1)
             generateTheCenterSurroundRFs(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
@@ -122,13 +129,15 @@ function JohannesEccentricityAnalyses2
         end
     end
     
-%     for iEcc = 1:size(mosaicEccDegs,1)
-%         inspectFittedReceptiveFields(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
-%                 ZernikeDataBase, subjectRankOrder, pupilDiameterMM);
-%     end
+    
+    if (visualizeTheFittedRFs)
+        for iEcc = 1:size(mosaicEccDegs,1)
+            inspectFittedReceptiveFields(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
+                    ZernikeDataBase, subjectRankOrder, pupilDiameterMM);
+        end
+    end
 
-
-
+    
     % STF stimulus parameters
     % L+M contrast for gratings used to measure the STFs 
     coneContrasts = [1 1 0];
@@ -136,9 +145,7 @@ function JohannesEccentricityAnalyses2
     deltaOri = 15;
     orientationsTested = 0:deltaOri:(180-deltaOri);
     spatialFrequenciesTested = [0.25 0.5 1 2 4 6 8 12 16 20 24 32 48 64];
-
-
-    computeTheSTFs = true;
+    
     if (computeTheSTFs)
         for iEcc = 1:size(mosaicEccDegs,1)
             computeTheMosaicSTFs(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
@@ -149,7 +156,6 @@ function JohannesEccentricityAnalyses2
     end
 
 
-    fitTheSTFs = true;
     centerMostRGCsNumToAnalyze = [];
     if (fitTheSTFs)
         for iEcc = 1:size(mosaicEccDegs,1)
@@ -159,8 +165,8 @@ function JohannesEccentricityAnalyses2
         end
     end
 
-    inspectSyntheticRFsComponents = ~true;
-    if (inspectSyntheticRFsComponents)
+    
+    if (inspectTheSyntheticRFsComponents)
         for iEcc = 1:size(mosaicEccDegs,1)
             inspectSyntheticRFs(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
                 ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
