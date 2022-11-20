@@ -119,7 +119,9 @@ function [RTVFTobjList, ...
         % 'arbitrary center cone weights, gaussian surround weights'
         % 'arbitrary center cone weights, gaussian surround weights with adjustments'   % takes a long time - not very beneficial 
         % retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio';
-        retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights-free';
+        % retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights-free';
+
+        retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround (best cell)';
 
         theTargetVisualRFDoGparams = struct(...
             'visualRFmodel', visualRFmodel, ... 

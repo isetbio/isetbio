@@ -85,7 +85,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     switch (targetVisualRFDoGparams.retinalConePoolingModel)
         case {'arbitrary center cone weights, double exponential surround weights-free', ...
               'arbitrary center cone weights, double exponential surround weights-meanVnVwRatio', ...
-              'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio'}
+              'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio', ...
+              'arbitrary center cone weights, double exponential surround (best cell)'}
             modelConstants.indicesOfCenterCones = indicesOfConesPooledByTheRFcenter;
             modelConstants.weightsOfCenterCones = weightsOfConesPooledByTheRFcenter;
             modelConstants.coneCharacteristicRadiusConversionFactor = obj.coneCharacteristicRadiusConversionFactor;
@@ -103,9 +104,9 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             %                                        Kc   Ks/KcRatio   narrowToWideFieldVolumeRatio  RwideDegs            RnarrowToRwideRatio
             retinalConePoolingParams.names =         {'Kc', 'KsKcRatio', 'VnVwRatio',                'RwDegs',             'RnRwRatio'};
             retinalConePoolingParams.scaling =       {'log', 'log',      'log',                      'linear',                'log'};
-            retinalConePoolingParams.initialValues = [1       0.05        0.5       RwDegsInitial         mean(RnarrowToRwideRatios)];
-            retinalConePoolingParams.lowerBounds   = [0.5    1e-2         0.5        RwDegsLowerBound      min(RnarrowToRwideRatios)];
-            retinalConePoolingParams.upperBounds   = [5      1e1         0.5        RwDegsUpperBound      max(RnarrowToRwideRatios)];
+            retinalConePoolingParams.initialValues = [1       0.05        mean(NWvolumeRatios)       RwDegsInitial         mean(RnarrowToRwideRatios)];
+            retinalConePoolingParams.lowerBounds   = [0.5    1e-2         min(NWvolumeRatios)        RwDegsLowerBound      min(RnarrowToRwideRatios)];
+            retinalConePoolingParams.upperBounds   = [5      1e1         max(NWvolumeRatios)        RwDegsUpperBound      max(RnarrowToRwideRatios)];
 
             if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'meanVnVwRatio')))
                 idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
@@ -113,11 +114,28 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
                 retinalConePoolingParams.lowerBounds(idx) = mean(NWvolumeRatios);
                 retinalConePoolingParams.upperBounds(idx) = mean(NWvolumeRatios);
             end
+
             if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'meanRnRwRatio')))
                 idx = find(ismember(retinalConePoolingParams.names, 'RnarrowToRwideRatio'));
                 retinalConePoolingParams.initialValues(idx) = mean(RnarrowToRwideRatios);
                 retinalConePoolingParams.lowerBounds(idx) = mean(RnarrowToRwideRatios);
                 retinalConePoolingParams.upperBounds(idx) = mean(RnarrowToRwideRatios);
+            end
+
+            if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'best cell')))
+
+                % Get values from first H1 cell
+                H1cellIndex = 1;
+
+                idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
+                retinalConePoolingParams.initialValues(idx) = mean(NWvolumeRatios);
+                retinalConePoolingParams.lowerBounds(idx) = mean(NWvolumeRatios);
+                retinalConePoolingParams.upperBounds(idx) = mean(NWvolumeRatios);
+
+                idx = find(ismember(retinalConePoolingParams.names, 'RnarrowToRwideRatio'));
+                retinalConePoolingParams.initialValues(idx) = RnarrowToRwideRatios(H1cellIndex);
+                retinalConePoolingParams.lowerBounds(idx) = RnarrowToRwideRatios(H1cellIndex);
+                retinalConePoolingParams.upperBounds(idx) = RnarrowToRwideRatios(H1cellIndex);
             end
 
         case 'arbitrary center cone weights, gaussian surround weights'
