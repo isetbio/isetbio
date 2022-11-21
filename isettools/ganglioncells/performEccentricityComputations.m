@@ -131,7 +131,7 @@ function performEccentricityComputations(H1cellIndex)
 
 
     retinalConePoolingModel = sprintf('arbitrary center cone weights, double exponential surround from H1 cell with index %d', H1cellIndex);
-    mappedRFsDir = sprintf('%s/RGCmosaicsWithFixedParamsH%d', mappedRFsDir, H1cellIndex);
+    mappedRFsDir = sprintf('%s/RGCMosaicsWithFixedParamsH%d', mappedRFsDir, H1cellIndex);
     
     if (generateRTVobjects)
         % Multipliers for the 2 Croner&Kaplan target variables
