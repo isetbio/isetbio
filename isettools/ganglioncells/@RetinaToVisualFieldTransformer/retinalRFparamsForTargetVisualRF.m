@@ -86,7 +86,10 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
         case {'arbitrary center cone weights, double exponential surround weights-free', ...
               'arbitrary center cone weights, double exponential surround weights-meanVnVwRatio', ...
               'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio', ...
-              'arbitrary center cone weights, double exponential surround (best cell)'}
+              'arbitrary center cone weights, double exponential surround from H1 cell with index 1', ...
+              'arbitrary center cone weights, double exponential surround from H1 cell with index 2', ...
+              'arbitrary center cone weights, double exponential surround from H1 cell with index 3', ...
+              'arbitrary center cone weights, double exponential surround from H1 cell with index 4'}
             modelConstants.indicesOfCenterCones = indicesOfConesPooledByTheRFcenter;
             modelConstants.weightsOfCenterCones = weightsOfConesPooledByTheRFcenter;
             modelConstants.coneCharacteristicRadiusConversionFactor = obj.coneCharacteristicRadiusConversionFactor;
@@ -122,15 +125,29 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
                 retinalConePoolingParams.upperBounds(idx) = mean(RnarrowToRwideRatios);
             end
 
-            if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'best cell')))
+            if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'H1 cell with index')))
 
-                % Get values from first H1 cell
-                H1cellIndex = 1;
+                if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'H1 cell with index 1')))
+                    % Get values from first H1 cell
+                    H1cellIndex = 1;
+                elseif (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'H1 cell with index 2')))
+                    % Get values from second H1 cell
+                    H1cellIndex = 2;
+                elseif (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'H1 cell with index 3')))
+                    % Get values from third H1 cell
+                    H1cellIndex = 3;
+                elseif (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'H1 cell with index 4')))
+                    % Get values from fourth H1 cell
+                    H1cellIndex = 4;
+                else
+                    error('Unknown model: ''%s''.', targetVisualRFDoGparams.retinalConePoolingModel);
+                end
+
 
                 idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
-                retinalConePoolingParams.initialValues(idx) = mean(NWvolumeRatios);
-                retinalConePoolingParams.lowerBounds(idx) = mean(NWvolumeRatios);
-                retinalConePoolingParams.upperBounds(idx) = mean(NWvolumeRatios);
+                retinalConePoolingParams.initialValues(idx) = NWvolumeRatios(H1cellIndex);
+                retinalConePoolingParams.lowerBounds(idx) = NWvolumeRatios(H1cellIndex);
+                retinalConePoolingParams.upperBounds(idx) = NWvolumeRatios(H1cellIndex);
 
                 idx = find(ismember(retinalConePoolingParams.names, 'RnarrowToRwideRatio'));
                 retinalConePoolingParams.initialValues(idx) = RnarrowToRwideRatios(H1cellIndex);
@@ -211,7 +228,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             retinalConePoolingParams.upperBounds(extraIndices) =  0.5*ones(1,numel(nn));
 
         otherwise
-            error('Unknown retinalConePoolingModel: ''%s''.', retinalConePoolingModel);
+            error('Unknown retinalConePoolingModel: ''%s''.', targetVisualRFDoGparams.retinalConePoolingModel);
     end
 
 
