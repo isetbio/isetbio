@@ -1,4 +1,4 @@
-function filename = arizonaWrite(thisR)
+function filename = arizonaWrite(thisR,accommodation)
 % Write out the Arizona lens file for a given accomodation
 %
 % Syntax:
@@ -38,7 +38,9 @@ end
 
 %% Get the parameters given the accommodation
 
-accommodation = thisR.get('accommodation');
+if notDefined('accommodation')
+    accommodation = thisR.get('accommodation'); 
+end
 az = arizonaLensCreate(accommodation);
 
 %% Build matrix

@@ -6,9 +6,12 @@ function thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 %
 % Description:
 %    We change the fields of the thisR to match accommodation. As
-%    accommodation changes, the lens file will change, as will the index of
-%    refraction for the lens media. We write these new files out and
+%    accommodation changes, the lens file changes. We write these new files out and
 %    reference them in the structure.
+%
+%   This scope of the model includes accommodation from 0 to 10 diopters. A
+%   value of 0 diopters means the focus is at infinity.  10 diopters means
+%   the eye model focus is at 0.1 meter.
 %
 % Inputs:
 %    thisR         - Object (Render recipe)
@@ -16,8 +19,7 @@ function thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 %                    thisR by.
 %
 % Optional
-%    workingFolder - String. The file location to write the new
-%                    renderRecipe to.  By default it is 
+%    workingFolder - String. By default it is
 %                    thisR.get('lens output dir')
 %
 % Outputs:
@@ -34,9 +36,8 @@ function thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 %                   which is breaking Windows executions.
 %    05/29/19  JNM  Second documentation pass (minor tweaks)
 
-%% Check and make sure this recipe includes a realisticEye
-subType = lower(thisR.camera.subtype);
-if(~strcmp(subType, 'realisticeye') && ~strcmp(subType,'humaneye'))
+%% Check and make sure this recipe has a human eye model
+if ~strcmp(thisR.get('camera subtype'),'humaneye')
     warning('The camera type is not a human eye model. Returning untouched.');
     return;
 end
@@ -44,10 +45,11 @@ end
 %% Check inputs
 if(~(accommodation >= 0 && accommodation <= 10))
     % This is the scope of the model.  0 diopters means the focus is at
-    % infinity.  10 diopters means the in focus object is at 0.1 meter.
+    % infinity.  10 diopters means the eye model focus is at 0.1 meter.
     error('Accommodation must be between 0 and 10 diopters.');
 end
 
+% Default output directory
 if notDefined('workingFolder'), workingFolder = thisR.get('lens output dir'); end
 if ~exist(workingFolder, 'dir')
     error('Working folder does not exist.');
@@ -57,7 +59,7 @@ end
 
 % See the function description for more information on why this is needed.
 % Basically, the Navarro units are not a simple match to the focal distance
-% for reasons we explain in the header of this function.
+% when we compared them to the values computed by Zemax.
 navarroAccom = convertToNavarroAccomm(accommodation);
 
 %% Write out ocular media spectra files

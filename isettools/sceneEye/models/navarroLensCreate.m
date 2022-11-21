@@ -21,7 +21,7 @@ function [na,txt] = navarroLensCreate(accommodation)
 
 % Examples:
 %{
- [na,txt] = navarroLensCreate(1);
+ [na,txt] = navarroLensCreate(0);
 %}
 
 %% Check the variable

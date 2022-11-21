@@ -1,8 +1,8 @@
-function filename = navarroWrite(thisR)
+function filename = navarroWrite(thisR,accommodation)
 % Write the navarro lens and support IoR files for a given accommodation
 %
 % Synopsis
-%     filename = navarroWrite(thisR);
+%     filename = navarroWrite(thisR,[accommodation]);
 %
 % Description
 %   
@@ -23,8 +23,9 @@ function filename = navarroWrite(thisR)
 %          will be specified in the lens file name.  The default was
 %          navarro.dat. But maybe it should be navarro_X_YY_.dat
 %
-% Optional key/val pairs
-%   N/A
+% Optional
+%  accom:  Specify an accommodation value.  If not specified, we try to get
+%          it from the recipe.
 %
 % Outputs
 %   filename:  Lens file
@@ -48,22 +49,27 @@ end
 
 
 %% Writes out the navarro.dat file in the lens directory of the output
-accom = (thisR.get('accommodation'));
-na    = navarroLensCreate(accom);  % Diopters
+if notDefined('accommodation')
+    accommodation = (thisR.get('accommodation'));
+end
+na    = navarroLensCreate(accommodation);  % Diopters
 
 % Build matrix and set focal Length
 lensMatrix = [na.corneaA; na.corneaP; na.pupil; na.lensA; na.lensP];
 
 % accom is in diopters (1/meters).  The base eye power is 60 diopters.  We
 % add the accommodation to the base.
-focalLength = 1 / (60.6061 + accom) * 10 ^ 3; % mm
+focalLength = 1 / (60.6061 + accommodation) * 10 ^ 3; % mm
 
 %% Set up the lens sub-directory
 
 lensDir = thisR.get('lens dir output');
 if ~exist(lensDir,'dir'), mkdir(lensDir); end
-lensFile = thisR.get('lens file');
-% lensFile = fullfile(lensDir,'navarro.dat');
+
+% Make the lens file for this accommodation and put it in the lens
+% directory.
+lensFile = fullfile(lensDir,'navarro.dat');
+thisR.set('lens file',lensFile);
 
 %% Do the writing
 fid = fopen(lensFile, 'w');
@@ -85,7 +91,7 @@ for ii = 1:size(lensMatrix, 1)
         lensMatrix(ii, 7));
 end
 
-str = sprintf('\n# Accommodation (Diopters) %f \n',accom);
+str = sprintf('\n# Accommodation (Diopters) %f \n',accommodation);
 fprintf(fid, '%s', str);
 
 str = '# See navarroLensCreate.m for adjusting accommodation';
@@ -107,7 +113,7 @@ iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 % We assume the eye is accommodated to the object distance.  There is only
 % a very very small impact of accommodation until the object is very close
 % (less than 0.5 m).
-[ior, wave]= navarroRefractiveIndices(accom);
+[ior, wave]= navarroRefractiveIndices(accommodation);
 
 % We will put these files next to the lens file (navarro.dat).
 nSamples = numel(wave);
@@ -124,6 +130,6 @@ for ii=1:4
     thisR.set(str,filename);
 end
 
-fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accom);
+fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
 
 end

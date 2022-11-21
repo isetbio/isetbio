@@ -20,7 +20,7 @@ function [az, txt] = arizonaLensCreate(accommodation)
 
 % Examples:
 %{
-   [az, columnDescription]  = arizonaLensCreate(1);
+   [az, columnDescription]  = arizonaLensCreate(0);
 %}
 
 %% Set the basic model parameters
