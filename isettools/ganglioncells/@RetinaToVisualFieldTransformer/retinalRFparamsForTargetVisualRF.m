@@ -143,16 +143,19 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
                     error('Unknown model: ''%s''.', targetVisualRFDoGparams.retinalConePoolingModel);
                 end
 
-
+                tolerance = 20/100;
+                
                 idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
-                retinalConePoolingParams.initialValues(idx) = NWvolumeRatios(H1cellIndex);
-                retinalConePoolingParams.lowerBounds(idx) = NWvolumeRatios(H1cellIndex);
-                retinalConePoolingParams.upperBounds(idx) = NWvolumeRatios(H1cellIndex);
+                measuredValue = NWvolumeRatios(H1cellIndex);
+                retinalConePoolingParams.initialValues(idx) = measuredValue;
+                retinalConePoolingParams.lowerBounds(idx) = measuredValue / (1.0+tolerance);
+                retinalConePoolingParams.upperBounds(idx) = measuredValue * (1.0+tolerance);
 
-                idx = find(ismember(retinalConePoolingParams.names, 'RnarrowToRwideRatio'));
-                retinalConePoolingParams.initialValues(idx) = RnarrowToRwideRatios(H1cellIndex);
-                retinalConePoolingParams.lowerBounds(idx) = RnarrowToRwideRatios(H1cellIndex);
-                retinalConePoolingParams.upperBounds(idx) = RnarrowToRwideRatios(H1cellIndex);
+                idx = find(ismember(retinalConePoolingParams.names, 'RnRwRatio'));
+                measuredValue = RnarrowToRwideRatios(H1cellIndex);
+                retinalConePoolingParams.initialValues(idx) = measuredValue;
+                retinalConePoolingParams.lowerBounds(idx) = measuredValue / (1.0+tolerance);
+                retinalConePoolingParams.upperBounds(idx) = measuredValue * (1.0+tolerance);
             end
 
         case 'arbitrary center cone weights, gaussian surround weights'
