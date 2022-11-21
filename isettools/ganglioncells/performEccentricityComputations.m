@@ -1,4 +1,4 @@
-function performEccentricityComputations
+function performEccentricityComputations(H1cellIndex)
 
     % Get dropboxDir & intermediate data files location
     computerInfo = GetComputerInfo();
@@ -76,12 +76,14 @@ function performEccentricityComputations
 
     mosaicEccDegs = [...
           0 0; ...
-          1 0; ....
+          0.5 0; ...
+          1 0; ...
+          2 0; ...
+          3 0; ...
           4 0; ...
           6 0; ...
-          8 0];
-
-    mosaicEccDegs = [2 0];
+          8 0; ...
+          10 0];
 
     % Actions
     generateRTVobjects = true;
@@ -90,7 +92,7 @@ function performEccentricityComputations
 
     computeTheSTFs = true;
     fitTheSTFs = true;
-    inspectTheSyntheticRFsComponents = true;
+    inspectTheSyntheticRFsComponents = ~true;
 
     % multiStartsNum: select from:
     % - 1 (Single start run, fastest results), 
@@ -127,7 +129,7 @@ function performEccentricityComputations
     % retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio';
     % retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights-free';
 
-    H1cellIndex = 1;
+
     retinalConePoolingModel = sprintf('arbitrary center cone weights, double exponential surround from H1 cell with index %d', H1cellIndex);
     mappedRFsDir = sprintf('%s/RGCmosaicsWithFixedParamsH%d', mappedRFsDir, H1cellIndex);
     
