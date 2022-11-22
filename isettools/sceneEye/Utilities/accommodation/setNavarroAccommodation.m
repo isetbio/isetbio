@@ -109,12 +109,14 @@ thisR.camera.ior4.value = fullfile(workingFolder, iorNames{4});
 
 % For Navarro (and Arizona), the lens file will change depending on
 % accomodation. Here we can write it out to a file to be read in later.
-lensFile = sprintf('navarroAccomodated_%s.dat', accStr);
-writeNavarroLensFile(navarroAccom, fullfile(workingFolder, lensFile));
-fprintf('Wrote out a new lens file: \n')
-fprintf('%s \n \n', fullfile(workingFolder, lensFile));
+% lensFile = sprintf('navarroAccomodated_%s.dat', accStr);
+lensFile = navarroWrite(thisR,accommodation);
 
-thisR.camera.lensfile.value = fullfile(workingFolder, lensFile);
+% writeNavarroLensFile(navarroAccom, fullfile(workingFolder, lensFile));
+fprintf('Wrote out a new lens file: %s: \n',lensFile)
+% fprintf('%s \n \n', fullfile(workingFolder, lensFile));
+
+thisR.camera.lensfile.value = lensFile;
 thisR.camera.lensfile.type = 'string';
 
 end
