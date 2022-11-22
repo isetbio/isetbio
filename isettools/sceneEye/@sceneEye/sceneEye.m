@@ -2,7 +2,16 @@ classdef sceneEye < hiddenHandle
 % Create a sceneEye object
 %
 % Syntax:
-%   myScene = sceneEye();
+%   thisSE = sceneEye(sceneName,varargin);
+%
+% Inputs
+%  sceneName - 
+% 
+% Optional key/val
+%    'eye model' - 'navarro','legrand','arizona'
+%     
+% Output
+%    sceneEye - Modified scene eye object
 %
 % Description:
 %    sceneEye is represents the information needed to construct a new PBRT
@@ -14,18 +23,20 @@ classdef sceneEye < hiddenHandle
 %    ISET/ISETBIO "scene" struct, sceneEye is implemented as a MATLAB class
 %    with its own methods.
 %
-%    The sceneEye includes the PBRT rendering recipe (thisR) in one of its
-%    slots. The camera struct is called 'realisticEye' and it contains the
-%    slots that are necessary to specify the human eye model.  These
-%    parameter slots differ from the standard camera model (e.g.,
-%    'realistic', 'pinhole', or 'omni'.  The slots in 'realisticEye'
-%    include retinal curvature, the index of refraction of the components
-%    of the eye, and so forth.
+%    The sceneEye includes the PBRT rendering recipe (thisR) in one of
+%    its slots. The camera struct is called 'human eye' and it
+%    contains the slots that are necessary to specify the human eye
+%    model.  These parameter slots differ from the standard camera
+%    model (e.g., 'realistic', 'pinhole', or 'omni').  The slots in
+%    'human eye' include retinal curvature, the index of refraction
+%    of the components of the eye, and so forth.  These are fixed, and
+%    to change accommodation we change the lens model using
+%    recipe.set('accommodation') and related functions. 
 %
 %    Dependencies: ISET3D
 %
 % See Also:
-%    
+%    t_eyeNavarro, setNavarroAccommodation, recipe
 
 % Examples:
 %{
