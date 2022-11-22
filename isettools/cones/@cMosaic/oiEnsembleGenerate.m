@@ -32,6 +32,9 @@ function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSampling
 %   cMosaic (main class)
 %
 
+% History
+%   11/22/22  dhb  Add Marimont/Wandell optics options as best I could.
+
 % Help
 if (ischar(oiSamplingGridDegs)) && (strcmp(oiSamplingGridDegs,'help'))
     doc('cMosaic.oiEnsembleGenerate');
