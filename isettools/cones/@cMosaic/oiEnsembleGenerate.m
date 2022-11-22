@@ -42,7 +42,7 @@ end
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x,'cMosaic')));
 p.addRequired('oiSamplingGridDegs', @(x)(isnumeric(x) && (size(x,2) == 2) && (all(isreal(x)))));
-p.addParameter('zernikeDataBase', 'Polans2015', @(x)(ismember(x, {'Polans2015', 'Artal2012'})));
+p.addParameter('zernikeDataBase', 'Polans2015', @(x)(ismember(x, {'Polans2015', 'Artal2012', 'MarimontWandell'})));
 p.addParameter('warningInsteadOfErrorForBadZernikeCoeffs', false, @islogical);
 p.addParameter('subjectID', 6, @isscalar);
 p.addParameter('pupilDiameterMM', 3.0, @isscalar);
@@ -72,6 +72,59 @@ oiEnsemble = cell(1, oiNum);
 psfEnsemble = cell(1, oiNum);
 
 switch (zernikeDataBase)
+    case 'MarimontWandell'
+        % This doesn't use wavefront optics but implements the Marimont and
+        % Wandell optics model.  This is for foveal viewing but at some
+        % risk we allow it for any eccentricity but warn the user with
+        % a printout.
+
+        for oiIndex = 1:oiNum
+            %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
+            %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
+            targetEcc = oiSamplingGridDegs(oiIndex,:);
+            
+            if (targetEcc(1) ~= 0 | targetEcc(2) ~= 0)
+                fprintf(2,'Marimont/Wandell optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
+                targetEcc(2) = 0;
+            end
+
+            [theOI] = oiCreate('human',pupilDiamMM,'wave',obj.wave);
+            theOptics = oiGet(theOI,'optics');
+            thePSF = opticsGet(theOptics,'psf data');
+
+            % God save us, the comments don't provide the units and say
+            % that we aren't sure whether this comes back as X/Y or Y/X.
+            % Looking through the code, I think passing units of frequency
+            % to be cycles per degree and thus the units of psf support to
+            % be degrees.
+            psfSupport = opticsGet(theOptics,'psf support','cyclesperdeg');
+            psfSupportMinutesX = psfSupport{1}*60;
+            psfSupportMinutesY = psfSupport{2}*60;
+            psfSupportWavelength = opticsGet(theOptics,'wave');
+            zCoeffs = [];
+            
+            if (isempty(theOI))
+                if (warningInsteadOfErrorForBadZernikeCoeffs)
+                    fprintf(2,'Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye\n', obj.whichEye, subjectID);
+              
+                    oiEnsemble = [];
+                    psfEnsemble = []; 
+                    zCoeffs = [];
+                    return;
+                else
+                    error('Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye', obj.whichEye, subjectID);
+                end
+                
+            end
+            
+            oiEnsemble{oiIndex} = theOI;
+            psfEnsemble{oiIndex} = struct(...
+                'data', thePSF, ...
+                'supportX', psfSupportMinutesX, ...
+                'supportY', psfSupportMinutesY, ...
+                'supportWavelength', psfSupportWavelength, ...
+                'zCoeffs', []);
+        end
     
     case 'Artal2012'
         % Looks like Artal optics now accepts refractive error in diopters.
