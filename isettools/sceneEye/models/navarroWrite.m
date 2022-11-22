@@ -5,30 +5,23 @@ function filename = navarroWrite(thisR,accommodation)
 %     filename = navarroWrite(thisR,[accommodation]);
 %
 % Description
-%   
-%   The navarro_X_YY.dat file and associated index of refraction files
-%   (iorX.spd) are written into the lens rendering directory. The navarro
-%   model accounts for accommodation in the ior and lens files.  
+%   Write the navarro.dat file and associated index of refraction
+%   files (iorX.spd) into the lens rendering directory. The navarro
+%   model accounts for accommodation by changing the ior and lens
+%   files.  The retinalDistance does not change.
 % 
-%   This is unclear to me.  What is the relationship between accommodation
-%   and object distance?  I need to track this through the code.  But the
-%   original text reads this way:
-%
-%   We use the 'object distance' slot to define the accommodation.  Until
-%   the accommodation is less than 0.5 m, the impact of that factor is very
-%   small on the IOR.
-%
 % Input
 %  thisR:  The rendering recipe.  The accommodation (1 / focus distance)
-%          will be specified in the lens file name.  The default was
-%          navarro.dat. But maybe it should be navarro_X_YY_.dat
+%          is specified in the lens file comment.  The file can be
+%          read and the value extracted using
 %
-% Optional
-%  accom:  Specify an accommodation value.  If not specified, we try to get
-%          it from the recipe.
+%                thisR.get('accommodation')
+%
+%  accom:  Specify an accommodation value.  Default is 0 (Accommodated
+%  to infinity).  
 %
 % Outputs
-%   filename:  Lens file
+%   filename:  Lens file, full path to navarro.dat
 %
 % See also
 %   navarroLensCreate, navarroRefractiveIndices
@@ -57,8 +50,8 @@ na    = navarroLensCreate(accommodation);  % Diopters
 % Build matrix and set focal Length
 lensMatrix = [na.corneaA; na.corneaP; na.pupil; na.lensA; na.lensP];
 
-% accom is in diopters (1/meters).  The base eye power is 60 diopters.  We
-% add the accommodation to the base.
+% accommodation is in diopters (1/meters).  The base eye power is 60
+% diopters.  We add the accommodation to the base.
 focalLength = 1 / (60.6061 + accommodation) * 10 ^ 3; % mm
 
 %% Set up the lens sub-directory
@@ -103,11 +96,19 @@ thisR.set('lens file',lensFile);
 
 %% Now write out the IoR files
 
-% Our convention (which was hard coded in writeNavarroLensFile) is
-% ior1 --> cornea
-% ior2 --> aqueuous
-% ior3 --> lens
-% ior4 --> vitreous
+% We calculate and write out the index of refraction curves of each ocular
+% media. Each surface boundary is linked to an "ior slot" (ior1, ior2,
+% etc.) When the ray is traveling through that material, it will follow the
+% curve defined by the spectrum in the corresponding interface.
+%
+% Our convention (hard coded in writeNavarroLensFile) is always these
+% interfaces: 
+%
+%   ior1 --> air-cornea
+%   ior2 --> cornea-aqueuous
+%   ior3 --> aqueous-lens
+%   ior4 --> lens-vitreous
+%
 iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 
 % We assume the eye is accommodated to the object distance.  There is only

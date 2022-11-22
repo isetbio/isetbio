@@ -5,13 +5,18 @@ function thisR = setNavarroAccommodation(thisR, accommodation, workingFolder)
 %   thisR = setNavarroAccommodation(thisR, accommodation, [workingFolder])
 %
 % Description:
-%    We change the fields of the thisR to match accommodation. As
-%    accommodation changes, the lens file changes. We write these new files out and
-%    reference them in the structure.
+%    For the human eye models, when accommodation changes the lens
+%    file changes. We write these new files out and reference them in
+%    the structure. 
 %
-%   This scope of the model includes accommodation from 0 to 10 diopters. A
-%   value of 0 diopters means the focus is at infinity.  10 diopters means
-%   the eye model focus is at 0.1 meter.
+%   This scope of the Navarro model includes accommodation from 0 to
+%   10 diopters. A value of 0 diopters means the focus is at infinity.
+%   10 diopters means the eye model focus is at 0.1 meter. 
+%
+%   However, the Navarro accommodation values do not match the Zemax
+%   values.  So we call a function that converts the user's
+%   accommodation value to the one from Zemax.  We should probably
+%   allow ourselves to turn this conversion off (BW).
 %
 % Inputs:
 %    thisR         - Object (Render recipe)
@@ -55,12 +60,23 @@ if ~exist(workingFolder, 'dir')
     error('Working folder does not exist.');
 end
 
+% Maybe set a switch to include this or not.
+accommodation = convertToNavarroAccomm(accommodation);
+
+% Simply over-write the eye model with the new accommodation
+navarroWrite(thisR,accommodation);
+
+end
+
+% The original code that has now been replaced.
+%
+%{
 %% Convert accommodation
 
 % See the function description for more information on why this is needed.
 % Basically, the Navarro units are not a simple match to the focal distance
 % when we compared them to the values computed by Zemax.
-navarroAccom = convertToNavarroAccomm(accommodation);
+accommodation = convertToNavarroAccomm(accommodation);
 
 %% Write out ocular media spectra files
 
@@ -119,4 +135,5 @@ fprintf('Wrote out a new lens file: %s: \n',lensFile)
 thisR.camera.lensfile.value = lensFile;
 thisR.camera.lensfile.type = 'string';
 
-end
+%}
+
