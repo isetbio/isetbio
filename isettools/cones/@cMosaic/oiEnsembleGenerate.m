@@ -88,15 +88,18 @@ switch (zernikeDataBase)
                 targetEcc(2) = 0;
             end
 
+            % Create Marimont/Wandell oi.  I don't see how to set
+            % microns per degree easily here, and so we ignore the microns
+            % per degree property of the passed mosaic object.
             [theOI] = oiCreate('human',pupilDiamMM,'wave',obj.wave);
             theOptics = oiGet(theOI,'optics');
             thePSF = opticsGet(theOptics,'psf data');
 
-            % God save us, the comments don't provide the units and say
-            % that we aren't sure whether this comes back as X/Y or Y/X.
-            % Looking through the code, I think passing units of frequency
-            % to be cycles per degree and thus the units of psf support to
-            % be degrees.
+            % God save us, the comments in oiGet don't provide the unit
+            % options and say that we aren't sure whether this comes back
+            % as X/Y or Y/X. Looking through the code, I think passing
+            % units of frequency to be cycles per degree and thus the units
+            % of psf support to be degrees.
             psfSupport = opticsGet(theOptics,'psf support','cyclesperdeg');
             psfSupportMinutesX = psfSupport{1}*60;
             psfSupportMinutesY = psfSupport{2}*60;
