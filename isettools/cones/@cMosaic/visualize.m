@@ -88,6 +88,8 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
     p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
     p.addParameter('textDisplayColor', [], @isnumeric);
+
+    p.addParameter('superimposedOIAlpha', 0.7, @isnumeric);
     
     p.parse(varargin{:});
     
@@ -649,7 +651,7 @@ function visualizationParams = visualize(obj, varargin)
     
     % Superimpose optical image
     if (~isempty(superimposedOpticalImage))
-        superimposeTheOpticalImage(obj, axesHandle, domain, superimposedOpticalImage);
+        superimposeTheOpticalImage(obj, axesHandle, domain, superimposedOpticalImage,p.Results.superimposedOIAlpha);
     end
 
     % Superimpose PSF
@@ -907,7 +909,7 @@ function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData)
             'lineWidth', 1.5);
 end
 
-function superimposeTheOpticalImage(obj, axesHandle, visualizationDomain, theOI)
+function superimposeTheOpticalImage(obj, axesHandle, visualizationDomain, theOI, superimposedOIAlpha)
 
     % Obtain spatial support in microns
     spatialSupportMeters = oiGet(theOI, 'spatial support');
@@ -947,7 +949,7 @@ function superimposeTheOpticalImage(obj, axesHandle, visualizationDomain, theOI)
     % Superimpose the optical image
     imPlot = image(axesHandle, xSupport, ySupport, theOpticalImageRGB);
     % Make it semi-transparent
-    imPlot.AlphaData = 0.7;
+    imPlot.AlphaData = superimposedOIAlpha;
 end
 
 
