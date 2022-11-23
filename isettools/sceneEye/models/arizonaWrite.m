@@ -46,7 +46,6 @@ az = arizonaLensCreate(accommodation);
 %% Build matrix
 lensMatrix = [az.corneaA; az.corneaP; az.pupil; az.lensA; az.lensP];
 
-focalLength = 1 / (60.0 + accommodation) * 10 ^ 3; % mm
 
 %% Set up the filename
 
@@ -61,6 +60,8 @@ fid = fopen(filename, 'w');
 str = sprintf('# Focal length (mm) \n');
 fprintf(fid, '%s', str);
 
+% Not sure about this.
+focalLength = 1 / (60.0 + accommodation) * 10 ^ 3; % mm
 str = sprintf('%.3f\n', focalLength);
 fprintf(fid, '%s', str);
 
@@ -87,13 +88,18 @@ thisR.set('lens file',filename);
 
 %% Now write out the IoR files for Arizona
 %
-% Waiting for TL comment
-
-% Our convention (which was hard coded in writeNavarroLensFile) is
-% ior1 --> cornea
-% ior2 --> aqueuous
-% ior3 --> lens
-% ior4 --> vitreous
+% We calculate and write out the index of refraction curves of each ocular
+% media. Each surface boundary is linked to an "ior slot" (ior1, ior2,
+% etc.) When the ray is traveling through that material, it will follow the
+% curve defined by the spectrum in the corresponding interface.
+%
+% Our convention (hard coded in writeNavarroLensFile) is always these
+% interfaces: 
+%
+%   ior1 --> air-cornea
+%   ior2 --> cornea-aqueuous
+%   ior3 --> aqueous-lens
+%   ior4 --> lens-vitreous
 iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 
 % We assume the eye is accommodated to the object distance.  There is only
