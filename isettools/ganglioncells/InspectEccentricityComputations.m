@@ -1,20 +1,13 @@
-function inspectEccentricityComputations
+function inspectEccentricityComputations(H1cellIndex)
 
-    % Get dropboxDir & intermediate data files location
+   % Get dropboxDir & intermediate data files location
     computerInfo = GetComputerInfo();
     switch (computerInfo.localHostName)
         case 'Ithaka'
             dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
-            mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataOLD';
-            %mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
-            mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataBoostedKSParams';
-            mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataBoost2';
-            %mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataBoost2NoCompensation';
-            mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataFixedVnVw';
-   
+
         case 'Crete'
             dropboxDir = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
-            mappedRFsDir = '/Volumes/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataBoostedKSPrams';
 
         otherwise
             if (contains(computerInfo.networkName, 'leviathan'))
@@ -23,6 +16,7 @@ function inspectEccentricityComputations
                 error('Could not establish dropbox location')
             end
     end
+    mappedRFsDir = sprintf('%s/RGCMosaicsWithFixedParamsH%d', dropboxDir, H1cellIndex);
 
     ZernikeDataBase = 'Polans2015';
     subjectRankOrder = 6;
@@ -53,66 +47,31 @@ function inspectEccentricityComputations
                     -12.0 0 ...
                     ];
 
-    if (contains(mappedRFsDir, 'OLD'))
-        mosaicEccDegs = [0 0; ...
-                     -1 0; ...
-                     -2 0; ...
-                     -3 0; ...
-                     -4.0 0; ...
-                     -5 0; ...
-                     -6 0; ...
-                     -8 0; ...
-                     -10 0; ...
-                     -12 0 ...
-                     ];
-        mosaicEccDegs = [6 0];
-    else
-
-        mosaicEccDegs = [0 0; ...
-                     1 0; ...
-                     2 0; ...
-                     4.0 0; ...
-                     6 0; ...
-                     8 0; ...
-                     10 0 ...
-                     ];
-
-        mosaicEccDegs = [2 0];
-    end
+    mosaicEccDegs = [ ...
+          0 0; ...
+          1 0; ...
+          2 0; ...
+          4 0; ...
+          6 0; ...
+          8 0; ...
+          10 0];
 
 
-%     mosaicEccDegs = [ ...
-%         -20 0; ...
-%         -16 0; ...
-%         -12 0; ...
-%         -10 0; ...
-%          -8 0; ...
-%          -6 0; ...
-%          -5 0; ...
-%          -4 0; ...
-%          -2 0; ...
-%          -1 0; ...
-%        -0.5 0; ...
-%         0.0 0; ...
-%         0.5 0; ...
-%           1 0; ...
-%           2 0; ...
-%           3 0; ...
-%           4 0; ...
-%           5 0; ...
-%           6 0; ...
-%           8 0; ...
-%          10 0; ...
-%          12 0; ...
-%          20 0];
+    mosaicEccDegs = [ ...
+          1 0; ...
+          2 0; ...
+          4 0; ...
+          6 0; ...
+          8 0; ...
+          10 0];
 
 
 
     % Αctions
-    centerMostRGCsNumToAnalyze = 100;
-    inspectTheSTFs = true;
+    centerMostRGCsNumToAnalyze = 256;
+    inspectTheSTFs = ~true;
     inspectTheSpatialRFs = true;
-    contrastModelToCronerAndKaplan = true;
+    contrastModelToCronerAndKaplan = ~true;
     
     if (inspectTheSTFs)
         for iEcc = 1:size(mosaicEccDegs,1)
@@ -139,12 +98,12 @@ function inspectEccentricityComputations
                 ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
                 coneContrasts, centerMostRGCsNumToAnalyze);
         end
-        contastDerivedDoGparamsToCronerAndKaplanDoGParams(dataOut);
+        contastDerivedDoGparamsToCronerAndKaplanDoGParams(dataOut, mappedRFsDir);
     end
 end
 
 
-function contastDerivedDoGparamsToCronerAndKaplanDoGParams(dataOut)
+function contastDerivedDoGparamsToCronerAndKaplanDoGParams(dataOut, mappedRFsDir)
 
     mosaicTemporalEccDegs = [];
     modelRGCRcDegs = [];
@@ -192,7 +151,9 @@ function contastDerivedDoGparamsToCronerAndKaplanDoGParams(dataOut)
         scatter(CronerKaplanTemporalEccDegs, CronerKaplanKsKcDegs, 144, ...
              'LineWidth', 1.0, 'MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor',[0.7 0.7 0.7]);
     
-        legend({'ISETBio midget RGCs', 'macaque midget RGCs (Croner & Kaplan)'}, 'Location', 'NorthOutside', 'box', 'off', 'FontSize', 15);
+
+        plot(ax, [0.1 30], RGCmodels.CronerKaplan.constants.surroundToCenterPeakSensitivityRatio*[1 1], 'b-', 'LineWidth', 2.0);
+        legend({'ISETBio midget RGCs', 'macaque midget RGCs (Croner & Kaplan)', 'target'},  'NumColumns', 2, 'Location', 'NorthOutside', 'box', 'off', 'FontSize', 15);
        
         grid 'on'
         set(gca, 'XLim', [0.1 30], 'XScale', 'log', 'XTick', [0.1 0.3 1 3 10 30], ...
@@ -237,8 +198,10 @@ function contastDerivedDoGparamsToCronerAndKaplanDoGParams(dataOut)
     scatter(CronerKaplanTemporalEccDegs, 1./CronerKaplanRcRsRatios, 144, ...
          'LineWidth', 1.0, 'MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor',[0.7 0.7 0.7]);
 
-    %plot(mosaicTemporalEccDegs, targetRsRcRatios, 'b-', 'LineWidth',2);
-    legend({'ISETBio midget RGCs', 'macaque midget RGCs (Croner & Kaplan)'}, 'NumColumns', 1, ...
+    targetCronerKaplanSurroundToCenterRcRatio = RGCmodels.CronerKaplan.constants.surroundToCenterRcRatio;
+    %plot(mosaicTemporalEccDegs, targetRsRcRatios, 'b-', 'LineWidth', 1.0);
+    plot(mosaicTemporalEccDegs, mosaicTemporalEccDegs*0 + targetCronerKaplanSurroundToCenterRcRatio , 'b-', 'LineWidth',2);
+    legend({'ISETBio midget RGCs', 'macaque midget RGCs (Croner & Kaplan)', 'target'}, 'NumColumns', 2, ...
         'Location', 'NorthOutside', 'box', 'off', 'FontSize', 15);
     
     grid 'on'
@@ -262,9 +225,14 @@ function contastDerivedDoGparamsToCronerAndKaplanDoGParams(dataOut)
     scatter(CronerKaplanTemporalEccDegs, CronerKaplanSCintSensRatios, 144, ...
          'LineWidth', 1.0, 'MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor',[0.7 0.7 0.7]);
 
-    %plot(mosaicTemporalEccDegs, targetSCintSensRatios , 'b-', 'LineWidth', 2);
-    legend({'ISETBio midget RGCs', 'macaque midget RGCs (Croner & Kaplan)'}, ...
-        'NumColumns', 1, 'Location', 'NorthOutside', 'box', 'off', 'FontSize', 15);
+    % Temporal-equivalent eccentricity based SCint sensitivity ratio
+    targetCronerKaplanSCIntSensitivity = RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(mosaicTemporalEccDegs);
+     
+
+   % plot(mosaicTemporalEccDegs, targetSCintSensRatios , 'b-', 'LineWidth', 1);
+    plot(mosaicTemporalEccDegs, targetCronerKaplanSCIntSensitivity, 'b-', 'LineWidth', 2.0)
+    legend({'ISETBio midget RGCs', 'macaque midget RGCs (Croner & Kaplan)', 'target'}, ...
+        'NumColumns', 2, 'Location', 'NorthOutside', 'box', 'off', 'FontSize', 15);
     
     grid 'on'
     set(gca, 'XLim', [0.1 30], 'XScale', 'log', 'XTick', [0.1 0.3 1 3 10 30], ...
@@ -273,7 +241,9 @@ function contastDerivedDoGparamsToCronerAndKaplanDoGParams(dataOut)
     xlabel('temporal equivalent eccentericity (degs)');
     ylabel('S/C int. sensitivity ratio');
 
-    
+    pdfFileName = fullfile(mappedRFsDir, 'ComparisonToCronerKaplan.pdf');
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+    fprintf('PDF saved at %s\n', pdfFileName);
 end
 
 
@@ -367,16 +337,18 @@ function inspectSpatialRFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subject
         ZernikeDataBase, subjectRankOrder, mosaicEccDegs(1), mosaicEccDegs(2)));
     load(fName, 'theMidgetRGCmosaic');
 
+    thePSFData = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{1}.theVlambdaWeightedPSFData;
+
     videoFileName = strrep(fName, 'mat', '_SpatialRFs.mp4');
 
-    maxVisualizedRFs = 100;
+    maxVisualizedRFs = centerMostRGCsNumToAnalyze;
     coVisualizeSTFs = true;
 
     if (coVisualizeSTFs == false)
     
         theMidgetRGCmosaic.visualizeSpatialRFs(...
                 'maxVisualizedRFs', maxVisualizedRFs, ...
-                'generateVideo', true);
+                'generateVideo', false);
     else
 
         % Assemble the responses filename
@@ -390,6 +362,9 @@ function inspectSpatialRFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subject
         videoOBJ.FrameRate = 10;
         videoOBJ.Quality = 100;
         videoOBJ.open();
+
+        % Only analyze the centerMostRGCsNumToAnalyze
+        fittedSTFs = fittedSTFs(1:min([numel(fittedSTFs) centerMostRGCsNumToAnalyze]));
 
         for iRGC = 1:numel(fittedSTFs)
             if (iRGC > maxVisualizedRFs)
@@ -413,7 +388,10 @@ function inspectSpatialRFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subject
     
             [hFig, allAxes] = theMidgetRGCmosaic.visualizeSpatialRFs(...
                 'onlyForRGCwithIndex', theRGCindex, ...
-                'generateVideo', false);
+                'generateVideo', false, ...
+                'withEccentricityCrossHairs', true, ...
+                'withPSFData', thePSFData, ...
+                'fontSize', 16);
     
             % replace graphic is (1,1) with the STFs
             noXLabel = false; noYLabel = false;
@@ -422,17 +400,16 @@ function inspectSpatialRFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subject
                         f.allMeasuredSTFs, f.theMeasuredSTFtoFit, ...
                         theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, ...
                         theTargetSTFsupport, theTargetSTFmeasured, ...
-                        noXLabel, noYLabel, inputConeTypes, theRGCindex);
-    
+                        noXLabel, noYLabel, inputConeTypes, theRGCindex, iRGC, numel(fittedSTFs));
+            set(allAxes{1,1}, 'FontSize', 16);
             drawnow;
             videoOBJ.writeVideo(getframe(hFig));
     
         end
 
         videoOBJ.close();
+        fprintf('spatial RFs video saved at %s\n', videoFileName );
     end
-
-
 
 end
 
@@ -453,7 +430,7 @@ function inspectSTFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectRankOr
          'spatialPhasesDegs', 'fittedSTFs');
     
     
-   videoFileName = strrep(fName, 'mat', '_STFs.mp4');
+    videoFileName = strrep(fName, 'mat', '_STFs.mp4');
 
     videoOBJ = VideoWriter(videoFileName, 'MPEG-4');
     videoOBJ.FrameRate = 10;
@@ -463,7 +440,9 @@ function inspectSTFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectRankOr
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1500 450], 'Color', [1 1 1]);
 
-    
+    % Only analyze the centerMostRGCsNumToAnalyze
+    fittedSTFs = fittedSTFs(1:min([numel(fittedSTFs) centerMostRGCsNumToAnalyze]));
+
     for iRGC = 1:numel(fittedSTFs)
         f = fittedSTFs{iRGC};
         theRGCindex = f.targetRGC;
@@ -479,7 +458,7 @@ function inspectSTFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectRankOr
         theTargetSTFmeasured = f.theTargetSTFdata(:,3);        
         theFittedSTFDoGparams = f.theFittedSTFDoGparams;
         
-         % CronerKaplan targets
+        % CronerKaplan targets
         % Rs/Rc ratio
         targetCronerKaplanSurroundToCenterRcRatio = RGCmodels.CronerKaplan.constants.surroundToCenterRcRatio;
 
@@ -494,7 +473,8 @@ function inspectSTFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectRankOr
                 f.allMeasuredSTFs, f.theMeasuredSTFtoFit, ...
                 theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, ...
                 theTargetSTFsupport, theTargetSTFmeasured, ...
-                noXLabel, noYLabel, inputConeTypes, theRGCindex);
+                noXLabel, noYLabel, inputConeTypes, theRGCindex, iRGC, numel(fittedSTFs));
+
 
         ax = subplot('Position', [0.39 0.13 0.25 0.8]);
         hold(ax, 'off')
@@ -545,6 +525,7 @@ function inspectSTFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectRankOr
     end
     videoOBJ.close();
 
+    fprintf('STFs video saved at %s\n', videoFileName );
 
 end
 
@@ -582,7 +563,7 @@ function visualizeSTFs(ax, measuredDpatialFrequencySupport, ...
     allMeasuredSTFs, theMeasuredSTFtoFit,  ...
     theFittedSTFsupport, theFittedSTF, ...
     theTargetSTFsupport, theTargetSTFmeasured, ...
-    noXLabel, noYLabel, inputConeTypes, theRGCindex)
+    noXLabel, noYLabel, inputConeTypes, theRGCindex, iRGC, totalRGCs)
 
     
     plot(ax, measuredDpatialFrequencySupport, allMeasuredSTFs', ...
@@ -615,7 +596,7 @@ function visualizeSTFs(ax, measuredDpatialFrequencySupport, ...
     if (noYLabel)
         set(ax, 'YTickLabel', {});
     else
-        ylabel(ax, 'STF');
+        ylabel(ax, 'STF (visual space)');
     end
 
     if (numel(inputConeTypes) <6)
@@ -638,6 +619,6 @@ function visualizeSTFs(ax, measuredDpatialFrequencySupport, ...
         coneInfoString = sprintf('%d input cones', numel(inputConeTypes));
     end
 
-    coneInfoString = sprintf('RGC %d: %s', theRGCindex, coneInfoString);
+    coneInfoString = sprintf('RGC %d (%d/%d): %s', theRGCindex, iRGC, totalRGCs, coneInfoString);
     title(ax, sprintf('%s', coneInfoString), 'FontWeight', 'Normal');
 end
