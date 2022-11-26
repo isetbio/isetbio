@@ -1,11 +1,11 @@
 function [na,txt] = navarroLensCreate(accommodation)
-% Write out the Navarro lens file for a given accomodation
+% Create a data struct for the Navarro eye model
 %
 % Syntax:
 %   [na,txt] = navarroLensCreate(accommodation)
 %
 % Description:
-%    Create a Navarro lens file.
+%    Create a Navarro eye model data structure.
 %
 % Inputs:
 %    accommodation: The accommodation in diopters
@@ -21,7 +21,7 @@ function [na,txt] = navarroLensCreate(accommodation)
 
 % Examples:
 %{
- [na,txt] = navarroLensCreate(1);
+ [na,txt] = navarroLensCreate(0);
 %}
 
 %% Check the variable

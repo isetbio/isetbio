@@ -17,6 +17,9 @@ classdef constants
         % Surround / center Rc ratio
         surroundToCenterRcRatio = 6.7;
 
+        % From Table 1, Pcells (0-40 degs)
+        surroundToCenterPeakSensitivityRatio = 1.1/106.3;
+
         % Surround radius from center radius
         surroundRadiusFromCenterRadiusDegsForPcells = @(centerRadiusDegs) (centerRadiusDegs * RGCmodels.CronerKaplan.constants.surroundToCenterRcRatio);
         

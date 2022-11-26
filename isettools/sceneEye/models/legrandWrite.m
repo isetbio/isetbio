@@ -6,9 +6,9 @@ function thisR = legrandWrite(thisR)
 %
 % Description:
 %    Write out the Le Grand theoretical eye lens file. These values are
-%    currently all fixed, but may be changeable in the future (I believe
-%    the model has some simple accommodation models which we might
-%    implement here.)
+%    currently all fixed, but may be changeable in the future. Trisha
+%    believes the model has some simple accommodation models which we might
+%    implement here. But we do not have them yet.
 %
 % Inputs:
 %    thisR   - Render recipe

@@ -2,7 +2,16 @@ classdef sceneEye < hiddenHandle
 % Create a sceneEye object
 %
 % Syntax:
-%   myScene = sceneEye();
+%   thisSE = sceneEye(sceneName,varargin);
+%
+% Inputs
+%  sceneName - 
+% 
+% Optional key/val
+%    'eye model' - 'navarro','legrand','arizona'
+%     
+% Output
+%    sceneEye - Modified scene eye object
 %
 % Description:
 %    sceneEye is represents the information needed to construct a new PBRT
@@ -14,18 +23,20 @@ classdef sceneEye < hiddenHandle
 %    ISET/ISETBIO "scene" struct, sceneEye is implemented as a MATLAB class
 %    with its own methods.
 %
-%    The sceneEye includes the PBRT rendering recipe (thisR) in one of its
-%    slots. The camera struct is called 'realisticEye' and it contains the
-%    slots that are necessary to specify the human eye model.  These
-%    parameter slots differ from the standard camera model (e.g.,
-%    'realistic', 'pinhole', or 'omni'.  The slots in 'realisticEye'
-%    include retinal curvature, the index of refraction of the components
-%    of the eye, and so forth.
+%    The sceneEye includes the PBRT rendering recipe (thisR) in one of
+%    its slots. The camera struct is called 'human eye' and it
+%    contains the slots that are necessary to specify the human eye
+%    model.  These parameter slots differ from the standard camera
+%    model (e.g., 'realistic', 'pinhole', or 'omni').  The slots in
+%    'human eye' include retinal curvature, the index of refraction
+%    of the components of the eye, and so forth.  These are fixed, and
+%    to change accommodation we change the lens model using
+%    recipe.set('accommodation') and related functions. 
 %
 %    Dependencies: ISET3D
 %
 % See Also:
-%    
+%    t_eyeNavarro, setNavarroAccommodation, recipe
 
 % Examples:
 %{
@@ -114,32 +125,28 @@ methods
 
         p = inputParser;
         p.addRequired('pbrtfile',@(x)(isempty(x) || ischar(x)));
-        p.addParameter('humaneye','navarro',@ischar);
+        p.addParameter('eyemodel','navarro',@(x)ismember(x,{'navarro','legrand','arizona'}));
         p.parse(pbrtFile,varargin{:});
-        
+
         % Setup the pbrt scene recipe
         if isempty(pbrtFile),  obj.recipe = recipe;
         else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
         end
         
-        switch lower(p.Results.humaneye)
-            case {'navarro'}
-                % Make sure the recipe specifies realistic eye.  That camera has
-                % the parameters needed to model the human.  Note:  realisticEye
-                % differs from realistic.
-                % disp('Setting Navarro model default');
-                obj.set('camera',piCameraCreate('humaneye','lens file','navarro.dat'));
-                obj.modelName = 'navarro'; % Default
-            case 'legrand'
-                obj.set('camera',piCameraCreate('humaneye','lens file','legrand.dat'));
-                obj.modelName = 'legrand'; % Default
-            case 'arizona'
-                obj.set('camera',piCameraCreate('humaneye','lens file','arizona.dat'));
-                obj.modelName = 'arizona'; % Default
-            otherwise
-                error('Unknown physiological optics model %s\n',varargin{1});
-        end
+        % Create the camera model
+        obj.set('camera',piCameraCreate('humaneye','eye model',p.Results.eyemodel));
         
+        % At this point the camera is created.  The recipe should have an
+        % output dir, so we can create the default lens file
+        switch (p.Results.eyemodel)
+            case 'navarro'
+                navarroWrite(obj.recipe,0);
+            case 'arizona'
+                arizonaWrite(obj.recipe,0);
+            case 'legrand'
+                legrandWrite(obj.recipe);
+        end        
+
         % Assign this object the basename of the input file
         obj.set('name',obj.get('input basename'));
                         

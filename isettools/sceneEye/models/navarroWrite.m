@@ -1,26 +1,27 @@
-function filename = navarroWrite(thisR)
+function filename = navarroWrite(thisR,accommodation)
 % Write the navarro lens and support IoR files for a given accommodation
 %
 % Synopsis
-%     filename = navarroWrite(thisR);
+%     filename = navarroWrite(thisR,[accommodation]);
 %
 % Description
-%   The navarro.dat file and associated index of refraction files
-%   (iorX.spd) are written into the lens rendering directory. The navarro
-%   model accounts for accommodation in the ior and lens files.  We use the
-%   'object distance' slot to define the accommodation.  Until the
-%   accommodation is less than 0.5 m, the impact of that factor is very
-%   small on the IOR.
-%
+%   Write the navarro.dat file and associated index of refraction
+%   files (iorX.spd) into the lens rendering directory. The navarro
+%   model accounts for accommodation by changing the ior and lens
+%   files.  The retinalDistance does not change.
+% 
 % Input
-%  thisR:  The rendering recipe.  It should include the accommodation
-%          (1 / focus distance)
+%  thisR:  The rendering recipe.  The accommodation (1 / focus distance)
+%          is specified in the lens file comment.  The file can be
+%          read and the value extracted using
 %
-% Optional key/val pairs
-%   N/A
+%                thisR.get('accommodation')
+%
+%  accom:  Specify an accommodation value.  Default is 0 (Accommodated
+%  to infinity).  
 %
 % Outputs
-%   filename:  Lens file
+%   filename:  Lens file, full path to navarro.dat
 %
 % See also
 %   navarroLensCreate, navarroRefractiveIndices
@@ -41,19 +42,27 @@ end
 
 
 %% Writes out the navarro.dat file in the lens directory of the output
-accom = (thisR.get('accommodation'));
-na    = navarroLensCreate(accom);  % Diopters
+if notDefined('accommodation')
+    accommodation = (thisR.get('accommodation'));
+end
+na    = navarroLensCreate(accommodation);  % Diopters
 
 % Build matrix and set focal Length
 lensMatrix = [na.corneaA; na.corneaP; na.pupil; na.lensA; na.lensP];
 
-focalLength = 1 / (60.6061 + accom) * 10 ^ 3; % mm
+% accommodation is in diopters (1/meters).  The base eye power is 60
+% diopters.  We add the accommodation to the base.
+focalLength = 1 / (60.6061 + accommodation) * 10 ^ 3; % mm
 
 %% Set up the lens sub-directory
 
 lensDir = thisR.get('lens dir output');
 if ~exist(lensDir,'dir'), mkdir(lensDir); end
+
+% Make the lens file for this accommodation and put it in the lens
+% directory.
 lensFile = fullfile(lensDir,'navarro.dat');
+thisR.set('lens file',lensFile);
 
 %% Do the writing
 fid = fopen(lensFile, 'w');
@@ -75,7 +84,7 @@ for ii = 1:size(lensMatrix, 1)
         lensMatrix(ii, 7));
 end
 
-str = sprintf('\n# Accommodation (Diopters) %f \n',accom);
+str = sprintf('\n# Accommodation (Diopters) %f \n',accommodation);
 fprintf(fid, '%s', str);
 
 str = '# See navarroLensCreate.m for adjusting accommodation';
@@ -87,17 +96,25 @@ thisR.set('lens file',lensFile);
 
 %% Now write out the IoR files
 
-% Our convention (which was hard coded in writeNavarroLensFile) is
-% ior1 --> cornea
-% ior2 --> aqueuous
-% ior3 --> lens
-% ior4 --> vitreous
+% We calculate and write out the index of refraction curves of each ocular
+% media. Each surface boundary is linked to an "ior slot" (ior1, ior2,
+% etc.) When the ray is traveling through that material, it will follow the
+% curve defined by the spectrum in the corresponding interface.
+%
+% Our convention (hard coded in writeNavarroLensFile) is always these
+% interfaces: 
+%
+%   ior1 --> air-cornea
+%   ior2 --> cornea-aqueuous
+%   ior3 --> aqueous-lens
+%   ior4 --> lens-vitreous
+%
 iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 
 % We assume the eye is accommodated to the object distance.  There is only
 % a very very small impact of accommodation until the object is very close
 % (less than 0.5 m).
-[ior, wave]= navarroRefractiveIndices(accom);
+[ior, wave]= navarroRefractiveIndices(accommodation);
 
 % We will put these files next to the lens file (navarro.dat).
 nSamples = numel(wave);
@@ -114,6 +131,6 @@ for ii=1:4
     thisR.set(str,filename);
 end
 
-fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accom);
+fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
 
 end

@@ -14,13 +14,16 @@ function [az, txt] = arizonaLensCreate(accommodation)
 %   az:   Struct with the relevant rows of the lens matrix.
 %   txt:  Text description of the columns
 %
+% Description
+%  https://photonengr.com/wp-content/uploads/kbasefiles/ArizonaEyeModel.pdf
+%
 % See also
 %  arizonaWrite, navarroWrite, legrandWrite
 % 
 
 % Examples:
 %{
-   [az, columnDescription]  = arizonaLensCreate(1);
+   [az, columnDescription]  = arizonaLensCreate(0);
 %}
 
 %% Set the basic model parameters

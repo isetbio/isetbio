@@ -1,24 +1,27 @@
-function JohannesEccentricityAnalyses2
+function performEccentricityComputations(H1cellIndex)
 
     % Get dropboxDir & intermediate data files location
     computerInfo = GetComputerInfo();
     switch (computerInfo.localHostName)
         case 'Ithaka'
             dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
-            mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataFixedVnVw';
+            mappedRFsDir = dropboxDir ;
    
         case 'Crete'
             dropboxDir = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
-            mappedRFsDir = '/Volumes/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataFixedVnVw';
+            mappedRFsDir = dropboxDir ;
 
         otherwise
             if (contains(computerInfo.networkName, 'leviathan'))
                 dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio/midgetRGCMosaics';
+                mappedRFsDir = dropboxDir ;
+
             else
                 error('Could not establish dropbox location')
             end
     end
 
+    
     ZernikeDataBase = 'Polans2015';
     subjectRankOrder = 6;
     pupilDiameterMM = 3.0;
@@ -73,10 +76,23 @@ function JohannesEccentricityAnalyses2
 
     mosaicEccDegs = [...
           0 0; ...
-          1 0; ....
+          0.5 0; ...
+          1 0; ...
+          2 0; ...
+          3 0; ...
           4 0; ...
           6 0; ...
-          8 0];
+          8 0; ...
+          10 0];
+
+    % Actions
+    generateRTVobjects = true;
+    generateCenterSurroundRFstructure = true;
+    visualizeTheFittedRFs = ~true;
+
+    computeTheSTFs = true;
+    fitTheSTFs = true;
+    inspectTheSyntheticRFsComponents = ~true;
 
     % multiStartsNum: select from:
     % - 1 (Single start run, fastest results), 
@@ -94,9 +110,31 @@ function JohannesEccentricityAnalyses2
     % variations in cone efficiency
     coneWeightsCompensateForVariationsInConeEfficiency = ~true;
 
-    generateRTVobjects = true;
-    if (generateRTVobjects)
+    
+    % Visual RF model to match. Choose between: 
+    % {'ellipsoidal gaussian center, gaussian surround', ...
+    %  'gaussian center, gaussian surround', ...
+    %  'arbitrary center, gaussian surround'}
+    % When simulating the Croner&Kaplan assessment this must be set to 'gaussian center, gaussian surround';
+    visualRFmodel = 'gaussian center, gaussian surround';
 
+    % Retinal cone pooling model to use. Choose between:
+    % 'arbitrary center cone weights, variable exponential surround weights';
+    % 'arbitrary center cone weights, double exponential surround weights-free'
+    % 'arbitrary center cone weights, double exponential surround weights-meanVnVwRatio'
+    % 'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio'
+    % 'arbitrary center cone weights, double gaussian surround weights'
+    % 'arbitrary center cone weights, gaussian surround weights'
+    % 'arbitrary center cone weights, gaussian surround weights with adjustments'   % takes a long time - not very beneficial 
+    % retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights-meanRnRwRatio';
+    % retinalConePoolingModel = 'arbitrary center cone weights, double exponential surround weights-free';
+
+
+    retinalConePoolingModel = sprintf('arbitrary center cone weights, double exponential surround from H1 cell with index %d', H1cellIndex);
+    mappedRFsDir = sprintf('%s/RGCMosaicsWithFixedParamsH%d', mappedRFsDir, H1cellIndex);
+    
+    if (generateRTVobjects)
+        % Multipliers for the 2 Croner&Kaplan target variables
         CronerKaplanMultipliers = struct(...
             'RsRcRatio', 0.7, ...
             'SCintSensRatio', 1.1);
@@ -108,13 +146,13 @@ function JohannesEccentricityAnalyses2
                 ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
                 centerConnectableConeTypes, surroundConnectableConeTypes, ...
                 coneWeightsCompensateForVariationsInConeEfficiency, ...
-                CronerKaplanMultipliers, multiStartsNum);
+                CronerKaplanMultipliers, ...
+                visualRFmodel, retinalConePoolingModel, ...
+                multiStartsNum);
             fprintf('Finished generating RTVF objects for mosaic %d of %d in %2.1f hours.\n', iEcc, size(mosaicEccDegs,1), toc/(60*60));
         end
     end
-
-   
-    generateCenterSurroundRFstructure = true;
+    
     if (generateCenterSurroundRFstructure)
         for iEcc = 1:size(mosaicEccDegs,1)
             generateTheCenterSurroundRFs(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
@@ -122,13 +160,15 @@ function JohannesEccentricityAnalyses2
         end
     end
     
-%     for iEcc = 1:size(mosaicEccDegs,1)
-%         inspectFittedReceptiveFields(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
-%                 ZernikeDataBase, subjectRankOrder, pupilDiameterMM);
-%     end
+    
+    if (visualizeTheFittedRFs)
+        for iEcc = 1:size(mosaicEccDegs,1)
+            inspectFittedReceptiveFields(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
+                    ZernikeDataBase, subjectRankOrder, pupilDiameterMM);
+        end
+    end
 
-
-
+    
     % STF stimulus parameters
     % L+M contrast for gratings used to measure the STFs 
     coneContrasts = [1 1 0];
@@ -136,9 +176,7 @@ function JohannesEccentricityAnalyses2
     deltaOri = 15;
     orientationsTested = 0:deltaOri:(180-deltaOri);
     spatialFrequenciesTested = [0.25 0.5 1 2 4 6 8 12 16 20 24 32 48 64];
-
-
-    computeTheSTFs = true;
+    
     if (computeTheSTFs)
         for iEcc = 1:size(mosaicEccDegs,1)
             computeTheMosaicSTFs(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
@@ -149,7 +187,6 @@ function JohannesEccentricityAnalyses2
     end
 
 
-    fitTheSTFs = true;
     centerMostRGCsNumToAnalyze = [];
     if (fitTheSTFs)
         for iEcc = 1:size(mosaicEccDegs,1)
@@ -159,8 +196,8 @@ function JohannesEccentricityAnalyses2
         end
     end
 
-    inspectSyntheticRFsComponents = ~true;
-    if (inspectSyntheticRFsComponents)
+    
+    if (inspectTheSyntheticRFsComponents)
         for iEcc = 1:size(mosaicEccDegs,1)
             inspectSyntheticRFs(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
                 ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
@@ -695,7 +732,9 @@ function generateTheRTVFobjects(mosaicEccDegs, mappedRFsDir, ...
     ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
     centerConnectableConeTypes, surroundConnectableConeTypes, ...
     coneWeightsCompensateForVariationsInConeEfficiency, ...
-    CronerKaplanMultipliers, multiStartsNum)
+    CronerKaplanMultipliers, ...
+    visualRFmodel, retinalConePoolingModel, ...
+    multiStartsNum)
    
     fName = fullfile(mappedRFsDir, sprintf('mosaicAnd%s_Subject%d_optics_EccXY_%2.2f_%2.2f.mat', ...
         ZernikeDataBase, subjectRankOrder, mosaicEccDegs(1), mosaicEccDegs(2)));
@@ -720,6 +759,7 @@ function generateTheRTVFobjects(mosaicEccDegs, mappedRFsDir, ...
                 centerConnectableConeTypes, surroundConnectableConeTypes, ...
                 coneWeightsCompensateForVariationsInConeEfficiency, ...
                 CronerKaplanMultipliers, ...
+                visualRFmodel, retinalConePoolingModel, ...
                 multiStartsNum);
 
     % Measure lapsed time

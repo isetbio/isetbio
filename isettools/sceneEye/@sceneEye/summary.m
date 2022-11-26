@@ -45,7 +45,7 @@ txt = addText(txt,delimit);
 
 if ~thisEye.usePinhole
     focallength = thisR.get('film distance');   % In meters
-    txt = addText(txt,sprintf('\nFocal length: %0.2f (m), %0.2f (diopters)\n',focallength,1/focallength));
+    txt = addText(txt,sprintf('\nFocal length: %0.4f (m), %0.2f (diopters)\n',focallength,1/focallength));
     txt = addText(txt,sprintf('Pupil diameter: %0.1f mm\n',thisR.get('pupil diameter','mm')));
 end
 

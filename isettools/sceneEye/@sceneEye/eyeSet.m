@@ -44,8 +44,10 @@ switch param
         obj.name = val;
 
     case 'modelname'
-        % When we set the eye model, we need to change the retina distance and
-        % radius.  
+        % If we set the eye model, we need to change the retina distance and
+        % radius.  But to me (BW) this doesn't seem enough.  I think we
+        % need to create a new lens file, right?  Potentially, we need to
+        % adjust the accommodation, too.
         switch lower(val)
             case {'navarro'}
                 obj.modelName = val;
@@ -90,8 +92,8 @@ switch param
                 
     case 'fov'
         % We have a PPT about the parameters that need to be adjusted to
-        % set the FOV for a realisticEye mode.  
-        % The PowerPoint is in the wiki/images directory.
+        % set the FOV for a realisticEye mode. The PowerPoint
+        % (EyeballGeometry.pptx) is in the ISETBio/wiki/images directory.
         %
         % Setting the field of view amounts to setting the 'retina
         % semidiam' parameter. We figure out what it should be set to

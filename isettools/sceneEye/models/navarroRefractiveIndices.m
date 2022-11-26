@@ -81,20 +81,20 @@ end
 
 %% Calculate refractive indices at given wavelength
 % Check units for wavelength
-if(sum(wave < 400 + wave > 800) > 0)
+if min(wave) < 350 || max(wave) > 800
     error(['Units for wavelength don''t seem correct...' ...
-        ' they should be nm here.']);
+        ' they should be in nm roughly in the range 400 to 700.']);
 end
 
-% The equations use um, so let's convert to um. We want to stick with the
-% nm convention though, to match ISET and PBRT.
-wave = wave .* 10 ^ -3;
+% The refractive index equations use um, so let's convert to um. We want
+% to stick with the nm convention though, to match ISET and PBRT.
+waveUM = wave .* 10 ^ -3;
 
 lambda0 = 0.1673;
-L = 1 ./ (wave .^ 2 - lambda0 ^ 2);
+L = 1 ./ (waveUM .^ 2 - lambda0 ^ 2);
 RI_all = zeros(4, length(wave));
 for i = 1:length(mediaNames)
-    RI_all(i, :) = a(i, 1) + a(i, 2) * wave .^ 2 ...
+    RI_all(i, :) = a(i, 1) + a(i, 2) * waveUM .^ 2 ...
         + a(i, 3) * L + a(i, 4) * L .^ 2;
 end
 

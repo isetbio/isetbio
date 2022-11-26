@@ -1,5 +1,5 @@
-function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs] = analyzeVisuallyProjectedConeAperture(...
-                 anatomicalConeCharacteristicRadiusDegs, thePSFData, simulateCronerKaplanEstimation, hFig)
+function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs] = analyzeVisuallyProjectedConeAperture(theConeMosaic, ...
+                 anatomicalConeApertureDiameterDegs, thePSFData, simulateCronerKaplanEstimation, hFig)
 
     % Compute the centroid of the PSF
     theCentroidDegs = RetinaToVisualFieldTransformer.estimateGeometry(...
@@ -8,15 +8,21 @@ function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDe
 
     % Generate anatomical cone aperture (a Gaussian with Rc) map centered
     % on the centroid of the PSF
-    maxRadius = anatomicalConeCharacteristicRadiusDegs*30;
+    maxRadius = anatomicalConeApertureDiameterDegs*30;
     dx = thePSFData.psfSupportXdegs(2)-thePSFData.psfSupportXdegs(1);
     spatialSupportXdegs = dx:dx:maxRadius;
     spatialSupportXdegs = [-fliplr(spatialSupportXdegs) 0 spatialSupportXdegs];
     spatialSupportYdegs = spatialSupportXdegs;
-    [Xdegs, Ydegs] = meshgrid(spatialSupportXdegs, spatialSupportYdegs);
-    theAnatomicalConeApertureMap = exp(-(((Xdegs-theCentroidDegs(1)))/anatomicalConeCharacteristicRadiusDegs).^2) .* ...
-                                   exp(-(((Ydegs-theCentroidDegs(2)))/anatomicalConeCharacteristicRadiusDegs).^2);
 
+
+    spatialSupportDegs = [spatialSupportXdegs(:)-theCentroidDegs(1) spatialSupportYdegs(:)-theCentroidDegs(2)];
+    theAnatomicalConeApertureMap = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
+        theConeMosaic, ...
+        [0 0], ...
+        1.0, ...
+        spatialSupportDegs);
+
+    theAnatomicalConeApertureMap = theAnatomicalConeApertureMap / max(theAnatomicalConeApertureMap(:));
     % Convolve cone aperture with the PSF
     theVisuallyProjectedConeApertureMap = conv2(theAnatomicalConeApertureMap, thePSFData.vLambdaWeightedData, 'same');
     theVisuallyProjectedConeApertureMap = theVisuallyProjectedConeApertureMap  / max(theVisuallyProjectedConeApertureMap(:));
@@ -32,7 +38,6 @@ function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDe
         % Rotate theVisuallyProjectedConeApertureMap so as to maximize horizontal resolution
         [rotatedTargetVisualRFmap,bestHorizontalResolutionRotationDegs] = ...
             RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(theVisuallyProjectedConeApertureMap, bestHorizontalResolutionRotationDegs);
-
         
         % Fit a 1D Gaussian line weighting function to the 1D profile 
         % (integration along the Y-dimension of the 2D visually projected
@@ -49,10 +54,13 @@ function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDe
         end
 
         figure(hFig); clf;
-        plot(spatialSupportXdegs, theVisuallyProjectedConeApertureMapProfile, 'k-'); hold on
-        plot(spatialSupportXdegs,theFittedGaussianLineWeightingFunction.profile, 'r-');
+        theAnatomicalConeApertureProfile = sum(theAnatomicalConeApertureMap,1);
+        plot(spatialSupportXdegs, theVisuallyProjectedConeApertureMapProfile, 'ks-'); hold on
+        plot(spatialSupportXdegs,theFittedGaussianLineWeightingFunction.profile, 'rs-');
+        plot(spatialSupportXdegs,theAnatomicalConeApertureProfile, 'bs-');
+
         xlabel('space (degs)');
-        legend('data', 'fit');
+        legend('data', 'fit', 'cone aperture');
         axis 'square'
         
     else
@@ -145,5 +153,8 @@ function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDe
         xlabel('arcmin');
         set(gca, 'XLim', spatialSupportXLims*60, 'XTick', -5:1:5);
         grid on
+
+        disp('here')
+        pause
     end
 end

@@ -12,8 +12,8 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     p.addParameter('inputPoolingVisualization', '', @(x)((isempty(x))||(ismember(x, {'centerOnly', 'surroundOnly', 'centerAndSurround'}))));
     p.addParameter('xRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
     p.addParameter('yRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
-    p.addParameter('xLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
-    p.addParameter('yLimsDegs', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('xLimsDegs', [], @(x)(isempty(x)||isinf(x)||(numel(x)==2)));
+    p.addParameter('yLimsDegs', [], @(x)(isempty(x)||isinf(x)||(numel(x)==2)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
@@ -65,6 +65,14 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     ecc = sum((bsxfun(@minus, obj.rgcRFpositionsDegs, mRGCmosaicCenterDegs)).^2,2);
     [~,sortedRGCindices] = sort(ecc, 'ascend');
 
+    if (maxVisualizedRFs < 0)
+        % If negative half of the visualizedRFs will be from the mosaic
+        % center and the other half from its 4 corners
+        maxVisualizedRFs = -maxVisualizedRFs;
+        m1 = min([floor(maxVisualizedRFs/2) numel(sortedRGCindices)]);
+        sortedRGCindices = unique([sortedRGCindices(1:m1); sortedRGCindices(end:-1:numel(sortedRGCindices)-m1)]);
+    end
+
     % Compute the retinal RFcenter maps
     if (isempty(inputPoolingVisualization))
         marginDegs = min([0.5 0.4*min(obj.sizeDegs)]);
@@ -92,6 +100,14 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         yLimsDegs = mRGCmosaicCenterDegs(2) + 0.5*yRangeDegs*[-1 1];
     end
     
+    if (isinf(xLimsDegs)) 
+        xLimsDegs = mRGCmosaicCenterDegs(1) + 0.5*obj.inputConeMosaic.sizeDegs(1)*[-1 1];
+    end
+
+    if (isinf(yLimsDegs)) 
+        yLimsDegs = mRGCmosaicCenterDegs(2) + 0.5*obj.inputConeMosaic.sizeDegs(2)*[-1 1];
+    end
+
     xyLimsDegs = min([xLimsDegs yLimsDegs]);
     if (xyLimsDegs < 0.5)
         xyTicksDegs = 0.05;
@@ -107,16 +123,14 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         xyTicksDegs = 2.0;
     end
     
-
     if (isempty(domainVisualizationTicks))
         xTicks = sign(mRGCmosaicCenterDegs(1)) * round(abs(mRGCmosaicCenterDegs(1)*10))/10 + xyTicksDegs*(-10:1:10);
         yTicks = sign(mRGCmosaicCenterDegs(2)) * round(abs(mRGCmosaicCenterDegs(2)*10))/10 + xyTicksDegs*(-10:1:10);
         domainVisualizationTicks = struct('x', xTicks, 'y', yTicks);
     end
 
-
-     % Superimpose cone mosaic
-   if (superimposedConeMosaic)
+    % Superimpose cone mosaic
+    if (superimposedConeMosaic)
         obj.inputConeMosaic.visualize(...
             'figureHandle', figureHandle, ...
             'axesHandle', axesHandle, ...
@@ -164,6 +178,7 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         maxVisualizedRFs = numel(sortedRGCindices);
     end
 
+
     for iRGC = 1:numel(sortedRGCindices)
 
         if (iRGC > maxVisualizedRFs)
@@ -171,7 +186,7 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         end
 
         % Retrieve the RGCindex
-        targetRGCindex  = sortedRGCindices(iRGC);
+        targetRGCindex = sortedRGCindices(iRGC);
 
         if (~isempty(theRetinalRFcenterMaps))
             % Retrieve the computed retinal center RF map
