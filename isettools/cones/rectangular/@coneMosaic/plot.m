@@ -70,12 +70,15 @@ function [uData, hf] = plot(obj, plotType, varargin)
 
 %  Examples:
 %{
-    coneMosaic.plot('impulse response')
-    coneMosaic.plot('cone mosaic')
+  cm = coneMosaic;
+  cm.plot('cone mosaic');
+
+  % Starts the parallel pool for some reason
+  cm.plot('impulse response');
 %}
 
 %% Check plot type string if we send this off to the os plot routine
-%
+
 % (Might Find a cleaner way to check and send to os.plot.
 %  Maybe create a parse argument string as in ISET.)
 if (length(plotType) > 3 && strcmp(plotType(1:3), 'os '))
@@ -176,27 +179,7 @@ switch ieParamFormat(plotType)
         else
             locs    = obj.coneLocs;
             pattern = obj.pattern(:);
-            
-            % We used to speed things up when there are a lot of cones But on
-            % my new Mac even with 200,000 cones things are fast enough. There
-            % may be people on slower older Macs.  Not sure what to do but
-            % maybe this.
-            %{
-           nCones  = size(obj.coneLocs, 1);
-           maxCones = 5e4;
-           if  nCones > maxCones
-            disp('Displaying subsampled (50K) version')
-            lst = randi(nCones, [maxCones, 1]);
-            lst = unique(lst);
-            locs = locs(lst, :);
-            pattern = pattern(lst, :);
-
-             % Need to check the rendering when there are a lot of cones
-             % support = round([nCones / maxCones, nCones / maxCones]);
-             % spread = 2 * support(1);
-            end
-            %}
-            
+                       
             % The locations are converted to microns from meters, I think.
             [axisData.support, axisData.spread, axisData.delta, axisData.mosaicImage] = ...
                 conePlot(locs * 1e6, pattern);
@@ -257,7 +240,7 @@ switch ieParamFormat(plotType)
 
         % Draw a circle around the selected point.
         viscircles([x, y], 0.7);
-        vcNewGraphWin;
+        ieNewGraphWin;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
             plot(data(:, x), 'k-', 'LineWidth', 2);
