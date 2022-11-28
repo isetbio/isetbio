@@ -1,5 +1,5 @@
 function [uData, hf] = plot(obj, plotType, varargin)
-% Plot function for @conemmsaic base class
+% Plot function for @conemosaic base class
 %
 % Syntax:
 %   [uData, hf] = plot(obj, plotType, varargin)
@@ -129,7 +129,7 @@ validPlots = cellfun(@(x)(ieParamFormat(x)), validPlots, ...
 p.addRequired('pType', @(x) any(validatestring(ieParamFormat(x), ...
     validPlots)));
 
-p.addParameter('hf', [],@(x)(isa(x,'matlab.ui.Figure'))); % Figure handle
+p.addParameter('hf', [],@(x)(isa(x,'matlab.graphics.axis.Axes'))); % Figure handle
 p.addParameter('oi', [], @isstruct);  % Used for spectral qe
 p.addParameter('x', [], @isscalar);   % x axis value
 p.addParameter('y', [], @isscalar);   % y axis value
@@ -265,38 +265,48 @@ switch ieParamFormat(plotType)
 
         % The plots below are with respect to a point.
         % Get the point
+        figure(obj.hdl);
         [x, y] = ginput(1); % Rounded and clipped to the data
         x = ieClip(round(x), 1, size(data, 2));
         y = ieClip(round(y), 1, size(data, 1));
         viscircles([x, y], 0.7);
 
-        vcNewGraphWin([], 'tall'); names = 'LMS';
+        % Get the cone locations in microns
+        coneLocs(:,:,1) = reshape(obj.coneLocs(:,1),obj.rows,obj.cols);
+        coneLocs(:,:,2) = reshape(obj.coneLocs(:,2),obj.rows,obj.cols);
+        coneLocs = coneLocs*1e6;  % In microns
+
+        ieNewGraphWin([], 'tall'); names = 'LMS';
         c = {'ro-', 'go-', 'bo-'};
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
             c = {'ro-', 'go-', 'bo-'};
             for ii = 2 : 4 % L, M, S
+                % Maybe this should be a coneAbsorptions method?
                 subplot(3, 1, ii - 1);
-                pos = find(obj.pattern(:, x) == ii);
-                plot(pos, data(pos, x), c{ii - 1}, 'LineWidth', 2);
+                lst = (obj.pattern(:,x) == ii);
+                data = obj.absorptions(lst,x);
+                pos = coneLocs(lst,x,2);
+                plot(pos, data, c{ii - 1}, 'LineWidth', 2);
                 grid on;
-                uData.pos{ii - 1} = pos;
-                uData.data{ii - 1} = data(pos, x);
-                xlabel('Vertical Position (cones');
+                xlabel('Vertical Position (um)');
                 ylabel([names(ii - 1) ' ' yStr]);
-                set(gca, 'xlim', [1 size(data, 1)]);
+                uData.pos{ii - 1} = pos;
+                uData.data{ii - 1} = data;
             end
         else
+            % Horizontal
             for ii = 2:4 % L, M, S
                 subplot(3, 1, ii - 1);
-                pos = find(obj.pattern(y, :) == ii);
-                plot(pos, data(y, pos), c{ii - 1}, 'LineWidth', 2);
+                lst = find(obj.pattern(y, :) == ii);
+                data = obj.absorptions(y,lst);
+                pos = coneLocs(y,lst,1);
+                plot(pos, data, c{ii - 1}, 'LineWidth', 2);
                 grid on;
-                uData.pos{ii - 1} = pos;
-                uData.data{ii - 1} = data(y, pos);
-                xlabel('Horizontal Position (cones');
+                xlabel('Horizontal Position (um)');
                 ylabel([names(ii - 1) ' ' yStr]);
-                set(gca, 'xlim', [1 size(data, 2)]);
+                uData.pos{ii - 1} = pos;
+                uData.data{ii - 1} = data;
             end
         end
 
@@ -313,7 +323,7 @@ switch ieParamFormat(plotType)
 
         t = (1:size(data, 3)) * obj.integrationTime * 1e3;
 
-        vcNewGraphWin;         
+        ieNewGraphWin;         
         yStr = 'Absorptions per frame';
         data = squeeze(data(y, x, :));
         plot(t, squeeze(data), 'LineWidth', 2);
@@ -364,7 +374,7 @@ switch ieParamFormat(plotType)
 
         % Draw a circle around the selected point.
         viscircles([x, y], 0.7);
-        vcNewGraphWin;
+        ieNewGraphWin;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
             plot(data(:, x), 'LineWidth', 2);
@@ -391,7 +401,7 @@ switch ieParamFormat(plotType)
         y = ieClip(round(y), 1, size(data, 1));
         viscircles([x, y], 0.7);
 
-        vcNewGraphWin([], 'tall');
+        ieNewGraphWin([], 'tall');
         names = 'LMS';
         c = {'ro-', 'go-', 'bo-'};
         yStr = 'Photocurrent (pA)';
@@ -433,7 +443,7 @@ switch ieParamFormat(plotType)
 
         t = (1:size(data, 3)) * obj.integrationTime * 1e3;
 
-        vcNewGraphWin;
+        ieNewGraphWin;
         yStr = 'Absorptions per frame';
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
         uData.x = t;
