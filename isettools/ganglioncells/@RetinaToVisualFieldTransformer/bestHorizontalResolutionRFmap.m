@@ -13,37 +13,38 @@ function [theRotatedRF, rotationDegs] = bestHorizontalResolutionRFmap(theRF, rot
 
         % Find peak of Radon transform 
         [~,idx] = max(R(:));
-        [~, col] = ind2sub(size(R), idx);
-
+        [row, col] = ind2sub(size(R), idx);
+        
         % Peak rotation is theta(col), so rotate by its negative
         rotationDegs = -theta(col);
+    end
 
-        % Debug the radon transform information
-        debugRadon = false;
-        if (debugRadon)
-            theRotatedRF = imrotate(theRF, rotationDegs, 'bilinear', 'crop');
-            theRotatedRF2 = imrotate(theRF, -rotationDegs, 'bilinear', 'crop');
+    % The rotatedRF so that the elongation is along the y-axis
+    theRotatedRF = imrotate(theRF, rotationDegs, 'bilinear', 'crop');
 
-            figure(1999)
-            subplot(2,2,1);
-            imagesc(theRF); axis 'image'
-        
-            subplot(2,2,2);
-            xOffset = xOffset(rowIndices);
-            imshow(R,[],'Xdata',theta,'Ydata',xOffset,'InitialMagnification','fit')
-            set(gca, 'XTick', theta)
-            xlabel('\theta (degrees)')
-            ylabel('offset (pixels from center)')
-            colormap(gca,hot), colorbar
-        
-            subplot(2,2,3);
-            imagesc(theRotatedRF); axis 'image'
-        
-            subplot(2,2,4);
-            imagesc(theRotatedRF2); axis 'image'
-            drawnow
-        end
-   end
+    % Debug the radon transform information
+    debugRadon = true;
+    if (debugRadon) && (isempty(rotationDegs))
+        hFig = figure(1999);
+        set(hFig, 'Position', [10 10 1500 530]);
+        subplot(1,3,1);
+        imagesc(theRF); axis 'image'
+    
+        subplot(1,3,2);
+        xOffset = xOffset(rowIndices);
+        imshow(R,[],'Xdata',theta,'Ydata',xOffset,'InitialMagnification','fit');
+        hold on;
+        plot(theta(col), xOffset(row), 'kx');
+        set(gca, 'XTick', theta, 'XTickLabel', sprintf('%2.0f\n',theta));
+        xlabel('\theta (degrees)')
+        ylabel('offset (pixels from center)')
+        colormap(gca,hot), colorbar
+    
+        subplot(1,3,3);
+        imagesc(theRotatedRF); axis 'image'
+        title(sprintf('best orientation = %2.0f degs', rotationDegs));
 
-   theRotatedRF = imrotate(theRF, rotationDegs, 'bilinear', 'crop');
+        drawnow;
+    end
+   
 end

@@ -263,8 +263,14 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
         colormap(gray(1024));
 
         theTargetRFmeasurement = sum(rotatedTargetVisualRFmap,1);
+
+        % Target STF curve
         [stfSupportCPD, theTargetSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
             modelConstants.spatialSupportDegs(:,1),theTargetRFmeasurement);
+
+        % TargetSTF match mode: either the params of the DoG model fit to
+        % the visual STF or the STF itself
+        modelConstants.targetSTFmatchMode = obj.targetSTFmatchMode;
     else
         theTargetRFmap = targetVisualRFmap(:);
     end
@@ -279,7 +285,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     visualizeRFs(54, spatialSupportDegs, targetVisualRFmap, theInitialFittedVisualRFmap, {'target RF',  'initial fitted RF'});
     
 
-    if (modelConstants.simulateCronerKaplanEstimation)   % Rotate the theInitialFittedVisualRFmap according to the rotation
+    if (modelConstants.simulateCronerKaplanEstimation)   
+        % Rotate the theInitialFittedVisualRFmap according to the rotation
         % that maximizes horizontal resolution of the targetVisualRFmap
         rotatedInitialFittedVisualRFmap = ...
            RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(theInitialFittedVisualRFmap, bestHorizontalResolutionRotationDegs);
@@ -479,11 +486,44 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             currentRFmeasurement = sum(rotatedCurrentVisualRF,1);
 
             % Compute current STF
-            [~, currentFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            [spatialFrequencySupport, theCurrentSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
                  modelConstants.spatialSupportDegs(:,1), currentRFmeasurement);
 
             % RMSE based on STFs
-            fullRMSE = ((currentFittedSTF(:) - theTargetSTF(:))).^2;
+            switch  (modelConstants.targetSTFmatchMode) 
+                case 'STFcurve'
+                    % RMSE based on the difference of the STF curves
+                    fullRMSE = ((theCurrentSTF(:) - theTargetSTF(:))).^2;
+
+                case 'STFDoGparams'
+                    % RMSE based on the difference of the DoG model params
+                    % to the targetSTF and theCurrentSTF
+
+                    % Fit theCurrentSTF with a DoG model 
+                    multiStartsNum = 32;
+                    theCurrentSTFDoGparams = RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(...
+                            spatialFrequencySupport, ...
+                            theCurrentSTF, ...
+                            anatomicalRFcenterCharacteristicRadiusDegs, ...
+                            multiStartsNum);
+                    
+                    theCurrentSTFmodelSurroundToCenterRcRatio = theCurrentSTFDoGparams.finalValues(3);
+                    theCurrentSTFmodelSurroundToCenterIntegratedSensitivityRatio = theCurrentSTFDoGparams.finalValues(2) * (theCurrentSTFDoGparams.finalValues(3))^2;
+
+                    % Target STF DoG model fit params
+                    r1 = (targetVisualRFDoGparams.surroundToCenterRcRatio - ...
+                          theCurrentSTFmodelSurroundToCenterRcRatio);
+
+                    r2 = (targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio -  ...
+                          theCurrentSTFmodelSurroundToCenterIntegratedSensitivityRatio);
+
+                    % RMSE is the sum of their differences squared
+                    fullRMSE = sqrt(r1^2 + r2^2);
+
+                otherwise
+                    error('modelConstants.targetSTFmatchMode must be set to either ''STFcurve'' or ''STFDoGparams''.');
+            end
+
         else
             % RMSE based on RFs
             fullRMSE = ((currentVisualRF(:) - theTargetRFmap(:))).^2;

@@ -42,7 +42,8 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         % retrieve the rotation that maximizes horizontal resolution
         figure(444); clf;
         subplot(1,3,1)
-        imagesc(visualRFcenterConeMap)
+        imagesc(visualRFcenterConeMap);
+        axis 'image';
         title('RF center cone map');
 
         bestHorizontalResolutionRotationDegs = [];
@@ -50,7 +51,8 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
             RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(visualRFcenterConeMap, bestHorizontalResolutionRotationDegs);
 
         subplot(1,3,2);
-        imagesc(rotatedVisualRFcenterConeMap)
+        imagesc(rotatedVisualRFcenterConeMap);
+        axis 'image'
         title('RF center cone map (rotated)');
 
         visualRFcenterConeMapProfile = sum(rotatedVisualRFcenterConeMap,1);
@@ -72,9 +74,9 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
         hold on
         plot(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, theFittedGaussianLineWeightingFunction.profile, 'r--');
         legend('data', 'fit')
+        axis 'square'
         drawnow;
         
-
         % Return the characteristic radius in degrees
         visualRFcenterCharacteristicRadiusDegs = theFittedGaussianLineWeightingFunction.characteristicRadius;
 

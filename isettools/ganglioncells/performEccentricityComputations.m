@@ -5,23 +5,19 @@ function performEccentricityComputations(H1cellIndex)
     switch (computerInfo.localHostName)
         case 'Ithaka'
             dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
-            mappedRFsDir = dropboxDir ;
-   
+
         case 'Crete'
             dropboxDir = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
-            mappedRFsDir = dropboxDir ;
 
         otherwise
             if (contains(computerInfo.networkName, 'leviathan'))
                 dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio/midgetRGCMosaics';
-                mappedRFsDir = dropboxDir ;
-
             else
                 error('Could not establish dropbox location')
             end
     end
+    mappedRFsDir = sprintf('%s/RGCMosaicsWithFixedParamsH%d', dropboxDir, H1cellIndex);
 
-    
     ZernikeDataBase = 'Polans2015';
     subjectRankOrder = 6;
     pupilDiameterMM = 3.0;
@@ -74,24 +70,15 @@ function performEccentricityComputations(H1cellIndex)
           8 0; ...
           10 0];
 
-    mosaicEccDegs = [...
-          0 0; ...
-          0.5 0; ...
-          1 0; ...
-          2 0; ...
-          3 0; ...
-          4 0; ...
-          6 0; ...
-          8 0; ...
-          10 0];
+    mosaicEccDegs = [0 0]; % [-3 -6];
 
     % Actions
     generateRTVobjects = true;
-    generateCenterSurroundRFstructure = true;
+    generateCenterSurroundRFstructure = ~true;
     visualizeTheFittedRFs = ~true;
 
-    computeTheSTFs = true;
-    fitTheSTFs = true;
+    computeTheSTFs = ~true;
+    fitTheSTFs = ~true;
     inspectTheSyntheticRFsComponents = ~true;
 
     % multiStartsNum: select from:
@@ -131,13 +118,17 @@ function performEccentricityComputations(H1cellIndex)
 
 
     retinalConePoolingModel = sprintf('arbitrary center cone weights, double exponential surround from H1 cell with index %d', H1cellIndex);
-    mappedRFsDir = sprintf('%s/RGCMosaicsWithFixedParamsH%d', mappedRFsDir, H1cellIndex);
+    
     
     if (generateRTVobjects)
         % Multipliers for the 2 Croner&Kaplan target variables
         CronerKaplanMultipliers = struct(...
             'RsRcRatio', 0.7, ...
             'SCintSensRatio', 1.1);
+
+        CronerKaplanMultipliers = struct(...
+            'RsRcRatio', 1.0, ...
+            'SCintSensRatio', 1.0);
 
         for iEcc = 1:size(mosaicEccDegs,1)
             tic
@@ -510,7 +501,7 @@ function fitTheMosaicSTFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectR
         % Fit the DoG model to the measured STF
         multiStartsNum = 64;
         [DoGparams, theFittedSTF] = ...
-            fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, ...
+            RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, ...
                     theMeasuredSTFtoFit, ...
                     retinalRFcenterRcDegsInitialParam, ...
                     multiStartsNum);
@@ -775,83 +766,4 @@ function generateTheRTVFobjects(mosaicEccDegs, mappedRFsDir, ...
                 '-append');
     fprintf('Appended the computed RTVFTobjList to %s\n', fName);
 
-end
-
-
-function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF, retinalRFcenterRcDegs, multiStartsNum)
-    % DoG param initial values and limits: center gain, kc
-    Kc = struct(...    
-        'low', 1e-1, ...
-        'high', 1e4, ...
-        'initial', 1);
-
-    % DoG param initial values and limits: Ks/Kc ratio
-    KsToKc = struct(...
-        'low', 1e-6, ...
-        'high', 1.0, ...
-        'initial', 0.1);
-
-    % DoG param initial values and limits: RsToRc ratio
-    RsToRc = struct(...
-        'low', 1.5, ...
-        'high', 30, ...
-        'initial', 5);
-
-    % DoG param initial values and limits: RcDegs
-    RcDegs = struct(...
-        'low', retinalRFcenterRcDegs/sqrt(2.0), ...
-        'high', retinalRFcenterRcDegs*200, ...
-        'initial', retinalRFcenterRcDegs*5);
-    
-     %                          Kc           kS/kC             RsToRc            RcDegs    
-     DoGparams.initialValues = [Kc.initial   KsToKc.initial    RsToRc.initial    RcDegs.initial];
-     DoGparams.lowerBounds   = [Kc.low       KsToKc.low        RsToRc.low        RcDegs.low];
-     DoGparams.upperBounds   = [Kc.high      KsToKc.high       RsToRc.high       RcDegs.high];
-     DoGparams.names         = {'Kc',        'kS/kC',         'RsToRc',         'RcDegs'};
-     DoGparams.scaling       = {'log',       'log',           'linear',         'linear'};
-     
-     % The DoG model in the frequency domain
-     DoGSTF = @(params,sf)(...
-                    abs(params(1)       * ( pi * params(4)^2             * exp(-(pi*params(4)*sf).^2) ) - ...
-                    params(1)*params(2) * ( pi * (params(4)*params(3))^2 * exp(-(pi*params(4)*params(3)*sf).^2) )));
-        
-     % The optimization objective
-     objective = @(p) sum((DoGSTF(p, sf) - theMeasuredSTF).^2);
-
-     % Ready to fit
-     options = optimset(...
-            'Display', 'off', ...
-            'Algorithm', 'interior-point',... % 'sqp', ... % 'interior-point',...
-            'GradObj', 'off', ...
-            'DerivativeCheck', 'off', ...
-            'MaxFunEvals', 10^5, ...
-            'MaxIter', 10^3);
-        
-     % Multi-start
-     problem = createOptimProblem('fmincon',...
-          'objective', objective, ...
-          'x0', DoGparams.initialValues, ...
-          'lb', DoGparams.lowerBounds, ...
-          'ub', DoGparams.upperBounds, ...
-          'options', options...
-          );
-      
-     ms = MultiStart(...
-          'Display', 'off', ...
-          'StartPointsToRun','bounds-ineqs', ...  % run only initial points that are feasible with respect to bounds and inequality constraints.
-          'UseParallel', true);
-      
-     % Run the multi-start
-     DoGparams.finalValues = run(ms, problem, multiStartsNum);
-
-     theFittedSTF.compositeSTF = DoGSTF(DoGparams.finalValues, sf);
-     theFittedSTF.centerSTF = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sf).^2) );
-     theFittedSTF.surroundSTF = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sf).^2) );
-     
-     sfHiRes = logspace(log10(0.1), log10(100), 64);
-     theFittedSTF.sfHiRes = sfHiRes;
-     theFittedSTF.compositeSTFHiRes = DoGSTF(DoGparams.finalValues, sfHiRes);
-     theFittedSTF.centerSTFHiRes = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sfHiRes).^2) );
-     theFittedSTF.surroundSTFHiRes = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sfHiRes).^2) );
-     
 end

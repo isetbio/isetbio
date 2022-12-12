@@ -23,6 +23,10 @@ classdef RetinaToVisualFieldTransformer < handle
        % maps.
        simulateCronerKaplanEstimation;
 
+       % STF match mode: either match the shape or the DoG params of the
+       % fitted shapes
+       targetSTFmatchMode;
+
        % Whether to use a flatop gaussian model for estimating the characteristic
        % radius of the visual RF center
        flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation;
@@ -75,6 +79,7 @@ classdef RetinaToVisualFieldTransformer < handle
             p.addParameter('psfWavelengthSupport', [], @(x)(isvector(x)));
             p.addParameter('flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation', false, @islogical);
             p.addParameter('simulateCronerKaplanEstimation', true, @islogical);
+            p.addParameter('targetSTFmatchMode', 'STFDoGparams', @(x)(ismember(x,{'STFDoGparams', 'STFcurve'})));
             p.addParameter('multiStartsNum', 10, @isscalar);
             p.addParameter('doDryRunFirst', false, @islogical);
             p.addParameter('computedRTVObjectExportDirectory', '', @(x)(isempty(x)||ischar(x)));
@@ -98,6 +103,8 @@ classdef RetinaToVisualFieldTransformer < handle
             obj.targetVisualRFDoGparams = targetVisualRFDoGparams;
 
             obj.simulateCronerKaplanEstimation = p.Results.simulateCronerKaplanEstimation;
+            obj.targetSTFmatchMode = p.Results.targetSTFmatchMode;
+       
             obj.psfWavelengthSupport = p.Results.psfWavelengthSupport;
             obj.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation = p.Results.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation;
             obj.multiStartsNum = p.Results.multiStartsNum;
@@ -136,7 +143,7 @@ classdef RetinaToVisualFieldTransformer < handle
             % Generate the PSF to employ
             obj.vLambdaWeightedPSFandOTF();
 
-            % Estimate the characteristic radius of the mean cone at the cone pooling RF position
+            % Estimate the mean characteristic radius of cones at the examined position
             % as projected on to visual space using the computed PSF
             dStruct = obj.estimateConeCharacteristicRadiusInVisualSpace(...
                 obj.opticsParams.positionDegs, ...
@@ -291,6 +298,11 @@ classdef RetinaToVisualFieldTransformer < handle
         % Method to fit a Gaussian line weight function to a 1D RFmap profile
         theFittedGaussianLineWeightingFunction = fitGaussianLineWeightingFunction(...
             supportXdegs, theRFprofile, varargin);
+
+        % Method to fit a Difference of Gaussians model to a spatial
+        % transfer function
+        [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(...
+            spatialFrequencySupport, theSTF, RcDegsInitialEstimate, multiStartsNum);
 
         % Method to detemine best RF rotation to maximize resolution along
         % horizontal axis, and rotate the RF according to this angle
