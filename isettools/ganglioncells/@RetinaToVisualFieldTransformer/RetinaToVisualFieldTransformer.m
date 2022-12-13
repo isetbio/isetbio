@@ -42,6 +42,7 @@ classdef RetinaToVisualFieldTransformer < handle
 
        % # of multi-starts
        multiStartsNum;
+       multiStartsNumDoGFit;
 
        % Whether to do a dry run first
        doDryRunFirst;
@@ -80,6 +81,7 @@ classdef RetinaToVisualFieldTransformer < handle
             p.addParameter('flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation', false, @islogical);
             p.addParameter('simulateCronerKaplanEstimation', true, @islogical);
             p.addParameter('targetSTFmatchMode', 'STFDoGparams', @(x)(ismember(x,{'STFDoGparams', 'STFcurve'})));
+            p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
             p.addParameter('multiStartsNum', 10, @isscalar);
             p.addParameter('doDryRunFirst', false, @islogical);
             p.addParameter('computedRTVObjectExportDirectory', '', @(x)(isempty(x)||ischar(x)));
@@ -108,6 +110,7 @@ classdef RetinaToVisualFieldTransformer < handle
             obj.psfWavelengthSupport = p.Results.psfWavelengthSupport;
             obj.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation = p.Results.flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation;
             obj.multiStartsNum = p.Results.multiStartsNum;
+            obj.multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
             obj.doDryRunFirst = p.Results.doDryRunFirst;
 
             % Assert that the cone mosaic contains the position

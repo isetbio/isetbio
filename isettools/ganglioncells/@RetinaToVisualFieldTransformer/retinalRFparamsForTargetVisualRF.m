@@ -312,7 +312,13 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
         displaySpatialProfileAndSTF(57, spatialSupportDegs, stfSupportCPD, ...
             theTargetRFmeasurement, theInitialFittedRFmeasurement, ...
-            theTargetSTF, theInitialFittedSTF, 'initial');
+            theTargetSTF, theInitialFittedSTF, ...
+            [], [], [], [], 'initial');
+
+        if (strcmp(modelConstants.targetSTFmatchMode, 'STFDoGparams'))
+            multiStartsNumDoGFit = obj.multiStartsNumDoGFit;
+        end
+
     end
 
     % Run the single-start fmincon
@@ -325,6 +331,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
                 'MaxFunEvals', 10^5, ...
                 'MaxIter', 256 ...
      );
+
+    
 
     % Start timer 
     tic
@@ -355,12 +363,32 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             theFittedRFmeasurement = sum(theRotatedFittedVisualRF,1);
 
             % Compute the final STF
-            [~, theFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            [spatialFrequencySupport, theFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
                      modelConstants.spatialSupportDegs(:,1),theFittedRFmeasurement);
     
+            if (strcmp(modelConstants.targetSTFmatchMode, 'STFDoGparams'))
+                    
+                    theFittedSTFDoGparams = RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(...
+                            spatialFrequencySupport, ...
+                            theFittedSTF, ...
+                            anatomicalRFcenterCharacteristicRadiusDegs, ...
+                            multiStartsNumDoGFit);
+                    
+                    theFittedSTFmodelSurroundToCenterRcRatio = theFittedSTFDoGparams.finalValues(3);
+                    theFittedSTFmodelSurroundToCenterIntegratedSensitivityRatio = theFittedSTFDoGparams.finalValues(2) * (theFittedTFDoGparams.finalValues(3))^2;
+            else
+                theFittedSTFmodelSurroundToCenterRcRatio = [];
+                theFittedSTFmodelSurroundToCenterIntegratedSensitivityRatio = [];
+            end
+
             displaySpatialProfileAndSTF(158, spatialSupportDegs, stfSupportCPD, ...
                 theTargetRFmeasurement, theFittedRFmeasurement, ...
-                theTargetSTF, theFittedSTF, 'fitted (single run)');
+                theTargetSTF, theFittedSTF, ...
+                targetVisualRFDoGparams.surroundToCenterRcRatio, ...
+                targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio, ...
+                theFittedSTFmodelSurroundToCenterRcRatio, ...
+                theFittedSTFmodelSurroundToCenterIntegratedSensitivityRatio, ...
+                'fitted (single run)');
         end
 
     elseif (obj.multiStartsNum ~= 1)
@@ -411,13 +439,37 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             % integrate along Y
             theFittedRFmeasurement = sum(theRotatedFittedVisualRF,1);
 
+            % Compute the final STF
+            [spatialFrequencySupport, theFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+                     modelConstants.spatialSupportDegs(:,1),theFittedRFmeasurement);
+    
+            if (strcmp(modelConstants.targetSTFmatchMode, 'STFDoGparams'))
+                    theFittedSTFDoGparams = RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(...
+                            spatialFrequencySupport, ...
+                            theFittedSTF, ...
+                            anatomicalRFcenterCharacteristicRadiusDegs, ...
+                            multiStartsNumDoGFit);
+                    
+                    theFittedSTFmodelSurroundToCenterRcRatio = theFittedSTFDoGparams.finalValues(3);
+                    theFittedSTFmodelSurroundToCenterIntegratedSensitivityRatio = theFittedSTFDoGparams.finalValues(2) * (theFittedSTFDoGparams.finalValues(3))^2;
+            else
+                theFittedSTFmodelSurroundToCenterRcRatio = [];
+                theFittedSTFmodelSurroundToCenterIntegratedSensitivityRatio = [];
+            end
+
+
             % Compute final STF
             [~, theFittedSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
                      modelConstants.spatialSupportDegs(:,1),theFittedRFmeasurement);
     
             displaySpatialProfileAndSTF(158, spatialSupportDegs, stfSupportCPD, ...
                 theTargetRFmeasurement, theFittedRFmeasurement, ...
-                theTargetSTF, theFittedSTF, 'fitted (multi-run)');
+                 theTargetSTF, theFittedSTF, ...
+                targetVisualRFDoGparams.surroundToCenterRcRatio, ...
+                targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio, ...
+                theFittedSTFmodelSurroundToCenterRcRatio, ...
+                theFittedSTFmodelSurroundToCenterIntegratedSensitivityRatio, ...
+                'fitted (multi-run)');
         end
     end %(obj.multiStartsNum ~= 1)
 
@@ -500,26 +552,25 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
                     % to the targetSTF and theCurrentSTF
 
                     % Fit theCurrentSTF with a DoG model 
-                    multiStartsNum = 32;
                     theCurrentSTFDoGparams = RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(...
                             spatialFrequencySupport, ...
                             theCurrentSTF, ...
                             anatomicalRFcenterCharacteristicRadiusDegs, ...
-                            multiStartsNum);
+                            multiStartsNumDoGFit);
                     
                     theCurrentSTFmodelSurroundToCenterRcRatio = theCurrentSTFDoGparams.finalValues(3);
                     theCurrentSTFmodelSurroundToCenterIntegratedSensitivityRatio = theCurrentSTFDoGparams.finalValues(2) * (theCurrentSTFDoGparams.finalValues(3))^2;
 
                     % Target STF DoG model fit params
-                    r1 = (targetVisualRFDoGparams.surroundToCenterRcRatio - ...
-                          theCurrentSTFmodelSurroundToCenterRcRatio);
+                    r1 = ((targetVisualRFDoGparams.surroundToCenterRcRatio - ...
+                          theCurrentSTFmodelSurroundToCenterRcRatio)/targetVisualRFDoGparams.surroundToCenterRcRatio)^2;
 
-                    r2 = (targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio -  ...
-                          theCurrentSTFmodelSurroundToCenterIntegratedSensitivityRatio);
+                    r2 = ((targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio -  ...
+                          theCurrentSTFmodelSurroundToCenterIntegratedSensitivityRatio)/targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio)^2;
 
-                    % RMSE is the sum of their differences squared
-                    fullRMSE = sqrt(r1^2 + r2^2);
+                    rSTFcurve = ((theCurrentSTF(:) - theTargetSTF(:))).^2;
 
+                    fullRMSE = [r1; r2];
                 otherwise
                     error('modelConstants.targetSTFmatchMode must be set to either ''STFcurve'' or ''STFDoGparams''.');
             end
@@ -577,12 +628,17 @@ end
 
 function displaySpatialProfileAndSTF(figNo, spatialSupportDegs, stfSupportCPD, ...
                 theTargetRFmeasurement, theFittedRFmeasurement, ...
-                theTargetSTF,  theFittedSTF, theFittedLegend)
+                theTargetSTF,  theFittedSTF, ...
+                targetSurroundToCenterRcRatio, ...
+                targetSurroundToCenterIntegratedSensitivityRatio, ...
+                achievedSurroundToCenterRcRatio, ...
+                achievedSurroundToCenterIntegratedSensitivityRatio, ...
+                theFittedLegend)
 
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [100 100 1200 600], 'Color', [1 1 1]);
+    set(hFig, 'Position', [100 100 1200 900], 'Color', [1 1 1]);
     legends = {};
-    ax = subplot(1,2,1);
+    ax = subplot(2,2,1);
     plot(ax, spatialSupportDegs(:,1), theTargetRFmeasurement, 'k-', 'LineWidth', 1.5);
     legends{1} = 'target';
     hold(ax, 'on');
@@ -598,8 +654,8 @@ function displaySpatialProfileAndSTF(figNo, spatialSupportDegs, stfSupportCPD, .
     legend(ax,legends);
     
 
-
-    ax = subplot(1,2,2);
+    
+    ax = subplot(2,2,2);
     plot(ax, stfSupportCPD, theTargetSTF, 'k-', 'LineWidth', 1.5);
     hold(ax, 'on');
     if (~isempty(theFittedSTF))
@@ -613,6 +669,33 @@ function displaySpatialProfileAndSTF(figNo, spatialSupportDegs, stfSupportCPD, .
     grid(ax, 'on');
 
     legend(ax,legends);
+
+    if (~isempty(targetSurroundToCenterRcRatio))
+        ax = subplot(2,2,3);
+        
+        plot([1 10], [1 10], 'k-', 'LineWidth', 1.0); hold(ax, 'on');
+        plot(ax, targetSurroundToCenterRcRatio, achievedSurroundToCenterRcRatio, 'ro', ...
+            'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.5); 
+        set(ax, 'XLim', [1 10], 'YLim', [1 10], 'XTick', 1:1:10, 'YTick', 1:1:10);
+        axis(ax, 'square');
+        grid(ax, 'on'); box(ax, 'off');
+        set(ax, 'FontSize', 16);
+        xlabel('ax,target');
+        ylabel(ax,'achieved');
+        title(ax,'Rs/Rc ratio');
+    
+        ax = subplot(2,2,4);
+        plot([0 1], [0 1], 'k-', 'LineWidth', 1.0); hold(ax, 'on');
+        plot(ax, targetSurroundToCenterIntegratedSensitivityRatio, achievedSurroundToCenterIntegratedSensitivityRatio, 'ro', ...
+            'MarkerSize', 12, 'MarkerFaceColor', [1 0.5 0.5], 'LineWidth', 1.5);
+        set(ax, 'XLim', [0 1], 'YLim', [0 1],  'XTick', 0:0.1:1.0,'YTick', 0:0.1:1.0);
+        axis(ax, 'square');
+        grid(ax, 'on'); box(ax, 'off');
+        set(ax, 'FontSize', 16);
+        xlabel('ax,target');
+        title(ax,'S/C int. sensitivity ratio');
+    end
+
 
     drawnow;
 
