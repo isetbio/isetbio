@@ -17,7 +17,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
     if (obj.simulateCronerKaplanEstimation)
         if (~(strcmp(targetVisualRFDoGparams.visualRFmodel, 'gaussian center, gaussian surround')))
-            error('When simulating the Croner & Kaplan estimation, the targetVisualRFDoGparams.visualRFmodel must be set to ''gaussian center, gaussian surround''.');
+            fprintf(2,'WARNINGL When simulating the Croner & Kaplan estimation, the targetVisualRFDoGparams.visualRFmodel is supposed to be ''gaussian center, gaussian surround''.');
         end
     end
 
@@ -261,6 +261,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
         [~, rotatedTargetVisualRFmap, theTargetRFprofile, theTargetSTF, stfSupportCPD] = ...
             performCronerKaplanSimulation(...
                 theTargetVisualRFmap, ...
+                visualRFcenterCharacteristicRadiusDegs, ...
                 bestHorizontalResolutionRotationDegs, ...
                 modelConstants.spatialSupportDegs(:,1), ...
                 modelConstants.targetSTFmatchMode, ...
@@ -301,6 +302,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
         [~, theRotatedInitialFittedVisualRFmap, theInitialRFprofile, theInitialFittedSTF, stfSupportCPD] = performCronerKaplanSimulation(...
                 theInitialFittedVisualRFmap, ...
+                visualRFcenterCharacteristicRadiusDegs, ...
                 bestHorizontalResolutionRotationDegs, ...
                 modelConstants.spatialSupportDegs(:,1), ...
                 modelConstants.targetSTFmatchMode, ...
@@ -343,6 +345,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
      );
 
     
+    % Zero the rmseSequence
+    rmseSequence = [];
 
     % Start timer 
     tic
@@ -410,6 +414,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
          theFinalFittedSTFsurroundToCenterRcRatio, ...
          theFinalFittedSTFsurroundToCenterIntegratedSensitivityRatio] = performCronerKaplanSimulation(...
                 theFittedVisualRF, ...
+                visualRFcenterCharacteristicRadiusDegs, ...
                 bestHorizontalResolutionRotationDegs, ...
                 modelConstants.spatialSupportDegs(:,1), ...
                 modelConstants.targetSTFmatchMode, ...
@@ -498,6 +503,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             % Compute current RMSEvector
             theCurrentRMSEvector = performCronerKaplanSimulation(...
                 currentVisualRF, ...
+                visualRFcenterCharacteristicRadiusDegs, ...
                 bestHorizontalResolutionRotationDegs, ...
                 modelConstants.spatialSupportDegs(:,1), ...
                 modelConstants.targetSTFmatchMode, ...
@@ -513,6 +519,17 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
         % Compute RMSE
         rmse = sqrt(mean(theCurrentRMSEvector,1));
+
+        rmseSequence(numel(rmseSequence)+1) = rmse;
+        figure(1555);
+        ax = subplot(1,3,3);
+        plot(ax,1:numel(rmseSequence), rmseSequence, 'r.', 'MarkerSize', 12, 'LineWidth', 1.0); 
+        set(ax, 'YLim', [min([0.01 min(rmseSequence)]), max(rmseSequence)], 'YScale', 'log', 'FontSize', 14);
+        xlabel(ax, 'iteration');
+        ylabel(ax, 'RMSE');
+        title('RMSE sequence');
+        drawnow
+
     end
 end
 
@@ -520,7 +537,7 @@ end
 function [theRMSEvector, theRotatedRF, theRFprofile, theVisualSTF, theSpatialFrequencySupport, ...
     theFittedSTFsurroundToCenterRcRatio, theFittedSTFsurroundToCenterIntegratedSensitivityRatio] = ...
         performCronerKaplanSimulation(...
-            theVisualRF, bestHorizontalResolutionRotationDegs, sfSupport, ...
+            theVisualRF, visualRFcenterCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs, sfSupport, ...
             targetSTFmatchMode, theTargetSTF, targetVisualRFDoGparams, ...
             anatomicalRFcenterCharacteristicRadiusDegs, multiStartsNumDoGFit)
 
@@ -553,42 +570,53 @@ function [theRMSEvector, theRotatedRF, theRFprofile, theVisualSTF, theSpatialFre
                theFittedSTFsurroundToCenterIntegratedSensitivityRatio = [];
     
                figure(1555); clf;
-               ax = subplot(1,2,1);
+               ax = subplot(1,3,1);
                plot(ax,theSpatialFrequencySupport, theVisualSTF, 'ko-', 'MarkerSize', 12, 'LineWidth', 1.0); hold on;
                plot(ax,theSpatialFrequencySupport, theTargetSTF, 'b-', 'LineWidth', 1.5);
                set(ax, 'XScale', 'log', 'XLim', [0.1 100]);
                grid(ax,'on')
-               drawnow
+               
 
             case 'STFDoGparams'
-                % Fit the final STF
+
+                theVisualSTF = theVisualSTF/max(theVisualSTF(:)) * max(theTargetSTF(:));
+
+                % Fit the final STF with a DoG model
                 [theFittedSTFDoGparams, theFittedVisualSTF] = RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(...
                       theSpatialFrequencySupport, ...
                       theVisualSTF, ...
                       anatomicalRFcenterCharacteristicRadiusDegs, ...
                       multiStartsNumDoGFit);
+                      %'rangeForRc', visualRFcenterCharacteristicRadiusDegs*[1/sqrt(2.0) 1.0 sqrt(2.0)]);
 
-                theRMSEvector = ((theFittedVisualSTF.compositeSTF(:) - theTargetSTF(:))).^2;
-                theRMSEvector = ((theVisualSTF(:)- theTargetSTF(:))).^2;
+                %theRMSEvector = ((theFittedVisualSTF.compositeSTF(:) - theTargetSTF(:))).^2;
+
+                
+                theRMSEvector = ((theVisualSTF(:) - theTargetSTF(:))).^2;
+
+                
                 theFittedSTFsurroundToCenterRcRatio = theFittedSTFDoGparams.finalValues(3);
                 theFittedSTFsurroundToCenterIntegratedSensitivityRatio = theFittedSTFDoGparams.finalValues(2) * (theFittedSTFDoGparams.finalValues(3))^2;
     
                 
                 figure(1555); clf;
-                ax = subplot(1,2,1);
-                plot(ax,theSpatialFrequencySupport, theVisualSTF, 'ko', 'MarkerSize', 12, 'LineWidth', 1.0); hold on;
-                plot(ax,theSpatialFrequencySupport, theFittedVisualSTF.compositeSTF, 'm--', 'LineWidth', 2.0);
-                plot(ax,theFittedVisualSTF.sfHiRes, theFittedVisualSTF.compositeSTFHiRes, 'r-', 'LineWidth', 2.0);
-                plot(ax,theSpatialFrequencySupport, theTargetSTF, 'b-', 'LineWidth', 1.5);
+                ax = subplot(1,3,1);
+                pMeasured = plot(ax,theSpatialFrequencySupport, theVisualSTF, 'ro', 'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', 12, 'LineWidth', 1.0); hold on;
+                pMeasuredDoGfit = plot(ax,theFittedVisualSTF.sfHiRes, theFittedVisualSTF.compositeSTFHiRes, 'b-', 'LineWidth', 4.0);
+                plot(ax,theFittedVisualSTF.sfHiRes, theFittedVisualSTF.compositeSTFHiRes, 'c-', 'LineWidth', 2.0);
+                pTarget = plot(ax,theSpatialFrequencySupport, theTargetSTF, 'r-', 'LineWidth', 1.5);
+                legend(ax, [pMeasured pMeasuredDoGfit pTarget], {'measured', 'measured (DoG fit)', 'target'}, 'Location', 'SouthWest');
+
                 set(ax, 'XScale', 'log', 'XLim', [0.1 100]);
                 grid(ax, 'on')
-                title(ax,sprintf('Rs/Rc= (current/target: %2.1f/%2.1f), intS/C= (current/target: %2.2f/%2.1f)', ...
+                title(ax,sprintf('Rs/Rc= (current/target: %2.1f/%2.1f)\nintS/C= (current/target: %2.2f/%2.1f)', ...
                     theFittedSTFsurroundToCenterRcRatio, targetVisualRFDoGparams.surroundToCenterRcRatio, ...
                     theFittedSTFsurroundToCenterIntegratedSensitivityRatio, ...
                     targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio), 'FontSize', 16);
                 
-                ax = subplot(1,2,2);
+                ax = subplot(1,3,2);
                 RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, theFittedSTFDoGparams);
+                title('fitted DoG model parameters')
                 drawnow;
 
                 % Target STF DoG model fit params
@@ -598,8 +626,9 @@ function [theRMSEvector, theRotatedRF, theRFprofile, theVisualSTF, theSpatialFre
                 res2 = ((targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio -  ...
                           theFittedSTFsurroundToCenterIntegratedSensitivityRatio)/targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio)^2;
     
-               
-                theRMSEvector = [0.5*res1; 0.5*res2; mean(theRMSEvector)];
+
+                %errors = [mean(theRMSEvector) 0.1*res1 0.1*res2]
+                theRMSEvector = [mean(theRMSEvector); 0.1*res1; 0.1*res2];
     
             otherwise
                     error('modelConstants.targetSTFmatchMode must be set to either ''STFcurve'' or ''STFDoGparams''.');

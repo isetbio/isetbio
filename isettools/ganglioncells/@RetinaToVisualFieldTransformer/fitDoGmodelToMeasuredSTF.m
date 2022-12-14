@@ -1,4 +1,13 @@
-function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF, RcDegsInitialEstimate, multiStartsNum)
+function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(...
+    sfCPD, theMeasuredSTF, RcDegsInitialEstimate, multiStartsNum, varargin)
+
+    p = inputParser;
+    p.addParameter('fixedRc', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('rangeForRc', [], @(x)(isempty(x)||(numel(x)==3)));
+    p.parse(varargin{:});
+    fixedRc = p.Results.fixedRc;
+    rangeForRc = p.Results.rangeForRc;
+
     % DoG param initial values and limits: center gain, kc
     Kc = struct(...    
         'low', 1e-1, ...
@@ -18,11 +27,25 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF
         'initial', 5);
 
     % DoG param initial values and limits: RcDegs
-    RcDegs = struct(...
-        'low', RcDegsInitialEstimate/sqrt(2.0), ...
-        'high', RcDegsInitialEstimate*200, ...
-        'initial', RcDegsInitialEstimate*5);
-    
+    if (~isempty(fixedRc))
+        RcDegs = struct(...
+            'low', fixedRc, ...
+            'high', fixedRc, ...
+        'initial', fixedRc);
+    else
+        if (~isempty(rangeForRc))
+            RcDegs = struct(...
+                'low', rangeForRc(1), ...
+                'high', rangeForRc(3), ...
+            'initial', rangeForRc(2));
+        else
+            RcDegs = struct(...
+                'low', RcDegsInitialEstimate/sqrt(2.0), ...
+                'high', RcDegsInitialEstimate*200, ...
+            'initial', RcDegsInitialEstimate*5);
+        end
+    end
+
      %                          Kc           kS/kC             RsToRc            RcDegs    
      DoGparams.initialValues = [Kc.initial   KsToKc.initial    RsToRc.initial    RcDegs.initial];
      DoGparams.lowerBounds   = [Kc.low       KsToKc.low        RsToRc.low        RcDegs.low];
@@ -31,12 +54,12 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF
      DoGparams.scaling       = {'log',       'log',           'linear',         'linear'};
      
      % The DoG model in the frequency domain
-     DoGSTF = @(params,sf)(...
-                    abs(params(1)       * ( pi * params(4)^2             * exp(-(pi*params(4)*sf).^2) ) - ...
-                    params(1)*params(2) * ( pi * (params(4)*params(3))^2 * exp(-(pi*params(4)*params(3)*sf).^2) )));
+     DoGSTF = @(params,sfCPD)(...
+                    abs(params(1)       * ( pi * params(4)^2             * exp(-(pi*params(4)*sfCPD).^2) ) - ...
+                    params(1)*params(2) * ( pi * (params(4)*params(3))^2 * exp(-(pi*params(4)*params(3)*sfCPD).^2) )));
         
      % The optimization objective
-     objective = @(p) sum((DoGSTF(p, sf) - theMeasuredSTF).^2);
+     objective = @(p) sum((DoGSTF(p, sfCPD) - theMeasuredSTF).^2);
 
      % Ready to fit
      options = optimset(...
@@ -64,9 +87,9 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(sf, theMeasuredSTF
      % Run the multi-start
      DoGparams.finalValues = run(ms, problem, multiStartsNum);
 
-     theFittedSTF.compositeSTF = DoGSTF(DoGparams.finalValues, sf);
-     theFittedSTF.centerSTF = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sf).^2) );
-     theFittedSTF.surroundSTF = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sf).^2) );
+     theFittedSTF.compositeSTF = DoGSTF(DoGparams.finalValues, sfCPD);
+     theFittedSTF.centerSTF = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sfCPD).^2) );
+     theFittedSTF.surroundSTF = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sfCPD).^2) );
      
      sfHiRes = logspace(log10(0.1), log10(100), 64);
      theFittedSTF.sfHiRes = sfHiRes;

@@ -305,7 +305,7 @@ classdef RetinaToVisualFieldTransformer < handle
         % Method to fit a Difference of Gaussians model to a spatial
         % transfer function
         [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(...
-            spatialFrequencySupport, theSTF, RcDegsInitialEstimate, multiStartsNum);
+            spatialFrequencySupport, theSTF, RcDegsInitialEstimate, multiStartsNum, varargin);
 
         % Method to detemine best RF rotation to maximize resolution along
         % horizontal axis, and rotate the RF according to this angle
