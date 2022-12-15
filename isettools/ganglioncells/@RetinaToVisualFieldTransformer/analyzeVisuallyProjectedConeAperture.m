@@ -1,4 +1,5 @@
-function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs] = analyzeVisuallyProjectedConeAperture(theConeMosaic, ...
+function [visualConeCharacteristicRadiusDegs, ...
+          bestHorizontalResolutionRotationDegs] = analyzeVisuallyProjectedConeAperture(theConeMosaic, ...
                  anatomicalConeApertureDiameterDegs, thePSFData, simulateCronerKaplanEstimation, hFig)
 
     % Compute the centroid of the PSF
@@ -13,7 +14,6 @@ function [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDe
     spatialSupportXdegs = dx:dx:maxRadius;
     spatialSupportXdegs = [-fliplr(spatialSupportXdegs) 0 spatialSupportXdegs];
     spatialSupportYdegs = spatialSupportXdegs;
-
 
     spatialSupportDegs = [spatialSupportXdegs(:)-theCentroidDegs(1) spatialSupportYdegs(:)-theCentroidDegs(2)];
     theAnatomicalConeApertureMap = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...

@@ -1,5 +1,8 @@
 function [theRotatedRF, rotationDegs] = bestHorizontalResolutionRFmap(theRF, rotationDegs)
 
+    
+    
+
     if (isempty(rotationDegs))  
         % Sample the rotation axis (theRF rotation) every 1 degree
         theta = 0:1:179;
@@ -17,14 +20,18 @@ function [theRotatedRF, rotationDegs] = bestHorizontalResolutionRFmap(theRF, rot
         
         % Peak rotation is theta(col), so rotate by its negative
         rotationDegs = -theta(col);
+
+        % Debug the radon transform
+        debugRadonTransformAnalysis = true;
+    else
+        debugRadonTransformAnalysis = false;
     end
 
     % The rotatedRF so that the elongation is along the y-axis
     theRotatedRF = imrotate(theRF, rotationDegs, 'bilinear', 'crop');
 
     % Debug the radon transform information
-    debugRadon = true;
-    if (debugRadon) && (isempty(rotationDegs))
+    if (debugRadonTransformAnalysis)
         hFig = figure(1999);
         set(hFig, 'Position', [10 10 1500 530]);
         subplot(1,3,1);

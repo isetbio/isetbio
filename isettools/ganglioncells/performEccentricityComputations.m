@@ -31,12 +31,17 @@ function performEccentricityComputations()
           10 0; ...
           12 0];
 
-    mosaicEccDegs = [-1 0];
+    mosaicEccDegs = [...
+        0 0; ...
+        -1 0; ...
+        -2 0; ...
+        -4 0; ...
+        -8 0]; 
     
     doIt(mosaicEccDegs, 1);
-    doIt(mosaicEccDegs, 2);
-    doIt(mosaicEccDegs, 3);
-    doIt(mosaicEccDegs, 4);
+    %doIt(mosaicEccDegs, 2);
+    %doIt(mosaicEccDegs, 3);
+    %doIt(mosaicEccDegs, 4);
 end
 
 function doIt(mosaicEccDegs, H1cellIndex)
@@ -65,7 +70,7 @@ function doIt(mosaicEccDegs, H1cellIndex)
 
     % Actions
     generateRTVobjects = true;
-    generateCenterSurroundRFstructure = true;
+    generateCenterSurroundRFstructure = ~true;
     visualizeTheFittedRFs = ~true;
 
     computeTheSTFs = true;

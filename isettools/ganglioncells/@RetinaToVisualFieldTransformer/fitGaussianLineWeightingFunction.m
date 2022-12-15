@@ -55,7 +55,7 @@ function theFittedGaussianLineWeightingFunction = fitGaussianLineWeightingFuncti
               'UseParallel', true);
       
          % Run the multi-start
-         multiStartsNum = 32;
+         multiStartsNum = 256;
          params.finalValues = run(ms, problem, multiStartsNum);
     else
         % Local search
