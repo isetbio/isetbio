@@ -12,7 +12,7 @@ function [theRF, centerRF, surroundRF] = differenceOfArbitraryCenterAndGaussianS
     Ks = Kc * surroundToCenterIntegratedSensitivitiesRatio/(surroundToCenterCharacteristicRadiiRatio^2);
 
     % Compute the center RF
-    centerRF = Kc * RFcenterConeMap;
+    centerRF = Kc * RFcenterConeMap/max(RFcenterConeMap(:));
 
     % Compute the surround RF
     surroundRF = Ks * exp(-modelConstants.Rdegs2/RsDegs^2);

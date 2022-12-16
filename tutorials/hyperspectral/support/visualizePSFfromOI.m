@@ -2,14 +2,24 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
 % Visualize multi-spectral PSF slices at select wavelengths
 %
 % 7/25/18  npc  Wrote it
-%
+
+% Examples:
+%{
+    clear; close all;
+    oi = oiCreate('wvf human');
+    visualizePSFfromOI(oi,300);
+    visualizePSFfromOI(oi,300,'displayPSFCenterOfMass',true);
+%}
+
     p = inputParser;
     p.addParameter('visualizedWavelengths', [], @isnumeric);
     p.addParameter('rows', [], @isnumeric);
     p.addParameter('cols', [], @isnumeric);
     p.addParameter('colormapToUse', 1-gray(1024), @isnumeric);
     p.addParameter('labelLastPSF', true, @islogical);
-    p.addParameter('displayWavelengthInTitle', true, @islogical)
+    p.addParameter('displayWavelengthInTitle', true, @islogical);
+    p.addParameter('displayPSFCenterOfMass', false, @islogical);
+    p.addParameter('psfRangeMicrons',5,@isnumeric);
     p.parse(varargin{:});
     
     visualizedWavelengths = p.Results.visualizedWavelengths;
@@ -56,7 +66,7 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
                'topMargin',      0.00);
     
     
-    psfRange = 5;
+    psfRange = p.Results.psfRangeMicrons;
     xx = find(abs(xSupportMicrons) <= psfRange);
     yy = find(abs(ySupportMicrons) <= psfRange);
 
@@ -74,12 +84,26 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
         hold on;
         plot(xSupportMicrons, xSupportMicrons*0, 'r-', 'Color', [1 0.0 0.0], 'LineWidth', 1.0);
         plot(xSupportMicrons*0, xSupportMicrons, 'r-', 'Color', [1 0.0 0.0], 'LineWidth', 1.0);
-        hold off
         axis 'image'; axis 'xy';
         set(gca, 'XLim', psfRange*1.05*[-1 1], 'YLim', psfRange*1.05*[-1 1], 'CLim', [0 1], ...
             'XTick', [-10:2:10], 'YTick', [-10:2:10]);
         set(gca, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'Color', [0 0 0]);
-        
+
+        % Compute PSF center of mass locaiton and add to plot
+        if (p.Results.displayPSFCenterOfMass)
+            psfCenterOfMass = [0 0];
+            psfCounter = 0;
+            for ii = 1:length(xx)
+                for jj = 1:length(yy)
+                    psfCenterOfMass(1) = psfCenterOfMass(1) + psf(yy(jj),xx(ii))*xSupportMicrons(xx(ii));
+                    psfCenterOfMass(2) = psfCenterOfMass(2) + psf(yy(jj),xx(ii))*ySupportMicrons(yy(jj));
+                    psfCounter = psfCounter + psf(yy(jj),xx(ii));
+                end
+            end
+            psfCenterOfMass = psfCenterOfMass/psfCounter;
+            plot(psfCenterOfMass(1),psfCenterOfMass(2),'b*','MarkerSize',10);
+        end
+
         if (waveIndex == numel(visualizedWavelengths)) && (labelLastPSF)
             xlabel('arc min');
             ylabel('arc min');

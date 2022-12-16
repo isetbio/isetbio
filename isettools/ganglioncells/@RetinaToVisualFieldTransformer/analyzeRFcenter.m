@@ -31,7 +31,10 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
     
     % Compute the visual RF center cone map via convolution of the retinalRFcenterConeMap with the PSF
     visualRFcenterConeMap = conv2(retinalRFcenterConeMap, obj.theVlambdaWeightedPSFData.vLambdaWeightedData, 'same');
-  
+
+    % Normalize to unit amplitude
+    visualRFcenterConeMap = visualRFcenterConeMap / max(visualRFcenterConeMap(:));
+
     if (obj.simulateCronerKaplanEstimation)
         % Since RF parameters by Croner&Kaplan were based on gratings, to
         % approximate this (and to include features of this estimation) we sum
@@ -40,41 +43,74 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
 
         % Rotate the targetVisualRFmap so as to maximize horizontal resolution and 
         % retrieve the rotation that maximizes horizontal resolution
-        figure(444); clf;
-        subplot(1,3,1)
-        imagesc(visualRFcenterConeMap)
-        title('RF center cone map');
-
         bestHorizontalResolutionRotationDegs = [];
         [rotatedVisualRFcenterConeMap, bestHorizontalResolutionRotationDegs] = ...
             RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(visualRFcenterConeMap, bestHorizontalResolutionRotationDegs);
 
-        subplot(1,3,2);
-        imagesc(rotatedVisualRFcenterConeMap)
-        title('RF center cone map (rotated)');
-
+        % Integrate over Y
         visualRFcenterConeMapProfile = sum(rotatedVisualRFcenterConeMap,1);
+
+        % Normalize to unit amplitude
         visualRFcenterConeMapProfile = visualRFcenterConeMapProfile / max(visualRFcenterConeMapProfile(:));
 
-        
-        %subplot(1,3,3);
-        %imagesc(rotatedVisualRFcenterConeMap)
-        %title('RF center cone map (rotated + coneAperture masked)');
         % Fit a 1D Gaussian line weighting function to the 1D profile 
         % (integration along the Y-dimension of the 2D visually projected
         % cone aperture map)
         theFittedGaussianLineWeightingFunction = RetinaToVisualFieldTransformer.fitGaussianLineWeightingFunction(...
             obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, visualRFcenterConeMapProfile);
 
-        figure(444)
-        subplot(1,3,3);
-        plot(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, visualRFcenterConeMapProfile, 'ks');
+        % Compute the corresponding STFs
+        [spatialFrequencySupport, visualRFcenterSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, visualRFcenterConeMapProfile);
+        [~, visualRFcenterModelSTF] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, theFittedGaussianLineWeightingFunction.profile);
+        [~, visualRFcenterModelSTFNormalized] = RetinaToVisualFieldTransformer.spatialTransferFunction(...
+            obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, theFittedGaussianLineWeightingFunction.profile/max(theFittedGaussianLineWeightingFunction.profile));
+
+
+
+        hFig = figure(444); clf;
+        set(hFig, 'Position', [10 10 950 1150], 'Name', 'RF center analysis');
+        subplot(2,2,1)
+        imagesc(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, ...
+                obj.theVlambdaWeightedPSFData.spatialSupportForRFmapYdegs, ...
+                visualRFcenterConeMap);
+        axis 'image';
+        set(gca, 'XLim', 0.1*[-1 1], 'YLim', 0.1*[-1 1], 'FontSize', 16);
+        colormap(gray(1024))
+        title('RF center cone map');
+        
+        subplot(2,2,2);
+        imagesc(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, ...
+                obj.theVlambdaWeightedPSFData.spatialSupportForRFmapYdegs, ...
+                rotatedVisualRFcenterConeMap);
+        axis 'image'
+        set(gca, 'XLim', 0.1*[-1 1], 'YLim', 0.1*[-1 1], 'FontSize', 16);
+        colormap(gray(1024))
+        title('RF center cone map (rotated)');
+
+
+        subplot(2,2,3);
+        plot(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, visualRFcenterConeMapProfile, 'ko', 'MarkerSize', 12);
         hold on
-        plot(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, theFittedGaussianLineWeightingFunction.profile, 'r--');
-        legend('data', 'fit')
+        plot(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, theFittedGaussianLineWeightingFunction.profile, 'r-', 'LineWidth', 1.5);
+        plot(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs, theFittedGaussianLineWeightingFunction.profile/max(theFittedGaussianLineWeightingFunction.profile), 'r--', 'LineWidth', 1.0);
+        
+        legend('RFcenter profile', 'Gaussian fit', 'Gaussian fit (normalized)', 'Location', 'NorthOutside')
+        set(gca, 'XLim', 0.1*[-1 1], 'FontSize', 16);
+        axis 'square'
+
+        % Plot the STFs
+        subplot(2,2,4);
+        plot(spatialFrequencySupport, visualRFcenterSTF, 'ko', 'MarkerSize', 12); hold on;
+        plot(spatialFrequencySupport, visualRFcenterModelSTF, 'r-', 'LineWidth', 1.5);
+        plot(spatialFrequencySupport, visualRFcenterModelSTFNormalized, 'r--', 'LineWidth', 1.0);
+        legend('RFcenter profile', 'Gaussian fit', 'Gaussian fit (normalized)', 'Location', 'NorthOutside')
+        set(gca, 'XLim', [0.1 100], 'XScale', 'log', 'FontSize', 16);
+        axis 'square'
+
         drawnow;
         
-
         % Return the characteristic radius in degrees
         visualRFcenterCharacteristicRadiusDegs = theFittedGaussianLineWeightingFunction.characteristicRadius;
 

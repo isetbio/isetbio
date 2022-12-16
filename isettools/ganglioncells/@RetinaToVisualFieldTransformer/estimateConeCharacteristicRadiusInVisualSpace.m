@@ -4,8 +4,9 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetP
     theConeMosaic = obj.theConeMosaic;
     thePSFData = obj.theVlambdaWeightedPSFData;
 
-    conesNum = numel(theConeMosaic.coneTypes);
-    if (conesNum < max([6 neighboringConesNum]))
+    conesNumInRetinalPatch = numel(theConeMosaic.coneTypes);
+    conesNumToAnalyze = max([6 neighboringConesNum]);
+    if (conesNumInRetinalPatch < conesNumToAnalyze )
         fprintf(2, 'The mosaic contain less than the desired number of cones at this eccentricity, skipping computation of cone aperture in visual space.\n')
     
         % Return struct
@@ -18,7 +19,7 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetP
     % Find the neighboringConesNum closest (to the target position) cones
     [~,idx] = MosaicConnector.pdist2(theConeMosaic.coneRFpositionsDegs, [], ...
         'fromPosition', theTargetPositionDegs, ...
-        'smallest', max([6 neighboringConesNum]) ...
+        'smallest', conesNumToAnalyze ...
         );
     
     % Estimate mean anatomical cone aperture from the closest (to the target position) cones
@@ -31,7 +32,7 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetP
             meanConeApertureDegs, thePSFData, simulateCronerKaplanEstimation, hFig);
     
     % Return struct
-    dStruct.conesNumInRetinalPatch = conesNum;
+    dStruct.conesNumInRetinalPatch = conesNumInRetinalPatch;
     %dStruct.indicesOfConesSortedWithDistanceToTargetRFposition = idx(1:neighboringConesNum);
     dStruct.anatomicalConeCharacteristicRadiusDegs = anatomicalConeCharacteristicRadiusDegs;
     dStruct.visualConeCharacteristicRadiusDegs = visualConeCharacteristicRadiusDegs;
