@@ -315,6 +315,14 @@ classdef RetinaToVisualFieldTransformer < handle
         % Method to compute the one-sided STF from the RF profile
         [oneSidedSpatialFrequencySupport, oneSidedSTF] = spatialTransferFunction(spatialSupportDegs, theRFprofile);
 
+        %Given Kc (center gain), KsToKcRatio (surround/center peak sensitivity
+        % ratio) and Rwide (wide RF surround radius), narrowToWideVolumeRatio and RnarrowToRwideRatio,
+        % compute the peak sensitivity gains for the wide and the narrow surround components
+        [Kwide, Knarrow, Rnarrow] = H1doubleExponentRFparams(Kc, Rwide, KsToKcPeakRatio, narrowToWideVolumeRatio, RnarrowToRwideRatio);
+
+        % Method to test the doule exponent RF params
+        testDoubleExponentRFparams();
+
         % Method to visualize the fitted param values
         visualizeRetinalSurroundModelParametersAndRanges(ax, modelParams);
 

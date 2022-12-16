@@ -8,25 +8,11 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     RwideDegs = conePoolingParamsVector(4);               % radius at which wide sensitivity drops to 10%
     RnarrowToRwideRatio = conePoolingParamsVector(5);     % range [0.01 to 1.0]
 
-    % Params for the sum of 2 exponentials (wide field + narrow field, Packer& Dacey 2002)
-    % RF = Kwide * exp(-2.3*R/Rwide) + Knarrow * exp(-2.3*R/Rnarrow) 
-    % Rwide: radius at which sensitivity drops to 10%, which is defined as half the RFdiameter
-    % Volume: R^2 * K
-    % N/W volume ratio (range: 0.2 to 1.0) = Knarrow/Kwide * (Rnarrow/Rwide)^2;
 
-    % Knarrow = volumeRatio * Kwide / (RnarrowToRwideRatio^2)
-    % Rnarrow = Rwide * RnarrowToRwideRatio;
+    % Compute Kwide, Knarrow, and RnarrowDegs
+    [Kwide, Knarrow, RnarrowDegs] = RetinaToVisualFieldTransformer.H1doubleExponentRFparams(...
+        Kc, RwideDegs, KsToKcPeakRatio, narrowToWideVolumeRatio, RnarrowToRwideRatio);
 
-    % Kwide + Knarrow = Ks = KsToKcPeakRatio * Kc;
-    % Kwide = KsToKcPeakRatio * Kc - Knarrow;
-    % Kwide = KsToKcPeakRatio * Kc - volumeRatio * Kwide / (RnarrowToRwideRatio^2);
-    % Kwide*(1+volumeRatio/(RnarrowToRwideRatio^2)) = KsToKcPeakRatio * Kc;
-    % Kwide = KsToKcPeakRatio * Kc / (1+volumeRatio/(RnarrowToRwideRatio^2));
-
-    % Compute parameters
-    Kwide = KsToKcPeakRatio * Kc / (1+narrowToWideVolumeRatio/(RnarrowToRwideRatio^2));
-    Knarrow = Kwide * narrowToWideVolumeRatio / (RnarrowToRwideRatio^2);
-    RnarrowDegs = RwideDegs * RnarrowToRwideRatio;
 
     % Compute center cone indices and weights
     centerConeIndices = modelConstants.indicesOfCenterCones;
