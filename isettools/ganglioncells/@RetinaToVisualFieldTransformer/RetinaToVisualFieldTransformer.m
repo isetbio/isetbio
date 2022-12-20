@@ -280,7 +280,8 @@ classdef RetinaToVisualFieldTransformer < handle
 
         % Method to remove surround cone indices (and weights) for
         % non-connectable surround cones
-        [surroundConeIndices, surroundConeWeights] = connectableSurroundConeIndicesAndWeights(...
+        [surroundConeIndices, surroundConeWeights, ...
+         nonConnectableSurroundConeIndices, nonConnectableSurroundConeWeights] = connectableSurroundConeIndicesAndWeights(...
             surroundConeIndices, surroundConeWeights, modelConstants)
 
         % Compute the fitted visualRF from the current retinal pooling params

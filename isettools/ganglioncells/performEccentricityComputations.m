@@ -36,12 +36,13 @@ function performEccentricityComputations()
         -1 0; ...
         -2 0; ...
         -4 0; ...
+        -6 0; ...
         -8 0]; 
     
-    mosaicEccDegs = [-6 0];
+    mosaicEccDegs = [-1 0];
 
     doIt(mosaicEccDegs, 1);
-    doIt(mosaicEccDegs, 2);
+    %doIt(mosaicEccDegs, 2);
     %doIt(mosaicEccDegs, 3);
     %doIt(mosaicEccDegs, 4);
 end
@@ -94,7 +95,7 @@ function doIt(mosaicEccDegs, H1cellIndex)
 
     % Whether cone weights are compensated to account for eccentricity-dependent
     % variations in cone efficiency
-    coneWeightsCompensateForVariationsInConeEfficiency = ~true;
+    coneWeightsCompensateForVariationsInConeEfficiency = true;
 
     
     % Visual RF model to match. Choose between: 

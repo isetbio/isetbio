@@ -24,7 +24,6 @@ function [theVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, p
         pooledConeIndicesAndWeights.surroundConeWeights, ...
         modelConstants.spatialSupportDegs);
 
-
     % The composite retinal RF cone map
     theRetinalRF = theRetinalRFcenterConeMap - theRetinalRFsurroundConeMap;
 

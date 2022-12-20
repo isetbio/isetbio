@@ -5,6 +5,7 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
     p.addParameter('maxVisualizedRFs', 18, @(x)(isempty(x) || isscalar(x)));
     p.addParameter('onlyForRGCwithIndex', [], @(x)(isempty(x) || isscalar(x)));
     p.addParameter('generateVideo', false, @islogical);
+    p.addParameter('videoFileName', [], @(x)(isempty(x) || ischar(x)));
     p.addParameter('withEccentricityCrossHairs', false, @islogical);
     p.addParameter('withPSFData', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('fontSize', 16, @isscalar);
@@ -14,6 +15,7 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
     maxVisualizedRFs = p.Results.maxVisualizedRFs;
     onlyForRGCwithIndex = p.Results.onlyForRGCwithIndex;
     generateVideo = p.Results.generateVideo;
+    videoFileName = p.Results.videoFileName;
     eccentricityCrossHairs = p.Results.withEccentricityCrossHairs;
     thePSFData = p.Results.withPSFData;
     fontSize = p.Results.fontSize;
@@ -44,6 +46,9 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
 
 
     if (generateVideo)
+        if (isempty(videoFileName))
+            videoFileName = 'RetinalRFs.mp4';
+        end
         videoOBJ = VideoWriter('RetinalRFs.mp4', 'MPEG-4');
         videoOBJ.FrameRate = 10;
         videoOBJ.Quality = 100;
@@ -264,11 +269,14 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
             
         end
 
-        for iRadius = 1:3
-             plot(ax, squeeze(crossHairsOutline(iRadius,1,:)), ...
-                      squeeze( crossHairsOutline(iRadius,2,:)), 'k-', 'LineWidth', 0.7, ...
+        if (eccentricityCrossHairs)
+            for iRadius = 1:3
+                plot(ax, squeeze(crossHairsOutline(iRadius,1,:)), ...
+                      squeeze(crossHairsOutline(iRadius,2,:)), 'k-', 'LineWidth', 0.7, ...
                       'Color', [0.5 0.5 0.5]);
+            end
         end
+
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
         set(ax, 'XLim', mRGCmosaicXLims, 'YLim', mRGCmosaicYLims);
@@ -346,11 +354,14 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         end
 
         %plot(ax, surroundOutline.x, surroundOutline.y, 'k--', 'LineWidth', 1.0);
-        for iRadius = 1:3
-             plot(ax, squeeze(crossHairsOutline(iRadius,1,:)), ...
+        if (eccentricityCrossHairs)
+            for iRadius = 1:3
+                plot(ax, squeeze(crossHairsOutline(iRadius,1,:)), ...
                       squeeze( crossHairsOutline(iRadius,2,:)), 'k-', 'LineWidth', 0.7, ...
                       'Color', [0.5 0.5 0.5]);
+            end
         end
+        
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
         set(ax, 'XLim', mRGCmosaicXLims, 'YLim', mRGCmosaicYLims)

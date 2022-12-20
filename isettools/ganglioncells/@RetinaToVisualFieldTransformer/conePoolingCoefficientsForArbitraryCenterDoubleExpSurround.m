@@ -32,13 +32,16 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     surroundConeWeights = surroundConeWeights(surroundConeIndices);
 
     % Keep only the connectable surround cones
-    [surroundConeIndices, surroundConeWeights] = RetinaToVisualFieldTransformer.connectableSurroundConeIndicesAndWeights(...
+    [surroundConeIndices, surroundConeWeights, ...
+     nonConnectableSurroundConeIndices, ...
+     nonConnectableSurroundConeWeights] = RetinaToVisualFieldTransformer.connectableSurroundConeIndicesAndWeights(...
          surroundConeIndices, surroundConeWeights, modelConstants);
 
     % The indices of center and surround cones
     pooledConeIndicesAndWeights.centerConeIndices = centerConeIndices;
     pooledConeIndicesAndWeights.surroundConeIndices = surroundConeIndices;
-
+    pooledConeIndicesAndWeights.nonConnectableSurroundConeIndices = nonConnectableSurroundConeIndices;
+    
     if (modelConstants.coneWeightsCompensateForVariationsInConeEfficiency)
         % Adjust cone weights to compensate for variations in
         % relative efficiency of the input cones 
@@ -58,9 +61,18 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
             modelConstants.theConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices), ...
             surroundConeWeights, ...
             maxEfficiency);
+
+        pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights = RetinaToVisualFieldTransformer.coneEfficacyAdjustedGains(...
+            modelConstants.theConeMosaic, ...
+            modelConstants.theConeMosaic.coneApertureDiametersDegs(nonConnectableSurroundConeIndices), ...
+            modelConstants.theConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(nonConnectableSurroundConeIndices), ...
+            nonConnectableSurroundConeWeights, ...
+            maxEfficiency);
+    
     else
         pooledConeIndicesAndWeights.centerConeWeights = centerConeWeights;
         pooledConeIndicesAndWeights.surroundConeWeights = surroundConeWeights;
+        pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights = nonConnectableSurroundConeWeights;
     end
 end
 
