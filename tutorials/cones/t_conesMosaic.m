@@ -27,8 +27,7 @@ oi = oiCompute(oi, s);
 % Get the default set of cone mosaic parameters.
 cmParams = cMosaicParams;
 
-% Generate off-axis mosaic
-cmParams.eccentricityDegs = [0 0];   % The size of the cones out here is about the same as the mouse?
+cmParams.eccentricityDegs = [0 0];
 cmParams.sizeDegs = [1.5 1.5]*2;
 cmParams.micronsPerDegree = oiGet(oi,'distance per degree','um');
 cm = cMosaic(cmParams);
