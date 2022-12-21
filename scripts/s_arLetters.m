@@ -209,7 +209,7 @@ load('cm5x5.mat','cm');
 cm.visualize;
 title('');
 
-oi = vcGetObject('oi');
+oi = ieGetObject('oi');
 
 % save('cm5x5','cm');
 [allE, noisyE] = cm.compute(oi);
