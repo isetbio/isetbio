@@ -15,7 +15,7 @@ function visualizationParams = visualize(obj, varargin)
 %    pStruct = cm.visualize('params') - Retrieve the visualization parameter structure
 %
 %  See also
-%   Tutorials in tutorials/t_cones/cMosaic
+%   Tutorials in tutorials/cones/cMosaic
 %
     
     if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
