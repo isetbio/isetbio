@@ -21,33 +21,48 @@ function performEccentricityComputations()
           12 0];
 
 
-    mosaicEccDegs = [ ...
-          0 0; ...
-          1 0; ...
-          2 0; ...
-          4 0; ...
-          6 0; ...
-          8 0; ...
-          10 0; ...
-          12 0];
+
 
     mosaicEccDegs = [...
         0 0; ...
-        -1 0; ...
         -2 0; ...
         -4 0; ...
         -6 0; ...
-        -8 0]; 
+        -8 0; ...
+        -10 0]; 
     
-    mosaicEccDegs = [-1 0];
+    mosaicEccDegs = [...
+        -3 0];
 
-    doIt(mosaicEccDegs, 1);
-    %doIt(mosaicEccDegs, 2);
-    %doIt(mosaicEccDegs, 3);
-    %doIt(mosaicEccDegs, 4);
+    % Actions
+    generateRTVobjects = true;
+    generateCenterSurroundRFstructure = true;
+
+    computeTheSTFs = ~true;
+    fitTheSTFs = ~true;
+
+    visualizeTheFittedRFs = ~true;
+    inspectTheSyntheticRFsComponents = ~true;
+
+    for H1index = 1:4
+        doIt(mosaicEccDegs, 1, ...
+            generateRTVobjects, ...
+            generateCenterSurroundRFstructure, ...
+            visualizeTheFittedRFs, ...
+            computeTheSTFs, ...
+            fitTheSTFs, ...
+            inspectTheSyntheticRFsComponents);
+    end
+
 end
 
-function doIt(mosaicEccDegs, H1cellIndex)
+function doIt(mosaicEccDegs, H1cellIndex, ...
+            generateRTVobjects, ...
+            generateCenterSurroundRFstructure, ...
+            visualizeTheFittedRFs, ...
+            computeTheSTFs, ...
+            fitTheSTFs, ...
+            inspectTheSyntheticRFsComponents)
 
     % Get dropboxDir & intermediate data files location
     computerInfo = GetComputerInfo();
@@ -71,20 +86,13 @@ function doIt(mosaicEccDegs, H1cellIndex)
     subjectRankOrder = 6;
     pupilDiameterMM = 3.0;
 
-    % Actions
-    generateRTVobjects = true;
-    generateCenterSurroundRFstructure = ~true;
-    visualizeTheFittedRFs = ~true;
-
-    computeTheSTFs = ~true;
-    fitTheSTFs = ~true;
-    inspectTheSyntheticRFsComponents = ~true;
+    
 
     % multiStartsNum: select from:
     % - 1 (Single start run, fastest results), 
     % - some number (Multi-start), or 
     % - inf (Global search)
-    multiStartsNum = 6;
+    multiStartsNum = 10;
     multiStartsNumDoGFit = 128;
 
     % Cone types that can connect to the RF center
@@ -504,12 +512,14 @@ function fitTheMosaicSTFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectR
         retinalRFcenterRcDegsInitialParam = sqrt(conesNumPooledByTheRFcenter)*coneRcDegs;
 
         % Fit the DoG model to the measured STF
-        multiStartsNum = 64;
+        multiStartsNum = 128;
         [DoGparams, theFittedSTF] = ...
             RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, ...
                     theMeasuredSTFtoFit, ...
                     retinalRFcenterRcDegsInitialParam, ...
                     multiStartsNum);
+        %, ...
+        %            'rangeForRc', *[1 1 1]);
 
         % Save the fit results
 
@@ -541,9 +551,10 @@ function fitTheMosaicSTFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectR
 
         figure(2000+mod(iRGC,10)+1); clf;
         plot(spatialFrequenciesTested, theMeasuredSTFtoFit, 'ko'); hold on
-        plot(theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, 'r-');
-        plot(theTargetSTFdata(:,1), theTargetSTFdata(:,2), 'b--');
-        plot(theTargetSTFdata(:,1), theTargetSTFdata(:,3), 'm--');
+        plot(theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, 'r-', 'LineWidth', 1.5);
+        plot(theTargetSTFdata(:,1), theTargetSTFdata(:,2)/max(theTargetSTFdata(:,2))*max(theMeasuredSTFtoFit), 'b--', 'LineWidth', 1.5);
+        plot(theTargetSTFdata(:,1), theTargetSTFdata(:,3), 'm--', 'LineWidth', 1.5);
+        legend('measuredSTF', 'fittedSTF', 'measuredSTF (Dogfit)', 'targetSTF')
         set(gca, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100], 'YLim', [0 2]);
         drawnow;
         

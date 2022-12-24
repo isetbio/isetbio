@@ -1,4 +1,4 @@
-function analyzeEccentricityComputations(H1cellIndex)
+function analyzeEccentricityComputations()
 
     mosaicEccDegs = [...
         0 0; ...
@@ -9,17 +9,25 @@ function analyzeEccentricityComputations(H1cellIndex)
         -8 0]; 
 
     mosaicEccDegs = [...
-        0 0]
+        0 0; ...
+        -1 0];
 
     inspectTheSpatialRFs = ~true;
     inspectTheSTFs = ~true;
     contrastModelToCronerAndKaplan = true;
 
-    doIt(mosaicEccDegs, H1cellIndex, ...
+    % Αctions
+    centerMostRGCsNumToAnalyze = input('Enter # of center-most cells to include in the analysis. [] for all: ');
+
+    for H1index = 1:4
+        doIt(mosaicEccDegs, H1index, centerMostRGCsNumToAnalyze, ...
         inspectTheSpatialRFs, inspectTheSTFs, contrastModelToCronerAndKaplan);
+    end
+
 end
 
-function doIt(mosaicEccDegs, H1cellIndex, inspectTheSpatialRFs, inspectTheSTFs, contrastModelToCronerAndKaplan)
+function doIt(mosaicEccDegs, H1cellIndex, centerMostRGCsNumToAnalyze, ...
+    inspectTheSpatialRFs, inspectTheSTFs, contrastModelToCronerAndKaplan)
 
    % Get dropboxDir & intermediate data files location
     computerInfo = GetComputerInfo();
@@ -48,8 +56,7 @@ function doIt(mosaicEccDegs, H1cellIndex, inspectTheSpatialRFs, inspectTheSTFs, 
     % L+M contrast for gratings used to measure the STFs 
     coneContrasts = [1 1 0];
     
-    % Αctions
-    centerMostRGCsNumToAnalyze = input('Enter # of center-most cells to include in the analysis: ');
+    
 
     if (inspectTheSTFs)
         for iEcc = 1:size(mosaicEccDegs,1)

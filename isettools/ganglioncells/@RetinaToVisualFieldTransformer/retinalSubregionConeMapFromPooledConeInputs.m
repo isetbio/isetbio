@@ -29,9 +29,6 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(.
         blurApertureDiameterDegs = theConeMosaic.blurApertureDiameterDegsZones(zoneIndex);
         theConeApertureRF{iCone} = theConeMosaic.generateApertureKernel(blurApertureDiameterDegs(1), oiResDegs, lowOpticalImageResolutionWarning);
 
-        % Divide by relative efficacy because during actual computation  this relative cone efficacy is applied
-        theConeApertureRF{iCone} = theConeApertureRF{iCone} ; 
-
         % Compute aperture map insertion coordinates
         dd = sum((bsxfun(@minus, XY, conePosDegs(iCone,:))).^2,2);
         [~,idx] = min(dd(:));

@@ -61,8 +61,6 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
             (obj.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) ...  % match the conesNum in the center
             );
         theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{iObj};
-        theRTVFTobj.rfComputeStruct.modelConstants
-        pause
         
         % Extract the retinal cone pooling weights compute function
         theRetinalConePoolingWeightsComputeFunction = theRTVFTobj.rfComputeStruct.modelConstants.weightsComputeFunctionHandle;
@@ -77,16 +75,8 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         % Extract the model center and surround retinal cone pooling weights
         fittedCenterConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights;
         fittedSurroundConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights;
-
-        if (isfield(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights, 'nonConnectableSurroundConeWeights'))
-            fittedNonConnectableSurroundConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights;
-        else
-            % nonConnectableSurroundConeWeights was not computed during the
-            % model fit. Compute it now
-            d = theRetinalConePoolingWeightsComputeFunction(...
-                modelConstants, theRetinalConePoolingParamsVector);
-            fittedNonConnectableSurroundConeWeights = d.nonConnectableSurroundConeWeights;
-        end
+        fittedNonConnectableSurroundConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights;
+      
 
         % Visualize model fits
         if (isnan(totalCenterStrengthForModelRF(iObj)))
@@ -115,27 +105,31 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         % Target and achieved ratios
         targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
         targetSCintSensRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
-        fittedRsRcRatio = targetRsRcRatio * (1+ sqrt(theRTVFTobj.rfComputeStruct.theFinalRMSEvector(end-1)));
-        fittedSCintSensRatio = targetSCintSensRatio * (1+ sqrt(theRTVFTobj.rfComputeStruct.theFinalRMSEvector(end)));
+        fittedRsRcRatio = theRTVFTobj.rfComputeStruct.theSTF.fittedRsRcRatio;
+        fittedSCintSensRatio = theRTVFTobj.rfComputeStruct.theSTF.fittedSCIntSensRatio;
 
+        
         fprintf('\n\n*** Stats for RGC %d ***\n', iSortedRGCindex);
         fprintf('Target Rs/Rc ratio: %2.2f, achieved: %2.2f\n', targetRsRcRatio, fittedRsRcRatio);
         fprintf('Target S/C int. sens. ratio: %2.2f, achieved: %2.2f\n', targetSCintSensRatio, fittedSCintSensRatio);
         fprintf('Computing c/s cone pooling weights for RGC %d of %d using the RTVFTobj #%d\n', iSortedRGCindex, rgcsNum, iObj);
-      
+        
         
         % Update the center cone indices and weights for the target midgetRGC center 
         % so we can pass that info to theRetinalConePoolingWeightsComputeFunction()
         modelConstants.indicesOfCenterCones = indicesOfCenterCones;
         modelConstants.weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
-    
+
+
         % Compute the pooled cone indices and weights using the
         % theRetinalConePoolingWeightsComputeFunction & theRetinalConePoolingParamsVector
         pooledConeIndicesAndWeights = theRetinalConePoolingWeightsComputeFunction(...
             modelConstants, theRetinalConePoolingParamsVector);
-    
+
+
         % Extract the model center and surround retinal cone pooling weights
         currentRGCCenterConeWeights = pooledConeIndicesAndWeights.centerConeWeights;
+
         currentRGCSurroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights;
         currentRGCNonConnectableSurroundConeWeights = pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights;
 
@@ -168,20 +162,7 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
                 totalSurroundStrengthForModelRF(iObj) = sum(weights(:));
             end
 
-            % Center strength correction factor for the current RGC
-            idx = find(pooledConeIndicesAndWeights.centerConeWeights > 0);
-            centerConeIndices = pooledConeIndicesAndWeights.centerConeIndices(idx);
-            centerConeWeights = pooledConeIndicesAndWeights.centerConeWeights(idx);
-
-            % Center correction for efficacy changes
-            maxEfficiency = [];
-            [pooledConeIndicesAndWeights.centerConeWeights, maxEfficiency] = RetinaToVisualFieldTransformer.coneEfficacyAdjustedGains(...
-                modelConstants.theConeMosaic, ...
-                modelConstants.theConeMosaic.coneApertureDiametersDegs(centerConeIndices), ...
-                modelConstants.theConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(centerConeIndices), ...
-                centerConeWeights, ...
-                maxEfficiency);
-
+            % Center cone indices and weights for the current RGC
             totalCenterStrengthForThisRF = sum(pooledConeIndicesAndWeights.centerConeWeights);
             centerStrengthCorrectionFactor = totalCenterStrengthForModelRF(iObj)/totalCenterStrengthForThisRF;
             pooledConeIndicesAndWeights.centerConeWeights = pooledConeIndicesAndWeights.centerConeWeights * centerStrengthCorrectionFactor;
@@ -189,26 +170,13 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
 
 %             % Surround strength correction factor
 %             % First adjust for different # of S-cones
-%             if (1==1)
-%                 fittedBoost = 1 + sum(fittedNonConnectableSurroundConeWeights)/sum(fittedSurroundConeWeights);
-%                 currentBoost = 1 + sum(currentRGCNonConnectableSurroundConeWeights)/sum(currentRGCSurroundConeWeights);
-%                 boostRatio = currentBoost/fittedBoost;
-%                 pooledConeIndicesAndWeights.surroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights * boostRatio;
-%             end
+            if (1==1)
+                fittedBoost = 1 + sum(fittedNonConnectableSurroundConeWeights)/sum(fittedSurroundConeWeights);
+                currentBoost = 1 + sum(currentRGCNonConnectableSurroundConeWeights)/sum(currentRGCSurroundConeWeights);
+                surroundBoostRatio = currentBoost/fittedBoost
+                pooledConeIndicesAndWeights.surroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights * surroundBoostRatio;
+            end
 
-
-            % Surround strength correction factor for the current RGC
-            idx = find(pooledConeIndicesAndWeights.surroundConeWeights > 0);
-            surroundConeIndices = pooledConeIndicesAndWeights.surroundConeIndices(idx);
-            surroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights(idx);
-
-            % Surround correction for efficacy changes
-            pooledConeIndicesAndWeights.surroundConeWeights = RetinaToVisualFieldTransformer.coneEfficacyAdjustedGains(...
-                modelConstants.theConeMosaic, ...
-                modelConstants.theConeMosaic.coneApertureDiametersDegs(surroundConeIndices), ...
-                modelConstants.theConeMosaic.outerSegmentLengthEccVariationAttenuationFactors(surroundConeIndices), ...
-                surroundConeWeights, ...
-                maxEfficiency);
 
             totalSurroundStrengthForThisRF = sum(pooledConeIndicesAndWeights.surroundConeWeights);
             surroundStrengthCorrectionFactor = totalSurroundStrengthForModelRF(iObj)/totalSurroundStrengthForThisRF;
@@ -245,7 +213,7 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         
         xlabel(ax,'distance to nearest ecc grid (degs)');
         set(ax, 'XLim', [0 1], 'YLim', [0 1], 'FontSize', 16);
-        ylabel(ax, 'integrated S/C weights ratio')
+        ylabel(ax, 'integrated S/C weights ratio (retinal)')
         drawnow;
     end
 
