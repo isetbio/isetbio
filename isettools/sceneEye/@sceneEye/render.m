@@ -14,23 +14,19 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %
 %
 % Inputs:
-%    obj       - Object. The scene3D object to render.  This object
-%                has a slot for an iset3d render recipe.
+%    obj  - sceneEye object. The sceneEye object has an ISET3d recipe to
+%           render. 
 %
 % Optional key/value pairs:
-%    render type - One of these types of renders.
-%      {'radiance','depth','both','all', 
-%       'coordinates','material','mesh', 'illuminant','illuminantonly'};  
-%         Default is 'both', meaning radiance and depth.
-%
-%    scaleIlluminance - Boolean. Whether or not to scale the oi
-%                       illuminance.
-%    write - Typically, we call piWrite() to make sure the pbrt file is
-%            updated.  But for debugging we sometimes suppress the piWrite.
-%
+%    render type       - Usual recipe render type cell array 
+%    scale Illuminance - Scale the returned oi illuminance (default: true)
+%    write - Call piWrite first. Default: true - but for debugging we
+%            sometimes suppress the piWrite. 
+%            
 %
 % Outputs:
-%    ieObject         - Object. The Optical Image object.
+%    ieObject         - Object. An oi or a scene, depending on the
+%                       usePinhole flag
 %    terminalOutput   - String. Terminal output.
 %
 % Description:
@@ -44,8 +40,8 @@ function [ieObject, terminalOutput] = render(obj, varargin)
 %    debugMode, in which case it is a scene), filling in the parameters
 %    with the ISETBio information from the rendering recipe
 %
-% It returns an oi when there is a lens specified (omni, realisticEye), but
-% if you turn on the debugMode it renders a scene through a pinhole.
+% It returns an oi when there is a lens specified (omni, realisticEye).  If
+% the sceneEye pinhole slot is true, it returns a scene.
 %
 % Dependencies
 %   iset3d, ISEBio
@@ -60,7 +56,7 @@ varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x, 'sceneEye')));
 p.addParameter('scaleilluminance', true, @islogical);
-p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper')));
+p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper') || isempty(x)));
 p.addParameter('write',true,@islogical);
 
 % Some day, check that the cell array has one of these types.

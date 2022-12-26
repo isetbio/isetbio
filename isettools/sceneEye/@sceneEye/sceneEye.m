@@ -218,7 +218,8 @@ end
 
 methods (Access=public)
     [oi, terminalOutput, outputFile] = render(obj, varargin);
-    
+    [oi, terminalOutput, outputFile] = piWRS(obj, varargin);
+
     % These are helper functions called within render() above. Splitting
     % them into their individual functions allows us to integrate them with
     % isetcloud tools.
@@ -226,5 +227,6 @@ methods (Access=public)
     [obj] = setOI(obj, ieObject, varargin)
     [objNew] = write(obj, varargin)
 end
+
 
 end

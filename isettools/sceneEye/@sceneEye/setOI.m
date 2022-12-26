@@ -21,10 +21,12 @@ function [ieObject] = setOI(obj, ieObject, varargin)
 %                            correct parameters set. 
 %
 % Optional key/value pairs:
-%    meanIlluminancePerMM2 - Numeric. The mean illuminance per mm^2.
-%                            Default 5.
-%    scaleIlluminance      - Boolean. Whether or not to scale the
-%                            illuminance. Default true.
+%    meanIlluminancePerMM2 - The mean illuminance per mm^2 of pupil area
+%                            Default 5 cd/m2. (Numeric)
+%    scaleIlluminance      - Scale the returned illuminance with respect to
+%                            the pupil area. Default true. 
+%
+% See also
 %
 
 %% Initialization
