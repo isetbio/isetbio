@@ -1,8 +1,8 @@
-function piWRS(SE,varargin)
+function obj = piWRS(SE,varargin)
 % Calls the sceneEye render and then shows the returned object
 %
 % Synopsis
-%   sceneEye.pWRS(varargin);
+%   obj = sceneEye.pWRS(varargin);
 %
 % Brief
 %   Writes, Renders, and Shows the sceneEye recipe
@@ -20,8 +20,10 @@ function piWRS(SE,varargin)
 %                         dockerWrapper.humanEyeDocker
 %   'name'  - Set the Scene or OI name
 %   'gamma' - Set the display gamma for the window
+%   'show'  - Default: true
 %
 % Outputs
+%   obj - Returns the ISETBio/Cam scene or oi struct
 %
 % See also
 %   sceneEye.render, sceneEye.write
@@ -43,8 +45,8 @@ p.parse(SE,varargin{:});
 
 thisDocker  = p.Results.dockerwrapper;
 g           = p.Results.gamma;
-name = p.Results.name;
-show = p.Results.show;
+name       = p.Results.name;
+show       = p.Results.show;
 renderFlag = p.Results.renderflag;
 
 %% Render
@@ -57,18 +59,20 @@ switch lower(obj.type)
     case 'scene'
 
         if ~isempty(name), obj = sceneSet(obj,'name',name); end
-        if show, sceneWindow(obj);
+        if show
+            sceneWindow(obj);
             if ~isempty(g), sceneSet(obj,'gamma',g); end
             if ~isempty(renderFlag), sceneSet(obj,'render flag',renderFlag); end
         end
+
     case 'opticalimage'
 
         if ~isempty(name), obj = oiSet(obj,'name',name); end
-        if show, oiWindow(obj);
+        if show
+            oiWindow(obj);
             if ~isempty(g), oiSet(obj,'gamma',g); end
             if ~isempty(renderFlag), oiSet(obj,'render flag',renderFlag); end
         end
-        oiWindow(obj);
 
     otherwise
         error('Unknown ISET Object type %s',obj.type)
