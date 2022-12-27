@@ -244,7 +244,8 @@ classdef midgetRGCMosaic < handle
 
     % Static methods
     methods (Static)
-        % Method to generate RetinaToVisualTransformer objects for a midgetRGCMosaic
+        % Method to generate RetinaToVisualTransformer objects for a
+        % midgetRGCMosaic (OLD)
         [RTVFTobjList, theOpticsPositionGrid, ...
          theConesNumPooledByTheRFcenterGrid, theVisualSTFSurroundToCenterRcRatioGrid, ...
          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = generateRTVFobjects(...
@@ -257,7 +258,20 @@ classdef midgetRGCMosaic < handle
                    targetSTFmatchMode, ...
                    multiStartsNum, multiStartsNumDoGFit);
 
+        % Method to generate RetinaToVisualTransformer objects for a
+        % midgetRGCMosaic (NEW)
+        [RTVFTobjList, theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
+          theVisualSTFSurroundToCenterRcRatioGrid, ...
+          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = R2VFTobjects(...
+                   theMidgetRGCMosaic, ...
+                   eccentricitySamplingGrid, ...
+                   mosaicSurroundParams, opticsParams, fitParams);
+
         extraDegs = extraConeMosaicDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
+
+        % Method to generate coordinates for eccentricitySamplingGrid passed to the RTVF object
+        gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords);
+
     end % Static metthods
 
 end
