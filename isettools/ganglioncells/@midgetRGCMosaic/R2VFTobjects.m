@@ -29,7 +29,6 @@ function [RTVFTobjList, ...
     [RTVTOpticalPositionGrid, RTVTConesNumInRFcenterGrid] = ...
         meshgrid(1:size(eccentricitySamplingGrid,1), conesNumPooledByTheRFcenters);
     
-
     % Allocate memory
     RTVTobjectsNum = numel(RTVTConesNumInRFcenterGrid);
     RTVFTobjList = cell(RTVTobjectsNum,1);
@@ -53,9 +52,13 @@ function [RTVFTobjList, ...
         end
 
         % Get indices of center cones for the RGC that is closest to the samplingPositionDegs
-        indicesOfRGCsWithThisManyCenterCones  = find(allConesNumPooledByTheRFcenters == conesNumPooled);
+        indicesOfRGCsWithThisManyCenterCones = find(allConesNumPooledByTheRFcenters == conesNumPooled);
         [~,idx] = min(sum((bsxfun(@minus, theMidgetRGCMosaic.rgcRFpositionsDegs(indicesOfRGCsWithThisManyCenterCones,:), samplingPositionDegs)).^2,2));
         theTargetRGCindex = indicesOfRGCsWithThisManyCenterCones(idx);
+
+        % Update the samplingPositionDegs to reflect the actual position of theTargetRGCindex
+        samplingPositionDegs = theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,:);
+
         indicesOfConesPooledByTheRFcenter = find(theMidgetRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,theTargetRGCindex)> 0);
         typesOfConesPooledByTheRFcenter = theMidgetRGCMosaic.inputConeMosaic.coneTypes(indicesOfConesPooledByTheRFcenter);
 
@@ -68,25 +71,31 @@ function [RTVFTobjList, ...
             sprintf('indicesOfConesPooledByTheRFcenter are not all connectable'));
 
         % Report types of cones in the RF center
+        fprintf(2,'\n============================================================= \n');
+        fprintf(2,'Fitting at eccentricity position (degs): (%2.2f, %2.2f) [fit index: %d of %d]', ...
+            samplingPositionDegs(1), samplingPositionDegs(2), iRTVobjIndex, RTVTobjectsNum);
+
         if (conesNumPooled == 1)
-            fprintf('\nCone type in single-cone RF center: ');
+            fprintf(2,'\nCone type in single-cone RF center (at %2.2f, %2.2f): ', ...
+                theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,1), theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,1));
         else
-            fprintf('\nCone types in multi-cone RF center: ');
+            fprintf(2,'\nCone types in multi-cone RF center (at %2.2f, %2.2f): ', ...
+                theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,1), theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,1));
         end
 
         for iInputConeIndex = 1:numel(typesOfConesPooledByTheRFcenter)
             switch (typesOfConesPooledByTheRFcenter(iInputConeIndex))
                 case cMosaic.LCONE_ID
-                    fprintf('L ');
+                    fprintf(2,'L ');
                 case cMosaic.MCONE_ID
-                    fprintf('M ');
+                    fprintf(2,'M ');
                 case cMosaic.SCONE_ID
-                    fprintf('S ');
+                    fprintf(2,'S ');
                 otherwise
                     error('not an LMS cone type');
             end
         end
-        fprintf('\n');
+        fprintf(2,'\n============================================================= \n');
 
         % Unit weights for all center cones
         weightsOfConesPooledByTheRFcenter = ones(1,numel(indicesOfConesPooledByTheRFcenter));
