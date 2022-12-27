@@ -30,7 +30,17 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                 X = 0;
                 Y = 0;
             else
-                r = linspace(0, max(sizeDegs)*0.5, gridHalfSamplesNum+1);
+                if (eccentricityDegs(1) == 0) && (eccentricityDegs(2) == 0)
+                    if (gridHalfSamplesNum == 1)
+                        r = logspace(log10(0.1), log10(max(sizeDegs)*0.3), gridHalfSamplesNum+1);
+                    else
+                        r = logspace(log10(0.1), log10(max(sizeDegs)*0.4), gridHalfSamplesNum+1);
+                    end
+                    r(1) = 0;
+                else
+                    r = linspace(0, max(sizeDegs)*0.4, gridHalfSamplesNum);
+                end
+
                 angles = 0:60:360;
                 X = [];
                 Y = [];
@@ -46,15 +56,28 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                     Y(size(Y,1)+(1:numel(angles)),1) = r(iRadius) * sind(angles+delta);
                 end
     
+                % Add the 4 corner points
+                X(size(X,1)+1,1) = sizeDegs(1)/2;
+                Y(size(Y,1)+1,1) = sizeDegs(2)/2;
+
+                X(size(X,1)+1,1) = sizeDegs(1)/2;
+                Y(size(Y,1)+1,1) =-sizeDegs(2)/2;
+
+                X(size(X,1)+1,1) =-sizeDegs(1)/2;
+                Y(size(Y,1)+1,1) = sizeDegs(2)/2;
+
+                X(size(X,1)+1,1) =-sizeDegs(1)/2;
+                Y(size(Y,1)+1,1) =-sizeDegs(2)/2;
+
             end
     end
 
 
     if (max(abs(X(:)))>0)
-        X = X(:)/max(abs(X(:))) * sizeDegs(1)*0.5;
+        X = X(:)/max(abs(X(:))) * sizeDegs(1)*0.5*0.95;
     end
     if (max(abs(Y(:)))>0)
-        Y = Y(:)/max(abs(Y(:))) * sizeDegs(2)*0.5;
+        Y = Y(:)/max(abs(Y(:))) * sizeDegs(2)*0.5*0.95;
     end
 
     gridCoords(:,1) = eccentricityDegs(1) + X;

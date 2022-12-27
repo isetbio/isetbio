@@ -11,6 +11,7 @@ function generateProductionMidgetRGCMosaic()
 
     % Actions to perform
     actionToPerform = 'generateCenterConnectedMosaic';
+    actionToPerform = 'generateR2VFTobjects';
 
     switch (actionToPerform)
         case 'generateCenterConnectedMosaic'
@@ -18,20 +19,21 @@ function generateProductionMidgetRGCMosaic()
 
         case 'generateR2VFTobjects'
 
+            H1cellIndex = 1;
             mosaicSurroundParams = struct(...
-                'eccentricitySamplingGridHalfSamplesNum', 0, ...                         % generate R2VFTobjects at 2*gridHalfSamplesNum + 1 spatial positions
+                'eccentricitySamplingGridHalfSamplesNum', 1, ...                         % generate R2VFTobjects at 2*gridHalfSamplesNum + 1 spatial positions
                 'centerConnectableConeTypes', [cMosaic.LCONE_ID cMosaic.MCONE_ID], ...   % cone types that can connect to the RF center
                 'surroundConnectableConeTypes', [cMosaic.LCONE_ID cMosaic.MCONE_ID], ... % cone types that can connect to the RF surround
                 'coneWeightsCompensateForVariationsInConeEfficiency', true, ...          % cone weight compensationfor eccentricity-dependent variations in cone efficiency
                 'visualRFmodel', 'gaussian center, gaussian surround', ...
-                'retinalConePoolingModel', 'arbitrary center cone weights, double exponential surround from H1 cell with index', ...
-                'H1cellIndex', 1, ...
+                'retinalConePoolingModel', sprintf('arbitrary center cone weights, double exponential surround from H1 cell with index %d', H1cellIndex),...
+                'H1cellIndex', H1cellIndex, ...
                 'targetSTFmatchMode', 'STFDoGparams' ...
             );
         
             opticsParams = struct(...
                 'ZernikeDataBase', 'Polans2015', ...
-                'subjectRankOrder ', 6, ...
+                'subjectRankOrder', 6, ...
                 'pupilDiameterMM', 3.0 ...
             );
 
@@ -57,10 +59,14 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
         'hexagonal', true);
 
 
-    theMidgetRGCmosaic.visualize( ...
-        'eccentricitySamplingGrid', eccentricitySamplingGrid);
+    %centerConesNum = full(sum(theMidgetRGCmosaic.rgcRFcenterConeConnectivityMatrix,1))
+    %[max(centerConesNum) min(centerConesNum) numel(find(centerConesNum ==max(centerConesNum))) numel(find(centerConesNum ==min(centerConesNum)))]
 
-    pause
+    % Visualize the mosaic
+    theMidgetRGCmosaic.visualize( ...
+        'eccentricitySamplingGrid', eccentricitySamplingGrid, ...
+        'inputPoolingVisualization', 'centerOnly');
+
 
     % multiStartsNum: select from:
     % - 1 (Single start run, fastest results), 
@@ -125,14 +131,14 @@ function dropboxDir = localDropboxPath()
     computerInfo = GetComputerInfo();
     switch (computerInfo.localHostName)
         case 'Ithaka'
-            dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
+            dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
 
         case 'Crete'
-            dropboxDir = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
+            dropboxDir = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
 
         otherwise
             if (contains(computerInfo.networkName, 'leviathan'))
-                dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio/midgetRGCMosaics';
+                dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio';
             else
                 error('Could not establish dropbox location')
             end

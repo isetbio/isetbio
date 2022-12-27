@@ -4,14 +4,15 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     p = inputParser;
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
-    p.addParameter('maxVisualizedRFs', 18, @(x)(isempty(x) || isscalar(x)));
+    p.addParameter('eccentricitySamplingGrid', [], @(x)(isempty(x) || (isnumeric(x) && (size(x,2) == 2)) ));
+    p.addParameter('maxVisualizedRFs', 0, @(x)(isempty(x) || isscalar(x)));
     p.addParameter('showConnectionsToCones', true, @islogical);
     p.addParameter('withSuperimposedConeMosaic', true, @islogical);
     p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('inputPoolingVisualization', '', @(x)((isempty(x))||(ismember(x, {'centerOnly', 'surroundOnly', 'centerAndSurround'}))));
-    p.addParameter('xRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
-    p.addParameter('yRangeDegs', 0.3, @(x)(isempty(x)||(numel(x)==1)));
+    p.addParameter('xRangeDegs', [], @(x)(isempty(x)||(numel(x)==1)));
+    p.addParameter('yRangeDegs', [], @(x)(isempty(x)||(numel(x)==1)));
     p.addParameter('xLimsDegs', [], @(x)(isempty(x)||isinf(x)||(numel(x)==2)));
     p.addParameter('yLimsDegs', [], @(x)(isempty(x)||isinf(x)||(numel(x)==2)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
@@ -25,6 +26,7 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
 
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
+    eccentricitySamplingGrid = p.Results.eccentricitySamplingGrid;
     maxVisualizedRFs = p.Results.maxVisualizedRFs;
     showConnectionsToCones = p.Results.showConnectionsToCones;
     superimposedOpticalImage = p.Results.withSuperimposedOpticalImage;
@@ -76,26 +78,30 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     % Compute the retinal RFcenter maps
     if (isempty(inputPoolingVisualization))
         marginDegs = min([0.5 0.4*min(obj.sizeDegs)]);
-        spatialSupportSamplesNum = 256;
-        theRetinalRFcenterMaps = obj.computeRetinalRFcenterMaps(...
-            marginDegs, spatialSupportSamplesNum, ...
-            'forRGCindices', sortedRGCindices(1:min([maxVisualizedRFs numel(sortedRGCindices)])));
+        if (maxVisualizedRFs > 0)
+            spatialSupportSamplesNum = 256;
+            theRetinalRFcenterMaps = obj.computeRetinalRFcenterMaps(...
+                marginDegs, spatialSupportSamplesNum, ...
+                'forRGCindices', sortedRGCindices(1:min([maxVisualizedRFs numel(sortedRGCindices)])));
+        end
     else
         theRetinalRFcenterMaps = [];
     end
 
+    
     if (isempty(xRangeDegs))
-        xRangeDegs = obj.sizeDegs(1);
+        xRangeDegs = obj.sizeDegs(1)*1.05;
     end
 
     if (isempty(yRangeDegs))
-        yRangeDegs = obj.sizeDegs(2);
+        yRangeDegs = obj.sizeDegs(2)*1.05;
     end
 
     % Plot part of the input cone mosaic
     if (isempty(xLimsDegs))
         xLimsDegs = mRGCmosaicCenterDegs(1) + 0.5*xRangeDegs*[-1 1];
     end
+
     if (isempty(yLimsDegs))
         yLimsDegs = mRGCmosaicCenterDegs(2) + 0.5*yRangeDegs*[-1 1];
     end
@@ -178,6 +184,10 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         maxVisualizedRFs = numel(sortedRGCindices);
     end
 
+
+    if (isempty(inputPoolingVisualization)) && (maxVisualizedRFs == 0)
+        plot(axesHandle, obj.rgcRFpositionsDegs(:,1), obj.rgcRFpositionsDegs(:,2), 'k+');
+    end
 
     for iRGC = 1:numel(sortedRGCindices)
 
@@ -309,6 +319,11 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
         end
    end % iRGC
 
+   if (~isempty(eccentricitySamplingGrid))
+       plot(axesHandle, eccentricitySamplingGrid(:,1), eccentricitySamplingGrid(:,2), 'k+', 'LineWidth', 3.0, 'MarkerSize', 20);
+       plot(axesHandle, eccentricitySamplingGrid(:,1), eccentricitySamplingGrid(:,2), 'c+', 'LineWidth', 1.0, 'MarkerSize', 16);
+   end
+
    set(axesHandle, 'XLim', [xLimsDegs(1) xLimsDegs(2)], 'YLim', [yLimsDegs(1) yLimsDegs(2)]);
    drawnow;
 end
@@ -328,7 +343,7 @@ function renderConePoolingWeights(ax, rgcRFpositionsDegs, rfCenterConePositionsD
                  'k-', 'LineWidth', w);
     end
     
-    if (numel(rfCenterConeWeights == 1))
+    if (numel(rfCenterConeWeights) == 1)
         plot(ax, rfCenterConePositionsDegs(1,1), rfCenterConePositionsDegs(1,2), ...
             'wo', 'LineWidth', 2.0, 'MarkerSize', 20);
     else
