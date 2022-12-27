@@ -1,5 +1,5 @@
 function [RTVFTobjList, ...
-          theOpticsPositionGrid, ...
+          theSamplingPositionGrid, ...
           theConesNumPooledByTheRFcenterGrid, ...
           theVisualSTFSurroundToCenterRcRatioGrid, ...
           theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = R2VFTobjects(...
@@ -33,15 +33,15 @@ function [RTVFTobjList, ...
     % Allocate memory
     RTVTobjectsNum = numel(RTVTConesNumInRFcenterGrid);
     RTVFTobjList = cell(RTVTobjectsNum,1);
-    theOpticsPositionGrid = zeros(RTVTobjectsNum,2);
+    theSamplingPositionGrid = zeros(RTVTobjectsNum,2);
     theConesNumPooledByTheRFcenterGrid = zeros(RTVTobjectsNum,1);
     theVisualSTFSurroundToCenterRcRatioGrid = zeros(RTVTobjectsNum,1);
     theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid = zeros(RTVTobjectsNum,1);
 
     for iRTVobjIndex = 1:RTVTobjectsNum
-        % Optics position
+        % Sampling position (within the  mosaic)
         eccPositionIndex = RTVTOpticalPositionGrid(iRTVobjIndex);
-        opticsPositionDegs = eccentricitySamplingGrid(eccPositionIndex,:);
+        samplingPositionDegs = eccentricitySamplingGrid(eccPositionIndex,:);
 
         % Cones num in RF center
         conesNumPooled = RTVTConesNumInRFcenterGrid(iRTVobjIndex);
@@ -52,9 +52,9 @@ function [RTVFTobjList, ...
             multiStartsNum = 4;
         end
 
-        % Get indices of center cones for the RGC that is closest to the opticsPositionDegs
+        % Get indices of center cones for the RGC that is closest to the samplingPositionDegs
         indicesOfRGCsWithThisManyCenterCones  = find(allConesNumPooledByTheRFcenters == conesNumPooled);
-        [~,idx] = min(sum((bsxfun(@minus, theMidgetRGCMosaic.rgcRFpositionsDegs(indicesOfRGCsWithThisManyCenterCones,:), opticsPositionDegs)).^2,2));
+        [~,idx] = min(sum((bsxfun(@minus, theMidgetRGCMosaic.rgcRFpositionsDegs(indicesOfRGCsWithThisManyCenterCones,:), samplingPositionDegs)).^2,2));
         theTargetRGCindex = indicesOfRGCsWithThisManyCenterCones(idx);
         indicesOfConesPooledByTheRFcenter = find(theMidgetRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,theTargetRGCindex)> 0);
         typesOfConesPooledByTheRFcenter = theMidgetRGCMosaic.inputConeMosaic.coneTypes(indicesOfConesPooledByTheRFcenter);
@@ -95,7 +95,7 @@ function [RTVFTobjList, ...
         surroundToCenterRcRatio = RGCmodels.CronerKaplan.constants.surroundToCenterRcRatio;
 
         % Temporal-equivalent eccentricity based SCint sensitivity ratio
-        temporalEquivalentEccDegs = theMidgetRGCMosaic.temporalEquivalentEccentricityForEccentricity(opticsPositionDegs);
+        temporalEquivalentEccDegs = theMidgetRGCMosaic.temporalEquivalentEccentricityForEccentricity(samplingPositionDegs);
         radialTemporalEquivalentEccDegs = sqrt(sum(temporalEquivalentEccDegs.^2,2));
         scIntSensitivity = RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(radialTemporalEquivalentEccDegs);
         
@@ -105,7 +105,7 @@ function [RTVFTobjList, ...
             'ZernikeDataBase', ZernikeDataBase, ...
             'examinedSubjectRankOrder', subjectRankOrder, ...
             'pupilDiameterMM', pupilDiameterMM, ...
-            'positionDegs', opticsPositionDegs, ...
+            'positionDegs', samplingPositionDegs, ...
             'refractiveErrorDiopters', 0.0, ...    % use -999 for optics that do not subtract the central refraction
             'analyzedEye', theMidgetRGCMosaic.whichEye, ...
             'subjectRankingEye', 'right eye', ...
@@ -126,9 +126,7 @@ function [RTVFTobjList, ...
             'surroundToCenterRcRatio', surroundToCenterRcRatio, ...
             'surroundToCenterIntegratedSensitivityRatio', scIntSensitivity);
 
-        
-
-        % Compute the RetinaToVisualFieldTransformer for this (optics position, conesNumPooled) pair
+        % Compute the RetinaToVisualFieldTransformer for this (optics & cone position, conesNumPooled) pair
         % We are simulating the Croner&Kaplan estimation (1D STF, and we
         % are matching the fitted STF DoG model params)
         RTVFTobjList{iRTVobjIndex} = RetinaToVisualFieldTransformer(...
@@ -142,7 +140,7 @@ function [RTVFTobjList, ...
             'doDryRunFirst', true);
 
 
-        theOpticsPositionGrid(iRTVobjIndex,:) = opticsPositionDegs;
+        theSamplingPositionGrid(iRTVobjIndex,:) = samplingPositionDegs;
         theConesNumPooledByTheRFcenterGrid(iRTVobjIndex) = conesNumPooled;
         theVisualSTFSurroundToCenterRcRatioGrid(iRTVobjIndex) = surroundToCenterRcRatio;
         theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid(iRTVobjIndex) = scIntSensitivity;
