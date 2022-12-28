@@ -37,7 +37,7 @@ function generateProductionMidgetRGCMosaic()
                 'pupilDiameterMM', 3.0 ...
             );
 
-            generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsParams, mosaicFileName);
+            generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsParams, mosaicFileName, mosaicDirectory);
 
         otherwise
             error('Unknown action: ''%s''.', actionToPerform);
@@ -46,7 +46,7 @@ function generateProductionMidgetRGCMosaic()
 
 end
 
-function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsParams, mosaicFileName)
+function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsParams, mosaicFileName, mosaicDirectory)
 
     % Load the center-connected mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');
@@ -73,6 +73,9 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     % - some number (Multi-start), or 
     % - inf (Global search)
     fitParams.multiStartsNumDoGFit = 128;
+
+    % Where to save the fitted RTVFobjects
+    fitParams.exportsDirectory = mosaicDirectory;
 
     tStart = cputime;
 
