@@ -45,7 +45,7 @@ end
 p = inputParser;
 p.addRequired('obj', @(x)(isa(x,'cMosaic')));
 p.addRequired('oiSamplingGridDegs', @(x)(isnumeric(x) && (size(x,2) == 2) && (all(isreal(x)))));
-p.addParameter('zernikeDataBase', 'Polans2015', @(x)(ismember(x, {'Polans2015', 'Artal2012', 'MarimontWandell'})));
+p.addParameter('zernikeDataBase', 'Polans2015', @(x)(ismember(x, {'Polans2015', 'Artal2012', 'MarimontWandell', 'Thibos2002'})));
 p.addParameter('warningInsteadOfErrorForBadZernikeCoeffs', false, @islogical);
 p.addParameter('subjectID', 6, @isscalar);
 p.addParameter('pupilDiameterMM', 3.0, @isscalar);
@@ -88,6 +88,7 @@ switch (zernikeDataBase)
             
             if (targetEcc(1) ~= 0 | targetEcc(2) ~= 0)
                 fprintf(2,'Marimont/Wandell optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
+                targetEcc(1) = 0;
                 targetEcc(2) = 0;
             end
 
@@ -213,6 +214,42 @@ switch (zernikeDataBase)
                 'supportWavelength', psfSupportWavelength, ...
                 'zCoeffs', zCoeffs);
         end
+
+    case 'Thibos2002'
+
+        % Thibos optics
+        for oiIndex = 1:oiNum
+            %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
+            %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
+            targetEcc = oiSamplingGridDegs(oiIndex,:);
+            if (targetEcc(1) ~= 0 | targetEcc(2) ~= 0)
+                fprintf(2,'Marimont/Wandell optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
+                targetEcc(1) = 0;
+                targetEcc(2) = 0;
+            end
+            
+%             [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = ...
+%                 PolansOptics.oiForSubjectAtEccentricity(subjectID, ...
+%                 obj.whichEye, targetEcc, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
+%                 'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
+%                 'subtractCentralRefraction', subtractCentralRefraction, ...
+%                 'zeroCenterPSF', zeroCenterPSF, ...
+%                 'flipPSFUpsideDown', flipPSFUpsideDown, ...
+%                 'upsampleFactor', upSampleFactor, ...
+%                 'noLCA',p.Results.noLCA, ...
+%                 'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
+%             
+%             oiEnsemble{oiIndex} = theOI;
+%             psfEnsemble{oiIndex} = struct(...
+%                 'data', thePSF, ...
+%                 'supportX', psfSupportMinutesX, ...
+%                 'supportY', psfSupportMinutesY, ...
+%                 'supportWavelength', psfSupportWavelength, ...
+%                 'zCoeffs', zCoeffs);
+        end
+
+    otherwise
+        error('Unknown Zernike database specified');
         
     end
 
