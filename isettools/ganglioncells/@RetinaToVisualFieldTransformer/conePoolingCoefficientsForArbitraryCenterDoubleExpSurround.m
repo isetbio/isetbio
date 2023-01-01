@@ -25,8 +25,10 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
     % Compute all cone distances from the RF center (squared)
     coneDistancesFromRFCenter = sqrt(sum(bsxfun(@minus, modelConstants.theConeMosaic.coneRFpositionsDegs, RFcenterPos).^2,2));
 
-    % Compute surround cone weights
+    % Compute surround cone weights from the current model params
     surroundConeWeights = Kwide * exp(-2.3*coneDistancesFromRFCenter/RwideDegs) + Knarrow * exp(-2.3*coneDistancesFromRFCenter/RnarrowDegs);
+
+
     minSurroundConeWeight = 1e-3 * (Knarrow+Kwide);
     surroundConeIndices = find(surroundConeWeights>minSurroundConeWeight);
     surroundConeWeights = surroundConeWeights(surroundConeIndices);

@@ -22,92 +22,31 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         obj.theRetinaToVisualFieldTransformerOBJList{1}.rfComputeStruct.modelConstants.coneWeightsCompensateForVariationsInConeEfficiency;
 
     if (compensateForVariationsInConeEfficiency)
-        centerCorrectionFactors = zeros(1, rgcsNum);
-        surroundCorrectionFactors = zeros(1, rgcsNum);
-        
-        % Initialize the total center/surround strengths for the model RFs
-        totalCenterStrengthForModelRF = nan(1, numel(obj.theRetinaToVisualFieldTransformerOBJList));
-        totalSurroundStrengthForModelRF = nan(1, numel(obj.theRetinaToVisualFieldTransformerOBJList));
+        totalCenterStrengthForModelRF = zeros(1, numel(obj.theRetinaToVisualFieldTransformerOBJList));
+        totalSurroundStrengthForModelRF = zeros(1, numel(obj.theRetinaToVisualFieldTransformerOBJList));
+
+        for iObj = 1:numel(obj.theRetinaToVisualFieldTransformerOBJList)
+            theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{iObj};
+            idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights > 0);
+            weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights(idx);
+            totalCenterStrengthForModelRF(iObj) = sum(weights(:));
+           
+            idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights > 0);
+            weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights(idx);
+            totalSurroundStrengthForModelRF(iObj) = sum(weights(:));
+        end
     end
 
-    % Sort RGCs with respect to their distance from the mRGC mosaic center
-    distancesToEccGrid = sum((bsxfun(@minus, obj.rgcRFpositionsDegs, mean(obj.rgcRFpositionsDegs,1))).^2,2);
-    [~,sortedRGCindices] = sort(distancesToEccGrid, 'ascend');
+    visualizedSpatialExtent = 0.1*[-1 1];
 
+    if (1==2)
     hFigModels = figure(1000); clf;
     set(hFigModels, 'Color', [1 1 1]);
 
-    for iSortedRGCindex = 1:numel(sortedRGCindices)
     
-        % Retrieve RGC index
-        iRGC = sortedRGCindices(iSortedRGCindex);
-
-        % Retrieve this cell's center cone indices and weights
-        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
-        indicesOfCenterCones = find(connectivityVector > 0.0001);
-
-        % Compute distances of this RGC to all eccGrids
-        distancesToSamplingGridPositions = sqrt(sum((bsxfun(@minus, obj.theSamplingPositionGrid, obj.rgcRFpositionsDegs(iRGC,:))).^2,2));
-
-        % Retrieve the correct RTVFTobj based on this cells position and #of center cones. 
-        iObj = find(... 
-            (distancesToSamplingGridPositions == min(distancesToSamplingGridPositions)) && ...  % match the sampling position grid closest to this RGC
-            (obj.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) ...         % match the conesNum in the center
-            );
-
-        fprintf('sampling positions grid:\n')
-        obj.theSamplingPositionGrid*60
-
-        fprintf('cones num grid:\n')
-        obj.theConesNumPooledByTheRFcenterGrid
-
-        fprintf('position for this RGC:\n')
-        obj.rgcRFpositionsDegs(iRGC,:)*60
-
-        fprintf('center cones for this RGC: %d', numel(indicesOfCenterCones));
-        theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{iObj};
-        
-        fprintf('Selected grid index: %d\n', iObj);
-        pause
-
-        % Extract the retinal cone pooling weights compute function
-        theRetinalConePoolingWeightsComputeFunction = theRTVFTobj.rfComputeStruct.modelConstants.weightsComputeFunctionHandle;
+    fprintf('Visualizing retinal maps for obj %d of %d\n', iObj, numel(totalCenterStrengthForModelRF));
     
-        % Extract the retinal cone pooling weights params vector
-        theRetinalConePoolingParamsVector = theRTVFTobj.rfComputeStruct.retinalConePoolingParams.finalValues;
-
-        % Extract the model constants
-        modelConstants = theRTVFTobj.rfComputeStruct.modelConstants;
-       
-
-        % Extract the model center and surround retinal cone pooling weights
-        fittedCenterConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights;
-        fittedSurroundConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights;
-        fittedNonConnectableSurroundConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights;
-      
-        % Visualize model fits
-        if (isnan(totalCenterStrengthForModelRF(iObj)))
-            figure(hFigModels);
-            fprintf('Visualizing retinal maps for obj %d of %d\n', iObj, numel(totalCenterStrengthForModelRF));
-            visualizedSpatialExtent = 0.1*[-1 1];
-            ax = subplot(numel(obj.theRetinaToVisualFieldTransformerOBJList), 2, (iObj-1)*2+1);
-            imagesc(ax, modelConstants.spatialSupportDegs(:,1), ...
-                        modelConstants.spatialSupportDegs(:,2), ...
-                        theRTVFTobj.rfComputeStruct.theRetinalRFcenterConeMap);
-            axis(ax, 'image');
-            set(ax, 'XLim', visualizedSpatialExtent, 'YLim', visualizedSpatialExtent, 'FontSize', 16);
-    
-            ax = subplot(numel(obj.theRetinaToVisualFieldTransformerOBJList), 2, (iObj-1)*2+2);
-            imagesc(ax, modelConstants.spatialSupportDegs(:,1), ...
-                        modelConstants.spatialSupportDegs(:,2), ...
-                        theRTVFTobj.rfComputeStruct.theRetinalRFsurroundConeMap);
-            axis(ax, 'image');
-            set(ax, 'XLim', visualizedSpatialExtent, 'YLim', visualizedSpatialExtent, 'FontSize', 16);
-    
-            drawnow;
-            colormap(gray(1024));
-        end
-
+    for iObj = 1:numel(obj.theRetinaToVisualFieldTransformerOBJList)
 
         % Target and achieved ratios
         targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
@@ -115,75 +54,170 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
         fittedRsRcRatio = theRTVFTobj.rfComputeStruct.theSTF.fittedRsRcRatio;
         fittedSCintSensRatio = theRTVFTobj.rfComputeStruct.theSTF.fittedSCIntSensRatio;
 
-        
-        fprintf('\n\n*** Stats for RGC %d ***\n', iSortedRGCindex);
         fprintf('Target Rs/Rc ratio: %2.2f, achieved: %2.2f\n', targetRsRcRatio, fittedRsRcRatio);
         fprintf('Target S/C int. sens. ratio: %2.2f, achieved: %2.2f\n', targetSCintSensRatio, fittedSCintSensRatio);
-        fprintf('Computing c/s cone pooling weights for RGC %d of %d using the RTVFTobj #%d\n', iSortedRGCindex, rgcsNum, iObj);
+
+        theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{iObj};
+        ax = subplot(2,numel(obj.theRetinaToVisualFieldTransformerOBJList), iObj);
+        imagesc(ax, theRTVFTobj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1), ...
+                    theRTVFTobj.rfComputeStruct.modelConstants.spatialSupportDegs(:,2), ...
+                    theRTVFTobj.rfComputeStruct.theRetinalRFcenterConeMap);
+        axis(ax, 'image');
+        set(ax, 'XLim', visualizedSpatialExtent, 'YLim', visualizedSpatialExtent, 'FontSize', 16);
+
+        ax = subplot(2,numel(obj.theRetinaToVisualFieldTransformerOBJList), numel(obj.theRetinaToVisualFieldTransformerOBJList)+iObj);
+        imagesc(ax, theRTVFTobj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1), ...
+                    theRTVFTobj.rfComputeStruct.modelConstants.spatialSupportDegs(:,2), ...
+                    theRTVFTobj.rfComputeStruct.theRetinalRFsurroundConeMap);
+        axis(ax, 'image');
+        set(ax, 'XLim', visualizedSpatialExtent, 'YLim', visualizedSpatialExtent, 'FontSize', 16);
+
+        drawnow;
+        colormap(gray(1024));
+    end
+    pause
+    end
+
+
+    % Sort RGCs with respect to their distance from the mRGC mosaic center
+    distancesToEccGrid = sum((bsxfun(@minus, obj.rgcRFpositionsDegs, mean(obj.rgcRFpositionsDegs,1))).^2,2);
+    [~,sortedRGCindices] = sort(distancesToEccGrid, 'ascend');
+
+
+    for iSortedRGCindex = 1:numel(sortedRGCindices)
+        fprintf('Generating surround for %d of %d RGC\n', iSortedRGCindex, numel(sortedRGCindices));
+
+        % Retrieve RGC index
+        iRGC = sortedRGCindices(iSortedRGCindex);
+
+        % Retrieve this cell's # of center cone indices
+        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
+        indicesOfCenterCones = find(connectivityVector > 0.0001);
+        weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
+
+        % Retrieve the indices of the fitted RTVF objects that have the
+        % same # of center cones
+        centerConeMatchObjIndices = find(obj.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones));
+
+        % Compute distance based weights for this RGC and the fitted RTVF objects
+        distancesToSamplingGridPositions = sqrt(sum((bsxfun(@minus, obj.theSamplingPositionGrid(centerConeMatchObjIndices,:), obj.rgcRFpositionsDegs(iRGC,:))).^2,2));
+        [distancesToSamplingGridPositions, neighboringSamplingGridPositions] = sort(distancesToSamplingGridPositions, 'ascend');
+
+        if (distancesToSamplingGridPositions(1) == 0)
+            % If the minimum distance to one of the fitted RTVF objects is
+            % zero, just use that RTVF object
+            neighboringSamplingGridPositions = neighboringSamplingGridPositions(1);
+            distancesToSamplingGridPositions = distancesToSamplingGridPositions(1);
+            neigboringRTVFobjIndices = centerConeMatchObjIndices(neighboringSamplingGridPositions);
+            distanceBasedWeights(1) = 1;
+        else
+            % We will sum the weigted surrounds from the nearest nearbyFittedModelsNum
+            % with weights inversely proportional to the cell's distance to the position of the nearbyFittedModels
+            nearbyFittedModelsNum = 3;
+            neighboringSamplingGridPositions = neighboringSamplingGridPositions(1:nearbyFittedModelsNum);
+            distancesToSamplingGridPositions = distancesToSamplingGridPositions(1:nearbyFittedModelsNum);
+            neigboringRTVFobjIndices = centerConeMatchObjIndices(neighboringSamplingGridPositions);
+            distanceBasedWeights = 1./ distancesToSamplingGridPositions;
+            distanceBasedWeights = distanceBasedWeights/sum(distanceBasedWeights);
+        end
+
+        % Compute the pooledConeIndicesAndWeights for each of the neigboringRTVFobj
+        pooledConeIndicesAndWeightsForNearbyObj = cell(1, numel(neigboringRTVFobjIndices));
+        for iNearbyObj = 1:numel(neigboringRTVFobjIndices)
+            iObj = neigboringRTVFobjIndices(iNearbyObj);
+            theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{iObj};
+            pooledConeIndicesAndWeightsForNearbyObj{iNearbyObj} = computePooledConeIndicesAndWeightsFromRTVFTobject(...
+                theRTVFTobj, indicesOfCenterCones, weightsOfCenterCones, ...
+                totalCenterStrengthForModelRF(iObj), totalSurroundStrengthForModelRF(iObj), ...
+                compensateForVariationsInConeEfficiency);
+        end
+
+        % Accumulate weigted surround weights
+        for iNearbyObj = 1:numel(neigboringRTVFobjIndices)
+            newSurroundConeIndices = pooledConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeIndices;
+            newSurroundConeWeights = pooledConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeWeights *distanceBasedWeights(iNearbyObj);
+
+            if (iNearbyObj == 1) 
+                surroundConeIndices = newSurroundConeIndices;
+                surroundConeWeights = newSurroundConeWeights;
+            else
+                % Find which of the newSurroundConeIndices already exist in
+                % the surroundConeIndices
+                [ia,ib] = ismember(newSurroundConeIndices, surroundConeIndices);
+
+                % Sum weights (to the weights of previously existing cone indices)
+                for i = 1:numel(ia)
+                    if (ia(i) == 1)
+                        surroundConeWeights(ib(i)) = surroundConeWeights(ib(i)) + newSurroundConeWeights(i); 
+                    end
+                end
+                % Add weights (of not previoulsy included cone indices)
+                for i = 1:numel(ia)
+                    if (ia(i) == 0)
+                        surroundConeWeights = cat(1, surroundConeWeights, newSurroundConeWeights(i));
+                        surroundConeIndices = cat(1, surroundConeIndices, newSurroundConeIndices(i));
+                    end
+                end
+            end
+        end
         
-        
-        % Update the center cone indices and weights for the target midgetRGC center 
-        % so we can pass that info to theRetinalConePoolingWeightsComputeFunction()
-        modelConstants.indicesOfCenterCones = indicesOfCenterCones;
-        modelConstants.weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
+        % Pooled cone indices and weights for this RGC
+        pooledConeIndicesAndWeights.centerConeWeights = pooledConeIndicesAndWeightsForNearbyObj{1}.centerConeWeights;
+        pooledConeIndicesAndWeights.centerConeIndices = pooledConeIndicesAndWeightsForNearbyObj{1}.centerConeIndices;
 
+        pooledConeIndicesAndWeights.surroundConeIndices = surroundConeIndices;
+        pooledConeIndicesAndWeights.surroundConeWeights = surroundConeWeights;
 
-        % Compute the pooled cone indices and weights using the
-        % theRetinalConePoolingWeightsComputeFunction & theRetinalConePoolingParamsVector
-        pooledConeIndicesAndWeights = theRetinalConePoolingWeightsComputeFunction(...
-            modelConstants, theRetinalConePoolingParamsVector);
+        visualizeRetinalRFsurroundMapFromWeigtedAcrossRTVFobjects = ~true;
+        if (visualizeRetinalRFsurroundMapFromWeigtedAcrossRTVFobjects)
+            figure(5678); clf;
 
+            modelConstants = obj.theRetinaToVisualFieldTransformerOBJList{neigboringRTVFobjIndices(1)}.rfComputeStruct.modelConstants;
+            xx = modelConstants.spatialSupportDegs(:,1);
+            idx = find(abs(xx)< max(visualizedSpatialExtent));
+            spatialSupportDegs = modelConstants.spatialSupportDegs(idx,:);
 
-        % Extract the model center and surround retinal cone pooling weights
-        currentRGCCenterConeWeights = pooledConeIndicesAndWeights.centerConeWeights;
+            
+            theConePositionsDegs = modelConstants.theConeMosaic.coneRFpositionsDegs(pooledConeIndicesAndWeights.centerConeIndices,:);
+            rfCenterPositionDegs = mean(theConePositionsDegs,1);
+    
+            for iNearbyObj = 1:numel(neigboringRTVFobjIndices)
+                ax = subplot(2,2,iNearbyObj);
+                surroundConeIndices = pooledConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeIndices;
+                surroundConeWeights = pooledConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeWeights;
+                theConePositionsDegs = modelConstants.theConeMosaic.coneRFpositionsDegs(surroundConeIndices,:);
+                theConePositionsDegs = bsxfun(@minus, theConePositionsDegs, rfCenterPositionDegs);
+                theModelRetinalRFsurroundConeMap = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
+                    modelConstants.theConeMosaic,...
+                    theConePositionsDegs, ...
+                    surroundConeWeights, ...
+                    spatialSupportDegs);
 
-        currentRGCSurroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights;
-        currentRGCNonConnectableSurroundConeWeights = pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights;
-
-        fprintf('fitted model RGC center/surround/surround non-connectable total weights: %2.2f (%d cones)/%2.2f (%d cones)/%2.2f (%d cones)\n', ...
-            sum(fittedCenterConeWeights), numel(fittedCenterConeWeights), ...
-            sum(fittedSurroundConeWeights), numel(fittedSurroundConeWeights), ...
-            sum(fittedNonConnectableSurroundConeWeights), numel(fittedNonConnectableSurroundConeWeights));
-
-        fprintf('current RGC center/surround total weights: %2.2f (%d cones)/%2.2f (%d cones)/%2.2f (%d cones)\n', ...
-            sum(currentRGCCenterConeWeights), numel(currentRGCCenterConeWeights), ...
-            sum(currentRGCSurroundConeWeights), numel(currentRGCSurroundConeWeights), ...
-            sum(currentRGCNonConnectableSurroundConeWeights), numel(currentRGCNonConnectableSurroundConeWeights));
-        
-        if (compensateForVariationsInConeEfficiency)
-            if (isnan(totalCenterStrengthForModelRF(iObj)))
-                idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights > 0);
-                weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights(idx);
-                totalCenterStrengthForModelRF(iObj) = sum(weights(:));
+                imagesc(ax,modelConstants.spatialSupportDegs(:,1), modelConstants.spatialSupportDegs(:,2), theModelRetinalRFsurroundConeMap);
+                axis(ax, 'image');
+                set(ax, 'XLim', visualizedSpatialExtent, 'YLim', visualizedSpatialExtent, 'FontSize', 16);
+                title(ax,sprintf('nearby model %d surround (weight: %2.2f)\n(%d surround cones, %d center cones)', ...
+                    iNearbyObj, distanceBasedWeights(iNearbyObj), numel(surroundConeIndices), numel(pooledConeIndicesAndWeights.centerConeIndices)));
             end
 
-            if (isnan(totalSurroundStrengthForModelRF(iObj)))
-                idx = find(theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights > 0);
-                weights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights(idx);
-                totalSurroundStrengthForModelRF(iObj) = sum(weights(:));
-            end
 
-            % Center cone indices and weights for the current RGC
-            totalCenterStrengthForThisRF = sum(pooledConeIndicesAndWeights.centerConeWeights);
-            centerStrengthCorrectionFactor = totalCenterStrengthForModelRF(iObj)/totalCenterStrengthForThisRF;
-            pooledConeIndicesAndWeights.centerConeWeights = pooledConeIndicesAndWeights.centerConeWeights * centerStrengthCorrectionFactor;
+            ax = subplot(2,2,4);
+            theConePositionsDegs = modelConstants.theConeMosaic.coneRFpositionsDegs(pooledConeIndicesAndWeights.surroundConeIndices,:);
+            theConePositionsDegs = bsxfun(@minus, theConePositionsDegs, rfCenterPositionDegs);
+            theRGCRetinalRFsurroundConeMap = RetinaToVisualFieldTransformer.retinalSubregionConeMapFromPooledConeInputs(...
+                    modelConstants.theConeMosaic,...
+                    theConePositionsDegs, ...
+                    pooledConeIndicesAndWeights.surroundConeWeights, ...
+                    spatialSupportDegs);
 
-            % Surround strength correction factor
-            % First adjust for different # of S-cones
-            fittedBoost = 1 + sum(fittedNonConnectableSurroundConeWeights)/sum(fittedSurroundConeWeights);
-            currentBoost = 1 + sum(currentRGCNonConnectableSurroundConeWeights)/sum(currentRGCSurroundConeWeights);
-            surroundBoostRatio = currentBoost/fittedBoost;
-            pooledConeIndicesAndWeights.surroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights * surroundBoostRatio;
+            imagesc(ax,modelConstants.spatialSupportDegs(:,1), modelConstants.spatialSupportDegs(:,2), theRGCRetinalRFsurroundConeMap);
+            axis(ax, 'image')
+            set(ax, 'XLim', visualizedSpatialExtent, 'YLim', visualizedSpatialExtent, 'FontSize', 16);
+            title(ax, sprintf('RGC %d surround\n(%d surround cones)', iSortedRGCindex, numel(pooledConeIndicesAndWeights.surroundConeWeights)));
+            colormap(gray(1024))
+            drawnow;
+        end
 
-            % Adjust for total strength
-            totalSurroundStrengthForThisRF = sum(pooledConeIndicesAndWeights.surroundConeWeights);
-            surroundStrengthCorrectionFactor = totalSurroundStrengthForModelRF(iObj)/totalSurroundStrengthForThisRF;
-            pooledConeIndicesAndWeights.surroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights * surroundStrengthCorrectionFactor;
-
-            % Keep track for printing the stats
-            centerCorrectionFactors(iRGC) = (centerStrengthCorrectionFactor-1)*100;
-            surroundCorrectionFactors(iRGC) = (surroundStrengthCorrectionFactor-1)*100;
-        end % compensateForVariationsInConeEfficiency
 
 
         % Set the theMidgetRGCmosaic.rgcRFcenterConePoolingMatrix and
@@ -192,30 +226,85 @@ function generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTrans
             pooledConeIndicesAndWeights.centerConeWeights;
         obj.rgcRFsurroundConePoolingMatrix(pooledConeIndicesAndWeights.surroundConeIndices,iRGC) = ...
             pooledConeIndicesAndWeights.surroundConeWeights;
-       
-
-        % Plot how the sum(surroundWeights)/sum(centerWeights) changes with
-        % eccentricity within the patch
-        hFig = figure(1001);
-        if (iSortedRGCindex == 1)
-            set(hFig, 'Color', [1 1 1]);
-            clf;
+      
+        if (max(pooledConeIndicesAndWeights.centerConeWeights(:)) ~= 1)
+            error('Max center weight must be 1');
         end
 
-        ax = subplot(1, numel(theRetinaToVisualFieldTransformerOBJList), iObj);
-        hold(ax, 'on');
 
-        plot(ax, distancesToEccGrids(iObj), sum(pooledConeIndicesAndWeights.surroundConeWeights) / sum(pooledConeIndicesAndWeights.centerConeWeights), 'k.');
-        title(sprintf('RGC %d of %d (%d center cones)', iSortedRGCindex,numel(sortedRGCindices), obj.theConesNumPooledByTheRFcenterGrid(iObj)))
-        
-        xlabel(ax,'distance to nearest ecc grid (degs)');
-        set(ax, 'XLim', [0 1], 'YLim', [0 1], 'FontSize', 16);
-        ylabel(ax, 'integrated S/C weights ratio (retinal)')
-        drawnow;
+    end
+end
+
+function pooledConeIndicesAndWeights = computePooledConeIndicesAndWeightsFromRTVFTobject(theRTVFTobj, ...
+    indicesOfCenterCones, weightsOfCenterCones,  ...
+    totalCenterStrengthForModelRF, totalSurroundStrengthForModelRF, compensateForVariationsInConeEfficiency)
+
+    % Extract the retinal cone pooling weights compute function
+    theRetinalConePoolingWeightsComputeFunction = theRTVFTobj.rfComputeStruct.modelConstants.weightsComputeFunctionHandle;
+    
+    % Extract the retinal cone pooling weights params vector
+    theRetinalConePoolingParamsVector = theRTVFTobj.rfComputeStruct.retinalConePoolingParams.finalValues;
+
+    % Extract the model constants
+    modelConstants = theRTVFTobj.rfComputeStruct.modelConstants;
+       
+    % Extract the model center and surround retinal cone pooling weights
+    fittedCenterConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.centerConeWeights;
+    fittedSurroundConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.surroundConeWeights;
+    fittedNonConnectableSurroundConeWeights = theRTVFTobj.rfComputeStruct.pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights;
+
+    % Update the center cone indices and weights for the target midgetRGC center 
+    % so we can pass that info to theRetinalConePoolingWeightsComputeFunction()
+    modelConstants.indicesOfCenterCones = indicesOfCenterCones;
+    modelConstants.weightsOfCenterCones = weightsOfCenterCones;
+
+
+    % Compute the pooled cone indices and weights using the
+    % theRetinalConePoolingWeightsComputeFunction & theRetinalConePoolingParamsVector
+    pooledConeIndicesAndWeights = theRetinalConePoolingWeightsComputeFunction(...
+            modelConstants, theRetinalConePoolingParamsVector);
+
+    % Extract the model center and surround retinal cone pooling weights
+    currentRGCCenterConeWeights = pooledConeIndicesAndWeights.centerConeWeights;
+
+    currentRGCSurroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights;
+    currentRGCNonConnectableSurroundConeWeights = pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights;
+
+    beVerbose = false;
+    if (beVerbose)
+    fprintf('fitted model RGC center/surround/surround/non-connectable total weights: %2.2f (%d cones)/%2.2f (%d cones)/%2.2f (%d S-cones)\n', ...
+            sum(fittedCenterConeWeights), numel(fittedCenterConeWeights), ...
+            sum(fittedSurroundConeWeights), numel(fittedSurroundConeWeights), ...
+            sum(fittedNonConnectableSurroundConeWeights), numel(fittedNonConnectableSurroundConeWeights));
+
+    fprintf('current RGC center/surround/non-connectable total weights: %2.2f (%d cones)/%2.2f (%d cones)/%2.2f (%d S-cones)\n', ...
+            sum(currentRGCCenterConeWeights), numel(currentRGCCenterConeWeights), ...
+            sum(currentRGCSurroundConeWeights), numel(currentRGCSurroundConeWeights), ...
+            sum(currentRGCNonConnectableSurroundConeWeights), numel(currentRGCNonConnectableSurroundConeWeights));
     end
 
     if (compensateForVariationsInConeEfficiency)
-        fprintf('Center correction factors:   [ %+02.1f%% (min)  ..  %+02.1f%% (max)] \n', min(centerCorrectionFactors), max(centerCorrectionFactors));
-        fprintf('Surround correction factors: [ %+02.1f%% (min)  ..  %+02.1f%% (max)] \n', min(surroundCorrectionFactors), max(surroundCorrectionFactors)); 
-    end
+        % Center cone indices and weights for the current RGC
+        totalCenterStrengthForThisRF = sum(pooledConeIndicesAndWeights.centerConeWeights);
+        centerStrengthCorrectionFactor = totalCenterStrengthForModelRF/totalCenterStrengthForThisRF;
+        pooledConeIndicesAndWeights.centerConeWeights = pooledConeIndicesAndWeights.centerConeWeights * centerStrengthCorrectionFactor;
+
+        % Surround strength correction factor
+        % First adjust for different # of S-cones
+        fittedBoost = 1 + sum(fittedNonConnectableSurroundConeWeights)/sum(fittedSurroundConeWeights);
+        currentBoost = 1 + sum(currentRGCNonConnectableSurroundConeWeights)/sum(currentRGCSurroundConeWeights);
+        surroundBoostRatio = currentBoost/fittedBoost;
+        pooledConeIndicesAndWeights.surroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights * surroundBoostRatio;
+
+        % Adjust for total strength
+        totalSurroundStrengthForThisRF = sum(pooledConeIndicesAndWeights.surroundConeWeights);
+        surroundStrengthCorrectionFactor = totalSurroundStrengthForModelRF/totalSurroundStrengthForThisRF;
+        pooledConeIndicesAndWeights.surroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights * surroundStrengthCorrectionFactor;
+     end % compensateForVariationsInConeEfficiency
+
+     % Normalize weights
+     normalizingWeight = max(pooledConeIndicesAndWeights.centerConeWeights(:));
+     pooledConeIndicesAndWeights.centerConeWeights = pooledConeIndicesAndWeights.centerConeWeights / normalizingWeight;
+     pooledConeIndicesAndWeights.surroundConeWeights = pooledConeIndicesAndWeights.surroundConeWeights / normalizingWeight;
+
 end

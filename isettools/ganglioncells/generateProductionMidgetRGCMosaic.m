@@ -5,6 +5,7 @@ function generateProductionMidgetRGCMosaic()
         'sizeDegs',  [3 3], ...        
         'whichEye', 'right eye');
 
+    H1cellIndex = 1;
 
     % Generate mosaic filename and directory
     [mosaicFileName, mosaicDirectory] = generateMosaicFileName(mosaicCenterParams);
@@ -12,14 +13,15 @@ function generateProductionMidgetRGCMosaic()
     % Actions to perform
     actionToPerform = 'generateCenterConnectedMosaic';
     actionToPerform = 'generateR2VFTobjects';
+    actionToPerform = 'generateSurroundParameterEccentricityMaps';
 
     switch (actionToPerform)
-        case 'generateCenterConnectedMosaic'
-            generateCenterConnectedMosaic(mosaicCenterParams, mosaicFileName);
 
-        case 'generateR2VFTobjects'
+        case 'generateSurroundParameterEccentricityMaps'
+            R2VFTobjFileName = R2VFTobjFileNameForMosaicFileName(mosaicFileName, H1cellIndex);
+            generateSurroundParameterEccentricityMaps(mosaicFileName,R2VFTobjFileName);
 
-            H1cellIndex = 1;
+        case 'generateR2VFTobjects' 
             mosaicSurroundParams = struct(...
                 'eccentricitySamplingGridHalfSamplesNum', 1, ...                         % generate R2VFTobjects at 2*gridHalfSamplesNum + 1 spatial positions
                 'centerConnectableConeTypes', [cMosaic.LCONE_ID cMosaic.MCONE_ID], ...   % cone types that can connect to the RF center
@@ -39,12 +41,90 @@ function generateProductionMidgetRGCMosaic()
 
             generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsParams, mosaicFileName, mosaicDirectory);
 
+        case 'generateCenterConnectedMosaic'
+            generateCenterConnectedMosaic(mosaicCenterParams, mosaicFileName);
+
         otherwise
             error('Unknown action: ''%s''.', actionToPerform);
     end
-
-
 end
+
+function generateSurroundParameterEccentricityMaps(mosaicFileName, R2VFTobjFileName)
+
+    % Load the center-connected mosaic
+    load(mosaicFileName, 'theMidgetRGCmosaic');
+
+
+    % Load the computed R2VFTobjects
+    load(R2VFTobjFileName, 'theRTFVTobjList', 'theOpticsPositionGrid', ...
+                'theConesNumPooledByTheRFcenterGrid', ...
+                'theVisualSTFSurroundToCenterRcRatioGrid', ...
+                'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid');
+
+
+    visualizeFittedModels = ~true;
+
+    
+    if (visualizeFittedModels)
+        theConesNumPooledList = unique(theConesNumPooledByTheRFcenterGrid);
+        
+        xLims(1) = min(theRTFVTobjList{1}.theConeMosaic.coneRFpositionsDegs(:,1));
+        xLims(2) = max(theRTFVTobjList{1}.theConeMosaic.coneRFpositionsDegs(:,1));
+        yLims(1) = min(theRTFVTobjList{1}.theConeMosaic.coneRFpositionsDegs(:,2));
+        yLims(2) = max(theRTFVTobjList{1}.theConeMosaic.coneRFpositionsDegs(:,2));
+
+        for theConesNumPooledIndex = 1:numel(theConesNumPooledList)
+            iRTVobjIndices = find(theConesNumPooledByTheRFcenterGrid == theConesNumPooledList(theConesNumPooledIndex));
+            spatialPositions = theOpticsPositionGrid(iRTVobjIndices,:);
+            
+            figure(theConesNumPooledIndex); clf;
+            ax = subplot('Position', [0.01 0.01 0.99 0.99]);
+            set(ax, 'Color', [0 0 0]);
+
+            for idx = 1:numel(iRTVobjIndices)
+                iRTVobjIndex = iRTVobjIndices(idx)
+                theRTVFobj = theRTFVTobjList{iRTVobjIndex};
+    
+                [~, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, ...
+                    pooledConeIndicesAndWeights] = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...
+                     theRTVFobj.rfComputeStruct.modelConstants, ...
+                     theRTVFobj.rfComputeStruct.retinalConePoolingParams.finalValues);
+    
+                spatialPositions(idx,:)
+                xDegs = theRTVFobj.rfComputeStruct.modelConstants.spatialSupportDegs(:,1) + spatialPositions(idx,1);
+                yDegs = theRTVFobj.rfComputeStruct.modelConstants.spatialSupportDegs(:,2) + spatialPositions(idx,2);
+                imagesc(ax, xDegs, yDegs, theRetinalRFsurroundConeMap/max(theRetinalRFsurroundConeMap(:)));
+                hold(ax, 'on')
+                %plot(ax, spatialPositions(idx,1), spatialPositions(idx,2), 'r+');
+                axis 'equal'
+                colormap(ax, gray(1024))
+                
+
+            end
+    
+            pause
+            
+            %title('spatial positions fitted (%d center cones)', theConesNumPooledList(theConesNumPooledIndex)); 
+            %axis 'equal'
+            %set(gca, 'XLim', xLims, 'yLim', yLims);
+        end
+    end
+
+    theMidgetRGCmosaic.generateCenterSurroundSpatialPoolingRF(theRTFVTobjList, ...
+                        theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
+                        theVisualSTFSurroundToCenterRcRatioGrid, theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid);
+
+
+    % Save the updated midgetRGCmosaic which now includes  the computed
+    % RTVFTobjList as well as the different grids:
+    %  - 'theOpticsPositionGrid'
+    %  - 'theConesNumPooledByTheRFcenterGrid'
+    %  - 'theVisualSTFSurroundToCenterRcRatioGrid'
+    %  - 'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid'
+    save(mosaicFileName, 'theMidgetRGCmosaic', '-v7.3');
+    
+end
+
 
 function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsParams, mosaicFileName, mosaicDirectory)
 
