@@ -41,21 +41,15 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpti
     end
 
     if (isempty(theOpticalImage))
-        %fprintf('No optics were passed. Using the optics used to derive the center/surround pooling weights.')
-        % Retrieve the optics
-        % Note: if the obj.theOpticsPositionGrid contains more than one
-        % position, we will have to generate multiple optical images
-        % more than 1 
-        opticalPositionsNum = size(obj.theOpticsPositionGrid,1);
-        opticalPositionIndex = 1;
-        %if (opticalPositionsNum > 1)
-        %    fprintf(2,'Computing with multiple optical images is not yet supported. Using the first one.\n');
-        %end
-    
-        % Retrieve the optics params from the first RTVFTobj
+        % Retrieve the optics params from the first RTVFTobj at the center
+        % of the mosaic
+        [~, opticalPositionIndex] = min(sum((bsxfun(@minus, obj.theSamplingPositionGrid, obj.eccentricityDegs)).^2,2));
         theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{opticalPositionIndex};
         opticsParams = theRTVFTobj.opticsParams;
     
+        fprintf('No optics were passed. Will use optics at (%2.2f,%2.2f) degs', ...
+            opticsParams.positionDegs(1), opticsParams.positionDegs(2));
+
         % Generate the OI based on the retrieved opticsParams
         oiEnsemble = obj.inputConeMosaic.oiEnsembleGenerate(opticsParams.positionDegs, ...
                         'zernikeDataBase', opticsParams.ZernikeDataBase, ...
