@@ -179,10 +179,9 @@ classdef midgetRGCMosaic < handle
         % visualization and RFoverlap analysis
         retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum, varargin);
 
-        % Method to generate the C/S spatial pooling RF based on a passed RTVFT
-        % object(s), which encodes C/S weights to achieve a desired visual STF
-        % for specific optics and # of center cones
-        generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTransformerOBJList, ...
+        % Method to generate the C/S spatial pooling RFs based on the computed list of RTVFT
+        % object(s) at different positions and # of center cones
+        generateCenterSurroundSpatialPoolingRFs(obj, theRetinaToVisualFieldTransformerOBJList, ...
             theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
             theVisualSTFSurroundToCenterRcRatioGrid, ...
             theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid);
@@ -240,6 +239,11 @@ classdef midgetRGCMosaic < handle
     methods (Access=private)
         generateInputConeMosaic(obj, pResults);
         generateRFpositionsAndWireTheirCenters(obj);
+
+        % Method to return the triangulatingRTVFobjectIndicesAndWeights for
+        % an RGC
+        [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
+            triangulatingRTVFobjectIndicesAndWeights(obj,iRGC);
 
         
         % Method to crop RGCs on the border

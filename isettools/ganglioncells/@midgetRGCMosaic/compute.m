@@ -41,13 +41,12 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpti
     end
 
     if (isempty(theOpticalImage))
-        % Retrieve the optics params from the first RTVFTobj at the center
-        % of the mosaic
+        % Retrieve the optics params from the RTVFTobj at the center of the mosaic
         [~, opticalPositionIndex] = min(sum((bsxfun(@minus, obj.theSamplingPositionGrid, obj.eccentricityDegs)).^2,2));
         theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{opticalPositionIndex};
         opticsParams = theRTVFTobj.opticsParams;
     
-        fprintf('No optics were passed. Will use optics at (%2.2f,%2.2f) degs', ...
+        fprintf('No optics were passed. Computing retinal image using optics at (%2.2f,%2.2f) degs\n', ...
             opticsParams.positionDegs(1), opticsParams.positionDegs(2));
 
         % Generate the OI based on the retrieved opticsParams
@@ -64,6 +63,8 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpti
     
         theOpticalImage = oiEnsemble{1};
         clear 'theRTVFTobj';
+    else
+        fprintf('Computing retinal image using supplied optics\n');
     end
 
     % Process the null scene
