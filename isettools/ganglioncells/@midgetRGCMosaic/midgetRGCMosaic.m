@@ -186,6 +186,11 @@ classdef midgetRGCMosaic < handle
             theVisualSTFSurroundToCenterRcRatioGrid, ...
             theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid);
 
+        % Method to return the indices and weights of the triangulating RTVFobjects for an RGC
+        [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
+            triangulatingRTVFobjectIndicesAndWeights(obj,iRGC);
+
+
         % Method to adjust the midgetRGC RF overlap
         adjustRFoverlap(obj, overlapRatio);
 
@@ -239,12 +244,6 @@ classdef midgetRGCMosaic < handle
     methods (Access=private)
         generateInputConeMosaic(obj, pResults);
         generateRFpositionsAndWireTheirCenters(obj);
-
-        % Method to return the triangulatingRTVFobjectIndicesAndWeights for
-        % an RGC
-        [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
-            triangulatingRTVFobjectIndicesAndWeights(obj,iRGC);
-
         
         % Method to crop RGCs on the border
         cropRGCsOnTheBorder(obj);
