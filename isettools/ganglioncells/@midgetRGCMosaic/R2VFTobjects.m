@@ -2,15 +2,23 @@ function [RTVFTobjList, ...
           theSamplingPositionGrid, ...
           theConesNumPooledByTheRFcenterGrid, ...
           theVisualSTFSurroundToCenterRcRatioGrid, ...
-          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = generateRTVFobjects(...
-                   ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
-                   theMidgetRGCMosaic, eccentricitySamplingGrid, ...
-                   centerConnectableConeTypes, surroundConnectableConeTypes, ...
-                   coneWeightsCompensateForVariationsInConeEfficiency, ...
-                   CronerKaplanMultipliers, ...
-                   visualRFmodel, retinalConePoolingModel, ...
-                   targetSTFmatchMode, ...
-                   multiStartsNum, multiStartsNumDoGFit)
+          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = R2VFTobjects(...
+                   theMidgetRGCMosaic, ...
+                   eccentricitySamplingGrid, ...
+                   mosaicSurroundParams, opticsParams, fitParams)
+
+    ZernikeDataBase = opticsParams.ZernikeDataBase;
+    subjectRankOrder = opticsParams.subjectRankOrder;
+    pupilDiameterMM = opticsParams.pupilDiameterMM; 
+
+    centerConnectableConeTypes = mosaicSurroundParams.centerConnectableConeTypes;
+    surroundConnectableConeTypes = mosaicSurroundParams.surroundConnectableConeTypes;
+    coneWeightsCompensateForVariationsInConeEfficiency = mosaicSurroundParams.coneWeightsCompensateForVariationsInConeEfficiency;
+    visualRFmodel = mosaicSurroundParams.visualRFmodel;
+    retinalConePoolingModel = mosaicSurroundParams.retinalConePoolingModel;
+    targetSTFmatchMode = mosaicSurroundParams.targetSTFmatchMode;
+    multiStartsNumDoGFit = fitParams.multiStartsNumDoGFit;
+    exportsDirectory = fitParams.exportsDirectory;
 
     % Find out the range of cones in the RF center
     allConesNumPooledByTheRFcenters = full(sum(theMidgetRGCMosaic.rgcRFcenterConeConnectivityMatrix,1));
@@ -21,7 +29,6 @@ function [RTVFTobjList, ...
     [RTVTOpticalPositionGrid, RTVTConesNumInRFcenterGrid] = ...
         meshgrid(1:size(eccentricitySamplingGrid,1), conesNumPooledByTheRFcenters);
     
-
     % Allocate memory
     RTVTobjectsNum = numel(RTVTConesNumInRFcenterGrid);
     RTVFTobjList = cell(RTVTobjectsNum,1);
@@ -31,17 +38,27 @@ function [RTVFTobjList, ...
     theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid = zeros(RTVTobjectsNum,1);
 
     for iRTVobjIndex = 1:RTVTobjectsNum
-        % Optics position
+        % Sampling position (within the  mosaic)
         eccPositionIndex = RTVTOpticalPositionGrid(iRTVobjIndex);
         samplingPositionDegs = eccentricitySamplingGrid(eccPositionIndex,:);
 
         % Cones num in RF center
         conesNumPooled = RTVTConesNumInRFcenterGrid(iRTVobjIndex);
 
+        if (conesNumPooled < 3)
+            multiStartsNum = 8;
+        else
+            multiStartsNum = 4;
+        end
+
         % Get indices of center cones for the RGC that is closest to the samplingPositionDegs
-        indicesOfRGCsWithThisManyCenterCones  = find(allConesNumPooledByTheRFcenters == conesNumPooled);
+        indicesOfRGCsWithThisManyCenterCones = find(allConesNumPooledByTheRFcenters == conesNumPooled);
         [~,idx] = min(sum((bsxfun(@minus, theMidgetRGCMosaic.rgcRFpositionsDegs(indicesOfRGCsWithThisManyCenterCones,:), samplingPositionDegs)).^2,2));
         theTargetRGCindex = indicesOfRGCsWithThisManyCenterCones(idx);
+
+        % Update the samplingPositionDegs to reflect the actual position of theTargetRGCindex
+        samplingPositionDegs = theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,:);
+
         indicesOfConesPooledByTheRFcenter = find(theMidgetRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,theTargetRGCindex)> 0);
         typesOfConesPooledByTheRFcenter = theMidgetRGCMosaic.inputConeMosaic.coneTypes(indicesOfConesPooledByTheRFcenter);
 
@@ -54,25 +71,31 @@ function [RTVFTobjList, ...
             sprintf('indicesOfConesPooledByTheRFcenter are not all connectable'));
 
         % Report types of cones in the RF center
+        fprintf(2,'\n============================================================= \n');
+        fprintf(2,'Fitting at eccentricity position (degs): (%2.2f, %2.2f) [fit index: %d of %d]', ...
+            samplingPositionDegs(1), samplingPositionDegs(2), iRTVobjIndex, RTVTobjectsNum);
+
         if (conesNumPooled == 1)
-            fprintf('\nCone type in single-cone RF center: ');
+            fprintf(2,'\nCone type in single-cone RF center (at %2.2f, %2.2f): ', ...
+                theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,1), theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,1));
         else
-            fprintf('\nCone types in multi-cone RF center: ');
+            fprintf(2,'\nCone types in multi-cone RF center (at %2.2f, %2.2f): ', ...
+                theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,1), theMidgetRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,1));
         end
 
         for iInputConeIndex = 1:numel(typesOfConesPooledByTheRFcenter)
             switch (typesOfConesPooledByTheRFcenter(iInputConeIndex))
                 case cMosaic.LCONE_ID
-                    fprintf('L ');
+                    fprintf(2,'L ');
                 case cMosaic.MCONE_ID
-                    fprintf('M ');
+                    fprintf(2,'M ');
                 case cMosaic.SCONE_ID
-                    fprintf('S ');
+                    fprintf(2,'S ');
                 otherwise
                     error('not an LMS cone type');
             end
         end
-        fprintf('\n');
+        fprintf(2,'\n============================================================= \n');
 
         % Unit weights for all center cones
         weightsOfConesPooledByTheRFcenter = ones(1,numel(indicesOfConesPooledByTheRFcenter));
@@ -85,10 +108,6 @@ function [RTVFTobjList, ...
         radialTemporalEquivalentEccDegs = sqrt(sum(temporalEquivalentEccDegs.^2,2));
         scIntSensitivity = RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(radialTemporalEquivalentEccDegs);
         
-        % Apply CronerKaplanMultipliers
-        surroundToCenterRcRatio = surroundToCenterRcRatio * CronerKaplanMultipliers.RsRcRatio;
-        scIntSensitivity = scIntSensitivity * CronerKaplanMultipliers.SCintSensRatio;
-
         % Optics params
         [psfUpsampleFactor, wavefrontSpatialSamples] = psfAndWavefrontSamples(radialTemporalEquivalentEccDegs);
         theOpticsParams = struct(...
@@ -116,9 +135,7 @@ function [RTVFTobjList, ...
             'surroundToCenterRcRatio', surroundToCenterRcRatio, ...
             'surroundToCenterIntegratedSensitivityRatio', scIntSensitivity);
 
-        
-
-        % Compute the RetinaToVisualFieldTransformer for this (optics position, conesNumPooled) pair
+        % Compute the RetinaToVisualFieldTransformer for this (optics & cone position, conesNumPooled) pair
         % We are simulating the Croner&Kaplan estimation (1D STF, and we
         % are matching the fitted STF DoG model params)
         RTVFTobjList{iRTVobjIndex} = RetinaToVisualFieldTransformer(...
@@ -129,13 +146,22 @@ function [RTVFTobjList, ...
             'targetSTFmatchMode', targetSTFmatchMode, ...
             'multiStartsNumDoGFit', multiStartsNumDoGFit, ...
             'multiStartsNum', multiStartsNum , ...
-            'doDryRunFirst', true);
-
+            'doDryRunFirst', true, ...
+            'computedRTVObjectExportDirectory',  exportsDirectory);
 
         theSamplingPositionGrid(iRTVobjIndex,:) = samplingPositionDegs;
         theConesNumPooledByTheRFcenterGrid(iRTVobjIndex) = conesNumPooled;
         theVisualSTFSurroundToCenterRcRatioGrid(iRTVobjIndex) = surroundToCenterRcRatio;
         theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid(iRTVobjIndex) = scIntSensitivity;
+
+        % Append the grids and the current iRTVobjIndex
+        save(RTVFTobjList{iRTVobjIndex}.computedObjDataFileName, ...
+            'iRTVobjIndex', ...
+            'theSamplingPositionGrid', ...
+            'theConesNumPooledByTheRFcenterGrid', ...
+            'theVisualSTFSurroundToCenterRcRatioGrid', ...
+            'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid', ...
+            '-append');
     end
 end
 
@@ -154,5 +180,4 @@ function [psfUpsampleFactor, wavefrontSpatialSamples] = psfAndWavefrontSamples(r
         psfUpsampleFactor = 1;
         wavefrontSpatialSamples = 701;
     end
-
 end

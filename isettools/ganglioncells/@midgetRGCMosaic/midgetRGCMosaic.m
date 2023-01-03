@@ -75,8 +75,13 @@ classdef midgetRGCMosaic < handle
         % - visual STF properties (C/S radius, C/S int.ratio)
         theRetinaToVisualFieldTransformerOBJList;
 
-        theOpticsPositionGrid;
+        % The positions (within the mosaic) at which we fit an RTVFT object
+        theSamplingPositionGrid;
+
+        % The # of center cones for which we fit an RTVFT object
         theConesNumPooledByTheRFcenterGrid;
+
+        % The visual params for which we fit an RTVFT object
         theVisualSTFSurroundToCenterRcRatioGrid;
         theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
 
@@ -174,13 +179,17 @@ classdef midgetRGCMosaic < handle
         % visualization and RFoverlap analysis
         retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum, varargin);
 
-        % Method to generate the C/S spatial pooling RF based on a passed RTVFT
-        % object(s), which encodes C/S weights to achieve a desired visual STF
-        % for specific optics and # of center cones
-        generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTransformerOBJList, ...
-            theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
+        % Method to generate the C/S spatial pooling RFs based on the computed list of RTVFT
+        % object(s) at different positions and # of center cones
+        generateCenterSurroundSpatialPoolingRFs(obj, theRetinaToVisualFieldTransformerOBJList, ...
+            theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
             theVisualSTFSurroundToCenterRcRatioGrid, ...
             theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid);
+
+        % Method to return the indices and weights of the triangulating RTVFobjects for an RGC
+        [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
+            triangulatingRTVFobjectIndicesAndWeights(obj,iRGC);
+
 
         % Method to adjust the midgetRGC RF overlap
         adjustRFoverlap(obj, overlapRatio);
@@ -235,7 +244,6 @@ classdef midgetRGCMosaic < handle
     methods (Access=private)
         generateInputConeMosaic(obj, pResults);
         generateRFpositionsAndWireTheirCenters(obj);
-
         
         % Method to crop RGCs on the border
         cropRGCsOnTheBorder(obj);
@@ -244,8 +252,9 @@ classdef midgetRGCMosaic < handle
 
     % Static methods
     methods (Static)
-        % Method to generate RetinaToVisualTransformer objects for a midgetRGCMosaic
-        [RTVFTobjList, theOpticsPositionGrid, ...
+        % Method to generate RetinaToVisualTransformer objects for a
+        % midgetRGCMosaic (OLD)
+        [RTVFTobjList, theSamplingPositionGrid, ...
          theConesNumPooledByTheRFcenterGrid, theVisualSTFSurroundToCenterRcRatioGrid, ...
          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = generateRTVFobjects(...
                    ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
@@ -257,7 +266,20 @@ classdef midgetRGCMosaic < handle
                    targetSTFmatchMode, ...
                    multiStartsNum, multiStartsNumDoGFit);
 
+        % Method to generate RetinaToVisualTransformer objects for a
+        % midgetRGCMosaic (NEW)
+        [RTVFTobjList, theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
+          theVisualSTFSurroundToCenterRcRatioGrid, ...
+          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = R2VFTobjects(...
+                   theMidgetRGCMosaic, ...
+                   eccentricitySamplingGrid, ...
+                   mosaicSurroundParams, opticsParams, fitParams);
+
         extraDegs = extraConeMosaicDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
+
+        % Method to generate coordinates for eccentricitySamplingGrid passed to the RTVF object
+        gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords);
+
     end % Static metthods
 
 end

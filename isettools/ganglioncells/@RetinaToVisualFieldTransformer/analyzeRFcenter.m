@@ -33,7 +33,7 @@ function [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
     visualRFcenterConeMap = conv2(retinalRFcenterConeMap, obj.theVlambdaWeightedPSFData.vLambdaWeightedData, 'same');
 
     % Normalize to unit amplitude
-    visualRFcenterConeMap = visualRFcenterConeMap / max(visualRFcenterConeMap(:));
+    %visualRFcenterConeMap = visualRFcenterConeMap / max(visualRFcenterConeMap(:));
 
     if (obj.simulateCronerKaplanEstimation)
         % Since RF parameters by Croner&Kaplan were based on gratings, to

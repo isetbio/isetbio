@@ -3,8 +3,10 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
     % Parse input
     p = inputParser;
     p.addParameter('maxVisualizedRFs', 18, @(x)(isempty(x) || isscalar(x)));
+    p.addParameter('visualizedRFspatialExtent', [], @(x)(isempty(x) || isscalar(x)));
     p.addParameter('onlyForRGCwithIndex', [], @(x)(isempty(x) || isscalar(x)));
     p.addParameter('generateVideo', false, @islogical);
+    p.addParameter('videoFileName', [], @(x)(isempty(x) || ischar(x)));
     p.addParameter('withEccentricityCrossHairs', false, @islogical);
     p.addParameter('withPSFData', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('fontSize', 16, @isscalar);
@@ -12,8 +14,10 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
     p.parse(varargin{:});
 
     maxVisualizedRFs = p.Results.maxVisualizedRFs;
+    visualizedRFspatialExtent = p.Results.visualizedRFspatialExtent;
     onlyForRGCwithIndex = p.Results.onlyForRGCwithIndex;
     generateVideo = p.Results.generateVideo;
+    videoFileName = p.Results.videoFileName;
     eccentricityCrossHairs = p.Results.withEccentricityCrossHairs;
     thePSFData = p.Results.withPSFData;
     fontSize = p.Results.fontSize;
@@ -22,13 +26,16 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         fprintf(2,'The center and surround cone pooling matrices have not yet been set (no center/surround RF and no overlap) !!\n');
         return;
     end
+    
 
     % Compute center of mosaic
     mRGCmosaicCenterDegs = mean(obj.rgcRFpositionsDegs,1);
-   
+
     if (isempty(onlyForRGCwithIndex))
+
         % Sort RGCs according to their distance from the mosaic center
         ecc = sum((bsxfun(@minus, obj.rgcRFpositionsDegs, mRGCmosaicCenterDegs)).^2,2);
+        
         [~,sortedRGCindices] = sort(ecc, 'ascend');
     
         if (maxVisualizedRFs < 0)
@@ -44,6 +51,9 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
 
 
     if (generateVideo)
+        if (isempty(videoFileName))
+            videoFileName = 'RetinalRFs.mp4';
+        end
         videoOBJ = VideoWriter('RetinalRFs.mp4', 'MPEG-4');
         videoOBJ.FrameRate = 10;
         videoOBJ.Quality = 100;
@@ -51,7 +61,7 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
     end
 
     hFig = figure(4000); clf;
-    set(hFig, 'Position', [10 10 1450 900], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1650 1150], 'Color', [1 1 1]);
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 2, ...
@@ -78,25 +88,16 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         % Retrieve the RGCindex
         iRGC = sortedRGCindices(iSortedRGCindex);
 
+        % Compute the indices of the triangulating RTVFobjects and their
+        % contributing weights
+        [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
+            obj.triangulatingRTVFobjectIndicesAndWeights(iRGC);
+
         % Retrieve this cell's center cone indices and weights
-        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
+        connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
         indicesOfCenterCones = find(connectivityVector > 0.0001);
         weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
-
-        % Retrieve the correct RTVFTobj based on this cells position and
-        % #of center cones. For now only checking the centerConesNum
-%         iObj = find(...
-%             (obj.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) & ...  % match the conesNum in the center
-%             (distancesToEccGrid == min(distancesToEccGrid)) ...                     % match to the closest eccGrid position
-%             )
-        iObj = find(...
-            (obj.theConesNumPooledByTheRFcenterGrid == numel(indicesOfCenterCones)) ...  % match the conesNum in the center
-            );
-        theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{iObj};
-
-        % Extract the model constants
-        modelConstants = theRTVFTobj.rfComputeStruct.modelConstants;
-
+        
         connectivityVector = full(obj.rgcRFsurroundConePoolingMatrix(:, iRGC));
         indicesOfSurroundCones = find(connectivityVector > 0.0001);
         weightsOfSurroundCones = connectivityVector(indicesOfSurroundCones);
@@ -170,6 +171,10 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         spatialTicksX = linspace(mRGCmosaicXLims(1), mRGCmosaicXLims(end), 7);
         spatialTicksY = linspace(mRGCmosaicYLims(1), mRGCmosaicYLims(end), 7);
 
+
+        spatialTicksXHiRes = (round(mRGCmosaicXLims(1)*10)/10):0.1:(round(mRGCmosaicXLims(end)*10)/10);
+        spatialTicksYHiRes = (round(mRGCmosaicYLims(1)*10)/10):0.1:(round(mRGCmosaicYLims(end)*10)/10);
+        
         if (eccentricityCrossHairs)
             mosaicCenterDegs = mean(obj.rgcRFpositionsDegs,1);
             radius = spatialTicksX(2)-spatialTicksX(1);
@@ -264,20 +269,31 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
             
         end
 
-        for iRadius = 1:3
-             plot(ax, squeeze(crossHairsOutline(iRadius,1,:)), ...
-                      squeeze( crossHairsOutline(iRadius,2,:)), 'k-', 'LineWidth', 0.7, ...
+        if (eccentricityCrossHairs)
+            for iRadius = 1:3
+                plot(ax, squeeze(crossHairsOutline(iRadius,1,:)), ...
+                      squeeze(crossHairsOutline(iRadius,2,:)), 'k-', 'LineWidth', 0.7, ...
                       'Color', [0.5 0.5 0.5]);
+            end
         end
+
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
-        set(ax, 'XLim', mRGCmosaicXLims, 'YLim', mRGCmosaicYLims);
+        if (~isempty(visualizedRFspatialExtent))
+            set(ax, 'XLim', visualizedRFspatialExtent*[-0.5 0.5]+obj.rgcRFpositionsDegs(iRGC,1), ...
+                    'YLim', visualizedRFspatialExtent*[-0.5 0.5]+obj.rgcRFpositionsDegs(iRGC,2));
+            set(ax, 'XTick', spatialTicksXHiRes, 'XTickLabel', sprintf('%2.2f\n', spatialTicksXHiRes));
+            set(ax, 'YTick', spatialTicksYHiRes, 'YTickLabel', sprintf('%2.2f\n', spatialTicksYHiRes));
+        else
+            set(ax, 'XLim', mRGCmosaicXLims, 'YLim', mRGCmosaicYLims);
+            set(ax, 'XTick', spatialTicksX, 'XTickLabel', sprintf('%2.2f\n', spatialTicksX));
+            set(ax, 'YTick', spatialTicksY, 'YTickLabel', sprintf('%2.2f\n', spatialTicksY));
+        end
         colormap(ax, cMap);
         set(ax, 'Color', cMap(cMapEntries/2,:));
         set(ax, 'CLim', 0.7*max(theRetinalRFcenterConeMap(:))*[-1 1]);
         
-        set(ax, 'XTick', spatialTicksX, 'XTickLabel', sprintf('%2.2f\n', spatialTicksX));
-        set(ax, 'YTick', spatialTicksY, 'YTickLabel', sprintf('%2.2f\n', spatialTicksY));
+        
         ylabel(ax, 'space, y (degs)');
         grid(ax, 'on');
         xtickangle(ax, 90);
@@ -296,10 +312,16 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
 
         plot(ax,yCenterProfile-ySurroundProfile, ySupportDegs, 'k-', 'LineWidth', 1.0);
         plot(ax,mRGCmosaicYLims*0, mRGCmosaicYLims, 'k--', 'LineWidth', 0.5);
-        set(ax, 'YLim',  mRGCmosaicYLims);
+        if (~isempty(visualizedRFspatialExtent))
+            set(ax, 'YLim', visualizedRFspatialExtent*[-0.5 0.5]+obj.rgcRFpositionsDegs(iRGC,2));
+            set(ax, 'YTick', spatialTicksYHiRes, 'YTickLabel', sprintf('%2.2f\n', spatialTicksYHiRes));
+        else
+            set(ax, 'YLim', mRGCmosaicYLims);
+            set(ax, 'YTick', spatialTicksY, 'YTickLabel', sprintf('%2.2f\n', spatialTicksY));
+        end
         set(ax, 'XLim', profileRange);
         set(ax, 'XTick', profileTicks, 'XTickLabel', sprintf('%2.1f\n', profileTicks/max(profileTicks)));
-        set(ax, 'YTick', spatialTicksY, 'YTickLabel', sprintf('%2.2f\n', spatialTicksY));
+        
         grid(ax, 'on');
         axis(ax, 'square');
         set(ax, 'Xdir', 'reverse', 'YAxisLocation', 'right');
@@ -309,10 +331,37 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         title(ax,'retinal X- and Y-line weighting profiles', 'FontWeight', 'Normal');
 
 
-        % The fitted model values
+        % The relationship of this RGC to the triangularing RTVF objects
         ax = subplot('Position', subplotPosVectors(2,1).v);
-        hold(ax, 'off');
-        RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, theRTVFTobj.rfComputeStruct.retinalConePoolingParams);
+
+        % All the RTVFob positions
+        examinedCenterConesNum = unique(obj.theConesNumPooledByTheRFcenterGrid);
+        for iCenterConesNumIndex = 1:numel(examinedCenterConesNum)
+            idx = find(obj.theConesNumPooledByTheRFcenterGrid == examinedCenterConesNum(iCenterConesNumIndex));
+            plot(ax, obj.theSamplingPositionGrid(idx,1), obj.theSamplingPositionGrid(idx,2), ...
+                'ko', 'MarkerSize', 12+10*iCenterConesNumIndex/numel(examinedCenterConesNum), 'LineWidth', 1.5);
+            hold(ax, 'on');
+        end
+
+        plot(ax, obj.theSamplingPositionGrid(triangulatingRTVFobjIndices,1), obj.theSamplingPositionGrid(triangulatingRTVFobjIndices,2), ...
+            'ro', 'MarkerSize', 12+2*obj.theConesNumPooledByTheRFcenterGrid(triangulatingRTVFobjIndices(1)), 'LineWidth', 1.5);
+        for k = 1:numel(triangulatingRTVFobjIndices)
+            plot(ax, [obj.rgcRFpositionsDegs(iRGC,1) obj.theSamplingPositionGrid(triangulatingRTVFobjIndices(k),1)], ...
+                     [obj.rgcRFpositionsDegs(iRGC,2) obj.theSamplingPositionGrid(triangulatingRTVFobjIndices(k),2)], ...
+                     'r-', 'LineWidth', triangulatingRTVFobjWeights(k)*10);
+        end
+
+        axis(ax, 'equal');
+        grid(ax, 'on');
+        xlabel(ax, 'space, x (degs)')
+        ylabel(ax, 'space, y (degs)')
+        set(ax, 'XLim', mRGCmosaicXLims, 'YLim', mRGCmosaicYLims);
+        set(ax, 'XTick', spatialTicksX, 'XTickLabel', sprintf('%2.2f\n', spatialTicksX));
+        set(ax, 'YTick', spatialTicksY, 'YTickLabel', sprintf('%2.2f\n', spatialTicksY));
+        set(ax, 'FontSize', fontSize);
+        
+
+        
 
         % The surround cone map
         ax = subplot('Position', subplotPosVectors(2,2).v);
@@ -320,46 +369,64 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         imagesc(ax,xSupportDegs, ySupportDegs, -theRetinalRFsurroundConeMap);
         hold(ax, 'on');
 
-        if (isfield(obj.inputConeMosaic.coneApertureModifiers, 'shape') && (strcmp(obj.inputConeMosaic.coneApertureModifiers.shape, 'Gaussian')))
-                gaussianSigma = obj.inputConeMosaic.coneApertureModifiers.sigma;
-                visualizedApertures = 3*sqrt(2)*gaussianSigma * obj.inputConeMosaic.coneApertureDiametersDegs(indicesOfIncludedSurroundCones);
-            else
-                fprintf(2,'cone aperture is not Gaussian, so cannot visualize characteristic radius. Visualizing the diameter\n');
-                visualizedApertures = obj.inputConeMosaic.coneApertureDiametersDegs(indicesOfIncludedSurroundCones);
-        end
+        labelSurroundCones = false;
+        if (labelSurroundCones)
 
-        for iCone = 1:numel(indicesOfIncludedSurroundCones)
-            xyCenter = obj.inputConeMosaic.coneRFpositionsDegs(indicesOfIncludedSurroundCones(iCone),:);
-            xConeOutline = xyCenter(1) + visualizedApertures(iCone)*0.5*cosd(0:20:360);
-            yConeOutline = xyCenter(2) + visualizedApertures(iCone)*0.5*sind(0:20:360);
-            switch (obj.inputConeMosaic.coneTypes(indicesOfIncludedSurroundCones(iCone)))
-                case cMosaic.LCONE_ID
-                    coneColor = obj.inputConeMosaic.lConeColor;
-                case cMosaic.MCONE_ID
-                    coneColor = obj.inputConeMosaic.mConeColor*0.5;
-                case cMosaic.SCONE_ID
-                    coneColor = obj.inputConeMosaic.sConeColor;
-                case cMosaic.KCONE_ID
-                    coneColor = obj.inputConeMosaic.kConeColor;
+            if (isfield(obj.inputConeMosaic.coneApertureModifiers, 'shape') && (strcmp(obj.inputConeMosaic.coneApertureModifiers.shape, 'Gaussian')))
+                    gaussianSigma = obj.inputConeMosaic.coneApertureModifiers.sigma;
+                    visualizedApertures = 3*sqrt(2)*gaussianSigma * obj.inputConeMosaic.coneApertureDiametersDegs(indicesOfIncludedSurroundCones);
+                else
+                    fprintf(2,'cone aperture is not Gaussian, so cannot visualize characteristic radius. Visualizing the diameter\n');
+                    visualizedApertures = obj.inputConeMosaic.coneApertureDiametersDegs(indicesOfIncludedSurroundCones);
             end
-            plot(ax,xConeOutline,yConeOutline,'k-', 'Color', coneColor, 'LineWidth', 1.0);
+
+        
+            for iCone = 1:numel(indicesOfIncludedSurroundCones)
+                xyCenter = obj.inputConeMosaic.coneRFpositionsDegs(indicesOfIncludedSurroundCones(iCone),:);
+                xConeOutline = xyCenter(1) + visualizedApertures(iCone)*0.5*cosd(0:20:360);
+                yConeOutline = xyCenter(2) + visualizedApertures(iCone)*0.5*sind(0:20:360);
+                switch (obj.inputConeMosaic.coneTypes(indicesOfIncludedSurroundCones(iCone)))
+                    case cMosaic.LCONE_ID
+                        coneColor = obj.inputConeMosaic.lConeColor;
+                    case cMosaic.MCONE_ID
+                        coneColor = obj.inputConeMosaic.mConeColor*0.5;
+                    case cMosaic.SCONE_ID
+                        coneColor = obj.inputConeMosaic.sConeColor;
+                    case cMosaic.KCONE_ID
+                        coneColor = obj.inputConeMosaic.kConeColor;
+                end
+                plot(ax,xConeOutline,yConeOutline,'k-', 'Color', coneColor, 'LineWidth', 1.0);
+            end
         end
 
         %plot(ax, surroundOutline.x, surroundOutline.y, 'k--', 'LineWidth', 1.0);
-        for iRadius = 1:3
-             plot(ax, squeeze(crossHairsOutline(iRadius,1,:)), ...
+        if (eccentricityCrossHairs)
+            for iRadius = 1:3
+                plot(ax, squeeze(crossHairsOutline(iRadius,1,:)), ...
                       squeeze( crossHairsOutline(iRadius,2,:)), 'k-', 'LineWidth', 0.7, ...
                       'Color', [0.5 0.5 0.5]);
+            end
         end
+        
         hold(ax, 'off');
         axis(ax, 'image'); axis(ax, 'xy');
-        set(ax, 'XLim', mRGCmosaicXLims, 'YLim', mRGCmosaicYLims)
-        set(ax, 'CLim', 0.05*max(theRetinalRFsurroundConeMap(:))*[-1 1]);
+
+        if (~isempty(visualizedRFspatialExtent))
+            set(ax, 'XLim', visualizedRFspatialExtent*[-0.5 0.5]+obj.rgcRFpositionsDegs(iRGC,1), ...
+                    'YLim', visualizedRFspatialExtent*[-0.5 0.5]+obj.rgcRFpositionsDegs(iRGC,2));
+            set(ax, 'XTick', spatialTicksXHiRes, 'XTickLabel', sprintf('%2.2f\n', spatialTicksXHiRes));
+            set(ax, 'YTick', spatialTicksYHiRes, 'YTickLabel', sprintf('%2.2f\n', spatialTicksYHiRes));
+        else
+            set(ax, 'XLim', mRGCmosaicXLims, 'YLim', mRGCmosaicYLims);
+            set(ax, 'XTick', spatialTicksX, 'XTickLabel', sprintf('%2.2f\n', spatialTicksX));
+            set(ax, 'YTick', spatialTicksY, 'YTickLabel', sprintf('%2.2f\n', spatialTicksY));
+        end
+
+        set(ax, 'CLim', 0.02*max(theRetinalRFcenterConeMap(:))*[-1 1]);
         set(ax, 'Color', cMap(cMapEntries/2,:));
         xlabel(ax, 'space, x (degs)')
         ylabel(ax, 'space, y (degs)')
-        set(ax, 'XTick', spatialTicksX, 'XTickLabel', sprintf('%2.2f\n', spatialTicksX));
-        set(ax, 'YTick', spatialTicksY, 'YTickLabel', sprintf('%2.2f\n', spatialTicksY));
+        
         grid(ax, 'on');
         xtickangle(ax, 90);
         set(ax, 'FontSize', fontSize);
@@ -377,10 +444,17 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
             -xSurroundProfile*0, cMap(512-256,:), 'none', 0.6, 1.5, '-');
         plot(ax,xSupportDegs, xCenterProfile-xSurroundProfile, 'k-', 'LineWidth', 1.0);
         plot(ax,mRGCmosaicXLims, mRGCmosaicXLims*0, 'k--', 'LineWidth', 0.5);
-        set(ax, 'XLim', mRGCmosaicXLims);
+        if (~isempty(visualizedRFspatialExtent))
+            set(ax, 'XLim', visualizedRFspatialExtent*[-0.5 0.5]+obj.rgcRFpositionsDegs(iRGC,1));
+            set(ax, 'XTick', spatialTicksXHiRes, 'XTickLabel', sprintf('%2.2f\n', spatialTicksXHiRes));
+        else
+            set(ax, 'XLim', mRGCmosaicXLims);
+            set(ax, 'XTick', spatialTicksX, 'XTickLabel', sprintf('%2.2f\n', spatialTicksX));
+        end
+
         set(ax, 'YLim', profileRange);
         set(ax, 'YTick', profileTicks, 'YTickLabel', sprintf('%2.1f\n', profileTicks/max(profileTicks)));
-        set(ax, 'XTick', spatialTicksX, 'XTickLabel', sprintf('%2.2f\n', spatialTicksX));
+        
         set(ax, 'FontSize', fontSize);
         xtickangle(ax, 90);
         grid(ax, 'on');
