@@ -14,8 +14,18 @@ function generateProductionMidgetRGCMosaic()
     % Actions to perform
     actionToPerform = 'generateCenterConnectedMosaic';
     actionToPerform = 'generateR2VFTobjects';
-    actionToPerform = 'reGenerateR2VFTobjectsAtSpecificPosition'
-    %actionToPerform = 'inspectR2VFTobjects';
+
+    % This action is interactive, asking the user for position and # of center cones
+    actionToPerform = 'reGenerateR2VFTobjectsAtSpecificPosition';
+    
+    
+    % This action is interactive, asking the user to select an RFVTobj file
+    %actionToPerform = 'inspectSingleRTVFobjectFile';
+
+    % This action is interactive, asking the user to select the file containing all the computed RFVTobjects
+    %actionToPerform = 'inspectAllRTVFobjectsFile';
+
+
     %actionToPerform = 'generateCenterSurroundRFs';
    
     %actionToPerform = 'visualizeFittedSpatialRFs';
@@ -41,11 +51,17 @@ function generateProductionMidgetRGCMosaic()
             R2VFTobjFileName = R2VFTobjFileNameForMosaicFileName(mosaicFileName, H1cellIndex);
             generateCenterSurroundRFs(mosaicFileName, R2VFTobjFileName);
 
-        case 'inspectR2VFTobjects'
+        case 'inspectSingleRTVFobjectFile'
             dropboxDir = localDropboxPath();
             [file,path] = uigetfile(fullfile(localDropboxPath(), '*.mat'), ...
                         'Select an RTVF file');
-            inspectSavedRTVFfile(fullfile(path,file));
+            inspectSingleRTVFobjectFile(fullfile(path,file));
+
+        case 'inspectAllRTVFobjectsFile'
+            dropboxDir = localDropboxPath();
+            [file,path] = uigetfile(fullfile(localDropboxPath(), '*.mat'), ...
+                        'Select an RTVF file');
+            inspectAllRTVFobjectsFile(fullfile(path,file));
 
         case {'reGenerateR2VFTobjectsAtSpecificPosition','generateR2VFTobjects'}
 
@@ -519,47 +535,64 @@ function generateCenterSurroundRFs(mosaicFileName, R2VFTobjFileName)
 end
 
 
-function inspectSavedRTVFfile(fName)
+function inspectSingleRTVFobjectFile(fName)
     load(fName, 'obj', 'iRTVobjIndex', ...
         'theConesNumPooledByTheRFcenterGrid', ...
-        'theSamplingPositionGrid', ...                         
-        'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid', ...                                     
-        'theVisualSTFSurroundToCenterRcRatioGrid');
+        'theSamplingPositionGrid');
 
-    theRTVFTobj = obj;
-    clear 'obj';
-    
+    peekIntoRTVFobj(obj, RTVobjIndex, theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, 999);
+end
+
+
+function inspectAllRTVFobjectsFile(fName)
+    load(fName, 'theRTFVTobjList', ...
+        'theConesNumPooledByTheRFcenterGrid', ...
+        'theOpticsPositionGrid');
+
+    for iObj = 1:numel(theRTFVTobjList)
+        peekIntoRTVFobj(theRTFVTobjList{iObj}, iObj, theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, 1000+iObj);
+    end
+end
+
+
+function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, figNo)
     % Target and achieved ratios
     targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
     targetSCintSensRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
     fittedRsRcRatio = theRTVFTobj.rfComputeStruct.theSTF.fittedRsRcRatio;
     fittedSCintSensRatio = theRTVFTobj.rfComputeStruct.theSTF.fittedSCIntSensRatio;
 
-    fprintf('RTVFobj at position (degs): %2.2f %2.2f\n', theSamplingPositionGrid(iRTVobjIndex,1), theSamplingPositionGrid(iRTVobjIndex,2));
+    fprintf('RTVFobj at position (degs): %2.2f %2.2f with %d center cones\n', ...
+        theSamplingPositionGrid(iRTVobjIndex,1), theSamplingPositionGrid(iRTVobjIndex,2), theConesNumPooledByTheRFcenterGrid(iRTVobjIndex));
     fprintf('Target Rs/Rc ratio: %2.2f, achieved: %2.2f\n', targetRsRcRatio, fittedRsRcRatio);
     fprintf('Target S/C int. sens. ratio: %2.3f, achieved: %2.3f\n', targetSCintSensRatio, fittedSCintSensRatio);
 
-    hFig = figure(999); clf;
+    hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 900 350], ...
-        'Name', sprintf('RTVF at position (degs): %2.2f, %2.2f', ...
+        'Name', sprintf('RTVF obj #%d  located at position (degs): %2.2f, %2.2f with %d center cones', ...
+                         iRTVobjIndex, ...
                          theSamplingPositionGrid(iRTVobjIndex,1), ...
-                         theSamplingPositionGrid(iRTVobjIndex,2)));
+                         theSamplingPositionGrid(iRTVobjIndex,2), ...
+                         theConesNumPooledByTheRFcenterGrid(iRTVobjIndex)));
     ax = subplot(1,2,1);
-    XLims = [1 15]; YLims = [1 15];
-    plotTargetAndAchievedParam(ax, targetRsRcRatio, fittedRsRcRatio, XLims, YLims, 'Rs/Rc ratio');
+    XLims = [1 15]; YLims = XLims;
+    XTicks = 0:2:20; YTicks = XTicks;
+    plotTargetAndAchievedParam(ax, targetRsRcRatio, fittedRsRcRatio, XLims, YLims, XTicks, YTicks, 'Rs/Rc ratio');
 
     ax = subplot(1,2,2);
-    XLims = [0 1]; YLims = [0 2];
-    plotTargetAndAchievedParam(ax, targetSCintSensRatio, fittedSCintSensRatio, XLims, YLims, 'int. sens. S/C ratio');
-
+    XLims = [0 1]; YLims = XLims;
+    XTicks = 0:0.2:1.0; YTicks = XTicks;
+    plotTargetAndAchievedParam(ax, targetSCintSensRatio, fittedSCintSensRatio, XLims, YLims, XTicks, YTicks, 'int. sens. S/C ratio');
+    drawnow;
 end
 
-function plotTargetAndAchievedParam(ax, targetVal, fittedVal, XLims, YLims, titleString)
+function plotTargetAndAchievedParam(ax, targetVal, fittedVal, XLims, YLims, XTicks, YTicks, titleString)
     
     plot(ax, XLims, YLims, 'k-', 'LineWidth', 1.0); hold(ax,'on');
     plot(ax, targetVal, fittedVal, 'ro', 'MarkerSize', 14, 'MarkerFaceColor', [1 0.5 0.5]);
-    axis(ax, 'square')
-    set(ax, 'XLim', XLims, 'YLim', YLims, 'FontSize', 16);
+    axis(ax, 'square');
+    grid(ax, 'on');
+    set(ax, 'XLim', XLims, 'YLim', YLims, 'XTick', XTicks, 'YTick', YTicks, 'FontSize', 16);
     title(ax, titleString);
     xlabel(ax,'target');
     ylabel(ax,'achieved');
@@ -600,6 +633,9 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
         'eccentricitySamplingGrid', eccentricitySamplingGrid, ...
         'inputPoolingVisualization', 'centerOnly');
 
+    % Assemble R2CFT filename
+    R2VFTobjFileName = R2VFTobjFileNameForMosaicFileName(mosaicFileName, mosaicSurroundParams.H1cellIndex);
+
     % multiStartsNum: select from:
     % - 1 (Single start run, fastest results), 
     % - some number (Multi-start), or 
@@ -612,63 +648,67 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
 
     tStart = cputime;
 
-    % Generate list of RTVT objects
-    [theRTFVTobjList, theOpticsPositionGrid, ...
-     theConesNumPooledByTheRFcenterGrid, ...
-     theVisualSTFSurroundToCenterRcRatioGrid, ...
-     theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = midgetRGCMosaic.R2VFTobjects(...
-                theMidgetRGCmosaic, eccentricitySamplingGrid, ...
-                mosaicSurroundParams, opticsParams, fitParams);
+    if (isempty(updateRTVFobjectAtPosition))
+        % Generate list of RTVT objects
+        [theRTFVTobjList, theOpticsPositionGrid, ...
+         theConesNumPooledByTheRFcenterGrid, ...
+         theVisualSTFSurroundToCenterRcRatioGrid, ...
+         theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = midgetRGCMosaic.R2VFTobjects(...
+                    theMidgetRGCmosaic, eccentricitySamplingGrid, ...
+                    mosaicSurroundParams, opticsParams, fitParams);
+    else
+        % Generate list of updated RTVT objects
+        [theUpdatedRTFVTobjList, theUpdatedOpticsPositionGrid, ...
+         theUpdatedConesNumPooledByTheRFcenterGrid] = midgetRGCMosaic.R2VFTobjects(...
+                    theMidgetRGCmosaic, eccentricitySamplingGrid, ...
+                    mosaicSurroundParams, opticsParams, fitParams);
+    end
 
     timeLapsedMinutes = (cputime - tStart)/60;
     fprintf('\n\n midgetRGCMosaic.R2VFTobjects were generated in %d positions and fitting took %f minutes\n', ...
-        size(eccentricitySamplingGrid,1), timeLapsedMinutes);
+            size(eccentricitySamplingGrid,1), timeLapsedMinutes);
+        
     
-    % Save the computed list of RTVFTobj and the various grids to the mosaic mat file
-    R2VFTobjFileName = R2VFTobjFileNameForMosaicFileName(mosaicFileName, mosaicSurroundParams.H1cellIndex);
-
     if (~isempty(updateRTVFobjectAtPosition))
-
-        % Compute sourceRTVFobjectIndex
-        sourceRTVFobjectIndex = find(...
-            (theConesNumPooledByTheRFcenterGrid == updateRTVFobjectWithCenterConesNum));
-
-        tmp = theRTFVTobjList{sourceRTVFobjectIndex};
-        clear 'theRTFVTobjList';
         
         % Load previously generated theRTFVTobjList
         load(R2VFTobjFileName, 'theRTFVTobjList', ...
             'theOpticsPositionGrid', 'theConesNumPooledByTheRFcenterGrid');
-        
-        % Compute destinationRTVFobjectIndex
-        % Retrieve the indices of the fitted RTVF objects that have the
-        % same # of center cones
-        centerConeMatchObjIndices = find(theConesNumPooledByTheRFcenterGrid == updateRTVFobjectWithCenterConesNum);
 
-        % Compute distance based weights for this RGC and the fitted RTVF objects
-        distancesToSamplingGridPositions = sqrt(sum((bsxfun(@minus, theOpticsPositionGrid(centerConeMatchObjIndices,:), targetPosition)).^2,2));
-        [~, idx] = sort(distancesToSamplingGridPositions, 'ascend');
-        destinationRTVFobjectIndex = idx(1);
+        for iUpdatedIndex = 1:numel(updateRTVFobjectWithCenterConesNum)
+            % Compute sourceRTVFobjectIndex
+            sourceRTVFobjectIndex = find(theUpdatedConesNumPooledByTheRFcenterGrid == updateRTVFobjectWithCenterConesNum(iUpdatedIndex));
 
-        fprintf('Will override the RTVF with %d cones at position (degs): %2.2f %2.2f\n', ...
-            theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
-            theOpticsPositionGrid(destinationRTVFobjectIndex,1), theOpticsPositionGrid(destinationRTVFobjectIndex,2));
-        pause
+            % Compute destinationRTVFobjectIndex
+            % Retrieve the indices of the fitted RTVF objects that have the
+            % same # of center cones
+            centerConeMatchObjIndices = find(theConesNumPooledByTheRFcenterGrid == updateRTVFobjectWithCenterConesNum(iUpdatedIndex));
 
-        % Overwrite list at the updatedRTVFobjectIndex
-        theRTFVTobjList{destinationRTVFobjectIndex} = tmp;
+            % Compute distance based weights for this RGC and the fitted RTVF objects
+            distancesToSamplingGridPositions = sqrt(sum((bsxfun(@minus, theOpticsPositionGrid(centerConeMatchObjIndices,:), targetPosition)).^2,2));
+            [~, idx] = min(distancesToSamplingGridPositions);
+            destinationRTVFobjectIndex = centerConeMatchObjIndices(idx);
+
+            % Notify user of RVFTobj updating
+            fprintf('Will update the RTVF with %d cones at position (degs): %2.2f %2.2f\n', ...
+                theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
+                theOpticsPositionGrid(destinationRTVFobjectIndex,1), theOpticsPositionGrid(destinationRTVFobjectIndex,2));
+            pause
+
+            % Update !
+            theRTFVTobjList{destinationRTVFobjectIndex} = theUpdatedRTFVTobjList{sourceRTVFobjectIndex};
+        end
 
         % Save the updated RTVFT list
         save(R2VFTobjFileName, 'theRTFVTobjList', '-append');
     else
-
+        % Save the computed RTVFT list
         save(R2VFTobjFileName, 'theRTFVTobjList', 'theOpticsPositionGrid', ...
                     'theConesNumPooledByTheRFcenterGrid', ...
                     'theVisualSTFSurroundToCenterRcRatioGrid', ...
                     'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid');
         fprintf('Computed R2VFTobjects saved in: %s\n', R2VFTobjFileName);
     end
-
 
 end
 
