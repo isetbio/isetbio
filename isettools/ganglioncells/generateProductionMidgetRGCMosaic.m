@@ -540,7 +540,7 @@ function inspectSingleRTVFobjectFile(fName)
         'theConesNumPooledByTheRFcenterGrid', ...
         'theSamplingPositionGrid');
 
-    peekIntoRTVFobj(obj, RTVobjIndex, theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, 999);
+    peekIntoRTVFobj(obj, iRTVobjIndex, theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, 999);
 end
 
 
@@ -603,7 +603,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     % Parse input
     p = inputParser;
     p.addParameter('updateRTVFobjectAtPosition', [], @(x)(isempty(x) || (numel(x)==2)));
-    p.addParameter('updateRTVFobjectWithCenterConesNum', [], @(x)(isempty(x) || (numel(x)==1)));
+    p.addParameter('updateRTVFobjectWithCenterConesNum', [], @(x)(isempty(x) || (numel(x)>=1)));
     p.parse(varargin{:});
 
     updateRTVFobjectAtPosition = p.Results.updateRTVFobjectAtPosition;
@@ -678,6 +678,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
             'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid');
 
         for iUpdatedIndex = 1:numel(updateRTVFobjectWithCenterConesNum)
+
             % Compute sourceRTVFobjectIndex
             sourceRTVFobjectIndex = find(theUpdatedConesNumPooledByTheRFcenterGrid == updateRTVFobjectWithCenterConesNum(iUpdatedIndex));
 
@@ -691,11 +692,19 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
             [~, idx] = min(distancesToSamplingGridPositions);
             destinationRTVFobjectIndex = centerConeMatchObjIndices(idx);
 
-            % Notify user of RVFTobj updating
-            fprintf('Will update the RTVF with %d cones at position (degs): %2.2f %2.2f\n', ...
+            % Query user whether to updaste the list of RVFTobj
+            prompt = sprintf('Update the RTVFlist with current RTVFobj with %d cones at position (degs): %2.2f %2.2f? [y/n] : ', ...
                 theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
                 theOpticsPositionGrid(destinationRTVFobjectIndex,1), theOpticsPositionGrid(destinationRTVFobjectIndex,2));
-            pause
+            txt = lower(input(prompt,'s'));
+            if isempty(txt)
+                txt = 'n';
+            end
+            if (strcmp(txt, 'n'))
+                fprintf('Will skip overwriting previous data.\n');
+                continue;
+            end
+            fprintf('Overwriting previous data.\n');
 
             % Update !
             theRTFVTobjList{destinationRTVFobjectIndex} = theUpdatedRTFVTobjList{sourceRTVFobjectIndex};
