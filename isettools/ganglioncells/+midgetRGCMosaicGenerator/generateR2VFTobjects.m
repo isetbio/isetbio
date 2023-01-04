@@ -80,6 +80,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
             'theVisualSTFSurroundToCenterRcRatioGrid', ...
             'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid');
 
+        reWriteRTVFTfile = false;
         for iUpdatedIndex = 1:numel(updateRTVFobjectWithCenterConesNum)
 
             % Compute sourceRTVFobjectIndex
@@ -107,18 +108,23 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
                 fprintf('Will skip overwriting previous data.\n');
                 continue;
             end
-            fprintf('Overwriting previous data.\n');
 
+            reWriteRTVFTfile = true;
+            fprintf('Updating RTVFTobj data.\n');
+            
             % Update !
             theRTFVTobjList{destinationRTVFobjectIndex} = theUpdatedRTFVTobjList{sourceRTVFobjectIndex};
         end
 
-        % Save the updated RTVFT list
-        save(R2VFTobjFileName, ...
-            'theRTFVTobjList', ...
-            'theOpticsPositionGrid', 'theConesNumPooledByTheRFcenterGrid', ...
-            'theVisualSTFSurroundToCenterRcRatioGrid', ...
-            'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid');
+        if (reWriteRTVFTfile)
+            % Save the updated RTVFT list
+            save(R2VFTobjFileName, ...
+                'theRTFVTobjList', ...
+                'theOpticsPositionGrid', 'theConesNumPooledByTheRFcenterGrid', ...
+                'theVisualSTFSurroundToCenterRcRatioGrid', ...
+                'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid');
+        end
+
     else
         % Save the computed RTVFT list
         save(R2VFTobjFileName, 'theRTFVTobjList', 'theOpticsPositionGrid', ...
