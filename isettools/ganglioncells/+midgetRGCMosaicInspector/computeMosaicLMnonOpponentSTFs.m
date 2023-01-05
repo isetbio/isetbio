@@ -1,4 +1,4 @@
-function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams)
+function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams, useParfor)
     
     % Generate the live mosaic filename and directory
     liveMosaicFileName = midgetRGCMosaicInspector.generateMosaicFileName(mosaicCenterParams);
@@ -13,8 +13,6 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
            
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
-
-
 
     viewingDistanceMeters = 4;
     stimulusPixelsNum = 512*2;
@@ -95,28 +93,52 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                     theDisplay, theStimParams, theDriftingGratingSpatialModulationPatterns, ...
                     'validateScenes', false);
 
-            % Allocate memory
-            theFrameResponses = zeros(numel(spatialPhasesDegs), rgcsNum);
-
-            % Compute mRGCmosaic responses
-            for iFrame = 1:numel(spatialPhasesDegs)
-
-                fprintf('Computing mRGC mosaic response to frame (%d/%d) of the %2.2f c/deg stimulus.\n', ...
-                    iFrame, numel(spatialPhasesDegs), theStimParams.spatialFrequencyCPD);
-
-                % Get scene corresponding to this stimulus frame
-                theScene = theDriftingGratingFrameScenes{iFrame};
-
-                % Compute the mosaic's response to this stimulus frame
-                r = theMidgetRGCmosaic.compute(...
-                        theScene, ...
+            if (iOri == 1) && (iFreq == 1)
+                % Do a compute just so we generate the optics
+                theMidgetRGCmosaic.compute(...
+                        theDriftingGratingFrameScenes{1}, ...
                         'nTrials', 1, ...
                         'theNullScene', theNullStimulusScene, ...
                         'withWavefronOpticsAtPositionDegs', opticsPositionToEmploy, ...
                         'normalizeConeResponsesWithRespectToNullScene', true);
+            end
 
-                theFrameResponses(iFrame,:) = r(1,1,:);
-            end % iFrame
+
+            % Allocate memory
+            theFrameResponses = zeros(numel(spatialPhasesDegs), rgcsNum);
+
+            if (useParfor)
+            % Compute mRGCmosaic responses
+                parfor iFrame = 1:numel(spatialPhasesDegs)
+                    % Get scene corresponding to this stimulus frame
+                    theScene = theDriftingGratingFrameScenes{iFrame};
+    
+                    % Compute the mosaic's response to this stimulus frame
+                    r = theMidgetRGCmosaic.compute(...
+                            theScene, ...
+                            'nTrials', 1, ...
+                            'theNullScene', theNullStimulusScene, ...
+                            'withWavefronOpticsAtPositionDegs', opticsPositionToEmploy, ...
+                            'normalizeConeResponsesWithRespectToNullScene', true);
+    
+                    theFrameResponses(iFrame,:) = r(1,1,:);
+                end % iFrame
+            else
+                for iFrame = 1:numel(spatialPhasesDegs)
+                    % Get scene corresponding to this stimulus frame
+                    theScene = theDriftingGratingFrameScenes{iFrame};
+    
+                    % Compute the mosaic's response to this stimulus frame
+                    r = theMidgetRGCmosaic.compute(...
+                            theScene, ...
+                            'nTrials', 1, ...
+                            'theNullScene', theNullStimulusScene, ...
+                            'withWavefronOpticsAtPositionDegs', opticsPositionToEmploy, ...
+                            'normalizeConeResponsesWithRespectToNullScene', true);
+    
+                    theFrameResponses(iFrame,:) = r(1,1,:);
+                end % iFrame
+            end
 
             % Save memory
             theDriftingGratingFrameScenes = [];

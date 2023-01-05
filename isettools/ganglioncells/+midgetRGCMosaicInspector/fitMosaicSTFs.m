@@ -1,20 +1,24 @@
 function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams, maxRGCsNum)
 
-    % Generate mosaic filename and directory
-    [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.generateMosaicFileName(...
-        mosaicCenterParams);
-   
-    % Generate responses filename
+    % Generate the live mosaic filename and directory
+    liveMosaicFileName = midgetRGCMosaicInspector.generateMosaicFileName(mosaicCenterParams);
+    
+    % Generate the frozen mosaic filename
+    frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileNameForMosaicFileName(...
+        liveMosaicFileName, mosaicSurroundParams.H1cellIndex);
+    
+    % Generate the responses filename
     responsesFileName = midgetRGCMosaicInspector.responsesFileNameForMosaicFileName(...
-        mosaicFileName, mosaicSurroundParams.H1cellIndex);
- 
+        frozenMosaicFileName, mosaicSurroundParams.H1cellIndex);
+    
     % RGC indices to fit
     rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesToAnalyze(...
-        mosaicFileName, ...
+        frozenMosaicFileName, ...
         'maxRGCsNum', maxRGCsNum);
+    
+    % Load the frozen midget RGC mosaic
+    load(frozenMosaicFileName, 'theMidgetRGCmosaic');
 
-    % Load the fully-connected mosaic
-    load(mosaicFileName, 'theMidgetRGCmosaic');
 
     % Load the mosaic responses
     load(responsesFileName, 'theMidgetRGCMosaicResponses', ...

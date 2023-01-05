@@ -83,9 +83,18 @@ function executeButtonAction(btn, app)
                 app.simulation.mosaicSurroundParams);
 
         case "validate: compute LM-non-opponent STFs"
-             midgetRGCMosaicInspector.computeMosaicLMnonOpponentSTFs(...
+            % Ask user whether to use parfor or not
+            useParfor = input('Use parfor for the midgetRGCMosaic computes? ([Hit enter to use parfor): ');
+            if (isempty(useParfor))
+                useParfor = true;
+            else
+                useParfor = false;
+            end
+            
+            midgetRGCMosaicInspector.computeMosaicLMnonOpponentSTFs(...
                  app.simulation.mosaicCenterParams, ...
-                 app.simulation.mosaicSurroundParams);
+                 app.simulation.mosaicSurroundParams, ...
+                 useParfor);
 
         case "validate: fit LM-non-opponent STFs"
             maxRGCsNum = 1000;
