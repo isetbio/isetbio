@@ -66,7 +66,7 @@ function executeButtonAction(btn, app)
                 'updateRTVFobjectAtPosition', targetPosition, ...
                 'updateRTVFobjectWithCenterConesNum', targetRFcenterConesNum);
 
-        case "compute: centerSurroundConePoolingKernels"
+        case "compute: center-surround cone pooling kernels"
             midgetRGCMosaicGenerator.generateCenterSurroundConePoolingKernels(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.mosaicSurroundParams);
@@ -104,6 +104,8 @@ function executeButtonAction(btn, app)
                 maxRGCsNum);
 
 
+        otherwise
+            error('Unknown action: ''%s''.', app.currentAction);
     end
 end
 

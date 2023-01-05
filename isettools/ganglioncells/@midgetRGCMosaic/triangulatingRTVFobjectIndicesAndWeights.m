@@ -1,7 +1,14 @@
-function [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = triangulatingRTVFobjectIndicesAndWeights(obj,iRGC)
+function [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
+    triangulatingRTVFobjectIndicesAndWeights(obj,iRGC)
 
-    % Retrieve this cell's # of center cone indices
-    connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
+    if (~isempty(obj.rgcRFcenterConeConnectivityMatrix))
+        % Retrieve this cell's # of center cone indices
+        connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
+    else
+        % Retrieve this cell's # of center cone indices
+        connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
+    end
+
     indicesOfCenterCones = find(connectivityVector > 0.0001);
 
     % Retrieve the indices of the fitted RTVF objects that have the

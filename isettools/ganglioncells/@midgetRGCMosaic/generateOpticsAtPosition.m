@@ -5,7 +5,7 @@ function generateOpticsAtPosition(obj, wavefrontOpticsPositionDegs)
     
     if (~isempty(obj.theCurrentOpticalImagePositionGridIndex)) && (obj.theCurrentOpticalImagePositionGridIndex == opticalPositionIndex)
         % Optics already computed. Return
-        fprintf('Using existing optical image from position (%2.2f, %2.2f) degs\n', obj.theSamplingPositionGrid(opticalPositionIndex,:));
+        % fprintf('Using existing optical image from position (%2.2f, %2.2f) degs\n', obj.theSamplingPositionGrid(opticalPositionIndex,:));
         return;
     end
 
