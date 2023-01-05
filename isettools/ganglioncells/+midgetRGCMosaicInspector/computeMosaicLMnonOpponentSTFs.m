@@ -1,15 +1,20 @@
 function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams)
     
-    % Generate mosaic filename and directory
-    [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.generateMosaicFileName(...
-        mosaicCenterParams);
+    % Generate the live mosaic filename and directory
+    liveMosaicFileName = midgetRGCMosaicInspector.generateMosaicFileName(mosaicCenterParams);
    
-    % Generate responses filename
+    % Generate the frozen mosaic filename
+    frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileNameForMosaicFileName(...
+        liveMosaicFileName, mosaicSurroundParams.H1cellIndex);
+
+    % Generate the responses filename
     responsesFileName = midgetRGCMosaicInspector.responsesFileNameForMosaicFileName(...
-        mosaicFileName, mosaicSurroundParams.H1cellIndex);
+        frozenMosaicFileName, mosaicSurroundParams.H1cellIndex);
            
-    % Load the fully-connected mosaic
-    load(mosaicFileName, 'theMidgetRGCmosaic');
+    % Load the frozen midget RGC mosaic
+    load(frozenMosaicFileName, 'theMidgetRGCmosaic');
+
+
 
     viewingDistanceMeters = 4;
     stimulusPixelsNum = 512*2;
@@ -66,9 +71,8 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
    
     disp('Allocated memory');
     
-    % No optics. We will get it back during the first call to
-    % mRGCMosaic.compute()
-    theOptics = [];
+    % Select which optics to use
+    opticsPositionToEmploy = theMidgetRGCmosaic.eccentricityDegs;
 
     % Go through all stimulus orientations
     for iOri = 1:numel(orientationsTested)
@@ -103,30 +107,15 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                 % Get scene corresponding to this stimulus frame
                 theScene = theDriftingGratingFrameScenes{iFrame};
 
-                if (isempty(theOptics))
-                    % Compute the mosaic's response to this stimulus frame
-                    % and also retrieve the optics so we can pass it along
-                    % in subsequent calls (avoid recomputing it)
-                    [r,~,theConeMosaicActivation, theOptics] = theMidgetRGCmosaic.compute(...
+                % Compute the mosaic's response to this stimulus frame
+                r = theMidgetRGCmosaic.compute(...
                         theScene, ...
                         'nTrials', 1, ...
                         'theNullScene', theNullStimulusScene, ...
+                        'withWavefronOpticsAtPositionDegs', opticsPositionToEmploy, ...
                         'normalizeConeResponsesWithRespectToNullScene', true);
-                else
-                    % Compute the mosaic's response to this stimulus frame
-                    % using the returned optics
-                    [r,~,theConeMosaicActivation] = theMidgetRGCmosaic.compute(...
-                        theScene, ...
-                        'nTrials', 1, ...
-                        'theNullScene', theNullStimulusScene, ...
-                        'withOptics', theOptics, ...
-                        'normalizeConeResponsesWithRespectToNullScene', true);
-                end
 
-
-                % Store the mosaic's responses
-                theFrameResponses(iFrame,:) = r;
-
+                theFrameResponses(iFrame,:) = r(1,1,:);
             end % iFrame
 
             % Save memory

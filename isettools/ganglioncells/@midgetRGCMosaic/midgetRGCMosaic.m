@@ -85,6 +85,12 @@ classdef midgetRGCMosaic < handle
         theVisualSTFSurroundToCenterRcRatioGrid;
         theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
 
+        % The currently employed optical image and its index in the theSamplingPositionGrid
+        theCurrentOpticalImage = [];
+        theCurrentOpticalImagePositionGridIndex = [];
+
+        % Flag indicating whether this is a frozen mosaic.
+        isFrozen = false;
     end % Read-only properties
 
 
@@ -138,6 +144,7 @@ classdef midgetRGCMosaic < handle
             p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
             p.parse(varargin{:});
 
+
             obj.name = p.Results.name;
             obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
             obj.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
@@ -171,9 +178,16 @@ classdef midgetRGCMosaic < handle
             end
         end % Constructor
 
+        % Method to freeze the mosaic, removing components of the various
+        %theRetinaToVisualFieldTransformerOBJs that take a lot of space
+        freeze(obj);
+        
         % Method to compute the response of the midgetRGCmosaic to a scene
         [midgetRGCresponses, responseTemporalSupport, ...
-         noiseFreeAbsorptionsCount, theOpticalImage] = compute(obj, theScene, varargin);
+         noiseFreeAbsorptionsCount] = compute(obj, theScene, varargin);
+
+        % Method to compute optics at a desired position within the mosaic
+        generateOpticsAtPosition(obj, wavefrontOpticsPositionDegs);
 
         % Method to compute the retinal RFcenter maps - used for
         % visualization and RFoverlap analysis

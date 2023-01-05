@@ -4,7 +4,6 @@ function generateCenterSurroundConePoolingKernels(mosaicCenterParams, mosaicSurr
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.generateMosaicFileName(...
         mosaicCenterParams);
     
-
     R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileNameForMosaicFileName(...
         mosaicFileName, mosaicSurroundParams.H1cellIndex);
 

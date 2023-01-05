@@ -193,6 +193,10 @@ classdef RetinaToVisualFieldTransformer < handle
         dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetPositionDegs, ...
             simulateCronerKaplanEstimation, neighboringConesNum);
 
+        % Method to remove large chunks of data
+        % Called from midgetRGCMosaic.freeze()
+        freeze(obj);
+
     end % Public methods
 
     % Private methods
