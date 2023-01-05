@@ -32,20 +32,20 @@ function performEccentricityComputations()
         -10 0]; 
     
     mosaicEccDegs = [...
-        -3 0];
+        -6 0];
 
     % Actions
-    generateRTVobjects = true;
-    generateCenterSurroundRFstructure = true;
+    generateRTVobjects = ~true;
+    generateCenterSurroundRFstructure = ~true;
 
-    computeTheSTFs = ~true;
-    fitTheSTFs = ~true;
+    computeTheSTFs = true;
+    fitTheSTFs = true;
 
     visualizeTheFittedRFs = ~true;
     inspectTheSyntheticRFsComponents = ~true;
 
     for H1index = 1:4
-        doIt(mosaicEccDegs, 1, ...
+        doIt(mosaicEccDegs, H1index, ...
             generateRTVobjects, ...
             generateCenterSurroundRFstructure, ...
             visualizeTheFittedRFs, ...
@@ -92,7 +92,7 @@ function doIt(mosaicEccDegs, H1cellIndex, ...
     % - 1 (Single start run, fastest results), 
     % - some number (Multi-start), or 
     % - inf (Global search)
-    multiStartsNum = 10;
+    multiStartsNum = 4;
     multiStartsNumDoGFit = 128;
 
     % Cone types that can connect to the RF center
