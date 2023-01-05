@@ -1,7 +1,7 @@
 function examineMidgetRFcenterSizeVsPSFsize()
 
     % Choose retinal quadrant
-    retinaQuadrant = 'nasal meridian';
+    retinaQuadrant = 'temporal meridian';
     if (strcmp(retinaQuadrant, 'nasal meridian'))
         radialEccExamined = [0 1 2 3 4 6 8 12 19 24 30];
     else
@@ -18,7 +18,7 @@ function examineMidgetRFcenterSizeVsPSFsize()
 
     % When the subject rank order is empty we analyze the PSFs of all
     % subjects
-    opticsSubjectRankOrder = [];
+    %opticsSubjectRankOrder = [];
 
 
     % RGC overlap ratio (0 = no overlap)
@@ -28,7 +28,7 @@ function examineMidgetRFcenterSizeVsPSFsize()
 
     % If summarizeData is false, we analyze PSF and midget RGC data for the chosen eccentricities
     % If summarizeData is true, we import analyzed PSF and midget RGC data (across the chosen eccentricities) and plot them
-    summarizeData = ~true;
+    summarizeData = true;
       
 
     % Plot summarized data
@@ -37,10 +37,10 @@ function examineMidgetRFcenterSizeVsPSFsize()
         dListAllSubjectPSFs = cell(1, numel(radialEccExamined));
         for iEcc = 1:numel(radialEccExamined)
             if (strcmp(retinaQuadrant, 'nasal meridian')) && (radialEccExamined(iEcc) == 0)
-                dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, 'temporal meridian',  destinationRFoverlapRatio, includeConeApertureInPSF);
+                dListSingleSubjectPSF{iEcc} =[]; % doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, 'temporal meridian',  destinationRFoverlapRatio, includeConeApertureInPSF);
                 dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], 'temporal meridian', destinationRFoverlapRatio, includeConeApertureInPSF);
             else
-                dListSingleSubjectPSF{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant,  destinationRFoverlapRatio, includeConeApertureInPSF);
+                dListSingleSubjectPSF{iEcc} = []; %doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, 10, retinaQuadrant,  destinationRFoverlapRatio, includeConeApertureInPSF);
                 dListAllSubjectPSFs{iEcc} = doIt(radialEccExamined(iEcc), summarizeData, opticsDataBase, [], retinaQuadrant, destinationRFoverlapRatio, includeConeApertureInPSF);
             end
         end
@@ -71,16 +71,17 @@ function plotSummaryData(radialEccExamined, retinaQuadrant, dListSingleSubjectPS
 
         % Single subject data - use this for the midget info
         d = dListSingleSubjectPSF{iEcc};
-        
-        % Find cells that were analyzed (20)
-        theRcDegs2 = prod(d.midgetRGCRFcenterRadiiDegs,2);
-        idx = find(theRcDegs2>0);
-        midgetRGCRFcenterRadiiDegs(iEcc,:,:) = d.midgetRGCRFcenterRadiiDegs(idx,:);
-
-        exclusiveCenterConesNum(iEcc,:) = mean(d.exclusiveCenterConesNum);
-
-        % PSF data from the single subject
-        opticalPSFRadiiDegs(iEcc,:) = d.opticalPSFRadiiDegs;
+        if (~isempty(d))
+            % Find cells that were analyzed (20)
+            theRcDegs2 = prod(d.midgetRGCRFcenterRadiiDegs,2);
+            idx = find(theRcDegs2>0);
+            midgetRGCRFcenterRadiiDegs(iEcc,:,:) = d.midgetRGCRFcenterRadiiDegs(idx,:);
+    
+            exclusiveCenterConesNum(iEcc,:) = mean(d.exclusiveCenterConesNum);
+    
+            % PSF data from the single subject
+            opticalPSFRadiiDegs(iEcc,:) = d.opticalPSFRadiiDegs;
+        end
 
         % PSF data from all subjects
         d = dListAllSubjectPSFs{iEcc};

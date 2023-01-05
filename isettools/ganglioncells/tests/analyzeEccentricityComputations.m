@@ -9,10 +9,9 @@ function analyzeEccentricityComputations()
         -8 0]; 
 
     mosaicEccDegs = [...
-        0 0; ...
-        -1 0];
+        -3 0];
 
-    inspectTheSpatialRFs = ~true;
+    inspectTheSpatialRFs = true;
     inspectTheSTFs = ~true;
     contrastModelToCronerAndKaplan = true;
 
@@ -68,14 +67,13 @@ function doIt(mosaicEccDegs, H1cellIndex, centerMostRGCsNumToAnalyze, ...
 
    
     if (inspectTheSpatialRFs)
-        coVisualizeMeasuredSTFs = ~true;
-        coVisualizeFittedSTFs = true;
+        coVisualizeMeasuredSTFs = true;
 
         for iEcc = 1:size(mosaicEccDegs,1)
             inspectSpatialRFs(mosaicEccDegs(iEcc,:), mappedRFsDir, ...
                 ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
                 coneContrasts, centerMostRGCsNumToAnalyze, ...
-                coVisualizeFittedSTFs, coVisualizeMeasuredSTFs);
+                coVisualizeMeasuredSTFs);
         end
     end
     
@@ -404,7 +402,7 @@ end
 
 
 function inspectSpatialRFs(mosaicEccDegs, mappedRFsDir, ZernikeDataBase, subjectRankOrder, ...
-    pupilDiameterMM, coneContrasts, centerMostRGCsNumToAnalyze, coVisualizeFittedSTFs, coVisualizeMeasuredSTFs)
+    pupilDiameterMM, coneContrasts, centerMostRGCsNumToAnalyze, coVisualizeMeasuredSTFs)
 
     % Load the midgetRGCMosaic
     fName = fullfile(mappedRFsDir, sprintf('mosaicAnd%s_Subject%d_optics_EccXY_%2.2f_%2.2f.mat', ...

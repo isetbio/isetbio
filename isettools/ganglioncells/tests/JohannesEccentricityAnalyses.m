@@ -5,20 +5,21 @@ function JohannesEccentricityAnalyses()
     eccY = [-8:1:8];
 
     % Eccs sent in email
-    eccX = [-10 -8:1:8 10];
+    eccX = [ -10 -8:1:8 10];
     eccY = [-6:1:6];
 
-    % Remaining computations
-    eccX = [-20 -16 -12 12 20];
+%     % Remaining computations
+%     eccX = [-20 -16 -12 12 20];
+% 
+%     % Do the +/- 12 degs
+%     eccX = [-12 12];
+% 
+%     % Do the remaining X
+%     eccX = [-20 -16 20];
+%     eccY = [-6:1:6];
 
-    % Do the +/- 12 degs
-    eccX = [-12 12];
-
-    % Do the remaining X
-    eccX = [-20 -16 20];
-    eccY = [-6:1:6];
-
-
+%    eccX = [-3];
+%    eccY = [0];
 
     % Optics
     %newZernikeDataBase = 'Artal2012';
@@ -37,11 +38,11 @@ function JohannesEccentricityAnalyses()
     switch (computerInfo.localHostName)
         case 'Ithaka'
             dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
-            mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
+            mappedRFsDir = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataOLD';
    
         case 'Crete'
             dropboxDir = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris/midgetRGCMosaics';
-            mappedRFsDir = '/Volumes/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesData';
+            mappedRFsDir = '/Volumes/MATLAB/toolboxes/isetbio/isettools/ganglioncells/JohannesAnalysesDataOLD';
 
         otherwise
             if (contains(computerInfo.networkName, 'leviathan'))
@@ -70,12 +71,13 @@ function JohannesEccentricityAnalyses()
     end
     
     % Compute relativePhotonCatch
-    computePhotonCatchMaps = ~true;
+    computePhotonCatchMaps = true;
     if computePhotonCatchMaps
         computeRelativePhotonCatchMaps(newZernikeDataBase, newSubjectRankOrder, ...
             eccX, eccY, maxVisualizedRFs, mappedRFsDir);
     end
     
+    pause
 
     % Compute visual RF maps (center) using subspace RF mapping stimuli
     computeTheVisualAchromaticRFmaps = ~true;
@@ -95,8 +97,11 @@ function JohannesEccentricityAnalyses()
     % Summarize analyses
     summarizeAnalyses = true;
     if (summarizeAnalyses)
+
         summarizeAnalyzedData(newZernikeDataBase, newSubjectRankOrder, ...
             eccX, eccY, mappedRFsDir);
+
+        
     end
 end
 
@@ -105,39 +110,46 @@ function summarizeAnalyzedData(ZernikeDataBase, subjectRankOrder, eccX, eccY, ma
 
     visualizedFOVdegs = 0.15;
 
-%     hFig = figure(1); clf;
-%     set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
-%     maxVisualizedRFs = 16;
-%     superimposeConeMosaic = ~true;
-%     showGanglionCellPooling = true;
-%     plotTheRetinalRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, superimposeConeMosaic , showGanglionCellPooling , hFig);
-%     NicePlot.exportFigToPDF('RetinalRFs.pdf', hFig, 300);
+    maxVisualizedRFs = 16;
+    if (1==2)
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 1800 1050], 'Color', [1 1 1]);
+        
+        superimposeConeMosaic = ~true;
+        showGanglionCellPooling = true;
+        plotTheRetinalRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, superimposeConeMosaic , showGanglionCellPooling , hFig);
+        NicePlot.exportFigToPDF('RetinalRFs.pdf', hFig, 300);
+    
+    % 
+        % The grid of PSFs
+        hFig = figure(2); clf;
+        set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
+        plotThePSFgrid(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, mappedRFsDir);
+        NicePlot.exportFigToPDF('PSFs.pdf', hFig, 300);
 
-% 
-%     % The grid of PSFs
-%     hFig = figure(2); clf;
-%     set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
-%     plotThePSFgrid(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, mappedRFsDir);
-%     NicePlot.exportFigToPDF('PSFs.pdf', hFig, 300);
-% 
-%     
+    %     
+    
+        hFig = figure(3); clf;
+        set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
+        maxVisualizedRFs = 16;
+        plotTheVisualRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, hFig);
+        NicePlot.exportFigToPDF('VisualRFs.pdf', hFig, 300);
+    %     
+        hFig = figure(4); clf;
+        set(hFig, 'Position', [10 10 800 800], 'Color', [1 1 1]);
+        plotTheRcGrid(mappedRFsDir);
+        NicePlot.exportFigToPDF('VisualMinorMajorRcs.pdf', hFig, 300);
+    
+        
+    %     hFig = figure(6); clf;
+    %     set(hFig, 'Position', [10 10 800 1200], 'Color', [1 1 1]);
+    %     compareISETBioModelRcToCronerKaplanRc(ZernikeDataBase, subjectRankOrder, eccX, eccY, mappedRFsDir);
+    %     NicePlot.exportFigToPDF('ISETBioVsCronerKaplan.pdf', hFig, 300);
 
-%     hFig = figure(3); clf;
-%     set(hFig, 'Position', [10 10 1650 1050], 'Color', [1 1 1]);
-%     maxVisualizedRFs = 16;
-%     plotTheVisualRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, hFig);
-%     NicePlot.exportFigToPDF('VisualRFs.pdf', hFig, 300);
+    end
 
-%     
-%     hFig = figure(4); clf;
-%     set(hFig, 'Position', [10 10 800 800], 'Color', [1 1 1]);
-%     plotTheRcGrid(mappedRFsDir);
-%     NicePlot.exportFigToPDF('VisualMinorMajorRcs.pdf', hFig, 300);
+    plotVisualRFcenterRcsAsAFunctionOfTemporalEquivalenEcc(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir);
 
-    hFig = figure(6); clf;
-    set(hFig, 'Position', [10 10 800 1200], 'Color', [1 1 1]);
-    compareISETBioModelRcToCronerKaplanRc(ZernikeDataBase, subjectRankOrder, eccX, eccY, mappedRFsDir);
-    NicePlot.exportFigToPDF('ISETBioVsCronerKaplan.pdf', hFig, 300);
 
 end
 
@@ -257,6 +269,8 @@ end
 
 function plotTheRetinalRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir, superimposeConeMosaic , showGanglionCellPooling, hFig)
 
+    figure(hFig);
+
     [eccXGrid, eccYGrid] = meshgrid(eccX, eccY);
     eccXGrid = eccXGrid(:);
     eccYGrid = eccYGrid(:);
@@ -292,6 +306,7 @@ function plotTheRetinalRFs(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder,
 
         axesHandle = subplot('Position', subplotPosVectors(subplotRow,subplotCol).v);
         contourLineWidth = 2.0;
+        axis(axesHandle, 'square');
 
         if (coVisualizePSF)
             if (isfield(thePSFData, 'vLambdaWeightedData'))
@@ -521,7 +536,6 @@ function compareISETBioModelRcToCronerKaplanRc(ZernikeDataBase, subjectRankOrder
             mosaicTemporalEccRadiusDegs(iPos) = 0.3;
         end
 
-        
      end % iPos
 
      
@@ -568,12 +582,170 @@ function compareISETBioModelRcToCronerKaplanRc(ZernikeDataBase, subjectRankOrder
 end
 
 
+function plotVisualRFcenterRcsAsAFunctionOfTemporalEquivalenEcc(visualizedFOVdegs, ZernikeDataBase, subjectRankOrder, eccX, eccY, maxVisualizedRFs, mappedRFsDir)
+    
+     % Load the summary data
+     load(fullfile(mappedRFsDir, 'JohannesAnalysesSummaryData.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc');
+
+     hFig = figure(55); clf;
+     set(hFig, 'Position', [10 10 600 1000], 'Color', [1 1 1]);
+
+     minorVisualRcs  = [];
+     majorVisualRcs  = [];
+     eccDegs = [];
+
+     
+
+     for iPos = 1:size(mosaicEccDegsGrid,1)
+         % The position analyzed
+         mosaicEccDegs = mosaicEccDegsGrid(iPos,:);
+ 
+         % Load the computed components data
+         fName = sprintf('mosaicAnd%s_Subject%d_optics_EccXY_%2.2f_%2.2f.mat', ...
+            ZernikeDataBase, subjectRankOrder, mosaicEccDegs(1), mosaicEccDegs(2));
+
+         load(fName, 'theMidgetRGCmosaic');
+
+         % The visualRc for all cells analyzed in the (X,Y) position
+         theVisualRcs = visualRc{iPos};
+         
+         minorVisualRcs = cat(2, minorVisualRcs , (min(theVisualRcs,[],2))');
+         majorVisualRcs = cat(2, majorVisualRcs, (max(theVisualRcs,[],2))');
+
+         mosaicEccDegs = mosaicEccDegsGrid(iPos,:);
+         mosaicTemporalEccDegs = theMidgetRGCmosaic.temporalEquivalentEccentricityForEccentricity(mosaicEccDegs);
+         mosaicTemporalEccRadiusDegs = sqrt(sum(mosaicTemporalEccDegs.^2,2));
+         if (mosaicEccDegs(1) == 0) && (mosaicEccDegs(2) == 0)
+            mosaicTemporalEccRadiusDegs = 0.3;
+         end
+   
+         eccDegs = cat(2, eccDegs, repmat(mosaicTemporalEccRadiusDegs, [1 size(theVisualRcs ,1)]));
+     
+     end % iPos
+     
+
+
+      % Load the summary data
+     load(fullfile(mappedRFsDir, 'JohannesAnalysesSummaryDataHorizontalPlusMinus12Degs.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc');
+
+   
+     for iPos = 1:size(mosaicEccDegsGrid,1)
+         % The position analyzed
+         mosaicEccDegs = mosaicEccDegsGrid(iPos,:);
+ 
+         % Load the computed components data
+         fName = sprintf('mosaicAnd%s_Subject%d_optics_EccXY_%2.2f_%2.2f.mat', ...
+            ZernikeDataBase, subjectRankOrder, mosaicEccDegs(1), mosaicEccDegs(2));
+
+         load(fName, 'theMidgetRGCmosaic');
+
+         % The visualRc for all cells analyzed in the (X,Y) position
+         theVisualRcs = visualRc{iPos};
+         
+         minorVisualRcs = cat(2, minorVisualRcs , (min(theVisualRcs,[],2))');
+         majorVisualRcs = cat(2, majorVisualRcs, (max(theVisualRcs,[],2))');
+
+         mosaicEccDegs = mosaicEccDegsGrid(iPos,:);
+         mosaicTemporalEccDegs = theMidgetRGCmosaic.temporalEquivalentEccentricityForEccentricity(mosaicEccDegs);
+         mosaicTemporalEccRadiusDegs = sqrt(sum(mosaicTemporalEccDegs.^2,2));
+         if (mosaicEccDegs(1) == 0) && (mosaicEccDegs(2) == 0)
+            mosaicTemporalEccRadiusDegs = 0.3;
+         end
+   
+         eccDegs = cat(2, eccDegs, repmat(mosaicTemporalEccRadiusDegs, [1 size(theVisualRcs ,1)]));
+
+     end % iPos
+
+
+      % Load the summary data
+     load(fullfile(mappedRFsDir, 'JohannesAnalysesSummaryDataHorizontalPlusMinus20Degs.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc');
+
+   
+     for iPos = 1:size(mosaicEccDegsGrid,1)
+         % The position analyzed
+         mosaicEccDegs = mosaicEccDegsGrid(iPos,:);
+ 
+         % Load the computed components data
+         fName = sprintf('mosaicAnd%s_Subject%d_optics_EccXY_%2.2f_%2.2f.mat', ...
+            ZernikeDataBase, subjectRankOrder, mosaicEccDegs(1), mosaicEccDegs(2));
+
+         load(fName, 'theMidgetRGCmosaic');
+
+         % The visualRc for all cells analyzed in the (X,Y) position
+         theVisualRcs = visualRc{iPos};
+         
+         minorVisualRcs = cat(2, minorVisualRcs , (min(theVisualRcs,[],2))');
+         majorVisualRcs = cat(2, majorVisualRcs, (max(theVisualRcs,[],2))');
+
+         mosaicEccDegs = mosaicEccDegsGrid(iPos,:);
+         mosaicTemporalEccDegs = theMidgetRGCmosaic.temporalEquivalentEccentricityForEccentricity(mosaicEccDegs);
+         mosaicTemporalEccRadiusDegs = sqrt(sum(mosaicTemporalEccDegs.^2,2));
+         if (mosaicEccDegs(1) == 0) && (mosaicEccDegs(2) == 0)
+            mosaicTemporalEccRadiusDegs = 0.3;
+         end
+   
+         eccDegs = cat(2, eccDegs, repmat(mosaicTemporalEccRadiusDegs, [1 size(theVisualRcs ,1)]));
+     
+     end % iPos
+
+
+     subplot(2,1,1);
+     [CronerKaplanTemporalEccDegs, CronerKaplanRcDegs] = RGCmodels.CronerKaplan.digitizedData.parvoCenterRadiusAgainstEccentricity();
+    
+     p1 = scatter(eccDegs, minorVisualRcs, 10, ...
+         'LineWidth', 1.0, 'MarkerFaceAlpha', 1.0, 'MarkerEdgeAlpha', 1.0, 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor',[1 0 0]);
+     hold on
+
+     p2 = scatter(CronerKaplanTemporalEccDegs, CronerKaplanRcDegs*60, 144, ...
+         'LineWidth', 1.0, 'MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor',[0.7 0.7 0.7]);
+
+     
+     
+
+     legend([p1 p2], {'ISETBio midget RGCs (minor axis)', 'macaque midget RGCs (Croner & Kaplan)'}, ...
+         'Location', 'NorthWest');
+   
+     grid 'on'
+     set(gca, 'XLim', [0.3 30], 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], ...
+         'YLim', [0 14], 'YTick', 0:2:16, 'FontSize', 20);
+     set(gca, 'TickDir', 'both');
+     xlabel('temporal equivalent eccentericity (degs)');
+     ylabel('Rc (arc min)');
+
+
+     subplot(2,1,2);
+     [CronerKaplanTemporalEccDegs, CronerKaplanRcDegs] = RGCmodels.CronerKaplan.digitizedData.parvoCenterRadiusAgainstEccentricity();
+    
+     
+     
+     p1= scatter(eccDegs, majorVisualRcs, 10, ...
+         'LineWidth', 1.0, 'MarkerFaceAlpha', 1, 'MarkerEdgeAlpha', 1, 'MarkerEdgeColor', [0 0.5 1], 'MarkerFaceColor',[0 0.5 1]);
+     hold on
+     p2 = scatter(CronerKaplanTemporalEccDegs, CronerKaplanRcDegs*60, 144, ...
+         'LineWidth', 1.0, 'MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor',[0.7 0.7 0.7]);
+
+
+     legend([p1 p2], {'ISETBio midget RGCs (major axis)', 'macaque midget RGCs (Croner & Kaplan)'}, ...
+         'Location', 'NorthWest');
+   
+     grid 'on'
+     set(gca, 'XLim', [0.3 30], 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], ...
+         'YLim', [0 14], 'YTick', 0:2:16, 'FontSize', 20);
+     set(gca, 'TickDir', 'both');
+     xlabel('temporal equivalent eccentericity (degs)');
+     ylabel('Rc (arc min)');
+
+
+end
+
 
 function plotTheRcGrid(mappedRFsDir)
 
      % Load the summary data
      load(fullfile(mappedRFsDir, 'JohannesAnalysesSummaryData.mat'), 'mosaicEccDegsGrid', 'visualRc', 'retinalRc');
 
+     mosaicEccDegsGrid
+     pause
      minorVisualRc = nan(1,size(mosaicEccDegsGrid,1));
      majorVisualRc = nan(1,size(mosaicEccDegsGrid,1));
 
@@ -965,7 +1137,7 @@ function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, ec
 
         % Compute visual RF maps using subspace rev corr
         % Generate a presentation display with a desired resolution
-        stimSizeDegs = 0.5*max(theMidgetRGCmosaic.sizeDegs);
+        stimSizeDegs = 0.5*max(theMidgetRGCmosaic.inputConeMosaic.sizeDegs);
         pixelsNum = 256;
         retinalImageResolutionDegs = stimSizeDegs/pixelsNum;
         viewingDistanceMeters = 4;
@@ -987,7 +1159,7 @@ function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, ec
 
         % Hartley (RF mapping) spatial patterns
         fprintf('Generating Hartley patterns\n');
-        omega = 11;
+        omega =  17;
         % Compute spatial modulation patterns for the Hartley set
         HartleySpatialModulationPatterns = ...
             rfMappingStimulusGenerator.HartleyModulationPatterns(...
@@ -1048,7 +1220,18 @@ function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, ec
 
         diffResponse = zeros(numel(rgcIndicesOfAnalyzedRFs), nStim);
 
-        parfor iFrame = 1:nStim
+%         hFig = figure(75); clf;
+%         axRGC = subplot(1,2,1);
+%         axConeMosaic = subplot(1,2,2);
+% 
+%         videoFileName = 'subspace.mp4';
+% 
+%         videoOBJ = VideoWriter(videoFileName, 'MPEG-4');
+%         videoOBJ.FrameRate = 10;
+%         videoOBJ.Quality = 100;
+%         videoOBJ.open();
+
+        for iFrame = 1:nStim
             fprintf('Computing responses and RFs for stimulus %d/%d\n', iFrame, nStim);
 
             theHartleyPattern = HartleySpatialModulationPatterns(iFrame,:,:);
@@ -1059,16 +1242,42 @@ function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, ec
                     theDisplay, stimParams, theHartleyPattern, ...
                     'validateScenes', false);
 
+            
             % Compute the mosaic's response to the positive polarity frame
-            rPlus = theMidgetRGCmosaic.compute(...
+            [rPlus,~,theConeMosaicResponse,theOpticalImage] = theMidgetRGCmosaic.compute(...
                     theRFMappingStimulusFrameScene{1}, ...
                     'withOptics', theSubjectOptics, ...
                     'nTrials', 1, ...
                     'opticalImagePositionDegs', opticalImagePositionDegs, ...
                     'theNullScene', theNullStimulusScene, ...
                     'normalizeConeResponsesWithRespectToNullScene', true);
+            
 
-            % Generate scene for the inverse Hartley pattern
+%             if (iFrame == 1)
+%                 theMidgetRGCmosaic.visualize(...
+%                     'figureHandle', hFig, ...
+%                     'axesHandle', axRGC, ...
+%                     'xRangeDegs', theMidgetRGCmosaic.sizeDegs(1), ...
+%                     'yRangeDegs', theMidgetRGCmosaic.sizeDegs(2));
+% 
+%                  mRGCmosaicCenterDegs = mean(theMidgetRGCmosaic.rgcRFpositionsDegs,1);
+%                 xLimsDegs = mRGCmosaicCenterDegs(1) + 0.5*theMidgetRGCmosaic.sizeDegs(1)*[-1 1];
+%                 yLimsDegs = mRGCmosaicCenterDegs(2) + 0.5*theMidgetRGCmosaic.sizeDegs(2)*[-1 1];
+%             end
+% 
+%             theMidgetRGCmosaic.inputConeMosaic.visualize(...
+%                     'figureHandle', hFig, ...
+%                     'axesHandle', axConeMosaic, ...
+%                     'labelCones', false, ...
+%                     'domainVisualizationLimits', [xLimsDegs(1) xLimsDegs(2) yLimsDegs(1) yLimsDegs(2)], ...
+%                     'domainVisualizationTicks', struct('x', 2:0.1:4, 'y', -1:0.1:1),...
+%                     'activation', theConeMosaicResponse);
+
+%             drawnow;
+% 
+%             videoOBJ.writeVideo(getframe(hFig));
+
+            %Generate scene for the inverse Hartley pattern
             theRFMappingStimulusFrameScene = ...
                 rfMappingStimulusGenerator.generateStimulusMappingFramesOnPresentationDisplay(...
                     theDisplay, stimParams, -theHartleyPattern, ...
@@ -1088,6 +1297,7 @@ function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, ec
             diffResponse(:,iFrame) = squeeze(dR(rgcIndicesOfAnalyzedRFs));
         end
 
+       % videoOBJ.close()
         
 
        for iFrame = 1:nStim
@@ -1112,8 +1322,8 @@ function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, ec
             marginDegs, spatialSupportSamplesNum, ...
             'forRGCindices', rgcIndicesOfAnalyzedRFs);
 
-        xLims = theMidgetRGCmosaic.eccentricityDegs(1) + theMidgetRGCmosaic.sizeDegs(1)*0.5*[-1 1];
-        yLims = theMidgetRGCmosaic.eccentricityDegs(2) + theMidgetRGCmosaic.sizeDegs(2)*0.5*[-1 1];
+        xLims = theMidgetRGCmosaic.eccentricityDegs(1) + theMidgetRGCmosaic.sizeDegs(1)*0.45*[-1 1];
+        yLims = theMidgetRGCmosaic.eccentricityDegs(2) + theMidgetRGCmosaic.sizeDegs(2)*0.45*[-1 1];
 
         for iRGCindex = 1:numel(retinalRFcenterMaps)
             r = retinalRFcenterMaps{iRGCindex};
@@ -1121,28 +1331,48 @@ function computeSubspaceAchromaticVisualRF(ZernikeDataBase, subjectRankOrder, ec
             retinalSpatialSupportDegsX = r.spatialSupportDegsX;
             retinalSpatialSupportDegsY = r.spatialSupportDegsY;
 
-            cMap = gray(1024);
+            cMapConeMap = brewermap(1024, 'greys');
+
+            cMapRF = brewermap(1024, 'RdBu');
             hFig = figure(1); clf;
             set(hFig, 'Position', [10 10 1700 850], 'Color', [1 1 1]);
             subplot(1,2,1);
             imagesc(retinalSpatialSupportDegsX, retinalSpatialSupportDegsY, retinalRFcenterMap);
             axis 'image'; axis 'xy';
-            set(gca, 'XLim', xLims, 'YLim', yLims, 'FontSize', 20);
-            title(sprintf('Retinal RF map \nX,Y = (%2.1f,%2.1f) degs', ...
-                theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesOfAnalyzedRFs(iRGCindex),1), theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesOfAnalyzedRFs(iRGCindex),2)));
-            
-            subplot(1,2,2);
+            set(gca, 'XLim', xLims, 'YLim', yLims, 'FontSize', 30);
+            colormap(gca, cMapConeMap)
+            title(sprintf('RF center \ncone input map'), 'FontSize', 20, 'FontWeight', 'Normal');
             theRFmap = squeeze(theVisualRFmaps(iRGCindex,:,:));
             theRFmap = theRFmap / max(abs(theRFmap(:)));
-
-            imagesc(visualRFspatialSupportDegs+theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(1), ...
+            zLevels = -0.97:0.02:0.97;
+            contourf(visualRFspatialSupportDegs+theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(1), ...
                     visualRFspatialSupportDegs+theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(2), ...
-                    theRFmap);
+                    theRFmap, zLevels, 'LineStyle', 'none', 'EdgeAlpha', 0.0);
+            hold on
+            contour(visualRFspatialSupportDegs+theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(1), ...
+                    visualRFspatialSupportDegs+theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(2), ...
+                    theRFmap, -1:0.1:1, 'LineStyle', '-', 'LineColor', [0 0 0]);
+
+            profile = sum(theRFmap,1);
+            profile = profile/max(abs(profile(:)));
+            xx = visualRFspatialSupportDegs+theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(1);
+            plot(xx, yLims(1) + (yLims(2)-yLims(1))*0.1 + (yLims(2)-yLims(1))*0.3*profile, ...
+                'k-', 'LineWidth', 2.0);
+            plot(xx, xx*0+yLims(1)+ (yLims(2)-yLims(1))*0.1, 'k:', 'LineWidth', 1.0);
+
+            profile = sum(theRFmap,2);
+            profile = profile/max(abs(profile(:)));
+            yy = visualRFspatialSupportDegs+theMidgetRGCmosaic.inputConeMosaic.eccentricityDegs(2);
+            plot(xLims(1) + (xLims(2)-xLims(1))*0.1 + (xLims(2)-xLims(1))*0.3*profile, yy, ...
+                 'k-', 'LineWidth', 2.0);
+            plot(yy*0+xLims(1)+(xLims(2)-xLims(1))*0.1, yy, 'k:', 'LineWidth', 1.0);
+
             axis 'image'; axis 'xy';
-            set(gca, 'XLim', xLims, 'YLim', yLims, 'FontSize', 20, 'Color', cMap(512,:), 'CLim', [-1 1]);
-            title(sprintf('Visual RF map \nX,Y = (%2.1f,%2.1f) degs', ...
-                theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesOfAnalyzedRFs(iRGCindex),1), theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesOfAnalyzedRFs(iRGCindex),2)));
-            colormap(cMap);
+            set(gca, 'XLim', xLims, 'YLim', yLims, 'FontSize', 30, 'Color', cMapRF(512,:), 'CLim', [-0.3 0.3]);
+            title(sprintf('visual RF map \n (full pipeline)'), 'FontSize', 20, 'FontWeight', 'Normal');
+            colormap(gca, cMapRF);
+            NicePlot.exportFigToPDF(sprintf('RF%d.pdf', iRGCindex), hFig, 300);
+            
         end % iRGCindex
 
         % Save data

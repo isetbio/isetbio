@@ -5,7 +5,7 @@ function test_RetinaRFestimationFromTargetVisualRF
     pupilDiameterMM = 3.0;
 
     % Retinallocation and eye
-    analyzedRetinaMeridian = 'nasal meridian';
+    analyzedRetinaMeridian = 'temporal meridian';
     
     
     % Human subject rank
@@ -13,7 +13,7 @@ function test_RetinaRFestimationFromTargetVisualRF
     examinedSubjectRankOrders = 1:38;
     % Remove some subjects which increase the variance a lot
     examinedSubjectRankOrders = setdiff(examinedSubjectRankOrders, [5 16 20 23 31 34 36 37]);
-    examinedSubjectRankOrder = 10;
+    examinedSubjectRankOrder = 2;
 
     % Define the DoG characteristics of the visualRF
     conesNumPooledByTheRFcenter = 1;

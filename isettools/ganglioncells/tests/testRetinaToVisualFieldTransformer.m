@@ -5,9 +5,9 @@ function testRetinaToVisualFieldTransformer(reComputeData)
     % Remove some subjects which increase the variance a lot
     examinedSubjectRankOrders = setdiff(examinedSubjectRankOrders, [5 16 20 23 31 34 36 37]);
 
-    examinedSubjectRankOrders = [41];
+    examinedSubjectRankOrders = [2];
 
-     % Visual RF model to match. Choose between: 
+    % Visual RF model to match. Choose between: 
     % {'ellipsoidal gaussian center, gaussian surround', ...
     %  'gaussian center, gaussian surround', ...
     %  'arbitrary center, gaussian surround'}
@@ -58,7 +58,7 @@ function testRetinaToVisualFieldTransformer(reComputeData)
 
     switch (comparison)
         case 'acrossSubjects'
-            examinedHorizontalEccDegs = 0.5;
+            examinedHorizontalEccDegs = 0.0;
             conesNumPooledByTheRFcenter = 1;
             
             surroundToCenterRcRatio = 6.7;
@@ -210,7 +210,9 @@ function batchJob(reComputeData, examinedSubjectRankOrder, horizontalEccDegs, ..
         obj.visualizeResults();
 
         % Visualize the fitted params
-        RetinaToVisualFieldTransformer.visualizeFittedParamValues(obj.rfComputeStruct.retinalConePoolingParams);
+        set(hFig, 'Position', [10 10 600 500], 'Color', [1 1 1 ]);
+        ax = subplot('Position', [0.1 0.1 0.9 0.9]);
+        RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, obj.rfComputeStruct.retinalConePoolingParams);
     end
 
 
