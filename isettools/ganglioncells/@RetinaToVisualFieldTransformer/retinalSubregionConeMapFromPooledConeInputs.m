@@ -59,7 +59,6 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(.
 
     if (conesNotIncluded > 0)
         fprintf(2,'%d of the %d cones pooled by the continuous model were NOT included in the actual subregion map because they fell outside of the spatial support.\n', conesNotIncluded, conesNumPooled);
-        pause(1);
     end
 
 end
