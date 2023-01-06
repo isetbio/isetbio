@@ -5,16 +5,18 @@ function rgcIndices = rgcIndicesToAnalyze(mosaicFileName, varargin)
     p.parse(varargin{:});
 
     maxRGCsNum = p.Results.maxRGCsNum;
-    if (isempty(maxRGCsNum))
-        maxRGCsNum = 1000;
-    end
+
 
     % Load the fully-connected mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');
 
     rgcsNum = size(theMidgetRGCmosaic.rgcRFsurroundConePoolingMatrix,2);
-    skippedRGCs = max([1 round(rgcsNum/maxRGCsNum)]);
-    
+    if (isempty(maxRGCsNum))
+        skippedRGCs = 1;
+    else
+        skippedRGCs = max([1 round(rgcsNum/maxRGCsNum)]);
+    end
+
     % Sort RGCs with respect to their distance from the mRGC mosaic center
     mRGCmosaicCenterDegs = mean(theMidgetRGCmosaic.rgcRFpositionsDegs,1);
     d = sum((bsxfun(@minus, theMidgetRGCmosaic.rgcRFpositionsDegs, mRGCmosaicCenterDegs)).^2,2);

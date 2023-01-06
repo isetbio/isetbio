@@ -1,7 +1,7 @@
 function generateCenterConnectedMosaic(mosaicCenterParams)
 
     % Generate mosaic filename and directory
-    [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.generateMosaicFileName(mosaicCenterParams);
+    [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(mosaicCenterParams);
     
     fprintf('Mosaic will be saved in: %s', mosaicFileName);
     fprintf('Generating mosaic. Please wait ...');

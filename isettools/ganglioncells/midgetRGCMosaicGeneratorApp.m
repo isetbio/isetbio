@@ -72,7 +72,9 @@ function executeButtonAction(btn, app)
                 app.simulation.mosaicSurroundParams);
 
         case "visualize: spatial RFs"
-            maxRGCsNum = 1000;
+            % Ask user how many RGCs to visualize
+            maxRGCsNum = input('How many RGC RFs to visualize? ([Hit enter for all): ');
+
             midgetRGCMosaicInspector.visualizeSpatialRFmaps(...
                 app.simulation.mosaicCenterParams, ...
                 maxRGCsNum);
@@ -97,8 +99,9 @@ function executeButtonAction(btn, app)
                  useParfor);
 
         case "validate: fit LM-non-opponent STFs"
-            maxRGCsNum = 1000;
-            opticsPositionDegs = [0 0];
+            % Ask user how many RGCs to analyze
+            maxRGCsNum = input('How many RGCs to fit? ([Hit enter for all): ');
+
             midgetRGCMosaicInspector.fitMosaicSTFs(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.mosaicSurroundParams, ...

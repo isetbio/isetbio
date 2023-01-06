@@ -10,7 +10,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     updateRTVFobjectWithCenterConesNum = p.Results.updateRTVFobjectWithCenterConesNum;
 
     % Generate mosaic filename and directory
-    [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.generateMosaicFileName(mosaicCenterParams);
+    [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(mosaicCenterParams);
 
     % Load the center-connected mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');
@@ -37,7 +37,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
         'inputPoolingVisualization', 'centerOnly');
 
     % Assemble R2CFT filename
-    R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileNameForMosaicFileName(mosaicFileName, mosaicSurroundParams.H1cellIndex);
+    R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(mosaicFileName, mosaicSurroundParams.H1cellIndex);
 
     % multiStartsNum: select from:
     % - 1 (Single start run, fastest results), 

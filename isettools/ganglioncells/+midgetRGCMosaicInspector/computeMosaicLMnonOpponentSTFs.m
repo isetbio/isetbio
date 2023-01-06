@@ -1,11 +1,8 @@
 function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams, useParfor)
     
-    % Generate the live mosaic filename and directory
-    liveMosaicFileName = midgetRGCMosaicInspector.generateMosaicFileName(mosaicCenterParams);
-   
     % Generate the frozen mosaic filename
-    frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileNameForMosaicFileName(...
-        liveMosaicFileName, mosaicSurroundParams.H1cellIndex);
+    frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileName(...
+        mosaicCenterParams, mosaicSurroundParams.H1cellIndex);
 
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
@@ -13,12 +10,10 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
     % Ask the user which optics position to use for the computation
     opticsPositionDegs = midgetRGCMosaicInspector.selectOpticsPosition(theMidgetRGCmosaic);
 
-    
     % Generate the responses filename
     responsesFileName = midgetRGCMosaicInspector.responsesFileName(...
-        frozenMosaicFileName, mosaicSurroundParams.H1cellIndex, opticsPositionDegs);
+        frozenMosaicFileName, opticsPositionDegs);
            
-    
     viewingDistanceMeters = 4;
     stimulusPixelsNum = 512*2;
     coneContrasts = [1 1 0];
