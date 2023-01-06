@@ -8,7 +8,9 @@ function freeze(obj)
         obj.theRetinaToVisualFieldTransformerOBJList{iObj}.freeze();
     end
 
-    obj.theMosaicConnectorOBJ = [];
-
+    % Remove the rgcRFcenterConeConnectivityMatrix = [];
     obj.rgcRFcenterConeConnectivityMatrix = [];
+
+    % Remove theMosaicConnectorOBJ
+    obj.theMosaicConnectorOBJ = [];
 end

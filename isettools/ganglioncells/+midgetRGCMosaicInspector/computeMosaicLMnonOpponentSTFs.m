@@ -7,13 +7,18 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
     frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileNameForMosaicFileName(...
         liveMosaicFileName, mosaicSurroundParams.H1cellIndex);
 
-    % Generate the responses filename
-    responsesFileName = midgetRGCMosaicInspector.responsesFileNameForMosaicFileName(...
-        frozenMosaicFileName, mosaicSurroundParams.H1cellIndex);
-           
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
 
+    % Ask the user which optics position to use for the computation
+    opticsPositionDegs = midgetRGCMosaicInspector.selectOpticsPosition(theMidgetRGCmosaic);
+
+    
+    % Generate the responses filename
+    responsesFileName = midgetRGCMosaicInspector.responsesFileName(...
+        frozenMosaicFileName, mosaicSurroundParams.H1cellIndex, opticsPositionDegs);
+           
+    
     viewingDistanceMeters = 4;
     stimulusPixelsNum = 512*2;
     coneContrasts = [1 1 0];
@@ -64,14 +69,17 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
     stimParams.spatialFrequencyCPD = spatialFrequenciesTested(1);
     [~, spatialPhasesDegs] = rfMappingStimulusGenerator.driftingGratingFrames(stimParams);
     rgcsNum = size(theMidgetRGCmosaic.rgcRFpositionsMicrons,1);
-    theMidgetRGCMosaicResponses = ...
-        zeros(numel(orientationsTested), numel(spatialFrequenciesTested), numel(spatialPhasesDegs), rgcsNum);
+
+    % Single precision responses
+    theMidgetRGCMosaicResponses = zeros(...
+        numel(orientationsTested), ...
+        numel(spatialFrequenciesTested), ...
+        numel(spatialPhasesDegs), ...
+        rgcsNum, ...
+        'single');
    
     disp('Allocated memory');
     
-    % Select which optics to use
-    opticsPositionToEmploy = theMidgetRGCmosaic.eccentricityDegs;
-
     % Go through all stimulus orientations
     for iOri = 1:numel(orientationsTested)
         stimParams.orientationDegs = orientationsTested(iOri);
@@ -99,7 +107,7 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                         theDriftingGratingFrameScenes{1}, ...
                         'nTrials', 1, ...
                         'theNullScene', theNullStimulusScene, ...
-                        'withWavefronOpticsAtPositionDegs', opticsPositionToEmploy, ...
+                        'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
                         'normalizeConeResponsesWithRespectToNullScene', true);
             end
 
@@ -118,7 +126,7 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                             theScene, ...
                             'nTrials', 1, ...
                             'theNullScene', theNullStimulusScene, ...
-                            'withWavefronOpticsAtPositionDegs', opticsPositionToEmploy, ...
+                            'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
                             'normalizeConeResponsesWithRespectToNullScene', true);
     
                     theFrameResponses(iFrame,:) = r(1,1,:);
@@ -133,7 +141,7 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                             theScene, ...
                             'nTrials', 1, ...
                             'theNullScene', theNullStimulusScene, ...
-                            'withWavefronOpticsAtPositionDegs', opticsPositionToEmploy, ...
+                            'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
                             'normalizeConeResponsesWithRespectToNullScene', true);
     
                     theFrameResponses(iFrame,:) = r(1,1,:);
@@ -144,7 +152,7 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
             theDriftingGratingFrameScenes = [];
             theNullStimulusScene = [];
 
-            theMidgetRGCMosaicResponses(iOri, iFreq,:,:) = theFrameResponses;
+            theMidgetRGCMosaicResponses(iOri, iFreq,:,:) = single(theFrameResponses);
 
         end % iFreq
     end % iOri
@@ -152,5 +160,5 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
     % Save all response data to disk
     save(responsesFileName, 'theMidgetRGCMosaicResponses', ...
          'orientationsTested', 'spatialFrequenciesTested', ...
-         'spatialPhasesDegs', 'coneContrasts', '-v7.3');
+         'spatialPhasesDegs', 'coneContrasts', 'opticsPositionDegs', '-v7.3');
 end

@@ -1,4 +1,4 @@
-function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams, maxRGCsNum)
+function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
 
     % Generate the live mosaic filename and directory
     liveMosaicFileName = midgetRGCMosaicInspector.generateMosaicFileName(mosaicCenterParams);
@@ -8,9 +8,10 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams, maxRGCsNum)
         liveMosaicFileName, mosaicSurroundParams.H1cellIndex);
     
     % Generate the responses filename
-    responsesFileName = midgetRGCMosaicInspector.responsesFileNameForMosaicFileName(...
-        frozenMosaicFileName, mosaicSurroundParams.H1cellIndex);
-    
+    responsesFileName = midgetRGCMosaicInspector.responsesFileName(...
+        frozenMosaicFileName, mosaicSurroundParams.H1cellIndex, opticsPositionDegs);
+       
+
     % RGC indices to fit
     rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesToAnalyze(...
         frozenMosaicFileName, ...
@@ -19,6 +20,11 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams, maxRGCsNum)
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
 
+    % Ask the user to specify the optics position for which responses were saved
+    opticsPositionDegs = [];
+    while (numel(opticsPositionDegs) ~= 2)
+        opticsPositionDegs = input('\nEnter the optics position that was used to compute the responses ([x y]): ');
+    end
 
     % Load the mosaic responses
     load(responsesFileName, 'theMidgetRGCMosaicResponses', ...
