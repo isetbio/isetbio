@@ -30,13 +30,17 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
     refractiveErrorMicrons = wvfDefocusDioptersToMicrons(refractiveErrorDiopters, pupilDiamMM);
     
-    
     % Obtain z-coeffs at desired eccentricity
-    if (subjectID == 0)
-        zCoeffs = zCoeffsForSubjectAtEcc(1, whichEye, ecc(1), subtractCentralRefraction, refractiveErrorMicrons);
+    if (subjectID == 0)   
+        % Get zCoeffs for dimension and zero.  Actually the first function
+        % does the zero as well.  Then put back refractive error.
+        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
         zCoeffs = 0*zCoeffs;
+        zCoeffs(wvfOSAIndexToVectorIndex('defocus')) = refractiveErrorMicrons;
+        measurementPupilDiameterMM = pupilDiamMM;
     else
         zCoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc(1), subtractCentralRefraction, refractiveErrorMicrons);
+        measurementPupilDiameterMM = ArtalOptics.constants.measurementPupilDiamMM;
     end
     
     if (isempty(zCoeffs))
@@ -52,7 +56,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     [thePSF, ~, ~,~, psfSupportMinutesX, psfSupportMinutesY, theWVF] = ...
         computePSFandOTF(zCoeffs, ...
              wavelengthsListToCompute, wavefrontSpatialSamples, ...
-             ArtalOptics.constants.measurementPupilDiamMM, ...
+             MeasurementPupilDiameterMM, ...
              pupilDiamMM, inFocusWavelength, false, ...
              'doNotZeroCenterPSF', ~zeroCenterPSF, ...
              'micronsPerDegree', micronsPerDegree, ...

@@ -38,9 +38,12 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     refractiveErrorMicrons = wvfDefocusDioptersToMicrons(refractiveErrorDiopters, pupilDiamMM);
     
     % Obtain z-coeffs at desired eccentricity
-    if (subjectID == 0)
+    if (subjectID == 0)   
+        % Get zCoeffs for dimension and zero.  Actually the first function
+        % does the zero as well.  Then put back refractive error.
         zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
         zCoeffs = 0*zCoeffs;
+        zCoeffs(wvfOSAIndexToVectorIndex('defocus')) = refractiveErrorMicrons;
         measurementPupilDiameterMM = pupilDiamMM;
     else
         zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
@@ -59,6 +62,12 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
              'upsampleFactor', upsampleFactor, ...
              'noLCA', noLCA, ...
              'name', sprintf('Polans subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
+
+    % Need to put defocus back in for subject 0 case, because it got 
+    % zeroed out above.  Easiest to do that 
+    if (subjectID == 0)
+        theWVF = wvfSet(theWVF,'zcoeffs', refractiveErrorMicrons, {'defocus'});
+    end
     
     % Remove wavelength-dependent defocus if noLCA is set
     %
