@@ -24,7 +24,7 @@ function initializeState(obj)
     % Load the various params structs
     [obj.simulation.mosaicCenterParams, ...
      obj.simulation.mosaicSurroundParams, ...
-     obj.simulation.opticsParams] = midgetRGCMosaicInspector.generateMosaicAndOpticsParamStructs();
+     obj.simulation.opticsParams] = midgetRGCMosaicGenerator.generateMosaicAndOpticsParamStructs();
 end
 
 
