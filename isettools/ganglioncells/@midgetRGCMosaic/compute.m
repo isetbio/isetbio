@@ -1,4 +1,4 @@
-function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpticalImage] = compute(obj, theScene, varargin)
+function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount] = compute(obj, theScene, varargin)
 % Compute the response of a midgetRGCmosaic to a scene
 %
 % Syntax:
@@ -24,7 +24,7 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpti
     p = inputParser;
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('theNullScene', [], @isstruct);
-    p.addParameter('withOptics', [], @isstruct);
+    p.addParameter('withWavefronOpticsAtPositionDegs', obj.eccentricityDegs, @(x)((isnumeric(x))&&(numel(x)==2)))
     p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
     p.addParameter('normalizeConeResponsesWithRespectToNullScene', false, @islogical);
     p.parse(varargin{:});
@@ -32,7 +32,7 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpti
 
     nTrials = p.Results.nTrials;
     theNullScene = p.Results.theNullScene;
-    theOpticalImage = p.Results.withOptics;
+    wavefrontOpticsPositionDegs = p.Results.withWavefronOpticsAtPositionDegs;
     opticalImagePositionDegs = p.Results.opticalImagePositionDegs;
     normalizeConeResponsesWithRespectToNullScene = p.Results.normalizeConeResponsesWithRespectToNullScene;
 
@@ -40,55 +40,26 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpti
         nTrials = 1;
     end
 
-    if (isempty(theOpticalImage))
-        %fprintf('No optics were passed. Using the optics used to derive the center/surround pooling weights.')
-        % Retrieve the optics
-        % Note: if the obj.theOpticsPositionGrid contains more than one
-        % position, we will have to generate multiple optical images
-        % more than 1 
-        opticalPositionsNum = size(obj.theOpticsPositionGrid,1);
-        opticalPositionIndex = 1;
-        %if (opticalPositionsNum > 1)
-        %    fprintf(2,'Computing with multiple optical images is not yet supported. Using the first one.\n');
-        %end
-    
-        % Retrieve the optics params from the first RTVFTobj
-        theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{opticalPositionIndex};
-        opticsParams = theRTVFTobj.opticsParams;
-    
-        % Generate the OI based on the retrieved opticsParams
-        oiEnsemble = obj.inputConeMosaic.oiEnsembleGenerate(opticsParams.positionDegs, ...
-                        'zernikeDataBase', opticsParams.ZernikeDataBase, ...
-                        'subjectID', opticsParams.testSubjectID, ...
-                        'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
-                        'refractiveErrorDiopters', opticsParams.refractiveErrorDiopters, ...
-                        'zeroCenterPSF', opticsParams.zeroCenterPSF, ...
-                        'subtractCentralRefraction', opticsParams.subtractCentralRefraction, ...
-                        'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
-                        'upsampleFactor', opticsParams.psfUpsampleFactor, ...
-                        'warningInsteadOfErrorForBadZernikeCoeffs', true);
-    
-        theOpticalImage = oiEnsemble{1};
-        clear 'theRTVFTobj';
-    end
+    % Generate the optics to use
+    obj.generateOpticsAtPosition(wavefrontOpticsPositionDegs);
 
     % Process the null scene
     if (~isempty(theNullScene))
         % Compute the optical image of the null scene (0  contrast typically)
-        theOpticalImage = oiCompute(theNullScene, theOpticalImage);
+        obj.theCurrentOpticalImage  = oiCompute(theNullScene, obj.theCurrentOpticalImage );
         % Call the inputConeMosaic.compute() method for the current opticalImage
         [noiseFreeAbsorptionsCountNull, ~, ...
          photoCurrentsNull, ~, ~] = ...
-            obj.inputConeMosaic.compute(theOpticalImage, 'nTrials', 1);
+            obj.inputConeMosaic.compute(obj.theCurrentOpticalImage, 'nTrials', 1);
     end
 
     % Compute the optical image of the test stimulus
-    theOpticalImage = oiCompute(theScene, theOpticalImage);
+    obj.theCurrentOpticalImage = oiCompute(theScene, obj.theCurrentOpticalImage);
 
     % Call the inputConeMosaic.compute() method for the current opticalImage
     [noiseFreeAbsorptionsCount, noisyAbsorptionsCountInstances, ...
      photoCurrents, photoCurrentInstances, responseTemporalSupport] = ...
-        obj.inputConeMosaic.compute(theOpticalImage, ...
+        obj.inputConeMosaic.compute(obj.theCurrentOpticalImage, ...
         'nTrials', nTrials, ...
         'opticalImagePositionDegs', opticalImagePositionDegs);
 
@@ -102,8 +73,13 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount, theOpti
 
     nTrials = size(noiseFreeAbsorptionsCount,1);
     nTimePoints = size(noiseFreeAbsorptionsCount,2);
-    mRGCsNum = size(obj.rgcRFcenterConeConnectivityMatrix,2);
-    
+
+    if (isempty(obj.rgcRFcenterConePoolingMatrix))
+        mRGCsNum = size(obj.rgcRFcenterConeConnectivityMatrix,2);
+    else
+        mRGCsNum = size(obj.rgcRFcenterConePoolingMatrix,2);
+    end
+
     % Allocate memory for the responses
     responses = zeros(nTrials, nTimePoints, mRGCsNum);
 
