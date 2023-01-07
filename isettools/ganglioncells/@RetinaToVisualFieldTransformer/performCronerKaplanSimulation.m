@@ -7,7 +7,7 @@ function [theRMSEvector, theRotatedRF, theRFprofile, ...
             currentRetinalPoolingParams, retinalConePoolingParams, ... 
             bestHorizontalResolutionRotationDegs, sfSupport, ...
             targetSTFmatchMode, theTargetSTF, targetRsRcRatio, targetIntSensSCRatio, ...
-            visualRFcenterCharacteristicRadiusDegs, multiStartsNumDoGFit, figNo)
+            visualRFcenterCharacteristicRadiusDegs, multiStartsNumDoGFit, figNo, figureName)
 
     % Rotate theVisualRFmap according to the rotation
     % that maximizes horizontal resolution of the targetVisualRFmap
@@ -78,21 +78,26 @@ function [theRMSEvector, theRotatedRF, theRFprofile, ...
 
                 
                 hFig = figure(figNo); clf;
-                set(hFig, 'Position', [10 10 1000 1200]);
+                set(hFig, 'Position', [10 10 1000 1200], 'Name', figureName);
+
                 if (~isempty(theRetinalRFcenterConeMap))
                     ax = subplot(3,2,1);
                     xMid = round(size(theRetinalRFcenterConeMap,2)/2);
                     yMid = round(size(theRetinalRFcenterConeMap,1)/2);
                     xx = xMid + (-(round(xMid/10)):1:(round(xMid/10)));
                     yy = yMid + (-(round(yMid/10)):1:(round(yMid/10)));
-                    imagesc(ax, theRetinalRFcenterConeMap(yy,xx));
+                    theVisualizedRFportion = theRetinalRFcenterConeMap(yy,xx);
+                    imagesc(ax, theVisualizedRFportion);
+                    set(gca, 'CLim', [0 0.1*max(theVisualizedRFportion(:))]);
                     axis(ax,'image')
                     title(ax,'retinal RF center')
                 end
 
                 ax = subplot(3,2,2);
                 if (~isempty(theRetinalRFsurroundConeMap))
-                    imagesc(ax, theRetinalRFsurroundConeMap(yy,xx));
+                    theVisualizedRFportion= theRetinalRFsurroundConeMap(yy,xx);
+                    imagesc(ax, theVisualizedRFportion);
+                    set(gca, 'CLim', [0 0.1*max(theVisualizedRFportion(:))]);
                     axis(ax,'image')
                     title(ax,'current retinal RF surround')
                 end

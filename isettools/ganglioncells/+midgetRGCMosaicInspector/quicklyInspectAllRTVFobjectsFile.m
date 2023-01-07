@@ -20,7 +20,7 @@ function quicklyInspectAllRTVFobjectsFile()
     for iObj = 1:numel(theRTFVTobjList)
         waitbar(0.3+(iObj/numel(theRTFVTobjList))*0.7,progressBar, sprintf('Processing R2VF obj %d of %d', iObj, numel(theRTFVTobjList)));
         pause(0.1);
-        midgetRGCMosaicInspector.peekIntoRTVFobj(theRTFVTobjList{iObj}, iObj, theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, 1000+iObj);
+        midgetRGCMosaicInspector.peekIntoRTVFobj(theRTFVTobjList{iObj}, iObj, theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, 10000+iObj*100);
     end
 
     close(progressBar);
