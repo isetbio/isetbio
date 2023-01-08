@@ -5,7 +5,7 @@ function [theRMSEvector, theRotatedRF, theRFprofile, ...
           theFittedSTFsurroundToCenterIntegratedSensitivityRatio, ratioWeights] = performCronerKaplanSimulation(...
             theVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, ...
             currentRetinalPoolingParams, retinalConePoolingParams, ... 
-            bestHorizontalResolutionRotationDegs, sfSupport, ...
+            bestHorizontalResolutionRotationDegs, spatialSupportDegs, ...
             targetSTFmatchMode, theTargetSTF, targetRsRcRatio, targetIntSensSCRatio, ...
             visualRFcenterCharacteristicRadiusDegs, multiStartsNumDoGFit, figNo, figureName)
 
@@ -20,7 +20,7 @@ function [theRMSEvector, theRotatedRF, theRFprofile, ...
     % Compute the visual STF corresponding to the visual RF profile
     [theSpatialFrequencySupport, theVisualSTF] = ...
         RetinaToVisualFieldTransformer.spatialTransferFunction(...
-                sfSupport, theRFprofile);
+                spatialSupportDegs, theRFprofile);
 
     if (isempty(theTargetSTF))
         theRMSEvector = [];
@@ -76,52 +76,87 @@ function [theRMSEvector, theRotatedRF, theRFprofile, ...
                 theRMSEvector(2,1) = ratioWeights(2) * RsRcRatioResidual^2;
                 theRMSEvector(3,1) = ratioWeights(3) * SCintSensRatioResidual^2;
 
-                
+                rfColorMap = brewermap(1024, 'greys');
+
                 hFig = figure(figNo); clf;
-                set(hFig, 'Position', [10 10 1000 1200], 'Name', figureName);
+                set(hFig, 'Position', [10 10 1580 760], 'Name', figureName);
 
                 if (~isempty(theRetinalRFcenterConeMap))
-                    ax = subplot(3,2,1);
+                    ax = subplot(2,4,1);
                     xMid = round(size(theRetinalRFcenterConeMap,2)/2);
                     yMid = round(size(theRetinalRFcenterConeMap,1)/2);
-                    xx = xMid + (-(round(xMid/10)):1:(round(xMid/10)));
-                    yy = yMid + (-(round(yMid/10)):1:(round(yMid/10)));
+                    xx = find(abs(spatialSupportDegs)< 0.1);
+                    yy = xx;
                     theVisualizedRFportion = theRetinalRFcenterConeMap(yy,xx);
-                    imagesc(ax, theVisualizedRFportion);
-                    set(gca, 'CLim', [0 0.1*max(theVisualizedRFportion(:))]);
+                    xCenterProfile = sum(theVisualizedRFportion,1);
+                    yCenterProfile = sum(theVisualizedRFportion,2);
+                    maxRFamplitude = max(theVisualizedRFportion(:));
+                    imagesc(ax, spatialSupportDegs(xx), spatialSupportDegs(yy), theVisualizedRFportion);
+                    set(gca, 'CLim', [0 maxRFamplitude], 'FontSize', 16);
                     axis(ax,'image')
+                    set(ax, 'XTick', [-0.5:0.05:0.5], 'YTick', [-0.5:0.05:0.5]);
                     title(ax,'retinal RF center')
+                    ylabel(ax, 'space (degs)');
+                    xlabel(ax, 'space (degs)');
                 end
+                colormap(ax, rfColorMap);
 
-                ax = subplot(3,2,2);
+                ax = subplot(2,4,2);
                 if (~isempty(theRetinalRFsurroundConeMap))
-                    theVisualizedRFportion= theRetinalRFsurroundConeMap(yy,xx);
-                    imagesc(ax, theVisualizedRFportion);
-                    set(gca, 'CLim', [0 0.1*max(theVisualizedRFportion(:))]);
+                    theVisualizedRFportion = theRetinalRFsurroundConeMap(yy,xx);
+                    xSurroundProfile = sum(theVisualizedRFportion,1);
+                    ySurroundProfile = sum(theVisualizedRFportion,2);
+                    imagesc(ax, spatialSupportDegs(xx), spatialSupportDegs(yy), theVisualizedRFportion);
+                    set(gca, 'CLim', [0 0.05*maxRFamplitude], 'FontSize', 16);
                     axis(ax,'image')
-                    title(ax,'current retinal RF surround')
+                    set(ax, 'XTick', [-0.5:0.05:0.5], 'YTick', [-0.5:0.05:0.5]);
+                    title(ax,'current retinal RF surround');
+                    xlabel(ax, 'space (degs)');
                 end
-                colormap(gray);
+                colormap(ax, rfColorMap);
 
 
-                ax = subplot(3,2,3);
+                ax = subplot(2,4,3);
+                scalingFactor = max(theTargetSTF)/max(theFittedVisualSTF.compositeSTF);
+                
                 pMeasured = plot(ax,theSpatialFrequencySupport, theVisualSTF, 'ko', 'MarkerFaceColor', [0.5 0.5 0.5], 'MarkerSize', 12, 'LineWidth', 1.0); hold on;
                 pMeasuredDoGfit = plot(ax,theSpatialFrequencySupport, theFittedVisualSTF.compositeSTF, 'k-', 'LineWidth', 3.0);
+                
                 pTarget = plot(ax,theSpatialFrequencySupport, theTargetSTF, 'r-', 'LineWidth', 1.5);
+                plot(ax,theSpatialFrequencySupport, theFittedVisualSTF.compositeSTF*scalingFactor, 'k--', 'LineWidth', 3.0);
+                
                 legend(ax, [pMeasured pMeasuredDoGfit pTarget], {'current', 'current (DoG fit)', 'target'}, 'Location', 'SouthWest');
-
-                set(ax, 'XScale', 'log', 'XLim', [0.1 100]);
+                axis(ax, 'square')
+                set(ax, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100], ...
+                    'XTickLabel', {'0.1', '0.3', '1', '3', '10', '30', '100'}, ...
+                    'YLim', [0 1.1*max(theTargetSTF)], 'FontSize', 16);
                 grid(ax, 'on')
+                xtickangle(ax, 0);
                 title(ax,sprintf('Rs/Rc= (current/target: %2.2f/%2.2f)\nintS/C= (current/target: %2.2f/%2.2f)', ...
                     theFittedSTFsurroundToCenterRcRatio, targetRsRcRatio, ...
                     theFittedSTFsurroundToCenterIntegratedSensitivityRatio, ...
                     targetIntSensSCRatio), 'FontSize', 16);
-                
-                ax = subplot(3,2,5);
+                xlabel(ax, 'spatial frequency (c/deg)');
+
+
+                % The 1D-profiles
+                ax = subplot(2,4, 5);
+                xp = plot(ax,spatialSupportDegs(xx), xCenterProfile, 'r-', 'LineWidth', 1.0); hold(ax, 'on');
+                plot(ax,spatialSupportDegs(xx),-xSurroundProfile, 'r-', 'Color', [0.5 0 0], 'LineWidth', 1.0);
+                yp = plot(ax,spatialSupportDegs(yy),yCenterProfile, 'b-','LineWidth', 1.0);
+                plot(ax,spatialSupportDegs(yy),-ySurroundProfile, 'b-', 'Color', [0 0 0.5],'LineWidth', 1.0);
+                set(ax, 'XTick', [-0.5:0.05:0.5])
+                grid(ax, 'on');
+                axis(ax, 'square');
+                set(ax,'FontSize', 16);
+                title(ax, 'x- (red) and y- (blue) profiles');
+                xlabel(ax, 'space (degs)');
+
+                ax = subplot(2,4, 6);
                 RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, theFittedSTFDoGparams);
                 title('current DoG fit params')
 
-                ax = subplot(3,2,6);
+                ax = subplot(2,4, [7 8]);
                 theCurrentRetinalConePoolingParams = retinalConePoolingParams;
                 theCurrentRetinalConePoolingParams .finalValues = currentRetinalPoolingParams;
                 RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, theCurrentRetinalConePoolingParams );

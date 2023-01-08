@@ -2,9 +2,12 @@ function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, theSamplingPositionGrid, the
     % Target and achieved ratios
     targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
     targetSCintSensRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
+    theRTVFTobj.rfComputeStruct.theSTF
     fittedRsRcRatio = theRTVFTobj.rfComputeStruct.theSTF.fittedRsRcRatio;
     fittedSCintSensRatio = theRTVFTobj.rfComputeStruct.theSTF.fittedSCIntSensRatio;
-
+    targetKsKcRatio = targetSCintSensRatio / (targetRsRcRatio^2);
+    fittedKsKcRatio = fittedSCintSensRatio / (fittedRsRcRatio^2);
+    
 
     fprintf('RTVFobj at position (degs): %2.2f %2.2f with %d center cones\n', ...
         theSamplingPositionGrid(iRTVobjIndex,1), theSamplingPositionGrid(iRTVobjIndex,2), theConesNumPooledByTheRFcenterGrid(iRTVobjIndex));
@@ -34,29 +37,41 @@ function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, theSamplingPositionGrid, the
                 theRTVFTobj.multiStartsNumDoGFit, ...
                 figNo, figureName);
 
+    ax = subplot(2,4,[7 8]);
+    title(ax, sprintf('retinal pooling params for RFs with %d center cone(s) around (%2.2f,%2.2f) degs', ...
+        theConesNumPooledByTheRFcenterGrid(iRTVobjIndex), theSamplingPositionGrid(iRTVobjIndex,1), theSamplingPositionGrid(iRTVobjIndex,2)));
 
-    hFig = figure(figNo+1); clf;
-    set(hFig, 'Position', [10 10 900 350], 'Name', figureName);
-    ax = subplot(1,2,1);
-    XLims = [1 15]; YLims = XLims;
-    XTicks = 0:2:20; YTicks = XTicks;
-    plotTargetAndAchievedParam(ax, targetRsRcRatio, fittedRsRcRatio, XLims, YLims, XTicks, YTicks, 'Rs/Rc ratio');
+    % Plot correspondence between target and achieved ratios
+    ax = subplot(2,4,4);
+    yyaxis(ax, 'left');
+    b1 = bar(ax, [2], 100*((fittedRsRcRatio/targetRsRcRatio)-1), 'BaseValue', 0.0);
+    hold(ax, 'on');
+    b2 = bar(ax, [4], 100*((fittedSCintSensRatio/targetSCintSensRatio)-1), 'BaseValue', 0.0);
 
-    ax = subplot(1,2,2);
-    XLims = [0 1]; YLims = XLims;
-    XTicks = 0:0.2:1.0; YTicks = XTicks;
-    plotTargetAndAchievedParam(ax, targetSCintSensRatio, fittedSCintSensRatio, XLims, YLims, XTicks, YTicks, 'int. sens. S/C ratio');
-    drawnow;
-end
+    b1(1).FaceColor = 'flat';
+    b1(1).CData(1,:) = [1 0 0];
 
-function plotTargetAndAchievedParam(ax, targetVal, fittedVal, XLims, YLims, XTicks, YTicks, titleString)
-    
-    plot(ax, XLims, YLims, 'k-', 'LineWidth', 1.0); hold(ax,'on');
-    plot(ax, targetVal, fittedVal, 'ro', 'MarkerSize', 14, 'MarkerFaceColor', [1 0.5 0.5]);
+    b2(1).FaceColor = 'flat';
+    b2(1).CData(1,:) = [1 0 0];
+
     axis(ax, 'square');
     grid(ax, 'on');
-    set(ax, 'XLim', XLims, 'YLim', YLims, 'XTick', XTicks, 'YTick', YTicks, 'FontSize', 16);
-    title(ax, titleString);
-    xlabel(ax,'target');
-    ylabel(ax,'achieved');
+    set(ax, 'YLim', [-1 1], 'YColor', [1 0 0], 'FontSize', 16, ...
+        'YLim', [-100 100], 'YTick', -100:20:100);
+    ylabel(ax,'(fitted-target)/target');
+
+    yyaxis(ax, 'right')
+    b = bar(ax, [6], 100*((fittedKsKcRatio/targetKsKcRatio)-1), 'BaseValue', 0.0);
+    b(1).FaceColor = 'flat';
+    b(1).CData(1,:) = [0 0 1];
+    axis(ax, 'square');
+    grid(ax, 'on');
+    set(ax, 'XLim', [1 7],  'YColor', [0 0 1], 'XTick', [2 4 6], 'XTickLabel', {'Rs/Rc','S/C sens', 'Ks/Kc'}, ...
+        'YLim', [-100 100], 'FontSize', 16, 'YTick', [-100:20:100]);
+    ylabel(ax,'(fitted-target)/target');
+    
+    drawnow;
+
+    hFig = figure(figNo);
+    NicePlot.exportFigToPDF(sprintf('RTVFobj%d.pdf',iRTVobjIndex), hFig, 300);
 end
