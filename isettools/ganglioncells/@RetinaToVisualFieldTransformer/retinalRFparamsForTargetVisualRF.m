@@ -244,7 +244,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     modelConstants.simulateCronerKaplanEstimation = obj.simulateCronerKaplanEstimation;
     
     debugRFrotation = true;
-
+    figureName = '';
     if (modelConstants.simulateCronerKaplanEstimation)
 
         % TargetSTF match mode: either the params of the DoG model fit to
@@ -303,7 +303,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     visualizeRFs(53, spatialSupportDegs, theInitialRetinalRFcenterConeMap, theInitialRetinalRFsurroundConeMap, {'initial retinal RF center',  'initial retinal RF surround'});
     visualizeRFs(54, spatialSupportDegs, theTargetVisualRFmap, theInitialFittedVisualRFmap, {'target RF',  'initial fitted RF'});
     
-    figureName = '';
+    
     if (modelConstants.simulateCronerKaplanEstimation)  
 
         [~, theRotatedInitialFittedVisualRFmap, theInitialRFprofile, theInitialFittedSTF, stfSupportCPD] =  RetinaToVisualFieldTransformer.performCronerKaplanSimulation(...
@@ -544,7 +544,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
 
         figure(1555);
-        ax = subplot(3,2,4);
+        ax = subplot(2,4, 4);
         iterations = 1:size(rmseSequence,2);
         plot(ax,iterations, rmseSequence(1,:), 'r-', 'MarkerSize', 12, 'LineWidth', 1.0); hold on
         plot(ax,iterations, rmseSequence(2,:), 'b-', 'MarkerSize', 12, 'LineWidth', 1.0); 
