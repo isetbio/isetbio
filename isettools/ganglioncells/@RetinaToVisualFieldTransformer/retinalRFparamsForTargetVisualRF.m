@@ -15,12 +15,6 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
                weightsOfConesPooledByTheRFcenter, ...
                spatialSupportDegs);
 
-    if (obj.simulateCronerKaplanEstimation)
-        if (~(strcmp(targetVisualRFDoGparams.visualRFmodel, 'gaussian center, gaussian surround')))
-            fprintf(2,'WARNINGL When simulating the Croner & Kaplan estimation, the targetVisualRFDoGparams.visualRFmodel is supposed to be ''gaussian center, gaussian surround''.');
-        end
-    end
-
     % Model constants
     modelConstants = struct();
     
