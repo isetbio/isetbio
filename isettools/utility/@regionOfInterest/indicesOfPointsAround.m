@@ -8,5 +8,5 @@ function idx = indicesOfPointsAround(obj, points, pointsPerSmaple, samplingPoint
     [D,I] = pdist2(points,sampledOutline,'euclidean','Smallest',pointsPerSmaple);
     
     idx = find(D<=maxDistance);
-    idx = I(idx);
+    idx = unique(I(idx));
 end
