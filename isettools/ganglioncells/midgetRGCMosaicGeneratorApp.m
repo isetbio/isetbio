@@ -32,7 +32,6 @@ end
 
 function executeButtonAction(btn, app)
 
-    app.currentAction
     switch app.currentAction
         case "compute: center-connected mRGC mosaic"
             midgetRGCMosaicGenerator.generateCenterConnectedMosaic(...
