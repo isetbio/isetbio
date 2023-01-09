@@ -8,9 +8,9 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
 
     % RGC indices to fit
-    rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesToAnalyze(...
-        frozenMosaicFileName, ...
-        'maxRGCsNum', maxRGCsNum);
+%     rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesToAnalyze(...
+%         frozenMosaicFileName, ...
+%         'maxRGCsNum', maxRGCsNum);
 
     % Ask the user to specify the optics position for which responses were saved
     opticsPositionDegs = [];
@@ -40,40 +40,51 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
        'topMargin',      0.05);
 
     % Examine every 22.5 degs
-    theMeridianAngles  = 0:22.5:(180-22.5);
+    deltaAngle = 90;
+    theMeridianAngles  = 0:deltaAngle:(180-deltaAngle);
     radius = 1.5 * sqrt(2.0);
 
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1400 700]);
 
-    for iMeridianAngle = 1:numel(theMeridianAngles )
+    RGCindices = cell(1, numel(theMeridianAngles));
+    signedDistances = cell(1, numel(theMeridianAngles));
+
+    for iMeridianAngle = 1:numel(theMeridianAngles)
         theMeridianAngle = theMeridianAngles (iMeridianAngle);
         x = radius * cosd(theMeridianAngle );
         y = radius * sind(theMeridianAngle );
     
         theROI = regionOfInterest('shape', 'line', 'from', [x,y], 'to', [-x,-y], 'thickness', 0.01);
-        samplingPoints = 200;  % sample the perimeter of the ROI along 1000 points');
+        samplingPoints = 400;  % sample the perimeter of the ROI along 1000 points');
         pointsPerSample = 10;  % return up to 10 points for each sample along the perimeter');
         maxDistance = 0.1;     % points must be no further than 0.1 degs away from the closest perimeter sample');
         idx = theROI.indicesOfPointsAround(theMidgetRGCmosaic.rgcRFpositionsDegs, pointsPerSample, samplingPoints, maxDistance);
         
-        radialDistance = sqrt(sum((theMidgetRGCmosaic.rgcRFpositionsDegs(idx,:)).^2,2));
-
-        if (theMeridianAngle == 90)
-            signedDistances{iMeridianAngle} = radialDistance  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,2));
+        if (~isempty(maxRGCsNum))
+            skip = floor(numel(idx)/maxRGCsNum);
         else
-            signedDistances{iMeridianAngle} = radialDistance  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,1));
+            skip = 1;
         end
+        idx = idx(1:skip:numel(idx));
         RGCindices{iMeridianAngle} = idx;
 
+        radialDistances = sqrt(sum((theMidgetRGCmosaic.rgcRFpositionsDegs(idx,:)).^2,2));
+        if (theMeridianAngle == 90)
+            signedDistances{iMeridianAngle} = radialDistances  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,2));
+        else
+            signedDistances{iMeridianAngle} = radialDistances  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,1));
+        end
+
+        
         i = floor((iMeridianAngle-1)/4)+1;
         j = mod(iMeridianAngle-1,4)+1;
         ax = subplot('Position', subplotPosVectors(i,j).v);
         plot(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,1), ...
-            theMidgetRGCmosaic.rgcRFpositionsDegs(idx,2), 'k.');
+             theMidgetRGCmosaic.rgcRFpositionsDegs(idx,2), 'k.');
         axis(ax, 'square');
         set(ax, 'XLim', 1.5*[-1 1], 'YLim', 1.5*[-1 1]);
-        title(ax, sprintf('%d RGCs along %2.1f degs', numel(idx), theMeridianAngle ));
+        title(ax, sprintf('%d RGCs along %2.1f degs', numel(idx), theMeridianAngle));
     end
 
     hFigRcDegs = figure(2); clf;
@@ -109,10 +120,13 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
 
         figure(hFigRcDegs);
         ax = subplot('Position', subplotPosVectors(i,j).v);
-        plot(ax, signedDistances{iMeridianAngle}, fittedParams.achievedRcDegs, 'r.');
+        size(signedDistances{iMeridianAngle})
+        size(fittedParams.achievedRcDegs)
+        plot(ax, signedDistances{iMeridianAngle}, fittedParams.achievedRcDegs*60, 'r.');
         axis(ax, 'square');
-        set(ax, 'XLim', 1.5*sqrt(2)*[-1 1]);
-        ylabel(ax, 'RcDegs');
+        set(ax, 'XLim', 2*[-1 1], 'YLim', [0.2 1], 'YTick', 0.2:0.1:1.0, 'FontSize', 16);
+        grid(ax, 'on');
+        ylabel(ax, 'RcDegs (arc min)');
         xlabel(ax, 'eccentricity (degs)');
         title(ax, sprintf('%d RGCs along %2.1f degs', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
         drawnow
@@ -121,7 +135,8 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
         ax = subplot('Position', subplotPosVectors(i,j).v);
         plot(ax, signedDistances{iMeridianAngle}, fittedParams.achievedRsToRcRatios, 'r.');
         axis(ax, 'square');
-        set(ax, 'XLim', 1.5*sqrt(2)*[-1 1], 'YLim', [0 16], 'YTick', 0:2:16);
+        set(ax, 'XLim', 2*[-1 1], 'YLim', [0 16], 'YTick', 0:2:16, 'FontSize', 16);
+        grid(ax, 'on');
         ylabel(ax, 'Rs/Rc ratio');
         xlabel(ax, 'eccentricity (degs)');
         title(ax, sprintf('%d RGCs along %2.1f degs', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
@@ -131,7 +146,8 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
         ax = subplot('Position', subplotPosVectors(i,j).v);
         plot(ax, signedDistances{iMeridianAngle}, fittedParams.achievedSCintSensRatios, 'r.');
         axis(ax, 'square');
-        set(ax, 'XLim', 1.5*sqrt(2)*[-1 1], 'YLim', [0 1], 'YTick', 0:0.2:1.0);
+        set(ax, 'XLim', 2*[-1 1], 'YLim', [0 1], 'YTick', 0:0.2:1.0, 'FontSize', 16);
+        grid(ax, 'on');
         ylabel(ax, 'S/C int. sens. ratio');
         xlabel(ax, 'eccentricity (degs)');
         title(ax, sprintf('%d RGCs along %2.1f degs', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
@@ -148,13 +164,13 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
     spatialFrequenciesTested, orientationsTested, ...
     theMidgetRGCmosaic, theMidgetRGCMosaicResponses)
 
-    d = struct(...
-        'temporalEquivalentEccDegs', zeros(1, numel(rgcIndicesToAnalyze)), ...
-        'achievedRcDegs', zeros(1, numel(rgcIndicesToAnalyze)), ...
-        'achievedRsToRcRatios', zeros(1, numel(rgcIndicesToAnalyze)), ...
-        'achievedKsToKcRatios', zeros(1, numel(rgcIndicesToAnalyze)), ...
-        'achievedSCintSensRatios', zeros(1, numel(rgcIndicesToAnalyze)) ...
-        );
+    temporalEquivalentEccDegs = zeros(1, numel(rgcIndicesToAnalyze));
+    achievedRcDegs = zeros(1, numel(rgcIndicesToAnalyze));
+    achievedRsToRcRatios = zeros(1, numel(rgcIndicesToAnalyze));
+    achievedKsToKcRatios = zeros(1, numel(rgcIndicesToAnalyze));
+    achievedSCintSensRatios = zeros(1, numel(rgcIndicesToAnalyze)); 
+
+    
 
     % Allocate memory
     fittedSTFs = cell(1, numel(rgcIndicesToAnalyze));
@@ -166,7 +182,7 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
             iRGC, numel(rgcIndicesToAnalyze), theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,1), theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,2));
 
         temporalEquivEccDegs = theMidgetRGCmosaic.temporalEquivalentEccentricityForEccentricity(theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,:));
-        d.temporalEquivalentEccDegs(iRGC) = sqrt(sum(temporalEquivEccDegs.^2,2));
+        temporalEquivalentEccDegs(iRGC) = sqrt(sum(temporalEquivEccDegs.^2,2));
 
         % Obtain the responses
         theSingleMidgetRGCResponses = squeeze(theMidgetRGCMosaicResponses(:, :, :, theRGCindex));
@@ -185,18 +201,18 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
 
         % The RcDegs
         idx = find(strcmp(theFittedDoGmodelParams.names, 'RcDegs'));
-        d.achievedRcDegs(iRGC) = theFittedDoGmodelParams.finalValues(idx);
+        achievedRcDegs(iRGC) = theFittedDoGmodelParams.finalValues(idx);
 
         % The Rs/Rc ratio
         idx = find(strcmp(theFittedDoGmodelParams.names, 'RsToRc'));
-        d.achievedRsToRcRatios(iRGC) = theFittedDoGmodelParams.finalValues(idx);
+        achievedRsToRcRatios(iRGC) = theFittedDoGmodelParams.finalValues(idx);
 
         % The Ks/Kc ratio
         idx = find(strcmp(theFittedDoGmodelParams.names, 'kS/kC'));
-        d.achievedKsToKcRatios(iRGC) = theFittedDoGmodelParams.finalValues(idx);
+        achievedKsToKcRatios(iRGC) = theFittedDoGmodelParams.finalValues(idx);
 
         % The S/C int sens ratio
-        d.achievedSCintSensRatios(iRGC) = d.achievedKsToKcRatios(iRGC) * (d.achievedRsToRcRatios(iRGC))^2;
+        achievedSCintSensRatios(iRGC) = achievedKsToKcRatios(iRGC) * (achievedRsToRcRatios(iRGC))^2;
 
 
         [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
@@ -271,14 +287,10 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
                 theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,1), ...
                 theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,2)));
 
-            idx = find(strcmp(theFittedDoGmodelParams.names, 'RsToRc'));
-            theAchievedRsToRcRatio(iRGC) = theFittedDoGmodelParams.finalValues(idx);
-            idx = find(strcmp(theFittedDoGmodelParams.names, 'kS/kC'));
-            theAchievedKsToKcRatio = theFittedDoGmodelParams.finalValues(idx);
-            theAchievedSCintSensRatio(iRGC) = theAchievedKsToKcRatio *(theAchievedRsToRcRatio(iRGC))^2;
+          
 
             subplot(2,4,[5 6]);
-            scatter(theTemporalEccDegs, theAchievedRsToRcRatio, 140, ...
+            scatter(temporalEquivalentEccDegs, achievedRsToRcRatios, 140, ...
                 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeAlpha', 0.5);
     
             set(gca, 'XScale', 'log', 'XLim', [0.01 3], 'XTick', [0.01 0.03 0.1 0.3 1 3]);
@@ -290,7 +302,7 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
     
     
             subplot(2,4,[7 8]);
-            scatter(theTemporalEccDegs, theAchievedSCintSensRatio, 140, ...
+            scatter(temporalEquivalentEccDegs, achievedSCintSensRatios, 140, ...
                 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeAlpha', 0.5);
             set(gca, 'XScale', 'log', 'XLim', [0.01 3], 'XTick', [0.01 0.03 0.1 0.3 1 3]);
             set(gca, 'YLim', [0 1], 'YTick', 0:0.2:1.0);
@@ -313,6 +325,15 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
             'theFittedDoGmodelParams', theFittedDoGmodelParams);
             
     end % iRGC
+
+    d = struct(...
+        'temporalEquivalentEccDegs', temporalEquivalentEccDegs, ...
+        'achievedRcDegs', achievedRcDegs, ...
+        'achievedRsToRcRatios', achievedRsToRcRatios, ...
+        'achievedKsToKcRatios', achievedKsToKcRatios, ...
+        'achievedSCintSensRatios', achievedSCintSensRatios ...
+        );
+
 end
 
 function RcDegs = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex)

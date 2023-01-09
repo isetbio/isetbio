@@ -163,7 +163,7 @@ function generateGUI(obj)
 
     theActionDropdown.FontSize = 14;
     % Current action
-    obj.currentAction = theActionDropdown.Items{4}
+    obj.currentAction = theActionDropdown.Items{4};
     theActionDropdown.Value = obj.currentAction;
     theActionDropdown.ValueChangedFcn = @(src,event) dropDownActionChanged(src,event, obj);
     
