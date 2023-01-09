@@ -24,10 +24,10 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     if (~isempty(updateRTVFobjectAtPosition))
         targetPosition = [updateRTVFobjectAtPosition(1) updateRTVFobjectAtPosition(2)];
         d = sum((bsxfun(@minus, eccentricitySamplingGrid, targetPosition)).^2,2);
-        [~,updatedRTVFobjectIndex] = min(d);
-        eccentricitySamplingGrid = eccentricitySamplingGrid(updatedRTVFobjectIndex,:);
-        fprintf(2, 'Will update the RTVFobjList at index %d (pos (degs) = %2.2f,%2.2f)', ...
-            updatedRTVFobjectIndex, eccentricitySamplingGrid(1), eccentricitySamplingGrid(2));
+        [~,idx] = min(d);
+        eccentricitySamplingGrid = eccentricitySamplingGrid(idx,:);
+        fprintf(2, 'Will update object(s) of the RTVFobjList near pos (degs) = (%2.2f,%2.2f)', ...
+            eccentricitySamplingGrid(1), eccentricitySamplingGrid(2));
     end
 
 
@@ -36,7 +36,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
         'eccentricitySamplingGrid', eccentricitySamplingGrid, ...
         'inputPoolingVisualization', 'centerOnly');
 
-    % Assemble R2CFT filename
+    % Assemble R2CVFT filename
     R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(mosaicFileName, mosaicSurroundParams.H1cellIndex);
 
     % multiStartsNum: select from:
@@ -86,19 +86,16 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
             % Compute sourceRTVFobjectIndex
             sourceRTVFobjectIndex = find(theUpdatedConesNumPooledByTheRFcenterGrid == updateRTVFobjectWithCenterConesNum(iUpdatedIndex));
 
-            % Compute destinationRTVFobjectIndex
-            % Retrieve the indices of the fitted RTVF objects that have the
-            % same # of center cones
-            centerConeMatchObjIndices = find(theConesNumPooledByTheRFcenterGrid == updateRTVFobjectWithCenterConesNum(iUpdatedIndex));
-
-            % Compute distance based weights for this RGC and the fitted RTVF objects
-            distancesToSamplingGridPositions = sqrt(sum((bsxfun(@minus, theOpticsPositionGrid(centerConeMatchObjIndices,:), targetPosition)).^2,2));
-            [~, idx] = min(distancesToSamplingGridPositions);
-            destinationRTVFobjectIndex = centerConeMatchObjIndices(idx);
+            % Compute destination RTVFobject index
+            destinationRTVFobjectIndex = midgetRGCMosaicGenerator.indexOfRTVFobject(...
+                updateRTVFobjectWithCenterConesNum(iUpdatedIndex), ...
+                targetPosition, ...
+                heConesNumPooledByTheRFcenterGrid, ...
+                theOpticsPositionGrid);
 
             % Query user whether to updaste the list of RVFTobj
-            prompt = sprintf('Update the RTVFlist with current RTVFobj with %d cones at position (degs): %2.2f %2.2f? [y/n] : ', ...
-                theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
+            prompt = sprintf('Update the RTVFlist{%d}  (%d center cones at position (degs): (%2.2f %2.2f))? [y/n] : ', ...
+                destinationRTVFobjectIndex, theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
                 theOpticsPositionGrid(destinationRTVFobjectIndex,1), theOpticsPositionGrid(destinationRTVFobjectIndex,2));
             txt = lower(input(prompt,'s'));
             if isempty(txt)

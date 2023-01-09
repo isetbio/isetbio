@@ -1,4 +1,12 @@
-function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, figNo)
+function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, ...
+    theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, figNo)
+
+    iRTVobjIndexDoesNotCorrespondToFullList = false;
+    if (iRTVobjIndex < 0)
+        iRTVobjIndex = -iRTVobjIndex;
+        iRTVobjIndexDoesNotCorrespondToFullList = true;
+    end
+
     % Target and achieved ratios
     targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
     targetSCintSensRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
@@ -15,8 +23,7 @@ function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, theSamplingPositionGrid, the
     fprintf('Target S/C int. sens. ratio: %2.3f, achieved: %2.3f\n', targetSCintSensRatio, fittedSCintSensRatio);
 
 
-    figureName = sprintf('RTVF obj #%d  located at position (degs): %2.2f, %2.2f with %d center cones', ...
-                         iRTVobjIndex, ...
+    figureName = sprintf('RTVF obj located at position (degs): %2.2f, %2.2f with %d center cones', ...
                          theSamplingPositionGrid(iRTVobjIndex,1), ...
                          theSamplingPositionGrid(iRTVobjIndex,2), ...
                          theConesNumPooledByTheRFcenterGrid(iRTVobjIndex));
@@ -73,5 +80,19 @@ function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, theSamplingPositionGrid, the
     drawnow;
 
     hFig = figure(figNo);
-    NicePlot.exportFigToPDF(sprintf('RTVFobj%d.pdf',iRTVobjIndex), hFig, 300);
+    if (iRTVobjIndexDoesNotCorrespondToFullList)
+        pdfFileName = spritnf('RTVFobj_X_at_%2.2f_%2.2fdegs_with%d_centerCones.pdf', ...
+                         theSamplingPositionGrid(iRTVobjIndex,1), ...
+                         theSamplingPositionGrid(iRTVobjIndex,2), ...
+                         theConesNumPooledByTheRFcenterGrid(iRTVobjIndex));
+    else
+        pdfFileName = sprintf('RTVFobj_%d_at_%2.2f_%2.2fdegs_with_%d_centerCones.pdf', ...
+                         iRTVobjIndex, ...
+                         theSamplingPositionGrid(iRTVobjIndex,1), ...
+                         theSamplingPositionGrid(iRTVobjIndex,2), ...
+                         theConesNumPooledByTheRFcenterGrid(iRTVobjIndex));
+    end
+    
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+
 end
