@@ -25,10 +25,12 @@ function quicklyInspectAllRTVFobjectsFile()
     yLims = [min(y) max(y)];
     spatialTicksX = linspace(xLims(1), xLims(2), 7);
     spatialTicksY = linspace(yLims(1), yLims(2), 7);
+    spatialTicksX = -2:0.5:2;
+    spatialTicksY = -2:0.5:2;
 
 
     hFig = figure(9000); clf;
-    set(hFig, 'Position', [10 10 1500 500]);
+    set(hFig, 'Position', [10 10 1500 500], 'Color', [1 1 1]);
 
     theDifferentConesNumPooled = sort(unique(theConesNumPooledByTheRFcenterGrid));
     c = brewermap(numel(theDifferentConesNumPooled), 'set1');
@@ -37,6 +39,7 @@ function quicklyInspectAllRTVFobjectsFile()
         idx = find(theConesNumPooledByTheRFcenterGrid == conesNumPooled);
         ax = subplot(1, numel(theDifferentConesNumPooled), iConesNumPooledIndex);
         plot(ax, theOpticsPositionGrid(idx,1), theOpticsPositionGrid(idx, 2), 'k+', ...
+            'LineWidth', 1.5, ...
             'MarkerEdgeColor', c(iConesNumPooledIndex,:)*0.4, ...
             'MarkerFaceColor', c(iConesNumPooledIndex,:), 'MarkerSize', 14);
 
@@ -49,8 +52,9 @@ function quicklyInspectAllRTVFobjectsFile()
         set(ax, 'YTick', spatialTicksY, 'YTickLabel', sprintf('%2.2f\n', spatialTicksY));
         set(ax, 'FontSize', 16);
 
-        title(ax, sprintf('sampling grid for %d center cones', conesNumPooled));
+        title(ax, sprintf('sampling grid for %d cone(s) RF centers', conesNumPooled));
     end
+    NicePlot.exportFigToPDF('samplingGrids.pdf', hFig, 300);
 
     for iObj = 1:numel(theRTFVTobjList)
         waitbar(0.3+(iObj/numel(theRTFVTobjList))*0.7,progressBar, sprintf('Processing R2VF obj %d of %d', iObj, numel(theRTFVTobjList)));
