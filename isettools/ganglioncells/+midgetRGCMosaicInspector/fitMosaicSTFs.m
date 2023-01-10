@@ -7,10 +7,6 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
 
-    % RGC indices to fit
-%     rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesToAnalyze(...
-%         frozenMosaicFileName, ...
-%         'maxRGCsNum', maxRGCsNum);
 
     % Ask the user to specify the optics position for which responses were saved
     opticsPositionDegs = [];
@@ -32,7 +28,7 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
     % Examine every 15 degs
     deltaAngle = 22.5;
     theMeridianAngles  = 0:deltaAngle:(180-deltaAngle);
-    radius = 1.5 * sqrt(2.0);
+    theMeridianRadius = 1.5 * sqrt(2.0);
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 2, ...
@@ -66,26 +62,14 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
     signedDistances = cell(1, numel(theMeridianAngles));
 
     for iMeridianAngle = 1:numel(theMeridianAngles)
-        theMeridianAngle = theMeridianAngles (iMeridianAngle);
-        x = radius * cosd(theMeridianAngle );
-        y = radius * sind(theMeridianAngle );
-    
-        theROI = regionOfInterest('shape', 'line', 'from', [x,y], 'to', [-x,-y], 'thickness', 0.01);
-        samplingPoints = 400;  % sample the perimeter of the ROI along 1000 points');
-        pointsPerSample = 10;  % return up to 10 points for each sample along the perimeter');
-        maxDistance = 0.1;     % points must be no further than 0.1 degs away from the closest perimeter sample');
-        idx = theROI.indicesOfPointsAround(theMidgetRGCmosaic.rgcRFpositionsDegs, pointsPerSample, samplingPoints, maxDistance);
-        
-        if (~isempty(maxRGCsNum))
-            skip = floor(numel(idx)/maxRGCsNum);
-        else
-            skip = 1;
-        end
-        idx = idx(1:skip:numel(idx));
+        theMeridianAngle = theMeridianAngles(iMeridianAngle);
+        idx = midgetRGCMosaicInspector.rgcIndicesAlongMeridianWithAngle(...
+            theMeridianAngle, theMeridianRadius, ...
+            theMidgetRGCmosaic.rgcRFpositionsDegs, maxRGCsNum);
         RGCindices{iMeridianAngle} = idx;
 
         radialDistances = sqrt(sum((theMidgetRGCmosaic.rgcRFpositionsDegs(idx,:)).^2,2));
-        if (theMeridianAngle == 90)
+        if (theMeridianAngle == 90) || (theMeridianAngle == 270)
             signedDistances{iMeridianAngle} = radialDistances  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,2));
         else
             signedDistances{iMeridianAngle} = radialDistances  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,1));

@@ -4,10 +4,7 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(...
         mosaicCenterParams);
 
-    % RGC indices to visualize
-    rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesToAnalyze(...
-        mosaicFileName, ...
-        'maxRGCsNum', maxRGCsNum);
+
 
     % Load the mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');
@@ -17,13 +14,29 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
              numel(theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList), ...
              numel(unique(theMidgetRGCmosaic.theConesNumPooledByTheRFcenterGrid)));
 
-    videoFileName = 'RFs';
+    
+
+    
+
+    % RGC indices to visualize
+%     rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesToAnalyze(...
+%         mosaicFileName, ...
+%         'maxRGCsNum', maxRGCsNum);
+
+    % Examine RFs along horizontal meridian
+    theMeridianAngle = 90;
+    theMeridianRadius = 1.5 * sqrt(2.0);
+    rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesAlongMeridianWithAngle(...
+            theMeridianAngle, theMeridianRadius, ...
+            theMidgetRGCmosaic.rgcRFpositionsDegs, maxRGCsNum);
+
+    videoFileName = sprintf('RFsAlongMeridianAt_%2.1fdegs', theMeridianAngle);
     videoOBJ = VideoWriter(videoFileName, 'MPEG-4');
     videoOBJ.FrameRate = 10;
     videoOBJ.Quality = 100;
     videoOBJ.open();
 
-    
+
     % Visualize the PSF of the RTVF object that was closest to a particular mosaic position
     targetMosaicPosition = [0 0];
     [~, objIndexForVisualizingPSF] = min(sum((bsxfun(@minus, theMidgetRGCmosaic.theSamplingPositionGrid, targetMosaicPosition)).^2,2));
@@ -75,7 +88,7 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
                 'visualizedRFspatialExtent', 0.3, ...
                 'withPSFData', theVisualizedPSFData, ...
                 'generateVideo', false, ...
-                'withEccentricityCrossHairs', true, ...
+                'withEccentricityCrossHairs', false, ...
                 'fontSize', 16);
 
         % replace graphic is (1,1) with the STFs of the nearest RTVF
