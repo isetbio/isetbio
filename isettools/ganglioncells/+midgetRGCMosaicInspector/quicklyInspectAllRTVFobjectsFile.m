@@ -33,15 +33,15 @@ function quicklyInspectAllRTVFobjectsFile()
     set(hFig, 'Position', [10 10 1500 500], 'Color', [1 1 1]);
 
     theDifferentConesNumPooled = sort(unique(theConesNumPooledByTheRFcenterGrid));
-    c = brewermap(numel(theDifferentConesNumPooled), 'set1');
+    markerTypes = {'o', 'x', 's', 'd', 'h', '*', 'p'};
+
     for iConesNumPooledIndex = 1:numel(theDifferentConesNumPooled)
         conesNumPooled = theDifferentConesNumPooled(iConesNumPooledIndex);
         idx = find(theConesNumPooledByTheRFcenterGrid == conesNumPooled);
         ax = subplot(1, numel(theDifferentConesNumPooled), iConesNumPooledIndex);
-        plot(ax, theOpticsPositionGrid(idx,1), theOpticsPositionGrid(idx, 2), 'k+', ...
+        scatter(ax, theOpticsPositionGrid(idx,1), theOpticsPositionGrid(idx, 2), 200, ...
             'LineWidth', 1.5, ...
-            'MarkerEdgeColor', c(iConesNumPooledIndex,:)*0.4, ...
-            'MarkerFaceColor', c(iConesNumPooledIndex,:), 'MarkerSize', 14);
+            'Marker',  markerTypes{iConesNumPooledIndex});
 
         axis(ax, 'equal');
         grid(ax, 'on');

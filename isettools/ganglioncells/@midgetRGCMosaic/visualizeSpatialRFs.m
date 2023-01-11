@@ -336,10 +336,11 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
 
         % All the RTVFob positions
         examinedCenterConesNum = unique(obj.theConesNumPooledByTheRFcenterGrid);
+        markerTypes = {'o', 'x', 's', 'd', 'h', '*', 'p'};
         for iCenterConesNumIndex = 1:numel(examinedCenterConesNum)
             idx = find(obj.theConesNumPooledByTheRFcenterGrid == examinedCenterConesNum(iCenterConesNumIndex));
             plot(ax, obj.theSamplingPositionGrid(idx,1), obj.theSamplingPositionGrid(idx,2), ...
-                'ko', 'MarkerSize', 12+10*iCenterConesNumIndex/numel(examinedCenterConesNum), 'LineWidth', 1.5);
+                'ko', 'MarkerSize', 14, 'Marker', markerTypes{iCenterConesNumIndex}, 'LineWidth', 1.5);
             hold(ax, 'on');
         end
 

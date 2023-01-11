@@ -4,8 +4,6 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(...
         mosaicCenterParams);
 
-
-
     % Load the mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');
 
@@ -14,16 +12,8 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
              numel(theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList), ...
              numel(unique(theMidgetRGCmosaic.theConesNumPooledByTheRFcenterGrid)));
 
-    
 
-    
-
-    % RGC indices to visualize
-%     rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesToAnalyze(...
-%         mosaicFileName, ...
-%         'maxRGCsNum', maxRGCsNum);
-
-    % Examine RFs along horizontal meridian
+    % Examine RFs along some meridian angle
     theMeridianAngle = 90;
     theMeridianRadius = 1.5 * sqrt(2.0);
     rgcIndicesToAnalyze = midgetRGCMosaicInspector.rgcIndicesAlongMeridianWithAngle(...
