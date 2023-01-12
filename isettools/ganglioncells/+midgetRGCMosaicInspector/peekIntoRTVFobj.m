@@ -23,7 +23,8 @@ function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, ...
     fprintf('Target S/C int. sens. ratio: %2.3f, achieved: %2.3f\n', targetSCintSensRatio, fittedSCintSensRatio);
 
 
-    figureName = sprintf('RTVF obj located at position (degs): %2.2f, %2.2f with %d center cones', ...
+    figureName = sprintf('RTVF obj %d located at position (degs): %2.2f, %2.2f with %d center cones', ...
+                         iRTVobjIndex, ...
                          theSamplingPositionGrid(iRTVobjIndex,1), ...
                          theSamplingPositionGrid(iRTVobjIndex,2), ...
                          theConesNumPooledByTheRFcenterGrid(iRTVobjIndex));
@@ -44,42 +45,27 @@ function peekIntoRTVFobj(theRTVFTobj, iRTVobjIndex, ...
                 theRTVFTobj.multiStartsNumDoGFit, ...
                 figNo, figureName);
 
+    hFig = figure(figNo);
     ax = subplot(2,4,[7 8]);
     title(ax, sprintf('retinal pooling params for RFs with %d center cone(s) around (%2.2f,%2.2f) degs', ...
         theConesNumPooledByTheRFcenterGrid(iRTVobjIndex), theSamplingPositionGrid(iRTVobjIndex,1), theSamplingPositionGrid(iRTVobjIndex,2)));
 
     % Plot correspondence between target and achieved ratios
     ax = subplot(2,4,4);
-    yyaxis(ax, 'left');
-    b1 = bar(ax, [2], 100*((fittedRsRcRatio/targetRsRcRatio)-1), 'BaseValue', 0.0);
+    bar(ax, 1, 100*((fittedRsRcRatio/targetRsRcRatio)-1), 'BaseValue', 0.0);
     hold(ax, 'on');
-    b2 = bar(ax, [4], 100*((fittedSCintSensRatio/targetSCintSensRatio)-1), 'BaseValue', 0.0);
+    bar(ax, 2, 100*((fittedSCintSensRatio/targetSCintSensRatio)-1), 'BaseValue', 0.0);
 
-    b1(1).FaceColor = 'flat';
-    b1(1).CData(1,:) = [1 0 0];
 
-    b2(1).FaceColor = 'flat';
-    b2(1).CData(1,:) = [1 0 0];
-
+    bar(ax, 3, 100*((fittedKsKcRatio/targetKsKcRatio)-1), 'BaseValue', 0.0);
     axis(ax, 'square');
     grid(ax, 'on');
-    set(ax, 'YLim', [-1 1], 'YColor', [1 0 0], 'FontSize', 16, ...
-        'YLim', [-100 100], 'YTick', -100:20:100);
-    ylabel(ax,'(fitted-target)/target');
-
-    yyaxis(ax, 'right')
-    b = bar(ax, [6], 100*((fittedKsKcRatio/targetKsKcRatio)-1), 'BaseValue', 0.0);
-    b(1).FaceColor = 'flat';
-    b(1).CData(1,:) = [0 0 1];
-    axis(ax, 'square');
-    grid(ax, 'on');
-    set(ax, 'XLim', [1 7],  'YColor', [0 0 1], 'XTick', [2 4 6], 'XTickLabel', {'Rs/Rc','S/C sens', 'Ks/Kc'}, ...
-        'YLim', [-100 100], 'FontSize', 16, 'YTick', [-100:20:100]);
+    set(ax, 'XLim', [0 4],  'XTick', [1 2 3], 'XTickLabel', {'Rs/Rc','S/C sens', 'Ks/Kc'}, ...
+        'YLim', [-100 100], 'FontSize', 16, 'YTick', -100:20:100);
     ylabel(ax,'(fitted-target)/target');
     
     drawnow;
-
-    hFig = figure(figNo);
+    
     if (iRTVobjIndexDoesNotCorrespondToFullList)
         pdfFileName = sprintf('RTVFobj_X_at_%2.2f_%2.2fdegs_with%d_centerCones.pdf', ...
                          theSamplingPositionGrid(iRTVobjIndex,1), ...

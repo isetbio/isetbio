@@ -1,15 +1,14 @@
-function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount] = compute(obj, theScene, varargin)
+function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount] = compute(obj, varargin)
 % Compute the response of a midgetRGCmosaic to a scene
 %
 % Syntax:
-%   [responses, responseTemporalSupport] = compute(obj, theScene);
+%   [responses, responseTemporalSupport] = compute(obj, varargin);
 %
 % Description:
 %    Compute the response of a midgetRGCmosaic to an optical image
 %
 % Inputs:
 %    obj                 - A @midgetRGCMosaic object
-%    theScene            - A scene
 %
 % Outputs:
 %    responses - [nTrials, nTimePoints, nConesNum] matrix
@@ -23,14 +22,27 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount] = compu
     % Parse input
     p = inputParser;
     p.addParameter('nTrials', [], @isscalar);
+
+    % The following parameters only make sense when we are asked to compute
+    % midgetRGCMosaic responses to scenes. Probably should combine all
+    % these in a struct
+    p.addParameter('theTestScene', [], @isstruct);
     p.addParameter('theNullScene', [], @isstruct);
     p.addParameter('withWavefronOpticsAtPositionDegs', obj.eccentricityDegs, @(x)((isnumeric(x))&&(numel(x)==2)))
     p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
     p.addParameter('normalizeConeResponsesWithRespectToNullScene', false, @islogical);
+
+    % The following parameters only make sense when we are asked to compute
+    % midgetRGCMosaic responses from cone mosaic responses which were precomputed 
+    % by the user (using the obj.inputConeMosaic)
+    
+
+
     p.parse(varargin{:});
     
 
     nTrials = p.Results.nTrials;
+    theScene = p.Results.theTestScene;
     theNullScene = p.Results.theNullScene;
     wavefrontOpticsPositionDegs = p.Results.withWavefronOpticsAtPositionDegs;
     opticalImagePositionDegs = p.Results.opticalImagePositionDegs;
@@ -46,7 +58,7 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount] = compu
     % Process the null scene
     if (~isempty(theNullScene))
         % Compute the optical image of the null scene (0  contrast typically)
-        obj.theCurrentOpticalImage  = oiCompute(theNullScene, obj.theCurrentOpticalImage );
+        obj.theCurrentOpticalImage  = oiCompute(theNullScene, obj.theCurrentOpticalImage);
         % Call the inputConeMosaic.compute() method for the current opticalImage
         [noiseFreeAbsorptionsCountNull, ~, ...
          photoCurrentsNull, ~, ~] = ...
@@ -85,7 +97,7 @@ function [responses, responseTemporalSupport, noiseFreeAbsorptionsCount] = compu
 
     if (isempty(obj.rgcRFcenterConePoolingMatrix))
         fprintf(2,'The center and surround cone pooling matrices have not yet been set (no center/surround RF and no overlap) !!\n');
-        fprintf(2,'Using the rgcRFcenterConeConnectivityMatrix (zero overlap) instead to compute RF center responses only !!\n');
+        fprintf(2,'Using the rgcRFcenterConeConnectivityMatrix instead to compute RF center responses only !!\n');
 
         % Compute the response of each mRGC
         parfor iRGC = 1:mRGCsNum

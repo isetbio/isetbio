@@ -3,7 +3,10 @@ function generateOpticsAtPosition(obj, wavefrontOpticsPositionDegs)
     % Retrieve the optics params from the RTVFTobj closest to the mosaic center
     [~, opticalPositionIndex] = min(sum((bsxfun(@minus, obj.theSamplingPositionGrid, [wavefrontOpticsPositionDegs(1) wavefrontOpticsPositionDegs(2)])).^2,2));
     
-    if (~isempty(obj.theCurrentOpticalImagePositionGridIndex)) && (obj.theCurrentOpticalImagePositionGridIndex == opticalPositionIndex)
+    if (...
+            (~isempty(obj.theCurrentOpticalImagePositionGridIndex)) && ...
+            (obj.theCurrentOpticalImagePositionGridIndex == opticalPositionIndex) ...
+        )
         % Optics already computed. Return
         % fprintf('Using existing optical image from position (%2.2f, %2.2f) degs\n', obj.theSamplingPositionGrid(opticalPositionIndex,:));
         return;

@@ -87,10 +87,24 @@ function executeButtonAction(btn, app)
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.mosaicSurroundParams);
 
-        case "validate: compute LM-non-opponent STFs"
+        case "validate: pre-compute LM-non-opponent cone mosaic responses"
             % Ask user whether to use parfor or not
-            useParfor = input('Use parfor for the midgetRGCMosaic computes? ([Hit enter to use parfor): ');
-            if (isempty(useParfor))
+            useParfor = input('Use parfor for the cone mosaic computes? ([Hit enter to use parfor): ', 's');
+            if (isempty(useParfor)) || (ischar(useParfor) && strcmpi(useParfor, 'y'))
+                useParfor = true;
+            else
+                useParfor = false;
+            end
+            
+            midgetRGCMosaicInspector.preComputeConeMosaicLMnonOpponentSTFs(...
+                 app.simulation.mosaicCenterParams, ...
+                 app.simulation.mosaicSurroundParams, ...
+                 useParfor);
+
+        case "validate: compute LM-non-opponent STFs (without pre-computing the cone mosaic responses)"
+            % Ask user whether to use parfor or not
+            useParfor = input('Use parfor for the midgetRGCMosaic computes? ([Hit enter to use parfor): ', 's');
+            if (isempty(useParfor)) || (ischar(useParfor) && strcmpi(useParfor, 'y'))
                 useParfor = true;
             else
                 useParfor = false;
@@ -123,7 +137,10 @@ end
 function generateGUI(obj)
 
     % Create figure window
-    obj.mainView = uifigure;
+    obj.mainView = uifigure('Position', [30 500 800 400], ...
+        'WindowStyle', 'AlwaysOnTop', ...
+        'Scrollable', 'on', ...
+        'Resize', 'off');
     obj.mainView.Name = "Midget RGC Mosaic Generator & Inspector";
 
     % Manage app layout
@@ -157,7 +174,8 @@ function generateGUI(obj)
         "compute: center-surround cone pooling kernels", ...
         "visualize: spatial RFs", ...
         "compute: frozen mRGC mosaic", ...
-        "validate: compute LM-non-opponent STFs", ...
+        "validate: pre-compute LM-non-opponent cone mosaic responses", ...
+        "validate: compute LM-non-opponent STFs (without pre-computing the cone mosaic responses)", ...
         "validate: fit LM-non-opponent STFs" ...
         ];
 
@@ -170,8 +188,10 @@ function generateGUI(obj)
     % The ExecuteActionButton
     theExecuteActionButton.Layout.Row = 2;
     theExecuteActionButton.Layout.Column = 2;
-    theExecuteActionButton.Text = "G O !";
+    theExecuteActionButton.Text = "GO !";
     theExecuteActionButton.FontSize = 20;
+    theExecuteActionButton.BackgroundColor = [0.3 0.3 0.3];
+    theExecuteActionButton.FontColor = [0.1 0.8 0.9];
     theExecuteActionButton.ButtonPushedFcn = @(btn,event) executeButtonAction(btn, obj);
 
     % The ExitButton
@@ -179,6 +199,8 @@ function generateGUI(obj)
     theExitButton.Layout.Column = 2;
     theExitButton.Text = "Quit";
     theExitButton.FontSize = 20;
+    theExitButton.BackgroundColor = [0.3 0.3 0.3];
+    theExitButton.FontColor = [0.9 0.8 0.0];
     theExitButton.ButtonPushedFcn = @(btn,event) exitButtonAction(btn, obj);
 end
 

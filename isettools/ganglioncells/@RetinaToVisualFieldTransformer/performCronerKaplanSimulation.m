@@ -110,7 +110,7 @@ function [theRMSEvector, theRotatedRF, theRFprofile, ...
                     set(gca, 'CLim', [0 0.05*maxRFamplitude], 'FontSize', 16);
                     axis(ax,'image')
                     set(ax, 'XTick', [-0.5:0.05:0.5], 'YTick', [-0.5:0.05:0.5]);
-                    title(ax,'current retinal RF surround');
+                    title(ax,'retinal RF surround');
                     xlabel(ax, 'space (degs)');
                 end
                 colormap(ax, rfColorMap);
@@ -125,14 +125,14 @@ function [theRMSEvector, theRotatedRF, theRFprofile, ...
                 pTarget = plot(ax,theSpatialFrequencySupport, theTargetSTF, 'r-', 'LineWidth', 1.5);
                 plot(ax,theSpatialFrequencySupport, theFittedVisualSTF.compositeSTF*scalingFactor, 'k--', 'LineWidth', 3.0);
                 
-                legend(ax, [pMeasured pMeasuredDoGfit pTarget], {'current', 'current (DoG fit)', 'target'}, 'Location', 'SouthWest');
+                legend(ax, [pMeasured pMeasuredDoGfit pTarget], {'current STF', 'DoG fit', 'target STF'}, 'Location', 'SouthWest');
                 axis(ax, 'square')
                 set(ax, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100], ...
                     'XTickLabel', {'0.1', '0.3', '1', '3', '10', '30', '100'}, ...
                     'YLim', [0 1.1*max(theTargetSTF)], 'FontSize', 16);
                 grid(ax, 'on')
                 xtickangle(ax, 0);
-                title(ax,sprintf('Rs/Rc= (current/target: %2.2f/%2.2f)\nintS/C= (current/target: %2.2f/%2.2f)', ...
+                title(ax,sprintf('Rs/Rc: achieved=%2.2f, target=%2.2f\nintS/C: achieved=%2.2f, target=%2.2f)', ...
                     theFittedSTFsurroundToCenterRcRatio, targetRsRcRatio, ...
                     theFittedSTFsurroundToCenterIntegratedSensitivityRatio, ...
                     targetIntSensSCRatio), 'FontSize', 16);
@@ -154,13 +154,13 @@ function [theRMSEvector, theRotatedRF, theRFprofile, ...
 
                 ax = subplot(2,4, 6);
                 RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, theFittedSTFDoGparams);
-                title('current DoG fit params')
+                title('DoG model params')
 
                 ax = subplot(2,4, [7 8]);
                 theCurrentRetinalConePoolingParams = retinalConePoolingParams;
-                theCurrentRetinalConePoolingParams .finalValues = currentRetinalPoolingParams;
+                theCurrentRetinalConePoolingParams.finalValues = currentRetinalPoolingParams;
                 RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, theCurrentRetinalConePoolingParams );
-                title('current retinal cone pooling params')
+                title('surround cone pooling params')
 
                 drawnow;
     

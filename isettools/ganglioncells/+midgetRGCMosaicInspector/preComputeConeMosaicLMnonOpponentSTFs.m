@@ -1,5 +1,5 @@
-function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams, useParfor)
-    
+function preComputeConeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams, useParfor)
+
     % Generate the frozen mosaic filename
     frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileName(...
         mosaicCenterParams, mosaicSurroundParams.H1cellIndex);
@@ -10,33 +10,47 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
     % Ask the user which optics position to use for the computation
     opticsPositionDegs = midgetRGCMosaicInspector.selectOpticsPosition(theMidgetRGCmosaic);
 
+    % Generate the optics to use. Here we are using the wavefront measurements
+    % (database, subject, eye) that were used to fit the midgetRGCmosaic RTVF objects,
+    % but we can specify the retinal position of these optics, for example
+    % some off-axis position, not at the center of the mosaic
+    theMidgetRGCmosaic.generateOpticsAtPosition(opticsPositionDegs);
+    theOI = theMidgetRGCmosaic.theCurrentOpticalImage;
+
+    % Extract the input cone mosaic
+    theInputConeMosaic = theMidgetRGCmosaic.inputConeMosaic;
+
     % Generate the responses filename
-    responsesFileName = midgetRGCMosaicInspector.responsesFileName(...
+    responsesFileName = midgetRGCMosaicInspector.coneMosaicResponsesFileName(...
         frozenMosaicFileName, opticsPositionDegs);
-           
+
     % Generate components for running the STF mapping experiment
     [stimParams, thePresentationDisplay] = midgetRGCMosaicInspector.setupVisualSTFmappingExperiment(...
-        theMidgetRGCmosaic.inputConeMosaic.sizeDegs, ...
-        theMidgetRGCmosaic.inputConeMosaic.wave);
+        theInputConeMosaic.sizeDegs, ...
+        theInputConeMosaic.wave);
 
     % Allocate memory
-    rgcsNum = size(theMidgetRGCmosaic.rgcRFpositionsMicrons,1);
+    conesNum = size(theInputConeMosaic.coneRFpositionsDegs,1);
 
     % Single precision responses
-    theMidgetRGCMosaicResponses = zeros(...
+    theConeMosaicResponses = zeros(...
         numel(stimParams.orientationsTested), ...
         numel(stimParams.spatialFrequenciesTested), ...
         numel(stimParams.spatialPhasesDegs), ...
-        rgcsNum, ...
+        conesNum, ...
         'single');
    
     disp('Allocated memory');
-    
+
+    % Empty the noiseFreeAbsorptionsCountNull
+    noiseFreeAbsorptionsCountNull = [];
+
+
     % Go through all stimulus orientations
     for iOri = 1:numel(stimParams.orientationsTested)
         stimParams.orientationDegs = stimParams.orientationsTested(iOri);
 
-        fprintf('Computing midget RGC mosaic STFs for the %d degs orientation patterns.\n', ...
+        fprintf('Computing cone mosaic STFs for the %d degs orientation patterns.\n', ...
                 stimParams.orientationDegs);
 
         for iFreq = 1:numel(stimParams.spatialFrequenciesTested)
@@ -53,55 +67,54 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                     thePresentationDisplay, theCurrentStimParams, theDriftingGratingSpatialModulationPatterns, ...
                     'validateScenes', false);
 
-            if (iOri == 1) && (iFreq == 1)
-                % Do a compute just so we generate the optics
-                theMidgetRGCmosaic.compute(...
-                        'theTestScene', theDriftingGratingFrameScenes{1}, ...
-                        'nTrials', 1, ...
-                        'theNullScene', theNullStimulusScene, ...
-                        'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
-                        'normalizeConeResponsesWithRespectToNullScene', true);
+
+            % Compute the cone mosaic responses to the null scene OI
+            if (isempty(noiseFreeAbsorptionsCountNull))
+                % Compute the optical image of the null scene
+                theOI  = oiCompute(theNullStimulusScene, theOI);
+
+                % Compute the cone mosaic responses
+                coneMosaicNullResponses = theInputConeMosaic.compute(theOI, 'nTrials', 1);
             end
 
 
-            % Allocate memory
-            theFrameResponses = zeros(numel(theCurrentStimParams.spatialPhasesDegs), rgcsNum);
 
-            % Compute mRGCmosaic responses
+            % Allocate memory
+            theFrameResponses = zeros(numel(theCurrentStimParams.spatialPhasesDegs), conesNum, 'single');
+
+            % Compute the input cone mosaic responses
             if (useParfor)
                 parfor iFrame = 1:numel(theCurrentStimParams.spatialPhasesDegs)
                     % Get scene corresponding to this stimulus frame
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
-    
-                    % Compute the mosaic's response to this stimulus frame
-                    r = theMidgetRGCmosaic.compute(...
-                            'theTestScene', theFrameScene, ...
-                            'nTrials', 1, ...
-                            'theNullScene', theNullStimulusScene, ...
-                            'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
-                            'normalizeConeResponsesWithRespectToNullScene', true);
-    
-                    theFrameResponses(iFrame,:) = r(1,1,:);
-                end % iFrame
+
+                    % Compute the optical image of the frame scene
+                    theCurrentOI = oiCompute(theFrameScene, theOI);
+
+                    % Compute the cone mosaic responses
+                    [noiseFreeAbsorptionsCount, noisyAbsorptionsCountInstances, noiseFreePhotoCurrents, noisyPhotocurrentInstances, ~] = ...
+                        theInputConeMosaic.compute(theCurrentOI, 'nTrials', 1);
+
+                    theFrameResponses(iFrame,:) = single(noiseFreeAbsorptionsCount(1,1,:));
+                end
             else
                 for iFrame = 1:numel(theCurrentStimParams.spatialPhasesDegs)
                     % Get scene corresponding to this stimulus frame
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
-    
-                    % Compute the mosaic's response to this stimulus frame
-                    r = theMidgetRGCmosaic.compute(...
-                            'theTestScene', theFrameScene, ...
-                            'nTrials', 1, ...
-                            'theNullScene', theNullStimulusScene, ...
-                            'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
-                            'normalizeConeResponsesWithRespectToNullScene', true);
-    
-                    theFrameResponses(iFrame,:) = r(1,1,:);
-                end % iFrame
+
+                    % Compute the optical image of the frame scene
+                    theCurrentOI  = oiCompute(theFrameScene, theOI);
+
+                    % Compute the cone mosaic responses
+                    [noiseFreeAbsorptionsCount, noisyAbsorptionsCountInstances, photoCurrents, ~, ~] = ...
+                        theInputConeMosaic.compute(theCurrentOI, 'nTrials', 1);
+
+                    theFrameResponses(iFrame,:) = single(noiseFreeAbsorptionsCount(1,1,:));
+                end
             end
 
             % Save theFrameResponses
-            theMidgetRGCMosaicResponses(iOri, iFreq,:,:) = single(theFrameResponses);
+            theConeMosaicResponses(iOri, iFreq,:,:) = theFrameResponses;
 
             % Save memory
             theDriftingGratingFrameScenes = [];
@@ -109,12 +122,15 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
         end % iFreq
     end % iOri
 
+
     % Save response data to disk
     orientationsTested = stimParams.orientationsTested;
     spatialFrequenciesTested = stimParams.spatialFrequenciesTested;
     coneContrasts = stimParams.coneContrasts;
     spatialPhasesDegs = stimParams.spatialPhasesDegs;
-    save(responsesFileName, 'theMidgetRGCMosaicResponses', ...
+    save(responsesFileName, 'theConeMosaicResponses', 'coneMosaicNullResponses', ...
          'orientationsTested', 'spatialFrequenciesTested', ...
          'spatialPhasesDegs', 'coneContrasts', 'opticsPositionDegs', '-v7.3');
+
 end
+
