@@ -37,9 +37,11 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
         translationVector = [0 0];
     else
         if (~isempty(measWavelength))
-            % Retrieve OTF at the measurement wavelength
-            theCenteringOTF = wvfGet(theWVF, 'otf', measWavelength);
-            theCenteringPSF = wvfGet(theWVF, 'psf', measWavelength);
+            % Retrieve OTF closest to the measurement wavelength]
+            theWavelengthSupport = wvfGet(theWVF, 'wave');
+            [~,idx] = min(abs(theWavelengthSupport-measWavelength));
+            theCenteringOTF = wvfGet(theWVF, 'otf', theWavelengthSupport(idx));
+            theCenteringPSF = wvfGet(theWVF, 'psf', theWavelengthSupport(idx));
             translationVector = []; showTranslation = false;
             [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(...
                         theCenteringOTF, theCenteringPSF, ...
