@@ -182,6 +182,7 @@ function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
 
     % Append the fittedSTFs structs
     save(responsesFileName, 'theMeridianFits', 'theMeridianAngles', '-append');
+    fprintf('Appended theMeridianFits to the responses file: ''%s''.', responsesFileName);
 end
 
 function plotDataAlongMeridian(ax1, ax2, ...

@@ -32,6 +32,10 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
    
     disp('Allocated memory');
     
+    % Initialize theInputDataStruct for computation with input scenes
+    theInputDataStruct = midgetRGCMosaic.inputDataStruct(midgetRGCMosaic.SCENE_COMPUTE_INPUT_DATA_TYPE);
+
+
     % Go through all stimulus orientations
     for iOri = 1:numel(stimParams.orientationsTested)
         stimParams.orientationDegs = stimParams.orientationsTested(iOri);
@@ -53,14 +57,19 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                     thePresentationDisplay, theCurrentStimParams, theDriftingGratingSpatialModulationPatterns, ...
                     'validateScenes', false);
 
+
             if (iOri == 1) && (iFreq == 1)
+                theCurrentInputDataStruct = theInputDataStruct;
+                theCurrentInputDataStruct.theTestScene = theDriftingGratingFrameScenes{1}; 
+                theCurrentInputDataStruct.theNullScene = theNullStimulusScene;
+                theCurrentInputDataStruct.wavefrontOpticsPositionDegs = theMidgetRGCmosaic.eccentricityDegs;
+                theCurrentInputDataStruct.opticalImagePositionDegs = 'mosaic-centered';
+                theCurrentInputDataStruct.normalizeConeResponsesWithRespectToNullScene = true;
+            
                 % Do a compute just so we generate the optics
                 theMidgetRGCmosaic.compute(...
-                        'theTestScene', theDriftingGratingFrameScenes{1}, ...
-                        'nTrials', 1, ...
-                        'theNullScene', theNullStimulusScene, ...
-                        'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
-                        'normalizeConeResponsesWithRespectToNullScene', true);
+                    theCurrentInputDataStruct, ...
+                    'nTrials', 1);
             end
 
 
@@ -69,18 +78,26 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
 
             % Compute mRGCmosaic responses
             if (useParfor)
+
+                % Compute each frame separately
                 parfor iFrame = 1:numel(theCurrentStimParams.spatialPhasesDegs)
                     % Get scene corresponding to this stimulus frame
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
     
+                    % Update theInputDataStruct with theFrameScene
+                    theCurrentInputDataStruct = theInputDataStruct;
+                    theCurrentInputDataStruct.theTestScene = theFrameScene; 
+                    theCurrentInputDataStruct.theNullScene = theNullStimulusScene;
+                    theCurrentInputDataStruct.wavefrontOpticsPositionDegs = theMidgetRGCmosaic.eccentricityDegs;
+                    theCurrentInputDataStruct.opticalImagePositionDegs = 'mosaic-centered';
+                    theCurrentInputDataStruct.normalizeConeResponsesWithRespectToNullScene = true;
+
                     % Compute the mosaic's response to this stimulus frame
-                    r = theMidgetRGCmosaic.compute(...
-                            'theTestScene', theFrameScene, ...
-                            'nTrials', 1, ...
-                            'theNullScene', theNullStimulusScene, ...
-                            'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
-                            'normalizeConeResponsesWithRespectToNullScene', true);
+                    r =  theMidgetRGCmosaic.compute(...
+                            theCurrentInputDataStruct, ...
+                            'nTrials', 1);
     
+                    % Insert it in theFrameResponses
                     theFrameResponses(iFrame,:) = r(1,1,:);
                 end % iFrame
             else
@@ -88,13 +105,18 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                     % Get scene corresponding to this stimulus frame
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
     
+                    % Update theInputDataStruct with theFrameScene
+                    theCurrentInputDataStruct = theInputDataStruct;
+                    theCurrentInputDataStruct.theTestScene = theFrameScene; 
+                    theCurrentInputDataStruct.theNullScene = theNullStimulusScene;
+                    theCurrentInputDataStruct.wavefrontOpticsPositionDegs = theMidgetRGCMosaic.eccentricityDegs;
+                    theCurrentInputDataStruct.opticalImagePositionDegs = 'mosaic-centered';
+                    theCurrentInputDataStruct.normalizeConeResponsesWithRespectToNullScene = true;
+
                     % Compute the mosaic's response to this stimulus frame
-                    r = theMidgetRGCmosaic.compute(...
-                            'theTestScene', theFrameScene, ...
-                            'nTrials', 1, ...
-                            'theNullScene', theNullStimulusScene, ...
-                            'withWavefronOpticsAtPositionDegs', opticsPositionDegs, ...
-                            'normalizeConeResponsesWithRespectToNullScene', true);
+                    r =  theMidgetRGCmosaic.compute(...
+                            theCurrentInputDataStruct, ...
+                            'nTrials', 1);
     
                     theFrameResponses(iFrame,:) = r(1,1,:);
                 end % iFrame

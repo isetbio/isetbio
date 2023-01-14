@@ -20,7 +20,7 @@ function preComputeConeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroun
     % Extract the input cone mosaic
     theInputConeMosaic = theMidgetRGCmosaic.inputConeMosaic;
 
-    % Generate the responses filename
+    % Generate the input cone mosaics responses filename
     responsesFileName = midgetRGCMosaicInspector.coneMosaicResponsesFileName(...
         frozenMosaicFileName, opticsPositionDegs);
 
