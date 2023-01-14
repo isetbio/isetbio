@@ -1,6 +1,19 @@
 classdef midgetRGCMosaic < handle
 % Create a midgetRGCMosaic mosaic object
 
+    % Constant properties
+    properties (Constant)
+
+        % Valid compute input data types
+        SCENE_COMPUTE_INPUT_DATA_TYPE = 'scene';
+        CONE_MOSAIC_RESPONSE_COMPUTE_INPUT_DATA_TYPE = 'coneMosaicActivation';
+
+        validComputeInputDataTypes = {...
+            midgetRGCMosaic.SCENE_COMPUTE_INPUT_DATA_TYPE ...
+            midgetRGCMosaic.CONE_MOSAIC_RESPONSE_COMPUTE_INPUT_DATA_TYPE ...
+            };
+    end
+
     % Public properties
     properties  (GetAccess=public, SetAccess=public)
         % Name of the mosaic
@@ -182,9 +195,24 @@ classdef midgetRGCMosaic < handle
         %theRetinaToVisualFieldTransformerOBJs that take a lot of space
         freeze(obj);
         
-        % Method to compute the response of the midgetRGCmosaic to a scene
-        [midgetRGCresponses, responseTemporalSupport, ...
-         noiseFreeAbsorptionsCount] = compute(obj, theScene, varargin);
+        % Gateway compute method to compute the response of the
+        % midgetRGCmosaic. It diverts to one of the specialized compute methods
+        [midgetRGCresponses, responseTemporalSupport] = ...
+            compute(obj, inputDataStruct, varargin);
+
+        % Specialized compute method used to compute responses to input scenes
+        [midgetRGCresponses, responseTemporalSupport, noiseFreeAbsorptionsCount] = ...
+            computeGivenInputScene(obj, inputDataStruct, varargin);
+
+        % Specialized compute method used to compute responses to input
+        % cone mosaic responses
+        [midgetRGCresponses, responseTemporalSupport] = ...
+            computeGivenInputConeMosaicActivation(obj, inputDataStruct, varargin);
+
+        % Common method of computing responses by pooling cone mosaic
+        % responses
+        [responses, responseTemporalSupport] = computeResponsesByPoolingConeResponses(obj, ...
+            coneMosaicResponses, coneMosaicResponseTemporalSupport);
 
         % Method to compute optics at a desired position within the mosaic
         generateOpticsAtPosition(obj, wavefrontOpticsPositionDegs);
@@ -261,7 +289,6 @@ classdef midgetRGCMosaic < handle
         
         % Method to crop RGCs on the border
         cropRGCsOnTheBorder(obj);
-
     end % Private methods
 
     % Static methods
@@ -293,6 +320,13 @@ classdef midgetRGCMosaic < handle
 
         % Method to generate coordinates for eccentricitySamplingGrid passed to the RTVF object
         gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords);
+
+        % Method to generate a skeleton computeInputDataStruct that the
+        % user has to update with the current input information
+        theInputDataStruct = inputDataStruct(computeInputDataType);
+
+        % Method to validate a user-updated computeInputDataStruct
+        validateComputeInputDataStruct(computeInputDataStruct);
 
     end % Static metthods
 
