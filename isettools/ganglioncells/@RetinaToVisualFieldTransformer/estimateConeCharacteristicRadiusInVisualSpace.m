@@ -2,7 +2,7 @@ function dStruct = estimateConeCharacteristicRadiusInVisualSpace(obj, theTargetP
     simulateCronerKaplanEstimation, neighboringConesNum)
 
     theConeMosaic = obj.theConeMosaic;
-    thePSFData = obj.theVlambdaWeightedPSFData;
+    thePSFData = obj.theSpectrallyWeightedPSFData;
 
     conesNumInRetinalPatch = numel(theConeMosaic.coneTypes);
     conesNumToAnalyze = max([6 neighboringConesNum]);

@@ -37,8 +37,8 @@ classdef RetinaToVisualFieldTransformer < handle
        % Whether the subject requires subtraction of central refraction
        subtractCentralRefraction;
 
-       % The computed (vLambda weighted, or not) PSFs
-       theVlambdaWeightedPSFData;
+       % The spectrally-weighted PSFs
+       theSpectrallyWeightedPSFData;
 
        % # of multi-starts
        multiStartsNum;
@@ -143,8 +143,8 @@ classdef RetinaToVisualFieldTransformer < handle
             obj.targetVisualRFDoGparams.surroundConnectableConeTypes = unique(obj.targetVisualRFDoGparams.surroundConnectableConeTypes);
 
 
-            % Generate the PSF to employ
-            obj.vLambdaWeightedPSFandOTF();
+            % Compute the spectrally-weighted PSFdata
+            obj.spectrallyWeightedPSFs();
 
             % Estimate the mean characteristic radius of cones at the examined position
             % as projected on to visual space using the computed PSF
@@ -201,8 +201,8 @@ classdef RetinaToVisualFieldTransformer < handle
 
     % Private methods
     methods (Access=private)
-        % Generate vLambda weighted PSF and its circularly symmetric version
-        vLambdaWeightedPSFandOTF(obj);
+        % Generate spectrally weighted PSFs
+        spectrallyWeightedPSFs(obj);
 
         % Crop the PSFs
         cropPSF(obj,maxSpatialSupportDegs);
@@ -241,8 +241,6 @@ classdef RetinaToVisualFieldTransformer < handle
         [visualConeCharacteristicRadiusDegs, bestHorizontalResolutionRotationDegs] = analyzeVisuallyProjectedConeAperture(theConeMosaic, ...
                  anatomicalConeApertureDiameterDegs, thePSFData, simulateCronerKaplanEstimation, hFig);
 
-        [theVlambdaWeightedPSFData, testSubjectID, subtractCentralRefraction, opticsParams, theOI] = computeVlambdaWeightedPSF(...
-            opticsParams, theConeMosaic, psfWavelengthSupport);
 
         % visual RF model: arbitrary shape (fixed) RF center and Gaussian surround
         [theRF, centerRF, surroundRF] = differenceOfArbitraryCenterAndGaussianSurroundRF(...

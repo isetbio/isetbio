@@ -1,5 +1,18 @@
-function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams, theOI] = computeVlambdaWeightedPSF(...
-    opticsParams, theConeMosaic, psfWavelengthSupport)
+function spectrallyWeightedPSFs(obj)
+
+    [obj.theSpectrallyWeightedPSFData, ...
+     obj.testSubjectID, ...
+     obj.subtractCentralRefraction, ...
+     obj.opticsParams] = computeWeightedPSFs(...
+            obj.opticsParams, ...
+            obj.theConeMosaic, ...
+            obj.psfWavelengthSupport);
+end
+
+
+function [thePSFData, testSubjectID, subtractCentralRefraction, ...
+          opticsParams] = computeWeightedPSFs(...
+              opticsParams, theConeMosaic, psfWavelengthSupport)
 
     % Ensure we have a valid eye specification
     assert(ismember(opticsParams.analyzedEye, {'left eye','right eye'}), ...
@@ -57,22 +70,27 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams, th
 
     % Extract the OTF & the PSF
     thePSFData = psfEnsemble{1};
-    theOI = oiEnsemble{1};
 
     % Compute v_lambda weights for weigthing the PSF/OTF
-    weights = vLambdaWeights(theConeMosaic.wave);
+    theVlambda2DegWeights = vLambda2DegsWeights(theConeMosaic.wave);
 
-    % Compute vLambda weighted PSF
-    vLambdaWeightedPSF = zeros(size(thePSFData.data,1), size(thePSFData.data,2));
-    for iWave = 1:size(thePSFData.data,3)
-        if (ismember(theConeMosaic.wave(iWave), psfWavelengthSupport)) || ...
-           (isempty(psfWavelengthSupport))
-            vLambdaWeightedPSF = vLambdaWeightedPSF + thePSFData.data(:,:,iWave) * weights(iWave);
-        end
-    end
+    % Compute L/M cone weights for weighting the PSF/OTF
+    [theLconeWeights, theMconeWeights] = LMconeFundamentals(theConeMosaic.wave);
 
-    % The vLambda-weighted data with unit-volume
-    thePSFData.vLambdaWeightedData = vLambdaWeightedPSF/sum(vLambdaWeightedPSF(:));
+    % V-lambda weighted PSF
+    thePSFData.vLambda2DegWeightedData = spectrallyWeightedPSF(...
+        theVlambda2DegWeights, thePSFData.data, ...
+        theConeMosaic.wave, psfWavelengthSupport);
+
+    % L-cone fundamental weighted PSF
+    thePSFData.LconeWeightedData = spectrallyWeightedPSF(...
+        theLconeWeights, thePSFData.data, ...
+        theConeMosaic.wave, psfWavelengthSupport);
+
+    % M-cone fundamental weighted PSF
+    thePSFData.MconeWeightedData = spectrallyWeightedPSF(...
+        theMconeWeights, thePSFData.data, ...
+        theConeMosaic.wave, psfWavelengthSupport);
 
     % Specify support in degs instead of the default arc min
     thePSFData.psfSupportXdegs = thePSFData.supportX/60;
@@ -86,10 +104,41 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams, th
     thePSFData = rmfield(thePSFData, 'supportY');
 end
 
-function w = vLambdaWeights(wavelengthSupport)
+function vLambda = vLambdaCIE31Weights(wavelengthSupport)
     load T_xyz1931;
     S = WlsToS(wavelengthSupport(:));
-    T_vLambda = SplineCmf(S_xyz1931,T_xyz1931(2,:),S);
-    w = T_vLambda/max(T_vLambda(:));
-    w = w / sum(w(:));
+    vLambda = SplineCmf(S_xyz1931,T_xyz1931(2,:),S);
 end
+
+function vLambda = vLambda2DegsWeights(wavelengthSupport)
+    load T_CIE_Y2;
+    S = WlsToS(wavelengthSupport(:));
+    vLambda = SplineCmf(S_CIE_Y2,T_CIE_Y2,S);
+end
+
+function [L,M] = LMconeFundamentals(wavelengthSupport)
+    load T_cones_ss2
+    S = WlsToS(wavelengthSupport(:));
+    coneFundamentals = SplineCmf(S_cones_ss2,T_cones_ss2 ,S);
+    L = coneFundamentals(1,:);
+    M = coneFundamentals(2,:);
+end
+
+function weightedPSF = spectrallyWeightedPSF(weights, theFullPSF, ...
+    theConeMosaicWavelengthSupport, thePSFWavelengthSupport)
+
+    % Compute spectrally-weighted PSF
+    weightedPSF = zeros(size(theFullPSF,1), size(theFullPSF,2));
+    for iWave = 1:size(theFullPSF,3)
+        if (ismember(theConeMosaicWavelengthSupport(iWave), thePSFWavelengthSupport)) || ...
+           (isempty(thePSFWavelengthSupport))
+            weightedPSF = weightedPSF + theFullPSF(:,:,iWave) * weights(iWave);
+        else
+            error('How can this be?');
+        end
+    end
+
+    % The weighted PSF with unit-volume
+    weightedPSF = weightedPSF/sum(weightedPSF(:));
+end
+
