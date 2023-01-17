@@ -86,7 +86,7 @@ switch (zernikeDataBase)
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
             
-            if (targetEcc(1) ~= 0 | targetEcc(2) ~= 0)
+            if (targetEcc(1) ~= 0 || targetEcc(2) ~= 0)
                 fprintf(2,'Marimont/Wandell optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
                 targetEcc(1) = 0;
                 targetEcc(2) = 0;
@@ -222,8 +222,8 @@ switch (zernikeDataBase)
             %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
-            if (targetEcc(1) ~= 0 | targetEcc(2) ~= 0)
-                fprintf(2,'Marimont/Wandell optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
+            if (targetEcc(1) ~= 0 || targetEcc(2) ~= 0)
+                fprintf(2,'Thibos optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
                 targetEcc(1) = 0;
                 targetEcc(2) = 0;
             end

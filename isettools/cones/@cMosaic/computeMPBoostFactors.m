@@ -10,30 +10,10 @@ function macularPigmentDensityBoostFactors = computeMPBoostFactors(obj, oiPositi
     
     % Adjust oiPositionsDegs to take into account the current eye position
     oiPositionsDegs = bsxfun(@minus, oiPositionsDegs, emPositionDegs);
-    
-    % Compute ecc-based MP optical densities
-    eccBasedMacularPigmentDensities = obj.macular.eccDensity([], 'eccDegs2', sum(oiPositionsDegs.^2,2));
 
-    
-    computeMethod = 2;
-    
-    if (computeMethod == 1)
-        %Total: 59.1
-        eccBasedMacularPigmentTransmittances = 10.^(-eccBasedMacularPigmentDensities * obj.macular.unitDensity'); % 43.5
-        macularPigmentDensityBoostFactors = eccBasedMacularPigmentTransmittances ./ repmat(obj.macular.transmittance', [size(eccBasedMacularPigmentTransmittances,1) 1]); % 11.1
-    elseif (computeMethod == 2)
-        % Total: 57.1
-        eccBasedMacularPigmentTransmittances = 10.^(-eccBasedMacularPigmentDensities * obj.macular.unitDensity'); % 43.4
-        macularPigmentDensityBoostFactors = bsxfun(@rdivide, eccBasedMacularPigmentTransmittances, obj.macular.transmittance'); %9.3
-    else
-        % Total: 62
-        macularUnitDensity = obj.macular.unitDensity';
-        a = eccBasedMacularPigmentDensities * macularUnitDensity; % 8
-        b = repmat(obj.macular.density * macularUnitDensity,  [size(eccBasedMacularPigmentDensities,1) 1]); %6
-        diff = b-a; % 8
-        macularPigmentDensityBoostFactors = 10 .^ diff; % 30
-    end
-    
+    % Compute the macular pigment density boost factors for all oi pixel positions
+    macularPigmentDensityBoostFactors = cMosaic.macularPigmentDensityBoostFactors(obj.macular, oiPositionsDegs);
+
     % Save to cache
     obj.cachedMacularPigmentDensityBoostFactors.eccVaryingMacularPigmentDensity = obj.eccVaryingMacularPigmentDensity;
     obj.cachedMacularPigmentDensityBoostFactors.macularPigmentDensityBoostFactors = macularPigmentDensityBoostFactors;

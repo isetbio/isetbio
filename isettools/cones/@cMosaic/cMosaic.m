@@ -875,6 +875,10 @@ classdef cMosaic < handle
     end
     
     methods (Static)
+        % Static method to compute the macular pigment density boost
+        % factors at an arbitray array of retinal positions (in degrees)
+        macularPigmentDensityBoostFactors = macularPigmentBoostFactors(theMacular, retinalPositionsDegs)
+
         % Static method to return signed horizontal and vertical
         % eccentricities corresponding to radial eccentricities specified
         % on one of the 4 principal retinal meridians and eye
