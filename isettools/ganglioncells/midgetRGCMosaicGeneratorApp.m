@@ -27,9 +27,6 @@ function initializeState(obj)
      obj.simulation.opticsParams] = midgetRGCMosaicGenerator.generateMosaicAndOpticsParamStructs();
 end
 
-
-
-
 function executeButtonAction(btn, app)
 
     switch app.currentAction
@@ -43,10 +40,11 @@ function executeButtonAction(btn, app)
                 app.simulation.mosaicSurroundParams, ...
                 app.simulation.opticsParams);
 
+        
         case "inspect: single R2VFT object file"
             midgetRGCMosaicInspector.quicklyInspectSingleRTVFobjectFile();
 
-        case "inspect: all R2VFT object files"
+        case "inspect: all R2VFT objects file"
             midgetRGCMosaicInspector.quicklyInspectAllRTVFobjectsFile();
 
         case "compute: refit R2VFT object(s)"
@@ -68,6 +66,9 @@ function executeButtonAction(btn, app)
 
         case "compute: manually replace a specific R2VFT object"
             midgetRGCMosaicGenerator.replaceSpecificR2VFTobject()
+
+        case "export: retinal cone pooling params for all fitted R2VFT objects"
+            midgetRGCMosaicInspector.exportRetinalConePoolingParamsForAllFittedRTVFTobjects();
 
         case "compute: center-surround cone pooling kernels"
             midgetRGCMosaicGenerator.generateCenterSurroundConePoolingKernels(...
@@ -144,18 +145,18 @@ end
 function generateGUI(obj)
 
     % Create figure window
-    obj.mainView = uifigure('Position', [30 500 800 400], ...
+    obj.mainView = uifigure('Position', [30 500 1200 200], ...
         'WindowStyle', 'AlwaysOnTop', ...
         'Scrollable', 'on', ...
         'Resize', 'off');
     obj.mainView.Name = "Midget RGC Mosaic Generator & Inspector";
 
     % Manage app layout
-    layoutRows = 5;
-    layoutCols = 2;
+    layoutRows = 1;
+    layoutCols = 4;
     gl = uigridlayout(obj.mainView,[layoutRows layoutCols]);
-    gl.RowHeight = {30,'1x'};
-    gl.ColumnWidth = {'fit','1x'};
+    gl.RowHeight = {'1x', '4x'};
+    gl.ColumnWidth = {'fit','6x', '1x', '1x'};
 
     theActionLabel  = uilabel(gl);
     theActionDropdown = uidropdown(gl);
@@ -175,9 +176,10 @@ function generateGUI(obj)
         "compute: center-connected mRGC mosaic", ...
         "compute: all R2VFT objects", ...
         "inspect: single R2VFT object file", ...
-        "inspect: all R2VFT object files", ...
+        "inspect: all R2VFT objects file", ...
         "compute: refit R2VFT object(s)", ...
         "compute: manually replace a specific R2VFT object", ...
+        "export: retinal cone pooling params for all fitted R2VFT objects", ...
         "compute: center-surround cone pooling kernels", ...
         "visualize: spatial RFs", ...
         "compute: frozen mRGC mosaic", ...
@@ -194,8 +196,8 @@ function generateGUI(obj)
     theActionDropdown.ValueChangedFcn = @(src,event) dropDownActionChanged(src,event, obj);
     
     % The ExecuteActionButton
-    theExecuteActionButton.Layout.Row = 2;
-    theExecuteActionButton.Layout.Column = 2;
+    theExecuteActionButton.Layout.Row = 1;
+    theExecuteActionButton.Layout.Column = 3;
     theExecuteActionButton.Text = "GO !";
     theExecuteActionButton.FontSize = 20;
     theExecuteActionButton.BackgroundColor = [0.3 0.3 0.3];
@@ -203,8 +205,8 @@ function generateGUI(obj)
     theExecuteActionButton.ButtonPushedFcn = @(btn,event) executeButtonAction(btn, obj);
 
     % The ExitButton
-    theExitButton.Layout.Row = 5;
-    theExitButton.Layout.Column = 2;
+    theExitButton.Layout.Row = 1;
+    theExitButton.Layout.Column = 4;
     theExitButton.Text = "Quit";
     theExitButton.FontSize = 20;
     theExitButton.BackgroundColor = [0.3 0.3 0.3];

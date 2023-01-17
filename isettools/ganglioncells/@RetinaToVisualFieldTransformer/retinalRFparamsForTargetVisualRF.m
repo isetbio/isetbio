@@ -1,10 +1,21 @@
-function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter, ...
-    weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams)
+function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter, ...
+    weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
+    centerConeType, initialRetinalConePoolingParamsStruct)
     
     % Spatial support
-    spatialSupportDegs = [obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:) obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:)];
-    [Xdegs,Ydegs] = meshgrid(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:), obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:));
+    spatialSupportDegs = [...
+        obj.theSpectrallyWeightedPSFData.spatialSupportForRFmapXdegs(:) ...
+        obj.theSpectrallyWeightedPSFData.spatialSupportForRFmapXdegs(:)];
+
+    [Xdegs,Ydegs] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
     Rdegs2 = Xdegs.^2+Ydegs.^2;
+
+    switch (centerConeType)
+        case cMosaic.LCONE_ID
+            theEmployedPSFData = obj.theSpectrallyWeightedPSFData.LconeWeighted;
+        case cMosaic.MCONE_ID
+            theEmployedPSFData = obj.theSpectrallyWeightedPSFData.MconeWeighted;
+    end
 
     % Compute the visual RF center and its characteristic radius
     [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
@@ -13,7 +24,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
      anatomicalRFcenterCharacteristicRadiusDegs] = obj.analyzeRFcenter(...
                indicesOfConesPooledByTheRFcenter, ...
                weightsOfConesPooledByTheRFcenter, ...
-               spatialSupportDegs);
+               spatialSupportDegs, ...
+               theEmployedPSFData);
 
     % Model constants
     modelConstants = struct();
@@ -71,7 +83,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
     % Retinal cone pooling model constants
     modelConstants.theConeMosaic = obj.theConeMosaic;
-    modelConstants.thePSF = obj.theVlambdaWeightedPSFData.vLambdaWeightedData;
+    modelConstants.thePSF = theEmployedPSFData;
     modelConstants.surroundConnectableConeTypes = targetVisualRFDoGparams.surroundConnectableConeTypes;
     modelConstants.centerConnectableConeTypes = targetVisualRFDoGparams.centerConnectableConeTypes;
     modelConstants.coneWeightsCompensateForVariationsInConeEfficiency = targetVisualRFDoGparams.coneWeightsCompensateForVariationsInConeEfficiency;
@@ -228,6 +240,24 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
             error('Unknown retinalConePoolingModel: ''%s''.', targetVisualRFDoGparams.retinalConePoolingModel);
     end
 
+
+    if (isempty(initialRetinalConePoolingParamsStruct))
+        fprintf('\n*** RTVF will be fitted using default initial params. *** \n');
+    else
+        % Ensure that the imported params are for the current model
+        for iParam = 1:numel(retinalConePoolingParams.names)
+            assert(strcmp(retinalConePoolingParams.names{iParam}, initialRetinalConePoolingParamsStruct.names{iParam}), ...
+                'model parameter name mismatch');
+        end
+
+        % All good, so replace the default initial params,
+        %   retinalConePoolingParams.initialValues with
+        % with the imported final values,
+        %   initialRetinalConePoolingParamsStruct.finalValues
+
+        fprintf('\n*** RTVF will be fitted with initial params set to the final values of the previously fitted RTVFobj. ***\n');
+        retinalConePoolingParams.initialValues = initialRetinalConePoolingParamsStruct.finalValues;
+    end
 
     % Compute the target visual RF map
     [theTargetVisualRFmap, theTargetVisualRFcenterMap, theTargetVisualRFsurroundMap] = ...
@@ -457,46 +487,46 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, retinalConePoolingParams);
 
 
-    % Form the rfComputeStruct
-    obj.rfComputeStruct = struct();
-    obj.rfComputeStruct.modelConstants = modelConstants;
+    % Form theRFcomputeStruct
+    theRFcomputeStruct = struct();
+    theRFcomputeStruct.modelConstants = modelConstants;
 
     if (obj.multiStartsNum > 1) && (~isinf(obj.multiStartsNum))
         % All solutions
-        obj.rfComputeStruct.allSolutions = allMins;
+        theRFcomputeStruct.allSolutions = allMins;
     end
 
 
-    obj.rfComputeStruct.retinalConePoolingParams = retinalConePoolingParams;
-    obj.rfComputeStruct.pooledConeIndicesAndWeights = pooledConeIndicesAndWeights;
+    theRFcomputeStruct.retinalConePoolingParams = retinalConePoolingParams;
+    theRFcomputeStruct.pooledConeIndicesAndWeights = pooledConeIndicesAndWeights;
     
     if (modelConstants.simulateCronerKaplanEstimation)
-        obj.rfComputeStruct.theSTF = struct(...
+        theRFcomputeStruct.theSTF = struct(...
             'support', stfSupportCPD, ...
             'fitted', theFinalFittedSTF, ...
             'target', theTargetSTF, ...
             'fittedRsRcRatio', theFinalFittedSTFsurroundToCenterRcRatio, ...
             'fittedSCIntSensRatio', theFinalFittedSTFsurroundToCenterIntegratedSensitivityRatio);
-        obj.rfComputeStruct.theRotationOfTheFittedVisualRF = bestHorizontalResolutionRotationDegs;
-        obj.rfComputeStruct.theRotatedFittedVisualRF = theRotatedFittedVisualRF;
-        obj.rfComputeStruct.theFinalRMSEvector = theFinalRMSEvector;
-        obj.rfComputeStruct.theFinalRMSEvectorRatioWeights = ratioWeights;
+        theRFcomputeStruct.theRotationOfTheFittedVisualRF = bestHorizontalResolutionRotationDegs;
+        theRFcomputeStruct.theRotatedFittedVisualRF = theRotatedFittedVisualRF;
+        theRFcomputeStruct.theFinalRMSEvector = theFinalRMSEvector;
+        theRFcomputeStruct.theFinalRMSEvectorRatioWeights = ratioWeights;
     end
 
     % Convolve the center retinal cone-pooling based retinal RF to get the corresponding visual center RF
-    obj.rfComputeStruct.theFittedVisualRFMap = theFittedVisualRF;
-    obj.rfComputeStruct.theFittedVisualRFcenterConeMap = conv2(theRetinalRFcenterConeMap, modelConstants.thePSF, 'same');
-    obj.rfComputeStruct.theFittedVisualRFsurroundConeMap = conv2(theRetinalRFsurroundConeMap, modelConstants.thePSF, 'same');
+    theRFcomputeStruct.theFittedVisualRFMap = theFittedVisualRF;
+    theRFcomputeStruct.theFittedVisualRFcenterConeMap = conv2(theRetinalRFcenterConeMap, modelConstants.thePSF, 'same');
+    theRFcomputeStruct.theFittedVisualRFsurroundConeMap = conv2(theRetinalRFsurroundConeMap, modelConstants.thePSF, 'same');
     
-    obj.rfComputeStruct.theRetinalRFcenterConeMap = theRetinalRFcenterConeMap;
-    obj.rfComputeStruct.theRetinalRFsurroundConeMap = theRetinalRFsurroundConeMap;
+    theRFcomputeStruct.theRetinalRFcenterConeMap = theRetinalRFcenterConeMap;
+    theRFcomputeStruct.theRetinalRFsurroundConeMap = theRetinalRFsurroundConeMap;
     
 
-    obj.rfComputeStruct.targetVisualRFfunctionHandle = targetVisualRFfunctionHandle;
-    obj.rfComputeStruct.targetVisualRFparamsVector = targetVisualRFparamsVector;
-    obj.rfComputeStruct.targetVisualRFMap = theTargetVisualRFmap;
-    obj.rfComputeStruct.targetVisualRFcenterMap = theTargetVisualRFcenterMap;
-    obj.rfComputeStruct.targetVisualRFsurroundMap = theTargetVisualRFsurroundMap;
+    theRFcomputeStruct.targetVisualRFfunctionHandle = targetVisualRFfunctionHandle;
+    theRFcomputeStruct.targetVisualRFparamsVector = targetVisualRFparamsVector;
+    theRFcomputeStruct.targetVisualRFMap = theTargetVisualRFmap;
+    theRFcomputeStruct.targetVisualRFcenterMap = theTargetVisualRFcenterMap;
+    theRFcomputeStruct.targetVisualRFsurroundMap = theTargetVisualRFsurroundMap;
 
     
 

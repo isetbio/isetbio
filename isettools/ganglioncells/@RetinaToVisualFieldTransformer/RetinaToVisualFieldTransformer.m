@@ -47,8 +47,11 @@ classdef RetinaToVisualFieldTransformer < handle
        % Whether to do a dry run first
        doDryRunFirst;
 
-       % The results of the computation
-       rfComputeStruct;
+       % The rfComputeStruct for L-center RFs
+       LconeRFcomputeStruct;
+
+       % The rfComputeStruct for M-center RFs
+       MconeRFcomputeStruct;
 
        % The data filename where the computed object is saved
        computedObjDataFileName;
@@ -81,6 +84,7 @@ classdef RetinaToVisualFieldTransformer < handle
             p.addParameter('flatTopGaussianForVisualRFcenterCharacteristicRadiusEstimation', false, @islogical);
             p.addParameter('simulateCronerKaplanEstimation', true, @islogical);
             p.addParameter('targetSTFmatchMode', 'STFDoGparams', @(x)(ismember(x,{'STFDoGparams', 'STFcurve'})));
+            p.addParameter('initialRetinalConePoolingParamsStruct', [], @(x)(isempty(x)||isstruct(x)));
             p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
             p.addParameter('multiStartsNum', 10, @isscalar);
             p.addParameter('doDryRunFirst', false, @islogical);
@@ -88,6 +92,7 @@ classdef RetinaToVisualFieldTransformer < handle
             p.parse(varargin{:});
 
             computedRTVObjectExportDirectory = p.Results.computedRTVObjectExportDirectory;
+            initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
 
             % Generate filename for saved object
             if (isempty(computedRTVObjectExportDirectory))
@@ -143,7 +148,13 @@ classdef RetinaToVisualFieldTransformer < handle
             obj.targetVisualRFDoGparams.surroundConnectableConeTypes = unique(obj.targetVisualRFDoGparams.surroundConnectableConeTypes);
 
 
-            % Compute the spectrally-weighted PSFdata
+            % Compute the spectrally-weighted PSFdata. This generates an
+            % L-cone fundamental spectrally-weighted PSF, and an
+            % M-cone fundamental spectrally-weighted PSF,
+            % obj.theSpectrallyWeightedPSFData.LconeWeighted
+            % obj.theSpectrallyWeightedPSFData.MconeWeighted
+            % and
+            % obj.theSpectrallyWeightedPSFData.LMconeWeighted
             obj.spectrallyWeightedPSFs();
 
             % Estimate the mean characteristic radius of cones at the examined position
@@ -171,9 +182,19 @@ classdef RetinaToVisualFieldTransformer < handle
             indicesOfConesPooledByTheRFcenter = obj.targetVisualRFDoGparams.indicesOfConesPooledByTheRFcenter;  % dStruct.indicesOfConesSortedWithDistanceToTargetRFposition(1:targetVisualRFDoGparams.conesNumPooledByTheRFcenter);
             weightsOfConesPooledByTheRFcenter = obj.targetVisualRFDoGparams.weightsOfConesPooledByTheRFcenter;  
 
-            % Compute retinal cone pooling params to generate the target visual RF
-            obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, ...
-                weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams);
+            % Compute retinal cone pooling params to generate the target
+            % visual RF for L-cone center RGCs
+            obj.LconeRFcomputeStruct = obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, ...
+                weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
+                cMosaic.LCONE_ID, ...
+                initialRetinalConePoolingParamsStruct);
+
+            % Compute retinal cone pooling params to generate the target
+            % visual RF for M-cone center RGCs
+            obj.MconeRFcomputeStruct = obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, ...
+                weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
+                cMosaic.MCONE_ID, ...
+                initialRetinalConePoolingParamsStruct);
 
             % Save the computed object
             if (~isempty(computedRTVObjectExportDirectory))
@@ -181,12 +202,7 @@ classdef RetinaToVisualFieldTransformer < handle
                 save(obj.computedObjDataFileName, 'obj');
             end
 
-            % Visualize the results
-            obj.visualizeResults();
         end
-
-        % Method to visualize the results
-        visualizeResults(obj);
 
         % Method to estimate the visually-projectected cone Rc given a target
         % position in the mosaic and corresponding PSF data
@@ -214,11 +230,17 @@ classdef RetinaToVisualFieldTransformer < handle
          visualRFcenterXYpos, visualRFcenterOrientationDegs, ...
          anatomicalRFcenterCharacteristicRadiusDegs] = analyzeRFcenter(obj, ...
             indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, ...
-            spatialSupportDegs);
+            spatialSupportDegs, ...
+            theEmployedPSFData);
 
 
-        % Obtain the retinal cone pooling params (weights and indices of surround cones) by fitting the target visualRF
-        dataOut = retinalRFparamsForTargetVisualRF(obj,indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams);
+        % Obtain theRFcomputeStruct (weights and indices of surround cones) by fitting the target visualRF
+        theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj,...
+            indicesOfConesPooledByTheRFcenter, ...
+            weightsOfConesPooledByTheRFcenter, ...
+            targetVisualRFDoGparams, ...
+            centerConeType, ...
+            initialRetinalConePoolingParamsStruct);
     
     end
 

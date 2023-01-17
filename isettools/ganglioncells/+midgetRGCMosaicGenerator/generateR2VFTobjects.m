@@ -12,6 +12,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     % Generate mosaic filename and directory
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(mosaicCenterParams);
 
+    fprintf('Loading the midget RGC mosaic from %s.\nPlease wait ...\n', mosaicFileName);
     % Load the center-connected mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');
     
@@ -30,11 +31,12 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
             eccentricitySamplingGrid(1), eccentricitySamplingGrid(2));
     end
 
-
+    fprintf('\nVisualizing the mosaic. Please wait ...')
     % Visualize the mosaic
     theMidgetRGCmosaic.visualize( ...
         'eccentricitySamplingGrid', eccentricitySamplingGrid, ...
         'inputPoolingVisualization', 'centerOnly');
+    fprintf('\nDone ! \n');
 
     % Assemble R2CVFT filename
     R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(mosaicFileName, mosaicSurroundParams.H1cellIndex);
@@ -52,6 +54,27 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     tStart = cputime;
 
     if (isempty(updateRTVFobjectAtPosition))
+        % Ask the user if he wants to use a dictionary with previously
+        % fitted params to use as initial values
+        usePreviousFittedParamsValues = input('Use initial values from a previous fit ? [y = YES] ', 's');
+        initialRetinalConePoolingParamsStruct = [];
+        if strcmpi(usePreviousFittedParamsValues, 'y')
+            dropboxDir = midgetRGCMosaicInspector.localDropboxPath();
+            [file,path] = uigetfile(fullfile(dropboxDir, '*.mat'), ...
+                                'Select a file');
+        
+            if (file ~= 0)
+                fName = fullfile(path,file);
+                load(fName, 'retinalConePoolingParamsDictionary', 'theConesNumPooledByTheRFcenterGrid', 'theOpticsPositionGrid');
+                initialRetinalConePoolingParamsStruct.dictionary = retinalConePoolingParamsDictionary;
+                initialRetinalConePoolingParamsStruct.eccentricitySamplingGrid = theOpticsPositionGrid;
+                initialRetinalConePoolingParamsStruct.centerConesNumGrid = theConesNumPooledByTheRFcenterGrid;
+            end
+        end
+        
+        % Update fitParams with initialRetinalConePoolingParamsStruct
+        fitParams.initialRetinalConePoolingParamsStruct = initialRetinalConePoolingParamsStruct;
+
         % Generate list of RTVT objects
         [theRTFVTobjList, theOpticsPositionGrid, ...
          theConesNumPooledByTheRFcenterGrid, ...
@@ -60,6 +83,8 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
                     theMidgetRGCmosaic, eccentricitySamplingGrid, ...
                     mosaicSurroundParams, opticsParams, fitParams);
     else
+        fitParams.initialRetinalConePoolingParamsStruct  = [];
+        
         % Generate list of updated RTVT objects
         [theUpdatedRTFVTobjList, theUpdatedOpticsPositionGrid, ...
          theUpdatedConesNumPooledByTheRFcenterGrid] = midgetRGCMosaic.R2VFTobjects(...
@@ -71,9 +96,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     fprintf('\n\n midgetRGCMosaic.R2VFTobjects were generated in %d positions and fitting took %f minutes\n', ...
             size(eccentricitySamplingGrid,1), timeLapsedMinutes);
         
-    
     if (~isempty(updateRTVFobjectAtPosition))
-        
         % Load previously generated theRTFVTobjList
         load(R2VFTobjFileName, 'theRTFVTobjList', ...
             'theOpticsPositionGrid', 'theConesNumPooledByTheRFcenterGrid', ...
