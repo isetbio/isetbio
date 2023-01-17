@@ -13,7 +13,7 @@
 function t_MPandLensAdustedQuantalEfficiency
 
     % Generate a @cMosaic at some desired eccentricity
-    targetEccXYdegs = [-2 0];
+    targetEccXYdegs = [-1 1];
 
     sigmaGaussian = 0.204;
     coneApertureModifiers = struct(...
@@ -67,7 +67,10 @@ function t_MPandLensAdustedQuantalEfficiency
 
     % Show the various changes induced in the quantal cone efficiencies
     % by the macular pigment and the lens
-    figure(1); clf
+    hFig = figure(1); clf
+    set(hFig, 'Position', [200 300 800 650], 'Color', [1 1 1]);
+
+
     subplot(2,2,1)
     plot(theConeMosaic.wave, coneQuantalEfficienciesFovealMP(:,1), 'r-', 'LineWidth', 1.5);
     hold on;
@@ -102,7 +105,7 @@ function t_MPandLensAdustedQuantalEfficiency
     plot(theConeMosaic.wave, coneQuantalEfficienciesFinal(:,3), 'b-', 'LineWidth', 1.5);
     set(gca, 'YLim', [0 0.5], 'FontSize', 16);
     grid on
-    title(sprintf('(%2.3f,%2.3f) degs MP with lens', targetEcc(1), targetEcc(2)));
+    title(sprintf('(%2.1f,%2.1f) degs MP with lens', targetEcc(1), targetEcc(2)));
 
 
 
@@ -110,8 +113,13 @@ end
 
 function plotMPBoostMap(theConeMosaic, macularPigmentBoostFactors)
     hFig = figure(2); clf;
-    ax = subplot(1,2,1);
-    theConeMosaic.visualize('figureHandle', hFig, 'axesHandle', ax);
+    set(hFig, 'Position', [700 300 800 850], 'Color', [1 1 1]);
+
+    ax = subplot(2,1,1);
+    theConeMosaic.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax, ...
+        'plotTitle', 'the cone mosaic');
 
     [~,idx] = max(macularPigmentBoostFactors(:));
     [~, wavelengthIndexOfMaxBoost] = ind2sub(size(macularPigmentBoostFactors), idx);
@@ -121,11 +129,12 @@ function plotMPBoostMap(theConeMosaic, macularPigmentBoostFactors)
     minBoostFactor = min(mpBoostMap(:));
     maxBoostFactor = max(mpBoostMap(:));
 
-    ax = subplot(1,2,2);
+    ax = subplot(2,1,2);
     theConeMosaic.visualize('figureHandle', hFig, 'axesHandle', ax, ...
         'activation', mpBoostMap, ...
         'activationRange', [minBoostFactor maxBoostFactor], ...
-        'verticalActivationColorBar', true, ...
+        'verticalActivationColorBarInside', true, ...
+        'backgroundColor', [0.1 0.1 0.1], ...
         'plotTitle', plotTitle);
    
 end
