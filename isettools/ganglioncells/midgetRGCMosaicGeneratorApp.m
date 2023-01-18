@@ -35,12 +35,24 @@ function executeButtonAction(btn, app)
                 app.simulation.mosaicCenterParams);
 
         case "compute: all R2VFT objects"
+
+            RTVobjIndicesToBeComputed = 'all';
+
+            % If we had a crash, compute remaining RTVFobjects
+            % Then update the list with the ones that were computed before
+            % the crash, using 
+            % "compute: manually replace a specific R2VFT object" for each
+            % of these pre-crash computed RTVF objects
+
+            RTVobjIndicesToBeComputed = [9:22]
+            pause
+            
             midgetRGCMosaicGenerator.generateR2VFTobjects(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.mosaicSurroundParams, ...
-                app.simulation.opticsParams);
+                app.simulation.opticsParams, ...
+                'RTVobjIndicesToBeComputed', RTVobjIndicesToBeComputed);
 
-        
         case "inspect: single R2VFT object file"
             midgetRGCMosaicInspector.quicklyInspectSingleRTVFobjectFile();
 
