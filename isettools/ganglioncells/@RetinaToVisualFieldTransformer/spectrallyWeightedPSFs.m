@@ -10,9 +10,8 @@ function spectrallyWeightedPSFs(obj)
 end
 
 
-function [thePSFData, testSubjectID, subtractCentralRefraction, ...
-          opticsParams] = computeWeightedPSFs(...
-              opticsParams, theConeMosaic, psfWavelengthSupport)
+function [thePSFData, testSubjectID, subtractCentralRefraction, opticsParams] = ...
+    computeWeightedPSFs(opticsParams, theConeMosaic, psfWavelengthSupport)
 
     % Ensure we have a valid eye specification
     assert(ismember(opticsParams.analyzedEye, {'left eye','right eye'}), ...
@@ -72,7 +71,7 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, ...
     thePSFData = psfEnsemble{1};
 
     % Compute L/M cone weights for weighting the PSF/OTF
-    [theLconeWeights, theMconeWeights] = LMconeFundamentals(theConeMosaic.wave);
+    [theLconeWeights, theMconeWeights] = LMconeWeightings(theConeMosaic, opticsParams.positionDegs);
 
     % L-cone fundamental weighted PSF
     thePSFData.LconeWeighted = spectrallyWeightedPSF(...
@@ -84,10 +83,10 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, ...
         theMconeWeights, thePSFData.data, ...
         theConeMosaic.wave, psfWavelengthSupport);
 
-    thePSFData.LMconeWeighted = spectrallyWeightedPSF(...
-        0.5*(theMconeWeights+theMconeWeights), thePSFData.data, ...
-        theConeMosaic.wave, psfWavelengthSupport);
-
+    % L+M weighted PSF
+    thePSFData.LMconeWeighted = thePSFData.LconeWeighted + thePSFData.MconeWeighted;
+    thePSFData.LMconeWeighted = thePSFData.LMconeWeighted / sum(thePSFData.LMconeWeighted(:));
+    
     % Specify support in degs instead of the default arc min
     thePSFData.psfSupportXdegs = thePSFData.supportX/60;
     thePSFData.psfSupportYdegs = thePSFData.supportY/60;
@@ -100,24 +99,33 @@ function [thePSFData, testSubjectID, subtractCentralRefraction, ...
     thePSFData = rmfield(thePSFData, 'supportY');
 end
 
-function vLambda = vLambdaCIE31Weights(wavelengthSupport)
-    load T_xyz1931;
-    S = WlsToS(wavelengthSupport(:));
-    vLambda = SplineCmf(S_xyz1931,T_xyz1931(2,:),S);
-end
 
-function vLambda = vLambda2DegsWeights(wavelengthSupport)
-    load T_CIE_Y2;
-    S = WlsToS(wavelengthSupport(:));
-    vLambda = SplineCmf(S_CIE_Y2,T_CIE_Y2,S);
-end
+function [L,M] = LMconeWeightings(theConeMosaic, theTargetEccDegs)
 
-function [L,M] = LMconeFundamentals(wavelengthSupport)
-    load T_cones_ss2
-    S = WlsToS(wavelengthSupport(:));
-    coneFundamentals = SplineCmf(S_cones_ss2,T_cones_ss2 ,S);
-    L = coneFundamentals(1,:);
-    M = coneFundamentals(2,:);
+    if (theConeMosaic.eccVaryingMacularPigmentDensity)
+        % Each cone has a different boost factor, based on its eccentricity
+        macularPigmentBoostFactors = cMosaic.macularPigmentBoostFactors(theConeMosaic.macular, theTargetEccDegs);
+    else
+        % Single factor based on the eccentricity of the mosaic
+        macularPigmentBoostFactors = cMosaic.macularPigmentBoostFactors(theConeMosaic.macular, theConeMosaic.eccentricityDegs);
+    end
+    boostVector = macularPigmentBoostFactors';
+    
+
+    % Quantal efficiencies with the foveal MP density and no lens
+    coneQuantalEfficienciesFovealMP = theConeMosaic.qe;
+
+    % Quantal efficiencies with the MP density at the target ecc and no lens
+    coneQuantalEfficienciesEccBasedMP = diag(boostVector) * coneQuantalEfficienciesFovealMP;
+
+    % Quantal efficiencies with the MP density at the target ecc and the lens
+    theLens = Lens('wave',theConeMosaic.wave);
+    lensTransmittance = theLens.transmittance;
+    coneQuantalEfficienciesFinal = diag(lensTransmittance)*coneQuantalEfficienciesEccBasedMP;
+
+    % Return the L- and M-cone quantal efficiencies
+    L = coneQuantalEfficienciesFinal(:,1);
+    M = coneQuantalEfficienciesFinal(:,2);
 end
 
 function weightedPSF = spectrallyWeightedPSF(weights, theFullPSF, ...

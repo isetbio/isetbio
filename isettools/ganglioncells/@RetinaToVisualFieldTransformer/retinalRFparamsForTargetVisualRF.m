@@ -1,7 +1,29 @@
 function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter, ...
     weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
     centerConeType, initialRetinalConePoolingParamsStruct)
-    
+
+    switch (centerConeType)
+        case cMosaic.LCONE_ID
+            theEmployedPSFData = obj.theSpectrallyWeightedPSFData.LconeWeighted;
+
+            spatialPositionDegs = mean(obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
+            figureName = sprintf('RF center with %d L-cone(s) at (%2.2f,%2.2f) degs', ...
+                numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
+            
+        case cMosaic.MCONE_ID
+            theEmployedPSFData = obj.theSpectrallyWeightedPSFData.MconeWeighted;
+
+            spatialPositionDegs = mean(obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
+            figureName = sprintf('RF center with %d M-cone(s) at (%2.2f,%2.2f) degs', ...
+                numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
+
+        otherwise
+            error('Not L or M cone: %d', centerConeType);
+    end
+
+
     % Spatial support
     spatialSupportDegs = [...
         obj.theSpectrallyWeightedPSFData.spatialSupportForRFmapXdegs(:) ...
@@ -9,13 +31,6 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
 
     [Xdegs,Ydegs] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
     Rdegs2 = Xdegs.^2+Ydegs.^2;
-
-    switch (centerConeType)
-        case cMosaic.LCONE_ID
-            theEmployedPSFData = obj.theSpectrallyWeightedPSFData.LconeWeighted;
-        case cMosaic.MCONE_ID
-            theEmployedPSFData = obj.theSpectrallyWeightedPSFData.MconeWeighted;
-    end
 
     % Compute the visual RF center and its characteristic radius
     [visualRFcenterCharacteristicRadiusDegs, visualRFcenterConeMap, ...
@@ -268,7 +283,7 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
     modelConstants.simulateCronerKaplanEstimation = obj.simulateCronerKaplanEstimation;
     
     debugRFrotation = true;
-    figureName = '';
+    
     if (modelConstants.simulateCronerKaplanEstimation)
 
         % TargetSTF match mode: either the params of the DoG model fit to
@@ -298,7 +313,7 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
                 targetRsRcRatio, targetIntSensSCRatio, ...
                 visualRFcenterCharacteristicRadiusDegs, ...
                 multiStartsNumDoGFit, ...
-                1555, figureName);
+                1555, '');
 
         
         if (debugRFrotation)
@@ -344,7 +359,7 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
                 multiStartsNumDoGFit, ...
                 1555, figureName);
 
-        displaySpatialProfileAndSTF(57, [], spatialSupportDegs, stfSupportCPD, ...
+        displaySpatialProfileAndSTF(57, '', [], spatialSupportDegs, stfSupportCPD, ...
             theTargetRFprofile, theInitialRFprofile, ...
             theTargetSTF, theInitialFittedSTF, ...
             [], [], [], [], 'initial');
@@ -458,7 +473,7 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
                 targetRsRcRatio, targetIntSensSCRatio, ...
                 visualRFcenterCharacteristicRadiusDegs, ...
                 multiStartsNumDoGFit, ...
-                1555, figureName);
+                1556, figureName);
 
         
         if (obj.multiStartsNum ~= 1)
@@ -467,7 +482,7 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
             plotTitle = 'fitted (single-run)';
         end
 
-        displaySpatialProfileAndSTF(158, [1300 400], spatialSupportDegs, stfSupportCPD, ...
+        displaySpatialProfileAndSTF(summaryFigNo, figureName, [1300 400], spatialSupportDegs, stfSupportCPD, ...
                 theTargetRFprofile, theFittedRFprofile, ...
                 theTargetSTF, theFinalFittedSTF, ...
                 targetRsRcRatio, targetIntSensSCRatio, ...
@@ -624,7 +639,7 @@ function visualizeRFs(figNo, spatialSupportDegs, RFmap, RFmap2, theTitles)
     drawnow;
 end
 
-function displaySpatialProfileAndSTF(figNo, figXYpos, spatialSupportDegs, stfSupportCPD, ...
+function displaySpatialProfileAndSTF(figNo, figureName, figXYpos, spatialSupportDegs, stfSupportCPD, ...
                 theTargetRFprofile, theFittedRFprofile, ...
                 theTargetSTF,  theFittedSTF, ...
                 targetSurroundToCenterRcRatio, ...
@@ -644,7 +659,7 @@ function displaySpatialProfileAndSTF(figNo, figXYpos, spatialSupportDegs, stfSup
         figXYpos = [100 100];
     end
 
-    set(hFig, 'Position', [figXYpos(1) figXYpos(2) 1200 900], 'Color', [1 1 1]);
+    set(hFig, 'Position', [figXYpos(1) figXYpos(2) 1200 900], 'Color', [1 1 1], 'Name', figureName);
     legends = {};
     ax = subplot(2,2,1);
     plot(ax, spatialSupportDegs(:,1)-peakPositionTarget, theTargetRFprofile, 'k-', 'LineWidth', 2);
