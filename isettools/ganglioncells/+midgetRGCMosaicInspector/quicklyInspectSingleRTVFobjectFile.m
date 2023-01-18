@@ -18,5 +18,5 @@ function quicklyInspectSingleRTVFobjectFile()
         -iRTVobjIndex, ... % negative sign to indicate that this is not the index to the full list
         theSamplingPositionGrid, ...
         theConesNumPooledByTheRFcenterGrid, ...
-        999);
+        990);
 end
