@@ -76,6 +76,7 @@ function [RTVFTobjList, ...
 
             if (ismember(theTargetKey, theDictionaryKeys))
                 initialRetinalConePoolingParamsStruct = fitParams.initialRetinalConePoolingParamsStruct.dictionary(theTargetKey);
+                fprintf(2,'Using previous initial retinal cone pooling params (key: %s)', theTargetKey);
             else
                 fprintf(2,'Did not find previous initial retinal cone pooling params for current position. Will use standard initial params\n');
             end
@@ -175,8 +176,6 @@ function [RTVFTobjList, ...
                 samplingPositionDegs(1), samplingPositionDegs(2), numel(typesOfConesPooledByTheRFcenter), iRTVobjIndex, RTVTobjectsNum);
             fprintf(2,'\n============================================================= \n');
 
-          
-        
         end
     end
 end
