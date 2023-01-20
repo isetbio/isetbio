@@ -230,8 +230,10 @@ classdef midgetRGCMosaic < handle
 
         % Method to return the indices and weights of the triangulating RTVFobjects for an RGC
         [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
-            triangulatingRTVFobjectIndicesAndWeights(obj,iRGC);
+            triangulatingRTVFobjectIndicesAndWeights(obj,theRGCindex);
 
+        % Method to determine the majority center cone type for an RGC
+        theMajorityCenterConeType = majorityCenterConeType(obj, theRGCindex);
 
         % Method to adjust the midgetRGC RF overlap
         adjustRFoverlap(obj, overlapRatio);
