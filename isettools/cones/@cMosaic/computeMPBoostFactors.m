@@ -12,7 +12,7 @@ function macularPigmentDensityBoostFactors = computeMPBoostFactors(obj, oiPositi
     oiPositionsDegs = bsxfun(@minus, oiPositionsDegs, emPositionDegs);
 
     % Compute the macular pigment density boost factors for all oi pixel positions
-    macularPigmentDensityBoostFactors = cMosaic.macularPigmentDensityBoostFactors(obj.macular, oiPositionsDegs);
+    macularPigmentDensityBoostFactors = cMosaic.macularPigmentBoostFactors(obj.macular, oiPositionsDegs);
 
     % Save to cache
     obj.cachedMacularPigmentDensityBoostFactors.eccVaryingMacularPigmentDensity = obj.eccVaryingMacularPigmentDensity;
