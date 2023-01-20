@@ -309,27 +309,44 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
         achievedSCintSensRatios(iRGC) = achievedKsToKcRatios(iRGC) * (achievedRsToRcRatios(iRGC))^2;
 
 
+        % Determine whether the majority of center cones are L- or M-
+        theMajorityCenterConeType = theMidgetRGCmosaic.majorityCenterConeType(theRGCindex);
+        
+        % Compute the indices of the triangulating RTVFobjects and their
+        % contributing weights
+
         [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
              theMidgetRGCmosaic.triangulatingRTVFobjectIndicesAndWeights(theRGCindex);
 
         pipelineScaleFactorBasedOnLowestSF = 0;
         triangulatingRTVFobjSTFdata = cell(1, numel(triangulatingRTVFobjIndices));
 
-        for iObj = 1:numel(triangulatingRTVFobjIndices)
-            theRTVFobjIndex = triangulatingRTVFobjIndices(iObj);
-            theRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{theRTVFobjIndex};
+        for iNearbyObj = 1:numel(triangulatingRTVFobjIndices)
+            iObj  = triangulatingRTVFobjIndices(iNearbyObj);
+            theRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{iObj};
+
+            switch (theMajorityCenterConeType)
+                case cMosaic.LCONE_ID
+                    theRFcomputeStruct = theRTVFTobj.LconeRFcomputeStruct;
+
+                case cMosaic.MCONE_ID
+                    theRFcomputeStruct = theRTVFTobj.MconeRFcomputeStruct;
+
+                otherwise
+                    error('How can the majority cone type be not L- or M- ??')
+            end
 
             % Normalize theRTVFTobj.fitted to the theRTVFTobj.targetSTF
-            scaleFactorBasedOnLowestSF = theRTVFTobj.rfComputeStruct.theSTF.target(1)/theRTVFTobj.rfComputeStruct.theSTF.fitted(1);
-            pipelineScaleFactorBasedOnLowestSF = pipelineScaleFactorBasedOnLowestSF + theRTVFTobj.rfComputeStruct.theSTF.target(1)*triangulatingRTVFobjWeights(iObj);
+            scaleFactorBasedOnLowestSF = theRFcomputeStruct.theSTF.target(1)/theRFcomputeStruct.theSTF.fitted(1);
+            pipelineScaleFactorBasedOnLowestSF = pipelineScaleFactorBasedOnLowestSF + theRFcomputeStruct.theSTF.target(1)*triangulatingRTVFobjWeights(iNearbyObj);
             
             % The spatial support
-            triangulatingRTVFobjSTFdata{iObj} = struct();
-            triangulatingRTVFobjSTFdata{iObj}.spatialFrequencySupport = theRTVFTobj.rfComputeStruct.theSTF.support(:);
+            triangulatingRTVFobjSTFdata{iNearbyObj} = struct();
+            triangulatingRTVFobjSTFdata{iNearbyObj}.spatialFrequencySupport = theRFcomputeStruct.theSTF.support(:);
             % The model-achieved STF
-            triangulatingRTVFobjSTFdata{iObj}.fittedSTF = theRTVFTobj.rfComputeStruct.theSTF.fitted(:)*scaleFactorBasedOnLowestSF;
+            triangulatingRTVFobjSTFdata{iNearbyObj}.fittedSTF = theRFcomputeStruct.theSTF.fitted(:)*scaleFactorBasedOnLowestSF;
             % The model-target STF
-            triangulatingRTVFobjSTFdata{iObj}.targetSTF = theRTVFTobj.rfComputeStruct.theSTF.target(:);
+            triangulatingRTVFobjSTFdata{iNearbyObj}.targetSTF = theRFcomputeStruct.theSTF.target(:);
         end
 
         
