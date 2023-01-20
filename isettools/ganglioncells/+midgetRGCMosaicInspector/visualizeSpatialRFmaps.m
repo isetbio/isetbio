@@ -45,13 +45,18 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
         [~,idx] = max(triangulatingRTVFobjWeights);
         nearestRTVFobjectIndex = triangulatingRTVFobjIndices(idx);
 
+        % Determine whether the majority of center cones are L- or M-
+        theMajorityCenterConeType = theMidgetRGCmosaic.majorityCenterConeType(theTargetRGCindex);
+
         % Extract the PSF data to visualize
         if (strcmp(visualizedPSF,'nearest'))
             % Visualize the PSF of the nearest RTVF object (i.e. max weight for this RGC)
             objIndexForVisualizingPSF = nearestRTVFobjectIndex;
         end
         theRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{objIndexForVisualizingPSF};
-        theVisualizedPSFData = theRTVFTobj.theVlambdaWeightedPSFData;
+
+        theVisualizedPSFData = theRTVFTobj.theSpectrallyWeightedPSFData;
+        theVisualizedPSFData.theMajorityCenterConeType = theMajorityCenterConeType;
         theVisualizedPSFData.psfSupportXdegs = theVisualizedPSFData.psfSupportXdegs + ...
             theMidgetRGCmosaic.rgcRFpositionsDegs(theTargetRGCindex,1);
         theVisualizedPSFData.psfSupportYdegs = theVisualizedPSFData.psfSupportYdegs + ...
@@ -61,16 +66,24 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
         % Extract the STF of the nearest RTVFobject
         theNearestRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{nearestRTVFobjectIndex};
 
+        switch (theMajorityCenterConeType)
+            case cMosaic.LCONE_ID
+                theRFcomputeStruct = theNearestRTVFTobj.LconeRFcomputeStruct;
+            case cMosaic.MCONE_ID
+                theRFcomputeStruct = theNearestRTVFTobj.MconeRFcomputeStruct;
+        end
+
         % Normalize theRTVFTobj.fitted to the theRTVFTobj.targetSTF
-        scaleFactorBasedOnLowestSF = theNearestRTVFTobj.rfComputeStruct.theSTF.target(1)/theNearestRTVFTobj.rfComputeStruct.theSTF.fitted(1);
+        scaleFactorBasedOnLowestSF = theRFcomputeStruct.theSTF.target(1)/theRFcomputeStruct.theSTF.fitted(1);
  
         % Assemble the nearest RTVF object STF data
         theNearestRTVFobjSTFdata = struct();
-        theNearestRTVFobjSTFdata.spatialFrequencySupport = theNearestRTVFTobj.rfComputeStruct.theSTF.support(:);
+        theNearestRTVFobjSTFdata.spatialFrequencySupport = theRFcomputeStruct.theSTF.support(:);
+
         % The model-achieved STF
-        theNearestRTVFobjSTFdata.fittedSTF = theNearestRTVFTobj.rfComputeStruct.theSTF.fitted(:)*scaleFactorBasedOnLowestSF;
+        theNearestRTVFobjSTFdata.fittedSTF = theRFcomputeStruct.theSTF.fitted(:)*scaleFactorBasedOnLowestSF;
         % The model-target STF
-        theNearestRTVFobjSTFdata.targetSTF = theNearestRTVFTobj.rfComputeStruct.theSTF.target(:);
+        theNearestRTVFobjSTFdata.targetSTF = theRFcomputeStruct.theSTF.target(:);
 
 
         [hFig, allAxes] = theMidgetRGCmosaic.visualizeSpatialRFs(...

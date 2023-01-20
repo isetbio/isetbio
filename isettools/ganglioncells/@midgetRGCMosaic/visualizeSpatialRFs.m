@@ -255,14 +255,25 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         end
 
         if (~isempty(thePSFData))
+            switch (thePSFData.theMajorityCenterConeType)
+                case cMosaic.LCONE_ID
+                    employedSpectrallyWeightedData = thePSFData.LconeWeighted;
+                    contourLineColor = [0.4 0 0.0];
+                    nearestRTVFobjLineColor = [1 0 0];
+                case cMosaic.MCONE_ID
+                    employedSpectrallyWeightedData = thePSFData.MconeWeighted;
+                    contourLineColor = [0 0.4 0.0];
+                    nearestRTVFobjLineColor = [0 0.8 0];
+            end
+
             mosaicCenterDegs = obj.eccentricityDegs; %mean(obj.rgcRFpositionsDegs,1);
             xSupportDegsForPSF = thePSFData.psfSupportXdegs + mosaicCenterDegs(1);
             ySupportDegsForPSF = thePSFData.psfSupportYdegs + mosaicCenterDegs(2);
             alpha = 0.0;
-            contourLineColor = [0 0 0.5];
+            
             contourLineWidth = 0.5;
             cMosaic.semiTransparentContourPlot(ax, xSupportDegsForPSF, ySupportDegsForPSF, ...
-                thePSFData.vLambdaWeightedData/max(thePSFData.vLambdaWeightedData(:))*max(abs(theRetinalRFcenterConeMap(:))), ...
+                employedSpectrallyWeightedData/max(employedSpectrallyWeightedData(:))*max(abs(theRetinalRFcenterConeMap(:))), ...
                 (-1.0:0.1:1.0)*max(abs(theRetinalRFcenterConeMap(:))), cMap, alpha, contourLineColor, ...
                 'lineWidth', contourLineWidth, ...
                 'edgeAlpha', 0.7);
@@ -340,7 +351,7 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         for iCenterConesNumIndex = 1:numel(examinedCenterConesNum)
             idx = find(obj.theConesNumPooledByTheRFcenterGrid == examinedCenterConesNum(iCenterConesNumIndex));
             plot(ax, obj.theSamplingPositionGrid(idx,1), obj.theSamplingPositionGrid(idx,2), ...
-                'ko', 'MarkerSize', 14, 'Marker', markerTypes{iCenterConesNumIndex}, 'LineWidth', 1.5);
+                'ko', 'MarkerSize', 14, 'Marker', markerTypes{iCenterConesNumIndex}, 'MarkerEdgeColor', nearestRTVFobjLineColor, 'LineWidth', 1.5);
             hold(ax, 'on');
         end
 
@@ -349,7 +360,7 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         for k = 1:numel(triangulatingRTVFobjIndices)
             plot(ax, [obj.rgcRFpositionsDegs(iRGC,1) obj.theSamplingPositionGrid(triangulatingRTVFobjIndices(k),1)], ...
                      [obj.rgcRFpositionsDegs(iRGC,2) obj.theSamplingPositionGrid(triangulatingRTVFobjIndices(k),2)], ...
-                     'r-', 'LineWidth', triangulatingRTVFobjWeights(k)*10);
+                     '-', 'LineWidth', triangulatingRTVFobjWeights(k)*10, 'Color', nearestRTVFobjLineColor);
         end
 
         axis(ax, 'equal');
