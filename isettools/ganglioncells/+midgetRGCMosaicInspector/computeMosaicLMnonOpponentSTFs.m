@@ -109,7 +109,7 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
                     theCurrentInputDataStruct = theInputDataStruct;
                     theCurrentInputDataStruct.theTestScene = theFrameScene; 
                     theCurrentInputDataStruct.theNullScene = theNullStimulusScene;
-                    theCurrentInputDataStruct.wavefrontOpticsPositionDegs = theMidgetRGCMosaic.eccentricityDegs;
+                    theCurrentInputDataStruct.wavefrontOpticsPositionDegs = theMidgetRGCmosaic.eccentricityDegs;
                     theCurrentInputDataStruct.opticalImagePositionDegs = 'mosaic-centered';
                     theCurrentInputDataStruct.normalizeConeResponsesWithRespectToNullScene = true;
 

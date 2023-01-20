@@ -43,9 +43,9 @@ function executeButtonAction(btn, app)
             % the crash, using 
             % "compute: manually replace a specific R2VFT object" for each
             % of these pre-crash computed RTVF objects
-
-            RTVobjIndicesToBeComputed = 'all';
-            RTVobjIndicesToBeComputed = [22:22]
+            %RTVobjIndicesToBeComputed = [22:22];
+            
+            RTVobjIndicesToBeComputed 
             pause
             
             midgetRGCMosaicGenerator.generateR2VFTobjects(...

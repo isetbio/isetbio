@@ -1,10 +1,10 @@
 function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter, ...
     weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
-    centerConeType, initialRetinalConePoolingParamsStruct)
+    centerConeMajorityType, initialRetinalConePoolingParamsStruct)
 
-    switch (centerConeType)
+    switch (centerConeMajorityType)
         case cMosaic.LCONE_ID
-            theEmployedPSFData = obj.theSpectrallyWeightedPSFData.LconeWeighted;
+            theRFCenterConeMajorityPSF  = obj.theSpectrallyWeightedPSFData.LconeWeighted;
 
             spatialPositionDegs = mean(obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
             figureName = sprintf('RF center with %d L-cone(s) at (%2.2f,%2.2f) degs', ...
@@ -12,7 +12,7 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
             summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
             
         case cMosaic.MCONE_ID
-            theEmployedPSFData = obj.theSpectrallyWeightedPSFData.MconeWeighted;
+            theRFCenterConeMajorityPSF  = obj.theSpectrallyWeightedPSFData.MconeWeighted;
 
             spatialPositionDegs = mean(obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
             figureName = sprintf('RF center with %d M-cone(s) at (%2.2f,%2.2f) degs', ...
@@ -20,10 +20,10 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
             summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
 
         otherwise
-            error('Not L or M cone: %d', centerConeType);
+            error('Not L or M cone: %d', centerConeMajorityType);
     end
 
-
+    
     % Spatial support
     spatialSupportDegs = [...
         obj.theSpectrallyWeightedPSFData.spatialSupportForRFmapXdegs(:) ...
@@ -40,7 +40,7 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
                indicesOfConesPooledByTheRFcenter, ...
                weightsOfConesPooledByTheRFcenter, ...
                spatialSupportDegs, ...
-               theEmployedPSFData);
+               theRFCenterConeMajorityPSF);
 
     % Model constants
     modelConstants = struct();
@@ -98,7 +98,9 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
 
     % Retinal cone pooling model constants
     modelConstants.theConeMosaic = obj.theConeMosaic;
-    modelConstants.thePSF = theEmployedPSFData;
+    modelConstants.theRFCenterConeMajorityPSF = theRFCenterConeMajorityPSF;
+    modelConstants.theSurroundLconePlusMconePSF = obj.theSpectrallyWeightedPSFData.LMconeWeighted;
+
     modelConstants.surroundConnectableConeTypes = targetVisualRFDoGparams.surroundConnectableConeTypes;
     modelConstants.centerConnectableConeTypes = targetVisualRFDoGparams.centerConnectableConeTypes;
     modelConstants.coneWeightsCompensateForVariationsInConeEfficiency = targetVisualRFDoGparams.coneWeightsCompensateForVariationsInConeEfficiency;
@@ -549,8 +551,9 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
     function theCurrentRMSE = matchedVisualRFobjective(currentRetinalPoolingParams)
 
         % Compute the current visual RF given the current cone pooling params
-        [currentVisualRF, currentRetinalRFcenterConeMap, currentRetinalRFsurroundConeMap] = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...
-            modelConstants, currentRetinalPoolingParams);
+        [currentVisualRF, currentRetinalRFcenterConeMap, currentRetinalRFsurroundConeMap] = ...
+            RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...
+                modelConstants, currentRetinalPoolingParams);
 
         % RF assessment
         if (modelConstants.simulateCronerKaplanEstimation)
