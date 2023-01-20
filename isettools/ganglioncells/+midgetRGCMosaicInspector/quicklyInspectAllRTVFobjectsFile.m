@@ -16,11 +16,25 @@ function quicklyInspectAllRTVFobjectsFile()
         'theConesNumPooledByTheRFcenterGrid', ...
         'theOpticsPositionGrid');
 
+    for iObj = 1:numel(theRTFVTobjList)
+        if (isempty(theRTFVTobjList{iObj}))
+            fprintf(2, '**** There is no RTVFobj at grid position %d ***** \n', iObj);
+        end
+    end
+
     % Plot the sampling grid for all RTVF objects, separately for the different # of
     % center cones examined
-     
-    x = theRTFVTobjList{1}.theConeMosaic.coneRFpositionsDegs(:,1);
-    y = theRTFVTobjList{1}.theConeMosaic.coneRFpositionsDegs(:,2);
+    iObj = 1;
+    while (isempty(theRTFVTobjList{iObj})) && (iObj < numel(theRTFVTobjList))
+        iObj = iObj + 1;
+    end
+
+    if (iObj > numel(theRTFVTobjList))
+        return;
+    end
+
+    x = theRTFVTobjList{iObj}.theConeMosaic.coneRFpositionsDegs(:,1);
+    y = theRTFVTobjList{iObj}.theConeMosaic.coneRFpositionsDegs(:,2);
     xLims = [min(x) max(x)];
     yLims = [min(y) max(y)];
     spatialTicksX = linspace(xLims(1), xLims(2), 7);
@@ -57,14 +71,17 @@ function quicklyInspectAllRTVFobjectsFile()
     NicePlot.exportFigToPDF('samplingGrids.pdf', hFig, 300);
 
     for iObj = 1:numel(theRTFVTobjList)
-        waitbar(0.3+(iObj/numel(theRTFVTobjList))*0.7,progressBar, sprintf('Processing R2VF obj %d of %d', iObj, numel(theRTFVTobjList)));
+        waitbar(0.3+(iObj/numel(theRTFVTobjList))*0.7,progressBar, ...
+            sprintf('Processing R2VF obj %d of %d', iObj, numel(theRTFVTobjList)));
         pause(0.1);
-        midgetRGCMosaicInspector.peekIntoRTVFobj(...
-            theRTFVTobjList{iObj}, ...
-            iObj, ...
-            theOpticsPositionGrid, ...
-            theConesNumPooledByTheRFcenterGrid, ...
-            10000+iObj*100);
+        if (~isempty(theRTFVTobjList{iObj}))
+            midgetRGCMosaicInspector.peekIntoRTVFobj(...
+                theRTFVTobjList{iObj}, ...
+                iObj, ...
+                theOpticsPositionGrid, ...
+                theConesNumPooledByTheRFcenterGrid, ...
+                10000+iObj*100);
+        end
     end
 
     close(progressBar);
