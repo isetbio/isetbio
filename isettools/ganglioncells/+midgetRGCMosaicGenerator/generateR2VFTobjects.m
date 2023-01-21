@@ -5,11 +5,13 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     p.addParameter('RTVobjIndicesToBeComputed', 'all',  @(x)(((ischar(x))&&(strcmp(x, 'all'))) || isnumeric(x)));
     p.addParameter('updateRTVFobjectAtPosition', [], @(x)(isempty(x) || (numel(x)==2)));
     p.addParameter('updateRTVFobjectWithCenterConesNum', [], @(x)(isempty(x) || (numel(x)>=1)));
+    p.addParameter('updateRTVFobjectWithCenterConeType', [], @(x)(isempty(x) || ismember(x, {'L', 'M'})));
     p.parse(varargin{:});
 
     RTVobjIndicesToBeComputed = p.Results.RTVobjIndicesToBeComputed;
     updateRTVFobjectAtPosition = p.Results.updateRTVFobjectAtPosition;
     updateRTVFobjectWithCenterConesNum = p.Results.updateRTVFobjectWithCenterConesNum;
+    updateRTVFobjectWithCenterConeType = p.Results.updateRTVFobjectWithCenterConeType;
 
     % Generate mosaic filename and directory
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(mosaicCenterParams);
@@ -125,9 +127,20 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
                 theOpticsPositionGrid);
 
             % Query user whether to update the list of RVFTobj
-            prompt = sprintf('Update the RTVFlist{%d}  (%d center cones at position (degs): (%2.2f %2.2f))? [y/n] : ', ...
-                destinationRTVFobjectIndex, theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
-                theOpticsPositionGrid(destinationRTVFobjectIndex,1), theOpticsPositionGrid(destinationRTVFobjectIndex,2));
+            if (isempty(updateRTVFobjectWithCenterConeType))
+                prompt = sprintf('Update the RTVFlist{%d}  (%d center BOTH L- & M-cone models at position (degs): (%2.2f %2.2f))? [y/n] : ', ...
+                    destinationRTVFobjectIndex, theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
+                    theOpticsPositionGrid(destinationRTVFobjectIndex,1), theOpticsPositionGrid(destinationRTVFobjectIndex,2));
+            elseif strcmpi(updateRTVFobjectWithCenterConeType, 'l')
+                prompt = sprintf('Update the RTVFlist{%d}  (%d center ONLY the L-cone model at position (degs): (%2.2f %2.2f))? [y/n] : ', ...
+                    destinationRTVFobjectIndex,  theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
+                    theOpticsPositionGrid(destinationRTVFobjectIndex,1), theOpticsPositionGrid(destinationRTVFobjectIndex,2));
+            elseif strcmp(updateRTVFobjectWithCenterConeType, 'm')
+                prompt = sprintf('Update the RTVFlist{%d}  (%d center ONLY the M-cone model at position (degs): (%2.2f %2.2f))? [y/n] : ', ...
+                    destinationRTVFobjectIndex, theConesNumPooledByTheRFcenterGrid(destinationRTVFobjectIndex), ...
+                    theOpticsPositionGrid(destinationRTVFobjectIndex,1), theOpticsPositionGrid(destinationRTVFobjectIndex,2));
+            end
+
             txt = lower(input(prompt,'s'));
             if isempty(txt)
                 txt = 'n';
@@ -138,10 +151,24 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
             end
 
             reWriteRTVFTfile = true;
-            fprintf('Updating RTVFTobj data.\n');
-            
+
             % Update !
-            theRTFVTobjList{destinationRTVFobjectIndex} = theUpdatedRTFVTobjList{sourceRTVFobjectIndex};
+            if (isempty(updateRTVFobjectWithCenterConeType))
+                fprintf('Updating RTVFTobj data for both the L- and M-cone models.\n');
+                theRTFVTobjList{destinationRTVFobjectIndex} = ...
+                    theUpdatedRTFVTobjList{sourceRTVFobjectIndex};
+
+            elseif strcmpi(updateRTVFobjectWithCenterConeType, 'l')
+                fprintf('Updating RTVFTobj data for the L-cone model.\n');
+                theRTFVTobjList{destinationRTVFobjectIndex}.LconeRFcomputeStruct = ...
+                    theUpdatedRTFVTobjList{sourceRTVFobjectIndex}.LconeRFcomputeStruct;
+
+            elseif strcmpi(updateRTVFobjectWithCenterConeType, 'm')
+                fprintf('Updating RTVFTobj data for the M-cone model.\n');
+                theRTFVTobjList{destinationRTVFobjectIndex}.MconeRFcomputeStruct = ...
+                    theUpdatedRTFVTobjList{sourceRTVFobjectIndex}.MconeRFcomputeStruct;
+            end
+
         end
 
         if (reWriteRTVFTfile)

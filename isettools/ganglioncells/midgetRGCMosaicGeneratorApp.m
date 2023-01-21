@@ -68,6 +68,7 @@ function executeButtonAction(btn, app)
                 targetPosition = input('Enter position for which to update the RTVF object ([x y]): ');
             end
             targetRFcenterConesNum = input('Enter center cones num for which to update the RTVF object (e.g, 1, 2): ');
+            targetRFcenterConeType = input('Enter center cone type for which to update the RTVF object (L or M or hit Enter for both): ', 's');
 
             % Re-generate R2VFT objects at a specific position
             midgetRGCMosaicGenerator.generateR2VFTobjects(...
@@ -75,7 +76,8 @@ function executeButtonAction(btn, app)
                 app.simulation.mosaicSurroundParams, ...
                 app.simulation.opticsParams, ...
                 'updateRTVFobjectAtPosition', targetPosition, ...
-                'updateRTVFobjectWithCenterConesNum', targetRFcenterConesNum);
+                'updateRTVFobjectWithCenterConesNum', targetRFcenterConesNum, ...
+                'updateRTVFobjectWithCenterConeType', targetRFcenterConeType)
 
         case "compute: manually replace a specific R2VFT object"
             midgetRGCMosaicGenerator.replaceSpecificR2VFTobject()
