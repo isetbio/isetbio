@@ -47,7 +47,7 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
     theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
 
     % Compute the response of each mRGC
-    for iRGC = 1:obj.rgcsNum
+    parfor iRGC = 1:obj.rgcsNum
         % Retrieve the center cone indices & weights
         centerConnectivityVector = full(squeeze(obj.centerConePoolingMatrix(:, iRGC)));
         centerConeIndices = find(centerConnectivityVector > 0.0001);

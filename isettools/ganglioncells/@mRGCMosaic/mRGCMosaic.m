@@ -66,6 +66,12 @@ classdef mRGCMosaic < handle
         multifocalRTVFopticsParams;
     end
 
+    % Private properties
+    properties (GetAccess=private, SetAccess=private)
+        % Outlines for visualizing the RF centers
+        rfCenterVisualizationOutlines = [];
+    end
+
     % Public methods
     methods
         
@@ -116,6 +122,9 @@ classdef mRGCMosaic < handle
         % Compute method
         [response, responseTemporalSupport] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupport, varargin);
+
+        % Method to visualize different aspects of the mosaic
+        visualize(obj, varargin)
 
     end % Public methods
 
