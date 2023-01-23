@@ -18,7 +18,12 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
         'The size(theConeMosaicResponsth,2) (%d) does not equal the length of temporal support (%d)', ...
         size(theConeMosaicResponse,2), numel(theConeMosaicResponseTemporalSupportSeconds));
 
-    inputTimeResolutionSeconds = theConeMosaicResponseTemporalSupportSeconds(2)-theConeMosaicResponseTemporalSupportSeconds(1);
+    if (numel(theConeMosaicResponseTemporalSupportSeconds)>1)
+        inputTimeResolutionSeconds = theConeMosaicResponseTemporalSupportSeconds(2)-theConeMosaicResponseTemporalSupportSeconds(1);
+    else
+        inputTimeResolutionSeconds = 1.0;
+    end
+
     inputTimePoints = numel(theConeMosaicResponseTemporalSupportSeconds);
 
     if (isempty(timeResolutionSeconds))
@@ -42,7 +47,7 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
     theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
 
     % Compute the response of each mRGC
-    parfor iRGC = 1:obj.rgcsNum
+    for iRGC = 1:obj.rgcsNum
         % Retrieve the center cone indices & weights
         centerConnectivityVector = full(squeeze(obj.centerConePoolingMatrix(:, iRGC)));
         centerConeIndices = find(centerConnectivityVector > 0.0001);
@@ -59,19 +64,22 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
         % Spatially pool the weighted cone responses to the RF surround
         surroundSpatiallyIntegratedActivations = sum(bsxfun(@times, theConeMosaicResponse(1:nTrials,1:inputTimePoints, surroundConeIndices), surroundConeWeights),3);
 
-        % Temporally filter the center responses
-        theCenterSpatioTemporalResponses = temporalFilter(centerSpatiallyIntegratedActivations, ...
-            theConeMosaicResponseTemporalSupportSeconds, ...
-            theMRGCresponseTemporalSupportSeconds, ...
-            theRFcenterImpulseResponse);
+        if (numel(theConeMosaicResponseTemporalSupportSeconds)>1)
+            % Temporally filter the center responses
+            centerSpatiallyIntegratedActivations = temporalFilter(centerSpatiallyIntegratedActivations, ...
+                theConeMosaicResponseTemporalSupportSeconds, ...
+                theMRGCresponseTemporalSupportSeconds, ...
+                theRFcenterImpulseResponse);
+    
+            % Temporally filter the surround responses
+            surroundSpatiallyIntegratedActivations = temporalFilter(surroundSpatiallyIntegratedActivations, ...
+                theConeMosaicResponseTemporalSupportSeconds, ...
+                theMRGCresponseTemporalSupportSeconds, ...
+                theRFsurroundImpulseResponse);
+        end
 
-        % Temporally filter the center responses
-        theSurroundSpatioTemporalResponses = temporalFilter(surroundSpatiallyIntegratedActivations, ...
-            theConeMosaicResponseTemporalSupportSeconds, ...
-            theMRGCresponseTemporalSupportSeconds, ...
-            theRFsurroundImpulseResponse);
 
-        theMRGCresponses(:,:,iRGC) = theCenterSpatioTemporalResponses - theSurroundSpatioTemporalResponses;
+        theMRGCresponses(:,:,iRGC) = centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations;
     end % parfor
 
 end

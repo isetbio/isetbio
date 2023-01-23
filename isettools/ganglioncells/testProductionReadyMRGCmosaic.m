@@ -11,7 +11,37 @@ function testProductionReadyMRGCmosaic
         'sizeDegs', [0.4 0.2], ...
         'name', 'my small off-center mRGC mosaic');
 
-    pause
+    theOI = mySmallMRGCmosaic.multiFocalRTVFopticsAtPosition(...
+        mySmallMRGCmosaic.eccentricityDegs);
+    
+
+    % Create the letter A scene
+    font = fontCreate('A', 'Georgia', 20, 96);
+    display = 'LCD-Apple';
+    theStimulusScene = sceneCreate('letter', font, display);
+    theStimulusScene = sceneSet(theStimulusScene,'wangular',1.5);
+
+    % Compute the retinal image
+    theOI = oiCompute(theOI, theStimulusScene);
+
+    % Compute the cone mosaic response to the retinal image placed at the center of the MRGC mosaic
+    theConeMosaicResponse = mySmallMRGCmosaic.inputConeMosaic.compute(...
+        theOI, 'opticalImagePositionDegs', mySmallMRGCmosaic.eccentricityDegs);
+
+    % Visualize the cone mosaic response
+    mySmallMRGCmosaic.inputConeMosaic.visualize(...
+        'activation', theConeMosaicResponse);
+
+    % Compute the MRGCmosaic response
+    theConeMosaicResponseTemporalSupportSeconds = [0];
+    theMRGCresponse = mySmallMRGCmosaic.compute(theConeMosaicResponse, ...
+                             theConeMosaicResponseTemporalSupportSeconds);
+
+    size(theMRGCresponse)
+
+    pause;
+
+
 
     % Instantiate a compute-ready optimized mRGCMosaic with the same size
     % and position as the sourceMidgetRGCMosaic

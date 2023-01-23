@@ -1,50 +1,27 @@
-% Method to generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
-function generateByCroppingTheSourceMosaic(obj, sourceMidgetRGCMosaic, varargin)
-    p = inputParser;
-    p.addParameter('visualizeSpatialRelationshipToSourceMosaic', [], @(x)(isempty(x))||(isscalar(x)));
+function retrieveMultifocalRTVFOpticsParams(obj, sourceMidgetRGCMosaic)
+  
+    % The number of center cones in the multifocal RTVF object
+    centerConesNumExamined = sort(unique(sourceMidgetRGCMosaic.theConesNumPooledByTheRFcenterGrid), 'ascend');
 
-    % Parse input
-    p.parse(varargin{:});
-    visualizeSpatialRelationshipToSourceMosaic = p.Results.visualizeSpatialRelationshipToSourceMosaic;
+    % The multifocalRTVFstruct
+    obj.multifocalRTVFgrids = struct(...
+        'conesNumPooledByTheRFcenterGrid', sourceMidgetRGCMosaic.theConesNumPooledByTheRFcenterGrid, ...
+        'samplingPositionGrid', sourceMidgetRGCMosaic.theSamplingPositionGrid);
+    obj.multifocalRTVFopticsParams = cell(1,numel(sourceMidgetRGCMosaic.theRetinaToVisualFieldTransformerOBJList));
+    
+    for iCone = 1:numel(centerConesNumExamined)
+        iidx = find(sourceMidgetRGCMosaic.theConesNumPooledByTheRFcenterGrid == centerConesNumExamined(iCone));
+        for idx = 1:numel(iidx)
+            iObj = iidx(idx);
+            theLabel = sprintf('%d cones @ %+2.2f %+2.2f', ...
+                sourceMidgetRGCMosaic.theConesNumPooledByTheRFcenterGrid(iObj), ...
+                sourceMidgetRGCMosaic.theSamplingPositionGrid(iObj,1), ...
+                sourceMidgetRGCMosaic.theSamplingPositionGrid(iObj,2));
+            fprintf('\nRTVF{%02d} was fitted for %s', iObj, theLabel);
 
- 
-    if ((isempty(obj.eccentricityDegs))&&(isempty(obj.sizeDegs))) || ...
-       ((all(obj.eccentricityDegs==sourceMidgetRGCMosaic.eccentricityDegs))&&(all(obj.sizeDegs == sourceMidgetRGCMosaic.sizeDegs)))
-        % When empty just set to the eccentricity and size of the 
-        % sourceMidgetRGCMosaic
-        obj.eccentricityDegs = sourceMidgetRGCMosaic.eccentricityDegs;
-        obj.sizeDegs = sourceMidgetRGCMosaic.sizeDegs;
-
-        % Get the rf positions and cone pooling matrices of the entire
-        % sourceMidgetRGCMosaic
-        obj.rgcRFpositionsDegs = sourceMidgetRGCMosaic.rgcRFpositionsDegs;
-        obj.centerConePoolingMatrix = sourceMidgetRGCMosaic.rgcRFcenterConePoolingMatrix;
-        obj.surroundConePoolingMatrix = sourceMidgetRGCMosaic.rgcRFsurroundConePoolingMatrix;
-    else
-        % Instantiate a rectangular ROI with the desired size and position
-        theROI = regionOfInterest(...
-            'geometryStruct', struct(...
-                'units', 'degs', ...
-                'shape', 'rect', ...
-                'center', obj.eccentricityDegs, ...
-                'width', obj.sizeDegs(1), ...
-                'height', obj.sizeDegs(2), ...
-                'rotation', 0 ...
-                ));
-
-        idx = theROI.indicesOfPointsInside(sourceMidgetRGCMosaic.rgcRFpositionsDegs);
-
-        % Crop now
-        obj.rgcRFpositionsDegs = sourceMidgetRGCMosaic.rgcRFpositionsDegs(idx,:);
-        obj.centerConePoolingMatrix = sourceMidgetRGCMosaic.rgcRFcenterConePoolingMatrix(:,idx);
-        obj.surroundConePoolingMatrix = sourceMidgetRGCMosaic.rgcRFsurroundConePoolingMatrix(:,idx);
-    end
-
-    obj.inputConesNum = size(obj.centerConePoolingMatrix,1);
-    obj.rgcsNum = size(obj.centerConePoolingMatrix,2);
-
-    if (visualizeSpatialRelationshipToSourceMosaic)
-        visualizeMosaicBorders(obj,sourceMidgetRGCMosaic, theROI)
+            theRTVFTobj = sourceMidgetRGCMosaic.theRetinaToVisualFieldTransformerOBJList{iObj};
+            obj.multifocalRTVFopticsParams{iObj} = theRTVFTobj.opticsParams;
+        end
     end
 
 end

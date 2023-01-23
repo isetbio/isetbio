@@ -52,9 +52,18 @@ classdef mRGCMosaic < handle
         centerConePoolingMatrix;
         surroundConePoolingMatrix;
 
+        % The number of RGCs
         rgcsNum;
+
+        % The number of input cones
         inputConesNum;
 
+        % The spatial position grid at which the multifocal RTVF model was fitted
+        multifocalRTVFgrids;
+
+        % The params for generating optics at the positions where the
+        % multifocal RTVF model was fitted
+        multifocalRTVFopticsParams;
     end
 
     % Public methods
@@ -89,10 +98,20 @@ classdef mRGCMosaic < handle
                 obj.eccentricityDegs = p.Results.positionDegs;
             end
 
+            % Get the input cone mosaic
+            obj.inputConeMosaic = sourceMidgetRGCMosaic.inputConeMosaic;
+
+            % Get the optics params used to train the multi-focal RTVF
+            % so we can pass them to the user when requested
+            obj.retrieveMultifocalRTVFOpticsParams(p.Results.sourceMidgetRGCMosaic);
+
             % Generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
             obj.generateByCroppingTheSourceMosaic(p.Results.sourceMidgetRGCMosaic);
 
         end % Constructor
+
+        % Method to compute optics at a given position
+        theOI = multiFocalRTVFopticsAtPosition(obj, eccDegs);
 
         % Compute method
         [response, responseTemporalSupport] = compute(obj, ...
@@ -104,6 +123,10 @@ classdef mRGCMosaic < handle
     methods (Access=private)
         % Method to generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
         generateByCroppingTheSourceMosaic(obj, sourceMidgetRGCMosaic);
+
+        % Method to retrieve the optics params of the multifocal RTVFobject
+        % used to derive cone pooling weights
+        retrieveMultifocalRTVFOpticsParams(obj, sourceMidgetRGCMosaic);
     end % Private methods
 
     
