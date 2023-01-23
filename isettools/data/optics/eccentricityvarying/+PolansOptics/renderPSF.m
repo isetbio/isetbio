@@ -16,6 +16,9 @@ function renderPSF(axesHandle, xSupport, ySupport, thePSF, xyRange, zLevels, cMa
     plotTitle = p.Results.plotTitle;
     alpha = p.Results.alpha;
     
+    if (numel(xyRange) == 1)
+        xyRange = xyRange*0.5*[-1 1];
+    end
     image(axesHandle, xSupport, ySupport, ones(size(thePSF,1), size(thePSF,2),3));
     axis(axesHandle, 'image');
     hold(axesHandle, 'on');
