@@ -8,7 +8,7 @@ function testProductionReadyMRGCmosaic
     % at (x,y) = (1,0.5), with width = 0.4 degs and height = 0.2 degs
     mySmallMRGCmosaic = mRGCMosaic(theSourceMidgetRGCMosaic, ...
         'eccentricityDegs', [1 0.5], ...
-        'sizeDegs', [0.4 0.2], ...
+        'sizeDegs', [0.7 0.7], ...
         'name', 'my small off-center mRGC mosaic');
 
     theOI = mySmallMRGCmosaic.multiFocalRTVFopticsAtPosition(...
@@ -32,13 +32,16 @@ function testProductionReadyMRGCmosaic
     mySmallMRGCmosaic.inputConeMosaic.visualize(...
         'activation', theConeMosaicResponse);
 
+
+    mySmallMRGCmosaic.visualize('component', 'RF centers');
+
     % Compute the MRGCmosaic response
     theConeMosaicResponseTemporalSupportSeconds = [0];
     theMRGCresponse = mySmallMRGCmosaic.compute(theConeMosaicResponse, ...
                              theConeMosaicResponseTemporalSupportSeconds);
 
-    size(theMRGCresponse)
-
+    mySmallMRGCmosaic.visualize('activation', theMRGCresponse);
+    
     pause;
 
 
@@ -50,7 +53,7 @@ function testProductionReadyMRGCmosaic
 
     nTrials = 3;
     nTimePoints = 12;
-    nCones = myMRGCmosaic.inputConesNum;
+    nCones = myLargeMRGCmosaic.inputConesNum;
     theConeMosaicResponse = 5+randn(nTrials, nTimePoints, nCones);
     theConeMosaicResponse(:,4,:) = 10;
     theConeMosaicResponseTemporalSupportSeconds = 4+(1:nTimePoints)*30/1000;
