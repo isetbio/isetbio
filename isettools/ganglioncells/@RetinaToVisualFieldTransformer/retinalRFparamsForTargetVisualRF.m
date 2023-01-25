@@ -532,8 +532,10 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
 
     % Convolve the center retinal cone-pooling based retinal RF to get the corresponding visual center RF
     theRFcomputeStruct.theFittedVisualRFMap = theFittedVisualRF;
-    theRFcomputeStruct.theFittedVisualRFcenterConeMap = conv2(theRetinalRFcenterConeMap, modelConstants.thePSF, 'same');
-    theRFcomputeStruct.theFittedVisualRFsurroundConeMap = conv2(theRetinalRFsurroundConeMap, modelConstants.thePSF, 'same');
+    theRFcomputeStruct.theFittedVisualRFcenterConeMap = ...
+        conv2(theRetinalRFcenterConeMap, modelConstants.theRFCenterConeMajorityPSF, 'same');
+    theRFcomputeStruct.theFittedVisualRFsurroundConeMap = ...
+        conv2(theRetinalRFsurroundConeMap, modelConstants.theSurroundLconePlusMconePSF, 'same');
     
     theRFcomputeStruct.theRetinalRFcenterConeMap = theRetinalRFcenterConeMap;
     theRFcomputeStruct.theRetinalRFsurroundConeMap = theRetinalRFsurroundConeMap;
