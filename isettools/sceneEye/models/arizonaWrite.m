@@ -2,7 +2,7 @@ function filename = arizonaWrite(thisR,accommodation)
 % Write out the Arizona lens file for a given accomodation
 %
 % Syntax:
-%   arizonaWrite(thisR)
+%   arizonaWrite(thisR, accommodation)
 %
 % Description:
 %    Write out the Arizona lens file for a given accomodation

@@ -128,6 +128,8 @@ methods
         p.addParameter('eyemodel','navarro',@(x)ismember(x,{'navarro','legrand','arizona'}));
         p.parse(pbrtFile,varargin{:});
 
+        obj.modelName = p.Results.eyemodel;
+
         % Setup the pbrt scene recipe
         if isempty(pbrtFile),  obj.recipe = recipe;
         else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
@@ -149,7 +151,6 @@ methods
 
         % Assign this object the basename of the input file
         obj.set('name',obj.get('input basename'));
-                        
     end
 
     %% Get methods for dependent variables

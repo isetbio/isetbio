@@ -33,8 +33,8 @@ function thisR = setArizonaAccommodation(thisR, accommodation, workingFolder)
 %    05/29/19  JNM  Documentation pass
 
 %% Check and make sure this recipe includes a realisticEye
-if(~strcmp(thisR.camera.subtype, 'realisticEye'))
-    warning('The camera type is not a realisticEye. Returning untouched.');
+if ~isequal(thisR.get('camera subtype'), 'humaneye')
+    warning('The camera type is not a human eye. Returning untouched.');
     return;
 end
 
