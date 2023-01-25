@@ -213,6 +213,16 @@ classdef RetinaToVisualFieldTransformer < handle
         % Called from midgetRGCMosaic.freeze()
         freeze(obj);
 
+        % Method to overwrite the LconeRFcomputeStruct
+        function overwriteLconeRFcomputeStruct(obj, newComputeStruct)
+            obj.LconeRFcomputeStruct = newComputeStruct;
+        end
+
+        % Method to overwrite the MconeRFcomputeStruct
+        function overwriteMconeRFcomputeStruct(obj, newComputeStruct)
+            obj.MconeRFcomputeStruct = newComputeStruct;
+        end
+
     end % Public methods
 
     % Private methods
