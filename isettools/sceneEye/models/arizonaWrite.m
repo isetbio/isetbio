@@ -122,6 +122,6 @@ for ii=1:4
     thisR.set(str,filename);
 end
 
-fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
+fprintf('Wrote arizona lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
 
 end

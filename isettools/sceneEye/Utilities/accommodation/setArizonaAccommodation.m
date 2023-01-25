@@ -1,17 +1,15 @@
 function thisR = setArizonaAccommodation(thisR, accommodation, workingFolder)
-% DEPRECATED Change renderRecipe to match the accommodation for the Arizona eye
-%
-%   Deprecated:  Now part of the arizona* methods
+% Deprecated:  
+% 
+% Change lens model to match the accommodation for the Arizona eye
 %
 % Syntax:
-%   thisR = setArizonaAccommodation(..
-%       thisR, accommodation, workingFolder)
+%   thisR = setArizonaAccommodation(thisR, accommodation, [workingFolder])
 %
 % Description:
-%    We change the fields of the renderRecipe to match accommodation. As
-%    accommodation changes, the lens file will change, as will the index of
-%    refraction for the lens media. We write these new files out and
-%    reference them in the structure.
+%    We write the arizona lens model with the specified accommodation.
+%    We write the lens in the lens output dir.  The specification of
+%    the lens file parameters is managed in arizonaWrite
 %
 % Inputs:
 %    thisR  -  Render Recipe. 
@@ -21,16 +19,13 @@ function thisR = setArizonaAccommodation(thisR, accommodation, workingFolder)
 %                    renderRecipe to.
 %
 % Outputs:
-%    renderRecipe  - Object. The modified renderRecipe.
+%    thisR  - Object. The modified render recipe.
 %
 % Optional key/value pairs:
 %    None.
 %
-
-% History:
-%    xx/xx/17  TL   Created by Trisha Lian IESTBIO Team 2017
-%    12/19/17  jnm  Formatting
-%    05/29/19  JNM  Documentation pass
+% See also
+%   arizonaWrite
 
 %% Check and make sure this recipe includes a realisticEye
 if ~isequal(thisR.get('camera subtype'), 'humaneye')
@@ -38,11 +33,20 @@ if ~isequal(thisR.get('camera subtype'), 'humaneye')
     return;
 end
 
-%% Check inputs
+% Default output directory
+if notDefined('workingFolder'), workingFolder = thisR.get('lens output dir'); end
 if ~exist(workingFolder, 'dir')
     error('Working folder does not exist.');
 end
 
+% Simply over-write the eye model with the new accommodation
+arizonaWrite(thisR,accommodation);
+
+end
+%{
+% We used to do a lot here. But now, we handle all the work in
+arizonaWrite.
+%
 %% Write out ocular media spectra files
 % We calculate the dispersion curves of each ocular media. In the lens
 % file, each surface material is linked to an "ior slot" (ior1,
@@ -136,11 +140,15 @@ thisR.camera.ior4.value = fullfile(workingFolder, iorNames{4});
 % The lens file will change depending on accomodation. Here we can write it
 % out to a file to be read in later.
 lensFile = sprintf('arizonaAccomodated_%0.2f.dat', accommodation);
-writeArizonaLensFile(accommodation, fullfile(workingFolder, lensFile));
+
 fprintf('Wrote out a new lens file: \n')
 fprintf('%s \n \n', fullfile(workingFolder, lensFile));
 
 thisR.camera.lensfile.value = fullfile(workingFolder, lensFile);
 thisR.camera.lensfile.type = 'string';
 
+% Perhaps this should only happen in the 'render' call for scene eye, a
+arizonaWrite(thisR,accommodation);
+
 end
+%}

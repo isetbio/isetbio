@@ -45,6 +45,15 @@ end
 if notDefined('accommodation')
     accommodation = (thisR.get('accommodation'));
 end
+
+% TL believed that the usual accomodation value and the equivalent
+% value for the Navarro model differ.  She inserted this function so
+% that the Navarro model accommodation matched her Zemax calculation.
+% See the comments in the function.  We should probablyk have a switch
+% to use or not use this function, and we should document more
+% extensively.
+accommodation = convertToNavarroAccomm(accommodation);
+
 na    = navarroLensCreate(accommodation);  % Diopters
 
 % Build matrix and set focal Length
