@@ -243,10 +243,12 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisua
             S = obj.visualizationCache.theContourData{theRGCindex}{1};
             S.FaceVertexCData = 0.5;
             S.FaceColor = 'flat';
-            S.EdgeColor = [1 1 1];
+            S.EdgeColor = [1 1 0];
             S.FaceAlpha = 0.0;
             S.LineWidth = 1.0;
-            patch(S, 'Parent', ax)
+            S.LineStyle = '-';
+            patch(S, 'Parent', ax);
+
         end
     end
 
@@ -299,12 +301,14 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisua
     
   
             if (verticalColorBar)
-                colorbar(ax, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
+                colorbar(ax, 'eastOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
+                    'Color', colorbarTickLabelColor);
             elseif (verticalColorBarInside)
                 colorbar(ax, 'east', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
                     'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', colorbarFontSize, 'FontName', 'Spot mono');
             elseif (horizontalColorBar)
-                colorbar(ax,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels);
+                colorbar(ax,'northOutside', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
+                    'Color', colorbarTickLabelColor);
             elseif (horizontalColorBarInside)
                 colorbar(ax,'north', 'Ticks', colorBarTicks, 'TickLabels', colorBarTickLabels, ...
                     'Color', colorbarTickLabelColor,  'FontWeight', 'Bold', 'FontSize', colorbarFontSize, 'FontName', 'Spot mono');
