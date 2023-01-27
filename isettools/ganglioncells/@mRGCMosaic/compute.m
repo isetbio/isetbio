@@ -46,6 +46,7 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
     theRFcenterImpulseResponse = generateCenterTemporalImpulseResponse(theImpulseResponseTemporalSupport);
     theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
 
+
     % Compute the response of each mRGC
     parfor iRGC = 1:obj.rgcsNum
         % Retrieve the center cone indices & weights
@@ -78,10 +79,8 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
                 theRFsurroundImpulseResponse);
         end
 
-
         theMRGCresponses(:,:,iRGC) = centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations;
     end % parfor
-
 end
 
 
@@ -101,6 +100,7 @@ function theResponses = temporalFilter(theInputResponses, ...
     theInputResponseResolution = theInputResponsesTemporalSupportSeconds(2)-theInputResponsesTemporalSupportSeconds(1);
     theScalingFactor = theOutputResponseResolution/theInputResponseResolution;
 
+
     for iTrial = 1:nTrials
         theInputResponse = theInputResponses(iTrial,:);
 
@@ -117,7 +117,7 @@ function theResponses = temporalFilter(theInputResponses, ...
         % Decimate to the # of output time points
         theResponses(iTrial,:) = theResponse(1:nOutputPoints);
 
-        debugFilter = false;
+        debugFilter = ~true;
         if (debugFilter)
             figure(1); clf;
             
@@ -127,23 +127,25 @@ function theResponses = temporalFilter(theInputResponses, ...
             plot(theOutputResponsesTemporalSupportSeconds, theInterpolatedInputResponse, 'k.-', 'MarkerSize', 12, 'MarkerFaceColor', [0 0 0]);
             plot(theOutputResponsesTemporalSupportSeconds, theResponses(iTrial,:), 'b-');
             plot(theImpulseResponseTemporalSupportSeconds, theImpulseResponse, 'r.', 'LineWidth', 1.5);
+            drawnow
         end
-
     end
 end
 
 
 function theImpulseResponse = generateCenterTemporalImpulseResponse(temporalSupport)
     theImpulseResponse = zeros(1,numel(temporalSupport));
-    theImpulseResponse(1:2) = 1;
-    theImpulseResponse(4:8) = -0.2;
+    theImpulseResponse(1:1) = 1;
+    %theImpulseResponse(4:8) = -0.2;
 end
 
 function theImpulseResponse = generateSurroundTemporalImpulseResponse(temporalSupport)
     % Just a delay for now
     theImpulseResponse = zeros(1,numel(temporalSupport));
-    theImpulseResponse(3+(1:2)) = 1;
-    theImpulseResponse(3+(4:8)) = -0.2;
+    theImpulseResponse(1:1) = 1;
+
+    %theImpulseResponse(3+(1:2)) = 1;
+    %theImpulseResponse(3+(4:8)) = -0.2;
 end
 
 

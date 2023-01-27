@@ -52,6 +52,9 @@ classdef mRGCMosaic < handle
         centerConePoolingMatrix;
         surroundConePoolingMatrix;
 
+        % The type of the majority of cone inputs to the RF center subregions
+        centerSubregionMajorityConeTypes;
+
         % The number of RGCs
         rgcsNum;
 
@@ -68,8 +71,8 @@ classdef mRGCMosaic < handle
 
     % Private properties
     properties (GetAccess=private, SetAccess=private)
-        % Outlines for visualizing the RF centers
-        rfCenterVisualizationOutlines = [];
+        % Cache for various visualizations
+        visualizationCache = [];
     end
 
     % Public methods
@@ -114,6 +117,9 @@ classdef mRGCMosaic < handle
             % Generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
             obj.generateByCroppingTheSourceMosaic(p.Results.sourceMidgetRGCMosaic);
 
+            % The type of the majority of cone types in the RF center
+            obj.centerSubregionMajorityConeTypes = obj.majorityConeTypes(1:obj.rgcsNum);
+            
         end % Constructor
 
         % Method to compute optics at a given position
@@ -124,7 +130,10 @@ classdef mRGCMosaic < handle
             theConeMosaicResponse, theConeMosaicResponseTemporalSupport, varargin);
 
         % Method to visualize different aspects of the mosaic
-        visualize(obj, varargin)
+        visualize(obj, varargin);
+
+        % Method to return the type of the majority of cones in the RF center
+        theMajorityCenterConeType = majorityCenterConeType(obj, theRGCindex);
 
     end % Public methods
 

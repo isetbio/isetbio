@@ -40,6 +40,11 @@ function generateByCroppingTheSourceMosaic(obj, sourceMidgetRGCMosaic, varargin)
         obj.surroundConePoolingMatrix = sourceMidgetRGCMosaic.rgcRFsurroundConePoolingMatrix(:,idx);
     end
 
+    % Normalize cone pooling weights for each RF center/surround with respect to total input in its RF center
+    totalCenterSignals = full(sum(obj.centerConePoolingMatrix,1));
+    obj.centerConePoolingMatrix = bsxfun(@times, obj.centerConePoolingMatrix, 1./totalCenterSignals);
+    obj.surroundConePoolingMatrix = bsxfun(@times, obj.surroundConePoolingMatrix, 1./totalCenterSignals);
+
     obj.inputConesNum = size(obj.centerConePoolingMatrix,1);
     obj.rgcsNum = size(obj.centerConePoolingMatrix,2);
 

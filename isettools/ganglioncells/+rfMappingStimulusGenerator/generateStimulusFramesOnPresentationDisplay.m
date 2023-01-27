@@ -1,4 +1,8 @@
-function [theScenes, theNullStimulusScene, spatialSupportDegs] = generateStimulusMappingFramesOnPresentationDisplay(presentationDisplay, stimParams, spatialModulationPatterns, varargin)
+function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
+        generateStimulusFramesOnPresentationDisplay(...
+                presentationDisplay, stimParams, ...
+                spatialModulationPatterns, varargin)
+
     p = inputParser;
     p.addParameter('validateScenes', false, @islogical);
     p.parse(varargin{:});
@@ -207,7 +211,3 @@ function [sceneLRGBimage, sceneSRGBimage, sceneLMScontrastsImage, sceneLMSexcita
     % Compute the LMS cone contrasts of the emitted radiance image
     [sceneLMScontrastsImage, sceneLMSexcitationsImage] = displayRadianceToLMS(emittedRadianceImage, coneFundamentals);
 end
-
-
-
-
