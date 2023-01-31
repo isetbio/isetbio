@@ -76,8 +76,7 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCs
 
     end
 
-    
-
+   
     % Retrieve the C&K data
     [CronerKaplanRcDegs.temporalEccDegs, CronerKaplanRcDegs.val] = ...
             RGCmodels.CronerKaplan.digitizedData.parvoCenterRadiusAgainstEccentricity();
@@ -107,7 +106,6 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCs
             'rgcIndicesAlongThisMeridian', rgcIndicesAlongThisMeridian, ...
             'fittedParams', fittedParams, ...
             'fittedSTFs', fittedSTFs);
-
 
 
         % The Rc degs values
@@ -311,15 +309,47 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
     majorityCenterConeType = zeros(1, numel(rgcIndicesToAnalyze));
     fittedSTFs = cell(1, numel(rgcIndicesToAnalyze));
 
-
     parfor iRGC = 1:numel(rgcIndicesToAnalyze)
         % Target RGC
         theRGCindex = rgcIndicesToAnalyze(iRGC);
-        fprintf('Fitting RGC %d of %d, located at (%2.2f,%2.2f degs)\n', ...
-            iRGC, numel(rgcIndicesToAnalyze), theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,1), theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,2));
+        fprintf('Fitting RGC %d of %d\n', iRGC, numel(rgcIndicesToAnalyze));
 
+        % Do the fitting
+        [fittedSTFs{iRGC}, ...
+         temporalEquivalentEccDegs(iRGC), ...
+         conesNumPooledByTheRFcenter(iRGC), ...
+         majorityCenterConeType(iRGC), ...
+         achievedRcDegs(iRGC), ...
+         achievedRsToRcRatios(iRGC), ...
+         achievedKsToKcRatios(iRGC), ...
+         achievedSCintSensRatios(iRGC)] = fitSingleRGC(...
+                theMidgetRGCmosaic, ...
+                theMidgetRGCMosaicResponses, ...
+                theRGCindex, ...
+                spatialFrequenciesTested, ...
+                orientationsTested);
+
+    end % iRGC
+
+    d = struct(...
+        'temporalEquivalentEccDegs', temporalEquivalentEccDegs, ...
+        'conesNumPooledByTheRFcenter', conesNumPooledByTheRFcenter, ...
+        'majorityCenterConeType', majorityCenterConeType, ...
+        'achievedRcDegs', achievedRcDegs, ...
+        'achievedRsToRcRatios', achievedRsToRcRatios, ...
+        'achievedKsToKcRatios', achievedKsToKcRatios, ...
+        'achievedSCintSensRatios', achievedSCintSensRatios ...
+        );
+end
+
+
+function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, majorityCenterConeType, ...
+          achievedRcDegs, achievedRsToRcRatio, achievedKsToKcRatio, achievedSCintSensRatio] = ...
+            fitSingleRGC(theMidgetRGCmosaic, theMidgetRGCMosaicResponses, theRGCindex, ...
+            spatialFrequenciesTested, orientationsTested)
+   
         temporalEquivEccDegs = theMidgetRGCmosaic.temporalEquivalentEccentricityForEccentricity(theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,:));
-        temporalEquivalentEccDegs(iRGC) = sqrt(sum(temporalEquivEccDegs.^2,2));
+        temporalEquivalentEccDegs = sqrt(sum(temporalEquivEccDegs.^2,2));
 
         % Obtain the responses
         theSingleMidgetRGCResponses = squeeze(theMidgetRGCMosaicResponses(:, :, :, theRGCindex));
@@ -329,7 +359,7 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
 
         % Fit the DoG model to the measured STF
         multiStartsNum = 128;
-        [RcDegsEstimate, conesNumPooledByTheRFcenter(iRGC), majorityCenterConeType(iRGC)] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex);
+        [RcDegsEstimate, conesNumPooledByTheRFcenter, majorityCenterConeType] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex);
 
         [theFittedDoGmodelParams, theDoGmodelFitOfTheMeasuredSTF] = ...
             RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, ...
@@ -340,18 +370,18 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
 
         % The RcDegs
         idx = find(strcmp(theFittedDoGmodelParams.names, 'RcDegs'));
-        achievedRcDegs(iRGC) = theFittedDoGmodelParams.finalValues(idx);
+        achievedRcDegs = theFittedDoGmodelParams.finalValues(idx);
 
         % The Rs/Rc ratio
         idx = find(strcmp(theFittedDoGmodelParams.names, 'RsToRc'));
-        achievedRsToRcRatios(iRGC) = theFittedDoGmodelParams.finalValues(idx);
+        achievedRsToRcRatio = theFittedDoGmodelParams.finalValues(idx);
 
         % The Ks/Kc ratio
         idx = find(strcmp(theFittedDoGmodelParams.names, 'kS/kC'));
-        achievedKsToKcRatios(iRGC) = theFittedDoGmodelParams.finalValues(idx);
+        achievedKsToKcRatio = theFittedDoGmodelParams.finalValues(idx);
 
         % The S/C int sens ratio
-        achievedSCintSensRatios(iRGC) = achievedKsToKcRatios(iRGC) * (achievedRsToRcRatios(iRGC))^2;
+        achievedSCintSensRatio = achievedKsToKcRatio * (achievedRsToRcRatio)^2;
 
 
         % Determine whether the majority of center cones are L- or M-
@@ -395,82 +425,7 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
         end
 
         
-    
-        visualizeSTFfits = false;
-        if (visualizeSTFfits)
-
-            % Normalize theRTVFTobj.fitted to the theRTVFTobj.targetSTF
-            pipelineScaleFactorBasedOnLowestSF = pipelineScaleFactorBasedOnLowestSF /theDoGmodelFitOfTheMeasuredSTF.compositeSTFHiRes(1);
-
-            hFig = figure(10000); clf;
-            set(hFig, 'Position',[10 10 1800 1100]);
-    
-            for iObj = 1:numel(triangulatingRTVFobjIndices) 
-    
-                RTVFobjPosition = theMidgetRGCmosaic.theSamplingPositionGrid(triangulatingRTVFobjIndices(iObj),:);
-    
-                subplot(2,4, iObj)
-                plot(triangulatingRTVFobjSTFdata{iObj}.spatialFrequencySupport, triangulatingRTVFobjSTFdata{iObj}.targetSTF, ...
-                    'k-', 'LineWidth', 1.5);
-                hold on;
-                plot(triangulatingRTVFobjSTFdata{iObj}.spatialFrequencySupport, triangulatingRTVFobjSTFdata{iObj}.fittedSTF, ...
-                    'r-', 'LineWidth', 1.5);
-                plot(spatialFrequenciesTested, theMeasuredSTF*pipelineScaleFactorBasedOnLowestSF, 'co-', 'MarkerSize', 14, 'LineWidth', 1.5, 'MarkerFaceColor', [0 1 1], 'Color', [0 0.6 0.6]);
-                plot(theDoGmodelFitOfTheMeasuredSTF.sfHiRes, theDoGmodelFitOfTheMeasuredSTF.compositeSTFHiRes*pipelineScaleFactorBasedOnLowestSF, 'b-', 'LineWidth', 1.5);
-                axis 'square'
-                legend({'RTVF: target', 'RTVF: fitted', 'pipeline: measured', 'pipeline: DoGmodel'}, 'Location', 'SouthWest');
-                set(gca, 'YLim', [0 1], 'YTick', 0:0.2:1, 'XScale', 'log', ...
-                    'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100], 'XLim', [0.1 100]);
-                grid on
-                set(gca, 'FontSize', 16);
-                xlabel('spatial frequency (c/deg)')
-                title(sprintf('component RTVF model (#%d)\nweight %2.3f, located at (%2.2f,%2.2f) degs', ...
-                    triangulatingRTVFobjIndices(iObj), triangulatingRTVFobjWeights(iObj), RTVFobjPosition(1), RTVFobjPosition(2)));
-            end
-        
-            subplot(2,4,4);
-            plot(spatialFrequenciesTested, theMeasuredSTF*pipelineScaleFactorBasedOnLowestSF, 'co-', 'MarkerSize', 14, 'LineWidth', 1.5, 'MarkerFaceColor', [0 1 1], 'Color', [0 0.6 0.6]);
-            hold on
-            plot(theDoGmodelFitOfTheMeasuredSTF.sfHiRes, theDoGmodelFitOfTheMeasuredSTF.compositeSTFHiRes*pipelineScaleFactorBasedOnLowestSF, 'b-', 'LineWidth', 1.5);
-            legend({'pipeline: measured', 'pipeline: DoGmodel'}, 'Location', 'SouthWest');
-            axis 'square'
-            set(gca, 'YLim', [0 1], 'YTick', 0:0.2:1, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100], 'XLim', [0.1 100]);
-            grid on
-            set(gca, 'FontSize', 16);
-            xlabel('spatial frequency (c/deg)')
-            title(sprintf('RGC %d of %d at (%2.2f,%2.2f degs)', ...
-                iRGC, numel(rgcIndicesToAnalyze), ...
-                theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,1), ...
-                theMidgetRGCmosaic.rgcRFpositionsDegs(theRGCindex,2)));
-
-          
-
-            subplot(2,4,[5 6]);
-            scatter(temporalEquivalentEccDegs, achievedRsToRcRatios, 140, ...
-                'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeAlpha', 0.5);
-    
-            set(gca, 'XScale', 'log', 'XLim', [0.01 3], 'XTick', [0.01 0.03 0.1 0.3 1 3]);
-            set(gca, 'YLim', [0 16], 'YTick', 0:2:16);
-            set(gca, 'FontSize', 16);
-            grid on
-            xlabel('temporal eccentricity (degs)');
-            ylabel('Rs/Rc ratio')
-    
-    
-            subplot(2,4,[7 8]);
-            scatter(temporalEquivalentEccDegs, achievedSCintSensRatios, 140, ...
-                'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.3, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeAlpha', 0.5);
-            set(gca, 'XScale', 'log', 'XLim', [0.01 3], 'XTick', [0.01 0.03 0.1 0.3 1 3]);
-            set(gca, 'YLim', [0 1], 'YTick', 0:0.2:1.0);
-            xlabel('temporal eccentricity (degs)');
-            ylabel('S/C int. sensitivity ratio');
-            set(gca, 'FontSize', 16);
-            grid on
-        end
-
-
-
-        fittedSTFs{iRGC} = struct(...
+        fittedSTF = struct(...
             'targetRGC', theRGCindex, ...
             'theMultiFocalRTVFmodelSTFdata', triangulatingRTVFobjSTFdata, ...
             'theMultiFocalRTVFmodelWeights', triangulatingRTVFobjWeights, ...
@@ -480,19 +435,7 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
             'theDoGmodelFitOfTheMeasuredSTF', theDoGmodelFitOfTheMeasuredSTF, ...
             'theFittedDoGmodelParams', theFittedDoGmodelParams);
             
-    end % iRGC
-
     
-    d = struct(...
-        'temporalEquivalentEccDegs', temporalEquivalentEccDegs, ...
-        'conesNumPooledByTheRFcenter', conesNumPooledByTheRFcenter, ...
-        'majorityCenterConeType', majorityCenterConeType, ...
-        'achievedRcDegs', achievedRcDegs, ...
-        'achievedRsToRcRatios', achievedRsToRcRatios, ...
-        'achievedKsToKcRatios', achievedKsToKcRatios, ...
-        'achievedSCintSensRatios', achievedSCintSensRatios ...
-        );
-
 end
 
 function [RcDegs, conesNumPooledByTheRFcenter,  majorityCenterConeType] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex)
