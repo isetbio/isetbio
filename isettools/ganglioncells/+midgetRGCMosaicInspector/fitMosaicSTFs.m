@@ -1,4 +1,4 @@
-function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCsNum)
+function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCsNum)
 
     % Generate the frozen mosaic filename
     frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileName(...
@@ -31,7 +31,7 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCs
     theMeridianRadius = 1.5 * sqrt(2.0);
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 2, ...
+       'rowsNum', 3, ...
        'colsNum', numel(theMeridianAngles), ...
        'heightMargin',  0.06, ...
        'widthMargin',    0.02, ...
@@ -42,24 +42,23 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCs
 
     
 
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 3000 850], 'Color', [1 1 1]);
+    hFigRcDegs = figure(1); clf;
+    set(hFigRcDegs, 'Position', [10 10 3000 1250], 'Color', [1 1 1]);
     drawnow;
 
-    hFigRcDegs = figure(2); clf;
-    set(hFigRcDegs, 'Position', [10 10 3000 850], 'Color', [1 1 1]);
+    hFigRsRcRatios = figure(2); clf;
+    set(hFigRsRcRatios, 'Position', [100 100 3000 1250], 'Color', [1 1 1]);
     drawnow;
 
-    hFigRsRcRatios = figure(3); clf;
-    set(hFigRsRcRatios, 'Position', [100 100 3000 850], 'Color', [1 1 1]);
-    drawnow;
-
-    hFigSCintSensRatios = figure(4); clf;
-    set(hFigSCintSensRatios, 'Position', [200 200 3000 850], 'Color', [1 1 1]);
+    hFigSCintSensRatios = figure(3); clf;
+    set(hFigSCintSensRatios, 'Position', [200 200 3000 1250], 'Color', [1 1 1]);
     drawnow;
 
     RGCindices = cell(1, numel(theMeridianAngles));
     signedDistances = cell(1, numel(theMeridianAngles));
+
+    eccentricityLims = 3*[-1 1];
+    eccentricityTicks = -5:1:5;
 
     for iMeridianAngle = 1:numel(theMeridianAngles)
         theMeridianAngle = theMeridianAngles(iMeridianAngle);
@@ -75,19 +74,6 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCs
             signedDistances{iMeridianAngle} = radialDistances  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,1));
         end
 
-        ax = subplot('Position', subplotPosVectors(1,iMeridianAngle).v);
-        plot(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,1), ...
-             theMidgetRGCmosaic.rgcRFpositionsDegs(idx,2), 'k.', ...
-             'MarkerSize', 15)
-        axis(ax, 'square');
-        eccentricityLims = 3*[-1 1];
-        eccentricityTicks = -5:1:5;
-        grid(ax, 'on');
-        set(ax, 'XLim', eccentricityLims, 'YLim', eccentricityLims, ...
-                'XTick', eccentricityTicks, 'YTick', eccentricityTicks, ...
-                'FontSize', 16);
-        title(ax, sprintf('%d RGCs along the\n%2.1f deg meridian', numel(idx), theMeridianAngle));
-        drawnow;
     end
 
     
@@ -106,6 +92,7 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCs
             RGCmodels.CronerKaplan.digitizedData.parvoSurroundCenterPeakSensisitivityRatioAgainstEccentricity();
 
     theMeridianFits = cell(1, numel(theMeridianAngles));
+
     for iMeridianAngle = 1:numel(theMeridianAngles)
 
         theMeridianAngle = theMeridianAngles(iMeridianAngle);
@@ -127,9 +114,15 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCs
         figure(hFigRcDegs);
         ax1 = subplot('Position', subplotPosVectors(1,iMeridianAngle).v);
         ax2 = subplot('Position', subplotPosVectors(2,iMeridianAngle).v);
+        ax3 = subplot('Position', subplotPosVectors(3,iMeridianAngle).v);
+
+        plotRGCpositionsAlongMeridian(ax1, ...
+            theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesAlongThisMeridian,:), ...
+            eccentricityLims, eccentricityTicks, ...
+            sprintf('%d RGCs along the\n%2.1f deg meridian', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
 
         RcDegsLims = [0.5 1]; RcDegsTicks = 0.5:0.1:1.0;
-        plotDataAlongMeridian(ax1, ax2, ...
+        plotDataAlongMeridian(ax2, ax3, ...
             signedDistances{iMeridianAngle}, fittedParams.achievedRcDegs*60, ...
             eccentricityLims, eccentricityTicks, ...
             RcDegsLims, RcDegsTicks, ...
@@ -146,9 +139,15 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCs
         figure(hFigRsRcRatios);
         ax1 = subplot('Position', subplotPosVectors(1,iMeridianAngle).v);
         ax2 = subplot('Position', subplotPosVectors(2,iMeridianAngle).v);
+        ax3 = subplot('Position', subplotPosVectors(3,iMeridianAngle).v);
+
+        plotRGCpositionsAlongMeridian(ax1, ...
+            theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesAlongThisMeridian,:), ...
+            eccentricityLims, eccentricityTicks, ...
+            sprintf('%d RGCs along the\n%2.1f deg meridian', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
 
         RsRcLims = [0 16]; RsRcTicks = 0:2:40;
-        plotDataAlongMeridian(ax1, ax2, ...
+        plotDataAlongMeridian(ax2, ax3, ...
             signedDistances{iMeridianAngle}, fittedParams.achievedRsToRcRatios, ...
             eccentricityLims, eccentricityTicks, ...
             RsRcLims, RsRcTicks, ...
@@ -164,9 +163,16 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCs
         figure(hFigSCintSensRatios);
         ax1 = subplot('Position', subplotPosVectors(1,iMeridianAngle).v);
         ax2 = subplot('Position', subplotPosVectors(2,iMeridianAngle).v);
+        ax3 = subplot('Position', subplotPosVectors(3,iMeridianAngle).v);
+
+
+        plotRGCpositionsAlongMeridian(ax1, ...
+            theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesAlongThisMeridian,:), ...
+            eccentricityLims, eccentricityTicks, ...
+            sprintf('%d RGCs along the\n%2.1f deg meridian', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
 
         intSensitivitySCLims = [0 1]; intSensitivitySCTicks = 0:0.1:1.0;
-        plotDataAlongMeridian(ax1, ax2, ...
+        plotDataAlongMeridian(ax2, ax3, ...
             signedDistances{iMeridianAngle}, fittedParams.achievedSCintSensRatios, ...
             eccentricityLims, eccentricityTicks, ...
             intSensitivitySCLims , intSensitivitySCTicks , ...
@@ -180,10 +186,49 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCs
 
     end
 
-    % Append the fittedSTFs structs
-    save(responsesFileName, 'theMeridianFits', 'theMeridianAngles', '-append');
+    hFig =  figure(hFigRcDegs);
+    pdfFileName = strrep(responsesFileName, '.mat', '_FittedSTF_RcDegs.pdf');
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+
+
+    hFig =  figure(hFigRsRcRatios);
+    pdfFileName = strrep(responsesFileName, '.mat', '_FittedSTF_RcRsRatios.pdf');
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+
+
+    hFig =  figure(hFigSCintSensRatios);
+    pdfFileName = strrep(responsesFileName, '.mat', '_FittedSTF_SCintSensRatios.pdf');
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+
+
+    % Append the fittedSTFs structs.
+    % Here we use  matfile which lets you read and write to part of variables in a mat file.
+    % In that way, if 'theMeridianAngles', 'theMeridianFits' do not exist
+    % it will write them to the file, whereas if they do exist it will
+    % replace them with the new values
+    m = matfile(responsesFileName, 'Writable', true);
+    m.theMeridianAngles = theMeridianAngles;
+    m.theMeridianFits = theMeridianFits;
     fprintf('Appended theMeridianFits to the responses file: ''%s''.', responsesFileName);
+    clear 'm';
 end
+
+
+function plotRGCpositionsAlongMeridian(ax, rgcRFpositionsDegs, ...
+    eccentricityLims, eccentricityTicks, plotTitle)
+
+    plot(ax,rgcRFpositionsDegs(idx,1),  rgcRFpositionsDegs(idx,2), 'k.', ...
+         'MarkerSize', 15)
+    axis(ax1, 'square');
+    
+    grid(ax1, 'on');
+    set(ax1, 'XLim', eccentricityLims, 'YLim', eccentricityLims, ...
+            'XTick', eccentricityTicks, 'YTick', eccentricityTicks, ...
+            'FontSize', 16);
+    title(ax, plotTitle);
+    drawnow;
+end
+
 
 function plotDataAlongMeridian(ax1, ax2, ...
             signedDistances, fittedParams, ...
@@ -256,18 +301,18 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
     spatialFrequenciesTested, orientationsTested, ...
     theMidgetRGCmosaic, theMidgetRGCMosaicResponses)
 
+    % Allocate memory
     temporalEquivalentEccDegs = zeros(1, numel(rgcIndicesToAnalyze));
     achievedRcDegs = zeros(1, numel(rgcIndicesToAnalyze));
     achievedRsToRcRatios = zeros(1, numel(rgcIndicesToAnalyze));
     achievedKsToKcRatios = zeros(1, numel(rgcIndicesToAnalyze));
     achievedSCintSensRatios = zeros(1, numel(rgcIndicesToAnalyze)); 
     conesNumPooledByTheRFcenter = zeros(1, numel(rgcIndicesToAnalyze)); 
-    majorityCenterConeType = zeros(1, numel(rgcIndicesToAnalyze)); 
-
-    % Allocate memory
+    majorityCenterConeType = zeros(1, numel(rgcIndicesToAnalyze));
     fittedSTFs = cell(1, numel(rgcIndicesToAnalyze));
 
-    for iRGC = 1:numel(rgcIndicesToAnalyze)
+
+    parfor iRGC = 1:numel(rgcIndicesToAnalyze)
         % Target RGC
         theRGCindex = rgcIndicesToAnalyze(iRGC);
         fprintf('Fitting RGC %d of %d, located at (%2.2f,%2.2f degs)\n', ...
