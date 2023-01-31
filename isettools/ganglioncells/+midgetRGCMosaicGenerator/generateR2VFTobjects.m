@@ -1,4 +1,4 @@
-function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsParams, varargin)
+function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, varargin)
 
     % Parse input
     p = inputParser;
@@ -23,7 +23,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     % Generate the eccentricitySamplingGrid
     eccentricitySamplingGrid = midgetRGCMosaic.eccentricitySamplingGridCoords(...
         mosaicCenterParams.positionDegs, mosaicCenterParams.sizeDegs, ...
-        mosaicSurroundParams.eccentricitySamplingGridHalfSamplesNum, ...
+        rfModelParams.eccentricitySamplingGridHalfSamplesNum, ...
         'hexagonal', true);
 
     if (~isempty(updateRTVFobjectAtPosition))
@@ -43,7 +43,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
     fprintf('\nDone ! \n');
 
     % Assemble R2CVFT filename
-    R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(mosaicFileName, mosaicSurroundParams.H1cellIndex);
+    R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(mosaicFileName, opticsParams, rfModelParams.H1cellIndex);
 
     % multiStartsNum: select from:
     % - 1 (Single start run, fastest results), 
@@ -89,7 +89,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = midgetRGCMosaic.R2VFTobjects(...
                     RTVobjIndicesToBeComputed, ...
                     theMidgetRGCmosaic, eccentricitySamplingGrid, ...
-                    mosaicSurroundParams, opticsParams, fitParams);
+                    rfModelParams, opticsParams, fitParams);
     else
     
         fitParams.initialRetinalConePoolingParamsStruct = initialRetinalConePoolingParamsStruct;
@@ -99,7 +99,7 @@ function generateR2VFTobjects(mosaicCenterParams, mosaicSurroundParams, opticsPa
          theUpdatedConesNumPooledByTheRFcenterGrid] = midgetRGCMosaic.R2VFTobjects(...
                     RTVobjIndicesToBeComputed, ...
                     theMidgetRGCmosaic, eccentricitySamplingGrid, ...
-                    mosaicSurroundParams, opticsParams, fitParams);
+                    rfModelParams, opticsParams, fitParams);
     end
 
     timeLapsedMinutes = (cputime - tStart)/60;

@@ -1,8 +1,8 @@
-function preComputeConeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams, useParfor)
+function preComputeConeMosaicLMnonOpponentSTFs(mosaicCenterParams, rfModelParams, opticsParams, useParfor)
 
     % Generate the frozen mosaic filename
     frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileName(...
-        mosaicCenterParams, mosaicSurroundParams.H1cellIndex);
+        mosaicCenterParams, rfModelParams.H1cellIndex, opticsParams);
 
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
@@ -21,7 +21,7 @@ function preComputeConeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroun
     theInputConeMosaic = theMidgetRGCmosaic.inputConeMosaic;
 
     % Generate the input cone mosaics responses filename
-    responsesFileName = midgetRGCMosaicInspector.coneMosaicResponsesFileName(...
+    coneMosaicResponsesFileName = midgetRGCMosaicInspector.coneMosaicResponsesFileName(...
         frozenMosaicFileName, opticsPositionDegs);
 
     % Generate components for running the STF mapping experiment
@@ -128,9 +128,10 @@ function preComputeConeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroun
     spatialFrequenciesTested = stimParams.spatialFrequenciesTested;
     coneContrasts = stimParams.coneContrasts;
     spatialPhasesDegs = stimParams.spatialPhasesDegs;
-    save(responsesFileName, 'theConeMosaicResponses', 'coneMosaicNullResponses', ...
+    save(coneMosaicResponsesFileName, 'theConeMosaicResponses', 'coneMosaicNullResponses', ...
          'orientationsTested', 'spatialFrequenciesTested', ...
          'spatialPhasesDegs', 'coneContrasts', 'opticsPositionDegs', '-v7.3');
 
+    fprintf('Saved computed cone mosaic responses to %s\n', coneMosaicResponsesFileName);
 end
 

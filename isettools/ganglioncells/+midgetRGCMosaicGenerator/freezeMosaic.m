@@ -1,4 +1,4 @@
-function freezeMosaic(mosaicCenterParams, mosaicSurroundParams)
+function freezeMosaic(mosaicCenterParams, rfModelParams, opticsParams)
     
     % Generate mosaic filename and directory
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(...
@@ -6,7 +6,7 @@ function freezeMosaic(mosaicCenterParams, mosaicSurroundParams)
     
     % Generate frozen mosaic filename
     frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileName(...
-        mosaicCenterParams, mosaicSurroundParams.H1cellIndex);
+        mosaicCenterParams, rfModelParams.H1cellIndex, opticsParams);
     
     % Load the center-connected mosaic
     fprintf('\nLoading live mosaic ....\n ');

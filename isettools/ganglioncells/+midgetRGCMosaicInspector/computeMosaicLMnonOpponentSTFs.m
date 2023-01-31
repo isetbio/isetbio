@@ -1,8 +1,8 @@
-function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams, useParfor)
+function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, rfModelParams, opticsParams, useParfor)
     
     % Generate the frozen mosaic filename
     frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileName(...
-        mosaicCenterParams, mosaicSurroundParams.H1cellIndex);
+        mosaicCenterParams, rfModelParams.H1cellIndex, opticsParams);
 
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
@@ -139,4 +139,6 @@ function computeMosaicLMnonOpponentSTFs(mosaicCenterParams, mosaicSurroundParams
     save(responsesFileName, 'theMidgetRGCMosaicResponses', ...
          'orientationsTested', 'spatialFrequenciesTested', ...
          'spatialPhasesDegs', 'coneContrasts', 'opticsPositionDegs', '-v7.3');
+
+     fprintf('Saved computed mRGC responses to %s\n', responsesFileName);
 end

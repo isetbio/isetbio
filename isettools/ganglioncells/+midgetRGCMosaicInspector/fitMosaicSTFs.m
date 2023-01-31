@@ -1,8 +1,8 @@
-function fitMosaicSTFs(mosaicCenterParams, mosaicSurroundParams,  maxRGCsNum)
+function fitMosaicSTFs(mosaicCenterParams, rfModelParams,  opticsParams, maxRGCsNum)
 
     % Generate the frozen mosaic filename
     frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileName(...
-        mosaicCenterParams, mosaicSurroundParams.H1cellIndex);
+        mosaicCenterParams, rfModelParams.H1cellIndex, opticsParams);
     
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');

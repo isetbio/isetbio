@@ -1,11 +1,11 @@
-function generateCenterSurroundConePoolingKernels(mosaicCenterParams, mosaicSurroundParams)
+function generateCenterSurroundConePoolingKernels(mosaicCenterParams,  rfModelParams, opticsParams)
 
     % Generate mosaic filename and directory
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(...
         mosaicCenterParams);
     
     R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(...
-        mosaicFileName, mosaicSurroundParams.H1cellIndex);
+        mosaicFileName, opticsParams, rfModelParams.H1cellIndex);
 
     % Load the center-connected mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');

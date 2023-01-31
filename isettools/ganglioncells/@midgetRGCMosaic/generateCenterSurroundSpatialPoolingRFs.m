@@ -62,57 +62,69 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRetinaToVisualFieldTran
         % Retrieve this cell's # of center cone indices
         connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, iRGC)));
         indicesOfCenterCones = find(connectivityVector > 0.0001);
-        weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
 
-        % Determine whether the majority of center cones are L- or M-
-        theMajorityCenterConeType = obj.majorityCenterConeType(iRGC);
-        
+        idx = find(obj.inputConeMosaic.coneTypes(indicesOfCenterCones) == cMosaic.LCONE_ID);
+        indicesOfCenterLCones = indicesOfCenterCones(idx);
+        weightsOfCenterLCones = connectivityVector(indicesOfCenterLCones);
+
+        idx = find(obj.inputConeMosaic.coneTypes(indicesOfCenterCones) == cMosaic.MCONE_ID);
+        indicesOfCenterMCones = indicesOfCenterCones(idx);
+        weightsOfCenterMCones = connectivityVector(indicesOfCenterMCones);
+
+
+        % Determine the number of center L- and M-cones
+        [~, theCenterConeTypesNums] = obj.majorityCenterConeType(iRGC);
+
+        % Weights for L- and M-cone compute structs proportional to the
+        % # of center L- and M-cones, respectively
+        theLconeComputeStructWeight = theCenterConeTypesNums(cMosaic.LCONE_ID) / sum(theCenterConeTypesNums);
+        theMconeComputeStructWeight = theCenterConeTypesNums(cMosaic.MCONE_ID) / sum(theCenterConeTypesNums);
+
         % Compute the indices of the triangulating RTVFobjects and their
         % contributing weights
         [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
             obj.triangulatingRTVFobjectIndicesAndWeights(iRGC);
 
+
         % Compute the pooledConeIndicesAndWeights for each of the triangulatingRTVFobjIndices
-        pooledConeIndicesAndWeightsForNearbyObj = cell(1, numel(triangulatingRTVFobjIndices));
+        pooledLConeIndicesAndWeightsForNearbyObj = cell(1, numel(triangulatingRTVFobjIndices));
+        pooledMConeIndicesAndWeightsForNearbyObj = cell(1, numel(triangulatingRTVFobjIndices));
+
         for iNearbyObj = 1:numel(triangulatingRTVFobjIndices)
 
             iObj = triangulatingRTVFobjIndices(iNearbyObj);
             theRTVFTobj = obj.theRetinaToVisualFieldTransformerOBJList{iObj};
 
-            switch (theMajorityCenterConeType)
-                case cMosaic.LCONE_ID
-                    totalCenterStrengthForModelRF = totalCenterStrengthForLconeCenterModelRF(iObj);
-                    totalSurroundStrengthForModelRF = totalSurroundStrengthForLconeCenterModelRF(iObj);
-                    theRFcomputeStruct = theRTVFTobj.LconeRFcomputeStruct;
-
-                case cMosaic.MCONE_ID
-                    totalCenterStrengthForModelRF = totalCenterStrengthForMconeCenterModelRF(iObj);
-                    totalSurroundStrengthForModelRF = totalSurroundStrengthForMconeCenterModelRF(iObj);
-                    theRFcomputeStruct = theRTVFTobj.MconeRFcomputeStruct;
-
-                otherwise
-                    error('How can the majority cone type be not L- or M- ??')
+            if (theLconeComputeStructWeight > 0) 
+                pooledLConeIndicesAndWeightsForNearbyObj{iNearbyObj} = computePooledConeIndicesAndWeightsFromRTVFTobject(...
+                    theRTVFTobj.LconeRFcomputeStruct, indicesOfCenterLCones, weightsOfCenterLCones, ...
+                    totalCenterStrengthForLconeCenterModelRF(iObj), totalSurroundStrengthForLconeCenterModelRF(iObj), ...
+                    compensateForVariationsInConeEfficiency);
             end
 
-            pooledConeIndicesAndWeightsForNearbyObj{iNearbyObj} = computePooledConeIndicesAndWeightsFromRTVFTobject(...
-                theRFcomputeStruct, indicesOfCenterCones, weightsOfCenterCones, ...
-                totalCenterStrengthForModelRF, totalSurroundStrengthForModelRF, ...
-                compensateForVariationsInConeEfficiency);
+            if (theMconeComputeStructWeight > 0) 
+                pooledMConeIndicesAndWeightsForNearbyObj{iNearbyObj} = computePooledConeIndicesAndWeightsFromRTVFTobject(...
+                    theRTVFTobj.MconeRFcomputeStruct, indicesOfCenterMCones, weightsOfCenterMCones, ...
+                    totalCenterStrengthForMconeCenterModelRF(iObj), totalSurroundStrengthForMconeCenterModelRF(iObj), ...
+                    compensateForVariationsInConeEfficiency);
+            end
         end
-        
-        % Accumulate weigted surround weights
-        for iNearbyObj = 1:numel(triangulatingRTVFobjIndices)
-            newSurroundConeIndices = pooledConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeIndices;
-            newSurroundConeWeights = pooledConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeWeights * triangulatingRTVFobjWeights(iNearbyObj);
 
-            if (iNearbyObj == 1) 
-                surroundConeIndices = newSurroundConeIndices;
-                surroundConeWeights = newSurroundConeWeights;
-            else
+
+        % Initialize surround cone indices and weights
+        surroundConeIndices = [];
+        surroundConeWeights = [];
+
+        % Accumulate weigted surround weights: Lcone compute struct contribution
+        if (theLconeComputeStructWeight > 0) 
+            for iNearbyObj = 1:numel(triangulatingRTVFobjIndices)
+                newSurroundConeIndices = pooledLConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeIndices;
+                newSurroundConeWeights = pooledLConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeWeights * triangulatingRTVFobjWeights(iNearbyObj) * theLconeComputeStructWeight;
+    
                 % Find which of the newSurroundConeIndices already exist in
                 % the surroundConeIndices
                 [ia,ib] = ismember(newSurroundConeIndices, surroundConeIndices);
-
+    
                 % Sum weights (to the weights of previously existing cone indices)
                 for i = 1:numel(ia)
                     if (ia(i) == 1)
@@ -128,10 +140,53 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRetinaToVisualFieldTran
                 end
             end
         end
+
+        % Accumulate weigted surround weights: Mcone compute struct contribution
+        if (theMconeComputeStructWeight > 0) 
+            for iNearbyObj = 1:numel(triangulatingRTVFobjIndices)
+                newSurroundConeIndices = pooledMConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeIndices;
+                newSurroundConeWeights = pooledMConeIndicesAndWeightsForNearbyObj{iNearbyObj}.surroundConeWeights * triangulatingRTVFobjWeights(iNearbyObj) * theMconeComputeStructWeight;
+    
+                % Find which of the newSurroundConeIndices already exist in
+                % the surroundConeIndices
+                [ia,ib] = ismember(newSurroundConeIndices, surroundConeIndices);
+    
+                % Sum weights (to the weights of previously existing cone indices)
+                for i = 1:numel(ia)
+                    if (ia(i) == 1)
+                        surroundConeWeights(ib(i)) = surroundConeWeights(ib(i)) + newSurroundConeWeights(i); 
+                    end
+                end
+                % Add weights (of not previoulsy included cone indices)
+                for i = 1:numel(ia)
+                    if (ia(i) == 0)
+                        surroundConeWeights = cat(1, surroundConeWeights, newSurroundConeWeights(i));
+                        surroundConeIndices = cat(1, surroundConeIndices, newSurroundConeIndices(i));
+                    end
+                end
+            end
+        end
+
         
-        % Pooled cone indices and weights for this RGC
-        pooledConeIndicesAndWeights.centerConeWeights = pooledConeIndicesAndWeightsForNearbyObj{1}.centerConeWeights;
-        pooledConeIndicesAndWeights.centerConeIndices = pooledConeIndicesAndWeightsForNearbyObj{1}.centerConeIndices;
+        % Accumulate weigted center weights from Lcone and Mcone compute
+        % struct contributions
+        centerConeWeights = zeros(size(indicesOfCenterCones));
+
+        for iNearbyObj = 1:numel(triangulatingRTVFobjIndices)
+            if (theLconeComputeStructWeight > 0) 
+                centerConeWeights = centerConeWeights + ...
+                    pooledLConeIndicesAndWeightsForNearbyObj{iNearbyObj}.centerConeWeights * triangulatingRTVFobjWeights(iNearbyObj) * theLconeComputeStructWeight;
+            end
+            if (theMconeComputeStructWeight > 0) 
+                centerConeWeights = centerConeWeights + ...
+                    pooledMConeIndicesAndWeightsForNearbyObj{iNearbyObj}.centerConeWeights * triangulatingRTVFobjWeights(iNearbyObj) * theMconeComputeStructWeight;
+            end
+        end
+
+
+        % Pooled cone indices and weights for this RGC        
+        pooledConeIndicesAndWeights.centerConeIndices = indicesOfCenterCones;
+        pooledConeIndicesAndWeights.centerConeWeights = centerConeWeights;
 
         pooledConeIndicesAndWeights.surroundConeIndices = surroundConeIndices;
         pooledConeIndicesAndWeights.surroundConeWeights = surroundConeWeights;
@@ -143,8 +198,8 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRetinaToVisualFieldTran
         obj.rgcRFsurroundConePoolingMatrix(pooledConeIndicesAndWeights.surroundConeIndices,iRGC) = ...
             pooledConeIndicesAndWeights.surroundConeWeights;
       
-        if (max(pooledConeIndicesAndWeights.centerConeWeights(:)) ~= 1)
-            error('Max center weight must be 1');
+        if (abs((max(pooledConeIndicesAndWeights.centerConeWeights(:)) - 1)) > 0.001)
+            error('Max center weight must be 1. It is %2.4f', max(pooledConeIndicesAndWeights.centerConeWeights(:)));
         end
 
     end

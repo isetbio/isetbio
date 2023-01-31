@@ -30,11 +30,14 @@ classdef mRGCMosaic < handle
     properties  (GetAccess=public, SetAccess=public)
         % Name of the mosaic
         name;
+
+        % Boolean. Set to true to allow the object to print various info
+        beVerbose;
     end
 
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
-
+        
         % Eccentricity [x,y] of the center of the mRGC mosaic (degs)
         eccentricityDegs;
 
@@ -54,6 +57,9 @@ classdef mRGCMosaic < handle
 
         % The type of the majority of cone inputs to the RF center subregions
         centerSubregionMajorityConeTypes;
+
+        % How many center cones are of type cMosaic.LCONE_ID, cMosaic.MCONE_ID, cMosaic.SCONE_ID
+        centerSubregionConeTypesNums;
 
         % The number of RGCs
         rgcsNum;
@@ -87,16 +93,18 @@ classdef mRGCMosaic < handle
             p.addParameter('eccentricityDegs', [], @(x)(isempty(x))||(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('positionDegs', [], @(x)(isempty(x))||(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [], @(x)(isempty(x))||(isnumeric(x) && (numel(x) == 2)));
-
+            p.addParameter('visualizeSpatialRelationshipToSourceMosaic', false, @islogical);
+            p.addParameter('beVerbose', false, @islogical);
             % Parse input
             p.parse(sourceMidgetRGCMosaic, varargin{:});
             
 
             % The sourceMidgetRGCMosaic must be frozen
-            assert(sourceMidgetRGCMosaic.isFrozen, 'SourceMidgetRGCMosaic must be frozen');
+            assert(sourceMidgetRGCMosaic.isFrozen, 'sourceMidgetRGCMosaic must be frozen.');
 
             obj.name = p.Results.name;
             obj.sizeDegs = p.Results.sizeDegs;
+            obj.beVerbose = p.Results.beVerbose;
             
             if (~isempty(p.Results.eccentricityDegs))
                 % eccentricityDegs is always used if present
@@ -112,10 +120,13 @@ classdef mRGCMosaic < handle
 
             % Get the optics params used to train the multi-focal RTVF
             % so we can pass them to the user when requested
-            obj.retrieveMultifocalRTVFOpticsParams(p.Results.sourceMidgetRGCMosaic);
+            obj.retrieveMultifocalRTVFOpticsParams(...
+                p.Results.sourceMidgetRGCMosaic);
 
             % Generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
-            obj.generateByCroppingTheSourceMosaic(p.Results.sourceMidgetRGCMosaic);
+            obj.generateByCroppingTheSourceMosaic(...
+                p.Results.sourceMidgetRGCMosaic, ...
+                p.Results.visualizeSpatialRelationshipToSourceMosaic);
 
             % The type of the majority of cone types in the RF center
             obj.centerSubregionMajorityConeTypes = obj.majorityConeTypes(1:obj.rgcsNum);
@@ -133,14 +144,16 @@ classdef mRGCMosaic < handle
         visualize(obj, varargin);
 
         % Method to return the type of the majority of cones in the RF center
-        theMajorityCenterConeType = majorityCenterConeType(obj, theRGCindex);
+        [theMajorityCenterConeType, theCenterConeTypesNums] = majorityCenterConeType(obj, theRGCindex);
 
     end % Public methods
 
     % Private methods
     methods (Access=private)
         % Method to generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
-        generateByCroppingTheSourceMosaic(obj, sourceMidgetRGCMosaic);
+        generateByCroppingTheSourceMosaic(obj, ...
+            sourceMidgetRGCMosaic, ...
+            visualizeSpatialRelationshipToSourceMosaic);
 
         % Method to retrieve the optics params of the multifocal RTVFobject
         % used to derive cone pooling weights

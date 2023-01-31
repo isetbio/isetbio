@@ -6,7 +6,7 @@ function visualize(obj, varargin)
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('component', 'RF centers', @(x)ismember(x, {'RF centers'}));
     p.addParameter('activation', []);
-    p.addParameter('identifyInputCones', false, @islogical);
+    p.addParameter('identifyInputCones', true, @islogical);
     p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
     p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.addParameter('horizontalActivationColorBar', false, @islogical);
@@ -49,15 +49,20 @@ function visualize(obj, varargin)
     plotTitle = p.Results.plotTitle;
     plotTitleColor = p.Results.plotTitleColor;
 
+
+    % Generate the visualization cache
+    xSupport = [];
+    ySupport = []; 
+    spatialSupportSamples = 60;
+    generateVisualizationCache(obj, xSupport, ySupport, spatialSupportSamples);
+
     % Determine X,Y limits
     if (isempty(domainVisualizationLimits))
-        xRange(1) = min(obj.rgcRFpositionsDegs(:,1));
-        xRange(2) = max(obj.rgcRFpositionsDegs(:,1));
+        xRange = obj.visualizationCache.surroundConesXrange;
         if (xRange(2) == xRange(1))
             xRange = xRange(1) + 0.02*[-1 1];
         end
-        yRange(1) = min(obj.rgcRFpositionsDegs(:,2));
-        yRange(2) = max(obj.rgcRFpositionsDegs(:,2));
+        yRange = obj.visualizationCache.surroundConesYrange;
         if (yRange(2) == yRange(1))
             yRange = yRange(1) + 0.02*[-1 1];
         end
@@ -131,18 +136,13 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisua
     verticalColorBarInside, horizontalColorBarInside, ...
     backgroundColor, fontSize, plotTitle, plotTitleColor)
 
-    xSupport = [];
-    ySupport = []; 
-    spatialSupportSamples = 60;
-    generateRFcenterPatchData(obj, xSupport, ySupport, spatialSupportSamples);
-
-
+    
     if (isempty(ax))
         if (isempty(hFig))
             hFig = figure(); clf;
-            set(hFig, 'Color', [1 1 1], 'Position', [10 10 850 800]);
+            set(hFig, 'Color', [1 1 1], 'Position', [10 10 1120 1050], 'Name', obj.name);
         end
-        ax = subplot('Position', [0.05 0.07 0.93 0.9]);
+        ax = subplot('Position', [0.05 0.05 0.93 0.93]);
     end
 
     
@@ -219,18 +219,17 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisua
             'Color', [0 1 0],...
             'LineWidth', 1.5); 
 
-
-        % Plot the input cones (L-only)
-        plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.lConeIndices,1), ...
-                 obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.lConeIndices,2), ...
+        % Plot the L-cones
+        plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds,1), ...
+                 obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds,2), ...
                  'r.', 'MarkerSize', 10);
 
-        % Plot the input cones (M-only)
-        plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.mConeIndices,1), ...
-                 obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.mConeIndices,2), ...
+        % Plot the M-cones
+        plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds ,1), ...
+                 obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds ,2), ...
                  'g.',  'MarkerSize', 10);
 
-        % Plot the input cones (S-only)
+        % Plot the S-cones
         plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,1), ...
                  obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,2), ...
                  'b.',  'MarkerSize', 10);
@@ -333,7 +332,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisua
 end
 
 
-function generateRFcenterPatchData(obj, xSupport, ySupport, spatialSupportSamples)
+function generateVisualizationCache(obj, xSupport, ySupport, spatialSupportSamples)
     if (isfield(obj.visualizationCache, 'rfCenterPatchData')) && ...
        (~isempty(obj.visualizationCache.rfCenterPatchData))
         % Already in visualizationCache, so return
@@ -409,6 +408,17 @@ function generateRFcenterPatchData(obj, xSupport, ySupport, spatialSupportSample
     obj.visualizationCache.rfCenterPatchData.Vertices = verticesList;
     obj.visualizationCache.rfCenterPatchData.Faces = facesList;
     obj.visualizationCache.rfCenterPatchData.FaceVertexCData = colorVertexCData;
+
+    % Find all input cone indices that are connected to the RF surrounds
+    surroundConnectedConeIndices = find(sum(obj.surroundConePoolingMatrix,2) > 0);
+    xx = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,1));
+    yy = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,2));
+    obj.visualizationCache.surroundConesXrange = [min(xx) max(xx)];
+    obj.visualizationCache.surroundConesYrange = [min(yy) max(yy)];
+    idx = find(obj.inputConeMosaic.coneTypes(surroundConnectedConeIndices) == cMosaic.LCONE_ID);
+    obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
+    idx = find(obj.inputConeMosaic.coneTypes(surroundConnectedConeIndices) == cMosaic.MCONE_ID);
+    obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
 
     fprintf(' Done in %2.1f seconds\n', toc);
 

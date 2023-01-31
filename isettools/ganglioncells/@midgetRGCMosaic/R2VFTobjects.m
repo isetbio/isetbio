@@ -6,18 +6,18 @@ function [RTVFTobjList, ...
                     RTVobjIndicesToBeComputed, ...
                     theMidgetRGCMosaic, ...
                     eccentricitySamplingGrid, ...
-                    mosaicSurroundParams, opticsParams, fitParams)
+                    rfModelParams, opticsParams, fitParams)
 
     ZernikeDataBase = opticsParams.ZernikeDataBase;
     subjectRankOrder = opticsParams.subjectRankOrder;
     pupilDiameterMM = opticsParams.pupilDiameterMM; 
 
-    centerConnectableConeTypes = mosaicSurroundParams.centerConnectableConeTypes;
-    surroundConnectableConeTypes = mosaicSurroundParams.surroundConnectableConeTypes;
-    coneWeightsCompensateForVariationsInConeEfficiency = mosaicSurroundParams.coneWeightsCompensateForVariationsInConeEfficiency;
-    visualRFmodel = mosaicSurroundParams.visualRFmodel;
-    retinalConePoolingModel = mosaicSurroundParams.retinalConePoolingModel;
-    targetSTFmatchMode = mosaicSurroundParams.targetSTFmatchMode;
+    centerConnectableConeTypes = rfModelParams.centerConnectableConeTypes;
+    surroundConnectableConeTypes = rfModelParams.surroundConnectableConeTypes;
+    coneWeightsCompensateForVariationsInConeEfficiency = rfModelParams.coneWeightsCompensateForVariationsInConeEfficiency;
+    visualRFmodel = rfModelParams.visualRFmodel;
+    retinalConePoolingModel = rfModelParams.retinalConePoolingModel;
+    targetSTFmatchMode = rfModelParams.targetSTFmatchMode;
 
     multiStartsNumDoGFit = fitParams.multiStartsNumDoGFit;
     exportsDirectory = fitParams.exportsDirectory;

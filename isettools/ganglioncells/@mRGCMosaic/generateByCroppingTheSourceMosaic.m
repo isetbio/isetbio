@@ -1,12 +1,5 @@
 % Method to generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
-function generateByCroppingTheSourceMosaic(obj, sourceMidgetRGCMosaic, varargin)
-    p = inputParser;
-    p.addParameter('visualizeSpatialRelationshipToSourceMosaic', [], @(x)(isempty(x))||(isscalar(x)));
-
-    % Parse input
-    p.parse(varargin{:});
-    visualizeSpatialRelationshipToSourceMosaic = p.Results.visualizeSpatialRelationshipToSourceMosaic;
-
+function generateByCroppingTheSourceMosaic(obj, sourceMidgetRGCMosaic, visualizeSpatialRelationshipToSourceMosaic)
  
     if ((isempty(obj.eccentricityDegs))&&(isempty(obj.sizeDegs))) || ...
        ((all(obj.eccentricityDegs==sourceMidgetRGCMosaic.eccentricityDegs))&&(all(obj.sizeDegs == sourceMidgetRGCMosaic.sizeDegs)))
@@ -67,8 +60,8 @@ function visualizeMosaicBorders(obj, sourceMidgetRGCMosaic, theROI)
 
 
     hFig = figure(); clf;
-    set(hFig, 'Position', [10 10 1500 800], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.05 0.08 0.5 0.90]);
+    set(hFig, 'Position', [10 10 1950 850], 'Color', [1 1 1]);
+    ax = subplot('Position', [0.02 0.08 0.5 0.90]);
     theROI.visualize(...
        'figureHandle', hFig, ...
        'axesHandle', ax, ...
@@ -90,19 +83,24 @@ function visualizeMosaicBorders(obj, sourceMidgetRGCMosaic, theROI)
     ylabel(ax, 'y (degs)');
 
     
-    ax = subplot('Position', [0.58 0.08 0.4 0.90]);
-    pRGC = plotRect(ax, theRGCXYmin(1), theRGCXYmax(1), theRGCXYmin(2), theRGCXYmax(2), [1 0 0]);
-    hold(ax, 'on');
-    plot(obj.rgcRFpositionsDegs(:,1), obj.rgcRFpositionsDegs(:,2), 'ko');
-    axis(ax, 'equal');
-    set(ax, 'XLim', [theRGCXYmin(1)-0.2 theRGCXYmax(1)+0.2], 'YLim', [theRGCXYmin(2)-0.2 theRGCXYmax(2)+0.2]);
-    set(ax, 'XTick', -20:0.2:20, 'YTick', -20:0.2:20);
-    grid(ax, 'on');
-    xtickangle(ax, 0);
-    set(ax, 'FontSize', 16, 'TickDir', 'both');
-    xlabel(ax, 'x (degs)');
-    ylabel(ax, 'y (degs)');
-    title('cropped mRGCmosaic')
+    ax = subplot('Position', [0.56 0.06 0.40 0.90]);
+    obj.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax, ...
+        'backgroundColor', [0.7 0.7 0.6]);
+
+%     pRGC = plotRect(ax, theRGCXYmin(1), theRGCXYmax(1), theRGCXYmin(2), theRGCXYmax(2), [1 0 0]);
+%     hold(ax, 'on');
+%     plot(obj.rgcRFpositionsDegs(:,1), obj.rgcRFpositionsDegs(:,2), 'ko');
+%     axis(ax, 'equal');
+%     set(ax, 'XLim', [theRGCXYmin(1)-0.2 theRGCXYmax(1)+0.2], 'YLim', [theRGCXYmin(2)-0.2 theRGCXYmax(2)+0.2]);
+%     set(ax, 'XTick', -20:0.2:20, 'YTick', -20:0.2:20);
+%     grid(ax, 'on');
+%     xtickangle(ax, 0);
+%     set(ax, 'FontSize', 16, 'TickDir', 'both');
+%     xlabel(ax, 'x (degs)');
+%     ylabel(ax, 'y (degs)');
+    title(obj.name)
 end
 
 function p = plotRect(ax, xMin, xMax, yMin, yMax, color)
