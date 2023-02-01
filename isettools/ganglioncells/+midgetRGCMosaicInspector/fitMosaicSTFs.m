@@ -30,75 +30,28 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCs
     theMeridianAngles  = 0:deltaAngle:(180-deltaAngle);
     theMeridianRadius = 1.5 * sqrt(2.0);
 
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 3, ...
-       'colsNum', numel(theMeridianAngles), ...
-       'heightMargin',  0.06, ...
-       'widthMargin',    0.02, ...
-       'leftMargin',     0.03, ...
-       'rightMargin',    0.01, ...
-       'bottomMargin',   0.05, ...
-       'topMargin',      0.02);
-
-    
-
-    hFigRcDegs = figure(1); clf;
-    set(hFigRcDegs, 'Position', [10 10 3000 1250], 'Color', [1 1 1]);
-    drawnow;
-
-    hFigRsRcRatios = figure(2); clf;
-    set(hFigRsRcRatios, 'Position', [100 100 3000 1250], 'Color', [1 1 1]);
-    drawnow;
-
-    hFigSCintSensRatios = figure(3); clf;
-    set(hFigSCintSensRatios, 'Position', [200 200 3000 1250], 'Color', [1 1 1]);
-    drawnow;
-
-    RGCindices = cell(1, numel(theMeridianAngles));
-    signedDistances = cell(1, numel(theMeridianAngles));
-
-    eccentricityLims = 3*[-1 1];
-    eccentricityTicks = -5:1:5;
-
+    % Compute RGC indices to fit along each meridian
+    RGCindicesToFit = cell(1, numel(theMeridianAngles));
     for iMeridianAngle = 1:numel(theMeridianAngles)
         theMeridianAngle = theMeridianAngles(iMeridianAngle);
         idx = midgetRGCMosaicInspector.rgcIndicesAlongMeridianWithAngle(...
             theMeridianAngle, theMeridianRadius, ...
             theMidgetRGCmosaic.rgcRFpositionsDegs, maxRGCsNum);
-        RGCindices{iMeridianAngle} = idx;
-
-        radialDistances = sqrt(sum((theMidgetRGCmosaic.rgcRFpositionsDegs(idx,:)).^2,2));
-        if (theMeridianAngle == 90) || (theMeridianAngle == 270)
-            signedDistances{iMeridianAngle} = radialDistances  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,2));
-        else
-            signedDistances{iMeridianAngle} = radialDistances  .* sign(theMidgetRGCmosaic.rgcRFpositionsDegs(idx,1));
-        end
-
+        RGCindicesToFit{iMeridianAngle} = idx;
     end
 
-   
-    % Retrieve the C&K data
-    [CronerKaplanRcDegs.temporalEccDegs, CronerKaplanRcDegs.val] = ...
-            RGCmodels.CronerKaplan.digitizedData.parvoCenterRadiusAgainstEccentricity();
+    
+    hFigRcDegs = [];
+    hFigRsRcRatios = [];
+    hFigSCintSensRatios = [];
 
-    [CronerKaplanRcRsRatios.temporalEccDegs, CronerKaplanRcRsRatios.val] = ...
-                RGCmodels.CronerKaplan.digitizedData.parvoCenterSurroundRadiusRatioAgainstEccentricity();
-
-    [CronerKaplanSCintSensRatios.temporalEccDegs, CronerKaplanSCintSensRatios.val] = ...
-                RGCmodels.CronerKaplan.digitizedData.parvoSurroundCenterIntSensisitivityRatioAgainstEccentricity();
-
-    [CronerKaplanKsKcRatios.temporalEccDegs, CronerKaplanKsKcRatios.val] = ...
-            RGCmodels.CronerKaplan.digitizedData.parvoSurroundCenterPeakSensisitivityRatioAgainstEccentricity();
-
+    % Fit STFs along all meridians
     theMeridianFits = cell(1, numel(theMeridianAngles));
-
     for iMeridianAngle = 1:numel(theMeridianAngles)
 
-        theMeridianAngle = theMeridianAngles(iMeridianAngle);
-        
         % Fit all RGCs located at this meridian
-        rgcIndicesAlongThisMeridian = RGCindices{iMeridianAngle};
-        [fittedParams, fittedSTFs] = fitSelectSTFs(rgcIndicesAlongThisMeridian, ...
+        [fittedParams, fittedSTFs] = fitSelectSTFs(...
+            RGCindicesToFit{iMeridianAngle}, ...
             spatialFrequenciesTested, orientationsTested, ...
             theMidgetRGCmosaic, theMidgetRGCMosaicResponses);
 
@@ -107,96 +60,14 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCs
             'fittedParams', fittedParams, ...
             'fittedSTFs', fittedSTFs);
 
-
-        % The Rc degs values
-        figure(hFigRcDegs);
-        ax1 = subplot('Position', subplotPosVectors(1,iMeridianAngle).v);
-        ax2 = subplot('Position', subplotPosVectors(2,iMeridianAngle).v);
-        ax3 = subplot('Position', subplotPosVectors(3,iMeridianAngle).v);
-
-        plotRGCpositionsAlongMeridian(ax1, ...
-            theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesAlongThisMeridian,:), ...
-            eccentricityLims, eccentricityTicks, ...
-            sprintf('%d RGCs along the\n%2.1f deg meridian', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
-
-        RcDegsLims = [0.5 1]; RcDegsTicks = 0.5:0.1:1.0;
-        plotDataAlongMeridian(ax2, ax3, ...
-            signedDistances{iMeridianAngle}, fittedParams.achievedRcDegs*60, ...
-            eccentricityLims, eccentricityTicks, ...
-            RcDegsLims, RcDegsTicks, ...
-            [RcDegsLims(1) 8], 0.5:0.5:10, ...
-            'RcDegs (arc min)', sprintf('%d RGCs along %2.1f degs', numel(rgcIndicesAlongThisMeridian), theMeridianAngle), ...
-            fittedParams.conesNumPooledByTheRFcenter, ...
-            fittedParams.majorityCenterConeType, ...
-            fittedParams.temporalEquivalentEccDegs, ...
-            CronerKaplanRcDegs.temporalEccDegs, CronerKaplanRcDegs.val*60 ...
-            );
-        
-
-        % The Rs/Rc ratio values
-        figure(hFigRsRcRatios);
-        ax1 = subplot('Position', subplotPosVectors(1,iMeridianAngle).v);
-        ax2 = subplot('Position', subplotPosVectors(2,iMeridianAngle).v);
-        ax3 = subplot('Position', subplotPosVectors(3,iMeridianAngle).v);
-
-        plotRGCpositionsAlongMeridian(ax1, ...
-            theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesAlongThisMeridian,:), ...
-            eccentricityLims, eccentricityTicks, ...
-            sprintf('%d RGCs along the\n%2.1f deg meridian', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
-
-        RsRcLims = [0 16]; RsRcTicks = 0:2:40;
-        plotDataAlongMeridian(ax2, ax3, ...
-            signedDistances{iMeridianAngle}, fittedParams.achievedRsToRcRatios, ...
-            eccentricityLims, eccentricityTicks, ...
-            RsRcLims, RsRcTicks, ...
-            [RsRcLims(1) 32], RsRcTicks, ...
-            'Rs/Rc ratio', sprintf('%d RGCs along %2.1f degs', numel(rgcIndicesAlongThisMeridian), theMeridianAngle), ...
-            fittedParams.conesNumPooledByTheRFcenter, ...
-            fittedParams.majorityCenterConeType, ...
-            fittedParams.temporalEquivalentEccDegs, ...
-            CronerKaplanRcRsRatios.temporalEccDegs, 1./CronerKaplanRcRsRatios.val...
-            );
-
-        % The S/C integrated sensitivity ratios
-        figure(hFigSCintSensRatios);
-        ax1 = subplot('Position', subplotPosVectors(1,iMeridianAngle).v);
-        ax2 = subplot('Position', subplotPosVectors(2,iMeridianAngle).v);
-        ax3 = subplot('Position', subplotPosVectors(3,iMeridianAngle).v);
-
-
-        plotRGCpositionsAlongMeridian(ax1, ...
-            theMidgetRGCmosaic.rgcRFpositionsDegs(rgcIndicesAlongThisMeridian,:), ...
-            eccentricityLims, eccentricityTicks, ...
-            sprintf('%d RGCs along the\n%2.1f deg meridian', numel(rgcIndicesAlongThisMeridian), theMeridianAngle));
-
-        intSensitivitySCLims = [0 1]; intSensitivitySCTicks = 0:0.1:1.0;
-        plotDataAlongMeridian(ax2, ax3, ...
-            signedDistances{iMeridianAngle}, fittedParams.achievedSCintSensRatios, ...
-            eccentricityLims, eccentricityTicks, ...
-            intSensitivitySCLims , intSensitivitySCTicks , ...
-            intSensitivitySCLims , intSensitivitySCTicks , ...
-            'S/C int. sens. ratio', sprintf('%d RGCs along\nthe %2.1f degs meridian', numel(rgcIndicesAlongThisMeridian), theMeridianAngle), ...
-            fittedParams.conesNumPooledByTheRFcenter, ...
-            fittedParams.majorityCenterConeType, ...
-            fittedParams.temporalEquivalentEccDegs, ...
-            CronerKaplanSCintSensRatios.temporalEccDegs, CronerKaplanSCintSensRatios.val ...
-            );
+        [hFigRcDegs, hFigRsRcRatios, hFigSCintSensRatios] = ...
+            midgetRGCMosaicInspector.renderSTFfitPlots(...
+                hFigRcDegs, hFigRsRcRatios, hFigSCintSensRatios, ...
+                theMidgetRGCmosaic.rgcRFpositionsDegs, ...
+                theMeridianAngles, iMeridianAngle, ...
+                theMeridianFits{iMeridianAngle});
 
     end
-
-    hFig =  figure(hFigRcDegs);
-    pdfFileName = strrep(responsesFileName, '.mat', '_FittedSTF_RcDegs.pdf');
-    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
-
-
-    hFig =  figure(hFigRsRcRatios);
-    pdfFileName = strrep(responsesFileName, '.mat', '_FittedSTF_RcRsRatios.pdf');
-    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
-
-
-    hFig =  figure(hFigSCintSensRatios);
-    pdfFileName = strrep(responsesFileName, '.mat', '_FittedSTF_SCintSensRatios.pdf');
-    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
 
 
     % Append the fittedSTFs structs.
@@ -209,89 +80,6 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCs
     m.theMeridianFits = theMeridianFits;
     fprintf('Appended theMeridianFits to the responses file: ''%s''.', responsesFileName);
     clear 'm';
-end
-
-
-function plotRGCpositionsAlongMeridian(ax, rgcRFpositionsDegs, ...
-    eccentricityLims, eccentricityTicks, plotTitle)
-
-    plot(ax,rgcRFpositionsDegs(idx,1),  rgcRFpositionsDegs(idx,2), 'k.', ...
-         'MarkerSize', 15)
-    axis(ax1, 'square');
-    
-    grid(ax1, 'on');
-    set(ax1, 'XLim', eccentricityLims, 'YLim', eccentricityLims, ...
-            'XTick', eccentricityTicks, 'YTick', eccentricityTicks, ...
-            'FontSize', 16);
-    title(ax, plotTitle);
-    drawnow;
-end
-
-
-function plotDataAlongMeridian(ax1, ax2, ...
-            signedDistances, fittedParams, ...
-            XLims, XTicks, ...
-            YLims, YTicks, ...
-            YLimsCK, YTicksCK, ...
-            yLabelString, titleString, ...
-            conesNumPooledByTheRFcenters, ...
-            majorityCenterConeTypes, ...
-            temporalEquivalentEccDegs, ...
-            CronerKaplanTemporalEccDegs, CronerKaplanValues)
- 
-
-        % Plot on ax1
-        majorityCenterConeType = unique(majorityCenterConeTypes);
-        for i = 1:numel(majorityCenterConeType)
-             rgcIndicesToPlot = find(majorityCenterConeTypes == majorityCenterConeType(i));
-             switch (majorityCenterConeType(i))
-                case cMosaic.LCONE_ID
-                    markerColor = [1 0 0];
-                case cMosaic.MCONE_ID
-                    markerColor = [0 0.7 0];
-                otherwise
-                    markerColor = [0 0 0];
-            end
-            plot(ax1, signedDistances(rgcIndicesToPlot), fittedParams(rgcIndicesToPlot), '.', 'MarkerSize', 15, ...
-                'MarkerFaceColor', markerColor, 'MarkerEdgeColor', markerColor);
-            hold(ax1, 'on');
-        end
-        
-        axis(ax1, 'square');
-        set(ax1, 'XLim', XLims, 'XTick', XTicks, 'YLim', YLims, 'YTick', YTicks, 'FontSize', 16);
-        grid(ax1, 'on');
-        xtickangle(ax1, 0);
-        ylabel(ax1, yLabelString);
-        xlabel(ax1, 'eccentricity (degs)');
-        title(ax1, titleString);
-
-        % Now replot on ax2, along with the Croner & Kaplan data
-        for i = 1:numel(majorityCenterConeType)
-             rgcIndicesToPlot = find(majorityCenterConeTypes == majorityCenterConeType(i));
-             switch (majorityCenterConeType(i))
-                case cMosaic.LCONE_ID
-                    markerColor = [1 0 0];
-                case cMosaic.MCONE_ID
-                    markerColor = [0 0.7 0];
-                otherwise
-                    markerColor = [0 0 0];
-            end
-            plot(ax2, temporalEquivalentEccDegs(rgcIndicesToPlot), fittedParams(rgcIndicesToPlot), '.', 'MarkerSize', 15, ...
-                'MarkerFaceColor', markerColor, 'MarkerEdgeColor', markerColor);
-            hold(ax2, 'on');
-        end
-
-        scatter(ax2, CronerKaplanTemporalEccDegs, CronerKaplanValues, 121, 'o', ...
-            'MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [0.3 0.3 0.3], 'MarkerFaceColor', [0.6 0.6 0.6], 'LineWidth', 1.0);
-        axis(ax2, 'square');
-        set(ax2, 'XLim', [0.01 30], 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30], 'XScale', 'log');
-        xtickangle(ax2, 0);
-        set(ax2, 'YLim', YLimsCK, 'YTick', YTicksCK, 'FontSize', 16);
-        grid(ax2, 'on');
-        ylabel(ax2, yLabelString);
-        xlabel(ax2, 'temporal equiv. eccentricity (degs)');
-        drawnow
-
 end
 
 
@@ -433,12 +221,11 @@ function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, maj
             'theMeasuredSTF', theMeasuredSTF, ... 
             'allMeasuredSTFs', allMeasuredSTFs, ...
             'theDoGmodelFitOfTheMeasuredSTF', theDoGmodelFitOfTheMeasuredSTF, ...
-            'theFittedDoGmodelParams', theFittedDoGmodelParams);
-            
-    
+            'theFittedDoGmodelParams', theFittedDoGmodelParams);    
 end
 
 function [RcDegs, conesNumPooledByTheRFcenter,  majorityCenterConeType] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex)
+
     connectivityVector = full(squeeze(theMidgetRGCmosaic.rgcRFcenterConePoolingMatrix(:, theRGCindex)));
     indicesOfCenterCones = find(abs(connectivityVector) > 0.0001);
     centerConeTypes = theMidgetRGCmosaic.inputConeMosaic.coneTypes(indicesOfCenterCones);
@@ -509,4 +296,3 @@ function [theHighestExtensionSTF, theMeasuredSTFs] = highestExtensionSTF(theMidg
     end
     theHighestExtensionSTF = squeeze(theMeasuredSTFs(iBestOri,:));
 end
-
