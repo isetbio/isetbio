@@ -41,6 +41,7 @@ function [hFigRcDegs, hFigRsRcRatios, hFigSCintSensRatios] = renderSTFfitPlots(h
     rgcIndicesAlongThisMeridian = theMeridianFits.rgcIndicesAlongThisMeridian;
     rgcRFpositionsDegs = rgcRFpositionsDegs(rgcIndicesAlongThisMeridian,:);
 
+
     % Compute signed distances
     radialDistances = sqrt(sum(rgcRFpositionsDegs.^2,2));
     theMeridianAngle = theMeridianAngles(iMeridianAngle);
@@ -62,10 +63,13 @@ function [hFigRcDegs, hFigRsRcRatios, hFigSCintSensRatios] = renderSTFfitPlots(h
        'topMargin',      0.02);
 
 
-    fittedParams = theMeridianFits.fittedParams;
+%     fittedParams = theMeridianFits.fittedParams
+%     theFittedSTFs = theMeridianFits.fittedSTFs
+%     
+%     pause
 
     % The Rc degs values
-    figure(hFigRcDegs);
+    figure(hFigRcDegs);       
     ax1 = subplot('Position', subplotPosVectors(1,iMeridianAngle).v);
     ax2 = subplot('Position', subplotPosVectors(2,iMeridianAngle).v);
     ax3 = subplot('Position', subplotPosVectors(3,iMeridianAngle).v);
