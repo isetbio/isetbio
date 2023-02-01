@@ -63,8 +63,8 @@ function [hFigRcDegs, hFigRsRcRatios, hFigSCintSensRatios] = renderSTFfitPlots(h
        'topMargin',      0.02);
 
 
-%     fittedParams = theMeridianFits.fittedParams
-%     theFittedSTFs = theMeridianFits.fittedSTFs
+     fittedParams = theMeridianFits.fittedParams;
+     theFittedSTFs = theMeridianFits.fittedSTFs;
 %     
 %     pause
 
