@@ -102,7 +102,6 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
     achievedKsToKcRatios = zeros(1, numel(rgcIndicesToAnalyze));
     achievedSCintSensRatios = zeros(1, numel(rgcIndicesToAnalyze)); 
     conesNumPooledByTheRFcenter = zeros(1, numel(rgcIndicesToAnalyze)); 
-    majorityCenterConeType = zeros(1, numel(rgcIndicesToAnalyze));
     fittedSTFs = cell(1, numel(rgcIndicesToAnalyze));
 
     parfor iRGC = 1:numel(rgcIndicesToAnalyze)
@@ -114,7 +113,6 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
         [fittedSTFs{iRGC}, ...
          temporalEquivalentEccDegs(iRGC), ...
          conesNumPooledByTheRFcenter(iRGC), ...
-         majorityCenterConeType(iRGC), ...
          achievedRcDegs(iRGC), ...
          achievedRsToRcRatios(iRGC), ...
          achievedKsToKcRatios(iRGC), ...
@@ -130,7 +128,6 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
     d = struct(...
         'temporalEquivalentEccDegs', temporalEquivalentEccDegs, ...
         'conesNumPooledByTheRFcenter', conesNumPooledByTheRFcenter, ...
-        'majorityCenterConeType', majorityCenterConeType, ...
         'achievedRcDegs', achievedRcDegs, ...
         'achievedRsToRcRatios', achievedRsToRcRatios, ...
         'achievedKsToKcRatios', achievedKsToKcRatios, ...
@@ -139,7 +136,7 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
 end
 
 
-function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, majorityCenterConeType, ...
+function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, ...
           achievedRcDegs, achievedRsToRcRatio, achievedKsToKcRatio, achievedSCintSensRatio] = ...
             fitSingleRGC(theMidgetRGCmosaic, theMidgetRGCMosaicResponses, theRGCindex, ...
             spatialFrequenciesTested, orientationsTested)
@@ -155,7 +152,7 @@ function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, maj
 
         % Fit the DoG model to the measured STF
         multiStartsNum = 128;
-        [RcDegsEstimate, conesNumPooledByTheRFcenter, majorityCenterConeType] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex);
+        [RcDegsEstimate, conesNumPooledByTheRFcenter] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex);
 
         [theFittedDoGmodelParams, theDoGmodelFitOfTheMeasuredSTF] = ...
             RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, ...
@@ -178,53 +175,9 @@ function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, maj
 
         % The S/C int sens ratio
         achievedSCintSensRatio = achievedKsToKcRatio * (achievedRsToRcRatio)^2;
-
-
-        % Determine whether the majority of center cones are L- or M-
-        theMajorityCenterConeType = theMidgetRGCmosaic.majorityCenterConeType(theRGCindex);
-        
-        % Compute the indices of the triangulating RTVFobjects and their
-        % contributing weights
-
-        [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
-             theMidgetRGCmosaic.triangulatingRTVFobjectIndicesAndWeights(theRGCindex);
-
-        pipelineScaleFactorBasedOnLowestSF = 0;
-        triangulatingRTVFobjSTFdata = cell(1, numel(triangulatingRTVFobjIndices));
-
-        for iNearbyObj = 1:numel(triangulatingRTVFobjIndices)
-            iObj  = triangulatingRTVFobjIndices(iNearbyObj);
-            theRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{iObj};
-
-            switch (theMajorityCenterConeType)
-                case cMosaic.LCONE_ID
-                    theRFcomputeStruct = theRTVFTobj.LconeRFcomputeStruct;
-
-                case cMosaic.MCONE_ID
-                    theRFcomputeStruct = theRTVFTobj.MconeRFcomputeStruct;
-
-                otherwise
-                    error('How can the majority cone type be not L- or M- ??')
-            end
-
-            % Normalize theRTVFTobj.fitted to the theRTVFTobj.targetSTF
-            scaleFactorBasedOnLowestSF = theRFcomputeStruct.theSTF.target(1)/theRFcomputeStruct.theSTF.fitted(1);
-            pipelineScaleFactorBasedOnLowestSF = pipelineScaleFactorBasedOnLowestSF + theRFcomputeStruct.theSTF.target(1)*triangulatingRTVFobjWeights(iNearbyObj);
-            
-            % The spatial support
-            triangulatingRTVFobjSTFdata{iNearbyObj} = struct();
-            triangulatingRTVFobjSTFdata{iNearbyObj}.spatialFrequencySupport = theRFcomputeStruct.theSTF.support(:);
-            % The model-achieved STF
-            triangulatingRTVFobjSTFdata{iNearbyObj}.fittedSTF = theRFcomputeStruct.theSTF.fitted(:)*scaleFactorBasedOnLowestSF;
-            % The model-target STF
-            triangulatingRTVFobjSTFdata{iNearbyObj}.targetSTF = theRFcomputeStruct.theSTF.target(:);
-        end
-
         
         fittedSTF = struct();
         fittedSTF.targetRGC = theRGCindex;
-        fittedSTF.theMultiFocalRTVFmodelSTFdata = triangulatingRTVFobjSTFdata;
-        fittedSTF.theMultiFocalRTVFmodelWeights = triangulatingRTVFobjWeights;
         fittedSTF.spatialFrequencySupport = spatialFrequenciesTested;
         fittedSTF.orientationsTested = orientationsTested;
         fittedSTF.allMeasuredSTFs =  allMeasuredSTFs;
@@ -233,20 +186,10 @@ function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, maj
         fittedSTF.theFittedDoGmodelParams = theFittedDoGmodelParams;  
 end
 
-function [RcDegs, conesNumPooledByTheRFcenter,  majorityCenterConeType] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex)
+function [RcDegs, conesNumPooledByTheRFcenter] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex)
 
     connectivityVector = full(squeeze(theMidgetRGCmosaic.rgcRFcenterConePoolingMatrix(:, theRGCindex)));
     indicesOfCenterCones = find(abs(connectivityVector) > 0.0001);
-    centerConeTypes = theMidgetRGCmosaic.inputConeMosaic.coneTypes(indicesOfCenterCones);
-    lConesNum = numel(find(centerConeTypes == cMosaic.LCONE_ID));
-    mConesNum = numel(find(centerConeTypes == cMosaic.MCONE_ID));
-    if (lConesNum > mConesNum)
-        majorityCenterConeType = cMosaic.LCONE_ID;
-    elseif (lConesNum < mConesNum)
-        majorityCenterConeType = cMosaic.MCONE_ID;
-    else
-        majorityCenterConeType = 0;
-    end
 
     conesNumPooledByTheRFcenter = numel(indicesOfCenterCones);
     coneRcDegs = mean(theMidgetRGCmosaic.inputConeMosaic.coneApertureDiametersDegs(indicesOfCenterCones)) * ...

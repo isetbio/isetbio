@@ -352,21 +352,22 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
 
         % All the RTVFob positions
         examinedCenterConesNum = unique(obj.theConesNumPooledByTheRFcenterGrid);
-        markerTypes = {'o', 'x', 's', 'd', 'h', '*', 'p'};
+        markerTypes = {'o', 'd', 'h', '*', 'p', 'x'};
         for iCenterConesNumIndex = 1:numel(examinedCenterConesNum)
             idx = find(obj.theConesNumPooledByTheRFcenterGrid == examinedCenterConesNum(iCenterConesNumIndex));
             plot(ax, obj.theSamplingPositionGrid(idx,1), obj.theSamplingPositionGrid(idx,2), ...
-                'ko', 'MarkerSize', 14, 'Marker', markerTypes{iCenterConesNumIndex}, 'LineWidth', 1.5);
+                'ko', 'MarkerSize', 14, 'MarkerFaceColor', [0.8 0.8 0.8], 'Marker', markerTypes{iCenterConesNumIndex}, 'LineWidth', 1.5);
             hold(ax, 'on');
         end
 
-        plot(ax, obj.theSamplingPositionGrid(triangulatingRTVFobjIndices,1), obj.theSamplingPositionGrid(triangulatingRTVFobjIndices,2), ...
-            'ro', 'MarkerSize', 12+2*obj.theConesNumPooledByTheRFcenterGrid(triangulatingRTVFobjIndices(1)), 'MarkerEdgeColor', nearestRTVFobjLineColor, 'LineWidth', 1.5);
+       % plot(ax, obj.theSamplingPositionGrid(triangulatingRTVFobjIndices,1), obj.theSamplingPositionGrid(triangulatingRTVFobjIndices,2), ...
+       %     'ro', 'MarkerSize', 12+2*obj.theConesNumPooledByTheRFcenterGrid(triangulatingRTVFobjIndices(1)), 'MarkerEdgeColor', nearestRTVFobjLineColor, 'LineWidth', 1.5);
         for k = 1:numel(triangulatingRTVFobjIndices)
             plot(ax, [obj.rgcRFpositionsDegs(iRGC,1) obj.theSamplingPositionGrid(triangulatingRTVFobjIndices(k),1)], ...
                      [obj.rgcRFpositionsDegs(iRGC,2) obj.theSamplingPositionGrid(triangulatingRTVFobjIndices(k),2)], ...
                      '-', 'LineWidth', triangulatingRTVFobjWeights(k)*10, 'Color', nearestRTVFobjLineColor);
         end
+        plot(ax, obj.rgcRFpositionsDegs(iRGC,1), obj.rgcRFpositionsDegs(iRGC,2), 'ks', 'LineWidth', 1.0, 'MarkerSize', 16);
 
         axis(ax, 'equal');
         grid(ax, 'on');
