@@ -1,5 +1,7 @@
 function generateCenterSurroundConePoolingKernels(mosaicCenterParams,  rfModelParams, opticsParams)
 
+    midgetRGCMosaicInspector.say('Generating center-surround cone pooling kernels for all RGCs in the mosaic');
+
     % Generate mosaic filename and directory
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(...
         mosaicCenterParams);
@@ -28,5 +30,7 @@ function generateCenterSurroundConePoolingKernels(mosaicCenterParams,  rfModelPa
     %  - 'theVisualSTFSurroundToCenterRcRatioGrid'
     %  - 'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid'
     save(mosaicFileName, 'theMidgetRGCmosaic', '-v7.3');
+
+    fprintf('MidgetRGCMosaic with center/surround pooling weights and RTVFTobjList saved in: %s\n', mosaicFileName);
 
 end

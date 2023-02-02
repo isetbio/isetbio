@@ -13,6 +13,12 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     updateRTVFobjectWithCenterConesNum = p.Results.updateRTVFobjectWithCenterConesNum;
     updateRTVFobjectWithCenterConeType = p.Results.updateRTVFobjectWithCenterConeType;
 
+    if (strcmp(RTVobjIndicesToBeComputed, 'all'))
+        midgetRGCMosaicInspector.say('Generating select RTVF objects');
+    else
+        midgetRGCMosaicInspector.say('Generating all RTVF objects');
+    end
+    
     % Generate mosaic filename and directory
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(mosaicCenterParams);
 

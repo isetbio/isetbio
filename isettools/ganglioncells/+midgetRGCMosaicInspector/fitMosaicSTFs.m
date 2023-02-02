@@ -1,5 +1,7 @@
 function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCsNum)
 
+    midgetRGCMosaicInspector.say('Fitting mosaic STFs using the difference of Gaussians model');
+
     % Generate the frozen mosaic filename
     frozenMosaicFileName = midgetRGCMosaicInspector.frozenMosaicFileName(...
         mosaicCenterParams, rfModelParams.H1cellIndex, opticsParams);

@@ -85,8 +85,6 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
             continue;
         end
 
-        nearestRTVFobjLineColor = [0 0 0]
-
         % Retrieve the RGCindex
         iRGC = sortedRGCindices(iSortedRGCindex);
 
@@ -94,6 +92,11 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
         % contributing weights
         [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
             obj.triangulatingRTVFobjectIndicesAndWeights(iRGC);
+
+        % Retrieve the net weights of the L-cones and the M-cones in the RF
+        % center
+        [theCenterConeTypeWeights, theCenterConeTypeNum] = obj.centerConeTypeWeights(iRGC);
+
 
         % Retrieve this cell's center cone indices and weights
         connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
@@ -211,11 +214,11 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
             for iCone = 1:numel(inputConeTypes)
                 switch (inputConeTypes(iCone))
                     case cMosaic.LCONE_ID
-                        coneInfoString = sprintf('%s L', coneInfoString);
+                        coneInfoString = sprintf('%s L (%0.2f)', coneInfoString, theCenterConeTypeWeights(cMosaic.LCONE_ID));
                     case cMosaic.MCONE_ID
-                        coneInfoString = sprintf('%s M', coneInfoString);
+                        coneInfoString = sprintf('%s M (%0.2f)', coneInfoString, theCenterConeTypeWeights(cMosaic.MCONE_ID));
                     case cMosaic.SCONE_ID
-                        coneInfoString = sprintf('%s S', coneInfoString);
+                        coneInfoString = sprintf('%s S (%0.2f)', coneInfoString, theCenterConeTypeWeights(cMosaic.SCONE_ID));
                 end
             end
         else
@@ -256,17 +259,17 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
             plot(ax,xConeOutline,yConeOutline,'k-', 'Color', coneColor, 'LineWidth', 1.0);
         end
 
+       
+
+        contourLineColor = [0.4 0 0.0];
+        nearestRTVFobjLineColor = [1 0 0] * theCenterConeTypeWeights(cMosaic.LCONE_ID)/sum(theCenterConeTypeWeights) + ...
+                                  [0 1 0] * theCenterConeTypeWeights(cMosaic.MCONE_ID)/sum(theCenterConeTypeWeights);
+
         if (~isempty(thePSFData))
-            switch (thePSFData.theMajorityCenterConeType)
-                case cMosaic.LCONE_ID
-                    employedSpectrallyWeightedData = thePSFData.LconeWeighted;
-                    contourLineColor = [0.4 0 0.0];
-                    nearestRTVFobjLineColor = [1 0 0];
-                case cMosaic.MCONE_ID
-                    employedSpectrallyWeightedData = thePSFData.MconeWeighted;
-                    contourLineColor = [0 0.4 0.0];
-                    nearestRTVFobjLineColor = [0 0.8 0];
-            end
+
+            employedSpectrallyWeightedData = ...
+                thePSFData.LconeWeighted * theCenterConeTypeWeights(cMosaic.LCONE_ID) + ...
+                thePSFData.MconeWeighted * theCenterConeTypeWeights(cMosaic.MCONE_ID);
 
             mosaicCenterDegs = obj.eccentricityDegs; %mean(obj.rgcRFpositionsDegs,1);
             xSupportDegsForPSF = thePSFData.psfSupportXdegs + mosaicCenterDegs(1);

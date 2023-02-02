@@ -4,8 +4,9 @@ function generateCenterConnectedMosaic(mosaicCenterParams)
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(mosaicCenterParams);
     
     fprintf('Mosaic will be saved in: %s', mosaicFileName);
-    fprintf('Generating mosaic. Please wait ...');
-    
+ 
+    midgetRGCMosaicInspector.say('Generating center-connected midgetRGCMosaic. Please wait');
+
     % Generate mRGC mosaic
     theMidgetRGCmosaic = midgetRGCMosaic(...
                 'sourceLatticeSizeDegs', 60, ...

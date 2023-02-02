@@ -1,4 +1,4 @@
-function [theMajorityCenterConeType, theCenterConeTypesNums] = majorityCenterConeType(obj, theRGCindex)
+function [theCenterConeTypeWeights, theCenterConeTypeNum] = centerConeTypeWeights(obj, theRGCindex)
     if (~isempty(obj.rgcRFcenterConeConnectivityMatrix))
         % Retrieve this cell's # of center cone indices
         connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theRGCindex)));
@@ -8,17 +8,18 @@ function [theMajorityCenterConeType, theCenterConeTypesNums] = majorityCenterCon
     end
     indicesOfCenterCones = find(connectivityVector > 0.0001);
 
+    weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
+    typesOfCenterCones = obj.inputConeMosaic.coneTypes(indicesOfCenterCones);
 
     coneTypes = [cMosaic.LCONE_ID cMosaic.MCONE_ID cMosaic.SCONE_ID];
-    lmsConesNum = zeros(1, numel(coneTypes));
-    theCenterConeTypesNums = zeros(1, numel(coneTypes));
+    theCenterConeTypeWeights = zeros(1, numel(coneTypes));
+    theCenterConeTypeNum = zeros(1, numel(coneTypes));
 
     for iConeType = 1:numel(coneTypes)
         theConeType = coneTypes(iConeType);
-        lmsConesNum(iConeType) = numel(find(obj.inputConeMosaic.coneTypes(indicesOfCenterCones) == theConeType));
-        theCenterConeTypesNums(theConeType) = lmsConesNum(iConeType);
+        idx = find(typesOfCenterCones == theConeType);
+        theCenterConeTypeWeights(theConeType) = sum(weightsOfCenterCones(idx));
+        theCenterConeTypeNum(theConeType) = numel(idx);
     end
     
-    [~,idx] = max(lmsConesNum);
-    theMajorityCenterConeType = coneTypes(idx);
 end

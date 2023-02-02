@@ -33,8 +33,7 @@ function replaceSpecificR2VFTobject()
         return;
     end
 
-    progressBar = waitbar(0.2,'Loading all computed R2VFT objects. Please wait ...');
-    pause(.1);
+    midgetRGCMosaicInspector.say('Loading all computed R2VFT objects. Please wait ')
 
     fName = fullfile(path,file);
     load(fName, 'theRTFVTobjList', ...

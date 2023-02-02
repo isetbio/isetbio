@@ -64,15 +64,14 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRetinaToVisualFieldTran
         indicesOfCenterCones = find(connectivityVector > 0.0001);
         weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
 
-
-        % Determine the number of center L- and M-cones
-        [~, theCenterConeTypesNums] = obj.majorityCenterConeType(iRGC);
+        % Determine the net L-cone, and net M-cone weights in the RF center of this RGC
+        theCenterConeTypeWeights = obj.centerConeTypeWeights(iRGC);
+        theTotalCenterConeWeights = sum(theCenterConeTypeWeights([cMosaic.LCONE_ID cMosaic.MCONE_ID]));
 
         % Weights for L- and M-cone compute structs proportional to the
         % # of center L- and M-cones, respectively
-        theLconeComputeStructWeight = theCenterConeTypesNums(cMosaic.LCONE_ID) / sum(theCenterConeTypesNums);
-        theMconeComputeStructWeight = theCenterConeTypesNums(cMosaic.MCONE_ID) / sum(theCenterConeTypesNums);
-
+        theLconeComputeStructWeight = theCenterConeTypeWeights(cMosaic.LCONE_ID) / theTotalCenterConeWeights;
+        theMconeComputeStructWeight = theCenterConeTypeWeights(cMosaic.MCONE_ID) / theTotalCenterConeWeights;
 
         % Compute the indices of the triangulating RTVFobjects and their
         % contributing weights

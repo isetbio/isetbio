@@ -1,5 +1,7 @@
 function freezeMosaic(mosaicCenterParams, rfModelParams, opticsParams)
     
+    midgetRGCMosaicInspector.say('Freezing mRGCmosaic');
+
     % Generate mosaic filename and directory
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(...
         mosaicCenterParams);

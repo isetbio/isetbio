@@ -1,8 +1,8 @@
 function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter, ...
     weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
-    centerConeMajorityType, initialRetinalConePoolingParamsStruct)
+    centerConeType, initialRetinalConePoolingParamsStruct)
 
-    switch (centerConeMajorityType)
+    switch (centerConeType)
         case cMosaic.LCONE_ID
             theRFCenterConeMajorityPSF  = obj.theSpectrallyWeightedPSFData.LconeWeighted;
 
@@ -20,7 +20,7 @@ function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfCon
             summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
 
         otherwise
-            error('Not L or M cone: %d', centerConeMajorityType);
+            error('Not L or M cone: %d', centerConeType);
     end
 
     
