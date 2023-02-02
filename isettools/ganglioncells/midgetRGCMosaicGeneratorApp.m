@@ -99,7 +99,7 @@ function executeButtonAction(btn, app)
                 app.simulation.mosaicCenterParams, ...
                 maxRGCsNum);
          
-        case "compute: frozen mRGC mosaic"
+        case "compute: frozen midgetRGCMosaic (with current center-surround cone pooling weights)"
             midgetRGCMosaicGenerator.freezeMosaic(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.rfModelParams, ...
@@ -172,18 +172,18 @@ end
 function generateGUI(obj)
 
     % Create figure window
-    obj.mainView = uifigure('Position', [30 500 1200 200], ...
+    obj.mainView = uifigure('Position', [30 1500 900 300], ...
         'WindowStyle', 'AlwaysOnTop', ...
         'Scrollable', 'on', ...
         'Resize', 'off');
-    obj.mainView.Name = "Midget RGC Mosaic Generator & Inspector";
+    obj.mainView.Name = "midgetRGCMosaic generator & inspector";
 
     % Manage app layout
     layoutRows = 1;
-    layoutCols = 4;
+    layoutCols = 2;
     gl = uigridlayout(obj.mainView,[layoutRows layoutCols]);
     gl.RowHeight = {'1x', '4x'};
-    gl.ColumnWidth = {'fit','6x', '1x', '1x'};
+    gl.ColumnWidth = {'fit','6x'};
 
     theActionLabel  = uilabel(gl);
     theActionDropdown = uidropdown(gl);
@@ -193,12 +193,14 @@ function generateGUI(obj)
     % The Action label
     theActionLabel.Layout.Row = 1;
     theActionLabel.Layout.Column = 1;
-    theActionLabel.Text = "Actions:";
-    theActionLabel.FontSize = 14;
+    theActionLabel.Text = "pipeline";
+    theActionLabel.FontSize = 20;
+    theActionLabel.FontWeight = 'Bold';
 
     % The Action dropdown
     theActionDropdown.Layout.Row = 1;
     theActionDropdown.Layout.Column = 2;
+    theActionDropdown.FontSize = 14;
     theActionDropdown.Items = [ ...
         "compute: center-connected mRGC mosaic", ...
         "compute: all R2VFT objects", ...
@@ -209,7 +211,7 @@ function generateGUI(obj)
         "export: retinal cone pooling params for all fitted R2VFT objects", ...
         "compute: center-surround cone pooling kernels", ...
         "visualize: spatial RFs", ...
-        "compute: frozen mRGC mosaic", ...
+        "compute: frozen midgetRGCMosaic (with current center-surround cone pooling weights)", ...
         "validate: pre-compute LM-non-opponent cone mosaic STFs", ...
         "validate: compute LM-non-opponent RGC STFs (midgetRGCMosaic object handles the computation of cone mosaic responses)", ...
         "validate: compute LM-non-opponent RGC STFs from pre-computed LM-non-opponent cone mosaic STFs", ...
@@ -217,26 +219,27 @@ function generateGUI(obj)
         "validate: visualize STF fits" ...
         ];
 
-    theActionDropdown.FontSize = 14;
     % Current action
     obj.currentAction = theActionDropdown.Items{4};
     theActionDropdown.Value = obj.currentAction;
     theActionDropdown.ValueChangedFcn = @(src,event) dropDownActionChanged(src,event, obj);
     
     % The ExecuteActionButton
-    theExecuteActionButton.Layout.Row = 1;
-    theExecuteActionButton.Layout.Column = 3;
-    theExecuteActionButton.Text = "GO !";
+    theExecuteActionButton.Layout.Row = 2;
+    theExecuteActionButton.Layout.Column = 2;
+    theExecuteActionButton.Text = "commit selected pipeline";
     theExecuteActionButton.FontSize = 20;
+    theExecuteActionButton.FontWeight = 'Bold';
     theExecuteActionButton.BackgroundColor = [0.3 0.3 0.3];
     theExecuteActionButton.FontColor = [0.1 0.8 0.9];
     theExecuteActionButton.ButtonPushedFcn = @(btn,event) executeButtonAction(btn, obj);
 
     % The ExitButton
-    theExitButton.Layout.Row = 1;
-    theExitButton.Layout.Column = 4;
-    theExitButton.Text = "Quit";
+    theExitButton.Layout.Row = 2;
+    theExitButton.Layout.Column = 1;
+    theExitButton.Text = "Exit";
     theExitButton.FontSize = 20;
+    theExitButton.FontWeight = 'Bold';
     theExitButton.BackgroundColor = [0.3 0.3 0.3];
     theExitButton.FontColor = [0.9 0.8 0.0];
     theExitButton.ButtonPushedFcn = @(btn,event) exitButtonAction(btn, obj);

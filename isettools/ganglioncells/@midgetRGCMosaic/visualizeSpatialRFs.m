@@ -85,6 +85,8 @@ function [hFig, allAxes] = visualizeSpatialRFs(obj, varargin)
             continue;
         end
 
+        nearestRTVFobjLineColor = [0 0 0]
+
         % Retrieve the RGCindex
         iRGC = sortedRGCindices(iSortedRGCindex);
 
