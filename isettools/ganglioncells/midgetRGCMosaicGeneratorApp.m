@@ -172,17 +172,20 @@ end
 function generateGUI(obj)
 
     % Create figure window
-    obj.mainView = uifigure('Position', [30 1500 900 300], ...
+    obj.mainView = uifigure('Position', [30 1500 900 200], ...
         'WindowStyle', 'AlwaysOnTop', ...
         'Scrollable', 'on', ...
+        'Color', [0.3 0.3 0.3], ...
         'Resize', 'off');
+
     obj.mainView.Name = "midgetRGCMosaic generator & inspector";
 
     % Manage app layout
-    layoutRows = 1;
+    layoutRows = 3;
     layoutCols = 2;
-    gl = uigridlayout(obj.mainView,[layoutRows layoutCols]);
-    gl.RowHeight = {'1x', '4x'};
+    gl = uigridlayout(obj.mainView,[layoutRows layoutCols])
+    gl.BackgroundColor = [0.3 0.3 0.3];
+    gl.RowHeight = {'1x', '1x', '1x'};
     gl.ColumnWidth = {'fit','6x'};
 
     theActionLabel  = uilabel(gl);
@@ -195,6 +198,7 @@ function generateGUI(obj)
     theActionLabel.Layout.Column = 1;
     theActionLabel.Text = "pipeline";
     theActionLabel.FontSize = 20;
+    theActionLabel.FontColor = [0.8 0.8 0.9];
     theActionLabel.FontWeight = 'Bold';
 
     % The Action dropdown
@@ -225,22 +229,22 @@ function generateGUI(obj)
     theActionDropdown.ValueChangedFcn = @(src,event) dropDownActionChanged(src,event, obj);
     
     % The ExecuteActionButton
-    theExecuteActionButton.Layout.Row = 2;
+    theExecuteActionButton.Layout.Row = 3;
     theExecuteActionButton.Layout.Column = 2;
     theExecuteActionButton.Text = "commit selected pipeline";
     theExecuteActionButton.FontSize = 20;
     theExecuteActionButton.FontWeight = 'Bold';
-    theExecuteActionButton.BackgroundColor = [0.3 0.3 0.3];
+    theExecuteActionButton.BackgroundColor = [0.4 0.4 0.4];
     theExecuteActionButton.FontColor = [0.1 0.8 0.9];
     theExecuteActionButton.ButtonPushedFcn = @(btn,event) executeButtonAction(btn, obj);
 
     % The ExitButton
-    theExitButton.Layout.Row = 2;
+    theExitButton.Layout.Row = 3;
     theExitButton.Layout.Column = 1;
-    theExitButton.Text = "Exit";
+    theExitButton.Text = "exit";
     theExitButton.FontSize = 20;
     theExitButton.FontWeight = 'Bold';
-    theExitButton.BackgroundColor = [0.3 0.3 0.3];
+    theExitButton.BackgroundColor = [0.4 0.4 0.4];
     theExitButton.FontColor = [0.9 0.8 0.0];
     theExitButton.ButtonPushedFcn = @(btn,event) exitButtonAction(btn, obj);
 end
