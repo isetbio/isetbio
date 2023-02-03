@@ -42,15 +42,8 @@ function [hFigRcDegs, hFigRsRcRatios, hFigSCintSensRatios] = renderSTFfitPlots(h
     rgcRFpositionsDegs = theMidgetRGCMosaic.rgcRFpositionsDegs(rgcIndicesAlongThisMeridian,:);
 
     majorityCenterConeType = zeros(1, numel(rgcIndicesAlongThisMeridian));
-    for i=1:numel(rgcIndicesAlongThisMeridian)
-         theCenterConeTypeWeights = theMidgetRGCMosaic.centerConeTypeWeights(rgcIndicesAlongThisMeridian(i));
-         if (theCenterConeTypeWeights(cMosaic.LCONE_ID) == theCenterConeTypeWeights(cMosaic.MCONE_ID))
-             majorityCenterConeType(i) = 0;
-         elseif (theCenterConeTypeWeights(cMosaic.LCONE_ID) > theCenterConeTypeWeights(cMosaic.MCONE_ID))
-             majorityCenterConeType(i) = cMosaic.LCONE_ID;
-         else
-             majorityCenterConeType(i) = cMosaic.MCONE_ID;
-         end
+    parfor i=1:numel(rgcIndicesAlongThisMeridian)
+         [~, ~,  majorityCenterConeType(i)]= theMidgetRGCMosaic.centerConeTypeWeights(rgcIndicesAlongThisMeridian(i));
     end
 
     % Compute signed distances
@@ -76,8 +69,7 @@ function [hFigRcDegs, hFigRsRcRatios, hFigSCintSensRatios] = renderSTFfitPlots(h
 
      fittedParams = theMeridianFits.fittedParams;
      theFittedSTFs = theMeridianFits.fittedSTFs;
-%     
-%     pause
+
 
     % The Rc degs values
     figure(hFigRcDegs);       
@@ -184,19 +176,25 @@ function plotDataAlongMeridian(ax1, ax2, ...
  
 
         % Plot on ax1
-        majorityCenterConeType = unique(majorityCenterConeTypes);
+        majorityCenterConeType = [cMosaic.LCONE_ID cMosaic.MCONE_ID nan];
+
         for i = 1:numel(majorityCenterConeType)
-             rgcIndicesToPlot = find(majorityCenterConeTypes == majorityCenterConeType(i));
-             switch (majorityCenterConeType(i))
-                case cMosaic.LCONE_ID
-                    markerColor = [1 0 0];
-                case cMosaic.MCONE_ID
-                    markerColor = [0 0.7 0];
-                otherwise
-                    markerColor = [0 0 0];
+            if (isnan(majorityCenterConeType(i)))
+                rgcIndicesToPlot = find(isnan(majorityCenterConeTypes));
+                markerColor = [1 1 0];
+            else
+                switch (majorityCenterConeType(i))
+                    case cMosaic.LCONE_ID
+                        markerColor = [1 0 0];
+                    case cMosaic.MCONE_ID
+                        markerColor = [0 0.7 0];
+                end
+                rgcIndicesToPlot = find(majorityCenterConeTypes == majorityCenterConeType(i));
             end
-            plot(ax1, signedDistances(rgcIndicesToPlot), fittedParams(rgcIndicesToPlot), '.', 'MarkerSize', 15, ...
-                'MarkerFaceColor', markerColor, 'MarkerEdgeColor', markerColor);
+           
+            
+            plot(ax1, signedDistances(rgcIndicesToPlot), fittedParams(rgcIndicesToPlot), 'o', 'MarkerSize', 7, ...
+                'MarkerFaceColor', markerColor, 'MarkerEdgeColor', [0 0 0]);
             hold(ax1, 'on');
         end
         
@@ -210,17 +208,22 @@ function plotDataAlongMeridian(ax1, ax2, ...
 
         % Now replot on ax2, along with the Croner & Kaplan data
         for i = 1:numel(majorityCenterConeType)
-             rgcIndicesToPlot = find(majorityCenterConeTypes == majorityCenterConeType(i));
-             switch (majorityCenterConeType(i))
-                case cMosaic.LCONE_ID
-                    markerColor = [1 0 0];
-                case cMosaic.MCONE_ID
-                    markerColor = [0 0.7 0];
-                otherwise
-                    markerColor = [0 0 0];
+            if (isnan(majorityCenterConeType(i)))
+                rgcIndicesToPlot = find(isnan(majorityCenterConeTypes));
+                markerColor = [1 1 0];
+            else
+                switch (majorityCenterConeType(i))
+                    case cMosaic.LCONE_ID
+                        markerColor = [1 0 0];
+                    case cMosaic.MCONE_ID
+                        markerColor = [0 0.7 0];
+                end
+                rgcIndicesToPlot = find(majorityCenterConeTypes == majorityCenterConeType(i));
             end
-            plot(ax2, temporalEquivalentEccDegs(rgcIndicesToPlot), fittedParams(rgcIndicesToPlot), '.', 'MarkerSize', 15, ...
-                'MarkerFaceColor', markerColor, 'MarkerEdgeColor', markerColor);
+            
+            plot(ax2, temporalEquivalentEccDegs(rgcIndicesToPlot), fittedParams(rgcIndicesToPlot), 'o', 'MarkerSize', 7, ...
+                'MarkerFaceColor', markerColor, 'MarkerEdgeColor', [0 0 0]);
+            
             hold(ax2, 'on');
         end
 

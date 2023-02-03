@@ -1,4 +1,6 @@
 classdef midgetRGCMosaicGeneratorApp < handle
+
+
     properties  (GetAccess=public, SetAccess=private)
         % GUI components
         mainView;
@@ -10,22 +12,64 @@ classdef midgetRGCMosaicGeneratorApp < handle
         simulation;
     end
 
+    properties (GetAccess=private, SetAccess=private)
+        theMosaicGeometryTable;
+        theOpticsTable;
+        theRTVFmodelTable;
+    end
+
     methods
         % Constructor
         function obj = midgetRGCMosaicGeneratorApp()
+            
             generateGUI(obj);
             initializeState(obj);
+
         end
     end
 end
 
 
 function initializeState(obj)
-    % Load the various params structs
-    [obj.simulation.mosaicCenterParams, ...
-     obj.simulation.rfModelParams, ...
-     obj.simulation.opticsParams] = midgetRGCMosaicGenerator.generateMosaicAndOpticsParamStructs();
+
+     theParamsFile = midgetRGCMosaicGenerator.paramsFile();
+
+     if (isfile(theParamsFile))
+         load(theParamsFile, ...
+             'mosaicCenterParams', ...
+             'rfModelParams', ...
+             'opticsParams');
+         obj.simulation.mosaicCenterParams = mosaicCenterParams;
+         obj.simulation.rfModelParams  = rfModelParams;
+         obj.simulation.opticsParams = opticsParams;
+     else
+        % Generate the default params structs
+        [obj.simulation.mosaicCenterParams, ...
+         obj.simulation.rfModelParams, ...
+         obj.simulation.opticsParams] = midgetRGCMosaicGenerator.generateDefaultMosaicAndOpticsParamStructs();
+     end
+
+     % Update theMosaicGeometryTable
+     d = {};
+     d{1} = obj.simulation.mosaicCenterParams.positionDegs(1);
+     d{2} = obj.simulation.mosaicCenterParams.positionDegs(2);
+     d{3} = obj.simulation.mosaicCenterParams.sizeDegs(1);
+     d{4} = obj.simulation.mosaicCenterParams.sizeDegs(2);
+     set(obj.theMosaicGeometryTable,'Data',d)
+
+     d = {};
+     d{1} = obj.simulation.opticsParams.ZernikeDataBase;
+     d{2} = obj.simulation.opticsParams.subjectRankOrder;
+     d{3} = obj.simulation.opticsParams.pupilDiameterMM;
+     set(obj.theOpticsTable, 'Data', d);
+
+     d = {};
+     d{1} = obj.simulation.rfModelParams.H1cellIndex;
+     d{2} = obj.simulation.rfModelParams.eccentricitySamplingGridHalfSamplesNum;
+     set(obj.theRTVFmodelTable, 'Data', d)
+     drawnow
 end
+
 
 function executeButtonAction(btn, app)
 
@@ -172,7 +216,7 @@ end
 function generateGUI(obj)
 
     % Create figure window
-    obj.mainView = uifigure('Position', [30 1500 900 200], ...
+    obj.mainView = uifigure('Position', [30 1500 1000 360], ...
         'WindowStyle', 'AlwaysOnTop', ...
         'Scrollable', 'on', ...
         'Color', [0.3 0.3 0.3], ...
@@ -181,30 +225,97 @@ function generateGUI(obj)
     obj.mainView.Name = "midgetRGCMosaic generator & inspector";
 
     % Manage app layout
-    layoutRows = 3;
+    layoutRows = 5;
     layoutCols = 2;
-    gl = uigridlayout(obj.mainView,[layoutRows layoutCols])
+    gl = uigridlayout(obj.mainView,[layoutRows layoutCols]);
     gl.BackgroundColor = [0.3 0.3 0.3];
-    gl.RowHeight = {'1x', '1x', '1x'};
+    gl.RowHeight = {'1x', '1x', '1x', '1x', '1x'};
     gl.ColumnWidth = {'fit','6x'};
 
     theActionLabel  = uilabel(gl);
+    theMosaicGeometryButton  = uibutton(gl);
+    obj.theMosaicGeometryTable = uitable(gl);
+    obj.theOpticsTable = uitable(gl);
+    obj.theRTVFmodelTable = uitable(gl);
+    theOpticsButton = uibutton(gl);
+    theRTVFmodelButton = uibutton(gl);
     theActionDropdown = uidropdown(gl);
     theExecuteActionButton = uibutton(gl);
-    theExitButton = uibutton(gl);
+    %theExitButton = uibutton(gl);
+
+    % TheMosaicGeometry button
+    theMosaicGeometryButton.Layout.Row = 3;
+    theMosaicGeometryButton.Layout.Column = 1;
+    theMosaicGeometryButton.Text = "mosaic params";
+    theMosaicGeometryButton.FontSize = 20;
+    theMosaicGeometryButton.FontWeight = 'Bold';
+    theMosaicGeometryButton.BackgroundColor = [0.4 0.4 0.4];
+    theMosaicGeometryButton.FontColor = [0.3 1 0.8];
+    theMosaicGeometryButton.ButtonPushedFcn = @(btn,event) updateMosaicParams(btn, obj);
+
+    obj.theMosaicGeometryTable.Layout.Row = 3;
+    obj.theMosaicGeometryTable.Layout.Column = 2;
+    obj.theMosaicGeometryTable.RowName = {};
+    obj.theMosaicGeometryTable.ColumnName = {'x-position (degs)', 'y-position (degs)', 'x-size (degs)', 'y-size (degs)'};
+    obj.theMosaicGeometryTable.Data = {};
+    obj.theMosaicGeometryTable.FontSize = 18;
+    obj.theMosaicGeometryTable.BackgroundColor = [0.4 0.4 0.4];
+    addStyle(obj.theMosaicGeometryTable,uistyle('HorizontalAlignment','center', 'FontColor', [0.3 1 0.8]))
+
+    % TheOptics button
+    theOpticsButton.Layout.Row = 4;
+    theOpticsButton.Layout.Column = 1;
+    theOpticsButton.Text = "optics params";
+    theOpticsButton.FontSize = 20;
+    theOpticsButton.FontWeight = 'Bold';
+    theOpticsButton.BackgroundColor = [0.4 0.4 0.4];
+    theOpticsButton.FontColor = [0.3 1 0.8];
+    theOpticsButton.ButtonPushedFcn = @(btn,event) updateOpticsParams(btn, obj);
+
+    obj.theOpticsTable.Layout.Row = 4;
+    obj.theOpticsTable.Layout.Column = 2;
+    obj.theOpticsTable.RowName = {};
+    obj.theOpticsTable.ColumnName = {'Zernike Database', 'subject rank', 'pupil diameter (mm)'};
+    obj.theOpticsTable.Data = {};
+    obj.theOpticsTable.FontSize = 18;
+    obj.theOpticsTable.BackgroundColor = [0.4 0.4 0.4];
+    addStyle(obj.theOpticsTable, uistyle('HorizontalAlignment','center', 'FontColor', [0.3 1 0.8]))
+
+
+    % theRTVFmodel button
+    theRTVFmodelButton.Layout.Row = 5;
+    theRTVFmodelButton.Layout.Column = 1;
+    theRTVFmodelButton.Text = "optics params";
+    theRTVFmodelButton.FontSize = 20;
+    theRTVFmodelButton.FontWeight = 'Bold';
+    theRTVFmodelButton.BackgroundColor = [0.4 0.4 0.4];
+    theRTVFmodelButton.FontColor = [0.3 1 0.8];
+    theRTVFmodelButton.ButtonPushedFcn = @(btn,event) updateRTVFmodelParams(btn, obj);
+
+    obj.theRTVFmodelTable.Layout.Row = 5;
+    obj.theRTVFmodelTable.Layout.Column = 2;
+    obj.theRTVFmodelTable.RowName = {};
+    obj.theRTVFmodelTable.ColumnName = {'employed H1 horizontal cell index', 'grid half samples num, N (total samples: (2*N + 1)^2)'};
+    obj.theRTVFmodelTable.Data = {};
+    obj.theRTVFmodelTable.FontSize = 18;
+    obj.theRTVFmodelTable.BackgroundColor = [0.4 0.4 0.4];
+    addStyle(obj.theRTVFmodelTable, uistyle('HorizontalAlignment','center', 'FontColor', [0.3 1 0.8]))
+
 
     % The Action label
     theActionLabel.Layout.Row = 1;
     theActionLabel.Layout.Column = 1;
     theActionLabel.Text = "pipeline";
+    theActionLabel.HorizontalAlignment = "center";
     theActionLabel.FontSize = 20;
-    theActionLabel.FontColor = [0.8 0.8 0.9];
+    theActionLabel.FontColor = [0.1 0.8 0.9];
     theActionLabel.FontWeight = 'Bold';
 
     % The Action dropdown
     theActionDropdown.Layout.Row = 1;
     theActionDropdown.Layout.Column = 2;
     theActionDropdown.FontSize = 14;
+    theActionDropdown.BackgroundColor = [0.3 0.8 0.95];
     theActionDropdown.Items = [ ...
         "compute: center-connected mRGC mosaic", ...
         "compute: all R2VFT objects", ...
@@ -229,7 +340,7 @@ function generateGUI(obj)
     theActionDropdown.ValueChangedFcn = @(src,event) dropDownActionChanged(src,event, obj);
     
     % The ExecuteActionButton
-    theExecuteActionButton.Layout.Row = 3;
+    theExecuteActionButton.Layout.Row = 2;
     theExecuteActionButton.Layout.Column = 2;
     theExecuteActionButton.Text = "commit selected pipeline";
     theExecuteActionButton.FontSize = 20;
@@ -238,15 +349,18 @@ function generateGUI(obj)
     theExecuteActionButton.FontColor = [0.1 0.8 0.9];
     theExecuteActionButton.ButtonPushedFcn = @(btn,event) executeButtonAction(btn, obj);
 
-    % The ExitButton
-    theExitButton.Layout.Row = 3;
-    theExitButton.Layout.Column = 1;
-    theExitButton.Text = "exit";
-    theExitButton.FontSize = 20;
-    theExitButton.FontWeight = 'Bold';
-    theExitButton.BackgroundColor = [0.4 0.4 0.4];
-    theExitButton.FontColor = [0.9 0.8 0.0];
-    theExitButton.ButtonPushedFcn = @(btn,event) exitButtonAction(btn, obj);
+
+end
+
+function updateRTVFmodelParams(btn, app)
+end
+
+
+function updateOpticsParams(btn, app)
+end
+
+
+function updateMosaicParams(btn, app)
 end
 
 function exitButtonAction(btn, app)

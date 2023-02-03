@@ -1,4 +1,4 @@
-function [theCenterConeTypeWeights, theCenterConeTypeNum] = centerConeTypeWeights(obj, theRGCindex)
+function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = centerConeTypeWeights(obj, theRGCindex)
     if (~isempty(obj.rgcRFcenterConeConnectivityMatrix))
         % Retrieve this cell's # of center cone indices
         connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theRGCindex)));
@@ -22,4 +22,16 @@ function [theCenterConeTypeWeights, theCenterConeTypeNum] = centerConeTypeWeight
         theCenterConeTypeNum(theConeType) = numel(idx);
     end
     
+    % Determine majority cone type based on weights
+    thresholdRatioForEqualWeights = 0.9;
+    [~,idx] = sort(theCenterConeTypeWeights, 'descend');
+    theMajorityConeType = coneTypes(idx(1));
+    if (numel(find(theCenterConeTypeWeights>0)) > 1)
+        ratio = theCenterConeTypeWeights(idx(2))/theCenterConeTypeWeights(idx(1));
+        if (ratio  >thresholdRatioForEqualWeights)
+            % nearly equal weights, majorityConeType = nan
+            theMajorityConeType = nan;
+        end
+    end
+
 end

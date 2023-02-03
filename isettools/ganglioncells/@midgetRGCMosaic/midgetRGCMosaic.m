@@ -233,7 +233,7 @@ classdef midgetRGCMosaic < handle
             triangulatingRTVFobjectIndicesAndWeights(obj,theRGCindex);
 
         % Method to return the net L-cone, net M-cone and net S-cone weights in the RF center of an RGC
-        [theCenterConeWeights,theCenterConeTypeNum] = centerConeTypeWeights(obj, theRGCindex);
+        [theCenterConeWeights, theCenterConeTypeNum, theMajorityConeType] = centerConeTypeWeights(obj, theRGCindex);
 
 
         % Method to adjust the midgetRGC RF overlap
