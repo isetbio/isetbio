@@ -318,7 +318,7 @@ function generateGUI(obj)
     obj.theMosaicGeometryTable.Layout.Row = 3;
     obj.theMosaicGeometryTable.Layout.Column = 2;
     obj.theMosaicGeometryTable.RowName = {};
-    obj.theMosaicGeometryTable.ColumnName = {'POSITION,X (DEGS)', 'POSITION, Y (degs)', 'SIZE, X (degs)', 'SIZE, Y(degs)'};
+    obj.theMosaicGeometryTable.ColumnName = {'POSITION,X (DEGS)', 'POSITION, Y (DEGS', 'SIZE, X (DEGS)', 'SIZE, Y(DEGS)'};
     obj.theMosaicGeometryTable.Data = {};
     obj.theMosaicGeometryTable.FontSize = 18;
     obj.theMosaicGeometryTable.BackgroundColor = [0.4 0.4 0.4];

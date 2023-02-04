@@ -323,7 +323,8 @@ classdef midgetRGCMosaic < handle
         extraDegs = extraConeMosaicDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
 
         % Method to generate coordinates for eccentricitySamplingGrid passed to the RTVF object
-        gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords);
+        gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, ...
+            rgcRFpositionsDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords);
 
         % Method to generate a skeleton computeInputDataStruct that the
         % user has to update with the current input information

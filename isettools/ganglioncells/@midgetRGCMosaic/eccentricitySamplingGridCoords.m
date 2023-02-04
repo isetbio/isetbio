@@ -1,8 +1,16 @@
-function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords)
+function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, ...
+    rgcRFpositionsDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords)
 
     assert(numel(sizeDegs) == 2, 'MidgetRGCMosaic:gridNormalizedCoords: sizeDegs must be a 2-element vector');
     assert(ismember(samplingScheme, {'rectangular', 'hexagonal'}), 'MidgetRGCMosaic:gridNormalizedCoords: samplingScheme must be either ''hexagonal'' or ''rectangular''.');
 
+
+    xCoords = squeeze(rgcRFpositionsDegs(:,1));
+    yCoords = squeeze(rgcRFpositionsDegs(:,2));
+    minX = min(xCoords(:)); maxX = max(xCoords(:));
+    minY = min(yCoords(:)); maxY = max(yCoords(:));
+    midX = (minX + maxX)/2;
+    midY = (minY + maxY)/2;
 
     switch (samplingScheme)
         case 'rectangular'
@@ -41,10 +49,7 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                     r = linspace(0, max(sizeDegs)*0.4, gridHalfSamplesNum);
                 end
 
-                angles = 0:60:360;
-                X = [];
-                Y = [];
-        
+                angles = 0:60:360; X = []; Y = [];
                 delta = 0;
                 for iRadius = numel(r):-1:1
                     if (delta == 0)
@@ -57,31 +62,64 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                 end
     
                 % Add the 4 corner points
-                X(size(X,1)+1,1) = sizeDegs(1)/2;
-                Y(size(Y,1)+1,1) = sizeDegs(2)/2;
+                if (eccentricityDegs(1) == 0) && (eccentricityDegs(2) == 0)
+                    % Mosaic centered at (0,0)
+                    X(size(X,1)+1,1) = sizeDegs(1)/2;
+                    Y(size(Y,1)+1,1) = sizeDegs(2)/2;
 
-                X(size(X,1)+1,1) = sizeDegs(1)/2;
-                Y(size(Y,1)+1,1) =-sizeDegs(2)/2;
+                    X(size(X,1)+1,1) = sizeDegs(1)/2;
+                    Y(size(Y,1)+1,1) =-sizeDegs(2)/2;
 
-                X(size(X,1)+1,1) =-sizeDegs(1)/2;
-                Y(size(Y,1)+1,1) = sizeDegs(2)/2;
+                    X(size(X,1)+1,1) =-sizeDegs(1)/2;
+                    Y(size(Y,1)+1,1) = sizeDegs(2)/2;
 
-                X(size(X,1)+1,1) =-sizeDegs(1)/2;
-                Y(size(Y,1)+1,1) =-sizeDegs(2)/2;
+                    X(size(X,1)+1,1) =-sizeDegs(1)/2;
+                    Y(size(Y,1)+1,1) =-sizeDegs(2)/2;
+                else
+                    % Off-center mosaic
+                    X(size(X,1)+1,1) = minX-midX;
+                    Y(size(Y,1)+1,1) = minY-midY;
+                    
+                    X(size(X,1)+1,1) = minX-midX; 
+                    Y(size(Y,1)+1,1) = maxY-midY;
 
-            end
+                    X(size(X,1)+1,1) = maxX-midX;
+                    Y(size(Y,1)+1,1) = minY-midY;
+
+                    X(size(X,1)+1,1) = maxX-midX;
+                    Y(size(Y,1)+1,1) = maxY-midY;
+
+                    % And 3 points along the midY line
+                    X(size(X,1)+1,1) = minX-midX;
+                    Y(size(Y,1)+1,1) = midY-midY;
+
+                    X(size(X,1)+1,1) = maxX-midX;
+                    Y(size(Y,1)+1,1) = midY-midY;
+
+                    X(size(X,1)+1,1) = midX-midX;
+                    Y(size(Y,1)+1,1) = midY-midY;
+                end
+            end  
+    end % Switch
+
+
+    if (eccentricityDegs(1) == 0) && (eccentricityDegs(2) == 0)
+        if (max(abs(X(:)))>0)
+            X = X(:)/max(abs(X(:))) * sizeDegs(1)*0.5*0.95;
+        end
+        if (max(abs(Y(:)))>0)
+            Y = Y(:)/max(abs(Y(:))) * sizeDegs(2)*0.5*0.95;
+        end
     end
 
-
-    if (max(abs(X(:)))>0)
-        X = X(:)/max(abs(X(:))) * sizeDegs(1)*0.5*0.95;
+    if (eccentricityDegs(1) == 0) && (eccentricityDegs(2) == 0)
+        gridCoords(:,1) = X;
+        gridCoords(:,2) = Y;
+    else
+        gridCoords(:,1) = midX + X;
+        gridCoords(:,2) = midY + Y;
     end
-    if (max(abs(Y(:)))>0)
-        Y = Y(:)/max(abs(Y(:))) * sizeDegs(2)*0.5*0.95;
-    end
 
-    gridCoords(:,1) = eccentricityDegs(1) + X;
-    gridCoords(:,2) = eccentricityDegs(2) + Y;
     gridCoords = unique(gridCoords, 'rows');
 
     if (visualizeGridCoords)
