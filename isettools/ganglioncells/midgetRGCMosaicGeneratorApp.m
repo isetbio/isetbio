@@ -347,7 +347,7 @@ function generateGUI(obj)
     % theRTVFmodel button
     theRTVFmodelButton.Layout.Row = 5;
     theRTVFmodelButton.Layout.Column = 1;
-    theRTVFmodelButton.Text = "optics params";
+    theRTVFmodelButton.Text = "RTVF params";
     theRTVFmodelButton.FontSize = 20;
     theRTVFmodelButton.FontWeight = 'Bold';
     theRTVFmodelButton.BackgroundColor = [0.4 0.4 0.4];
@@ -365,13 +365,13 @@ function generateGUI(obj)
 
 
     % The Pipelinelabel
-    thePipelineLabel.Layout.Row = 1;
-    thePipelineLabel.Layout.Column = 1;
-    thePipelineLabel.Text = "pipeline";
-    thePipelineLabel.HorizontalAlignment = "right";
-    thePipelineLabel.FontSize = 20;
-    thePipelineLabel.FontColor = [1 0.8 0.2];
-    thePipelineLabel.FontWeight = 'Bold';
+%     thePipelineLabel.Layout.Row = 1;
+%     thePipelineLabel.Layout.Column = 1;
+%     thePipelineLabel.Text = "pipeline";
+%     thePipelineLabel.HorizontalAlignment = "right";
+%     thePipelineLabel.FontSize = 20;
+%     thePipelineLabel.FontColor = [1 0.8 0.2];
+%     thePipelineLabel.FontWeight = 'Bold';
 
     % The Pipeline dropdown
     thePipelineDropdown.Layout.Row = 1;
@@ -402,9 +402,9 @@ function generateGUI(obj)
     
     
     % The ExecutePipelineButton
-    theExecutePipelineButton.Layout.Row = 2;
-    theExecutePipelineButton.Layout.Column = 2;
-    theExecutePipelineButton.Text = "commit selected pipeline";
+    theExecutePipelineButton.Layout.Row = 1;
+    theExecutePipelineButton.Layout.Column = 1;
+    theExecutePipelineButton.Text = "commit";
     theExecutePipelineButton.FontSize = 20;
     theExecutePipelineButton.FontWeight = 'Bold';
     theExecutePipelineButton.BackgroundColor = [0.4 0.4 0.4];
@@ -423,8 +423,8 @@ function generateGUI(obj)
     theExportParamsButton.ButtonPushedFcn = @(btn,event) exportParams(btn, obj);
 
     % TheImportParamsButton
-    theImportParamsButton.Layout.Row = 6;
-    theImportParamsButton.Layout.Column = 2;
+    theImportParamsButton.Layout.Row = 2;
+    theImportParamsButton.Layout.Column = 1;
     theImportParamsButton.Text = "import params";
     theImportParamsButton.FontSize = 20;
     theImportParamsButton.FontWeight = 'Bold';
@@ -436,10 +436,31 @@ function generateGUI(obj)
 end
 
 function updateRTVFmodelParams(btn, app)
+    
+   app.simulation.rfModelParams.H1cellIndex = queryUserForParamValue(...
+        'employed H1 cell index', [1 2 3 4], app.simulation.rfModelParams.H1cellIndex);
+    updateParamsTables(app);
+
+   app.simulation.rfModelParams.eccentricitySamplingGridHalfSamplesNum = queryUserForParamValue(...
+        'spatial grid half-samples num', [], app.simulation.rfModelParams.eccentricitySamplingGridHalfSamplesNum );
+   updateParamsTables(app);
+   
+
 end
 
 
 function updateOpticsParams(btn, app)
+    app.simulation.opticsParams.ZernikeDataBase = queryUserForParamValue(...
+        'Zernike database', {'Polans2015', 'Artal2012'}, app.simulation.opticsParams.ZernikeDataBase);
+    updateParamsTables(app);
+
+    app.simulation.opticsParams.subjectRankOrder = queryUserForParamValue(...
+        'subject rank', [], app.simulation.opticsParams.subjectRankOrder);
+    updateParamsTables(app);
+
+    app.simulation.opticsParams.pupilDiameterMM = queryUserForParamValue(...
+        'pupil diameter (mm)', [], app.simulation.opticsParams.pupilDiameterMM);
+    updateParamsTables(app);
 end
 
 
@@ -475,7 +496,9 @@ function val = queryUserForParamValue(paramName, validParamValues, oldVal)
     end
 
     if (~isempty(newVal))
-        val = newVal;
+        if ((~isempty(validParamValues)) && (ismember(newVal, validParamValues))) || (isempty(validParamValues))
+            val = newVal;
+        end
     end
 
 end
