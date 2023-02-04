@@ -1,15 +1,15 @@
 function exportRetinalConePoolingParamsForAllFittedRTVFTobjects()
     
     dropboxDir = midgetRGCMosaicInspector.localDropboxPath();
+    midgetRGCMosaicInspector.say('Select the RTVF-objects file to export ');
     [file,path] = uigetfile(fullfile(dropboxDir, '*.mat'), ...
-                        'Select an RTVF file');
+                        'Select the RTVF-objects file to export');
 
     if (file == 0)
         return;
     end
 
-    progressBar = waitbar(0.2,'Loading all computed R2VFT objects. Please wait ...');
-    pause(.1);
+    midgetRGCMosaicInspector.say('Loading computed R2VFT objects. Please wait');
 
     fName = fullfile(path,file);
     load(fName, 'theRTFVTobjList', ...
@@ -18,25 +18,29 @@ function exportRetinalConePoolingParamsForAllFittedRTVFTobjects()
 
     retinalConePoolingParamsDictionary = containers.Map();
     for iRTVobjIndex = 1:numel(theRTFVTobjList)
-        theRTVFTobj = theRTFVTobjList{iRTVobjIndex};
         
         theKey = sprintf('%d center cones at (%2.3f,%2.3f)', ...
             theConesNumPooledByTheRFcenterGrid(iRTVobjIndex), ...
             theOpticsPositionGrid(iRTVobjIndex,1), ...
             theOpticsPositionGrid(iRTVobjIndex,2));
-        retinalConePoolingParamsDictionary(theKey) = theRTVFTobj.rfComputeStruct.retinalConePoolingParams;
+
+        theRTVFTobj = theRTFVTobjList{iRTVobjIndex};
+        s = struct();   
+        s.LconeRetinalConePoolingParams = theRTVFTobj.LconeRFcomputeStruct.retinalConePoolingParams;
+        s.MconeRetinalConePoolingParams = theRTVFTobj.MconeRFcomputeStruct.retinalConePoolingParams;
+
+        retinalConePoolingParamsDictionary(theKey) = s;
     end
 
-    close(progressBar);
+   
+    midgetRGCMosaicInspector.say('Loaded all computed R2VFT objects. Please specify a file name for export');
 
     suggestedExportFileName = strrep(fName, '.mat', '_FittedRTVTparamsOnly.mat');
     [file,path] = uiputfile(suggestedExportFileName);
     fName = fullfile(path,file);
 
-    fprintf('Fitted RTVFTparams for all objects will be exported to %s\n', fName);
-    fprintf('Hit Enter to continue ...');
-    pause
     save(fName, 'retinalConePoolingParamsDictionary', 'theConesNumPooledByTheRFcenterGrid', ...
         'theOpticsPositionGrid');
 
+    fprintf('Fitted RTVFTparams for all objects was exported to %s\n', fName);
 end

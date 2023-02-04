@@ -69,6 +69,9 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     initialRetinalConePoolingParamsStruct = [];
     if strcmpi(usePreviousFittedParamsValues, 'y')
         dropboxDir = midgetRGCMosaicInspector.localDropboxPath();
+
+        midgetRGCMosaicInspector.say('Select file with previously derived retinal cone pooling params');
+
         [file,path] = uigetfile(fullfile(dropboxDir, '*.mat'), ...
                             'Select a file');
     

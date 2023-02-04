@@ -34,8 +34,14 @@ function importParams(btn, app)
 
     suggestedParamsFileDirectory = fullfile(isetRootPath, 'ganglioncells');
 
+    midgetRGCMosaicInspector.say('Choose the params file to import');
     [fileName, filePath] = uigetfile({'*.mat'} ,...
-                        'Select a params file', suggestedParamsFileDirectory);
+                        'Choose the params file to import', suggestedParamsFileDirectory);
+
+    if ((isequal(fileName,0)) || (isequal(filePath,0)))
+        disp('Import cancelled');
+        return;
+    end
 
     theUserSelectedParamsFile = fullfile(filePath, fileName);
     load(theUserSelectedParamsFile, ...
@@ -59,11 +65,13 @@ function exportParams(btn, app)
     suggestedParamsFileName = 'params.mat';
     suggestedParamsFileDirectory = fullfile(isetRootPath, 'ganglioncells');
 
+    midgetRGCMosaicInspector.say('Choose exported params filename');
+    
     [fileName, filePath] = uiputfile(...
-        suggestedParamsFileName , 'Specify params filename', ...
+        suggestedParamsFileName , 'Choose exported params filename', ...
         suggestedParamsFileDirectory);
     if ((isequal(fileName,0)) || (isequal(filePath,0)))
-        disp('Not exporting anything\n');
+        disp('Export cancelled');
         return;
     end
 
@@ -127,11 +135,11 @@ end
 function executePipelineAction(btn, app)
 
     switch app.currentPipeline
-        case "compute: center-connected mRGC mosaic"
+        case "GENERATION: center-connected mRGC mosaic"
             midgetRGCMosaicGenerator.generateCenterConnectedMosaic(...
                 app.simulation.mosaicCenterParams);
 
-        case "compute: all R2VFT objects"
+        case "OPTIMIZATION: fit all locations R2VFT objects"
 
             RTVobjIndicesToBeComputed = 'all';
 
@@ -142,8 +150,8 @@ function executePipelineAction(btn, app)
             % of these pre-crash computed RTVF objects
             %RTVobjIndicesToBeComputed = [22:22];
             
-            RTVobjIndicesToBeComputed 
-            pause
+            %RTVobjIndicesToBeComputed 
+            %pause
             
             midgetRGCMosaicGenerator.generateR2VFTobjects(...
                 app.simulation.mosaicCenterParams, ...
@@ -151,13 +159,13 @@ function executePipelineAction(btn, app)
                 app.simulation.opticsParams, ...
                 'RTVobjIndicesToBeComputed', RTVobjIndicesToBeComputed);
 
-        case "inspect: single R2VFT object file"
+        case "VISUALIZATION: fits in single location R2VFT object file"
             midgetRGCMosaicInspector.quicklyInspectSingleRTVFobjectFile();
 
-        case "inspect: all R2VFT objects file"
+        case "VISUALIZATION: fits in all locations R2VFT objects file"
             midgetRGCMosaicInspector.quicklyInspectAllRTVFobjectsFile();
 
-        case "compute: refit R2VFT object(s)"
+        case "OPTIMIZATION: refit single location R2VFT object"
             % Ask user which R2VFT objects to refit 
             % (single position,  multiple center cones num)
             targetPosition = [];
@@ -176,19 +184,19 @@ function executePipelineAction(btn, app)
                 'updateRTVFobjectWithCenterConesNum', targetRFcenterConesNum, ...
                 'updateRTVFobjectWithCenterConeType', targetRFcenterConeType)
 
-        case "compute: manually replace a specific R2VFT object"
+        case "OPTIMIZATION: manually replace a specific R2VFT object"
             midgetRGCMosaicGenerator.replaceSpecificR2VFTobject()
 
-        case "export: retinal cone pooling params for all fitted R2VFT objects"
+        case "EXPORT: optimized retinal cone pooling params for all fitted R2VFT objects"
             midgetRGCMosaicInspector.exportRetinalConePoolingParamsForAllFittedRTVFTobjects();
 
-        case "compute: center-surround cone pooling kernels"
+        case "GENERATION: center-surround cone pooling kernels"
             midgetRGCMosaicGenerator.generateCenterSurroundConePoolingKernels(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.rfModelParams, ...
                 app.simulation.opticsParams)
 
-        case "visualize: spatial RFs"
+        case "VISUALIZATION: spatial RFs"
             % Ask user how many RGCs to visualize
             maxRGCsNum = input('How many RGC RFs to visualize? ([Hit enter for all): ');
 
@@ -196,13 +204,13 @@ function executePipelineAction(btn, app)
                 app.simulation.mosaicCenterParams, ...
                 maxRGCsNum);
          
-        case "compute: frozen midgetRGCMosaic (with current center-surround cone pooling weights)"
+        case "GENERATION: frozen midgetRGCMosaic (with current center-surround cone pooling weights)"
             midgetRGCMosaicGenerator.freezeMosaic(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.rfModelParams, ...
                 app.simulation.opticsParams)
 
-        case "validate: pre-compute LM-non-opponent cone mosaic STFs"
+        case "VALIDATION: pre-compute cone mosaic STFs"
             % Ask user whether to use parfor or not
             useParfor = input('Use parfor for the cone mosaic computes? ([Hit enter to use parfor): ', 's');
             if (isempty(useParfor)) || (ischar(useParfor) && strcmpi(useParfor, 'y'))
@@ -217,7 +225,7 @@ function executePipelineAction(btn, app)
                  app.simulation.opticsParams, ...
                  useParfor);
 
-        case "validate: compute LM-non-opponent RGC STFs (midgetRGCMosaic object handles the computation of cone mosaic responses)"
+        case "VALIDATION: compute RGC STFs (midgetRGCMosaic object handles the computation of cone mosaic responses)"
             % Ask user whether to use parfor or not
             useParfor = input('Use parfor for the midgetRGCMosaic computes? ([Hit enter to use parfor): ', 's');
             if (isempty(useParfor)) || (ischar(useParfor) && strcmpi(useParfor, 'y'))
@@ -232,7 +240,7 @@ function executePipelineAction(btn, app)
                  app.simulation.opticsParams, ...
                  useParfor);
 
-        case "validate: compute LM-non-opponent RGC STFs from pre-computed LM-non-opponent cone mosaic STFs"
+        case "VALIDATION: compute RGC STFs from pre-computed cone mosaic STFs"
             useParfor = true;
             midgetRGCMosaicInspector.computeMosaicLMnonOpponentSTFsFromConeMosaicLMnonOpponentSTFs(...
                  app.simulation.mosaicCenterParams, ...
@@ -240,7 +248,7 @@ function executePipelineAction(btn, app)
                  app.simulation.opticsParams, ...
                  useParfor);
 
-        case "validate: fit LM-non-opponent STFs"
+        case "VALIDATION: fit STFs"
             % Ask user how many RGCs to analyze
             maxRGCsNum = input('How many RGCs to fit? ([Hit enter for all): ');
 
@@ -251,7 +259,7 @@ function executePipelineAction(btn, app)
                 maxRGCsNum);
 
 
-        case "validate: visualize STF fits"
+        case "VALIDATION: visualize STF fits across eccentricities"
             midgetRGCMosaicInspector.visualizeMosaicSTFfits(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.rfModelParams, ...
@@ -269,7 +277,7 @@ end
 function generateGUI(obj)
 
     % Create figure window
-    obj.mainView = uifigure('Position', [30 1500 1000 420], ...
+    obj.mainView = uifigure('Position', [30 1500 1000 450], ...
         'WindowStyle', 'AlwaysOnTop', ...
         'Scrollable', 'on', ...
         'Color', [0.3 0.3 0.3], ...
@@ -360,7 +368,7 @@ function generateGUI(obj)
     thePipelineLabel.Layout.Row = 1;
     thePipelineLabel.Layout.Column = 1;
     thePipelineLabel.Text = "pipeline";
-    thePipelineLabel.HorizontalAlignment = "center";
+    thePipelineLabel.HorizontalAlignment = "right";
     thePipelineLabel.FontSize = 20;
     thePipelineLabel.FontColor = [1 0.8 0.2];
     thePipelineLabel.FontWeight = 'Bold';
@@ -371,27 +379,27 @@ function generateGUI(obj)
     thePipelineDropdown.FontSize = 14;
     thePipelineDropdown.BackgroundColor = [1 0.9 0.6];
     thePipelineDropdown.Items = [ ...
-        "compute: center-connected mRGC mosaic", ...
-        "compute: all R2VFT objects", ...
-        "inspect: single R2VFT object file", ...
-        "inspect: all R2VFT objects file", ...
-        "compute: refit R2VFT object(s)", ...
-        "compute: manually replace a specific R2VFT object", ...
-        "export: retinal cone pooling params for all fitted R2VFT objects", ...
-        "compute: center-surround cone pooling kernels", ...
-        "visualize: spatial RFs", ...
-        "compute: frozen midgetRGCMosaic (with current center-surround cone pooling weights)", ...
-        "validate: pre-compute LM-non-opponent cone mosaic STFs", ...
-        "validate: compute LM-non-opponent RGC STFs (midgetRGCMosaic object handles the computation of cone mosaic responses)", ...
-        "validate: compute LM-non-opponent RGC STFs from pre-computed LM-non-opponent cone mosaic STFs", ...
-        "validate: fit LM-non-opponent STFs", ...
-        "validate: visualize STF fits" ...
+        "GENERATION: center-connected mRGC mosaic", ...
+        "OPTIMIZATION: fit all locations R2VFT objects", ...
+        "VISUALIZATION: fits in single location R2VFT object file", ...
+        "VISUALIZATION: fits in all locations R2VFT objects file", ...
+        "OPTIMIZATION: refit single location R2VFT object", ...
+        "OPTIMIZATION: manually replace a specific R2VFT object", ...
+        "EXPORT: optimized retinal cone pooling params for all fitted R2VFT objects", ...
+        "GENERATION: center-surround cone pooling kernels", ...
+        "VISUALIZATION: spatial RFs", ...
+        "GENERATION: frozen midgetRGCMosaic (with current center-surround cone pooling weights)", ...
+        "VALIDATION: pre-compute cone mosaic STFs", ...
+        "VALIDATION: compute RGC STFs (midgetRGCMosaic object handles the computation of cone mosaic responses)", ...
+        "VALIDATION: compute RGC STFs from pre-computed cone mosaic STFs", ...
+        "VALIDATION: fit STFs", ...
+        "VALIDATION: visualize STF fits across eccentricities" ...
         ];
-
     % Current action
     obj.currentPipeline = thePipelineDropdown.Items{4};
     thePipelineDropdown.Value = obj.currentPipeline;
     thePipelineDropdown.ValueChangedFcn = @(src,event) dropDownPipelineChanged(src,event, obj);
+    
     
     % The ExecutePipelineButton
     theExecutePipelineButton.Layout.Row = 2;
@@ -436,7 +444,42 @@ end
 
 
 function updateMosaicParams(btn, app)
+
+    app.simulation.mosaicCenterParams.positionDegs(1) = queryUserForParamValue(...
+        'position, x (degs)', [], app.simulation.mosaicCenterParams.positionDegs(1));
+    updateParamsTables(app);
+
+    app.simulation.mosaicCenterParams.positionDegs(2) = queryUserForParamValue(...
+        'position, y (degs)', [], app.simulation.mosaicCenterParams.positionDegs(2));
+    updateParamsTables(app);
+
+    app.simulation.mosaicCenterParams.sizeDegs(1) = queryUserForParamValue(...
+        'size, x (degs)', [], app.simulation.mosaicCenterParams.sizeDegs(1));
+    updateParamsTables(app);
+
+    app.simulation.mosaicCenterParams.sizeDegs(2) = queryUserForParamValue(...
+        'size, y (degs)', [], app.simulation.mosaicCenterParams.sizeDegs(2));
+    updateParamsTables(app);
 end
+
+function val = queryUserForParamValue(paramName, validParamValues, oldVal)
+    val = oldVal;
+    if (~isempty(validParamValues))
+        fprintf('Valid values for ''%s'': \n', paramName);
+        validParamValues
+    end
+    if (ischar(oldVal))
+        newVal = input(sprintf('Update ''%s'' (current: ''%s'')? Enter to keep current value:', paramName, oldVal), 's');
+    else
+        newVal = input(sprintf('Update ''%s'' (current: %g) ? Enter to keep current value: ', paramName, oldVal));
+    end
+
+    if (~isempty(newVal))
+        val = newVal;
+    end
+
+end
+
 
 function exitButtonAction(btn, app)
     app.mainView.delete();
