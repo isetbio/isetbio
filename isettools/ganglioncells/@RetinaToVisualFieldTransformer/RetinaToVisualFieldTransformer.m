@@ -184,17 +184,25 @@ classdef RetinaToVisualFieldTransformer < handle
 
             % Compute retinal cone pooling params to generate the target
             % visual RF for L-cone center RGCs
+            if (~isempty(initialRetinalConePoolingParamsStruct))
+                LconeRetinalConePoolingParams = initialRetinalConePoolingParamsStruct.LconeRetinalConePoolingParams;
+                MconeRetinalConePoolingParams = initialRetinalConePoolingParamsStruct.MconeRetinalConePoolingParams;
+            else
+                LconeRetinalConePoolingParams = [];
+                MconeRetinalConePoolingParams = [];
+            end
+
             obj.LconeRFcomputeStruct = obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, ...
                 weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
                 cMosaic.LCONE_ID, ...
-                initialRetinalConePoolingParamsStruct.LconeRetinalConePoolingParams);
+                LconeRetinalConePoolingParams);
 
             % Compute retinal cone pooling params to generate the target
             % visual RF for M-cone center RGCs
             obj.MconeRFcomputeStruct = obj.retinalRFparamsForTargetVisualRF(indicesOfConesPooledByTheRFcenter, ...
                 weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
                 cMosaic.MCONE_ID, ...
-                initialRetinalConePoolingParamsStruct.MconeRetinalConePoolingParams);
+                MconeRetinalConePoolingParams);
 
             % Save the computed object
             if (~isempty(computedRTVObjectExportDirectory))
