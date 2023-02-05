@@ -3,7 +3,7 @@ function theFrozenMosaicFileName = frozenMosaicFileName(mosaicCenterParams, H1ce
     opticsPostFix = sprintf('%s_Rank_%d_Pupil_%1.1f', ...
                     opticsParams.ZernikeDataBase, opticsParams.subjectRankOrder, opticsParams.pupilDiameterMM);
 
-    modelEncodingPostFix = sprintf('_R2VFTobjectsForOptics_%s_and_H1cellIndex_%d', opticsPostFix, H1cellIndex);
+    modelEncodingPostFix = sprintf('_%s_H1cellIndex_%d', opticsPostFix, H1cellIndex);
 
     theLiveMosaicFileName = midgetRGCMosaicInspector.mosaicFileName(mosaicCenterParams);
     theFrozenMosaicFileName = strrep(theLiveMosaicFileName, '.mat', sprintf('%s_Frozen.mat', modelEncodingPostFix));

@@ -58,10 +58,9 @@ function visualizeMosaicBorders(obj, sourceMidgetRGCMosaic, theROI)
     sourceRGCXYmin = min(sourceMidgetRGCMosaic.rgcRFpositionsDegs, [],1);
     sourceRGCXYmax = max(sourceMidgetRGCMosaic.rgcRFpositionsDegs, [],1);
 
-
     hFig = figure(); clf;
-    set(hFig, 'Position', [10 10 1950 850], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.02 0.08 0.5 0.90]);
+    set(hFig, 'Position', [10 10 1950 1150], 'Color', [1 1 1]);
+    ax = subplot('Position', [0.04 0.25 0.3 0.60]);
     theROI.visualize(...
        'figureHandle', hFig, ...
        'axesHandle', ax, ...
@@ -83,23 +82,12 @@ function visualizeMosaicBorders(obj, sourceMidgetRGCMosaic, theROI)
     ylabel(ax, 'y (degs)');
 
     
-    ax = subplot('Position', [0.56 0.06 0.40 0.90]);
+    ax = subplot('Position', [0.41 0.05 0.60 0.93]);
     obj.visualize(...
         'figureHandle', hFig, ...
         'axesHandle', ax, ...
         'backgroundColor', [0.7 0.7 0.6]);
 
-%     pRGC = plotRect(ax, theRGCXYmin(1), theRGCXYmax(1), theRGCXYmin(2), theRGCXYmax(2), [1 0 0]);
-%     hold(ax, 'on');
-%     plot(obj.rgcRFpositionsDegs(:,1), obj.rgcRFpositionsDegs(:,2), 'ko');
-%     axis(ax, 'equal');
-%     set(ax, 'XLim', [theRGCXYmin(1)-0.2 theRGCXYmax(1)+0.2], 'YLim', [theRGCXYmin(2)-0.2 theRGCXYmax(2)+0.2]);
-%     set(ax, 'XTick', -20:0.2:20, 'YTick', -20:0.2:20);
-%     grid(ax, 'on');
-%     xtickangle(ax, 0);
-%     set(ax, 'FontSize', 16, 'TickDir', 'both');
-%     xlabel(ax, 'x (degs)');
-%     ylabel(ax, 'y (degs)');
     title(obj.name)
 end
 

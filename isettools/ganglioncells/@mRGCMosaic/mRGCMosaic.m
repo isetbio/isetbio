@@ -129,7 +129,9 @@ classdef mRGCMosaic < handle
                 p.Results.visualizeSpatialRelationshipToSourceMosaic);
 
             % The type of the majority of cone types in the RF center
-            obj.centerSubregionMajorityConeTypes = obj.majorityConeTypes(1:obj.rgcsNum);
+            [~, ...
+                obj.centerSubregionConeTypesNums, ...
+                obj.centerSubregionMajorityConeTypes] = obj.centerConeTypeWeights(1:obj.rgcsNum);
             
         end % Constructor
 
@@ -143,8 +145,12 @@ classdef mRGCMosaic < handle
         % Method to visualize different aspects of the mosaic
         visualize(obj, varargin);
 
-        % Method to return the type of the majority of cones in the RF center
-        [theMajorityCenterConeType, theCenterConeTypesNums] = majorityCenterConeType(obj, theRGCindex);
+        % Method to return the net weights and numbers of types of cones in the RF center
+        % as well as the type with the strongest net weight. If 2 types
+        % of cones have net weights that are close to each other (90%)
+        % then theMajorityConeType is set to nan
+        [theCenterConeTypesWeights, theCenterConeTypesNum, theMajorityConeTypes] = ...
+            centerConeTypeWeights(obj, theRGCindices);
 
     end % Public methods
 

@@ -53,7 +53,7 @@ function visualize(obj, varargin)
     % Generate the visualization cache
     xSupport = [];
     ySupport = []; 
-    spatialSupportSamples = 60;
+    spatialSupportSamples = 12;
     generateVisualizationCache(obj, xSupport, ySupport, spatialSupportSamples);
 
     % Determine X,Y limits
@@ -142,7 +142,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisua
             hFig = figure(); clf;
             set(hFig, 'Color', [1 1 1], 'Position', [10 10 1120 1050], 'Name', obj.name);
         end
-        ax = subplot('Position', [0.05 0.05 0.93 0.93]);
+        ax = subplot('Position', [0.06 0.05 0.93 0.93]);
     end
 
     
@@ -421,10 +421,7 @@ function generateVisualizationCache(obj, xSupport, ySupport, spatialSupportSampl
     obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
 
     fprintf(' Done in %2.1f seconds\n', toc);
-
 end
-
-
 
 
 function contourData = subregionOutlineContourFromPooledCones(...
@@ -432,7 +429,7 @@ function contourData = subregionOutlineContourFromPooledCones(...
     xSupport, ySupport, spatialSupportSamples)
 
     % Compute spatial support
-    xSep = max(coneRc)*3;
+    xSep = max(coneRc)*2*sqrt(numel(poolingWeights));
     if (isempty(xSupport))
         xx = conePos(:,1);
         xSupport = linspace(min(xx)-xSep,max(xx)+xSep,spatialSupportSamples);

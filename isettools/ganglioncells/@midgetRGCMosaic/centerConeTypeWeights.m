@@ -28,7 +28,7 @@ function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] =
     theMajorityConeType = coneTypes(idx(1));
     if (numel(find(theCenterConeTypeWeights>0)) > 1)
         ratio = theCenterConeTypeWeights(idx(2))/theCenterConeTypeWeights(idx(1));
-        if (ratio  >thresholdRatioForEqualWeights)
+        if (ratio  > thresholdRatioForEqualWeights)
             % nearly equal weights, majorityConeType = nan
             theMajorityConeType = nan;
         end
