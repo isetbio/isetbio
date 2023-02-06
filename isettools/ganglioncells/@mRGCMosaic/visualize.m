@@ -53,8 +53,7 @@ function visualize(obj, varargin)
     % Generate the visualization cache
     xSupport = [];
     ySupport = []; 
-    spatialSupportSamples = 12;
-    generateVisualizationCache(obj, xSupport, ySupport, spatialSupportSamples);
+    generateVisualizationCache(obj, xSupport, ySupport);
 
     % Determine X,Y limits
     if (isempty(domainVisualizationLimits))
@@ -128,7 +127,11 @@ function visualize(obj, varargin)
 end
 
 
-function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisualizationTicks, ...
+
+
+
+function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
+        XLims, YLims, domainVisualizationTicks, ...
     identifyInputCones, labelRGCsWithIndices, ...
     activation, activationRange, activationColorMap, ...
     colorBarTickLabelPostFix, colorbarTickLabelColor, ...
@@ -191,63 +194,24 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisua
     patch(S, 'Parent', ax)
 
 
+    % Identify input cones
     if (identifyInputCones)
         hold(ax, 'on')
-
-        % Plot the connections from the RF center to the input L-cones
-        idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.LCONE_ID);
-        plot(ax, ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-            'Color', [0 0 0],...
-            'LineWidth', 3.0);  
-        plot(ax, ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-            'Color', [1 0 0],...
-            'LineWidth', 1.5); 
-
-        idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.MCONE_ID);
-        plot(ax, ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-            'Color', [0 0 0],...
-            'LineWidth', 3.0); 
-        plot(ax, ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-            'Color', [0 1 0],...
-            'LineWidth', 1.5); 
-
-        % Plot the L-cones
-        plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds,1), ...
-                 obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds,2), ...
-                 'r.', 'MarkerSize', 10);
-
-        % Plot the M-cones
-        plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds ,1), ...
-                 obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds ,2), ...
-                 'g.',  'MarkerSize', 10);
-
-        % Plot the S-cones
-        plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,1), ...
-                 obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,2), ...
-                 'b.',  'MarkerSize', 10);
+        labelConeTypes(obj,ax)
     end
 
     if (~isempty(labelRGCsWithIndices))
         hold(ax, 'on')
         for iRGC = 1:numel(labelRGCsWithIndices)
             theRGCindex = labelRGCsWithIndices(iRGC);
-            S = obj.visualizationCache.theContourData{theRGCindex}{1};
+            S = obj.visualizationCache.rfCenterContourData{theRGCindex}{1};
             S.FaceVertexCData = 0.5;
             S.FaceColor = 'flat';
-            S.EdgeColor = [1 1 0];
+            S.EdgeColor = [1 0 0.6];
             S.FaceAlpha = 0.0;
-            S.LineWidth = 1.0;
+            S.LineWidth = 2.0;
             S.LineStyle = '-';
             patch(S, 'Parent', ax);
-
         end
     end
 
@@ -332,7 +296,51 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, XLims, YLims, domainVisua
 end
 
 
-function generateVisualizationCache(obj, xSupport, ySupport, spatialSupportSamples)
+function labelConeTypes(obj,ax)
+   
+    % Plot the connections from the RF center to the input L-cones
+    idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.LCONE_ID);
+    plot(ax, ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+        'Color', [0 0 0],...
+        'LineWidth', 3.0);  
+    plot(ax, ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+        'Color', [1 0 0],...
+        'LineWidth', 1.5); 
+
+    idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.MCONE_ID);
+    plot(ax, ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+        'Color', [0 0 0],...
+        'LineWidth', 3.0); 
+    plot(ax, ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+        'Color', [0 1 0],...
+        'LineWidth', 1.5); 
+
+    % Plot the L-cones
+    plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds,1), ...
+             obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds,2), ...
+             'r.', 'MarkerSize', 10);
+
+    % Plot the M-cones
+    plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds,1), ...
+             obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds,2), ...
+             'g.',  'MarkerSize', 10);
+
+    % Plot the S-cones
+    plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,1), ...
+             obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,2), ...
+             'b.',  'MarkerSize', 10);
+end
+        
+
+function generateVisualizationCache(obj, xSupport, ySupport)
     if (isfield(obj.visualizationCache, 'rfCenterPatchData')) && ...
        (~isempty(obj.visualizationCache.rfCenterPatchData))
         % Already in visualizationCache, so return
@@ -342,35 +350,67 @@ function generateVisualizationCache(obj, xSupport, ySupport, spatialSupportSampl
     fprintf('\nComputing RF center outline contours. Please wait ...');
     tic
 
+    
+
+    % Compute graphic data for center contours
+    spatialSupportSamples = 12;
+    minCenterConePoolingWeights = max(obj.centerConePoolingMatrix,[], 1)* 0.001;
+    [verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments] = ...
+        graphicDataForSubregion(obj, obj.centerConePoolingMatrix, minCenterConePoolingWeights, ...
+        xSupport, ySupport, spatialSupportSamples);
+
+    
+
+    obj.visualizationCache.rfCenterContourData = theContourData;
+    obj.visualizationCache.rfCenterPatchData.Vertices = verticesList;
+    obj.visualizationCache.rfCenterPatchData.Faces = facesList;
+    obj.visualizationCache.rfCenterPatchData.FaceVertexCData = colorVertexCData;
+    obj.visualizationCache.rfCenterConeConnectionLineSegments = rfCenterConeConnectionLineSegments;
+
+    % Find all input cone indices that are connected to the RF surrounds
+    surroundConnectedConeIndices = find(sum(obj.surroundConePoolingMatrix,2) > 0);
+    xx = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,1));
+    yy = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,2));
+    obj.visualizationCache.surroundConesXrange = [min(xx) max(xx)];
+    obj.visualizationCache.surroundConesYrange = [min(yy) max(yy)];
+    idx = find(obj.inputConeMosaic.coneTypes(surroundConnectedConeIndices) == cMosaic.LCONE_ID);
+    obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
+    idx = find(obj.inputConeMosaic.coneTypes(surroundConnectedConeIndices) == cMosaic.MCONE_ID);
+    obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
+
+    fprintf(' Done in %2.1f seconds\n', toc);
+end
+
+function [verticesList, facesList, colorVertexCData, theContourData, subregionConeConnectionLineSegments] = ...
+        graphicDataForSubregion(obj, conePoolingMatrix, minPoolingWeights, xSupport, ySupport, spatialSupportSamples)
+    
     coneCharacteristicRadiiDegs = ...
         obj.inputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
         obj.inputConeMosaic.coneApertureDiametersDegs;
 
-
     verticesNumForRGC = zeros(1, obj.rgcsNum);
     theContourData = cell(1, obj.rgcsNum);
  
-
     lineSegmentIndex = 0;
     for iRGC = 1:obj.rgcsNum
-        % Retrieve the center cone indices & weights
-        centerConnectivityVector = full(squeeze(obj.centerConePoolingMatrix(:, iRGC)));
-        centerConeIndices = find(centerConnectivityVector > 0.0001);
+        % Retrieve the subregion cone indices & weights
+        connectivityVector = full(squeeze(conePoolingMatrix(:, iRGC)));
+        subregionConeIndices = find(connectivityVector > minPoolingWeights(iRGC));
 
-        theConePoolingWeights = centerConnectivityVector(centerConeIndices);
-        theConePositions = obj.inputConeMosaic.coneRFpositionsDegs(centerConeIndices,:);
-        theConeCharacteristicRadii = coneCharacteristicRadiiDegs(centerConeIndices);
-        theConeTypes = obj.inputConeMosaic.coneTypes(centerConeIndices);
+        theConePoolingWeights = connectivityVector(subregionConeIndices);
+        theConePositions = obj.inputConeMosaic.coneRFpositionsDegs(subregionConeIndices,:);
+        theConeCharacteristicRadii = coneCharacteristicRadiiDegs(subregionConeIndices);
+        theConeTypes = obj.inputConeMosaic.coneTypes(subregionConeIndices);
 
         inputConesNum = size(theConePositions,1);
         if (inputConesNum > 1)
             for iCone = 1:inputConesNum
                 lineSegmentIndex = lineSegmentIndex + 1;
-                rfCenterConeConnectionLineSegments.Xpos(:, lineSegmentIndex) = ...
+                subregionConeConnectionLineSegments.Xpos(:, lineSegmentIndex) = ...
                     [obj.rgcRFpositionsDegs(iRGC,1) theConePositions(iCone,1)]';
-                rfCenterConeConnectionLineSegments.Ypos(:, lineSegmentIndex) = ...
+                subregionConeConnectionLineSegments.Ypos(:, lineSegmentIndex) = ...
                     [obj.rgcRFpositionsDegs(iRGC,2) theConePositions(iCone,2)]';
-                rfCenterConeConnectionLineSegments.coneTypes(lineSegmentIndex) = theConeTypes(iCone);
+                subregionConeConnectionLineSegments.coneTypes(lineSegmentIndex) = theConeTypes(iCone);
             end
         end
 
@@ -402,25 +442,6 @@ function generateVisualizationCache(obj, xSupport, ySupport, spatialSupportSampl
         currentFacesNum = currentFacesNum + newVerticesNum;
     end
 
-    obj.visualizationCache.theContourData = theContourData;
-    obj.visualizationCache.rfCenterConeConnectionLineSegments = rfCenterConeConnectionLineSegments;
-    obj.visualizationCache.rfCenterPatchData.VerticesNumForRGC = verticesNumForRGC;
-    obj.visualizationCache.rfCenterPatchData.Vertices = verticesList;
-    obj.visualizationCache.rfCenterPatchData.Faces = facesList;
-    obj.visualizationCache.rfCenterPatchData.FaceVertexCData = colorVertexCData;
-
-    % Find all input cone indices that are connected to the RF surrounds
-    surroundConnectedConeIndices = find(sum(obj.surroundConePoolingMatrix,2) > 0);
-    xx = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,1));
-    yy = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,2));
-    obj.visualizationCache.surroundConesXrange = [min(xx) max(xx)];
-    obj.visualizationCache.surroundConesYrange = [min(yy) max(yy)];
-    idx = find(obj.inputConeMosaic.coneTypes(surroundConnectedConeIndices) == cMosaic.LCONE_ID);
-    obj.visualizationCache.lConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
-    idx = find(obj.inputConeMosaic.coneTypes(surroundConnectedConeIndices) == cMosaic.MCONE_ID);
-    obj.visualizationCache.mConeIndicesConnectedToRGCsurrounds = surroundConnectedConeIndices(idx);
-
-    fprintf(' Done in %2.1f seconds\n', toc);
 end
 
 
@@ -462,6 +483,8 @@ function contourData = subregionOutlineContourFromPooledCones(...
     contourData = generateContourData(spatialSupportXY, RF, zLevels);
 end
 
+
+
 function cData = generateContourData(spatialSupportXY, zData, zLevels)
     xSupport = squeeze(spatialSupportXY(:,1));
     ySupport = squeeze(spatialSupportXY(:,2));
@@ -474,7 +497,7 @@ function cData = generateContourData(spatialSupportXY, zData, zLevels)
     while (startPoint < dataPoints)
         levelsNum = levelsNum + 1;
         if (levelsNum > 1)
-            theLevel = C(1,startPoint)
+            theLevel = C(1,startPoint);
         end
         theLevelVerticesNum = C(2,startPoint);
         x = C(1,startPoint+(1:theLevelVerticesNum));

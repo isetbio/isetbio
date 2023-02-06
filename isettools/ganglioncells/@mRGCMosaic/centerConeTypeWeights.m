@@ -1,4 +1,4 @@
-function [allCellsCenterConeTypeWeights, allCellsCenterConeTypeNum, allCellsMajorityConeType] = ...
+function [allCellsCenterConeTypeWeights, allCellsCenterConeTypeNum, allCellsMajorityConeType, allCellsCenterConesNum] = ...
             centerConeTypeWeights(obj, theRGCindices)
 
     coneTypes = [cMosaic.LCONE_ID cMosaic.MCONE_ID cMosaic.SCONE_ID];
@@ -6,7 +6,8 @@ function [allCellsCenterConeTypeWeights, allCellsCenterConeTypeNum, allCellsMajo
     allCellsCenterConeTypeWeights = zeros(numel(theRGCindices), numel(coneTypes));
     allCellsCenterConeTypeNum = zeros(numel(theRGCindices), numel(coneTypes));
     allCellsMajorityConeType = zeros(numel(theRGCindices),1);
-
+    allCellsCenterConesNum = zeros(numel(theRGCindices),1);
+    
     parfor iRGC = 1:numel(theRGCindices)
         theRGCindex = theRGCindices(iRGC);
 
@@ -42,6 +43,7 @@ function [allCellsCenterConeTypeWeights, allCellsCenterConeTypeNum, allCellsMajo
         allCellsCenterConeTypeNum(iRGC,:) = theCenterConeTypeNum;
         allCellsCenterConeTypeWeights(iRGC,:) = theCenterConeTypeWeights;
         allCellsMajorityConeType(iRGC) = theMajorityConeType;
+        allCellsCenterConesNum(iRGC) = numel(indicesOfCenterCones);
     end
      
 end

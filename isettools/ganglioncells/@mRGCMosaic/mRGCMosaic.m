@@ -61,6 +61,9 @@ classdef mRGCMosaic < handle
         % How many center cones are of type cMosaic.LCONE_ID, cMosaic.MCONE_ID, cMosaic.SCONE_ID
         centerSubregionConeTypesNums;
 
+        % How many cones in each RF center
+        centerSubregionConesNums;
+
         % The number of RGCs
         rgcsNum;
 
@@ -131,7 +134,8 @@ classdef mRGCMosaic < handle
             % The type of the majority of cone types in the RF center
             [~, ...
                 obj.centerSubregionConeTypesNums, ...
-                obj.centerSubregionMajorityConeTypes] = obj.centerConeTypeWeights(1:obj.rgcsNum);
+                obj.centerSubregionMajorityConeTypes, ...
+                obj.centerSubregionConesNums] = obj.centerConeTypeWeights(1:obj.rgcsNum);
             
         end % Constructor
 
@@ -142,14 +146,17 @@ classdef mRGCMosaic < handle
         [response, responseTemporalSupport] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupport, varargin);
 
-        % Method to visualize different aspects of the mosaic
+        % Method to visualize the mRGC mosaic and its activation (RF centers only)
         visualize(obj, varargin);
+
+        % Method to visual the RF structure of individual RGCs
+        visualizeRFs(obj, rgcIndices, varargin);
 
         % Method to return the net weights and numbers of types of cones in the RF center
         % as well as the type with the strongest net weight. If 2 types
         % of cones have net weights that are close to each other (90%)
         % then theMajorityConeType is set to nan
-        [theCenterConeTypesWeights, theCenterConeTypesNum, theMajorityConeTypes] = ...
+        [theCenterConeTypesWeights, theCenterConeTypesNum, theMajorityConeTypes, theCenterConesNum] = ...
             centerConeTypeWeights(obj, theRGCindices);
 
     end % Public methods
