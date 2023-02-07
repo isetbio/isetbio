@@ -56,7 +56,7 @@ function [stimParams, theDisplay] = setupVisualSTFmappingExperiment(coneMosaicSi
             );
 
 
-    [~, stimParams.spatialPhasesDegs, spatialSupportDegs] = ...
+    [~, stimParams.spatialPhasesDegs] = ...
         rfMappingStimulusGenerator.driftingGratingFrames(stimParams);
    
 end

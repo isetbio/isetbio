@@ -140,11 +140,15 @@ classdef mRGCMosaic < handle
         end % Constructor
 
         % Method to compute optics at a given position
-        theOI = multiFocalRTVFopticsAtPosition(obj, eccDegs);
+        [theOI, thePSF, theZcoeffs] = multiFocalRTVFopticsAtPosition(obj, eccDegs);
 
         % Compute method
         [response, responseTemporalSupport] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupport, varargin);
+
+        % Method to return the optics for the subject that was used to
+        % derive the RF structure at some user-specified position
+        [theOI, thePSF, theZcoeffs] = nativeOptics(obj, varargin);
 
         % Method to visualize the mRGC mosaic and its activation (RF centers only)
         visualize(obj, varargin);
@@ -158,6 +162,7 @@ classdef mRGCMosaic < handle
         % then theMajorityConeType is set to nan
         [theCenterConeTypesWeights, theCenterConeTypesNum, theMajorityConeTypes, theCenterConesNum] = ...
             centerConeTypeWeights(obj, theRGCindices);
+
 
     end % Public methods
 
