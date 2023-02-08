@@ -203,7 +203,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
             photons(:,:,k) = flipud(squeeze(photons(:,:,k)));
         end
 
-        % Phad photons field as needed to accomodate eye movements
+        % Pad photons field as needed to accomodate eye movements
         photons = padPhotons(photons, additionalPixels);
     
         % Update oiSize

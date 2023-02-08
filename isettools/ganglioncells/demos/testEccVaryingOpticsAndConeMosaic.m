@@ -35,7 +35,8 @@ function [theConeMosaic, thePSF, wavelengthSupport, psfSupportX] = eccVaryingOpt
     micronsPerDegree = sizeMicrons(1)/sizeDegs(1);
 
     % Compute spacing for cone mosaic appropriate for this eccentricity
-    coneSpacingDegs = RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccRadiusDegs, 'temporal meridian');
+    useParfor = true;
+    coneSpacingDegs = RGCmodels.Watson.compute.coneSpacingAlongMeridianInRightEyeVisualField(eccRadiusDegs, 'temporal meridian', useParfor);
     coneSpacingMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(coneSpacingDegs, eccRadiusDegs);
     coneApertureMicrons = RGCmodels.Watson.constants.coneApertureToDiameterRatio * coneSpacingMicrons;
     

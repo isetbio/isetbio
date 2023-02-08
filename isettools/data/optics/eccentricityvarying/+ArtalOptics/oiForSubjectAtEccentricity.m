@@ -30,13 +30,13 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
     refractiveErrorMicrons = wvfDefocusDioptersToMicrons(refractiveErrorDiopters, pupilDiamMM);
     
-    
     % Obtain z-coeffs at desired eccentricity
-    if (subjectID == 0)
-        zCoeffs = zCoeffsForSubjectAtEcc(1, whichEye, ecc(1), subtractCentralRefraction, refractiveErrorMicrons);
-        zCoeffs = 0*zCoeffs;
+    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc(1), subtractCentralRefraction, refractiveErrorMicrons);
+
+    if (subjectID == 0)   
+        measurementPupilDiameterMM = pupilDiamMM;
     else
-        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc(1), subtractCentralRefraction, refractiveErrorMicrons);
+        measurementPupilDiameterMM = ArtalOptics.constants.measurementPupilDiamMM;
     end
     
     if (isempty(zCoeffs))
@@ -52,7 +52,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     [thePSF, ~, ~,~, psfSupportMinutesX, psfSupportMinutesY, theWVF] = ...
         computePSFandOTF(zCoeffs, ...
              wavelengthsListToCompute, wavefrontSpatialSamples, ...
-             ArtalOptics.constants.measurementPupilDiamMM, ...
+             measurementPupilDiameterMM, ...
              pupilDiamMM, inFocusWavelength, false, ...
              'doNotZeroCenterPSF', ~zeroCenterPSF, ...
              'micronsPerDegree', micronsPerDegree, ...
@@ -108,27 +108,35 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
     indexOfZeroEcc = find(ArtalOptics.constants.measurementHorizontalEccentricities==0);
     
     interpolatedZcoeffs = zeros(1, 30);
+
+    % The Artal Z-coeff indices start from 0, not 1
+    theDefocusZcoeffIndex = wvfOSAIndexToVectorIndex('defocus') - 1;
+
     for zIndex = 1:zCoeffsNum
          % Retrieve the X spatial map for this z-coeff
-         z2Dmap = squeeze(zMap(:,zIndex));
+         z1Dmap = squeeze(zMap(:,zIndex));
          
-         % The 4-th z-coeff is defocus. Subtract central defocus from all
-         % spatial positions
-         if ((zCoeffIndices(zIndex) == 4) && (subtractCentralRefraction))
-             z2Dmap = z2Dmap - z2Dmap(indexOfZeroEcc);
+         % Subtract central defocus from all spatial positions
+         if ((zCoeffIndices(zIndex) == theDefocusZcoeffIndex) && (subtractCentralRefraction))
+             z1Dmap = z1Dmap - z1Dmap(indexOfZeroEcc);
          end
 
          % Add refractive error
-         if (zCoeffIndices(zIndex) == 4)
-             z2Dmap = z2Dmap + refractiveErrorMicrons;
+         if (zCoeffIndices(zIndex) == theDefocusZcoeffIndex)
+             z1Dmap = z1Dmap + refractiveErrorMicrons;
          end
 
          % Interpolate the XY map at the desired eccentricity.
-         interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp1(ArtalOptics.constants.measurementHorizontalEccentricities, z2Dmap, ecc(1));
-    end
-     
-    if (subjectID == 0)
-        interpolatedZcoeffs = 0*interpolatedZcoeffs;
+         % Note the + 1 added to the z-coeff. This is to ensure that
+         % we are addressing the correct indices expected by the wvf object
+         interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp1(...
+             ArtalOptics.constants.measurementHorizontalEccentricities, z1Dmap, ecc(1));
     end
     
+    if (subjectID == 0)
+        % All zero coefficients
+        interpolatedZcoeffs = 0*interpolatedZcoeffs;
+        % Add refractive error
+        interpolatedZcoeffs(wvfOSAIndexToVectorIndex('defocus')) = refractiveErrorMicrons;
+    end
 end

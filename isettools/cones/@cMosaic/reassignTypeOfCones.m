@@ -1,6 +1,11 @@
 function reassignTypeOfCones(obj, coneIndices, newConeType)
 
+    
     oldConesNum = numel(obj.coneTypes);
+    if (isempty(coneIndices))
+        coneIndices = 1:oldConesNum;
+    end
+    coneIndices = coneIndices(:)';
 
     % Assert the the cone indices are valid
     assert(min(coneIndices)>0, 'coneIndices must be > 0');
@@ -34,15 +39,16 @@ function reassignTypeOfCones(obj, coneIndices, newConeType)
         obj.kConeIndices = setdiff(obj.kConeIndices, coneIndices(idx));
     end
 
+
     switch (newConeType)
         case cMosaic.LCONE_ID
-            obj.lConeIndices = cat(1, obj.lConeIndices, coneIndices(:));
+            obj.lConeIndices = cat(1, obj.lConeIndices(:), coneIndices(:));
         case cMosaic.MCONE_ID(:)
-            obj.mConeIndices = cat(1, obj.mConeIndices, coneIndices(:));
+            obj.mConeIndices = cat(1, obj.mConeIndices(:), coneIndices(:));
         case cMosaic.SCONE_ID
-            obj.sConeIndices = cat(1, obj.sConeIndices, coneIndices(:));
+            obj.sConeIndices = cat(1, obj.sConeIndices(:), coneIndices(:));
         case cMosaic.KCONE_ID
-            obj.kConeIndices = cat(1, obj.kConeIndices, coneIndices(:));
+            obj.kConeIndices = cat(1, obj.kConeIndices(:), coneIndices(:));
     end
 
     % Change the cone types

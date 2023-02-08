@@ -1,6 +1,19 @@
 classdef midgetRGCMosaic < handle
 % Create a midgetRGCMosaic mosaic object
 
+    % Constant properties
+    properties (Constant)
+
+        % Valid compute input data types
+        SCENE_COMPUTE_INPUT_DATA_TYPE = 'scene';
+        CONE_MOSAIC_RESPONSE_COMPUTE_INPUT_DATA_TYPE = 'coneMosaicActivation';
+
+        validComputeInputDataTypes = {...
+            midgetRGCMosaic.SCENE_COMPUTE_INPUT_DATA_TYPE ...
+            midgetRGCMosaic.CONE_MOSAIC_RESPONSE_COMPUTE_INPUT_DATA_TYPE ...
+            };
+    end
+
     % Public properties
     properties  (GetAccess=public, SetAccess=public)
         % Name of the mosaic
@@ -75,11 +88,22 @@ classdef midgetRGCMosaic < handle
         % - visual STF properties (C/S radius, C/S int.ratio)
         theRetinaToVisualFieldTransformerOBJList;
 
-        theOpticsPositionGrid;
+        % The positions (within the mosaic) at which we fit an RTVFT object
+        theSamplingPositionGrid;
+
+        % The # of center cones for which we fit an RTVFT object
         theConesNumPooledByTheRFcenterGrid;
+
+        % The visual params for which we fit an RTVFT object
         theVisualSTFSurroundToCenterRcRatioGrid;
         theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
 
+        % The currently employed optical image and its index in the theSamplingPositionGrid
+        theCurrentOpticalImage = [];
+        theCurrentOpticalImagePositionGridIndex = [];
+
+        % Flag indicating whether this is a frozen mosaic.
+        isFrozen = false;
     end % Read-only properties
 
 
@@ -133,6 +157,7 @@ classdef midgetRGCMosaic < handle
             p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
             p.parse(varargin{:});
 
+
             obj.name = p.Results.name;
             obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
             obj.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
@@ -166,21 +191,50 @@ classdef midgetRGCMosaic < handle
             end
         end % Constructor
 
-        % Method to compute the response of the midgetRGCmosaic to a scene
-        [midgetRGCresponses, responseTemporalSupport, ...
-         noiseFreeAbsorptionsCount, theOpticalImage] = compute(obj, theScene, varargin);
+        % Method to freeze the mosaic, removing components of the various
+        %theRetinaToVisualFieldTransformerOBJs that take a lot of space
+        freeze(obj);
+        
+        % Gateway compute method to compute the response of the
+        % midgetRGCmosaic. It diverts to one of the specialized compute methods
+        [midgetRGCresponses, responseTemporalSupport] = ...
+            compute(obj, inputDataStruct, varargin);
+
+        % Specialized compute method used to compute responses to input scenes
+        [midgetRGCresponses, responseTemporalSupport, noiseFreeAbsorptionsCount] = ...
+            computeGivenInputScene(obj, inputDataStruct, varargin);
+
+        % Specialized compute method used to compute responses to input
+        % cone mosaic responses
+        [midgetRGCresponses, responseTemporalSupport] = ...
+            computeGivenInputConeMosaicActivation(obj, inputDataStruct, varargin);
+
+        % Common method of computing responses by pooling cone mosaic
+        % responses
+        [responses, responseTemporalSupport] = computeResponsesByPoolingConeResponses(obj, ...
+            coneMosaicResponses, coneMosaicResponseTemporalSupport);
+
+        % Method to compute optics at a desired position within the mosaic
+        generateOpticsAtPosition(obj, wavefrontOpticsPositionDegs);
 
         % Method to compute the retinal RFcenter maps - used for
         % visualization and RFoverlap analysis
         retinalRFcenterMaps = computeRetinalRFcenterMaps(obj, marginDegs, spatialSupportSamplesNum, varargin);
 
-        % Method to generate the C/S spatial pooling RF based on a passed RTVFT
-        % object(s), which encodes C/S weights to achieve a desired visual STF
-        % for specific optics and # of center cones
-        generateCenterSurroundSpatialPoolingRF(obj, theRetinaToVisualFieldTransformerOBJList, ...
-            theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
+        % Method to generate the C/S spatial pooling RFs based on the computed list of RTVFT
+        % object(s) at different positions and # of center cones
+        generateCenterSurroundSpatialPoolingRFs(obj, theRetinaToVisualFieldTransformerOBJList, ...
+            theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
             theVisualSTFSurroundToCenterRcRatioGrid, ...
             theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid);
+
+        % Method to return the indices and weights of the triangulating RTVFobjects for an RGC
+        [triangulatingRTVFobjIndices, triangulatingRTVFobjWeights] = ...
+            triangulatingRTVFobjectIndicesAndWeights(obj,theRGCindex);
+
+        % Method to return the net L-cone, net M-cone and net S-cone weights in the RF center of an RGC
+        [theCenterConeWeights, theCenterConeTypeNum, theMajorityConeType] = centerConeTypeWeights(obj, theRGCindex);
+
 
         % Method to adjust the midgetRGC RF overlap
         adjustRFoverlap(obj, overlapRatio);
@@ -235,17 +289,16 @@ classdef midgetRGCMosaic < handle
     methods (Access=private)
         generateInputConeMosaic(obj, pResults);
         generateRFpositionsAndWireTheirCenters(obj);
-
         
         % Method to crop RGCs on the border
         cropRGCsOnTheBorder(obj);
-
     end % Private methods
 
     % Static methods
     methods (Static)
-        % Method to generate RetinaToVisualTransformer objects for a midgetRGCMosaic
-        [RTVFTobjList, theOpticsPositionGrid, ...
+        % Method to generate RetinaToVisualTransformer objects for a
+        % midgetRGCMosaic (OLD)
+        [RTVFTobjList, theSamplingPositionGrid, ...
          theConesNumPooledByTheRFcenterGrid, theVisualSTFSurroundToCenterRcRatioGrid, ...
          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = generateRTVFobjects(...
                    ZernikeDataBase, subjectRankOrder, pupilDiameterMM, ...
@@ -257,7 +310,29 @@ classdef midgetRGCMosaic < handle
                    targetSTFmatchMode, ...
                    multiStartsNum, multiStartsNumDoGFit);
 
+        % Method to generate RetinaToVisualTransformer objects for a
+        % midgetRGCMosaic (NEW)
+        [RTVFTobjList, theSamplingPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
+          theVisualSTFSurroundToCenterRcRatioGrid, ...
+          theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid] = R2VFTobjects(...
+                   RTVobjIndicesToBeComputed, ...
+                   theMidgetRGCMosaic, ...
+                   eccentricitySamplingGrid, ...
+                   mosaicSurroundParams, opticsParams, fitParams);
+
         extraDegs = extraConeMosaicDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
+
+        % Method to generate coordinates for eccentricitySamplingGrid passed to the RTVF object
+        gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, ...
+            rgcRFpositionsDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords);
+
+        % Method to generate a skeleton computeInputDataStruct that the
+        % user has to update with the current input information
+        theInputDataStruct = inputDataStruct(computeInputDataType);
+
+        % Method to validate a user-updated computeInputDataStruct
+        validateComputeInputDataStruct(computeInputDataStruct);
+
     end % Static metthods
 
 end

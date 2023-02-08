@@ -24,10 +24,12 @@ function [theVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, p
         pooledConeIndicesAndWeights.surroundConeWeights, ...
         modelConstants.spatialSupportDegs);
 
+    % Convolve the retinal RF center with the center cone PSF to get the corresponding visual RF center
+    theVisualRFcenter = conv2(theRetinalRFcenterConeMap, modelConstants.theRFCenterConeMajorityPSF, 'same');
 
-    % The composite retinal RF cone map
-    theRetinalRF = theRetinalRFcenterConeMap - theRetinalRFsurroundConeMap;
+    % Convolve the retinal RF surround with the surround L+M PSF to get the corresponding visual RF surround
+    theVisualRFsurround = conv2(theRetinalRFsurroundConeMap, modelConstants.theSurroundLconePlusMconePSF, 'same');
 
-    % Convolve the composite cone-pooling based retinal RF to get the corresponding visual RF
-    theVisualRF = conv2(theRetinalRF, modelConstants.thePSF, 'same');
+    % The composite visual RF cone map
+    theVisualRF = theVisualRFcenter - theVisualRFsurround;
 end

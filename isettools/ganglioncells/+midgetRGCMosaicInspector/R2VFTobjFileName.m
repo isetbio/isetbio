@@ -1,0 +1,13 @@
+function R2VFTobjFileName = R2VFTobjFileName(mosaicFileName, opticsParams, H1cellIndex)
+    
+    opticsPostFix = sprintf('%s_Rank_%d_Pupil_%1.1f', ...
+                    opticsParams.ZernikeDataBase, ...
+                    opticsParams.subjectRankOrder, ...
+                    opticsParams.pupilDiameterMM);
+
+    modelEncodingPostFix = sprintf('_R2VFTobjectsForOptics_%s_and_H1cellIndex_%d.mat', ...
+        opticsPostFix, H1cellIndex);
+
+    % Add the model encoding postfix
+    R2VFTobjFileName = strrep(mosaicFileName, '.mat', modelEncodingPostFix);
+end

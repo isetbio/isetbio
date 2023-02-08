@@ -6,22 +6,30 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(...
     p.parse(varargin{:});
     rangeForRc = p.Results.rangeForRc;
 
+    visualizeResults = false;
+    if (visualizeResults)
+        figure(); clf;
+        plot(sfCPD, theMeasuredSTF, 'ko-');
+        set(gca, 'XScale', 'log');
+        drawnow;
+    end
+
     % DoG param initial values and limits: center gain, kc
     Kc = struct(...    
         'low', 1, ...
-        'high', 1e6, ...
+        'high', 1e4, ...
         'initial', 1);
 
     % DoG param initial values and limits: Ks/Kc ratio
     KsToKc = struct(...
-        'low', 1e-6, ...
-        'high', 1.0, ...
+        'low', 1e-4, ...
+        'high', 0.2, ...
         'initial', 0.1);
 
     % DoG param initial values and limits: RsToRc ratio
     RsToRc = struct(...
         'low', 1.5, ...
-        'high', 30, ...
+        'high', 20, ...
         'initial', 5);
 
     % DoG param initial values and limits: RcDegs
@@ -78,6 +86,8 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(...
      % Run the multi-start
      DoGparams.finalValues = run(ms, problem, multiStartsNum);
 
+     
+
      theFittedSTF.compositeSTF = DoGSTF(DoGparams.finalValues, sfCPD);
      theFittedSTF.centerSTF = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sfCPD).^2) );
      theFittedSTF.surroundSTF = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sfCPD).^2) );
@@ -87,4 +97,11 @@ function [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(...
      theFittedSTF.compositeSTFHiRes = DoGSTF(DoGparams.finalValues, sfHiRes);
      theFittedSTF.centerSTFHiRes = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sfHiRes).^2) );
      theFittedSTF.surroundSTFHiRes = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sfHiRes).^2) );
+
+     if (visualizeResults)
+        hold on;
+        plot(theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, 'r-', 'LineWidth', 1.0);
+        drawnow;
+     end
+
 end

@@ -1,9 +1,35 @@
-function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter, ...
-    weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams)
+function theRFcomputeStruct = retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter, ...
+    weightsOfConesPooledByTheRFcenter, targetVisualRFDoGparams, ...
+    centerConeType, initialRetinalConePoolingParamsStruct)
+
+    switch (centerConeType)
+        case cMosaic.LCONE_ID
+            theRFCenterConeMajorityPSF  = obj.theSpectrallyWeightedPSFData.LconeWeighted;
+
+            spatialPositionDegs = mean(obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
+            figureName = sprintf('RF center with %d L-cone(s) at (%2.2f,%2.2f) degs', ...
+                numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
+            
+        case cMosaic.MCONE_ID
+            theRFCenterConeMajorityPSF  = obj.theSpectrallyWeightedPSFData.MconeWeighted;
+
+            spatialPositionDegs = mean(obj.theConeMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
+            figureName = sprintf('RF center with %d M-cone(s) at (%2.2f,%2.2f) degs', ...
+                numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
+
+        otherwise
+            error('Not L or M cone: %d', centerConeType);
+    end
+
     
     % Spatial support
-    spatialSupportDegs = [obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:) obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:)];
-    [Xdegs,Ydegs] = meshgrid(obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:), obj.theVlambdaWeightedPSFData.spatialSupportForRFmapXdegs(:));
+    spatialSupportDegs = [...
+        obj.theSpectrallyWeightedPSFData.spatialSupportForRFmapXdegs(:) ...
+        obj.theSpectrallyWeightedPSFData.spatialSupportForRFmapXdegs(:)];
+
+    [Xdegs,Ydegs] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
     Rdegs2 = Xdegs.^2+Ydegs.^2;
 
     % Compute the visual RF center and its characteristic radius
@@ -13,13 +39,8 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
      anatomicalRFcenterCharacteristicRadiusDegs] = obj.analyzeRFcenter(...
                indicesOfConesPooledByTheRFcenter, ...
                weightsOfConesPooledByTheRFcenter, ...
-               spatialSupportDegs);
-
-    if (obj.simulateCronerKaplanEstimation)
-        if (~(strcmp(targetVisualRFDoGparams.visualRFmodel, 'gaussian center, gaussian surround')))
-            fprintf(2,'WARNINGL When simulating the Croner & Kaplan estimation, the targetVisualRFDoGparams.visualRFmodel is supposed to be ''gaussian center, gaussian surround''.');
-        end
-    end
+               spatialSupportDegs, ...
+               theRFCenterConeMajorityPSF);
 
     % Model constants
     modelConstants = struct();
@@ -77,7 +98,9 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
     % Retinal cone pooling model constants
     modelConstants.theConeMosaic = obj.theConeMosaic;
-    modelConstants.thePSF = obj.theVlambdaWeightedPSFData.vLambdaWeightedData;
+    modelConstants.theRFCenterConeMajorityPSF = theRFCenterConeMajorityPSF;
+    modelConstants.theSurroundLconePlusMconePSF = obj.theSpectrallyWeightedPSFData.LMconeWeighted;
+
     modelConstants.surroundConnectableConeTypes = targetVisualRFDoGparams.surroundConnectableConeTypes;
     modelConstants.centerConnectableConeTypes = targetVisualRFDoGparams.centerConnectableConeTypes;
     modelConstants.coneWeightsCompensateForVariationsInConeEfficiency = targetVisualRFDoGparams.coneWeightsCompensateForVariationsInConeEfficiency;
@@ -101,15 +124,15 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
             % Range for RwDegs, based to characteristic radius of cones and # of cones in RF center
             RwDegsInitial    = 4.00 * 1/mean(RnarrowToRwideRatios) * anatomicalRFcenterCharacteristicRadiusDegs * sqrt(2.3) * sqrt(numel(modelConstants.indicesOfCenterCones));
-            RwDegsLowerBound = 0.25 * RwDegsInitial;
-            RwDegsUpperBound = min([max(spatialSupportDegs(:))*2 15*RwDegsInitial]);
+            RwDegsLowerBound = max([0.02 0.01*RwDegsInitial]);
+            RwDegsUpperBound = min([max(spatialSupportDegs(:))*2 4*RwDegsInitial]);
 
             %                                        Kc   Ks/KcRatio   narrowToWideFieldVolumeRatio  RwideDegs            RnarrowToRwideRatio
             retinalConePoolingParams.names =         {'Kc', 'KsKcRatio', 'VnVwRatio',                'RwDegs',             'RnRwRatio'};
             retinalConePoolingParams.scaling =       {'log', 'log',      'log',                      'linear',                'log'};
-            retinalConePoolingParams.initialValues = [1       0.05        mean(NWvolumeRatios)       RwDegsInitial         mean(RnarrowToRwideRatios)];
-            retinalConePoolingParams.lowerBounds   = [0.5    1e-3         min(NWvolumeRatios)        RwDegsLowerBound      min(RnarrowToRwideRatios)];
-            retinalConePoolingParams.upperBounds   = [100      1e0         max(NWvolumeRatios)        RwDegsUpperBound      max(RnarrowToRwideRatios)];
+            retinalConePoolingParams.initialValues = [1.       0.06        mean(NWvolumeRatios)       RwDegsInitial         mean(RnarrowToRwideRatios)];
+            retinalConePoolingParams.lowerBounds   = [0.5    0.005        min(NWvolumeRatios)        RwDegsLowerBound      min(RnarrowToRwideRatios)];
+            retinalConePoolingParams.upperBounds   = [2      1e0         max(NWvolumeRatios)        RwDegsUpperBound      max(RnarrowToRwideRatios)];
 
             if (~isempty(strfind(targetVisualRFDoGparams.retinalConePoolingModel,'meanVnVwRatio')))
                 idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
@@ -143,19 +166,19 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
                     error('Unknown model: ''%s''.', targetVisualRFDoGparams.retinalConePoolingModel);
                 end
 
-                tolerance = 20/100;
+                tolerance = 0.1;
                 
                 idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
                 measuredValue = NWvolumeRatios(H1cellIndex);
                 retinalConePoolingParams.initialValues(idx) = measuredValue;
-                retinalConePoolingParams.lowerBounds(idx) = measuredValue / (1.0+tolerance);
-                retinalConePoolingParams.upperBounds(idx) = measuredValue * (1.0+tolerance);
+                retinalConePoolingParams.lowerBounds(idx) = measuredValue - tolerance;
+                retinalConePoolingParams.upperBounds(idx) = measuredValue + tolerance;
 
                 idx = find(ismember(retinalConePoolingParams.names, 'RnRwRatio'));
                 measuredValue = RnarrowToRwideRatios(H1cellIndex);
                 retinalConePoolingParams.initialValues(idx) = measuredValue;
-                retinalConePoolingParams.lowerBounds(idx) = measuredValue / (1.0+tolerance);
-                retinalConePoolingParams.upperBounds(idx) = measuredValue * (1.0+tolerance);
+                retinalConePoolingParams.lowerBounds(idx) = measuredValue - tolerance;
+                retinalConePoolingParams.upperBounds(idx) = measuredValue + tolerance;
             end
 
         case 'arbitrary center cone weights, gaussian surround weights'
@@ -235,6 +258,24 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     end
 
 
+    if (isempty(initialRetinalConePoolingParamsStruct))
+        fprintf('\n*** RTVF will be fitted using default initial params. *** \n');
+    else
+        % Ensure that the imported params are for the current model
+        for iParam = 1:numel(retinalConePoolingParams.names)
+            assert(strcmp(retinalConePoolingParams.names{iParam}, initialRetinalConePoolingParamsStruct.names{iParam}), ...
+                'model parameter name mismatch');
+        end
+
+        % All good, so replace the default initial params,
+        %   retinalConePoolingParams.initialValues with
+        % with the imported final values,
+        %   initialRetinalConePoolingParamsStruct.finalValues
+
+        fprintf('\n*** RTVF will be fitted with initial params set to the final values of the previously fitted RTVFobj. ***\n');
+        retinalConePoolingParams.initialValues = initialRetinalConePoolingParamsStruct.finalValues;
+    end
+
     % Compute the target visual RF map
     [theTargetVisualRFmap, theTargetVisualRFcenterMap, theTargetVisualRFsurroundMap] = ...
         targetVisualRFfunctionHandle(modelConstants, targetVisualRFparamsVector);
@@ -244,7 +285,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     modelConstants.simulateCronerKaplanEstimation = obj.simulateCronerKaplanEstimation;
     
     debugRFrotation = true;
-
+    
     if (modelConstants.simulateCronerKaplanEstimation)
 
         % TargetSTF match mode: either the params of the DoG model fit to
@@ -262,15 +303,19 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
 
         % Compute theTargetSTF from targetVisualRFmap
         [~, rotatedTargetVisualRFmap, theTargetRFprofile, theTargetSTF, stfSupportCPD] = ...
-            performCronerKaplanSimulation(...
+             RetinaToVisualFieldTransformer.performCronerKaplanSimulation(...
                 theTargetVisualRFmap, ...
+                [], [], ...
+                retinalConePoolingParams.initialValues, ...
+                retinalConePoolingParams, ...
                 bestHorizontalResolutionRotationDegs, ...
+                visualRFcenterCharacteristicRadiusDegs, ...
                 modelConstants.spatialSupportDegs(:,1), ...
                 modelConstants.targetSTFmatchMode, ...
                 [], ...
                 targetRsRcRatio, targetIntSensSCRatio, ...
-                visualRFcenterCharacteristicRadiusDegs, ...
-                multiStartsNumDoGFit);
+                multiStartsNumDoGFit, ...
+                1555, '');
 
         
         if (debugRFrotation)
@@ -299,20 +344,24 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     visualizeRFs(53, spatialSupportDegs, theInitialRetinalRFcenterConeMap, theInitialRetinalRFsurroundConeMap, {'initial retinal RF center',  'initial retinal RF surround'});
     visualizeRFs(54, spatialSupportDegs, theTargetVisualRFmap, theInitialFittedVisualRFmap, {'target RF',  'initial fitted RF'});
     
-
+    
     if (modelConstants.simulateCronerKaplanEstimation)  
 
-        [~, theRotatedInitialFittedVisualRFmap, theInitialRFprofile, theInitialFittedSTF, stfSupportCPD] = performCronerKaplanSimulation(...
+        [~, theRotatedInitialFittedVisualRFmap, theInitialRFprofile, theInitialFittedSTF, stfSupportCPD] =  RetinaToVisualFieldTransformer.performCronerKaplanSimulation(...
                 theInitialFittedVisualRFmap, ...
+                theInitialRetinalRFcenterConeMap, theInitialRetinalRFsurroundConeMap, ...
+                retinalConePoolingParams.initialValues, ...
+                retinalConePoolingParams, ...
                 bestHorizontalResolutionRotationDegs, ...
+                visualRFcenterCharacteristicRadiusDegs, ...
                 modelConstants.spatialSupportDegs(:,1), ...
                 modelConstants.targetSTFmatchMode, ...
                 theTargetSTF, ...
                 targetRsRcRatio, targetIntSensSCRatio, ...
-                visualRFcenterCharacteristicRadiusDegs, ...
-                multiStartsNumDoGFit);
+                multiStartsNumDoGFit, ...
+                1555, figureName);
 
-        displaySpatialProfileAndSTF(57, spatialSupportDegs, stfSupportCPD, ...
+        displaySpatialProfileAndSTF(57, '', [], spatialSupportDegs, stfSupportCPD, ...
             theTargetRFprofile, theInitialRFprofile, ...
             theTargetSTF, theInitialFittedSTF, ...
             [], [], [], [], 'initial');
@@ -338,7 +387,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     options = optimoptions(...
                 'fmincon',...
                 'Display','iter',...
-                'Algorithm','sqp', ... %'interior-point', ...
+                'Algorithm','interior-point', ... %'interior-point', 'sqp'...
                 'GradObj', 'off', ...
                 'DerivativeCheck', 'off', ...
                 'MaxFunEvals', 10^5, ...
@@ -413,24 +462,29 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
         [theFinalRMSEvector, theRotatedFittedVisualRF, theFittedRFprofile, ...
          theFinalFittedSTF, stfSupportCPD, ...
          theFinalFittedSTFsurroundToCenterRcRatio, ...
-         theFinalFittedSTFsurroundToCenterIntegratedSensitivityRatio] = performCronerKaplanSimulation(...
+         theFinalFittedSTFsurroundToCenterIntegratedSensitivityRatio, ...
+         ratioWeights] =  RetinaToVisualFieldTransformer.performCronerKaplanSimulation(...
                 theFittedVisualRF, ...
+                theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, ...
+                retinalConePoolingParams.finalValues, ...
+                retinalConePoolingParams, ...
                 bestHorizontalResolutionRotationDegs, ...
+                visualRFcenterCharacteristicRadiusDegs, ...
                 modelConstants.spatialSupportDegs(:,1), ...
                 modelConstants.targetSTFmatchMode, ...
                 theTargetSTF, ...
                 targetRsRcRatio, targetIntSensSCRatio, ...
-                visualRFcenterCharacteristicRadiusDegs, ...
-                multiStartsNumDoGFit);
+                multiStartsNumDoGFit, ...
+                1556, figureName);
 
         
         if (obj.multiStartsNum ~= 1)
-            plotTitle = 'fitted (single-run)';
-        else
             plotTitle = 'fitted (multi-run)';
+        else
+            plotTitle = 'fitted (single-run)';
         end
 
-        displaySpatialProfileAndSTF(158, spatialSupportDegs, stfSupportCPD, ...
+        displaySpatialProfileAndSTF(summaryFigNo, figureName, [1300 400], spatialSupportDegs, stfSupportCPD, ...
                 theTargetRFprofile, theFittedRFprofile, ...
                 theTargetSTF, theFinalFittedSTF, ...
                 targetRsRcRatio, targetIntSensSCRatio, ...
@@ -442,10 +496,7 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
         theFinalRMSEvector  = ((theFittedVisualRF(:) - theTargetVisualRFmap(:))).^2;
     end
 
-    % Final RMSE
-    theFinalRMSE = sqrt(mean(theFinalRMSEvector ,1));
-
-
+  
     % Visualize the fitted params
     hFig = figure(1999); clf;
     set(hFig, 'Position', [1000 300 600 500], 'Color', [1 1 1 ]);
@@ -453,62 +504,76 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
     RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, retinalConePoolingParams);
 
 
-    % Form the rfComputeStruct
-    obj.rfComputeStruct = struct();
-    obj.rfComputeStruct.modelConstants = modelConstants;
+    % Form theRFcomputeStruct
+    theRFcomputeStruct = struct();
+    theRFcomputeStruct.modelConstants = modelConstants;
 
     if (obj.multiStartsNum > 1) && (~isinf(obj.multiStartsNum))
         % All solutions
-        obj.rfComputeStruct.allSolutions = allMins;
+        theRFcomputeStruct.allSolutions = allMins;
     end
 
 
-    obj.rfComputeStruct.retinalConePoolingParams = retinalConePoolingParams;
-    obj.rfComputeStruct.pooledConeIndicesAndWeights = pooledConeIndicesAndWeights;
+    theRFcomputeStruct.retinalConePoolingParams = retinalConePoolingParams;
+    theRFcomputeStruct.pooledConeIndicesAndWeights = pooledConeIndicesAndWeights;
     
     if (modelConstants.simulateCronerKaplanEstimation)
-        obj.rfComputeStruct.theSTF = struct('support', stfSupportCPD, 'fitted', theFinalFittedSTF, 'target', theTargetSTF);
-        obj.rfComputeStruct.theRotationOfTheFittedVisualRF = bestHorizontalResolutionRotationDegs;
-        obj.rfComputeStruct.theRotatedFittedVisualRF = theRotatedFittedVisualRF;
+        theRFcomputeStruct.theSTF = struct(...
+            'support', stfSupportCPD, ...
+            'fitted', theFinalFittedSTF, ...
+            'target', theTargetSTF, ...
+            'fittedRsRcRatio', theFinalFittedSTFsurroundToCenterRcRatio, ...
+            'fittedSCIntSensRatio', theFinalFittedSTFsurroundToCenterIntegratedSensitivityRatio);
+        theRFcomputeStruct.theRotationOfTheFittedVisualRF = bestHorizontalResolutionRotationDegs;
+        theRFcomputeStruct.theRotatedFittedVisualRF = theRotatedFittedVisualRF;
+        theRFcomputeStruct.theFinalRMSEvector = theFinalRMSEvector;
+        theRFcomputeStruct.theFinalRMSEvectorRatioWeights = ratioWeights;
     end
 
     % Convolve the center retinal cone-pooling based retinal RF to get the corresponding visual center RF
-    obj.rfComputeStruct.theFittedVisualRFMap = theFittedVisualRF;
-    obj.rfComputeStruct.theFittedVisualRFcenterConeMap = conv2(theRetinalRFcenterConeMap, modelConstants.thePSF, 'same');
-    obj.rfComputeStruct.theFittedVisualRFsurroundConeMap = conv2(theRetinalRFsurroundConeMap, modelConstants.thePSF, 'same');
+    theRFcomputeStruct.theFittedVisualRFMap = theFittedVisualRF;
+    theRFcomputeStruct.theFittedVisualRFcenterConeMap = ...
+        conv2(theRetinalRFcenterConeMap, modelConstants.theRFCenterConeMajorityPSF, 'same');
+    theRFcomputeStruct.theFittedVisualRFsurroundConeMap = ...
+        conv2(theRetinalRFsurroundConeMap, modelConstants.theSurroundLconePlusMconePSF, 'same');
     
-    obj.rfComputeStruct.theRetinalRFcenterConeMap = theRetinalRFcenterConeMap;
-    obj.rfComputeStruct.theRetinalRFsurroundConeMap = theRetinalRFsurroundConeMap;
+    theRFcomputeStruct.theRetinalRFcenterConeMap = theRetinalRFcenterConeMap;
+    theRFcomputeStruct.theRetinalRFsurroundConeMap = theRetinalRFsurroundConeMap;
     
 
-    obj.rfComputeStruct.targetVisualRFfunctionHandle = targetVisualRFfunctionHandle;
-    obj.rfComputeStruct.targetVisualRFparamsVector = targetVisualRFparamsVector;
-    obj.rfComputeStruct.targetVisualRFMap = theTargetVisualRFmap;
-    obj.rfComputeStruct.targetVisualRFcenterMap = theTargetVisualRFcenterMap;
-    obj.rfComputeStruct.targetVisualRFsurroundMap = theTargetVisualRFsurroundMap;
+    theRFcomputeStruct.targetVisualRFfunctionHandle = targetVisualRFfunctionHandle;
+    theRFcomputeStruct.targetVisualRFparamsVector = targetVisualRFparamsVector;
+    theRFcomputeStruct.targetVisualRFMap = theTargetVisualRFmap;
+    theRFcomputeStruct.targetVisualRFcenterMap = theTargetVisualRFcenterMap;
+    theRFcomputeStruct.targetVisualRFsurroundMap = theTargetVisualRFsurroundMap;
 
     
 
     % Nested function rfObjective
-    function rmse = matchedVisualRFobjective(currentRetinalPoolingParams)
+    function theCurrentRMSE = matchedVisualRFobjective(currentRetinalPoolingParams)
 
         % Compute the current visual RF given the current cone pooling params
-        currentVisualRF = RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...
-            modelConstants, currentRetinalPoolingParams);
+        [currentVisualRF, currentRetinalRFcenterConeMap, currentRetinalRFsurroundConeMap] = ...
+            RetinaToVisualFieldTransformer.visualRFfromRetinalConePooling(...
+                modelConstants, currentRetinalPoolingParams);
 
         % RF assessment
         if (modelConstants.simulateCronerKaplanEstimation)
 
             % Compute current RMSEvector
-            theCurrentRMSEvector = performCronerKaplanSimulation(...
+            theCurrentRMSEvector =  RetinaToVisualFieldTransformer.performCronerKaplanSimulation(...
                 currentVisualRF, ...
+                currentRetinalRFcenterConeMap, currentRetinalRFsurroundConeMap, ...
+                currentRetinalPoolingParams, ...
+                retinalConePoolingParams, ...
                 bestHorizontalResolutionRotationDegs, ...
+                visualRFcenterCharacteristicRadiusDegs, ...
                 modelConstants.spatialSupportDegs(:,1), ...
                 modelConstants.targetSTFmatchMode, ...
                 theTargetSTF, ...
                 targetRsRcRatio, targetIntSensSCRatio, ...
-                visualRFcenterCharacteristicRadiusDegs, ...
-                multiStartsNumDoGFit);
+                multiStartsNumDoGFit, ...
+                1555, figureName);
 
         else
             % RMSE based on RFs
@@ -516,133 +581,28 @@ function retinalRFparamsForTargetVisualRF(obj, indicesOfConesPooledByTheRFcenter
         end
 
         % Compute RMSE
-        rmse = sqrt(mean(theCurrentRMSEvector,1));
+        theCurrentRMSE = sqrt(mean(theCurrentRMSEvector,1));
+       
+        % Update the sequence of RMSEs
+        rmseSequence(:,size(rmseSequence,2)+1) = theCurrentRMSEvector;
 
-        rmseSequence(numel(rmseSequence)+1) = rmse;
+
         figure(1555);
-        ax = subplot(1,3,3);
-        plot(ax,1:numel(rmseSequence), rmseSequence, 'r.', 'MarkerSize', 12, 'LineWidth', 1.0); 
-        set(ax, 'YLim', [min([0.01 min(rmseSequence)]), max(rmseSequence)], 'YScale', 'log', 'FontSize', 14);
+        ax = subplot(2,4, 4);
+        iterations = 1:size(rmseSequence,2);
+        plot(ax,iterations, rmseSequence(1,:), 'r-', 'MarkerSize', 12, 'LineWidth', 1.0); hold on
+        plot(ax,iterations, rmseSequence(2,:), 'b-', 'MarkerSize', 12, 'LineWidth', 1.0); 
+        plot(ax,iterations, rmseSequence(3,:), 'k-', 'MarkerSize', 12, 'LineWidth', 1.0); 
+        legend(ax, {'shape', 'Rs/Rc', 'int S/C'}, 'Location', 'NorthOutside', 'Orientation','horizontal');
+        set(ax, 'YLim', [min([0.01 min(rmseSequence(:))]), max(rmseSequence(:))], 'YScale', 'log', 'FontSize', 14);
         xlabel(ax, 'iteration');
         ylabel(ax, 'RMSE');
-        title('RMSE sequence');
+        
         drawnow
 
     end
 end
 
-
-function [theRMSEvector, theRotatedRF, theRFprofile, ...
-          theVisualSTF, theSpatialFrequencySupport, ...
-          theFittedSTFsurroundToCenterRcRatio, ...
-          theFittedSTFsurroundToCenterIntegratedSensitivityRatio] = performCronerKaplanSimulation(...
-            theVisualRF, bestHorizontalResolutionRotationDegs, sfSupport, ...
-            targetSTFmatchMode, theTargetSTF, targetRsRcRatio, targetIntSensSCRatio, ...
-            visualRFcenterCharacteristicRadiusDegs, multiStartsNumDoGFit)
-
-    % Rotate theVisualRFmap according to the rotation
-    % that maximizes horizontal resolution of the targetVisualRFmap
-    theRotatedRF = RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(...
-        theVisualRF, bestHorizontalResolutionRotationDegs);
-
-    % Integrate along Y to generate the visual RF profile
-    theRFprofile = sum(theRotatedRF,1);
-    theRFprofile = theRFprofile / max(theRFprofile(:));
-
-    % Compute the visual STF corresponding to the visual RF profile
-    [theSpatialFrequencySupport, theVisualSTF] = ...
-        RetinaToVisualFieldTransformer.spatialTransferFunction(...
-                sfSupport, theRFprofile);
-
-    if (isempty(theTargetSTF))
-        theRMSEvector = [];
-        theFittedSTFsurroundToCenterRcRatio = [];
-        theFittedSTFsurroundToCenterIntegratedSensitivityRatio = [];
-    else
-
-        % Compute RMSEvector
-        switch  (targetSTFmatchMode) 
-            case 'STFcurve'
-               % RMSE based on the difference of the STF curves
-               theRMSEvector = ((theVisualSTF(:) - theTargetSTF(:))).^2;
-    
-               theFittedSTFsurroundToCenterRcRatio = [];
-               theFittedSTFsurroundToCenterIntegratedSensitivityRatio = [];
-    
-               figure(1555); clf;
-               ax = subplot(1,3,1);
-               plot(ax,theSpatialFrequencySupport, theVisualSTF, 'ko-', 'MarkerSize', 12, 'LineWidth', 1.0); hold on;
-               plot(ax,theSpatialFrequencySupport, theTargetSTF, 'b-', 'LineWidth', 1.5);
-               set(ax, 'XScale', 'log', 'XLim', [0.1 100]);
-               grid(ax,'on')
-               
-
-            case 'STFDoGparams'
-
-                % Equate max amplitude
-                theVisualSTF = theVisualSTF/max(theVisualSTF(:)) * max(theTargetSTF(:));
-
-                % Fit DoG model to the visual STF
-                [theFittedSTFDoGparams, theFittedVisualSTF] = RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(...
-                      theSpatialFrequencySupport, ...
-                      theVisualSTF, ...
-                      visualRFcenterCharacteristicRadiusDegs, ...
-                      multiStartsNumDoGFit, ...
-                      'rangeForRc', visualRFcenterCharacteristicRadiusDegs*[1 1 1]);
-
-                % RMS based on the DoG model of the visual STF
-                theRMSEvectorBetweenDoGmodelMeasuredSTFAndDoGmodelTargetSTF = ((theFittedVisualSTF.compositeSTF(:) - theTargetSTF(:))).^2;
-
-                % RMS based on the actual visual STF
-                theRMSEvectorBetweenMeasuredSTFAndDoGmodelTargetSTF = cat(1, ((theVisualSTF(:) - theTargetSTF(:))).^2);
-
-                % RMS based on the combined RMSs
-                theRMSEvector = cat(1, ...
-                    theRMSEvectorBetweenDoGmodelMeasuredSTFAndDoGmodelTargetSTF, ...
-                    theRMSEvectorBetweenMeasuredSTFAndDoGmodelTargetSTF);
-
-                
-                theFittedSTFsurroundToCenterRcRatio = theFittedSTFDoGparams.finalValues(3);
-                theFittedSTFsurroundToCenterIntegratedSensitivityRatio = theFittedSTFDoGparams.finalValues(2) * (theFittedSTFDoGparams.finalValues(3))^2;
-    
-                
-                figure(1555); clf;
-                ax = subplot(1,3,1);
-                pMeasured = plot(ax,theSpatialFrequencySupport, theVisualSTF, 'ko', 'MarkerFaceColor', [0.5 0.5 0.5], 'MarkerSize', 12, 'LineWidth', 1.0); hold on;
-                pMeasuredDoGfit = plot(ax,theSpatialFrequencySupport, theFittedVisualSTF.compositeSTF, 'k-', 'LineWidth', 3.0);
-                plot(ax,theFittedVisualSTF.sfHiRes, theFittedVisualSTF.compositeSTFHiRes, 'r-', 'LineWidth', 1.5);
-                pTarget = plot(ax,theSpatialFrequencySupport, theTargetSTF, 'r-', 'LineWidth', 1.5);
-                legend(ax, [pMeasured pMeasuredDoGfit pTarget], {'measured', 'measured (DoG fit)', 'target'}, 'Location', 'SouthWest');
-
-                set(ax, 'XScale', 'log', 'XLim', [0.1 100]);
-                grid(ax, 'on')
-                title(ax,sprintf('Rs/Rc= (current/target: %2.1f/%2.1f)\nintS/C= (current/target: %2.2f/%2.1f)', ...
-                    theFittedSTFsurroundToCenterRcRatio, targetRsRcRatio, ...
-                    theFittedSTFsurroundToCenterIntegratedSensitivityRatio, ...
-                    targetIntSensSCRatio), 'FontSize', 16);
-                
-                ax = subplot(1,3,2);
-                RetinaToVisualFieldTransformer.visualizeRetinalSurroundModelParametersAndRanges(ax, theFittedSTFDoGparams);
-                title('fitted DoG model parameters')
-                drawnow;
- 
-%                 % Target STF DoG model fit params
-%                 res1 = ((targetRsRcRatio - ...
-%                           theFittedSTFsurroundToCenterRcRatio)/targetRsRcRatio)^2;
-%     
-%                 res2 = ((targetIntSensSCRatio -  ...
-%                           theFittedSTFsurroundToCenterIntegratedSensitivityRatio)/targetIntSensSCRatio)^2;
-%     
-% 
-%                 %errors = [mean(theRMSEvector) 0.1*res1 0.1*res2]
-%                 theRMSEvector = [mean(theRMSEvector); 0.1*res1; 0.1*res2];
-    
-            otherwise
-                    error('modelConstants.targetSTFmatchMode must be set to either ''STFcurve'' or ''STFDoGparams''.');
-        end % switch
-    end
-
-end
 
 
 function visualizeRFs(figNo, spatialSupportDegs, RFmap, RFmap2, theTitles)
@@ -684,7 +644,7 @@ function visualizeRFs(figNo, spatialSupportDegs, RFmap, RFmap2, theTitles)
     drawnow;
 end
 
-function displaySpatialProfileAndSTF(figNo, spatialSupportDegs, stfSupportCPD, ...
+function displaySpatialProfileAndSTF(figNo, figureName, figXYpos, spatialSupportDegs, stfSupportCPD, ...
                 theTargetRFprofile, theFittedRFprofile, ...
                 theTargetSTF,  theFittedSTF, ...
                 targetSurroundToCenterRcRatio, ...
@@ -695,12 +655,16 @@ function displaySpatialProfileAndSTF(figNo, spatialSupportDegs, stfSupportCPD, .
 
     [~, idx] = max(theTargetRFprofile(:));
     peakPositionTarget = spatialSupportDegs(idx,1);
-
+                                                                                                                                                                                                        
     [~, idx] = max(theFittedRFprofile(:));
     peakPositionFitted = spatialSupportDegs(idx,1);
 
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [100 100 1200 900], 'Color', [1 1 1]);
+    if (isempty(figXYpos))
+        figXYpos = [100 100];
+    end
+
+    set(hFig, 'Position', [figXYpos(1) figXYpos(2) 1200 900], 'Color', [1 1 1], 'Name', figureName);
     legends = {};
     ax = subplot(2,2,1);
     plot(ax, spatialSupportDegs(:,1)-peakPositionTarget, theTargetRFprofile, 'k-', 'LineWidth', 2);

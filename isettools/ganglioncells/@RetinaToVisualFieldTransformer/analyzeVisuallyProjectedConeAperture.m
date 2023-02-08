@@ -4,7 +4,8 @@ function [visualConeCharacteristicRadiusDegs, ...
 
     % Compute the centroid of the PSF
     theCentroidDegs = RetinaToVisualFieldTransformer.estimateGeometry(...
-        thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.vLambdaWeightedData);
+        thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, ...
+        thePSFData.LMconeWeighted);
 
 
     % Generate anatomical cone aperture (a Gaussian with Rc) map centered
@@ -24,7 +25,7 @@ function [visualConeCharacteristicRadiusDegs, ...
 
     theAnatomicalConeApertureMap = theAnatomicalConeApertureMap / max(theAnatomicalConeApertureMap(:));
     % Convolve cone aperture with the PSF
-    theVisuallyProjectedConeApertureMap = conv2(theAnatomicalConeApertureMap, thePSFData.vLambdaWeightedData, 'same');
+    theVisuallyProjectedConeApertureMap = conv2(theAnatomicalConeApertureMap, thePSFData.LMconeWeighted, 'same');
     theVisuallyProjectedConeApertureMap = theVisuallyProjectedConeApertureMap  / max(theVisuallyProjectedConeApertureMap(:));
 
 
@@ -90,7 +91,7 @@ function [visualConeCharacteristicRadiusDegs, ...
         title('the anatomical cone aperture');
     
         subplot(2,2,2);
-        imagesc(thePSFData.psfSupportXdegs*60, thePSFData.psfSupportYdegs*60, thePSFData.thePSFData.vLambdaWeightedData);
+        imagesc(thePSFData.psfSupportXdegs*60, thePSFData.psfSupportYdegs*60, thePSFData.LMconeWeighted);
         axis ('image');
         set(gca,'XLim', spatialSupportXLims*60, 'YLim', spatialSupportYLims*60, 'XTick', -5:1:5, 'YTick', -5:1:5);
         xlabel('arcmin');

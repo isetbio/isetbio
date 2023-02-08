@@ -38,13 +38,20 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     refractiveErrorMicrons = wvfDefocusDioptersToMicrons(refractiveErrorDiopters, pupilDiamMM);
     
     % Obtain z-coeffs at desired eccentricity
+    zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
     if (subjectID == 0)
-        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
-        zCoeffs = 0*zCoeffs;
         measurementPupilDiameterMM = pupilDiamMM;
     else
-        zCoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractCentralRefraction, refractiveErrorMicrons);
         measurementPupilDiameterMM = PolansOptics.constants.measurementPupilDiamMM;
+    end
+    
+    if (isempty(zCoeffs))
+        theOI = [];
+        thePSF = []; 
+        psfSupportMinutesX = []; 
+        psfSupportMinutesY = [];
+        psfSupportWavelength = [];
+        return;
     end
     
     % Compute PSF and WVF from z-Coeffs for the desired pupil and wavelenghts
@@ -59,6 +66,12 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
              'upsampleFactor', upsampleFactor, ...
              'noLCA', noLCA, ...
              'name', sprintf('Polans subject %d, eccentricity: %2.1f,%2.1f degs', subjectID, ecc(1), ecc(2)));
+
+    % Need to put defocus back in for subject 0 case, because it got 
+    % zeroed out above.  Easiest to do that 
+    if (subjectID == 0)
+        theWVF = wvfSet(theWVF,'zcoeffs', refractiveErrorMicrons, {'defocus'});
+    end
     
     % Remove wavelength-dependent defocus if noLCA is set
     %
@@ -100,27 +113,35 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, ecc, subtractC
     
     interpolatedZcoeffs = zeros(1, 30);
     zCoeffsNum = size(zMap,3);
+
+    % The POlans Z-coeff indices start from 0, not 1
+    theDefocusZcoeffIndex = wvfOSAIndexToVectorIndex('defocus') - 1;
+
     for zIndex = 1:zCoeffsNum
          % Retrieve the XY spatial map for this z-coeff
          z2Dmap = squeeze(zMap(:,:,zIndex));
          
          % The 4-th z-coeff is defocus. Subtract central defocus from all
          % spatial positions
-         if ((zCoeffIndices(zIndex) == 4) && (subtractCentralRefraction))
+         if ((zCoeffIndices(zIndex) == theDefocusZcoeffIndex) && (subtractCentralRefraction))
              z2Dmap = z2Dmap - z2Dmap(indexOfZeroEcc);
          end
          
          % Add refractive error
-         if (zCoeffIndices(zIndex) == 4)
+         if (zCoeffIndices(zIndex) == theDefocusZcoeffIndex)
              z2Dmap = z2Dmap + refractiveErrorMicrons;
          end
          
          % Interpolate the XY map at the desired eccentricity.
+         % Note the + 1 added to the z-coeff. This is to ensure that
+         % we are addressing the correct indices expected by the wvf object
          interpolatedZcoeffs(zCoeffIndices(zIndex)+1) = interp2(X,Y,z2Dmap, ecc(1), ecc(2));
     end
     
     if (subjectID == 0)
+        % All zero coefficients
         interpolatedZcoeffs = 0*interpolatedZcoeffs;
+        % Add refractive error
+        interpolatedZcoeffs(wvfOSAIndexToVectorIndex('defocus')) = refractiveErrorMicrons;
     end
-    
 end

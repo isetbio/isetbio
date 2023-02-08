@@ -21,6 +21,7 @@ function visualize(obj, varargin)
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
 
+
     if (isempty(fillColor))
         fillColor = [0.3 0.6 0.9];
         faceAlpha = 0.5;
@@ -28,6 +29,8 @@ function visualize(obj, varargin)
         if (numel(fillColor) == 4)
             faceAlpha = fillColor(4);
             fillColor = fillColor(1:3);
+        else
+            faceAlpha = 0.5;
         end
     end
     
@@ -51,6 +54,9 @@ function visualize(obj, varargin)
     % Generate the outline
     roiOutline = obj.outline();
     
+    dx = 0.1*(max(roiOutline.x)-min(roiOutline.x));
+    dy = 0.1*(max(roiOutline.y)-min(roiOutline.y));
+    dx = max([dx dy]);
     if (isempty(xLims))
         xLims = [min(roiOutline.x)-dx max(roiOutline.x)+dx];
     end
@@ -63,9 +69,8 @@ function visualize(obj, varargin)
     hold(axesHandle, 'on');
     patch(axesHandle, roiOutline.x, roiOutline.y, ...
         fillColor, 'FaceAlpha', faceAlpha, 'EdgeColor', fillColor*0.5, 'LineWidth', 1.0);
-    dx = 0.1*(max(roiOutline.x)-min(roiOutline.x));
-    dy = 0.1*(max(roiOutline.y)-min(roiOutline.y));
-    dx = max([dx dy]);
+    
+    
     axis(axesHandle, 'image');
     set(axesHandle, 'XLim', xLims, ...
                     'YLim', yLims);
