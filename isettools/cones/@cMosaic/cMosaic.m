@@ -639,6 +639,12 @@ classdef cMosaic < handle
         % Only for Gaussian aperture modifier
         apertureBlurSigmaMicrons = apertureBlurSigmaMicronsOfConeFromItsBlurZone(obj, theConeIndex);
         
+        % Method to compute aperture areas
+        apertureAreasMetersSquared = computeApertureAreasMetersSquared(obj, coneIndices);
+
+        % Method to compute the effective os length attenuation factors
+        v = computeEffectiveOSlengthAttenuationFactors(obj, coneIndices);
+
         % Method to visualize the cone mosaic and its activation
         params = visualize(obj, varargin);
         
