@@ -1,8 +1,8 @@
-function spectrallyWeightedPSFs(obj, varargin)
+function computeSpectrallyWeightedPSFs(obj, visualize, varargin)
 % Compute spectrally weighted (L-cone, M-cone and L+M-cone weighted) PSFs
 %
 % Syntax:
-%   spectrallyWeightedPSFs(obj, varargin)
+%   spectrallyWeightedPSFs(obj, visualize, varargin)
 %
 % Description:
 %    Computes spectrally weighted (L-cone, M-cone and L+M-cone weighted)
@@ -32,7 +32,7 @@ function spectrallyWeightedPSFs(obj, varargin)
      obj.opticsParams] = computeSpecrallyWeightedPSFs(...
             obj.opticsParams, ...
             obj.coneMosaic, ...
-            obj.visualizeSpectrallyWeightedPSFs);
+            visualize);
 end
 
 

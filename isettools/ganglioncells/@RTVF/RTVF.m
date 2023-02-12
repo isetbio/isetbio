@@ -20,16 +20,30 @@ classdef RTVF < handle
        % position 
        spectrallyWeightedPSFData;
 
-       % Visualization options
-       visualizeSpectrallyWeightedPSFs;
-
        % Cone aperture blur kernel
        coneApertureBlurKernel;
+
+       % The visual RF center of the retinal cone map
+       visualRFcenterConeMap;
+
+       % The rotation that results in the narrowest x-profile for the
+       % visual RF center
+       bestHorizontalResolutionRotationDegs;
 
        % The characteristic radius of the visual RF center as estimated by
        % fitting a 1D Gaussian line weighting function to the 1D profile
        % of the visual RF center
        visualRFcenterRcDegs;
+
+       % The characteristic radius of the anatomical RF center
+       anatomicalRFcenterCharacteristicRadiusDegs;
+
+       % How many multistarts to use for fitting a DoG model to the
+       % visualRF obtained with the current retinal cone pooling params
+       multiStartsNumDoGFit;
+
+       % How many multistarts to use for the retinal cone pooling params
+       multiStartsNumRetinalPooling;
 
        % The computed L-cone RF compute struct
        LconeRFcomputeStruct;
@@ -67,11 +81,9 @@ classdef RTVF < handle
 
         % Default defaultTargetVisualRFDoGParams: no surround
         defaultTargetVisualRFDoGParams = struct(...
-            'visualRFmodel', 'arbitraryShapedCenter_GaussianShapedSurround', ... 
             'retinalConePoolingModel', 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights', ...
             'centerConnectableConeTypes', [cMosaic.LCONE_ID cMosaic.MCONE_ID], ...
             'surroundConnectableConeTypes', [cMosaic.LCONE_ID cMosaic.MCONE_ID], ...
-            'coneWeightsCompensateForVariationsInConeEfficiency', true,  ...
             'indicesOfConesPooledByTheRFcenter', [], ...
             'weightsOfConesPooledByTheRFcenter', [], ...
             'surroundToCenterRcRatio', 0.0, ...
@@ -91,11 +103,16 @@ classdef RTVF < handle
             p.addParameter('exportsDirectory', '', @(x)(isempty(x)||ischar(x)));
             p.addParameter('visualizeSpectrallyWeightedPSFs', false, @islogical);
             p.addParameter('initialRetinalConePoolingParamsStruct', [], @(x)(isempty(x)||isstruct(x)));
+            p.addParameter('multiStartsNumRetinalPooling', 1, @isscalar);
+            p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
             p.parse(varargin{:});
 
             % Handle optional inputs
             obj.exportsDirectory = p.Results.exportsDirectory;
-            obj.visualizeSpectrallyWeightedPSFs = p.Results.visualizeSpectrallyWeightedPSFs;
+            obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
+            obj.multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
+
+            visualizeSpectrallyWeightedPSFs = p.Results.visualizeSpectrallyWeightedPSFs;
             initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
             
             % Handle empty opticsParams
@@ -116,6 +133,17 @@ classdef RTVF < handle
             % Handle empty argetVisualRFDoGparams
             if (isempty(theTargetVisualRFDoGparams))
                 obj.targetVisualRFDoGparams = RTVF.defaultTargetVisualRFDoGParams;
+
+                % Median value of C&K Rs/Rc ratios
+                [temporalEccDegs, RcRsRatios] = ...
+                    RGCmodels.CronerKaplan.digitizedData.parvoCenterSurroundRadiusRatioAgainstEccentricity();
+                obj.targetVisualRFDoGparams.surroundToCenterRcRatio = prctile(1./RcRsRatios, 50);
+            
+
+                % Median value of C&K S/C ratios
+                [temporalEccDegs, SCratios] = ...
+                    RGCmodels.CronerKaplan.digitizedData.parvoSurroundCenterIntSensisitivityRatioAgainstEccentricity();
+                obj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio = prctile(SCratios,50);
             else
                 obj.targetVisualRFDoGparams = theTargetVisualRFDoGparams;
             end
@@ -128,7 +156,7 @@ classdef RTVF < handle
             %         specified by the input @cMosaic.
             %         This sets the obj.theSpectrallyWeightedPSFData parameter
             %         and updates the obj.opticsParams
-            obj.spectrallyWeightedPSFs();
+            obj.computeSpectrallyWeightedPSFs(visualizeSpectrallyWeightedPSFs);
 
             % Generate the cone aperture blur kernel for the RF center pooled cones
             %          i.e., targetVisualRFDoGparams.indicesOfConesPooledByTheRFcenter
@@ -139,20 +167,30 @@ classdef RTVF < handle
 
             % Compute the characteristic radius of the retinal RFcenter cone map
             %          as projected in visual space using the computed L+M-cone weighted PSF.
-            obj.visualRFcenterRcDegs = obj.rfCenterCharacteristicRadiusInVisualSpace();
+            [obj.anatomicalRFcenterCharacteristicRadiusDegs, ...
+             obj.visualRFcenterRcDegs, ...
+             obj.visualRFcenterConeMap, ...
+             obj.bestHorizontalResolutionRotationDegs] = obj.rfCenterCharacteristicRadiusInVisualSpace();
 
 
             % Retrieve the C&K Rs/Rc ratios
             [CronerKaplanRcRsRatios.temporalEccDegs, CronerKaplanRcRsRatios.val] = ...
                 RGCmodels.CronerKaplan.digitizedData.parvoCenterSurroundRadiusRatioAgainstEccentricity();
 
-            % Max Rs/Rc ratio
+            % Max Rs/Rc ratio (80% prctile of the C&K data)
             maxRsRcRatio =  max([ ...
-                prctile(1./CronerKaplanRcRsRatios.val, 50), ...
+                prctile(1./CronerKaplanRcRsRatios.val, 80), ...
                 obj.targetVisualRFDoGparams.surroundToCenterRcRatio]);
 
             % Crop the PSF to this max spatial support
             obj.cropPSF(obj.visualRFcenterRcDegs * maxRsRcRatio);
+
+            % Recompute the visual RFcenter cone map which may have
+            % different spatial support based on the above cropping
+            [~, ~, obj.visualRFcenterConeMap, obj.bestHorizontalResolutionRotationDegs] = ...
+             obj.rfCenterCharacteristicRadiusInVisualSpace( ...
+                    'computeAnatomicalRFcenterRc', false, ...
+                    'computeVisualRFcenterRc', false);
 
             % See if we have initial retinal cone pooling params
             if (~isempty(initialRetinalConePoolingParamsStruct))
@@ -180,16 +218,27 @@ classdef RTVF < handle
     methods (Access=private)
 
         % PSF computation
-        spectrallyWeightedPSFs(obj, varargin);
+        computeSpectrallyWeightedPSFs(obj, visualize, varargin);
         cropPSF(obj, maxSpatialSupportDegs);
 
         % Subregion computation
         computeConeApertureBlurKernel(obj);
-        retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(obj, ...
+        retinalSubregionConeMap = retinalSubregionMapFromPooledConeInputs(obj, ...
             conePosDegs, coneApertureAreas, osLengthAttenuationFactors, coneWeights);
 
-        % Rc
-        visualRFcenterRcDegs = rfCenterCharacteristicRadiusInVisualSpace(obj);
+        % RF center params
+        [anatomicalRFcenterCharacteristicRadiusDegs, ...
+         visualRFcenterRcDegs, ...
+         visualRFcenterConeMap, ...
+         bestHorizontalResolutionRotationDegs] = rfCenterCharacteristicRadiusInVisualSpace(obj, varargin);
+
+        % Method to compute the visual RF ensuing from the current retinal
+        % cone pooling params
+        [theVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
+            visualRFfromRetinalConePooling(obj, modelConstants, retinalPoolingParams)
+
+        % Method to compute the Croner&Kaplan RF analysis
+        dataOut = visualRFmapPropertiesFromCronerKaplanAnalysis(obj, theVisualRF);
 
         % Method to compute the RFcomputeStruct
         RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
@@ -207,9 +256,8 @@ classdef RTVF < handle
         % resolution (narrowest profile) along the x-axis
         [theRotatedRF, rotationDegs] = bestHorizontalResolutionRFmap(theRF, rotationDegs, debugRadonTransformAnalysis);
 
-        % Method to compute the STF from the RF line weighting profile
-        [oneSidedSpatialFrequencySupport, oneSidedSTF] = ...
-            spatialTransferFunction(spatialSupportDegs, theRFprofile);
+        % Method to fit a 2D Gaussian ellipsoid to a RF cone map
+        theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRFconeMap, varargin);
 
         % Method to fit the RF line-weighting profile with a Gaussian
         theFittedGaussianLineWeightingFunction = ...
@@ -218,8 +266,36 @@ classdef RTVF < handle
         % Method to compute the line weighting function for a Gaussian
         theLineWeightingProfile = gaussianLineWeightingProfile(params, spatialSupport);
 
+        % Method to compute the STF  of a RF line weighting function
+        [oneSidedSpatialFrequencySupport, oneSidedSTF] = spatialTransferFunction(...
+            spatialSupportDegs, theLineWeightingFunction);
+
+        % Method to fit a DoG STF to the measured STF
+        [DoGparams, theFittedSTF] = fitDoGmodelToMeasuredSTF(...
+            sfCPD, theMeasuredSTF, RcDegsInitialEstimate, rangeForRc, multiStartsNum);
+
         % Method to visualize the params and ranges of a fitted model
         visualizeFittedModelParametersAndRanges(ax, modelParams);
+        
+        % Method to compute the pooling cone indices and weights for the
+        % current conePoolingParamsVector for the
+        % 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights'
+        % retinal cone pooling model
+        pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterDoubleExpSurround( ...
+            modelConstants, conePoolingParamsVector)
+
+        % Method to compute H1 double exponent RF params that are dependent
+        % on other H1 model params
+        [Kwide, Knarrow, Rnarrow] = H1doubleExponentRFparams(...
+            Kc, Rwide, KsToKcPeakRatio, narrowToWideVolumeRatio, RnarrowToRwideRatio);
+
+        % Method to compute the surround cone indices and weights based on
+        % the the obj.targetVisualRFDoGparams.surroundConnectableConeTypes
+        % (which is encoded in the modelConstant struct)
+        [surroundConeIndices, surroundConeWeights, ...
+          nonConnectableSurroundConeIndices, ...
+          nonConnectableSurroundConeWeights] = connectableSurroundConeIndicesAndWeights(...
+                surroundConeIndices, surroundConeWeights, modelConstants);
     end
 
 end

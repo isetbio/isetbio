@@ -2,12 +2,16 @@ function computeConeApertureBlurKernel(obj)
 
     theConeIndices = obj.targetVisualRFDoGparams.indicesOfConesPooledByTheRFcenter;
 
+    % Find the blurZone in which theConeIndices belong to
     targetZoneIndex = coneApertureBlurZone(obj.coneMosaic, theConeIndices);
+
+    % Retrieve the blurApertureDiameter for the target zone
     blurApertureDiameterDegs = obj.coneMosaic.blurApertureDiameterDegsZones(targetZoneIndex);
 
-    % Compute aperture kernel
+    % Compute the aperture blur kernel
     lowOpticalImageResolutionWarning = true;
-    oiResDegs = obj.spectrallyWeightedPSFData.spatialSupportForRFmapXdegs(2)-obj.spectrallyWeightedPSFData.spatialSupportForRFmapXdegs(1);
+    oiResDegs = obj.spectrallyWeightedPSFData.spatialSupportForRFmapXdegs(2) - ...
+                obj.spectrallyWeightedPSFData.spatialSupportForRFmapXdegs(1);
     obj.coneApertureBlurKernel = obj.coneMosaic.generateApertureKernel(...
         blurApertureDiameterDegs(1), oiResDegs, lowOpticalImageResolutionWarning);
 

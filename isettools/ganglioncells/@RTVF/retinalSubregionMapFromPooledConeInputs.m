@@ -1,4 +1,4 @@
-function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(obj, ...
+function retinalSubregionConeMap = retinalSubregionMapFromPooledConeInputs(obj, ...
     conePosDegs, coneApertureAreas, osLengthAttenuationFactors, coneWeights)
 
     % Generate XY spatial position grid
@@ -56,7 +56,7 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(o
     end
  
     if (conesNotIncluded > 0)
-        fprintf(2,'%d of the %d cones pooled by the continuous model were NOT included in the actual subregion map because they fell outside of the spatial support.\n', conesNotIncluded, conesNumPooled);
+        fprintf(2,'RTVF.retinalSubregionMapFromPooledConeInputs:: %d of the %d cones pooled by the continuous model were NOT included in the actual subregion map because they fell outside of the spatial support.\n', conesNotIncluded, conesNumPooled);
     end
 
 end
