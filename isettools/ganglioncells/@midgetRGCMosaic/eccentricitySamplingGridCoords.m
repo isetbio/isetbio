@@ -45,11 +45,17 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                         r = logspace(log10(0.1), log10(max(sizeDegs)*0.4), gridHalfSamplesNum+1);
                     end
                     r(1) = 0;
+                    angles = -30+(0:60:360);
+                    xScale = 0.75;
+                    yScale = 1.0;
                 else
+                    xScale = 1;
+                    yScale = 1;
                     r = linspace(0, max(sizeDegs)*0.4, gridHalfSamplesNum);
+                    angles = 0:60:360; 
                 end
 
-                angles = 0:60:360; X = []; Y = [];
+                X = []; Y = [];
                 delta = 0;
                 for iRadius = numel(r):-1:1
                     if (delta == 0)
@@ -57,8 +63,8 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                     else
                         delta = 0;
                     end
-                    X(size(X,1)+(1:numel(angles)),1) = r(iRadius) * cosd(angles+delta);
-                    Y(size(Y,1)+(1:numel(angles)),1) = r(iRadius) * sind(angles+delta);
+                    X(size(X,1)+(1:numel(angles)),1) = xScale * r(iRadius) * cosd(angles+delta);
+                    Y(size(Y,1)+(1:numel(angles)),1) = yScale * r(iRadius) * sind(angles+delta);
                 end
     
                 % Add the 4 corner points
@@ -75,6 +81,16 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
 
                     X(size(X,1)+1,1) =-sizeDegs(1)/2;
                     Y(size(Y,1)+1,1) =-sizeDegs(2)/2;
+
+                    % And 2 points along the y=0 meridian
+                    X(size(X,1)+1,1) = sizeDegs(1)/2;
+                    Y(size(Y,1)+1,1) = 0;
+
+                    X(size(X,1)+1,1) = -sizeDegs(1)/2;
+                    Y(size(Y,1)+1,1) = 0;
+
+
+
                 else
                     % Off-center mosaic
                     X(size(X,1)+1,1) = minX-midX;
