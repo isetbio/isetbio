@@ -221,30 +221,24 @@ classdef RTVF < handle
             end
 
             % Action!
-%             if (computeLconeCenterComputeStruct && computeMconeCenterComputeStruct)
-%                 % Do them in parallel
-%                 computeStructs = cell(1,2)
-%                 parfor i = 1:2
-%                 end
-% 
-%             else
-                if (computeLconeCenterComputeStruct)
-                    obj.LconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
-                        cMosaic.LCONE_ID, ...
-                        initialLconeRetinalConePoolingParams);
-                end
-    
-                if (computeMconeCenterComputeStruct)
-                    obj.MconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
-                        cMosaic.MCONE_ID, ...
-                        initialMconeRetinalConePoolingParams);
-                end
-            %end
+            if (computeLconeCenterComputeStruct)
+                obj.LconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
+                    cMosaic.LCONE_ID, ...
+                    initialLconeRetinalConePoolingParams);
+            end
 
+            if (computeMconeCenterComputeStruct)
+                obj.MconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
+                    cMosaic.MCONE_ID, ...
+                    initialMconeRetinalConePoolingParams);
+            end
 
             % Save the computed object
-            obj.saveComputedObject(computeLconeCenterComputeStruct, computeMconeCenterComputeStruct);
-
+            if (isempty(computedRTVFobjectExportDirectory))
+                fprintf('Computed RTVF object was not saved to the disk.');
+            else
+                obj.saveComputedObject(computeLconeCenterComputeStruct, computeMconeCenterComputeStruct);
+            end
         end % 
         % Constructor
     end % public methods

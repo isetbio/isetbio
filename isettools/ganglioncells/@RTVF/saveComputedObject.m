@@ -1,15 +1,12 @@
 function saveComputedObject(obj, computeLconeCenterComputeStruct, computeMconeCenterComputeStruct)
-    if (isempty(computedRTVObjectExportDirectory))
-        fprintf('Did not save the computed object');
-        return;
-    else
-       if (writeTheFile(obj, computeLconeCenterComputeStruct, computeMconeCenterComputeStruct))
-           fprintf('Saving computed object to %s\n', obj.computedObjDataFileName);
-           save(obj.computedObjDataFileName, 'obj');
-       else
-           fprintf('Did not save the computed object');
-       end
-    end
+    
+   if (writeTheFile(obj, computeLconeCenterComputeStruct, computeMconeCenterComputeStruct))
+      fprintf('Saving computed object to %s\n', obj.computedObjDataFileName);
+      save(obj.computedObjDataFileName, 'obj');
+   else
+      fprintf('Computed RTVF object was not saved to the disk');
+   end
+   
 end
 
 function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeMconeCenterComputeStruct)

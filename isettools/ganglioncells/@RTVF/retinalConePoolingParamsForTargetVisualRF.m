@@ -117,16 +117,12 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     end
 
     
-    
-
     videoOBJ = [];
-    if (displayFittingProgress)
-        % Zero the rmseSequence
-        rmseSequence = [];
+    rmseSequence = [];
 
+    if (displayFittingProgress)
         hFigProgress = figure(1000); clf;
         set(hFigProgress, 'Position', [10 10 1500 950], 'Name', figureName);
-
         
         if (recordProgressVideo)
             videoFileName = 'ProgressVideo';
@@ -194,8 +190,9 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     end
 
     % Done with fitting. Report time to fit the RVFT model
+    fprintf('\n===========================================\n');
     fprintf('Fitting RVFT model finished in %2.2f hours\n', toc/60/60);
-
+    fprintf('===========================================\n');
 
      % Compute the fitted visual RF map
     [theFinalRMSE, theFinalVisualRFmap, theFinalSTFdata, theFinalPooledConeIndicesAndWeights] = ...
@@ -212,11 +209,11 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     end
 
 
-    % Form theRFcomputeStruct
+    % Assemble theRFcomputeStruct
     theRFcomputeStruct = struct();
     theRFcomputeStruct.modelConstants = modelConstants;
     theRFcomputeStruct.retinalConePoolingParams = retinalConePoolingParams;
-
+    theRFcomputeStruct.rmseSequence = rmseSequence;
 
     %  ------- Nested objective function --------
     function [theCurrentRMSE, theCurrentVisualRFmap, theCurrentSTFdata, pooledConeIndicesAndWeights] = ...
