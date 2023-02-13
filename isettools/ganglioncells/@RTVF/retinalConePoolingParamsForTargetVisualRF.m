@@ -1,8 +1,9 @@
-function RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
+function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
                 centerConeMajorityType, initialRetinalConePoolingParamsStruct)
 
-  
-    RFcomputeStruct = [];
+    displayFittedModel = true;
+    displayFittingProgress = true;
+    recordProgressVideo = false;
 
     indicesOfConesPooledByTheRFcenter = obj.targetVisualRFDoGparams.indicesOfConesPooledByTheRFcenter;
     weightsOfConesPooledByTheRFcenter = obj.targetVisualRFDoGparams.weightsOfConesPooledByTheRFcenter;
@@ -115,22 +116,41 @@ function RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
         retinalConePoolingParams.initialValues = initialRetinalConePoolingParamsStruct.finalValues;
     end
 
-    % Zero the rmseSequence
-    rmseSequence = [];
+    
+    
 
-    hFigProgress = figure(1000); clf;
-    set(hFigProgress, 'Position', [10 10 1580 430], 'Name', figureName);
+    videoOBJ = [];
+    if (displayFittingProgress)
+        % Zero the rmseSequence
+        rmseSequence = [];
+
+        hFigProgress = figure(1000); clf;
+        set(hFigProgress, 'Position', [10 10 1500 950], 'Name', figureName);
+
+        
+        if (recordProgressVideo)
+            videoFileName = 'ProgressVideo';
+            videoOBJ = VideoWriter(videoFileName, 'MPEG-4');
+            videoOBJ.FrameRate = 10;
+            videoOBJ.Quality = 100;
+            videoOBJ.open();           
+        end
+
+    end
+
 
     % Compute initial visual RF map
     [theInitialRMSE, theInitiaVisualRFmap , theInitialSTFdata] = theObjectiveFunction(retinalConePoolingParams.initialValues);
 
-    
-    debugCronerKaplanAnalysis = true;
-    if (debugCronerKaplanAnalysis)
-        displaySTFdata(100, modelConstants, theInitiaVisualRFmap, theInitialSTFdata, ...
-            obj.visualRFcenterRcDegs, ...
-            obj.targetVisualRFDoGparams.surroundToCenterRcRatio, ...
-            obj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio);
+
+    if (displayFittedModel)
+        targetParams = struct(...
+            'RcDegs', obj.visualRFcenterRcDegs, ...
+            'RsRcRatio', obj.targetVisualRFDoGparams.surroundToCenterRcRatio, ...
+            'SCintSensRatio', obj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio);
+
+        RTVF.displayFittedModel(100, modelConstants, theInitiaVisualRFmap, theInitialSTFdata, ...
+            targetParams);
     end
 
     % Optimization optics
@@ -178,19 +198,33 @@ function RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
 
 
      % Compute the fitted visual RF map
-    [theFinalRMSE, theFinalVisualRFmap , theFinalSTFdata] = theObjectiveFunction(retinalConePoolingParams.initialValues);
+    [theFinalRMSE, theFinalVisualRFmap, theFinalSTFdata, theFinalPooledConeIndicesAndWeights] = ...
+        theObjectiveFunction(retinalConePoolingParams.finalValues);
 
 
-    displaySTFdata(101, modelConstants, theFinalVisualRFmap, theFinalSTFdata, ...
-            obj.visualRFcenterRcDegs, ...
-            obj.targetVisualRFDoGparams.surroundToCenterRcRatio, ...
-            obj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio);
+    if (displayFittedModel)
+        RTVF.displayFittedModel(101, modelConstants, theFinalVisualRFmap, theFinalSTFdata, ...
+            targetParams);
+    end
+
+    if (~isempty(videoOBJ))
+        videoOBJ.close();
+    end
+
+
+    % Form theRFcomputeStruct
+    theRFcomputeStruct = struct();
+    theRFcomputeStruct.modelConstants = modelConstants;
+    theRFcomputeStruct.retinalConePoolingParams = retinalConePoolingParams;
+
 
     %  ------- Nested objective function --------
-    function [theCurrentRMSE, theCurrentVisualRFmap, theCurrentSTFdata] = theObjectiveFunction(currentRetinalPoolingParamValues)
+    function [theCurrentRMSE, theCurrentVisualRFmap, theCurrentSTFdata, pooledConeIndicesAndWeights] = ...
+            theObjectiveFunction(currentRetinalPoolingParamValues)
 
         % Compute initial visual RF map
-        [theCurrentVisualRFmap , theCurrentRetinalRFcenterConeMap, theCurrentRetinalRFsurroundConeMap] = ...
+        [theCurrentVisualRFmap, theCurrentRetinalRFcenterConeMap, ...
+         theCurrentRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
             obj.visualRFfromRetinalConePooling(...
                 modelConstants, currentRetinalPoolingParamValues);
   
@@ -204,105 +238,17 @@ function RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
         rmseWeights = rmseWeights / sum(rmseWeights);
         theCurrentRMSE = sqrt(rmseWeights(1) * RsRcRatioResidual^2 + rmseWeights(2)*SCintSensRatioResidual^2);
 
-        % Update the sequence of RMSEs
-        rmseSequence(:,size(rmseSequence,2)+1) = abs([RsRcRatioResidual SCintSensRatioResidual theCurrentRMSE]);
-
-
-        currentRetinalConePoolingParams = retinalConePoolingParams;
-        currentRetinalConePoolingParams.finalValues = currentRetinalPoolingParamValues;
-
-        figure(hFigProgress);
-        ax = subplot(2,3,1);
-        RTVF.visualizeFittedModelParametersAndRanges(ax, currentRetinalConePoolingParams);
-
-        ax = subplot(2,3,2);
-        RTVF.visualizeFittedModelParametersAndRanges(ax, theCurrentSTFdata.fittedDoGModelParams);
-
-        ax = subplot(2,3,3);
-        cla(ax);
-        iterations = 1:size(rmseSequence,2);
-        
-        plot(ax,iterations, rmseSequence(1,:), 'r-', 'MarkerSize', 12, 'LineWidth', 1.0); hold(ax, 'on')
-        plot(ax,iterations, rmseSequence(2,:), 'b-', 'MarkerSize', 12, 'LineWidth', 1.0); 
-        plot(ax,iterations, rmseSequence(3,:), 'k-', 'MarkerSize', 12, 'LineWidth', 1.0); 
-        legend(ax, {'Rs/Rc', 'int S/C', 'total'}, 'Location', 'NorthOutside', 'Orientation','horizontal');
-        set(ax, 'YLim', max(abs(rmseSequence(:)))*[1e-5 1.1], 'YScale', 'log', 'FontSize', 14);
-        xlabel(ax, 'iteration');
-        ylabel(ax, 'RMSE');
-
-        if (theCurrentRMSE == min(squeeze(rmseSequence(3,:))))
-            spatialSupportDegsX = obj.spectrallyWeightedPSFData.spatialSupportForRFmapXdegs;
-            spatialSupportDegsY = obj.spectrallyWeightedPSFData.spatialSupportForRFmapYdegs;
-            ax = subplot(2,3,4);
-            imagesc(ax, spatialSupportDegsX, spatialSupportDegsY, theCurrentRetinalRFcenterConeMap);
-            axis(ax, 'image');
-            title(sprintf('RF at iteration %d', size(rmseSequence,2)));
-            ax = subplot(2,3,5);
-            imagesc(ax, spatialSupportDegsX, spatialSupportDegsY, theCurrentRetinalRFsurroundConeMap);
-            axis(ax, 'image');
-            colormap(gray(1024));
-            drawnow;
-        end
-
+        % Display fitting progress
+        if (displayFittingProgress)
+            rmseSequence = RTVF.displayFittingProgress(hFigProgress, videoOBJ, rmseSequence, ...
+                RsRcRatioResidual, SCintSensRatioResidual, theCurrentRMSE, ...
+                retinalConePoolingParams, currentRetinalPoolingParamValues, ...
+                theCurrentSTFdata, ...
+                obj.spectrallyWeightedPSFData.spatialSupportForRFmapXdegs, ...
+                obj.spectrallyWeightedPSFData.spatialSupportForRFmapYdegs, ...
+                theCurrentRetinalRFcenterConeMap, ...
+                theCurrentRetinalRFsurroundConeMap);
+        end  % displayFittingProgress
 
     end
-
-
-end
-
-
-
-
-
-
-function displaySTFdata(figNo, modelConstants, theVisualRFmap, theVisualSTFdata, ...
-    visualRFcenterRcDegs, targetRsRcatio, targetSCIntSensRatio)
-
-    
-    figure(figNo); clf;
-    ax = subplot(2,3,1);
-    imagesc(ax,modelConstants.spatialSupportDegs(:,1), ...
-            modelConstants.spatialSupportDegs(:,2), ...
-            theVisualRFmap);
-    axis(ax, 'image');  axis(ax, 'xy');
-
-    title(sprintf('center max: %2.3f', max(theVisualRFmap(:))))
-
-
-
-    ax = subplot(2,3,2);
-    plot(ax,theVisualSTFdata.spatialFrequencySupport, theVisualSTFdata.visualSTF, 'ks', 'LineWidth', 1.5);
-    hold(ax, 'on');
-    plot(ax,theVisualSTFdata.spatialFrequencySupport, theVisualSTFdata.fittedDoGModelToVisualSTF.compositeSTF, 'r-', 'LineWidth', 1.5);
-    plot(ax,theVisualSTFdata.spatialFrequencySupport, theVisualSTFdata.fittedDoGModelToVisualSTF.centerSTF, 'r:', 'LineWidth', 1.0);
-    plot(ax,theVisualSTFdata.spatialFrequencySupport, theVisualSTFdata.fittedDoGModelToVisualSTF.surroundSTF, 'r--', 'LineWidth', 1.0);
-    set(ax, 'XScale', 'log', 'XLim', [0.1 100], 'XTick', [0.1 0.3 1 3 10 30 100]);
-
-    ax = subplot(2,3,4);
-    plot(ax,visualRFcenterRcDegs*60, theVisualSTFdata.fittedRcDegs*60 , 'ro', 'LineWidth', 1.5);
-    hold(ax, 'on')
-    plot([0 20], [0 20], 'k-', 'LineWidth', 1.0)
-    xlabel('target Rc (arcmin)');
-    ylabel('fitted DoG model Rc (arcmin)')
-    set(ax, 'XLim', [0 3], 'YLim', [0 3]);
-    axis(ax, 'square');
-
-    ax = subplot(2,3,5);
-    plot(ax,targetRsRcatio, theVisualSTFdata.fittedDoGModelRsRcRatio, 'ro', 'LineWidth', 1.5);
-    hold(ax, 'on')
-    plot([1 20], [1 20], 'k-', 'LineWidth', 1.0)
-    xlabel('target Rs/Rc');
-    ylabel('fitted DoG model Rs/Rc')
-    set(ax, 'XLim', [1 20], 'YLim', [1 20]);
-    axis(ax, 'square');
-
-    ax = subplot(2,3,6);
-    plot(ax, targetSCIntSensRatio, theVisualSTFdata.fittedDoGModelSCIntSensRatio , 'ro', 'LineWidth', 1.5);
-    set(ax, 'XLim', [0 1], 'YLim', [0 1]);
-    hold(ax, 'on')
-    plot([0 1], [0 1], 'k-', 'LineWidth', 1.0)
-    xlabel('target S/C int sens');
-    ylabel('fitted S/C int sens')
-    axis(ax, 'square');
-
 end

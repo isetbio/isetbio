@@ -1,9 +1,72 @@
 function testRTVF
-    positionDegs = [2 0]
-    test1(positionDegs)
+
+    computedRTVFobjectExportDirectory = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/tmp';
+
+    % Compute everything
+    computeRTVF = false;
+    
+    updateLconeRTVF = true;
+    updateMconeRTVF = false;
+    usePreviousRetinalConePoolingParams = true;
+    
+    positionDegs = [1 0];
+
+    % Case 1. Compute both the L- and the M- RTVF
+    if (computeRTVF) 
+        computeRTVFobject(positionDegs, ...
+            'computedRTVFobjectExportDirectory', computedRTVFobjectExportDirectory);
+    end
+
+    % Case 2. Updating the L- or the M- RTVF
+    if (updateLconeRTVF) || (updateMconeRTVF)
+
+        if (~usePreviousRetinalConePoolingParams)
+            initialRetinalConePoolingParamsStruct = [];
+        else
+            % Load previous RTVF file to get previous initial params
+            [file,path] = uigetfile(fullfile(computedRTVObjectExportDirectory, '*.mat'), ...
+                            'Select a file');
+    
+            if (file == 0)
+                initialRetinalConePoolingParamsStruct = [];
+            else
+                % Load previous file to extract previous retinal cone pooling
+                % params (optional)
+                load(fullfile(path,file), 'obj');
+        
+                % Extract previous L-cone retinal cone pooling params
+                previousRetinalConePoolingParamsForLconeCenter = obj.LconeRFcomputeStruct.retinalConePoolingParams;
+                % Extract previous M-cone retinal cone pooling params
+                previousRetinalConePoolingParamsForMconeCenter = obj.MconeRFcomputeStruct.retinalConePoolingParams;
+        
+                % Set initialRetinalConePoolingParams struct
+                initialRetinalConePoolingParamsStruct.LconeRFcenter = previousRetinalConePoolingParamsForLconeCenter;
+                initialRetinalConePoolingParamsStruct.MconeRFcenter = previousRetinalConePoolingParamsForMconeCenter;
+            end
+        end
+
+        computeRTVFobject(positionDegs, ...
+            'computedRTVFobjectExportDirectory', computedRTVFobjectExportDirectory, ...
+            'initialRetinalConePoolingParamsStruct', initialRetinalConePoolingParamsStruct, ...
+            'computeLconeCenterComputeStruct', updateLconeRTVF, ...
+            'computeMconeCenterComputeStruct', updateMconeRTVF);
+
+    end
+
 end
 
-function test1(positionDegs)
+function computeRTVFobject(positionDegs, varargin)
+    p = inputParser;
+    p.addParameter('computedRTVFobjectExportDirectory', '', @(x)(isempty(x)||ischar(x)));
+    p.addParameter('initialRetinalConePoolingParamsStruct', [], @(x)(isempty(x)||isstruct(x)));
+    p.addParameter('computeLconeCenterComputeStruct', true, @islogical);
+    p.addParameter('computeMconeCenterComputeStruct', true, @islogical);
+    p.parse(varargin{:});
+    computedRTVFobjectExportDirectory = p.Results.computedRTVFobjectExportDirectory;
+    initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
+    computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
+    computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
+
     theConeMosaic = generateTestConeMosaic(positionDegs);
 
     theOpticsParams = RTVF.defaultOpticsParams;
@@ -28,17 +91,20 @@ function test1(positionDegs)
     theTargetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio = prctile(SCratios,50);
 
     if (numel(theTargetVisualRFDoGparams.indicesOfConesPooledByTheRFcenter) < 3)
-        multiStartsNumRetinalPooling= 8;
+        multiStartsNumRetinalPooling = 8*3;
     else
-        multiStartsNumRetinalPooling= 4;
+        multiStartsNumRetinalPooling = 4*3;
     end
 
-    % Instantiate the default RTVF object, which consists of a cone mosaic
-    % with 1 L-cone and 1 M-cone, and Polans Subject #4 optics
-    myRTVF = RTVF(theConeMosaic, ...
+    % Instantiate and execute the RTVF object
+    theRTVF = RTVF(theConeMosaic, ...
                  theOpticsParams, ...
                  theTargetVisualRFDoGparams, ...
                  'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling, ...
+                 'computedRTVFobjectExportDirectory', computedRTVFobjectExportDirectory, ...
+                 'initialRetinalConePoolingParamsStruct', initialRetinalConePoolingParamsStruct, ...
+                 'computeLconeCenterComputeStruct', computeLconeCenterComputeStruct, ...
+                 'computeMconeCenterComputeStruct', computeMconeCenterComputeStruct, ...
                  'visualizeSpectrallyWeightedPSFs', ~true);
 
 end

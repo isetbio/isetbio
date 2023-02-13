@@ -1,6 +1,5 @@
 classdef RTVF < handle
 
-
     % Public properties (read-only)
     properties (SetAccess = private)
        % The @cMosaic object
@@ -11,9 +10,6 @@ classdef RTVF < handle
 
        % The target visual params
        targetVisualRFDoGparams;
-
-       % The exports directory
-       exportsDirectory;
 
        % L- and M-cone weighted PSFs 
        % appropriate for the optical
@@ -50,6 +46,9 @@ classdef RTVF < handle
 
        % The computed M-cone RF compute struct
        MconeRFcomputeStruct;
+
+       % The data filename where the computed object is saved
+       computedObjDataFileName;
     end
 
     % Constant properties
@@ -100,21 +99,26 @@ classdef RTVF < handle
                 varargin) 
 
             p = inputParser;
-            p.addParameter('exportsDirectory', '', @(x)(isempty(x)||ischar(x)));
+            p.addParameter('computedRTVFobjectExportDirectory', '', @(x)(isempty(x)||ischar(x)));
             p.addParameter('visualizeSpectrallyWeightedPSFs', false, @islogical);
+            p.addParameter('computeLconeCenterComputeStruct', true, @islogical);
+            p.addParameter('computeMconeCenterComputeStruct', true, @islogical);
             p.addParameter('initialRetinalConePoolingParamsStruct', [], @(x)(isempty(x)||isstruct(x)));
             p.addParameter('multiStartsNumRetinalPooling', 1, @isscalar);
             p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
             p.parse(varargin{:});
 
             % Handle optional inputs
-            obj.exportsDirectory = p.Results.exportsDirectory;
             obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
             obj.multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
 
             visualizeSpectrallyWeightedPSFs = p.Results.visualizeSpectrallyWeightedPSFs;
             initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
             
+            computedRTVFobjectExportDirectory = p.Results.computedRTVFobjectExportDirectory;
+            computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
+            computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
+
             % Handle empty opticsParams
             if (isempty(theOpticsParams))
                 obj.opticsParams = RTVF.defaultOpticsParams;
@@ -148,6 +152,16 @@ classdef RTVF < handle
                 obj.targetVisualRFDoGparams = theTargetVisualRFDoGparams;
             end
             
+
+            % Generate filename for saved object
+            if (isempty(computedRTVFobjectExportDirectory))
+                fprintf('Computed object will NOT be saved to disk.\n');
+                obj.computedObjDataFileName = '';
+            else
+                obj.computedObjDataFileName = fullfile(computedRTVFobjectExportDirectory, obj.computeObjectDataFileName());
+                fprintf('Computed object will be saved to %s\n', obj.computedObjDataFileName);
+            end
+
             % Compute spectrally weighted (L-cone, M-cone and L+M-cone weighted)
             %         PSFs, where the L- and M-w spectral eights are derived from the retinal
             %         spectral absorptance of actual L- and M-cones in the input cone
@@ -192,23 +206,45 @@ classdef RTVF < handle
                     'computeAnatomicalRFcenterRc', false, ...
                     'computeVisualRFcenterRc', false);
 
-            % See if we have initial retinal cone pooling params
+
+            % Initial retinal cone pooling params
             if (~isempty(initialRetinalConePoolingParamsStruct))
-                initialLconeRetinalConePoolingParams = initialRetinalConePoolingParamsStruct.LconeRFcenter;
-                initialMconeRetinalConePoolingParams = initialRetinalConePoolingParamsStruct.MconeRFcenter;
+                if (isfield(initialRetinalConePoolingParamsStruct, 'LconeRFcenter'))
+                    initialLconeRetinalConePoolingParams = initialRetinalConePoolingParamsStruct.LconeRFcenter;
+                end
+                if (isfield(initialRetinalConePoolingParamsStruct, 'MconeRFcenter'))
+                    initialMconeRetinalConePoolingParams = initialRetinalConePoolingParamsStruct.MconeRFcenter;  
+                end
             else
                 initialLconeRetinalConePoolingParams = [];
                 initialMconeRetinalConePoolingParams = [];
             end
 
             % Action!
-            obj.LconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
-                cMosaic.LCONE_ID, ...
-                initialLconeRetinalConePoolingParams);
+%             if (computeLconeCenterComputeStruct && computeMconeCenterComputeStruct)
+%                 % Do them in parallel
+%                 computeStructs = cell(1,2)
+%                 parfor i = 1:2
+%                 end
+% 
+%             else
+                if (computeLconeCenterComputeStruct)
+                    obj.LconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
+                        cMosaic.LCONE_ID, ...
+                        initialLconeRetinalConePoolingParams);
+                end
+    
+                if (computeMconeCenterComputeStruct)
+                    obj.MconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
+                        cMosaic.MCONE_ID, ...
+                        initialMconeRetinalConePoolingParams);
+                end
+            %end
 
-            obj.MconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
-                cMosaic.MCONE_ID, ...
-                initialMconeRetinalConePoolingParams);
+
+            % Save the computed object
+            obj.saveComputedObject(computeLconeCenterComputeStruct, computeMconeCenterComputeStruct);
+
         end % 
         % Constructor
     end % public methods
@@ -244,6 +280,11 @@ classdef RTVF < handle
         RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
                 centerConeType, initialRetinalConePoolingParamsStruct);
 
+        % Method to compute the saved obj filename
+        dataFileName = computeObjectDataFileName(obj);
+
+        % Method to save the computed RTVF object (or parts of it)
+        saveComputedObject(obj,computeLconeCenterComputeStruct, computeMconeCenterComputeStruct);
     end % private methods
 
 
@@ -276,7 +317,21 @@ classdef RTVF < handle
 
         % Method to visualize the params and ranges of a fitted model
         visualizeFittedModelParametersAndRanges(ax, modelParams);
-        
+
+        % Method to visualize the fitted model
+        displayFittedModel(figNo, modelConstants, theVisualRFmap, theVisualSTFdata, ...
+    targetParams);
+
+        % Method to visualize the fitting progress
+        rmseSequence = displayFittingProgress(hFigProgress, videoOBJ, rmseSequence, ...
+                RsRcRatioResidual, SCintSensRatioResidual, theCurrentRMSE, ...
+                retinalConePoolingParams, currentRetinalPoolingParamValues, ...
+                theCurrentSTFdata, ...
+                spatialSupportDegsX, ...
+                spatialSupportDegsY, ...
+                theCurrentRetinalRFcenterConeMap, ...
+                theCurrentRetinalRFsurroundConeMap);
+
         % Method to compute the pooling cone indices and weights for the
         % current conePoolingParamsVector for the
         % 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights'
@@ -296,6 +351,9 @@ classdef RTVF < handle
           nonConnectableSurroundConeIndices, ...
           nonConnectableSurroundConeWeights] = connectableSurroundConeIndicesAndWeights(...
                 surroundConeIndices, surroundConeWeights, modelConstants);
+
+        % Method to inspect a saved RTVF object
+        generateSpatialRFs(theRTVFobj);
     end
 
 end
