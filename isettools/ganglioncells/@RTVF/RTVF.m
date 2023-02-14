@@ -155,11 +155,11 @@ classdef RTVF < handle
 
             % Generate filename for saved object
             if (isempty(computedRTVFobjectExportDirectory))
-                fprintf('Computed object will NOT be saved to disk.\n');
+                fprintf('\nComputed object will NOT be saved to disk.\n');
                 obj.computedObjDataFileName = '';
             else
                 obj.computedObjDataFileName = fullfile(computedRTVFobjectExportDirectory, obj.computeObjectDataFileName());
-                fprintf('Computed object will be saved to %s\n', obj.computedObjDataFileName);
+                fprintf('\nComputed object will be saved to %s\n', obj.computedObjDataFileName);
             end
 
             % Compute spectrally weighted (L-cone, M-cone and L+M-cone weighted)
