@@ -15,6 +15,7 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
             spatialPositionDegs = mean(obj.coneMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
             figureName = sprintf('RF center with %d L-cone(s) at (%2.2f,%2.2f) degs', ...
                 numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
             summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
             
         case cMosaic.MCONE_ID
@@ -23,6 +24,7 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
             spatialPositionDegs = mean(obj.coneMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
             figureName = sprintf('RF center with %d M-cone(s) at (%2.2f,%2.2f) degs', ...
                 numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
             summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
 
         otherwise
@@ -121,7 +123,7 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     rmseSequence = [];
 
     if (displayFittingProgress)
-        hFigProgress = figure(1000); clf;
+        hFigProgress = figure(figNo); clf;
         set(hFigProgress, 'Position', [10 10 1500 950], 'Name', figureName);
         
         if (recordProgressVideo)

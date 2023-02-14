@@ -20,14 +20,15 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
    end
 
    % Load the previously saved RTVF file
-   fprintf(2,'Found previously saved RTVF file.\n');
+   fprintf(2,'Found the following previously saved RTVF file\n');
+   fprintf(2,'%s\n', obj.computedObjDataFileName);
    theOldOBJ = load(obj.computedObjDataFileName, 'obj');
    
    if (computeLconeCenterComputeStruct) && (computeMconeCenterComputeStruct)
         % Ask user if he wants to overwrite both the L- and the M-cone compute structs
         s = input('Overwrite both the L- and the M-cone compute structs? [y=YES] ', 's');
         if (strcmpi(s, 'y'))
-            printf(2, 'Overwriting both the L-cone and the M-cone compute struct.\n'); 
+            fprintf(2, 'Overwriting both the L-cone and the M-cone compute struct.\n'); 
             writeFile = true;
             return;
         end

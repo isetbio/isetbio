@@ -3,14 +3,20 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     % Parse input
     p = inputParser;
     p.addParameter('RTVobjIndicesToBeComputed', 'all',  @(x)(((ischar(x))&&(strcmp(x, 'all'))) || isnumeric(x)));
+    p.addParameter('computeLconeCenterComputeStruct', true, @islogical);
+    p.addParameter('computeMconeCenterComputeStruct', true, @islogical);
     p.parse(varargin{:});
 
     RTVobjIndicesToBeComputed = p.Results.RTVobjIndicesToBeComputed;
+    computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
+    computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
 
-    if (strcmp(RTVobjIndicesToBeComputed, 'all'))
+    if (ischar(RTVobjIndicesToBeComputed))&&(strcmp(RTVobjIndicesToBeComputed, 'all'))
         midgetRGCMosaicInspector.say('Generating select RTVF objects');
+        appendToRTVFfile = true;
     else
         midgetRGCMosaicInspector.say('Generating all RTVF objects');
+        appendToRTVFfile = false;
     end
 
     % Generate mosaic filename and directory
@@ -20,23 +26,25 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     % Load the center-connected mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');
 
-    % Generate the eccentricitySamplingGrid
-    eccentricitySamplingGrid = midgetRGCMosaic.eccentricitySamplingGridCoords(...
-        mosaicCenterParams.positionDegs, mosaicCenterParams.sizeDegs, ...
-        theMidgetRGCmosaic.rgcRFpositionsDegs, ...
-        rfModelParams.eccentricitySamplingGridHalfSamplesNum, ...
-        'hexagonal', true);
+    % Instantiate the multifocalRTVFobj
+    samplingScheme = 'hexagonal';
+
+    % Just for testing
+    multiStartsNumRetinalPooling = 1
+    theMultifocalRTVFOBJ = RTVFmultifocal(theMidgetRGCmosaic, ...
+        mosaicCenterParams, opticsParams, rfModelParams, ...
+        samplingScheme, ...
+        'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling);
 
     fprintf('\nVisualizing the mosaic. Please wait ...')
     % Visualize the mosaic
     theMidgetRGCmosaic.visualize( ...
-        'eccentricitySamplingGrid', eccentricitySamplingGrid, ...
+        'eccentricitySamplingGrid', theMultifocalRTVFOBJ.nominalSpatialSamplingGrid, ...
         'maxVisualizedRFs', 0);
     fprintf('\nDone ! \n');
+    
 
-     % Assemble R2CVFT filename
-    R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(mosaicFileName, opticsParams, rfModelParams.H1cellIndex);
-
+    
     % Ask the user if he wants to use a dictionary with previously
     % fitted params to use as initial values
     usePreviousFittedParamsValues = input('Use initial values from a previous fit ? [y = YES] ', 's');
@@ -58,30 +66,73 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
         end
     end
     
-    fitParams = struct();
-    fitParams.exportsDirectory = mosaicDirectory;
-    fitParams.initialGridRetinalConePoolingParamsStruct = initialGridRetinalConePoolingParamsStruct;
-
+    % Go !
     tStart = cputime;
+    theMultifocalRTVFOBJ.compute( ...
+        initialGridRetinalConePoolingParamsStruct, ...
+        RTVobjIndicesToBeComputed, ...
+        computeLconeCenterComputeStruct, ...
+        computeMconeCenterComputeStruct, ...
+        mosaicDirectory);
 
-    midgetRGCMosaic.R2VFTobjects(...
-                    RTVobjIndicesToBeComputed, ...
-                    theMidgetRGCmosaic, eccentricitySamplingGrid, ...
-                    rfModelParams, opticsParams, fitParams);
 
     timeLapsedMinutes = (cputime - tStart)/60;
     fprintf('\n\n midgetRGCMosaic.R2VFTobjects were generated in %d positions and fitting took %f minutes\n', ...
             size(eccentricitySamplingGrid,1), timeLapsedMinutes);
 
-    % Save the computed RTVFT list
-    save(R2VFTobjFileName, 'theRTFVTobjList', 'theOpticsPositionGrid', ...
-                    'theConesNumPooledByTheRFcenterGrid', ...
-                    'theVisualSTFSurroundToCenterRcRatioGrid', ...
-                    'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid', ...
-                    '-v7.3');
-    fprintf('Computed R2VFTobjects saved in: %s\n', R2VFTobjFileName);
+    
+    % Assemble R2CVFT filename
+    R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(mosaicFileName, opticsParams, rfModelParams.H1cellIndex);
+
+    if (appendToRTVFfile)
+        % Save everything
+        % Save the computed RTVFT list
+        theRTFVTobjList = theMultifocalRTVFOBJ.RTVFTobjList;
+        theOpticsPositionGrid = theMultifocalRTVFOBJ.opticalPositionGrid;
+        theConesNumPooledByTheRFcenterGrid = theMultifocalRTVFOBJ.conesNumPooledByTheRFcenterGrid;
+        theVisualSTFSurroundToCenterRcRatioGrid = theMultifocalRTVFOBJ.visualSTFSurroundToCenterRcRatioGrid;
+        theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid = theMultifocalRTVFOBJ.visualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
+
+        save(R2VFTobjFileName, 'theRTFVTobjList', ...
+                        'theOpticsPositionGrid', ...
+                        'theConesNumPooledByTheRFcenterGrid', ...
+                        'theVisualSTFSurroundToCenterRcRatioGrid', ...
+                        'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid', ...
+                        '-v7.3');
+        fprintf('All computed R2VFTobjects were saved in: %s\n', R2VFTobjFileName);
+    else
+        % Ask the user whether to overwrite the R2VFTobjFileName 
+        prompt = sprintf('Update the all RTVF objects file (%s)? [y/n] : ', R2VFTobjFileName);
+        txt = lower(input(prompt,'s'));
+        if isempty(txt)
+           txt = 'n';
+        end
+        if (strcmp(txt, 'y'))
+            % Load previous file with an existing theRTFVTobjList
+            load(R2VFTobjFileName, 'theRTFVTobjList', ...
+                        'theOpticsPositionGrid', ...
+                        'theConesNumPooledByTheRFcenterGrid', ...
+                        'theVisualSTFSurroundToCenterRcRatioGrid', ...
+                        'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid');
+
+            for iObj = 1:numel(RTVobjIndicesToBeComputed)
+                theOverWrittenOBJindex = RTVobjIndicesToBeComputed(iObj);
+                fprintf('Overwrting RTVF obj #%d\n', theOverWrittenOBJindex);
+                theRTFVTobjList{theOverWrittenOBJindex} = theMultifocalRTVFOBJ.RTVFTobjList{theOverWrittenOBJindex};
+            end
+
+            save(R2VFTobjFileName, 'theRTFVTobjList', ...
+                        'theOpticsPositionGrid', ...
+                        'theConesNumPooledByTheRFcenterGrid', ...
+                        'theVisualSTFSurroundToCenterRcRatioGrid', ...
+                        'theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid', ...
+                        '-v7.3');
+            fprintf('Updated the all RTVF objects file (%s)\n', R2VFTobjFileName);
+
+        else
+            fprintf('Did not update the all RTVF objects file ');
+        end
+
+    end
 
 end
-
-
-
