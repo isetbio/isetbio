@@ -102,8 +102,9 @@ function peekIntoConeSpecificRTVFobj( ...
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.fittedDoGModelToVisualSTF.compositeSTF, 'k-');
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.fittedDoGModelToVisualSTF.centerSTF, 'r-');
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.fittedDoGModelToVisualSTF.surroundSTF, 'b-');
-    set(gca, 'XScale', 'log', 'XTick', [0.1 0.3 1 3 10 30 100], 'XLim', [0.1 100]);;
-    
+    set(gca, 'XScale', 'log', 'XTick', [0.1 0.3 1 3 10 30 100], 'XLim', [0.1 100]);
+    title(ax, sprintf('Rs/Rc: %2.2f (target: %2.2f), S/CintSens: %2.2f (target: %2.2f)', ...
+        fittedRsRcRatio, targetRsRcRatio, fittedSCintSensRatio, targetSCintSensRatio));
 
     % Plot correspondence between target and achieved ratios
     ax = subplot(2,2,4);
