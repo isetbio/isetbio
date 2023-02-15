@@ -35,15 +35,13 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
                 notValidResponse = false;
             end
         end    
-        if (strcmp(s, 'y'))
+        if (strcmp(txt, 'y'))
             fprintf(2, 'Overwriting both the L-cone and the M-cone compute struct.\n'); 
             writeFile = true;
             return;
         end
 
         % User wants to overwrite only one of the two. Find out which.
-        overwriteL = false;
-        overwriteM = false;
         notValidResponse = true;
         while (notValidResponse)
             txt = lower(input('Overwrite the L-cone compute struct? [y=YES] ', 's'));
@@ -53,6 +51,8 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
         end   
         if (strcmp(txt, 'y'))
             overwriteL = true;
+        else
+            overwriteL = false;
         end
 
         notValidResponse = true;
@@ -64,6 +64,8 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
         end   
         if (strcmp(txt, 'y'))
             overwriteM = true;
+        else
+            overwriteM = false;
         end
         
         if (~overwriteL) && (~overwriteM)
