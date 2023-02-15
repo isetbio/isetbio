@@ -26,8 +26,8 @@ function exportRetinalConePoolingParamsForAllFittedRTVFTobjects()
 
         theRTVFTobj = theRTFVTobjList{iRTVobjIndex};
         s = struct();   
-        s.LconeRetinalConePoolingParams = theRTVFTobj.LconeRFcomputeStruct.retinalConePoolingParams;
-        s.MconeRetinalConePoolingParams = theRTVFTobj.MconeRFcomputeStruct.retinalConePoolingParams;
+        s.LconeRFcenter = theRTVFTobj.LconeRFcomputeStruct.retinalConePoolingParams;
+        s.MconeRFcenter= theRTVFTobj.MconeRFcomputeStruct.retinalConePoolingParams;
 
         retinalConePoolingParamsDictionary(theKey) = s;
     end

@@ -33,8 +33,8 @@ function quicklyInspectAllRTVFobjectsFile()
         return;
     end
 
-    x = theRTFVTobjList{iObj}.theConeMosaic.coneRFpositionsDegs(:,1);
-    y = theRTFVTobjList{iObj}.theConeMosaic.coneRFpositionsDegs(:,2);
+    x = theRTFVTobjList{iObj}.coneMosaic.coneRFpositionsDegs(:,1);
+    y = theRTFVTobjList{iObj}.coneMosaic.coneRFpositionsDegs(:,2);
     xLims = [min(x) max(x)];
     yLims = [min(y) max(y)];
     spatialTicksX = linspace(xLims(1), xLims(2), 7);
@@ -75,7 +75,7 @@ function quicklyInspectAllRTVFobjectsFile()
             sprintf('Processing R2VF obj %d of %d', iObj, numel(theRTFVTobjList)));
         pause(0.1);
         if (~isempty(theRTFVTobjList{iObj}))
-            midgetRGCMosaicInspector.peekIntoRTVFobj(...
+            RTVFmultifocal.peekIntoSingleRTVFobj(...
                 theRTFVTobjList{iObj}, ...
                 iObj, ...
                 theOpticsPositionGrid, ...

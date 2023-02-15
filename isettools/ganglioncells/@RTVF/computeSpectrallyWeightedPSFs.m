@@ -1,14 +1,38 @@
-function spectrallyWeightedPSFs(obj, varargin)
+function computeSpectrallyWeightedPSFs(obj, visualize, varargin)
+% Compute spectrally weighted (L-cone, M-cone and L+M-cone weighted) PSFs
+%
+% Syntax:
+%   spectrallyWeightedPSFs(obj, visualize, varargin)
+%
+% Description:
+%    Computes spectrally weighted (L-cone, M-cone and L+M-cone weighted)
+%    PSFs, where the L- and M-w spectral eights are derived from the retinal
+%    spectral absorptance of actual L- and M-cones in the input cone
+%    mosaic at the desrired eccentricity (opticsParams.positionDegs), 
+%    taking into account macular pigment density at that location, as 
+%    specified by the input @cMosaic.
+%    This function sets the obj.theSpectrallyWeightedPSFData parameter
+%    and updates the obj.opticsParams
+%
+% Inputs:
+%    obj                 - An @RTVF object
+%
+% Outputs:
+%    none
+%
+% Optional key/value pairs:
+%    none
+%         
 
     % Parse input
-    p = inputParser;
-    p.parse(varargin{:});
+    %p = inputParser;
+    %p.parse(varargin{:});
 
-    [obj.theSpectrallyWeightedPSFData, ...
+    [obj.spectrallyWeightedPSFData, ...
      obj.opticsParams] = computeSpecrallyWeightedPSFs(...
             obj.opticsParams, ...
-            obj.theConeMosaic, ...
-            obj.visualizeSpectrallyWeightedPSFs);
+            obj.coneMosaic, ...
+            visualize);
 end
 
 
@@ -22,13 +46,13 @@ function [thePSFData, opticsParams] = computeSpecrallyWeightedPSFs(opticsParams,
 
 
     switch (opticsParams.ZernikeDataBase)
-        case RetinaToVisualFieldTransformer.Artal
+        case RTVF.Artal
             rankedSujectIDs = ArtalOptics.constants.subjectRanking(opticsParams.subjectRankingEye);
             testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
             subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
                 opticsParams.analyzedEye, testSubjectID);
 
-        case RetinaToVisualFieldTransformer.Polans
+        case RTVF.Polans
             if (~strcmp(opticsParams.subjectRankingEye, 'right eye'))
                 error('Polans measurements exist only for the right eye.');
             end
@@ -49,6 +73,11 @@ function [thePSFData, opticsParams] = computeSpecrallyWeightedPSFs(opticsParams,
         opticsParams.refractiveErrorDiopters = 0;
     else
         opticsParams.subtractCentralRefraction = subtractCentralRefraction;
+    end
+
+    eccDegs = sqrt(sum(opticsParams.positionDegs.^2,2));
+    if (eccDegs < 0.5) && (opticsParams.psfUpsampleFactor < 2)
+        opticsParams.psfUpsampleFactor = 2;
     end
 
     [oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(opticsParams.positionDegs, ...
@@ -97,7 +126,12 @@ function [thePSFData, opticsParams] = computeSpecrallyWeightedPSFs(opticsParams,
     thePSFData.psfSupportXdegs = thePSFData.supportX/60;
     thePSFData.psfSupportYdegs = thePSFData.supportY/60;
 
-    
+    % Spatial surrport for computing RF maps. This will be changed when
+    % cropping the PSF
+    thePSFData.spatialSupportForRFmapXdegs = thePSFData.psfSupportXdegs;
+    thePSFData.spatialSupportForRFmapYdegs = thePSFData.psfSupportYdegs;
+
+
     if (visualize)
         ff = MSreadyPlot.figureFormat('1x4');
         hFig = figure(4000); clf;

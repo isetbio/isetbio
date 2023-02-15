@@ -1,4 +1,4 @@
-function  [mosaicCenterParams, rfModelParams, opticsParams] = generateMosaicAndOpticsParamStructs()
+function  [mosaicCenterParams, rfModelParams, opticsParams] = generateDefaultMosaicAndOpticsParamStructs()
 
     % Position, size and eye of the mosaic
     mosaicCenterParams = struct(...
@@ -9,15 +9,14 @@ function  [mosaicCenterParams, rfModelParams, opticsParams] = generateMosaicAndO
     % index of the one of 4 H1 cells in Packer & Dacey (valid numbers: 1, 2, 3, or 4)
     H1cellIndex = 1;
 
+    retinalConePoolingModel = sprintf('arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights', H1cellIndex);
+
     % Params controlling the optimization of retinal cone pooling weights
     rfModelParams = struct(...
-        'retinalConePoolingModel', sprintf('arbitrary center cone weights, double exponential surround from H1 cell with index %d', H1cellIndex),...
-        'visualRFmodel', 'arbitrary center, gaussian surround', ...
+        'retinalConePoolingModel', retinalConePoolingModel, ...
         'H1cellIndex', H1cellIndex, ...                                          
-        'targetSTFmatchMode', 'STFDoGparams', ...                                % what is optimized
         'centerConnectableConeTypes', [cMosaic.LCONE_ID cMosaic.MCONE_ID], ...   % cone types that can connect to the RF center
         'surroundConnectableConeTypes', [cMosaic.LCONE_ID cMosaic.MCONE_ID], ... % cone types that can connect to the RF surround
-        'coneWeightsCompensateForVariationsInConeEfficiency', true, ...          % cone weight compensationfor eccentricity-dependent variations in cone efficiency
         'eccentricitySamplingGridHalfSamplesNum', 1 ...                          % generate R2VFTobjects at 2*gridHalfSamplesNum + 1 spatial positions        
     );
         

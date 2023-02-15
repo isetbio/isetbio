@@ -1,9 +1,13 @@
-function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs, ...
-    rgcRFpositionsDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords)
+function generateNominalSpatialSamplingGrid(obj, samplingScheme, visualizeSamplingGrid)
 
-    assert(numel(sizeDegs) == 2, 'MidgetRGCMosaic:gridNormalizedCoords: sizeDegs must be a 2-element vector');
-    assert(ismember(samplingScheme, {'rectangular', 'hexagonal'}), 'MidgetRGCMosaic:gridNormalizedCoords: samplingScheme must be either ''hexagonal'' or ''rectangular''.');
+    centerDegs = obj.mosaicCenterParams.positionDegs;
+    sizeDegs = obj.mosaicCenterParams.sizeDegs;
+    gridHalfSamplesNum = obj.rfModelParams.eccentricitySamplingGridHalfSamplesNum;
 
+    assert(numel(sizeDegs) == 2, 'RTVFmultifocal.generateSamplingGrid: sizeDegs must be a 2-element vector');
+    assert(ismember(samplingScheme, {'rectangular', 'hexagonal'}), 'RTVFmultifocal.generateSamplingGrid: samplingScheme must be either ''hexagonal'' or ''rectangular''.');
+
+    rgcRFpositionsDegs = obj.theRGCMosaic.rgcRFpositionsDegs;
 
     xCoords = squeeze(rgcRFpositionsDegs(:,1));
     yCoords = squeeze(rgcRFpositionsDegs(:,2));
@@ -22,7 +26,7 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                     nSamples = gridHalfSamplesNum(1);
                 end
         
-                if (eccentricityDegs(iDim) == 0)
+                if (centerDegs(iDim) == 0)
                     x = logspace(log10(0.2/nSamples), log10(sizeDegs(iDim)*0.5), nSamples+1);
                     x(1) = 0;
                     coords{iDim} = unique([-fliplr(x) x]);
@@ -38,7 +42,7 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                 X = 0;
                 Y = 0;
             else
-                if (eccentricityDegs(1) == 0) && (eccentricityDegs(2) == 0)
+                if (centerDegs(1) == 0) && (centerDegs(2) == 0)
                     if (gridHalfSamplesNum == 1)
                         r = logspace(log10(0.1), log10(max(sizeDegs)*0.3), gridHalfSamplesNum+1);
                     else
@@ -68,7 +72,7 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
                 end
     
                 % Add the 4 corner points
-                if (eccentricityDegs(1) == 0) && (eccentricityDegs(2) == 0)
+                if (centerDegs(1) == 0) && (centerDegs(2) == 0)
                     % Mosaic centered at (0,0)
                     X(size(X,1)+1,1) = sizeDegs(1)/2;
                     Y(size(Y,1)+1,1) = sizeDegs(2)/2;
@@ -119,7 +123,7 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
     end % Switch
 
 
-    if (eccentricityDegs(1) == 0) && (eccentricityDegs(2) == 0)
+    if (centerDegs(1) == 0) && (centerDegs(2) == 0)
         if (max(abs(X(:)))>0)
             X = X(:)/max(abs(X(:))) * sizeDegs(1)*0.5*0.95;
         end
@@ -128,7 +132,7 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
         end
     end
 
-    if (eccentricityDegs(1) == 0) && (eccentricityDegs(2) == 0)
+    if (centerDegs(1) == 0) && (centerDegs(2) == 0)
         gridCoords(:,1) = X;
         gridCoords(:,2) = Y;
     else
@@ -136,21 +140,12 @@ function gridCoords = eccentricitySamplingGridCoords(eccentricityDegs, sizeDegs,
         gridCoords(:,2) = midY + Y;
     end
 
-    gridCoords = unique(gridCoords, 'rows');
+    obj.nominalSpatialSamplingGrid = unique(gridCoords, 'rows');
 
-    if (visualizeGridCoords)
+    if (visualizeSamplingGrid)
         hFig = figure(1); clf;
         set(hFig, 'Color', [1 1 1]);
-        
-        xx = eccentricityDegs(1) + sizeDegs(1)/2*[-1 -1 1  1 -1];
-        yy = eccentricityDegs(2) + sizeDegs(2)/2*[-1  1 1 -1 -1];
-        plot(xx,yy,'k-', 'LineWidth', 1);
-        hold on;
-        plot(gridCoords(:,1), gridCoords(:,2), 'r+', 'MarkerSize', 12, 'LineWidth', 3.0);
-        set(gca, 'FontSize', 16);
-        axis 'equal'
-        box off;
-        grid on
-        set(gca, 'XLim', eccentricityDegs(1) + sizeDegs(1)*0.5*[-1 1] + [-0.1 0.1], 'YLim', eccentricityDegs(2) + sizeDegs(2)*0.5*[-1 1] + [-0.1 0.1]);
+        ax = subplot('Position', [0.05 0.05 0.94 0.94]);
+        obj.plotSpatialSamplingGrid(ax, obj.nominalSpatialSamplingGrid, 'nominal spatial sampling grid');
     end
 end
