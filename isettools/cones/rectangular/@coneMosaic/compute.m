@@ -233,7 +233,7 @@ else
                 absorptions = absorptions(:, nonNullConeIndices);
 
                 % NPC's note about noise:
-                % In out eccentricity-based hexagonal cone mosaics we correct 
+                % In our eccentricity-based hexagonal cone mosaics we correct 
                 % the absorptions (which are computed for a foveal cone) based 
                 % on the eccentricity-dependent variation in outer-segment 
                 % length and inner segment diameter. This correction is applied 

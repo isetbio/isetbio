@@ -16,7 +16,7 @@ ieInit;
 
 % First the scene
 s = sceneCreate('rings rays');
-s = sceneSet(s, 'fov', 1);
+s = sceneSet(s, 'fov', 2.5);
 
 % Then the oi
 oi = oiCreate;
@@ -28,7 +28,7 @@ oi = oiCompute(oi, s);
 cMosaic = coneMosaic;
 
 % Set size to show about half the scene. Speeds things up.
-cMosaic.setSizeToFOV(0.1 * sceneGet(s, 'fov'));
+cMosaic.setSizeToFOV(0.9 * sceneGet(s, 'fov'));
 
 % You can see the field of view for this cone mosaic object, along with
 % other parameters, within the coneMosaic object:
@@ -37,7 +37,7 @@ cMosaic.setSizeToFOV(0.1 * sceneGet(s, 'fov'));
 %% Generate a sequence of 100 eye posistions.
 % This function creates an eye movement object (see t_fixationalEM.m) and
 % automatically generates a path for this given cone mosaic.
-cMosaic.emGenSequence(100);
+cMosaic.emGenSequence(50);
 
 %% Compute isomerizations for each eye position.
 cMosaic.compute(oi);
@@ -54,6 +54,6 @@ cMosaic.window;
 % directly. 
 
 % cMosaic.plot('Cone mosaic');
-% cMosaic.plot('meanabsorptions');
+% cMosaic.plot('mean absorptions');
 
 %% END
