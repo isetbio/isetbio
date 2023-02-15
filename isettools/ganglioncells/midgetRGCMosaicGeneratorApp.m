@@ -162,36 +162,11 @@ function executePipelineAction(btn, app)
                 singleRTVobjIndexToBeComputed = input('\nEnter index of RTVF object to be refit: ');
             end
 
-            notValidResponse = true;
-            while (notValidResponse)
-                txt = lower(input('\nCompute the L-cone compute struct? [y=YES] ', 's'));
-                if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
-                    notValidResponse = false;
-                end
-            end   
-            if (strcmp(txt, 'y'))
-                computeLconeCenterComputeStruct = true;
-                fprintf('Will refit the L-center RTVF\n');
-            else
-                computeLconeCenterComputeStruct = false;
-                fprintf('Will SKIP refitting the L-center RTVF\n');
-            end
+            % Ask user whether to compute the L-cone compute struct
+            computeLconeCenterComputeStruct = queryUserForYesNoResponse('\nCompute the L-cone compute struct?');
 
-
-            notValidResponse = true;
-            while (notValidResponse)
-                txt = lower(input('\nCompute the M-cone compute struct? [y=YES] ', 's'));
-                if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
-                    notValidResponse = false;
-                end
-            end   
-            if (strcmp(txt, 'y'))
-                computeMconeCenterComputeStruct = true;
-                fprintf('Will refit the M-center RTVF\n');
-            else
-                computeMconeCenterComputeStruct = false;
-                fprintf('Will SKIP refitting the M-center RTVF\n');
-            end
+            % Ask user whether to compute the M-cone compute struct
+            computeMconeCenterComputeStruct = queryUserForYesNoResponse('\nCompute the M-cone compute struct?');
 
 
             multiStartsNumRetinalPooling  = [];
@@ -526,7 +501,24 @@ function val = queryUserForParamValue(paramName, validParamValues, oldVal)
             val = newVal;
         end
     end
+end
 
+function val = queryUserForYesNoResponse(message)
+    notValidResponse = true;
+    while (notValidResponse)
+        message = sprintf('%s [y=YES, n=NO]: ', message);
+        txt = lower(input(message, 's'));
+        if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
+            notValidResponse = false;
+        end
+    end   
+    if (strcmp(txt, 'y'))
+        val = true;
+        fprintf('Will do.\n');
+    else
+        val = false;
+        fprintf('Will SKIP\n');
+   end
 end
 
 
