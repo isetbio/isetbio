@@ -12,22 +12,25 @@ function generateSamplingGrids(obj, visualizeSpatialSamplingGrids)
         meshgrid(1:size(obj.nominalSpatialSamplingGrid,1), conesNumPooledByTheRFcenters);
     
     % Allocate memory
-    multifocalRTVFobjectsNum = numel(multiFocalConesNumInRFcenterGrid);
-    obj.opticalPositionGrid = zeros(multifocalRTVFobjectsNum, 2);
-    obj.conesNumPooledByTheRFcenterGrid = zeros(multifocalRTVFobjectsNum,1);
-    obj.visualSTFSurroundToCenterRcRatioGrid = zeros(multifocalRTVFobjectsNum, 1);
-    obj.visualSTFSurroundToCenterIntegratedSensitivityRatioGrid = zeros(multifocalRTVFobjectsNum,1);
+    maxmultifocalRTVFobjectsNum = numel(multiFocalConesNumInRFcenterGrid);
+    spatialPositionsVisitedForConesNumPooled = cell(1, max(conesNumPooledByTheRFcenters));
 
+    obj.opticalPositionGrid = [];
+    obj.conesNumPooledByTheRFcenterGrid = [];
+    obj.visualSTFSurroundToCenterRcRatioGrid = [];
+    obj.visualSTFSurroundToCenterIntegratedSensitivityRatioGrid = [];
+    obj.targetRGCindex = [];
 
-    for iMultifocalRTVFobjIndex = 1:multifocalRTVFobjectsNum
+    for iMultifocalRTVFobjIndex = 1:maxmultifocalRTVFobjectsNum
+
+        % Cones num in RF center
+        conesNumPooled = multiFocalConesNumInRFcenterGrid(iMultifocalRTVFobjIndex);
+
         % Sampling position (within the  mosaic)
         eccPositionIndex = multiFocalOpticalPositionGrid(iMultifocalRTVFobjIndex);
 
         % Start with the nominal position
         opticalPositionDegs = obj.nominalSpatialSamplingGrid(eccPositionIndex,:);
-
-        % Cones num in RF center
-        conesNumPooled = multiFocalConesNumInRFcenterGrid(iMultifocalRTVFobjIndex);
 
         % Get indices of center cones for the RGC that is closest to the opticalPositionDegs
         indicesOfRGCsWithThisManyCenterCones = find(allConesNumPooledByTheRFcenters == conesNumPooled);
@@ -36,6 +39,22 @@ function generateSamplingGrids(obj, visualizeSpatialSamplingGrids)
 
         % Update the opticalPositionDegs for this RTVFobj to reflect the actual position of theTargetRGCindex
         opticalPositionDegs = obj.theRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,:);
+
+        % Check to see if we visited a nearby position
+        thresholdDistanceDegs = 0.25;
+        alreadyVisitedPositions = spatialPositionsVisitedForConesNumPooled{conesNumPooled};
+        if (~isempty(alreadyVisitedPositions))
+            mindistance = min(sqrt(sum((bsxfun(@minus, alreadyVisitedPositions, [opticalPositionDegs(1) opticalPositionDegs(2)])).^2,2)));
+            if (mindistance < thresholdDistanceDegs)
+                continue;
+            end
+        end
+       
+       
+        % We havent visited, so add it
+        alreadyVisitedPositions = cat(1, alreadyVisitedPositions, [opticalPositionDegs(1) opticalPositionDegs(2)]);
+        spatialPositionsVisitedForConesNumPooled{conesNumPooled} = alreadyVisitedPositions;
+
 
         indicesOfConesPooledByTheRFcenter = find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,theTargetRGCindex)> 0);
         typesOfConesPooledByTheRFcenter = obj.theRGCMosaic.inputConeMosaic.coneTypes(indicesOfConesPooledByTheRFcenter);
@@ -57,13 +76,20 @@ function generateSamplingGrids(obj, visualizeSpatialSamplingGrids)
         scIntSensitivity = RGCmodels.CronerKaplan.constants.surroundToCenterIntegratedSensitivityRatioFromEccDegsForPcells(radialTemporalEquivalentEccDegs);
        
         % The 4 grids
-        obj.opticalPositionGrid(iMultifocalRTVFobjIndex,:) = opticalPositionDegs;
-        obj.conesNumPooledByTheRFcenterGrid(iMultifocalRTVFobjIndex) = conesNumPooled;
-        obj.visualSTFSurroundToCenterRcRatioGrid(iMultifocalRTVFobjIndex) = surroundToCenterRcRatio;
-        obj.visualSTFSurroundToCenterIntegratedSensitivityRatioGrid(iMultifocalRTVFobjIndex) = scIntSensitivity;
+        obj.opticalPositionGrid = ...
+            cat(1, obj.opticalPositionGrid, opticalPositionDegs);
 
-        % Save the target RGC index for this RTVF
-        obj.targetRGCindex(iMultifocalRTVFobjIndex) = theTargetRGCindex;
+        obj.conesNumPooledByTheRFcenterGrid = ...
+            cat(1, obj.conesNumPooledByTheRFcenterGrid,conesNumPooled);
+
+        obj.visualSTFSurroundToCenterRcRatioGrid  = ...
+            cat(1, obj.visualSTFSurroundToCenterRcRatioGrid, surroundToCenterRcRatio);
+
+        obj.visualSTFSurroundToCenterIntegratedSensitivityRatioGrid = ...
+            cat(1, obj.visualSTFSurroundToCenterIntegratedSensitivityRatioGrid, scIntSensitivity);
+
+         % Save the target RGC index for this RTVF
+         obj.targetRGCindex = cat(1, obj.targetRGCindex,theTargetRGCindex);
 
     end % for iMultifocalRTVFobjIndex 
 

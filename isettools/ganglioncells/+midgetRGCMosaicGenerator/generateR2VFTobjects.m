@@ -12,11 +12,11 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
 
     if (ischar(RTVobjIndicesToBeComputed))&&(strcmp(RTVobjIndicesToBeComputed, 'all'))
-        midgetRGCMosaicInspector.say('Generating select RTVF objects');
-        appendToRTVFfile = true;
-    else
         midgetRGCMosaicInspector.say('Generating all RTVF objects');
-        appendToRTVFfile = false;
+        fullWrite = true;
+    else
+        midgetRGCMosaicInspector.say('Generating select RTVF objects');
+        fullWrite = false;
     end
 
     % Generate mosaic filename and directory
@@ -77,14 +77,14 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
 
 
     timeLapsedMinutes = (cputime - tStart)/60;
-    fprintf('\n\n midgetRGCMosaic.R2VFTobjects were generated in %d positions and fitting took %f minutes\n', ...
-            size(eccentricitySamplingGrid,1), timeLapsedMinutes);
+    fprintf('\n\n midgetRGCMosaic.R2VFTobjecs fitting took %f minutes\n', ...
+           timeLapsedMinutes);
 
     
     % Assemble R2CVFT filename
     R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(mosaicFileName, opticsParams, rfModelParams.H1cellIndex);
 
-    if (appendToRTVFfile)
+    if (fullWrite)
         % Save everything
         % Save the computed RTVFT list
         theRTFVTobjList = theMultifocalRTVFOBJ.RTVFTobjList;
@@ -102,7 +102,7 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
         fprintf('All computed R2VFTobjects were saved in: %s\n', R2VFTobjFileName);
     else
         % Ask the user whether to overwrite the R2VFTobjFileName 
-        prompt = sprintf('Update the all RTVF objects file (%s)? [y/n] : ', R2VFTobjFileName);
+        prompt = sprintf('Update the all RTVF objects file with the re-fitted RTVFs (%s)? [y/n] : ', R2VFTobjFileName);
         txt = lower(input(prompt,'s'));
         if isempty(txt)
            txt = 'n';

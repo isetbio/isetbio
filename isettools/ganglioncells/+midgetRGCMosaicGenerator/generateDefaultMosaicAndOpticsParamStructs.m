@@ -1,4 +1,4 @@
-function  [mosaicCenterParams, rfModelParams, opticsParams] = generateMosaicAndOpticsParamStructs()
+function  [mosaicCenterParams, rfModelParams, opticsParams] = generateDefaultMosaicAndOpticsParamStructs()
 
     % Position, size and eye of the mosaic
     mosaicCenterParams = struct(...
@@ -9,7 +9,7 @@ function  [mosaicCenterParams, rfModelParams, opticsParams] = generateMosaicAndO
     % index of the one of 4 H1 cells in Packer & Dacey (valid numbers: 1, 2, 3, or 4)
     H1cellIndex = 1;
 
-    retinalConePoolingModel = sprintf('arbitraryCenterConeWeights_doubleExpH1cellIndex%dSurroundWeights', H1cellIndex);
+    retinalConePoolingModel = sprintf('arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights', H1cellIndex);
 
     % Params controlling the optimization of retinal cone pooling weights
     rfModelParams = struct(...
