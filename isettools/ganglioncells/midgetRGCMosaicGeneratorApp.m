@@ -21,17 +21,14 @@ classdef midgetRGCMosaicGeneratorApp < handle
     methods
         % Constructor
         function obj = midgetRGCMosaicGeneratorApp()
-            
             generateGUI(obj);
             initializeState(obj);
-
         end
     end
 end
 
 
 function importParams(btn, app)
-
     suggestedParamsFileDirectory = fullfile(isetRootPath, 'ganglioncells');
 
     midgetRGCMosaicInspector.say('Choose the params file to import');
@@ -139,28 +136,8 @@ function executePipelineAction(btn, app)
             midgetRGCMosaicGenerator.generateCenterConnectedMosaic(...
                 app.simulation.mosaicCenterParams);
 
+
         case "OPTIMIZATION: fit all locations R2VFT objects"
-
-            RTVobjIndicesToBeComputed = 'all';
-
-            % If we had a crash, compute remaining RTVFobjects
-            % Then update the list with the ones that were computed before
-            % the crash, using 
-            % "compute: manually replace a specific R2VFT object" for each
-            % of these pre-crash computed RTVF objects
-            %RTVobjIndicesToBeComputed = [22:22];
-            
-            %RTVobjIndicesToBeComputed 
-            %pause
-            
-            midgetRGCMosaicGenerator.generateR2VFTobjectsOLD(...
-                app.simulation.mosaicCenterParams, ...
-                app.simulation.rfModelParams, ...
-                app.simulation.opticsParams, ...
-                'RTVobjIndicesToBeComputed', RTVobjIndicesToBeComputed);
-
-
-        case "OPTIMIZATION: fit all locations R2VFT objects (NEW RTVFobj)"
 
             RTVobjIndicesToBeComputed = 'all';
             midgetRGCMosaicGenerator.generateR2VFTobjects(...
@@ -179,21 +156,43 @@ function executePipelineAction(btn, app)
         case "OPTIMIZATION: refit single location R2VFT object"
             % Ask user which R2VFT objects to refit 
             % (single position,  multiple center cones num)
-            targetPosition = [];
-            while (numel(targetPosition) ~= 2)
-                targetPosition = input('Enter position for which to update the RTVF object ([x y]): ');
-            end
-            targetRFcenterConesNum = input('Enter center cones num for which to update the RTVF object (e.g, 1, 2): ');
-            targetRFcenterConeType = input('Enter center cone type for which to update the RTVF object (L or M or hit Enter for both): ', 's');
 
-            % Re-generate R2VFT objects at a specific position
+            singleRTVobjIndexToBeComputed = [];
+            while (isempty(singleRTVobjIndexToBeComputed))
+                singleRTVobjIndexToBeComputed = input('\nEnter index of RTVF object to be refit: ');
+            end
+
+            userSelection = input('\nCompute the L-cone center RTVF? [y/n]: ', 's');
+            if (strcmp(userSelection, 'y'))
+                computeLconeCenterComputeStruct = true;
+                fprintf('Will refit the L-center RTVF\n');
+            else
+                computeLconeCenterComputeStruct = false;
+                fprintf('Will SKIP refitting the L-center RTVF\n');
+            end
+
+            userSelection = input('\nCompute the M-cone center RTVF? [y/n]: ', 's');
+            if (strcmp(userSelection, 'y'))
+                computeMconeCenterComputeStruct = true;
+                fprintf('Will refit the M-center RTVF\n');
+            else
+                computeMconeCenterComputeStruct = false;
+                fprintf('Will SKIP refitting the M-center RTVF\n');
+            end
+
+            multiStartsNumRetinalPooling  = [];
+            while (isempty(multiStartsNumRetinalPooling))
+                multiStartsNumRetinalPooling = input('\nNumber of multi-starts, e.g., 1, 2, ... : ');
+            end
+
             midgetRGCMosaicGenerator.generateR2VFTobjects(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.rfModelParams, ...
                 app.simulation.opticsParams, ...
-                'updateRTVFobjectAtPosition', targetPosition, ...
-                'updateRTVFobjectWithCenterConesNum', targetRFcenterConesNum, ...
-                'updateRTVFobjectWithCenterConeType', targetRFcenterConeType)
+                'RTVobjIndicesToBeComputed', singleRTVobjIndexToBeComputed, ...
+                'computeLconeCenterComputeStruct', computeLconeCenterComputeStruct, ...
+                'computeMconeCenterComputeStruct', computeMconeCenterComputeStruct, ...
+                'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling);
 
         case "OPTIMIZATION: manually replace a specific R2VFT object"
             midgetRGCMosaicGenerator.replaceSpecificR2VFTobject()
@@ -394,7 +393,6 @@ function generateGUI(obj)
     thePipelineDropdown.Items = [ ...
         "GENERATION: center-connected mRGC mosaic", ...
         "OPTIMIZATION: fit all locations R2VFT objects", ...
-        "OPTIMIZATION: fit all locations R2VFT objects (NEW RTVFobj)", ...
         "VISUALIZATION: fits in single location R2VFT object file", ...
         "VISUALIZATION: fits in all locations R2VFT objects file", ...
         "OPTIMIZATION: refit single location R2VFT object", ...

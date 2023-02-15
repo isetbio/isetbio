@@ -55,7 +55,6 @@ function generateSamplingGrids(obj, visualizeSpatialSamplingGrids)
         alreadyVisitedPositions = cat(1, alreadyVisitedPositions, [opticalPositionDegs(1) opticalPositionDegs(2)]);
         spatialPositionsVisitedForConesNumPooled{conesNumPooled} = alreadyVisitedPositions;
 
-
         indicesOfConesPooledByTheRFcenter = find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,theTargetRGCindex)> 0);
         typesOfConesPooledByTheRFcenter = obj.theRGCMosaic.inputConeMosaic.coneTypes(indicesOfConesPooledByTheRFcenter);
 

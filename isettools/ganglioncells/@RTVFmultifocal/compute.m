@@ -98,7 +98,21 @@ function compute(obj, ...
                 initialRetinalConePoolingParamsForThisRTVFobj = initialGridRetinalConePoolingParamsStruct.dictionary(theTargetKey);
                 fprintf(2,'Using previous initial retinal cone pooling params (key: %s)', theTargetKey);
             else
-                fprintf(2,'Did not find previous initial retinal cone pooling params for current position. Will use standard initial params\n');
+                % Find the nearest RTVF object
+                idx = find(obj.conesNumPooledByTheRFcenterGrid == conesNumPooled);
+                thisSpatialGridCoords = obj.opticalPositionGrid(idx,:);
+
+                distancesToAllPositionsInThisGrid = sqrt(sum((bsxfun(@minus, thisSpatialGridCoords, [opticalPositionDegs(1) opticalPositionDegs(2)])).^2,2));
+                [~,iidx] = sort(distancesToAllPositionsInThisGrid, 'ascend');
+                theNearestRTVFobjIndex = idx(iidx(2));
+
+                sourceOpticalPositionDegs = obj.opticalPositionGrid(theNearestRTVFobjIndex,:);
+                theSourceKey = sprintf('%d center cones at (%2.3f,%2.3f)', ...
+                    conesNumPooled, sourceOpticalPositionDegs(1), sourceOpticalPositionDegs(2));
+                initialRetinalConePoolingParamsForThisRTVFobj = initialGridRetinalConePoolingParamsStruct.dictionary(theSourceKey);
+
+                fprintf(2,'Did not find previous initial retinal cone pooling params for [%2.2f,%2.2f] degs with %d cones. Will use params from RTVF at position [%2.2f,%2.2f]\n', ...
+                    opticalPositionDegs(1), opticalPositionDegs(2), conesNumPooled, sourceOpticalPositionDegs(1), sourceOpticalPositionDegs(2))
             end
         end
 

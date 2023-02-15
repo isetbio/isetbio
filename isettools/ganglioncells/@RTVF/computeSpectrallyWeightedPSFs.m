@@ -46,13 +46,13 @@ function [thePSFData, opticsParams] = computeSpecrallyWeightedPSFs(opticsParams,
 
 
     switch (opticsParams.ZernikeDataBase)
-        case RetinaToVisualFieldTransformer.Artal
+        case RTVF.Artal
             rankedSujectIDs = ArtalOptics.constants.subjectRanking(opticsParams.subjectRankingEye);
             testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
             subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
                 opticsParams.analyzedEye, testSubjectID);
 
-        case RetinaToVisualFieldTransformer.Polans
+        case RTVF.Polans
             if (~strcmp(opticsParams.subjectRankingEye, 'right eye'))
                 error('Polans measurements exist only for the right eye.');
             end

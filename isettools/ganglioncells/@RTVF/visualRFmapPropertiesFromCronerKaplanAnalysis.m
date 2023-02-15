@@ -2,7 +2,7 @@ function theSTFdata = visualRFmapPropertiesFromCronerKaplanAnalysis(obj, theVisu
 
     % Rotate theVisualRFmap according to the rotation
     % that maximizes horizontal resolution of the targetVisualRFmap
-    theRotatedVisualRF = RetinaToVisualFieldTransformer.bestHorizontalResolutionRFmap(...
+    theRotatedVisualRF = RTVF.bestHorizontalResolutionRFmap(...
         theVisualRF, obj.bestHorizontalResolutionRotationDegs);
 
     % Integrate along Y to generate the X-axis line weighting function

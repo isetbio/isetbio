@@ -27,7 +27,7 @@ function theFittedGaussian = fitGaussianEllipsoid(supportX, supportY, theRF, var
 
     maxRF = max(theRF(:));
     theRF = theRF / maxRF;
-    [theCentroid, theAxesLengths, theRotationAngle] = RetinaToVisualFieldTransformer.estimateGeometry(...
+    [theCentroid, theAxesLengths, theRotationAngle] = RTVF.estimateGeometry(...
         supportX, supportY, theRF);
 
     if (~isempty(forcedOrientationDegs))

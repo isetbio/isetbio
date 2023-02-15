@@ -60,8 +60,8 @@ classdef RTVF < handle
     
     properties (Constant)
         validZernikeDataBases = {...
-            RetinaToVisualFieldTransformer.Artal ...
-            RetinaToVisualFieldTransformer.Polans ...
+            RTVF.Artal ...
+            RTVF.Polans ...
             };
 
         ArtalSubjectsNum = 54;
@@ -287,7 +287,7 @@ classdef RTVF < handle
     % Class methods
     methods (Static)
         % Method to determine the centroid,and minor/major axis lengehs of a map
-        %[theCentroid, theAxesLengths] = estimateGeometry(supportX, supportY, rfMap)
+        [theCentroid, theAxesLengths, theRotationAngle] = estimateGeometry(supportX, supportY, rfMap)
 
         % Method to find the rotation of theRF which results in the best
         % resolution (narrowest profile) along the x-axis

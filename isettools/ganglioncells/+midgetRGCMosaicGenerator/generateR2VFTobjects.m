@@ -5,12 +5,14 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     p.addParameter('RTVobjIndicesToBeComputed', 'all',  @(x)(((ischar(x))&&(strcmp(x, 'all'))) || isnumeric(x)));
     p.addParameter('computeLconeCenterComputeStruct', true, @islogical);
     p.addParameter('computeMconeCenterComputeStruct', true, @islogical);
+    p.addParameter('multiStartsNumRetinalPooling', 1, @isscalar);
     p.parse(varargin{:});
 
     RTVobjIndicesToBeComputed = p.Results.RTVobjIndicesToBeComputed;
     computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
     computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
-
+    multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
+    
     if (ischar(RTVobjIndicesToBeComputed))&&(strcmp(RTVobjIndicesToBeComputed, 'all'))
         midgetRGCMosaicInspector.say('Generating all RTVF objects');
         fullWrite = true;
@@ -29,8 +31,7 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     % Instantiate the multifocalRTVFobj
     samplingScheme = 'hexagonal';
 
-    % Just for testing
-    multiStartsNumRetinalPooling = 1
+    % Go
     theMultifocalRTVFOBJ = RTVFmultifocal(theMidgetRGCmosaic, ...
         mosaicCenterParams, opticsParams, rfModelParams, ...
         samplingScheme, ...

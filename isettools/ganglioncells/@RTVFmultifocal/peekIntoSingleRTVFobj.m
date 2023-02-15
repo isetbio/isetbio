@@ -52,10 +52,6 @@ function peekIntoConeSpecificRTVFobj( ...
     % Compute the STF data for the visual RF map
     theSTFdata = theRTVFTobj.visualRFmapPropertiesFromCronerKaplanAnalysis(theVisualRFmap);
     
-
-    theConeSpecificRFcomputeStruct
-    
-
     % Target and achieved ratios
     targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
     targetSCintSensRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
@@ -91,16 +87,17 @@ function peekIntoConeSpecificRTVFobj( ...
                          conesString);
 
     hFig = figure(figNo); clf;
+    set(hFig, 'Position', [10 10 1000 800], 'Name', figureName, 'Color', [1 1 1]);
 
     ax = subplot(2,2,1);
     xSupportDegs = theConeSpecificRFcomputeStruct.modelConstants.spatialSupportDegs(:,1);
     ySupportDegs = theConeSpecificRFcomputeStruct.modelConstants.spatialSupportDegs(:,2);
     imagesc(xSupportDegs, ySupportDegs, theRetinalRFcenterConeMap)
-
+    
     ax = subplot(2,2,2);
     imagesc(xSupportDegs, ySupportDegs, theRetinalRFsurroundConeMap)
  
-    ax = subplot(2,2,3)
+    ax = subplot(2,2,3);
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.visualSTF, 'ks'); hold on
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.fittedDoGModelToVisualSTF.compositeSTF, 'k-');
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.fittedDoGModelToVisualSTF.centerSTF, 'r-');
