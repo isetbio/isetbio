@@ -49,6 +49,9 @@ classdef RTVF < handle
 
        % The data filename where the computed object is saved
        computedObjDataFileName;
+
+       % Boolean indicating whether the RTVF file was updates
+       RTVFfileWasUpdated;
     end
 
     % Constant properties
@@ -239,9 +242,10 @@ classdef RTVF < handle
 
             % Save the computed object
             if (isempty(computedRTVFobjectExportDirectory))
+                obj.RTVFfileWasUpdated = false;
                 fprintf('Computed RTVF object was not saved to the disk.');
             else
-                obj.saveComputedObject(computeLconeCenterComputeStruct, computeMconeCenterComputeStruct);
+                obj.RTVFfileWasUpdated  = obj.saveComputedObject(computeLconeCenterComputeStruct, computeMconeCenterComputeStruct);
             end
         end % 
         % Constructor
@@ -285,7 +289,7 @@ classdef RTVF < handle
         dataFileName = computeObjectDataFileName(obj);
 
         % Method to save the computed RTVF object (or parts of it)
-        saveComputedObject(obj,computeLconeCenterComputeStruct, computeMconeCenterComputeStruct);
+        RTVFfileWasUpdated  = saveComputedObject(obj,computeLconeCenterComputeStruct, computeMconeCenterComputeStruct);
     end % private methods
 
 

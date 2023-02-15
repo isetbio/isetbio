@@ -1,8 +1,10 @@
-function saveComputedObject(obj, computeLconeCenterComputeStruct, computeMconeCenterComputeStruct)
+function RTVFfileWasUpdated = saveComputedObject(obj, computeLconeCenterComputeStruct, computeMconeCenterComputeStruct)
     
+   RTVFfileWasUpdated = false;
    if (writeTheFile(obj, computeLconeCenterComputeStruct, computeMconeCenterComputeStruct))
       fprintf('Saving computed object to %s\n', obj.computedObjDataFileName);
       save(obj.computedObjDataFileName, 'obj');
+      RTVFfileWasUpdated = true;
    else
       fprintf('Computed RTVF object was not saved to the disk');
    end
