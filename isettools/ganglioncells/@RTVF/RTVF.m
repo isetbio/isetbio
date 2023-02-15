@@ -100,6 +100,7 @@ classdef RTVF < handle
 
             p = inputParser;
             p.addParameter('computedRTVFobjectExportDirectory', '', @(x)(isempty(x)||ischar(x)));
+            p.addParameter('progressFigureName', '', @ischar);
             p.addParameter('visualizeSpectrallyWeightedPSFs', false, @islogical);
             p.addParameter('computeLconeCenterComputeStruct', true, @islogical);
             p.addParameter('computeMconeCenterComputeStruct', true, @islogical);
@@ -116,6 +117,7 @@ classdef RTVF < handle
             initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
             
             computedRTVFobjectExportDirectory = p.Results.computedRTVFobjectExportDirectory;
+            progressFigureName = p.Results.progressFigureName;
             computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
             computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
 
@@ -224,13 +226,15 @@ classdef RTVF < handle
             if (computeLconeCenterComputeStruct)
                 obj.LconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
                     cMosaic.LCONE_ID, ...
-                    initialLconeRetinalConePoolingParams);
+                    initialLconeRetinalConePoolingParams, ...
+                    progressFigureName);
             end
 
             if (computeMconeCenterComputeStruct)
                 obj.MconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
                     cMosaic.MCONE_ID, ...
-                    initialMconeRetinalConePoolingParams);
+                    initialMconeRetinalConePoolingParams, ...
+                    progressFigureName);
             end
 
             % Save the computed object
@@ -274,7 +278,8 @@ classdef RTVF < handle
 
         % Method to compute the RFcomputeStruct
         RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
-                centerConeType, initialRetinalConePoolingParamsStruct);
+                centerConeType, initialRetinalConePoolingParamsStruct, ...
+                progressFigureName);
 
         % Method to compute the saved obj filename
         dataFileName = computeObjectDataFileName(obj);

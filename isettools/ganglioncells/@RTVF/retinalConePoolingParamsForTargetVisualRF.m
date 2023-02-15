@@ -1,5 +1,5 @@
 function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
-                centerConeMajorityType, initialRetinalConePoolingParamsStruct)
+                centerConeMajorityType, initialRetinalConePoolingParamsStruct, progressFigureName)
 
     displayFittedModel = true;
     displayFittingProgress = true;
@@ -13,19 +13,28 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
             theRFCenterConeMajorityPSF  = obj.spectrallyWeightedPSFData.LconeWeighted;
 
             spatialPositionDegs = mean(obj.coneMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
-            figureName = sprintf('RF center with %d L-cone(s) at (%2.2f,%2.2f) degs', ...
-                numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            if (isempty(progressFigureName))
+                figureName = sprintf('RF center with %d L-cone(s) at (%2.2f,%2.2f) degs', ...
+                    numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            else
+                figureName = sprintf('%s (L)', progressFigureName);
+            end
             figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
-            summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
+            
             
         case cMosaic.MCONE_ID
             theRFCenterConeMajorityPSF  = obj.spectrallyWeightedPSFData.MconeWeighted;
 
             spatialPositionDegs = mean(obj.coneMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
-            figureName = sprintf('RF center with %d M-cone(s) at (%2.2f,%2.2f) degs', ...
-                numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            if (isempty(progressFigureName))
+                figureName = sprintf('RF center with %d M-cone(s) at (%2.2f,%2.2f) degs', ...
+                    numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+            else
+                figureName = sprintf('%s (M)', progressFigureName);
+            end
+
             figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
-            summaryFigNo = 2000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
+     
 
         otherwise
             error('Not L or M cone: %d', centerConeType);
