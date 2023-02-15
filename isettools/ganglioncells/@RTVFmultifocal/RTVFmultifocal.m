@@ -86,6 +86,10 @@ classdef RTVFmultifocal < handle
         gridCoords = spatialSamplingGridCoords(eccentricityDegs, sizeDegs, ...
             rgcRFpositionsDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords)
 
+        % Method to visualize a computed RTVF object 
+        peekIntoSingleRTVFobj(theRTVFTobj, iRTVobjIndex, ...
+            theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, figNo);
+
     end % Class methods
     
 end

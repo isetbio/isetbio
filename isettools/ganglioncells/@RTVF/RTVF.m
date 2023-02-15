@@ -241,6 +241,15 @@ classdef RTVF < handle
             end
         end % 
         % Constructor
+
+        % Method to compute the visual RF ensuing from the current retinal
+        % cone pooling params
+        [theVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
+            visualRFfromRetinalConePooling(obj, modelConstants, retinalPoolingParams)
+
+        % Method to compute the Croner&Kaplan RF analysis
+        dataOut = visualRFmapPropertiesFromCronerKaplanAnalysis(obj, theVisualRF);
+
     end % public methods
 
 
@@ -262,13 +271,6 @@ classdef RTVF < handle
          visualRFcenterConeMap, ...
          bestHorizontalResolutionRotationDegs] = rfCenterCharacteristicRadiusInVisualSpace(obj, varargin);
 
-        % Method to compute the visual RF ensuing from the current retinal
-        % cone pooling params
-        [theVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
-            visualRFfromRetinalConePooling(obj, modelConstants, retinalPoolingParams)
-
-        % Method to compute the Croner&Kaplan RF analysis
-        dataOut = visualRFmapPropertiesFromCronerKaplanAnalysis(obj, theVisualRF);
 
         % Method to compute the RFcomputeStruct
         RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
