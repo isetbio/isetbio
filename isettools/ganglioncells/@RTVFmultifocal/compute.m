@@ -104,15 +104,28 @@ function compute(obj, ...
 
                 distancesToAllPositionsInThisGrid = sqrt(sum((bsxfun(@minus, thisSpatialGridCoords, [opticalPositionDegs(1) opticalPositionDegs(2)])).^2,2));
                 [~,iidx] = sort(distancesToAllPositionsInThisGrid, 'ascend');
-                theNearestRTVFobjIndex = idx(iidx(2));
+                closestIndex = 1;
+                keyWasNotFound = true;
+                while (closestIndex <= numel(iidx)) && (keyWasNotFound)
+                    closestIndex = closestIndex + 1;
+                    theNearestRTVFobjIndex = idx(iidx(closestIndex));
 
-                sourceOpticalPositionDegs = obj.opticalPositionGrid(theNearestRTVFobjIndex,:);
-                theSourceKey = sprintf('%d center cones at (%2.3f,%2.3f)', ...
-                    conesNumPooled, sourceOpticalPositionDegs(1), sourceOpticalPositionDegs(2));
-                initialRetinalConePoolingParamsForThisRTVFobj = initialGridRetinalConePoolingParamsStruct.dictionary(theSourceKey);
+                    sourceOpticalPositionDegs = obj.opticalPositionGrid(theNearestRTVFobjIndex,:);
+                    theSourceKey = sprintf('%d center cones at (%2.3f,%2.3f)', ...
+                        conesNumPooled, sourceOpticalPositionDegs(1), sourceOpticalPositionDegs(2));
 
-                fprintf(2,'Did not find previous initial retinal cone pooling params for [%2.2f,%2.2f] degs with %d cones. Will use params from RTVF at position [%2.2f,%2.2f]\n', ...
-                    opticalPositionDegs(1), opticalPositionDegs(2), conesNumPooled, sourceOpticalPositionDegs(1), sourceOpticalPositionDegs(2))
+                    if (ismember(theSourceKey, theDictionaryKeys))
+                        keyWasNotFound = false;
+                    end
+                end
+
+                if (~keyWasNotFound)
+                    initialRetinalConePoolingParamsForThisRTVFobj = initialGridRetinalConePoolingParamsStruct.dictionary(theSourceKey);
+                    fprintf(2,'Did not find previous initial retinal cone pooling params for [%2.2f,%2.2f] degs with %d cones. Will use params from RTVF at position [%2.2f,%2.2f]\n', ...
+                        opticalPositionDegs(1), opticalPositionDegs(2), conesNumPooled, sourceOpticalPositionDegs(1), sourceOpticalPositionDegs(2));
+                else
+                    fprintf(2,'Did not find previous initial retinal cone pooling params at or near [%2.2f,%2.2f] degs with %d cones\n');
+                end
             end
         end
 
