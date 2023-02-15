@@ -162,8 +162,14 @@ function executePipelineAction(btn, app)
                 singleRTVobjIndexToBeComputed = input('\nEnter index of RTVF object to be refit: ');
             end
 
-            userSelection = input('\nCompute the L-cone center RTVF? [y/n]: ', 's');
-            if (strcmp(userSelection, 'y'))
+            notValidResponse = true;
+            while (notValidResponse)
+                txt = lower(input('\nCompute the L-cone compute struct? [y=YES] ', 's'));
+                if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
+                    notValidResponse = false;
+                end
+            end   
+            if (strcmp(txt, 'y'))
                 computeLconeCenterComputeStruct = true;
                 fprintf('Will refit the L-center RTVF\n');
             else
@@ -171,14 +177,22 @@ function executePipelineAction(btn, app)
                 fprintf('Will SKIP refitting the L-center RTVF\n');
             end
 
-            userSelection = input('\nCompute the M-cone center RTVF? [y/n]: ', 's');
-            if (strcmp(userSelection, 'y'))
+
+            notValidResponse = true;
+            while (notValidResponse)
+                txt = lower(input('\nCompute the M-cone compute struct? [y=YES] ', 's'));
+                if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
+                    notValidResponse = false;
+                end
+            end   
+            if (strcmp(txt, 'y'))
                 computeMconeCenterComputeStruct = true;
                 fprintf('Will refit the M-center RTVF\n');
             else
                 computeMconeCenterComputeStruct = false;
                 fprintf('Will SKIP refitting the M-center RTVF\n');
             end
+
 
             multiStartsNumRetinalPooling  = [];
             while (isempty(multiStartsNumRetinalPooling))

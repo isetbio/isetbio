@@ -28,8 +28,14 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
    
    if (computeLconeCenterComputeStruct) && (computeMconeCenterComputeStruct)
         % Ask user if he wants to overwrite both the L- and the M-cone compute structs
-        s = input('Overwrite both the L- and the M-cone compute structs? [y=YES] ', 's');
-        if (strcmpi(s, 'y'))
+        notValidResponse = true;
+        while (notValidResponse)
+            txt = lower(input('Overwrite both the L- and the M-cone compute structs? [y=YES] ', 's'));
+            if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
+                notValidResponse = false;
+            end
+        end    
+        if (strcmp(s, 'y'))
             fprintf(2, 'Overwriting both the L-cone and the M-cone compute struct.\n'); 
             writeFile = true;
             return;
@@ -38,12 +44,25 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
         % User wants to overwrite only one of the two. Find out which.
         overwriteL = false;
         overwriteM = false;
-        s = input('Overwrite the L-cone compute struct? [y=YES] ', 's');
-        if (strcmpi(s, 'y'))
+        notValidResponse = true;
+        while (notValidResponse)
+            txt = lower(input('Overwrite the L-cone compute struct? [y=YES] ', 's'));
+            if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
+                notValidResponse = false;
+            end
+        end   
+        if (strcmp(txt, 'y'))
             overwriteL = true;
         end
-        s = input('Overwrite the M-cone compute struct? [y=YES] ', 's');
-        if (strcmpi(s, 'y'))
+
+        notValidResponse = true;
+        while (notValidResponse)
+            txt = lower(input('Overwrite the M-cone compute struct? [y=YES] ', 's'));
+            if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
+                notValidResponse = false;
+            end
+        end   
+        if (strcmp(txt, 'y'))
             overwriteM = true;
         end
         

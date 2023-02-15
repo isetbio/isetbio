@@ -12,7 +12,7 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
     computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
     multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
-    
+
     if (ischar(RTVobjIndicesToBeComputed))&&(strcmp(RTVobjIndicesToBeComputed, 'all'))
         midgetRGCMosaicInspector.say('Generating all RTVF objects');
         fullWrite = true;
@@ -103,11 +103,15 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
         fprintf('All computed R2VFTobjects were saved in: %s\n', R2VFTobjFileName);
     else
         % Ask the user whether to overwrite the R2VFTobjFileName 
-        prompt = sprintf('Update the all RTVF objects file with the re-fitted RTVFs (%s)? [y/n] : ', R2VFTobjFileName);
-        txt = lower(input(prompt,'s'));
-        if isempty(txt)
-           txt = 'n';
+        notValidResponse = true;
+        while (notValidResponse)
+            prompt = sprintf('Update the all RTVF objects file with the re-fitted RTVFs (%s)? [y/n] : ', R2VFTobjFileName);
+            txt = lower(input(prompt,'s'));
+            if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
+                notValidResponse = false;
+            end
         end
+
         if (strcmp(txt, 'y'))
             % Load previous file with an existing theRTFVTobjList
             load(R2VFTobjFileName, 'theRTFVTobjList', ...
