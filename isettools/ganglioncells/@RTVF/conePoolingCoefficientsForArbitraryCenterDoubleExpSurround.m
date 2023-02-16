@@ -52,7 +52,7 @@ function pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenter
 
     % Unlike the old version, we do not need compensate for variations in relative cone efficiency
     % resulting from c variations in cone IS diameter and cone OS length with eccentricity 
-    % because we now take this into account in the one weights to compensate for variations in
+    % because we now take this into account in the cone weights to compensate for variations in
     % the RTV.retinalSubregionConeMapFromPooledConeInputs() method
     pooledConeIndicesAndWeights.centerConeWeights = centerConeWeights;
     pooledConeIndicesAndWeights.surroundConeWeights = surroundConeWeights;

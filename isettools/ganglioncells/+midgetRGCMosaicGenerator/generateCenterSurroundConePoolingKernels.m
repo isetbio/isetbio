@@ -6,11 +6,14 @@ function generateCenterSurroundConePoolingKernels(mosaicCenterParams,  rfModelPa
     [mosaicFileName, mosaicDirectory] = midgetRGCMosaicInspector.mosaicFileName(...
         mosaicCenterParams);
     
-    R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(...
-        mosaicFileName, opticsParams, rfModelParams.H1cellIndex);
-
     % Load the center-connected mosaic
     load(mosaicFileName, 'theMidgetRGCmosaic');
+
+    % save(mosaicFileName, 'theMidgetRGCmosaic'); - to remove theRetinaToVisualFieldOBJLIst
+
+
+    R2VFTobjFileName = midgetRGCMosaicInspector.R2VFTobjFileName(...
+        mosaicFileName, opticsParams, rfModelParams.H1cellIndex);
 
     % Load the computed R2VFTobjects
     load(R2VFTobjFileName, 'theRTFVTobjList', 'theOpticsPositionGrid', ...
