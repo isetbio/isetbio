@@ -76,7 +76,7 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
    end % (computeLconeCenterComputeStruct) && (~computeMconeCenterComputeStruct)
 
    if (computeMconeCenterComputeStruct) && (~computeLconeCenterComputeStruct)
-        updateMstruct = RTVF.queryUserForYesNoResponse('Overwrite the L-cone compute struct?');
+        updateMstruct = RTVF.queryUserForYesNoResponse('Overwrite the M-cone compute struct?');
         if (updateMstruct)
             fprintf(2, 'Overwriting the M-cone compute struct, keeping the old L-cone compute struct.\n');
             % Keep the previous L-cone compute struct    
