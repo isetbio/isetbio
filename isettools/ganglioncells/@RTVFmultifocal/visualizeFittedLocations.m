@@ -1,4 +1,4 @@
-function visualizeFittedLocations(figNo, theMidgetRGCmosaic, ...
+function visualizeFittedLocations(mosaicDirectory, figNo, theMidgetRGCmosaic, ...
     theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid)
 
     % Find how many different #of center cones are fitted
@@ -31,38 +31,10 @@ function visualizeFittedLocations(figNo, theMidgetRGCmosaic, ...
            'Color', [1 0 0], 'LineWidth', ff.lineWidth, 'MarkerSize', ff.markerSize);
 
         drawnow
+
+        pdfFilename = sprintf('RTVFmultifocal_%dCenterCone_samplingGrid.pdf', theConesNumPooled);
+        pdfFilename = fullfile(mosaicDirectory,pdfFilename );
+        NicePlot.exportFigToPDF(pdfFilename , hFig, 300);
+        
     end
-
-end
-
-function plotGrid(ax, gridCoords, theMidgetRGCmosaic, plotTitle)
-    xCoords = squeeze(theMidgetRGCmosaic.rgcRFpositionsDegs(:,1));
-    yCoords = squeeze(theMidgetRGCmosaic.rgcRFpositionsDegs(:,2));
-    xMin = min(xCoords);
-    xMax = max(xCoords);
-    yMin = min(yCoords);
-    yMax = max(yCoords);
-
-    xx = [xMin xMin xMax xMax xMin];
-    yy = [yMin yMax yMax yMin yMin];
-    
-    hold(ax, 'on');
-    plot(ax,xx,yy,'k-', 'LineWidth', 1);
-    
-    plot(ax, gridCoords(:,1), gridCoords(:,2), 'r+', 'MarkerSize', 12, 'LineWidth', 3.0);
-
-    xCoords = squeeze(theMidgetRGCmosaic.inputConeMosaic.coneRFpositionsDegs(:,1));
-    yCoords = squeeze(theMidgetRGCmosaic.inputConeMosaic.coneRFpositionsDegs(:,2));
-    xMin = min(xCoords);
-    xMax = max(xCoords);
-    yMin = min(yCoords);
-    yMax = max(yCoords);
-    axis(ax, 'equal')
-    set(ax, 'XLim', [xMin xMax], 'YLim', [yMin yMax]);
-    set(ax, 'FontSize', 16);
-    xlabel(ax, 'degrees');
-    ylabel(ax, 'degrees');
-    title(ax, plotTitle);
-    box(ax, 'off');
-    grid(ax, 'on');
 end

@@ -1,4 +1,4 @@
-function visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
+function visualizeFittedLocationsCombo(mosaicDirectory, figNo, theMidgetRGCmosaic, ...
     theRTFVTobjList, theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, ...
     varargin)
 
@@ -9,6 +9,8 @@ function visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
         'retinal M-center RF subregions', ...
         'retinal L-center RF subregions & L-weighted PSF', ...
         'retinal M-center RF subregions & M-weighted PSF', ...
+        'L-center STFs & L-weighted PSF', ...
+        'M-center STFs & M-weighted PSF', ...
         'L-center composite RFs', ...
         'M-center composite RFs' ...
     };
@@ -16,12 +18,20 @@ function visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
     p = inputParser;
     p.addParameter('topPanelInfo', 'retinal quantal efficiencies', @(x)(ismember(x, validComponents)));
     p.addParameter('bottomPanelInfo', 'PSFs', @(x)(ismember(x, validComponents)));
+    p.addParameter('visualizedSpatialRangeArcMin', 10, @isscalar);
     p.addParameter('figPostfix', '', @ischar);
 
     p.parse(varargin{:});
     topPanelInfo = p.Results.topPanelInfo;
     bottomPanelInfo = p.Results.bottomPanelInfo;
     figPostfix = p.Results.figPostfix;
+    visualizedSpatialRangeArcMin = p.Results.visualizedSpatialRangeArcMin;
+
+    visualizationRequiresComputationOfRFs = false;
+    if (contains(topPanelInfo, 'RF')) || (contains(bottomPanelInfo, 'RF')) || ...
+       (contains(topPanelInfo, 'STF')) || (contains(bottomPanelInfo, 'STF')) 
+        visualizationRequiresComputationOfRFs = true;
+    end
 
     % Find how many different #of center cones are fitted
     conesNumPooled = unique(theConesNumPooledByTheRFcenterGrid);
@@ -30,7 +40,7 @@ function visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
     xLimsDegs = [min(xCoords) max(xCoords)];
     yLimsDegs = [min(yCoords) max(yCoords)];
 
-    psfRangeDegs = 10/60;
+    psfRangeDegs = visualizedSpatialRangeArcMin/60;
     rfRangeDegs = psfRangeDegs;
  
     for iConesNumPooled = 1:numel(conesNumPooled)
@@ -51,9 +61,11 @@ function visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
             theRTVFobjIndex = theRTVFobjIndicesForThisGrid(idx);
             theRTVFobj = theRTFVTobjList{theRTVFobjIndex};
 
-            % Compute the fitted L- and M-cone RF data
-            fittedLconeModelRFdata = extractRFandSTFdata(theRTVFobj, theRTVFobj.LconeRFcomputeStruct);
-            fittedMconeModelRFdata = extractRFandSTFdata(theRTVFobj, theRTVFobj.MconeRFcomputeStruct);
+            if (visualizationRequiresComputationOfRFs)
+                % Compute the fitted L- and M-cone RF data
+                fittedLconeModelRFdata = extractRFandSTFdata(theRTVFobj, theRTVFobj.LconeRFcomputeStruct);
+                fittedMconeModelRFdata = extractRFandSTFdata(theRTVFobj, theRTVFobj.MconeRFcomputeStruct);
+            end
 
             % Compute the retinal L- and M-cone quantal efficiencies at this
             % optical position, taking into account the input cone mosaic's
@@ -98,6 +110,38 @@ function visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
                     MSreadyPlot.renderConeFundamentals(ax, wavelengthSupport, ...
                         LquantalEfficiency, MquantalEffiency, [], 'retinal quantal efficiency (qe)', ff);
                 
+                case 'L-center STFs & L-weighted PSF'
+                    % Top left panel: computed and DoG model fit of the visual STF (L) at current location
+                    ax = subplot('Position',  [0.52 0.62 0.14 0.36]);
+
+                    MSreadyPlot.renderSTF(ax, ...
+                        fittedLconeModelRFdata.theSTFdata.spatialFrequencySupport, ...
+                        fittedLconeModelRFdata.theSTFdata.visualSTF, ...
+                        fittedLconeModelRFdata.theSTFdata.fittedDoGModelToVisualSTF.compositeSTF, ...
+                        fittedLconeModelRFdata.theSTFdata.fittedDoGModelToVisualSTF.centerSTF, ...
+                        fittedLconeModelRFdata.theSTFdata.fittedDoGModelToVisualSTF.surroundSTF, ...
+                        '', ...
+                        {'achieved STF', 'fitted DoG STF', 'fitted center STF', 'fitted surround STF'}, ff, ...
+                        'noYLabel', true);
+
+                    % Top middle panel: correspondence between achieved and desired DoG ratios at current location
+                    targetSCintSensRatio = theRTVFobj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
+                    targetRsRcRatio = theRTVFobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
+                    achievedRsRcRatio = fittedLconeModelRFdata.theSTFdata.fittedDoGModelRsRcRatio;
+                    achievedSCintSensRatio = fittedLconeModelRFdata.theSTFdata.fittedDoGModelSCIntSensRatio;
+                    
+                    ax = subplot('Position', [0.71 0.62 0.10 0.29]);
+                    MSreadyPlot.renderPerformance(ax, ...
+                        targetRsRcRatio, targetSCintSensRatio, ...
+                        achievedRsRcRatio, achievedSCintSensRatio, ...
+                        ff);
+
+                    % Top right panel: L-cone qe weighted PSF at current location
+                    ax = subplot('Position', [0.84 0.62 0.14 0.29]);
+                    MSreadyPlot.render2DPSF(ax, thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, ...
+                        thePSFData.LconeWeighted, psfRangeDegs, sprintf('L-cone q.e.-\nweighted PSF'), ff, ...
+                        'noXLabel', false, 'noYLabel', true);
+
                 case 'retinal L-center RF subregions & L-weighted PSF'
                     % Top left panel: RF center (L) at current location
                     ax = subplot('Position',  [0.52 0.62 0.14 0.29]);
@@ -218,6 +262,40 @@ function visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
                     MSreadyPlot.renderConeFundamentals(ax, wavelengthSupport, ...
                         LquantalEfficiency, MquantalEffiency, [], 'retinal quantal efficiency (qe)', ff);
                 
+                case 'M-center STFs & M-weighted PSF'
+                    % Top left panel: computed and DoG model fit of the visual STF (M) at current location
+                    ax = subplot('Position',  [0.52 0.14 0.14 0.36]);
+
+                    MSreadyPlot.renderSTF(ax, ...
+                        fittedMconeModelRFdata.theSTFdata.spatialFrequencySupport, ...
+                        fittedMconeModelRFdata.theSTFdata.visualSTF, ...
+                        fittedMconeModelRFdata.theSTFdata.fittedDoGModelToVisualSTF.compositeSTF, ...
+                        fittedMconeModelRFdata.theSTFdata.fittedDoGModelToVisualSTF.centerSTF, ...
+                        fittedMconeModelRFdata.theSTFdata.fittedDoGModelToVisualSTF.surroundSTF, ...
+                        '', ...
+                        {'achieved STF', 'fitted DoG STF', 'fitted center STF', 'fitted surround STF'}, ff, ...
+                        'noYLabel', true);
+
+                    % Top middle panel: correspondence between achieved and desired DoG ratios at current location
+                    targetSCintSensRatio = theRTVFobj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
+                    targetRsRcRatio = theRTVFobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
+                    
+                    achievedRsRcRatio = fittedMconeModelRFdata.theSTFdata.fittedDoGModelRsRcRatio;
+                    achievedSCintSensRatio = fittedMconeModelRFdata.theSTFdata.fittedDoGModelSCIntSensRatio;
+                    
+                    ax = subplot('Position', [0.71 0.14 0.10 0.29]);
+                    MSreadyPlot.renderPerformance(ax, ...
+                        targetRsRcRatio, targetSCintSensRatio, ...
+                        achievedRsRcRatio, achievedSCintSensRatio, ...
+                        ff);
+
+                    % Top right panel: M-cone qe weighted PSF at current location
+                    ax = subplot('Position', [0.84 0.14 0.14 0.29]);
+                    MSreadyPlot.render2DPSF(ax, thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, ...
+                        thePSFData.MconeWeighted, psfRangeDegs, sprintf('M-cone q.e.-\nweighted PSF'), ff, ...
+                        'noXLabel', false, 'noYLabel', true);
+
+
                 case 'retinal M-center RF subregions & M-weighted PSF'
                     % Bottom left panel: RF center (M) at current location
                     ax = subplot('Position',  [0.52 0.14 0.14 0.29]);
@@ -327,11 +405,11 @@ function visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
                         rfRangeDegs, 'visual RF (M-center)', ff);
 
                 otherwise
-                    error('Top panel info ''%s'' not implented', topPanelInfo);
+                    error('Bottom panel info ''%s'' not implented', bottomPanelInfo);
             end
             
             drawnow;
-            NicePlot.exportFigToPDF(figName, hFig, 300);
+            NicePlot.exportFigToPDF(fullfile(mosaicDirectory,figName), hFig, 300);
         end % iSpatialPosition
     end % iConesNumPooled
 

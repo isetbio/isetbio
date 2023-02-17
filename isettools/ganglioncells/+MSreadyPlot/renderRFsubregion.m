@@ -40,11 +40,20 @@ function renderRFsubregion(ax, xSupportDegs, ySupportDegs, theSubregionMap, rfRa
             faceColor = [1 0.5 0.5];
             edgeColor = [1 0 0 ];
         end
+        xArcMin = 60*xSupportDegs;
+
+        % Only show down to 1% of the peak
+        thresholdNormalizedValue = 1/100;
+        
+        idx = find(abs(lineWeightingFunction)>= thresholdNormalizedValue * max(abs(lineWeightingFunction)));
+        xArcMin = xArcMin(idx);
+        y1 = y1(idx);
+        y2 = y2(idx);
 
         faceAlpha = 0.3;
-        lineWidth = 1.5;
+        lineWidth = 1.0;
         lineStyle = '-';
-        shadedAreaBetweenTwoLines(ax,60*xSupportDegs', y1, y2, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
+        shadedAreaBetweenTwoLines(ax, xArcMin', y1, y2, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
     end
 
     set(ax, 'CLim', [0 1], 'ZLim', [0 1]);

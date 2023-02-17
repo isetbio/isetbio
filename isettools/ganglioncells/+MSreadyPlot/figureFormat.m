@@ -69,4 +69,6 @@ function f = figureFormat(panelLayout)
     f.titleColor = [0.2 0.2 0.2];
     f.titleFontWeight = 'normal';
 
+    f.legendFontSize = 13;
+
 end
