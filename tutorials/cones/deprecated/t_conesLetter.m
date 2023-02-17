@@ -1,16 +1,18 @@
 %% Show a letter on a display imaged at the level of the cone mosaic
 %
 %
+% Wandell, 2019
+%
+% See also
+%   sceneCreate('letter', ...), displayCreate, ....
+%
+
 % TODO:
 %   Write a routine that takes the outline of the letter and superimposes
 %   it on the color image of the cm.
 %
 %   Implement this for the hex mosaic.
 %
-% Wandell, 2019
-%
-% See also
-%   sceneCreate('letter', ...), displayCreate, ....
 %
 
 %%
