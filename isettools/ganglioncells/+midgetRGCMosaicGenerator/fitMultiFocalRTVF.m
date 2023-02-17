@@ -1,4 +1,4 @@
-function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, varargin)
+function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, varargin)
 
     % Parse input
     p = inputParser;
@@ -45,7 +45,6 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     fprintf('\nDone ! \n');
     
 
-    
     % Ask the user if he wants to use a dictionary with previously
     % fitted params to use as initial values
     usePreviousFittedParamsValues = midgetRGCMosaicInspector.queryUserForYesNoResponse('\nUse initial values from a previous fit ?');

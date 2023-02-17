@@ -1,4 +1,4 @@
-function generateSamplingGrids(obj, visualizeSpatialSamplingGrids)
+function generateSamplingGrids(obj, minSpatialSamplingDegs, visualizeSpatialSamplingGrids)
 
     centerConnectableConeTypes = obj.rfModelParams.centerConnectableConeTypes;
 
@@ -41,15 +41,13 @@ function generateSamplingGrids(obj, visualizeSpatialSamplingGrids)
         opticalPositionDegs = obj.theRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,:);
 
         % Check to see if we visited a nearby position
-        thresholdDistanceDegs = 0.25;
         alreadyVisitedPositions = spatialPositionsVisitedForConesNumPooled{conesNumPooled};
         if (~isempty(alreadyVisitedPositions))
             mindistance = min(sqrt(sum((bsxfun(@minus, alreadyVisitedPositions, [opticalPositionDegs(1) opticalPositionDegs(2)])).^2,2)));
-            if (mindistance < thresholdDistanceDegs)
+            if (mindistance < minSpatialSamplingDegs)
                 continue;
             end
         end
-       
        
         % We havent visited, so add it
         alreadyVisitedPositions = cat(1, alreadyVisitedPositions, [opticalPositionDegs(1) opticalPositionDegs(2)]);

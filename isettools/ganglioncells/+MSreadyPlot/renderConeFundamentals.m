@@ -32,7 +32,7 @@ function renderConeFundamentals(ax, wavelengthSupport, Lcone, Mcone, Scone, plot
         legends{numel(legends)+1} = 'S';
     end
 
-    axis(ax, 'square');
+    % axis(ax, 'square');
 
     % xy axis labels
     if (~noXLabel)
@@ -49,7 +49,7 @@ function renderConeFundamentals(ax, wavelengthSupport, Lcone, Mcone, Scone, plot
     % ticks and grids
     grid(ax, 'on')
     xtickangle(ax, 0);
-    set(ax, 'XLim', [wavelengthSupport(1)-10 wavelengthSupport(end)+10], 'YLim', [-0.02 0.5]);
+    set(ax, 'XLim', [wavelengthSupport(1)-10 wavelengthSupport(end)], 'YLim', [-0.02 0.5]);
     set(ax, 'XTick', 400:50:700, 'YTick', 0:0.1:1);
     set(ax, 'TickDir', 'both');
 

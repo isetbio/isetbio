@@ -45,16 +45,17 @@ classdef RTVFmultifocal < handle
         
             p = inputParser;
             p.addParameter('multiStartsNumRetinalPooling', [], @(x)(isempty(x)||isscalar(x)));
+            p.addParameter('minSpatialSamplingDegs', 0.25, @isnumeric);
             p.parse(varargin{:});
 
             obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
-
+            
             % Generate the nominal spatial sampling grid
             obj.generateNominalSpatialSamplingGrid(...
                 samplingScheme, true);
 
             % Generate the full sampling grids
-            obj.generateSamplingGrids(true);
+            obj.generateSamplingGrids(p.Results.minSpatialSamplingDegs, true);
 
         end % Constructor
 
@@ -73,7 +74,7 @@ classdef RTVFmultifocal < handle
             samplingScheme,visualizeSamplingGrid);
 
         % Method to generate the full sampling grids
-        generateSamplingGrids(obj, visualizeSpatialSamplingGrids);
+        generateSamplingGrids(obj, minSpatialSamplingDegs, visualizeSpatialSamplingGrids);
 
         % Method to plot various spatial sampling grids
         plotSpatialSamplingGrid(obj, ax, spatialSamplingGrid, plotTitle);
@@ -83,12 +84,30 @@ classdef RTVFmultifocal < handle
      % Class methods
     methods (Static)
         % Method to generate the spatial sampling grid of the multi-focal RTVF
-        gridCoords = spatialSamplingGridCoords(eccentricityDegs, sizeDegs, ...
+        gridCoords  = spatialSamplingGridCoords(eccentricityDegs, sizeDegs, ...
             rgcRFpositionsDegs, gridHalfSamplesNum, samplingScheme, visualizeGridCoords)
+
+        % Method to return the grid coords and the corresponding RTVFobj indices
+        % for theConesNumPooled case
+        [gridCoords, theRTVFobjIndicesForThisGrid] = subGridSpatialCoordsForConesNumPooled(theConesNumPooled, ...
+            theConesNumPooledByTheRFcenterGrid, theOpticsPositionGrid);
+
 
         % Method to visualize a computed RTVF object 
         peekIntoSingleRTVFobj(theRTVFTobj, iRTVobjIndex, ...
             theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid, figNo);
+
+
+        % Method to visualize the fitted locations
+        visualizeFittedLocations(figNo, theMidgetRGCmosaic, ...
+            theOpticsPositionGrid, theConesNumPooledByTheRFcenterGrid);
+
+
+        % Method to visualize the fitted locations
+        visualizeFittedLocationsCombo(figNo, theMidgetRGCmosaic, ...
+            theRTFVTobjList, theOpticsPositionGrid, ...
+            theConesNumPooledByTheRFcenterGrid, varargin);
+
 
     end % Class methods
     

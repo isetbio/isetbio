@@ -100,7 +100,7 @@ function [thePSFData, opticsParams] = computeSpecrallyWeightedPSFs(opticsParams,
 
     % Compute L/M cone weights for weighting the PSF/OTF
     [theLconeSpectralWeights, theMconeSpectralWeights] = ...
-        LMconeSpectralWeightings(theConeMosaic, opticsParams.positionDegs);
+        RTVF.LMconeSpectralWeightings(theConeMosaic, opticsParams.positionDegs);
 
     % L-cone fundamental weighted PSF
     thePSFData.LconeWeighted = spectrallyWeightedPSF(...
@@ -174,34 +174,7 @@ function [thePSFData, opticsParams] = computeSpecrallyWeightedPSFs(opticsParams,
 end
 
 
-function [L,M] = LMconeSpectralWeightings(theConeMosaic, theTargetEccDegs)
 
-    if (theConeMosaic.eccVaryingMacularPigmentDensity)
-        % Each cone has a different boost factor, based on its eccentricity
-        macularPigmentBoostFactors = cMosaic.macularPigmentBoostFactors(theConeMosaic.macular, theTargetEccDegs);
-    else
-        % Single factor based on the eccentricity of the mosaic
-        macularPigmentBoostFactors = cMosaic.macularPigmentBoostFactors(theConeMosaic.macular, theConeMosaic.eccentricityDegs);
-    end
-    boostVector = macularPigmentBoostFactors';
-    
-
-    % Quantal efficiencies with the foveal MP density and no lens
-    coneQuantalEfficienciesFovealMP = theConeMosaic.qe;
-
-    % Quantal efficiencies with the MP density at the target ecc and no lens
-    coneQuantalEfficienciesEccBasedMP = diag(boostVector) * coneQuantalEfficienciesFovealMP;
-
-    % Quantal efficiencies with the MP density at the target ecc and the lens
-    theLens = Lens('wave',theConeMosaic.wave);
-    lensTransmittance = theLens.transmittance;
-    coneQuantalEfficienciesFinal = diag(lensTransmittance)*coneQuantalEfficienciesEccBasedMP;
-
-    % Return the L- and M-cone quantal efficiencies
-    L = coneQuantalEfficienciesFinal(:,1);
-    M = coneQuantalEfficienciesFinal(:,2);
-
-end
 
 function weightedPSF = spectrallyWeightedPSF(spectralWeights, theFullPSF)
 

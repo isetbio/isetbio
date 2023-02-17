@@ -5,16 +5,19 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('eccentricitySamplingGrid', [], @(x)(isempty(x) || (isnumeric(x) && (size(x,2) == 2)) ));
+    p.addParameter('eccentricitySamplingGridOutlineColor', [1 0 0], @(x)(isempty(x)||(numel(x)==3)));
+    p.addParameter('eccentricitySamplingGridFillColor', [1 0.6 0.6], @(x)(isempty(x)||(numel(x)==3)));
     p.addParameter('maxVisualizedRFs', 0, @(x)(isempty(x) || isscalar(x)));
     p.addParameter('showConnectionsToCones', true, @islogical);
+    p.addParameter('identityRGCsWithThisManyCenterConesNum', 0, @isscalar);
     p.addParameter('withSuperimposedConeMosaic', true, @islogical);
     p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
     p.addParameter('inputPoolingVisualization', '', @(x)((isempty(x))||(ismember(x, {'centerOnly', 'surroundOnly', 'centerAndSurround'}))));
     p.addParameter('xRangeDegs', [], @(x)(isempty(x)||(numel(x)==1)));
     p.addParameter('yRangeDegs', [], @(x)(isempty(x)||(numel(x)==1)));
-    p.addParameter('xLimsDegs', [], @(x)(isempty(x)||isinf(x)||(numel(x)==2)));
-    p.addParameter('yLimsDegs', [], @(x)(isempty(x)||isinf(x)||(numel(x)==2)));
+    p.addParameter('xLimsDegs', [], @(x)((numel(x)==1)&&((isempty(x)||isinf(x)))||(numel(x)==2)));
+    p.addParameter('yLimsDegs', [], @(x)((numel(x)==1)&&((isempty(x)||isinf(x)))||(numel(x)==2)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
@@ -27,8 +30,11 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     figureHandle = p.Results.figureHandle;
     axesHandle = p.Results.axesHandle;
     eccentricitySamplingGrid = p.Results.eccentricitySamplingGrid;
+    eccentricitySamplingGridOutlineColor = p.Results.eccentricitySamplingGridOutlineColor;
+    eccentricitySamplingGridFillColor = p.Results.eccentricitySamplingGridFillColor;
     maxVisualizedRFs = p.Results.maxVisualizedRFs;
     showConnectionsToCones = p.Results.showConnectionsToCones;
+    identityRGCsWithThisManyCenterConesNum = p.Results.identityRGCsWithThisManyCenterConesNum;
     superimposedOpticalImage = p.Results.withSuperimposedOpticalImage;
     superimposedPSF = p.Results.withSuperimposedPSF;
     superimposedConeMosaic = p.Results.withSuperimposedConeMosaic;
@@ -193,25 +199,14 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
     end
 
 
-    if (isempty(inputPoolingVisualization)) && (maxVisualizedRFs == 0)
+    if (isempty(inputPoolingVisualization)) && (maxVisualizedRFs == 0) && (showConnectionsToCones)
         plot(axesHandle, obj.rgcRFpositionsDegs(:,1), obj.rgcRFpositionsDegs(:,2), 'k.');
     end
 
-%     for iRGC = 1:numel(sortedRGCindices)
-% 
-%         % Retrieve the RGCindex
-%         targetRGCindex = sortedRGCindices(iRGC);
-%         centerConnectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, targetRGCindex)));
-%         centerConeIndices = find(centerConnectivityVector > 0.0001);
-%         centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
-%         renderConePoolingWeights(axesHandle, ...
-%                         obj.rgcRFpositionsDegs(targetRGCindex,:), ...
-%                         obj.inputConeMosaic.coneRFpositionsDegs(centerConeIndices,:), ...
-%                         centerConeWeights, ...
-%                         [], [], ...
-%                         max(centerConeWeights));
-%         drawnow
-%     end
+    if (identityRGCsWithThisManyCenterConesNum > 0)
+        idx = find(sum(obj.rgcRFcenterConePoolingMatrix,1) == identityRGCsWithThisManyCenterConesNum);
+        plot(axesHandle, obj.rgcRFpositionsDegs(idx,1), obj.rgcRFpositionsDegs(idx,2), 'k.');
+    end
 
                     
     for iRGC = 1:numel(sortedRGCindices)
@@ -350,10 +345,13 @@ function [figureHandle, axesHandle] = visualize(obj, varargin)
    end % iRGC
 
    if (~isempty(eccentricitySamplingGrid))
-       plot(axesHandle, eccentricitySamplingGrid(:,1), eccentricitySamplingGrid(:,2), 'k+', 'LineWidth', 3.0, 'MarkerSize', 20);
-       plot(axesHandle, eccentricitySamplingGrid(:,1), eccentricitySamplingGrid(:,2), 'c+', 'LineWidth', 1.0, 'MarkerSize', 16);
+       plot(axesHandle, eccentricitySamplingGrid(:,1), eccentricitySamplingGrid(:,2), '+', ...
+           'Color', eccentricitySamplingGridFillColor , 'LineWidth', 5.0, 'MarkerSize', 20);
+       plot(axesHandle, eccentricitySamplingGrid(:,1), eccentricitySamplingGrid(:,2), '+', ...
+           'Color', eccentricitySamplingGridOutlineColor , 'LineWidth', 2.0, 'MarkerSize', 16);
    end
 
+   axis(axesHandle, 'equal');
    set(axesHandle, 'XLim', [xLimsDegs(1) xLimsDegs(2)], 'YLim', [yLimsDegs(1) yLimsDegs(2)]);
    drawnow;
 end

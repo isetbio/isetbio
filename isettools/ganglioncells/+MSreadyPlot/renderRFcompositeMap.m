@@ -1,5 +1,4 @@
-function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeDegs, plotTitle, ff, varargin)
-    
+function renderRFcompositeMap(ax, xSupportDegs, ySupportDegs, theCompositeRFmap, rfRangeDegs, plotTitle, ff, varargin)
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
@@ -8,35 +7,36 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
 
-    % plot
-    psfSupportXarcmin = psfSupportXdegs * 60;
-    psfSupportYarcmin = psfSupportYdegs * 60;
-    cmap = brewermap(1024, 'greys');
-    MSreadyPlot.transparentContourPlot(ax, ...
-        psfSupportXarcmin , psfSupportYarcmin , ...
-        thePSFData/max(thePSFData(:)), ...
-        [0.1 0.3 0.5 0.7 0.9], cmap);
-    axis(ax, 'image');
-    axis(ax, 'xy');
+    
+    
+    compositeMapLineWeightingFunctionX = sum(theCompositeRFmap,1);
+    compositeMapLineWeightingFunctionX = compositeMapLineWeightingFunctionX / max(abs(compositeMapLineWeightingFunctionX));
 
-    psfRangeArcMin = psfRangeDegs*60;
-    psfTicksArcMin = MSreadyPlot.spatialMapTicksArcMin(psfRangeArcMin);
+    sensitivityRange = [-0.35 1.05];
 
+    plot(ax, xSupportDegs*60, compositeMapLineWeightingFunctionX, 'k-', 'LineWidth', 1.5);
+    
+    
+    set(ax, 'CLim', [0 1]);
+    axis(ax, 'square');
+    
 
-    if (psfRangeArcMin <= 2)
-        psfTickLabels = sprintf('%2.1f\n', psfTicksArcMin);
+    rfRangeArcMin = rfRangeDegs*60;
+    rfTicksArcMin = MSreadyPlot.spatialMapTicksArcMin(rfRangeArcMin);
+
+    if (rfRangeArcMin <= 2)
+        rfTickLabels = sprintf('%2.1f\n', rfTicksArcMin);
     else
-        psfTickLabels = sprintf('%2.0f\n', psfTicksArcMin);
+        rfTickLabels = sprintf('%2.0f\n', rfTicksArcMin);
     end
 
-   
     % ticks and grids
     grid(ax, 'on'); box(ax, 'on');
-    set(ax, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1]);
-    set(ax, 'XTick', psfTicksArcMin , 'YTick', psfTicksArcMin, ...
-        'XTickLabel', psfTickLabels, 'YTickLabel', psfTickLabels);
+    set(ax, 'XLim', rfRangeArcMin*1.05*[-1 1], 'YLim', sensitivityRange);
+    set(ax, 'XTick', rfTicksArcMin , 'YTick', -1:0.2:1, ...
+            'XTickLabel', rfTickLabels, 'YTickLabel', -1:0.2:1);
     set(ax, 'TickDir', 'in')
-
+    
     % xy axis labels
     xtickangle(ax, 0);
     ytickangle(ax, 0);
@@ -61,8 +61,5 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     if (~isempty(plotTitle))
         title(ax, plotTitle, 'Color', ff.titleColor, 'FontSize', ff.titleFontSize, 'FontWeight', ff.titleFontWeight);
     end
-
-    % Colormap
-    colormap(ax, cmap);
 
 end
