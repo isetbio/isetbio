@@ -28,53 +28,25 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
    
    if (computeLconeCenterComputeStruct) && (computeMconeCenterComputeStruct)
         % Ask user if he wants to overwrite both the L- and the M-cone compute structs
-        notValidResponse = true;
-        while (notValidResponse)
-            txt = lower(input('Overwrite both the L- and the M-cone compute structs? [y=YES] ', 's'));
-            if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
-                notValidResponse = false;
-            end
-        end    
-        if (strcmp(txt, 'y'))
-            fprintf(2, 'Overwriting both the L-cone and the M-cone compute struct.\n'); 
+        updateBothLandMstructs = RTVF.queryUserForYesNoResponse('Overwrite both the L- and the M-cone compute structs?');
+        if (updateBothLandMstructs)
             writeFile = true;
             return;
         end
 
-        % User wants to overwrite only one of the two. Find out which.
-        notValidResponse = true;
-        while (notValidResponse)
-            txt = lower(input('Overwrite the L-cone compute struct? [y=YES] ', 's'));
-            if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
-                notValidResponse = false;
-            end
-        end   
-        if (strcmp(txt, 'y'))
-            overwriteL = true;
-        else
-            overwriteL = false;
-        end
 
-        notValidResponse = true;
-        while (notValidResponse)
-            txt = lower(input('Overwrite the M-cone compute struct? [y=YES] ', 's'));
-            if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
-                notValidResponse = false;
-            end
-        end   
-        if (strcmp(txt, 'y'))
-            overwriteM = true;
-        else
-            overwriteM = false;
-        end
+        % User wants to overwrite only one of the two. Find out which.
+        updateLstruct = RTVF.queryUserForYesNoResponse('Overwrite the L-cone compute struct?');
+        updateMstruct = RTVF.queryUserForYesNoResponse('Overwrite the M-cone compute struct?');
         
-        if (~overwriteL) && (~overwriteM)
+        if (~updateLstruct) && (~updateMstruct)
            % User  wants to overwrite neither, so do not write the file
+           writeFile = false;
            fprintf(2, 'Will not overwrite anything.\n');
            return;
         end
            
-        if (overwriteL) && (~overwriteM)
+        if (updateLstruct) && (~updateMstruct)
            fprintf(2, 'Overwriting the L-cone compute struct, keeping the old M-cone compute struct.\n');
            % Keep the previous M-cone compute struct    
            obj.MconeRFcomputeStruct =  theOldOBJ.obj.MconeRFcomputeStruct; 
@@ -82,7 +54,7 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
            return;
         end
             
-        if (overwriteM)&&(~overwriteL)
+        if (~updateLstruct)&&(updateMstruct)
            fprintf(2, 'Overwriting the M-cone compute struct, keeping the old L-cone compute struct.\n');
            % Keep the previous L-cone compute struct    
            obj.LconeRFcomputeStruct =  theOldOBJ.obj.LconeRFcomputeStruct; 
@@ -93,8 +65,8 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
 
 
    if (computeLconeCenterComputeStruct) && (~computeMconeCenterComputeStruct)
-        s = input('Overwrite the L-cone compute struct? [y=YES] ', 's');
-        if (strcmpi(s, 'y'))
+        updateLstruct = RTVF.queryUserForYesNoResponse('Overwrite the L-cone compute struct?');
+        if (updateLstruct)
             fprintf(2, 'Overwriting the L-cone compute struct, keeping the old M-cone compute struct.\n');
             % Keep the previous M-cone compute struct    
             obj.MconeRFcomputeStruct =  theOldOBJ.obj.MconeRFcomputeStruct; 
@@ -104,8 +76,8 @@ function writeFile = writeTheFile(obj, computeLconeCenterComputeStruct, computeM
    end % (computeLconeCenterComputeStruct) && (~computeMconeCenterComputeStruct)
 
    if (computeMconeCenterComputeStruct) && (~computeLconeCenterComputeStruct)
-        s = input('Overwrite the M-cone compute struct? [y=YES] ', 's');
-        if (strcmpi(s, 'y'))
+        updateMstruct = RTVF.queryUserForYesNoResponse('Overwrite the M-cone compute struct?');
+        if (updateMstruct)
             fprintf(2, 'Overwriting the M-cone compute struct, keeping the old L-cone compute struct.\n');
             % Keep the previous L-cone compute struct    
             obj.LconeRFcomputeStruct =  theOldOBJ.obj.LconeRFcomputeStruct; 

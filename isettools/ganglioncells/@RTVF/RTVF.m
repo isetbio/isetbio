@@ -359,6 +359,9 @@ classdef RTVF < handle
 
         % Method to inspect a saved RTVF object
         generateSpatialRFs(theRTVFobj);
+
+        % Method to accept either a 'y' or a 'n' response
+        val = queryUserForYesNoResponse(message);
     end
 
 end

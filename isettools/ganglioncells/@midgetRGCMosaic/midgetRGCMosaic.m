@@ -80,13 +80,13 @@ classdef midgetRGCMosaic < handle
         % The MosaicConnectorOBJ used to connect cones to midget RGCs
         theMosaicConnectorOBJ;
 
-        % The RetinalToVisualFieldTransformerList cell array which contains 
-        % RTVFT objects for a grid of positions, conesNumInRFcenter,
+        % The theRTVFobjList cell array which contains 
+        % RTVF objects for a grid of positions, conesNumInRFcenter,
         % and visual STF properties:
         % - optics (position) 
         % - conesNumInRFcenter
         % - visual STF properties (C/S radius, C/S int.ratio)
-        theRetinaToVisualFieldTransformerOBJList;
+        theRTVFobjList;
 
         % The positions (within the mosaic) at which we fit an RTVFT object
         theSamplingPositionGrid;
@@ -332,6 +332,10 @@ classdef midgetRGCMosaic < handle
 
         % Method to validate a user-updated computeInputDataStruct
         validateComputeInputDataStruct(computeInputDataStruct);
+
+        % Method to generate retinal subregion maps for visualization
+        retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(...
+            theConeMosaic, conePosDegs, coneWeights, spatialSupportDegs)
 
     end % Static metthods
 

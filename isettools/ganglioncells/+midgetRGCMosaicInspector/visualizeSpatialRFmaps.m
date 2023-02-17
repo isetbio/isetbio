@@ -11,7 +11,7 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
 
     fprintf(['Center/Surround RFs of theMidgetRGCmosaic were generated based on %d spatial RTVF objects \n' ...
              'for %d different cases of center cones num\n'], ...
-             numel(theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList), ...
+             numel(theMidgetRGCmosaic.theRTVFobjList), ...
              numel(unique(theMidgetRGCmosaic.theConesNumPooledByTheRFcenterGrid)));
 
 
@@ -50,9 +50,9 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
 
 
         % Extract the PSF data to visualize      
-        theRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{nearestRTVFobjectIndex};
+        theRTVFTobj = theMidgetRGCmosaic.theRTVFobjList{nearestRTVFobjectIndex};
 
-        theVisualizedPSFData = theRTVFTobj.theSpectrallyWeightedPSFData;
+        theVisualizedPSFData = theRTVFTobj.spectrallyWeightedPSFData;
         theVisualizedPSFData.psfSupportXdegs = theVisualizedPSFData.psfSupportXdegs + ...
             theMidgetRGCmosaic.rgcRFpositionsDegs(theTargetRGCindex,1);
         theVisualizedPSFData.psfSupportYdegs = theVisualizedPSFData.psfSupportYdegs + ...
@@ -60,15 +60,15 @@ function visualizeSpatialRFmaps(mosaicCenterParams, maxRGCsNum)
        
 
         % Extract the STF of the nearest RTVFobject
-        theNearestRTVFTobj = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{nearestRTVFobjectIndex};
+        theNearestRTVFTobj = theMidgetRGCmosaic.theRTVFobjList{nearestRTVFobjectIndex};
 
         [spatialFrequencySupport, ...
             LconeCenterVisualSTF, MconeCenterVisualSTF, ...
             multiSpectralVisualSTF] = extractPSFsFromRTVFobj(theNearestRTVFTobj, theCenterConeTypeWeights);
 
         if (~isempty(theRemainingNearestRTVFobjectIndices))
-            RTVFobj2 = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{theRemainingNearestRTVFobjectIndices(1)};
-            RTVFobj3 = theMidgetRGCmosaic.theRetinaToVisualFieldTransformerOBJList{theRemainingNearestRTVFobjectIndices(2)};
+            RTVFobj2 = theMidgetRGCmosaic.theRTVFobjList{theRemainingNearestRTVFobjectIndices(1)};
+            RTVFobj3 = theMidgetRGCmosaic.theRTVFobjList{theRemainingNearestRTVFobjectIndices(2)};
             [~, ~, ~, multiSpectralVisualSTF2] = extractPSFsFromRTVFobj(RTVFobj2, theCenterConeTypeWeights);
             [~, ~, ~, multiSpectralVisualSTF3] = extractPSFsFromRTVFobj(RTVFobj3, theCenterConeTypeWeights);
         end
@@ -122,15 +122,33 @@ end
 function  [spatialFrequencySupport, LconeCenterVisualSTF, MconeCenterVisualSTF, multiSpectralVisualSTF] =  ...
     extractPSFsFromRTVFobj(theRTVFTobj, theCenterConeTypeWeights)
 
+    % Compute the L-cone visual RF map
+    theLconeVisualRFmap = theRTVFTobj.visualRFfromRetinalConePooling(...
+                theRTVFTobj.LconeRFcomputeStruct.modelConstants, ...
+                theRTVFTobj.LconeRFcomputeStruct.retinalConePoolingParams.finalValues);
+  
+    % Compute the L-cone visual STF data for the L-cone visual RF map
+    theLconeSTFdata = theRTVFTobj.visualRFmapPropertiesFromCronerKaplanAnalysis(theLconeVisualRFmap);
+    
+    % Compute the M-cone visual RF map
+    theMconeVisualRFmap = theRTVFTobj.visualRFfromRetinalConePooling(...
+                theRTVFTobj.MconeRFcomputeStruct.modelConstants, ...
+                theRTVFTobj.MconeRFcomputeStruct.retinalConePoolingParams.finalValues);
+  
+    % Compute the LMcone visual STF data for the L-cone visual RF map
+    theMconeSTFdata = theRTVFTobj.visualRFmapPropertiesFromCronerKaplanAnalysis(theMconeVisualRFmap);
+    
 
-    fittedVisualSTF = theRTVFTobj.LconeRFcomputeStruct.theSTF.fitted(:);
+
+
+    fittedVisualSTF = theLconeSTFdata.fittedDoGModelToVisualSTF.compositeSTF(:);
     theLconeCenterRGCModelVisualSTF = fittedVisualSTF / max(fittedVisualSTF(:));
 
-    fittedVisualSTF = theRTVFTobj.MconeRFcomputeStruct.theSTF.fitted(:);
+    fittedVisualSTF = theMconeSTFdata.fittedDoGModelToVisualSTF.compositeSTF(:);
     theMconeCenterRGCModelVisualSTF = fittedVisualSTF / max(fittedVisualSTF(:));
 
 
-    spatialFrequencySupport = theRTVFTobj.LconeRFcomputeStruct.theSTF.support(:);
+    spatialFrequencySupport = theLconeSTFdata.spatialFrequencySupport(:);
     LconeCenterVisualSTF = theLconeCenterRGCModelVisualSTF * theCenterConeTypeWeights(cMosaic.LCONE_ID)/sum(theCenterConeTypeWeights);
     MconeCenterVisualSTF = theMconeCenterRGCModelVisualSTF * theCenterConeTypeWeights(cMosaic.MCONE_ID)/sum(theCenterConeTypeWeights);
     multiSpectralVisualSTF = LconeCenterVisualSTF + MconeCenterVisualSTF;
