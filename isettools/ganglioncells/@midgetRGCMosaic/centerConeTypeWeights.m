@@ -6,8 +6,8 @@ function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] =
         % Retrieve this cell's # of center cone indices
         connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, theRGCindex)));
     end
-    indicesOfCenterCones = find(connectivityVector > 0.0001);
 
+    indicesOfCenterCones = find(connectivityVector > 0.0001);
     weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
     typesOfCenterCones = obj.inputConeMosaic.coneTypes(indicesOfCenterCones);
 

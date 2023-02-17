@@ -48,9 +48,9 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     
     % Ask the user if he wants to use a dictionary with previously
     % fitted params to use as initial values
-    usePreviousFittedParamsValues = input('Use initial values from a previous fit ? [y = YES] ', 's');
+    usePreviousFittedParamsValues = midgetRGCMosaicInspector.queryUserForYesNoResponse('\nUse initial values from a previous fit ?');
     initialGridRetinalConePoolingParamsStruct = [];
-    if strcmpi(usePreviousFittedParamsValues, 'y')
+    if (usePreviousFittedParamsValues)
         dropboxDir = midgetRGCMosaicInspector.localDropboxPath();
 
         midgetRGCMosaicInspector.say('Select file with previously derived retinal cone pooling params');
@@ -102,17 +102,10 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
                         '-v7.3');
         fprintf('All computed R2VFTobjects were saved in: %s\n', R2VFTobjFileName);
     else
-        % Ask the user whether to overwrite the R2VFTobjFileName 
-        notValidResponse = true;
-        while (notValidResponse)
-            prompt = sprintf('Update the all RTVF objects file with the re-fitted RTVFs (%s)? [y/n] : ', R2VFTobjFileName);
-            txt = lower(input(prompt,'s'));
-            if (strcmp(txt, 'y')) || (strcmp(txt, 'n'))
-                notValidResponse = false;
-            end
-        end
-
-        if (strcmp(txt, 'y'))
+        % Ask the user whether to overwrite the R2VFTobjFileName
+        R2VFTobjFileName
+        updateFile = midgetRGCMosaicInspector.queryUserForYesNoResponse('\nUpdate the all RTVF objects file with the re-fitted RTVFs?');
+        if (updateFile)
             % Load previous file with an existing theRTFVTobjList
             load(R2VFTobjFileName, 'theRTFVTobjList', ...
                         'theOpticsPositionGrid', ...
