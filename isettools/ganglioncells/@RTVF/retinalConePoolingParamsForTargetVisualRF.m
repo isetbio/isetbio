@@ -236,15 +236,28 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     function [theCurrentRMSE, theCurrentVisualRFmap, theCurrentSTFdata, pooledConeIndicesAndWeights] = ...
             theObjectiveFunction(currentRetinalPoolingParamValues)
 
-        % Compute initial visual RF map
-        [theCurrentVisualRFmap, theCurrentRetinalRFcenterConeMap, ...
-         theCurrentRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
-            obj.visualRFfromRetinalConePooling(...
-                modelConstants, currentRetinalPoolingParamValues);
+        if (strcmp(obj.stfComputeMethod, RTVF.modeledSTFcomputeMethod))
+            % Compute the STF data for the  current visual RF map
+            % First, compute the visual RF map
+            [theCurrentVisualRFmap, theCurrentRetinalRFcenterConeMap, ...
+             theCurrentRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
+                obj.visualRFfromRetinalConePooling(...
+                    modelConstants, currentRetinalPoolingParamValues);
   
-        % Compute the STF data for the  initial visual RF map
-        theCurrentSTFdata = obj.visualRFmapPropertiesFromCronerKaplanAnalysis(theCurrentVisualRFmap);
-    
+            % Then compute the visual STF from the visualRF map
+            theCurrentSTFdata = obj.visualSTFfromCronerKaplanAnalysisOfVisualRF(theCurrentVisualRFmap);
+        else
+            % Compute the indices and retinal weights of cones pooled by the center and the
+            % surround mechanism
+            pooledConeIndicesAndWeights = modelConstants.weightsComputeFunctionHandle(modelConstants, currentRetinalPoolingParamValues);
+            theCurrentSTFdata = obj.visualSTFfromCronerKaplanAnalysisOfconeMosaicSTFresponses(pooledConeIndicesAndWeights);
+            
+            % No computation of visual RF maps
+            theCurrentVisualRFmap = [];
+            theCurrentRetinalRFcenterConeMap = [];
+            theCurrentRetinalRFsurroundConeMap = [];
+        end
+
         % Compute RMSE
         RsRcRatioResidual = theCurrentSTFdata.fittedDoGModelRsRcRatio/obj.targetVisualRFDoGparams.surroundToCenterRcRatio - 1;
         SCintSensRatioResidual = theCurrentSTFdata.fittedDoGModelSCIntSensRatio/obj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio - 1;

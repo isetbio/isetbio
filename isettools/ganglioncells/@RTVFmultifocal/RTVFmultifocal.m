@@ -10,6 +10,10 @@ classdef RTVFmultifocal < handle
         opticsParams;
         rfModelParams; 
 
+        % The compute method and its resources
+        stfComputeMethod;
+        stfComputeMethodResources;
+
         % The nominal spatial sampling grid
         nominalSpatialSamplingGrid;
 
@@ -36,18 +40,36 @@ classdef RTVFmultifocal < handle
         % Constructor
         function obj = RTVFmultifocal(theRGCmosaic, ...
             mosaicCenterParams, opticsParams, rfModelParams, ...
-            samplingScheme, varargin)
+            samplingScheme, stfComputeMethod, varargin)
 
             obj.theRGCMosaic = theRGCmosaic;
             obj.mosaicCenterParams = mosaicCenterParams;
             obj.opticsParams = opticsParams;
             obj.rfModelParams = rfModelParams;
         
+            assert(ismember(stfComputeMethod, RTVF.validSTFcomputeMethods), ...
+                sprintf('STF computeMethod ''%s'' is not valid', stfComputeMethod));
+            obj.stfComputeMethod = stfComputeMethod;
+
+            if (strcmp(obj.stfComputeMethod, RTVF.directSTFcomputeMethod))
+                % Ensure that the file with the mosaic responses exists
+                midgetRGCMosaicInspector.say('Select file with cone mosaic STF responses');
+
+                dropboxDir = midgetRGCMosaicInspector.localDropboxPath();
+                [file,path] = uigetfile(fullfile(dropboxDir, '*.mat'), ...
+                            'Select a file');
+    
+                if (file ~= 0)
+                    coneMosaicResponsesFileName = fullfile(path,file);
+                    obj.loadComputeMethodResources(coneMosaicResponsesFileName);
+                end
+            end
+
+            % Parse optional input
             p = inputParser;
             p.addParameter('multiStartsNumRetinalPooling', [], @(x)(isempty(x)||isscalar(x)));
             p.addParameter('minSpatialSamplingDegs', 0.25, @isnumeric);
             p.parse(varargin{:});
-
             obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
             
             % Generate the nominal spatial sampling grid

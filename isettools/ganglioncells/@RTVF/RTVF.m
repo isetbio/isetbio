@@ -41,6 +41,12 @@ classdef RTVF < handle
        % How many multistarts to use for the retinal cone pooling params
        multiStartsNumRetinalPooling;
 
+       % Compute method
+       stfComputeMethod;
+
+       % Compute method resources
+       stfComputeMethodResources;
+
        % The computed L-cone RF compute struct
        LconeRFcomputeStruct;
 
@@ -58,10 +64,18 @@ classdef RTVF < handle
     properties (Constant, Hidden)
         Artal = 'Artal2012';
         Polans = 'Polans2015';
+
+        directSTFcomputeMethod = 'cone mosaic STF response based';
+        modeledSTFcomputeMethod = 'modeled STF';
     end
 
     
     properties (Constant)
+        validSTFcomputeMethods = {
+            RTVF.directSTFcomputeMethod ...
+            RTVF.modeledSTFcomputeMethod ...
+            };
+
         validZernikeDataBases = {...
             RTVF.Artal ...
             RTVF.Polans ...
@@ -99,12 +113,14 @@ classdef RTVF < handle
                 theConeMosaic, ...
                 theOpticsParams, ...
                 theTargetVisualRFDoGparams, ...
+                stfComputeMethod, ...
                 varargin) 
 
             p = inputParser;
             p.addParameter('computedRTVFobjectExportDirectory', '', @(x)(isempty(x)||ischar(x)));
             p.addParameter('progressFigureName', '', @ischar);
             p.addParameter('visualizeSpectrallyWeightedPSFs', false, @islogical);
+            p.addParameter('computeMethodResources', @isstruct);
             p.addParameter('computeLconeCenterComputeStruct', true, @islogical);
             p.addParameter('computeMconeCenterComputeStruct', true, @islogical);
             p.addParameter('initialRetinalConePoolingParamsStruct', [], @(x)(isempty(x)||isstruct(x)));
@@ -115,12 +131,16 @@ classdef RTVF < handle
             % Handle optional inputs
             obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
             obj.multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
-
+            
             visualizeSpectrallyWeightedPSFs = p.Results.visualizeSpectrallyWeightedPSFs;
             initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
             
             computedRTVFobjectExportDirectory = p.Results.computedRTVFobjectExportDirectory;
             progressFigureName = p.Results.progressFigureName;
+            
+            obj.stfComputeMethod = stfComputeMethod;
+            obj.stfComputeMethodResources = p.Results.computeMethodResources;
+
             computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
             computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
 
@@ -255,8 +275,11 @@ classdef RTVF < handle
         [theVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
             visualRFfromRetinalConePooling(obj, modelConstants, retinalPoolingParams)
 
-        % Method to compute the Croner&Kaplan RF analysis
-        dataOut = visualRFmapPropertiesFromCronerKaplanAnalysis(obj, theVisualRF);
+        % Method to compute the visual STF from the visualRF simulating the Croner&Kaplan RF analysis
+        dataOut = visualSTFfromCronerKaplanAnalysisOfVisualRF(obj, theVisualRF);
+
+        % Method to compute the visual STF from cone mosaic STF responses simulating the Croner&Kaplan RF analysis
+        dataOut = visualSTFfromCronerKaplanAnalysisOfconeMosaicSTFresponses(obj, pooledConeIndicesAndWeights);
 
     end % public methods
 

@@ -12,6 +12,7 @@ function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, vara
     computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
     computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
     multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
+    
 
     if (ischar(RTVobjIndicesToBeComputed))&&(strcmp(RTVobjIndicesToBeComputed, 'all'))
         midgetRGCMosaicInspector.say('Generating all RTVF objects');
@@ -30,6 +31,7 @@ function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, vara
 
     % Instantiate the multifocalRTVFobj
     samplingScheme = 'hexagonal';
+    computeMethod = 'cone mosaic STF response based'; % choose between 'simulated' and 'cone mosaic response based'
 
     % Instantiate an @RTVFmultifocal object with the desired mosaic and
     % optics and rfModel params. During instantiation the @RTVFmultifocal
@@ -38,7 +40,7 @@ function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, vara
     % M-center RFs
     theMultifocalRTVFOBJ = RTVFmultifocal(theMidgetRGCmosaic, ...
         mosaicCenterParams, opticsParams, rfModelParams, ...
-        samplingScheme, ...
+        samplingScheme, computeMethod, ...
         'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling);
 
     fprintf('\nVisualizing the mosaic. Please wait ...')

@@ -33,23 +33,26 @@ function rmseSequence = displayFittingProgress(hFigProgress, videoOBJ, rmseSeque
             ylabel(ax, 'RMSE');
 
             if (theCurrentRMSE == min(squeeze(rmseSequence(3,:)))) 
-                ax = subplot(2,4,3);
-                imagesc(ax, spatialSupportDegsX, spatialSupportDegsY, theCurrentRetinalRFcenterConeMap);
-                axis(ax, 'image');
-                title(sprintf('RF at iteration %d', size(rmseSequence,2)));
-                ax = subplot(2,4,7);
-                imagesc(ax, spatialSupportDegsX, spatialSupportDegsY, theCurrentRetinalRFsurroundConeMap);
-                axis(ax, 'image');
-                colormap(brewermap(1024, 'greys'));
+                if (~isempty(theCurrentRetinalRFcenterConeMap))
+                    ax = subplot(2,4,3);
+                    imagesc(ax, spatialSupportDegsX, spatialSupportDegsY, theCurrentRetinalRFcenterConeMap);
+                    axis(ax, 'image');
+                    title(sprintf('RF at iteration %d', size(rmseSequence,2)));
+                    ax = subplot(2,4,7);
+                    imagesc(ax, spatialSupportDegsX, spatialSupportDegsY, theCurrentRetinalRFsurroundConeMap);
+                    axis(ax, 'image');
+                    colormap(brewermap(1024, 'greys'));
+    
+                    ax = subplot(2,4,4);
+                    cla(ax);
+                    centerProfileX = sum(theCurrentRetinalRFcenterConeMap,1);
+                    surroundProfileX = sum(theCurrentRetinalRFsurroundConeMap,1);
+                    plotProfiles(ax, spatialSupportDegsX, centerProfileX, surroundProfileX);
+    
+                    centerProfileY = sum(theCurrentRetinalRFcenterConeMap,2);
+                    surroundProfileY = sum(theCurrentRetinalRFsurroundConeMap,2);
+                end
 
-                ax = subplot(2,4,4);
-                cla(ax);
-                centerProfileX = sum(theCurrentRetinalRFcenterConeMap,1);
-                surroundProfileX = sum(theCurrentRetinalRFsurroundConeMap,1);
-                plotProfiles(ax, spatialSupportDegsX, centerProfileX, surroundProfileX);
-
-                centerProfileY = sum(theCurrentRetinalRFcenterConeMap,2);
-                surroundProfileY = sum(theCurrentRetinalRFsurroundConeMap,2);
 
                 ax = subplot(2,4,8);
                 cla(ax);

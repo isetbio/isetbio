@@ -1,4 +1,4 @@
-function theSTFdata = visualRFmapPropertiesFromCronerKaplanAnalysis(obj, theVisualRF)
+function theSTFdata = visualSTFfromCronerKaplanAnalysisOfVisualRF(obj, theVisualRF)
 
     % Rotate theVisualRFmap according to the rotation
     % that maximizes horizontal resolution of the targetVisualRFmap

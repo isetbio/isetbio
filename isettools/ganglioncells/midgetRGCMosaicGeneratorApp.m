@@ -138,11 +138,18 @@ function executePipelineAction(btn, app)
 
         case "OPTIMIZATION: fit all locations R2VFT objects"
             RTVobjIndicesToBeComputed = 'all';
+
+            multiStartsNumRetinalPooling  = [];
+            while (isempty(multiStartsNumRetinalPooling))
+                multiStartsNumRetinalPooling = input('\nNumber of multi-starts, e.g., 1, 2, ... : ');
+            end
+            
             midgetRGCMosaicGenerator.fitMultiFocalRTVF(...
                 app.simulation.mosaicCenterParams, ...
                 app.simulation.rfModelParams, ...
                 app.simulation.opticsParams, ...
-                'RTVobjIndicesToBeComputed', RTVobjIndicesToBeComputed);
+                'RTVobjIndicesToBeComputed', RTVobjIndicesToBeComputed, ...
+                'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling);
 
 
         case "VISUALIZATION: fits in single location R2VFT object file"
