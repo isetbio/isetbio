@@ -31,7 +31,11 @@ function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, vara
     % Instantiate the multifocalRTVFobj
     samplingScheme = 'hexagonal';
 
-    % Go
+    % Instantiate an @RTVFmultifocal object with the desired mosaic and
+    % optics and rfModel params. During instantiation the @RTVFmultifocal
+    % generates a grid of spatial positions/center cones num on which a
+    % different @RTVF object will be fit, separately for L- and for
+    % M-center RFs
     theMultifocalRTVFOBJ = RTVFmultifocal(theMidgetRGCmosaic, ...
         mosaicCenterParams, opticsParams, rfModelParams, ...
         samplingScheme, ...
@@ -66,7 +70,7 @@ function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, vara
         end
     end
     
-    % Go !
+    % Go ! Fit a separate @RTVF object to each node of this grid.
     tStart = cputime;
     theMultifocalRTVFOBJ.compute( ...
         initialGridRetinalConePoolingParamsStruct, ...
