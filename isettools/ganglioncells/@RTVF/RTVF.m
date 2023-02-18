@@ -258,6 +258,10 @@ classdef RTVF < handle
         % Method to compute the Croner&Kaplan RF analysis
         dataOut = visualRFmapPropertiesFromCronerKaplanAnalysis(obj, theVisualRF);
 
+        % Method to freeze the obj (i.e., remove large chunks of data that
+        % are of no use after the cone weights to the surround have been
+        % computed)
+        freeze(obj);
     end % public methods
 
 
