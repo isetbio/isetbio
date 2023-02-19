@@ -58,8 +58,6 @@ classdef RTVF < handle
 
        % Boolean indicating whether the RTVF file was updates
        RTVFfileWasUpdated;
-
-       useParallelMultiStart;
     end
 
     % Constant properties
@@ -128,14 +126,11 @@ classdef RTVF < handle
             p.addParameter('initialRetinalConePoolingParamsStruct', [], @(x)(isempty(x)||isstruct(x)));
             p.addParameter('multiStartsNumRetinalPooling', 1, @isscalar);
             p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
-            p.addParameter('useParallelMultiStart', false, @islogical);
-
             p.parse(varargin{:});
 
             % Handle optional inputs
             obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
             obj.multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
-            obj.useParallelMultiStart = p.Results.useParallelMultiStart;
             
             visualizeSpectrallyWeightedPSFs = p.Results.visualizeSpectrallyWeightedPSFs;
             initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
@@ -222,7 +217,7 @@ classdef RTVF < handle
                 RGCmodels.CronerKaplan.digitizedData.parvoCenterSurroundRadiusRatioAgainstEccentricity();
 
             % Max Rs/Rc ratio (80% prctile of the C&K data)
-            maxRsRcRatio =  max([ ...
+            maxRsRcRatio = max([ ...
                 prctile(1./CronerKaplanRcRsRatios.val, 80), ...
                 obj.targetVisualRFDoGparams.surroundToCenterRcRatio]);
 
@@ -235,7 +230,6 @@ classdef RTVF < handle
              obj.rfCenterCharacteristicRadiusInVisualSpace( ...
                     'computeAnatomicalRFcenterRc', false, ...
                     'computeVisualRFcenterRc', false);
-
 
             % Initial retinal cone pooling params
             if (~isempty(initialRetinalConePoolingParamsStruct))
@@ -251,19 +245,31 @@ classdef RTVF < handle
             end
 
             % Action!
-            if (computeLconeCenterComputeStruct)
-                obj.LconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
-                    cMosaic.LCONE_ID, ...
-                    initialLconeRetinalConePoolingParams, ...
-                    progressFigureName);
+            if (strcmp(obj.stfComputeMethod, RTVF.modeledSTFcomputeMethod))
+                if (computeLconeCenterComputeStruct) 
+                    obj.LconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
+                        cMosaic.LCONE_ID, ...
+                        initialLconeRetinalConePoolingParams, ...
+                        progressFigureName);
+                end
+    
+                if (computeMconeCenterComputeStruct)
+                    obj.MconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
+                        cMosaic.MCONE_ID, ...
+                        initialMconeRetinalConePoolingParams, ...
+                        progressFigureName);
+                end
+            else
+                % Just compute one and assign it to both L and M
+                theComputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
+                        [], ...
+                        initialLconeRetinalConePoolingParams, ...
+                        progressFigureName);
+                obj.LconeRFcomputeStruct = theComputeStruct;
+                obj.MconeRFcomputeStruct = theComputeStruct;
             end
 
-            if (computeMconeCenterComputeStruct)
-                obj.MconeRFcomputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
-                    cMosaic.MCONE_ID, ...
-                    initialMconeRetinalConePoolingParams, ...
-                    progressFigureName);
-            end
+
 
             % Save the computed object
             if (isempty(computedRTVFobjectExportDirectory))
@@ -285,7 +291,6 @@ classdef RTVF < handle
 
         % Method to compute the visual STF from cone mosaic STF responses simulating the Croner&Kaplan RF analysis
         dataOut = visualSTFfromCronerKaplanAnalysisOfconeMosaicSTFresponses(obj, pooledConeIndicesAndWeights);
-
     end % public methods
 
 
@@ -306,7 +311,6 @@ classdef RTVF < handle
          visualRFcenterRcDegs, ...
          visualRFcenterConeMap, ...
          bestHorizontalResolutionRotationDegs] = rfCenterCharacteristicRadiusInVisualSpace(obj, varargin);
-
 
         % Method to compute the RFcomputeStruct
         RFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
@@ -357,8 +361,7 @@ classdef RTVF < handle
         visualizeFittedModelParametersAndRanges(ax, modelParams);
 
         % Method to visualize the fitted model
-        displayFittedModel(figNo, modelConstants, theVisualRFmap, theVisualSTFdata, ...
-    targetParams);
+        displayFittedModel(figNo, modelConstants, theVisualRFmap, theVisualSTFdata, targetParams);
 
         % Method to visualize the fitting progress
         rmseSequence = displayFittingProgress(hFigProgress, videoOBJ, rmseSequence, ...

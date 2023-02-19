@@ -1,5 +1,5 @@
 function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
-                centerConeMajorityType, initialRetinalConePoolingParamsStruct, progressFigureName)
+                centerConeType, initialRetinalConePoolingParamsStruct, progressFigureName)
 
     displayFittedModel = true;
     displayFittingProgress = true;
@@ -8,37 +8,46 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     indicesOfConesPooledByTheRFcenter = obj.targetVisualRFDoGparams.indicesOfConesPooledByTheRFcenter;
     weightsOfConesPooledByTheRFcenter = obj.targetVisualRFDoGparams.weightsOfConesPooledByTheRFcenter;
 
-    switch (centerConeMajorityType)
-        case cMosaic.LCONE_ID
-            theRFCenterConeMajorityPSF  = obj.spectrallyWeightedPSFData.LconeWeighted;
+    spatialPositionDegs = mean(obj.coneMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
 
-            spatialPositionDegs = mean(obj.coneMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
-            if (isempty(progressFigureName))
-                figureName = sprintf('RF center with %d L-cone(s) at (%2.2f,%2.2f) degs', ...
-                    numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
-            else
-                figureName = sprintf('%s (L)', progressFigureName);
-            end
-            figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
-            
-            
-        case cMosaic.MCONE_ID
-            theRFCenterConeMajorityPSF  = obj.spectrallyWeightedPSFData.MconeWeighted;
-
-            spatialPositionDegs = mean(obj.coneMosaic.coneRFpositionsDegs(indicesOfConesPooledByTheRFcenter,:),1);
-            if (isempty(progressFigureName))
-                figureName = sprintf('RF center with %d M-cone(s) at (%2.2f,%2.2f) degs', ...
-                    numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
-            else
-                figureName = sprintf('%s (M)', progressFigureName);
-            end
-
-            figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
-     
-
-        otherwise
-            error('Not L or M cone: %d', centerConeType);
+    if (strcmp(obj.stfComputeMethod, RTVF.directSTFcomputeMethod))
+        theRFCenterConeMajorityPSF = [];
+        figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
+        if (isempty(progressFigureName))
+            figureName = sprintf('RF center with %d cone(s) at (%2.2f,%2.2f) degs', ...
+                        numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+        else
+             figureName = progressFigureName;
+        end
+    else
+        switch (centerConeType)
+            case cMosaic.LCONE_ID
+                theRFCenterConeMajorityPSF = obj.spectrallyWeightedPSFData.LconeWeighted;
+    
+                if (isempty(progressFigureName))
+                    figureName = sprintf('RF center with %d L-cone(s) at (%2.2f,%2.2f) degs', ...
+                        numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+                else
+                    figureName = sprintf('%s (L)', progressFigureName);
+                end
+                figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+1;
+                
+            case cMosaic.MCONE_ID
+                theRFCenterConeMajorityPSF = obj.spectrallyWeightedPSFData.MconeWeighted;
+    
+                if (isempty(progressFigureName))
+                    figureName = sprintf('RF center with %d M-cone(s) at (%2.2f,%2.2f) degs', ...
+                        numel(indicesOfConesPooledByTheRFcenter), spatialPositionDegs(1), spatialPositionDegs(2));
+                else
+                    figureName = sprintf('%s (M)', progressFigureName);
+                end
+                figNo = 1000 + numel(weightsOfConesPooledByTheRFcenter)*10+2;
+    
+            otherwise
+                error('Not L or M cone: %d', centerConeType);
+        end
     end
+
 
     % Spatial support
     spatialSupportDegs = [...
@@ -64,11 +73,10 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     modelConstants.surroundConnectableConeTypes = obj.targetVisualRFDoGparams.surroundConnectableConeTypes;
     modelConstants.centerConnectableConeTypes = obj.targetVisualRFDoGparams.centerConnectableConeTypes;
 
-    
-   if (strcmp(obj.targetVisualRFDoGparams.retinalConePoolingModel, 'arbitrary center cone weights, double exponential surround from H1 cell with index 1'))
+    if (strcmp(obj.targetVisualRFDoGparams.retinalConePoolingModel, 'arbitrary center cone weights, double exponential surround from H1 cell with index 1'))
        fprintf(2,'OLD H1 MODEL NAMING USED. Translating')
          obj.targetVisualRFDoGparams.retinalConePoolingModel = 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights';
-   end
+    end
     
     switch (obj.targetVisualRFDoGparams.retinalConePoolingModel)
         case 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights'
@@ -152,7 +160,8 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
 
 
     % Compute initial visual RF map
-    [theInitialRMSE, theInitiaVisualRFmap , theInitialSTFdata] = theObjectiveFunction(retinalConePoolingParams.initialValues);
+    [theInitialRMSE, theInitiaVisualRFmap , theInitialSTFdata] = ...
+        theObjectiveFunction(retinalConePoolingParams.initialValues);
 
 
     if (displayFittedModel)
@@ -197,11 +206,10 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     if (obj.multiStartsNumRetinalPooling == 1)
         retinalConePoolingParams.finalValues = fmincon(problem);
     else
-        obj.useParallelMultiStart
         ms = MultiStart(...
               'Display', 'final', ...
               'StartPointsToRun','bounds', ...  % run only initial points that are feasible with respect to bounds
-              'UseParallel', obj.useParallelMultiStart);
+              'UseParallel', false);
     
         % Run the multi-start solver
         [retinalConePoolingParams.finalValues, ~, ~, ~, allMins] = run(ms, problem, obj.multiStartsNumRetinalPooling); 

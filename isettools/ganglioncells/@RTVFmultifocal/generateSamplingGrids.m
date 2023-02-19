@@ -86,8 +86,7 @@ function generateSamplingGrids(obj, minSpatialSamplingDegs, visualizeSpatialSamp
             cat(1, obj.visualSTFSurroundToCenterIntegratedSensitivityRatioGrid, scIntSensitivity);
 
          % Save the target RGC index for this RTVF
-         obj.targetRGCindex = cat(1, obj.targetRGCindex,theTargetRGCindex);
-
+         obj.targetRGCindex = cat(1, obj.targetRGCindex, theTargetRGCindex);
     end % for iMultifocalRTVFobjIndex 
 
     if (visualizeSpatialSamplingGrids)
