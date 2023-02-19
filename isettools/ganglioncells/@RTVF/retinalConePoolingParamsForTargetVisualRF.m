@@ -197,10 +197,11 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     if (obj.multiStartsNumRetinalPooling == 1)
         retinalConePoolingParams.finalValues = fmincon(problem);
     else
+        obj.useParallelMultiStart
         ms = MultiStart(...
               'Display', 'final', ...
               'StartPointsToRun','bounds', ...  % run only initial points that are feasible with respect to bounds
-              'UseParallel', false);
+              'UseParallel', obj.useParallelMultiStart);
     
         % Run the multi-start solver
         [retinalConePoolingParams.finalValues, ~, ~, ~, allMins] = run(ms, problem, obj.multiStartsNumRetinalPooling); 

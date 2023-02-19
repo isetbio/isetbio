@@ -5,14 +5,16 @@ function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, vara
     p.addParameter('RTVobjIndicesToBeComputed', 'all',  @(x)(((ischar(x))&&(strcmp(x, 'all'))) || isnumeric(x)));
     p.addParameter('computeLconeCenterComputeStruct', true, @islogical);
     p.addParameter('computeMconeCenterComputeStruct', true, @islogical);
+    p.addParameter('useParallelMultiStart', true, @islogical);
     p.addParameter('multiStartsNumRetinalPooling', 1, @isscalar);
+
     p.parse(varargin{:});
 
     RTVobjIndicesToBeComputed = p.Results.RTVobjIndicesToBeComputed;
     computeLconeCenterComputeStruct = p.Results.computeLconeCenterComputeStruct;
     computeMconeCenterComputeStruct = p.Results.computeMconeCenterComputeStruct;
     multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
-    
+    useParallelMultiStart = p.Results.useParallelMultiStart;
 
     if (ischar(RTVobjIndicesToBeComputed))&&(strcmp(RTVobjIndicesToBeComputed, 'all'))
         midgetRGCMosaicInspector.say('Generating all RTVF objects');
@@ -41,7 +43,8 @@ function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, vara
     theMultifocalRTVFOBJ = RTVFmultifocal(theMidgetRGCmosaic, ...
         mosaicCenterParams, opticsParams, rfModelParams, ...
         samplingScheme, computeMethod, ...
-        'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling);
+        'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling, ...
+        'useParallelMultiStart', useParallelMultiStart);
 
     fprintf('\nVisualizing the mosaic. Please wait ...')
     % Visualize the mosaic

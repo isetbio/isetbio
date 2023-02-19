@@ -31,6 +31,7 @@ classdef RTVFmultifocal < handle
 
         % Multistarts num
         multiStartsNumRetinalPooling;
+        useParallelMultiStart;
     end % Read-only
 
 
@@ -69,8 +70,10 @@ classdef RTVFmultifocal < handle
             p = inputParser;
             p.addParameter('multiStartsNumRetinalPooling', [], @(x)(isempty(x)||isscalar(x)));
             p.addParameter('minSpatialSamplingDegs', 0.25, @isnumeric);
+            p.addParameter('useParallelMultiStart', false, @islogical);
             p.parse(varargin{:});
             obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
+            obj.useParallelMultiStart = p.Results.useParallelMultiStart;
             
             % Generate the nominal spatial sampling grid
             obj.generateNominalSpatialSamplingGrid(...

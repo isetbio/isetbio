@@ -58,6 +58,8 @@ classdef RTVF < handle
 
        % Boolean indicating whether the RTVF file was updates
        RTVFfileWasUpdated;
+
+       useParallelMultiStart;
     end
 
     % Constant properties
@@ -126,11 +128,14 @@ classdef RTVF < handle
             p.addParameter('initialRetinalConePoolingParamsStruct', [], @(x)(isempty(x)||isstruct(x)));
             p.addParameter('multiStartsNumRetinalPooling', 1, @isscalar);
             p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
+            p.addParameter('useParallelMultiStart', false, @islogical);
+
             p.parse(varargin{:});
 
             % Handle optional inputs
             obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
             obj.multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
+            obj.useParallelMultiStart = p.Results.useParallelMultiStart;
             
             visualizeSpectrallyWeightedPSFs = p.Results.visualizeSpectrallyWeightedPSFs;
             initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
