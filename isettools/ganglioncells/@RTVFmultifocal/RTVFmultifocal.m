@@ -23,8 +23,9 @@ classdef RTVFmultifocal < handle
         visualSTFSurroundToCenterRcRatioGrid;
         visualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
 
-        % The target RGC index for each RTVFobj
+        % The target RGC indices for each RTVFobj
         targetRGCindex;
+        targetRGCindexOfDifferentMajorityConeType;
 
         % The list with all computed RTVF objects
         RTVFTobjList;
@@ -103,6 +104,10 @@ classdef RTVFmultifocal < handle
 
         % Method to plot various spatial sampling grids
         plotSpatialSamplingGrid(obj, ax, spatialSamplingGrid, plotTitle);
+
+        % Method to determine the majority center cone type for an RGC
+        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = centerConeTypeWeights(obj, theRGCindex);
+
     end % Private methods
 
 

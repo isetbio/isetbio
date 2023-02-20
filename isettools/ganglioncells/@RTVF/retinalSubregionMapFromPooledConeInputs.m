@@ -37,6 +37,11 @@ function retinalSubregionConeMap = retinalSubregionMapFromPooledConeInputs(obj, 
     retinalSubregionConeMap = X * 0;
     conesNotIncluded = 0;
 
+    apertureScalingBasedOnQuantalEfficacy  = false;
+    if (strcmp(obj.stfComputeMethod, RTVF.modeledSTFcomputeMethod))
+        apertureScalingBasedOnQuantalEfficacy = true;
+    end
+
     for iCone = 1:conesNumPooled
         % Extract aperture map insertion coordinates
         cc = insertionCoords{iCone}(:,1);
@@ -49,7 +54,11 @@ function retinalSubregionConeMap = retinalSubregionMapFromPooledConeInputs(obj, 
         % The effective cone aperture is the cone apertur blur kernel (at
         % the cone's blur zone) multiplied by the aperture area of the individual cone
         % and by the os-length attenuation factor for the individual cone
-        effectiveConeApertureRF = obj.coneApertureBlurKernel * coneApertureAreas(iCone) * osLengthAttenuationFactors(iCone);
+        if (apertureScalingBasedOnQuantalEfficacy)
+            effectiveConeApertureRF = obj.coneApertureBlurKernel * coneApertureAreas(iCone) * osLengthAttenuationFactors(iCone);
+        else
+            effectiveConeApertureRF = obj.coneApertureBlurKernel;
+        end
 
         % Accumulate the subregion cone map
         retinalSubregionConeMap(rr,cc) = retinalSubregionConeMap(rr,cc) + coneWeights(iCone) * effectiveConeApertureRF;

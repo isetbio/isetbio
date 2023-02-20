@@ -20,6 +20,7 @@ function generateSamplingGrids(obj, minSpatialSamplingDegs, visualizeSpatialSamp
     obj.visualSTFSurroundToCenterRcRatioGrid = [];
     obj.visualSTFSurroundToCenterIntegratedSensitivityRatioGrid = [];
     obj.targetRGCindex = [];
+    obj.targetRGCindexOfDifferentMajorityConeType = [];
 
     for iMultifocalRTVFobjIndex = 1:maxmultifocalRTVFobjectsNum
 
@@ -34,8 +35,14 @@ function generateSamplingGrids(obj, minSpatialSamplingDegs, visualizeSpatialSamp
 
         % Get indices of center cones for the RGC that is closest to the opticalPositionDegs
         indicesOfRGCsWithThisManyCenterCones = find(allConesNumPooledByTheRFcenters == conesNumPooled);
-        [~,idx] = min(sum((bsxfun(@minus, obj.theRGCMosaic.rgcRFpositionsDegs(indicesOfRGCsWithThisManyCenterCones,:), opticalPositionDegs)).^2,2));
-        theTargetRGCindex = indicesOfRGCsWithThisManyCenterCones(idx);
+        distances = sqrt(sum((bsxfun(@minus, obj.theRGCMosaic.rgcRFpositionsDegs(indicesOfRGCsWithThisManyCenterCones,:), opticalPositionDegs)).^2,2));
+        [~,idx] = sort(distances, 'ascend');
+        indicesOfRGCsWithThisManyCenterCones = indicesOfRGCsWithThisManyCenterCones(idx);
+        theTargetRGCindex = indicesOfRGCsWithThisManyCenterCones(1);
+
+        % Get nearby RGC index with different center majority cone type
+        theTargetRGCindexOfDifferentMajorityConeType = ...
+            nearbyRGCindexOfDifferentMajorityCenterConeType(obj, theTargetRGCindex, indicesOfRGCsWithThisManyCenterCones);
 
         % Update the opticalPositionDegs for this RTVFobj to reflect the actual position of theTargetRGCindex
         opticalPositionDegs = obj.theRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,:);
@@ -87,6 +94,9 @@ function generateSamplingGrids(obj, minSpatialSamplingDegs, visualizeSpatialSamp
 
          % Save the target RGC index for this RTVF
          obj.targetRGCindex = cat(1, obj.targetRGCindex, theTargetRGCindex);
+         obj.targetRGCindexOfDifferentMajorityConeType = cat(1, obj.targetRGCindexOfDifferentMajorityConeType, theTargetRGCindexOfDifferentMajorityConeType);
+   
+    
     end % for iMultifocalRTVFobjIndex 
 
     if (visualizeSpatialSamplingGrids)
@@ -105,4 +115,27 @@ function generateSamplingGrids(obj, minSpatialSamplingDegs, visualizeSpatialSamp
         end
 
     end
+end
+
+
+function theNearbyTargetRGCindexOfDifferentMajorityConeType = ...
+            nearbyRGCindexOfDifferentMajorityCenterConeType(obj, theTargetRGCindex, indicesOfRGCsWithThisManyCenterCones)
+
+    [~, ~, theMajorityConeType] = obj.centerConeTypeWeights(theTargetRGCindex);
+    notFound = true;
+    iRGC = 0;
+    while (notFound) && (iRGC < numel(indicesOfRGCsWithThisManyCenterCones))
+        iRGC = iRGC + 1;
+        theNearbyTargetRGCindex = indicesOfRGCsWithThisManyCenterCones(iRGC);
+        [~, ~, theNearbyMajorityConeType] = obj.centerConeTypeWeights(theNearbyTargetRGCindex);
+        if (theNearbyMajorityConeType ~= theMajorityConeType)
+            notFound = false;
+            theNearbyTargetRGCindexOfDifferentMajorityConeType = theNearbyTargetRGCindex;
+        end
+    end
+    if (notFound)
+        theNearbyTargetRGCindexOfDifferentMajorityConeType = theTargetRGCindex;
+    end
+
+
 end

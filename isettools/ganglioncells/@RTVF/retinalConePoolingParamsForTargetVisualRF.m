@@ -239,6 +239,7 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
     theRFcomputeStruct = struct();
     theRFcomputeStruct.modelConstants = modelConstants;
     theRFcomputeStruct.retinalConePoolingParams = retinalConePoolingParams;
+    theRFcomputeStruct.theFinalSTFdata = theFinalSTFdata;
     theRFcomputeStruct.rmseSequence = rmseSequence;
 
     %  ------- Nested objective function --------

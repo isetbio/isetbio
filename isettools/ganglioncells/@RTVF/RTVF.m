@@ -263,13 +263,65 @@ classdef RTVF < handle
                         progressFigureName);
                 end
             else
-                % Just compute one and assign it to both L and M
+                % The first majority cone type
+                switch (obj.targetVisualRFDoGparams.targetRGCmajorityConeType)
+                    case cMosaic.LCONE_ID
+                        initialRetinalConePoolingParams = initialLconeRetinalConePoolingParams;
+                        fprintf(2,'Computing L-cone compute struct\n');
+                    case cMosaic.MCONE_ID
+                        initialRetinalConePoolingParams= initialMconeRetinalConePoolingParams;
+                        fprintf(2,'Computing M-cone compute struct\n');
+                    otherwise
+                        initialRetinalConePoolingParams = initialLconeRetinalConePoolingParams;
+                end
+
                 theComputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
                         [], ...
-                        initialLconeRetinalConePoolingParams, ...
+                        initialRetinalConePoolingParams, ...
                         progressFigureName);
-                obj.LconeRFcomputeStruct = theComputeStruct;
-                obj.MconeRFcomputeStruct = theComputeStruct;
+
+                switch (obj.targetVisualRFDoGparams.targetRGCmajorityConeType)
+                    case cMosaic.LCONE_ID
+                        obj.LconeRFcomputeStruct = theComputeStruct;
+                    case cMosaic.MCONE_ID
+                        obj.MconeRFcomputeStruct = theComputeStruct;
+                    otherwise
+                        obj.LconeRFcomputeStruct = theComputeStruct;
+                        obj.MconeRFcomputeStruct = theComputeStruct;
+                end
+
+                
+                % Now the other majory cone type
+                obj.targetVisualRFDoGparams.indicesOfConesPooledByTheRFcenter = ...
+                    obj.targetVisualRFDoGparams.indicesOfConesPooledByTheRFcenterOfDifferentMajorityConeType;
+                obj.targetVisualRFDoGparams.weightsOfConesPooledByTheRFcenter = ...
+                    obj.targetVisualRFDoGparams.weightsOfConesPooledByTheRFcenterOfDifferentMajorityConeType;
+
+                switch (obj.theTargetVisualRFDoGparams.targetRGCdifferentMajorityConeType)
+                    case cMosaic.LCONE_ID
+                        initialRetinalConePoolingParams = initialLconeRetinalConePoolingParams;
+                        fprintf(2,'Computing L-cone compute struct\n');
+                    case cMosaic.MCONE_ID
+                        initialRetinalConePoolingParams = initialMconeRetinalConePoolingParams;
+                        fprintf(2,'Computing M-cone compute struct\n');
+                    otherwise
+                        initialRetinalConePoolingParams = initialLconeRetinalConePoolingParams;
+                end
+
+                theComputeStruct = obj.retinalConePoolingParamsForTargetVisualRF(...
+                        [], ...
+                        initialRetinalConePoolingParams, ...
+                        progressFigureName);
+
+                switch (obj.theTargetVisualRFDoGparams.targetRGCdifferentMajorityConeType)
+                    case cMosaic.LCONE_ID
+                        obj.LconeRFcomputeStruct = theComputeStruct;
+                    case cMosaic.MCONE_ID
+                        obj.MconeRFcomputeStruct = theComputeStruct;
+                    otherwise
+                        obj.LconeRFcomputeStruct = theComputeStruct;
+                        obj.MconeRFcomputeStruct = theComputeStruct;
+                end
             end
 
             % Remove the stfComputeMethodResources. No longer needed after the

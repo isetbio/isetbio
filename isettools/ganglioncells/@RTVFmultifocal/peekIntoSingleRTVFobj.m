@@ -7,7 +7,6 @@ function peekIntoSingleRTVFobj(theRTVFTobj, iRTVobjIndex, ...
         iRTVobjIndexDoesNotCorrespondToFullList = true;
     end
 
-
     peekIntoConeSpecificRTVFobj(...
         theRTVFTobj, ...
         cMosaic.LCONE_ID, ...
@@ -49,15 +48,21 @@ function peekIntoConeSpecificRTVFobj( ...
                 theConeSpecificRFcomputeStruct.modelConstants, ...
                 theConeSpecificRFcomputeStruct.retinalConePoolingParams.finalValues);
   
-    % Compute the STF data for the visual RF map
-    theSTFdata = theRTVFTobj.visualSTFfromCronerKaplanAnalysisOfVisualRF(theVisualRFmap, false);
-    
+    if (strcmp(theRTVFTobj.stfComputeMethod, RTVF.modeledSTFcomputeMethod))
+        % Compute the STF data from the visual RF map
+        theSTFdata = theRTVFTobj.visualSTFfromCronerKaplanAnalysisOfVisualRF(theVisualRFmap, false);
+        fittedRsRcRatio = theSTFdata.fittedDoGModelRsRcRatio
+        fittedSCintSensRatio = theSTFdata.fittedDoGModelSCIntSensRatio
+    else
+        theSTFdata = theConeSpecificRFcomputeStruct.theFinalSTFdata 
+        pause
+    end
+
     % Target and achieved ratios
     targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
     targetSCintSensRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterIntegratedSensitivityRatio;
 
-    fittedRsRcRatio = theSTFdata.fittedDoGModelRsRcRatio;
-    fittedSCintSensRatio = theSTFdata.fittedDoGModelSCIntSensRatio;
+    
     targetKsKcRatio = targetSCintSensRatio / (targetRsRcRatio^2);
     fittedKsKcRatio = fittedSCintSensRatio / (fittedRsRcRatio^2);
     
@@ -89,15 +94,34 @@ function peekIntoConeSpecificRTVFobj( ...
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 1000 800], 'Name', figureName, 'Color', [1 1 1]);
 
-    ax = subplot(2,2,1);
+    ax = subplot(2,3,1);
     xSupportDegs = theConeSpecificRFcomputeStruct.modelConstants.spatialSupportDegs(:,1);
     ySupportDegs = theConeSpecificRFcomputeStruct.modelConstants.spatialSupportDegs(:,2);
     imagesc(xSupportDegs, ySupportDegs, theRetinalRFcenterConeMap)
     
-    ax = subplot(2,2,2);
+    ax = subplot(2,3,2);
     imagesc(xSupportDegs, ySupportDegs, theRetinalRFsurroundConeMap)
  
-    ax = subplot(2,2,3);
+    
+    centerProfileX = sum(theRetinalRFcenterConeMap, 1);
+    centerProfileY = sum(theRetinalRFcenterConeMap, 2);
+    surroundProfileX = sum(theRetinalRFsurroundConeMap, 1);
+    surroundProfileY = sum(theRetinalRFsurroundConeMap, 2);
+    
+
+    maxAll = max([max(centerProfileX) max(centerProfileY ) max(surroundProfileX ) max(surroundProfileY)]);
+    maxSurround = max([max(surroundProfileX ) max(surroundProfileY)]);
+
+    ax = subplot(2,3,3);
+    plot(xSupportDegs, centerProfileX, 'r-', 'LineWidth', 1.5);
+    hold on
+    plot(xSupportDegs, -surroundProfileX, 'b-', 'LineWidth', 1.5);
+    hold on
+    plot(xSupportDegs, centerProfileX-surroundProfileX, 'k--', 'LineWidth', 1.0);
+    set(gca, 'YLim', [-maxSurround maxAll]);
+    
+
+    ax = subplot(2,3,4);
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.visualSTF, 'ks'); hold on
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.fittedDoGModelToVisualSTF.compositeSTF, 'k-');
     plot(theSTFdata.spatialFrequencySupport, theSTFdata.fittedDoGModelToVisualSTF.centerSTF, 'r-');
@@ -108,7 +132,7 @@ function peekIntoConeSpecificRTVFobj( ...
         fittedSCintSensRatio, targetSCintSensRatio, 100*((fittedSCintSensRatio/targetSCintSensRatio)-1)));
 
     % Plot correspondence between target and achieved ratios
-    ax = subplot(2,2,4);
+    ax = subplot(2,3,5);
     bar(ax, 1, 100*((fittedRsRcRatio/targetRsRcRatio)-1), 'BaseValue', 0.0);
     hold(ax, 'on');
     bar(ax, 2, 100*((fittedSCintSensRatio/targetSCintSensRatio)-1), 'BaseValue', 0.0);
@@ -121,6 +145,15 @@ function peekIntoConeSpecificRTVFobj( ...
         'YLim', [-100 100], 'FontSize', 16, 'YTick', -100:20:100);
     ylabel(ax,'(fitted-target)/target');
     
+    ax = subplot(2,3,6);
+    plot(ySupportDegs, centerProfileY, 'r-', 'LineWidth', 1.5);
+    hold on
+    plot(ySupportDegs, -surroundProfileY, 'b-', 'LineWidth', 1.5);
+    plot(ySupportDegs, centerProfileY-surroundProfileY, 'k--', 'LineWidth', 1.0);
+    hold on
+    set(gca, 'YLim', [-maxSurround maxAll]);
+
+    colormap(brewermap(1024, 'greys'));
     drawnow;
     
     if (iRTVobjIndexDoesNotCorrespondToFullList)
