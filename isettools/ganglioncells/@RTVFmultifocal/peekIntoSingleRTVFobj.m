@@ -50,7 +50,7 @@ function peekIntoConeSpecificRTVFobj( ...
                 theConeSpecificRFcomputeStruct.retinalConePoolingParams.finalValues);
   
     % Compute the STF data for the visual RF map
-    theSTFdata = theRTVFTobj.visualRFmapPropertiesFromCronerKaplanAnalysis(theVisualRFmap);
+    theSTFdata = theRTVFTobj.visualSTFfromCronerKaplanAnalysisOfVisualRF(theVisualRFmap, false);
     
     % Target and achieved ratios
     targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;

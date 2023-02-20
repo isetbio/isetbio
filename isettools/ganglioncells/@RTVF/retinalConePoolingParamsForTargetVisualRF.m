@@ -254,7 +254,7 @@ function theRFcomputeStruct = retinalConePoolingParamsForTargetVisualRF(obj, ...
                     modelConstants, currentRetinalPoolingParamValues);
   
             % Then compute the visual STF from the visualRF map
-            theCurrentSTFdata = obj.visualSTFfromCronerKaplanAnalysisOfVisualRF(theCurrentVisualRFmap);
+            theCurrentSTFdata = obj.visualSTFfromCronerKaplanAnalysisOfVisualRF(theCurrentVisualRFmap, false);
         else
             % Compute the indices and retinal weights of cones pooled by the center and the
             % surround mechanism

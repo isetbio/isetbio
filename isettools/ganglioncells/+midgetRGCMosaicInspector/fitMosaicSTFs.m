@@ -9,7 +9,6 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCs
     % Load the frozen midget RGC mosaic
     load(frozenMosaicFileName, 'theMidgetRGCmosaic');
 
-
     % Ask the user to specify the optics position for which responses were saved
     opticsPositionDegs = [];
     while (numel(opticsPositionDegs) ~= 2)
@@ -53,6 +52,7 @@ function fitMosaicSTFs(mosaicCenterParams, rfModelParams, opticsParams,  maxRGCs
     theMeridianFits = cell(1, numel(theMeridianAngles));
     for iMeridianAngle = 1:numel(theMeridianAngles)
 
+       fprintf('Fitting RGCs along the %d deg meridian\n', theMeridianAngles(iMeridianAngle));
        rgcIndicesAlongThisMeridian = RGCindicesToFit{iMeridianAngle};
 
        fitsAlongThisMeridian = struct();
@@ -107,7 +107,7 @@ function [d, fittedSTFs] = fitSelectSTFs(rgcIndicesToAnalyze, ...
     parfor iRGC = 1:numel(rgcIndicesToAnalyze)
         % Target RGC
         theRGCindex = rgcIndicesToAnalyze(iRGC);
-        fprintf('Fitting RGC %d of %d\n', iRGC, numel(rgcIndicesToAnalyze));
+        %fprintf('Fitting RGC %d of %d\n', iRGC, numel(rgcIndicesToAnalyze));
 
         % Do the fitting
         [fittedSTFs{iRGC}, ...
@@ -153,11 +153,13 @@ function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, ...
         % Fit the DoG model to the measured STF
         multiStartsNum = 128;
         [RcDegsEstimate, conesNumPooledByTheRFcenter] = retinalRFcenterRcDegsInitialEstimate(theMidgetRGCmosaic, theRGCindex);
-
+         
+        
         [theFittedDoGmodelParams, theDoGmodelFitOfTheMeasuredSTF] = ...
-            RetinaToVisualFieldTransformer.fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, ...
+            RTVF.fitDoGmodelToMeasuredSTF(spatialFrequenciesTested, ...
                     theMeasuredSTF, ...
                     RcDegsEstimate, ...
+                    [], ...
                     multiStartsNum);
 
 
@@ -176,6 +178,7 @@ function [fittedSTF, temporalEquivalentEccDegs, conesNumPooledByTheRFcenter, ...
         % The S/C int sens ratio
         achievedSCintSensRatio = achievedKsToKcRatio * (achievedRsToRcRatio)^2;
         
+
         fittedSTF = struct();
         fittedSTF.targetRGC = theRGCindex;
         fittedSTF.spatialFrequencySupport = spatialFrequenciesTested;

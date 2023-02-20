@@ -9,14 +9,13 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRTVFobjList , ...
     obj.theVisualSTFSurroundToCenterRcRatioGrid = theVisualSTFSurroundToCenterRcRatioGrid;
     obj.theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid = theVisualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
 
-
     % Reset the center and surround cone pooling (sparse) matrices
     conesNum = size(obj.rgcRFcenterConeConnectivityMatrix,1);
     rgcsNum = size(obj.rgcRFcenterConeConnectivityMatrix,2);
     obj.rgcRFcenterConePoolingMatrix = sparse(conesNum, rgcsNum);
     obj.rgcRFsurroundConePoolingMatrix = sparse(conesNum, rgcsNum);
 
-    compensateForVariationsInConeEfficiency = false;
+    compensateForVariationsInConeEfficiency = true;
     if (compensateForVariationsInConeEfficiency)
         totalCenterStrengthForLconeCenterModelRF = zeros(1, numel(obj.theRTVFobjList ));
         totalSurroundStrengthForLconeCenterModelRF = zeros(1, numel(obj.theRTVFobjList ));
@@ -27,20 +26,33 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRTVFobjList , ...
             theRTVFTobj = obj.theRTVFobjList {iObj};
     
             % Center and surround strengths for the L-cone center model
-            idx = find(theRTVFTobj.LconeRFcomputeStruct.pooledConeIndicesAndWeights.centerConeWeights > 0);
-            weights = theRTVFTobj.LconeRFcomputeStruct.pooledConeIndicesAndWeights.centerConeWeights(idx);
+            theRetinalConePoolingWeightsComputeFunction = theRTVFTobj.LconeRFcomputeStruct.modelConstants.weightsComputeFunctionHandle;
+    
+            pooledConeIndicesAndWeights = theRetinalConePoolingWeightsComputeFunction(...
+                theRTVFTobj.LconeRFcomputeStruct.modelConstants, theRTVFTobj.LconeRFcomputeStruct.retinalConePoolingParams.finalValues);
+            
+            idx = find(pooledConeIndicesAndWeights.centerConeWeights > 0);
+            weights = pooledConeIndicesAndWeights.centerConeWeights(idx);
             totalCenterStrengthForLconeCenterModelRF(iObj) = sum(weights(:));
-            idx = find(theRTVFTobj.LconeRFcomputeStruct.pooledConeIndicesAndWeights.surroundConeWeights > 0);
-            weights = theRTVFTobj.LconeRFcomputeStruct.pooledConeIndicesAndWeights.surroundConeWeights(idx);
+
+            idx = find(pooledConeIndicesAndWeights.surroundConeWeights > 0);
+            weights = pooledConeIndicesAndWeights.surroundConeWeights(idx);
             totalSurroundStrengthForLconeCenterModelRF(iObj) = sum(weights(:));
     
              % Center and surround strengths for the M-cone center model
-            idx = find(theRTVFTobj.MconeRFcomputeStruct.pooledConeIndicesAndWeights.centerConeWeights > 0);
-            weights = theRTVFTobj.MconeRFcomputeStruct.pooledConeIndicesAndWeights.centerConeWeights(idx);
+            theRetinalConePoolingWeightsComputeFunction = theRTVFTobj.MconeRFcomputeStruct.modelConstants.weightsComputeFunctionHandle;
+    
+            pooledConeIndicesAndWeights = theRetinalConePoolingWeightsComputeFunction(...
+                theRTVFTobj.MconeRFcomputeStruct.modelConstants, theRTVFTobj.MconeRFcomputeStruct.retinalConePoolingParams.finalValues);
+
+            idx = find(pooledConeIndicesAndWeights.centerConeWeights > 0);
+            weights = pooledConeIndicesAndWeights.centerConeWeights(idx);
             totalCenterStrengthForMconeCenterModelRF(iObj) = sum(weights(:));
-            idx = find(theRTVFTobj.MconeRFcomputeStruct.pooledConeIndicesAndWeights.surroundConeWeights > 0);
-            weights = theRTVFTobj.MconeRFcomputeStruct.pooledConeIndicesAndWeights.surroundConeWeights(idx);
+
+            idx = find(pooledConeIndicesAndWeights.surroundConeWeights > 0);
+            weights = pooledConeIndicesAndWeights.surroundConeWeights(idx);
             totalSurroundStrengthForMconeCenterModelRF(iObj) = sum(weights(:));
+           
         end
     else
         totalCenterStrengthForLconeCenterModelRF = nan(1, numel(obj.theRTVFobjList ));
@@ -54,6 +66,7 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRTVFobjList , ...
     % Sort RGCs with respect to their distance from the mRGC mosaic center
     distancesToEccGrid = sum((bsxfun(@minus, obj.rgcRFpositionsDegs, mean(obj.rgcRFpositionsDegs,1))).^2,2);
     [~,sortedRGCindices] = sort(distancesToEccGrid, 'ascend');
+
 
     centerConeIndicesAllRGCs = cell(rgcsNum,1);
     centerConeWeightsAllRGCs = cell(rgcsNum,1);
@@ -127,7 +140,6 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRTVFobjList , ...
             end
         end
 
-
         % Initialize surround cone indices and weights
         surroundConeIndicesForThisRGC = [];
         surroundConeWeightsForThisRGC = [];
@@ -168,6 +180,7 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRTVFobjList , ...
         surroundRGCindicesAllRGCs{iSortedRGCindex} = repmat(iRGC, [numel(surroundConeWeightsForThisRGC) 1]);
 
 
+        % OLD WAY, not for use with parfor
 %         obj.rgcRFcenterConePoolingMatrix(pooledConeIndicesAndWeightsForThisRGC.centerConeIndices,iRGC) = ...
 %             pooledConeIndicesAndWeightsForThisRGC.centerConeWeights;
 %         obj.rgcRFsurroundConePoolingMatrix(pooledConeIndicesAndWeightsForThisRGC.surroundConeIndices,iRGC) = ...
@@ -177,19 +190,33 @@ function generateCenterSurroundSpatialPoolingRFs(obj, theRTVFobjList , ...
             error('Max center weight must be 1. It is %2.4f', max(pooledConeIndicesAndWeightsForThisRGC.centerConeWeights(:)));
         end
 
+        if (abs((max(pooledConeIndicesAndWeightsForThisRGC.centerConeWeights(:)))) < 0.001)
+            error('Max center weight cannot be 0. It is %2.4f', max(pooledConeIndicesAndWeightsForThisRGC.centerConeWeights(:)));
+        end
+
     end % parfor iSortedRGCindex 
 
+    
     centerConeIndices = vertcat(centerConeIndicesAllRGCs{:});
     centerConeWeights = vertcat(centerConeWeightsAllRGCs{:});
     rgcIndices = vertcat(centerRGCindicesAllRGCs{:});
     obj.rgcRFcenterConePoolingMatrix = sparse(centerConeIndices, rgcIndices, centerConeWeights);
-
 
     surroundConeIndices = vertcat(surroundConeIndicesAllRGCs{:});
     surroundConeWeights = vertcat(surroundConeWeightsAllRGCs{:});
     rgcIndices = vertcat(surroundRGCindicesAllRGCs{:});
     obj.rgcRFsurroundConePoolingMatrix = sparse(surroundConeIndices, rgcIndices, surroundConeWeights);
 
+    % Sanity checks
+    totalCenterWeights = sum(obj.rgcRFcenterConePoolingMatrix,1);
+    connectedRGCindicesCenter = numel(find(totalCenterWeights > 0.0001));
+    assert(connectedRGCindicesCenter == size(obj.rgcRFcenterConePoolingMatrix,2), ...
+        'Not all centers are connected');
+    
+    totalSurroundWeights = sum(obj.rgcRFsurroundConePoolingMatrix,1);
+    connectedRGCindicesSurround = numel(find(totalSurroundWeights > 0.000001));
+    assert(connectedRGCindicesSurround == size(obj.rgcRFcenterConePoolingMatrix,2), ...
+        'Not all surround are connected');
 end
 
 function [surroundConeIndices, surroundConeWeights] = accumulateSurroundWeights(...
@@ -271,6 +298,7 @@ function pooledConeIndicesAndWeights = computePooledConeIndicesAndWeightsFromRTV
     if (compensateForVariationsInConeEfficiency)
         % Adjust for total strength of the center
         totalCenterStrengthForThisRF = sum(pooledConeIndicesAndWeights.centerConeWeights);
+
         centerStrengthCorrectionFactor = totalCenterStrengthForModelRF/totalCenterStrengthForThisRF;
         pooledConeIndicesAndWeights.centerConeWeights = pooledConeIndicesAndWeights.centerConeWeights * centerStrengthCorrectionFactor;
 

@@ -1,9 +1,22 @@
-function theSTFdata = visualSTFfromCronerKaplanAnalysisOfVisualRF(obj, theVisualRF)
+function theSTFdata = visualSTFfromCronerKaplanAnalysisOfVisualRF(obj, ...
+    theVisualRF, recomputeBestHorizontalResolutionRFmap)
 
-    % Rotate theVisualRFmap according to the rotation
-    % that maximizes horizontal resolution of the targetVisualRFmap
-    theRotatedVisualRF = RTVF.bestHorizontalResolutionRFmap(...
-        theVisualRF, obj.bestHorizontalResolutionRotationDegs);
+    if (recomputeBestHorizontalResolutionRFmap)
+
+        % Rotate theVisualRFmap according to the rotation
+        % that maximizes horizontal resolution of the targetVisualRFmap
+        debugRadonTransform = false;
+        [theRotatedVisualRF, rotationDegs] = ...
+            RTVF.bestHorizontalResolutionRFmap(theVisualRF, [], debugRadonTransform);
+
+        fprintf("RGC rotation: %2.1f, model rotation: %2.1f deg", ...
+            rotationDegs, obj.bestHorizontalResolutionRotationDegs);
+    else
+        % Rotate theVisualRFmap according to the rotation
+        % that maximizes horizontal resolution of the targetVisualRFmap
+        theRotatedVisualRF = RTVF.bestHorizontalResolutionRFmap(...
+            theVisualRF, obj.bestHorizontalResolutionRotationDegs);
+    end
 
     % Integrate along Y to generate the X-axis line weighting function
     spatialSupportDegsY = obj.spectrallyWeightedPSFData.spatialSupportForRFmapYdegs;
@@ -14,8 +27,7 @@ function theSTFdata = visualSTFfromCronerKaplanAnalysisOfVisualRF(obj, theVisual
     spatialSupportDegsX = obj.spectrallyWeightedPSFData.spatialSupportForRFmapXdegs;
     [theSpatialFrequencySupport, theVisualSTF] = ...
         RTVF.spatialTransferFunction(spatialSupportDegsX, theLineWeightingFunctionX);
-
-
+    
     % Fit the visual STF with a DoG model
     [theFittedDoGModelParams, theFittedDoGModelToTheVisualSTF] = RTVF.fitDoGmodelToMeasuredSTF(...
                       theSpatialFrequencySupport, ...

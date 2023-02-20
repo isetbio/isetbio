@@ -40,6 +40,7 @@ classdef RTVF < handle
 
        % How many multistarts to use for the retinal cone pooling params
        multiStartsNumRetinalPooling;
+       useParallelMultiStart;
 
        % Compute method
        stfComputeMethod;
@@ -125,12 +126,14 @@ classdef RTVF < handle
             p.addParameter('computeMconeCenterComputeStruct', true, @islogical);
             p.addParameter('initialRetinalConePoolingParamsStruct', [], @(x)(isempty(x)||isstruct(x)));
             p.addParameter('multiStartsNumRetinalPooling', 1, @isscalar);
+            p.addParameter('useParallelMultiStart', false, @islogical);
             p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
             p.parse(varargin{:});
 
             % Handle optional inputs
             obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
             obj.multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
+            obj.useParallelMultiStart = p.Results.useParallelMultiStart;
             
             visualizeSpectrallyWeightedPSFs = p.Results.visualizeSpectrallyWeightedPSFs;
             initialRetinalConePoolingParamsStruct = p.Results.initialRetinalConePoolingParamsStruct;
@@ -269,7 +272,9 @@ classdef RTVF < handle
                 obj.MconeRFcomputeStruct = theComputeStruct;
             end
 
-
+            % Remove the stfComputeMethodResources. No longer needed after the
+            % computation is done
+            obj.removeResources();
 
             % Save the computed object
             if (isempty(computedRTVFobjectExportDirectory))
@@ -281,16 +286,27 @@ classdef RTVF < handle
         end % 
         % Constructor
 
+        function removeResources(obj)
+            if (strcmp(obj.stfComputeMethod, RTVF.directSTFcomputeMethod))
+                obj.stfComputeMethodResources = [];
+            end
+        end
+
         % Method to compute the visual RF ensuing from the current retinal
         % cone pooling params
         [theVisualRF, theRetinalRFcenterConeMap, theRetinalRFsurroundConeMap, pooledConeIndicesAndWeights] = ...
             visualRFfromRetinalConePooling(obj, modelConstants, retinalPoolingParams)
 
         % Method to compute the visual STF from the visualRF simulating the Croner&Kaplan RF analysis
-        dataOut = visualSTFfromCronerKaplanAnalysisOfVisualRF(obj, theVisualRF);
+        dataOut = visualSTFfromCronerKaplanAnalysisOfVisualRF(obj, theVisualRF, recomputeBestHorizontalResolutionRFmap);
 
         % Method to compute the visual STF from cone mosaic STF responses simulating the Croner&Kaplan RF analysis
         dataOut = visualSTFfromCronerKaplanAnalysisOfconeMosaicSTFresponses(obj, pooledConeIndicesAndWeights);
+
+        % Method to freeze the obj (i.e., remove large chunks of data that
+        % are of no use after the cone weights to the surround have been
+        % computed)
+        freeze(obj);
     end % public methods
 
 
