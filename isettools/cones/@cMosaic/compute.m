@@ -30,6 +30,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     p = inputParser;
     p.addRequired('oi', @(x)((isa(x, 'struct')) || (isa(x, 'oiSequence')) || (isa(x, 'oiArbitrarySequence'))))
     p.addParameter('withFixationalEyeMovements', false, @islogical);
+    p.addParameter('padOIwithZeros', false, @islogical);
     p.addParameter('opticalImagePositionDegs', obj.opticalImagePositionDegs, @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
     p.addParameter('nTimePoints', [], @isscalar);
     p.addParameter('nTrials', [], @isscalar);
@@ -52,6 +53,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     nTimePoints = p.Results.nTimePoints;
     nTrials = p.Results.nTrials;
     noiseSeed = p.Results.seed;
+    padOIwithZeros = p.Results.padOIwithZeros;
     lowOpticalImageResolutionWarning = p.Results.lowOpticalImageResolutionWarning;
     verbosityLevel = p.Results.verbosityLevel;
     
@@ -204,7 +206,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
         end
 
         % Pad photons field as needed to accomodate eye movements
-        photons = padPhotons(photons, additionalPixels);
+        photons = padPhotons(photons, additionalPixels, padOIwithZeros);
     
         % Update oiSize
         oiSize = size(photons);
@@ -376,7 +378,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
 end
 
 
-function photons = padPhotons(photons, additionalPixels)
+function photons = padPhotons(photons, additionalPixels, padOIwithZeros)
     if ((additionalPixels.xLeft > 0) || (additionalPixels.xRight > 0) || ...
         (additionalPixels.yBottom > 0) || (additionalPixels.yTop > 0))
         originalPhotons = photons;
@@ -386,7 +388,11 @@ function photons = padPhotons(photons, additionalPixels)
         newYpixelsNum = originalYpixelsNum + additionalPixels.yBottom + additionalPixels.yTop;
         % mean-padded photons
         photons = zeros(newYpixelsNum, newXpixelsNum, size(photons,3));
-        meanPadValues = originalPhotons(1,1,:);
+        if (padOIwithZeros)
+            meanPadValues = 0*originalPhotons(1,1,:);
+        else
+            meanPadValues = originalPhotons(1,1,:);
+        end
         xOffset = additionalPixels.xLeft;
         yOffset = additionalPixels.yBottom;
         for k = 1:size(photons,3)
