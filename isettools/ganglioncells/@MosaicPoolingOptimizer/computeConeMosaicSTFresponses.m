@@ -1,4 +1,4 @@
-function computeConeMosaicSTFresponses(obj, gridNode, stimSizeDegs, ...
+function computeConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, ...
     responsesFileName, varargin)
 
     p = inputParser;
@@ -9,20 +9,33 @@ function computeConeMosaicSTFresponses(obj, gridNode, stimSizeDegs, ...
     useParfor = p.Results.useParfor;
     visualizeResponses = p.Results.visualizedResponses;
 
-    % Retrieve the RGC indices for the L-center and M-center RGC at the desired grid node
-    targetRGCindices = [...
-        obj.targetRGCindicesWithLconeMajorityCenter(gridNode) ...
-        obj.targetRGCindicesWithMconeMajorityCenter(gridNode)];
+    if (isempty( gridNodeIndex))
+        retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, []);
+        % Stimulus centered at the RGC mosaic mosaic
+        stimPositionDegs = obj.theRGCMosaic.eccentricityDegs;
+        % 10% larger than the cone mosaic
+        stimSizeDegs = 1.1*obj.theRGCMosaic.inputConeMosaic.sizeDegs;
+        fprintf('Computing STF responses at %2.1f,%2.1f degs over a region of  %2.1f,%2.1f degs with a retinal resolution of %2.2f arc min', ...
+            stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60);
 
-    % Determine position of node (mean of L-center and M-center RGC)
-    stimPositionDegs = mean(obj.theRGCMosaic.rgcRFpositionsDegs(targetRGCindices,:),1);
+    else
+        % Retrieve the RGC indices for the L-center and M-center RGC at the desired grid node
+        targetRGCindices = [...
+            obj.targetRGCindicesWithLconeMajorityCenter(gridNodeIndex) ...
+            obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndex)];
     
-    % Determine optimal stimulus resolution so that cone aperture blur will
-    % have an observable effect
-    retinalImageResolutionDegs = retinalResolutionFromConeApertureBlur(obj, targetRGCindices);
+        % Determine position of node (mean of L-center and M-center RGC)
+        stimPositionDegs = mean(obj.theRGCMosaic.rgcRFpositionsDegs(targetRGCindices,:),1);
+        
+        % Determine optimal stimulus resolution so that cone aperture blur will
+        % have an observable effect
+        retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, targetRGCindices);
+   
 
-    fprintf('Computing STF responses at %2.1f,%2.1f degs with a retinal resolution of %2.2f arc min', ...
-        stimPositionDegs(1), stimPositionDegs(2), retinalImageResolutionDegs*60);
+        fprintf('Computing STF responses at %2.1f,%2.1f degs over a region of  %2.1f,%2.1f degs with a retinal resolution of %2.2f arc min', ...
+            stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60);
+    end
+
 
     % Generate components for running the STF mapping experiment
     [stimParams, thePresentationDisplay] = obj.setupSTFmappingExperiment(...
@@ -101,7 +114,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
         fprintf('Computing cone mosaic STFs for the %d degs orientation patterns.\n', ...
                 stimParams.orientationDegs);
 
-        for iFreq = 1:numel(stimParams.spatialFrequenciesTested)
+        for iFreq = numel(stimParams.spatialFrequenciesTested):-1:1
 
             theCurrentStimParams = stimParams;
             theCurrentStimParams.spatialFrequencyCPD = stimParams.spatialFrequenciesTested(iFreq);
@@ -203,22 +216,17 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
 end
 
 
-function retinalImageResolutionDegs = retinalResolutionFromConeApertureBlur(obj, targetRGCindices)
+function retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, targetRGCindices)
 
-    % Find cone aperture size of the input cones
-    coneIndices = find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,targetRGCindices(1)) > 0.001);
-    coneIndices = cat(1, coneIndices, ...
-                  find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,targetRGCindices(2)) > 0.001));
-    
-    blurApertureDiametersDegs = [];
-    for iBlurZoneIndex = 1:numel(obj.theRGCMosaic.inputConeMosaic.coneIndicesInZones)
-        for idx = 1:numel(coneIndices)
-            if (ismember(coneIndices(idx), obj.theRGCMosaic.inputConeMosaic.coneIndicesInZones{iBlurZoneIndex}))
-                blurApertureDiametersDegs = cat(1, blurApertureDiametersDegs, ...
-                    obj.theRGCMosaic.inputConeMosaic.blurApertureDiameterDegsZones(iBlurZoneIndex));
-            end
-        end
+    if (isempty(targetRGCindices))
+        retinalImageResolutionDegs = min(obj.theRGCMosaic.inputConeMosaic.coneApertureDiametersDegs)/9;
+    else
+        % Find cone aperture size of the input cones
+        coneIndices = find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,targetRGCindices(1)) > 0.001);
+        coneIndices = cat(1, coneIndices, ...
+                      find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,targetRGCindices(2)) > 0.001));
+        
+        retinalImageResolutionDegs = mean(obj.theRGCMosaic.inputConeMosaic.coneApertureDiametersDegs(coneIndices))/13; 
     end
 
-    retinalImageResolutionDegs = mean(blurApertureDiametersDegs)/13;
 end

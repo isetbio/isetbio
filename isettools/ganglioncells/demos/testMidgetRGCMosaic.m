@@ -1,18 +1,18 @@
 function testMidgetRGCMosaic()
 
     
-    mosaicEccDegs = [3 0];
-    mosaicSizeDegs = [2 2];
+    mosaicEccDegs = [2.5 0];
+    mosaicSizeDegs = [3 3];
 
     resourcesDirectory = fullfile(...
                 MosaicPoolingOptimizer.localDropboxPath, ...
                 'productionMidgetRGCMosaics/MosaicOptimizerResources');
 
-    mosaiFileName = sprintf('mRGCMosaicEcDegs(%2.1f_%2.1f)_SizeDegs(%2.1f_%2.1f).mat', ...
+    mosaicFileName = sprintf('mRGCMosaicEcDegs(%2.1f_%2.1f)_SizeDegs(%2.1f_%2.1f).mat', ...
         mosaicEccDegs(1), mosaicEccDegs(2), mosaicSizeDegs(1), mosaicSizeDegs(2));
 
     % Actions
-    recomputeMosaic = true;
+    recomputeMosaic = ~true;
     recomputeConeMosaicSTFresponses = true;
 
     if (recomputeMosaic)
@@ -21,9 +21,9 @@ function testMidgetRGCMosaic()
             'eccentricityDegs', mosaicEccDegs, ...
             'sizeDegs', mosaicSizeDegs);
     
-        save(fullfile(resourcesDirectory,mosaiFileName), 'theMidgetRGCMosaic');
+        save(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
     else
-        load(fullfile(resourcesDirectory,mosaiFileName), 'theMidgetRGCMosaic');
+        load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
     end
 
     % Visualize input cone mosaic
@@ -47,20 +47,28 @@ function testMidgetRGCMosaic()
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(theMidgetRGCMosaic);
 
-        % Compute cone mosaic STF responses for 1x1 stim patches
-        % positioned at the targetRGCposition of each grid node
-        for gridNode = 1:theMosaicPoolingOptimizer.gridNodesNum
-            stimSizeDegs = [1 1];
-
-            % Responses filename
-            responsesFileName = sprintf('STFresponsesGridNode_%d.mat', gridNode);
-            responsesFileName = fullfile(resourcesDirectory, responsesFileName );
+        if (1==2)
+            % Compute cone mosaic STF responses for 1x1 stim patches
+            % positioned at the targetRGCposition of each grid node
+            for gridNode = 1:theMosaicPoolingOptimizer.gridNodesNum
+                stimSizeDegs = [1 1];
+                % Responses filename
+                responsesFileName = strrep(mosaicFileName, '.mat', sprintf('_STFresponsesGridNode_%d.mat', gridNode));
+    
+                theMosaicPoolingOptimizer.computeConeMosaicSTFresponses(...
+                    gridNode, stimSizeDegs,  fullfile(resourcesDirectory, responsesFileName ), ...
+                    'useParfor', true, ...
+                    'visualizedResponses', ~true);
+            end
+        else
+            responsesFileName = strrep(mosaicFileName, '.mat', '_STFresponses.mat')
 
             theMosaicPoolingOptimizer.computeConeMosaicSTFresponses(...
-                gridNode, stimSizeDegs, responsesFileName, ...
-                'useParfor', true, ...
-                'visualizedResponses', ~true);
+                    [], [], fullfile(resourcesDirectory, responsesFileName), ...
+                    'useParfor', ~true, ...
+                    'visualizedResponses', ~true);
         end
+
 
 
 
