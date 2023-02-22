@@ -20,6 +20,13 @@ classdef MosaicPoolingOptimizer < handle
         
     end % Read only properties
 
+    % Dependent properties
+    properties (Dependent)
+        % Number of grid nodes
+        gridNodesNum;
+    end
+
+
     properties (Constant)
         defaultRetinalRFmodelParams = struct(...
             'retinalConePoolingModel', 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights', ...
@@ -65,6 +72,12 @@ classdef MosaicPoolingOptimizer < handle
         % Compute cone mosaicSTFs resources for the fitter at a single grid node
         computeConeMosaicSTFresponses(obj, gridNode, stimSizeDegs, responsesFileName, varargin);
 
+        % Getter for dependent property gridNodesNum
+        function val = get.gridNodesNum(obj)
+            val = numel(obj.targetRGCindicesWithLconeMajorityCenter);
+        end
+
+
     end % Public methods
 
     % Private methods
@@ -83,5 +96,10 @@ classdef MosaicPoolingOptimizer < handle
         % Method to return the center majority cone types
         [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = centerConeTypeWeights(obj, theRGCindex);
     end
+
+    % Static methods
+    methods (Static)
+        dropboxDir = localDropboxPath();
+    end % Static methods
 
 end

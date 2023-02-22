@@ -1,17 +1,29 @@
 function testMidgetRGCMosaic()
 
-    intemediateFilesDirectory = '/Volumes/SSDdisk/MATLAB/toolboxes/isetbio/isettools/ganglioncells/demos';
+    
+    mosaicEccDegs = [3 0];
+    mosaicSizeDegs = [2 2];
 
-    recomputeStage1 = ~true;
-    if (recomputeStage1)
+    resourcesDirectory = fullfile(...
+                MosaicPoolingOptimizer.localDropboxPath, ...
+                'productionMidgetRGCMosaics/MosaicOptimizerResources');
+
+    mosaiFileName = sprintf('mRGCMosaicEcDegs(%2.1f_%2.1f)_SizeDegs(%2.1f_%2.1f).mat', ...
+        mosaicEccDegs(1), mosaicEccDegs(2), mosaicSizeDegs(1), mosaicSizeDegs(2));
+
+    % Actions
+    recomputeMosaic = true;
+    recomputeConeMosaicSTFresponses = true;
+
+    if (recomputeMosaic)
         % Generate mosaic, its input coneMosaic and connect cones to the RF centers
         theMidgetRGCMosaic = mRGCMosaic(...
-            'eccentricityDegs', [2 0], ...
-            'sizeDegs', [1 1]);
+            'eccentricityDegs', mosaicEccDegs, ...
+            'sizeDegs', mosaicSizeDegs);
     
-        save(fullfile(intemediateFilesDirectory,'mRGCMosaicStage1.mat'), 'theMidgetRGCMosaic');
+        save(fullfile(resourcesDirectory,mosaiFileName), 'theMidgetRGCMosaic');
     else
-        load(fullfile(intemediateFilesDirectory,'mRGCMosaicStage1.mat'), 'theMidgetRGCMosaic');
+        load(fullfile(resourcesDirectory,mosaiFileName), 'theMidgetRGCMosaic');
     end
 
     % Visualize input cone mosaic
@@ -21,10 +33,7 @@ function testMidgetRGCMosaic()
     theMidgetRGCMosaic.visualize();
 
     % Stage 2: Generate optics and connect cones to the RF surrounds
-    inputConeMosaicSTFresponsesFileName = fullfile(intemediateFilesDirectory,'STFresponses.mat');
-
-    recomputeStage2a = true;
-    if (recomputeStage2a)
+    if (recomputeConeMosaicSTFresponses)
         % Generate the native optics. These optics will be used 
         % for optimizing surround weights so as to achieve target visual RF
         % properties.
@@ -38,13 +47,21 @@ function testMidgetRGCMosaic()
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(theMidgetRGCMosaic);
 
-        stimSizeDegs = [0.5 0.5];
-        gridNode = 8;
-        responsesFileName = sprintf('STFresponsesGridNode_%d.mat', gridNode);
-        theMosaicPoolingOptimizer.computeConeMosaicSTFresponses(...
-            gridNode, stimSizeDegs, responsesFileName, ...
-            'useParfor', false, ...
-            'visualizedResponses', true);
+        % Compute cone mosaic STF responses for 1x1 stim patches
+        % positioned at the targetRGCposition of each grid node
+        for gridNode = 1:theMosaicPoolingOptimizer.gridNodesNum
+            stimSizeDegs = [1 1];
+
+            % Responses filename
+            responsesFileName = sprintf('STFresponsesGridNode_%d.mat', gridNode);
+            responsesFileName = fullfile(resourcesDirectory, responsesFileName );
+
+            theMosaicPoolingOptimizer.computeConeMosaicSTFresponses(...
+                gridNode, stimSizeDegs, responsesFileName, ...
+                'useParfor', true, ...
+                'visualizedResponses', ~true);
+        end
+
 
 
         % Fit the cone pooling weight optimizer at a particular grid node

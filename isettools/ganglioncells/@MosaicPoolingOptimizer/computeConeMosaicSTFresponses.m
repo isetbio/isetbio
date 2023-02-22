@@ -21,6 +21,9 @@ function computeConeMosaicSTFresponses(obj, gridNode, stimSizeDegs, ...
     % have an observable effect
     retinalImageResolutionDegs = retinalResolutionFromConeApertureBlur(obj, targetRGCindices);
 
+    fprintf('Computing STF responses at %2.1f,%2.1f degs with a retinal resolution of %2.2f arc min', ...
+        stimPositionDegs(1), stimPositionDegs(2), retinalImageResolutionDegs*60);
+
     % Generate components for running the STF mapping experiment
     [stimParams, thePresentationDisplay] = obj.setupSTFmappingExperiment(...
         stimSizeDegs, ...
@@ -217,5 +220,5 @@ function retinalImageResolutionDegs = retinalResolutionFromConeApertureBlur(obj,
         end
     end
 
-    retinalImageResolutionDegs = mean(blurApertureDiametersDegs)/7;
+    retinalImageResolutionDegs = mean(blurApertureDiametersDegs)/13;
 end
