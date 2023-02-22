@@ -297,7 +297,7 @@ classdef RTVF < handle
                 obj.targetVisualRFDoGparams.weightsOfConesPooledByTheRFcenter = ...
                     obj.targetVisualRFDoGparams.weightsOfConesPooledByTheRFcenterOfDifferentMajorityConeType;
 
-                switch (obj.theTargetVisualRFDoGparams.targetRGCdifferentMajorityConeType)
+                switch (obj.targetVisualRFDoGparams.targetRGCdifferentMajorityConeType)
                     case cMosaic.LCONE_ID
                         initialRetinalConePoolingParams = initialLconeRetinalConePoolingParams;
                         fprintf(2,'Computing L-cone compute struct\n');
@@ -313,7 +313,7 @@ classdef RTVF < handle
                         initialRetinalConePoolingParams, ...
                         progressFigureName);
 
-                switch (obj.theTargetVisualRFDoGparams.targetRGCdifferentMajorityConeType)
+                switch (obj.targetVisualRFDoGparams.targetRGCdifferentMajorityConeType)
                     case cMosaic.LCONE_ID
                         obj.LconeRFcomputeStruct = theComputeStruct;
                     case cMosaic.MCONE_ID

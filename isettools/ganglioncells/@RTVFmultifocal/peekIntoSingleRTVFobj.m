@@ -51,12 +51,13 @@ function peekIntoConeSpecificRTVFobj( ...
     if (strcmp(theRTVFTobj.stfComputeMethod, RTVF.modeledSTFcomputeMethod))
         % Compute the STF data from the visual RF map
         theSTFdata = theRTVFTobj.visualSTFfromCronerKaplanAnalysisOfVisualRF(theVisualRFmap, false);
-        fittedRsRcRatio = theSTFdata.fittedDoGModelRsRcRatio
-        fittedSCintSensRatio = theSTFdata.fittedDoGModelSCIntSensRatio
+        
     else
-        theSTFdata = theConeSpecificRFcomputeStruct.theFinalSTFdata 
-        pause
+        theSTFdata = theConeSpecificRFcomputeStruct.theFinalSTFdata;
     end
+
+    fittedRsRcRatio = theSTFdata.fittedDoGModelRsRcRatio
+        fittedSCintSensRatio = theSTFdata.fittedDoGModelSCIntSensRatio
 
     % Target and achieved ratios
     targetRsRcRatio = theRTVFTobj.targetVisualRFDoGparams.surroundToCenterRcRatio;
