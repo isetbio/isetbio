@@ -1,85 +1,119 @@
 classdef mRGCMosaic < handle
-    % Create an mRGCMosaic for computation by cropping a subregion from a
-    % previously frozen midgetRGCMosaic (which takes hours/days to generate)
-    %
-    %
-    % Syntax:
-    %   theMRGCMosaic = mRGCMosaic(sourceMidgetRGCMosaic);
-    %   theConeMosaic = cMosaic(sourceMidgetRGCMosaic, 'sizeDegs',[5,5],'eccentricityDegs',[0,0]);
-    %
-    % Description:
-    %    Creates 
-    %
-    % Inputs:
-    %    None required.
-    %
-    % Outputs:
-    %    mRGCMosaic                 The created mRGCMosaic object.
-    %
-    % Optional key/value pairs:
-    %    'name'                     - String. Mosaic name. 
-    %    'eccentricityDegs'         - [x,y]. Center of the mosaic, in degrees. Default: [0 0]
-    %    'sizeDegs'                 - [sx, sy]. Width and height of the mosaic, in degrees. Default: [0.5 0.5]
-    %
-    %
-    %
-    % History:
-    %    January 2023  NPC  Wrote it
+% Create an mRGCMosaic mosaic object
 
     % Public properties
     properties  (GetAccess=public, SetAccess=public)
         % Name of the mosaic
         name;
 
-        % Boolean. Set to true to allow the object to print various info
-        beVerbose;
-    end
+    end % Public properties
+
+
+    % Constant properties
+    properties (Constant)
+        % Default optics params
+        defaultOpticsParams = struct(...
+            'positionDegs', [], ...
+            'ZernikeDataBase', 'Polans2015', ...
+            'examinedSubjectRankOrder', 6, ...
+            'pupilDiameterMM', 3.0, ...
+            'refractiveErrorDiopters', 0.0, ...    % use -999 for optics that do not subtract the central refraction
+            'analyzedEye', 'right eye', ...
+            'subjectRankingEye', 'right eye', ...
+            'zeroCenterPSF', true, ...
+            'psfUpsampleFactor', 1.0, ...
+            'wavefrontSpatialSamples', 401); 
+
+        defaultRetinalRFparams = struct(...
+            );
+
+        defaultVisualRFparams = struct(...
+            );
+        
+    end % Constant properties
 
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
-        
+
+        % The source lattice specification
+        sourceLatticeSizeDegs;
+
         % Eccentricity [x,y] of the center of the mRGC mosaic (degs)
         eccentricityDegs;
 
-        % Size of the mRGC mosaic (degs)
+        % Eccentricity [x,y] of the center of the mRGC mosaic (microns)
+        eccentricityMicrons;
+
+        % Size of the mRGC mosaic [width, height]
         sizeDegs;
+
+        % Either 'right eye' or 'left eye'
+        whichEye;
 
         % The input cone mosaic (@cMosaic)
         inputConeMosaic;
 
-        % [n x 2] matrix of RF positions, in degrees
+        % Extra size of the input cone mosaic (to allow for cone inputs to
+        % the RF surrounds)
+        extraDegsForInputConeMosaic;
+
+        % [0: minimize chromatic variance 1: minimize spatial variance]
+        chromaticSpatialVarianceTradeoff;
+
+        % [n x 2] matrix of rgc rf positions, in microns & degrees
+        rgcRFpositionsMicrons;
         rgcRFpositionsDegs;
 
-        % The (sparse) [conesNum x rgcRFsNum] conePoolingMatrices for the
-        % center and the surround subregions
-        centerConePoolingMatrix;
-        surroundConePoolingMatrix;
+        % [n x 1] vector of rgc rf spacings, in microns & degrees
+        rgcRFspacingsMicrons;
+        rgcRFspacingsDegs;
 
-        % The type of the majority of cone inputs to the RF center subregions
-        centerSubregionMajorityConeTypes;
+        % The factor by which we convert nasal eccentricities to their
+        % temporal equivalents
+        temporalEquivantEccentricityFactor;
 
-        % How many center cones are of type cMosaic.LCONE_ID, cMosaic.MCONE_ID, cMosaic.SCONE_ID
-        centerSubregionConeTypesNums;
+        % Computed params
+        % Sparse [conesNum x rgcRFsNum]  connectivity matrix 
+        % To find which cones are connected to an rgcRF:
+        %  connectivityVector = full(squeeze(rgcRFcenterConeConnectivityMatrix(:, rgcRF)));
+        %  inputConeIndices = find(abs(connectivityVector) > 0.0001);
+        rgcRFcenterConeConnectivityMatrix = [];
 
-        % How many cones in each RF center
-        centerSubregionConesNums;
+        rgcRFcenterConePoolingMatrix = [];
+        rgcRFsurroundConePoolingMatrix = [];
 
-        % The number of RGCs
+        % The optics used to optimize surround cone weights
+        % so as to generate RFs with the target visual properties
+        theNativeOptics;
+
+        % The params used to generate theNativeOptics
+        theNativeOpticsParams;
+
+        % Encodes what generation stage the mosaic is in.
+        generationStage;
+
+    end % Read-only properties
+
+    % Dependent properties
+    properties (Dependent)
+        % The mosaic's temporal equivalent eccentricity.
+        % If the mosaic is on the temporal retinal quadrant this is: sqrt(ecc_x^2 + ecc_y^2)
+        % If the mosaic is on the nasal retinal quadrant this is: sqrt((0.61 * ecc_x)^2 + ecc_y^2)
+        temporalEquivalentEccentricityDegs;
+
+        % Number of cells
         rgcsNum;
 
-        % The number of input cones
-        inputConesNum;
-
-        % The spatial position grid at which the multifocal RTVF model was fitted
-        multifocalRTVFgrids;
-
-        % The params for generating optics at the positions where the
-        % multifocal RTVF model was fitted
-        multifocalRTVFopticsParams;
+        % Retinal quadrant (i.e. nasal, temporal, inferior, superior)
+        horizontalRetinalMeridian;
+        verticalRetinalMeridian;
     end
 
     % Private properties
     properties (GetAccess=private, SetAccess=private)
+        % The MosaicConnectorOBJ used to connect cones to midget RGCs
+        theMosaicConnectorOBJ;
+
         % Cache for various visualizations
         visualizationCache = [];
     end
@@ -88,95 +122,101 @@ classdef mRGCMosaic < handle
     methods
         
         % Constructor
-        function obj = mRGCMosaic(sourceMidgetRGCMosaic, varargin)
+        function obj = mRGCMosaic(varargin)
+
             % Parse input
             p = inputParser;
-            p.addRequired('sourceMidgetRGCMosaic', @(x)(isa(x, 'midgetRGCMosaic')));
-            p.addParameter('name', 'my midget RGC mosaic', @ischar);
-            p.addParameter('eccentricityDegs', [], @(x)(isempty(x))||(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('positionDegs', [], @(x)(isempty(x))||(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('sizeDegs', [], @(x)(isempty(x))||(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('visualizeSpatialRelationshipToSourceMosaic', false, @islogical);
-            p.addParameter('beVerbose', false, @islogical);
-            % Parse input
-            p.parse(sourceMidgetRGCMosaic, varargin{:});
+            p.addParameter('name', 'mRGC mosaic', @ischar);
+            p.addParameter('sourceLatticeSizeDegs', 58, @isscalar);
+            p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             
-
-            % The sourceMidgetRGCMosaic must be frozen
-            assert(sourceMidgetRGCMosaic.isFrozen, 'sourceMidgetRGCMosaic must be frozen.');
+            % Eccentricity/Position: if positionDegs is sent in, it overwrites eccentricityDegs
+            p.addParameter('eccentricityDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('positionDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('temporalEquivantEccentricityFactor', 'ISETBioMosaicsBased', @(x)(ischar(x) && (ismember(x, {'ISETBioMosaicsBased', 'WatanabeRodieckBased'}))));
+            
+            % Custom Degs <-> MM conversion functions
+            p.addParameter('customDegsToMMsConversionFunction', @(x)RGCmodels.Watson.convert.rhoDegsToMMs(x), @(x) (isempty(x) || isa(x,'function_handle')));
+            p.addParameter('customMMsToDegsConversionFunction', @(x)RGCmodels.Watson.convert.rhoMMsToDegs(x), @(x) (isempty(x) || isa(x,'function_handle')));
+            
+            p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
+            p.parse(varargin{:});
 
             obj.name = p.Results.name;
-            obj.sizeDegs = p.Results.sizeDegs;
-            obj.beVerbose = p.Results.beVerbose;
+            obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
+            obj.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
+            obj.temporalEquivantEccentricityFactor = p.Results.temporalEquivantEccentricityFactor;
             
-            if (~isempty(p.Results.eccentricityDegs))
-                % eccentricityDegs is always used if present
-                obj.eccentricityDegs = p.Results.eccentricityDegs;
-            elseif (~isempty(p.Results.positionDegs))
-                % Use positionDegs if available but there is not
-                % eccentricityDegs
-                obj.eccentricityDegs = p.Results.positionDegs;
-            end
+            % Generate the input cone mosaic. This also sets various
+            % other properties that are matched to the input cone
+            % mosaic, such as:
+            % - eccentricityDegs
+            % - sizeDegs
+            % - whichEye
+            obj.generateInputConeMosaic(p.Results);
 
-            % Get the input cone mosaic
-            obj.inputConeMosaic = sourceMidgetRGCMosaic.inputConeMosaic;
+            % Set the eccentricity in microns
+            obj.eccentricityMicrons = obj.inputConeMosaic.eccentricityMicrons;
 
-            % Get the optics params used to train the multi-focal RTVF
-            % so we can pass them to the user when requested
-            obj.retrieveMultifocalRTVFOpticsParams(...
-                p.Results.sourceMidgetRGCMosaic);
+            % Wire the RF centers. This configures and runs theobj.theMosaicConnectorOBJ
+            % which wires cones to midget RGC RF center (no overlap)
+            obj.generateRFpositionsAndWireTheirCenters();
 
-            % Generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
-            obj.generateByCroppingTheSourceMosaic(...
-                p.Results.sourceMidgetRGCMosaic, ...
-                p.Results.visualizeSpatialRelationshipToSourceMosaic);
-
-            % The type of the majority of cone types in the RF center
-            [~, ...
-                obj.centerSubregionConeTypesNums, ...
-                obj.centerSubregionMajorityConeTypes, ...
-                obj.centerSubregionConesNums] = obj.centerConeTypeWeights(1:obj.rgcsNum);
-            
+            % Eliminate RGCs near the border
+            obj.cropRGCsOnTheBorder();
         end % Constructor
 
-        % Method to compute optics at a given position
-        [theOI, thePSF, theZcoeffs] = multiFocalRTVFopticsAtPosition(obj, eccDegs);
+        % Method to generate the native optics for the mosaic.
+        % These optics form the basis on which surround cone weights are optimized
+        % for wiring so as to generate desired visual RF properties
+        generateNativeOptics(obj, opticsParams);
 
-        % Compute method
-        [response, responseTemporalSupport] = compute(obj, ...
-            theConeMosaicResponse, theConeMosaicResponseTemporalSupport, varargin);
+        % Method to compute input cone mosaic STF responses using the 
+        computeInputConeMosaicSTFresponsesForNativeOptics(obj, responsesFileName, useParfor);
 
-        % Method to return the optics for the subject that was used to
-        % derive the RF structure at some user-specified position
-        [theOI, thePSF, theZcoeffs] = nativeOptics(obj, varargin);
-
-        % Method to visualize the mRGC mosaic and its activation (RF centers only)
+        % Method to visualize the mRGCmosaic and its activation
         visualize(obj, varargin);
 
-        % Method to visual the RF structure of individual RGCs
-        visualizeRFs(obj, rgcIndices, varargin);
 
-        % Method to return the net weights and numbers of types of cones in the RF center
-        % as well as the type with the strongest net weight. If 2 types
-        % of cones have net weights that are close to each other (90%)
-        % then theMajorityConeType is set to nan
-        [theCenterConeTypesWeights, theCenterConeTypesNum, theMajorityConeTypes, theCenterConesNum] = ...
-            centerConeTypeWeights(obj, theRGCindices);
+        % Getter for dependent property cellsNum
+        function val = get.rgcsNum(obj)
+            val = size(obj.rgcRFpositionsDegs,1);
+        end
 
+        % Getter for dependent property temporalEquivalentEccentricityDegs
+        function val = get.temporalEquivalentEccentricityDegs(obj)
+            val = obj.temporalEquivalentEccentricityForEccentricity(obj.eccentricityDegs);
+        end
+
+        % Getter for dependent property horizontalRetinalMeridian
+        function val = get.horizontalRetinalMeridian(obj)
+            val = obj.inputConeMosaic.horizontalRetinalMeridian;
+        end
+
+        % Getter for dependent property verticalRetinalMeridian
+        function val = get.verticalRetinalMeridian(obj)
+            val = obj.inputConeMosaic.verticalRetinalMeridian;
+        end
 
     end % Public methods
 
     % Private methods
     methods (Access=private)
-        % Method to generate the mRGCMosaic by cropping the sourceMidgetRGCMosaic
-        generateByCroppingTheSourceMosaic(obj, ...
-            sourceMidgetRGCMosaic, ...
-            visualizeSpatialRelationshipToSourceMosaic);
-
-        % Method to retrieve the optics params of the multifocal RTVFobject
-        % used to derive cone pooling weights
-        retrieveMultifocalRTVFOpticsParams(obj, sourceMidgetRGCMosaic);
+        generateInputConeMosaic(obj, pResults);
+        generateRFpositionsAndWireTheirCenters(obj);
+        
+        % Method to crop RGCs on the border
+        cropRGCsOnTheBorder(obj);
     end % Private methods
 
-    
+
+    % Static methods
+    methods (Static)
+    end % Static methods
+
 end
+
+
+
+ 

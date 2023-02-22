@@ -2,6 +2,9 @@ classdef constants
 % Constants from Polans study
 
     properties (Constant)
+        % Database name
+        ZernikeDataBaseName = 'Polans2015'
+
         % Label for left eye
         leftEye = 'left eye';
         

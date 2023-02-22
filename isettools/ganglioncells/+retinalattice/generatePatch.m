@@ -1,4 +1,6 @@
-function bestQualityRFpositions = generatePatch(fovDegs, neuronType, whichEye, exportHistoryToFile, visualizeConvergence, useParfor, maxIterations, varargin)
+function bestQualityRFpositions = generatePatch(fovDegs, neuronType, ...
+    whichEye, exportHistoryToFile, visualizeConvergence, useParfor, maxIterations, ...
+    varargin)
    
     p = inputParser;
     p.addParameter('randomSeed', [],  @(x)(isempty(x) || isscalar(x)));

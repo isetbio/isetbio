@@ -2,6 +2,9 @@ classdef constants
 % Constants from the Jaeken and Artal, 2012. study
 
      properties (Constant)
+        % Database name
+        ZernikeDataBaseName = 'Artal2012'
+
         % Label for left eye
         leftEye = 'left eye';
         
