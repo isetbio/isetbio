@@ -18,6 +18,16 @@ classdef MosaicPoolingOptimizer < handle
         visualSTFSurroundToCenterRcRatioGrid;
         visualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
         
+        % The visual STF data of the input cone mosaic
+        inputConeMosaicVisualSTFdata;
+
+        % Number of multistarts for fitting the DoG model to the
+        % model RGC STF
+        multiStartsNumDoGFit;
+
+        % Number of multistarts for fitting the surround model
+        multiStartsNumRetinalPooling;
+
     end % Read only properties
 
     % Dependent properties
@@ -35,6 +45,12 @@ classdef MosaicPoolingOptimizer < handle
             'surroundConnectableConeTypes', [cMosaic.LCONE_ID cMosaic.MCONE_ID] ... % cone types that can connect to the RF surround
         );
 
+        % Labels for available retinal cone pooling models
+        ArbitraryCenter_DoubleExpH1cellIndex1Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights';
+        ArbitraryCenter_DoubleExpH1cellIndex2Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex2SurroundWeights';
+        ArbitraryCenter_DoubleExpH1cellIndex3Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights';
+        ArbitraryCenter_DoubleExpH1cellIndex4Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex4SurroundWeights';
+
     end % Constants
 
     % Public methods (class interface)
@@ -48,29 +64,46 @@ classdef MosaicPoolingOptimizer < handle
             p.addRequired('theRGCmosaic', @(x)(isa(x, 'mRGCMosaic')));
             p.addParameter('minSpatialSamplingDegs', 0.25, @isnumeric);
             p.addParameter('samplingScheme', 'hexagonal', @(x)(ismember(x, {'hexagonal', 'rectangular'})));
+            p.addParameter('visualizeSamplingGrids', false, @islogical);
+            p.addParameter('generateSamplingGrids', false, @islogical);
             p.parse(theRGCmosaic, varargin{:});
 
             obj.theRGCMosaic = p.Results.theRGCmosaic;
             obj.retinalRFmodelParams = obj.defaultRetinalRFmodelParams;
 
-            % Generate the nominal multifocal spatial sampling grid
-            obj.generateNominalSpatialSamplingGrid(p.Results.samplingScheme);
+            if (p.Results.generateSamplingGrids)
+                fprintf('\nGenerating sampling grids. Please wait ...\n');
+                % Generate the nominal multifocal spatial sampling grid
+                obj.generateNominalSpatialSamplingGrid(p.Results.samplingScheme);
+                
+                % Generate the full multifocal sampling grids
+                obj.generateSamplingGrids(p.Results.minSpatialSamplingDegs);
+                fprintf('Done \n')
 
-            % Generate the full multifocal sampling grids
-            obj.generateSamplingGrids(p.Results.minSpatialSamplingDegs);
-
-            obj.visualizeSamplingGrids();
+                if (p.Results.visualizeSamplingGrids)
+                    obj.visualizeSamplingGrids();
+                end
+            end
 
         end % Constructor
 
-        % Visualize Sampling grids
+        % Method to visualize the sampling grids
         visualizeSamplingGrids(obj);
 
-        % Fit the optimizer
-        fit(obj, varargin);
+        % Method to compute the input cone mosaic visual STFs, either at a single
+        % gridNode (using small stimulus patches centered on that node)
+        % or across all nodes, using full field stimuli
+        generateConeMosaicSTFresponses(obj, gridNodeIndex, ...
+            stimSizeDegs, responsesFileName, varargin);
 
-        % Compute cone mosaicSTFs resources for the fitter at a single grid node
-        computeConeMosaicSTFresponses(obj, gridNode, stimSizeDegs, responsesFileName, varargin);
+        % Method to load the computed input cone mosaic STF responses
+        loadConeMosaicVisualSTFresponses(obj, responsesFileName);
+
+        % Method to compute optimized RGC models (surround cone pooling weights)
+        % for each grid node in the RGC mosaic
+        compute(obj, gridNodeIndex, ...
+            coneMosaicSTFresponsesFileName, ...
+            varargin);
 
         % Getter for dependent property gridNodesNum
         function val = get.gridNodesNum(obj)
@@ -94,12 +127,65 @@ classdef MosaicPoolingOptimizer < handle
             sceneFOVdegs, retinalImageResolutionDegs)
 
         % Method to return the center majority cone types
-        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = centerConeTypeWeights(obj, theRGCindex);
+        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = ...
+            centerConeTypeWeights(obj, theRGCindex);
+
+        % Method to select the highest-ectending STF (across a set of STFs
+        % measured at different orientations)
+        theHighestExtensionSTF = highestExtensionSTF(obj, STFsAcrossMultipleOrientations);
+
+        % Method to compute the RGCmodel STF and its DoG model fit params
+        % based on its current cone pooling weights
+        theSTFdata = rgcSTFfromPooledConeMosaicSTFresponses(obj, pooledConeIndicesAndWeights, visualRcDegs);
+
+        % Method to opimize the surround cone pooling so as to achieve a
+        % visual STF matching the targetSTF
+        theRFcomputeStruct = optimizeSurroundConePooling(obj, theRGCindex, targetVisualSTFparams, ...
+            displayFittingProgress, figNo, figTitle);
+
+        % Optimization components
+        [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptimizationComponents(obj, theRGCindex);
     end
 
     % Static methods
     methods (Static)
+        % Method to generate the local dropbox path
         dropboxDir = localDropboxPath();
+
+        % Method to generate the mosaic filename
+        [mosaicFileName, resourcesDirectory] = ...
+            resourceFileNameAndPath(component, varargin);
+
+        % Fit a Gaussian model to a subregion STF
+        [Gparams, theFittedSTF] = fitGaussianToSubregionSTF(...
+            spatialFrequencySupportCPD, theSubregionSTF, ...
+            RcDegsInitialEstimate, rangeForRc, multiStartsNum)
+
+        % Fit a DoG model to an STF
+        [DoGparams, theFittedSTF] = fitDifferenceOfGaussiansToSTF(...
+             spatialFrequencySupportCPD, theSTF, ...
+             RcDegsInitialEstimate, rangeForRc, multiStartsNum);
+
+        % Method to convert cone pooling params to pooled cone indices and
+        % weights for the  
+        pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterDoubleExpSurround( ...
+            modelConstants, conePoolingParamsVector);
+
+        % Connectable cone indices to the surround
+        [surroundConeIndices, surroundConeWeights, ...
+          nonConnectableSurroundConeIndices, ...
+          nonConnectableSurroundConeWeights] = connectableSurroundConeIndicesAndWeights(...
+                surroundConeIndices, surroundConeWeights, modelConstants)
+
+        % Method to visualize the optimization progress
+        visualizeOptimizationProgress(figNo, figTitle, ...
+            targetVisualSTFparams, theCurrentSTFdata, ...
+            retinalConePoolingParams,  ...
+            pooledConeIndicesAndWeights, ...
+            rmseSequence)
+
+        % Method to visualize a model's parameter values & ranges
+        visualizeFittedModelParametersAndRanges(ax, modelParams, modelName);
     end % Static methods
 
 end

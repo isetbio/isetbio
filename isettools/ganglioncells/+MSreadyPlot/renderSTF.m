@@ -46,7 +46,7 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, compositeSTFfit, centerSTFfit
     % ticks and grids
     xTicks = [0.1 0.3 1 3 10 30 100];
     grid(ax, 'on'); box(ax, 'off');
-    set(ax, 'XLim', [0.08 100], 'YLim', [-0.02 1]);
+    set(ax, 'XLim', [min(sfSupportCPD)-0.05 100], 'YLim', [-0.02 1]);
     set(ax, 'XTick', xTicks, 'YTick', 0:0.2:1, ...
             'XTickLabel', xTicks, 'YTickLabel', 0:0.2:1);
     set(ax, 'TickDir', 'both')
@@ -69,7 +69,7 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, compositeSTFfit, centerSTFfit
     % legends
     if (~isempty(theLegends))
         hl = legend(ax, [p1 p2 p3 p4], theLegends, ...
-            'Location', 'NorthOutside', 'NumColumns', 2, ...
+            'Location', 'SouthWest', 'NumColumns', 1, ...
             'FontSize', ff.legendFontSize, 'Box', 'off');
     end
 

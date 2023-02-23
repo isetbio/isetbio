@@ -1,4 +1,4 @@
-function computeConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, ...
+function generateConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, ...
     responsesFileName, varargin)
 
     p = inputParser;
@@ -9,7 +9,7 @@ function computeConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, ...
     useParfor = p.Results.useParfor;
     visualizeResponses = p.Results.visualizedResponses;
 
-    if (isempty( gridNodeIndex))
+    if (isempty(gridNodeIndex))
         retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, []);
         % Stimulus centered at the RGC mosaic mosaic
         stimPositionDegs = obj.theRGCMosaic.eccentricityDegs;
@@ -31,7 +31,6 @@ function computeConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, ...
         % have an observable effect
         retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, targetRGCindices);
    
-
         fprintf('Computing STF responses at %2.1f,%2.1f degs over a region of  %2.1f,%2.1f degs with a retinal resolution of %2.2f arc min', ...
             stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60);
     end
@@ -140,9 +139,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
                     'nTrials', 1);
 
                 if (visualizeResponses)
-                    %coneMosaicNullResponses = squeeze(theConeMosaicNullResponses);
                     coneIndicesWithZeroNullResponse = find(theConeMosaicNullResponses== 0);
-
                     normalizingResponses = 1./theConeMosaicNullResponses;
                     normalizingResponses(coneIndicesWithZeroNullResponse) = 0;
                     normalizingResponses = reshape(normalizingResponses, [1 1 numel(normalizingResponses)]);
