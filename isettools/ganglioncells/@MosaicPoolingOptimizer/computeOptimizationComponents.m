@@ -8,6 +8,9 @@ function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptim
     modelConstants = struct();
     retinalConePoolingParams = struct();
 
+    modelConstants.rmseWeightForRsRcResidual = obj.rmseWeightForRsRcResidual;
+    modelConstants.rmseWeightForSCintSensResidual = obj.rmseWeightForSCintSensResidual;
+
     % The cone mosaic and the spectrally-weighted PSFs
     %modelConstants.theConeMosaic = obj.theRGCMosaic.inputConeMosaic;
 

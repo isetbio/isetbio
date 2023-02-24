@@ -7,10 +7,16 @@ function compute(obj, gridNodeIndex, whichConeType, coneMosaicSTFresponsesFileNa
     p.addParameter('displayFittingProgress', false, @islogical);
     p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
     p.addParameter('multiStartsNumRetinalPooling', 8, @isscalar);
+    p.addParameter('rmseWeightForRsRcResidual', 1.0, @isscalar);
+    p.addParameter('rmseWeightForSCintSensResidual', 1.0, @isscalar);
+
     p.parse(varargin{:});
 
     obj.multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
     obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
+    obj.rmseWeightForRsRcResidual = abs(p.Results.rmseWeightForRsRcResidual);
+    obj.rmseWeightForSCintSensResidual = abs(p.Results.rmseWeightForSCintSensResidual);
+
     displayFittingProgress = p.Results.displayFittingProgress;
     
     % Default targetSurroundToCenterRcRatio
@@ -43,26 +49,33 @@ function compute(obj, gridNodeIndex, whichConeType, coneMosaicSTFresponsesFileNa
     obj.loadConeMosaicVisualSTFresponses(coneMosaicSTFresponsesFileName);
 
     
+    if (isfile(optimizedRGCpoolingObjectsFileNameForThisNode))
+        fprintf('<<<<< Loading previously computed model\n');
+        load(optimizedRGCpoolingObjectsFileNameForThisNode, ...
+            'theLconeRFcomputeStruct', 'theMconeRFcomputeStruct');
+        initialRetinalLconePoolingParams = theLconeRFcomputeStruct.retinalConePoolingParams.finalValues;
+        initialRetinalMconePoolingParams = theMconeRFcomputeStruct.retinalConePoolingParams.finalValues;
+    else
+        initialRetinalLconePoolingParams = [];
+        initialRetinalMconePoolingParams = [];
+    end
+
     % Optimize the L-center RGC RF pooling
     if (ismember(cMosaic.LCONE_ID, whichConeType))
         % Compute theLconeRFcomputeStruct
-        fprintf('>>>>> Computing the LconeComputeStruct\n');
+        fprintf('>>>>> Recomputing the LconeComputeStruct\n');
+        
         LconeRGCindex = obj.targetRGCindicesWithLconeMajorityCenter(gridNodeIndex);
         figNo = 1000 + gridNodeIndex;
         figTitle = sprintf('grid no %d of %d L-cone center RGC %d', gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), LconeRGCindex);
         theLconeRFcomputeStruct = obj.optimizeSurroundConePooling(...
             LconeRGCindex, targetVisualSTFparams, ...
-            displayFittingProgress, figNo, figTitle);
-    else
-        fprintf('<<<<< Loading previously computed LconeComputeStruct\n');
-        % Load theLconeRFcomputeStruct (must be previously computed)
-        load(optimizedRGCpoolingObjectsFileNameForThisNode, ...
-            'theLconeRFcomputeStruct');
+            initialRetinalLconePoolingParams, displayFittingProgress, figNo, figTitle);
     end
 
     % Optimize the M-center RGC RF pooling
     if (ismember(cMosaic.MCONE_ID, whichConeType))
-        fprintf('>>>> Computing the MconeComputeStruct\n');
+        fprintf('>>>> Recomputing the MconeComputeStruct\n');
         MconeRGCindex = obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndex);
         figNo = 2000 + gridNodeIndex;
         figTitle = sprintf('grid no %d of %d M-cone center RGC %d', ...
@@ -70,12 +83,7 @@ function compute(obj, gridNodeIndex, whichConeType, coneMosaicSTFresponsesFileNa
     
         theMconeRFcomputeStruct = obj.optimizeSurroundConePooling(...
             MconeRGCindex, targetVisualSTFparams, ...
-            displayFittingProgress, figNo, figTitle);
-    else
-        fprintf('<<<<< Loading previously computed MconeComputeStruct\n');
-        % Load theMconeRFcomputeStruct (must be previously computed)
-        load(optimizedRGCpoolingObjectsFileNameForThisNode, ...
-            'theMconeRFcomputeStruct');
+            initialRetinalMconePoolingParams, displayFittingProgress, figNo, figTitle);
     end
 
     % Saved computed object

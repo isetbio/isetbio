@@ -1,10 +1,16 @@
 function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
     theRGCindex, targetVisualSTFparams,  ...
+    initialRetinalConePoolingParams, ...
     displayFittingProgress, figNo, figTitle)
     
     % Compute optimization components
     [modelConstants, retinalConePoolingParams, visualRcDegs] = ...
         obj.computeOptimizationComponents(theRGCindex);
+
+    % Override intial retinal cone pooling params
+    if (~isempty(initialRetinalConePoolingParams))
+        retinalConePoolingParams.initialValues = initialRetinalConePoolingParams;
+    end
 
     rmseSequence = [];
     
@@ -90,7 +96,8 @@ function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
     theRFcomputeStruct.theAchievedSTFdata = theFinalSTFdata;
     theRFcomputeStruct.theFinalRMSE = theFinalRMSE;
     theRFcomputeStruct.theFinalPooledConeIndicesAndWeights = theFinalPooledConeIndicesAndWeights;
-    
+    theRFcomputeStruct.rmseSequence = rmseSequence;
+
     hFig = MosaicPoolingOptimizer.visualizeOptimizationProgress(figNo, figTitle, ...
                 targetVisualSTFparams, ...
                 theFinalSTFdata, retinalConePoolingParams, ...
@@ -113,7 +120,7 @@ function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
         % Compute RMSE
         RsRcRatioResidual = theCurrentSTFdata.fittedDoGModelRsRcRatio/targetVisualSTFparams.surroundToCenterRcRatio - 1;
         SCintSensRatioResidual = theCurrentSTFdata.fittedDoGModelSCIntSensRatio/targetVisualSTFparams.surroundToCenterIntegratedSensitivityRatio - 1;
-        rmseWeights = abs([1 1]);    
+        rmseWeights = [modelConstants.rmseWeightForRsRcResidual modelConstants.rmseWeightForSCintSensResidual];    
         rmseWeights = rmseWeights / sum(rmseWeights);
         theCurrentRMSE = sqrt(rmseWeights(1) * RsRcRatioResidual^2 + rmseWeights(2)*SCintSensRatioResidual^2);
         rmseSequence(size(rmseSequence,1)+1,:) = [theCurrentRMSE RsRcRatioResidual SCintSensRatioResidual];

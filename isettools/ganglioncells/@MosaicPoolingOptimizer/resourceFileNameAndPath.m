@@ -1,4 +1,4 @@
-function [resourceFileName, resourcesDirectory] = resourceFileNameAndPath(component, varargin)
+function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNameAndPath(component, varargin)
     % Parse input
     p = inputParser;
     p.addParameter('mosaicParams', [], @(x)(isempty(x)||(isstruct(x))));
@@ -11,6 +11,10 @@ function [resourceFileName, resourcesDirectory] = resourceFileNameAndPath(compon
                 MosaicPoolingOptimizer.localDropboxPath, ...
                 'productionMidgetRGCMosaics/MosaicOptimizerResources');
 
+    pdfsDirectory = fullfile(...
+                MosaicPoolingOptimizer.localDropboxPath, ...
+                'productionMidgetRGCMosaics/MosaicOptimizerPDFs');
+
     switch (component)
         case 'mosaic'
             resourceFileName = generateMosaicFileName(mosaicParams);
@@ -20,6 +24,9 @@ function [resourceFileName, resourcesDirectory] = resourceFileNameAndPath(compon
 
         case 'optimizedRGCpoolingObjects'
             resourceFileName = generateOptimizedRGCpoolingObjectsFileName(mosaicParams, opticsParams);
+
+        case 'pdfsDirectory'
+            resourceFileName = '';
 
         otherwise
             error('Unknown component: ''%s''.', component)

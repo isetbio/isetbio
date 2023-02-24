@@ -28,6 +28,10 @@ classdef MosaicPoolingOptimizer < handle
         % Number of multistarts for fitting the surround model
         multiStartsNumRetinalPooling;
 
+        % RMSE weights for the Rs/Rc and the S/CintSensitivity ratios
+        rmseWeightForRsRcResidual;
+        rmseWeightForSCintSensResidual;
+
     end % Read only properties
 
     % Dependent properties
@@ -146,7 +150,7 @@ classdef MosaicPoolingOptimizer < handle
         % Method to opimize the surround cone pooling so as to achieve a
         % visual STF matching the targetSTF
         theRFcomputeStruct = optimizeSurroundConePooling(obj, theRGCindex, targetVisualSTFparams, ...
-            displayFittingProgress, figNo, figTitle);
+            initialRetinalConePoolingParams, displayFittingProgress, figNo, figTitle);
 
         % Optimization components
         [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptimizationComponents(obj, theRGCindex);
@@ -158,7 +162,7 @@ classdef MosaicPoolingOptimizer < handle
         dropboxDir = localDropboxPath();
 
         % Method to generate the mosaic filename
-        [mosaicFileName, resourcesDirectory] = ...
+        [mosaicFileName, resourcesDirectory, pdfsDirectory] = ...
             resourceFileNameAndPath(component, varargin);
 
         % Fit a Gaussian model to a subregion STF
