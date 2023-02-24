@@ -60,7 +60,7 @@ function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptim
             retinalConePoolingParams.upperBounds   = [2        1e0         max(NWvolumeRatios)            RwDegsUpperBound      max(RnarrowToRwideRatios)];
 
             H1cellIndex = 1;
-            parameterTolerance = 0.1;
+            parameterTolerance = 0.3;
                 
             idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
             measuredValue = NWvolumeRatios(H1cellIndex);

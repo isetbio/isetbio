@@ -21,12 +21,7 @@ function visualizeOptimizationProgress(figNo, figTitle, ...
             'Color', [1 1 1]);
     end
 
-    ax = subplot('Position',  ff.subplotPosVectors(1,1).v);
-    MosaicPoolingOptimizer.visualizeFittedModelParametersAndRanges(ax, retinalConePoolingParams, 'cone pooling');
-
-    ax = subplot('Position',  ff.subplotPosVectors(1,2).v);
-    MosaicPoolingOptimizer.visualizeFittedModelParametersAndRanges(ax, theCurrentSTFdata.fittedDoGModelParams, 'DoG fit to STF');
-
+   
     % Bottom 
     ax = subplot('Position', ff.subplotPosVectors(2,1).v);
     plot(ax, 1:size(rmseSequence,1), rmseSequence(:,2), 'b.-', 'MarkerSize', 20, 'LineWidth', 1.0); hold(ax, 'on');
@@ -50,6 +45,15 @@ function visualizeOptimizationProgress(figNo, figTitle, ...
     box(ax, 'off');
 
     if (resetFigure)
+        % These are updated only when the MRSE reaches a new minimum so
+        % they depict the best optimization so far during the process
+        ax = subplot('Position',  ff.subplotPosVectors(1,1).v);
+        MosaicPoolingOptimizer.visualizeFittedModelParametersAndRanges(ax, retinalConePoolingParams, 'cone pooling');
+
+        ax = subplot('Position',  ff.subplotPosVectors(1,2).v);
+        MosaicPoolingOptimizer.visualizeFittedModelParametersAndRanges(ax, theCurrentSTFdata.fittedDoGModelParams, 'DoG fit to STF');
+
+
         ax = subplot('Position',  ff.subplotPosVectors(1,3).v);
         MSreadyPlot.renderSTF(ax, ...
            theCurrentSTFdata.spatialFrequencySupport, ...

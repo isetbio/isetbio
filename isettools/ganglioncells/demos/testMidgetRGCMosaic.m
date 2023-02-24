@@ -1,5 +1,7 @@
-function testMidgetRGCMosaic()
-
+function testMidgetRGCMosaic(nodesToCompute)
+    
+    assert(ismember(nodesToCompute, {'even', 'odd'}), ...
+        'grid nodes must be either ''even'' or ''odd''.');
     
     mosaicParams = struct(...
         'eccDegs', [2.5 0], ...
@@ -100,15 +102,28 @@ function testMidgetRGCMosaic()
     % RGC mosaic
 
     if (optimizeRGCMosaic)
+
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
             theMidgetRGCMosaic, ...
             'generateSamplingGrids', true);
 
+        switch nodesToCompute
+            case 'even'
+                gridNodesToCompute = 2:2:theMosaicPoolingOptimizer.gridNodesNum;
+            case 'odd'
+                gridNodesToCompute = 1:2:theMosaicPoolingOptimizer.gridNodesNum;
+            otherwise
+                error('grid nodes must be either ''even'' or ''odd''.');
+        end
+
+        
+
         % Compute optimized RGC models (surround cone pooling weights)
         % for each grid node in the RGC mosaic
-        for gridNodeIndex = 1:theMosaicPoolingOptimizer.gridNodesNum
+        for iNode = 1:numel(gridNodesToCompute)
 
+            gridNodeIndex = gridNodesToCompute(iNode);
             theMosaicPoolingOptimizer.compute(gridNodeIndex, ...
                 fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
                 fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName), ...
