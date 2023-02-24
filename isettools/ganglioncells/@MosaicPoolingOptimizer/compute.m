@@ -48,7 +48,7 @@ function compute(obj, gridNodeIndex, coneMosaicSTFresponsesFileName, optimizedRG
     % Optimize the L-center RGC RF pooling
     LconeRGCindex = obj.targetRGCindicesWithLconeMajorityCenter(gridNodeIndex);
     figNo = 1000 + gridNodeIndex;
-    figTitle = sprintf('grid no %d/%d, L-cone center (RGC #%d)', gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), LconeRGCindex);
+    figTitle = sprintf('grid no %d of %d L-cone center RGC %d', gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), LconeRGCindex);
     theLconeRFcomputeStruct = obj.optimizeSurroundConePooling(...
         LconeRGCindex, targetVisualSTFparams, ...
         displayFittingProgress, figNo, figTitle);
@@ -56,7 +56,9 @@ function compute(obj, gridNodeIndex, coneMosaicSTFresponsesFileName, optimizedRG
     % Fit the M-center RGC RF pooling
     MconeRGCindex = obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndex);
     figNo = 2000 + gridNodeIndex;
-    figTitle = sprintf('grid no %d/%d, M-cone center (RGC #%d)', gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), MconeRGCindex);
+    figTitle = sprintf('grid no %d of %d M-cone center RGC %d', ...
+        gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), MconeRGCindex);
+
     theMconeRFcomputeStruct = obj.optimizeSurroundConePooling(...
         MconeRGCindex, targetVisualSTFparams, ...
         displayFittingProgress, figNo, figTitle);

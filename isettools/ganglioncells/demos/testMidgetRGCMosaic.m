@@ -108,11 +108,15 @@ function testMidgetRGCMosaic(nodesToCompute)
             theMidgetRGCMosaic, ...
             'generateSamplingGrids', true);
 
+        % Here we can select a subset of nodes
+        allGridNodesToCompute = 1:theMosaicPoolingOptimizer.gridNodesNum;
+        multiStartsNumRetinalPooling = 16;
+
         switch nodesToCompute
             case 'even'
-                gridNodesToCompute = 2:2:theMosaicPoolingOptimizer.gridNodesNum;
+                gridNodesToCompute = allGridNodesToCompute(2:2:numel(allGridNodesToCompute));
             case 'odd'
-                gridNodesToCompute = 1:2:theMosaicPoolingOptimizer.gridNodesNum;
+                gridNodesToCompute = allGridNodesToCompute(1:2:numel(allGridNodesToCompute));
             otherwise
                 error('grid nodes must be either ''even'' or ''odd''.');
         end
@@ -124,11 +128,12 @@ function testMidgetRGCMosaic(nodesToCompute)
         for iNode = 1:numel(gridNodesToCompute)
 
             gridNodeIndex = gridNodesToCompute(iNode);
+
             theMosaicPoolingOptimizer.compute(gridNodeIndex, ...
                 fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
                 fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName), ...
                 'multiStartsNumDoGFit', 64, ...
-                'multiStartsNumRetinalPooling', 8, ...
+                'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling, ...
                 'displayFittingProgress', true);
 
         end

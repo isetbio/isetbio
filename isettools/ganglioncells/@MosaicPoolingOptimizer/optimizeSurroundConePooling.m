@@ -42,7 +42,15 @@ function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
 
     % Fit model
     if (obj.multiStartsNumRetinalPooling == 1)
+        % Run the solver
         retinalConePoolingParams.finalValues = fmincon(problem);
+
+        if (isempty(retinalConePoolingParams.finalValues))
+            % Re-run the  solver
+            fprintf(2, 'Solver failed. Trying once again\n');
+            retinalConePoolingParams.finalValues = fmincon(problem);
+        end
+
     else
         ms = MultiStart(...
               'Display', 'final', ...
@@ -52,6 +60,14 @@ function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
         % Run the multi-start solver
         [retinalConePoolingParams.finalValues, ~, ~, ~, allMins] = ...
             run(ms, problem, obj.multiStartsNumRetinalPooling); 
+
+        if (isempty(retinalConePoolingParams.finalValues))
+            % Re-run the multi-start solver
+            fprintf(2, 'Solver failed. Trying once again\n');
+            [retinalConePoolingParams.finalValues, ~, ~, ~, allMins] = ...
+                run(ms, problem, obj.multiStartsNumRetinalPooling);
+        end
+
     end
 
     % Done with fitting. Report time to fit the RVFT model
@@ -59,6 +75,8 @@ function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
     fprintf('Fitting RVFT model finished in %2.2f hours\n', toc/60/60);
     fprintf('===========================================\n');
 
+
+    
 
     % Compute the fitted visual STF
     [theFinalRMSE, theFinalSTFdata, theFinalPooledConeIndicesAndWeights] = ...
@@ -79,7 +97,7 @@ function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
                 theFinalPooledConeIndicesAndWeights, ...
                 rmseSequence);
 
-    NicePlot.exportFigToPDF(sprintf('%s.pdf',figName), hFig, 300);
+    NicePlot.exportFigToPDF(sprintf('%s.pdf',figTitle), hFig, 300);
     close(hFig);
     
     %  ------- theObjectiveFunction --------
