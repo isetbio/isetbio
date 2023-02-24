@@ -189,6 +189,14 @@ classdef MosaicPoolingOptimizer < handle
             pooledConeIndicesAndWeights, ...
             rmseSequence)
 
+        % Method to render the cone pooling subregion maps of an RGC
+        lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
+            rgcRFposDegs, coneIndices, coneWeights);
+
+        renderConePoolingLineWeightingFunctions(ax, ...
+            centerLineWeightingFunction, surroundLineWeightingFunction, ...
+            sensitivityRange);
+
         % Method to visualize a model's parameter values & ranges
         visualizeFittedModelParametersAndRanges(ax, modelParams, modelName);
     end % Static methods
