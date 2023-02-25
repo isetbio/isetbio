@@ -18,8 +18,8 @@ function testMidgetRGCMosaic
     % Actions
     generateRGCMosaic = ~true;
     computeConeMosaicSTFresponses = ~true;
-    optimizeRGCMosaic = true;
-    inspectOptimizedRGCmodels = ~true;
+    optimizeRGCMosaic = ~true;
+    inspectOptimizedRGCmodels = true;
 
     if (generateRGCMosaic)
         % Generate mosaic, its input coneMosaic and connect cones to the RF centers
@@ -49,7 +49,7 @@ function testMidgetRGCMosaic
     % Change something if we want, like the model name, e.g. choose cell index 3,
     % 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights', ... 
     retinalRFmodelParams = MosaicPoolingOptimizer.defaultRetinalRFmodelParams;
-    retinalRFmodelParams.conePoolingModel = 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights'
+    retinalRFmodelParams.conePoolingModel = 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights';
 
 
 

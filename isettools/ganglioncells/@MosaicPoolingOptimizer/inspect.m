@@ -17,8 +17,9 @@ function inspect(obj, gridNodeIndex, optimizedRGCpoolingObjectsFileName, varargi
     figNo = 10000 + gridNodeIndex;
     figTitle = sprintf('grid no %d of %d L-cone center RGC %d', ...
         gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), LconeRGCindex);
+    pdfFilename = strrep(optimizedRGCpoolingObjectsFileNameForThisNode, '.mat', '_Lcone');
 
-    inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
+    inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         obj.theRGCMosaic.rgcRFpositionsDegs(LconeRGCindex,:), ...
         obj.theRGCMosaic.inputConeMosaic, ...
         theLconeRFcomputeStruct);
@@ -27,15 +28,15 @@ function inspect(obj, gridNodeIndex, optimizedRGCpoolingObjectsFileName, varargi
     figNo = 20000 + gridNodeIndex;
     figTitle = sprintf('grid no %d of %d M-cone center RGC %d', ...
         gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), MconeRGCindex);
-    
-    inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
+    pdfFilename = strrep(optimizedRGCpoolingObjectsFileNameForThisNode, '.mat', '_Mcone');
+    inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         obj.theRGCMosaic.rgcRFpositionsDegs(MconeRGCindex,:), ...
         obj.theRGCMosaic.inputConeMosaic, ...
         theMconeRFcomputeStruct);
 
 end
 
-function inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
+function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
     rgcRFposDegs, inputConeMosaic, theConeSpecificRFcomputeStruct)
 
     % Retrieve the saved data
@@ -60,8 +61,6 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
     ax = subplot('Position', ff.subplotPosVectors(1,2).v);
     cla(ax, 'reset');
 
-    retinalConePoolingParams
-    pause
     idx = find(strcmp(retinalConePoolingParams.names,  'VnVwRatio'));
     fittedModel.NWvolumeRatio = retinalConePoolingParams.finalValues(idx);
     
@@ -127,8 +126,8 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
     axis(ax, 'square');
     title(ax, 'line weighting functions (y)')
 
-    [~,~,pdfsDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
-    pdfFilename = fullfile(pdfsDirectory, sprintf('%s.pdf',figTitle));
+    
+    pdfFilename = strrep(sprintf('%s.pdf',pdfFilename), 'MosaicOptimizerResources', 'MosaicOptimizerPDFs');
     NicePlot.exportFigToPDF(pdfFilename, hFig, 300);
     disp('Hit enter to continue')
     pause
