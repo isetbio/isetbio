@@ -1,11 +1,14 @@
 function testMidgetRGCMosaic
 
+    
+    arbitraryNodesToCompute = [] %selectNodesToRecompute();
 
-    arbitraryNodesToCompute = selectNodesToRecompute();
-
+    % Mosaic params to employ
     mosaicParams = struct(...
         'eccDegs', [2.5 0], ...
         'sizeDegs', [3 3]);
+
+    
 
     % Get mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
@@ -38,8 +41,17 @@ function testMidgetRGCMosaic
         theMidgetRGCMosaic.visualize();
     end
 
-
+   
+    % Optics params to employ
     opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
+
+    % RetinalRFmodel params to employ
+    % Change something if we want, like the model name, e.g. choose cell index 3,
+    % 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights', ... 
+    retinalRFmodelParams = MosaicPoolingOptimizer.defaultRetinalRFmodelParams;
+    retinalRFmodelParams.conePoolingModel = 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights'
+
+
 
     % Generate filename for the computed coneMosaicSTF responses
     [coneMosaicSTFresponsesFileName, resourcesDirectory] = ...
@@ -118,10 +130,7 @@ function testMidgetRGCMosaic
         rmseWeightForRsRcResidual = 2.0;
         rmseWeightForSCintSensResidual = 1.0;
 
-        % Change something if we want, like the model name, e.g. choose cell index 3,
-        % 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights', ... 
-        retinalRFmodelParams = MosaicPoolingOptimizer.defaultRetinalRFmodelParams;
-        retinalRFmodelParams.conePoolingModel = 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights'
+        
 
         if (~isempty(arbitraryNodesToCompute))&&(iscell(arbitraryNodesToCompute))
             % Doing an arbitrary selection of nodes (L or M)
@@ -186,6 +195,12 @@ function testMidgetRGCMosaic
             'generateSamplingGrids', true);
 
         gridNodesToInspect = input('Enter grid node to inspect: '); % 1:theMosaicPoolingOptimizer.gridNodesNum;
+
+        [optimizedRGCpoolingObjectsFileName, resourcesDirectory] = ...
+        MosaicPoolingOptimizer.resourceFileNameAndPath('optimizedRGCpoolingObjects', ...
+            'mosaicParams', mosaicParams, ...
+            'opticsParams', opticsParams, ...
+            'retinalRFmodelParams', retinalRFmodelParams);
 
         for iNode = 1:numel(gridNodesToInspect)
             gridNodeIndex = gridNodesToInspect(iNode);
