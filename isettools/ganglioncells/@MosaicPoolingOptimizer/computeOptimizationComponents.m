@@ -39,17 +39,24 @@ function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptim
     modelConstants.cachedData.coneDistancesFromRFCenter = coneDistancesFromRFCenter(modelConstants.cachedData.surroundConeIndices);
 
 
-    switch (obj.retinalRFmodelParams.retinalConePoolingModel)
-        case MosaicPoolingOptimizer.ArbitraryCenter_DoubleExpH1cellIndex1Surround
+    switch (obj.retinalRFmodelParams.conePoolingModel)
+        case {
+                MosaicPoolingOptimizer.ArbitraryCenter_DoubleExpH1cellIndex1Surround, ...
+                MosaicPoolingOptimizer.ArbitraryCenter_DoubleExpH1cellIndex2Surround, ...
+                MosaicPoolingOptimizer.ArbitraryCenter_DoubleExpH1cellIndex3Surround, ...
+                MosaicPoolingOptimizer.ArbitraryCenter_DoubleExpH1cellIndex4Surround, ...
+                }
 
+            % From the 4 cells in Figure 6 of Packer & Dacey (2002)
+            RnarrowToRwideRatios  = MosaicPoolingOptimizer.PackerDacey2002_H1params.RnarrowToRwideRatios;
+            NWvolumeRatios        = MosaicPoolingOptimizer.PackerDacey2002_H1params.NWvolumeRatios;
+
+            modelConstants.retinalConePoolingModel = obj.retinalRFmodelParams.conePoolingModel;
             modelConstants.weightsComputeFunctionHandle = @MosaicPoolingOptimizer.conePoolingCoefficientsForArbitraryCenterDoubleExpSurround;
             modelConstants.indicesOfCenterCones = indicesOfConesPooledByTheRFcenter;
             modelConstants.weightsOfCenterCones = weightsOfConesPooledByTheRFcenter;
 
-            % From the 4 cells in Figure 6 of Packer & Dacey (2002)
-            RnarrowToRwideRatios  = [152/515 170/718 115/902 221/1035];
-            NWvolumeRatios        = [1.0     0.8     0.3     0.2];
-
+            
             % Range for RwDegs, based to characteristic radius of cones and # of cones in RF center
             RwDegsInitial    = 4.00 * 1/mean(RnarrowToRwideRatios) * anatomicalRcDegs * sqrt(2.3) * sqrt(numel(modelConstants.indicesOfCenterCones));
             RwDegsLowerBound = max([0.02 0.01*RwDegsInitial]);
@@ -62,23 +69,38 @@ function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptim
             retinalConePoolingParams.lowerBounds   = [0.5      0.005       min(NWvolumeRatios)            RwDegsLowerBound      min(RnarrowToRwideRatios)];
             retinalConePoolingParams.upperBounds   = [2        1e0         max(NWvolumeRatios)            RwDegsUpperBound      max(RnarrowToRwideRatios)];
 
-            H1cellIndex = 1;
-            parameterTolerance = 0.3;
-                
+            if (contains(modelConstants.retinalConePoolingModel, 'H1cellIndex1'))
+                H1cellIndex = 1;
+                fprintf('Fitting using params from the FIRST H1 cell of Dacey and Packer\n');
+            elseif (contains(modelConstants.retinalConePoolingModel, 'H1cellIndex2'))
+                H1cellIndex = 2;
+                fprintf('Fitting using params from the SECOND H1 cell of Dacey and Packer\n');
+            elseif (contains(modelConstants.retinalConePoolingModel, 'H1cellIndex3'))
+                H1cellIndex = 3;
+                fprintf('Fitting using params from the THIRD H1 cell of Dacey and Packer\n');
+            elseif (contains(modelConstants.retinalConePoolingModel, 'H1cellIndex4'))
+                H1cellIndex = 4;
+                fprintf('Fitting using params from the FOURTH H1 cell of Dacey and Packer\n');
+            else
+                error('Could not determine H1cellIndex from the retinal cone pooling model: ''%s''.\n', ...
+                    modelConstants.retinalConePoolingModel);
+            end
+
             idx = find(ismember(retinalConePoolingParams.names, 'VnVwRatio'));
             measuredValue = NWvolumeRatios(H1cellIndex);
             retinalConePoolingParams.initialValues(idx) = measuredValue;
-            retinalConePoolingParams.lowerBounds(idx) = measuredValue - parameterTolerance;
-            retinalConePoolingParams.upperBounds(idx) = measuredValue + parameterTolerance;
+            retinalConePoolingParams.lowerBounds(idx) = measuredValue * (1 - obj.retinalRFmodelParams.H1parameterTolerance);
+            retinalConePoolingParams.upperBounds(idx) = measuredValue * (1 + obj.retinalRFmodelParams.H1parameterTolerance);
 
             idx = find(ismember(retinalConePoolingParams.names, 'RnRwRatio'));
             measuredValue = RnarrowToRwideRatios(H1cellIndex);
             retinalConePoolingParams.initialValues(idx) = measuredValue;
-            retinalConePoolingParams.lowerBounds(idx) = measuredValue - parameterTolerance;
-            retinalConePoolingParams.upperBounds(idx) = measuredValue + parameterTolerance;
+            retinalConePoolingParams.lowerBounds(idx) = measuredValue * (1 - obj.retinalRFmodelParams.H1parameterTolerance);
+            retinalConePoolingParams.upperBounds(idx) = measuredValue * (1 + obj.retinalRFmodelParams.H1parameterTolerance);
+           
 
         otherwise
-            error('Retinal cone pooling model ''%s'' is not implemented\n', obj.retinalRFmodelParams.retinalConePoolingModel)
+            error('Retinal cone pooling model ''%s'' is not implemented\n', obj.retinalRFmodelParams.conePoolingModel)
     end % switch (obj.retinalRFmodelParams.retinalConePoolingModel)
 end
 

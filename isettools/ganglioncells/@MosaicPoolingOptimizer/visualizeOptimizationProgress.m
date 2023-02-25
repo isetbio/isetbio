@@ -1,6 +1,6 @@
-function hFigProgress = visualizeOptimizationProgress(figNo, figTitle, ...
+function [hFigProgress, ff] = visualizeOptimizationProgress(figNo, figTitle, ...
     targetVisualSTFparams, theCurrentSTFdata, ...
-    retinalConePoolingParams,  ...
+    retinalConePoolingParams,  retinalConePoolingModel, ...
     pooledConeIndicesAndWeights, ...
     rmseSequence)
         
@@ -57,7 +57,18 @@ function hFigProgress = visualizeOptimizationProgress(figNo, figTitle, ...
         % These are updated only when the MRSE reaches a new minimum so
         % they depict the best optimization so far during the process
         ax = subplot('Position',  ff.subplotPosVectors(1,1).v);
-        MosaicPoolingOptimizer.visualizeFittedModelParametersAndRanges(ax, retinalConePoolingParams, 'cone pooling');
+
+
+        if (contains(retinalConePoolingModel, 'H1cellIndex1'))
+            conePoolingModelName = 'cone pooling params (H1 DaceyPaker#1)';
+        elseif (contains(retinalConePoolingModel, 'H1cellIndex2'))
+            conePoolingModelName = 'cone pooling params (H1 DaceyPaker#2)';
+        elseif (contains(retinalConePoolingModel, 'H1cellIndex3'))
+            conePoolingModelName = 'cone pooling params (H1 DaceyPaker#3)';
+        elseif (contains(retinalConePoolingModel, 'H1cellIndex4'))
+            conePoolingModelName = 'cone pooling params (H1 DaceyPaker#4)';
+        end
+        MosaicPoolingOptimizer.visualizeFittedModelParametersAndRanges(ax, retinalConePoolingParams, conePoolingModelName);
 
         ax = subplot('Position',  ff.subplotPosVectors(1,2).v);
         MosaicPoolingOptimizer.visualizeFittedModelParametersAndRanges(ax, theCurrentSTFdata.fittedDoGModelParams, 'DoG fit to STF');

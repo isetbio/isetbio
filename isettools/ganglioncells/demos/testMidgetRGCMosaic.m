@@ -1,5 +1,6 @@
-function testMidgetRGCMosaic(nodeIndicesToCompute)
-    
+function testMidgetRGCMosaic
+
+
     arbitraryNodesToCompute = selectNodesToRecompute();
 
     mosaicParams = struct(...
@@ -46,12 +47,7 @@ function testMidgetRGCMosaic(nodeIndicesToCompute)
             'mosaicParams', mosaicParams, ...
             'opticsParams', opticsParams);
     
-    % Generate filename for the optimizedRGCpoolingObjects
-    [optimizedRGCpoolingObjectsFileName, resourcesDirectory] = ...
-        MosaicPoolingOptimizer.resourceFileNameAndPath('optimizedRGCpoolingObjects', ...
-            'mosaicParams', mosaicParams, ...
-            'opticsParams', opticsParams);
-
+    
     
     % Stage 2: Generate optics and compute input cone mosaic STF responses
     if (computeConeMosaicSTFresponses)
@@ -103,10 +99,11 @@ function testMidgetRGCMosaic(nodeIndicesToCompute)
     % RGC mosaic
     if (optimizeRGCMosaic)
         % Make sure 
+        nodeIndicesToCompute = input('Which node indices set to compute ? (even or odd) : ', 's');
+
         assert(...
-            (iscell(nodeIndicesToCompute)) || ...
-            ismember(nodeIndicesToCompute, {'even', 'odd', 'all'}), ...
-            'grid nodes indicesmust be either ''even'' or ''odd''.');
+            (ismember(nodeIndicesToCompute, {'even', 'odd', 'all'})), ...
+            'grid nodes indices must be either ''even'' or ''odd''.');
 
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
@@ -121,6 +118,11 @@ function testMidgetRGCMosaic(nodeIndicesToCompute)
         rmseWeightForRsRcResidual = 2.0;
         rmseWeightForSCintSensResidual = 1.0;
 
+        % Change something if we want, like the model name, e.g. choose cell index 3,
+        % 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights', ... 
+        retinalRFmodelParams = MosaicPoolingOptimizer.defaultRetinalRFmodelParams;
+        retinalRFmodelParams.conePoolingModel = 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights'
+
         if (~isempty(arbitraryNodesToCompute))&&(iscell(arbitraryNodesToCompute))
             % Doing an arbitrary selection of nodes (L or M)
             allGridNodesToCompute = arbitraryNodesToCompute;
@@ -129,6 +131,7 @@ function testMidgetRGCMosaic(nodeIndicesToCompute)
             allGridNodesToCompute = 1:theMosaicPoolingOptimizer.gridNodesNum;
         end
 
+        
         switch nodeIndicesToCompute
             case 'even'
                 gridNodesToCompute = allGridNodesToCompute(2:2:numel(allGridNodesToCompute));
@@ -141,8 +144,17 @@ function testMidgetRGCMosaic(nodeIndicesToCompute)
         end
         
 
+        % Generate filename for the optimizedRGCpoolingObjects
+        [optimizedRGCpoolingObjectsFileName, resourcesDirectory] = ...
+        MosaicPoolingOptimizer.resourceFileNameAndPath('optimizedRGCpoolingObjects', ...
+            'mosaicParams', mosaicParams, ...
+            'opticsParams', opticsParams, ...
+            'retinalRFmodelParams', retinalRFmodelParams);
+
+
         % Compute optimized RGC models (surround cone pooling weights)
         % for each grid node in the RGC mosaic
+        
         for iNode = 1:numel(gridNodesToCompute)
 
             if (iscell(gridNodesToCompute))
@@ -160,6 +172,7 @@ function testMidgetRGCMosaic(nodeIndicesToCompute)
                 'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling, ...
                 'rmseWeightForRsRcResidual', rmseWeightForRsRcResidual, ...
                 'rmseWeightForSCintSensResidual', rmseWeightForSCintSensResidual, ...
+                'retinalRFmodelParams', retinalRFmodelParams, ...
                 'displayFittingProgress', true);
 
         end
@@ -172,7 +185,7 @@ function testMidgetRGCMosaic(nodeIndicesToCompute)
             theMidgetRGCMosaic, ...
             'generateSamplingGrids', true);
 
-        gridNodesToInspect = 1:theMosaicPoolingOptimizer.gridNodesNum;
+        gridNodesToInspect = input('Enter grid node to inspect: '); % 1:theMosaicPoolingOptimizer.gridNodesNum;
 
         for iNode = 1:numel(gridNodesToInspect)
             gridNodeIndex = gridNodesToInspect(iNode);

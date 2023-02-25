@@ -9,6 +9,7 @@ function compute(obj, gridNodeIndex, whichConeType, coneMosaicSTFresponsesFileNa
     p.addParameter('multiStartsNumRetinalPooling', 8, @isscalar);
     p.addParameter('rmseWeightForRsRcResidual', 1.0, @isscalar);
     p.addParameter('rmseWeightForSCintSensResidual', 1.0, @isscalar);
+    p.addParameter('retinalRFmodelParams', MosaicPoolingOptimizer.defaultRetinalRFmodelParams, @isstruct);
 
     p.parse(varargin{:});
 
@@ -16,6 +17,7 @@ function compute(obj, gridNodeIndex, whichConeType, coneMosaicSTFresponsesFileNa
     obj.multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
     obj.rmseWeightForRsRcResidual = abs(p.Results.rmseWeightForRsRcResidual);
     obj.rmseWeightForSCintSensResidual = abs(p.Results.rmseWeightForSCintSensResidual);
+    obj.retinalRFmodelParams = p.Results.retinalRFmodelParams;
 
     displayFittingProgress = p.Results.displayFittingProgress;
     
@@ -48,7 +50,7 @@ function compute(obj, gridNodeIndex, whichConeType, coneMosaicSTFresponsesFileNa
     % Load the precomputed cone mosaic STF responses
     obj.loadConeMosaicVisualSTFresponses(coneMosaicSTFresponsesFileName);
 
-    
+    % Deal with initialRetinalConePoolingParamds
     if (isfile(optimizedRGCpoolingObjectsFileNameForThisNode))
         fprintf('<<<<< Loading previously computed model\n');
         load(optimizedRGCpoolingObjectsFileNameForThisNode, ...
@@ -56,6 +58,7 @@ function compute(obj, gridNodeIndex, whichConeType, coneMosaicSTFresponsesFileNa
         initialRetinalLconePoolingParams = theLconeRFcomputeStruct.retinalConePoolingParams.finalValues;
         initialRetinalMconePoolingParams = theMconeRFcomputeStruct.retinalConePoolingParams.finalValues;
     else
+        fprintf('Did not find a previously computed model. Starting with default params.\n')
         initialRetinalLconePoolingParams = [];
         initialRetinalMconePoolingParams = [];
     end

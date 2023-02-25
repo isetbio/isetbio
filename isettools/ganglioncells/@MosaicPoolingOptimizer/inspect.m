@@ -42,22 +42,53 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
     targetVisualSTFparams = theConeSpecificRFcomputeStruct.theTargetSTFparams;
     theFinalSTFdata = theConeSpecificRFcomputeStruct.theAchievedSTFdata;
     retinalConePoolingParams = theConeSpecificRFcomputeStruct.retinalConePoolingParams;
+    retinalConePoolingModel = theConeSpecificRFcomputeStruct.modelConstants.retinalConePoolingModel;
     theFinalPooledConeIndicesAndWeights = theConeSpecificRFcomputeStruct.theFinalPooledConeIndicesAndWeights;
     rmseSequence = [];
 
-    hFig = MosaicPoolingOptimizer.visualizeOptimizationProgress(...
+    [hFig, ff] = MosaicPoolingOptimizer.visualizeOptimizationProgress(...
                 figNo, figTitle, ...
                 targetVisualSTFparams, ...
-                theFinalSTFdata, retinalConePoolingParams, ...
+                theFinalSTFdata, retinalConePoolingParams, retinalConePoolingModel, ...
                 theFinalPooledConeIndicesAndWeights, ...
                 rmseSequence);
 
-
-    % Add the cone pooling RF maps
-    ff = MSreadyPlot.figureFormat('2x4');
     figure(hFig);
-    ax = subplot('Position',  ff.subplotPosVectors(2,3).v);
+
+    % Replace the DoG params with a correspondence between H1 cell data and
+    % our surround params
+    ax = subplot('Position', ff.subplotPosVectors(1,2).v);
+    cla(ax, 'reset');
+
+    retinalConePoolingParams
+    pause
+    idx = find(strcmp(retinalConePoolingParams.names,  'VnVwRatio'));
+    fittedModel.NWvolumeRatio = retinalConePoolingParams.finalValues(idx);
     
+    idx = find(strcmp(retinalConePoolingParams.names,  'RnRwRatio'));
+    fittedModel.RnarrowToRwideRatio = retinalConePoolingParams.finalValues(idx);
+
+    plot(ax, MosaicPoolingOptimizer.PackerDacey2002_H1params.NWvolumeRatios, ...
+             MosaicPoolingOptimizer.PackerDacey2002_H1params.RnarrowToRwideRatios, 'ko', ...
+             'MarkerSize', 12, 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', 1.5);
+    hold(ax, 'on')
+    scatter(ax, fittedModel.NWvolumeRatio, fittedModel.RnarrowToRwideRatio, 200, 's', ...
+             'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.5, 'LineWidth', 1.5);
+
+    xlabel(ax, 'narrow-field/wide-field volume ratio')
+    ylabel(ax, 'narrow-field/wide-field radius ratio')
+    set(ax, 'XLim', [0 1], 'YLim', [0 0.4], 'XTick', 0:0.2:1, 'YTick', 0:0.1:1, 'TickDir', 'both');
+    set(ax, 'FontSize', ff.fontSize)
+    axis(ax, 'square');
+    grid(ax, 'on');
+    box(ax, 'off');
+    xtickangle(ax, 0);
+    
+
+    % Add the cone pooling maps
+    ax = subplot('Position',  ff.subplotPosVectors(2,3).v);
+    cla(ax, 'reset');
+
     centerLineWeightingFunctions = MosaicPoolingOptimizer.renderConePoolingPlot(ax, inputConeMosaic, ...
         rgcRFposDegs, ...
         theFinalPooledConeIndicesAndWeights.centerConeIndices, ...
@@ -67,6 +98,8 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
        
     
     ax = subplot('Position',  ff.subplotPosVectors(2,4).v);
+    cla(ax, 'reset');
+
     surroundLineWeightingFunctions = MosaicPoolingOptimizer.renderConePoolingPlot(ax, inputConeMosaic, ...
         rgcRFposDegs, ...
         theFinalPooledConeIndicesAndWeights.surroundConeIndices, ...
@@ -86,6 +119,8 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
     title(ax, 'line weighting functions (x)')
 
     ax = subplot('Position',  ff.subplotPosVectors(2,2).v);
+    cla(ax, 'reset');
+
     MosaicPoolingOptimizer.renderConePoolingLineWeightingFunctions(ax, ...
         centerLineWeightingFunctions.y, surroundLineWeightingFunctions.y, ...
         sensitivityRange);
@@ -95,6 +130,9 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, ...
     [~,~,pdfsDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
     pdfFilename = fullfile(pdfsDirectory, sprintf('%s.pdf',figTitle));
     NicePlot.exportFigToPDF(pdfFilename, hFig, 300);
+    disp('Hit enter to continue')
+    pause
+
     close(hFig);
 end
 
