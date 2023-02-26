@@ -129,8 +129,6 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
     
     pdfFilename = strrep(sprintf('%s.pdf',pdfFilename), 'MosaicOptimizerResources', 'MosaicOptimizerPDFs');
     NicePlot.exportFigToPDF(pdfFilename, hFig, 300);
-    disp('Hit enter to continue')
-    pause
 
     close(hFig);
 end

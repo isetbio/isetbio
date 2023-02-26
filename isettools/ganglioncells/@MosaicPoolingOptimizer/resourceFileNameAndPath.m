@@ -27,6 +27,9 @@ function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNam
         case 'optimizedRGCpoolingObjects'
             resourceFileName = generateOptimizedRGCpoolingObjectsFileName(mosaicParams, opticsParams, retinalRFmodelParams);
 
+        case 'computeReadyMosaic'
+            resourceFileName = generateComputeReadyMidgetRGCMosaicFileName(mosaicParams, opticsParams, retinalRFmodelParams);
+
         case 'pdfsDirectory'
             resourceFileName = '';
 
@@ -67,6 +70,25 @@ function m = generateOptimizedRGCpoolingObjectsFileName(mosaicParams, opticsPara
     end
 
     m = strrep(mosaicFileName, '.mat', sprintf('%s_H1cellIndex%dBasedConePoolingObject.mat', opticsString, H1cellIndex));
+end
+
+
+function m = generateComputeReadyMidgetRGCMosaicFileName(mosaicParams, opticsParams, retinalRFmodelParams)
+    mosaicFileName = generateMosaicFileName(mosaicParams);
+    opticsString = generateOpticsString(opticsParams);
+    if (contains(retinalRFmodelParams.conePoolingModel, 'H1cellIndex1'))
+        H1cellIndex = 1;
+    elseif (contains(retinalRFmodelParams.conePoolingModel, 'H1cellIndex2'))
+        H1cellIndex = 2;
+    elseif (contains(retinalRFmodelParams.conePoolingModel, 'H1cellIndex3'))
+        H1cellIndex = 3;
+    elseif (contains(retinalRFmodelParams.conePoolingModel, 'H1cellIndex4'))
+        H1cellIndex = 4;
+    else
+        error('Could not determine H1cellIndex\n');
+    end
+
+    m = strrep(mosaicFileName, '.mat', sprintf('%s_H1cellIndex%d_ComputeReadyMosaic.mat', opticsString, H1cellIndex));
 end
 
 function m = generateOpticsString(opticsParams)

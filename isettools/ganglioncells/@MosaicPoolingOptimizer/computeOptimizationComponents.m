@@ -23,9 +23,9 @@ function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptim
     % surrounds at the cell's eccentricity
     radialEccentricityForThisRGC = sqrt(sum(obj.theRGCMosaic.rgcRFpositionsDegs(theRGCindex,:).^2,2));
     
-    % Surround cones up to 3 * surround characteristic radius of
+    % Surround cones up to 2 * surround characteristic radius of
     % Croner&Kaplan at this eccentricity
-    modelConstants.maxSurroundSupportDegs = 3.0 * ...
+    modelConstants.maxSurroundSupportDegs = MosaicPoolingOptimizer.maxSurroundSupportFactor  * ...
                 RGCmodels.CronerKaplan.constants.surroundCharacteristicRadiusFromFitToPandMcells(radialEccentricityForThisRGC);
 
     % Compute the RF center position

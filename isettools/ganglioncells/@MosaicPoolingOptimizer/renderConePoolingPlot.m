@@ -1,9 +1,11 @@
 function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
         rgcRFposDegs, coneIndices, coneWeights)
 
-    spatialSupportDegs = (-10:0.1:10)/60;
+    spatialSupportDegs = (-20:0.1:20)/60;
     spatialSupportXYDegs(:,1) = rgcRFposDegs(1) + spatialSupportDegs;
     spatialSupportXYDegs(:,2) = rgcRFposDegs(2) + spatialSupportDegs;
+    XLims = rgcRFposDegs(1) + [spatialSupportDegs(1) spatialSupportDegs(end)];
+    YLims = rgcRFposDegs(2) + [spatialSupportDegs(1) spatialSupportDegs(end)];
 
     retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(...
         theConeMosaic, coneIndices, coneWeights, spatialSupportXYDegs);
@@ -32,7 +34,8 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
         'amplitude', sum(retinalSubregionConeMap,2));
     axis(ax, 'image');
     axis(ax, 'xy');
-    set(ax, 'CLim', [0 0.3*max(retinalSubregionConeMap(:))]);
+    set(ax, 'CLim', [0 0.3*max(retinalSubregionConeMap(:))], ...
+            'XLim', XLims, 'YLim', YLims);
 
     colormap(ax, brewermap(1024, 'greys'));
 end

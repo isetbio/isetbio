@@ -419,7 +419,7 @@ function generateVisualizationCache(obj, xSupport, ySupport)
 
     if (~isempty(obj.rgcRFsurroundConePoolingMatrix))
         % Find all input cone indices that are connected to the RF surrounds
-        surroundConnectedConeIndices = find(sum(obj.surroundConePoolingMatrix,2) > 0);
+        surroundConnectedConeIndices = find(sum(obj.rgcRFsurroundConePoolingMatrix,2) > 0);
         xx = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,1));
         yy = squeeze(obj.inputConeMosaic.coneRFpositionsDegs(surroundConnectedConeIndices,2));
         obj.visualizationCache.surroundConesXrange = [min(xx) max(xx)];

@@ -3,12 +3,14 @@ function testMidgetRGCMosaic
     
     arbitraryNodesToCompute = [] %selectNodesToRecompute();
 
+    arbitraryNodesToCompute{1} = struct(...
+        'number', 16, ...
+        'coneType', [cMosaic.LCONE_ID]);
+
     % Mosaic params to employ
     mosaicParams = struct(...
         'eccDegs', [2.5 0], ...
         'sizeDegs', [3 3]);
-
-    
 
     % Get mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
@@ -18,8 +20,10 @@ function testMidgetRGCMosaic
     % Actions
     generateRGCMosaic = ~true;
     computeConeMosaicSTFresponses = ~true;
-    optimizeRGCMosaic = ~true;
-    inspectOptimizedRGCmodels = true;
+    optimizeRGCMosaic = true;
+    inspectOptimizedRGCmodels = ~true;
+    generateComputeReadyMidgetRGCMosaic = ~true;
+
 
     if (generateRGCMosaic)
         % Generate mosaic, its input coneMosaic and connect cones to the RF centers
@@ -48,18 +52,16 @@ function testMidgetRGCMosaic
     % RetinalRFmodel params to employ
     % Change something if we want, like the model name, e.g. choose cell index 3,
     % 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights', ... 
+    H1cellIndex = 2;
     retinalRFmodelParams = MosaicPoolingOptimizer.defaultRetinalRFmodelParams;
-    retinalRFmodelParams.conePoolingModel = 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights';
-
-
+    retinalRFmodelParams.conePoolingModel = sprintf('arbitraryCenterConeWeights_doubleExpH1cellIndex%dSurroundWeights', H1cellIndex);
 
     % Generate filename for the computed coneMosaicSTF responses
     [coneMosaicSTFresponsesFileName, resourcesDirectory] = ...
         MosaicPoolingOptimizer.resourceFileNameAndPath('coneMosaicSTFresponses', ...
             'mosaicParams', mosaicParams, ...
             'opticsParams', opticsParams);
-    
-    
+   
     
     % Stage 2: Generate optics and compute input cone mosaic STF responses
     if (computeConeMosaicSTFresponses)
@@ -123,14 +125,12 @@ function testMidgetRGCMosaic
             'generateSamplingGrids', true);
 
         % Fitting options
-        multiStartsNumRetinalPooling = 16;
-        multiStartsNumDoGFit = 64;
+        multiStartsNumRetinalPooling = 12;
+        multiStartsNumDoGFit = 128;
 
         % More weight for matching the Rs/Rc ratio
         rmseWeightForRsRcResidual = 2.0;
         rmseWeightForSCintSensResidual = 1.0;
-
-        
 
         if (~isempty(arbitraryNodesToCompute))&&(iscell(arbitraryNodesToCompute))
             % Doing an arbitrary selection of nodes (L or M)
@@ -194,7 +194,11 @@ function testMidgetRGCMosaic
             theMidgetRGCMosaic, ...
             'generateSamplingGrids', true);
 
-        gridNodesToInspect = input('Enter grid node to inspect: '); % 1:theMosaicPoolingOptimizer.gridNodesNum;
+        gridNodesToInspect = input('Enter grid node to inspect. Hit enter to inspect all.: ');
+        if (isempty(gridNodesToInspect))
+            gridNodesToInspect = 1:theMosaicPoolingOptimizer.gridNodesNum;
+        end
+        
 
         [optimizedRGCpoolingObjectsFileName, resourcesDirectory] = ...
         MosaicPoolingOptimizer.resourceFileNameAndPath('optimizedRGCpoolingObjects', ...
@@ -206,8 +210,33 @@ function testMidgetRGCMosaic
             gridNodeIndex = gridNodesToInspect(iNode);
             theMosaicPoolingOptimizer.inspect(gridNodeIndex, ...
                 fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName));
-
         end
+
+    end
+
+    % Stage 5: Bake in the computed RGC models (across all grid nodes)
+    % to the midgetRGCmosaic
+    if (generateComputeReadyMidgetRGCMosaic)
+        % Instantiate the mosaic pooling optimizer with theMidgetRGCMosaic
+        theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
+            theMidgetRGCMosaic, ...
+            'generateSamplingGrids', true);
+
+        [optimizedRGCpoolingObjectsFileName, resourcesDirectory] = ...
+            MosaicPoolingOptimizer.resourceFileNameAndPath('optimizedRGCpoolingObjects', ...
+                'mosaicParams', mosaicParams, ...
+                'opticsParams', opticsParams, ...
+                'retinalRFmodelParams', retinalRFmodelParams);
+
+        [computeReadyMosaicFileName, resourcesDirectory] = ...
+            MosaicPoolingOptimizer.resourceFileNameAndPath('computeReadyMosaic', ...
+                'mosaicParams', mosaicParams, ...
+                'opticsParams', opticsParams, ...
+                'retinalRFmodelParams', retinalRFmodelParams);
+
+        theMosaicPoolingOptimizer.generateComputeReadyMidgetRGCMosaic(...
+            fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName), ...
+            fullfile(resourcesDirectory, computeReadyMosaicFileName));
 
     end
 

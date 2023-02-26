@@ -172,12 +172,16 @@ classdef mRGCMosaic < handle
         % for wiring so as to generate desired visual RF properties
         generateNativeOptics(obj, opticsParams);
 
-        % Method to compute input cone mosaic STF responses using the 
-        computeInputConeMosaicSTFresponsesForNativeOptics(obj, responsesFileName, useParfor);
-
         % Method to visualize the mRGCmosaic and its activation
         visualize(obj, varargin);
 
+        % Method to bake in center/surround cone pooling weights.
+        % This method replaces the rgcRFcenterConeConnectivityMatrix with
+        % the rgcRFcenterConePoolingMatrix & rgcRFsurroundConePoolingMatrix
+        % and can only be called by the MosaicPoolingOptimizer which
+        % optimized these weights based on input cone mosaic STF responses
+        % computed by computeInputConeMosaicSTFresponsesForNativeOptics
+        bakeInConePoolingMatrices(obj, centerConePoolingMatrix, surroundConePoolingMatrix);
 
         % Getter for dependent property cellsNum
         function val = get.rgcsNum(obj)

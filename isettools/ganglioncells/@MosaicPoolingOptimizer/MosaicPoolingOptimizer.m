@@ -18,6 +18,10 @@ classdef MosaicPoolingOptimizer < handle
         visualSTFSurroundToCenterRcRatioGrid;
         visualSTFSurroundToCenterIntegratedSensitivityRatioGrid;
         
+        % The computed L- and M-compute structs for all nodes in the sampling grid
+        LconeComputeStructsList;
+        MconeComputeStructsList;
+
         % The visual STF data of the input cone mosaic
         inputConeMosaicVisualSTFdata;
 
@@ -54,6 +58,9 @@ classdef MosaicPoolingOptimizer < handle
             'RnarrowToRwideRatios',  [152/515 170/718 115/902 221/1035], ...
             'NWvolumeRatios',        [1.0     0.8     0.3     0.2]);
 
+        % Multiplier for surroundRc used to set the max radius for pooled surround
+        % cones (modelConstants.maxSurroundSupportDegs)
+        maxSurroundSupportFactor = 2.0;
 
         % Labels for available retinal cone pooling models
         ArbitraryCenter_DoubleExpH1cellIndex1Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex1SurroundWeights';
@@ -110,15 +117,22 @@ classdef MosaicPoolingOptimizer < handle
         loadConeMosaicVisualSTFresponses(obj, responsesFileName);
 
         % Method to compute optimized RGC models (surround cone pooling weights)
-        % for each grid node in the RGC mosaic
+        % for a grid node in the RGC mosaic
         compute(obj, gridNodeIndex, ...
             coneMosaicSTFresponsesFileName, ...
             optimizedRGCpoolingObjectsFileName, ...
             varargin);
 
+        % Method to inspect optimized RGC models for a grid node in the RGC mosaic
         inspect(obj, gridNodeIndex, ...
             optimizedRGCpoolingObjectsFileName, ...
             varargin);
+
+        % Method that incorporates the RGC pooling models optimized across all
+        % nodes in the RGCmosaic and generates a compute-ready mRGCMosaic
+        % with center and surround cone connections derived from these
+        % optimized RGC pooling models
+        generateComputeReadyMidgetRGCMosaic(obj, optimizedRGCpoolingObjectsFileName, computeReadyMosaicFilename);
 
         % Getter for dependent property gridNodesNum
         function val = get.gridNodesNum(obj)
@@ -182,7 +196,7 @@ classdef MosaicPoolingOptimizer < handle
              RcDegsInitialEstimate, rangeForRc, multiStartsNum);
 
         % Method to convert cone pooling params to pooled cone indices and
-        % weights for the  
+        % weights for the double exponent H1 surround model 
         pooledConeIndicesAndWeights = conePoolingCoefficientsForArbitraryCenterDoubleExpSurround( ...
             modelConstants, conePoolingParamsVector);
 
@@ -190,7 +204,12 @@ classdef MosaicPoolingOptimizer < handle
         [surroundConeIndices, surroundConeWeights, ...
           nonConnectableSurroundConeIndices, ...
           nonConnectableSurroundConeWeights] = connectableSurroundConeIndicesAndWeights(...
-                surroundConeIndices, surroundConeWeights, modelConstants)
+                surroundConeIndices, surroundConeWeights, modelConstants);
+
+        % Method to compute triangulating nodes and weights for computing
+        % pooling parameters from nearby RGC models
+        [triangulatingGridNodeIndices, triangulatingGridNodeWeights] = ...
+            triangulatingGridNodeIndicesAndWeights(theRGCposition, positionsOfModelRGCs, indicesOfModelRGCs)
 
         % Method to visualize the optimization progress
         [hFig, figureFormat] = visualizeOptimizationProgress(figNo, figTitle, ...
