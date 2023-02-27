@@ -21,7 +21,7 @@ function testMidgetRGCMosaic
     generateRGCMosaic = ~true;
     computeConeMosaicSTFresponses = ~true;
     optimizeRGCMosaic = ~true;
-    visualizeConeMosaicSTFresponses = true;
+    visualizeConeMosaicSTFresponses = ~true;
     inspectOptimizedRGCmodels = true;
     generateComputeReadyMidgetRGCMosaic = ~true;
 
@@ -141,7 +141,8 @@ function testMidgetRGCMosaic
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
             theMidgetRGCMosaic, ...
-            'generateSamplingGrids', true);
+            'generateSamplingGrids', true, ...
+            'visualizeSamplingGrids', true);
 
         % Fitting options
         multiStartsNumRetinalPooling = 12;
@@ -211,7 +212,8 @@ function testMidgetRGCMosaic
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
             theMidgetRGCMosaic, ...
-            'generateSamplingGrids', true);
+            'generateSamplingGrids', true, ...
+            'visualizeSamplingGrids', true);
 
         gridNodesToInspect = input('Enter grid node to inspect. Hit enter to inspect all.: ');
         if (isempty(gridNodesToInspect))

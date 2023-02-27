@@ -1,4 +1,70 @@
 function visualizeSamplingGrids(obj)
+
+    
+    conesNumPooledByTheRFcenters = unique(obj.conesNumPooledByTheRFcenterGrid);
+
+    hFig = figure(10); clf;
+    set(hFig, 'Color', [0 0 0], 'Position', [10 10 1280 1280]);
+    ax = subplot('Position', [0.03 0.04 0.97 0.94]);
+    obj.theRGCMosaic.visualize('figureHandle', hFig, ...
+                            'axesHandle',ax, ...
+                            'identifyInputCones', true, ...
+                            'backgroundColor', 'none', ...
+                            'domainVisualizationTicks', struct(...
+                                'x', 0:0.2:5, 'y', -1.6:0.2:1.6));
+
+    set(hFig, 'Color', [0 0 0]);
+    set(ax, 'XColor', [0.7 0.7 0.7], 'YColor', [0.7 0.7 0.7]);
+
+    NicePlot.exportFigToPDF('rgcmosaic.pdf', hFig, 300);
+
+
+    for iConesNumPooled = 1:numel(conesNumPooledByTheRFcenters)
+
+        theIdentifiedConeIndices = [];
+
+        hFig = figure(iConesNumPooled); clf;
+        set(hFig, 'Color', [0 0 0], 'Position', [10 10 1280 1280]);
+        ax = subplot('Position', [0.03 0.04 0.97 0.94]);
+
+        % Determine spatial grid coords for this # of center cones
+        conesNumPooled = conesNumPooledByTheRFcenters(iConesNumPooled);
+        gridNodesList = find(obj.conesNumPooledByTheRFcenterGrid == conesNumPooled);
+
+        LcenterRGCs = obj.targetRGCindicesWithLconeMajorityCenter(gridNodesList);
+        for i = 1:numel(LcenterRGCs)
+            inputConeIndicesForThisTargetRGC = find(squeeze(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,LcenterRGCs(i))) > 0.0001);
+            theIdentifiedConeIndices = cat(1, theIdentifiedConeIndices, inputConeIndicesForThisTargetRGC);
+        end
+
+        McenterRGCs = obj.targetRGCindicesWithMconeMajorityCenter(gridNodesList);
+        for i = 1:numel(McenterRGCs)
+            inputConeIndicesForThisTargetRGC = find(squeeze(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,McenterRGCs(i))) > 0.0001);
+            theIdentifiedConeIndices = cat(1, theIdentifiedConeIndices, inputConeIndicesForThisTargetRGC);
+        end
+
+    
+        obj.theRGCMosaic.inputConeMosaic.visualize(...
+                            'figureHandle', hFig, ...
+                            'axesHandle',ax, ...
+                            'labelConesWithIndices', theIdentifiedConeIndices, ...
+                            'backgroundColor', [0 0 0], ...
+                            'domainVisualizationTicks', struct(...
+                                'x', 0:0.2:5, 'y', -1.6:0.2:1.6), ...
+                            'plotTitle', sprintf('%d-cone center sanpling positions', conesNumPooled), ...
+                            'plotTitleColor', [1 1 0.5]);
+
+        set(hFig, 'Color', [0 0 0]);
+        set(ax, 'XColor', [0.7 0.7 0.7], 'YColor', [0.7 0.7 0.7]);
+
+        NicePlot.exportFigToPDF(sprintf('%d-cone center grid', conesNumPooled), hFig, 300);
+
+    end
+
+
+end
+
+function old(obj)
    hFig = figure(2); clf;
    set(hFig, 'Color', [1 1 1]);
 

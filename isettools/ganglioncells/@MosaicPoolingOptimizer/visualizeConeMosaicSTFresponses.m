@@ -32,14 +32,7 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
     normalizingResponses(coneIndicesWithZeroNullResponse) = 0;
     normalizingResponses = reshape(normalizingResponses, [1 1 numel(normalizingResponses)]);
 
-    hFig = figure(10);
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1280 1280]);
-    ax = subplot('Position', [0.03 0.04 0.97 0.94]);
-    cMap = gray(1024);
-
-    for iCone = 1:size(targetConePositions,1)
-        theSingleConeAxes{iCone} = axes('Position', [0.12 + (iCone-1)*0.16 0.78 0.15 0.15]);
-    end
+    
 
     if (~isempty(targetConePositions))
         for iCone = 1:size(targetConePositions,1)
@@ -52,24 +45,77 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
     end
 
     
-    videoOBJ = VideoWriter('ConeMosaicSTFresponses.mp4', 'MPEG-4');
+  
+    if (1==2)
+    orientationIndicesToVisualize = 1:numel(orientationsTested);
+    [~,sfIndexToVisualize] = min(abs(spatialFrequenciesTested-32));
+
+    videoFileName = sprintf('ConeMosaicSTFresponsesOrientationVary%2.0fcpd.mp4', spatialFrequenciesTested(sfIndexToVisualize));
+
+    generateVideo(theConeMosaicSTFresponses, normalizingResponses, theConeMosaicNullResponses, ...
+        spatialFrequenciesTested, orientationsTested, spatialPhasesDegs, orientationIndicesToVisualize, sfIndexToVisualize, ...
+        theIdentifiedConeIndices, targetConePositions, theMidgetRGCMosaic, thePSFdata, videoFileName);
+
+    end
+
+
+    [~,orientationIndexToVisualize] = min(abs(orientationsTested-90));
+    sfIndicesToVisualize = [3 5 7 9 11 13 14];
+
+    videoFileName = sprintf('ConeMosaicSTFresponsesSFvary%2.0fdegs.mp4', orientationsTested(orientationIndexToVisualize));
+
+    generateVideo(theConeMosaicSTFresponses, normalizingResponses, theConeMosaicNullResponses, ...
+        spatialFrequenciesTested, orientationsTested, spatialPhasesDegs, orientationIndexToVisualize, sfIndicesToVisualize, ...
+        theIdentifiedConeIndices, targetConePositions, theMidgetRGCMosaic, thePSFdata, videoFileName);
+
+end
+
+function generateVideo(theConeMosaicSTFresponses, normalizingResponses, theConeMosaicNullResponses, ...
+    spatialFrequenciesTested, orientationsTested, spatialPhasesDegs, ...
+    orientationIndicesToVisualize, sfIndicesToVisualize, ...
+    theIdentifiedConeIndices, targetConePositions, theMidgetRGCMosaic, thePSFdata, videoFileName)
+
+    hFig = figure(10);
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1280 1280]);
+    ax = subplot('Position', [0.03 0.04 0.97 0.94]);
+    cMap = gray(1024);
+
+    for iCone = 1:size(targetConePositions,1)
+        theSingleConeAxes{iCone} = axes('Position', [0.12 + (iCone-1)*0.16 0.78 0.15 0.15]);
+    end
+
+    videoOBJ = VideoWriter(videoFileName, 'MPEG-4');
     videoOBJ.FrameRate = 10;
     videoOBJ.Quality = 100;
     videoOBJ.open();
 
-    
-    orientationIndicesToVisualize = [7];
-    sfIndicesToVisualize = [3 5 7 9 11 13 14];
+    if (numel(orientationIndicesToVisualize)==1)
+        takeMaxAtEachSF = true;
+        takeMaxAtEachOrientation = false;
+    elseif (numel(sfIndicesToVisualize)==1)
+        takeMaxAtEachSF = ~true;
+        takeMaxAtEachOrientation = ~false;
+    end
 
     % Go through all stimulus orientations
-    for iOri = 7:7
-        orientationDegs = orientationsTested(iOri);
-
+    for orientationIndex = 1:numel(orientationIndicesToVisualize)
+        iOri = orientationIndicesToVisualize(orientationIndex);
+        
         theConeMosaicContrastResponsesAtThisOrientation = ...
             bsxfun(@times, bsxfun(@minus, squeeze(theConeMosaicSTFresponses(iOri,:,:,:)), theConeMosaicNullResponses), ...
                  normalizingResponses);
 
-        for iFreq = 1:numel(spatialFrequenciesTested)
+        if (takeMaxAtEachOrientation)
+            m = 1.05*max(max(max(abs(theConeMosaicContrastResponsesAtThisOrientation(sfIndicesToVisualize(1),:,theIdentifiedConeIndices)))));
+        end
+
+        for sfIndex = 1:numel(sfIndicesToVisualize)
+
+            iFreq = sfIndicesToVisualize(sfIndex);
+
+            if (takeMaxAtEachSF)
+                m = 1.05*max(max(max(abs(theConeMosaicContrastResponsesAtThisOrientation(iFreq,:,theIdentifiedConeIndices)))));
+            end
 
             for iFrame = 1:numel(spatialPhasesDegs)
 
@@ -85,7 +131,7 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
                     end
 
 
-                    m = 1.05*max(max(max(abs(theConeMosaicContrastResponsesAtThisOrientation(iFreq,:,theIdentifiedConeIndices)))));
+                    
                     if ( m < 0.1)
                         yTickIncrement = 0.02;
                     elseif (m < 0.5)
@@ -102,6 +148,7 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
                     else
                         ylabel(theSingleConeAxes{iCone}, 'modulation');
                     end
+                    title(theSingleConeAxes{iCone}, sprintf('x = %2.1f degs', targetConePositions(iCone,1)), 'FontSize', 16, 'Color', [1 1 0.5])
                     grid(theSingleConeAxes{iCone}, 'on')
                     box(theSingleConeAxes{iCone}, 'off');
 
@@ -122,18 +169,21 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
                  
 
                  thePSFdataMinus = thePSFdata;
-                 thePSFdataMinus.supportXdegs = thePSFdataMinus.supportXdegs-1.6;
+                 thePSFdataMinus.supportXdegs = thePSFdataMinus.supportXdegs-1.7;
                  thePSFaxis1 = axes('Position', [0.42-0.25 0.08 0.2 0.20]);
                  theMidgetRGCMosaic.inputConeMosaic.visualize(...
                             'figureHandle', hFig, ...
                             'axesHandle',thePSFaxis1, ...
                             'visualizedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
                             'withSuperimposedPSF', thePSFdataMinus, ...
-                            'domainVisualizationLimits', [2.4-1.6 2.6-1.6 -0.1 0.1], ...
+                            'domainVisualizationLimits', [0.7 0.9 -0.1 0.1], ...
                             'domainVisualizationTicks', struct(...
                             'x', 0:0.2:5, 'y', -1.6:0.2:1.6), ...
                             'noXLabel', true, 'noYLabel', true, ...
                             'fontSize', 1, ...
+                            'plotTitle', 'x = 0.8 degs', ...
+                            'plotTitleFontSize', 16, ...
+                            'plotTitleColor', [1 1 0.5], ...
                             'backgroundColor', [0 0 0]);
 
                  thePSFaxis2 = axes('Position', [0.42 0.08 0.2 0.20]);
@@ -147,6 +197,9 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
                             'x', 0:0.2:5, 'y', -1.6:0.2:1.6), ...
                             'noXLabel', true, 'noYLabel', true, ...
                             'fontSize', 1, ...
+                            'plotTitle', 'x = 2.5 degs', ...
+                            'plotTitleFontSize', 16, ...
+                            'plotTitleColor', [1 1 0.5], ...
                             'backgroundColor', [0 0 0]);
                  
 
@@ -163,6 +216,9 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
                             'x', 0:0.2:5, 'y', -1.6:0.2:1.6), ...
                             'noXLabel', true, 'noYLabel', true, ...
                             'fontSize', 1, ...
+                            'plotTitle', 'x = 4.1 degs', ...
+                            'plotTitleFontSize', 16, ...
+                            'plotTitleColor', [1 1 0.5], ...
                             'backgroundColor', [0 0 0]);
                  
                  set(hFig, 'Color', [0 0 0]);

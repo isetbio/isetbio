@@ -209,7 +209,8 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
     if (~isempty(activation))
         S.EdgeColor = 'none';
     else
-        S.EdgeColor = [1 1 1];
+        %S.FaceColor = 'none';
+        S.EdgeColor = [0 0 0];
     end
     S.FaceAlpha = 1.0;
     S.LineWidth = 1.0;
@@ -322,6 +323,8 @@ end
 
 function labelConeTypes(obj,ax)
    
+    identifyConnections = false;
+    if (identifyConnections)
     % Plot the connections from the RF center to the input L-cones
     idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.LCONE_ID);
 
@@ -329,12 +332,12 @@ function labelConeTypes(obj,ax)
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
         'Color', [0 0 0],...
-        'LineWidth', 3.0);  
+        'LineWidth', 2.0);  
     plot(ax, ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
         'Color', [1 0 0],...
-        'LineWidth', 1.5); 
+        'LineWidth', 1.); 
 
     idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.MCONE_ID);
 
@@ -342,28 +345,36 @@ function labelConeTypes(obj,ax)
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
         'Color', [0 0 0],...
-        'LineWidth', 3.0); 
+        'LineWidth', 2); 
     plot(ax, ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
         'Color', [0 1 0],...
-        'LineWidth', 1.5); 
+        'LineWidth', 1.0); 
 
+    end
+
+    identifyCones = ~true;
+    if (identifyCones)
 
 %     % Plot the L-cones
     plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCcenters,1), ...
              obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCcenters,2), ...
-             'r.', 'MarkerSize', 10);
+             'r.', 'MarkerSize', 2);
  
 %     % Plot the M-cones
     plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCcenters,1), ...
              obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCcenters,2), ...
-             'g.',  'MarkerSize', 10);
+             'g.',  'MarkerSize', 2);
 % 
 %     % Plot the S-cones
 %     plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,1), ...
 %              obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,2), ...
 %              'b.',  'MarkerSize', 10);
+
+    end
+
+
 end
 
 function generateVisualizationCache(obj, xSupport, ySupport)

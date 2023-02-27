@@ -86,6 +86,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
+    p.addParameter('plotTitleFontSize', 16, @isscalar);
     p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
     p.addParameter('textDisplayColor', [], @isnumeric);
 
@@ -127,6 +128,7 @@ function visualizationParams = visualize(obj, varargin)
     noYlabel = p.Results.noYLabel;
     displayedEyeMovementData = p.Results.displayedEyeMovementData;
     fontSize = p.Results.fontSize;
+    plotTitleFontSize = p.Results.plotTitleFontSize;
     colorbarFontSize = p.Results.colorbarFontSize;
     cMap = p.Results.activationColorMap;
     verticalColorBar = p.Results.verticalActivationColorBar;
@@ -863,16 +865,16 @@ function visualizationParams = visualize(obj, varargin)
                     100*obj.coneDensities(2), ...
                     100*obj.coneDensities(3), ...
                     100*obj.coneDensities(4), ...
-                    conesNum), 'Color', plotTitleColor);
+                    conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
             else
                 title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
                     100*obj.coneDensities(1), ...
                     100*obj.coneDensities(2), ...
                     100*obj.coneDensities(3), ...
-                    conesNum), 'Color', plotTitleColor);
+                    conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
             end
         else
-            title(axesHandle,plotTitle, 'Color', plotTitleColor);
+            title(axesHandle,plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
         end
     end
     
