@@ -76,7 +76,7 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
 
     xlabel(ax, 'narrow-field/wide-field volume ratio')
     ylabel(ax, 'narrow-field/wide-field radius ratio')
-    set(ax, 'XLim', [0 1], 'YLim', [0 0.4], 'XTick', 0:0.2:1, 'YTick', 0:0.1:1, 'TickDir', 'both');
+    set(ax, 'XLim', [0 1.21], 'YLim', [0 0.4], 'XTick', 0:0.2:1.2, 'YTick', 0:0.1:1, 'TickDir', 'both');
     set(ax, 'FontSize', ff.fontSize)
     axis(ax, 'square');
     grid(ax, 'on');

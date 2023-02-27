@@ -228,6 +228,8 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to visualize a model's parameter values & ranges
         visualizeFittedModelParametersAndRanges(ax, modelParams, modelName);
+
+        visualizeConeMosaicSTFresponses(mRGCMosaicFileName, coneMosaicSTFresponsesFileName, varargin);
     end % Static methods
 
 end

@@ -20,8 +20,9 @@ function testMidgetRGCMosaic
     % Actions
     generateRGCMosaic = ~true;
     computeConeMosaicSTFresponses = ~true;
-    optimizeRGCMosaic = true;
-    inspectOptimizedRGCmodels = ~true;
+    optimizeRGCMosaic = ~true;
+    visualizeConeMosaicSTFresponses = true;
+    inspectOptimizedRGCmodels = true;
     generateComputeReadyMidgetRGCMosaic = ~true;
 
 
@@ -34,10 +35,15 @@ function testMidgetRGCMosaic
         save(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
     else
         load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
-    end
+    end 
     
-    visualizeMosaics = false;
+    % Optics params to employ
+    opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
+
+
+    visualizeMosaics = ~true;
     if (visualizeMosaics)
+
         % Visualize input cone mosaic
         theMidgetRGCMosaic.inputConeMosaic.visualize()
     
@@ -46,13 +52,11 @@ function testMidgetRGCMosaic
     end
 
    
-    % Optics params to employ
-    opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
-
+    
     % RetinalRFmodel params to employ
     % Change something if we want, like the model name, e.g. choose cell index 3,
     % 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights', ... 
-    H1cellIndex = 2;
+    H1cellIndex = 4;
     retinalRFmodelParams = MosaicPoolingOptimizer.defaultRetinalRFmodelParams;
     retinalRFmodelParams.conePoolingModel = sprintf('arbitraryCenterConeWeights_doubleExpH1cellIndex%dSurroundWeights', H1cellIndex);
 
@@ -106,6 +110,21 @@ function testMidgetRGCMosaic
                     'useParfor', ~true, ...
                     'visualizedResponses', ~true);
         end
+    end
+
+    if (visualizeConeMosaicSTFresponses)
+        targetConePositions = [...
+            0.77 0.0; ...
+            1.4 0.0; ...
+            2.42 0.0; ...
+            3.3 0.0; ...
+            4.2 0.0];
+
+        MosaicPoolingOptimizer.visualizeConeMosaicSTFresponses(...
+                    fullfile(resourcesDirectory,mosaicFileName), ...
+                    fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
+                    'opticsParams', opticsParams, ...
+                    'targetConePositions', targetConePositions);
     end
 
     % Stage 3: Optimize pooling from the cone mosaic using the computed
