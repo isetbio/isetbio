@@ -3,9 +3,6 @@ function testMidgetRGCMosaic
     
     arbitraryNodesToCompute = selectNodesToRecompute();
 
-%     arbitraryNodesToCompute{1} = struct(...
-%         'number', 16, ...
-%         'coneType', [cMosaic.LCONE_ID]);
 
     % Mosaic params to employ
     mosaicParams = struct(...
@@ -21,10 +18,9 @@ function testMidgetRGCMosaic
     generateRGCMosaic = ~true;
     computeConeMosaicSTFresponses = ~true;
     optimizeRGCMosaic = true;
-    visualizeConeMosaicSTFresponses = ~true;
     inspectOptimizedRGCmodels = ~true;
     generateComputeReadyMidgetRGCMosaic = ~true;
-
+    animateModelConvergence = ~true;
 
     if (generateRGCMosaic)
         % Generate mosaic, its input coneMosaic and connect cones to the RF centers
@@ -35,15 +31,10 @@ function testMidgetRGCMosaic
         save(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
     else
         load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
-    end 
+    end
     
-    % Optics params to employ
-    opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
-
-
-    visualizeMosaics = ~true;
+    visualizeMosaics = false;
     if (visualizeMosaics)
-
         % Visualize input cone mosaic
         theMidgetRGCMosaic.inputConeMosaic.visualize()
     
@@ -52,7 +43,9 @@ function testMidgetRGCMosaic
     end
 
    
-    
+    % Optics params to employ
+    opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
+
     % RetinalRFmodel params to employ
     % Change something if we want, like the model name, e.g. choose cell index 3,
     % 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights', ... 
@@ -112,21 +105,6 @@ function testMidgetRGCMosaic
         end
     end
 
-    if (visualizeConeMosaicSTFresponses)
-        targetConePositions = [...
-            0.77 0.0; ...
-            1.4 0.0; ...
-            2.42 0.0; ...
-            3.3 0.0; ...
-            4.2 0.0];
-
-        MosaicPoolingOptimizer.visualizeConeMosaicSTFresponses(...
-                    fullfile(resourcesDirectory,mosaicFileName), ...
-                    fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
-                    'opticsParams', opticsParams, ...
-                    'targetConePositions', targetConePositions);
-    end
-
     % Stage 3: Optimize pooling from the cone mosaic using the computed
     % cone mosaic STF responses and desired visual RF properties for the
     % RGC mosaic
@@ -141,8 +119,7 @@ function testMidgetRGCMosaic
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
             theMidgetRGCMosaic, ...
-            'generateSamplingGrids', true, ...
-            'visualizeSamplingGrids', true);
+            'generateSamplingGrids', true);
 
         % Fitting options
         multiStartsNumRetinalPooling = 12;
@@ -194,7 +171,7 @@ function testMidgetRGCMosaic
                 whichConeType = [cMosaic.LCONE_ID cMosaic.MCONE_ID];
             end
             
-            theMosaicPoolingOptimizer.compute(gridNodeIndex, whichConeType, ...
+            theMosaicPoolingOptimizer.compute(gridNodeIndex, whichConeType, opticsParams, ...
                 fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
                 fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName), ...
                 'multiStartsNumDoGFit', multiStartsNumDoGFit, ...
@@ -212,8 +189,7 @@ function testMidgetRGCMosaic
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
             theMidgetRGCMosaic, ...
-            'generateSamplingGrids', true, ...
-            'visualizeSamplingGrids', ~true);
+            'generateSamplingGrids', true);
 
         gridNodesToInspect = input('Enter grid node to inspect. Hit enter to inspect all.: ');
         if (isempty(gridNodesToInspect))
@@ -229,11 +205,29 @@ function testMidgetRGCMosaic
 
         for iNode = 1:numel(gridNodesToInspect)
             gridNodeIndex = gridNodesToInspect(iNode);
-            theMosaicPoolingOptimizer.inspect(gridNodeIndex, ...
+            theMosaicPoolingOptimizer.inspect(gridNodeIndex, opticsParams, ...
                 fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName));
         end
 
     end
+
+    if (animateModelConvergence)
+        % Instantiate the mosaic pooling optimizer
+        theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
+            theMidgetRGCMosaic, ...
+            'generateSamplingGrids', true);
+
+        [optimizedRGCpoolingObjectsFileName, resourcesDirectory] = ...
+        MosaicPoolingOptimizer.resourceFileNameAndPath('optimizedRGCpoolingObjects', ...
+            'mosaicParams', mosaicParams, ...
+            'opticsParams', opticsParams, ...
+            'retinalRFmodelParams', retinalRFmodelParams);
+
+        gridNodeToAnimate = input('Enter grid node to animate: ');
+        theMosaicPoolingOptimizer.animateModelConvergence(gridNodeToAnimate, ...
+                fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName));
+    end
+
 
     % Stage 5: Bake in the computed RGC models (across all grid nodes)
     % to the midgetRGCmosaic
@@ -308,44 +302,20 @@ function arbitraryNodesToCompute = selectNodesToRecompute()
     arbitraryNodesToCompute = {};
 
     arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 2, ...
-        'coneType', [cMosaic.LCONE_ID]);
-
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
         'number', 5, ...
-        'coneType', [cMosaic.MCONE_ID]);
+        'coneType', [cMosaic.LCONE_ID]);
 
     arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
         'number', 7, ...
         'coneType', [cMosaic.MCONE_ID]);
 
     arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 9, ...
-        'coneType', [cMosaic.MCONE_ID]);
-
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
         'number', 13, ...
-        'coneType', [cMosaic.LCONE_ID]);
-
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 17, ...
-        'coneType', [cMosaic.LCONE_ID]);
-
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 20, ...
-        'coneType', [cMosaic.LCONE_ID]);
-
-
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 21, ...
         'coneType', [cMosaic.MCONE_ID]);
 
     arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 22, ...
-        'coneType', [cMosaic.MCONE_ID]);
+        'number', 14, ...
+        'coneType', [cMosaic.LCONE_ID]);
 
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 23, ...
-        'coneType', [cMosaic.MCONE_ID]);
 
 end
