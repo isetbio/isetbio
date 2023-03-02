@@ -8,7 +8,7 @@ function testProductionReadyMRGCmosaic
     % at (x,y) = (1,0.5), with width = 0.4 degs and height = 0.2 degs
     mySmallMRGCmosaic = mRGCMosaic(theSourceMidgetRGCMosaic, ...
         'eccentricityDegs', [1 0.5], ...
-        'sizeDegs', [0.6 0.6], ...
+        'sizeDegs', [0.5 0.5], ...
         'name', 'my small off-center mRGC mosaic');
 
     theOI = mySmallMRGCmosaic.multiFocalRTVFopticsAtPosition(...
@@ -16,7 +16,8 @@ function testProductionReadyMRGCmosaic
     
 
     % Stimulus params
-    sceneFOVdegs = [2 1];
+    spatialFrequenciesTested = [1];
+    sceneFOVdegs = 1.5*[1 1];
     stimulusPixelsNum = 256;
     retinalImageResolutionDegs = max(sceneFOVdegs)/stimulusPixelsNum;
     
@@ -35,13 +36,14 @@ function testProductionReadyMRGCmosaic
 
     contrastMask = rfMappingStimulusGenerator.contrastMask(...
         spatialSupportDegs, ...
-        'zeroInCentralRegionWithSize', [0.15 0.15] ...
+        'zeroInCentralRegionWithSize', [0.2 0.2] ...
         );
+
 
     coneContrasts = [1 1 1];
     orientationsTested = 0;
 
-    spatialFrequenciesTested = [0.5];
+   
 
     % Where to position  the stimulus
     stimulusRetinalPositionDegs = mySmallMRGCmosaic.eccentricityDegs;
@@ -89,7 +91,7 @@ function testProductionReadyMRGCmosaic
     theBackgroundOI = oiCompute(theOI, theNullStimulusScene);
 
     % Compute the cone mosaic response to the retinal image of the background stimulus
-        theNullConeMosaicResponse = mySmallMRGCmosaic.inputConeMosaic.compute(...
+    theNullConeMosaicResponse = mySmallMRGCmosaic.inputConeMosaic.compute(...
             theBackgroundOI, 'opticalImagePositionDegs', stimParams.retinalPositionDegs);
 
     for frameIndex = 1:numel(theDriftingGratingFrameScenes)
@@ -115,26 +117,20 @@ function testProductionReadyMRGCmosaic
 
 
 
-    theROI = regionOfInterest('shape', 'line', 'from', [1,0.25], 'to', [1,0.75], 'thickness', 0.01);
-    samplingPoints = 4000;  % sample the perimeter of the ROI along 1000 points');
-    pointsPerSample = 10;  % return up to 6 points for each sample along the perimeter');
-    maxDistance = 0.4;     % points must be no further than 0.03 degs away from the closest perimeter sample');
+    theROI = regionOfInterest('shape', 'line', 'from', [1.04,0.25], 'to', [1.04,0.75], 'thickness', 0.01);
+    samplingPoints = 1000;  % sample the perimeter of the ROI along 1000 points');
+    pointsPerSample = 4;  % return up to 6 points for each sample along the perimeter');
+    maxDistance = 0.01;     % points must be no further than 0.03 degs away from the closest perimeter sample');
 
     % Find cones around the ROI
     idx = theROI.indicesOfPointsAround(...
         mySmallMRGCmosaic.inputConeMosaic.coneRFpositionsDegs, pointsPerSample, samplingPoints, maxDistance);
-    maxConesNumForTemporalResponsePlotting = 20;
-    skip = floor(numel(idx)/maxConesNumForTemporalResponsePlotting);
-    idx = idx(1:skip:numel(idx));
     identifiedConeIndices = idx;
 
 
     % Find RGCs around the ROI
     idx = theROI.indicesOfPointsAround(...
         mySmallMRGCmosaic.rgcRFpositionsDegs, pointsPerSample, samplingPoints, maxDistance);
-    maxRGCsNumForTemporalResponsePlotting = 20;
-    skip = floor(numel(idx)/maxRGCsNumForTemporalResponsePlotting);
-    idx = idx(1:skip:numel(idx));
     identifiedRGCIndices = idx;
 
 
@@ -162,6 +158,7 @@ function testProductionReadyMRGCmosaic
                 'activation', theConeMosaicResponseModulation(1,timeBin,:), ...
                 'activationRange', max(abs(theConeMosaicResponseModulation(:))) * [-1 1], ...
                 'backgroundColor', [0 0 0], ...
+                'domainVisualizationTicks', struct('x', -1:0.5:1, 'y', -1:0.5:1), ...
                 'labelConesWithIndices', identifiedConeIndices, ...
                 'verticalActivationColorBar', true, ...
                 'plotTitle', sprintf('time: %2.0f msec', 1000.0*theConeMosaicResponseTemporalSupportSeconds(timeBin)));
@@ -194,6 +191,7 @@ function testProductionReadyMRGCmosaic
     hFig = figure(2); clf;
     set(hFig, 'Position', [10 10 2048 800]);
     
+    
     ax1 = subplot('Position', [0.07 0.07 0.4 0.9]);
     ax2 = subplot('Position', [0.55 0.07 0.4 0.9]);
 
@@ -207,33 +205,38 @@ function testProductionReadyMRGCmosaic
 
 
     hFig = figure(3); clf;
-    set(hFig, 'Position', [10 10 2048 800], 'Color', [0 0 0]);
-    ax1 = subplot('Position', [0.07 0.07 0.4 0.9]);
-    ax2 = subplot('Position', [0.55 0.07 0.4 0.9]);
+    set(hFig, 'Position', [10 10 2000 1150], 'Color', [0 0 0]);
+    ax0 = subplot('Position', [0.03 0.05 0.5 0.92]);
+    ax1 = subplot('Position', [0.60 0.45  0.4 0.52]);
+    ax2 = subplot('Position', [0.63 0.06 0.34 0.30]);
     
-    activationColorMap = gray(512);
-    activationColorMap(:,2) = 0;
-    activationColorMap(:,3) = 0;
-    redColorMap = activationColorMap;
-    activationColorMap = gray(512);
-    activationColorMap(:,1) = 0;
-    activationColorMap(:,2) = 0;
-    blueColorMap = activationColorMap;
-
-    activationColorMap = cat(1, flipud(redColorMap), blueColorMap);
+   
 
     activationColorMap = gray(1024);
-    videoOBJ = VideoWriter('MRGCresponseDriftingGrating', 'MPEG-4');
+    videoOBJ = VideoWriter(sprintf('MRGCresponseDriftingGrating_%2.3fcyclesPerDeg', spatialFrequenciesTested(1)), 'MPEG-4');
     videoOBJ.FrameRate = 10;
     videoOBJ.Quality = 100;
     videoOBJ.open();
 
 
-    maxResponse = 0.8*max(abs(squeeze(theMRGCresponses(:))));
+    maxResponse = 0.2*max(abs(squeeze(theMRGCresponses(:))));
     s = abs(squeeze(theMRGCresponses(1,:,identifiedRGCIndices)));
     lineRGCResponseRange = max(s(:))*[-1 1];
 
     for timeBin = 1:size(theMRGCresponses,2)
+
+        mySmallMRGCmosaic.inputConeMosaic.visualize(...
+                'figureHandle', hFig, ...
+                'axesHandle', ax0, ...
+                'activation', theConeMosaicResponseModulation(1,timeBin,:), ...
+                'activationRange', max(abs(theConeMosaicResponseModulation(:))) * [-1 1], ...
+                'backgroundColor', [0 0 0], ...
+                'verticalActivationColorBar', true, ...
+                'domainVisualizationTicks', struct('x', -1:0.5:1, 'y', -1:0.5:1), ...
+                'colorbarTickLabelColor', [0.8 0.8 0.8]);
+    
+        set(hFig, 'Color', [0 0 0]);
+        set(ax0, 'XColor', [0.7 0.7 0.7], 'YColor', [0.7 0.7 0.7]);
 
         % Visualize the mRGC mosaic
 %         mySmallMRGCmosaic.visualize(...
@@ -261,14 +264,16 @@ function testProductionReadyMRGCmosaic
             'labelRGCsWithIndices', identifiedRGCIndices, ...
             'colorbarTickLabelColor', [0.8 0.8 0.8], ...
             'activationColorMap', activationColorMap, ...
-            'backgroundColor', [0 0 0]);
+            'backgroundColor', [0 0 0], ...
+            'plotTitle', 'RGC modulation');
 
         set(ax1, 'XColor', [0.7 0.7 0.7], 'YColor', [0.7 0.7 0.7]);
 
-        if (timeBin> 1)
-            cla(ax2);
-            hold(ax2, 'on')
+        cla(ax2);
+        hold(ax2, 'on')
 
+        if (timeBin> 1)
+            
             theIdentifiedRGCresponses = squeeze(theMRGCresponses(1,1:timeBin,identifiedRGCIndices));
 
             for iRGC = 1:numel(identifiedRGCIndices)
@@ -284,14 +289,16 @@ function testProductionReadyMRGCmosaic
                       theIdentifiedRGCresponses(:, iRGC), '-', 'Color', color, 'LineWidth', 1);
             end
             
-            plot(theMRGCresponseTemporalSupportSeconds(timeBin)*[1 1], lineRGCResponseRange, 'c-', 'LineWidth', 1.5)
-            axis(ax2, 'square');
-            set(ax2, 'YLim', lineRGCResponseRange, 'XLim', [theMRGCresponseTemporalSupportSeconds(1) theMRGCresponseTemporalSupportSeconds(end)]);
-            set(ax2, 'Color', [0 0 0], 'YTick', -1:0.1:1);
-            set(ax2, 'FontSize', 16, 'XColor', [0.7 0.7 0.7], 'YColor', [0.7 0.7 0.7]);
-            xlabel(ax2, 'time (seconds)')
-            ylabel(ax2, 'RGC modulation');
+            plot(ax2, theMRGCresponseTemporalSupportSeconds(timeBin)*[1 1], lineRGCResponseRange, 'c-', 'LineWidth', 1.5)
         end
+
+        set(ax2, 'YLim', lineRGCResponseRange, 'XLim', [theMRGCresponseTemporalSupportSeconds(1) theMRGCresponseTemporalSupportSeconds(end)]);
+        set(ax2, 'Color', [0 0 0], 'YTick', -1:0.1:1);
+        set(ax2, 'FontSize', 16, 'XColor', [0.7 0.7 0.7], 'YColor', [0.7 0.7 0.7]);
+        xlabel(ax2, 'time (seconds)')
+        ylabel(ax2, 'RGC modulation');
+        box(ax2, 'on')
+        
 
         drawnow;
         videoOBJ.writeVideo(getframe(hFig));

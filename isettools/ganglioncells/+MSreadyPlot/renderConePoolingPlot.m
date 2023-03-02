@@ -1,7 +1,30 @@
 function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
-        rgcRFposDegs, coneIndices, coneWeights)
+        rgcRFposDegs, coneIndices, coneWeights, ff, varargin)
 
-    spatialSupportDegs = (-20:0.1:20)/60;
+    p = inputParser;
+    p.addParameter('noXLabel', false, @islogical);
+    p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('plotTitle', '', @ischar);
+    p.addParameter('tickSeparationArcMin', 6, @isscalar);
+    p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
+    p.parse(varargin{:});
+    
+    spatialSupportRangeArcMin = p.Results.spatialSupportRangeArcMin;
+    tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    plotTitle = p.Results.plotTitle;
+    noXLabel = p.Results.noXLabel;
+    noYLabel = p.Results.noYLabel;
+    
+    if (isempty(spatialSupportRangeArcMin))
+        spatialSupportRangeArcMin = 10;
+    end
+
+    if (isempty(tickSeparationArcMin))
+        tickSeparationArcMin = 2.0;
+    end
+
+    maxXY = round(spatialSupportRangeArcMin/2);
+    spatialSupportDegs = (-maxXY:0.05:maxXY)/60;
     spatialSupportXYDegs(:,1) = rgcRFposDegs(1) + spatialSupportDegs;
     spatialSupportXYDegs(:,2) = rgcRFposDegs(2) + spatialSupportDegs;
     XLims = rgcRFposDegs(1) + [spatialSupportDegs(1) spatialSupportDegs(end)];
@@ -32,11 +55,40 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
     lineWeightingFunctions.y = struct(...
         'spatialSupportDegs', spatialSupportXYDegs(:,2), ...
         'amplitude', sum(retinalSubregionConeMap,2));
+
+
     axis(ax, 'image');
     axis(ax, 'xy');
+    xyTicks = -30:(tickSeparationArcMin/60):30;
     set(ax, 'CLim', [0 0.3*max(retinalSubregionConeMap(:))], ...
-            'XLim', XLims, 'YLim', YLims);
+            'XLim', XLims, 'YLim', YLims, ...
+            'XTick', xyTicks, 'YTick', xyTicks, ...
+            'XTickLabel', sprintf('%2.2f\n', xyTicks), ...
+            'YTickLabel', sprintf('%2.2f\n', xyTicks));
 
+    % Font size
+    set(ax, 'FontSize', ff.fontSize);
+
+    % axis color and width
+    set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+
+    if (~noXLabel)
+        xlabel(ax, 'space, x (deg)', 'FontAngle', ff.axisFontAngle);
+    end
+
+    if (~noYLabel)
+        ylabel(ax, 'space, y (deg)' ,'FontAngle', ff.axisFontAngle);
+    end
+
+
+
+    if (~isempty(plotTitle))
+       title(ax, plotTitle, ...
+                'Color', ff.titleColor, 'FontSize', ff.titleFontSize, ...
+                'FontWeight', ff.titleFontWeight);
+    end
+
+    xtickangle(ax, 90);
     colormap(ax, brewermap(1024, 'greys'));
 end
 

@@ -40,6 +40,7 @@ function visualizeFittedModelParametersAndRanges(ax, modelParams, modelName)
             'XTick', xTicks, 'XTickLabel', xTickLabels, 'YLim', [-0.1 1.1], ...
             'YTickLabel', {}, 'FontSize', 14, 'YColor', 'none');
     
+    axis (ax, 'square');
     ylabel(ax,'parameter value range');
     title(ax, modelName, 'FontSize', 16, 'Color', [0.3 0.3 0.3]);
     
