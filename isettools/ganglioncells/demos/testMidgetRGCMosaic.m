@@ -1,8 +1,6 @@
 function testMidgetRGCMosaic
-
     
-    arbitraryNodesToCompute = selectNodesToRecompute();
-
+    arbitraryNodesToCompute = []; % selectNodesToRecompute();
 
     % Mosaic params to employ
     mosaicParams = struct(...

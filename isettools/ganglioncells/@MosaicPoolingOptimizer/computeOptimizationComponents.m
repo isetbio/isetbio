@@ -35,7 +35,7 @@ function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptim
     % RF center - THIS IS CACHED HERE
     coneDistancesFromRFCenterSquared = sum(bsxfun(@minus, obj.theRGCMosaic.inputConeMosaic.coneRFpositionsDegs, RFcenterPos).^2,2);
     coneDistancesFromRFCenter = sqrt(coneDistancesFromRFCenterSquared);
-    modelConstants.cachedData.surroundConeIndices = find(coneDistancesFromRFCenterSquared <= modelConstants.maxSurroundSupportDegs);
+    modelConstants.cachedData.surroundConeIndices = find(coneDistancesFromRFCenter <= modelConstants.maxSurroundSupportDegs);
     modelConstants.cachedData.coneDistancesFromRFCenter = coneDistancesFromRFCenter(modelConstants.cachedData.surroundConeIndices);
 
 

@@ -241,6 +241,7 @@ function [LconeComputeStructsList, MconeComputeStructsList] = loadOptimizedRFcom
         theLconeRFcomputeStruct.modelTotalSurroundStrength = sum(pooledConeIndicesAndWeights.surroundConeWeights);
         theLconeRFcomputeStruct.modelTotalNonConnectableSurroundConesStrength = sum(pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights);
 
+
         % Compute the M-cone models' total center/surround and non-connectable
         % surround strengths
         pooledConeIndicesAndWeights = centerNormalizedPooledConeIndicesAndWeights(...
@@ -249,7 +250,12 @@ function [LconeComputeStructsList, MconeComputeStructsList] = loadOptimizedRFcom
         theMconeRFcomputeStruct.modelTotalSurroundStrength = sum(pooledConeIndicesAndWeights.surroundConeWeights);
         theMconeRFcomputeStruct.modelTotalNonConnectableSurroundConesStrength = sum(pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights);
 
-
+        fprintf('L-cone model at grid node%d has a total strengths: %2.3f\n', gridNodeIndex, ...
+            theLconeRFcomputeStruct.modelTotalCenterStrength , theLconeRFcomputeStruct.modelTotalSurroundStrength );
+       
+        fprintf('M-cone model at grid node%d has a total strengths: %2.3f (center) %2.3f (surround)\n', gridNodeIndex, ...
+            theMconeRFcomputeStruct.modelTotalCenterStrength , theMconeRFcomputeStruct.modelTotalSurroundStrength );
+        
         % Add to the list
         LconeComputeStructsList{gridNodeIndex} = theLconeRFcomputeStruct;
         MconeComputeStructsList{gridNodeIndex} = theMconeRFcomputeStruct;
@@ -263,7 +269,7 @@ function updatedModelConstants = updateModelConstantsForCurrentRGC(...
 
     updatedModelConstants = modelConstants;
     
-    % Maximum support for the surround, in degrees, taken as 3 times the C&K
+    % Maximum support for the surround, in degrees, taken as MosaicPoolingOptimizer.maxSurroundSupportFactor times the C&K
     % surrounds at the cell's eccentricity
     radialEccentricityForThisRGC = sqrt(sum(theRGCpositionDegs.^2,2));
     updatedModelConstants.maxSurroundSupportDegs = MosaicPoolingOptimizer.maxSurroundSupportFactor * ...
@@ -275,7 +281,7 @@ function updatedModelConstants = updateModelConstantsForCurrentRGC(...
     % Compute the distances of ALL cones in the input cone mosaic from the RF center
     coneDistancesFromRFCenterSquared = sum(bsxfun(@minus, theRGCMosaic.inputConeMosaic.coneRFpositionsDegs, RFcenterPos).^2,2);
     coneDistancesFromRFCenter = sqrt(coneDistancesFromRFCenterSquared);
-    updatedModelConstants.cachedData.surroundConeIndices = find(coneDistancesFromRFCenterSquared <= updatedModelConstants.maxSurroundSupportDegs);
+    updatedModelConstants.cachedData.surroundConeIndices = find(coneDistancesFromRFCenter <= updatedModelConstants.maxSurroundSupportDegs);
     updatedModelConstants.cachedData.coneDistancesFromRFCenter = coneDistancesFromRFCenter(updatedModelConstants.cachedData.surroundConeIndices);
 
     updatedModelConstants.indicesOfCenterCones = indicesOfConesPooledByTheRFcenter;
