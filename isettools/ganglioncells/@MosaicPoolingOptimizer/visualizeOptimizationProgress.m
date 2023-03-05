@@ -98,13 +98,6 @@ function [hFigProgress, ff] = visualizeOptimizationProgress(figNo, figTitle, ...
                  ff);
        axis(ax, 'square');
 
-       ax = subplot('Position',  ff.subplotPosVectors(2,3).v);
-       axis(ax, 'square');
-       title(ax, 'RF center')
-       ax = subplot('Position',  ff.subplotPosVectors(2,4).v);
-       axis(ax, 'square');
-       title(ax, 'RF surround')
-
     end
 
     drawnow;

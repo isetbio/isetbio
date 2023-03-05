@@ -64,7 +64,6 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
     MSreadyPlot.renderFittedH1paramsCorrespondenceToPackerDaceyData(ax, ...
         retinalConePoolingParams, ff);
     
-    
     % Add the RF center cone pooling map
     tickSeparationArcMin = 3;
     spatialSupportRangeArcMin = tickSeparationArcMin*6;
@@ -83,6 +82,7 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         'plotTitle', 'RF center');
 
     
+    % Add the RF surround cone pooling map
     ax = subplot('Position',  ff.subplotPosVectors(2,2).v);
     cla(ax, 'reset');
 
@@ -96,7 +96,6 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
         'plotTitle', 'RF surround', ...
         'noYLabel', true);
-
 
 
     % Add the line weighting functions

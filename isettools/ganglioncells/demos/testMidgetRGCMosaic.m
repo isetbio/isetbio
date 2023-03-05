@@ -15,9 +15,9 @@ function testMidgetRGCMosaic
     % Actions
     generateRGCMosaic = ~true;
     computeConeMosaicSTFresponses = ~true;
-    optimizeRGCMosaic = true;
+    optimizeRGCMosaic = ~true;
     inspectOptimizedRGCmodels = ~true;
-    generateComputeReadyMidgetRGCMosaic = ~true;
+    generateComputeReadyMidgetRGCMosaic = true;
     animateModelConvergence = ~true;
 
     if (generateRGCMosaic)
@@ -110,6 +110,7 @@ function testMidgetRGCMosaic
         % Make sure 
         nodeIndicesToCompute = input('Which node indices set to compute ? (even or odd) : ', 's');
 
+        
         assert(...
             (ismember(nodeIndicesToCompute, {'even', 'odd', 'all'})), ...
             'grid nodes indices must be either ''even'' or ''odd''.');
@@ -247,9 +248,17 @@ function testMidgetRGCMosaic
                 'opticsParams', opticsParams, ...
                 'retinalRFmodelParams', retinalRFmodelParams);
 
+        visualizeInterpolation = input('Visualize interpolation? [y = YES] : ', 's');
+        if (strcmp(visualizeInterpolation, 'y'))
+            visualizeInterpolation = true;
+        else
+            visualizeInterpolation = false;
+        end
+        
         theMosaicPoolingOptimizer.generateComputeReadyMidgetRGCMosaic(...
             fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName), ...
-            fullfile(resourcesDirectory, computeReadyMosaicFileName));
+            fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
+            visualizeInterpolation)
 
     end
 

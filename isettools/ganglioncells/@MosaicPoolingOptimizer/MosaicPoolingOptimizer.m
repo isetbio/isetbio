@@ -137,7 +137,10 @@ classdef MosaicPoolingOptimizer < handle
         % nodes in the RGCmosaic and generates a compute-ready mRGCMosaic
         % with center and surround cone connections derived from these
         % optimized RGC pooling models
-        generateComputeReadyMidgetRGCMosaic(obj, optimizedRGCpoolingObjectsFileName, computeReadyMosaicFilename);
+        generateComputeReadyMidgetRGCMosaic(obj, ...
+            optimizedRGCpoolingObjectsFileName, ...
+            computeReadyMosaicFilename, ...
+            visualizeInterpolation);
 
         % Getter for dependent property gridNodesNum
         function val = get.gridNodesNum(obj)
@@ -178,7 +181,8 @@ classdef MosaicPoolingOptimizer < handle
             opticsParams, initialRetinalConePoolingParams, displayFittingProgress, figNo, figTitle);
 
         % Optimization components
-        [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptimizationComponents(obj, theRGCindex);
+        [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptimizationComponents(...
+            obj, theRGCindex);
     end
 
     % Static methods
@@ -213,8 +217,9 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to compute triangulating nodes and weights for computing
         % pooling parameters from nearby RGC models
-        [triangulatingGridNodeIndices, triangulatingGridNodeWeights] = ...
-            triangulatingGridNodeIndicesAndWeights(theRGCposition, positionsOfModelRGCs, indicesOfModelRGCs)
+        [triangulatingModelRGCIndices, triangulatingModelRGCWeights, triangulatingGridNodeIndices] = ...
+            triangulatingGridNodeIndicesAndWeights(theRGCposition, positionsOfModelRGCs, ...
+            targetModelRGCindices, targetGridNodeIndices);
 
         % Method to visualize the optimization progress
         [hFig, figureFormat] = visualizeOptimizationProgress(figNo, figTitle, ...
@@ -225,6 +230,18 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to visualize a model's parameter values & ranges
         visualizeFittedModelParametersAndRanges(ax, modelParams, modelName);
+
+        % Method to visualize how we synthesize RF center/surround via
+        % triangulating interpolation
+        visualizeMultiSpectralMultiFocalRFgeneration(figNo, ...
+            inputConeMosaic, theCurrentRGCindex, theCurrentRGCposition, ...
+            coneType, ...
+            coneIndicesAndWeightsForTriangulatingModels, ...
+            triangulatingModelRGCpositions, ...
+            triangulatingModelGridIndices, triangulatingModelWeights, ...
+            centerConeIndicesForCurrentRGC, centerConeWeightsForCurrentRGC, ...
+            surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC);
+
 
         visualizeConeMosaicSTFresponses(mRGCMosaicFileName, coneMosaicSTFresponsesFileName, varargin);
     end % Static methods

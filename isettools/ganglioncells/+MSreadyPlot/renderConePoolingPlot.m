@@ -4,6 +4,8 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('noXTicks', false, @islogical);
+    p.addParameter('noYTicks', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
@@ -14,7 +16,9 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
     plotTitle = p.Results.plotTitle;
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
-    
+    noXTicks = p.Results.noXTicks;
+    noYTicks = p.Results.noYTicks;
+
     if (isempty(spatialSupportRangeArcMin))
         spatialSupportRangeArcMin = 10;
     end
@@ -56,15 +60,25 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
         'spatialSupportDegs', spatialSupportXYDegs(:,2), ...
         'amplitude', sum(retinalSubregionConeMap,2));
 
+    xyTicks = -30:(tickSeparationArcMin/60):30;
+    
 
     axis(ax, 'image');
     axis(ax, 'xy');
-    xyTicks = -30:(tickSeparationArcMin/60):30;
+
     set(ax, 'CLim', [0 0.3*max(retinalSubregionConeMap(:))], ...
             'XLim', XLims, 'YLim', YLims, ...
             'XTick', xyTicks, 'YTick', xyTicks, ...
             'XTickLabel', sprintf('%2.2f\n', xyTicks), ...
             'YTickLabel', sprintf('%2.2f\n', xyTicks));
+
+    if (noXTicks)
+        set(ax, 'XTickLabel', {});
+    end
+
+    if (noYTicks)
+        set(ax, 'YTickLabel', {});
+    end
 
     % Font size
     set(ax, 'FontSize', ff.fontSize);

@@ -5,6 +5,8 @@ function renderConePoolingLineWeightingFunctions(ax, ...
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('noXTicks', false, @islogical);
+    p.addParameter('noYTicks', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
@@ -15,6 +17,8 @@ function renderConePoolingLineWeightingFunctions(ax, ...
     plotTitle = p.Results.plotTitle;
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
+    noXTicks = p.Results.noXTicks;
+    noYTicks = p.Results.noYTicks;
 
     if (isempty(spatialSupportRangeArcMin))
         spatialSupportRangeArcMin = 10;
@@ -62,6 +66,14 @@ function renderConePoolingLineWeightingFunctions(ax, ...
             'XTickLabel', sprintf('%2.1f\n', xTicks), ...
             'YTickLabel', sprintf('%2.1f\n', sensitivityTicks )); 
 
+    if (noXTicks)
+        set(ax, 'XTickLabel', {});
+    end
+
+    if (noYTicks)
+        set(ax, 'YTickLabel', {});
+    end
+
     % Font size
     set(ax, 'FontSize', ff.fontSize);
 
@@ -88,7 +100,7 @@ function renderConePoolingLineWeightingFunctions(ax, ...
                 'FontWeight', ff.titleFontWeight);
     end
 
-    xtickangle(ax, 0);
+    xtickangle(ax, 90);
 
 end
 

@@ -1,21 +1,26 @@
-function [triangulatingGridNodeIndices, triangulatingGridNodeWeights] = ...
-    triangulatingGridNodeIndicesAndWeights(theRGCposition, positionsOfModelRGCs, indicesOfModelRGCs)
+function [triangulatingModelRGCIndices, triangulatingModelRGCWeights, triangulatingGridNodeIndices] = ...
+    triangulatingGridNodeIndicesAndWeights(theRGCposition, positionsOfModelRGCs, ...
+                                           targetModelRGCindices, targetGridNodeIndices)
 
     distancesToModelRGCs = sqrt(sum((bsxfun(@minus, positionsOfModelRGCs, theRGCposition)).^2,2));
     [distancesToModelRGCs, idx] = sort(distancesToModelRGCs, 'ascend');
-    nearestModelRGCindices = indicesOfModelRGCs(idx);
+    nearestTargetModelRGCindices = targetModelRGCindices(idx);
+    triangulatingGridNodeIndices = targetGridNodeIndices(idx);
 
     if (distancesToModelRGCs(1) == 0)
         % If the minimum distance to one of the fitted RTVF objects is
         % zero, just use that RTVF object
-        triangulatingGridNodeIndices = nearestModelRGCindices(1);
-        triangulatingGridNodeWeights(1) = 1;
+        triangulatingModelRGCIndices = nearestTargetModelRGCindices(1);
+        triangulatingModelRGCWeights(1) = 1;
+        triangulatingGridNodeIndices = triangulatingGridNodeIndices(1);
     else
         % Weights inversely proportional to the cell's distance to the
         % pnearby model RGCs
         nearbyFittedModelsNum = 3;
-        triangulatingGridNodeIndices = nearestModelRGCindices(1:nearbyFittedModelsNum);
-        triangulatingGridNodeWeights = 1./distancesToModelRGCs(1:nearbyFittedModelsNum);
+        triangulatingModelRGCIndices = nearestTargetModelRGCindices(1:nearbyFittedModelsNum);
+        triangulatingModelRGCWeights = 1./distancesToModelRGCs(1:nearbyFittedModelsNum);
+        triangulatingGridNodeIndices = triangulatingGridNodeIndices(1:nearbyFittedModelsNum);
     end
-    triangulatingGridNodeWeights = triangulatingGridNodeWeights/sum(triangulatingGridNodeWeights);
+    triangulatingModelRGCWeights = triangulatingModelRGCWeights/sum(triangulatingModelRGCWeights);
+
 end
