@@ -79,6 +79,11 @@ classdef mRGCMosaic < handle
         %  inputConeIndices = find(abs(connectivityVector) > 0.0001);
         rgcRFcenterConeConnectivityMatrix = [];
 
+        % Sparse [conesNum x rgcRFsNum] cone pooling matrices for RF center
+        % and RF surrounds.
+        % To find which cones are connected to the surround of an rgcRF:
+        %  connectivityVector = full(squeeze(rgcRFsurroundConePoolingMatrix(:, rgcRF)));
+        %  surroundConeIndices = find(abs(connectivityVector) > 0.0001);
         rgcRFcenterConePoolingMatrix = [];
         rgcRFsurroundConePoolingMatrix = [];
 
@@ -167,13 +172,19 @@ classdef mRGCMosaic < handle
             obj.cropRGCsOnTheBorder();
         end % Constructor
 
+        % Compute method
+        [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj, ...
+            theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin);
+
+
+        % Method to visualize the mRGCmosaic and its activation
+        visualize(obj, varargin);
+
+
         % Method to generate the native optics for the mosaic.
         % These optics form the basis on which surround cone weights are optimized
         % for wiring so as to generate desired visual RF properties
         generateNativeOptics(obj, opticsParams);
-
-        % Method to visualize the mRGCmosaic and its activation
-        visualize(obj, varargin);
 
         % Method to bake in center/surround cone pooling weights.
         % This method replaces the rgcRFcenterConeConnectivityMatrix with

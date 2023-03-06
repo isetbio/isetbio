@@ -33,19 +33,20 @@ function generateComputeReadyMidgetRGCMosaic(obj, optimizedRGCpoolingObjectsFile
     sanityCheck(rgcRFsurroundConePoolingMatrix, 'surround');
 
     % All good. Proceed with baking in the computed center/surround cone pooling matrices to
-    % theRCMosaic. At this point we should export this compute-ready midgetRGCMosaic
+    % theRCMosaic. This also sets the center-connectivity sparse matrix to []. 
     obj.theRGCMosaic.bakeInConePoolingMatrices(...
         rgcRFcenterConePoolingMatrix, rgcRFsurroundConePoolingMatrix);
 
+    % Export this compute-ready midgetRGCMosaic
     theComputeReadyMRGCmosaic = obj.theRGCMosaic;
     save(computeReadyMosaicFilename, 'theComputeReadyMRGCmosaic', '-v7.3');
-    fprintf('The compute-ready mRGCMosaic was saved in %s\n', computeReadyMosaicFilename);
+    fprintf('The compute-ready mRGCMosaic was exported in %s.\n', computeReadyMosaicFilename);
 end
 
 function [centerConeIndicesAllRGCs, centerConeWeightsAllRGCs, centerRGCindicesAllRGCs, ...
           surroundConeIndicesAllRGCs, surroundConeWeightsAllRGCs, surroundRGCindicesAllRGCs ] = ...
-         computePoolingWeightsByInterpolatingModelsAcrossTheSamplingGrid(...
-                obj, LconeRFcomputeStructsList, MconeRFcomputeStructsList, visualizeInterpolation)
+                computePoolingWeightsByInterpolatingModelsAcrossTheSamplingGrid(obj, ...
+                    LconeRFcomputeStructsList, MconeRFcomputeStructsList, visualizeInterpolation)
 
     rgcsNum = size(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix,2);
    
@@ -57,141 +58,165 @@ function [centerConeIndicesAllRGCs, centerConeWeightsAllRGCs, centerRGCindicesAl
     surroundConeWeightsAllRGCs = cell(rgcsNum,1);
     surroundRGCindicesAllRGCs = cell(rgcsNum,1);
 
-    parfor theCurrentRGCindex = 1:rgcsNum 
-    %for theCurrentRGCindex = 1:rgcsNum 
-        fprintf('Generating surround for RGC%d of %d RGC\n', theCurrentRGCindex, rgcsNum);
+    if (visualizeInterpolation)
+        for theCurrentRGCindex = 1:rgcsNum 
+            fprintf('Generating surround for RGC%d of %d RGC\n', theCurrentRGCindex, rgcsNum);
 
-        % The cell position
-        theCurrentRGCposition = obj.theRGCMosaic.rgcRFpositionsDegs(theCurrentRGCindex,:);
+            d = computeConeInputsForRCG(obj, theCurrentRGCindex, ...
+                LconeRFcomputeStructsList, MconeRFcomputeStructsList, true);
 
-        % Retrieve this cell's # of center cone indices
-        connectivityVector = full(squeeze(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:, theCurrentRGCindex)));
-        centerConeIndicesForCurrentRGC = find(connectivityVector > 0.0001);
+            centerConeIndicesAllRGCs{theCurrentRGCindex} = d.centerConeIndices;
+            centerConeWeightsAllRGCs{theCurrentRGCindex} = d.centerConeWeights;
+            centerRGCindicesAllRGCs{theCurrentRGCindex} = repmat(theCurrentRGCindex, [numel(d.centerConeIndices) 1]);
 
-        % Retrieve this cell's center cone weights
-        weightsOfCenterConesForCurrentRGC = connectivityVector(centerConeIndicesForCurrentRGC);
+            surroundConeIndicesAllRGCs{theCurrentRGCindex} = d.surroundConeIndices;
+            surroundConeWeightsAllRGCs{theCurrentRGCindex} = d.surroundConeWeights;
+            surroundRGCindicesAllRGCs{theCurrentRGCindex} = repmat(theCurrentRGCindex, [numel(d.surroundConeIndices) 1]);
+        end
+    else
+        parfor theCurrentRGCindex = 1:rgcsNum 
+            fprintf('Generating surround for RGC%d of %d RGC\n', theCurrentRGCindex, rgcsNum);
 
-        % Determine the net L-cone, and net M-cone weights in the RF center of this RGC
-        theCenterConeTypeWeights = obj.centerConeTypeWeights(theCurrentRGCindex);
-        theTotalCenterConeWeights = sum(theCenterConeTypeWeights([cMosaic.LCONE_ID cMosaic.MCONE_ID]));
+            d = computeConeInputsForRCG(obj, theCurrentRGCindex, ...
+                LconeRFcomputeStructsList, MconeRFcomputeStructsList, false);
 
-        % Spectral interpolation: compute the weights for L- and M-cone compute structs to be proportional to the
-        % # of center L- and M-cones, respectively
-        theLconeComputeStructWeight = theCenterConeTypeWeights(cMosaic.LCONE_ID) / theTotalCenterConeWeights;
-        theMconeComputeStructWeight = theCenterConeTypeWeights(cMosaic.MCONE_ID) / theTotalCenterConeWeights;
+            centerConeIndicesAllRGCs{theCurrentRGCindex} = d.centerConeIndices;
+            centerConeWeightsAllRGCs{theCurrentRGCindex} = d.centerConeWeights;
+            centerRGCindicesAllRGCs{theCurrentRGCindex} = repmat(theCurrentRGCindex, [numel(d.centerConeIndices) 1]);
 
-        % Find all model RGCs with the same number of center cones as this RGC
-        gridNodeIndicesWithMatchedCenterConesNum = find(obj.conesNumPooledByTheRFcenterGrid == numel(centerConeIndicesForCurrentRGC));
+            surroundConeIndicesAllRGCs{theCurrentRGCindex} = d.surroundConeIndices;
+            surroundConeWeightsAllRGCs{theCurrentRGCindex} = d.surroundConeWeights;
+            surroundRGCindicesAllRGCs{theCurrentRGCindex} = repmat(theCurrentRGCindex, [numel(d.surroundConeIndices) 1]);
+        end
+    end
+end
 
 
-        % Find the model RGC indices with this many L-cones in their RF center
-        targetLconeModelRGCindices = obj.targetRGCindicesWithLconeMajorityCenter(gridNodeIndicesWithMatchedCenterConesNum);
-        targetLconeModelRGCpositions = obj.theRGCMosaic.rgcRFpositionsDegs(targetLconeModelRGCindices,:);
-        % Spatial interpolation for L-center models: compute this RGC' weights for pooling parameters from the 3 triangularing L-center RGC models
-        [triangulatingLconeModelRGCIndices, triangulatingLconeModelRGCweights, triangulatingLconeGridIndices] = ...
+
+function dStruct = computeConeInputsForRCG(obj, theCurrentRGCindex, ...
+    LconeRFcomputeStructsList, MconeRFcomputeStructsList, visualizeInterpolation)
+
+    % The cell position
+    theCurrentRGCposition = obj.theRGCMosaic.rgcRFpositionsDegs(theCurrentRGCindex,:);
+
+    % Retrieve this cell's # of center cone indices
+    connectivityVector = full(squeeze(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:, theCurrentRGCindex)));
+    centerConeIndices = find(connectivityVector > 0.0001);
+
+    % Retrieve this cell's center cone weights
+    weightsOfCenterConesForCurrentRGC = connectivityVector(centerConeIndices);
+
+    % Determine the net L-cone, and net M-cone weights in the RF center of this RGC
+    theCenterConeTypeWeights = obj.centerConeTypeWeights(theCurrentRGCindex);
+    theTotalCenterConeWeights = sum(theCenterConeTypeWeights([cMosaic.LCONE_ID cMosaic.MCONE_ID]));
+
+    % Spectral interpolation: compute the weights for L- and M-cone compute structs to be proportional to the
+    % # of center L- and M-cones, respectively
+    theLconeComputeStructWeight = theCenterConeTypeWeights(cMosaic.LCONE_ID) / theTotalCenterConeWeights;
+    theMconeComputeStructWeight = theCenterConeTypeWeights(cMosaic.MCONE_ID) / theTotalCenterConeWeights;
+
+    % Find all model RGCs with the same number of center cones as this RGC
+    gridNodeIndicesWithMatchedCenterConesNum = find(obj.conesNumPooledByTheRFcenterGrid == numel(centerConeIndices));
+
+    % Find the model RGC indices with this many L-cones in their RF center
+    targetLconeModelRGCindices = obj.targetRGCindicesWithLconeMajorityCenter(gridNodeIndicesWithMatchedCenterConesNum);
+    targetLconeModelRGCpositions = obj.theRGCMosaic.rgcRFpositionsDegs(targetLconeModelRGCindices,:);
+    
+    % Spatial interpolation for L-center models: compute this RGC' weights for pooling parameters from the 3 triangularing L-center RGC models
+    [triangulatingLconeModelRGCIndices, triangulatingLconeModelRGCweights, triangulatingLconeGridIndices] = ...
             obj.triangulatingGridNodeIndicesAndWeights(theCurrentRGCposition, ...
                 targetLconeModelRGCpositions, targetLconeModelRGCindices, gridNodeIndicesWithMatchedCenterConesNum);
 
+    % Find the model RGC indices with this many M-cones in their RF center
+    targetMconeModelRGCindices = obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndicesWithMatchedCenterConesNum);
+    targetMconeModelRGCpositions = obj.theRGCMosaic.rgcRFpositionsDegs(targetMconeModelRGCindices,:);
 
-        % Find the model RGC indices with this many M-cones in their RF center
-        targetMconeModelRGCindices = obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndicesWithMatchedCenterConesNum);
-        targetMconeModelRGCpositions = obj.theRGCMosaic.rgcRFpositionsDegs(targetMconeModelRGCindices,:);
-
-        
-        % Spatial interpolation for M-center models: compute this RGC' weights for pooling parameters from the 3 triangularing M-center RGC models
-        [triangulatingMconeModelRGCIndices, triangulatingMconeModelRGCweights, triangulatingMconeGridIndices] = ...
+    % Spatial interpolation for M-center models: compute this RGC' weights for pooling parameters from the 3 triangularing M-center RGC models
+    [triangulatingMconeModelRGCIndices, triangulatingMconeModelRGCweights, triangulatingMconeGridIndices] = ...
             obj.triangulatingGridNodeIndicesAndWeights(theCurrentRGCposition, ...
-                targetMconeModelRGCpositions, targetMconeModelRGCindices, gridNodeIndicesWithMatchedCenterConesNum );
+                targetMconeModelRGCpositions, targetMconeModelRGCindices, gridNodeIndicesWithMatchedCenterConesNum);
 
-        % Spatio-spectral intepolation: combine spatial and spectral weights.
-        triangulatingLconeModelRGCweights = triangulatingLconeModelRGCweights * theLconeComputeStructWeight;
-        triangulatingMconeModelRGCweights = triangulatingMconeModelRGCweights * theMconeComputeStructWeight;
+    % Spatio-spectral intepolation: combine spatial and spectral weights.
+    triangulatingLconeModelRGCweights = triangulatingLconeModelRGCweights * theLconeComputeStructWeight;
+    triangulatingMconeModelRGCweights = triangulatingMconeModelRGCweights * theMconeComputeStructWeight;
 
-        % Update modelConstants for the current RGC
-        modelConstants = LconeRFcomputeStructsList{triangulatingLconeGridIndices(1)}.modelConstants;
-        modelConstantsForCurrentRGC = updateModelConstantsForCurrentRGC(obj.theRGCMosaic, modelConstants, ...
-                theCurrentRGCposition, centerConeIndicesForCurrentRGC, weightsOfCenterConesForCurrentRGC);
+    % Update modelConstants for the current RGC
+    modelConstants = LconeRFcomputeStructsList{triangulatingLconeGridIndices(1)}.modelConstants;
+    modelConstantsForCurrentRGC = updateModelConstantsForCurrentRGC(obj.theRGCMosaic, modelConstants, ...
+                theCurrentRGCposition, centerConeIndices, weightsOfCenterConesForCurrentRGC);
 
-        coneIndicesAndWeightsForLconeModels = coneIndicesAndWeightsFromTriangulatingModels(...
+    coneIndicesAndWeightsForLconeModels = coneIndicesAndWeightsFromTriangulatingModels(...
             modelConstantsForCurrentRGC,...
             LconeRFcomputeStructsList, ...
             triangulatingLconeGridIndices, ...
             triangulatingLconeModelRGCweights);
 
        
-        coneIndicesAndWeightsForMconeModels = coneIndicesAndWeightsFromTriangulatingModels(...
+    coneIndicesAndWeightsForMconeModels = coneIndicesAndWeightsFromTriangulatingModels(...
             modelConstantsForCurrentRGC,...
             MconeRFcomputeStructsList, ...
             triangulatingMconeGridIndices, ...
             triangulatingMconeModelRGCweights);
 
-        % Accumulate center cone weights from all models now
-        centerConeWeightsForCurrentRGC = zeros(size(centerConeIndicesForCurrentRGC));
-        for iModel = 1:numel(coneIndicesAndWeightsForLconeModels)
-            centerConeWeightsForCurrentRGC = centerConeWeightsForCurrentRGC + ...
+    % Accumulate center cone weights from all models now
+    centerConeWeights = zeros(size(centerConeIndices));
+    surroundConeIndices = [];
+    surroundConeWeights = [];
+
+    for iModel = 1:numel(coneIndicesAndWeightsForLconeModels)
+        % Center cones
+        centerConeWeights = centerConeWeights + ...
                     coneIndicesAndWeightsForLconeModels{iModel}.centerConeWeights;
-        end
 
-        for iModel = 1:numel(coneIndicesAndWeightsForMconeModels)
-            centerConeWeightsForCurrentRGC = centerConeWeightsForCurrentRGC + ...
+        % Surround cones
+        theModelSurroundConeWeights = coneIndicesAndWeightsForLconeModels{iModel}.surroundConeWeights;
+        theModelSurroundConeIndices = coneIndicesAndWeightsForLconeModels{iModel}.surroundConeIndices;
+        [surroundConeIndices, surroundConeWeights] = accumulateSurroundWeights(...
+                surroundConeIndices, surroundConeWeights, ...
+                theModelSurroundConeIndices, theModelSurroundConeWeights);
+    end
+
+    for iModel = 1:numel(coneIndicesAndWeightsForMconeModels)
+        % Center cones
+        centerConeWeights = centerConeWeights + ...
                     coneIndicesAndWeightsForMconeModels{iModel}.centerConeWeights;
-        end
 
-       
-        % Accumulate surround cone weights from all models now
-        surroundConeIndicesForCurrentRGC = [];
-        surroundConeWeightsForCurrentRGC = [];
+        % Surround cones
+        theModelSurroundConeWeights = coneIndicesAndWeightsForMconeModels{iModel}.surroundConeWeights;
+        theModelSurroundConeIndices = coneIndicesAndWeightsForMconeModels{iModel}.surroundConeIndices;
+        [surroundConeIndices, surroundConeWeights] = accumulateSurroundWeights(...
+                surroundConeIndices, surroundConeWeights, ...
+                theModelSurroundConeIndices, theModelSurroundConeWeights);
 
-        % Accumulate surround weights from LconeModels
-        for iModel = 1:numel(coneIndicesAndWeightsForLconeModels)
-            newSurroundConeWeights = coneIndicesAndWeightsForLconeModels{iModel}.surroundConeWeights;
-            newSurroundConeIndices = coneIndicesAndWeightsForLconeModels{iModel}.surroundConeIndices;
-            [surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC] = accumulateSurroundWeights(...
-                surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC, ...
-                newSurroundConeIndices, newSurroundConeWeights);
-        end % accumulate surround weights from LconeModels
+    end
 
-        
+    % Assemble struct with center and surround cone indices and weights
+    dStruct = struct();
+    dStruct.centerConeIndices = centerConeIndices(:);
+    dStruct.centerConeWeights = centerConeWeights(:);
+    dStruct.surroundConeIndices = surroundConeIndices(:);
+    dStruct.surroundConeWeights = surroundConeWeights(:);
 
-        % Accumulate surround weights from MconeModels
-        for iModel = 1:numel(coneIndicesAndWeightsForMconeModels)
-            newSurroundConeWeights = coneIndicesAndWeightsForMconeModels{iModel}.surroundConeWeights;
-            newSurroundConeIndices = coneIndicesAndWeightsForMconeModels{iModel}.surroundConeIndices;
-            [surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC] = accumulateSurroundWeights(...
-                surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC, ...
-                newSurroundConeIndices, newSurroundConeWeights);
-        end % accumulate surround weights from MconeModels
-
-        centerConeIndicesAllRGCs{theCurrentRGCindex} = centerConeIndicesForCurrentRGC(:);
-        centerConeWeightsAllRGCs{theCurrentRGCindex} = centerConeWeightsForCurrentRGC(:);
-        centerRGCindicesAllRGCs{theCurrentRGCindex} = repmat(theCurrentRGCindex, [numel(centerConeIndicesForCurrentRGC) 1]);
-
-        surroundConeIndicesAllRGCs{theCurrentRGCindex} = surroundConeIndicesForCurrentRGC(:);
-        surroundConeWeightsAllRGCs{theCurrentRGCindex} = surroundConeWeightsForCurrentRGC(:);
-        surroundRGCindicesAllRGCs{theCurrentRGCindex} = repmat(theCurrentRGCindex, [numel(surroundConeWeightsForCurrentRGC) 1]);
-    
-        if (visualizeInterpolation)
-
-            MosaicPoolingOptimizer.visualizeMultiSpectralMultiFocalRFgeneration(1000, ...
+    if (visualizeInterpolation)
+       MosaicPoolingOptimizer.visualizeMultiSpectralMultiFocalRFgeneration(1000, ...
                 obj.theRGCMosaic.inputConeMosaic, theCurrentRGCindex, theCurrentRGCposition, ...
                 cMosaic.LCONE_ID, coneIndicesAndWeightsForLconeModels, ...
                 obj.theRGCMosaic.rgcRFpositionsDegs(obj.targetRGCindicesWithLconeMajorityCenter(triangulatingLconeGridIndices),:), ...
                 triangulatingLconeModelRGCIndices, triangulatingLconeModelRGCweights, ...
-                centerConeIndicesForCurrentRGC, centerConeWeightsForCurrentRGC, ...
-                surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC);
+                centerConeIndices, centerConeWeights, ...
+                surroundConeIndices, surroundConeWeights);
 
-            MosaicPoolingOptimizer.visualizeMultiSpectralMultiFocalRFgeneration(1000, ...
+       MosaicPoolingOptimizer.visualizeMultiSpectralMultiFocalRFgeneration(1000, ...
                 obj.theRGCMosaic.inputConeMosaic, theCurrentRGCindex, theCurrentRGCposition, ...
                 cMosaic.MCONE_ID, coneIndicesAndWeightsForMconeModels, ...
                 obj.theRGCMosaic.rgcRFpositionsDegs(obj.targetRGCindicesWithMconeMajorityCenter(triangulatingMconeGridIndices),:), ...
                 triangulatingMconeModelRGCIndices, triangulatingMconeModelRGCweights, ...
-                centerConeIndicesForCurrentRGC, centerConeWeightsForCurrentRGC, ...
-                 surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC);
+                centerConeIndices, centerConeWeights, ...
+                surroundConeIndices, surroundConeWeights);
 
-            pause
-        end
+       pause
+   end
 
-    end % parfor
 end
 
 
@@ -279,10 +304,10 @@ function [LconeComputeStructsList, MconeComputeStructsList] = loadOptimizedRFcom
         theMconeRFcomputeStruct.modelTotalSurroundStrength = sum(pooledConeIndicesAndWeights.surroundConeWeights);
         theMconeRFcomputeStruct.modelTotalNonConnectableSurroundConesStrength = sum(pooledConeIndicesAndWeights.nonConnectableSurroundConeWeights);
 
-        fprintf('L-cone model at grid node%d has a total strengths: %2.3f\n', gridNodeIndex, ...
+        fprintf('L-cone model at grid node%d has total strengths: %2.3f (center) %2.3f (surround)\n', gridNodeIndex, ...
             theLconeRFcomputeStruct.modelTotalCenterStrength , theLconeRFcomputeStruct.modelTotalSurroundStrength );
        
-        fprintf('M-cone model at grid node%d has a total strengths: %2.3f (center) %2.3f (surround)\n', gridNodeIndex, ...
+        fprintf('M-cone model at grid node%d has total strengths: %2.3f (center) %2.3f (surround)\n', gridNodeIndex, ...
             theMconeRFcomputeStruct.modelTotalCenterStrength , theMconeRFcomputeStruct.modelTotalSurroundStrength );
         
         % Add to the list

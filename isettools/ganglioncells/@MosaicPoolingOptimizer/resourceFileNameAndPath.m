@@ -24,6 +24,9 @@ function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNam
         case 'coneMosaicSTFresponses'
             resourceFileName = generateConeMosaicSTFResponsesFileName(mosaicParams, opticsParams);
 
+        case 'mRGCMosaicSTFresponses'
+            resourceFileName = generateMRGCMosaicSTFResponsesFileName(mosaicParams, opticsParams);
+
         case 'optimizedRGCpoolingObjects'
             resourceFileName = generateOptimizedRGCpoolingObjectsFileName(mosaicParams, opticsParams, retinalRFmodelParams);
 
@@ -52,6 +55,12 @@ function m = generateConeMosaicSTFResponsesFileName(mosaicParams, opticsParams)
     mosaicFileName = generateMosaicFileName(mosaicParams);
     opticsString = generateOpticsString(opticsParams);
     m = strrep(mosaicFileName, '.mat', sprintf('%s_coneMosaicSTFresponses.mat', opticsString));
+end
+
+function m = generateMRGCMosaicSTFResponsesFileName(mosaicParams, opticsParams)
+    mosaicFileName = generateMosaicFileName(mosaicParams);
+    opticsString = generateOpticsString(opticsParams);
+    m = strrep(mosaicFileName, '.mat', sprintf('%s_mRGCMosaicSTFresponses.mat', opticsString));
 end
 
 function m = generateOptimizedRGCpoolingObjectsFileName(mosaicParams, opticsParams, retinalRFmodelParams)

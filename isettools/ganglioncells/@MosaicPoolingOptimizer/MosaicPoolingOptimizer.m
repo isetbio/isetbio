@@ -142,6 +142,8 @@ classdef MosaicPoolingOptimizer < handle
             computeReadyMosaicFilename, ...
             visualizeInterpolation);
 
+       
+
         % Getter for dependent property gridNodesNum
         function val = get.gridNodesNum(obj)
             val = numel(obj.targetRGCindicesWithLconeMajorityCenter);
@@ -242,6 +244,18 @@ classdef MosaicPoolingOptimizer < handle
             centerConeIndicesForCurrentRGC, centerConeWeightsForCurrentRGC, ...
             surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC);
 
+        % Method to compute the visualSTF of the compute-ready
+        % MRGCmosaic
+        computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
+            computeReadyMosaicFilename, ...
+            coneMosaicSTFresponsesFilename, ...
+            mRGCMosaicSTFresponsesFilename);
+
+        % Method to fit the visualSTF of the compute-ready
+        % MRGCmosaic
+        inspectVisualSTFsOfComputeReadyMidgetRGCMosaic(...
+                computeReadyMosaicFilename, ...
+                mRGCMosaicSTFresponsesFilename)
 
         visualizeConeMosaicSTFresponses(mRGCMosaicFileName, coneMosaicSTFresponsesFileName, varargin);
     end % Static methods
