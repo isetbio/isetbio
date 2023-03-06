@@ -16,7 +16,10 @@ function theSTFdata = rgcSTFfromPooledConeMosaicSTFresponses(obj, pooledConeIndi
     theModelRGCResponsesForAllOrientationsAndSpatialFrequencies = netCenterResponses - netSurroundResponses;
 
     % The STF of the current model RGC
-    theModelRGCoptimalSTF = obj.optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies( ...
+    orientationsTested = obj.inputConeMosaicVisualSTFdata.orientationsTested;
+    spatialFrequenciesTested = obj.inputConeMosaicVisualSTFdata.spatialFrequenciesTested;
+    theModelRGCoptimalSTF = MosaicPoolingOptimizer.optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies( ...
+                    orientationsTested, spatialFrequenciesTested, ...
                     theModelRGCResponsesForAllOrientationsAndSpatialFrequencies);
 
 

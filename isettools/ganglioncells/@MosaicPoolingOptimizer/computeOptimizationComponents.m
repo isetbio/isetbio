@@ -115,7 +115,10 @@ function [visualRcDegs, anatomicalRcDegs, inputConeIndices, inputConeWeights] = 
         reshape(inputConeWeights, [1 1 1 numel(inputConeIndices)])),4);
 
     % The STF of center
-    theOptimalCenterSTF = obj.optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies( ...
+    orientationsTested = obj.inputConeMosaicVisualSTFdata.orientationsTested;
+    spatialFrequenciesTested = obj.inputConeMosaicVisualSTFdata.spatialFrequenciesTested;
+    theOptimalCenterSTF = MosaicPoolingOptimizer.optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies( ...
+                    orientationsTested, spatialFrequenciesTested, ...
                     theCenterResponsesAcrossAllOrientationsAndSpatialFrequencies);
 
     % An estimate of the anatomical RcDegs

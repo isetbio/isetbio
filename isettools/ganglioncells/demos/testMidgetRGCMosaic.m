@@ -1,6 +1,6 @@
 function testMidgetRGCMosaic
     
-    arbitraryNodesToCompute = []; % selectNodesToRecompute();
+    arbitraryNodesToCompute =  selectNodesToRecompute();
 
     % Mosaic params to employ
     mosaicParams = struct(...
@@ -18,7 +18,7 @@ function testMidgetRGCMosaic
     optimizeRGCMosaic = ~true;
     inspectOptimizedRGCmodels = ~true;
     generateComputeReadyMidgetRGCMosaic = ~true;
-    computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic =~true;
+    computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
     inspectVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
     animateModelConvergence = ~true;
 
@@ -351,13 +351,6 @@ end
 function arbitraryNodesToCompute = selectNodesToRecompute()
     arbitraryNodesToCompute = {};
 
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 5, ...
-        'coneType', [cMosaic.LCONE_ID]);
-
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 7, ...
-        'coneType', [cMosaic.MCONE_ID]);
 
     arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
         'number', 13, ...

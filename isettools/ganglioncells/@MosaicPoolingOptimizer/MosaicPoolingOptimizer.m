@@ -143,7 +143,6 @@ classdef MosaicPoolingOptimizer < handle
             visualizeInterpolation);
 
        
-
         % Getter for dependent property gridNodesNum
         function val = get.gridNodesNum(obj)
             val = numel(obj.targetRGCindicesWithLconeMajorityCenter);
@@ -168,10 +167,6 @@ classdef MosaicPoolingOptimizer < handle
         % Method to return the center majority cone types
         [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = ...
             centerConeTypeWeights(obj, theRGCindex);
-
-        % Method to select the highest-ectending STF (across a set of STFs
-        % measured at different orientations)
-        theHighestExtensionSTF = highestExtensionSTF(obj, STFsAcrossMultipleOrientations);
 
         % Method to compute the RGCmodel STF and its DoG model fit params
         % based on its current cone pooling weights
@@ -205,6 +200,13 @@ classdef MosaicPoolingOptimizer < handle
         [DoGparams, theFittedSTF] = fitDifferenceOfGaussiansToSTF(...
              spatialFrequencySupportCPD, theSTF, ...
              RcDegsInitialEstimate, rangeForRc, multiStartsNum);
+
+        % Method to select the highest-extending STF (across a set of STFs
+        % measured at different orientations)
+        theOptimalSTF = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+            orientationsTested, spatialFrequenciesTested, ...
+            theResponsesAcrossAllOrientationsAndSpatialFrequencies)
+
 
         % Method to convert cone pooling params to pooled cone indices and
         % weights for the double exponent H1 surround model 
