@@ -18,8 +18,9 @@ function testMidgetRGCMosaic
     optimizeRGCMosaic = ~true;
     inspectOptimizedRGCmodels = ~true;
     generateComputeReadyMidgetRGCMosaic = ~true;
-    computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
-    inspectVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+    computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+    fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+    visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
     animateModelConvergence = ~true;
 
     if (generateRGCMosaic)
@@ -290,8 +291,7 @@ function testMidgetRGCMosaic
 
 
     % Stage 6: Fit the DoG model to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
-    if ( inspectVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
-
+    if (fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
         % Generate the filename of the compute-ready mRGCMosaic to generate
         [computeReadyMosaicFileName, resourcesDirectory] = ...
             MosaicPoolingOptimizer.resourceFileNameAndPath('computeReadyMosaic', ...
@@ -299,11 +299,27 @@ function testMidgetRGCMosaic
                 'opticsParams', opticsParams, ...
                 'retinalRFmodelParams', retinalRFmodelParams);
 
-        MosaicPoolingOptimizer.inspectVisualSTFsOfComputeReadyMidgetRGCMosaic(...
+        MosaicPoolingOptimizer.fitVisualSTFsOfComputeReadyMidgetRGCMosaic(...
             fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName));
 
     end
+
+    % Stage 7: Visualized the fitted DoG models to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
+    if (visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
+        % Generate the filename of the compute-ready mRGCMosaic to generate
+        [computeReadyMosaicFileName, resourcesDirectory] = ...
+            MosaicPoolingOptimizer.resourceFileNameAndPath('computeReadyMosaic', ...
+                'mosaicParams', mosaicParams, ...
+                'opticsParams', opticsParams, ...
+                'retinalRFmodelParams', retinalRFmodelParams);
+
+        MosaicPoolingOptimizer.visualizeFittedVisualSTFsOfComputeReadyMidgetRGCMosaic(...
+            fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
+            fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName));
+
+    end
+
 
 
 
