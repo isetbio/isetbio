@@ -184,7 +184,11 @@ classdef mRGCMosaic < handle
         % Method to generate the native optics for the mosaic.
         % These optics form the basis on which surround cone weights are optimized
         % for wiring so as to generate desired visual RF properties
+        dataOut = generateOptics(obj, opticsParams);
         generateNativeOptics(obj, opticsParams);
+
+        % Method to visualize optics at a number of eccentricities
+        visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams);
 
         % Method to bake in center/surround cone pooling weights.
         % This method replaces the rgcRFcenterConeConnectivityMatrix with
@@ -228,6 +232,7 @@ classdef mRGCMosaic < handle
 
     % Static methods
     methods (Static)
+        
     end % Static methods
 
 end

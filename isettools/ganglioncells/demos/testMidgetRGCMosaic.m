@@ -2,10 +2,18 @@ function testMidgetRGCMosaic
     
     arbitraryNodesToCompute =  selectNodesToRecompute();
 
-    % Mosaic params to employ
+    % Mosaic params to employ. This is for the 2.5 deg - centered mosaic
+    % which covers the [1 - 4] deg eccentricity range
+%     mosaicParams = struct(...
+%         'eccDegs', [2.5 0], ...
+%         'sizeDegs', [3 3]);
+
+    % Mosaic params to employ. This is for the 7.0 deg - centered mosaic
+    % which covers the [4-10] deg eccentricity range
     mosaicParams = struct(...
-        'eccDegs', [2.5 0], ...
-        'sizeDegs', [3 3]);
+        'eccDegs', [7 0], ...
+        'sizeDegs', [6 3]);
+ 
 
     % Get mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
@@ -14,13 +22,14 @@ function testMidgetRGCMosaic
     
     % Actions
     generateRGCMosaic = ~true;
-    computeConeMosaicSTFresponses = ~true;
+    examineOpticsAtEccentricities = ~true;
+    computeConeMosaicSTFresponses = true;
     optimizeRGCMosaic = ~true;
     inspectOptimizedRGCmodels = ~true;
     generateComputeReadyMidgetRGCMosaic = ~true;
     computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
-    visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+    visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     animateModelConvergence = ~true;
 
     if (generateRGCMosaic)
@@ -34,18 +43,33 @@ function testMidgetRGCMosaic
         load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
     end
     
-    visualizeMosaics = false;
-    if (visualizeMosaics)
+    if (generateRGCMosaic)
         % Visualize input cone mosaic
         theMidgetRGCMosaic.inputConeMosaic.visualize()
     
         % Visualize cone pooling by the RF centers
         theMidgetRGCMosaic.visualize();
+        return;
     end
 
    
     % Optics params to employ
     opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
+
+    if (examineOpticsAtEccentricities)
+
+        theMidgetRGCMosaic.visualize();
+        
+        xPosDegs = 0.5*mosaicParams.sizeDegs(1)*[-1 0 1];
+        yPosDegs = 0.5*mosaicParams.sizeDegs(2)*[-1 0 1];
+
+        [X,Y] = meshgrid(xPosDegs, yPosDegs);
+        eccDegs = [X(:) Y(:)];
+        eccDegs = bsxfun(@plus, eccDegs, mosaicParams.eccDegs);
+
+        theMidgetRGCMosaic.visualizeOpticsAtEccentricities(eccDegs, opticsParams);
+    end
+
 
     % RetinalRFmodel params to employ
     % Change something if we want, like the model name, e.g. choose cell index 3,

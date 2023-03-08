@@ -21,7 +21,7 @@ function visualize(obj, varargin)
     p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
     p.addParameter('colorbarTickLabelColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
-    p.addParameter('backgroundColor', [0 0 0], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('backgroundColor', [1 1 1], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
@@ -167,7 +167,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
             hFig = figure(); clf;
             set(hFig, 'Color', [1 1 1], 'Position', [10 10 1120 1050], 'Name', obj.name);
         end
-        ax = subplot('Position', [0.06 0.05 0.93 0.93]);
+        ax = subplot('Position', [0.02 0.02 0.98 0.98]);
     end
 
     
@@ -209,10 +209,11 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
     if (~isempty(activation))
         S.EdgeColor = 'none';
     else
-        %S.FaceColor = 'none';
-        S.EdgeColor = [0 0 0];
+        S.FaceColor = [0.8 0.8 0.8];
+        S.EdgeColor = [0.3 0.3 0.3];
     end
-    S.FaceAlpha = 1.0;
+    S.FaceAlpha = 0.7;
+    S.EdgeAlpha = 0.7;
     S.LineWidth = 1.0;
     patch(S, 'Parent', ax)
 
@@ -323,7 +324,7 @@ end
 
 function labelConeTypes(obj,ax)
    
-    identifyConnections = false;
+    identifyConnections = true;
     if (identifyConnections)
     % Plot the connections from the RF center to the input L-cones
     idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.LCONE_ID);
@@ -331,41 +332,31 @@ function labelConeTypes(obj,ax)
     plot(ax, ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-        'Color', [0 0 0],...
-        'LineWidth', 2.0);  
-    plot(ax, ...
-        obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-        obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
         'Color', [1 0 0],...
-        'LineWidth', 1.); 
+        'LineWidth', 1.5);  
 
     idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.MCONE_ID);
+    plot(ax, ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+        obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+        'Color', [0 0.8 0],...
+        'LineWidth', 1.5); 
 
-    plot(ax, ...
-        obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-        obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-        'Color', [0 0 0],...
-        'LineWidth', 2); 
-    plot(ax, ...
-        obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-        obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-        'Color', [0 1 0],...
-        'LineWidth', 1.0); 
 
     end
 
-    identifyCones = ~true;
+    identifyCones = true;
     if (identifyCones)
 
 %     % Plot the L-cones
     plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCcenters,1), ...
              obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.lConeIndicesConnectedToRGCcenters,2), ...
-             'r.', 'MarkerSize', 2);
+             'r.', 'MarkerSize', 6);
  
 %     % Plot the M-cones
     plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCcenters,1), ...
              obj.inputConeMosaic.coneRFpositionsDegs(obj.visualizationCache.mConeIndicesConnectedToRGCcenters,2), ...
-             'g.',  'MarkerSize', 2);
+             'g.',  'MarkerSize', 6);
 % 
 %     % Plot the S-cones
 %     plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,1), ...
@@ -388,7 +379,7 @@ function generateVisualizationCache(obj, xSupport, ySupport)
     tic
 
     % Compute graphic data for center contours
-    spatialSupportSamples = 12;
+    spatialSupportSamples = 24;
     
     if (~isempty(obj.rgcRFcenterConePoolingMatrix))
         minCenterConePoolingWeights = max(obj.rgcRFcenterConePoolingMatrix,[], 1)* 0.001;
@@ -446,10 +437,22 @@ end
 
 function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, subregionConeConnectionLineSegments] = ...
         graphicDataForSubregion(obj, conePoolingMatrix, minPoolingWeights, xSupport, ySupport, spatialSupportSamples)
-    
-    coneCharacteristicRadiiDegs = ...
-        obj.inputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
-        obj.inputConeMosaic.coneApertureDiametersDegs;
+        
+
+    coneApertureSizeSpecifierForRGCRFplotting = 'spacing based';
+    %coneApertureSizeSpecifierForRGCRFplotting = 'characteristic radius based';
+
+    switch (coneApertureSizeSpecifierForRGCRFplotting)
+        case 'spacing based'
+            coneRFradiiDegs = 0.6*0.5*obj.inputConeMosaic.coneRFspacingsDegs;
+        case 'characteristic radius based'
+            coneRFradiiDegs = ...
+                obj.inputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
+                obj.inputConeMosaic.coneApertureDiametersDegs;
+        otherwise
+            error('Unknown apertureSizeSpecifierForRGCRFplotting: ''%s''.', coneApertureSizeSpecifierForRGCRFplotting)
+    end
+
 
     verticesNumForRGC = zeros(1, obj.rgcsNum);
     theContourData = cell(1, obj.rgcsNum);
@@ -462,7 +465,7 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
 
         theConePoolingWeights = connectivityVector(subregionConeIndices);
         theConePositions = obj.inputConeMosaic.coneRFpositionsDegs(subregionConeIndices,:);
-        theConeCharacteristicRadii = coneCharacteristicRadiiDegs(subregionConeIndices);
+        theConeRFRadii = coneRFradiiDegs(subregionConeIndices);
         theConeTypes = obj.inputConeMosaic.coneTypes(subregionConeIndices);
 
         inputConesNum = size(theConePositions,1);
@@ -479,7 +482,7 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
 
 
         theContourData{iRGC} = subregionOutlineContourFromPooledCones(...
-                 theConePositions, theConeCharacteristicRadii , theConePoolingWeights, ...
+                 theConePositions, theConeRFRadii, theConePoolingWeights, ...
                  xSupport, ySupport, spatialSupportSamples);
 
         s = theContourData{iRGC}{1};
@@ -540,7 +543,7 @@ function contourData = subregionOutlineContourFromPooledCones(...
         RF = RF + theAperture2D;
     end
 
-    zLevels(1) = 0.05*min(poolingWeights);
+    zLevels(1) = 0.02*min(poolingWeights);
     zLevels(2) = max(poolingWeights);
 
     contourData = generateContourData(spatialSupportXY, RF, zLevels);
