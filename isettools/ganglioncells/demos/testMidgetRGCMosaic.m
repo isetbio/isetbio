@@ -1,48 +1,30 @@
 function testMidgetRGCMosaic
     
     arbitraryNodesToCompute =  selectNodesToRecompute();
+    mosaicEcc = 2.5;
 
-    % Mosaic params to employ. This is for the 2.5 deg - centered mosaic
-    % which covers the [1 - 4] deg eccentricity range
-%     mosaicParams = struct(...
-%         'eccDegs', [2.5 0], ...
-%         'sizeDegs', [3 3]);
+    % Get mosaic ecc and size
+    mosaicParams = getMosaicParams(mosaicEcc);
 
-    % Mosaic params to employ. This is for the 7.0 deg - centered mosaic
-    % which covers the [4-10] deg eccentricity range
-    mosaicParams = struct(...
-        'eccDegs', [7 0], ...
-        'sizeDegs', [6 3]);
- 
+    % Ask user what to action to take
+    [generateRGCMosaic, ...
+     visualizePSFsAtEccentricities, ...
+     computeConeMosaicSTFresponses, ...
+     optimizeRGCMosaic, ...
+     inspectOptimizedRGCmodels, ...
+     generateComputeReadyMidgetRGCMosaic, ...
+     computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic, ...
+     fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic, ...
+     visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic] = promptUserForAction(mosaicParams);
 
-    % Get mosaic filename
+    animateModelConvergence = ~true;
+
+    
+
+    % Generate mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
         MosaicPoolingOptimizer.resourceFileNameAndPath('mosaic', ...
             'mosaicParams', mosaicParams);
-    
-    % Generate mosaic and examine optics
-    generateRGCMosaic = ~true;
-    examineOpticsAtEccentricities = ~true;
-
-    % Compute cone mosaic STF responses
-    computeConeMosaicSTFresponses = true;
-
-    % Derive optimized surround cone pooling kernels (takes a long time)
-    optimizeRGCMosaic = ~true;
-
-    % Examine optimized cone pooling models at all grids
-    inspectOptimizedRGCmodels = ~true;
-
-    % Generate the compute-ready mRGC mosaic
-    generateComputeReadyMidgetRGCMosaic = ~true;
-
-    % Validate the compute-ready mRGC mosaic
-    computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
-    fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
-    visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
-
-    
-    animateModelConvergence = ~true;
 
     if (generateRGCMosaic)
         % Generate mosaic, its input coneMosaic and connect cones to the RF centers
@@ -50,28 +32,25 @@ function testMidgetRGCMosaic
             'eccentricityDegs', mosaicParams.eccDegs, ...
             'sizeDegs', mosaicParams.sizeDegs);
     
+        % Save the generated center-only connected mRGCmosaic
         save(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
-    else
-        load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
-    end
-    
-    if (generateRGCMosaic)
+
         % Visualize input cone mosaic
         theMidgetRGCMosaic.inputConeMosaic.visualize()
     
         % Visualize cone pooling by the RF centers
         theMidgetRGCMosaic.visualize();
-        return;
+
+    else
+        % Load a previously-generated mRGCMosaic
+        load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
     end
 
    
-    % Optics params to employ
+    % Default optics params
     opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
 
-    if (examineOpticsAtEccentricities)
-
-        theMidgetRGCMosaic.visualize();
-        
+    if (visualizePSFsAtEccentricities)
         xPosDegs = 0.5*mosaicParams.sizeDegs(1)*[-1 0 1];
         yPosDegs = 0.5*mosaicParams.sizeDegs(2)*[-1 0 1];
 
@@ -400,6 +379,29 @@ function testMidgetRGCMosaic
 end
 
 
+function mosaicParams = getMosaicParams(mosaicEcc)
+
+    switch (mosaicEcc)
+        case 2.5
+        % Mosaic params to employ. This is for the 2.5 deg - centered mosaic
+        % which covers the [1 - 4] deg eccentricity range
+        mosaicParams = struct(...
+            'eccDegs', [2.5 0], ...
+            'sizeDegs', [3 3]);
+
+        case 7.0
+        % Mosaic params to employ. This is for the 7.0 deg - centered mosaic
+        % which covers the [4-10] deg eccentricity range
+        mosaicParams = struct(...
+            'eccDegs', [7 0], ...
+            'sizeDegs', [6 3]);
+
+        otherwise
+            error('No data for this eccentricity')
+    end
+end
+
+
 function arbitraryNodesToCompute = selectNodesToRecompute()
     arbitraryNodesToCompute = {};
 
@@ -411,6 +413,98 @@ function arbitraryNodesToCompute = selectNodesToRecompute()
     arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
         'number', 14, ...
         'coneType', [cMosaic.LCONE_ID]);
+end
 
 
+function [generateRGCMosaic, ...
+     visualizePSFsAtEccentricities, ...
+     computeConeMosaicSTFresponses, ...
+     optimizeRGCMosaic, ...
+     inspectOptimizedRGCmodels, ...
+     generateComputeReadyMidgetRGCMosaic, ...
+     computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic, ...
+     fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic, ...
+     visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic] = promptUserForAction(mosaicParams)
+
+    % Generate mosaic
+    generateRGCMosaic = ~true;
+
+    % Visualize PSFs at various positions within the mosaic
+    visualizePSFsAtEccentricities = ~true;
+
+    % Compute cone mosaic STF responses
+    computeConeMosaicSTFresponses = ~true;
+
+    % Derive optimized surround cone pooling kernels (takes a long time)
+    optimizeRGCMosaic = ~true;
+
+    % Examine optimized cone pooling models at all grids
+    inspectOptimizedRGCmodels = ~true;
+
+    % Generate the compute-ready mRGC mosaic
+    generateComputeReadyMidgetRGCMosaic = ~true;
+
+    % Validate the compute-ready mRGC mosaic
+    computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+    fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+    visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+
+    invalidActionSelected = true;
+    validChoiceIDs = 1:9;
+    while (invalidActionSelected)
+        fprintf('\n\nAvailable actions for the mosaic at eccentricity (%2.1f,%2.1f):', ...
+            mosaicParams.eccDegs(1), mosaicParams.eccDegs(2));
+        fprintf('\n\n\t[1] Generate the center-connected mRGCMosaic');
+        fprintf('\n\n\t[2] Visualize PSFs at a 3x3 grid within the mRGCMosaic');
+        fprintf('\n\n\t[3] Compute responses across spatial frequencies and orientations of the input cone mosaic'); 
+        fprintf('\n\n\t[4] Derive optimized surround cone pooling kernels. (NOTE: This step takes a long time)');
+        fprintf('\n\n\t[5] Examine optimized cone pooling models at all or certain grid nodes within the mosaic');
+        fprintf('\n\n\t[6] Generate a compute-ready (center-surround connected) mRGCMosaic\n\t   based on the previously derived optimized surround cone pooling kernels');
+        fprintf('\n\n\t[7] Compute-ready mRGCMosaic validation. Step1: compute visual STFs for all cells in the mosaic');
+        fprintf('\n\n\t[8] Compute-ready mRGCMosaic validation. Step2: fit a DoG model to the computed visual STFs for all cells in the mosaic');
+        fprintf('\n\n\t[9] Compute-ready mRGCMosaic validation. Step3: visualize fitted DoG model params for all cells in the mosaic');
+
+        choice = input('\n\nEnter action ID : ', 's');
+        if (~isempty(choice))
+            choiceID = str2num(choice);
+            if (ismember(choiceID, validChoiceIDs))
+                switch (choiceID)
+                    case 1
+                        % Generate mosaic
+                        generateRGCMosaic = true;
+                    case 2
+                        % Visualize PSFs at various positions within the mosaic
+                        visualizePSFsAtEccentricities = true;
+                    case 3
+                        % Compute cone mosaic STF responses
+                        computeConeMosaicSTFresponses = true;
+                    case 4
+                        % Derive optimized surround cone pooling kernels (takes a long time)
+                        optimizeRGCMosaic = true;
+                    case 5
+                        % Examine optimized cone pooling models at all or
+                        % certain  grid nodes
+                        inspectOptimizedRGCmodels = true;
+                    case 6
+                        % Generate a compute-ready MRGC mosaic
+                        generateComputeReadyMidgetRGCMosaic = true;
+                    case 7
+                        % Validate a compute-ready mRGCMosaic: step1 - compute visual STFs for all cells
+                        computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                    case 8
+                        % Validate a compute-ready mRGCMosaic: step2 - fit a DoG model to all the computed visual STFs for all cells
+                        fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                    case 9
+                        % Validate a compute-ready mRGCMosaic: step3 - visualize fitted visual STFs for all cells
+                        visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                    otherwise
+                        error('Unknown option')
+
+                end % switch
+                invalidActionSelected = false;
+            end
+        end
+
+    end
+   
 end
