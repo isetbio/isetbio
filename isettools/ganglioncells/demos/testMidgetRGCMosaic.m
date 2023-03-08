@@ -20,16 +20,28 @@ function testMidgetRGCMosaic
         MosaicPoolingOptimizer.resourceFileNameAndPath('mosaic', ...
             'mosaicParams', mosaicParams);
     
-    % Actions
+    % Generate mosaic and examine optics
     generateRGCMosaic = ~true;
     examineOpticsAtEccentricities = ~true;
+
+    % Compute cone mosaic STF responses
     computeConeMosaicSTFresponses = true;
+
+    % Derive optimized surround cone pooling kernels (takes a long time)
     optimizeRGCMosaic = ~true;
+
+    % Examine optimized cone pooling models at all grids
     inspectOptimizedRGCmodels = ~true;
+
+    % Generate the compute-ready mRGC mosaic
     generateComputeReadyMidgetRGCMosaic = ~true;
+
+    % Validate the compute-ready mRGC mosaic
     computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+
+    
     animateModelConvergence = ~true;
 
     if (generateRGCMosaic)
