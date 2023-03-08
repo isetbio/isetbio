@@ -107,13 +107,13 @@ function dStruct = computeConeInputsForRCG(obj, theCurrentRGCindex, ...
     weightsOfCenterConesForCurrentRGC = connectivityVector(centerConeIndices);
 
     % Determine the net L-cone, and net M-cone weights in the RF center of this RGC
-    theCenterConeTypeWeights = obj.centerConeTypeWeights(theCurrentRGCindex);
-    theTotalCenterConeWeights = sum(theCenterConeTypeWeights([cMosaic.LCONE_ID cMosaic.MCONE_ID]));
+    [theCenterConeTypeWeights, ~, ~, theCenterConeTypes] = obj.centerConeTypeWeights(theCurrentRGCindex);
+    theTotalCenterConeWeights = sum(theCenterConeTypeWeights(:));
 
     % Spectral interpolation: compute the weights for L- and M-cone compute structs to be proportional to the
     % # of center L- and M-cones, respectively
-    theLconeComputeStructWeight = theCenterConeTypeWeights(cMosaic.LCONE_ID) / theTotalCenterConeWeights;
-    theMconeComputeStructWeight = theCenterConeTypeWeights(cMosaic.MCONE_ID) / theTotalCenterConeWeights;
+    theLconeComputeStructWeight = theCenterConeTypeWeights(find(theCenterConeTypes == cMosaic.LCONE_ID)) / theTotalCenterConeWeights;
+    theMconeComputeStructWeight = theCenterConeTypeWeights(find(theCenterConeTypes == cMosaic.MCONE_ID)) / theTotalCenterConeWeights;
 
     % Find all model RGCs with the same number of center cones as this RGC
     gridNodeIndicesWithMatchedCenterConesNum = find(obj.conesNumPooledByTheRFcenterGrid == numel(centerConeIndices));

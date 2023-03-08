@@ -180,7 +180,6 @@ classdef mRGCMosaic < handle
         % Method to visualize the mRGCmosaic and its activation
         visualize(obj, varargin);
 
-
         % Method to generate the native optics for the mosaic.
         % These optics form the basis on which surround cone weights are optimized
         % for wiring so as to generate desired visual RF properties
@@ -197,6 +196,9 @@ classdef mRGCMosaic < handle
         % optimized these weights based on input cone mosaic STF responses
         % computed by computeInputConeMosaicSTFresponsesForNativeOptics
         bakeInConePoolingMatrices(obj, centerConePoolingMatrix, surroundConePoolingMatrix);
+
+        % Method to return the majority center cone type for an RGC
+        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = centerConeTypeWeights(obj, theRGCindex);
 
         % Getter for dependent property cellsNum
         function val = get.rgcsNum(obj)

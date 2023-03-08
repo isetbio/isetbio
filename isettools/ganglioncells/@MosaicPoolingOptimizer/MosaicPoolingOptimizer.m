@@ -165,7 +165,7 @@ classdef MosaicPoolingOptimizer < handle
             sceneFOVdegs, retinalImageResolutionDegs)
 
         % Method to return the center majority cone types
-        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = ...
+        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = ...
             centerConeTypeWeights(obj, theRGCindex);
 
         % Method to compute the RGCmodel STF and its DoG model fit params
