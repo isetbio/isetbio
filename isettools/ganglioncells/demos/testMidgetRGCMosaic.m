@@ -2,6 +2,7 @@ function testMidgetRGCMosaic
     
     arbitraryNodesToCompute =  selectNodesToRecompute();
     mosaicEcc = 2.5;
+    %mosaicEcc = 7.0;
 
     % Get mosaic ecc and size
     mosaicParams = getMosaicParams(mosaicEcc);
