@@ -129,32 +129,6 @@ function visualizeFittedVisualSTFsOfComputeReadyMidgetRGCMosaic(...
           [0.1 0.9], (0:0.1:1), ...
           'S/C int. sens.', 'L-cone centers', ...
           ff);
-    pause
-
-    
-    
-    subplot(2,4,6);
-    [counts,edges] = histcounts(CK95RsRcRatios.data,0:0.5:20);
-    countsPercentage = counts / numel(CK95RsRcRatios.data)*100;
-    bar(edges(1:end-1), countsPercentage, 1, 'FaceColor','none','EdgeColor',[0 0 0], 'LineWidth', 1.0);
-    hold 'on'
-    [counts,edges] = histcounts(cellRsRcRatios,0:0.5:20);
-    countsPercentage = counts / numel(cellRsRcRatios)*100;
-    bar(edges(1:end-1), countsPercentage, 1, 'FaceAlpha', 0.5', 'FaceColor',[1 0.5 0.50],'EdgeColor',[1 0 0], 'LineWidth', 1.0);
-    plot(median(1./CK95RsRcRatios.data)*[1 1], [0 20], 'k--', 'LineWidth', 1.5);
-
-
-    subplot(2,4,8);
-    [counts,edges] = histcounts(CK95SCintSensRatios.data,0:0.05:1.0);
-    countsPercentage = counts / numel(CK95SCintSensRatios.data)*100;
-    bar(edges(1:end-1), countsPercentage, 1, 'FaceColor','none','EdgeColor',[0 0 0], 'LineWidth', 1.0);
-    hold 'on'
-    [counts,edges] = histcounts(cellSCintSensRatios,0:0.05:1.0);
-    countsPercentage = counts / numel(cellSCintSensRatios)*100;
-    bar(edges(1:end-1), countsPercentage, 1, 'FaceAlpha', 0.5', 'FaceColor',[1 0.5 0.50],'EdgeColor',[1 0 0], 'LineWidth', 1.0);
-    plot(median(CK95SCintSensRatios.data)*[1 1], [0 1], 'k--', 'LineWidth', 1.5);
-    set(gca, 'XLim', [0 1], 'XTick', 0:0.1:1);
-
 end
 
 function [cellTemporalEquivalentEccDegs, cellCenterConeTypeWeights, ...
