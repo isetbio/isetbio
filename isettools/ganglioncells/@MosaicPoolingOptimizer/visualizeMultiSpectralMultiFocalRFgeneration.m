@@ -106,12 +106,8 @@ function visualizeMultiSpectralMultiFocalRFgeneration(figNo, ...
         surroundConeWeights = coneIndicesAndWeightsForTriangulatingModels{iModel}.surroundConeWeights;
         surroundConeIndices = coneIndicesAndWeightsForTriangulatingModels{iModel}.surroundConeIndices;
         
-
-       
         noXLabel = true;
         noXTicks = true;
-
-
 
         if (triangulatingModelWeights(iModel) == 0)
             ax = subplot('Position', ff.subplotPosVectors(iModel,1+xSubplotOffset).v);

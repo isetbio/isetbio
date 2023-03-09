@@ -10,7 +10,6 @@ function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
     % Plot format
     ff = MSreadyPlot.figureFormat('3x3');
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 ff.figureSize(1) ff.figureSize(2)], 'Color', [1 1 1]);
     theAxes = MSreadyPlot.generateAxes(hFig,ff);
 
     % Plot rows and cols
