@@ -1,3 +1,3 @@
-function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = centerConeTypeWeights(obj, theRGCindex)
-    [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType] = obj.theRGCMosaic.centerConeTypeWeights(theRGCindex);
+function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType,  theCenterConeTypes] = centerConeTypeWeights(obj, theRGCindex)
+    [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType,  theCenterConeTypes] = obj.theRGCMosaic.centerConeTypeWeights(theRGCindex);
 end
