@@ -32,13 +32,26 @@ function visualizeSamplingGrids(obj)
         gridNodesList = find(obj.conesNumPooledByTheRFcenterGrid == conesNumPooled);
 
         LcenterRGCs = obj.targetRGCindicesWithLconeMajorityCenter(gridNodesList);
+        LcenterRGCsString = 'L-center RGCs: ';
         for i = 1:numel(LcenterRGCs)
+            if (i < numel(LcenterRGCs))
+                LcenterRGCsString = sprintf('%s%d ,', LcenterRGCsString, LcenterRGCs(i));
+            else
+                LcenterRGCsString = sprintf('%s%d', LcenterRGCsString, LcenterRGCs(i));
+            end
+
             inputConeIndicesForThisTargetRGC = find(squeeze(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,LcenterRGCs(i))) > 0.0001);
             theIdentifiedConeIndices = cat(1, theIdentifiedConeIndices, inputConeIndicesForThisTargetRGC);
         end
 
         McenterRGCs = obj.targetRGCindicesWithMconeMajorityCenter(gridNodesList);
+        McenterRGCsString = 'M-center RGCs: ';
         for i = 1:numel(McenterRGCs)
+            if (i < numel(McenterRGCs))
+                McenterRGCsString = sprintf('%s%d ,', McenterRGCsString, McenterRGCs(i));
+            else
+                McenterRGCsString = sprintf('%s%d', McenterRGCsString, McenterRGCs(i));
+            end
             inputConeIndicesForThisTargetRGC = find(squeeze(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,McenterRGCs(i))) > 0.0001);
             theIdentifiedConeIndices = cat(1, theIdentifiedConeIndices, inputConeIndicesForThisTargetRGC);
         end
@@ -51,7 +64,7 @@ function visualizeSamplingGrids(obj)
                             'backgroundColor', [0 0 0], ...
                             'domainVisualizationTicks', struct(...
                                 'x', 0:0.2:5, 'y', -1.6:0.2:1.6), ...
-                            'plotTitle', sprintf('%d-cone center sanpling positions', conesNumPooled), ...
+                            'plotTitle', sprintf('%d-cone center sanpling positions\n%s\n%s', conesNumPooled, LcenterRGCsString, McenterRGCsString), ...
                             'plotTitleColor', [1 1 0.5]);
 
         set(hFig, 'Color', [0 0 0]);

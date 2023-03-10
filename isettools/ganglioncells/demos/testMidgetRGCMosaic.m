@@ -2,8 +2,8 @@ function testMidgetRGCMosaic
     
     arbitraryNodesToCompute =  selectNodesToRecompute();
     mosaicEcc = 2.5;
-    %mosaicEcc = 7.0;
-
+    mosaicEcc = 7.0;
+    
     % Get mosaic ecc and size
     mosaicParams = getMosaicParams(mosaicEcc);
 
@@ -136,7 +136,9 @@ function testMidgetRGCMosaic
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
             theMidgetRGCMosaic, ...
-            'generateSamplingGrids', true);
+            'samplingScheme', 'rectangular', ...
+            'generateSamplingGrids', true, ...
+            'visualizeSamplingGrids', true);
 
         % Fitting options
         multiStartsNumRetinalPooling = 12;
@@ -180,6 +182,7 @@ function testMidgetRGCMosaic
                 whichConeType = [cMosaic.LCONE_ID cMosaic.MCONE_ID];
             end
             
+           
             theMosaicPoolingOptimizer.compute(gridNodeIndex, whichConeType, opticsParams, ...
                 fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
                 fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName), ...
@@ -198,7 +201,9 @@ function testMidgetRGCMosaic
         % Instantiate the mosaic pooling optimizer
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
             theMidgetRGCMosaic, ...
-            'generateSamplingGrids', true);
+            'samplingScheme', 'rectangular', ...
+            'generateSamplingGrids', true, ...
+            'visualizeSamplingGrids', true);
 
         gridNodesToInspect = input('Enter grid node to inspect. Hit enter to inspect all.: ');
         if (isempty(gridNodesToInspect))
@@ -213,16 +218,16 @@ function testMidgetRGCMosaic
     end
 
 
-    if (operationSetToPerformContains.animateModelConvergence)
-        % Instantiate the mosaic pooling optimizer
-        theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
-            theMidgetRGCMosaic, ...
-            'generateSamplingGrids', true);
-
-        gridNodeToAnimate = input('Enter grid node to animate: ');
-        theMosaicPoolingOptimizer.animateModelConvergence(gridNodeToAnimate, ...
-                fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName));
-    end
+%     if (operationSetToPerformContains.animateModelConvergence)
+%         % Instantiate the mosaic pooling optimizer
+%         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
+%             theMidgetRGCMosaic, ...
+%             'generateSamplingGrids', true);
+% 
+%         gridNodeToAnimate = input('Enter grid node to animate: ');
+%         theMosaicPoolingOptimizer.animateModelConvergence(gridNodeToAnimate, ...
+%                 fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName));
+%     end
 
 
     % Stage 5: Bake in the computed RGC models (across all grid nodes)
@@ -231,7 +236,9 @@ function testMidgetRGCMosaic
         % Instantiate the mosaic pooling optimizer with theMidgetRGCMosaic
         theMosaicPoolingOptimizer = MosaicPoolingOptimizer(...
             theMidgetRGCMosaic, ...
-            'generateSamplingGrids', true);
+            'samplingScheme', 'rectangular', ...
+            'generateSamplingGrids', true, ...
+            'visualizeSamplingGrids', true);
 
         visualizeInterpolation = input('Visualize interpolation? [y = YES] : ', 's');
         if (strcmp(visualizeInterpolation, 'y'))
@@ -315,6 +322,13 @@ end
 function mosaicParams = getMosaicParams(mosaicEcc)
 
     switch (mosaicEcc)
+        case 0
+            % Mosaic params to employ. This is for the 2.5 deg - centered mosaic
+        % which covers the [1 - 4] deg eccentricity range
+        mosaicParams = struct(...
+            'eccDegs', [0 0], ...
+            'sizeDegs', [3 3]);
+
         case 2.5
         % Mosaic params to employ. This is for the 2.5 deg - centered mosaic
         % which covers the [1 - 4] deg eccentricity range
@@ -338,13 +352,18 @@ end
 function arbitraryNodesToCompute = selectNodesToRecompute()
     arbitraryNodesToCompute = {};
 
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 13, ...
-        'coneType', [cMosaic.MCONE_ID]);
+    s = input('Compute all nodes (1) or speficic ones (2):');
+    if (s == 1)
+        arbitraryNodesToCompute
+        return;
+    else
 
-    arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-        'number', 14, ...
-        'coneType', [cMosaic.LCONE_ID]);
+        for i = 7:27
+            arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
+                    'number', i, ...
+                    'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
+        end
+    end
 end
 
 

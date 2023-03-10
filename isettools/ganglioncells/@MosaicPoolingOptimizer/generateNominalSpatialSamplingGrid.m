@@ -16,6 +16,7 @@ function generateNominalSpatialSamplingGrid(obj, samplingScheme)
     midX = (minX + maxX)/2;
     midY = (minY + maxY)/2;
 
+
     switch (samplingScheme)
         case 'rectangular'
             for iDim = 1:numel(sizeDegs)
@@ -36,7 +37,9 @@ function generateNominalSpatialSamplingGrid(obj, samplingScheme)
                 end
             end
             [X,Y] = meshgrid(coords{1}, coords{2});
-    
+            X = X(:);
+            Y = Y(:);
+
         case 'hexagonal'
             if (gridHalfSamplesNum == 0)
                 X = 0;
