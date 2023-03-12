@@ -1,4 +1,4 @@
-function renderMosaic(hFig, theMosaicOBJ, plotTitle, varargin)
+function renderPosterMosaic(hFig, theMosaicOBJ, plotTitle, ff, varargin)
 
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
@@ -6,6 +6,8 @@ function renderMosaic(hFig, theMosaicOBJ, plotTitle, varargin)
     p.addParameter('plotRFoutlines', true, @islogical);
     p.addParameter('identifyPooledCones', true, @islogical);
     p.addParameter('identifyInputCones', true, @islogical);
+    p.addParameter('domainVisualizationLimits', [], @isnumeric);
+    p.addParameter('domainVisualizationTicks', [],  @(x)(isempty(x)||isstruct(x)));
     p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
     p.parse(varargin{:});
     
@@ -15,24 +17,34 @@ function renderMosaic(hFig, theMosaicOBJ, plotTitle, varargin)
     identifyInputCones = p.Results.identifyInputCones;
     plotRFoutlines = p.Results.plotRFoutlines;
     backgroundColor = p.Results.backgroundColor;
+    domainVisualizationTicks = p.Results.domainVisualizationTicks;
+    domainVisualizationLimits = p.Results.domainVisualizationLimits;
 
-    ff = MSreadyPlot.figureFormat('1x1 long');
+    
     theAxes = MSreadyPlot.generateAxes(hFig,ff);
     ax = theAxes{1,1};
 
-    xMin =  theMosaicOBJ.eccentricityDegs(1) - 0.5*theMosaicOBJ.sizeDegs(1);
-    xMax =  theMosaicOBJ.eccentricityDegs(1) + 0.5*theMosaicOBJ.sizeDegs(1);
-    yMin =  theMosaicOBJ.eccentricityDegs(2) - 0.5*theMosaicOBJ.sizeDegs(2);
-    yMax =  theMosaicOBJ.eccentricityDegs(2) + 0.5*theMosaicOBJ.sizeDegs(2);
-    domainVisualizationLimits = [xMin xMax yMin yMax];
-    domainVisualizationTicks = struct(...
-        'x', [xMin theMosaicOBJ.eccentricityDegs(1) xMax], ...
-        'y', [yMin theMosaicOBJ.eccentricityDegs(2) yMax]);
+    if (isempty(domainVisualizationLimits))
+        xMin =  theMosaicOBJ.eccentricityDegs(1) - 0.5*theMosaicOBJ.sizeDegs(1);
+        xMax =  theMosaicOBJ.eccentricityDegs(1) + 0.5*theMosaicOBJ.sizeDegs(1);
+        yMin =  theMosaicOBJ.eccentricityDegs(2) - 0.25;
+        yMax =  theMosaicOBJ.eccentricityDegs(2) + 0.25;
+        domainVisualizationLimits = [xMin xMax yMin yMax];
+    end
 
+    if isempty(domainVisualizationTicks)
+        xMin =  theMosaicOBJ.eccentricityDegs(1) - 0.5*theMosaicOBJ.sizeDegs(1);
+        xMax =  theMosaicOBJ.eccentricityDegs(1) + 0.5*theMosaicOBJ.sizeDegs(1);
+        domainVisualizationTicks = struct(...
+            'x', [xMin theMosaicOBJ.eccentricityDegs(1) xMax], ...
+            'y', [yMin theMosaicOBJ.eccentricityDegs(2) yMax]);
+    end
 
     theMosaicOBJ.visualize(...
         'figureHandle', hFig, ...
         'axesHandle', ax, ...
+        'identifiedConeApertureThetaSamples', 32, ...
+        'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
         'identifyPooledCones', identifyPooledCones, ...
         'identifyInputCones', identifyInputCones, ...
         'plotRFoutlines', plotRFoutlines, ...
@@ -53,9 +65,12 @@ function renderMosaic(hFig, theMosaicOBJ, plotTitle, varargin)
     end
 
     % ticks and grids
-    grid(ax, 'on')
+    grid(ax, 'off');
+
+    box(ax, 'on');
+
     xtickangle(ax, 0);
-    set(ax, 'TickDir', 'both');
+    set(ax, 'TickDir', 'out', 'TickLength', ff.tickLength);
 
     % Font size
     set(ax, 'FontSize', ff.fontSize);

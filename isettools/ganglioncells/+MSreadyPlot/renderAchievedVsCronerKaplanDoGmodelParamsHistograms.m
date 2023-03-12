@@ -1,5 +1,5 @@
 function renderAchievedVsCronerKaplanDoGmodelParamsHistograms(ax, ...
-    CK95data, ISETBioData, histogramEdges, ...
+    CK95data, ISETBioData, visualizedISETBioDataSets, histogramEdges, ...
     ISETBioDataColor, faceAlpha, ...
     XLims, XTicks, ...
     xAxisLabel, plotTitle, ff)
@@ -16,12 +16,28 @@ function renderAchievedVsCronerKaplanDoGmodelParamsHistograms(ax, ...
 
     hold(ax, 'on');
     for setIndex = 1:numel(ISETBioData)
-        [counts,edges] = histcounts(ISETBioData{setIndex}.data, histogramEdges);
-        countsPercentage = counts / numel(ISETBioData{setIndex}.data)*100;
-        maxY = max([maxY max(countsPercentage)]);
-        bar(ax, edges(1:end-1), countsPercentage, 1, ...
-            'FaceColor', ISETBioDataColor(setIndex,:), 'EdgeColor',ISETBioDataColor(setIndex,:), ...
-            'FaceAlpha', faceAlpha, 'LineWidth', ff.lineWidth);
+        if (ismember(setIndex, visualizedISETBioDataSets))
+            [counts,edges] = histcounts(ISETBioData{setIndex}.data, histogramEdges);
+            countsPercentage = counts / numel(ISETBioData{setIndex}.data)*100;
+            maxY = max([maxY max(countsPercentage)]);
+            xOutline = [];
+            yOutline = [];
+            dd = (edges(2)-edges(1))/2
+            for i = 1:numel(edges)-1
+                xOutline(numel(xOutline)+1) = edges(i)+dd;
+                yOutline(numel(yOutline)+1) = countsPercentage(i);
+                if (i < numel(edges)-1)
+                xOutline(numel(xOutline)+1) = edges(i)+dd;
+                yOutline(numel(yOutline)+1) = countsPercentage(i+1);
+                end
+            end
+
+            bar(ax, edges(1:end-1), countsPercentage, 1, ...
+                'FaceColor', ISETBioDataColor(setIndex,:), 'EdgeColor','none', ...
+                'FaceAlpha', faceAlpha, 'LineWidth', ff.lineWidth);
+            plot(ax, xOutline,yOutline, 'k-', 'LineWidth', 1.5, 'Color', ISETBioDataColor(setIndex,:)*0.5)
+        end
+
     end
 
     yTickIncrement = 5;

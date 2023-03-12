@@ -1,5 +1,24 @@
 function f = figureFormat(panelLayout)
 
+    f.fontSize = 18;
+    f.markerSize = 12;
+    f.lineWidth = 1.5;
+    f.LconeColor = [1 0.2 0.6];
+    f.MconeColor = [0.2 1 0.4];
+    f.SconeColor = [0.6 0.2 0.9];
+    f.axisLineWidth = 1.0;
+
+    f.axisColor = [0.3 0.3 0.3];
+    f.axisFontAngle = 'italic';
+
+    f.titleFontSize = 16;
+    f.titleColor = [0.2 0.2 0.2];
+    f.titleFontWeight = 'normal';
+
+    f.legendFontSize = 13;
+
+    f.axisOffsetFactor = -0.03;
+
     % figure sizes
     switch panelLayout
         case '1x4'
@@ -97,6 +116,34 @@ function f = figureFormat(panelLayout)
                 'bottomMargin',   0.08, ...
                 'topMargin',      0.02);
 
+        case '1x1 very long poster'
+            f.fontSize = 24;
+            f.figureSize = [2050 250];
+            f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                'rowsNum', 1, ...
+                'colsNum', 1, ...
+                'heightMargin',  0.00, ...
+                'widthMargin',    0.00, ...
+                'leftMargin',     0.04, ...
+                'rightMargin',    0.00, ...
+                'bottomMargin',   0.09, ...
+                'topMargin',      -0.03);
+            f.tickLength = [0.01/4 0.01/10];
+
+        case '1x1 poster'
+            f.fontSize = 24;
+            f.figureSize = [2050 1150];
+            f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                'rowsNum', 1, ...
+                'colsNum', 1, ...
+                'heightMargin',  0.00, ...
+                'widthMargin',    0.00, ...
+                'leftMargin',     0.05, ...
+                'rightMargin',    0.00, ...
+                'bottomMargin',   0.01, ...
+                'topMargin',      -0.06);
+            f.tickLength = [0.01/4 0.01/10];
+
         case '1x2 large'
             f.figureSize = [1700 800];
             f.subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -113,22 +160,5 @@ function f = figureFormat(panelLayout)
             error('unknown panelLayout: ''%s''.', panelLayout);
     end
 
-    f.fontSize = 18;
-    f.markerSize = 12;
-    f.lineWidth = 1.5;
-    f.LconeColor = [1 0.2 0.6];
-    f.MconeColor = [0.2 1 0.4];
-    f.SconeColor = [0.6 0.2 0.9];
-    f.axisLineWidth = 1.0;
-
-    f.axisColor = [0.3 0.3 0.3];
-    f.axisFontAngle = 'italic';
-
-    f.titleFontSize = 16;
-    f.titleColor = [0.2 0.2 0.2];
-    f.titleFontWeight = 'normal';
-
-    f.legendFontSize = 13;
-
-    f.axisOffsetFactor = -0.03;
+    
 end
