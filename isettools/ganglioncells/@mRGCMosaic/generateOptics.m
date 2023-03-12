@@ -5,8 +5,10 @@ function dataOut = generateOptics(obj, opticsParams)
     % for wiring so as to generate RF with the target visual properties
        
     if (isempty(opticsParams.positionDegs))
+        % 'Native optics', at mosaic's eccentricity
         ZernikeCoefficientsEccDegs = obj.eccentricityDegs;
     else
+        % 'Custom optics', at user-supplied position
         ZernikeCoefficientsEccDegs = opticsParams.positionDegs;
     end
 

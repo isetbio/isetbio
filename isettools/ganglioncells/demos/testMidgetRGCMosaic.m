@@ -88,10 +88,37 @@ function testMidgetRGCMosaic
 
     % Stage 2: Generate optics and compute input cone mosaic STF responses
     if (operationSetToPerformContains.computeConeMosaicSTFresponses)
-        % Generate the native optics appropriate for the midgetRGCMosaic at hand. 
-        % These will be used to compute the
-        % cone mosaic STF responses and optimize the RGC RFs
-        theMidgetRGCMosaic.generateNativeOptics(opticsParams);
+
+        opticsChoice = 'f';
+        validOpticsChoices = {'n', 'c'};
+        while (~ismember(opticsChoice, validOpticsChoices))
+            fprintf('\nOptics options: \n');
+            fprintf('[n] - Native optics (at the mosaic''s center) \n');
+            fprintf('[c] - Custom optics (at an arbitrary position) \n');
+            opticsChoice = input('Optics to employ: ', 's');
+        end
+
+        switch (opticsChoice)
+            case 'n'
+                % Generate the native optics appropriate for the midgetRGCMosaic at hand. 
+                % These will be used to compute the
+                % cone mosaic STF responses and optimize the RGC RFs
+                theMidgetRGCMosaic.generateNativeOptics(opticsParams);
+                opticsToEmploy = 'native';
+            case 'c'
+                xyPos = input('Enter (x,y) position (in degrees) for the optics (e.g., [2 0]) : ');
+                opticsPositionPostfix = sprintf('AtCustomXYposition_%2.2f_%2.2f.mat', xyPos(1), xyPos(2));
+                coneMosaicSTFresponsesFileName = strrep(coneMosaicSTFresponsesFileName, '.mat', opticsPositionPostfix);
+                
+                % Generate optics at the user-specified position
+                opticsParams.positionDegs = xyPos;
+                theMidgetRGCMosaic.generateNativeOptics(opticsParams);
+                opticsToEmploy = 'custom';
+
+            otherwise
+                fprintf('Valid optics options: ''n'' (native, at mosaic''s center), or ''c'', (custom position)\n');
+                error('Unknown optics choice: ''%s''.', opticsChoice)
+        end
 
         compuseConeMosaicSTFResponsesSeparatelyAtEachGridLocation = false;
         if (compuseConeMosaicSTFResponsesSeparatelyAtEachGridLocation)
@@ -107,11 +134,12 @@ function testMidgetRGCMosaic
                 coneMosaicSTFresponsesFileNameForThisNode = strrep(coneMosaicSTFresponsesFileName, '.mat', sprintf('_AtGridNode_%d.mat', gridNodeIndex));
     
                 stimSizeDegs = [1 1];
-                theMosaicPoolingOptimizer.generateConeMosaicSTFresponses(...
+                theMosaicPoolingOptimizer.generateInputConeMosaicSTFresponses(...
                     gridNodeIndex, stimSizeDegs,  ...
                     fullfile(resourcesDirectory, coneMosaicSTFresponsesFileNameForThisNode), ...
                     'useParfor', true, ...
-                    'visualizedResponses', ~true);
+                    'visualizedResponses', ~true, ...
+                    'opticsToEmploy', opticsToEmploy);
             end
         else
             % Instantiate the mosaic pooling optimizer
@@ -121,11 +149,12 @@ function testMidgetRGCMosaic
 
             % Compute the input cone mosaic visual STFs across all nodes, 
             % using full field stimuli
-            theMosaicPoolingOptimizer.generateConeMosaicSTFresponses(...
+            theMosaicPoolingOptimizer.generateInputConeMosaicSTFresponses(...
                     [], [], ...
                     fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
                     'useParfor', ~true, ...
-                    'visualizedResponses', ~true);
+                    'visualizedResponses', ~true, ...
+                    'opticsToEmploy', opticsToEmploy);
         end
     end
 

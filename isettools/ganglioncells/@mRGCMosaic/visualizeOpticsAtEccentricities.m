@@ -11,7 +11,8 @@ function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
     ff = MSreadyPlot.figureFormat('3x3');
     hFig = figure(1); clf;
     theAxes = MSreadyPlot.generateAxes(hFig,ff);
-
+    set(hFig, 'Color', 'none');
+    
     % Plot rows and cols
     [X,Y] = meshgrid(1:3, 1:3); cols = X(:); rows = Y(:);
 
@@ -32,9 +33,13 @@ function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
             opticsParams.positionDegs(1), opticsParams.positionDegs(2));
         noXLabel = (rows(iPos) < 3);
         noYLabel = (cols(iPos)> 1);
-        MSreadyPlot.render2DPSF(theAxes{rows(iPos),cols(iPos)}, ...
+
+        apertureDataStruct = localConeApertureData(obj, opticsParams.positionDegs, thePSFData.psfSupportXdegs);
+
+        MSreadyPlot.render2DPSF(theAxes{4-rows(iPos),cols(iPos)}, ...
             thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, ...
             thePSFData.data, psfRangeDegs, plotTitle, ff, ...
+            'withConeApertureData', apertureDataStruct, ...
             'noXLabel', noXLabel, ...
             'noYLabel', noYLabel);
         drawnow;
@@ -43,4 +48,21 @@ function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
 end
 
 
+function dOut = localConeApertureData(obj, opticsPositionDegs, psfSupportDegs)
+    d = sqrt(sum((bsxfun(@minus, obj.inputConeMosaic.coneRFpositionsDegs, opticsPositionDegs)).^2,2));
+    idx = find (d<max(psfSupportDegs));
+    coneAperturePositionsDegs = bsxfun(@minus, obj.inputConeMosaic.coneRFpositionsDegs(idx,:),opticsPositionDegs);
+
+    if (isfield(obj.inputConeMosaic.coneApertureModifiers, 'shape') && (strcmp(obj.inputConeMosaic.coneApertureModifiers.shape, 'Gaussian')))
+        gaussianSigma = obj.inputConeMosaic.coneApertureModifiers.sigma;
+        coneAperturesDegs = sqrt(2)*gaussianSigma*obj.inputConeMosaic.coneApertureDiametersDegs(idx);
+    else  
+        coneAperturesDegs = obj.inputConeMosaic.coneApertureDiametersDegs(idx);
+    end
+
+    dOut = struct(...
+       'positionDegs', coneAperturePositionsDegs, ...
+       'RcDegs', coneAperturesDegs);
+
+end
 

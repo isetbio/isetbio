@@ -9,6 +9,11 @@ function visualize(obj, varargin)
     p.addParameter('samplingGrid', [], @(x)(isempty(x) || (isnumeric(x) && (size(x,2) == 2)) ));
     p.addParameter('samplingGridOutlineColor', [1 0 0], @(x)(isempty(x)||(numel(x)==3)));
     p.addParameter('samplingGridFillColor', [1 0.6 0.6], @(x)(isempty(x)||(numel(x)==3)));
+    p.addParameter('identifiedConeAperture', 'geometricArea', @(x)ismember(x, ...
+        {'lightCollectingArea', 'geometricArea', 'coneSpacing', ...
+        'lightCollectingAreaCharacteristicDiameter', 'lightCollectingArea2sigma', 'lightCollectingArea4sigma', 'lightCollectingArea5sigma', 'lightCollectingArea6sigma'}));
+    p.addParameter('identifiedConeApertureThetaSamples', [], @(x)(isempty(x) || isscalar(x)));
+   
     p.addParameter('identifyInputCones', false, @islogical);
     p.addParameter('identifyPooledCones', false, @islogical);
     p.addParameter('plotRFoutlines', true, @islogical);
@@ -36,6 +41,8 @@ function visualize(obj, varargin)
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     visualizedComponent = p.Results.component;
+    identifiedConeAperture = p.Results.identifiedConeAperture;
+    identifiedConeApertureThetaSamples = p.Results.identifiedConeApertureThetaSamples;
     identifyInputCones = p.Results.identifyInputCones;
     identifyPooledCones = p.Results.identifyPooledCones';
     plotRFoutlines = p.Results.plotRFoutlines;
@@ -133,7 +140,8 @@ function visualize(obj, varargin)
     switch (visualizedComponent)
         case 'RF centers'
             [hFig, ax] = visualizeRFcenters(obj, hFig, ax, ...
-                XLims, YLims, domainVisualizationTicks, ...
+                domainVisualizationTicks, domainVisualizationLimits, ...
+                identifiedConeAperture, identifiedConeApertureThetaSamples, ...
                 identifyInputCones, identifyPooledCones, labelRGCsWithIndices, ...
                 plotRFoutlines, activation, activationRange, activationColorMap, ...
                 colorBarTickLabelPostFix, colorbarTickLabelColor, ...
@@ -159,7 +167,8 @@ end
 
 
 function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
-        XLims, YLims, domainVisualizationTicks, ...
+        domainVisualizationTicks, domainVisualizationLimits, ...
+        identifiedConeAperture, identifiedConeApertureThetaSamples, ...
     identifyInputCones, identifyPooledCones, labelRGCsWithIndices, ...
     plotRFoutlines, activation, activationRange, activationColorMap, ...
     colorBarTickLabelPostFix, colorbarTickLabelColor, ...
@@ -177,14 +186,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
     end
 
 
-    % Identify input cones
-    if (identifyInputCones)
-        hold(ax, 'on')
-        obj.inputConeMosaic.visualize(...
-            'figureHandle', hFig, 'axesHandle', ax, ...
-            'clearAxesBeforeDrawing', false, ...
-            'backgroundColor', backgroundColor);
-    end
+    
 
     if (~isempty(activation))
         % Visualize RF centers, color-coded with their activation level
@@ -225,13 +227,31 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
         if (~isempty(activation))
             S.EdgeColor = 'none';
         else
-            S.FaceColor = [0.85 0.85 0.85];
-            S.EdgeColor = [0.2 0.2 0.2];
+            S.FaceColor = [0.95 0.95 0.95]*0.6;
+            S.EdgeColor = [0 0 0];
         end
-        S.FaceAlpha = 0.3;
-        S.EdgeAlpha = 1;
-        S.LineWidth = 1;
+        S.FaceAlpha = 0.4;
+        S.EdgeAlpha = 0.0;
+        S.LineWidth = 2;
         patch(S, 'Parent', ax)
+
+        % Plot the RFs
+        S.Vertices = obj.visualizationCache.rfCenterPatchData.vertices;
+        S.Faces = obj.visualizationCache.rfCenterPatchData.faces;
+        S.FaceVertexCData = obj.visualizationCache.rfCenterPatchData.faceVertexCData;
+    
+        S.FaceColor = 'flat';
+        if (~isempty(activation))
+            S.EdgeColor = 'none';
+        else
+            S.FaceColor = [0.95 0.95 0.95]*0.6;
+            S.EdgeColor = [0 0 0];
+        end
+        S.FaceAlpha = 0.4;
+        S.EdgeAlpha = 0.0;
+        S.LineWidth = 2;
+        patch(S, 'Parent', ax)
+        
     
         if (~isempty(labelRGCsWithIndices))
             hold(ax, 'on')
@@ -250,28 +270,46 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
     end
 
 
+    
     if (identifyPooledCones)
         hold(ax, 'on')
-        if (~identifyInputCones)
+        if (identifyInputCones)
+            lConeInputLineColor = [0 0 0];
+            mConeInputLineColor = [0 0 0];
+            lineSegmentWidth = 1.0;
+        else
             lConeInputLineColor = [1 0 0];
             mConeInputLineColor = [0 1 0];
-        else
-            lConeInputLineColor = [0.5 0.5 0.5];
-            mConeInputLineColor = [0.5 0.5 0.5];
+            lineSegmentWidth = 1.5;
         end
-        labelConePooling(obj,ax, lConeInputLineColor , mConeInputLineColor );
+        
+        labelConePooling(obj, ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth);
+    end
+
+    axis(ax, 'equal');
+    % Identify input cones
+    if (identifyInputCones)
+        hold(ax, 'on')
+        obj.inputConeMosaic.visualize(...
+            'figureHandle', hFig, 'axesHandle', ax, ...
+            'clearAxesBeforeDrawing', false, ...
+            'visualizedConeAperture', identifiedConeAperture, ...
+            'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'backgroundColor', backgroundColor);
+    else
+        hold(ax, 'on')
+        obj.inputConeMosaic.visualize(...
+            'figureHandle', hFig, 'axesHandle', ax, ...
+            'clearAxesBeforeDrawing', false, ...
+            'labelCones', false, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'backgroundColor', backgroundColor);
     end
 
     % Finalize plot
-    axis(ax, 'equal');
-    if (~isempty(XLims))
-        set(ax, 'XLim', XLims);
-    end
-    if (~isempty(YLims))
-        set(ax, 'YLim', YLims);
-    end
-    set(ax, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
-   
     set(ax, 'FontSize', fontSize);
 
     if (~identifyInputCones)
@@ -345,7 +383,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
 end
 
 
-function labelConePooling(obj,ax, lConeInputLineColor, mConeInputLineColor)
+function labelConePooling(obj,ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth)
    
     % Plot the connections from the RF center to the input L-cones
     idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.LCONE_ID);
@@ -354,14 +392,14 @@ function labelConePooling(obj,ax, lConeInputLineColor, mConeInputLineColor)
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
         'Color', lConeInputLineColor,...
-        'LineWidth', 2);  
+        'LineWidth', lineSegmentWidth);  
 
     idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.MCONE_ID);
     plot(ax, ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
         obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
         'Color', mConeInputLineColor,...
-        'LineWidth', 2);
+        'LineWidth', lineSegmentWidth);
 
 end
 

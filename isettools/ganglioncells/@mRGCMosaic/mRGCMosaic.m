@@ -94,6 +94,13 @@ classdef mRGCMosaic < handle
         % The params used to generate theNativeOptics
         theNativeOpticsParams;
 
+        % Custom optics
+        theCustomOptics;
+
+        % The params used to generate theCustomOptics
+        theCustomOpticsParams;
+
+
         % Encodes what generation stage the mosaic is in.
         generationStage;
 

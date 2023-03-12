@@ -1,77 +1,11 @@
-function generateConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, ...
-    responsesFileName, varargin)
-
-    p = inputParser;
-    p.addParameter('useParfor', false, @islogical);
-    p.addParameter('visualizedResponses', false, @islogical);
-
-    p.parse(varargin{:});
-    useParfor = p.Results.useParfor;
-    visualizeResponses = p.Results.visualizedResponses;
-
-    if (isempty(gridNodeIndex))
-        retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, []);
-        % Stimulus centered at the RGC mosaic mosaic
-        stimPositionDegs = obj.theRGCMosaic.eccentricityDegs;
-        % 10% larger than the cone mosaic
-        stimSizeDegs = 1.1*obj.theRGCMosaic.inputConeMosaic.sizeDegs;
-        fprintf('Computing STF responses at %2.1f,%2.1f degs over a region of  %2.1f,%2.1f degs with a retinal resolution of %2.2f arc min', ...
-            stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60);
-
-    else
-        % Retrieve the RGC indices for the L-center and M-center RGC at the desired grid node
-        targetRGCindices = [...
-            obj.targetRGCindicesWithLconeMajorityCenter(gridNodeIndex) ...
-            obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndex)];
-    
-        % Determine position of node (mean of L-center and M-center RGC)
-        stimPositionDegs = mean(obj.theRGCMosaic.rgcRFpositionsDegs(targetRGCindices,:),1);
-        
-        % Determine optimal stimulus resolution so that cone aperture blur will
-        % have an observable effect
-        retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, targetRGCindices);
-   
-        fprintf('Computing STF responses at %2.1f,%2.1f degs over a region of  %2.1f,%2.1f degs with a retinal resolution of %2.2f arc min', ...
-            stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60);
-    end
-
-
-    % Generate components for running the STF mapping experiment
-    [stimParams, thePresentationDisplay] = obj.setupSTFmappingExperiment(...
-        stimSizeDegs, ...
-        retinalImageResolutionDegs);
-
-    % Compute cone mosaic STF responses
-    [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
-        computeFocalConeMosaicSTFresponses(obj, stimParams, ...
-                                           thePresentationDisplay, ...
-                                           stimPositionDegs, ...
-                                           useParfor, ...
-                                           visualizeResponses);
-
-    % Save computed cone mosaic STF responses to disk
-    orientationsTested = stimParams.orientationsTested;
-    spatialFrequenciesTested = stimParams.spatialFrequenciesTested;
-    coneContrasts = stimParams.coneContrasts;
-    spatialPhasesDegs = stimParams.spatialPhasesDegs;
-    theNativeOpticsParams = obj.theRGCMosaic.theNativeOpticsParams;
-
-    save(responsesFileName, 'theNativeOpticsParams', ...
-        'theConeMosaicSTFresponses', 'theConeMosaicNullResponses', ...
-         'orientationsTested', 'spatialFrequenciesTested', ...
-         'spatialPhasesDegs', 'coneContrasts', '-v7.3');
-
-    fprintf('Saved computed cone mosaic STF responses to %s\n', responsesFileName);
-
-end
-
 function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
-    computeFocalConeMosaicSTFresponses(obj, stimParams, ...
-                                       thePresentationDisplay, stimPositionDegs, ...
+    computeConeMosaicSTFresponses(theConeMosaic, theOptics, ...
+                                       thePresentationDisplay, ...
+                                       stimParams, stimPositionDegs, ...
                                        useParfor, visualizeResponses)
 
     % Allocate memory
-    conesNum = size(obj.theRGCMosaic.inputConeMosaic.coneRFpositionsDegs,1);
+    conesNum = size(theConeMosaic.coneRFpositionsDegs,1);
 
     % Single precision responses
     theConeMosaicSTFresponses = zeros(...
@@ -92,19 +26,13 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
         ax = subplot('Position', [0.1 0.1 0.85 0.85]);
     end
 
-    % Retrieve the native optics
-    nativeOI = obj.theRGCMosaic.theNativeOptics;
-
     % This is necessary to avoid the background being modulated when the
     % stimulus is smaller than the mosaic. This is due to the way oiCompute
     % does the padding.
     padOIwithZeros = true;
     if (padOIwithZeros)
-        nativeOI = oiSet(nativeOI, 'pad', struct('value', 'zero photons'));
+        theOptics = oiSet(theOptics, 'pad', struct('value', 'zero photons'));
     end
-
-    % Retrieve the input cone mosaic
-    inputConeMosaic = obj.theRGCMosaic.inputConeMosaic;
 
     % Go through all stimulus orientations
     for iOri = 1:numel(stimParams.orientationsTested)
@@ -130,10 +58,10 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
             % Compute the cone mosaic responses to the null scene OI
             if (isempty(theConeMosaicNullResponses))
                 % Compute the optical image of the null scene
-                nativeOI  = oiCompute(theNullStimulusScene, nativeOI);
+                theOptics  = oiCompute(theNullStimulusScene, theOptics);
 
                 % Compute the cone mosaic responses
-                theConeMosaicNullResponses = inputConeMosaic.compute(nativeOI, ...
+                theConeMosaicNullResponses = theConeMosaic.compute(theOptics, ...
                     'padOIwithZeros', padOIwithZeros, ...
                     'opticalImagePositionDegs', stimPositionDegs, ...
                     'nTrials', 1);
@@ -152,7 +80,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
 
             % Compute the input cone mosaic responses
             if (useParfor)
-                theOI = nativeOI;
+                theOI = theOptics;
                 parfor iFrame = 1:numel(theCurrentStimParams.spatialPhasesDegs)
                     % Get scene corresponding to this stimulus frame
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
@@ -162,7 +90,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
 
                     % Compute the cone mosaic responses
                     noiseFreeAbsorptionsCount = ...
-                        inputConeMosaic.compute(theCurrentOI, ...
+                        theConeMosaic.compute(theCurrentOI, ...
                         'padOIwithZeros', padOIwithZeros, ...
                         'opticalImagePositionDegs', stimPositionDegs, ...
                         'nTrials', 1);
@@ -175,11 +103,11 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
 
                     % Compute the optical image of the frame scene
-                    nativeOI = oiCompute(theFrameScene, nativeOI);
+                    theOptics = oiCompute(theFrameScene, theOptics);
 
                     % Compute the cone mosaic responses
                     noiseFreeAbsorptionsCount = ...
-                        inputConeMosaic.compute(nativeOI, ...
+                        theConeMosaic.compute(theOptics, ...
                         'padOIwithZeros', padOIwithZeros, ...
                         'opticalImagePositionDegs', stimPositionDegs, ...
                         'nTrials', 1);
@@ -190,7 +118,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
                         theConeMosaicContrastResponses = ...
                             bsxfun(@times, bsxfun(@minus, noiseFreeAbsorptionsCount, theConeMosaicNullResponses), ...
                             normalizingResponses);
-                        inputConeMosaic.visualize(...
+                        theConeMosaic.visualize(...
                             'figureHandle', hFig, ...
                             'axesHandle',ax, ...
                             'activation', theConeMosaicContrastResponses, ...
@@ -210,20 +138,4 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
 
         end % iFreq
     end % iOri
-end
-
-
-function retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, targetRGCindices)
-
-    if (isempty(targetRGCindices))
-        retinalImageResolutionDegs = min(obj.theRGCMosaic.inputConeMosaic.coneApertureDiametersDegs)/9;
-    else
-        % Find cone aperture size of the input cones
-        coneIndices = find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,targetRGCindices(1)) > 0.001);
-        coneIndices = cat(1, coneIndices, ...
-                      find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,targetRGCindices(2)) > 0.001));
-        
-        retinalImageResolutionDegs = mean(obj.theRGCMosaic.inputConeMosaic.coneApertureDiametersDegs(coneIndices))/13; 
-    end
-
 end

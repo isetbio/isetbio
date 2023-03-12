@@ -10,7 +10,7 @@ function [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(obj, .
     spatialFrequenciesTested = [0.25 0.5 1 2 4 6 8 12 16 20 24 32 48 64];
 
     % Generate a presentation display with a desired resolution
-    stimulusPixelsNum = round(max(sceneFOVdegs)/retinalImageResolutionDegs)
+    stimulusPixelsNum = round(max(sceneFOVdegs)/retinalImageResolutionDegs);
 
     % At least 6 samples / period
     maxSF = 1/(2*3*retinalImageResolutionDegs);
