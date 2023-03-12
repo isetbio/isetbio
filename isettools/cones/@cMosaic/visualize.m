@@ -425,10 +425,10 @@ function visualizationParams = visualize(obj, varargin)
             end
         end
 
-        lineWidth = 0.5;
+        lineWidth = 1.0;
         % Plot L-cones
         if (labelCones) || (~isempty(labelConesWithIndices))
-            edgeColor = [0.8 0 0];
+            edgeColor = [0.1 0.1 0.1];
         else
             edgeColor = [0.5 0.5 0.5];
         end
@@ -436,7 +436,7 @@ function visualizationParams = visualize(obj, varargin)
         if (~isempty(activation))
             faceAlphaCones = 0.0;
             edgeColor = [1 0 0];
-            lineWidth = 1.5;
+            lineWidth = 0.5;
         end
 
         if (labelCones)
@@ -453,7 +453,7 @@ function visualizationParams = visualize(obj, varargin)
         
         % Plot M-cones
         if (labelCones) || (~isempty(labelConesWithIndices))
-            edgeColor = [0 0.7 0];
+            edgeColor = [0.1 0.1 0.1];
         else
             edgeColor = [0.5 0.5 0.5];
         end
@@ -461,7 +461,7 @@ function visualizationParams = visualize(obj, varargin)
         if (~isempty(activation))
             faceAlphaCones = 0.0;
             edgeColor = [0 1 0];
-            lineWidth = 1.5;
+            lineWidth = 0.5;
         end
 
         if (labelCones)
@@ -480,7 +480,7 @@ function visualizationParams = visualize(obj, varargin)
         
         % Plot S-cones
         if (labelCones)  || (~isempty(labelConesWithIndices))
-            edgeColor = [0 0 1];
+            edgeColor = [0.1 0.1 0.1];
         else
             edgeColor = [0.5 0.5 0.5];
         end
@@ -488,7 +488,7 @@ function visualizationParams = visualize(obj, varargin)
         if (~isempty(activation))
             faceAlphaCones = 0.0;
             edgeColor = [0 0.5 1];
-            lineWidth = 1.5;
+            lineWidth = 0.5;
         end
 
         if (labelCones)
