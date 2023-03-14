@@ -20,7 +20,7 @@ function renderPerformance(ax, targetRsRcRatio, targetSCintSensRatio, ...
     grid(ax, 'on');
     box(ax, 'off');
     
-    ylabel(ax,'', 'FontAngle', ff.axisFontAngle);
+    ylabel(ax,'residual (%)', 'FontAngle', ff.axisFontAngle);
     xlabel(ax, '', 'FontAngle', ff.axisFontAngle);
 
     

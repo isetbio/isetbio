@@ -22,7 +22,7 @@ function renderAchievedVsCronerKaplanDoGmodelParamsHistograms(ax, ...
             maxY = max([maxY max(countsPercentage)]);
             xOutline = [];
             yOutline = [];
-            dd = (edges(2)-edges(1))/2
+            dd = (edges(2)-edges(1))/2;
             for i = 1:numel(edges)-1
                 xOutline(numel(xOutline)+1) = edges(i)+dd;
                 yOutline(numel(yOutline)+1) = countsPercentage(i);
@@ -64,7 +64,7 @@ function renderAchievedVsCronerKaplanDoGmodelParamsHistograms(ax, ...
     set(ax, 'FontSize', ff.fontSize);
 
     % axis color and width
-    set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+    set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor,  'LineWidth', ff.axisLineWidth);
     
     title(ax, plotTitle, 'fontSize', ff.titleFontSize, ...
      'Color', ff.titleColor, 'FontWeight', ff.titleFontWeight); 

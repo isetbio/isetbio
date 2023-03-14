@@ -3,7 +3,8 @@ function testMidgetRGCMosaic
     arbitraryNodesToCompute =  selectNodesToRecompute();
     mosaicEcc = 2.5;
     mosaicEcc = 7.0;
-    
+    mosaicEcc = -10.0;
+
     % Get mosaic ecc and size
     mosaicParams = getMosaicParams(mosaicEcc);
 
@@ -283,7 +284,16 @@ function testMidgetRGCMosaic
     end
 
 
-    % Stage 6: Compute the visual STFs of all cells in the generated compute-ready mRGCMosaic
+    % Stage 6: Visualize spatialRFs of the compute-ready mosaic
+    if (operationSetToPerformContains.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic)
+        
+        [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
+        MosaicPoolingOptimizer.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic(...
+            fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
+            fullfile(pdfDirectory, 'spatialRFmaps.pdf'));
+    end
+
+    % Stage 7: Compute the visual STFs of all cells in the generated compute-ready mRGCMosaic
     if (operationSetToPerformContains.computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
         MosaicPoolingOptimizer.computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
             fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
@@ -292,19 +302,70 @@ function testMidgetRGCMosaic
     end
 
 
-    % Stage 6: Fit the DoG model to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
+    % Stage 8: Fit the DoG model to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
     if (operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
         MosaicPoolingOptimizer.fitVisualSTFsOfComputeReadyMidgetRGCMosaic(...
             fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName));
     end
 
-    % Stage 7: Visualized the fitted DoG models to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
+    % Stage 9: Visualized the fitted DoG models to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
     if (operationSetToPerformContains.visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
+
+        theMosaicFileNames = {...
+            fullfile(resourcesDirectory, computeReadyMosaicFileName) ...
+            };
+        theMRGCSTFResponsesFileNames = { ...
+            fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName) ...
+            };
+
+        employTemporalEquivalentEccentricity = ~true;
         MosaicPoolingOptimizer.visualizeFittedVisualSTFsOfComputeReadyMidgetRGCMosaic(...
-            fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
-            fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName));
+            theMosaicFileNames, ...
+            theMRGCSTFResponsesFileNames, ...
+            employTemporalEquivalentEccentricity);
+
     end
+
+    
+
+    % Stage 10: Visualized the fitted DoG models to the computed visual STFs of all cells in multiple compute-ready mRGCMosaics
+    if (operationSetToPerformContains.visualizeFittedVisualSTFsAcrossMultipleComputeReadyMidgetRGCMosaics)
+
+        mosaicEccs = [2.5 7.0];
+        theMosaicFileNames = cell(1, numel(mosaicEccs));
+        theMRGCSTFResponsesFileNames = cell(1, numel(mosaicEccs));
+        employTemporalEquivalentEccentricity = ~true;
+
+        for iMosaic = 1:numel(mosaicEccs)
+            mosaicParams = getMosaicParams(mosaicEccs(iMosaic));
+
+            % Generate the filename of the compute-ready mRGCMosaic
+            [computeReadyMosaicFileName, resourcesDirectory] = ...
+            MosaicPoolingOptimizer.resourceFileNameAndPath('computeReadyMosaic', ...
+                'mosaicParams', mosaicParams, ...
+                'opticsParams', opticsParams, ...
+                'retinalRFmodelParams', retinalRFmodelParams);
+
+            % Generate the filename of the  mRGCMosaic STF responses
+            [mRGCMosaicSTFresponsesFileName, resourcesDirectory] = ...
+            MosaicPoolingOptimizer.resourceFileNameAndPath('mRGCMosaicSTFresponses', ...
+            'mosaicParams', mosaicParams, ...
+            'opticsParams', opticsParams);
+
+            theMosaicFileNames{iMosaic} = fullfile(resourcesDirectory, computeReadyMosaicFileName);
+            theMRGCSTFResponsesFileNames{iMosaic} = fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName);
+        end
+
+        MosaicPoolingOptimizer.visualizeFittedVisualSTFsOfComputeReadyMidgetRGCMosaic(...
+            theMosaicFileNames, ...
+            theMRGCSTFResponsesFileNames, ...
+            employTemporalEquivalentEccentricity);
+    end
+
+
+   
+
 
 
 
@@ -372,6 +433,13 @@ function mosaicParams = getMosaicParams(mosaicEcc)
             'eccDegs', [7 0], ...
             'sizeDegs', [6 3]);
 
+        case -10.0
+        mosaicParams = struct(...
+            'eccDegs', [-10 0], ...
+            'sizeDegs', [6 3]);
+
+
+
         otherwise
             error('No data for this eccentricity')
     end
@@ -391,78 +459,6 @@ function arbitraryNodesToCompute = selectNodesToRecompute()
         arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
                 'number', 5, ...
                 'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 6, ...
-                'coneType', [cMosaic.LCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 7, ...
-                'coneType', [cMosaic.MCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 8, ...
-                'coneType', [cMosaic.MCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 9, ...
-                'coneType', [cMosaic.LCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 12, ...
-                'coneType', [cMosaic.LCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 21, ...
-                'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 23, ...
-                'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
- 
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 25, ...
-                'coneType', [cMosaic.MCONE_ID]);
-
-        
-        % Not so bad nodes
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 1, ...
-                'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 4, ...
-                'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 11, ...
-                'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
-
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 17, ...
-                'coneType', [cMosaic.LCONE_ID]);
-
-         arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 20, ...
-                'coneType', [cMosaic.LCONE_ID]);
-
-         arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 22, ...
-                'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
- 
-        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 24, ...
-                'coneType', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
- 
-         arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 26, ...
-                'coneType', [cMosaic.LCONE_ID]);
-
-          arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
-                'number', 27, ...
-                'coneType', [cMosaic.MCONE_ID]);
     end
 end
 
@@ -487,28 +483,40 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
     % Generate the compute-ready mRGC mosaic
     operationSetToPerformContains.generateComputeReadyMidgetRGCMosaic = ~true;
 
+    % Visualize the derived spatial RFs of the compute-ready mRGC mosaic
+    operationSetToPerformContains.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+
     % Validate the compute-ready mRGC mosaic
     operationSetToPerformContains.computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     operationSetToPerformContains.visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+    operationSetToPerformContains.visualizeFittedVisualSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = ~true;
+
+    
 
     operationSetToPerformContains.animateModelConvergence = ~true;
 
+    actionStrings{1} = '[ 1] Generate the center-connected mRGCMosaic';
+    actionStrings{2} = '[ 2] Visualize PSFs at a 3x3 grid within the mRGCMosaic';
+    actionStrings{3} = '[ 3] Compute responses across spatial frequencies and orientations of the input cone mosaic';
+    actionStrings{4} = '[ 4] Derive optimized surround cone pooling kernels. (NOTE: This step takes a long time';
+    actionStrings{5} = '[ 5] Examine optimized cone pooling models at all or certain grid nodes within the mosaic';
+    actionStrings{6} = '[ 6] Generate a compute-ready (center-surround connected) mRGCMosaic\n\t   based on the previously derived optimized surround cone pooling kernels';
+    actionStrings{7} = '[ 7] Compute-ready mRGCMosaic: visualize spatial RFs';
+    actionStrings{8} = '[ 8] Compute-ready mRGCMosaic validation. Step1: compute visual STFs for all cells in the mosaic';
+    actionStrings{9} = '[ 9] Compute-ready mRGCMosaic validation. Step2: fit a DoG model to the computed visual STFs for all cells in the mosaic';
+    actionStrings{10} = '[10] Compute-ready mRGCMosaic validation. Step3: visualize fitted DoG model params for all cells in the mosaic';
+    actionStrings{11} = '[11] Compute-ready mRGCMosaic validation. Step4: visualize fitted DoG model params for all cells in multiple mosaics';
+    
+
     invalidActionSelected = true;
-    validChoiceIDs = 1:9;
+    validChoiceIDs = 1:numel(actionStrings);
     while (invalidActionSelected)
         fprintf('\n\nAvailable actions for the mosaic at eccentricity (%2.1f,%2.1f):', ...
             mosaicParams.eccDegs(1), mosaicParams.eccDegs(2));
-        fprintf('\n\n\t[1] Generate the center-connected mRGCMosaic');
-        fprintf('\n\n\t[2] Visualize PSFs at a 3x3 grid within the mRGCMosaic');
-        fprintf('\n\n\t[3] Compute responses across spatial frequencies and orientations of the input cone mosaic'); 
-        fprintf('\n\n\t[4] Derive optimized surround cone pooling kernels. (NOTE: This step takes a long time)');
-        fprintf('\n\n\t[5] Examine optimized cone pooling models at all or certain grid nodes within the mosaic');
-        fprintf('\n\n\t[6] Generate a compute-ready (center-surround connected) mRGCMosaic\n\t   based on the previously derived optimized surround cone pooling kernels');
-        fprintf('\n\n\t[7] Compute-ready mRGCMosaic validation. Step1: compute visual STFs for all cells in the mosaic');
-        fprintf('\n\n\t[8] Compute-ready mRGCMosaic validation. Step2: fit a DoG model to the computed visual STFs for all cells in the mosaic');
-        fprintf('\n\n\t[9] Compute-ready mRGCMosaic validation. Step3: visualize fitted DoG model params for all cells in the mosaic');
-
+        for iString = 1:numel(actionStrings)
+            fprintf('\n\n\t%s', actionStrings{iString});
+        end
         choice = input('\n\nEnter action ID : ', 's');
         if (~isempty(choice))
             choiceID = str2num(choice);
@@ -534,14 +542,21 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
                         % Generate a compute-ready MRGC mosaic
                         operationSetToPerformContains.generateComputeReadyMidgetRGCMosaic = true;
                     case 7
+                        % Visualize the derived spatial RFs of the compute-ready mRGC mosaic
+                        operationSetToPerformContains.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                    case 8
                         % Validate a compute-ready mRGCMosaic: step1 - compute visual STFs for all cells
                         operationSetToPerformContains.computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
-                    case 8
+                    case 9
                         % Validate a compute-ready mRGCMosaic: step2 - fit a DoG model to all the computed visual STFs for all cells
                         operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
-                    case 9
-                        % Validate a compute-ready mRGCMosaic: step3 - visualize fitted visual STFs for all cells
+                    case 10
+                        % Validate a compute-ready mRGCMosaic: step3 - visualize fitted visual STFs for all cells in a single mRGC mosaic
                         operationSetToPerformContains.visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                    case 11
+                        % Validate a compute-ready mRGCMosaic: step4 - visualize fitted visual STFs for all cells in multiple mRGC mosaics
+                        operationSetToPerformContains.visualizeFittedVisualSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = true;
+                    
                     otherwise
                         error('Unknown option')
 

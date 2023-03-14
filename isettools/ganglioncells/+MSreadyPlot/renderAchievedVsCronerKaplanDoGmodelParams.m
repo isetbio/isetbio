@@ -1,27 +1,51 @@
 function renderAchievedVsCronerKaplanDoGmodelParams(ax, ...
-    CK95data, ISETBioData, visualizedISETBioDataSets, ISETBioDataColor, faceAlpha, ...
+    CK95data, ISETBioData, visualizedDataSet, ISETBioDataColor, faceAlpha, ...
     XLims, XTicks, YLims, YTicks, ...
-    yAxisScaling, yAxisLabel, plotTitle, ff)
+    yAxisScaling, yAxisLabel, plotTitle, ...
+    employTemporalEquivalentEccentricity, ff)
 
     cla(ax, 'reset');
     hold(ax, 'on');
     cellsNum = 0;
 
     for setIndex = 1:numel(ISETBioData)
-        if (ismember(setIndex, visualizedISETBioDataSets))
+        if (ismember(setIndex, visualizedDataSet))
             cellsNum  = cellsNum  + numel(ISETBioData{setIndex}.eccentricityDegs);
             scatter(ax, ISETBioData{setIndex}.eccentricityDegs, ISETBioData{setIndex}.data, (ff.markerSize-6)^2,'o', ...
                 'MarkerFaceColor', ISETBioDataColor(setIndex,:), 'MarkerEdgeColor', ISETBioDataColor(setIndex,:), ...
                 'MarkerFaceAlpha', faceAlpha, 'MarkerEdgeAlpha', 0.0,  'LineWidth', ff.lineWidth);
-%             plot(ax, ISETBioData{setIndex}.eccentricityDegs, ISETBioData{setIndex}.data, '.', ...
-%                  'MarkerFaceColor', ISETBioDataColor(setIndex,:), 'MarkerEdgeColor', ISETBioDataColor(setIndex,:), ...
-%                  'MarkerSize', 6, 'LineWidth', 0.2);
         end
 
     end
-    plot(ax, CK95data.eccentricityDegs, ...
-             CK95data.data, 'ks', ...
-             'MarkerSize', ff.markerSize, 'MarkerFaceColor', [0.8 0.8 0.8], 'LineWidth', ff.lineWidth*0.75);
+
+    % Add the Croner&Kaplan data
+    scatter(ax, CK95data.eccentricityDegs, ...
+             CK95data.data, 144, 's', ...
+             'MarkerFaceAlpha', 0.5, ...
+             'MarkerEdgeColor', [0.2 0.2 0.2], ...
+             'MarkerFaceColor', [0.8 0.8 0.8], ...
+             'LineWidth', ff.lineWidth*0.75);
+    
+    % Add the mean data
+    for setIndex = 1:numel(ISETBioData)
+        if (ismember(setIndex, visualizedDataSet))
+            X = ISETBioData{setIndex}.eccentricityDegs;
+            Y = ISETBioData{setIndex}.data;
+            % Compute mean values across eccentricities
+            minEcc = 0.3;
+            maxEcc = 30;
+            [N,edges,bin] = histcounts(X, logspace(log10(minEcc), log10(maxEcc), 32));
+            for iBin = 1:numel(edges)
+                idx = find(bin == iBin);
+                meanY(iBin) = mean(Y(idx));
+            end
+
+            saturatedColor = (ISETBioDataColor(setIndex,:)-min(ISETBioDataColor(setIndex,:)))./(max(ISETBioDataColor(setIndex,:))-min(ISETBioDataColor(setIndex,:)));
+
+            plot(ax, edges, meanY, 'k-', 'LineWidth', 4, 'Color', ISETBioDataColor(setIndex,:));
+            plot(ax, edges, meanY, 'w-', 'LineWidth', 2, 'Color', saturatedColor);
+        end
+     end
     
     
     dY = (YLims(2)-YLims(1))*4/100;
@@ -35,7 +59,12 @@ function renderAchievedVsCronerKaplanDoGmodelParams(ax, ...
     box(ax, 'off');
     xtickangle(ax, 0);
 
-    xlabel(ax,'eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
+    if (employTemporalEquivalentEccentricity)
+        xlabel(ax,'temporal equivalent eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
+    else
+        xlabel(ax,'eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
+    end
+
     ylabel(ax, yAxisLabel, 'FontAngle', ff.axisFontAngle);
 
     % Font size
@@ -45,7 +74,9 @@ function renderAchievedVsCronerKaplanDoGmodelParams(ax, ...
     set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
     
     if (isempty(plotTitle))
-        plotTitle = sprintf('n = %2.0f RGCs', cellsNum);
+        plotTitle = '';
+    else
+        plotTitle = sprintf('%d %s RGCs', cellsNum, plotTitle);
     end
 
     title(ax, plotTitle, 'fontSize', ff.titleFontSize, ...

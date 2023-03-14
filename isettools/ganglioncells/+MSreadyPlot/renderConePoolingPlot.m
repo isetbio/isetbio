@@ -9,6 +9,8 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
+    p.addParameter('xAxisTickAngleRotationDegs', 90, @isscalar);
+
     p.parse(varargin{:});
     
     spatialSupportRangeArcMin = p.Results.spatialSupportRangeArcMin;
@@ -18,7 +20,8 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
     noYLabel = p.Results.noYLabel;
     noXTicks = p.Results.noXTicks;
     noYTicks = p.Results.noYTicks;
-
+    xAxisTickAngleRotationDegs = p.Results.xAxisTickAngleRotationDegs;
+    
     if (isempty(spatialSupportRangeArcMin))
         spatialSupportRangeArcMin = 10;
     end
@@ -102,7 +105,8 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
                 'FontWeight', ff.titleFontWeight);
     end
 
-    xtickangle(ax, 90);
+
+    xtickangle(ax, xAxisTickAngleRotationDegs);
     colormap(ax, brewermap(1024, 'greys'));
 end
 

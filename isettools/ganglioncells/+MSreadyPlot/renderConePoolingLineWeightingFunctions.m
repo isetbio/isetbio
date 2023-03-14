@@ -1,6 +1,6 @@
 function renderConePoolingLineWeightingFunctions(ax, ...
             centerLineWeightingFunction, surroundLineWeightingFunction, ...
-            sensitivityRange, ff, varargin)
+            sensitivityRange, horizontalAxisDirection, ff, varargin)
 
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
@@ -10,6 +10,8 @@ function renderConePoolingLineWeightingFunctions(ax, ...
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
+    p.addParameter('xAxisTickAngleRotationDegs', 90, @isscalar)
+
     p.parse(varargin{:});
     
     spatialSupportRangeArcMin = p.Results.spatialSupportRangeArcMin;
@@ -19,6 +21,7 @@ function renderConePoolingLineWeightingFunctions(ax, ...
     noYLabel = p.Results.noYLabel;
     noXTicks = p.Results.noXTicks;
     noYTicks = p.Results.noYTicks;
+    xAxisTickAngleRotationDegs = p.Results.xAxisTickAngleRotationDegs;
 
     if (isempty(spatialSupportRangeArcMin))
         spatialSupportRangeArcMin = 10;
@@ -81,7 +84,7 @@ function renderConePoolingLineWeightingFunctions(ax, ...
     set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
 
     if (~noXLabel)
-        xlabel(ax, 'space (arc min)', 'FontAngle', ff.axisFontAngle);
+        xlabel(ax, sprintf('space, %s (arc min)', horizontalAxisDirection), 'FontAngle', ff.axisFontAngle);
     end
 
     if (~noYLabel)
@@ -100,7 +103,7 @@ function renderConePoolingLineWeightingFunctions(ax, ...
                 'FontWeight', ff.titleFontWeight);
     end
 
-    xtickangle(ax, 90);
+    xtickangle(ax, xAxisTickAngleRotationDegs);
 
 end
 
