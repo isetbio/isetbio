@@ -62,13 +62,13 @@ function [hFigProgress, ff] = visualizeOptimizationProgress(figNo, figTitle, ...
         ax = subplot('Position',  ff.subplotPosVectors(1,1).v);
 
         if (contains(retinalConePoolingModel, 'H1cellIndex1'))
-            conePoolingModelName = 'cone pooling params (Packer & Dacey (H1 #1)';
+            conePoolingModelName = 'H1 (#1) surround model params)';
         elseif (contains(retinalConePoolingModel, 'H1cellIndex2'))
-            conePoolingModelName = 'cone pooling params (Packer & Dacey (H1 #2))';
+            conePoolingModelName = 'H1 (#2) surround model params)';
         elseif (contains(retinalConePoolingModel, 'H1cellIndex3'))
-            conePoolingModelName = 'cone pooling params (Packer & Dacey (H1 #3))';
+            conePoolingModelName = 'H1 (#3) surround model params)';
         elseif (contains(retinalConePoolingModel, 'H1cellIndex4'))
-            conePoolingModelName = 'cone pooling params (Packer & Dacey (H1 #4))';
+            conePoolingModelName = 'H1 (#4) surround model params)';
         end
         MosaicPoolingOptimizer.visualizeFittedModelParametersAndRanges(ax, retinalConePoolingParams, conePoolingModelName);
 
@@ -91,7 +91,7 @@ function [hFigProgress, ff] = visualizeOptimizationProgress(figNo, figTitle, ...
            'noYLabel', true);
 
        % Top middle panel: correspondence between achieved and desired DoG ratios at current location                    
-       ax = subplot('Position',  ff.subplotPosVectors(1,4).v);
+       ax = subplot('Position',  ff.subplotPosVectors(2,3).v);
        MSreadyPlot.renderPerformance(ax, ...
                  targetVisualSTFparams.surroundToCenterRcRatio, targetVisualSTFparams.surroundToCenterIntegratedSensitivityRatio, ...
                  theCurrentSTFdata.fittedDoGModelRsRcRatio, theCurrentSTFdata.fittedDoGModelSCIntSensRatio, ...

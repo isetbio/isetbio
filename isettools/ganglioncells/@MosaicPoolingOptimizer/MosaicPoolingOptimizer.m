@@ -246,6 +246,11 @@ classdef MosaicPoolingOptimizer < handle
             centerConeIndicesForCurrentRGC, centerConeWeightsForCurrentRGC, ...
             surroundConeIndicesForCurrentRGC, surroundConeWeightsForCurrentRGC);
 
+        % Method to visualize spatial RFs across the compute-ready mRGC
+        % mosaic
+        visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic(...
+            computeReadyMosaicFilename, pdfFileName);
+
         % Method to compute visualSTF responses of a cone mosaic under
         % some optics
         [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
@@ -269,7 +274,8 @@ classdef MosaicPoolingOptimizer < handle
         % Method to visualized the fitted the visualSTF of the compute-ready MRGCmosaic
         visualizeFittedVisualSTFsOfComputeReadyMidgetRGCMosaic(...
                 computeReadyMosaicFilename, ...
-                mRGCMosaicSTFresponsesFilename)
+                mRGCMosaicSTFresponsesFilename, ...
+                employTemporalEquivalentEccentricity);
 
         visualizeConeMosaicSTFresponses(mRGCMosaicFileName, coneMosaicSTFresponsesFileName, varargin);
     end % Static methods

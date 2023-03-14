@@ -42,6 +42,6 @@ function visualizeFittedModelParametersAndRanges(ax, modelParams, modelName)
     
     axis (ax, 'square');
     ylabel(ax,'parameter value range');
-    title(ax, modelName, 'FontSize', 16, 'Color', [0.3 0.3 0.3]);
+    title(ax, modelName, 'FontSize', 16, 'Color', [0.3 0.3 0.3], 'FontWeight', 'normal');
     
 end
