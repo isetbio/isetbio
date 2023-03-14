@@ -184,8 +184,21 @@ classdef mRGCMosaic < handle
             theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin);
 
 
+        % Method to generate the visualization cache
+        generateVisualizationCache(obj, xSupport, ySupport);
+
         % Method to visualize the mRGCmosaic and its activation
         visualize(obj, varargin);
+
+        % Method to visualize the spatial RF of an RGC near a target
+        % positon, with a target # of center cones, and a target center
+        % cone majority type
+        visualizeSpatialRFnearPosition(obj, ...
+            targetRGCposition, targetCenterConesNum, ...
+            targetCenterConeMajorityType, varargin);
+
+        % Method to visual the spatial RF of an RGC with a specific index
+        visualizeSpatialRFofRGCwithIndex(obj,theRGCindex, pdfFileName);
 
         % Method to generate the native optics for the mosaic.
         % These optics form the basis on which surround cone weights are optimized
