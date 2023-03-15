@@ -1,6 +1,6 @@
-function renderConePoolingLineWeightingFunctions(ax, ...
+function renderSubregionConePoolingLineWeightingFunctions(ax, ...
             centerLineWeightingFunction, surroundLineWeightingFunction, ...
-            sensitivityRange, horizontalAxisDirection, ff, varargin)
+            sensitivityRange, horizontalAxisDirection, varargin)
 
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
@@ -11,7 +11,7 @@ function renderConePoolingLineWeightingFunctions(ax, ...
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
     p.addParameter('xAxisTickAngleRotationDegs', 90, @isscalar)
-
+    p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
     p.parse(varargin{:});
     
     spatialSupportRangeArcMin = p.Results.spatialSupportRangeArcMin;
@@ -22,6 +22,7 @@ function renderConePoolingLineWeightingFunctions(ax, ...
     noXTicks = p.Results.noXTicks;
     noYTicks = p.Results.noYTicks;
     xAxisTickAngleRotationDegs = p.Results.xAxisTickAngleRotationDegs;
+    ff = p.Results.withFigureFormat;
 
     if (isempty(spatialSupportRangeArcMin))
         spatialSupportRangeArcMin = 10;
@@ -77,32 +78,46 @@ function renderConePoolingLineWeightingFunctions(ax, ...
         set(ax, 'YTickLabel', {});
     end
 
-    % Font size
-    set(ax, 'FontSize', ff.fontSize);
+    if (isempty(ff))
+        if (~noXLabel)
+            xlabel(ax, sprintf('space, %s (arc min)', horizontalAxisDirection));
+        end
+    
+        if (~noYLabel)
+            ylabel(ax, 'sensitivity');
+        end
 
-    % axis color and width
-    set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+        if (~isempty(plotTitle))
+            title(ax, plotTitle);
+        end
+    else
+        % Font size
+        set(ax, 'FontSize', ff.fontSize);
+    
+        % axis color and width
+        set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
 
-    if (~noXLabel)
-        xlabel(ax, sprintf('space, %s (arc min)', horizontalAxisDirection), 'FontAngle', ff.axisFontAngle);
-    end
+        if (~noXLabel)
+            xlabel(ax, sprintf('space, %s (arc min)', horizontalAxisDirection), 'FontAngle', ff.axisFontAngle);
+        end
+    
+        if (~noYLabel)
+            ylabel(ax, 'sensitivity' ,'FontAngle', ff.axisFontAngle);
+        end
 
-    if (~noYLabel)
-        ylabel(ax, 'sensitivity' ,'FontAngle', ff.axisFontAngle);
+        if (~isempty(plotTitle))
+            title(ax, plotTitle, ...
+                'Color', ff.titleColor, ...
+                'FontSize', ff.titleFontSize, ...
+                'FontWeight', ff.titleFontWeight);
+        end
+
     end
 
     
     grid(ax, 'on');
     box(ax, 'off');
     axis(ax, 'square');
-
-    if (~isempty(plotTitle))
-       title(ax, plotTitle, ...
-                'Color', ff.titleColor, ...
-                'FontSize', ff.titleFontSize, ...
-                'FontWeight', ff.titleFontWeight);
-    end
-
     xtickangle(ax, xAxisTickAngleRotationDegs);
 
 end

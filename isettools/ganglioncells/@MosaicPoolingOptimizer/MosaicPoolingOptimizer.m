@@ -249,7 +249,7 @@ classdef MosaicPoolingOptimizer < handle
         % Method to visualize spatial RFs across the compute-ready mRGC
         % mosaic
         visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic(...
-            computeReadyMosaicFilename, pdfFileName);
+            computeReadyMosaicFilename, mRGCMosaicSTFresponsesFilename, pdfFileName);
 
         % Method to compute visualSTF responses of a cone mosaic under
         % some optics

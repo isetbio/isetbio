@@ -3,7 +3,7 @@ function testMidgetRGCMosaic
     arbitraryNodesToCompute =  selectNodesToRecompute();
     mosaicEcc = 2.5;
     mosaicEcc = 7.0;
-    mosaicEcc = -10.0;
+    %mosaicEcc = -10.0;
 
     % Get mosaic ecc and size
     mosaicParams = getMosaicParams(mosaicEcc);
@@ -290,6 +290,7 @@ function testMidgetRGCMosaic
         [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
         MosaicPoolingOptimizer.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic(...
             fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
+            fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName), ...
             fullfile(pdfDirectory, 'spatialRFmaps.pdf'));
     end
 

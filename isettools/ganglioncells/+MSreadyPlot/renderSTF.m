@@ -2,11 +2,15 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('noXTickLabel', false, @islogical);
+    p.addParameter('noYTickLabel', false, @islogical);
     p.parse(varargin{:});
     
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
-    
+    noXTickLabel = p.Results.noXTickLabel;
+    noYTickLabel = p.Results.noYTickLabel;
+
     maxAll = max([max(compositeSTF(:)) max(compositeSTFfit(:)) max(centerSTFfit(:)) max(surroundSTFfit(:))]);
     compositeSTF = compositeSTF / maxAll;
     compositeSTFfit = compositeSTFfit / maxAll;
@@ -75,6 +79,17 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     else
         set(ax, 'YTickLabel', 0:0.2:1, 'YTickLabel', sprintf('%1.1f\n', 0:0.2:1));
     end
+
+    if (~noYTickLabel)
+    else
+        set(ax, 'YTickLabel', {});
+    end
+
+    if (~noXTickLabel)
+    else
+        set(ax, 'XTickLabel', {});
+    end
+
 
     % legends
     if (~isempty(theLegends))

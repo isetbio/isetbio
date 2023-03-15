@@ -1,5 +1,5 @@
-function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
-        rgcRFposDegs, coneIndices, coneWeights, ff, varargin)
+function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
+        rgcRFposDegs, coneIndices, coneWeights, varargin)
 
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
@@ -10,7 +10,7 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
     p.addParameter('xAxisTickAngleRotationDegs', 90, @isscalar);
-
+    p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
     p.parse(varargin{:});
     
     spatialSupportRangeArcMin = p.Results.spatialSupportRangeArcMin;
@@ -20,6 +20,7 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
     noYLabel = p.Results.noYLabel;
     noXTicks = p.Results.noXTicks;
     noYTicks = p.Results.noYTicks;
+    ff = p.Results.withFigureFormat;
     xAxisTickAngleRotationDegs = p.Results.xAxisTickAngleRotationDegs;
     
     if (isempty(spatialSupportRangeArcMin))
@@ -27,7 +28,7 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
     end
 
     if (isempty(tickSeparationArcMin))
-        tickSeparationArcMin = 2.0;
+        tickSeparationArcMin = 5.0;
     end
 
     maxXY = round(spatialSupportRangeArcMin/2);
@@ -54,12 +55,12 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
         plot(ax,theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),1), theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),2), '.', 'MarkerSize', 8, 'Color', coneColor);
     end
     
-
-    lineWeightingFunctions.x = struct(...
+    % Return the subregion line weighting functions along X and Y
+    subregionLineWeightingFunctions.x = struct(...
         'spatialSupportDegs', spatialSupportXYDegs(:,1), ...
         'amplitude', sum(retinalSubregionConeMap,1));
 
-    lineWeightingFunctions.y = struct(...
+    subregionLineWeightingFunctions.y = struct(...
         'spatialSupportDegs', spatialSupportXYDegs(:,2), ...
         'amplitude', sum(retinalSubregionConeMap,2));
 
@@ -83,28 +84,41 @@ function lineWeightingFunctions = renderConePoolingPlot(ax, theConeMosaic, ...
         set(ax, 'YTickLabel', {});
     end
 
-    % Font size
-    set(ax, 'FontSize', ff.fontSize);
+    if (isempty(ff))
+        if (~noXLabel)
+            xlabel(ax, 'space, x (deg)');
+        end
+    
+        if (~noYLabel)
+            ylabel(ax, 'space, y (deg)');
+        end
 
-    % axis color and width
-    set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+        if (~isempty(plotTitle))
+            title(ax, plotTitle);
+        end
 
-    if (~noXLabel)
-        xlabel(ax, 'space, x (deg)', 'FontAngle', ff.axisFontAngle);
-    end
+    else
+        % Font size
+        set(ax, 'FontSize', ff.fontSize);
+    
+        % axis color and width
+        set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+    
+        if (~noXLabel)
+            xlabel(ax, 'space, x (deg)', 'FontAngle', ff.axisFontAngle);
+        end
+    
+        if (~noYLabel)
+            ylabel(ax, 'space, y (deg)' ,'FontAngle', ff.axisFontAngle);
+        end
 
-    if (~noYLabel)
-        ylabel(ax, 'space, y (deg)' ,'FontAngle', ff.axisFontAngle);
-    end
-
-
-
-    if (~isempty(plotTitle))
-       title(ax, plotTitle, ...
+        if (~isempty(plotTitle))
+            title(ax, plotTitle, ...
                 'Color', ff.titleColor, 'FontSize', ff.titleFontSize, ...
                 'FontWeight', ff.titleFontWeight);
-    end
+        end
 
+    end
 
     xtickangle(ax, xAxisTickAngleRotationDegs);
     colormap(ax, brewermap(1024, 'greys'));

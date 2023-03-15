@@ -193,12 +193,12 @@ classdef mRGCMosaic < handle
         % Method to visualize the spatial RF of an RGC near a target
         % positon, with a target # of center cones, and a target center
         % cone majority type
-        visualizeSpatialRFnearPosition(obj, ...
+        theVisualizedRGCindex = visualizeSpatialRFnearPosition(obj, ...
             targetRGCposition, targetCenterConesNum, ...
-            targetCenterConeMajorityType, varargin);
+            targetCenterConeMajorityType, theAxes, varargin);
 
         % Method to visual the spatial RF of an RGC with a specific index
-        visualizeSpatialRFofRGCwithIndex(obj,theRGCindex, pdfFileName);
+        visualizeSpatialRFofRGCwithIndex(obj,theRGCindex, theAxes, varargin);
 
         % Method to generate the native optics for the mosaic.
         % These optics form the basis on which surround cone weights are optimized
@@ -254,7 +254,16 @@ classdef mRGCMosaic < handle
 
     % Static methods
     methods (Static)
-        
+        % Method to render the cone pooling plot with a subregion based on
+        % the cone indices and weights pooled by that subregion and return
+        % the X,Y line weighting functions for that subregion
+        subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
+            rgcRFposDegs, coneIndices, coneWeights, varargin);
+
+        % Method to render the X,Y line weighting functions for a subregion
+        renderSubregionConePoolingLineWeightingFunctions(ax, ...
+            centerLineWeightingFunction, surroundLineWeightingFunction, ...
+            sensitivityRange, horizontalAxisDirection, varargin);
     end % Static methods
 
 end

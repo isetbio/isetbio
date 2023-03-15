@@ -1,32 +1,13 @@
-function visualizeSpatialRFnearPosition(obj, ...
+function theVisualizedRGCindex = visualizeSpatialRFnearPosition(obj, ...
     targetRGCposition, targetCenterConesNum, ...
-    targetCenterConeMajorityType, varargin)
+    targetCenterConeMajorityType, theAxes, varargin)
 
-    % Parse optional input
-    p = inputParser;
-    p.addParameter('pdfFileName', '', @ischar);
-    p.parse(varargin{:});
-    pdfFileName = p.Results.pdfFileName;
+     % Parse optional input
+     p = inputParser;
+     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
+     p.parse(varargin{:});
+     ff = p.Results.withFigureFormat;
 
-    % Customize PDF filename
-    if (~isempty(pdfFileName))
-        if (isnan(targetCenterConeMajorityType))
-            pdfPostFix = sprintf('AtPosition_%2.2f_%2.2f_CenterConesNum_%d_mixedLM', ...
-                    targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);
-        else
-            switch (targetCenterConeMajorityType)
-                case cMosaic.LCONE_ID
-                    pdfPostFix = sprintf('AtPosition_%2.2f_%2.2f_CenterConesNum_%d_LconeDominated.pdf', ...
-                        targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);
-                case cMosaic.MCONE_ID
-                    pdfPostFix = sprintf('AtPosition_%2.2f_%2.2f_CenterConesNum_%d_MconeDominated.pdf', ...
-                        targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);
-                    
-            end
-        end
-    
-        pdfFileName = strrep(pdfFileName, '.pdf', pdfPostFix);
-    end
 
     d = (bsxfun(@minus, obj.rgcRFpositionsDegs, targetRGCposition)).^2;
     d = sqrt(sum(d,2));
@@ -62,11 +43,13 @@ function visualizeSpatialRFnearPosition(obj, ...
         fprintf(2, 'Could not find an RGC with %d center cones\n', targetCenterConesNum)
         return;
     else
+        theVisualizedRGCindex = theCurrentRGCindex;
         fprintf('Found mosaic with %d center cones near the target position (%2.2f,%2.2f) at %2.2f,%2.2f\n', ...
             targetCenterConesNum, ...
             targetRGCposition(1), targetRGCposition(2), ...
-            obj.rgcRFpositionsDegs(theCurrentRGCindex,1), obj.rgcRFpositionsDegs(theCurrentRGCindex,2));
+            obj.rgcRFpositionsDegs(theVisualizedRGCindex,1), obj.rgcRFpositionsDegs(theVisualizedRGCindex,2));
     end
 
-    obj.visualizeSpatialRFofRGCwithIndex(theCurrentRGCindex, pdfFileName);
+    obj.visualizeSpatialRFofRGCwithIndex(theVisualizedRGCindex, theAxes, ...
+        'withFigureFormat', ff);
 end
