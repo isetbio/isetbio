@@ -220,6 +220,12 @@ classdef mRGCMosaic < handle
         % Method to return the majority center cone type for an RGC
         [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = centerConeTypeWeights(obj, theRGCindex);
 
+        % Method to return the indices of RGCs with a specific number of center cones
+        indicesOfRGCsIdentified = indicesOfRGCsWithThisManyCenterCones(obj, targetCenterConesNum);
+
+        % Stats on the center cones
+        centerConePoolingStats(obj);
+
         % Getter for dependent property cellsNum
         function val = get.rgcsNum(obj)
             val = size(obj.rgcRFpositionsDegs,1);

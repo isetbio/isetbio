@@ -3,7 +3,7 @@ function testMidgetRGCMosaic
     arbitraryNodesToCompute =  selectNodesToRecompute();
     mosaicEcc = 2.5;
     mosaicEcc = 7.0;
-    %mosaicEcc = -10.0;
+    mosaicEcc = -10.0;
 
     % Get mosaic ecc and size
     mosaicParams = getMosaicParams(mosaicEcc);
@@ -35,9 +35,38 @@ function testMidgetRGCMosaic
     else
         % Load a previously-generated mRGCMosaic
         load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
+        
+        % Report stats
+        theMidgetRGCMosaic.centerConePoolingStats();
+
+        targetCenterConesNum = input('Label RGCs with this many center cones (e.g, 0, 1, 2, ...)? :');
+        indicesOfRGCsIdentified = theMidgetRGCMosaic.indicesOfRGCsWithThisManyCenterCones(targetCenterConesNum);
+       
+        identifyPooledCones = true;
+        identifyInputCones = true;
+        plotRFoutlines = true;
+
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 1800 1000], 'Color', [1 1 1]);
+        theMidgetRGCMosaic.visualize(...
+            'figureHandle', hFig, ...
+            'identifiedConeApertureThetaSamples', 32, ...
+            'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
+            'identifyPooledCones', identifyPooledCones, ...
+            'identifyInputCones',identifyInputCones, ...
+            'labelRGCsWithIndices', indicesOfRGCsIdentified, ...
+            'plotRFoutlines', plotRFoutlines, ...
+            'domainVisualizationLimits', [], ...
+            'domainVisualizationTicks', [], ...
+            'backgroundColor', [0 0 0]);
     end
 
-   
+    if (operationSetToPerformContains.visualizeRGCMosaic)
+        % Save the generated center-only connected mRGCmosaic
+        load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
+    end
+
+
     % Default optics params
     opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
 
@@ -311,7 +340,7 @@ function testMidgetRGCMosaic
     end
 
     % Stage 9: Visualized the fitted DoG models to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
-    if (operationSetToPerformContains.visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
+    if (operationSetToPerformContains.visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic)
 
         theMosaicFileNames = {...
             fullfile(resourcesDirectory, computeReadyMosaicFileName) ...
@@ -321,7 +350,7 @@ function testMidgetRGCMosaic
             };
 
         employTemporalEquivalentEccentricity = ~true;
-        MosaicPoolingOptimizer.visualizeFittedVisualSTFsOfComputeReadyMidgetRGCMosaic(...
+        MosaicPoolingOptimizer.visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
             theMosaicFileNames, ...
             theMRGCSTFResponsesFileNames, ...
             employTemporalEquivalentEccentricity);
@@ -331,7 +360,7 @@ function testMidgetRGCMosaic
     
 
     % Stage 10: Visualized the fitted DoG models to the computed visual STFs of all cells in multiple compute-ready mRGCMosaics
-    if (operationSetToPerformContains.visualizeFittedVisualSTFsAcrossMultipleComputeReadyMidgetRGCMosaics)
+    if (operationSetToPerformContains.visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics)
 
         mosaicEccs = [2.5 7.0];
         theMosaicFileNames = cell(1, numel(mosaicEccs));
@@ -358,7 +387,7 @@ function testMidgetRGCMosaic
             theMRGCSTFResponsesFileNames{iMosaic} = fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName);
         end
 
-        MosaicPoolingOptimizer.visualizeFittedVisualSTFsOfComputeReadyMidgetRGCMosaic(...
+        MosaicPoolingOptimizer.visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
             theMosaicFileNames, ...
             theMRGCSTFResponsesFileNames, ...
             employTemporalEquivalentEccentricity);
@@ -466,8 +495,11 @@ end
 
 function operationSetToPerformContains = promptUserForOperationsToPerform(mosaicParams)
 
-    % Generate mosaic
+    % Generate the center-connected mosaic
     operationSetToPerformContains.generateRGCMosaic = ~true;
+
+    % Visualize the center-connected mosaic
+    operationSetToPerformContains.visualizeRGCMosaic = ~true;
 
     % Visualize PSFs at various positions within the mosaic
     operationSetToPerformContains.visualizePSFsAtEccentricities = ~true;
@@ -490,24 +522,25 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
     % Validate the compute-ready mRGC mosaic
     operationSetToPerformContains.computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
-    operationSetToPerformContains.visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
-    operationSetToPerformContains.visualizeFittedVisualSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = ~true;
+    operationSetToPerformContains.visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+    operationSetToPerformContains.visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = ~true;
 
     
 
     operationSetToPerformContains.animateModelConvergence = ~true;
 
     actionStrings{1} = '[ 1] Generate the center-connected mRGCMosaic';
-    actionStrings{2} = '[ 2] Visualize PSFs at a 3x3 grid within the mRGCMosaic';
-    actionStrings{3} = '[ 3] Compute responses across spatial frequencies and orientations of the input cone mosaic';
-    actionStrings{4} = '[ 4] Derive optimized surround cone pooling kernels. (NOTE: This step takes a long time';
-    actionStrings{5} = '[ 5] Examine optimized cone pooling models at all or certain grid nodes within the mosaic';
-    actionStrings{6} = '[ 6] Generate a compute-ready (center-surround connected) mRGCMosaic\n\t   based on the previously derived optimized surround cone pooling kernels';
-    actionStrings{7} = '[ 7] Compute-ready mRGCMosaic: visualize spatial RFs';
-    actionStrings{8} = '[ 8] Compute-ready mRGCMosaic validation. Step1: compute visual STFs for all cells in the mosaic';
-    actionStrings{9} = '[ 9] Compute-ready mRGCMosaic validation. Step2: fit a DoG model to the computed visual STFs for all cells in the mosaic';
-    actionStrings{10} = '[10] Compute-ready mRGCMosaic validation. Step3: visualize fitted DoG model params for all cells in the mosaic';
-    actionStrings{11} = '[11] Compute-ready mRGCMosaic validation. Step4: visualize fitted DoG model params for all cells in multiple mosaics';
+    actionStrings{2} = '[ 2] Visualize the center-connected mRGCMosaic';
+    actionStrings{3} = '[ 3] Visualize PSFs at a 3x3 grid within the mRGCMosaic';
+    actionStrings{4} = '[ 4] Compute responses across spatial frequencies and orientations of the input cone mosaic';
+    actionStrings{5} = '[ 5] Derive optimized surround cone pooling kernels. (NOTE: This step takes a long time';
+    actionStrings{6} = '[ 6] Examine optimized cone pooling models at all or certain grid nodes within the mosaic';
+    actionStrings{7} = '[ 7] Generate a compute-ready (center-surround connected) mRGCMosaic\n\t   based on the previously derived optimized surround cone pooling kernels';
+    actionStrings{8} = '[ 8] Compute-ready mRGCMosaic: visualize spatial RFs';
+    actionStrings{9} = '[ 9] Compute-ready mRGCMosaic validation. Step1: compute visual STFs for all cells in the mosaic';
+    actionStrings{10} = '[10] Compute-ready mRGCMosaic validation. Step2: fit a DoG model to the computed visual STFs for all cells in the mosaic';
+    actionStrings{11} = '[11] Compute-ready mRGCMosaic validation. Step3: visualize fitted DoG model params for all cells in the mosaic';
+    actionStrings{12} = '[12] Compute-ready mRGCMosaic validation. Step4: visualize fitted DoG model params for all cells in multiple mosaics';
     
 
     invalidActionSelected = true;
@@ -524,39 +557,42 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
             if (ismember(choiceID, validChoiceIDs))
                 switch (choiceID)
                     case 1
-                        % Generate mosaic
+                        % Generate center-connected mosaic
                         operationSetToPerformContains.generateRGCMosaic = true;
                     case 2
+                        % Visualize center-connected mosaic
+                        operationSetToPerformContains.visualizeRGCMosaic = true;
+                    case 3
                         % Visualize PSFs at various positions within the mosaic
                         operationSetToPerformContains.visualizePSFsAtEccentricities = true;
-                    case 3
+                    case 4
                         % Compute cone mosaic STF responses
                         operationSetToPerformContains.computeConeMosaicSTFresponses = true;
-                    case 4
+                    case 5
                         % Derive optimized surround cone pooling kernels (takes a long time)
                         operationSetToPerformContains.optimizeRGCMosaic = true;
-                    case 5
+                    case 6
                         % Examine optimized cone pooling models at all or
                         % certain  grid nodes
                         operationSetToPerformContains.inspectOptimizedRGCmodels = true;
-                    case 6
+                    case 7
                         % Generate a compute-ready MRGC mosaic
                         operationSetToPerformContains.generateComputeReadyMidgetRGCMosaic = true;
-                    case 7
+                    case 8
                         % Visualize the derived spatial RFs of the compute-ready mRGC mosaic
                         operationSetToPerformContains.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
-                    case 8
+                    case 9
                         % Validate a compute-ready mRGCMosaic: step1 - compute visual STFs for all cells
                         operationSetToPerformContains.computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
-                    case 9
+                    case 10
                         % Validate a compute-ready mRGCMosaic: step2 - fit a DoG model to all the computed visual STFs for all cells
                         operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
-                    case 10
-                        % Validate a compute-ready mRGCMosaic: step3 - visualize fitted visual STFs for all cells in a single mRGC mosaic
-                        operationSetToPerformContains.visualizeFittedVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
                     case 11
+                        % Validate a compute-ready mRGCMosaic: step3 - visualize fitted visual STFs for all cells in a single mRGC mosaic
+                        operationSetToPerformContains.visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                    case 12
                         % Validate a compute-ready mRGCMosaic: step4 - visualize fitted visual STFs for all cells in multiple mRGC mosaics
-                        operationSetToPerformContains.visualizeFittedVisualSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = true;
+                        operationSetToPerformContains.visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = true;
                     
                     otherwise
                         error('Unknown option')
