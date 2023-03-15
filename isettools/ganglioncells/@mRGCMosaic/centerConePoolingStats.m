@@ -1,4 +1,4 @@
-function centerConePoolingStats(obj)
+function centerConesNumCases = centerConePoolingStats(obj)
     
     if (isempty(obj.rgcRFcenterConePoolingMatrix))
         centerConesNum = full(sum(obj.rgcRFcenterConeConnectivityMatrix,1));

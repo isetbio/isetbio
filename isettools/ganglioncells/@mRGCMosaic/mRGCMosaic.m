@@ -100,10 +100,8 @@ classdef mRGCMosaic < handle
         % The params used to generate theCustomOptics
         theCustomOpticsParams;
 
-
         % Encodes what generation stage the mosaic is in.
         generationStage;
-
     end % Read-only properties
 
     % Dependent properties
@@ -223,8 +221,11 @@ classdef mRGCMosaic < handle
         % Method to return the indices of RGCs with a specific number of center cones
         indicesOfRGCsIdentified = indicesOfRGCsWithThisManyCenterCones(obj, targetCenterConesNum);
 
+        % Method to eliminate RGCs with a specified number of center cones
+        eliminateRGCsWithThisManyCenterConesNum(obj, targetCenterConesNum)
+
         % Stats on the center cones
-        centerConePoolingStats(obj);
+        centerConesNumCases = centerConePoolingStats(obj);
 
         % Getter for dependent property cellsNum
         function val = get.rgcsNum(obj)

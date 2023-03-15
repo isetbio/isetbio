@@ -35,17 +35,18 @@ function testMidgetRGCMosaic
     else
         % Load a previously-generated mRGCMosaic
         load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
-        
-        % Report stats
-        theMidgetRGCMosaic.centerConePoolingStats();
+    end
 
-        targetCenterConesNum = input('Label RGCs with this many center cones (e.g, 0, 1, 2, ...)? :');
-        indicesOfRGCsIdentified = theMidgetRGCMosaic.indicesOfRGCsWithThisManyCenterCones(targetCenterConesNum);
-       
+
+
+    if (operationSetToPerformContains.visualizeRGCMosaic)
+        % Load the generated center-only connected mRGCmosaic
+        load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
+
         identifyPooledCones = true;
         identifyInputCones = true;
         plotRFoutlines = true;
-
+    
         hFig = figure(1); clf;
         set(hFig, 'Position', [10 10 1800 1000], 'Color', [1 1 1]);
         theMidgetRGCMosaic.visualize(...
@@ -54,16 +55,36 @@ function testMidgetRGCMosaic
             'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
             'identifyPooledCones', identifyPooledCones, ...
             'identifyInputCones',identifyInputCones, ...
-            'labelRGCsWithIndices', indicesOfRGCsIdentified, ...
             'plotRFoutlines', plotRFoutlines, ...
             'domainVisualizationLimits', [], ...
             'domainVisualizationTicks', [], ...
             'backgroundColor', [0 0 0]);
-    end
 
-    if (operationSetToPerformContains.visualizeRGCMosaic)
-        % Save the generated center-only connected mRGCmosaic
-        load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
+        % Report stats
+        centerConesNumCases = theMidgetRGCMosaic.centerConePoolingStats();
+
+        % Ask user whether to eliminate certain RGCs
+        eliminateRGCs = input('Eliminate RGCs with a certain no of center cones? [y = YES] : ', 's');
+        if (strcmpi(eliminateRGCs, 'y'))
+            % Ask user which RGCs to eliminate
+            targetCenterConesNum = input(sprintf('What number of center cones [%d .. %d]? :', min(centerConesNumCases), max(centerConesNumCases)));
+            
+            % Eliminate the target RGCs
+            theMidgetRGCMosaic.eliminateRGCsWithThisManyCenterConesNum(targetCenterConesNum);
+            
+            % Ask user whether to save the updated RGC mosaic
+            exportUpdatedRGCMosaic = input('Export the updated RGC mosaic [y = YES] : ', 's');
+            if (strcmpi(exportUpdatedRGCMosaic, 'y'))
+                save(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic', '-v7.3');
+                fprintf('The updated RGC mosaic was saved to %s.\n', ...
+                    fullfile(resourcesDirectory,mosaicFileName));
+            else
+                fprintf('The updated RGC mosaic was not saved to the disk.\n');
+            end
+        else
+            fprintf('No change in the RGC mosaic\n');
+        end
+
     end
 
 

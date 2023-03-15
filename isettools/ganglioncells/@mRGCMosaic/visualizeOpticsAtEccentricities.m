@@ -11,10 +11,12 @@ function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
     ff = MSreadyPlot.figureFormat('3x3');
     hFig = figure(1); clf;
     theAxes = MSreadyPlot.generateAxes(hFig,ff);
-    set(hFig, 'Color', 'none');
+    set(hFig, 'Color', [1 1 1]);
     
     % Plot rows and cols
-    [X,Y] = meshgrid(1:3, 1:3); cols = X(:); rows = Y(:);
+    [X,Y] = meshgrid(1:3, 1:3); 
+    cols = X(:); rows = Y(:);
+    rows = 4 - rows;
 
     % Render PSF at each position
     for iPos = 1:size(eccDegs,1)
@@ -36,7 +38,7 @@ function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
 
         apertureDataStruct = localConeApertureData(obj, opticsParams.positionDegs, thePSFData.psfSupportXdegs);
 
-        MSreadyPlot.render2DPSF(theAxes{4-rows(iPos),cols(iPos)}, ...
+        MSreadyPlot.render2DPSF(theAxes{rows(iPos),cols(iPos)}, ...
             thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, ...
             thePSFData.data, psfRangeDegs, plotTitle, ff, ...
             'withConeApertureData', apertureDataStruct, ...
