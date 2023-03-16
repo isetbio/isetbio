@@ -446,7 +446,7 @@ function visualizationParams = visualize(obj, varargin)
             includedLconeIndices = intersect(obj.lConeIndices, labelConesWithIndices);
             excludedLconeIndices = setdiff(obj.lConeIndices, includedLconeIndices);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedLconeIndices)*0.5, ...
-                rfPositions(includedLconeIndices,:), 1/5*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(includedLconeIndices,:), 1/5*0.9, [1 0 0], lineWidth, faceAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedLconeIndices)*0.5, ...
                 rfPositions(excludedLconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
         end
@@ -471,7 +471,7 @@ function visualizationParams = visualize(obj, varargin)
             includedMconeIndices = intersect(obj.mConeIndices, labelConesWithIndices);
             excludedMconeIndices = setdiff(obj.mConeIndices, includedMconeIndices);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedMconeIndices)*0.5, ...
-                rfPositions(includedMconeIndices,:), 2/5*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(includedMconeIndices,:), 2/5*0.9, [0 1 0], lineWidth, faceAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedMconeIndices)*0.5, ...
                 rfPositions(excludedMconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
         end
@@ -499,7 +499,7 @@ function visualizationParams = visualize(obj, varargin)
             excludedSconeIndices = setdiff(obj.sConeIndices, includedSconeIndices);
 
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedSconeIndices)*0.5, ...
-                rfPositions(includedSconeIndices,:), 3/5*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(includedSconeIndices,:), 3/5*0.9, [0 0 1], lineWidth, faceAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedSconeIndices)*0.5, ...
                 rfPositions(excludedSconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
         end

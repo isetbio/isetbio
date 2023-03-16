@@ -12,6 +12,8 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
     opticsToEmploy = p.Results.opticsToEmploy;
 
     if (isempty(gridNodeIndex))
+        % Determine optimal stimulus resolution so that cone aperture blur will
+        % have an observable effect
         retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, []);
         % Stimulus centered at the RGC mosaic mosaic
         stimPositionDegs = obj.theRGCMosaic.eccentricityDegs;
@@ -39,7 +41,8 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
 
 
     % Generate components for running the STF mapping experiment
-    [stimParams, thePresentationDisplay] = obj.setupSTFmappingExperiment(...
+    [stimParams, thePresentationDisplay] = MosaicPoolingOptimizer.setupSTFmappingExperiment(...
+        obj.theRGCMosaic.inputConeMosaic, ...
         stimSizeDegs, ...
         retinalImageResolutionDegs);
 

@@ -113,6 +113,7 @@ classdef MosaicPoolingOptimizer < handle
         generateInputConeMosaicSTFresponses(obj, gridNodeIndex, ...
             stimSizeDegs, responsesFileName, varargin);
 
+       
         % Method to load the computed input cone mosaic STF responses
         loadConeMosaicVisualSTFresponses(obj, responsesFileName);
 
@@ -158,11 +159,6 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to generate the full sampling grids
         generateSamplingGrids(obj, minSpatialSamplingDegs);
-
-        % Method to setup the parameters and the display for conducting an
-        % STF mapping experiment.
-        [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(obj, ...
-            sceneFOVdegs, retinalImageResolutionDegs)
 
         % Method to return the center majority cone types
         [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = ...
@@ -251,6 +247,12 @@ classdef MosaicPoolingOptimizer < handle
         visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic(...
             computeReadyMosaicFilename, mRGCMosaicSTFresponsesFilename, pdfFileName);
 
+        % Method to setup the parameters and the display for conducting an
+        % STF mapping experiment.
+        [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputConeMosaic, ...
+            sceneFOVdegs, retinalImageResolutionDegs);
+
+
         % Method to compute visualSTF responses of a cone mosaic under
         % some optics
         [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
@@ -277,7 +279,37 @@ classdef MosaicPoolingOptimizer < handle
                 mRGCMosaicSTFresponsesFilename, ...
                 employTemporalEquivalentEccentricity);
 
+        
         visualizeConeMosaicSTFresponses(mRGCMosaicFileName, coneMosaicSTFresponsesFileName, varargin);
+
+
+        % Method to compute visual RFs of the computeReadyMosaic (using the
+        % subspace RF mapping method)
+        computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
+            computeReadyMosaicFilename, ...
+            coneMosaicResponsesFileName, ...
+            mRGCMosaicResponsesFileName);
+
+        % Method to setup the parameters and the display for conducting an
+        % Subspace RF mapping experiment.
+        [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment(inputConeMosaic, ...
+            sceneFOVdegs, retinalImageResolutionDegs);
+
+
+        % Method to generate and save input cone mosaic subspace responses
+        generateInputConeMosaicSubspaceRFmappingResponses(theRGCMosaic, responsesFileName);
+
+        % Method to compute subspace responses of a cone mosaic under some
+        % optics
+        [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
+         HartleySpatialModulationPatterns, lIndices, mIndices] = ...
+            computeConeMosaicSubspaceRFmappingResponses(theConeMosaic, theOptics,  ...
+                                           thePresentationDisplay, ...
+                                           stimParams, ...
+                                           stimPositionDegs, ...
+                                           useParfor, ...
+                                           visualizeResponses);
+
     end % Static methods
 
 end

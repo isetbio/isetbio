@@ -1,7 +1,7 @@
-function [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(obj, ...
+function [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputConeMosaic, ...
         sceneFOVdegs, retinalImageResolutionDegs)
 
-    wavelengthSupport = obj.theRGCMosaic.inputConeMosaic.wave;
+    wavelengthSupport = inputConeMosaic.wave;
 
     viewingDistanceMeters = 4;
     coneContrasts = [1 1 1];

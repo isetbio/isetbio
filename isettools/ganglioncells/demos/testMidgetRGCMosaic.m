@@ -3,7 +3,7 @@ function testMidgetRGCMosaic
     arbitraryNodesToCompute =  selectNodesToRecompute();
     mosaicEcc = 2.5;
     mosaicEcc = 7.0;
-    mosaicEcc = -10.0;
+    %mosaicEcc = -10.0;
 
     % Get mosaic ecc and size
     mosaicParams = getMosaicParams(mosaicEcc);
@@ -121,6 +121,19 @@ function testMidgetRGCMosaic
         MosaicPoolingOptimizer.resourceFileNameAndPath('mRGCMosaicSTFresponses', ...
             'mosaicParams', mosaicParams, ...
             'opticsParams', opticsParams);
+
+    % Generate filename for the computed coneMosaic subspace responses
+    [coneMosaicSubspaceResponsesFileName, resourcesDirectory] = ...
+        MosaicPoolingOptimizer.resourceFileNameAndPath('coneMosaicSubspaceResponses', ...
+            'mosaicParams', mosaicParams, ...
+            'opticsParams', opticsParams);
+
+    % Generate filename for the computed mRGCMosaic subspace responses
+    [mRGCMosaicSubspaceRresponsesFileName, resourcesDirectory] = ...
+        MosaicPoolingOptimizer.resourceFileNameAndPath('mRGCMosaicSubspaceResponses', ...
+            'mosaicParams', mosaicParams, ...
+            'opticsParams', opticsParams);
+
 
     % Generate the filenames of the optimizedRGCpooling objects
     [optimizedRGCpoolingObjectsFileName, resourcesDirectory] = ...
@@ -334,7 +347,16 @@ function testMidgetRGCMosaic
     end
 
 
-    % Stage 6: Visualize spatialRFs of the compute-ready mosaic
+    % Stage 6: Compute the visual STFs of all cells in the generated compute-ready mRGCMosaic
+    if (operationSetToPerformContains.computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
+        MosaicPoolingOptimizer.computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
+            fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
+            fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
+            fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName));
+    end
+
+
+    % Stage 7: Visualize spatialRFs of the compute-ready mosaic
     if (operationSetToPerformContains.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic)
         
         [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
@@ -343,15 +365,6 @@ function testMidgetRGCMosaic
             fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName), ...
             fullfile(pdfDirectory, 'spatialRFmaps.pdf'));
     end
-
-    % Stage 7: Compute the visual STFs of all cells in the generated compute-ready mRGCMosaic
-    if (operationSetToPerformContains.computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
-        MosaicPoolingOptimizer.computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
-            fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
-            fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
-            fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName));
-    end
-
 
     % Stage 8: Fit the DoG model to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
     if (operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
@@ -415,7 +428,13 @@ function testMidgetRGCMosaic
     end
 
 
-   
+    % Stage 11: Compute visual RFs
+    if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
+        MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
+            fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
+            fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
+            fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName));
+    end
 
 
 
@@ -545,7 +564,7 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
     operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     operationSetToPerformContains.visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     operationSetToPerformContains.visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = ~true;
-
+    operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
     
 
     operationSetToPerformContains.animateModelConvergence = ~true;
@@ -557,12 +576,12 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
     actionStrings{5} = '[ 5] Derive optimized surround cone pooling kernels. (NOTE: This step takes a long time';
     actionStrings{6} = '[ 6] Examine optimized cone pooling models at all or certain grid nodes within the mosaic';
     actionStrings{7} = '[ 7] Generate a compute-ready (center-surround connected) mRGCMosaic\n\t   based on the previously derived optimized surround cone pooling kernels';
-    actionStrings{8} = '[ 8] Compute-ready mRGCMosaic: visualize spatial RFs';
-    actionStrings{9} = '[ 9] Compute-ready mRGCMosaic validation. Step1: compute visual STFs for all cells in the mosaic';
-    actionStrings{10} = '[10] Compute-ready mRGCMosaic validation. Step2: fit a DoG model to the computed visual STFs for all cells in the mosaic';
+    actionStrings{8} = '[ 8] Compute-ready mRGCMosaic validation. Step1: compute visual STFs for all cells in the mosaic';
+    actionStrings{9} = '[ 9] Compute-ready mRGCMosaic validation. Step2: fit a DoG model to the computed visual STFs for all cells in the mosaic';
+    actionStrings{10} = '[10] Compute-ready mRGCMosaic: visualize spatial RFs and visual STF';
     actionStrings{11} = '[11] Compute-ready mRGCMosaic validation. Step3: visualize fitted DoG model params for all cells in the mosaic';
     actionStrings{12} = '[12] Compute-ready mRGCMosaic validation. Step4: visualize fitted DoG model params for all cells in multiple mosaics';
-    
+    actionStrings{13} = '[13] Compute-ready mRGCMosaic: compute visual RFs for all cells in the mosaic';
 
     invalidActionSelected = true;
     validChoiceIDs = 1:numel(actionStrings);
@@ -600,21 +619,22 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
                         % Generate a compute-ready MRGC mosaic
                         operationSetToPerformContains.generateComputeReadyMidgetRGCMosaic = true;
                     case 8
-                        % Visualize the derived spatial RFs of the compute-ready mRGC mosaic
-                        operationSetToPerformContains.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
-                    case 9
                         % Validate a compute-ready mRGCMosaic: step1 - compute visual STFs for all cells
                         operationSetToPerformContains.computeVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
-                    case 10
+                    case 9
                         % Validate a compute-ready mRGCMosaic: step2 - fit a DoG model to all the computed visual STFs for all cells
                         operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                    case 10
+                        % Visualize the derived spatial RFs of the compute-ready mRGC mosaic
+                        operationSetToPerformContains.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
                     case 11
                         % Validate a compute-ready mRGCMosaic: step3 - visualize fitted visual STFs for all cells in a single mRGC mosaic
                         operationSetToPerformContains.visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
                     case 12
                         % Validate a compute-ready mRGCMosaic: step4 - visualize fitted visual STFs for all cells in multiple mRGC mosaics
                         operationSetToPerformContains.visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = true;
-                    
+                    case 13
+                        operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
                     otherwise
                         error('Unknown option')
 
