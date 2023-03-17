@@ -4,12 +4,14 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     p.addParameter('noYLabel', false, @islogical);
     p.addParameter('noXTickLabel', false, @islogical);
     p.addParameter('noYTickLabel', false, @islogical);
+    p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
     p.parse(varargin{:});
     
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
     noXTickLabel = p.Results.noXTickLabel;
     noYTickLabel = p.Results.noYTickLabel;
+    visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
 
     maxAll = max([max(compositeSTF(:)) max(compositeSTFfit(:)) max(centerSTFfit(:)) max(surroundSTFfit(:))]);
     compositeSTF = compositeSTF / maxAll;
@@ -59,8 +61,12 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     
     % ticks and grids
     xTicks = [0.1 0.3 1 3 10 30 100];
+    if (isempty(visualizedSpatialFrequencyRange))
+        visualizedSpatialFrequencyRange = [minSF-0.02 100];
+    end
+
     grid(ax, 'on'); box(ax, 'off');
-    set(ax, 'XLim', [minSF-0.02 100], 'YLim', [1*ff.axisOffsetFactor 1]);
+    set(ax, 'XLim', visualizedSpatialFrequencyRange, 'YLim', [1*ff.axisOffsetFactor 1]);
     set(ax, 'XTick', xTicks, 'YTick', 0:0.2:1, ...
             'XTickLabel', xTicks, 'YTickLabel', 0:0.2:1);
     set(ax, 'TickDir', 'both')

@@ -73,8 +73,8 @@ function visualizeSpatialRFofRGCwithIndex(obj,theRGCindex, theAxes, varargin)
 
 
     % Add the line weighting functions
-    sensitivityRange(2) =  1.0*max([max(centerLineWeightingFunctions.x.amplitude(:)) max(centerLineWeightingFunctions.y.amplitude(:))]);
-    sensitivityRange(1) = -0.8*sensitivityRange(2);
+    sensitivityRange(2) =  max([max(centerLineWeightingFunctions.x.amplitude(:)) max(centerLineWeightingFunctions.y.amplitude(:))]);
+    sensitivityRange(1) = -0.4*sensitivityRange(2);
     
     centerLineWeightingFunctions.x.amplitude = centerLineWeightingFunctions.x.amplitude / max(sensitivityRange);
     centerLineWeightingFunctions.y.amplitude = centerLineWeightingFunctions.y.amplitude / max(sensitivityRange);
@@ -89,7 +89,7 @@ function visualizeSpatialRFofRGCwithIndex(obj,theRGCindex, theAxes, varargin)
             'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'plotTitle', '', ...
-            'noYTicks', true, ...
+            'noYTicks', ~true, ...
             'xAxisTickAngleRotationDegs', 0);
 
     mRGCMosaic.renderSubregionConePoolingLineWeightingFunctions(theAxes{1,3}, ...
