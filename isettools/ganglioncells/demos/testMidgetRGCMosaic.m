@@ -359,11 +359,16 @@ function testMidgetRGCMosaic
     % Stage 7: Visualize spatialRFs of the compute-ready mosaic
     if (operationSetToPerformContains.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic)
         
+        targetRGCposition = input('Enter (xy) position of target RGC (e.g., [5.6 -1.3]): ');
+        targetCenterConesNum = input('Enter # of center cones num (e.g, 3): ');
+        targetCenterConeMajorityType = input('Enter type of majority center cone num (either cMosaic.LCONE_ID or cMosaic.MCONE_ID): ');
+
         [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
         MosaicPoolingOptimizer.visualizeSpatialRFsAcrossTheComputeReadyMidgetRGCMosaic(...
             fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName), ...
-            fullfile(pdfDirectory, 'spatialRFmaps.pdf'));
+            fullfile(pdfDirectory, 'spatialRFmaps.pdf'), ...
+            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType);
     end
 
     % Stage 8: Fit the DoG model to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
