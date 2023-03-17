@@ -1,4 +1,4 @@
-function generateInputConeMosaicSubspaceRFmappingResponses(theRGCMosaic, responsesFileName)
+function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, responsesFileName)
 
     % Determine optimal stimulus resolution so that cone aperture blur will
     % have an observable effect
@@ -24,12 +24,14 @@ function generateInputConeMosaicSubspaceRFmappingResponses(theRGCMosaic, respons
     % Retrieve the input cone mosaic
     theConeMosaic = theRGCMosaic.inputConeMosaic;
 
-    % Compute the subspace responses of the input cone mosaic
-    useParfor = true;
+    % Compute the subspace responses of the input cone mosaic.
+    % Note: These are linear responses, i.e., 
+    % Response(forward polarity Hartley) - Response (inverse polarity Hartley)
+    useParfor = ~true;
     visualizeResponses = false;
     [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
-        HartleySpatialModulationPatterns, lIndices, mIndices] = ...
-        MosaicPoolingOptimizer.computeConeMosaicSubspaceRFmappingResponses(theConeMosaic, theOptics,  ...
+        HartleySpatialModulationPatterns, spatialSupportDegs, lIndices, mIndices] = ...
+        MosaicPoolingOptimizer.computeConeMosaicSubspaceRFmappingLinearResponses(theConeMosaic, theOptics,  ...
                                            thePresentationDisplay, ...
                                            stimParams, ...
                                            stimPositionDegs, ...
@@ -37,12 +39,13 @@ function generateInputConeMosaicSubspaceRFmappingResponses(theRGCMosaic, respons
                                            visualizeResponses);
 
     theNativeOpticsParams = theRGCMosaic.theNativeOpticsParams;
-
+    HartleySpatialModulationPatterns = single(HartleySpatialModulationPatterns);
+    
     save(responsesFileName, 'theNativeOpticsParams', ...
-                'HartleySpatialModulationPatterns', 'lIndices', 'mIndices', ...
+                'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'lIndices', 'mIndices', ...
                 'theConeMosaicSubspaceResponses', 'theConeMosaicNullResponses', ...
                  '-v7.3');
 
-    fprintf('Saved computed cone mosaic SUBSPACE RF mapping responses to %s\n', responsesFileName);
+    fprintf('Saved computed cone mosaic SUBSPACE RF mapping linear responses to %s\n', responsesFileName);
 
 end

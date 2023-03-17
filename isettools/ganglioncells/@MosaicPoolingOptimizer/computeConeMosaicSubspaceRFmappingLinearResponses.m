@@ -1,6 +1,6 @@
 function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
-    HartleySpatialModulationPatterns, lIndices, mIndices] = ...
-    computeConeMosaicSubspaceResponses(theConeMosaic, theOptics,  ...
+    HartleySpatialModulationPatterns, spatialSupportDegs, lIndices, mIndices] = ...
+    computeConeMosaicSubspaceRFmappingLinearResponses(theConeMosaic, theOptics,  ...
                                            thePresentationDisplay, ...
                                            stimParams, ...
                                            stimPositionDegs, ...
@@ -15,21 +15,11 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
             stimParams.omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs);
 
 
-    % Generate scenes for the Hartley patterns
-    fprintf('Generating scenes for the Hartley patterns\n')
-    [theRFMappingStimulusScenes, theNullStimulusScene, spatialSupportDegs] = ...
-            rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
+    % Compute the null stimulus
+    [~, theNullStimulusScene, spatialSupportDegs] = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
                 thePresentationDisplay, stimParams, HartleySpatialModulationPatterns, ...
-                'validateScenes', false);
-
-    % Generate scenes for the inverse-polarity Hartley patterns
-    fprintf('Generating scenes for the inverse polarity Hartley patterns\n');
-    theInversePolarityRFMappingStimulusScenes = ...
-            rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
-                thePresentationDisplay, stimParams, -HartleySpatialModulationPatterns, ...
-                'validateScenes', false);
-    
-    fprintf('Done with all scene generation\n');
+                'validateScenes', false, ...
+                'sceneIndexToCompute', 0);
 
 
     % This is necessary to avoid the background being modulated when the
@@ -56,16 +46,36 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
              
 
     % Compute the input cone mosaic responses
-    nStim = numel(theRFMappingStimulusScenes);
+    nStim = size(HartleySpatialModulationPatterns,1);
 
     % Allocate memory
-    theConeMosaicSubspaceResponses = zeros(nStim, conesNum, 'single');
-
+    theConeMosaicSubspaceResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
     if (useParfor)
          theOI = theOptics;
+         poolobj = gcp('nocreate'); % If no pool, do not create new one.
+         if (~isempty(poolobj))
+            delete(poolobj);
+         end
+         processorsNum = 2;
+         parpool('local',processorsNum);
          parfor iFrame = 1:nStim
+
+             % Generate scenes for the Hartley patterns
+            fprintf('Computing cone mosaic response for Hartley pattern %d of %d.\n', iFrame, nStim);
+
+             theForwardPolarityRFMappingStimulusScenes =  rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
+                thePresentationDisplay, stimParams, HartleySpatialModulationPatterns, ...
+                'validateScenes', false, ...
+                'sceneIndexToCompute', iFrame);
+
+    
+             theInversePolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
+                thePresentationDisplay, stimParams, -HartleySpatialModulationPatterns, ...
+                'validateScenes', false, ...
+                'sceneIndexToCompute', iFrame);
+
              % Get scene corresponding to this forward polarity of the stimulus frame
-             theFrameScene = theRFMappingStimulusScenes{iFrame};
+             theFrameScene = theForwardPolarityRFMappingStimulusScenes{1};
 
              % Compute the optical image of the frame scene
              theCurrentOI = oiCompute(theFrameScene, theOI);
@@ -83,7 +93,7 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
                 normalizingResponses;
 
              % Get scene corresponding to the inverse polarity of this stimulus frame
-             theFrameScene = theInversePolarityRFMappingStimulusScenes{iFrame};
+             theFrameScene = theInversePolarityRFMappingStimulusScenes{1};
 
              % Compute the optical image of the frame scene
              theCurrentOI = oiCompute(theFrameScene, theOI);
@@ -105,10 +115,31 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
                  noiseFreeAbsorptionsCountInversePolarity(1,1,:));
 
          end % iFrame
+
+         poolobj = gcp('nocreate'); % If no pool, do not create new one.
+         if (~isempty(poolobj))
+            delete(poolobj);
+         end
+         
     else
         for iFrame = 1:nStim
+
+            fprintf('Computing cone mosaic response for Hartley pattern %d of %d.\n', iFrame, nStim);
+
+            theForwardPolarityRFMappingStimulusScenes =  rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
+                thePresentationDisplay, stimParams, HartleySpatialModulationPatterns, ...
+                'validateScenes', false, ...
+                'sceneIndexToCompute', iFrame);
+
+    
+            theInversePolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
+                thePresentationDisplay, stimParams, -HartleySpatialModulationPatterns, ...
+                'validateScenes', false, ...
+                'sceneIndexToCompute', iFrame);
+
             % Get scene corresponding to this forward polarity of the stimulus frame
-            theFrameScene = theRFMappingStimulusScenes{iFrame};
+            theFrameScene = theForwardPolarityRFMappingStimulusScenes{1};
+
 
             % Compute the optical image of the frame scene
             theOptics = oiCompute(theFrameScene, theOptics);
@@ -126,7 +157,7 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
                 normalizingResponses;
 
             % Get scene corresponding to the inverse polarity of this stimulus frame
-            theFrameScene = theInversePolarityRFMappingStimulusScenes{iFrame};
+            theFrameScene = theInversePolarityRFMappingStimulusScenes{1};
 
             % Compute the optical image of the frame scene
             theOptics = oiCompute(theFrameScene, theOptics);
