@@ -56,7 +56,7 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
          if (~isempty(poolobj))
             delete(poolobj);
          end
-         processorsNum = 2;
+         processorsNum = 10;
          parpool('local',processorsNum);
          parfor iFrame = 1:nStim
 
