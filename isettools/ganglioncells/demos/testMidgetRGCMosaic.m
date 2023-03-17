@@ -430,8 +430,15 @@ function testMidgetRGCMosaic
 
     % Stage 11: Compute visual RFs
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
+
+        % Load the compute-ready MRGC mosaic
+        load(fullfile(resourcesDirectory, computeReadyMosaicFileName), 'theComputeReadyMRGCmosaic');
+
+        % Generate native optics
+        theComputeReadyMRGCmosaic.generateNativeOptics(opticsParams);
+
         MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
-            fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
+            theComputeReadyMRGCmosaic, ...
             fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName));
     end
