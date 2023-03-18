@@ -4,24 +4,41 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
                                            thePresentationDisplay, ...
                                            stimParams, ...
                                            stimPositionDegs, ...
-                                           useParfor, ...
-                                           visualizeResponses)
+                                           varargin)
+
+    p = inputParser;
+    p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
+    p.parse(varargin{:});
+    parPoolSize = p.Results.parPoolSize;
 
     % Compute the Hartley spatial patterns
-    fprintf('Generating Hartley patterns\n')
     % Compute spatial modulation patterns for the Hartley set
     [HartleySpatialModulationPatterns, lIndices, mIndices] = ...
             rfMappingStimulusGenerator.HartleyModulationPatterns(...
-            stimParams.omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs);
+            stimParams.omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs, ...
+            'parPoolSize', []);
 
 
-    % Compute the null stimulus
+    % Compute memory requirement
+    a = single(1);
+    s = whos('a');
+    nStim = size(HartleySpatialModulationPatterns,1);
+    memRequirementGBytes = (nStim * theConeMosaic.conesNum * s.bytes)/1024/1024/1024;
+    fprintf('The cone mosaic responses to the %d Hartley patterns require %2.1f GBytes of memory\n', ...
+         nStim, memRequirementGBytes)
+    disp('Hit enter to proceed\n');
+    pause
+
+    % Compute the null stimulus. Make sure it covers all of the cone mosaic
+    fprintf('Computing null scene\n');
+    nullStimParams = stimParams;
+    nullStimParams.sizeDegs = 1.1*max(theConeMosaic.sizeDegs);
     [~, theNullStimulusScene, spatialSupportDegs] = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
                 thePresentationDisplay, stimParams, HartleySpatialModulationPatterns, ...
                 'validateScenes', false, ...
                 'sceneIndexToCompute', 0);
 
-
+    fprintf('Computing null scene response\n');
     % This is necessary to avoid the background being modulated when the
     % stimulus is smaller than the mosaic. This is due to the way oiCompute
     % does the padding.
@@ -33,10 +50,10 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
     % Compute the optical image of the null scene
     theOptics  = oiCompute(theNullStimulusScene, theOptics);
 
-    % Compute the cone mosaic null responses
+    % Compute the cone mosaic response to the null stimulus
     theConeMosaicNullResponses = theConeMosaic.compute(theOptics, ...
                     'padOIwithZeros', padOIwithZeros, ...
-                    'opticalImagePositionDegs', stimPositionDegs, ...
+                    'opticalImagePositionDegs', theConeMosaic.eccentricityDegs, ...
                     'nTrials', 1);
 
     coneIndicesWithZeroNullResponse = find(theConeMosaicNullResponses== 0);
@@ -46,18 +63,13 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
              
 
     % Compute the input cone mosaic responses
-    nStim = size(HartleySpatialModulationPatterns,1);
-
-    % Allocate memory
     theConeMosaicSubspaceResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
-    if (useParfor)
+
+    if (parPoolSize ~= 0)
+         % Reset parpool
+         shutdownParPoolOnceCompleted = MosaicPoolingOptimizer.resetParPool(parPoolSize);
+
          theOI = theOptics;
-         poolobj = gcp('nocreate'); % If no pool, do not create new one.
-         if (~isempty(poolobj))
-            delete(poolobj);
-         end
-         processorsNum = 10;
-         parpool('local',processorsNum);
          parfor iFrame = 1:nStim
 
              % Generate scenes for the Hartley patterns
@@ -116,8 +128,8 @@ function [theConeMosaicSubspaceResponses, theConeMosaicNullResponses, ...
 
          end % iFrame
 
-         poolobj = gcp('nocreate'); % If no pool, do not create new one.
-         if (~isempty(poolobj))
+         if (shutdownParPoolOnceCompleted)
+            poolobj = gcp('nocreate'); 
             delete(poolobj);
          end
          

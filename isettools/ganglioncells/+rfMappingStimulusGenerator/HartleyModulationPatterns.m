@@ -22,33 +22,36 @@ function [H, lIndices, mIndices] = HartleyModulationPatterns(omega, stimSizeDegs
         end
     end
 
-    shutdownParPoolOnceCompleted = false;
-    if (~isempty(parPoolSize))
-        poolobj = gcp('nocreate'); 
-        if (~isempty(poolobj)) && ( poolobj.NumWorkers ~= parPoolSize)
-           fprintf('Deleting previous parpool with %d workers to start a new one with %d workers instead\n', ...
-               poolobj.NumWorkers, parPoolSize);
-           delete(poolobj);
-           shutdownParPoolOnceCompleted = true;
-           parpool('local',parPoolSize);
-        end
-    end
+    % Reset parpool
+    shutdownParPoolOnceCompleted = MosaicPoolingOptimizer.resetParPool(parPoolSize);
 
     % Generate patterns
     H = zeros(nStim, size(X,1), size(X,2), 'single');
-    parfor sIndex = 1:nStim
-        fprintf('Hartley pattern %d of %d\n', sIndex, nStim);
-        fx = lIndices(sIndex);
-        fy = mIndices(sIndex);
-        a = 2*pi*(fx*X + fy*Y);
-        f = sin(a)+cos(a);
-        H(sIndex,:,:) = single(f);
+
+    if (parPoolSize ~= 0)
+        parfor sIndex = 1:nStim
+            fprintf('Hartley pattern %d of %d\n', sIndex, nStim);
+            fx = lIndices(sIndex);
+            fy = mIndices(sIndex);
+            a = 2*pi*(fx*X + fy*Y);
+            H(sIndex,:,:) = single(sin(a)+cos(a));
+        end
+    
+        % Shutdown parpool
+        if (shutdownParPoolOnceCompleted)
+            poolobj = gcp('nocreate');
+            delete(poolobj);
+        end
+    else
+        for sIndex = 1:nStim
+            fprintf('Hartley pattern %d of %d\n', sIndex, nStim);
+            fx = lIndices(sIndex);
+            fy = mIndices(sIndex);
+            a = 2*pi*(fx*X + fy*Y);
+            H(sIndex,:,:) = single(sin(a)+cos(a));
+        end
     end
 
-    % Shutdown parpool
-    if (shutdownParPoolOnceCompleted)
-       delete(poolobj);
-    end
 
     H = H / max(H(:));
     H = single(H);

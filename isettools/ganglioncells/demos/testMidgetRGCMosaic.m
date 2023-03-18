@@ -442,10 +442,14 @@ function testMidgetRGCMosaic
         % Generate native optics
         theComputeReadyMRGCmosaic.generateNativeOptics(opticsParams);
 
+        reComputeInputConeMosaicSubspaceRFmappingResponses = true
+        fprintf(2, '\nHit enter to continue:')
+        pause
         MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             theComputeReadyMRGCmosaic, ...
             fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
-            fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName));
+            fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName), ...
+            reComputeInputConeMosaicSubspaceRFmappingResponses);
     end
 
 

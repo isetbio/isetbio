@@ -1,14 +1,14 @@
 function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             theComputeReadyMRGCmosaic, ...
             coneMosaicResponsesFileName, ...
-            mRGCMosaicResponsesFileName)
+            mRGCMosaicResponsesFileName, ...
+            reComputeInputConeMosaicSubspaceRFmappingResponses)
 
    
     % Compute responses of the input cone mosaic to the subspace RF mapping
     % stimuli
-    computeInputConeMosaicSubspaceRFmappingResponses = true
-    pause
-    if (computeInputConeMosaicSubspaceRFmappingResponses)
+
+    if (reComputeInputConeMosaicSubspaceRFmappingResponses)
         MosaicPoolingOptimizer.generateInputConeMosaicSubspaceRFmappingLinearResponses(...
          theComputeReadyMRGCmosaic, coneMosaicResponsesFileName);
     else
