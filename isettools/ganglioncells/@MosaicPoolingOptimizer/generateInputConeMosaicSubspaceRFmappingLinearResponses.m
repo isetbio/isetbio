@@ -3,6 +3,7 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, r
     % Generate components for running the Subspace mapping experiment
     maxSFcyclesPerDegree = 30;
     wavelengthSupport = theRGCMosaic.inputConeMosaic.wave;
+    stimSizeDegs = 1.0; % 1.05*theRGCMosaic.inputConeMosaic.sizeDegs;
     [stimParams, thePresentationDisplay] = MosaicPoolingOptimizer.setupSubspaceRFmappingExperiment(...
         wavelengthSupport, stimSizeDegs, maxSFcyclesPerDegree);
 
@@ -22,8 +23,7 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, r
                                            thePresentationDisplay, ...
                                            stimParams, ...
                                            theRGCMosaic.eccentricityDegs, ...
-                                           useParfor, ...
-                                           'parPoolSize', []);
+                                           'parPoolSize', 6);
 
 
     theNativeOpticsParams = theRGCMosaic.theNativeOpticsParams;

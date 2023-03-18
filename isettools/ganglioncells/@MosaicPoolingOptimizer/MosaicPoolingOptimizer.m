@@ -290,7 +290,8 @@ classdef MosaicPoolingOptimizer < handle
             theMRGCMosaic, ...
             coneMosaicResponsesFileName, ...
             mRGCMosaicResponsesFileName, ...
-            reComputeInputConeMosaicSubspaceRFmappingResponses);
+            reComputeInputConeMosaicSubspaceRFmappingResponses, ...
+            reComputeMRGCMosaicSubspaceRFmappingResponses)
 
         % Method to setup the parameters and the display for conducting an
         % Subspace RF mapping experiment.
@@ -312,7 +313,7 @@ classdef MosaicPoolingOptimizer < handle
                                            varargin);
 
         % Method to reset the parpool
-        shutdownParPoolOnceCompleted = resetParPool(parPoolSize)
+        [shutdownParPoolOnceCompleted, numWorkers] = resetParPool(parPoolSize)
 
     end % Static methods
 
