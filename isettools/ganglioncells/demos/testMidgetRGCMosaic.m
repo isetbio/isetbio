@@ -442,12 +442,27 @@ function testMidgetRGCMosaic
         % Generate native optics
         theComputeReadyMRGCmosaic.generateNativeOptics(opticsParams);
 
-        reComputeInputConeMosaicSubspaceRFmappingResponses = ~true
+         % Retrieve the native optics
+        theOptics = theRGCMosaic.theNativeOptics;
+
+        % RF mapping params:
+        % max SF to explore
+        maxSFcyclesPerDegree = 45; 
+
+        % stimulus patch size
+        stimSizeDegs = 1.0;    
+
+        % stimulus position within the mRGC mosaic
+        stimXYpositionDegs = theComputeReadyMRGCmosaic.inputConeMosaic.eccentricityDegs;
+
+        % What to compute
+        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
         reComputeMRGCMosaicSubspaceRFmappingResponses = true;
-        fprintf(2, '\nHit enter to continue:')
-        pause
+        
+        % Go !
         MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
-            theComputeReadyMRGCmosaic, ...
+            theComputeReadyMRGCmosaic, theOptics, ...
+            maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, ...
             fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName), ...
             reComputeInputConeMosaicSubspaceRFmappingResponses, ...
