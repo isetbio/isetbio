@@ -11,6 +11,8 @@ function  [shutdownParPoolOnceCompleted, numWorkers] = resetParPool(parPoolSize)
                shutdownParPoolOnceCompleted = true;
                parpool('local',parPoolSize);
             end
+        else
+            parpool();
         end
     end
 

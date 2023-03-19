@@ -4,9 +4,14 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             coneMosaicResponsesFileName, ...
             mRGCMosaicResponsesFileName, ...
             reComputeInputConeMosaicSubspaceRFmappingResponses, ...
-            reComputeMRGCMosaicSubspaceRFmappingResponses)
+            reComputeMRGCMosaicSubspaceRFmappingResponses, varargin)
 
    
+    p = inputParser;
+    p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
+    p.parse(varargin{:});
+    parPoolSize = p.Results.parPoolSize;
+
     % Encode examined spatial position
     positionPostFix = sprintf('_atPosition_%2.2f_%2.2f.mat', stimXYpositionDegs(1), stimXYpositionDegs(2));
     coneMosaicResponsesFileName = strrep(coneMosaicResponsesFileName, '.mat', positionPostFix);
@@ -17,20 +22,21 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
         MosaicPoolingOptimizer.generateInputConeMosaicSubspaceRFmappingLinearResponses(...
             theComputeReadyMRGCmosaic, theOptics, ...
             maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, ...
-            coneMosaicResponsesFileName);
+            coneMosaicResponsesFileName, ...
+            'parPoolSize', parPoolSize);
     end
     fprintf('\nLoading cone mosaic subspace responses and Hartley spatial modulation patterns ...');
     % Load the previously computed responses
     load(coneMosaicResponsesFileName, ...
                 'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'lIndices', 'mIndices', ...
-                'theConeMosaicSubspaceResponses');
+                'theConeMosaicSubspaceLinearResponses', 'theConeMosaicSubspaceEnergyResponses');
     HartleySpatialModulationPatterns = single(HartleySpatialModulationPatterns);
     fprintf('Done loading !\n');
     
 
     % Compute mRGC mosaic responses to theConeMosaicSubspaceResponses
     % Compute RF maps of cells in the mRGC mosaic
-    [HartleyStimNum, nCones] = size(theConeMosaicSubspaceResponses);
+    [HartleyStimNum, nCones] = size(theConeMosaicSubspaceLinearResponses);
     
     if (reComputeMRGCMosaicSubspaceRFmappingResponses)
         fprintf('MRGC mosaic subspace RF maps and responses will be saved to %s \n', mRGCMosaicResponsesFileName);
@@ -41,26 +47,38 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
         
         theMRGCMosaicSubspaceRFmappingLinearResponses = zeros(...
                      HartleyStimNum, theComputeReadyMRGCmosaic.rgcsNum, 'single');
-    
+        theMRGCMosaicSubspaceRFmappingEnergyResponses = theMRGCMosaicSubspaceRFmappingLinearResponses;
+
         % Use all processors
         [shutdownParPoolOnceCompleted, numWorkers] = MosaicPoolingOptimizer.resetParPool([]);
     
         parfor iStim = 1:HartleyStimNum
              fprintf('Computing mRGC mosaic response for Hartley pattern %d of %d (using %d parallel processes).\n', ...
                  iStim, HartleyStimNum, numWorkers);
-             theConeMosaicResponse = squeeze(theConeMosaicSubspaceResponses(iStim,:));
+             theConeMosaicResponse = squeeze(theConeMosaicSubspaceLinearResponses(iStim,:));
              theConeMosaicResponse = reshape(theConeMosaicResponse, [nTrials nTimePoints nCones]);
 
              % Compute !
              [theMRGCMosaicResponse, theMRGCresponseTemporalSupportSeconds] = ...
                     theComputeReadyMRGCmosaic.compute(theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds);
              theMRGCMosaicSubspaceRFmappingLinearResponses(iStim,:) = single(squeeze(theMRGCMosaicResponse(1, :,:)));
+
+
+             theConeMosaicResponse = squeeze(theConeMosaicSubspaceEnergyResponses(iStim,:));
+             theConeMosaicResponse = reshape(theConeMosaicResponse, [nTrials nTimePoints nCones]);
+
+             % Compute !
+             [theMRGCMosaicResponse, theMRGCresponseTemporalSupportSeconds] = ...
+                    theComputeReadyMRGCmosaic.compute(theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds);
+             theMRGCMosaicSubspaceRFmappingEnergyResponses(iStim,:) = single(squeeze(theMRGCMosaicResponse(1, :,:)));
+
          end
     
     
         fprintf('\nSaving computed mRGCRF mosaic SUBSPACE RF mapping linear responses to %s ...', mRGCMosaicResponsesFileName);
         save(mRGCMosaicResponsesFileName, ...
             'theMRGCMosaicSubspaceRFmappingLinearResponses', ...
+            'theMRGCMosaicSubspaceRFmappingEnergyResponses', ...
             'spatialSupportDegs', 'lIndices', 'mIndices', ...
             '-v7.3');
     end
@@ -68,12 +86,14 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
     % Load theMRGCMosaicSubspaceRFmappingLinearResponses
     load(mRGCMosaicResponsesFileName, ...
             'theMRGCMosaicSubspaceRFmappingLinearResponses', ...
+            'theMRGCMosaicSubspaceRFmappingEnergyResponses',...
             'spatialSupportDegs', 'lIndices', 'mIndices');
 
     % Compute RF maps of cones in the MRGC mosaic
     theMRGCMosaicVisualRFmaps = computeRFs(...
         theComputeReadyMRGCmosaic, ...
         theMRGCMosaicSubspaceRFmappingLinearResponses, ...
+        theMRGCMosaicSubspaceRFmappingEnergyResponses, ...
         HartleySpatialModulationPatterns, ...
         spatialSupportDegs, lIndices, mIndices);
 
@@ -85,11 +105,12 @@ end
 
 function theRFmaps = computeRFs(theComputeReadyMRGCmosaic, ...
     theSubspaceRFmappingLinearResponses, ...
+    theSubspaceRFmappingEnergyResponses, ...
     HartleySpatialModulationPatterns, ...
     spatialSupportDegs, lIndices, mIndices)
 
     nStim = size(theSubspaceRFmappingLinearResponses,1);
-    omega = (sqrt(nStim)-1)/2
+    omega = (sqrt(nStim)-1)/2;
     cellsNum = size(theSubspaceRFmappingLinearResponses,2);
     pixelsNum = size(HartleySpatialModulationPatterns,2);
 
@@ -110,10 +131,10 @@ function theRFmaps = computeRFs(theComputeReadyMRGCmosaic, ...
         HartleyMapSize = 2*omega+1;
         theHartleyTuningMap = zeros(HartleyMapSize, HartleyMapSize);
         for iStim = 1:nStim
-            theHartleyTuningMap(lIndices(iStim)+omega+1, mIndices(iStim)+omega+1) = theSubspaceRFmappingLinearResponses(iStim,iCell);
+            theHartleyTuningMap(lIndices(iStim)+omega+1, mIndices(iStim)+omega+1) = theSubspaceRFmappingEnergyResponses(iStim,iCell);
         end
 
-        theHartleyTuningMap = theHartleyTuningMap / max(abs(theHartleyTuningMap(:)));
+        theHartleyTuningMap = theHartleyTuningMap / max(theHartleyTuningMap(:));
         
         imagesc(ax1,-omega:1:omega, -omega:1:omega, abs(theHartleyTuningMap));
         set(ax1, 'CLim', [0 1]);
