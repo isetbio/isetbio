@@ -306,7 +306,7 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to generate and save input cone mosaic subspace responses
         generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, theOptics, ...
-            maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, responsesFileName);
+            maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, responsesFileName, varargin);
 
         % Method to compute subspace responses of a cone mosaic under some optics
         [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyResponses, theConeMosaicNullResponses, ...
