@@ -117,10 +117,14 @@ function theRFmaps = computeRFs(theComputeReadyMRGCmosaic, ...
     fprintf('Computing visual RFs for all RGCs in the mosaic ... \n')
     theRFmaps = cell(cellsNum, 1);
 
+    visualizeRFs = false;
+
+    if (visualizeRFs)
     hFig = figure(1);
     set(hFig, 'Position', [10 10 2048 1024], 'Color', [1 1 1]);
     ax1 = subplot(1,2,1);
     ax2 = subplot(1,2,2);
+    end
 
     m = max(abs(theSubspaceRFmappingLinearResponses),[],1);
     cellsWithNonZeroResponse = find(m > 0);
@@ -136,10 +140,12 @@ function theRFmaps = computeRFs(theComputeReadyMRGCmosaic, ...
 
         theHartleyTuningMap = theHartleyTuningMap / max(theHartleyTuningMap(:));
         
+          if (visualizeRFs)
         imagesc(ax1,-omega:1:omega, -omega:1:omega, abs(theHartleyTuningMap));
         set(ax1, 'CLim', [0 1]);
         axis(ax1, 'image')
         colormap(ax1,brewermap(1024, '*greys'));
+          end
 
         theRFmap = zeros(pixelsNum, pixelsNum, 'single');
         for iStim = 1:nStim
@@ -149,6 +155,7 @@ function theRFmaps = computeRFs(theComputeReadyMRGCmosaic, ...
         end
         theRFmap = theRFmap / max(abs(theRFmap(:)));
        
+         if (visualizeRFs)
         imagesc(ax2,theRFmap);
         set(ax2, 'CLim', [-1 1]);
         axis(ax2, 'image')
@@ -157,7 +164,8 @@ function theRFmaps = computeRFs(theComputeReadyMRGCmosaic, ...
             theComputeReadyMRGCmosaic.rgcRFpositionsDegs(iCell,2)));
         colormap(ax2,brewermap(1024, '*RdBu'));
         drawnow
-  
+         end
+         
         theRFmaps{iCell} = theRFmap;
     end
 
