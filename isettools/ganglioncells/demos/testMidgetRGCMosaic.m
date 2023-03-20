@@ -441,10 +441,10 @@ function testMidgetRGCMosaic
 
         % RF mapping params:
         % max SF to explore
-        maxSFcyclesPerDegree = 60; 
+        maxSFcyclesPerDegree = 45; 
 
         % stimulus patch size
-        stimSizeDegs = 2;    
+        stimSizeDegs = 1.5;    
 
         posIncrementDegs = 1.0;
         k = round(0.5*theComputeReadyMRGCmosaic.inputConeMosaic.sizeDegs(1)/posIncrementDegs)-1;
@@ -481,7 +481,7 @@ function testMidgetRGCMosaic
                 fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName), ...
                 reComputeInputConeMosaicSubspaceRFmappingResponses, ...
                 reComputeMRGCMosaicSubspaceRFmappingResponses, ...
-                'parPoolSize', 10);
+                'parPoolSize', 16);
         end
 
     end

@@ -13,8 +13,6 @@ function [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment
     HartleyMemoryRequirementGBytes = (nStim * stimulusPixelsNum * stimulusPixelsNum * s.bytes)/1024/1024/1024;
     fprintf('\nTo probe RFs with spatial frequencies up to %2.1f c/deg\nusing a patch size of %2.1f degs,\n%d (%d x %d) Hartley patterns (retinal res:%2.1f arc min) will be employed.\nThis requires %2.1f GBytes or RAM\n', ...
         maxSFcyclesPerDegree, stimSizeDegs(1), nStim, stimulusPixelsNum, stimulusPixelsNum, pixelSizeDegs*60, HartleyMemoryRequirementGBytes);
-    fprintf(2,'Hit enter to continue\n');
-    pause
 
     % Generate a presentation display with a desired resolution
     viewingDistanceMeters = 4;
