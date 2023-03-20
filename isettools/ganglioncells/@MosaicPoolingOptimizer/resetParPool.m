@@ -12,7 +12,7 @@ function  [shutdownParPoolOnceCompleted, numWorkers] = resetParPool(parPoolSize)
                parpool('local',parPoolSize);
             end
         else
-            parpool();
+            parpool;
         end
     end
 
@@ -21,7 +21,7 @@ function  [shutdownParPoolOnceCompleted, numWorkers] = resetParPool(parPoolSize)
         if ((~isempty(parPoolSize)) && (parPoolSize>1))
             parpool('local',parPoolSize);
         else
-            parpool();
+            parpool;
         end
     end
     poolobj = gcp('nocreate');
