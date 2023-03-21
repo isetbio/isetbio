@@ -445,44 +445,23 @@ function testMidgetRGCMosaic
 
         % stimulus patch size
         stimSizeDegs = 1.5;    
-
-        posIncrementDegs = 1.0;
-        k = round(0.5*theComputeReadyMRGCmosaic.inputConeMosaic.sizeDegs(1)/posIncrementDegs)-1;
-        xCoords = theComputeReadyMRGCmosaic.inputConeMosaic.eccentricityDegs(1) + ...
-            (-(k+1):1:k)*posIncrementDegs + posIncrementDegs*0.5;
-        k = round(0.5*theComputeReadyMRGCmosaic.inputConeMosaic.sizeDegs(2)/posIncrementDegs)-1;
-        yCoords = theComputeReadyMRGCmosaic.inputConeMosaic.eccentricityDegs(2) + ...
-            (-(k+1):1:k)*posIncrementDegs + posIncrementDegs*0.5;
-
-        [X,Y] = meshgrid(xCoords, yCoords);
-        X = X(:); Y = Y(:);
         
-        for iPos = 1:numel(X)
-            % stimulus position within the mRGC mosaic
-            stimXYpositionDegs = [X(iPos) Y(iPos)];
-    
-            % Generate native optics
-            opticsParamsAtThisPosition = opticsParams;
-            opticsParamsAtThisPosition.positionDegs = stimXYpositionDegs;
-            theComputeReadyMRGCmosaic.generateNativeOptics(opticsParams);
+        posIncrementDegs = 1.0;
 
-             % Retrieve the native optics
-            theOptics = theComputeReadyMRGCmosaic.theNativeOptics;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = false;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = false;
+        reComputeRFs = false;
 
-            % What to compute
-            reComputeInputConeMosaicSubspaceRFmappingResponses = true;
-            reComputeMRGCMosaicSubspaceRFmappingResponses = true;
-            
-            % Go !
-            MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
-                theComputeReadyMRGCmosaic, theOptics, ...
-                maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, ...
+        % Go !
+        MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
+                theComputeReadyMRGCmosaic, opticsParams, ...
+                maxSFcyclesPerDegree, stimSizeDegs, posIncrementDegs, ...
                 fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
                 fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName), ...
                 reComputeInputConeMosaicSubspaceRFmappingResponses, ...
                 reComputeMRGCMosaicSubspaceRFmappingResponses, ...
+                reComputeRFs, ...
                 'parPoolSize', 16);
-        end
 
     end
 

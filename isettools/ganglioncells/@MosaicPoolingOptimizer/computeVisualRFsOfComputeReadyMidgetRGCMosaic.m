@@ -1,16 +1,137 @@
 function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
-            theComputeReadyMRGCmosaic, theOptics, ...
-            maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, ...
+            theComputeReadyMRGCmosaic, opticsParams, ...
+            maxSFcyclesPerDegree, stimSizeDegs, posIncrementDegs, ...
             coneMosaicResponsesFileName, ...
             mRGCMosaicResponsesFileName, ...
             reComputeInputConeMosaicSubspaceRFmappingResponses, ...
-            reComputeMRGCMosaicSubspaceRFmappingResponses, varargin)
+            reComputeMRGCMosaicSubspaceRFmappingResponses, ...
+            reComputeRFs, varargin)
 
    
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
+
+
+    [X,Y] = generateSamplingGrid(...
+        theComputeReadyMRGCmosaic.inputConeMosaic.sizeDegs, ...
+        theComputeReadyMRGCmosaic.inputConeMosaic.eccentricityDegs, ...
+        posIncrementDegs);
+
+
+    for iPos = 1:numel(X)
+        % stimulus position within the mRGC mosaic
+        stimXYpositionDegs = [X(iPos) Y(iPos)];
+    
+        % Generate native optics
+        opticsParamsAtThisPosition = opticsParams;
+        opticsParamsAtThisPosition.positionDegs = stimXYpositionDegs;
+        theComputeReadyMRGCmosaic.generateNativeOptics(opticsParams);
+
+        % Retrieve the native optics
+        theOptics = theComputeReadyMRGCmosaic.theNativeOptics;
+
+        if (reComputeInputConeMosaicSubspaceRFmappingResponses || ...
+            reComputeMRGCMosaicSubspaceRFmappingResponses || ...
+            reComputeRFs)
+
+            computeRFsForGridPosition(...
+                theComputeReadyMRGCmosaic, theOptics, ...
+                maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, ...
+                parPoolSize, ...
+                coneMosaicResponsesFileName, ...
+                mRGCMosaicResponsesFileName, ...
+                reComputeInputConeMosaicSubspaceRFmappingResponses, ...
+                reComputeMRGCMosaicSubspaceRFmappingResponses);
+
+        end
+
+        visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionDegs, mRGCMosaicResponsesFileName);
+    end
+
+end
+
+function visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionDegs, mRGCMosaicResponsesFileName)
+
+    % Encode examined spatial position
+    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f.mat', stimXYpositionDegs(1), stimXYpositionDegs(2));
+    mRGCMosaicResponsesFileName = strrep(mRGCMosaicResponsesFileName, '.mat', positionPostFix);
+
+    load(mRGCMosaicResponsesFileName, ...
+        'theMRGCMosaicSubspaceRFmappingLinearResponses', ...
+        'theMRGCMosaicSubspaceRFmappingEnergyResponses', ...
+        'spatialSupportDegs', 'lIndices', 'mIndices', ...
+        'theMRGCMosaicVisualRFmaps');
+
+    hFig = figure(1);
+    set(hFig, 'Position', [10 10 2048 1024], 'Color', [1 1 1]);
+    ax1 = subplot(1,2,1);
+    ax2 = subplot(1,2,2);
+
+    HartleyMapSize = sqrt(numel(lIndices));
+
+    nStim = size(theMRGCMosaicSubspaceRFmappingEnergyResponses,1);
+    omega = (HartleyMapSize-1)/2;
+
+    cellsNum = numel(theMRGCMosaicVisualRFmaps);
+    for iCell = 1:cellsNum
+
+        if isempty(theMRGCMosaicVisualRFmaps{iCell})
+            continue;
+        end
+
+        HartleyMapSize = 2*omega+1;
+        theHartleyTuningMap = zeros(HartleyMapSize, HartleyMapSize);
+        for iStim = 1:nStim
+            theHartleyTuningMap(lIndices(iStim)+omega+1, mIndices(iStim)+omega+1) = theMRGCMosaicSubspaceRFmappingEnergyResponses(iStim,iCell);
+        end
+
+        theHartleyTuningMap = theHartleyTuningMap / max(theHartleyTuningMap(:));
+        
+        imagesc(ax1,-omega:1:omega, -omega:1:omega, abs(theHartleyTuningMap));
+        set(ax1, 'CLim', [0 1]);
+        axis(ax1, 'image')
+        colormap(ax1,brewermap(1024, '*greys'));
+
+
+        theRFmap = theMRGCMosaicVisualRFmaps{iCell};
+        imagesc(ax2, theRFmap);
+        set(ax2, 'CLim', [-1 1]);
+        axis(ax2, 'image')
+        title(ax2,sprintf('RF %d of %d (%2.1f,%2.1f) degs', iCell, cellsNum, ...
+                theComputeReadyMRGCmosaic.rgcRFpositionsDegs(iCell,1), ...
+                theComputeReadyMRGCmosaic.rgcRFpositionsDegs(iCell,2)));
+        colormap(ax2,brewermap(1024, '*RdBu'));
+        drawnow
+
+    end
+end
+
+
+function [X,Y] = generateSamplingGrid(inputConeMosaicSizeDegs, inputConeMosaicEccDegs, posIncrementDegs)
+
+    k = round(0.5*inputConeMosaicSizeDegs(1)/posIncrementDegs)-1;
+    xCoords = inputConeMosaicEccDegs(1) + ...
+            (-(k+1):1:k)*posIncrementDegs + posIncrementDegs*0.5;
+
+    k = round(0.5*inputConeMosaicSizeDegs(2)/posIncrementDegs)-1;
+    yCoords = inputConeMosaicEccDegs(2) + ...
+            (-(k+1):1:k)*posIncrementDegs + posIncrementDegs*0.5;
+
+    [X,Y] = meshgrid(xCoords, yCoords);
+    X = X(:); Y = Y(:);
+end
+
+
+function computeRFsForGridPosition( ...
+            theComputeReadyMRGCmosaic, theOptics, ...
+            maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, ...
+            parPoolSize,...
+            coneMosaicResponsesFileName, ...
+            mRGCMosaicResponsesFileName, ...
+            reComputeInputConeMosaicSubspaceRFmappingResponses, ...
+            reComputeMRGCMosaicSubspaceRFmappingResponses)
 
     % Encode examined spatial position
     positionPostFix = sprintf('_atPosition_%2.2f_%2.2f.mat', stimXYpositionDegs(1), stimXYpositionDegs(2));
@@ -85,17 +206,12 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
 
     % Load theMRGCMosaicSubspaceRFmappingLinearResponses
     load(mRGCMosaicResponsesFileName, ...
-            'theMRGCMosaicSubspaceRFmappingLinearResponses', ...
-            'theMRGCMosaicSubspaceRFmappingEnergyResponses',...
-            'spatialSupportDegs', 'lIndices', 'mIndices');
+            'theMRGCMosaicSubspaceRFmappingLinearResponses');
 
     % Compute RF maps of cones in the MRGC mosaic
     theMRGCMosaicVisualRFmaps = computeRFs(...
-        theComputeReadyMRGCmosaic, ...
         theMRGCMosaicSubspaceRFmappingLinearResponses, ...
-        theMRGCMosaicSubspaceRFmappingEnergyResponses, ...
-        HartleySpatialModulationPatterns, ...
-        spatialSupportDegs, lIndices, mIndices);
+        HartleySpatialModulationPatterns);
 
     fprintf('\nSaving computed visual RFs to %s ...', mRGCMosaicResponsesFileName);
     save(mRGCMosaicResponsesFileName, ...
@@ -103,28 +219,18 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
     fprintf('Done saving! \n')
 end
 
-function theRFmaps = computeRFs(theComputeReadyMRGCmosaic, ...
+
+function theRFmaps = computeRFs( ...
     theSubspaceRFmappingLinearResponses, ...
-    theSubspaceRFmappingEnergyResponses, ...
-    HartleySpatialModulationPatterns, ...
-    spatialSupportDegs, lIndices, mIndices)
+    HartleySpatialModulationPatterns)
 
     nStim = size(theSubspaceRFmappingLinearResponses,1);
-    omega = (sqrt(nStim)-1)/2;
     cellsNum = size(theSubspaceRFmappingLinearResponses,2);
     pixelsNum = size(HartleySpatialModulationPatterns,2);
 
     fprintf('Computing visual RFs for all RGCs in the mosaic ... \n')
     theRFmaps = cell(cellsNum, 1);
 
-    visualizeRFs = false;
-
-    if (visualizeRFs)
-    hFig = figure(1);
-    set(hFig, 'Position', [10 10 2048 1024], 'Color', [1 1 1]);
-    ax1 = subplot(1,2,1);
-    ax2 = subplot(1,2,2);
-    end
 
     m = max(abs(theSubspaceRFmappingLinearResponses),[],1);
     cellsWithNonZeroResponse = find(m > 0);
@@ -132,41 +238,15 @@ function theRFmaps = computeRFs(theComputeReadyMRGCmosaic, ...
     for idx = 1:numel(cellsWithNonZeroResponse)
 
         iCell = cellsWithNonZeroResponse(idx);
-        HartleyMapSize = 2*omega+1;
-        theHartleyTuningMap = zeros(HartleyMapSize, HartleyMapSize);
-        for iStim = 1:nStim
-            theHartleyTuningMap(lIndices(iStim)+omega+1, mIndices(iStim)+omega+1) = theSubspaceRFmappingEnergyResponses(iStim,iCell);
-        end
-
-        theHartleyTuningMap = theHartleyTuningMap / max(theHartleyTuningMap(:));
-        
-          if (visualizeRFs)
-        imagesc(ax1,-omega:1:omega, -omega:1:omega, abs(theHartleyTuningMap));
-        set(ax1, 'CLim', [0 1]);
-        axis(ax1, 'image')
-        colormap(ax1,brewermap(1024, '*greys'));
-          end
-
         theRFmap = zeros(pixelsNum, pixelsNum, 'single');
+
         for iStim = 1:nStim
             r = theSubspaceRFmappingLinearResponses(iStim,iCell);
             theRFmap = theRFmap + ...
                     single(squeeze(HartleySpatialModulationPatterns(iStim,:,:)) * r);
         end
-        theRFmap = theRFmap / max(abs(theRFmap(:)));
-       
-         if (visualizeRFs)
-        imagesc(ax2,theRFmap);
-        set(ax2, 'CLim', [-1 1]);
-        axis(ax2, 'image')
-        title(ax2,sprintf('RF %d of %d (%2.1f,%2.1f) degs', iCell, cellsNum, ...
-            theComputeReadyMRGCmosaic.rgcRFpositionsDegs(iCell,1), ...
-            theComputeReadyMRGCmosaic.rgcRFpositionsDegs(iCell,2)));
-        colormap(ax2,brewermap(1024, '*RdBu'));
-        drawnow
-         end
-         
-        theRFmaps{iCell} = theRFmap;
+
+        theRFmaps{iCell} = theRFmap / max(abs(theRFmap(:)));
     end
 
 end
