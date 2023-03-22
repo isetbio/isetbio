@@ -257,25 +257,24 @@ function theRFmaps = computeRFs( ...
     cellsNum = size(theSubspaceRFmappingLinearResponses,2);
     pixelsNum = size(HartleySpatialModulationPatterns,2);
 
-    fprintf('Computing visual RFs for all RGCs in the mosaic ... \n')
-    theRFmaps = cell(cellsNum, 1);
-
-
+    
+    
     m = max(abs(theSubspaceRFmappingLinearResponses),[],1);
     cellsWithNonZeroResponse = find(m > 0);
 
-    for idx = 1:numel(cellsWithNonZeroResponse)
 
-        iCell = cellsWithNonZeroResponse(idx);
-        theRFmap = zeros(pixelsNum, pixelsNum, 'single');
-
-        for iStim = 1:nStim
-            r = theSubspaceRFmappingLinearResponses(iStim,iCell);
-            theRFmap = theRFmap + ...
-                    single(squeeze(HartleySpatialModulationPatterns(iStim,:,:)) * r);
+    theRFmaps = cell(cellsNum, 1);
+    parfor iCell = 1:cellsNum
+        fprintf('Computing visual RF by accumulating Hartley patterns for RGC #%d of %d ... \n', iCell, cellsNum)
+        if (ismember(iCell, cellsWithNonZeroResponse))
+            theRFmap = zeros(pixelsNum, pixelsNum, 'single');
+            for iStim = 1:nStim
+                r = theSubspaceRFmappingLinearResponses(iStim,iCell);
+                theRFmap = theRFmap + ...
+                        single(squeeze(HartleySpatialModulationPatterns(iStim,:,:)) * r);
+            end
+            theRFmaps{iCell} = theRFmap / max(abs(theRFmap(:)));
         end
-
-        theRFmaps{iCell} = theRFmap / max(abs(theRFmap(:)));
     end
 
 end
