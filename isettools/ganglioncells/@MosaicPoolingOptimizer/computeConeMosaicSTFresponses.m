@@ -17,8 +17,8 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
 
     theConeMosaicNullResponses = [];
 
-    if (useParfor)
-        visualizeResponses = false;
+    if (visualizeResponses)
+        useParfor = false;
     end
 
     if (visualizeResponses)
@@ -29,7 +29,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
     % This is necessary to avoid the background being modulated when the
     % stimulus is smaller than the mosaic. This is due to the way oiCompute
     % does the padding.
-    padOIwithZeros = true;
+    padOIwithZeros = ~true;
     if (padOIwithZeros)
         theOptics = oiSet(theOptics, 'pad', struct('value', 'zero photons'));
     end

@@ -3,8 +3,10 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
 
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
+    p.addParameter('visualizedResponses', false, @islogical);
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
+    visualizedResponses = p.Results.visualizedResponses;
 
     % Generate components for running the Subspace mapping experiment
     wavelengthSupport = theRGCMosaic.inputConeMosaic.wave;
@@ -25,6 +27,7 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
                                            thePresentationDisplay, ...
                                            stimParams, ...
                                            stimXYpositionDegs, ...
+                                           'visualizedResponses', visualizedResponses, ...
                                            'parPoolSize', parPoolSize);
 
 

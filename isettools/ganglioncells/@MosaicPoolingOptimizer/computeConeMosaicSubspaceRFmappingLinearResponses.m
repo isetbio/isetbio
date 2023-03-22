@@ -67,7 +67,7 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
     theConeMosaicSubspaceLinearResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
     theConeMosaicSubspaceEnergyResponses = theConeMosaicSubspaceLinearResponses;
 
-    if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize))
+    if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize)) || (visualizeResponses)
          % Reset parpool
          [shutdownParPoolOnceCompleted, numWorkers] = MosaicPoolingOptimizer.resetParPool(parPoolSize);
 
