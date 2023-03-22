@@ -3,7 +3,7 @@ function testMidgetRGCMosaic
     arbitraryNodesToCompute =  selectNodesToRecompute();
     mosaicEcc = 2.5;
     mosaicEcc = 7.0;
-    %mosaicEcc = -10.0;
+   % mosaicEcc = -10.0;
 
     % Get mosaic ecc and size
     mosaicParams = getMosaicParams(mosaicEcc);
@@ -441,16 +441,17 @@ function testMidgetRGCMosaic
 
         % RF mapping params:
         % max SF to explore
-        maxSFcyclesPerDegree = 45; 
+        maxSFcyclesPerDegree = 30; 
 
         % stimulus patch size
         stimSizeDegs = 1.5;    
         
         posIncrementDegs = 1.0;
 
-        reComputeInputConeMosaicSubspaceRFmappingResponses = false;
-        reComputeMRGCMosaicSubspaceRFmappingResponses = false;
-        reComputeRFs = false;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = true;
+        reComputeRFs = true;
+        parpoolSize = 16;
 
         % Go !
         MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
@@ -461,7 +462,7 @@ function testMidgetRGCMosaic
                 reComputeInputConeMosaicSubspaceRFmappingResponses, ...
                 reComputeMRGCMosaicSubspaceRFmappingResponses, ...
                 reComputeRFs, ...
-                'parPoolSize', 16);
+                'parPoolSize', parpoolSize);
 
     end
 

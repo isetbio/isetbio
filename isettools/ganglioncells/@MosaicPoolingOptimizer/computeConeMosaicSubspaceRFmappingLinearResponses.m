@@ -48,20 +48,12 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
                 'sceneIndexToCompute', 0);
 
     fprintf('Computing null scene response\n');
-    % This is necessary to avoid the background being modulated when the
-    % stimulus is smaller than the mosaic. This is due to the way oiCompute
-    % does the padding.
-    padOIwithZeros = true;
-    if (padOIwithZeros)
-        theOptics = oiSet(theOptics, 'pad', struct('value', 'zero photons'));
-    end
 
     % Compute the optical image of the null scene
     theOptics  = oiCompute(theNullStimulusScene, theOptics);
 
     % Compute the cone mosaic response to the null stimulus
     theConeMosaicNullResponses = theConeMosaic.compute(theOptics, ...
-                    'padOIwithZeros', padOIwithZeros, ...
                     'opticalImagePositionDegs', theConeMosaic.eccentricityDegs, ...
                     'nTrials', 1);
 
@@ -81,7 +73,6 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
 
          theOI = theOptics;
          parfor iFrame = 1:nStim
-
              % Generate scenes for the Hartley patterns
             fprintf('Computing cone mosaic response for Hartley pattern %d of %d (using %d parallel processes).\n', ...
                 iFrame, nStim, numWorkers);
@@ -91,22 +82,21 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
                 'validateScenes', false, ...
                 'sceneIndexToCompute', iFrame);
 
-    
              theInversePolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
                 thePresentationDisplay, stimParams, -HartleySpatialModulationPatterns, ...
                 'validateScenes', false, ...
                 'sceneIndexToCompute', iFrame);
 
-             % Get scene corresponding to this forward polarity of the stimulus frame
+             % Get scene corresponding to the forward polarity of the stimulus frame
              theFrameScene = theForwardPolarityRFMappingStimulusScenes{1};
 
              % Compute the optical image of the frame scene
              theCurrentOI = oiCompute(theFrameScene, theOI);
 
+             
              % Compute the cone mosaic responses
              noiseFreeAbsorptionsCountForwardPolarity = ...
                         theConeMosaic.compute(theCurrentOI, ...
-                        'padOIwithZeros', padOIwithZeros, ...
                         'opticalImagePositionDegs', stimPositionDegs, ...
                         'nTrials', 1);
 
@@ -124,7 +114,6 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
              % Compute the cone mosaic responses
              noiseFreeAbsorptionsCountInversePolarity = ...
                         theConeMosaic.compute(theCurrentOI, ...
-                        'padOIwithZeros', padOIwithZeros, ...
                         'opticalImagePositionDegs', stimPositionDegs, ...
                         'nTrials', 1);
 
@@ -133,14 +122,17 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
                 (noiseFreeAbsorptionsCountInversePolarity - theConeMosaicNullResponses) .* ...
                 normalizingResponses;
 
+
+             % The linear response: forward - inverse
              theConeMosaicSubspaceLinearResponses(iFrame,:) = single(...
                  noiseFreeAbsorptionsCountForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsCountInversePolarity(1,1,:));
 
+             % The energy response
              theConeMosaicSubspaceEnergyResponses(iFrame,:) = ...
                  (noiseFreeAbsorptionsCountForwardPolarity(1,1,:)).^2 + ...
                  (noiseFreeAbsorptionsCountInversePolarity(1,1,:)).^2;
-
+            
          end % iFrame
 
          if (shutdownParPoolOnceCompleted)
@@ -158,7 +150,6 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
                 'validateScenes', false, ...
                 'sceneIndexToCompute', iFrame);
 
-    
             theInversePolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
                 thePresentationDisplay, stimParams, -HartleySpatialModulationPatterns, ...
                 'validateScenes', false, ...
@@ -174,7 +165,6 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
             % Compute the cone mosaic responses
             noiseFreeAbsorptionsCountForwardPolarity = ...
                         theConeMosaic.compute(theOptics, ...
-                        'padOIwithZeros', padOIwithZeros, ...
                         'opticalImagePositionDegs', stimPositionDegs, ...
                         'nTrials', 1);
 
@@ -192,7 +182,6 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
             % Compute the cone mosaic responses
             noiseFreeAbsorptionsCountInversePolarity = ...
                         theConeMosaic.compute(theOptics, ...
-                        'padOIwithZeros', padOIwithZeros, ...
                         'opticalImagePositionDegs', stimPositionDegs, ...
                         'nTrials', 1);
 
@@ -218,25 +207,24 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
                 drawnow;
             end
 
+            % The linear response: forward - inverse
             theConeMosaicSubspaceLinearResponses(iFrame,:) = single(...
                  noiseFreeAbsorptionsCountForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsCountInversePolarity(1,1,:));
 
+            % The energy response
             theConeMosaicSubspaceEnergyResponses(iFrame,:) = ...
                  (noiseFreeAbsorptionsCountForwardPolarity(1,1,:)).^2 + ...
                  (noiseFreeAbsorptionsCountInversePolarity(1,1,:)).^2;
-
         end
     end
 
-    % Qaudrature sum
+    % Qaudrature sum of energy responses
     iiFrame = zeros(1, nStim);
-
     for iFrame = 1:nStim
         iiFrame(iFrame) = find(...
             (lIndices == -lIndices(iFrame)) & ...
             (mIndices == -mIndices(iFrame)));
     end
-
     theConeMosaicSubspaceEnergyResponses = theConeMosaicSubspaceEnergyResponses + theConeMosaicSubspaceEnergyResponses(iiFrame,:);
 end

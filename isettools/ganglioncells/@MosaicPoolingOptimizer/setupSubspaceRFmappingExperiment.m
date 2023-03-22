@@ -3,7 +3,7 @@ function [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment
 
     
     maxSFperiodDegs = 1/maxSFcyclesPerDegree;
-    minSamplesPerMaxSFperiod = 2;
+    minSamplesPerMaxSFperiod = round(4*sqrt(2.0));
     pixelSizeDegs = maxSFperiodDegs/minSamplesPerMaxSFperiod;
     omega = round(maxSFcyclesPerDegree * max(stimSizeDegs));
     nStim = (2*omega+1)^2;
