@@ -21,7 +21,9 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
         posIncrementDegs);
 
     stimXYpositionGridDegs = [X(:) Y(:)];
+    theMRGCMosaicOptimalVisualRFmaps = [];
 
+    size(stimXYpositionGridDegs,1)
     for theGridNodeIndex = 1:size(stimXYpositionGridDegs,1)
         % stimulus position within the mRGC mosaic
         gridNodeXYpositionDegs = stimXYpositionGridDegs(theGridNodeIndex,:);
@@ -49,29 +51,32 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
                 visualizedResponses);
 
         else
-            visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionGridDegs, theGridNodeIndex, mRGCMosaicResponsesFileName);
+            theMRGCMosaicOptimalVisualRFmaps = visualizeRFsForGridPosition(...
+                theMRGCMosaicOptimalVisualRFmaps, theComputeReadyMRGCmosaic, ...
+                stimXYpositionGridDegs, theGridNodeIndex, mRGCMosaicResponsesFileName);
         end
     end
 
 end
 
-function visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionGridDegs, theGridNodeIndex, mRGCMosaicResponsesFileName)
+function theMRGCMosaicOptimalVisualRFmaps = visualizeRFsForGridPosition(...
+    theMRGCMosaicOptimalVisualRFmaps, theComputeReadyMRGCmosaic, ...
+    stimXYpositionGridDegs, theGridNodeIndex, mRGCMosaicResponsesFileName)
 
     % Encode examined spatial position
     gridNodeXYpositionDegs = stimXYpositionGridDegs(theGridNodeIndex,:);
     positionPostFix = sprintf('_atPosition_%2.2f_%2.2f.mat', gridNodeXYpositionDegs(1), gridNodeXYpositionDegs(2));
     mRGCMosaicResponsesFileName = strrep(mRGCMosaicResponsesFileName, '.mat', positionPostFix);
 
+    whos('-file', mRGCMosaicResponsesFileName)
+    pause
     load(mRGCMosaicResponsesFileName, ...
-        'spatialSupportDegs', 'lIndices', 'mIndices', ...
+        'spatialSupportDegs', ...
         'theMRGCMosaicVisualRFmaps');
 
-    HartleyMapSize = sqrt(numel(lIndices));
 
-    nStim = size(theMRGCMosaicSubspaceRFmappingEnergyResponses,1);
-    omega = (HartleyMapSize-1)/2;
+    cellsNum = numel(theMRGCMosaicVisualRFmaps)
 
-    cellsNum = numel(theMRGCMosaicVisualRFmaps);
     for iCell = 1:cellsNum
 
         if isempty(theMRGCMosaicVisualRFmaps{iCell})
@@ -82,10 +87,14 @@ function visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionGr
         d = sqrt(sum((bsxfun(@minus, stimXYpositionGridDegs, theComputeReadyMRGCmosaic.rgcRFpositionsDegs(iCell,:))).^2,2));
         [~, theClosestGridNodeIndex] = min(d);
 
+        [theClosestGridNodeIndex  theGridNodeIndex cellsNum]
+
         if (theClosestGridNodeIndex ~= theGridNodeIndex)
             continue;
         end
 
+        spatialSupportDegsX = spatialSupportDegs+stimXYpositionGridDegs(theGridNodeIndex, 1);
+        spatialSupportDegsY = spatialSupportDegs+stimXYpositionGridDegs(theGridNodeIndex, 2);
         hFig = figure(1);clf;
         set(hFig, 'Position', [10 10 1800 500], 'Color', [1 1 1]);
         ax1 = subplot(1,3,1);
@@ -93,7 +102,17 @@ function visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionGr
         ax3 = subplot(1,3,3);
 
         theRFmap = theMRGCMosaicVisualRFmaps{iCell};
-        imagesc(ax2, spatialSupportDegs, spatialSupportDegs, theRFmap);
+        if (isempty(theMRGCMosaicOptimalVisualRFmaps))
+            theMRGCMosaicOptimalVisualRFmaps = cell(1, cellsNum);
+        end
+
+        theMRGCMosaicOptimalVisualRFmaps{iCell} = struct(...
+            'theRFmap', theRFmap, ...
+            'spatialSupportDegsX', spatialSupportDegsX, ...
+            'spatialSupportDegsY', spatialSupportDegsY ...
+            );
+
+        imagesc(ax2, spatialSupportDegsX, spatialSupportDegsY, theRFmap);
         
         set(ax2, 'CLim', 0.1*[-1 1]);
         axis(ax2, 'image')
@@ -111,7 +130,6 @@ function visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionGr
         hold(ax3, 'on');
         plot(ax3, spatialSupportDegs, theRFprofileY/maxProfile, 'b-', 'LineWidth', 1.5);
         set(ax3, 'YLim', [-1 1]);
-        pause
         drawnow
 
     end
@@ -122,11 +140,12 @@ function [X,Y] = generateSamplingGrid(inputConeMosaicSizeDegs, inputConeMosaicEc
 
     k = round(0.5*inputConeMosaicSizeDegs(1)/posIncrementDegs)-1;
     xCoords = inputConeMosaicEccDegs(1) + ...
-            (-(k+1):1:k)*posIncrementDegs + posIncrementDegs*0.5;
+            (-k:1:k)*posIncrementDegs;
 
     k = round(0.5*inputConeMosaicSizeDegs(2)/posIncrementDegs)-1;
     yCoords = inputConeMosaicEccDegs(2) + ...
-            (-(k+1):1:k)*posIncrementDegs + posIncrementDegs*0.5;
+            (-k:1:k)*posIncrementDegs;
+    
 
     [X,Y] = meshgrid(xCoords, yCoords);
     X = X(:); Y = Y(:);
