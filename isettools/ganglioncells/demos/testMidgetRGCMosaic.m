@@ -444,14 +444,14 @@ function testMidgetRGCMosaic
         maxSFcyclesPerDegree = 30; 
 
         % stimulus patch size
-        stimSizeDegs = 1.5;    
+        stimSizeDegs = 1.0;    
         
-        posIncrementDegs = 1.0;
+        posIncrementDegs = 0.5;
 
         reComputeInputConeMosaicSubspaceRFmappingResponses = true;
         reComputeMRGCMosaicSubspaceRFmappingResponses = true;
         reComputeRFs = true;
-        parpoolSize = 16;
+        parpoolSize = 20;
 
         % Go !
         MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...

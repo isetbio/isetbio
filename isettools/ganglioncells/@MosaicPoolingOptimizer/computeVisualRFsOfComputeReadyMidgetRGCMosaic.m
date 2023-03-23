@@ -63,7 +63,6 @@ function visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionGr
     mRGCMosaicResponsesFileName = strrep(mRGCMosaicResponsesFileName, '.mat', positionPostFix);
 
     load(mRGCMosaicResponsesFileName, ...
-        'theMRGCMosaicSubspaceRFmappingEnergyResponses', ...
         'spatialSupportDegs', 'lIndices', 'mIndices', ...
         'theMRGCMosaicVisualRFmaps');
 
@@ -92,23 +91,6 @@ function visualizeRFsForGridPosition(theComputeReadyMRGCmosaic, stimXYpositionGr
         ax1 = subplot(1,3,1);
         ax2 = subplot(1,3,2);
         ax3 = subplot(1,3,3);
-
-        HartleyMapSize = 2*omega+1;
-        theHartleyTuningMap = zeros(HartleyMapSize, HartleyMapSize);
-        for iStim = 1:nStim
-            theHartleyTuningMap(lIndices(iStim)+omega+1, mIndices(iStim)+omega+1) = theMRGCMosaicSubspaceRFmappingEnergyResponses(iStim,iCell);
-        end
-
-        
-        m1 = min(theHartleyTuningMap(:));
-        m2 = max(theHartleyTuningMap(:));
-        theHartleyTuningMap = (theHartleyTuningMap-m1) / (m2-m1);
-
-        imagesc(ax1,-omega:1:omega, -omega:1:omega, theHartleyTuningMap);
-        set(ax1, 'CLim', [0 1]);
-        axis(ax1, 'image')
-        colormap(ax1,brewermap(1024, '*greys'));
-
 
         theRFmap = theMRGCMosaicVisualRFmaps{iCell};
         imagesc(ax2, spatialSupportDegs, spatialSupportDegs, theRFmap);
@@ -179,7 +161,7 @@ function computeRFsForGridPosition( ...
     % Load the previously computed responses
     load(coneMosaicResponsesFileName, ...
                 'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'lIndices', 'mIndices', ...
-                'theConeMosaicSubspaceLinearResponses', 'theConeMosaicSubspaceEnergyResponses');
+                'theConeMosaicSubspaceLinearResponses');
     HartleySpatialModulationPatterns = single(HartleySpatialModulationPatterns);
     fprintf('Done loading !\n');
     
@@ -197,7 +179,6 @@ function computeRFsForGridPosition( ...
         
         theMRGCMosaicSubspaceRFmappingLinearResponses = zeros(...
                      HartleyStimNum, theComputeReadyMRGCmosaic.rgcsNum, 'single');
-        theMRGCMosaicSubspaceRFmappingEnergyResponses = theMRGCMosaicSubspaceRFmappingLinearResponses;
 
         % Use all processors
         [shutdownParPoolOnceCompleted, numWorkers] = MosaicPoolingOptimizer.resetParPool([]);
@@ -212,23 +193,12 @@ function computeRFsForGridPosition( ...
              [theMRGCMosaicResponse, theMRGCresponseTemporalSupportSeconds] = ...
                     theComputeReadyMRGCmosaic.compute(theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds);
              theMRGCMosaicSubspaceRFmappingLinearResponses(iStim,:) = single(squeeze(theMRGCMosaicResponse(1, :,:)));
-
-
-             theConeMosaicResponse = squeeze(theConeMosaicSubspaceEnergyResponses(iStim,:));
-             theConeMosaicResponse = reshape(theConeMosaicResponse, [nTrials nTimePoints nCones]);
-
-             % Compute !
-             [theMRGCMosaicResponse, theMRGCresponseTemporalSupportSeconds] = ...
-                    theComputeReadyMRGCmosaic.compute(theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds);
-             theMRGCMosaicSubspaceRFmappingEnergyResponses(iStim,:) = single(squeeze(theMRGCMosaicResponse(1, :,:)));
-
          end
     
     
         fprintf('\nSaving computed mRGCRF mosaic SUBSPACE RF mapping linear responses to %s ...', mRGCMosaicResponsesFileName);
         save(mRGCMosaicResponsesFileName, ...
             'theMRGCMosaicSubspaceRFmappingLinearResponses', ...
-            'theMRGCMosaicSubspaceRFmappingEnergyResponses', ...
             'spatialSupportDegs', 'lIndices', 'mIndices', ...
             '-v7.3');
     end

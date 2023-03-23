@@ -1,4 +1,4 @@
-function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyResponses, theConeMosaicNullResponses, ...
+function [theConeMosaicSubspaceLinearResponses, theConeMosaicNullResponses, ...
     HartleySpatialModulationPatterns, spatialSupportDegs, lIndices, mIndices] = ...
     computeConeMosaicSubspaceRFmappingLinearResponses(theConeMosaic, theOptics,  ...
                                            thePresentationDisplay, ...
@@ -65,7 +65,6 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
 
     % Compute the input cone mosaic responses
     theConeMosaicSubspaceLinearResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
-    theConeMosaicSubspaceEnergyResponses = theConeMosaicSubspaceLinearResponses;
 
     if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize)) || (visualizeResponses)
          % Reset parpool
@@ -128,11 +127,7 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
                  noiseFreeAbsorptionsCountForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsCountInversePolarity(1,1,:));
 
-             % The energy response
-             theConeMosaicSubspaceEnergyResponses(iFrame,:) = ...
-                 (noiseFreeAbsorptionsCountForwardPolarity(1,1,:)).^2 + ...
-                 (noiseFreeAbsorptionsCountInversePolarity(1,1,:)).^2;
-            
+
          end % iFrame
 
          if (shutdownParPoolOnceCompleted)
@@ -211,20 +206,6 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicSubspaceEnergyRespo
             theConeMosaicSubspaceLinearResponses(iFrame,:) = single(...
                  noiseFreeAbsorptionsCountForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsCountInversePolarity(1,1,:));
-
-            % The energy response
-            theConeMosaicSubspaceEnergyResponses(iFrame,:) = ...
-                 (noiseFreeAbsorptionsCountForwardPolarity(1,1,:)).^2 + ...
-                 (noiseFreeAbsorptionsCountInversePolarity(1,1,:)).^2;
         end
     end
-
-    % Qaudrature sum of energy responses
-    iiFrame = zeros(1, nStim);
-    for iFrame = 1:nStim
-        iiFrame(iFrame) = find(...
-            (lIndices == -lIndices(iFrame)) & ...
-            (mIndices == -mIndices(iFrame)));
-    end
-    theConeMosaicSubspaceEnergyResponses = theConeMosaicSubspaceEnergyResponses + theConeMosaicSubspaceEnergyResponses(iiFrame,:);
 end
