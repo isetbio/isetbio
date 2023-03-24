@@ -234,25 +234,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
         S.EdgeAlpha = 0.0;
         S.LineWidth = 2;
         patch(S, 'Parent', ax)
-
-        % Plot the RFs
-        S.Vertices = obj.visualizationCache.rfCenterPatchData.vertices;
-        S.Faces = obj.visualizationCache.rfCenterPatchData.faces;
-        S.FaceVertexCData = obj.visualizationCache.rfCenterPatchData.faceVertexCData;
-    
-        S.FaceColor = 'flat';
-        if (~isempty(activation))
-            S.EdgeColor = 'none';
-        else
-            S.FaceColor = [0.95 0.95 0.95]*0.6;
-            S.EdgeColor = [0 0 0];
-        end
-        S.FaceAlpha = 0.4;
-        S.EdgeAlpha = 0.0;
-        S.LineWidth = 2;
-        patch(S, 'Parent', ax)
         
-    
         if (~isempty(labelRGCsWithIndices))
             hold(ax, 'on')
             for iRGC = 1:numel(labelRGCsWithIndices)

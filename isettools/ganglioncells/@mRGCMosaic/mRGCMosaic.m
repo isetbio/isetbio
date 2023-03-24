@@ -191,12 +191,12 @@ classdef mRGCMosaic < handle
         % Method to visualize the spatial RF of an RGC near a target
         % positon, with a target # of center cones, and a target center
         % cone majority type
-        theVisualizedRGCindex = visualizeSpatialRFnearPosition(obj, ...
+        theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(obj, ...
             targetRGCposition, targetCenterConesNum, ...
             targetCenterConeMajorityType, theAxes, varargin);
 
         % Method to visual the spatial RF of an RGC with a specific index
-        visualizeSpatialRFofRGCwithIndex(obj,theRGCindex, theAxes, varargin);
+        visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj,theRGCindex, theAxes, varargin);
 
         % Method to generate the native optics for the mosaic.
         % These optics form the basis on which surround cone weights are optimized
@@ -217,6 +217,11 @@ classdef mRGCMosaic < handle
 
         % Method to return the majority center cone type for an RGC
         [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = centerConeTypeWeights(obj, theRGCindex);
+
+        % Method to return the index of the RGC best matching the target
+        % criteria
+        [targetCenterConesNumNotMatched, theCurrentRGCindex] = indexOfRGCNearPosition(obj, ...
+            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType);
 
         % Method to return the indices of RGCs with a specific number of center cones
         indicesOfRGCsIdentified = indicesOfRGCsWithThisManyCenterCones(obj, targetCenterConesNum);
@@ -261,6 +266,14 @@ classdef mRGCMosaic < handle
 
     % Static methods
     methods (Static)
+        % Method to visualize the visual RF map computed via some way, such
+        % as subspace mapping. The VisualRFmapStruct must contain the
+        % following fields:
+        % 'spatialSupportDegsX'   - vector
+        % 'spatialSupportDegsY'   - vector
+        % 'theRFmap'              - matrix 
+        visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes, varargin);
+
         % Method to render the cone pooling plot with a subregion based on
         % the cone indices and weights pooled by that subregion and return
         % the X,Y line weighting functions for that subregion
@@ -271,6 +284,9 @@ classdef mRGCMosaic < handle
         renderSubregionConePoolingLineWeightingFunctions(ax, ...
             centerLineWeightingFunction, surroundLineWeightingFunction, ...
             sensitivityRange, horizontalAxisDirection, varargin);
+
+        % Method to generate iso-sensitivity contour data for a 2D map at a specified set of levels
+        cData = contourDataFromDensityMap(spatialSupportXY, zData, zLevels);
     end % Static methods
 
 end

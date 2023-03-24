@@ -1,4 +1,4 @@
-function visualizeSpatialRFofRGCwithIndex(obj,theRGCindex, theAxes, varargin)
+function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, theAxes, varargin)
     % Parse optional input
     p = inputParser;
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
