@@ -6,7 +6,7 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             reComputeInputConeMosaicSubspaceRFmappingResponses, ...
             reComputeMRGCMosaicSubspaceRFmappingResponses, ...
             reComputeRFs, ...
-            onlyVisualizeOptimallyMappedRFmaps, varargin)
+            varargin)
 
    
     p = inputParser;
@@ -16,111 +16,75 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
     parPoolSize = p.Results.parPoolSize;
     visualizedResponses = p.Results.visualizedResponses;
 
-    
+    [X,Y] = generateSamplingGrid(...
+        theComputeReadyMRGCmosaic.inputConeMosaic.sizeDegs, ...
+        theComputeReadyMRGCmosaic.inputConeMosaic.eccentricityDegs, ...
+        posIncrementDegs);
+
+    stimXYpositionGridDegs = [X(:) Y(:)];
     optimallyMappedVisualRFmaps = [];
+    totalOptimallyMappedRFs = 0;
+    indicesOfOptimallyMappedRGCs = [];
 
-    if (~onlyVisualizeOptimallyMappedRFmaps)
+    for theGridNodeIndex = 1:size(stimXYpositionGridDegs,1)
+        % stimulus position within the mRGC mosaic
+        gridNodeXYpositionDegs = stimXYpositionGridDegs(theGridNodeIndex,:);
+    
+        if (reComputeInputConeMosaicSubspaceRFmappingResponses || ...
+            reComputeMRGCMosaicSubspaceRFmappingResponses || ...
+            reComputeRFs)
 
-        [X,Y] = generateSamplingGrid(...
-            theComputeReadyMRGCmosaic.inputConeMosaic.sizeDegs, ...
-            theComputeReadyMRGCmosaic.inputConeMosaic.eccentricityDegs, ...
-            posIncrementDegs);
+            % Generate native optics
+            opticsParamsAtThisPosition = opticsParams;
+            opticsParamsAtThisPosition.positionDegs = gridNodeXYpositionDegs;
+            theComputeReadyMRGCmosaic.generateNativeOptics(opticsParams);
 
-        stimXYpositionGridDegs = [X(:) Y(:)];
-        optimallyMappedVisualRFmaps = [];
-        totalOptimallyMappedRFs = 0;
-        indicesOfOptimallyMappedRGCs = [];
+            % Retrieve the native optics
+            theOptics = theComputeReadyMRGCmosaic.theNativeOptics;
 
-        for theGridNodeIndex = 1:size(stimXYpositionGridDegs,1)
-            % stimulus position within the mRGC mosaic
-            gridNodeXYpositionDegs = stimXYpositionGridDegs(theGridNodeIndex,:);
-        
-            if (reComputeInputConeMosaicSubspaceRFmappingResponses || ...
-                reComputeMRGCMosaicSubspaceRFmappingResponses || ...
-                reComputeRFs)
-    
-                % Generate native optics
-                opticsParamsAtThisPosition = opticsParams;
-                opticsParamsAtThisPosition.positionDegs = gridNodeXYpositionDegs;
-                theComputeReadyMRGCmosaic.generateNativeOptics(opticsParams);
-    
-                % Retrieve the native optics
-                theOptics = theComputeReadyMRGCmosaic.theNativeOptics;
-    
-                % Compute the RF maps for ALL cells using stimuli at this grid
-                % position. Only some cells will be optimally mapped at each
-                % position. These optimally derived RF maps are extracted by
-                % the optimalyMappedRFsAtThisGridPosition() function
-                computeRFmapsForAllCellsUsingStimuliAThisGridPosition(...
-                    theComputeReadyMRGCmosaic, theOptics, ...
-                    maxSFcyclesPerDegree, stimSizeDegs, gridNodeXYpositionDegs, ...
-                    parPoolSize, ...
-                    coneMosaicSubspaceResponsesFileName, ...
-                    mRGCMosaicSubspaceResponsesFileName, ...
-                    reComputeInputConeMosaicSubspaceRFmappingResponses, ...
-                    reComputeMRGCMosaicSubspaceRFmappingResponses, ...
-                    visualizedResponses);
-    
-            else
-                % Extract visual RF maps for cells that are optimally mapped at this grid position
-                [optimallyMappedVisualRFmaps, indicesOfOptimallyRGCsAtThisPosition] = optimalyMappedRFsAtThisGridPosition(...
-                    optimallyMappedVisualRFmaps, theComputeReadyMRGCmosaic, ...
-                    stimXYpositionGridDegs, theGridNodeIndex, mRGCMosaicSubspaceResponsesFileName);
-                
-                if (~isempty(indicesOfOptimallyRGCsAtThisPosition))
-                    totalOptimallyMappedRFs = totalOptimallyMappedRFs + numel(indicesOfOptimallyRGCsAtThisPosition);
-                    indicesOfOptimallyMappedRGCs = cat(1,indicesOfOptimallyMappedRGCs(:), indicesOfOptimallyRGCsAtThisPosition(:));
-                    if (totalOptimallyMappedRFs ~= numel(unique(indicesOfOptimallyMappedRGCs)))
-                        error('Multiply-optimally mapped RGCs');
-                    end
-    
+            % Compute the RF maps for ALL cells using stimuli at this grid
+            % position. Only some cells will be optimally mapped at each
+            % position. These optimally derived RF maps are extracted by
+            % the optimalyMappedRFsAtThisGridPosition() function
+            computeRFmapsForAllCellsUsingStimuliAThisGridPosition(...
+                theComputeReadyMRGCmosaic, theOptics, ...
+                maxSFcyclesPerDegree, stimSizeDegs, gridNodeXYpositionDegs, ...
+                parPoolSize, ...
+                coneMosaicSubspaceResponsesFileName, ...
+                mRGCMosaicSubspaceResponsesFileName, ...
+                reComputeInputConeMosaicSubspaceRFmappingResponses, ...
+                reComputeMRGCMosaicSubspaceRFmappingResponses, ...
+                visualizedResponses);
+
+        else
+            % Extract visual RF maps for cells that are optimally mapped at this grid position
+            [optimallyMappedVisualRFmaps, indicesOfOptimallyRGCsAtThisPosition] = optimalyMappedRFsAtThisGridPosition(...
+                optimallyMappedVisualRFmaps, theComputeReadyMRGCmosaic, ...
+                stimXYpositionGridDegs, theGridNodeIndex, mRGCMosaicSubspaceResponsesFileName);
+            
+            if (~isempty(indicesOfOptimallyRGCsAtThisPosition))
+                totalOptimallyMappedRFs = totalOptimallyMappedRFs + numel(indicesOfOptimallyRGCsAtThisPosition);
+                indicesOfOptimallyMappedRGCs = cat(1,indicesOfOptimallyMappedRGCs(:), indicesOfOptimallyRGCsAtThisPosition(:));
+                if (totalOptimallyMappedRFs ~= numel(unique(indicesOfOptimallyMappedRGCs)))
+                    error('Multiply-optimally mapped RGCs');
                 end
+
             end
         end
     end
-
-    % Optimally generated RF maps filename
-    optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', '_optimallyMappedRFs.mat');
-
-    % Save all the optimall mapped visual RF maps
+    
+    % Save all the optimally mapped visual RF maps
     if (~isempty(optimallyMappedVisualRFmaps))
         fprintf('Saving optimally mapped subspace RF maps to %s\n', optimallyMappedSubspaceRFmapsFileName);
         save(optimallyMappedSubspaceRFmapsFileName, 'optimallyMappedVisualRFmaps', '-v7.3');
     end
 
-    if (onlyVisualizeOptimallyMappedRFmaps)
-
-        visualizeAnotherSingleRGC = true;
-        while (visualizeAnotherSingleRGC)
-            visualizeSingleRGC = input('Visualize visual RF and profiles for a single RGC ? [y=YES] : ', 's');
-            if (strcmpi(visualizeSingleRGC, 'y'))
-                targetRGCposition = input('Enter (xy) position of target RGC (e.g., [5.6 -1.3]): ');
-                targetCenterConesNum = input('Enter # of center cones num (e.g, 3): ');
-                targetCenterConeMajorityType = input('Enter type of majority center cone num (either cMosaic.LCONE_ID or cMosaic.MCONE_ID): ');
-        
-                MosaicPoolingOptimizer.visualizeVisualRFmapForTargetRGC(...
-                    theComputeReadyMRGCmosaic, ...
-                    optimallyMappedSubspaceRFmapsFileName, ...
-                    targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType);
-            else
-                visualizeAnotherSingleRGC = false;
-            end
-        end
-
-        visualizeVisualRFcentersOfAllRGCs = input('Visualize the visual RF centers for all RGCs in the mosaic ? [y=YES] : ', 's');
-        if (strcmpi(visualizeVisualRFcentersOfAllRGCs , 'y'))
-            MosaicPoolingOptimizer.visualizeVisualRFcentersOfComputeReadyMidgetRGCMosaic(...
-                theComputeReadyMRGCmosaic, ...
-                mRGCMosaicSubspaceResponsesFileName);
-        end
-    end
 end
 
 
 function [optimallyMappedVisualRFmaps, indicesOfOptimallyRGCsAtThisPosition] = optimalyMappedRFsAtThisGridPosition(...
     optimallyMappedVisualRFmaps, theComputeReadyMRGCmosaic, ...
     stimXYpositionGridDegs, theGridNodeIndex, mRGCMosaicSubspaceResponsesFileName)
-
 
     % Encode examined spatial position
     gridNodeXYpositionDegs = stimXYpositionGridDegs(theGridNodeIndex,:);
@@ -155,7 +119,6 @@ function [optimallyMappedVisualRFmaps, indicesOfOptimallyRGCsAtThisPosition] = o
         return;
     end
     
-
     % All good. Extract the computed subspace RF maps
     load(mRGCMosaicSubspaceResponsesAtThisPositionGridFileName, ...
         'spatialSupportDegs', ...
@@ -206,7 +169,6 @@ function [X,Y] = generateSamplingGrid(inputConeMosaicSizeDegs, inputConeMosaicEc
     yCoords = inputConeMosaicEccDegs(2) + ...
             (-k:1:k)*posIncrementDegs;
     
-
     [X,Y] = meshgrid(xCoords, yCoords);
     X = X(:); Y = Y(:);
 end
@@ -272,8 +234,7 @@ function computeRFmapsForAllCellsUsingStimuliAThisGridPosition( ...
              [theMRGCMosaicResponse, theMRGCresponseTemporalSupportSeconds] = ...
                     theComputeReadyMRGCmosaic.compute(theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds);
              theMRGCMosaicSubspaceRFmappingLinearResponses(iStim,:) = single(squeeze(theMRGCMosaicResponse(1, :,:)));
-         end
-    
+        end
     
         fprintf('\nSaving computed mRGCRF mosaic SUBSPACE RF mapping linear responses to %s ...', mRGCMosaicResponsesFileName);
         save(mRGCMosaicSubspaceResponsesAtThisPositionGridFileName, ...
@@ -328,5 +289,3 @@ function theRFmaps = computeRFs( ...
     end
 
 end
-
-

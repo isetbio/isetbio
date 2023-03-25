@@ -364,10 +364,11 @@ function testMidgetRGCMosaic
         targetCenterConeMajorityType = input('Enter type of majority center cone num (either cMosaic.LCONE_ID or cMosaic.MCONE_ID): ');
 
         [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
+
         MosaicPoolingOptimizer.visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
             fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName), ...
-            fullfile(pdfDirectory, 'spatialRFmaps.pdf'), ...
+            fullfile(pdfDirectory, 'retinalConePoolingRFmapAndVisualSTF.pdf'), ...
             targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType);
     end
 
@@ -378,7 +379,7 @@ function testMidgetRGCMosaic
             fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName));
     end
 
-    % Stage 9: Visualized the fitted DoG models to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
+    % Stage 9: Visualize the fitted DoG models to the computed visual STFs of all cells in the generated compute-ready mRGCMosaic
     if (operationSetToPerformContains.visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic)
 
         theMosaicFileNames = {...
@@ -435,9 +436,12 @@ function testMidgetRGCMosaic
 
     % Stage 11: Compute visual RFs
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
-
+       
         % Load the compute-ready MRGC mosaic
         load(fullfile(resourcesDirectory, computeReadyMosaicFileName), 'theComputeReadyMRGCmosaic');
+
+        % Optimally generated RF maps filename
+        optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceRresponsesFileName, '.mat', '_optimallyMappedRFs.mat');
 
         % RF mapping params:
         % max SF to explore
@@ -451,21 +455,38 @@ function testMidgetRGCMosaic
         reComputeInputConeMosaicSubspaceRFmappingResponses = ~true;
         reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
         reComputeRFs = ~true;
-        extractOptimalRFmaps = true;
-        onlyVisualizeOptimallyMappedRFmaps = ~extractOptimalRFmaps;
+
         parpoolSize = [];
 
         % Go !
         MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
-                theComputeReadyMRGCmosaic, opticsParams, ...
-                maxSFcyclesPerDegree, stimSizeDegs, posIncrementDegs, ...
-                fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
-                fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName), ...
-                reComputeInputConeMosaicSubspaceRFmappingResponses, ...
-                reComputeMRGCMosaicSubspaceRFmappingResponses, ...
-                reComputeRFs, ...
-                onlyVisualizeOptimallyMappedRFmaps, ...
-                'parPoolSize', parpoolSize);
+            theComputeReadyMRGCmosaic, opticsParams, ...
+            maxSFcyclesPerDegree, stimSizeDegs, posIncrementDegs, ...
+            fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
+            fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName), ...
+            fullfile(resourcesDirectory, optimallyMappedSubspaceRFmapsFileName), ...
+            reComputeInputConeMosaicSubspaceRFmappingResponses, ...
+            reComputeMRGCMosaicSubspaceRFmappingResponses, ...
+            reComputeRFs, ...
+            'parPoolSize', parpoolSize);
+    end
+
+
+    if (operationSetToPerformContains.visualizeVisualRFmapForTargetRGC)
+        % Load the compute-ready MRGC mosaic
+        load(fullfile(resourcesDirectory, computeReadyMosaicFileName), 'theComputeReadyMRGCmosaic');
+
+        % Optimally generated RF maps filename
+        optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceRresponsesFileName, '.mat', '_optimallyMappedRFs.mat');
+
+        % PDF directory
+        [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
+
+        MosaicPoolingOptimizer.visualizeVisualRFmapsForMultipleTargetRGCs(...
+            theComputeReadyMRGCmosaic, ...
+            fullfile(resourcesDirectory, optimallyMappedSubspaceRFmapsFileName), ...
+            fullfile(resourcesDirectory, mRGCMosaicSubspaceRresponsesFileName), ...
+            fullfile(pdfDirectory, 'visualRFmap.pdf'));
 
     end
 
@@ -601,7 +622,7 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
 
     % Subspace RF mapping
     operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
-    
+    operationSetToPerformContains.visualizeVisualRFmapForTargetRGC = ~true;
 
     operationSetToPerformContains.animateModelConvergence = ~true;
 
@@ -618,6 +639,9 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
     actionStrings{11} = '[11] Compute-ready mRGCMosaic validation. Step3: visualize fitted DoG model params for all cells in the mosaic';
     actionStrings{12} = '[12] Compute-ready mRGCMosaic validation. Step4: visualize fitted DoG model params for all cells in multiple mosaics';
     actionStrings{13} = '[13] Compute-ready mRGCMosaic: compute visual RFs for all cells in the mosaic';
+    actionStrings{14} = '[14] Compute-ready mRGCMosaic: visualize visual RF maps for mutiple target RGCs';
+
+    
 
     invalidActionSelected = true;
     validChoiceIDs = 1:numel(actionStrings);
@@ -671,6 +695,8 @@ function operationSetToPerformContains = promptUserForOperationsToPerform(mosaic
                         operationSetToPerformContains.visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = true;
                     case 13
                         operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                    case 14
+                        operationSetToPerformContains.visualizeVisualRFmapForTargetRGC = true;
                     otherwise
                         error('Unknown option')
 

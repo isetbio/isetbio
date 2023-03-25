@@ -30,8 +30,8 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     xShiftSamples = sign(xShiftDegs)*round(abs(xShiftDegs)/pixelSizeDegs);
     yShiftSamples = sign(yShiftDegs)*round(abs(yShiftDegs)/pixelSizeDegs);
 
-    visualRGCRFposDegs(1) = theVisualRFmapStruct.spatialSupportDegsX(col);
-    visualRGCRFposDegs(2) = theVisualRFmapStruct.spatialSupportDegsY(row);
+    %visualRGCRFposDegs(1) = theVisualRFmapStruct.spatialSupportDegsX(col);
+    %visualRGCRFposDegs(2) = theVisualRFmapStruct.spatialSupportDegsY(row);
 
     maxXY = round(spatialSupportRangeArcMin/2);
     spatialSupportDegs = (-maxXY:0.05:maxXY)/60;
@@ -61,7 +61,10 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
         title(theAxes{1,4}, 'surround boosted x 10');
     else
         xlabel(theAxes{1,4}, 'space, x (deg)', 'FontAngle', ff.axisFontAngle);
-        title(theAxes{1,4}, 'surround boosted (x10)', 'FontSize', ff.titleFontSize, 'FontWeight', ff.titleFontWeight);
+        title(theAxes{1,4}, 'surround boosted (x10)', ...
+            'FontSize', ff.titleFontSize, ...
+            'FontWeight', ff.titleFontWeight, ...
+            'Color', ff.titleColor);
         % Font size
         set(theAxes{1,4}, 'FontSize', ff.fontSize);
 
@@ -86,7 +89,7 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     plot(theAxes{1,2}, spatialSupportArcMinX, theRFprofileX/maxProfile, 'r-', 'LineWidth', 1.5);
     set(theAxes{1,2}, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
         'XTick', xyTicksArcMin, 'XLim', xyLimsArcMin, ...
-        'XTickLabel', sprintf('%2.2f\n', xyTicksArcMin));
+        'XTickLabel', sprintf('%2.1f\n', xyTicksArcMin));
     axis(theAxes{1,2}, 'square');
     grid(theAxes{1,2}, 'on');
     xtickangle(theAxes{1,2}, 0);
@@ -110,7 +113,8 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     plot(theAxes{1,3}, spatialSupportArcMinY, theRFprofileY/maxProfile, 'r-', 'LineWidth', 1.5);
     set(theAxes{1,3}, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
         'XTick', xyTicksArcMin, 'XLim', xyLimsArcMin, ...
-        'XTickLabel', sprintf('%2.2f\n', xyTicksArcMin));
+        'XTickLabel', sprintf('%2.1f\n', xyTicksArcMin), ...
+        'YTickLabel', {});
 
     axis(theAxes{1,3}, 'square');
     grid(theAxes{1,3}, 'on');
