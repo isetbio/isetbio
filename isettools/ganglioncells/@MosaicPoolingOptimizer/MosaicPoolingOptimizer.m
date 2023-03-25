@@ -180,12 +180,9 @@ classdef MosaicPoolingOptimizer < handle
 
     % Static methods
     methods (Static)
+
         % Method to generate the local dropbox path
         dropboxDir = localDropboxPath();
-
-        % Method to generate the mosaic filename
-        [mosaicFileName, resourcesDirectory, pdfsDirectory] = ...
-            resourceFileNameAndPath(component, varargin);
 
         % Fit a Gaussian model to a subregion STF
         [Gparams, theFittedSTF] = fitGaussianToSubregionSTF(...
@@ -252,7 +249,15 @@ classdef MosaicPoolingOptimizer < handle
         visualizeVisualRFmapForTargetRGC(...
             theComputeReadyMRGCmosaic, ...
             optimallyMappedSubspaceRFmapsFileName, ...
-            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType)
+            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType, ...
+            pdfFileName);
+
+        % Method to visualize the visual RF maps for multiple target RGCs
+        visualizeVisualRFmapsForMultipleTargetRGCs(...
+            theComputeReadyMRGCmosaic, ...
+            optimallyMappedSubspaceRFmapsFileName, ...
+            mRGCMosaicSubspaceResponsesFileName, ...
+            pdfFileName);
 
         % Method to setup the parameters and the display for conducting an
         % STF mapping experiment.
@@ -294,7 +299,6 @@ classdef MosaicPoolingOptimizer < handle
         % Subspace RF mapping experiment.
         [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment(wavelengthSupport, ...
              stimSizeDegs, maxSFcyclesPerDegree);
- 
 
         % Method to compute visual RFs of the computeReadyMosaic (using the
         % subspace RF mapping method)
@@ -331,5 +335,20 @@ classdef MosaicPoolingOptimizer < handle
         [shutdownParPoolOnceCompleted, numWorkers] = resetParPool(parPoolSize);
 
     end % Static methods
+
+    % Main methods
+    methods (Static)
+
+        % Main method for doing mRGCmosaic analyses/computations
+        run();
+
+        % Method to get the user's selection on which operation to perform
+        operationSetToPerformContains = operationsMenu(mosaicParams);
+
+        % Method to generate the mosaic filename
+        [mosaicFileName, resourcesDirectory, pdfsDirectory] = ...
+            resourceFileNameAndPath(component, varargin);
+
+    end
 
 end
