@@ -9,6 +9,10 @@ function [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputC
     orientationsTested = 0:deltaOri:(180-deltaOri);
     spatialFrequenciesTested = [0.25 0.5 1 2 4 6 8 12 16 20 24 32 48 64];
 
+    if (max(abs(inputConeMosaic.eccentricityDegs)) > 10)
+        spatialFrequenciesTested = [0.06 .125 0.25 0.5 1 2 4 6 8 12 16 20 24 32];
+    end
+
     % Generate a presentation display with a desired resolution
     stimulusPixelsNum = round(max(sceneFOVdegs)/retinalImageResolutionDegs);
 

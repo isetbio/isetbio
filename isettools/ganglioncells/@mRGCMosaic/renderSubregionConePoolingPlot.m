@@ -7,8 +7,8 @@ function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, th
     p.addParameter('noXTicks', false, @islogical);
     p.addParameter('noYTicks', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
-    p.addParameter('tickSeparationArcMin', 6, @isscalar);
-    p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
+    p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('spatialSupportRangeArcMin', [], @(x)(isempty(x)||isscalar(x)));
     p.addParameter('xAxisTickAngleRotationDegs', 90, @isscalar);
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
     p.parse(varargin{:});
@@ -23,6 +23,10 @@ function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, th
     ff = p.Results.withFigureFormat;
     xAxisTickAngleRotationDegs = p.Results.xAxisTickAngleRotationDegs;
     
+    if (isempty(tickSeparationArcMin))
+        tickSeparationArcMin = 3;
+    end
+
     if (isempty(spatialSupportRangeArcMin))
         spatialSupportRangeArcMin = 10;
     end

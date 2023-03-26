@@ -1,4 +1,4 @@
-function generateNativeOptics(obj, opticsParams)
+function  setTheOptics(obj, opticsParams)
 
     % Generate the native optics.
     % These optics form the basis on which surround cone weights are optimized

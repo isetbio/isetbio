@@ -1,8 +1,12 @@
 function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFileName, varargin)
     % Parse optional input
-%     p = inputParser;
-%     p.addParameter('visualize', [], @(x)(isempty(x)||(isscalar(x))));
-%     p.parse(varargin{:});
+    p = inputParser;
+    p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.parse(varargin{:});
+
+    tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
 
     % Optimized RGCpooling object filename
     optimizedRGCpoolingObjectsFileNameForThisNode = ...
@@ -23,7 +27,7 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
         opticsParams, ...
         obj.theRGCMosaic.rgcRFpositionsDegs(LconeRGCindex,:), ...
         obj.theRGCMosaic.inputConeMosaic, ...
-        theLconeRFcomputeStruct);
+        theLconeRFcomputeStruct, tickSeparationArcMin, visualizedSpatialFrequencyRange);
 
     MconeRGCindex = obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndex);
     figNo = 20000 + gridNodeIndex;
@@ -34,16 +38,18 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
         opticsParams, ...
         obj.theRGCMosaic.rgcRFpositionsDegs(MconeRGCindex,:), ...
         obj.theRGCMosaic.inputConeMosaic, ...
-        theMconeRFcomputeStruct);
+        theMconeRFcomputeStruct, tickSeparationArcMin, visualizedSpatialFrequencyRange);
 
 end
 
 function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
-    opticsParams, rgcRFposDegs, inputConeMosaic, theConeSpecificRFcomputeStruct)
+    opticsParams, rgcRFposDegs, inputConeMosaic, theConeSpecificRFcomputeStruct, ...
+    tickSeparationArcMin, visualizedSpatialFrequencyRange)
 
     % Retrieve the saved data
     targetVisualSTFparams = theConeSpecificRFcomputeStruct.theTargetSTFparams;
     theFinalSTFdata = theConeSpecificRFcomputeStruct.theAchievedSTFdata;
+    theFinalSTFdata.visualizedSpatialFrequencyRange = visualizedSpatialFrequencyRange;
     retinalConePoolingParams = theConeSpecificRFcomputeStruct.retinalConePoolingParams;
     retinalConePoolingModel = theConeSpecificRFcomputeStruct.modelConstants.retinalConePoolingModel;
     theFinalPooledConeIndicesAndWeights = theConeSpecificRFcomputeStruct.theFinalPooledConeIndicesAndWeights;
@@ -65,7 +71,6 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         retinalConePoolingParams, ff);
     
     % Add the RF center cone pooling map
-    tickSeparationArcMin = 3;
     spatialSupportRangeArcMin = tickSeparationArcMin*6;
     
     ax = subplot('Position',  ff.subplotPosVectors(2,1).v);
@@ -118,8 +123,6 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
         'plotTitle', 'line weighting functions, X');
-
-   
 
     ax = subplot('Position',  ff.subplotPosVectors(2,4).v);
     mRGCMosaic.renderSubregionConePoolingLineWeightingFunctions(ax, ...

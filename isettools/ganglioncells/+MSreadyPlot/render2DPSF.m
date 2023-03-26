@@ -18,7 +18,6 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     if (~isempty(coneApertureData))
         xOutline = cosd(0:15:360);
         yOutline = sind(0:15:360);
-        numel(coneApertureData.RcDegs)
         for iCone = 1:numel(coneApertureData.RcDegs)
             xx = coneApertureData.positionDegs(iCone,1)+coneApertureData.RcDegs(iCone)*xOutline;
             yy = coneApertureData.positionDegs(iCone,2)+coneApertureData.RcDegs(iCone)*yOutline;

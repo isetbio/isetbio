@@ -89,12 +89,14 @@ classdef mRGCMosaic < handle
 
         % The optics used to optimize surround cone weights
         % so as to generate RFs with the target visual properties
+        % These are the optics at the mosaic'c center
         theNativeOptics;
 
         % The params used to generate theNativeOptics
         theNativeOpticsParams;
 
-        % Custom optics
+        % Custom optics. These are optics generated at a position other
+        % that the center of the mosaic
         theCustomOptics;
 
         % The params used to generate theCustomOptics
@@ -181,7 +183,6 @@ classdef mRGCMosaic < handle
         [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin);
 
-
         % Method to generate the visualization cache
         generateVisualizationCache(obj, xSupport, ySupport);
 
@@ -198,11 +199,12 @@ classdef mRGCMosaic < handle
         % Method to visual the spatial RF of an RGC with a specific index
         visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj,theRGCindex, theAxes, varargin);
 
-        % Method to generate the native optics for the mosaic.
-        % These optics form the basis on which surround cone weights are optimized
-        % for wiring so as to generate desired visual RF properties
+        % Method to generate optics for the mosaic.
         dataOut = generateOptics(obj, opticsParams);
-        generateNativeOptics(obj, opticsParams);
+        
+        % Method to set either the native (apropriate for the mosaic's center)
+        % or the custom optics (at an arbitrary position within the mosaic)
+        setTheOptics(obj, opticsParams);
 
         % Method to visualize optics at a number of eccentricities
         visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams);

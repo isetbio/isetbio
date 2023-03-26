@@ -20,7 +20,11 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     surroundSTFfit = surroundSTFfit / maxAll;
 
 
-    minSF = 0.1;
+    minSF = min(sfSupportCDPfit);
+    if (~isempty(visualizedSpatialFrequencyRange))
+        minSF = visualizedSpatialFrequencyRange(1);
+    end
+
     idx = find(sfSupportCDPfit >= minSF);
     sfSupportCDPfit = sfSupportCDPfit(idx);
     compositeSTFfit = compositeSTFfit(idx);
@@ -60,17 +64,22 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     axis(ax, 'square');
     
     % ticks and grids
-    xTicks = [0.1 0.3 1 3 10 30 100];
+    xTicks = [0.01 0.03 0.1 0.3 1 3 10 30 100];
     if (isempty(visualizedSpatialFrequencyRange))
-        visualizedSpatialFrequencyRange = [minSF-0.02 100];
+         visualizedSpatialFrequencyRange(1) = minSF;
+        visualizedSpatialFrequencyRange(2) = 100;
     end
-
+    
+    visualizedSpatialFrequencyRange = [visualizedSpatialFrequencyRange(1) visualizedSpatialFrequencyRange(2)];
+    
     grid(ax, 'on'); box(ax, 'off');
     set(ax, 'XLim', visualizedSpatialFrequencyRange, 'YLim', [1*ff.axisOffsetFactor 1]);
+    
     set(ax, 'XTick', xTicks, 'YTick', 0:0.2:1, ...
             'XTickLabel', xTicks, 'YTickLabel', 0:0.2:1);
     set(ax, 'TickDir', 'both')
     set(ax, 'XScale', 'log');
+    
 
     % xy axis labels
     xtickangle(ax, 0);

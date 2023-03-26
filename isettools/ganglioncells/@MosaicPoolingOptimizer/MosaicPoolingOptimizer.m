@@ -345,10 +345,48 @@ classdef MosaicPoolingOptimizer < handle
         % Method to get the user's selection on which operation to perform
         operationSetToPerformContains = operationsMenu(mosaicParams);
 
-        % Method to generate the mosaic filename
+        % Method to perform the generateRGCMosaicOperation()
+        performGenerateCenterConnectedRGCMosaicOp(mosaicParams);
+
+        % Method to perform the
+        % visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs operation
+        performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams);
+
+        % Method to perform the visualizePSFsWithinRGCMosaic operation
+        performVisualizePSFsWithinRGCMosaicOp(mosaicParams);
+
+        % Method to perform the computeInputConeMosaicSTFresponses operation
+        performComputeInputConeMosaicSTFresponsesOp(mosaicParams);
+
+        % Method to perform the optimizeSurroundConePoolingModels operation
+        performOptimizeSurroundConePoolingModelsOp(mosaicParams);
+
+        % Method to perform the inspectOptimizedSurroundConePoolingModels operation
+        performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams);
+
+        % Method to perform the generateComputeReadyMidgetRGCMosaic operation
+        performGenerateComputeReadyMidgetRGCMosaicOp(mosaicParams);
+
+        % Method to perform the computeVisualSTFsOfTheComputeReadyMidgetRGCmosaic operation
+        performComputeVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams);
+
+        % Method to ask the user which opticsParams to use for computing
+        % the inputConeMosaic STF responses
+        [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
+            chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
+
+        % Method to ask the user which H1 cell index to use for optimizing
+        % the RF surround cone pooling model
+        [retinalRFmodelParams, gridSamplingScheme, optimizedRGCpoolingObjectsFileName] = ...
+            chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams);
+
+        % Method to specify the grid nodes for which we will optimize 
+        % surround cone pooling 
+        gridNodes = gridNodesToOptimize();
+
+        % Method to generate filenames for various compute components
         [mosaicFileName, resourcesDirectory, pdfsDirectory] = ...
             resourceFileNameAndPath(component, varargin);
-
     end
 
 end
