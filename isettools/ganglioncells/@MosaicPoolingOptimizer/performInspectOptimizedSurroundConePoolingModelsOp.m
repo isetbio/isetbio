@@ -15,8 +15,9 @@ function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams)
 
     % Ask the user which H1 cell index was used to optimize the RF
     % surround pooling model models
-    [~, optimizedRGCpoolingObjectsFileName] = ...
+    [~, ~, optimizedRGCpoolingObjectsFileName] = ...
             MosaicPoolingOptimizer.chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams);
+
 
     % Instantiate a MosaicPoolingOptimizer object with the center-connected
     % mRGC mosaic

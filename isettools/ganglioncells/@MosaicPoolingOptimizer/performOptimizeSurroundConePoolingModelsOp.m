@@ -1,5 +1,8 @@
 function performOptimizeSurroundConePoolingModelsOp(mosaicParams)
 
+    % Select the nodes at which to optimize the surround pooling
+    gridNodesToOptimize = MosaicPoolingOptimizer.gridNodesToOptimize();
+    
     % Generate the mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
         MosaicPoolingOptimizer.resourceFileNameAndPath('mosaic', ...
@@ -20,8 +23,7 @@ function performOptimizeSurroundConePoolingModelsOp(mosaicParams)
     [retinalRFmodelParams, gridSamplingScheme, optimizedRGCpoolingObjectsFileName] = ...
             MosaicPoolingOptimizer.chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams);
 
-    % Select the nodes at which to optimize the surround pooling
-    gridNodesToOptimize = MosaicPoolingOptimizer.gridNodesToOptimize();
+    
 
     % Instantiate a MosaicPoolingOptimizer object with the center-connected
     % mRGC mosaic

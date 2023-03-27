@@ -6,7 +6,7 @@ function run()
     mosaicEcc = -10.0;
 
     % Get mosaic params
-    mosaicParams = getMosaicParams(mosaicEcc);
+    mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);
 
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
@@ -55,43 +55,48 @@ function run()
     end
 
     % Perform the computeVisualSTFsOfTheComputeReadyMidgetRGCMosaic operation
-    if (operationSetToPerformContains.computeVisualSTFsOfTheComputeReadyMidgetRGCMosaic )
+    if (operationSetToPerformContains.computeVisualSTFsOfTheComputeReadyMidgetRGCMosaic)
         MosaicPoolingOptimizer.performComputeVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams);
+        return;
+    end
+
+    % Perform the fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic operation
+    if (operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic)
+        MosaicPoolingOptimizer.performFitVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams);
+        return;
+    end
+
+    % Perform the visualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
+    if (operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC)
+        MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams);
+        return;
+    end
+
+    % Perform the visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic operation
+    if (operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic)
+        MosaicPoolingOptimizer.performVisualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic(mosaicParams);
+        return;
+    end
+
+    % Perform the visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic operation
+    if (operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics)
+        mosaicEccsToInclude = [2.5 7.0];
+        MosaicPoolingOptimizer.performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEccsToInclude);
+        return;
+    end
+
+    % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
+    if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
+        MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams);
+        return;
+    end
+
+    % Perform the visualizeVisualRFmapForTargetRGC operation
+    if (operationSetToPerformContains.visualizeVisualRFmapForTargetRGC)
+        MosaicPoolingOptimizer.performVisualizeVisualRFmapForTargetRGC(mosaicParams);
         return;
     end
 
 end
 
 
-function mosaicParams = getMosaicParams(mosaicEcc)
-    switch (mosaicEcc)
-        case 0
-            % Mosaic params to employ. This is for the 2.5 deg - centered mosaic
-            % which covers the [1 - 4] deg eccentricity range
-            mosaicParams = struct(...
-                'eccDegs', [0 0], ...
-                'sizeDegs', [3 3]);
-
-        case 2.5
-            % Mosaic params to employ. This is for the 2.5 deg - centered mosaic
-            % which covers the [1 - 4] deg eccentricity range
-            mosaicParams = struct(...
-                'eccDegs', [2.5 0], ...
-                'sizeDegs', [3 3]);
-
-        case 7.0
-            % Mosaic params to employ. This is for the 7.0 deg - centered mosaic
-            % which covers the [4-10] deg eccentricity range
-            mosaicParams = struct(...
-                'eccDegs', [7 0], ...
-                'sizeDegs', [6 3]);
-
-        case -10.0
-            mosaicParams = struct(...
-                'eccDegs', [-10 0], ...
-                'sizeDegs', [6 3]);
-
-        otherwise
-            error('No data for this eccentricity')
-    end
-end

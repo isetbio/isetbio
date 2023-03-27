@@ -10,7 +10,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     operationDescriptors{8}  = '[ 8] Compute-ready mRGCMosaic validation (step 1) : Compute visual STFs for all cells in the mosaic';
     operationDescriptors{9}  = '[ 9] Compute-ready mRGCMosaic validation (step 2) : Fit the DoG model to the computed visual STFs for all cells in the mosaic';
     operationDescriptors{10} = '[10] Compute-ready mRGCMosaic validation (step 3) : Visualize cone pooling RF maps and visual STF for individual target RGCs';
-    operationDescriptors{11} = '[11] Compute-ready mRGCMosaic validation (step 4) : Visualize fitted DoG model params for all cells in the current mosaic';
+    operationDescriptors{11} = '[11] Compute-ready mRGCMosaic validation (step 4) : Visualize fitted DoG model params for all cells in the mosaic';
     operationDescriptors{12} = '[12] Compute-ready mRGCMosaic validation (step 5) : Visualize fitted DoG model params for all cells in multiple mosaics';
     operationDescriptors{13} = '[13] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (subspace) for all cells in the mosaic';
     operationDescriptors{14} = '[14] Compute-ready mRGCMosaic (RF computation) : Visualize visual RF maps (subspace) for individual target RGCs';
@@ -46,10 +46,10 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC = ~true;
 
     % 11 Visualization: Fitted DoG model params for all cells in the current mosaic
-    operationSetToPerformContains.visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+    operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic = ~true;
 
     % 12 Visualization: Fitted DoG model params for all cells in the current mosaic
-    operationSetToPerformContains.visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = ~true;
+    operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics = ~true;
 
     % 13 Subspace RF mapping: compute visual RFs (subspace) for all cells 
     operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
@@ -162,16 +162,16 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
 
                     case 11
                         % Validate a compute-ready mRGCMosaic: step3 - visualize fitted visual STFs for all cells in a single mRGC mosaic
-                        if (isfield(operationSetToPerformContains, 'visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic'))
-                            operationSetToPerformContains.visualizeFittedSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                        if (isfield(operationSetToPerformContains, 'visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic'))
+                            operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic = true;
                         else
                             error('no such field');
                         end
 
                     case 12
                         % Validate a compute-ready mRGCMosaic: step4 - visualize fitted visual STFs for all cells in multiple mRGC mosaics
-                        if (isfield(operationSetToPerformContains, 'visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics'))
-                            operationSetToPerformContains.visualizeFittedSTFsAcrossMultipleComputeReadyMidgetRGCMosaics = true;
+                        if (isfield(operationSetToPerformContains, 'visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics'))
+                            operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics = true;
                         else
                             error('no such field');
                         end
@@ -180,14 +180,14 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic'))
                             operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
                         else
-                            error('no such field');
+                            error('no such field: ''^s''.', 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic');
                         end
                         
                     case 14
-                        if (isfield(operationSetToPerformContains, 'visualizeVisualRFmapForTargetRGC '))
+                        if (isfield(operationSetToPerformContains, 'visualizeVisualRFmapForTargetRGC'))
                             operationSetToPerformContains.visualizeVisualRFmapForTargetRGC  = true;
                         else
-                            error('no such field');
+                            error('no such field: ''%s''.', 'visualizeVisualRFmapForTargetRGC');
                         end
                        
                     otherwise

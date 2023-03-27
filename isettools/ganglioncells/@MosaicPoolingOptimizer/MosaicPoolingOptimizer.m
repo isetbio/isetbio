@@ -370,6 +370,24 @@ classdef MosaicPoolingOptimizer < handle
         % Method to perform the computeVisualSTFsOfTheComputeReadyMidgetRGCmosaic operation
         performComputeVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams);
 
+        % Method to perform the fitVisualSTFsOfTheComputeReadyMidgetRGCmosaic operation
+        performFitVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams);
+
+        % Method to perform the VisualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
+        performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams);
+
+        % Method to perform the VisualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic operation
+        performVisualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic(mosaicParams);
+
+        % Method to perform the VisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic operation
+        performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEccsToInclude);
+
+        % Method to perform the ComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
+        performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams);
+
+        % Method to perform the VisualizeVisualRFmapForTargetRGC
+        performVisualizeVisualRFmapForTargetRGC(mosaicParams);
+
         % Method to ask the user which opticsParams to use for computing
         % the inputConeMosaic STF responses
         [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
@@ -387,6 +405,10 @@ classdef MosaicPoolingOptimizer < handle
         % Method to generate filenames for various compute components
         [mosaicFileName, resourcesDirectory, pdfsDirectory] = ...
             resourceFileNameAndPath(component, varargin);
+
+        % Method to obtain the (x,y) eccentricity and (x,y) size of an mRGC
+        % mosaic based on some descriptor (for now 1D mosaicEcc)
+        mosaicParams = getMosaicParams(mosaicEcc);
     end
 
 end
