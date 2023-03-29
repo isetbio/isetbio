@@ -37,7 +37,21 @@ function run()
 
     % Perfom the optimizeSurroundConePoolingModels operation
     if (operationSetToPerformContains.optimizeSurroundConePoolingModels)
-        MosaicPoolingOptimizer.performOptimizeSurroundConePoolingModelsOp(mosaicParams);
+        
+        % Fitting options
+        multiStartsNumRetinalPooling = 20; % 12
+        multiStartsNumDoGFit = 128;
+
+        % More weight for matching the Rs/Rc ratio
+        rmseWeightForRsRcResidual = 2.0;
+        rmseWeightForSCintSensResidual = 1.0;
+
+        MosaicPoolingOptimizer.performOptimizeSurroundConePoolingModelsOp(mosaicParams, ...
+            'multiStartsNumRetinalPooling', multiStartsNumRetinalPooling, ...
+            'multiStartsNumDoGFit', multiStartsNumDoGFit, ...
+            'rmseWeightForRsRcResidual', rmseWeightForRsRcResidual , ...
+            'rmseWeightForSCintSensResidual', rmseWeightForSCintSensResidual);
+
         return;
     end
 

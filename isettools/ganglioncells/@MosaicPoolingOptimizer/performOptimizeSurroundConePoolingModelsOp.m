@@ -1,5 +1,18 @@
-function performOptimizeSurroundConePoolingModelsOp(mosaicParams)
+function performOptimizeSurroundConePoolingModelsOp(mosaicParams, varargin)
 
+    % Parse optional input
+    p = inputParser;
+    p.addParameter('multiStartsNumRetinalPooling', 12, @isscalar);
+    p.addParameter('multiStartsNumDoGFit', 128, @isscalar);
+    p.addParameter('rmseWeightForRsRcResidual', 1.0, @isscalar);
+    p.addParameter('rmseWeightForSCintSensResidual', 1.0, @isscalar);
+    p.parse(varargin{:});
+
+    multiStartsNumRetinalPooling = p.Results.multiStartsNumRetinalPooling;
+    multiStartsNumDoGFit = p.Results.multiStartsNumDoGFit;
+    rmseWeightForRsRcResidual = p.Results.rmseWeightForRsRcResidual;
+    rmseWeightForSCintSensResidual = p.Results.rmseWeightForSCintSensResidual;
+    
     % Select the nodes at which to optimize the surround pooling
     gridNodesToOptimize = MosaicPoolingOptimizer.gridNodesToOptimize();
     
@@ -64,14 +77,6 @@ function performOptimizeSurroundConePoolingModelsOp(mosaicParams)
             gridNodeIndex = gridNodesToCompute(iNode);
             whichConeType = [cMosaic.LCONE_ID cMosaic.MCONE_ID];
         end
-        
-        % Fitting options
-        multiStartsNumRetinalPooling = 12;
-        multiStartsNumDoGFit = 128;
-
-        % More weight for matching the Rs/Rc ratio
-        rmseWeightForRsRcResidual = 2.0;
-        rmseWeightForSCintSensResidual = 1.0;
 
         theMosaicPoolingOptimizerOBJ.compute(gridNodeIndex, whichConeType, opticsParams, ...
             fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName), ...
