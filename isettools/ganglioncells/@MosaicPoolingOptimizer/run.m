@@ -4,6 +4,7 @@ function run()
     mosaicEcc = 2.5;
     mosaicEcc = 7.0;
     mosaicEcc = -10.0;
+    mosaicEcc = -20.0;
 
     % Get mosaic params
     mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);
@@ -105,7 +106,7 @@ function run()
 
     % Perform the visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic operation
     if (operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics)
-        mosaicEccsToInclude = [2.5 7.0];
+        mosaicEccsToInclude = [2.5 7.0 -10.0];
         MosaicPoolingOptimizer.performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEccsToInclude);
         return;
     end

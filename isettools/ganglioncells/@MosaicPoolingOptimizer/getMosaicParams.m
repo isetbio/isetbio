@@ -29,7 +29,13 @@ function mosaicParams = getMosaicParams(mosaicEcc)
                 'eccDegs', [-10 0], ...
                 'sizeDegs', [6 3]);
 
+       case -20.0
+            mosaicParams = struct(...
+                'eccDegs', [-20 0], ...
+                'sizeDegs', [10 5]);
+
+
         otherwise
-            error('No data for this eccentricity')
+            error('No data for this eccentricity (%2.1f degs)', mosaicEcc)
     end
 end
