@@ -40,27 +40,27 @@ function performComputeInputConeMosaicSTFresponsesOp(mosaicParams)
 
 
     % Alternatively, we could do this at different grid locations
-    compuseConeMosaicSTFResponsesSeparatelyAtEachGridLocation = false;
-    if (compuseConeMosaicSTFResponsesSeparatelyAtEachGridLocation)
-            % Instantiate the mosaic pooling optimizer
-            theMosaicPoolingOptimizerOBJ = MosaicPoolingOptimizer(...
-                theMidgetRGCMosaic, ...
-                'generateSamplingGrids', true);
-
-            % Compute the input cone mosaic visual STFs, at a single
-            % gridNode (using small stimulus patches centered on that node)
-            for gridNodeIndex = 1:theMosaicPoolingOptimizerOBJ.gridNodesNum
-                % Responses filename
-                coneMosaicSTFresponsesFileNameForThisNode = strrep(coneMosaicSTFresponsesFileName, '.mat', sprintf('_AtGridNode_%d.mat', gridNodeIndex));
-    
-                stimSizeDegs = [1 1];
-                theMosaicPoolingOptimizerOBJ.generateInputConeMosaicSTFresponses(...
-                    gridNodeIndex, stimSizeDegs,  ...
-                    fullfile(resourcesDirectory, coneMosaicSTFresponsesFileNameForThisNode), ...
-                    'useParfor', true, ...
-                    'visualizedResponses', ~true, ...
-                    'opticsToEmploy', opticsToEmploy);
-            end
-    end
+%     compuseConeMosaicSTFResponsesSeparatelyAtEachGridLocation = false;
+%     if (compuseConeMosaicSTFResponsesSeparatelyAtEachGridLocation)
+%             % Instantiate the mosaic pooling optimizer
+%             theMosaicPoolingOptimizerOBJ = MosaicPoolingOptimizer(...
+%                 theMidgetRGCMosaic, ...
+%                 'generateSamplingGrids', true);
+% 
+%             % Compute the input cone mosaic visual STFs, at a single
+%             % gridNode (using small stimulus patches centered on that node)
+%             for gridNodeIndex = 1:theMosaicPoolingOptimizerOBJ.gridNodesNum
+%                 % Responses filename
+%                 coneMosaicSTFresponsesFileNameForThisNode = strrep(coneMosaicSTFresponsesFileName, '.mat', sprintf('_AtGridNode_%d.mat', gridNodeIndex));
+%     
+%                 stimSizeDegs = [1 1];
+%                 theMosaicPoolingOptimizerOBJ.generateInputConeMosaicSTFresponses(...
+%                     gridNodeIndex, stimSizeDegs,  ...
+%                     fullfile(resourcesDirectory, coneMosaicSTFresponsesFileNameForThisNode), ...
+%                     'useParfor', true, ...
+%                     'visualizedResponses', ~true, ...
+%                     'opticsToEmploy', opticsToEmploy);
+%             end
+%     end
 
 end
