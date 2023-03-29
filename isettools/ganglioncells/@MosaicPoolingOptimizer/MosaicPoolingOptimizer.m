@@ -359,7 +359,7 @@ classdef MosaicPoolingOptimizer < handle
         performComputeInputConeMosaicSTFresponsesOp(mosaicParams);
 
         % Method to perform the optimizeSurroundConePoolingModels operation
-        performOptimizeSurroundConePoolingModelsOp(mosaicParams);
+        performOptimizeSurroundConePoolingModelsOp(mosaicParams, varargin);
 
         % Method to perform the inspectOptimizedSurroundConePoolingModels operation
         performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams);
