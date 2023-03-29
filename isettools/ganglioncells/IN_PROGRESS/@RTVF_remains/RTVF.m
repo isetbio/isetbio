@@ -352,9 +352,12 @@ classdef RTVF < handle
         % Method to compute the visual STF from the visualRF simulating the Croner&Kaplan RF analysis
         dataOut = visualSTFfromCronerKaplanAnalysisOfVisualRF(obj, theVisualRF, recomputeBestHorizontalResolutionRFmap);
 
+<<<<<<< HEAD:isettools/ganglioncells/IN_PROGRESS/@RTVF_remains/RTVF.m
         % Method to compute the visual STF from cone mosaic STF responses simulating the Croner&Kaplan RF analysis
         dataOut = visualSTFfromCronerKaplanAnalysisOfconeMosaicSTFresponses(obj, pooledConeIndicesAndWeights);
 
+=======
+>>>>>>> master:isettools/ganglioncells/@RTVF/RTVF.m
         % Method to freeze the obj (i.e., remove large chunks of data that
         % are of no use after the cone weights to the surround have been
         % computed)
