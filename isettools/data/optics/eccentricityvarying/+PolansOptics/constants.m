@@ -2,6 +2,9 @@ classdef constants
 % Constants from Polans study
 
     properties (Constant)
+        % Database name
+        ZernikeDataBaseName = 'Polans2015'
+
         % Label for left eye
         leftEye = 'left eye';
         
@@ -48,9 +51,9 @@ classdef constants
         
         function retinalQuadrantName = retinalQuadrantFromEcc(ecc, whichEye)
             assert(numel(ecc) == 2, 'Eccentricity must be a 2-element vector (x,y)');
-            assert(ismember(whichEye, {PolansOptics.constants.leftEye, PolansOptics.constants.leftEye}));
+            assert(ismember(whichEye, {PolansOptics.constants.leftEye, PolansOptics.constants.rightEye}));
             switch (whichEye)
-                case 'right'
+                case PolansOptics.constants.rightEye
                     if (ecc(1) < 0)
                         horizontalMeridianName = PolansOptics.constants.nasalMeridian;
                     elseif (ecc(1) == 0)
@@ -58,7 +61,7 @@ classdef constants
                     else
                         horizontalMeridianName = PolansOptics.constants.temporalMeridian;
                     end
-                case 'left'
+                case PolansOptics.constants.leftEye
                     if (ecc(1) < 0)
                         horizontalMeridianName = PolansOptics.constants.temporalMeridian;
                     elseif (ecc(1) == 0)
@@ -235,3 +238,4 @@ classdef constants
     end % Static methods
     
 end
+
