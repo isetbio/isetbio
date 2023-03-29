@@ -85,7 +85,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'generateCenterConnectedRGCMosaic'))
                             operationSetToPerformContains.generateCenterConnectedRGCMosaic = true;
                         else
-                            error('no such field');
+                             error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'generateCenterConnectedRGCMosaic');
                         end
 
                     case 2
@@ -93,7 +93,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs'))
                             operationSetToPerformContains.visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs = true;
                         else
-                            error('no such field');
+                             error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs');
                         end
 
                     case 3
@@ -101,7 +101,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'visualizePSFsWithinRGCMosaic'))
                             operationSetToPerformContains.visualizePSFsWithinRGCMosaic = true;
                         else
-                            error('no such field');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'visualizePSFsWithinRGCMosaic');
                         end
 
                     case 4
@@ -109,7 +109,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'computeInputConeMosaicSTFresponses'))
                             operationSetToPerformContains.computeInputConeMosaicSTFresponses = true;
                         else
-                            error('no such field');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'computeInputConeMosaicSTFresponses');
                         end
 
                     case 5
@@ -117,7 +117,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'optimizeSurroundConePoolingModels'))
                             operationSetToPerformContains.optimizeSurroundConePoolingModels = true;
                         else
-                            error('no such field');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'optimizeSurroundConePoolingModels');
                         end
 
                     case 6
@@ -125,7 +125,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'inspectOptimizedSurroundConePoolingModels'))
                             operationSetToPerformContains.inspectOptimizedSurroundConePoolingModels = true;
                         else
-                            error('no such field');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'inspectOptimizedSurroundConePoolingModels');
                         end
 
                     case 7
@@ -133,15 +133,15 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'generateComputeReadyMidgetRGCMosaic'))
                             operationSetToPerformContains.generateComputeReadyMidgetRGCMosaic = true;
                         else
-                            error('no such field');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'generateComputeReadyMidgetRGCMosaic');
                         end
 
                     case 8
                         % Validate a compute-ready mRGCMosaic: step1 - compute visual STFs for all cells
-                        if (isfield(operationSetToPerformContains, 'computeVisualSTFsOfTheComputeReadyMidgetRGCMosaic '))
+                        if (isfield(operationSetToPerformContains, 'computeVisualSTFsOfTheComputeReadyMidgetRGCMosaic'))
                             operationSetToPerformContains.computeVisualSTFsOfTheComputeReadyMidgetRGCMosaic  = true;
                         else
-                            error('no such field');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'computeVisualSTFsOfTheComputeReadyMidgetRGCMosaic');
                         end
               
                     case 9
@@ -149,7 +149,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic'))
                             operationSetToPerformContains.fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic = true;
                         else
-                            error('no such field');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'fitVisualSTFsAcrossTheComputeReadyMidgetRGCMosaic');
                         end
 
                     case 10
@@ -157,7 +157,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'visualizeConePoolingRFmapAndVisualSTFforTargetRGC'))
                             operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC = true;
                         else
-                            error('no such field');
+                             error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'visualizeConePoolingRFmapAndVisualSTFforTargetRGC');
                         end
 
                     case 11
@@ -165,7 +165,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic'))
                             operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic = true;
                         else
-                            error('no such field');
+                           error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic');
                         end
 
                     case 12
@@ -173,21 +173,21 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         if (isfield(operationSetToPerformContains, 'visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics'))
                             operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics = true;
                         else
-                            error('no such field');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics');
                         end
                         
                     case 13
                         if (isfield(operationSetToPerformContains, 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic'))
                             operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
                         else
-                            error('no such field: ''^s''.', 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic');
                         end
                         
                     case 14
                         if (isfield(operationSetToPerformContains, 'visualizeVisualRFmapForTargetRGC'))
                             operationSetToPerformContains.visualizeVisualRFmapForTargetRGC  = true;
                         else
-                            error('no such field: ''%s''.', 'visualizeVisualRFmapForTargetRGC');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'visualizeVisualRFmapForTargetRGC');
                         end
                        
                     otherwise
