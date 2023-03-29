@@ -362,7 +362,7 @@ classdef MosaicPoolingOptimizer < handle
         performOptimizeSurroundConePoolingModelsOp(mosaicParams, varargin);
 
         % Method to perform the inspectOptimizedSurroundConePoolingModels operation
-        performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams);
+        performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams, varargin);
 
         % Method to perform the generateComputeReadyMidgetRGCMosaic operation
         performGenerateComputeReadyMidgetRGCMosaicOp(mosaicParams);

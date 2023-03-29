@@ -7,7 +7,6 @@ function arbitraryNodesToCompute = gridNodesToOptimize()
     else
 
         % Bad nodes
-
          arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
                 'number', 13, ...
                 'coneType', [cMosaic.MCONE_ID]);

@@ -1,5 +1,13 @@
-function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams)
+function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams, varargin)
 
+   % Parse optional input
+    p = inputParser;
+    p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.parse(varargin{:});
+
+    tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
     % Generate the mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
         MosaicPoolingOptimizer.resourceFileNameAndPath('mosaic', ...
@@ -27,16 +35,24 @@ function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams)
          'generateSamplingGrids', true, ...
          'visualizeSamplingGrids', false);
 
-    gridNodesToInspect = input('Enter grid node to inspect. Hit enter to inspect all.: ');
+    queryString = sprintf('\nEnter grid node to inspect [%d-%d]. Alternatively, hit enter to inspect multiple nodes: ', ...
+        1, theMosaicPoolingOptimizerOBJ.gridNodesNum);
+    gridNodesToInspect = input(queryString, 's');
     if (isempty(gridNodesToInspect))
-       gridNodesToInspect = 1:theMosaicPoolingOptimizerOBJ.gridNodesNum;
+        gridNodesToInspect = MosaicPoolingOptimizer.gridNodesToOptimize();
+    else
+       gridNodesToInspect = str2num(gridNodesToInspect);
     end
 
-    tickSeparationArcMin = 6;
-    visualizedSpatialFrequencyRange = []; %[0.1 30];
 
     for iNode = 1:numel(gridNodesToInspect)
-       gridNodeIndex = gridNodesToInspect(iNode);
+
+       if (iscell(gridNodesToInspect))
+            gridNodeIndex = gridNodesToInspect{iNode}.number;
+       else
+            gridNodeIndex = gridNodesToInspect(iNode);
+       end
+
        theMosaicPoolingOptimizerOBJ.inspect(...
            gridNodeIndex, ...
            opticsParams, ...

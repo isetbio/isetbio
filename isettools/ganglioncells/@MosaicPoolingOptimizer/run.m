@@ -58,7 +58,18 @@ function run()
 
     % Perfom the inspectOptimizedSurroundConePoolingModels operation
     if (operationSetToPerformContains.inspectOptimizedSurroundConePoolingModels)
-        MosaicPoolingOptimizer.performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams);
+        % This controls the visualized spatial support range
+        visualizedSpatialSupportRangeArcMin = 24;
+
+        % This controls the visualize spatial frequency range.
+        % [] for full range, or enter a specific range, i.e. [0.1 30]
+        visualizedSpatialFrequencyRange = [0.1 30]; %[0.1 30];
+
+        MosaicPoolingOptimizer.performInspectOptimizedSurroundConePoolingModelsOp(...
+            mosaicParams, ...
+            'tickSeparationArcMin', ceil(visualizedSpatialSupportRangeArcMin/6), ...
+            'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange);
+
         return;
     end
 
