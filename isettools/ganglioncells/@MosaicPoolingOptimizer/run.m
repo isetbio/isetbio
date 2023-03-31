@@ -14,7 +14,12 @@ function run()
 
     % Perform the generateRGCMosaic operation
     if (operationSetToPerformContains.generateCenterConnectedRGCMosaic)
-        MosaicPoolingOptimizer.performGenerateCenterConnectedRGCMosaicOp(mosaicParams);
+        if (isfield(mosaicParams, 'maxConeInputsPerRGCToConsiderTransferToNearbyRGCs'))
+            MosaicPoolingOptimizer.performGenerateCenterConnectedRGCMosaicOp(mosaicParams, ...
+                'maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', mosaicParams.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs);
+        else
+            MosaicPoolingOptimizer.performGenerateCenterConnectedRGCMosaicOp(mosaicParams);
+        end
         return;
     end
 

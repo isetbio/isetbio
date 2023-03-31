@@ -7,12 +7,15 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
     generateProgressVideo = p.Results.generateProgressVideo;
 
     % We only transfer inputs from destinationRF-A to a nearby destination RF-B
-    % if the destinationRF-A has between 3 and 10 inputs
+    % if the destinationRF-A has between 3 (MosaicConnector.minConeInputsPerRGCToConsiderTransferToNearbyRGCs)
+    % and obj.wiringParams.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs inputs
     % If it has less than 3 inputs, i.e. 2, then this will be dealt by the
     % swapSourceRFsBetweenNearbyDestinationRFs() method which is called later on
-    minInputsNum = 3;
-    maxInputsNum = 10;
+    minInputsNum = MosaicConnector.minConeInputsPerRGCToConsiderTransferToNearbyRGCs; 
+    maxInputsNum = obj.wiringParams.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs;
 
+    fprintf('Will optimize homogeneity of cone inputs to nearby RGCs for RGCs with center cones num in the range [%d .. %d]\n', ...
+        minInputsNum, maxInputsNum);
     ss = squeeze(sum(obj.connectivityMatrix,1));
     targetedDestinationRFindices = find((ss >= minInputsNum) & (ss <= maxInputsNum));
     if (isempty(targetedDestinationRFindices))

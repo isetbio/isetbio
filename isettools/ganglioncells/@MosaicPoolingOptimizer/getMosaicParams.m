@@ -32,7 +32,8 @@ function mosaicParams = getMosaicParams(mosaicEcc)
        case -20.0
             mosaicParams = struct(...
                 'eccDegs', [-20 0], ...
-                'sizeDegs', [10 5]);
+                'sizeDegs', [10 5], ...
+                'maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', 20);
 
 
         otherwise

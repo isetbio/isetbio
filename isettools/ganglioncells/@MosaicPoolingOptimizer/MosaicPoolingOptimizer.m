@@ -346,7 +346,7 @@ classdef MosaicPoolingOptimizer < handle
         operationSetToPerformContains = operationsMenu(mosaicParams);
 
         % Method to perform the generateRGCMosaicOperation()
-        performGenerateCenterConnectedRGCMosaicOp(mosaicParams);
+        performGenerateCenterConnectedRGCMosaicOp(mosaicParams, varargin);
 
         % Method to perform the
         % visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs operation

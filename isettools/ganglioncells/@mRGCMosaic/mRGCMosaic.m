@@ -152,6 +152,7 @@ classdef mRGCMosaic < handle
             p.addParameter('customDegsToMMsConversionFunction', @(x)RGCmodels.Watson.convert.rhoDegsToMMs(x), @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('customMMsToDegsConversionFunction', @(x)RGCmodels.Watson.convert.rhoMMsToDegs(x), @(x) (isempty(x) || isa(x,'function_handle')));
             
+            p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs, @isscalar);
             p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
             p.parse(varargin{:});
 
@@ -173,7 +174,7 @@ classdef mRGCMosaic < handle
 
             % Wire the RF centers. This configures and runs theobj.theMosaicConnectorOBJ
             % which wires cones to midget RGC RF center (no overlap)
-            obj.generateRFpositionsAndWireTheirCenters();
+            obj.generateRFpositionsAndWireTheirCenters(p.Results);
 
             % Eliminate RGCs near the border
             obj.cropRGCsOnTheBorder();
@@ -259,7 +260,7 @@ classdef mRGCMosaic < handle
     % Private methods
     methods (Access=private)
         generateInputConeMosaic(obj, pResults);
-        generateRFpositionsAndWireTheirCenters(obj);
+        generateRFpositionsAndWireTheirCenters(obj,pResults);
         
         % Method to crop RGCs on the border
         cropRGCsOnTheBorder(obj);

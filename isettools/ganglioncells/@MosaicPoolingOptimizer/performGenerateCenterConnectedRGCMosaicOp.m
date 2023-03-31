@@ -1,8 +1,17 @@
-function generateCenterConnectedRGCMosaicOperation(mosaicParams)
+function performGenerateCenterConnectedRGCMosaicOp(mosaicParams, varargin)
+
+    % Parse input
+    p = inputParser;
+    p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs, @isscalar);
+    p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
+    p.parse(varargin{:});
+
     % Generate mosaic, its input coneMosaic and connect cones to the RF centers
     theMidgetRGCMosaic = mRGCMosaic(...
         'eccentricityDegs', mosaicParams.eccDegs, ...
-        'sizeDegs', mosaicParams.sizeDegs);
+        'sizeDegs', mosaicParams.sizeDegs, ...
+        'chromaticSpatialVarianceTradeoff', p.Results.chromaticSpatialVarianceTradeoff, ...
+        'maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', p.Results.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs);
 
     % Generate the mosaic filename
     [mosaicFileName, resourcesDirectory] = ...

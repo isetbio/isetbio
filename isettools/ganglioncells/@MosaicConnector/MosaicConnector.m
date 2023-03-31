@@ -21,8 +21,10 @@ classdef MosaicConnector < handle
 
     % Constant properties
     properties (Constant)
-        maxNeighborsNum = 6;                           % max number of neighboring destination RF
-        maxNeighborNormDistance = 1.1;                 % max distance to search for neighboring destination RFs   
+        maxNeighborsNum = 6;                                    % max number of neighboring destination RF
+        maxNeighborNormDistance = 1.1;                          % max distance to search for neighboring destination RFs
+        minConeInputsPerRGCToConsiderTransferToNearbyRGCs = 3;  % Transfer inputs to nearby RGCs if the cones/RGC are greater than or equal to this number
+        maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = 10; % Transfer inputs to nearby RGCs if the cones/RGC are less than or equal to this number
     end
 
     % Protected properties. All @MosaicConnector subclasses can read these, 
