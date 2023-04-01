@@ -146,6 +146,7 @@ classdef mRGCMosaic < handle
             p.addParameter('eccentricityDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('positionDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('withInputConeMosaic', [],  @(x) (isempty(x) || isa(x, 'cMosaic')));
             p.addParameter('temporalEquivantEccentricityFactor', 'ISETBioMosaicsBased', @(x)(ischar(x) && (ismember(x, {'ISETBioMosaicsBased', 'WatanabeRodieckBased'}))));
             
             % Custom Degs <-> MM conversion functions
