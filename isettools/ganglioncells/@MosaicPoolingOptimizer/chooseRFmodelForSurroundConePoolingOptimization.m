@@ -4,6 +4,10 @@ function [retinalRFmodelParams, gridSamplingScheme, optimizedRGCpoolingObjectsFi
     % Grid sampling 'rectangular' or 'hexagonal'
     gridSamplingScheme = 'rectangular';
 
+    if (mosaicParams.eccDegs(1) == 0)
+        gridSamplingScheme = 'hexagonal';
+    end
+
     % RetinalRFmodel params to employ
     % Change something if we want, like the model name, e.g. choose cell index 3,
     % 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights', ... 

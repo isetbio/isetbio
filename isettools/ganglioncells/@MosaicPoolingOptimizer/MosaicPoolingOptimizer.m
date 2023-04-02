@@ -388,6 +388,9 @@ classdef MosaicPoolingOptimizer < handle
         % Method to perform the VisualizeVisualRFmapForTargetRGC
         performVisualizeVisualRFmapForTargetRGC(mosaicParams);
 
+        % Method to ask the user which mRGC mosaic to use for computing
+        mosaicEcc =  chooseMosaicToUse();
+        
         % Method to ask the user which opticsParams to use for computing
         % the inputConeMosaic STF responses
         [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...

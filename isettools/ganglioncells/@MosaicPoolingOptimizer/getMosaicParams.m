@@ -8,7 +8,7 @@ function mosaicParams = getMosaicParams(mosaicEcc)
             % which covers the [1 - 4] deg eccentricity range
             mosaicParams = struct(...
                 'eccDegs', [0 0], ...
-                'sizeDegs', [3 3]);
+                'sizeDegs', [2 2]);
 
         case 2.5
             % Mosaic params to employ. This is for the 2.5 deg - centered mosaic

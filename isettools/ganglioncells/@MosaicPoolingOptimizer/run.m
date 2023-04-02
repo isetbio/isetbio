@@ -1,10 +1,7 @@
 function run()
-    
-    % Eccentricities of optimized mosaics
-    mosaicEcc = 2.5;
-    mosaicEcc = 7.0;
-    mosaicEcc = -10.0;
-    mosaicEcc = -20.0;
+
+    % Ask user which mosaic to use
+    mosaicEcc = MosaicPoolingOptimizer.chooseMosaicToUse();
 
     % Get mosaic params
     mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);

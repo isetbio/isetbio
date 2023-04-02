@@ -56,7 +56,7 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
             % Transfer inputs to any remaining zero input destination RFs
             indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZeroInputDestinationRFs(obj, ...
                 indicesOfDestinationRFsInThisGroup, indicesOfZeroInputDestinationRFs, ...
-                inputsNumToAllDestinationRFs, videoOBJ);
+                inputsNumToAllDestinationRFs, inputNumerosityGroups(iGroup), videoOBJ);
 
         end % if (~isempty(indicesOfZeroInputDestinationRFs))
     end % iGroup
@@ -81,10 +81,18 @@ end
 
 function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZeroInputDestinationRFs(obj, ...
     indicesOfDestinationRFs, indicesOfZeroInputDestinationRFs, ...
-    inputsNumToAllDestinationRFs, videoOBJ)
+    inputsNumToAllDestinationRFs, inputNumerosity, videoOBJ)
+
+    % Feedback
+    fprintf('Transfering inputs from %d input destination RFs to zero input destination RFs. Please wait ...', inputNumerosity);
 
     for iRGC = 1:numel(indicesOfDestinationRFs)
         
+        fprintf('.');
+        if (mod((iRGC-1),100) == 0)
+           fprintf('  [%d/%d]\n', iRGC , numel(indicesOfDestinationRFs));
+        end
+
         if (~isempty(indicesOfZeroInputDestinationRFs))
             % The multi-input destination RF 
             theMultiInputDestinationRFindex = indicesOfDestinationRFs(iRGC);
@@ -127,7 +135,10 @@ function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZe
 
     end % iRGC
 
-
+    % Feedback
+    fprintf('  [%d/%d]\n', iRGC, numel(indicesOfDestinationRFs));
+       
+    
     % Update the destinationRF spacings based on the updated connectivity
     obj.updateDestinationRFspacingsBasedOnCentroids();
 

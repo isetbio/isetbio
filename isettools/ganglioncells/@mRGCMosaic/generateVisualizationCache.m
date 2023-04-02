@@ -82,11 +82,11 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
             error('Unknown apertureSizeSpecifierForRGCRFplotting: ''%s''.', coneApertureSizeSpecifierForRGCRFplotting)
     end
 
-
     verticesNumForRGC = zeros(1, obj.rgcsNum);
     theContourData = cell(1, obj.rgcsNum);
  
     lineSegmentIndex = 0;
+    subregionConeConnectionLineSegments = [];
     for iRGC = 1:obj.rgcsNum
         % Retrieve the subregion cone indices & weights
         connectivityVector = full(squeeze(conePoolingMatrix(:, iRGC)));
