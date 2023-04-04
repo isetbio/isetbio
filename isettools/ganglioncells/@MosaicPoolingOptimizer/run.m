@@ -108,7 +108,7 @@ function run()
 
     % Perform the visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic operation
     if (operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics)
-        mosaicEccsToInclude = [2.5 7.0 -10.0];
+        mosaicEccsToInclude = [0.0 2.5 7.0 -10.0];
         MosaicPoolingOptimizer.performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEccsToInclude);
         return;
     end
