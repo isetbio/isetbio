@@ -40,6 +40,10 @@ function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams, vararg
     gridNodesToInspect = input(queryString, 's');
     if (isempty(gridNodesToInspect))
         gridNodesToInspect = MosaicPoolingOptimizer.gridNodesToOptimize();
+        if (isempty(gridNodesToInspect))
+             gridNodesToInspect = 1:theMosaicPoolingOptimizerOBJ.gridNodesNum;
+        end
+
     else
        gridNodesToInspect = str2num(gridNodesToInspect);
     end
