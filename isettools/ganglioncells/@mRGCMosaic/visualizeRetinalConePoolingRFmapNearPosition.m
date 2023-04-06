@@ -5,10 +5,11 @@ function theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(ob
 
      % Parse optional input
      p = inputParser;
+     p.addParameter('tickSeparationArcMin', 6, @isscalar);
      p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
      p.parse(varargin{:});
      ff = p.Results.withFigureFormat;
-
+     tickSeparationArcMin = p.Results.tickSeparationArcMin;
 
     % Find the RGC index that best matches the target criteria
     [targetCenterConesNumNotMatched, theVisualizedRGCindex] = obj.indexOfRGCNearPosition(...
@@ -24,6 +25,7 @@ function theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(ob
             obj.rgcRFpositionsDegs(theVisualizedRGCindex,1), obj.rgcRFpositionsDegs(theVisualizedRGCindex,2));
     
         obj.visualizeRetinalConePoolingRFmapOfRGCwithIndex(theVisualizedRGCindex, theAxes, ...
+            'tickSeparationArcMin', tickSeparationArcMin, ...
             'withFigureFormat', ff);
     end
 end

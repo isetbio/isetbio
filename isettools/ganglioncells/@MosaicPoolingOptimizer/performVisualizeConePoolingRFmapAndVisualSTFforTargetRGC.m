@@ -1,5 +1,12 @@
-function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams)
+function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, varargin)
 
+    % Parse input
+    p = inputParser;
+    p.addParameter('tickSeparationArcMin', 6, @isscalar);
+    p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.parse(varargin{:});
+    tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
 
     % Ask the user which optics were used for computing the input cone
     % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
@@ -34,6 +41,8 @@ function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams)
             fullfile(resourcesDirectory, computeReadyMosaicFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName), ...
             fullfile(pdfDirectory, 'retinalConePoolingRFmapAndVisualSTF.pdf'), ...
-            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType);
+            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType, ...
+            'tickSeparationArcMin', tickSeparationArcMin, ...
+            'visualizedSpatialFrequencyRange',  visualizedSpatialFrequencyRange);
 
 end

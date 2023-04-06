@@ -1,4 +1,12 @@
-function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams)
+function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams, varargin)
+
+    % Parse input
+    p = inputParser;
+    p.addParameter('identifyPooledCones', true, @islogical);
+    p.addParameter('identifyInputCones',  true, @islogical);
+    p.addParameter('plotRFoutlines',  true, @islogical);
+    p.addParameter('backgroundColor', [0 0 0], @(x)(isnumeric(x)||(numel(x)==3)));
+    p.parse(varargin{:});
 
     % Generate the mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
@@ -8,10 +16,11 @@ function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicP
     % Load the generated center-only connected mRGCmosaic
     load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
 
-    identifyPooledCones = true;
-    identifyInputCones = true;
-    plotRFoutlines = true;
-    
+    identifyPooledCones = p.Results.identifyPooledCones;
+    identifyInputCones = p.Results.identifyInputCones;
+    plotRFoutlines = p.Results.plotRFoutlines;
+    backgroundColor = p.Results.backgroundColor;
+
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1800 1000], 'Color', [1 1 1]);
 
@@ -24,7 +33,7 @@ function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicP
             'plotRFoutlines', plotRFoutlines, ...
             'domainVisualizationLimits', [], ...
             'domainVisualizationTicks', [], ...
-            'backgroundColor', [0 0 0]);
+            'backgroundColor', backgroundColor);
 
     % Report stats of how many RGCs contain each # of cones in their RFcenter
     centerConesNumCases = theMidgetRGCMosaic.centerConePoolingStats();

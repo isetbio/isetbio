@@ -1,4 +1,10 @@
-function performVisualizeVisualRFmapForTargetRGC(mosaicParams)
+function performVisualizeVisualRFmapForTargetRGC(mosaicParams, varargin)
+
+    % Parse input
+    p = inputParser;
+    p.addParameter('tickSeparationArcMin', 6, @isscalar);
+    p.parse(varargin{:});
+    tickSeparationArcMin = p.Results.tickSeparationArcMin;
 
     % Ask the user which optics were used for computing the input cone
     % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
@@ -34,5 +40,6 @@ function performVisualizeVisualRFmapForTargetRGC(mosaicParams)
             theComputeReadyMRGCmosaic, ...
             fullfile(resourcesDirectory, optimallyMappedSubspaceRFmapsFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSubspaceResponsesFileName), ...
-            fullfile(pdfDirectory, 'visualRFmap.pdf'));
+            fullfile(pdfDirectory, 'visualRFmap.pdf'), ...
+            'tickSeparationArcMin', tickSeparationArcMin);
 end

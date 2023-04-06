@@ -2,8 +2,10 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, theAxe
     % Parse optional input
     p = inputParser;
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.parse(varargin{:});
     ff = p.Results.withFigureFormat;
+    tickSeparationArcMin = p.Results.tickSeparationArcMin;
 
     % Generate the visualization cache
     xSupport = [];
@@ -26,9 +28,7 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, theAxe
 
     inputConeMosaic = obj.inputConeMosaic;
 
-    tickSeparationArcMin = 6;
     spatialSupportRangeArcMin = tickSeparationArcMin*4;
-
 
     centerLineWeightingFunctions = mRGCMosaic.renderSubregionConePoolingPlot(theAxes{1,1}, ...
             inputConeMosaic, ...

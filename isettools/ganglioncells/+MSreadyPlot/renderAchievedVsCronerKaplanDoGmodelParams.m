@@ -1,5 +1,5 @@
 function renderAchievedVsCronerKaplanDoGmodelParams(ax, ...
-    CK95data, ISETBioData, visualizedDataSet, ISETBioDataColor, faceAlpha, ...
+    CK95data, ISETBioData, visualizedDataSetScatter, visualizedDataSetMeans, ISETBioDataColor, faceAlpha, ...
     XLims, XTicks, YLims, YTicks, ...
     yAxisScaling, yAxisLabel, plotTitle, ...
     employTemporalEquivalentEccentricity, ff)
@@ -9,11 +9,11 @@ function renderAchievedVsCronerKaplanDoGmodelParams(ax, ...
     cellsNum = 0;
 
     for setIndex = 1:numel(ISETBioData)
-        if (ismember(setIndex, visualizedDataSet))
+        if (ismember(setIndex, visualizedDataSetScatter))
             cellsNum  = cellsNum  + numel(ISETBioData{setIndex}.eccentricityDegs);
-            scatter(ax, ISETBioData{setIndex}.eccentricityDegs, ISETBioData{setIndex}.data, (ff.markerSize-6)^2,'o', ...
-                'MarkerFaceColor', ISETBioDataColor(setIndex,:), 'MarkerEdgeColor', ISETBioDataColor(setIndex,:), ...
-                'MarkerFaceAlpha', faceAlpha, 'MarkerEdgeAlpha', 0.0,  'LineWidth', ff.lineWidth);
+            scatter(ax, ISETBioData{setIndex}.eccentricityDegs, ISETBioData{setIndex}.data, (ff.markerSize-8)^2,'o', ...
+                'MarkerFaceColor', ISETBioDataColor(setIndex,:), 'MarkerEdgeColor', 'none', ...
+                'MarkerFaceAlpha', faceAlpha, 'MarkerEdgeAlpha', faceAlpha,  'LineWidth', ff.lineWidth);
         end
 
     end
@@ -28,22 +28,22 @@ function renderAchievedVsCronerKaplanDoGmodelParams(ax, ...
     
     % Add the mean data
     for setIndex = 1:numel(ISETBioData)
-        if (ismember(setIndex, visualizedDataSet))
+        if (ismember(setIndex, visualizedDataSetMeans))
             X = ISETBioData{setIndex}.eccentricityDegs;
             Y = ISETBioData{setIndex}.data;
             % Compute mean values across eccentricities
-            minEcc = 0.3;
+            minEcc = 0.01;
             maxEcc = 30;
-            [N,edges,bin] = histcounts(X, logspace(log10(minEcc), log10(maxEcc), 32));
+            [N,edges,bin] = histcounts(X, logspace(log10(minEcc), log10(maxEcc), 64));
             for iBin = 1:numel(edges)
                 idx = find(bin == iBin);
                 meanY(iBin) = mean(Y(idx));
             end
 
-            saturatedColor = (ISETBioDataColor(setIndex,:)-min(ISETBioDataColor(setIndex,:)))./(max(ISETBioDataColor(setIndex,:))-min(ISETBioDataColor(setIndex,:)));
+            saturatedColor = ISETBioDataColor(setIndex,:); %(ISETBioDataColor(setIndex,:)-min(ISETBioDataColor(setIndex,:)))./(max(ISETBioDataColor(setIndex,:))-min(ISETBioDataColor(setIndex,:)));
 
-            plot(ax, edges, meanY, 'k-', 'LineWidth', 4, 'Color', ISETBioDataColor(setIndex,:));
-            plot(ax, edges, meanY, 'w-', 'LineWidth', 2, 'Color', saturatedColor);
+            plot(ax, edges, meanY, 'k-', 'LineWidth', 4, 'Color', [0 0 0]);
+            plot(ax, edges, meanY, 'w--', 'LineWidth', 3, 'Color', saturatedColor);
         end
      end
     
@@ -54,7 +54,7 @@ function renderAchievedVsCronerKaplanDoGmodelParams(ax, ...
     set(ax, 'XTick', XTicks, 'YTick', YTicks);
     set(ax, 'TickDir', 'both');
     set(ax, 'XScale', 'log', 'YScale', yAxisScaling);
-    axis(ax, 'square');
+    %axis(ax, 'square');
     grid(ax, 'on');
     box(ax, 'off');
     xtickangle(ax, 0);

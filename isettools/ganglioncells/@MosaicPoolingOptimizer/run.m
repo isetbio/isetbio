@@ -22,7 +22,22 @@ function run()
 
     % Perform the visualizeRGCMosaic operation
     if (operationSetToPerformContains.visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs)
-        MosaicPoolingOptimizer.performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams);
+        
+        identifyPooledCones = true;
+        identifyInputCones = true;
+        plotRFoutlines = true;
+        backgroundColor = [0 0 0];
+
+        identifyPooledCones = ~true;
+        identifyInputCones = ~true;
+        plotRFoutlines = true;
+        backgroundColor = [1 1 1];
+
+        MosaicPoolingOptimizer.performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams, ...
+            'identifyPooledCones', identifyPooledCones, ...
+            'identifyInputCones', identifyInputCones, ...
+            'plotRFoutlines', plotRFoutlines, ...
+            'backgroundColor', backgroundColor);
         return;
     end
 
@@ -62,15 +77,15 @@ function run()
     % Perfom the inspectOptimizedSurroundConePoolingModels operation
     if (operationSetToPerformContains.inspectOptimizedSurroundConePoolingModels)
         % This controls the visualized spatial support range
-        visualizedSpatialSupportRangeArcMin = 24;
+        tickSeparationArcMin = 2;
 
         % This controls the visualize spatial frequency range.
         % [] for full range, or enter a specific range, i.e. [0.1 30]
-        visualizedSpatialFrequencyRange = [0.1 30]; %[0.1 30];
+        visualizedSpatialFrequencyRange = [0.1 100]; %[0.1 30];
 
         MosaicPoolingOptimizer.performInspectOptimizedSurroundConePoolingModelsOp(...
             mosaicParams, ...
-            'tickSeparationArcMin', ceil(visualizedSpatialSupportRangeArcMin/6), ...
+            'tickSeparationArcMin', tickSeparationArcMin, ...
             'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange);
 
         return;
@@ -96,7 +111,11 @@ function run()
 
     % Perform the visualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
     if (operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC)
-        MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams);
+        tickSeparationArcMin = 2;
+        visualizedSpatialFrequencyRange = [0.1 100];
+        MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, ...
+            'tickSeparationArcMin', tickSeparationArcMin, ...
+            'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange);
         return;
     end
 
@@ -128,7 +147,9 @@ function run()
 
     % Perform the visualizeVisualRFmapForTargetRGC operation
     if (operationSetToPerformContains.visualizeVisualRFmapForTargetRGC)
-        MosaicPoolingOptimizer.performVisualizeVisualRFmapForTargetRGC(mosaicParams);
+        tickSeparationArcMin = 2;
+        MosaicPoolingOptimizer.performVisualizeVisualRFmapForTargetRGC(mosaicParams, ...
+            'tickSeparationArcMin', tickSeparationArcMin);
         return;
     end
 

@@ -243,21 +243,21 @@ classdef MosaicPoolingOptimizer < handle
         % STF for a target RGC
         visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
             computeReadyMosaicFilename, mRGCMosaicSTFresponsesFilename, pdfFileName, ...
-            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType);
+            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType, varargin);
 
         % Method to visualize the visual RF map for a target RGC
         visualizeVisualRFmapForTargetRGC(...
             theComputeReadyMRGCmosaic, ...
             optimallyMappedSubspaceRFmapsFileName, ...
             targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType, ...
-            pdfFileName);
+            pdfFileName, varargin);
 
         % Method to visualize the visual RF maps for multiple target RGCs
         visualizeVisualRFmapsForMultipleTargetRGCs(...
             theComputeReadyMRGCmosaic, ...
             optimallyMappedSubspaceRFmapsFileName, ...
             mRGCMosaicSubspaceResponsesFileName, ...
-            pdfFileName);
+            pdfFileName, varargin);
 
         % Method to setup the parameters and the display for conducting an
         % STF mapping experiment.
@@ -350,7 +350,7 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to perform the
         % visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs operation
-        performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams);
+        performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams, varargin);
 
         % Method to perform the visualizePSFsWithinRGCMosaic operation
         performVisualizePSFsWithinRGCMosaicOp(mosaicParams);
@@ -374,7 +374,7 @@ classdef MosaicPoolingOptimizer < handle
         performFitVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams);
 
         % Method to perform the VisualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
-        performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams);
+        performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, varargin);
 
         % Method to perform the VisualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic operation
         performVisualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic(mosaicParams);
@@ -386,7 +386,7 @@ classdef MosaicPoolingOptimizer < handle
         performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, varargin);
 
         % Method to perform the VisualizeVisualRFmapForTargetRGC
-        performVisualizeVisualRFmapForTargetRGC(mosaicParams);
+        performVisualizeVisualRFmapForTargetRGC(mosaicParams, varargin);
 
         % Method to ask the user which mRGC mosaic to use for computing
         mosaicEcc =  chooseMosaicToUse();
