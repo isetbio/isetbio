@@ -383,7 +383,7 @@ classdef MosaicPoolingOptimizer < handle
         performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEccsToInclude);
 
         % Method to perform the ComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
-        performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams);
+        performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, varargin);
 
         % Method to perform the VisualizeVisualRFmapForTargetRGC
         performVisualizeVisualRFmapForTargetRGC(mosaicParams);
@@ -412,6 +412,9 @@ classdef MosaicPoolingOptimizer < handle
         % Method to obtain the (x,y) eccentricity and (x,y) size of an mRGC
         % mosaic based on some descriptor (for now 1D mosaicEcc)
         mosaicParams = getMosaicParams(mosaicEcc);
+
+        % Various plotting methods
+        plotRawCronerKaplanData();
     end
 
 end

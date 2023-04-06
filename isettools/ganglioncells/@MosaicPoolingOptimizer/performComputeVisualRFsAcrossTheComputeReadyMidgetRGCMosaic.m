@@ -1,17 +1,27 @@
-function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams)
+function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, varargin)
+
+    % Parse optional input
+    p = inputParser;
+    p.addParameter('maxSFcyclesPerDegree', 30, @isscalar);
+    p.addParameter('stimSizeDegs', 1.0, @isscalar);
+    p.addParameter('posIncrementDegs', 0.5, @isscalar);
+    p.addParameter('reComputeInputConeMosaicSubspaceRFmappingResponses', false, @islogical);
+    p.addParameter('reComputeMRGCMosaicSubspaceRFmappingResponses', false, @islogical);
+    p.addParameter('reComputeRFs', false, @islogical);
+    p.parse(varargin{:});
 
     % Subspace RF mapping params:
     % max SF to explore
-    maxSFcyclesPerDegree = 30; 
+    maxSFcyclesPerDegree = p.Results.maxSFcyclesPerDegree; 
 
     % stimulus patch size
-    stimSizeDegs = 1.0;    
+    stimSizeDegs = p.Results.stimSizeDegs;    
     
-    posIncrementDegs = 0.5;
+    posIncrementDegs = p.Results.posIncrementDegs;
 
-    reComputeInputConeMosaicSubspaceRFmappingResponses = ~true;
-    reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
-    reComputeRFs = ~true;
+    reComputeInputConeMosaicSubspaceRFmappingResponses = p.Results.reComputeInputConeMosaicSubspaceRFmappingResponses;
+    reComputeMRGCMosaicSubspaceRFmappingResponses = p.Results.reComputeMRGCMosaicSubspaceRFmappingResponses;
+    reComputeRFs = p.Results.reComputeRFs;
 
     parpoolSize = [];
 
@@ -46,7 +56,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
             'opticsParams', opticsParams);
 
     % Optimally generated RF maps filename
-    optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceRresponsesFileName, '.mat', '_optimallyMappedRFs.mat');
+    optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', '_optimallyMappedRFs.mat');
 
     MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             theComputeReadyMRGCmosaic, opticsParams, ...
