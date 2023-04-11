@@ -6,6 +6,11 @@ function run()
     % Get mosaic params
     mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);
 
+    % This controls the visualized spatial support range
+    tickSeparationArcMin = 6;
+
+    visualizedSpatialFrequencyRange = [0.1 100];
+
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
 
@@ -26,7 +31,7 @@ function run()
         identifyPooledCones = true;
         identifyInputCones = true;
         plotRFoutlines = true;
-        backgroundColor = [0 0 0];
+        backgroundColor = [1 1 1];
 
         identifyPooledCones = ~true;
         identifyInputCones = ~true;
@@ -76,8 +81,6 @@ function run()
 
     % Perfom the inspectOptimizedSurroundConePoolingModels operation
     if (operationSetToPerformContains.inspectOptimizedSurroundConePoolingModels)
-        % This controls the visualized spatial support range
-        tickSeparationArcMin = 2;
 
         % This controls the visualize spatial frequency range.
         % [] for full range, or enter a specific range, i.e. [0.1 30]
@@ -111,8 +114,7 @@ function run()
 
     % Perform the visualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
     if (operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC)
-        tickSeparationArcMin = 2;
-        visualizedSpatialFrequencyRange = [0.1 100];
+        
         MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange);
@@ -134,20 +136,32 @@ function run()
 
     % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
+%         MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...
+%             'maxSFcyclesPerDegree', 10, ...
+%             'stimSizeDegs', 0.3, ....
+%             'posIncrementDegs', max(mosaicParams.sizeDegs), ...
+%             'reComputeInputConeMosaicSubspaceRFmappingResponses', ~true, ...
+%             'reComputeMRGCMosaicSubspaceRFmappingResponses', ~true, ...
+%             'reComputeRFs', ~true ...
+%             );
+
+        horizontalMeridianNodeIndices = [4 18 32 46];
+
         MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...
-            'maxSFcyclesPerDegree', 100, ...
-            'stimSizeDegs', 0.3, ....
-            'posIncrementDegs', max(mosaicParams.sizeDegs), ...
-            'reComputeInputConeMosaicSubspaceRFmappingResponses', ~true, ...
+            'maxSFcyclesPerDegree', 60, ...
+            'stimSizeDegs', 0.75, ....
+            'posIncrementDegs', 0.5, ...
+            'reComputeInputConeMosaicSubspaceRFmappingResponses', true, ...
             'reComputeMRGCMosaicSubspaceRFmappingResponses', ~true, ...
-            'reComputeRFs', ~true ...
+            'reComputeRFs', ~true, ...
+            'gridNodeIndicesToCompute', horizontalMeridianNodeIndices ...
             );
+        
         return;
     end
 
     % Perform the visualizeVisualRFmapForTargetRGC operation
     if (operationSetToPerformContains.visualizeVisualRFmapForTargetRGC)
-        tickSeparationArcMin = 2;
         MosaicPoolingOptimizer.performVisualizeVisualRFmapForTargetRGC(mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin);
         return;

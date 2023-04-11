@@ -7,20 +7,32 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             reComputeInputConeMosaicSubspaceRFmappingResponses, ...
             reComputeMRGCMosaicSubspaceRFmappingResponses, ...
             reComputeRFs, ...
+            onlyVisualizeOptimallyMappedRFmaps, ...
             varargin)
 
    
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
+    p.addParameter('gridNodeIndicesToCompute', [], @(x)(isempty(x)||(isnumeric(x))));
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
     visualizedResponses = p.Results.visualizedResponses;
+    gridNodeIndicesToCompute = p.Results.gridNodeIndicesToCompute;
 
     [X,Y] = generateSamplingGrid(...
         theComputeReadyMRGCmosaic.inputConeMosaic.sizeDegs, ...
         theComputeReadyMRGCmosaic.inputConeMosaic.eccentricityDegs, ...
         posIncrementDegs);
+
+    figure(2); clf;
+    for iNode = 1:numel(X)
+        plot(X(iNode), Y(iNode), 'r.');
+        text(X(iNode), Y(iNode), sprintf('%d', iNode));
+        hold(gca, 'on')
+    end
+    set(gca, 'TickDir', 'both', 'FontSize', 16);
+    pause
 
     stimXYpositionGridDegs = [X(:) Y(:)];
     optimallyMappedVisualRFmaps = [];
@@ -28,6 +40,12 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
     indicesOfOptimallyMappedRGCs = [];
 
     for theGridNodeIndex = 1:size(stimXYpositionGridDegs,1)
+
+        if (~isempty(gridNodeIndicesToCompute))&&(~ismember(theGridNodeIndex, gridNodeIndicesToCompute))
+            fprintf(2, 'Skipping grid node #%d\n', theGridNodeIndex);
+            return;
+        end
+
         % stimulus position within the mRGC mosaic
         gridNodeXYpositionDegs = stimXYpositionGridDegs(theGridNodeIndex,:);
     
@@ -57,7 +75,9 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
                 reComputeMRGCMosaicSubspaceRFmappingResponses, ...
                 visualizedResponses);
 
-        else
+        end
+
+        if (onlyVisualizeOptimallyMappedRFmaps)
             % Extract visual RF maps for cells that are optimally mapped at this grid position
             [optimallyMappedVisualRFmaps, indicesOfOptimallyRGCsAtThisPosition] = optimalyMappedRFsAtThisGridPosition(...
                 optimallyMappedVisualRFmaps, theComputeReadyMRGCmosaic, ...
@@ -72,10 +92,10 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
 
             end
         end
-    end
+    end % for theGridNodeIndex
     
     % Save all the optimally mapped visual RF maps
-    if (~isempty(optimallyMappedVisualRFmaps))
+    if (onlyVisualizeOptimallyMappedRFmaps)&&(~isempty(optimallyMappedVisualRFmaps))
         fprintf('Saving optimally mapped subspace RF maps to %s\n', optimallyMappedSubspaceRFmapsFileName);
         save(optimallyMappedSubspaceRFmapsFileName, 'optimallyMappedVisualRFmaps', '-v7.3');
     end

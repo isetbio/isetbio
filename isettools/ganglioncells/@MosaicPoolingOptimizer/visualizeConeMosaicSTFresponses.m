@@ -33,7 +33,6 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
     normalizingResponses = reshape(normalizingResponses, [1 1 numel(normalizingResponses)]);
 
     
-
     if (~isempty(targetConePositions))
         for iCone = 1:size(targetConePositions,1)
             d = bsxfun(@minus, theMidgetRGCMosaic.inputConeMosaic.coneRFpositionsDegs, targetConePositions(iCone,:));
@@ -43,19 +42,16 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
     else
         theIdentifiedConeIndices = [];
     end
-
-    
   
     if (1==2)
-    orientationIndicesToVisualize = 1:numel(orientationsTested);
-    [~,sfIndexToVisualize] = min(abs(spatialFrequenciesTested-32));
-
-    videoFileName = sprintf('ConeMosaicSTFresponsesOrientationVary%2.0fcpd.mp4', spatialFrequenciesTested(sfIndexToVisualize));
-
-    generateVideo(theConeMosaicSTFresponses, normalizingResponses, theConeMosaicNullResponses, ...
-        spatialFrequenciesTested, orientationsTested, spatialPhasesDegs, orientationIndicesToVisualize, sfIndexToVisualize, ...
-        theIdentifiedConeIndices, targetConePositions, theMidgetRGCMosaic, thePSFdata, videoFileName);
-
+        orientationIndicesToVisualize = 1:numel(orientationsTested);
+        [~,sfIndexToVisualize] = min(abs(spatialFrequenciesTested-32));
+    
+        videoFileName = sprintf('ConeMosaicSTFresponsesOrientationVary%2.0fcpd.mp4', spatialFrequenciesTested(sfIndexToVisualize));
+    
+        generateVideo(theConeMosaicSTFresponses, normalizingResponses, theConeMosaicNullResponses, ...
+            spatialFrequenciesTested, orientationsTested, spatialPhasesDegs, orientationIndicesToVisualize, sfIndexToVisualize, ...
+            theIdentifiedConeIndices, targetConePositions, theMidgetRGCMosaic, thePSFdata, videoFileName);
     end
 
 

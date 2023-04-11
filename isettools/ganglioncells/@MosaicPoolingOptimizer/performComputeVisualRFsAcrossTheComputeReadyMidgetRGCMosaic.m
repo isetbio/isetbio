@@ -5,9 +5,11 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     p.addParameter('maxSFcyclesPerDegree', 30, @isscalar);
     p.addParameter('stimSizeDegs', 1.0, @isscalar);
     p.addParameter('posIncrementDegs', 0.5, @isscalar);
+    p.addParameter('gridNodeIndicesToCompute', [], @(x)(isempty(x)||(isnumeric(x))));
     p.addParameter('reComputeInputConeMosaicSubspaceRFmappingResponses', false, @islogical);
     p.addParameter('reComputeMRGCMosaicSubspaceRFmappingResponses', false, @islogical);
     p.addParameter('reComputeRFs', false, @islogical);
+    p.addParameter('onlyVisualizeOptimallyMappedRFmaps', false, @islogical);
     p.parse(varargin{:});
 
     % Subspace RF mapping params:
@@ -17,11 +19,16 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     % stimulus patch size
     stimSizeDegs = p.Results.stimSizeDegs;    
     
+    % simulus delta position
     posIncrementDegs = p.Results.posIncrementDegs;
+
+    % Which grid nodes to compute RFs
+    gridNodeIndicesToCompute = p.Results.gridNodeIndicesToCompute;
 
     reComputeInputConeMosaicSubspaceRFmappingResponses = p.Results.reComputeInputConeMosaicSubspaceRFmappingResponses;
     reComputeMRGCMosaicSubspaceRFmappingResponses = p.Results.reComputeMRGCMosaicSubspaceRFmappingResponses;
     reComputeRFs = p.Results.reComputeRFs;
+    onlyVisualizeOptimallyMappedRFmaps = p.Results.onlyVisualizeOptimallyMappedRFmaps;
 
     parpoolSize = [];
 
@@ -67,5 +74,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
             reComputeInputConeMosaicSubspaceRFmappingResponses, ...
             reComputeMRGCMosaicSubspaceRFmappingResponses, ...
             reComputeRFs, ...
+            onlyVisualizeOptimallyMappedRFmaps, ...
+            'gridNodeIndicesToCompute', gridNodeIndicesToCompute, ...
             'parPoolSize', parpoolSize);
 end
