@@ -43,7 +43,7 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
 
         if (~isempty(gridNodeIndicesToCompute))&&(~ismember(theGridNodeIndex, gridNodeIndicesToCompute))
             fprintf(2, 'Skipping grid node #%d\n', theGridNodeIndex);
-            return;
+            continue;
         end
 
         % stimulus position within the mRGC mosaic
