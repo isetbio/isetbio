@@ -3,9 +3,11 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, theAxe
     p = inputParser;
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
+    p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.parse(varargin{:});
     ff = p.Results.withFigureFormat;
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
 
     % Generate the visualization cache
     xSupport = [];
@@ -38,7 +40,7 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, theAxe
             'withFigureFormat', ff, ...
             'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
-            'plotTitle', '', ...
+            'plotTitle', sprintf('RGCindex: %d', theRGCindex), ...
             'noXLabel', true, ...
             'noYLabel', true, ...
             'noYTicks', true, ...
@@ -74,8 +76,8 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, theAxe
 
     % Add the line weighting functions
     sensitivityRange(2) =  max([max(centerLineWeightingFunctions.x.amplitude(:)) max(centerLineWeightingFunctions.y.amplitude(:))]);
-    sensitivityRange(1) = -0.4*sensitivityRange(2);
-    
+    sensitivityRange(1) = -normalizedPeakSurroundSensitivity*sensitivityRange(2);
+
     centerLineWeightingFunctions.x.amplitude = centerLineWeightingFunctions.x.amplitude / max(sensitivityRange);
     centerLineWeightingFunctions.y.amplitude = centerLineWeightingFunctions.y.amplitude / max(sensitivityRange);
     surroundLineWeightingFunctions.x.amplitude = surroundLineWeightingFunctions.x.amplitude / max(sensitivityRange);

@@ -9,10 +9,20 @@ function visualizeVisualRFmapsForMultipleTargetRGCs(...
     visualizeAnotherSingleRGC = true;
     while (visualizeAnotherSingleRGC)
         
-        targetRGCposition = input('Enter (xy) position of target RGC (e.g., [5.6 -1.3]): ');
-        targetCenterConesNum = input('Enter # of center cones num (e.g, 3): ');
-        targetCenterConeMajorityType = input('Enter type of majority center cone num (either cMosaic.LCONE_ID or cMosaic.MCONE_ID): ');
-    
+        % Ask the user which RGC to look for:
+        % position, # of center cones, majority cone type
+        rgcSpecification = input('Plot RGC with specific index (1), or RGC at a target position (2) ? ');
+        if (rgcSpecification == 1)
+            targetRGCposition = [];
+            targetCenterConesNum = [];
+            targetCenterConeMajorityType = [];
+        else
+            targetRGCposition = input('Enter (xy) position of target RGC (e.g., [5.6 -1.3]): ');
+            targetCenterConesNum = input('Enter # of center cones num (e.g, 3): ');
+            targetCenterConeMajorityType = input('Enter type of majority center cone num (either cMosaic.LCONE_ID or cMosaic.MCONE_ID): ');
+        end
+
+
         MosaicPoolingOptimizer.visualizeVisualRFmapForTargetRGC(...
                 theComputeReadyMRGCmosaic, ...
                 optimallyMappedSubspaceRFmapsFileName, ...

@@ -2,10 +2,12 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
     % Parse optional input
     p = inputParser;
     p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
     p.parse(varargin{:});
 
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
 
     % Optimized RGCpooling object filename
@@ -27,7 +29,7 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
         opticsParams, ...
         obj.theRGCMosaic.rgcRFpositionsDegs(LconeRGCindex,:), ...
         obj.theRGCMosaic.inputConeMosaic, ...
-        theLconeRFcomputeStruct, tickSeparationArcMin, visualizedSpatialFrequencyRange);
+        theLconeRFcomputeStruct, LconeRGCindex, tickSeparationArcMin, normalizedPeakSurroundSensitivity, visualizedSpatialFrequencyRange);
 
     MconeRGCindex = obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndex);
     figNo = 20000 + gridNodeIndex;
@@ -38,13 +40,14 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
         opticsParams, ...
         obj.theRGCMosaic.rgcRFpositionsDegs(MconeRGCindex,:), ...
         obj.theRGCMosaic.inputConeMosaic, ...
-        theMconeRFcomputeStruct, tickSeparationArcMin, visualizedSpatialFrequencyRange);
+        theMconeRFcomputeStruct, MconeRGCindex, tickSeparationArcMin, normalizedPeakSurroundSensitivity, visualizedSpatialFrequencyRange);
 
 end
 
 function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
-    opticsParams, rgcRFposDegs, inputConeMosaic, theConeSpecificRFcomputeStruct, ...
-    tickSeparationArcMin, visualizedSpatialFrequencyRange)
+    opticsParams, rgcRFposDegs, inputConeMosaic, theConeSpecificRFcomputeStruct, theRGCindex, ...
+    tickSeparationArcMin, normalizedPeakSurroundSensitivity, visualizedSpatialFrequencyRange)
+
 
     % Retrieve the saved data
     targetVisualSTFparams = theConeSpecificRFcomputeStruct.theTargetSTFparams;
@@ -84,7 +87,7 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         'withFigureFormat', ff, ...
         'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
-        'plotTitle', 'RF center');
+        'plotTitle', sprintf('RF center (RGC index: %d)', theRGCindex));
 
     
     % Add the RF surround cone pooling map
@@ -107,7 +110,7 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
     % Visualized sensitivity range
     %sensitivityRange(1) = -1.05*max([max(surroundLineWeightingFunctions.x.amplitude(:)) max(surroundLineWeightingFunctions.y.amplitude(:))]);
     sensitivityRange(2) =  1.0*max([max(centerLineWeightingFunctions.x.amplitude(:)) max(centerLineWeightingFunctions.y.amplitude(:))]);
-    sensitivityRange(1) = -0.8*sensitivityRange(2);
+    sensitivityRange(1) = -normalizedPeakSurroundSensitivity*sensitivityRange(2);
 
     centerLineWeightingFunctions.x.amplitude = centerLineWeightingFunctions.x.amplitude / max(sensitivityRange);
     centerLineWeightingFunctions.y.amplitude = centerLineWeightingFunctions.y.amplitude / max(sensitivityRange);

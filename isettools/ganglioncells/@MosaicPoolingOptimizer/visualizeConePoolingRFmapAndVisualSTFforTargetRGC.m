@@ -5,10 +5,12 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
     % Parse input
     p = inputParser;
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
+    p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
     p.parse(varargin{:});
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
+    normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
 
     load(computeReadyMosaicFilename, 'theComputeReadyMRGCmosaic');
     load(mRGCMosaicSTFresponsesFilename, 'spatialFrequenciesTested', 'theMRGCMosaicOptimalSTFs');
@@ -22,6 +24,7 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
         targetRGCposition, targetCenterConesNum, ...
         targetCenterConeMajorityType, theAxes, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
+        'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
         'withFigureFormat', ff);
 
     theVisualizedRGCvisualSTFdata = theMRGCMosaicOptimalSTFs{theVisualizedRGCindex};
@@ -44,21 +47,26 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
          'noYLabel', ~true, ...
          'noYTickLabel', ~true);
 
-
-
     % Export to PDF
     if (isnan(targetCenterConeMajorityType))
         pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_mixedLM', ...
                     targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);
     else
+        if (isempty(targetCenterConeMajorityType))
+            [~, theCenterConeTypeNum, targetCenterConeMajorityType, ~] = theComputeReadyMRGCmosaic.centerConeTypeWeights(theVisualizedRGCindex);
+            targetCenterConesNum = sum(theCenterConeTypeNum);
+        end
+        if (isempty(targetRGCposition))
+            targetRGCposition = theComputeReadyMRGCmosaic.rgcRFpositionsDegs(theVisualizedRGCindex,:);
+        end
+
         switch (targetCenterConeMajorityType)
            case cMosaic.LCONE_ID
                 pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_LconeDominated.pdf', ...
                         targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);
            case cMosaic.MCONE_ID
                 pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_MconeDominated.pdf', ...
-                        targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);
-                    
+                        targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);                    
        end
     end
     pdfFileName = strrep(pdfFileName, '.pdf', pdfPostFix);

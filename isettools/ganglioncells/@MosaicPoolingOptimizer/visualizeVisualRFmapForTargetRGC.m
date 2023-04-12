@@ -10,12 +10,19 @@ function visualizeVisualRFmapForTargetRGC(...
     p.parse(varargin{:});
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     
-    % Find the target RGC to be visualized
-    [targetCenterConesNumNotMatched, theVisualizedRGCindex] = theComputeReadyMRGCmosaic.indexOfRGCNearPosition( ...
+    if (isempty(targetCenterConeMajorityType))
+            theVisualizedRGCindex = input('Enter index of target RGC : ');
+            [~, theCenterConeTypeNum, targetCenterConeMajorityType, ~] = theComputeReadyMRGCmosaic.centerConeTypeWeights(theVisualizedRGCindex);
+            targetCenterConesNum = sum(theCenterConeTypeNum);
+            targetRGCposition = theComputeReadyMRGCmosaic.rgcRFpositionsDegs(theVisualizedRGCindex,:);
+    else
+        % Find the target RGC to be visualized
+        [targetCenterConesNumNotMatched, theVisualizedRGCindex] = theComputeReadyMRGCmosaic.indexOfRGCNearPosition( ...
             targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType);
-    if (targetCenterConesNumNotMatched)
-        fprintf(2, 'Could not find an RGC with %d center cones\n', targetCenterConesNum);
-        return;
+        if (targetCenterConesNumNotMatched)
+            fprintf(2, 'Could not find an RGC with %d center cones\n', targetCenterConesNum);
+            return;
+        end
     end
 
     % Load the optimall mapped visual RF maps for all cells

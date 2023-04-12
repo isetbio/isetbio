@@ -8,7 +8,7 @@ function run()
 
     % This controls the visualized spatial support range
     tickSeparationArcMin = 6;
-
+    normalizedPeakSurroundSensitivity = 0.4;
     visualizedSpatialFrequencyRange = [0.1 100];
 
     % Get operation to perform
@@ -82,13 +82,10 @@ function run()
     % Perfom the inspectOptimizedSurroundConePoolingModels operation
     if (operationSetToPerformContains.inspectOptimizedSurroundConePoolingModels)
 
-        % This controls the visualize spatial frequency range.
-        % [] for full range, or enter a specific range, i.e. [0.1 30]
-        visualizedSpatialFrequencyRange = [0.1 100]; %[0.1 30];
-
         MosaicPoolingOptimizer.performInspectOptimizedSurroundConePoolingModelsOp(...
             mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
+            'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
             'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange);
 
         return;
@@ -117,6 +114,7 @@ function run()
         
         MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
+            'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
             'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange);
         return;
     end
