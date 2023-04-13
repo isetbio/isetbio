@@ -14,26 +14,16 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
-    p.addParameter('gridNodeIndicesToCompute', [], @(x)(isempty(x)||(isnumeric(x))));
+    
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
     visualizedResponses = p.Results.visualizedResponses;
-    gridNodeIndicesToCompute = p.Results.gridNodeIndicesToCompute;
 
-    [X,Y] = generateSamplingGrid(...
+    % Generate the subspace mapping grid
+    [X,Y, gridNodeIndicesToCompute] = generateSubspaceRFmappingSamplingGrid(...
         theComputeReadyMRGCmosaic.inputConeMosaic.sizeDegs, ...
         theComputeReadyMRGCmosaic.inputConeMosaic.eccentricityDegs, ...
-        posIncrementDegs);
-
-    
-    figure(2); clf;
-    for iNode = 1:numel(X)
-        plot(X(iNode), Y(iNode), 'r.');
-        text(X(iNode), Y(iNode), sprintf('%d', iNode));
-        hold(gca, 'on')
-    end
-    set(gca, 'TickDir', 'both', 'FontSize', 16);
-    pause
+        posIncrementDegs, stimSizeDegs);
 
     stimXYpositionGridDegs = [X(:) Y(:)];
     optimallyMappedVisualRFmaps = [];
@@ -142,6 +132,7 @@ function [optimallyMappedVisualRFmaps, indicesOfOptimallyRGCsAtThisPosition] = o
         return;
     end
     
+    fprintf('Loading data. Please wait ...\n');
     % All good. Extract the computed subspace RF maps
     load(mRGCMosaicSubspaceResponsesAtThisPositionGridFileName, ...
         'spatialSupportDegs', ...
@@ -158,7 +149,17 @@ function [optimallyMappedVisualRFmaps, indicesOfOptimallyRGCsAtThisPosition] = o
     optimallyMappedRFsForThisGridPosition = 0;
     indicesOfOptimallyRGCsAtThisPosition = [];
 
+    fprintf('\nExtracting optimally mapped RGCs for desired grid node ...\n\t')
+    counter = 0;
     for iCell = 1:cellsNum
+        if (mod(iCell,50) == 1)
+            fprintf('.');
+            counter = counter + 1;
+        end
+        if (counter == 20)
+            counter = 0;
+            fprintf('\n\t');
+        end
         % Find the grid position that this cell is closest to
         d = sqrt(sum((bsxfun(@minus, stimXYpositionGridDegs, theComputeReadyMRGCmosaic.rgcRFpositionsDegs(iCell,:))).^2,2));
         [~, theClosestGridNodeIndex] = min(d);
@@ -177,12 +178,13 @@ function [optimallyMappedVisualRFmaps, indicesOfOptimallyRGCsAtThisPosition] = o
             );
     end
 
-    fprintf('There were %d optimally mapped RF maps at (x,y) = %2.1f,%2.1f\n', optimallyMappedRFsForThisGridPosition, ...
+    fprintf('\nThere were %d optimally mapped RF maps at (x,y) = %2.1f,%2.1f\n', optimallyMappedRFsForThisGridPosition, ...
         stimXYpositionGridDegs(theGridNodeIndex, 1), stimXYpositionGridDegs(theGridNodeIndex, 2));
 end
 
 
-function [X,Y] = generateSamplingGrid(inputConeMosaicSizeDegs, inputConeMosaicEccDegs, posIncrementDegs)
+function [X,Y, gridNodeIndicesToCompute] = generateSubspaceRFmappingSamplingGrid(...
+    inputConeMosaicSizeDegs, inputConeMosaicEccDegs, posIncrementDegs, stimSizeDegs)
 
     k = round(0.5*inputConeMosaicSizeDegs(1)/posIncrementDegs)-1;
     xCoords = inputConeMosaicEccDegs(1) + ...
@@ -194,6 +196,52 @@ function [X,Y] = generateSamplingGrid(inputConeMosaicSizeDegs, inputConeMosaicEc
     
     [X,Y] = meshgrid(xCoords, yCoords);
     X = X(:); Y = Y(:);
+
+    hFig = figure(2); clf;
+    set(hFig, 'Name', 'Subspace RF mapping grid', 'Position', [10 10 1000 1000]);
+    ax = subplot('Position', [0.1 0.1 0.85 0.85]);
+    for iNode = 1:numel(X)
+        if (iNode == 1) || (iNode == numel(X))
+            lineWidth = 3.0;
+            lineColor = [0 0 1];
+        else
+            lineWidth = 1.0;
+            lineColor = [0.5 0.5 0.5];
+        end
+        rect.x = X(iNode) + 0.5*stimSizeDegs(1)*[-1 -1 1  1 -1];
+        rect.y = Y(iNode) + 0.5*stimSizeDegs(1)*[-1  1 1 -1 -1];
+        plot(ax,rect.x, rect.y, 'r-', 'LineWidth', lineWidth, 'Color', lineColor);
+        hold(ax, 'on')
+    end
+    XX = sort(unique(X), 'ascend');
+    dx = 0.1*(XX(2)-XX(1));
+    for iNode = 1:numel(X)
+        if (iNode == 1) || (iNode == numel(X))
+            fontWeight = 'Bold';
+            lineColor = [0 0 1];
+        else
+            fontWeight = 'normal';
+            lineColor = [0.5 0.5 0.5];
+        end
+        text(ax, X(iNode)-dx, Y(iNode), sprintf('%d', iNode), 'Color', lineColor, 'FontSize', 20, 'FontWeight', fontWeight, 'BackgroundColor', [1 1 1]);
+    end
+
+    set(ax, 'TickDir', 'both', 'FontSize', 16);
+    drawnow;
+    gridNodeIndicesToCompute = input('Enter grid node indices to compute :' );
+
+    for iNode = 1:numel((gridNodeIndicesToCompute))
+        rect.x = X(gridNodeIndicesToCompute(iNode)) + 0.5*stimSizeDegs(1)*[-1 -1 1  1 -1];
+        rect.y = Y(gridNodeIndicesToCompute(iNode)) + 0.5*stimSizeDegs(1)*[-1  1 1 -1 -1];
+        plot(ax,rect.x, rect.y, 'r-', 'LineWidth', 3, 'Color', [1 0 0]);
+        text(ax, X(gridNodeIndicesToCompute(iNode))-dx, Y(gridNodeIndicesToCompute(iNode)), ...
+            sprintf('%d', gridNodeIndicesToCompute(iNode)), 'Color', [1 0 0], ...
+            'FontSize', 20, 'FontWeight', fontWeight, 'BackgroundColor', [1 1 1]);
+    end
+
+    drawnow;
+
+
 end
 
 
@@ -274,7 +322,8 @@ function computeRFmapsForAllCellsUsingStimuliAThisGridPosition( ...
     
         % Compute RF maps of all cells in the MRGC mosaic for stimuli delivered
         % in this position grid. Only some cells are optimally mapped in each
-        % position grid. These are selected by the
+        % position grid, as the subspace stim size is usually small not covering the
+        % entire RGC mosaic. These are selected by the
         % optimalyMappedRFsAtThisGridPosition() function later on
         theMRGCMosaicVisualRFmaps = computeRFs(...
             theMRGCMosaicSubspaceRFmappingLinearResponses, ...
