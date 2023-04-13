@@ -17,28 +17,32 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
         tickSeparationArcMin = 2.0;
     end
 
-    xyLimsArcMin = spatialSupportRangeArcMin/2*[-1 1];
-    xyTicksArcMin = -60:(tickSeparationArcMin):60;
-    xyTicks = -30:(tickSeparationArcMin/60):30;
-    
-
+     
+    % Find the coords of the RF max
     [~,idx] = max(abs(theVisualRFmapStruct.theRFmap(:)));
     [row,col] = ind2sub(size(theVisualRFmapStruct.theRFmap),idx);
+
     xShiftDegs = mean(theVisualRFmapStruct.spatialSupportDegsX) - theVisualRFmapStruct.spatialSupportDegsX(col);
     yShiftDegs = mean(theVisualRFmapStruct.spatialSupportDegsY) - theVisualRFmapStruct.spatialSupportDegsY(row);
     pixelSizeDegs = theVisualRFmapStruct.spatialSupportDegsX(2)-theVisualRFmapStruct.spatialSupportDegsX(1);
     xShiftSamples = sign(xShiftDegs)*round(abs(xShiftDegs)/pixelSizeDegs);
     yShiftSamples = sign(yShiftDegs)*round(abs(yShiftDegs)/pixelSizeDegs);
 
-    %visualRGCRFposDegs(1) = theVisualRFmapStruct.spatialSupportDegsX(col);
-    %visualRGCRFposDegs(2) = theVisualRFmapStruct.spatialSupportDegsY(row);
+    visualRGCRFposDegs(1) = theVisualRFmapStruct.spatialSupportDegsX(col);
+    visualRGCRFposDegs(2) = theVisualRFmapStruct.spatialSupportDegsY(row);
+
+    xyLimsArcMin = spatialSupportRangeArcMin/2*[-1 1];
+    xyTicksArcMin = 0:(tickSeparationArcMin):60;
+    xyTicksArcMin = [-fliplr(xyTicksArcMin(2:end)) xyTicksArcMin];
+    xyTicks = 0:(tickSeparationArcMin/60):30;
+    xyTicks = [-fliplr(xyTicks(2:end)) xyTicks];
 
     maxXY = round(spatialSupportRangeArcMin/2);
     spatialSupportDegs = (-maxXY:0.05:maxXY)/60;
 
     % The cell position
-    XLims = retinalRGCRFposDegs(1) + [spatialSupportDegs(1) spatialSupportDegs(end)];
-    YLims = retinalRGCRFposDegs(2) + [spatialSupportDegs(1) spatialSupportDegs(end)];
+    XLims = visualRGCRFposDegs(1) + [spatialSupportDegs(1) spatialSupportDegs(end)];
+    YLims = visualRGCRFposDegs(2) + [spatialSupportDegs(1) spatialSupportDegs(end)];
 
 
     surroundBoostedRF = theVisualRFmapStruct.theRFmap;

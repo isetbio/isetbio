@@ -62,7 +62,8 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
     %plot(ax, surroundLineWeightingFunction.spatialSupportArcMin, surroundLineWeightingFunction.spatialSupportArcMin*0, 'k--', 'LineWidth', 0.5);
             
     XLims = spatialSupportRangeArcMin/2*[-1 1];
-    xTicks = -60:(tickSeparationArcMin):60;
+    xTicks = 0:(tickSeparationArcMin):60;
+    xTicks = [-fliplr(xTicks(2:end)) xTicks];
     sensitivityTicks = -1:0.2:1;
     set(ax, 'XLim', [XLims(1)+(XLims(2)-XLims(1))*ff.axisOffsetFactor XLims(2)], ...
             'YLim', [sensitivityRange(1)+(sensitivityRange(2)-sensitivityRange(1))*ff.axisOffsetFactor sensitivityRange(2)], ...
