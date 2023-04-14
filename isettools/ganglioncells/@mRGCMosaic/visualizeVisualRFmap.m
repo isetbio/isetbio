@@ -92,10 +92,9 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     spatialSupportArcMinY = theVisualRFmapStruct.spatialSupportDegsY*60;
     spatialSupportArcMinY = spatialSupportArcMinY - mean(spatialSupportArcMinY);
 
-    plot(theAxes{1,2}, spatialSupportArcMinX, theRFprofileX*0, 'k-', 'LineWidth', 1.0);
+    shadedAreaPlot(theAxes{1,2},spatialSupportArcMinX, theRFprofileX/maxProfile, 0, [1 0.85 0.85], [0.7 0 0], 0.5, 1.5);
     hold(theAxes{1,2}, 'on');
-    plot(theAxes{1,2}, spatialSupportArcMinX, theRFprofileX/maxProfile, 'r-', 'LineWidth', 1.5);
-    
+    plot(theAxes{1,2}, spatialSupportArcMinX, theRFprofileX*0, 'k-', 'LineWidth', 1.0);
 
     set(theAxes{1,2}, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
         'XTick', xyTicksArcMin, 'XLim', xyLimsArcMin, ...
@@ -120,9 +119,10 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
         set(theAxes{1,2}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
     end
 
-    plot(theAxes{1,3}, spatialSupportArcMinY, theRFprofileY*0, 'k-', 'LineWidth', 1.0);
+    shadedAreaPlot(theAxes{1,3},spatialSupportArcMinX, theRFprofileY/maxProfile, 0, [1 0.85 0.85], [0.7 0 0], 0.5, 1.5);
     hold(theAxes{1,3}, 'on');
-    plot(theAxes{1,3}, spatialSupportArcMinY, theRFprofileY/maxProfile, 'r-', 'LineWidth', 1.5);
+    plot(theAxes{1,3}, spatialSupportArcMinY, theRFprofileY*0, 'k-', 'LineWidth', 1.0);
+
     set(theAxes{1,3}, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
         'XTick', xyTicksArcMin, 'XLim', xyLimsArcMin, ...
         'XTickLabel', sprintf('%2.1f\n', xyTicksArcMin), ...
@@ -179,4 +179,14 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     end
 
     drawnow;
+end
+
+
+function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth)
+    x = [x fliplr(x)];
+    y = [y y*0+baseline];
+    px = reshape(x, [1 numel(x)]);
+    py = reshape(y, [1 numel(y)]);
+    pz = -10*eps*ones(size(py)); 
+    patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, 'FaceAlpha', faceAlpha, 'LineWidth', lineWidth);
 end
