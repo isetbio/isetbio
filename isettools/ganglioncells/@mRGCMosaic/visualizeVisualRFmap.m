@@ -48,14 +48,16 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     surroundBoostedRF = theVisualRFmapStruct.theRFmap;
     surroundBoostedRF(surroundBoostedRF<0) = surroundBoostedRF(surroundBoostedRF<0)*10;
 
+    rfSensitivityLUT = brewermap(1024, '*RdBu');
+    backgroundColor = rfSensitivityLUT(512,:);
     imagesc(theAxes{1,4}, theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, surroundBoostedRF);
     axis(theAxes{1,4}, 'image');
     axis(theAxes{1,4}, 'xy');
-    set(theAxes{1,4}, 'CLim', [-1 1], 'XLim', XLims, 'YLim', YLims, ...
+    set(theAxes{1,4}, 'Color', backgroundColor, 'CLim', [-1 1], 'XLim', XLims, 'YLim', YLims, ...
         'XTick', xyTicks, 'YTick', xyTicks, ...
         'XTickLabel', sprintf('%2.2f\n', xyTicks), ...
         'YTickLabel', sprintf('%2.2f\n', xyTicks));
-    colormap(theAxes{1,4},brewermap(1024, '*RdBu'));
+    colormap(theAxes{1,4},rfSensitivityLUT);
     xtickangle(theAxes{1,4}, 0);
     
 
@@ -90,7 +92,11 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     spatialSupportArcMinY = theVisualRFmapStruct.spatialSupportDegsY*60;
     spatialSupportArcMinY = spatialSupportArcMinY - mean(spatialSupportArcMinY);
 
+    plot(theAxes{1,2}, spatialSupportArcMinX, theRFprofileX*0, 'k-', 'LineWidth', 1.0);
+    hold(theAxes{1,2}, 'on');
     plot(theAxes{1,2}, spatialSupportArcMinX, theRFprofileX/maxProfile, 'r-', 'LineWidth', 1.5);
+    
+
     set(theAxes{1,2}, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
         'XTick', xyTicksArcMin, 'XLim', xyLimsArcMin, ...
         'XTickLabel', sprintf('%2.1f\n', xyTicksArcMin));
@@ -114,6 +120,8 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
         set(theAxes{1,2}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
     end
 
+    plot(theAxes{1,3}, spatialSupportArcMinY, theRFprofileY*0, 'k-', 'LineWidth', 1.0);
+    hold(theAxes{1,3}, 'on');
     plot(theAxes{1,3}, spatialSupportArcMinY, theRFprofileY/maxProfile, 'r-', 'LineWidth', 1.5);
     set(theAxes{1,3}, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
         'XTick', xyTicksArcMin, 'XLim', xyLimsArcMin, ...
@@ -147,8 +155,8 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
         -0.01*[0.99 1], 'LineWidth', 1.0, 'LineStyle', '--', 'Color', [0 0 0]);
     axis(theAxes{1,1}, 'image');
     axis(theAxes{1,1}, 'xy');
-    colormap(theAxes{1,1},brewermap(1024, '*RdBu'));
-    set(theAxes{1,1}, 'CLim', [-1 1], 'XLim', XLims, 'YLim', YLims, ...
+    colormap(theAxes{1,1},rfSensitivityLUT);
+    set(theAxes{1,1}, 'Color', backgroundColor, 'CLim', [-1 1], 'XLim', XLims, 'YLim', YLims, ...
         'XTick', xyTicks, 'YTick', xyTicks, ...
         'XTickLabel', sprintf('%2.2f\n', xyTicks), ...
         'YTickLabel', sprintf('%2.2f\n', xyTicks));
