@@ -20,8 +20,6 @@ function performVisualizePSFsWithinRGCMosaicOp(mosaicParams)
         opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
     end
 
-    opticsParams
-
     xPosDegs = 0.5*mosaicParams.sizeDegs(1)*[-1 0 1];
     yPosDegs = 0.5*mosaicParams.sizeDegs(2)*[-1 0 1];
 

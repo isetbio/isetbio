@@ -3,18 +3,35 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
     employTemporalEquivalentEccentricity)
 
     % Load the Croner&Kaplan '95 data for Parvocellular neurons
-    [CK95RcDegs, CK95RsRcRatios, CK95KsKcRatios, CK95SCintSensRatios] = loadCronerKaplan95ParvoCellularData();
+    [CK95RcDegs, CK95KcVsRcDegs, CK95RsRcRatios, CK95KsKcRatios, CK95SCintSensRatios] = ...
+        loadCronerKaplan95ParvoCellularData();
    
     % Initialize all data sets to empty
-    for iDataSet = 1:4
-        ISETBioRcDegs{iDataSet}.eccentricityDegs = [];
-        ISETBioRsRcRatios{iDataSet}.eccentricityDegs = [];
-        ISETBioKsKcRatios{iDataSet}.eccentricityDegs = [];
-        ISETBioSCintSensRatios{iDataSet}.eccentricityDegs = [];
+    ISETBioRcDegs = cell(1,4);
+    ISETBioKc = cell(1,4);
+    ISETBioRsRcRatios = cell(1,4);
+    ISETBioKsKcRatios = cell(1,4);
+    ISETBioSCintSensRatios = cell(1,4);
 
+    for iDataSet = 1:4
+        % RcDegs
+        ISETBioRcDegs{iDataSet}.eccentricityDegs = [];
         ISETBioRcDegs{iDataSet}.data = [];
+
+        % Kc
+        ISETBioKc{iDataSet}.eccentricityDegs = [];
+        ISETBioKc{iDataSet}.data = [];
+
+        % RsRc ratios
+        ISETBioRsRcRatios{iDataSet}.eccentricityDegs = [];
         ISETBioRsRcRatios{iDataSet}.data = [];
+
+        % KsKc ratios
+        ISETBioKsKcRatios{iDataSet}.eccentricityDegs = [];
         ISETBioKsKcRatios{iDataSet}.data = [];
+
+        % Integrated sensitivity ratios
+        ISETBioSCintSensRatios{iDataSet}.eccentricityDegs = [];
         ISETBioSCintSensRatios{iDataSet}.data = [];
     end
     
@@ -35,8 +52,8 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
     
      
         % Extract the corresponding params as measured for the compute-ready mRGCMosaic
-        [cellEccDegs , cellCenterConeTypeWeights, ...
-         cellRcDegs, cellRsRcRatios, cellKsKcRatios, cellSCintSensRatios] = ...
+        [cellEccDegs, cellCenterConeTypeWeights, ...
+         cellRcDegs, cellKc, cellRsRcRatios, cellKsKcRatios, cellSCintSensRatios] = ...
             extractComputeReadyMosaicData(theComputeReadyMRGCmosaic, theMRGCMosaicOptimalSTFs, employTemporalEquivalentEccentricity);
     
 
@@ -47,6 +64,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
     
         % L-center RGCs data
         iDataSet = 1;
+
         % The RcDegs as a function of eccentricity for L-center RGCs
         ISETBioRcDegs{iDataSet}.eccentricityDegs = cat(2, ISETBioRcDegs{iDataSet}.eccentricityDegs, cellEccDegs(LcenterRGCindices)); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
         ISETBioRcDegs{iDataSet}.data = cat(2, ISETBioRcDegs{iDataSet}.data, cellRcDegs(LcenterRGCindices));
@@ -54,6 +72,14 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
         ISETBioRcDegs{4}.eccentricityDegs = cat(2, ISETBioRcDegs{4}.eccentricityDegs, ISETBioRcDegs{iDataSet}.eccentricityDegs); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
         ISETBioRcDegs{4}.data = cat(2, ISETBioRcDegs{4}.data, ISETBioRcDegs{iDataSet}.data);
     
+        % The Kc as a function of eccentricity for L-center RGCs
+        ISETBioKc{iDataSet}.eccentricityDegs = cat(2, ISETBioKc{iDataSet}.eccentricityDegs, cellKc(LcenterRGCindices)); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
+        ISETBioKc{iDataSet}.data = cat(2, ISETBioKc{iDataSet}.data, cellKc(LcenterRGCindices));
+        % All-center RGCs Kc data
+        ISETBioKc{4}.eccentricityDegs = cat(2, ISETBioKc{4}.eccentricityDegs, ISETBioKc{iDataSet}.eccentricityDegs); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
+        ISETBioKc{4}.data = cat(2, ISETBioKc{4}.data, ISETBioKc{iDataSet}.data);
+    
+
         % The RsRcRatios as a function of eccentricity for L-center RGCs
         ISETBioRsRcRatios{iDataSet}.eccentricityDegs = ISETBioRcDegs{iDataSet}.eccentricityDegs;
         ISETBioRsRcRatios{iDataSet}.data = cat(2, ISETBioRsRcRatios{iDataSet}.data, cellRsRcRatios(LcenterRGCindices));
@@ -80,12 +106,21 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
         % M-center RGCs data
         iDataSet = 2;
+
         % The RcDegs as a function of eccentricity plot for M-center RGCs
         ISETBioRcDegs{iDataSet}.eccentricityDegs = cat(2, ISETBioRcDegs{iDataSet}.eccentricityDegs, cellEccDegs(McenterRGCindices)); %cellTemporalEquivalentEccDegs(McenterRGCindices);
         ISETBioRcDegs{iDataSet}.data = cat(2, ISETBioRcDegs{iDataSet}.data, cellRcDegs(McenterRGCindices));
         % All-center RGCs RcDegs data
         ISETBioRcDegs{4}.eccentricityDegs = cat(2, ISETBioRcDegs{4}.eccentricityDegs, ISETBioRcDegs{iDataSet}.eccentricityDegs); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
         ISETBioRcDegs{4}.data = cat(2, ISETBioRcDegs{4}.data, ISETBioRcDegs{iDataSet}.data);
+    
+
+        % The Kc as a function of eccentricity for M-center RGCs
+        ISETBioKc{iDataSet}.eccentricityDegs = cat(2, ISETBioKc{iDataSet}.eccentricityDegs, cellKc(McenterRGCindices)); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
+        ISETBioKc{iDataSet}.data = cat(2, ISETBioKc{iDataSet}.data, cellKc(McenterRGCindices));
+        % All-center RGCs Kc data
+        ISETBioKc{4}.eccentricityDegs = cat(2, ISETBioKc{4}.eccentricityDegs, ISETBioKc{iDataSet}.eccentricityDegs); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
+        ISETBioKc{4}.data = cat(2, ISETBioKc{4}.data, ISETBioKc{iDataSet}.data);
     
 
         % The RsRcRatios as a function of eccentricity plot for M-center RGCs
@@ -113,6 +148,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
        
         % LM-center RGCs data
         iDataSet = 3;
+
         % The RcDegs as a function of eccentricity plot for L/M-center RGCs
         ISETBioRcDegs{iDataSet}.eccentricityDegs = cat(2, ISETBioRcDegs{iDataSet}.eccentricityDegs, cellEccDegs(LMcenterRGCindices)); % cellTemporalEquivalentEccDegs(LMcenterRGCindices);
         ISETBioRcDegs{iDataSet}.data = cat(2, ISETBioRcDegs{iDataSet}.data, cellRcDegs(LMcenterRGCindices));
@@ -120,6 +156,14 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
         ISETBioRcDegs{4}.eccentricityDegs = cat(2, ISETBioRcDegs{4}.eccentricityDegs, ISETBioRcDegs{iDataSet}.eccentricityDegs); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
         ISETBioRcDegs{4}.data = cat(2, ISETBioRcDegs{4}.data, ISETBioRcDegs{iDataSet}.data);
     
+        % The Kc as a function of eccentricity for L/M-center RGCs
+        ISETBioKc{iDataSet}.eccentricityDegs = cat(2, ISETBioKc{iDataSet}.eccentricityDegs, cellKc(LMcenterRGCindices)); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
+        ISETBioKc{iDataSet}.data = cat(2, ISETBioKc{iDataSet}.data, cellKc(LMcenterRGCindices));
+        % All-center RGCs Kc data
+        ISETBioKc{4}.eccentricityDegs = cat(2, ISETBioKc{4}.eccentricityDegs, ISETBioKc{iDataSet}.eccentricityDegs); %cellTemporalEquivalentEccDegs(LcenterRGCindices);
+        ISETBioKc{4}.data = cat(2, ISETBioKc{4}.data, ISETBioKc{iDataSet}.data);
+    
+
         % The RsRcRatios as a function of eccentricity plot for LM-center RGCs
         ISETBioRsRcRatios{iDataSet}.eccentricityDegs = ISETBioRcDegs{iDataSet}.eccentricityDegs;
         ISETBioRsRcRatios{iDataSet}.data = cat(2, ISETBioRsRcRatios{iDataSet}.data, cellRsRcRatios(LMcenterRGCindices));
@@ -144,7 +188,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
     end % iMosaic
 
 
-    % Transform Ks to log10(k)
+    % Transform KsKc ratios to log10(ks/Kc)
     CK95KsKcRatiosLog = CK95KsKcRatios;
     ISETBioKsKcRatiosLog = ISETBioKsKcRatios;
     CK95KsKcRatiosLog.data = log10(CK95KsKcRatios.data);
@@ -185,7 +229,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
         end
 
         % The RcDegs as a function of eccentricity plot
-        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParams(theAxes{1,1}, ...
+        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc(theAxes{1,1}, ...
                   CK95RcDegs, ISETBioRcDegs, theVisualizedDataSetsScatter, theVisualizedDataSetsMeans, ...
                   ISETBioSetsColors, scatterFaceAlpha, ...
                   eccRange, eccTicks, ...
@@ -195,8 +239,20 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
                   ff);
     
 
+        % The Kc vs RcDegs plot
+        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParams(theAxes{2,1}, ...
+                  CK95KcVsRcDegs.RcDegs, CK95KcVsRcDegs.Kc, ISETBioRcDegs, ISETBioKc, ...
+                  theVisualizedDataSetsScatter, ...
+                  ISETBioSetsColors, scatterFaceAlpha, ...
+                  [0.006 0.105], [0.006 0.01 0.03 0.06 0.1], ...
+                  [10 1e4], [10 100 1e3 1e4], ...
+                  'log', 'Rc (degs)', ...
+                  'log', 'Kc', ...
+                  pdfFileNamePostfix{iDataSet}, ...
+                  ff);
+
         % The Rs/Rc ratio as a function of eccentricity plot
-        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParams(theAxes{1,2}, ...
+        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc(theAxes{1,2}, ...
                   CK95RsRcRatios, ISETBioRsRcRatios, theVisualizedDataSetsScatter, theVisualizedDataSetsMeans, ...
                   ISETBioSetsColors, scatterFaceAlpha, ...
                   eccRange, eccTicks, ...
@@ -216,7 +272,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
 
         % The Ks/Kc int ratio as a function of eccentricity plot
-        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParams(theAxes{1,3}, ...
+        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc(theAxes{1,3}, ...
               CK95KsKcRatios, ISETBioKsKcRatios, theVisualizedDataSetsScatter, theVisualizedDataSetsMeans, ...
               ISETBioSetsColors, scatterFaceAlpha, ...
               eccRange, eccTicks, ...
@@ -237,7 +293,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
 
         % The S/C int sens ratio as a function of eccentricity
-        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParams(theAxes{1,4}, ...
+        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc(theAxes{1,4}, ...
               CK95SCintSensRatios, ISETBioSCintSensRatios, theVisualizedDataSetsScatter, theVisualizedDataSetsMeans, ...
               ISETBioSetsColors, scatterFaceAlpha, ...
               eccRange, eccTicks, ...
@@ -260,7 +316,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 end
 
 function [cellEccDegs, cellCenterConeTypeWeights, ...
-          cellRcDegs, cellRsRcRatios, cellKsKcRatios, ...
+          cellRcDegs, cellKc, cellRsRcRatios, cellKsKcRatios, ...
           cellSCintSensRatios] = extractComputeReadyMosaicData(...
                                     theComputeReadyMRGCmosaic, ...
                                     theMRGCMosaicOptimalSTFs, ...
@@ -268,13 +324,15 @@ function [cellEccDegs, cellCenterConeTypeWeights, ...
 
     rgcIndex = 1;
     theSTFdata = theMRGCMosaicOptimalSTFs{rgcIndex};
+
+    idxKc = find(strcmp(theSTFdata.DoGfitParams.names, 'Kc'));
     idxRcDegs = find(strcmp(theSTFdata.DoGfitParams.names, 'RcDegs'));
     idxRsRcRatio = find(strcmp(theSTFdata.DoGfitParams.names, 'RsToRc'));
     idxKsKcRatio = find(strcmp(theSTFdata.DoGfitParams.names, 'kS/kC'));
     
     cellEccDegs = zeros(1,theComputeReadyMRGCmosaic.rgcsNum);
     cellCenterConeTypeWeights = zeros(3,theComputeReadyMRGCmosaic.rgcsNum);
-
+    cellKc = cellEccDegs;
     cellRcDegs = cellEccDegs;
     cellRsRcRatios = cellEccDegs;
     cellKsKcRatios = cellEccDegs;
@@ -308,6 +366,7 @@ function [cellEccDegs, cellCenterConeTypeWeights, ...
 
         cellCenterConeTypeWeights(:,iRGC) = reshape(centerConeTypeWeights, [3 1]);
 
+        cellKc(iRGC) = theSTFdata.DoGfitParams.finalValues(idxKc);
         cellRcDegs(iRGC) = theSTFdata.DoGfitParams.finalValues(idxRcDegs);
         cellRsRcRatios(iRGC) = theSTFdata.DoGfitParams.finalValues(idxRsRcRatio);
         cellKsKcRatios(iRGC) = theSTFdata.DoGfitParams.finalValues(idxKsKcRatio);
@@ -318,10 +377,14 @@ function [cellEccDegs, cellCenterConeTypeWeights, ...
 end
 
 
-function [CK95RcDegs, CK95RsRcRatios, CK95KsKcRatios, CK95SCintSensRatios] = loadCronerKaplan95ParvoCellularData()
+function [CK95RcDegs, CK95KcVsRcDegs, CK95RsRcRatios, CK95KsKcRatios, CK95SCintSensRatios] = ...
+    loadCronerKaplan95ParvoCellularData()
     
     [CK95RcDegs.eccentricityDegs, CK95RcDegs.data] = ...
         RGCmodels.CronerKaplan.digitizedData.parvoCenterRadiusAgainstEccentricity();
+
+    CK95KcVsRcDegs = ...
+        RGCmodels.CronerKaplan.digitizedData.parvoCenterKcVsRadiusDegs();
 
     [CK95RsRcRatios.eccentricityDegs, CK95RsRcRatios.data] = ...
         RGCmodels.CronerKaplan.digitizedData.parvoCenterSurroundRadiusRatioAgainstEccentricity();

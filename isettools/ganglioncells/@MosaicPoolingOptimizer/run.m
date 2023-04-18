@@ -7,7 +7,7 @@ function run()
     mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);
 
     % This controls the visualized spatial support range
-    tickSeparationArcMin = 6;
+    tickSeparationArcMin = 4;
     normalizedPeakSurroundSensitivity = 0.4;
     visualizedSpatialFrequencyRange = [0.1 100];
 
@@ -33,10 +33,6 @@ function run()
         plotRFoutlines = true;
         backgroundColor = [1 1 1];
 
-        identifyPooledCones = ~true;
-        identifyInputCones = ~true;
-        plotRFoutlines = true;
-        backgroundColor = [1 1 1];
 
         MosaicPoolingOptimizer.performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams, ...
             'identifyPooledCones', identifyPooledCones, ...
@@ -139,10 +135,10 @@ function run()
             'maxSFcyclesPerDegree', mosaicParams.subspaceRFmappingParams.maxSFcyclesPerDegree, ...
             'stimSizeDegs', mosaicParams.subspaceRFmappingParams.stimSizeDegs, ....
             'posIncrementDegs', mosaicParams.subspaceRFmappingParams.posIncrementDegs, ...
-            'reComputeInputConeMosaicSubspaceRFmappingResponses', true, ...
+            'reComputeInputConeMosaicSubspaceRFmappingResponses', ~true, ...
             'reComputeMRGCMosaicSubspaceRFmappingResponses', ~true, ...
             'reComputeRFs', ~true, ...
-            'onlyVisualizeOptimallyMappedRFmaps', ~true);
+            'onlyVisualizeOptimallyMappedRFmaps', true);
         
         return;
     end

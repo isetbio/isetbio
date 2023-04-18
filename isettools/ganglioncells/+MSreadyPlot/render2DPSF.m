@@ -21,10 +21,10 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
         for iCone = 1:numel(coneApertureData.RcDegs)
             xx = coneApertureData.positionDegs(iCone,1)+coneApertureData.RcDegs(iCone)*xOutline;
             yy = coneApertureData.positionDegs(iCone,2)+coneApertureData.RcDegs(iCone)*yOutline;
+            
+            patch(ax, xx*60,yy*60, [0.8 0.8 0.8]);
+            hold(ax, 'on');
             plot(ax, xx*60,yy*60, 'k-', 'LineWidth', 1.0, 'Color', [0.4 0.4 0.4]);
-            if (iCone == 1)
-                hold(ax, 'on')
-            end
         end
         
     end

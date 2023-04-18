@@ -1,70 +1,54 @@
 function renderAchievedVsCronerKaplanDoGmodelParams(ax, ...
-    CK95data, ISETBioData, visualizedDataSetScatter, visualizedDataSetMeans, ISETBioDataColor, faceAlpha, ...
+    CK95dataX, CK95dataY, ISETBioDataX, ISETBioDataY, ...
+    visualizedDataSetScatter, ISETBioDataColor, faceAlpha, ...
     XLims, XTicks, YLims, YTicks, ...
-    yAxisScaling, yAxisLabel, plotTitle, ...
-    employTemporalEquivalentEccentricity, ff)
+    xAxisScaling, xAxisLabel, ...
+    yAxisScaling, yAxisLabel, ...
+    plotTitle, ff)
 
     cla(ax, 'reset');
     hold(ax, 'on');
     cellsNum = 0;
 
-    for setIndex = 1:numel(ISETBioData)
+    for setIndex = 1:numel(ISETBioDataX)
         if (ismember(setIndex, visualizedDataSetScatter))
-            cellsNum  = cellsNum  + numel(ISETBioData{setIndex}.eccentricityDegs);
-            scatter(ax, ISETBioData{setIndex}.eccentricityDegs, ISETBioData{setIndex}.data, (ff.markerSize-8)^2,'o', ...
+            cellsNum  = cellsNum  + numel(ISETBioDataX{setIndex}.data);
+            scatter(ax, ISETBioDataX{setIndex}.data, ISETBioDataY{setIndex}.data, (ff.markerSize-8)^2,'o', ...
                 'MarkerFaceColor', ISETBioDataColor(setIndex,:), 'MarkerEdgeColor', 'none', ...
                 'MarkerFaceAlpha', faceAlpha, 'MarkerEdgeAlpha', faceAlpha,  'LineWidth', ff.lineWidth);
         end
 
     end
 
-    % Add the Croner&Kaplan data
-    scatter(ax, CK95data.eccentricityDegs, ...
-             CK95data.data, 144, 's', ...
+    if (~isempty(CK95dataX)) && (~isempty(CK95dataY))
+        % Add the Croner&Kaplan data
+        scatter(ax, CK95dataX, ...
+             CK95dataY, 144, 's', ...
              'MarkerFaceAlpha', 0.5, ...
              'MarkerEdgeColor', [0.2 0.2 0.2], ...
              'MarkerFaceColor', [0.8 0.8 0.8], ...
              'LineWidth', ff.lineWidth*0.75);
-    
+    end
+
     % Add the mean data
-    for setIndex = 1:numel(ISETBioData)
-        if (ismember(setIndex, visualizedDataSetMeans))
-            X = ISETBioData{setIndex}.eccentricityDegs;
-            Y = ISETBioData{setIndex}.data;
-            % Compute mean values across eccentricities
-            minEcc = 0.01;
-            maxEcc = 30;
-            [N,edges,bin] = histcounts(X, logspace(log10(minEcc), log10(maxEcc), 64));
-            for iBin = 1:numel(edges)
-                idx = find(bin == iBin);
-                meanY(iBin) = mean(Y(idx));
-            end
+    
+    
+    if (strcmp(xAxisScaling, 'linear'))
+        dX = (XLims(2)-XLims(1))*4/100;
+    else
+        dX = (XLims(2)-XLims(1))*0.1/100;
+    end
 
-            saturatedColor = ISETBioDataColor(setIndex,:); %(ISETBioDataColor(setIndex,:)-min(ISETBioDataColor(setIndex,:)))./(max(ISETBioDataColor(setIndex,:))-min(ISETBioDataColor(setIndex,:)));
-
-            plot(ax, edges, meanY, 'k-', 'LineWidth', 4, 'Color', [0 0 0]);
-            plot(ax, edges, meanY, 'w--', 'LineWidth', 3, 'Color', saturatedColor);
-        end
-     end
-    
-    
-    dY = (YLims(2)-YLims(1))*4/100;
-    
-    set(ax, 'XLim', [XLims(1)-0.05 XLims(2)], 'YLim', [YLims(1)-dY YLims(2)]);
+    set(ax, 'XLim', [XLims(1) XLims(2)], 'YLim', [YLims(1) YLims(2)]);
     set(ax, 'XTick', XTicks, 'YTick', YTicks);
     set(ax, 'TickDir', 'both');
-    set(ax, 'XScale', 'log', 'YScale', yAxisScaling);
+    set(ax, 'XScale', xAxisScaling, 'YScale', yAxisScaling);
     %axis(ax, 'square');
     grid(ax, 'on');
     box(ax, 'off');
     xtickangle(ax, 0);
 
-    if (employTemporalEquivalentEccentricity)
-        xlabel(ax,'temporal equivalent eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
-    else
-        xlabel(ax,'eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
-    end
-
+    xlabel(ax, xAxisLabel, 'FontAngle', ff.axisFontAngle);
     ylabel(ax, yAxisLabel, 'FontAngle', ff.axisFontAngle);
 
     % Font size

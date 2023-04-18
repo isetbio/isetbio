@@ -152,7 +152,7 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     contour(theAxes{1,1}, theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, theVisualRFmapStruct.theRFmap, ...
         exp(-1)*[0.99 1], 'LineWidth', 1.0, 'Color', [0 0 0]);
     contour(theAxes{1,1}, theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, theVisualRFmapStruct.theRFmap, ...
-        -0.01*[0.99 1], 'LineWidth', 1.0, 'LineStyle', '--', 'Color', [0 0 0]);
+        -0.01*[0.99 1], 'LineWidth', 1.0, 'LineStyle', ':', 'Color', [0 0 0]);
     axis(theAxes{1,1}, 'image');
     axis(theAxes{1,1}, 'xy');
     colormap(theAxes{1,1},rfSensitivityLUT);
