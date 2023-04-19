@@ -5,6 +5,7 @@ function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicP
     p.addParameter('identifyPooledCones', true, @islogical);
     p.addParameter('identifyInputCones',  true, @islogical);
     p.addParameter('plotRFoutlines',  true, @islogical);
+    p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('backgroundColor', [0 0 0], @(x)(isnumeric(x)||(numel(x)==3)));
     p.parse(varargin{:});
 
@@ -19,6 +20,7 @@ function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicP
     identifyPooledCones = p.Results.identifyPooledCones;
     identifyInputCones = p.Results.identifyInputCones;
     plotRFoutlines = p.Results.plotRFoutlines;
+    labelRetinalMeridians = p.Results.labelRetinalMeridians;
     backgroundColor = p.Results.backgroundColor;
 
     hFig = figure(1); clf;
@@ -26,6 +28,7 @@ function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicP
 
     theMidgetRGCMosaic.visualize(...
             'figureHandle', hFig, ...
+            'labelRetinalMeridians', labelRetinalMeridians, ...
             'identifiedConeApertureThetaSamples', 32, ...
             'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
             'identifyPooledCones', identifyPooledCones, ...

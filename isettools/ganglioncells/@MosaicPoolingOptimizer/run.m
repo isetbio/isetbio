@@ -31,6 +31,7 @@ function run()
         identifyPooledCones = true;
         identifyInputCones = true;
         plotRFoutlines = true;
+        labelRetinalMeridians  = true;
         backgroundColor = [1 1 1];
 
 
@@ -38,6 +39,7 @@ function run()
             'identifyPooledCones', identifyPooledCones, ...
             'identifyInputCones', identifyInputCones, ...
             'plotRFoutlines', plotRFoutlines, ...
+            'labelRetinalMeridians', labelRetinalMeridians, ...
             'backgroundColor', backgroundColor);
         return;
     end

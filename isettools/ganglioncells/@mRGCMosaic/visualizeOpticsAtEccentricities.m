@@ -30,6 +30,9 @@ function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
         thePSFData.psfSupportYdegs = thePSFData.supportY/60;
         thePSFData.data = squeeze(thePSFData.data(:,:,idx));
 
+        % Flip left-right
+        thePSFData.data = fliplr(thePSFData.data);
+
         % Render the PSF
         plotTitle = sprintf('XYecc (degs): (%2.1f, %2.1f)', ...
             opticsParams.positionDegs(1), opticsParams.positionDegs(2));
