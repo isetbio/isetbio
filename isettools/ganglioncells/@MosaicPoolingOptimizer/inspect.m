@@ -36,6 +36,7 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
     figTitle = sprintf('grid no %d of %d M-cone center RGC %d', ...
         gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), MconeRGCindex);
     pdfFilename = strrep(optimizedRGCpoolingObjectsFileNameForThisNode, '.mat', '_Mcone');
+
     inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         opticsParams, ...
         obj.theRGCMosaic.rgcRFpositionsDegs(MconeRGCindex,:), ...
@@ -138,7 +139,8 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         'noYLabel', true);
 
 
-    pdfFilename = strrep(sprintf('%s.pdf',pdfFilename), 'MosaicOptimizerResources', 'MosaicOptimizerPDFs');
+    pdfFilename = strrep(pdfFilename, 'intermediateFiles', 'pdfs');
+    pdfFilename = sprintf('%s.pdf', pdfFilename);
     NicePlot.exportFigToPDF(pdfFilename, hFig, 300);
 
     close(hFig);

@@ -1,21 +1,30 @@
 function dropboxDir = localDropboxPath()
     % Get dropboxDir & intermediate data files location
-    computerInfo = GetComputerInfo();
-    switch (computerInfo.localHostName)
-        case 'Ithaka'
-            dropboxDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    p = getpref('isetbio');
 
-        case 'Crete'
-            dropboxDir = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
-
-        case 'Santorini'
-            dropboxDir = '/Users/nicolas/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
-
-        otherwise
-            if (contains(computerInfo.networkName, 'leviathan'))
-                dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio';
+    if (isfield(p, 'rgcResources'))
+        if (isstruct(p.rgcResources))
+            if (isfield(p.rgcResources, 'method'))
+                switch (p.rgcResources.method)
+                    case 'localFile'
+                        if (isfield(p.rgcResources, 'URLpath'))
+                            dropboxDir = p.rgcResources.URLpath;
+                        else
+                            error('ISETBio preferences contains an ''rgcResources'' struct, but this struct does not contain a ''URLpath'' field. Check your preferences\n');
+                        end
+                    otherwise
+                        error('Unknown rgcResources.method value: ''%s''. Check your ISETBio preferences.', p.rgcResources.method);
+                end
             else
-                error('Could not establish dropbox location')
+                error('ISETBio preferences contains an ''rgcResources'' struct, but this struct does not contain a ''method'' field. Check your preferences\n');
             end
+
+        else
+            error('ISETBio preferences contains an ''rgcResources'' field, but this field is not a struct. Check your preferences\n');
+        end
+
+    else
+        error('ISETBio preferences does not contain an ''rgcResources'' field. Check your preferences\n');
     end
+
 end

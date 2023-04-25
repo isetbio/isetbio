@@ -22,6 +22,7 @@ function [retinalRFmodelParams, gridSamplingScheme, optimizedRGCpoolingObjectsFi
                 'opticsParams', opticsParams, ...
                 'retinalRFmodelParams', retinalRFmodelParams);
 
+    optimizedRGCpoolingObjectsFileName = fullfile(resourcesDirectory, optimizedRGCpoolingObjectsFileName);
 end
 
    

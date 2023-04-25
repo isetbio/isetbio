@@ -9,14 +9,29 @@ function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNam
     opticsParams = p.Results.opticsParams;
     retinalRFmodelParams = p.Results.retinalRFmodelParams;
 
-    resourcesDirectory = fullfile(...
+    % For now, we only have ONcenterMidgetRGCmosaics
+    mosaicTypeSubDir = 'ONcenterMidgetRGCmosaics';
+
+    resourcesRootDirectory = fullfile(...
                 MosaicPoolingOptimizer.localDropboxPath, ...
-                'productionMidgetRGCMosaics/MosaicOptimizerResources');
+                mosaicTypeSubDir);
 
     pdfsDirectory = fullfile(...
-                MosaicPoolingOptimizer.localDropboxPath, ...
-                'productionMidgetRGCMosaics/MosaicOptimizerPDFs');
+                resourcesRootDirectory, ...
+                'pdfs');
 
+    if (strcmp(component, 'computeReadyMosaic'))
+        resourcesDirectory = fullfile(...
+                resourcesRootDirectory, ...
+                'computeReadyMosaics');
+    else
+        resourcesDirectory = fullfile(...
+                resourcesRootDirectory, ...
+                'intermediateFiles');
+    end
+
+
+    
     switch (component)
         case 'mosaic'
             resourceFileName = generateMosaicFileName(mosaicParams);

@@ -5,6 +5,7 @@ function performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEc
    theMosaicFileNames = cell(1, numel(mosaicEccsToInclude));
    theMRGCSTFResponsesFileNames = cell(1, numel(mosaicEccsToInclude));
 
+   
    % Generate all filenames for all included mosaics
    for iMosaic = 1:numel(mosaicEccsToInclude)
        mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEccsToInclude(iMosaic));
@@ -18,7 +19,7 @@ function performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEc
        retinalRFmodelParams = MosaicPoolingOptimizer.chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams);
 
        % Generate the filename of the compute-ready mRGCMosaic
-       [computeReadyMosaicFileName, resourcesDirectory] = ...
+       [computeReadyMosaicFileName, computeReadyMosaicResourcesDirectory] = ...
             MosaicPoolingOptimizer.resourceFileNameAndPath('computeReadyMosaic', ...
                 'mosaicParams', mosaicParams, ...
                 'opticsParams', opticsParams, ...
@@ -30,13 +31,16 @@ function performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEc
             'mosaicParams', mosaicParams, ...
             'opticsParams', opticsParams);
 
-      theMosaicFileNames{iMosaic} = fullfile(resourcesDirectory, computeReadyMosaicFileName);
+      theMosaicFileNames{iMosaic} = fullfile(computeReadyMosaicResourcesDirectory, computeReadyMosaicFileName);
       theMRGCSTFResponsesFileNames{iMosaic} = fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName);
    end % iEcc
+
+   [~, ~, pdfsDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
 
    MosaicPoolingOptimizer.visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
             theMosaicFileNames, ...
             theMRGCSTFResponsesFileNames, ...
+            pdfsDirectory, ...
             employTemporalEquivalentEccentricity);
 
 end

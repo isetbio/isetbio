@@ -1,5 +1,6 @@
 function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
     computeReadyMosaicFilenames, mRGCMosaicSTFresponsesFilenames, ...
+    pdfDirectory, ...
     employTemporalEquivalentEccentricity)
 
     % Load the Croner&Kaplan '95 data for Parvocellular neurons
@@ -211,7 +212,8 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
     for iDataSet = 1:4
         pngFileName{iDataSet} = sprintf('SummaryStats_%s.png',pdfFileNamePostfix{iDataSet});
-        
+        pngFileName{iDataSet} = fullfile(pdfDirectory, pngFileName{iDataSet});
+
         hFig = figure(iDataSet); clf;
         ff = MSreadyPlot.figureFormat('2x4-tall');
         theAxes = MSreadyPlot.generateAxes(hFig,ff);
