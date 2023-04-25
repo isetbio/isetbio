@@ -72,9 +72,23 @@ switch (computerInfo.localHostName)
         dropboxValidationRootDirPath = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
     case 'Crete'
         % Nicolas' M1 MacStudio Ultra
-        dropboxValidationRootDirPath = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+        dropboxValidationRootDirPath = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    case 'Santorini'
+        % Nicolas' M1 MacMini
+        dropboxValidationRootDirPath  = '/Users/nicolas/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
     otherwise
-        error('Dropbox validation root directory location not available for computer named: ''%s''.', computerInfo.localHostName);          
+        if (contains(computerInfo.networkName, 'leviathan'))
+            dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio';
+        else
+            error('Dropbox validation root directory location not available for computer named: ''%s''.', computerInfo.localHostName);  
+        end   
+end % switch
+
+% RGC mosaic resources Dropbox URLpath
+if (~isempty(dropboxValidationRootDirPath))
+    rgcDropboxURLpath = fullfile(dropboxValidationRootDirPath, 'IBIO_rgcMosaicResources');
+else
+    rgcDropboxURLpath = '';
 end
 
 p = struct(...
@@ -85,6 +99,7 @@ p = struct(...
     'useRemoteDataToolbox', ~true, ...
     'remoteDataToolboxConfig', 'isetbio', ...
     'githubRepoURL', 'http://isetbio.github.io/isetbio', ...
+    'rgcResources', struct('method', 'localFile', 'URLpath', rgcDropboxURLpath), ...
     'generateGroundTruthDataIfNotFound', ~true, ...
     'listingScript', 'ieValidateListAllValidationDirs', ...
     'coreListingScript', 'ieValidateListCoreValidationFiles', ...
