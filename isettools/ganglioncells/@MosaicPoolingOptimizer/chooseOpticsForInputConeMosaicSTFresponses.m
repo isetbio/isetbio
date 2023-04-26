@@ -42,9 +42,11 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
 
             % Update the coneMosaicSTFresponsesFileName to reflect the custom optics position
             coneMosaicSTFresponsesFileName = strrep(coneMosaicSTFresponsesFileName, '.mat', opticsPositionPostfix);
-            coneMosaicSTFresponsesFileName = fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName);
+            
         otherwise
             fprintf('Valid optics options: ''n'' (native, at mosaic''s center), or ''c'', (custom position)\n');
             error('Unknown optics choice: ''%s''.', opticsChoice)
     end
+
+    coneMosaicSTFresponsesFileName = fullfile(resourcesDirectory, coneMosaicSTFresponsesFileName);
 end
