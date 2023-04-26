@@ -95,7 +95,7 @@ classdef MosaicPoolingOptimizer < handle
                 
                 % Generate the full multifocal sampling grids
                 obj.generateSamplingGrids(p.Results.minSpatialSamplingDegs);
-                fprintf('Done \n')
+                fprintf('Done \n');
 
                 if (p.Results.visualizeSamplingGrids)
                     obj.visualizeSamplingGrids();

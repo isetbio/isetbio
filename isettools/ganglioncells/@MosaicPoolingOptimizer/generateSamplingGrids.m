@@ -38,9 +38,11 @@ function generateSamplingGrids(obj, minSpatialSamplingDegs)
         [~,idx] = sort(distances, 'ascend');
         indicesOfRGCsWithThisManyCenterCones = indicesOfRGCsWithThisManyCenterCones(idx);
 
-        % Examine the 10 nearby indices to determine the one with the
+   
+        % Examine the nearby RGCs to determine the one with the
         % highest spectral purity (smallest ratio of cone type1 to cone
         % type2)
+        ratio = zeros(1,numel(indicesOfRGCsWithThisManyCenterCones));
         for i = 1:numel(indicesOfRGCsWithThisManyCenterCones)
             theTargetRGCindex = indicesOfRGCsWithThisManyCenterCones(i);
             theCenterConeTypeWeights = obj.centerConeTypeWeights(theTargetRGCindex);
