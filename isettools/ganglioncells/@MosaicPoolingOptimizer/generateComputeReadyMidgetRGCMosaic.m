@@ -18,8 +18,15 @@ function generateComputeReadyMidgetRGCMosaic(obj, optimizedRGCpoolingObjectsFile
     centerConeIndices = vertcat(centerConeIndicesAllRGCs{:});
     centerConeWeights = vertcat(centerConeWeightsAllRGCs{:});
     rgcIndices = vertcat(centerRGCindicesAllRGCs{:});
-    rgcRFcenterConePoolingMatrix = sparse(centerConeIndices, rgcIndices, centerConeWeights);
+    rgcRFcenterConePoolingMatrix = sparse(centerConeIndices, rgcIndices, centerConeWeights, obj.inputConeMosaic.conesNum, obj.rgcsNum);
 
+    size(rgcRFcenterConePoolingMatrix)
+    size(obj.rgcRFcenterConeConnectivityMatrix)
+    size(rgcRFcenterConePoolingMatrix) == size(obj.rgcRFcenterConeConnectivityMatrix)
+    all(size(rgcRFcenterConePoolingMatrix) == size(obj.rgcRFcenterConeConnectivityMatrix))
+    pause
+
+    
     % Sanity check
     sanityCheck(rgcRFcenterConePoolingMatrix, 'center');
 
@@ -27,7 +34,7 @@ function generateComputeReadyMidgetRGCMosaic(obj, optimizedRGCpoolingObjectsFile
     surroundConeIndices = vertcat(surroundConeIndicesAllRGCs{:});
     surroundConeWeights = vertcat(surroundConeWeightsAllRGCs{:});
     rgcIndices = vertcat(surroundRGCindicesAllRGCs{:});
-    rgcRFsurroundConePoolingMatrix = sparse(surroundConeIndices, rgcIndices, surroundConeWeights);
+    rgcRFsurroundConePoolingMatrix = sparse(surroundConeIndices, rgcIndices, surroundConeWeights, obj.inputConeMosaic.conesNum, obj.rgcsNum);
 
     % Sanity check
     sanityCheck(rgcRFsurroundConePoolingMatrix, 'surround');
