@@ -4,17 +4,19 @@ function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNam
     p.addParameter('mosaicParams', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('opticsParams', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('retinalRFmodelParams', [], @(x)(isempty(x)||(isstruct(x))));
+
     p.parse(varargin{:});
     mosaicParams = p.Results.mosaicParams;
     opticsParams = p.Results.opticsParams;
     retinalRFmodelParams = p.Results.retinalRFmodelParams;
+    
 
-    % For now, we only have ONcenterMidgetRGCmosaics
-    mosaicTypeSubDir = 'ONcenterMidgetRGCmosaics';
+    assert(ismember(mosaicParams.rgcType, {'ONcenterMidgetRGC'}), ...
+        sprintf('Invalid mosaicParams.rgcType: ''%s''.', mosaicParams.rgcType));
 
     resourcesRootDirectory = fullfile(...
                 MosaicPoolingOptimizer.localDropboxPath, ...
-                mosaicTypeSubDir);
+                sprintf('%smosaics',mosaicParams.rgcType));
 
     pdfsDirectory = fullfile(...
                 resourcesRootDirectory, ...
