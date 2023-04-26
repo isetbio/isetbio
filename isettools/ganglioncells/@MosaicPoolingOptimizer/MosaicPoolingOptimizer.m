@@ -79,7 +79,6 @@ classdef MosaicPoolingOptimizer < handle
             % Parse input
             p = inputParser;
             p.addRequired('theRGCmosaic', @(x)(isa(x, 'mRGCMosaic')));
-            p.addParameter('minSpatialSamplingDegs', 0.25, @isnumeric);
             p.addParameter('samplingScheme', 'hexagonal', @(x)(ismember(x, {'hexagonal', 'rectangular'})));
             p.addParameter('visualizeSamplingGrids', false, @islogical);
             p.addParameter('generateSamplingGrids', false, @islogical);
@@ -93,8 +92,12 @@ classdef MosaicPoolingOptimizer < handle
                 % Generate the nominal multifocal spatial sampling grid
                 obj.generateNominalSpatialSamplingGrid(p.Results.samplingScheme);
                 
+                % Sampling positions must be at least 0.25 degs, or 10 x min RGC RF
+                % spacing, whichever is larger
+                minSpatialSamplingDegs = max([0.25 10*min(obj.theRGCMosaic.rgcRFspacingsDegs(:))]);
+
                 % Generate the full multifocal sampling grids
-                obj.generateSamplingGrids(p.Results.minSpatialSamplingDegs);
+                obj.generateSamplingGrids(minSpatialSamplingDegs);
                 fprintf('Done \n');
 
                 if (p.Results.visualizeSamplingGrids)

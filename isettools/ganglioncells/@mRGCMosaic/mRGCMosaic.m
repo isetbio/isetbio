@@ -181,6 +181,9 @@ classdef mRGCMosaic < handle
             obj.cropRGCsOnTheBorder();
         end % Constructor
 
+        % Method to crop a compute-ready mRGCMosaic to size at an eccentricity
+        cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin);
+
         % Compute method
         [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin);
@@ -214,13 +217,14 @@ classdef mRGCMosaic < handle
         % Method to bake in center/surround cone pooling weights.
         % This method replaces the rgcRFcenterConeConnectivityMatrix with
         % the rgcRFcenterConePoolingMatrix & rgcRFsurroundConePoolingMatrix
-        % and can only be called by the MosaicPoolingOptimizer which
-        % optimized these weights based on input cone mosaic STF responses
-        % computed by computeInputConeMosaicSTFresponsesForNativeOptics
+        % It is called by the MosaicPoolingOptimizer.generateComputeReadyMidgetRGCMosaic()
+        % method which computes optimal center/surround weights for all RGCs in the mosaic
+        % by fitting the mRGC model to the Croner&Kaplan STF data 
         bakeInConePoolingMatrices(obj, centerConePoolingMatrix, surroundConePoolingMatrix);
 
         % Method to return the majority center cone type for an RGC
-        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = centerConeTypeWeights(obj, theRGCindex);
+        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = ...
+            centerConeTypeWeights(obj, theRGCindex);
 
         % Method to return the index of the RGC best matching the target
         % criteria

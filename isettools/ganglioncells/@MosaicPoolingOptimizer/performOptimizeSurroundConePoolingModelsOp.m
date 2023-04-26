@@ -30,23 +30,13 @@ function performOptimizeSurroundConePoolingModelsOp(mosaicParams, varargin)
     [opticsParams, ~, coneMosaicSTFresponsesFileName] = ...
         MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
-
     % Ask the user which H1 cell index to use for optimizing the RF
     % surround pooling model
     [retinalRFmodelParams, gridSamplingScheme, optimizedRGCpoolingObjectsFileName] = ...
             MosaicPoolingOptimizer.chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams);
 
-    
-
-    % Instantiate a MosaicPoolingOptimizer object with the center-connected
-    % mRGC mosaic
-    % Sampling positions must be at least 0.25 degs, or 10 x min RGC RF
-    % spacing, whichever is larger
-
-    minSpatialSamplingDegs = max([0.25 10*min(theMidgetRGCMosaic.rgcRFspacingsDegs(:))]);
     theMosaicPoolingOptimizerOBJ = MosaicPoolingOptimizer(...
          theMidgetRGCMosaic, ...
-         'minSpatialSamplingDegs', minSpatialSamplingDegs, ...
          'samplingScheme', gridSamplingScheme, ...
          'generateSamplingGrids', true, ...
          'visualizeSamplingGrids', true);
