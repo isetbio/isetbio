@@ -235,25 +235,9 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
         S.EdgeAlpha = 0.0;
         S.LineWidth = 2;
         patch(S, 'Parent', ax)
-        
-        if (~isempty(labelRGCsWithIndices))
-            hold(ax, 'on')
-            for iRGC = 1:numel(labelRGCsWithIndices)
-                theRGCindex = labelRGCsWithIndices(iRGC);
-                S = obj.visualizationCache.rfCenterContourData{theRGCindex}{1};
-                S.FaceVertexCData = 0.5;
-                S.FaceColor = 'flat';
-                S.EdgeColor = [1 1 0];
-                S.FaceAlpha = 0.0;
-                S.LineWidth = 2.0;
-                S.LineStyle = '-';
-                patch(S, 'Parent', ax);
-            end
-        end
     end
 
 
-    
     if (identifyPooledCones)
         hold(ax, 'on')
         if (identifyInputCones)
@@ -293,6 +277,25 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
             'domainVisualizationLimits', domainVisualizationLimits, ...
             'backgroundColor', backgroundColor);
     end
+
+
+    if (~isempty(labelRGCsWithIndices))
+        if (plotRFoutlines) || (~isempty(activation))
+            hold(ax, 'on')
+            for iRGC = 1:numel(labelRGCsWithIndices)
+                theRGCindex = labelRGCsWithIndices(iRGC);
+                S = obj.visualizationCache.rfCenterContourData{theRGCindex}{1};
+                S.FaceVertexCData = 0.5;
+                S.FaceColor = 'flat';
+                S.EdgeColor = [1 1 0];
+                S.FaceAlpha = 0.0;
+                S.LineWidth = 2.0;
+                S.LineStyle = '-';
+                patch(S, 'Parent', ax);
+            end
+        end
+    end
+
 
     % Finalize plot
     set(ax, 'FontSize', fontSize);

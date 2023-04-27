@@ -1,13 +1,18 @@
-function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, theAxes, varargin)
+function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, varargin)
     % Parse optional input
     p = inputParser;
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
+    p.addParameter('theAxes', [], @(x)(isempty(x)||(iscell(x))));
+
     p.parse(varargin{:});
     ff = p.Results.withFigureFormat;
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
+    theAxes = p.Results.theAxes;
+
+
 
     % Generate the visualization cache
     xSupport = [];
@@ -31,6 +36,13 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, theAxe
     inputConeMosaic = obj.inputConeMosaic;
 
     spatialSupportRangeArcMin = tickSeparationArcMin*4;
+
+    % Generate the axes
+    if (isempty(theAxes))
+        hFig = figure(); clf;
+        ff = MSreadyPlot.figureFormat('1x3 RF poster');
+        theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    end
 
     centerLineWeightingFunctions = mRGCMosaic.renderSubregionConePoolingPlot(theAxes{1,1}, ...
             inputConeMosaic, ...

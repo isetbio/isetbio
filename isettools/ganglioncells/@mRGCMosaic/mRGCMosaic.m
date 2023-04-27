@@ -199,10 +199,10 @@ classdef mRGCMosaic < handle
         % cone majority type
         theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(obj, ...
             targetRGCposition, targetCenterConesNum, ...
-            targetCenterConeMajorityType, theAxes, varargin);
+            targetCenterConeMajorityType, varargin);
 
         % Method to visual the spatial RF of an RGC with a specific index
-        visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj,theRGCindex, theAxes, varargin);
+        visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj,theRGCindex, varargin);
 
         % Method to generate optics for the mosaic.
         dataOut = generateOptics(obj, opticsParams);

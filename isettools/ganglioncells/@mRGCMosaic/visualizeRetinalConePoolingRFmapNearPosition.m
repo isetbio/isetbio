@@ -1,6 +1,6 @@
 function theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(obj, ...
     targetRGCposition, targetCenterConesNum, ...
-    targetCenterConeMajorityType, theAxes, ...
+    targetCenterConeMajorityType,  ...
     varargin)
 
     % Parse optional input
@@ -8,10 +8,13 @@ function theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(ob
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('theAxes', [], @(x)(isempty(x)||(iscell(x))));
     p.parse(varargin{:});
+    
     ff = p.Results.withFigureFormat;
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
+    theAxes = p.Results.theAxes;
 
     if (isempty(targetRGCposition))
         theVisualizedRGCindex = input('Enter index of target RGC : ');
@@ -31,7 +34,8 @@ function theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(ob
         end
     end
 
-    obj.visualizeRetinalConePoolingRFmapOfRGCwithIndex(theVisualizedRGCindex, theAxes, ...
+    obj.visualizeRetinalConePoolingRFmapOfRGCwithIndex(theVisualizedRGCindex, ...
+            'theAxes', theAxes, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
             'withFigureFormat', ff);
