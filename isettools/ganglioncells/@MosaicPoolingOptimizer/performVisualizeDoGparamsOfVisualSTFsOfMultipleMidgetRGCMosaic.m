@@ -35,7 +35,8 @@ function performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEc
       theMRGCSTFResponsesFileNames{iMosaic} = fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName);
    end % iEcc
 
-   [~, ~, pdfsDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
+   [~, ~, pdfsDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory', ...
+       'mosaicParams', mosaicParams);
 
    MosaicPoolingOptimizer.visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
             theMosaicFileNames, ...

@@ -34,7 +34,8 @@ function performVisualizeVisualRFmapForTargetRGC(mosaicParams, varargin)
     optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', '_optimallyMappedRFs.mat');
 
     % PDF directory
-    [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
+    [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory', ...
+        'mosaicParams', mosaicParams);
 
     MosaicPoolingOptimizer.visualizeVisualRFmapsForMultipleTargetRGCs(...
             theComputeReadyMRGCmosaic, ...

@@ -31,7 +31,8 @@ function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, 
             'opticsParams', opticsParams);
 
     % Get PDF directory
-    [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
+    [~,~,pdfDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory', ...
+        'mosaicParams', mosaicParams);
 
     % Ask the user which RGC to look for:
     % position, # of center cones, majority cone type

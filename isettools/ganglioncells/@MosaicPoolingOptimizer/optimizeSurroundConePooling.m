@@ -104,7 +104,8 @@ function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
                 theFinalPooledConeIndicesAndWeights, ...
                 rmseSequence);
 
-    [~,~,pdfsDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory');
+    [~,~,pdfsDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory', ...
+        'mosaicParams', mosaicParams);
     pdfFilename = fullfile(pdfsDirectory, sprintf('%s.pdf',figTitle));
    
     NicePlot.exportFigToPDF(pdfFilename, hFig, 300);
