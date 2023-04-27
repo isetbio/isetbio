@@ -32,17 +32,33 @@ function cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin)
             'rotation', 0.0...
         ));
 
-    % Find the RGCs whose position is within theROI
+    % Find the indices of the RGCs whose position is within theROI
     keptRGCindices = theROI.indicesOfPointsInside(obj.rgcRFpositionsDegs);
 
-    % Update the eccentricity and size of the cropped mRGCMosaic 
-    obj.eccentricityDegs = eccentricityDegs;
-    obj.eccentricityMicrons = obj.inputConeMosaic.distanceDegreesToDistanceMicronsForCmosaic(eccentricityDegs);
-    obj.sizeDegs = sizeDegs;
+    % Find cone indices to keep
+    keptConeIndices = [];
+    for iRGC = 1:numel(keptRGCindices)
+        coneIndices = find(squeeze(obj.rgcRFsurroundConePoolingMatrix(:, keptRGCindices(iRGC)))>0.000001);
+        keptConeIndices = unique(cat(1,keptConeIndices(:),coneIndices(:)));
+    end
 
-    % Update the inputConeMosaic of the cropped mRGCMosaic 
-    % For now we are keeping the entire inputConeMosaic
-    keptConeIndices = 1:obj.inputConeMosaic.conesNum;
+    % Determine the indices of cones to keep
+    xPos = obj.inputConeMosaic.coneRFpositionsDegs(keptConeIndices,1);
+    yPos = obj.inputConeMosaic.coneRFpositionsDegs(keptConeIndices,2);
+    xMinPos = min(xPos(:));
+    xMaxPos = max(xPos(:));
+    yMinPos = min(yPos(:));
+    yMaxPos = max(yPos(:));
+
+    keptAllConeTypeIndices = find(...
+        (obj.inputConeMosaic.coneRFpositionsDegs(:,1) >= xMinPos) & ...
+        (obj.inputConeMosaic.coneRFpositionsDegs(:,1) <= xMaxPos) & ...
+        (obj.inputConeMosaic.coneRFpositionsDegs(:,2) >= yMinPos) & ...
+        (obj.inputConeMosaic.coneRFpositionsDegs(:,2) <= yMaxPos) ...
+        );
+
+    % Update obj.inputConeMosaic to only include the keptConeIndices
+    obj.inputConeMosaic.cropMosaicToIncluceConesWithIndices(keptAllConeTypeIndices);
 
     % Update the rgcRFpositions and spacings of the cropped mRGCMosaic 
     obj.rgcRFpositionsMicrons = obj.rgcRFpositionsMicrons(keptRGCindices,:);
@@ -51,14 +67,19 @@ function cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin)
     obj.rgcRFspacingsDegs = obj.rgcRFspacingsDegs(1,keptRGCindices);
 
     % Crop obj.rgcRFcenterConePoolingMatrix to generate croppedCenterConePoolingMatrix
-    croppedCenterConePoolingMatrix = obj.rgcRFcenterConePoolingMatrix(keptConeIndices, keptRGCindices);
+    croppedCenterConePoolingMatrix = obj.rgcRFcenterConePoolingMatrix(keptAllConeTypeIndices, keptRGCindices);
 
     % Crop obj.rgcRFsurroundConePoolingMatrix to generate croppedSurroundConePoolingMatrix
-    croppedSurroundConePoolingMatrix = obj.rgcRFsurroundConePoolingMatrix(keptConeIndices, keptRGCindices);
+    croppedSurroundConePoolingMatrix = obj.rgcRFsurroundConePoolingMatrix(keptAllConeTypeIndices, keptRGCindices);
 
     % Update cone pooling matrices with the cropped versions
     obj.rgcRFcenterConePoolingMatrix = croppedCenterConePoolingMatrix;
     obj.rgcRFsurroundConePoolingMatrix = croppedSurroundConePoolingMatrix;
+
+    % Update the eccentricity and size of the cropped mRGCMosaic 
+    obj.eccentricityDegs = eccentricityDegs;
+    obj.eccentricityMicrons = obj.inputConeMosaic.distanceDegreesToDistanceMicronsForCmosaic(eccentricityDegs);
+    obj.sizeDegs = sizeDegs;
 
     % Reset the visualizationCache
     obj.visualizationCache = [];
