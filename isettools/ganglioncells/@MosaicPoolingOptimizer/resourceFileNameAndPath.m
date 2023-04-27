@@ -11,6 +11,7 @@ function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNam
     retinalRFmodelParams = p.Results.retinalRFmodelParams;
     
 
+    % Validate mosaicParams.rgcType
     assert(ismember(mosaicParams.rgcType, {'ONcenterMidgetRGC'}), ...
         sprintf('Invalid mosaicParams.rgcType: ''%s''.', mosaicParams.rgcType));
 
