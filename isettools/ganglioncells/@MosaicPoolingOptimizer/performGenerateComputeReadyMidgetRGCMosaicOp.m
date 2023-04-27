@@ -8,11 +8,12 @@ function performGenerateComputeReadyMidgetRGCMosaicOp(mosaicParams)
     % Load the generated center-only connected mRGCmosaic
     load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
 
-
     % Ask the user which optics were used for computing the input cone
     % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
     opticsParams = MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
+    % Generate and set the optics
+    theMidgetRGCMosaic.setTheOptics(opticsParams);
 
     % Ask the user which H1 cell index to use for optimizing the RF
     % surround pooling model
