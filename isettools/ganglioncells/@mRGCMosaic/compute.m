@@ -1,14 +1,16 @@
 % Method to compute the spatiotemporal response of the mRGCMosaic given the response of its input cone
 % mosaic
-function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj, ...
+function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSupportSeconds] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin)
 
     p = inputParser;
     p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
+    p.addParameter('vMembraneGaussianNoiseSigma', [], @(x)(isempty(x))||(isscalar(x)));
 
     % Parse input
     p.parse(varargin{:});
     timeResolutionSeconds = p.Results.timeResolutionSeconds;
+    vMembraneGaussianNoiseSigma = p.Results.vMembraneGaussianNoiseSigma;
 
     % Parse input
     assert(ndims(theConeMosaicResponse) == 3, ...
@@ -28,18 +30,18 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
 
     if (isempty(timeResolutionSeconds))
         timeResolutionSeconds = inputTimeResolutionSeconds;
-        theMRGCresponseTemporalSupportSeconds = theConeMosaicResponseTemporalSupportSeconds;
+        responseTemporalSupportSeconds = theConeMosaicResponseTemporalSupportSeconds;
     else
-        theMRGCresponseTemporalSupportSeconds = - inputTimeResolutionSeconds/2 + ...
-                                                (theConeMosaicResponseTemporalSupportSeconds(1)) : ...
+        responseTemporalSupportSeconds = - inputTimeResolutionSeconds/2 + ...
+                                                (responseTemporalSupportSeconds(1)) : ...
                                                 timeResolutionSeconds : ...
-                                                (theConeMosaicResponseTemporalSupportSeconds(end)+inputTimeResolutionSeconds/2);
+                                                (responseTemporalSupportSeconds(end)+inputTimeResolutionSeconds/2);
     end
 
    
     % Allocate memory for the computed responses
     nTrials = size(theConeMosaicResponse,1);
-    theMRGCresponses = zeros(nTrials, numel(theMRGCresponseTemporalSupportSeconds), obj.rgcsNum);
+    noiseFreeMRGCresponses = zeros(nTrials, numel(responseTemporalSupportSeconds), obj.rgcsNum);
     
     % Delta function center impulse response with a length of 200 mseconds
     theImpulseResponseTemporalSupport = 0:timeResolutionSeconds:0.2;
@@ -79,8 +81,18 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
                 theRFsurroundImpulseResponse);
         end
 
-        theMRGCresponses(:,:,iRGC) = centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations;
+        noiseFreeMRGCresponses(:,:,iRGC) = centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations;
     end % parfor
+
+    % vMembrane additive noise
+    if (~isempty(vMembraneGaussianNoiseSigma))
+        noisyMRGCresponseInstances = noiseFreeMRGCresponses + ...
+            vMembraneGaussianNoiseSigma * randn(size(noiseFreeMRGCresponses));
+    else
+        noisyMRGCresponseInstances = [];
+    end
+
+
 end
 
 
