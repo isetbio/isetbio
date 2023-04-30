@@ -9,7 +9,7 @@ function generateVisualizationCache(obj, xSupport, ySupport)
     tic
 
     % Compute graphic data for center contours
-    spatialSupportSamples = 24;
+    spatialSupportSamples = 64;
     
     if (~isempty(obj.rgcRFcenterConePoolingMatrix))
         minCenterConePoolingWeights = max(obj.rgcRFcenterConePoolingMatrix,[], 1)* 0.001;
@@ -109,10 +109,20 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
             end
         end
 
+        method = 'contourOfPooledConeApertureImage';
+        method = 'ellipseFitToPooledConeApertureImage';
 
-        theContourData{iRGC} = subregionOutlineContourFromPooledCones(...
-                 theConePositions, theConeRFRadii, theConePoolingWeights, ...
-                 xSupport, ySupport, spatialSupportSamples);
+        switch (method)
+            case 'contourOfPooledConeApertureImage'
+                theContourData{iRGC} = subregionOutlineContourFromPooledCones(...
+                     theConePositions, theConeRFRadii, theConePoolingWeights, ...
+                     xSupport, ySupport, spatialSupportSamples);
+
+            case 'ellipseFitToPooledConeApertureImage'
+                theContourData{iRGC} = subregionEllipseFromPooledCones(...
+                     theConePositions, theConeRFRadii, theConePoolingWeights, ...
+                     xSupport, ySupport, spatialSupportSamples);
+        end % switch
 
         s = theContourData{iRGC}{1};
         verticesNumForRGC(iRGC) = size(s.vertices,1);
@@ -177,6 +187,76 @@ function contourData = subregionOutlineContourFromPooledCones(...
 
     contourData = mRGCMosaic.contourDataFromDensityMap(spatialSupportXY, RF, zLevels);
 end
+
+function contourData = subregionEllipseFromPooledCones(...
+    conePos, coneRc, poolingWeights, ...
+    xSupport, ySupport, spatialSupportSamples)
+
+    % Compute spatial support
+    xSep = max(coneRc)*2*sqrt(numel(poolingWeights));
+    if (isempty(xSupport))
+        xx = conePos(:,1);
+        xSupport = linspace(min(xx)-xSep,max(xx)+xSep,spatialSupportSamples);
+    end
+
+    if (isempty(ySupport))
+        yy = conePos(:,2);
+        ySupport = linspace(min(yy)-xSep,max(yy)+xSep,spatialSupportSamples);
+    end
+
+    [X,Y] = meshgrid(xSupport, ySupport);
+    spatialSupportXY(:,1) = xSupport(:);
+    spatialSupportXY(:,2) = ySupport(:);
+
+    RF = zeros(size(X));
+    for iCone = 1:numel(poolingWeights)
+        % Characteristic radius of the input RF
+        rC = coneRc(iCone);
+        % Compute aperture2D x weight
+        XX = X-conePos(iCone,1);
+        YY = Y-conePos(iCone,2);
+        theAperture2D = poolingWeights(iCone) * exp(-(XX/rC).^2) .* exp(-(YY/rC).^2);
+        % Accumulate 2D apertures
+        RF = RF + theAperture2D;
+    end
+
+    % Binarize
+    RF = RF / max(RF(:));
+    RF(RF<0.04) = 0.0;
+    RF(RF>0) = 1.0;
+    BW = imbinarize(RF);
+
+
+    % Extract the maximum area
+    BW = imclearborder(BW);
+    BW = bwareafilt(BW,1);
+
+    % Calculate centroid, orientation and major/minor axis length of the ellipse
+    s = regionprops(BW,{'Centroid','Orientation','MajorAxisLength','MinorAxisLength'});
+
+
+    % Calculate the ellipse line
+    theta = linspace(0, 2*pi, 10);
+    col = (s.MajorAxisLength/2)*cos(theta);
+    row = (s.MinorAxisLength/2)*sin(theta);
+    M = makehgtform('translate',[s.Centroid, 0],'zrotate',deg2rad(-1*s.Orientation));
+    D = M*[col;row;zeros(1,numel(row));ones(1,numel(row))];
+
+    x = D(1,:);
+    y = D(2,:);
+
+    x = x(:);
+    y = y(:);
+    x = (x-1)/(numel(xSupport)-1) * (xSupport(end)-xSupport(1)) + xSupport(1); 
+    y = (y-1)/(numel(ySupport)-1) * (ySupport(end)-ySupport(1)) + ySupport(1); 
+
+    v = [x(:) y(:)];
+    f = 1:numel(x);
+    contourData{1} = struct('faces', f, 'vertices', v);
+end
+
+
+
 
 
 

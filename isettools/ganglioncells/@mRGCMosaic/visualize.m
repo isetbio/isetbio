@@ -242,8 +242,8 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
             S.EdgeColor = [0 0 0];
         end
         S.FaceAlpha = 0.4;
-        S.EdgeAlpha = 0.0;
-        S.LineWidth = 2;
+        S.EdgeAlpha = 1.0;
+        S.LineWidth = 1;
         patch(S, 'Parent', ax)
     end
 
