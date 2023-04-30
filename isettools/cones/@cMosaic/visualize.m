@@ -83,7 +83,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('clearAxesBeforeDrawing', true, @islogical);
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
-    p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('backgroundColor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
     p.addParameter('plotTitleFontSize', 16, @isscalar);

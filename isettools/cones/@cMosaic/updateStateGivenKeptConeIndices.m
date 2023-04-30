@@ -12,6 +12,17 @@ function updateStateGivenKeptConeIndices(obj, keptConeIndices)
     if (~isempty(obj.coneApertureRodIntrusionInducedShrinkageFactors))
         obj.coneApertureRodIntrusionInducedShrinkageFactors = obj.coneApertureRodIntrusionInducedShrinkageFactors(keptConeIndices);
     end
+
+    minRFpositionDegs = squeeze(min(obj.coneRFpositionsDegs,[],1));
+    maxRFpositionDegs = squeeze(max(obj.coneRFpositionsDegs,[],1));
+    minRFpositionMicrons = squeeze(min(obj.coneRFpositionsMicrons,[],1));
+    maxRFpositionMicrons = squeeze(max(obj.coneRFpositionsMicrons,[],1));
+
+    obj.eccentricityDegs = 0.5*(maxRFpositionDegs+minRFpositionDegs);
+    obj.eccentricityMicrons = 0.5*(maxRFpositionMicrons+minRFpositionMicrons);
+
+    obj.sizeDegs = maxRFpositionDegs-minRFpositionDegs;
+
     keptConeIndices = keptConeIndices(:);
     theConeIndices = obj.coneIndicesInZones;
     parfor zoneBandIndex = 1:numel(theConeIndices)

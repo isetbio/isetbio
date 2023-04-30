@@ -423,7 +423,9 @@ function opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj
     if ((ischar(opticalImagePositionDegs))&&(strcmp(opticalImagePositionDegs, 'mosaic-centered')))
         opticalImagePositionMicrons = obj.eccentricityMicrons;
     elseif ((isnumeric(opticalImagePositionDegs))&&(numel(opticalImagePositionDegs)==2))
-        opticalImagePositionMicrons = obj.distanceDegreesToDistanceMicronsForCmosaic(opticalImagePositionDegs);
+        opticalImagePositionMicrons = opticalImagePositionDegs * obj.micronsPerDegree; 
+        % USED TO BE: opticalImagePositionMicrons = obj.distanceDegreesToDistanceMicronsForCmosaic(opticalImagePositionDegs);
+        % BUT THIS WAS PROBLEMATIC AT HIGH ECCENTRICITIES.
     else
         error('''opticalImagePositionDegs'' must be set to either ''mosaic-centered'' or to a 2-element vector.');
     end
