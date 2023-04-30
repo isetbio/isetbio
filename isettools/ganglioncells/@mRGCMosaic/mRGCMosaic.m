@@ -185,7 +185,7 @@ classdef mRGCMosaic < handle
         cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin);
 
         % Compute method
-        [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj, ...
+        [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSupportSeconds] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin);
 
         % Method to generate the visualization cache

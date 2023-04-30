@@ -9,7 +9,7 @@ function generateVisualizationCache(obj, xSupport, ySupport)
     tic
 
     % Compute graphic data for center contours
-    spatialSupportSamples = 64;
+    spatialSupportSamples = 48;
     
     if (~isempty(obj.rgcRFcenterConePoolingMatrix))
         minCenterConePoolingWeights = max(obj.rgcRFcenterConePoolingMatrix,[], 1)* 0.001;
@@ -244,9 +244,6 @@ function contourData = subregionEllipseFromPooledCones(...
 
     x = D(1,:);
     y = D(2,:);
-
-    x = x(:);
-    y = y(:);
     x = (x-1)/(numel(xSupport)-1) * (xSupport(end)-xSupport(1)) + xSupport(1); 
     y = (y-1)/(numel(ySupport)-1) * (ySupport(end)-ySupport(1)) + ySupport(1); 
 

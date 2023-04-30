@@ -35,7 +35,7 @@ function cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin)
     % Find the indices of the RGCs whose position is within theROI
     keptRGCindices = theROI.indicesOfPointsInside(obj.rgcRFpositionsDegs);
 
-    % Find cone indices to keep
+    % Find cone indices to keep based on the surrounds of the kept RGCs
     keptConeIndices = [];
     for iRGC = 1:numel(keptRGCindices)
         coneIndices = find(squeeze(obj.rgcRFsurroundConePoolingMatrix(:, keptRGCindices(iRGC)))>0.000001);
@@ -77,9 +77,15 @@ function cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin)
     obj.rgcRFsurroundConePoolingMatrix = croppedSurroundConePoolingMatrix;
 
     % Update the eccentricity and size of the cropped mRGCMosaic 
-    obj.eccentricityDegs = eccentricityDegs;
-    obj.eccentricityMicrons = obj.inputConeMosaic.distanceDegreesToDistanceMicronsForCmosaic(eccentricityDegs);
-    obj.sizeDegs = sizeDegs;
+    minRFpositionDegs = squeeze(min(obj.rgcRFpositionsDegs,[],1));
+    maxRFpositionDegs = squeeze(max(obj.rgcRFpositionsDegs,[],1));
+    minRFpositionMicrons = squeeze(min(obj.rgcRFpositionsMicrons,[],1));
+    maxRFpositionMicrons = squeeze(max(obj.rgcRFpositionsMicrons,[],1));
+
+    obj.eccentricityDegs = 0.5*(maxRFpositionDegs+minRFpositionDegs);
+    obj.eccentricityMicrons = 0.5*(maxRFpositionMicrons+minRFpositionMicrons);
+ 
+    obj.sizeDegs = maxRFpositionDegs-minRFpositionDegs;
 
     % Reset the visualizationCache
     obj.visualizationCache = [];
