@@ -29,9 +29,10 @@ function visualize(obj, varargin)
     p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
     p.addParameter('colorbarTickLabelColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
-    p.addParameter('backgroundColor', [1 1 1], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('backgroundColor', [1 1 1], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
+    p.addParameter('plotTitleFontSize', 16, @isscalar);
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
    
@@ -66,6 +67,8 @@ function visualize(obj, varargin)
     colorbarFontSize = p.Results.colorbarFontSize;
     plotTitle = p.Results.plotTitle;
     plotTitleColor = p.Results.plotTitleColor;
+    plotTitleFontSize = p.Results.plotTitleFontSize;
+
 
     % Generate the visualization cache
     xSupport = [];
@@ -151,7 +154,7 @@ function visualize(obj, varargin)
                 verticalColorBar, horizontalColorBar, colorbarFontSize, ...
                 verticalColorBarInside, horizontalColorBarInside, ...
                 backgroundColor, fontSize, ...
-                plotTitle, plotTitleColor);
+                plotTitle, plotTitleColor, plotTitleFontSize);
 
         otherwise
             error('Uknown visualized component: ''%s''.', visualizedComponent);
@@ -178,7 +181,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
         colorBarTickLabelPostFix, colorbarTickLabelColor, ...
         verticalColorBar, horizontalColorBar, colorbarFontSize, ...
         verticalColorBarInside, horizontalColorBarInside, ...
-        backgroundColor, fontSize, plotTitle, plotTitleColor)
+        backgroundColor, fontSize, plotTitle, plotTitleColor,  plotTitleFontSize)
 
     
     if (isempty(ax))
@@ -195,6 +198,13 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
             cMap = gray(obj.rgcsNum);
         else
             cMap = activationColorMap;
+        end
+        
+        if (ischar(backgroundColor) && strcmp(backgroundColor, 'mean of color map'))
+            midRow = round(size(cMap,1)/2);
+            backgroundColor = squeeze(cMap(midRow,:));
+        elseif (isempty(backgroundColor))
+            backgroundColor = squeeze(cMap(1,:));
         end
         
         if (isempty(activationRange))
@@ -310,6 +320,10 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
         set(ax, 'CLim', [0 1], 'Color', backgroundColor);
     end
 
+    if (isempty(colorbarTickLabelColor))
+        colorbarTickLabelColor = [1 0.5 0];
+    end
+    
     box(ax, 'on')
 
     % Colorbar and colorbar ticks
@@ -357,7 +371,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
     end
 
     if (plotTitle)    
-       title(ax, plotTitle, 'Color', plotTitleColor);
+       title(ax, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
     end
 
 
