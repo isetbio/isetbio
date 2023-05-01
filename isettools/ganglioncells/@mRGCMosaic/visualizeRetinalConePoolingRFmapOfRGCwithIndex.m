@@ -12,8 +12,6 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
     theAxes = p.Results.theAxes;
 
-
-
     % Generate the visualization cache
     xSupport = [];
     ySupport = []; 

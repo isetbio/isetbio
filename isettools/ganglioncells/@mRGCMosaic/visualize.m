@@ -4,6 +4,7 @@ function visualize(obj, varargin)
     p = inputParser;
     p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+    p.addParameter('clearAxesBeforeDrawing', true, @islogical);
     p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('component', 'RF centers', @(x)ismember(x, {'RF centers'}));
     p.addParameter('activation', []);
@@ -42,6 +43,7 @@ function visualize(obj, varargin)
 
     hFig = p.Results.figureHandle;
     ax = p.Results.axesHandle;
+    clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
@@ -148,7 +150,7 @@ function visualize(obj, varargin)
 
     switch (visualizedComponent)
         case 'RF centers'
-            [hFig, ax] = visualizeRFcenters(obj, hFig, ax, ...
+            [hFig, ax] = visualizeRFcenters(obj, hFig, ax, clearAxesBeforeDrawing, ...
                 labelRetinalMeridians, ...
                 domainVisualizationTicks, domainVisualizationLimits, ...
                 identifiedConeAperture, identifiedConeApertureThetaSamples, ...
@@ -177,7 +179,7 @@ function visualize(obj, varargin)
 end
 
 
-function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
+function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, ...
         labelRetinalMeridians, ...
         domainVisualizationTicks, domainVisualizationLimits, ...
         identifiedConeAperture, identifiedConeApertureThetaSamples, ...
@@ -196,6 +198,10 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
             set(hFig, 'Color', [1 1 1], 'Position', [10 10 1120 1050], 'Name', obj.name);
         end
         ax = subplot('Position', [0.05 0.05 0.95 0.95]);
+    else
+        if (clearAxesBeforeDrawing)
+            cla(ax);
+        end
     end
 
     if (~isempty(activation))
@@ -247,7 +253,12 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, ...
             S.FaceColor = [0.95 0.95 0.95]*0.6;
             S.EdgeColor = [0 0 0];
         end
-        S.FaceAlpha = 0.4;
+        if (isempty(activation))
+            S.FaceAlpha = 0.4;
+        else
+            S.FaceAlpha = 0.9;
+        end
+
         S.EdgeAlpha = 1.0;
         S.LineWidth = 1;
         patch(S, 'Parent', ax)

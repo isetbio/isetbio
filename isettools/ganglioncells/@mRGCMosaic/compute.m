@@ -55,6 +55,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         centerConnectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
         centerConeIndices = find(centerConnectivityVector > 0.0001);
         centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
+        
 
         % Retrieve the surround cone indices & weights
         surroundConnectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix (:, iRGC)));
@@ -81,7 +82,11 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
                 theRFsurroundImpulseResponse);
         end
 
-        noiseFreeMRGCresponses(:,:,iRGC) = centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations;
+        % Composite response gain: inversely proportional to sum(centerWeights)
+        responseGain = 1.0 / sum(centerConeWeights);
+
+        % Composite respose
+        noiseFreeMRGCresponses(:,:,iRGC) = responseGain * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
     end % parfor
 
     % vMembrane additive noise
@@ -91,8 +96,6 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     else
         noisyMRGCresponseInstances = [];
     end
-
-
 end
 
 
