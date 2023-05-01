@@ -25,11 +25,6 @@ mosaicParams = struct(...
     'sizeDegs',  [6 3], ...
     'rgcType', 'ONcenterMidgetRGC');
 
-% mosaicParams = struct(...
-%     'eccDegs', [0 0], ...
-%     'sizeDegs',  [2 2], ...
-%     'rgcType', 'ONcenterMidgetRGC');
-
 % Neurons of the pre-computed mRGCMosaic have spatiall RFs that were 
 % optimized for the following optics.
 opticsParams = struct(...
@@ -53,15 +48,8 @@ retinalRFmodelParams = struct(...
 % These parameters are encoded in the filename that contains the mRGCMosaic. 
 % To inspect the available pre-computed ON-center mRGCMosaics do the following:
 %{
-    p = getpref('isetbio');
-    switch (p.rgcResources.method)
-       case 'localFile'
-           allRGCmosaicsRootDir = p.rgcResources.URLpath;
-       otherwise
-          error('Unknown rgcResourcesMethod: ''%''.', p.rgcResources.method)
-    end % switch
-    ONcenterMidgetRGCmosaicsRootDir = fullfile(allRGCmosaicsRootDir,'ONcenterMidgetRGCmosaics', 'computeReadyMosaics');
-    dir(ONcenterMidgetRGCmosaicsRootDir)
+    rgcMosaicType = 'ONcenter';
+    mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
 %}
 
 %% Load the mRGCMosaic with the specified mosaic, optical, and
@@ -77,16 +65,13 @@ theComputeReadyRGCMosaic.visualize(...
     'identifyPooledCones', true, ...
     'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
     'plotTitle', 'full mosaic');
-
+pause
 
 %% Crop the mRGCMosaic (if so desired)
 % We can use this pre-computed mRGC as-is, or we can crop it to a smaller
 % size. Lets crop it to a [1.3 x 1.0] region centered at [5, 0]
 sizeDegs = [1.2 1.0];
 eccentricityDegs = [5 0];
-
-% sizeDegs = [0.4 0.4];
-% eccentricityDegs = [0.3 0];
 
 % Crop it to desired size
 theComputeReadyRGCMosaic.cropToSizeAtEccentricity(sizeDegs, eccentricityDegs);
@@ -247,7 +232,7 @@ coneContrasts = [1 1 1];
 backgroundLuminanceCdM2 = 50.0;
 backgroundChromaticity = [0.301 0.301];
 orientationDegs = 90;
-spatialFrequencyCPD = 0.5;
+spatialFrequencyCPD = 20.0;
 driftingPhaseIncrementDegs = 20;
 
 stimPositionDegs = theComputeReadyRGCMosaic.eccentricityDegs;
@@ -341,7 +326,7 @@ for iFrame = 0:framesNum
     % Compute noisy mRGC mosaic response instances operating
     % on the noisy cone mosaic response modulation with additive vMembrane
     % noise with custom sigma
-    vMembraneGaussianNoiseSigma = 0.2;
+    vMembraneGaussianNoiseSigma = 0.15;
     [noisyMRGCMosaicResponseInstances, noisyMRGCMosaicResponseInstancesWithAdditiveMembraneNoise] = theComputeReadyRGCMosaic.compute( ...
              noisyConeMosaicResponseInstancesModulation, theConeMosaicResponseTemporalSupportSeconds, ...
              'vMembraneGaussianNoiseSigma', vMembraneGaussianNoiseSigma);
@@ -374,8 +359,11 @@ if (visualizeConeMosaicResponses)
     figure(hFig);
 
     % The activation ranges
-    coneMosaicActivationRange = [-1 1]*max(abs(theNoiseFreeConeMosaicModulationResponses(:)));
-    mRGCMosaicActivationRange = [-1 1]*prctile(abs(theNoisyMRGCMosaicResponseInstances(:)),99);
+    %  coneMosaicActivationRange = 0.74 (0.5cpd),  0.63 (5.0cpd), 0.4789 (10cpd)
+    %  mRGCMosaicActivationRange = 0.38 (0.5cpd),  0.52 (5.0cpd), 0.4267 (10cpd)
+    coneMosaicActivationRange = 0.75*[-1 1]; %[-1 1]*max(abs(theNoiseFreeConeMosaicModulationResponses(:)))
+    mRGCMosaicActivationRange = 0.50*[-1 1]; %[-1 1]*prctile(abs(theNoisyMRGCMosaicResponseInstances(:)),99)
+    
 
     %% Visualize each frame
     for iFrame = 1:framesNum

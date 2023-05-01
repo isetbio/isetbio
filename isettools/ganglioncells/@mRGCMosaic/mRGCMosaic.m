@@ -295,6 +295,9 @@ classdef mRGCMosaic < handle
 
         % Method to generate iso-sensitivity contour data for a 2D map at a specified set of levels
         cData = contourDataFromDensityMap(spatialSupportXY, zData, zLevels);
+
+        % Method to list the available compute-ready mosaics
+        availableComputeReadyMosaics(rgcMosaicType);
     end % Static methods
 
 end

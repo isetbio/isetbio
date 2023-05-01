@@ -5,6 +5,8 @@ function [targetCenterConesNumNotMatched, theCurrentRGCindex] = indexOfRGCNearPo
     theCurrentRGCindex = [];
     iRGC = 0;
 
+    beVerbose = false;
+
     d = (bsxfun(@minus, obj.rgcRFpositionsDegs, targetRGCposition)).^2;
     d = sqrt(sum(d,2));
     [sortedDistances,sortedRGCindices] = sort(d,'ascend');
@@ -18,18 +20,28 @@ function [targetCenterConesNumNotMatched, theCurrentRGCindex] = indexOfRGCNearPo
 
         if (isnan(targetCenterConeMajorityType))
             if (sum(theCenterConeTypeNum) ~= targetCenterConesNum) || (~isnan(theMajorityConeType))
+                if (beVerbose)
                 fprintf('Nope: cell at distance %2.3f has %d cones in the center with majority type %d\n', ...
                     sortedDistances(iRGC), sum(theCenterConeTypeNum), theMajorityConeType);
+                end
             else
                 targetCenterConesNumNotMatched = false;
             end
         else
             if (sum(theCenterConeTypeNum) ~= targetCenterConesNum) || (theMajorityConeType ~= targetCenterConeMajorityType)
+                if (beVerbose)
                 fprintf('Nope: cell at distance %2.3f has %d cones in the center with majority type %d\n', ...
                     sortedDistances(iRGC), sum(theCenterConeTypeNum), theMajorityConeType);
+                end
             else
                 targetCenterConesNumNotMatched = false;
             end
         end
     end
+
+    if (targetCenterConesNumNotMatched)
+        fprintf(2, 'Did not find an RGC near (%2.1f, %2.1f) with %d center cones of type %d\n', ...
+            targetRGCposition(1), targetRGCposition(2), targetCenterConesNum, targetCenterConeMajorityType)
+    end
+
 end
