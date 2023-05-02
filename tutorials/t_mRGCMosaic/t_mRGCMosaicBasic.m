@@ -54,7 +54,7 @@ retinalRFmodelParams = struct(...
 
 %% Load the mRGCMosaic with the specified mosaic, optical, and
 % retinalRFmodel params.
-theComputeReadyRGCMosaic = loadSourceComputeReadyRGCMosaic(mosaicParams, opticsParams, retinalRFmodelParams);
+theComputeReadyRGCMosaic = mRGCMosaic.loadComputeReadyRGCMosaic(mosaicParams, opticsParams, retinalRFmodelParams);
 
 %% Visualize the mRGCMosaic
 % Lets visualize it together with its input cone mosaic.
@@ -544,32 +544,6 @@ function hFig = visualizeResponseTimeSeries(figNo, mRGCMosaicResponseInstances, 
     end
 end
 
-function theSourceRGCMosaic = loadSourceComputeReadyRGCMosaic(mosaicParams, opticsParams, retinalRFmodelParams)
-
-    % Load the compute-ready RGC mosaic
-    [computeReadyMosaicFileName, resourcesDirectory] = ...
-            MosaicPoolingOptimizer.resourceFileNameAndPath('computeReadyMosaic', ...
-                'mosaicParams', mosaicParams, ...
-                'opticsParams', opticsParams, ...
-                'retinalRFmodelParams', retinalRFmodelParams);
-    
-    sourceRGCMosaicFileName = fullfile(resourcesDirectory, computeReadyMosaicFileName);
-
-    fprintf('Will try to load %s ... \n', sourceRGCMosaicFileName)
-    fprintf('from %s ... \n', resourcesDirectory);
-
-    % Check that the mosaic directory exists
-    assert(isfolder(resourcesDirectory), sprintf('Mosaic directory (''%s'') not found.', resourcesDirectory));
-
-    % Check that the mosaic file exists
-    assert(isfile(sourceRGCMosaicFileName), sprintf('Mosaic file (''%s'') not found.', sourceRGCMosaicFileName));
-
-    % Mosaic file found, so load the data
-    load(sourceRGCMosaicFileName, 'theComputeReadyMRGCmosaic');
-    theSourceRGCMosaic = theComputeReadyMRGCmosaic;
-    clear 'theComputeReadyMRGCmosaic';
-    fprintf('Loaded source mosaic.\n');
-end
 
 
 function thePSFData = retrievePSF(theOI, micronsPerDegree, visualizedWavelength)

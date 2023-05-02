@@ -298,6 +298,9 @@ classdef mRGCMosaic < handle
 
         % Method to list the available compute-ready mosaics
         availableComputeReadyMosaics(rgcMosaicType);
+
+        % Method to load a compute-ready mosaic
+        theComputeReadyMRGCmosaic = loadComputeReadyRGCMosaic(mosaicParams, opticsParams, retinalRFmodelParams);
     end % Static methods
 
 end
