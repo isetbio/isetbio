@@ -5,11 +5,12 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
 
     p = inputParser;
     p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
+    p.addParameter('seed', 1, @isnumeric);
 
     % Parse input
     p.parse(varargin{:});
     timeResolutionSeconds = p.Results.timeResolutionSeconds;
-    
+    noiseSeed = p.Results.seed;
 
     % Parse input
     assert(ndims(theConeMosaicResponse) == 3, ...
@@ -89,6 +90,15 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     end % parfor
 
     % vMembrane additive noise
+
+    % Set up RNG depending on noiseFlag
+    switch (obj.noiseFlag)
+        case 'frozen'
+            rng(noiseSeed);
+        case 'random'
+            rng('shuffle');
+    end
+
     fprintf('Computing noisy mRGC response instances with vMembrane noise std = %2.3f\n', obj.vMembraneGaussianNoiseSigma);
     noisyMRGCresponseInstances = noiseFreeMRGCresponses + ...
             obj.vMembraneGaussianNoiseSigma * randn(size(noiseFreeMRGCresponses));
