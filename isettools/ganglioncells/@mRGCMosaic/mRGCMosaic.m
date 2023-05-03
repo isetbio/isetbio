@@ -6,6 +6,18 @@ classdef mRGCMosaic < handle
         % Name of the mosaic
         name;
 
+        % Noise flag for mRGC responses
+        noiseFlag;
+
+        % Random seed
+        randomSeed = [];
+
+        % Noise flag and randomSeed for the inputConeMosaic
+        inputConeMosaicNoiseFlag;
+        inputConeMosaicRandomSeed = [];
+
+        % vMembrane noise sigma
+        vMembraneGaussianNoiseSigma = 0.1;
     end % Public properties
 
 
@@ -240,6 +252,9 @@ classdef mRGCMosaic < handle
         % Stats on the center cones
         centerConesNumCases = centerConePoolingStats(obj);
 
+        % Method to set the noiseFlags for the mRGCmosaic and for its inputConeMosaic
+        setNoiseFlags(obj, varargin);
+
         % Getter for dependent property cellsNum
         function val = get.rgcsNum(obj)
             val = size(obj.rgcRFpositionsDegs,1);
@@ -259,6 +274,7 @@ classdef mRGCMosaic < handle
         function val = get.verticalRetinalMeridian(obj)
             val = obj.inputConeMosaic.verticalRetinalMeridian;
         end
+
 
     end % Public methods
 

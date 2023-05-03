@@ -12,9 +12,18 @@ function cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin)
 
     assert(~isempty(obj.rgcRFcenterConePoolingMatrix), 'This is not a compute-ready mosaic.');
     assert(~isempty(obj.rgcRFsurroundConePoolingMatrix), 'This is not a compute-ready mosaic.');
-    assert(numel(eccentricityDegs)==2, 'eccentricity must be a 2-element vector');
-    assert(numel(sizeDegs)==2, 'size must be a 2-element vector');
+    assert(isempty(eccentricityDegs)||numel(eccentricityDegs)==2, 'eccentricity must be either [] OR a 2-element vector');
+    assert(isempty(sizeDegs)||numel(sizeDegs)==2, 'size must be either [] (no cropping) OR a 2-element vector');
 
+    if (isempty(sizeDegs))
+        % No cropping
+        return;
+    end
+    
+    if (isempty(eccentricityDegs))
+        % Crop at the mosaic's center
+        eccentricityDegs = obj.eccentricityDegs;
+    end
 
     name = p.Results.name;
     visualizeSpatialRelationshipToSourceMosaic = p.Results.visualizeSpatialRelationshipToSourceMosaic;
