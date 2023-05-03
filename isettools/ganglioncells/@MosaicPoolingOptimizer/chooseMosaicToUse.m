@@ -1,7 +1,7 @@
 function mosaicEcc =  chooseMosaicToUse()
 
     % Select optics to employ
-    availableMosaicEccs = {'  0.0', '  2.5', '  7.0', '-10.0', '-20.0'};
+    availableMosaicEccs = {'  0.0', '  2.5', '  7.0', '-10.0', '-16.0'};
     availableMosaicEccsNoSpaces = strrep(availableMosaicEccs, ' ', '');
 
     theChoice = 'invalid';
