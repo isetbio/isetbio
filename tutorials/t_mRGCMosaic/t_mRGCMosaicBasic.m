@@ -326,10 +326,11 @@ for iFrame = 0:framesNum
     % Compute noisy mRGC mosaic response instances operating
     % on the noisy cone mosaic response modulation with additive vMembrane
     % noise with custom sigma
-    vMembraneGaussianNoiseSigma = 0.15;
+    theComputeReadyRGCMosaic.vMembraneGaussianNoiseSigma = 0.15;
+    theComputeReadyRGCMosaic.noiseFlag = 'random';
+
     [noisyMRGCMosaicResponseInstances, noisyMRGCMosaicResponseInstancesWithAdditiveMembraneNoise] = theComputeReadyRGCMosaic.compute( ...
-             noisyConeMosaicResponseInstancesModulation, theConeMosaicResponseTemporalSupportSeconds, ...
-             'vMembraneGaussianNoiseSigma', vMembraneGaussianNoiseSigma);
+             noisyConeMosaicResponseInstancesModulation, theConeMosaicResponseTemporalSupportSeconds);
 
 
     % Save responses in single precision
