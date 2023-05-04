@@ -12,16 +12,20 @@ function noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses
     end
 
     % Set up RNG depending on noiseFlag
-    switch (obj.noiseFlag)
+    switch obj.noiseFlag
+        case 'none'
+            noiseGain = 0.0;
         case 'frozen'
             rng(seed);
+            noiseGain = 1.0;
         case 'random'
             rng('shuffle');
+            noiseGain = 1.0;
     end
 
     % vMembrane additive noise
-    fprintf('Computing noisy mRGC response instances with vMembrane noise std = %2.3f\n', obj.vMembraneGaussianNoiseSigma);
+    fprintf('Computing noisy mRGC response instances with vMembrane noise std = %2.3f\n', noiseGain * obj.vMembraneGaussianNoiseSigma);
     noisyMRGCresponseInstances = noiseFreeMRGCresponses + ...
-                obj.vMembraneGaussianNoiseSigma * randn(size(noiseFreeMRGCresponses));
+                noiseGain * obj.vMembraneGaussianNoiseSigma * randn(size(noiseFreeMRGCresponses));
 
 end
