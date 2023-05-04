@@ -5,7 +5,8 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
 
     p = inputParser;
     p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
-    p.addParameter('seed', 1, @isnumeric);
+    p.addParameter('seed', [], @isnumeric);
+    
 
     % Parse input
     p.parse(varargin{:});
@@ -89,19 +90,9 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         noiseFreeMRGCresponses(:,:,iRGC) = responseGain * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
     end % parfor
 
-    % vMembrane additive noise
-
-    % Set up RNG depending on noiseFlag
-    switch (obj.noiseFlag)
-        case 'frozen'
-            rng(noiseSeed);
-        case 'random'
-            rng('shuffle');
-    end
-
-    fprintf('Computing noisy mRGC response instances with vMembrane noise std = %2.3f\n', obj.vMembraneGaussianNoiseSigma);
-    noisyMRGCresponseInstances = noiseFreeMRGCresponses + ...
-            obj.vMembraneGaussianNoiseSigma * randn(size(noiseFreeMRGCresponses));
+    % Generate noisy instances
+    noisyMRGCresponseInstances = obj.noisyInstances(noiseFreeMRGCresponses, ...
+        'seed', noiseSeed);
 end
 
 

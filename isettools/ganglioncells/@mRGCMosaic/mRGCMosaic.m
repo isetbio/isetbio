@@ -200,6 +200,9 @@ classdef mRGCMosaic < handle
         [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSupportSeconds] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin);
 
+        % Method to compute noisy mRGCresponse instances
+        noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses, varargin);
+
         % Method to generate the visualization cache
         generateVisualizationCache(obj, xSupport, ySupport);
 
@@ -251,9 +254,6 @@ classdef mRGCMosaic < handle
 
         % Stats on the center cones
         centerConesNumCases = centerConePoolingStats(obj);
-
-        % Method to set the noiseFlags for the mRGCmosaic and for its inputConeMosaic
-        setNoiseFlags(obj, varargin);
 
         % Getter for dependent property cellsNum
         function val = get.rgcsNum(obj)
@@ -317,6 +317,8 @@ classdef mRGCMosaic < handle
 
         % Method to load a compute-ready mosaic
         theComputeReadyMRGCmosaic = loadComputeReadyRGCMosaic(mosaicParams, opticsParams, retinalRFmodelParams);
+
+        
     end % Static methods
 
 end
