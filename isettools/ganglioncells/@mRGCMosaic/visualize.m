@@ -32,7 +32,7 @@ function visualize(obj, varargin)
     p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
     p.addParameter('colorbarTickLabelColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
-    p.addParameter('backgroundColor', [1 1 1], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('backgroundColor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
     p.addParameter('plotTitleFontSize', 16, @isscalar);
@@ -237,6 +237,10 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             currentFacesNum = currentFacesNum + newVerticesNum;
         end
     else
+        if (isempty(backgroundColor))
+            backgroundColor = [1 1 1];
+        end
+
         % All mRGC centers in gray
         cMap = [0 0 0; 0.5 0.5 0.5; 0 0 0];
         S.FaceVertexCData = obj.visualizationCache.rfCenterPatchData.faceVertexCData*0+0.5;
