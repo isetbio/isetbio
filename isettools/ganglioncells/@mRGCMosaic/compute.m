@@ -90,6 +90,12 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         noiseFreeMRGCresponses(:,:,iRGC) = responseGain * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
     end % parfor
 
+    % Check noiseFlag. If empty, set it to 'random'
+    if (isempty(obj.noiseFlag))
+        fprintf('Warning: The mRGCMosaic.noiseFlag not set before calling the compute() method. Setting it to ''random''.');
+        obj.noiseFlag = 'random';
+    end
+
     % Generate noisy instances
     noisyMRGCresponseInstances = obj.noisyInstances(noiseFreeMRGCresponses, ...
         'seed', noiseSeed);

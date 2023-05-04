@@ -1,5 +1,5 @@
 function renderResponseTimeSeriesPlot(ax, temporalSupport, response, ...
-    responseRange, responseColorMap, ...
+    responseRange, ...
     xLabelTitle, yLabelTitle, plotTitle, ff, varargin)
     
     p = inputParser;
@@ -73,9 +73,6 @@ function renderResponseTimeSeriesPlot(ax, temporalSupport, response, ...
 
     % axis color and width
     set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
-    
-    % Colormap
-    colormap(responseColorMap);
 
     % plot title
     if (~isempty(plotTitle))

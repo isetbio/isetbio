@@ -12,7 +12,7 @@ function noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses
     end
 
     % Set up RNG depending on noiseFlag
-    switch obj.noiseFlag
+    switch (obj.noiseFlag)
         case 'frozen'
             rng(seed);
         case 'random'

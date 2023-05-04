@@ -12,17 +12,17 @@ classdef mRGCMosaic < handle
         % Random seed
         randomSeed = [];
 
-        % Noise flag and randomSeed for the inputConeMosaic
-        inputConeMosaicNoiseFlag;
-        inputConeMosaicRandomSeed = [];
-
         % vMembrane noise sigma
-        vMembraneGaussianNoiseSigma = 0.1;
+        vMembraneGaussianNoiseSigma = 0.07;
     end % Public properties
 
 
     % Constant properties
     properties (Constant)
+
+        % Valid noise flags
+        validNoiseFlags = {'none', 'frozen', 'random'};
+
         % Default optics params
         defaultOpticsParams = struct(...
             'positionDegs', [], ...
@@ -167,6 +167,9 @@ classdef mRGCMosaic < handle
             
             p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs, @isscalar);
             p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
+            
+            % Compute-ready mosaic params
+            p.addParameter('noiseFlag', 'random');
             p.parse(varargin{:});
 
             obj.name = p.Results.name;
@@ -191,6 +194,9 @@ classdef mRGCMosaic < handle
 
             % Eliminate RGCs near the border
             obj.cropRGCsOnTheBorder();
+
+            % Compute-ready params
+            obj.noiseFlag = p.Results.noiseFlag;
         end % Constructor
 
         % Method to crop a compute-ready mRGCMosaic to size at an eccentricity
@@ -254,6 +260,13 @@ classdef mRGCMosaic < handle
 
         % Stats on the center cones
         centerConesNumCases = centerConePoolingStats(obj);
+
+        % Setter for noiseFlag
+        function set.noiseFlag(obj, val)
+            assert(ismember(val, mRGCMosaic.validNoiseFlags), ...
+                sprintf('''%s'' is not a valid noise flag', val));
+            obj.noiseFlag = val;
+        end
 
         % Getter for dependent property cellsNum
         function val = get.rgcsNum(obj)

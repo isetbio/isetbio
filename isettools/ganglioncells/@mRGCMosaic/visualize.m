@@ -207,7 +207,9 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
     if (~isempty(activation))
         % Visualize RF centers, color-coded with their activation level
         if (isempty(activationColorMap))
-            cMap = gray(obj.rgcsNum);
+            linearRamp = linspace(0,1,1024);
+            linearRamp = linearRamp(:);
+            cMap = [linearRamp*0 linearRamp linearRamp*0];
         else
             cMap = activationColorMap;
         end
