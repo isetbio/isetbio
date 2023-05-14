@@ -7,6 +7,7 @@ function [triangulatingModelRGCIndices, triangulatingModelRGCWeights, triangulat
     nearestTargetModelRGCindices = targetModelRGCindices(idx);
     triangulatingGridNodeIndices = targetGridNodeIndices(idx);
 
+
     if (distancesToModelRGCs(1) == 0)
         % If the minimum distance to one of the fitted RTVF objects is
         % zero, just use that RTVF object
@@ -16,7 +17,7 @@ function [triangulatingModelRGCIndices, triangulatingModelRGCWeights, triangulat
     else
         % Weights inversely proportional to the cell's distance to the
         % pnearby model RGCs
-        nearbyFittedModelsNum = 3;
+        nearbyFittedModelsNum = min([3 numel(nearestTargetModelRGCindices)]);
         triangulatingModelRGCIndices = nearestTargetModelRGCindices(1:nearbyFittedModelsNum);
         triangulatingModelRGCWeights = 1./distancesToModelRGCs(1:nearbyFittedModelsNum);
         triangulatingGridNodeIndices = triangulatingGridNodeIndices(1:nearbyFittedModelsNum);
