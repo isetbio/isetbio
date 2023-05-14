@@ -1,4 +1,4 @@
-function theOptimalSTF = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+function [theOptimalSTF, theSTFsAcrossAllOrientations] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
     orientationsTested, spatialFrequenciesTested, ...
     theResponsesAcrossAllOrientationsAndSpatialFrequencies)
 
@@ -18,11 +18,11 @@ function theOptimalSTF = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequ
     end
 
     % Pick the highest extension STF as the visual STF for this cell
-    theOptimalSTF = highestExtensionSTF(orientationsTested, spatialFrequenciesTested, theSTFsAcrossAllOrientations);
+    [theOptimalSTF,theSTFsAcrossAllOrientations] = highestExtensionSTF(orientationsTested, spatialFrequenciesTested, theSTFsAcrossAllOrientations);
 end
 
         
-function theHighestExtensionSTF = highestExtensionSTF(orientationsTested, spatialFrequenciesTested, theMeasuredSTFs)
+function [theHighestExtensionSTF,theMeasuredSTFs] = highestExtensionSTF(orientationsTested, spatialFrequenciesTested, theMeasuredSTFs)
 
     theMeasuredSTFs = theMeasuredSTFs / max(theMeasuredSTFs(:));
 

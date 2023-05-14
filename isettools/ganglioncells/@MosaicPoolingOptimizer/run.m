@@ -11,7 +11,7 @@ function run()
     normalizedPeakSurroundSensitivity = 0.4;
     visualizedSpatialFrequencyRange = [0.1 100];
 
-    MosaicPoolingOptimizer.performComputeVisuallyProjectedAnatomicalConeRcs([]);
+    %MosaicPoolingOptimizer.performComputeVisuallyProjectedAnatomicalConeRcs([]);
 
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
@@ -55,6 +55,12 @@ function run()
     % Perform the computeInputConeMosaicSTFresponses operation
     if (operationSetToPerformContains.computeInputConeMosaicSTFresponses)
         MosaicPoolingOptimizer.performComputeInputConeMosaicSTFresponsesOp(mosaicParams);
+        return;
+    end
+
+    % Perform the computeInputConeMosaicVisuallyProjectedCharacteristicRadii operation
+    if (operationSetToPerformContains.computeInputConeMosaicVisuallyProjectedCharacteristicRadii)
+        MosaicPoolingOptimizer.performComputeInputConeMosaicVisuallyProjectedRcDegsOp(mosaicParams);
         return;
     end
 

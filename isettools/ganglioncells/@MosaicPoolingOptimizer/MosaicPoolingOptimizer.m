@@ -116,7 +116,11 @@ classdef MosaicPoolingOptimizer < handle
         generateInputConeMosaicSTFresponses(obj, gridNodeIndex, ...
             stimSizeDegs, responsesFileName, varargin);
 
-       
+        % Method to compute the input cone mosaic visually projectedRcDegs by fitting a Gaussian to the
+        % previously computed input cone mosaic visual STFs
+        computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
+            responsesFileName, varargin);
+
         % Method to load the computed input cone mosaic STF responses
         loadConeMosaicVisualSTFresponses(obj, responsesFileName);
 
@@ -202,7 +206,7 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to select the highest-extending STF (across a set of STFs
         % measured at different orientations)
-        theOptimalSTF = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+        [theOptimalSTF,theSTFsAcrossAllOrientations] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
             orientationsTested, spatialFrequenciesTested, ...
             theResponsesAcrossAllOrientationsAndSpatialFrequencies)
 
@@ -277,8 +281,8 @@ classdef MosaicPoolingOptimizer < handle
             computeConeMosaicSTFresponses(theConeMosaic, theOptics, ...
                                        thePresentationDisplay, ...
                                        stimParams, stimPositionDegs, ...
-                                       useParfor, visualizeResponses)
-
+                                       useParfor, visualizeResponses);
+        
         % Method to compute the visualSTF of the compute-ready
         % MRGCmosaic
         computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
@@ -369,6 +373,9 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to perform the computeInputConeMosaicSTFresponses operation
         performComputeInputConeMosaicSTFresponsesOp(mosaicParams);
+
+        % Method to perform the computeInputConeMosaicVisuallyProjectedRcDegs operation
+        performComputeInputConeMosaicVisuallyProjectedRcDegsOp(mosaicParams);
 
         % Method to perform the optimizeSurroundConePoolingModels operation
         performOptimizeSurroundConePoolingModelsOp(mosaicParams, varargin);
