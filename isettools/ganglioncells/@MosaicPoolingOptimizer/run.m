@@ -11,8 +11,7 @@ function run()
     normalizedPeakSurroundSensitivity = 0.4;
     visualizedSpatialFrequencyRange = [0.1 100];
 
-    MosaicPoolingOptimizer.performComputeVisuallyProjectedAnatomicalConeRcs(mosaicParams);
-    pause
+    MosaicPoolingOptimizer.performComputeVisuallyProjectedAnatomicalConeRcs([]);
 
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
