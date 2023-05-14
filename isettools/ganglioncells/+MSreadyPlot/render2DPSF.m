@@ -3,11 +3,13 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('psfAlpha', 0.7, @(x)(isscalar(x)&&(x>0.0)&&(x<=1.0)));
     p.addParameter('withConeApertureData', [] , @(x)(isempty(x)||isstruct(x)));
     p.parse(varargin{:});
     
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
+    psfAlpha = p.Results.psfAlpha;
     coneApertureData = p.Results.withConeApertureData;
 
     % plot
@@ -31,10 +33,9 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
 
     zData = thePSFData/max(thePSFData(:));
     zLevels = [0.1 0.3 0.5 0.7 0.9];
-    alpha = 0.7;
     contourLineColor = [1 0 0];
     cMosaic.semiTransparentContourPlot(ax, psfSupportXarcmin, psfSupportYarcmin, ...
-        zData, zLevels, cmap, alpha, contourLineColor, 'LineWidth', 1.5)
+        zData, zLevels, cmap, psfAlpha, contourLineColor, 'LineWidth', 1.5)
     
 
     axis(ax, 'image');

@@ -59,8 +59,7 @@ function dOut = localConeApertureData(obj, opticsPositionDegs, psfSupportDegs)
     coneAperturePositionsDegs = bsxfun(@minus, obj.inputConeMosaic.coneRFpositionsDegs(idx,:),opticsPositionDegs);
 
     if (isfield(obj.inputConeMosaic.coneApertureModifiers, 'shape') && (strcmp(obj.inputConeMosaic.coneApertureModifiers.shape, 'Gaussian')))
-        gaussianSigma = obj.inputConeMosaic.coneApertureModifiers.sigma;
-        coneAperturesDegs = sqrt(2)*gaussianSigma*obj.inputConeMosaic.coneApertureDiametersDegs(idx);
+        coneAperturesDegs = obj.coneApertureToConeCharacteristicRadiusConversionFactor*obj.inputConeMosaic.coneApertureDiametersDegs(idx);
     else  
         coneAperturesDegs = obj.inputConeMosaic.coneApertureDiametersDegs(idx);
     end

@@ -350,6 +350,10 @@ classdef MosaicPoolingOptimizer < handle
         % Method to get the user's selection on which operation to perform
         operationSetToPerformContains = operationsMenu(mosaicParams);
 
+        % Method to compute the compute the visually projected anatomical
+        % cone Rcs
+        performComputeVisuallyProjectedAnatomicalConeRcs(mosaicParams, varargin);
+
         % Method to perform the generateRGCMosaicOperation()
         performGenerateCenterConnectedRGCMosaicOp(mosaicParams, varargin);
 
