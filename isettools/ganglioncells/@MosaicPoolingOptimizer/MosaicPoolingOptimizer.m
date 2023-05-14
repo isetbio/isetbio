@@ -187,6 +187,9 @@ classdef MosaicPoolingOptimizer < handle
         % Method to generate the local dropbox path
         dropboxDir = localDropboxPath();
 
+        % Fit a Gaussian ellipsoid to a RFmap
+        theFittedGaussianEllipsoid = fitGaussianEllipsoid(supportX, supportY, theRFmap, varargin)
+
         % Fit a Gaussian model to a subregion STF
         [Gparams, theFittedSTF] = fitGaussianToSubregionSTF(...
             spatialFrequencySupportCPD, theSubregionSTF, ...

@@ -81,6 +81,10 @@ function performComputeVisuallyProjectedAnatomicalConeRcs(mosaicParams, varargin
     anatomicalConeApertureMap = exp(-(Rdegs/coneRcDegs).^2);
     visuallyProjectedConeApertureMap = conv2(thePSFData.data, anatomicalConeApertureMap, 'same');
 
+    theFittedGaussianEllipsoid = MosaicPoolingOptimizer.fitGaussianEllipsoid(...
+        thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, visuallyProjectedConeApertureMap, ...
+        varargin);
+
 
     size(anatomicalConeApertureMap)
     size(thePSFData.data)
@@ -142,8 +146,6 @@ function inputConeMosaic = generateInputConeMosaic(mosaicParams, opticsParams)
         'overlappingConeFractionForElimination', 0.5, ...
         'rodIntrusionAdjustedConeAperture', true, ...
         'coneApertureModifiers', coneApertureModifiers);
-
-    
 
 end
 
