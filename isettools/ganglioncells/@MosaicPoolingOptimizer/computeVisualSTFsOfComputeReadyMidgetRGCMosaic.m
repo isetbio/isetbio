@@ -59,6 +59,10 @@ function computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
     frameDurationSeconds = 20/1000;
     theConeMosaicResponseTemporalSupportSeconds = (0:1:(nTimePoints-1))*frameDurationSeconds;
     
+    % Set noise flag to none. We dont need noisy responses now
+    lastNoiseFlag = theComputeReadyMRGCmosaic.noiseFlag;
+    theComputeReadyMRGCmosaic.noiseFlag = 'none';
+
     for iOri = 1:numel(orientationsTested)
         for iSF = 1:numel(spatialFrequenciesTested)
             theConeMosaicResponse = squeeze(theConeMosaicModulationSTFresponses(iOri, iSF,:,:));
@@ -80,8 +84,11 @@ function computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
                     theComputeReadyMRGCmosaic.rgcsNum, 'single');
             end
             theMRGCMosaicSTFresponses(iOri, iSF, :,:) = single(squeeze(theMRGCMosaicResponse(1, :,:)));
-        end
-    end
+        end % iSF
+    end % iOri
+
+    % Set noise flag to what was before.
+    theComputeReadyMRGCmosaic.noiseFlag =  lastNoiseFlag;
 
 
     % Save the computed mRGC  STF responses 

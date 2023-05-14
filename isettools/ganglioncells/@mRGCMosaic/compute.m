@@ -96,6 +96,11 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         obj.noiseFlag = 'random';
     end
 
+    if (strcmp(obj.noiseFlag, 'none'))
+        noisyMRGCresponseInstances = [];
+        return;
+    end
+
     % Generate noisy instances
     noisyMRGCresponseInstances = obj.noisyInstances(noiseFreeMRGCresponses, ...
         'seed', noiseSeed);

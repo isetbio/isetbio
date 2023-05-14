@@ -263,7 +263,7 @@ classdef mRGCMosaic < handle
 
         % Setter for noiseFlag
         function set.noiseFlag(obj, val)
-            assert(ismember(val, mRGCMosaic.validNoiseFlags), ...
+            assert((isempty(val))||ismember(val, mRGCMosaic.validNoiseFlags), ...
                 sprintf('''%s'' is not a valid noise flag', val));
             obj.noiseFlag = val;
         end
