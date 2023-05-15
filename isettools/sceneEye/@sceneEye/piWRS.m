@@ -1,14 +1,14 @@
 function obj = piWRS(SE,varargin)
-% Calls the sceneEye render and then shows the returned object
+% Calls piWRS
 %
 % Synopsis
-%   obj = sceneEye.pWRS(varargin);
+%   obj = sceneEye.piWRS(varargin);
 %
 % Brief
 %   Writes, Renders, and Shows the sceneEye recipe
 %
 % Inputs
-%   obj - sceneEye object
+%   SE - sceneEye object
 %
 % Key/val pairs
 %    render type      - Usual recipe render type cell array 
@@ -31,11 +31,53 @@ function obj = piWRS(SE,varargin)
 
 %% Parse
 varargin = ieParamFormat(varargin);
+
+p = inputParser;
+p.KeepUnmatched = true;
+p.addRequired('SE', @(x)(isa(x, 'sceneEye')));
+p.addParameter('scaleilluminance', true, @islogical);
+p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper') || isempty(x)));
+
+p.parse(SE, varargin{:});
+scaleIlluminance  = p.Results.scaleilluminance;
+thisDockerWrapper = p.Results.dockerwrapper;
+
+thisR = SE.recipe;
+
+% For ISETBio debugging, we sometimes switch the camera to pinhole
+if SE.usePinhole
+    % We will render a scene through a pinhole camera.  We try to match the
+    % fov for the scene with the fov that was set for the eyeballc ase.
+    fov = thisR.get('fov');
+    cameraSave = thisR.get('camera');
+    
+    thisR.set('camera',piCameraCreate('pinhole'));
+    thisR.set('fov',fov);
+end
+
+% Call the master piWRS routine
+obj = piWRS(thisR,varargin{:},'dockerwrapper',thisDockerWrapper);
+
+% Deal with special ISETBio pinhole management
+if(~SE.usePinhole)
+    % If we are not in debug mode with a pinhole, set OI parameters.
+    obj = obj.setOI(obj, 'scale illuminance', scaleIlluminance);
+    % oiWindow(obj);
+else
+    % If debugMode, put back the saved camera information.
+    thisR.set('camera',cameraSave);
+    % sceneWindow(obj);
+end
+
+end
+
+%{
+varargin = ieParamFormat(varargin);
 p = inputParser;
 
 p.addRequired('SE',@(x)(isa(x,'sceneEye')));
 
-p.addParameter('dockerwrapper',dockerWrapper.humanEyeDocker,@(x)(isa(x,'dockerWrapper')));
+p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper')));
 p.addParameter('name','',@ischar);
 p.addParameter('show',true,@islogical);
 p.addParameter('gamma',[],@isnumeric);
@@ -45,9 +87,14 @@ p.parse(SE,varargin{:});
 
 thisDocker  = p.Results.dockerwrapper;
 g           = p.Results.gamma;
-name       = p.Results.name;
-show       = p.Results.show;
-renderFlag = p.Results.renderflag;
+name        = p.Results.name;
+show        = p.Results.show;
+renderFlag  = p.Results.renderflag;
+
+if isempty(thisDocker)
+    thisDocker = dockerWrapper;
+    thisDocker.preset('human eye');
+end
 
 %% Render
 
@@ -79,3 +126,4 @@ switch lower(obj.type)
 end
 
 end
+%}

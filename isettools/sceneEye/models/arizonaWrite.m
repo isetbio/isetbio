@@ -41,6 +41,8 @@ end
 if notDefined('accommodation')
     accommodation = thisR.get('accommodation'); 
 end
+
+accommodation = round(accommodation*100)/100;
 az = arizonaLensCreate(accommodation);
 
 %% Build matrix
@@ -51,7 +53,8 @@ lensMatrix = [az.corneaA; az.corneaP; az.pupil; az.lensA; az.lensP];
 
 lensDir = fullfile(thisR.get('output dir'),'lens');
 if ~exist(lensDir,'dir'), mkdir(lensDir); end
-filename = fullfile(lensDir,'arizona.dat');
+baseName = sprintf('arizona-%03d.dat',accommodation);
+filename = fullfile(lensDir,baseName);
 
 %% Write the data into the file
 
@@ -81,10 +84,9 @@ fprintf(fid, '%s', str);
 
 fclose(fid);
 
-%% Make sure the lens file is set properly
+%% Set lens file with a relative path so it will work remotely, too.
 
-thisR.set('lens file',filename);
-
+thisR.set('lens file',fullfile('lens',baseName));
 
 %% Now write out the IoR files for Arizona
 %
@@ -100,7 +102,7 @@ thisR.set('lens file',filename);
 %   ior2 --> cornea-aqueuous
 %   ior3 --> aqueous-lens
 %   ior4 --> lens-vitreous
-iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
+iorNames = {'ior1','ior2','ior3','ior4'};
 
 % We assume the eye is accommodated to the object distance.  There is only
 % a very very small impact of accommodation until the object is very close
@@ -110,16 +112,18 @@ iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 % We will put these files next to the lens file (navarro.dat).
 nSamples = numel(wave);
 for ii=1:4
-    filename = fullfile(thisR.get('lens dir output'),iorNames{ii});
+    baseName = sprintf('%s-%03d.spd',iorNames{ii},accommodation);
+    filename = fullfile(thisR.get('lens dir output'),baseName);
     fid = fopen(filename, 'w');
     for jj = 1:nSamples
         fprintf(fid, '%d %f\n', wave(jj), ior(jj,ii));
     end
     fclose(fid);
     
-    % Update the recipe with the ior files
+    % Update the recipe with the ior files, using a relative path.
     [~,str,~] = fileparts(filename);
-    thisR.set(str,filename);
+    filename = fullfile('lens',baseName);
+    thisR.set(str(1:4),filename);
 end
 
 fprintf('Wrote arizona lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
