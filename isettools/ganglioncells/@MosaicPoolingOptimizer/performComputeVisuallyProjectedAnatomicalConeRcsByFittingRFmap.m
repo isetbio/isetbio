@@ -8,7 +8,7 @@ function performComputeVisuallyProjectedAnatomicalConeRcsByFittingRFmap(mosaicPa
                 xEcc = [0.1  0.25 0.50 0.75 1.0 1.25 1.50 1.75 2.00 2.5 3.00 3.50 4.0 4.5 5.0  6.0  7.0  8.0  9.0 10.0 12 19 20 22 24 26 28 30 ];
                 yEcc = xEcc*0;
                 eccDegs = [xEcc(:) yEcc(:)];
-                sizeDegs = [0.05 0.06 0.07 0.08 0.1 0.12 0.13 0.15 0.17 0.2 0.26 0.29 0.3 0.3 0.35 0.35 0.4 0.45 0.45 0.5 0.5 0.5 0.5 0.5 0.5 0.6 0.65 0.65];
+                sizeDegs = [0.05 0.07 0.08 0.09 0.1 0.12 0.13 0.15 0.17 0.2 0.26 0.29 0.3 0.3 0.35 0.35 0.4 0.45 0.45 0.5 0.5 0.5 0.5 0.5 0.5 0.6 0.65 0.65];
                 temporalEquivalentEccDegs = temporalEquivalentEccentricityForNasalEccentricity(eccDegs);
             case 'temporal'
                 xEcc = -[0.1  0.25 0.50 0.75 1.0     1.25 1.50 1.75 2.00 2.5 3.00 3.50 4.0 4.5 5.0  6.0  7.0  8.0  9.0 10.0 12 14 16 18 20 22 24 26 28 30 ];
@@ -20,6 +20,7 @@ function performComputeVisuallyProjectedAnatomicalConeRcsByFittingRFmap(mosaicPa
             otherwise
                 error('meridian %s not coded', retinalMeridian);
         end
+
 
 %         
         for iEcc = 1:size(eccDegs,1)
