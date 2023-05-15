@@ -359,7 +359,7 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to compute the compute the visually projected anatomical
         % cone Rcs
-        performComputeVisuallyProjectedAnatomicalConeRcs(mosaicParams, varargin);
+        performComputeVisuallyProjectedAnatomicalConeRcsByFittingRFmap(mosaicParams, varargin);
 
         % Method to perform the generateRGCMosaicOperation()
         performGenerateCenterConnectedRGCMosaicOp(mosaicParams, varargin);

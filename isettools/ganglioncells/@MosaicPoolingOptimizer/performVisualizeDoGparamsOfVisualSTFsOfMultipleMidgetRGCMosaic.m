@@ -5,7 +5,6 @@ function performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEc
    theMosaicFileNames = cell(1, numel(mosaicEccsToInclude));
    theMRGCSTFResponsesFileNames = cell(1, numel(mosaicEccsToInclude));
 
-   
    % Generate all filenames for all included mosaics
    for iMosaic = 1:numel(mosaicEccsToInclude)
        mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEccsToInclude(iMosaic));
@@ -25,14 +24,14 @@ function performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEc
                 'opticsParams', opticsParams, ...
                 'retinalRFmodelParams', retinalRFmodelParams);
 
-      % Generate filename for the computed mRGCMosaicSTF responses
-      [mRGCMosaicSTFresponsesFileName, resourcesDirectory] = ...
-        MosaicPoolingOptimizer.resourceFileNameAndPath('mRGCMosaicSTFresponses', ...
-            'mosaicParams', mosaicParams, ...
-            'opticsParams', opticsParams);
+       % Generate filename for the computed mRGCMosaicSTF responses
+       [mRGCMosaicSTFresponsesFileName, resourcesDirectory] = ...
+            MosaicPoolingOptimizer.resourceFileNameAndPath('mRGCMosaicSTFresponses', ...
+                'mosaicParams', mosaicParams, ...
+                'opticsParams', opticsParams);
 
-      theMosaicFileNames{iMosaic} = fullfile(computeReadyMosaicResourcesDirectory, computeReadyMosaicFileName);
-      theMRGCSTFResponsesFileNames{iMosaic} = fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName);
+        theMosaicFileNames{iMosaic} = fullfile(computeReadyMosaicResourcesDirectory, computeReadyMosaicFileName);
+        theMRGCSTFResponsesFileNames{iMosaic} = fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName);
    end % iEcc
 
    [~, ~, pdfsDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory', ...
@@ -43,6 +42,4 @@ function performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEc
             theMRGCSTFResponsesFileNames, ...
             pdfsDirectory, ...
             employTemporalEquivalentEccentricity);
-
 end
-

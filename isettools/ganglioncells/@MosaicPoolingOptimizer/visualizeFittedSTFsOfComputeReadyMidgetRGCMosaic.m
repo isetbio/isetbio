@@ -239,23 +239,6 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
                   'linear', 'Rc (degs)', pdfFileNamePostfix{iDataSet}, ...
                   employTemporalEquivalentEccentricity, ...
                   ff);
-    
-
-
-        % TEMPOARY
-        disp('tempoarry')
-        pause
-        hold(theAxes{1,1}, 'on')
-        load('/Users/nicolas/Desktop/visuallyProjectedConeAperturesnasalRetina.mat', 'temporalEquivalentEccDegs', 'theVisuallyProjectedConeApertureRcDegs');
-        %plot(theAxes{1,1}, -temporalEquivalentEccDegs(:,1), theVisuallyProjectedConeApertureRcDegs, 'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]);
-        interpEccDegs = 0.1:0.1:30;
-        interpNasalRc = interp1(-temporalEquivalentEccDegs(:,1), theVisuallyProjectedConeApertureRcDegs, interpEccDegs, 'linear');
-
-        load('/Users/nicolas/Desktop/visuallyProjectedConeAperturestemporalRetina.mat', 'temporalEquivalentEccDegs', 'theVisuallyProjectedConeApertureRcDegs');
-        %plot(theAxes{1,1}, -temporalEquivalentEccDegs(:,1), theVisuallyProjectedConeApertureRcDegs, 'rs--', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]);
-        interpTemporalRc = interp1(-temporalEquivalentEccDegs(:,1), theVisuallyProjectedConeApertureRcDegs, interpEccDegs, 'linear');
-        plot(theAxes{1,1}, interpEccDegs, 0.5*(interpNasalRc+interpTemporalRc), 'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]);
-        
 
         % The Kc vs RcDegs plot
         MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParams(theAxes{2,1}, ...

@@ -1,4 +1,4 @@
-function performComputeVisuallyProjectedAnatomicalConeRcs(mosaicParams, varargin)
+function performComputeVisuallyProjectedAnatomicalConeRcsByFittingRFmap(mosaicParams, varargin)
 
     retinalMeridian = 'temporal';
     if (isempty(mosaicParams))

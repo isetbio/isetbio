@@ -14,7 +14,6 @@ function computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
     % Retrieve the input cone mosaic
     theInputConeMosaic = obj.theRGCMosaic.inputConeMosaic;
 
-
     % Load the previously computed inputConeMosaic STF responses
     switch (opticsToEmploy)
         case 'native'
@@ -82,7 +81,6 @@ function computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
     for idx = 1:numel(analyzedConeIndices)
         iCone = analyzedConeIndices(idx);
 
-
         % The temporal equivalent ecc for this cone
         tempEquivEccDegs = obj.theRGCMosaic.temporalEquivalentEccentricityForEccentricity(theInputConeMosaic.coneRFpositionsDegs(iCone,:));
         temporalEquivalentEccDegs(idx) = sqrt(sum(tempEquivEccDegs.^2,2));
@@ -94,8 +92,6 @@ function computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
                orientationsTested, spatialFrequenciesTested, ...
                theConeResponsesAcrossAllOrientationsAndSpatialFrequencies);
 
-
-       
         fprintf('Computing estimate of the visual Rc for cone %d of %d \n', ...
             idx, numel(analyzedConeIndices));
 
@@ -120,14 +116,10 @@ function computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
         plot(theFittedSTF.sfHiRes, theFittedSTF.subregionSTFHiRes , 'r-', 'LineWidth', 1.5);
         set(gca, 'XScale', 'log')
         
-
         % The visually projected Rc for this cone
         visualRcDegs(idx) = fittedParamsStruct.finalValues(2);
-
     end
 
-
-    
 
     figure(99);
     plot(temporalEquivalentEccDegs, visualRcDegs, 'ro-', 'LineWidth', 1.5);

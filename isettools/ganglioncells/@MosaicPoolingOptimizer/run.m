@@ -11,7 +11,7 @@ function run()
     normalizedPeakSurroundSensitivity = 0.4;
     visualizedSpatialFrequencyRange = [0.1 100];
 
-    %MosaicPoolingOptimizer.performComputeVisuallyProjectedAnatomicalConeRcs([]);
+    %MosaicPoolingOptimizer.performComputeVisuallyProjectedAnatomicalConeRcsByFittingRFmap([]);
 
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
@@ -133,9 +133,8 @@ function run()
 
     % Perform the visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic operation
     if (operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics)
-        mosaicEccsToInclude = [0.0 2.5 7.0 -10.0 -16.0]
-        mosaicEccsToInclude = [0.0 2.5 7.0 -10.0]
-        pause
+        mosaicEccsToInclude = [0.0 2.5 7.0 -10.0 -16.0];
+        
         MosaicPoolingOptimizer.performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEccsToInclude);
         return;
     end
@@ -161,7 +160,4 @@ function run()
             'tickSeparationArcMin', tickSeparationArcMin);
         return;
     end
-
 end
-
-
