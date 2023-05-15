@@ -17,25 +17,43 @@ function figure1()
     
     % Generate figure
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1000 500], 'Color', [1 1 1]);
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+
     theMeridianLabels = cell(1,numel(examinedMeridians));
     for k = 1:numel(examinedMeridians)
         % Retrieve color for meridian
-        meridianColor = RGCmodels.Watson.plot.colorForMeridian(examinedMeridians{k}); hold on
+        meridianColor = RGCmodels.Watson.plot.colorForMeridian(examinedMeridians{k}); 
         theMeridianLabels{k} = examinedMeridians{k};
-        plot(eccDegs, squeeze(coneDensityDegs2(k,:)), 'k-', 'Color', meridianColor, 'LineWidth', 1.5);
+        plot(theAxes{1,1}, eccDegs, squeeze(coneDensityDegs2(k,:)), 'k-', 'Color', meridianColor, 'LineWidth', 1.5);
+        hold(theAxes{1,1}, 'on');
     end
+
     % Plot the max cone density as a disk
-    plot(0.01, RGCmodels.Watson.constants.dc0, 'ko', 'MarkerSize', 14, 'MarkerFaceColor', [1 1 1]);
+    plot(theAxes{1,1},0.01, RGCmodels.Watson.constants.dc0, 'ko', 'MarkerSize', 14, 'LineWidth', 1.0, 'MarkerFaceColor', 0.8*[1 1 1]);
+    
     % Label the meridians
-    legend(theMeridianLabels);
+    legend(theAxes{1,1},theMeridianLabels,  'Location', 'SouthWest');
+
     % Axes and limits
-    set(gca, 'XLim', [0.01 100], 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100]);
-    set(gca, 'YLim', [100 20000], 'YScale', 'log', 'YTick', [100 300 1000 3000 10000]);
-    set(gca, 'FontSize', 20);
-    xlabel('eccentricity (degs)');
-    ylabel('density (cones/deg^2)');
-    grid on;
+    set(theAxes{1,1}, 'XLim', [0.01*(1+3*ff.axisOffsetFactor) 100], 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100]);
+    set(theAxes{1,1}, 'YLim', [100*(1+3*ff.axisOffsetFactor) 20000], 'YScale', 'log', 'YTick', [100 300 1000 3000 10000]);
+    
+    xlabel(theAxes{1,1}, 'eccentricity (degs)');
+    ylabel(theAxes{1,1},'density (cones/deg^2)');
+
+    % Grid
+    grid(theAxes{1,1}, 'on'); box(theAxes{1,1}, 'off');
+
+    % Ticks
+    set(theAxes{1,1}, 'TickDir', 'both');
+
+    % Font size
+    set(theAxes{1,1}, 'FontSize', ff.fontSize+4);
+
+    % axis color and width
+    set(theAxes{1,1}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
 end
 
 
