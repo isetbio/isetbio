@@ -61,7 +61,7 @@ obj = piWRS(thisR,varargin{:},'dockerwrapper',thisDockerWrapper);
 % Deal with special ISETBio pinhole management
 if(~SE.usePinhole)
     % If we are not in debug mode with a pinhole, set OI parameters.
-    obj = obj.setOI(obj, 'scale illuminance', scaleIlluminance);
+    obj = SE.setOI(obj, 'scale illuminance', scaleIlluminance);
     % oiWindow(obj);
 else
     % If debugMode, put back the saved camera information.
