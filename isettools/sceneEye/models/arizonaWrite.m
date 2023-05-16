@@ -10,11 +10,14 @@ function filename = arizonaWrite(thisR,accommodation)
 % Inputs:
 %    thisR:   - rendering recipe
 %
-% Optional key/values:
-%    None.
+% Optional
+%    accommodation - If not passed, we use thisR.get('accommodation')
 %
 % Outputs:
-%    filename:  lens file name
+%    filename:  lens file name.  
+%       The file names include three digits that specify the accommodation
+%       (diopters). So arizona-ABC.dat, and similarly for ior{1-4}-ABC.dat
+%       and the accommodation is AB.C.
 %
 % See also
 %   arizonaLensCreate; navarroWrite, legrandWrite
@@ -42,18 +45,18 @@ if notDefined('accommodation')
     accommodation = thisR.get('accommodation'); 
 end
 
-accommodation = round(accommodation*100)/100;
+% Round to 1 decimal place (0.1 diopter precision)
+accommodation = round(accommodation*10)/10;
 az = arizonaLensCreate(accommodation);
 
 %% Build matrix
 lensMatrix = [az.corneaA; az.corneaP; az.pupil; az.lensA; az.lensP];
 
-
 %% Set up the filename
 
 lensDir = fullfile(thisR.get('output dir'),'lens');
 if ~exist(lensDir,'dir'), mkdir(lensDir); end
-baseName = sprintf('arizona-%03d.dat',accommodation);
+baseName = sprintf('arizona-%03.0f.dat',10*accommodation);
 filename = fullfile(lensDir,baseName);
 
 %% Write the data into the file
@@ -112,7 +115,7 @@ iorNames = {'ior1','ior2','ior3','ior4'};
 % We will put these files next to the lens file (navarro.dat).
 nSamples = numel(wave);
 for ii=1:4
-    baseName = sprintf('%s-%03d.spd',iorNames{ii},accommodation);
+    baseName = sprintf('%s-%03.0f.spd',iorNames{ii},accommodation);
     filename = fullfile(thisR.get('lens dir output'),baseName);
     fid = fopen(filename, 'w');
     for jj = 1:nSamples
@@ -121,9 +124,8 @@ for ii=1:4
     fclose(fid);
     
     % Update the recipe with the ior files, using a relative path.
-    [~,str,~] = fileparts(filename);
     filename = fullfile('lens',baseName);
-    thisR.set(str(1:4),filename);
+    thisR.set(iorNames{ii},filename);
 end
 
 fprintf('Wrote arizona lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
