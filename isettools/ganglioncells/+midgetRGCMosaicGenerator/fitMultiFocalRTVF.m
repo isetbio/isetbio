@@ -1,4 +1,4 @@
-function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, varargin)
+function fitMultiFocalRTVF(mosaicCenterParams, rfModelParams, opticsParams, varargin)
 
     % Parse input
     p = inputParser;
@@ -31,7 +31,11 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     % Instantiate the multifocalRTVFobj
     samplingScheme = 'hexagonal';
 
-    % Go
+    % Instantiate an @RTVFmultifocal object with the desired mosaic and
+    % optics and rfModel params. During instantiation the @RTVFmultifocal
+    % generates a grid of spatial positions/center cones num on which a
+    % different @RTVF object will be fit, separately for L- and for
+    % M-center RFs
     theMultifocalRTVFOBJ = RTVFmultifocal(theMidgetRGCmosaic, ...
         mosaicCenterParams, opticsParams, rfModelParams, ...
         samplingScheme, ...
@@ -45,7 +49,6 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
     fprintf('\nDone ! \n');
     
 
-    
     % Ask the user if he wants to use a dictionary with previously
     % fitted params to use as initial values
     usePreviousFittedParamsValues = midgetRGCMosaicInspector.queryUserForYesNoResponse('\nUse initial values from a previous fit ?');
@@ -67,7 +70,7 @@ function generateR2VFTobjects(mosaicCenterParams, rfModelParams, opticsParams, v
         end
     end
     
-    % Go !
+    % Go ! Fit a separate @RTVF object to each node of this grid.
     tStart = cputime;
     theMultifocalRTVFOBJ.compute( ...
         initialGridRetinalConePoolingParamsStruct, ...

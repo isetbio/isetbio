@@ -28,8 +28,8 @@ mosaicEccDegs  = [0 0];
 %% Eye: choose {from 'right eye', 'left eye'}
 whichEye = 'right eye';   
 
-%% choose between {'Polans2015', and 'Artal2012'}
-opticsZernikeCoefficientsDataBase = 'Polans2015';            
+%% choose between {'Polans2015', 'Artal2012', and 'Thibos2002'}
+opticsZernikeCoefficientsDataBase = 'Thibos2002';            
 
 %% Select ranking of subjects for which to visualize the PSFs
 switch (opticsZernikeCoefficientsDataBase)
@@ -37,6 +37,8 @@ switch (opticsZernikeCoefficientsDataBase)
          subjectRankOrderList = 1:10;
      case 'Artal2012'
          subjectRankOrderList = 1:5:50;
+     case 'Thibos2002'
+         subjectRankOrderList = 1:7:70;
 end
  
 %% Generate mosaic centered at target eccentricity
@@ -83,6 +85,14 @@ for subjectRankOrderIndex = 1:numel(subjectRankOrderList)
 
             % Determine if we need to subtract the subject's central refraction to
             subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(whichEye, testSubjectID);
+
+        case 'Thibos2002'
+            % Obtain subject IDs ranking in decreasing foveal resolution
+            rankedSubjectIDs = ThibosOptics.constants.subjectRanking(whichEye);
+            testSubjectID = rankedSubjectIDs(subjectRankOrder);
+
+            % Determine if we need to subtract the subject's central refraction to
+            subtractCentralRefraction = ThibosOptics.constants.subjectRequiresCentralRefractionCorrection(whichEye, testSubjectID);
     end
 
 
@@ -93,7 +103,8 @@ for subjectRankOrderIndex = 1:numel(subjectRankOrderList)
                     'subjectID', testSubjectID, ...
                     'pupilDiameterMM', 3.0, ...
                     'subtractCentralRefraction', subtractCentralRefraction, ...
-                    'wavefrontSpatialSamples', 501);
+                    'wavefrontSpatialSamples', 501, ...
+                    'refractiveErrorDiopters', 0.0);
     thePSFData = psfEnsemble{1};       
 
     % Visualize PSF
@@ -114,9 +125,9 @@ for subjectRankOrderIndex = 1:numel(subjectRankOrderList)
         'axesHandle', ax, ...
         'domain', domainUnits, ...
         'domainVisualizationTicks', domainVisualizationTicks, ...
-        'labelCones', false, ...
+        'labelCones', ~true, ...
         'noYLabel', true, ...
-        'plotTitle', sprintf('Subj.ID: %d (rank:%d)', testSubjectID, subjectRankOrder));
+        'plotTitle', sprintf('%s - Subj.ID: %d (rank:%d)', opticsZernikeCoefficientsDataBase, testSubjectID, subjectRankOrder));
     hold(ax, 'on');
     cmap = brewermap(1024,'reds');
     alpha = 0.3;
@@ -124,6 +135,6 @@ for subjectRankOrderIndex = 1:numel(subjectRankOrderList)
     cMosaic.semiTransparentContourPlot(ax, psfSupportMicrons, psfSupportMicrons, psf, 0.05:0.1:0.95, cmap, alpha, contourLineColor);
 end
 
-NicePlot.exportFigToPDF(sprintf('%s_rankedPSFs.pdf',opticsZernikeCoefficientsDataBase), hFig, 300);
+NicePlot.exportFigToPDF(sprintf('%s_rankedPSFs.pdf', opticsZernikeCoefficientsDataBase), hFig, 300);
 
 %%

@@ -17,7 +17,7 @@ function analyzePolansOptics(reAnalyzeData)
         if (doRankAnalysis)
             % Plot ranked subject data
             rankStrategy = 'resolution'; %  Choose from {'resolution', 'peak resolution', 'correlation coefficient 10 degs'}
-            rankedSubjectIDs = rankSubjects(exportsDir, rankStrategy)
+            rankedSubjectIDs = rankSubjects(exportsDir, rankStrategy);
             plotRankedSubjects(exportsDir, rankedSubjectIDs, rankStrategy);
         end
         

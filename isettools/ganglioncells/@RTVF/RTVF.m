@@ -258,6 +258,10 @@ classdef RTVF < handle
         % Method to compute the Croner&Kaplan RF analysis
         dataOut = visualRFmapPropertiesFromCronerKaplanAnalysis(obj, theVisualRF);
 
+        % Method to freeze the obj (i.e., remove large chunks of data that
+        % are of no use after the cone weights to the surround have been
+        % computed)
+        freeze(obj);
     end % public methods
 
 
@@ -295,6 +299,11 @@ classdef RTVF < handle
 
     % Class methods
     methods (Static)
+        % Method to compute the retinal spectral quantal efficiencies 
+        % at a target position within a @cMosaic
+        % taking into account variations in MP density
+        [L,M,wavelengthSupport] = LMconeSpectralWeightings(theConeMosaic, theTargetEccDegs)
+
         % Method to determine the centroid,and minor/major axis lengehs of a map
         [theCentroid, theAxesLengths, theRotationAngle] = estimateGeometry(supportX, supportY, rfMap)
 
@@ -357,7 +366,7 @@ classdef RTVF < handle
           nonConnectableSurroundConeWeights] = connectableSurroundConeIndicesAndWeights(...
                 surroundConeIndices, surroundConeWeights, modelConstants);
 
-        % Method to inspect a saved RTVF object
+        % Method to generate the center/surround spatial RF from an RTVFobj
         generateSpatialRFs(theRTVFobj);
 
         % Method to accept either a 'y' or a 'n' response
