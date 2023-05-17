@@ -74,8 +74,8 @@ thisR = obj.recipe;
 
 % For debugging, we sometimes switch the camera to pinhole
 if obj.usePinhole
-    % We will render a scene through a pinhole camera.  We try to match the
-    % fov for the scene with the fov that was set for the eyeballc ase.
+    % We render the scene through a pinhole camera.  We try to match
+    % the fov for the scene with the fov that was set for the eyeball case.
     fov = thisR.get('fov');
     cameraSave = thisR.get('camera');
     
