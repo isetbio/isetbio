@@ -1,11 +1,16 @@
 function obj = piWRS(SE,varargin)
-% Calls piWRS
+% Calls the main piWRS function, but accounting for sceneEye
+% parameters
 %
 % Synopsis
 %   obj = sceneEye.piWRS(varargin);
 %
 % Brief
-%   Writes, Renders, and Shows the sceneEye recipe
+%   Writes, Renders, and Shows the sceneEye recipe.  The typical piWRS
+%   parameters are passed through. The special case of accounting for
+%   the pinhole testing case and scaling the illuminance case are
+%   managed here.  But everything else is passed to the piWRS function
+%   in ISET3d-v4.
 %
 % Inputs
 %   SE - sceneEye object
@@ -71,59 +76,3 @@ end
 
 end
 
-%{
-varargin = ieParamFormat(varargin);
-p = inputParser;
-
-p.addRequired('SE',@(x)(isa(x,'sceneEye')));
-
-p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper')));
-p.addParameter('name','',@ischar);
-p.addParameter('show',true,@islogical);
-p.addParameter('gamma',[],@isnumeric);
-p.addParameter('renderflag','',@ischar);
-
-p.parse(SE,varargin{:});
-
-thisDocker  = p.Results.dockerwrapper;
-g           = p.Results.gamma;
-name        = p.Results.name;
-show        = p.Results.show;
-renderFlag  = p.Results.renderflag;
-
-if isempty(thisDocker)
-    thisDocker = dockerWrapper;
-    thisDocker.preset('human eye');
-end
-
-%% Render
-
-obj = SE.render('dockerwrapper',thisDocker);
-
-%% Edit parameters
-
-switch lower(obj.type)
-    case 'scene'
-
-        if ~isempty(name), obj = sceneSet(obj,'name',name); end
-        if show
-            sceneWindow(obj);
-            if ~isempty(g), sceneSet(obj,'gamma',g); end
-            if ~isempty(renderFlag), sceneSet(obj,'render flag',renderFlag); end
-        end
-
-    case 'opticalimage'
-
-        if ~isempty(name), obj = oiSet(obj,'name',name); end
-        if show
-            oiWindow(obj);
-            if ~isempty(g), oiSet(obj,'gamma',g); end
-            if ~isempty(renderFlag), oiSet(obj,'render flag',renderFlag); end
-        end
-
-    otherwise
-        error('Unknown ISET Object type %s',obj.type)
-end
-
-end
-%}
