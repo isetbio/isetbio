@@ -25,7 +25,7 @@ cm = mosaicLoad([1 1],[1 0]);
 
 %% Answer a call for help.
 if isequal(sizeDeg,'help')
-    lst = dir(fullfile(isetRootPath,'data','cones','*.mat'));
+    lst = dir(fullfile(isetbioDataPath,'cones','*.mat'));
     fprintf('\n\nSize and Positions available in the cone mosaic library.\n\n')
     fprintf('\n\n            Name  \t\t\t   Size \t   Pos   \n---------------------------------------------------------------------\n')
     for ii=1:numel(lst)
