@@ -73,7 +73,7 @@ whichGroup = 'emmetropes';
 % Get [x,y] support for plotting OTF
 otfSupport = wvfGet(wvf, 'otfSupport', 'mm');
 
-vcNewGraphWin;
+ieNewGraphWin;
 surf(otfSupport, otfSupport, fftshift(wvf.otf{1}));
 set(gca, 'XLim', [-100 100], 'YLim', [-100 100])
 xlabel('Freq (lines/mm)');
@@ -88,7 +88,7 @@ centeredPSF = [wvf.psf{1}(101:end,:);
 centeredPSFNormalized = centeredPSF./sum(centeredPSF);
 
 % Plot PSF
-vcNewGraphWin;
+ieNewGraphWin;
 surf(psfSupport, psfSupport, centeredPSF)
 set(gca, 'XLim', [-40 40], 'YLim', [-40 40])
 xlabel('Pos (um)');
@@ -97,7 +97,7 @@ title(sprintf('%s: PSF 550 nm, pupil 4 mm, eccen %d deg, %s eye', ...
     whichGroup, eccen, whichEye))
 
 %% Plot normalized PSF
-vcNewGraphWin;
+ieNewGraphWin;
 surf(psfSupport, psfSupport, centeredPSFNormalized)
 set(gca, 'XLim', [-40 40], 'YLim', [-40 40])
 xlabel('Pos (um)');
