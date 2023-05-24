@@ -146,4 +146,7 @@ for iEcc = 1:numel(R)
     axis(ax, 'square');
 end   
 
-NicePlot.exportFigToPDF(sprintf('%s_subject%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID), hFig, 300);
+% If you want a PDF of the figure:
+%
+%  NicePlot.exportFigToPDF(sprintf('%s_subject%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID), hFig, 300);
+%
