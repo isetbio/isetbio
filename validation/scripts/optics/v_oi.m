@@ -25,7 +25,7 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('diffractionOI', oi);
 
     %% Human optics (MW)
-    oi = oiCreate('human');
+    oi = oiCreate('human mw');
     if (runTimeParams.generatePlots)
         oiPlot(oi,'psf',[],420);
         oiPlot(oi,'psf',[],550);
@@ -50,7 +50,7 @@ function ValidationFunction(runTimeParams)
     
     %% Make a scene and show some oiGets and oiCompute work
     scene = sceneCreate;
-    oi = oiCreate('human');
+    oi = oiCreate('human mw');
     oi = oiCompute(oi,scene);
     if (runTimeParams.generatePlots)
         oiPlot(oi,'illuminance mesh linear');
