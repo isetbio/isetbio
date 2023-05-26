@@ -312,7 +312,7 @@ function ValidationFunction(runTimeParams)
     load T_xyz1931
     T_xyz = SplineCmf(S_xyz1931,T_xyz1931,S_cieday);
     ptbDayXYZ = T_xyz*ptbDaySpd;
-    ptbDayuv_isetbio = xyz2uv(ptbDayXYZ','uv')';
+    ptbDayuv_isetbio = xyz2uv(ptbDayXYZ','uv');
     ptbDayCCT_isetbio = cct(ptbDayuv_isetbio);
     fprintf('ISETBio function cct recovers %d as CCT of daylight at %d\n',round(ptbDayCCT_isetbio),testTemp);
     

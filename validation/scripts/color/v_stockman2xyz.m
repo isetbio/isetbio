@@ -20,7 +20,7 @@ function ValidationFunction(runTimeParams)
     xyz = ieReadSpectra('XYZ',wave);
     stock = ieReadSpectra('stockman',wave);
     if (runTimeParams.generatePlots)
-        vcNewGraphWin;
+        ieNewGraphWin;
         plot(wave,stock)
         plot(wave,xyz)
     end
@@ -30,7 +30,7 @@ function ValidationFunction(runTimeParams)
 
     %% Make matrix that transforms XYZ to Stockman-Sharpe
     % Isetbio keeps sensitivities in columns and matrices
-    % are applied to the right to transform.
+    % are applied on the right to transform.
     %
     % Note (sigh) that PTB keeps sensitivities in rows and
     % that matrices are appplied from the left, so if you
@@ -60,7 +60,7 @@ function ValidationFunction(runTimeParams)
     T1 = colorTransformMatrix('stockman 2 xyz');
     T2 = colorTransformMatrix('xyz 2 stockman');
     tolerance = 1e-3;
-    quantityOfInterest = T1-T_ss2xyz;
+    quantityOfInterest = T1 - T_ss2xyz;
     UnitTest.assertIsZero(quantityOfInterest,'Matrix T_ss2xyz returned by colorTransformMatrix',tolerance);
     
     quantityOfInterest = T2-T_xyz2ss;
@@ -97,7 +97,7 @@ function ValidationFunction(runTimeParams)
     % The agreement would get a little better for the subsampled PTB functions if one
     % renormalized after interpolating.
     if (runTimeParams.generatePlots)
-        figure; clf;
+        ieNewGraphWin;
         subplot(1,2,1); hold on
         plot(wave,xyz,'k','LineWidth',4);
         subplot(1,2,2); hold on
@@ -118,7 +118,7 @@ function ValidationFunction(runTimeParams)
     % PTB data matches CVRL
     [cvrlWls,cvrlLMS] = ReturnCVRLLMS;
     if (runTimeParams.generatePlots)      
-        figure; clf; hold on
+        ieNewGraphWin; hold on
         plot(cvrlWls,cvrlLMS,'k','LineWidth',3);
         plot(SToWls(S_cones_ss2),T_cones_ss2','g');
         xlabel('Wavelength (nm');
@@ -135,7 +135,7 @@ function ValidationFunction(runTimeParams)
     T_ptbData = (T_cones'\T_xyz')';
     ptbPred = T_ptbData*T_cones;
     if (runTimeParams.generatePlots)
-        figure; clf; hold on
+        ieNewGraphWin; hold on
         plot(wave,pred,'k','LineWidth',3)
         plot(wave,ptbPred,'r','LineWidth',2);
         xlabel('Wavelength (nm');
