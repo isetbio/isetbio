@@ -14,7 +14,7 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Initialize ISETBIO
-    ieInit;
+    % ieInit;
 
     %% Diffraction limited simulation properties
     oi = oiCreate('diffraction limited');
