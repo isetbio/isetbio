@@ -1,8 +1,8 @@
-function varargout = v_Cones(varargin)
+function varargout = v_ibio_Cones(varargin)
 %
 % Test cone, lens and macular function calls.  Compare against PTB answers.
 %
-% See also v_IrradianceIsomerizations.
+% See also v_ibio_IrradianceIsomerizations.
 %
 % Issues:
 %

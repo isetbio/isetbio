@@ -1,1 +1,0 @@
-This section contains validation scripts related to iset optical images.
