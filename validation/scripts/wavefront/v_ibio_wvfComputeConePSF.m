@@ -1,4 +1,4 @@
-function varargout = v_wvfComputeConePSF(varargin)
+function varargout = v_ibio_wvfComputeConePSF(varargin)
 %
 % Test the routines that compute L, M, and S cone PSFs from Zernike coefficients.
 %
@@ -38,8 +38,6 @@ end
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
 
-%% Initialize
-close all; ieInit;
 %% Some informative text
 UnitTest.validationRecord('SIMPLE_MESSAGE', 'Check L, M, S cone PSFs.');
 
@@ -133,12 +131,12 @@ newSamples = 497;
 wvf0 = wvfSet(wvf0,'number spatial samples',newSamples);
 fprintf('Sampling pupil plane/psf with %d pixels\n',wvfGet(wvf0,'number spatial samples'));
 fprintf('Pupil plane info\n');
-for wavelength = [400 500 600 700];
+for wavelength = [400 500 600 700]
     fprintf('\t%d nm, %0.1f mm, %0.3f mm/pixel\n',...
         wavelength,wvfGet(wvf0,'pupil plane size','mm',wavelength),wvfGet(wvf0,'pupil plane size','mm',wavelength)/wvfGet(wvf0,'number spatial samples'));
 end
 fprintf('PSF plane info\n');
-for wavelength = [400 500 600 700];
+for wavelength = [400 500 600 700]
     fprintf('\t%d nm, %0.1f minutes, %0.3f min/pixel\n',...
         wavelength,wvfGet(wvf0,'psf angle per sample','min',wavelength)*wvfGet(wvf0,'number spatial samples'),wvfGet(wvf0,'psf angle per sample','min',wavelength));
 end
@@ -223,37 +221,38 @@ UnitTest.validationData('spsfd', spsfd);
 
 % Diffraction limited (Figure 2)
 wavelengths = [400 550 700];
-vcNewGraphWin([],'wide');
+ieNewGraphWin([],'wide');
 % position = get(gcf,'Position');
 % position(3) = 1600; position(4) = 800;
 % set(gcf,'Position',position);
-for i = 1:length(wavelengths);
+for i = 1:length(wavelengths)
     wavelength = wavelengths(i);
     
     subplot(2,length(wavelengths),i); hold on
-    [nil,p] = wvfPlot(wvfParams2,'image pupil phase','mm',wavelength,'no window');
-    
+
+    [~,p] = wvfPlot(wvfParams2,'image pupil phase','mm',wavelength,'no window');    
     focusWl = wvfGet(wvfParams2,'measured wavelength');
     subplot(2,length(wavelengths),i+length(wavelengths)); hold on
     psf = wvfGet(wvfParams2,'psf',wavelength);
     maxVal = max(psf(:));
+
     % [nil,p] = wvfPlot(wvfParams2,'2d psf angle','min',wavelength,'no window');
-    [nil,p] = wvfPlot(wvfParams2,'image psf angle','min',wavelength,'no window');
+    [~,p] = wvfPlot(wvfParams2,'image psf angle','min',wavelength,'no window');
     h = get(p,'Parent');
     view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
     title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
 end
 
 % With aberrations (Figure 4)
-vcNewGraphWin([],'wide');
+ieNewGraphWin([],'wide');
 % position = get(gcf,'Position');
 % position(3) = 1600; position(4) = 800;
 % set(gcf,'Position',position);
-for i = 1:length(wavelengths);
+for i = 1:length(wavelengths)
     wavelength = wavelengths(i);
     
     subplot(2,length(wavelengths),i); hold on
-    [nil,p] = wvfPlot(wvfParams1,'image pupil phase','mm',wavelength,'no window');
+    [~,p] = wvfPlot(wvfParams1,'image pupil phase','mm',wavelength,'no window');
     %h = get(p,'Parent');
     %view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
     %title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
@@ -262,7 +261,7 @@ for i = 1:length(wavelengths);
     psf = wvfGet(wvfParams1,'psf',wavelength);
     maxVal = max(psf(:));
     %[nil,p] = wvfPlot(wvfParams1,'2d psf angle','min',wavelength,'no window');
-    [nil,p] = wvfPlot(wvfParams1,'image psf angle','min',wavelength,'no window');
+    [~,p] = wvfPlot(wvfParams1,'image psf angle','min',wavelength,'no window');
     h = get(p,'Parent');
     view([0 90]); ylim([-30 30]); xlim([-30 30]); axis('square');
     title(sprintf('%d nm, focus %d nm, max = %0.5f',wavelength,focusWl,maxVal));
@@ -272,8 +271,8 @@ end
 % Compare with diffraction limited + defocus
 
 % The position setting was a bit specific to some monitor.  I tried to make
-% vcNewGraphWin do the right thing.
-vcNewGraphWin([],'wide'); 
+% ieNewGraphWin do the right thing.
+ieNewGraphWin([],'wide'); 
 % position = get(gcf,'Position');
 % position(3) = 1600;
 % set(gcf,'Position',position);
@@ -360,7 +359,7 @@ autrusseauFigure11 = ReadStructsFromText('autrusseauFigure11.txt');
 % middle row of full MTFs) that we get, and compare to what Autrusseau et al. got.
 % Dashed colord line is horizontal grating MTFs.  Black lines are MTFs for 
 % diffraction plus defocus 
-theFig = vcNewGraphWin([],'wide'); clf;
+theFig = ieNewGraphWin([],'wide'); clf;
 subplot(1,3,1); hold on
 onedLOTFH = abs(lotf(whichRow,:));
 onedLOTFV = abs(lotf(:,whichRow));
