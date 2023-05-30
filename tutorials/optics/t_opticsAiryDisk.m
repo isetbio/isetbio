@@ -63,7 +63,7 @@ radius = (2.44 * fNumber * thisWave * 10 ^ -9) / 2 ...
 
 % Draw a circle at the first zero crossing (Airy disk)
 nCircleSamples = 200;
-[~, ptsXY]=ieShape('circle', 'nSamp', nCircleSamples, 'radius', radius);
+[~, ptsXY]=ieShape('circle', nCircleSamples, radius);
 adX = ptsXY(:, 1);
 adY = ptsXY(:, 2);
 adZ = zeros(size(ptsXY(:, 1)));
