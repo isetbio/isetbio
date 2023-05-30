@@ -37,6 +37,36 @@ function navarroAccomm = convertToNavarroAccomm(inputAccomm)
 %      relationship more finely.]
 %
 
+% Examples:
+%{
+% This describes the conversion that TL implemented in the form of
+% some graphs.
+%
+
+% Input distance
+inD = 0.2:0.05:2;  % Meters
+inA  = 1./inD;     % Input accommodation
+
+% The conversion
+outA = zeros(size(inA));
+for ii=1:numel(inA)
+ outA(ii) = convertToNavarroAccomm(inA(ii));
+end
+
+% Accommodation conversion
+ieNewGraphWin;
+plot(inA,outA,'-ko');
+grid on; identityLine;
+xlabel('input acc'); ylabel('output acc');
+
+% Distance conversion
+ieNewGraphWin;
+plot(inD, 1 ./ outA,'-ko');
+grid on; identityLine;
+xlabel('input dist'); ylabel('output dist');
+
+%}
+
 % Catch the special case of 0 accommodation. 
 % if(inputAccomm == 0)
 %     navarroAccomm = 0;
