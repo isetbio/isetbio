@@ -5,11 +5,11 @@ function [ieObject] = setOI(obj, ieObject, varargin)
 %   ieObject = write(obj, [varargin])
 %
 % Description:
-%    Given an ieObject (the optical image), we will set the parameters
-%    within to match those given in the sceneEye object. This is necessary,
-%    since the optical image returned by piRender will have parameters such
-%    as f-number, focal length, etc. set to default, but we want these
-%    values to reflect the retinal image we have just rendered.
+%    Given an ieObject (the optical image), we set the parameters
+%    within to match those given in the sceneEye object. This is
+%    necessary, since the optical image returned by piRender will have
+%    parameters such as f-number, focal length, etc. set to default.
+%    We want the values to reflect the retinal model we rendered.
 %
 % Inputs:
 %    obj                   - Object. The scene3D object to render.
@@ -84,7 +84,7 @@ ieObject = oiSet(ieObject, 'optics focal length',retDistance);
 
 ieObject = oiSet(ieObject,'optics OTF', []);
 ieObject = oiSet(ieObject,'optics name',obj.recipe.get('lens file'));
-ieObject = oiSet(ieObject,'optics offaxis','');
+ieObject = oiSet(ieObject,'optics offaxis method','');
 % ieObject = oiSet(ieObject,'optics vignetting',[]);
 
 %% Calculate and apply lens transmittance
