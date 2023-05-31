@@ -52,9 +52,11 @@ end
 % TL believed that the usual accomodation value and the equivalent
 % value for the Navarro model differ.  She inserted this function so
 % that the Navarro model accommodation matched her Zemax calculation.
-% See the comments in the function.  We should probablyk have a switch
-% to use or not use this function, and we should document more
-% extensively.
+% See the comments in the function.
+%
+% The script t_eyeAccommodation images an edge, sweeping through
+% accommodation from close, in focus, too far. The color fringe shifts
+% as focus shift from too close to too far.
 accommodation = convertToNavarroAccomm(accommodation);
 
 % Round to 1 decimal place
