@@ -61,16 +61,17 @@ else
 end
 
 diffEnabled = thisR.get('diffraction');
-if diffEnabled
-    txt = addText(txt,sprintf('Diffraction: Enabled\n'));
-else
-    txt = addText(txt,sprintf('Diffraction: Disabled\n'));
+switch diffEnabled
+    case 'true'
+        txt = addText(txt,sprintf('Diffraction: Enabled\n'));
+    case 'false'
+        txt = addText(txt,sprintf('Diffraction: Disabled\n'));
+    otherwise
+        txt = addText(txt,sprintf('Diffraction: Bad string\n'));
 end
 txt = addText(txt,delimit);
 
-
 %% Will get fancier in the future
-
 disp(txt);
 
 end

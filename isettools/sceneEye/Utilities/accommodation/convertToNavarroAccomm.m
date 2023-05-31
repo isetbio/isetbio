@@ -4,26 +4,32 @@ function navarroAccomm = convertToNavarroAccomm(inputAccomm)
 % Syntax:
 %   navarroAccomm = convertToNavarroAccomm(inputAccomm)
 %
-% Description:
-%    The reason we need this function is because the input accommodation to
-%    the Navarro model does not precisely match the distance to the point
-%    in the scene we wish to accommodate to (for 550 nm).
+% Description (TL):
+%    We need this function because the input accommodation of the
+%    Navarro model does not precisely match the distance to the point
+%    in the scene we wish to accommodate to for 550 nm.
 %
-%    For example, if we use the 0.4 diopter Navarro model, the point of
-%    best focus for 550 nm would be at 1013 mm, according to Zemax (which
-%    we trust). The user probably wanted the point of best focus to be
-%    1/0.4 diopter = 1500 mm. This discrepancy probably happens because
-%    Navarro fitted the accommodation equations to match 5 and 10 diopters,
-%    but not other accommodation states. Either that, or Navarro is somehow
-%    defining accommodation differently than we are here.
+%    For example, if we use the 0.4 diopter Navarro model, the point
+%    of best focus for 550 nm would be at 1013 mm, according to Zemax
+%    (which we trust). The user probably wanted the point of best
+%    focus to be 1/0.4 diopter = 1500 mm. This discrepancy probably
+%    happens because Navarro fitted the accommodation equations to
+%    match 5 and 10 diopters, but not other accommodation states.
+%    Either that, or Navarro is somehow defining accommodation
+%    differently than we are here.
 %
-%    We use a few sample points to find the Navarro accommodation state
-%    that most closely matches the user's desired point of best focus.
+%    We (TL) used Zemax and a few sample points to find the Navarro
+%    accommodation state that most closely matches the user's desired
+%    point of best focus. BW isn't sure where that calculation is,
+%    however.
 %
 % Inputs:
-%    inputAccomm   - Numeric. The non-Navarro accommodation. This should be
-%                    within a reasonable range for accommodation, aka it
-%                    should be between 0.44 and 9.25.
+%    inputAccomm   - Numeric. The non-Navarro accommodation. We can
+%                    accept a reasonable range for accommodation, from
+%                    0.44 D (2.27 m) to 9.25 (10 cm).  Anything
+%                    smaller than 0.44D is set to 0 (Inf) and anything
+%                    closer than 10 cm is set to 10 cm.  Warnings are
+%                    issued by this code when the values are changed.
 %
 % Outputs:
 %    navarroAccomm - Numeric. The Navarro model accommodation.
@@ -37,21 +43,51 @@ function navarroAccomm = convertToNavarroAccomm(inputAccomm)
 %      relationship more finely.]
 %
 
-% Catch the special case of 0 accommodation. 
-% if(inputAccomm == 0)
-%     navarroAccomm = 0;
-%     return;
-% end
+% Examples:
+%{
+% This describes the conversion that TL implemented in the form of
+% some graphs.
+%
 
-% We can't interpolate past ~0.4 diopters and over ~9.25. 
+% Input distance
+inD = 0.2:0.05:2;  % Meters
+inA  = 1./inD;     % Input accommodation
+
+% The conversion
+outA = zeros(size(inA));
+for ii=1:numel(inA)
+ outA(ii) = convertToNavarroAccomm(inA(ii));
+end
+
+% Accommodation conversion TL implemented
+ieNewGraphWin;
+plot(inA,outA,'-ko');
+grid on; identityLine;
+xlabel('input acc (D)'); ylabel('output acc (D)');
+
+% Distance conversion
+ieNewGraphWin;
+plot(inD, 1 ./ outA,'-ko');
+grid on; identityLine;
+xlabel('input dist (m)'); ylabel('output dist (m)');
+
+%}
+
+% Catch the special case of 0 accommodation. 
+if(inputAccomm == 0)
+    navarroAccomm = 0;
+    return;
+end
+
+% These are limits on our interpolation
+% Past ~0.4 diopters (2.27 meters) and over ~9.25 (10 cm)
 if(inputAccomm < 0.44) 
-    %navarroAccomm = inputAccomm;
+    warning('Accommodation < 0.44 (> 2.27 m) is set to 0 (~Inf m)');
+    % treated as infinitely far away.
     navarroAccomm = 0;
     return;
 elseif(inputAccomm > 9.25)
-    warning(['At the moment, we don''t have data for accommodation ', ...
-    'greater than 9.25 dpt. This may change in the near future, but ', ...
-    'for now we set accommodation to 9.25 dpt.']);
+    warning('Accommodation > 9.25D (~10 cm) set to 9.25D.');
     navarroAccomm = 9.25;
     return;
 end
