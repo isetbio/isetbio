@@ -50,6 +50,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('densityColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     
     p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
+    p.addParameter('superimposedOIAlpha', 0.7, @isnumeric);
     p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
     
     p.addParameter('activation', []);
@@ -91,7 +92,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
     p.addParameter('textDisplayColor', [], @isnumeric);
 
-    p.addParameter('superimposedOIAlpha', 0.7, @isnumeric);
+    
     
     p.parse(varargin{:});
     

@@ -210,7 +210,7 @@ classdef mRGCMosaic < handle
         noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses, varargin);
 
         % Method to generate the visualization cache
-        generateVisualizationCache(obj, xSupport, ySupport);
+        generateVisualizationCache(obj, xSupport, ySupport, centerSubregionContourSamples);
 
         % Method to visualize the mRGCmosaic and its activation
         visualize(obj, varargin);

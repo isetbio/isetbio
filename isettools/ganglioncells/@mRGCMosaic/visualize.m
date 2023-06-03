@@ -7,6 +7,7 @@ function visualize(obj, varargin)
     p.addParameter('clearAxesBeforeDrawing', true, @islogical);
     p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('component', 'RF centers', @(x)ismember(x, {'RF centers'}));
+    p.addParameter('centerSubregionContourSamples', 10, @isscalar);
     p.addParameter('activation', []);
     p.addParameter('samplingGrid', [], @(x)(isempty(x) || (isnumeric(x) && (size(x,2) == 2)) ));
     p.addParameter('samplingGridOutlineColor', [1 0 0], @(x)(isempty(x)||(numel(x)==3)));
@@ -48,6 +49,7 @@ function visualize(obj, varargin)
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     visualizedComponent = p.Results.component;
+    centerSubregionContourSamples = p.Results.centerSubregionContourSamples;
     identifiedConeAperture = p.Results.identifiedConeAperture;
     identifiedConeApertureThetaSamples = p.Results.identifiedConeApertureThetaSamples;
     identifyInputCones = p.Results.identifyInputCones;
@@ -79,9 +81,7 @@ function visualize(obj, varargin)
     % Generate the visualization cache
     xSupport = [];
     ySupport = []; 
-
-
-    obj.generateVisualizationCache(xSupport, ySupport);
+    obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples);
 
     % Determine X,Y limits
     if (isempty(domainVisualizationLimits))
@@ -254,7 +254,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
     
         S.FaceColor = 'flat';
         if (~isempty(activation))
-            S.EdgeColor = 'none';
+            S.EdgeColor = [0 0 0]';
         else
             S.FaceColor = [0.95 0.95 0.95]*0.6;
             S.EdgeColor = [0 0 0];
@@ -294,6 +294,8 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             'figureHandle', hFig, 'axesHandle', ax, ...
             'clearAxesBeforeDrawing', false, ...
             'visualizedConeAperture', identifiedConeAperture, ...
+            'conesAlpha', 1.0, ...
+            'conesEdgeAlpha', 0.5, ...
             'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
             'labelRetinalMeridians', labelRetinalMeridians, ...
             'domainVisualizationTicks', domainVisualizationTicks, ...

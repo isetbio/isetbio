@@ -1,6 +1,8 @@
-function generateVisualizationCache(obj, xSupport, ySupport)
+function generateVisualizationCache(obj, xSupport, ySupport, centerSubregionContourSamples)
+
     if (isfield(obj.visualizationCache, 'rfCenterPatchData')) && ...
-       (~isempty(obj.visualizationCache.rfCenterPatchData))
+       (~isempty(obj.visualizationCache.rfCenterPatchData)) && ...
+       (obj.visualizationCache.centerSubregionContourSamples == centerSubregionContourSamples)
         % Already in visualizationCache, so return
         return;
     end
@@ -8,9 +10,8 @@ function generateVisualizationCache(obj, xSupport, ySupport)
     fprintf('\nComputing RF center outline contours. Please wait ...');
     tic
 
-    % Compute graphic data for center contours
+
     spatialSupportSamples = 48;
-    
     if (~isempty(obj.rgcRFcenterConePoolingMatrix))
         minCenterConePoolingWeights = max(obj.rgcRFcenterConePoolingMatrix,[], 1)* 0.001;
     else
@@ -20,15 +21,15 @@ function generateVisualizationCache(obj, xSupport, ySupport)
     if (~isempty(obj.rgcRFcenterConePoolingMatrix))
         [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments] = ...
             graphicDataForSubregion(obj, obj.rgcRFcenterConePoolingMatrix, minCenterConePoolingWeights, ...
-            xSupport, ySupport, spatialSupportSamples);
+            xSupport, ySupport, spatialSupportSamples,centerSubregionContourSamples);
     else
         [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments] = ...
             graphicDataForSubregion(obj, obj.rgcRFcenterConeConnectivityMatrix, minCenterConePoolingWeights, ...
-            xSupport, ySupport, spatialSupportSamples);
+            xSupport, ySupport, spatialSupportSamples,centerSubregionContourSamples);
     end
 
 
-
+    obj.visualizationCache.centerSubregionContourSamples = centerSubregionContourSamples;
     obj.visualizationCache.rfCenterContourData = theContourData;
     obj.visualizationCache.rfCenterPatchData.vertices = verticesList;
     obj.visualizationCache.rfCenterPatchData.verticesNumForRGC = verticesNumForRGC;
@@ -66,7 +67,7 @@ function generateVisualizationCache(obj, xSupport, ySupport)
 end
 
 function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, subregionConeConnectionLineSegments] = ...
-        graphicDataForSubregion(obj, conePoolingMatrix, minPoolingWeights, xSupport, ySupport, spatialSupportSamples)
+        graphicDataForSubregion(obj, conePoolingMatrix, minPoolingWeights, xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples)
         
     coneApertureSizeSpecifierForRGCRFplotting = 'spacing based';
     %coneApertureSizeSpecifierForRGCRFplotting = 'characteristic radius based';
@@ -121,7 +122,7 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
             case 'ellipseFitToPooledConeApertureImage'
                 theContourData{iRGC} = subregionEllipseFromPooledCones(...
                      theConePositions, theConeRFRadii, theConePoolingWeights, ...
-                     xSupport, ySupport, spatialSupportSamples);
+                     xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples);
         end % switch
 
         s = theContourData{iRGC}{1};
@@ -190,7 +191,7 @@ end
 
 function contourData = subregionEllipseFromPooledCones(...
     conePos, coneRc, poolingWeights, ...
-    xSupport, ySupport, spatialSupportSamples)
+    xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples)
 
     % Compute spatial support
     xSep = max(coneRc)*2*sqrt(numel(poolingWeights));
@@ -236,7 +237,7 @@ function contourData = subregionEllipseFromPooledCones(...
 
 
     % Calculate the ellipse line
-    theta = linspace(0, 2*pi, 10);
+    theta = linspace(0, 2*pi, centerSubregionContourSamples);
     col = (s.MajorAxisLength/2)*cos(theta);
     row = (s.MinorAxisLength/2)*sin(theta);
     M = makehgtform('translate',[s.Centroid, 0],'zrotate',deg2rad(-1*s.Orientation));
