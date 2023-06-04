@@ -115,12 +115,20 @@ classdef Lens < handle
     lens = Lens;
     t = lens.transmittance;
     a = lens.absorptance;
-    vcNewGraphWin;
+    ieNewGraphWin;
     plot(lens.wave, t, 'r-', lens.wave, a, 'g-', lens.wave, a + t, 'k--');
     xlabel('Wave (nm)');
     ylabel('Fraction');
     legend({'transmittance', 'absorptance', 'sum'});
 %}
+%{
+% Change the wavelength sample
+lens = Lens;
+ieNewGraphWin; plot(lens.wave,lens.transmittance);
+lens.wave = 400:50:600;
+hold on; plot(lens.wave,lens.transmittance,'ko');
+%}
+
 
 properties  % public properties
     % name - Name of this particular lens object

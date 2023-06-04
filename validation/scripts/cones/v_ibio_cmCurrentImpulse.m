@@ -27,7 +27,7 @@ function ValidationFunction(runTimeParams)
 rng('default'); rng(3);
 
 %% Set testing tolerance
-tolerance = 1e-4;
+% tolerance = 1e-4;
 
 %% Impulse on a 5 ms time axis.
 integrationTime = 5e-3;

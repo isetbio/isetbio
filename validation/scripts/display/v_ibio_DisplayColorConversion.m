@@ -12,9 +12,6 @@ end
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
 
-%% Initialize ISET
-close all; ieInit;
-
 %% Some informative text
 UnitTest.validationRecord('SIMPLE_MESSAGE', 'Compare isetbio and PTB display color conversion.');
 
@@ -77,7 +74,11 @@ try
     % that the comparison will not be stochastic.
     mosaicDegrees = 2;
     roiPixels = 10;
-    cMosaic = coneMosaic;
+
+    % This is the rectangular mosaic.  We were thinking about deprecating.
+    % It has some issue with 'listeners' for macular and photopigment wave
+    % settings.
+    cMosaic = coneMosaic;   
     cMosaic.wave = displayGet(d,'wave');
     cMosaic.noiseFlag = 'none';
     cMosaic.integrationTime = 1;
