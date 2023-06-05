@@ -1,8 +1,8 @@
-function setWave(obj, src)
+function setWave(obj,src)
 % Keep photopigment and macular pigment wavelength sampling consistent.
 %
 % Syntax:
-%   setWave(obj, src)
+%   setWave(obj)
 %
 % Description:
 %    When you set the photpigment wavelength sampling, it sets the macular
@@ -10,7 +10,6 @@ function setWave(obj, src)
 %
 % Inputs:
 %    obj - The cone mosaic object
-%    src - The light source? 
 %
 % Outputs:
 %    None.
@@ -29,6 +28,8 @@ function setWave(obj, src)
 % History:
 %    xx/xx/16  HJ   ISETBIO Team 2016
 %    02/23/18  jnm  Formatting
+
+warning('This method is deprecated, according to BW.');
 
 switch src.DefiningClass.Name
     case 'photoPigment'

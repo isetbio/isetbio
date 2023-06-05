@@ -97,7 +97,7 @@ try
     % Get the isomerizations in an ROI
     mosaicCFA = cMosaic.pattern;
     rect = round([cMosaic.cols/2,cMosaic.rows/2,roiPixels,roiPixels]);
-    mosaicRoiLocs = ieRoi2Locs(rect);
+    mosaicRoiLocs = ieRect2Locs(rect);
     nLocs = size(mosaicRoiLocs,1);
     sumIsomerizations = zeros(3,1);
     nSummed = zeros(3,1);    
@@ -122,9 +122,8 @@ try
     %
     % Multiply by the lens transmittance, to agree with old validations 
     S_cones   = WlsToS(cMosaic.wave);
-    T_conesQE = cMosaic.qe';   
-    lens = oiGet(oi,'lens');
-    lensTransmittance = lens.transmittance;
+    T_conesQE = cMosaic.qe';
+    lensTransmittance = oiGet(oi,'optics transmittance');
     T_conesQE = bsxfun(@times, T_conesQE, lensTransmittance');
  
     %% Create PTB calibration structure from ISETBIO display object

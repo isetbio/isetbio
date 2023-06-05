@@ -1,7 +1,10 @@
 classdef coneMosaic < hiddenHandle
-    % Create a cone mosaic object - to be deprecated and replaced by cMosaic
+    % Create a rectangular cone mosaic object 
     %
-    
+    % This should be renamed to rectMosaic and a bunch of code would be
+    % updated. The other more complex cone mosaic routines should have
+    % their own names, also.
+    %
     % Syntax:
     %   cMosaic = coneMosaic;
     %   cMosaic = coneMosaic('pigment', pp);
@@ -435,9 +438,13 @@ classdef coneMosaic < hiddenHandle
             %
             % These listeners make sure the wavelength samples
             % in obj.pigment and obj.macular match
-            addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
-            addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
-            
+            % But the listener logic is complex and was brokenin June,
+            % 2023. So, I removed these and manage this in the set/function
+            % (BW).
+            % addlistener(obj.pigment, 'wave', 'PostSet', @obj.setWave);
+            % addlistener(obj.pigment, 'wave', 'PostSet', @(src,evnt)disp('Wave changed'));
+            % addlistener(obj.macular, 'wave', 'PostSet', @obj.setWave);
+
             % Return parameters if asked
             if nargout > 1
                 % Return a struct with the parameters from this object.

@@ -1,4 +1,4 @@
-function varargout = v_DisplayLUTinversion(varargin)
+function varargout = v_ibio_DisplayLUTinversion(varargin)
 %
 % Validate display calibration lut inversion against PTB.
 %
