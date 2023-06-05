@@ -99,6 +99,9 @@ classdef mRGCMosaic < handle
         rgcRFcenterConePoolingMatrix = [];
         rgcRFsurroundConePoolingMatrix = [];
 
+        % Peak gain for each RGC. 
+        rgcRFgains = [];
+
         % The optics used to optimize surround cone weights
         % so as to generate RFs with the target visual properties
         % These are the optics at the mosaic'c center
@@ -201,6 +204,9 @@ classdef mRGCMosaic < handle
 
         % Method to crop a compute-ready mRGCMosaic to size at an eccentricity
         cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin);
+
+        % Method to set the peak gain of each mRGC 
+        setPeakGains(obj, method, methodParams);
 
         % Compute method
         [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSupportSeconds] = compute(obj, ...

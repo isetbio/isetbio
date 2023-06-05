@@ -115,6 +115,13 @@ function run()
         return;
     end
 
+    % Perform the adjustGainOfComputeReadyMRGCMosaicBasedOnVisualSTFdata
+    if (operationSetToPerformContains.adjustGainOfComputeReadyMidgetRGCMosaicBaseOnFittedVisualSTFs)
+        MosaicPoolingOptimizer.performAdjustGainOfComputeReadyMRGCMosaicBasedOnVisualSTFdata(mosaicParams)
+        return;
+    end
+
+
     % Perform the visualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
     if (operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC)
         

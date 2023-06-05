@@ -49,6 +49,9 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     theRFcenterImpulseResponse = generateCenterTemporalImpulseResponse(theImpulseResponseTemporalSupport);
     theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
 
+    if (isempty(obj.rgcRFgains))
+        fprintf(2,'the mRGCMosaic.rgcRFgains property has not been set: will employ the ''1/integrated center cone weights'' method\n');
+    end
 
     % Compute the response of each mRGC
     parfor iRGC = 1:obj.rgcsNum
@@ -57,7 +60,6 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         centerConeIndices = find(centerConnectivityVector > 0.0001);
         centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
         
-
         % Retrieve the surround cone indices & weights
         surroundConnectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix (:, iRGC)));
         surroundConeIndices = find(surroundConnectivityVector > 0.0001);
@@ -83,8 +85,12 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
                 theRFsurroundImpulseResponse);
         end
 
-        % Composite response gain: inversely proportional to sum(centerWeights)
-        responseGain = 1.0 / sum(centerConeWeights);
+        % Response gain
+        if (isempty(obj.rgcRFgains))
+            responseGain = 1.0 / sum(centerConeWeights);
+        else
+            responseGain = obj.rgcRFgains(iRGC);
+        end
 
         % Composite respose
         noiseFreeMRGCresponses(:,:,iRGC) = responseGain * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
