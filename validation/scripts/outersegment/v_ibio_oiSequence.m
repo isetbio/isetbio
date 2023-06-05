@@ -1,4 +1,4 @@
-function varargout = v_oiSequence(varargin)
+function varargout = v_ibio_oiSequence(varargin)
 %
 % Validate simulations using the oiSequence method
 %  
@@ -20,9 +20,6 @@ end
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
-
-%% Init
-ieInit;
 
 % Reproduce identical random number
 rng(1);

@@ -1,4 +1,4 @@
-function varargout = v_IrradianceIsomerizations(varargin)
+function varargout = v_ibio_IrradianceIsomerizations(varargin)
 %
 % Validate ISETBIO-based irradiance/isomerization computations by comparing to PTB-based irradiance/isomerization computations.
 %
@@ -43,7 +43,7 @@ end
 function ValidationFunction(runTimeParams)
     
     %% Initialize ISETBIO
-    s_initISET;
+    % s_initISET;
        
     %% Set computation params
     %
@@ -73,7 +73,7 @@ function ValidationFunction(runTimeParams)
     % roiSize x roiSize
     sz = sceneGet(scene,'size');
     rect = [sz(2)/2,sz(1)/2,roiSize,roiSize];
-    sceneRoiLocs = ieRoi2Locs(rect);
+    sceneRoiLocs = ieRect2Locs(rect);
     
     %% Get wavelength and spectral radiance spd data (averaged within the scene ROI) 
     %
@@ -101,17 +101,19 @@ function ValidationFunction(runTimeParams)
     % because the optical image is padded to deal with optical blurring at its edge.
     sz         = oiGet(oi,'size');
     rect       = [sz(2)/2,sz(1)/2,roiSize,roiSize];
-    oiRoiLocs  = ieRoi2Locs(rect);
+    oiRoiLocs  = ieRect2Locs(rect);
     if (any(wave-oiGet(scene,'wave')))
         UnitTest.validationRecord('FUNDAMENTAL_CHECK_FAILED', 'Wavelength sampling changed between scene and optical image.');
         return;
     end
+    % 
     isetbioIrradianceEnergy = oiGet(oi,'roi mean energy', oiRoiLocs);
 
     % Get lens transmittance and divide this out, for compatibility with a
     % time where the lens was in the sensor and not in the oi.
-    lens = oiGet(oi,'lens');
-    lensTransmittance = lens.transmittance;
+    lensTransmittance = oiGet(oi,'optics transmittance',oiGet(oi,'wave'));
+
+    % XW format
     isetbioIrradianceEnergy = isetbioIrradianceEnergy ./ lensTransmittance';    
 
     %% Check spatial uniformity of optical image irradiance data.
@@ -124,6 +126,7 @@ function ValidationFunction(runTimeParams)
     irradianceData = vcGetROIData(oi,oiRoiLocs,'energy');
     
 	% Divide by lens transmittance, to agree with old validations 
+    % XW format.
     irradianceData = bsxfun(@times, irradianceData, 1./lensTransmittance');
 
     irradianceEnergyCheck = mean(irradianceData,1);
@@ -177,7 +180,7 @@ function ValidationFunction(runTimeParams)
     tolerance = 0.01;
     ptbMagCorrectIrradiance = ptbMagCorrectIrradiance(:);
     isetbioIrradianceEnergy = isetbioIrradianceEnergy(:);
-    difference = ptbMagCorrectIrradiance-isetbioIrradianceEnergy;
+    difference = ptbMagCorrectIrradiance - isetbioIrradianceEnergy;
     quantityOfInterest = difference./isetbioIrradianceEnergy;
     UnitTest.assertIsZero(quantityOfInterest,'Difference between PTB and isetbio irradiance',tolerance);
     

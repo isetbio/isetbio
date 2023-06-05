@@ -1,4 +1,4 @@
-function varargout = v_osIncDec(varargin)
+function varargout = v_ibio_osIncDec(varargin)
 %
 % Validate the os models for light increment and decrement stimuli
 %
@@ -20,9 +20,6 @@ end
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
-
-    %% Init
-    ieInit;
 
     %% Load measured outer segment data
     [stimulusPhotonRateAmplitudesNeuralDataPoints, decToIncRatioNeuralDataPoints] = loadMeasuredDecIncRatios();

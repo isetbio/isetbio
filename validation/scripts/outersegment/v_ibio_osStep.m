@@ -1,4 +1,4 @@
-function varargout = v_osStep(varargin)
+function varargout = v_ibio_osStep(varargin)
 % 
 % Validate the cone outer segment models against neural data (step stimuli)
 %
@@ -28,9 +28,6 @@ end
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
-
-    %% Init
-    ieInit;
 
     %% Load measured outer segment data
     [time, measuredOuterSegmentCurrents, stimulusPhotonRates] = loadMeasuredOuterSegmentResponses();

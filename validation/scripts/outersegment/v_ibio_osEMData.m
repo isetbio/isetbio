@@ -1,4 +1,4 @@
-function varargout = v_osEMData(varargin)
+function varargout = v_ibio_osEMData(varargin)
 %
 % Check os models against neural data (simulating eye movements)
 %

@@ -1,4 +1,4 @@
-function varargout =  v_OTFandPupilSize(varargin)
+function varargout =  v_ibio_OTFandPupilSize(varargin)
 %
 % Validate the ISETBIO's OTF as a function of pupil size by comparing it to the Watson (2013) OTF model.
 % "A formula for the mean human optical modulation transfer function as a function of pupil size".
@@ -10,10 +10,7 @@ end
 
 %% Function implementing the isetbio validation code
 % Contrasting isetbio's OTF to Watson's (2013) model.
-function ValidationFunction(runTimeParams)
-    
-    %% Initialize ISETBIO
-    s_initISET;
+function ValidationFunction(runTimeParams)    
     
     %% Set run parameters
     
@@ -61,8 +58,8 @@ function ValidationFunction(runTimeParams)
         
         %% Retrieve the spatial frequency support in cycles/micron
         OTFsupport = opticsGet(optics,'otf support', 'um');
-        otf_sfXInCyclesPerMicron = OTFsupport{1};
-        otf_sfYInCyclesPerMicron = OTFsupport{2};
+        otf_sfXInCyclesPerMicron = OTFsupport.fx;
+        otf_sfYInCyclesPerMicron = OTFsupport.fy;
         
         %% Convert spatial frequency to cycles/deg.
         % In human retina, 1 deg of visual angle is about 288 microns

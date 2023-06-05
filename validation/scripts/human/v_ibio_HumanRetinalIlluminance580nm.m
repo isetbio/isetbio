@@ -1,4 +1,4 @@
-function varargout = v_HumanRetinalIlluminance580nm(varargin)
+function varargout = v_ibio_HumanRetinalIlluminance580nm(varargin)
 %
 % Validate photon flux measurements with assertions from Ed Pugh. 
 %
@@ -30,9 +30,6 @@ end
 %% Function implementing the isetbio validation code
 % Validation script for human retinal irradiance at 580 nm.
 function ValidationFunction(runTimeParams)
-
-    %% Initialize ISETBIO
-    ieInit;
     
     %% Set run parameters
     sceneFOV                = 20;      % 20 degrees scene
@@ -59,8 +56,7 @@ function ValidationFunction(runTimeParams)
     photonIrradiance = oiGet(oi,'roi mean photons',roi);
     
     % divide by lens transmittance, to agree with old validations
-    lens = oiGet(oi,'lens');
-    lensTransmittance = lens.transmittance;
+    lensTransmittance = oiGet(oi,'optics transmittance',oiGet(oi,'wave'));
     photonIrradiance = photonIrradiance ./ lensTransmittance';
     
     %% Compute difference from expected value
