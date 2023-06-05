@@ -45,6 +45,8 @@ function ValidationFunction(runTimeParams)
     % ieInit;
 
     %% Load measured outer segment data.  usec time base
+
+    % This fails because of RDT Client
     [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses();
     
     % Set the simulation time interval equal to the temporal sampling resolution of the measured measured data

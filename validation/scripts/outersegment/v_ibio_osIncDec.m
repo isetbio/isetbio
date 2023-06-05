@@ -1,6 +1,7 @@
 function varargout = v_ibio_osIncDec(varargin)
-%
 % Validate the os models for light increment and decrement stimuli
+%
+% RDT client error.  Needs re-write.
 %
 % This script tests the linear and biophysical outer segment models of 
 % photon isomerizations to photocurrent transduction that occurs in the
@@ -161,7 +162,6 @@ function ValidationFunction(runTimeParams)
         [decToIncRatioNeural(stepIndex), stimulusPhotonRateAxisFit, decToIncRatioNeuralFit] = generateDecIncRatioEstimate(stimulusPhotonRateAmplitudes(stepIndex), showFit, stimulusPhotonRateAmplitudesNeuralDataPoints, decToIncRatioNeuralDataPoints);
         decToIncRatioModel(stepIndex) = decrementResponseAmplitude(stepIndex) / incrementResponseAmplitude(stepIndex);
         decToIncRatioLinearModel(stepIndex) = decrementLinearResponseAmplitude(stepIndex) / incrementLinearResponseAmplitude(stepIndex);
- 
     end
     
     h = figure(2); clf;
