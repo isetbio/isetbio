@@ -5,9 +5,10 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
 
     p = inputParser;
     p.addParameter('validateScenes', false, @islogical);
+    p.addParameter('sceneIndexToCompute',  [], @isnumeric);
     p.parse(varargin{:});
     validateScenes = p.Results.validateScenes;
-
+    sceneIndexToCompute = p.Results.sceneIndexToCompute;
     
     % Compute spatial support
     pixelsNum  = round(stimParams.stimSizeDegs / stimParams.pixelSizeDegs);
@@ -26,9 +27,20 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
     % Background LMS excitations
     backgroundLMS = imageLinearTransform(backgroundRGB, displayGet(presentationDisplay, 'rgb2lms'));
 
-    theScenes = cell(1, size(spatialModulationPatterns,1));
+    nStim = size(spatialModulationPatterns,1);
 
-    for sceneIndex = 0:numel(theScenes)
+    theScenes = []; theNullStimulusScene = [];
+    if (isempty(sceneIndexToCompute))
+        theScenes = cell(1, nStim);
+    end
+
+    for sceneIndex = 0:nStim
+
+        if (~isempty(sceneIndexToCompute))
+            if (sceneIndex ~= sceneIndexToCompute)
+                continue;
+            end
+        end
 
         % The LMS contrast image
         LMScontrastImage = zeros(size(spatialModulationPatterns,2), size(spatialModulationPatterns,2), numel(stimParams.coneContrasts));
@@ -83,12 +95,24 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
             visualizeDisplayImage(figNo, sceneSRGBimage, sceneLMSexcitationsImage, presentationDisplay);
         end
 
-        if (sceneIndex == 0)
-            theNullStimulusScene = theScene;
-        else
-            theScenes{sceneIndex} = theScene;
+        if (isempty(sceneIndexToCompute))
+            if (sceneIndex == 0)
+                theNullStimulusScene = theScene;
+            else
+                theScenes{sceneIndex} = theScene;
+            end
         end
+
+    end % for sceneIndex
+
+    if (~isempty(sceneIndexToCompute))
+         if (sceneIndexToCompute == 0)
+             theNullStimulusScene = theScene;
+         else
+            theScenes{1} = theScene;
+         end
     end
+
 end
 
 

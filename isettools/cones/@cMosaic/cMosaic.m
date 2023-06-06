@@ -614,6 +614,10 @@ classdef cMosaic < handle
             
         end % constructor
         
+        % Method to crop the cMosaic to only incluce cones with specific
+        % indices
+        cropMosaicToIncluceConesWithIndices(obj,keptConeIndices);
+        
         % Method to transform a distance specified in units of retinal
         % microns to a distance specified in units of visual degrees based on the @cMosaic configuration
         microns = distanceDegreesToDistanceMicronsForCmosaic(obj, degrees);

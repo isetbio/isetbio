@@ -41,6 +41,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('labelCones', true, @islogical);
     p.addParameter('labelConesInActivationMap', false, @islogical);
     p.addParameter('conesAlpha', 1.0, @isscalar);
+    p.addParameter('conesEdgeAlpha', 1.0, @isscalar);
     p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('outlinedConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('densityContourOverlay', false, @islogical);
@@ -49,6 +50,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('densityColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     
     p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
+    p.addParameter('superimposedOIAlpha', 0.7, @isnumeric);
     p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
     
     p.addParameter('activation', []);
@@ -83,13 +85,14 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('clearAxesBeforeDrawing', true, @islogical);
     p.addParameter('fontSize', 16, @isscalar);
     p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
-    p.addParameter('backgroundColor', [], @(x)((ischar(x)&&(strcmp(x,'none')))||isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('backgroundColor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
+    p.addParameter('plotTitleFontSize', 16, @isscalar);
     p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
     p.addParameter('textDisplayColor', [], @isnumeric);
 
-    p.addParameter('superimposedOIAlpha', 0.7, @isnumeric);
+    
     
     p.parse(varargin{:});
     
@@ -118,6 +121,7 @@ function visualizationParams = visualize(obj, varargin)
     labelCones = p.Results.labelCones;
     labelConesInActivationMap = p.Results.labelConesInActivationMap;
     faceAlphaCones = p.Results.conesAlpha;
+    edgeAlphaCones = p.Results.conesEdgeAlpha;
     labelConesWithIndices = p.Results.labelConesWithIndices;
     outlinedConesWithIndices = p.Results.outlinedConesWithIndices;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
@@ -127,6 +131,7 @@ function visualizationParams = visualize(obj, varargin)
     noYlabel = p.Results.noYLabel;
     displayedEyeMovementData = p.Results.displayedEyeMovementData;
     fontSize = p.Results.fontSize;
+    plotTitleFontSize = p.Results.plotTitleFontSize;
     colorbarFontSize = p.Results.colorbarFontSize;
     cMap = p.Results.activationColorMap;
     verticalColorBar = p.Results.verticalActivationColorBar;
@@ -267,6 +272,7 @@ function visualizationParams = visualize(obj, varargin)
             set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
             axesHandle = subplot('Position', [0.09 0.07 0.85 0.90]);
         end
+
         if (clearAxesBeforeDrawing)
             cla(axesHandle);
         end
@@ -387,18 +393,19 @@ function visualizationParams = visualize(obj, varargin)
         
         % Visualize activations
         faceAlpha = 1.0;
+        edgeAlpha = 1.0;
         % Plot L-cone activations
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.lConeIndices)*0.5, ...
-            rfPositions(obj.lConeIndices,:), activation(obj.lConeIndices), [0 0 0], 0.1, faceAlpha);
+            rfPositions(obj.lConeIndices,:), activation(obj.lConeIndices), [0 0 0], 0.1, faceAlpha, edgeAlpha);
         % Plot M-cone activations
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.mConeIndices)*0.5, ...
-            rfPositions(obj.mConeIndices,:), activation(obj.mConeIndices), [0 0 0], 0.1, faceAlpha);
+            rfPositions(obj.mConeIndices,:), activation(obj.mConeIndices), [0 0 0], 0.1, faceAlpha, edgeAlpha);
         % Plot S-cone activations
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.sConeIndices)*0.5, ...
-            rfPositions(obj.sConeIndices,:), activation(obj.sConeIndices), [0 0 0], 0.1, faceAlpha);
+            rfPositions(obj.sConeIndices,:), activation(obj.sConeIndices), [0 0 0], 0.1, faceAlpha, edgeAlpha);
         % Plot K-cone activations
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.kConeIndices)*0.5, ...
-            rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1, faceAlpha);
+            rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1, faceAlpha, edgeAlpha);
         
         if (~isempty(verticalActivationSliceEccentricity))
             d = abs(rfPositions(:,2)-verticalActivationSliceEccentricity);
@@ -423,10 +430,10 @@ function visualizationParams = visualize(obj, varargin)
             end
         end
 
-        lineWidth = 0.5;
+        lineWidth = 1.0;
         % Plot L-cones
         if (labelCones) || (~isempty(labelConesWithIndices))
-            edgeColor = [0.8 0 0];
+            edgeColor = [0.1 0.1 0.1];
         else
             edgeColor = [0.5 0.5 0.5];
         end
@@ -434,24 +441,24 @@ function visualizationParams = visualize(obj, varargin)
         if (~isempty(activation))
             faceAlphaCones = 0.0;
             edgeColor = [1 0 0];
-            lineWidth = 1.5;
+            lineWidth = 0.5;
         end
 
         if (labelCones)
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.lConeIndices)*0.5, ...
-                rfPositions(obj.lConeIndices,:), 1/4*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(obj.lConeIndices,:), 1/4*0.9, edgeColor, lineWidth, faceAlphaCones, edgeAlphaCones);
         elseif (~isempty(labelConesWithIndices))
             includedLconeIndices = intersect(obj.lConeIndices, labelConesWithIndices);
             excludedLconeIndices = setdiff(obj.lConeIndices, includedLconeIndices);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedLconeIndices)*0.5, ...
-                rfPositions(includedLconeIndices,:), 1/5*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(includedLconeIndices,:), 1/5*0.9, [1 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedLconeIndices)*0.5, ...
-                rfPositions(excludedLconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
+                rfPositions(excludedLconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
         end
         
         % Plot M-cones
         if (labelCones) || (~isempty(labelConesWithIndices))
-            edgeColor = [0 0.7 0];
+            edgeColor = [0.1 0.1 0.1];
         else
             edgeColor = [0.5 0.5 0.5];
         end
@@ -459,26 +466,26 @@ function visualizationParams = visualize(obj, varargin)
         if (~isempty(activation))
             faceAlphaCones = 0.0;
             edgeColor = [0 1 0];
-            lineWidth = 1.5;
+            lineWidth = 0.5;
         end
 
         if (labelCones)
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.mConeIndices)*0.5, ...
-                rfPositions(obj.mConeIndices,:), 2/4*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(obj.mConeIndices,:), 2/4*0.9, edgeColor, lineWidth, faceAlphaCones, edgeAlphaCones);
         elseif (~isempty(labelConesWithIndices))
             includedMconeIndices = intersect(obj.mConeIndices, labelConesWithIndices);
             excludedMconeIndices = setdiff(obj.mConeIndices, includedMconeIndices);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedMconeIndices)*0.5, ...
-                rfPositions(includedMconeIndices,:), 2/5*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(includedMconeIndices,:), 2/5*0.9, [0 1 0], lineWidth, faceAlphaCones, edgeAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedMconeIndices)*0.5, ...
-                rfPositions(excludedMconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
+                rfPositions(excludedMconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
         end
         
         
         
         % Plot S-cones
         if (labelCones)  || (~isempty(labelConesWithIndices))
-            edgeColor = [0 0 1];
+            edgeColor = [0.1 0.1 0.1];
         else
             edgeColor = [0.5 0.5 0.5];
         end
@@ -486,20 +493,20 @@ function visualizationParams = visualize(obj, varargin)
         if (~isempty(activation))
             faceAlphaCones = 0.0;
             edgeColor = [0 0.5 1];
-            lineWidth = 1.5;
+            lineWidth = 0.5;
         end
 
         if (labelCones)
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.sConeIndices)*0.5, ...
-                rfPositions(obj.sConeIndices,:), 3/4*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(obj.sConeIndices,:), 3/4*0.9, edgeColor, lineWidth, faceAlphaCones, edgeAlphaCones);
         elseif (~isempty(labelConesWithIndices))
             includedSconeIndices = intersect(obj.sConeIndices, labelConesWithIndices);
             excludedSconeIndices = setdiff(obj.sConeIndices, includedSconeIndices);
 
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedSconeIndices)*0.5, ...
-                rfPositions(includedSconeIndices,:), 3/5*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(includedSconeIndices,:), 3/5*0.9, [0 0 1], lineWidth, faceAlphaCones, edgeAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedSconeIndices)*0.5, ...
-                rfPositions(excludedSconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
+                rfPositions(excludedSconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
         end
         
         
@@ -511,14 +518,14 @@ function visualizationParams = visualize(obj, varargin)
         end
         if (labelCones)
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.kConeIndices)*0.5, ...
-                rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
+                rfPositions(obj.kConeIndices,:), 4/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
         elseif (~isempty(labelConesWithIndices))
             includedKconeIndices = intersect(obj.kConeIndices, labelConesWithIndices);
             excludedKconeIndices = setdiff(obj.kConeIndices, includedKconeIndices);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(includedKconeIndices)*0.5, ...
-                rfPositions(includedKconeIndices,:), 4/5*0.9, edgeColor, lineWidth, faceAlphaCones);
+                rfPositions(includedKconeIndices,:), 4/5*0.9, edgeColor, lineWidth, faceAlphaCones, edgeAlphaCones);
             renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedKconeIndices)*0.5, ...
-                rfPositions(excludedKconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones);
+                rfPositions(excludedKconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
         end
 
         if (~isempty(outlinedConesWithIndices))
@@ -669,6 +676,7 @@ function visualizationParams = visualize(obj, varargin)
         elseif (~isempty(labelConesWithIndices))
             cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor; [0.5 0.5 0.5]];
         else
+            disp('here')
             cMap = 0.4*ones(4,3);
         end
     else
@@ -863,16 +871,16 @@ function visualizationParams = visualize(obj, varargin)
                     100*obj.coneDensities(2), ...
                     100*obj.coneDensities(3), ...
                     100*obj.coneDensities(4), ...
-                    conesNum), 'Color', plotTitleColor);
+                    conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
             else
                 title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
                     100*obj.coneDensities(1), ...
                     100*obj.coneDensities(2), ...
                     100*obj.coneDensities(3), ...
-                    conesNum), 'Color', plotTitleColor);
+                    conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
             end
         else
-            title(axesHandle,plotTitle, 'Color', plotTitleColor);
+            title(axesHandle,plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
         end
     end
     
@@ -956,7 +964,7 @@ end
 
 
 function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ...
-    faceColors, edgeColor, lineWidth, faceAlpha)
+    faceColors, edgeColor, lineWidth, faceAlpha, edgeAlpha)
 
     conesNum = numel(apertureRadii);
     if (conesNum == 0)
@@ -990,6 +998,7 @@ function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ..
     S.FaceColor = 'flat';
     S.EdgeColor = edgeColor;
     S.FaceAlpha = faceAlpha;
+    S.EdgeAlpha = edgeAlpha;
     S.LineWidth = lineWidth;
     patch(S, 'Parent', axesHandle);
 end

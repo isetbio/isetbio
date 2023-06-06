@@ -2,7 +2,7 @@
 %
 % Description:
 %    Demonstrates
-%        - creation o a midget RGC mosaic,
+%        - creation of a midget RGC mosaic,
 %        - how to compute with it, and
 %        - how to visualize different aspects of the mRGCMosaic
 %        - how to visualize its response
@@ -10,286 +10,610 @@
 
 
 % History:
-%    01/27/23  NPC  ISETBIO Team, Copyright 2023 Wrote it.
+%    04/30/23  NPC  ISETBIO Team, Copyright 2023 Wrote it.
 
 function t_mRGCMosaicBasic
 
-%% Load the source midgetRGCMosaic from the database of prebaked mRGCMosaics
-% Choose the prebaked mRGCMosaic that was generated at an eccentricity of (0,0) 
-% extending over a 3x3 deg, with cone pooling weights tuned for the Polans subject
-% with rank 6 and a pupil size of 3.0 mm
+%% Close all figures
+close all;
 
-mosaicCenterParams = struct(...
-    'positionDegs',[0 0], ...
-    'sizeDegs',  [3 3], ...        
-    'whichEye', 'right eye');
+%% Specify params for a pre-computed mRGCMosaic 
+% The pre-computed mRGCMosaic is centered at (0,0), has a size of (2x2)
+% degs and is on the ON-center type
+mosaicParams = struct(...
+    'eccDegs', [7 0], ...
+    'sizeDegs',  [6 3], ...
+    'rgcType', 'ONcenterMidgetRGC');
 
+% Neurons of the pre-computed mRGCMosaic have spatiall RFs that were 
+% optimized for the following optics.
 opticsParams = struct(...
             'ZernikeDataBase', 'Polans2015', ...
-            'subjectRankOrder', 6, ...
-            'pupilDiameterMM', 3.0 ...
+            'examinedSubjectRankOrder', 6, ...
+            'pupilDiameterMM', 3.0, ...
+            'analyzedEye', 'right eye', ...
+            'refractiveErrorDiopters', 0.0, ...
+            'positionDegs', [] ...
         );
 
-rfModelParams = struct(...
-    'H1cellIndex', 1 ...
+% Neurons of the pre-computed mRGCMosaic have spatial RFs that were 
+% optimized using a double exponential surround model with parameters around
+% those of the 4-th H1 neuron recorded by Packer&Dacey (2002):
+% "Receptive field structure of H1 horizontal cells in macaque monkey
+% retina", (2002) JoV, 2, 272-292
+retinalRFmodelParams = struct(...
+    'conePoolingModel', 'arbitraryCenterConeWeights_doubleExpH1cellIndex4SurroundWeights' ...
     );
 
-% Load it
-theSourceMidgetRGCMosaic = loadSourceMidgetRGCMosaic(mosaicCenterParams, rfModelParams, opticsParams);
+% These parameters are encoded in the filename that contains the mRGCMosaic. 
+% To inspect the available pre-computed ON-center mRGCMosaics do the following:
+%{
+    rgcMosaicType = 'ONcenter';
+    mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
+%}
 
-% The SourceMidgetRGCMosaic contains all the information that was used to
-% derive the weights. It is not compute-ready.
+%% Load the mRGCMosaic with the specified mosaic, optical, and
+% retinalRFmodel params.
+theComputeReadyRGCMosaic = mRGCMosaic.loadComputeReadyRGCMosaic(mosaicParams, opticsParams, retinalRFmodelParams);
 
-% Instantiate a compute-ready mRGCMosaic from the sourceMidgetRGCMosaic
-% Here we are using part of the sourceMidgetRGCMosaic, centered at (x,y) = (1,0.5), 
-% with width = 0.4 degs and height = 0.2 degs
-
-theMRGCMosaic = mRGCMosaic(theSourceMidgetRGCMosaic, ...
-        'eccentricityDegs', [1 0.5], ...
-        'sizeDegs', [0.5 0.5], ...
-        'name', 'my small off-center mRGC mosaic', ...
-        'beVerbose', true, ...
-        'visualizeSpatialRelationshipToSourceMosaic', true);
-
-% Retrive the native optics for this mRGCmosaic
-[theOI, thePSF, theZcoeffs] = theMRGCMosaic.nativeOptics;
-
-
-spatialFrequenciesTested = [4]; %[0.25 0.5 1 2 4 6 8 12 16 20 24 32 48 64];
-orientationTested = 0;
-[theConeMosaicResponses, coneMosaicNullResponse] = computeConeMosaicResponses(...
-    spatialFrequenciesTested, orientationTested, ...
-    theMRGCMosaic.inputConeMosaic, theOI);
-
-
-stimFramesNum = size(theConeMosaicResponses,2);
-nConesNum = size(theConeMosaicResponses,3);
-
-frameDurationSeconds = 1/30;
-theConeMosaicResponseTemporalSupportSeconds = (0:(stimFramesNum-1))*frameDurationSeconds;
-
-iTrial = 1; nTrialsNum = 1;
-for iSF = 1:numel(spatialFrequenciesTested)
-    theSpatioTemporalConeMosaicResponse = squeeze(theConeMosaicResponses(iSF,:,:));
-    
-    theSpatioTemporalConeMosaicResponse = reshape(theSpatioTemporalConeMosaicResponse, [nTrialsNum stimFramesNum, nConesNum]);
- 
-    [theMRGCMosaicResponses(iTrial, iSF,:,:), theMRGCresponseTemporalSupportSeconds] = theMRGCMosaic.compute( ...
-             theSpatioTemporalConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds);
-end
-
-activationRange = [min(theMRGCMosaicResponses(:)) max(theMRGCMosaicResponses(:))];
-
-hFig = figure(1);
-clf;
-ax1 = subplot(1,2,1);
-ax2 = subplot(1,2,2);
-
-oneCenterConeRGCindices = find(theMRGCMosaic.centerSubregionConesNums == 1);
-twoCenterConeRGCindices = find(theMRGCMosaic.centerSubregionConesNums == 2);
-visualizedRGCindices = [oneCenterConeRGCindices(1:2) twoCenterConeRGCindices(1:2)];
-
-
-% Visualize the centers of all RGCs, identifying 2 1-cone center RGCs and 2, 2-cone center RGCs
-theMRGCMosaic.visualize(...,
-    'figureHandle', hFig, ...
-    'axesHandle', ax1, ...
+%% Visualize the mRGCMosaic
+% Lets visualize it together with its input cone mosaic.
+% In this visualization, the gray contours identify the mRGC RF centers, 
+% whereas cones connected to mRGCs are displayed by colored disks.
+theComputeReadyRGCMosaic.visualize(...
     'identifyInputCones', true, ...
-    'labelRGCsWithIndices', visualizedRGCindices, ...
-    'backgroundColor', [0.7 0.7 0.7]);
+    'identifyPooledCones', true, ...
+    'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
+    'plotTitle', 'full mosaic');
+pause
 
-% Visualize the mRGCmosaic activation, frame-by-frame
-for iTrial = 1:nTrialsNum
-    for iSF = 1:numel(spatialFrequenciesTested)
-    for iTimeBin = 1:numel(theMRGCresponseTemporalSupportSeconds)
-        theMRGCMosaic.visualize(...
+%% Crop the mRGCMosaic (if so desired)
+% We can use this pre-computed mRGC as-is, or we can crop it to a smaller
+% size. Lets crop it to a [1.3 x 1.0] region centered at [5, 0]
+sizeDegs = [1.2 1.0];
+eccentricityDegs = [5 0];
+
+% Crop it to desired size
+theComputeReadyRGCMosaic.cropToSizeAtEccentricity(sizeDegs, eccentricityDegs);
+
+%% Visualize the cropped mRGCMosaic
+% Visualize the cropped mosaic together with its input cone mosaic (which
+% is also cropped accordingly)
+theComputeReadyRGCMosaic.visualize(...
+    'identifyInputCones', true, ...
+    'identifyPooledCones', true, ...
+    'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
+    'plotTitle', 'cropped mosaic');
+
+%% Visualize the retinal cone pooling for a couple neurons
+% Lets visualize the retinal cone pooling of a couple of neurons.
+% For the first neuron visualization, find a unit with 2 L-cone
+% inputz in its RF center, and located near eccentricityDegs+[-0.5 0]; degs. 
+% 
+targetRGCposition = eccentricityDegs+[-0.5 0];
+targetCenterConesNum = 2;
+targetCenterConeMajorityType = cMosaic.LCONE_ID;
+theRGC1index = theComputeReadyRGCMosaic.visualizeRetinalConePoolingRFmapNearPosition(...
+    targetRGCposition, targetCenterConesNum, ...
+    targetCenterConeMajorityType, ...
+    'tickSeparationArcMin', 3);
+
+% For the second neuron visualization, find a unit with 2 M-cone 
+% inputs in its RF center, and located near eccentricityDegs+[0.5 0.0] degs. 
+% 
+targetRGCposition = eccentricityDegs+[0.5 0.0];
+targetCenterConesNum = 2;
+targetCenterConeMajorityType = cMosaic.MCONE_ID;
+theRGC2index = theComputeReadyRGCMosaic.visualizeRetinalConePoolingRFmapNearPosition(...
+    targetRGCposition, targetCenterConesNum, ...
+    targetCenterConeMajorityType, ...
+    'tickSeparationArcMin', 3);
+
+
+%% Identify the 2 visualized neurons within the mRGCMosaic
+theComputeReadyRGCMosaic.visualize(...
+    'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
+    'identifyInputCones', true, ...
+    'identifyPooledCones', true, ...
+    'labelRGCsWithIndices', [theRGC1index theRGC2index], ...
+    'labeledRGCsColor', [1 1 0], ...
+    'labeledRGCsLineWidth', 3.0, ...
+    'backgroundColor', [1 1 1]);
+
+
+%% Get ready to compute. 
+%% Step 1. Obtain the optics used to optimize the cone weights
+% Obtain the optics used to optimize the cone weights for the neurons in
+% this mRGCMosaic
+if (~isempty(theComputeReadyRGCMosaic.theNativeOptics))
+    theOI = theComputeReadyRGCMosaic.theNativeOptics;
+elseif (~isempty(theComputeReadyRGCMosaic.theCustomOptics))
+    theOI = theComputeReadyRGCMosaic.theCustomOptics;
+else
+    error('No optics found in the mRGCMosaic object!')
+end
+
+
+%% Visualization, anyone?
+visualizeConeMosaicResponses = true;
+
+if (visualizeConeMosaicResponses)
+    ff = MSreadyPlot.figureFormat('2x3');
+    hFig = figure(10); clf;
+    set(hFig, 'Position', [10 10 ff.figureSize(1) ff.figureSize(1)]);
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+
+    visualizeEntireInputConeMosaic = false;
+    if (visualizeEntireInputConeMosaic)
+        % Settings for visualizing the entire input cone mosaic
+        domainVisualizationLimits = [...
+            theComputeReadyRGCMosaic.inputConeMosaic.eccentricityDegs(1)-0.51*theComputeReadyRGCMosaic.inputConeMosaic.sizeDegs(1), ...
+            theComputeReadyRGCMosaic.inputConeMosaic.eccentricityDegs(1)+0.51*theComputeReadyRGCMosaic.inputConeMosaic.sizeDegs(1), ...
+            theComputeReadyRGCMosaic.inputConeMosaic.eccentricityDegs(2)-0.51*theComputeReadyRGCMosaic.inputConeMosaic.sizeDegs(2), ...
+            theComputeReadyRGCMosaic.inputConeMosaic.eccentricityDegs(2)+0.51*theComputeReadyRGCMosaic.inputConeMosaic.sizeDegs(2)];
+        midX = theComputeReadyRGCMosaic.inputConeMosaic.eccentricityDegs(1);
+        midY = theComputeReadyRGCMosaic.inputConeMosaic.eccentricityDegs(2);
+        inputConeMosaicText = 'input cone mosaic (full view)'
+    else
+        % Settings for visualizing the entire mRGC mosaic
+        domainVisualizationLimits = [...
+            theComputeReadyRGCMosaic.eccentricityDegs(1)-0.52*theComputeReadyRGCMosaic.sizeDegs(1), ...
+            theComputeReadyRGCMosaic.eccentricityDegs(1)+0.52*theComputeReadyRGCMosaic.sizeDegs(1), ...
+            theComputeReadyRGCMosaic.eccentricityDegs(2)-0.52*theComputeReadyRGCMosaic.sizeDegs(2), ...
+            theComputeReadyRGCMosaic.eccentricityDegs(2)+0.52*theComputeReadyRGCMosaic.sizeDegs(2)];
+        midX = theComputeReadyRGCMosaic.eccentricityDegs(1);
+        midY = theComputeReadyRGCMosaic.eccentricityDegs(2);
+        inputConeMosaicText = 'input cone mosaic (partial view)';
+    end
+
+    % Ticks
+    domainVisualizationTicks = struct(...
+        'x', [domainVisualizationLimits(1) midX domainVisualizationLimits(2)], ...
+        'y', [domainVisualizationLimits(3) midY domainVisualizationLimits(4)]);
+
+    % Determine a ROI for visualizing RGCs along the x-axis
+    theVisualizedRFsROI = regionOfInterest(...
+        'geometryStruct', struct(...
+            'units', 'degs', ...
+            'shape', 'line', ...
+            'from', [theComputeReadyRGCMosaic.eccentricityDegs(1)-0.5*theComputeReadyRGCMosaic.sizeDegs(1) theComputeReadyRGCMosaic.eccentricityDegs(2)], ...
+            'to',   [theComputeReadyRGCMosaic.eccentricityDegs(1)+0.5*theComputeReadyRGCMosaic.sizeDegs(1) theComputeReadyRGCMosaic.eccentricityDegs(2)], ...
+            'thickness', 0.05 ...
+        ));
+
+    % Find the indices of the RGCs whose position is within theVisualizedRFsROI
+    visualizedRGCindices = theVisualizedRFsROI.indicesOfPointsInside(theComputeReadyRGCMosaic.rgcRFpositionsDegs);
+
+    % Sort the visualized RGC indices according to their x-ecc
+    [~,idx] = sort(squeeze(theComputeReadyRGCMosaic.rgcRFpositionsDegs(visualizedRGCindices,1)), 'ascend');
+    visualizedRGCindices = visualizedRGCindices(idx);
+    % We are visualizing only 32 RGCs so make sure we cover the entire range
+    ii = (1:32)*numel(visualizedRGCindices)/32;
+    visualizedRGCindices = visualizedRGCindices(round(ii));
+
+    % Visualize the input cone mosaic with the PSF
+    % Retrieve the PSF at 550
+%
+%     micronsPerDegree = theComputeReadyRGCMosaic.inputConeMosaic.micronsPerDegree;
+%     visualizedWavelength = 550;
+%     thePSFData = retrievePSF(theOI, micronsPerDegree, visualizedWavelength);
+%
+%     theComputeReadyRGCMosaic.inputConeMosaic.visualize(...
+%             'figureHandle', hFig, ...
+%             'axesHandle', theAxes{1,1}, ...
+%             'withSuperimposedPSF', thePSFData, ...
+%             'domainVisualizationLimits', domainVisualizationLimits, ...
+%             'domainVisualizationTicks', domainVisualizationTicks, ...
+%             'backgroundColor', [1 1 1], ...
+%             'plotTitle', inputConeMosaicText);
+
+    % Visualize the mRGC mosaic
+    theComputeReadyRGCMosaic.visualize(...
             'figureHandle', hFig, ...
-            'axesHandle', ax2, ...
+            'axesHandle', theAxes{1,1}, ...
             'identifyInputCones', true, ...
-            'activation', squeeze(theMRGCMosaicResponses(iTrial, iSF, iTimeBin,:)), ...
-            'activationRange', activationRange, ...
-            'plotTitle', sprintf('%2.2f c/deg, %d msec', spatialFrequenciesTested(iSF), theMRGCresponseTemporalSupportSeconds(iTimeBin)));
-        pause
-    end
-    end
+            'identifyPooledCones', true, ...
+            'labelRGCsWithIndices', visualizedRGCindices, ...
+            'labeledRGCsColor', [0 0 0], ...
+            'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'backgroundColor', [1 1 1], ...
+            'plotTitle', sprintf('mRGC mosaic'));
 end
 
+%% Step 2. Generate scenes representing the frames of a drifting grating stimulus
+% Stimulus parameters
+
+viewingDistanceMeters = 0.57;
+stimulusPixelsNum = 512;
+wavelengthSupport = theComputeReadyRGCMosaic.inputConeMosaic.wave;
+coneContrasts = [1 1 1];
+backgroundLuminanceCdM2 = 50.0;
+backgroundChromaticity = [0.301 0.301];
+orientationDegs = 90;
+spatialFrequencyCPD = 20.0;
+driftingPhaseIncrementDegs = 20;
+
+stimPositionDegs = theComputeReadyRGCMosaic.eccentricityDegs;
+stimSizeDegs = theComputeReadyRGCMosaic.inputConeMosaic.sizeDegs*1.05;
+apertureDiameterDegs = min(theComputeReadyRGCMosaic.sizeDegs)*0.6;
+apertureShape = 'rect';
+
+[theDriftingGratingFrameScenes, theNullStimulusScene] = ...
+    generateStimulusFrameScenes(stimSizeDegs, apertureDiameterDegs, apertureShape, viewingDistanceMeters, stimulusPixelsNum, ...
+    orientationDegs, spatialFrequencyCPD, driftingPhaseIncrementDegs, ...
+    wavelengthSupport, coneContrasts, backgroundLuminanceCdM2, backgroundChromaticity);
 
 
+%% Step 3. Compute the input cone mosaic responses to each of the stimulus frames
+framesNum = numel(theDriftingGratingFrameScenes);
+conesNum = theComputeReadyRGCMosaic.inputConeMosaic.conesNum;
+mRGCsNum = theComputeReadyRGCMosaic.rgcsNum;
+nTrials = 8;
+
+% Allocate memory for the noise-free cone mosaic modulation (contrast) responses and mRGC mosaic responses
+theNoiseFreeConeMosaicModulationResponses = zeros(1, framesNum, conesNum, 'single');
+theNoiseFreeMRGCMosaicResponses = zeros(1, framesNum, mRGCsNum, 'single');
+
+% Allocate memory for the noisy cone mosaic modulation response instances and the
+% noisy mRGC mosaic response instances
+theNoisyConeMosaicModulationResponseInstances = zeros(nTrials, framesNum, conesNum, 'single');
+theNoisyMRGCMosaicResponseInstances = zeros(nTrials, framesNum, mRGCsNum, 'single');
+theNoisyMRGCMosaicResponseInstancesWithAdditiveVmembraneNoise = zeros(nTrials, framesNum, mRGCsNum, 'single');
 
 
+% Compute responses for all stimulus frames
+for iFrame = 0:framesNum
+    if (iFrame == 0)
+        % Compute the optical image of the null scene
+        theFrameOI = oiCompute(theNullStimulusScene, theOI);
 
-theMRGCMosaic.multifocalRTVFgrids
-theMRGCMosaic.multifocalRTVFopticsParams
+        % Compute the input cone mosaic response to the NULL scene
+        theConeMosaicNullResponse = theComputeReadyRGCMosaic.inputConeMosaic.compute(...
+            theFrameOI, ...
+            'opticalImagePositionDegs', stimPositionDegs, ...
+            'nTrials', 1);
 
-% Visualize the RFs of the identified  RGCs
-theMRGCMosaic.visualizeRFs(visualizedRGCindices);
+        % Compute normalizing response (for computing the  modulated response)
+        coneIndicesWithZeroNullResponse = find(theConeMosaicNullResponse == 0);
+        coneMosaicNormalizingResponse = 1./theConeMosaicNullResponse;
+        coneMosaicNormalizingResponse(coneIndicesWithZeroNullResponse) = 0;
+        coneMosaicNormalizingResponse = reshape(coneMosaicNormalizingResponse, [1 1 numel(coneMosaicNormalizingResponse)]);
+        continue;
+    end
+
+    % User freedback
+    fprintf('Computing responses to frame %d/%d of the drifting grating.\n', iFrame, framesNum);
+
+    % Retrieve the stimulus frame scene
+    theFrameScene = theDriftingGratingFrameScenes{iFrame};
+
+    % Compute the optical image of the frame scene
+    theFrameOI = oiCompute(theFrameScene, theOI);
+
+    % Compute the input cone mosaic response
+    [noiseFreeConeMosaicResponse, noisyConeMosaicResponseInstances] = ...
+        theComputeReadyRGCMosaic.inputConeMosaic.compute(...
+        theFrameOI, ...
+        'opticalImagePositionDegs', stimPositionDegs, ...
+        'nTrials', nTrials);
+
+    % Compute the noise-free cone mosaic response modulation relative to the response
+    % to the null (zero contrast) stimulus. This mimics the photocurrent
+    % response which is normalized with respect to the mean cone activation
+    noiseFreeConeMosaicResponseModulation = ...
+              bsxfun(@times, bsxfun(@minus, noiseFreeConeMosaicResponse, theConeMosaicNullResponse), ...
+              coneMosaicNormalizingResponse);
+
+    % Compute noisy cone mosaic response modulation instances relative to the response
+    % to the null (zero contrast) stimulus. This mimics the photocurrent
+    % response which is normalized with respect to the mean cone activation
+    noisyConeMosaicResponseInstancesModulation = ...
+              bsxfun(@times, bsxfun(@minus, noisyConeMosaicResponseInstances, theConeMosaicNullResponse), ...
+              coneMosaicNormalizingResponse);
+
+    % Compute the noise-free mRGC mosaic response operating on the
+    % noise-free input cone mosaic response modulation
+    theConeMosaicResponseTemporalSupportSeconds = [0];
+    theComputeReadyRGCMosaic.noiseFlag = 'none';
+    noiseFreeMRGCMosaicResponse = theComputeReadyRGCMosaic.compute( ...
+             noiseFreeConeMosaicResponseModulation, theConeMosaicResponseTemporalSupportSeconds);
+
+    % Compute noisy mRGC mosaic response instances operating
+    % on the noisy cone mosaic response modulation with additive vMembrane
+    % noise with custom sigma
+    theComputeReadyRGCMosaic.vMembraneGaussianNoiseSigma = 0.075;
+    theComputeReadyRGCMosaic.noiseFlag = 'random';
+
+    [noisyMRGCMosaicResponseInstances, noisyMRGCMosaicResponseInstancesWithAdditiveMembraneNoise] = theComputeReadyRGCMosaic.compute( ...
+             noisyConeMosaicResponseInstancesModulation, theConeMosaicResponseTemporalSupportSeconds);
+
+
+    % Save responses in single precision
+    % The cone mosaic responses
+    theNoiseFreeConeMosaicModulationResponses(1,iFrame,:) = single(noiseFreeConeMosaicResponseModulation(1,1,:));
+    theNoisyConeMosaicModulationResponseInstances(:,iFrame,:) = single(noisyConeMosaicResponseInstancesModulation(:,1,:));
+
+    % The mRGC mosaic responses
+    theNoiseFreeMRGCMosaicResponses(1,iFrame,:) = single(noiseFreeMRGCMosaicResponse(1,1,:));
+    theNoisyMRGCMosaicResponseInstances(:, iFrame,:) = single(noisyMRGCMosaicResponseInstances(:,1,:));
+    theNoisyMRGCMosaicResponseInstancesWithAdditiveVmembraneNoise(:, iFrame,:) = single(noisyMRGCMosaicResponseInstancesWithAdditiveMembraneNoise(:,1,:));
+end % iFrame
+
+
+%% Visualize responses
+if (visualizeConeMosaicResponses)
+
+    %% Start video recording
+    videoFileName = sprintf('RGCactivation_ecc_%2.1f_%2.1f_%2.1fCPD', ...
+        theComputeReadyRGCMosaic.eccentricityDegs(1), theComputeReadyRGCMosaic.eccentricityDegs(2), spatialFrequencyCPD);
+    videoOBJ = VideoWriter(videoFileName, 'MPEG-4');
+    videoOBJ.FrameRate = 10;
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+
+    % Bring figure to the foreground
+    figure(hFig);
+
+    % The activation ranges
+    %  coneMosaicActivationRange = 0.74 (0.5cpd),  0.63 (5.0cpd), 0.4789 (10cpd)
+    %  mRGCMosaicActivationRange = 0.38 (0.5cpd),  0.52 (5.0cpd), 0.4267 (10cpd)
+    coneMosaicActivationRange = 0.75*[-1 1]; %[-1 1]*max(abs(theNoiseFreeConeMosaicModulationResponses(:)))
+    mRGCMosaicActivationRange = 0.50*[-1 1]; %[-1 1]*prctile(abs(theNoisyMRGCMosaicResponseInstances(:)),99)
+    
+
+    %% Visualize each frame
+    for iFrame = 1:framesNum
+
+        % Visualize the noise-free cone mosaic activation for this frame
+        theComputeReadyRGCMosaic.inputConeMosaic.visualize(...
+            'figureHandle', hFig, ...
+            'axesHandle', theAxes{1,2}, ...
+            'activation', theNoiseFreeConeMosaicModulationResponses(1,iFrame,:), ...
+            'activationRange', coneMosaicActivationRange, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'backgroundColor', 'mean of color map', ...
+            'verticalActivationColorBarInside', true, ...
+            'plotTitle', sprintf('input cone mosaic noise-free response\nframe %d/%d', iFrame, framesNum));
+
+        % Visualize a single noisy cone mosaic response instance (operating on 
+        % noisy cone mosaic responses without additional vMembrane noise)
+        visualizedResponseInstance = 1;
+        theComputeReadyRGCMosaic.inputConeMosaic.visualize(...
+            'figureHandle', hFig, ...
+            'axesHandle', theAxes{1,3}, ...
+            'activation', theNoisyConeMosaicModulationResponseInstances(visualizedResponseInstance,iFrame,:), ...
+            'activationRange', coneMosaicActivationRange, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'backgroundColor', 'mean of color map', ...
+            'verticalActivationColorBarInside', true, ...
+            'plotTitle', sprintf('input cone mosaic single noisy response instance\nframe %d/%d', iFrame, framesNum));
+
+        % Visualize a single noisy cone mosaic response instance (operating on 
+        % noisy cone mosaic responses with additional vMembrane noise)
+        theComputeReadyRGCMosaic.visualize(...
+            'figureHandle', hFig, ...
+            'axesHandle', theAxes{2,1}, ...
+            'activation', theNoiseFreeMRGCMosaicResponses(1,iFrame,:), ...
+            'activationRange', mRGCMosaicActivationRange, ...
+            'labelRGCsWithIndices', visualizedRGCindices, ...
+            'labeledRGCsColor', [1 0 0], ...
+            'labeledRGCsLineWidth', 0.75, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'backgroundColor', [0 0 0], ...
+            'verticalActivationColorBarInside', true, ...
+            'plotTitle', sprintf('mRGC mosaic noise-free response\nframe %d/%d', iFrame, framesNum));
+
+        theComputeReadyRGCMosaic.visualize(...
+            'figureHandle', hFig, ...
+            'axesHandle', theAxes{2,2}, ...
+            'activation', theNoisyMRGCMosaicResponseInstances(visualizedResponseInstance,iFrame,:), ...
+            'activationRange', mRGCMosaicActivationRange, ...
+            'labelRGCsWithIndices', visualizedRGCindices, ...
+            'labeledRGCsColor', [1 0 0], ...
+            'labeledRGCsLineWidth', 0.75, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'backgroundColor', [0 0 0], ...
+            'verticalActivationColorBarInside', true, ...
+            'plotTitle', sprintf('mRGC mosaic single noisy response instance\nframe %d/%d', iFrame, framesNum));
+
+        theComputeReadyRGCMosaic.visualize(...
+            'figureHandle', hFig, ...
+            'axesHandle', theAxes{2,3}, ...
+            'activation', theNoisyMRGCMosaicResponseInstancesWithAdditiveVmembraneNoise(visualizedResponseInstance,iFrame,:), ...
+            'activationRange', mRGCMosaicActivationRange, ...
+            'labelRGCsWithIndices', visualizedRGCindices, ...
+            'labeledRGCsColor', [1 0 0], ...
+            'labeledRGCsLineWidth', 0.75, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'backgroundColor', [0 0 0], ...
+            'verticalActivationColorBarInside', true, ...
+            'plotTitle', sprintf('mRGC mosaic single noisy response instance with additive vMembrane noise\nframe %d/%d', iFrame, framesNum));
+
+         % Add video frame
+         drawnow;
+         videoOBJ.writeVideo(getframe(hFig));
+    end
+
+    % Close video
+    videoOBJ.close();
+
+    
+    %% Visualize the noise-free mRGC response time series for the visualizedRGCindices
+    hFig = visualizeResponseTimeSeries(11, theNoiseFreeMRGCMosaicResponses, visualizedRGCindices, ...
+        theComputeReadyRGCMosaic.rgcRFpositionsDegs, mRGCMosaicActivationRange);
+
+    % Export to PDF
+    pdfFileName = sprintf('noiseFreeRGCactivation_ecc_%2.1f_%2.1f_%2.1fCPD.pdf', ...
+        theComputeReadyRGCMosaic.eccentricityDegs(1), theComputeReadyRGCMosaic.eccentricityDegs(2), spatialFrequencyCPD);
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+
+
+    %% Visualize the noisy mRGC response time series (noise only due to cone inputs) for the visualizedRGCindices
+    hFig = visualizeResponseTimeSeries(12, theNoisyMRGCMosaicResponseInstances, visualizedRGCindices, ...
+        theComputeReadyRGCMosaic.rgcRFpositionsDegs, mRGCMosaicActivationRange);
+
+    % Export to PDF
+    pdfFileName = sprintf('noisyRGCactivation_ecc_%2.1f_%2.1f_%2.1fCPD.pdf', ...
+        theComputeReadyRGCMosaic.eccentricityDegs(1), theComputeReadyRGCMosaic.eccentricityDegs(2), spatialFrequencyCPD);
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+
+    %% Visualize the noisy mRGC response time series (noise only due to cone inputs + vMembrane noise) for the visualizedRGCindices
+    hFig = visualizeResponseTimeSeries(13, theNoisyMRGCMosaicResponseInstancesWithAdditiveVmembraneNoise, visualizedRGCindices, ...
+        theComputeReadyRGCMosaic.rgcRFpositionsDegs, mRGCMosaicActivationRange);
+
+    % Export to PDF
+    pdfFileName = sprintf('noisyRGCactivationWithVmembraneNoise_ecc_%2.1f_%2.1f_%2.1fCPD.pdf', ...
+        theComputeReadyRGCMosaic.eccentricityDegs(1), theComputeReadyRGCMosaic.eccentricityDegs(2), spatialFrequencyCPD);
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+end
 
 end
+
 
 
 % ======== HELPER FUNCTIONS ========
 
-function theSourceMidgetRGCMosaic = loadSourceMidgetRGCMosaic(mosaicCenterParams, rfModelParams, opticsParams)
+function hFig = visualizeResponseTimeSeries(figNo, mRGCMosaicResponseInstances, visualizedRGCindices, ...
+    rgcRFpositionsDegs, mRGCMosaicActivationRange)
 
-    dropboxDir = midgetRGCMosaicInspector.localDropboxPath;
-    frozenMidgetRGCMosaicsDir = 'productionMidgetRGCMosaics/frozenMosaics';
-    directoryPath = fullfile(dropboxDir,frozenMidgetRGCMosaicsDir);
+    % Finally, visualize the response time series (line plot) of the visualized RGCs
+    ff = MSreadyPlot.figureFormat('4x8');
+    hFig = figure(figNo); clf;
+    set(hFig, 'Position', [10 10 ff.figureSize(1) ff.figureSize(1)], 'Color', [1 1 1]);
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
 
+    framesNum = size(mRGCMosaicResponseInstances,2);
     
-    sourceMidgetRGCMosaicFileName = ...
-        sprintf('MRGCmosaic_Ecc_%2.1f_%2.1f_sizeDegs_%2.1f_%2.1f_%s_Rank_%d_Pupil_%2.1f_H1cellIndex_%d_Frozen.mat', ...
-        mosaicCenterParams.positionDegs(1), mosaicCenterParams.positionDegs(2), ...
-        mosaicCenterParams.sizeDegs(1), mosaicCenterParams.sizeDegs(2), ...
-        opticsParams.ZernikeDataBase, ...
-        opticsParams.subjectRankOrder, ...
-        opticsParams.pupilDiameterMM, ...
-        rfModelParams.H1cellIndex);
+    timeAxis = 1:framesNum;
 
-    theFileName = fullfile(directoryPath, sourceMidgetRGCMosaicFileName);
-    fprintf('Will try to load %s ... \n', sourceMidgetRGCMosaicFileName)
-    fprintf('from %s ... \n', directoryPath);
+    xTicks = timeAxis(1:2:end);
+    yTicks = linspace(0,mRGCMosaicActivationRange(2),3);
+    yTicks = [-fliplr(yTicks) yTicks(2:end)];
 
-    % Check that the mosaic directory exists
-    assert(isfolder(directoryPath), sprintf('Mosaic directory (''%s'') not found.', directoryPath));
+    rowsNum = 4;
+    colsNum = 8;
+    for iRGC = 1:numel(visualizedRGCindices)
+        if (iRGC <= numel(theAxes))
+            row = floor((iRGC-1)/colsNum)+1; 
+            col = mod(iRGC-1,colsNum)+1;
+            noXLabel = true;
+            noYLabel = true;
+            if (col == 1)
+                noYLabel = false;
+            end
+            if (row == rowsNum)
+                noXLabel = false;
+            end
+            ax = theAxes{row,col};
+            theRGCindex = visualizedRGCindices(iRGC);
+            responseInstances = squeeze(mRGCMosaicResponseInstances(:,:,theRGCindex));
 
-    % Check that the mosaic file exists
-    assert(isfile(theFileName), sprintf('Mosaic file (''%s'') not found.', theFileName));
+            plotTitle = ...
+                sprintf('RGC at ecc:(%2.1f,%2.1f)', ...
+                rgcRFpositionsDegs(theRGCindex,1), ...
+                rgcRFpositionsDegs(theRGCindex,2));
 
-    % Mosaic file found, so load the data
-    load(theFileName, 'theMidgetRGCmosaic');
-    theSourceMidgetRGCMosaic = theMidgetRGCmosaic;
-    clear 'theMidgetRGCmosaic';
-    fprintf('Loaded source mosaic.\n');
-end
+            MSreadyPlot.renderResponseTimeSeriesPlot(ax, ...
+                timeAxis, responseInstances, ...
+                mRGCMosaicActivationRange,  ...
+                'frame no', 'response', plotTitle, ff, ...
+                'lineColor', [0 0.7 0], ...
+                'markerEdgeColor', [0.5 0.5 0.5], ...
+                'markerFaceColor', [0.5 1 0.5], ...
+                'markerSize', 10, ...
+                'lineWidth', 1.5, ...
+                'xTicks', xTicks, ...
+                'yTicks', yTicks, ...
+                'noXLabel', noXLabel, ...
+                'noYLabel', noYLabel);
 
-function [theConeMosaicResponses, coneMosaicNullResponse] = computeConeMosaicResponses(...
-    spatialFrequenciesTested, orientationTested, ...
-    theInputConeMosaic, theOI)
-
-    fprintf('Computing cone mosaic responses\n')
-    [stimParams, thePresentationDisplay] = setupVisualSTFmappingExperiment(...
-        spatialFrequenciesTested, orientationTested, ...
-        theInputConeMosaic.sizeDegs, ...
-        theInputConeMosaic.wave);
-
-    % Allocate memory
-    conesNum = size(theInputConeMosaic.coneRFpositionsDegs,1);
-
-    % Single precision responses
-    theConeMosaicResponses = zeros(...
-        numel(stimParams.spatialFrequenciesTested), ...
-        numel(stimParams.spatialPhasesDegs), ...
-        conesNum, ...
-        'single');
-
-    % Empty the noiseFreeAbsorptionsCountNull
-    noiseFreeAbsorptionsCountNull = [];
-
-    for iFreq = 1:numel(stimParams.spatialFrequenciesTested)
-        theCurrentStimParams = stimParams;
-        theCurrentStimParams.spatialFrequencyCPD = stimParams.spatialFrequenciesTested(iFreq);
-                
-        % Generate spatial modulation patterns for each stimulus frame
-        theDriftingGratingSpatialModulationPatterns = rfMappingStimulusGenerator.driftingGratingFrames(theCurrentStimParams);
-    
-        % Generate scenes for the different spatial phases
-        [theDriftingGratingFrameScenes, theNullStimulusScene] = ...
-           rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
-                        thePresentationDisplay, theCurrentStimParams, theDriftingGratingSpatialModulationPatterns, ...
-                        'validateScenes', false);
-    
-         % Compute the cone mosaic responses to the null scene OI
-         if (isempty(noiseFreeAbsorptionsCountNull))
-            % Compute the optical image of the null scene
-            theOI  = oiCompute(theNullStimulusScene, theOI);
-
-            % Compute the cone mosaic null responses
-            coneMosaicNullResponse = theInputConeMosaic.compute(theOI, 'nTrials', 1);
-         end
-
-         % Allocate memory for all frames
-         theFrameResponses = zeros(numel(theCurrentStimParams.spatialPhasesDegs), conesNum, 'single');
-
-         parfor iFrame = 1:numel(theCurrentStimParams.spatialPhasesDegs)
-            % Get scene corresponding to this stimulus frame
-            theFrameScene = theDriftingGratingFrameScenes{iFrame};
-
-            % Compute the optical image of the frame scene
-            theCurrentOI = oiCompute(theFrameScene, theOI);
-
-            % Compute the cone mosaic responses
-            [noiseFreeAbsorptionsCount, noisyAbsorptionsCountInstances] = ...
-                        theInputConeMosaic.compute(theCurrentOI, 'nTrials', 1);
-
-            theFrameResponses(iFrame,:) = single(noiseFreeAbsorptionsCount(1,1,:));
-         end
-
-         % Save theFrameResponses
-         theConeMosaicResponses(iFreq,:,:) = theFrameResponses;
-
-    end % iFreq
-    fprintf('Done computing cone mosaic responses\n')
-end
-
-
-function [stimParams, theDisplay] = setupVisualSTFmappingExperiment(...
-        spatialFrequenciesTested, orientationTested, ...
-        coneMosaicSizeDegs, wavelengthSupport)
-
-    viewingDistanceMeters = 4;
-    stimulusPixelsNum = 512*2;
-    coneContrasts = [1 1 0];
-
-    % Generate a presentation display with a desired resolution
-    sceneFOVdegs = coneMosaicSizeDegs;
-    retinalImageResolutionDegs = max(sceneFOVdegs)/stimulusPixelsNum;
-
-    % At least 6 samples / period
-    maxSF = 1/(2*3*retinalImageResolutionDegs);
-    if (max(spatialFrequenciesTested) > maxSF)
-        fprintf('Max SF examined (%2.2f c/deg) is too high for this FOV (%2.2f degs) and pixels num (%d). (SFmax: %2.2f c/deg)\n', ...
-            max(spatialFrequenciesTested), max(sceneFOVdegs), stimulusPixelsNum, maxSF);
-        idx = find(spatialFrequenciesTested <= maxSF);
-        spatialFrequenciesTested = spatialFrequenciesTested(idx);
-        if (maxSF > max(spatialFrequenciesTested))
-            spatialFrequenciesTested(numel(spatialFrequenciesTested)+1) = maxSF;
+            drawnow;
         end
-
-        fprintf('Will only measure the STF up to %2.2f c/deg.\n', max(spatialFrequenciesTested));
     end
+end
 
-    stimSizeDegs = max(sceneFOVdegs);
-    pixelSizeDegs = retinalImageResolutionDegs;
 
-    theDisplay = rfMappingStimulusGenerator.presentationDisplay(...
-            wavelengthSupport, pixelSizeDegs, ...
+
+function thePSFData = retrievePSF(theOI, micronsPerDegree, visualizedWavelength)
+    optics = oiGet(theOI, 'optics');
+    waves = opticsGet(optics, 'wave');
+
+    psfSupportMicrons = opticsGet(optics,'psf support','um');
+    xGridDegs = psfSupportMicrons{1}/micronsPerDegree;
+    yGridDegs = psfSupportMicrons{2}/micronsPerDegree;
+
+    thePSFData.supportXdegs = xGridDegs(1,:);
+    thePSFData.supportYdegs = yGridDegs(:,1);
+
+    
+    [~,idx] = min(abs(visualizedWavelength-waves));
+    targetWavelength = waves(idx);
+    thePSFData.data = opticsGet(optics,'psf data',targetWavelength );
+end
+
+
+function [theDriftingGratingFrameScenes, theNullStimulusScene] = generateStimulusFrameScenes(...
+    stimSizeDegs, apertureDiameterDegs, apertureShape, viewingDistanceMeters, stimulusPixelsNum, ...
+    orientationDegs, spatialFrequencyCPD, driftingPhaseIncrementDegs, ...
+    wavelengthSupport, coneContrasts, backgroundLuminanceCdM2, backgroundChromaticity)
+
+    retinalImageResolutionDegs = max(stimSizeDegs)/stimulusPixelsNum;
+    thePresentationDisplay = rfMappingStimulusGenerator.presentationDisplay(...
+            wavelengthSupport, retinalImageResolutionDegs, ...
             viewingDistanceMeters);
 
     spatialSupportDegs = rfMappingStimulusGenerator.spatialSupport(...
-        stimSizeDegs, pixelSizeDegs);
-        
+        max(stimSizeDegs), retinalImageResolutionDegs);
+
+
+
+    spatialMask = zeros(numel(spatialSupportDegs), numel(spatialSupportDegs));
     
-    % Stim params for the STF mapping
+    [X,Y] = meshgrid(spatialSupportDegs,spatialSupportDegs);
+    switch (apertureShape)
+        case 'disk'
+            R = sqrt(X.^2 + Y.^2);
+            spatialMask(R<0.5*apertureDiameterDegs) = 1;
+        case 'rect'
+            spatialMask((abs(X) <= 0.5*apertureDiameterDegs)&((abs(Y) <= 0.5*apertureDiameterDegs))) = 1;
+        otherwise
+            error('Unknown aperture shape: ''%s''.', apertureShape);
+    end
+
+
+    % Stim params for a drifting grating in a circular aperture
     stimParams = struct(...
-            'backgroundLuminanceCdM2', 50.0, ...
-            'backgroundChromaticity', [0.301 0.301], ...
+            'backgroundLuminanceCdM2', backgroundLuminanceCdM2, ...
+            'backgroundChromaticity', backgroundChromaticity, ...
             'coneContrasts', coneContrasts, ...
             'contrast', 0.75, ...
-            'orientationsTested', orientationTested, ...
-            'spatialFrequenciesTested', spatialFrequenciesTested, ...
-            'orientationDegs', 0, ...
-            'spatialFrequencyCPD', spatialFrequenciesTested(1), ...
-            'spatialPhaseIncrementDegs', 30, ...
-            'pixelSizeDegs', pixelSizeDegs, ...
-            'stimSizeDegs', stimSizeDegs, ...
-            'spatialMask', ones(numel(spatialSupportDegs), numel(spatialSupportDegs)), ...
-            'wavelengthSupport', displayGet(theDisplay, 'wave'), ...
-            'viewingDistanceMeters', displayGet(theDisplay, 'viewing distance') ...
+            'orientationsTested', orientationDegs, ...
+            'spatialFrequenciesTested', spatialFrequencyCPD, ...
+            'orientationDegs', orientationDegs, ...
+            'spatialFrequencyCPD', spatialFrequencyCPD, ...
+            'spatialPhaseIncrementDegs', driftingPhaseIncrementDegs, ...
+            'pixelSizeDegs', retinalImageResolutionDegs, ...
+            'stimSizeDegs', max(stimSizeDegs), ...
+            'contrastMask', spatialMask, ...
+            'wavelengthSupport', displayGet(thePresentationDisplay, 'wave'), ...
+            'viewingDistanceMeters', displayGet(thePresentationDisplay, 'viewing distance') ...
             );
 
 
-    [~, stimParams.spatialPhasesDegs] = ...
+    [theDriftingGratingSpatialModulationPatterns, stimParams.spatialPhasesDegs] = ...
         rfMappingStimulusGenerator.driftingGratingFrames(stimParams);
    
+    [theDriftingGratingFrameScenes, theNullStimulusScene] = ...
+         rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
+                    thePresentationDisplay, stimParams, theDriftingGratingSpatialModulationPatterns, ...
+                    'validateScenes', ~true);
+
 end
+

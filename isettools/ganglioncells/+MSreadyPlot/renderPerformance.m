@@ -12,26 +12,34 @@ function renderPerformance(ax, targetRsRcRatio, targetSCintSensRatio, ...
     targetKsKcRatio = targetSCintSensRatio / (targetRsRcRatio^2);
     achievedKsKcRatio = achievedSCintSensRatio/ (achievedRsRcRatio^2);
 
-    bar(ax, 1, 100*((achievedRsRcRatio/targetRsRcRatio)-1), 'BaseValue', 0.0);
+    bar(ax, 1, 100*((achievedRsRcRatio/targetRsRcRatio)-1), 0.5, 'BaseValue', 0.0);
     hold(ax, 'on');
-    bar(ax, 2, 100*((achievedSCintSensRatio/targetSCintSensRatio)-1), 'BaseValue', 0.0);
-    bar(ax, 3, 100*((achievedKsKcRatio/targetKsKcRatio)-1), 'BaseValue', 0.0);
+    bar(ax, 2, 100*((achievedSCintSensRatio/targetSCintSensRatio)-1), 0.5, 'BaseValue', 0.0);
+    bar(ax, 3, 100*((achievedKsKcRatio/targetKsKcRatio)-1), 0.5, 'BaseValue', 0.0);
     
     grid(ax, 'on');
-    set(ax, 'XLim', [0 4],  'XTick', [1 2 3], 'XTickLabel', {'Rs/Rc','S/C sens', 'Ks/Kc'}, ...
-        'YLim', [-100 100], 'YTick', -100:20:100);
-    ylabel(ax,'', 'FontAngle', ff.axisFontAngle);
+    box(ax, 'off');
+    
+    ylabel(ax,'residual (%)', 'FontAngle', ff.axisFontAngle);
     xlabel(ax, '', 'FontAngle', ff.axisFontAngle);
 
-    xtickangle(ax, 90);
+    
     % Font size
     set(ax, 'FontSize', ff.fontSize);
 
     % axis color and width
     set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
 
+    % 0-deg roated x-ticks
+    xtickangle(ax, 0);
+
+    set(ax, 'XLim', [0.5+3*ff.axisOffsetFactor 3.5],  'XTick', 0.5:0.5:3.5, ...
+        'XTickLabel', {'', 'R_s/R_c', '', 'intS_s/intS_c', '', 'K_s/K_c', ''}, ...
+        'YLim', [-100+200*ff.axisOffsetFactor  100], ...
+        'YTick', -100:20:100);
+
     % Plot title
-    title(ax, sprintf('(achieved - target)/\ntarget'), ...
+    title(ax, sprintf('(model - Croner&Kaplan)/Croner&Kaplan'), ...
         'Color', ff.titleColor, 'FontSize', ff.titleFontSize, 'FontWeight', ff.titleFontWeight);
   
 end

@@ -1,14 +1,17 @@
 % Method to compute the spatiotemporal response of the mRGCMosaic given the response of its input cone
 % mosaic
-function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj, ...
+function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSupportSeconds] = compute(obj, ...
             theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin)
 
     p = inputParser;
     p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
+    p.addParameter('seed', [], @isnumeric);
+    
 
     % Parse input
     p.parse(varargin{:});
     timeResolutionSeconds = p.Results.timeResolutionSeconds;
+    noiseSeed = p.Results.seed;
 
     % Parse input
     assert(ndims(theConeMosaicResponse) == 3, ...
@@ -28,34 +31,37 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
 
     if (isempty(timeResolutionSeconds))
         timeResolutionSeconds = inputTimeResolutionSeconds;
-        theMRGCresponseTemporalSupportSeconds = theConeMosaicResponseTemporalSupportSeconds;
+        responseTemporalSupportSeconds = theConeMosaicResponseTemporalSupportSeconds;
     else
-        theMRGCresponseTemporalSupportSeconds = - inputTimeResolutionSeconds/2 + ...
-                                                (theConeMosaicResponseTemporalSupportSeconds(1)) : ...
+        responseTemporalSupportSeconds = - inputTimeResolutionSeconds/2 + ...
+                                                (responseTemporalSupportSeconds(1)) : ...
                                                 timeResolutionSeconds : ...
-                                                (theConeMosaicResponseTemporalSupportSeconds(end)+inputTimeResolutionSeconds/2);
+                                                (responseTemporalSupportSeconds(end)+inputTimeResolutionSeconds/2);
     end
 
    
     % Allocate memory for the computed responses
     nTrials = size(theConeMosaicResponse,1);
-    theMRGCresponses = zeros(nTrials, numel(theMRGCresponseTemporalSupportSeconds), obj.rgcsNum);
+    noiseFreeMRGCresponses = zeros(nTrials, numel(responseTemporalSupportSeconds), obj.rgcsNum);
     
     % Delta function center impulse response with a length of 200 mseconds
     theImpulseResponseTemporalSupport = 0:timeResolutionSeconds:0.2;
     theRFcenterImpulseResponse = generateCenterTemporalImpulseResponse(theImpulseResponseTemporalSupport);
     theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
 
+    if (isempty(obj.rgcRFgains))
+        fprintf(2,'the mRGCMosaic.rgcRFgains property has not been set: will employ the ''1/integrated center cone weights'' method\n');
+    end
 
     % Compute the response of each mRGC
     parfor iRGC = 1:obj.rgcsNum
         % Retrieve the center cone indices & weights
-        centerConnectivityVector = full(squeeze(obj.centerConePoolingMatrix(:, iRGC)));
+        centerConnectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
         centerConeIndices = find(centerConnectivityVector > 0.0001);
         centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
-
+        
         % Retrieve the surround cone indices & weights
-        surroundConnectivityVector = full(squeeze(obj.surroundConePoolingMatrix(:, iRGC)));
+        surroundConnectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix (:, iRGC)));
         surroundConeIndices = find(surroundConnectivityVector > 0.0001);
         surroundConeWeights = reshape(surroundConnectivityVector(surroundConeIndices), [1 1 numel(surroundConeIndices)]);
 
@@ -69,18 +75,41 @@ function [theMRGCresponses, theMRGCresponseTemporalSupportSeconds] = compute(obj
             % Temporally filter the center responses
             centerSpatiallyIntegratedActivations = temporalFilter(centerSpatiallyIntegratedActivations, ...
                 theConeMosaicResponseTemporalSupportSeconds, ...
-                theMRGCresponseTemporalSupportSeconds, ...
+                responseTemporalSupportSeconds, ...
                 theRFcenterImpulseResponse);
     
             % Temporally filter the surround responses
             surroundSpatiallyIntegratedActivations = temporalFilter(surroundSpatiallyIntegratedActivations, ...
                 theConeMosaicResponseTemporalSupportSeconds, ...
-                theMRGCresponseTemporalSupportSeconds, ...
+                responseTemporalSupportSeconds, ...
                 theRFsurroundImpulseResponse);
         end
 
-        theMRGCresponses(:,:,iRGC) = centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations;
+        % Response gain
+        if (isempty(obj.rgcRFgains))
+            responseGain = 1.0 / sum(centerConeWeights);
+        else
+            responseGain = obj.rgcRFgains(iRGC);
+        end
+
+        % Composite respose
+        noiseFreeMRGCresponses(:,:,iRGC) = responseGain * (centerSpatiallyIntegratedActivations - surroundSpatiallyIntegratedActivations);
     end % parfor
+
+    % Check noiseFlag. If empty, set it to 'random'
+    if (isempty(obj.noiseFlag))
+        fprintf('Warning: The mRGCMosaic.noiseFlag not set before calling the compute() method. Setting it to ''random''.');
+        obj.noiseFlag = 'random';
+    end
+
+    if (strcmp(obj.noiseFlag, 'none'))
+        noisyMRGCresponseInstances = [];
+        return;
+    end
+
+    % Generate noisy instances
+    noisyMRGCresponseInstances = obj.noisyInstances(noiseFreeMRGCresponses, ...
+        'seed', noiseSeed);
 end
 
 
@@ -147,8 +176,3 @@ function theImpulseResponse = generateSurroundTemporalImpulseResponse(temporalSu
     %theImpulseResponse(3+(1:2)) = 1;
     %theImpulseResponse(3+(4:8)) = -0.2;
 end
-
-
-
-
-
