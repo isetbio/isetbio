@@ -175,10 +175,11 @@ colorIR = (jet(numel(backgroundLuminances)));
 for iLum = 1:numel(backgroundLuminances)
     if (iLum == 1)
         legends = {};
-        hFig = figure(figNo);
-        clf;
-        set(hFig, 'Position', [10, 10, 1380, 650 + 50 * iLum], ...
-            'Color', [0.1 0.1 0.1]);
+        ieNewGraphWin;
+        % hFig = figure(figNo);
+        % clf;
+        % set(hFig, 'Position', [10, 10, 1380, 650 + 50 * iLum], ...
+        %    'Color', [0.1 0.1 0.1]);
     end
 
     legends{numel(legends) + 1} = sprintf('lum: %2.1f cd/m2', ...
@@ -237,7 +238,7 @@ end %iLum
 
 end
 
-% Internal utility
+%% Internal utility
 function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, ...
     osNoise, integrationTime, osTimeStep)
 % An internal utility to generate a cone mosaic

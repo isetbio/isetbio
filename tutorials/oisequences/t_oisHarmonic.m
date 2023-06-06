@@ -66,3 +66,5 @@ oiHarmonicSeq.visualize('movie illuminance');
 
 %% Visualize all frames in a montage
 oiHarmonicSeq.visualize('montage');
+
+%% END
