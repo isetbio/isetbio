@@ -1,4 +1,4 @@
-function varargout = v_DisplayColorConversion(varargin)
+function varargout = v_ibio_DisplayColorConversion(varargin)
 %
 % Validate display calibration color conversion against PTB.  Oddly enough, this also does some checking of LUT inversion.
 %
