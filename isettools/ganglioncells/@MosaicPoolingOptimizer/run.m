@@ -121,6 +121,11 @@ function run()
         return;
     end
 
+    % Perform the resetGainOfComputeReadyMRGCMosaic
+    if (operationSetToPerformContains.resetGainOfComputeReadyMidgetRGCMosaic)
+        MosaicPoolingOptimizer.performResetGainOfComputeReadyMRGCMosaic(mosaicParams);
+        return;
+    end
 
     % Perform the visualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
     if (operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC)
