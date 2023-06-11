@@ -1,4 +1,4 @@
-function varargout = v_PTBcalStructToIsetbioDisplayObjectAndBack(varargin)
+function varargout = v_ibio_PTBcalStructToIsetbioDisplayObjectAndBack(varargin)
 %
 % Validate conversion of PTBcalStruct to isetbio display object and back.
 % This compares the PTB reconstruction after conversion into isetbio and
@@ -13,7 +13,7 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Initialize ISET
-    close all; ieInit;
+    % close all; ieInit;
     
     %% Some informative text
     UnitTest.validationRecord('SIMPLE_MESSAGE', 'Conversion of PTB cal struct to isetbio display object.');

@@ -1,4 +1,4 @@
-function ieRunTutorialsAll
+function ieRunValidationsAll
 %ieRunTutorialsAll
 %
 % Description:

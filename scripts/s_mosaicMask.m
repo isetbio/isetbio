@@ -2,7 +2,14 @@
 %
 % Work with David to create a simple function that masks (zeros out?) 
 % specific functions, perhaps defined as a spatial mask over the cone
-% mosaic
+% mosaic.
+%
+% One approach is to put a scalar mask in the scene.
+% Another is to place a scalar mask over the OI.
+% Finally, for rect mosaic it is pretty straightforward to build a scalar
+% mask over the cone mosaic itself, but apply it to the OI prior to
+% computing the cone absorptions.
+%
 %
 %{
 Hello Dr. Wandell, 
