@@ -25,7 +25,7 @@ mosaicParams = struct(...
     'sizeDegs',  [6 3], ...
     'rgcType', 'ONcenterMidgetRGC');
 
-% Neurons of the pre-computed mRGCMosaic have spatiall RFs that were 
+% Neurons of the pre-computed mRGCMosaic have spatial RFs that were 
 % optimized for the following optics.
 opticsParams = struct(...
             'ZernikeDataBase', 'Polans2015', ...
@@ -226,14 +226,16 @@ end
 % Stimulus parameters
 
 viewingDistanceMeters = 0.57;
-stimulusPixelsNum = 512;
+stimulusPixelsNum = 256;
 wavelengthSupport = theComputeReadyRGCMosaic.inputConeMosaic.wave;
 coneContrasts = [1 1 1];
 backgroundLuminanceCdM2 = 50.0;
 backgroundChromaticity = [0.301 0.301];
 orientationDegs = 90;
-spatialFrequencyCPD = 20.0;
-driftingPhaseIncrementDegs = 20;
+spatialFrequencyCPD = 10.0;
+
+% Advance each frame by 30 deg
+driftingPhaseIncrementDegs = 30;
 
 stimPositionDegs = theComputeReadyRGCMosaic.eccentricityDegs;
 stimSizeDegs = theComputeReadyRGCMosaic.inputConeMosaic.sizeDegs*1.05;
