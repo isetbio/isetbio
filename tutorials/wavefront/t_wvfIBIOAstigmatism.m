@@ -1,4 +1,4 @@
-function t_wvfAstigmatism
+function t_wvfIBIOAstigmatism
 % Compute the wavefront-based PSF for various astigmatism and blur levels.
 %
 % Syntax:
@@ -47,7 +47,7 @@ Zvals = [Z4(:), Z5(:)];
 
 %% Alter defocus and astigmatism
 % Make a plot of the psf for each case.
-h = vcNewGraphWin;
+h = ieNewGraphWin;
 set(h, 'Position', [0.5 0.5 0.45 0.45]);
 wList = wvfGet(wvfParams, 'calc wave');
 for ii = 1:size(Zvals, 1)
