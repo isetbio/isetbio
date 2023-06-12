@@ -5,17 +5,22 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     operationDescriptors{3}  = '[ 3] mRGCMosaic visualization            : Visualize PSFs at a 3x3 grid within the mRGCMosaic';
     operationDescriptors{4}  = '[ 4] mRGCMosaic generation (step G2)     : Compute STF responses of the input cone mosaic ';
     operationDescriptors{5}  = '[ 5] inputConeMosaic visualization       : Visualize visually-projected cone Rc';
+
     operationDescriptors{6}  = '[ 6] mRGCMosaic generation (step G3)     : Optimize surround cone pooling models using the input cone mosaic STF responses. (NOTE: This step takes a long time) ';
     operationDescriptors{7}  = '[ 7] mRGCMosaic visualization            : Inspect optimized cone pooling kernels';
     operationDescriptors{8}  = '[ 8] mRGCMosaic generation (step G4)     : Generate the compute-ready mRGCMosaic based on the optimized cone pooling kernels ';
+    
     operationDescriptors{9}  = '[ 9] Compute-ready mRGCMosaic validation : Compute visual STFs for all cells in the mosaic';
     operationDescriptors{10} = '[10] Compute-ready mRGCMosaic validation : Fit the DoG model to the computed visual STFs for all cells in the mosaic';
-    operationDescriptors{11} = '[11] mRGCMosaic generation (step G5)     :  Adjust gain of the compute-ready mRGCMosaic based on the  fitted visual STFs ';
-    operationDescriptors{12} = '[12] Compute-ready mRGCMosaic validation : Visualize cone pooling RF maps and visual STF for individual target RGCs';
-    operationDescriptors{13} = '[13] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in the mosaic';
-    operationDescriptors{14} = '[14] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in multiple mosaics';
-    operationDescriptors{15} = '[15] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (subspace) for all cells in the mosaic';
-    operationDescriptors{16} = '[16] Compute-ready mRGCMosaic (RF computation) : Visualize visual RF maps (subspace) for individual target RGCs';
+    operationDescriptors{11} = '[11] mRGCMosaic generation (step G5)     : Adjust gain of the compute-ready mRGCMosaic based on the  fitted visual STFs';
+    operationDescriptors{12} = '[12] mRGCMosaic generation (step G5)     : Reset gain of the compute-ready mRGCMosaic (1/integrated center weights)';
+
+    operationDescriptors{13} = '[13] Compute-ready mRGCMosaic validation : Visualize cone pooling RF maps and visual STF for individual target RGCs';
+    operationDescriptors{14} = '[14] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in the mosaic';
+    operationDescriptors{15} = '[15] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in multiple mosaics';
+
+    operationDescriptors{16} = '[16] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (subspace) for all cells in the mosaic';
+    operationDescriptors{17} = '[17] Compute-ready mRGCMosaic (RF computation) : Visualize visual RF maps (subspace) for individual target RGCs';
 
     % 01. Generate the center-connected mosaic
     operationSetToPerformContains.generateCenterConnectedRGCMosaic = ~true;
@@ -50,19 +55,22 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     % 11 Adjust gain of the compute-ready mRGC mosaic based on fitted visual STFs
     operationSetToPerformContains.adjustGainOfComputeReadyMidgetRGCMosaicBaseOnFittedVisualSTFs = ~true;
 
-    % 12 Visualization: Cone pooling RF maps and visual STF 
+    % 12 Reset gain of the compute-ready mRGC mosaic
+    operationSetToPerformContains.resetGainOfComputeReadyMidgetRGCMosaic = ~true;
+
+    % 13 Visualization: Cone pooling RF maps and visual STF 
     operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC = ~true;
 
-    % 13 Visualization: Fitted DoG model params for all cells in the current mosaic
+    % 14 Visualization: Fitted DoG model params for all cells in the current mosaic
     operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic = ~true;
 
-    % 14 Visualization: Fitted DoG model params for all cells in the current mosaic
+    % 15 Visualization: Fitted DoG model params for all cells in the current mosaic
     operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics = ~true;
 
-    % 15 Subspace RF mapping: compute visual RFs (subspace) for all cells 
+    % 16 Subspace RF mapping: compute visual RFs (subspace) for all cells 
     operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
 
-    % 16 Subspace RF mapping: visualize visual RF maps 
+    % 17 Subspace RF mapping: visualize visual RF maps 
     operationSetToPerformContains.visualizeVisualRFmapForTargetRGC = ~true;
 
     operationSetToPerformContains.animateModelConvergence = ~true;
@@ -81,7 +89,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                 fprintf('\n\t%s', operationDescriptors{iString});
             end
 
-            if (iString == 5) || (iString == 8) || (iString == 11) || (iString == 13)
+            if (iString == 5) || (iString == 8) || (iString == 12) || (iString == 15)
                 fprintf('\n');
             end
         end
@@ -182,6 +190,14 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         end
 
                     case 12
+                        % Reset gain of compute-read MRGCMosaic 
+                        if (isfield(operationSetToPerformContains, 'resetGainOfComputeReadyMidgetRGCMosaic'))
+                            operationSetToPerformContains.resetGainOfComputeReadyMidgetRGCMosaic = true;
+                        else
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'resetGainOfComputeReadyMidgetRGCMosaic');
+                        end
+
+                    case 13
                         % Visualize the derived spatial RF and resulting visual STF for a target RGC 
                         if (isfield(operationSetToPerformContains, 'visualizeConePoolingRFmapAndVisualSTFforTargetRGC'))
                             operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC = true;
@@ -189,7 +205,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                              error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'visualizeConePoolingRFmapAndVisualSTFforTargetRGC');
                         end
 
-                    case 13
+                    case 14
                         % Validate a compute-ready mRGCMosaic: step3 - visualize fitted visual STFs for all cells in a single mRGC mosaic
                         if (isfield(operationSetToPerformContains, 'visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic'))
                             operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic = true;
@@ -197,7 +213,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'visualizeDoGparamsOfVisualSTFsOfSingleMidgetRGCMosaic');
                         end
 
-                    case 14
+                    case 15
                         % Validate a compute-ready mRGCMosaic: step4 - visualize fitted visual STFs for all cells in multiple mRGC mosaics
                         if (isfield(operationSetToPerformContains, 'visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics'))
                             operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics = true;
@@ -205,14 +221,14 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                             error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics');
                         end
                         
-                    case 15
+                    case 16
                         if (isfield(operationSetToPerformContains, 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic'))
                             operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
                         else
                             error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic');
                         end
                         
-                    case 16
+                    case 17
                         if (isfield(operationSetToPerformContains, 'visualizeVisualRFmapForTargetRGC'))
                             operationSetToPerformContains.visualizeVisualRFmapForTargetRGC  = true;
                         else

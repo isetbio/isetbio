@@ -395,6 +395,9 @@ classdef MosaicPoolingOptimizer < handle
         % Method to perform the adjustGainOfComputeReadyMRGCMosaicBasedOnVisualSTFdata
         performAdjustGainOfComputeReadyMRGCMosaicBasedOnVisualSTFdata(mosaicParams);
 
+        % Method to perform the restGainOfComputeReadyMRGCMosaic
+        performResetGainOfComputeReadyMRGCMosaic(mosaicParams);
+
         % Method to perform the VisualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
         performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, varargin);
 

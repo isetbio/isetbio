@@ -1,6 +1,9 @@
 % Method to set the peak gain of each mRGC 
 function setPeakGains(obj, method, methodParams)
     switch (method)
+        case 'arbitrary'
+            obj.rgcRFgains = methodParams;
+
         case 'CK95formulaAppliedToMRGCMosaicVisualRcDegs'
             % From Croner&Kaplan '95, Figure 5b
             % Here, the passed methodParams variable must be computed externally
