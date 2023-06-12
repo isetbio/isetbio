@@ -44,11 +44,5 @@ function centerOfMass = computeCenterOfMass(PSF, varargin)
         binaryImage = true(size(PSF));
         measurements = regionprops(bwlabel(binaryImage), PSF, 'WeightedCentroid');
         centerOfMass = measurements.WeightedCentroid;
-
-%         [rc,cc] = ndgrid(1:size(PSF,1),1:size(PSF,2));
-%         Mt = sum(PSF(:));
-%         centerOfMassY = sum(PSF(:) .* rc(:)) / Mt;
-%         centerOfMassX = sum(PSF(:) .* cc(:)) / Mt;
-%         centerOfMass = [centerOfMassX centerOfMassY];
     end
 end
