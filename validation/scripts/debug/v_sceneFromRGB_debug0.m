@@ -1,4 +1,4 @@
-function varargout = v_sceneFromRGB(varargin)
+function v_sceneFromRGB_debug0(varargin)
 % Test how isetbio creates a scene from an rgb data using sceneFromFile
 %
 % Function sceneFromFile uses 1) the rgb data and the spectral power
@@ -24,96 +24,87 @@ function varargout = v_sceneFromRGB(varargin)
 % For this example, the gamma function of the display is not used.
 %
 % Copyright ImagEval, 2011
+%
+%     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+% end
+%
+% %% Function implementing the isetbio validation code
+% function ValidationFunction(runTimeParams)%% s_sceneFromRGB
 
-    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
+DEBUG_LEVEL = 0;
+
+%% Initialize
+% ieInit
+
+%% Load display calibration data
+displayCalFile = 'LCD-Apple.mat';
+load(displayCalFile,'d'); dsp = d;
+wave = displayGet(dsp,'wave');
+spd = displayGet(dsp,'spd');
+ieNewGraphWin; plot(wave,spd);
+xlabel('Wave (nm)'); ylabel('Energy'); grid on
+title('Spectral Power Distribution of Display Color Primaries');
+
+if (DEBUG_LEVEL >= 1)
+    UnitTest.validationData('wave', wave);
+    UnitTest.validationData('spd', spd);
 end
 
-%% Function implementing the isetbio validation code
-function ValidationFunction(runTimeParams)%% s_sceneFromRGB
+%% Analyze the display properties: Chromaticity
+d = displayCreate(displayCalFile);
+whtSPD = displayGet(d,'white spd');
+wave   = displayGet(d,'wave');
+whiteXYZ = ieXYZFromEnergy(whtSPD',wave);
+fig = chromaticityPlot(chromaticity(whiteXYZ));
 
-    DEBUG_LEVEL = 0;
+if (DEBUG_LEVEL >= 1)
+    UnitTest.validationData('wave1', wave);
+    UnitTest.validationData('spd1', spd);
+end
 
-    %% Initialize
-    ieInit
+%% Read in an rgb file and create calibrated display values
+rgbFile = fullfile(isetRootPath,'data','images','rgb','eagle.jpg');
+scene = sceneFromFile(rgbFile,'rgb',[],displayCalFile);
+sceneWindow(scene);
 
-    %% Load display calibration data
-    displayCalFile = 'LCD-Apple.mat';
-    load(displayCalFile,'d'); dsp = d;
-    wave = displayGet(dsp,'wave');
-    spd = displayGet(dsp,'spd'); 
-    if (runTimeParams.generatePlots)   
-        vcNewGraphWin; plot(wave,spd);
-        xlabel('Wave (nm)'); ylabel('Energy'); grid on
-        title('Spectral Power Distribution of Display Color Primaries');
-    end
+if (DEBUG_LEVEL >= 2)
+    UnitTest.validationData('scene', scene);
+end
 
-    if (DEBUG_LEVEL >= 1)
-        UnitTest.validationData('wave', wave);
-        UnitTest.validationData('spd', spd);
-    end
+%% Internal validation
+%
+% We are having cross-platform issues with the horizontal angular
+% extent of the scene varying.  So we'll compute it from first
+% principles here.
+testByHand.hFovDegreesFromScene = sceneGet(scene,'hfov');
+testByHand.displayDPI = displayGet(d,'dpi');
+testByHand.displayMetersPerDot = displayGet(d,'meters per dot');
+testByHand.distance = sceneGet(scene,'distance');
+testByHand.degreesPerDot = displayGet(d,'deg per dot');
+testByHand.degreesPerDotCheck = 2*atand(testByHand.displayMetersPerDot/(2*testByHand.distance));
+testByHand.hSceneDots = sceneGet(scene,'cols');
+testByHand.hFovMeters = testByHand.displayMetersPerDot*testByHand.hSceneDots;
+testByHand.hFovDegreeesCheck = testByHand.hSceneDots*testByHand.degreesPerDot;
 
-    %% Analyze the display properties: Chromaticity
-    d = displayCreate(displayCalFile);
-    whtSPD = displayGet(d,'white spd');
-    wave   = displayGet(d,'wave');
-    whiteXYZ = ieXYZFromEnergy(whtSPD',wave);
-    if (runTimeParams.generatePlots)   
-        fig = chromaticityPlot(chromaticity(whiteXYZ));
-    end
+tolerance = 1e-12;
+quantityOfInterest = testByHand.hFovDegreesFromScene-testByHand.hFovDegreeesCheck;
+UnitTest.assertIsZero(quantityOfInterest,'Hand check of h fov',tolerance);
 
-    if (DEBUG_LEVEL >= 1)
-        UnitTest.validationData('wave1', wave);
-        UnitTest.validationData('spd1', spd);
-    end
+if (DEBUG_LEVEL >= 3)
+    UnitTest.validationData('testByHand', testByHand);
+end
 
-    %% Read in an rgb file and create calibrated display values
-    rgbFile = fullfile(isetbioDataPath,'images','rgb','eagle.jpg');
-    scene = sceneFromFile(rgbFile,'rgb',[],displayCalFile);
-    if (runTimeParams.generatePlots)   
-        vcAddAndSelectObject(scene); sceneWindow;
-    end
+%% Change the illuminant to 4000 K
+bb = blackbody(sceneGet(scene,'wave'),4000,'energy');
+scene = sceneAdjustIlluminant(scene,bb);
+sceneWindow(scene);
 
-    if (DEBUG_LEVEL >= 2)
-        UnitTest.validationData('scene', scene);
-    end
+if (DEBUG_LEVEL >= 4)
+    UnitTest.validationData('bb', bb);
+end
 
-    %% Internal validation
-    %
-    % We are having cross-platform issues with the horizontal angular 
-    % extent of the scene varying.  So we'll compute it from first
-    % principles here.
-    testByHand.hFovDegreesFromScene = sceneGet(scene,'hfov');
-    testByHand.displayDPI = displayGet(d,'dpi');
-    testByHand.displayMetersPerDot = displayGet(d,'meters per dot');
-    testByHand.distance = sceneGet(scene,'distance');
-    testByHand.degreesPerDot = displayGet(d,'deg per dot');
-    testByHand.degreesPerDotCheck = 2*atand(testByHand.displayMetersPerDot/(2*testByHand.distance));
-    testByHand.hSceneDots = sceneGet(scene,'cols');
-    testByHand.hFovMeters = testByHand.displayMetersPerDot*testByHand.hSceneDots;
-    testByHand.hFovDegreeesCheck = testByHand.hSceneDots*testByHand.degreesPerDot;
-    
-    tolerance = 1e-12;
-    quantityOfInterest = testByHand.hFovDegreesFromScene-testByHand.hFovDegreeesCheck;
-    UnitTest.assertIsZero(quantityOfInterest,'Hand check of h fov',tolerance);
+if (DEBUG_LEVEL >= 5)
+    UnitTest.validationData('scene1', scene);
+end
 
-    if (DEBUG_LEVEL >= 3)
-        UnitTest.validationData('testByHand', testByHand);
-    end
-
-    %% Change the illuminant to 4000 K
-    bb = blackbody(sceneGet(scene,'wave'),4000,'energy');
-    scene = sceneAdjustIlluminant(scene,bb);
-    if (runTimeParams.generatePlots)   
-        vcAddAndSelectObject(scene); sceneWindow;
-    end
-
-    if (DEBUG_LEVEL >= 4)
-        UnitTest.validationData('bb', bb);
-    end
-
-    if (DEBUG_LEVEL >= 5)
-        UnitTest.validationData('scene1', scene);
-    end
-
-    %% End
 end

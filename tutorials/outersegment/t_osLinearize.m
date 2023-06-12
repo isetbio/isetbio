@@ -86,3 +86,5 @@ title(sprintf('Peripheral IR (R*/sec)'));
 
 % Add a legend
 legend('100', '500', '1000', '2000', '5000', '10000')
+
+%% END

@@ -193,14 +193,12 @@ end
 function [intensities, decIncRatios] = loadMeasuredDecIncRatios()
 dataSource = {'resources/data/cones', 'decIncRatios.mat'};
 
-% {
-validD = fullfile(isetRootPath,'local','validationdata',dataSource{1});
+validD = fullfile(isetRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});
 load(filename,'intensities','decIncRatios');
-%}
+
 %{
-    p = getpref('isetbio');
-    
+    p = getpref('isetbio');    
     if (p.useRemoteDataToolbox == false)
         resourcesDir = strrep(p.alternateFullDataDir,'validationFull', '');
         dataFile = fullfile(resourcesDir, dataSource{1}, dataSource{2});

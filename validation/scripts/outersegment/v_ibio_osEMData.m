@@ -143,11 +143,9 @@ function [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredO
 
 dataSource = {'resources/data/cones', 'eyeMovementExample'};
 
-% {
-validD = fullfile(isetRootPath,'local','validationdata',dataSource{1});
+validD = fullfile(isetRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});
 eyeMovementExample = load(filename,'data');
-%}
 
 %{
     p = getpref('isetbio');   

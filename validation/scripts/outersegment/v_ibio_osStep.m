@@ -158,14 +158,11 @@ function [time, measuredOuterSegmentCurrents, stimulusPhotonRates] = loadMeasure
 
 dataSource = {'resources/data/cones', 'stepExample'};
 
-
-% {
-validD = fullfile(isetRootPath,'local','validationdata',dataSource{1});
+validD = fullfile(isetRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});
 stepExample = load(filename,'data');
-%}
-%{
-    
+
+%{    
     p = getpref('isetbio');
 
     if (p.useRemoteDataToolbox == false)
