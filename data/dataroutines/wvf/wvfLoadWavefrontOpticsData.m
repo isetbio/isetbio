@@ -571,25 +571,6 @@ else % No averaging, just use single subject, add otf and change name
 end
 
 % Create OI from our wvf
-oi = wvf2oi(wvf);
+oi = wvf2oi(wvf,'model','human');
 
-% Get optics
-optics = oiGet(oi, 'optics');
-
-% [Note: EK - Not sure why, but we need to reset the otf data in oi.optics]
-oi.optics = opticsSet(optics, 'otf data', wvf.otf{1});
-oi.optics.model = 'custom';
-
-% Plot OTF and PSF
-%{
-if (params.verbose)
-    wvfPlot(wvf, '2d otf', 'um', 550);
-    xlim([-0.6 0.6]);
-    ylim([-0.6 0.6]);
-
-    % Plot PSF based off the OTF mean requested eye
-    wvfPlot(wvf, '2d psf angle', 'deg', 550);
 end
-%}
-
-return
