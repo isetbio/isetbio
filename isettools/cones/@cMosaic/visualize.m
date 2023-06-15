@@ -902,10 +902,16 @@ function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData)
     xSupport = thePSFData.supportXdegs + obj.eccentricityDegs(1);
     ySupport = thePSFData.supportYdegs + obj.eccentricityDegs(2);
 
+    
     if (strcmp(visualizationDomain, 'microns'))
-         % Convert spatial support in microns to degs
-         xSupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(xSupport);
-         ySupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(ySupport);
+        if (isfield(thePSFData, 'supportXmicrons'))
+            xSupport  = thePSFData.supportXmicrons + obj.eccentricityMicrons(1);
+            ySupport  = thePSFData.supportYmicrons + obj.eccentricityMicrons(2);
+        else
+             % Convert spatial support in microns to degs
+             xSupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(xSupport);
+             ySupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(ySupport);
+        end
     end
 
     cmap = brewermap(1024,'blues');
