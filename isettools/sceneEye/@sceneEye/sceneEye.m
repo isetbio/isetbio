@@ -132,7 +132,7 @@ methods
 
         % Setup the pbrt scene recipe
         if isempty(pbrtFile),  obj.recipe = recipe;
-        else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
+        else,                  obj.recipe = piRecipeCreate(pbrtFile);
         end
         
         % Create the camera model
