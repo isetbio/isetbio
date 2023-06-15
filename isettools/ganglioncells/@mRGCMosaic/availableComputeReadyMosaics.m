@@ -1,5 +1,5 @@
 function availableComputeReadyMosaics(rgcMosaicType)
-    validMRGCMosaicTypes = {'ONcenter'};
+    validMRGCMosaicTypes = {'ONcenterMidgetRGC'};
     assert(ismember(rgcMosaicType, validMRGCMosaicTypes), sprintf('Unknown mRGCmosaic type: ''%s''.', rgcMosaicType));
 
     p = getpref('isetbio');
@@ -10,7 +10,7 @@ function availableComputeReadyMosaics(rgcMosaicType)
           error('Unknown rgcResourcesMethod: ''%''.', p.rgcResources.method)
     end % switch
     
-    midgetRGCmosaicsRootDir = fullfile(allRGCmosaicsRootDir, sprintf('%sMidgetRGCmosaics', rgcMosaicType),'computeReadyMosaics');
+    midgetRGCmosaicsRootDir = fullfile(allRGCmosaicsRootDir, sprintf('%smosaics', rgcMosaicType),'computeReadyMosaics');
     filesFound = dir(midgetRGCmosaicsRootDir);
 
     mosaicsAvailableNum = 0;

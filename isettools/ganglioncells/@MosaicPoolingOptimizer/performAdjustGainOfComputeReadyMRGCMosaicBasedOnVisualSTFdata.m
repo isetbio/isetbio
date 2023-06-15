@@ -18,64 +18,81 @@ function performAdjustGainOfComputeReadyMRGCMosaicBasedOnVisualSTFdata(mosaicPar
     computeReadyMosaicFileName = fullfile(computeReadyMosaicResourcesDirectory, computeReadyMosaicFileName);
     load(computeReadyMosaicFileName, 'theComputeReadyMRGCmosaic');
 
-    % Generate filename for the computed mRGCMosaicSTF responses
-    [mRGCMosaicSTFresponsesFileName, resourcesDirectory] = ...
-        MosaicPoolingOptimizer.resourceFileNameAndPath('mRGCMosaicSTFresponses', ...
-            'mosaicParams', mosaicParams, ...
-            'opticsParams', opticsParams);
+    % Set the peak gains based on the model cell's integrated center cone
+    % weights. This is the default and is what is used by the
+    % mRGCMosaic.compute() method, if the mRGCMosaic.rgcRFgains property is
+    % empty (not set).
+    method = '1/integrated center cone weights';
+    maxGain = 1.0;
+    methodParams = maxGain;
+    theComputeReadyMRGCmosaic.setPeakGains(method, methodParams);
 
-    % Load the STFresponsesFilename
-    mRGCMosaicSTFresponsesFileName = fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName);
-    load( mRGCMosaicSTFresponsesFileName, ...
-        'visualRcDegsEstimates', ...
-        'theMRGCMosaicOptimalSTFs');
 
-    % For each cell, extract the visualRcDegs estimates obtained by fitting
-    % the centerSTF alone and by fitting the compositeSTF
-    rgcsNum = numel(theMRGCMosaicOptimalSTFs);
-    visualRcDegsEstimateFromFittingCompositeSTF = zeros(1, rgcsNum);
-    
-    % For each cell extract the visualRFdegs obtained by fitting the composite STF at the
-    % optimal orientation
-    for iRGC = 1:theComputeReadyMRGCmosaic.rgcsNum
+    useVisualRcEstimates = false;
+    if (useVisualRcEstimates)
 
-        % Retrieve the fitted STFdata
-        theSTFdata = theMRGCMosaicOptimalSTFs{iRGC};
-        if (iRGC == 1)
-            % Retrieve the index of the RcDegs param
-            idxRcDegs = find(strcmp(theSTFdata.DoGfitParams.names, 'RcDegs'));
+        % Generate filename for the computed mRGCMosaicSTF responses
+        [mRGCMosaicSTFresponsesFileName, resourcesDirectory] = ...
+            MosaicPoolingOptimizer.resourceFileNameAndPath('mRGCMosaicSTFresponses', ...
+                'mosaicParams', mosaicParams, ...
+                'opticsParams', opticsParams);
+        mRGCMosaicSTFresponsesFileName = fullfile(resourcesDirectory, mRGCMosaicSTFresponsesFileName);
+        
+        % Check that the responses filename contain visualSTF data
+        variableInfo = who('-file', mRGCMosaicSTFresponsesFileName);
+        if (~ismember('theMRGCMosaicOptimalSTFs', variableInfo))
+            error('Did not find fitted visual STFs in the specified responses filename (%s).', ...
+                mRGCMosaicSTFresponsesFileName);
         end
     
-        % Get it
-        visualRcDegsEstimateFromFittingCompositeSTF(iRGC) = theSTFdata.DoGfitParams.finalValues(idxRcDegs);
+    
+        % Load the fitted optimal STFs which contain the visualRcDegs obtained by
+        % fitting the composite visual STF. Also load the visualRcDegs estimate
+        % obtained by fitting the center visual STF.
+        load(mRGCMosaicSTFresponsesFileName, ...
+            'visualRcDegsEstimates', ...
+            'theMRGCMosaicOptimalSTFs');
+    
+        % For each cell, extract the visualRcDegs estimates obtained by fitting
+        % the centerSTF alone and by fitting the compositeSTF
+        rgcsNum = numel(theMRGCMosaicOptimalSTFs);
+        visualRcDegsEstimateFromFittingCompositeSTF = zeros(1, rgcsNum);
+        
+        % For each cell extract the visualRFdegs obtained by fitting the composite STF at the
+        % optimal orientation
+        for iRGC = 1:theComputeReadyMRGCmosaic.rgcsNum
+    
+            % Retrieve the fitted STFdata
+            theSTFdata = theMRGCMosaicOptimalSTFs{iRGC};
+            if (iRGC == 1)
+                % Retrieve the index of the RcDegs param
+                idxRcDegs = find(strcmp(theSTFdata.DoGfitParams.names, 'RcDegs'));
+            end
+        
+            % Get it
+            visualRcDegsEstimateFromFittingCompositeSTF(iRGC) = theSTFdata.DoGfitParams.finalValues(idxRcDegs);
+        end
+    
+        % Set the peak gains based on the model cell's computed visual Rc Degs and
+        % the C&K '95 formula
+        method = 'CK95formulaAppliedToMRGCMosaicVisualRcDegs';
+        methodParams = visualRcDegsEstimateFromFittingCompositeSTF;
+        foveolarVisualRcDegs = 0.456/60; %min(visualRcDegsEstimateFromFittingCompositeSTF)
+        
+        methodParams(numel(methodParams)+1) = foveolarVisualRcDegs;
+        theComputeReadyMRGCmosaic.setPeakGains(method, methodParams);
     end
 
-    % Set the peak gains based on the model cell's computed visual Rc Degs and
-    % the C&K '95 formula
-    method = 'CK95formulaAppliedToMRGCMosaicVisualRcDegs';
-    methodParams = visualRcDegsEstimateFromFittingCompositeSTF;
-    theComputeReadyMRGCmosaic.setPeakGains(method, methodParams);
 
     debugGains = false;
     if (debugGains)
         % Display the range of rgcRFgains
         rgcRFgainsRange = [min(theComputeReadyMRGCmosaic.rgcRFgains(:)) max(theComputeReadyMRGCmosaic.rgcRFgains(:))]
     
-    
-        % Set the peak gains based on the model cell's integrated center cone weights
-        method = '1/integrated center cone weights';
-        % Gain selected to match the peak gain computed by 'CK95formulaAppliedToMRGCMosaicVisualRcDegs' at the fovea
-        maxGain = 3.3*1e3;
-        methodParams = maxGain;
-        theComputeReadyMRGCmosaic.setPeakGains(method, methodParams);
-    
-        % Display the range of rgcRFgains
-        rgcRFgainsRange = [min(theComputeReadyMRGCmosaic.rgcRFgains(:)) max(theComputeReadyMRGCmosaic.rgcRFgains(:))]
-    
         % Set the peak gains based on the model cell's integrated retinal cone aperture areas
-        method = '1/integrated center retinal cone apertures';
+        method = '1/integrated center retinal cone apertures'
         % Gain selected to match the peak gain computed by 'CK95formulaAppliedToMRGCMosaicVisualRcDegs' at the fovea
-        maxGain = 4e-9;
+        maxGain = 1.2024e-12;
         methodParams = maxGain;
         theComputeReadyMRGCmosaic.setPeakGains(method, methodParams);
     
@@ -84,7 +101,7 @@ function performAdjustGainOfComputeReadyMRGCMosaicBasedOnVisualSTFdata(mosaicPar
     end
 
     % Save the updated mosaic
-    save(computeReadyMosaicFilename, 'theComputeReadyMRGCmosaic', '-v7.3');
-    fprintf('The updated rgcRFgains - compute-ready mRGCMosaic was exported in %s.\n', computeReadyMosaicFilename);
+    save(computeReadyMosaicFileName, 'theComputeReadyMRGCmosaic', '-v7.3');
+    fprintf('The updated rgcRFgains - compute-ready mRGCMosaic was exported to %s overwriting the previous compute-ready mosaic.\n', computeReadyMosaicFileName);
 
 end
