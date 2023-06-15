@@ -1,10 +1,10 @@
 function v_ibio_OTFandPupilSize(varargin)
-%
 % Compare the ISETBio OTFs as a function of pupil size with Watson (2013)
-% OTF model curves.  The paper is:
+% 
+% The paper is:
 %
-% "A formula for the mean human optical modulation transfer function as a
-% function of pupil size". 
+%   "A formula for the mean human optical modulation transfer function as a
+%   function of pupil size". 
 % http://www.journalofvision.org/content/13/6/18.short?related-urls=yes&legid=jov;13/6/18)
 %
 % Conclusion:
