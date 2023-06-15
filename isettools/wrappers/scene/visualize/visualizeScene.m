@@ -1,5 +1,6 @@
 function visualizeScene(scene, varargin)
     p = inputParser;
+    p.addParameter('presentationDisplay', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('displayContrastProfiles', false, @islogical);
     p.addParameter('displayRadianceMaps', true, @islogical);
     p.addParameter('spatialSupportInDegs', false, @islogical);
@@ -13,6 +14,7 @@ function visualizeScene(scene, varargin)
     % Parse input
     p.parse(varargin{:});
     
+    presentationDisplay = p.Results.presentationDisplay;
     displayContrastProfiles = p.Results.displayContrastProfiles;
     displayRadianceMaps = p.Results.displayRadianceMaps;
     spatialSupportInDegs = p.Results.spatialSupportInDegs;
@@ -20,10 +22,10 @@ function visualizeScene(scene, varargin)
     crossHairsAtOrigin = p.Results.crossHairsAtOrigin;
     avoidAutomaticRGBscaling = p.Results.avoidAutomaticRGBscaling;
     
+
     % retrieve the spatial support of the scene(in millimeters)
     spatialSupportMilliMeters = sceneGet(scene, 'spatial support', 'mm');
-    % retrieve the sRGB components of the scene (just for visualization)
-    sceneRGBsettings = sceneGet(scene, 'rgb image');
+
     % retrieve the XYZ tristimulus components of the scene
     XYZmap = sceneGet(scene, 'xyz');
     % compute the xy-chroma and the luminance maps
@@ -33,7 +35,19 @@ function visualizeScene(scene, varargin)
     % Compute mean luminance and mean chromaticity
     meanLuminance = mean(luminanceMap(:));
     meanChromaticity = [mean(xMap(:)) mean(yMap(:))];
-    
+
+    % retrieve the sRGB components of the scene (just for visualization)
+    if (isempty(presentationDisplay))
+        sceneRGBsettings = sceneGet(scene, 'rgb image');
+    else
+        % If the presentationDisplay that was used to generate this scene
+        % is passed we can do a much better job
+        % computing the sceneRGBsettings from the sceneXYZ
+        displayLinearRGBToXYZ = displayGet(presentationDisplay, 'rgb2xyz');
+        displayXYZToLinearRGB = inv(displayLinearRGBToXYZ);
+        sceneRGBsettings = imageLinearTransform(XYZmap, displayXYZToLinearRGB);
+    end
+
     if (spatialSupportInDegs)
         viewingDistance = sceneGet(scene, 'distance');
         spatialSupportDegs = 2 * atand(spatialSupportMilliMeters/1e3/2/viewingDistance);
