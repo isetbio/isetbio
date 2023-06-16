@@ -191,7 +191,7 @@ end
 
 %% Helper functions
 function [intensities, decIncRatios] = loadMeasuredDecIncRatios()
-dataSource = {'resources/data/cones', 'decIncRatios.mat'};
+dataSource = {'cones', 'decIncRatios.mat'};
 
 validD = fullfile(isetRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});

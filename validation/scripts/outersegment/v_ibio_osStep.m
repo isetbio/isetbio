@@ -1,8 +1,6 @@
 function v_ibio_osStep(varargin)
 % Validate the cone outer segment models against neural data (step stimuli)
 %
-% Not looking good, I think.  To discuss with Nicolas.
-%
 % This script tests the linear and biophysical outer segment models of
 % photon isomerizations to photocurrent transduction that occurs in the
 % cone outer segments, for recordings of response to light steps of
@@ -147,47 +145,28 @@ for stepIndex = 1:numel(stimulusPhotonRates)
 end % stepIndex
 
 %% Save validation data
-UnitTest.validationData('osBiophysCurrent', osBiophysOuterSegmentCurrent);
-UnitTest.validationData('simulationTime', simulationTime);
-UnitTest.validationData('stimPeriod', stimPeriod);
-UnitTest.validationData('stimulusPhotonRates', stimulusPhotonRates);
+% UnitTest.validationData('osBiophysCurrent', osBiophysOuterSegmentCurrent);
+% UnitTest.validationData('simulationTime', simulationTime);
+% UnitTest.validationData('stimPeriod', stimPeriod);
+% UnitTest.validationData('stimulusPhotonRates', stimulusPhotonRates);
 end
 
-%% Helper functions
+%% Load validation data
 function [time, measuredOuterSegmentCurrents, stimulusPhotonRates] = loadMeasuredOuterSegmentResponses()
 
-dataSource = {'resources/data/cones', 'stepExample'};
-
+dataSource = {'cones', 'stepExample'};
 validD = fullfile(isetRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});
 stepExample = load(filename,'data');
 
-%{    
-    p = getpref('isetbio');
-
-    if (p.useRemoteDataToolbox == false)
-        resourcesDir = strrep(p.alternateFullDataDir,'validationFull', '');
-        dataFile = fullfile(resourcesDir, dataSource{1}, dataSource{2});
-        stepExample = load(dataFile);
-    else
-
-        fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
-        % Download neural data from isetbio's repository
-        client = RdtClient('isetbio');
-        client.crp(dataSource{1});
-        [stepExample, stepExampleArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
-        fprintf('Done fetching data.\n');
-    end
-%}
-
 % stimulus in isomerizations/sec
 stimulusPhotonRates = stepExample.data.lightLevel;
-
 
 % measured outer segment currents
 measuredOuterSegmentCurrents = stepExample.data.Data;
 
 % time axis
 time = (1:size(measuredOuterSegmentCurrents{1},2))*stepExample.data.samplingInterval;
+
 end
 

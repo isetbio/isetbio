@@ -141,7 +141,7 @@ end
 %% Helper functions
 function [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredOuterSegmentResponses()
 
-dataSource = {'resources/data/cones', 'eyeMovementExample'};
+dataSource = {'cones', 'eyeMovementExample'};
 
 validD = fullfile(isetRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});
