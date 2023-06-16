@@ -1,12 +1,18 @@
 % v_ibio_DisplayColorConversion(varargin)
 %
+% This is way too complicated for a simple test.
+%
 % Create a uniform field corresponding to specified display and rgb
 % values.  Use isetbio to calculate cone isomerization rates.
 % Then do the same calculation for the same display, cone
 % fundamentals, and rgb values in PTB.  We start with the isetbio
 % calculation.
 %
-% There is a factor of 2 off here somewhere.
+% BW:  There is a factor of 2 off here somewhere.  Also, we aren't
+% comparing the simple physical quantities along the way. To check
+% with DHB.
+% See also
+%  
 
 %% Create isetbio display
 
@@ -15,6 +21,8 @@ d = displayCreate(displayToTest);
 gammaTable = displayGet(d, 'gamma table');
 nInputLevels = size(gammaTable,1);
 gammaInput   = linspace(0,1,nInputLevels);
+displayPlot(d,'spd');
+title('ISET Primaries.')
 
 %% Create a uniform field radiance image in ISETBIO
 
@@ -43,8 +51,9 @@ sceneDegrees = 10;  % need large field
 scene = sceneFromFile(theRGBImage,'rgb',[],d);
 scene = sceneSet(scene,'fov', sceneDegrees);
 sceneSize = sceneGet(scene,'size');
+% sceneShowImage(scene);
 
-%% Compute optial image, for delta function optics.
+%% Compute optical image, for pinhole optics.
 oi = oiCreate('human');
 optics = oiGet(oi,'optics');
 optics = opticsSet(optics,'off axis method','skip');
@@ -52,6 +61,7 @@ optics = opticsSet(optics,'otf method','skip otf');
 oi = oiSet(oi,'optics',optics);
 oi = oiCompute(scene,oi);
 oi = oiSet(oi,'fov',sceneDegrees);
+% oiShowImage(oi);
 
 %% Compute mosaic responses
 
@@ -156,6 +166,11 @@ PTBcal = ptb.GeneratePsychToolboxCalStruct(...
     'dotsPerMeter', dotsPerMeter ...
     );
 
+% BW:  These do not match the display primaries.  Why?
+energy = Quanta2Energy(wave,ptbPrimarySpdMagCorrectIrradiancePhotons');
+plotRadiance(wave,energy);
+title('PTB Primaries.')
+
 %% Initialize PTB calibration structure.
 PTBcal = CalibrateFitGamma(PTBcal, nInputLevels);
 gammaMethod = 1;
@@ -169,7 +184,7 @@ ptbRGBToTestPrimary = SettingsToPrimary(PTBcal,RGBToTest);
 isetbioRGBToTestPrimary = ieLUTDigital(theRGBImage(1,1,:),gammaTable);
 xVals = linspace(0,1,size(gammaTable,1))';
 
-figure; hold on;
+ieNewGraphWin; hold on;
 plot(xVals,gammaTable(:,1),'r');
 plot(xVals,gammaTable(:,2),'g');
 plot(xVals,gammaTable(:,3),'b');
