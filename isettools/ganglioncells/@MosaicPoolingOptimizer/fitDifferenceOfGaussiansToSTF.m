@@ -76,14 +76,18 @@ function [DoGparams, theFittedSTF] = fitDifferenceOfGaussiansToSTF(...
      % Run the multi-start
      DoGparams.finalValues = run(ms, problem, multiStartsNum);
 
-     theFittedSTF.compositeSTF = normFactor * DoGSTF(DoGparams.finalValues, spatialFrequencySupportCPD);
-     theFittedSTF.centerSTF = normFactor *  DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*spatialFrequencySupportCPD).^2) );
-     theFittedSTF.surroundSTF = normFactor * DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*spatialFrequencySupportCPD).^2) );
+     % Account for normalizationFactor
+     DoGparams.finalValues(1) = ...
+         DoGparams.finalValues(1) * normFactor;
+
+     theFittedSTF.compositeSTF = DoGSTF(DoGparams.finalValues, spatialFrequencySupportCPD);
+     theFittedSTF.centerSTF = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*spatialFrequencySupportCPD).^2) );
+     theFittedSTF.surroundSTF = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*spatialFrequencySupportCPD).^2) );
      
      sfHiRes = logspace(log10(0.1), log10(100), 64);
      theFittedSTF.sfHiRes = sfHiRes;
-     theFittedSTF.compositeSTFHiRes = normFactor * DoGSTF(DoGparams.finalValues, sfHiRes);
-     theFittedSTF.centerSTFHiRes = normFactor * DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sfHiRes).^2) );
-     theFittedSTF.surroundSTFHiRes = normFactor *  DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sfHiRes).^2) );
+     theFittedSTF.compositeSTFHiRes = DoGSTF(DoGparams.finalValues, sfHiRes);
+     theFittedSTF.centerSTFHiRes = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sfHiRes).^2) );
+     theFittedSTF.surroundSTFHiRes = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sfHiRes).^2) );
 
 end
