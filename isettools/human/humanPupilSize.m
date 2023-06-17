@@ -142,4 +142,4 @@ end
 
 if nargout == 2, area = pi * (diam / 2) .^ 2; end
 
-return;
+end

@@ -126,6 +126,6 @@ for ii=2:8
     wvf = wvfComputePSF(wvf);
     [n,m] = wvfOSAIndexToZernikeNM(ii);
     wvfPlot(wvf,'image wavefront aberrations','um',550,[]);
-    colormap("gray"); title(sprintf('ZC %d %d',n,m));
+    colormap("gray"); title(sprintf('Z_%d^%d',n,m));
 end
 
