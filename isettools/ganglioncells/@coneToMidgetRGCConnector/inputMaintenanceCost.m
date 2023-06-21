@@ -23,30 +23,12 @@ function theCostComponents = inputMaintenanceCost(obj, ...
             inputConeTypes = cMosaic.LCONE_ID;
         end
 
-        switch (obj.wiringParams.spatialVarianceMetric)
-            case 'maximal interinput distance'
-                spatialVarianceCost = MosaicConnector.maximalInterInputDistance(inputPositions);
-            case 'spatial variance'
-                varianceXY = var(inputPositions,inputWeights,1);
-                spatialVarianceXY = varianceXY(:);
-                spatialVarianceCost = sqrt(spatialVarianceXY(1)+spatialVarianceXY(2));
-            otherwise
-                error('Unknown spatialVarianceMetric: ''%s''.', obj.wiringParams.spatialVarianceMetric);
-        end
+        % Spatial variance cost
+        spatialVarianceCost = coneToMidgetRGCConnector.spatialVarianceCost(...
+            obj.wiringParams.spatialVarianceMetric, inputWeights, inputPositions, destinationRFspacing);
 
-        spatialVarianceCost = spatialVarianceCost / destinationRFspacing;
-
-        lConeIndices = find(inputConeTypes == cMosaic.LCONE_ID);
-        mConeIndices = find(inputConeTypes == cMosaic.MCONE_ID);
-        lConeSignal = sum(inputWeights(lConeIndices));
-        mConeSignal = sum(inputWeights(mConeIndices));
-        
-        totalLMConeSignal = lConeSignal + mConeSignal;
-        if (lConeSignal <= mConeSignal)
-            chromaticVarianceCost = lConeSignal/totalLMConeSignal;
-        else
-            chromaticVarianceCost = mConeSignal/totalLMConeSignal;
-        end
+        % Chromatic variance cost
+        chromaticVarianceCost = coneToMidgetRGCConnector.chromaticVarianceCost(inputWeights, inputConeTypes);
 
         % Total cost
         w = obj.wiringParams.chromaticSpatialVarianceTradeoff;
