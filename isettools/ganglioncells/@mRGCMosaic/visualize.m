@@ -19,6 +19,7 @@ function visualize(obj, varargin)
    
     p.addParameter('identifyInputCones', false, @islogical);
     p.addParameter('identifyPooledCones', false, @islogical);
+    p.addParameter('pooledConesLineWidth', 1.0, @isscalar);
     p.addParameter('plotRFoutlines', true, @islogical);
     p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
     p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
@@ -27,6 +28,7 @@ function visualize(obj, varargin)
     p.addParameter('horizontalActivationColorBarInside', false, @islogical);
     p.addParameter('verticalActivationColorBarInside', false, @islogical);
     p.addParameter('fontSize', 16, @(x)(isempty(x)||(isscalar(x))));
+    p.addParameter('fontAngle', 'normal', @(x)(ismember(lower(x), {'normal', 'italic'})));
     p.addParameter('labelRGCsWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('labeledRGCsColor', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.addParameter('labeledRGCsLineWidth', 1.5, @isscalar);
@@ -53,7 +55,8 @@ function visualize(obj, varargin)
     identifiedConeAperture = p.Results.identifiedConeAperture;
     identifiedConeApertureThetaSamples = p.Results.identifiedConeApertureThetaSamples;
     identifyInputCones = p.Results.identifyInputCones;
-    identifyPooledCones = p.Results.identifyPooledCones';
+    identifyPooledCones = p.Results.identifyPooledCones;
+    pooledConesLineWidth = p.Results.pooledConesLineWidth;
     plotRFoutlines = p.Results.plotRFoutlines;
     activation = p.Results.activation;
     samplingGrid = p.Results.samplingGrid;
@@ -69,6 +72,7 @@ function visualize(obj, varargin)
     colorbarTickLabelColor = p.Results.colorbarTickLabelColor;
     backgroundColor = p.Results.backgroundColor;
     fontSize = p.Results.fontSize;
+    fontAngle = p.Results.fontAngle;
     labelRGCsWithIndices = p.Results.labelRGCsWithIndices;
     labeledRGCsColor = p.Results.labeledRGCsColor;
     labeledRGCsLineWidth = p.Results.labeledRGCsLineWidth;
@@ -154,13 +158,13 @@ function visualize(obj, varargin)
                 labelRetinalMeridians, ...
                 domainVisualizationTicks, domainVisualizationLimits, ...
                 identifiedConeAperture, identifiedConeApertureThetaSamples, ...
-                identifyInputCones, identifyPooledCones, labelRGCsWithIndices, ...
+                identifyInputCones, identifyPooledCones, pooledConesLineWidth, labelRGCsWithIndices, ...
                 labeledRGCsColor, labeledRGCsLineWidth, ...
                 plotRFoutlines, activation, activationRange, activationColorMap, ...
                 colorBarTickLabelPostFix, colorbarTickLabelColor, ...
                 verticalColorBar, horizontalColorBar, colorbarFontSize, ...
                 verticalColorBarInside, horizontalColorBarInside, ...
-                backgroundColor, fontSize, ...
+                backgroundColor, fontSize, fontAngle, ...
                 plotTitle, plotTitleColor, plotTitleFontSize);
 
         otherwise
@@ -183,13 +187,13 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
         labelRetinalMeridians, ...
         domainVisualizationTicks, domainVisualizationLimits, ...
         identifiedConeAperture, identifiedConeApertureThetaSamples, ...
-        identifyInputCones, identifyPooledCones, labelRGCsWithIndices, ...
+        identifyInputCones, identifyPooledCones, pooledConesLineWidth, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
         plotRFoutlines, activation, activationRange, activationColorMap, ...
         colorBarTickLabelPostFix, colorbarTickLabelColor, ...
         verticalColorBar, horizontalColorBar, colorbarFontSize, ...
         verticalColorBarInside, horizontalColorBarInside, ...
-        backgroundColor, fontSize, plotTitle, plotTitleColor,  plotTitleFontSize)
+        backgroundColor, fontSize, fontAngle, plotTitle, plotTitleColor,  plotTitleFontSize)
 
     
     if (isempty(ax))
@@ -276,11 +280,11 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
         if (identifyInputCones)
             lConeInputLineColor = [0 0 0];
             mConeInputLineColor = [0 0 0];
-            lineSegmentWidth = 1.0;
+            lineSegmentWidth = pooledConesLineWidth;
         else
             lConeInputLineColor = [1 0 0];
             mConeInputLineColor = [0 1 0];
-            lineSegmentWidth = 1.5;
+            lineSegmentWidth = pooledConesLineWidth;
         end
         
         labelConePooling(obj, ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth);
@@ -339,7 +343,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
 
 
     % Finalize plot
-    set(ax, 'FontSize', fontSize);
+    set(ax, 'FontSize', fontSize, 'FontAngle', fontAngle);
 
     if (~identifyInputCones)
         colormap(ax, cMap);

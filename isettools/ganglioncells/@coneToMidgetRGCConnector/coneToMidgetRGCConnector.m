@@ -131,6 +131,11 @@ classdef coneToMidgetRGCConnector < MosaicConnector
 
     end % Private methods 
 
+    methods (Static)
+        cost = chromaticVarianceCost(inputWeights, inputConeTypes);
+        cost = spatialVarianceCost(spatialVarianceMetric, inputWeights, inputPositions, destinationRFspacing);
+    end % Static methods
+
 end
 
 

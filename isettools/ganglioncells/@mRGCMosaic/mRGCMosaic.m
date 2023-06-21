@@ -173,6 +173,7 @@ classdef mRGCMosaic < handle
             
             % Compute-ready mosaic params
             p.addParameter('noiseFlag', 'random');
+            p.addParameter('randomSeed', [], @(x)(isempty(x) || isscalar(x)));
             p.parse(varargin{:});
 
             obj.name = p.Results.name;
@@ -267,6 +268,11 @@ classdef mRGCMosaic < handle
         % Stats on the center cones
         centerConesNumCases = centerConePoolingStats(obj);
 
+        % Method to compute the spatial and chromatic variance cost for each RGC
+        theCostComponentsMatrix = totalInputMaintenanceCost(obj, ...
+            chromaticSpatialVarianceTradeoff, spatialVarianceMetric)
+
+
         % Setter for noiseFlag
         function set.noiseFlag(obj, val)
             assert((isempty(val))||ismember(val, mRGCMosaic.validNoiseFlags), ...
@@ -337,7 +343,8 @@ classdef mRGCMosaic < handle
         % Method to load a compute-ready mosaic
         theComputeReadyMRGCmosaic = loadComputeReadyRGCMosaic(mosaicParams, opticsParams, retinalRFmodelParams);
 
-        
+        % Method to compute the extra degs to include the surrounds
+        extraDegs = extraConeMosaicDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
     end % Static methods
 
 end
