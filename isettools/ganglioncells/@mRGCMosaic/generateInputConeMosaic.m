@@ -19,10 +19,9 @@ function generateInputConeMosaic(obj, pResults)
     
     % Input cone mosaic generation
     if (isempty(pResults.withInputConeMosaic))
-
         % Make the inputConeMosaic a little bit larger than the
         % midget RGC mosaic to allow for cone inputs to the RF surrounds
-        obj.extraDegsForInputConeMosaic = midgetRGCMosaic.extraConeMosaicDegsForMidgetRGCSurrounds(...
+        obj.extraDegsForInputConeMosaic = mRGCMosaic.extraConeMosaicDegsForMidgetRGCSurrounds(...
             obj.eccentricityDegs, obj.sizeDegs);
 
         % Set cone aperture modifiers
@@ -45,7 +44,8 @@ function generateInputConeMosaic(obj, pResults)
             'customMMsToDegsConversionFunction', pResults.customMMsToDegsConversionFunction, ...
             'overlappingConeFractionForElimination', 0.5, ...
             'rodIntrusionAdjustedConeAperture', true, ...
-            'coneApertureModifiers', coneApertureModifiers);
+            'coneApertureModifiers', coneApertureModifiers, ...
+            'randomSeed', pResults.randomSeed);
     else
         % Use passed input cone mosaic
         obj.inputConeMosaic = pResults.withInputConeMosaic;
