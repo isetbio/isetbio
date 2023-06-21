@@ -206,20 +206,75 @@ function contourData = subregionEllipseFromPooledCones(...
     end
 
     [X,Y] = meshgrid(xSupport, ySupport);
-    spatialSupportXY(:,1) = xSupport(:);
-    spatialSupportXY(:,2) = ySupport(:);
-
     RF = zeros(size(X));
-    for iCone = 1:numel(poolingWeights)
+
+    if (numel(poolingWeights)>1)
+        xx = conePos(:,1);
+        yy = conePos(:,2);
+        dx = max(xx)-min(xx);
+        dy = max(yy)-min(yy);
+        if (dx > dy)
+            [~,idx] = sort(xx);
+        else
+            [~,idx] = sort(yy);
+        end
+        
+        xo = mean(xx);
+        yo = mean(yy);
+
+        poolingWeights = poolingWeights(idx);
+        coneRc = coneRc(idx);
+        xx = xx(idx);
+        yy = yy(idx);
+        interpolationPointsNum = 4;
+        xxxInterp = zeros(1, interpolationPointsNum * numel(xx));
+        yyyInterp = zeros(1, interpolationPointsNum * numel(xx));
+        coneRcInterp = zeros(1, interpolationPointsNum * numel(xx));
+        poolingWeightsInterp = zeros(1, interpolationPointsNum * numel(xx));
+
+        for ii = 1:numel(xx)
+            for iii = 1:interpolationPointsNum
+                f = (iii-1)/interpolationPointsNum;
+                xxxInterp((ii-1)*interpolationPointsNum+iii) = xo*(1-f) + xx(ii)*f;
+                yyyInterp((ii-1)*interpolationPointsNum+iii) = yo*(1-f) + yy(ii)*f;
+                coneRcInterp((ii-1)*interpolationPointsNum+iii) = coneRc(ii);
+                poolingWeightsInterp((ii-1)*interpolationPointsNum+iii) = poolingWeights(ii);
+            end
+        end
+
+
+        for iConeInterp = 1:numel(coneRcInterp)
+            % Characteristic radius of the input RF
+            rC = coneRcInterp(iConeInterp);
+            % Compute aperture2D x weight
+            XX = X-xxxInterp(iConeInterp);
+            YY = Y-yyyInterp(iConeInterp);
+            theAperture2D = poolingWeightsInterp(iConeInterp) * exp(-(XX/rC).^2) .* exp(-(YY/rC).^2);
+            % Accumulate 2D apertures
+            RF = RF + theAperture2D;
+        end
+
+        % for iCone = 1:numel(poolingWeights)
+        %     % Characteristic radius of the input RF
+        %     rC = coneRc(iCone);
+        %     % Compute aperture2D x weight
+        %     XX = X-conePos(iCone,1);
+        %     YY = Y-conePos(iCone,2);
+        %     theAperture2D = poolingWeights(iCone) * exp(-(XX/rC).^2) .* exp(-(YY/rC).^2);
+        %     % Accumulate 2D apertures
+        %     RF = RF + theAperture2D;
+        % end
+    else
         % Characteristic radius of the input RF
+        iCone = 1;
         rC = coneRc(iCone);
         % Compute aperture2D x weight
         XX = X-conePos(iCone,1);
         YY = Y-conePos(iCone,2);
         theAperture2D = poolingWeights(iCone) * exp(-(XX/rC).^2) .* exp(-(YY/rC).^2);
-        % Accumulate 2D apertures
-        RF = RF + theAperture2D;
+        RF = theAperture2D;
     end
+
 
     % Binarize
     RF = RF / max(RF(:));
