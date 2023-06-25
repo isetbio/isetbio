@@ -166,7 +166,7 @@ else
         theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
             obj.cols + 2 * padCols);
     
-    elseif isa(theExpandedMosaic, 'coneMosaic')
+    elseif isa(theExpandedMosaic, 'coneMosaicRect')
         % OK, we are passed theExpandedMosaic.
         % Set the current path and integrationTime and use it.
         theExpandedMosaic.emPositions = obj.emPositions;

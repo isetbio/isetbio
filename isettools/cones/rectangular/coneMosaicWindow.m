@@ -97,7 +97,7 @@ function coneMosaicWindow_OpeningFcn(hObject, eventdata, handles, varargin)
 %#ok<*ST2NM>
 
 % check inputs
-if isempty(varargin) || ~isa(varargin{1}, 'coneMosaic')
+if isempty(varargin) || ~isa(varargin{1}, 'coneMosaicRect')
     error('cone mosaic object required');
 end
 plotType = 'meanabsorptions';
@@ -114,7 +114,7 @@ guidata(hObject, handles);
 handles.cMosaic.hdl = hObject;
 
 % Adjust the database and bring this figure to the front
-vcSetFigureHandles('conemosaic', hObject, eventdata, handles);
+% vcSetFigureHandles('conemosaic', hObject, eventdata, handles);
 figure(hObject);
 
 % Set the popup default image selection to mean absorptions for when the

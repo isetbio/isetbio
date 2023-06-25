@@ -25,7 +25,7 @@ function str = description(obj, varargin)
 
 %% parse input
 p = inputParser;
-p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
+p.addRequired('obj', @(x) isa(x, 'coneMosaicRect'));
 p.addParameter('skipPigment', false, @islogical);
 p.addParameter('skipMacular', false, @islogical);
 p.parse(obj, varargin{:});

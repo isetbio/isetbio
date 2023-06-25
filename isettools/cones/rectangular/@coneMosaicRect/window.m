@@ -5,19 +5,19 @@ function window(obj, varargin)
 %   window(obj, [varargin])
 %
 % Description:
-%    This function opens a cone mosaic window GUI via calling the
-%    coneMosaicWindow function.
+%    Oopens a cone mosaic rect window GUI via the coneMosaicWindow
+%    function. 
 %
 % Inputs:
-%    obj - The cone mosaic object.
+%    obj - The cone mosaic rect object.
 %
-%   Outputs:
+%  Outputs:
 %   None.
 %
-%   Optional key/value pairs:
+%  Optional key/value pairs:
 %   'show' - 'mean absorptions', 'cone mosaic', 'mean photocurrent'
 %
-%   See Also:
+%  See Also:
 %    coneMosaicWindow
 
 % History:
@@ -28,7 +28,7 @@ function window(obj, varargin)
 p = inputParser;
 
 valid = {'conemosaic','meanabsorptions','meanphotocurrent'};
-p.addRequired('obj',@(x)(isa(x,'coneMosaic')));
+p.addRequired('obj',@(x)(isa(x,'coneMosaicRect')));
 p.addParameter('show','meanabsorptions',@(x)(ismember(ieParamFormat(x),valid)));
 
 p.parse(obj,varargin{:});

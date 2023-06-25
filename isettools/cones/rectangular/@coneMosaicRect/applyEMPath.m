@@ -36,7 +36,7 @@ function absorptions = applyEMPath(obj, LMS, varargin)
 
 % parse inputs
 p = inputParser;
-p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
+p.addRequired('obj', @(x) isa(x, 'coneMosaicRect'));
 p.addRequired('LMS', @isnumeric);
 p.addParameter('padRows', [], @isnumeric);
 p.addParameter('padCols', [], @isnumeric);

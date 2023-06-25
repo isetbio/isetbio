@@ -1,4 +1,4 @@
-classdef coneMosaic < hiddenHandle
+classdef coneMosaicRect < hiddenHandle
     % Create a rectangular cone mosaic object 
     %
     % This should be renamed to rectMosaic and a bunch of code would be
@@ -304,7 +304,7 @@ classdef coneMosaic < hiddenHandle
 
     methods
         % Constructor
-        function [obj, cmParams] = coneMosaic(varargin)
+        function [obj, cmParams] = coneMosaicRect(varargin)
             % Initialize the cone mosaic class
             %
             % Syntax:
