@@ -786,8 +786,7 @@ function visualizationParams = visualize(obj, varargin)
         
     end
     
-    set(axesHandle, 'XTick', domainVisualizationTicks.x, ...
-        'YTick', domainVisualizationTicks.y);
+    set(axesHandle, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
     
     box(axesHandle, 'on');
     set(figureHandle, 'Color', [1 1 1]);
@@ -817,7 +816,9 @@ function visualizationParams = visualize(obj, varargin)
                     ylabel(axesHandle, 'space (degrees)');
                 end
             end
-            if (xRange(2)-xRange(1) > 0.5)
+            minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
+            
+            if (minTickIncrement >= 0.1)
                 set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
                     'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
             else
@@ -851,11 +852,12 @@ function visualizationParams = visualize(obj, varargin)
                     ylabel(axesHandle, 'space (microns)');
                 end
             end
-            if (xRange(2)-xRange(1) > 0.5)
-                set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
+            minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
+            if (minTickIncrement >= 1)
+                set(axesHandle, 'XTickLabel', sprintf('%1.0f\n', domainVisualizationTicks.x), ...
                     'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
             else
-                set(axesHandle, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
+                set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
                     'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
             end
             
