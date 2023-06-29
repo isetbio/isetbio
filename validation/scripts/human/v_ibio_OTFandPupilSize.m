@@ -55,7 +55,7 @@ for pupilSizeIndex = 1:numel(examinedPupilDiametersInMillimeters)
     scene = sceneSet(scene,'distance', sceneDistanceInMeters);
 
     %% Compute optical image
-    oi = oiCompute(scene,oi);
+    oi = oiCompute(oi,scene);
 
     %% Retrieve the full OTF
     optics = oiGet(oi, 'optics');

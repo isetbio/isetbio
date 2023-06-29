@@ -73,8 +73,8 @@ zlabel('log_{10} Cones / mm^2 ')
 
 surf(X * 1e3, Y * 1e3, coneDensity); colormap(hsv)
 xlabel('Position (mm)'); ylabel('Position (mm)'); 
-zlabel('Cones / mm^2 ')
-
+zlabel('Cones / mm^2 (log)')
+set(gca,'zscale','log');
 %% END
 
 

@@ -1,4 +1,4 @@
-function varargout = v_osStepFlash(varargin)
+function varargout = v_ibio_osStepFlash(varargin)
 %
 % Validate the os models for very brief flashes on different pedestals.
 %
@@ -30,7 +30,7 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Init
-    ieInit;
+    % ieInit;
     %% Build stimuli
     
     % Set the simulation time interval. In general, the stimulation time interval should 
@@ -61,7 +61,7 @@ function ValidationFunction(runTimeParams)
     % Linear os
         osCML = osLinear();            
         osCML.set('noise flag','none');
-        cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+        cmL = coneMosaicRect('os',osCML,'pattern', 2); % a single cone
         cmL.integrationTime = simulationTimeIntervalInSeconds;
         cmL.os.timeStep = simulationTimeIntervalInSeconds;
         cmL.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
@@ -72,7 +72,7 @@ function ValidationFunction(runTimeParams)
     % Biophys os
         osCM = osBioPhys();            % peripheral (fast) cone dynamics
         osCM.set('noise flag','none');
-        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm = coneMosaicRect('os',osCM,'pattern', 2); % a single cone
         cm.integrationTime = simulationTimeIntervalInSeconds;
         cm.os.timeStep = simulationTimeIntervalInSeconds;
         cm.absorptions  = reshape(stepStimulusPhotonRate,[1,1,length(stepStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
@@ -93,7 +93,7 @@ function ValidationFunction(runTimeParams)
     % Linear os        
         osCML = osLinear();            
         osCML.set('noise flag','none');
-        cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+        cmL = coneMosaicRect('os',osCML,'pattern', 2); % a single cone
         cmL.integrationTime = simulationTimeIntervalInSeconds;
         cmL.os.timeStep = simulationTimeIntervalInSeconds;
         cmL.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;
@@ -105,7 +105,7 @@ function ValidationFunction(runTimeParams)
     % Biophys os        
         osCM = osBioPhys();            % peripheral (fast) cone dynamics
         osCM.set('noise flag','none');
-        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm = coneMosaicRect('os',osCM,'pattern', 2); % a single cone
         cm.integrationTime = simulationTimeIntervalInSeconds;
         cm.os.timeStep = simulationTimeIntervalInSeconds;
         cm.absorptions  = reshape(stepFlashStimulusPhotonRate,[1,1,length(stepFlashStimulusPhotonRate)])*simulationTimeIntervalInSeconds;

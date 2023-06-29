@@ -1157,10 +1157,10 @@ classdef coneMosaicRect < hiddenHandle
             %    None.
             %
             if ischar(val) && ...
-                    (ismember(lower(val), coneMosaic.validNoiseFlags))
+                    (ismember(lower(val), coneMosaicRect.validNoiseFlags))
                 obj.noiseFlag = val;
             else
-                s = sprintf('%s ', coneMosaic.validNoiseFlags{:});
+                s = sprintf('%s ', coneMosaicRect.validNoiseFlags{:});
                 error(['''%s'' is an invalid value for ' ...
                     'coneMosaic.noiseFlag. Choose one from: %s '], val, s);
             end

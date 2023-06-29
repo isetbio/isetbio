@@ -95,7 +95,7 @@ p.addRequired('oi', @isstruct);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPath', obj.emPositions, @isnumeric);
-p.addParameter('theExpandedMosaic', [], @(x)(isa(x, 'coneMosaic')));
+p.addParameter('theExpandedMosaic', [], @(x)(isa(x, 'coneMosaicRect')));
 p.addParameter('beVerbose', false, @islogical);
 p.parse(oi, varargin{:});
 

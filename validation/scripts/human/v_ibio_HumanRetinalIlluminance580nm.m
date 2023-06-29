@@ -49,7 +49,7 @@ function ValidationFunction(runTimeParams)
     oi      = oiSet(oi,'optics',optics);
     
     %% Compute optical image from the scene
-    oi = oiCompute(scene,oi);
+    oi = oiCompute(oi,scene);
     
     %% Get irradiance in the center
     roi = oiGet(oi,'size') ./2; 

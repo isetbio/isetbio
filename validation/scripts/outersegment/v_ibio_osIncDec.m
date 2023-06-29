@@ -61,7 +61,7 @@ for stepIndex = 1:numel(stimulusPhotonRateAmplitudes)
         % Linear model
         osCML = osLinear();
         osCML.set('noise flag','none');
-        cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+        cmL = coneMosaicRect('os',osCML,'pattern', 2); % a single cone
         cmL.integrationTime = simulationTimeIntervalInSeconds;
         cmL.os.timeStep = simulationTimeIntervalInSeconds;
         cmL.absorptions  = simulationTimeIntervalInSeconds*reshape(squeeze(stimulusPhotonRateStep(contrastIndex,:)), [1 1 size(stimulusPhotonRateStep,2)]);
@@ -72,7 +72,7 @@ for stepIndex = 1:numel(stimulusPhotonRateAmplitudes)
         % Biophys model
         osCM = osBioPhys();            % peripheral (fast) cone dynamics
         osCM.set('noise flag','none');
-        cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+        cm = coneMosaicRect('os',osCM,'pattern', 2); % a single cone
         cm.integrationTime = simulationTimeIntervalInSeconds;
         cm.os.timeStep = simulationTimeIntervalInSeconds;
         cm.absorptions  = simulationTimeIntervalInSeconds*reshape(squeeze(stimulusPhotonRateStep(contrastIndex,:)), [1 1 size(stimulusPhotonRateStep,2)]);
@@ -193,27 +193,10 @@ end
 function [intensities, decIncRatios] = loadMeasuredDecIncRatios()
 dataSource = {'cones', 'decIncRatios.mat'};
 
-validD = fullfile(isetRootPath,'data','validation',dataSource{1});
+validD = fullfile(isetbioRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});
 load(filename,'intensities','decIncRatios');
 
-%{
-    p = getpref('isetbio');    
-    if (p.useRemoteDataToolbox == false)
-        resourcesDir = strrep(p.alternateFullDataDir,'validationFull', '');
-        dataFile = fullfile(resourcesDir, dataSource{1}, dataSource{2});
-        data = load(dataFile);
-    else
-        fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
-        % Download neural data from isetbio's repository
-        client = RdtClient('isetbio');
-        client.crp(dataSource{1});
-        [data, decIncRatiosArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
-        fprintf('Done fetching data.\n');
-    end
-%}
-% intensities = data.intensities;
-% decIncRatios = data.decIncRatios;
 end
 
 %%

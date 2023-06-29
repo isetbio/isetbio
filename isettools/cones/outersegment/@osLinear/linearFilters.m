@@ -67,7 +67,7 @@ function [lmsFilters, meanCurrent] = linearFilters(os, cMosaic, varargin)
     %% parse input parameters
     p = inputParser; p.KeepUnmatched = true;
     p.addRequired('os', @(x) isa(x, 'outerSegment'));
-    p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic')); 
+    p.addRequired('cMosaic', @(x) isa(x, 'coneMosaicRect') || isa(x,'cMosaic')); 
     p.addParameter('absorptionsInXWFormat', [], @isnumeric);
     p.addParameter('eccentricity', 15, @isnumeric);
     p.parse(os, cMosaic, varargin{:})
@@ -134,7 +134,7 @@ function [lmsFilters, meanCurrent] = biophysicalLinearFilters(eccentricityDegs, 
     % Run it without noise
     osCM.set('noise flag', 'none');
     % Single cone mosaic, L cone as placeholder
-    cm = coneMosaic('os', osCM, 'pattern', 2);
+    cm = coneMosaicRect('os', osCM, 'pattern', 2);
     cm.integrationTime = timeStep;
     cm.os.timeStep = timeStep;
 

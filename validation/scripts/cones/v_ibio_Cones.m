@@ -28,7 +28,7 @@ function ValidationFunction(runTimeParams)
 
     %% Create appropriate structures
     humanOI = oiCreate('wvf human');
-    cMosaic = coneMosaic;
+    cMosaic = coneMosaicRect;
     wave = cMosaic.wave;
     
 

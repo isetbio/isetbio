@@ -56,7 +56,7 @@ simulationTimeIntervalInSeconds = time(2)-time(1);
 %% Linear model
 osCML = osLinear();            % peripheral (fast) cone dynamics
 osCML.set('noise flag','none');
-cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+cmL = coneMosaicRect('os',osCML,'pattern', 2); % a single cone
 cmL.integrationTime = simulationTimeIntervalInSeconds;
 cmL.os.timeStep = simulationTimeIntervalInSeconds;
 cmL.absorptions  = reshape(stimulusPhotonRate, [1 1 size(stimulusPhotonRate,2)])*simulationTimeIntervalInSeconds;
@@ -69,7 +69,7 @@ osLinearOuterSegmentCurrent = squeeze(osLinearOuterSegmentCurrent(1,1,:));
 %% Biophys model
 osCM = osBioPhys();            % peripheral (fast) cone dynamics
 osCM.set('noise flag','none');
-cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+cm = coneMosaicRect('os',osCM,'pattern', 2); % a single cone
 cm.integrationTime = simulationTimeIntervalInSeconds;
 cm.os.timeStep = simulationTimeIntervalInSeconds;
 cm.absorptions  = reshape(stimulusPhotonRate, [1 1 size(stimulusPhotonRate,2)])*simulationTimeIntervalInSeconds;
@@ -143,25 +143,9 @@ function [time, measuredOuterSegmentCurrent, stimulusPhotonRate] = loadMeasuredO
 
 dataSource = {'cones', 'eyeMovementExample'};
 
-validD = fullfile(isetRootPath,'data','validation',dataSource{1});
+validD = fullfile(isetbioRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});
 eyeMovementExample = load(filename,'data');
-
-%{
-    p = getpref('isetbio');   
-    if (p.useRemoteDataToolbox == false)
-        resourcesDir = strrep(p.alternateFullDataDir,'validationFull', '');
-        dataFile = fullfile(resourcesDir, dataSource{1}, dataSource{2});
-        eyeMovementExample = load(dataFile, 'data');
-    else
-        fprintf('Fetching remote data: dir=''%s''  file=''%s''. Please wait ...\n', dataSource{1}, dataSource{2});
-        % Download neural data from isetbio's repository
-        client = RdtClient('isetbio');
-        client.crp(dataSource{1});
-        [eyeMovementExample, eyeMovementExampleArtifact] = client.readArtifact(dataSource{2}, 'type', 'mat');
-        fprintf('Done fetching data.\n');
-    end
-%}
 
 extraTimeForBaselineComputation = 2.0;
 

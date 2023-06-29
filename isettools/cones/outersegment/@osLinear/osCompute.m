@@ -79,7 +79,7 @@ function [current, interpFilters, meanCur] = osCompute(obj, cMosaic, varargin)
 p = inputParser; 
 p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'outerSegment'));
-p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+p.addRequired('cMosaic', @(x) isa(x, 'coneMosaicRect') || isa(x,'cMosaic'));
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('interpFilters', [], @isnumeric);
 p.addParameter('meanCur', [], @isnumeric);

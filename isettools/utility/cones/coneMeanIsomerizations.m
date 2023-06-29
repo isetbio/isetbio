@@ -82,7 +82,7 @@ function meanRate = coneMeanIsomerizations(cMosaic, varargin)
 
 %% Validate and parse input parameters
 p = inputParser; 
-p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+p.addRequired('cMosaic', @(x) isa(x, 'coneMosaicRect'));
 p.addParameter('perSample', false, @islogical);
 p.addParameter('absorptionsInXWFormat', [], @isnumeric);
 p.parse(cMosaic, varargin{:});

@@ -39,10 +39,18 @@ function [coneDensity,params,comment] = coneDensityReadData(varargin)
 %                                 'Song2011Old'        From Table 1 of Ref 2 below, old subjects data.
 %                                 'Song2011Young'      From Table 1 of Ref 2 below, young subjects data.
 %
-%                                  The value for 'coneDensitySource' may be passed as a function handle, in
-%                                  which case the passed function is called direclty with the key/value pairs passed to this
-%                                  routine. The passed function must return the same values as coneDensityReadData does, and handle
-%                                  the same key/value pairs (including unit specification).
+%                                  If you have an alternative value
+%                                  for 'coneDensitySource', it may be
+%                                  passed as a function handle, in
+%                                  which case the passed function is
+%                                  called direclty with the key/value
+%                                  pairs passed to this routine. The
+%                                  passed function must return the
+%                                  same values as coneDensityReadData
+%                                  does, and handle the same key/value
+%                                  pairs (including unit
+%                                  specification).  (BW: Suggest
+%                                  deleting).
 %
 %    'eccentricity'             Retinal eccentricity, default is 0.  Units according
 %                               to eccentricityUnits.  May be a vector,
@@ -108,9 +116,10 @@ end
 %% Take care of case where a function handle is specified as source
 %
 % This allows for custom data to be defined by a user, via a function that
-% could live outside of ISETBio.
+% could live outside of ISETBio. It is probably too complex to support
+% in this code and should be deleted (says BW).
 %
-% This function needs to handle 
+% This  needs to be a function handle 
 if (isa(params.coneDensitySource,'function_handle'))
     [coneDensity,params,comment] = params.coneDensitySource(varargin{:});
     return;

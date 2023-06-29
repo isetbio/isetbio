@@ -89,7 +89,7 @@ end
 p = inputParser;
 varargin = ieParamFormat(varargin);
 
-p.addRequired('obj', @(x)(isa(x,'coneMosaic')));
+p.addRequired('obj', @(x)(isa(x,'coneMosaicRect')));
 p.addRequired('nEyeMovements', @isscalar);
 
 % Either create the default, or the user creates it with special parameters

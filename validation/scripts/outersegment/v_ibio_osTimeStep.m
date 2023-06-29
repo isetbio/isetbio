@@ -1,4 +1,4 @@
-function varargout = v_osTimeStep(varargin)
+function varargout = v_ibio_osTimeStep(varargin)
 %
 % Demonstrate simulations using three different timebases, 
 %    For stimuli (based on stimulus refresh rate), 
@@ -247,7 +247,7 @@ end
 
 function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep)
     % Default human mosaic
-    theConeMosaic = coneMosaic;
+    theConeMosaic = coneMosaicRect;
     
     % Adjust size
     if isnan(mosaicSize)

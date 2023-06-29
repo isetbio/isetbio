@@ -1,4 +1,4 @@
-function varargout = v_cmCurrentImpulse(varargin)
+function varargout = v_ibio_cmCurrentImpulse(varargin)
 %
 % Cone mosaic photocurrent impulse response calculations.
 %
@@ -47,7 +47,7 @@ oiImpulse = oisCreate('impulse','add',modulation,...
     'sampleTimes',sampleTimes);
 
 %% Set the cone mosaic parameters
-cMosaic = coneMosaic;           % Default is osLinear
+cMosaic = coneMosaicRect;           % Default is osLinear
 cMosaic.noiseFlag = 'none';     % Turn off photon noise
 cMosaic.os.noiseFlag = 'none';  % Turn off photocurrent noise
 cMosaic.integrationTime = integrationTime;

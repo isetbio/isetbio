@@ -59,7 +59,7 @@ for stepIndex = 1:numel(stimulusPhotonRates)
     %% Linear model
     osCML = osLinear();
     osCML.set('noise flag','none');
-    cmL = coneMosaic('os',osCML,'pattern', 2); % a single cone
+    cmL = coneMosaicRect('os',osCML,'pattern', 2); % a single cone
     cmL.integrationTime = simulationTimeIntervalInSeconds;
     cmL.os.timeStep = simulationTimeIntervalInSeconds;
     cmL.absorptions  = reshape(stimulusPhotonRate,[1,1,length(stimulusPhotonRate)])*simulationTimeIntervalInSeconds;
@@ -69,7 +69,7 @@ for stepIndex = 1:numel(stimulusPhotonRates)
     %% Biophys model
     osCM = osBioPhys();            % peripheral (fast) cone dynamics
     osCM.set('noise flag','none');
-    cm = coneMosaic('os',osCM,'pattern', 2); % a single cone
+    cm = coneMosaicRect('os',osCM,'pattern', 2); % a single cone
     cm.integrationTime = simulationTimeIntervalInSeconds;
     cm.os.timeStep = simulationTimeIntervalInSeconds;
     cm.absorptions  = reshape(stimulusPhotonRate,[1,1,length(stimulusPhotonRate)])*simulationTimeIntervalInSeconds;
@@ -155,7 +155,7 @@ end
 function [time, measuredOuterSegmentCurrents, stimulusPhotonRates] = loadMeasuredOuterSegmentResponses()
 
 dataSource = {'cones', 'stepExample'};
-validD = fullfile(isetRootPath,'data','validation',dataSource{1});
+validD = fullfile(isetbioRootPath,'data','validation',dataSource{1});
 filename = fullfile(validD,dataSource{2});
 stepExample = load(filename,'data');
 

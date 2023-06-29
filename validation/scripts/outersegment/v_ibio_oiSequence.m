@@ -50,7 +50,7 @@ UnitTest.assertIsZero(quantityOfInterest,'oiModulated photons',tolerance);
 
 % This tests the generation of the sequence because the sequence is built
 % by coneMosaic.compute
-cMosaic = coneMosaic;
+cMosaic = coneMosaicRect;
 cMosaic.noiseFlag = 'frozen';
 cMosaic.os.noiseFlag = 'frozen';
 cMosaic.setSizeToFOV(0.2);

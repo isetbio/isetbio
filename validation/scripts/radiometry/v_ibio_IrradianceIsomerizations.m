@@ -209,7 +209,7 @@ function ValidationFunction(runTimeParams)
     
     % Create isetbio coneMosaic object, and pull out quantal
     % efficiencies. 
-    cMosaic = coneMosaic;
+    cMosaic = coneMosaicRect;
     cMosaic.setSizeToFOV(fov);
     cMosaic.noiseFlag = 'none';
     cMosaic.rows = oiGet(oi,'rows'); 

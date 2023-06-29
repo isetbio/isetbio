@@ -1,4 +1,4 @@
-function varargout = v_cmosaic(varargin)
+function varargout = v_ibio_cmosaic(varargin)
 %
 % Simple rectangular cone mosaic calculation.
 %
@@ -30,7 +30,7 @@ oi = oiCompute(oi,scene);
 %% Creat the mosaic and compute isomerizations (which are sometimes called absorptions)
 % This doesn't use the default integration time.
 
-cMosaic = coneMosaic;
+cMosaic = coneMosaicRect;
 cMosaic.setSizeToFOV(0.5*sceneGet(scene,'fov'));
 cMosaic.integrationTime = 0.050;    
 cMosaic.compute(oi);

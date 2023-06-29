@@ -35,7 +35,7 @@ function current = osCompute(obj, cMosaic, varargin)
 p = inputParser;
 p.KeepUnmatched = true;
 p.addRequired('obj', @(x) isa(x, 'osBioPhys'));
-p.addRequired('cMosaic', @(x) isa(x, 'coneMosaic'));
+p.addRequired('cMosaic', @(x) isa(x, 'coneMosaicRect') || isa(x,'cMosaic'));
 p.addParameter('bgR', 0, @isnumeric);
 p.addParameter('seed', 1, @isnumeric);
 
