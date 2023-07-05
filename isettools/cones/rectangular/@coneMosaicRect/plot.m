@@ -70,7 +70,7 @@ function [uData, hf] = plot(obj, plotType, varargin)
 
 %  Examples:
 %{
-  cm = coneMosaic;
+  cm = coneMosaicRect;
   cm.plot('cone mosaic');
 
   % Starts the parallel pool for some reason
@@ -129,7 +129,8 @@ validPlots = cellfun(@(x)(ieParamFormat(x)), validPlots, ...
 p.addRequired('pType', @(x) any(validatestring(ieParamFormat(x), ...
     validPlots)));
 
-p.addParameter('hf', [],@(x)(isa(x,'matlab.graphics.axis.Axes'))); % Figure handle
+% Axis only?  Or figure is OK?
+p.addParameter('hf', [],@(x)(isa(x,'matlab.graphics.axis.Axes') || isa(x,'matlab.ui.Figure'))); % Figure handle
 p.addParameter('oi', [], @isstruct);  % Used for spectral qe
 p.addParameter('x', [], @isscalar);   % x axis value
 p.addParameter('y', [], @isscalar);   % y axis value
@@ -624,7 +625,7 @@ function mov = coneImageActivity(cMosaic, hf, varargin)
 % Make a movie or a single image of cone absorptions on a colored mosaic
 %
 % Syntax:
-%   mov = coneImageActivity(coneMosaic, hf)
+%   mov = coneImageActivity(coneMosaicRect, hf)
 %
 % Description:
 %    This function Would be used in commented out cases above if they are
@@ -633,7 +634,7 @@ function mov = coneImageActivity(cMosaic, hf, varargin)
 %    Make a movie or a single image of cone absorptions on a colored mosaic
 %
 % Inputs:
-%    cones - coneMosaic class object=
+%    cones - coneMosaicRect class object=
 %    hf    - figure handle, 'none', a boolean, or a struct.
 %        Struct  - If a struct, hf contains the movie parameters. The movie
 %                  is saved based on the name field in these parameters.
@@ -661,7 +662,7 @@ function mov = coneImageActivity(cMosaic, hf, varargin)
 %% Parse inputs
 p = inputParser;
 p.KeepUnmatched = true;
-p.addRequired('cMosaic', @(x) (isa(x, 'coneMosaic')));
+p.addRequired('cMosaic', @(x) (isa(x, 'coneMosaicRect')));
 p.addRequired('hf', @(x) (ischar(x) || ishandle(x) || isstruct(x)));
 p.addParameter('step', [], @isnumeric);
 p.addParameter('showBar', true, @islogical);

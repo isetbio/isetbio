@@ -38,7 +38,7 @@ function [a, locs, lst] = coneAbsorptions(obj, varargin)
    scene = sceneCreate;
    oi = oiCreate('human');
    oi = oiCompute(oi,scene);
-   cm = coneMosaic();
+   cm = coneMosaicRect();
    cm.compute(oi);
    absorptions = cm.coneAbsorptions;
    [absorptions, locsL] = coneAbsorptions(cm, 'cone type', 'l', 'units','um');
@@ -54,7 +54,7 @@ function [a, locs, lst] = coneAbsorptions(obj, varargin)
 varargin = ieParamFormat(varargin);
 
 p = inputParser;
-p.addRequired('obj', @(x) isa(x, 'coneMosaic'));
+p.addRequired('obj', @(x) isa(x, 'coneMosaicRect'));
 p.addParameter('conetype', 'lms', @ischar);
 p.addParameter('units', 'm', @ischar);
 

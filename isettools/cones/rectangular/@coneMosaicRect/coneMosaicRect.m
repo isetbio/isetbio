@@ -335,7 +335,7 @@ classdef coneMosaicRect < hiddenHandle
             
             p = inputParser;
             p.KeepUnmatched = true;
-            p.addParameter('name', 'cone mosaic', @ischar);
+            p.addParameter('name', 'cone mosaic rect', @ischar);
             p.addParameter('pigment', photoPigment(), ...
                 @(x) isa(x, 'photoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
@@ -392,6 +392,11 @@ classdef coneMosaicRect < hiddenHandle
             %
             % Units returned are meters.
             %
+            % BW: TODO
+            %   This is obscure and seems like a bad idea to me.  I removed
+            %   the p.Unmatched hack.  I probably didn't understand the
+            %   need, and we can fix it later.  But it's gone for now.
+            %
             % passing p.Unmatched first ensures that we override it with
             % the expected units of meters and degrees used here,
             % independent of what the user passes.  Since the user can't
@@ -401,13 +406,19 @@ classdef coneMosaicRect < hiddenHandle
             % 'angle' key value pairs.
             ecc = sqrt(sum(obj.center .^ 2));
             ang = atan2d(obj.center(2), obj.center(1));
+            [spacing, aperture] = coneSizeReadData('eccentricity', ecc, ...
+                'eccentricityUnits', p.Results.eccentricityunits, ...
+                'angle', ang, 'angleUnits', 'deg', ...
+                'whichEye', obj.whichEye, ...
+                'useParfor', obj.useParfor);
+            %{
             [spacing, aperture] = coneSizeReadData( p.Unmatched, ...
                 'eccentricity', ecc, ...
                 'eccentricityUnits', p.Results.eccentricityunits, ...
                 'angle', ang, 'angleUnits', 'deg', ...
                 'whichEye', obj.whichEye, ...
                 'useParfor', obj.useParfor);
-
+            %}
             obj.pigment.pdWidth  = aperture;
             obj.pigment.pdHeight = aperture;
             obj.pigment.height   = spacing;

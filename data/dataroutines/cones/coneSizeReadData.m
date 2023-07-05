@@ -66,16 +66,17 @@ function [spacing, aperture, density, params, comment] = coneSizeReadData(vararg
 % 02/17/19  npc  Added useParfor k/v pair
 
 %% Parse inputs
+varargin = ieParamFormat(varargin);
 p = inputParser;
 p.KeepUnmatched = true;
 p.addParameter('species','human', @ischar);
-p.addParameter('coneDensitySource','Curcio1990',@(x) (ischar(x) | isa(x,'function_handle')));
+p.addParameter('conedensitysource','Curcio1990',@(x) (ischar(x) | isa(x,'function_handle')));
 p.addParameter('eccentricity',0, @isnumeric);
 p.addParameter('angle',0, @isnumeric);
-p.addParameter('whichEye','left',@(x)(ismember(x,{'left','right'})));
-p.addParameter('eccentricityUnits','m',@ischar);
-p.addParameter('angleUnits','deg',@ischar);
-p.addParameter('useParfor', false, @(x)(((isempty(x))||islogical(x))));
+p.addParameter('whicheye','left',@(x)(ismember(x,{'left','right'})));
+p.addParameter('eccentricityunits','m',@ischar);
+p.addParameter('angleunits','deg',@ischar);
+p.addParameter('useparfor', false, @(x)(((isempty(x))||islogical(x))));
 p.parse(varargin{:});
 
 %% Set up params return.
@@ -87,7 +88,7 @@ params = p.Results;
 % could live outside of ISETBio.
 %
 % This function needs to handle 
-if (isa(params.coneDensitySource,'function_handle'))
+if (isa(params.conedensitysource,'function_handle'))
     [spacing, aperture, density, comment] = params.coneSizeSource(varargin{:});
     return;
 end

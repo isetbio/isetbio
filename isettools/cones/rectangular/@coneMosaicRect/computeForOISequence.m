@@ -30,7 +30,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %   May not be fully implemented yet.]
 %
 % Inputs:
-%    obj                - @coneMosaic object
+%    obj                - @coneMosaicRect object
 %    oiSequence         - @oiSequence object
 %
 % Outputs:
@@ -174,7 +174,7 @@ if (isempty(theExpandedMosaic))
     padCols = max(max(abs(emPaths(:, :, 1))));
 
     % We need a copy of the object because of eye movements. Make it here
-    % instead of in coneMosaic.compute(), which is called multiple times.
+    % instead of in coneMosaicRect.compute(), which is called multiple times.
     obj.absorptions = [];
     obj.current = [];
     if (isa(obj.os, 'osLinear'))
@@ -691,6 +691,7 @@ if (~currentFlag) || (numel(rounded.eyeMovementTimeAxis) == 1)
 end
 
 %% Photocurrent computation
+
 % The currentFlag must be on, and there must be a few eye movements. So we
 % compute. N.B. Not adequately checked for osBioPhys model. Runs ok for
 % osLinear model.
