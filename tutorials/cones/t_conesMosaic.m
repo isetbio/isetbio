@@ -28,7 +28,7 @@ oi = oiCompute(oi, s);
 cmParams = cMosaicParams;
 
 cmParams.eccentricityDegs = [0 0];
-cmParams.sizeDegs = [1.5 1.5]*2;
+cmParams.sizeDegs = [1.5 1.5];
 cmParams.micronsPerDegree = oiGet(oi,'distance per degree','um');
 cm = cMosaic(cmParams);
 
