@@ -2,13 +2,29 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
         computePSFandOTF(zcoeffsMicrons, wavelengthsListToCompute, wavefrontSpatialSamples, measPupilDiamMM, ...
         targetPupilDiamMM, measWavelength, showTranslation, varargin)
     
+% BW:
+% Uncommented upon arrival.
+% 
+% This function really shouldn't exist. If we want a wvf to provide a psf
+% and otf, we should use wvfGet.  This function doesn't respect the fact
+% that we have a wvf struct and that we have already built methods to
+% calculate the PSF and OTF from the OTF.
+%
+% In the ISETCam branch, I am going to remove it and replace it with the
+% wavefront functions.  This may cause some slight differences in the
+% numerical values.
+% 
+% NC seems to be using it as part of oiForSubjectAtEccentricity and
+% diffractionLimitedOptics.
+%
+%
     p = inputParser;
     p.addParameter('doNotZeroCenterPSF', false, @islogical);
     p.addParameter('micronsPerDegree', 300, @isscalar);
     p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('rotatePSF90degs', false, @islogical);
     p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
-    p.addParameter('noLCA',false,@islogical);
+    p.addParameter('noLCA',false,@islogical);  % This should become human lca
     p.addParameter('name', 'noname', @ischar);
     p.parse(varargin{:});
     doNotZeroCenterPSF = p.Results.doNotZeroCenterPSF;
@@ -25,7 +41,7 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
             'upsampleFactor', upsampleFactor, ...
             'flipPSFUpsideDown', flipPSFUpsideDown, ...
             'rotatePSF90degs', rotatePSF90degs , ...
-            'noLCA', noLCA);
+            'humanlca', ~noLCA);
     
     xSfCyclesPerRetinalMicron = wvfGet(theWVF, 'otf support', 'um', wavelengthsListToCompute(1));
     xSfCyclesDeg = xSfCyclesPerRetinalMicron * wvfGet(theWVF,'um per degree');

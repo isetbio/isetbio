@@ -1,17 +1,19 @@
 function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelength, wavelengthsToCompute, ...
     measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, name, varargin)
 
+% The only place this is called from is computePSFandOTF
+%
     % Parse input
     p = inputParser;
     p.addParameter('flipPSFUpsideDown', false, @islogical);
     p.addParameter('rotatePSF90degs', false, @islogical);
     p.addParameter('upsampleFactor', [], @(x)(isempty(x) || ((isnumeric(x))&&(numel(x)==1)&&(x>0))));
-    p.addParameter('noLCA',false,@islogical);
+    p.addParameter('humanlca',true,@islogical);
     p.parse(varargin{:});
     flipPSFUpsideDown = p.Results.flipPSFUpsideDown;
     rotatePSF90degs = p.Results.rotatePSF90degs;
     upsampleFactor = p.Results.upsampleFactor;
-    noLCA = p.Results.noLCA;
+    LCA = p.Results.humanlca;
 
     theWVF = wvfCreate(...
     			'umPerDegree', umPerDegree, ...
@@ -31,5 +33,5 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelengt
     end
     
     % Now compute the PSF
-    theWVF = wvfComputePSF(theWVF, false, 'nolca', noLCA);
+    theWVF = wvfCompute(theWVF, false, 'lca', LCA);
 end

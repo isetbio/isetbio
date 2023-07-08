@@ -1,5 +1,25 @@
 function [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin)
-% Create an ensemble of optical images and psfs 
+% Create an ensemble of optical images and psfs
+%
+% NOTE:  BW and DHB/NC should examine the organization of this method and
+% simplify it.  
+% 
+% As written, the method has its own special wavefront calculation tools
+% (makeWVF, computePSFandOTF) rather than relying on the core wavefront
+% tools (wvfCreate, wvfCompute(), wvfGet(). Consequently, the number of
+% parameters and complexity of the methods is much greater than we would
+% like (IMHO).  Also, there are many special numbers in here for specifying
+% degrees, and the particulars of this call.  That means as we improve the
+% general functions, and validate and test them, we do not similarly
+% improve this function.  An example is the new addition of a pupil
+% aperture function. This format does not have such a function, which might
+% be useful for modeling scratched corneas.  Or oddly shaped pupils.  Or
+% ...
+%
+% I think we want the call to the subject in any database to simply return
+% the Zernike coefficients in a wavefront structure.  Then we make a few
+% calls to wvfCompute(), wvfGet(this and that), and we are done.
+%
 %
 % Brief description
 %  The varargin parameters specify the dataset and other processing
@@ -85,7 +105,7 @@ switch (zernikeDataBase)
             %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
-            
+
             if (targetEcc(1) ~= 0 || targetEcc(2) ~= 0)
                 fprintf(2,'Marimont/Wandell optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
                 targetEcc(1) = 0;
@@ -109,21 +129,21 @@ switch (zernikeDataBase)
             psfSupportMinutesY = psfSupport{2}*60;
             psfSupportWavelength = opticsGet(theOptics,'wave');
             zCoeffs = [];
-            
+
             if (isempty(theOI))
                 if (warningInsteadOfErrorForBadZernikeCoeffs)
                     fprintf(2,'Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye\n', obj.whichEye, subjectID);
-              
+
                     oiEnsemble = [];
-                    psfEnsemble = []; 
+                    psfEnsemble = [];
                     zCoeffs = [];
                     return;
                 else
                     error('Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye', obj.whichEye, subjectID);
                 end
-                
+
             end
-            
+
             oiEnsemble{oiIndex} = theOI;
             psfEnsemble{oiIndex} = struct(...
                 'data', thePSF, ...
@@ -132,7 +152,7 @@ switch (zernikeDataBase)
                 'supportWavelength', psfSupportWavelength, ...
                 'zCoeffs', []);
         end
-    
+
     case 'Artal2012'
         % Looks like Artal optics now accepts refractive error in diopters.
         % Commented out this warning. DHB.
@@ -149,12 +169,12 @@ switch (zernikeDataBase)
             %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
-            
+
             if (targetEcc(2) ~= 0)
                 fprintf(2,'Artal optics not available off the horizontal meridian. Computing for vEcc = 0\n');
                 targetEcc(2) = 0;
             end
-            
+
             [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = ArtalOptics.oiForSubjectAtEccentricity(subjectID, ...
                 obj.whichEye, targetEcc, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
                 'wavefrontSpatialSamples', wavefrontSpatialSamples, ...
@@ -164,21 +184,21 @@ switch (zernikeDataBase)
                 'upsampleFactor', upSampleFactor, ...
                 'noLCA',p.Results.noLCA, ...
                 'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
-            
+
             if (isempty(theOI))
                 if (warningInsteadOfErrorForBadZernikeCoeffs)
                     fprintf(2,'Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye\n', obj.whichEye, subjectID);
-              
+
                     oiEnsemble = [];
-                    psfEnsemble = []; 
+                    psfEnsemble = [];
                     zCoeffs = [];
                     return;
                 else
                     error('Bad Zernike coefficents for the %s of Artal subject %d. Choose another subject/eye', obj.whichEye, subjectID);
                 end
-                
+
             end
-            
+
             oiEnsemble{oiIndex} = theOI;
             psfEnsemble{oiIndex} = struct(...
                 'data', thePSF, ...
@@ -187,14 +207,14 @@ switch (zernikeDataBase)
                 'supportWavelength', psfSupportWavelength, ...
                 'zCoeffs', zCoeffs);
         end
-        
+
     case 'Polans2015'
         % Polans optics
         for oiIndex = 1:oiNum
             %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
-            
+
             [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = ...
                 PolansOptics.oiForSubjectAtEccentricity(subjectID, ...
                 obj.whichEye, targetEcc, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
@@ -205,7 +225,7 @@ switch (zernikeDataBase)
                 'upsampleFactor', upSampleFactor, ...
                 'noLCA',p.Results.noLCA, ...
                 'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
-            
+
             oiEnsemble{oiIndex} = theOI;
             psfEnsemble{oiIndex} = struct(...
                 'data', thePSF, ...
@@ -225,7 +245,7 @@ switch (zernikeDataBase)
             if (targetEcc(1) ~= 0 || targetEcc(2) ~= 0)
                 fprintf(2,'Thibos optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
             end
-            
+
             [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavelength, zCoeffs] = ...
                 ThibosOptics.oiForSubjectAtEccentricity(subjectID, ...
                 obj.whichEye, pupilDiamMM, obj.wave, obj.micronsPerDegree, ...
@@ -236,7 +256,7 @@ switch (zernikeDataBase)
                 'upsampleFactor', upSampleFactor, ...
                 'noLCA',p.Results.noLCA, ...
                 'refractiveErrorDiopters', p.Results.refractiveErrorDiopters);
-            
+
             oiEnsemble{oiIndex} = theOI;
             psfEnsemble{oiIndex} = struct(...
                 'data', thePSF, ...
@@ -248,7 +268,7 @@ switch (zernikeDataBase)
 
     otherwise
         error('Unknown Zernike database specified');
-        
-    end
+
+end
 
 end

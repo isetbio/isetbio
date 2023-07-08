@@ -1,7 +1,15 @@
 function t_cMosaicAndOpticsGrid()
 % Plot Polans optics across a grid of (x,y) eccentricities
 %
-% Description:
+% Description:  This is a good script to go through with Nicolas and/or
+% David.  It is a very complicated read of something that should be much
+% simpler.  It also does not use the wvf* methods, but reimplements them in
+% its own way, and only their only use is in this context.
+%
+% We would like the functionality of this tutorial.  But we would like it
+% to read simply and to rely on the existing tools.
+%
+% Plus there were a number of defined variables that are never used.
 %
 % See Also:
 %   t_cMosaicOffAxisDistortion
@@ -29,10 +37,9 @@ whichEye = 'right eye';
 opticsZernikeCoefficientsDataBase = 'Polans2015';            
 
 %% Select ranking of displayed subject
-for subjectRankOrder = 1:10
+for subjectRankOrder = 1 %1:10
 
-
-%% Setup figure
+% Setup a very large and complex figure
 hFig = figure(1); clf;
 set(hFig, 'Position', [10 10 1600 1200], 'Color', [0 0 0]);
 
@@ -48,12 +55,12 @@ sv = NicePlot.getSubPlotPosVectors(...
        'bottomMargin',   0.01, ...
        'topMargin',      0.01);
    
-%% Generate eccentricity mesh
+% Generate eccentricity mesh
 [Y,X] = meshgrid(mosaicEccDegsY, mosaicEccDegsX);
 X = X(:);
 Y = Y(:);
 R = sqrt(X.^2+Y.^2);
-
+%
 for iEcc = 1:numel(R)
     
     % Obtain subject IDs ranking in decreasing foveal resolution
@@ -68,7 +75,7 @@ for iEcc = 1:numel(R)
     conesAcrossMosaic = 20;
     mosaicEccMicrons = 1e3 * RGCmodels.Watson.convert.rhoDegsToMMs([X(iEcc) Y(iEcc)]);
     coneSpacingDegs = RGCmodels.Watson.compute.rfSpacingAtRetinalPositions(whichEye, mosaicEccMicrons, 'cones', false);
-    sizeDegs = coneSpacingDegs*conesAcrossMosaic*[1 1];
+    % sizeDegs = coneSpacingDegs*conesAcrossMosaic*[1 1];
     
     % Generate mosaic centered at target eccentricity
     cm = cMosaic(...
@@ -78,7 +85,11 @@ for iEcc = 1:numel(R)
         'opticalImagePositionDegs', 'mosaic-centered' ...
         );
     
-    % Generate optics appropriate for the mosaic's eccentricity  
+    % Original comment was brief and not quite right.
+    %
+    % This call is used to get a PSF.
+    % Generate optics appropriate for a particular subject from a
+    % particular database at a particular eccentricity and pupil diameter and ... 
     [oiEnsemble, psfEnsemble] = ...
                     cm.oiEnsembleGenerate(cm.eccentricityDegs, ...
                     'zernikeDataBase', opticsZernikeCoefficientsDataBase, ...
