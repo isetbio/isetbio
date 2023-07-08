@@ -1,47 +1,8 @@
-function varargout = v_wvfZernkePolynomials(varargin)
+%% v_ibio_wvfZernikePolynomials
 %
-% Test that single Zernike coeffs produce correct wavefront aberrations.
-%
-% Make plots of the wavefront aberrations we get for single Zernike coefficients.
-% These ought to match up with standard pictures of the Zernike pyramid.
-%
-% The problem is that pictures easily availalbe on the web don't match up with
-% each other.  Compare for example
-%   http://en.wikipedia.org/wiki/Zernike_polynomials (blue is postive)
-%   http://www.telescope-optics.net/monochromatic_eye_aberrations.htm (red is positive)
-%   http://www.traceytechnologies.com/resources_wf101.htm (green is positive)
-%
-% Even given the color reversals, the three sets don't agree.  I suspect that the
-% differences have to do with the coordinate system convention chosen (z into the
-% (eye or out of the eye, x horizontal or vertical, etc.).
-%
-% We do match what is at http://www.traceytechnologies.com/resources_wf101.htm, once you
-% flip the sign of the color coding in the pictures (and map their green to our blue).
-%
-% Our defocus picture does manifestly match the formula given in the OSA standard,
-% where the radial dependency goes as (2*rho^2-1).  This is clearly negative for rho = 0, as
-% we obtain.  Also, as I read the general formula for the Zernike's the OSA formula matches
-% it for the defocus case (and presumably for others too, I didn't check.)
-%
-% 7/31/12  dhb  Wrote it.
-% 8/12/15  dhb  UnitTestToolbox'ize
-
-    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
-end
-
-%% Function implementing the isetbio validation code
-function ValidationFunction(runTimeParams)
-% 
-
-%% Initialize
-close all; ieInit;
-
-%% Some informative text
-UnitTest.validationRecord('SIMPLE_MESSAGE', 'Validate wavefront individual Zernike coefficients.');
-
-%% Make plots of various pupil functions and their respective
-% point-spread functions for different Zernike polynomials of 1st through
-% 3rd radial orders (OSA j indices 1 through 9).
+% Make plots of various pupil functions and their respective point-spread
+% functions for different Zernike polynomials of 1st through 3rd radial
+% orders (OSA j indices 1 through 9).
 %
 % Each time through the loop we see the effect of wiggling one coefficient.
 %
@@ -51,6 +12,8 @@ UnitTest.validationRecord('SIMPLE_MESSAGE', 'Validate wavefront individual Zerni
 % The wavefront aberration plots we get match those
 %  http://www.telescope-optics.net/monochromatic_eye_aberrations.htm
 % except for defocus, where we have opposite sign.
+
+%%
 wvf0 = wvfCreate;
 wvf0 = wvfSet(wvf0,'calculated pupil',wvfGet(wvf0,'measured pupil','mm'));
 pupilfuncrangeMM = 4;
@@ -61,7 +24,7 @@ for ii = jindices
     vcNewGraphWin([],'tall');
     insertCoeff = 1;
     wvf = wvfSet(wvf0,'zcoeffs',insertCoeff,ii);
-    wvf = wvfComputePSF(wvf);
+    wvf = wvfCompute(wvf);
     [n,m] = wvfOSAIndexToZernikeNM(ii);
 
     subplot(3,1,1);
@@ -90,7 +53,4 @@ for ii = jindices
         nStr = num2str(n);
     end
     
-    UnitTest.validationData(sprintf('wvf_%s_%s',mStr,nStr), wvf);
-end
-
 end

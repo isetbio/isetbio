@@ -1,6 +1,9 @@
-function varargout = v_ibio_wvfComputeConePSF(varargin)
+% v_ibio_wvfComputeConePSF
 %
-% Test the routines that compute L, M, and S cone PSFs from Zernike coefficients.
+% DHB and NC to test and clarify.
+%
+% Test the routines that compute L, M, and S cone PSFs from Zernike
+% coefficients.
 %
 % Replicates figures from 
 %  Autrusseau et al., 2011, Vision Research, 51, 2282-2294.
@@ -18,7 +21,7 @@ function varargout = v_ibio_wvfComputeConePSF(varargin)
 % between what's calculated here and Figure 4A/B checks relies on
 % many things being done in the same way.
 %
-% See also: wvfComputeConePSF, wvfComputePSF, wvfComputePupilFunction,
+% See also: wvfComputeConePSF, wvfCompute, wvfComputePupilFunction,
 %   sceGetParams, wvfGetDefocusFromWavelengthDifference
 
 % History:
@@ -31,15 +34,6 @@ function varargout = v_ibio_wvfComputeConePSF(varargin)
 % 12/20/17 dhb  Use wvfLoadThibosVirtualEyes to load, rather than directly
 %               loading the file.
 % 01/16/18 dhb  Use create/set to make conePsfInfo structure.
-
-    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
-end
-
-%% Function implementing the isetbio validation code
-function ValidationFunction(runTimeParams)
-
-%% Some informative text
-UnitTest.validationRecord('SIMPLE_MESSAGE', 'Check L, M, S cone PSFs.');
 
 %% Parameters
 %
@@ -152,12 +146,12 @@ end
 
 %% Compute LMS psfs both for a subject and diffraction limited
 wvfParams1 = wvf0;
-wvfParams1 = wvfComputePSF(wvfParams1);
+wvfParams1 = wvfCompute(wvfParams1);
 conePsf1 = wvfGet(wvfParams1,'cone psf');
 
 wvfParams2 = wvf0;
 wvfParams2 = wvfSet(wvfParams2,'zcoeffs',0);
-wvfParams2 = wvfComputePSF(wvfParams2);
+wvfParams2 = wvfCompute(wvfParams2);
 conePsf2 = wvfGet(wvfParams2,'cone psf');
 
 % This bit is a sanity check that our code yields constant sampling in the psf domain.
@@ -418,7 +412,6 @@ else
 end
 drawnow;
 
-end
 
 %% Need to come back to this code and get it working.
 %
@@ -437,7 +430,8 @@ end
 % % This takes a long time and produces an error that could be fixed by BW,
 % % but he is too lazy.
 % %  Error using wvfGet (line 590)
-% %   Must explicitly compute PSF on wvf structure before getting it.  Use wvfComputePSF
+% %   Must explicitly compute PSF on wvf structure before getting it.  Use
+%     wvfCompute 
 % 
 % wvfParams3 = wvfComputeOptimizedConePSF(wvfParams3);
 % 

@@ -1,5 +1,7 @@
 %% v_wvfPupilFunction
 %
+% Deprecated:   See v_opticsWVF in ISETCam
+%
 % Calculate and explore the pupil function.
 %
 % This is the the complex function over the surface of the pupil that
