@@ -1,4 +1,4 @@
-% Demo how to generate a stereo pair of @cMosaic objects
+t% Demo how to generate a stereo pair of @cMosaic objects
 %
 % Description:
 %    Shows how to generate a stereo pair of @cMosaic objects, and
@@ -10,7 +10,8 @@
 
 % History:
 %    03/22/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
-
+%    Still runs in ISETCAM branch (7/23).
+%
 
 %% Initialize
 ieInit;

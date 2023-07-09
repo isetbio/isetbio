@@ -36,7 +36,7 @@ scene = sceneSet(scene, 'fov', 0.25);
 
 %% Compute the optical image
 oi = oiCreate;
-oi = oiCompute(scene, oi);
+oi = oiCompute(oi,scene);
 
 %% Generate the mosaic
 cm = cMosaic(...

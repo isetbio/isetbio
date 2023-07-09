@@ -1,6 +1,9 @@
 classdef coneMosaicHex < coneMosaic
 % Create a hexagonal cone mosaic class
 %
+% BW: Broken because the relationship between coneMosaic, coneMosaicRect,
+% and coneMosaicHex has become confused.
+%
 % Syntax:
 %   cMosaicHex = coneMosaicHex(resamplingFactor, [varargin]);
 %
@@ -229,6 +232,8 @@ classdef coneMosaicHex < coneMosaic
             %    See pairs in header above.
             %
 
+            error('coneMosaicHex not yet working on isetcam branch.')
+            
             % Params that we want to consume
             % (not pass to our super-class @coneMosaic)
             paramsForConeMosaicHex = {...

@@ -1,15 +1,15 @@
 function t_cMosaicAndOpticsGrid()
 % Plot Polans optics across a grid of (x,y) eccentricities
 %
-% Description:  This is a good script to go through with Nicolas and/or
-% David.  It is a very complicated read of something that should be much
-% simpler.  It also does not use the wvf* methods, but reimplements them in
-% its own way, and only their only use is in this context.
+% BW:   This is a good tutorial to go through with Nicolas and/or David. It
+% is a very complicated read of something that should be much simpler. It
+% does not use the wvf* methods, but reimplements them in its own way, and
+% only their only use is in this context.  I believe that this relies on a
+% very important method, oiEnsembleGenerate, that should be at the heart of
+% the re-write.
 %
 % We would like the functionality of this tutorial.  But we would like it
 % to read simply and to rely on the existing tools.
-%
-% Plus there were a number of defined variables that are never used.
 %
 % See Also:
 %   t_cMosaicOffAxisDistortion

@@ -1,5 +1,7 @@
 % Illustrate photoPigment object
 %
+% BW:  Too complicated.
+%
 % Description:
 %    The photoPigment object represents the spectral responsivity of
 %    the cone photopigments.  These values are needed to calculate the
@@ -14,7 +16,7 @@
 %% Initialize
 ieInit; clear; close all;
 
-%% Set wavelength support
+% Set wavelength support
 wls = (400:5:700)';
 
 %% Start by computing outside of ISETBio
@@ -67,12 +69,12 @@ fovDegreesISETBio = 0.2;
     [],[],[],coneParams.indDiffParams);
 
 % Plot
-fundamentalsFig = figure; clf; hold on;
+fundamentalsFig = ieNewGraphWin; clf; hold on;
 plot(wls,T_quantalExcitationProb(1,:),'r','LineWidth',6);
 plot(wls,T_quantalExcitationProb(2,:),'g','LineWidth',6);
 plot(wls,T_quantalExcitationProb(3,:),'b','LineWidth',6);
 xlabel('Wavelength (nm)');
-ylabel('Exication Probability');
+ylabel('Exciation probability'); grid on;
 
 %% Lens transmittance
 %
@@ -124,6 +126,9 @@ temp = load('T_log10coneabsorbance_ss');
 photopigmentAbsorbance = 10.^SplineCmf(temp.S_log10coneabsorbance_ss,temp.T_log10coneabsorbance_ss,wls,2);
 clear temp
 
+%{
+% BW: There are missing fields in the PTB functions.  DHB to investigate.
+
 % The individual differences model allows for shifting the absorbance along
 % the wavelength axis. Do that here.
 photopigmentAbsorbance = ShiftPhotopigmentAbsorbance(wls,photopigmentAbsorbance, ...
@@ -139,6 +144,7 @@ if (any(adjIndDiffParams.dphotopigment(:) ~= axialDensity(:)))
     error('Mysterious axial density difference');
 end
 
+%
 % Compute absorbtance from absorbance.  The absorbtance is the probabilyt that a photon
 % entering the cone will be absorbed, so 1- tranmittance = 1 - 10^(-absorbance*axialDensity).
 % This calculation is done by routine AbsorbanceToAbsorbtance;
@@ -146,6 +152,7 @@ photopigmentAbsorptance = AbsorbanceToAbsorptance(photopigmentAbsorbance,wls,axi
 if (any(adjIndDiffParams.absorptance(:) ~= photopigmentAbsorptance(:)))
     error('Fail to compute photopigment absorptance same way twice');
 end
+%}
 
 %% Put it all together
 %
@@ -226,6 +233,9 @@ photopigmentObject = cPhotoPigment('wave', wls,...
     'peakEfficiency',cieStaticParams.quantalEfficiency );
 
 %% Generate the mosaic object, with custom pigments
+%
+% This runs if macObject, photopigmentObject, and axialDensity are defined
+% from above.
 %
 % This should now compute with the photoreceptor properties we defined
 % above, which we will attempt to verify below.

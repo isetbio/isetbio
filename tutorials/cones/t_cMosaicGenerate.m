@@ -6,8 +6,10 @@
 %    Shows 3 different ways of generating a @cMosaic object. Also shows how
 %    to visualize the generated mosaic.
 %
+% coneMosaicHex - not working in isetcam branch
+%
 % See Also:
-%   t_cMosaicBasic
+%   t_cMosaicBasic.mlx - for the advanced cone mosaic methods
 %   t_cMosaicStereoPair
 
 % History:
@@ -33,8 +35,9 @@ hFig = figure(1);
 set(hFig, 'Position', [10 10 1000 1200]);
 
 
-%%  Method 1. Generate a @cMosaic object by cropping a region from a large (45x45 deg)
-%% precomputed lattice. This is the fastest way to generate a @cMosaic at any eccentricity
+%%  Method 1. Generate a @cMosaic object 
+% by cropping a region from a large (45x45 deg) precomputed lattice. This
+% is the fastest way to generate a @cMosaic at any eccentricity
 cm = cMosaic(...
     'sizeDegs', [4 3], ...            % SIZE: x=4.0 degs, y=3.0 degs
     'eccentricityDegs', [20 -15] ...  % ECC:  x=20 deg, y= -15 deg, near the edge of the precomputed 45x45 mosaic
@@ -58,8 +61,9 @@ cm.visualize(...
 
 drawnow;
 
-%%  Method 2. Generate a @cMosic object by generating its mesh from scratch. This can be slow, especially
-%% if the mosaic eccentricity is off-axis
+%%  Method 2. Generate a @cMosic object 
+% by generating its mesh from scratch. This can be slow, especially
+% if the mosaic eccentricity is off-axis
 cm = cMosaic(...
     'sizeDegs', [0.5 0.5], ...            % SIZE: x=0.5 degs, y=0.5 degs
     'eccentricityDegs', [1.0 0], ...      % ECC:  x=1.0 degs, y= 0.0 degs
@@ -79,10 +83,16 @@ cm.visualize(...
 drawnow;
 
 %% Method 3. Generate a @coneMosaicHex and its equivalent @cMosaic object
+
+% coneMosaicHex not working yet.
+
+%{
 % Generate source mosaic, a @coneMosaicHex object
 sourceMosaic = coneMosaicHex(7, 'fovDegs', 0.25);
+
 % Generate equivalent @cMosaic object
 cm = cMosaic('coneData', sourceMosaic.coneData());
+
 
 %% Visualize source @coneMosaicHex mosaic
 ax = subplot('Position', sv(3,1).v);
@@ -102,3 +112,4 @@ cm.visualize(...
     'plotTitle', 'source-equivalent @cMosaic');
 
 %%
+%}

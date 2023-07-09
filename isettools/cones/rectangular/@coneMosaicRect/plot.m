@@ -1,11 +1,11 @@
 function [uData, hf] = plot(obj, plotType, varargin)
-% Plot function for @conemosaic base class
+% Plot function for @coneMosaicRect class
 %
 % Syntax:
 %   [uData, hf] = plot(obj, plotType, varargin)
 %
 % Description:
-%    There is a specialized plot method for the coneMosaicHex class that
+%    There is a specialized plot method for the coneMosaic class that
 %    calls this function.
 % 
 %    When the plot type string begins with 'os ' or 'outersegment ' we pass
@@ -266,7 +266,7 @@ switch ieParamFormat(plotType)
 
         % The plots below are with respect to a point.
         % Get the point
-        figure(obj.hdl);
+        figure(hf);
         [x, y] = ginput(1); % Rounded and clipped to the data
         x = ieClip(round(x), 1, size(data, 2));
         y = ieClip(round(y), 1, size(data, 1));
