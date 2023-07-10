@@ -66,6 +66,19 @@ thisM.compute(oi);
 thisM.window;
 
 %%
+chdir(fullfile(isetbioRootPath,'local'))
+bv = imread('bloodvessels.png');
+bv = sum(bv,3);
+bv = imresize(bv,[256 256]);
+ieNewGraphWin; imagesc(bv); colormap(gray); axis image
+bv = ieScale(bv,0,1);
+bv = 1- bv;
+imwrite(bv,'coneMask_bloodvessels.png');
+
+
+
+
+%%
 
 thisM = cMosaic;  % Put in more parameters here.
 
