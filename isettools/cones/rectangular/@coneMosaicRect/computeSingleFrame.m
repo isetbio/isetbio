@@ -94,7 +94,9 @@ end
 % isomerizations.
 %
 % Note that there are not necessarily cones at all of these locations,
-% we'll sample below.
+% we'll sample below.  sQE is the spectral quantum efficiency.  We
+% reformat into RGB format so we can manage spatial blurring and
+% sampling.
 absorbDensityLMS = XW2RGBFormat(photons * sQE, r, c);
 
 %% Blur by cone aperture
