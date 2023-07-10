@@ -25,7 +25,7 @@ oi = oiCompute(oi,scene);
 
 %%  Build a human cone mosaic
 
-cm = coneMosaic('center',[0 0]*1e-6,'eccentricityUnits','m');
+cm = coneMosaicRect('center',[0 0]*1e-6,'eccentricityUnits','m');
 cm.setSizeToFOV(1);
 
 cm.emGenSequence(50);
@@ -35,7 +35,7 @@ cm.compute(oi);
 cm.window;
 
 %%
-cm = coneMosaic('center',[0 450]*1e-6,'eccentricityUnits','m');
+cm = coneMosaicRect('center',[0 450]*1e-6,'eccentricityUnits','m');
 cm.setSizeToFOV(1);
 
 cm.emGenSequence(50);
@@ -46,7 +46,7 @@ cm.window;
 
 %%
 
-cm = coneMosaic('center',[0 900]*1e-6,'eccentricityUnits','m');
+cm = coneMosaicRect('center',[0 900]*1e-6,'eccentricityUnits','m');
 cm.setSizeToFOV(1);
 
 cm.emGenSequence(50);

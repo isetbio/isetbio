@@ -1,6 +1,6 @@
-%% t_conesBigArray
+%% t_conesRectBigArray
 %
-%  Create a fairly large rectangular array.  The cone mosaic is computed
+%  Create a large rectangular array.  The cone mosaic is computed
 %  and stored in the axis userdata.
 %
 % 
@@ -19,7 +19,7 @@ oi = oiCompute(oi, s);
 %% Build a default cone mosaic and compute isomerizatoins
 
 % Create the coneMosaic object
-cMosaic = coneMosaic;
+cMosaic = coneMosaicRect;
 
 % Set cone mosaic size to show the entire scene
 cMosaic.setSizeToFOV(sceneGet(s, 'fov'));

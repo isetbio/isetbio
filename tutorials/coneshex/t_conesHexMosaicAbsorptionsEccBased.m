@@ -1,6 +1,8 @@
 function t_conesMosaicAbsorptionsEccBased
 % Demonstrate applying ecc-based efficiency correction on static stimulus.
 %
+% conesMosaicHex implementation.  Needs updating.
+%
 % Syntax:
 %   t_conesMosaicAbsorptionEccBased
 %
