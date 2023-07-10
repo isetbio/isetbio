@@ -54,6 +54,10 @@ classdef coneMosaicRect < hiddenHandle
     %                         calling photoPigment().
     %    'macular'          - Macular pigment object. Default is set by
     %                         calling Macular().
+    %    'coneMask'         - Struct that specifies a spatial mask to apply
+    %                         to the cone signals.  Potentially
+    %                         representing blood vessels or shadow casting
+    %                         subtrate.
     %    'os'               - Outer segment object. Default is set by
     %                         calling osLinear().
     %    'center'           - Vector. Default [0 0]. Position of center of
@@ -115,6 +119,11 @@ classdef coneMosaicRect < hiddenHandle
         %macular - Macular pigment object for mosaic
         macular;
 
+        % conemask - Structure that defines substrate above the surface of
+        % the cone mosaic that casts a shadow on the receptors (e.g., blood
+        % vessels)
+        coneMask;
+        
         %os - Outer segment object for mosaic
         os;
 

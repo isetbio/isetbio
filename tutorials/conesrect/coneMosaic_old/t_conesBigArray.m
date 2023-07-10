@@ -19,7 +19,7 @@ oi = oiCompute(oi, s);
 %% Build a default cone mosaic and compute isomerizatoins
 
 % Create the coneMosaic object
-cMosaic = coneMosaic;
+cMosaic = coneMosaicRect;
 
 % Set cone mosaic size to show the entire scene
 cMosaic.setSizeToFOV(sceneGet(s, 'fov'));

@@ -42,7 +42,26 @@ oiWindow(oi);
 %%  Let's try a rectangular mosaic, first
 
 thisM = coneMosaicRect;
-class(thisM)
+% class(thisM)
+
+coneMask.row = linspace(-150,150,256)*1e-6;  % Units of meters
+coneMask.col = linspace(-150,150,256)*1e-6;  %
+% coneMask.img = rand(256,256);
+coneMask.img = imageDeadLeaves(256,0.1);
+
+imgLine = ones(256,256);
+imgLine(:,25) = 0;
+imgLine(:,97) = 0.2;
+imgLine(:,185) = 0.5;
+imgLine(:,215) = 0.0;
+coneMask.img = imgLine;
+
+ieNewGraphWin; imagesc(imgLine); colormap("gray"); axis image
+
+thisM.coneMask = coneMask;
+
+ieNewGraphWin; imagesc(coneMask.img); colormap("gray"); axis image
+
 thisM.compute(oi);
 thisM.window;
 

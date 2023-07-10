@@ -48,16 +48,16 @@ fullLMS = p.Results.fullLMS;
 obj = obj.copy();
 obj.wave = oiGet(oi, 'wave');
 
-%% Get wavelength-spacing scaled spectral qe
+%% Get wavelength-spacing scaled spectral quantum efficiency
 %
 % This which includes cone pigment and macular pigment properties. (Lens is
 % in oi). Scale this by the wavelength sample spacing, so that spacing is
-% taken into account when we compute isomerizations (aka absorptions in the
+% taken into account when we compute isomerizations (a.k.a absorptions in the
 % isetbio world.)
 sQE = obj.qe * oiGet(oi, 'bin width');
 
 
-%% Reshape the photons for efficient computations
+%% Reshape the optical image photons for efficient computations
 [photons, r, c] = RGB2XWFormat(oiGet(oi, 'photons'));
 
 %% Correct retinal photons to account for the eccentricity-dependent density
@@ -126,7 +126,7 @@ if (obj.apertureBlur)
         apertureRadius = sqrt(obj.pigment.pdArea / pi);
     end
     
-    % Get optical image resolution and figure out how big conv kernal needs
+    % Get optical image resolution and figure out how big conv kernel needs
     % to be. Make sure it is an odd number greater than 0.
     oiRes = oiGet(oi, 'height spatial resolution');
     if (oiRes ~= oiGet(oi, 'width spatial resolution'))
@@ -138,7 +138,7 @@ if (obj.apertureBlur)
         apertureSamples = apertureSamples + 1;
     end
 
-    % Make the kernal and make the circular pillbox with unit volume.
+    % Make the kernel and make the circular pillbox with unit volume.
     apertureKernal = zeros(apertureSamples, apertureSamples);
     [apertureRows, apertureCols] = meshgrid(...
         sample2space(1:apertureSamples, 1:apertureSamples, oiRes, oiRes));
@@ -188,7 +188,12 @@ else
     absorbDensity = zeros(obj.rows, obj.cols);
 end
 
-% Loop through L, M and S cones and get isomerizations.
+% Loop through L, M and S cones and get isomerizations.  After we obtain
+% these values, we may subsequently apply a mask that either reduces or
+% even zeroes the cone absorptions in some regions.  That mask can be set
+% as a coneMosaicRect parameter (conemask).  The mask might represent light
+% loss due to blood vessels or biological substrate in the foveal avascular
+% zone (FAX).
 %
 % In the loop over cone types, 1 means blank/black so we just iterate 2:4.
 warning('off', 'MATLAB:interp1:NaNinY');
@@ -236,5 +241,40 @@ absorptions = absorbDensity * obj.pigment.pdArea;
 
 % Multiply by integration time to get absorption counts
 absorptions = absorptions * obj.integrationTime;
+
+% Apply a spatial mask that scales absorptions in specific regions of the
+% cone array. If the mask looks like blood vessels, or small spots, well,
+% then we are simulating the effect of blocking the light from the vessels
+% or spots.
+%
+% coneR and coneC represent the position of the cones in the mosaic. The
+% variable coneMask is specified over a set of retinal row and column
+% positions using units of 'mm' or meters?  The img value specifies whether
+% the region is (clear = 1) or obscuring (< 1).
+%
+% We spatially interpolate the coneMask over the cone mosaic locations and
+% then scale the absorptions by the value of the cone mask.
+%
+coneMask = obj.coneMask;
+if ~isempty(coneMask) && isstruct(coneMask)
+    disp('Applying cone mask.');
+    % We specify the rows and columns range (150) in microns, but then convert
+    % to meters by the 1e-6
+    %{
+      coneMask.row = linspace(-150,150,256)*1e-6;  % Units of meters
+      coneMask.col = linspace(-150,150,256)*1e-6;  % 
+      coneMask.img = rand(256,256);
+    %}
+    [X,Y] = meshgrid(coneMask.col,coneMask.row);
+    [U,V] = meshgrid(coneC,coneR);
+    coneMaskInterp = interp2(X,Y,coneMask.img,U,V);
+    for ii=1:size(absorptions,3)
+        absorptions(:,:,ii) = absorptions(:,:,ii).*coneMaskInterp;
+    end
+end
+%{
+ieNewGraphWin; imagesc(coneC,coneR,absorptions(:,:,2)); colormap("gray");
+ieNewGraphWin; imagesc(coneC,coneR,coneMaskInterp); colormap("gray");
+%}
 
 end

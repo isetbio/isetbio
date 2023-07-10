@@ -88,7 +88,8 @@ function [correctionFactors, outerSegmentLengthAttenationFactors, innerSegmentDi
     end  
 end
 
-function [correctionFactors, sensitivityChangeDueToInnerSegmentDiam, sensitivityChangeDueToOuterSegmentLength]= computeAbsorptionCorrectionFactors(...
+function [correctionFactors, sensitivityChangeDueToInnerSegmentDiam, sensitivityChangeDueToOuterSegmentLength] = ...
+    computeAbsorptionCorrectionFactors(...
     apertureChangeWithRespectToZeroEcc, osChangeWithRespectToZeroEcc, coneTypeIndex)
     
     % Sensitivity change due to change in aperture diameter (A = r^2);
