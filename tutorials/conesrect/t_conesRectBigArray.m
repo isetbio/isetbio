@@ -1,6 +1,6 @@
-%% t_conesBigArray
+%% t_conesRectBigArray
 %
-%  Create a fairly large rectangular array.  The cone mosaic is computed
+%  Create a large rectangular array.  The cone mosaic is computed
 %  and stored in the axis userdata.
 %
 % 

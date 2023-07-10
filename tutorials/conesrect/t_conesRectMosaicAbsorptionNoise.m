@@ -36,7 +36,7 @@ oi = oiCompute(oi, scene);
 %
 % Create a cone mosaic and generate isomerizations. The noiseFlag is
 % 'random' by default, but it is set here explictily just because.
-cMosaic = coneMosaic;
+cMosaic = coneMosaicRect;
 cMosaic.noiseFlag = 'random';
 cMosaic.compute(oi);
 
