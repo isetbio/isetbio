@@ -102,7 +102,8 @@ ieNewGraphWin; imagesc(coneMask.col,coneMask.row,coneMask.img); colormap("gray")
 thisM.compute(oi);
 thisM.window;
 
-%%
+%% Roughly what I did to prepare the file
+%{
 chdir(fullfile(isetbioRootPath,'local'))
 bv = imread('bloodvessels.png');
 bv = sum(bv,3);
@@ -111,6 +112,7 @@ ieNewGraphWin; imagesc(bv); colormap(gray); axis image
 bv = ieScale(bv,0,1);
 bv = 1- bv;
 imwrite(bv,'coneMask_bloodvessels.png');
+%}
 
 %% Uniform mosaic, central 2 deg
 %
@@ -142,7 +144,7 @@ coneMask.row = linspace(-mosaicSizeUM,mosaicSizeUM,size(bv,1))*1e-6;
 mosaicSizeUM = (thisM.width*1e6/2);
 coneMask.col = linspace(-mosaicSizeUM,mosaicSizeUM,size(bv,2))*1e-6;
 
-ieNewGraphWin; imagesc(coneMask.col,coneMask.row,coneMask.img); colormap("gray"); axis image
+% ieNewGraphWin; imagesc(coneMask.col,coneMask.row,coneMask.img); colormap("gray"); axis image
 
 thisM.coneMask = coneMask;
 thisM.compute(oi);
@@ -150,5 +152,6 @@ thisM.window;
 
 
 %%
-
+%{
 thisM = cMosaic;  % Put in more parameters here.
+%}
