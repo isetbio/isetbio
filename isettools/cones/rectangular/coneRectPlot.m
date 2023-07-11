@@ -7,9 +7,9 @@ function [uData, hf] = coneRectPlot(obj, plotType, varargin)
 % Description:
 %    There is a specialized plot method for the coneMosaic class that
 %    calls this function.
-% 
+%
 %    When the plot type string begins with 'os ' or 'outersegment ' we pass
-%    the arguments along to os.plot(). For example, 
+%    the arguments along to os.plot(). For example,
 %
 %           cMosaic.plot('os impulse response')
 %
@@ -30,7 +30,7 @@ function [uData, hf] = coneRectPlot(obj, plotType, varargin)
 %       Movie current            - Gray scale movie of current
 %
 %       hline absorptions*       - Graph of horizontal line of absoprtions
-%       hline current*           - 
+%       hline current*           -
 %       hline absorptions lms*   - Three panel graph of LMS absorptions
 %       hline current lms*       - Three panel graph of LMS current
 %       vline absorptions*       - Vertical line
@@ -59,37 +59,27 @@ function [uData, hf] = coneRectPlot(obj, plotType, varargin)
 %           []: create plot in new figure
 %           'none': don't plot
 %         (isgraphics figure or axes handle): Use that figure or axes
-%    'oi' - Optical image used to get lens transmittance for QE plots 
-%    'x' - x value (col) for vline plots 
+%    'oi' - Optical image used to get lens transmittance for QE plots
+%    'x' - x value (col) for vline plots
 %    'y' - y value (row) for hline plots
-%    roiRect - rect defining a region of interest
-%    roiPoint - a point for drawing a line
+%    roi - a point or rect for drawing a line
 %
 % Notes:
 %    * TODO: Think about coneImageActivity function at end.
 %
 
-% History:
-%    xx/xx/16  HJ/BW  ISETBIO TEAM, 2016
-%    02/19/18  jnm     Formatting
-
 %  Examples:
 %{
   cm = coneMosaicRect;
-  coneRectPlot(cm,'help');
-
+  coneRectPlot('help');
   coneRectPlot(cm,'cone mosaic');
 %}
 %{
-coneRectPlot(thisM,'hline absorptions','roi',[150 150]);
+  coneRectPlot(thisM,'hline absorptions','roi',[150 150]);
 %}
-%%
+%% If user wants help
 
-p = inputParser;
-p.KeepUnmatched = true;
-
-p.addRequired('obj',@(x)(isa(x,'coneMosaicRect') || (isa(x,'coneRectWindow_App'))));
-
+%
 validPlotsPrint = {'help', ...
     'Cone mosaic', ...
     'Mean absorptions', 'Movie absorptions', ...
@@ -108,6 +98,21 @@ validPlotsPrint = {'help', ...
 validPlots = cellfun(@(x)(ieParamFormat(x)), validPlotsPrint, ...
     'UniformOutput', false);
 
+if ischar(obj) && strcmp(obj,'help')
+    coneRectPlotHelp(validPlotsPrint);
+    return;
+end
+
+%% Start parsing
+varargin = ieParamFormat(varargin);
+p = inputParser;
+p.KeepUnmatched = true;
+
+p.addRequired('obj',...
+    @(x)(isa(x,'coneMosaicRect') || ...
+    isa(x,'coneRectWindow_App') || ...
+    strcmp(obj,'help')));
+
 p.addRequired('plotType',...
     @(x)(ismember(ieParamFormat(x),validPlots)) || ...
     @(x)(strcmpi(ieParamFormat(plotType(1:12)),'outersegment')));
@@ -115,47 +120,47 @@ p.addRequired('plotType',...
 p.addParameter('hf',[],@(x)(isa(x,'matlab.ui.Figure')));
 p.addParameter('x', [], @isscalar);   % x axis value
 p.addParameter('y', [], @isscalar);   % y axis value
-p.addParameter('roi',[],@isvector);  % (x,y) or (x,y,width,height) 
+p.addParameter('roi',[],@isvector);  % (x,y) or (x,y,width,height)
 p.addParameter('oi',[],@isstruct);
 
 p.parse(obj,plotType,varargin{:});
 
 plotType = ieParamFormat(plotType);
-hf = p.Results.hf;
-oi = p.Results.oi;                    % Used in plotGraphs routine
+hf  = p.Results.hf;
+oi  = p.Results.oi;                    % Used in plotGraphs routine
 roi = p.Results.roi;
 
-% If the person just wants help
-if isequal(plotType, 'help')
-    fprintf('\nconeRectPlot (%s) plot types\n--------------\n', class(obj));
-    for ii = 2:length(validPlots), fprintf('\t%s\n', validPlotsPrint{ii}); end
-    return;
-end
 
-%% Onward
-varargin = ieParamFormat(varargin);
 
-%% Initialize the axis where we plot
+%% Initialize the window for plotting
+
 if isa(obj,'coneRectWindow_App')
-    % User sent the app in
+    % User sent coneRectWindow_App.  Use the image for plotting,
+    % unless the user sent in a handle to a figure, hf.
     app   = obj;   % Just renaming
     cm    = app.cMosaic;
     curAx = app.imgMain;
+    if ~isempty(hf)
+        curAx = get(hf,'CurrentAxes');
+    end
 else
     % User sent coneMosaicRect in
-    app = [];
-    cm  = obj;
-    fig = ieNewGraphWin;
-    curAx = get(fig,'CurrentAxes');
+    app = []; cm  = obj;
+    if isempty(hf)
+        % If they did not specify a window, create one.
+        hf = ieNewGraphWin;
+    end
+    curAx = get(hf,'CurrentAxes');
 end
 
+
 % Deal with the gamma from the window
-if isa(app,'coneRectWindow_app'), gam = str2double(app.editGam.Value);  
+if isa(app,'coneRectWindow_app'), gam = str2double(app.editGam.Value);
 else, gam = 1;
 end
 
 % Check plot type to see if we send this off to the outer segment plot
-% routine 
+% routine
 if numel(plotType)> 11 && strcmpi(ieParamFormat(plotType(1:12)),'outersegment')
     cm.os.plot(plotType(13:end), 'cmosaic', obj, varargin{:});
 end
@@ -178,7 +183,7 @@ end
 switch ieParamFormat(plotType)
     case 'conemosaic'
         % This might become
-        %  
+        %
         %   cmrPlot(obj,cone mosaic, axisData)
         %
         axisData = get(curAx,'UserData');  % Main axis in the window
@@ -189,19 +194,19 @@ switch ieParamFormat(plotType)
         else
             locs    = cm.coneLocs;
             pattern = cm.pattern(:);
-                       
+
             % The locations are converted to microns from meters, I think.
             [axisData.support, axisData.spread, axisData.delta, axisData.mosaicImage] = ...
                 conePlot(locs * 1e6, pattern);
             imagesc(axisData.mosaicImage);
             axis off; axis image;
         end
-        
+
         set(curAx,'UserData',axisData);  % Put the modified values back
 
     case 'meanabsorptions'
         % This might become
-        %  
+        %
         %   cmrPlot(obj,mean absorptions,axisData)
         %
 
@@ -212,7 +217,7 @@ switch ieParamFormat(plotType)
         end
 
         % Show the data, with the gamma from the window.
-        axisData.data = mean(cm.absorptions, 3);        
+        axisData.data = mean(cm.absorptions, 3);
         imagesc((axisData.data) .^ gam);
         axis off;
 
@@ -226,7 +231,7 @@ switch ieParamFormat(plotType)
         set(cbar, 'TickLabels', photons);
         axis image;
         title('Absorptions per integration time');
-        
+
         set(curAx,'UserData',axisData);  % Put it back
 
     case 'movieabsorptions'
@@ -263,8 +268,7 @@ switch ieParamFormat(plotType)
             case 'v'
                 c = [x, x, 1,size(data,1)];
         end
-        ieROIDraw(app,'shape','line','shape data',c);
-        
+
         ieNewGraphWin;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
@@ -284,6 +288,10 @@ switch ieParamFormat(plotType)
             ylabel(yStr);
         end
 
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','line','shape data',c);
+        end
+
     case {'hlineabsorptionslms', 'vlineabsorptionslms'}
         % Does not work correctly when in the cone mosaic viewing mode.
         data = mean(cm.absorptions, 3);
@@ -299,7 +307,10 @@ switch ieParamFormat(plotType)
             case 'v'
                 c = [x, x, 1,size(data,1)];
         end
-        ieROIDraw(app,'shape','line','shape data',c);
+
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','line','shape data',c);
+        end
 
         % Get the cone locations in microns
         coneLocs(:,:,1) = reshape(cm.coneLocs(:,1),cm.rows,cm.cols);
@@ -357,17 +368,19 @@ switch ieParamFormat(plotType)
         x = ieClip(pt(1), 1, size(data, 1));
         y = ieClip(pt(2), 1, size(data, 2));
         c = [7 y x];
-        ieROIDraw(app,'shape','circle','shape data',c);
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','circle','shape data',c);
+        end
 
         t = (1:size(data, 3)) * cm.integrationTime * 1e3;
 
-        ieNewGraphWin;         
+        ieNewGraphWin;
         yStr = 'Absorptions per frame';
         data = squeeze(data(y, x, :));
         plot(t, squeeze(data), 'LineWidth', 2);
         uData.timerseries = t;
         uData.x = t; uData.y = data; uData.pos = [x, y];
-        grid on; xlabel('Time (ms)'); ylabel(yStr); 
+        grid on; xlabel('Time (ms)'); ylabel(yStr);
         set(curAx, 'ylim', [mn mx]);
 
     case 'meancurrent'
@@ -409,8 +422,10 @@ switch ieParamFormat(plotType)
             case 'v'
                 c = [x, x, 1,size(data,1)];
         end
-        ieROIDraw(app,'shape','line','shape data',c);
-        
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','line','shape data',c);
+        end
+
         ieNewGraphWin;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
@@ -418,7 +433,7 @@ switch ieParamFormat(plotType)
             grid on;
             xlabel('Vertical position (cones)');
             ylabel(yStr);
-            uData.y = data(:, x); uData.x = 1:length(uData.y); 
+            uData.y = data(:, x); uData.x = 1:length(uData.y);
         else
             plot(data(y, :), 'LineWidth', 2);
             grid on;
@@ -440,7 +455,9 @@ switch ieParamFormat(plotType)
             case 'v'
                 c = [x, x, 1,size(data,1)];
         end
-        ieROIDraw(app,'shape','line','shape data',c);
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','line','shape data',c);
+        end
 
         ieNewGraphWin([], 'tall');
         names = 'LMS';
@@ -481,12 +498,9 @@ switch ieParamFormat(plotType)
         x = ieClip(pt(1), 1, size(data, 1));
         y = ieClip(pt(2), 1, size(data, 2));
         c = [3 x y];
-        ieROIDraw(app,'shape','circle','shape data',c);
-
-        %         [x, y] = ginput(1); % Rounded and clipped to the data
-        %         x = ieClip(round(x), 1, size(data, 2));
-        %         y = ieClip(round(y), 1, size(data, 1));
-        %         viscircles([x, y], 0.7);
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','circle','shape data',c);
+        end
 
         t = (1:size(data, 3)) * cm.integrationTime * 1e3;
 
@@ -503,7 +517,7 @@ switch ieParamFormat(plotType)
 
     case 'impulseresponse'
         % Current impulse response at cone mosaic temporal sampling rate
-        % 
+        %
         % Not called from within the window, so it should probably be
         % moved out of here.
 
@@ -522,7 +536,7 @@ switch ieParamFormat(plotType)
                 absorptionsInXWFormat);
         %}
 
-        
+
 
         %% Interpolate stored lmsFilters to the time base of absorptions
         osTimeAxis = cm.os.timeAxis;
@@ -535,7 +549,7 @@ switch ieParamFormat(plotType)
         % axis. See the notes in s_matlabConv2.m for an explanation of why.
         interpFilters = interp1(osTimeAxis(:), lmsFilters, ...
             coneTimeAxis(:), 'linear', 0);
-        
+
         plot(coneTimeAxis, interpFilters(:, 1), 'r-o', ...
             coneTimeAxis, interpFilters(:, 2), 'g-o', ...
             coneTimeAxis, interpFilters(:, 3), 'b-o');
@@ -628,19 +642,19 @@ switch ieParamFormat(plotType)
         %     uData = plotCurrentTimeseries(obj, varargin{:});
 
     case {'empath', 'eyemovementpath'}
+        % coneRectPlot(app,'eye movement path');
+
         plot(cm.emPositions(:, 1), cm.emPositions(:, 2),'ko:');
         xLim = [min(cm.emPositions(:,1)),max(cm.emPositions(:,1))];
         yLim = [min(cm.emPositions(:,2)),max(cm.emPositions(:,2))];
-        if xLim(1) > -1, xLim(1) = -3; end
-        if xLim(2) < 1,  xLim(2) = 3; end
-        if yLim(1) > -1, yLim(1) = -3; end
-        if yLim(2) < 1,  yLim(2) = 3; end
+        if xLim(1) > -1, xLim(1) = -3; end; if xLim(2) < 1,  xLim(2) = 3; end
+        if yLim(1) > -1, yLim(1) = -3; end; if yLim(2) < 1,  yLim(2) = 3; end
         grid on;
         xlabel('Horizontal position (cones)');
         ylabel('Vertical position (cones)');
         set(curAx,'xlim',xLim,'ylim',yLim);
         title(sprintf('Eye movement path (%.1f ms steps)',cm.integrationTime*1e3));
-        
+
         % RGB movies on cone mosaic. These are not currently implemented,
         % but exist here in draft form. See routine coneImageActivity below
         % as well. Could be resurrected some day.
@@ -829,3 +843,11 @@ ylabel('pA');
 
 end
 %}
+
+%----------------------
+function coneRectPlotHelp(validPlotsPrint)
+
+fprintf('\nconeRectPlot plot types\n--------------\n');
+for ii = 2:length(validPlotsPrint), fprintf('\t%s\n', validPlotsPrint{ii}); end
+
+end
