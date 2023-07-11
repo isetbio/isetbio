@@ -1,4 +1,4 @@
-function [uData, hf] = plot(obj, plotType, app, varargin)
+function [uData, hf] = coneRectPlot(obj, plotType, varargin)
 % Plot function for @coneMosaicRect class
 %
 % Syntax:
@@ -7,15 +7,18 @@ function [uData, hf] = plot(obj, plotType, app, varargin)
 % Description:
 %    There is a specialized plot method for the coneMosaic class that
 %    calls this function.
-% 
+%
 %    When the plot type string begins with 'os ' or 'outersegment ' we pass
-%    the arguments along to os.plot(). For example, 
+%    the arguments along to os.plot(). For example,
 %
 %           cMosaic.plot('os impulse response')
 %
 %    graphs the outer segment impulse response on its own time axis.
 %
 % Inputs:
+%    obj      - Either the coneMosaicRect or the coneRectWindow_app,
+%               which contains the coneMosaicRect in the cMosaic
+%               slot
 %    plotType - string, type of plot (N.B. The '*' means user must select a
 %               point on an image to specify the location of the point or
 %               line to be plotted.)
@@ -27,7 +30,7 @@ function [uData, hf] = plot(obj, plotType, app, varargin)
 %       Movie current            - Gray scale movie of current
 %
 %       hline absorptions*       - Graph of horizontal line of absoprtions
-%       hline current*           - 
+%       hline current*           -
 %       hline absorptions lms*   - Three panel graph of LMS absorptions
 %       hline current lms*       - Three panel graph of LMS current
 %       vline absorptions*       - Vertical line
@@ -47,8 +50,6 @@ function [uData, hf] = plot(obj, plotType, app, varargin)
 %       Macular absorbance       - Graph
 %       Eye movement path        - eye movement path
 %
-%  app - coneRectWindow_App object
-%
 % Outputs:
 %    uData    - The user data
 %    hf       - The figure or axes handle
@@ -58,43 +59,28 @@ function [uData, hf] = plot(obj, plotType, app, varargin)
 %           []: create plot in new figure
 %           'none': don't plot
 %         (isgraphics figure or axes handle): Use that figure or axes
-%    'oi' - Optical image used to get lens transmittance for QE plots 
-%    'x' - x value (col) for vline plots 
+%    'oi' - Optical image used to get lens transmittance for QE plots
+%    'x' - x value (col) for vline plots
 %    'y' - y value (row) for hline plots
+%    roi - a point or rect for drawing a line
 %
 % Notes:
 %    * TODO: Think about coneImageActivity function at end.
 %
 
-% History:
-%    xx/xx/16  HJ/BW  ISETBIO TEAM, 2016
-%    02/19/18  jnm     Formatting
-
 %  Examples:
 %{
   cm = coneMosaicRect;
-  cm.plot('cone mosaic');
-
-  % Starts the parallel pool for some reason
-  cm.plot('impulse response');
+  coneRectPlot('help');
+  coneRectPlot(cm,'cone mosaic');
 %}
+%{
+  coneRectPlot(thisM,'hline absorptions','roi',[150 150]);
+%}
+%% If user wants help
 
-%% Check plot type string if we send this off to the os plot routine
-
-% (Might Find a cleaner way to check and send to os.plot.
-%  Maybe create a parse argument string as in ISET.)
-if (length(plotType) > 3 && strcmp(plotType(1:3), 'os '))
-    obj.os.plot(plotType(4:end), 'cmosaic', obj, varargin{:});
-    return;
-elseif (length(plotType) > 13 && strcmp(plotType(1:13), 'outersegment '))
-    obj.os.plot(plotType(14:end), 'cmosaic', obj, varargin{:});
-    return;
-end
-
-%% It is a cone mosaic plot, not an os plot.
-% Add to this list when you put in a new type of plot. The validation
-% squeezes out the spaces and makes lower case.
-validPlots = {'help', ...
+%
+validPlotsPrint = {'help', ...
     'Cone mosaic', ...
     'Mean absorptions', 'Movie absorptions', ...
     'Mean current', 'Movie current', ...
@@ -108,62 +94,85 @@ validPlots = {'help', ...
     'Macular transmittance', 'Macular absorptance', ...
     'Macular absorbance', 'Eye movement path'};
 
-% If the person just wants help
-if isequal(plotType, 'help')
-    fprintf('\nKnown %s plot types\n--------------\n', class(obj));
-    for ii = 2:length(validPlots), fprintf('\t%s\n', validPlots{ii}); end
+% Squeeze spaces and force lower case on validPlots. Then check plotType
+validPlots = cellfun(@(x)(ieParamFormat(x)), validPlotsPrint, ...
+    'UniformOutput', false);
+
+if ischar(obj) && strcmp(obj,'help')
+    coneRectPlotHelp(validPlotsPrint);
     return;
-else
-    % Makes less readable, but better for programming. I
-    for ii = 1:length(validPlots)
-        validPlots{ii} = ieParamFormat(validPlots{ii});
-    end
 end
 
-%% Onward
+%% Start parsing
 varargin = ieParamFormat(varargin);
-
 p = inputParser;
 p.KeepUnmatched = true;
-p.addRequired('obj');
 
-% Squeeze spaces and force lower case on validPlots. Then check plotType
-validPlots = cellfun(@(x)(ieParamFormat(x)), validPlots, ...
-    'UniformOutput', false);
-p.addRequired('pType', @(x) any(validatestring(ieParamFormat(x), ...
-    validPlots)));
+p.addRequired('obj',...
+    @(x)(isa(x,'coneMosaicRect') || ...
+    isa(x,'coneRectWindow_App') || ...
+    strcmp(obj,'help')));
 
-% Axis only?  Or figure is OK?
-p.addParameter('hf', [],@(x)(isa(x,'matlab.graphics.axis.Axes') || isa(x,'matlab.ui.Figure'))); % Figure handle
-p.addParameter('oi', [], @isstruct);  % Used for spectral qe
+p.addRequired('plotType',...
+    @(x)(ismember(ieParamFormat(x),validPlots)) || ...
+    @(x)(strcmpi(ieParamFormat(plotType(1:12)),'outersegment')));
+
+p.addParameter('hf',[],@(x)(isa(x,'matlab.ui.Figure')));
 p.addParameter('x', [], @isscalar);   % x axis value
 p.addParameter('y', [], @isscalar);   % y axis value
-p.addParameter('roirect',[],@isvector);  % (x,y,width,height) (I think)
+p.addParameter('roi',[],@isvector);  % (x,y) or (x,y,width,height)
+p.addParameter('oi',[],@isstruct);
 
-p.parse(obj, plotType, varargin{:});
-hf = p.Results.hf;
-oi = p.Results.oi;                    % Used in plotGraphs routine
-roiRect = p.Results.roirect;
+p.parse(obj,plotType,varargin{:});
 
-%% Initialize where we'll plot
-if isempty(hf),                   hf = ieNewGraphWin;
-elseif isgraphics(hf, 'figure'),  figure(hf);
-elseif isgraphics(hf, 'axes'),    axes(hf);
+plotType = ieParamFormat(plotType);
+hf  = p.Results.hf;
+oi  = p.Results.oi;                    % Used in plotGraphs routine
+roi = p.Results.roi;
+
+
+
+%% Initialize the window for plotting
+
+if isa(obj,'coneRectWindow_App')
+    % User sent coneRectWindow_App.  Use the image for plotting,
+    % unless the user sent in a handle to a figure, hf.
+    app   = obj;   % Just renaming
+    cm    = app.cMosaic;
+    curAx = app.imgMain;
+    if ~isempty(hf)
+        curAx = get(hf,'CurrentAxes');
+    end
+else
+    % User sent coneMosaicRect in
+    app = []; cm  = obj;
+    if isempty(hf)
+        % If they did not specify a window, create one.
+        hf = ieNewGraphWin;
+    end
+    curAx = get(hf,'CurrentAxes');
+end
+
+
+% Deal with the gamma from the window
+if isa(app,'coneRectWindow_app'), gam = str2double(app.editGam.Value);
+else, gam = 1;
+end
+
+% Check plot type to see if we send this off to the outer segment plot
+% routine
+if numel(plotType)> 11 && strcmpi(ieParamFormat(plotType(1:12)),'outersegment')
+    cm.os.plot(plotType(13:end), 'cmosaic', obj, varargin{:});
 end
 
 %% Set color order so that LMS plots as RGB
-% But if the user has changed the default, we leave it alone.
 
-if ~isequal(hf, 'none')
-    co = get(gca, 'ColorOrder');  
-    if size(co,1) == 7    % Figure        
-        if isgraphics(hf, 'axes')
-            set(get(hf, 'parent'), ...
-                'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
-        else
-            set(hf, 'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :));
-        end
-    end
+% If the user has changed the default, we leave it alone.
+% We should have a better way to check this.
+co = get(curAx, 'ColorOrder');
+if size(co,1) == 7    % This is the default number.  So we reorder.
+    set(get(curAx, 'parent'), ...
+        'DefaultAxesColorOrder', co([2 5 1 3 4 6 7], :))
 end
 
 %% Switch on passed plot type
@@ -174,44 +183,41 @@ end
 switch ieParamFormat(plotType)
     case 'conemosaic'
         % This might become
-        %  
+        %
         %   cmrPlot(obj,cone mosaic, axisData)
         %
-        axisData = get(gca,'UserData');  % Main axis in the window
+        axisData = get(curAx,'UserData');  % Main axis in the window
 
         if isfield(axisData,'mosaicImage') && ~isempty(axisData.mosaicImage)
             imagesc(axisData.mosaicImage)
             axis off; axis image;
         else
-            locs    = obj.coneLocs;
-            pattern = obj.pattern(:);
-                       
+            locs    = cm.coneLocs;
+            pattern = cm.pattern(:);
+
             % The locations are converted to microns from meters, I think.
             [axisData.support, axisData.spread, axisData.delta, axisData.mosaicImage] = ...
                 conePlot(locs * 1e6, pattern);
             imagesc(axisData.mosaicImage);
             axis off; axis image;
         end
-        
-        set(gca,'UserData',axisData);  % Put the modified values back
+
+        set(curAx,'UserData',axisData);  % Put the modified values back
 
     case 'meanabsorptions'
         % This might become
-        %  
+        %
         %   cmrPlot(obj,mean absorptions,axisData)
         %
-        axisData = get(gca,'UserData'); % Main axis in window
 
         % Image of mean absorptions per integration period
-        if isempty(obj.absorptions)
+        if isempty(cm.absorptions)
             warning('no absorption data');
             return;
         end
 
         % Show the data, with the gamma from the window.
-        axisData.data = mean(obj.absorptions, 3);
-        gdata = guidata(obj.hdl);
-        gam = str2double(get(gdata.editGam, 'string'));
+        axisData.data = mean(cm.absorptions, 3);
         imagesc((axisData.data) .^ gam);
         axis off;
 
@@ -225,23 +231,23 @@ switch ieParamFormat(plotType)
         set(cbar, 'TickLabels', photons);
         axis image;
         title('Absorptions per integration time');
-        
-        set(gca,'UserData',axisData);  % Put it back
+
+        set(curAx,'UserData',axisData);  % Put it back
 
     case 'movieabsorptions'
         % Movie in gray scale
 
         % Could become cla return
-        if isempty(obj.absorptions)
+        if isempty(cm.absorptions)
             disp('no absorption data');
             return;
-        elseif ismatrix(obj.absorptions)
+        elseif ismatrix(cm.absorptions)
             disp('no absorption time series')
             return;
         else
             % Additional movie arguments may include the video file name, step,
             % and FrameRate
-            ieMovie(obj.absorptions, varargin{:});
+            ieMovie(cm.absorptions, varargin{:});
         end
 
     case {'hlineabsorptions', 'vlineabsorptions'}
@@ -249,16 +255,20 @@ switch ieParamFormat(plotType)
         %
         % cmrPlot(obj,'hline absorptions',[roiPoint])
 
-        data = mean(obj.absorptions, 3);
+        data = mean(cm.absorptions, 3);
 
-        % The plots below are with respect to a point.
-        % Get the point
-        [x, y] = ginput(1); % Rounded and clipped to the data
-        x = ieClip(round(x), 1, size(data, 2));
-        y = ieClip(round(y), 1, size(data, 1));
+        if isempty(roi), pt = iePointSelect(app,'Select a point.',1);
+        else, pt = roi;
+        end
+        x = ieClip(pt(1), 1, size(data, 1));
+        y = ieClip(pt(2), 1, size(data, 2));
+        switch lower(plotType(1))
+            case 'h'
+                c = [1,size(data,2),y,y];
+            case 'v'
+                c = [x, x, 1,size(data,1)];
+        end
 
-        % Draw a circle around the selected point.
-        viscircles([x, y], 0.7);
         ieNewGraphWin;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
@@ -268,7 +278,7 @@ switch ieParamFormat(plotType)
             grid on;
             xlabel('Vertical position (cones)');
             ylabel(yStr);
-            set(gca, 'userdata', data(:, x));
+            set(curAx, 'userdata', data(:, x));
         else
             plot(data(y, :), 'k-', 'LineWidth', 2);
             uData.y = data(y, :);
@@ -278,21 +288,33 @@ switch ieParamFormat(plotType)
             ylabel(yStr);
         end
 
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','line','shape data',c);
+        end
+
     case {'hlineabsorptionslms', 'vlineabsorptionslms'}
         % Does not work correctly when in the cone mosaic viewing mode.
-        data = mean(obj.absorptions, 3);
+        data = mean(cm.absorptions, 3);
 
-        % The plots below are with respect to a point.
-        % Get the point
-        figure(hf);
-        [x, y] = ginput(1); % Rounded and clipped to the data
-        x = ieClip(round(x), 1, size(data, 2));
-        y = ieClip(round(y), 1, size(data, 1));
-        viscircles([x, y], 0.7);
+        if isempty(roi), pt = iePointSelect(app,'Select a point.',1);
+        else, pt = roi;
+        end
+        x = ieClip(pt(1), 1, size(data, 1));
+        y = ieClip(pt(2), 1, size(data, 2));
+        switch lower(plotType(1))
+            case 'h'
+                c = [1,size(data,2),y,y];
+            case 'v'
+                c = [x, x, 1,size(data,1)];
+        end
+
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','line','shape data',c);
+        end
 
         % Get the cone locations in microns
-        coneLocs(:,:,1) = reshape(obj.coneLocs(:,1),obj.rows,obj.cols);
-        coneLocs(:,:,2) = reshape(obj.coneLocs(:,2),obj.rows,obj.cols);
+        coneLocs(:,:,1) = reshape(cm.coneLocs(:,1),cm.rows,cm.cols);
+        coneLocs(:,:,2) = reshape(cm.coneLocs(:,2),cm.rows,cm.cols);
         coneLocs = coneLocs*1e6;  % In microns
 
         ieNewGraphWin([], 'tall'); names = 'LMS';
@@ -303,8 +325,8 @@ switch ieParamFormat(plotType)
             for ii = 2 : 4 % L, M, S
                 % Maybe this should be a coneAbsorptions method?
                 subplot(3, 1, ii - 1);
-                lst = (obj.pattern(:,x) == ii);
-                data = obj.absorptions(lst,x);
+                lst = (cm.pattern(:,x) == ii);
+                data = cm.absorptions(lst,x);
                 pos = coneLocs(lst,x,2);
                 plot(pos, data, c{ii - 1}, 'LineWidth', 2);
                 grid on;
@@ -317,8 +339,8 @@ switch ieParamFormat(plotType)
             % Horizontal
             for ii = 2:4 % L, M, S
                 subplot(3, 1, ii - 1);
-                lst = find(obj.pattern(y, :) == ii);
-                data = obj.absorptions(y,lst);
+                lst = find(cm.pattern(y, :) == ii);
+                data = cm.absorptions(y,lst);
                 pos = coneLocs(y,lst,1);
                 plot(pos, data, c{ii - 1}, 'LineWidth', 2);
                 grid on;
@@ -331,48 +353,65 @@ switch ieParamFormat(plotType)
 
     case 'timeseriesabsorptions'
         % Context menu plot absorption time series.
-        data = obj.absorptions;
+        data = cm.absorptions;
+        if size(data,3) == 1
+            warning('No time series.')
+            return;
+        end
+
         mx = max(data(:));
         mn = min(data(:));
 
-        [x, y] = ginput(1); % Rounded and clipped to the data
-        x = ieClip(round(x), 1, size(data, 2));
-        y = ieClip(round(y), 1, size(data, 1));
-        viscircles([x, y], 0.7);
+        if isempty(roi), pt = iePointSelect(app,'Select a point.',1);
+        else, pt = roi;
+        end
+        x = ieClip(pt(1), 1, size(data, 1));
+        y = ieClip(pt(2), 1, size(data, 2));
+        c = [7 y x];
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','circle','shape data',c);
+        end
 
-        t = (1:size(data, 3)) * obj.integrationTime * 1e3;
+        t = (1:size(data, 3)) * cm.integrationTime * 1e3;
 
-        ieNewGraphWin;         
+        ieNewGraphWin;
         yStr = 'Absorptions per frame';
         data = squeeze(data(y, x, :));
         plot(t, squeeze(data), 'LineWidth', 2);
         uData.timerseries = t;
-        uData.x = t;
-        uData.y = data;
-        uData.pos = [x, y];
-        grid on;
-        xlabel('Time (ms)');
-        ylabel(yStr);
-        set(gca, 'ylim', [mn mx]);
+        uData.x = t; uData.y = data; uData.pos = [x, y];
+        grid on; xlabel('Time (ms)'); ylabel(yStr);
+        set(curAx, 'ylim', [mn mx]);
 
     case 'meancurrent'
-        if isempty(obj.current), error('no photocurrent data'); end
-        data = mean(obj.current, 3);
+        if isempty(cm.current)
+            warning('no photocurrent data'); 
+            return;
+        end
 
-        % Apply gamma. The current is always negative.
-        gdata = guidata(obj.hdl);
-        gam = str2double(get(gdata.editGam, 'string'));
-        if max(data(:)) > 0
-            warning('Gamma correction in display is not correct');
+        data = mean(cm.current, 3);
+
+        % Apply gamma. The current is always negative.        
+        gam = str2double(app.editGam.Value);
+        if max(data(:)) > 0 && ~isequal(gam,1)
+            warning('Current is +/-, gamma correction turned off');
+            gam = 1;
         end
 
         % Carry on assuming current is all negative pA.
         % uData = -1*(abs(uData).^gam);
         data = abs(data);
         if ~isequal(hf, 'none'), imagesc(data .^ gam); end
-        uData.data = data;
+        uData.data = data;        
 
+        % Show the data, with the gamma from the window.
+        axisData.data = mean(cm.current, 3);
+        if isequal(gam,1), imagesc(axisData.data);
+        else,              imagesc((axisData.data) .^ gam);
+        end
         axis off;
+
+        % Preserve the tick labels in real photons
         colormap(flipud(gray));  % Shows a numerical value
         cbar = colorbar;
         current = -1 * ...
@@ -382,17 +421,24 @@ switch ieParamFormat(plotType)
         axis image;
         title('Photocurrent (pA)');
 
+        set(curAx,'UserData',axisData);  % Put it back
+
     case {'hlinecurrent', 'vlinecurrent'}
-        data = mean(obj.current, 3);
+        data = mean(cm.current, 3);
 
-        % The plots below are with respect to a point.
-        % Get the point
-        [x, y] = ginput(1); % Rounded and clipped to the data
-        x = ieClip(round(x), 1, size(data, 2));
-        y = ieClip(round(y), 1, size(data, 1));
+        pt = iePointSelect(app,'Select a point.',1);
+        x = ieClip(pt(1), 1, size(data, 1));
+        y = ieClip(pt(2), 1, size(data, 2));
+        switch lower(plotType(1))
+            case 'h'
+                c = [1,size(data,2),y,y];
+            case 'v'
+                c = [x, x, 1,size(data,1)];
+        end
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','line','shape data',c);
+        end
 
-        % Draw a circle around the selected point.
-        viscircles([x, y], 0.7);
         ieNewGraphWin;
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
@@ -400,7 +446,7 @@ switch ieParamFormat(plotType)
             grid on;
             xlabel('Vertical position (cones)');
             ylabel(yStr);
-            uData.y = data(:, x); uData.x = 1:length(uData.y); 
+            uData.y = data(:, x); uData.x = 1:length(uData.y);
         else
             plot(data(y, :), 'LineWidth', 2);
             grid on;
@@ -411,14 +457,20 @@ switch ieParamFormat(plotType)
         end
 
     case {'hlinecurrentlms', 'vlinecurrentlms'}
-        data = mean(obj.current, 3);
+        data = mean(cm.current, 3);
 
-        % The plots below are with respect to a point.
-        % Get the point
-        [x, y] = ginput(1); % Rounded and clipped to the data
-        x = ieClip(round(x), 1, size(data, 2));
-        y = ieClip(round(y), 1, size(data, 1));
-        viscircles([x, y], 0.7);
+        pt = iePointSelect(app,'Select a point.',1);
+        x = ieClip(pt(1), 1, size(data, 1));
+        y = ieClip(pt(2), 1, size(data, 2));
+        switch lower(plotType(1))
+            case 'h'
+                c = [1,size(data,2),y,y];
+            case 'v'
+                c = [x, x, 1,size(data,1)];
+        end
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','line','shape data',c);
+        end
 
         ieNewGraphWin([], 'tall');
         names = 'LMS';
@@ -428,39 +480,42 @@ switch ieParamFormat(plotType)
             c = {'ro-', 'go-', 'bo-'};
             for ii = 2:4 % L, M, S
                 subplot(3, 1, ii - 1);
-                pos = find(obj.pattern(:, x) == ii);
+                pos = find(cm.pattern(:, x) == ii);
                 plot(pos, data(pos, x), c{ii-1}, 'LineWidth', 2);
                 grid on;
                 uData.pos{ii - 1} = pos;
                 uData.data{ii - 1} = data(pos, x);
-                xlabel('Vertical Position (cones');
+                xlabel('Vertical position (cones');
                 ylabel([names(ii-1) ' ' yStr]);
-                set(gca, 'xlim', [1 size(data, 1)]);
+                set(curAx, 'xlim', [1 size(data, 1)]);
             end
         else
             for ii = 2:4 % L, M, S
                 subplot(3, 1, ii - 1);
-                pos = find(obj.pattern(y, :) == ii);
+                pos = find(cm.pattern(y, :) == ii);
                 plot(pos, data(y, pos), c{ii - 1}, 'LineWidth', 2);
                 grid on;
                 uData.pos{ii - 1} = pos;
                 uData.data{ii - 1} = data(y, pos);
-                xlabel('Horizontal Position (cones');
+                xlabel('Horizontal position (cones');
                 ylabel([names(ii - 1) ' ' yStr]);
-                set(gca, 'xlim', [1 size(data, 2)]);
+                set(curAx, 'xlim', [1 size(data, 2)]);
             end
         end
     case 'timeseriescurrent'
-        data = obj.current;
+        data = cm.current;
         mx = max(data(:));
         mn = min(data(:));
 
-        [x, y] = ginput(1); % Rounded and clipped to the data
-        x = ieClip(round(x), 1, size(data, 2));
-        y = ieClip(round(y), 1, size(data, 1));
-        viscircles([x, y], 0.7);
+        pt = iePointSelect(app,'Select a point.',1);
+        x = ieClip(pt(1), 1, size(data, 1));
+        y = ieClip(pt(2), 1, size(data, 2));
+        c = [3 x y];
+        if isa(app,'coneRectWindow_app')
+            ieROIDraw(app,'shape','circle','shape data',c);
+        end
 
-        t = (1:size(data, 3)) * obj.integrationTime * 1e3;
+        t = (1:size(data, 3)) * cm.integrationTime * 1e3;
 
         ieNewGraphWin;
         yStr = 'Absorptions per frame';
@@ -471,11 +526,11 @@ switch ieParamFormat(plotType)
         grid on;
         xlabel('Time (ms)');
         ylabel(yStr);
-        set(gca, 'ylim', [mn mx]);
+        set(curAx, 'ylim', [mn mx]);
 
     case 'impulseresponse'
         % Current impulse response at cone mosaic temporal sampling rate
-        % 
+        %
         % Not called from within the window, so it should probably be
         % moved out of here.
 
@@ -483,22 +538,22 @@ switch ieParamFormat(plotType)
         % The outersegment cone temporal impulse response functions are
         % always represented at a high sampling rate (0.1 ms).
 
-        lmsFilters = obj.os.linearFilters(obj);
+        lmsFilters = cm.os.linearFilters(obj);
 
-        % Old code if ~isempty(obj.absorptions)
+        % Old code if ~isempty(cm.absorptions)
         % This doesn't make sense to me (BW).  Guessing this
         % if/else is older code that should be removed.
         %{
-            absorptionsInXWFormat = RGB2XWFormat(obj.absorptions);
-            lmsFilters = obj.os.linearFilters('absorptionsInXWFormat', ...
+            absorptionsInXWFormat = RGB2XWFormat(cm.absorptions);
+            lmsFilters = cm.os.linearFilters('absorptionsInXWFormat', ...
                 absorptionsInXWFormat);
         %}
 
-        
+
 
         %% Interpolate stored lmsFilters to the time base of absorptions
-        osTimeAxis = obj.os.timeAxis;
-        coneTimeAxis = obj.interpFilterTimeAxis;
+        osTimeAxis = cm.os.timeAxis;
+        coneTimeAxis = cm.interpFilterTimeAxis;
 
         % Interpolate down to the cone mosaic sampling rate Interpolation
         % assumes that we are accounting for the time sample bin width
@@ -507,7 +562,7 @@ switch ieParamFormat(plotType)
         % axis. See the notes in s_matlabConv2.m for an explanation of why.
         interpFilters = interp1(osTimeAxis(:), lmsFilters, ...
             coneTimeAxis(:), 'linear', 0);
-        
+
         plot(coneTimeAxis, interpFilters(:, 1), 'r-o', ...
             coneTimeAxis, interpFilters(:, 2), 'g-o', ...
             coneTimeAxis, interpFilters(:, 3), 'b-o');
@@ -520,47 +575,47 @@ switch ieParamFormat(plotType)
 
     case 'moviecurrent'
         % Current movie in gray scale
-        if isempty(obj.current)
+        if isempty(cm.current)
             if isempty(p.Results.hf), close(hf); end
             error('no current data');
         end
 
         % Additional arguments may be the video file name, step, and
         % FrameRate
-        ieMovie(obj.current, varargin{:});
+        ieMovie(cm.current, varargin{:});
 
     case 'conefundamentals'
         % The cone absorptance without macular pigment or lens
-        uData = obj.pigment.absorptance;
+        uData = cm.pigment.absorptance;
         if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2);
+            plot(cm.wave, uData, 'LineWidth', 2);
             grid on;
             xlabel('Wavelength (nm)');
             ylabel('Cone quanta absorptance');
         end
 
     case 'maculartransmittance'
-        uData = obj.macular.transmittance;
+        uData = cm.macular.transmittance;
         if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2);
+            plot(cm.wave, uData, 'LineWidth', 2);
             grid on;
             xlabel('Wavelength (nm)');
             ylabel('Macular transmittance');
         end
 
     case 'macularabsorptance'
-        uData = obj.macular.absorptance;
+        uData = cm.macular.absorptance;
         if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2);
+            plot(cm.wave, uData, 'LineWidth', 2);
             grid on;
             xlabel('Wavelength (nm)');
             ylabel('Macular absorptance');
         end
 
     case 'macularabsorbance'
-        uData = obj.macular.unitDensity;
+        uData = cm.macular.unitDensity;
         if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2);
+            plot(cm.wave, uData, 'LineWidth', 2);
             grid on;
             xlabel('Wavelength (nm)');
             ylabel('Macular absorbance');
@@ -568,9 +623,9 @@ switch ieParamFormat(plotType)
 
     case 'conespectralqe'
         % Quantum efficiency of macular pigment and cone photopigments
-        uData = obj.qe;
+        uData = cm.qe;
         if ~isequal(hf, 'none')
-            plot(obj.wave, obj.qe, 'LineWidth', 2);
+            plot(cm.wave, cm.qe, 'LineWidth', 2);
             grid on;
             xlabel('Wavelength (nm)');
             ylabel('Cone quanta efficiency');
@@ -580,11 +635,11 @@ switch ieParamFormat(plotType)
         % Includes lens, macular pigment, and cone photopigment properties
         if isempty(oi), error('oi required for spectral qe'); end
         lensTransmittance = oiGet(oi, 'lens transmittance', ...
-            'wave', obj.wave);
-        uData = bsxfun(@times, lensTransmittance, obj.qe);
+            'wave', cm.wave);
+        uData = bsxfun(@times, lensTransmittance, cm.qe);
 
         if ~isequal(hf, 'none')
-            plot(obj.wave, uData, 'LineWidth', 2);
+            plot(cm.wave, uData, 'LineWidth', 2);
             grid on;
             xlabel('Wavelength (nm)');
             ylabel('Eye quanta efficiency');
@@ -593,33 +648,33 @@ switch ieParamFormat(plotType)
         % case 'currenttimeseries'
         %     % Photocurrent time series of selected points.
         %     % Need a way to choose which points!
-        %     if isempty(obj.current)
+        %     if isempty(cm.current)
         %         if isempty(p.Results.hf), close(hf); end
         %         error('no photocurrent data');
         %     end
         %     uData = plotCurrentTimeseries(obj, varargin{:});
 
     case {'empath', 'eyemovementpath'}
-        plot(obj.emPositions(:, 1), obj.emPositions(:, 2),'ko:');
-        xLim = [min(obj.emPositions(:,1)),max(obj.emPositions(:,1))];
-        yLim = [min(obj.emPositions(:,2)),max(obj.emPositions(:,2))];
-        if xLim(1) > -1, xLim(1) = -3; end
-        if xLim(2) < 1,  xLim(2) = 3; end
-        if yLim(1) > -1, yLim(1) = -3; end
-        if yLim(2) < 1,  yLim(2) = 3; end
+        % coneRectPlot(app,'eye movement path');
+
+        plot(cm.emPositions(:, 1), cm.emPositions(:, 2),'ko:');
+        xLim = [min(cm.emPositions(:,1)),max(cm.emPositions(:,1))];
+        yLim = [min(cm.emPositions(:,2)),max(cm.emPositions(:,2))];
+        if xLim(1) > -1, xLim(1) = -3; end; if xLim(2) < 1,  xLim(2) = 3; end
+        if yLim(1) > -1, yLim(1) = -3; end; if yLim(2) < 1,  yLim(2) = 3; end
         grid on;
         xlabel('Horizontal position (cones)');
         ylabel('Vertical position (cones)');
-        set(gca,'xlim',xLim,'ylim',yLim);
-        title(sprintf('Eye movement path (%.1f ms steps)',obj.integrationTime*1e3));
-        
+        set(curAx,'xlim',xLim,'ylim',yLim);
+        title(sprintf('Eye movement path (%.1f ms steps)',cm.integrationTime*1e3));
+
         % RGB movies on cone mosaic. These are not currently implemented,
         % but exist here in draft form. See routine coneImageActivity below
         % as well. Could be resurrected some day.
         %
         % case 'absorptions'
         %     % Movie of the absorptions on the cone mosaic
-        %     if isempty(obj.absorptions)
+        %     if isempty(cm.absorptions)
         %         % Could be come cla; return
         %         error('no absorption data');
         %     end
@@ -627,7 +682,7 @@ switch ieParamFormat(plotType)
         %
         % case {'current', 'photocurrent'}
         %     % Photo current movie on colored cone mosaic
-        %     if isempty(obj.current)
+        %     if isempty(cm.current)
         %         if isempty(p.Results.hf), close(hf); end
         %         error('no photocurrent data');
         %     end
@@ -639,7 +694,7 @@ switch ieParamFormat(plotType)
 end
 
 % Put back the modified user data
-if exist('uData','var'), set(gca, 'userdata', uData); end
+if exist('uData','var'), set(curAx, 'userdata', uData); end
 
 end
 
@@ -780,10 +835,10 @@ function uData = plotCurrentTimeseries(obj, varargin)
 %
 
 % Temporal samples
-dt = obj.os.timeStep;
+dt = cm.os.timeStep;
 
 % The current
-outputSignalTemp = obj.current;
+outputSignalTemp = cm.current;
 sz = size(outputSignalTemp);
 
 % Reshape for plotting
@@ -801,3 +856,11 @@ ylabel('pA');
 
 end
 %}
+
+%----------------------
+function coneRectPlotHelp(validPlotsPrint)
+
+fprintf('\nconeRectPlot plot types\n--------------\n');
+for ii = 2:length(validPlotsPrint), fprintf('\t%s\n', validPlotsPrint{ii}); end
+
+end

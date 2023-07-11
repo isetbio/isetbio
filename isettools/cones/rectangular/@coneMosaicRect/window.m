@@ -1,5 +1,7 @@
 function window(obj, varargin)
-% Opens a cone mosaic window GUI.
+% Open a cone mosaic window GUI (older GUIDE style for now).
+%
+% TODO:  Update to appdesigner
 %
 % Syntax:
 %   window(obj, [varargin])
@@ -9,12 +11,12 @@ function window(obj, varargin)
 %    function. 
 %
 % Inputs:
-%    obj - The cone mosaic rect object.
+%    obj - The rectangular cone mosaic object.
 %
-%  Outputs:
+% Outputs:
 %   None.
 %
-%  Optional key/value pairs:
+% Optional key/value pairs:
 %   'show' - 'mean absorptions', 'cone mosaic', 'mean photocurrent'
 %
 %  See Also:

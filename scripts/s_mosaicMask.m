@@ -106,7 +106,10 @@ oiWindow(oi);
 thisM = coneMosaicRect;
 thisM.setSizeToFOV(sceneGet(scene, 'fov'));
 thisM.compute(oi);
-thisM.window;
+
+coneRectWindow(thisM);
+
+% thisM.window;
 
 %% Now add a cone mask overlay.
 
@@ -126,7 +129,7 @@ coneMask.col = linspace(-mosaicSizeUM,mosaicSizeUM,size(bv,2))*1e-6;
 
 thisM.coneMask = coneMask;
 thisM.compute(oi);
-thisM.window;
+coneRectWindow(thisM);
 
 
 %%
