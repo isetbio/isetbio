@@ -22,18 +22,17 @@ function window(obj, varargin)
 %  See Also:
 %    coneMosaicWindow
 
-% History:
-%    xx/xx/16  HJ   ISETBIO Team 2016
-%    02/19/18  jnm  Formatting
 
 %% 
+varargin = ieParamFormat(varargin);
 p = inputParser;
 
 valid = {'conemosaic','meanabsorptions','meanphotocurrent'};
 p.addRequired('obj',@(x)(isa(x,'coneMosaicRect')));
-p.addParameter('show','meanabsorptions',@(x)(ismember(ieParamFormat(x),valid)));
+p.addParameter('plottype','meanabsorptions',@(x)(ismember(ieParamFormat(x),valid)));
 
 p.parse(obj,varargin{:});
-coneMosaicWindow(obj,p.Results.show);
+
+coneRectWindow(obj,'plot type',p.Results.plottype);
 
 end

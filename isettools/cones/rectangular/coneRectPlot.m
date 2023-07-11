@@ -155,7 +155,7 @@ end
 
 
 % Deal with the gamma from the window
-if isa(app,'coneRectWindow_app'), gam = str2double(app.editGam.Value);
+if isa(app,'coneRectWindow_App'), gam = str2double(app.editGam.Value);
 else, gam = 1;
 end
 
@@ -288,7 +288,7 @@ switch ieParamFormat(plotType)
             ylabel(yStr);
         end
 
-        if isa(app,'coneRectWindow_app')
+        if isa(app,'coneRectWindow_App')
             ieROIDraw(app,'shape','line','shape data',c);
         end
 
@@ -308,7 +308,7 @@ switch ieParamFormat(plotType)
                 c = [x, x, 1,size(data,1)];
         end
 
-        if isa(app,'coneRectWindow_app')
+        if isa(app,'coneRectWindow_App')
             ieROIDraw(app,'shape','line','shape data',c);
         end
 
@@ -368,7 +368,7 @@ switch ieParamFormat(plotType)
         x = ieClip(pt(1), 1, size(data, 1));
         y = ieClip(pt(2), 1, size(data, 2));
         c = [7 y x];
-        if isa(app,'coneRectWindow_app')
+        if isa(app,'coneRectWindow_App')
             ieROIDraw(app,'shape','circle','shape data',c);
         end
 
@@ -435,7 +435,7 @@ switch ieParamFormat(plotType)
             case 'v'
                 c = [x, x, 1,size(data,1)];
         end
-        if isa(app,'coneRectWindow_app')
+        if isa(app,'coneRectWindow_App')
             ieROIDraw(app,'shape','line','shape data',c);
         end
 
@@ -468,7 +468,7 @@ switch ieParamFormat(plotType)
             case 'v'
                 c = [x, x, 1,size(data,1)];
         end
-        if isa(app,'coneRectWindow_app')
+        if isa(app,'coneRectWindow_App')
             ieROIDraw(app,'shape','line','shape data',c);
         end
 
@@ -511,7 +511,7 @@ switch ieParamFormat(plotType)
         x = ieClip(pt(1), 1, size(data, 1));
         y = ieClip(pt(2), 1, size(data, 2));
         c = [3 x y];
-        if isa(app,'coneRectWindow_app')
+        if isa(app,'coneRectWindow_App')
             ieROIDraw(app,'shape','circle','shape data',c);
         end
 

@@ -106,6 +106,7 @@ oiWindow(oi);
 thisM = coneMosaicRect;
 thisM.setSizeToFOV(sceneGet(scene, 'fov'));
 thisM.compute(oi);
+thisM.window;
 
 coneRectWindow(thisM);
 

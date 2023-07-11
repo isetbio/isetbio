@@ -30,20 +30,18 @@ function coneRectW = coneRectWindow(cones,varargin)
 
 %%
 varargin = ieParamFormat(varargin);
+
 p = inputParser;
 p.addRequired('cones',@(x)(isa(x,'coneMosaicRect')));
-p.addParameter('show',true,@islogical);
+p.addParameter('plottype',true,@ischar);
 
 p.parse(cones,varargin{:});
 
 %% See if there is a window.
 
 % Empty, so create one and put it in the vcSESSION
-coneRectW = coneRectWindow_App(cones);
-% coneRectW.refresh;
+coneRectW = coneRectWindow_App(cones,p.Results.plottype);
 
-if p.Results.show
-    drawnow;
-end
+drawnow;
 
 end
