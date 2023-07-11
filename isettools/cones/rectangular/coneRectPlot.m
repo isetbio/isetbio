@@ -149,12 +149,14 @@ else
     curAx = get(fig,'CurrentAxes');
 end
 
-% gam = str2double(app.editGam.Value);  % Probably not needed here.  Only in the plot routine
-gam = 1;
+% Deal with the gamma from the window
+if isa(app,'coneRectWindow_app'), gam = str2double(app.editGam.Value);  
+else, gam = 1;
+end
 
 % Check plot type to see if we send this off to the outer segment plot
 % routine 
-if strcmpi(ieParamFormat(plotType(1:12)),'outersegment')
+if numel(plotType)> 11 && strcmpi(ieParamFormat(plotType(1:12)),'outersegment')
     cm.os.plot(plotType(13:end), 'cmosaic', obj, varargin{:});
 end
 
@@ -202,7 +204,6 @@ switch ieParamFormat(plotType)
         %  
         %   cmrPlot(obj,mean absorptions,axisData)
         %
-        axisData = get(curAx,'UserData'); % Main axis in window
 
         % Image of mean absorptions per integration period
         if isempty(cm.absorptions)
