@@ -73,8 +73,23 @@ switch (computerInfo.localHostName)
     case 'Crete'
         % Nicolas' M1 MacStudio Ultra
         dropboxValidationRootDirPath = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    case 'sharkray'
+            % DHB's desktop
+            dropboxValidationRootDirPath = fullfile(filesep,'Volumes','Dropbox','Aguirre-Brainard Lab Dropbox','David Brainard');       
     otherwise
-        error('Dropbox validation root directory location not available for computer named: ''%s''.', computerInfo.localHostName);          
+        % Some unspecified machine, try user specific customization
+        switch(sysInfo.userShortName)
+            % Could put user specific things in, but at the moment generic
+            % is good enough.
+     
+            case 'colorlab'
+                % SACCSFA desktop (Linux)
+                userNameDropbox = 'Mela Nopsin';
+                dropboxValidationRootDirPath = fullfile('/home/',sysInfo.userShortName,'Aguirre-Brainard Lab Dropbox',userNameDropbox);
+                
+            otherwise
+                dropboxValidationRootDirPath = fullfile('/Users/',sysInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
+        end
 end
 
 p = struct(...
@@ -95,6 +110,13 @@ addpath(genpath(p.alternateFullDataDir));
 
 generatePreferenceGroup(p);
 UnitTest.usePreferencesForProject(p.projectName);
+
+% Some behaviors are controlled through the ISET preferences.
+%
+% Turn off the waitbar!
+setpref('ISET','waitbar',false);
+ieSessionSet('waitbar',false);
+
 
 end
 
