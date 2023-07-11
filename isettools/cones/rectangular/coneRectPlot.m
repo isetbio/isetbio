@@ -384,23 +384,34 @@ switch ieParamFormat(plotType)
         set(curAx, 'ylim', [mn mx]);
 
     case 'meancurrent'
-        if isempty(cm.current), error('no photocurrent data'); end
+        if isempty(cm.current)
+            warning('no photocurrent data'); 
+            return;
+        end
+
         data = mean(cm.current, 3);
 
-        % Apply gamma. The current is always negative.
-        gdata = guidata(cm.hdl);
-        gam = str2double(get(gdata.editGam, 'string'));
-        if max(data(:)) > 0
-            warning('Gamma correction in display is not correct');
+        % Apply gamma. The current is always negative.        
+        gam = str2double(app.editGam.Value);
+        if max(data(:)) > 0 && ~isequal(gam,1)
+            warning('Current is +/-, gamma correction turned off');
+            gam = 1;
         end
 
         % Carry on assuming current is all negative pA.
         % uData = -1*(abs(uData).^gam);
         data = abs(data);
         if ~isequal(hf, 'none'), imagesc(data .^ gam); end
-        uData.data = data;
+        uData.data = data;        
 
+        % Show the data, with the gamma from the window.
+        axisData.data = mean(cm.current, 3);
+        if isequal(gam,1), imagesc(axisData.data);
+        else,              imagesc((axisData.data) .^ gam);
+        end
         axis off;
+
+        % Preserve the tick labels in real photons
         colormap(flipud(gray));  % Shows a numerical value
         cbar = colorbar;
         current = -1 * ...
@@ -409,6 +420,8 @@ switch ieParamFormat(plotType)
         set(cbar, 'TickLabels', current);
         axis image;
         title('Photocurrent (pA)');
+
+        set(curAx,'UserData',axisData);  % Put it back
 
     case {'hlinecurrent', 'vlinecurrent'}
         data = mean(cm.current, 3);
