@@ -676,11 +676,12 @@ set(handles.popupImageType, 'String', str);
 % for the movies that get passed to ieMovie.
 g = str2num(get(handles.editGam, 'string'));
 
+% The image axis in the cone mosaic window is stored in handles.axes2.
 switch ieParamFormat(plotType)
     case 'conemosaic'
         % cone mosaic image
-        % TODO:  For large mosaics, the computation is slow. We should
-        % compute it once and store it.
+        % For large cone mosaics, we compute the mosaic and store it
+        % in the axis handle as userdata.
         nCones  = size(cm.coneLocs, 1);
         maxCones = 1e4;
         if  nCones > maxCones
