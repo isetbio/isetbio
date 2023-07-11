@@ -12,8 +12,9 @@ end
 %% Actual validation code
 function ValidationFunction(runTimeParams)
 
-    %% Ihitialize
+    %% Initialize
     ieInit;
+    runTimeParams.generatePlots = true;
 
     %% Get Stockman-Sharpe and XYZ functions
     wave = (400:5:700)';
@@ -57,10 +58,15 @@ function ValidationFunction(runTimeParams)
     end
 
     %% Get the same things out of colorTransformMatrix
+    %
+    % In isetcam, T1 is the inverse of T2, and not obtained the 
+    % way we get T_ss2xyz by regression above. In isetbio, T1
+    % was obtained by regression.  Adjusted this assert to make
+    % it pass for the isetcam method.  DHB, 2022-07-11.
     T1 = colorTransformMatrix('stockman 2 xyz');
     T2 = colorTransformMatrix('xyz 2 stockman');
     tolerance = 1e-3;
-    quantityOfInterest = T1 - T_ss2xyz;
+    quantityOfInterest = T1 - inv(T_xyz2ss); 
     UnitTest.assertIsZero(quantityOfInterest,'Matrix T_ss2xyz returned by colorTransformMatrix',tolerance);
     
     quantityOfInterest = T2-T_xyz2ss;
