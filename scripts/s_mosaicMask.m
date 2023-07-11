@@ -103,14 +103,11 @@ oi = oiCreate('wvf human');
 oi = oiCompute(oi,scene);
 oi = oiCrop(oi,'border');
 oiWindow(oi);
+
 thisM = coneMosaicRect;
 thisM.setSizeToFOV(sceneGet(scene, 'fov'));
 thisM.compute(oi);
 thisM.window;
-
-coneRectWindow(thisM);
-
-% thisM.window;
 
 %% Now add a cone mask overlay.
 
