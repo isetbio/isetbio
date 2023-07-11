@@ -129,7 +129,7 @@ coneMask.col = linspace(-mosaicSizeUM,mosaicSizeUM,size(bv,2))*1e-6;
 
 thisM.coneMask = coneMask;
 thisM.compute(oi);
-thisM.window;
+coneRectWindow(thisM);
 
 
 %%
