@@ -26,18 +26,18 @@ classdef cMosaic < handle
     %    'wave'                             - Vector. Wavalength support. Default is: 400:10:700.
     %    'pigment'                          - @cPhotoPigment. Custom cPhotoPigment object.
     %    'macular'                          - @Macular(). Custom Macular object.
-    %    'coneData',                        - Struct. Struct with custom cone data, usually exported from a @coneMosaicHex.
-    %    'eccentricityDegs'                 - [x,y]. Center of the mosaic, in degrees. Default: [0 0]
-    %    'sizeDegs'                         - [sx, sy]. Width and height of the mosaic, in degrees. Default: [0.4 0.4]
-    %    'whichEye'                         - Which eye. Valid options are: {'left eye', 'right eye'}. Default: 'right eye'.
-    %    'computeMeshFromScratch'           - Logical, indicating whether to recompute the mesh from scratch. Default: false
-    %    'visualizeMeshConvergence'         - Logical, indicating whether to visualize the convergence of the mesh. Default: false 
-    %    'exportMeshConvergenceHistoryToFile' - Logical, indicating whether to save the convergence of the mesh. Default:false
-    %    'maxMeshIterations'                - Scalar. Max number of iterations for the mesh generation. Default: 100.
-    %    'customRFspacingFunction'          - Empty [], of a handle to a function that returns the RF spacing in microns for an array of RF positions in microns - used only when generating a mesh from scratch 
-    %    'customDegsToMMsConversionFunction'- Empty [], of a handle to a function that returns eccentricity in degs of visual angle for eccentricities specified in to retinal mms - used only when generating a mesh from scratch
-    %    'customMMsToDegsConversionFunction'- Empty [], of a handle to a function that returns eccentricity in retinal mms for eccentricities specified in to degrees of visual angle   - used only when generating a mesh from scratch        
-    %    'micronsPerDegree'                 - Scalar. A custom retinal magnification factor, microns/deg
+    %    'cone data',                       - Struct. Struct with custom cone data, usually exported from a @coneMosaicHex.
+    %    'eccentricity degs'                - [x,y]. Center of the mosaic, in degrees. Default: [0 0]
+    %    'size degs'                        - [sx, sy]. Width and height of the mosaic, in degrees. Default: [0.4 0.4]
+    %    'which eye'                        - Which eye. Valid options are: {'left eye', 'right eye'}. Default: 'right eye'.
+    %    'compute mesh from scratch'        - Logical, indicating whether to recompute the mesh from scratch. Default: false
+    %    'visualize mesh convergence'       - Logical, indicating whether to visualize the convergence of the mesh. Default: false 
+    %    'export mesh convergence history'  - Logical, indicating whether to save the convergence of the mesh. Default:false
+    %    'max mesh iterations'              - Scalar. Max number of iterations for the mesh generation. Default: 100.
+    %    'custom rf spacing function'       - Empty [], of a handle to a function that returns the RF spacing in microns for an array of RF positions in microns - used only when generating a mesh from scratch 
+    %    'custom degs to mms conversion function'- Empty [], of a handle to a function that returns eccentricity in degs of visual angle for eccentricities specified in to retinal mms - used only when generating a mesh from scratch
+    %    'custom mms to degs conversion function'- Empty [], of a handle to a function that returns eccentricity in retinal mms for eccentricities specified in to degrees of visual angle   - used only when generating a mesh from scratch        
+    %    'micronsperdegree'                 - Scalar. A custom retinal magnification factor, microns/deg
     %    'rodIntrusionAdjustedConeAperture' - Logical, indicating whether to adjust the cone aperture (light collecting area), or scalar in (0..1], to account for rods. Default: false 
     %    'eccVaryingConeAperture'           - Logical, indicating whether to allow the cone aperture (light collecting area) to vary with eccentricity. Default: true 
     %    'eccVaryingConeBlur'               - Logical, indicating whether to allow the cone aperture (spatial blur) to vary with eccentricity.  Default: false 
@@ -65,13 +65,19 @@ classdef cMosaic < handle
         SCONE_ID = 3;
         KCONE_ID = 4;
         
-        % OD size is from "The Size and Shape of the Optic Disc in Normal Human Eyes"
-        %                  Harry A. Quigley, MD; Andrew E. Brown; John D. Morrison, MD; et al Stephen M. Drance, MD
-        %                  Arch Ophthalmol. 1990;108(1):51-57. doi:10.1001/archopht.1990.01070030057028
+        % OD properties
+        %   Size is from "The Size and Shape of the Optic Disc in
+        %   Normal Human Eyes" Harry A. Quigley, MD; Andrew E. Brown;
+        %   John D. Morrison, MD; et al Stephen M. Drance, MD Arch
+        %   Ophthalmol. 1990;108(1):51-57.
+        %   doi:10.1001/archopht.1990.01070030057028
         %
-        % OD location is from "Determination of the Location of the Fovea on the Fundus".
-        %                  Invest. Ophthalmol. Vis. Sci. 2004;45(9):3257-3258. doi: https://doi.org/10.1167/iovs.03-1157.
-        % These are both specified in retinal coordinates
+        %   Location is from "Determination of the Location of the
+        %   Fovea on the Fundus". Invest. Ophthalmol. Vis. Sci.
+        %   2004;45(9):3257-3258. doi:
+        %   https://doi.org/10.1167/iovs.03-1157.
+        %
+        % Both size and location are specified in retinal coordinates
         opticDisk = struct(...
             'centerDegs', [15.5, 1.5], ...
         	'horizontalDiameterMM', 1.77, ...
@@ -149,7 +155,7 @@ classdef cMosaic < handle
         % passing a ('opticalImagePositionDegs', something) key/value pair during the cMosaic.compute() call.
         opticalImagePositionDegs;
         
-        % Color for cone rendering in mosaic visualization
+        % RGB values to use when rendering the mosaic
         lConeColor = [1 0.1 0.5];
         mConeColor = [0.1 1 0.5];
         sConeColor = [0.6 0.1 1];
@@ -166,7 +172,7 @@ classdef cMosaic < handle
         tritanopicRadiusDegs;
     end
     
-    % Read-only properties
+    % Read-only private properties
     properties (GetAccess=public, SetAccess=private)
         % [n x 2] matrix of cone positions, in microns
         coneRFpositionsMicrons;
@@ -241,7 +247,7 @@ classdef cMosaic < handle
         blurApertureDiameterMicronsZones = [];
         blurApertureDiameterDegsZones = []; 
         
-        % User-settable microns per degree
+        % User-settable microns per degree (user settable?)
         micronsPerDegreeApproximation = [];
         
         % Custom degs <-> mm conversions
@@ -258,7 +264,7 @@ classdef cMosaic < handle
     % Dependent properties
     properties (Dependent)
         % wave - Wavelength support
-        %   wave depends on wavelength support of the pigment property
+        %   wave depends on wavelength support of the pigment
         wave;
         
         % qe - Cone quantal efficiency (absorptance)
@@ -277,7 +283,7 @@ classdef cMosaic < handle
         % average microns per degree
         micronsPerDegree;
         
-        % mosaic size in microns
+        % mosaic size in microns (vector?)
         sizeMicrons;
 
         % Number of cones
@@ -339,34 +345,42 @@ classdef cMosaic < handle
         % Constructor
         function [obj, cmParams] = cMosaic(varargin)
             
-            cmParams = cMosaicParams;  % Default.  Updated at the end
+            % The default parameters are stored in cMosaicParams
+            % The constructor reads the user parameters and updates
+            % the values in this instance.
+            cmParams = cMosaicParams;  
             
+            % All the parameters should be defined as lower case with
+            % no spaces. This function allows the inputs to have
+            % spaces and mixed case.
+            varargin = ieParamFormat(varargin);
+
             % Parse input
             p = inputParser;
             p.addParameter('name', 'cone mosaic', @ischar);
-            p.addParameter('sourceLatticeSizeDegs', 58, @isscalar);
-            p.addParameter('overlappingConeFractionForElimination', [], @(x)( (isempty(x)) || (isscalar(x)&&(x<=1.0)&&(x>0))));
+            p.addParameter('sourcelatticesizedegs', 58, @isscalar);
+            p.addParameter('overlappingconefractionforelimination', [], @(x)( (isempty(x)) || (isscalar(x)&&(x<=1.0)&&(x>0))));
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('pigment', cPhotoPigment(), @(x) isa(x, 'cPhotoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
-            p.addParameter('coneData', [], @(x)(isempty(x) || (isstruct(x))));
+            p.addParameter('conedata', [], @(x)(isempty(x) || (isstruct(x))));
             
             % These are synonyms.  If positionDegs is sent in, it
             % overwrites eccentricityDegs
-            p.addParameter('eccentricityDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('eccentricitydegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('positionDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
             
-            p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
-            p.addParameter('computeMeshFromScratch', false, @islogical);
-            p.addParameter('customMinRFspacing', [], @(x) (isempty(x) || isscalar(x)));
-            p.addParameter('customRFspacingFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
-            p.addParameter('customDegsToMMsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
-            p.addParameter('customMMsToDegsConversionFunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
-            p.addParameter('visualizeMeshConvergence', false, @islogical);
-            p.addParameter('exportMeshConvergenceHistoryToFile', false, @islogical);
-            p.addParameter('maxMeshIterations', 100, @(x)(isempty(x) || isscalar(x)));
-            p.addParameter('micronsPerDegree', [], @(x)(isempty(x) || (isscalar(x))));
+            p.addParameter('sizedegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('whicheye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
+            p.addParameter('computemeshfromscratch', false, @islogical);
+            p.addParameter('customminrfspacing', [], @(x) (isempty(x) || isscalar(x)));
+            p.addParameter('customrfspacingfunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
+            p.addParameter('customdegstommsconversionfunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
+            p.addParameter('custommmstodegsconversionfunction', [], @(x) (isempty(x) || isa(x,'function_handle')));
+            p.addParameter('visualizemeshconvergence', false, @islogical);
+            p.addParameter('exportmeshconvergencehistory', false, @islogical);
+            p.addParameter('maxmeshiterations', 100, @(x)(isempty(x) || isscalar(x)));
+            p.addParameter('micronsperdegree', [], @(x)(isempty(x) || (isscalar(x))));
             p.addParameter('rodIntrusionAdjustedConeAperture', false, @(x) ((islogical(x))||((isscalar(x))&&((x>0)&&(x<=1)))));
             p.addParameter('eccVaryingConeAperture', true, @islogical);
             p.addParameter('eccVaryingConeBlur', false, @islogical);
@@ -393,18 +407,18 @@ classdef cMosaic < handle
             p.parse(varargin{:});
             
             obj.name    = p.Results.name;
-            obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
-            obj.overlappingConeFractionForElimination = p.Results.overlappingConeFractionForElimination;
+            obj.sourceLatticeSizeDegs = p.Results.sourcelatticesizedegs;
+            obj.overlappingConeFractionForElimination = p.Results.overlappingconefractionforelimination;
             obj.macular = p.Results.macular;
             obj.pigment = p.Results.pigment;
             obj.wave    = p.Results.wave;
             
             % BW wants to use positionDegs rather than eccentricity.  For
             % teaching purposes.
-            if ~isempty(p.Results.eccentricityDegs)
+            if ~isempty(p.Results.eccentricitydegs)
                 % eccentricityDegs is always used if present, for
                 % historical reasons 
-                obj.eccentricityDegs = p.Results.eccentricityDegs;
+                obj.eccentricityDegs = p.Results.eccentricitydegs;
             elseif ~isempty(p.Results.positionDegs)
                 % Use positionDegs if available but there is not
                 % eccentricityDegs
@@ -414,8 +428,8 @@ classdef cMosaic < handle
                 obj.eccentricityDegs = [0,0];
             end
                 
-            obj.sizeDegs = p.Results.sizeDegs;
-            obj.whichEye = p.Results.whichEye;
+            obj.sizeDegs = p.Results.sizedegs;
+            obj.whichEye = p.Results.whicheye;
             
             obj.rodIntrusionAdjustedConeAperture = p.Results.rodIntrusionAdjustedConeAperture;
             obj.eccVaryingConeAperture = p.Results.eccVaryingConeAperture;
@@ -441,9 +455,9 @@ classdef cMosaic < handle
             obj.useParfor = p.Results.useParfor;
             
             % Custom mm/deg conversion factors
-            obj.customDegsToMMsConversionFunction = p.Results.customDegsToMMsConversionFunction;
-            obj.customMMsToDegsConversionFunction = p.Results.customMMsToDegsConversionFunction;
-            obj.micronsPerDegreeApproximation = p.Results.micronsPerDegree;
+            obj.customDegsToMMsConversionFunction = p.Results.customdegstommsconversionfunction;
+            obj.customMMsToDegsConversionFunction = p.Results.custommmstodegsconversionfunction;
+            obj.micronsPerDegreeApproximation = p.Results.micronsperdegree;
             
             % Assert that only one microns/deg conversion has been specified
             if (...
@@ -497,18 +511,18 @@ classdef cMosaic < handle
             addlistener(obj, 'coneDensities','PostSet', @obj.assignConeTypes);
             addlistener(obj, 'tritanopicRadiusDegs', 'PostSet', @obj.assignConeTypes);
                 
-            if (isempty(p.Results.coneData))
-                if (p.Results.computeMeshFromScratch)
+            if (isempty(p.Results.conedata))
+                if (p.Results.computemeshfromscratch)
                     
                     % Custom mesh generation function 
-                    customMinRFspacing = p.Results.customMinRFspacing;
-                    customRFspacingFunction = p.Results.customRFspacingFunction;
+                    customMinRFspacing = p.Results.customminrfspacing;
+                    customRFspacingFunction = p.Results.customrfspacingfunction;
             
                     % Re-generate lattice
                     obj.regenerateConePositions(...
-                        p.Results.maxMeshIterations,  ...
-                        p.Results.visualizeMeshConvergence, ...
-                        p.Results.exportMeshConvergenceHistoryToFile, ...
+                        p.Results.maxmeshiterations,  ...
+                        p.Results.visualizemeshconvergence, ...
+                        p.Results.exportmeshconvergencehistory, ...
                         'customMinRFspacing', customMinRFspacing, ...
                         'customRFspacingFunction', customRFspacingFunction);
                 else
@@ -540,7 +554,7 @@ classdef cMosaic < handle
                 
             else
                 % Load cone positions and cone types from passed struct
-                obj.importExternalConeData(p.Results.coneData);
+                obj.importExternalConeData(p.Results.conedata);
                 
                 % Set random seed
                 if (isempty(obj.randomSeed))
