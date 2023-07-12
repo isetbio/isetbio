@@ -59,7 +59,7 @@ optics = oiGet(oi,'optics');
 optics = opticsSet(optics,'off axis method','skip');
 optics = opticsSet(optics,'otf method','skip otf');
 oi = oiSet(oi,'optics',optics);
-oi = oiCompute(scene,oi);
+oi = oiCompute(oi,scene);
 oi = oiSet(oi,'fov',sceneDegrees);
 % oiShowImage(oi);
 
