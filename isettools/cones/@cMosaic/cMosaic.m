@@ -38,25 +38,32 @@ classdef cMosaic < handle
     %    'custom degs to mms conversion function'- Empty [], of a handle to a function that returns eccentricity in degs of visual angle for eccentricities specified in to retinal mms - used only when generating a mesh from scratch
     %    'custom mms to degs conversion function'- Empty [], of a handle to a function that returns eccentricity in retinal mms for eccentricities specified in to degrees of visual angle   - used only when generating a mesh from scratch        
     %    'micronsperdegree'                 - Scalar. A custom retinal magnification factor, microns/deg
-    %    'rodIntrusionAdjustedConeAperture' - Logical, indicating whether to adjust the cone aperture (light collecting area), or scalar in (0..1], to account for rods. Default: false 
-    %    'eccVaryingConeAperture'           - Logical, indicating whether to allow the cone aperture (light collecting area) to vary with eccentricity. Default: true 
-    %    'eccVaryingConeBlur'               - Logical, indicating whether to allow the cone aperture (spatial blur) to vary with eccentricity.  Default: false 
-    %    'eccVaryingOuterSegmentLength'     - Logical, indicating whether to allow the outer segment (light collecting area) to vary with eccentricity. Default: true
-    %    'eccVaryingMacularPigmentDensity'  - Logical, indicating whether to allow the macular pigment density to vary with eccentricity. Default: true
-    %    'eccVaryingMacularPigmentDensityDynamic',- Logical, indicating whether to correct the macular pigment density in the presence of eye movements. Default: false
-    %    'coneDensities'                    - Vector, with 3 or 4 densities for L-, M-, S-, and possibly a 4th cone. Default: [0.6 0.3 0.1 0.0]
-    %    'tritanopicRadiusDegs'             - Scalar. Radius of S-cone free region. Default: 0.15 degs
-    %    'noiseFlag'                        - String. Indicating whether to compute with random noise, frozen noise or no-noise. Valid options are {'random', 'frozen', 'none'}
-    %    'randomSeed'                       - Random seed for the noise.
-    %    'integrationTime'                  - Scalar. Integration time in seconds. Default is: 5/1000
-    %    'useParfor'                        - Logical, indicating whether to use parfor. Default: true.
+    %    'rod intrusion adjusted cone aperture' - Logical, indicating whether to adjust the cone aperture (light collecting area), or scalar in (0..1], to account for rods. Default: false 
+    %    'ecc varying cone aperture'        - Logical, indicating whether to allow the cone aperture (light collecting area) to vary with eccentricity. Default: true 
+    %    'ecc varying cone blur'            - Logical, indicating whether to allow the cone aperture (spatial blur) to vary with eccentricity.  Default: false 
+    %    'ecc varying outer segment length'     - Logical, indicating whether to allow the outer segment (light collecting area) to vary with eccentricity. Default: true
+    %    'ecc varying macular pigment density'  - Logical, indicating whether to allow the macular pigment density to vary with eccentricity. Default: true
+    %    'ecc varying macular pigment density dynamic' - Logical, indicating whether to correct the macular pigment density in the presence of eye movements. Default: false
+    %    'conedensities'                    - Vector, with 3 or 4 densities for L-, M-, S-, and possibly a 4th cone. Default: [0.6 0.3 0.1 0.0]
+    %    'tritanopic radius degs'           - Scalar. Radius of S-cone free region. Default: 0.15 degs
+    %    'noise flag'                       - String. Indicating whether to compute with random noise, frozen noise or no-noise. Valid options are {'random', 'frozen', 'none'}
+    %    'random seed'                      - Random seed for the noise.
+    %    'integration time'                 - Scalar. Integration time in seconds. Default is: 5/1000
+    %    'use parfor'                       - Logical, indicating whether to use parfor. Default: true.
     %
+    % Uncommented, found recently.  NC to comment.
+    %    'anchor all ecc varying params to their foveal values'
+    %    'optical image position degs'
+    %    'cone coupling lambda'
+    %    'cone aperture modifiers'
+    %    'cone diameter to spacing ratio'
     %
     % See Also:
     %    cPhotoPigment
     %
     % History:
     %    December 2020  NPC  Wrote it
+    %    July, 2023.    BW was here
     
     properties (Constant)
         % Cone types
@@ -345,15 +352,17 @@ classdef cMosaic < handle
         % Constructor
         function [obj, cmParams] = cMosaic(varargin)
             
-            % The default parameters are stored in cMosaicParams
-            % The constructor reads the user parameters and updates
-            % the values in this instance.
-            cmParams = cMosaicParams;  
-            
-            % All the parameters should be defined as lower case with
-            % no spaces. This function allows the inputs to have
-            % spaces and mixed case.
-            varargin = ieParamFormat(varargin);
+            % If the input arguments are in the form of a struct, we
+            % leave it alone.
+            %
+            % The key/val parameters are all defined as lower case
+            % with no spaces. The ieParamFormat function allows the
+            % user to specify parameters that include spaces and mixed
+            % case.  It forces to lower case and removes space.  This
+            % improves readability. 
+            if ~isempty(varargin) && ~isstruct(varargin{1})
+                varargin = ieParamFormat(varargin);
+            end
 
             % Parse input
             p = inputParser;
@@ -368,7 +377,7 @@ classdef cMosaic < handle
             % These are synonyms.  If positionDegs is sent in, it
             % overwrites eccentricityDegs
             p.addParameter('eccentricitydegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('positionDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('positiondegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
             
             p.addParameter('sizedegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
             p.addParameter('whicheye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
@@ -381,28 +390,28 @@ classdef cMosaic < handle
             p.addParameter('exportmeshconvergencehistory', false, @islogical);
             p.addParameter('maxmeshiterations', 100, @(x)(isempty(x) || isscalar(x)));
             p.addParameter('micronsperdegree', [], @(x)(isempty(x) || (isscalar(x))));
-            p.addParameter('rodIntrusionAdjustedConeAperture', false, @(x) ((islogical(x))||((isscalar(x))&&((x>0)&&(x<=1)))));
-            p.addParameter('eccVaryingConeAperture', true, @islogical);
-            p.addParameter('eccVaryingConeBlur', false, @islogical);
-            p.addParameter('eccVaryingOuterSegmentLength', true, @islogical);
-            p.addParameter('eccVaryingMacularPigmentDensity', true, @islogical);
-            p.addParameter('eccVaryingMacularPigmentDensityDynamic', false, @islogical);
-            p.addParameter('anchorAllEccVaryingParamsToTheirFovealValues', false, @islogical);
-            p.addParameter('coneCouplingLambda', [], @(x)(isempty(x)||isscalar(x)));
-            p.addParameter('coneApertureModifiers', struct('smoothLocalVariations', true), @isstruct);
-            p.addParameter('coneDiameterToSpacingRatio', 1.0,  @(x)(isscalar(x)&&(x<=1.0)));
-            p.addParameter('coneDensities', [0.6 0.3 0.1 0.0], @(x)(isnumeric(x) && ((numel(x) == 3)||(numel(x)==4))));
-            p.addParameter('tritanopicRadiusDegs', 0.15, @isscalar);
-            p.addParameter('integrationTime', 5/1000, @isscalar);
-            p.addParameter('opticalImagePositionDegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
-            p.addParameter('useParfor', true, @islogical);
+            p.addParameter('rodintrusionadjustedconeaperture', false, @(x) ((islogical(x))||((isscalar(x))&&((x>0)&&(x<=1)))));
+            p.addParameter('eccvaryingconeaperture', true, @islogical);
+            p.addParameter('eccvaryingconeblur', false, @islogical);
+            p.addParameter('eccvaryingoutersegmentlength', true, @islogical);
+            p.addParameter('eccvaryingmacularpigmentdensity', true, @islogical);
+            p.addParameter('eccvaryingmacularpigmentdensitydynamic', false, @islogical);
+            p.addParameter('anchoralleccvaryingparamstotheirfovealvalues', false, @islogical);
+            p.addParameter('conecouplinglambda', [], @(x)(isempty(x)||isscalar(x)));
+            p.addParameter('coneaperturemodifiers', struct('smoothLocalVariations', true), @isstruct);
+            p.addParameter('conediametertospacingratio', 1.0,  @(x)(isscalar(x)&&(x<=1.0)));
+            p.addParameter('conedensities', [0.6 0.3 0.1 0.0], @(x)(isnumeric(x) && ((numel(x) == 3)||(numel(x)==4))));
+            p.addParameter('tritanopicradiusdegs', 0.15, @isscalar);
+            p.addParameter('integrationtime', 5/1000, @isscalar);
+            p.addParameter('opticalimagepositiondegs', 'mosaic-centered', @(x)(ischar(x) || (isnumeric(x)&&numel(x)==2)));
+            p.addParameter('useparfor', true, @islogical);
             
             % Can we have frozen noise without a randomseed? And, if we
             % have a seed, perhaps we intend frozen noise? So we agree on
             % what we want and deal with it here and then below around line
             % 490.
-            p.addParameter('noiseFlag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
-            p.addParameter('randomSeed', [], @(x)(isempty(x) || isscalar(x)));
+            p.addParameter('noiseflag', 'random', @(x)(ischar(x) && (ismember(x, {'random', 'frozen', 'none'}))));
+            p.addParameter('randomseed', [], @(x)(isempty(x) || isscalar(x)));
 
             p.parse(varargin{:});
             
@@ -419,10 +428,10 @@ classdef cMosaic < handle
                 % eccentricityDegs is always used if present, for
                 % historical reasons 
                 obj.eccentricityDegs = p.Results.eccentricitydegs;
-            elseif ~isempty(p.Results.positionDegs)
-                % Use positionDegs if available but there is not
+            elseif ~isempty(p.Results.positiondegs)
+                % Use positionDegs if available but there is no
                 % eccentricityDegs
-                obj.eccentricityDegs = p.Results.positionDegs;
+                obj.eccentricityDegs = p.Results.positiondegs;
             else                
                 % Default
                 obj.eccentricityDegs = [0,0];
@@ -431,28 +440,28 @@ classdef cMosaic < handle
             obj.sizeDegs = p.Results.sizedegs;
             obj.whichEye = p.Results.whicheye;
             
-            obj.rodIntrusionAdjustedConeAperture = p.Results.rodIntrusionAdjustedConeAperture;
-            obj.eccVaryingConeAperture = p.Results.eccVaryingConeAperture;
-            obj.eccVaryingOuterSegmentLength = p.Results.eccVaryingOuterSegmentLength;
-            obj.eccVaryingMacularPigmentDensity = p.Results.eccVaryingMacularPigmentDensity;
-            obj.eccVaryingConeBlur = p.Results.eccVaryingConeBlur;
-            obj.eccVaryingMacularPigmentDensityDynamic  = p.Results.eccVaryingMacularPigmentDensityDynamic;
-            obj.anchorAllEccVaryingParamsToTheirFovealValues = p.Results.anchorAllEccVaryingParamsToTheirFovealValues;
+            obj.rodIntrusionAdjustedConeAperture = p.Results.rodintrusionadjustedconeaperture;
+            obj.eccVaryingConeAperture = p.Results.eccvaryingconeaperture;
+            obj.eccVaryingOuterSegmentLength = p.Results.eccvaryingoutersegmentlength;
+            obj.eccVaryingMacularPigmentDensity = p.Results.eccvaryingmacularpigmentdensity;
+            obj.eccVaryingConeBlur = p.Results.eccvaryingconeblur;
+            obj.eccVaryingMacularPigmentDensityDynamic  = p.Results.eccvaryingmacularpigmentdensitydynamic;
+            obj.anchorAllEccVaryingParamsToTheirFovealValues = p.Results.anchoralleccvaryingparamstotheirfovealvalues;
 
-            obj.coneCouplingLambda = p.Results.coneCouplingLambda;
+            obj.coneCouplingLambda = p.Results.conecouplinglambda;
             
-            obj.coneDensities = p.Results.coneDensities;
-            obj.tritanopicRadiusDegs = p.Results.tritanopicRadiusDegs;
-            obj.coneApertureModifiers = p.Results.coneApertureModifiers;
-            obj.coneDiameterToSpacingRatio = p.Results.coneDiameterToSpacingRatio;
+            obj.coneDensities = p.Results.conedensities;
+            obj.tritanopicRadiusDegs = p.Results.tritanopicradiusdegs;
+            obj.coneApertureModifiers = p.Results.coneaperturemodifiers;
+            obj.coneDiameterToSpacingRatio = p.Results.conediametertospacingratio;
             
-            obj.noiseFlag  = p.Results.noiseFlag;
-            obj.randomSeed = p.Results.randomSeed;
-            obj.integrationTime = p.Results.integrationTime;
-            obj.opticalImagePositionDegs = p.Results.opticalImagePositionDegs;
+            obj.noiseFlag  = p.Results.noiseflag;
+            obj.randomSeed = p.Results.randomseed;
+            obj.integrationTime = p.Results.integrationtime;
+            obj.opticalImagePositionDegs = p.Results.opticalimagepositiondegs;
             
             % Parallel computations
-            obj.useParfor = p.Results.useParfor;
+            obj.useParfor = p.Results.useparfor;
             
             % Custom mm/deg conversion factors
             obj.customDegsToMMsConversionFunction = p.Results.customdegstommsconversionfunction;

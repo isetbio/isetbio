@@ -1,12 +1,17 @@
 function cmParams = cMosaicParams()
 % Return a struct with the cMosaic default parameters
 %
-% cMosaic itself when run with cMosaic('params',varargin)
-% will return the parameters of the specifically created cmosaic.
-% Shortly.
+% If you control the cMosaic parameters at creation, the constructor
+% returns your parameters as a second output argument
+%
+%   [cm, params] = cMosaic( ... your parameter ...) ;
+%
+% This makes it easy to re-create the cMosaic
+%
+%  cmDuplicate = cMosaic(params);
 %
 % See also
-%   coneMosaicRectP
+%   coneMosaicRectParams
 
 cmParams.name = 'cone mosaic';
 cmParams.wave =  400:10:700;
@@ -14,8 +19,10 @@ cmParams.pigment = cPhotoPigment();
 cmParams.macular = Macular();
 cmParams.coneData = [];
 
-% In some cases we use eccentricityDegs.  But BW likes this better.
-cmParams.positionDegs =  [0 0];
+% In some cases we use eccentricityDegs.  BW likes position better,
+% and he enabled using it as an alternative.
+% cmParams.positionDegs =  [0 0];
+cmParams.eccentricityDegs =  [0 0];
 
 cmParams.sizeDegs =  [0.4 0.4];
 cmParams.whichEye =  'right eye';
@@ -25,7 +32,7 @@ cmParams.customRFspacingFunction =  [];
 cmParams.customDegsToMMsConversionFunction =  [];
 cmParams.customMMsToDegsConversionFunction =  [];
 cmParams.visualizeMeshConvergence =  false;
-cmParams.exportMeshConvergenceHistoryToFile =  false;
+cmParams.exportMeshConvergenceHistory =  false;
 cmParams.maxMeshIterations =  100;
 cmParams.micronsPerDegree =  [];
 
