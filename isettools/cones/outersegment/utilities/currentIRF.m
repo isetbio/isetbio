@@ -49,7 +49,7 @@ function [irf, timeAxis] = currentIRF(meanIso,ecc, timeSamples)
 %% Dummy coneMosaic object
 
 % This enables us to access the outersegment methods.
-cMosaic = coneMosaic('os', osLinear, 'pattern', [2 2 2]);
+cMosaic = coneMosaicRect('os', osLinear, 'pattern', [2 2 2]);
 
 if ~exist('ecc','var'), ecc = 0; end
 
