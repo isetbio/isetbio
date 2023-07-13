@@ -11,7 +11,7 @@
 %   Write a routine that takes the outline of the letter and superimposes
 %   it on the color image of the cm.
 %
-%   Implement this for the hex mosaic.
+% This is VERY slow.  Figure out why.
 %
 
 %%
@@ -20,38 +20,24 @@ ieInit;
 %% Create a letter on a display
 
 % family, size, dpi
+% To make a letter string, use 'ABC' or 'Hello'
 font = fontCreate('A', 'Georgia', 18, 96);
 display = 'LCD-Apple';
 scene = sceneCreate('letter', font, display);
 scene = sceneSet(scene,'wangular',0.5);
-
-%{
-% To make a second letter and combine, perhaps?
-
-% family, size, dpi
-scene = sceneCrop(scene,[96 1 sz(2)-97 sz(1)-1]);
-sz = sceneGet(scene,'size');
-
-font = fontCreate('B', 'Georgia', 18, 96);
-display = 'LCD-Apple';
-scene2 = sceneCreate('letter', font, display);
-scene2 = sceneSet(scene2,'wangular',0.5);
-scene2 = sceneCrop(scene2,[96 1 sz(2)-65 sz(1)-1]);
-scene = sceneCombine(scene,scene2,'direction','horizontal');
-%}
-
 sceneWindow(scene);
 
-%% Calculate through human optics
+%% Calculate through human wvf optics
 
 oi = oiCreate;
 oi = oiCompute(oi,scene);
 
-%oiWindow(oi);
-
 %%  Now image it on the cone mosaic with some fixational eye movements
 
-% Here is a stored cMosaic
+% Here are some stored, pre-computed cMosaics.  Probably we should
+% recompute these, or use NC's methods for creating and storing.  And we
+% should have a smater way to load them with parameters that are
+% meaningful in the mosaicLoad call.  which should be cMosaicLoad()
 cm = mosaicLoad('cmosaic_0.5-0.5_0.0-0.0.mat'); ecc = 0;
 % cm = mosaicLoad('cmosaic_0.5-0.5_10.0-0.0.mat'); ecc = 10;
 % cm = mosaicLoad('cmosaic_1.0-1.0_0.0-0.0.mat'); ecc = 0;
