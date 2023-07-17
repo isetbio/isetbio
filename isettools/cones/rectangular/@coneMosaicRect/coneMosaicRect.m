@@ -54,7 +54,7 @@ classdef coneMosaicRect < hiddenHandle
     %                         calling photoPigment().
     %    'macular'          - Macular pigment object. Default is set by
     %                         calling Macular().
-    %    'coneMask'         - Struct that specifies a spatial mask to apply
+    %    'cone mask'        - Struct that specifies a spatial mask to apply
     %                         to the cone signals.  Potentially
     %                         representing blood vessels or shadow casting
     %                         subtrate.
@@ -70,7 +70,7 @@ classdef coneMosaicRect < hiddenHandle
     %                         density of cone types, K, L, M, S.
     %    'size'             - Vector. Default [72 88]. Spatial size of
     %                         mosaic (number of rows/cols).
-    %    'integrationTime'  - Value. Default 0.005. Temporal integration in
+    %    'integration time' - Value. Default 0.005. Temporal integration in
     %                         sec. Keep this under 25 ms (0.025) if you are
     %                         computing photocurrent for decent numerical
     %                         accuracy.
@@ -78,25 +78,18 @@ classdef coneMosaicRect < hiddenHandle
     %    'em positions      - Eye movement positions. N x 2 matrix (default
     %                         [0 0] is middle of cone mosaic, 1 unit is 1
     %                         cone for rect.
-    %    'aperture blur'     - Boolean. Default false. Blur by cone aperture
-    %    'noiseFlag'        - String. Default 'random'. Add photon noise
+    %    'aperture blur'    - Boolean. Default false. Blur by cone aperture
+    %    'noise flag'       - String. Default 'random'. Add photon noise
     %                         (default) or not. Valid values are 'random', 
     %                         'frozen', or 'none'.
-    %    'eccentricityunits' - 'm' or 'deg'
+    %    'eccentricity units' - 'm' or 'deg'
     %    'useParfor'
-    %
-    % Notes:
-    %    * TODO: We should take eccentricity and angle as an input
-    %      parameter and create cones of the appropriate size for that
-    %      retinal location. (taken from constructor)
-    %    * TODO: Allow units to be specified as a part of varargin for
-    %      size() function below.
     %
     % References:
     %    ISETBIO wiki: https://github.com/isetbio/isetbio/wiki/Cone-mosaic
     %
     % See Also:
-    %    coneMosaicHex, photoPigment, Macular, lens, outersegment
+    %    cMosaic, photoPigment, Macular, lens, outersegment
     %
     
     % History:
@@ -376,6 +369,8 @@ classdef coneMosaicRect < hiddenHandle
             p.addParameter('integrationtime', 0.005, @isscalar);
             p.addParameter('empositions', [0 0], @isnumeric);
             p.addParameter('apertureblur', false, @islogical);
+            p.addParameter('conemask', [], @isnumeric);
+            
             p.addParameter('noiseflag', 'random', ...
                 @(x)(ismember(lower(x), coneMosaicRect.validNoiseFlags)));
             p.addParameter('useparfor', false, @islogical);
@@ -397,6 +392,7 @@ classdef coneMosaicRect < hiddenHandle
             obj.noiseFlag   = p.Results.noiseflag;
             obj.emPositions = p.Results.empositions;
             obj.useParfor   = p.Results.useparfor;
+            obj.coneMask    = p.Results.conemask;
             
             % Construct outersgement if not passed.
             if (isempty(p.Results.os))

@@ -1,8 +1,11 @@
 classdef coneMosaicHex < coneMosaic
 % Create a hexagonal cone mosaic class
 %
-% BW: Broken because the relationship between coneMosaic, coneMosaicRect,
-% and coneMosaicHex has become confused.
+% BW: Broken because I broke the relationship between coneMosaic,
+% coneMosaicRect, and coneMosaicHex.  There is no 'super class' for
+% coneMosaic any more.  They will each need to live in their separate
+% worlds.  So I need to add the coneMosaicRect parameters that are
+% needed into this class.
 %
 % Syntax:
 %   cMosaicHex = coneMosaicHex(resamplingFactor, [varargin]);
@@ -231,8 +234,6 @@ classdef coneMosaicHex < coneMosaic
             % Optional key/value pairs:
             %    See pairs in header above.
             %
-
-            error('coneMosaicHex not yet working on isetcam branch.')
             
             % Params that we want to consume
             % (not pass to our super-class @coneMosaic)
@@ -255,7 +256,9 @@ classdef coneMosaicHex < coneMosaic
                 'latticeAdjustmentDelaunayToleranceF' ...
                 'marginF'};
 
-            % Call the super-class constructor.
+            % BW needs to eliminate this and make the proper method
+            % work.  The hex implementation, however, is not very high
+            % priority.  But it is summer, so this could happen.
             vararginForConeMosaic = {};
             vararginForConeHexMosaic = {};
             for k = 1:2:numel(varargin)
@@ -278,7 +281,8 @@ classdef coneMosaicHex < coneMosaic
             end
             obj = obj@coneMosaic(vararginForConeMosaic{:});
 
-            % parse input
+            % Start from here. parse the input and add the missing
+            % parameters from the prior coneMosaic class.
             p = inputParser;
             p.addRequired('resamplingFactor', @isnumeric);
             p.addParameter('fovDegs', 0.25, @(x)(isnumeric(x) && ...

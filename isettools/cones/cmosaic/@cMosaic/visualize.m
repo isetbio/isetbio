@@ -68,6 +68,11 @@ p.addParameter('visualizedconeaperture', 'geometricarea', @(x)ismember(ieParamFo
     {'lightcollectingsrea', 'geometricarea', 'conespacing', ...
     'lightcollectingareacharacteristicdiameter', 'lightcollectingarea2sigma', ...
     'lightcollectingarea4sigma', 'lightcollectingarea5sigma', 'lightcollectingarea6sigma'}));
+
+% Specifies how finely to sample the circle representing the cone
+% aperture.  Default values are assigned below that depend on the
+% number of cones in the mosaic.  When there are few, the default is
+% 72 and when there are many the default is 6.
 p.addParameter('visualizedconeaperturethetasamples', [], @(x)(isempty(x) || isscalar(x)));
 
 % Cone rendering parameters
@@ -120,6 +125,7 @@ p.addParameter('clearaxesbeforedrawing', true, @islogical);
 p.addParameter('fontsize', 16, @isscalar);
 p.addParameter('colorbarfontsize', 16, @(x)(isempty(x)||(isscalar(x))));
 p.addParameter('backgroundcolor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
+
 p.addParameter('plottitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
 p.addParameter('plottitlecolor', [0 0 0], @isnumeric);
 p.addParameter('plottitlefontsize', 16, @isscalar);
@@ -165,7 +171,6 @@ noYlabel = p.Results.noylabel;
 displayedEyeMovementData = p.Results.displayedeyemovementdata;
 
 fontSize          = p.Results.fontsize;
-plotTitleFontSize = p.Results.plottitlefontsize;
 colorbarFontSize  = p.Results.colorbarfontsize;
 cMap              = p.Results.activationcolormap;
 verticalColorBar  = p.Results.verticalActivationColorBar;
@@ -178,9 +183,12 @@ colorBarTickLabelPostFix = p.Results.colorbarticklabelpostfix;
 horizontalActivationSliceEccentricity = p.Results.horizontalactivationsliceeccentricity;
 verticalActivationSliceEccentricity = p.Results.verticalactivationsliceeccentricity;
 backgroundColor = p.Results.backgroundcolor;
-plotTitle = p.Results.plottitle;
+
+plotTitle      = p.Results.plottitle;
 plotTitleColor = p.Results.plottitlecolor;
-textDisplay = p.Results.textdisplay;
+plotTitleFontSize = p.Results.plottitlefontsize;
+
+textDisplay    = p.Results.textdisplay;
 textDisplayColor = p.Results.textdisplaycolor;
 clearAxesBeforeDrawing = p.Results.clearaxesbeforedrawing;
 
@@ -231,9 +239,9 @@ end
 switch (domain)
     case 'degrees'
         rfPositions = obj.coneRFpositionsDegs;
-        rfSpacings = obj.coneRFspacingsDegs;
+        rfSpacings  = obj.coneRFspacingsDegs;
         rfApertureDiameters = obj.coneApertureDiametersDegs;
-        rfDiameters = rfApertureDiameters/obj.coneApertureToDiameterRatio;
+        rfDiameters         = rfApertureDiameters/obj.coneApertureToDiameterRatio;
 
         rfProximityThreshold = 1/270;
         if (isstruct(displayedEyeMovementData))
@@ -318,10 +326,22 @@ visualizationParams.axesHandle   = axesHandle;
 % Number of cones
 conesNum = numel(rfSpacings);
 
-% Aperture shape (disk)
+% Aperture shape will be a circle.  We sample more finely when there
+% are fewer cones.  NC used as many as 72 samples.  BW
 if (isempty(visualizedConeApertureThetaSamples))
+    if (conesNum < 40000),       deltaAngle = 30;  % 12 samples
+    elseif (conesNum < 60000),   deltaAngle = 45;  %  8 samples
+    else,                        deltaAngle = 60;  %  6 samples
+    end
+else
+    % User specified
+    deltaAngle = 360/visualizedConeApertureThetaSamples;
+end
+
+%{ 
+% BW removed.  To delete if no one complains.
     if (conesNum < 100)
-        deltaAngle = 5;
+        deltaAngle = 5;  % 72 samples
     elseif (conesNum < 500)
         deltaAngle = 10;
     elseif (conesNum < 1000)
@@ -333,13 +353,12 @@ if (isempty(visualizedConeApertureThetaSamples))
     elseif (conesNum < 60000)
         deltaAngle = 45;
     else
-        deltaAngle = 60;
+        deltaAngle = 60;  % 6 samples
     end
-else
-    deltaAngle = 360/visualizedConeApertureThetaSamples;
-end
 
-% Generate cone aperture shape
+%}
+% Generate cone aperture shape as a set of (x,y) values.  The
+% deltaAngle determines the sampling rate around the circle.
 iTheta = (0:deltaAngle:360) / 180 * pi;
 coneApertureShape.x = cos(iTheta);
 coneApertureShape.y = sin(iTheta);
@@ -453,11 +472,12 @@ end
 
 
 if (visualizeCones)
-    % Visualize cone types
+    % Visualize cone types - It seems faceAlpha is not used?  Just
+    % faceAlphaCones
     if (densityContourOverlay)
         faceAlpha = 0.2;
     else
-        if (strcmp(visualizedConeAperture, 'lightCollectingArea6sigma'))
+        if (strcmpi(visualizedConeAperture, 'lightCollectingArea6sigma'))
             faceAlpha = 0.6;
         else
             faceAlpha = 0.9;
@@ -897,9 +917,13 @@ switch (domain)
 
 end
 
-% User can set plotTitle to false.  Then we skip.  Used in
-% cMosaic.plot
+% User can set plotTitle to false, empty or a character string.
 if plotTitle
+
+    %  plotTitle is true.  So, it cannot be empty! I am deleting the
+    %  first part of the 'if' to see whether this ever breaks
+    %  anything. (BW).
+    %{
     if (isempty(plotTitle))
         if (numel(obj.coneDensities) == 4)
             title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
@@ -916,8 +940,9 @@ if plotTitle
                 conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
         end
     else
-        title(axesHandle,plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
-    end
+    %}
+    title(axesHandle, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+    % end
 end
 
 if (~isempty(textDisplay))
@@ -933,6 +958,7 @@ end
 drawnow;
 end
 
+%%
 function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData)
 
 xSupport = thePSFData.supportXdegs + obj.eccentricityDegs(1);
@@ -961,6 +987,8 @@ cMosaic.semiTransparentContourPlot(axesHandle, ...
     'lineWidth', 1.5);
 end
 
+
+%%
 function superimposeTheOpticalImage(obj, axesHandle, visualizationDomain, theOI, superimposedOIAlpha)
 
 % Obtain spatial support in microns
@@ -1005,8 +1033,15 @@ imPlot.AlphaData = superimposedOIAlpha;
 end
 
 
+%% Key rendering function.  Could be used by coneMosaicRect, too, I think
 function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ...
     faceColors, edgeColor, lineWidth, faceAlpha, edgeAlpha)
+% Called several times to render each of the different cone classes
+%
+% In principle, the parameters could be calculated from a
+% coneMosaicRect, too so that this could be the visualization routine
+% for that class.
+%
 
 conesNum = numel(apertureRadii);
 if (conesNum == 0)

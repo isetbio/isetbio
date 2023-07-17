@@ -1,8 +1,8 @@
 function [spacing, aperture, density, params, comment] = coneSizeReadData(varargin)
-%%coneSizeReadData  Read in data about cone size parameters
+% Look up data about cone size parameters
 %
 % Syntax:
-%    [spacing, aperture, density] = coneSizeReadData;
+%    [spacing, aperture, density] = coneSizeReadData(varargin);
 %
 % Descirption:
 %     Calculate expected cone spacing and aperture size at this eccentricity and angle.
