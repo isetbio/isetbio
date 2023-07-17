@@ -2,25 +2,48 @@ function visualizationParams = visualize(obj, varargin)
 % Visualize different aspects of a @cMosaic or its activation
 %
 % TODO:
-%   ieParamFormat
 %   Comments, extraction of useful utilities for reuse.
+%
+% Brief description
+%   NC built many nice visualization functions and inserted them here.
+%   The number of parameters is so large and the possibilities so
+%   vast, the it seemed useful to provide the user with a set of
+%   simpler calls.  Those are in cMosaic.plot and likely cMosaicPlot()
+%   will be implemented.  Those routine interface to this one
+%   regularly.
+%
+%   I am considering making this routine visualize(cm,...) and having
+%   it live outside of the class.  We can leave just the cm.plot as
+%   part of the class.  Noodling, not sure what I think.
 %
 % Syntax:
 %   cm = cMosaic(); cm.visualize();
 %
-%   % Return the various settable params
-%   pStruct = cm.visualize('params')
+%   % Return the many settable visualize params
+%   visParams = cm.visualize('params')
 %
 %   % Display the various settable params and info about them
 %   cm.visualize('help');
 %
-%  Examples
-%    cm.visualize();        - Visualize the cone mosaic
-%    pStruct = cm.visualize('params') - Retrieve the visualization parameter structure
-%
 %  See also
 %   cMosaic.plot (an interface to this)
 %   Tutorials in tutorials/cones/cMosaic
+
+% Examples:
+%{
+cm = cMosaic;
+
+% Visualize the cone mosaic
+cm.visualize();        
+
+% Retrieve the visualization parameters
+pStruct = cm.visualize('params') 
+
+cm.visualize('density contour overlay',true,...
+             'crosshairs on fovea',true, ...
+             'label retinal meridians',true);   
+
+%}
 
 if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
     visualizationParams = visualizeParams(varargin{1});
@@ -29,127 +52,137 @@ else
     visualizationParams = '';
 end
 
+% Force to lower case, no spaces.  I spent a lot of time arranging
+% this, but it is always possible I missed something.
+varargin = ieParamFormat(varargin);
+
 % Parse input
 p = inputParser;
-p.addParameter('visualizationView', 'REVF', @(x)(ischar(x) && (ismember(x, {'REVF', 'retinal view'}))));
+p.addParameter('visualizationview', 'revf', @(x)(ischar(x) && (ismember(x, {'revf', 'retinal view'}))));
 p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
-p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
-p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
+p.addParameter('domainvisualizationlimits', [], @(x)((isempty(x))||(numel(x)==4)));
+p.addParameter('domainvisualizationticks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
 
-p.addParameter('visualizedConeAperture', 'geometricArea', @(x)ismember(x, ...
-    {'lightCollectingArea', 'geometricArea', 'coneSpacing', ...
-    'lightCollectingAreaCharacteristicDiameter', 'lightCollectingArea2sigma', 'lightCollectingArea4sigma', 'lightCollectingArea5sigma', 'lightCollectingArea6sigma'}));
-p.addParameter('visualizedConeApertureThetaSamples', [], @(x)(isempty(x) || isscalar(x)));
+% Worried about these parameters upper/lower space issues
+p.addParameter('visualizedconeaperture', 'geometricarea', @(x)ismember(ieParamFormat(x), ...
+    {'lightcollectingsrea', 'geometricarea', 'conespacing', ...
+    'lightcollectingareacharacteristicdiameter', 'lightcollectingarea2sigma', ...
+    'lightcollectingarea4sigma', 'lightcollectingarea5sigma', 'lightcollectingarea6sigma'}));
+p.addParameter('visualizedconeaperturethetasamples', [], @(x)(isempty(x) || isscalar(x)));
 
-p.addParameter('visualizeCones', true, @islogical);
-p.addParameter('labelCones', true, @islogical);
-p.addParameter('labelConesInActivationMap', false, @islogical);
-p.addParameter('conesAlpha', 1.0, @isscalar);
-p.addParameter('conesEdgeAlpha', 1.0, @isscalar);
-p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
-p.addParameter('outlinedConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
-p.addParameter('densityContourOverlay', false, @islogical);
-p.addParameter('densityContourLevels', [], @isnumeric);
-p.addParameter('densityContourLevelLabelsDisplay', false, @islogical);
-p.addParameter('densityColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
+% Cone rendering parameters
+p.addParameter('visualizecones', true, @islogical);
+p.addParameter('labelcones', true, @islogical);
+p.addParameter('labelconesinactivationmap', false, @islogical);
+p.addParameter('conesalpha', 1.0, @isscalar);
+p.addParameter('conesedgealpha', 1.0, @isscalar);
+p.addParameter('labelconeswithindices', [], @(x)(isempty(x)||isnumeric(x)));
+p.addParameter('outlinedconeswithindices', [], @(x)(isempty(x)||isnumeric(x)));
+p.addParameter('densitycontouroverlay', false, @islogical);
+p.addParameter('densitycontourlevels', [], @isnumeric);
+p.addParameter('densitycontourlevellabelsdisplay', false, @islogical);
+p.addParameter('densitycolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
 
-p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
-p.addParameter('superimposedOIAlpha', 0.7, @isnumeric);
+p.addParameter('withsuperimposedopticalimage', [], @(x)(isempty(x) || isstruct(x)));
+p.addParameter('superimposedoialpha', 0.7, @isnumeric);
 p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
 
 p.addParameter('activation', []);
-p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
-p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
-p.addParameter('verticalDensityColorBar', false, @islogical);
-p.addParameter('horizontalActivationColorBar', false, @islogical);
+p.addParameter('activationrange', [],@(x)((isempty(x))||(numel(x)==2)));
+p.addParameter('activationcolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
+p.addParameter('verticaldensitycolorbar', false, @islogical);
+p.addParameter('horizontalactivationcolorbar', false, @islogical);
 p.addParameter('verticalActivationColorBar', false, @islogical);
 p.addParameter('horizontalActivationColorBarInside', false, @islogical);
-p.addParameter('verticalActivationColorBarInside', false, @islogical);
-p.addParameter('colorBarTickLabelPostFix', '', @ischar);
-p.addParameter('colorbarTickLabelColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+p.addParameter('verticalactivationcolorbarinside', false, @islogical);
+p.addParameter('colorbarticklabelpostfix', '', @ischar);
+p.addParameter('colorbarticklabelcolor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
 
-p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
-p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
+p.addParameter('horizontalactivationsliceeccentricity', [], @(x)((isempty(x))||(isscalar(x))));
+p.addParameter('verticalactivationsliceeccentricity', [], @(x)((isempty(x))||(isscalar(x))));
 
-p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
-p.addParameter('crossHairsAtPosition', [], @(x)((isempty(x))||(numel(x)==2)));
-p.addParameter('crossHairsOnFovea', false, @islogical);
+p.addParameter('crosshairsonmosaiccenter', false, @islogical);
+p.addParameter('crosshairsatposition', [], @(x)((isempty(x))||(numel(x)==2)));
+p.addParameter('crosshairsonfovea', false, @islogical);
 p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
-p.addParameter('crossHairsColor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+p.addParameter('crosshairscolor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
 
-p.addParameter('displayedEyeMovementData', [], @(x)(isempty(x)||(isstruct(x))));
-p.addParameter('currentEMposition', [], @(x)(isempty(x)||(numel(x)==2)));
+p.addParameter('displayedeyemovementdata', [], @(x)(isempty(x)||(isstruct(x))));
+p.addParameter('currentemposition', [], @(x)(isempty(x)||(numel(x)==2)));
 
-p.addParameter('labelRetinalMeridians', false, @islogical);
-p.addParameter('noXLabel', false, @islogical);
-p.addParameter('noYLabel', false, @islogical);
+p.addParameter('labelretinalmeridians', false, @islogical);
+p.addParameter('noxlabel', false, @islogical);
+p.addParameter('noylabel', false, @islogical);
 
-p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
-p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
-p.addParameter('clearAxesBeforeDrawing', true, @islogical);
-p.addParameter('fontSize', 16, @isscalar);
-p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
-p.addParameter('backgroundColor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
-p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
-p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
-p.addParameter('plotTitleFontSize', 16, @isscalar);
-p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
-p.addParameter('textDisplayColor', [], @isnumeric);
+p.addParameter('figurehandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+p.addParameter('axeshandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+p.addParameter('clearaxesbeforedrawing', true, @islogical);
+p.addParameter('fontsize', 16, @isscalar);
+p.addParameter('colorbarfontsize', 16, @(x)(isempty(x)||(isscalar(x))));
+p.addParameter('backgroundcolor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
+p.addParameter('plottitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
+p.addParameter('plottitlecolor', [0 0 0], @isnumeric);
+p.addParameter('plottitlefontsize', 16, @isscalar);
+p.addParameter('textdisplay', '',@(x)(isempty(x) || ischar(x)));
+p.addParameter('textdisplaycolor', [], @isnumeric);
 
 p.parse(varargin{:});
 
-% visualizationView = p.Results.visualizationView;
+% visualizationView = p.Results.visualizationview;
 domain = p.Results.domain;
-domainVisualizationLimits = p.Results.domainVisualizationLimits;
-domainVisualizationTicks = p.Results.domainVisualizationTicks;
-visualizedConeAperture = p.Results.visualizedConeAperture;
-visualizedConeApertureThetaSamples = p.Results.visualizedConeApertureThetaSamples;
-figureHandle = p.Results.figureHandle;
-axesHandle = p.Results.axesHandle;
-verticalDensityColorBar = p.Results.verticalDensityColorBar;
-densityContourOverlay = p.Results.densityContourOverlay;
-densityContourLevels = p.Results.densityContourLevels;
-densityContourLevelLabelsDisplay = p.Results.densityContourLevelLabelsDisplay;
-densityColorMap = p.Results.densityColorMap;
-superimposedOpticalImage = p.Results.withSuperimposedOpticalImage;
+domainVisualizationLimits = p.Results.domainvisualizationlimits;
+domainVisualizationTicks  = p.Results.domainvisualizationticks;
+
+visualizedConeAperture             = p.Results.visualizedconeaperture;
+visualizedConeApertureThetaSamples = p.Results.visualizedconeaperturethetasamples;
+figureHandle = p.Results.figurehandle;
+axesHandle   = p.Results.axeshandle;
+verticalDensityColorBar = p.Results.verticaldensitycolorbar;
+densityContourOverlay   = p.Results.densitycontouroverlay;
+densityContourLevels    = p.Results.densitycontourlevels;
+densityContourLevelLabelsDisplay = p.Results.densitycontourlevellabelsdisplay;
+densityColorMap = p.Results.densitycolormap;
+superimposedOpticalImage = p.Results.withsuperimposedopticalimage;
 superimposedPSF = p.Results.withSuperimposedPSF;
-activation = p.Results.activation;
-activationRange = p.Results.activationRange;
-currentEMposition = p.Results.currentEMposition;
-crossHairsOnMosaicCenter = p.Results.crossHairsOnMosaicCenter;
+activation      = p.Results.activation;
+activationRange = p.Results.activationrange;
+currentEMposition = p.Results.currentemposition;
+crossHairsOnMosaicCenter = p.Results.crosshairsonmosaiccenter;
 crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
-crossHairsAtPosition = p.Results.crossHairsAtPosition;
-visualizeCones = p.Results.visualizeCones;
-labelCones = p.Results.labelCones;
-labelConesInActivationMap = p.Results.labelConesInActivationMap;
-faceAlphaCones = p.Results.conesAlpha;
-edgeAlphaCones = p.Results.conesEdgeAlpha;
-labelConesWithIndices = p.Results.labelConesWithIndices;
-outlinedConesWithIndices = p.Results.outlinedConesWithIndices;
-labelRetinalMeridians = p.Results.labelRetinalMeridians;
-crossHairsOnFovea = p.Results.crossHairsOnFovea;
-crossHairsColor = p.Results.crossHairsColor;
-noXlabel = p.Results.noXLabel;
-noYlabel = p.Results.noYLabel;
-displayedEyeMovementData = p.Results.displayedEyeMovementData;
-fontSize = p.Results.fontSize;
-plotTitleFontSize = p.Results.plotTitleFontSize;
-colorbarFontSize = p.Results.colorbarFontSize;
-cMap = p.Results.activationColorMap;
-verticalColorBar = p.Results.verticalActivationColorBar;
-colorbarTickLabelColor = p.Results.colorbarTickLabelColor;
-horizontalColorBar = p.Results.horizontalActivationColorBar;
-verticalColorBarInside = p.Results.verticalActivationColorBarInside;
+crossHairsAtPosition = p.Results.crosshairsatposition;
+visualizeCones = p.Results.visualizecones;
+labelCones     = p.Results.labelcones;
+labelConesInActivationMap = p.Results.labelconesinactivationmap;
+faceAlphaCones = p.Results.conesalpha;
+edgeAlphaCones = p.Results.conesedgealpha;
+labelConesWithIndices    = p.Results.labelconeswithindices;
+outlinedConesWithIndices = p.Results.outlinedconeswithindices;
+labelRetinalMeridians    = p.Results.labelretinalmeridians;
+crossHairsOnFovea = p.Results.crosshairsonfovea;
+crossHairsColor   = p.Results.crosshairscolor;
+noXlabel = p.Results.noxlabel;
+noYlabel = p.Results.noylabel;
+displayedEyeMovementData = p.Results.displayedeyemovementdata;
+
+fontSize          = p.Results.fontsize;
+plotTitleFontSize = p.Results.plottitlefontsize;
+colorbarFontSize  = p.Results.colorbarfontsize;
+cMap              = p.Results.activationcolormap;
+verticalColorBar  = p.Results.verticalActivationColorBar;
+colorbarTickLabelColor = p.Results.colorbarticklabelcolor;
+horizontalColorBar     = p.Results.horizontalactivationcolorbar;
+verticalColorBarInside = p.Results.verticalactivationcolorbarinside;
 horizontalColorBarInside = p.Results.horizontalActivationColorBarInside;
-colorBarTickLabelPostFix = p.Results.colorBarTickLabelPostFix;
-horizontalActivationSliceEccentricity = p.Results.horizontalActivationSliceEccentricity;
-verticalActivationSliceEccentricity = p.Results.verticalActivationSliceEccentricity;
-backgroundColor = p.Results.backgroundColor;
-plotTitle = p.Results.plotTitle;
-plotTitleColor = p.Results.plotTitleColor;
-textDisplay = p.Results.textDisplay;
-textDisplayColor = p.Results.textDisplayColor;
-clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
+colorBarTickLabelPostFix = p.Results.colorbarticklabelpostfix;
+
+horizontalActivationSliceEccentricity = p.Results.horizontalactivationsliceeccentricity;
+verticalActivationSliceEccentricity = p.Results.verticalactivationsliceeccentricity;
+backgroundColor = p.Results.backgroundcolor;
+plotTitle = p.Results.plottitle;
+plotTitleColor = p.Results.plottitlecolor;
+textDisplay = p.Results.textdisplay;
+textDisplayColor = p.Results.textdisplaycolor;
+clearAxesBeforeDrawing = p.Results.clearaxesbeforedrawing;
 
 if (~isempty(activation))
     labelCones = false;
@@ -317,17 +350,17 @@ end
 hold(axesHandle, 'on');
 
 %% Visualize cone apertures
-switch (visualizedConeAperture)
-    case 'coneSpacing'
+switch ieParamFormat(visualizedConeAperture)
+    case 'conespacing'
         visualizedApertures = rfSpacings;
 
-    case 'geometricArea'
+    case 'geometricarea'
         visualizedApertures = rfDiameters;
 
-    case 'lightCollectingArea'
+    case 'lightcollectingarea'
         visualizedApertures = rfApertureDiameters;
 
-    case 'lightCollectingAreaCharacteristicDiameter'
+    case 'lightcollectingareacharacteristicdiameter'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 2*sqrt(2)*gaussianSigma*rfApertureDiameters;
@@ -336,7 +369,7 @@ switch (visualizedConeAperture)
             visualizedApertures = rfApertureDiameters;
         end
 
-    case 'lightCollectingArea2sigma'
+    case 'lightcollectingarea2sigma'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 2*gaussianSigma*rfApertureDiameters;
@@ -345,7 +378,7 @@ switch (visualizedConeAperture)
             visualizedApertures = rfApertureDiameters;
         end
 
-    case 'lightCollectingArea4sigma'
+    case 'lightcollectingarea4sigma'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 4*gaussianSigma*rfApertureDiameters;
@@ -354,7 +387,7 @@ switch (visualizedConeAperture)
             visualizedApertures = rfApertureDiameters;
         end
 
-    case 'lightCollectingArea5sigma'
+    case 'lightcollectingarea5sigma'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 5*gaussianSigma*rfApertureDiameters;
@@ -363,7 +396,7 @@ switch (visualizedConeAperture)
             visualizedApertures = rfApertureDiameters;
         end
 
-    case 'lightCollectingArea6sigma'
+    case 'lightcollectingarea6sigma'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 6*gaussianSigma*rfApertureDiameters;
@@ -659,7 +692,7 @@ end
 
 % Superimpose optical image
 if (~isempty(superimposedOpticalImage))
-    superimposeTheOpticalImage(obj, axesHandle, domain, superimposedOpticalImage,p.Results.superimposedOIAlpha);
+    superimposeTheOpticalImage(obj, axesHandle, domain, superimposedOpticalImage,p.Results.superimposedoialpha);
 end
 
 % Superimpose PSF
