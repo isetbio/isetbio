@@ -1,9 +1,17 @@
-function cmParams = coneMosaicRectP()
+function cmParams = coneMosaicRectParams()
 % Return a struct with default coneMosaicRect parameters
 %
+% If you control the coneMosaicRect parameters at creation, the constructor
+% returns your parameters as a second output argument
+%
+%   [cm, params] = coneMosaicRect( ... your parameter ...) ;
+%
+% This makes it easy to re-create the cMosaic
+%
+%  cmDuplicate = coneMosaicRect(params);
 %
 % See also
-%   coneMosaic
+%   cMosaicParams
 %
 
 cmParams.name    = 'rectMosaic';

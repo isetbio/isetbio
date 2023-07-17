@@ -66,7 +66,7 @@ classdef coneMosaicRect < hiddenHandle
     %                         samples in nm.
     %    'pattern'          - Matrix. Default []. Cone type at each
     %                         position (1-4, K, L, M, S).
-    %    'spatialDensity'   - Vector. Default [0 0.6 0.3 0.1]. Relative
+    %    'spatial density'  - Vector. Default [0 0.6 0.3 0.1]. Relative
     %                         density of cone types, K, L, M, S.
     %    'size'             - Vector. Default [72 88]. Spatial size of
     %                         mosaic (number of rows/cols).
@@ -74,11 +74,11 @@ classdef coneMosaicRect < hiddenHandle
     %                         sec. Keep this under 25 ms (0.025) if you are
     %                         computing photocurrent for decent numerical
     %                         accuracy.
-    %    'micronsPerDegree' - Microns/degree. Default 300.
-    %    'emPositions'      - Eye movement positions. N x 2 matrix (default
+    %    'microns per degree' - Microns/degree. Default 300.
+    %    'em positions      - Eye movement positions. N x 2 matrix (default
     %                         [0 0] is middle of cone mosaic, 1 unit is 1
     %                         cone for rect.
-    %    'apertureBlur'     - Boolean. Default false. Blur by cone aperture
+    %    'aperture blur'     - Boolean. Default false. Blur by cone aperture
     %    'noiseFlag'        - String. Default 'random'. Add photon noise
     %                         (default) or not. Valid values are 'random', 
     %                         'frozen', or 'none'.
@@ -326,7 +326,7 @@ classdef coneMosaicRect < hiddenHandle
             %    None required.
             %
             % Outputs:
-            %    obj - The created cone mosaic object.
+            %    obj     -  The rectangular cone mosaic object.
             %    cmParams - Struct with the params for this object
             %
             % Optional key/value pairs:
@@ -338,12 +338,23 @@ classdef coneMosaicRect < hiddenHandle
             %    aperture size and spacing. I wonder if we should take
             %    eccentricity and angle as an input parameter and computer
             %    center
-            %
-            %    * TODO:  Use ieParamFormat to simplify naming and allow
-            %    spacing of the input arguments.
             
+            
+            % If the input arguments are in the form of a struct, or
+            % there are none, we leave it alone.
+            %
+            % The key/val parameters are all defined as lower case
+            % with no spaces. The ieParamFormat function allows the
+            % user to specify parameters that include spaces and mixed
+            % case.  It forces to lower case and removes space.  This
+            % improves readability. 
+            if ~isempty(varargin) && ~isstruct(varargin{1})
+                varargin = ieParamFormat(varargin);
+            end
+
             p = inputParser;
             p.KeepUnmatched = true;
+
             p.addParameter('name', 'cone mosaic rect', @ischar);
             p.addParameter('pigment', photoPigment(), ...
                 @(x) isa(x, 'photoPigment'));
@@ -355,19 +366,19 @@ classdef coneMosaicRect < hiddenHandle
             % Should check for valid.  Maybe meters or degrees?  Microns?
             p.addParameter('eccentricityunits', 'm', @ischar); 
 
-            p.addParameter('whichEye', 'left', ...
+            p.addParameter('whicheye', 'left', ...
                 @(x) ismember(x, {'left', 'right'}));
             p.addParameter('wave', 400:10:700, @isnumeric);
             p.addParameter('pattern', [], @isnumeric);
-            p.addParameter('spatialDensity', [0 0.6 0.3 0.1], @isnumeric);
+            p.addParameter('spatialdensity', [0 0.6 0.3 0.1], @isnumeric);
             p.addParameter('size', [72 88], @isnumeric);
-            p.addParameter('micronsPerDegree', 300, @isnumeric);
-            p.addParameter('integrationTime', 0.005, @isscalar);
-            p.addParameter('emPositions', [0 0], @isnumeric);
-            p.addParameter('apertureBlur', false, @islogical);
-            p.addParameter('noiseFlag', 'random', ...
-                @(x)(ismember(lower(x), coneMosaic.validNoiseFlags)));
-            p.addParameter('useParfor', false, @islogical);
+            p.addParameter('micronsperdegree', 300, @isnumeric);
+            p.addParameter('integrationtime', 0.005, @isscalar);
+            p.addParameter('empositions', [0 0], @isnumeric);
+            p.addParameter('apertureblur', false, @islogical);
+            p.addParameter('noiseflag', 'random', ...
+                @(x)(ismember(lower(x), coneMosaicRect.validNoiseFlags)));
+            p.addParameter('useparfor', false, @islogical);
             p.parse(varargin{:});
 
             
@@ -377,15 +388,15 @@ classdef coneMosaicRect < hiddenHandle
             obj.macular = p.Results.macular;
 
             obj.center   = p.Results.center(:)';
-            obj.whichEye = p.Results.whichEye;
+            obj.whichEye = p.Results.whicheye;
             obj.wave     = p.Results.wave;
-            obj.spatialDensity_   = p.Results.spatialDensity(:);
-            obj.integrationTime   = p.Results.integrationTime;
-            obj.micronsPerDegree  = p.Results.micronsPerDegree;
+            obj.spatialDensity_   = p.Results.spatialdensity(:);
+            obj.integrationTime   = p.Results.integrationtime;
+            obj.micronsPerDegree  = p.Results.micronsperdegree;
             obj.coneDarkNoiseRate = [0 0 0];
-            obj.noiseFlag   = p.Results.noiseFlag;
-            obj.emPositions = p.Results.emPositions;
-            obj.useParfor   = p.Results.useParfor;
+            obj.noiseFlag   = p.Results.noiseflag;
+            obj.emPositions = p.Results.empositions;
+            obj.useParfor   = p.Results.useparfor;
             
             % Construct outersgement if not passed.
             if (isempty(p.Results.os))
@@ -452,7 +463,7 @@ classdef coneMosaicRect < hiddenHandle
             obj.os.patchSize = obj.width;
 
             % Blur by aperture
-            obj.apertureBlur = p.Results.apertureBlur;
+            obj.apertureBlur = p.Results.apertureblur;
 
             % Initialize listener
             %
@@ -470,8 +481,8 @@ classdef coneMosaicRect < hiddenHandle
                 % Return a struct with the parameters from this object.
                 % If you want the default use
                 %
-                %   cmParams = coneMosaicRectP;
-                
+                % cmParams = coneMosaicRectParams;
+
                 cmParams.name    = obj.name;
                 cmParams.pigment = obj.pigment; 
                 cmParams.macular = obj.macular; 

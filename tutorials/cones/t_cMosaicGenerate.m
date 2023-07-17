@@ -19,51 +19,26 @@
 %% Initialize
 ieInit;
 
-%% Setup plotting
-%{
-sv = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 3, ...
-       'colsNum', 2, ...
-       'heightMargin',  0.09, ...
-       'widthMargin',    0.09, ...
-       'leftMargin',     0.07, ...
-       'rightMargin',    0.01, ...
-       'bottomMargin',   0.06, ...
-       'topMargin',      0.02);
-hFig = figure(1);
-set(hFig, 'Position', [10 10 1000 1200]);
-%}
-
 %%  Method 1. Generate a @cMosaic object 
-% by cropping a region from a large (45x45 deg) precomputed lattice. This
-% is the fastest way to generate a @cMosaic at any eccentricity
+
+% This method crops a region from a large (45x45 deg) precomputed
+% lattice. This is the fastest way to generate a @cMosaic at any
+% eccentricity
 cm = cMosaic(...
     'size degs', [4 3], ...            % SIZE: x=4.0 degs, y=3.0 degs
     'position degs', [20 -15] ...  % ECC:  x=20 deg, y= -15 deg, near the edge of the precomputed 45x45 mosaic
     );
 
 %% Visualize it (spatial support in degrees)
-% ax = subplot('Position', sv(1,1).v);
-
-cm.visualize('domain','degrees','plotTitle','Support: deg');
-
-%{
 cm.visualize(...
-    'figureHandle', hFig, ...
-    'axesHandle', ax, ...
-    'domain', 'degrees', ...
-    'plotTitle', 'cropped from large mesh (support: deg)');
-%}
+    'domain','degrees',...
+    'plotTitle','Support: deg');
 
 %% Visualize it (spatial support in microns)
 
 cm.visualize(...
     'domain', 'microns', ...
     'plotTitle', 'Support: um');
-%{
- ax = subplot('Position', sv(1,2).v);
-
-%}
 drawnow;
 
 %%  Method 2. Generate a @cMosic object from scratch
@@ -78,8 +53,8 @@ cm = cMosaic(...
     'max mesh iterations', 80 ...           % stop iterative procedure after this many iterations
     );
 
-%% Visualize it
-% ax = subplot('Position', sv(2,1).v);
+%% Visualize in a ieNewGraphWin
+
 hFig = ieNewGraphWin;
 cm.visualize(...
     'figureHandle', hFig, ...
