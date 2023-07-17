@@ -1,5 +1,15 @@
 function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
-% plot methods for the cMosaic
+% Plot methods for the cMosaic
+%
+% TODO:  Should we make a cMosaicPlot(cMosaic,varargin) function?
+%        Analogous to coneRectPlot()?  Or is visualize already that
+%        function?  Anyway, simplify the interface for users because
+%        visualize is complex.
+%
+%        Also, we should have cMosaic.get commands that make it easy
+%        to extract the data used in this or the visualize function.
+%        When we call this function, a window will always appear.  If
+%        you just want the data, call the cMosaic.get function.
 %
 % Syopsis
 %    [uData, hdl] = plot(cmosaic, plotType, allE, varargin)
@@ -11,8 +21,8 @@ function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
 % Optional key/val pairs
 %    roi 
 %    cone type
-%    hdl - Figure handle (matlab.ui.Figure).  Used for overlaying
-%           curves.
+%    hdl - Use this figure handle (matlab.ui.Figure).  Used for overlaying
+%           curves. 
 %
 % Output
 %    uData - Struct with the plot data including the ROI
@@ -49,6 +59,7 @@ p.addRequired('allE',@isnumeric);
 p.addParameter('conetype',{'l','m','s'},@(x)(ischar(x) || iscell(x)));
 p.addParameter('roi',[],@(x)(isa(x,'regionOfInterest')));
 p.addParameter('plottitle','',@ischar);
+p.addParameter('dataonly',false,@islogical);   %NYI
 
 p.addParameter('lens',[],@(x)(isa(x,'Lens')));
 

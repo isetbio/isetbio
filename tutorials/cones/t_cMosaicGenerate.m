@@ -18,10 +18,9 @@
 
 %% Initialize
 ieInit;
-clear;
-close all;
 
 %% Setup plotting
+%{
 sv = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 3, ...
        'colsNum', 2, ...
@@ -33,54 +32,60 @@ sv = NicePlot.getSubPlotPosVectors(...
        'topMargin',      0.02);
 hFig = figure(1);
 set(hFig, 'Position', [10 10 1000 1200]);
-
+%}
 
 %%  Method 1. Generate a @cMosaic object 
 % by cropping a region from a large (45x45 deg) precomputed lattice. This
 % is the fastest way to generate a @cMosaic at any eccentricity
 cm = cMosaic(...
-    'size degs', [4 3], ...        % SIZE: x=4.0 degs, y=3.0 degs
+    'size degs', [4 3], ...            % SIZE: x=4.0 degs, y=3.0 degs
     'position degs', [20 -15] ...  % ECC:  x=20 deg, y= -15 deg, near the edge of the precomputed 45x45 mosaic
     );
 
 %% Visualize it (spatial support in degrees)
-ax = subplot('Position', sv(1,1).v);
+% ax = subplot('Position', sv(1,1).v);
+
+cm.visualize('domain','degrees','plotTitle','Support: deg');
+
+%{
 cm.visualize(...
     'figureHandle', hFig, ...
     'axesHandle', ax, ...
     'domain', 'degrees', ...
-    'plotTitle', sprintf('cropped from existing (deg) %s',datetime));
+    'plotTitle', 'cropped from large mesh (support: deg)');
+%}
 
 %% Visualize it (spatial support in microns)
-ax = subplot('Position', sv(1,2).v);
-cm.visualize(...
-    'figureHandle', hFig, ...
-    'axesHandle', ax, ...
-    'domain', 'microns', ...
-    'plotTitle', sprintf('cropped from existing (um) %s',datetime));
 
+cm.visualize(...
+    'domain', 'microns', ...
+    'plotTitle', 'Support: um');
+%{
+ ax = subplot('Position', sv(1,2).v);
+
+%}
 drawnow;
 
-%%  Method 2. Generate a @cMosic object 
-%
-% Generating the mosaic from scratch. This can be slow, especially if
-% the mosaic eccentricity is off-axis.
+%%  Method 2. Generate a @cMosic object from scratch
 
+% Generating from scratch can be slow, especially
+% if the mosaic eccentricity is off-axis
 cm = cMosaic(...
     'size degs', [0.5 0.5], ...            % SIZE: x=0.5 degs, y=0.5 degs
     'position degs', [1.0 0], ...      % ECC:  x=1.0 degs, y= 0.0 degs
     'compute mesh from scratch', true, ...   % generate mesh on-line, will take some time
     'random seed', randi(9999999), ...     % set the random seed, so at to generate a different mosaic each time
-    'max mesh iterations', 40 ...           % stop iterative procedure after this many iterations
+    'max mesh iterations', 80 ...           % stop iterative procedure after this many iterations
     );
 
 %% Visualize it
-ax = subplot('Position', sv(2,1).v);
+% ax = subplot('Position', sv(2,1).v);
+hFig = ieNewGraphWin;
 cm.visualize(...
     'figureHandle', hFig, ...
-    'axesHandle', ax, ...
+    'axesHandle', gca, ...
     'domain', 'degrees', ...
-    'plotTitle', sprintf('Generated from scratch %s',datetime));
+    'plotTitle', 'on-line mesh generation');
 
 drawnow;
 
