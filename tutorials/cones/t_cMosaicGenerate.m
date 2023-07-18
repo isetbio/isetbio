@@ -65,60 +65,20 @@ cm.visualize(...
 
 drawnow;
 
-%% Experimenting with using renderPatchArray and the coneMosaicRect
+%% Experimenting using the renderPatchArray code with the coneMosaicRect
 
-
+% It will generate a new window
 cRect = coneMosaicRect;
-%{
-% Circular apoerture shape
-deltaAngle = 45;
-iTheta = (0:deltaAngle:360) / 180 * pi;
-coneApertureShape.x = cos(iTheta);
-coneApertureShape.y = sin(iTheta);
-
-rfPositions = cRect.coneLocs;
-lConeIndices = (cRect.pattern == 2);
-mConeIndices = (cRect.pattern == 3);
-sConeIndices = (cRect.pattern == 4);
-kConeIndices = (cRect.pattern == 1);
-
-% Pattern sample size is the aperture of each cone (square).  In this
-% case, they are all the same.
-diameter = cRect.patternSampleSize(1);
-
-hFig = ieNewGraphWin; axesHandle = gca;
-
-edgeColor = [0.1, 0.1, 0.1];
-lineWidth = 1;
-faceAlpha = 1;
-edgeAlpha = 1;
-
-faceColors = 1; % 1/4*0.7;
-rfCoords = rfPositions(lConeIndices,:);
-apertureRadii = ones(size(rfCoords,1),1)*diameter/2;
-coneRectRender(axesHandle, coneApertureShape, apertureRadii, rfCoords, ...
-    faceColors, edgeColor, lineWidth, faceAlpha, edgeAlpha);
-
-rfCoords = rfPositions(mConeIndices,:);
-apertureRadii = ones(size(rfCoords,1),1)*diameter/2;
-faceColors = 2; % 2/4*0.7;
-
-coneRectRender(axesHandle, coneApertureShape, apertureRadii, rfCoords, ...
-    faceColors, edgeColor, lineWidth, faceAlpha, edgeAlpha);
-
-rfCoords = rfPositions(sConeIndices,:);
-apertureRadii = ones(size(rfCoords,1),1)*diameter/2;
-faceColors = 3; % 3/4*0.7;
-coneRectRender(axesHandle, coneApertureShape, apertureRadii, rfCoords, ...
-    faceColors, edgeColor, lineWidth, faceAlpha, edgeAlpha);
-%}
-hFig = ieNewGraphWin;
-thisAxes = gca;
-coneRectRender(cRect,thisAxes);
-coneRectRender(cRect);
+coneRectRender(cRect);    % Based on renderPatchArray
 xlabel('Position (um)');
 ylabel('Position (um)');
 
+%%  Specify the axes
+
+hFig = ieNewGraphWin; thisAxes = gca;
+coneRectRender(cRect,'axes handle',thisAxes);
+xlabel('Position (um)');
+ylabel('Position (um)');
 
 %% Method 3. Generate a @coneMosaicHex and its equivalent @cMosaic object
 
