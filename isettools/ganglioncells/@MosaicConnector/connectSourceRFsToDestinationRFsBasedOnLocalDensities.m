@@ -35,9 +35,15 @@ function connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj)
     % Update the input-based destination RF centroids
     obj.updateDestinationCentroidsFromInputs(unique(nearestDestinationRFIndices));
 
-    % Visualize connectivity
+    % Save the metaDataStuct for this stage
+    if (obj.saveIntermediateConnectivityStagesMetaData)
+        obj.updateIntermediateMetaDataStructs();
+    end
+
+    % Visualize connectivity at this stage
     if (obj.visualizeConnectivityAtIntermediateStages)
-        obj.visualizeCurrentConnectivity(1001);
+        obj.intermediateFigureHandles{numel(obj.intermediateFigureHandles)+1} = ...
+            obj.visualizeCurrentConnectivity(1001);
     end
 
 end

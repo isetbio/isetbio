@@ -11,7 +11,7 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
     % and obj.wiringParams.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs inputs
     % If it has less than 3 inputs, i.e. 2, then this will be dealt by the
     % swapSourceRFsBetweenNearbyDestinationRFs() method which is called later on
-    minInputsNum = MosaicConnector.minConeInputsPerRGCToConsiderTransferToNearbyRGCs; 
+    minInputsNum = MosaicConnector.minSourceInputsToConsiderTransferToNearbyDestinationRF; 
     maxInputsNum = obj.wiringParams.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs;
 
     fprintf('Will optimize homogeneity of cone inputs to nearby RGCs for RGCs with center cones num in the range [%d .. %d]\n', ...
@@ -37,8 +37,9 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
     theCostComponentsMatrix = obj.totalInputMaintenanceCost();
     
     % The different cost component sequences
-    netCostSequences = mean(theCostComponentsMatrix,1);
-
+    s = theCostComponentsMatrix(1,:);
+    idx = find(s > -99);
+    netCostSequences = mean(theCostComponentsMatrix(idx,:),1);
 
     currentPass = 0;  tranfersInCurrentPass = 1; convergenceAchieved = false;
     while (currentPass < obj.wiringParams.maxPassesNum) && ...
@@ -118,7 +119,9 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
         theCostComponentsMatrix = obj.totalInputMaintenanceCost();
 
         % Accumulate cost sequences
-        netCostSequences = cat(1, netCostSequences, mean(theCostComponentsMatrix,1));
+        s = theCostComponentsMatrix(1,:);
+        idx = find(s > -99);
+        netCostSequences = cat(1, netCostSequences, mean(theCostComponentsMatrix(idx,:),1));
         
         % Visualize convergence
         MosaicConnector.visualizeConvergenceSequence(currentPass, ...
@@ -131,12 +134,21 @@ function transferSourceRFsBetweenUnbalancedInputNearbyDestinationRFs(obj, vararg
 
     end % while loop
 
+    hFig = figure(5050);
+    NicePlot.exportFigToPDF('transferOptimization.pdf', hFig, 300);
+
     if (generateProgressVideo)
         videoOBJ.close();
     end
 
-    % Visualize connectivity
+    % Save the metaDataStuct for this stage
+    if (obj.saveIntermediateConnectivityStagesMetaData)
+        obj.updateIntermediateMetaDataStructs();
+    end
+    
+    % Visualize connectivity at this stage
     if (obj.visualizeConnectivityAtIntermediateStages)
-        obj.visualizeCurrentConnectivity(1003);
+        obj.intermediateFigureHandles{numel(obj.intermediateFigureHandles)+1} = ...
+            obj.visualizeCurrentConnectivity(1003);
     end
 end

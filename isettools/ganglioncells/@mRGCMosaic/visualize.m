@@ -8,6 +8,7 @@ function visualize(obj, varargin)
     p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('component', 'RF centers', @(x)ismember(x, {'RF centers'}));
     p.addParameter('centerSubregionContourSamples', 10, @isscalar);
+    p.addParameter('contourGenerationMethod', 'ellipseFitToPooledConeApertureImage', @(x)(ismember(x, {'ellipseFitBasedOnLocalSpacing', 'contourOfPooledConeApertureImage','ellipseFitToPooledConeApertureImage'})));
     p.addParameter('activation', []);
     p.addParameter('samplingGrid', [], @(x)(isempty(x) || (isnumeric(x) && (size(x,2) == 2)) ));
     p.addParameter('samplingGridOutlineColor', [1 0 0], @(x)(isempty(x)||(numel(x)==3)));
@@ -41,7 +42,8 @@ function visualize(obj, varargin)
     p.addParameter('plotTitleFontSize', 16, @isscalar);
     p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
-   
+    p.addParameter('superimposedRect', [], @(x)(isempty(x)||isstruct(x)));
+    p.addParameter('superimposedRectColor', [], @(x)( isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.parse(varargin{:});
 
     hFig = p.Results.figureHandle;
@@ -52,6 +54,7 @@ function visualize(obj, varargin)
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     visualizedComponent = p.Results.component;
     centerSubregionContourSamples = p.Results.centerSubregionContourSamples;
+    contourGenerationMethod = p.Results.contourGenerationMethod;
     identifiedConeAperture = p.Results.identifiedConeAperture;
     identifiedConeApertureThetaSamples = p.Results.identifiedConeApertureThetaSamples;
     identifyInputCones = p.Results.identifyInputCones;
@@ -80,12 +83,13 @@ function visualize(obj, varargin)
     plotTitle = p.Results.plotTitle;
     plotTitleColor = p.Results.plotTitleColor;
     plotTitleFontSize = p.Results.plotTitleFontSize;
-
+    superimposedRect = p.Results.superimposedRect;
+    superimposedRectColor = p.Results.superimposedRectColor;
 
     % Generate the visualization cache
     xSupport = [];
     ySupport = []; 
-    obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples);
+    obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod);
 
     % Determine X,Y limits
     if (isempty(domainVisualizationLimits))
@@ -160,7 +164,8 @@ function visualize(obj, varargin)
                 identifiedConeAperture, identifiedConeApertureThetaSamples, ...
                 identifyInputCones, identifyPooledCones, pooledConesLineWidth, labelRGCsWithIndices, ...
                 labeledRGCsColor, labeledRGCsLineWidth, ...
-                plotRFoutlines, activation, activationRange, activationColorMap, ...
+                plotRFoutlines, superimposedRect, superimposedRectColor, ...
+                activation, activationRange, activationColorMap, ...
                 colorBarTickLabelPostFix, colorbarTickLabelColor, ...
                 verticalColorBar, horizontalColorBar, colorbarFontSize, ...
                 verticalColorBarInside, horizontalColorBarInside, ...
@@ -189,7 +194,8 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
         identifiedConeAperture, identifiedConeApertureThetaSamples, ...
         identifyInputCones, identifyPooledCones, pooledConesLineWidth, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
-        plotRFoutlines, activation, activationRange, activationColorMap, ...
+        plotRFoutlines, superimposedRect, superimposedRectColor, ...
+        activation, activationRange, activationColorMap, ...
         colorBarTickLabelPostFix, colorbarTickLabelColor, ...
         verticalColorBar, horizontalColorBar, colorbarFontSize, ...
         verticalColorBarInside, horizontalColorBarInside, ...
@@ -278,12 +284,12 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
     if (identifyPooledCones)
         hold(ax, 'on')
         if (identifyInputCones)
-            lConeInputLineColor = [0 0 0];
-            mConeInputLineColor = [0 0 0];
+            lConeInputLineColor = [1 0.1 0.5];
+            mConeInputLineColor = [0.1 1 0.5];
             lineSegmentWidth = pooledConesLineWidth;
         else
-            lConeInputLineColor = [1 0 0];
-            mConeInputLineColor = [0 1 0];
+            lConeInputLineColor = [0 0 0];
+            mConeInputLineColor = [0 0 0];
             lineSegmentWidth = pooledConesLineWidth;
         end
         
@@ -298,8 +304,8 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             'figureHandle', hFig, 'axesHandle', ax, ...
             'clearAxesBeforeDrawing', false, ...
             'visualizedConeAperture', identifiedConeAperture, ...
-            'conesAlpha', 1.0, ...
-            'conesEdgeAlpha', 0.5, ...
+            'conesAlpha', 0.7, ...
+            'conesEdgeAlpha', 0.7, ...
             'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
             'labelRetinalMeridians', labelRetinalMeridians, ...
             'domainVisualizationTicks', domainVisualizationTicks, ...
@@ -311,6 +317,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             'figureHandle', hFig, 'axesHandle', ax, ...
             'clearAxesBeforeDrawing', false, ...
             'labelCones', false, ...
+            'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
             'labelRetinalMeridians', labelRetinalMeridians, ...
             'domainVisualizationTicks', domainVisualizationTicks, ...
             'domainVisualizationLimits', domainVisualizationLimits, ...
@@ -342,12 +349,43 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
     end
 
 
+    if (~isempty(superimposedRect))
+        hold(ax, 'on');
+        if (isempty(superimposedRectColor))
+            superimposedRectColor = [1 0 0];
+        end
+
+        x1 = superimposedRect.center(1) - 0.5*superimposedRect.xRange;
+        x2 = superimposedRect.center(1) + 0.5*superimposedRect.xRange;
+        y1 = superimposedRect.center(2) - 0.5*superimposedRect.yRange;
+        y2 = superimposedRect.center(2) + 0.5*superimposedRect.yRange;
+        xx = [x1 x1 x2 x2 x1];
+        yy = [y1 y2 y2 y1 y1];
+        if (all(superimposedRectColor(1:2) == [1 1]))
+            plot(ax, xx,yy, '-', 'LineWidth', 3, 'Color', [0 0 0]);
+        else
+            plot(ax, xx,yy, '-', 'LineWidth', 3, 'Color', [1 1 0]);
+        end
+
+        plot(ax, xx,yy, '--', 'LineWidth', 3, 'Color', superimposedRectColor);
+    end
+
     % Finalize plot
     set(ax, 'FontSize', fontSize, 'FontAngle', fontAngle);
+
+    minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
+    if (minTickIncrement >= 1)
+       set(ax, 'XTickLabel', sprintf('%1.0f\n', domainVisualizationTicks.x), ...
+               'YTickLabel', sprintf('%1.0f\n', domainVisualizationTicks.y));
+    else
+       set(ax, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
+               'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
+    end
 
     if (~identifyInputCones)
         colormap(ax, cMap);
     end
+
 
     if (isempty(backgroundColor))
         set(ax, 'CLim', [0 1], 'Color', 'none');
@@ -373,7 +411,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
                     colorBarTickLabels{k} = sprintf('%2.0f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
                 elseif (max(abs(colorBarTickLevels)) >= 1)
                     colorBarTickLabels{k} = sprintf('%2.1f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
-                elseif (max(abs(colorBarTickLevels)) >= 0.1)
+                elseif (max(abs(colorBarTickLevels)) > 0.1)
                     colorBarTickLabels{k} = sprintf('%2.2f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
                 else
                     colorBarTickLabels{k} = sprintf('%2.3f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
@@ -427,10 +465,22 @@ function labelConePooling(obj,ax, lConeInputLineColor, mConeInputLineColor, line
         plot(ax, ...
             obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
             obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+            'Color', [0 0 0],...
+            'LineWidth', lineSegmentWidth*2);  
+
+        plot(ax, ...
+            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
             'Color', lConeInputLineColor,...
-            'LineWidth', lineSegmentWidth);  
+            'LineWidth', lineSegmentWidth); 
+
     
         idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.MCONE_ID);
+        plot(ax, ...
+            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+            'Color', [0 0 0],...
+            'LineWidth', lineSegmentWidth*2);
         plot(ax, ...
             obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
             obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...

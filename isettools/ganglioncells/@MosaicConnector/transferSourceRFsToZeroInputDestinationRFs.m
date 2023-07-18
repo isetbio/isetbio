@@ -75,6 +75,11 @@ function transferSourceRFsToZeroInputDestinationRFs(obj, varargin)
         obj.removeZeroInputDestinationRFs(indicesOfZeroInputDestinationRFs);
     end
     
+    % Visualize connectivity
+    if (obj.visualizeConnectivityAtIntermediateStages)
+        obj.intermediateFigureHandles{numel(obj.intermediateFigureHandles)+1} = ...
+            obj.visualizeCurrentConnectivity(1004);
+    end
 
 end
 
@@ -142,7 +147,12 @@ function indicesOfZeroInputDestinationRFs = attemptToTrasfterInputsToRemainingZe
     % Update the destinationRF spacings based on the updated connectivity
     obj.updateDestinationRFspacingsBasedOnCentroids();
 
-    % Visualize connectivity
+    % Save the metaDataStuct for this stage
+    if (obj.saveIntermediateConnectivityStagesMetaData)
+        obj.updateIntermediateMetaDataStructs();
+    end
+    
+    % Visualize connectivity at this stage
     if (obj.visualizeConnectivityAtIntermediateStages)
         obj.visualizeCurrentConnectivity(1004);
     end
