@@ -54,7 +54,12 @@ end
 
 % Force to lower case, no spaces.  I spent a lot of time arranging
 % this, but it is always possible I missed something.
-varargin = ieParamFormat(varargin);
+if iscell(varargin)
+    varargin = ieParamFormat(varargin{1});
+else
+    varargin = ieParamFormat(varargin);
+end
+
 
 % Parse input
 p = inputParser;
