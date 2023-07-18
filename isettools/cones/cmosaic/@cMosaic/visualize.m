@@ -52,12 +52,10 @@ else
     visualizationParams = '';
 end
 
-% Force to lower case, no spaces.  I spent a lot of time arranging
-% this, but it is always possible I missed something.
-if iscell(varargin)
+% If key/val pairs, force to lower case, no spaces.  I spent a lot of time
+% arranging this, but it is always possible I missed something.
+if numel(varargin) > 1
     varargin = ieParamFormat(varargin{1});
-else
-    varargin = ieParamFormat(varargin);
 end
 
 
