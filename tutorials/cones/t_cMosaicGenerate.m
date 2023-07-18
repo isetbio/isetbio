@@ -29,16 +29,11 @@ cm = cMosaic(...
     'position degs', [20 -15] ...  % ECC:  x=20 deg, y= -15 deg, near the edge of the precomputed 45x45 mosaic
     );
 
-cm = cMosaic(...
-    'size degs', [4 3], ...            % SIZE: x=4.0 degs, y=3.0 degs
-    'position degs', [20 -15]);
-
-
 %% Visualize it (spatial support in degrees)
 cm.visualize(...
     'domain','degrees',...
     'plot title','Support: deg', ...    
-    'visualizedconeaperturethetasamples', 72);
+    'visualized cone aperture theta samples', 12);
 
 %% Visualize the mosaic (spatial support in microns)
 
