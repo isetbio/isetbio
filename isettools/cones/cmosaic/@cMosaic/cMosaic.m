@@ -623,7 +623,7 @@ classdef cMosaic < handle
                 % Sometimes people send in positionDegs instead of
                 % eccentricityDegs (BW).  But eccentricityDeg cannot be
                 % empty.  So we fill it here.
-                cmParams.eccentricityDegs = obj.eccentricityDegs;
+                cmParams.eccentricitydegs = obj.eccentricityDegs;
                 
                 % A random seed was used.  We store it in the return in
                 % case we want it in the future

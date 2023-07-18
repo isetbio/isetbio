@@ -2,6 +2,8 @@ function params = visualizeParams(mode)
 % User wants to return a struct with a list of parameters
 % This can be set and passed in as the varargin.
 
+if notDefined('mode'), mode = 'params'; end
+
 visualizationParamsStruct.domain = struct(...
     'default', 'degrees', ...
     'docString', 'Choose between {''degrees'', ''microns''}');

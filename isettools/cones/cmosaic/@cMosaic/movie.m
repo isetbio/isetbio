@@ -12,7 +12,6 @@ function mp4File = movie(obj,timeAxis, signal,varargin)
 %   obj - @cMosaic
 %
 % Optional key/value pairs
-%
 %   'file name'  -   filename with mp4 extension, default is 'test.mp4'
 %   'photocurrent' - boolean, default is false
 %
@@ -22,7 +21,6 @@ function mp4File = movie(obj,timeAxis, signal,varargin)
 
 %% Inputs
 
-%%
 varargin = ieParamFormat(varargin);
 p = inputParser;
 p.addRequired('obj',@(x)(isa(x,'cMosaic')));
@@ -53,7 +51,7 @@ for ii=1:numel(timeAxis)
     else
         obj.plot('excitations',signal(p.Results.sample,ii,:),'hdl',hdl);
     end
-    drawnow
+    drawnow;
     thisImg = getframe(gcf);
     writeVideo(vidfile,thisImg);
 end
