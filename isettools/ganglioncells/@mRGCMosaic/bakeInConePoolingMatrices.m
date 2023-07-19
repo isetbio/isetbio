@@ -7,6 +7,10 @@ function bakeInConePoolingMatrices(obj, centerConePoolingMatrix, surroundConePoo
     assert(all(size(surroundConePoolingMatrix) == size(obj.rgcRFcenterConeConnectivityMatrix)), ...
         sprintf('Mismatch in size of rgcRFsurroundConePoolingMatrix'));
 
+    % Remove intermediate connectivity data 
+    obj.intermediateMetaDataStructs = {};
+    obj.mosaicConnectorIntermediateFigureHandles = {};
+
     % The centerConeConnectivityMatrix is no longer operational
     % Empty it to save space
     obj.rgcRFcenterConeConnectivityMatrix = [];

@@ -42,12 +42,14 @@ classdef coneToMidgetRGCConnector < MosaicConnector
             p.addParameter('generateProgressVideo', false, @islogical);
             p.addParameter('coneIndicesToBeConnected', []);
             p.addParameter('visualizeConnectivityAtIntermediateStages', false, @islogical);
+            p.addParameter('saveIntermediateConnectivityStagesMetaData', false, @islogical);
             p.addParameter('smoothSourceLatticeSpacings', true, @islogical);
             p.addParameter('smoothDestinationLatticeSpacings', true, @islogical);
 
             p.addParameter('maxNeighborNormDistance', MosaicConnector.maxNeighborNormDistance, @isscalar);
             p.addParameter('maxNeighborsNum', MosaicConnector.maxNeighborsNum, @isscalar);
-            p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs, @(x)(isscalar(x)&&(x>=MosaicConnector.minConeInputsPerRGCToConsiderTransferToNearbyRGCs)));
+            p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxSourceInputsToConsiderTransferToNearbyDestinationRF, @(x)(isscalar(x)&&(x>=MosaicConnector.minSourceInputsToConsiderTransferToNearbyDestinationRF)));
+            p.addParameter('maxMeanConeInputsPerRGCToConsiderSwappingWithNearbyRGCs',MosaicConnector.maxMeanSourceInputsToConsiderSwappingWithNearbyDestinationRF, @(x)(isscalar(x)&&(x>1)));
             p.addParameter('chromaticSpatialVarianceTradeoff', coneToMidgetRGCConnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));  % [0: minimize chromatic variance 1: minimize spatial variance]
             p.addParameter('optimizationCenter', coneToMidgetRGCConnector.defaultWiringParams.optimizationCenter, @(x)(ismember(x, {'patchCenter', 'origin'})));
 
@@ -57,7 +59,10 @@ classdef coneToMidgetRGCConnector < MosaicConnector
             customWiringParams = coneToMidgetRGCConnector.defaultWiringParams;
             customWiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
             customWiringParams.maxNeighborsNum = p.Results.maxNeighborsNum;
+
             customWiringParams.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = p.Results.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs;
+            customWiringParams.maxMeanConeInputsPerRGCToConsiderSwapping = p.Results.maxMeanConeInputsPerRGCToConsiderSwappingWithNearbyRGCs;
+
             customWiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
             customWiringParams.optimizationCenter = p.Results.optimizationCenter;
            
@@ -69,6 +74,7 @@ classdef coneToMidgetRGCConnector < MosaicConnector
                 destinationLattice, ...
                 'verbosity', p.Results.verbosity, ...
                 'connectableSourceRFindices', p.Results.coneIndicesToBeConnected, ...
+                'saveIntermediateConnectivityStagesMetaData', p.Results.saveIntermediateConnectivityStagesMetaData, ...
                 'visualizeConnectivityAtIntermediateStages', p.Results.visualizeConnectivityAtIntermediateStages, ...
                 'smoothSourceLatticeSpacings', p.Results.smoothSourceLatticeSpacings, ...
                 'smoothDestinationLatticeSpacings', p.Results.smoothDestinationLatticeSpacings, ...

@@ -1,4 +1,4 @@
-function generateVisualizationCache(obj, xSupport, ySupport, centerSubregionContourSamples)
+function generateVisualizationCache(obj, xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod)
 
     if (isfield(obj.visualizationCache, 'rfCenterPatchData')) && ...
        (~isempty(obj.visualizationCache.rfCenterPatchData)) && ...
@@ -21,11 +21,11 @@ function generateVisualizationCache(obj, xSupport, ySupport, centerSubregionCont
     if (~isempty(obj.rgcRFcenterConePoolingMatrix))
         [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments] = ...
             graphicDataForSubregion(obj, obj.rgcRFcenterConePoolingMatrix, minCenterConePoolingWeights, ...
-            xSupport, ySupport, spatialSupportSamples,centerSubregionContourSamples);
+            xSupport, ySupport, spatialSupportSamples,centerSubregionContourSamples, contourGenerationMethod);
     else
         [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments] = ...
             graphicDataForSubregion(obj, obj.rgcRFcenterConeConnectivityMatrix, minCenterConePoolingWeights, ...
-            xSupport, ySupport, spatialSupportSamples,centerSubregionContourSamples);
+            xSupport, ySupport, spatialSupportSamples,centerSubregionContourSamples, contourGenerationMethod);
     end
 
 
@@ -66,8 +66,11 @@ function generateVisualizationCache(obj, xSupport, ySupport, centerSubregionCont
     fprintf(' Done in %2.1f seconds\n', toc);
 end
 
+
+
 function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, subregionConeConnectionLineSegments] = ...
-        graphicDataForSubregion(obj, conePoolingMatrix, minPoolingWeights, xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples)
+        graphicDataForSubregion(obj, conePoolingMatrix, minPoolingWeights, xSupport, ySupport, spatialSupportSamples, ...
+        centerSubregionContourSamples, contourGenerationMethod)
         
     coneApertureSizeSpecifierForRGCRFplotting = 'spacing based';
     %coneApertureSizeSpecifierForRGCRFplotting = 'characteristic radius based';
@@ -110,10 +113,12 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
             end
         end
 
-        method = 'contourOfPooledConeApertureImage';
-        method = 'ellipseFitToPooledConeApertureImage';
-
-        switch (method)
+        switch (contourGenerationMethod)
+            case 'ellipseFitBasedOnLocalSpacing'
+                rgcRFradius = 0.5*obj.rgcRFspacingsDegs(iRGC);
+                theContourData{iRGC} = subregionOutlineContourFromSpacing(...
+                    obj.rgcRFpositionsDegs(iRGC,:), rgcRFradius,...
+                    xSupport, ySupport, spatialSupportSamples);
             case 'contourOfPooledConeApertureImage'
                 theContourData{iRGC} = subregionOutlineContourFromPooledCones(...
                      theConePositions, theConeRFRadii, theConePoolingWeights, ...
@@ -123,10 +128,17 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
                 theContourData{iRGC} = subregionEllipseFromPooledCones(...
                      theConePositions, theConeRFRadii, theConePoolingWeights, ...
                      xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples);
+
+            otherwise
+                error('Unknown contourGenerationMethod: ''%s''.', contourGenerationMethod);
         end % switch
 
-        s = theContourData{iRGC}{1};
-        verticesNumForRGC(iRGC) = size(s.vertices,1);
+        if (isempty(theContourData{iRGC}))
+            verticesNumForRGC(iRGC) = 0;
+        else
+            s = theContourData{iRGC};
+            verticesNumForRGC(iRGC) = size(s.vertices,1);
+        end
     end
 
     maxNoVertices = max(verticesNumForRGC);
@@ -139,7 +151,11 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
     currentFacesNum = 0;
 
     for iRGC = 1:obj.rgcsNum
-        s = theContourData{iRGC}{1};
+        if (isempty(theContourData{iRGC}))
+            continue;
+        end
+
+        s = theContourData{iRGC};
         newVerticesNum = size(s.vertices,1);
         idx = currentFacesNum+(1:newVerticesNum);
         verticesList(idx,:) =  s.vertices;
@@ -150,6 +166,45 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
 
 end
 
+
+function contourData = subregionOutlineContourFromSpacing(...
+    rgcPos, rgcRFradius,  ...
+    xSupport, ySupport, spatialSupportSamples)
+
+    % Compute spatial support
+    xSep = rgcRFradius;
+    if (isnan(xSep))
+        contourData = [];
+        return;
+    end
+
+    if (isempty(xSupport))
+        xx = rgcPos(:,1);
+        xSupport = linspace(min(xx)-xSep,max(xx)+xSep,spatialSupportSamples);
+    end
+
+    if (isempty(ySupport))
+        yy = rgcPos(:,2);
+        ySupport = linspace(min(yy)-xSep,max(yy)+xSep,spatialSupportSamples);
+    end
+
+    [X,Y] = meshgrid(xSupport, ySupport);
+    spatialSupportXY(:,1) = xSupport(:);
+    spatialSupportXY(:,2) = ySupport(:);
+    
+    % 2*sigma = radius
+    rSigma = rgcRFradius/3;
+    % Compute aperture2D x weight
+    XX = X-rgcPos(1);
+    YY = Y-rgcPos(2);
+    theAperture2D = exp(-0.5*(XX/rSigma).^2) .* exp(-0.5*(YY/rSigma).^2);
+    RF = theAperture2D;
+
+    zLevels(1) = exp(-2.5);
+    zLevels(2) = exp(-2.4);
+    s = mRGCMosaic.contourDataFromDensityMap(spatialSupportXY, RF, zLevels);
+    contourData = s{1};
+end
 
 function contourData = subregionOutlineContourFromPooledCones(...
     conePos, coneRc, poolingWeights, ...
@@ -185,8 +240,8 @@ function contourData = subregionOutlineContourFromPooledCones(...
 
     zLevels(1) = 0.02*min(poolingWeights);
     zLevels(2) = max(poolingWeights);
-
-    contourData = mRGCMosaic.contourDataFromDensityMap(spatialSupportXY, RF, zLevels);
+    s = mRGCMosaic.contourDataFromDensityMap(spatialSupportXY, RF, zLevels);
+    contourData = s{1};
 end
 
 function contourData = subregionEllipseFromPooledCones(...
@@ -194,7 +249,14 @@ function contourData = subregionEllipseFromPooledCones(...
     xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples)
 
     % Compute spatial support
-    xSep = max(coneRc)*2*sqrt(numel(poolingWeights));
+    xSep = max(coneRc)*2.5*sqrt(numel(poolingWeights));
+
+    if (isempty(poolingWeights))
+        fprintf(2, 'poolingWeights is []. Returning an empty contourData struct\n');
+        contourData = [];
+        return;
+    end
+
     if (isempty(xSupport))
         xx = conePos(:,1);
         xSupport = linspace(min(xx)-xSep,max(xx)+xSep,spatialSupportSamples);
@@ -252,6 +314,7 @@ function contourData = subregionEllipseFromPooledCones(...
             theAperture2D = poolingWeightsInterp(iConeInterp) * exp(-(XX/rC).^2) .* exp(-(YY/rC).^2);
             % Accumulate 2D apertures
             RF = RF + theAperture2D;
+            RF(RF>1) = 1;
         end
 
         % for iCone = 1:numel(poolingWeights)
@@ -273,12 +336,13 @@ function contourData = subregionEllipseFromPooledCones(...
         YY = Y-conePos(iCone,2);
         theAperture2D = poolingWeights(iCone) * exp(-(XX/rC).^2) .* exp(-(YY/rC).^2);
         RF = theAperture2D;
+        RF(RF>1) = 1;
     end
 
 
     % Binarize
     RF = RF / max(RF(:));
-    RF(RF<0.04) = 0.0;
+    RF(RF<0.1) = 0.0;
     RF(RF>0) = 1.0;
     BW = imbinarize(RF);
 
@@ -289,7 +353,17 @@ function contourData = subregionEllipseFromPooledCones(...
 
     % Calculate centroid, orientation and major/minor axis length of the ellipse
     s = regionprops(BW,{'Centroid','Orientation','MajorAxisLength','MinorAxisLength'});
-
+    if (isempty(s))
+       
+        figure()
+        subplot(1,2,1);
+        imagesc(RF)
+        axis 'image'
+        subplot(1,2,2)
+        imagesc(BW);
+        axis 'image'
+        pause
+    end
 
     % Calculate the ellipse line
     theta = linspace(0, 2*pi, centerSubregionContourSamples);
@@ -305,7 +379,8 @@ function contourData = subregionEllipseFromPooledCones(...
 
     v = [x(:) y(:)];
     f = 1:numel(x);
-    contourData{1} = struct('faces', f, 'vertices', v);
+    s = struct('faces', f, 'vertices', v);
+    contourData = s;
 end
 
 

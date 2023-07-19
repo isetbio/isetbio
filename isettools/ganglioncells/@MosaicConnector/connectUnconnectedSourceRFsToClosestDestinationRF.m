@@ -50,9 +50,15 @@ function connectUnconnectedSourceRFsToClosestDestinationRF(obj)
     % Update the centroid-based RF spacings since the centroids have changed
     obj.updateDestinationRFspacingsBasedOnCentroids();
 
-    % Visualize connectivity
+    % Save the metaDataStuct for this stage
+    if (obj.saveIntermediateConnectivityStagesMetaData)
+        obj.updateIntermediateMetaDataStructs();
+    end
+
+    % Visualize connectivity at this stage
     if (obj.visualizeConnectivityAtIntermediateStages)
-        obj.visualizeCurrentConnectivity(1002);
+        obj.intermediateFigureHandles{numel(obj.intermediateFigureHandles)+1} = ...
+            obj.visualizeCurrentConnectivity(1002);
     end
 
 end

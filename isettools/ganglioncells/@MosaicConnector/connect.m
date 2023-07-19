@@ -7,6 +7,11 @@ function connect(obj, varargin)
     generateProgressVideo = p.Results.generateProgressVideo;
 
 
+    % Empty the intermediateFigureHandles cell array
+    obj.intermediateFigureHandles = {};
+    % Empty the intermediate meta data struct cell array
+    obj.intermediateMetaDataStructs = {};
+
     % Stage 1. Connect mosaics based on the sourceToDestinationDensityRatio
     obj.connectSourceRFsToDestinationRFsBasedOnLocalDensities();
  

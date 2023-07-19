@@ -1,7 +1,7 @@
 function generateComputeReadyMidgetRGCMosaic(obj, optimizedRGCpoolingObjectsFileName, ...
     computeReadyMosaicFilename, visualizeInterpolation)
 
-    % Load the ptimizedRFcomputeStructs (retinal cone pooling models)
+    % Load the optimizedRFcomputeStructs (retinal cone pooling models)
     % across all grid nodes in the mosaic
     [LconeRFcomputeStructsList, MconeRFcomputeStructsList] = ...
         loadOptimizedRFcomputeStructs(obj, optimizedRGCpoolingObjectsFileName);
@@ -36,6 +36,9 @@ function generateComputeReadyMidgetRGCMosaic(obj, optimizedRGCpoolingObjectsFile
     % theRCMosaic. This also sets the center-connectivity sparse matrix to []. 
     obj.theRGCMosaic.bakeInConePoolingMatrices(...
         rgcRFcenterConePoolingMatrix, rgcRFsurroundConePoolingMatrix);
+
+
+    
 
     % Export this compute-ready midgetRGCMosaic
     theComputeReadyMRGCmosaic = obj.theRGCMosaic;

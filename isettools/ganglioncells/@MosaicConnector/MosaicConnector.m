@@ -22,9 +22,10 @@ classdef MosaicConnector < handle
     % Constant properties
     properties (Constant)
         maxNeighborsNum = 6;                                    % max number of neighboring destination RF
-        maxNeighborNormDistance = 1.1;                          % max distance to search for neighboring destination RFs
-        minConeInputsPerRGCToConsiderTransferToNearbyRGCs = 3;  % Transfer inputs to nearby RGCs if the cones/RGC are greater than or equal to this number
-        maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = 10; % Transfer inputs to nearby RGCs if the cones/RGC are less than or equal to this number
+        maxNeighborNormDistance = 1.2;                          % max distance to search for neighboring destination RFs
+        maxMeanSourceInputsToConsiderSwappingWithNearbyDestinationRF = 7;          % max mean # of 
+        minSourceInputsToConsiderTransferToNearbyDestinationRF = 3;  % Transfer inputs to nearby RGCs if the cones/RGC are greater than or equal to this number
+        maxSourceInputsToConsiderTransferToNearbyDestinationRF = 10; % Transfer inputs to nearby RGCs if the cones/RGC are less than or equal to this number
     end
 
     % Protected properties. All @MosaicConnector subclasses can read these, 
@@ -67,7 +68,10 @@ classdef MosaicConnector < handle
         % by the divergeSourceRFsToNearbyDestinationRFs() method
         connectivityMatrixIsNonExclusiveAnyMore = false;
 
-        % Flag indicating whether to visualize connectivity as each stage
+        % Flag indicating whether to save meta data for each connectivity stage
+        saveIntermediateConnectivityStagesMetaData;
+
+        % Flag indicating whether to visualize connectivity as each connectivity stage
         visualizeConnectivityAtIntermediateStages;
 
         % Flags indicating whether to smooth the spacing noise( due to local positional jitter)
@@ -78,6 +82,11 @@ classdef MosaicConnector < handle
         % Struct with wiring params
         wiringParams;
 
+        % Cell array of meta data structs at each intermediate connectivity stage
+        intermediateMetaDataStructs;
+
+        % Cell array of figure handles for each intermediate connectivity stage
+        intermediateFigureHandles = {};
     end % Write-protected 
 
     % The MosaicConnector subclass has no need to access these properties 
@@ -137,6 +146,7 @@ classdef MosaicConnector < handle
             p.addParameter('densityRatioMapSamplingIntervalMicrons', 3, @isscalar);
             p.addParameter('connectableSourceRFindices', []);
             p.addParameter('visualizeConnectivityAtIntermediateStages', false, @islogical);
+            p.addParameter('saveIntermediateConnectivityStagesMetaData', false, @islogical);
             p.addParameter('smoothSourceLatticeSpacings', true, @islogical);
             p.addParameter('smoothDestinationLatticeSpacings', true, @islogical);
             p.addParameter('wiringParams', [], @(x)(isempty(x)||isstruct(x)));
@@ -146,6 +156,7 @@ classdef MosaicConnector < handle
             obj.connectableSourceRFindices = p.Results.connectableSourceRFindices;
             obj.verbosity = p.Results.verbosity;
             obj.visualizeConnectivityAtIntermediateStages = p.Results.visualizeConnectivityAtIntermediateStages;
+            obj.saveIntermediateConnectivityStagesMetaData = p.Results.saveIntermediateConnectivityStagesMetaData;
             obj.smoothSourceLatticeSpacings = p.Results.smoothSourceLatticeSpacings;
             obj.smoothDestinationLatticeSpacings = p.Results.smoothDestinationLatticeSpacings;
             obj.wiringParams = p.Results.wiringParams;
@@ -166,6 +177,9 @@ classdef MosaicConnector < handle
 
         % Method to diverge source RFs to multiple destination RFs
         divergeSourceRFsToNearbyDestinationRFs(obj, varargin);
+
+        % Method to update the intermediate meta data structs;
+        updateIntermediateMetaDataStructs(obj);
 
         % Visualization methods
         hFig = visualizeCurrentConnectivity(obj, figNo, varargin);

@@ -16,7 +16,8 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
     xSupport = [];
     ySupport = []; 
     centerSubregionContourSamples = 10;
-    obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples);
+    contourGenerationMethod = 
+    obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod);
     theContourData = obj.visualizationCache.rfCenterContourData{theRGCindex};
 
     % The cell position

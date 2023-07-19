@@ -119,6 +119,12 @@ classdef mRGCMosaic < handle
 
         % Encodes what generation stage the mosaic is in.
         generationStage;
+
+        % Cell array of meta data structs at each intermediate connectivity stage of theMosaicConnectorOBJ 
+        intermediateMetaDataStructs;
+
+        % Cell array of figure handles for each intermediate connectivity stage of theMosaicConnectorOBJ 
+        mosaicConnectorIntermediateFigureHandles;
     end % Read-only properties
 
     % Dependent properties
@@ -168,8 +174,11 @@ classdef mRGCMosaic < handle
             p.addParameter('customDegsToMMsConversionFunction', @(x)RGCmodels.Watson.convert.rhoDegsToMMs(x), @(x) (isempty(x) || isa(x,'function_handle')));
             p.addParameter('customMMsToDegsConversionFunction', @(x)RGCmodels.Watson.convert.rhoMMsToDegs(x), @(x) (isempty(x) || isa(x,'function_handle')));
             
-            p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs, @isscalar);
+            p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxSourceInputsToConsiderTransferToNearbyDestinationRF, @isscalar);
+            p.addParameter('maxMeanConeInputsPerRGCToConsiderSwappingWithNearbyRGCs', MosaicConnector.maxMeanSourceInputsToConsiderSwappingWithNearbyDestinationRF, @isscalar);
             p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
+            p.addParameter('visualizeIntermediateStagesOfCenterConnectivityOptimization', false, @islogical);
+            p.addParameter('saveIntermediateStagesOfCenterConnectivityOptimization', false, @islogical);
             
             % Compute-ready mosaic params
             p.addParameter('noiseFlag', 'random');
@@ -217,7 +226,7 @@ classdef mRGCMosaic < handle
         noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses, varargin);
 
         % Method to generate the visualization cache
-        generateVisualizationCache(obj, xSupport, ySupport, centerSubregionContourSamples);
+        generateVisualizationCache(obj, xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod);
 
         % Method to visualize the mRGCmosaic and its activation
         visualize(obj, varargin);
@@ -272,6 +281,9 @@ classdef mRGCMosaic < handle
         theCostComponentsMatrix = totalInputMaintenanceCost(obj, ...
             chromaticSpatialVarianceTradeoff, spatialVarianceMetric)
 
+        % Method to overwrite the connectivity matrix and the RGCRF
+        % positions (only used for debugging purposes)
+        overwritePositionConnectivityDataForDebugPurposes(obj, theStageMetaDataStruct);
 
         % Setter for noiseFlag
         function set.noiseFlag(obj, val)

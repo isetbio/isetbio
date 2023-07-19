@@ -19,11 +19,19 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
     theCostComponentsMatrix = obj.totalInputMaintenanceCost();
 
     % The different cost component sequences
-    netCostSequences = mean(theCostComponentsMatrix,1);
+    s = theCostComponentsMatrix(1,:);
+    idx = find(s > -99);
+    netCostSequences = mean(theCostComponentsMatrix(idx,:),1);
 
     
+
     currentPass = 0;  swapsInCurrentPass = 1; convergenceAchieved = false;
     while (currentPass < obj.wiringParams.maxPassesNum) && (swapsInCurrentPass>0) && (~convergenceAchieved)
+
+        % Save old connectivity matrix
+        lastConnectivityMatrix = obj.connectivityMatrix;
+        lastDestinationRFspacingsFromCentroids = obj.destinationRFspacingsFromCentroids;
+
         % Update pass number
         currentPass = currentPass + 1;
         swapsInCurrentPass = 0;
@@ -114,7 +122,9 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
         theCostComponentsMatrix = obj.totalInputMaintenanceCost();
 
         % Accumulate cost sequences
-        netCostSequences = cat(1, netCostSequences, mean(theCostComponentsMatrix,1));
+        s = theCostComponentsMatrix(1,:);
+        idx = find(s > -99);
+        netCostSequences = cat(1, netCostSequences, mean(theCostComponentsMatrix(idx,:),1));
 
         % Visualize convergence
         MosaicConnector.visualizeConvergenceSequence(currentPass, ...
@@ -126,15 +136,26 @@ function swapSourceRFsBetweenNearbyDestinationRFs(obj, varargin)
         convergenceAchieved = MosaicConnector.convergenceAchieved(netCostSequences(:,1));
 
     end % while
-    
+
+    obj.connectivityMatrix = lastConnectivityMatrix;
+    obj.destinationRFspacingsFromCentroids = lastDestinationRFspacingsFromCentroids;
+
+    hFig = figure(5060);
+    NicePlot.exportFigToPDF('swapOptimization.pdf', hFig, 300);
 
     if (generateProgressVideo)
         videoOBJ.close();
     end
 
-    % Visualize connectivity
+    % Save the metaDataStuct for this stage
+    if (obj.saveIntermediateConnectivityStagesMetaData)
+        obj.updateIntermediateMetaDataStructs();
+    end
+  
+    % Visualize connectivity at this stage
     if (obj.visualizeConnectivityAtIntermediateStages)
-        obj.visualizeCurrentConnectivity(1005);
+        obj.intermediateFigureHandles{numel(obj.intermediateFigureHandles)+1} = ...
+            obj.visualizeCurrentConnectivity(1005);
     end
 
 end
