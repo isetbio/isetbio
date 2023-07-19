@@ -15,7 +15,7 @@
 sizeDegs     = [0.5  0.5; 1.0 1.0; 2 2; 4 4;  8 8];  % multiple sizes
 positionDegs = [0.0  0.0; 1.0 0.0; 2 0; 4 0; 10 0];  % Locations along the x-axis
 
-dataDir = fullfile(isetRootPath,'data','cones');
+dataDir = fullfile(isetbioDataPath,'cones');
 
 %% Generate the mosaic
 
