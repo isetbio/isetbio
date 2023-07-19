@@ -22,7 +22,7 @@ hparam = harmonicP('freq',[1, 7],'ang',[0 0],...
     'ph',[pi/2, pi/2], 'contrast',[1 1],...
     'row',256,'col',256);
 scene = sceneCreate('harmonic',hparam);
-scene = sceneSet(scene,'fov',0.5);
+scene = sceneSet(scene,'fov',0.6);
 sceneWindow(scene);
 
 %% Push the scene through human optics
