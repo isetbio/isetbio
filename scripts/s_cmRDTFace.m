@@ -16,7 +16,7 @@ scene = sceneSet(scene,'fov',2.5);
 scene = sceneAdjustIlluminant(scene,'D65.mat');
 vcAddObject(scene); sceneWindow;
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 vcAddObject(oi); oiWindow;
 

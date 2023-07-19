@@ -62,14 +62,14 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %}
 %{
  scene = sceneCreate('mackay'); scene = sceneSet(scene,'fov',1);
- oi = oiCreate; oi = oiCompute(oi,scene);
+ oi = oiCreate('human'); oi = oiCompute(oi,scene);
  cm = coneMosaic; 
  cm.emGenSequence(50, 'nTrials', 1);
  cm.compute(oi);  cm.window;
 %}
 %{
  scene = sceneCreate('mackay'); scene = sceneSet(scene,'fov',1);
- oi = oiCreate; oi = oiCompute(oi,scene);
+ oi = oiCreate('human'); oi = oiCompute(oi,scene);
  cm = coneMosaic; 
  cm.emGenSequence(50, ...
         'nTrials', 1, ...

@@ -142,7 +142,7 @@ scene = sceneCreate('rings rays');
 scene = sceneSet(scene, 'fov', 1.0);
 
 % Compute the optical image
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(scene, oi);
 
 % Compute isomerizations for both mosaics and look at them in a window.

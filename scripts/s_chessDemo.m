@@ -13,7 +13,7 @@ scene1 = scene;
 scene1 = sceneSet(scene1,'fov',2);
 vcAddObject(scene1); sceneWindow;
 
-oi1 = oiCreate;
+oi1 = oiCreate('human');
 oi1 = oiCompute(oi1,scene1);
 vcAddObject(oi1); oiWindow;
 
@@ -23,7 +23,7 @@ scene2 = scene;
 scene2 = sceneSet(scene2,'fov',2);
 vcAddObject(scene2); sceneWindow;
 
-oi2 = oiCreate;
+oi2 = oiCreate('human');
 oi2 = oiCompute(oi2,scene2);
 vcAddObject(oi2); oiWindow;
 

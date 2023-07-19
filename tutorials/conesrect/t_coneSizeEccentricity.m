@@ -19,7 +19,7 @@ scene = sceneCreate('harmonic',hparms);
 % sceneWindow(scene);
 
 %%
-oi = oiCreate; 
+oi = oiCreate('human'); 
 oi = oiCompute(oi,scene);
 % oiWindow(oi);
 

@@ -69,7 +69,7 @@ end
 %% Create an oi with a larger spatial sample distance
 scene = sceneCreate;
 scene = sceneSet(scene,'fov',10);
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 % ieAddObject(oi); oiWindow;
 

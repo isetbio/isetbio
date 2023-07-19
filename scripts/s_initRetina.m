@@ -24,7 +24,7 @@ scene = sceneCreate('rings rays');
 scene = sceneSet(scene,'fov',2);
 % ieAddObject(scene); sceneWindow;
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 % ieAddObject(oi); oiWindow;
 

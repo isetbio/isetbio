@@ -14,7 +14,7 @@ scene = sceneAdjustLuminance(scene,10^-11);
 % vcAddAndSelectObject(scene); sceneWindow
 
 %% Create and crop out center of OI
-oi = oiCreate; 
+oi = oiCreate('human'); 
 
 % No lens shading
 optics = oiGet(oi,'optics');

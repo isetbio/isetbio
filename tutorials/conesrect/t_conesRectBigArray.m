@@ -13,7 +13,7 @@ s = sceneCreate('rings rays');
 s = sceneSet(s, 'fov', 3);
 
 % Then the oi
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi, s);
 
 %% Build a default cone mosaic and compute isomerizatoins

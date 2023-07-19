@@ -46,11 +46,11 @@ scene2 = sceneSet(scene2, 'fov', sceneFOVDegs);
 
 %% Compute optical images
 fprintf('Computing optical images ...\n');
-oi1 = oiCreate;
+oi1 = oiCreate('human');
 oi1 = oiCompute(scene1, oi1);
 
-oi2 = oiCreate;
-oi2 = oiCompute(scene2, oi2);
+oi2 = oiCreate('human');
+oi2 = oiCompute(oi2,scene2);
 
 %% Generate the old-style cone mosaic
 fprintf('Computing mosaics ...\n');

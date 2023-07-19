@@ -39,7 +39,7 @@ cm.eccVaryingConeBlur = true;
     
     
 %% Compute the optical image
-theOI = oiCreate;
+theOI = oiCreate('human');
 theOI = oiCompute(scene, theOI);
 
 

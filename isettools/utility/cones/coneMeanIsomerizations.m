@@ -73,7 +73,7 @@ function meanRate = coneMeanIsomerizations(cMosaic, varargin)
    % Create default scene, oi, mosaic and get the mean LMS isomerizations
    % from the mosaic.
    scene = sceneCreate;
-   oi = oiCreate;
+   oi = oiCreate('human');
    oi = oiCompute(oi, scene);
    cMosaic = coneMosaic;
    cMosaic.compute(oi);

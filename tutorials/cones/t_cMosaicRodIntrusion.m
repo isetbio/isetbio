@@ -224,6 +224,6 @@ function oi = generateTestOI()
     scene = sceneSet(scene, 'fov', fovDegs);
     
     %% Compute the optical image
-    oi = oiCreate;
+    oi = oiCreate('human');
     oi = oiCompute(scene, oi);
 end

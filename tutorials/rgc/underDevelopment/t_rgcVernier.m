@@ -56,7 +56,7 @@ s = sceneCreate('vernier','display',p);
 
 %%
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,s);
 % vcAddObject(oi); oiWindow;
 

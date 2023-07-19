@@ -58,7 +58,7 @@ load(fullfile(dirName, 't_conesGaborAchromScene.mat'))
 gaborScene = sceneSet(gaborScene, 'fov', 1.0);
 
 % Compute the optical image
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(gaborScene, oi);
 
 % Compute isomerizations
@@ -102,7 +102,7 @@ vcAddObject(scene);
 sceneWindow
 
 % Compute the optical image
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(scene, oi);
 
 % Compute isomerizations for both mosaics
@@ -140,7 +140,7 @@ vcAddObject(scene);
 sceneWindow
 
 % Compute the optical image
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(scene, oi);
 
 % Compute isomerizations for both mosaics

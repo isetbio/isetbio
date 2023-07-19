@@ -85,7 +85,7 @@ s = sceneCreate('rings rays');
 s = sceneSet(s, 'fov', 1);
 
 % ...then the oi
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi, s);
 
 % Calculate cone isomerizations

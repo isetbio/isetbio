@@ -19,7 +19,7 @@ scene = sceneDeadleaves(dlSize, dlSigma);
 fov = 4; scene = sceneSet(scene,'fov',3);
 % sceneWindow(scene);
 
-oi = oiCreate; oi = oiCompute(oi,scene); ieAddObject(oi);
+oi = oiCreate('human'); oi = oiCompute(oi,scene); ieAddObject(oi);
 % oiWindow(oi);
 
 cm = coneMosaic;

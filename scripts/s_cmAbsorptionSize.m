@@ -12,7 +12,7 @@
 ieInit
 
 scene = sceneCreate('uniform ee');
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 
 %% One cone, one time

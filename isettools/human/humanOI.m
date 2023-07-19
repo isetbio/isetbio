@@ -30,7 +30,7 @@ function oi = humanOI(scene, oi)
 
 % Examples:
 %{
-    oi = oiCreate();
+    oi = oiCreate('human');
     scene = sceneCreate();
     oi = humanOI(scene, oi)
 %}

@@ -54,7 +54,7 @@ s = sceneCreate('letter', font, d);
 
 %%
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,s);
 % vcAddObject(oi); oiWindow;
 

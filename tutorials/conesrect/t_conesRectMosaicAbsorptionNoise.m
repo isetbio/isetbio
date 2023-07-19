@@ -28,7 +28,7 @@ ieInit;
 % instead we take the mean value and allow the noise emerge whene we
 % compute isomerizations.
 scene = sceneCreate('slanted bar');
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi, scene);
 
 %% Look at effect of random Poisson isomerization noise.

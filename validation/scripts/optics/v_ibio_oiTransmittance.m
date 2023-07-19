@@ -11,7 +11,7 @@ function v_ibio_oiTransmittance(varargin)
 % ieInit;
 
 %% Human optics
-oi = oiCreate;
+oi = oiCreate('human');
 t = oiGet(oi,'optics transmittance');
 w = oiGet(oi,'optics transmittance wave');
 

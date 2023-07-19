@@ -97,7 +97,7 @@ cMosaic.emGenSequence(eyeMovementsNum, ...
 theEmPositions = cMosaic.emPositions;
 
 %% Compute the optical image for our static scene
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi, scene);
 
 %% Apply the emPositions to both mosaics

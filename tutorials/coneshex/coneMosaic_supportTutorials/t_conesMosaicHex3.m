@@ -93,7 +93,7 @@ vcAddObject(scene);
 sceneWindow
     
 % Compute the optical image
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(scene, oi);
 
 % Compute isomerizations for both mosaics

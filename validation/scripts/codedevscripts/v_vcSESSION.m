@@ -23,7 +23,7 @@ tst = vcSESSION.SCENE{1};
 UnitTest.assert(isequal(tst,vcGetObject('scene')),'ieAddObject/vcGetObject pass for scene');
 
 %%
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 
 ieAddObject(oi);

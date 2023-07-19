@@ -89,7 +89,7 @@ s = sceneSet(s,'fov',fov);
 s = sceneAdjustLuminance(s,10);
 vcAddObject(s);
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,s);
 vcAddObject(oi); % oiWindow;
 
@@ -137,7 +137,7 @@ p.meanLum = 100;p.barColor = [.9 0.9 0.9]; p.bgColor = .3;
 s = sceneCreate('vernier','display',p);
 % vcAddObject(s); sceneWindow;
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,s);
 % vcAddObject(oi); oiWindow;
 
@@ -177,7 +177,7 @@ font = fontCreate;
 s = sceneCreate('letter', font, d);
 % vcAddObject(s); sceneWindow;
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,s);
 % vcAddObject(oi); oiWindow;
 

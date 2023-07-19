@@ -192,9 +192,13 @@ switch ieParamFormat(plotType)
             imagesc(axisData.mosaicImage)
             axis off; axis image;
         else
-            cla(curAx);
-            coneRectRender(obj.cMosaic,'axes handle',curAx);
-
+            if isempty(curAx)
+                close(hf);
+                coneRectRender(cm);
+            else
+                cla(curAx);
+                coneRectRender(cm,'axes handle',curAx);
+            end
             %{
             locs    = cm.coneLocs;
             pattern = cm.pattern(:);

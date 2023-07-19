@@ -21,7 +21,7 @@ scene = sceneInterpolate(scene,10);
 scene = sceneSet(scene,'hfov',10);
 sceneWindow(scene);
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 [allE, allNoisyE] = cm.compute(oi);
 cm.plot('excitations horizontal line',allE,'ydeg',0);
@@ -36,7 +36,7 @@ scene = sceneCreate('harmonic',hp);
 scene = sceneSet(scene,'hfov',10);
 sceneWindow(scene);
 
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 [allE, allNoisyE] = cm.compute(oi);
 uData = cm.plot('excitations horizontal line',allNoisyE,'ydeg',0);

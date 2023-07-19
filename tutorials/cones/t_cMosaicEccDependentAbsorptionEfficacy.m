@@ -41,7 +41,7 @@ scene = sceneCreate('harmonic', parms);
 scene = sceneSet(scene, 'fov', fovDegs);
 
 %% Compute the optical image
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(scene, oi);
 
 %% Set mosaic size and eccentricity

@@ -152,9 +152,9 @@ function [oi1,oi2] = computeOIs(mosaicFOV)
     scene2 = sceneCreate('distortion grid', params.row);
     scene2 = sceneSet(scene2, 'fov', sceneFOV);
 
-    oi1 = oiCreate;
+    oi1 = oiCreate('human');
     oi1 = oiCompute(scene1, oi1);
 
-    oi2 = oiCreate;
+    oi2 = oiCreate('human');
     oi2 = oiCompute(scene2, oi2);
 end

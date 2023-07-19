@@ -109,7 +109,7 @@ photons(idy, idx,:) = photonsFullImage(idy, idx,:);
 stim = sceneSet(stim, 'photons', photons);
 
 % Compute the optical image
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(stim, oi);
 
 % Compute mosaic activations

@@ -17,7 +17,7 @@ thisFOV = 1;
 
 scene = sceneCreate('uniform');
 scene = sceneSet(scene,'fov',thisFOV);
-oi = oiCreate; oi = oiCompute(oi,scene);
+oi = oiCreate('human'); oi = oiCompute(oi,scene);
 
 %% Count excitations at different eccentricities
 

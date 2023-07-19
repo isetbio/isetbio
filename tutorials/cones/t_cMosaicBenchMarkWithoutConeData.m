@@ -33,7 +33,7 @@ scene1 = sceneSet(scene1, 'fov', sceneFOVDegs);
 
 %% Compute optical images
 fprintf('Computing optical images ...\n');
-oi1 = oiCreate;
+oi1 = oiCreate('human');
 oi1 = oiCompute(scene1, oi1);
 
 

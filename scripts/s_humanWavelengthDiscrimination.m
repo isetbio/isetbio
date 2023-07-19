@@ -20,7 +20,7 @@ rng('default');  % To achieve the same result each time
 % or for simulating people with biological variability.
 
 % Human optics
-oi = oiCreate; 
+oi = oiCreate('human'); 
 % vcAddObject(oi);
 
 % Create a typical cone mosaic and show a little picture

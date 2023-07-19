@@ -36,7 +36,7 @@ scene = sceneCreate('harmonic', parms);
 scene = sceneSet(scene, 'fov', 0.25);
 
 %% Compute the optical image
-oi = oiCreate;
+oi = oiCreate('human');
 oi = oiCompute(scene, oi);
 
 %% Generate the mosaic
