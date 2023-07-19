@@ -66,7 +66,6 @@ function [absorptions, current, interpFilters, meanCur] = compute(obj, oi, varar
 %    'theExpandedMosaic' - This allows you to set a larger cone mosaic to
 %                          make sure that the eye movements are within the
 %                          mosaic.
-%   'verbose'          - Whether to display infos (default false).
 %
 % See Also:
 %    coneMosaic, computeForOISequence, emGenSequence, t_simplePhotocurrentComputation.
@@ -96,14 +95,12 @@ p.addParameter('currentFlag', false, @islogical);
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('emPath', obj.emPositions, @isnumeric);
 p.addParameter('theExpandedMosaic', [], @(x)(isa(x, 'coneMosaicRect')));
-p.addParameter('verbose', false, @islogical);
 p.parse(oi, varargin{:});
 
 currentFlag = p.Results.currentFlag;
 seed        = p.Results.seed;
 emPath      = p.Results.emPath;
 theExpandedMosaic = p.Results.theExpandedMosaic;
-verbose = p.Results.verbose;
 
 obj.absorptions = [];
 obj.current = [];
@@ -186,29 +183,9 @@ else
         'padRows', padRows, 'padCols', padCols);
     % ieNewGraphWin; imagesc(absorptions);
     
-    %{ 
-    % This code looks like a set of functions in coneMosaicHex, not
-    % coneMosaicRect.  There is a need for the ability to set a scale
-    % factor over individual cones, say to account for blood vessels or
-    % diseases (FAZ) that may block light from some of the cones.
-    %
-    % Starting to implement a fixed cone scale factor up above.
-    %    
-    % Determine if we need to apply eccentricity-dependent corrections to 
-    % the absorptions, and if so do it here.                
-    if (obj.shouldCorrectAbsorptionsWithEccentricity())
-        if (isempty(obj.coneEfficiencyCorrectionFactors))
-            correctionFactors = ...
-                coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
-                    mfilename(), 'verbose', verbose);
-            obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
-        end
-        absorptions = absorptions .* obj.coneEfficiencyCorrectionFactors;
-    end
-    %}
     
     %% Set the obj.absorptions to the noise-free absorptions, so 
-    %% that the current is computed on the noise-free absorptions.
+    % that the current is computed on the noise-free absorptions.
     obj.absorptions = absorptions;
 
     %% Compute photocurrent if requested on the noise-free absorptions

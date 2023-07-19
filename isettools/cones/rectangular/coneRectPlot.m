@@ -192,6 +192,10 @@ switch ieParamFormat(plotType)
             imagesc(axisData.mosaicImage)
             axis off; axis image;
         else
+            cla(curAx);
+            coneRectRender(obj.cMosaic,'axes handle',curAx);
+
+            %{
             locs    = cm.coneLocs;
             pattern = cm.pattern(:);
 
@@ -199,7 +203,8 @@ switch ieParamFormat(plotType)
             [axisData.support, axisData.spread, axisData.delta, axisData.mosaicImage] = ...
                 conePlot(locs * 1e6, pattern);
             imagesc(axisData.mosaicImage);
-            axis off; axis image;
+            %}
+            axis off; axis image; colorbar('off');
         end
 
         set(curAx,'UserData',axisData);  % Put the modified values back

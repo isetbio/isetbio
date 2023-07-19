@@ -29,8 +29,14 @@ sceneWindow(scene);
 
 %% Calculate through human wvf optics
 
-oi = oiCreate;
+oi = oiCreate('human wvf');
 oi = oiCompute(oi,scene);
+
+%% Try with a rectangular mosaic first
+cm = coneMosaicRect;
+cm.setSizeToFOV(0.5);
+cm.compute(oi);
+cm.window;
 
 %%  Now image it on the cone mosaic with some fixational eye movements
 
