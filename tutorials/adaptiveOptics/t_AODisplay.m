@@ -241,14 +241,14 @@ wvfP = wvfSet(wvfP,'zcoeffs', defocusAmount, 'defocus');
 % Whether LCA should be included depends on your apparatus and
 % is controlled by the boolean defeatLCA in the computation of
 % the pupil function.
-wvfP = wvfComputePupilFunction(wvfP,false,'no lca',defeatLCA);
-wvfP = wvfComputePSF(wvfP);
+wvfP = wvfCompute(wvfP,'human lca',defeatLCA);
+% wvfP = wvfComputePSF(wvfP);
 
 % Generate optical image object from the wavefront object
-theOI = wvf2oi(wvfP);
+theOI = wvf2oi(wvfP,'model','human');
 
 % Set the fNumber to correspond to the pupil size
-focalLengthMM = oiGet(theOI,'focal length')*1000;
+focalLengthMM = oiGet(theOI,'focal length','mm');
 theOI = oiSet(theOI, 'optics fnumber', focalLengthMM/pupilDiameterMm);
 
 % You could adjust lens density if you don't like the default values for
@@ -263,6 +263,9 @@ theOI = oiSet(theOI, 'optics fnumber', focalLengthMM/pupilDiameterMm);
 %
 % Note that this code is not highly tested, but it runs without crashing.
 lens0 = oiGet(theOI,'lens');
+
+% Well (BW) it does not run without crashing any more on this branch.  We
+% need to figure out the lens wavelength check for you.
 if (any(lens0.wave ~= wls))
     error('Wavelengths in Lens object are not as expected');
 end
