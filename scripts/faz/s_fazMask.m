@@ -36,7 +36,7 @@ scene = sceneCreate('harmonic');
 scene = sceneSet(scene,'fov',1);
 sceneWindow(scene);
 
-oi = oiCreate('wvf human');
+oi = oiCreate('human');
 oi = oiCompute(oi,scene);
 oiWindow(oi);
 %%  Let's try a rectangular mosaic, first
@@ -46,9 +46,9 @@ thisM = coneMosaicRect;
 
 coneMask.row = linspace(-150,150,256)*1e-6;  % Units of meters
 coneMask.col = linspace(-150,150,256)*1e-6;  %
-% coneMask.img = rand(256,256);
 coneMask.img = imageDeadLeaves(256,0.1);
 
+%{
 imgLine = ones(256,256);
 imgLine(:,25) = 0;
 imgLine(:,97) = 0.2;
@@ -57,26 +57,30 @@ imgLine(:,215) = 0.0;
 coneMask.img = imgLine;
 
 ieNewGraphWin; imagesc(imgLine); colormap("gray"); axis image
+ieNewGraphWin; imagesc(coneMask.img); colormap("gray"); axis image
+%}
 
 thisM.coneMask = coneMask;
+thisM.compute(oi);
+thisM.window;
 
-ieNewGraphWin; imagesc(coneMask.img); colormap("gray"); axis image
+%% Change to another mask image
 
+coneMask.img = double(imread('coneMask_bloodvessels.png'));
+thisM.coneMask = coneMask;
 thisM.compute(oi);
 thisM.window;
 
 %%
-chdir(fullfile(isetbioRootPath,'local'))
-bv = imread('bloodvessels.png');
+%{
+bv = imread('coneMask_bloodvessels.png');
 bv = sum(bv,3);
 bv = imresize(bv,[256 256]);
 ieNewGraphWin; imagesc(bv); colormap(gray); axis image
 bv = ieScale(bv,0,1);
 bv = 1- bv;
 imwrite(bv,'coneMask_bloodvessels.png');
-
-
-
+%}
 
 %%
 
