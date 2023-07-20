@@ -76,13 +76,31 @@ switch (computerInfo.localHostName)
     case 'Santorini'
         % Nicolas' M1 MacMini
         dropboxValidationRootDirPath  = '/Users/nicolas/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    case 'sharkray'
+            % DHB's desktop
+            dropboxValidationRootDirPath = fullfile(filesep,'Volumes','Dropbox','Aguirre-Brainard Lab Dropbox','David Brainard');       
     otherwise
+        % Some unspecified machine, try user specific customization
+        switch(sysInfo.userShortName)
+            % Could put user specific things in, but at the moment generic
+            % is good enough.
+     
+            case 'colorlab'
+                % SACCSFA desktop (Linux)
+                userNameDropbox = 'Mela Nopsin';
+                dropboxValidationRootDirPath = fullfile('/home/',sysInfo.userShortName,'Aguirre-Brainard Lab Dropbox',userNameDropbox);
+                
+            otherwise
+                dropboxValidationRootDirPath = fullfile('/Users/',sysInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
+        end
+
         if (contains(computerInfo.networkName, 'leviathan'))
-            dropboxDir = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio';
+            dropboxValidationRootDirPath = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio';
         else
             error('Dropbox validation root directory location not available for computer named: ''%s''.', computerInfo.localHostName);  
-        end   
-end % switch
+        end 
+
+end
 
 % RGC mosaic resources Dropbox URLpath
 if (~isempty(dropboxValidationRootDirPath))
@@ -110,6 +128,13 @@ addpath(genpath(p.alternateFullDataDir));
 
 generatePreferenceGroup(p);
 UnitTest.usePreferencesForProject(p.projectName);
+
+% Some behaviors are controlled through the ISET preferences.
+%
+% Turn off the waitbar!
+setpref('ISET','waitbar',false);
+ieSessionSet('waitbar',false);
+
 
 end
 
