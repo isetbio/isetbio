@@ -16,7 +16,7 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
     xSupport = [];
     ySupport = []; 
     centerSubregionContourSamples = 10;
-    contourGenerationMethod = 
+    contourGenerationMethod = 'ellipseFitToPooledConeApertureImage';
     obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod);
     theContourData = obj.visualizationCache.rfCenterContourData{theRGCindex};
 
@@ -75,8 +75,14 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
             'noYTicks', false, ...
             'xAxisTickAngleRotationDegs', 0);
 
-    S.Vertices = theContourData{1}.vertices;
-    S.Faces = theContourData{1}.faces;
+    if (iscell(theContourData))
+        S.Vertices = theContourData{1}.vertices;
+        S.Faces = theContourData{1}.faces;
+    else
+        S.Vertices = theContourData.vertices;
+        S.Faces = theContourData.faces;
+    end
+
     S.FaceVertexCData = [0.5 0.5 0.5];
 
     S.FaceColor = 'flat';
