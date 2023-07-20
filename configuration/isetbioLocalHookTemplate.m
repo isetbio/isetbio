@@ -73,6 +73,9 @@ switch (computerInfo.localHostName)
     case 'Crete'
         % Nicolas' M1 MacStudio Ultra
         dropboxValidationRootDirPath = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    case 'Santorini'
+        % Nicolas' M1 MacMini
+        dropboxValidationRootDirPath  = '/Users/nicolas/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
     case 'sharkray'
             % DHB's desktop
             dropboxValidationRootDirPath = fullfile(filesep,'Volumes','Dropbox','Aguirre-Brainard Lab Dropbox','David Brainard');       
