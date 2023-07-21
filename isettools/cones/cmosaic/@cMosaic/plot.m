@@ -33,6 +33,7 @@ function [uData, hdl] = plot(cmosaic,plotType, allE, varargin)
 %    excitations - pull out excitations of various types
 %       cmosaic.plot('excitations',allE) 
 %       cmosaic.plot('excitations horizontal line',allE,'ydeg',0)
+%       cmosaic.plot('excitations vertical line',allE,'ydeg',0)
 %       cmosaic.plot('excitations roi',allE,'cone type',conetype)
 %
 %    roi - show the ROI superimposed on the excitation image
@@ -82,6 +83,9 @@ end
 %% Different types of plots
 
 switch ieParamFormat(plotType)
+    case {'conemosaic','mosaic'}
+        % We should enable passing in params
+        cmosaic.visualize;
     case {'excitations','activations'}
         % Show the activations in an image
         % We should choose one - excitations or activations - for
