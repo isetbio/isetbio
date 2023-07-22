@@ -48,7 +48,7 @@ retinalRFmodelParams = struct(...
 % These parameters are encoded in the filename that contains the mRGCMosaic. 
 % To inspect the available pre-computed ON-center mRGCMosaics do the following:
 %{
-    rgcMosaicType = 'ONcenter';
+    rgcMosaicType = 'ONcenterMidgetRGC';
     mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
 %}
 

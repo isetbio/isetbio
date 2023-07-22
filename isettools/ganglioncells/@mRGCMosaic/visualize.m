@@ -330,7 +330,12 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             hold(ax, 'on')
             for iRGC = 1:numel(labelRGCsWithIndices)
                 theRGCindex = labelRGCsWithIndices(iRGC);
-                S = obj.visualizationCache.rfCenterContourData{theRGCindex}{1};
+                if (iscell(obj.visualizationCache.rfCenterContourData{theRGCindex}))
+                    S = obj.visualizationCache.rfCenterContourData{theRGCindex}{1};
+                else
+                    S = obj.visualizationCache.rfCenterContourData{theRGCindex};
+                end
+
                 S.FaceVertexCData = 0.5;
                 S.FaceColor = 'flat';
                 if (isempty(labeledRGCsColor))
