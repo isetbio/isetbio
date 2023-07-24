@@ -46,7 +46,7 @@ classdef coneMosaicRect < hiddenHandle
     %    None required.
     %
     % Outputs:
-    %    cMosaic           The created coneMosaic object.
+    %    cMosaicRect           The created coneMosaicRect object.
     %
     % Optional key/value pairs:
     %    'name'             - String. Mosaic name. Default 'cone mosaic'.
@@ -159,9 +159,6 @@ classdef coneMosaicRect < hiddenHandle
         %   For rectangular grid mosaics, this is set to the width/height
         %   field of the PIGMENT object, i.e., the actual cone separation.
         %
-        %   For hexagonal grid mosaics (instances of the coneMosaicHex
-        %   class), this is the separation between the rect grid nodes on
-        %   which the cone positions are sampled.
         patternSampleSize;
 
         %integrationTime - Cone temporal integration time (secs).
