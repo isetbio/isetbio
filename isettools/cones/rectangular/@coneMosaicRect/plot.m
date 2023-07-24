@@ -1,8 +1,8 @@
-function [uData, hf] = plot(obj, plotType, app, varargin)
+function [uData, hf] = plot(obj, plotType, varargin)
 % Plot function for @coneMosaicRect class
 %
 % Syntax:
-%   [uData, hf] = plot(obj, plotType, app, varargin)
+%   [uData, hf] = plot(obj, plotType, varargin)
 %
 % Description:
 %    There is a specialized plot method for the coneMosaic class that
@@ -578,9 +578,8 @@ switch ieParamFormat(plotType)
 
     case 'eyespectralqe'
         % Includes lens, macular pigment, and cone photopigment properties
-        if isempty(oi), error('oi required for spectral qe'); end
-        lensTransmittance = oiGet(oi, 'lens transmittance', ...
-            'wave', obj.wave);
+        if isempty(oi), error('oi required for spectral qe'); end       
+        lensTransmittance = oiGet(oi, 'optics transmittance', obj.wave);
         uData = bsxfun(@times, lensTransmittance, obj.qe);
 
         if ~isequal(hf, 'none')
