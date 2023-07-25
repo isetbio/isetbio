@@ -326,7 +326,7 @@ switch ieParamFormat(plotType)
         coneLocs(:,:,2) = reshape(cm.coneLocs(:,2),cm.rows,cm.cols);
         coneLocs = coneLocs*1e6;  % In microns
 
-        ieNewGraphWin([], 'tall'); names = 'LMS';
+        ieNewGraphWin(hf, 'tall'); names = 'LMS';
         c = {'ro-', 'go-', 'bo-'};
         yStr = 'Absorptions per frame';
         if isequal(plotType(1), 'v')
