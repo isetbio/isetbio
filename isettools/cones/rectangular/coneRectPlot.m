@@ -642,9 +642,8 @@ switch ieParamFormat(plotType)
 
     case 'eyespectralqe'
         % Includes lens, macular pigment, and cone photopigment properties
-        if isempty(oi), error('oi required for spectral qe'); end
-        lensTransmittance = oiGet(oi, 'lens transmittance', ...
-            'wave', cm.wave);
+        if isempty(oi), error('oi required for spectral qe'); end       
+        lensTransmittance = oiGet(oi, 'optics transmittance', obj.wave);
         uData = bsxfun(@times, lensTransmittance, cm.qe);
 
         if ~isequal(hf, 'none')
