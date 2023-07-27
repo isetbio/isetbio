@@ -95,7 +95,7 @@ elseif (length(plotType) > 13 && strcmp(plotType(1:13), 'outersegment '))
     return;
 end
 
-coneRectPlot(obj,plotType,varargin{:});
+[uData, hf] = coneRectPlot(obj,plotType,varargin{:});
 
 end
 

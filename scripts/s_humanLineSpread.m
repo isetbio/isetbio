@@ -32,7 +32,9 @@ cm = coneMosaicRect;
 cm.setSizeToFOV(1);
 cm.integrationTime = 1;
 cm.compute(oi);
-cm.plot('hline absorptions lms','roi',[1 148]);
+[~,target] = cm.plot('hline absorptions lms','roi',[1 148]);
+title(target.Children(end),'Wave: broadband');
+
 
 %% Change the line scene to 450nm and plot
 preserveLuminance = 1;
@@ -41,7 +43,8 @@ line450S = sceneInterpolateW(lineS,450,preserveLuminance);
 oi = oiCreate('wvf human');
 oi = oiCompute(oi,line450S);
 cm.compute(oi);
-cm.plot('hline absorptions lms','roi',[1 148]);
+[~,target] = cm.plot('hline absorptions lms','roi',[1 148]);
+title(target.Children(end),'Wave: 450nm');
 
 %% Show the spread of the line at 550 nm
 preserveLuminance = 1;
@@ -51,7 +54,10 @@ oi = oiCreate('wvf human');
 oi = oiCompute(oi,line550S);
 cm.compute(oi);
 cm.plot('hline absorptions lms','roi',[1 145]);
-cm.plot('hline absorptions lms','roi',[1 146]);
+title('Wave: 550nm');
+
+[~,target] = cm.plot('hline absorptions lms','roi',[1 146]);
+title(target.Children(end),'Wave: 550nm');
 
 %% Create a small grid pattern and image it on the sensor
 
@@ -65,7 +71,8 @@ oi = oiCrop(oi,'border');
 
 cm.compute(oi);
 cm.window;
-cm.plot('hline absorptions lms','roi',[1 145]);
+[~,target] = cm.plot('hline absorptions lms','roi',[1 145]);
+title(target.Children(end),'Wave: broadband');
 
 %% Show the 450 nm version of the grid.  Surprising, hunh?
 % This version is very blurred, of course.  Surprisingly so.
@@ -75,15 +82,7 @@ oi = oiCreate('wvf human');
 oi = oiCompute(oi,grid450S);
 cm.compute(oi);
 cm.window;
-cm.plot('hline absorptions lms','roi',[1 145]);
-
-%{
-sensor = sensorSet(sensor,'exp time',0.050);
-sensor = sensorCompute(sensor,oi);
-sensor = sensorSet(sensor,'name','human-grid');
-
-sensorWindow(sensor);
-sensorPlot(sensor,'electrons hline',xy);
-%}
+[~,target] = cm.plot('hline absorptions lms','roi',[1 145]);
+title(target.Children(end),'Wave: 450nm');
 
 %% END
