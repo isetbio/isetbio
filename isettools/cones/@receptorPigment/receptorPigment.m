@@ -14,73 +14,73 @@ classdef receptorPigment < hiddenHandle
 % aperture whereas the new @cPhotopigment has disk-shaped aperture.
 %
 % Description:
-%    Our understanding of the terminology and best conventions for
-%    describing this type of data has evolved over time, and the property
-%    names differ somewhat from the conventions we would adopt today.
-%    Changing the names in the code will not be backwards compatibile, so
-%    we have done our best to comment and explain here.
+%    Our understanding of the terminology for describing pigment
+%    properties has evolved over time. The property names differ
+%    somewhat from the conventions we would adopt today. Changing the
+%    names in the code will not be backwards compatibile, so we have
+%    done our best to comment and explain here.
 %
-%    obj.absorbance  - the absorbance spectra of the L, M, and S cones,
-%    each normalized to a peak value of 1. Values are in the columns, with
-%    a separate column for L, M and S. The column-wise arrangement applies
-%    to this and to the other L, M, and S spectra below. This quantity is
-%    called obj.unitDensity in the Lens and Macular objects, and in the
-%    Lens object it is not normalized. The normalization to peak of 1 is
-%    just a convention, the quantity that matters is the product
-%    obj.opticalDensity*ojb.absorbance, and there are those who might call
-%    that product the absorbance.
+%    In general, the data for the different receptors are stored in
+%    columns.  This applies to all of the parameters below.
 %
-%    obj.opticalDensity - the peak optical density (sometimes just called
-%    optical density). The interpretation as peak optical density depends
-%    on the convention followed here of normlizing obj.absorbance to a peak
-%    of 1. There are three entries to this vector, one each for the L, M,
-%    and S cones.
+%    obj.absorbance  - the absorbance spectra of the L, M, and S
+%    cones, each normalized to a peak value of 1. This quantity is
+%    called obj.unitDensity in the Lens and Macular objects, and in
+%    the Lens object it is not normalized. The normalization to peak
+%    of 1 is just a convention, the quantity that matters is the
+%    product obj.opticalDensity*ojb.absorbance. Some might call that
+%    product the absorbance. 
 %
-%    obj.peakEfficiency is the probability that a photopigment absorption
-%    leads to an isomerization.  There are three entries to this vector,
-%    one each for the L, M, and S cones.  This property is unfortunately
-%    named, as is it isn't the peak of anything.
+%    obj.opticalDensity - the peak optical density (sometimes just
+%    called optical density). The interpretation as peak optical
+%    density depends on the convention followed here of normlizing
+%    obj.absorbance to a peak of 1. There are three entries to this
+%    row vector, one each for the L, M, and S cones.
 %
-%    obj.absorptance is the absorptance spectrum.  This tells us the
+%    obj.peakEfficiency - the probability that a photopigment
+%    absorption leads to an isomerization.  There are three entries to
+%    this vector, one each for the L, M, and S cones.  This property
+%    is unfortunately named, as is it isn't the peak of anything.
+%
+%    obj.absorptance - the absorptance spectrum.  This tells us the
 %    probability that a photon of a given wavelength is absorbed as it
-%    passes through a layer of photopigment with total absorbance given
-%    by obj.opticalDensity*obj.absorbance.
+%    passes through a thin layer of photopigment with total absorbance
+%    given by obj.opticalDensity*obj.absorbance.  See the formula
+%    below.
 %
-%    obj.quantalEfficiency. These are the actual quantal efficiences with
-%    which an incident photon causes an isomerization.  Obtained by
-%    multiplying obj.absorptance by the quantal efficiency
-%    obj.peakEfficiency.  These are at the cone, and do not take into
-%    account effect of lens or macular pigment, nor of cone collecting
-%    area.  This is true of the fundamentals below.
+%    obj.quantalEfficiency - The chance that an incident photon causes
+%    an isomerization.  Obtained by multiplying obj.absorptance by the
+%    quantal efficiency obj.peakEfficiency.  These are at the cone,
+%    and do not take into account effect of lens or macular pigment,
+%    nor of cone collecting area.  This is true of the fundamentals
+%    below.
 % 
-%    obj.quantaFundamentals are nomalized (each to a peak of 1) fundamentals
-%    of the L, M, and S cones, in quantal units. These really shouldn't be
-%    used for anything other than perhaps making a plot of the relative
-%    shapes of the photopigment action spectra expressed in quantal units.
-%    The term cone fundamentals usually is takent to mean cone
-%    sensitivities expressed relative to light entering the eye ("at the
-%    cornea"), which these are not.  They are also not in any useful units,
-%    because of the normalization.
+%    obj.quantaFundamentals are nomalized (each to a peak of 1)
+%    fundamentals of the L, M, and S cones, in quantal units. These
+%    really shouldn't be used for anything other than perhaps making a
+%    plot of the relative shapes of the photopigment action spectra
+%    expressed in quantal units. The term cone fundamentals usually is
+%    taken to mean cone sensitivities expressed relative to light
+%    entering the eye ("at the cornea"), which these are not.  They
+%    are also not in any useful units, because of the normalization.
 %
-%    obj.energyFundamentals. Same as obj.quantaFundamentals, but in energy
-%    units. As with obj.quantaFundamentals, these are not in useful units
-%    because they begin with the normalized obj.quantaFundamentals.  So,
-%    possibly of interest for seeing the shape of the function, but not
-%    anything one should be encouraged to use.
+%    obj.energyFundamentals are the same as obj.quantaFundamentals,
+%    but in energy units. As with obj.quantaFundamentals, these are
+%    not in useful units because they begin with the normalized
+%    obj.quantaFundamentals.  So, possibly of interest for seeing the
+%    shape of the function, but not anything one should be encouraged
+%    to use.
 %
 %    Useful formulae:
 %       
 %           absorptance = 1 - 10.^(-opticalDensity * absorbance). 
 %
-%       Absorbance spectra are normalized to a peak value of 1, and then
-%       scaled by optical density to get the not normalized absorbance.
+%       Absorbance spectra are normalized to a peak value of 1, and
+%       then scaled by optical density to get the specific system
+%       absorbance.
 %
 %       Absorptance spectra are the proportion of quanta actually absorbed.
 %       This is the term used in this routine.
-%       
-%       In this routine, again for historical reasons, opticalDensity is
-%       just called density.  In the literature, this is sometimes called
-%       peak optical density.       
 %
 %    The absorbance data that drive this routine are stored on wavelength
 %    support in property wave_ in property absorbance.  Typically wave_ is

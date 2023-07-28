@@ -40,6 +40,11 @@ classdef cPhotoPigment < receptorPigment
 % History:
 %    12/07/20  NPC Wrote it
 
+% Examples:
+%{
+% Make the rod photopigment
+
+%}
 properties  % public properties related to the geometry of the cone aperture
     % diameter of the light collecting cone aperture in meters
     diameter;

@@ -6,19 +6,20 @@ classdef photoPigment < receptorPigment
 %
 % Description:
 %    This class contains properties for the photopigment absorption
-%    properties of a single cone cell. This class is derived from the 
-%    @photoPigment, which handles all the spectral properties. The main
-%    function of the @photoPigment class is to handle geometry for a
-%    rectangular-shaped cone aperture. It is to be used with the (old) @coneMosaic class.
+%    properties of a single cone cell. This class is derived from the
+%    @receptorPigment, which handles all the spectral properties. The
+%    main function of this @photoPigment subclass is to handle
+%    geometry for a rectangular-shaped cone aperture. It is to be used
+%    with the @coneMosaicRect class.
 %
-%    For the full cone mosaic, see the @coneMosaic and @coneMosaicHex classes.
+%    For the full cone mosaic, see the @cMosaic class.
 %
 %
 % Input:
 %	 None required.
 %
 % Output:
-%    pigment          - The created photoPigment object.
+%    pigment          - The photoPigment object.
 %   
 % Optional key/value pairs:
 %	 'wave'           - Vector of wavelengths in nm (400:10:31).
@@ -37,9 +38,16 @@ classdef photoPigment < receptorPigment
 %    'pdHeight'       - Collecting area height in meters (default 2e-6)
 %
 % Notes:
-%    * [NOTE: DHB - Need to explain about width and height, pdWidth and
-%      pdHeight and how these are used. Perhaps even simplify code not
-%      to have both.]
+%    * The width,height and pdWidth, pdHeight parameters are residual
+%    from the initial ISETCam pixel modeling.  In camera pixels, the
+%    pixel has a size (width,height) and the photodetector inside the
+%    pixel has a smaller size (pdWidth,pdHeight).  Here, abuse that
+%    notation by using (width,height) to determine the spacing between
+%    the receptors and pdWidth, pdHeight to specify the aperture size
+%    of the receptor.  Thus, if rods are spaced every 3 microns, and
+%    their aperture are 2 microns, you could set width,height to 3 um
+%    and pdWidth, pdHeight to 2 um.  (BW thinks.  Needs checking in
+%    the Cottaris implementation.  July 2023).
 %
 % See Also:
 %    t_conePhotoPigment, cPhotoPigment, coneMosaic, Macular, Lens

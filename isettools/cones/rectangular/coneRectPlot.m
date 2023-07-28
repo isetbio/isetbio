@@ -91,6 +91,7 @@ validPlotsPrint = {'help', ...
     'Impulse response', ...
     'time series absorptions', 'time series current', ...
     'Cone fundamentals', 'Cone spectral QE', 'Eye spectral QE', ...
+    'Receptor spectral QE', ...
     'Macular transmittance', 'Macular absorptance', ...
     'Macular absorbance', 'Eye movement path'};
 
@@ -122,6 +123,7 @@ p.addParameter('x', [], @isscalar);   % x axis value
 p.addParameter('y', [], @isscalar);   % y axis value
 p.addParameter('roi',[],@isvector);  % (x,y) or (x,y,width,height)
 p.addParameter('oi',[],@isstruct);
+p.addParameter('receptor',1:3,@isnumeric);
 
 p.parse(obj,plotType,varargin{:});
 
@@ -593,7 +595,7 @@ switch ieParamFormat(plotType)
         % FrameRate
         ieMovie(cm.current, varargin{:});
 
-    case 'conefundamentals'
+    case {'conefundamentals','pigmentfundamentals','pigmentabsorptance'}
         % The cone absorptance without macular pigment or lens
         uData = cm.pigment.absorptance;
         if ~isequal(hf, 'none')
@@ -630,14 +632,21 @@ switch ieParamFormat(plotType)
             ylabel('Macular absorbance');
         end
 
-    case 'conespectralqe'
-        % Quantum efficiency of macular pigment and cone photopigments
-        uData = cm.qe;
+    case {'conespectralqe','receptorspectralqe'}
+        % Quantum efficiency of the combination of macular pigment and
+        % receptor photopigment
+        if ~isempty(p.Results.receptor)
+            uData = cm.qe(:,p.Results.receptor);
+        else
+            uData = cm.qe;
+        end
+
         if ~isequal(hf, 'none')
-            plot(cm.wave, cm.qe, 'LineWidth', 2);
+            plot(cm.wave, uData, 'LineWidth', 2);
             grid on;
             xlabel('Wavelength (nm)');
-            ylabel('Cone quanta efficiency');
+            ylabel('Spectral quantum efficiency');
+            title('Combined macular and receptor sensitivity')
         end
 
     case 'eyespectralqe'
