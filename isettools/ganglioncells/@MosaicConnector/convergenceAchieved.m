@@ -1,5 +1,13 @@
 function convergenceIsAchieved = convergenceAchieved(netTotalCostSequence)
 
+    convergenceIsAchieved = false;
+    if (numel(netTotalCostSequence)>1)
+        if (netTotalCostSequence(end) > netTotalCostSequence(end-1))
+            convergenceIsAchieved = true;
+            return;
+        end
+    end
+
     trackingValues = 3;
     currentPass = numel(netTotalCostSequence);
     if (currentPass >= 2*trackingValues)
@@ -15,8 +23,6 @@ function convergenceIsAchieved = convergenceAchieved(netTotalCostSequence)
     
     if (epsilon < 1)
         convergenceIsAchieved = true;
-    else
-        convergenceIsAchieved = false;
     end
     
 end
