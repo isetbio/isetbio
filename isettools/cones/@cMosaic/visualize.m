@@ -84,6 +84,7 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('clearAxesBeforeDrawing', true, @islogical);
     p.addParameter('fontSize', 16, @isscalar);
+    p.addParameter('fontAngle', 'normal', @(x)(ismember(lower(x), {'normal', 'italic'})));
     p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('backgroundColor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
@@ -91,9 +92,6 @@ function visualizationParams = visualize(obj, varargin)
     p.addParameter('plotTitleFontSize', 16, @isscalar);
     p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
     p.addParameter('textDisplayColor', [], @isnumeric);
-
-    
-    
     p.parse(varargin{:});
     
     % visualizationView = p.Results.visualizationView;
@@ -131,6 +129,7 @@ function visualizationParams = visualize(obj, varargin)
     noYlabel = p.Results.noYLabel;
     displayedEyeMovementData = p.Results.displayedEyeMovementData;
     fontSize = p.Results.fontSize;
+    fontAngle = p.Results.fontAngle;
     plotTitleFontSize = p.Results.plotTitleFontSize;
     colorbarFontSize = p.Results.colorbarFontSize;
     cMap = p.Results.activationColorMap;
@@ -750,7 +749,7 @@ function visualizationParams = visualize(obj, varargin)
     set(axesHandle, 'Color', backgroundColor);
     axis(axesHandle, 'xy');
     axis(axesHandle, 'equal');
-    set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize);
+    set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize, 'FontAngle', fontAngle);
     
     if (~isempty(densityColorMap)) && (densityContourOverlay)
         colormap(axesHandle, densityColorMap);
