@@ -14,7 +14,7 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
         theMidgetRGCMosaic.generateNativeOptics(opticsParams);
         visualizedWavelength = 550;
         micronsPerDegree = theMidgetRGCMosaic.inputConeMosaic.micronsPerDegree;
-        thePSFdata = generateNativeOpticsPSFdata(...
+        thePSFdata = mRGCMosaic.generateOpticsPSFdataForVisualization(...
             theMidgetRGCMosaic.theNativeOptics, ...
             visualizedWavelength, micronsPerDegree);
     else
@@ -228,26 +228,4 @@ function generateVideo(theConeMosaicSTFresponses, normalizingResponses, theConeM
         end
     end
     videoOBJ.close();
-
 end
-
-
-function thePSFData = generateNativeOpticsPSFdata(theOI, visualizedWavelength, micronsPerDegree)
-
-    optics = oiGet(theOI, 'optics');
-    waves = opticsGet(optics, 'wave');
-
-    psfSupportMicrons = opticsGet(optics,'psf support','um');
-    xGridDegs = psfSupportMicrons{1}/micronsPerDegree;
-    yGridDegs = psfSupportMicrons{2}/micronsPerDegree;
-
-    thePSFData.supportXdegs = xGridDegs(1,:);
-    thePSFData.supportYdegs = yGridDegs(:,1);
-
-    
-    [~,idx] = min(abs(visualizedWavelength-waves));
-    targetWavelength = waves(idx);
-    thePSFData.data = opticsGet(optics,'psf data',targetWavelength );
-    
-end
-

@@ -357,6 +357,9 @@ classdef mRGCMosaic < handle
 
         % Method to compute the extra degs to include the surrounds
         extraDegs = extraConeMosaicDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
+
+        % Method to generate  data for visualization of the PSF
+        thePSFData = generateOpticsPSFdataForVisualization(theOI, visualizedWavelength, micronsPerDegree);
     end % Static methods
 
 end
