@@ -68,6 +68,9 @@ classdef MosaicPoolingOptimizer < handle
         ArbitraryCenter_DoubleExpH1cellIndex3Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex3SurroundWeights';
         ArbitraryCenter_DoubleExpH1cellIndex4Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex4SurroundWeights';
 
+        % Attenuation factor at the high SF regime to determine optimal orientation
+        highSFAttenuationFactorForOptimalOrientation = 0.15;
+
     end % Constants
 
     % Public methods (class interface)
@@ -88,7 +91,6 @@ classdef MosaicPoolingOptimizer < handle
             obj.retinalRFmodelParams = obj.defaultRetinalRFmodelParams;
 
             if (p.Results.generateSamplingGrids)
-                fprintf('\nGenerating sampling grids. Please wait ...\n');
                 % Generate the nominal multifocal spatial sampling grid
                 obj.generateNominalSpatialSamplingGrid(p.Results.samplingScheme);
                 
@@ -98,7 +100,6 @@ classdef MosaicPoolingOptimizer < handle
 
                 % Generate the full multifocal sampling grids
                 obj.generateSamplingGrids(minSpatialSamplingDegs);
-                fprintf('Done \n');
 
                 if (p.Results.visualizeSamplingGrids)
                     obj.visualizeSamplingGrids();
@@ -178,11 +179,12 @@ classdef MosaicPoolingOptimizer < handle
         % Method to opimize the surround cone pooling so as to achieve a
         % visual STF matching the targetSTF
         theRFcomputeStruct = optimizeSurroundConePooling(obj, theRGCindex, targetVisualSTFparams, ...
-            mosaicParams, opticsParams, initialRetinalConePoolingParams, displayFittingProgress, figNo, figTitle);
+            mosaicParams, opticsParams, initialRetinalConePoolingParams, ...
+            displayFittingProgress, exportedFittingProgressFolder, figNo, figTitle);
 
         % Optimization components
         [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptimizationComponents(...
-            obj, theRGCindex);
+            obj, theRGCindex, visualizeComponents, exportedFittingProgressFolder);
     end
 
     % Static methods
@@ -206,9 +208,9 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to select the highest-extending STF (across a set of STFs
         % measured at different orientations)
-        [theOptimalSTF,theSTFsAcrossAllOrientations] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+        [theOptimalSTF,theSTFsAcrossAllOrientations, theOptimalOrientation] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
             orientationsTested, spatialFrequenciesTested, ...
-            theResponsesAcrossAllOrientationsAndSpatialFrequencies)
+            theResponsesAcrossAllOrientationsAndSpatialFrequencies);
 
 
         % Method to convert cone pooling params to pooled cone indices and

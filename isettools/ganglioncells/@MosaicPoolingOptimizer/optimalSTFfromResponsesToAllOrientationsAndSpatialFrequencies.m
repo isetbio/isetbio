@@ -1,4 +1,4 @@
-function [theOptimalSTF, theSTFsAcrossAllOrientations] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+function [theOptimalSTF, theSTFsAcrossAllOrientations, theHighestExtensionOrientation] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
     orientationsTested, spatialFrequenciesTested, ...
     theResponsesAcrossAllOrientationsAndSpatialFrequencies)
 
@@ -18,11 +18,14 @@ function [theOptimalSTF, theSTFsAcrossAllOrientations] = optimalSTFfromResponses
     end
 
     % Pick the highest extension STF as the visual STF for this cell
-    [theOptimalSTF,theSTFsAcrossAllOrientations] = highestExtensionSTF(orientationsTested, spatialFrequenciesTested, theSTFsAcrossAllOrientations);
+    [theOptimalSTF,theSTFsAcrossAllOrientations, theHighestExtensionOrientation] = ...
+        highestExtensionSTF(orientationsTested, spatialFrequenciesTested, ...
+        theSTFsAcrossAllOrientations);
 end
 
         
-function [theHighestExtensionSTF,theMeasuredSTFs] = highestExtensionSTF(orientationsTested, spatialFrequenciesTested, theMeasuredSTFs)
+function [theHighestExtensionSTF,theMeasuredSTFs, theHighestExtensionOrientation] = highestExtensionSTF(...
+    orientationsTested, spatialFrequenciesTested, theMeasuredSTFs)
 
     theMeasuredSTFs = theMeasuredSTFs / max(theMeasuredSTFs(:));
 
@@ -35,7 +38,7 @@ function [theHighestExtensionSTF,theMeasuredSTFs] = highestExtensionSTF(orientat
         theSTFatThisOri = squeeze(theMeasuredSTFs(iOri,:));
         theSTFatThisOriInterpolated = interp1(spatialFrequenciesTested, theSTFatThisOri, spatialFrequenciesInterpolated);
         [mag, iSFpeak] = max(theSTFatThisOri);
-        thresholdSTF = mag * 0.2;
+        thresholdSTF = mag * MosaicPoolingOptimizer.highSFAttenuationFactorForOptimalOrientation;
 
         ii = iSFpeak;
         keepGoing = true; iStop = [];
@@ -59,4 +62,5 @@ function [theHighestExtensionSTF,theMeasuredSTFs] = highestExtensionSTF(orientat
         [~, iBestOri] = max(maxSF);
     end
     theHighestExtensionSTF = squeeze(theMeasuredSTFs(iBestOri,:));
+    theHighestExtensionOrientation = orientationsTested(iBestOri);
 end
