@@ -1,11 +1,11 @@
 function theRFcomputeStruct = optimizeSurroundConePooling(obj, ...
     theRGCindex, targetVisualSTFparams,  mosaicParams, opticsParams, ...
     initialRetinalConePoolingParams, ...
-    displayFittingProgress, figNo, figTitle)
+    displayFittingProgress, exportedFittingProgressFolder, figNo, figTitle)
     
     % Compute optimization components
     [modelConstants, retinalConePoolingParams, visualRcDegs] = ...
-        obj.computeOptimizationComponents(theRGCindex);
+        obj.computeOptimizationComponents(theRGCindex, displayFittingProgress, exportedFittingProgressFolder);
 
     % Override intial retinal cone pooling params
     if (~isempty(initialRetinalConePoolingParams))

@@ -7,6 +7,7 @@ function compute(obj, gridNodeIndex, whichConeType, mosaicParams, opticsParams, 
     p.addParameter('targetSurroundToCenterRcRatio', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('targetSurroundToCenterIntegratedSensitivityRatio', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('displayFittingProgress', false, @islogical);
+    p.addParameter('exportedFittingProgressFolder', '', @ischar);
     p.addParameter('multiStartsNumDoGFit', 64, @isscalar);
     p.addParameter('multiStartsNumRetinalPooling', 8, @isscalar);
     p.addParameter('rmseWeightForRsRcResidual', 1.0, @isscalar);
@@ -22,7 +23,8 @@ function compute(obj, gridNodeIndex, whichConeType, mosaicParams, opticsParams, 
     obj.retinalRFmodelParams = p.Results.retinalRFmodelParams;
 
     displayFittingProgress = p.Results.displayFittingProgress;
-    
+    exportedFittingProgressFolder = p.Results.exportedFittingProgressFolder;
+
     % Default targetSurroundToCenterRcRatio
     targetSurroundToCenterRcRatio = obj.visualSTFSurroundToCenterRcRatioGrid(gridNodeIndex);
     if (~isempty(p.Results.targetSurroundToCenterRcRatio))
@@ -75,7 +77,8 @@ function compute(obj, gridNodeIndex, whichConeType, mosaicParams, opticsParams, 
         figTitle = sprintf('grid no %d of %d L-cone center RGC %d', gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), LconeRGCindex);
         theLconeRFcomputeStruct = obj.optimizeSurroundConePooling(...
             LconeRGCindex, targetVisualSTFparams, mosaicParams, opticsParams, ...
-            initialRetinalLconePoolingParams, displayFittingProgress, figNo, figTitle);
+            initialRetinalLconePoolingParams, ...
+            displayFittingProgress, exportedFittingProgressFolder, figNo, figTitle);
     end
 
     % Optimize the M-center RGC RF pooling
@@ -88,9 +91,12 @@ function compute(obj, gridNodeIndex, whichConeType, mosaicParams, opticsParams, 
     
         theMconeRFcomputeStruct = obj.optimizeSurroundConePooling(...
             MconeRGCindex, targetVisualSTFparams, mosaicParams, opticsParams, ...
-            initialRetinalMconePoolingParams, displayFittingProgress, figNo, figTitle);
+            initialRetinalMconePoolingParams, ...
+            displayFittingProgress, exportedFittingProgressFolder, figNo, figTitle);
     end
 
+    disp('before save')
+    pause
     % Saved computed object
     fprintf('\n\nSaved computeStructs for grid node %d to %s\n\n',gridNodeIndex, optimizedRGCpoolingObjectsFileNameForThisNode);
     save(optimizedRGCpoolingObjectsFileNameForThisNode, ...

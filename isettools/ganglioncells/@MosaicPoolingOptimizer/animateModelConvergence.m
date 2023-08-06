@@ -41,9 +41,9 @@ function animateConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
     modelConstants = theConeSpecificRFcomputeStruct.modelConstants;
     theConeSpecificRFcomputeStruct.retinalConePoolingParams
     
-
+    visualizeComponents = false;
     [modelConstants, retinalConePoolingParams, visualRcDegs] = ...
-        obj.computeOptimizationComponents(theRGCindex);
+        obj.computeOptimizationComponents(theRGCindex, visualizeComponents);
 
     for iteration = 1:size(theConeSpecificRFcomputeStruct.rmseSequence,1)
 
