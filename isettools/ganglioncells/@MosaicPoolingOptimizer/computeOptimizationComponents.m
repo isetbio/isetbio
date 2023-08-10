@@ -280,8 +280,8 @@ function [visualRcDegs, anatomicalRcDegs, inputConeIndices, inputConeWeights] = 
 
         xtickangle(theAxes{1,1}, 0);
 
-        xlabel(theAxes{1,1}, 'spatial frequency (x)')
-        ylabel(theAxes{1,1}, 'spatial frequency (y)');
+        xlabel(theAxes{1,1}, 'spatial frequency, x (c/deg)')
+        ylabel(theAxes{1,1}, 'spatial frequency, y (c/deg)');
 
         
         colormap(theAxes{1,1}, cLut);

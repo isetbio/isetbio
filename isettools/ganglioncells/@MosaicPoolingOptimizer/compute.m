@@ -54,6 +54,8 @@ function compute(obj, gridNodeIndex, whichConeType, mosaicParams, opticsParams, 
     % Load the precomputed cone mosaic STF responses
     obj.loadConeMosaicVisualSTFresponses(coneMosaicSTFresponsesFileName);
 
+    % use dummy.mat to start with initial conditions optimizedRGCpoolingObjectsFileNameForThisNode = 'dummy.mat';
+
     % Deal with initialRetinalConePoolingParamds
     if (isfile(optimizedRGCpoolingObjectsFileNameForThisNode))
         fprintf('<<<<< Loading previously computed model\n');

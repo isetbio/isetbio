@@ -36,6 +36,8 @@ classdef MosaicPoolingOptimizer < handle
         rmseWeightForRsRcResidual;
         rmseWeightForSCintSensResidual;
 
+        % Where to export PDFs
+        exportedPDFFolder;
     end % Read only properties
 
     % Dependent properties
@@ -85,10 +87,12 @@ classdef MosaicPoolingOptimizer < handle
             p.addParameter('samplingScheme', 'hexagonal', @(x)(ismember(x, {'hexagonal', 'rectangular'})));
             p.addParameter('visualizeSamplingGrids', false, @islogical);
             p.addParameter('generateSamplingGrids', false, @islogical);
+            p.addParameter('exportedPDFFolder', '', @ischar);
             p.parse(theRGCmosaic, varargin{:});
 
             obj.theRGCMosaic = p.Results.theRGCmosaic;
             obj.retinalRFmodelParams = obj.defaultRetinalRFmodelParams;
+            obj.exportedPDFFolder = p.Results.exportedPDFFolder;
 
             if (p.Results.generateSamplingGrids)
                 % Generate the nominal multifocal spatial sampling grid

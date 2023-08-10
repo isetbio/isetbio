@@ -1,31 +1,46 @@
 function visualizeSamplingGrids(obj)
 
-    
     conesNumPooledByTheRFcenters = unique(obj.conesNumPooledByTheRFcenterGrid);
 
-    hFig = figure(10); clf;
-    set(hFig, 'Color', [0 0 0], 'Position', [10 10 1280 1280]);
-    ax = subplot('Position', [0.03 0.04 0.97 0.94]);
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 medium');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+
     obj.theRGCMosaic.visualize('figureHandle', hFig, ...
-                            'axesHandle',ax, ...
+                            'axesHandle',theAxes{1,1}, ...
                             'identifyInputCones', true, ...
-                            'backgroundColor', 'none', ...
+                            'backgroundColor', [0.5 0.5 0.5], ...
+                            'fontAngle', ff.axisFontAngle, ...
+                            'fontSize', ff.fontSize, ...
                             'domainVisualizationTicks', struct(...
-                                'x', 0:0.2:5, 'y', -1.6:0.2:1.6));
+                                'x', 0-5:0.5:5, 'y', -5:0.5:5));
 
-    set(hFig, 'Color', [0 0 0]);
-    set(ax, 'XColor', [0.7 0.7 0.7], 'YColor', [0.7 0.7 0.7]);
+    set(theAxes{1,1}, 'TickDir', 'both');
 
-    NicePlot.exportFigToPDF('rgcmosaic.pdf', hFig, 300);
+    % Font size
+    set(theAxes{1,1}, 'FontSize', ff.fontSize);
+
+    % axis color and width
+    set(theAxes{1,1}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+   
+    if (~isempty(obj.exportedPDFFolder))
+        pdfFileName = fullfile(obj.exportedPDFFolder,'rgcmosaic.pdf');
+    else
+        pdfFileName = 'rgcmosaic.pdf';
+    end
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
 
 
     for iConesNumPooled = 1:numel(conesNumPooledByTheRFcenters)
 
         theIdentifiedConeIndices = [];
 
-        hFig = figure(iConesNumPooled); clf;
-        set(hFig, 'Color', [0 0 0], 'Position', [10 10 1280 1280]);
-        ax = subplot('Position', [0.03 0.04 0.97 0.94]);
+        hFig = figure(iConesNumPooled+1); clf;
+        ff = MSreadyPlot.figureFormat('1x1 medium');
+        theAxes = MSreadyPlot.generateAxes(hFig,ff);
+        set(hFig, 'Color', [1 1 1]);
+
 
         % Determine spatial grid coords for this # of center cones
         conesNumPooled = conesNumPooledByTheRFcenters(iConesNumPooled);
@@ -71,18 +86,31 @@ function visualizeSamplingGrids(obj)
     
         obj.theRGCMosaic.inputConeMosaic.visualize(...
                             'figureHandle', hFig, ...
-                            'axesHandle',ax, ...
+                            'axesHandle',theAxes{1,1}, ...
                             'labelConesWithIndices', theIdentifiedConeIndices, ...
-                            'backgroundColor', [0 0 0], ...
+                            'backgroundColor', [0.5 0.5 0.5], ...
+                            'fontAngle', ff.axisFontAngle, ...
+                            'fontSize', ff.fontSize, ...
                             'domainVisualizationTicks', struct(...
-                                'x', 0:0.2:5, 'y', -1.6:0.2:1.6), ...
-                            'plotTitle', sprintf('%d-cone center sanpling positions\n%s\n%s', conesNumPooled, LcenterRGCsString, McenterRGCsString), ...
-                            'plotTitleColor', [1 1 0.5]);
+                                'x', 0-5:0.5:5, 'y', -5:0.5:5));
 
-        set(hFig, 'Color', [0 0 0]);
-        set(ax, 'XColor', [0.7 0.7 0.7], 'YColor', [0.7 0.7 0.7]);
+        %                    'plotTitle', sprintf('%d-cone center sanpling positions\n%s\n%s', conesNumPooled, LcenterRGCsString, McenterRGCsString), ...
+        %                    'plotTitleColor', [1 1 0.5]);
 
-        NicePlot.exportFigToPDF(sprintf('%d-cone center grid', conesNumPooled), hFig, 300);
+        
+        set(theAxes{1,1}, 'TickDir', 'both');
+
+        % Font size
+        set(theAxes{1,1}, 'FontSize', ff.fontSize);
+
+        % axis color and width
+        set(theAxes{1,1}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+   
+        pdfFileName = sprintf('%d-coneCenterGrid', conesNumPooled);
+        if (~isempty(obj.exportedPDFFolder))
+            pdfFileName = fullfile(obj.exportedPDFFolder,pdfFileName);
+        end
+        NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
 
     end
 
