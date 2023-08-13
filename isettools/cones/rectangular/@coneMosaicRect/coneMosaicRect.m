@@ -382,7 +382,6 @@ classdef coneMosaicRect < hiddenHandle
 
             obj.center   = p.Results.center(:)';
             obj.whichEye = p.Results.whicheye;
-            obj.wave     = p.Results.wave;
             obj.spatialDensity_   = p.Results.spatialdensity(:);
             obj.integrationTime   = p.Results.integrationtime;
             obj.micronsPerDegree  = p.Results.micronsperdegree;
@@ -420,23 +419,25 @@ classdef coneMosaicRect < hiddenHandle
             % 'angle' key value pairs.
             if isempty(obj.pigment)
                 obj.pigment = photoPigment;  % Initialize
-                %{
+                % {
                 % Figure out the spacing and size from the position
                 ecc = sqrt(sum(obj.center .^ 2));
                 ang = atan2d(obj.center(2), obj.center(1));
+                % {
                 [spacing, aperture] = coneSizeReadData('eccentricity', ecc, ...
                     'eccentricityUnits', p.Results.eccentricityunits, ...
                     'angle', ang, 'angleUnits', 'deg', ...
                     'whichEye', obj.whichEye, ...
                     'useParfor', obj.useParfor);
                 %}
-                % {
+                %{
                 % We use the p.Unmatched here. BW is suspicious
                 % and deleted  it.
-                [spacing, aperture] = coneSizeReadData( p.Unmatched, ...
+                [spacing, aperture] = coneSizeReadData(p.Unmatched, ...
                   'eccentricity', ecc, ...
                   'eccentricityUnits', p.Results.eccentricityunits, ...
-                  'angle', ang, 'angleUnits', 'deg', ...
+                  'angle', ang, ...
+                  'angleUnits', 'deg', ...
                   'whichEye', obj.whichEye, ...
                   'useParfor', obj.useParfor);
                 %}
@@ -449,6 +450,7 @@ classdef coneMosaicRect < hiddenHandle
                 % of the rods, for example (July 2023).
                 obj.pigment = p.Results.pigment;
             end
+            obj.wave     = p.Results.wave;
 
             % See description of this parameter on the wiki page at
             % <https://github.com/isetbio/isetbio/wiki/
@@ -520,7 +522,8 @@ classdef coneMosaicRect < hiddenHandle
         %   -  Property set and get access methods
 
         function val = get.wave(obj)
-            % Retrieve the cone mosaic object's wave value
+            % The cone mosaic object's wave value is stored in the
+            % obj.pigment.wave slot.
             %
             % Syntax:
             %   val = get.wave(obj)
@@ -537,7 +540,9 @@ classdef coneMosaicRect < hiddenHandle
             % Optional key/value pairs:
             %    None.
             %
-            val = obj.pigment.wave;
+            if isempty(obj.pigment), val = [];
+            else, val = obj.pigment.wave;
+            end
         end
 
         function val = get.rows(obj)
