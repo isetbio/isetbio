@@ -4,8 +4,8 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
     % Select optics to employ
     validOpticsChoices = {'n', 'c'};
     opticsChoice = 'invalid';
-    while (~ismember(opticsChoice, validOpticsChoices))
-       fprintf('\nOptics options: \n');
+    while (~ismember(opticsChoice, validOpticsChoices)) 
+       fprintf('\nOptics options for mosaic at (%2.1f,%2.1f): \n', mosaicParams.eccDegs(1), mosaicParams.eccDegs(2));
        fprintf('[n] - Native optics (at the mosaic''s center) \n');
        fprintf('[c] - Custom optics (at an arbitrary position) \n');
        opticsChoice = input('Optics to employ: ', 's');

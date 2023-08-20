@@ -1,6 +1,7 @@
 function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
     computeReadyMosaicFilenames, mRGCMosaicSTFresponsesFilenames, ...
     pdfDirectory, ...
+    showZscoresInsteadOfData, ...
     employTemporalEquivalentEccentricity)
 
     % Load the Croner&Kaplan '95 data for Parvocellular neurons
@@ -38,10 +39,18 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
     
 
     % Concatenate data across mosaics
+    mosaicOutlines = cell(1, numel(computeReadyMosaicFilenames));
     for iMosaic = 1:numel(computeReadyMosaicFilenames)
         % Load the compute-ready MRGC mosaic
         load(computeReadyMosaicFilenames{iMosaic}, 'theComputeReadyMRGCmosaic');
     
+        outlineStruct.eccDegs = theComputeReadyMRGCmosaic.eccentricityDegs;
+        outlineStruct.sizeDegs = theComputeReadyMRGCmosaic.sizeDegs;
+        outlineStruct.sizeDegs(2) = outlineStruct.sizeDegs(2)+(iMosaic-1)*0.2;
+        outlineStruct.temporalEquivalentEccDegs = theComputeReadyMRGCmosaic.temporalEquivalentEccentricityDegs;
+        mosaicOutlines{iMosaic}.outlineStruct = outlineStruct;
+        
+
         % Load the computed mRGC  STF responses 
         load(mRGCMosaicSTFresponsesFilenames{iMosaic}, ...
             'theMRGCMosaicOptimalSTFs', ...
@@ -188,6 +197,8 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
        
     end % iMosaic
 
+    generateAllSynthesizedMosaicOutlinesFigure(mosaicOutlines, false);
+    generateAllSynthesizedMosaicOutlinesFigure(mosaicOutlines, true);
 
     % Transform KsKc ratios to log10(ks/Kc)
     CK95KsKcRatiosLog = CK95KsKcRatios;
@@ -198,9 +209,9 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
     ISETBioKsKcRatiosLog{3}.data = log10(ISETBioKsKcRatios{3}.data);
     ISETBioKsKcRatiosLog{4}.data = log10(ISETBioKsKcRatios{4}.data);
 
-    pdfFileNamePostfix{1} = 'L-cone center';
-    pdfFileNamePostfix{2} = 'M-cone center';
-    pdfFileNamePostfix{3} = 'mixed LM-cone center';
+    pdfFileNamePostfix{1} = 'LconeCenter';
+    pdfFileNamePostfix{2} = 'MconeCenter';
+    pdfFileNamePostfix{3} = 'mixedLMconeCenter';
     pdfFileNamePostfix{4} = 'midget'; %all center types';
 
     eccRange = [0.1 30];
@@ -211,8 +222,8 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
 
     for iDataSet = 1:4
-        pngFileName{iDataSet} = sprintf('SummaryStats_%s.png',pdfFileNamePostfix{iDataSet});
-        pngFileName{iDataSet} = fullfile(pdfDirectory, pngFileName{iDataSet});
+        pngFileName = fullfile(pdfDirectory,sprintf('SummaryStats_%s.png',pdfFileNamePostfix{iDataSet}));
+        pdfFileName = fullfile(pdfDirectory,sprintf('SummaryStats_%s.pdf',pdfFileNamePostfix{iDataSet}));
 
         hFig = figure(iDataSet); clf;
         ff = MSreadyPlot.figureFormat('2x4-tall');
@@ -237,6 +248,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
                   eccRange, eccTicks, ...
                   [0.005 0.1], (0:0.01:0.1), ...
                   'linear', 'Rc (degs)', pdfFileNamePostfix{iDataSet}, ...
+                  showZscoresInsteadOfData, ...
                   employTemporalEquivalentEccentricity, ...
                   ff);
 
@@ -259,6 +271,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
                   eccRange, eccTicks, ...
                   [0 22], (0:2:26), ...
                   'linear', 'Rs/Rc', '', ...
+                  showZscoresInsteadOfData, ...
                   employTemporalEquivalentEccentricity, ...
                   ff);
 
@@ -279,6 +292,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
               eccRange, eccTicks, ...
               [1e-4 1e-1], [1e-4 1e-3 1e-2 1e-1], ...
               'log', 'Ks/Kc', '', ...
+              showZscoresInsteadOfData, ...
               employTemporalEquivalentEccentricity, ...
               ff);
 
@@ -300,6 +314,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
               eccRange, eccTicks, ...
               [0 1.0], (0:0.1:1), ...
               'linear', 'intS_s/intS_c', '', ...
+              showZscoresInsteadOfData, ...
               employTemporalEquivalentEccentricity, ...
               ff);
 
@@ -312,8 +327,184 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
               'intS_s/intS_c', '', ...
               ff);
 
-        NicePlot.exportFigToPNG(pngFileName{iDataSet}, hFig, 300);
+        if (showZscoresInsteadOfData)
+            NicePlot.exportFigToPNG(pngFileName, hFig, 300);
+        else
+            NicePlot.exportFigToPNG(pdfFileName, hFig, 300); 
+        end
+
+
+        % ============ Now generate separate figs for each parameter (PLOS format)
+        rawFiguresRoot = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/Raw';
+
+        % The RcDegs as a function of eccentricity plot
+        hFig = MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc([], ...
+                  CK95RcDegs, ISETBioRcDegs, theVisualizedDataSetsScatter, theVisualizedDataSetsMeans, ...
+                  ISETBioSetsColors, scatterFaceAlpha, ...
+                  eccRange, eccTicks, ...
+                  [0.005 0.1], (0:0.01:0.1), ...
+                  'linear', 'Rc (degs)', pdfFileNamePostfix{iDataSet}, ...
+                  employTemporalEquivalentEccentricity, ...
+                  []);
+
+        % Export fig 
+        PNGFullFileName = strrep(strrep(pngFileName, '.png', 'RcDegs.png'), pdfDirectory, rawFiguresRoot);
+        PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
+        
+        if (showZscoresInsteadOfData)
+            NicePlot.exportFigToPDF(PDFFullFileName, hFig, 300);
+        else
+            NicePlot.exportFigToPNG(PNGFullFileName, hFig, 300);
+        end
+        
+
+        % The S/C int sens ratio as a function of eccentricity
+        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc([], ...
+              CK95SCintSensRatios, ISETBioSCintSensRatios, theVisualizedDataSetsScatter, theVisualizedDataSetsMeans, ...
+              ISETBioSetsColors, scatterFaceAlpha, ...
+              eccRange, eccTicks, ...
+              [0 1.0], (0:0.1:1), ...
+              'linear', 'intS_s/intS_c', '', ...
+              employTemporalEquivalentEccentricity, ...
+              []);
+
+        % Export fig 
+        PNGFullFileName = strrep(strrep(pngFileName, '.png', 'intSCRatio.png'), pdfDirectory, rawFiguresRoot);
+        PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
+
+        if (showZscoresInsteadOfData)
+            NicePlot.exportFigToPDF(PDFFullFileName, hFig, 300);
+        else
+            NicePlot.exportFigToPNG(PNGFullFileName, hFig, 300);
+        end
+        
+
+        % The Ks/Kc int ratio as a function of eccentricity plot
+        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc([], ...
+              CK95KsKcRatios, ISETBioKsKcRatios, theVisualizedDataSetsScatter, theVisualizedDataSetsMeans, ...
+              ISETBioSetsColors, scatterFaceAlpha, ...
+              eccRange, eccTicks, ...
+              [1e-4 1e-1], [1e-4 1e-3 1e-2 1e-1], ...
+              'log', 'Ks/Kc', '', ...
+              employTemporalEquivalentEccentricity, ...
+              []);
+
+        % Export fig 
+        PNGFullFileName = strrep(strrep(pngFileName, '.png', 'KsKcRatio.png'), pdfDirectory, rawFiguresRoot);
+        PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
+
+        if (showZscoresInsteadOfData)
+            NicePlot.exportFigToPDF(PDFFullFileName, hFig, 300);
+        else
+            NicePlot.exportFigToPNG(PNGFullFileName, hFig, 300);
+        end
+
+
+        % The Rs/Rc ratio as a function of eccentricity plot
+        MSreadyPlot.renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc([], ...
+                  CK95RsRcRatios, ISETBioRsRcRatios, theVisualizedDataSetsScatter, theVisualizedDataSetsMeans, ...
+                  ISETBioSetsColors, scatterFaceAlpha, ...
+                  eccRange, eccTicks, ...
+                  [0 22], (0:2:26), ...
+                  'linear', 'Rs/Rc', '', ...
+                  employTemporalEquivalentEccentricity, ...
+                  []);
+
+        % Export fig 
+        PNGFullFileName = strrep(strrep(pngFileName, '.png', 'RsRcRatio.png'), pdfDirectory, rawFiguresRoot);
+        PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
+
+        if (showZscoresInsteadOfData)
+            NicePlot.exportFigToPDF(PDFFullFileName, hFig, 300);
+        else
+            NicePlot.exportFigToPNG(PNGFullFileName, hFig, 300);
+        end
     end % iDataSet
+
+    % Generate paper-ready figures (scaled versions of the figures i
+    % nrawFiguresRoot directory) which are stored in the PaperReady folder
+    commandString = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/cpdf -args generatePLOSOnePaperReadyFigures.txt';
+    system(commandString);
+
+end
+
+
+function generateAllSynthesizedMosaicOutlinesFigure(mosaicOutlines, employTEE)
+
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    hold(theAxes{1,1}, 'on');
+
+    mosaicColors = brewermap(numel(mosaicOutlines), 'Pastel1');
+
+    for iMosaic = 1:numel(mosaicOutlines)
+        outlineStruct = mosaicOutlines{iMosaic}.outlineStruct;
+        if (employTEE)
+            xo = abs(outlineStruct.temporalEquivalentEccDegs(1));
+            yo = abs(outlineStruct.temporalEquivalentEccDegs(2));
+        else
+            xo = outlineStruct.eccDegs(1);
+            yo = outlineStruct.eccDegs(2);
+        end
+
+        xOutline = xo + outlineStruct.sizeDegs(1)*0.5*[-1 1 1 -1 -1];
+        if (employTEE)
+            xOutline = max(xOutline, 0.05);
+        end
+
+        yOutline = yo + outlineStruct.sizeDegs(2)*0.5*[-1 -1 1 1 -1];
+        patch(theAxes{1,1}, xOutline, yOutline, mosaicColors(iMosaic,:), 'FaceAlpha', 0.5);
+        plot(theAxes{1,1}, xOutline, yOutline, '-', 'LineWidth', ff.lineWidth, 'Color', 0.3*mosaicColors(iMosaic,:));
+        
+    end
+
+    set(theAxes{1,1}, 'XTick', -20:5:20, 'YTick', -10:2:10);
+    axis(theAxes{1,1}, 'equal');
+
+    % Limits and ticks
+    if (employTEE)
+        set(theAxes{1,1}, 'XLim', [0.05 30], 'XTick', [0.1 0.3 1 3 10 30], 'XScale', 'log', 'YLim', [-2.5 2.5]);
+    else
+        set(theAxes{1,1}, 'XLim', [-20 20], 'YLim', [-2.5 2.5]);
+    end
+
+    
+
+    % Grids
+    grid(theAxes{1,1}, 'on');
+    box(theAxes{1,1}, 'off');
+
+    if (employTEE)
+        xlabel(theAxes{1,1},'temporal equivalent eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
+    else
+        xlabel(theAxes{1,1},'eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
+    end
+
+    ylabel(theAxes{1,1},'eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
+
+    % axis color and width
+    set(theAxes{1,1}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+    
+    % Font size
+    set(theAxes{1,1}, 'FontSize', ff.fontSize);
+
+
+    rawFiguresRoot = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/Raw';
+    if (employTEE)
+        pdfFileName = sprintf('%s/synthesizedMosaicOutlinesTEE.pdf', rawFiguresRoot);
+    else
+        pdfFileName = sprintf('%s/synthesizedMosaicOutlines.pdf', rawFiguresRoot);
+    end
+
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+    
+
+    % Generate paper-ready figures (scaled versions of the figures i
+    % nrawFiguresRoot directory) which are stored in the PaperReady folder
+    commandString = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/cpdf -args generatePLOSOnePaperReadyFigures.txt';
+    system(commandString);
 end
 
 function [cellEccDegs, cellCenterConeTypeWeights, ...
