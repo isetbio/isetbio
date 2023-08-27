@@ -4,18 +4,20 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
     p.addParameter('psfAlpha', 0.7, @(x)(isscalar(x)&&(x>0.0)&&(x<=1.0)));
-    p.addParameter('withConeApertureData', [] , @(x)(isempty(x)||isstruct(x)));
+    p.addParameter('withConeApertureData', [], @(x)(isempty(x)||isstruct(x)));
+    p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
     p.parse(varargin{:});
     
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
     psfAlpha = p.Results.psfAlpha;
     coneApertureData = p.Results.withConeApertureData;
+    tickSeparationArcMin = p.Results.tickSeparationArcMin;
 
     % plot
     psfSupportXarcmin = psfSupportXdegs * 60;
     psfSupportYarcmin = psfSupportYdegs * 60;
-    cmap = brewermap(1024, 'greys');
+    cmap = brewermap(1024, 'blues');
 
     if (~isempty(coneApertureData))
         xOutline = cosd(0:15:360);
@@ -33,7 +35,7 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
 
     zData = thePSFData/max(thePSFData(:));
     zLevels = [0.1 0.3 0.5 0.7 0.9];
-    contourLineColor = [1 0 0];
+    contourLineColor = [0 0 1];
     cMosaic.semiTransparentContourPlot(ax, psfSupportXarcmin, psfSupportYarcmin, ...
         zData, zLevels, cmap, psfAlpha, contourLineColor, 'LineWidth', 1.5)
     
@@ -42,7 +44,12 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     axis(ax, 'xy');
 
     psfRangeArcMin = psfRangeDegs*60;
-    psfTicksArcMin = MSreadyPlot.spatialMapTicksArcMin(psfRangeArcMin);
+    if (isempty(tickSeparationArcMin))
+        psfTicksArcMin = MSreadyPlot.spatialMapTicksArcMin(psfRangeArcMin);
+    else
+        psfTicksArcMin = -(10*tickSeparationArcMin):tickSeparationArcMin:(10*tickSeparationArcMin);
+    end
+
 
     if (psfRangeArcMin <= 2)
         psfTickLabels = sprintf('%2.1f\n', psfTicksArcMin);
@@ -71,6 +78,8 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     else
         set(ax, 'YTickLabel', {});
     end
+
+    grid(ax, 'on');
 
     % Font size
     set(ax, 'FontSize', ff.fontSize);

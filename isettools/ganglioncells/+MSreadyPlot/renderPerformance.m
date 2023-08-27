@@ -4,10 +4,13 @@ function renderPerformance(ax, targetRsRcRatio, targetSCintSensRatio, ...
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
+    p.addParameter('noTitle', false, @islogical);
+
     p.parse(varargin{:});
     
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
+    noTitle = p.Results.noTitle;
 
     targetKsKcRatio = targetSCintSensRatio / (targetRsRcRatio^2);
     achievedKsKcRatio = achievedSCintSensRatio/ (achievedRsRcRatio^2);
@@ -20,7 +23,10 @@ function renderPerformance(ax, targetRsRcRatio, targetSCintSensRatio, ...
     grid(ax, 'on');
     box(ax, 'off');
     
-    ylabel(ax,'residual (%)', 'FontAngle', ff.axisFontAngle);
+    if (~noYLabel)
+        ylabel(ax,'residual (%)', 'FontAngle', ff.axisFontAngle);
+    end
+
     xlabel(ax, '', 'FontAngle', ff.axisFontAngle);
 
     
@@ -35,11 +41,13 @@ function renderPerformance(ax, targetRsRcRatio, targetSCintSensRatio, ...
 
     set(ax, 'XLim', [0.5+3*ff.axisOffsetFactor 3.5],  'XTick', 0.5:0.5:3.5, ...
         'XTickLabel', {'', 'R_s/R_c', '', 'intS_s/intS_c', '', 'K_s/K_c', ''}, ...
-        'YLim', [-100+200*ff.axisOffsetFactor  100], ...
+        'YLim', [-80+200*ff.axisOffsetFactor  80], ...
         'YTick', -100:20:100);
 
     % Plot title
-    title(ax, sprintf('(model - Croner&Kaplan)/Croner&Kaplan'), ...
-        'Color', ff.titleColor, 'FontSize', ff.titleFontSize, 'FontWeight', ff.titleFontWeight);
-  
+    if (~noTitle)
+        title(ax, sprintf('(model - Croner&Kaplan)/Croner&Kaplan'), ...
+            'Color', ff.titleColor, 'FontSize', ff.titleFontSize, 'FontWeight', ff.titleFontWeight);
+    end
+
 end
