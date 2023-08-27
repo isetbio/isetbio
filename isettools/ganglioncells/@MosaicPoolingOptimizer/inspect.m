@@ -75,17 +75,16 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         retinalConePoolingParams, ff);
     
     % Add the RF center cone pooling map
-    spatialSupportRangeArcMin = tickSeparationArcMin*6;
+    spatialSupportRangeArcMin = tickSeparationArcMin*4;
     
     ax = subplot('Position',  ff.subplotPosVectors(2,1).v);
-    cla(ax, 'reset');
-
     centerLineWeightingFunctions = mRGCMosaic.renderSubregionConePoolingPlot(ax, ...
         inputConeMosaic, ...
         rgcRFposDegs, ...
         theFinalPooledConeIndicesAndWeights.centerConeIndices, ...
         theFinalPooledConeIndicesAndWeights.centerConeWeights, ...
         'withFigureFormat', ff, ...
+        'resetAxes', true, ...
         'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
         'plotTitle', sprintf('RF center (RGC index: %d)', theRGCindex));
@@ -93,7 +92,6 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
     
     % Add the RF surround cone pooling map
     ax = subplot('Position',  ff.subplotPosVectors(2,2).v);
-    cla(ax, 'reset');
 
     surroundLineWeightingFunctions = mRGCMosaic.renderSubregionConePoolingPlot(ax, ...
         inputConeMosaic, ...
@@ -101,6 +99,7 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
         theFinalPooledConeIndicesAndWeights.surroundConeIndices, ...
         theFinalPooledConeIndicesAndWeights.surroundConeWeights, ...
         'withFigureFormat', ff, ...
+        'resetAxes', true, ...
         'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
         'plotTitle', 'RF surround', ...
@@ -142,7 +141,234 @@ function inspectConeSpecificRFcomputeStruct(figNo, figTitle, pdfFilename, ...
     pdfFilename = strrep(pdfFilename, 'intermediateFiles', 'pdfs');
     pdfFilename = sprintf('%s.pdf', pdfFilename);
     NicePlot.exportFigToPDF(pdfFilename, hFig, 300);
-
     close(hFig);
+
+
+    % ============== Export to PLOS directory ==========================
+    rawFiguresRoot = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/Raw';
+
+
+    % The achieved residual vector (shape metrics : comparison to Croner & Kaplan)
+    pdfFileName = 'OptimizedSurround_ResidualsVector';
+
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = theAxes{1,1};
+
+    MSreadyPlot.renderPerformance(ax, ...
+                 targetVisualSTFparams.surroundToCenterRcRatio, targetVisualSTFparams.surroundToCenterIntegratedSensitivityRatio, ...
+                 theFinalSTFdata.fittedDoGModelRsRcRatio, theFinalSTFdata.fittedDoGModelSCIntSensRatio, ...
+                 ff, ...
+                 'noTitle', true);
+    axis(ax, 'square');
+
+    if (strfind(figTitle, 'L-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_LconeCenter.pdf', pdfFileName));
+    elseif (strfind(figTitle, 'M-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_MconeCenter.pdf', pdfFileName));
+    else
+        error('Unknown center dominance: ''%''.', figTitle);
+    end
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+
+    % The visual STF
+    pdfFileName = 'OptimizedSurround_VisualSTF';
+
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = theAxes{1,1};
+
+    theLegends = {'achieved STF', 'fitted DoG STF', 'fitted center STF', 'fitted surround STF'};
+    theLegends = {};
+
+    MSreadyPlot.renderSTF(ax, ...
+           theFinalSTFdata.spatialFrequencySupport, ...
+           theFinalSTFdata.visualSTF, ...
+           theFinalSTFdata.fittedDoGModelToVisualSTF.sfHiRes,...
+           theFinalSTFdata.fittedDoGModelToVisualSTF.compositeSTFHiRes, ...
+           theFinalSTFdata.fittedDoGModelToVisualSTF.centerSTFHiRes, ...
+           theFinalSTFdata.fittedDoGModelToVisualSTF.surroundSTFHiRes, ...
+           '', ...
+           theLegends, ff, ...
+           'noYLabel', false, ...
+           'visualizedSpatialFrequencyRange', theFinalSTFdata.visualizedSpatialFrequencyRange);
+
+    if (strfind(figTitle, 'L-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_LconeCenter.pdf', pdfFileName));
+    elseif (strfind(figTitle, 'M-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_MconeCenter.pdf', pdfFileName));
+    else
+        error('UNknown center dominance: ''%''.', figTitle);
+    end
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+
+    % The correspondence to H1 cells
+    pdfFileName = 'OptimizedSurround_CorrespondenceToPackerDaceyH1cells';
+
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = theAxes{1,1};
+    MSreadyPlot.renderFittedH1paramsCorrespondenceToPackerDaceyData(ax, ...
+        retinalConePoolingParams, ff, ...
+        'noLegends', true, ...
+        'resetAxes', false);
+
+    
+    if (strfind(figTitle, 'L-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_LconeCenter.pdf', pdfFileName));
+    elseif (strfind(figTitle, 'M-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_MconeCenter.pdf', pdfFileName));
+    else
+        error('UNknown center dominance: ''%''.', figTitle);
+    end
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+
+
+    % The RF center cone pooling weights
+    pdfFileName = 'OptimizedSurround_RFcenterWeightsMap';
+
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = theAxes{1,1};
+
+    [centerLineWeightingFunctions, rfCenterContourData] = mRGCMosaic.renderSubregionConePoolingPlot(ax, ...
+        inputConeMosaic, ...
+        rgcRFposDegs, ...
+        theFinalPooledConeIndicesAndWeights.centerConeIndices, ...
+        theFinalPooledConeIndicesAndWeights.centerConeWeights, ...
+        'alsoComputeSubregionContour', true, ...
+        'withFigureFormat', ff, ...
+        'resetAxes', false, ...
+        'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
+        'tickSeparationArcMin', tickSeparationArcMin, ...
+        'plotTitle', '');
+
+    if (strfind(figTitle, 'L-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_LconeCenter.pdf', pdfFileName));
+    elseif (strfind(figTitle, 'M-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_MconeCenter.pdf', pdfFileName));
+    else
+        error('UNknown center dominance: ''%''.', figTitle);
+    end
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+    % The RF surround cone pooling weights
+    pdfFileName = 'OptimizedSurround_RFsurroundWeightsMap';
+
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = theAxes{1,1};
+
+    surroundLineWeightingFunctions = mRGCMosaic.renderSubregionConePoolingPlot(ax, ...
+        inputConeMosaic, ...
+        rgcRFposDegs, ...
+        theFinalPooledConeIndicesAndWeights.surroundConeIndices, ...
+        theFinalPooledConeIndicesAndWeights.surroundConeWeights, ...
+        'overlayedSubregionContour', rfCenterContourData, ...
+        'withFigureFormat', ff, ...
+        'resetAxes', false, ...
+        'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
+        'tickSeparationArcMin', tickSeparationArcMin, ...
+        'plotTitle', '');
+    
+
+    if (strfind(figTitle, 'L-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_LconeCenter.pdf', pdfFileName));
+    elseif (strfind(figTitle, 'M-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_MconeCenter.pdf', pdfFileName));
+    else
+        error('UNknown center dominance: ''%''.', figTitle);
+    end
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+
+
+    % Visualized sensitivity range
+    %sensitivityRange(1) = -1.05*max([max(surroundLineWeightingFunctions.x.amplitude(:)) max(surroundLineWeightingFunctions.y.amplitude(:))]);
+    sensitivityRange(2) =  1.0*max([max(centerLineWeightingFunctions.x.amplitude(:)) max(centerLineWeightingFunctions.y.amplitude(:))]);
+    sensitivityRange(1) = -normalizedPeakSurroundSensitivity*sensitivityRange(2);
+    centerLineWeightingFunctions.x.amplitude = centerLineWeightingFunctions.x.amplitude / max(sensitivityRange);
+    centerLineWeightingFunctions.y.amplitude = centerLineWeightingFunctions.y.amplitude / max(sensitivityRange);
+    surroundLineWeightingFunctions.x.amplitude = surroundLineWeightingFunctions.x.amplitude / max(sensitivityRange);
+    surroundLineWeightingFunctions.y.amplitude = surroundLineWeightingFunctions.y.amplitude / max(sensitivityRange);
+    sensitivityRange = sensitivityRange / max(sensitivityRange);
+
+    % The line weighting funciton (x) 
+    pdfFileName = 'OptimizedSurround_LineWeightingFunctionX';
+
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = theAxes{1,1};
+
+    mRGCMosaic.renderSubregionConePoolingLineWeightingFunctions(ax, ...
+        centerLineWeightingFunctions.x, surroundLineWeightingFunctions.x, ...
+        sensitivityRange, 'x', ...
+        'withFigureFormat', ff, ...
+        'resetAxes', false, ...
+        'xAxisTickAngleRotationDegs', 0, ...
+        'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
+        'tickSeparationArcMin', tickSeparationArcMin, ...
+        'plotTitle', '');
+
+    if (strfind(figTitle, 'L-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_LconeCenter.pdf', pdfFileName));
+    elseif (strfind(figTitle, 'M-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_MconeCenter.pdf', pdfFileName));
+    else
+        error('UNknown center dominance: ''%''.', figTitle);
+    end
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+
+    % The line weighting funciton (x) 
+    pdfFileName = 'OptimizedSurround_LineWeightingFunctionY';
+
+    hFig = figure(1); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = theAxes{1,1};
+
+
+    mRGCMosaic.renderSubregionConePoolingLineWeightingFunctions(ax, ...
+        centerLineWeightingFunctions.y, surroundLineWeightingFunctions.y, ...
+        sensitivityRange, 'y', ...
+        'withFigureFormat', ff, ...
+        'resetAxes', false, ...
+        'xAxisTickAngleRotationDegs', 0, ...
+        'spatialSupportRangeArcMin', spatialSupportRangeArcMin, ...
+        'tickSeparationArcMin', tickSeparationArcMin, ...
+        'plotTitle', '', ...
+        'noYLabel', true);
+
+    if (strfind(figTitle, 'L-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_LconeCenter.pdf', pdfFileName));
+    elseif (strfind(figTitle, 'M-cone center'))
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('%s_MconeCenter.pdf', pdfFileName));
+    else
+        error('UNknown center dominance: ''%''.', figTitle);
+    end
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+    % Generate paper-ready figures (scaled versions of the figures i
+    % nrawFiguresRoot directory) which are stored in the PaperReady folder
+    commandString = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/cpdf -args generatePLOSOnePaperReadyFigures.txt';
+    system(commandString);
+
 end
 

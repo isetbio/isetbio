@@ -376,7 +376,7 @@ classdef MosaicPoolingOptimizer < handle
         performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams, varargin);
 
         % Method to perform the visualizePSFsWithinRGCMosaic operation
-        performVisualizePSFsWithinRGCMosaicOp(mosaicParams);
+        performVisualizePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationArcMin);
 
         % Method to perform the computeInputConeMosaicSTFresponses operation
         performComputeInputConeMosaicSTFresponsesOp(mosaicParams);

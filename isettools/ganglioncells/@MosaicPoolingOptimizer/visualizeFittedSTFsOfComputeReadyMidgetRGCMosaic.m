@@ -223,8 +223,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
     for iDataSet = 1:4
         pngFileName = fullfile(pdfDirectory,sprintf('SummaryStats_%s.png',pdfFileNamePostfix{iDataSet}));
-        pdfFileName = fullfile(pdfDirectory,sprintf('SummaryStats_%s.pdf',pdfFileNamePostfix{iDataSet}));
-
+        
         hFig = figure(iDataSet); clf;
         ff = MSreadyPlot.figureFormat('2x4-tall');
         theAxes = MSreadyPlot.generateAxes(hFig,ff);
@@ -330,6 +329,7 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
         if (showZscoresInsteadOfData)
             NicePlot.exportFigToPNG(pngFileName, hFig, 300);
         else
+            pdfFileName = fullfile(pdfDirectory,sprintf('SummaryStats_%s.pdf',pdfFileNamePostfix{iDataSet}));
             NicePlot.exportFigToPNG(pdfFileName, hFig, 300); 
         end
 
@@ -349,9 +349,9 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
         % Export fig 
         PNGFullFileName = strrep(strrep(pngFileName, '.png', 'RcDegs.png'), pdfDirectory, rawFiguresRoot);
-        PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
         
         if (showZscoresInsteadOfData)
+            PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
             NicePlot.exportFigToPDF(PDFFullFileName, hFig, 300);
         else
             NicePlot.exportFigToPNG(PNGFullFileName, hFig, 300);
@@ -370,9 +370,9 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
         % Export fig 
         PNGFullFileName = strrep(strrep(pngFileName, '.png', 'intSCRatio.png'), pdfDirectory, rawFiguresRoot);
-        PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
 
         if (showZscoresInsteadOfData)
+            PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
             NicePlot.exportFigToPDF(PDFFullFileName, hFig, 300);
         else
             NicePlot.exportFigToPNG(PNGFullFileName, hFig, 300);
@@ -391,9 +391,10 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
         % Export fig 
         PNGFullFileName = strrep(strrep(pngFileName, '.png', 'KsKcRatio.png'), pdfDirectory, rawFiguresRoot);
-        PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
+        
 
         if (showZscoresInsteadOfData)
+            PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
             NicePlot.exportFigToPDF(PDFFullFileName, hFig, 300);
         else
             NicePlot.exportFigToPNG(PNGFullFileName, hFig, 300);
@@ -412,9 +413,9 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
         % Export fig 
         PNGFullFileName = strrep(strrep(pngFileName, '.png', 'RsRcRatio.png'), pdfDirectory, rawFiguresRoot);
-        PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
-
+        
         if (showZscoresInsteadOfData)
+            PDFFullFileName = strrep(PNGFullFileName, '.png', '.pdf');
             NicePlot.exportFigToPDF(PDFFullFileName, hFig, 300);
         else
             NicePlot.exportFigToPNG(PNGFullFileName, hFig, 300);

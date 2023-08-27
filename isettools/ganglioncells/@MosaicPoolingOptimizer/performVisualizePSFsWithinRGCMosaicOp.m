@@ -1,8 +1,12 @@
-function performVisualizePSFsWithinRGCMosaicOp(mosaicParams)
+function performVisualizePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationArcMin)
 
     % Generate the mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
         MosaicPoolingOptimizer.resourceFileNameAndPath('mosaic', ...
+            'mosaicParams', mosaicParams);
+
+    [~, ~, pdfsDirectory] = ...
+        MosaicPoolingOptimizer.resourceFileNameAndPath('pdfsDirectory', ...
             'mosaicParams', mosaicParams);
 
     % Load the generated center-only connected mRGCmosaic
@@ -27,7 +31,11 @@ function performVisualizePSFsWithinRGCMosaicOp(mosaicParams)
     eccDegs = [X(:) Y(:)];
     eccDegs = bsxfun(@plus, eccDegs, mosaicParams.eccDegs);
 
-    theMidgetRGCMosaic.visualizeOpticsAtEccentricities(eccDegs, opticsParams);
+    % Visualize the PSFs
+    hFig = theMidgetRGCMosaic.visualizeOpticsAtEccentricities(eccDegs, opticsParams, tickSeparationArcMin);
+
+    % Export fig
+    NicePlot.exportFigToPDF(fullfile(pdfsDirectory,'PSFs.pdf'), hFig, 300);
 
 end
 

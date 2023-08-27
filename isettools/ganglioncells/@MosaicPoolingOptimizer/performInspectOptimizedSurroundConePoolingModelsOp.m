@@ -46,14 +46,12 @@ function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams, vararg
         if (isempty(gridNodesToInspect))
              gridNodesToInspect = 1:theMosaicPoolingOptimizerOBJ.gridNodesNum;
         end
-
     else
        gridNodesToInspect = str2num(gridNodesToInspect);
     end
 
 
     for iNode = 1:numel(gridNodesToInspect)
-
        if (iscell(gridNodesToInspect))
             gridNodeIndex = gridNodesToInspect{iNode}.number;
        else
@@ -68,6 +66,10 @@ function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams, vararg
            'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
            'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange ...
            );
+
+       fprintf('Exported files for node %d (%d of %d nodes)\n', gridNodeIndex, iNode , numel(gridNodesToInspect));
+       fprintf('Hit enter to continue ...');
+       pause
     end
 
 end

@@ -7,7 +7,7 @@ function run()
     mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);
 
     % This controls the visualized spatial support range
-    tickSeparationArcMin = 4;
+    tickSeparationArcMin = 6;
     normalizedPeakSurroundSensitivity = 0.4;
     visualizedSpatialFrequencyRange = [0.1 100];
 
@@ -48,7 +48,7 @@ function run()
 
     % Perform the visualizePSFsWithinRGCMosaic operation
     if (operationSetToPerformContains.visualizePSFsWithinRGCMosaic)
-        MosaicPoolingOptimizer.performVisualizePSFsWithinRGCMosaicOp(mosaicParams);
+        MosaicPoolingOptimizer.performVisualizePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationArcMin);
         return;
     end
 
