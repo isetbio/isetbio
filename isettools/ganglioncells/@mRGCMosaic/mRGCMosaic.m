@@ -249,7 +249,7 @@ classdef mRGCMosaic < handle
         setTheOptics(obj, opticsParams);
 
         % Method to visualize optics at a number of eccentricities
-        visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams);
+        hFig = visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams, tickSeparationArcMin);
 
         % Method to bake in center/surround cone pooling weights.
         % This method replaces the rgcRFcenterConeConnectivityMatrix with
@@ -338,7 +338,7 @@ classdef mRGCMosaic < handle
         % Method to render the cone pooling plot with a subregion based on
         % the cone indices and weights pooled by that subregion and return
         % the X,Y line weighting functions for that subregion
-        subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
+        [subregionLineWeightingFunctions, subregionContourData] = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
             rgcRFposDegs, coneIndices, coneWeights, varargin);
 
         % Method to render the X,Y line weighting functions for a subregion
@@ -360,6 +360,24 @@ classdef mRGCMosaic < handle
 
         % Method to generate  data for visualization of the PSF
         thePSFData = generateOpticsPSFdataForVisualization(theOI, visualizedWavelength, micronsPerDegree);
+
+        % Method to generate RF center contours from the pooled cones when
+        % the contourGenerationMethod is set to 'ellipseFitBasedOnLocalSpacing'
+        contourData = subregionOutlineContourFromSpacing(...
+            rgcPos, rgcRFradius,  ...
+            xSupport, ySupport, spatialSupportSamples);
+
+        % Method to generate RF center contours from the pooled cones when
+        % the contourGenerationMethod is set to 'contourOfPooledConeApertureImage'
+        contourData = subregionOutlineContourFromPooledCones(...
+            conePos, coneRc, poolingWeights, ...
+            xSupport, ySupport, spatialSupportSamples)
+
+        % Method to generate RF center contours from the pooled cones when
+        % the contourGenerationMethod is set to 'ellipseFitToPooledConeApertureImage'
+        contourData = subregionEllipseFromPooledCones(...
+            conePos, coneRc, poolingWeights, ...
+            xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples);
     end % Static methods
 
 end

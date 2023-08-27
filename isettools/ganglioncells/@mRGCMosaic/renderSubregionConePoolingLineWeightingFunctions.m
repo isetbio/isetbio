@@ -12,6 +12,8 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
     p.addParameter('spatialSupportRangeArcMin', [],  @(x)(isempty(x)||isscalar(x)));
     p.addParameter('xAxisTickAngleRotationDegs', 90, @isscalar)
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('resetAxes', true, @islogical);
+
     p.parse(varargin{:});
     
     spatialSupportRangeArcMin = p.Results.spatialSupportRangeArcMin;
@@ -23,6 +25,7 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
     noYTicks = p.Results.noYTicks;
     xAxisTickAngleRotationDegs = p.Results.xAxisTickAngleRotationDegs;
     ff = p.Results.withFigureFormat;
+    resetAxes = p.Results.resetAxes;
 
     if (isempty(spatialSupportRangeArcMin))
         spatialSupportRangeArcMin = 10;
@@ -41,7 +44,9 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
     centerLineWeightingFunction.spatialSupportArcMin = (centerLineWeightingFunction.spatialSupportDegs  - xo)*60;
     surroundLineWeightingFunction.spatialSupportArcMin = (surroundLineWeightingFunction.spatialSupportDegs - xo)*60;
 
-    cla(ax, 'reset');
+    if (resetAxes)
+        cla(ax, 'reset');
+    end
 
     % Surround
     shadedAreaBetweenTwoLines(ax, surroundLineWeightingFunction.spatialSupportArcMin, ...
@@ -64,11 +69,17 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
     XLims = spatialSupportRangeArcMin/2*[-1 1];
     xTicks = 0:(tickSeparationArcMin):60;
     xTicks = [-fliplr(xTicks(2:end)) xTicks];
+    if (tickSeparationArcMin >= 6)
+        xTickLabels = sprintf('%2.0f\n', xTicks);
+    else
+        xTickLabels = sprintf('%2.1f\n', xTicks);
+    end
+
     sensitivityTicks = -1:0.2:1;
     set(ax, 'XLim', [XLims(1)+(XLims(2)-XLims(1))*ff.axisOffsetFactor XLims(2)], ...
             'YLim', [sensitivityRange(1)+(sensitivityRange(2)-sensitivityRange(1))*ff.axisOffsetFactor sensitivityRange(2)], ...
             'XTick', xTicks, 'YTick', sensitivityTicks , ...
-            'XTickLabel', sprintf('%2.1f\n', xTicks), ...
+            'XTickLabel', xTickLabels, ...
             'YTickLabel', sprintf('%2.1f\n', sensitivityTicks )); 
 
     if (noXTicks)
