@@ -77,8 +77,15 @@ function ValidationFunction(runTimeParams)
     % Append to validationData
     UnitTest.validationData('fov', sceneFOV);
     UnitTest.validationData('tolerance', tolerance);
-    UnitTest.validationData('scene', scene);
-    UnitTest.validationData('oi', oi);
+
+    % 08/31/23. The problem with storing entire structs is that the structure
+    % is allowed to change but that breaks the validations. So
+    % I (DHB) changed the below to store the photons.
+    %
+    % UnitTest.validationData('scene', scene);
+    % UnitTest.validationData('oi', oi);
+    UnitTest.validationData('scenePhotons', sceneGet(scene,'photons'));
+    UnitTest.validationData('oiPhotons', oiGet(oi,'photons'));
     
     %% Plotting
     if (runTimeParams.generatePlots)
