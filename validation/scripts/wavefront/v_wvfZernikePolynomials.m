@@ -25,16 +25,17 @@ function varargout = v_wvfZernkePolynomials(varargin)
 %
 % 7/31/12  dhb  Wrote it.
 % 8/12/15  dhb  UnitTestToolbox'ize
+% 09/21/23 dhb  Don't store full structures; use fractional tolerance
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
-% 
 
 %% Initialize
-close all; ieInit;
+close all;
+toleranceFraction = 0.001;
 
 %% Some informative text
 UnitTest.validationRecord('SIMPLE_MESSAGE', 'Validate wavefront individual Zernike coefficients.');
@@ -89,8 +90,25 @@ for ii = jindices
     else
         nStr = num2str(n);
     end
-    
-    UnitTest.validationData(sprintf('wvf_%s_%s',mStr,nStr), wvf);
+
+    % Get variables to validate
+    zCoeffs = wvfGet(wvf,'zcoeffs');
+    theTolerance = mean(zCoeffs(:))*toleranceFraction;
+    UnitTest.validationData(sprintf('zcoeffs_wvf_%s_%s',mStr,nStr), zCoeffs, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        sprintf('zcoeffs_wvf_%s_%s',mStr,nStr), theTolerance); 
+
+    pupilFunction = wvfGet(wvf,'pupil function');
+    theTolerance = mean(pupilFunction(:))*toleranceFraction;
+    UnitTest.validationData(sprintf('pupilfunction_wvf_%s_%s',mStr,nStr), pupilFunction, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        sprintf('pupilfunction_wvf_%s_%s',mStr,nStr), theTolerance); 
+
+    PSF = wvfGet(wvf,'PSF');
+    theTolerance = mean(PSF(:))*toleranceFraction;
+    UnitTest.validationData(sprintf('PSF_wvf_%s_%s',mStr,nStr), pupilFunction, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        sprintf('PSF_wvf_%s_%s',mStr,nStr), theTolerance); 
 end
 
 end
