@@ -1,4 +1,4 @@
-function varargout = v_wvfZernkePolynomials(varargin)
+function varargout = v_wvfZernikePolynomials(varargin)
 %
 % Test that single Zernike coeffs produce correct wavefront aberrations.
 %
@@ -98,7 +98,7 @@ for ii = jindices
         'UsingTheFollowingVariableTolerancePairs', ...
         sprintf('zcoeffs_wvf_%s_%s',mStr,nStr), theTolerance); 
 
-    pupilFunction = wvfGet(wvf,'pupil function');
+    pupilFunction = abs(wvfGet(wvf,'pupil function'));
     theTolerance = mean(pupilFunction(:))*toleranceFraction;
     UnitTest.validationData(sprintf('pupilfunction_wvf_%s_%s',mStr,nStr), pupilFunction, ...
         'UsingTheFollowingVariableTolerancePairs', ...
