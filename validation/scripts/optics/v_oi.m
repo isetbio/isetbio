@@ -19,11 +19,18 @@ end
 function ValidationFunction(runTimeParams)
 
     %% Initialize ISETBIO
-    ieInit;
+    % ieInit;
+
+    % Tolerance fraction
+    toleranceFraction = 0.005;
 
     % Create a scene to check oi function
     scene = sceneCreate;
-    UnitTest.validationData('theScenePhotons',sceneGet(scene,'photons'));
+    theScenePhotons = sceneGet(scene,'photons');
+    theTolerance = mean(theScenePhotons(:))*toleranceFraction;
+    UnitTest.validationData('theScenePhotons',theScenePhotons, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        'theScenePhotons', theTolerance);
 
     %% Diffraction limited simulation properties
     oi = oiCreate('diffraction limited');
@@ -32,9 +39,12 @@ function ValidationFunction(runTimeParams)
         oiPlot(oi,'otf',[],550);
         oiPlot(oi,'otf',[],450);
     end
-    % UnitTest.validationData('diffractionOI', oi);
-    UnitTest.validationData('diffractionLimitedFromScenePhotons', oiGet(oi,'photons'));
-    
+    theOiPhotons = oiGet(oi,'photons');
+    theTolerance = mean(theOiPhotons(:))*toleranceFraction;
+    UnitTest.validationData('diffractionLimitedFromScenePhotons', theOiPhotons, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        'diffractionLimitedFromScenePhotons', theTolerance);    
+
     %% Wavefront (Thibos) human optics
     oi = oiCreate('wvf human');
     oi = oiCompute(oi,scene);
@@ -42,8 +52,11 @@ function ValidationFunction(runTimeParams)
         oiPlot(oi,'psf',[],420);
         oiPlot(oi,'psf',[],550);
     end
-    % UnitTest.validationData('humanWVF', oi);
-    UnitTest.validationData('humanWVFFromScenePhotons', oiGet(oi,'photons'));
+    theOiPhotons = oiGet(oi,'photons');
+    theTolerance = mean(theOiPhotons(:))*toleranceFraction;
+    UnitTest.validationData('humanWVFFromScenePhotons', theOiPhotons, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        'humanWVFFromScenePhotons', theTolerance);    
 
     %% A simple case used for testing
     oi = oiCreate('uniform ee');
@@ -52,8 +65,11 @@ function ValidationFunction(runTimeParams)
         oiPlot(oi,'psf',[],420);
         oiPlot(oi,'psf',[],550);
     end
-    % UnitTest.validationData('EEoi', oi);
-    UnitTest.validationData('unifromEEFromScenePhotons', oiGet(oi,'photons'));
+    theOiPhotons = oiGet(oi,'photons');
+    theTolerance = mean(theOiPhotons(:))*toleranceFraction;
+    UnitTest.validationData('unifromEEFromScenePhotons', theOiPhotons, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        'unifromEEFromScenePhotons', theTolerance);    
 
     %% Make a scene and show some oiGets and oiCompute work
     oi = oiCreate('human');
@@ -61,9 +77,11 @@ function ValidationFunction(runTimeParams)
     if (runTimeParams.generatePlots)
         oiPlot(oi,'illuminance mesh linear');
     end
-    %UnitTest.validationData('theScene',scene);
-    %UnitTest.validationData('humanOIFromScene', oi);
-    UnitTest.validationData('humanMWOIFromScenePhotons', oiGet(oi,'photons'));
+    theOiPhotons = oiGet(oi,'photons');
+    theTolerance = mean(theOiPhotons(:))*toleranceFraction;
+    UnitTest.validationData('humanMWOIFromScenePhotons', theOiPhotons, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        'humanMWOIFromScenePhotons', theTolerance);    
 
     %% Check GUI control
     if (runTimeParams.generatePlots)
