@@ -1,5 +1,28 @@
-function [theConeIndices, theROI] = ...
-    coneIndicesOfCertainTypeWithinHorizontalSlice(obj, slicePositionDegs, sliceWidthDegs, coneType)
+function [theConeIndices, theROI] = coneIndicesOfCertainTypeWithinHorizontalSlice(...
+    obj, slicePositionDegs, sliceThicknessDegs, coneType)
+% Method to return the indices of cones within a horizontal slice through the mosaic
+%
+% Syntax:
+%   [theConeIndices, theROI] = coneIndicesOfCertainTypeWithinHorizontalSlice(...
+%         obj, slicePositionDegs, sliceThicknessDegs, coneType)
+%
+% Description:
+%    Method to return the indices of cones of a single specified cone type that 
+%    lie within a horizontal slice through the mosaic
+%
+% Inputs:
+%    obj                 - A @cMosaic object
+%    slicePositionDegs   - Y-coord of slice
+%    sliceThicknessDegs  - Y-thickness of slice 
+%    coneType            - Type of cone. Choose from [cMosaic.LCONE_ID cMosaic.MCONE_ID cMosaic.SCONE_ID]
+%
+% Outputs:                 
+%    theConeIndices      - Indices of cones of specified type that lie 
+%                          within the specified horizontal slice, sorted 
+%                          in increasing x-coord eccentricity
+%
+% Optional key/value pairs:
+%                        None
 
     % Define an ROI
     theROI = regionOfInterest(...
@@ -8,7 +31,7 @@ function [theConeIndices, theROI] = ...
             'shape', 'rect', ...
             'center', [obj.eccentricityDegs(1) slicePositionDegs], ...
             'width', obj.sizeDegs(1), ...
-            'height', sliceWidthDegs, ...
+            'height', sliceThicknessDegs, ...
             'rotation', 0.0...
         ));
     

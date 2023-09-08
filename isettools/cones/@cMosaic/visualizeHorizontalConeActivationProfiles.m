@@ -1,10 +1,47 @@
-function hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
-    horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, visualizedResponseScalingDegs)
+function figureHandle = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
+    horizontalSliceYcoordDegs, horizontalSliceThicknessDegs, maxResponse, visualizedResponseScalingDegs, varargin)
+% Superimpose cone activation profiles along a horizontal slice on top of the 2D cMosaic activation pattern
+%
+% Syntax:
+%   hFig = visualizeHorizontalConeActivationProfiles(obj, ...
+%    theConeMosaicResponse, coneTypesToVisualize, ...
+%    horizontalSliceYcoordDegs, horizontalSliceThicknessDegs, ...
+%    maxResponse, visualizedResponseScalingDegs);
+%
+% Description:
+%    Superimpose cone activation profiles along a horizontal slice on top
+%    of the 2D cMosaic activation pattern
+%
+% Inputs:
+%    obj                            - A @cMosaic object
+%    theConeMosaicResponse          - A @cMosaic activation pattern
+%    coneTypesToVisualize           - An array of cone types to visualize,
+%                                     e.g., [cMosaic.LCONE_ID, cMosaic.MCONE_ID, cMosaic.SCONE_ID]
+%    horizontalSliceYcoordDegs      - Y-coord of slice
+%    horizontalSliceThicknessDegs   - Y-thickness of slice
+%    maxResponse                    - The maximum value of the response
+%    visualizedResponseScalingDegs  - Y-axis scaling (in degrees) of visualized responses
+
+% Outputs:
+%    figureHandle                   - Handle of generated figure
+
+% Optional key/value pairs:
+%    'figureHandle'                 - Figure handle on which to render
+%    'axesHandle'                   - Axes handle on which to render
+
+    % Parse input
+    p = inputParser;
+    p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+    p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+    p.parse(varargin{:});
+
+    figureHandle = p.Results.figureHandle;
+    axesHandle = p.Results.axesHandle;
 
     % Visualized L-cone indices and x-coords
     if (ismember(cMosaic.LCONE_ID, coneTypesToVisualize))
         [theVisualizedLConeIndices, theROI] = ...
-            obj.coneIndicesOfCertainTypeWithinHorizontalSlice(horizontalSliceYcoordDegs, horizontalSliceWidthDegs, cMosaic.LCONE_ID);
+            obj.coneIndicesOfCertainTypeWithinHorizontalSlice(horizontalSliceYcoordDegs, horizontalSliceThicknessDegs, cMosaic.LCONE_ID);
     else
         theVisualizedLConeIndices = [];
     end
@@ -12,7 +49,7 @@ function hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResp
     % Visualized M-cone indices and x-coords
     if (ismember(cMosaic.MCONE_ID, coneTypesToVisualize))
         theVisualizedMConeIndices = ...
-            obj.coneIndicesOfCertainTypeWithinHorizontalSlice(horizontalSliceYcoordDegs, horizontalSliceWidthDegs, cMosaic.MCONE_ID);
+            obj.coneIndicesOfCertainTypeWithinHorizontalSlice(horizontalSliceYcoordDegs, horizontalSliceThicknessDegs, cMosaic.MCONE_ID);
     else
         theVisualizedMConeIndices = [];
     end
@@ -21,7 +58,7 @@ function hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResp
     % Visualized S-cone indices and x-coords
     if (ismember(cMosaic.SCONE_ID, coneTypesToVisualize))
         theVisualizedSConeIndices = ...
-            obj.coneIndicesOfCertainTypeWithinHorizontalSlice(horizontalSliceYcoordDegs, horizontalSliceWidthDegs, cMosaic.SCONE_ID);
+            obj.coneIndicesOfCertainTypeWithinHorizontalSlice(horizontalSliceYcoordDegs, horizontalSliceThicknessDegs, cMosaic.SCONE_ID);
     else
         theVisualizedSConeIndices = [];
     end
@@ -34,60 +71,74 @@ function hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResp
         ];
     visualizationTicks = struct('x', -20:0.5:20, 'y', -20:0.5:20);
 
-    hFig = figure(1);clf;
-    set(hFig, 'Position', [10 10 1900 1050], 'Color', [0 0 0]);
-    ax = subplot('Position', [0.05 0.05 0.94 0.94]);
+    % Set figure size
+    if (isempty(figureHandle))
+        figureHandle = figure();clf;
+        set(figureHandle, 'Position', [10 10 1900 1050], 'Color', [0 0 0]);
+        axesHandle = subplot('Position', [0.05 0.05 0.94 0.94]);
+    else
+        if (isempty(axesHandle))
+            figure(figureHandle);
+            clf;
+            set(figureHandle, 'Position', [10 10 1900 1050], 'Color', [0 0 0]);
+            axesHandle = subplot('Position', [0.05 0.05 0.94 0.94]);
+        end
+
+        if (clearAxesBeforeDrawing)
+            cla(axesHandle);
+        end
+    end
 
     % Plot the cone mosaic response
     obj.visualize(...
-        'figureHandle', hFig, ...
-        'axesHandle', ax, ...
+        'figureHandle', figureHandle, ...
+        'axesHandle', axesHandle, ...
         'activation', theConeMosaicResponse, ...
         'verticalActivationColorBarInside', true, ...
         'backgroundColor', [0.2 0.2 0.2], ...
         'domainVisualizationLimits', visualizationLimits, ...
         'domainVisualizationTicks', visualizationTicks);
 
-    hold(ax, 'on');
+    hold(axesHandle, 'on');
 
     % ROI over which we visualize cone responses
     theROI.visualize(...
-        'figureHandle', hFig, ...
-        'axesHandle', ax, ...
+        'figureHandle', figureHandle, ...
+        'axesHandle', axesHandle, ...
         'xLims', visualizationLimits(1:2), ...
         'yLims', visualizationLimits(3:4), ...
         'fillColor', [0.1 1.0 0.1 0.6]);
 
     % Y-offset
-    yOffset = horizontalSliceWidthDegs*0.5+0.1;
+    yOffset = horizontalSliceThicknessDegs*0.5+0.1;
     
     % Render visualization background
-    renderVisualizationBackground(ax, obj.eccentricityDegs, obj.sizeDegs, ...
+    renderVisualizationBackground(axesHandle, obj.eccentricityDegs, obj.sizeDegs, ...
         horizontalSliceYcoordDegs, yOffset, visualizedResponseScalingDegs);
 
     % Render L-cone responses
     if (~isempty(theVisualizedLConeIndices))
-        renderConeResponses(ax, squeeze(obj.coneRFpositionsDegs(theVisualizedLConeIndices,1)), theVisualizedLConeIndices, ...
+        renderConeResponses(axesHandle, squeeze(obj.coneRFpositionsDegs(theVisualizedLConeIndices,1)), theVisualizedLConeIndices, ...
             theConeMosaicResponse, horizontalSliceYcoordDegs+yOffset, visualizedResponseScalingDegs, maxResponse, [1.0 0.2 0.4]);
     end
 
     % Render M-cone responses
     if (~isempty(theVisualizedMConeIndices))
-        renderConeResponses(ax, squeeze(obj.coneRFpositionsDegs(theVisualizedMConeIndices,1)), theVisualizedMConeIndices, ...
+        renderConeResponses(axesHandle, squeeze(obj.coneRFpositionsDegs(theVisualizedMConeIndices,1)), theVisualizedMConeIndices, ...
             theConeMosaicResponse, horizontalSliceYcoordDegs+yOffset, visualizedResponseScalingDegs, maxResponse, [0.1 1.0 0.6]);
     end
 
 
     % Render S-cone responses
     if (~isempty(theVisualizedSConeIndices))
-        renderConeResponses(ax, squeeze(obj.coneRFpositionsDegs(theVisualizedSConeIndices,1)), theVisualizedSConeIndices, ...
+        renderConeResponses(axesHandle, squeeze(obj.coneRFpositionsDegs(theVisualizedSConeIndices,1)), theVisualizedSConeIndices, ...
             theConeMosaicResponse, horizontalSliceYcoordDegs+yOffset, visualizedResponseScalingDegs, maxResponse, [0.6 0.1 1.0]);
     end
 
     % Finalize plot
-    set(hFig, 'Color', [0 0 0]);
-    set(ax, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'LineWidth', 1.5, 'FontSize', 30);
-    grid(ax, 'off')
+    set(figureHandle, 'Color', [0 0 0]);
+    set(axesHandle, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'LineWidth', 1.5, 'FontSize', 30);
+    grid(axesHandle, 'off')
 
 end
 
