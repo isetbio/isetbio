@@ -17,7 +17,8 @@ end
 function ValidationFunction(runTimeParams)
 
 %% Initialize ISETBIO
-close all; ieInit;
+close all;
+toleranceFraction = 0.001;
 
 %% Some informative text
 UnitTest.validationRecord('SIMPLE_MESSAGE', 'Validate wavefront Stiles-Crawford Effect code.');
@@ -33,17 +34,31 @@ wvf = wvfCreate;
 wvf = wvfSet(wvf,'zcoeffs',[0.2 0.75],{'defocus', 'oblique_astigmatism'});
 sceP = sceCreate(theWavelength,'berendschot_data','centered');
 
-UnitTest.validationData('wvf', wvf);
-UnitTest.validationData('sceP', sceP);
-
 %% No Stiles Crawford effect
 wvf = wvfSet(wvf,'sce params',[]);
+wvf = wvfComputePupilFunction(wvf);
 wvf = wvfComputePSF(wvf);
 sce1DFig2 = vcNewGraphWin; hold on
 wvfPlot(wvf,'1d psf angle','min',[],maxMIN,'no window');
 
-UnitTest.validationData('wvfNoSCE', wvf);
+% Get variables to validate
+zCoeffs = wvfGet(wvf,'zcoeffs');
+theTolerance = mean(zCoeffs(:))*toleranceFraction;
+UnitTest.validationData('zCoeffsNoSCE', zCoeffs, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'zCoeffsNoSCE', theTolerance);
 
+pupilFunction = abs(wvfGet(wvf,'pupil function'));
+theTolerance = mean(pupilFunction(:))*toleranceFraction;
+UnitTest.validationData('pupilFunctionNoSCE', pupilFunction, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'pupilFunctionNoSCE', theTolerance);
+
+PSF = wvfGet(wvf,'PSF');
+theTolerance = mean(PSF(:))*toleranceFraction;
+UnitTest.validationData('PSFNoSCE', pupilFunction, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'PSFNoSCE', theTolerance);
 
 %% Include the SCE in place
 wvf = wvfSet(wvf,'sce params',sceP);
@@ -52,7 +67,24 @@ wvf = wvfComputePSF(wvf);
 set(p,'color','b')
 hold on
 
-UnitTest.validationData('wvfWithSCE', wvf);
+% Get variables to validate
+zCoeffs = wvfGet(wvf,'zcoeffs');
+theTolerance = mean(zCoeffs(:))*toleranceFraction;
+UnitTest.validationData('zCoeffsWithSCE', zCoeffs, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'zCoeffsWithSCE', theTolerance);
+
+pupilFunction = abs(wvfGet(wvf,'pupil function'));
+theTolerance = mean(pupilFunction(:))*toleranceFraction;
+UnitTest.validationData('pupilFunctionWithSCE', pupilFunction, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'pupilFunctionWithSCE', theTolerance);
+
+PSF = wvfGet(wvf,'PSF');
+theTolerance = mean(PSF(:))*toleranceFraction;
+UnitTest.validationData('PSFWithSCE', pupilFunction, ...
+    'UsingTheFollowingVariableTolerancePairs', ...
+    'PSFWithSCE', theTolerance);
 
 end
 

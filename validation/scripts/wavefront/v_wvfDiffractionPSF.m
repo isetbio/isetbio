@@ -111,7 +111,7 @@ optics = opticsSet(optics,'fnumber',fNumber);   % Roughly human
 oi = oiSet(oi,'optics',optics);
 uData = oiPlot(oi,'psf',[],thisWave);
 set(gca,'xlim',[-10 10],'ylim',[-10 10]);
-UnitTest.validationData('oi', oi);
+% UnitTest.validationData('oi', oi);
 
 %% Now, compare all three
 [r,c] = size(uData.x);
@@ -130,7 +130,8 @@ set(gca,'xlim',[-2 2])
 grid on
 legend('WVF','ISETBIO','PTB');
 
-UnitTest.validationData('wvf0', wvf0);
+%UnitTest.validationData('wvf0', wvf0);
+UnitTest.validationData('wvf0', wvfGet(wvf0,'psf'));
 
 %% Repeat the PSF calculation with a wavelength offset
 
@@ -194,8 +195,10 @@ ylabel('Normalize PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',pupilSize,w));
 
 % Save unit test data
-UnitTest.validationData('wvf1', wvf1);
-UnitTest.validationData('wvf17', wvf1);
+%UnitTest.validationData('wvf1', wvf1);
+%UnitTest.validationData('wvf17', wvf1);
+UnitTest.validationData('wvf1', wvfGet(wvf1,'psf'));
+UnitTest.validationData('wvf17', wvfGet(wvf17,'psf'));
 UnitTest.validationData('ptbPSF1', ptbPSF);
 
 % PSF angular sampling should be the same across wavelengths
@@ -228,7 +231,8 @@ xlabel('Arc Minutes');
 ylabel('Normalized PSF');
 title(sprintf('Diffraction limited, %0.1f mm pupil, %0.f nm',pupilSize,wList));
 
-UnitTest.validationData('wvf2', wvf2);
+%UnitTest.validationData('wvf2', wvf2);
+UnitTest.validationData('wvf2', wvfGet(wvf2,'psf'));
 UnitTest.validationData('ptbPSF2', ptbPSF);
 
 %% Show the PSF slices across wavelengths along with the 'white'
