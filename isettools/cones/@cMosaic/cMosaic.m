@@ -647,6 +647,12 @@ classdef cMosaic < handle
         % Method to visualize the cone mosaic and its activation
         params = visualize(obj, varargin);
         
+        % Method to visualize activation profiles for particular cone types along a
+        % horizontal slice ROI
+        hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
+            maxResponse, visualizedResponseScalingDegs, horizontalSliceYcoordDegs, horizontalSliceWidthDegs);
+
+
         % Method to visualize the continuous, full absorptions density and the actual cone positions
         visualizeFullAbsorptionsDensity(obj, figNo);
         
@@ -668,6 +674,11 @@ classdef cMosaic < handle
         % Method to return indices of cones within a geometry struct appropriate for @regionOfInterest
         coneIndices = indicesOfConesWithinROI(obj, geometryStruct);
         
+        % Method to return the cone indices of cones of a certain type that
+        % lie within a horizontal rect ROI
+        [coneIndicesOfCertainConeType, theROI] = ...
+            coneIndicesOfCertainTypeWithinHorizontalSlice(obj, slicePositionDegs, sliceWidthDegs, coneType);
+
         % Method to reassigne the type of any set of cones, specified by
         % their cone index
         reassignTypeOfCones(obj, coneIndices, newConeType);
