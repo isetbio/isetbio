@@ -650,7 +650,7 @@ classdef cMosaic < handle
         % Method to visualize activation profiles for particular cone types along a
         % horizontal slice ROI
         hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
-            horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, visualizedResponseScalingDegs);
+            horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, varargin);
 
 
 
