@@ -1,5 +1,7 @@
 function visualizeFullAbsorptionsDensity(obj, figNo)
-% Create an image that shows ... Nicolas???
+% Create a 2x2 panel of images that show the continuous absorption density
+% maps for L-cones, M-cones, and S-cones. The positions of cones sampling
+% each of these continuous absorption density maps are superimposed.
 %
 % Inputs
 %   obj   - cMosaic object
@@ -7,6 +9,9 @@ function visualizeFullAbsorptionsDensity(obj, figNo)
 %
 % Buglet:  You need to run compute before this to fill in the
 %          absorptionsDensitySpatialSupportMicrons variable.
+% Note:    Not really a buglet, this is a debug method that is not supposed
+%          to be called by the user directly. It is called by
+%          computePerformanceTAFC after the cMosaic.compute() method has been run
 %
 % See also
 %  
