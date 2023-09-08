@@ -1,7 +1,8 @@
 function run()
 
     % Ask user which mosaic to use
-    mosaicEcc = MosaicPoolingOptimizer.chooseMosaicToUse();
+    [mosaicEcc,  mosaicEccsForSummaryStatistics] = ...
+        MosaicPoolingOptimizer.chooseMosaicToUse();
 
     % Get mosaic params
     mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);
@@ -145,9 +146,7 @@ function run()
 
     % Perform the visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic operation
     if (operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics)
-        mosaicEccsToInclude = [0.0 2.5 7.0 -10.0 -16.0];
-        
-        MosaicPoolingOptimizer.performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEccsToInclude);
+        MosaicPoolingOptimizer.performVisualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaic(mosaicEccsForSummaryStatistics);
         return;
     end
 
