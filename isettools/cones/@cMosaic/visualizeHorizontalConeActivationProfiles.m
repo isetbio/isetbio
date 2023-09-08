@@ -1,5 +1,5 @@
 function hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
-    maxResponse, visualizedResponseScalingDegs, horizontalSliceYcoordDegs, horizontalSliceWidthDegs)
+    horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, visualizedResponseScalingDegs)
 
     % Visualized L-cone indices and x-coords
     if (ismember(cMosaic.LCONE_ID, coneTypesToVisualize))

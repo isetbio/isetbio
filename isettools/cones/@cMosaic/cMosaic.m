@@ -650,7 +650,8 @@ classdef cMosaic < handle
         % Method to visualize activation profiles for particular cone types along a
         % horizontal slice ROI
         hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
-            maxResponse, visualizedResponseScalingDegs, horizontalSliceYcoordDegs, horizontalSliceWidthDegs);
+            horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, visualizedResponseScalingDegs);
+
 
 
         % Method to visualize the continuous, full absorptions density and the actual cone positions
