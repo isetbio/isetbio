@@ -390,6 +390,9 @@ classdef MosaicPoolingOptimizer < handle
         % Method to perform the inspectOptimizedSurroundConePoolingModels operation
         performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams, varargin);
 
+        % Method to perform the summarizeOptimizedSurroundConePoolingModels operation
+        performSummarizeOptimizedSurroundConePoolingModelsOp(mosaicEccsForSummaryStatistics, varargin);
+
         % Method to perform the generateComputeReadyMidgetRGCMosaic operation
         performGenerateComputeReadyMidgetRGCMosaicOp(mosaicParams);
 
@@ -421,12 +424,12 @@ classdef MosaicPoolingOptimizer < handle
         performVisualizeVisualRFmapForTargetRGC(mosaicParams, varargin);
 
         % Method to ask the user which mRGC mosaic to use for computing
-        mosaicEcc =  chooseMosaicToUse();
+        [mosaicEcc, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse();
         
         % Method to ask the user which opticsParams to use for computing
         % the inputConeMosaic STF responses
         [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
-            chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
+            chooseOpticsForInputConeMosaicSTFresponses(mosaicParams, varargin);
 
         % Method to ask the user which H1 cell index to use for optimizing
         % the RF surround cone pooling model

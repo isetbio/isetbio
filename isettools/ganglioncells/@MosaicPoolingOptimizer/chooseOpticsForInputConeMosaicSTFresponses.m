@@ -1,14 +1,22 @@
 function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
-    chooseOpticsForInputConeMosaicSTFresponses(mosaicParams)
+    chooseOpticsForInputConeMosaicSTFresponses(mosaicParams, varargin )
+
+    validOpticsChoices = {'n', 'c'};
+
+    p = inputParser;
+    p.addParameter('opticsChoice', [], @(x)(isempty(x)||ismember(x,validOpticsChoices)));
+    p.parse(varargin{:});
+    opticsChoice = p.Results.opticsChoice;
 
     % Select optics to employ
-    validOpticsChoices = {'n', 'c'};
-    opticsChoice = 'invalid';
-    while (~ismember(opticsChoice, validOpticsChoices)) 
-       fprintf('\nOptics options for mosaic at (%2.1f,%2.1f): \n', mosaicParams.eccDegs(1), mosaicParams.eccDegs(2));
-       fprintf('[n] - Native optics (at the mosaic''s center) \n');
-       fprintf('[c] - Custom optics (at an arbitrary position) \n');
-       opticsChoice = input('Optics to employ: ', 's');
+    if (isempty(opticsChoice))
+        opticsChoice = 'invalid';
+        while (~ismember(opticsChoice, validOpticsChoices)) 
+           fprintf('\nOptics options for mosaic at (%2.1f,%2.1f): \n', mosaicParams.eccDegs(1), mosaicParams.eccDegs(2));
+           fprintf('[n] - Native optics (at the mosaic''s center) \n');
+           fprintf('[c] - Custom optics (at an arbitrary position) \n');
+           opticsChoice = input('Optics to employ: ', 's');
+        end
     end
 
     % Generate the mosaic filename

@@ -338,7 +338,9 @@ function exportFigsForPaper(theInputConeMosaic, theCurrentRGCposition, theSTFdat
     % Generate paper-ready figures (scaled versions of the figures in
     % the rawFiguresRoot directory) which are stored in the PaperReady folder
     dd = strrep(rawFiguresRoot, 'Raw', 'cpdf');
-    commandString = sprintf('%s -args generatePLOSOnePaperReadyFigures.txt', dd);
+
+    PLOSdirectory = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode';
+    commandString = sprintf('%s -args %s/generatePLOSOnePaperReadyFigures.txt', dd, PLOSdirectory);
     system(commandString);
 
 

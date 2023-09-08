@@ -424,7 +424,8 @@ function visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
 
     % Generate paper-ready figures (scaled versions of the figures i
     % nrawFiguresRoot directory) which are stored in the PaperReady folder
-    commandString = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/cpdf -args generatePLOSOnePaperReadyFigures.txt';
+    PLOSdirectory = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode';
+    commandString = sprintf('%s/cpdf -args %s/generatePLOSOnePaperReadyFigures.txt', PLOSdirectory, PLOSdirectory);
     system(commandString);
 
 end

@@ -5,6 +5,7 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     p.addParameter('noXTickLabel', false, @islogical);
     p.addParameter('noYTickLabel', false, @islogical);
     p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('visualizeCronerKaplanTypicalSTF', false, @islogical);
     p.parse(varargin{:});
     
     noXLabel = p.Results.noXLabel;
@@ -12,6 +13,7 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     noXTickLabel = p.Results.noXTickLabel;
     noYTickLabel = p.Results.noYTickLabel;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
+    visualizeCronerKaplanTypicalSTF = p.Results.visualizeCronerKaplanTypicalSTF;
 
     maxAll = max([max(compositeSTF(:)) max(compositeSTFfit(:)) max(centerSTFfit(:)) max(surroundSTFfit(:))]);
     compositeSTF = compositeSTF / maxAll;
@@ -61,6 +63,12 @@ function renderSTF(ax, sfSupportCPD, compositeSTF, sfSupportCDPfit, compositeSTF
     p1 = plot(ax, sfSupportCPD, compositeSTF, 'ro', ...
         'MarkerEdgeColor', [1.0 0 0], 'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', ff.markerSize, ...
         'LineWidth', ff.lineWidth);
+
+    if (visualizeCronerKaplanTypicalSTF)
+        typicalSTF = RGCmodels.CronerKaplan.digitizedData.typicalRGCSTF();
+        plot(ax, typicalSTF.sfCPD, typicalSTF.amplitude*max(compositeSTFfit), 'b--', 'LineWidth', ff.lineWidth);
+    end
+
     axis(ax, 'square');
     
     % ticks and grids
