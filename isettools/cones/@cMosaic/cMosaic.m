@@ -896,6 +896,12 @@ classdef cMosaic < handle
         % factors at an arbitray array of retinal positions (in degrees)
         macularPigmentDensityBoostFactors = macularPigmentBoostFactors(theMacular, retinalPositionsDegs)
 
+        % Return the outer segment length in microns at the passed
+        % eccentricity as well as the foveal outer segment length using
+        % data from Banks, Sekuler and Anderson (1991). "Peripheral spatial vision: limits
+        % imposed by optics, photoreceptors and receptor pooling".
+        [osLengthMicrons, osLengthMicronsFoveal] = outerSegmentLengthFromEccentricity(eccDegs);
+
         % Static method to return signed horizontal and vertical
         % eccentricities corresponding to radial eccentricities specified
         % on one of the 4 principal retinal meridians and eye
