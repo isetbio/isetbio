@@ -157,6 +157,7 @@ function figureHandle = visualizeHorizontalConeActivationProfiles(obj, theConeMo
         end
     
         % Finalize plot
+        hold(axesHandle, 'off')
         set(figureHandle, 'Color', [0 0 0]);
         set(axesHandle, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'LineWidth', 1.5, 'FontSize', fontSize);
         grid(axesHandle, 'off')
@@ -181,10 +182,10 @@ function figureHandle = visualizeHorizontalConeActivationProfiles(obj, theConeMo
         if (~isempty(theVisualizedSConeIndices))
             renderConeResponses(axesHandle, squeeze(obj.coneRFpositionsDegs(theVisualizedSConeIndices,1)), theVisualizedSConeIndices, ...
                 theConeMosaicResponse, maxResponse, [0.6 0.1 1.0]);
-            hold(axesHandle, 'off')
         end
 
-        
+        hold(axesHandle, 'off');
+
         set(figureHandle, 'Color', [1 1 1]);
         set(axesHandle, 'LineWidth', 1.5, 'FontSize', fontSize);
         grid(axesHandle, 'on');
