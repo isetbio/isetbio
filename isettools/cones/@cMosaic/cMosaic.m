@@ -519,30 +519,25 @@ classdef cMosaic < handle
                 % Remove cones within the optic disk
                 obj.removeConesWithinOpticNerveHead();
 
-                % Set random seed - Puzzled by the logic of setting the
-                % seed twice here.  Once before assigning cone types (first
-                % code block) and once after importing the data (second
-                % code block).
-                if isequal(obj.noiseFlag,'random')
-                    % Make a noise seed and store it.  One in a million.
-                    obj.randomSeed = randi(1e6);
-
-                    % 'shuffle' did not have a specific seed I could read.
-                    % it used the time of day.  So I made a random seed
-                    % instead and returned it.
-                    %
-                    %   rng('shuffle');   % Initialize rng with current time
-                    
-                elseif isequal(obj.noiseFlag,'frozen') && isempty(obj.randomSeed)
-                    error('Frozen noise but no seed provided.');
-                end
-
+                % Set random seed so we get consistent cone assignment
                 if (~isempty(obj.randomSeed))
                     rng(obj.randomSeed);
                 end
 
                 % Assign cone types
                 obj.assignConeTypes();
+
+                % If we want random responses, but we were not passed a
+                % random seed, make a noise seed
+                if isequal(obj.noiseFlag,'random') && (isempty(obj.randomSeed))
+                    % Make a noise seed and store it.  One in a million.
+                    obj.randomSeed = randi(1e6);
+
+                elseif isequal(obj.noiseFlag,'frozen') && isempty(obj.randomSeed)
+                    error('Frozen noise but no seed provided.');
+                end
+
+                
             else
                 % Load cone positions and cone types from passed struct
                 obj.importExternalConeData(p.Results.coneData);
@@ -614,6 +609,10 @@ classdef cMosaic < handle
             
         end % constructor
         
+        % Method to crop the cMosaic to only incluce cones with specific
+        % indices
+        cropMosaicToIncluceConesWithIndices(obj,keptConeIndices);
+        
         % Method to transform a distance specified in units of retinal
         % microns to a distance specified in units of visual degrees based on the @cMosaic configuration
         microns = distanceDegreesToDistanceMicronsForCmosaic(obj, degrees);
@@ -648,10 +647,11 @@ classdef cMosaic < handle
         % Method to visualize the cone mosaic and its activation
         params = visualize(obj, varargin);
         
-        % Method to visualize horizontal activation profiles of certain
-        % cone types
+        % Method to visualize activation profiles for particular cone types along a
+        % horizontal slice ROI
         hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
-            maxResponse, visualizedResponseScalingDegs, horizontalSliceYcoordDegs, horizontalSliceWidthDegs);
+            horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, visualizedResponseScalingDegs);
+
 
         % Method to visualize the continuous, full absorptions density and the actual cone positions
         visualizeFullAbsorptionsDensity(obj, figNo);
@@ -674,9 +674,9 @@ classdef cMosaic < handle
         % Method to return indices of cones within a geometry struct appropriate for @regionOfInterest
         coneIndices = indicesOfConesWithinROI(obj, geometryStruct);
         
-        % Method to return indices of certain cone types within a
-        % horizontal slice ROI
-        [theConeIndices, theROI] = ...
+        % Method to return the cone indices of cones of a certain type that
+        % lie within a horizontal rect ROI
+        [coneIndicesOfCertainConeType, theROI] = ...
             coneIndicesOfCertainTypeWithinHorizontalSlice(obj, slicePositionDegs, sliceWidthDegs, coneType);
 
         % Method to reassigne the type of any set of cones, specified by
