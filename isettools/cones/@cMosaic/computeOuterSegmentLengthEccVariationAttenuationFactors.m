@@ -10,8 +10,10 @@ function computeOuterSegmentLengthEccVariationAttenuationFactors(obj, varargin)
     coneEccentricityDegs = sqrt((obj.coneRFpositionsDegs(:,1)).^2 + (obj.coneRFpositionsDegs(:,2)).^2);
     
     % Compute outer segment length for each cone based on its eccentricity
-    relativeWithRespectToFoveaOuterSegmentLength = outerSegmentLengthFromEccentricity(coneEccentricityDegs);
-    
+    [osLengthMicrons, osLengthMicronsFoveal] = cMosaic.outerSegmentLengthFromEccentricity(coneEccentricityDegs);
+
+    % Compute relative to the fovea os length
+    relativeWithRespectToFoveaOuterSegmentLength = osLengthMicrons / osLengthMicronsFoveal;
     
     % Instantiate a cPhotoPigment object
     p = cPhotoPigment;
@@ -55,24 +57,3 @@ function computeOuterSegmentLengthEccVariationAttenuationFactors(obj, varargin)
     
     obj.outerSegmentLengthEccVariationAttenuationFactors = attenuationFactors;
 end
-
-function relativeWithRespectToFoveaOuterSegmentLength = outerSegmentLengthFromEccentricity(eccDegs)
-    % Scanned data (eccentricity, osLength in microns) from Figure 1 (right panel)
-    % Banks, Sekuler and Anderson (1991). Peripher spatial vision: limits
-    % imposed by optics, photoreceptors and receptor pooling
-    s = [ ...
-        0.00  47.81;
-        1.82  26.16;
-        4.86  21.2;
-        9.86  21.20;
-        19.78  21.2;
-        39.90  13.22;
-    ];
-  scannedData.eccDegsRaw = s(:,1);
-  scannedData.lengthMicronsRaw = s(:,2);
-  interpolationMethod = 'pchip';
-  osLengthMicrons = interp1(scannedData.eccDegsRaw, scannedData.lengthMicronsRaw, eccDegs, interpolationMethod);
-  osLengthAtZeroEcc = s(1,2);
-  relativeWithRespectToFoveaOuterSegmentLength = osLengthMicrons / osLengthAtZeroEcc;
-end
-
