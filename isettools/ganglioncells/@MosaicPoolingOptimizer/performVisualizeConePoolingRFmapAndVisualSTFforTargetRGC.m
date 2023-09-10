@@ -5,10 +5,15 @@ function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, 
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('reverseXDir', false, @islogical);
+    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+
     p.parse(varargin{:});
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
+    reverseXDir = p.Results.reverseXDir;
+    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
 
     % Ask the user which optics were used for computing the input cone
     % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
@@ -54,6 +59,8 @@ function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, 
             targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
-            'visualizedSpatialFrequencyRange',  visualizedSpatialFrequencyRange);
+            'visualizedSpatialFrequencyRange',  visualizedSpatialFrequencyRange, ...
+            'reverseXDir', reverseXDir, ...
+            'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions);
 
 end

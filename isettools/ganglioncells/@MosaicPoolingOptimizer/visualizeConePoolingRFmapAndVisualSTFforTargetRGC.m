@@ -7,10 +7,15 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('reverseXDir', false, @islogical);
+    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
     p.parse(varargin{:});
+
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
+    reverseXDir = p.Results.reverseXDir;
+    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
 
     load(computeReadyMosaicFilename, 'theComputeReadyMRGCmosaic');
     load(mRGCMosaicSTFresponsesFilename, 'spatialFrequenciesTested', 'theMRGCMosaicOptimalSTFs');
@@ -26,7 +31,9 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
         'theAxes', theAxes, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
         'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
-        'withFigureFormat', ff);
+        'withFigureFormat', ff, ...
+        'reverseXDir', reverseXDir, ...
+        'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions);
 
     theVisualizedRGCvisualSTFdata = theMRGCMosaicOptimalSTFs{theVisualizedRGCindex};
     idx = find(strcmp(theVisualizedRGCvisualSTFdata.DoGfitParams.names, 'kS/kC'));

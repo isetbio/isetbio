@@ -5,12 +5,16 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('theAxes', [], @(x)(isempty(x)||(iscell(x))));
+    p.addParameter('reverseXDir', false, @islogical);
+    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
 
     p.parse(varargin{:});
     ff = p.Results.withFigureFormat;
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
     theAxes = p.Results.theAxes;
+    reverseXDir = p.Results.reverseXDir;
+    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
 
     % Generate the visualization cache
     xSupport = [];
@@ -74,6 +78,9 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
             'noYLabel', false, ...
             'noYTicks', false, ...
             'xAxisTickAngleRotationDegs', 0);
+    if (reverseXDir)
+        set(theAxes{1,1}, 'XDir', 'reverse');
+    end
 
     if (iscell(theContourData))
         S.Vertices = theContourData{1}.vertices;
@@ -110,7 +117,11 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'plotTitle', '', ...
             'noYTicks', ~true, ...
+            'gridless', gridlessLineWeightingFuncions, ...
             'xAxisTickAngleRotationDegs', 0);
+    if (reverseXDir)
+        set(theAxes{1,2}, 'XDir', 'reverse');
+    end
 
     mRGCMosaic.renderSubregionConePoolingLineWeightingFunctions(theAxes{1,3}, ...
             centerLineWeightingFunctions.y, surroundLineWeightingFunctions.y, ...
@@ -121,6 +132,12 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
             'plotTitle', '', ...
             'noYLabel', true, ...
             'noYTicks', true, ...
+            'gridless', gridlessLineWeightingFuncions, ...
             'xAxisTickAngleRotationDegs', 0);
+
+    if (reverseXDir)
+        set(theAxes{1,3}, 'XDir', 'reverse');
+    end
+
 
 end

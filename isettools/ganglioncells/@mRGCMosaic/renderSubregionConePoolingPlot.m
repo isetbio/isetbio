@@ -6,6 +6,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
     p.addParameter('noYLabel', false, @islogical);
     p.addParameter('noXTicks', false, @islogical);
     p.addParameter('noYTicks', false, @islogical);
+    p.addParameter('gridless', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('alsoComputeSubregionContour', false, @islogical);
     p.addParameter('overlayedSubregionContour', [], @(x)(isempty(x)||(isstruct(x))));
@@ -21,6 +22,8 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     computeSubregionContour = p.Results.alsoComputeSubregionContour;
     overlayedSubregionContour = p.Results.overlayedSubregionContour;
+    gridless = p.Results.gridless;
+
     plotTitle = p.Results.plotTitle;
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
@@ -176,7 +179,13 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
         end
 
     end
-    grid(ax, 'on');
+
+    if (~gridless)
+        grid(ax, 'on');
+    else
+        grid(ax, 'off');
+    end
+
     xtickangle(ax, xAxisTickAngleRotationDegs);
     colormap(ax, brewermap(1024, 'greys'));
 end

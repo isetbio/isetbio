@@ -7,6 +7,7 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
     p.addParameter('noYLabel', false, @islogical);
     p.addParameter('noXTicks', false, @islogical);
     p.addParameter('noYTicks', false, @islogical);
+    p.addParameter('gridless', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
     p.addParameter('tickSeparationArcMin', [],  @(x)(isempty(x)||isscalar(x)));
     p.addParameter('spatialSupportRangeArcMin', [],  @(x)(isempty(x)||isscalar(x)));
@@ -23,6 +24,7 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
     noYLabel = p.Results.noYLabel;
     noXTicks = p.Results.noXTicks;
     noYTicks = p.Results.noYTicks;
+    gridless = p.Results.gridless;
     xAxisTickAngleRotationDegs = p.Results.xAxisTickAngleRotationDegs;
     ff = p.Results.withFigureFormat;
     resetAxes = p.Results.resetAxes;
@@ -127,8 +129,15 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
     end
 
     
-    grid(ax, 'on');
-    box(ax, 'off');
+    if (~gridless)
+        grid(ax, 'on');
+        box(ax, 'off');
+    else
+        grid(ax, 'off');
+        box(ax, 'on');
+    end
+
+    
     axis(ax, 'square');
     xtickangle(ax, xAxisTickAngleRotationDegs);
 

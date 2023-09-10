@@ -31,19 +31,33 @@ function run()
     % Perform the visualizeRGCMosaic operation
     if (operationSetToPerformContains.visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs)
         
+        xMin = mosaicParams.eccDegs(1) - 1.5;
+        xMax = mosaicParams.eccDegs(1) + 1.5;
+        yMin = mosaicParams.eccDegs(2) - 0.5;
+        yMax = mosaicParams.eccDegs(2) + 0.5;
         identifyPooledCones = true;
         identifyInputCones = true;
         plotRFoutlines = true;
-        labelRetinalMeridians  = true;
+        labelRetinalMeridians  = ~true;
         backgroundColor = [1 1 1];
+        domainVisualizationLimits = [xMin xMax yMin yMax];
+        domainVisualizationTicks = struct('x', -30:0.5:30, 'y', -20:0.5:20);
 
+        if (mosaicParams.eccDegs(1)<0)
+            reverseXDir = true;
+        else
+            reverseXDir = false;
+        end
 
         MosaicPoolingOptimizer.performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicParams, ...
             'identifyPooledCones', identifyPooledCones, ...
             'identifyInputCones', identifyInputCones, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
             'plotRFoutlines', plotRFoutlines, ...
             'labelRetinalMeridians', labelRetinalMeridians, ...
-            'backgroundColor', backgroundColor);
+            'backgroundColor', backgroundColor, ...
+            'reverseXDir', reverseXDir);
         return;
     end
 
@@ -141,10 +155,18 @@ function run()
     % Perform the visualizeConePoolingRFmapAndVisualSTFforTargetRGC operation
     if (operationSetToPerformContains.visualizeConePoolingRFmapAndVisualSTFforTargetRGC)
         
+        if (mosaicParams.eccDegs(1)<0)
+            reverseXDir = true;
+        else
+            reverseXDir = false;
+        end
+
         MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
-            'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange);
+            'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange, ...
+            'reverseXDir', reverseXDir, ...
+            'gridlessLineWeightingFuncions', true);
         return;
     end
 
