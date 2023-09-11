@@ -125,6 +125,9 @@ classdef mRGCMosaic < handle
 
         % Cell array of figure handles for each intermediate connectivity stage of theMosaicConnectorOBJ 
         mosaicConnectorIntermediateFigureHandles;
+
+        % Cache for various visualizations
+        visualizationCache = [];
     end % Read-only properties
 
     % Dependent properties
@@ -146,9 +149,6 @@ classdef mRGCMosaic < handle
     properties (GetAccess=private, SetAccess=private)
         % The MosaicConnectorOBJ used to connect cones to midget RGCs
         theMosaicConnectorOBJ;
-
-        % Cache for various visualizations
-        visualizationCache = [];
     end
 
     % Public methods

@@ -5,11 +5,13 @@ function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams, vararg
     p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
+    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
     p.parse(varargin{:});
 
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
+    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
 
     % Generate the mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
@@ -68,7 +70,8 @@ function performInspectOptimizedSurroundConePoolingModelsOp(mosaicParams, vararg
            optimizedRGCpoolingObjectsFileName, ...
            'tickSeparationArcMin', tickSeparationArcMin, ...
            'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
-           'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange ...
+           'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange, ...
+           'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions ...
            );
 
        fprintf('Exported files for node %d (%d of %d nodes)\n', gridNodeIndex, iNode , numel(gridNodesToInspect));

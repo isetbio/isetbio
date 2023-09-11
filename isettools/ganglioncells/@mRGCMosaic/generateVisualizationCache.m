@@ -20,11 +20,11 @@ function generateVisualizationCache(obj, xSupport, ySupport, centerSubregionCont
     end
 
     if (~isempty(obj.rgcRFcenterConePoolingMatrix))
-        [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments] = ...
+        [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments, singleConeRGCdotPositions] = ...
             graphicDataForSubregion(obj, obj.rgcRFcenterConePoolingMatrix, minCenterConePoolingWeights, ...
             xSupport, ySupport, spatialSupportSamples,centerSubregionContourSamples, contourGenerationMethod);
     else
-        [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments] = ...
+        [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, rfCenterConeConnectionLineSegments, singleConeRGCdotPositions] = ...
             graphicDataForSubregion(obj, obj.rgcRFcenterConeConnectivityMatrix, minCenterConePoolingWeights, ...
             xSupport, ySupport, spatialSupportSamples,centerSubregionContourSamples, contourGenerationMethod);
     end
@@ -37,6 +37,7 @@ function generateVisualizationCache(obj, xSupport, ySupport, centerSubregionCont
     obj.visualizationCache.rfCenterPatchData.faces = facesList;
     obj.visualizationCache.rfCenterPatchData.faceVertexCData = colorVertexCData;
     obj.visualizationCache.rfCenterConeConnectionLineSegments = rfCenterConeConnectionLineSegments;
+    obj.visualizationCache.rfCenterSingleConeInputDotPositions = singleConeRGCdotPositions;
 
     % Find all input cone indices that are connected to the RF centers
     if (~isempty(obj.rgcRFcenterConePoolingMatrix))
@@ -69,7 +70,7 @@ end
 
 
 
-function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, subregionConeConnectionLineSegments] = ...
+function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theContourData, subregionConeConnectionLineSegments, singleConeRGCdotPositions] = ...
         graphicDataForSubregion(obj, conePoolingMatrix, minPoolingWeights, xSupport, ySupport, spatialSupportSamples, ...
         centerSubregionContourSamples, contourGenerationMethod)
         
@@ -92,10 +93,19 @@ function [verticesNumForRGC, verticesList, facesList, colorVertexCData, theConto
  
     lineSegmentIndex = 0;
     subregionConeConnectionLineSegments = [];
+
+    singleConeRGCindex = 0;
+    singleConeRGCdotPositions = [];
+
     for iRGC = 1:obj.rgcsNum
         % Retrieve the subregion cone indices & weights
         connectivityVector = full(squeeze(conePoolingMatrix(:, iRGC)));
         subregionConeIndices = find(connectivityVector > minPoolingWeights(iRGC));
+
+        if (numel(subregionConeIndices) == 1)
+            singleConeRGCindex = singleConeRGCindex + 1;
+            singleConeRGCdotPositions(singleConeRGCindex,:) = obj.inputConeMosaic.coneRFpositionsDegs(subregionConeIndices,:);
+        end
 
         theConePoolingWeights = connectivityVector(subregionConeIndices);
         theConePositions = obj.inputConeMosaic.coneRFpositionsDegs(subregionConeIndices,:);

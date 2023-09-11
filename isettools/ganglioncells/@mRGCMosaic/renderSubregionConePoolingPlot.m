@@ -53,7 +53,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
     XLims = rgcRFposDegs(1) + [spatialSupportDegs(1) spatialSupportDegs(end)];
     YLims = rgcRFposDegs(2) + [spatialSupportDegs(1) spatialSupportDegs(end)];
 
-    retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(...
+    [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
         theConeMosaic, coneIndices, coneWeights, spatialSupportXYDegs);
 
     if (computeSubregionContour)
@@ -85,7 +85,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
         cla(ax, 'reset');
     end
 
-    imagesc(ax, spatialSupportXYDegs(:,1), spatialSupportXYDegs(:,2), retinalSubregionConeMap);
+    imagesc(ax, spatialSupportXYDegs(:,1), spatialSupportXYDegs(:,2), retinalSubregionConeMapFlatTop);
     hold(ax, 'on');
     
 
@@ -96,7 +96,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
         S.FaceColor = 'flat';
         S.EdgeColor = [0 0 0];
         S.FaceAlpha = 0.0;
-        S.LineWidth = 1.5;
+        S.LineWidth = 2.0;
         patch(S, 'Parent', ax);
     end
 
@@ -109,7 +109,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
             case cMosaic.SCONE_ID
                 coneColor = [0 0 1];
         end
-        plot(ax,theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),1), theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),2), '.', 'MarkerSize', 8, 'Color', coneColor);
+        plot(ax,theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),1), theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),2), '.', 'MarkerSize', 14, 'Color', coneColor);
     end
     
     % Return the subregion line weighting functions along X and Y
@@ -130,7 +130,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
         xyTickLabels = sprintf('%2.2f\n', xyTicks);
     end
 
-    set(ax, 'CLim', [0 0.2*max(retinalSubregionConeMap(:))], ...
+    set(ax, 'CLim', [0 max(retinalSubregionConeMapFlatTop(:))], ...
             'XLim', XLims, 'YLim', YLims, ...
             'XTick', xyTicks, 'YTick', xyTicks, ...
             'XTickLabel', xyTickLabels, ...
@@ -190,7 +190,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
     colormap(ax, brewermap(1024, 'greys'));
 end
 
-function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(...
+function [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
     theConeMosaic, theConeIndices, theConeWeights, spatialSupportDegs)
     
     [X,Y] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
@@ -205,6 +205,10 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(.
 
     oiResDegs = spatialSupportDegs(2,1) - spatialSupportDegs(1,1);
     theConeApertureBlurKernel = computeConeApertureBlurKernel(theConeMosaic, theConeIndices, oiResDegs);
+
+    halfMax = 0.1*max(theConeApertureBlurKernel(:));
+    theConeApertureBlurKernelFlatTop = theConeApertureBlurKernel;
+    theConeApertureBlurKernelFlatTop(theConeApertureBlurKernelFlatTop>halfMax) = halfMax;
 
     insertionCoords = cell(1, conesNumPooled);
     parfor iCone = 1:conesNumPooled
@@ -221,6 +225,7 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(.
     end
 
     retinalSubregionConeMap = X * 0;
+    retinalSubregionConeMapFlatTop = X*0;
     conesNotIncluded = 0;
 
     for iCone = 1:conesNumPooled
@@ -234,6 +239,7 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(.
 
         % Accumulate the subregion cone map
         retinalSubregionConeMap(rr,cc) = retinalSubregionConeMap(rr,cc) + theConeWeights(iCone) * theConeApertureBlurKernel;
+        retinalSubregionConeMapFlatTop(rr,cc) = retinalSubregionConeMapFlatTop(rr,cc) + theConeWeights(iCone) * theConeApertureBlurKernelFlatTop;
     end
 
     if (conesNotIncluded > 0)

@@ -31,17 +31,19 @@ function run()
     % Perform the visualizeRGCMosaic operation
     if (operationSetToPerformContains.visualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCs)
         
-        xMin = mosaicParams.eccDegs(1) - 1.5;
-        xMax = mosaicParams.eccDegs(1) + 1.5;
-        yMin = mosaicParams.eccDegs(2) - 0.5;
-        yMax = mosaicParams.eccDegs(2) + 0.5;
+        xMin = mosaicParams.eccDegs(1) - 1.0;
+        xMax = mosaicParams.eccDegs(1) + 1.0;
+        yMin = mosaicParams.eccDegs(2) - 0.35;
+        yMax = mosaicParams.eccDegs(2) + 0.35;
+
+
         identifyPooledCones = true;
-        identifyInputCones = true;
+        identifyInputCones = ~true;
         plotRFoutlines = true;
         labelRetinalMeridians  = ~true;
         backgroundColor = [1 1 1];
         domainVisualizationLimits = [xMin xMax yMin yMax];
-        domainVisualizationTicks = struct('x', -30:0.5:30, 'y', -20:0.5:20);
+        domainVisualizationTicks = struct('x', -30:0.2:30, 'y', -20:0.2:20);
 
         if (mosaicParams.eccDegs(1)<0)
             reverseXDir = true;
@@ -106,7 +108,8 @@ function run()
             mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
-            'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange);
+            'visualizedSpatialFrequencyRange', visualizedSpatialFrequencyRange, ...
+            'gridlessLineWeightingFuncions', true);
 
         return;
     end

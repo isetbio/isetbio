@@ -30,7 +30,7 @@ function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicP
     reverseXDir = p.Results.reverseXDir;
 
     hFig = figure(1); clf;
-    ff = MSreadyPlot.figureFormat('1x1 small ultra wide');
+    ff = MSreadyPlot.figureFormat('1x1 small wide');
     theAxes = MSreadyPlot.generateAxes(hFig,ff);
     set(hFig, 'Color', [1 1 1]);
 

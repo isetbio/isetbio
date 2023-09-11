@@ -296,9 +296,13 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             lConeInputLineColor = [0 0 0];
             mConeInputLineColor = [0 0 0];
             lineSegmentWidth = pooledConesLineWidth;
+
+            % Put a single dot in all mRGC RF centers with a single input
+            plot(ax, obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,1), obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,2), 'k.');
         end
         
-        labelConePooling(obj, ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth);
+        % Render line segments from centroid to pulled cones
+        renderPooledConesLineSegments(obj, ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth);
     end
 
     axis(ax, 'equal');
@@ -484,7 +488,7 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
 end
 
 
-function labelConePooling(obj,ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth)
+function renderPooledConesLineSegments(obj,ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth)
    
     if (~isempty(obj.visualizationCache.rfCenterConeConnectionLineSegments))
         % Plot the connections from the RF center to the input L-cones
