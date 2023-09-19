@@ -17,6 +17,7 @@ function run()
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
 
+  
     % Perform the generateRGCMosaic operation
     if (operationSetToPerformContains.generateCenterConnectedRGCMosaic)
         if (isfield(mosaicParams, 'maxConeInputsPerRGCToConsiderTransferToNearbyRGCs'))
@@ -206,4 +207,10 @@ function run()
             'tickSeparationArcMin', tickSeparationArcMin);
         return;
     end
+
+   
+    if (operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF)
+        MosaicPoolingOptimizer.performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF()
+    end
+
 end

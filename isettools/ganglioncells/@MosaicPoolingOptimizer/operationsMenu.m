@@ -23,6 +23,8 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     operationDescriptors{17} = '[17] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (subspace) for all cells in the mosaic';
     operationDescriptors{18} = '[18] Compute-ready mRGCMosaic (RF computation) : Visualize visual RF maps (subspace) for individual target RGCs';
 
+    operationDescriptors{19} = '[19] ComputeVisualRFcenterMapsViaDirectConvolutionWithPSF';
+
     % 01. Generate the center-connected mosaic
     operationSetToPerformContains.generateCenterConnectedRGCMosaic = ~true;
 
@@ -76,6 +78,9 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
 
     % 18 Subspace RF mapping: visualize visual RF maps 
     operationSetToPerformContains.visualizeVisualRFmapForTargetRGC = ~true;
+
+    % 19 Map the visual RF center of mRGCs
+    operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF = ~true;
 
     operationSetToPerformContains.animateModelConvergence = ~true;
 
@@ -247,6 +252,13 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                             error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'visualizeVisualRFmapForTargetRGC');
                         end
                        
+                    case 19
+                        if (isfield(operationSetToPerformContains, 'computeVisualRFcenterMapsViaDirectConvolutionWithPSF'))
+                            operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF = true;
+                        else
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'computeVisualRFcenterMapsViaDirectConvolutionWithPSF');
+                        end
+
                     otherwise
                         error('Unknown option')
                 end % switch
@@ -259,4 +271,5 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
 
     end
    
+    operationSetToPerformContains
 end

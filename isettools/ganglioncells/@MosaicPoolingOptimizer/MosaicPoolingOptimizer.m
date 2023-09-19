@@ -423,6 +423,9 @@ classdef MosaicPoolingOptimizer < handle
         % Method to perform the VisualizeVisualRFmapForTargetRGC
         performVisualizeVisualRFmapForTargetRGC(mosaicParams, varargin);
 
+        % Method to perform the ComputeVisualRFmapsOfRFcenterSubregions
+        performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF(varargin);
+
         % Method to ask the user which mRGC mosaic to use for computing
         [mosaicEcc, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse();
         
