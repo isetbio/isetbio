@@ -48,7 +48,7 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
 
     % Compute cone mosaic STF responses
     switch (opticsToEmploy)
-        case 'native'
+        case {'native', 'adaptive optics'}
              % Retrieve the native optics
              theOptics = obj.theRGCMosaic.theNativeOptics;
              
@@ -82,7 +82,7 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
 
 
     switch (opticsToEmploy)
-        case 'native'
+        case {'native', 'adaptive optics'}
              theNativeOpticsParams = obj.theRGCMosaic.theNativeOpticsParams;
              save(responsesFileName, 'theNativeOpticsParams', ...
                 'theConeMosaicSTFresponses', 'theConeMosaicNullResponses', ...
