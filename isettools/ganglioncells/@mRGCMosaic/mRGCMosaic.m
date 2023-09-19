@@ -378,6 +378,10 @@ classdef mRGCMosaic < handle
         contourData = subregionEllipseFromPooledCones(...
             conePos, coneRc, poolingWeights, ...
             xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples);
+
+        % Method to fit an ellipse at some RFmap at the normalized level zLevel
+        contourData = ellipseContourFromSubregionRFmap(xSupport, ySupport, RFmap, ...
+            zLevel, centerSubregionContourSamples);
     end % Static methods
 
 end
