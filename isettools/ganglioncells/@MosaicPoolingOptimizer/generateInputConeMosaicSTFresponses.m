@@ -4,7 +4,7 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
     p = inputParser;
     p.addParameter('useParfor', false, @islogical);
     p.addParameter('visualizedResponses', false, @islogical);
-    p.addParameter('opticsToEmploy', 'native', @(x)(ismember(x, {'native', 'custom'})));
+    p.addParameter('opticsToEmploy', 'native', @(x)(ismember(x, {'native', 'custom', 'adaptive optics'})));
 
     p.parse(varargin{:});
     useParfor = p.Results.useParfor;
