@@ -59,7 +59,7 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
         otherwise
              error('Unknown optics: ''%s''.', opticsToEmploy);
     end
-    fprintf('Will save responses in %s.\n', responsesFileName);
+    fprintf('\nWill save responses in %s.\n', responsesFileName);
 
    
     % Retrieve the input cone mosaic
