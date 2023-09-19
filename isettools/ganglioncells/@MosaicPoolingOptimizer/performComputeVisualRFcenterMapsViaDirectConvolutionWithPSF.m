@@ -39,13 +39,13 @@ function performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF()
         runAtEccentricity(axRetinal, axVisual, axPSF, ff, [horizontalEccDegs(iCol) verticalEccDegs(iRow)]);
 
         % Export PDFs
-        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('retinalRFs_%d_%d', horizontalEccDegs(iCol), verticalEccDegs(iRow)));
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('retinalRFs_%d_%d.pdf', horizontalEccDegs(iCol), verticalEccDegs(iRow)));
         NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig1, 300);
 
-        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('visualRFs_%d_%d', horizontalEccDegs(iCol), verticalEccDegs(iRow)));
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('visualRFs_%d_%d.pdf', horizontalEccDegs(iCol), verticalEccDegs(iRow)));
         NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig2, 300);
 
-        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('PSFs_%d_%d', horizontalEccDegs(iCol), verticalEccDegs(iRow)));
+        pdfFileNameForPLOS = fullfile(rawFiguresRoot, sprintf('PSFs_%d_%d.pdf', horizontalEccDegs(iCol), verticalEccDegs(iRow)));
         NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig3, 300);
     end
 
@@ -91,7 +91,7 @@ function runAtEccentricity(axRetinal, axVisual, axPSF, ff, eccDegs)
     [~,idx] = sort(dd, 'ascend');
 
     % Examine the 16 RGCs closest to the mosaic's center
-    maxNeuronsVisualized = 16;
+    maxNeuronsVisualized = 19;
     visualizedSizeDegs = 0.4;
 
     visualizedRFsNum = min([maxNeuronsVisualized numel(idx)]);
