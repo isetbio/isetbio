@@ -15,7 +15,7 @@ function [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputC
             contrast = 0.12;
        case 'Scone isolating'
             coneContrasts = [0 0 1];
-            contrast = 0.75;
+            contrast = 0.5;
         otherwise
             error('Unknown stimulus chromaticity: ''%s''.', stimulusChromaticity);
     end
