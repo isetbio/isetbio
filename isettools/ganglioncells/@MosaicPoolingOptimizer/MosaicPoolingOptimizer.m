@@ -278,7 +278,7 @@ classdef MosaicPoolingOptimizer < handle
         % Method to setup the parameters and the display for conducting an
         % STF mapping experiment.
         [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputConeMosaic, ...
-            sceneFOVdegs, retinalImageResolutionDegs);
+            sceneFOVdegs, retinalImageResolutionDegs, stimulusChromaticity);
 
 
         % Method to compute visualSTF responses of a cone mosaic under
@@ -433,6 +433,11 @@ classdef MosaicPoolingOptimizer < handle
         % the inputConeMosaic STF responses
         [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
             chooseOpticsForInputConeMosaicSTFresponses(mosaicParams, varargin);
+
+        % Method to ask the user what stimulus chromaticity to use for
+        % computing the inputConeMosaic STF responses
+        [stimulusChromaticity, coneMosaicSTFresponsesFileName] = ...
+            chooseStimulusChromaticityForInputConeMosaicSTFresponses(coneMosaicSTFresponsesFileName);
 
         % Method to ask the user which H1 cell index to use for optimizing
         % the RF surround cone pooling model

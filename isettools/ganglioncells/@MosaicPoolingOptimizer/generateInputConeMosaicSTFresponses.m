@@ -5,11 +5,14 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
     p.addParameter('useParfor', false, @islogical);
     p.addParameter('visualizedResponses', false, @islogical);
     p.addParameter('opticsToEmploy', 'native', @(x)(ismember(x, {'native', 'custom', 'adaptive optics'})));
-
+    p.addParameter('stimulusChromaticity', 'achromatic', @(x)(ismember(x, {'achromatic', 'Lcone isolating', 'Mcone isolating', 'Scone isolating'})));
     p.parse(varargin{:});
+
+    % Parse input
     useParfor = p.Results.useParfor;
     visualizeResponses = p.Results.visualizedResponses;
     opticsToEmploy = p.Results.opticsToEmploy;
+    stimulusChromaticity = p.Results.stimulusChromaticity;
 
     if (isempty(gridNodeIndex))
         % Determine optimal stimulus resolution so that cone aperture blur will
@@ -19,8 +22,8 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
         stimPositionDegs = obj.theRGCMosaic.eccentricityDegs;
         % 10% larger than the cone mosaic
         stimSizeDegs = 1.1*obj.theRGCMosaic.inputConeMosaic.sizeDegs;
-        fprintf('Computing STF responses for stimuli positioned at %2.1f,%2.1f degs\nover a region of  %2.1f,%2.1f degs\nwith a retinal resolution of %2.2f arc min\nand %s optics', ...
-            stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60, opticsToEmploy);
+        fprintf('Computing *** %s *** STF responses for stimuli positioned at %2.1f,%2.1f degs\nover a region of  %2.1f,%2.1f degs\nwith a retinal resolution of %2.2f arc min\nand %s optics', ...
+            stimulusChromaticity, stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60, opticsToEmploy);
 
     else
         % Retrieve the RGC indices for the L-center and M-center RGC at the desired grid node
@@ -35,8 +38,8 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
         % have an observable effect
         retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, targetRGCindices);
    
-        fprintf('Computing STF responses for stimuli positioned at %2.1f,%2.1f degs\nover a region of  %2.1f,%2.1f degs\nwith a retinal resolution of %2.2f arc min\n and % optics', ...
-            stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60, opticsToEmploy);
+        fprintf('Computing *** %s *** STF responses for stimuli positioned at %2.1f,%2.1f degs\nover a region of  %2.1f,%2.1f degs\nwith a retinal resolution of %2.2f arc min\n and % optics', ...
+            stimulusChromaticity, stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60, opticsToEmploy);
     end
 
 
@@ -44,7 +47,8 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
     [stimParams, thePresentationDisplay] = MosaicPoolingOptimizer.setupSTFmappingExperiment(...
         obj.theRGCMosaic.inputConeMosaic, ...
         stimSizeDegs, ...
-        retinalImageResolutionDegs);
+        retinalImageResolutionDegs, ...
+        stimulusChromaticity);
 
     % Compute cone mosaic STF responses
     switch (opticsToEmploy)
