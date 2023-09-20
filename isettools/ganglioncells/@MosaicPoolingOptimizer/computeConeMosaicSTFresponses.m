@@ -81,6 +81,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
             % Compute the input cone mosaic responses
             if (useParfor)
                 theOI = theOptics;
+
                 parfor iFrame = 1:numel(theCurrentStimParams.spatialPhasesDegs)
                     % Get scene corresponding to this stimulus frame
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
@@ -99,6 +100,8 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
                 end
             else
                 for iFrame = 1:numel(theCurrentStimParams.spatialPhasesDegs)
+
+                    fprintf('Ori: %d/%d, freq: %d/%d, frame: %d of %d\n', iOri, numel(stimParams.orientationsTested), iFreq, numel(stimParams.spatialFrequenciesTested), iFrame, numel(theCurrentStimParams.spatialPhasesDegs))
                     % Get scene corresponding to this stimulus frame
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
 
