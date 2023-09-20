@@ -101,8 +101,8 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
             else
                 for iFrame = 1:numel(theCurrentStimParams.spatialPhasesDegs)
 
-                    fprintf('Ori: %d/%d, freq: %d/%d, frame: %d of %d\n', iOri, numel(stimParams.orientationsTested), iFreq, numel(stimParams.spatialFrequenciesTested), iFrame, numel(theCurrentStimParams.spatialPhasesDegs))
-                    % Get scene corresponding to this stimulus frame
+                    tic
+                     % Get scene corresponding to this stimulus frame
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
 
                     % Compute the optical image of the frame scene
@@ -128,6 +128,12 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
                             'activationRange', [-1 1]);
                         drawnow;
                     end
+
+                    fprintf('Ori: %d/%d, freq: %d/%d, frame: %d of %d (%2.1f seconds)\n', ...
+                        iOri, numel(stimParams.orientationsTested), iFreq, ...
+                        numel(stimParams.spatialFrequenciesTested), iFrame, ...
+                        numel(theCurrentStimParams.spatialPhasesDegs), toc)
+                   
                 end  % iFrame
             end
 
