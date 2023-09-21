@@ -69,25 +69,20 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
         end
 
         if (isnan(targetCenterConeMajorityType))
-            pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_mixedLM.pdf', ...
-                            targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);
+            pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_mixedLM_RGCindex_%d.pdf', ...
+                            targetRGCposition(1), targetRGCposition(2), targetCenterConesNum, theVisualizedRGCindex);
         else
             switch (targetCenterConeMajorityType)
                case cMosaic.LCONE_ID
-                    pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_LconeDominated.pdf', ...
-                            targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);
+                    pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_LconeDominated_RGCindex_%d.pdf', ...
+                            targetRGCposition(1), targetRGCposition(2), targetCenterConesNum, theVisualizedRGCindex);
                case cMosaic.MCONE_ID
-                    pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_MconeDominated.pdf', ...
-                            targetRGCposition(1), targetRGCposition(2), targetCenterConesNum);                    
+                    pdfPostFix = sprintf('_atPosition_%2.2f_%2.2f_CenterConesNum_%d_MconeDominated_RGCindex_%d.pdf', ...
+                            targetRGCposition(1), targetRGCposition(2), targetCenterConesNum, theVisualizedRGCindex);                    
             end
         end
     end
 
     pdfFileName = strrep(pdfFileName, '.pdf', pdfPostFix);
-
-    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
-    
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300); 
 end
-
-
-    
