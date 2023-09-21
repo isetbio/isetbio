@@ -8,7 +8,7 @@ function performComputeInputConeMosaicSTFresponsesOp(mosaicParams)
     % Load the generated center-only connected mRGCmosaic
     load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
 
-    % Ask the user about what optics to use for computing the input cone
+    % Ask the user what optics to use for computing the input cone
     % mosaic STF responses
     [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
         MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);

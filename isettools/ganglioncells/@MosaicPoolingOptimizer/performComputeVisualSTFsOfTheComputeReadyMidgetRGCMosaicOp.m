@@ -1,25 +1,39 @@
 function performComputeVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams)
 
-    % Ask the user which optics were used for computing the input cone
-    % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
-    [opticsParams, ~, coneMosaicSTFresponsesFileName] = ...
+    % Ask the user what optics were used for computing compute-ready mosaic
+    fprintf('\n---> Select the optics that were used to compute the compute-ready mosaic\n');
+    opticsParamsForComputeReadyMosaic = ...
         MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
-    % Ask the user which H1 cell index to use for optimizing the RF
+    % Ask the user which H1 cell index was used for optimizing the RF
     % surround pooling model
-    retinalRFmodelParams = MosaicPoolingOptimizer.chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams);
+    retinalRFmodelParams = MosaicPoolingOptimizer.chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParamsForComputeReadyMosaic);
 
-    % Generate the filename of the compute-ready mRGCMosaic to generate
+    % Generate the filename of the compute-ready mRGCMosaic to use
     [computeReadyMosaicFileName,computeReadyMosaicResourcesDirectory] = MosaicPoolingOptimizer.resourceFileNameAndPath('computeReadyMosaic', ...
                 'mosaicParams', mosaicParams, ...
-                'opticsParams', opticsParams, ...
+                'opticsParams', opticsParamsForComputeReadyMosaic, ...
                 'retinalRFmodelParams', retinalRFmodelParams);
   
+
+
+    % Now, ask the user what optics to use for computing the input cone
+    % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
+    fprintf('\n---> Select the optics that were used to compute the input cone mosaic STF responses\n');
+    [opticsParamsForMRGCSTFs, ~, coneMosaicSTFresponsesFileName] = ...
+        MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
+
+    fprintf('\n---> Select the chromaticity that was used to compute the input cone mosaic STF responses\n');
+    % Ask the user what stimulus chromaticity to use
+    [~, coneMosaicSTFresponsesFileName] = ...
+        MosaicPoolingOptimizer.chooseStimulusChromaticityForInputConeMosaicSTFresponses(coneMosaicSTFresponsesFileName);
+
+
     % Generate filename for the computed mRGCMosaicSTF responses
     [mRGCMosaicSTFresponsesFileName, resourcesDirectory] = ...
         MosaicPoolingOptimizer.resourceFileNameAndPath('mRGCMosaicSTFresponses', ...
             'mosaicParams', mosaicParams, ...
-            'opticsParams', opticsParams);
+            'opticsParams', opticsParamsForMRGCSTFs);
 
     MosaicPoolingOptimizer.computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
             fullfile(computeReadyMosaicResourcesDirectory, computeReadyMosaicFileName), ...
