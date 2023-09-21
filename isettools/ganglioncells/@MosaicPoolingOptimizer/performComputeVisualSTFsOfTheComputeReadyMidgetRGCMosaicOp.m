@@ -1,6 +1,6 @@
 function performComputeVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams)
 
-    % Ask the user what optics were used for computing compute-ready mosaic
+    % Ask the user what optics were used for computing the compute-ready MRGC mosaic
     fprintf('\n---> Select the optics that were used to compute the compute-ready mosaic\n');
     opticsParamsForComputeReadyMosaic = ...
         MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
@@ -17,7 +17,7 @@ function performComputeVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams
                 'opticsParams', opticsParamsForComputeReadyMosaic, ...
                 'retinalRFmodelParams', retinalRFmodelParams);
   
-    % Now, ask the user what optics to use for computing the input cone
+    % Now, ask the user what optics were used for computing the input cone
     % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
     fprintf('\n---> Select the optics that were used to compute the input cone mosaic STF responses\n');
     [opticsParamsForMRGCSTFs, ~, coneMosaicSTFresponsesFileName] = ...
@@ -26,7 +26,7 @@ function performComputeVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams
     fprintf('\n---> Select the chromaticity that was used to compute the input cone mosaic STF responses\n');
     % Ask the user what stimulus chromaticity to use
     [~, coneMosaicSTFresponsesFileName] = ...
-        MosaicPoolingOptimizer.chooseStimulusChromaticityForInputConeMosaicSTFresponses(coneMosaicSTFresponsesFileName);
+        MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicSTFresponses(coneMosaicSTFresponsesFileName);
 
     % Generate filename for the computed mRGCMosaicSTF responses
     [mRGCMosaicSTFresponsesFileName, resourcesDirectory] = ...

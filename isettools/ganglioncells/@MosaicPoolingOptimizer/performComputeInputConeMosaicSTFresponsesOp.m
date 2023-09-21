@@ -15,7 +15,7 @@ function performComputeInputConeMosaicSTFresponsesOp(mosaicParams)
 
     % Ask the user what stimulus chromaticity to use
     [stimulusChromaticity, coneMosaicSTFresponsesFileName] = ...
-        MosaicPoolingOptimizer.chooseStimulusChromaticityForInputConeMosaicSTFresponses(coneMosaicSTFresponsesFileName);
+        MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicSTFresponses(coneMosaicSTFresponsesFileName);
         
     % Generate and set the optics
     theMidgetRGCMosaic.setTheOptics(opticsParams);
