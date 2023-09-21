@@ -98,7 +98,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                 fprintf('\n\t%s', operationDescriptors{iString});
             end
 
-            if (iString == 5) || (iString == 8) || (iString == 12) || (iString == 16) || (iString == 18)
+            if (iString == 5) || (iString == 8) || (iString == 12) || (iString == 13) || (iString == 16) || (iString == 18)
                 fprintf('\n');
             end
         end
