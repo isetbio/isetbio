@@ -71,7 +71,7 @@ classdef MosaicPoolingOptimizer < handle
         ArbitraryCenter_DoubleExpH1cellIndex4Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex4SurroundWeights';
 
         % Attenuation factor at the high SF regime to determine optimal orientation
-        highSFAttenuationFactorForOptimalOrientation = 0.15;
+        deltaThresholdToDeclareLocalMinInSTF = 0.01;
 
     end % Constants
 
@@ -209,6 +209,9 @@ classdef MosaicPoolingOptimizer < handle
         [DoGparams, theFittedSTF] = fitDifferenceOfGaussiansToSTF(...
              spatialFrequencySupportCPD, theSTF, ...
              RcDegsInitialEstimate, rangeForRc, multiStartsNum);
+
+        % Method to select STF portion to analyze (up to first local min)
+        [sfSupport, theSTF] = stfPortionToAnalyze(sfSupport, theSTF)
 
         % Method to select the highest-extending STF (across a set of STFs
         % measured at different orientations)
