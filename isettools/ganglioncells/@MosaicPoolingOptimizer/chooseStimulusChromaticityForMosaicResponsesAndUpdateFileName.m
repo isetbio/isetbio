@@ -1,5 +1,6 @@
-function [stimulusChromaticity, mosaicSTFresponsesFileName] = ...
-    chooseStimulusChromaticityForMosaicSTFresponses(mosaicSTFresponsesFileName)
+function [stimulusChromaticity, responsesFileName] = ...
+    chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
+    responsesFileName, identifierString)
 
     stimulusChromaticity = 'invalid';
     validChromaticityChoices = {'achromatic', 'Lcone isolating', 'Mcone isolating', 'Scone isolating'};
@@ -19,13 +20,13 @@ function [stimulusChromaticity, mosaicSTFresponsesFileName] = ...
                     % We do not add a chromaticity in the filename if achromatic stimulus was employed - this is the default
                 case 'L'
                     stimulusChromaticity = 'Lcone isolating';
-                    mosaicSTFresponsesFileName = strrep(mosaicSTFresponsesFileName, 'STFresponses', 'LconeIsolatingSTFresponses');
+                    responsesFileName = strrep(responsesFileName, identifierString, sprintf('LconeIsolating%s', identifierString));
                 case 'M'
                     stimulusChromaticity = 'Mcone isolating';
-                    mosaicSTFresponsesFileName = strrep(mosaicSTFresponsesFileName, 'STFresponses', 'MconeIsolatingSTFresponses');
+                    responsesFileName = strrep(responsesFileName, identifierString, sprintf('MconeIsolating%s', identifierString));
                 case 'S'
                     stimulusChromaticity = 'Scone isolating';
-                    mosaicSTFresponsesFileName = strrep(mosaicSTFresponsesFileName, 'STFresponses', 'SconeIsolatingSTFresponses');
+                    responsesFileName = strrep(responsesFileName, identifierString, sprintf('SconeIsolating%s', identifierString));
            end % switch
 
     end % while

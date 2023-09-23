@@ -164,6 +164,7 @@ function run()
         else
             reverseXDir = false;
         end
+        reverseXDir = false;
 
         MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
@@ -203,8 +204,18 @@ function run()
 
     % Perform the visualizeVisualRFmapForTargetRGC operation
     if (operationSetToPerformContains.visualizeVisualRFmapForTargetRGC)
+
+        if (mosaicParams.eccDegs(1)<0)
+            reverseXDir = true;
+        else
+            reverseXDir = false;
+        end
+        reverseXDir = false;
+
         MosaicPoolingOptimizer.performVisualizeVisualRFmapForTargetRGC(mosaicParams, ...
-            'tickSeparationArcMin', tickSeparationArcMin);
+            'tickSeparationArcMin', tickSeparationArcMin, ...
+            'reverseXDir', reverseXDir, ...
+            'gridlessLineWeightingFuncions', true);
         return;
     end
 

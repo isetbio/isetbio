@@ -48,7 +48,8 @@ function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, 
     fprintf('\n---> Select the chromaticity that was used to compute the input cone mosaic STF responses on which the mRGC mosaic STF responses were based on\n');
     % Ask the user what stimulus chromaticity to use
     [~, mRGCMosaicSTFresponsesFileName] = ...
-        MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicSTFresponses(mRGCMosaicSTFresponsesFileName);
+        MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
+            mRGCMosaicSTFresponsesFileName, 'STFresponses');
 
     
     % Get PDF directory

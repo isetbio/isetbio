@@ -26,7 +26,8 @@ function performComputeVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams
     fprintf('\n---> Select the chromaticity that was used to compute the input cone mosaic STF responses\n');
     % Ask the user what stimulus chromaticity to use
     [~, coneMosaicSTFresponsesFileName] = ...
-        MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicSTFresponses(coneMosaicSTFresponsesFileName);
+        MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
+        coneMosaicSTFresponsesFileName, 'STFresponses');
 
     % Generate filename for the computed mRGCMosaicSTF responses
     [mRGCMosaicSTFresponsesFileName, resourcesDirectory] = ...

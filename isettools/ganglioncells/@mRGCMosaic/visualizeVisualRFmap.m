@@ -3,19 +3,16 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     p = inputParser;
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
-    p.addParameter('spatialSupportRangeArcMin', [], @isscalar);
+    p.addParameter('reverseXDir', false, @islogical);
+    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+
     p.parse(varargin{:});
-    ff = p.Results.withFigureFormat;
-    spatialSupportRangeArcMin = p.Results.spatialSupportRangeArcMin;
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    reverseXDir = p.Results.reverseXDir;
+    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
+    ff = p.Results.withFigureFormat;
+    spatialSupportRangeArcMin = tickSeparationArcMin * 4;
 
-    if (isempty(spatialSupportRangeArcMin))
-        spatialSupportRangeArcMin = 10;
-    end
-
-    if (isempty(tickSeparationArcMin))
-        tickSeparationArcMin = 2.0;
-    end
 
      
     % Find the coords of the RF max
@@ -48,37 +45,6 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     surroundBoostedRF = theVisualRFmapStruct.theRFmap;
     surroundBoostedRF(surroundBoostedRF<0) = surroundBoostedRF(surroundBoostedRF<0)*10;
 
-    rfSensitivityLUT = brewermap(1024, '*RdBu');
-    backgroundColor = rfSensitivityLUT(512,:);
-    imagesc(theAxes{1,4}, theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, surroundBoostedRF);
-    axis(theAxes{1,4}, 'image');
-    axis(theAxes{1,4}, 'xy');
-    set(theAxes{1,4}, 'Color', backgroundColor, 'CLim', [-1 1], 'XLim', XLims, 'YLim', YLims, ...
-        'XTick', xyTicks, 'YTick', xyTicks, ...
-        'XTickLabel', sprintf('%2.2f\n', xyTicks), ...
-        'YTickLabel', sprintf('%2.2f\n', xyTicks));
-    colormap(theAxes{1,4},rfSensitivityLUT);
-    xtickangle(theAxes{1,4}, 0);
-    
-
-    % Finalize subplot
-    if (isempty(ff))
-        xlabel(theAxes{1,4}, 'space, x (deg)');
-        title(theAxes{1,4}, 'surround boosted x 10');
-    else
-        xlabel(theAxes{1,4}, 'space, x (deg)', 'FontAngle', ff.axisFontAngle);
-        title(theAxes{1,4}, 'surround boosted (x10)', ...
-            'FontSize', ff.titleFontSize, ...
-            'FontWeight', ff.titleFontWeight, ...
-            'Color', ff.titleColor);
-        % Font size
-        set(theAxes{1,4}, 'FontSize', ff.fontSize);
-
-        % axis color and width
-        set(theAxes{1,4}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
-    end
-
-
     theRFprofileX = squeeze(sum(theVisualRFmapStruct.theRFmap,1));
     theRFprofileY = squeeze(sum(theVisualRFmapStruct.theRFmap,2));
     maxProfile = max([max(abs(theRFprofileX(:))) max(abs(theRFprofileY(:)))]);
@@ -86,99 +52,188 @@ function visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes
     theRFprofileX = circshift(theRFprofileX ,xShiftSamples);
     theRFprofileY = circshift(theRFprofileY ,yShiftSamples);
 
+
     spatialSupportArcMinX = theVisualRFmapStruct.spatialSupportDegsX*60;
     spatialSupportArcMinX = spatialSupportArcMinX - mean(spatialSupportArcMinX);
 
     spatialSupportArcMinY = theVisualRFmapStruct.spatialSupportDegsY*60;
     spatialSupportArcMinY = spatialSupportArcMinY - mean(spatialSupportArcMinY);
 
-    shadedAreaPlot(theAxes{1,2},spatialSupportArcMinX, theRFprofileX/maxProfile, 0, [1 0.85 0.85], [0.7 0 0], 0.5, 1.5);
-    hold(theAxes{1,2}, 'on');
-    plot(theAxes{1,2}, spatialSupportArcMinX, theRFprofileX*0, 'k-', 'LineWidth', 1.0);
 
-    set(theAxes{1,2}, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
-        'XTick', xyTicksArcMin, 'XLim', xyLimsArcMin, ...
-        'XTickLabel', sprintf('%2.1f\n', xyTicksArcMin));
-    axis(theAxes{1,2}, 'square');
-    grid(theAxes{1,2}, 'on');
-    xtickangle(theAxes{1,2}, 0);
+    % Render the RF map
+    render2DVisualRF(theAxes{1,1}, ...
+        theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, ...
+        theVisualRFmapStruct.theRFmap,  ...
+        xyTicks, XLims, YLims, reverseXDir, [], false, ff);
 
-    % Finalize subplot
-    if (isempty(ff))
-        xlabel(theAxes{1,2}, 'space, x (arc min)');
-        ylabel(theAxes{1,2}, 'sensitivity');
+    render1DProfile(theAxes{1,2}, spatialSupportArcMinX, theRFprofileX/maxProfile, ...
+        xyTicksArcMin, xyLimsArcMin, reverseXDir, gridlessLineWeightingFuncions, ff);
 
-    else
-        xlabel(theAxes{1,2}, 'space, x (arc min)', 'FontAngle', ff.axisFontAngle);
-        ylabel(theAxes{1,2}, 'sensitivity', 'FontAngle', ff.axisFontAngle);
 
-        % Font size
-        set(theAxes{1,2}, 'FontSize', ff.fontSize);
+    render1DProfile(theAxes{1,3}, spatialSupportArcMinY, theRFprofileY/maxProfile, ...
+        xyTicksArcMin, xyLimsArcMin, reverseXDir, gridlessLineWeightingFuncions, ff);
 
-        % axis color and width
-        set(theAxes{1,2}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
-    end
+    % Render the surround boosted RFmap
+    render2DVisualRF(theAxes{1,4}, ...
+        theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, ...
+        surroundBoostedRF,  ...
+        xyTicks, XLims, YLims, reverseXDir, 'surround boosted (x10)', true, ff);
 
-    shadedAreaPlot(theAxes{1,3},spatialSupportArcMinX, theRFprofileY/maxProfile, 0, [1 0.85 0.85], [0.7 0 0], 0.5, 1.5);
-    hold(theAxes{1,3}, 'on');
-    plot(theAxes{1,3}, spatialSupportArcMinY, theRFprofileY*0, 'k-', 'LineWidth', 1.0);
+    drawnow;
 
-    set(theAxes{1,3}, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
+
+    % ============== Export to PLOS directory ==========================
+    rawFiguresRoot = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/Raw';
+
+
+    % The visual RF map
+    pdfFileName = sprintf('InterpolatedRGC_VisualRFmap');
+
+    hFig = figure(100); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    thePLOSAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = thePLOSAxes{1,1};
+
+    render2DVisualRF(ax, ...
+        theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, ...
+        theVisualRFmapStruct.theRFmap,  ...
+        xyTicks, XLims, YLims, reverseXDir, [], false, ff);
+
+
+    pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileName);
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+
+    % The visual RF map profile X
+    pdfFileName = sprintf('InterpolatedRGC_VisualRFprofileX');
+
+    hFig = figure(200); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    thePLOSAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = thePLOSAxes{1,1};
+
+    render1DProfile(ax, spatialSupportArcMinX, theRFprofileX/maxProfile, ...
+        xyTicksArcMin, xyLimsArcMin, reverseXDir, gridlessLineWeightingFuncions, ff);
+
+    pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileName);
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+
+    % The visual RF map profile Y
+    pdfFileName = sprintf('InterpolatedRGC_VisualRFprofileY');
+
+    hFig = figure(300); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    thePLOSAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
+    ax = thePLOSAxes{1,1};
+
+    render1DProfile(ax, spatialSupportArcMinY, theRFprofileY/maxProfile, ...
+        xyTicksArcMin, xyLimsArcMin, reverseXDir, gridlessLineWeightingFuncions, ff);
+
+    pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileName);
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+
+end
+
+function render1DProfile(ax, spatialSupportArcMinX, theRFprofile, ...
+        xyTicksArcMin, xyLimsArcMin, reverseXDir, gridlessLineWeightingFuncions, ff)
+
+    shadedAreaPlot(ax,spatialSupportArcMinX, theRFprofile, 0, [1 0.85 0.85], [0.7 0 0], 0.5, 1.5);
+    hold(ax, 'on');
+    plot(ax, spatialSupportArcMinX, theRFprofile*0, 'k-', 'LineWidth', 1.0);
+
+    
+    set(ax, 'YLim', [-0.4 1], 'YTick', -1:0.2:1, ...
         'XTick', xyTicksArcMin, 'XLim', xyLimsArcMin, ...
         'XTickLabel', sprintf('%2.1f\n', xyTicksArcMin), ...
         'YTickLabel', {});
+    axis(ax, 'square');
 
-    axis(theAxes{1,3}, 'square');
-    grid(theAxes{1,3}, 'on');
-    xtickangle(theAxes{1,3}, 0);
+    if (gridlessLineWeightingFuncions)
+        grid(ax, 'off');
+    else
+        grid(ax, 'on');
+    end
+    box(ax, 'on');
+    
+    xtickangle(ax, 0);
+
+    if (reverseXDir)
+        set(ax, 'XDir', 'reverse');
+    end
 
     % Finalize subplot
     if (isempty(ff))
-        xlabel(theAxes{1,3}, 'space, y (arc min)');
+        xlabel(ax, 'space, x (arc min)');
     else
-        xlabel(theAxes{1,3}, 'space, y (arc min)', 'FontAngle', ff.axisFontAngle);
+        xlabel(ax, 'space, x (arc min)', 'FontAngle', ff.axisFontAngle);
 
         % Font size
-        set(theAxes{1,3}, 'FontSize', ff.fontSize);
+        set(ax, 'FontSize', ff.fontSize);
 
         % axis color and width
-        set(theAxes{1,3}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+        set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
     end
+end
 
+function render2DVisualRF(ax, ...
+        spatialSupportDegsX, spatialSupportDegsY, ...
+        RFmap,  ...
+        xyTicks, XLims, YLims, reverseXDir, plotTitle, noYLabel,  ff)
 
-    
-    imagesc(theAxes{1,1}, theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, theVisualRFmapStruct.theRFmap);
-    hold(theAxes{1,1}, 'on');
-    contour(theAxes{1,1}, theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, theVisualRFmapStruct.theRFmap, ...
+    rfSensitivityLUT = brewermap(1024, '*RdBu');
+    backgroundColor = rfSensitivityLUT(512,:);
+    imagesc(ax, spatialSupportDegsX, spatialSupportDegsY, RFmap);
+
+    hold(ax, 'on');
+    contour(ax, spatialSupportDegsX, spatialSupportDegsY, RFmap, ...
         exp(-1)*[0.99 1], 'LineWidth', 1.0, 'Color', [0 0 0]);
-    contour(theAxes{1,1}, theVisualRFmapStruct.spatialSupportDegsX, theVisualRFmapStruct.spatialSupportDegsY, theVisualRFmapStruct.theRFmap, ...
+    contour(ax, spatialSupportDegsX, spatialSupportDegsY, RFmap, ...
         -0.01*[0.99 1], 'LineWidth', 1.0, 'LineStyle', ':', 'Color', [0 0 0]);
-    axis(theAxes{1,1}, 'image');
-    axis(theAxes{1,1}, 'xy');
-    colormap(theAxes{1,1},rfSensitivityLUT);
-    set(theAxes{1,1}, 'Color', backgroundColor, 'CLim', [-1 1], 'XLim', XLims, 'YLim', YLims, ...
+
+    axis(ax, 'image');
+    axis(ax, 'xy');
+    set(ax, 'Color', backgroundColor, 'CLim', [-1 1], 'XLim', XLims, 'YLim', YLims, ...
         'XTick', xyTicks, 'YTick', xyTicks, ...
         'XTickLabel', sprintf('%2.2f\n', xyTicks), ...
         'YTickLabel', sprintf('%2.2f\n', xyTicks));
-    xtickangle(theAxes{1,1}, 0);
+    colormap(ax,rfSensitivityLUT);
+    xtickangle(ax, 0);
+    
+    if (reverseXDir)
+        set(ax, 'XDir', 'reverse');
+    end
+
 
     % Finalize subplot
     if (isempty(ff))
-        xlabel(theAxes{1,1}, 'space, x (deg)');
-        ylabel(theAxes{1,1}, 'space, y (deg)');
-
+        xlabel(ax, 'space, x (deg)');
+        if (~noYLabel)
+            ylabel(ax, 'space, y (deg)');
+        end
     else
-        xlabel(theAxes{1,1}, 'space, x (deg)', 'FontAngle', ff.axisFontAngle);
-        ylabel(theAxes{1,1}, 'space, y (deg)', 'FontAngle', ff.axisFontAngle);
+        xlabel(ax, 'space, x (deg)', 'FontAngle', ff.axisFontAngle);
+        if (~noYLabel)
+            ylabel(ax, 'space, y (deg)', 'FontAngle', ff.axisFontAngle);
+        end
+
+        if (~isempty(plotTitle))
+        title(ax, 'surround boosted (x10)', ...
+            'FontSize', ff.titleFontSize, ...
+            'FontWeight', ff.titleFontWeight, ...
+            'Color', ff.titleColor);
+        end
 
         % Font size
-        set(theAxes{1,1}, 'FontSize', ff.fontSize);
+        set(ax, 'FontSize', ff.fontSize);
 
         % axis color and width
-        set(theAxes{1,1}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+        set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
     end
-
-    drawnow;
 end
 
 

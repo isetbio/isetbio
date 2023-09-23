@@ -438,9 +438,11 @@ classdef MosaicPoolingOptimizer < handle
             chooseOpticsForInputConeMosaicSTFresponses(mosaicParams, varargin);
 
         % Method to ask the user what stimulus chromaticity to use for
-        % computing the mosaic STF responses
-        [stimulusChromaticity, mosaicSTFresponsesFileName] = ...
-            chooseStimulusChromaticityForMosaicSTFresponses(mosaicSTFresponsesFileName);
+        % computing the mosaicResponses and update the
+        % mosaicResponsesFilename accordingly
+        [stimulusChromaticity, mosaicResponsesFileName] = ...
+            chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
+                 mosaicResponsesFileName, identifierString);
 
         % Method to ask the user which H1 cell index to use for optimizing
         % the RF surround cone pooling model
