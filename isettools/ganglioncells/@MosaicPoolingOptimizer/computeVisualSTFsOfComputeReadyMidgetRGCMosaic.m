@@ -10,15 +10,17 @@ function computeVisualSTFsOfComputeReadyMidgetRGCMosaic(...
          'orientationsTested', 'spatialFrequenciesTested', ...
          'spatialPhasesDegs', 'coneContrasts');
 
-    fprintf('MRGC mosaic STF responses will be saved to %s \n', mRGCMosaicSTFresponsesFilename);
+    fprintf('Will generate mRGCMosaic STF responses based on coneMosaic STF responses in %s\n', coneMosaicSTFresponsesFilename);
+    fprintf('The computed mRGCMosaic STF responses will be saved to %s \n', mRGCMosaicSTFresponsesFilename);
 
     % Transform cone excitation responses to cone modulation responses
-    coneIndicesWithZeroNullResponse = find(theConeMosaicNullResponses== 0);
+    coneIndicesWithZeroNullResponse = find(theConeMosaicNullResponses == 0);
     normalizingResponses = 1./theConeMosaicNullResponses;
     normalizingResponses(coneIndicesWithZeroNullResponse) = 0;
     normalizingResponses = reshape(normalizingResponses, [1 1 numel(normalizingResponses)]);
 
-    % Compute cone mosaic modulation responses
+    % Compute cone mosaic **modulation** responses from the cone mosaic
+    % **excitation** responses
     theConeMosaicModulationSTFresponses = 0 * theConeMosaicSTFresponses;
     for iOri = 1:numel(orientationsTested)
         theConeMosaicModulationSTFresponses(iOri,:,:,:) = ...

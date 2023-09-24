@@ -24,43 +24,37 @@ function [theOptimalSTF, theSTFsAcrossAllOrientations, theHighestExtensionOrient
 end
 
         
-function [theHighestExtensionSTF,theMeasuredSTFs, theHighestExtensionOrientation] = highestExtensionSTF(...
+function [theHighestExtensionSTF, theMeasuredSTFs, theHighestExtensionOrientation] = highestExtensionSTF(...
     orientationsTested, spatialFrequenciesTested, theMeasuredSTFs)
 
     theMeasuredSTFs = theMeasuredSTFs / max(theMeasuredSTFs(:));
 
     % Determine the orientation that maximizes the STF extension to high spatial frequencies
     maxSF = nan(1,numel(orientationsTested));
-    spatialFrequenciesInterpolated = linspace(spatialFrequenciesTested(1),spatialFrequenciesTested(end), 50);
-
+    
     for iOri = 1:numel(orientationsTested)
-        % Find spatial frequency at which STF drops to 20% of max
-        theSTFatThisOri = squeeze(theMeasuredSTFs(iOri,:));
-        theSTFatThisOriInterpolated = interp1(spatialFrequenciesTested, theSTFatThisOri, spatialFrequenciesInterpolated);
-        [mag, iSFpeak] = max(theSTFatThisOri);
-        thresholdSTF = mag * MosaicPoolingOptimizer.highSFAttenuationFactorForOptimalOrientation;
+        % Find spatial frequency at which STF drops to  max x
+        % MosaicPoolingOptimizer.highSFAttenuationFactorForOptimalOrientation
+        theSTFatThisOrientation = squeeze(theMeasuredSTFs(iOri,:));
+        
+        % Only fit the part of the STF that contains the main peak
+        [spatialFrequenciesToAnalyze, theSTFtoAnalyze{iOri}] = ...
+            MosaicPoolingOptimizer.stfPortionToAnalyze(spatialFrequenciesTested, theSTFatThisOrientation);
 
-        ii = iSFpeak;
-        keepGoing = true; iStop = [];
-        while (ii < numel(spatialFrequenciesInterpolated)-1)&&(keepGoing)
-            ii = ii + 1;
-            if (theSTFatThisOriInterpolated(ii)>=thresholdSTF) && (theSTFatThisOriInterpolated(ii+1)<thresholdSTF)
-                keepGoing = false;
-                iStop = ii;
-            end
-        end % while
-        if (~isempty(iStop))
-            maxSF(iOri) = spatialFrequenciesInterpolated(iStop);
-        end
-    end % iOri
-
-    % Best orientation
-    if (any(isnan(maxSF)))
-        theSTFatTheHighestSF = squeeze(theMeasuredSTFs(:,end));
-        [~, iBestOri] = max(theSTFatTheHighestSF(:));
-    else
-        [~, iBestOri] = max(maxSF);
+        maxSF(iOri) = max(spatialFrequenciesToAnalyze);
     end
-    theHighestExtensionSTF = squeeze(theMeasuredSTFs(iBestOri,:));
-    theHighestExtensionOrientation = orientationsTested(iBestOri);
+
+    idx = find(maxSF == max(maxSF));
+    for i = 1:numel(idx)
+         theSTF = theSTFtoAnalyze{iOri};
+         maxSTF(i) = max(theSTF);
+    end
+
+    [~,idx2] = max(maxSTF);
+
+    bestOri = idx(idx2);
+    theHighestExtensionSTF = squeeze(theMeasuredSTFs(bestOri,:));
+    theHighestExtensionOrientation = orientationsTested(bestOri);
 end
+
+

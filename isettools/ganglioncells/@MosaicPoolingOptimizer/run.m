@@ -17,6 +17,7 @@ function run()
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
 
+  
     % Perform the generateRGCMosaic operation
     if (operationSetToPerformContains.generateCenterConnectedRGCMosaic)
         if (isfield(mosaicParams, 'maxConeInputsPerRGCToConsiderTransferToNearbyRGCs'))
@@ -163,6 +164,7 @@ function run()
         else
             reverseXDir = false;
         end
+        reverseXDir = false;
 
         MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
@@ -188,13 +190,16 @@ function run()
     % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
 
+        recomputeRFs = ~true;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
         MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...
             'maxSFcyclesPerDegree', mosaicParams.subspaceRFmappingParams.maxSFcyclesPerDegree, ...
             'stimSizeDegs', mosaicParams.subspaceRFmappingParams.stimSizeDegs, ....
             'posIncrementDegs', mosaicParams.subspaceRFmappingParams.posIncrementDegs, ...
-            'reComputeInputConeMosaicSubspaceRFmappingResponses', ~true, ...
-            'reComputeMRGCMosaicSubspaceRFmappingResponses', ~true, ...
-            'reComputeRFs', ~true, ...
+            'reComputeInputConeMosaicSubspaceRFmappingResponses', reComputeInputConeMosaicSubspaceRFmappingResponses, ...
+            'reComputeMRGCMosaicSubspaceRFmappingResponses', reComputeMRGCMosaicSubspaceRFmappingResponses, ...
+            'reComputeRFs', recomputeRFs, ...
             'onlyVisualizeOptimallyMappedRFmaps', true);
         
         return;
@@ -202,8 +207,24 @@ function run()
 
     % Perform the visualizeVisualRFmapForTargetRGC operation
     if (operationSetToPerformContains.visualizeVisualRFmapForTargetRGC)
+
+        if (mosaicParams.eccDegs(1)<0)
+            reverseXDir = true;
+        else
+            reverseXDir = false;
+        end
+        reverseXDir = false;
+
         MosaicPoolingOptimizer.performVisualizeVisualRFmapForTargetRGC(mosaicParams, ...
-            'tickSeparationArcMin', tickSeparationArcMin);
+            'tickSeparationArcMin', tickSeparationArcMin, ...
+            'reverseXDir', reverseXDir, ...
+            'gridlessLineWeightingFuncions', true);
         return;
     end
+
+   
+    if (operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF)
+        MosaicPoolingOptimizer.performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF()
+    end
+
 end

@@ -4,10 +4,13 @@ function [DoGparams, theFittedSTF] = fitDifferenceOfGaussiansToSTF(...
     normFactor = max(theSTF(:));
     theSTF = theSTF / normFactor;
 
+    % Only fit the part of the STF that contains the main peak
+    [spatialFrequencySupportCPDtoFit, theSTFtoFit] = MosaicPoolingOptimizer.stfPortionToAnalyze(spatialFrequencySupportCPD, theSTF);
+
     % DoG param initial values and limits: center gain, kc
     Kc = struct(...    
         'low', 0.1, ...
-        'high', 1e4, ...
+        'high', 1e5, ...
         'initial', 1);
 
     % DoG param initial values and limits: Ks/Kc ratio
@@ -43,12 +46,13 @@ function [DoGparams, theFittedSTF] = fitDifferenceOfGaussiansToSTF(...
      DoGparams.scaling       = {'log',       'log',           'linear',         'linear'};
      
      % The DoG model in the frequency domain
-     DoGSTF = @(params,spatialFrequencySupportCPD)(...
-                    abs(params(1)       * ( pi * params(4)^2             * exp(-(pi*params(4)*spatialFrequencySupportCPD).^2) ) - ...
-                    params(1)*params(2) * ( pi * (params(4)*params(3))^2 * exp(-(pi*params(4)*params(3)*spatialFrequencySupportCPD).^2) )));
+     DoGSTF = @(params,spatialFrequency)(...
+                    abs(params(1)       * ( pi * params(4)^2             * exp(-(pi*params(4)*spatialFrequency).^2) ) - ...
+                    params(1)*params(2) * ( pi * (params(4)*params(3))^2 * exp(-(pi*params(4)*params(3)*spatialFrequency).^2) )));
         
      % The optimization objective
-     objective = @(p) sum((DoGSTF(p, spatialFrequencySupportCPD) - theSTF).^2);
+     weights = 1 + 0./spatialFrequencySupportCPDtoFit;
+     objective = @(p) sum((weights .* (DoGSTF(p, spatialFrequencySupportCPDtoFit) - theSTFtoFit)).^2);
 
      % Ready to fit
      options = optimset(...
@@ -76,6 +80,7 @@ function [DoGparams, theFittedSTF] = fitDifferenceOfGaussiansToSTF(...
      % Run the multi-start
      DoGparams.finalValues = run(ms, problem, multiStartsNum);
 
+    
      % Account for normalizationFactor
      DoGparams.finalValues(1) = ...
          DoGparams.finalValues(1) * normFactor;
@@ -90,4 +95,18 @@ function [DoGparams, theFittedSTF] = fitDifferenceOfGaussiansToSTF(...
      theFittedSTF.centerSTFHiRes = DoGparams.finalValues(1) * ( pi * DoGparams.finalValues(4)^2 * exp(-(pi*DoGparams.finalValues(4)*sfHiRes).^2) );
      theFittedSTF.surroundSTFHiRes = DoGparams.finalValues(1)*DoGparams.finalValues(2) * ( pi * (DoGparams.finalValues(4)*DoGparams.finalValues(3))^2 * exp(-(pi*DoGparams.finalValues(4)*DoGparams.finalValues(3)*sfHiRes).^2) );
 
-end
+     % figure(1); clf;
+     % plot(spatialFrequencySupportCPD, theSTF, 'ks');
+     % hold on
+     % plot(spatialFrequencySupportCPDtoFit, theSTFtoFit, 'b.');
+     % set(gca, 'XScale', 'log', 'XLim', [0.1 100]);
+     % plot(theFittedSTF.sfHiRes, theFittedSTF.compositeSTFHiRes, 'r-')   
+     % drawnow
+
+     % DoGparams.lowerBounds(1)
+     % DoGparams.finalValues(1)
+     % DoGparams.upperBounds(1)
+     % DoGparams.lowerBounds(2:end)
+     % DoGparams.finalValues(2:end)
+     % DoGparams.upperBounds(2:end)
+     % pause

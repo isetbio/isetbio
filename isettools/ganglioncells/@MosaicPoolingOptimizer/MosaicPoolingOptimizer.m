@@ -71,7 +71,7 @@ classdef MosaicPoolingOptimizer < handle
         ArbitraryCenter_DoubleExpH1cellIndex4Surround = 'arbitraryCenterConeWeights_doubleExpH1cellIndex4SurroundWeights';
 
         % Attenuation factor at the high SF regime to determine optimal orientation
-        highSFAttenuationFactorForOptimalOrientation = 0.15;
+        deltaThresholdToDeclareLocalMinInSTF = 0.01;
 
     end % Constants
 
@@ -210,6 +210,9 @@ classdef MosaicPoolingOptimizer < handle
              spatialFrequencySupportCPD, theSTF, ...
              RcDegsInitialEstimate, rangeForRc, multiStartsNum);
 
+        % Method to select STF portion to analyze (up to first local min)
+        [sfSupport, theSTF] = stfPortionToAnalyze(sfSupport, theSTF)
+
         % Method to select the highest-extending STF (across a set of STFs
         % measured at different orientations)
         [theOptimalSTF,theSTFsAcrossAllOrientations, theOptimalOrientation] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
@@ -261,8 +264,16 @@ classdef MosaicPoolingOptimizer < handle
             computeReadyMosaicFilename, mRGCMosaicSTFresponsesFilename, pdfFileName, ...
             targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType, varargin);
 
-        % Method to visualize the visual RF map for a target RGC
-        visualizeVisualRFmapForTargetRGC(...
+        % Method to visualize the visual RF map computed via some way, such
+        % as subspace mapping. The VisualRFmapStruct must contain the
+        % following fields:
+        % 'spatialSupportDegsX'   - vector
+        % 'spatialSupportDegsY'   - vector
+        % 'theRFmap'              - matrix 
+        visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes, varargin);
+
+        % Method to retrieve a subspace RF map for a target RGC
+        retrieveAndVisualizeSubspaceRFmapForTargetRGC(...
             theComputeReadyMRGCmosaic, ...
             optimallyMappedSubspaceRFmapsFileName, ...
             targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType, ...
@@ -278,7 +289,7 @@ classdef MosaicPoolingOptimizer < handle
         % Method to setup the parameters and the display for conducting an
         % STF mapping experiment.
         [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputConeMosaic, ...
-            sceneFOVdegs, retinalImageResolutionDegs);
+            sceneFOVdegs, retinalImageResolutionDegs, stimulusChromaticity);
 
 
         % Method to compute visualSTF responses of a cone mosaic under
@@ -423,13 +434,23 @@ classdef MosaicPoolingOptimizer < handle
         % Method to perform the VisualizeVisualRFmapForTargetRGC
         performVisualizeVisualRFmapForTargetRGC(mosaicParams, varargin);
 
+        % Method to perform the ComputeVisualRFmapsOfRFcenterSubregions
+        performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF(varargin);
+
         % Method to ask the user which mRGC mosaic to use for computing
         [mosaicEcc, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse();
         
         % Method to ask the user which opticsParams to use for computing
-        % the inputConeMosaic STF responses
-        [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
+        % the input cone mosaic STF responses
+        [opticsParams, opticsToEmploy, inputConeMosaicSTFresponsesFileName] = ...
             chooseOpticsForInputConeMosaicSTFresponses(mosaicParams, varargin);
+
+        % Method to ask the user what stimulus chromaticity to use for
+        % computing the mosaicResponses and update the
+        % mosaicResponsesFilename accordingly
+        [stimulusChromaticity, mosaicResponsesFileName] = ...
+            chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
+                 mosaicResponsesFileName, identifierString);
 
         % Method to ask the user which H1 cell index to use for optimizing
         % the RF surround cone pooling model

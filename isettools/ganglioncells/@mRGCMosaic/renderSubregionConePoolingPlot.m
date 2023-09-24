@@ -105,7 +105,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
             case cMosaic.LCONE_ID
                 coneColor = [1 0 0];
             case cMosaic.MCONE_ID
-                coneColor = [0 1 0];
+                coneColor = [0 0.75 0];
             case cMosaic.SCONE_ID
                 coneColor = [0 0 1];
         end

@@ -8,11 +8,16 @@ function performComputeInputConeMosaicSTFresponsesOp(mosaicParams)
     % Load the generated center-only connected mRGCmosaic
     load(fullfile(resourcesDirectory,mosaicFileName), 'theMidgetRGCMosaic');
 
-    % Ask the user about what optics to use for computing the input cone
+    % Ask the user what optics to use for computing the input cone
     % mosaic STF responses
     [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
         MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
+    % Ask the user what stimulus chromaticity to use
+    [stimulusChromaticity, coneMosaicSTFresponsesFileName] = ...
+        MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
+        coneMosaicSTFresponsesFileName, 'STFresponses');
+        
     % Generate and set the optics
     theMidgetRGCMosaic.setTheOptics(opticsParams);
 
@@ -30,13 +35,15 @@ function performComputeInputConeMosaicSTFresponsesOp(mosaicParams)
     % Positioned at the mosaic's center
     gridNodeIndex = [];
 
+
     % Generate and save the input cone mosaic STF responses
     theMosaicPoolingOptimizerOBJ.generateInputConeMosaicSTFresponses(...
             gridNodeIndex, stimSizeDegs, ...
             coneMosaicSTFresponsesFileName, ...
             'useParfor', ~true, ...
-            'visualizedResponses', ~true, ...
-             'opticsToEmploy', opticsToEmploy);
+            'visualizedResponses', true, ...
+            'opticsToEmploy', opticsToEmploy, ...
+            'stimulusChromaticity', stimulusChromaticity);
 
 
     % Alternatively, we could do this at different grid locations

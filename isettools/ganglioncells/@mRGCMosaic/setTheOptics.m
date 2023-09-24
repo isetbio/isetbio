@@ -9,7 +9,11 @@ function setTheOptics(obj, opticsParams)
         % Save the native optics params and the native optics
         obj.theNativeOpticsParams = dataOut.opticsParams;
         obj.theNativeOptics = dataOut.theOptics;
-        fprintf('Generated native optics at mosaic''s center\n');
+        if (opticsParams.examinedSubjectRankOrder == 0)
+            fprintf('Generated AO optics at mosaic''s center\n');
+        else
+            fprintf('Generated native optics at mosaic''s center\n');
+        end
     else
         obj.theCustomOpticsParams = dataOut.opticsParams;
         obj.theCustomOptics = dataOut.theOptics;

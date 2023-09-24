@@ -1,10 +1,27 @@
 function [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputConeMosaic, ...
-        sceneFOVdegs, retinalImageResolutionDegs)
+        sceneFOVdegs, retinalImageResolutionDegs, stimulusChromaticity)
 
     wavelengthSupport = inputConeMosaic.wave;
 
+    switch (stimulusChromaticity)
+        case 'achromatic'
+            coneContrasts = [1 1 1];
+            contrast = 0.75;
+        case 'Lcone isolating'
+            coneContrasts = [1 0 0];
+            contrast = 0.12;
+        case 'Mcone isolating'
+            coneContrasts = [0 1 0];
+            contrast = 0.12;
+       case 'Scone isolating'
+            coneContrasts = [0 0 1];
+            contrast = 0.5;
+        otherwise
+            error('Unknown stimulus chromaticity: ''%s''.', stimulusChromaticity);
+    end
+
     viewingDistanceMeters = 4;
-    coneContrasts = [1 1 1];
+
     deltaOri = 15;
     orientationsTested = 0:deltaOri:(180-deltaOri);
     spatialFrequenciesTested = [0.25 0.5 1 2 4 6 8 12 16 20 24 32 48 64];
@@ -45,7 +62,7 @@ function [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputC
             'backgroundLuminanceCdM2', 50.0, ...
             'backgroundChromaticity', [0.301 0.301], ...
             'coneContrasts', coneContrasts, ...
-            'contrast', 0.75, ...
+            'contrast', contrast, ...
             'orientationsTested', orientationsTested, ...
             'spatialFrequenciesTested', spatialFrequenciesTested, ...
             'orientationDegs', 0, ...
