@@ -328,14 +328,6 @@ classdef mRGCMosaic < handle
 
     % Static methods
     methods (Static)
-        % Method to visualize the visual RF map computed via some way, such
-        % as subspace mapping. The VisualRFmapStruct must contain the
-        % following fields:
-        % 'spatialSupportDegsX'   - vector
-        % 'spatialSupportDegsY'   - vector
-        % 'theRFmap'              - matrix 
-        visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes, varargin);
-
         % Method to render the cone pooling plot with a subregion based on
         % the cone indices and weights pooled by that subregion and return
         % the X,Y line weighting functions for that subregion

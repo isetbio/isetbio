@@ -169,4 +169,11 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
     pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileNameYineWeightingFunctions);
     NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFigLineWeightingFunctionsY, 300);
 
+    % Generate paper-ready figures (scaled versions of the figures i
+    % nrawFiguresRoot directory) which are stored in the PaperReady folder
+    PLOSdirectory = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode';
+    commandString = sprintf('%s/cpdf -args %s/generatePLOSOnePaperReadyFigures.txt', PLOSdirectory, PLOSdirectory);
+    system(commandString);
+
+
 end
