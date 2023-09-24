@@ -28,6 +28,13 @@ function opticsSubjectDataBaseDropdown(app, direction, value)
                     maxSubjectRank = app.opticsParams.maxArtalSubjectRank;
                     % Data for both eyes exist, so enable eye switch
                     app.roiEyeSwitch.Enable = 'on';
+
+
+               case 'Thibos2002'
+                    maxSubjectRank = app.opticsParams.maxThibosSubjectRank;
+                    % Data for both eyes exist, so enable eye switch
+                    app.roiEyeSwitch.Enable = 'on';
+
                 otherwise
                     error('Unknown Zernike data set: ''%s''.', app.opticsParams.subjectDataset)
             end
