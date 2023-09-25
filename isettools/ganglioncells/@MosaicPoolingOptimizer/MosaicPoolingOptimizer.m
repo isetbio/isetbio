@@ -312,6 +312,9 @@ classdef MosaicPoolingOptimizer < handle
                 computeReadyMosaicFilename, ...
                 mRGCMosaicSTFresponsesFilename);
 
+        % Method to inspect the DoG model fits to measured STFs
+        inspectDoGmodelFitsToMeasuredSTFs(computeReadyMosaicFilename, mRGCMosaicSTFresponsesFilename);
+
         % Method to visualize the fitted the visualSTF of the compute-ready MRGCmosaic
         visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic(...
                 computeReadyMosaicFilename, ...
