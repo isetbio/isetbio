@@ -18,7 +18,7 @@ function opticsSubjectDataBaseDropdown(app, direction, value)
                         app.roiParams.whichEye = 'right eye';
                         app.roiEyeSwitch.Value = 'right eye';
                         app.coneMosaicParams.whichEye = 'right eye';
-                        
+                        app.opticsPupilSizeSpinner.Limits = [1 4];
                         CSFGeneratorApp.generate.processingPipeline(app, 'Generating new processing pipeline');
                         CSFGeneratorApp.render.coneMosaicView(app, 'update');
                         CSFGeneratorApp.render.roiView(app, 'update');
@@ -28,12 +28,14 @@ function opticsSubjectDataBaseDropdown(app, direction, value)
                     maxSubjectRank = app.opticsParams.maxArtalSubjectRank;
                     % Data for both eyes exist, so enable eye switch
                     app.roiEyeSwitch.Enable = 'on';
+                    app.opticsPupilSizeSpinner.Limits = [1 4];
 
 
                case 'Thibos2002'
                     maxSubjectRank = app.opticsParams.maxThibosSubjectRank;
                     % Data for both eyes exist, so enable eye switch
                     app.roiEyeSwitch.Enable = 'on';
+                    app.opticsPupilSizeSpinner.Limits = [1 7.5];
 
                 otherwise
                     error('Unknown Zernike data set: ''%s''.', app.opticsParams.subjectDataset)

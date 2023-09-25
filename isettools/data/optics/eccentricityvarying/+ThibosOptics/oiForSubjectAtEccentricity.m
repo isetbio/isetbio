@@ -5,10 +5,11 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     % Parse input
     p = inputParser;
     p.addRequired('subjectID', @(x)(isscalar(x)&&(x>=0)&&(x<=130)));
-    p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{ArtalOptics.constants.rightEye, ArtalOptics.constants.leftEye}))));
-    p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=7.5)));
+    p.addRequired('whichEye', @(x)(ischar(x)&&(ismember(x,{ThibosOptics.constants.rightEye, ThibosOptics.constants.leftEye}))));
+    p.addRequired('pupilDiamMM', @(x)(isscalar(x)&&(x>=1)&&(x<=max(ThibosOptics.constants.availableMeasurementPupilDiamsMM))));
     p.addRequired('wavelengthsListToCompute', @(x)(isnumeric(x)));
     p.addRequired('micronsPerDegree', @(x)(isscalar(x)));
+    p.addParameter('measurementPupilDiameterMM', ThibosOptics.constants.measurementPupilDiamMM,  @(x)(isscalar(x) && ismember(x, ThibosOptics.constants.availableMeasurementPupilDiamsMM)));
     p.addParameter('inFocusWavelength', 550, @isscalar);
     p.addParameter('wavefrontSpatialSamples', 801, @isscalar)
     p.addParameter('subtractCentralRefraction', true, @islogical);
@@ -20,6 +21,7 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     p.parse(subjectID, whichEye, pupilDiamMM, wavelengthsListToCompute, micronsPerDegree, varargin{:});
   
 
+    measurementPupilDiameterMM = p.Results.measurementPupilDiameterMM;
     inFocusWavelength = p.Results.inFocusWavelength;
     wavefrontSpatialSamples = p.Results.wavefrontSpatialSamples;
     subtractCentralRefraction = p.Results.subtractCentralRefraction;
@@ -33,14 +35,12 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
     refractiveErrorMicrons = wvfDefocusDioptersToMicrons(refractiveErrorDiopters, pupilDiamMM);
    
     % Obtain z-coeffs
-    zCoeffs = zCoeffsForSubject(subjectID, whichEye, subtractCentralRefraction, refractiveErrorMicrons);
+    zCoeffs = zCoeffsForSubject(subjectID, whichEye, measurementPupilDiameterMM, subtractCentralRefraction, refractiveErrorMicrons);
 
     if (subjectID == 0)
         % Subject ID is a special case: diffraction-limited optics  possibly with some
         % refractive error (see zCoeffsForSubject)
         measurementPupilDiameterMM = pupilDiamMM;
-    else
-        measurementPupilDiameterMM = ThibosOptics.constants.measurementPupilDiamMM;
     end
 
     if (isempty(zCoeffs))
@@ -72,10 +72,10 @@ function [theOI, thePSF, psfSupportMinutesX, psfSupportMinutesY, psfSupportWavel
 end
 
 
-function zCoeffs = zCoeffsForSubject(subjectID, whichEye, subtractCentralRefraction, refractiveErrorMicrons)
+function zCoeffs = zCoeffsForSubject(subjectID, whichEye, measPupilDiameterMM, subtractCentralRefraction, refractiveErrorMicrons)
 
     % Load the Z-coeffs for all subjects
-    [~, ~, subject_coeffs] = wvfLoadThibosVirtualEyes(ThibosOptics.constants.measurementPupilDiamMM);
+    [~, ~, subject_coeffs] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
     
     if (strcmp(whichEye, ThibosOptics.constants.rightEye))
         zCoeffs = subject_coeffs.rightEye;
