@@ -453,7 +453,7 @@ classdef MosaicPoolingOptimizer < handle
         % mosaicResponsesFilename accordingly
         [stimulusChromaticity, mosaicResponsesFileName] = ...
             chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
-                 mosaicResponsesFileName, identifierString);
+                 mosaicResponsesFileName, identifierString, varargin);
 
         % Method to ask the user which H1 cell index to use for optimizing
         % the RF surround cone pooling model

@@ -7,20 +7,20 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     operationDescriptors{5}  = '[ 5] inputConeMosaic visualization       : Visualize visually-projected cone Rc';
 
     operationDescriptors{6}  = '[ 6] mRGCMosaic generation (step G3)     : Optimize surround cone pooling models using the input cone mosaic STF responses. (NOTE: This step takes a long time) ';
-    operationDescriptors{7}  = '[ 7] mRGCMosaic visualization            : Inspect optimized cone pooling kernels for a single mosaic';
-    operationDescriptors{8}  = '[ 8] mRGCMosaic visualization            : Summarize optimized cone pooling kernels across multiple mosaics';
+    operationDescriptors{7}  = '[ 7] mRGCMosaic visualization            : Inspect optimized cone pooling kernels for a single RGC mosaic';
+    operationDescriptors{8}  = '[ 8] mRGCMosaic visualization            : Summarize optimized cone pooling kernels across multiple RGC mosaics';
     operationDescriptors{9}  = '[ 9] mRGCMosaic generation (step G4)     : Generate the compute-ready mRGCMosaic based on the optimized cone pooling kernels ';
     
-    operationDescriptors{10}  = '[10] Compute-ready mRGCMosaic validation : Compute visual STFs for all cells in the mosaic';
-    operationDescriptors{11} = '[11] Compute-ready mRGCMosaic validation : Fit the DoG model to the computed visual STFs for all cells in the mosaic';
+    operationDescriptors{10} = '[10] Compute-ready mRGCMosaic validation : Compute visual STFs for all cells in the RGC mosaic';
+    operationDescriptors{11} = '[11] Compute-ready mRGCMosaic validation : Fit the DoG model to the computed visual STFs for all cells in the RGC mosaic';
     operationDescriptors{12} = '[12] mRGCMosaic generation (step G5)     : Adjust gain of the compute-ready mRGCMosaic based on the  fitted visual STFs';
     operationDescriptors{13} = '[13] mRGCMosaic generation (step G5)     : Reset gain of the compute-ready mRGCMosaic (1/integrated center weights)';
 
     operationDescriptors{14} = '[14] Compute-ready mRGCMosaic validation : Visualize cone pooling RF maps and visual STF for individual target RGCs';
-    operationDescriptors{15} = '[15] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in the mosaic';
-    operationDescriptors{16} = '[16] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in multiple mosaics';
+    operationDescriptors{15} = '[15] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in the RGC mosaic';
+    operationDescriptors{16} = '[16] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in multiple mRGC mosaics';
 
-    operationDescriptors{17} = '[17] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (subspace) for all cells in the mosaic';
+    operationDescriptors{17} = '[17] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (subspace) for all cells in the RGC mosaic';
     operationDescriptors{18} = '[18] Compute-ready mRGCMosaic (RF computation) : Visualize visual RF maps (subspace) for individual target RGCs';
 
     operationDescriptors{19} = '[19] ComputeVisualRFcenterMapsViaDirectConvolutionWithPSF';
