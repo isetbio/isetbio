@@ -47,11 +47,10 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
             end
 
             if (abs(opticsParams.refractiveErrorDiopters) > 0)
-                opticsToEmploy = 'native with non-zero refractive error';
-
-                opticsPositionPostfix = sprintf('AO_pupilDiameterMM_%2.2f_residualRefractiveErrorDiopters_%2.3f.mat', ...
-                opticsParams.pupilDiameterMM, opticsParams.refractiveErrorDiopters);
-                coneMosaicSTFresponsesFileName = strrep(coneMosaicSTFresponsesFileName, '.mat', opticsPositionPostfix);
+                % Get updated coneMosaicSTFresponsesFileName
+                coneMosaicSTFresponsesFileName = MosaicPoolingOptimizer.resourceFileNameAndPath('coneMosaicSTFresponses', ...
+                    'mosaicParams', mosaicParams, ...
+                    'opticsParams', opticsParams);
             end
 
         case 'c'
