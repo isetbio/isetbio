@@ -18,7 +18,7 @@ function performFitVisualSTFsOfTheComputeReadyMidgetRGCMosaicOp(mosaicParams)
                 'retinalRFmodelParams', retinalRFmodelParams);
   
     % Now, ask the user what optics were used for computing the input cone
-    % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
+    % mosaic STF responses, so we can obtain the corresponding mRGCMosaicSTFresponsesFileName
     fprintf('\n---> Select the optics that were used to compute the input cone mosaic STF responses on which the mRGC mosaic STF responses were based on\n');
     opticsParamsForMRGCSTFs = ...
         MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);

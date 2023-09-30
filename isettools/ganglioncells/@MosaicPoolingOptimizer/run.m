@@ -82,7 +82,7 @@ function run()
         return;
     end
 
-    % Perfom the optimizeSurroundConePoolingModels operation
+    % Perform the optimizeSurroundConePoolingModels operation
     if (operationSetToPerformContains.optimizeSurroundConePoolingModels)
         
         % Fitting options
@@ -223,8 +223,18 @@ function run()
     end
 
    
+    % Perform the computeVisualRFcenterMapsViaDirectConvolutionWithPSF  operation
     if (operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF)
         MosaicPoolingOptimizer.performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF()
     end
+
+    % Perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities
+    % operation
+    if (operationSetToPerformContains.contrastSTFsAcrossDifferentOpticsOrChromaticities)
+        MosaicPoolingOptimizer.performContrastSTFsAcrossDifferentChromaticities(...
+            mosaicParams);
+
+    end
+
 
 end

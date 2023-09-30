@@ -13,13 +13,19 @@ function performComputeInputConeMosaicSTFresponsesOp(mosaicParams)
     [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
         MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
+    % Generate and set the optics
+    theMidgetRGCMosaic.setTheOptics(opticsParams);
+
+    % Visualize the generated optics
+    MosaicPoolingOptimizer.visualizeVlambdaWeightedPSF(theMidgetRGCMosaic, opticsParams);
+
+    
     % Ask the user what stimulus chromaticity to use
     [stimulusChromaticity, coneMosaicSTFresponsesFileName] = ...
         MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
         coneMosaicSTFresponsesFileName, 'STFresponses');
         
-    % Generate and set the optics
-    theMidgetRGCMosaic.setTheOptics(opticsParams);
+    
 
     % Instantiate a MosaicPoolingOptimizer object with the center-connected
     % mRGC mosaic and no sampling grid

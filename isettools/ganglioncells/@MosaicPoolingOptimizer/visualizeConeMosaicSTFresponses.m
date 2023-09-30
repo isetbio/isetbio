@@ -11,12 +11,8 @@ function visualizeConeMosaicSTFresponses(mosaicFileName, responsesFileName, vara
     load(mosaicFileName, 'theMidgetRGCMosaic')
 
     if (~isempty(opticsParams))       % Generate the native optics
-        theMidgetRGCMosaic.generateNativeOptics(opticsParams);
-        visualizedWavelength = 550;
-        micronsPerDegree = theMidgetRGCMosaic.inputConeMosaic.micronsPerDegree;
-        thePSFdata = mRGCMosaic.generateOpticsPSFdataForVisualization(...
-            theMidgetRGCMosaic.theNativeOptics, ...
-            visualizedWavelength, micronsPerDegree);
+        % Generate the Vlambda weighted psfData
+        thePSFData = MosaicPoolingOptimizer.generateVlambdaWeightedPSFData(theMidgetRGCMosaic, opticsParams);
     else
         thePSFdata = [];
     end

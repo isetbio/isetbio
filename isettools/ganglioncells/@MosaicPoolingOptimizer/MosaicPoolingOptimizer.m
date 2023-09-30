@@ -1,5 +1,9 @@
 classdef MosaicPoolingOptimizer < handle
 
+    properties (Constant)
+        validChromaticityChoices = {'achromatic', 'Lcone isolating', 'Mcone isolating', 'Scone isolating'};
+    end
+
     % Read-only properties 
     properties (SetAccess = private)
         % The RGC mosaic to be optimized
@@ -215,10 +219,16 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to select the highest-extending STF (across a set of STFs
         % measured at different orientations)
-        [theOptimalSTF,theSTFsAcrossAllOrientations, theOptimalOrientation] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+        [theOptimalSTF,theSTFsAcrossAllOrientations, ...
+            theOptimalOrientation, theUnscaledOptimalSTF] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
             orientationsTested, spatialFrequenciesTested, ...
             theResponsesAcrossAllOrientationsAndSpatialFrequencies);
 
+
+        % Method to compute the bandpass index of an STF as defined in:
+        % Lee, Shapley, Hayken, and Sun. (2012) "Spatial distributions of cone inputs to
+        % cells of the parvocellular pathway investigated with cone-isolating gratings", JOSA, 29, 2.
+        BPI = STFbandpassIndex(theSpatialFrequencySupport, theSTF);
 
         % Method to convert cone pooling params to pooled cone indices and
         % weights for the double exponent H1 surround model 
@@ -286,11 +296,16 @@ classdef MosaicPoolingOptimizer < handle
             mRGCMosaicSubspaceResponsesFileName, ...
             pdfFileName, varargin);
 
+     
         % Method to setup the parameters and the display for conducting an
         % STF mapping experiment.
         [stimParams, thePresentationDisplay] = setupSTFmappingExperiment(inputConeMosaic, ...
             sceneFOVdegs, retinalImageResolutionDegs, stimulusChromaticity);
 
+
+        % Method to return cone contrasts and overall contrast for each
+        % stimulus chromaticity
+        [coneContrasts, contrast] = contrastForChromaticity(stimulusChromaticity);
 
         % Method to compute visualSTF responses of a cone mosaic under
         % some optics
@@ -323,9 +338,24 @@ classdef MosaicPoolingOptimizer < handle
                 showZscoresInsteadOfData, ...
                 employTemporalEquivalentEccentricity);
 
-        
+        % Method to visualize cone mosaic STF responses
         visualizeConeMosaicSTFresponses(mRGCMosaicFileName, coneMosaicSTFresponsesFileName, varargin);
 
+        % Method to visualize the vLambda weighted PSF for a compute-ready
+        % mRGCmosaic given its opticsParams
+        visualizeVlambdaWeightedPSF(theComputeReadyMRGCmosaic, opticsParams, varargin);
+
+        % Method to contrast STFs across different optics/stimulus
+        % chromaticities
+        contrastVisualSTFsAcrossDifferentChromaticities(...
+            computeReadyMosaicFilename, ...
+            mRGCMosaicAchromaticSTFresponsesFileName, ...
+            mRGCMosaicLconeIsolatingSTFresponsesFileName, ...
+            mRGCMosaicMconeIsolatingSTFresponsesFileName, ...
+            opticsParams, varargin);
+
+        % Method to generate Vlambda weigted PSF for the mRGCmosaic
+        thePSFData = generateVlambdaWeightedPSFData(theMidgetRGCMosaic, opticsParams)
 
         % Method to setup the parameters and the display for conducting an
         % Subspace RF mapping experiment.
@@ -439,6 +469,10 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to perform the ComputeVisualRFmapsOfRFcenterSubregions
         performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF(varargin);
+
+        % Method to perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities operation
+        performContrastSTFsAcrossDifferentChromaticities(...
+            mosaicParams, varargin);
 
         % Method to ask the user which mRGC mosaic to use for computing
         [mosaicEcc, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse();

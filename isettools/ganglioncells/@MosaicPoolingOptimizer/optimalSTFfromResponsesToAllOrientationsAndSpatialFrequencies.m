@@ -1,4 +1,5 @@
-function [theOptimalSTF, theSTFsAcrossAllOrientations, theHighestExtensionOrientation] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+function [theOptimalSTF, theSTFsAcrossAllOrientations, ...
+    theHighestExtensionOrientation, theUnscaledOptimalSTF] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
     orientationsTested, spatialFrequenciesTested, ...
     theResponsesAcrossAllOrientationsAndSpatialFrequencies)
 
@@ -18,15 +19,20 @@ function [theOptimalSTF, theSTFsAcrossAllOrientations, theHighestExtensionOrient
     end
 
     % Pick the highest extension STF as the visual STF for this cell
-    [theOptimalSTF,theSTFsAcrossAllOrientations, theHighestExtensionOrientation] = ...
+    [theOptimalSTF,theSTFsAcrossAllOrientations, ...
+        theHighestExtensionOrientation, theUnscaledOptimalSTF] = ...
         highestExtensionSTF(orientationsTested, spatialFrequenciesTested, ...
         theSTFsAcrossAllOrientations);
 end
 
         
-function [theHighestExtensionSTF, theMeasuredSTFs, theHighestExtensionOrientation] = highestExtensionSTF(...
+function [theHighestExtensionSTF, theMeasuredSTFs, ...
+    theHighestExtensionOrientation, theUnscaledOptimalSTF] = highestExtensionSTF(...
     orientationsTested, spatialFrequenciesTested, theMeasuredSTFs)
 
+    theUnscaledMeasuredSTFs = theMeasuredSTFs;
+
+    % Normalize to max
     theMeasuredSTFs = theMeasuredSTFs / max(theMeasuredSTFs(:));
 
     % Determine the orientation that maximizes the STF extension to high spatial frequencies
@@ -55,6 +61,10 @@ function [theHighestExtensionSTF, theMeasuredSTFs, theHighestExtensionOrientatio
     bestOri = idx(idx2);
     theHighestExtensionSTF = squeeze(theMeasuredSTFs(bestOri,:));
     theHighestExtensionOrientation = orientationsTested(bestOri);
+
+    % Multiply by 0.5 to get the modulation, because the measurement is
+    % max-min which is 2 x modulation
+    theUnscaledOptimalSTF = 0.5*squeeze(theUnscaledMeasuredSTFs(bestOri,:));
 end
 
 

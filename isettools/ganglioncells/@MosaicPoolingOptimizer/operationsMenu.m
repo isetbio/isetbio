@@ -25,6 +25,9 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
 
     operationDescriptors{19} = '[19] ComputeVisualRFcenterMapsViaDirectConvolutionWithPSF';
 
+    operationDescriptors{20} = '[20] Compute-ready mRGCMosaic (comparisons) : Contrast STF responses for different optics/stim chromaticities';
+
+
     % 01. Generate the center-connected mosaic
     operationSetToPerformContains.generateCenterConnectedRGCMosaic = ~true;
 
@@ -82,6 +85,10 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     % 19 Map the visual RF center of mRGCs
     operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF = ~true;
 
+    % 20 Contrast mRGC STFs obtained with different optics and/or different  stimulus chromaticities
+    operationSetToPerformContains.contrastSTFsAcrossDifferentOpticsOrChromaticities = ~true;
+
+
     operationSetToPerformContains.animateModelConvergence = ~true;
 
     invalidActionSelected = true;
@@ -98,7 +105,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                 fprintf('\n\t%s', operationDescriptors{iString});
             end
 
-            if (iString == 5) || (iString == 8) || (iString == 12) || (iString == 13) || (iString == 16) || (iString == 18)
+            if (iString == 5) || (iString == 8) || (iString == 12) || (iString == 13) || (iString == 16) || (iString == 18) || (iString == 19)
                 fprintf('\n');
             end
         end
@@ -259,6 +266,13 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                             error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'computeVisualRFcenterMapsViaDirectConvolutionWithPSF');
                         end
 
+                    case 20
+                        if (isfield(operationSetToPerformContains, 'contrastSTFsAcrossDifferentOpticsOrChromaticities'))
+                            operationSetToPerformContains.contrastSTFsAcrossDifferentOpticsOrChromaticities = true;
+                        else
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'contrastSTFsAcrossDifferentOpticsOrChromaticities');
+                        end
+
                     otherwise
                         error('Unknown option')
                 end % switch
@@ -270,6 +284,4 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
         end
 
     end
-   
-    operationSetToPerformContains
 end

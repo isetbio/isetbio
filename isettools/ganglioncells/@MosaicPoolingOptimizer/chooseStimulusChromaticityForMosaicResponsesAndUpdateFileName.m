@@ -16,9 +16,8 @@ function [stimulusChromaticity, responsesFileName] = ...
     end
 
     stimulusChromaticity = 'invalid';
-    validChromaticityChoices = {'achromatic', 'Lcone isolating', 'Mcone isolating', 'Scone isolating'};
-
-    while (~ismember(stimulusChromaticity, validChromaticityChoices)) 
+    
+    while (~ismember(stimulusChromaticity, MosaicPoolingOptimizer.validChromaticityChoices)) 
            fprintf('\nChoose stimulus chromaticity \n');
            fprintf('[A]  - Achromatic (default) \n');
            fprintf('[L]  - L-cone isolating \n');
