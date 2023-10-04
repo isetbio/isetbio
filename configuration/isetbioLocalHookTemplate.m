@@ -66,7 +66,16 @@ function isetbioLocalHookTemplate
 
 % Get Dropbox Validation RootDir location
 computerInfo = GetComputerInfo();
+
+if (strcmp(computerInfo.MatlabPlatform, 'GLNXA64'))
+    % In Linux, usr networkName instead of localHostName
+    computerInfo.localHostName = computerInfo.networkName;
+end
+
 switch (computerInfo.localHostName)
+    case 'Leviathan'
+        % Leviathan
+        dropboxValidationRootDirPath = 'mnt/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
     case 'Ithaka'
         % Nicolas' M1 Macbook Pro
         dropboxValidationRootDirPath = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
@@ -81,24 +90,18 @@ switch (computerInfo.localHostName)
             dropboxValidationRootDirPath = fullfile(filesep,'Volumes','Dropbox','Aguirre-Brainard Lab Dropbox','David Brainard');       
     otherwise
         % Some unspecified machine, try user specific customization
-        switch(sysInfo.userShortName)
+        switch(computerInfo.userShortName)
             % Could put user specific things in, but at the moment generic
             % is good enough.
      
             case 'colorlab'
                 % SACCSFA desktop (Linux)
                 userNameDropbox = 'Mela Nopsin';
-                dropboxValidationRootDirPath = fullfile('/home/',sysInfo.userShortName,'Aguirre-Brainard Lab Dropbox',userNameDropbox);
+                dropboxValidationRootDirPath = fullfile('/home/',computerInfo.userShortName,'Aguirre-Brainard Lab Dropbox',userNameDropbox);
                 
             otherwise
-                dropboxValidationRootDirPath = fullfile('/Users/',sysInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
+                dropboxValidationRootDirPath = fullfile('/Users/',computerInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
         end
-
-        if (contains(computerInfo.networkName, 'leviathan'))
-            dropboxValidationRootDirPath = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio';
-        else
-            error('Dropbox validation root directory location not available for computer named: ''%s''.', computerInfo.localHostName);  
-        end 
 
 end
 
