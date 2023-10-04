@@ -68,7 +68,7 @@ function isetbioLocalHookTemplate
 computerInfo = GetComputerInfo();
 
 if (strcmp(computerInfo.MatlabPlatform, 'GLNXA64'))
-    % In Linux, usr networkName instead of localHostName
+    % In Linux, use networkName instead of localHostName
     computerInfo.localHostName = computerInfo.networkName;
 end
 
