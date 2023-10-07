@@ -1,4 +1,4 @@
-function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFColors, theLegends, plotTitle, ff, varargin)
+function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFphases, theSTFColors, theLegends, plotTitle, ff, varargin)
     p = inputParser;
     p.addParameter('noXLabel', false, @islogical);
     p.addParameter('noYLabel', false, @islogical);
@@ -13,18 +13,19 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFColors, t
     noYTickLabel = p.Results.noYTickLabel;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
 
-    y1 = theShadedSTF;
-    y2 = 0*y1;
-    faceColor = 0.5*(squeeze(theSTFColors(1,:))) + [0.5 0.5 0.5];
-    edgeColor = squeeze(theSTFColors(1,:));
-
-    faceAlpha = 0.3;
-    lineWidth = 1.0;
-    lineStyle = '-';
-    shadedAreaBetweenTwoLines(ax, sfSupportCPD, y1,y2, ...
-        faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
-    
-    hold(ax, 'on');
+    yyaxis(ax, 'right')
+    if (~isempty(theShadedSTF))
+        y1 = theShadedSTF;
+        y2 = 0*y1;
+        faceColor = 0.5*(squeeze(theSTFColors(1,:))) + [0.5 0.5 0.5];
+        edgeColor = squeeze(theSTFColors(1,:));
+        faceAlpha = 0.3;
+        lineWidth = 1.0;
+        lineStyle = '-';
+        shadedAreaBetweenTwoLines(ax, sfSupportCPD, y1,y2, ...
+            faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
+        hold(ax, 'on');
+    end
 
     for iSTF = 1:size(theSTFs,2)
         pH(iSTF) = plot(ax, sfSupportCPD, squeeze(theSTFs(:,iSTF)), 'o-', 'LineWidth', ff.lineWidth*2, ...
@@ -33,6 +34,7 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFColors, t
             'Color', squeeze(theSTFColors(iSTF,:)), ...
             'MarkerSize', ff.markerSize, ...
             'LineWidth', ff.lineWidth);
+        hold(ax, 'on');
     end
 
     axis(ax, 'square');
@@ -40,20 +42,20 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFColors, t
     % ticks and grids
     if (isempty(visualizedSpatialFrequencyRange))
         visualizedSpatialFrequencyRange(1) = min(sfSupportCPD);
-        visualizedSpatialFrequencyRange(2) = 100;
+        visualizedSpatialFrequencyRange(2) = max(sfSupportCPD);
     end
     if (visualizedSpatialFrequencyRange(2) <= 40)
         xTicks = [0.01 0.03 0.1 0.3 1 3 10 20 30 40];
     elseif (visualizedSpatialFrequencyRange(2) <= 70)
         xTicks = [0.01 0.03 0.1 0.3 1 3 10 30 60];
     else
-        xTicks = [0.01 0.03 0.1 0.3 1 3 10 30 100];
+        xTicks = [0.01 0.03 0.1 0.3 1 3 10 30 60 100];
     end
     
     visualizedSpatialFrequencyRange = [visualizedSpatialFrequencyRange(1) visualizedSpatialFrequencyRange(2)];
     
     grid(ax, 'on'); box(ax, 'off');
-    set(ax, 'XLim', visualizedSpatialFrequencyRange, 'YLim', [1*ff.axisOffsetFactor 1.01]);
+    set(ax, 'XLim', visualizedSpatialFrequencyRange, 'YLim', [1*ff.axisOffsetFactor 1.05]);
     
     set(ax, 'XTick', xTicks, 'YTick', 0:0.2:2, ...
             'XTickLabel', xTicks, 'YTickLabel', 0:0.2:2);
@@ -70,14 +72,14 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFColors, t
         set(ax, 'XTickLabel', {});
     end
     if (~noYLabel)
-        ylabel(ax, 'STF', 'FontAngle', ff.axisFontAngle);
-    else
-        set(ax, 'YTickLabel', 0:0.2:1, 'YTickLabel', sprintf('%1.1f\n', 0:0.2:1));
+        ylabel(ax, 'STF magnitude', 'FontAngle', ff.axisFontAngle);
     end
-
+    
+    
     if (~noYTickLabel)
+        set(ax, 'YTick', 0:0.2:1, 'YTickLabel', sprintf('%1.1f\n', 0:0.2:1));
     else
-        set(ax, 'YTickLabel', {});
+        set(ax, 'YTick', []);
     end
 
     if (~noXTickLabel)
@@ -86,27 +88,64 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFColors, t
     end
 
 
-    % legends
-    if (~isempty(theLegends))
-        legend(ax, pH, theLegends, ...
-            'Location', 'SouthWest', 'NumColumns', 1, ...
-            'FontSize', ff.legendFontSize, 'Box', 'off');
-    end
-
     % Font size
     set(ax, 'FontSize', ff.fontSize);
 
     % axis color and width
-    set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
-    
+    set(ax, 'XColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+    set(ax, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+
+    box(ax, 'on');
+
+    yyaxis(ax, 'left')
+    %hold(ax, 'on')
+
+    % The difference between the 2 cone-isolating STF phase spectra
+    theConeIsolatingPhaseSpectrumDifferential = unwrapPhaseSpectum(squeeze(theSTFphases(:,2)), squeeze(theSTFphases(:,3)));
+
+    plot(ax, sfSupportCPD, theConeIsolatingPhaseSpectrumDifferential, 'o-', 'LineWidth', ff.lineWidth, ...
+            'MarkerEdgeColor', [0 0 0.8], ...
+            'MarkerFaceColor', [0.5 0.5 1], ...
+            'Color', [0 0 0.8], ...
+            'MarkerSize', ff.markerSize/2, ...
+            'LineWidth', ff.lineWidth);
+    minPhase = min(theConeIsolatingPhaseSpectrumDifferential);
+    maxPhase = max(theConeIsolatingPhaseSpectrumDifferential);
+
+    phaseRange(1) = (sign(minPhase)*round(abs(minPhase)/30)-1) * 30;
+    phaseRange(2) = phaseRange(1) + 180 + 60;
+
+    while (phaseRange(2) < maxPhase)
+       phaseRange = phaseRange + 30; 
+    end
+
+    phaseTicks = (phaseRange(1)+30):30:(phaseRange(2)-30);
+    phaseTickLabels = sprintf('%2.0f\n', phaseTicks);
+
+    set(ax, 'YLim', phaseRange, 'YTick', phaseTicks, 'YTickLabel', phaseTickLabels, 'YColor', [0 0 0.8]);
+    ylabel(ax, 'STF differential phase (L-M)', 'FontAngle', ff.axisFontAngle);
+
     % plot title
     if (~isempty(plotTitle))
         title(ax, plotTitle, 'Color', ff.titleColor, 'FontSize', ff.titleFontSize, 'FontWeight', ff.titleFontWeight);
     end
 
+    % legends
+    yyaxis(ax, 'right')
+    if (~isempty(theLegends))
+        legend(ax, pH, theLegends, ...
+            'Location', 'EastOutside', 'NumColumns', 1, ...
+            'FontSize', ff.legendFontSize, 'Box', 'off');
+    end
+
 end
 
- function p = shadedAreaBetweenTwoLines(ax,x, y1, y2, ...
+function theUnwrappedPhaseSpectrum = unwrapPhaseSpectum(theLconePhaseSpectrum, theMconePhaseSpectrum)
+    theLMdifferentialPhaseSpectrum = theLconePhaseSpectrum - theMconePhaseSpectrum;
+    theUnwrappedPhaseSpectrum = unwrap(theLMdifferentialPhaseSpectrum/180*pi)/pi*180;
+end
+
+function p = shadedAreaBetweenTwoLines(ax,x, y1, y2, ...
      faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
 
     y1 = reshape(y1, size(x));
