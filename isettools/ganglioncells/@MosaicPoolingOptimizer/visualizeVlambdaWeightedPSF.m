@@ -3,20 +3,23 @@ function visualizeVlambdaWeightedPSF(theComputeReadyMRGCmosaic, opticsParams, va
     p = inputParser;
     p.addParameter('axesHandle', [],  @(x)(isempty(x)||ishandle(x)));
     p.addParameter('figureFormat', [],  @(x)(isempty(x)||isstruct(x)));
+    p.addParameter('tickSeparationArcMin', 6, @isscalar);
+    p.addParameter('gridlessPSF', false, @islogical);
     p.parse(varargin{:});
 
     axesHandle = p.Results.axesHandle;
     figureFormat = p.Results.figureFormat;
+    tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    gridlessPSF = p.Results.gridlessPSF;
 
     % Generate the Vlambda weighted psfData
     thePSFData = MosaicPoolingOptimizer.generateVlambdaWeightedPSFData(...
             theComputeReadyMRGCmosaic, opticsParams);
 
     % Plot the vLambda weigted PSF
-    tickSeparationArcMin = 3;
     psfSupportXdegs = thePSFData.supportX/60;
     psfSupportYdegs = thePSFData.supportY/60;
-    psfRangeArcMin = 0.5*tickSeparationArcMin * 4;
+    psfRangeArcMin = tickSeparationArcMin * 4;
 
     if (isempty(axesHandle))
         hFig = figure(1000); clf;
@@ -35,8 +38,8 @@ function visualizeVlambdaWeightedPSF(theComputeReadyMRGCmosaic, opticsParams, va
         thePSFData.vLambdaWeightedPSF/max(thePSFData.vLambdaWeightedPSF(:)), ...
         psfRangeArcMin/60, sprintf('V_{\\lambda}-weighted PSF'), figureFormat, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
-        'noYLabel', ~true, ...
-        'gridlessPSF', ~true, ...
+        'noYLabel', true, ...
+        'gridlessPSF', gridlessPSF, ...
         'colorMap', brewermap(1024, 'greys'));
 
     drawnow;

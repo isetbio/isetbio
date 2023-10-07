@@ -239,7 +239,7 @@ classdef mRGCMosaic < handle
             targetRGCposition, targetCenterConesNum, ...
             targetCenterConeMajorityType, varargin);
 
-        % Method to visual the spatial RF of an RGC with a specific index
+        % Method to visualize the spatial RF of an RGC with a specific index
         visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj,theRGCindex, varargin);
 
         % Method to generate optics for the mosaic.
@@ -261,8 +261,16 @@ classdef mRGCMosaic < handle
         bakeInConePoolingMatrices(obj, centerConePoolingMatrix, surroundConePoolingMatrix);
 
         % Method to return the majority center cone type for an RGC
-        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = ...
+        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, ...
+            theCenterConeTypes, theCenterConeIndices] = ...
             centerConeTypeWeights(obj, theRGCindex);
+
+        % Method to return the L, M, and S net cone weights in the surround
+        % If a non-empty theCenterConeIndices is passed the computed
+        % surround cone type weights are computed after excluding the surround cones
+        % that also feed into the RF center
+        [theSurroundConeTypeWeights, theExclusiveSurroundConeTypeWeights] = ...
+            surroundConeTypeWeights(obj, theRGCindex, theCenterConeIndices);
 
         % Method to return the index of the RGC best matching the target
         % criteria

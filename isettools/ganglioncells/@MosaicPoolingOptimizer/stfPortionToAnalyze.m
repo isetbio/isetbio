@@ -18,6 +18,7 @@ function [sfSupportForAnalysis, theSTFforAnalysis] = stfPortionToAnalyze(sfSuppo
         end
     end
 
+    
     sfSupportForAnalysis = sfSupport(1:localMinSF);
     theSTFforAnalysis = theSTF(1:localMinSF);
 
