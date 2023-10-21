@@ -67,7 +67,7 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
    
     % ticks and grids
     grid(ax, 'off'); box(ax, 'on');
-    set(ax, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1]);
+    set(ax, 'XLim', 0.5*psfRangeArcMin*1.05*[-1 1], 'YLim', 0.5*psfRangeArcMin*1.05*[-1 1]);
     set(ax, 'XTick', psfTicksArcMin , 'YTick', psfTicksArcMin, ...
         'XTickLabel', psfTickLabels, 'YTickLabel', psfTickLabels);
     set(ax, 'TickDir', 'in')

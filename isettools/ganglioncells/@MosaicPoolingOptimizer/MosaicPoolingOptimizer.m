@@ -201,6 +201,9 @@ classdef MosaicPoolingOptimizer < handle
         % Method to generate the local dropbox path
         dropboxDir = localDropboxPath();
 
+        % Fit a sinusoid to a response time series
+        [theFittedResponse, fittedParams] = fitSinusoidToResponseTimeSeries(time, theResponse, stimulusTemporalFrequencyHz, timeHR);
+
         % Fit a Gaussian ellipsoid to a RFmap
         theFittedGaussianEllipsoid = fitGaussianEllipsoid(supportX, supportY, theRFmap, varargin)
 
@@ -219,10 +222,10 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to select the highest-extending STF (across a set of STFs
         % measured at different orientations)
-        [theOptimalSTF,theSTFsAcrossAllOrientations, ...
-            theOptimalOrientation, theUnscaledOptimalSTF] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
-            orientationsTested, spatialFrequenciesTested, ...
-            theResponsesAcrossAllOrientationsAndSpatialFrequencies);
+        [theOptimalNormalizedSTF, theNormalizedSTFsAcrossAllOrientations, theHighestExtensionOrientation, ...
+            theOptimalSTFMagnitudeSpectrum, theOptimalSTFphaseSpectrum] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+                orientationsTested, spatialFrequenciesTested, ...
+                theResponsesAcrossAllOrientationsAndSpatialFrequencies);
 
 
         % Method to compute the bandpass index of an STF as defined in:
@@ -327,6 +330,7 @@ classdef MosaicPoolingOptimizer < handle
                 computeReadyMosaicFilename, ...
                 mRGCMosaicSTFresponsesFilename);
 
+        
         % Method to inspect the DoG model fits to measured STFs
         inspectDoGmodelFitsToMeasuredSTFs(computeReadyMosaicFilename, mRGCMosaicSTFresponsesFilename);
 
@@ -335,7 +339,7 @@ classdef MosaicPoolingOptimizer < handle
                 computeReadyMosaicFilename, ...
                 mRGCMosaicSTFresponsesFilename, ...
                 pdfsDirectory, ...
-                showZscoresInsteadOfData, ...
+                showZscoresInsteadOfData, visualizeFittedSTFsOfComputeReadyMidgetRGCMosaic, ...
                 employTemporalEquivalentEccentricity);
 
         % Method to visualize cone mosaic STF responses

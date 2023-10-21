@@ -7,6 +7,8 @@ function renderSTFBPIplot(ax, theLconeCenterBPIscatterData, ...
     p.addParameter('gridless', false, @islogical);
     p.addParameter('opticsString', '', @ischar);
     p.addParameter('superimposeLeeShapleyData', false, @islogical);
+    p.addParameter('showLegends', false, @islogical);
+    p.addParameter('outlineLastPoint', true, @islogical);
 
     p.parse(varargin{:});
     
@@ -15,6 +17,8 @@ function renderSTFBPIplot(ax, theLconeCenterBPIscatterData, ...
     gridless = p.Results.gridless;
     superimposeLeeShapleyData = p.Results.superimposeLeeShapleyData;
     opticsString = p.Results.opticsString;
+    showLegends = p.Results.showLegends;
+    outlineLastPoint = p.Results.outlineLastPoint;
 
     plot(ax, [0 1], [0.5 1], 'k-', 'LineWidth', ff.lineWidth);
     hold(ax, 'on');
@@ -24,7 +28,7 @@ function renderSTFBPIplot(ax, theLconeCenterBPIscatterData, ...
 
 
     if (~isempty(theLconeCenterBPIscatterData))
-        thePlotHandles(numel(thePlotHandles)+1) = scatter(ax, theLconeCenterBPIscatterData(:,1), theLconeCenterBPIscatterData(:,2), (ff.markerSize)^2, 'o', ...
+        thePlotHandles(numel(thePlotHandles)+1) = scatter(ax, theLconeCenterBPIscatterData(:,1), theLconeCenterBPIscatterData(:,2), (ff.markerSize-4)^2, 'o', ...
             'MarkerFaceColor', [1 0 0], 'MarkerFaceAlpha', 0.2, 'MarkerEdgeColor', [0 0 0], 'MarkerEdgeAlpha', 0.2);
         if (~isempty(opticsString))
             theLegends{numel(theLegends)+1} = sprintf('%s, L-center mRGCs', opticsString);
@@ -38,7 +42,7 @@ function renderSTFBPIplot(ax, theLconeCenterBPIscatterData, ...
     nMcenterModelCells = size(theMconeCenterBPIscatterData,1);
 
     if (~isempty(theMconeCenterBPIscatterData))
-        thePlotHandles(numel(thePlotHandles)+1) = scatter(ax, theMconeCenterBPIscatterData(:,1), theMconeCenterBPIscatterData(:,2), (ff.markerSize)^2, 'o', ...
+        thePlotHandles(numel(thePlotHandles)+1) = scatter(ax, theMconeCenterBPIscatterData(:,1), theMconeCenterBPIscatterData(:,2), (ff.markerSize-4)^2, 'o', ...
             'MarkerFaceColor', [0 0.8 0], 'MarkerFaceAlpha', 0.2, 'MarkerEdgeColor', [0 0 0], 'MarkerEdgeAlpha', 0.2);
         if (~isempty(opticsString))
             theLegends{numel(theLegends)+1} = sprintf('%s, M-center mRGCs', opticsString);
@@ -46,6 +50,19 @@ function renderSTFBPIplot(ax, theLconeCenterBPIscatterData, ...
             theLegends{numel(theLegends)+1} = sprintf('%s, M-center mRGCs', 'ISETBio');
         end
     end
+
+    if (outlineLastPoint)
+        if (~isempty(theLconeCenterBPIscatterData))
+            thePlotHandles(numel(thePlotHandles)+1) = scatter(ax, theLconeCenterBPIscatterData(end,1), theLconeCenterBPIscatterData(end,2), (ff.markerSize-6)^2, 'o', ...
+                'MarkerFaceColor', [1 0 0], 'MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [0 0 0], 'MarkerEdgeAlpha', 1.0, 'LineWidth', ff.lineWidth);
+        end
+
+        if (~isempty(theMconeCenterBPIscatterData))
+            thePlotHandles(numel(thePlotHandles)+1) = scatter(ax, theMconeCenterBPIscatterData(end,1), theMconeCenterBPIscatterData(end,2), (ff.markerSize-6)^2, 'o', ...
+                'MarkerFaceColor', [0 0.8 0], 'MarkerFaceAlpha', 0.5, 'MarkerEdgeColor', [0 0 0], 'MarkerEdgeAlpha', 1.0, 'LineWidth', ff.lineWidth);
+        end
+    end
+
 
     if (superimposeLeeShapleyData)
         [lCenterData, mCenterData] = loadLeeShapleyData();
@@ -60,10 +77,16 @@ function renderSTFBPIplot(ax, theLconeCenterBPIscatterData, ...
     set(ax, 'XTick', ticks, 'YTick', ticks, 'XTickLabel', sprintf('%0.1f\n', ticks), 'YTickLabel', sprintf('%0.1f\n', ticks));
     xtickangle(ax, 0);
 
-    legend(ax, thePlotHandles, theLegends, ...
+    if (showLegends)
+        legend(ax, thePlotHandles, theLegends, ...
             'Position', [0.1 0.20 1 0.15], 'NumColumns', 1, ...
             'FontSize', ff.legendFontSize-6, 'Box', 'on', 'Color', [0.95 0.95 0.95], 'EdgeColor', [0.3 0.3 0.3]);
- 
+
+        text(ax, 0.62, 0.23, sprintf('n_L: %d, n_M: %d',nLcenterModelCells, nMcenterModelCells), 'FontSize', ff.titleFontSize);
+    else
+        text(ax, 0.62, 0.05, sprintf('n_L: %d, n_M: %d',nLcenterModelCells, nMcenterModelCells), 'FontSize', ff.titleFontSize);
+    end
+
     axis(ax, 'square');
     if (~gridless)
         grid(ax, 'on');
@@ -88,7 +111,7 @@ function renderSTFBPIplot(ax, theLconeCenterBPIscatterData, ...
     % axis color and width
     set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
     
-    text(ax, 0.61, 0.26, sprintf('n_L: %d, n_M: %d',nLcenterModelCells, nMcenterModelCells), 'FontSize', ff.titleFontSize);
+    
     % plot title
     if (~isempty(plotTitle))
         title(ax, plotTitle, 'Color', ff.titleColor, 'FontSize', ff.titleFontSize, 'FontWeight', ff.titleFontWeight);
