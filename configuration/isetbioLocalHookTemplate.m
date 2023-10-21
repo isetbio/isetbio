@@ -102,6 +102,7 @@ switch (computerInfo.localHostName)
             otherwise
                 dropboxValidationRootDirPath = fullfile('/Users/',computerInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
         end
+
 end
 
 % RGC mosaic resources Dropbox URLpath
