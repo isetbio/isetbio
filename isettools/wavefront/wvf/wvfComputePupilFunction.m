@@ -237,7 +237,7 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         norm_radius_index = norm_radius <= 1;
         
         % Get Zernike coefficients and add in appropriate info to defocus
-        defocusZcoeffIndex = 5;
+        defocusZcoeffIndex = wvfOSAIndexToVectorIndex('defocus');
 
         % Need to make sure the c vector is long enough to contain defocus
         % term, because we handle that specially and it's easy just to make

@@ -124,6 +124,13 @@ function  interpolatedZcoeffs = zCoeffsForSubjectAtEcc(subjectID, whichEye, ecc,
 
          % Add refractive error
          if (zCoeffIndices(zIndex) == theDefocusZcoeffIndex)
+             if (abs(refractiveErrorMicrons)>0)
+                if (subtractCentralRefraction)
+                    fprintf('Original defocus at eccX = 0 (central-refraction subtracted) (microns): %f, added defocus (microns): %f\n', z1Dmap(indexOfZeroEcc), refractiveErrorMicrons);
+                else
+                    fprintf('Original defocus at eccX = 0 (microns): %f, added defocus (microns): %f\n', z1Dmap(indexOfZeroEcc), refractiveErrorMicrons);
+                end
+             end
              z1Dmap = z1Dmap + refractiveErrorMicrons;
          end
 

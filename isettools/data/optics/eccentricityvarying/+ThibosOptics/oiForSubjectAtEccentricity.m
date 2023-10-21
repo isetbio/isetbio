@@ -91,8 +91,15 @@ function zCoeffs = zCoeffsForSubject(subjectID, whichEye, measPupilDiameterMM, s
         zCoeffs(theDefocusZcoeffIndex) = 0;
     end
 
-    zCoeffs(theDefocusZcoeffIndex) = ...
-        zCoeffs(theDefocusZcoeffIndex) + refractiveErrorMicrons;
+    % Add refractive error
+    if (abs(refractiveErrorMicrons)>0)
+        if (subtractCentralRefraction)
+            fprintf('Original defocus (central-refraction subtracted) (microns): %f, added defocus (microns): %f\n', zCoeffs(theDefocusZcoeffIndex), refractiveErrorMicrons);
+        else
+            fprintf('Original defocus (microns): %f, added defocus (microns): %f\n', zCoeffs(theDefocusZcoeffIndex), refractiveErrorMicrons);
+        end
+    end
+    zCoeffs(theDefocusZcoeffIndex) = zCoeffs(theDefocusZcoeffIndex) + refractiveErrorMicrons;
 
    if (subjectID == 0)
         % Special case: diffraction-limited optics, possibly with some
