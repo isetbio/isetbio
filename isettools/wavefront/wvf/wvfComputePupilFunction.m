@@ -248,13 +248,8 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
             c(length(c) + 1:defocusZcoeffIndex) = 0;
         end
 
-        % We want the defocus correction to be of the same sign as the
-        % original defocus coefficient
-        defocusSign = sign(c(defocusZcoeffIndex));
-        imposedDefocusCorrectionMicrons = defocusSign * defocusCorrectionMicrons;
-
         % Apply the defocus correction
-        c(defocusZcoeffIndex) = c(defocusZcoeffIndex) + lcaMicrons + imposedDefocusCorrectionMicrons;
+        c(defocusZcoeffIndex) = c(defocusZcoeffIndex) + lcaMicrons + defocusCorrectionMicrons;
         
         % fprintf('At wavlength %0.1f nm, adding LCA of %0.3f microns to 
         % j = 4 (defocus) coefficient\n', thisWave, lcaMicrons); 

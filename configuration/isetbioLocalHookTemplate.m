@@ -68,14 +68,14 @@ function isetbioLocalHookTemplate
 computerInfo = GetComputerInfo();
 
 if (strcmp(computerInfo.MatlabPlatform, 'GLNXA64'))
-    % In Linux, use networkName instead of localHostName
+    % In Linux, usr networkName instead of localHostName
     computerInfo.localHostName = computerInfo.networkName;
 end
 
 switch (computerInfo.localHostName)
     case 'Leviathan'
         % Leviathan
-        dropboxValidationRootDirPath = 'mnt/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+        dropboxValidationRootDirPath = '/mnt/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
     case 'Ithaka'
         % Nicolas' M1 Macbook Pro
         dropboxValidationRootDirPath = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
