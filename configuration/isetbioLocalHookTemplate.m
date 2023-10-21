@@ -102,13 +102,6 @@ switch (computerInfo.localHostName)
             otherwise
                 dropboxValidationRootDirPath = fullfile('/Users/',sysInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
         end
-
-        if (contains(computerInfo.networkName, 'leviathan'))
-            dropboxValidationRootDirPath = '/media/dropbox_disk/Aguirre-Brainard Lab Dropbox/isetbio isetbio';
-        else
-            error('Dropbox validation root directory location not available for computer named: ''%s''.', computerInfo.localHostName);  
-        end 
-
 end
 
 % RGC mosaic resources Dropbox URLpath
