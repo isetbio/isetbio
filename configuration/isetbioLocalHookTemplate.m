@@ -90,17 +90,17 @@ switch (computerInfo.localHostName)
             dropboxValidationRootDirPath = fullfile(filesep,'Volumes','Dropbox','Aguirre-Brainard Lab Dropbox','David Brainard');       
     otherwise
         % Some unspecified machine, try user specific customization
-        switch(sysInfo.userShortName)
+        switch(computerInfo.userShortName)
             % Could put user specific things in, but at the moment generic
             % is good enough.
      
             case 'colorlab'
                 % SACCSFA desktop (Linux)
                 userNameDropbox = 'Mela Nopsin';
-                dropboxValidationRootDirPath = fullfile('/home/',sysInfo.userShortName,'Aguirre-Brainard Lab Dropbox',userNameDropbox);
+                dropboxValidationRootDirPath = fullfile('/home/',computerInfo.userShortName,'Aguirre-Brainard Lab Dropbox',userNameDropbox);
                 
             otherwise
-                dropboxValidationRootDirPath = fullfile('/Users/',sysInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
+                dropboxValidationRootDirPath = fullfile('/Users/',computerInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
         end
 end
 
