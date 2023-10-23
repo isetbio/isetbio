@@ -496,7 +496,7 @@ classdef MosaicPoolingOptimizer < handle
         % Method to ask the user which H1 cell index to use for optimizing
         % the RF surround cone pooling model
         [retinalRFmodelParams, gridSamplingScheme, optimizedRGCpoolingObjectsFileName] = ...
-            chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams);
+            chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams, varargin);
 
         % Method to specify the grid nodes for which we will optimize 
         % surround cone pooling 
@@ -513,6 +513,12 @@ classdef MosaicPoolingOptimizer < handle
         % Basically a wrapper for chooseOpticsForInputConeMosaicSTFresponses 
         % using the native optics and 0.0 refractive error
         opticsParams = getOpticsParams(mosaicParams);
+
+        % Method to obtain the retinalRFmodelParams based on the
+        % mosaicParams and opticsParams
+        % Basically a wrapper for chooseRFmodelForSurroundConePoolingOptimization 
+        % using the 4th H1 horizontal cell index
+        retinalRFmodelParams = getSurroundParams(mosaicParams, opticsParams);
 
         % Various plotting methods
         plotRawCronerKaplanData();
