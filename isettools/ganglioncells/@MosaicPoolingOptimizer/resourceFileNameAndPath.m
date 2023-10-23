@@ -67,12 +67,31 @@ function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNam
 end
 
 function m = generateMosaicFileName(mosaicParams)
-    if (isempty(mosaicParams))
-        error('Must provide mosaicParams struct')
-    end
+    % Validate mosaicParams
+    validateMosaicParams(mosaicParams);
+
     m = sprintf('mRGCMosaicEcDegs(%2.1f_%2.1f)_SizeDegs(%2.1f_%2.1f).mat', ...
              mosaicParams.eccDegs(1), mosaicParams.eccDegs(2), ...
              mosaicParams.sizeDegs(1), mosaicParams.sizeDegs(2));
+end
+
+function validateMosaicParams(mosaicParams)
+    if (isempty(mosaicParams))
+        error('Must provide a non-empty mosaicParams struct with ''eccDegs'' and ''sizeDegs'' fields.')
+    end
+    
+    assert(isfield(mosaicParams, 'eccDegs'), ...
+        sprintf('''mosaicParams'': missing field ''eccDegs'', containing the [x,y] center coords for the mosaic.'));
+
+    assert(numel(mosaicParams.eccDegs) == 2, ...
+        sprintf('''mosaicParams.eccDegs'': must contain a 2-element vector with the [x,y] center coords for the mosaic.'));
+
+    assert(isfield(mosaicParams, 'sizeDegs'), ...
+        sprintf('''mosaicParams'': missing field ''sizeDegs'', containing the [w,h] size of the mosaic.'));
+
+    assert(numel(mosaicParams.sizeDegs) == 2, ...
+        sprintf('''mosaicParams.sizeDegs'': must contain a 2-element vector with the [w,h] size for the mosaic.'));
+
 end
 
 function m = generateConeMosaicSTFResponsesFileName(mosaicParams, opticsParams)

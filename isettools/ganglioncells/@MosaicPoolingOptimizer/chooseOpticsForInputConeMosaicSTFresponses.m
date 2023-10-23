@@ -5,8 +5,11 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
 
     p = inputParser;
     p.addParameter('opticsChoice', [], @(x)(isempty(x)||ismember(x,validOpticsChoices)));
+    p.addParameter('refractiveErrorDiopters', [], @isscalar);
+
     p.parse(varargin{:});
     opticsChoice = p.Results.opticsChoice;
+    refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
 
     % Select optics to employ
     if (isempty(opticsChoice))
@@ -41,10 +44,15 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
         case 'n'
             opticsToEmploy = 'native';
 
-            opticsParams.refractiveErrorDiopters = input('Enter refractive error in diopters, e.g. 0.15 : ');
-            if (isempty(opticsParams.refractiveErrorDiopters))
-                opticsParams.refractiveErrorDiopters = 0.0;
+            if (isempty(refractiveErrorDiopters))
+                opticsParams.refractiveErrorDiopters = input('Enter refractive error in diopters, e.g. 0.15 : ');
+                if (isempty(opticsParams.refractiveErrorDiopters))
+                    opticsParams.refractiveErrorDiopters = 0.0;
+                end
+            else
+                opticsParams.refractiveErrorDiopters = refractiveErrorDiopters;
             end
+
 
             if (abs(opticsParams.refractiveErrorDiopters) > 0)
                 % Get updated coneMosaicSTFresponsesFileName

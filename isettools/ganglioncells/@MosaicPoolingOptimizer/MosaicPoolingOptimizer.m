@@ -506,9 +506,13 @@ classdef MosaicPoolingOptimizer < handle
         [mosaicFileName, resourcesDirectory, pdfsDirectory] = ...
             resourceFileNameAndPath(component, varargin);
 
-        % Method to obtain the (x,y) eccentricity and (x,y) size of an mRGC
-        % mosaic based on its horizontal eccentricity
+        % Method to obtain mosaicParams struct based on the mosaic's horizontal eccentricity
         mosaicParams = getMosaicParams(mosaicHorizontalEccentricityDegs);
+
+        % Method to obtain the opticsParams based on the mosaicParams
+        % Basically a wrapper for chooseOpticsForInputConeMosaicSTFresponses 
+        % using the native optics and 0.0 refractive error
+        opticsParams = getOpticsParams(mosaicParams);
 
         % Various plotting methods
         plotRawCronerKaplanData();
