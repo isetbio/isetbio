@@ -479,7 +479,7 @@ classdef MosaicPoolingOptimizer < handle
             mosaicParams, varargin);
 
         % Method to ask the user which mRGC mosaic to use for computing
-        [mosaicEcc, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse();
+        [mosaicHorizontalEccentricityDegs, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse();
         
         % Method to ask the user which opticsParams to use for computing
         % the input cone mosaic STF responses
@@ -507,8 +507,8 @@ classdef MosaicPoolingOptimizer < handle
             resourceFileNameAndPath(component, varargin);
 
         % Method to obtain the (x,y) eccentricity and (x,y) size of an mRGC
-        % mosaic based on some descriptor (for now 1D mosaicEcc)
-        mosaicParams = getMosaicParams(mosaicEcc);
+        % mosaic based on its horizontal eccentricity
+        mosaicParams = getMosaicParams(mosaicHorizontalEccentricityDegs);
 
         % Various plotting methods
         plotRawCronerKaplanData();

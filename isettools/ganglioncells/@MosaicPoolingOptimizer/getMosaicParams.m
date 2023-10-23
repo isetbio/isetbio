@@ -1,8 +1,13 @@
-function mosaicParams = getMosaicParams(mosaicEcc)
+function mosaicParams = getMosaicParams(mosaicHorizontalEccentricityDegs)
     % Method to obtain the (x,y) eccentricity and (x,y) size of an mRGC
-    % mosaic based on some descriptor (for now 1D mosaicEcc)
+    % mosaic based on some descriptor (for now horizontal eccentricity)
 
-    switch (mosaicEcc)
+    if (nargin == 0)
+        % Ask user which mosaic to use
+        mosaicHorizontalEccentricityDegs = MosaicPoolingOptimizer.chooseMosaicToUse();
+    end
+
+    switch (mosaicHorizontalEccentricityDegs)
         case 0
             % Mosaic params to employ. This is for the 2.5 deg - centered mosaic
             % which covers the [1 - 4] deg eccentricity range
@@ -66,6 +71,6 @@ function mosaicParams = getMosaicParams(mosaicEcc)
 
 
         otherwise
-            error('No data for this eccentricity (%2.1f degs)', mosaicEcc)
+            error('No data for this horizontal eccentricity (%2.1f degs)', mosaicHorizontalEccentricityDegs)
     end
 end

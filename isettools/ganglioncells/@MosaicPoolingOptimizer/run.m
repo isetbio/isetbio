@@ -1,11 +1,11 @@
 function run()
 
     % Ask user which mosaic to use
-    [mosaicEcc,  mosaicEccsForSummaryStatistics] = ...
+    [mosaicHorizontalEccentricityDegs,  mosaicEccsForSummaryStatistics] = ...
         MosaicPoolingOptimizer.chooseMosaicToUse();
 
     % Get mosaic params
-    mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);
+    mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicHorizontalEccentricityDegs);
 
     % This controls the visualized spatial support range
     tickSeparationArcMin = 6;
