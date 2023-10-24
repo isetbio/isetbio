@@ -1,14 +1,26 @@
-%%v_statsPoisson  Test the iePoisson random number generator calls
+function varargout = v_statsPoisson(varargin)
 %
-% Description:
-%     Exercise the Poisson random number generator
+% Test the iePoisson random number generator calls
+%
+% Copyright Imageval LLC, 2009
 
-% BW ISETBIO Team, 2015
-% 10/19/17  dhb  This was broken because someone changed the calling args
-%                to iePoisson without fixing this.  Fixed so it runs again.
+% History:
+%   BW ISETBIO Team, 2015
+%   10/19/17  dhb    This was broken because someone changed the calling args
+%                    to iePoisson without fixing this.  Fixed so it runs again.
+%   08/31/23  dhb    This was passing but storing full structures.  I
+%                    changed to do more computes and save the photons.  This will
+%                    generalize better.
+%   10/24/23  dhb    Put back into validation framework.
+
+    varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);    
+end
+
+%% Function implementing the isetbio validation code
+function ValidationFunction(runTimeParams)
 
 %% Initialize
-ieInit
+% ieInit
 
 %% Create a small lambda set of samples and plot them
 
@@ -36,4 +48,6 @@ v = iePoisson(lambda,'nSamp',nSamp);
 % fprintf('Mean %.2f and variance %.2f\n',mean(v(:)), var(v));
 vcNewGraphWin;
 hist(v,20);
+
+end
 
