@@ -86,7 +86,7 @@ s = sceneSet(s, 'fov', 1);
 
 % ...then the oi
 oi = oiCreate('human');
-oi = oiCompute(oi, s);
+oi = oiCompute(oi, s,'pad value','mean');
 
 % Calculate cone isomerizations
 cm.compute(oi);

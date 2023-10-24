@@ -22,7 +22,7 @@ scene = sceneSet(scene,'hfov',10);
 sceneWindow(scene);
 
 oi = oiCreate('human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 [allE, allNoisyE] = cm.compute(oi);
 cm.plot('excitations horizontal line',allE,'ydeg',0);
 cm.plot('excitations',allE);
@@ -37,7 +37,7 @@ scene = sceneSet(scene,'hfov',10);
 sceneWindow(scene);
 
 oi = oiCreate('human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 [allE, allNoisyE] = cm.compute(oi);
 uData = cm.plot('excitations horizontal line',allNoisyE,'ydeg',0);
 cm.plot('excitations',allE);

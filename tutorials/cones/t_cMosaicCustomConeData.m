@@ -116,6 +116,6 @@ function theOI = generateTestStimulusAndItsOpticalImage
     
     %% Compute the optical image
     theOI = oiCreate('human');
-    theOI = oiCompute(scene, theOI);
+    theOI = oiCompute(theOI, scene,'pad value','mean');
 
 end

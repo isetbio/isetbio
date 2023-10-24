@@ -21,7 +21,7 @@ if (doPhotocurrent), subplotRows = 2; else, subplotRows = 1; end
 scene = sceneCreate;
 scene = sceneSet(scene, 'h fov', 1.0);
 oi = oiCreate('human');
-oi = oiCompute(oi, scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 % Set up mosaic
 cMosaicOBJ = coneMosaic();

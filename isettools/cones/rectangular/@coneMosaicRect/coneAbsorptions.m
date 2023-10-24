@@ -37,7 +37,7 @@ function [a, locs, lst] = coneAbsorptions(obj, varargin)
 %{
    scene = sceneCreate;
    oi = oiCreate('human');
-   oi = oiCompute(oi,scene);
+   oi = oiCompute(oi,scene,'pad value','mean');
    cm = coneMosaicRect();
    cm.compute(oi);
    absorptions = cm.coneAbsorptions;

@@ -37,7 +37,7 @@ scene = sceneSet(scene,'fov',1);
 sceneWindow(scene);
 
 oi = oiCreate('human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 oiWindow(oi);
 %%  Let's try a rectangular mosaic, first
 

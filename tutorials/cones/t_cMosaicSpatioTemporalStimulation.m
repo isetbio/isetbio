@@ -120,7 +120,7 @@ function t_cMosaicSpatioTemporalStimulation
     theListOfOpticalImages = cell(1, framesNum);
     for frame = 1:framesNum
         theListOfOpticalImages{frame} = ...
-            oiCompute(theDriftingGratingSequence{frame}, theOptics);
+            oiCompute(theOptics, theDriftingGratingSequence{frame},'pad value','mean');
     end
     % Generate an @oiSequence object from the list of computed optical images
     theOIsequence = oiArbitrarySequence(theListOfOpticalImages, theStimulusTemporalSupportSeconds);

@@ -56,12 +56,12 @@ modulationFunction3 = 0.7 ...
 
 % Default human optics
 oi = oiCreate('human');
-oi = oiCompute(oi, uniformScene);
+oi = oiCompute(oi, uniformScene,'pad value','mean');
 
 % Compute the background and the modulated optical images
-oiBackground = oiCompute(oi, uniformScene);
+oiBackground = oiCompute(oi, uniformScene,'pad value','mean');
 oiModulated = oiBackground;
-oiModulatedGabor = oiCompute(oi, gaborScene);
+oiModulatedGabor = oiCompute(oi, gaborScene,'pad value','mean');
 modulationRegion.radiusInMicrons = 250;
 
 %% Adding a background

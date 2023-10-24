@@ -26,7 +26,7 @@ lineS = sceneCreate('line d65');
 lineS = sceneSet(lineS,'h fov',1);
 
 oi = oiCreate('wvf human');
-oi = oiCompute(oi,lineS);
+oi = oiCompute(oi,lineS,'pad value','mean');
 
 cm = coneMosaicRect;
 cm.setSizeToFOV(1);
@@ -41,7 +41,7 @@ preserveLuminance = 1;
 
 line450S = sceneInterpolateW(lineS,450,preserveLuminance);
 oi = oiCreate('wvf human');
-oi = oiCompute(oi,line450S);
+oi = oiCompute(oi,line450S,'pad value','mean');
 cm.compute(oi);
 [~,target] = cm.plot('hline absorptions lms','roi',[1 148]);
 title(target.Children(end),'Wave: 450nm');
@@ -51,7 +51,7 @@ preserveLuminance = 1;
 
 line550S = sceneInterpolateW(lineS,550,preserveLuminance);
 oi = oiCreate('wvf human');
-oi = oiCompute(oi,line550S);
+oi = oiCompute(oi,line550S,'pad value','mean');
 cm.compute(oi);
 cm.plot('hline absorptions lms','roi',[1 145]);
 title('Wave: 550nm');
@@ -66,7 +66,7 @@ gridS = sceneCreate('gridlines',imgSize,lineSeparation);
 gridS = sceneSet(gridS,'h fov',1);
 
 oi = oiCreate('wvf human');
-oi = oiCompute(oi,gridS);
+oi = oiCompute(oi,gridS,'pad value','mean');
 oi = oiCrop(oi,'border');
 
 cm.compute(oi);
@@ -79,7 +79,7 @@ title(target.Children(end),'Wave: broadband');
 
 grid450S = sceneInterpolateW(gridS,450,preserveLuminance);
 oi = oiCreate('wvf human');
-oi = oiCompute(oi,grid450S);
+oi = oiCompute(oi,grid450S,'pad value','mean');
 cm.compute(oi);
 cm.window;
 [~,target] = cm.plot('hline absorptions lms','roi',[1 145]);

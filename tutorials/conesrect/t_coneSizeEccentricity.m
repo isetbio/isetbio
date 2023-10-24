@@ -20,7 +20,7 @@ scene = sceneCreate('harmonic',hparms);
 
 %%
 oi = oiCreate('human'); 
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 % oiWindow(oi);
 
 %%  Build a human cone mosaic

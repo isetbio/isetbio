@@ -298,7 +298,7 @@ end
 T_quantalExcitationISETBio = zeros(size(T_quantalExcitationProb));
 for ww = 1:length(wls)
     % Compute retinal image
-    oiComputed{ww} = oiCompute(scene{ww}, oiBaseline);
+    oiComputed{ww} = oiCompute(oiBaseline,scene{ww}'pad value','mean');
 
     % Compute noise free cone excitations
     coneExcitations{ww} = cm.compute(oiComputed{ww},'nTrials', 1);

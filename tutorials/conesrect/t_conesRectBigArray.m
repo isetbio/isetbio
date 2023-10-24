@@ -14,7 +14,7 @@ s = sceneSet(s, 'fov', 3);
 
 % Then the oi
 oi = oiCreate('human');
-oi = oiCompute(oi, s);
+oi = oiCompute(oi, s,'pad value','mean');
 
 %% Build a default cone mosaic and compute isomerizatoins
 

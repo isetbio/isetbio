@@ -46,7 +46,7 @@ cTemp = 5000;   % Color temperature
 scene = sceneCreate('uniform bb',128,cTemp);
 scene = sceneAdjustLuminance(scene,lum);
 scene = sceneSet(scene,'fov',10);
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 oi = oiCrop(oi,'border');
 % oiShowImage(oi);
 

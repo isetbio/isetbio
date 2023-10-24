@@ -28,7 +28,7 @@ sceneWindow(scene);
 %% Push the scene through human optics
 
 oi = oiCreate('human wvf');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 %oiWindow(oi);
 
 %%  Now image it on the cone mosaic with some fixational eye movements

@@ -301,7 +301,7 @@ theOI = oiSet(theOI,'optics',opticsP);
 % of working with convolution as you can't get valid values at the edges of
 % an image when you convolve, unless you think hard about how to extend
 % beyond the image.
-theOI = oiCompute(theOI, theScene);
+theOI = oiCompute(theOI,theScene,'pad value','mean');
 vcAddAndSelectObject(theOI);
 oiWindow;
 

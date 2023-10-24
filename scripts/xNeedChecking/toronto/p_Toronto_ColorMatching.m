@@ -72,7 +72,7 @@ for rr = 1:length(peakRadiance)
         % scene{ww} = sceneAdjustLuminance(scene{ww},100);
         
         % Compute the irradiance at the retina
-        oi = oiCompute(scene{ww},oi);
+        oi = oiCompute(oi,scene{ww},'pad value','mean');
         
         % Create a human sensor.
         sensor{ww} = cSensor;

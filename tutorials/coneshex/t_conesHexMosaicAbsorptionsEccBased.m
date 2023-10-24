@@ -98,7 +98,7 @@ theEmPositions = cMosaic.emPositions;
 
 %% Compute the optical image for our static scene
 oi = oiCreate('human');
-oi = oiCompute(oi, scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 %% Apply the emPositions to both mosaics
 cMosaic.emPositions = theEmPositions;

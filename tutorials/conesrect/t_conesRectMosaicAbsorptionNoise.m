@@ -29,7 +29,7 @@ ieInit;
 % compute isomerizations.
 scene = sceneCreate('slanted bar');
 oi = oiCreate('human');
-oi = oiCompute(oi, scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 %% Look at effect of random Poisson isomerization noise.
 % Random meaning not frozen -> different on every run.

@@ -96,7 +96,7 @@ scene = sceneSet(scene, 'fov', 1.0);
 
 % Compute the optical image
 oi = oiCreate('human');
-oi = oiCompute(scene, oi);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 % Compute isomerizations for both mosaics and look at them in a window.
 isomerizationsHex = theHexMosaic.compute(oi, 'currentFlag', false);

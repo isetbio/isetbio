@@ -30,7 +30,7 @@ function t_osCurrentsVsLuminanceLevel
         theScene = uniformFieldSceneCreate(FOV, luminancesExamined(lumIndex));
 
         % Compute the optical images
-        oiBackground = oiCompute(theOI, theScene);
+        oiBackground = oiCompute(theOI,theScene,'pad value','mean');
         oiModulated  = oiBackground;
     
         % Generate the sequence of optical images

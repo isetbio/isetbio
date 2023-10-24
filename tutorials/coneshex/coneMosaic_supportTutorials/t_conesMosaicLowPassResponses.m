@@ -18,7 +18,7 @@
 scene = sceneCreate;
 scene = sceneSet(scene, 'h fov', 1.0);
 oi = oiCreate('human');
-oi = oiCompute(oi, scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 %% Set up mosaic and compute isomerizations
 cMosaic = coneMosaic();

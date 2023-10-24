@@ -110,7 +110,7 @@ stim = sceneSet(stim, 'photons', photons);
 
 % Compute the optical image
 oi = oiCreate('human');
-oi = oiCompute(stim, oi);
+oi = oiCompute(oi,stim,'pad value','mean');
 
 % Compute mosaic activations
 leftMosaicActivation = cmLeft.compute(oi);

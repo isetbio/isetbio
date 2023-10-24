@@ -65,7 +65,7 @@ visualizePSFfromOI(theOI, umPerDegree, ...
                 'displayWavelengthInTitle', ~false);
             
 %% Compute the retinal image of the selected scene
-theOI = oiCompute(theOI, theScene);
+theOI = oiCompute(theOI,theScene,'pad value','mean');
 
 %% Visualize RGB renditions of the scene and of the retinal image
 figNo = 1;

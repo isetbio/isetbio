@@ -25,7 +25,7 @@ scene = sceneSet(scene,'fov',2);
 % ieAddObject(scene); sceneWindow;
 
 oi = oiCreate('human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 % ieAddObject(oi); oiWindow;
 
 cmosaic = coneMosaic;

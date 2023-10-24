@@ -57,7 +57,7 @@ s = sceneCreate('vernier','display',p);
 %%
 
 oi = oiCreate('human');
-oi = oiCompute(oi,s);
+oi = oiCompute(oi,s,'pad value','mean');
 % vcAddObject(oi); oiWindow;
 
 %% Build a default cone mosaic and compute the OI

@@ -18,7 +18,7 @@ scene = sceneSet(scene,'wangular',1.5);
 
 % Generate optical image
 oi = oiCreate('human'); 
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 % Generate off-axis mosaic
 center = [10 10];

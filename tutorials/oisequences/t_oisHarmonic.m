@@ -28,7 +28,7 @@ scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'name', sprintf('F %d', params.freq));
 scene = sceneSet(scene, 'h fov', imgFov);
 scene = sceneSet(scene, 'distance', vDist);
-oiModulated =  oiCompute(oi, scene);
+oiModulated =  oiCompute(oi,scene,'pad value','mean');
 ieAddObject(scene);
 
 %% The background
@@ -37,7 +37,7 @@ scene = sceneCreate('harmonic', params);
 scene = sceneSet(scene, 'name', 'Background');
 scene = sceneSet(scene, 'h fov', imgFov);
 scene = sceneSet(scene, 'distance', vDist);
-oiBackground =  oiCompute(oi, scene);
+oiBackground =  oiCompute(oi,scene,'pad value','mean');
 ieAddObject(scene);
 
 %% Build the oiSequence

@@ -217,7 +217,7 @@ tMosaic = coneMosaicTreeShrewCreate(tOI.optics.micronsPerDegree, ...
     'fovDegs', fovDegs);
 
 % Compute the retinal image
-tOI = oiCompute(tOI, testScene);
+tOI = oiCompute(tOI, testScene,'pad value','mean');
 
 % Compute the mosaic responses (for more precise responses, use more trials)
 nTrialsNum = 1;

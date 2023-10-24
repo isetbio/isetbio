@@ -24,7 +24,7 @@ lineS = sceneSet(lineS, 'h fov', 1);
 oi = oiCreate('human');
 
 %%  Compute and display the broad band
-oi = oiCompute(lineS, oi);
+oi = oiCompute(oi,lineS,'pad value','mean');
 
 % Get rid of the surrounding area with the image mean.  This makes the
 % visualization a little nicer, and we are only interested in the center

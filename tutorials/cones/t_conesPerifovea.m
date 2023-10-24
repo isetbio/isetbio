@@ -28,7 +28,7 @@ sceneWindow(scene);
 %% Onward to oi and coneMosaic
 %
 oi = oiCreate('wvf human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 % oiWindow(oi);
 
 %% Generate mosaic centered at target eccentricity

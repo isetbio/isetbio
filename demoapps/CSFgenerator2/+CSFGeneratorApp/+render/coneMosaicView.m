@@ -264,7 +264,7 @@ end
             
     % Compute optical image for the first frame of the stimulus
     theScene = app.products.demoStimulusSceneSequence{1};
-    app.components.optics = oiCompute(theScene, app.components.optics);
+    app.components.optics = oiCompute(theScene, app.components.optics,'pad value','mean');
     
     % Get the rgb value
     rgbImage = flipud(oiGet(app.components.optics, 'rgb'));

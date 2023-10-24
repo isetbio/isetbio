@@ -17,7 +17,7 @@ scene = sceneAdjustIlluminant(scene,'D65.mat');
 vcAddObject(scene); sceneWindow;
 
 oi = oiCreate('human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 vcAddObject(oi); oiWindow;
 
 %%

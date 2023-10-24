@@ -50,7 +50,7 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicNullResponses, ...
     fprintf('Computing null scene response\n');
 
     % Compute the optical image of the null scene
-    theOptics  = oiCompute(theNullStimulusScene, theOptics);
+    theOptics  = oiCompute(theNullStimulusScene, theOptics,'pad value','mean');
 
     % Compute the cone mosaic response to the null stimulus
     theConeMosaicNullResponses = theConeMosaic.compute(theOptics, ...
@@ -90,7 +90,7 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicNullResponses, ...
              theFrameScene = theForwardPolarityRFMappingStimulusScenes{1};
 
              % Compute the optical image of the frame scene
-             theCurrentOI = oiCompute(theFrameScene, theOI);
+             theCurrentOI = oiCompute(theFrameScene, theOI,'pad value','mean');
 
              
              % Compute the cone mosaic responses
@@ -108,7 +108,7 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicNullResponses, ...
              theFrameScene = theInversePolarityRFMappingStimulusScenes{1};
 
              % Compute the optical image of the frame scene
-             theCurrentOI = oiCompute(theFrameScene, theOI);
+             theCurrentOI = oiCompute(theFrameScene, theOI,'pad value','mean');
 
              % Compute the cone mosaic responses
              noiseFreeAbsorptionsCountInversePolarity = ...
@@ -155,7 +155,7 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicNullResponses, ...
 
 
             % Compute the optical image of the frame scene
-            theOptics = oiCompute(theFrameScene, theOptics);
+            theOptics = oiCompute(theFrameScene, theOptics,'pad value','mean');
 
             % Compute the cone mosaic responses
             noiseFreeAbsorptionsCountForwardPolarity = ...
@@ -172,7 +172,7 @@ function [theConeMosaicSubspaceLinearResponses, theConeMosaicNullResponses, ...
             theFrameScene = theInversePolarityRFMappingStimulusScenes{1};
 
             % Compute the optical image of the frame scene
-            theOptics = oiCompute(theFrameScene, theOptics);
+            theOptics = oiCompute(theFrameScene, theOptics,'pad value','mean');
 
             % Compute the cone mosaic responses
             noiseFreeAbsorptionsCountInversePolarity = ...

@@ -196,7 +196,7 @@ function [coneMosaicSpatiotemporalActivation, baserateActivation, ...
     if (computeBaseRateActivation)
         fprintf('Computing cone mosaic response to the NULL stimulus\n');
         % Compute the null optical image
-        theNullOpticalImage = oiCompute(theNullStimulus, theOptics);
+        theNullOpticalImage = oiCompute(theNullStimulus, theOptics,'pad value','mean');
         % Compute the null stimulus cone mosaic activation (baserateActivation)
         baserateActivation = single(theConeMosaic.compute(theNullOpticalImage));
     else
@@ -210,7 +210,7 @@ function [coneMosaicSpatiotemporalActivation, baserateActivation, ...
     theListOfOpticalImages = cell(1, framesNum);
     for frame = 1:framesNum
         theListOfOpticalImages{frame} = ...
-            oiCompute(theDriftingGratingSequence{frame}, theOptics);
+            oiCompute(theDriftingGratingSequence{frame}, theOptics,'pad value','mean');
     end
 
     

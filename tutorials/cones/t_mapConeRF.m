@@ -99,18 +99,18 @@ function t_mapConeRF
     % Compute the cone mosaic responses and build - up the RF
     for iFrame = 0:nStim
         if (iFrame == 0)
-            theOI = oiCompute(theNullStimulusScene, theOI);
+            theOI = oiCompute(theOI, theNullStimulusScene, 'pad value','mean');
             theNullStimConeMosaicExcitation = squeeze(theConeMosaic.compute(theOI));
             continue;
         end
 
         fprintf('Computing mosaic response to stim %d of %d\n', iFrame, nStim);
         % The forward polarity responses
-        theOI = oiCompute(theRFMappingStimulusScenes{iFrame}, theOI);
+        theOI = oiCompute(theOI,theRFMappingStimulusScenes{iFrame},'pad value','mean');
         theConeMosaicExcitation(iFrame,:) = (squeeze(theConeMosaic.compute(theOI)) - theNullStimConeMosaicExcitation)./theNullStimConeMosaicExcitation;
         
         % The reverse polarity responses
-        theOI = oiCompute(theReversePolarityRFMappingStimulusScenes{iFrame}, theOI);
+        theOI = oiCompute(theOI,theReversePolarityRFMappingStimulusScenes{iFrame},'pad value','mean');
         theReversePolarityConeMosaicExcitation = (squeeze(theConeMosaic.compute(theOI)) - theNullStimConeMosaicExcitation)./theNullStimConeMosaicExcitation;
 
         % Update the RF map for each cone

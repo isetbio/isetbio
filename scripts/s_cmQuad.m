@@ -82,7 +82,7 @@ hparams.freq = 3;
 scene = sceneCreate('harmonic',hparams);
 fov = 4;
 scene = sceneSet(scene,'fov',3);
-oi = oiCreate('human'); oi = oiCompute(oi,scene);
+oi = oiCreate('human'); oi = oiCompute(oi,scene,'pad value','mean');
 ieAddObject(oi);
 
 %% Start the cone absorptions with no Poisson noise
@@ -278,7 +278,7 @@ fov = 4;
 scene = sceneSet(scene,'fov',3);
 % sceneWindow(scene);
 
-oi = oiCreate('human'); oi = oiCompute(oi,scene);
+oi = oiCreate('human'); oi = oiCompute(oi,scene,'pad value','mean');
 ieAddObject(oi);
 % oiWindow(oi);
 

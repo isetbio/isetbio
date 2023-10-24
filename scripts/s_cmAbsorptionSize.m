@@ -13,7 +13,7 @@ ieInit
 
 scene = sceneCreate('uniform ee');
 oi = oiCreate('human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 %% One cone, one time
 

@@ -162,7 +162,7 @@ backgroundScene = gaborSceneCreate(spatialParams, ...
 fprintf('Computing retinal image for background scene.\n');
 BaseOI = opticalImageConstruct(oiParams);
 oiBackground = BaseOI;
-oiBackground = oiCompute(oiBackground, backgroundScene);
+oiBackground = oiCompute(oiBackground, backgroundScene,'pad value','mean');
 oiModulated = oiBackground;
 
 %% Compute the sequence of background optical images (adapting stimulus)
@@ -212,7 +212,7 @@ for iContrast = 1:numel(testContrasts)
 
     % Compute the optical image of the modulated stimulus
     oiModulated = BaseOI;
-    oiModulated = oiCompute(oiModulated, modulatedScene);
+    oiModulated = oiCompute(oiModulated, modulatedScene,'pad value','mean');
 
     % Compute the stimulus of optical sequences
     stimulusOIsequence = oiSequence(oiBackground, oiModulated, ...

@@ -58,7 +58,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
             % Compute the cone mosaic responses to the null scene OI
             if (isempty(theConeMosaicNullResponses))
                 % Compute the optical image of the null scene
-                theOptics  = oiCompute(theNullStimulusScene, theOptics);
+                theOptics  = oiCompute(theNullStimulusScene, theOptics,'pad value','mean');
 
                 % Compute the cone mosaic responses
                 theConeMosaicNullResponses = theConeMosaic.compute(theOptics, ...
@@ -86,7 +86,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
 
                     % Compute the optical image of the frame scene
-                    theCurrentOI = oiCompute(theFrameScene, theOI);
+                    theCurrentOI = oiCompute(theFrameScene, theOI,'pad value','mean');
 
                     % Compute the cone mosaic responses
                     noiseFreeAbsorptionsCount = ...
@@ -103,7 +103,7 @@ function [theConeMosaicSTFresponses, theConeMosaicNullResponses] = ...
                     theFrameScene = theDriftingGratingFrameScenes{iFrame};
 
                     % Compute the optical image of the frame scene
-                    theOptics = oiCompute(theFrameScene, theOptics);
+                    theOptics = oiCompute(theFrameScene, theOptics,'pad value','mean');
 
                     % Compute the cone mosaic responses
                     noiseFreeAbsorptionsCount = ...

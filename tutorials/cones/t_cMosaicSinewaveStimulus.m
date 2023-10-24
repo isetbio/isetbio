@@ -253,10 +253,10 @@ function [cm, thePSFData, noiseFreeConeMosaicTestStimulusActivation, ...
     thePSFData = psfEnsemble{1};  
  
     % Compute the optical image of the stimulus
-    theStimulusOI = oiCompute(theTestStimulusScene, theOI);
+    theStimulusOI = oiCompute(theOI,theTestStimulusScene,'pad value','mean');
  
     % Compute the optical image of the null stimulus
-    theNullStimulusOI = oiCompute(theNullStimulusScene, theOI);
+    theNullStimulusOI = oiCompute(theOI,theNullStimulusScene,'pad value','mean');
  
     % Compute the mosaic response to the test stimulus
     nInstances = 2;

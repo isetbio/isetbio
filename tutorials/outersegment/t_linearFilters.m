@@ -81,7 +81,7 @@ for iLum = 1:numel(backgroundLuminances)
     theScene = uniformFieldSceneCreate(FOV, backgroundLuminances(iLum));
 
     % Compute the optical images
-    oiBackground = oiCompute(theOI, theScene);
+    oiBackground = oiCompute(theOI,theScene,'pad value','mean');
     oiModulated = oiBackground;
 
     % Generate the sequence of optical images

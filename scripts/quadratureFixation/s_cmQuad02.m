@@ -19,7 +19,7 @@ hparams = harmonicP;
 hparams.freq = 3;
 scene = sceneCreate('harmonic',hparams);
 fov = 4; scene = sceneSet(scene,'fov',3);
-oi = oiCreate('human'); oi = oiCompute(oi,scene); ieAddObject(oi);
+oi = oiCreate('human'); oi = oiCompute(oi,scene,'pad value','mean'); ieAddObject(oi);
 
 cm = coneMosaic;
 cm.noiseFlag = 'none';

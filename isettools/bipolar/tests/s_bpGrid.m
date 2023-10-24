@@ -17,7 +17,7 @@ scene = sceneCreate('grid lines',imSize,lineSpacing);
 scene = sceneSet(scene,'fov',fov);
 
 oi = oiCreate;    % Standard human optics
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 %%  Make the mosaic
 

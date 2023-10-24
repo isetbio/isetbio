@@ -54,7 +54,7 @@ for sFactor = [1, 2, 5]
     ylim = get(gca,'ylim');
     oi = wvf2oi(wvf,'model','wvf human');
     oi.optics.lens.density = 0;
-    oi = oiCompute(oi,scene);
+    oi = oiCompute(oi,scene,'pad value','mean');
     oi = oiSet(oi,'name',sprintf('Watson x %d',sFactor));
     oiWindow(oi);
     oiPlot(oi,'psf',550); set(gca,'xlim',xlim,'ylim',ylim);
@@ -72,14 +72,14 @@ wvfPlot(wvf,'image psf','min',550,10);
 oi = oiCreate('diffraction limited');
 oi = oiSet(oi,'optics fnumber', 5.67);
 oi = oiSet(oi,'optics focal length',0.016);
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('Diff %s',name));
 oiWindow(oi);
 
 %% Marimont Wandell eye model
 
 oi = oiCreate('human mw');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('MW %s',name));
 oiWindow(oi);
 
@@ -92,7 +92,7 @@ oi = oiCreate('wvf human');
 % still we are getting blur due to chromatic aberration.
 oi.optics.lens.density = 0;
 
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 name = oiGet(oi,'name'); oi = oiSet(oi,'name',sprintf('Thibos %s',name));
 oiWindow(oi);
 

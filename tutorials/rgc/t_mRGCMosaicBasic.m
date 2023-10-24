@@ -269,7 +269,7 @@ theNoisyMRGCMosaicResponseInstancesWithAdditiveVmembraneNoise = zeros(nTrials, f
 for iFrame = 0:framesNum
     if (iFrame == 0)
         % Compute the optical image of the null scene
-        theFrameOI = oiCompute(theNullStimulusScene, theOI);
+        theFrameOI = oiCompute(theOI,theNullStimulusScene,'pad value','mean');
 
         % Compute the input cone mosaic response to the NULL scene
         theConeMosaicNullResponse = theComputeReadyRGCMosaic.inputConeMosaic.compute(...
@@ -292,7 +292,7 @@ for iFrame = 0:framesNum
     theFrameScene = theDriftingGratingFrameScenes{iFrame};
 
     % Compute the optical image of the frame scene
-    theFrameOI = oiCompute(theFrameScene, theOI);
+    theFrameOI = oiCompute(theOI,theFrameScene,'pad value','mean');
 
     % Compute the input cone mosaic response
     [noiseFreeConeMosaicResponse, noisyConeMosaicResponseInstances] = ...

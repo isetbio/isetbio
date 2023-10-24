@@ -176,7 +176,7 @@ switch oisType
         % sceneWindow;
 
         % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii}); end
+        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
         % ieAddObject(OIs{1});
         % ieAddObject(OIs{2});
         % oiWindow;
@@ -217,7 +217,7 @@ switch oisType
         % sceneWindow;
 
         % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii}); end
+        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
         % ieAddObject(OIs{1});
         % ieAddObject(OIs{2});
         % oiWindow;
@@ -250,7 +250,7 @@ switch oisType
         % sceneWindow;
 
         % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii}); end
+        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
         % ieAddObject(OIs{1});
         % ieAddObject(OIs{2});
         % oiWindow;

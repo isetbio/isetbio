@@ -59,7 +59,7 @@ gaborScene = sceneSet(gaborScene, 'fov', 1.0);
 
 % Compute the optical image
 oi = oiCreate('human');
-oi = oiCompute(gaborScene, oi);
+oi = oiCompute(oi, gaborScene,'pad value','mean');
 
 % Compute isomerizations
 tic
@@ -103,7 +103,7 @@ sceneWindow
 
 % Compute the optical image
 oi = oiCreate('human');
-oi = oiCompute(scene, oi);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 % Compute isomerizations for both mosaics
 isomerizationsVernier = theHexMosaic.compute(oi, 'currentFlag', false);
@@ -141,7 +141,7 @@ sceneWindow
 
 % Compute the optical image
 oi = oiCreate('human');
-oi = oiCompute(scene, oi);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 % Compute isomerizations for both mosaics
 isomerizationsRays = theHexMosaic.compute(oi, 'currentFlag', false);

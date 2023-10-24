@@ -21,7 +21,7 @@ function t_mRGCMosaicCheckerBoardStimulus
 
     % Compute the retinal image
     theOI = theMRGCMosaic.theNativeOptics;
-    theStimulusRetinalImage = oiCompute(theStimulusScene, theOI);
+    theStimulusRetinalImage = oiCompute(theOI,theStimulusScene,'pad value','mean');
 
     % Compute the cone mosaic response
     theConeMosaicResponse = theMRGCMosaic.inputConeMosaic.compute(...

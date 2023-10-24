@@ -225,5 +225,5 @@ function oi = generateTestOI()
     
     %% Compute the optical image
     oi = oiCreate('human');
-    oi = oiCompute(scene, oi);
+    oi = oiCompute(oi,scene,'pad value','mean');
 end

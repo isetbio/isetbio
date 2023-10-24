@@ -56,7 +56,7 @@ for yOffset = 1:3
     oi = oiCreate('wvf human');
     
     % Compute the optical image of the scene
-    oi = oiCompute(scene, oi);
+    oi = oiCompute(oi,scene,'pad value','mean');
  
     % Compute the noise-free excitation response
     noiseFreeExcitationResponse = cm.compute(oi, 'opticalImagePositionDegs', [0 0]);

@@ -74,7 +74,7 @@ function meanRate = coneMeanIsomerizations(cMosaic, varargin)
    % from the mosaic.
    scene = sceneCreate;
    oi = oiCreate('human');
-   oi = oiCompute(oi, scene);
+   oi = oiCompute(oi,scene,'pad value','mean');
    cMosaic = coneMosaic;
    cMosaic.compute(oi);
    tmp = coneMeanIsomerizations(cMosaic);

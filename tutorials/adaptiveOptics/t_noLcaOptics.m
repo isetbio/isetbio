@@ -115,11 +115,11 @@ scene = sceneSet(scene, 'fov', 0.5);
 visualizeScene(scene);
 
 %% Compute and visualize the retinal images with and without LCA
-theOINoLca = oiCompute(theOINoLca, scene);
+theOINoLca = oiCompute(theOINoLca, scene,'pad value','mean');
 visualizeOpticalImage(theOINoLca, 'displayRadianceMaps', false, ...
     'displayRetinalContrastProfiles', false);
 
-theOIWithLca = oiCompute(theOIWithLca, scene);
+theOIWithLca = oiCompute(theOIWithLca, scene,'pad value','mean');
 visualizeOpticalImage(theOIWithLca, 'displayRadianceMaps', false, ...
     'displayRetinalContrastProfiles', false);
 

@@ -94,7 +94,7 @@ sceneWindow
     
 % Compute the optical image
 oi = oiCreate('human');
-oi = oiCompute(scene, oi);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 % Compute isomerizations for both mosaics
 isomerizationsRect = theRectMosaic.compute(oi, 'currentFlag', false);
@@ -178,7 +178,7 @@ vcAddObject(scene);
 sceneWindow
 
 % Compute the optical image
-oi = oiCompute(scene, oi);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 % Compute isomerizations for both mosaics
 isomerizationsRect = theRectMosaic.compute(oi, 'currentFlag', false);
@@ -260,7 +260,7 @@ vcAddObject(scene);
 sceneWindow;
 
 % Compute the optical image
-oi = oiCompute(scene, oi);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 % Compute isomerizations for both mosaics
 isomerizationsRect = theRectMosaic.compute(oi, 'currentFlag', false);

@@ -18,7 +18,7 @@ function coneMosaicActivation(app, dialog)
        
     % Compute the activation to the null stimulus 
     nullActivation = app.components.coneMosaic.compute(...
-        oiCompute(app.products.nullStimulusScene, app.components.optics));
+        oiCompute(app.products.nullStimulusScene, app.components.optics),'pad value','mean');
     
     % Compute response to first stimulus frame only
     theScene = app.products.demoStimulusSceneSequence{1};
@@ -27,7 +27,7 @@ function coneMosaicActivation(app, dialog)
     nInstances = 4;
     [app.products.noiseFreeConeMosaicActivation, ...
      app.products.noisyConeMosaicActivationInstances] = app.components.coneMosaic.compute(...
-        oiCompute(theScene, app.components.optics), ...
+        oiCompute(theScene, app.components.optics,'pad value','mean'), ...
         'nTrials', nInstances);
     
     % Compute noise-free modulation 

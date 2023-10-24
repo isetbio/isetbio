@@ -90,7 +90,7 @@ function t_computingWithCustomPSFs()
     theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textSceneParams, visualizeScene);
     
     %% Compute the optical image
-    theOI = oiCompute(theOI, theScene);
+    theOI = oiCompute(theOI,theScene,'pad value','mean');
     
     % Visualize the optical image
     visualizeOpticalImage(theOI, 'crossHairsAtOrigin', true, 'displayRadianceMaps', false);

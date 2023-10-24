@@ -30,7 +30,7 @@ sceneWindow(scene);
 %% Calculate through human wvf optics
 
 oi = oiCreate('human wvf');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 
 %% Try with a rectangular mosaic first
 cm = coneMosaicRect;

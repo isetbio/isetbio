@@ -153,8 +153,8 @@ function [oi1,oi2] = computeOIs(mosaicFOV)
     scene2 = sceneSet(scene2, 'fov', sceneFOV);
 
     oi1 = oiCreate('human');
-    oi1 = oiCompute(scene1, oi1);
+    oi1 = oiCompute(oi1, scene1,'pad value','mean');
 
     oi2 = oiCreate('human');
-    oi2 = oiCompute(scene2, oi2);
+    oi2 = oiCompute(oi2,scene2,'pad value','mean');
 end

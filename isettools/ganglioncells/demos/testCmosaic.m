@@ -49,7 +49,7 @@ function testCmosaic
     fprintf('The pixel size of the loaded scene is %2.3f arc min\n', sceneHorizontalFOV/sceneCols*60);
     
     % Compute the optical image
-    theOI = oiCompute(theScene, theOI);
+    theOI = oiCompute(theScene, theOI,'pad value','mean');
     
     % Compute responses and visualize results
     switch (conditionExamined)

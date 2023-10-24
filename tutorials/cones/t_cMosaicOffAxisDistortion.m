@@ -75,7 +75,7 @@ for yOffset = 1:3
         'subtractCentralRefraction', true);
     
     % Compute the optical image of the scene
-    oi = oiCompute(scene, oiEnsemble{1});
+    oi = oiCompute(oiEnsemble{1},scene,'pad value','mean');
  
     % Compute the noise-free excitation response
     noiseFreeExcitationResponse = cm.compute(oi);

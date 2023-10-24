@@ -51,7 +51,7 @@ scene = sceneSet(scene,'fov',1);
 sceneWindow(scene);
 %%
 oi = oiCreate('wvf human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 oiWindow(oi);
 %%  Let's try a rectangular mosaic, first
 
@@ -100,7 +100,7 @@ imwrite(bv,'coneMask_bloodvessels.png');
 scene = sceneCreate;
 scene = sceneSet(scene,'fov',2);
 oi = oiCreate('wvf human');
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 oi = oiCrop(oi,'border');
 oiWindow(oi);
 
