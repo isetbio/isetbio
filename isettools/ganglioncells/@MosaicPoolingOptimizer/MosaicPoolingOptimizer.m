@@ -506,6 +506,10 @@ classdef MosaicPoolingOptimizer < handle
         [mosaicFileName, resourcesDirectory, pdfsDirectory] = ...
             resourceFileNameAndPath(component, varargin);
 
+        % Method to load a pre-computed mRGC mosaic, solely based on its
+        % hotizontal eccentricity
+        theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEccDegs);
+
         % Method to obtain mosaicParams struct based on the mosaic's horizontal eccentricity
         mosaicParams = getMosaicParams(mosaicHorizontalEccentricityDegs);
 
