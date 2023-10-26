@@ -1,22 +1,15 @@
 function [theScene, theNullScene] = generateSinusoidalStimulusAndBackgroundScene(...
-    presentationDisplay, sizeDegs, spatialFrequencyCyclesPerDeg, contrast, isWindowed)
+    presentationDisplay, stimParams)
 
-    sigmaDegs = sizeDegs * 0.15;
-    if (~isWindowed)
-        sigmaDegs = 1e6;
+
+    stimParams.sigmaDegs = stimParams.sizeDegs * 0.15;
+    if (~stimParams.isWindowed)
+        stimParams.sigmaDegs = 1e9;
     end
 
-    stimParams = struct(...
-        'spatialFrequencyCyclesPerDeg', spatialFrequencyCyclesPerDeg, ... 
-        'orientationDegs', 0, ...               % 45 degrees
-        'phaseDegs', 0, ...                     % spatial phase in degrees
-        'sizeDegs', sizeDegs, ...               % size in degrees
-        'sigmaDegs', sigmaDegs, ...             % sigma of Gaussian envelope
-        'contrast', contrast,...                     % 0.6 Michelson contrast
-        'meanLuminanceCdPerM2', 40, ...         % mean luminance
-        'pixelsAlongWidthDim', 1024, ...         % pixels- width dimension
-        'pixelsAlongHeightDim', 1024 ...         % pixels- height dimension
-    );
+    % Remove fields that are not known to generateGaborScene
+    stimParams = rmfield(stimParams, 'isWindowed');
+    stimParams = rmfield(stimParams, 'positionDegs');
 
     theScene = generateGaborScene(...
         'stimParams', stimParams, ...
