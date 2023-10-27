@@ -8,9 +8,12 @@ classdef constants
         % Label for right eye
         rightEye = 'right eye';
 
-        % Pupil diameter for all measurements
+        % Default measurement pupil diameter
         measurementPupilDiamMM = 7.5;
         
+        % Available measurement pupil diameters
+        availableMeasurementPupilDiamsMM = [3.0 4.5 6.0 7.5];
+
         % Data exist for both left and right eyes
         measurementEyeOrder = {'right eye', 'left eye'};
      

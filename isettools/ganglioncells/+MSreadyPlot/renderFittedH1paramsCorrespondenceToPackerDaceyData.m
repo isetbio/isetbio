@@ -1,7 +1,17 @@
 function renderFittedH1paramsCorrespondenceToPackerDaceyData(ax, ...
-  retinalConePoolingParams, ff)
+  retinalConePoolingParams, ff, varargin)
 
-    cla(ax, 'reset');
+    % Parse input
+    p = inputParser;
+    p.addParameter('resetAxes', true, @islogical);
+    p.addParameter('noLegends', false, @islogical);
+    p.parse(varargin{:});
+    
+    noLegends = p.Results.noLegends;
+
+    if (p.Results.resetAxes)
+        cla(ax, 'reset');
+    end
 
     idx = find(strcmp(retinalConePoolingParams.names,  'VnVwRatio'));
     fittedModel.NWvolumeRatio = retinalConePoolingParams.finalValues(idx);
@@ -26,19 +36,18 @@ function renderFittedH1paramsCorrespondenceToPackerDaceyData(ax, ...
     box(ax, 'off');
     xtickangle(ax, 0);
 
-    legend(ax, {'fitted H1 model params', 'H1 cell model params (Packer & Dacey)'}, ...
-        'FontSize', ff.legendFontSize, 'box', 'off', 'Color', [0.8 0.8 0.7]);
+    if (~noLegends)
+        legend(ax, {'Packer & Dacey', 'fitted H1 model'}, ...
+            'FontSize', ff.legendFontSize, 'box', 'off', 'Color', [0.8 0.8 0.7]);
+    end
 
-    ylabel(ax,'V_{narrow}/V_{wide}', 'FontAngle', ff.axisFontAngle);
-    xlabel(ax, 'R_{narrow}/R_{wide}', 'FontAngle', ff.axisFontAngle);
+    ylabel(ax, 'Vnarrow / Vwide', 'FontAngle', ff.axisFontAngle);
+    xlabel(ax, 'Rnarrow / Rwide', 'FontAngle', ff.axisFontAngle);
 
     % Font size
     set(ax, 'FontSize', ff.fontSize);
 
     % axis color and width
     set(ax, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
-    
-    title(ax, 'correspondence to Packer & Dacey', 'fontSize', ff.titleFontSize, ...
-     'Color', ff.titleColor, 'FontWeight', ff.titleFontWeight); 
 
 end

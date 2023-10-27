@@ -31,6 +31,8 @@ function [sParams, coneMosaicIsTooSmall] = stimParamsStructForGratingSceneEngine
                     sigmaDegs = app.stimParams.sizeDegs/6;
                 end
                 sParams.spatialEnvelopeRadiusDegs = sigmaDegs; 
+            case 'halfcos'
+                sParams.spatialEnvelopeRadiusDegs = app.stimParams.sizeDegs/2;
             otherwise
                 error('Unknown spatial envelope: ''%s''.', app.stimParams.spatialEnvelope);
      end

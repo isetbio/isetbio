@@ -14,6 +14,8 @@ function availableComputeReadyMosaics(rgcMosaicType)
     filesFound = dir(midgetRGCmosaicsRootDir);
 
     mosaicsAvailableNum = 0;
+    theFileDescriptors = {};
+    theFileInfos = {};
     for i = 1:numel(filesFound)
         theFileName = filesFound(i).name;
         theFileDir = filesFound(i).folder;
@@ -21,8 +23,10 @@ function availableComputeReadyMosaics(rgcMosaicType)
         theFileSize = filesFound(i).bytes;
         if (contains(theFileName, 'ComputeReadyMosaic'))
             mosaicsAvailableNum  = mosaicsAvailableNum  + 1;
-            theFileDescriptors{mosaicsAvailableNum } = ...
-                sprintf('[%02d] %150s. This mosaic was generated on %s and it is %2.1f MBytes.', mosaicsAvailableNum, theFileName, theFileDate, theFileSize/(1024*1024));
+            theFileDescriptors{mosaicsAvailableNum} = ...
+                sprintf('%150s.', theFileName);
+            theFileInfos{mosaicsAvailableNum} = ...
+                sprintf(' Birthday: %s, Size:%2.1f_MBytes', theFileDate, theFileSize/(1024*1024));
         end
     end
 
@@ -37,7 +41,7 @@ function availableComputeReadyMosaics(rgcMosaicType)
         fprintf('\nFound %d compute-ready mRGCmosaics of type ''%s'' at %s.\n', mosaicsAvailableNum, rgcMosaicType, midgetRGCmosaicsRootDir);
         fprintf('These are:\n')
         for i = 1:mosaicsAvailableNum
-            fprintf('%s\n', theFileDescriptors{i});
+            fprintf('%s %30s\n', strrep(theFileDescriptors{i}, ' ', ''), theFileInfos{i});
         end
 
 end

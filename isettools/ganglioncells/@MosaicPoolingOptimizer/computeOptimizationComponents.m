@@ -1,8 +1,9 @@
-function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptimizationComponents(obj, theRGCindex)
+function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptimizationComponents(...
+    obj, theRGCindex, visualizeComponents, exportedFittingProgressFolder)
 
     % Compute the visual and anatomical Rc for this RGC
     [visualRcDegs, anatomicalRcDegs, indicesOfConesPooledByTheRFcenter, weightsOfConesPooledByTheRFcenter] = ...
-        computeRFcenterVisualRc(obj, theRGCindex);
+        computeRFcenterVisualRc(obj, theRGCindex, visualizeComponents, exportedFittingProgressFolder);
 
     % Retinal cone pooling model constants
     modelConstants = struct();
@@ -105,7 +106,7 @@ function [modelConstants, retinalConePoolingParams, visualRcDegs] = computeOptim
 end
 
 function [visualRcDegs, anatomicalRcDegs, inputConeIndices, inputConeWeights] = ...
-    computeRFcenterVisualRc(obj, theTargetRGCindex)
+    computeRFcenterVisualRc(obj, theTargetRGCindex, visualizeComponents, exportedFittingProgressFolder)
 
     inputConeIndices = find(squeeze(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,theTargetRGCindex))>0.001);
     inputConeWeights = full(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(inputConeIndices, theTargetRGCindex));
@@ -117,9 +118,196 @@ function [visualRcDegs, anatomicalRcDegs, inputConeIndices, inputConeWeights] = 
     % The STF of center
     orientationsTested = obj.inputConeMosaicVisualSTFdata.orientationsTested;
     spatialFrequenciesTested = obj.inputConeMosaicVisualSTFdata.spatialFrequenciesTested;
-    theOptimalCenterSTF = MosaicPoolingOptimizer.optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies( ...
+
+    [theOptimalCenterSTF, theCenterSTFsAcrossAllOrientations, theOptimalOrientation] = ...
+        MosaicPoolingOptimizer.optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies( ...
                     orientationsTested, spatialFrequenciesTested, ...
                     theCenterResponsesAcrossAllOrientationsAndSpatialFrequencies);
+
+    if (visualizeComponents)
+
+        domainVisualizationCenter = obj.theRGCMosaic.rgcRFpositionsDegs(theTargetRGCindex,:);
+        domainVisualizationLimits = [domainVisualizationCenter(1) domainVisualizationCenter(1) domainVisualizationCenter(2) domainVisualizationCenter(2)] + ...
+                                    0.12*[-1 1 -1 1];
+        domainVisualizationTicks = struct('x', -10:0.05:10, 'y', -10:0.05:10);
+
+        hFig = figure(996); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFig,ff);
+        set(hFig, 'Color', [1 1 1]);
+
+        % Generate and set the optics
+        obj.theRGCMosaic.setTheOptics(obj.inputConeMosaicVisualSTFdata.metaData.theNativeOpticsParams);
+
+        visualizedWavelength = 550;
+        micronsPerDegree = obj.theRGCMosaic.inputConeMosaic.micronsPerDegree;
+        thePSFdata = mRGCMosaic.generateOpticsPSFdataForVisualization(...
+            obj.theRGCMosaic.theNativeOptics, ...
+            visualizedWavelength, micronsPerDegree);
+
+        % Center the visualized PSF at the [ domainVisualizationLimits(1), domainVisualizationLimits(3)]
+        thePSFdata.supportXdegs = thePSFdata.supportXdegs - obj.theRGCMosaic.inputConeMosaic.eccentricityDegs(1) + ...
+            domainVisualizationCenter(1);
+        thePSFdata.supportYdegs = thePSFdata.supportYdegs - obj.theRGCMosaic.inputConeMosaic.eccentricityDegs(2) + ...
+            domainVisualizationCenter(2);
+
+        % Show just the PSF
+        obj.theRGCMosaic.inputConeMosaic.visualize(...
+            'figureHandle', hFig,...
+            'axesHandle', theAxes{1,1}, ...
+            'domain', 'degrees', ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'backgroundColor', [1 1 1], ...
+            'visualizeCones', ~true,...
+            'visualizedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
+            'withSuperimposedPSF', thePSFdata, ...
+            'fontAngle', ff.axisFontAngle, ...
+            'fontSize', ff.fontSize);
+        
+        if (~isempty(exportedFittingProgressFolder))
+            rawFiguresRoot = exportedFittingProgressFolder;
+            pdfFileName = fullfile(rawFiguresRoot,'RGCmosaicInputConeMosaicAtSurroundOptimizationNode.pdf');
+            NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+        end
+
+        hFig = figure(997); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFig,ff);
+        set(hFig, 'Color', [1 1 1]);
+
+        obj.theRGCMosaic.visualize(...
+            'figureHandle', hFig,...
+            'axesHandle', theAxes{1,1}, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'identifyInputCones', true, ...
+            'identifiedInputConeIndices', inputConeIndices, ...
+            'identifyPooledCones', ~true, ...
+            'identifiedConeAperture', 'lightCollectingArea4sigma', ...
+            'plottedRFoutlineLineWidth', 1.5, ...
+            'centerSubregionContourSamples', 30, ...
+            'labelRGCsWithIndices', theTargetRGCindex, ...
+            'labeledRGCsLineWidth', ff.lineWidth, ...
+            'labeledRGCsColor', [1 0 0], ...
+            'backgroundColor', [1 1 1], ...
+            'fontAngle', ff.axisFontAngle, ...
+            'fontSize', ff.fontSize);
+
+        if (~isempty(exportedFittingProgressFolder))
+            rawFiguresRoot = exportedFittingProgressFolder;
+            pdfFileName = fullfile(rawFiguresRoot,'RGCmosaicAtSurroundOptimizationNode.pdf');
+            NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+        end
+
+
+
+
+        % Generate 2D visual STF
+        SF = [];
+        ORI = [];
+        STF = [];
+
+        for iOri = 1:numel(orientationsTested)
+            for iSF = 1:numel(spatialFrequenciesTested)
+                SF = cat(1, SF, spatialFrequenciesTested(iSF));
+                ORI = cat(1, ORI, orientationsTested(iOri));
+                STF = cat(1, STF, theCenterSTFsAcrossAllOrientations(iOri, iSF));
+                if (orientationsTested(iOri) == 0)
+                    SF = cat(1, SF, spatialFrequenciesTested(iSF));
+                    ORI = cat(1, ORI, 180);
+                    STF = cat(1, STF, theCenterSTFsAcrossAllOrientations(iOri, iSF));
+                end
+            end
+        end
+
+        sfX = SF .* cosd(ORI);
+        sfY = SF .* sind(ORI);
+
+        F = scatteredInterpolant(sfX, sfY, STF, 'natural');
+
+        hiResSFx = -70:0.5:70;
+        hiResSFy = (0:0.5:70)'; 
+        [hiResSFxx, hiResSFyy] = meshgrid(hiResSFx, hiResSFy);
+        theCenterSTFsAcrossAllOrientationsHiRes = F(hiResSFxx(:),hiResSFyy(:));
+        theCenterSTFsAcrossAllOrientationsHiRes = theCenterSTFsAcrossAllOrientationsHiRes / max(theCenterSTFsAcrossAllOrientationsHiRes(:));
+        theCenterSTFsAcrossAllOrientationsHiRes = reshape(theCenterSTFsAcrossAllOrientationsHiRes, [numel(hiResSFy) numel(hiResSFx)]);
+        theCenterSTFsAcrossAllOrientationsHiRes(theCenterSTFsAcrossAllOrientationsHiRes<0.001) = 0.001;
+
+        % Make it symmetric
+        theCenterSTFsAcrossAllOrientationsHiRes = cat(1, ...
+            flipud(fliplr(theCenterSTFsAcrossAllOrientationsHiRes)), ...
+            theCenterSTFsAcrossAllOrientationsHiRes(2:end,:) ...
+            );
+
+        hFig = figure(999); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFig,ff);
+        set(hFig, 'Color', [1 1 1]);
+
+        contourLevelsLogMag = log10([1 2 4 8 15 30 55 95]/100);
+        cLut = brewermap(100, 'OrRd');
+        cLut(1,:) = cLut(1,:)*0.6 + 0.4*[1 1 1];
+
+        [M,c] = contourf(theAxes{1,1}, hiResSFx, hiResSFx, log10(theCenterSTFsAcrossAllOrientationsHiRes), ...
+            contourLevelsLogMag);
+        c.LineWidth = ff.axisLineWidth*1.5;
+        c.LineStyle = '-';
+        c.EdgeColor = [0.3 0.3 0.5];
+
+        % 20 % contour in red
+        hold(theAxes{1,1}, 'on');
+        contourLevels2 = log10(MosaicPoolingOptimizer.highSFAttenuationFactorForOptimalOrientation)*[1 1];
+        [M2,c2] = contourf(theAxes{1,1}, hiResSFx, hiResSFx, log10(theCenterSTFsAcrossAllOrientationsHiRes), ...
+            contourLevels2);
+        c2.LineStyle = '-';
+        c2.LineWidth = ff.axisLineWidth*2;
+        c2.EdgeColor = [0 0 0];
+        c2.FaceAlpha = 0;
+
+        axis(theAxes{1,1}, 'image');
+        axis(theAxes{1,1}, 'xy');
+        set(theAxes{1,1}, 'TickDir', 'both', 'XTick', -100:20:100, 'YTick', -100:20:100);
+        set(theAxes{1,1}, 'XLim', [-70 70], 'YLim', [-70 70], 'CLim', [min(contourLevelsLogMag) max(contourLevelsLogMag)]);
+
+        % Font size
+        set(theAxes{1,1}, 'FontSize', ff.fontSize, 'FontAngle', ff.axisFontAngle);
+
+        % axis color and width
+        set(theAxes{1,1}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'Color', [1 1 1], 'LineWidth', ff.axisLineWidth);
+        grid(theAxes{1,1}, 'on')
+        box(theAxes{1,1}, 'off')
+
+        xtickangle(theAxes{1,1}, 0);
+
+        xlabel(theAxes{1,1}, 'spatial frequency, x (c/deg)')
+        ylabel(theAxes{1,1}, 'spatial frequency, y (c/deg)');
+
+        
+        colormap(theAxes{1,1}, cLut);
+        
+        colorbar('Ticks',contourLevelsLogMag,...
+                 'TickLabels',sprintf('%.0f%%\n', 100*(10.^contourLevelsLogMag)), ...
+                 'FontSize', ff.fontSize-2);
+
+        if (~isempty(exportedFittingProgressFolder))
+            rawFiguresRoot = exportedFittingProgressFolder;
+            pdfFileName = fullfile(rawFiguresRoot,'RFcenter2DVisualSTF.pdf');
+            NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+
+            % Generate paper-ready figures (scaled versions of the figures in
+            % the rawFiguresRoot directory) which are stored in the PaperReady folder
+            dd = strrep(rawFiguresRoot, 'Raw', 'cpdf');
+
+            PLOSdirectory = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode';
+            commandString = sprintf('%s -args %s/generatePLOSOnePaperReadyFigures.txt', dd, PLOSdirectory);
+            system(commandString);
+
+            pause
+        end
+
+    end
+
 
     % An estimate of the anatomical RcDegs
     anatomicalRcDegs = sqrt(numel(inputConeWeights)) * ...

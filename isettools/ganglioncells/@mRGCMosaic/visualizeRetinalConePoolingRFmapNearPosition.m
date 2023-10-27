@@ -9,12 +9,17 @@ function theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(ob
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('theAxes', [], @(x)(isempty(x)||(iscell(x))));
+    p.addParameter('reverseXDir', false, @islogical);
+    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+
     p.parse(varargin{:});
     
     ff = p.Results.withFigureFormat;
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
     theAxes = p.Results.theAxes;
+    reverseXDir = p.Results.reverseXDir;
+    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
 
     if (isempty(targetRGCposition))
         theVisualizedRGCindex = input('Enter index of target RGC : ');
@@ -38,5 +43,8 @@ function theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(ob
             'theAxes', theAxes, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
-            'withFigureFormat', ff);
+            'withFigureFormat', ff, ...
+            'reverseXDir', reverseXDir, ...
+            'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions);
+           
 end

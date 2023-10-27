@@ -4,7 +4,7 @@ function computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
     p = inputParser;
     p.addParameter('useParfor', false, @islogical);
     p.addParameter('visualizedResponses', false, @islogical);
-    p.addParameter('opticsToEmploy', 'native', @(x)(ismember(x, {'native', 'custom'})));
+    p.addParameter('opticsToEmploy', 'native', @(x)(ismember(x, {'native', 'custom', 'adaptive optics'})));
 
     p.parse(varargin{:});
     useParfor = p.Results.useParfor;
@@ -16,7 +16,7 @@ function computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
 
     % Load the previously computed inputConeMosaic STF responses
     switch (opticsToEmploy)
-        case 'native'
+        case {'native', 'adaptive optics'}
              load(responsesFileName, 'theNativeOpticsParams', ...
                 'theConeMosaicSTFresponses', 'theConeMosaicNullResponses', ...
                  'orientationsTested', 'spatialFrequenciesTested', ...
@@ -78,46 +78,21 @@ function computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
     visualRcDegs = zeros(1, numel(analyzedConeIndices));
     temporalEquivalentEccDegs = zeros(1,numel(analyzedConeIndices));
 
-    for idx = 1:numel(analyzedConeIndices)
-        iCone = analyzedConeIndices(idx);
-
-        % The temporal equivalent ecc for this cone
-        tempEquivEccDegs = obj.theRGCMosaic.temporalEquivalentEccentricityForEccentricity(theInputConeMosaic.coneRFpositionsDegs(iCone,:));
-        temporalEquivalentEccDegs(idx) = sqrt(sum(tempEquivEccDegs.^2,2));
-
-        % Retrieve the visual STFs for all orientations for this cone
-        theConeResponsesAcrossAllOrientationsAndSpatialFrequencies = theConeMosaicModulationSTFresponses(:,:,:,iCone);
-    
-        [theConeVisualSTF,theSTFsAcrossAllOrientations] = MosaicPoolingOptimizer.optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies( ...
-               orientationsTested, spatialFrequenciesTested, ...
-               theConeResponsesAcrossAllOrientationsAndSpatialFrequencies);
-
-        fprintf('Computing estimate of the visual Rc for cone %d of %d \n', ...
-            idx, numel(analyzedConeIndices));
-
-        % An estimate of the anatomical RcDegs for this cone
-        anatomicalRcDegs(idx) = theInputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
-                           theInputConeMosaic.coneApertureDiametersDegs(iCone);
-
-        rangeForRc = anatomicalRcDegs(idx)*[1 5 20];
-
-        multiStartsNumDoGFit = 256;
-        % Fit the visual STF with a DoG model
-        [fittedParamsStruct, theFittedSTF] = MosaicPoolingOptimizer.fitGaussianToSubregionSTF(...
-                      spatialFrequenciesTested, ...
-                      theConeVisualSTF, ...
-                      anatomicalRcDegs(idx), ...
-                      rangeForRc, ...
-                      multiStartsNumDoGFit);
-
-        figure(idx); clf;
-        plot(spatialFrequenciesTested, theConeVisualSTF, 'rs', 'LineWidth', 1.5);
-        hold on;
-        plot(theFittedSTF.sfHiRes, theFittedSTF.subregionSTFHiRes , 'r-', 'LineWidth', 1.5);
-        set(gca, 'XScale', 'log')
-        
-        % The visually projected Rc for this cone
-        visualRcDegs(idx) = fittedParamsStruct.finalValues(2);
+    if (useParfor)
+        visualizeResponses = false;
+        parfor idx = 1:numel(analyzedConeIndices)
+            [temporalEquivalentEccDegs(idx), visualRcDegs(idx), anatomicalRcDegs(idx)] = analyzeSingleCone(...
+                idx, analyzedConeIndices, obj.theRGCMosaic, theConeMosaicModulationSTFresponses, ...
+                orientationsTested, spatialFrequenciesTested, ...
+                visualizeResponses);
+        end
+    else
+        for idx = 1:numel(analyzedConeIndices)
+            [temporalEquivalentEccDegs(idx), visualRcDegs(idx), anatomicalRcDegs(idx)] = analyzeSingleCone(...
+                idx, analyzedConeIndices, obj.theRGCMosaic, theConeMosaicModulationSTFresponses, ...
+                orientationsTested, spatialFrequenciesTested, ...
+                visualizeResponses);
+        end
     end
 
 
@@ -130,3 +105,51 @@ function computeInputConeMosaicVisuallyProjectedRcDegs(obj, ...
     ylabel('Rc (degs)');
     legend({'single cone visual Rc (gaussian STF fit)', 'anatomical Rc'});
 end
+
+
+function [temporalEquivalentEccDegs, visualRcDegs, anatomicalRcDegs] = analyzeSingleCone(idx, ...
+    analyzedConeIndices, theRGCMosaic, theConeMosaicModulationSTFresponses, ...
+    orientationsTested, spatialFrequenciesTested, visualizeResponses)
+
+    iCone = analyzedConeIndices(idx);
+
+    % The temporal equivalent ecc for this cone
+    tempEquivEccDegs = theRGCMosaic.temporalEquivalentEccentricityForEccentricity(theRGCMosaic.inputConeMosaic.coneRFpositionsDegs(iCone,:));
+    temporalEquivalentEccDegs = sqrt(sum(tempEquivEccDegs.^2,2));
+
+    % Retrieve the visual STFs for all orientations for this cone
+    theConeResponsesAcrossAllOrientationsAndSpatialFrequencies = theConeMosaicModulationSTFresponses(:,:,:,iCone);
+    
+    theConeVisualSTF = MosaicPoolingOptimizer.optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies( ...
+               orientationsTested, spatialFrequenciesTested, ...
+               theConeResponsesAcrossAllOrientationsAndSpatialFrequencies);
+
+    fprintf('Computing estimate of the visual Rc for cone %d of %d \n', ...
+        idx, numel(analyzedConeIndices));
+
+    % An estimate of the anatomical RcDegs for this cone
+    anatomicalRcDegs = theRGCMosaic.inputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
+                       theRGCMosaic.inputConeMosaic.coneApertureDiametersDegs(iCone);
+
+    % Fit the cone visual STF with a Gaussian model
+    rangeForRc = anatomicalRcDegs*[1 5 20];
+    multiStartsNumDoGFit = 256;
+    [fittedParamsStruct, theFittedSTF] = MosaicPoolingOptimizer.fitGaussianToSubregionSTF(...
+                      spatialFrequenciesTested, ...
+                      theConeVisualSTF, ...
+                      anatomicalRcDegs, ...
+                      rangeForRc, ...
+                      multiStartsNumDoGFit);
+
+    if (visualizeResponses)
+            figure(idx); clf;
+            plot(spatialFrequenciesTested, theConeVisualSTF, 'rs', 'LineWidth', 1.5);
+            hold on;
+            plot(theFittedSTF.sfHiRes, theFittedSTF.subregionSTFHiRes , 'r-', 'LineWidth', 1.5);
+            set(gca, 'XScale', 'log')
+    end
+
+    % The visually projected Rc for this cone
+    visualRcDegs = fittedParamsStruct.finalValues(2);
+end
+

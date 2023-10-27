@@ -4,22 +4,26 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
             theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin)
 
     p = inputParser;
+    p.addParameter('nTrials', [], @isscalar);
     p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
     p.addParameter('seed', [], @isnumeric);
-    
 
     % Parse input
     p.parse(varargin{:});
+    mRGCMosaicNoisyResponseInstancesNum = p.Results.nTrials;
     timeResolutionSeconds = p.Results.timeResolutionSeconds;
     noiseSeed = p.Results.seed;
 
-    % Parse input
+    % Validate input: ensure theConeMosaicResponse is a 3D matrix
     assert(ndims(theConeMosaicResponse) == 3, ...
         'The theConeMosaicResponse must have 3 dimensions [nTrials x nTimePoints x nCones]');
     
+    % Validate input: ensure that the temporal dimensions of the cone
+    % mosaic response and its temporal support match
     assert(size(theConeMosaicResponse,2) == numel(theConeMosaicResponseTemporalSupportSeconds), ...
         'The size(theConeMosaicResponsth,2) (%d) does not equal the length of temporal support (%d)', ...
         size(theConeMosaicResponse,2), numel(theConeMosaicResponseTemporalSupportSeconds));
+
 
     if (numel(theConeMosaicResponseTemporalSupportSeconds)>1)
         inputTimeResolutionSeconds = theConeMosaicResponseTemporalSupportSeconds(2)-theConeMosaicResponseTemporalSupportSeconds(1);
@@ -27,8 +31,30 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         inputTimeResolutionSeconds = 1.0;
     end
 
-    inputTimePoints = numel(theConeMosaicResponseTemporalSupportSeconds);
+    % Find out the # of trials to compute
+    coneMosaicResponseInstancesNum = size(theConeMosaicResponse,1);
+    if (isempty(mRGCMosaicNoisyResponseInstancesNum))
+        % No 'nTrials' passed, so we will create as many instances as there
+        % are cone mosaic noisy intances
+        mRGCMosaicNoisyResponseInstancesNum = coneMosaicResponseInstancesNum;
+    else
+        % 'nTrials' for mRGCMosaic responses is passed
+        if (coneMosaicResponseInstancesNum > 1)
+            % We also have more than 1 input cone mosaic response.
+            % Must be noisy cone mosaic responses instances. 
+            % Ensure that mRGCMosaicNoisyResponseInstancesNum == coneMosaicResponseInstancesNum
+            assert(mRGCMosaicNoisyResponseInstancesNum == coneMosaicResponseInstancesNum, ...
+               '''nTrials'' (%d) does not match the trials of the input cone mosaic response (%d)', ...
+               mRGCMosaicNoisyResponseInstancesNum,coneMosaicResponseInstancesNum);
+        else
+            % A single trial of input cone mosaic response, must be the noise-free cone mosaic response. Replicate it 
+            theConeMosaicResponse = repmat(theConeMosaicResponse, [mRGCMosaicNoisyResponseInstancesNum 1 1]);
+        end
+    end
+    nTrials = mRGCMosaicNoisyResponseInstancesNum;
 
+
+    inputTimePoints = numel(theConeMosaicResponseTemporalSupportSeconds);
     if (isempty(timeResolutionSeconds))
         timeResolutionSeconds = inputTimeResolutionSeconds;
         responseTemporalSupportSeconds = theConeMosaicResponseTemporalSupportSeconds;
@@ -41,7 +67,6 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
 
    
     % Allocate memory for the computed responses
-    nTrials = size(theConeMosaicResponse,1);
     noiseFreeMRGCresponses = zeros(nTrials, numel(responseTemporalSupportSeconds), obj.rgcsNum);
     
     % Delta function center impulse response with a length of 200 mseconds

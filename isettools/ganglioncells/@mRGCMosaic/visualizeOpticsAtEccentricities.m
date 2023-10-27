@@ -1,11 +1,12 @@
-function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
+function hFig = visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams, tickSeparationArcMin)
 
     assert(size(eccDegs,1)<=9, 'The number of visualized positions must be <= 9');
 
     % Visualized PSF range and wavelength
-    psfRangeDegs = 5/60;
+    psfRangeDegs = 0.5*(tickSeparationArcMin*4)/60;
     targetWavelength = 550;
     [~,idx] = min(abs(obj.inputConeMosaic.wave-targetWavelength));
+
 
     % Plot format
     ff = MSreadyPlot.figureFormat('3x3');
@@ -45,6 +46,7 @@ function visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams)
             thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, ...
             thePSFData.data, psfRangeDegs, plotTitle, ff, ...
             'withConeApertureData', apertureDataStruct, ...
+            'tickSeparationArcMin', tickSeparationArcMin, ...
             'noXLabel', noXLabel, ...
             'noYLabel', noYLabel);
         drawnow;
@@ -59,7 +61,8 @@ function dOut = localConeApertureData(obj, opticsPositionDegs, psfSupportDegs)
     coneAperturePositionsDegs = bsxfun(@minus, obj.inputConeMosaic.coneRFpositionsDegs(idx,:),opticsPositionDegs);
 
     if (isfield(obj.inputConeMosaic.coneApertureModifiers, 'shape') && (strcmp(obj.inputConeMosaic.coneApertureModifiers.shape, 'Gaussian')))
-        coneAperturesDegs = obj.coneApertureToConeCharacteristicRadiusConversionFactor*obj.inputConeMosaic.coneApertureDiametersDegs(idx);
+        coneAperturesDegs = obj.inputConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
+                            obj.inputConeMosaic.coneApertureDiametersDegs(idx);
     else  
         coneAperturesDegs = obj.inputConeMosaic.coneApertureDiametersDegs(idx);
     end

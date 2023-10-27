@@ -1,4 +1,4 @@
-function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
+function [subregionLineWeightingFunctions, subregionContourData] = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
         rgcRFposDegs, coneIndices, coneWeights, varargin)
 
     p = inputParser;
@@ -6,21 +6,32 @@ function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, th
     p.addParameter('noYLabel', false, @islogical);
     p.addParameter('noXTicks', false, @islogical);
     p.addParameter('noYTicks', false, @islogical);
+    p.addParameter('gridless', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
+    p.addParameter('alsoComputeSubregionContour', false, @islogical);
+    p.addParameter('overlayedSubregionContour', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
     p.addParameter('spatialSupportRangeArcMin', [], @(x)(isempty(x)||isscalar(x)));
-    p.addParameter('xAxisTickAngleRotationDegs', 90, @isscalar);
+    p.addParameter('xAxisTickAngleRotationDegs', 0, @isscalar);
     p.addParameter('withFigureFormat', [], @(x)(isempty(x)||(isstruct(x))));
+    p.addParameter('resetAxes', true, @islogical);
+
     p.parse(varargin{:});
     
     spatialSupportRangeArcMin = p.Results.spatialSupportRangeArcMin;
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    computeSubregionContour = p.Results.alsoComputeSubregionContour;
+    overlayedSubregionContour = p.Results.overlayedSubregionContour;
+    gridless = p.Results.gridless;
+
     plotTitle = p.Results.plotTitle;
     noXLabel = p.Results.noXLabel;
     noYLabel = p.Results.noYLabel;
     noXTicks = p.Results.noXTicks;
     noYTicks = p.Results.noYTicks;
     ff = p.Results.withFigureFormat;
+    resetAxes = p.Results.resetAxes;
+
     xAxisTickAngleRotationDegs = p.Results.xAxisTickAngleRotationDegs;
     
     if (isempty(tickSeparationArcMin))
@@ -30,7 +41,7 @@ function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, th
     if (isempty(spatialSupportRangeArcMin))
         spatialSupportRangeArcMin = 10;
     end
-
+    
     if (isempty(tickSeparationArcMin))
         tickSeparationArcMin = 5.0;
     end
@@ -39,24 +50,67 @@ function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, th
     spatialSupportDegs = (-maxXY:0.05:maxXY)/60;
     spatialSupportXYDegs(:,1) = rgcRFposDegs(1) + spatialSupportDegs;
     spatialSupportXYDegs(:,2) = rgcRFposDegs(2) + spatialSupportDegs;
-    XLims = rgcRFposDegs(1) + [spatialSupportDegs(1) spatialSupportDegs(end)];
-    YLims = rgcRFposDegs(2) + [spatialSupportDegs(1) spatialSupportDegs(end)];
+    dx = (spatialSupportDegs(end)-spatialSupportDegs(1))*0.05;
+    XLims = rgcRFposDegs(1) + [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
+    YLims = rgcRFposDegs(2) + [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
 
-    retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(...
+    [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
         theConeMosaic, coneIndices, coneWeights, spatialSupportXYDegs);
 
-    imagesc(ax, spatialSupportXYDegs(:,1), spatialSupportXYDegs(:,2), retinalSubregionConeMap);
+    if (computeSubregionContour)
+        spatialSupportSamples = 64;
+        coneApertureSizeSpecifierForRGCRFplotting = 'spacing based';
+        switch (coneApertureSizeSpecifierForRGCRFplotting)
+            case 'spacing based'
+                coneRFradii = 0.6*0.5*theConeMosaic.coneRFspacingsDegs;
+            case 'characteristic radius based'
+                coneRFradii = ...
+                    theConeMosaic.coneApertureToConeCharacteristicRadiusConversionFactor * ...
+                    theConeMosaic.coneApertureDiametersDegs;
+            otherwise
+                error('Unknown apertureSizeSpecifierForRGCRFplotting: ''%s''.', coneApertureSizeSpecifierForRGCRFplotting);
+        end
+
+        conePositions = theConeMosaic.coneRFpositionsDegs(coneIndices,:);
+        xSupport = spatialSupportXYDegs(:,1);
+        ySupport = spatialSupportXYDegs(:,2);
+        subregionContourData = mRGCMosaic.subregionOutlineContourFromPooledCones(...
+             conePositions, coneRFradii, coneWeights, ...
+             xSupport, ySupport, spatialSupportSamples);
+    else
+        subregionContourData = [];
+    end
+
+
+    if (resetAxes)
+        cla(ax, 'reset');
+    end
+
+    imagesc(ax, spatialSupportXYDegs(:,1), spatialSupportXYDegs(:,2), retinalSubregionConeMapFlatTop);
     hold(ax, 'on');
+    
+
+    if (~isempty(overlayedSubregionContour))
+        S.Vertices = overlayedSubregionContour.vertices;
+        S.Faces = overlayedSubregionContour.faces;
+        S.FaceVertexCData = [0.5 0.5 0.5];
+        S.FaceColor = 'flat';
+        S.EdgeColor = [0 0 0];
+        S.FaceAlpha = 0.0;
+        S.LineWidth = 2.0;
+        patch(S, 'Parent', ax);
+    end
+
     for iInputCone = 1:numel(coneIndices)
         switch theConeMosaic.coneTypes(coneIndices(iInputCone))
             case cMosaic.LCONE_ID
                 coneColor = [1 0 0];
             case cMosaic.MCONE_ID
-                coneColor = [0 1 0];
+                coneColor = [0 0.75 0];
             case cMosaic.SCONE_ID
                 coneColor = [0 0 1];
         end
-        plot(ax,theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),1), theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),2), '.', 'MarkerSize', 8, 'Color', coneColor);
+        plot(ax,theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),1), theConeMosaic.coneRFpositionsDegs(coneIndices(iInputCone),2), '.', 'MarkerSize', 14, 'Color', coneColor);
     end
     
     % Return the subregion line weighting functions along X and Y
@@ -68,17 +122,20 @@ function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, th
         'spatialSupportDegs', spatialSupportXYDegs(:,2), ...
         'amplitude', sum(retinalSubregionConeMap,2));
 
+    axis(ax, 'image'); axis(ax, 'xy');
+
     xyTicks = -30:(tickSeparationArcMin/60):30;
-    
+    if (tickSeparationArcMin >= 6)
+        xyTickLabels = sprintf('%2.1f\n', xyTicks);
+    else
+        xyTickLabels = sprintf('%2.2f\n', xyTicks);
+    end
 
-    axis(ax, 'image');
-    axis(ax, 'xy');
-
-    set(ax, 'CLim', [0 0.2*max(retinalSubregionConeMap(:))], ...
+    set(ax, 'CLim', [0 max(retinalSubregionConeMapFlatTop(:))], ...
             'XLim', XLims, 'YLim', YLims, ...
             'XTick', xyTicks, 'YTick', xyTicks, ...
-            'XTickLabel', sprintf('%2.2f\n', xyTicks), ...
-            'YTickLabel', sprintf('%2.2f\n', xyTicks));
+            'XTickLabel', xyTickLabels, ...
+            'YTickLabel', xyTickLabels);
 
     if (noXTicks)
         set(ax, 'XTickLabel', {});
@@ -124,11 +181,18 @@ function subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, th
 
     end
 
+    if (~gridless)
+        grid(ax, 'on');
+    else
+        grid(ax, 'off');
+    end
+
     xtickangle(ax, xAxisTickAngleRotationDegs);
     colormap(ax, brewermap(1024, 'greys'));
+    
 end
 
-function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(...
+function [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
     theConeMosaic, theConeIndices, theConeWeights, spatialSupportDegs)
     
     [X,Y] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
@@ -143,6 +207,10 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(.
 
     oiResDegs = spatialSupportDegs(2,1) - spatialSupportDegs(1,1);
     theConeApertureBlurKernel = computeConeApertureBlurKernel(theConeMosaic, theConeIndices, oiResDegs);
+
+    halfMax = 0.1*max(theConeApertureBlurKernel(:));
+    theConeApertureBlurKernelFlatTop = theConeApertureBlurKernel;
+    theConeApertureBlurKernelFlatTop(theConeApertureBlurKernelFlatTop>halfMax) = halfMax;
 
     insertionCoords = cell(1, conesNumPooled);
     parfor iCone = 1:conesNumPooled
@@ -159,6 +227,7 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(.
     end
 
     retinalSubregionConeMap = X * 0;
+    retinalSubregionConeMapFlatTop = X*0;
     conesNotIncluded = 0;
 
     for iCone = 1:conesNumPooled
@@ -172,6 +241,7 @@ function retinalSubregionConeMap = retinalSubregionConeMapFromPooledConeInputs(.
 
         % Accumulate the subregion cone map
         retinalSubregionConeMap(rr,cc) = retinalSubregionConeMap(rr,cc) + theConeWeights(iCone) * theConeApertureBlurKernel;
+        retinalSubregionConeMapFlatTop(rr,cc) = retinalSubregionConeMapFlatTop(rr,cc) + theConeWeights(iCone) * theConeApertureBlurKernelFlatTop;
     end
 
     if (conesNotIncluded > 0)

@@ -30,6 +30,7 @@ classdef mRGCMosaic < handle
             'examinedSubjectRankOrder', 6, ...
             'pupilDiameterMM', 3.0, ...
             'refractiveErrorDiopters', 0.0, ...    % use -999 for optics that do not subtract the central refraction
+            'noLCA', false, ...
             'analyzedEye', 'right eye', ...
             'subjectRankingEye', 'right eye', ...
             'zeroCenterPSF', true, ...
@@ -125,6 +126,9 @@ classdef mRGCMosaic < handle
 
         % Cell array of figure handles for each intermediate connectivity stage of theMosaicConnectorOBJ 
         mosaicConnectorIntermediateFigureHandles;
+
+        % Cache for various visualizations
+        visualizationCache = [];
     end % Read-only properties
 
     % Dependent properties
@@ -146,9 +150,6 @@ classdef mRGCMosaic < handle
     properties (GetAccess=private, SetAccess=private)
         % The MosaicConnectorOBJ used to connect cones to midget RGCs
         theMosaicConnectorOBJ;
-
-        % Cache for various visualizations
-        visualizationCache = [];
     end
 
     % Public methods
@@ -238,7 +239,7 @@ classdef mRGCMosaic < handle
             targetRGCposition, targetCenterConesNum, ...
             targetCenterConeMajorityType, varargin);
 
-        % Method to visual the spatial RF of an RGC with a specific index
+        % Method to visualize the spatial RF of an RGC with a specific index
         visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj,theRGCindex, varargin);
 
         % Method to generate optics for the mosaic.
@@ -249,7 +250,7 @@ classdef mRGCMosaic < handle
         setTheOptics(obj, opticsParams);
 
         % Method to visualize optics at a number of eccentricities
-        visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams);
+        hFig = visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams, tickSeparationArcMin);
 
         % Method to bake in center/surround cone pooling weights.
         % This method replaces the rgcRFcenterConeConnectivityMatrix with
@@ -260,8 +261,16 @@ classdef mRGCMosaic < handle
         bakeInConePoolingMatrices(obj, centerConePoolingMatrix, surroundConePoolingMatrix);
 
         % Method to return the majority center cone type for an RGC
-        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = ...
+        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, ...
+            theCenterConeTypes, theCenterConeIndices] = ...
             centerConeTypeWeights(obj, theRGCindex);
+
+        % Method to return the L, M, and S net cone weights in the surround
+        % If a non-empty theCenterConeIndices is passed the computed
+        % surround cone type weights are computed after excluding the surround cones
+        % that also feed into the RF center
+        [theSurroundConeTypeWeights, theExclusiveSurroundConeTypeWeights] = ...
+            surroundConeTypeWeights(obj, theRGCindex, theCenterConeIndices);
 
         % Method to return the index of the RGC best matching the target
         % criteria
@@ -327,18 +336,10 @@ classdef mRGCMosaic < handle
 
     % Static methods
     methods (Static)
-        % Method to visualize the visual RF map computed via some way, such
-        % as subspace mapping. The VisualRFmapStruct must contain the
-        % following fields:
-        % 'spatialSupportDegsX'   - vector
-        % 'spatialSupportDegsY'   - vector
-        % 'theRFmap'              - matrix 
-        visualizeVisualRFmap(theVisualRFmapStruct, retinalRGCRFposDegs, theAxes, varargin);
-
         % Method to render the cone pooling plot with a subregion based on
         % the cone indices and weights pooled by that subregion and return
         % the X,Y line weighting functions for that subregion
-        subregionLineWeightingFunctions = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
+        [subregionLineWeightingFunctions, subregionContourData] = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
             rgcRFposDegs, coneIndices, coneWeights, varargin);
 
         % Method to render the X,Y line weighting functions for a subregion
@@ -357,6 +358,31 @@ classdef mRGCMosaic < handle
 
         % Method to compute the extra degs to include the surrounds
         extraDegs = extraConeMosaicDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
+
+        % Method to generate  data for visualization of the PSF
+        thePSFData = generateOpticsPSFdataForVisualization(theOI, visualizedWavelength, micronsPerDegree);
+
+        % Method to generate RF center contours from the pooled cones when
+        % the contourGenerationMethod is set to 'ellipseFitBasedOnLocalSpacing'
+        contourData = subregionOutlineContourFromSpacing(...
+            rgcPos, rgcRFradius,  ...
+            xSupport, ySupport, spatialSupportSamples);
+
+        % Method to generate RF center contours from the pooled cones when
+        % the contourGenerationMethod is set to 'contourOfPooledConeApertureImage'
+        [contourData, RFmap2D] = subregionOutlineContourFromPooledCones(...
+            conePos, coneRc, poolingWeights, ...
+            xSupport, ySupport, spatialSupportSamples)
+
+        % Method to generate RF center contours from the pooled cones when
+        % the contourGenerationMethod is set to 'ellipseFitToPooledConeApertureImage'
+        contourData = subregionEllipseFromPooledCones(...
+            conePos, coneRc, poolingWeights, ...
+            xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples);
+
+        % Method to fit an ellipse at some RFmap at the normalized level zLevel
+        contourData = ellipseContourFromSubregionRFmap(xSupport, ySupport, RFmap, ...
+            zLevel, centerSubregionContourSamples);
     end % Static methods
 
 end

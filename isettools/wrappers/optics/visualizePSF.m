@@ -6,6 +6,9 @@ p.addParameter('figureTitle', '', @ischar);
 p.addParameter('fontSize', []);
 p.addParameter('contourLevels', 0.1:0.1:1.0);
 p.addParameter('includePupilAndInFocusWavelengthInTitle', true, @islogical);
+p.addParameter('noXLabel', false, @islogical);
+p.addParameter('noYLabel', false, @islogical);
+p.addParameter('psfColorMap', [], @isnumeric);
 
 % Parse input
 p.parse(varargin{:});
@@ -13,6 +16,9 @@ contourLevels = p.Results.contourLevels;
 axesHandle = p.Results.axesHandle;
 theMosaic = p.Results.withSuperimposedMosaic;
 figureTitle = p.Results.figureTitle;
+noXLabel = p.Results.noXLabel;
+noYLabel = p.Results.noYLabel;
+psfColorMap = p.Results.psfColorMap;
 
 psfRangeArcMin = 0.5*psfRangeArcMin;
 psfTicksMin = (-30:5:30);
@@ -101,8 +107,12 @@ if (~isempty(theMosaic))
    psfTicks = psfTicks / 60 * theMosaic.micronsPerDegree * 1e-6;
 end
 
+if (isempty(psfColorMap))
+    cmap = brewermap(1024, 'greys');
+else
+    cmap = psfColorMap;
+end
 
-cmap = brewermap(1024, 'greys');
 colormap(cmap);
 
 if (~isempty(theMosaic))
@@ -112,7 +122,7 @@ if (~isempty(theMosaic))
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.3 0.99 0.99], 'LineWidth', 2);
 else
     contourf(axesHandle,xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
-        'Color', [0 0 0], 'LineWidth', 1.5);
+        'Color', [0.3 0.3 0.3], 'LineWidth', 1.0);
 
     %imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
     hold(axesHandle, 'on');
@@ -121,14 +131,26 @@ else
 
 end
 
+
+xtickangle(axesHandle, 0);
+
 axis(axesHandle, 'image'); axis(axesHandle, 'xy');
 grid(axesHandle, 'on'); box(axesHandle,  'on');
 
 set(axesHandle, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1], 'CLim', [0 1], ...
                 'XTick', psfTicks, 'YTick', psfTicks, 'XTickLabel', psfTickLabels, 'YTickLabel', psfTickLabels);
 set(axesHandle, 'XColor', [0 0 0], 'YColor', [0 0 0]);
-xlabel(axesHandle,'space (arc min)');
-ylabel(axesHandle, '');
+if (~noXLabel)
+    xlabel(axesHandle,'space (arc min)');
+else
+    set(axesHandle, 'XTickLabel', {});
+end
+
+if (~noYLabel)
+    ylabel(axesHandle,'space (arc min)');
+else
+    set(axesHandle, 'YTickLabel', {});
+end
 set(axesHandle, 'FontSize', fontSize);
 
 

@@ -7,6 +7,9 @@ function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicP
     p.addParameter('plotRFoutlines',  true, @islogical);
     p.addParameter('labelRetinalMeridians', false, @islogical);
     p.addParameter('backgroundColor', [0 0 0], @(x)(isnumeric(x)||(numel(x)==3)));
+    p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
+    p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
+    p.addParameter('reverseXDir', false, @islogical);
     p.parse(varargin{:});
 
     % Generate the mosaic filename
@@ -22,22 +25,48 @@ function performVisualizeCenterConnectedRGCMosaicAndRemoveUnwantedRGCsOp(mosaicP
     plotRFoutlines = p.Results.plotRFoutlines;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
     backgroundColor = p.Results.backgroundColor;
+    domainVisualizationLimits = p.Results.domainVisualizationLimits;
+    domainVisualizationTicks = p.Results.domainVisualizationTicks;
+    reverseXDir = p.Results.reverseXDir;
 
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1800 1000], 'Color', [1 1 1]);
+    ff = MSreadyPlot.figureFormat('1x1 small wide');
+    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    set(hFig, 'Color', [1 1 1]);
 
     theMidgetRGCMosaic.visualize(...
             'figureHandle', hFig, ...
+            'axesHandle',theAxes{1,1}, ...
             'labelRetinalMeridians', labelRetinalMeridians, ...
             'identifiedConeApertureThetaSamples', 32, ...
             'identifiedConeAperture', 'lightCollectingAreaCharacteristicDiameter', ...
             'identifyPooledCones', identifyPooledCones, ...
             'identifyInputCones',identifyInputCones, ...
             'plotRFoutlines', plotRFoutlines, ...
-            'domainVisualizationLimits', [], ...
-            'domainVisualizationTicks', [], ...
-            'backgroundColor', backgroundColor);
+            'centerSubregionContourSamples', 32, ...
+            'domainVisualizationLimits', domainVisualizationLimits, ...
+            'domainVisualizationTicks', domainVisualizationTicks, ...
+            'backgroundColor', backgroundColor, ...
+            'fontSize', ff.fontSize, ...
+            'fontAngle', ff.axisFontAngle);
 
+    if (reverseXDir)
+        set(theAxes{1,1}, 'XDir', 'reverse');
+    end
+    
+    % ============ Now generate separate figs for each parameter (PLOS format)
+    rawFiguresRoot = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/Raw';
+    pdfFileName = fullfile(rawFiguresRoot, sprintf('RFcenters_%2.1fdegs.pdf', mosaicParams.eccDegs(1)));
+
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+
+    % Generate paper-ready figures (scaled versions of the figures i
+    % nrawFiguresRoot directory) which are stored in the PaperReady folder
+    PLOSdirectory = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode';
+    commandString = sprintf('%s/cpdf -args %s/generatePLOSOnePaperReadyFigures.txt', PLOSdirectory, PLOSdirectory);
+    system(commandString);
+
+    pause
     % Report stats of how many RGCs contain each # of cones in their RFcenter
     centerConesNumCases = theMidgetRGCMosaic.centerConePoolingStats();
 

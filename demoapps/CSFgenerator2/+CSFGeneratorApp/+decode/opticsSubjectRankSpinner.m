@@ -8,6 +8,8 @@ function opticsSubjectRankSpinner(app, direction, value)
                     maxSubjectRank = app.opticsParams.maxPolansSubjectRank;
                 case 'Artal2012'
                     maxSubjectRank = app.opticsParams.maxArtalSubjectRank;
+                case 'Thibos2002'
+                    maxSubjectRank = app.opticsParams.maxThibosSubjectRank;
                 otherwise
                     error('Unknown Zernike data set: ''%s''.', app.opticsParams.subjectDataset)
             end

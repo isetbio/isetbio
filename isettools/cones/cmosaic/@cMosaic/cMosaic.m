@@ -670,6 +670,13 @@ classdef cMosaic < handle
         % Method to visualize the cone mosaic and its activation
         params = visualize(obj, varargin);
         
+        % Method to visualize activation profiles for particular cone types along a
+        % horizontal slice ROI
+        hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
+            horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, varargin);
+
+
+
         % Method to visualize the continuous, full absorptions density and the actual cone positions
         visualizeFullAbsorptionsDensity(obj, figNo);
         
@@ -691,6 +698,11 @@ classdef cMosaic < handle
         % Method to return indices of cones within a geometry struct appropriate for @regionOfInterest
         coneIndices = indicesOfConesWithinROI(obj, geometryStruct);
         
+        % Method to return the cone indices of cones of a certain type that
+        % lie within a horizontal rect ROI
+        [coneIndicesOfCertainConeType, theROI] = ...
+            coneIndicesOfCertainTypeWithinHorizontalSlice(obj, slicePositionDegs, sliceWidthDegs, coneType);
+
         % Method to reassigne the type of any set of cones, specified by
         % their cone index
         reassignTypeOfCones(obj, coneIndices, newConeType);
@@ -912,6 +924,12 @@ classdef cMosaic < handle
         % Static method to compute the macular pigment density boost
         % factors at an arbitray array of retinal positions (in degrees)
         macularPigmentDensityBoostFactors = macularPigmentBoostFactors(theMacular, retinalPositionsDegs)
+
+        % Return the outer segment length in microns at the passed
+        % eccentricity as well as the foveal outer segment length using
+        % data from Banks, Sekuler and Anderson (1991). "Peripheral spatial vision: limits
+        % imposed by optics, photoreceptors and receptor pooling".
+        [osLengthMicrons, osLengthMicronsFoveal] = outerSegmentLengthFromEccentricity(eccDegs);
 
         % Static method to return signed horizontal and vertical
         % eccentricities corresponding to radial eccentricities specified

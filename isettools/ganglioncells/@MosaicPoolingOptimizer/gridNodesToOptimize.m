@@ -1,9 +1,17 @@
 function arbitraryNodesToCompute = gridNodesToOptimize()
     arbitraryNodesToCompute = {};
 
-    s = input('Compute all nodes (1) or speficic ones (2):');
+    s = input('Compute all nodes (1), or speficic ones (2), or nodes specified in gridNodesToOptimize():');
     if (s == 1)
         return;
+    elseif (s == 2)
+        gridNumber = input('Enter grid node index: ');
+        coneType = input('Enter majority cone type (1==Lcone, 2==Mcone');
+        assert(ismember(coneType, [cMosaic.LCONE_ID cMosaic.MCONE_ID]), 'Not L or M cone');
+
+        arbitraryNodesToCompute{numel(arbitraryNodesToCompute)+1} = struct(...
+                'number', gridNumber, ...
+                'coneType', coneType);
     else
 
         % Bad nodes
