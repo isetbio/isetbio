@@ -22,31 +22,27 @@ function t_mRGCMosaicBasic
     mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
 
     %% Specify the desired eccentricity of the precomputed mRGC mosaic
-    % Choose the x-eccentricity from one of the available mosaics,
-    % displayed above
+    % Choose the x-eccentricity from one of the available mosaics displayed above
     % (e.g., -16.0 to load the mosaic 'mRGCMosaicEcDegs(-10.0_0.0)_SizeDegs(6.0_3.0)...'
     horizontalEccDegs = input('Enter mRGCMosaic''s horizontal eccentricity: ');
 
-    %% Load the precomputed mRGCMosaic
+    %% Load precomputed mRGCMosaic
     theMRGCMosaic = MosaicPoolingOptimizer.loadPreComputedMRGCMosaic(horizontalEccDegs);
-
-    %% Examined level of the mRGCMosaic intrinsic noise
-    intrinsicMRGCnoiseSigma = 0.20;
 
     %% Set the presentation display on which the stimulus must be realized
     presentationDisplay = generateCRTDisplay();
 
     %% Set stimulus parameters
     sinusoidalStimulusParams = struct(...
-        'sizeDegs', 2.0, ...
-        'positionDegs',[6 0.5], ...
-        'spatialFrequencyCyclesPerDeg', 2.0, ...
+        'sizeDegs', 10.0, ...
+        'positionDegs',[7 0.], ...
+        'spatialFrequencyCyclesPerDeg', 10.0, ...
         'orientationDegs', 0, ...               
         'phaseDegs', 0, ...  
         'contrast', 0.9, ...
         'meanLuminanceCdPerM2', 40, ...
         'isWindowed', false, ...
-        'pixelsAlongWidthDim', 1024, ...         % pixels- width dimension
+        'pixelsAlongWidthDim', 1024, ...       
         'pixelsAlongHeightDim', 1024);
 
     %% Generate a sinusoidal stimulus scene and the background scene
@@ -54,16 +50,13 @@ function t_mRGCMosaicBasic
         presentationDisplay, sinusoidalStimulusParams);
 
     %% Retrieve the native optics
-    % These are the optics under which we optimized connections from the input cone
-    % mosaic to the mRGC mosaic 
+    % These are the optics under which the connections from the input cone
+    % mosaic to the mRGC mosaic were optimized
     theOI = theMRGCMosaic.theNativeOptics;
 
     %% Compute the retinal image of the stimulus and background scenes
     theStimulusRetinalImage = oiCompute(theStimulusScene, theOI);
     theBackgroundRetinalImage = oiCompute(theBackgroundScene, theOI);
-
-    %% Number of noisy response instances to compute
-    noisyInstancesNum = 128;
 
     %% Set the integration time of the input cone mosaic to 100 msec
     theMRGCMosaic.inputConeMosaic.integrationTime = 100/1000;
@@ -78,6 +71,9 @@ function t_mRGCMosaicBasic
 
     %% Set the input cone mosaic noise flag to random to generate noisy response instances
     theMRGCMosaic.inputConeMosaic.noiseFlag = 'random';
+
+    %% Number of noisy response instances to compute
+    noisyInstancesNum = 128;
 
     %% Compute the noise-free response and noisyInstancesNum of noisy response instances of the input cone mosaic
     [theConeMosaicNoiseFreeResponse,  ...
@@ -117,7 +113,7 @@ function t_mRGCMosaicBasic
              'nTrials', noisyInstancesNum);
 
     %% Set the intrinsic noise of the mRGCMosaic to the examined level
-    theMRGCMosaic.vMembraneGaussianNoiseSigma = intrinsicMRGCnoiseSigma;
+    theMRGCMosaic.vMembraneGaussianNoiseSigma = 0.05;
 
     %% Compute noisyInstancesNum of mRGC mosaic responses with the mRGCMosaic intrinsic noise being the only noise source
     % To do so, we compute using the input cone mosaic noise-free modulation response 

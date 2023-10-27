@@ -210,9 +210,9 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
     if (isempty(ax))
         if (isempty(hFig))
             hFig = figure(); clf;
-            set(hFig, 'Color', [1 1 1], 'Position', [10 10 1120 1050], 'Name', obj.name);
+            set(hFig, 'Color', [1 1 1], 'Position', [10 10 1300 900], 'Name', obj.name);
         end
-        ax = subplot('Position', [0.05 0.05 0.95 0.95]);
+        ax = subplot('Position', [0.05 0.06 0.91 0.91]);
     else
         if (clearAxesBeforeDrawing)
             cla(ax);

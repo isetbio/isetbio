@@ -96,6 +96,9 @@ function t_mRGCMosaicDynamicStimulus
     theStimulusRetinalOISequence = oiArbitrarySequence(...
         theListOfRetinalImages, theStimulusTemporalSupportSeconds);
 
+    %% Save some RAM
+    clear 'theListOfRetinalImages'
+
     %% Set the input cone mosaic integration time to the duration of a single stimulus frame
     theMRGCMosaic.inputConeMosaic.integrationTime = ...
         theStimulusRetinalOISequence.timeAxis(2) - theStimulusRetinalOISequence.timeAxis(1);
@@ -109,6 +112,9 @@ function t_mRGCMosaicDynamicStimulus
             theStimulusRetinalOISequence, ...
             'opticalImagePositionDegs', driftingSinusoidalStimulusParams.positionDegs);
 
+    %% Save some RAM
+    clear 'theStimulusRetinalOISequence'
+
     %% Compute the noise-free background activation of the input cone mosaic
     theConeMosaicNoiseFreeBackgroundResponse = theMRGCMosaic.inputConeMosaic.compute(...
             theBackgroundRetinalImage, ...
@@ -120,6 +126,8 @@ function t_mRGCMosaicDynamicStimulus
     [~,maxModulationFrame] = max(theStimulusTemporalRamp(:));
     coVisualizeRetinalStimulusConeAndMRGCmosaic(1, theMRGCMosaic, theListOfRetinalImages{maxModulationFrame});
 
+    %% Save some RAM
+    clear 'theStimulusRetinalOISequence'
 
     %% Define a function handle to convert excitations to modulations
     excitationsToModulations = @(e) (bsxfun(@times, (bsxfun(@minus, e, theConeMosaicNoiseFreeBackgroundResponse)), 1./theConeMosaicNoiseFreeBackgroundResponse));
