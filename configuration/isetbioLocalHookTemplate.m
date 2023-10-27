@@ -84,25 +84,20 @@ switch (computerInfo.localHostName)
         dropboxValidationRootDirPath = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
     case 'Santorini'
         % Nicolas' M1 MacMini
-        dropboxValidationRootDirPath  = '/Users/nicolas/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
-    case 'sharkray'
-            % DHB's desktop
-            dropboxValidationRootDirPath = fullfile(filesep,'Volumes','Dropbox','Aguirre-Brainard Lab Dropbox','David Brainard');       
+        dropboxValidationRootDirPath  = '/Users/nicolas/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';    
     otherwise
-        % Some unspecified machine, try user specific customization
-        switch(computerInfo.userShortName)
-            % Could put user specific things in, but at the moment generic
-            % is good enough.
-     
-            case 'colorlab'
-                % SACCSFA desktop (Linux)
-                userNameDropbox = 'Mela Nopsin';
-                dropboxValidationRootDirPath = fullfile('/home/',computerInfo.userShortName,'Aguirre-Brainard Lab Dropbox',userNameDropbox);
-                
-            otherwise
-                dropboxValidationRootDirPath = fullfile('/Users/',computerInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
-        end
-
+         if ismac
+            dbJsonConfigFile = '~/.dropbox/info.json';
+            fid = fopen(dbJsonConfigFile);
+            raw = fread(fid,inf);
+            str = char(raw');
+            fclose(fid);
+            val = jsondecode(str);
+            dropboxValidationRootDirPath = val.business.path;
+            %dropboxValidationRootDirPath = fullfile('/Users/',sysInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
+         else
+            error('Dropbox validation root directory location not available for computer named: ''%s''.', computerInfo.localHostName);
+         end
 end
 
 % RGC mosaic resources Dropbox URLpath
