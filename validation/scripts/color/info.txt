@@ -1,1 +1,0 @@
-This section contains validation scripts that relate color vision and colorimetry.
