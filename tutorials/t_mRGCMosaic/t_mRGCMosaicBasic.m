@@ -3,7 +3,8 @@
 % Description:
 %    Demonstrates
 %        - how to select one of the pre-computed midget RGC mosaics,
-%        - how to compute responses to a static (single-frame) stimulus, and
+%        - how to select noise source (cone-only or intrinscic mRGC noise only)
+%        - how to compute responses to a static (single-frame) stimulus
 %        - how to visualize different aspects of the mRGCMosaic
 %        - how to visualize its response
 %
@@ -24,7 +25,7 @@ function t_mRGCMosaicBasic
     % Choose the x-eccentricity from one of the available mosaics,
     % displayed above
     % (e.g., -16.0 to load the mosaic 'mRGCMosaicEcDegs(-10.0_0.0)_SizeDegs(6.0_3.0)...'
-    horizontalEccDegs = input('Enter mRGCMosaic''s horizontal eccentriciy: ');
+    horizontalEccDegs = input('Enter mRGCMosaic''s horizontal eccentricity: ');
 
     %% Load the precomputed mRGCMosaic
     theMRGCMosaic = MosaicPoolingOptimizer.loadPreComputedMRGCMosaic(horizontalEccDegs);
@@ -37,8 +38,8 @@ function t_mRGCMosaicBasic
 
     %% Set stimulus parameters
     sinusoidalStimulusParams = struct(...
-        'sizeDegs', 10.0, ...
-        'positionDegs',[7 0], ...
+        'sizeDegs', 2.0, ...
+        'positionDegs',[6 0.5], ...
         'spatialFrequencyCyclesPerDeg', 2.0, ...
         'orientationDegs', 0, ...               
         'phaseDegs', 0, ...  
@@ -61,19 +62,22 @@ function t_mRGCMosaicBasic
     theStimulusRetinalImage = oiCompute(theStimulusScene, theOI);
     theBackgroundRetinalImage = oiCompute(theBackgroundScene, theOI);
 
-    %% Visualize the spatial relationship between stimulus and MRGCMmosaic
-    visualizeSpatialRelationshipBetweenStimulusAndMRGCmosaic(1, theMRGCMosaic, theStimulusRetinalImage);
-
     %% Number of noisy response instances to compute
     noisyInstancesNum = 128;
 
-    %% Set the input cone mosaic noise flag
-    theMRGCMosaic.inputConeMosaic.noiseFlag = 'random';
+    %% Set the integration time of the input cone mosaic to 100 msec
+    theMRGCMosaic.inputConeMosaic.integrationTime = 100/1000;
 
+    %% Set the input cone mosaic noise flag to none
+    theMRGCMosaic.inputConeMosaic.noiseFlag = 'none';
+    
     %% Compute the noise-free background activation of the input cone mosaic
     theConeMosaicBackgroundNoiseFreeActivation = theMRGCMosaic.inputConeMosaic.compute(...
             theBackgroundRetinalImage, ...
             'opticalImagePositionDegs', sinusoidalStimulusParams.positionDegs);
+
+    %% Set the input cone mosaic noise flag to random to generate noisy response instances
+    theMRGCMosaic.inputConeMosaic.noiseFlag = 'random';
 
     %% Compute the noise-free response and noisyInstancesNum of noisy response instances of the input cone mosaic
     [theConeMosaicNoiseFreeResponse,  ...
@@ -83,20 +87,26 @@ function t_mRGCMosaicBasic
             'opticalImagePositionDegs', sinusoidalStimulusParams.positionDegs, ...
             'nTrials', noisyInstancesNum);
 
-    
+    %% Visualize the spatial relationship between stimulus and MRGCMmosaic
+    % This function must be called after the cMosaic.compute() method in
+    % order to display the OI at the correct location within the mosaic
+    coVisualizeRetinalStimulusConeAndMRGCmosaic(1, theMRGCMosaic, theStimulusRetinalImage);
+
     %% Define a function handle to convert excitations to modulations
     excitationsToModulations = @(e) (bsxfun(@times, (bsxfun(@minus, e, theConeMosaicBackgroundNoiseFreeActivation)), 1./theConeMosaicBackgroundNoiseFreeActivation));
 
-    %% Compute the noise-free response of the mRGC mosaic. No cone noise, no mRGC noise
+    %% Set the mRGCMosaic noise flag to none
     theMRGCMosaic.noiseFlag = 'none';
+
+    %% Compute the noise-free response of the mRGC mosaic. No cone noise, no mRGC noise
     noiseFreeResponse = theMRGCMosaic.compute( ...
               excitationsToModulations(theConeMosaicNoiseFreeResponse), ...
               theConeMosaicResponseTemporalSupportSeconds);
 
-    %% Set the mRGCMosaic noise flag
+    %% Set the mRGCMosaic noise flag to random
     theMRGCMosaic.noiseFlag = 'random';
  
-    %% Set the intrinsic noise of the mRGCMosaic to 0.
+    %% Set the intrinsic noise of the mRGCMosaic to 0
     theMRGCMosaic.vMembraneGaussianNoiseSigma = 0.0;
 
     %% Compute noisyInstancesNum of mRGC mosaic responses with the cone mosaic noise being the only noise source
@@ -118,7 +128,11 @@ function t_mRGCMosaicBasic
 
     %% Find indices of RGCs along the y = y-stimulus position
     targetYdegs = sinusoidalStimulusParams.positionDegs(2);
-    [~, mRGCIndices] = coneAndMRGCindicesAlongDesiredYposition(theMRGCMosaic, targetYdegs);
+    minConeSeparation = 0;
+    minRGCSeparation = 0;
+    [~, mRGCIndices] = coneAndMRGCindicesAlongDesiredYposition(...
+        theMRGCMosaic, targetYdegs, ...
+        minConeSeparation, minRGCSeparation);
 
     %% Visualize response components
     generatePDFs = ~true;

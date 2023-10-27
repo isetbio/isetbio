@@ -1,4 +1,4 @@
-function visualizeSpatialRelationshipBetweenStimulusAndMRGCmosaic(figNo, theMRGCMosaic, theStimulusRetinalImage)
+function coVisualizeRetinalStimulusConeAndMRGCmosaic(figNo, theMRGCMosaic, theStimulusRetinalImage)
 
     domainVisualizationLimits(1:2) = theMRGCMosaic.inputConeMosaic.eccentricityDegs(1) + theMRGCMosaic.inputConeMosaic.sizeDegs(1) * 0.51*[-1 1];
     domainVisualizationLimits(3:4) = theMRGCMosaic.inputConeMosaic.eccentricityDegs(2) + theMRGCMosaic.inputConeMosaic.sizeDegs(2) * 0.51*[-1 1];

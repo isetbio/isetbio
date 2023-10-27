@@ -1,5 +1,5 @@
 function [visualizedConeIndices, mRGCIndices, theROI] = ...
-    coneAndMRGCindicesAlongDesiredYposition(theMRGCMosaic, targetYdegs)
+    coneAndMRGCindicesAlongDesiredYposition(theMRGCMosaic, targetYdegs, minConeSeparation, minRGCSeparation)
 
     % Define an ROI
     theROI = regionOfInterest(...
@@ -28,4 +28,26 @@ function [visualizedConeIndices, mRGCIndices, theROI] = ...
     
     [~,idx] = sort(theVisualizedMRGCXcoords, 'ascend');
     mRGCIndices = mRGCIndices(idx);
+
+    visualizedConeIndices = trimIndices(visualizedConeIndices, ...
+        squeeze(theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(visualizedConeIndices,1)), ...
+        minConeSeparation);
+
+    mRGCIndices = trimIndices(mRGCIndices, ...
+        squeeze(theMRGCMosaic.rgcRFpositionsDegs(mRGCIndices,1)), ...
+        minRGCSeparation);
+
+end
+
+function keptIndices = trimIndices(theIndices, theCoords, minDisplacement)
+
+    previousCoord = theCoords(1);
+    keptIndices = theIndices(1);
+
+    for i = 2:numel(theCoords)
+        if (theCoords(i)-previousCoord >= minDisplacement)
+            keptIndices(numel(keptIndices)+1) = theIndices(i);
+            previousCoord = theCoords(i);
+        end
+    end
 end
