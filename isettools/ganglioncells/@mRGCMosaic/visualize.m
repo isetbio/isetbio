@@ -160,6 +160,7 @@ function visualize(obj, varargin)
         
     end
 
+    
     switch (visualizedComponent)
         case 'RF centers'
             [hFig, ax] = visualizeRFcenters(obj, hFig, ax, clearAxesBeforeDrawing, ...
@@ -296,16 +297,17 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             lConeInputLineColor = [0 0 0];
             mConeInputLineColor = [0 0 0];
             lineSegmentWidth = pooledConesLineWidth;
-
             % Put a single dot in all mRGC RF centers with a single input
-            plot(ax, obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,1), obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,2), 'k.');
+            if (~isempty(obj.visualizationCache.rfCenterSingleConeInputDotPositions))
+                plot(ax, obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,1), ...
+                         obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,2), 'k.');
+            end
         end
         
         % Render line segments from centroid to pulled cones
         renderPooledConesLineSegments(obj, ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth);
     end
 
-    axis(ax, 'equal');
     % Identify input cones
     if (identifyInputCones)
         hold(ax, 'on')
@@ -347,7 +349,6 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             'domainVisualizationLimits', domainVisualizationLimits, ...
             'backgroundColor', backgroundColor);
     end
-
 
     if (~isempty(labelRGCsWithIndices))
         if (plotRFoutlines) || (~isempty(activation))

@@ -675,7 +675,6 @@ function visualizationParams = visualize(obj, varargin)
         elseif (~isempty(labelConesWithIndices))
             cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor; [0.5 0.5 0.5]];
         else
-            disp('here')
             cMap = 0.4*ones(4,3);
         end
     else

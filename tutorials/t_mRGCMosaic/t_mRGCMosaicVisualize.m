@@ -49,10 +49,10 @@ function t_mRGCMosaicVisualize
         'plotTitle', 'cropped mosaic');
 
     %% Visualize the retinal cone pooling for a couple neurons
-% Lets visualize the retinal cone pooling of a couple of neurons.
-% For the first neuron visualization, find a unit with 2 L-cone
-% inputz in its RF center, and located near eccentricityDegs+[-0.5 0]; degs. 
-% 
+    % Lets visualize the retinal cone pooling of a couple of neurons.
+    % For the first neuron visualization, find a unit with 2 L-cone
+    % inputs in its RF center, and located near eccentricityDegs+[-0.5 0]; degs. 
+    % 
 
     targetRGCposition = eccDegs + [-0.1 0.1];
     targetCenterConesNum = 2;
