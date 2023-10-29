@@ -5,14 +5,14 @@ function MTF = humanAchromaticOTF(sampleSF, model, pupilD)
 %   MTF = humanAchromaticOTF([sampleSF], [model], [pupilD])
 %
 % Description:
-%    OTF fall off at the optimale wavelength. Does not contain any
+%    OTF fall off at the optimal wavelength. Does not contain any
 %    chromatic abberation.
 %
 %    For exponential model, a typical human OTF scaling is used from the
 %    work at Dave Williams' lab. And this is a smooth fit to their data,
 %    which was provided by Dave Brainard.
 %
-%    For watson model, it is described in 'A formula for the mean  human
+%    For Watson model, it is described in 'A formula for the mean  human
 %    optical modulation transfer function as a function of pupil size',
 %    Andrew B. Watson, JOV, 2013. The general fomula is
 %      M(u, d) = (1 + (u / u1(d)) ^ 2) ^ (-0.62) * sqrt(M_dl(u, d, 555))
