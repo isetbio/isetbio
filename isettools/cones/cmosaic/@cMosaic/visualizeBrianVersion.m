@@ -1,5 +1,12 @@
-function visualizationParams = visualize(obj, varargin)
+function visualizationParams = visualizeBrianVersion(obj, varargin)
 % Visualize different aspects of a @cMosaic or its activation
+%
+% THERE IS NOW A SET OF CONFLICTS BETWEEN THIS VERSION AND WHAT NICOLAS HAS
+% DONE. ONE MAJOR ISSUE IS THE UPPER/LOWER CASE OF THE PARAMETERS AND THE
+% USE OF ieParamFormat(), which BW ADDED AND NC DID NOT USE. 
+%
+% But NC also made changes the functionality, and we should preserve these.
+% I think resolving requires a discussion between NC and BW. (Oct 29, 2023)
 %
 % TODO:
 %   Comments, extraction of useful utilities for reuse.
@@ -17,10 +24,10 @@ function visualizationParams = visualize(obj, varargin)
 %   part of the class.  Noodling, not sure what I think.
 %
 % Syntax:
-%   cm = cMosaic(); cm.visualize();
+%   cm = cMosaic(); cm.visualizeBrianVersion();
 %
 %   % Return the many settable visualize params
-%   visParams = cm.visualize('params')
+%   visParams = cm.visualizeBrianVersion('params')
 %
 %   % Display the various settable params and info about them
 %   cm.visualize('help');
@@ -34,17 +41,23 @@ function visualizationParams = visualize(obj, varargin)
 cm = cMosaic;
 
 % Visualize the cone mosaic
-cm.visualize();        
+cm.visualizeBrianVersion();        
 
 % Retrieve the visualization parameters
-pStruct = cm.visualize('params') 
+pStruct = cm.visualizeBrianVersion('params') 
 
-cm.visualize('density contour overlay',true,...
+cm.visualizeBrianVersion('density contour overlay',true,...
              'crosshairs on fovea',true, ...
              'label retinal meridians',true);   
 
 %}
 
+%% If the call is 
+%
+%   cm.visualize('params') or cm.visualize('help') 
+%
+% we provide some help.
+%
 if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
     visualizationParams = visualizeParams(varargin{1});
     return;
@@ -52,14 +65,14 @@ else
     visualizationParams = '';
 end
 
-% If key/val pairs, force to lower case, no spaces.  I spent a lot of time
-% arranging this, but it is always possible I missed something.
+%% If key/val pairs, force to lower case, no spaces.  
+% 
+% I (BW) spent a lot of time arranging this, but it is always possible I
+% missed something.
 if numel(varargin) > 1
     varargin = ieParamFormat(varargin);
 end
 
-
-% Parse input
 p = inputParser;
 p.addParameter('visualizationview', 'revf', @(x)(ischar(x) && (ismember(x, {'revf', 'retinal view'}))));
 p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
@@ -100,8 +113,8 @@ p.addParameter('activationrange', [],@(x)((isempty(x))||(numel(x)==2)));
 p.addParameter('activationcolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
 p.addParameter('verticaldensitycolorbar', false, @islogical);
 p.addParameter('horizontalactivationcolorbar', false, @islogical);
-p.addParameter('verticalActivationColorBar', false, @islogical);
-p.addParameter('horizontalActivationColorBarInside', false, @islogical);
+p.addParameter('verticalactivationcolorbar', false, @islogical);
+p.addParameter('horizontalactivationcolorbarinside', false, @islogical);
 p.addParameter('verticalactivationcolorbarinside', false, @islogical);
 p.addParameter('colorbarticklabelpostfix', '', @ischar);
 p.addParameter('colorbarticklabelcolor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
@@ -112,7 +125,7 @@ p.addParameter('verticalactivationsliceeccentricity', [], @(x)((isempty(x))||(is
 p.addParameter('crosshairsonmosaiccenter', false, @islogical);
 p.addParameter('crosshairsatposition', [], @(x)((isempty(x))||(numel(x)==2)));
 p.addParameter('crosshairsonfovea', false, @islogical);
-p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
+p.addParameter('crosshairsonopticalimagecenter', false, @islogical);
 p.addParameter('crosshairscolor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
 
 p.addParameter('displayedeyemovementdata', [], @(x)(isempty(x)||(isstruct(x))));
@@ -157,7 +170,7 @@ activation      = p.Results.activation;
 activationRange = p.Results.activationrange;
 currentEMposition = p.Results.currentemposition;
 crossHairsOnMosaicCenter = p.Results.crosshairsonmosaiccenter;
-crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
+crossHairsOnOpticalImageCenter = p.Results.crosshairsonopticalimagecenter;
 crossHairsAtPosition = p.Results.crosshairsatposition;
 visualizeCones = p.Results.visualizecones;
 labelCones     = p.Results.labelcones;
@@ -176,11 +189,11 @@ displayedEyeMovementData = p.Results.displayedeyemovementdata;
 fontSize          = p.Results.fontsize;
 colorbarFontSize  = p.Results.colorbarfontsize;
 cMap              = p.Results.activationcolormap;
-verticalColorBar  = p.Results.verticalActivationColorBar;
+verticalColorBar  = p.Results.verticalactivationcolorbar;
 colorbarTickLabelColor = p.Results.colorbarticklabelcolor;
 horizontalColorBar     = p.Results.horizontalactivationcolorbar;
 verticalColorBarInside = p.Results.verticalactivationcolorbarinside;
-horizontalColorBarInside = p.Results.horizontalActivationColorBarInside;
+horizontalColorBarInside = p.Results.horizontalactivationcolorbarinside;
 colorBarTickLabelPostFix = p.Results.colorbarticklabelpostfix;
 
 horizontalActivationSliceEccentricity = p.Results.horizontalactivationsliceeccentricity;
