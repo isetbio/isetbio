@@ -1,10 +1,10 @@
 function t_mRGCMosaicCheckerBoardStimulus
 
     % Specify the precomputed mosaic's eccentricity
-    horizontalEcc = 7;
+    horizontalEccDegs = 7;
 
     % Load the precomputed mRGCMosaic
-    theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEcc);
+    theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEccDegs);
 
     % Noise-free responses
     theMRGCMosaic.inputConeMosaic.noiseFlag = 'none';
@@ -37,6 +37,8 @@ function t_mRGCMosaicCheckerBoardStimulus
     % Retrieve the default rgcRFgains
     defaultRGCRFgains = theMRGCMosaic.rgcRFgains;
     max(theMRGCMosaic.rgcRFgains)
+    min(theMRGCMosaic.rgcRFgains)
+    pause
 
     % Set the rgcRFgains as 1 / center-integrated retinal cone apertures
     method = '1/integrated center retinal cone apertures';
@@ -247,38 +249,17 @@ function [visualizedConeIndices, theVisualizedConeXcoords, ...
     visualizedMRGCindices = visualizedMRGCindices(idx);
 end
 
-function theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEcc)
+function theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEccDegs)
 
-    switch (horizontalEcc)
-        case 7
-            mosaicParams = struct(...
-                'eccDegs', [7 0], ...
-                'sizeDegs',  [6 3], ...
-                'rgcType', 'ONcenterMidgetRGC');
-        otherwise
-            error('No precomputed mRGCMosaic for horizontalEcc: %f\n', horizontalEcc);
-    end
+    % Choose one of the computed mRGCMosaics
+    % 1. mosaic params
+    mosaicParams = MosaicPoolingOptimizer.getMosaicParams(horizontalEccDegs);
 
+    % 2. optics params
+    opticsParams = MosaicPoolingOptimizer.getOpticsParams(mosaicParams);
 
-    % Neurons of the pre-computed mRGCMosaic have spatiall RFs that were 
-    % optimized for the following optics.
-    opticsParams = struct(...
-            'ZernikeDataBase', 'Polans2015', ...
-            'examinedSubjectRankOrder', 6, ...
-            'pupilDiameterMM', 3.0, ...
-            'analyzedEye', 'right eye', ...
-            'refractiveErrorDiopters', 0.0, ...
-            'positionDegs', [] ...
-        );
-
-    % Neurons of the pre-computed mRGCMosaic have spatial RFs that were 
-    % optimized using a double exponential surround model with parameters around
-    % those of the 4-th H1 neuron recorded by Packer&Dacey (2002):
-    % "Receptive field structure of H1 horizontal cells in macaque monkey
-    % retina", (2002) JoV, 2, 272-292
-    retinalRFmodelParams = struct(...
-        'conePoolingModel', 'arbitraryCenterConeWeights_doubleExpH1cellIndex4SurroundWeights' ...
-    );
+    % 3. retinal RF pooling params
+    retinalRFmodelParams = MosaicPoolingOptimizer.getSurroundParams(mosaicParams, opticsParams);
 
     theMRGCMosaic = mRGCMosaic.loadComputeReadyRGCMosaic(...
         mosaicParams, opticsParams, retinalRFmodelParams);

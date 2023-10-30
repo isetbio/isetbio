@@ -15,18 +15,32 @@ function dataOut = generateOptics(obj, opticsParams)
     switch (opticsParams.ZernikeDataBase)
         case ArtalOptics.constants.ZernikeDataBaseName
             rankedSujectIDs = ArtalOptics.constants.subjectRanking(opticsParams.subjectRankingEye);
-            testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
-            subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
-                opticsParams.analyzedEye, testSubjectID);
+
+            if (opticsParams.examinedSubjectRankOrder == 0)
+                % Subject 0 results in all-zero Zcoeffs, i.e., AO optics
+                testSubjectID = 0;
+                subtractCentralRefraction = false;
+            else
+                testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
+                subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
+                    opticsParams.analyzedEye, testSubjectID);
+            end
+
 
         case PolansOptics.constants.ZernikeDataBaseName
             if (~strcmp(opticsParams.subjectRankingEye, 'right eye'))
                 error('Polans measurements exist only for the right eye.');
             end
             rankedSujectIDs = PolansOptics.constants.subjectRanking();
-            testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
-            subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(...
-                testSubjectID);
+            if (opticsParams.examinedSubjectRankOrder == 0)
+                % Subject 0 results in all-zero Zcoeffs, i.e., AO optics
+                testSubjectID = 0;
+                subtractCentralRefraction = false;
+            else
+                testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
+                subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(...
+                    testSubjectID);
+            end
 
         otherwise
             error('Unknown zernike database: ''%ss'.', opticsParams.ZernikeDataBase);
@@ -39,6 +53,7 @@ function dataOut = generateOptics(obj, opticsParams)
        'subjectID', testSubjectID, ...
        'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
        'refractiveErrorDiopters', opticsParams.refractiveErrorDiopters, ...
+       'noLCA', opticsParams.noLCA, ...
        'zeroCenterPSF', opticsParams.zeroCenterPSF, ...
        'subtractCentralRefraction', subtractCentralRefraction, ...
        'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...

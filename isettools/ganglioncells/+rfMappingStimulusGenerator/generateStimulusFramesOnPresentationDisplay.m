@@ -83,16 +83,16 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
 
         if (validateScenes)
             % Compute different scene representations for validation and visualization purposes
-            [sceneLRGBimage, sceneSRGBimage, sceneLMScontrastsImage, sceneLMSexcitationsImage] = ...
-                sceneRepresentations(theScene, presentationDisplay);
+            sceneLMScontrastsImage = ...
+                sceneRepresentations(theScene, presentationDisplay, backgroundLMS);
 
             % Assert that the scene cone contrasts match the desired ones
             figNo = 1999;
             assertDisplayContrasts(figNo, sceneLMScontrastsImage, LMScontrastImage);
 
             % Visualize scene components
-            figNo = 2000;
-            visualizeDisplayImage(figNo, sceneSRGBimage, sceneLMSexcitationsImage, presentationDisplay);
+            %figNo = 2000;
+            %visualizeDisplayImage(figNo, sceneSRGBimage, sceneLMSexcitationsImage, presentationDisplay);
         end
 
         if (isempty(sceneIndexToCompute))
@@ -221,17 +221,34 @@ function assertDisplayContrasts(figNo, sceneLMScontrastsImage, desiredLMScontras
     title('S-cone contrast');
 end
 
-function [sceneLRGBimage, sceneSRGBimage, sceneLMScontrastsImage, sceneLMSexcitationsImage] = ...
-    sceneRepresentations(theScene, presentationDisplay)
+function sceneLMScontrastsImage  = ...
+    sceneRepresentations(theScene, presentationDisplay, backgroundLMS)
 
     emittedRadianceImage = sceneGet(theScene, 'energy');
-    displaySPDs = displayGet(presentationDisplay, 'spd');
     displayWavelengths = displayGet(presentationDisplay, 'wave');
-    [sceneLRGBimage, sceneSRGBimage] = displayRadianceToDisplayRGB(emittedRadianceImage, displaySPDs);
-        
+
     % Load the 2-deg Stockman cone fundamentals on a wavelength support matching the display
     coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
 
     % Compute the LMS cone contrasts of the emitted radiance image
-    [sceneLMScontrastsImage, sceneLMSexcitationsImage] = displayRadianceToLMS(emittedRadianceImage, coneFundamentals);
+    sceneLMScontrastsImage = computeLMScontrastImage(emittedRadianceImage, coneFundamentals, backgroundLMS);
+end
+
+function LMScontrastImage = computeLMScontrastImage(radianceImage, coneFundamentals, coneExcitationsBackground)
+    rowsNum = size(radianceImage,1);
+    colsNum = size(radianceImage,2);
+    wavelengthsNum = size(radianceImage, 3);
+    radianceImage = reshape(radianceImage, [rowsNum*colsNum wavelengthsNum]);
+        
+    coneExcitationsImage = radianceImage * coneFundamentals;
+    if (isempty(coneExcitationsBackground))
+        % Assuming the top-left pixel has 0 cone contrast, i.e. equal to the background
+        coneExcitationsBackground = coneExcitationsImage(1,:);
+    end
+    
+    LMScontrastImage = bsxfun(@times, ...
+        bsxfun(@minus, coneExcitationsImage, coneExcitationsBackground), ...
+        1./coneExcitationsBackground);
+    
+    LMScontrastImage = reshape(LMScontrastImage, [rowsNum colsNum 3]);
 end

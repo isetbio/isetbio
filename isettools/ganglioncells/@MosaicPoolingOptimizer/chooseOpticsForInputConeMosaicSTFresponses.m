@@ -1,20 +1,24 @@
 function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
     chooseOpticsForInputConeMosaicSTFresponses(mosaicParams, varargin )
 
-    validOpticsChoices = {'n', 'c'};
+    validOpticsChoices = {'n', 'c', 'ao'};
 
     p = inputParser;
     p.addParameter('opticsChoice', [], @(x)(isempty(x)||ismember(x,validOpticsChoices)));
+    p.addParameter('refractiveErrorDiopters', [], @isscalar);
+
     p.parse(varargin{:});
     opticsChoice = p.Results.opticsChoice;
+    refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
 
     % Select optics to employ
     if (isempty(opticsChoice))
         opticsChoice = 'invalid';
         while (~ismember(opticsChoice, validOpticsChoices)) 
            fprintf('\nOptics options for mosaic at (%2.1f,%2.1f): \n', mosaicParams.eccDegs(1), mosaicParams.eccDegs(2));
-           fprintf('[n] - Native optics (at the mosaic''s center) \n');
-           fprintf('[c] - Custom optics (at an arbitrary position) \n');
+           fprintf('[n]  - Native optics (at the mosaic''s center) \n');
+           fprintf('[c]  - Custom optics (at an arbitrary position) \n');
+           fprintf('[ao] - Adaptive optics \n');
            opticsChoice = input('Optics to employ: ', 's');
         end
     end
@@ -40,6 +44,23 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
         case 'n'
             opticsToEmploy = 'native';
 
+            if (isempty(refractiveErrorDiopters))
+                opticsParams.refractiveErrorDiopters = input('Enter refractive error in diopters, e.g. 0.15 : ');
+                if (isempty(opticsParams.refractiveErrorDiopters))
+                    opticsParams.refractiveErrorDiopters = 0.0;
+                end
+            else
+                opticsParams.refractiveErrorDiopters = refractiveErrorDiopters;
+            end
+
+
+            if (abs(opticsParams.refractiveErrorDiopters) > 0)
+                % Get updated coneMosaicSTFresponsesFileName
+                coneMosaicSTFresponsesFileName = MosaicPoolingOptimizer.resourceFileNameAndPath('coneMosaicSTFresponses', ...
+                    'mosaicParams', mosaicParams, ...
+                    'opticsParams', opticsParams);
+            end
+
         case 'c'
             opticsToEmploy = 'custom';
 
@@ -51,8 +72,41 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
             % Update the coneMosaicSTFresponsesFileName to reflect the custom optics position
             coneMosaicSTFresponsesFileName = strrep(coneMosaicSTFresponsesFileName, '.mat', opticsPositionPostfix);
             
+        case 'ao'
+            opticsToEmploy = 'adaptive optics';
+
+            % Set the subject to 0 to indicate AO
+            opticsParams.examinedSubjectRankOrder = 0;
+
+            % No LCA for AO
+            opticsParams.noLCA = true;
+
+            % High upsample factor to capture the diffraction-limited PSF
+            opticsParams.psfUpsampleFactor = 3;
+            opticsParams.wavefrontSpatialSamples = 301;
+
+            % Query user for AO pupil diameter
+            opticsParams.pupilDiameterMM = input('Enter AO pupil diameter in mm, e.g., 6 : ');
+            if (isempty(opticsParams.pupilDiameterMM))
+                opticsParams.pupilDiameterMM = 6.0;
+            end
+            assert((opticsParams.pupilDiameterMM > 0) && (opticsParams.pupilDiameterMM <=6), ...
+                'pupil diameter must be greater than 0 and not larger than 6.0 mm');
+
+            % Query user for refractive error 
+            opticsParams.refractiveErrorDiopters = input('Enter refractive error in diopters, e.g. 0.15 : ');
+            if (isempty(opticsParams.refractiveErrorDiopters))
+                opticsParams.refractiveErrorDiopters = 0.0;
+            end
+
+            % Get updated coneMosaicSTFresponsesFileName
+            coneMosaicSTFresponsesFileName = ...
+                MosaicPoolingOptimizer.resourceFileNameAndPath('coneMosaicSTFresponses', ...
+                'mosaicParams', mosaicParams, ...
+                'opticsParams', opticsParams);
+
         otherwise
-            fprintf('Valid optics options: ''n'' (native, at mosaic''s center), or ''c'', (custom position)\n');
+            fprintf('Valid optics options: ''n'' (native, at mosaic''s center), ''c'', (custom position), or ''ao'' (adaptive optics)\n');
             error('Unknown optics choice: ''%s''.', opticsChoice)
     end
 

@@ -1,66 +1,81 @@
-function [theOptimalSTF, theSTFsAcrossAllOrientations, theHighestExtensionOrientation] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
-    orientationsTested, spatialFrequenciesTested, ...
-    theResponsesAcrossAllOrientationsAndSpatialFrequencies)
+function [theOptimalNormalizedSTF, theNormalizedSTFsAcrossAllOrientations, ...
+    theHighestExtensionOrientation, theOptimalSTFMagnitudeSpectrum, theOptimalSTFphaseSpectrum] = optimalSTFfromResponsesToAllOrientationsAndSpatialFrequencies(...
+        orientationsTested, spatialFrequenciesTested, ...
+        theResponsesAcrossAllOrientationsAndSpatialFrequencies)
 
     orientationsNum = size(theResponsesAcrossAllOrientationsAndSpatialFrequencies,1);
     sfsNum = size(theResponsesAcrossAllOrientationsAndSpatialFrequencies,2);
 
     % Compute modelRGC STFs for all orientations
-    theSTFsAcrossAllOrientations = zeros(orientationsNum, sfsNum);
+    theSTFmagnitudeSpectraAcrossAllOrientations = zeros(orientationsNum, sfsNum);
+    theSTFPhaseSpectraAcrossAllOrientations = zeros(orientationsNum, sfsNum);
+
+    timeSupport = 0:(size(theResponsesAcrossAllOrientationsAndSpatialFrequencies,3)-1);
+    timeSupport = timeSupport/(numel(timeSupport)-1);
+    timeSupportHR = timeSupport(1):0.01:timeSupport(end);
+
+    temporalFrequency = 1.0;
 
     for iOri = 1:orientationsNum
         for iSF = 1:sfsNum
             % Retrieve cone mosaic responses for all frames of this stimulus
             theResponseTimeSeries = squeeze(theResponsesAcrossAllOrientationsAndSpatialFrequencies(iOri, iSF,:));
-            % STF as the amplitude of modulation of the response (max-min)
-            theSTFsAcrossAllOrientations(iOri, iSF) = max(theResponseTimeSeries(:)) - min(theResponseTimeSeries(:));
+
+            % Fit a sinusoid to extract the magnitude and phase
+            [~, fittedParams] = MosaicPoolingOptimizer.fitSinusoidToResponseTimeSeries(...
+                timeSupport, theResponseTimeSeries, temporalFrequency, timeSupportHR);
+            theSTFmagnitudeSpectraAcrossAllOrientations(iOri, iSF) = fittedParams(1);
+            theSTFPhaseSpectraAcrossAllOrientations(iOri, iSF) = fittedParams(2);
+
         end
     end
 
     % Pick the highest extension STF as the visual STF for this cell
-    [theOptimalSTF,theSTFsAcrossAllOrientations, theHighestExtensionOrientation] = ...
-        highestExtensionSTF(orientationsTested, spatialFrequenciesTested, ...
-        theSTFsAcrossAllOrientations);
+    [theOptimalNormalizedSTF,theNormalizedSTFsAcrossAllOrientations, theHighestExtensionOrientation, ...
+        theOptimalSTFMagnitudeSpectrum, theOptimalSTFphaseSpectrum] = highestExtensionSTF(orientationsTested, spatialFrequenciesTested, ...
+        theSTFmagnitudeSpectraAcrossAllOrientations, theSTFPhaseSpectraAcrossAllOrientations);
 end
 
         
-function [theHighestExtensionSTF,theMeasuredSTFs, theHighestExtensionOrientation] = highestExtensionSTF(...
-    orientationsTested, spatialFrequenciesTested, theMeasuredSTFs)
+function [theHighestExtensionSTF, theNormalizedSTFs, theHighestExtensionOrientation, ...
+    theOptimalSTFMagnitudeSpectrum, theOptimalSTFphaseSpectrum] = highestExtensionSTF(...
+        orientationsTested, spatialFrequenciesTested, theMeasuredSTFs, theMeasuredSTFphases)
 
-    theMeasuredSTFs = theMeasuredSTFs / max(theMeasuredSTFs(:));
+    % Normalize to max
+    theNormalizedSTFs = theMeasuredSTFs / max(theMeasuredSTFs(:));
 
     % Determine the orientation that maximizes the STF extension to high spatial frequencies
     maxSF = nan(1,numel(orientationsTested));
-    spatialFrequenciesInterpolated = linspace(spatialFrequenciesTested(1),spatialFrequenciesTested(end), 50);
+    theSTFtoAnalyze = cell(1, numel(orientationsTested));
 
     for iOri = 1:numel(orientationsTested)
-        % Find spatial frequency at which STF drops to 20% of max
-        theSTFatThisOri = squeeze(theMeasuredSTFs(iOri,:));
-        theSTFatThisOriInterpolated = interp1(spatialFrequenciesTested, theSTFatThisOri, spatialFrequenciesInterpolated);
-        [mag, iSFpeak] = max(theSTFatThisOri);
-        thresholdSTF = mag * MosaicPoolingOptimizer.highSFAttenuationFactorForOptimalOrientation;
+        % Find spatial frequency at which STF drops to  max x
+        % MosaicPoolingOptimizer.highSFAttenuationFactorForOptimalOrientation
+        theSTFatThisOrientation = squeeze(theNormalizedSTFs(iOri,:));
+        
+        % Only fit the part of the STF that contains the main peak
+        [spatialFrequenciesToAnalyze, theSTFtoAnalyze{iOri}] = ...
+            MosaicPoolingOptimizer.stfPortionToAnalyze(spatialFrequenciesTested, theSTFatThisOrientation);
 
-        ii = iSFpeak;
-        keepGoing = true; iStop = [];
-        while (ii < numel(spatialFrequenciesInterpolated)-1)&&(keepGoing)
-            ii = ii + 1;
-            if (theSTFatThisOriInterpolated(ii)>=thresholdSTF) && (theSTFatThisOriInterpolated(ii+1)<thresholdSTF)
-                keepGoing = false;
-                iStop = ii;
-            end
-        end % while
-        if (~isempty(iStop))
-            maxSF(iOri) = spatialFrequenciesInterpolated(iStop);
-        end
-    end % iOri
-
-    % Best orientation
-    if (any(isnan(maxSF)))
-        theSTFatTheHighestSF = squeeze(theMeasuredSTFs(:,end));
-        [~, iBestOri] = max(theSTFatTheHighestSF(:));
-    else
-        [~, iBestOri] = max(maxSF);
+        maxSF(iOri) = max(spatialFrequenciesToAnalyze);
     end
-    theHighestExtensionSTF = squeeze(theMeasuredSTFs(iBestOri,:));
-    theHighestExtensionOrientation = orientationsTested(iBestOri);
+
+    idx = find(maxSF == max(maxSF));
+    STFmagAtHighestSF = zeros(1, numel(idx));
+    for i = 1:numel(idx)
+        iOri = idx(i);
+        theSTF = theSTFtoAnalyze{iOri};
+        STFmagAtHighestSF(i) = theSTF(end);
+    end
+
+    [~,idx2] = max(STFmagAtHighestSF);
+
+    bestOri = idx(idx2);
+    theHighestExtensionSTF = squeeze(theNormalizedSTFs(bestOri,:));
+    theHighestExtensionOrientation = orientationsTested(bestOri);
+
+    theOptimalSTFMagnitudeSpectrum = theMeasuredSTFs(bestOri,:);
+    theOptimalSTFphaseSpectrum = theMeasuredSTFphases(bestOri,:);
 end
+
+

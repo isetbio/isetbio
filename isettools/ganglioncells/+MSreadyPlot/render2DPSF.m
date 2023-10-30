@@ -6,6 +6,8 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     p.addParameter('psfAlpha', 0.7, @(x)(isscalar(x)&&(x>0.0)&&(x<=1.0)));
     p.addParameter('withConeApertureData', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('gridlessPSF', false, @islogical);
+    p.addParameter('colorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.parse(varargin{:});
     
     noXLabel = p.Results.noXLabel;
@@ -13,11 +15,16 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     psfAlpha = p.Results.psfAlpha;
     coneApertureData = p.Results.withConeApertureData;
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
+    gridlessPSF = p.Results.gridlessPSF;
+    colorMap = p.Results.colorMap;
 
     % plot
     psfSupportXarcmin = psfSupportXdegs * 60;
     psfSupportYarcmin = psfSupportYdegs * 60;
-    cmap = brewermap(1024, 'blues');
+    if (isempty(colorMap))
+        colorMap = brewermap(1024, 'blues');
+    end
+
 
     if (~isempty(coneApertureData))
         xOutline = cosd(0:15:360);
@@ -35,9 +42,9 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
 
     zData = thePSFData/max(thePSFData(:));
     zLevels = [0.1 0.3 0.5 0.7 0.9];
-    contourLineColor = [0 0 1];
+    contourLineColor = [1 1 1]*0.3;
     cMosaic.semiTransparentContourPlot(ax, psfSupportXarcmin, psfSupportYarcmin, ...
-        zData, zLevels, cmap, psfAlpha, contourLineColor, 'LineWidth', 1.5)
+        zData, zLevels, colorMap, psfAlpha, contourLineColor, 'LineWidth', 1.5)
     
 
     axis(ax, 'image');
@@ -51,16 +58,16 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     end
 
 
-    if (psfRangeArcMin <= 2)
-        psfTickLabels = sprintf('%2.1f\n', psfTicksArcMin);
-    else
+    if (tickSeparationArcMin >= 6)
         psfTickLabels = sprintf('%2.0f\n', psfTicksArcMin);
+    else
+        psfTickLabels = sprintf('%2.1f\n', psfTicksArcMin);
     end
 
    
     % ticks and grids
     grid(ax, 'off'); box(ax, 'on');
-    set(ax, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1]);
+    set(ax, 'XLim', 0.5*psfRangeArcMin*1.05*[-1 1], 'YLim', 0.5*psfRangeArcMin*1.05*[-1 1]);
     set(ax, 'XTick', psfTicksArcMin , 'YTick', psfTicksArcMin, ...
         'XTickLabel', psfTickLabels, 'YTickLabel', psfTickLabels);
     set(ax, 'TickDir', 'in')
@@ -79,7 +86,9 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
         set(ax, 'YTickLabel', {});
     end
 
-    grid(ax, 'on');
+    if (~gridlessPSF)
+        grid(ax, 'on');
+    end
 
     % Font size
     set(ax, 'FontSize', ff.fontSize);
@@ -93,6 +102,5 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     end
 
     % Colormap
-    colormap(ax, cmap);
-
+    colormap(ax, colorMap);
 end

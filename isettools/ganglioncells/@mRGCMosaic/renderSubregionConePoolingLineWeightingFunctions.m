@@ -98,7 +98,11 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
         end
     
         if (~noYLabel)
-            ylabel(ax, 'sensitivity');
+            if (strcmp(horizontalAxisDirection, 'x'))
+                ylabel(ax, 'integrated (y) cone weights' ,'FontAngle', ff.axisFontAngle);
+            else
+                ylabel(ax, 'integrated (x) cone weights' ,'FontAngle', ff.axisFontAngle);
+            end
         end
 
         if (~isempty(plotTitle))
@@ -116,7 +120,11 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
         end
     
         if (~noYLabel)
-            ylabel(ax, 'sensitivity' ,'FontAngle', ff.axisFontAngle);
+            if (strcmp(horizontalAxisDirection, 'x'))
+                ylabel(ax, 'integrated (y) cone weights' ,'FontAngle', ff.axisFontAngle);
+            else
+                ylabel(ax, 'integrated (x) cone weights' ,'FontAngle', ff.axisFontAngle);
+            end
         end
 
         if (~isempty(plotTitle))
@@ -134,7 +142,7 @@ function renderSubregionConePoolingLineWeightingFunctions(ax, ...
         box(ax, 'off');
     else
         grid(ax, 'off');
-        box(ax, 'on');
+        box(ax, 'off');
     end
 
     

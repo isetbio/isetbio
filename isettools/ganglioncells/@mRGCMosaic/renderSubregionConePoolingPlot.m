@@ -50,8 +50,9 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
     spatialSupportDegs = (-maxXY:0.05:maxXY)/60;
     spatialSupportXYDegs(:,1) = rgcRFposDegs(1) + spatialSupportDegs;
     spatialSupportXYDegs(:,2) = rgcRFposDegs(2) + spatialSupportDegs;
-    XLims = rgcRFposDegs(1) + [spatialSupportDegs(1) spatialSupportDegs(end)];
-    YLims = rgcRFposDegs(2) + [spatialSupportDegs(1) spatialSupportDegs(end)];
+    dx = (spatialSupportDegs(end)-spatialSupportDegs(1))*0.05;
+    XLims = rgcRFposDegs(1) + [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
+    YLims = rgcRFposDegs(2) + [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
 
     [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
         theConeMosaic, coneIndices, coneWeights, spatialSupportXYDegs);
@@ -105,7 +106,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
             case cMosaic.LCONE_ID
                 coneColor = [1 0 0];
             case cMosaic.MCONE_ID
-                coneColor = [0 1 0];
+                coneColor = [0 0.75 0];
             case cMosaic.SCONE_ID
                 coneColor = [0 0 1];
         end
@@ -188,6 +189,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
 
     xtickangle(ax, xAxisTickAngleRotationDegs);
     colormap(ax, brewermap(1024, 'greys'));
+    
 end
 
 function [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...

@@ -130,10 +130,11 @@ if (~isfield(wvf, 'psf') || ~isfield(wvf, 'PSF_STALE') || ...
         psf{wl} = psf{wl} / sum(sum(psf{wl}));
 
         if (flipPSFUpsideDown)
-            % Flip PSF left right 
-            psf{wl} = fliplr(psf{wl});
+            % Flip PSF upside down
+            psf{wl} = flipud(psf{wl});
         end
         
+
         if (rotatePSF90degs)
             % Flip PSF left right 
             psf{wl} = rot90(psf{wl});

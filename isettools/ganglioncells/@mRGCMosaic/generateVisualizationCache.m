@@ -2,12 +2,13 @@ function generateVisualizationCache(obj, xSupport, ySupport, centerSubregionCont
 
     if (isfield(obj.visualizationCache, 'rfCenterPatchData')) && ...
        (~isempty(obj.visualizationCache.rfCenterPatchData)) && ...
-       (isfield(obj.visualizationCache, 'obj.visualizationCache')) && ...
+       (isfield(obj.visualizationCache, 'centerSubregionContourSamples')) && ...
        (obj.visualizationCache.centerSubregionContourSamples == centerSubregionContourSamples)
         % Already in visualizationCache, so return
         return;
     end
 
+    obj.visualizationCache = [];
     fprintf('\nComputing RF center outline contours. Please wait ...');
     tic
 

@@ -1,4 +1,4 @@
-function [mosaicEcc, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse()
+function [mosaicHorizontalEccentricityDegs, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse()
 
     % Select optics to employ
     availableMosaicEccs = {'  0.0', '  2.5', '  7.0', '-10.0', '-16.0'};
@@ -17,5 +17,5 @@ function [mosaicEcc, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse()
        theChoice = input('Mosaic to use: ', 's');
     end
 
-    mosaicEcc = str2num(theChoice);
+    mosaicHorizontalEccentricityDegs = str2num(theChoice);
 end    

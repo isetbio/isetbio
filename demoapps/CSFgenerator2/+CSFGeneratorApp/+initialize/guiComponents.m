@@ -105,7 +105,8 @@ function initializeOpticsGUIComponents(app)
     
     % The pupil size
     CSFGeneratorApp.decode.opticsPupilSizeSpinner(app, 'valueToSlider', app.opticsParams.pupilDiameterMM);
-    
+    app.opticsPupilSizeSpinner.Limits = [1 4];
+
     % The wavefront spatial samples
     CSFGeneratorApp.decode.opticsWavefrontSpatialSamplesSpinner(app, 'valueToSlider', app.opticsParams.wavefrontSpatialSamples);
     

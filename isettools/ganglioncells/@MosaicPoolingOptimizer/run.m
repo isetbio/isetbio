@@ -1,11 +1,11 @@
 function run()
 
     % Ask user which mosaic to use
-    [mosaicEcc,  mosaicEccsForSummaryStatistics] = ...
+    [mosaicHorizontalEccentricityDegs,  mosaicEccsForSummaryStatistics] = ...
         MosaicPoolingOptimizer.chooseMosaicToUse();
 
     % Get mosaic params
-    mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicEcc);
+    mosaicParams = MosaicPoolingOptimizer.getMosaicParams(mosaicHorizontalEccentricityDegs);
 
     % This controls the visualized spatial support range
     tickSeparationArcMin = 6;
@@ -17,6 +17,7 @@ function run()
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
 
+  
     % Perform the generateRGCMosaic operation
     if (operationSetToPerformContains.generateCenterConnectedRGCMosaic)
         if (isfield(mosaicParams, 'maxConeInputsPerRGCToConsiderTransferToNearbyRGCs'))
@@ -81,7 +82,7 @@ function run()
         return;
     end
 
-    % Perfom the optimizeSurroundConePoolingModels operation
+    % Perform the optimizeSurroundConePoolingModels operation
     if (operationSetToPerformContains.optimizeSurroundConePoolingModels)
         
         % Fitting options
@@ -163,6 +164,7 @@ function run()
         else
             reverseXDir = false;
         end
+        reverseXDir = false;
 
         MosaicPoolingOptimizer.performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
@@ -188,13 +190,16 @@ function run()
     % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
 
+        recomputeRFs = ~true;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
         MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...
             'maxSFcyclesPerDegree', mosaicParams.subspaceRFmappingParams.maxSFcyclesPerDegree, ...
             'stimSizeDegs', mosaicParams.subspaceRFmappingParams.stimSizeDegs, ....
             'posIncrementDegs', mosaicParams.subspaceRFmappingParams.posIncrementDegs, ...
-            'reComputeInputConeMosaicSubspaceRFmappingResponses', ~true, ...
-            'reComputeMRGCMosaicSubspaceRFmappingResponses', ~true, ...
-            'reComputeRFs', ~true, ...
+            'reComputeInputConeMosaicSubspaceRFmappingResponses', reComputeInputConeMosaicSubspaceRFmappingResponses, ...
+            'reComputeMRGCMosaicSubspaceRFmappingResponses', reComputeMRGCMosaicSubspaceRFmappingResponses, ...
+            'reComputeRFs', recomputeRFs, ...
             'onlyVisualizeOptimallyMappedRFmaps', true);
         
         return;
@@ -202,8 +207,41 @@ function run()
 
     % Perform the visualizeVisualRFmapForTargetRGC operation
     if (operationSetToPerformContains.visualizeVisualRFmapForTargetRGC)
+
+        if (mosaicParams.eccDegs(1)<0)
+            reverseXDir = true;
+        else
+            reverseXDir = false;
+        end
+        reverseXDir = false;
+
         MosaicPoolingOptimizer.performVisualizeVisualRFmapForTargetRGC(mosaicParams, ...
-            'tickSeparationArcMin', tickSeparationArcMin);
+            'tickSeparationArcMin', tickSeparationArcMin, ...
+            'reverseXDir', reverseXDir, ...
+            'gridlessLineWeightingFuncions', true);
         return;
+    end
+
+   
+    % Perform the computeVisualRFcenterMapsViaDirectConvolutionWithPSF  operation
+    if (operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF)
+        MosaicPoolingOptimizer.performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF()
+    end
+
+ 
+    % Perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities operation
+    if (operationSetToPerformContains.contrastSTFsAcrossDifferentOpticsOrChromaticities)
+        % 0.20 0.31 0.50 0.64 0.75
+        targetRangeForSurroundConeMix = 0.20 + [0.00 0.05];
+        targetRangeForSurroundConeMix = 0.31 + [0.00 0.05];
+        targetRangeForSurroundConeMix = 0.50 + [0.00 0.05];
+        %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
+        %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
+
+        maxRGCsToIncludeWithinTheTargetRange = 100;
+
+        MosaicPoolingOptimizer.performContrastSTFsAcrossDifferentChromaticities(mosaicParams, ...
+            'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix , ...
+            'maxRGCsToIncludeWithinTheTargetRange', maxRGCsToIncludeWithinTheTargetRange);
     end
 end

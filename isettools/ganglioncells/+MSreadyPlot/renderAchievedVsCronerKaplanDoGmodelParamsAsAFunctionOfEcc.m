@@ -2,7 +2,7 @@ function hFig = renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc(ax, .
     CK95data, ISETBioData, visualizedDataSetScatter, visualizedDataSetMeans, ISETBioDataColor, faceAlpha, ...
     XLims, XTicks, YLims, YTicks, ...
     yAxisScaling, yAxisLabel, plotTitle, ...
-    showZscoresInsteadOfData, ...
+    showZscoresInsteadOfData, onlyShowCronerKaplan95Data, ...
     employTemporalEquivalentEccentricity, ff)
 
 
@@ -37,13 +37,14 @@ function hFig = renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc(ax, .
     for setIndex = 1:numel(ISETBioData)
         if (ismember(setIndex, visualizedDataSetScatter))
             cellsNum  = cellsNum  + numel(ISETBioData{setIndex}.eccentricityDegs);
-            if (~showZscoresInsteadOfData)
+            if (~showZscoresInsteadOfData) && (~onlyShowCronerKaplan95Data)
                 p1 = scatter(ax, ISETBioData{setIndex}.eccentricityDegs, ISETBioData{setIndex}.data, (ff.markerSize-8)^2,'o', ...
                     'MarkerFaceColor', ISETBioDataColor(setIndex,:), 'MarkerEdgeColor', 'none', ...
                     'MarkerFaceAlpha', faceAlpha, 'MarkerEdgeAlpha', faceAlpha,  'LineWidth', ff.lineWidth);
             end
         end
-
+        
+        
         if (showZscoresInsteadOfData)
             % Compute z-scores
             zScores = cell(1,numel(eccSupportForZscores));
@@ -127,24 +128,31 @@ function hFig = renderAchievedVsCronerKaplanDoGmodelParamsAsAFunctionOfEcc(ax, .
                  'MarkerFaceColor', [0.8 0.8 0.8], ...
                  'LineWidth', ff.lineWidth*0.75);
         
-        % Add the mean ISETBio data
-        for setIndex = 1:numel(ISETBioData)
-            if (ismember(setIndex, visualizedDataSetMeans))
-                X = ISETBioData{setIndex}.eccentricityDegs;
-                Y = ISETBioData{setIndex}.data;
-                % Compute mean values across eccentricities
-                [N,edges,bin] = histcounts(X, eccSupportForISETBioMeanData);
-                for iBin = 1:numel(edges)
-                    idx = find(bin == iBin);
-                    meanY(iBin) = mean(Y(idx));
+        if (~onlyShowCronerKaplan95Data)
+            % Add the mean ISETBio data
+            for setIndex = 1:numel(ISETBioData)
+                if (ismember(setIndex, visualizedDataSetMeans))
+                    X = ISETBioData{setIndex}.eccentricityDegs;
+                    Y = ISETBioData{setIndex}.data;
+                    % Compute mean values across eccentricities
+                    [N,edges,bin] = histcounts(X, eccSupportForISETBioMeanData);
+                    for iBin = 1:numel(edges)
+                        idx = find(bin == iBin);
+                        meanY(iBin) = mean(Y(idx));
+                    end
+                    plot(ax, edges, meanY, 'k-', 'LineWidth', 4, 'Color', [0 0 0]);
+                    plot(ax, edges, meanY, 'w--', 'LineWidth', 3, 'Color', ISETBioDataColor(setIndex,:));
                 end
-                plot(ax, edges, meanY, 'k-', 'LineWidth', 4, 'Color', [0 0 0]);
-                plot(ax, edges, meanY, 'w--', 'LineWidth', 3, 'Color', ISETBioDataColor(setIndex,:));
             end
-         end
+        end
+
         
         % Legend
-        legend([p1 p2], {'ISETbio model', 'Croner&Kaplan ''95'}, 'Location', 'NorthWest', 'box', 'off', 'Color', 'none');
+        if (onlyShowCronerKaplan95Data)
+            legend(p2, {'Croner&Kaplan ''95'}, 'Location', 'NorthWest', 'box', 'off', 'Color', 'none');
+        else
+            legend([p1 p2], {'ISETbio model', 'Croner&Kaplan ''95'}, 'Location', 'NorthWest', 'box', 'off', 'Color', 'none');
+        end
 
         dY = (YLims(2)-YLims(1))*4/100;
         

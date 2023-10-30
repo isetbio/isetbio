@@ -237,15 +237,19 @@ if (~isfield(wvf, 'pupilfunc') || ~isfield(wvf, 'PUPILFUNCTION_STALE') ...
         norm_radius_index = norm_radius <= 1;
         
         % Get Zernike coefficients and add in appropriate info to defocus
+        defocusZcoeffIndex = wvfOSAIndexToVectorIndex('defocus');
+
         % Need to make sure the c vector is long enough to contain defocus
         % term, because we handle that specially and it's easy just to make
         % sure it is there. This wastes a little time when we just compute
         % diffraction, but that is the least of our worries.
         c = wvfGet(wvf, 'zcoeffs');
-        if (length(c) < 5)
-            c(length(c) + 1:5) = 0;
+        if (length(c) < defocusZcoeffIndex)
+            c(length(c) + 1:defocusZcoeffIndex) = 0;
         end
-        c(5) = c(5) + lcaMicrons + defocusCorrectionMicrons;
+
+        % Apply the defocus correction
+        c(defocusZcoeffIndex) = c(defocusZcoeffIndex) + lcaMicrons + defocusCorrectionMicrons;
         
         % fprintf('At wavlength %0.1f nm, adding LCA of %0.3f microns to 
         % j = 4 (defocus) coefficient\n', thisWave, lcaMicrons); 

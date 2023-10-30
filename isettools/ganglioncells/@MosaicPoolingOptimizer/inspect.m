@@ -22,6 +22,7 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
         'theMconeRFcomputeStruct');
 
     LconeRGCindex = obj.targetRGCindicesWithLconeMajorityCenter(gridNodeIndex);
+    fprintf(2,'The inspected L-cone center RGC index is: %d\n', LconeRGCindex);
     figNo = 10000 + gridNodeIndex;
     figTitle = sprintf('grid no %d of %d L-cone center RGC %d', ...
         gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), LconeRGCindex);
@@ -45,6 +46,7 @@ function inspect(obj, gridNodeIndex, opticsParams, optimizedRGCpoolingObjectsFil
         gridlessLineWeightingFuncions);
 
     MconeRGCindex = obj.targetRGCindicesWithMconeMajorityCenter(gridNodeIndex);
+    fprintf(2,'The inspected M-cone center RGC index is: %d\n', MconeRGCindex);
     figNo = 20000 + gridNodeIndex;
     figTitle = sprintf('grid no %d of %d M-cone center RGC %d', ...
         gridNodeIndex, numel(obj.conesNumPooledByTheRFcenterGrid), MconeRGCindex);

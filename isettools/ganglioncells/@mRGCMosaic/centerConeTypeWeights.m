@@ -1,4 +1,4 @@
-function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = centerConeTypeWeights(obj, theRGCindex)
+function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes, theCenterConeIndices] = centerConeTypeWeights(obj, theRGCindex)
     % Retrieve this cell's # of center cone indices
     if (isempty(obj.rgcRFcenterConePoolingMatrix))
         connectivityVector = full(squeeze(obj.rgcRFcenterConeConnectivityMatrix(:, theRGCindex)));
@@ -6,9 +6,9 @@ function [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, t
         connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, theRGCindex)));
     end
 
-    indicesOfCenterCones = find(connectivityVector > 0.0001);
-    weightsOfCenterCones = connectivityVector(indicesOfCenterCones);
-    typesOfCenterCones = obj.inputConeMosaic.coneTypes(indicesOfCenterCones);
+    theCenterConeIndices = find(connectivityVector > 0.0001);
+    weightsOfCenterCones = connectivityVector(theCenterConeIndices);
+    typesOfCenterCones = obj.inputConeMosaic.coneTypes(theCenterConeIndices);
 
     coneTypes = [cMosaic.LCONE_ID cMosaic.MCONE_ID cMosaic.SCONE_ID];
     theCenterConeTypeWeights = zeros(1, numel(coneTypes));

@@ -33,13 +33,21 @@ function theOptics = optics(app, dialog)
             % Determine if we need to subtract the subject's central refraction
             subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(app.roiParams.whichEye,subjectID);
 
+        case 'Thibos2002'
+            zernikeDataBase = 'Thibos2002';
+            rankedSubjectIDs = ThibosOptics.constants.subjectRanking(app.roiParams.whichEye);
+            subjectID = rankedSubjectIDs(app.opticsParams.subjectRank);
+            fprintf('Will generate optics for Thibos subject %d (rank: %d)\n', subjectID, app.opticsParams.subjectRank);
+            % Determine if we need to subtract the subject's central refraction
+            subtractCentralRefraction = ThibosOptics.constants.subjectRequiresCentralRefractionCorrection(app.roiParams.whichEye,subjectID);
+
         otherwise
             error('Unknown optics dataset: ''%s''.', app.opticsParams.subjectDataset);
     end
     
     
     % Generate optics appropriate for the mosaic's eccentricity
-    [oiEnsemble, psfEnsemble] = ...
+    [oiEnsemble, psfEnsemble, zCoeffs] = ...
             app.components.coneMosaic.oiEnsembleGenerate(app.coneMosaicParams.eccentricityDegs, ...
             'zernikeDataBase', zernikeDataBase, ...
             'subjectID', subjectID, ...
@@ -50,6 +58,8 @@ function theOptics = optics(app, dialog)
             'wavefrontSpatialSamples', app.opticsParams.wavefrontSpatialSamples ...
             );
            
+     zCoeffs
+
      % Update all components with new optics
      app.components.psf = psfEnsemble{1};
      app.components.optics = oiEnsemble{1};
