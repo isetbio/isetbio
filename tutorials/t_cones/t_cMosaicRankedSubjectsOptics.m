@@ -26,7 +26,7 @@ mosaicSizeDegs = [1 1]*0.15;
 mosaicEccDegs  = [0 0];
 
 %% Eye: choose {from 'right eye', 'left eye'}
-whichEye = 'right eye';   
+whichEye = 'left eye';   
 
 %% choose between {'Polans2015', 'Artal2012', and 'Thibos2002'}
 opticsZernikeCoefficientsDataBase = 'Thibos2002';            
