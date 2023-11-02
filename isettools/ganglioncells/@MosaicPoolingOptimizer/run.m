@@ -234,11 +234,11 @@ function run()
         % 0.20 0.31 0.50 0.64 0.75
         targetRangeForSurroundConeMix = 0.20 + [0.00 0.05];
         targetRangeForSurroundConeMix = 0.31 + [0.00 0.05];
-        targetRangeForSurroundConeMix = 0.50 + [0.00 0.05];
+        targetRangeForSurroundConeMix = 0.475 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
 
-        maxRGCsToIncludeWithinTheTargetRange = 100;
+        maxRGCsToIncludeWithinTheTargetRange = []; % 100;
 
         MosaicPoolingOptimizer.performContrastSTFsAcrossDifferentChromaticities(mosaicParams, ...
             'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix , ...

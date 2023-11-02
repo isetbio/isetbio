@@ -84,14 +84,6 @@ function contrastVisualSTFsAcrossDifferentChromaticities(...
        opticsString = sprintf('physio-optics, defocus_%1.2fD', opticsParams.refractiveErrorDiopters);
     end
 
-    %if (generateVideoWithAllExaminedRGCs)
-    %    videoFileName = fullfile(pdfDirectory,sprintf('AchromaticLMconeIsolatingSTFanalysis_%s.mp4', opticsString));
-    %    videoOBJ = VideoWriter(videoFileName, 'MPEG-4');
-    %    videoOBJ.FrameRate = 10;
-    %    videoOBJ.Quality = 100;
-    %    videoOBJ.open();
-    %end
-
     analyzedLconeCenterRGCs = 0;
     analyzedMconeCenterRGCs = 0;
 
@@ -130,18 +122,13 @@ function contrastVisualSTFsAcrossDifferentChromaticities(...
     haveNotEncounteredLastLConeRGC = true;
     haveNotEncounteredLastMConeRGC = true;
 
-    for iRGC = 1:numel(examinedRGCindices)
-
-        % Only visualize the desired mRGCs
-        %if (size(theLconeCenterBPIscatterData,1) + size(theMconeCenterBPIscatterData,1) == maxRGCsToIncludeWithinTheTargetRange) 
-
+    for iRGC = 1:numel(examinedRGCindices)+1
+ 
         % Only visualize the last L-cone center and the last M-cone center mRGCs
         onLastLconeCenterRGC = ((analyzedLconeCenterRGCs > 0) && (currentLconeCenterRGCindex == analyzedLconeCenterRGCs)) && (haveNotEncounteredLastLConeRGC);                             
         onLastMconeCenterRGC = ((analyzedMconeCenterRGCs > 0) && (currentMconeCenterRGCindex == analyzedMconeCenterRGCs)) && (haveNotEncounteredLastMConeRGC);
 
         if (onLastLconeCenterRGC || onLastMconeCenterRGC)
-       % if (((analyzedLconeCenterRGCs > 0) && (currentLconeCenterRGCindex == analyzedLconeCenterRGCs)) && ((analyzedMconeCenterRGCs == 0)||(currentMconeCenterRGCindex ~= analyzedMconeCenterRGCs))) || ...
-       %    (((analyzedMconeCenterRGCs > 0) && (currentMconeCenterRGCindex == analyzedMconeCenterRGCs)) && ((analyzedLconeCenterRGCs == 0)||(currentLconeCenterRGCindex ~= analyzedLconeCenterRGCs)))
 
             % 1. Render the current population BPI plot, outlining the BPI of
             % the last L-center and last M-center cell plotted
@@ -311,9 +298,19 @@ function contrastVisualSTFsAcrossDifferentChromaticities(...
             commandString = sprintf('%s/cpdf -args %s/generatePLOSOnePaperReadyFigures.txt', PLOSdirectory, PLOSdirectory);
             system(commandString);
 
+            if (onLastLconeCenterRGC)
+                fprintf('On last L-cone center mRGC of the %d visualized RGCs in the target surround cone mix range. There are a total of %d mRGCs within the target surround cone mix range\n', ...
+                    maxRGCsToIncludeWithinTheTargetRange, numel(examinedRGCindices));
+            end
+
+            if (onLastMconeCenterRGC)
+                fprintf('On last M-cone center mRGC of the %d visualized RGCs in the target surround cone mix range. There are a total of %d mRGCs within the target surround cone mix range\n', ...
+                    maxRGCsToIncludeWithinTheTargetRange, numel(examinedRGCindices));
+            end
+            
             disp('Hit enter to continue');
             pause
-        end
+        end % onLastL or onLastM
        
         allDoneWithLconeCenterRGCs = (analyzedLconeCenterRGCs == 0) || (analyzedLconeCenterRGCs > 0) && (haveNotEncounteredLastLConeRGC == false);
         allDoneWithMconeCenterRGCs = (analyzedMconeCenterRGCs == 0) || (analyzedMconeCenterRGCs > 0) && (haveNotEncounteredLastMConeRGC == false);
@@ -341,7 +338,7 @@ function contrastVisualSTFsAcrossDifferentChromaticities(...
         theOptimalLconeIsolatingSTFphaseSpectrum = zeros(1, numel(spatialFrequenciesTested));
         theOptimalMconeIsolatingSTFphaseSpectrum  = zeros(1, numel(spatialFrequenciesTested));
 
-        for iSF = 1:numel(spatialFrequenciesTested)
+        parfor iSF = 1:numel(spatialFrequenciesTested)
             % Retrieve L-cone isolating responses for all frames 
             theResponseTimeSeries = squeeze(theMRGCMosaicLconeIsolatingSTFresponses(iOri, iSF, :, theRGCindex));
             % Fit a sinusoid to extract the magnitude and phase
@@ -370,47 +367,20 @@ function contrastVisualSTFsAcrossDifferentChromaticities(...
 
         % Analyze cone weights to center and surround
         [theCenterMajorityConeType, netCenterLconeWeight, netCenterMconeWeight, ...
-         netSurroundLconeWeight, netSurroundMconeWeight] = analyzeCenterSurroundConeMix(...
+         netSurroundLconeWeight, netSurroundMconeWeight, surroundConeMix] = MosaicPoolingOptimizer.analyzeCenterSurroundConeMix(...
             theComputeReadyMRGCmosaic, theRGCindex, performSurroundAnalysisForConesExclusiveToTheSurround);
 
         if (theCenterMajorityConeType == cMosaic.LCONE_ID)
             currentLconeCenterRGCindex = currentLconeCenterRGCindex + 1;
             theLconeCenterBPIscatterData(currentLconeCenterRGCindex,:) = [theAchromaticSTFBandPassIndex theLconeIsolatingSTFBandPassIndex];
+            theLconeCenterSurroundConeMixData(currentLconeCenterRGCindex) = surroundConeMix;
         else
             currentMconeCenterRGCindex = currentMconeCenterRGCindex + 1;
             theMconeCenterBPIscatterData(currentMconeCenterRGCindex+1,:) = [theAchromaticSTFBandPassIndex theMconeIsolatingSTFBandPassIndex];
+            theMconeCenterSurroundConeMixData(currentMconeCenterRGCindex) = surroundConeMix;
         end
     
-        %if (generateVideoWithAllExaminedRGCs)
-        %    videoOBJ.writeVideo(getframe(hFig));
-        %end
-
+        
     end % iRGC
 
-    %if (generateVideoWithAllExaminedRGCs)
-    %    videoOBJ.close();
-    %end
-
-    
-
 end
-
-function [theCenterMajorityConeType, netCenterLconeWeight, netCenterMconeWeight, ...
-         netSurroundLconeWeight, netSurroundMconeWeight] = analyzeCenterSurroundConeMix(...
-         theMRGCmosaic, theRGCindex, performSurroundAnalysisForConesExclusiveToTheSurround)
-
-    [theCenterConeTypeNetWeights, ~, theCenterMajorityConeType, ...
-        theCenterConeTypes, theCenterConeIndices] = theMRGCmosaic.centerConeTypeWeights(theRGCindex);
-    netCenterLconeWeight = theCenterConeTypeNetWeights(find(theCenterConeTypes == cMosaic.LCONE_ID));
-    netCenterMconeWeight = theCenterConeTypeNetWeights(find(theCenterConeTypes == cMosaic.MCONE_ID));
-
-    if (performSurroundAnalysisForConesExclusiveToTheSurround)
-        [~, theSurroundConeTypeNetWeights] = theMRGCmosaic.surroundConeTypeWeights(theRGCindex, theCenterConeIndices);
-    else
-        theSurroundConeTypeNetWeights = theMRGCmosaic.surroundConeTypeWeights(theRGCindex, []);
-    end
-
-    netSurroundLconeWeight = theSurroundConeTypeNetWeights(cMosaic.LCONE_ID);
-    netSurroundMconeWeight = theSurroundConeTypeNetWeights(cMosaic.MCONE_ID);
-end
-

@@ -358,6 +358,11 @@ classdef MosaicPoolingOptimizer < handle
             mRGCMosaicMconeIsolatingSTFresponsesFileName, ...
             opticsParams, varargin);
 
+        % Method to compute the surround cone mix for mRGCs
+        [theCenterMajorityConeType, netCenterLconeWeight, netCenterMconeWeight, ...
+         netSurroundLconeWeight, netSurroundMconeWeight, surroundConeMix] = analyzeCenterSurroundConeMix(...
+            theMRGCmosaic, theRGCindex, performSurroundAnalysisForConesExclusiveToTheSurround);
+
         % Method to generate Vlambda weigted PSF for the mRGCmosaic
         thePSFData = generateVlambdaWeightedPSFData(theMidgetRGCMosaic, opticsParams)
 

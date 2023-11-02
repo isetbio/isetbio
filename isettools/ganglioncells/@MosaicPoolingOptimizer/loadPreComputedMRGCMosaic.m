@@ -4,6 +4,7 @@ function theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEccDegs)
     % 1. mosaic params
     mosaicParams = MosaicPoolingOptimizer.getMosaicParams(horizontalEccDegs)
 
+    pause
     % 2. optics params
     opticsParams = MosaicPoolingOptimizer.getOpticsParams(mosaicParams)
 

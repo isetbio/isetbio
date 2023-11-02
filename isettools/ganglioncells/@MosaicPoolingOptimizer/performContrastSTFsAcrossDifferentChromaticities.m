@@ -5,7 +5,7 @@ function performContrastSTFsAcrossDifferentChromaticities(...
     p = inputParser;
     p.addParameter('performSurroundAnalysisForConesExclusiveToTheSurround', true, @islogical);
     p.addParameter('targetRangeForSurroundConeMix', [0.4 0.5], @(x)(isnumeric(x)&&(numel(x)==2)));
-    p.addParameter('maxRGCsToIncludeWithinTheTargetRange', inf, @isscalar);
+    p.addParameter('maxRGCsToIncludeWithinTheTargetRange', [], @(x)(isempty(x)||isscalar(x)));
     p.parse(varargin{:});
     performSurroundAnalysisForConesExclusiveToTheSurround = p.Results.performSurroundAnalysisForConesExclusiveToTheSurround;
     targetRangeForSurroundConeMix = p.Results.targetRangeForSurroundConeMix;
@@ -67,9 +67,20 @@ function performContrastSTFsAcrossDifferentChromaticities(...
     load(fullfile(computeReadyMosaicResourcesDirectory, computeReadyMosaicFileName), 'theComputeReadyMRGCmosaic');
 
     % Analyze the surround cone mix for all mRGCs in theComputeReadyMRGCmosaic
-    [surroundConeMix, theCenterMajorityConeType] = analyzeSurroundConeMixForAllCells(...
+    [surroundConeMix, theCenterMajorityConeType] = surroundConeMixForAllCellsInMosaic(...
             theComputeReadyMRGCmosaic, performSurroundAnalysisForConesExclusiveToTheSurround);
         
+    % Determine visualized mRGCindices (only those whose surround cone mix is within the target range)
+    mRGCindicesToVisualizeSTFsAcrossChromaticities = find(...
+        (surroundConeMix >= targetRangeForSurroundConeMix(1)) & ...
+        (surroundConeMix <= targetRangeForSurroundConeMix(2)));
+
+    idxLconeCenter = find(theCenterMajorityConeType(mRGCindicesToVisualizeSTFsAcrossChromaticities) == cMosaic.LCONE_ID);
+    idxMconeCenter = find(theCenterMajorityConeType(mRGCindicesToVisualizeSTFsAcrossChromaticities) == cMosaic.MCONE_ID);
+    if (isempty(maxRGCsToIncludeWithinTheTargetRange))
+        maxRGCsToIncludeWithinTheTargetRange = numel(mRGCindicesToVisualizeSTFsAcrossChromaticities);
+    end
+
 
     % ============== Export to PLOS directory ==========================
     rawFiguresRoot = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/Raw';
@@ -93,39 +104,39 @@ function performContrastSTFsAcrossDifferentChromaticities(...
     NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
 
 
+    % Visualize the locations of cells with a surround cone mix in the targetRangeForSurroundConeMix
+    pdfFileNameLcenter = sprintf('SurroundConeMixOutlinedLcenterMRGClocationsWithinTargetRange_eccDegs_%2.1f_%2.1f.pdf', mosaicParams.eccDegs(1), mosaicParams.eccDegs(1));
+    pdfFileNameMcenter = sprintf('SurroundConeMixOutlinedMcenterMRGClocationsWithinTargetRange_eccDegs_%2.1f_%2.1f.pdf', mosaicParams.eccDegs(1), mosaicParams.eccDegs(1));
+
+
+    hFigLcenter = figure(556); clf;
+    ff = MSreadyPlot.figureFormat('1x1 small');
+    theLcenterAxes = MSreadyPlot.generateAxes(hFigLcenter,ff);
+
+    hFigMcenter = figure(557); clf;
+    theMcenterAxes = MSreadyPlot.generateAxes(hFigMcenter,ff);
+
+    plotTitleLcenter = sprintf('L-center mRGCs with surround cone mix in [%2.2f-%2.2f]',targetRangeForSurroundConeMix(1), targetRangeForSurroundConeMix(2));
+    plotTitleMcenter = sprintf('M-center mRGCs with surround cone mix in [%2.2f-%2.2f]',targetRangeForSurroundConeMix(1), targetRangeForSurroundConeMix(2));
+    MSreadyPlot.renderIdentifiedMRGClocations(hFigLcenter, hFigMcenter, theLcenterAxes{1,1}, theMcenterAxes{1,1}, ...
+            theComputeReadyMRGCmosaic, ...
+            mRGCindicesToVisualizeSTFsAcrossChromaticities(idxLconeCenter), ...
+            mRGCindicesToVisualizeSTFsAcrossChromaticities(idxMconeCenter), ...
+            plotTitleLcenter, plotTitleMcenter, ff);
+
+    pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileNameLcenter)
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFigLcenter, 300);
+
+    pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileNameMcenter)
+    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFigMcenter, 300);
+
     % Generate paper-ready figures (scaled versions of the figures i
     % nrawFiguresRoot directory) which are stored in the PaperReady folder
     PLOSdirectory = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode';
     commandString = sprintf('%s/cpdf -args %s/generatePLOSOnePaperReadyFigures.txt', PLOSdirectory, PLOSdirectory);
     system(commandString);
 
-    if (1==2)
-        % Examine RGCs lying along the horizontal meridian
-        targetYdegs = 0.0;
-        [~, ~, mRGCindicesToVisualizeSTFsAcrossChromaticities] = extractVisualizedConeAndRGCindices(theComputeReadyMRGCmosaic, targetYdegs);
-    else
-        % Determine visualized mRGCindices (only those whose surround cone
-        % mix is within the target range)
-        mRGCindicesToVisualizeSTFsAcrossChromaticities = find(...
-            (surroundConeMix >= targetRangeForSurroundConeMix(1)) & ...
-            (surroundConeMix <= targetRangeForSurroundConeMix(2)));
 
-        idxLconeCenter = find(theCenterMajorityConeType(mRGCindicesToVisualizeSTFsAcrossChromaticities) == cMosaic.LCONE_ID);
-        idxMconeCenter = find(theCenterMajorityConeType(mRGCindicesToVisualizeSTFsAcrossChromaticities) == cMosaic.MCONE_ID);
-        
-        
-        mRGCindicesToVisualizeSTFsAcrossChromaticities = [...
-            mRGCindicesToVisualizeSTFsAcrossChromaticities(idxLconeCenter) ...
-            mRGCindicesToVisualizeSTFsAcrossChromaticities(idxMconeCenter)];
-
-        % Randomize the order of visualized L-center and M-center cells but
-        % always with the same random seed so we always visualize the set
-        % of cells across different conditions
-        rng(1);
-        mRGCindicesToVisualizeSTFsAcrossChromaticities = ...
-            mRGCindicesToVisualizeSTFsAcrossChromaticities(randperm(numel(mRGCindicesToVisualizeSTFsAcrossChromaticities)));
-    end
-    
 
     MosaicPoolingOptimizer.contrastVisualSTFsAcrossDifferentChromaticities(...
         fullfile(computeReadyMosaicResourcesDirectory, computeReadyMosaicFileName), ...
@@ -144,29 +155,18 @@ function performContrastSTFsAcrossDifferentChromaticities(...
 end
 
 
-function [surroundConeMix, theCenterMajorityConeType] = analyzeSurroundConeMixForAllCells(theMRGCmosaic, performSurroundAnalysisForConesExclusiveToTheSurround)
+function [surroundConeMixForAllCells, theCenterMajorityConeTypeForAllCells] = surroundConeMixForAllCellsInMosaic(theMRGCmosaic, performSurroundAnalysisForConesExclusiveToTheSurround)
 
-    surroundConeMix = zeros(1, theMRGCmosaic.rgcsNum);
-    theCenterMajorityConeType = zeros(1, theMRGCmosaic.rgcsNum);
+    surroundConeMixForAllCells = zeros(1, theMRGCmosaic.rgcsNum);
+    theCenterMajorityConeTypeForAllCells = zeros(1, theMRGCmosaic.rgcsNum);
 
     parfor theRGCindex = 1:theMRGCmosaic.rgcsNum
-        [~, ~, theCenterMajorityConeType(theRGCindex), ~, theCenterConeIndices] = theMRGCmosaic.centerConeTypeWeights(theRGCindex);
-        if (performSurroundAnalysisForConesExclusiveToTheSurround) 
-            [~,theSurroundConeTypeNetWeights] = theMRGCmosaic.surroundConeTypeWeights(theRGCindex, theCenterConeIndices);
-        else
-            theSurroundConeTypeNetWeights = theMRGCmosaic.surroundConeTypeWeights(theRGCindex, []);
-        end
 
-        netSurroundLconeWeight = theSurroundConeTypeNetWeights(1);
-        netSurroundMconeWeight = theSurroundConeTypeNetWeights(2);
+        [theCenterMajorityConeType, ~,~, netSurroundLconeWeight, netSurroundMconeWeight, surroundConeMix] = MosaicPoolingOptimizer.analyzeCenterSurroundConeMix(...
+         theMRGCmosaic, theRGCindex, performSurroundAnalysisForConesExclusiveToTheSurround)
 
-        % Surround cone mix = net surround cone weights for the
-        % non-dominant center cone / total surround L+M cone weight
-        if (theCenterMajorityConeType(theRGCindex) == cMosaic.LCONE_ID)
-            surroundConeMix(theRGCindex) = netSurroundMconeWeight / (netSurroundMconeWeight+netSurroundLconeWeight);
-        else
-            surroundConeMix(theRGCindex) = netSurroundLconeWeight / (netSurroundMconeWeight+netSurroundLconeWeight);
-        end
+        surroundConeMixForAllCells(theRGCindex) = surroundConeMix;
+        theCenterMajorityConeTypeForAllCells(theRGCindex) = theCenterMajorityConeType;
     end
 
 end

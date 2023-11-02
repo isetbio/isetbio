@@ -769,13 +769,18 @@ function visualizationParams = visualize(obj, varargin)
         
         if (xx > 10)
             domainVisualizationTicks.x = round(ticksX);
+        elseif (xx > 5)
+            domainVisualizationTicks.x = round(ticksX*10)/10;
         elseif (xx > 1)
             domainVisualizationTicks.x = round(ticksX*100)/100;
         else
             domainVisualizationTicks.x = round(ticksX*1000)/1000;
         end
+
         if (yy > 10)
             domainVisualizationTicks.y = round(ticksY);
+        elseif (yy > 5)
+            domainVisualizationTicks.y = round(ticksY*10)/10;
         elseif (yy > 1)
             domainVisualizationTicks.y = round(ticksY*100)/100;
         else

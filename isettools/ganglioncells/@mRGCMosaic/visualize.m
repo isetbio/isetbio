@@ -134,17 +134,18 @@ function visualize(obj, varargin)
         YLims(2) = domainVisualizationLimits(4);
     end
     
-
     if (isempty(domainVisualizationTicks))
         xo = (XLims(1)+XLims(2))/2;
         xx = XLims(2)-XLims(1);
         yo = (YLims(1)+YLims(2))/2;
         yy = YLims(2)-YLims(1);
-        ticksX = xo + xx*0.5*[-0.75 0 0.75];
-        ticksY = yo + yy*0.5*[-0.75 0 0.75];
+        ticksX = [XLims(1) xo XLims(2)];
+        ticksY = [YLims(1) yo YLims(2)];
         
         if (xx > 10)
             domainVisualizationTicks.x = round(ticksX);
+        elseif (xx > 5)
+            domainVisualizationTicks.x = round(ticksX*10)/10;
         elseif (xx > 1)
             domainVisualizationTicks.x = round(ticksX*100)/100;
         else
@@ -152,14 +153,14 @@ function visualize(obj, varargin)
         end
         if (yy > 10)
             domainVisualizationTicks.y = round(ticksY);
+        elseif (yy > 5)
+            domainVisualizationTicks.y = round(ticksY*10)/10;
         elseif (yy > 1)
             domainVisualizationTicks.y = round(ticksY*100)/100;
         else
             domainVisualizationTicks.y = round(ticksY*1000)/1000;
-        end
-        
+        end 
     end
-
     
     switch (visualizedComponent)
         case 'RF centers'
@@ -404,15 +405,18 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
     set(ax, 'FontSize', fontSize, 'FontAngle', fontAngle);
 
     minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
-    if (minTickIncrement >= 1)
+    if (minTickIncrement >= 2)
        set(ax, 'XTickLabel', sprintf('%1.0f\n', domainVisualizationTicks.x), ...
                'YTickLabel', sprintf('%1.0f\n', domainVisualizationTicks.y));
-    elseif (minTickIncrement >= 0.1)
+    elseif (minTickIncrement >= 1)
        set(ax, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
                'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
+    elseif (minTickIncrement >= 0.1)
+       set(ax, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
+               'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
     else
-        set(ax, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
-                'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
+        set(ax, 'XTickLabel', sprintf('%1.3f\n', domainVisualizationTicks.x), ...
+                'YTickLabel', sprintf('%1.3f\n', domainVisualizationTicks.y));
     end
 
     if (~identifyInputCones)
