@@ -50,7 +50,7 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
         retinalImageResolutionDegs, ...
         stimulusChromaticity);
 
-    % Compute cone mosaic STF responses
+    % Retrieve the optics to employ
     switch (opticsToEmploy)
         case {'native', 'adaptive optics'}
              % Retrieve the native optics
@@ -63,6 +63,7 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
         otherwise
              error('Unknown optics: ''%s''.', opticsToEmploy);
     end
+    
     fprintf('\nWill save responses in %s.\n', responsesFileName);
 
    

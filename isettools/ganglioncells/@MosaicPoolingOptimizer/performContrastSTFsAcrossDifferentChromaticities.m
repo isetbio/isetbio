@@ -92,7 +92,7 @@ function performContrastSTFsAcrossDifferentChromaticities(...
      
     hFig = figure(555); clf;
     ff = MSreadyPlot.figureFormat('1x1 small');
-    theAxes = MSreadyPlot.generateAxes(hFig,ff);
+    theAxes = MSreadyPlot.generateAxes(hFig,ff, 'figPosition', [576 707]);
     plotTitle = '';
     MSreadyPlot.renderSurroundMixHistograms(theAxes{1,1}, ...
             surroundConeMix(find(theCenterMajorityConeType == cMosaic.LCONE_ID)), ...
@@ -111,10 +111,10 @@ function performContrastSTFsAcrossDifferentChromaticities(...
 
     hFigLcenter = figure(556); clf;
     ff = MSreadyPlot.figureFormat('1x1 small');
-    theLcenterAxes = MSreadyPlot.generateAxes(hFigLcenter,ff);
+    theLcenterAxes = MSreadyPlot.generateAxes(hFigLcenter,ff, 'figPosition', [268 127]);
 
     hFigMcenter = figure(557); clf;
-    theMcenterAxes = MSreadyPlot.generateAxes(hFigMcenter,ff);
+    theMcenterAxes = MSreadyPlot.generateAxes(hFigMcenter,ff, 'figPosition', [969 127]);
 
     plotTitleLcenter = sprintf('L-center mRGCs with surround cone mix in [%2.2f-%2.2f]',targetRangeForSurroundConeMix(1), targetRangeForSurroundConeMix(2));
     plotTitleMcenter = sprintf('M-center mRGCs with surround cone mix in [%2.2f-%2.2f]',targetRangeForSurroundConeMix(1), targetRangeForSurroundConeMix(2));

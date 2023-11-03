@@ -1,5 +1,5 @@
 function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, ...
-    theOptics, maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, responsesFileName, varargin)
+    opticsToEmploy, maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, responsesFileName, varargin)
 
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
@@ -21,6 +21,20 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
     % Note: These are linear responses, i.e., 
     % Response(forward polarity Hartley) - Response (inverse polarity Hartley)
 
+    % Retrieve the optics to employ
+    switch (opticsToEmploy)
+        case {'native', 'adaptive optics'}
+             % Retrieve the native optics
+             theOptics = theRGCMosaic.theNativeOptics;
+             
+        case 'custom'
+            % Retrieve the custom optics
+             theOptics = theRGCMosaic.theCustomOptics;
+
+        otherwise
+             error('Unknown optics: ''%s''.', opticsToEmploy);
+    end
+
     [theConeMosaicSubspaceLinearResponses, theConeMosaicNullResponses, ...
           HartleySpatialModulationPatterns, spatialSupportDegs, lIndices, mIndices] = ...
           MosaicPoolingOptimizer.computeConeMosaicSubspaceRFmappingLinearResponses(theConeMosaic, theOptics,  ...
@@ -30,14 +44,25 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
                                            'visualizeResponses', visualizedResponses, ...
                                            'parPoolSize', parPoolSize);
 
-
-    theNativeOpticsParams = theRGCMosaic.theNativeOpticsParams;
     HartleySpatialModulationPatterns = single(HartleySpatialModulationPatterns);
-    
-    save(responsesFileName, 'theNativeOpticsParams', ...
+
+    switch (opticsToEmploy)
+        case {'native', 'adaptive optics'}
+             theNativeOpticsParams = theRGCMosaic.theNativeOpticsParams;
+             save(responsesFileName, 'theNativeOpticsParams', ...
                 'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'lIndices', 'mIndices', ...
                 'theConeMosaicSubspaceLinearResponses', 'theConeMosaicNullResponses', ...
                  '-v7.3');
+
+        case 'custom'
+             theCustomOpticsParams = theRGCMosaic.theCustomOpticsParams;
+             save(responsesFileName, 'theCustomOpticsParams', ...
+                'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'lIndices', 'mIndices', ...
+                'theConeMosaicSubspaceLinearResponses', 'theConeMosaicNullResponses', ...
+                 '-v7.3');
+        otherwise
+             error('Unknown optics: ''%s''.', opticsToEmploy);
+    end
 
     fprintf('Saved computed cone mosaic SUBSPACE RF mapping linear responses to %s\n', responsesFileName);
 

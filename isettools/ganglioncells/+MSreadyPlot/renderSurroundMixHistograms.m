@@ -60,7 +60,7 @@ function renderSurroundMixHistograms(ax, lConeCenterSurroundConeMixRatios, ...
     xtickangle(ax, 0);
     ytickangle(ax, 0);
     if (~noXLabel)
-        xlabel(ax, '(non-center cone / net) surround weight ratio', 'FontAngle', ff.axisFontAngle);
+        xlabel(ax, 'surround cone weight mix, \chi', 'FontAngle', ff.axisFontAngle);
     else
         set(ax, 'XTickLabel', {});
     end
@@ -82,8 +82,8 @@ function renderSurroundMixHistograms(ax, lConeCenterSurroundConeMixRatios, ...
 
 
     % legends
-    legend(ax, {'L-cone center', 'M-cone center'}, ...
-        'Location', 'NorthEast', 'NumColumns', 1, ...
+    legend(ax, {'L-center: \chi=w^S_M/w^S_{LM}', 'M-center:  \chi=w^S_L/w^S_{LM}'}, ...
+        'Location', 'NorthOutside', 'NumColumns', 2, ...
         'FontSize', ff.legendFontSize, 'Box', 'off');
 
     % Font size
