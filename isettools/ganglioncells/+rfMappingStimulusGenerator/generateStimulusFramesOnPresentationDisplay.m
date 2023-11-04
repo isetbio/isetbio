@@ -91,8 +91,12 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
             assertDisplayContrasts(figNo, sceneLMScontrastsImage, LMScontrastImage);
 
             % Visualize scene components
-            %figNo = 2000;
-            %visualizeDisplayImage(figNo, sceneSRGBimage, sceneLMSexcitationsImage, presentationDisplay);
+            figure(2000);
+            ax = subplot(1,1,1);
+            visualizeScene(theScene, ...
+                'presentationDisplay', presentationDisplay, ...
+                'axesHandle', ax);
+            drawnow;
         end
 
         if (isempty(sceneIndexToCompute))
@@ -115,81 +119,6 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
 
 end
 
-
-function visualizeDisplayImage(figNo, sRGBimage, LMSimage,  presentationDisplay)
-    backgroundLMS = LMSimage(1,1,:);
-    %Compute the RGB image of the L-excitations image component
-    tmp = LMSimage;
-    for k = [2 3]
-        tmp(:,:,k) = 0*tmp(:,:,k)+backgroundLMS(k);
-    end
-    tmp = imageLinearTransform(tmp, inv(displayGet(presentationDisplay, 'rgb2lms')));
-    if ((min(tmp(:))<0) || (max(tmp(:))>1))
-        tmp(tmp<0) = 0;
-        tmp(tmp>1) = 1;
-        fprintf('L-only component not realizable. Will clip.\n');
-    end
-    LexcitationSRGBimage = lrgb2srgb(tmp);
-    
-    % Compute the RGB image of the M-excitations image component
-    tmp = LMSimage;
-    for k = [1 3]
-        tmp(:,:,k) = 0*tmp(:,:,k)+backgroundLMS(k);
-    end
-    tmp = imageLinearTransform(tmp, inv(displayGet(presentationDisplay, 'rgb2lms')));
-    if ((min(tmp(:))<0) || (max(tmp(:))>1))
-        tmp(tmp<0) = 0;
-        tmp(tmp>1) = 1;
-        fprintf('M-only component not realizable. Will clip.\n');
-    end
-    MexcitationSRGBimage = lrgb2srgb(tmp);
-    
-
-    % Compute the RGB image of the S-excitations image component
-    tmp = LMSimage;
-    for k =[1 2]
-        tmp(:,:,k) = 0*tmp(:,:,k)+backgroundLMS(k);
-    end
-    tmp = imageLinearTransform(tmp, inv(displayGet(presentationDisplay, 'rgb2lms')));
-    if ((min(tmp(:))<0) || (max(tmp(:))>1))
-        tmp(tmp<0) = 0;
-        tmp(tmp>1) = 1;
-        fprintf('S-only component not realizable. Will clip.\n');
-    end
-    SexcitationSRGBimage = lrgb2srgb(tmp);
-    
-
-    hFig = figure(figNo); clf;
-
-    % Plot the L-cone component
-    theCurrentAxes = subplot(2,2,1); 
-    image(theCurrentAxes, LexcitationSRGBimage);
-    axis(theCurrentAxes, 'square');
-    set(theCurrentAxes, 'XTick', [], 'YTick', []);
-    title(theCurrentAxes, 'L-cone stimulus component');
-    
-    % Plot the M-cone component
-    theCurrentAxes = subplot(2,2,2);
-    image(theCurrentAxes, MexcitationSRGBimage);
-    axis(theCurrentAxes, 'square');
-    set(theCurrentAxes, 'XTick', [], 'YTick', []);
-    title(theCurrentAxes, 'M-cone stimulus component');
-     
-    % Plot the S-cone component
-    theCurrentAxes = subplot(2,2,3);
-    image(theCurrentAxes, SexcitationSRGBimage);
-    axis(theCurrentAxes, 'square');
-    set(theCurrentAxes, 'XTick', [], 'YTick', []);
-    title(theCurrentAxes, 'S-cone stimulus component');
-    
-    % Plot the composite stimulus
-    theCurrentAxes = subplot(2,2,4);
-    image(theCurrentAxes, sRGBimage);
-    axis(theCurrentAxes, 'square')
-    set(theCurrentAxes, 'XTick', [], 'YTick', []);
-    title(theCurrentAxes, 'composite stimulus');
-    drawnow
-end
 
 function assertDisplayContrasts(figNo, sceneLMScontrastsImage, desiredLMScontrastImage)
     hFig = figure(figNo); clf;
