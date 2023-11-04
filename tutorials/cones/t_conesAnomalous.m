@@ -1,8 +1,8 @@
 %% t_conesAnomalous
 %
-% How to shift the photopigment absorbance
+% Shift the photopigment absorbance
 %
-% Built on PsychToolbox and Asano/Lamb pigment shifts
+% Uses the PsychToolbox and Asano/Lamb pigment shifts
 %
 % Notes:
 %   The photopigment properties are derived from the internal
