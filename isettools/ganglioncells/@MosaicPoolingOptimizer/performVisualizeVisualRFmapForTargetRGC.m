@@ -1,4 +1,4 @@
-function performVisualizeVisualRFmapForTargetRGC(mosaicParams, stimPositionDegs, varargin)
+function performVisualizeVisualRFmapForTargetRGC(mosaicParams, stimPositionDegs, rfMappingPixelMagnificationFactor, varargin)
 
     % Parse input
     p = inputParser;
@@ -43,15 +43,15 @@ function performVisualizeVisualRFmapForTargetRGC(mosaicParams, stimPositionDegs,
 
     fprintf('\n---> Select the chromaticity that was used to compute the mRGCMosaicSubspaceResponses\n');
     % Ask the user what stimulus chromaticity to use
-    [~, mRGCMosaicSubspaceResponsesFileName] = ...
+    [stimulusChromaticity, mRGCMosaicSubspaceResponsesFileName] = ...
         MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
-        mRGCMosaicSubspaceResponsesFileName, 'SubspaceResponses');
+        mRGCMosaicSubspaceResponsesFileName, 'mRGCMosaicSubspaceResponses');
 
     % Optimally generated RF maps filename
     optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', '_optimallyMappedRFs.mat');
 
     % Add the position info
-    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f.mat', stimPositionDegs(1), stimPositionDegs(2));
+    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor);
     optimallyMappedSubspaceRFmapsFileName = strrep(optimallyMappedSubspaceRFmapsFileName, '.mat', positionPostFix);
 
     % PDF directory

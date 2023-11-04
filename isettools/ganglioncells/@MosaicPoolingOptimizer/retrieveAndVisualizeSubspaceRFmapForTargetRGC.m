@@ -33,9 +33,9 @@ function retrieveAndVisualizeSubspaceRFmapForTargetRGC(...
 
     % Load the optimall mapped visual RF maps for all cells
     fprintf('Loading visual RF maps from %s\n', optimallyMappedSubspaceRFmapsFileName)
-    load(optimallyMappedSubspaceRFmapsFileName, 'optimallyMappedVisualRFmaps', 'indicesOfOptimallyMappedRGCsAtThisPosition');
+    load(optimallyMappedSubspaceRFmapsFileName, 'optimallyMappedVisualRFmaps', 'indicesOfOptimallyMappedRGCs');
 
-    idx = find(indicesOfOptimallyMappedRGCsAtThisPosition == theVisualizedRGCindex);
+    idx = find(indicesOfOptimallyMappedRGCs == theVisualizedRGCindex);
     if (isempty(idx))
         fprintf(2, 'Optimally mapped visual RF map data for this RGC were not found in %s\n', optimallyMappedSubspaceRFmapsFileName);
         return;

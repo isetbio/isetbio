@@ -3,13 +3,15 @@ function stimParams = generateInputConeMosaicSubspaceRFmappingLinearResponses(th
 
     p = inputParser;
     p.addParameter('maxSFLimit', [], @(x)(isempty(x)||(isscalar(x))));
+    p.addParameter('rfMappingPixelMagnificationFactor', 1, @(x)(isscalar(x)&&(x>=1)));
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
     visualizedResponses = p.Results.visualizedResponses;
     maxSFLimit = p.Results.maxSFLimit;
-
+    rfMappingPixelMagnificationFactor = p.Results.rfMappingPixelMagnificationFactor;
+    
     % Generate components for running the Subspace mapping experiment
     wavelengthSupport = theRGCMosaic.inputConeMosaic.wave;
    
@@ -37,10 +39,13 @@ function stimParams = generateInputConeMosaicSubspaceRFmappingLinearResponses(th
 
     % Determine optimal stimulus resolution so that cone aperture blur will
     % have an observable effect
-    retinalImageResolutionDegs = MosaicPoolingOptimizer.retinalResolutionFromConeApertureDiameter(theRGCMosaic, targetRGCindices);
+    optimalRetinalPixelSizeDegs = MosaicPoolingOptimizer.retinalResolutionFromConeApertureDiameter(theRGCMosaic, targetRGCindices);
+
+
+    employedRetinalPixelSizeDegs = rfMappingPixelMagnificationFactor * optimalRetinalPixelSizeDegs;
 
     [stimParams, thePresentationDisplay] = MosaicPoolingOptimizer.setupSubspaceRFmappingExperiment(...
-        wavelengthSupport, stimSizeDegs, retinalImageResolutionDegs, maxSFLimit, stimulusChromaticity);
+        wavelengthSupport, stimSizeDegs, employedRetinalPixelSizeDegs, maxSFLimit, stimulusChromaticity);
 
     % Retrieve the input cone mosaic
     theConeMosaic = theRGCMosaic.inputConeMosaic;

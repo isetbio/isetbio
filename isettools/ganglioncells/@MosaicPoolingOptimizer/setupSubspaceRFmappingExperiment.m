@@ -1,9 +1,8 @@
 function [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment(wavelengthSupport, ...
-        stimSizeDegs, optimalRetinalImageResolutionDegs, maxSFLimit, stimulusChromaticity)
-
+        stimSizeDegs, retinalPixelSizeDegs, maxSFLimit, stimulusChromaticity)
 
     % At least 6 samples / period
-    maxSFretinal = 1/(6*optimalRetinalImageResolutionDegs);
+    maxSFretinal = 1/(6*retinalPixelSizeDegs);
 
     % Maybe cap the maxSF to reduce the # of stimuli
     if (~isempty(maxSFLimit)) && (maxSFLimit < maxSFretinal)
@@ -16,9 +15,10 @@ function [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment
 
     pixelSizeDegs = 1/(6*maxSF);
 
+
     % Generate a presentation display with a desired resolution
     stimulusPixelsNum = round(max(stimSizeDegs(:))/pixelSizeDegs);
-
+    
     omega = round(maxSF * max(stimSizeDegs));
     nStim = (2*omega+1)^2;
 
