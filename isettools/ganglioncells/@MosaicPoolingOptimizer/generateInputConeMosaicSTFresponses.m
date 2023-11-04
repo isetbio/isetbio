@@ -17,7 +17,7 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
     if (isempty(gridNodeIndex))
         % Determine optimal stimulus resolution so that cone aperture blur will
         % have an observable effect
-        retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, []);
+        retinalImageResolutionDegs = MosaicPoolingOptimizer.retinalResolutionFromConeApertureDiameter(obj.theRGCMosaic, []);
         % Stimulus centered at the RGC mosaic mosaic
         stimPositionDegs = obj.theRGCMosaic.eccentricityDegs;
         % 10% larger than the cone mosaic
@@ -36,7 +36,7 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
         
         % Determine optimal stimulus resolution so that cone aperture blur will
         % have an observable effect
-        retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, targetRGCindices);
+        retinalImageResolutionDegs = MosaicPoolingOptimizer.retinalResolutionFromConeApertureDiameter(obj.theRGCMosaic, targetRGCindices);
    
         fprintf('Computing *** %s *** STF responses for stimuli positioned at %2.1f,%2.1f degs\nover a region of  %2.1f,%2.1f degs\nwith a retinal resolution of %2.2f arc min\n and % optics', ...
             stimulusChromaticity, stimPositionDegs(1), stimPositionDegs(2), stimSizeDegs(1), stimSizeDegs(2), retinalImageResolutionDegs*60, opticsToEmploy);
@@ -104,21 +104,5 @@ function generateInputConeMosaicSTFresponses(obj, gridNodeIndex, stimSizeDegs, .
     end
 
     fprintf('Saved computed cone mosaic STF responses using **%s** optics to %s\n', opticsToEmploy, responsesFileName);
-
-end
-
-
-function retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(obj, targetRGCindices)
-
-    if (isempty(targetRGCindices))
-        retinalImageResolutionDegs = min(obj.theRGCMosaic.inputConeMosaic.coneApertureDiametersDegs)/9;
-    else
-        % Find cone aperture size of the input cones
-        coneIndices = find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,targetRGCindices(1)) > 0.001);
-        coneIndices = cat(1, coneIndices, ...
-                      find(obj.theRGCMosaic.rgcRFcenterConeConnectivityMatrix(:,targetRGCindices(2)) > 0.001));
-        
-        retinalImageResolutionDegs = mean(obj.theRGCMosaic.inputConeMosaic.coneApertureDiametersDegs(coneIndices))/13; 
-    end
 
 end

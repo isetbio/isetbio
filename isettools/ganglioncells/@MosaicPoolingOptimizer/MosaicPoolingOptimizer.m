@@ -180,6 +180,7 @@ classdef MosaicPoolingOptimizer < handle
         [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, theCenterConeTypes] = ...
             centerConeTypeWeights(obj, theRGCindex);
 
+      
         % Method to compute the RGCmodel STF and its DoG model fit params
         % based on its current cone pooling weights
         theSTFdata = rgcSTFfromPooledConeMosaicSTFresponses(obj, pooledConeIndicesAndWeights, visualRcDegs);
@@ -365,16 +366,22 @@ classdef MosaicPoolingOptimizer < handle
         % Method to generate Vlambda weigted PSF for the mRGCmosaic
         thePSFData = generateVlambdaWeightedPSFData(theMidgetRGCMosaic, opticsParams)
 
+        % Method to compute an optimal retinal image resolution for
+        % stimulus generation (pixel size) based on which RGCs are to be
+        % mapped (either by STF or Subspsace mapping)
+        retinalImageResolutionDegs = retinalResolutionFromConeApertureDiameter(theMidgetRGCMosaic, targetRGCindices);
+
+
         % Method to setup the parameters and the display for conducting an
         % Subspace RF mapping experiment.
         [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment(wavelengthSupport, ...
-             stimSizeDegs, maxSFcyclesPerDegree);
+             stimSizeDegs, retinalImageResolutionDegs, maxSFLimit, stimulusChromaticity);
 
         % Method to compute visual RFs of the computeReadyMosaic (using the
         % subspace RF mapping method)
         computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
-            theComputeReadyMRGCmosaic, opticsParams, ...
-            maxSFcyclesPerDegree, stimSizeDegs, stimPositionDegs, ...
+            theComputeReadyMRGCmosaic, opticsToEmploy, ...
+            stimSizeDegs, stimPositionDegs, stimChromaticity, maxSFLimit, ...
             coneMosaicSubspaceResponsesFileName, ...
             mRGCMosaicSubspaceResponsesFileName, ...
             optimallyMappedSubspaceRFmapsFileName, ...
@@ -390,8 +397,8 @@ classdef MosaicPoolingOptimizer < handle
             theComputeReadyMRGCmosaic, mRGCMosaicSubspaceResponsesFileName);
 
         % Method to generate and save input cone mosaic subspace responses
-        generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, theOptics, ...
-            maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, responsesFileName, varargin);
+        generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, opticsToEmploy, ...
+            stimSizeDegs, stimXYpositionDegs, stimulusChromaticity, responsesFileName, varargin);
 
         % Method to compute subspace responses of a cone mosaic under some optics
         [theConeMosaicSubspaceLinearResponses, theConeMosaicNullResponses, ...

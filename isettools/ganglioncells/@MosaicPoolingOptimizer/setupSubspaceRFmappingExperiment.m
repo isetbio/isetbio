@@ -1,18 +1,32 @@
 function [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment(wavelengthSupport, ...
-        stimSizeDegs, maxSFcyclesPerDegree)
+        stimSizeDegs, optimalRetinalImageResolutionDegs, maxSFLimit, stimulusChromaticity)
 
-    
-    maxSFperiodDegs = 1/maxSFcyclesPerDegree;
-    minSamplesPerMaxSFperiod = round(4*sqrt(2.0));
-    pixelSizeDegs = maxSFperiodDegs/minSamplesPerMaxSFperiod;
-    omega = round(maxSFcyclesPerDegree * max(stimSizeDegs));
+
+    % At least 6 samples / period
+    maxSFretinal = 1/(6*optimalRetinalImageResolutionDegs);
+
+    % Maybe cap the maxSF to reduce the # of stimuli
+    if (~isempty(maxSFLimit)) && (maxSFLimit < maxSFretinal)
+        maxSF = maxSFLimit;
+        fprintf('Optimal SF: %2.1f c/deg. Capping max SF to %2.1f c/deg.\n', maxSFretinal, maxSFLimit);
+    else
+        maxSF = maxSFretinal;
+        fprintf('Optimal SF: %2.1f c/deg. Max SF set to this value.\n', maxSFretinal);
+    end
+
+    pixelSizeDegs = 1/(6*maxSF);
+
+    % Generate a presentation display with a desired resolution
+    stimulusPixelsNum = round(max(stimSizeDegs(:))/pixelSizeDegs);
+
+    omega = round(maxSF * max(stimSizeDegs));
     nStim = (2*omega+1)^2;
-    stimulusPixelsNum = round(max(stimSizeDegs)/pixelSizeDegs);
+
     a = single(1);
     s = whos('a');
     HartleyMemoryRequirementGBytes = (nStim * stimulusPixelsNum * stimulusPixelsNum * s.bytes)/1024/1024/1024;
     fprintf('\nTo probe RFs with spatial frequencies up to %2.1f c/deg\nusing a patch size of %2.1f degs,\n%d (%d x %d) Hartley patterns (retinal res:%2.1f arc min) will be employed.\nThis requires %2.1f GBytes or RAM\n', ...
-        maxSFcyclesPerDegree, stimSizeDegs(1), nStim, stimulusPixelsNum, stimulusPixelsNum, pixelSizeDegs*60, HartleyMemoryRequirementGBytes);
+        maxSF, stimSizeDegs(1), nStim, stimulusPixelsNum, stimulusPixelsNum, pixelSizeDegs*60, HartleyMemoryRequirementGBytes);
 
     % Generate a presentation display with a desired resolution
     viewingDistanceMeters = 4;
@@ -21,13 +35,17 @@ function [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment
             wavelengthSupport, pixelSizeDegs, ...
             viewingDistanceMeters);
 
+    % Cone contrasts and overall contrast for desired stimulus chromaticity
+    [coneContrasts, contrast] = MosaicPoolingOptimizer.contrastForChromaticity(stimulusChromaticity);
+
     % Stim params for the RF mapping
     stimParams = struct(...
             'backgroundLuminanceCdM2', 50.0, ...
             'backgroundChromaticity', [0.301 0.301], ...
-            'coneContrasts', [1 1 1], ...
-            'contrast', 0.75, ...
+            'coneContrasts', coneContrasts, ...
+            'contrast', contrast, ...
             'omega', omega, ...
+            'maxSF', maxSF, ...
             'pixelSizeDegs', pixelSizeDegs, ...
             'stimSizeDegs', max(stimSizeDegs), ...
             'wavelengthSupport', displayGet(thePresentationDisplay, 'wave'), ...

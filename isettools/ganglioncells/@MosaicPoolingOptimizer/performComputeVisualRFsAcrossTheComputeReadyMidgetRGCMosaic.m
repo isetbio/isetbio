@@ -2,18 +2,14 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
 
     % Parse optional input
     p = inputParser;
-    p.addParameter('maxSFcyclesPerDegree', 30, @isscalar);
-    p.addParameter('stimSizeDegs', 1.0, @isscalar);
+    p.addParameter('stimSizeDegs', 1.0, @(x)(isscalar(x)||numel(x)==2));
     p.addParameter('stimPositionDegs', [], @(x)(isempty(x)||(numel(x) == 2)));
+    p.addParameter('maxSFLimit', [], @isscalar);
     p.addParameter('reComputeInputConeMosaicSubspaceRFmappingResponses', false, @islogical);
     p.addParameter('reComputeMRGCMosaicSubspaceRFmappingResponses', false, @islogical);
     p.addParameter('reComputeRFs', false, @islogical);
     p.addParameter('visualizeOptimallyMappedRFmapLocations', false, @islogical);
     p.parse(varargin{:});
-
-    % Subspace RF mapping params:
-    % max SF to explore
-    maxSFcyclesPerDegree = p.Results.maxSFcyclesPerDegree; 
 
     % stimulus patch size
     stimSizeDegs = p.Results.stimSizeDegs;    
@@ -21,6 +17,8 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     % simulus position
     stimPositionDegs = p.Results.stimPositionDegs;
 
+    % stimulus max spatial frequency (can be set to lower that optimal retinal sf)
+    maxSFLimit = p.Results.maxSFLimit;
 
     % Which grid nodes to compute RFs
     reComputeInputConeMosaicSubspaceRFmappingResponses = p.Results.reComputeInputConeMosaicSubspaceRFmappingResponses;
@@ -91,7 +89,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
 
     MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
-            maxSFcyclesPerDegree, stimSizeDegs, stimPositionDegs, ...
+            stimSizeDegs, stimPositionDegs, stimulusChromaticity, maxSFLimit, ...
             fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, optimallyMappedSubspaceRFmapsFileName), ...

@@ -1,18 +1,46 @@
-function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, ...
-    opticsToEmploy, maxSFcyclesPerDegree, stimSizeDegs, stimXYpositionDegs, responsesFileName, varargin)
+function stimParams = generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, ...
+    opticsToEmploy, stimSizeDegs, stimXYpositionDegs, stimulusChromaticity, responsesFileName, varargin)
 
     p = inputParser;
+    p.addParameter('maxSFLimit', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
     visualizedResponses = p.Results.visualizedResponses;
+    maxSFLimit = p.Results.maxSFLimit;
 
     % Generate components for running the Subspace mapping experiment
     wavelengthSupport = theRGCMosaic.inputConeMosaic.wave;
    
+
+    % Find RGCs within the stimulus region
+    if (numel(stimSizeDegs) == 2)
+        widthDegs = stimSizeDegs(1);
+        heightDegs = stimSizeDegs(2);
+    else
+        widthDegs = stimSizeDegs(1);
+        heightDegs = stimSizeDegs(1);
+    end
+
+    theStimulusRegion = regionOfInterest(...
+        'geometryStruct', struct(...
+            'units', 'degs', ...
+            'shape', 'rect', ...
+            'center', stimXYpositionDegs, ...
+            'width', widthDegs, ...
+            'height', heightDegs , ...
+            'rotation', 0.0...
+        ));
+
+    targetRGCindices = theStimulusRegion.indicesOfPointsInside(theRGCMosaic.rgcRFpositionsDegs);
+
+    % Determine optimal stimulus resolution so that cone aperture blur will
+    % have an observable effect
+    retinalImageResolutionDegs = MosaicPoolingOptimizer.retinalResolutionFromConeApertureDiameter(theRGCMosaic, targetRGCindices);
+
     [stimParams, thePresentationDisplay] = MosaicPoolingOptimizer.setupSubspaceRFmappingExperiment(...
-        wavelengthSupport, stimSizeDegs, maxSFcyclesPerDegree);
+        wavelengthSupport, stimSizeDegs, retinalImageResolutionDegs, maxSFLimit, stimulusChromaticity);
 
     % Retrieve the input cone mosaic
     theConeMosaic = theRGCMosaic.inputConeMosaic;
@@ -50,14 +78,14 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
         case {'native', 'adaptive optics'}
              theNativeOpticsParams = theRGCMosaic.theNativeOpticsParams;
              save(responsesFileName, 'theNativeOpticsParams', ...
-                'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'lIndices', 'mIndices', ...
+                'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'stimParams', 'lIndices', 'mIndices', ...
                 'theConeMosaicSubspaceLinearResponses', 'theConeMosaicNullResponses', ...
                  '-v7.3');
 
         case 'custom'
              theCustomOpticsParams = theRGCMosaic.theCustomOpticsParams;
              save(responsesFileName, 'theCustomOpticsParams', ...
-                'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'lIndices', 'mIndices', ...
+                'HartleySpatialModulationPatterns', 'spatialSupportDegs', 'stimParams', 'lIndices', 'mIndices', ...
                 'theConeMosaicSubspaceLinearResponses', 'theConeMosaicNullResponses', ...
                  '-v7.3');
         otherwise
