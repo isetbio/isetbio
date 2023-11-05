@@ -73,7 +73,6 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
         colormap(gray(1024));
         title(sprintf('RGC %d: maxRF = %f', theRGCindex, max(d.theRFmap(:))));
         drawnow;
-        pause;
     end
 
 end

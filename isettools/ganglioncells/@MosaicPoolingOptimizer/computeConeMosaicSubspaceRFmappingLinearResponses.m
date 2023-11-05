@@ -12,10 +12,6 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
     visualizeResponses = p.Results.visualizeResponses;
-    visualizeResponses = true
-
-    stimParams
-    pause
 
     % Compute the Hartley spatial patterns
     visualizePatterns = ~true;
