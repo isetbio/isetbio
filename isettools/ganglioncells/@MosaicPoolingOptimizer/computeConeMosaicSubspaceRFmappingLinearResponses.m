@@ -12,6 +12,10 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
     visualizeResponses = p.Results.visualizeResponses;
+    visualizeResponses = true
+
+    stimParams
+    pause
 
     % Compute the Hartley spatial patterns
     visualizePatterns = ~true;
@@ -47,7 +51,6 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
 
    
     fprintf('Computing null scene response\n');
-
     % Compute the optical image of the null scene
     theOptics  = oiCompute(theNullStimulusScene, theOptics);
 
@@ -61,11 +64,10 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
     normalizingResponses(coneIndicesWithZeroNullResponse) = 0;
     normalizingResponses = reshape(normalizingResponses, [1 1 numel(normalizingResponses)]);
              
-
     % Compute the input cone mosaic modulation responses
     theConeMosaicSubspaceLinearModulationResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
 
-    if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize)) || (visualizeResponses)
+    if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize))
          % Reset parpool
          [shutdownParPoolOnceCompleted, numWorkers] = MosaicPoolingOptimizer.resetParPool(parPoolSize);
 
@@ -75,7 +77,7 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
             fprintf('Computing cone mosaic response for Hartley pattern %d of %d (using %d parallel processes).\n', ...
                 iFrame, nStim, numWorkers);
 
-             theForwardPolarityRFMappingStimulusScenes =  rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
+             theForwardPolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
                 thePresentationDisplay, stimParams, HartleySpatialModulationPatterns, ...
                 'validateScenes', false, ...
                 'sceneIndexToCompute', iFrame);
@@ -89,14 +91,13 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
              theFrameScene = theForwardPolarityRFMappingStimulusScenes{1};
 
              % Compute the optical image of the frame scene
-             theCurrentOI = oiCompute(theFrameScene, theOI);
+             theFrameOI = oiCompute(theFrameScene, theOI);
 
-             
-             % Compute the cone mosaic responses
-             noiseFreeAbsorptionsCountForwardPolarity = ...
-                        theConeMosaic.compute(theCurrentOI, ...
-                        'opticalImagePositionDegs', stimPositionDegs, ...
-                        'nTrials', 1);
+             % Compute the cone mosaic responses to the forward polarity stimulus
+             noiseFreeAbsorptionsCountForwardPolarity = theConeMosaic.compute(...
+                 theFrameOI, ...
+                 'opticalImagePositionDegs', stimPositionDegs, ...
+                 'nTrials', 1);
 
              % Convert  absorption responses to modulation responses (forward polarity)
              noiseFreeAbsorptionsModulationForwardPolarity = bsxfun(@times,...
@@ -107,25 +108,23 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
              theFrameScene = theInversePolarityRFMappingStimulusScenes{1};
 
              % Compute the optical image of the frame scene
-             theCurrentOI = oiCompute(theFrameScene, theOI);
+             theFrameOI = oiCompute(theFrameScene, theOI);
 
-             % Compute the cone mosaic responses
-             noiseFreeAbsorptionsCountInversePolarity = ...
-                        theConeMosaic.compute(theCurrentOI, ...
-                        'opticalImagePositionDegs', stimPositionDegs, ...
-                        'nTrials', 1);
+             % Compute the cone mosaic responses to the inverse polarity stimulus
+             noiseFreeAbsorptionsCountInversePolarity = theConeMosaic.compute(...
+                 theFrameOI, ...
+                 'opticalImagePositionDegs', stimPositionDegs, ...
+                 'nTrials', 1);
 
              % Convert  absorption responses to modulation responses (inverse polarity)
              noiseFreeAbsorptionsModulationInversePolarity = bsxfun(@times,...
                 bsxfun(@minus, noiseFreeAbsorptionsCountInversePolarity, theConeMosaicNullResponses), ...
                 normalizingResponses);
 
-
              % The linear response: forward - inverse
              theConeMosaicSubspaceLinearModulationResponses(iFrame,:) = single(...
                  noiseFreeAbsorptionsModulationForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
-
 
          end % iFrame
 
@@ -136,7 +135,6 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
          
     else
         for iFrame = 1:nStim
-
             fprintf('Computing cone mosaic response for Hartley pattern %d of %d (serially).\n', iFrame, nStim);
 
             theForwardPolarityRFMappingStimulusScenes =  rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
@@ -151,7 +149,6 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
 
             % Get scene corresponding to this forward polarity of the stimulus frame
             theFrameScene = theForwardPolarityRFMappingStimulusScenes{1};
-
 
             % Compute the optical image of the frame scene
             theOptics = oiCompute(theFrameScene, theOptics);
@@ -186,31 +183,45 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
                 bsxfun(@minus, noiseFreeAbsorptionsCountInversePolarity, theConeMosaicNullResponses), ...
                 normalizingResponses);
 
-            if (visualizeResponses)
-                hFig = figure(2); clf;
-                set(hFig, 'Position', [10 10 2000 1200]);
-                ax1 = subplot(2,1,1);
-                ax2 = subplot(2,1,2);
-    
-                theConeMosaic.visualize(...
-                    'figureHandle', hFig, ...
-                    'axesHandle', ax1, ...
-                    'activation', noiseFreeAbsorptionsModulationForwardPolarity, ...
-                    'activationRange', [-1 1]);
-                theConeMosaic.visualize(...
-                    'figureHandle', hFig, ...
-                    'axesHandle', ax2, ...
-                    'activation', noiseFreeAbsorptionsModulationInversePolarity, ...
-                    'activationRange', [-1 1]);
-                drawnow;
-            end
-
-
-            % The linear response: forward - inverse
+             % The linear response: forward - inverse
              theConeMosaicSubspaceLinearModulationResponses(iFrame,:) = single(...
                  noiseFreeAbsorptionsModulationForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
 
+         
+            if (visualizeResponses)
+                hFig = figure(2); clf;
+                set(hFig, 'Position', [10 10 2000 800]);
+                ax1 = subplot(1,3,1);
+                ax2 = subplot(1,3,2);
+                ax3 = subplot(1,3,3);
+    
+                 theConeMosaic.visualize(...
+                    'figureHandle', hFig, ...
+                    'axesHandle', ax1, ...
+                    'crossHairsAtPosition', stimPositionDegs, ...
+                    'domainVisualizationLimits', [stimPositionDegs(1)-0.15 stimPositionDegs(1)+0.15  stimPositionDegs(2)-0.15 stimPositionDegs(2)+0.15]);
+
+                theConeMosaic.visualize(...
+                    'figureHandle', hFig, ...
+                    'axesHandle', ax2, ...
+                    'crossHairsAtPosition', stimPositionDegs, ...
+                    'domainVisualizationLimits', [stimPositionDegs(1)-0.15 stimPositionDegs(1)+0.15  stimPositionDegs(2)-0.15 stimPositionDegs(2)+0.15], ...
+                    'activation', noiseFreeAbsorptionsModulationForwardPolarity, ...
+                    'activationRange', max(abs(noiseFreeAbsorptionsModulationForwardPolarity(:)))*[-1 1]);
+                
+                theConeMosaic.visualize(...
+                    'figureHandle', hFig, ...
+                    'axesHandle', ax3, ...
+                    'crossHairsAtPosition', stimPositionDegs, ...
+                    'domainVisualizationLimits', [stimPositionDegs(1)-0.15 stimPositionDegs(1)+0.15  stimPositionDegs(2)-0.15 stimPositionDegs(2)+0.15], ...
+                    'activation', noiseFreeAbsorptionsModulationInversePolarity, ...
+                    'activationRange', max(abs(noiseFreeAbsorptionsModulationForwardPolarity(:)))*[-1 1]);
+                drawnow;
+                pause
+            end
+
+           
         end
     end
 end

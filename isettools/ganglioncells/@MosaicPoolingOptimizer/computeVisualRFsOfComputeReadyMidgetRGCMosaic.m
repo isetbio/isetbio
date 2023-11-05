@@ -68,12 +68,12 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
         theRGCindex = indicesOfOptimallyMappedRGCs(iCell);
         d = optimallyMappedVisualRFmaps{iCell};
         imagesc(d.spatialSupportDegsX,  d.spatialSupportDegsY, d.theRFmap);
-        axis 'image'
+        axis 'image'; axis 'xy';
         set(gca, 'CLim', max(abs(d.theRFmap(:)))*[-1 1]);
         colormap(gray(1024));
         title(sprintf('RGC %d: maxRF = %f', theRGCindex, max(d.theRFmap(:))));
         drawnow;
-        pause(0.1)
+        pause;
     end
 
 end

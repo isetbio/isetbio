@@ -30,7 +30,12 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     reComputeRFs = p.Results.reComputeRFs;
     visualizeOptimallyMappedRFmapLocations = p.Results.visualizeOptimallyMappedRFmapLocations;
 
+    % Set the parpoolsize to [] to do 
     parpoolSize = [];
+
+    % Set the parpoolize to 1 to do one stimulus frame at a time so we can 
+    % visualize cone mosaic responses to each frame
+    %parpoolSize = 1;
 
     % Ask the user which optics were used for computing the input cone
     % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
