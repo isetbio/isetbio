@@ -4,11 +4,11 @@ function performVisualizeVisualRFmapForTargetRGC(mosaicParams, stimPositionDegs,
     p = inputParser;
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('reverseXDir', false, @islogical);
-    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+    p.addParameter('gridlessLineWeightingFunctions', false, @islogical);
     p.parse(varargin{:});
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     reverseXDir = p.Results.reverseXDir;
-    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
+    gridlessLineWeightingFunctions = p.Results.gridlessLineWeightingFunctions;
 
     % Ask the user which optics were used for computing the input cone
     % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
@@ -64,5 +64,5 @@ function performVisualizeVisualRFmapForTargetRGC(mosaicParams, stimPositionDegs,
             fullfile(pdfDirectory, 'visualRFmap.pdf'), ...
             'tickSeparationArcMin', tickSeparationArcMin, ...
             'reverseXDir', reverseXDir, ...
-            'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions);
+            'gridlessLineWeightingFunctions', gridlessLineWeightingFunctions);
 end

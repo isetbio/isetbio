@@ -7,12 +7,12 @@ function visualizeVisualRFmapsForMultipleTargetRGCs(...
     p = inputParser;
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('reverseXDir', false, @islogical);
-    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+    p.addParameter('gridlessLineWeightingFunctions', false, @islogical);
 
     p.parse(varargin{:});
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     reverseXDir = p.Results.reverseXDir;
-    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
+    gridlessLineWeightingFunctions = p.Results.gridlessLineWeightingFunctions;
 
 
     visualizeAnotherSingleRGC = true;
@@ -39,7 +39,7 @@ function visualizeVisualRFmapsForMultipleTargetRGCs(...
                 pdfFileName, ...
                 'tickSeparationArcMin', tickSeparationArcMin, ...
                 'reverseXDir', reverseXDir, ...
-                'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions)
+                'gridlessLineWeightingFunctions', gridlessLineWeightingFunctions)
 
         visualizeSingleRGC = input('Visualize visual RF and profiles for another RGC ? [y=YES] : ', 's');
         if (strcmpi(visualizeSingleRGC, 'y'))
