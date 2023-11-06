@@ -58,9 +58,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
         plot(customConeFundamentals.wavelengthSupport, coneFundamentals(:,2), 'g-', 'LineWidth', 1.5);
         plot(customConeFundamentals.wavelengthSupport, coneFundamentals(:,3), 'b-', 'LineWidth', 1.5);
         title('cMosaic cone fundamentals')
-        pause
 
-        
     end
 
     % Compute the displayRGCtoLMS matrix
