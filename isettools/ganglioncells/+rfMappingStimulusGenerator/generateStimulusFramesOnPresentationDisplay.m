@@ -6,10 +6,67 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
     p = inputParser;
     p.addParameter('validateScenes', false, @islogical);
     p.addParameter('sceneIndexToCompute',  [], @isnumeric);
+    p.addParameter('customConeFundamentals', [], @(x)(isempty(x)||isstruct(x)));
     p.parse(varargin{:});
     validateScenes = p.Results.validateScenes;
     sceneIndexToCompute = p.Results.sceneIndexToCompute;
+    customConeFundamentals = p.Results.customConeFundamentals;
     
+
+    if (isempty(customConeFundamentals))
+        % Load the 2-deg Stockman cone fundamentals on wavelength support matching the display
+        displayWavelengths = displayGet(presentationDisplay, 'wave');
+        coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
+
+    else
+        displayWavelengths = displayGet(presentationDisplay, 'wave');
+        assert(isfield(customConeFundamentals, 'wavelengthSupport'), ...
+            'customConeFundamentals does not contain wavelength support info');
+        assert(isfield(customConeFundamentals, 'quantalExcitationSpectra'), ...
+            'customConeFundamentals does not contain quantalExcitationSpectra info');
+        assert(size(customConeFundamentals.quantalExcitationSpectra,2) == 3, ...
+            'customConeFundamentals.spd is not an Nx3 matrix');
+        assert(size(customConeFundamentals.quantalExcitationSpectra,1) == numel(customConeFundamentals.wavelengthSupport), ...
+            'customConeFundamentals.spf does not have the same dimensionality as customConeFundamentals.wavelengthSupport');
+
+        if (~isequal(displayWavelengths, customConeFundamentals.wavelengthSupport))
+            % Resample customConeFundamentals.spd to wavelength support matching the display
+            resampledCustomConeFundamantals = displayWavelengths*0;
+            for iChannel = 1:size(customConeFundamentals.quantalExcitationSpectra,2)
+                resampledCustomConeFundamantals(:,iChannel) = interp1(...
+                    customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,iChannel), ...
+                    displayWavelengths, 'linear','extrap');
+            end
+            customConeFundamentals.quantalExcitationSpectra = resampledCustomConeFundamantals;
+            customConeFundamentals.wavelengthSupport = displayWavelengths;
+        end
+        
+        coneFundamentals = customConeFundamentals.quantalExcitationSpectra/max(customConeFundamentals.quantalExcitationSpectra(:));
+
+        hFig = figure(222); clf;
+        subplot(1,2,1);
+        StockmanSharpe2DegConeFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
+        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'r-', 'LineWidth', 1.5);
+        hold on;
+        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'g-', 'LineWidth', 1.5);
+        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'b-', 'LineWidth', 1.5);
+        title('Stockman 2 deg cone fundamentals')
+
+        subplot(1,2,2);
+        plot(customConeFundamentals.wavelengthSupport, coneFundamentals(:,1), 'r-', 'LineWidth', 1.5);
+        hold on;
+        plot(customConeFundamentals.wavelengthSupport, coneFundamentals(:,2), 'g-', 'LineWidth', 1.5);
+        plot(customConeFundamentals.wavelengthSupport, coneFundamentals(:,3), 'b-', 'LineWidth', 1.5);
+        title('cMosaic cone fundamentals')
+        pause
+
+        
+    end
+
+    % Compute the displayRGCtoLMS matrix
+    displayRGBtoLMS = (coneFundamentals' * displayGet(presentationDisplay, 'spd', displayWavelengths))';
+    displayLMStoRGB = inv(displayRGBtoLMS);
+
     % Compute spatial support
     pixelsNum  = round(stimParams.stimSizeDegs / stimParams.pixelSizeDegs);
     spatialSupportDegs = linspace(-0.5*stimParams.stimSizeDegs, 0.5*stimParams.stimSizeDegs, pixelsNum);
@@ -25,7 +82,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
     backgroundRGB = imageLinearTransform(backgroundXYZ, inv(displayGet(presentationDisplay, 'rgb2xyz')));
     
     % Background LMS excitations
-    backgroundLMS = imageLinearTransform(backgroundRGB, displayGet(presentationDisplay, 'rgb2lms'));
+    backgroundLMS = imageLinearTransform(backgroundRGB, displayRGBtoLMS);
 
     nStim = size(spatialModulationPatterns,1);
 
@@ -60,7 +117,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
         LMSexcitationImage = bsxfun(@times, (1+LMScontrastImage), reshape(backgroundLMS, [1 1 3]));
 
         % Stimulus linear RGB primaries image
-        RGBimage = imageLinearTransform(LMSexcitationImage, inv(displayGet(presentationDisplay, 'rgb2lms')));
+        RGBimage = imageLinearTransform(LMSexcitationImage, displayLMStoRGB);
 
         % Make sure we are in gamut (no subpixels with primary values outside of [0 1]
         outOfGamutPixels = numel(find((RGBimage(:)<0)|(RGBimage(:)>1)));

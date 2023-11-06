@@ -2,6 +2,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
 
     % Parse optional input
     p = inputParser;
+    p.addParameter('employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition', false, @islogical);
     p.addParameter('stimSizeDegs', 1.0, @(x)(isscalar(x)||numel(x)==2));
     p.addParameter('stimPositionDegs', [], @(x)(isempty(x)||(numel(x) == 2)));
     p.addParameter('maxSFLimit', [], @(x)(isempty(x)||isscalar(x)));
@@ -11,6 +12,11 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     p.addParameter('reComputeRFs', false, @islogical);
     p.addParameter('visualizeOptimallyMappedRFmapLocations', false, @islogical);
     p.parse(varargin{:});
+
+
+    % Whether to emply cone fundamentals appropriate for the position
+    % within the cone mosaic that we are stimulating and the current optics (lens, really)
+    employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = p.Results.employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition;
 
     % stimulus patch size
     stimSizeDegs = p.Results.stimSizeDegs;    
@@ -104,6 +110,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
             stimSizeDegs, stimPositionDegs, stimulusChromaticity, ...
+            employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition, ...
             maxSFLimit, rfMappingPixelMagnificationFactor, ...
             fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSubspaceResponsesFileName), ...

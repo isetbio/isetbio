@@ -2,15 +2,19 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
     opticsToEmploy, stimSizeDegs, stimXYpositionDegs, stimulusChromaticity, responsesFileName, varargin)
 
     p = inputParser;
+    p.addParameter('employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition', false, @islogical);
     p.addParameter('maxSFLimit', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('rfMappingPixelMagnificationFactor', 1, @(x)(isscalar(x)&&(x>=1)));
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
     p.parse(varargin{:});
-    parPoolSize = p.Results.parPoolSize;
-    visualizedResponses = p.Results.visualizedResponses;
+
+    
+    employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = p.Results.employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition;
     maxSFLimit = p.Results.maxSFLimit;
     rfMappingPixelMagnificationFactor = p.Results.rfMappingPixelMagnificationFactor;
+    parPoolSize = p.Results.parPoolSize;
+    visualizedResponses = p.Results.visualizedResponses;
 
     % Generate components for running the Subspace mapping experiment
     wavelengthSupport = theRGCMosaic.inputConeMosaic.wave;
@@ -68,12 +72,22 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
              error('Unknown optics: ''%s''.', opticsToEmploy);
     end
 
+    if (employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition)
+        % Compute custom cone fundamentals
+        customConeFundamentals = ...
+            MosaicPoolingOptimizer.coneFundamentalsAtTargetPositionWithinConeMosaic(...
+            theConeMosaic, theOptics, stimXYpositionDegs, stimParams.stimSizeDegs);
+    else
+        customConeFundamentals = [];
+    end
+
     [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullResponses, ...
           HartleySpatialModulationPatterns, spatialSupportDegs, lIndices, mIndices] = ...
           MosaicPoolingOptimizer.computeConeMosaicSubspaceRFmappingLinearResponses(theConeMosaic, theOptics,  ...
                                            thePresentationDisplay, ...
                                            stimParams, ...
                                            stimXYpositionDegs, ...
+                                           'customConeFundamentals', customConeFundamentals, ...
                                            'visualizeResponses', visualizedResponses, ...
                                            'parPoolSize', parPoolSize);
 
