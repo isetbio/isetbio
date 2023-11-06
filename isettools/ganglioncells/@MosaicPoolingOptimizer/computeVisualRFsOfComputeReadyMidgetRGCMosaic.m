@@ -13,6 +13,7 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             varargin)
 
    
+
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
@@ -49,13 +50,13 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
 
     if (visualizeOptimallyMappedRFmapLocations)
         visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmapsFileName, ...
-            stimPositionDegs, rfMappingPixelMagnificationFactor);
+            stimPositionDegs, rfMappingPixelMagnificationFactor, theComputeReadyMRGCmosaic, stimulusChromaticity);
     end
 
 end
 
 function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmapsFileName,...
-    stimPositionDegs, rfMappingPixelMagnificationFactor)
+    stimPositionDegs, rfMappingPixelMagnificationFactor, theMRGCMosaic, stimulusChromaticity)
     % Save all the optimally mapped visual RF maps
 
     positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor);
@@ -68,13 +69,38 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
     figure(22); clf
     for iCell = 1:numel(indicesOfOptimallyMappedRGCs)
         theRGCindex = indicesOfOptimallyMappedRGCs(iCell);
+
+        [~,~,~, theCenterConeTypes, theCenterConeIndices] = ...
+            theMRGCMosaic.centerConeTypeWeights(theRGCindex);
+
+        [~, ~, theSurroundConeTypes, theSurroundConeIndices] = ...
+            theMRGCMosaic.surroundConeTypeWeights(theRGCindex, theCenterConeIndices);
+
         d = optimallyMappedVisualRFmaps{iCell};
-        imagesc(d.spatialSupportDegsX,  d.spatialSupportDegsY, d.theRFmap);
+        dx = d.spatialSupportDegsX(2)-d.spatialSupportDegsX(1);
+        dy = d.spatialSupportDegsY(2)-d.spatialSupportDegsY(1);
+        imagesc(d.spatialSupportDegsX-dx,  d.spatialSupportDegsY-dx, d.theRFmap);
+        hold on;
+        idx = find(theSurroundConeTypes == cMosaic.LCONE_ID);
+        surroundLconeIndices = theSurroundConeIndices(idx);
+        plot(theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,1), ...
+             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,2), ...
+             'r.', 'MarkerSize', 20);
+        idx = find(theSurroundConeTypes == cMosaic.MCONE_ID);
+        surroundMconeIndices = theSurroundConeIndices(idx);
+        plot(theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,1), ...
+             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,2), ...
+             'g.', 'MarkerSize', 20);
+        hold off
         axis 'image'; axis 'xy';
-        set(gca, 'CLim', max(abs(d.theRFmap(:)))*[-1 1]);
+        set(gca, 'CLim', max(abs(d.theRFmap(:)))*[-1 1], ...
+            'XLim', [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)], ...
+            'YLim', [d.spatialSupportDegsY(1) d.spatialSupportDegsY(end)] ...
+            );
         colormap(gray(1024));
-        title(sprintf('RGC %d: maxRF = %f', theRGCindex, max(d.theRFmap(:))));
+        title(sprintf('RGC %d - %s RF range: [%f .. %f]', theRGCindex, stimulusChromaticity, min(d.theRFmap(:)), max(d.theRFmap(:))));
         drawnow;
+        pause
     end
 
 end

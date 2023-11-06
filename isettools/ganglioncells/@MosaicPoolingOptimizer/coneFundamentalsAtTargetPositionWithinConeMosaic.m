@@ -1,5 +1,5 @@
 function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosaic(...
-    theConeMosaic, theOptics, targetRegionPositionDegs, targetRegionSizeDegs)
+    theConeMosaic, theOptics, targetRegionPositionDegs, targetRegionSizeDegs, maxConesNumForAveraging)
 
     % Find cone indices within the target region
     if (numel(targetRegionSizeDegs) == 2)
@@ -16,19 +16,34 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
             'shape', 'rect', ...
             'center', targetRegionPositionDegs, ...
             'width', widthDegs, ...
-            'height', heightDegs , ...
+            'height', heightDegs, ...
             'rotation', 0.0...
         ));
     targetConeIndices = theStimulusRegion.indicesOfPointsInside(theConeMosaic.coneRFpositionsDegs);
 
     idx = find(theConeMosaic.coneTypes(targetConeIndices) == cMosaic.LCONE_ID);
-    indicesOfLconesWithinTargetRegion  = targetConeIndices(idx);
+    indicesOfLconesWithinTargetRegion = targetConeIndices(idx);
+    dd = theConeMosaic.coneRFpositionsDegs(indicesOfLconesWithinTargetRegion,:);
+    dd = sqrt(sum((bsxfun(@minus, dd, targetRegionPositionDegs)).^2,2));
+    iidx = sort(dd, 'ascend');
+    indicesOfLconesWithinTargetRegion = targetConeIndices(idx(iidx));
+    indicesOfLconesWithinTargetRegion = indicesOfLconesWithinTargetRegion(1:maxConesNumForAveraging);
 
     idx = find(theConeMosaic.coneTypes(targetConeIndices) == cMosaic.MCONE_ID);
     indicesOfMconesWithinTargetRegion  = targetConeIndices(idx);
+    dd = theConeMosaic.coneRFpositionsDegs(indicesOfMconesWithinTargetRegion,:);
+    dd = sqrt(sum((bsxfun(@minus, dd, targetRegionPositionDegs)).^2,2));
+    iidx = sort(dd, 'ascend');
+    indicesOfMconesWithinTargetRegion = targetConeIndices(idx(iidx));
+    indicesOfMconesWithinTargetRegion = indicesOfMconesWithinTargetRegion(1:maxConesNumForAveraging);
 
     idx = find(theConeMosaic.coneTypes(targetConeIndices) == cMosaic.SCONE_ID);
     indicesOfSconesWithinTargetRegion  = targetConeIndices(idx);
+    dd = theConeMosaic.coneRFpositionsDegs(indicesOfSconesWithinTargetRegion,:);
+    dd = sqrt(sum((bsxfun(@minus, dd, targetRegionPositionDegs)).^2,2));
+    iidx = sort(dd, 'ascend');
+    indicesOfSconesWithinTargetRegion = targetConeIndices(idx(iidx));
+    indicesOfSconesWithinTargetRegion = indicesOfSconesWithinTargetRegion(1:maxConesNumForAveraging);
 
     fprintf('Target region contains %d L-cones, %d M-cones and %d S-cones\n', ...
         numel(indicesOfLconesWithinTargetRegion), numel(indicesOfMconesWithinTargetRegion), numel(indicesOfSconesWithinTargetRegion));

@@ -74,9 +74,10 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
 
     if (employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition)
         % Compute custom cone fundamentals
+        maxConesNumForAveraging = 3;
         customConeFundamentals = ...
             MosaicPoolingOptimizer.coneFundamentalsAtTargetPositionWithinConeMosaic(...
-            theConeMosaic, theOptics, stimXYpositionDegs, stimParams.stimSizeDegs);
+            theConeMosaic, theOptics, stimXYpositionDegs, stimParams.stimSizeDegs, maxConesNumForAveraging);
     else
         customConeFundamentals = [];
     end

@@ -269,7 +269,8 @@ classdef mRGCMosaic < handle
         % If a non-empty theCenterConeIndices is passed the computed
         % surround cone type weights are computed after excluding the surround cones
         % that also feed into the RF center
-        [theSurroundConeTypeWeights, theExclusiveSurroundConeTypeWeights] = ...
+        [theSurroundConeTypeWeights, theExclusiveSurroundConeTypeWeights, ...
+         theSurroundConeTypes, theSurroundConeIndices] = ...
             surroundConeTypeWeights(obj, theRGCindex, theCenterConeIndices);
 
         % Method to return the index of the RGC best matching the target
