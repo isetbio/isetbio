@@ -25,7 +25,7 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
     indicesOfLconesWithinTargetRegion = targetConeIndices(idx);
     dd = theConeMosaic.coneRFpositionsDegs(indicesOfLconesWithinTargetRegion,:);
     dd = sqrt(sum((bsxfun(@minus, dd, targetRegionPositionDegs)).^2,2));
-    iidx = sort(dd, 'ascend');
+    [~,iidx] = sort(dd, 'ascend');
     indicesOfLconesWithinTargetRegion = targetConeIndices(idx(iidx));
     indicesOfLconesWithinTargetRegion = indicesOfLconesWithinTargetRegion(1:maxConesNumForAveraging);
 
@@ -33,7 +33,7 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
     indicesOfMconesWithinTargetRegion  = targetConeIndices(idx);
     dd = theConeMosaic.coneRFpositionsDegs(indicesOfMconesWithinTargetRegion,:);
     dd = sqrt(sum((bsxfun(@minus, dd, targetRegionPositionDegs)).^2,2));
-    iidx = sort(dd, 'ascend');
+    [~,iidx]  = sort(dd, 'ascend');
     indicesOfMconesWithinTargetRegion = targetConeIndices(idx(iidx));
     indicesOfMconesWithinTargetRegion = indicesOfMconesWithinTargetRegion(1:maxConesNumForAveraging);
 
@@ -41,7 +41,7 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
     indicesOfSconesWithinTargetRegion  = targetConeIndices(idx);
     dd = theConeMosaic.coneRFpositionsDegs(indicesOfSconesWithinTargetRegion,:);
     dd = sqrt(sum((bsxfun(@minus, dd, targetRegionPositionDegs)).^2,2));
-    iidx = sort(dd, 'ascend');
+    [~,iidx]  = sort(dd, 'ascend');
     indicesOfSconesWithinTargetRegion = targetConeIndices(idx(iidx));
     indicesOfSconesWithinTargetRegion = indicesOfSconesWithinTargetRegion(1:maxConesNumForAveraging);
 

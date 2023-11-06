@@ -374,7 +374,7 @@ classdef MosaicPoolingOptimizer < handle
         % Method to derive cone fundamentals for a target region within the
         % input cone mosaic
         customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosaic(...
-            theConeMosaic, theOptics, targetRegionPositionDegs, targetRegionSizeDegs)
+            theConeMosaic, theOptics, targetRegionPositionDegs, targetRegionSizeDegs, maxConesNumForAveraging);
 
         % Method to setup the parameters and the display for conducting an
         % Subspace RF mapping experiment.
