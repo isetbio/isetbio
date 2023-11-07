@@ -121,13 +121,15 @@ function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
             visualizedResponses)
 
     % Encode examined spatial position
-    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor);
+    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_%2.0fCPD.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor, maxSFLimit);
     coneMosaicSubspaceResponsesFileName = strrep(coneMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
     mRGCMosaicSubspaceResponsesFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
     optimallyMappedSubspaceRFmapsFileName = strrep(optimallyMappedSubspaceRFmapsFileName, '.mat', positionPostFix);
 
     % Compute responses of the input cone mosaic to the subspace RF mapping stimuli
     if (reComputeInputConeMosaicSubspaceRFmappingResponses)
+
+        fprintf('Cone mosaic subspace responses will be saved to %s \n', coneMosaicSubspaceResponsesFileName);
         MosaicPoolingOptimizer.generateInputConeMosaicSubspaceRFmappingLinearResponses(...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
             stimSizeDegs, stimPositionDegs, stimulusChromaticity, ...

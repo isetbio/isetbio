@@ -23,6 +23,7 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
         end
     end
 
+    
     % Generate the mosaic filename
     [mosaicFileName, resourcesDirectory] = ...
         MosaicPoolingOptimizer.resourceFileNameAndPath('mosaic', ...
@@ -33,6 +34,14 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
     
     % Get the default optics params
     opticsParams = theMidgetRGCMosaic.defaultOpticsParams;
+
+    % Ask user whether to override the optics with a vLambda-weighted
+    % monochromatic PSF
+    opticsParams.employMonochromaticVlambdaWeightedPSF = false;
+    tmp = lower(input('Override optics with monochromatic, vLambda-weighted PSF? [y/n]: ', 's'));
+    if (strcmp(tmp, 'y'))
+        opticsParams.employMonochromaticVlambdaWeightedPSF = true;
+    end
 
     % Generate filename for the computed coneMosaicSTF responses
     [coneMosaicSTFresponsesFileName, resourcesDirectory] = ...

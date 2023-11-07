@@ -49,8 +49,6 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     opticsParams = MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
 
-  
-
     % Ask the user which H1 cell index to use for optimizing the RF
     % surround pooling model
     retinalRFmodelParams = MosaicPoolingOptimizer.chooseRFmodelForSurroundConePoolingOptimization(mosaicParams, opticsParams);

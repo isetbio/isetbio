@@ -9,8 +9,7 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
     p.addParameter('visualizedResponses', false, @islogical);
     p.parse(varargin{:});
 
-    
-    employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = p.Results.employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition;
+        employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = p.Results.employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition;
     maxSFLimit = p.Results.maxSFLimit;
     rfMappingPixelMagnificationFactor = p.Results.rfMappingPixelMagnificationFactor;
     parPoolSize = p.Results.parPoolSize;

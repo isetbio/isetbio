@@ -180,4 +180,10 @@ function m = generateOpticsString(opticsParams)
             opticsParams.pupilDiameterMM, ...
             opticsParams.refractiveErrorDiopters);
     end
+
+    if (isfield(opticsParams, 'employMonochromaticVlambdaWeightedPSF'))
+        if (opticsParams.employMonochromaticVlambdaWeightedPSF)
+            m = sprintf('%s_MonochromaticVlambdaWeightedPSF', m);
+        end
+    end
 end
