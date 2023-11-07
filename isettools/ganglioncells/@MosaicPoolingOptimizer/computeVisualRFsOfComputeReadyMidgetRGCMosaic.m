@@ -27,6 +27,12 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
     end
 
 
+    % Encode examined spatial position, pixel magnification and maxSF
+    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_%2.0fCPD.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor, maxSFLimit);
+    coneMosaicSubspaceResponsesFileName = strrep(coneMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
+    mRGCMosaicSubspaceResponsesFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
+    optimallyMappedSubspaceRFmapsFileName = strrep(optimallyMappedSubspaceRFmapsFileName, '.mat', positionPostFix);
+
     if (reComputeInputConeMosaicSubspaceRFmappingResponses || reComputeMRGCMosaicSubspaceRFmappingResponses || reComputeRFs)
 
         % Compute the RF maps for ALL cells using stimuli at this 
@@ -50,17 +56,14 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
 
     if (visualizeOptimallyMappedRFmapLocations)
         visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmapsFileName, ...
-            stimPositionDegs, rfMappingPixelMagnificationFactor, theComputeReadyMRGCmosaic, stimulusChromaticity);
+            theComputeReadyMRGCmosaic, stimulusChromaticity);
     end
 
 end
 
 function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmapsFileName,...
-    stimPositionDegs, rfMappingPixelMagnificationFactor, theMRGCMosaic, stimulusChromaticity)
+    theMRGCMosaic, stimulusChromaticity)
     % Save all the optimally mapped visual RF maps
-
-    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor);
-    optimallyMappedSubspaceRFmapsFileName = strrep(optimallyMappedSubspaceRFmapsFileName, '.mat', positionPostFix);
 
     fprintf('Loading optimally mapped subspace RF maps from %s\n', optimallyMappedSubspaceRFmapsFileName);
     load(optimallyMappedSubspaceRFmapsFileName, 'optimallyMappedVisualRFmaps', 'indicesOfOptimallyMappedRGCs');
@@ -119,12 +122,6 @@ function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
             reComputeMRGCMosaicSubspaceRFmappingResponses, ...
             reComputeRFs, ...
             visualizedResponses)
-
-    % Encode examined spatial position
-    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_%2.0fCPD.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor, maxSFLimit);
-    coneMosaicSubspaceResponsesFileName = strrep(coneMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
-    mRGCMosaicSubspaceResponsesFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
-    optimallyMappedSubspaceRFmapsFileName = strrep(optimallyMappedSubspaceRFmapsFileName, '.mat', positionPostFix);
 
     % Compute responses of the input cone mosaic to the subspace RF mapping stimuli
     if (reComputeInputConeMosaicSubspaceRFmappingResponses)

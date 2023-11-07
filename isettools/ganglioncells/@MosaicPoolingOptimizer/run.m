@@ -191,11 +191,11 @@ function run()
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
 
         reComputeInputConeMosaicSubspaceRFmappingResponses = true;
-        reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
-        recomputeRFs = ~true;
-        visualizeOptimallyMappedRFmapLocations = ~true;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = true;
+        recomputeRFs = true;
+        visualizeOptimallyMappedRFmapLocations = true;
 
-        employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = ~true;
+        employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = true;
         stimPositionDegs = [0.65 0.72];
         stimSizeDegs = [0.25 0.25];
         maxSFLimit = 120;
