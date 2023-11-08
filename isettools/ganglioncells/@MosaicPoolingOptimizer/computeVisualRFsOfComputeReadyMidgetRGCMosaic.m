@@ -72,6 +72,7 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
 
 
     figure(22); clf
+
     for iCell = 1:numel(indicesOfOptimallyMappedRGCs)
         theRGCindex = indicesOfOptimallyMappedRGCs(iCell);
 
@@ -81,34 +82,60 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
         [~, ~, theSurroundConeTypes, theSurroundConeIndices] = ...
             theMRGCMosaic.surroundConeTypeWeights(theRGCindex, theCenterConeIndices);
 
-        d = optimallyMappedVisualRFmaps{iCell};
-        dx = d.spatialSupportDegsX(2)-d.spatialSupportDegsX(1);
-        dy = d.spatialSupportDegsY(2)-d.spatialSupportDegsY(1);
-        imagesc(d.spatialSupportDegsX-dx,  d.spatialSupportDegsY-dx, d.theRFmap);
-        hold on;
         idx = find(theSurroundConeTypes == cMosaic.LCONE_ID);
         surroundLconeIndices = theSurroundConeIndices(idx);
-        plot(theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,1), ...
-             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,2), ...
-             'ro', 'MarkerSize', 16, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
+
         idx = find(theSurroundConeTypes == cMosaic.MCONE_ID);
         surroundMconeIndices = theSurroundConeIndices(idx);
-        plot(theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,1), ...
-             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,2), ...
-             'go', 'MarkerSize', 16, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
-        hold off
-        axis 'image'; axis 'xy';
-        set(gca, 'CLim', max(abs(d.theRFmap(:)))*[-1 1], ...
-            'XLim', [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)], ...
-            'YLim', [d.spatialSupportDegsY(1) d.spatialSupportDegsY(end)] ...
-            );
-        colormap(gray(1024));
-        title(sprintf('RGC %d - %s RF range: [%f .. %f]', theRGCindex, stimulusChromaticity, min(d.theRFmap(:)), max(d.theRFmap(:))));
+
+        d = optimallyMappedVisualRFmaps{iCell};
+        ax = subplot(2,2,1);
+        renderSubspaceRFmap(ax, d, ...
+            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,:), ...
+            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,:), ...
+            theRGCindex, stimulusChromaticity);
+
+        xProfile = sum(d.theRFmap, 1);
+        yProfile = sum(d.theRFmap, 2);
+
+        ax = subplot(2,2,3);
+        plot(ax, d.spatialSupportDegsX, xProfile, 'k-', 'LineWidth', 1.0);
+        set(ax, 'XLim', [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)]);
+        xaxis(ax, 'space, x (degs)');
+
+        ax = subplot(2,2,2);
+        plot(ax, yProfile, d.spatialSupportDegsY, 'k-', 'LineWidth', 1.0);
+        set(ax, 'YLim', [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)]);
+        yaxis(ax, 'space, y (degs)');
+
         drawnow;
         pause
     end
 
 end
+
+
+function renderSubspaceRFmap(ax, d, surroundLconePositions, surroundMconePositions, theRGCindex, stimulusChromaticity)
+
+    imagesc(ax, d.spatialSupportDegsX,  d.spatialSupportDegsY, d.theRFmap);
+    hold(ax, 'on');    
+    plot(ax, surroundLconePositions(:,1), surroundLconePositions(:,2), ...
+         'r.', 'MarkerSize', 20, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
+        
+    plot(ax, surroundMconePositions(:,1), surroundMconePositions(:,2), ...
+             'g.', 'MarkerSize', 20, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
+
+    hold(ax, 'off')
+    axis(ax,'image'); axis(ax,'xy');
+    set(ax, 'CLim', max(abs(d.theRFmap(:)))*[-1 1], ...
+            'XLim', [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)], ...
+            'YLim', [d.spatialSupportDegsY(1) d.spatialSupportDegsY(end)], ...
+            'FontSize', 16 ...
+    );
+    colormap(ax,gray(1024));
+    title(ax, sprintf('RGC %d - %s RF range: [%f .. %f]', theRGCindex, stimulusChromaticity, min(d.theRFmap(:)), max(d.theRFmap(:))));
+end
+
 
 
 function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
@@ -316,11 +343,12 @@ function exportOptimalyMappedRFmaps(stimPositionDegs, mRGCMosaicSubspaceResponse
     optimallyMappedRFsForThisGridPosition = numel(indicesOfOptimallyMappedRGCs);
     optimallyMappedVisualRFmaps = cell(1, optimallyMappedRFsForThisGridPosition);
 
+    dx = spatialSupportDegs(2)-spatialSupportDegs(1);
     for iCell = 1:numel(theMRGCMosaicOptimallyMappedVisualRFmaps)
         optimallyMappedVisualRFmaps{iCell} = struct(...
             'theRFmap', theMRGCMosaicOptimallyMappedVisualRFmaps{iCell}, ...
-            'spatialSupportDegsX', spatialSupportDegs+stimPositionDegs(1), ...
-            'spatialSupportDegsY', spatialSupportDegs+stimPositionDegs(2) ...
+            'spatialSupportDegsX', spatialSupportDegs+stimPositionDegs(1)-dx, ...
+            'spatialSupportDegsY', spatialSupportDegs+stimPositionDegs(2)-dx ...
             );
     end
 

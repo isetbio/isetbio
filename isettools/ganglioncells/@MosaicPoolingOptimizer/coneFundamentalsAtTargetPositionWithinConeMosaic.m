@@ -73,23 +73,20 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
         fovDegs = 1;
         scene = sceneSet(scene,'fov', fovDegs);
 
-        % Get the photons 
-        photons = sceneGet(scene,'photons');
-        energy = sceneGet(scene,'energy');
-
-        % Zero photons at all wavelengths 
-        photons = zeros(size(photons));
-
-        % Allow photons only at the current monomchromatic wavelength
-        photonsPerSrM2NMSec = 1e25;
-        energyInBand = 1;
-        photons(:,:,iMonoChromaticBand) = photonsPerSrM2NMSec * ones(pixelsNum,pixelsNum);
-        energy(:,:,iMonoChromaticBand) = energyInBand * ones(pixelsNum,pixelsNum);
-    
         % Rewrite the scene with the desired monochromatic spectrum
-        %scene = sceneSet(scene,'photons',photons);
+        % allowing photons only at the current monomchromatic wavelength
+        energyInBand = 1;
+        energy = sceneGet(scene,'energy')*0;
+        energy(:,:,iMonoChromaticBand) = energyInBand * ones(pixelsNum,pixelsNum);
         scene = sceneSet(scene,'energy',energy);
 
+        % Rewrite the scene with the desired monochromatic spectrum
+        % allowing photons only at the current monomchromatic wavelength
+        % photonsPerSrM2NMSec = 1e25;
+        % photons = sceneGet(scene,'photons')*0;
+        % photons(:,:,iMonoChromaticBand) = photonsPerSrM2NMSec * ones(pixelsNum,pixelsNum);
+        % scene = sceneSet(scene,'photons',photons);
+        
         % Compute the retinal image of the monochromatic scene
         theMonochromaticOpticalImage = oiCompute(scene, theOptics);
 
