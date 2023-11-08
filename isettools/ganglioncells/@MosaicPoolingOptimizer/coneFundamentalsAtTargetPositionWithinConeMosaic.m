@@ -75,16 +75,20 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
 
         % Get the photons 
         photons = sceneGet(scene,'photons');
+        energy = sceneGet(scene,'energy');
 
         % Zero photons at all wavelengths 
         photons = zeros(size(photons));
 
         % Allow photons only at the current monomchromatic wavelength
         photonsPerSrM2NMSec = 1e25;
+        energyInBand = 1;
         photons(:,:,iMonoChromaticBand) = photonsPerSrM2NMSec * ones(pixelsNum,pixelsNum);
+        energy(:,:,iMonoChromaticBand) = energyInBand * ones(pixelsNum,pixelsNum);
     
         % Rewrite the scene with the desired monochromatic spectrum
-        scene = sceneSet(scene,'photons',photons);
+        %scene = sceneSet(scene,'photons',photons);
+        scene = sceneSet(scene,'energy',energy);
 
         % Compute the retinal image of the monochromatic scene
         theMonochromaticOpticalImage = oiCompute(scene, theOptics);
@@ -101,7 +105,7 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
         customConeFundamentals.quantalExcitationSpectra(iMonoChromaticBand, cMosaic.LCONE_ID) = ...
             mean(theConeExcitations(indicesOfLconesWithinTargetRegion)) / photonsPerSrM2NMSec;
 
-        % Compute the quantal M-cone excitations at this wavelength
+        % Compute the quantal M-cone excitatiomns at this wavelength
         customConeFundamentals.quantalExcitationSpectra(iMonoChromaticBand, cMosaic.MCONE_ID) = ...
             mean(theConeExcitations(indicesOfMconesWithinTargetRegion)) / photonsPerSrM2NMSec;
 
@@ -122,42 +126,5 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
         customConeFundamentals.quantalExcitationSpectra(:,iCone) = ...
         customConeFundamentals.quantalExcitationSpectra(:,iCone) / max(squeeze(customConeFundamentals.quantalExcitationSpectra(:,iCone)));
     end
-
-    hFig = figure(222); clf;
-    subplot(2,2,1);
-    
-
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'r--', 'LineWidth', 1.5);
-        hold on;
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'g--', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'b--', 'LineWidth', 1.5);
-        title('Stockman 2 deg cone fundamentals')
-
-        subplot(2,2,2);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-', 'LineWidth', 1.5);
-        hold on;
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-', 'LineWidth', 1.5);
-        title('cMosaic cone fundamentals')
-
-
-        subplot(2,2,3);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-', 'LineWidth', 1.5);
-        hold on;
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'k--', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'k--', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'k--', 'LineWidth', 1.5);
-        title('cMosaic cone fundamentals')
-
-        subplot(2,2,4);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1)./StockmanSharpe2DegConeFundamentals(:,1), 'r-', 'LineWidth', 1.5);
-        hold on;
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2)./StockmanSharpe2DegConeFundamentals(:,2), 'g-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3)./StockmanSharpe2DegConeFundamentals(:,3), 'b-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.wavelengthSupport*0 + 1, 'k-');
-        title('cMosaic cone fundamentals ./ SS2')
-        drawnow;
 
 end
