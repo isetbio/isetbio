@@ -9,7 +9,7 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
     p.addParameter('visualizedResponses', false, @islogical);
     p.parse(varargin{:});
 
-        employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = p.Results.employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition;
+    employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = p.Results.employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition;
     maxSFLimit = p.Results.maxSFLimit;
     rfMappingPixelMagnificationFactor = p.Results.rfMappingPixelMagnificationFactor;
     parPoolSize = p.Results.parPoolSize;
@@ -43,7 +43,6 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
     % Determine optimal stimulus resolution so that cone aperture blur will
     % have an observable effect
     optimalRetinalPixelSizeDegs = MosaicPoolingOptimizer.retinalResolutionFromConeApertureDiameter(theRGCMosaic, targetRGCindices);
-
 
     employedRetinalPixelSizeDegs = rfMappingPixelMagnificationFactor * optimalRetinalPixelSizeDegs;
 
