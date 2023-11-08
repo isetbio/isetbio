@@ -12,8 +12,6 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             visualizeOptimallyMappedRFmapLocations, ...
             varargin)
 
-   
-
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
@@ -25,7 +23,6 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
     if (isempty(stimPositionDegs))
         stimPositionDegs = theComputeReadyMRGCmosaic.eccentricityDegs;
     end
-
 
     % Encode examined spatial position, pixel magnification and maxSF
     positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_%2.0fCPD.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor, maxSFLimit);
@@ -88,12 +85,12 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
         surroundLconeIndices = theSurroundConeIndices(idx);
         plot(theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,1), ...
              theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,2), ...
-             'r.', 'MarkerSize', 20);
+             'ro', 'MarkerSize', 16, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
         idx = find(theSurroundConeTypes == cMosaic.MCONE_ID);
         surroundMconeIndices = theSurroundConeIndices(idx);
         plot(theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,1), ...
              theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,2), ...
-             'g.', 'MarkerSize', 20);
+             'go', 'MarkerSize', 16, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
         hold off
         axis 'image'; axis 'xy';
         set(gca, 'CLim', max(abs(d.theRFmap(:)))*[-1 1], ...
