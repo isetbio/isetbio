@@ -196,9 +196,15 @@ function run()
         visualizeOptimallyMappedRFmapLocations = true;
 
         employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = true;
-        stimPositionDegs = [0.65 0.72];
-        stimSizeDegs = [0.25 0.25];
+        stimPositionDegs = [0.65 0.72]*0;
+        stimSizeDegs = [0.2 0.2];
+
+        % Setup an uppen SF limit
         maxSFLimit = 120;
+
+        % or leave it empty to use the optimal max SF
+        %maxSFLimit = [];  
+
         rfMappingPixelMagnificationFactor = 1.0;
 
         MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...

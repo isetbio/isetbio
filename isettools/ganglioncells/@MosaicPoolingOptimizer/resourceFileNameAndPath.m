@@ -183,7 +183,7 @@ function m = generateOpticsString(opticsParams)
 
     if (isfield(opticsParams, 'employMonochromaticVlambdaWeightedPSF'))
         if (opticsParams.employMonochromaticVlambdaWeightedPSF)
-            m = sprintf('%s_MonochromaticVlambdaWeightedPSF', m);
+            m = sprintf('%s_MonoVlambdaPSF', m);
         end
     end
 end

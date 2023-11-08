@@ -28,7 +28,12 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
 
 
     % Encode examined spatial position, pixel magnification and maxSF
-    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_%2.0fCPD.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor, maxSFLimit);
+    if (isempty(maxSFLimit))
+        positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_OPTIMAL.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor);
+    else
+        positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_%2.0fCPD.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor, maxSFLimit);
+    end
+
     coneMosaicSubspaceResponsesFileName = strrep(coneMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
     mRGCMosaicSubspaceResponsesFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
     optimallyMappedSubspaceRFmapsFileName = strrep(optimallyMappedSubspaceRFmapsFileName, '.mat', positionPostFix);
