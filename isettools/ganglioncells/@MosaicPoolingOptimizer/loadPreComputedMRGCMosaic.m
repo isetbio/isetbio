@@ -2,14 +2,13 @@ function theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEccDegs)
 
     % Choose one of the computed mRGCMosaics
     % 1. mosaic params
-    mosaicParams = MosaicPoolingOptimizer.getMosaicParams(horizontalEccDegs)
+    mosaicParams = MosaicPoolingOptimizer.getMosaicParams(horizontalEccDegs);
 
-    pause
     % 2. optics params
-    opticsParams = MosaicPoolingOptimizer.getOpticsParams(mosaicParams)
+    opticsParams = MosaicPoolingOptimizer.getOpticsParams(mosaicParams);
 
     % 3. retinal RF pooling params
-    retinalRFmodelParams = MosaicPoolingOptimizer.getSurroundParams(mosaicParams, opticsParams)
+    retinalRFmodelParams = MosaicPoolingOptimizer.getSurroundParams(mosaicParams, opticsParams);
 
     % Load the mosaic
     theMRGCMosaic = mRGCMosaic.loadComputeReadyRGCMosaic(...

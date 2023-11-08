@@ -6,10 +6,12 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
     p = inputParser;
     p.addParameter('opticsChoice', [], @(x)(isempty(x)||ismember(x,validOpticsChoices)));
     p.addParameter('refractiveErrorDiopters', [], @isscalar);
+    p.addParameter('queryUserWhetherToUseSpecializedOpticsCases', true, @islogical);
 
     p.parse(varargin{:});
     opticsChoice = p.Results.opticsChoice;
     refractiveErrorDiopters = p.Results.refractiveErrorDiopters;
+    queryUserWhetherToUseSpecializedOpticsCases = p.Results.queryUserWhetherToUseSpecializedOpticsCases;
 
     % Select optics to employ
     if (isempty(opticsChoice))
@@ -38,9 +40,12 @@ function [opticsParams, opticsToEmploy, coneMosaicSTFresponsesFileName] = ...
     % Ask user whether to override the optics with a vLambda-weighted
     % monochromatic PSF
     opticsParams.employMonochromaticVlambdaWeightedPSF = false;
-    tmp = lower(input('Override optics with monochromatic, vLambda-weighted PSF? [y/n]: ', 's'));
-    if (strcmp(tmp, 'y'))
-        opticsParams.employMonochromaticVlambdaWeightedPSF = true;
+
+    if (queryUserWhetherToUseSpecializedOpticsCases)
+        tmp = lower(input('Override optics with monochromatic, vLambda-weighted PSF? [y/n]: ', 's'));
+        if (strcmp(tmp, 'y'))
+            opticsParams.employMonochromaticVlambdaWeightedPSF = true;
+        end
     end
 
     % Generate filename for the computed coneMosaicSTF responses
