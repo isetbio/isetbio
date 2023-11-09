@@ -75,10 +75,13 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
 
         % Rewrite the scene with the desired monochromatic spectrum
         % allowing photons only at the current monomchromatic wavelength
-        energyInBand = 1;
+        energyWithinBand = 1;
         energy = sceneGet(scene,'energy')*0;
-        energy(:,:,iMonoChromaticBand) = energyInBand * ones(pixelsNum,pixelsNum);
+        energy(:,:,iMonoChromaticBand) = energyWithinBand * ones(pixelsNum,pixelsNum);
         scene = sceneSet(scene,'energy',energy);
+
+        photons = sceneGet(scene,'photons');
+        photonsEmittedWithinBand = photons(pixelsNum/2, pixelsNum/2,iMonoChromaticBand)
 
         % Rewrite the scene with the desired monochromatic spectrum
         % allowing photons only at the current monomchromatic wavelength
@@ -100,11 +103,11 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
         
         % Compute the quantal L-cone excitations at this wavelength
         customConeFundamentals.quantalExcitationSpectra(iMonoChromaticBand, cMosaic.LCONE_ID) = ...
-            mean(theConeExcitations(indicesOfLconesWithinTargetRegion)) / photonsPerSrM2NMSec;
+            mean(theConeExcitations(indicesOfLconesWithinTargetRegion)) / energyWithinBand;
 
         % Compute the quantal M-cone excitatiomns at this wavelength
         customConeFundamentals.quantalExcitationSpectra(iMonoChromaticBand, cMosaic.MCONE_ID) = ...
-            mean(theConeExcitations(indicesOfMconesWithinTargetRegion)) / photonsPerSrM2NMSec;
+            mean(theConeExcitations(indicesOfMconesWithinTargetRegion)) / energyWithinBand;
 
         % Compute the quantal S-cone excitations at this wavelength
         if (isempty(indicesOfSconesWithinTargetRegion))
@@ -114,10 +117,17 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
                 StockmanSharpe2DegConeFundamentals(iMonoChromaticBand, cMosaic.SCONE_ID);
         else
             customConeFundamentals.quantalExcitationSpectra(iMonoChromaticBand, cMosaic.SCONE_ID) = ...
-                mean(theConeExcitations(indicesOfSconesWithinTargetRegion)) / photonsPerSrM2NMSec;
+                mean(theConeExcitations(indicesOfSconesWithinTargetRegion)) / energyWithinBand;
         end
 
     end % iMonochromaticBand 
+
+    figure(99); clf;
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-');
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-');
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-');
+    drawnow;
 
     for iCone = 1:3
         customConeFundamentals.quantalExcitationSpectra(:,iCone) = ...
