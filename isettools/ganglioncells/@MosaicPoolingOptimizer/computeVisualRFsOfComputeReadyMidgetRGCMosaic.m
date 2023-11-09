@@ -1,7 +1,7 @@
 function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
             stimSizeDegs, stimPositionDegs, stimulusChromaticity,...
-            employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition, ...
+            coneFundamentalsOptimizedForStimPosition, ...
             maxSFLimit, rfMappingPixelMagnificationFactor, ...
             coneMosaicSubspaceResponsesFileName, ...
             mRGCMosaicSubspaceResponsesFileName, ...
@@ -27,9 +27,9 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
 
     % Encode examined spatial position, pixel magnification and maxSF
     if (isempty(maxSFLimit))
-        positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_OPTIMAL.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor);
+        positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixMag_%2.1f_maxSF_OPTIMAL.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor);
     else
-        positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelMagnification_%2.3f_maxSF_%2.0fCPD.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor, maxSFLimit);
+        positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixMag_%2.1f_maxSF_%2.0fCPD.mat', stimPositionDegs(1), stimPositionDegs(2), rfMappingPixelMagnificationFactor, maxSFLimit);
     end
 
     coneMosaicSubspaceResponsesFileName = strrep(coneMosaicSubspaceResponsesFileName, '.mat', positionPostFix);
@@ -45,7 +45,7 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
         computeRFmapsForAllCellsUsingStimuliAtTargetPosition(...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
             stimSizeDegs, stimPositionDegs, stimulusChromaticity, ...
-            employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition, ...
+            coneFundamentalsOptimizedForStimPosition, ...
             maxSFLimit, rfMappingPixelMagnificationFactor, ...
             parPoolSize, ...
             coneMosaicSubspaceResponsesFileName, ...
@@ -92,7 +92,8 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
         [~,~,~, theCenterConeTypes, theCenterConeIndices] = ...
             theMRGCMosaic.centerConeTypeWeights(theRGCindex);
 
-        theRGCRFcenterPositionDegs = theMRGCMosaic.rgcRFpositionsDegs(theRGCindex,:);
+        % The RF center position on the retina
+        theRGCRetinalRFcenterPositionDegs = theMRGCMosaic.rgcRFpositionsDegs(theRGCindex,:);
 
         [~, ~, theSurroundConeTypes, theSurroundConeIndices] = ...
             theMRGCMosaic.surroundConeTypeWeights(theRGCindex, theCenterConeIndices);
@@ -106,24 +107,29 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
         d = optimallyMappedVisualRFmaps{iCell};
         d = generateMsequenceRFmap(d, msequencePixelSizeDegs);
 
+        % The RF center position in the visual field
+        [~,idx] = max(d.theRFmap(:));
+        [row,col] = ind2sub(size(d.theRFmap), idx);
+        theRGCVisualRFcenterPositionDegs = [d.spatialSupportDegsX(col) d.spatialSupportDegsY(row)];
+
         ax = subplot('Position', subplotPosVectors(1,1).v);
         renderSubspaceRFmap(ax, d, ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,:), ...
-            theRGCindex, theRGCRFcenterPositionDegs, stimulusChromaticity);
+            theRGCindex, theRGCRetinalRFcenterPositionDegs, theRGCVisualRFcenterPositionDegs, stimulusChromaticity);
 
         xProfile = sum(d.theRFmap, 1);
         yProfile = sum(d.theRFmap, 2);
         maxP = max([max(abs(xProfile(:))) max(abs(yProfile(:)))]);
 
         ax = subplot('Position', subplotPosVectors(2,1).v);
-        renderXProfile(ax, d.spatialSupportDegsX, xProfile, maxP, theRGCRFcenterPositionDegs);
+        renderXProfile(ax, d.spatialSupportDegsX, xProfile, maxP, theRGCVisualRFcenterPositionDegs);
 
         ax = subplot('Position', subplotPosVectors(1,2).v);
-        renderYProfile(ax, d.spatialSupportDegsY, yProfile, maxP, theRGCRFcenterPositionDegs);
+        renderYProfile(ax, d.spatialSupportDegsY, yProfile, maxP, theRGCVisualRFcenterPositionDegs);
 
         ax = subplot('Position', subplotPosVectors(2,2).v);
-        renderMsequenceRFmap(ax, d, theRGCRFcenterPositionDegs, msequencePixelSizeDegs);
+        renderMsequenceRFmap(ax, d, theRGCVisualRFcenterPositionDegs, msequencePixelSizeDegs);
 
         drawnow;
         pause
@@ -180,7 +186,7 @@ function renderXProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositio
         hold(ax, 'on');
         plot(ax, spatialSupport, profile*0, 'k-');
 
-        plot(theRGCRFcenterPositionDegs(1)*[1 1], maxP*[-1 1], 'c-', 'LineWidth', 1.0);
+        plot(theRGCRFcenterPositionDegs(1)*[1 1], maxP*[-1 1], 'b-', 'LineWidth', 1.0);
         hold(ax, 'off');
 
         axis(ax, 'square')
@@ -202,7 +208,7 @@ function renderYProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositio
     hold(ax, 'on');
     plot(ax, profile*0, spatialSupport, 'k-');
 
-    plot(maxP*[-1 1], theRGCRFcenterPositionDegs(2)*[1 1], 'c-', 'LineWidth', 1.0);
+    plot(maxP*[-1 1], theRGCRFcenterPositionDegs(2)*[1 1], 'b-', 'LineWidth', 1.0);
     hold(ax, 'off');
 
     axis(ax, 'square');
@@ -215,17 +221,21 @@ function renderYProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositio
 end
 
 
-function renderSubspaceRFmap(ax, d, surroundLconePositions, surroundMconePositions, theRGCindex, theRGCRFcenterPositionDegs, stimulusChromaticity)
+function renderSubspaceRFmap(ax, d, surroundLconePositions, surroundMconePositions, theRGCindex, ...
+    theRGCRFcenterPositionDegs, theVisualRGCRFcenterPositionDegs, stimulusChromaticity)
+
     imagesc(ax, d.spatialSupportDegsX,  d.spatialSupportDegsY, d.theRFmap);
     hold(ax, 'on');    
     plot(ax, surroundLconePositions(:,1), surroundLconePositions(:,2), ...
-         'r.', 'MarkerSize', 20, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
+         'ro', 'MarkerSize', 16, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
         
     plot(ax, surroundMconePositions(:,1), surroundMconePositions(:,2), ...
-             'g.', 'MarkerSize', 20, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
+             'go', 'MarkerSize', 16, 'MarkerFaceColor', 'none', 'LineWidth', 1.0);
 
-    plot(theRGCRFcenterPositionDegs(1)*[1 1], [min(d.spatialSupportDegsY) max(d.spatialSupportDegsY)], 'c-', 'LineWidth', 1.0);
-    plot([min(d.spatialSupportDegsX) max(d.spatialSupportDegsX)], theRGCRFcenterPositionDegs(2)*[1 1], 'c-', 'LineWidth', 1.0);
+    plot(ax, theRGCRFcenterPositionDegs(1), theRGCRFcenterPositionDegs(2), 'ks', 'MarkerSize', 16);
+    plot(theVisualRGCRFcenterPositionDegs(1)*[1 1], [min(d.spatialSupportDegsY) max(d.spatialSupportDegsY)], 'b-', 'LineWidth', 1.0);
+    plot([min(d.spatialSupportDegsX) max(d.spatialSupportDegsX)], theVisualRGCRFcenterPositionDegs(2)*[1 1], 'b-', 'LineWidth', 1.0);
+
     hold(ax, 'off')
     axis(ax,'image'); axis(ax,'xy');
     set(ax, 'CLim', max(abs(d.theRFmap(:)))*[-1 1], ...
@@ -245,8 +255,8 @@ end
 function renderMsequenceRFmap(ax, d, theRGCRFcenterPositionDegs, msequencePixelSizeDegs)
     imagesc(ax, d.theMsequenceRFmapSpatialSupportX, d.theMsequenceRFmapSpatialSupportY, d.theMsequenceRFmap);
     hold(ax, 'on');
-    plot(theRGCRFcenterPositionDegs(1)*[1 1], [min(d.spatialSupportDegsY) max(d.spatialSupportDegsY)], 'c-', 'LineWidth', 1.0);
-    plot([min(d.spatialSupportDegsX) max(d.spatialSupportDegsX)], theRGCRFcenterPositionDegs(2)*[1 1], 'c-', 'LineWidth', 1.0);
+    plot(theRGCRFcenterPositionDegs(1)*[1 1], [min(d.spatialSupportDegsY) max(d.spatialSupportDegsY)], 'b-', 'LineWidth', 1.0);
+    plot([min(d.spatialSupportDegsX) max(d.spatialSupportDegsX)], theRGCRFcenterPositionDegs(2)*[1 1], 'b-', 'LineWidth', 1.0);
     hold(ax, 'off');
     axis(ax,'image'); axis(ax,'xy');
     set(ax, 'CLim', max(abs(d.theMsequenceRFmap(:)))*[-1 1], ...
@@ -259,14 +269,14 @@ function renderMsequenceRFmap(ax, d, theRGCRFcenterPositionDegs, msequencePixelS
     colormap(ax,gray(1024));
     xlabel(ax, 'space, x (degs)');
     ylabel(ax, 'space, y (degs)');
-    title(ax, 'm-sequence mapped RF (pixel size: %2.3 arc min', msequencePixelSizeDegs*60));
+    title(ax, 'm-sequence mapped RF (pixel size: %2.3 arc min)', msequencePixelSizeDegs*60);
 end
 
 
 function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
             stimSizeDegs, stimPositionDegs, stimulusChromaticity,...
-            employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition, ...
+            coneFundamentalsOptimizedForStimPosition, ...
             maxSFLimit, rfMappingPixelMagnificationFactor, ...
             parPoolSize,...
             coneMosaicSubspaceResponsesFileName, ...
@@ -285,7 +295,7 @@ function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
             stimSizeDegs, stimPositionDegs, stimulusChromaticity, ...
             coneMosaicSubspaceResponsesFileName, ...
-            'employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition', employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition, ...
+            'coneFundamentalsOptimizedForStimPosition', coneFundamentalsOptimizedForStimPosition, ...
             'maxSFLimit', maxSFLimit, ...
             'rfMappingPixelMagnificationFactor', rfMappingPixelMagnificationFactor, ...
             'visualizedResponses', visualizedResponses, ...

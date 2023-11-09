@@ -190,12 +190,11 @@ function run()
     % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
 
-        reComputeInputConeMosaicSubspaceRFmappingResponses = ~true;
-        reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
-        recomputeRFs = ~true;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = true;
+        recomputeRFs = true;
         visualizeOptimallyMappedRFmapLocations = true;
 
-        employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = true;
         stimPositionDegs = [0.65 0.72];
         stimSizeDegs = [0.35 0.35];
 
@@ -211,7 +210,6 @@ function run()
         msequencePixelSizeDegs = msequencePixelSizeArcMin/60;
 
         MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...
-            'employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition', employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition, ...
             'stimSizeDegs', stimSizeDegs, ....
             'stimPositionDegs', stimPositionDegs, ...
             'maxSFLimit', maxSFLimit, ...

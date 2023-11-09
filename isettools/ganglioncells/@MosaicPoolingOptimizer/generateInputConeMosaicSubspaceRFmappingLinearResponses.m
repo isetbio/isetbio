@@ -2,14 +2,14 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
     opticsToEmploy, stimSizeDegs, stimXYpositionDegs, stimulusChromaticity, responsesFileName, varargin)
 
     p = inputParser;
-    p.addParameter('employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition', false, @islogical);
+    p.addParameter('coneFundamentalsOptimizedForStimPosition', false, @islogical);
     p.addParameter('maxSFLimit', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('rfMappingPixelMagnificationFactor', 1, @(x)(isscalar(x)&&(x>=1)));
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
     p.parse(varargin{:});
 
-    employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = p.Results.employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition;
+    coneFundamentalsOptimizedForStimPosition = p.Results.coneFundamentalsOptimizedForStimPosition;
     maxSFLimit = p.Results.maxSFLimit;
     rfMappingPixelMagnificationFactor = p.Results.rfMappingPixelMagnificationFactor;
     parPoolSize = p.Results.parPoolSize;
@@ -70,7 +70,7 @@ function generateInputConeMosaicSubspaceRFmappingLinearResponses(theRGCMosaic, .
              error('Unknown optics: ''%s''.', opticsToEmploy);
     end
 
-    if (employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition)
+    if (coneFundamentalsOptimizedForStimPosition)
         % Compute custom cone fundamentals
         maxConesNumForAveraging = 3;
         customConeFundamentals = MosaicPoolingOptimizer.coneFundamentalsAtTargetPositionWithinConeMosaic(...
