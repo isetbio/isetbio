@@ -1,209 +1,152 @@
-function visualizationParams = visualizeBrianVersion(obj, varargin)
+function visualizationParams = visualize(obj, varargin)
 % Visualize different aspects of a @cMosaic or its activation
 %
-% THERE IS NOW A SET OF CONFLICTS BETWEEN THIS VERSION AND WHAT NICOLAS HAS
-% DONE. ONE MAJOR ISSUE IS THE UPPER/LOWER CASE OF THE PARAMETERS AND THE
-% USE OF ieParamFormat(), which BW ADDED AND NC DID NOT USE. 
-%
-% But NC also made changes the functionality, and we should preserve these.
-% I think resolving requires a discussion between NC and BW. (Oct 29, 2023)
-%
-% TODO:
-%   Comments, extraction of useful utilities for reuse.
-%
-% Brief description
-%   NC built many nice visualization functions and inserted them here.
-%   The number of parameters is so large and the possibilities so
-%   vast, the it seemed useful to provide the user with a set of
-%   simpler calls.  Those are in cMosaic.plot and likely cMosaicPlot()
-%   will be implemented.  Those routine interface to this one
-%   regularly.
-%
-%   I am considering making this routine visualize(cm,...) and having
-%   it live outside of the class.  We can leave just the cm.plot as
-%   part of the class.  Noodling, not sure what I think.
-%
 % Syntax:
-%   cm = cMosaic(); cm.visualizeBrianVersion();
+%   cm = cMosaic(); cm.visualize();
 %
-%   % Return the many settable visualize params
-%   visParams = cm.visualizeBrianVersion('params')
+%   % Return the various settable params
+%   pStruct = cm.visualize('params')
 %
 %   % Display the various settable params and info about them
 %   cm.visualize('help');
 %
+%  Examples
+%    cm.visualize();        - Visualize the cone mosaic
+%    pStruct = cm.visualize('params') - Retrieve the visualization parameter structure
+%
 %  See also
-%   cMosaic.plot (an interface to this)
-%   Tutorials in tutorials/cones/cMosaic
-
-% Examples:
-%{
-cm = cMosaic;
-
-% Visualize the cone mosaic
-cm.visualizeBrianVersion();        
-
-% Retrieve the visualization parameters
-pStruct = cm.visualizeBrianVersion('params') 
-
-cm.visualizeBrianVersion('density contour overlay',true,...
-             'crosshairs on fovea',true, ...
-             'label retinal meridians',true);   
-
-%}
-
-%% If the call is 
+%   Tutorials in tutorials/t_cones/cMosaic
 %
-%   cm.visualize('params') or cm.visualize('help') 
-%
-% we provide some help.
-%
+
 if ~isempty(varargin) && (isequal(varargin{1},'params') || isequal(varargin{1},'help'))
-    visualizationParams = visualizeParams(varargin{1});
+    visualizationParams = returnVisualizationParams(varargin{1});
     return;
 else
     visualizationParams = '';
 end
 
-%% If key/val pairs, force to lower case, no spaces.  
-% 
-% I (BW) spent a lot of time arranging this, but it is always possible I
-% missed something.
-if numel(varargin) > 1
-    varargin = ieParamFormat(varargin);
-end
-
+% Parse input
 p = inputParser;
+p.addParameter('visualizationView', 'REVF', @(x)(ischar(x) && (ismember(x, {'REVF', 'retinal view'}))));
 p.addParameter('domain', 'degrees', @(x)(ischar(x) && (ismember(x, {'degrees', 'microns'}))));
-p.addParameter('domainvisualizationlimits', [], @(x)((isempty(x))||(numel(x)==4)));
-p.addParameter('domainvisualizationticks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
+p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
+p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
 
-% Worried about these parameters upper/lower space issues
-p.addParameter('visualizedconeaperture', 'geometricarea', @(x)ismember(ieParamFormat(x), ...
-    {'lightcollectingsrea', 'geometricarea', 'conespacing', ...
-    'lightcollectingareacharacteristicdiameter', 'lightcollectingarea2sigma', ...
-    'lightcollectingarea4sigma', 'lightcollectingarea5sigma', 'lightcollectingarea6sigma'}));
+p.addParameter('visualizedConeAperture', 'geometricArea', @(x)ismember(x, ...
+    {'lightCollectingArea', 'geometricArea', 'coneSpacing', ...
+    'lightCollectingAreaCharacteristicDiameter', 'lightCollectingArea2sigma', 'lightCollectingArea4sigma', 'lightCollectingArea5sigma', 'lightCollectingArea6sigma'}));
+p.addParameter('visualizedConeApertureThetaSamples', [], @(x)(isempty(x) || isscalar(x)));
 
-% Specifies how finely to sample the circle representing the cone
-% aperture.  Default values are assigned below that depend on the
-% number of cones in the mosaic.  When there are few, the default is
-% 72 and when there are many the default is 6.
-p.addParameter('visualizedconeaperturethetasamples', [], @(x)(isempty(x) || isscalar(x)));
+p.addParameter('visualizeCones', true, @islogical);
+p.addParameter('labelCones', true, @islogical);
+p.addParameter('labelConesInActivationMap', false, @islogical);
+p.addParameter('conesAlpha', 1.0, @isscalar);
+p.addParameter('conesEdgeAlpha', 1.0, @isscalar);
+p.addParameter('labelConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
+p.addParameter('outlinedConesWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
+p.addParameter('densityContourOverlay', false, @islogical);
+p.addParameter('densityContourLevels', [], @isnumeric);
+p.addParameter('densityContourLevelLabelsDisplay', false, @islogical);
+p.addParameter('densityColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
 
-% Cone rendering parameters
-p.addParameter('visualizecones', true, @islogical);
-p.addParameter('labelcones', true, @islogical);
-p.addParameter('labelconesinactivationmap', false, @islogical);
-p.addParameter('conesalpha', 1.0, @isscalar);
-p.addParameter('conesedgealpha', 1.0, @isscalar);
-p.addParameter('labelconeswithindices', [], @(x)(isempty(x)||isnumeric(x)));
-p.addParameter('outlinedconeswithindices', [], @(x)(isempty(x)||isnumeric(x)));
-p.addParameter('densitycontouroverlay', false, @islogical);
-p.addParameter('densitycontourlevels', [], @isnumeric);
-p.addParameter('densitycontourlevellabelsdisplay', false, @islogical);
-p.addParameter('densitycolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
-
-p.addParameter('withsuperimposedopticalimage', [], @(x)(isempty(x) || isstruct(x)));
-p.addParameter('superimposedopticalimagealpha', 0.7, @isnumeric);
-p.addParameter('withsuperimposedpsf', [], @(x)(isempty(x) || isstruct(x)));
+p.addParameter('withSuperimposedOpticalImage', [], @(x)(isempty(x) || isstruct(x)));
+p.addParameter('superimposedOIAlpha', 0.7, @isnumeric);
+p.addParameter('withSuperimposedPSF', [], @(x)(isempty(x) || isstruct(x)));
 
 p.addParameter('activation', []);
-p.addParameter('activationrange', [],@(x)((isempty(x))||(numel(x)==2)));
-p.addParameter('activationcolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
-p.addParameter('verticaldensitycolorbar', false, @islogical);
-p.addParameter('horizontalactivationcolorbar', false, @islogical);
-p.addParameter('verticalactivationcolorbar', false, @islogical);
-p.addParameter('horizontalactivationcolorbarinside', false, @islogical);
-p.addParameter('verticalactivationcolorbarinside', false, @islogical);
-p.addParameter('colorbarticklabelpostfix', '', @ischar);
-p.addParameter('colorbarticklabelcolor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
+p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
+p.addParameter('verticalDensityColorBar', false, @islogical);
+p.addParameter('horizontalActivationColorBar', false, @islogical);
+p.addParameter('verticalActivationColorBar', false, @islogical);
+p.addParameter('horizontalActivationColorBarInside', false, @islogical);
+p.addParameter('verticalActivationColorBarInside', false, @islogical);
+p.addParameter('colorBarTickLabelPostFix', '', @ischar);
+p.addParameter('colorbarTickLabelColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
 
-p.addParameter('horizontalactivationsliceeccentricity', [], @(x)((isempty(x))||(isscalar(x))));
-p.addParameter('verticalactivationsliceeccentricity', [], @(x)((isempty(x))||(isscalar(x))));
+p.addParameter('horizontalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
+p.addParameter('verticalActivationSliceEccentricity', [], @(x)((isempty(x))||(isscalar(x))));
 
-p.addParameter('crosshairsonmosaiccenter', false, @islogical);
-p.addParameter('crosshairsatposition', [], @(x)((isempty(x))||(numel(x)==2)));
-p.addParameter('crosshairsonfovea', false, @islogical);
-p.addParameter('crosshairsonopticalimagecenter', false, @islogical);
-p.addParameter('crosshairscolor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+p.addParameter('crossHairsOnMosaicCenter', false, @islogical);
+p.addParameter('crossHairsAtPosition', [], @(x)((isempty(x))||(numel(x)==2)));
+p.addParameter('crossHairsOnFovea', false, @islogical);
+p.addParameter('crossHairsOnOpticalImageCenter', false, @islogical);
+p.addParameter('crossHairsColor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
 
-p.addParameter('displayedeyemovementdata', [], @(x)(isempty(x)||(isstruct(x))));
-p.addParameter('currentemposition', [], @(x)(isempty(x)||(numel(x)==2)));
+p.addParameter('displayedEyeMovementData', [], @(x)(isempty(x)||(isstruct(x))));
+p.addParameter('currentEMposition', [], @(x)(isempty(x)||(numel(x)==2)));
 
-p.addParameter('labelretinalmeridians', false, @islogical);
-p.addParameter('noxlabel', false, @islogical);
-p.addParameter('noylabel', false, @islogical);
+p.addParameter('labelRetinalMeridians', false, @islogical);
+p.addParameter('noXLabel', false, @islogical);
+p.addParameter('noYLabel', false, @islogical);
 
-p.addParameter('figurehandle', [], @(x)(isempty(x)||isa(x, 'handle')));
-p.addParameter('axeshandle', [], @(x)(isempty(x)||isa(x, 'handle')));
-p.addParameter('clearaxesbeforedrawing', true, @islogical);
-p.addParameter('fontsize', 16, @isscalar);
-p.addParameter('colorbarfontsize', 16, @(x)(isempty(x)||(isscalar(x))));
-p.addParameter('backgroundcolor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
-
-p.addParameter('plottitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
-p.addParameter('plottitlecolor', [0 0 0], @isnumeric);
-p.addParameter('plottitlefontsize', 16, @isscalar);
-p.addParameter('textdisplay', '',@(x)(isempty(x) || ischar(x)));
-p.addParameter('textdisplaycolor', [], @isnumeric);
-
+p.addParameter('figureHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
+p.addParameter('clearAxesBeforeDrawing', true, @islogical);
+p.addParameter('fontSize', 16, @isscalar);
+p.addParameter('fontAngle', 'normal', @(x)(ismember(lower(x), {'normal', 'italic'})));
+p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
+p.addParameter('backgroundColor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
+p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
+p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
+p.addParameter('plotTitleFontSize', 16, @isscalar);
+p.addParameter('textDisplay', '',@(x)(isempty(x) || ischar(x)));
+p.addParameter('textDisplayColor', [], @isnumeric);
 p.parse(varargin{:});
+
+% visualizationView = p.Results.visualizationView;
 domain = p.Results.domain;
-domainVisualizationLimits = p.Results.domainvisualizationlimits;
-domainVisualizationTicks  = p.Results.domainvisualizationticks;
-visualizedConeAperture = p.Results.visualizedconeaperture;
-visualizedConeApertureThetaSamples = p.Results.visualizedconeaperturethetasamples;
-figureHandle = p.Results.figurehandle;
-axesHandle   = p.Results.axeshandle;
-verticalDensityColorBar = p.Results.verticaldensitycolorbar;
-densityContourOverlay = p.Results.densitycontouroverlay;
-densityContourLevels = p.Results.densitycontourlevels;
-densityContourLevelLabelsDisplay = p.Results.densitycontourlevellabelsdisplay;
-densityColorMap = p.Results.densitycolormap;
-superimposedOpticalImage = p.Results.withsuperimposedopticalimage;
-superimposedOpticalImageAlpha = p.Results.withsuperimposedopticalimagealpha;
-superimposedPSF = p.Results.withsuperimposedpsf;
+domainVisualizationLimits = p.Results.domainVisualizationLimits;
+domainVisualizationTicks = p.Results.domainVisualizationTicks;
+visualizedConeAperture = p.Results.visualizedConeAperture;
+visualizedConeApertureThetaSamples = p.Results.visualizedConeApertureThetaSamples;
+figureHandle = p.Results.figureHandle;
+axesHandle = p.Results.axesHandle;
+verticalDensityColorBar = p.Results.verticalDensityColorBar;
+densityContourOverlay = p.Results.densityContourOverlay;
+densityContourLevels = p.Results.densityContourLevels;
+densityContourLevelLabelsDisplay = p.Results.densityContourLevelLabelsDisplay;
+densityColorMap = p.Results.densityColorMap;
+superimposedOpticalImage = p.Results.withSuperimposedOpticalImage;
+superimposedPSF = p.Results.withSuperimposedPSF;
 activation = p.Results.activation;
-activationRange = p.Results.activationrange;
-currentEMposition = p.Results.currentemposition;
-crossHairsOnMosaicCenter = p.Results.crosshairsonmosaiccenter;
-crossHairsOnOpticalImageCenter = p.Results.crosshairsonopticalimagecenter;
-crossHairsAtPosition = p.Results.crosshairsatposition;
-visualizeCones = p.Results.visualizecones;
-labelCones = p.Results.labelcones;
-labelConesInActivationMap = p.Results.labelconesinactivationmap;
-faceAlphaCones = p.Results.conesalpha;
-edgeAlphaCones = p.Results.conesedgealpha;
-labelConesWithIndices = p.Results.labelconeswithindices;
-outlinedConesWithIndices = p.Results.outlinedconeswithindices;
-labelRetinalMeridians = p.Results.labelretinalmeridians;
-crossHairsOnFovea = p.Results.crosshairsonfovea;
-crossHairsColor = p.Results.crosshairscolor;
-noXlabel = p.Results.noxlabel;
-noYlabel = p.Results.noylabel;
-displayedEyeMovementData = p.Results.displayedeyemovementdata;
-
-fontSize  = p.Results.fontsize;
-colorbarFontSize  = p.Results.colorbarfontsize;
-cMap = p.Results.activationcolormap;
-verticalColorBar  = p.Results.verticalactivationcolorbar;
-colorbarTickLabelColor = p.Results.colorbarticklabelcolor;
-horizontalColorBar = p.Results.horizontalactivationcolorbar;
-verticalColorBarInside = p.Results.verticalactivationcolorbarinside;
-horizontalColorBarInside = p.Results.horizontalactivationcolorbarinside;
-colorBarTickLabelPostFix = p.Results.colorbarticklabelpostfix;
-
-horizontalActivationSliceEccentricity = p.Results.horizontalactivationsliceeccentricity;
-verticalActivationSliceEccentricity = p.Results.verticalactivationsliceeccentricity;
-backgroundColor = p.Results.backgroundcolor;
-
-plotTitle  = p.Results.plottitle;
-plotTitleColor = p.Results.plottitlecolor;
-plotTitleFontSize = p.Results.plottitlefontsize;
-
-textDisplay    = p.Results.textdisplay;
-textDisplayColor = p.Results.textdisplaycolor;
-clearAxesBeforeDrawing = p.Results.clearaxesbeforedrawing;
+activationRange = p.Results.activationRange;
+currentEMposition = p.Results.currentEMposition;
+crossHairsOnMosaicCenter = p.Results.crossHairsOnMosaicCenter;
+crossHairsOnOpticalImageCenter = p.Results.crossHairsOnOpticalImageCenter;
+crossHairsAtPosition = p.Results.crossHairsAtPosition;
+visualizeCones = p.Results.visualizeCones;
+labelCones = p.Results.labelCones;
+labelConesInActivationMap = p.Results.labelConesInActivationMap;
+faceAlphaCones = p.Results.conesAlpha;
+edgeAlphaCones = p.Results.conesEdgeAlpha;
+labelConesWithIndices = p.Results.labelConesWithIndices;
+outlinedConesWithIndices = p.Results.outlinedConesWithIndices;
+labelRetinalMeridians = p.Results.labelRetinalMeridians;
+crossHairsOnFovea = p.Results.crossHairsOnFovea;
+crossHairsColor = p.Results.crossHairsColor;
+noXlabel = p.Results.noXLabel;
+noYlabel = p.Results.noYLabel;
+displayedEyeMovementData = p.Results.displayedEyeMovementData;
+fontSize = p.Results.fontSize;
+fontAngle = p.Results.fontAngle;
+plotTitleFontSize = p.Results.plotTitleFontSize;
+colorbarFontSize = p.Results.colorbarFontSize;
+cMap = p.Results.activationColorMap;
+verticalColorBar = p.Results.verticalActivationColorBar;
+colorbarTickLabelColor = p.Results.colorbarTickLabelColor;
+horizontalColorBar = p.Results.horizontalActivationColorBar;
+verticalColorBarInside = p.Results.verticalActivationColorBarInside;
+horizontalColorBarInside = p.Results.horizontalActivationColorBarInside;
+colorBarTickLabelPostFix = p.Results.colorBarTickLabelPostFix;
+horizontalActivationSliceEccentricity = p.Results.horizontalActivationSliceEccentricity;
+verticalActivationSliceEccentricity = p.Results.verticalActivationSliceEccentricity;
+backgroundColor = p.Results.backgroundColor;
+plotTitle = p.Results.plotTitle;
+plotTitleColor = p.Results.plotTitleColor;
+textDisplay = p.Results.textDisplay;
+textDisplayColor = p.Results.textDisplayColor;
+clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
 
 if (~isempty(activation))
     labelCones = false;
@@ -224,7 +167,7 @@ if (~isempty(labelConesWithIndices))
     labelCones = false;
 end
 
-%% Determine what eye movement data have to be displayed
+% Determine what eye movement data have to be displayed
 if (isstruct(displayedEyeMovementData))
     if (ischar(displayedEyeMovementData.trial))
         switch(displayedEyeMovementData.trial)
@@ -248,14 +191,14 @@ if (isstruct(displayedEyeMovementData))
     end
 end
 
-%% Determine displayed domain (degs or microns)
+% Determine displayed domain (degs or microns)
 switch (domain)
     case 'degrees'
         rfPositions = obj.coneRFpositionsDegs;
         rfSpacings = obj.coneRFspacingsDegs;
         rfApertureDiameters = obj.coneApertureDiametersDegs;
         rfDiameters = rfApertureDiameters/obj.coneApertureToDiameterRatio;
-        
+
         rfProximityThreshold = 1/270;
         if (isstruct(displayedEyeMovementData))
             emPath = -1/60*obj.fixEMobj.emPosArcMin(displayedTrials,displayedTimePoints,:);
@@ -267,7 +210,7 @@ switch (domain)
         rfSpacings = obj.coneRFspacingsMicrons;
         rfApertureDiameters = obj.coneApertureDiametersMicrons;
         rfDiameters = rfApertureDiameters/obj.coneApertureToDiameterRatio;
-        
+
         rfProximityThreshold = 1;
         if (isstruct(displayedEyeMovementData))
             emPath = -obj.fixEMobj.emPosMicrons(displayedTrials,displayedTimePoints,:);
@@ -277,10 +220,10 @@ switch (domain)
 end
 
 
-%% Show the emPath on the center of the mosaic
+% Show the emPath on the center of the mosaic
 emPath = bsxfun(@plus, emPath, reshape(mean(rfPositions,1), [1 1 2]));
 
-%% Determine X,Y limits
+% Determine X,Y limits
 if (isempty(domainVisualizationLimits))
     xRange(1) = min(rfPositions(:,1));
     xRange(2) = max(rfPositions(:,1));
@@ -316,7 +259,7 @@ else
 end
 
 
-%% Set figure size
+% Set figure size
 if (isempty(figureHandle))
     figureHandle = figure(); clf;
     set(figureHandle, 'Position', [10 10 700 700], 'Color', [1 1 1]);
@@ -339,22 +282,10 @@ visualizationParams.axesHandle   = axesHandle;
 % Number of cones
 conesNum = numel(rfSpacings);
 
-% Aperture shape will be a circle.  We sample more finely when there
-% are fewer cones.  NC used as many as 72 samples.  BW
+% Aperture shape (disk)
 if (isempty(visualizedConeApertureThetaSamples))
-    if (conesNum < 40000),       deltaAngle = 30;  % 12 samples
-    elseif (conesNum < 60000),   deltaAngle = 45;  %  8 samples
-    else,                        deltaAngle = 60;  %  6 samples
-    end
-else
-    % User specified
-    deltaAngle = 360/visualizedConeApertureThetaSamples;
-end
-
-%{ 
-% BW removed.  To delete if no one complains.
     if (conesNum < 100)
-        deltaAngle = 5;  % 72 samples
+        deltaAngle = 5;
     elseif (conesNum < 500)
         deltaAngle = 10;
     elseif (conesNum < 1000)
@@ -366,12 +297,13 @@ end
     elseif (conesNum < 60000)
         deltaAngle = 45;
     else
-        deltaAngle = 60;  % 6 samples
+        deltaAngle = 60;
     end
+else
+    deltaAngle = 360/visualizedConeApertureThetaSamples;
+end
 
-%}
-% Generate cone aperture shape as a set of (x,y) values.  The
-% deltaAngle determines the sampling rate around the circle.
+% Generate cone aperture shape
 iTheta = (0:deltaAngle:360) / 180 * pi;
 coneApertureShape.x = cos(iTheta);
 coneApertureShape.y = sin(iTheta);
@@ -381,18 +313,19 @@ if (clearAxesBeforeDrawing)
 end
 hold(axesHandle, 'on');
 
-%% Visualize cone apertures
-switch (ieParamFormat(visualizedConeAperture))
-    case ieParamFormat('coneSpacing')
+
+% Visualize cone apertures
+switch (visualizedConeAperture)
+    case 'coneSpacing'
         visualizedApertures = rfSpacings;
-        
-    case ieParamFormat('geometricArea')
+
+    case 'geometricArea'
         visualizedApertures = rfDiameters;
-        
-    case ieParamFormat('lightCollectingArea')
+
+    case 'lightCollectingArea'
         visualizedApertures = rfApertureDiameters;
-        
-    case ieParamFormat('lightCollectingAreaCharacteristicDiameter')
+
+    case 'lightCollectingAreaCharacteristicDiameter'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 2*sqrt(2)*gaussianSigma*rfApertureDiameters;
@@ -400,8 +333,8 @@ switch (ieParamFormat(visualizedConeAperture))
             fprintf(2,'cone aperture is not Gaussian, so cannot visualize characteristic radius. Visualizing the diameter\n');
             visualizedApertures = rfApertureDiameters;
         end
-        
-    case ieParamFormat('lightCollectingArea2sigma')
+
+    case 'lightCollectingArea2sigma'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 2*gaussianSigma*rfApertureDiameters;
@@ -409,8 +342,8 @@ switch (ieParamFormat(visualizedConeAperture))
             fprintf(2,'cone aperture is not Gaussian, so cannot visualize 2xsigma. Visualizing the diameter\n');
             visualizedApertures = rfApertureDiameters;
         end
-        
-    case ieParamFormat('lightCollectingArea4sigma')
+
+    case 'lightCollectingArea4sigma'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 4*gaussianSigma*rfApertureDiameters;
@@ -418,8 +351,8 @@ switch (ieParamFormat(visualizedConeAperture))
             fprintf(2,'cone aperture is not Gaussian, so cannot visualize 4xsigma. Visualizing the diameter\n');
             visualizedApertures = rfApertureDiameters;
         end
-        
-    case ieParamFormat('lightCollectingArea5sigma')
+
+    case 'lightCollectingArea5sigma'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 5*gaussianSigma*rfApertureDiameters;
@@ -427,8 +360,8 @@ switch (ieParamFormat(visualizedConeAperture))
             fprintf(2,'cone aperture is not Gaussian, so cannot visualize 5xsigma. Visualizing the diameter\n');
             visualizedApertures = rfApertureDiameters;
         end
-        
-    case ieParamFormat('lightCollectingArea6sigma')
+
+    case 'lightCollectingArea6sigma'
         if (isfield(obj.coneApertureModifiers, 'shape') && (strcmp(obj.coneApertureModifiers.shape, 'Gaussian')))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 6*gaussianSigma*rfApertureDiameters;
@@ -436,7 +369,7 @@ switch (ieParamFormat(visualizedConeAperture))
             visualizedApertures = rfApertureDiameters;
             fprintf(2,'cone aperture is not Gaussian, so cannot visualize 6xsigma. Visualizing the diameter\n');
         end
-        
+
     otherwise
         error('Unknown visualizedConeAperture (%s)', visualizedConeAperture);
 end
@@ -451,12 +384,12 @@ if (~isempty(activation))
         activationRange(1) = activationRange(1)-0.1;
         activationRange(2) = activationRange(2)+0.1;
     end
-    
-    
+
+
     activation = (activation - activationRange(1))/(activationRange(2)-activationRange(1));
     activation(activation<0) = 0;
     activation(activation>1) = 1;
-    
+
     % Visualize activations
     faceAlpha = 1.0;
     edgeAlpha = 1.0;
@@ -472,7 +405,7 @@ if (~isempty(activation))
     % Plot K-cone activations
     renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(obj.kConeIndices)*0.5, ...
         rfPositions(obj.kConeIndices,:), activation(obj.kConeIndices), [0 0 0], 0.1, faceAlpha, edgeAlpha);
-    
+
     if (~isempty(verticalActivationSliceEccentricity))
         d = abs(rfPositions(:,2)-verticalActivationSliceEccentricity);
         idx = find(d < rfProximityThreshold);
@@ -483,8 +416,18 @@ if (~isempty(activation))
     end
 end
 
+
 if (visualizeCones)
     % Visualize cone types
+    if (densityContourOverlay)
+        faceAlpha = 0.2;
+    else
+        if (strcmp(visualizedConeAperture, 'lightCollectingArea6sigma'))
+            faceAlpha = 0.6;
+        else
+            faceAlpha = 0.9;
+        end
+    end
 
     lineWidth = 1.0;
     % Plot L-cones
@@ -493,7 +436,7 @@ if (visualizeCones)
     else
         edgeColor = [0.5 0.5 0.5];
     end
-    
+
     if (~isempty(activation))
         faceAlphaCones = 0.0;
         edgeColor = [1 0 0];
@@ -511,14 +454,14 @@ if (visualizeCones)
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedLconeIndices)*0.5, ...
             rfPositions(excludedLconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
     end
-    
+
     % Plot M-cones
     if (labelCones) || (~isempty(labelConesWithIndices))
         edgeColor = [0.1 0.1 0.1];
     else
         edgeColor = [0.5 0.5 0.5];
     end
-    
+
     if (~isempty(activation))
         faceAlphaCones = 0.0;
         edgeColor = [0 1 0];
@@ -536,8 +479,9 @@ if (visualizeCones)
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedMconeIndices)*0.5, ...
             rfPositions(excludedMconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
     end
-    
-    
+
+
+
     % Plot S-cones
     if (labelCones)  || (~isempty(labelConesWithIndices))
         edgeColor = [0.1 0.1 0.1];
@@ -563,8 +507,8 @@ if (visualizeCones)
         renderPatchArray(axesHandle, coneApertureShape, visualizedApertures(excludedSconeIndices)*0.5, ...
             rfPositions(excludedSconeIndices,:), 5/4*0.9, [0 0 0], lineWidth, faceAlphaCones, edgeAlphaCones);
     end
-    
-    
+
+
     % Plot K-cones
     if (labelCones)  || (~isempty(labelConesWithIndices))
         edgeColor = [1 1 0];
@@ -593,13 +537,15 @@ if (visualizeCones)
             plot(axesHandle, xx, yy, 'y--', 'LineWidth', 1.0);
         end
     end
+
+
 end % visualizeCones
 
 if (densityContourOverlay)
     % Compute dense 2D map
     sampledPositions{1} = linspace(xRange(1), xRange(2), 24);
     sampledPositions{2} = linspace(yRange(1), yRange(2), 24);
-    
+
     % Convert spacing to density
     if (strcmp(domain, 'microns'))
         % Convert to mm, so we report density in cones / mm^2
@@ -607,9 +553,9 @@ if (densityContourOverlay)
     else
         density2DMap = cMosaic.densityMap(rfPositions, rfSpacings, sampledPositions);
     end
-    
+
     [densityContourX,densityContourY] = meshgrid(sampledPositions{1}, sampledPositions{2});
-    
+
     % Render contour map
     if (isempty(densityContourLevels))
         densityContourLevels = round(prctile(density2DMap(:), [1 5 15 30 50 70 85 95 99])/100)*100;
@@ -628,7 +574,9 @@ if (densityContourOverlay)
         clabel(cH,hH,'FontWeight','bold', 'FontSize', 16, ...
             'Color', [1 1 1], 'BackgroundColor', 'none');
     end
+
 end
+
 
 
 % Add crosshairs
@@ -640,11 +588,11 @@ if (~isempty(crossHairsAtPosition))
     xx2 = crossHairsAtPosition(1)*[1 1];
     yy2 = [yRange(1) yRange(2)];
     plot(axesHandle, xx1, yy1, '-', 'Color', crossHairsColor, 'LineWidth', 1.5);
-    plot(axesHandle, xx2, yy2,  '-', 'Color', crossHairsColor,'LineWidth', 1.5); 
+    plot(axesHandle, xx2, yy2,  '-', 'Color', crossHairsColor,'LineWidth', 1.5);
 end
 
 if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairsOnFovea)
-    
+
     if (isempty(crossHairsColor))
         if (isempty(activation))
             if (strcmp(backgroundColor, 'none'))
@@ -656,7 +604,7 @@ if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairs
             crossHairsColor = [1 0 0];
         end
     end
-    
+
     if (crossHairsOnMosaicCenter)
         % Crosshairs centered on the middle of the mosaic
         xx1 = [xRange(1) xRange(2)];
@@ -692,7 +640,6 @@ if (crossHairsOnMosaicCenter) || (crossHairsOnOpticalImageCenter) || (crossHairs
     plot(axesHandle, xx2, yy2,  '-', 'Color', crossHairsColor,'LineWidth', 1.5);
 end
 
-
 % Superimpose eye movement path(s)
 if (~isempty(emPath))
     assert(size(emPath,3) == 2, sprintf('The third dimension of an emPath must be 2.'));
@@ -708,12 +655,12 @@ if (~isempty(emPath))
     end
 end
 
-% Superimpose an optical image
+% Superimpose optical image
 if (~isempty(superimposedOpticalImage))
-    superimposeTheOpticalImage(obj, axesHandle, domain, superimposedOpticalImage, superimposedOpticalImageAlpha);
+    superimposeTheOpticalImage(obj, axesHandle, domain, superimposedOpticalImage,p.Results.superimposedOIAlpha);
 end
 
-% Superimpose an optical PSF
+% Superimpose PSF
 if (~isempty(superimposedPSF))
     superimposeThePSF(obj, axesHandle, domain, superimposedPSF);
 end
@@ -728,6 +675,7 @@ if (isempty(activation))
     elseif (~isempty(labelConesWithIndices))
         cMap = [obj.lConeColor; obj.mConeColor; obj.sConeColor; obj.kConeColor; [0.5 0.5 0.5]];
     else
+        disp('here')
         cMap = 0.4*ones(4,3);
     end
 else
@@ -735,7 +683,7 @@ else
     if (isempty(cMap))
         cMap = gray(numel(obj.coneRFspacingsDegs)); %brewermap(numel(obj.coneRFspacingsDegs), '*greys');
     end
-    
+
     if (ischar(backgroundColor) && strcmp(backgroundColor, 'mean of color map'))
         midRow = round(size(cMap,1)/2);
         backgroundColor = squeeze(cMap(midRow,:));
@@ -744,12 +692,14 @@ else
     end
 end
 
+
+
 if (~isempty(activation))
     if (verticalColorBar) || (horizontalColorBar) || (verticalColorBarInside) || (horizontalColorBarInside)
         colorBarTicks = [0.00 0.25 0.5 0.75 1.0];
         colorBarTickLabels = cell(1, numel(colorBarTicks));
         colorBarTickLevels = activationRange(1) + (activationRange(2)-activationRange(1)) * colorBarTicks;
-        
+
         for k = 1:numel(colorBarTicks)
             if (max(abs(colorBarTickLevels)) >= 10)
                 colorBarTickLabels{k} = sprintf('%2.0f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
@@ -761,7 +711,7 @@ if (~isempty(activation))
                 colorBarTickLabels{k} = sprintf('%2.3f %s', colorBarTickLevels(k), colorBarTickLabelPostFix);
             end
         end
-        
+
         if (isempty(colorbarFontSize))
             colorbarFontSize = fontSize/2;
         end
@@ -793,6 +743,7 @@ else
 end
 
 
+
 % Finalize plot
 xtickangle(axesHandle, 0);
 set(axesHandle, 'Color', backgroundColor);
@@ -816,26 +767,22 @@ if (isempty(domainVisualizationTicks))
     yy = yRange(2)-yRange(1);
     ticksX = xo + xx*0.5*[-0.75 0 0.75];
     ticksY = yo + yy*0.5*[-0.75 0 0.75];
-    
+
     if (xx > 10)
         domainVisualizationTicks.x = round(ticksX);
-    elseif (xx > 5)
-        domainVisualizationTicks.x = round(ticksX*10)/10;
     elseif (xx > 1)
         domainVisualizationTicks.x = round(ticksX*100)/100;
     else
         domainVisualizationTicks.x = round(ticksX*1000)/1000;
     end
-
     if (yy > 10)
         domainVisualizationTicks.y = round(ticksY);
-    elseif (yy > 5)
-        domainVisualizationTicks.y = round(ticksY*10)/10;
     elseif (yy > 1)
         domainVisualizationTicks.y = round(ticksY*100)/100;
     else
         domainVisualizationTicks.y = round(ticksY*1000)/1000;
     end
+
 end
 
 set(axesHandle, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
@@ -869,7 +816,7 @@ switch (domain)
             end
         end
         minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
-        
+
         if (minTickIncrement >= 0.1)
             set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
                 'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
@@ -877,7 +824,7 @@ switch (domain)
             set(axesHandle, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
                 'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
         end
-        
+
     case 'microns'
         if (~noXlabel)
             if (labelRetinalMeridians)
@@ -912,25 +859,29 @@ switch (domain)
             set(axesHandle, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
                 'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
         end
+
 end
 
-% User can set plotTitle to false, empty or a character string.
+% User can set plotTitle to false.  Then we skip.  Used in
+% cMosaic.plot
 if plotTitle
-    title(axesHandle, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
-else
-    if (numel(obj.coneDensities) == 4)
-        title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
-            100*obj.coneDensities(1), ...
-            100*obj.coneDensities(2), ...
-            100*obj.coneDensities(3), ...
-            100*obj.coneDensities(4), ...
-            conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+    if (isempty(plotTitle))
+        if (numel(obj.coneDensities) == 4)
+            title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), K (%2.1f%%), N = %d', ...
+                100*obj.coneDensities(1), ...
+                100*obj.coneDensities(2), ...
+                100*obj.coneDensities(3), ...
+                100*obj.coneDensities(4), ...
+                conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+        else
+            title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
+                100*obj.coneDensities(1), ...
+                100*obj.coneDensities(2), ...
+                100*obj.coneDensities(3), ...
+                conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+        end
     else
-        title(axesHandle,sprintf('L (%2.1f%%), M (%2.1f%%), S (%2.1f%%), N = %d', ...
-            100*obj.coneDensities(1), ...
-            100*obj.coneDensities(2), ...
-            100*obj.coneDensities(3), ...
-            conesNum), 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
+        title(axesHandle,plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
     end
 end
 
@@ -947,20 +898,20 @@ end
 drawnow;
 end
 
-%% Method to superimpose an optical PSF on top of the mosaic
 function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData)
 
 xSupport = thePSFData.supportXdegs + obj.eccentricityDegs(1);
 ySupport = thePSFData.supportYdegs + obj.eccentricityDegs(2);
+
 
 if (strcmp(visualizationDomain, 'microns'))
     if (isfield(thePSFData, 'supportXmicrons'))
         xSupport  = thePSFData.supportXmicrons + obj.eccentricityMicrons(1);
         ySupport  = thePSFData.supportYmicrons + obj.eccentricityMicrons(2);
     else
-         % Convert spatial support in microns to degs
-         xSupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(xSupport);
-         ySupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(ySupport);
+        % Convert spatial support in microns to degs
+        xSupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(xSupport);
+        ySupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(ySupport);
     end
 end
 
@@ -975,8 +926,6 @@ cMosaic.semiTransparentContourPlot(axesHandle, ...
     'lineWidth', 1.5);
 end
 
-
-%% Method to superimpose an optical image on top of the mosaic
 function superimposeTheOpticalImage(obj, axesHandle, visualizationDomain, theOI, superimposedOIAlpha)
 
 % Obtain spatial support in microns
@@ -1021,15 +970,8 @@ imPlot.AlphaData = superimposedOIAlpha;
 end
 
 
-%% Key rendering function.  Could be used by coneMosaicRect, too, I think
 function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ...
     faceColors, edgeColor, lineWidth, faceAlpha, edgeAlpha)
-% Called several times to render each of the different cone classes
-%
-% In principle, the parameters could be calculated from a
-% coneMosaicRect, too so that this could be the visualization routine
-% for that class.
-%
 
 conesNum = numel(apertureRadii);
 if (conesNum == 0)
@@ -1037,6 +979,7 @@ if (conesNum == 0)
 end
 
 verticesPerCone = numel(apertureShape.x);
+
 verticesList = zeros(verticesPerCone * conesNum, 2);
 facesList = [];
 
@@ -1068,4 +1011,224 @@ patch(S, 'Parent', axesHandle);
 end
 
 
+function params = returnVisualizationParams(mode)
+% User wants to return a struct with a list of parameters
+% This can be set and passed in as the varargin.
 
+visualizationParamsStruct.domain = struct(...
+    'default', 'degrees', ...
+    'docString', 'Choose between {''degrees'', ''microns''}');
+
+visualizationParamsStruct.domainVisualizationLimits = struct(...
+    'default', [], ...
+    'docString', 'Limits for visualization. Either [], or a 4-element vector, [xMin xMax yMin yMax]' ...
+    );
+
+visualizationParamsStruct.domainVisualizationTicks = struct(...
+    'default', [], ...
+    'docString', 'Ticks for visualization. Either [], or a struct with the following content, struct(''x'', -10:1:10, ''y'', -5:1:5)' ...
+    );
+
+visualizationParamsStruct.visualizedConeAperture = struct(...
+    'default', 'geometricArea', ...
+    'docStringA', 'For pillbox apertures,  choose between {''geometricArea'', ''coneSpacing'', ''lightCollectingArea''}', ...
+    'docStringB', 'For Gaussian apertures, choose between {''geometricArea'', ''coneSpacing'', ''lightCollectingAreaCharacteristicDiameter'', ''lightCollectingArea2sigma'', ''lightCollectingArea4sigma'', ''lightCollectingArea5sigma'', ''lightCollectingArea6sigma''}' ...
+    );
+
+visualizationParamsStruct.visualizedConeApertureThetaSamples = struct(...
+    'default', [], ...
+    'docString', 'Number of angular samples to represent the visualized cone aperture, e.g., 6 for a hexagonal-shaped aperture' ...
+    );
+
+visualizationParamsStruct.visualizeCones = struct(...
+    'default', true, ...
+    'docString', 'Flag indicating whether to visual cones. You can set it to false when visualizing the cone density' ...
+    );
+
+visualizationParamsStruct.labelCones = struct(...
+    'default', true, ...
+    'docString', 'Flag indicating whether to color-code the visualized cones according to the their type: L, M, S etc' ...
+    );
+
+visualizationParamsStruct.labelConesWithIndices = struct(...
+    'default', [], ...
+    'docString', 'Either [], in which case all cones are labeled, or a list of indices specifying the cones to be labeled according to their type' ...
+    );
+
+visualizationParamsStruct.densityContourOverlay  = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to superimpose a contour map of cone density on top of the cone mosaic' ...
+    );
+
+visualizationParamsStruct.densityContourLevels = struct(...
+    'default', [], ...
+    'docString', 'Either [] or a vector of levels for which to draw iso-density contours' ...
+    );
+
+visualizationParamsStruct.densityContourLevelLabelsDisplay = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to label the iso-density contours' ...
+    );
+
+visualizationParamsStruct.densityColorMap = struct(...
+    'default', [], ...
+    'docString', 'Either [] or a [nx3] matrix of RGB values for the density map' ...
+    );
+
+visualizationParamsStruct.activation = struct(...
+    'default', [], ...
+    'docString', 'Either [] or a [1xnCones] matrix of activation values returned by cMosaic.compute()' ...
+    );
+
+visualizationParamsStruct.activationRange = struct(...
+    'default', [], ...
+    'docString', 'Either [] or a [1x2] vector of the visualized minimum and maximum activation values' ...
+    );
+
+visualizationParamsStruct.activationColorMap  = struct(...
+    'default', [], ...
+    'docString', 'Either [] or a [nx3] matrix of RGB values for the activation map' ...
+    );
+
+visualizationParamsStruct.verticalDensityColorBar = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to add a vertically-oriented colorbar showing the color-coding of the density map' ...
+    );
+
+visualizationParamsStruct.verticalActivationColorBar = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to add a vertically-oriented colorbar showing the color-coding of the activation map' ...
+    );
+visualizationParamsStruct.horizontalActivationColorBar = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to add a horizontally-oriented colorbar showing the color-coding of the activation map' ...
+    );
+
+visualizationParamsStruct.verticalActivationColorBarInside = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to add a vertically-oriented colorbar showing the color-coding of the activation map. This colorbar is placed inside the density map.' ...
+    );
+
+visualizationParamsStruct.horizontalActivationColorBarInside = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to add a horizontally-oriented colorbar showing the color-coding of the activation map. This colorbar is placed inside the density map.' ...
+    );
+
+visualizationParamsStruct.colorBarTickLabelPostFix = struct(...
+    'default', '', ...
+    'docString', 'Either an empty string, or a string to append to the labels of the colorbar' ...
+    );
+
+visualizationParamsStruct.colorbarTickLabelColor = struct(...
+    'default', [.9 .6 0.2], ...
+    'docString', 'Either [], or a [1x3] vector of RGB values for the color of the colorbar ticks' ...
+    );
+
+visualizationParamsStruct.horizontalActivationSliceEccentricity = struct(...
+    'default', [], ...
+    'docString', 'Either empty or a scalar specifying the y-eccentricity through which to depict the activation of cones along the x-axis' ...
+    );
+
+visualizationParamsStruct.verticalActivationSliceEccentricity = struct(...
+    'default', [], ...
+    'docString', 'Either empty or a scalar specifying the x-eccentricity through which to depict the activation of cones along the y-axis' ...
+    );
+
+visualizationParamsStruct.crossHairsOnMosaicCenter = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to add cross-hairs located at the mosaic center' ...
+    );
+
+visualizationParamsStruct.crossHairsOnFovea = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to add cross-hairs located at the fovea' ...
+    );
+
+visualizationParamsStruct.crossHairsOnOpticalImageCenter = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to add cross-hairs located at the center of the optical image' ...
+    );
+
+visualizationParamsStruct.crossHairsColor = struct(...
+    'default', [], ...
+    'docString', 'Either [], or a [1x3] vector of RGB values for the color of the cross-hairs' ...
+    );
+
+visualizationParamsStruct.displayedEyeMovementData = struct(...
+    'default', [], ...
+    'docStringA', 'Either [], or a struct specifying which eye movement data (trial index & time points) to superimpose.', ...
+    'docStringB', 'The struct should have the following format: struct(''trial'', 1:nTrials, ''timePoints'', timePoint1:timePoint2).', ...
+    'docStringC', 'See t_cMosaicSingleEyeMovementPath.m for usage'...
+    );
+
+visualizationParamsStruct.currentEMposition = struct(...
+    'default', [], ...
+    'docStringA', 'Either [], or a [1x2] vector of the (x,y) coordinates of the current eye position', ...
+    'docStringB', 'See t_cMosaicSingleEyeMovementPath.m for usage'...
+    );
+
+visualizationParamsStruct.labelRetinalMeridians = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to label the corresponding retinal meridians.' ...
+    );
+
+visualizationParamsStruct.noXLabel = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to avoid labeling the x-axis.' ...
+    );
+
+visualizationParamsStruct.noYLabel = struct(...
+    'default', false, ...
+    'docString', 'Flag indicating whether to avoid labeling the y-axis.' ...
+    );
+
+visualizationParamsStruct.figureHandle = struct(...
+    'default', [], ...
+    'docString', 'Either [], or the handle to an existing figure on which to render the mosaic' ...
+    );
+
+visualizationParamsStruct.axesHandle = struct(...
+    'default', [], ...
+    'docString', 'Either [], or the handle to existing axes on which to render the mosaic' ...
+    );
+
+visualizationParamsStruct.fontSize = struct(...
+    'default', 16, ...
+    'docString', 'The font size for the figure' ...
+    );
+
+visualizationParamsStruct.backgroundColor = struct(...
+    'default', [], ...
+    'docString', 'Either [], ''none'', or a [1x3] vector of RGB values for the axes background color' ...
+    );
+
+visualizationParamsStruct.plotTitle = struct(...
+    'default', [], ...
+    'docString', 'Either an empty string, or a string specifying the title displayed above the mosaic' ...
+    );
+
+visualizationParamsStruct.textDisplay = struct(...
+    'default', [], ...
+    'docString', 'Either an empty string, or a string specifying the text to be displayed at the bottom of the mosaic' ...
+    );
+
+visualizationParamsStruct.textDisplayColor = struct(...
+    'default', [], ...
+    'docString', 'Either [], or a [1x3] vector of RGB values for the displayed text' ...
+    );
+
+
+switch (mode)
+    case 'params'
+        % Return the params struct
+        fNames = fieldnames(visualizationParamsStruct);
+        for k = 1:numel(fNames)
+            params.(fNames{k}) = visualizationParamsStruct.(fNames{k}).default;
+        end
+
+    case 'help'
+        % Display the params struct along with information for each param
+        visualizeParamsStructTree(visualizationParamsStruct, 'visualizationParams');
+        params = '';
+end
+end
