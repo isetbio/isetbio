@@ -11,6 +11,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     p.addParameter('reComputeMRGCMosaicSubspaceRFmappingResponses', false, @islogical);
     p.addParameter('reComputeRFs', false, @islogical);
     p.addParameter('visualizeOptimallyMappedRFmapLocations', false, @islogical);
+    p.addParameter('msequencePixelSizeDegs', 0.01, @isscalar);
     p.parse(varargin{:});
 
 
@@ -35,6 +36,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     reComputeMRGCMosaicSubspaceRFmappingResponses = p.Results.reComputeMRGCMosaicSubspaceRFmappingResponses;
     reComputeRFs = p.Results.reComputeRFs;
     visualizeOptimallyMappedRFmapLocations = p.Results.visualizeOptimallyMappedRFmapLocations;
+    msequencePixelSizeDegs = p.Results.msequencePixelSizeDegs;
 
     % Set the parpoolsize to [] to do 
     parpoolSize = [];
@@ -117,5 +119,6 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
             reComputeMRGCMosaicSubspaceRFmappingResponses, ...
             reComputeRFs, ...
             visualizeOptimallyMappedRFmapLocations, ...
+            'msequencePixelSizeDegs', msequencePixelSizeDegs, ...
             'parPoolSize', parpoolSize);
 end

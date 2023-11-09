@@ -190,9 +190,9 @@ function run()
     % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
 
-        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
-        reComputeMRGCMosaicSubspaceRFmappingResponses = true;
-        recomputeRFs = true;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = ~true;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
+        recomputeRFs = ~true;
         visualizeOptimallyMappedRFmapLocations = true;
 
         employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition = true;
@@ -207,6 +207,9 @@ function run()
 
         rfMappingPixelMagnificationFactor = 1.0;
 
+        msequencePixelSizeArcMin = 0.25;
+        msequencePixelSizeDegs = msequencePixelSizeArcMin/60;
+
         MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...
             'employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition', employConeFundamentalsDerivedFromInputConeMosaicAtStimPosition, ...
             'stimSizeDegs', stimSizeDegs, ....
@@ -216,7 +219,8 @@ function run()
             'reComputeInputConeMosaicSubspaceRFmappingResponses', reComputeInputConeMosaicSubspaceRFmappingResponses, ...
             'reComputeMRGCMosaicSubspaceRFmappingResponses', reComputeMRGCMosaicSubspaceRFmappingResponses, ...
             'reComputeRFs', recomputeRFs, ...
-            'visualizeOptimallyMappedRFmapLocations', visualizeOptimallyMappedRFmapLocations);
+            'visualizeOptimallyMappedRFmapLocations', visualizeOptimallyMappedRFmapLocations, ...
+            'msequencePixelSizeDegs', msequencePixelSizeDegs);
         return;
     end
 
