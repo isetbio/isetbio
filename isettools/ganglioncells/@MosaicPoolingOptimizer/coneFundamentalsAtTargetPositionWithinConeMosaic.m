@@ -80,16 +80,6 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
         energy(:,:,iMonoChromaticBand) = energyWithinBand * ones(pixelsNum,pixelsNum);
         scene = sceneSet(scene,'energy',energy);
 
-        photons = sceneGet(scene,'photons');
-        photonsEmittedWithinBand = photons(pixelsNum/2, pixelsNum/2,iMonoChromaticBand)
-
-        % Rewrite the scene with the desired monochromatic spectrum
-        % allowing photons only at the current monomchromatic wavelength
-        % photonsPerSrM2NMSec = 1e25;
-        % photons = sceneGet(scene,'photons')*0;
-        % photons(:,:,iMonoChromaticBand) = photonsPerSrM2NMSec * ones(pixelsNum,pixelsNum);
-        % scene = sceneSet(scene,'photons',photons);
-        
         % Compute the retinal image of the monochromatic scene
         theMonochromaticOpticalImage = oiCompute(scene, theOptics);
 

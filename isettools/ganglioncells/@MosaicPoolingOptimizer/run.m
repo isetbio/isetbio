@@ -200,7 +200,7 @@ function run()
         stimSizeDegs = [0.35 0.35];
 
         % Setup an uppen SF limit
-        maxSFLimit = 100;
+        maxSFLimit = 90;
 
         % or leave it empty to use the optimal max SF
         %maxSFLimit = [];  
