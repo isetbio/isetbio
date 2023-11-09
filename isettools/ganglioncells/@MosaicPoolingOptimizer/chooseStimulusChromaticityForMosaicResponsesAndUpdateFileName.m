@@ -54,6 +54,12 @@ function coneFundamentalsOptimizedForStimPosition = queryUserWhetherToEmployOpti
     end
 
     coneFundamentalsOptimizedForStimPosition = strcmp(coneFundamentalsOptimizedForStimPosition, 'y');
+    if (coneFundamentalsOptimizedForStimPosition)
+        fprintf(2,'Employing cone fundamentals derived by probing the cone mosaic with monochromatic, equal energy stimuli delivered at the stimulus position\n');
+    else
+        fprintf(2,'Employing the default Stockman-Sharpe 2 deg cone fundamentals\n');
+    end
+
 end
 
 
