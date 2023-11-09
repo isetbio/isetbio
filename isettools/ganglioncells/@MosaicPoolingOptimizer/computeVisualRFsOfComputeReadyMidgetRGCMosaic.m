@@ -97,16 +97,13 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
 
         xProfile = sum(d.theRFmap, 1);
         yProfile = sum(d.theRFmap, 2);
+        maxP = max([max(abs(xProfile(:))) max(abs(yProfile(:)))]);
 
         ax = subplot(2,2,3);
-        plot(ax, d.spatialSupportDegsX, xProfile, 'k-', 'LineWidth', 1.0);
-        set(ax, 'XLim', [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)]);
-        xaxis(ax, 'space, x (degs)');
+        renderXProfile(ax, d.spatialSupportDegsX, xProfile, maxP);
 
         ax = subplot(2,2,2);
-        plot(ax, yProfile, d.spatialSupportDegsY, 'k-', 'LineWidth', 1.0);
-        set(ax, 'YLim', [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)]);
-        yaxis(ax, 'space, y (degs)');
+        renderYProfile(ax, d.spatialSupportDegsY, yProfile, maxP);
 
         drawnow;
         pause
@@ -114,9 +111,51 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
 
 end
 
+function shadedAreaPlotX(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth)
+    x = [x(:); flipud(x(:))];
+    y = [y(:); y(:)*0+baseline];
+    px = reshape(x, [1 numel(x)]);
+    py = reshape(y, [1 numel(y)]);
+    pz = -10*eps*ones(size(py)); 
+    patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, 'FaceAlpha', faceAlpha, 'LineWidth', lineWidth);
+end
+
+function shadedAreaPlotY(ax, x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth)
+    xx = [y(:); flipud(y(:))*0+baseline];
+    yy = [x(:); flipud(x(:))];
+    px = reshape(xx, [1 numel(xx)]);
+    py = reshape(yy, [1 numel(yy)]);
+    pz = -10*eps*ones(size(py)); 
+    patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, 'FaceAlpha', faceAlpha, 'LineWidth', lineWidth);
+end
+
+function renderXProfile(ax, spatialSupport, profile, maxP)
+        cla(ax)
+        shadedAreaPlotX(ax, spatialSupport, profile, 0, [1 0.5 0.5], [1 0 0], 0.5, 1.0);
+        hold(ax, 'on');
+        plot(ax, spatialSupport, profile*0, 'k-');
+        hold(ax, 'off');
+        set(ax, 'XLim', [spatialSupport(1) spatialSupport(end)]);
+        set(ax, 'YLim', maxP*[-1 1]);
+        xlabel(ax, 'space, x (degs)');
+        set(ax, 'FontSize', 16)
+end
+
+function renderYProfile(ax, spatialSupport, profile, maxP)
+    cla(ax)
+    yyaxis(ax, 'right');
+    shadedAreaPlotY(ax, spatialSupport, profile, 0, [1 0.5 0.5], [1 0 0], 0.5, 1.0);
+    hold(ax, 'on');
+    plot(ax, profile*0, spatialSupport, 'k-');
+    hold(ax, 'off');
+    set(ax, 'YLim', [spatialSupport(1) spatialSupport(end)]);
+    set(ax, 'XDir', 'reverse', 'XLim', maxP*[-1 1]);
+    ylabel(ax, 'space, y (degs)');
+    set(ax, 'FontSize', 16);
+end
+
 
 function renderSubspaceRFmap(ax, d, surroundLconePositions, surroundMconePositions, theRGCindex, stimulusChromaticity)
-
     imagesc(ax, d.spatialSupportDegsX,  d.spatialSupportDegsY, d.theRFmap);
     hold(ax, 'on');    
     plot(ax, surroundLconePositions(:,1), surroundLconePositions(:,2), ...
@@ -133,7 +172,7 @@ function renderSubspaceRFmap(ax, d, surroundLconePositions, surroundMconePositio
             'FontSize', 16 ...
     );
     colormap(ax,gray(1024));
-    title(ax, sprintf('RGC %d - %s RF range: [%f .. %f]', theRGCindex, stimulusChromaticity, min(d.theRFmap(:)), max(d.theRFmap(:))));
+    title(ax, sprintf('RGC %d - %s RF ([%2.2f ... %2.2f])', theRGCindex, stimulusChromaticity, min(d.theRFmap(:)), max(d.theRFmap(:))));
 end
 
 
