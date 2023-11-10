@@ -29,6 +29,7 @@ function [stimulusChromaticity, coneFundamentalsOptimizedForStimPosition, respon
            switch (upper(chromaChoice))
                 case 'A'
                     stimulusChromaticity = 'achromatic';
+                    coneFundamentalsOptimizedForStimPosition = queryUserWhetherToEmployOptimizedConeFundamentals();
                     % We do not add a chromaticity in the filename if achromatic stimulus was employed - this is the default
                 case 'L'
                     coneFundamentalsOptimizedForStimPosition = queryUserWhetherToEmployOptimizedConeFundamentals();
