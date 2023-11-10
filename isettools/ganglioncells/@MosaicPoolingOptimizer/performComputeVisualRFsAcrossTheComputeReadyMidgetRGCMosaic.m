@@ -5,6 +5,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     p.addParameter('stimSizeDegs', 1.0, @(x)(isscalar(x)||numel(x)==2));
     p.addParameter('stimPositionDegs', [], @(x)(isempty(x)||(numel(x) == 2)));
     p.addParameter('maxSFLimit', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('maxSFToBeAnalyzed', [], @(x)(isempty(x)||isscalar(x)));
     p.addParameter('rfMappingPixelMagnificationFactor', 1, @(x)(isscalar(x)&&(x>=1)));
     p.addParameter('reComputeInputConeMosaicSubspaceRFmappingResponses', false, @islogical);
     p.addParameter('reComputeMRGCMosaicSubspaceRFmappingResponses', false, @islogical);
@@ -22,15 +23,21 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     % stimulus max spatial frequency (can be set to lower that optimal retinal sf)
     maxSFLimit = p.Results.maxSFLimit;
 
+    % max spatial frequency to include in the RFmap
+    maxSFToBeAnalyzed = p.Results.maxSFToBeAnalyzed;
+
     % pixel magnification factor >= 1
     rfMappingPixelMagnificationFactor = p.Results.rfMappingPixelMagnificationFactor;
 
-    % Which grid nodes to compute RFs
+    % Pixel size for the simulation of m-sequence RF map
+    msequencePixelSizeDegs = p.Results.msequencePixelSizeDegs;
+
+    % What to compute
     reComputeInputConeMosaicSubspaceRFmappingResponses = p.Results.reComputeInputConeMosaicSubspaceRFmappingResponses;
     reComputeMRGCMosaicSubspaceRFmappingResponses = p.Results.reComputeMRGCMosaicSubspaceRFmappingResponses;
     reComputeRFs = p.Results.reComputeRFs;
     visualizeOptimallyMappedRFmapLocations = p.Results.visualizeOptimallyMappedRFmapLocations;
-    msequencePixelSizeDegs = p.Results.msequencePixelSizeDegs;
+    
 
     % Set the parpoolsize to [] to do 
     parpoolSize = [];
@@ -100,14 +107,22 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
                     'coneFundamentalsOptimizedForStimPosition', coneFundamentalsOptimizedForStimPosition));
 
 
+    if (isempty(maxSFToBeAnalyzed)) || (maxSFToBeAnalyzed>maxSFLimit)
+        maxSFToBeAnalyzed = maxSFLimit;
+    end
+
     % Optimally generated RF maps filename
     optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', '_optimallyMappedRFs.mat');
+
+    if (~isempty(maxSFToBeAnalyzed))
+        optimallyMappedSubspaceRFmapsFileName = strrep(optimallyMappedSubspaceRFmapsFileName, '.mat', sprintf('_LimitedTo%2.2fCPD.mat', maxSFToBeAnalyzed));
+    end
 
     MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
             stimSizeDegs, stimPositionDegs, stimulusChromaticity, ...
             coneFundamentalsOptimizedForStimPosition, ...
-            maxSFLimit, rfMappingPixelMagnificationFactor, ...
+            maxSFLimit, maxSFToBeAnalyzed, rfMappingPixelMagnificationFactor, ...
             fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, optimallyMappedSubspaceRFmapsFileName), ...

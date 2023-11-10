@@ -190,19 +190,22 @@ function run()
     % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
 
-        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
-        reComputeMRGCMosaicSubspaceRFmappingResponses = true;
-        recomputeRFs = true;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = ~true;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
+        recomputeRFs = ~true;
         visualizeOptimallyMappedRFmapLocations = true;
 
         stimPositionDegs = [0.65 0.72];
         stimSizeDegs = [0.35 0.35];
 
-        % Setup an uppen SF limit
+        % Upper SF limit for the subspace stimuli
         maxSFLimit = 90;
-
         % or leave it empty to use the optimal max SF
-        %maxSFLimit = [];  
+        % maxSFLimit = []; 
+
+        % Upper SF limit for the stimuli used to generate the RF
+        % This can be empty or lower than the maxSFLimit
+        maxSFanalyzed = []; %20;
 
         rfMappingPixelMagnificationFactor = 1.0;
 
@@ -213,6 +216,7 @@ function run()
             'stimSizeDegs', stimSizeDegs, ....
             'stimPositionDegs', stimPositionDegs, ...
             'maxSFLimit', maxSFLimit, ...
+            'maxSFToBeAnalyzed', maxSFanalyzed, ...
             'rfMappingPixelMagnificationFactor', rfMappingPixelMagnificationFactor, ...
             'reComputeInputConeMosaicSubspaceRFmappingResponses', reComputeInputConeMosaicSubspaceRFmappingResponses, ...
             'reComputeMRGCMosaicSubspaceRFmappingResponses', reComputeMRGCMosaicSubspaceRFmappingResponses, ...
