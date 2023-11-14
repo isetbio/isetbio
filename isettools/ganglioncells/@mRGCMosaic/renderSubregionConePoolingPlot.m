@@ -8,6 +8,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
     p.addParameter('noYTicks', false, @islogical);
     p.addParameter('gridless', false, @islogical);
     p.addParameter('plotTitle', '', @ischar);
+    p.addParameter('flatTopSaturationLevel', 1, @isscalar);
     p.addParameter('alsoComputeSubregionContour', false, @islogical);
     p.addParameter('overlayedSubregionContour', [], @(x)(isempty(x)||(isstruct(x))));
     p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
@@ -22,6 +23,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     computeSubregionContour = p.Results.alsoComputeSubregionContour;
     overlayedSubregionContour = p.Results.overlayedSubregionContour;
+    flatTopSaturationLevel = p.Results.flatTopSaturationLevel;
     gridless = p.Results.gridless;
 
     plotTitle = p.Results.plotTitle;
@@ -55,7 +57,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
     YLims = rgcRFposDegs(2) + [spatialSupportDegs(1)-dx spatialSupportDegs(end)+dx];
 
     [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
-        theConeMosaic, coneIndices, coneWeights, spatialSupportXYDegs);
+        theConeMosaic, coneIndices, coneWeights, spatialSupportXYDegs, flatTopSaturationLevel);
 
     if (computeSubregionContour)
         spatialSupportSamples = 64;
@@ -193,7 +195,7 @@ function [subregionLineWeightingFunctions, subregionContourData] = renderSubregi
 end
 
 function [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
-    theConeMosaic, theConeIndices, theConeWeights, spatialSupportDegs)
+    theConeMosaic, theConeIndices, theConeWeights, spatialSupportDegs, flatTopSaturationLevel)
     
     [X,Y] = meshgrid(spatialSupportDegs(:,1), spatialSupportDegs(:,2));
     XY = [X(:) Y(:)];
@@ -247,6 +249,12 @@ function [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubr
     if (conesNotIncluded > 0)
         fprintf(2,'%d of the %d cones pooled by the continuous model were NOT included in the actual subregion map because they fell outside of the spatial support.\n', conesNotIncluded, conesNumPooled);
     end
+
+
+    saturationLevel = max(retinalSubregionConeMapFlatTop(:)) * flatTopSaturationLevel;
+
+    idx = find(retinalSubregionConeMapFlatTop > saturationLevel);
+    retinalSubregionConeMapFlatTop(idx) = saturationLevel;
 
 end
 

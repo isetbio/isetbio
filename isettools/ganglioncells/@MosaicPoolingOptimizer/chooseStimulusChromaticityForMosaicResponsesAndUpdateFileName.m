@@ -11,7 +11,12 @@ function [stimulusChromaticity, coneFundamentalsOptimizedForStimPosition, respon
 
     if (~isempty(doNotQueryUserButUseThisStimulusChromaticityAndConeFundamentals))
         stimulusChromaticity = doNotQueryUserButUseThisStimulusChromaticityAndConeFundamentals.stimulusChromaticity;
-        coneFundamentalsOptimizedForStimPosition = doNotQueryUserButUseThisStimulusChromaticityAndConeFundamentals.coneFundamentalsOptimizedForStimPosition;
+        if (~isempty(doNotQueryUserButUseThisStimulusChromaticityAndConeFundamentals.coneFundamentalsOptimizedForStimPosition))
+            coneFundamentalsOptimizedForStimPosition = doNotQueryUserButUseThisStimulusChromaticityAndConeFundamentals.coneFundamentalsOptimizedForStimPosition;
+        else
+            coneFundamentalsOptimizedForStimPosition = queryUserWhetherToEmployOptimizedConeFundamentals();
+        end
+        
         responsesFileName = updateResponsesFileName(stimulusChromaticity, coneFundamentalsOptimizedForStimPosition, responsesFileName, identifierString);
         return;
     end

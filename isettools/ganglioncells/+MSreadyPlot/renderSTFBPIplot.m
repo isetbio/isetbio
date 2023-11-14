@@ -8,7 +8,7 @@ function renderSTFBPIplot(ax, theLconeCenterBPIscatterData, ...
     p.addParameter('opticsString', '', @ischar);
     p.addParameter('superimposeLeeShapleyData', false, @islogical);
     p.addParameter('showLegends', false, @islogical);
-    p.addParameter('outlineLastPoint', true, @islogical);
+    p.addParameter('outlineLastPoint', false, @islogical);
 
     p.parse(varargin{:});
     

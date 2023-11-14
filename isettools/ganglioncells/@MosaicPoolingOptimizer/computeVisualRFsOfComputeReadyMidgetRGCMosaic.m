@@ -16,10 +16,12 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('visualizedResponses', false, @islogical);
     p.addParameter('msequencePixelSizeDegs', 0.01, @isscalar);
+    p.addParameter('visualizedRGCindex', [], @(x)(isempty(x)||(isscalar(x))));
     p.parse(varargin{:});
     parPoolSize = p.Results.parPoolSize;
     visualizedResponses = p.Results.visualizedResponses;
     msequencePixelSizeDegs = p.Results.msequencePixelSizeDegs;
+    visualizedRGCindex = p.Results.visualizedRGCindex;
 
     if (isempty(stimPositionDegs))
         stimPositionDegs = theComputeReadyMRGCmosaic.eccentricityDegs;
@@ -59,13 +61,13 @@ function computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
 
     if (visualizeOptimallyMappedRFmapLocations)
         visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmapsFileName, ...
-            theComputeReadyMRGCmosaic, stimulusChromaticity, msequencePixelSizeDegs);
+            theComputeReadyMRGCmosaic, visualizedRGCindex, stimulusChromaticity, msequencePixelSizeDegs);
     end
 
 end
 
 function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmapsFileName,...
-    theMRGCMosaic, stimulusChromaticity, msequencePixelSizeDegs)
+    theMRGCMosaic, visualizedRGCindex, stimulusChromaticity, msequencePixelSizeDegs)
     % Save all the optimally mapped visual RF maps
 
     fprintf('Loading optimally mapped subspace RF maps from %s\n', optimallyMappedSubspaceRFmapsFileName);
@@ -89,6 +91,10 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
     for iCell = 1:numel(indicesOfOptimallyMappedRGCs)
         theRGCindex = indicesOfOptimallyMappedRGCs(iCell);
 
+        if ((~isempty(visualizedRGCindex)) && (theRGCindex ~= visualizedRGCindex))
+            continue;
+        end
+
         [~,~,~, theCenterConeTypes, theCenterConeIndices] = ...
             theMRGCMosaic.centerConeTypeWeights(theRGCindex);
 
@@ -108,10 +114,10 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
         d = generateMsequenceRFmap(d, msequencePixelSizeDegs);
 
         xLim = [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)];
-        xLim = theRGCRetinalRFcenterPositionDegs(1) + 0.05*[-1 1];
+        xLim = theRGCRetinalRFcenterPositionDegs(1) + 0.08*[-1 1];
 
         yLim = [d.spatialSupportDegsY(1) d.spatialSupportDegsY(end)];
-        yLim = theRGCRetinalRFcenterPositionDegs(2) + 0.05*[-1 1];
+        yLim = theRGCRetinalRFcenterPositionDegs(2) + 0.08*[-1 1];
 
         % The RF center position in the visual field
         [~,idx] = max(abs(d.theRFmap(:)));
@@ -141,7 +147,6 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedSubspaceRFmaps
         renderMsequenceRFmap(ax, d, theRGCVisualRFcenterPositionDegs, msequencePixelSizeDegs, xLim, yLim);
 
         drawnow;
-        pause
     end
 
 end
@@ -271,6 +276,12 @@ end
 function renderMsequenceRFmap(ax, d, theRGCRFcenterPositionDegs, msequencePixelSizeDegs, xLim, yLim)
     imagesc(ax, d.theMsequenceRFmapSpatialSupportX, d.theMsequenceRFmapSpatialSupportY, d.theMsequenceRFmap);
     hold(ax, 'on');
+    zLevelsNeg = 0.05: 0.1: 1;
+    zLevelsPos = 0.05: 0.1: 1;
+    contour(ax, d.theMsequenceRFmapSpatialSupportX,  d.theMsequenceRFmapSpatialSupportY, d.theMsequenceRFmap, max(abs(d.theMsequenceRFmap(:)))*zLevelsPos, ...
+        'LineStyle', '-', 'LineWidth', 1.0, 'EdgeColor', [0 0 0]);
+    contour(ax, d.theMsequenceRFmapSpatialSupportX,  d.theMsequenceRFmapSpatialSupportY, d.theMsequenceRFmap, -max(abs(d.theMsequenceRFmap(:)))*zLevelsNeg, ...
+        'LineStyle', '--', 'LineWidth', 1.0, 'EdgeColor', [0 0 0]);
     plot(theRGCRFcenterPositionDegs(1)*[1 1], [-100 100], 'b-', 'LineWidth', 1.0);
     plot([-100 100], theRGCRFcenterPositionDegs(2)*[1 1], 'b-', 'LineWidth', 1.0);
     hold(ax, 'off');
@@ -312,24 +323,27 @@ function renderSFTuningPlot(ax, spatialFrequencySupport, theSFtuningMap)
     radialSlices = true;
 
     if (radialSlices)
+        deltaAngle = 15;
         idx = find(spatialFrequencySupport >=0);
         midPoint = find(spatialFrequencySupport == 0);
         hiResSFaxis = linspace(0,max(spatialFrequencySupport(:)), 100);
-        anglesExamined = 0:30:330;
+        anglesExamined = 0:deltaAngle:(360-deltaAngle);
         lineColors = brewermap(numel(anglesExamined), 'Set1');
         theLegends = {};
         for iAngle = 1:numel(anglesExamined)
             theSlice = imrotate(theSFtuningMapMag, anglesExamined(iAngle),'bilinear','crop');
             plot(ax, 0.1+hiResSFaxis, interp1(spatialFrequencySupport(idx), theSlice(midPoint,idx), hiResSFaxis), ...
-                '-', 'LineWidth', 1.5, 'Color', squeeze(lineColors(iAngle,:)));
+                '-', 'LineWidth', 2.0, 'Color', [0 0 0]);
             hold(ax, 'on');
+            plot(ax, 0.1+hiResSFaxis, interp1(spatialFrequencySupport(idx), theSlice(midPoint,idx), hiResSFaxis), ...
+                '-', 'LineWidth', 1.5, 'Color', squeeze(lineColors(iAngle,:)));
             theLegends{numel(theLegends)+1} = sprintf('%d^o', anglesExamined(iAngle));
         end
         legend(ax, theLegends, 'NumColumns', 2, 'Location', 'SouthWest');
         hold(ax, 'off')
         axis(ax, 'square');
         set(ax, 'XScale', 'log', 'XLim', [0.5 100], ...
-                    'YLim', [0 0.1], ...
+                    'YLim', [0 max(theSFtuningMapMag(:))], ...
                     'YTick', 0:0.02:1, ...
                 'FontSize', 16 ...
             );

@@ -376,6 +376,10 @@ classdef MosaicPoolingOptimizer < handle
         customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosaic(...
             theConeMosaic, theOptics, targetRegionPositionDegs, targetRegionSizeDegs, maxConesNumForAveraging);
 
+        % Method to compute cone PSFs at the stimulus position
+        [theLconePSF, theMconePSF, theSconePSF, spatialSupportDegs] = ...
+            computeConePSFs(theRGCMosaic, opticsToEmploy, stimSizeDegs, stimXYpositionDegs, varargin);
+
         % Method to setup the parameters and the display for conducting an
         % Subspace RF mapping experiment.
         [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment(wavelengthSupport, ...
@@ -442,6 +446,9 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to perform the visualizePSFsWithinRGCMosaic operation
         performVisualizePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationArcMin);
+
+        % Method to perform the visualizeConePSFsWithinRGCMosaic operation
+        performVisualizeConePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationArcMin);
 
         % Method to perform the computeInputConeMosaicSTFresponses operation
         performComputeInputConeMosaicSTFresponsesOp(mosaicParams);

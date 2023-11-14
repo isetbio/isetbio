@@ -52,7 +52,7 @@ function renderSurroundMixHistograms(ax, lConeCenterSurroundConeMixRatios, ...
     set(ax, 'XLim', [1*ff.axisOffsetFactor/2 1.0], 'YLim', [Ymax*ff.axisOffsetFactor/2 Ymax]);
     
     set(ax, 'XTick', 0:0.125:1, 'XTickLabel', {'0', '', '.25', '', '.5', '', '.75', '', '1'}, ...
-            'YTick', 0:0.5:100, 'YTickLabel', sprintf('%2.1f\n', 0:0.5:100));
+            'YTick', 0:1:100, 'YTickLabel', sprintf('%2.0f\n', 0:0.5:100));
     
     set(ax, 'TickDir', 'both')
 

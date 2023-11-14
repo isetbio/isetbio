@@ -11,6 +11,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     p.addParameter('reComputeMRGCMosaicSubspaceRFmappingResponses', false, @islogical);
     p.addParameter('reComputeRFs', false, @islogical);
     p.addParameter('visualizeOptimallyMappedRFmapLocations', false, @islogical);
+    p.addParameter('visualizedRGCindex', [], @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('msequencePixelSizeDegs', 0.01, @isscalar);
     p.parse(varargin{:});
 
@@ -38,6 +39,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     reComputeRFs = p.Results.reComputeRFs;
     visualizeOptimallyMappedRFmapLocations = p.Results.visualizeOptimallyMappedRFmapLocations;
     
+    visualizedRGCindex = p.Results.visualizedRGCindex;
 
     % Set the parpoolsize to [] to do 
     parpoolSize = [];
@@ -72,7 +74,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     fprintf('\n---> Select the optics to use for subspace RF mapping\n');
     [opticsParamsForSubSpaceMapping, opticsToEmploy] = MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
-     % Generate and set the optics
+    % Generate and set the optics
     theComputeReadyMRGCmosaic.setTheOptics(opticsParamsForSubSpaceMapping);
 
     % Visualize the generated optics
@@ -131,5 +133,6 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
             reComputeRFs, ...
             visualizeOptimallyMappedRFmapLocations, ...
             'msequencePixelSizeDegs', msequencePixelSizeDegs, ...
+            'visualizedRGCindex', visualizedRGCindex, ...
             'parPoolSize', parpoolSize);
 end

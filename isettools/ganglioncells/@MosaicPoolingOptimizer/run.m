@@ -70,6 +70,12 @@ function run()
         return;
     end
 
+     % Perform the visualizeConePSFsAtLocationWithinRGCMosaic operation
+    if (operationSetToPerformContains.visualizeConePSFsAtLocationWithinRGCMosaic)
+        MosaicPoolingOptimizer.performVisualizeConePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationArcMin);
+        return;
+    end
+
     % Perform the computeInputConeMosaicSTFresponses operation
     if (operationSetToPerformContains.computeInputConeMosaicSTFresponses)
         MosaicPoolingOptimizer.performComputeInputConeMosaicSTFresponsesOp(mosaicParams);
@@ -190,11 +196,10 @@ function run()
     % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
 
-        reComputeInputConeMosaicSubspaceRFmappingResponses = ~true;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
         reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
-        recomputeRFs = ~true;
+        recomputeRFs = true;
         visualizeOptimallyMappedRFmapLocations = true;
-
         stimPositionDegs = [0.65 0.72];
         stimSizeDegs = [0.35 0.35];
 
@@ -205,12 +210,15 @@ function run()
 
         % Upper SF limit for the stimuli used to generate the RF
         % This can be empty or lower than the maxSFLimit
-        maxSFanalyzed = []; %20;
+        maxSFanalyzed = []; %input('Enter max SF to include in subspace analysis. Hit enter for full range: ');
+
 
         rfMappingPixelMagnificationFactor = 1.0;
 
-        msequencePixelSizeArcMin = 0.25;
+        msequencePixelSizeArcMin = 0.25*4;
         msequencePixelSizeDegs = msequencePixelSizeArcMin/60;
+
+        visualizedRGCindex = input('Enter RGC index to visualize its subspace RF. Hit enter to visualize all:');
 
         MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...
             'stimSizeDegs', stimSizeDegs, ....
@@ -222,6 +230,7 @@ function run()
             'reComputeMRGCMosaicSubspaceRFmappingResponses', reComputeMRGCMosaicSubspaceRFmappingResponses, ...
             'reComputeRFs', recomputeRFs, ...
             'visualizeOptimallyMappedRFmapLocations', visualizeOptimallyMappedRFmapLocations, ...
+            'visualizedRGCindex', visualizedRGCindex, ...
             'msequencePixelSizeDegs', msequencePixelSizeDegs);
         return;
     end
@@ -263,10 +272,8 @@ function run()
         %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
 
-        maxRGCsToIncludeWithinTheTargetRange = []; % 100;
-
         MosaicPoolingOptimizer.performContrastSTFsAcrossDifferentChromaticities(mosaicParams, ...
-            'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix , ...
-            'maxRGCsToIncludeWithinTheTargetRange', maxRGCsToIncludeWithinTheTargetRange);
+            'performSurroundAnalysisForConesExclusiveToTheSurround', true, ...
+            'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
     end
 end
