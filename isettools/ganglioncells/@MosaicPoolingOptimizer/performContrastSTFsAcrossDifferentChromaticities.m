@@ -1,5 +1,5 @@
 function performContrastSTFsAcrossDifferentChromaticities(...
-            mosaicParams, varargin)
+            mosaicParams, rawFiguresRoot, varargin)
 
     % Parse input
     p = inputParser;
@@ -95,8 +95,6 @@ function performContrastSTFsAcrossDifferentChromaticities(...
 
 
     % ============== Export to PLOS directory ==========================
-    rawFiguresRoot = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/Raw';
-
     % Visualize the surround mix histograms for all L-center and
     % M-center cells in this mRGCmosaic
     pdfFileName = sprintf('SurroundConeMix_eccDegs_%2.1f_%2.1f.pdf', mosaicParams.eccDegs(1), mosaicParams.eccDegs(1));

@@ -1,5 +1,13 @@
 function run()
 
+    % Generate path to rawFigures root directory.
+    % These are figures generated for manuscripts/presentations, formatted
+    % using a common figureFormat
+    p = getpref('isetbio');
+    rawFiguresRoot = strrep(p.alternateFullDataDir, ...
+        'ISETBioValidationFiles/gradleFiles/validationFull', ...
+        'ManuscriptSupportMaterials/PLOS2024/figures/raw');
+
     % Ask user which mosaic to use
     [mosaicHorizontalEccentricityDegs,  mosaicEccsForSummaryStatistics] = ...
         MosaicPoolingOptimizer.chooseMosaicToUse();
@@ -294,7 +302,8 @@ function run()
         %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
 
-        MosaicPoolingOptimizer.performContrastSTFsAcrossDifferentChromaticities(mosaicParams, ...
+        MosaicPoolingOptimizer.performContrastSTFsAcrossDifferentChromaticities(...
+            mosaicParams, rawFiguresRoot, ...
             'performSurroundAnalysisForConesExclusiveToTheSurround', true, ...
             'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
     end

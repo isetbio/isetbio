@@ -500,7 +500,7 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities operation
         performContrastSTFsAcrossDifferentChromaticities(...
-            mosaicParams, varargin);
+            mosaicParams, rawFiguresRoot, varargin);
 
         % Method to ask the user which mRGC mosaic to use for computing
         [mosaicHorizontalEccentricityDegs, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse();
