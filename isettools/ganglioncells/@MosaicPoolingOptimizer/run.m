@@ -72,7 +72,7 @@ function run()
 
      % Perform the visualizeConePSFsAtLocationWithinRGCMosaic operation
     if (operationSetToPerformContains.visualizeConePSFsAtLocationWithinRGCMosaic)
-        MosaicPoolingOptimizer.performVisualizeConePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationArcMin);
+        MosaicPoolingOptimizer.performVisualizeConePSFsWithinRGCMosaicOp(mosaicParams, 3.0);
         return;
     end
 
@@ -196,9 +196,9 @@ function run()
     % Perform the computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic operation
     if (operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic)
 
-        reComputeInputConeMosaicSubspaceRFmappingResponses = true;
+        reComputeInputConeMosaicSubspaceRFmappingResponses = ~true;
         reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
-        recomputeRFs = true;
+        recomputeRFs = ~true;
         visualizeOptimallyMappedRFmapLocations = true;
         stimPositionDegs = [0.65 0.72];
         stimSizeDegs = [0.35 0.35];
@@ -238,22 +238,44 @@ function run()
     % Perform the visualizeVisualRFmapForTargetRGC operation
     if (operationSetToPerformContains.visualizeVisualRFmapForTargetRGC)
 
-        if (mosaicParams.eccDegs(1)<0)
-            reverseXDir = true;
-        else
-            reverseXDir = false;
-        end
-        reverseXDir = false;
-
+        reComputeInputConeMosaicSubspaceRFmappingResponses = ~true;
+        reComputeMRGCMosaicSubspaceRFmappingResponses = ~true;
+        recomputeRFs = ~true;
+        visualizeOptimallyMappedRFmapLocations = true;
         stimPositionDegs = [0.65 0.72];
-        rfMappingPixelMagnificationFactor = 1.0; 
+        stimSizeDegs = [0.35 0.35];
 
-        MosaicPoolingOptimizer.performVisualizeVisualRFmapForTargetRGC(mosaicParams, ...
-            stimPositionDegs, rfMappingPixelMagnificationFactor, ...
-            'tickSeparationArcMin', tickSeparationArcMin, ...
-            'reverseXDir', reverseXDir, ...
-            'gridlessLineWeightingFunctions', true);
+        % Upper SF limit for the subspace stimuli
+        maxSFLimit = 90;
+        % or leave it empty to use the optimal max SF
+        % maxSFLimit = []; 
+
+        % Upper SF limit for the stimuli used to generate the RF
+        % This can be empty or lower than the maxSFLimit
+        maxSFanalyzed = []; %input('Enter max SF to include in subspace analysis. Hit enter for full range: ');
+
+
+        rfMappingPixelMagnificationFactor = 1.0;
+
+        msequencePixelSizeArcMin = 0.25*4;
+        msequencePixelSizeDegs = msequencePixelSizeArcMin/60;
+
+        visualizedRGCindex = input('Enter RGC index to visualize its subspace RF. Hit enter to visualize all:');
+
+        MosaicPoolingOptimizer.performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, ...
+            'stimSizeDegs', stimSizeDegs, ....
+            'stimPositionDegs', stimPositionDegs, ...
+            'maxSFLimit', maxSFLimit, ...
+            'maxSFToBeAnalyzed', maxSFanalyzed, ...
+            'rfMappingPixelMagnificationFactor', rfMappingPixelMagnificationFactor, ...
+            'reComputeInputConeMosaicSubspaceRFmappingResponses', reComputeInputConeMosaicSubspaceRFmappingResponses, ...
+            'reComputeMRGCMosaicSubspaceRFmappingResponses', reComputeMRGCMosaicSubspaceRFmappingResponses, ...
+            'reComputeRFs', recomputeRFs, ...
+            'visualizeOptimallyMappedRFmapLocations', visualizeOptimallyMappedRFmapLocations, ...
+            'visualizedRGCindex', visualizedRGCindex, ...
+            'msequencePixelSizeDegs', msequencePixelSizeDegs);
         return;
+
     end
 
    
@@ -265,10 +287,10 @@ function run()
  
     % Perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities operation
     if (operationSetToPerformContains.contrastSTFsAcrossDifferentOpticsOrChromaticities)
-        % 0.20 0.31 0.50 0.64 0.75
+        % 0.20 0.31 0.47 0.64 0.75
         targetRangeForSurroundConeMix = 0.20 + [0.00 0.05];
-        targetRangeForSurroundConeMix = 0.31 + [0.00 0.05];
-        targetRangeForSurroundConeMix = 0.475 + [0.00 0.05];
+        %targetRangeForSurroundConeMix = 0.31 + [0.00 0.05];
+        %targetRangeForSurroundConeMix = 0.475 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
 

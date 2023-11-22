@@ -58,7 +58,6 @@ function contrastVisualSTFsAcrossDifferentChromaticities(...
     [MconeIsolatingStimulusConeContrasts, MconeIsolatingStimulusContrast] = ...
         MosaicPoolingOptimizer.contrastForChromaticity('Mcone isolating');
 
-
     % Correction factors to account for low L/M cone isolating stimulus contrast
     % compared to the achromatic sitmulus contrast
     LconeStimulusContrastCorrection =  achromaticStimulusContrast * achromaticStimulusConeContrasts(1) / (LconeIsolatingStimulusContrast * LconeIsolatingStimulusConeContrasts(1));
@@ -172,6 +171,7 @@ function contrastVisualSTFsAcrossDifferentChromaticities(...
             currentLconeCenterRGCindex = currentLconeCenterRGCindex + 1;
             theLconeCenterData{currentLconeCenterRGCindex} = struct(...
                 'theRGCindex', theRGCindex, ...
+                'theHighestExtensionOrientation', theHighestExtensionOrientation, ...
                 'bandpassIndices', [theAchromaticSTFBandPassIndex theLconeIsolatingSTFBandPassIndex], ...
                 'netCenterLconeWeight', netCenterLconeWeight, ...
                 'netCenterMconeWeight', netCenterMconeWeight, ...
@@ -190,6 +190,7 @@ function contrastVisualSTFsAcrossDifferentChromaticities(...
             currentMconeCenterRGCindex = currentMconeCenterRGCindex + 1;
             theMconeCenterData{currentMconeCenterRGCindex} = struct(...
                 'theRGCindex', theRGCindex, ...
+                'theHighestExtensionOrientation', theHighestExtensionOrientation, ...
                 'bandpassIndices', [theAchromaticSTFBandPassIndex theMconeIsolatingSTFBandPassIndex], ...
                 'netCenterLconeWeight', netCenterLconeWeight, ...
                 'netCenterMconeWeight', netCenterMconeWeight, ...
@@ -236,11 +237,19 @@ function plotSelectedRGCData(theComputeReadyMRGCmosaic, theLconeCenterData, theM
 
     distances = sum((bsxfun(@minus, theLconeCenterRFpositions, exampleLconeCenterRGCposition)).^2,2);
     [~,idx] = min(distances(:));
-    exampleLconeCenterData = theLconeCenterData{idx};
-    
+    if (~isempty(idx))
+        exampleLconeCenterData = theLconeCenterData{idx};
+    else
+        exampleLconeCenterData = [];
+    end
+
     distances = sum((bsxfun(@minus, theMconeCenterRFpositions, exampleMconeCenterRGCposition)).^2,2);
     [~, idx] = min(distances(:));
-    exampleMconeCenterData = theMconeCenterData{idx};
+    if (~isempty(idx))
+        exampleMconeCenterData = theMconeCenterData{idx};
+    else
+        exampleMconeCenterData = [];
+    end
 
 
     % ============== Export to PLOS directory ==========================
@@ -304,55 +313,89 @@ function plotSelectedRGCData(theComputeReadyMRGCmosaic, theLconeCenterData, theM
     % 2A. Example L-cone RGC: STF magnitude spectra for the achromatic, L-cone
     % isolating and M-cone isolating gratings
 
-    hFigMultiSTF = figure(20); clf;
-    ff = MSreadyPlot.figureFormat('1x1 small');
-    theAxes = MSreadyPlot.generateAxes(hFigMultiSTF,ff);
-    set(hFigMultiSTF, 'Color', [1 1 1], 'OuterPosition', position);
-    ax = theAxes{1,1};
-
-    visualizeMultiSTF(ax,  exampleLconeCenterData, ff);
-    theSTFpdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleLconeCenterRGC_STFs.pdf');
-    NicePlot.exportFigToPDF(fullfile(rawFiguresRoot, theSTFpdfFileName), hFigMultiSTF, 300);
-    close(hFigMultiSTF);
+    if (~isempty(exampleLconeCenterData))
+        hFigMultiSTF = figure(20); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFigMultiSTF,ff);
+        set(hFigMultiSTF, 'Color', [1 1 1], 'OuterPosition', position);
+        ax = theAxes{1,1};
+    
+        visualizeMultiSTF(ax,  exampleLconeCenterData, ff);
+        theSTFpdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleLconeCenterRGC_STFs.pdf');
+        NicePlot.exportFigToPDF(fullfile(rawFiguresRoot, theSTFpdfFileName), hFigMultiSTF, 300);
+        close(hFigMultiSTF);
+    end
 
     % 2B. Example M-cone RGC: STF magnitude spectra for the achromatic, L-cone
     % isolating and M-cone isolating gratings
 
-    hFigMultiSTF2 = figure(21); clf;
-    ff = MSreadyPlot.figureFormat('1x1 small');
-    theAxes = MSreadyPlot.generateAxes(hFigMultiSTF2,ff);
-    set(hFigMultiSTF2, 'Color', [1 1 1], 'OuterPosition', position);
-    ax = theAxes{1,1};
-
-    visualizeMultiSTF(ax,  exampleMconeCenterData, ff);
-    theSTFpdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleMconeCenterRGC_STFs.pdf');
-    NicePlot.exportFigToPDF(fullfile(rawFiguresRoot, theSTFpdfFileName), hFigMultiSTF2, 300);
-    close(hFigMultiSTF2);
+    if (~isempty(exampleMconeCenterData))
+        hFigMultiSTF2 = figure(21); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFigMultiSTF2,ff);
+        set(hFigMultiSTF2, 'Color', [1 1 1], 'OuterPosition', position);
+        ax = theAxes{1,1};
+    
+        visualizeMultiSTF(ax,  exampleMconeCenterData, ff);
+        theSTFpdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleMconeCenterRGC_STFs.pdf');
+        NicePlot.exportFigToPDF(fullfile(rawFiguresRoot, theSTFpdfFileName), hFigMultiSTF2, 300);
+        close(hFigMultiSTF2);
+    end
 
 
     % 3A. Example L-cone RGC: Cone pooling map
-    hFigConePoolingMap = figure(30); clf;
-    ff = MSreadyPlot.figureFormat('1x1 small');
-    theAxes = MSreadyPlot.generateAxes(hFigConePoolingMap,ff);
-    set(hFigConePoolingMap, 'Color', [1 1 1], 'OuterPosition', position);
-    ax = theAxes{1,1};
+    if (~isempty(exampleLconeCenterData))
+        % The 2D cone pooling map
+        hFigConePoolingMap = figure(30); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFigConePoolingMap,ff);
+        set(hFigConePoolingMap, 'Color', [1 1 1], 'OuterPosition', position);
+        ax = theAxes{1,1};
+    
+        visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, exampleLconeCenterData, cMosaic.LCONE_ID, ff, false);
+        theConePoolingMapPdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleLconeCenterRGC_ConePoolingMap.pdf');
+        NicePlot.exportFigToPDF(fullfile(rawFiguresRoot,theConePoolingMapPdfFileName), hFigConePoolingMap, 300);
+        close(hFigConePoolingMap);
 
-    visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, exampleLconeCenterData, cMosaic.LCONE_ID, ff);
-    theConePoolingMapPdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleLconeCenterRGC_ConePoolingMap.pdf');
-    NicePlot.exportFigToPDF(fullfile(rawFiguresRoot,theConePoolingMapPdfFileName), hFigConePoolingMap, 300);
-    close(hFigConePoolingMap);
+        % The 1D line weighting function
+        hFigConePoolingMap2 = figure(40); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFigConePoolingMap2,ff);
+        set(hFigConePoolingMap2, 'Color', [1 1 1], 'OuterPosition', position);
+        ax = theAxes{1,1};
+
+        visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, exampleLconeCenterData, cMosaic.LCONE_ID, ff, true)
+        theConePoolingMapPdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleLconeCenterRGC_ConePoolingLineWeightingFunction.pdf');
+        NicePlot.exportFigToPDF(fullfile(rawFiguresRoot,theConePoolingMapPdfFileName), hFigConePoolingMap2, 300);
+        close(hFigConePoolingMap2);
+    end
 
     % 3B. Example M-cone RGC: Cone pooling map
-    hFigConePoolingMap2 = figure(31); clf;
-    ff = MSreadyPlot.figureFormat('1x1 small');
-    theAxes = MSreadyPlot.generateAxes(hFigConePoolingMap2,ff);
-    set(hFigConePoolingMap2, 'Color', [1 1 1], 'OuterPosition', position);
-    ax = theAxes{1,1};
+    if (~isempty(exampleMconeCenterData))
+        % The 2D cone pooling map
+        hFigConePoolingMap3 = figure(31); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFigConePoolingMap3,ff);
+        set(hFigConePoolingMap3, 'Color', [1 1 1], 'OuterPosition', position);
+        ax = theAxes{1,1};
+    
+        visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, exampleMconeCenterData, cMosaic.MCONE_ID, ff, false);
+        theConePoolingMapPdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleMconeCenterRGC_ConePoolingMap.pdf');
+        NicePlot.exportFigToPDF(fullfile(rawFiguresRoot,theConePoolingMapPdfFileName), hFigConePoolingMap3, 300);
+        close(hFigConePoolingMap3);
 
-    visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, exampleMconeCenterData, cMosaic.MCONE_ID, ff);
-    theConePoolingMapPdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleMconeCenterRGC_ConePoolingMap.pdf');
-    NicePlot.exportFigToPDF(fullfile(rawFiguresRoot,theConePoolingMapPdfFileName), hFigConePoolingMap2, 300);
-    close(hFigConePoolingMap2);
+        % The 1D line weighting function
+        hFigConePoolingMap4 = figure(40); clf;
+        ff = MSreadyPlot.figureFormat('1x1 small');
+        theAxes = MSreadyPlot.generateAxes(hFigConePoolingMap4,ff);
+        set(hFigConePoolingMap4, 'Color', [1 1 1], 'OuterPosition', position);
+        ax = theAxes{1,1};
+
+        visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, exampleMconeCenterData, cMosaic.MCONE_ID, ff, true)
+        theConePoolingMapPdfFileName = strrep(BPIpolulationPdfFileName, '.pdf', 'exampleLconeCenterRGC_ConePoolingLineWeightingFunction.pdf');
+        NicePlot.exportFigToPDF(fullfile(rawFiguresRoot,theConePoolingMapPdfFileName), hFigConePoolingMap4, 300);
+        close(hFigConePoolingMap4);
+    end
 
     % Generate paper-ready figures (scaled versions of the figures in nrawFiguresRoot directory) which are stored in the PaperReady folder
     PLOSdirectory = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode';
@@ -362,10 +405,18 @@ function plotSelectedRGCData(theComputeReadyMRGCmosaic, theLconeCenterData, theM
 end
 
 
-function visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, d, theCenterMajorityConeType, ff)
+function visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, d, theCenterMajorityConeType, ff, onlyVisualizeTheXprofile)
+
     theRearrangedAxes{1,1} = ax; % Plot the 2D cone pooling map
-    theRearrangedAxes{1,2} = []; % Do not plot the X-line weighting function
-    theRearrangedAxes{1,3} = []; % Do not plot the Y-line weighting function
+  
+    if (onlyVisualizeTheXprofile)
+        theRearrangedAxes{1,2} = ax; % Plot the X-line weighting function
+        theRearrangedAxes{1,3} = []; % Do not plot the Y-line weighting function
+    else
+        theRearrangedAxes{1,2} = []; % Do not plot the X-line weighting function
+        theRearrangedAxes{1,3} = []; % Do not plot the Y-line weighting function
+    end
+
     tickSeparationArcMin = 3;
 
     theComputeReadyMRGCmosaic.visualizeRetinalConePoolingRFmapOfRGCwithIndex(...
@@ -402,8 +453,9 @@ function visualizeRetinalConePooling(ax, theComputeReadyMRGCmosaic, d, theCenter
     end
     title(theRearrangedAxes{1,1}, coneWeightsInfo,'FontSize', ff.titleFontSize, ...
                 'FontWeight', ff.titleFontWeight, 'Color', titleColor);
-
 end
+
+
 
 
 function visualizeMultiSTF(ax,  d, ff)
@@ -427,14 +479,13 @@ function visualizeMultiSTF(ax,  d, ff)
          d.MconeIsolatingSTFphase(:)];
 
      theLegends = {'L+M+S', 'L-cone', 'M-cone'};
-     theSTFmagnitudeSpectra = theSTFmagnitudeSpectra / max(theSTFmagnitudeSpectra(:));
      theShadedSTFmagnitudeSpectrum = theSTFmagnitudeSpectra(:,1);
      theShadedSTFmagnitudeSpectrum = [];
      MSreadyPlot.renderMultiSTF(ax, d.spatialFrequenciesTested, ...
                  theSTFmagnitudeSpectra, theShadedSTFmagnitudeSpectrum, ...
-                 theSTFphaseSpectra, theSTFColors, theLegends, sprintf('RGC #%d', d.theRGCindex), ff, ...
+                 theSTFphaseSpectra, theSTFColors, theLegends, sprintf('RGC #%d (ori: %d)', d.theRGCindex, d.theHighestExtensionOrientation), ff, ...
                  'noYLabel', false, ...
-                 'noYTickLabel', true, ...
+                 'noYTickLabel', false, ...
                  'visualizedSpatialFrequencyRange', [0.2 80]);
        
 end

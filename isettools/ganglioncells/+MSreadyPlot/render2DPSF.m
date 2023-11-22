@@ -7,6 +7,8 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     p.addParameter('withConeApertureData', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('tickSeparationArcMin', [], @(x)(isempty(x)||isscalar(x)));
     p.addParameter('gridlessPSF', false, @islogical);
+    p.addParameter('superimposeXprofile', false, @islogical);
+    p.addParameter('xProfileRange', [], @isscalar);
     p.addParameter('colorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.parse(varargin{:});
     
@@ -17,6 +19,9 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     gridlessPSF = p.Results.gridlessPSF;
     colorMap = p.Results.colorMap;
+    superimposeXprofile = p.Results.superimposeXprofile;
+    xProfileRange = p.Results.xProfileRange;
+    psfRangeArcMin = psfRangeDegs*60;
 
     % plot
     psfSupportXarcmin = psfSupportXdegs * 60;
@@ -46,11 +51,25 @@ function render2DPSF(ax, psfSupportXdegs, psfSupportYdegs, thePSFData, psfRangeD
     cMosaic.semiTransparentContourPlot(ax, psfSupportXarcmin, psfSupportYarcmin, ...
         zData, zLevels, colorMap, psfAlpha, contourLineColor, 'LineWidth', 1.5)
     
+    if (superimposeXprofile)
+        hold(ax, 'on');
+        [~, idx] = max(thePSFData(:));
+        [mRow, ~] = ind2sub(size(thePSFData), idx);
+        xProfile = squeeze(thePSFData(mRow,:));
+        if (isempty(xProfileRange))
+            xProfile = xProfile/max(xProfile(:));
+        else
+            xProfile = xProfile/xProfileRange;
+        end
+
+        plot(ax, psfSupportXarcmin, -psfRangeArcMin/2 + psfRangeArcMin * xProfile, 'k-', 'LineWidth', 1.5);
+        hold(ax, 'off');
+    end
 
     axis(ax, 'image');
     axis(ax, 'xy');
 
-    psfRangeArcMin = psfRangeDegs*60;
+    
     if (isempty(tickSeparationArcMin))
         psfTicksArcMin = MSreadyPlot.spatialMapTicksArcMin(psfRangeArcMin);
     else

@@ -8,12 +8,12 @@ function retrieveAndVisualizeSubspaceRFmapForTargetRGC(...
     p = inputParser;
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('reverseXDir', false, @islogical);
-    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+    p.addParameter('gridlessLineWeightingFunctions', false, @islogical);
 
     p.parse(varargin{:});
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     reverseXDir = p.Results.reverseXDir;
-    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
+    gridlessLineWeightingFunctions = p.Results.gridlessLineWeightingFunctions;
 
     
     if (isempty(targetCenterConeMajorityType))
@@ -56,7 +56,7 @@ function retrieveAndVisualizeSubspaceRFmapForTargetRGC(...
         theAxes, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
         'reverseXDir', reverseXDir, ...
-        'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions, ...
+        'gridlessLineWeightingFunctions', gridlessLineWeightingFunctions, ...
         'withFigureFormat', ff);
 
     

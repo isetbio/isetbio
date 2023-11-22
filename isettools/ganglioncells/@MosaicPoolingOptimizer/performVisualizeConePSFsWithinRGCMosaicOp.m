@@ -18,6 +18,12 @@ function performVisualizeConePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationA
     fprintf('\n---> Select the optics to use for computing the cone PSFs\n');
     [opticsParamsForComputingConePSFs, opticsToEmploy] = MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
+    conePSFsFileName = ...
+        MosaicPoolingOptimizer.resourceFileNameAndPath('coneMosaicSubspaceResponses', ...
+            'mosaicParams', mosaicParams, ...
+            'opticsParams', opticsParamsForComputingConePSFs);
+    conePSFsFileName = strrep(conePSFsFileName, 'coneMosaicSubspaceResponses.mat', 'conePSF.pdf');
+
 
     % Generate and set the optics
     theMidgetRGCMosaic.setTheOptics(opticsParamsForComputingConePSFs);
@@ -34,38 +40,58 @@ function performVisualizeConePSFsWithinRGCMosaicOp(mosaicParams, tickSeparationA
     % ============== Export to PLOS directory ==========================
     rawFiguresRoot = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode/Raw';
 
-
-    
-    pdfFileName = sprintf('ConePSF_mosaicEccDegs_%2.1f_%2.1f_positionWithinMosaic_%2.2f_%2.2f.pdf', ...
-        mosaicParams.eccDegs(1), mosaicParams.eccDegs(1), targetPositionDegs(1), targetPositionDegs(2));
+    pdfFileName = sprintf('%s_positionWithinMosaic_%2.2f_%2.2f.pdf', ...
+        conePSFsFileName, targetPositionDegs(1), targetPositionDegs(2));
     psfRangeDegs = 0.5*(tickSeparationArcMin*4)/60;
 
+
+    
+    [~, idx] = max(theLconePSF(:));
+    [mRow, ~] = ind2sub(size(theLconePSF), idx);
+    maxLconePSF = max(squeeze(theLconePSF(mRow,:)));
+
+    [~, idx] = max(theMconePSF(:));
+    [mRow, ~] = ind2sub(size(theMconePSF), idx);
+    maxMconePSF = max(squeeze(theMconePSF(mRow,:)));
+
+    [~, idx] = max(theSconePSF(:));
+    [mRow, ~] = ind2sub(size(theSconePSF), idx);
+    maxSconePSF = max(squeeze(theSconePSF(mRow,:)));
+
+    xProfileRange = max([maxLconePSF maxMconePSF maxSconePSF])
+    xProfileRange = 0.145
     
     hFig = figure(555); clf;
     ff = MSreadyPlot.figureFormat('1x1 small');
     theAxes = MSreadyPlot.generateAxes(hFig,ff);
     MSreadyPlot.render2DPSF(theAxes{1,1}, spatialSupportDegs, spatialSupportDegs, theLconePSF, psfRangeDegs, 'L-cone PSF', ff, ...
+        'superimposeXprofile', true, ...
+        'xProfileRange', xProfileRange, ...
         'tickSeparationArcMin', tickSeparationArcMin);
 
-    pdfFileNameForPLOS = fullfile(rawFiguresRoot, strrep(pdfFileName, 'ConePSF', 'LconePSF'));
+    pdfFileNameForPLOS = fullfile(rawFiguresRoot, strrep(pdfFileName, 'conePSF', 'LconePSF'));
     NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
 
     hFig = figure(556); clf;
     ff = MSreadyPlot.figureFormat('1x1 small');
     theAxes = MSreadyPlot.generateAxes(hFig,ff);
     MSreadyPlot.render2DPSF(theAxes{1,1}, spatialSupportDegs, spatialSupportDegs, theMconePSF, psfRangeDegs, 'M-cone PSF', ff, ...
+        'superimposeXprofile', true, ...
+        'xProfileRange', xProfileRange, ...
         'tickSeparationArcMin', tickSeparationArcMin);
 
-    pdfFileNameForPLOS = fullfile(rawFiguresRoot, strrep(pdfFileName, 'ConePSF', 'MconePSF'));
+    pdfFileNameForPLOS = fullfile(rawFiguresRoot, strrep(pdfFileName, 'conePSF', 'MconePSF'));
     NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
 
     hFig = figure(557); clf;
     ff = MSreadyPlot.figureFormat('1x1 small');
     theAxes = MSreadyPlot.generateAxes(hFig,ff);
     MSreadyPlot.render2DPSF(theAxes{1,1}, spatialSupportDegs, spatialSupportDegs, theSconePSF, psfRangeDegs, 'S-cone PSF', ff, ...
+        'superimposeXprofile', true, ...
+        'xProfileRange', xProfileRange, ...
         'tickSeparationArcMin', tickSeparationArcMin);
 
-    pdfFileNameForPLOS = fullfile(rawFiguresRoot, strrep(pdfFileName, 'ConePSF', 'SconePSF'));
+    pdfFileNameForPLOS = fullfile(rawFiguresRoot, strrep(pdfFileName, 'conePSF', 'SconePSF'));
     NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
 
 end
