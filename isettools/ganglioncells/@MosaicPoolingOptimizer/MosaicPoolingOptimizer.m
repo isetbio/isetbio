@@ -356,7 +356,7 @@ classdef MosaicPoolingOptimizer < handle
             mRGCMosaicAchromaticSTFresponsesFileName, ...
             mRGCMosaicLconeIsolatingSTFresponsesFileName, ...
             mRGCMosaicMconeIsolatingSTFresponsesFileName, ...
-            opticsParams, varargin);
+            opticsParams, rawFiguresRoot, scaledFiguresRoot, varargin);
 
         % Method to compute the surround cone mix for mRGCs
         [theCenterMajorityConeType, netCenterLconeWeight, netCenterMconeWeight, ...
@@ -500,7 +500,7 @@ classdef MosaicPoolingOptimizer < handle
 
         % Method to perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities operation
         performContrastSTFsAcrossDifferentChromaticities(...
-            mosaicParams, rawFiguresRoot, varargin);
+            mosaicParams, rawFiguresRoot, scaledFiguresRoot, varargin);
 
         % Method to ask the user which mRGC mosaic to use for computing
         [mosaicHorizontalEccentricityDegs, mosaicEccsForSummaryStatistics] =  chooseMosaicToUse();
@@ -550,6 +550,10 @@ classdef MosaicPoolingOptimizer < handle
 
         % Various plotting methods
         plotRawCronerKaplanData();
+
+        % Scale figure and export it to a different file
+        exportScaledFigure(sourcePDF, destinationPDF, scaleFactor);
+
     end
 
 end

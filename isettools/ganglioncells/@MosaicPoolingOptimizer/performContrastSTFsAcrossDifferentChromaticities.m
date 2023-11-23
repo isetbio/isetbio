@@ -1,5 +1,5 @@
 function performContrastSTFsAcrossDifferentChromaticities(...
-            mosaicParams, rawFiguresRoot, varargin)
+            mosaicParams, rawFiguresRoot, scaledFiguresRoot, varargin)
 
     % Parse input
     p = inputParser;
@@ -94,7 +94,6 @@ function performContrastSTFsAcrossDifferentChromaticities(...
     idxMconeCenter = find(theCenterMajorityConeType(mRGCindicesToVisualizeSTFsAcrossChromaticities) == cMosaic.MCONE_ID);
 
 
-    % ============== Export to PLOS directory ==========================
     % Visualize the surround mix histograms for all L-center and
     % M-center cells in this mRGCmosaic
     pdfFileName = sprintf('SurroundConeMix_eccDegs_%2.1f_%2.1f.pdf', mosaicParams.eccDegs(1), mosaicParams.eccDegs(1));
@@ -110,8 +109,16 @@ function performContrastSTFsAcrossDifferentChromaticities(...
             plotTitle, ff, ...
             'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
 
-    pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileName);
-    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFig, 300);
+
+    pdfFileNameUnscaled = fullfile(rawFiguresRoot, pdfFileName);
+    NicePlot.exportFigToPDF(pdfFileNameUnscaled, hFig, 300);
+
+    exportScaledFigureVersionForManuscript = true;
+    if (exportScaledFigureVersionForManuscript)
+        scaleFactor = 0.24;
+        pdfFileNameScaled = fullfile(scaledFiguresRoot, pdfFileName);
+        MosaicPoolingOptimizer.exportScaledFigure(pdfFileNameUnscaled, pdfFileNameScaled, scaleFactor);
+    end
 
 
     % Visualize the locations of cells with a surround cone mix in the targetRangeForSurroundConeMix
@@ -134,18 +141,25 @@ function performContrastSTFsAcrossDifferentChromaticities(...
             mRGCindicesToVisualizeSTFsAcrossChromaticities(idxMconeCenter), ...
             plotTitleLcenter, plotTitleMcenter, ff);
 
-    pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileNameLcenter);
-    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFigLcenter, 300);
 
-    pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileNameMcenter);
-    NicePlot.exportFigToPDF(pdfFileNameForPLOS, hFigMcenter, 300);
+   
+    pdfFileNameUnscaled = fullfile(rawFiguresRoot, pdfFileNameLcenter);
+    NicePlot.exportFigToPDF(pdfFileNameUnscaled, hFigLcenter, 300);
 
-    % Generate paper-ready figures (scaled versions of the figures i
-    % nrawFiguresRoot directory) which are stored in the PaperReady folder
-    PLOSdirectory = '/Users/nicolas/Documents/4_LaTeX/PLOS2023-Overleaf/matlabFigureCode';
-    commandString = sprintf('%s/cpdf -args %s/generatePLOSOnePaperReadyFigures.txt', PLOSdirectory, PLOSdirectory);
-    system(commandString);
+    if (exportScaledFigureVersionForManuscript)
+        scaleFactor = 0.24;
+        pdfFileNameScaled = fullfile(scaledFiguresRoot, pdfFileNameLcenter);
+        MosaicPoolingOptimizer.exportScaledFigure(pdfFileNameUnscaled, pdfFileNameScaled, scaleFactor);
+    end
 
+    pdfFileNameUnscaled = fullfile(rawFiguresRoot, pdfFileNameMcenter);
+    NicePlot.exportFigToPDF(pdfFileNameUnscaled, hFigMcenter, 300);
+
+    if (exportScaledFigureVersionForManuscript)
+        scaleFactor = 0.24;
+        pdfFileNameScaled = fullfile(scaledFiguresRoot, pdfFileNameMcenter);
+        MosaicPoolingOptimizer.exportScaledFigure(pdfFileNameUnscaled, pdfFileNameScaled, scaleFactor);
+    end
 
 
     MosaicPoolingOptimizer.contrastVisualSTFsAcrossDifferentChromaticities(...
@@ -154,8 +168,7 @@ function performContrastSTFsAcrossDifferentChromaticities(...
         fullfile(resourcesDirectory, mRGCMosaicAchromaticSTFresponsesFileName), ...
         fullfile(resourcesDirectory, mRGCMosaicLconeIsolatingSTFresponsesFileName), ...
         fullfile(resourcesDirectory, mRGCMosaicMconeIsolatingSTFresponsesFileName), ...
-        opticsParamsForMRGCSTFs, ...
-        'pdfDirectory', pdfDirectory, ...
+        opticsParamsForMRGCSTFs, rawFiguresRoot, scaledFiguresRoot, exportScaledFigureVersionForManuscript,  ...
         'examinedRGCindices', mRGCindicesToVisualizeSTFsAcrossChromaticities, ...
         'tickSeparationArcMin', 2.0, ...
         'performSurroundAnalysisForConesExclusiveToTheSurround', performSurroundAnalysisForConesExclusiveToTheSurround, ...

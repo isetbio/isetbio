@@ -8,6 +8,9 @@ function run()
         'ISETBioValidationFiles/gradleFiles/validationFull', ...
         'ManuscriptSupportMaterials/PLOS2024/figures/raw');
 
+    % Where scaled figures are stored
+    scaledFiguresRoot = '/Users/nicolas/Documents/Manuscripts/PLOS2024/figures';
+
     % Ask user which mosaic to use
     [mosaicHorizontalEccentricityDegs,  mosaicEccsForSummaryStatistics] = ...
         MosaicPoolingOptimizer.chooseMosaicToUse();
@@ -298,12 +301,12 @@ function run()
         % 0.20 0.31 0.47 0.64 0.75
         targetRangeForSurroundConeMix = 0.20 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.31 + [0.00 0.05];
-        %targetRangeForSurroundConeMix = 0.475 + [0.00 0.05];
+        targetRangeForSurroundConeMix = 0.475 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
 
         MosaicPoolingOptimizer.performContrastSTFsAcrossDifferentChromaticities(...
-            mosaicParams, rawFiguresRoot, ...
+            mosaicParams, rawFiguresRoot, scaledFiguresRoot, ...
             'performSurroundAnalysisForConesExclusiveToTheSurround', true, ...
             'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
     end
