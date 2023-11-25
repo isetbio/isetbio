@@ -13,10 +13,13 @@ function computeVisualRFsUsingMSequenceMapping(...
 
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
+    p.addParameter('visualizedResponses', false, @islogical);
+    p.addParameter('visualizedRGCindex', [], @(x)(isempty(x)||(isscalar(x))));
     p.parse(varargin{:});
-    parPoolSize = p.Results.parPoolSize;
 
-    visualizedResponses = false;
+    parPoolSize = p.Results.parPoolSize;
+    visualizedRGCindex = p.Results.visualizedRGCindex;
+    visualizedResponses = p.Results.visualizedResponses;
 
     if (isempty(stimPositionDegs))
         stimPositionDegs = theComputeReadyMRGCmosaic.eccentricityDegs;
@@ -223,6 +226,175 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
     fprintf('Loading optimally mapped subspace RF maps from %s\n', optimallyMappedRFmapsFileName);
     load(optimallyMappedRFmapsFileName, 'optimallyMappedVisualRFmaps', 'indicesOfOptimallyMappedRGCs');
 
+    hFig = figure(22); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1200 1280]);
 
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 2, ...
+       'colsNum', 2, ...
+       'heightMargin',  0.06, ...
+       'widthMargin',    0.05, ...
+       'leftMargin',     0.06, ...
+       'rightMargin',    0.05, ...
+       'bottomMargin',   0.05, ...
+       'topMargin',      0.02);
+
+
+    for iCell = 1:numel(indicesOfOptimallyMappedRGCs)
+        theRGCindex = indicesOfOptimallyMappedRGCs(iCell);
+
+        if ((~isempty(visualizedRGCindex)) && (theRGCindex ~= visualizedRGCindex))
+            continue;
+        end
+
+        [~,~,~, theCenterConeTypes, theCenterConeIndices] = ...
+            theMRGCMosaic.centerConeTypeWeights(theRGCindex);
+
+        % The RF center position on the retina
+        theRGCRetinalRFcenterPositionDegs = theMRGCMosaic.rgcRFpositionsDegs(theRGCindex,:);
+
+        [~, ~, theSurroundConeTypes, theSurroundConeIndices] = ...
+            theMRGCMosaic.surroundConeTypeWeights(theRGCindex, theCenterConeIndices);
+
+        idx = find(theSurroundConeTypes == cMosaic.LCONE_ID);
+        surroundLconeIndices = theSurroundConeIndices(idx);
+
+        idx = find(theSurroundConeTypes == cMosaic.MCONE_ID);
+        surroundMconeIndices = theSurroundConeIndices(idx);
+
+        d = optimallyMappedVisualRFmaps{iCell};
+
+        xLim = [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)];
+        xLim = theRGCRetinalRFcenterPositionDegs(1) + 0.08*[-1 1];
+
+        yLim = [d.spatialSupportDegsY(1) d.spatialSupportDegsY(end)];
+        yLim = theRGCRetinalRFcenterPositionDegs(2) + 0.08*[-1 1];
+
+        % The RF center position in the visual field
+        [~,idx] = max(abs(d.theRFmap(:)));
+        [row,col] = ind2sub(size(d.theRFmap), idx);
+        theRGCVisualRFcenterPositionDegs = [d.spatialSupportDegsX(col) d.spatialSupportDegsY(row)];
+
+        ax = subplot('Position', subplotPosVectors(1,1).v);
+        renderRFmap(ax, d, ...
+            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(theCenterConeIndices,:), ...
+            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,:), ...
+            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,:), ...
+            theRGCindex, theRGCRetinalRFcenterPositionDegs, theRGCVisualRFcenterPositionDegs, ...
+            stimulusChromaticity, xLim, yLim);
+
+        xProfile = sum(d.theRFmap, 1);
+        yProfile = sum(d.theRFmap, 2);
+        maxP = max([max(abs(xProfile(:))) max(abs(yProfile(:)))]);
+
+        ax = subplot('Position', subplotPosVectors(2,2).v);
+        renderXProfile(ax, d.spatialSupportDegsX, xProfile, maxP, theRGCVisualRFcenterPositionDegs, xLim);
+
+        ax = subplot('Position', subplotPosVectors(1,2).v);
+        renderYProfile(ax, d.spatialSupportDegsY, yProfile, maxP, theRGCVisualRFcenterPositionDegs, yLim);
+
+        drawnow;
+    end
 end
+
+
+function renderXProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositionDegs, xLim)
+
+    cla(ax)
+
+    shadedAreaPlotX(ax, spatialSupport, profile, 0, [0.5 0.5 0.5], [0.5 0.5 0.5], 0.5, 1.0);
+    hold(ax, 'on');
+    plot(ax, spatialSupport, profile*0, 'k-');
+
+    plot(theRGCRFcenterPositionDegs(1)*[1 1], maxP*[-1 1], 'b-', 'LineWidth', 1.0);
+    hold(ax, 'off');
+
+    axis(ax, 'square')
+    set(ax, 'XLim', xLim);
+    set(ax, 'YLim', maxP*[-1 1]);
+    set(ax, 'XTick', -10:0.05:10);
+    set(ax, 'XColor', [0 0 0], 'YColor', [1 0 0]);
+    xlabel(ax, 'space, x (degs)');
+    set(ax, 'FontSize', 16)
+end
+
+function renderYProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositionDegs, yLim)
+    cla(ax)
+    yyaxis(ax, 'left');
+    set(ax, 'YColor', 'none');
+    yyaxis(ax, 'right');
+
+    shadedAreaPlotY(ax, spatialSupport, profile, 0, [0.5 0.5 0.5], [0.5 0.5 0.5], 0.5, 1.0);
+    hold(ax, 'on');
+    plot(ax, profile*0, spatialSupport, 'k-');
+
+    plot(maxP*[-1 1], theRGCRFcenterPositionDegs(2)*[1 1], 'b-', 'LineWidth', 1.0);
+    hold(ax, 'off');
+
+    axis(ax, 'square');
+    set(ax, 'YLim', yLim);
+    set(ax, 'YTick', -10:0.05:10);
+    set(ax, 'XDir', 'reverse', 'XLim', maxP*[-1 1]);
+    set(ax, 'YColor', [0 0 0], 'XColor', [1 0 0]);
+    ylabel(ax, 'space, y (degs)');
+    set(ax, 'FontSize', 16);
+end
+
+
+
+function shadedAreaPlotX(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth)
+    x = [x(:); flipud(x(:))];
+    y = [y(:); y(:)*0+baseline];
+    px = reshape(x, [1 numel(x)]);
+    py = reshape(y, [1 numel(y)]);
+    pz = -10*eps*ones(size(py)); 
+    patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, 'FaceAlpha', faceAlpha, 'LineWidth', lineWidth);
+end
+
+function shadedAreaPlotY(ax, x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth)
+    xx = [y(:); flipud(y(:))*0+baseline];
+    yy = [x(:); flipud(x(:))];
+    px = reshape(xx, [1 numel(xx)]);
+    py = reshape(yy, [1 numel(yy)]);
+    pz = -10*eps*ones(size(py)); 
+    patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, 'FaceAlpha', faceAlpha, 'LineWidth', lineWidth);
+end
+
+
+function renderRFmap(ax, d, centerConePositions, surroundLconePositions, surroundMconePositions, theRGCindex, ...
+    theRGCRFcenterPositionDegs, theVisualRGCRFcenterPositionDegs, stimulusChromaticity, xLim, yLim)
+
+    imagesc(ax, d.spatialSupportDegsX,  d.spatialSupportDegsY, d.theRFmap);
+    hold(ax, 'on');    
+
+    
+    scatter(ax, surroundLconePositions(:,1), surroundLconePositions(:,2), ...
+         16*16, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.5, 'LineWidth', 1.0);
+        
+    scatter(ax, surroundMconePositions(:,1), surroundMconePositions(:,2), ...
+         16*16, 'MarkerFaceColor', [0.5 0.8 0.5], 'MarkerEdgeColor', [0 0.8 0], 'MarkerFaceAlpha', 0.5, 'LineWidth', 1.0);
+    
+    plot(ax, centerConePositions(:,1), centerConePositions(:,2), 'ko', 'MarkerSize', 16, 'LineWidth', 2.0);
+
+    %plot(ax, theRGCRFcenterPositionDegs(1), theRGCRFcenterPositionDegs(2), 'yx', 'MarkerSize', 24, 'LineWidth', 2.0);
+    plot(theVisualRGCRFcenterPositionDegs(1)*[1 1], [-100 100], 'b-', 'LineWidth', 1.0);
+    plot([-100 100], theVisualRGCRFcenterPositionDegs(2)*[1 1], 'b-', 'LineWidth', 1.0);
+
+    hold(ax, 'off')
+    axis(ax,'image'); axis(ax,'xy');
+    set(ax, 'CLim', max(abs(d.theRFmap(:)))*[-1 1], ...
+            'XLim', xLim, ...
+            'YLim', yLim, ...
+            'FontSize', 16 ...
+    );
+    set(ax, 'XTick', -10:0.05:10);
+    set(ax, 'YTick', -10:0.05:10);
+    cLUT = brewermap(1024, '*RdBu');
+    colormap(ax, cLUT);
+    set(ax, 'Color', cLUT(512,:));
+    xlabel(ax, 'space, x (degs)');
+    ylabel(ax, 'space, y (degs)');
+    title(ax, sprintf('RGC %d - %s RF ([%2.2f ... %2.2f])', theRGCindex, stimulusChromaticity, min(d.theRFmap(:)), max(d.theRFmap(:))));
+end
+
 

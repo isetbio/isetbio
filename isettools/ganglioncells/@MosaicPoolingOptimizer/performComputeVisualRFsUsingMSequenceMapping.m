@@ -97,6 +97,11 @@ function performComputeVisualRFsUsingMSequenceMapping(mosaicParams, varargin)
         mRGCMosaicMSequenceResponsesFileName = strrep(mRGCMosaicMSequenceResponsesFileName, 'MSequence', 'BinaryMSequence');
     end
 
+    % Encode rfPixelsAcross
+    coneMosaicMSequenceResponsesFileName = strrep(coneMosaicMSequenceResponsesFileName, 'MSequence', sprintf('MSequence%dx%dPixels', rfPixelsAcross, rfPixelsAcross));
+    mRGCMosaicMSequenceResponsesFileName = strrep(mRGCMosaicMSequenceResponsesFileName, 'MSequence', sprintf('MSequence%dx%dPixels', rfPixelsAcross, rfPixelsAcross));
+
+
     % Optimally generated RF maps filename
     optimallyMappedMSequenceRFmapsFileName = strrep(mRGCMosaicMSequenceResponsesFileName, '.mat', '_optimallyMappedRFs.mat');
 
