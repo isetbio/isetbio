@@ -22,8 +22,9 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     operationDescriptors{16} = '[16] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in the RGC mosaic';
     operationDescriptors{17} = '[17] Compute-ready mRGCMosaic validation : Visualize fitted DoG model params for all cells in multiple mRGC mosaics';
 
-    operationDescriptors{18} = '[18] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (subspace) for all cells in the RGC mosaic';
-    operationDescriptors{19} = '[19] Compute-ready mRGCMosaic (RF computation) : Visualize visual RF maps (subspace) for individual target RGCs';
+    operationDescriptors{18} = '[18] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (subspace) for cells within the RGC mosaic';
+    operationDescriptors{19} = '[19] Compute-ready mRGCMosaic (RF computation) : Compute visual RFs (m-sequence) for cells within the RGC mosaic';
+
 
     operationDescriptors{20} = '[20] ComputeVisualRFcenterMapsViaDirectConvolutionWithPSF';
 
@@ -81,11 +82,11 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     % 17 Visualization: Fitted DoG model params for all cells in the current mosaic
     operationSetToPerformContains.visualizeDoGparamsOfVisualSTFsOfMultipleMidgetRGCMosaics = ~true;
 
-    % 18 Subspace RF mapping: compute visual RFs (subspace) for all cells 
-    operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = ~true;
+    % 18 Visual RF mapping using subspace
+    operationSetToPerformContains.computeVisualRFsUsingSubspaceMapping = ~true;
 
-    % 19 Subspace RF mapping: visualize visual RF maps 
-    operationSetToPerformContains.visualizeVisualRFmapForTargetRGC = ~true;
+    % 19 Visual RF mapping using m-sequence
+    operationSetToPerformContains.computeVisualRFsUsingMSequenceMapping = ~true;
 
     % 20 Map the visual RF center of mRGCs
     operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF = ~true;
@@ -259,17 +260,17 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                         end
                         
                     case 18
-                        if (isfield(operationSetToPerformContains, 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic'))
-                            operationSetToPerformContains.computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic = true;
+                        if (isfield(operationSetToPerformContains, 'computeVisualRFsUsingSubspaceMapping'))
+                            operationSetToPerformContains.computeVisualRFsUsingSubspaceMapping = true;
                         else
-                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'computeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: %s''.', 'computeVisualRFsUsingSubspaceMapping');
                         end
                         
                     case 19
-                        if (isfield(operationSetToPerformContains, 'visualizeVisualRFmapForTargetRGC'))
-                            operationSetToPerformContains.visualizeVisualRFmapForTargetRGC  = true;
+                        if (isfield(operationSetToPerformContains, 'computeVisualRFsUsingMSequenceMapping'))
+                            operationSetToPerformContains.computeVisualRFsUsingMSequenceMapping  = true;
                         else
-                            error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'visualizeVisualRFmapForTargetRGC');
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'computeVisualRFsUsingMSequenceMapping');
                         end
                        
                     case 20

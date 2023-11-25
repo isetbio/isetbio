@@ -1,10 +1,9 @@
-function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullResponses, ...
-    HartleySpatialModulationPatterns, spatialSupportDegs, lIndices, mIndices] = ...
-    computeConeMosaicSubspaceRFmappingLinearResponses(theConeMosaic, theOptics,  ...
-                                           thePresentationDisplay, ...
-                                           stimParams, ...
-                                           stimPositionDegs, ...
-                                           varargin)
+function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResponses, ...
+          mSequenceSpatialModulationPatterns, spatialSupportDegs] = computeConeMosaicMSequenceRFmappingLinearResponses(...
+                theConeMosaic, theOptics,  ...
+                thePresentationDisplay, ...
+                stimParams, ...
+                stimPositionDegs, varargin)
 
     p = inputParser;
     p.addParameter('parPoolSize', [], @(x)(isempty(x)||(isscalar(x))));
@@ -15,32 +14,31 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
     visualizeResponses = p.Results.visualizeResponses;
     customConeFundamentals = p.Results.customConeFundamentals;
 
-    % Compute the Hartley spatial patterns
+
+    % Compute the M-sequence spatial patterns
     visualizePatterns = ~true;
 
     if (visualizePatterns)
-        % Compute spatial modulation patterns for the Hartley set
-        [HartleySpatialModulationPatterns, lIndices, mIndices] = ...
-                rfMappingStimulusGenerator.HartleyModulationPatterns(...
-                    stimParams.omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs, ...
-                    'parPoolSize', 0, ...
+        % Compute spatial modulation patterns for the m-sequence
+        mSequenceSpatialModulationPatterns = rfMappingStimulusGenerator.binaryMsequencePatterns(...
+                    stimParams.rfPixelsAcross, stimParams.rfPixelRetinalPixelsWithin, ...
+                    'ternaryInsteadOfBinaryMsequence', stimParams.ternaryInsteadOfBinaryMsequence, ...
                     'visualizePatterns', true);
     else
-        [HartleySpatialModulationPatterns, lIndices, mIndices] = ...
-            rfMappingStimulusGenerator.HartleyModulationPatterns(...
-                stimParams.omega, stimParams.stimSizeDegs, stimParams.pixelSizeDegs);
+        mSequenceSpatialModulationPatterns = rfMappingStimulusGenerator.binaryMsequencePatterns(...
+                stimParams.rfPixelsAcross, stimParams.rfPixelRetinalPixelsWithin, ...
+                'ternaryInsteadOfBinaryMsequence', stimParams.ternaryInsteadOfBinaryMsequence);
     end
-
 
     % Compute the null stimulus.
     fprintf('Computing null scene\n');
     [~, theNullStimulusScene, spatialSupportDegs] = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
-                thePresentationDisplay, stimParams, HartleySpatialModulationPatterns, ...
+                thePresentationDisplay, stimParams, mSequenceSpatialModulationPatterns, ...
                 'validateScenes', false, ...
                 'sceneIndexToCompute', 0, ...
                 'customConeFundamentals', customConeFundamentals);
 
-   
+
     fprintf('Computing null scene response\n');
     % Compute the optical image of the null scene
     theOptics  = oiCompute(theNullStimulusScene, theOptics);
@@ -54,10 +52,10 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
     normalizingResponses = 1./theConeMosaicNullResponses;
     normalizingResponses(coneIndicesWithZeroNullResponse) = 0;
     normalizingResponses = reshape(normalizingResponses, [1 1 numel(normalizingResponses)]);
-             
+
     % Compute the input cone mosaic modulation responses
-    nStim = size(HartleySpatialModulationPatterns,1);
-    theConeMosaicSubspaceLinearModulationResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
+    nStim = size(mSequenceSpatialModulationPatterns,1);
+    theConeMosaicMSequenceLinearModulationResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
 
     if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize))
          % Reset parpool
@@ -66,17 +64,17 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
          theOI = theOptics;
          parfor iFrame = 1:nStim
              % Generate scenes for the Hartley patterns
-            fprintf('Computing cone mosaic response for Hartley pattern %d of %d (using %d parallel processes).\n', ...
+            fprintf('Computing cone mosaic response for m-sequence frame %d of %d (using %d parallel processes).\n', ...
                 iFrame, nStim, numWorkers);
 
              theForwardPolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
-                thePresentationDisplay, stimParams, HartleySpatialModulationPatterns, ...
+                thePresentationDisplay, stimParams, mSequenceSpatialModulationPatterns, ...
                 'validateScenes', false, ...
                 'sceneIndexToCompute', iFrame, ...
                 'customConeFundamentals', customConeFundamentals);
 
              theInversePolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
-                thePresentationDisplay, stimParams, -HartleySpatialModulationPatterns, ...
+                thePresentationDisplay, stimParams, -mSequenceSpatialModulationPatterns, ...
                 'validateScenes', false, ...
                 'sceneIndexToCompute', iFrame, ...
                 'customConeFundamentals', customConeFundamentals);
@@ -116,7 +114,7 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
                 normalizingResponses);
 
              % The linear response: forward - inverse
-             theConeMosaicSubspaceLinearModulationResponses(iFrame,:) = single(...
+             theConeMosaicMSequenceLinearModulationResponses(iFrame,:) = single(...
                  noiseFreeAbsorptionsModulationForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
 
@@ -126,19 +124,19 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
             poolobj = gcp('nocreate'); 
             delete(poolobj);
          end
-         
+
     else
         for iFrame = 1:nStim
-            fprintf('Computing cone mosaic response for Hartley pattern %d of %d (serially).\n', iFrame, nStim);
+            fprintf('Computing cone mosaic response for m-sequence frame %d of %d (serially).\n', iFrame, nStim);
 
             theForwardPolarityRFMappingStimulusScenes =  rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
-                thePresentationDisplay, stimParams, HartleySpatialModulationPatterns, ...
+                thePresentationDisplay, stimParams, mSequenceSpatialModulationPatterns, ...
                 'validateScenes', false, ...
                 'sceneIndexToCompute', iFrame, ...
                 'customConeFundamentals', customConeFundamentals);
 
             theInversePolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
-                thePresentationDisplay, stimParams, -HartleySpatialModulationPatterns, ...
+                thePresentationDisplay, stimParams, -mSequenceSpatialModulationPatterns, ...
                 'validateScenes', false, ...
                 'sceneIndexToCompute', iFrame, ...
                 'customConeFundamentals', customConeFundamentals);
@@ -180,7 +178,7 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
                 normalizingResponses);
 
              % The linear response: forward - inverse
-             theConeMosaicSubspaceLinearModulationResponses(iFrame,:) = single(...
+             theConeMosaicMSequenceLinearModulationResponses(iFrame,:) = single(...
                  noiseFreeAbsorptionsModulationForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
 
@@ -216,8 +214,59 @@ function [theConeMosaicSubspaceLinearModulationResponses, theConeMosaicNullRespo
                 drawnow;
                 pause
             end
-
-           
         end
     end
+
 end
+
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

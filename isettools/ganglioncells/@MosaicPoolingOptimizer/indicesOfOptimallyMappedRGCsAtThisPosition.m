@@ -1,0 +1,36 @@
+function indicesOfOptimallyMappedRGCs = indicesOfOptimallyMappedRGCsAtThisPosition(theMRGCmosaic, ...
+    stimPositionDegs, stimSizeDegs)
+
+    % Find RGCs within the stimulus region
+    if (numel(stimSizeDegs) == 2)
+        widthDegs = stimSizeDegs(1);
+        heightDegs = stimSizeDegs(2);
+    else
+        widthDegs = stimSizeDegs(1);
+        heightDegs = stimSizeDegs(1);
+    end
+
+    theStimulusRegion = regionOfInterest(...
+        'geometryStruct', struct(...
+            'units', 'degs', ...
+            'shape', 'rect', ...
+            'center', stimPositionDegs, ...
+            'width', widthDegs*0.75, ...
+            'height', heightDegs*0.75 , ...
+            'rotation', 0.0...
+        ));
+
+    indicesOfOptimallyMappedRGCs = theStimulusRegion.indicesOfPointsInside(theMRGCmosaic.rgcRFpositionsDegs);
+    
+    d = sqrt(sum(theMRGCmosaic.rgcRFpositionsDegs(indicesOfOptimallyMappedRGCs,:).^2,2));
+    [~,idx] = sort(d, 'ascend');
+    indicesOfOptimallyMappedRGCs = indicesOfOptimallyMappedRGCs(idx);
+
+    % All the cells in the MRGC mosaic
+    cellsNum = theMRGCmosaic.rgcsNum;
+    
+    fprintf('\nThere were %d/%d optimally mapped RF maps at (x,y) = %2.1f,%2.1f within the %2.2f x %2.2f mapping window\n', ...
+        numel(indicesOfOptimallyMappedRGCs), cellsNum, ...
+        stimPositionDegs(1), stimPositionDegs(2), widthDegs, heightDegs);
+
+end

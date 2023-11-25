@@ -1,4 +1,4 @@
-function H = binaryMsequencePatterns(stimSizeDegs, pixelSizeDegs, varargin)
+function H = binaryMsequencePatterns(rfPixelsAcross, rfPixelRetinalPixelsWithin, varargin)
     % Parse optional input
     p = inputParser;
     p.addParameter('visualizePatterns', false, @islogical);
@@ -7,9 +7,7 @@ function H = binaryMsequencePatterns(stimSizeDegs, pixelSizeDegs, varargin)
     visualizePatterns = p.Results.visualizePatterns;
     ternaryInsteadOfBinaryMsequence = p.Results.ternaryInsteadOfBinaryMsequence;
 
-    pixelsX  = round(stimSizeDegs / pixelSizeDegs);
-    pixelsNum = pixelsX^2;
-
+    
     % Binary m-sequence
     if (ternaryInsteadOfBinaryMsequence)
         nLevels = 3;
@@ -21,13 +19,13 @@ function H = binaryMsequencePatterns(stimSizeDegs, pixelSizeDegs, varargin)
         sequenceLength = 13;
     end
 
-    
     mseq = generateMsequence(nLevels, sequenceLength)/2.0;
     mseq = 0.5+mseq;
     nTimePoints = length(mseq);
     fprintf('Sequence length: %d\n', nTimePoints);
 
     % Shift msequence signal for each pixel
+    pixelsNum = rfPixelsAcross^2;
     spatioTemporalActivation = zeros(nTimePoints, pixelsNum, 'single');
     shiftStep = round(numel(mseq)/pixelsNum);
     for pixelIndex = 1:pixelsNum
@@ -55,9 +53,18 @@ function H = binaryMsequencePatterns(stimSizeDegs, pixelSizeDegs, varargin)
     end
 
     % Generate 2D patterns
-    H = zeros(nTimePoints, pixelsX, pixelsX, 'single');
+    H = zeros(nTimePoints, rfPixelsAcross * rfPixelRetinalPixelsWithin, rfPixelsAcross * rfPixelRetinalPixelsWithin, 'single');
     for iTimePoint = 1:nTimePoints
-        H(iTimePoint,:,:) = reshape(spatioTemporalActivation(iTimePoint,:), [pixelsX pixelsX]);
+        theFrame = reshape(spatioTemporalActivation(iTimePoint,:), [rfPixelsAcross rfPixelsAcross]);
+        theFullFrame = zeros(rfPixelsAcross * rfPixelRetinalPixelsWithin, rfPixelsAcross * rfPixelRetinalPixelsWithin, 'single');
+        yy = 1:rfPixelRetinalPixelsWithin;
+        xx = 1:rfPixelRetinalPixelsWithin;
+        for i = 1:rfPixelsAcross
+            for j = 1:rfPixelsAcross
+                theFullFrame((i-1)*rfPixelRetinalPixelsWithin+yy, (j-1)*rfPixelRetinalPixelsWithin+xx) = theFrame(i,j);
+            end
+        end
+        H(iTimePoint,:,:) = theFullFrame;
     end
 
     if (visualizePatterns)

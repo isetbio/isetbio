@@ -1,9 +1,9 @@
 function [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment(wavelengthSupport, ...
-        stimSizeDegs, retinalPixelSizeDegs, maxSFLimit, stimulusChromaticity)
+        stimSizeDegs, optimalRetinalPixelSizeDegs, maxSFLimit, stimulusChromaticity)
 
     % At least 7 samples / period
     minNumberOfPixelsPerSpatialPeriod = 7;
-    maxSFretinal = 1/(minNumberOfPixelsPerSpatialPeriod*sqrt(2.0)*retinalPixelSizeDegs);
+    maxSFretinal = 1/(minNumberOfPixelsPerSpatialPeriod*sqrt(2.0)*optimalRetinalPixelSizeDegs);
 
     % Maybe cap the maxSF to reduce the # of stimuli
     if (~isempty(maxSFLimit)) && (maxSFLimit < maxSFretinal)
@@ -26,8 +26,8 @@ function [stimParams, thePresentationDisplay] = setupSubspaceRFmappingExperiment
     a = single(1);
     s = whos('a');
     HartleyMemoryRequirementGBytes = (nStim * stimulusPixelsNum * stimulusPixelsNum * s.bytes)/1024/1024/1024;
-    fprintf('\nTo probe RFs with spatial frequencies up to %2.1f c/deg\nusing a patch size of %2.1f degs,\n%d (%d x %d) Hartley patterns (retinal res:%2.3f arc min) will be employed.\nThis requires %2.1f GBytes or RAM\n', ...
-        maxSF, stimSizeDegs(1), nStim, stimulusPixelsNum, stimulusPixelsNum, pixelSizeDegs*60, HartleyMemoryRequirementGBytes);
+    fprintf('\nTo probe RFs with spatial frequencies up to %2.1f c/deg\nusing a patch size of %2.1f degs,\n%d (%d x %d) Hartley patterns (retinal res:%2.3f arc min, optimal retinal res: %2.3f arc min) will be employed.\nThis requires %2.1f GBytes or RAM\n', ...
+        maxSF, stimSizeDegs(1), nStim, stimulusPixelsNum, stimulusPixelsNum, pixelSizeDegs*60, optimalRetinalPixelSizeDegs*60, HartleyMemoryRequirementGBytes);
 
     % Generate a presentation display with a desired resolution
     viewingDistanceMeters = 4;

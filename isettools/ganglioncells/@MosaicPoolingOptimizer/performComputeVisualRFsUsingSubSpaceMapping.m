@@ -1,4 +1,4 @@
-function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParams, varargin)
+function performComputeVisualRFsUsingSubSpaceMapping(mosaicParams, varargin)
 
     % Parse optional input
     p = inputParser;
@@ -7,8 +7,8 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     p.addParameter('maxSFLimit', [], @(x)(isempty(x)||isscalar(x)));
     p.addParameter('maxSFToBeAnalyzed', [], @(x)(isempty(x)||isscalar(x)));
     p.addParameter('rfMappingPixelMagnificationFactor', 1, @(x)(isscalar(x)&&(x>=1)));
-    p.addParameter('reComputeInputConeMosaicSubspaceRFmappingResponses', false, @islogical);
-    p.addParameter('reComputeMRGCMosaicSubspaceRFmappingResponses', false, @islogical);
+    p.addParameter('reComputeInputConeMosaicResponses', false, @islogical);
+    p.addParameter('reComputeMRGCMosaicResponses', false, @islogical);
     p.addParameter('reComputeRFs', false, @islogical);
     p.addParameter('visualizeOptimallyMappedRFmapLocations', false, @islogical);
     p.addParameter('visualizedRGCindex', [], @(x)(isempty(x)||(isscalar(x))));
@@ -34,8 +34,8 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     msequencePixelSizeDegs = p.Results.msequencePixelSizeDegs;
 
     % What to compute
-    reComputeInputConeMosaicSubspaceRFmappingResponses = p.Results.reComputeInputConeMosaicSubspaceRFmappingResponses;
-    reComputeMRGCMosaicSubspaceRFmappingResponses = p.Results.reComputeMRGCMosaicSubspaceRFmappingResponses;
+    reComputeInputConeMosaicResponses = p.Results.reComputeInputConeMosaicResponses;
+    reComputeMRGCMosaicResponses = p.Results.reComputeMRGCMosaicResponses;
     reComputeRFs = p.Results.reComputeRFs;
     visualizeOptimallyMappedRFmapLocations = p.Results.visualizeOptimallyMappedRFmapLocations;
     
@@ -69,8 +69,7 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
     load(fullfile(computeReadyMosaicResourcesDirectory, computeReadyMosaicFileName), 'theComputeReadyMRGCmosaic');
 
    
-    % Ask the user which optics were used for computing the input cone
-    % mosaic STF responses, so we can obtain the corresponding coneMosaicSTFresponsesFileName
+    % Ask the user which optics to use
     fprintf('\n---> Select the optics to use for subspace RF mapping\n');
     [opticsParamsForSubSpaceMapping, opticsToEmploy] = MosaicPoolingOptimizer.chooseOpticsForInputConeMosaicSTFresponses(mosaicParams);
 
@@ -120,16 +119,16 @@ function performComputeVisualRFsAcrossTheComputeReadyMidgetRGCMosaic(mosaicParam
         optimallyMappedSubspaceRFmapsFileName = strrep(optimallyMappedSubspaceRFmapsFileName, '.mat', sprintf('_LimitedTo%2.2fCPD.mat', maxSFToBeAnalyzed));
     end
 
-    MosaicPoolingOptimizer.computeVisualRFsOfComputeReadyMidgetRGCMosaic(...
+    MosaicPoolingOptimizer.computeVisualRFsUsingSubSpaceMapping(...
             theComputeReadyMRGCmosaic, opticsToEmploy, ...
-            stimSizeDegs, stimPositionDegs, stimulusChromaticity, ...
-            coneFundamentalsOptimizedForStimPosition, ...
+            stimSizeDegs, stimPositionDegs, ...
             maxSFLimit, maxSFToBeAnalyzed, rfMappingPixelMagnificationFactor, ...
+            stimulusChromaticity, coneFundamentalsOptimizedForStimPosition, ...
             fullfile(resourcesDirectory, coneMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, mRGCMosaicSubspaceResponsesFileName), ...
             fullfile(resourcesDirectory, optimallyMappedSubspaceRFmapsFileName), ...
-            reComputeInputConeMosaicSubspaceRFmappingResponses, ...
-            reComputeMRGCMosaicSubspaceRFmappingResponses, ...
+            reComputeInputConeMosaicResponses, ...
+            reComputeMRGCMosaicResponses, ...
             reComputeRFs, ...
             visualizeOptimallyMappedRFmapLocations, ...
             'msequencePixelSizeDegs', msequencePixelSizeDegs, ...
