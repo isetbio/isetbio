@@ -275,12 +275,15 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
         [row,col] = ind2sub(size(d.theRFmap), idx);
         theRGCVisualRFcenterPositionDegs = [d.spatialSupportDegsX(col) d.spatialSupportDegsY(row)];
 
+        crossHairsPosition = theRGCVisualRFcenterPositionDegs;
+        crossHairsPosition = theRGCRetinalRFcenterPositionDegs;
+
         ax = subplot('Position', subplotPosVectors(1,1).v);
         renderRFmap(ax, d, ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(theCenterConeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,:), ...
-            theRGCindex, theRGCRetinalRFcenterPositionDegs, theRGCVisualRFcenterPositionDegs, ...
+            theRGCindex, crossHairsPosition, ...
             stimulusChromaticity, xLim, yLim);
 
         xProfile = sum(d.theRFmap, 1);
@@ -288,17 +291,17 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
         maxP = max([max(abs(xProfile(:))) max(abs(yProfile(:)))]);
 
         ax = subplot('Position', subplotPosVectors(2,2).v);
-        renderXProfile(ax, d.spatialSupportDegsX, xProfile, maxP, theRGCVisualRFcenterPositionDegs, xLim);
+        renderXProfile(ax, d.spatialSupportDegsX, xProfile, maxP, crossHairsPosition, xLim);
 
         ax = subplot('Position', subplotPosVectors(1,2).v);
-        renderYProfile(ax, d.spatialSupportDegsY, yProfile, maxP, theRGCVisualRFcenterPositionDegs, yLim);
+        renderYProfile(ax, d.spatialSupportDegsY, yProfile, maxP, crossHairsPosition, yLim);
 
         drawnow;
     end
 end
 
 
-function renderXProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositionDegs, xLim)
+function renderXProfile(ax, spatialSupport, profile, maxP, crossHairsPosition, xLim)
 
     cla(ax)
 
@@ -306,7 +309,7 @@ function renderXProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositio
     hold(ax, 'on');
     plot(ax, spatialSupport, profile*0, 'k-');
 
-    plot(theRGCRFcenterPositionDegs(1)*[1 1], maxP*[-1 1], 'b-', 'LineWidth', 1.0);
+    plot(crossHairsPosition(1)*[1 1], maxP*[-1 1], 'b-', 'LineWidth', 1.0);
     hold(ax, 'off');
 
     axis(ax, 'square')
@@ -318,7 +321,7 @@ function renderXProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositio
     set(ax, 'FontSize', 16)
 end
 
-function renderYProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositionDegs, yLim)
+function renderYProfile(ax, spatialSupport, profile, maxP, crossHairsPosition, yLim)
     cla(ax)
     yyaxis(ax, 'left');
     set(ax, 'YColor', 'none');
@@ -328,7 +331,7 @@ function renderYProfile(ax, spatialSupport, profile, maxP, theRGCRFcenterPositio
     hold(ax, 'on');
     plot(ax, profile*0, spatialSupport, 'k-');
 
-    plot(maxP*[-1 1], theRGCRFcenterPositionDegs(2)*[1 1], 'b-', 'LineWidth', 1.0);
+    plot(maxP*[-1 1], crossHairsPosition(2)*[1 1], 'b-', 'LineWidth', 1.0);
     hold(ax, 'off');
 
     axis(ax, 'square');
@@ -362,7 +365,7 @@ end
 
 
 function renderRFmap(ax, d, centerConePositions, surroundLconePositions, surroundMconePositions, theRGCindex, ...
-    theRGCRFcenterPositionDegs, theVisualRGCRFcenterPositionDegs, stimulusChromaticity, xLim, yLim)
+    crossHairsPosition, stimulusChromaticity, xLim, yLim)
 
     imagesc(ax, d.spatialSupportDegsX,  d.spatialSupportDegsY, d.theRFmap);
     hold(ax, 'on');    
@@ -376,9 +379,8 @@ function renderRFmap(ax, d, centerConePositions, surroundLconePositions, surroun
     
     plot(ax, centerConePositions(:,1), centerConePositions(:,2), 'ko', 'MarkerSize', 16, 'LineWidth', 2.0);
 
-    %plot(ax, theRGCRFcenterPositionDegs(1), theRGCRFcenterPositionDegs(2), 'yx', 'MarkerSize', 24, 'LineWidth', 2.0);
-    plot(theVisualRGCRFcenterPositionDegs(1)*[1 1], [-100 100], 'b-', 'LineWidth', 1.0);
-    plot([-100 100], theVisualRGCRFcenterPositionDegs(2)*[1 1], 'b-', 'LineWidth', 1.0);
+    plot(crossHairsPosition(1)*[1 1], [-100 100], 'b-', 'LineWidth', 1.0);
+    plot([-100 100], crossHairsPosition(2)*[1 1], 'b-', 'LineWidth', 1.0);
 
     hold(ax, 'off')
     axis(ax,'image'); axis(ax,'xy');

@@ -1,4 +1,4 @@
-function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
+function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsStruct] = ...
         generateStimulusFramesOnPresentationDisplay(...
                 presentationDisplay, stimParams, ...
                 spatialModulationPatterns, varargin)
@@ -7,79 +7,63 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
     p.addParameter('validateScenes', false, @islogical);
     p.addParameter('sceneIndexToCompute',  [], @isnumeric);
     p.addParameter('customConeFundamentals', [], @(x)(isempty(x)||isstruct(x)));
+    p.addParameter('withPreviouslyComputedConeFundamentalsStruct', [], @(x)(isempty(x)||isstruct(x)));
     p.parse(varargin{:});
     validateScenes = p.Results.validateScenes;
     sceneIndexToCompute = p.Results.sceneIndexToCompute;
     customConeFundamentals = p.Results.customConeFundamentals;
+    previouslyComputedConeFundamentalsStruct = p.Results.withPreviouslyComputedConeFundamentalsStruct;
+
+    if (isempty(previouslyComputedConeFundamentalsStruct))
+        if (isempty(customConeFundamentals))
+            % Load the 2-deg Stockman cone fundamentals on wavelength support matching the display
+            displayWavelengths = displayGet(presentationDisplay, 'wave');
+            coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
+
+            % Returned coneFundamentals struct
+            coneFundamentalsStruct.coneFundamentals = coneFundamentals;
+            coneFundamentalsStruct.spectralSupport = displayWavelengths;
+
+            fprintf('Employing the standard SS-2 cone fundamentals.\n');
+        else
+            displayWavelengths = displayGet(presentationDisplay, 'wave');
+            assert(isfield(customConeFundamentals, 'wavelengthSupport'), ...
+                'customConeFundamentals does not contain wavelength support info');
+            assert(isfield(customConeFundamentals, 'quantalExcitationSpectra'), ...
+                'customConeFundamentals does not contain quantalExcitationSpectra info');
+            assert(size(customConeFundamentals.quantalExcitationSpectra,2) == 3, ...
+                'customConeFundamentals.spd is not an Nx3 matrix');
+            assert(size(customConeFundamentals.quantalExcitationSpectra,1) == numel(customConeFundamentals.wavelengthSupport), ...
+                'customConeFundamentals.spf does not have the same dimensionality as customConeFundamentals.wavelengthSupport');
     
-
-    if (isempty(customConeFundamentals))
-        % Load the 2-deg Stockman cone fundamentals on wavelength support matching the display
-        displayWavelengths = displayGet(presentationDisplay, 'wave');
-        coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
-        fprintf('Will employ the standard SS-2 cone fundamentals')
-    else
-        displayWavelengths = displayGet(presentationDisplay, 'wave');
-        assert(isfield(customConeFundamentals, 'wavelengthSupport'), ...
-            'customConeFundamentals does not contain wavelength support info');
-        assert(isfield(customConeFundamentals, 'quantalExcitationSpectra'), ...
-            'customConeFundamentals does not contain quantalExcitationSpectra info');
-        assert(size(customConeFundamentals.quantalExcitationSpectra,2) == 3, ...
-            'customConeFundamentals.spd is not an Nx3 matrix');
-        assert(size(customConeFundamentals.quantalExcitationSpectra,1) == numel(customConeFundamentals.wavelengthSupport), ...
-            'customConeFundamentals.spf does not have the same dimensionality as customConeFundamentals.wavelengthSupport');
-
-        if (~isequal(displayWavelengths, customConeFundamentals.wavelengthSupport))
-            % Resample customConeFundamentals.spd to wavelength support matching the display
-            resampledCustomConeFundamantals = displayWavelengths*0;
-            for iChannel = 1:size(customConeFundamentals.quantalExcitationSpectra,2)
-                resampledCustomConeFundamantals(:,iChannel) = interp1(...
-                    customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,iChannel), ...
-                    displayWavelengths, 'linear','extrap');
+            if (~isequal(displayWavelengths, customConeFundamentals.wavelengthSupport))
+                % Resample customConeFundamentals.spd to wavelength support matching the display
+                resampledCustomConeFundamantals = displayWavelengths*0;
+                for iChannel = 1:size(customConeFundamentals.quantalExcitationSpectra,2)
+                    resampledCustomConeFundamantals(:,iChannel) = interp1(...
+                        customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,iChannel), ...
+                        displayWavelengths, 'linear','extrap');
+                end
+                customConeFundamentals.quantalExcitationSpectra = resampledCustomConeFundamantals;
+                customConeFundamentals.wavelengthSupport = displayWavelengths;
             end
-            customConeFundamentals.quantalExcitationSpectra = resampledCustomConeFundamantals;
-            customConeFundamentals.wavelengthSupport = displayWavelengths;
+            
+            coneFundamentals = customConeFundamentals.quantalExcitationSpectra/max(customConeFundamentals.quantalExcitationSpectra(:));
+
+            % Returned coneFundamentals struct
+            coneFundamentalsStruct.coneFundamentals = coneFundamentals;
+            coneFundamentalsStruct.spectralSupport = displayWavelengths;
+
+            % Compare to default SS2
+            compareCustomConeFundamentalsToDefaultSS2(customConeFundamentals);
+
+            fprintf('Employing the custom cone fundamentals.\n');
         end
-        
-        coneFundamentals = customConeFundamentals.quantalExcitationSpectra/max(customConeFundamentals.quantalExcitationSpectra(:));
-        StockmanSharpe2DegConeFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
-
-
-        hFig = figure(223); clf;
-        subplot(2,2,1);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'r--', 'LineWidth', 1.5);
-        hold on;
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'g--', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'b--', 'LineWidth', 1.5);
-        title('Stockman 2 deg cone fundamentals')
-
-        subplot(2,2,2);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-', 'LineWidth', 1.5);
-        hold on;
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-', 'LineWidth', 1.5);
-        title('cMosaic cone fundamentals')
-
-
-        subplot(2,2,3);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-', 'LineWidth', 1.5);
-        hold on;
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'k--', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'k--', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'k--', 'LineWidth', 1.5);
-        title('cMosaic cone fundamentals')
-
-        subplot(2,2,4);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1)./StockmanSharpe2DegConeFundamentals(:,1), 'r-', 'LineWidth', 1.5);
-        hold on;
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2)./StockmanSharpe2DegConeFundamentals(:,2), 'g-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3)./StockmanSharpe2DegConeFundamentals(:,3), 'b-', 'LineWidth', 1.5);
-        plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.wavelengthSupport*0 + 1, 'k-');
-        title('cMosaic cone fundamentals ./ SS2')
-        drawnow;
-
+    else
+        coneFundamentals = previouslyComputedConeFundamentalsStruct.coneFundamentals;
+        displayWavelengths = previouslyComputedConeFundamentalsStruct.spectralSupport;
+        coneFundamentalsStruct = previouslyComputedConeFundamentalsStruct;
+        fprintf('Employing previously used cone fundamentals.\n');
     end
 
     % Compute the displayRGCtoLMS matrix
@@ -246,4 +230,45 @@ function LMScontrastImage = computeLMScontrastImage(radianceImage, coneFundament
         1./coneExcitationsBackground);
     
     LMScontrastImage = reshape(LMScontrastImage, [rowsNum colsNum 3]);
+end
+
+
+function compareCustomConeFundamentalsToDefaultSS2(customConeFundamentals)
+    % Normalize
+    coneFundamentals = customConeFundamentals.quantalExcitationSpectra/max(customConeFundamentals.quantalExcitationSpectra(:));
+    StockmanSharpe2DegConeFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), customConeFundamentals.wavelengthSupport);
+
+    hFig = figure(223); clf;
+    subplot(2,2,1);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'r--', 'LineWidth', 1.5);
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'g--', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'b--', 'LineWidth', 1.5);
+    title('Stockman 2 deg cone fundamentals')
+
+    subplot(2,2,2);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-', 'LineWidth', 1.5);
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-', 'LineWidth', 1.5);
+    title('cMosaic cone fundamentals')
+
+    subplot(2,2,3);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-', 'LineWidth', 1.5);
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'k--', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'k--', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'k--', 'LineWidth', 1.5);
+    title('cMosaic cone fundamentals')
+
+    subplot(2,2,4);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1)./StockmanSharpe2DegConeFundamentals(:,1), 'r-', 'LineWidth', 1.5);
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2)./StockmanSharpe2DegConeFundamentals(:,2), 'g-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3)./StockmanSharpe2DegConeFundamentals(:,3), 'b-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.wavelengthSupport*0 + 1, 'k-');
+    title('cMosaic cone fundamentals ./ SS2')
+    drawnow;
 end

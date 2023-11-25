@@ -1,5 +1,10 @@
 function run()
 
+    delete(gcp('nocreate'))
+    c = parcluster('Processes');
+    c.NumWorkers = input('Enter number of parallel workers: ');
+    parpool(c);
+
     % Generate path to rawFigures root directory.
     % These are figures generated for manuscripts/presentations, formatted
     % using a common figureFormat
@@ -255,7 +260,7 @@ function run()
         visualizeOptimallyMappedRFmapLocations = true;
 
         stimPositionDegs = [0.65 0.72];
-        stimSizeDegs = [0.35 0.35];
+        stimSizeDegs = [0.25 0.25];
 
         % Spatial sampling of RF (# of squares)
         rfPixelsAcross = 24;

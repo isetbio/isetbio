@@ -3,10 +3,10 @@ function [stimParams, thePresentationDisplay] = setupMSequenceRFmappingExperimen
     ternaryInsteadOfBinaryMsequence, stimulusChromaticity)
 
     rfPixelSizeDegs = max(stimSizeDegs(:))/rfPixelsAcross;
-    rfPixelRetinalPixelsWithin = max([1 ceil(rfPixelSizeDegs/optimalRetinalPixelSizeDegs)]);
+    rfPixelRetinalPixelsWithin = max([1 floor(rfPixelSizeDegs/optimalRetinalPixelSizeDegs)]);
     pixelSizeDegs = rfPixelSizeDegs/rfPixelRetinalPixelsWithin;
     
-    fprintf('\nTo probe RFs with a rfPixel size of %2.3f degs\nusing a patch size of %2.1f degs with %d x %d pixels\neach rfPixel will contain %d retinal pixels (retinal res of :%2.3f arc min, optimal retinal res: %2.3f arc min) will be employed', ...
+    fprintf('\nTo probe RFs with a rfPixel size of %2.3f degs\nusing a patch size of %2.3f degs with %d x %d pixels\neach rfPixel will contain %d retinal pixels (retinal res of :%2.3f arc min, optimal retinal res: %2.3f arc min) will be employed', ...
         rfPixelSizeDegs, stimSizeDegs(1), rfPixelsAcross, rfPixelsAcross, rfPixelRetinalPixelsWithin, pixelSizeDegs*60, optimalRetinalPixelSizeDegs*60);
     
     % Generate a presentation display with a desired resolution
