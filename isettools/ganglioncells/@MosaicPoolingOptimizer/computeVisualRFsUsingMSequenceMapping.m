@@ -25,7 +25,7 @@ function computeVisualRFsUsingMSequenceMapping(...
         stimPositionDegs = theComputeReadyMRGCmosaic.eccentricityDegs;
     end
 
-    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f_PixelsAcross_%d.mat', stimPositionDegs(1), stimPositionDegs(2), rfPixelsAcross);
+    positionPostFix = sprintf('_atPosition_%2.2f_%2.2f.mat', stimPositionDegs(1), stimPositionDegs(2));
 
     coneMosaicResponsesFileName = strrep(coneMosaicResponsesFileName, '.mat', positionPostFix);
     mRGCMosaicResponsesFileName = strrep(mRGCMosaicResponsesFileName, '.mat', positionPostFix);
