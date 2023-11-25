@@ -89,7 +89,7 @@ function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
         load(coneMosaicResponsesFileName, ...
             'mSequenceSpatialModulationPatterns', 'spatialSupportDegs', 'stimParams', ...
             'theConeMosaicMSequenceLinearModulationResponses');
-        HartleySpatialModulationPatterns = single(HartleySpatialModulationPatterns);
+        mSequenceSpatialModulationPatterns = single(mSequenceSpatialModulationPatterns);
         fprintf('Done loading !\n');
 
         [mSequenceStimsNum, nCones] = size(theConeMosaicMSequenceLinearModulationResponses);
@@ -109,9 +109,9 @@ function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
         % Noise-free responses
         theComputeReadyMRGCmosaic.noiseFlag = 'none';
 
-        parfor iStim = 1:size(theConeMosaicMSequenceLinearModulationResponses,1)
+        parfor iStim = 1:mSequenceStimsNum
              fprintf('Computing mRGC mosaic response for m-sequence frame %d of %d (using %d parallel processes).\n', ...
-                 iStim, HartleyStimNum, numWorkers);
+                 iStim, mSequenceStimsNum, numWorkers);
              theConeMosaicModulationResponse = squeeze(theConeMosaicMSequenceLinearModulationResponses(iStim,:));
              theConeMosaicModulationResponse = reshape(theConeMosaicModulationResponse, [nTrials nTimePoints nCones]);
 
@@ -199,7 +199,7 @@ function theRFmaps = computeRFs(indicesOfOptimallyMappedRGCs, ...
     theRFmaps = cell(cellsNum, 1);
 
     parfor iCell = 1:numel(indicesOfOptimallyMappedRGCs)
-        fprintf('Computing visual RF by accumulating Hartley patterns for the %d of %d optimally mapped RGC... \n', iCell, numel(indicesOfOptimallyMappedRGCs));
+        fprintf('Computing visual RF by accumulating m-sequence frames for the %d of %d optimally mapped RGC... \n', iCell, numel(indicesOfOptimallyMappedRGCs));
         theRGCindex = indicesOfOptimallyMappedRGCs(iCell);
 
         if (ismember(theRGCindex, cellsWithNonZeroResponse))
