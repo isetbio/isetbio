@@ -163,6 +163,7 @@ function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, ...
     wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMM);
     wvfP = wvfSet(wvfP, 'ref psf sample interval', psfSamplesPerMinute);
     % Compute the PSF using the wavefront code
+    wvfP = wvfComputePupilFunction(wvfP);
     wvfP = wvfComputePSF(wvfP);
     
     % Create the corresponding optics object
