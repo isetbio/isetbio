@@ -113,10 +113,10 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
         d = generateMsequenceRFmap(d, msequencePixelSizeDegs);
 
         xLim = [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)];
-        xLim = theRGCRetinalRFcenterPositionDegs(1) + 0.08*[-1 1];
+        %xLim = theRGCRetinalRFcenterPositionDegs(1) + 0.08*[-1 1];
 
         yLim = [d.spatialSupportDegsY(1) d.spatialSupportDegsY(end)];
-        yLim = theRGCRetinalRFcenterPositionDegs(2) + 0.08*[-1 1];
+        %yLim = theRGCRetinalRFcenterPositionDegs(2) + 0.08*[-1 1];
 
         % The RF center position in the visual field
         [~,idx] = max(abs(d.theRFmap(:)));

@@ -5,6 +5,7 @@ function performComputeVisualRFsUsingMSequenceMapping(mosaicParams, varargin)
     p.addParameter('stimSizeDegs', 1.0, @(x)(isscalar(x)||numel(x)==2));
     p.addParameter('stimPositionDegs', [], @(x)(isempty(x)||(numel(x) == 2)));
     p.addParameter('rfPixelsAcross', 16, @(x)(isscalar(x)&&(x>0)));
+    p.addParameter('mSequenceBitLength', 10, @(x)(isscalar(x)&&(x>0)));
     p.addParameter('ternaryInsteadOfBinaryMsequence', false, @islogical);
     p.addParameter('reComputeInputConeMosaicResponses', false, @islogical);
     p.addParameter('reComputeMRGCMosaicResponses', false, @islogical);
@@ -21,6 +22,9 @@ function performComputeVisualRFsUsingMSequenceMapping(mosaicParams, varargin)
 
     % pixels (x,y)
     rfPixelsAcross = p.Results.rfPixelsAcross;
+
+    % Bit length of m-sequence
+    mSequenceBitLength = p.Results.mSequenceBitLength;
 
     % Type of msequence
     ternaryInsteadOfBinaryMsequence = p.Results.ternaryInsteadOfBinaryMsequence;
@@ -90,11 +94,11 @@ function performComputeVisualRFsUsingMSequenceMapping(mosaicParams, varargin)
 
     % Encode m-sequence type in responses filename
     if (ternaryInsteadOfBinaryMsequence)
-        coneMosaicMSequenceResponsesFileName = strrep(coneMosaicMSequenceResponsesFileName, 'MSequence', 'TernaryMSequence');
-        mRGCMosaicMSequenceResponsesFileName = strrep(mRGCMosaicMSequenceResponsesFileName, 'MSequence', 'TernaryMSequence');
+        coneMosaicMSequenceResponsesFileName = strrep(coneMosaicMSequenceResponsesFileName, 'MSequence', sprintf('Ternary%2.0fBitMSequence', mSequenceBitLength));
+        mRGCMosaicMSequenceResponsesFileName = strrep(mRGCMosaicMSequenceResponsesFileName, 'MSequence', sprintf('Ternary%2.0fBitMSequence', mSequenceBitLength));
     else
-        coneMosaicMSequenceResponsesFileName = strrep(coneMosaicMSequenceResponsesFileName, 'MSequence', 'BinaryMSequence');
-        mRGCMosaicMSequenceResponsesFileName = strrep(mRGCMosaicMSequenceResponsesFileName, 'MSequence', 'BinaryMSequence');
+        coneMosaicMSequenceResponsesFileName = strrep(coneMosaicMSequenceResponsesFileName, 'MSequence', sprintf('Binary%2.0fBitMSequence', mSequenceBitLength));
+        mRGCMosaicMSequenceResponsesFileName = strrep(mRGCMosaicMSequenceResponsesFileName, 'MSequence', sprintf('Binary%2.0fBitMSequence', mSequenceBitLength));
     end
 
     % Encode rfPixelsAcross
@@ -109,8 +113,8 @@ function performComputeVisualRFsUsingMSequenceMapping(mosaicParams, varargin)
     MosaicPoolingOptimizer.computeVisualRFsUsingMSequenceMapping(...
         theComputeReadyMRGCmosaic, opticsToEmploy, ...
         stimSizeDegs, stimPositionDegs, rfPixelsAcross, ...
+        ternaryInsteadOfBinaryMsequence, mSequenceBitLength, ...
         stimulusChromaticity, coneFundamentalsOptimizedForStimPosition, ...
-        ternaryInsteadOfBinaryMsequence, ...
         fullfile(resourcesDirectory, coneMosaicMSequenceResponsesFileName), ...
         fullfile(resourcesDirectory, mRGCMosaicMSequenceResponsesFileName), ...
         fullfile(resourcesDirectory, optimallyMappedMSequenceRFmapsFileName), ...

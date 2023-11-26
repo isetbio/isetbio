@@ -2,24 +2,21 @@ function H = binaryMsequencePatterns(rfPixelsAcross, rfPixelRetinalPixelsWithin,
     % Parse optional input
     p = inputParser;
     p.addParameter('visualizePatterns', false, @islogical);
+    p.addParameter('mSequenceBitLength', 10, @(x)(isscalar(x)&&(x>0)));
     p.addParameter('ternaryInsteadOfBinaryMsequence', @false, @islogical);
     p.parse(varargin{:});
     visualizePatterns = p.Results.visualizePatterns;
     ternaryInsteadOfBinaryMsequence = p.Results.ternaryInsteadOfBinaryMsequence;
-
+    mSequenceBitLength = p.Results.mSequenceBitLength;
     
     % Binary m-sequence
     if (ternaryInsteadOfBinaryMsequence)
         nLevels = 3;
-        % maximum M-sequence length (2^length)
-        sequenceLength = 7;
     else
         nLevels = 2;
-        % M-sequence length (2^length)
-        sequenceLength = 12;
     end
 
-    mseq = generateMsequence(nLevels, sequenceLength)/2.0;
+    mseq = generateMsequence(nLevels, mSequenceBitLength)/2.0;
     mseq = 0.5+mseq;
     nTimePoints = length(mseq);
     fprintf('Sequence length: %d\n', nTimePoints);
