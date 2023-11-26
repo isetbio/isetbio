@@ -1,8 +1,24 @@
 function run()
 
+    computerInfo = GetComputerInfo;
+    switch (lower(computerInfo.localHostName))
+        case 'ithaka'
+            maxNumWorkers = 12;
+        case 'crete'
+            maxNumWorkers = 12;
+        otherwise
+            maxNumWorkers = [];
+    end
+
     delete(gcp('nocreate'))
     c = parcluster('Processes');
-    c.NumWorkers = input('Enter number of parallel workers: ');
+    numWorkers = input('Enter number of parallel workers: ');
+    if (isempty(numWorkers))
+        numWorkers = maxNumWorkers;
+    end
+    if (~isempty(numWorkers))
+        c.NumWorkers = numWorkers;
+    end
     parpool(c);
 
     % Generate path to rawFigures root directory.
@@ -260,10 +276,10 @@ function run()
         visualizeOptimallyMappedRFmapLocations = true;
 
         stimPositionDegs = [0.65 0.72];
-        stimSizeDegs = [0.25 0.25];
+        stimSizeDegs = [0.35 0.35];
 
         % Spatial sampling of RF (# of squares)
-        rfPixelsAcross = 24;
+        rfPixelsAcross = 36;
 
         % Use ternary instead of binary m-sequence
         ternaryInsteadOfBinaryMsequence = true;

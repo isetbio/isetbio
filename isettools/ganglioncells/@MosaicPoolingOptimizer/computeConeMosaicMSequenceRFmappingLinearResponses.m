@@ -1,4 +1,5 @@
 function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResponses, ...
+          theConeMosaicMSequenceForwardModulationResponses, theConeMosaicMSequenceInverseModulationResponses, ...
           mSequenceSpatialModulationPatterns, spatialSupportDegs] = computeConeMosaicMSequenceRFmappingLinearResponses(...
                 theConeMosaic, theOptics,  ...
                 thePresentationDisplay, ...
@@ -18,19 +19,13 @@ function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResp
     % Compute the M-sequence spatial patterns
     visualizePatterns = ~true;
 
-    if (visualizePatterns)
-        % Compute spatial modulation patterns for the m-sequence
-        mSequenceSpatialModulationPatterns = rfMappingStimulusGenerator.binaryMsequencePatterns(...
+    mSequenceSpatialModulationPatterns = rfMappingStimulusGenerator.binaryMsequencePatterns(...
                     stimParams.rfPixelsAcross, stimParams.rfPixelRetinalPixelsWithin, ...
                     'ternaryInsteadOfBinaryMsequence', stimParams.ternaryInsteadOfBinaryMsequence, ...
-                    'visualizePatterns', true);
-    else
-        mSequenceSpatialModulationPatterns = rfMappingStimulusGenerator.binaryMsequencePatterns(...
-                stimParams.rfPixelsAcross, stimParams.rfPixelRetinalPixelsWithin, ...
-                'ternaryInsteadOfBinaryMsequence', stimParams.ternaryInsteadOfBinaryMsequence);
-    end
+                    'visualizePatterns', visualizePatterns);
 
-    % Compute the null stimulus.
+    % Compute the null stimulus scene and retrieve theConeFundamentalsStruct
+    % so we can pass it to each stimulus frame response computation
     fprintf('Computing null scene\n');
     [~, theNullStimulusScene, spatialSupportDegs, theConeFundamentalsStruct] = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
                 thePresentationDisplay, stimParams, mSequenceSpatialModulationPatterns, ...
@@ -53,10 +48,13 @@ function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResp
     normalizingResponses(coneIndicesWithZeroNullResponse) = 0;
     normalizingResponses = reshape(normalizingResponses, [1 1 numel(normalizingResponses)]);
 
-    % Compute the input cone mosaic modulation responses
+    % Allocate memory for the input cone mosaic modulation responses
     nStim = size(mSequenceSpatialModulationPatterns,1);
     theConeMosaicMSequenceLinearModulationResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
+    theConeMosaicMSequenceForwardModulationResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
+    theConeMosaicMSequenceInverseModulationResponses = zeros(nStim, theConeMosaic.conesNum, 'single');
 
+    % Compute the input cone mosaic modulation responses
     if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize))
          % Reset parpool
          [shutdownParPoolOnceCompleted, numWorkers] = MosaicPoolingOptimizer.resetParPool(parPoolSize);
@@ -118,6 +116,13 @@ function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResp
                  noiseFreeAbsorptionsModulationForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
 
+             % The forward response
+             theConeMosaicMSequenceForwardModulationResponses(iFrame,:) = single(...
+                 noiseFreeAbsorptionsModulationForwardPolarity(1,1,:));
+
+             % The inverse response
+             theConeMosaicMSequenceInverseModulationResponses(iFrame,:) = single(...
+                 noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
          end % iFrame
 
          if (shutdownParPoolOnceCompleted)
@@ -182,7 +187,14 @@ function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResp
                  noiseFreeAbsorptionsModulationForwardPolarity(1,1,:) - ...
                  noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
 
-         
+            % The forward response
+             theConeMosaicMSequenceForwardModulationResponses(iFrame,:) = single(...
+                 noiseFreeAbsorptionsModulationForwardPolarity(1,1,:));
+
+             % The inverse response
+             theConeMosaicMSequenceInverseModulationResponses(iFrame,:) = single(...
+                 noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
+
             if (visualizeResponses)
                 hFig = figure(2); clf;
                 set(hFig, 'Position', [10 10 2000 800]);
@@ -216,57 +228,4 @@ function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResp
             end
         end
     end
-
 end
-
-
-
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
