@@ -1,8 +1,8 @@
-function [l, m, s] = coneTypeLocations(cmosaic, varargin)
+function [l, m, s] = coneTypeLocations(cmosaicRect, varargin)
 % Return row/col or indices of the three types of cones
 %
 % Syntax:
-%   [l, m, s] = coneTypeLocations(cmosaic, 'val', [{'index' or 'rowcol'}])
+%   [l, m, s] = coneTypeLocations(cmosaicRect, 'val', [{'index' or 'rowcol'}])
 %
 % Description:
 %    A function designed to return the row and column or indices of the
@@ -15,8 +15,12 @@ function [l, m, s] = coneTypeLocations(cmosaic, varargin)
 %    There are examples contained in the code. To access, type 'edit
 %    coneTypeLocations.m' into the Command Window.
 %
+%    Note: This routine works with the coneMosaicRect mosaic type.  With
+%    the cMosaic, you'll need to do this a different way.  See the cMosaic
+%    tutorials.
+%
 % Input:
-%    cmosaic  - Cone Mosaic object
+%    cmosaicRect  - coneMosaicRect object
 %
 % Outputs:
 %    l        - Pertinent information for L cones
@@ -33,14 +37,14 @@ function [l, m, s] = coneTypeLocations(cmosaic, varargin)
 
 % Examples:
 %{
-   cm = coneMosaic;
-   [l, m, s] = coneTypeLocations(cm);
-   [l, m, s] = coneTypeLocations(cm, 'format', 'rowcol');
+   cmRect = coneMosaicRect;
+   [l, m, s] = coneTypeLocations(cmRect);
+   [l, m, s] = coneTypeLocations(cmRect, 'format', 'rowcol');
 %}
 
 %%
 p = inputParser;
-p.addRequired('cmosaic', @(x)(isa(cmosaic, 'coneMosaic')));
+p.addRequired('cmosaic', @(x)(isa(cmosaic, 'coneMosaicRect')));
 p.addParameter('format', 'index', @ischar);
 p.parse(cmosaic, varargin{:});
 
