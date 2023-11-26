@@ -11,12 +11,12 @@ function H = binaryMsequencePatterns(rfPixelsAcross, rfPixelRetinalPixelsWithin,
     % Binary m-sequence
     if (ternaryInsteadOfBinaryMsequence)
         nLevels = 3;
-        % M-sequence length (2^length)
+        % maximum M-sequence length (2^length)
         sequenceLength = 7;
     else
         nLevels = 2;
         % M-sequence length (2^length)
-        sequenceLength = 13;
+        sequenceLength = 12;
     end
 
     mseq = generateMsequence(nLevels, sequenceLength)/2.0;
@@ -27,7 +27,12 @@ function H = binaryMsequencePatterns(rfPixelsAcross, rfPixelRetinalPixelsWithin,
     % Shift msequence signal for each pixel
     pixelsNum = rfPixelsAcross^2;
     spatioTemporalActivation = zeros(nTimePoints, pixelsNum, 'single');
-    shiftStep = round(numel(mseq)/pixelsNum);
+    mSequenceShift = numel(mseq)/pixelsNum;
+    if (mSequenceShift < 1.0)
+        error('M-sequence shift is %f. Either decrease the spatial resolution or increase the m-sequence length.\n', mSequenceShift);
+    end
+
+    shiftStep = round(mSequenceShift);
     for pixelIndex = 1:pixelsNum
         spatioTemporalActivation(:,pixelIndex) = single(shiftMseq(mseq, (pixelIndex-1)*shiftStep));
     end

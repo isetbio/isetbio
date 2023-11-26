@@ -279,10 +279,10 @@ function run()
         stimSizeDegs = [0.35 0.35];
 
         % Spatial sampling of RF (# of squares)
-        rfPixelsAcross = 36;
+        rfPixelsAcross = 63;
 
         % Use ternary instead of binary m-sequence
-        ternaryInsteadOfBinaryMsequence = true;
+        ternaryInsteadOfBinaryMsequence = ~true;
 
         MosaicPoolingOptimizer.performComputeVisualRFsUsingMSequenceMapping(mosaicParams, ...
             'stimSizeDegs', stimSizeDegs, ....
