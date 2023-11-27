@@ -46,11 +46,6 @@ function t_fixationalEyeMovementsToIsomerizations(varargin)
 %    02/07/18  npc  Comments.
 %    07/11/18  jnm  Formatting. Written as a function, so formatted as one.
 
-% Examples:
-%{
-    t_fixationalEyeMovementsToIsomerizations;
-%}
-
 %%
 p = inputParser;
 varargin = ieParamFormat(varargin);
