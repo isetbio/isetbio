@@ -491,6 +491,7 @@ for p = 1:length(subjectIdx)
         end
 
         % Compute and accumulate the PSF, OTF and zernikes across subjects
+        wvf = wvfComputePupilFunction(wvf);
         wvf = wvfComputePSF(wvf);
         all_psf(:, :, p) = wvfGet(wvf, 'psf');
         all_otf(:, :, p) = wvfGet(wvf, 'otf');
@@ -537,8 +538,11 @@ end
 if length(subjectIdx) > 1
     % First check for subjects without data
     if any(subjectWithoutData)
-        fprintf('(%s): Excluding subject nr %02d because there is no data available \n', ...
-            mfilename, find(subjectWithoutData))
+        badSubjectIndex = find(subjectWithoutData);
+        for ss = 1:length(badSubjectIndex)
+        fprintf('(%s): Excluding subject number %02d because there is no data available\n', ...
+            mfilename, badSubjectIndex(ss))
+        end
     end
     all_otf = all_otf(:, :, ~subjectWithoutData);
 
