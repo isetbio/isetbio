@@ -1,8 +1,8 @@
-function meanRate = coneMeanIsomerizations(cMosaic, varargin)
+function meanRate = coneMeanIsomerizations(cMosaicRect, varargin)
 % Calculate spatial mean photon rate(R*/sec) for the 3 cone types in mosaic
 % 
 % Syntax:
-%   meanRate = coneMeanIsomerizations(cMosaic);
+%   meanRate = coneMeanIsomerizations(cMosaicRect);
 %
 % Description:
 %    Calculate the spatial mean photon rate (R*/sec by default) for the 3
@@ -12,7 +12,7 @@ function meanRate = coneMeanIsomerizations(cMosaic, varargin)
 %    coneMeanIsomerizations.m' into the Command Window.
 %
 % Inputs:
-%    cMosaic                  - coneMosaic object
+%    cMosaicRect              - coneMosaicRect object
 %
 % Outputs:
 %    meanRate                 - Three vector absorption rates for the L, M, 
@@ -75,9 +75,9 @@ function meanRate = coneMeanIsomerizations(cMosaic, varargin)
    scene = sceneCreate;
    oi = oiCreate('human');
    oi = oiCompute(oi,scene,'pad value','mean');
-   cMosaic = coneMosaic;
-   cMosaic.compute(oi);
-   tmp = coneMeanIsomerizations(cMosaic);
+   cMosaicRect = coneMosaicRect;
+   cMosaicRect.compute(oi);
+   tmp = coneMeanIsomerizations(cMosaicRect);
 %}
 
 %% Validate and parse input parameters
@@ -85,8 +85,8 @@ p = inputParser;
 p.addRequired('cMosaic', @(x) isa(x, 'coneMosaicRect'));
 p.addParameter('perSample', false, @islogical);
 p.addParameter('absorptionsInXWFormat', [], @isnumeric);
-p.parse(cMosaic, varargin{:});
-cMosaic = p.Results.cMosaic;
+p.parse(cMosaicRect, varargin{:});
+cMosaicRect = p.Results.cMosaic;
 perSample = p.Results.perSample;
 
 %% Default values to return for null case, namely 0 all the way.
@@ -96,7 +96,7 @@ sMean = 0;
 meanRate = [lMean, mMean, sMean];
 
 %% Locations of each cone type
-coneType = cMosaic.pattern;
+coneType = cMosaicRect.pattern;
 
 %% Compute
 if (~isempty(p.Results.absorptionsInXWFormat))
@@ -104,7 +104,7 @@ if (~isempty(p.Results.absorptionsInXWFormat))
     % XW is a misnomer here.  It is really XT.
     % The action performed here should really be a 'get' method.
     pRateXW = p.Results.absorptionsInXWFormat;
-    nonNullConeIndices = find(cMosaic.pattern > 1);
+    nonNullConeIndices = find(cMosaicRect.pattern > 1);
     nonNullConeTypes = coneType(nonNullConeIndices);
     lConeIndices = find(nonNullConeTypes == 2);
     mConeIndices = find(nonNullConeTypes == 3);
@@ -115,7 +115,7 @@ else
     % Response to DHB:  This appears to convert (x, y, t) to (space x time)
     % Then we pull out the spatial locations for each cone type separately
     % and average them.
-    pRate = cMosaic.absorptions;     % Absorptions per sample
+    pRate = cMosaicRect.absorptions;     % Absorptions per sample
     if isempty(pRate), return; end   % Return 0 when no absorptions
     pRateXW = RGB2XWFormat(pRate);
     lConeIndices = find(coneType == 2);
@@ -151,7 +151,7 @@ if (perSample)
     meanRate = [lMean, mMean, sMean];    
 else
     % Convert to R*/sec. This is the default
-    meanRate = [lMean, mMean, sMean] / cMosaic.integrationTime;
+    meanRate = [lMean, mMean, sMean] / cMosaicRect.integrationTime;
 end
 
 end
