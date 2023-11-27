@@ -104,7 +104,7 @@ p.addParameter('densitycontourlevellabelsdisplay', false, @islogical);
 p.addParameter('densitycolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
 
 p.addParameter('withsuperimposedopticalimage', [], @(x)(isempty(x) || isstruct(x)));
-p.addParameter('superimposedopticalimagealpha', 0.7, @isnumeric);
+p.addParameter('withsuperimposedopticalimagealpha', 0.7, @isnumeric);
 p.addParameter('withsuperimposedpsf', [], @(x)(isempty(x) || isstruct(x)));
 
 p.addParameter('activation', []);
