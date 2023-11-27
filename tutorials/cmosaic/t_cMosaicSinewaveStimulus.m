@@ -14,6 +14,12 @@
 
 function t_cMosaicSinewaveStimulus
 
+    if (~exist('ISETBioCSFGenerator.mlapp','file'))
+        fprintf('This tutorial requires the ISETBioCSFGenerator repo on your path\n');
+        fprintf('Returning without doing anything.\n');
+        return;
+    end
+
     whichEye = 'right eye';             % choose between {'right eye', 'left eye'}
     opticsDataBase = 'Artal2012';      % choose between {'Polans2015', 'Artal2012'}
     subjectRankOrder = 4;
