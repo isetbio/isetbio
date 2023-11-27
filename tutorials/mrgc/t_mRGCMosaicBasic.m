@@ -24,7 +24,10 @@ function t_mRGCMosaicBasic
     %% Specify the desired eccentricity of the precomputed mRGC mosaic
     % Choose the x-eccentricity from one of the available mosaics displayed above
     % (e.g., -16.0 to load the mosaic 'mRGCMosaicEcDegs(-10.0_0.0)_SizeDegs(6.0_3.0)...'
-    horizontalEccDegs = input('Enter mRGCMosaic''s horizontal eccentricity: ');
+    %
+    % Better to code one we know should be there, because asking user for
+    % input in a tutorial hangs the autorun validations.
+    horizontalEccDegs = 0; % input('Enter mRGCMosaic''s horizontal eccentricity: ');
 
     %% Load precomputed mRGCMosaic
     theMRGCMosaic = MosaicPoolingOptimizer.loadPreComputedMRGCMosaic(horizontalEccDegs);
@@ -55,8 +58,8 @@ function t_mRGCMosaicBasic
     theOI = theMRGCMosaic.theNativeOptics;
 
     %% Compute the retinal image of the stimulus and background scenes
-    theStimulusRetinalImage = oiCompute(theStimulusScene, theOI);
-    theBackgroundRetinalImage = oiCompute(theBackgroundScene, theOI);
+    theStimulusRetinalImage = oiCompute(theOI, theStimulusScene);
+    theBackgroundRetinalImage = oiCompute(theOI, theBackgroundScene);
 
     %% Set the integration time of the input cone mosaic to 100 msec
     theMRGCMosaic.inputConeMosaic.integrationTime = 100/1000;
