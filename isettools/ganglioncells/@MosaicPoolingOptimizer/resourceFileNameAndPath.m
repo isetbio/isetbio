@@ -51,6 +51,12 @@ function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNam
         case 'mRGCMosaicSubspaceResponses'
             resourceFileName = generateMRGCMosaicSubspaceResponsesFileName(mosaicParams, opticsParams);
 
+        case 'coneMosaicMSequenceResponses'
+            resourceFileName = generateConeMosaicMSequenceResponsesFileName(mosaicParams, opticsParams);
+
+        case 'mRGCMosaicMSequenceResponses'
+            resourceFileName = generateMRGCMosaicMSequenceResponsesFileName(mosaicParams, opticsParams);
+
         case 'optimizedRGCpoolingObjects'
             resourceFileName = generateOptimizedRGCpoolingObjectsFileName(mosaicParams, opticsParams, retinalRFmodelParams);
 
@@ -118,6 +124,18 @@ function m = generateMRGCMosaicSubspaceResponsesFileName(mosaicParams, opticsPar
     m = strrep(mosaicFileName, '.mat', sprintf('%s_mRGCMosaicSubspaceResponses.mat', opticsString));
 end
 
+function m = generateConeMosaicMSequenceResponsesFileName(mosaicParams, opticsParams)
+    mosaicFileName = generateMosaicFileName(mosaicParams);
+    opticsString = generateOpticsString(opticsParams);
+    m = strrep(mosaicFileName, '.mat', sprintf('%s_coneMosaicMSequenceResponses.mat', opticsString));
+end
+
+function m = generateMRGCMosaicMSequenceResponsesFileName(mosaicParams, opticsParams)
+    mosaicFileName = generateMosaicFileName(mosaicParams);
+    opticsString = generateOpticsString(opticsParams);
+    m = strrep(mosaicFileName, '.mat', sprintf('%s_mRGCMosaicMSequenceResponses.mat', opticsString));
+end
+
 function m = generateOptimizedRGCpoolingObjectsFileName(mosaicParams, opticsParams, retinalRFmodelParams)
     mosaicFileName = generateMosaicFileName(mosaicParams);
     opticsString = generateOpticsString(opticsParams);
@@ -179,5 +197,11 @@ function m = generateOpticsString(opticsParams)
             strrep(opticsParams.analyzedEye, ' ', '_'),...
             opticsParams.pupilDiameterMM, ...
             opticsParams.refractiveErrorDiopters);
+    end
+
+    if (isfield(opticsParams, 'employMonochromaticVlambdaWeightedPSF'))
+        if (opticsParams.employMonochromaticVlambdaWeightedPSF)
+            m = sprintf('%s_MonoVlambdaPSF', m);
+        end
     end
 end

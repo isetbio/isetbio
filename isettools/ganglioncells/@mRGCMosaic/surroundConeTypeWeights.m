@@ -1,27 +1,27 @@
-function [theSurroundConeTypeWeights, theExclusiveSurroundConeTypeWeights] = ...
+function [theSurroundConeTypeWeights, theExclusiveSurroundConeTypeWeights, theSurroundConeTypes, theSurroundConeIndices] = ...
     surroundConeTypeWeights(obj, theRGCindex, theCenterConeIndices)
 
     % Retrieve the cell's surround cone indices and weights
     connectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix(:, theRGCindex)));
-    surroundConeIndices = find(connectivityVector > 0.0001);
+    theSurroundConeIndices = find(connectivityVector > 0.0001);
 
     % Retrieve the cell's surround cone types
-    surroundConeTypes = obj.inputConeMosaic.coneTypes(surroundConeIndices);
+    theSurroundConeTypes = obj.inputConeMosaic.coneTypes(theSurroundConeIndices);
 
     % Compute the net surround weights for each cone type
     theSurroundConeTypeWeights = netSurroundWeightsForEachConeType(...
-        connectivityVector, surroundConeIndices, surroundConeTypes);
+        connectivityVector, theSurroundConeIndices, theSurroundConeTypes);
     
     % If a non-empty centerConeIndices is passed, also compute the
     % exclusive surround cone type weights
     if (~isempty(theCenterConeIndices))
-        [~, idx] = setdiff(surroundConeIndices, theCenterConeIndices);
-        surroundConeIndices = surroundConeIndices(idx);
-        surroundConeTypes = surroundConeTypes(idx);
+        [~, idx] = setdiff(theSurroundConeIndices, theCenterConeIndices);
+        theExclusiceSurroundConeIndices = theSurroundConeIndices(idx);
+        theExclusiceSurroundConeTypes = theSurroundConeTypes(idx);
 
         % Compute the net surround weights for each cone type
         theExclusiveSurroundConeTypeWeights = netSurroundWeightsForEachConeType(...
-            connectivityVector, surroundConeIndices, surroundConeTypes);
+            connectivityVector, theExclusiceSurroundConeIndices, theExclusiceSurroundConeTypes);
     else
         theExclusiveSurroundConeTypeWeights = [];
     end

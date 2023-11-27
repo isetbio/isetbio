@@ -55,10 +55,10 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFphases, t
     visualizedSpatialFrequencyRange = [visualizedSpatialFrequencyRange(1) visualizedSpatialFrequencyRange(2)];
     
     grid(ax, 'on'); box(ax, 'off');
-    set(ax, 'XLim', visualizedSpatialFrequencyRange, 'YLim', [1*ff.axisOffsetFactor 1.05]);
+    set(ax, 'XLim', visualizedSpatialFrequencyRange, 'YLim', [1*ff.axisOffsetFactor 0.5]);
     
-    set(ax, 'XTick', xTicks, 'YTick', 0:0.2:2, ...
-            'XTickLabel', xTicks, 'YTickLabel', 0:0.2:2);
+    set(ax, 'XTick', xTicks, 'YTick', 0:0.1:1, ...
+            'XTickLabel', xTicks, 'YTickLabel', 0:0.1:1);
     set(ax, 'TickDir', 'both')
     set(ax, 'XScale', 'log');
     
@@ -77,7 +77,7 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFphases, t
     
     
     if (~noYTickLabel)
-        set(ax, 'YTick', 0:0.2:1, 'YTickLabel', sprintf('%1.1f\n', 0:0.2:1));
+        set(ax, 'YTick', 0:0.1:1, 'YTickLabel', sprintf('%1.1f\n', 0:0.1:1));
     else
         set(ax, 'YTick', []);
     end
@@ -95,7 +95,7 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFphases, t
     set(ax, 'XColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
     set(ax, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
 
-    box(ax, 'on');
+    box(ax, 'off');
 
     yyaxis(ax, 'left')
     %hold(ax, 'on')
@@ -103,12 +103,20 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFphases, t
     % The difference between the 2 cone-isolating STF phase spectra
     theConeIsolatingPhaseSpectrumDifferential = unwrapPhaseSpectum(squeeze(theSTFphases(:,2)), squeeze(theSTFphases(:,3)));
 
-    plot(ax, sfSupportCPD, theConeIsolatingPhaseSpectrumDifferential, 'o-', 'LineWidth', ff.lineWidth, ...
+    plot(ax, sfSupportCPD, theConeIsolatingPhaseSpectrumDifferential, '-', 'LineWidth', ff.lineWidth, ...
             'MarkerEdgeColor', [0 0 0.8], ...
             'MarkerFaceColor', [0.5 0.5 1], ...
-            'Color', [0 0 0.8], ...
+            'Color', [0 0.3 0.6], ...
+            'MarkerSize', ff.markerSize/2, ...
+            'LineWidth', ff.lineWidth*2);
+    hold(ax, 'on');
+    plot(ax, sfSupportCPD, theConeIsolatingPhaseSpectrumDifferential, '-', 'LineWidth', ff.lineWidth, ...
+            'MarkerEdgeColor', [0 0 0.8], ...
+            'MarkerFaceColor', [0.5 0.5 1], ...
+            'Color', [0 0.7 0.9], ...
             'MarkerSize', ff.markerSize/2, ...
             'LineWidth', ff.lineWidth);
+    hold(ax, 'off')
     minPhase = min(theConeIsolatingPhaseSpectrumDifferential);
     maxPhase = max(theConeIsolatingPhaseSpectrumDifferential);
 
@@ -124,6 +132,8 @@ function renderMultiSTF(ax, sfSupportCPD, theSTFs, theShadedSTF, theSTFphases, t
 
     set(ax, 'YLim', phaseRange, 'YTick', phaseTicks, 'YTickLabel', phaseTickLabels, 'YColor', [0 0 0.8]);
     ylabel(ax, 'STF differential phase (L-M)', 'FontAngle', ff.axisFontAngle);
+
+    set(ax, 'YColor', [0 0.6 0.8], 'LineWidth', ff.axisLineWidth);
 
     % plot title
     if (~isempty(plotTitle))

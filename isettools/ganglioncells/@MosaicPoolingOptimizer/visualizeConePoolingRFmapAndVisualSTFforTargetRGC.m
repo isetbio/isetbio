@@ -8,14 +8,14 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('reverseXDir', false, @islogical);
-    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+    p.addParameter('gridlessLineWeightingFunctions', false, @islogical);
     p.parse(varargin{:});
 
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
     reverseXDir = p.Results.reverseXDir;
-    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
+    gridlessLineWeightingFunctions = p.Results.gridlessLineWeightingFunctions;
 
     load(computeReadyMosaicFilename, 'theComputeReadyMRGCmosaic');
     load(mRGCMosaicSTFresponsesFilename, 'spatialFrequenciesTested', 'theMRGCMosaicOptimalSTFs');
@@ -33,7 +33,7 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
         'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
         'withFigureFormat', ff, ...
         'reverseXDir', reverseXDir, ...
-        'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions);
+        'gridlessLineWeightingFunctions', gridlessLineWeightingFunctions);
 
     theVisualizedRGCvisualSTFdata = theMRGCMosaicOptimalSTFs{theVisualizedRGCindex};
     idx = find(strcmp(theVisualizedRGCvisualSTFdata.DoGfitParams.names, 'kS/kC'));
@@ -157,7 +157,7 @@ function visualizeConePoolingRFmapAndVisualSTFforTargetRGC(...
         'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
         'withFigureFormat', ff, ...
         'reverseXDir', reverseXDir, ...
-        'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions);
+        'gridlessLineWeightingFunctions', gridlessLineWeightingFunctions);
 
 
     pdfFileNameForPLOS = fullfile(rawFiguresRoot, pdfFileNameSurroundWeightsNum);

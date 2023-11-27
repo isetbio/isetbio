@@ -6,14 +6,14 @@ function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, 
     p.addParameter('normalizedPeakSurroundSensitivity', 0.4, @isscalar);
     p.addParameter('visualizedSpatialFrequencyRange', [], @(x)(isempty(x)||(numel(x)==2)));
     p.addParameter('reverseXDir', false, @islogical);
-    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+    p.addParameter('gridlessLineWeightingFunctions', false, @islogical);
 
     p.parse(varargin{:});
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     visualizedSpatialFrequencyRange = p.Results.visualizedSpatialFrequencyRange;
     normalizedPeakSurroundSensitivity = p.Results.normalizedPeakSurroundSensitivity;
     reverseXDir = p.Results.reverseXDir;
-    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
+    gridlessLineWeightingFunctions = p.Results.gridlessLineWeightingFunctions;
 
     % Ask the user what optics were used for computing the compute-ready MRGC mosaic
     fprintf('\n---> Select the optics that were used to compute the compute-ready mosaic\n');
@@ -47,7 +47,7 @@ function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, 
 
     fprintf('\n---> Select the chromaticity that was used to compute the input cone mosaic STF responses on which the mRGC mosaic STF responses were based on\n');
     % Ask the user what stimulus chromaticity to use
-    [~, mRGCMosaicSTFresponsesFileName] = ...
+    [~, ~, mRGCMosaicSTFresponsesFileName] = ...
         MosaicPoolingOptimizer.chooseStimulusChromaticityForMosaicResponsesAndUpdateFileName(...
             mRGCMosaicSTFresponsesFileName, 'STFresponses');
 
@@ -78,6 +78,6 @@ function performVisualizeConePoolingRFmapAndVisualSTFforTargetRGC(mosaicParams, 
             'normalizedPeakSurroundSensitivity', normalizedPeakSurroundSensitivity, ...
             'visualizedSpatialFrequencyRange',  visualizedSpatialFrequencyRange, ...
             'reverseXDir', reverseXDir, ...
-            'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions);
+            'gridlessLineWeightingFunctions', gridlessLineWeightingFunctions);
 
 end

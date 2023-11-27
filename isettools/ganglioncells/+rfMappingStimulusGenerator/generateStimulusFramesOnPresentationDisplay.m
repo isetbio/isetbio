@@ -1,4 +1,4 @@
-function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
+function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsStruct] = ...
         generateStimulusFramesOnPresentationDisplay(...
                 presentationDisplay, stimParams, ...
                 spatialModulationPatterns, varargin)
@@ -6,10 +6,70 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
     p = inputParser;
     p.addParameter('validateScenes', false, @islogical);
     p.addParameter('sceneIndexToCompute',  [], @isnumeric);
+    p.addParameter('customConeFundamentals', [], @(x)(isempty(x)||isstruct(x)));
+    p.addParameter('withPreviouslyComputedConeFundamentalsStruct', [], @(x)(isempty(x)||isstruct(x)));
     p.parse(varargin{:});
     validateScenes = p.Results.validateScenes;
     sceneIndexToCompute = p.Results.sceneIndexToCompute;
+    customConeFundamentals = p.Results.customConeFundamentals;
+    previouslyComputedConeFundamentalsStruct = p.Results.withPreviouslyComputedConeFundamentalsStruct;
+
+    if (isempty(previouslyComputedConeFundamentalsStruct))
+        if (isempty(customConeFundamentals))
+            % Load the 2-deg Stockman cone fundamentals on wavelength support matching the display
+            displayWavelengths = displayGet(presentationDisplay, 'wave');
+            coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
+
+            % Returned coneFundamentals struct
+            coneFundamentalsStruct.coneFundamentals = coneFundamentals;
+            coneFundamentalsStruct.spectralSupport = displayWavelengths;
+
+            fprintf('Employing the standard SS-2 cone fundamentals.\n');
+        else
+            displayWavelengths = displayGet(presentationDisplay, 'wave');
+            assert(isfield(customConeFundamentals, 'wavelengthSupport'), ...
+                'customConeFundamentals does not contain wavelength support info');
+            assert(isfield(customConeFundamentals, 'quantalExcitationSpectra'), ...
+                'customConeFundamentals does not contain quantalExcitationSpectra info');
+            assert(size(customConeFundamentals.quantalExcitationSpectra,2) == 3, ...
+                'customConeFundamentals.spd is not an Nx3 matrix');
+            assert(size(customConeFundamentals.quantalExcitationSpectra,1) == numel(customConeFundamentals.wavelengthSupport), ...
+                'customConeFundamentals.spf does not have the same dimensionality as customConeFundamentals.wavelengthSupport');
     
+            if (~isequal(displayWavelengths, customConeFundamentals.wavelengthSupport))
+                % Resample customConeFundamentals.spd to wavelength support matching the display
+                resampledCustomConeFundamantals = displayWavelengths*0;
+                for iChannel = 1:size(customConeFundamentals.quantalExcitationSpectra,2)
+                    resampledCustomConeFundamantals(:,iChannel) = interp1(...
+                        customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,iChannel), ...
+                        displayWavelengths, 'linear','extrap');
+                end
+                customConeFundamentals.quantalExcitationSpectra = resampledCustomConeFundamantals;
+                customConeFundamentals.wavelengthSupport = displayWavelengths;
+            end
+            
+            coneFundamentals = customConeFundamentals.quantalExcitationSpectra/max(customConeFundamentals.quantalExcitationSpectra(:));
+
+            % Returned coneFundamentals struct
+            coneFundamentalsStruct.coneFundamentals = coneFundamentals;
+            coneFundamentalsStruct.spectralSupport = displayWavelengths;
+
+            % Compare to default SS2
+            compareCustomConeFundamentalsToDefaultSS2(customConeFundamentals);
+
+            fprintf('Employing the custom cone fundamentals.\n');
+        end
+    else
+        coneFundamentals = previouslyComputedConeFundamentalsStruct.coneFundamentals;
+        displayWavelengths = previouslyComputedConeFundamentalsStruct.spectralSupport;
+        coneFundamentalsStruct = previouslyComputedConeFundamentalsStruct;
+        fprintf('Employing previously used cone fundamentals.\n');
+    end
+
+    % Compute the displayRGCtoLMS matrix
+    displayRGBtoLMS = (coneFundamentals' * displayGet(presentationDisplay, 'spd', displayWavelengths))';
+    displayLMStoRGB = inv(displayRGBtoLMS);
+
     % Compute spatial support
     pixelsNum  = round(stimParams.stimSizeDegs / stimParams.pixelSizeDegs);
     spatialSupportDegs = linspace(-0.5*stimParams.stimSizeDegs, 0.5*stimParams.stimSizeDegs, pixelsNum);
@@ -25,7 +85,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
     backgroundRGB = imageLinearTransform(backgroundXYZ, inv(displayGet(presentationDisplay, 'rgb2xyz')));
     
     % Background LMS excitations
-    backgroundLMS = imageLinearTransform(backgroundRGB, displayGet(presentationDisplay, 'rgb2lms'));
+    backgroundLMS = imageLinearTransform(backgroundRGB, displayRGBtoLMS);
 
     nStim = size(spatialModulationPatterns,1);
 
@@ -60,7 +120,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
         LMSexcitationImage = bsxfun(@times, (1+LMScontrastImage), reshape(backgroundLMS, [1 1 3]));
 
         % Stimulus linear RGB primaries image
-        RGBimage = imageLinearTransform(LMSexcitationImage, inv(displayGet(presentationDisplay, 'rgb2lms')));
+        RGBimage = imageLinearTransform(LMSexcitationImage, displayLMStoRGB);
 
         % Make sure we are in gamut (no subpixels with primary values outside of [0 1]
         outOfGamutPixels = numel(find((RGBimage(:)<0)|(RGBimage(:)>1)));
@@ -82,17 +142,22 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
 
 
         if (validateScenes)
-            % Compute different scene representations for validation and visualization purposes
-            sceneLMScontrastsImage = ...
-                sceneRepresentations(theScene, presentationDisplay, backgroundLMS);
+            emittedRadianceImage = sceneGet(theScene, 'energy');
+            % Compute the LMS cone contrasts of the emitted radiance image
+            sceneLMScontrastsImage = computeLMScontrastImage(emittedRadianceImage, coneFundamentals, backgroundLMS);
+       
 
             % Assert that the scene cone contrasts match the desired ones
             figNo = 1999;
             assertDisplayContrasts(figNo, sceneLMScontrastsImage, LMScontrastImage);
 
             % Visualize scene components
-            %figNo = 2000;
-            %visualizeDisplayImage(figNo, sceneSRGBimage, sceneLMSexcitationsImage, presentationDisplay);
+            figure(2000);
+            ax = subplot(1,1,1);
+            visualizeScene(theScene, ...
+                'presentationDisplay', presentationDisplay, ...
+                'axesHandle', ax);
+            drawnow;
         end
 
         if (isempty(sceneIndexToCompute))
@@ -115,81 +180,6 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs] = ...
 
 end
 
-
-function visualizeDisplayImage(figNo, sRGBimage, LMSimage,  presentationDisplay)
-    backgroundLMS = LMSimage(1,1,:);
-    %Compute the RGB image of the L-excitations image component
-    tmp = LMSimage;
-    for k = [2 3]
-        tmp(:,:,k) = 0*tmp(:,:,k)+backgroundLMS(k);
-    end
-    tmp = imageLinearTransform(tmp, inv(displayGet(presentationDisplay, 'rgb2lms')));
-    if ((min(tmp(:))<0) || (max(tmp(:))>1))
-        tmp(tmp<0) = 0;
-        tmp(tmp>1) = 1;
-        fprintf('L-only component not realizable. Will clip.\n');
-    end
-    LexcitationSRGBimage = lrgb2srgb(tmp);
-    
-    % Compute the RGB image of the M-excitations image component
-    tmp = LMSimage;
-    for k = [1 3]
-        tmp(:,:,k) = 0*tmp(:,:,k)+backgroundLMS(k);
-    end
-    tmp = imageLinearTransform(tmp, inv(displayGet(presentationDisplay, 'rgb2lms')));
-    if ((min(tmp(:))<0) || (max(tmp(:))>1))
-        tmp(tmp<0) = 0;
-        tmp(tmp>1) = 1;
-        fprintf('M-only component not realizable. Will clip.\n');
-    end
-    MexcitationSRGBimage = lrgb2srgb(tmp);
-    
-
-    % Compute the RGB image of the S-excitations image component
-    tmp = LMSimage;
-    for k =[1 2]
-        tmp(:,:,k) = 0*tmp(:,:,k)+backgroundLMS(k);
-    end
-    tmp = imageLinearTransform(tmp, inv(displayGet(presentationDisplay, 'rgb2lms')));
-    if ((min(tmp(:))<0) || (max(tmp(:))>1))
-        tmp(tmp<0) = 0;
-        tmp(tmp>1) = 1;
-        fprintf('S-only component not realizable. Will clip.\n');
-    end
-    SexcitationSRGBimage = lrgb2srgb(tmp);
-    
-
-    hFig = figure(figNo); clf;
-
-    % Plot the L-cone component
-    theCurrentAxes = subplot(2,2,1); 
-    image(theCurrentAxes, LexcitationSRGBimage);
-    axis(theCurrentAxes, 'square');
-    set(theCurrentAxes, 'XTick', [], 'YTick', []);
-    title(theCurrentAxes, 'L-cone stimulus component');
-    
-    % Plot the M-cone component
-    theCurrentAxes = subplot(2,2,2);
-    image(theCurrentAxes, MexcitationSRGBimage);
-    axis(theCurrentAxes, 'square');
-    set(theCurrentAxes, 'XTick', [], 'YTick', []);
-    title(theCurrentAxes, 'M-cone stimulus component');
-     
-    % Plot the S-cone component
-    theCurrentAxes = subplot(2,2,3);
-    image(theCurrentAxes, SexcitationSRGBimage);
-    axis(theCurrentAxes, 'square');
-    set(theCurrentAxes, 'XTick', [], 'YTick', []);
-    title(theCurrentAxes, 'S-cone stimulus component');
-    
-    % Plot the composite stimulus
-    theCurrentAxes = subplot(2,2,4);
-    image(theCurrentAxes, sRGBimage);
-    axis(theCurrentAxes, 'square')
-    set(theCurrentAxes, 'XTick', [], 'YTick', []);
-    title(theCurrentAxes, 'composite stimulus');
-    drawnow
-end
 
 function assertDisplayContrasts(figNo, sceneLMScontrastsImage, desiredLMScontrastImage)
     hFig = figure(figNo); clf;
@@ -221,18 +211,7 @@ function assertDisplayContrasts(figNo, sceneLMScontrastsImage, desiredLMScontras
     title('S-cone contrast');
 end
 
-function sceneLMScontrastsImage  = ...
-    sceneRepresentations(theScene, presentationDisplay, backgroundLMS)
 
-    emittedRadianceImage = sceneGet(theScene, 'energy');
-    displayWavelengths = displayGet(presentationDisplay, 'wave');
-
-    % Load the 2-deg Stockman cone fundamentals on a wavelength support matching the display
-    coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
-
-    % Compute the LMS cone contrasts of the emitted radiance image
-    sceneLMScontrastsImage = computeLMScontrastImage(emittedRadianceImage, coneFundamentals, backgroundLMS);
-end
 
 function LMScontrastImage = computeLMScontrastImage(radianceImage, coneFundamentals, coneExcitationsBackground)
     rowsNum = size(radianceImage,1);
@@ -251,4 +230,45 @@ function LMScontrastImage = computeLMScontrastImage(radianceImage, coneFundament
         1./coneExcitationsBackground);
     
     LMScontrastImage = reshape(LMScontrastImage, [rowsNum colsNum 3]);
+end
+
+
+function compareCustomConeFundamentalsToDefaultSS2(customConeFundamentals)
+    % Normalize
+    coneFundamentals = customConeFundamentals.quantalExcitationSpectra/max(customConeFundamentals.quantalExcitationSpectra(:));
+    StockmanSharpe2DegConeFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), customConeFundamentals.wavelengthSupport);
+
+    hFig = figure(223); clf;
+    subplot(2,2,1);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'r--', 'LineWidth', 1.5);
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'g--', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'b--', 'LineWidth', 1.5);
+    title('Stockman 2 deg cone fundamentals')
+
+    subplot(2,2,2);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-', 'LineWidth', 1.5);
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-', 'LineWidth', 1.5);
+    title('cMosaic cone fundamentals')
+
+    subplot(2,2,3);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1), 'r-', 'LineWidth', 1.5);
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2), 'g-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3), 'b-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,1), 'k--', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,2), 'k--', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, StockmanSharpe2DegConeFundamentals(:,3), 'k--', 'LineWidth', 1.5);
+    title('cMosaic cone fundamentals')
+
+    subplot(2,2,4);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,1)./StockmanSharpe2DegConeFundamentals(:,1), 'r-', 'LineWidth', 1.5);
+    hold on;
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,2)./StockmanSharpe2DegConeFundamentals(:,2), 'g-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.quantalExcitationSpectra(:,3)./StockmanSharpe2DegConeFundamentals(:,3), 'b-', 'LineWidth', 1.5);
+    plot(customConeFundamentals.wavelengthSupport, customConeFundamentals.wavelengthSupport*0 + 1, 'k-');
+    title('cMosaic cone fundamentals ./ SS2')
+    drawnow;
 end

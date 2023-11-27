@@ -1,8 +1,5 @@
 function visualizeVisualRFcentersOfComputeReadyMidgetRGCMosaic(...
-    theComputeReadyMRGCmosaic, mRGCMosaicSubspaceResponsesFileName)
-
-    % Optimally generated RF maps filename
-    optimallyMappedSubspaceRFmapsFileName = strrep(mRGCMosaicSubspaceResponsesFileName, '.mat', '_optimallyMappedRFs.mat');
+    theComputeReadyMRGCmosaic, optimallyMappedSubspaceRFmapsFileName)
 
     % Load tha optimally mapped visual RF maps.
     % These are computed via

@@ -8,12 +8,12 @@ function retrieveAndVisualizeSubspaceRFmapForTargetRGC(...
     p = inputParser;
     p.addParameter('tickSeparationArcMin', 6, @isscalar);
     p.addParameter('reverseXDir', false, @islogical);
-    p.addParameter('gridlessLineWeightingFuncions', false, @islogical);
+    p.addParameter('gridlessLineWeightingFunctions', false, @islogical);
 
     p.parse(varargin{:});
     tickSeparationArcMin = p.Results.tickSeparationArcMin;
     reverseXDir = p.Results.reverseXDir;
-    gridlessLineWeightingFuncions = p.Results.gridlessLineWeightingFuncions;
+    gridlessLineWeightingFunctions = p.Results.gridlessLineWeightingFunctions;
 
     
     if (isempty(targetCenterConeMajorityType))
@@ -32,9 +32,11 @@ function retrieveAndVisualizeSubspaceRFmapForTargetRGC(...
     end
 
     % Load the optimall mapped visual RF maps for all cells
-    load(optimallyMappedSubspaceRFmapsFileName, 'optimallyMappedVisualRFmaps');
+    fprintf('Loading visual RF maps from %s\n', optimallyMappedSubspaceRFmapsFileName)
+    load(optimallyMappedSubspaceRFmapsFileName, 'optimallyMappedVisualRFmaps', 'indicesOfOptimallyMappedRGCs');
 
-    if (isempty(optimallyMappedVisualRFmaps{theVisualizedRGCindex}))
+    idx = find(indicesOfOptimallyMappedRGCs == theVisualizedRGCindex);
+    if (isempty(idx))
         fprintf(2, 'Optimally mapped visual RF map data for this RGC were not found in %s\n', optimallyMappedSubspaceRFmapsFileName);
         return;
     end
@@ -49,12 +51,12 @@ function retrieveAndVisualizeSubspaceRFmapForTargetRGC(...
 
 
     MosaicPoolingOptimizer.visualizeVisualRFmap(...
-        optimallyMappedVisualRFmaps{theVisualizedRGCindex}, ...
+        optimallyMappedVisualRFmaps{idx}, ...
         retinalRGCRFposDegs, ...
         theAxes, ...
         'tickSeparationArcMin', tickSeparationArcMin, ...
         'reverseXDir', reverseXDir, ...
-        'gridlessLineWeightingFuncions', gridlessLineWeightingFuncions, ...
+        'gridlessLineWeightingFunctions', gridlessLineWeightingFunctions, ...
         'withFigureFormat', ff);
 
     

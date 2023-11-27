@@ -5,6 +5,12 @@ function setTheOptics(obj, opticsParams)
     % for wiring so as to generate RF with the target visual properties
     dataOut = obj.generateOptics(opticsParams);
 
+    if (isfield(opticsParams, 'employMonochromaticVlambdaWeightedPSF'))
+        if (opticsParams.employMonochromaticVlambdaWeightedPSF)
+            dataOut.theOptics = monochromaticVlambdaWeightedOpticsFromOI(dataOut.theOptics);
+        end
+    end
+
     if (isempty(opticsParams.positionDegs))
         % Save the native optics params and the native optics
         obj.theNativeOpticsParams = dataOut.opticsParams;

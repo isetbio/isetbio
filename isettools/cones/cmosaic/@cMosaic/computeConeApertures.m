@@ -182,13 +182,7 @@ function [coneApertureDiameterMicronsZoneBands, ...     % the median cone apertu
         nSteps = idx+1;
     end
 
-   
     coneApertureDiscritization = logspace(log10(prctileRange(1)),log10(prctileRange(2)), nSteps);
-    if (nSteps > 1)
-        fprintf('To achieve min cone aperture step of %2.3f (%d), we will discretized with %d steps\n', ...
-            coneApertureMicronsStepSize, coneApertureDiscritization(2)-coneApertureDiscritization(1), nSteps);
-    end
-    
     coneApertureDiscritization = cat(2, min(coneApertureDiametersMicrons), coneApertureDiscritization);
     coneApertureDiscritization = cat(2, coneApertureDiscritization, 1.01*max(coneApertureDiametersMicrons));
     
