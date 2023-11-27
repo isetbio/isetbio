@@ -1,4 +1,4 @@
-function visualizationParams = visualizeBrianVersion(obj, varargin)
+function visualizationParams = visualize(obj, varargin)
 % Visualize different aspects of a @cMosaic or its activation
 %
 % THERE IS NOW A SET OF CONFLICTS BETWEEN THIS VERSION AND WHAT NICOLAS HAS
@@ -138,6 +138,7 @@ p.addParameter('figurehandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('axeshandle', [], @(x)(isempty(x)||isa(x, 'handle')));
 p.addParameter('clearaxesbeforedrawing', true, @islogical);
 p.addParameter('fontsize', 16, @isscalar);
+p.addParameter('fontangle', 'normal', @(x)(ismember(lower(x), {'normal', 'italic'})));
 p.addParameter('colorbarfontsize', 16, @(x)(isempty(x)||(isscalar(x))));
 p.addParameter('backgroundcolor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
 
@@ -154,7 +155,8 @@ domainVisualizationTicks  = p.Results.domainvisualizationticks;
 visualizedConeAperture = p.Results.visualizedconeaperture;
 visualizedConeApertureThetaSamples = p.Results.visualizedconeaperturethetasamples;
 figureHandle = p.Results.figurehandle;
-axesHandle   = p.Results.axeshandle;
+axesHandle = p.Results.axeshandle;
+fontangle = p.Results.fontangle;
 verticalDensityColorBar = p.Results.verticaldensitycolorbar;
 densityContourOverlay = p.Results.densitycontouroverlay;
 densityContourLevels = p.Results.densitycontourlevels;
@@ -792,13 +794,12 @@ else
     end
 end
 
-
 % Finalize plot
 xtickangle(axesHandle, 0);
 set(axesHandle, 'Color', backgroundColor);
 axis(axesHandle, 'xy');
 axis(axesHandle, 'equal');
-set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize, 'FontAngle', fontAngle);
+set(axesHandle, 'XLim', xRange, 'YLim', yRange,'FontSize', fontSize, 'FontAngle', fontangle);
 
 if (~isempty(densityColorMap)) && (densityContourOverlay)
     colormap(axesHandle, densityColorMap);
