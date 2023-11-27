@@ -1,4 +1,4 @@
-classdef coneMosaicHex < coneMosaic
+classdef coneMosaicHex < coneMosaicRect
 % Create a hexagonal cone mosaic class
 %
 % BW: Broken because I broke the relationship between coneMosaic,
@@ -279,7 +279,7 @@ classdef coneMosaicHex < coneMosaic
                         + 1} = varargin{k + 1};
                 end
             end
-            obj = obj@coneMosaic(vararginForConeMosaic{:});
+            obj = obj@coneMosaicRect(vararginForConeMosaic{:});
 
             % Start from here. parse the input and add the missing
             % parameters from the prior coneMosaic class.
