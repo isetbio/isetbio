@@ -271,15 +271,21 @@ function run()
     if (operationSetToPerformContains.computeVisualRFsUsingMSequenceMapping)
 
         reComputeInputConeMosaicResponses = true;
-        reComputeMRGCMosaicResponses = ~true;
-        recomputeRFs = ~true;
-        visualizeOptimallyMappedRFmapLocations = ~true;
+        reComputeMRGCMosaicResponses = true;
+        recomputeRFs = true;
+        visualizeOptimallyMappedRFmapLocations = true;
 
+        % (0,0) mosaic
         stimPositionDegs = [0.65 0.72];
         stimSizeDegs = [0.4 0.4];
 
+        % (2.5, 0 ) mosaic
+        stimPositionDegs = [3 -1];
+        stimSizeDegs = [0.6 0.6];
+
         % Spatial sampling of RF (# of squares)
         rfPixelsAcross = 16;
+        rfPixelsAcross = 32;
 
         % Bit length of m-sequence
         mSequenceBitLength = 12;
