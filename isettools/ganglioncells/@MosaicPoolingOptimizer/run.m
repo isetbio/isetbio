@@ -271,18 +271,18 @@ function run()
     if (operationSetToPerformContains.computeVisualRFsUsingMSequenceMapping)
 
         reComputeInputConeMosaicResponses = true;
-        reComputeMRGCMosaicResponses = true;
-        recomputeRFs = true;
-        visualizeOptimallyMappedRFmapLocations = true;
+        reComputeMRGCMosaicResponses = ~true;
+        recomputeRFs = ~true;
+        visualizeOptimallyMappedRFmapLocations = ~true;
 
         stimPositionDegs = [0.65 0.72];
         stimSizeDegs = [0.4 0.4];
 
         % Spatial sampling of RF (# of squares)
-        rfPixelsAcross = 63;
+        rfPixelsAcross = 16;
 
         % Bit length of m-sequence
-        mSequenceBitLength = 14;
+        mSequenceBitLength = 12;
 
         % Use ternary instead of binary m-sequence
         ternaryInsteadOfBinaryMsequence = ~true;

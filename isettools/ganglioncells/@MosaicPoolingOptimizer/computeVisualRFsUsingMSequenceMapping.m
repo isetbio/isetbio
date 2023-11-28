@@ -54,7 +54,7 @@ function computeVisualRFsUsingMSequenceMapping(...
 
     if (visualizeOptimallyMappedRFmapLocations)
         visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName, ...
-            theComputeReadyMRGCmosaic, visualizedRGCindex, stimulusChromaticity);
+            theComputeReadyMRGCmosaic, visualizedRGCindex, stimulusChromaticity, rfPixelsAcross);
     end
 
 end
@@ -90,11 +90,10 @@ function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
         fprintf('\nLoading cone mosaic m-sequence modulation responses and spatial modulation patterns ...');
         % Load the previously computed responses
         load(coneMosaicResponsesFileName, ...
-            'mSequenceSpatialModulationPatterns', 'spatialSupportDegs', 'stimParams', ...
+            'mSequenceIndicatorFunctions', 'spatialSupportDegs', 'stimParams', ...
             'theConeMosaicMSequenceLinearModulationResponses', ...
             'theConeMosaicMSequenceForwardModulationResponses', 'theConeMosaicMSequenceInverseModulationResponses');
 
-        mSequenceSpatialModulationPatterns = single(mSequenceSpatialModulationPatterns);
         fprintf('Done loading !\n');
 
         [mSequenceStimsNum, nCones] = size(theConeMosaicMSequenceLinearModulationResponses);
@@ -154,8 +153,7 @@ function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
 
 
     if (reComputeRFs)
-        load(coneMosaicResponsesFileName, 'mSequenceSpatialModulationPatterns', 'spatialSupportDegs', 'stimParams');
-        mSequenceSpatialModulationPatterns = single(mSequenceSpatialModulationPatterns);
+        load(coneMosaicResponsesFileName, 'mSequenceIndicatorFunctions', 'spatialSupportDegs', 'stimParams');
 
         % Load theMRGCMosaicMSequenceRFmappingLinearResponses
         load(mRGCMosaicResponsesFileName, ...
@@ -176,7 +174,8 @@ function computeRFmapsForAllCellsUsingStimuliAtTargetPosition( ...
             theMRGCMosaicMSequenceRFmappingLinearResponses, ...
             theMRGCMosaicMSequenceRFmappingForwardResponses, ...
             theMRGCMosaicMSequenceRFmappingInverseResponses, ...
-            mSequenceSpatialModulationPatterns, ...
+            mSequenceIndicatorFunctions, ...
+            stimParams.rfPixelRetinalPixelsWithin, ...
             spatialSupportDegs);
     
         fprintf('\nSaving computed visual RFs to %s ...', mRGCMosaicResponsesFileName);
@@ -225,11 +224,11 @@ end
 
 function [theRFmaps, theIncrementsRFmaps, theDecrementsRFmaps] = computeRFs(indicesOfOptimallyMappedRGCs, ...
     theLinearResponses, theForwardPolarityResponses, theInversePolarityResponses, ...
-    spatialModulationPatterns, spatialSupportDegs)
+    mSequenceIndicatorFunctions, rfPixelRetinalPixelsWithin, spatialSupportDegs)
 
     nStim = size(theLinearResponses,1);
     cellsNum = size(theLinearResponses,2);
-    pixelsNum = size(spatialModulationPatterns,2);
+    pixelsNum = size(mSequenceIndicatorFunctions,2);
 
     m = max(abs(theLinearResponses),[],1);
     cellsWithNonZeroResponse = find(m > 0);
@@ -244,22 +243,24 @@ function [theRFmaps, theIncrementsRFmaps, theDecrementsRFmaps] = computeRFs(indi
         theRGCindex = indicesOfOptimallyMappedRGCs(iCell);
 
         if (ismember(theRGCindex, cellsWithNonZeroResponse))
-            theRFmap = zeros(pixelsNum, pixelsNum, 'single');
-            theIncrementsRFmap = zeros(pixelsNum, pixelsNum, 'single');
-            theDecrementsRFmap = zeros(pixelsNum, pixelsNum, 'single');
+            theRFmap = zeros(pixelsNum, pixelsNum);
+            theIncrementsRFmap = zeros(pixelsNum, pixelsNum);
+            theDecrementsRFmap = zeros(pixelsNum, pixelsNum);
 
             allResponses = squeeze(theLinearResponses(:,theRGCindex));
             allForwardPolarityResponses = squeeze(theForwardPolarityResponses(:,theRGCindex));
             allInversePolarityResponses = squeeze(theInversePolarityResponses(:,theRGCindex));
 
             for iStim = 1:nStim
-                theStimulusFrame = squeeze(spatialModulationPatterns(iStim,:,:));
-                theRFmap = theRFmap + single(theStimulusFrame * allResponses(iStim));
+                theStimulusFrame = double(squeeze(mSequenceIndicatorFunctions(iStim,:,:)));
+                theRFmap = theRFmap + theStimulusFrame * allResponses(iStim);
             end
-            theRFmaps{iCell} = theRFmap;
+
+            % Expand to full size
+            theRFmaps{iCell} = rfMappingStimulusGenerator.expandFrame(theRFmap, rfPixelRetinalPixelsWithin);
 
             for iStim = 1:nStim
-                theStimulusFrame = squeeze(spatialModulationPatterns(iStim,:,:));
+                theStimulusFrame = double(squeeze(mSequenceIndicatorFunctions(iStim,:,:)));
 
                 theIncrementsStimulusFrame = theStimulusFrame*0;
                 theIncrementsStimulusFrame(theStimulusFrame>0) = 1;
@@ -268,10 +269,10 @@ function [theRFmaps, theIncrementsRFmaps, theDecrementsRFmaps] = computeRFs(indi
                 theDecrementsStimulusFrame(theStimulusFrame<0) = 1;
 
                 theIncrementsRFmap = theIncrementsRFmap + ...
-                    single(theIncrementsStimulusFrame * (allForwardPolarityResponses(iStim) - allInversePolarityResponses(iStim)));
+                    theIncrementsStimulusFrame * (allForwardPolarityResponses(iStim) - allInversePolarityResponses(iStim));
 
                 theDecrementsRFmap = theDecrementsRFmap + ...
-                    single(theDecrementsStimulusFrame * (allForwardPolarityResponses(iStim) - allInversePolarityResponses(iStim)));
+                    theDecrementsStimulusFrame * (allForwardPolarityResponses(iStim) - allInversePolarityResponses(iStim));
 
                 if (debugRFmap)
                     m = max([max(abs(theIncrementsRFmap(:))) max(abs(theDecrementsRFmap(:)))]);
@@ -305,8 +306,9 @@ function [theRFmaps, theIncrementsRFmaps, theDecrementsRFmaps] = computeRFs(indi
                 end
             end
             
-            theIncrementsRFmaps{iCell} = theIncrementsRFmap;
-            theDecrementsRFmaps{iCell} = theDecrementsRFmap;
+            % Expand to full size
+            theIncrementsRFmaps{iCell} = rfMappingStimulusGenerator.expandFrame(theIncrementsRFmap, rfPixelRetinalPixelsWithin);
+            theDecrementsRFmaps{iCell} = rfMappingStimulusGenerator.expandFrame(theDecrementsRFmap, rfPixelRetinalPixelsWithin);
         end
 
     end
@@ -314,7 +316,7 @@ end
 
 
 function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName,...
-    theMRGCMosaic, visualizedRGCindex, stimulusChromaticity)
+    theMRGCMosaic, visualizedRGCindex, stimulusChromaticity, rfPixelsAcross)
 
     % Load all the optimally mapped visual RF maps
     fprintf('Loading optimally mapped subspace RF maps from %s\n', optimallyMappedRFmapsFileName);
@@ -358,22 +360,34 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
 
         d = optimallyMappedVisualRFmaps{iCell};
 
+        dx = (d.spatialSupportDegsX(2)-d.spatialSupportDegsX(1));
+        rfPixelSizeDegs = (d.spatialSupportDegsX(end)-d.spatialSupportDegsX(1)+dx)/rfPixelsAcross;
+        rfPixelSizeSamples = rfPixelSizeDegs/dx;
+        
+        xx = -rfPixelSizeSamples :1: rfPixelSizeSamples;
+        [X, Y] = meshgrid(xx*dx,xx*dx);
+        sigma = dx*rfPixelSizeSamples/2.0;
+        h = exp(-(X.^2 + Y.^2) / (2*sigma*sigma));
+        smoothingKernel = h / sum(h(:));
+
+        d.smoothedBipolarRF = conv2(d.theRFmap, smoothingKernel, 'same');
+
         xLim = [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)];
         xLim = theRGCRetinalRFcenterPositionDegs(1) + 0.08*[-1 1];
 
         yLim = [d.spatialSupportDegsY(1) d.spatialSupportDegsY(end)];
         yLim = theRGCRetinalRFcenterPositionDegs(2) + 0.08*[-1 1];
-
+        
         % The RF center position in the visual field
-        [~,idx] = max(abs(d.theRFmap(:)));
+        [~,idx] = max(abs(d.smoothedBipolarRF(:)));
         [row,col] = ind2sub(size(d.theRFmap), idx);
         theRGCVisualRFcenterPositionDegs = [d.spatialSupportDegsX(col) d.spatialSupportDegsY(row)];
 
         crossHairsPosition = theRGCVisualRFcenterPositionDegs;
-        crossHairsPosition = theRGCRetinalRFcenterPositionDegs;
+        %crossHairsPosition = theRGCRetinalRFcenterPositionDegs;
 
         ax = subplot('Position', subplotPosVectors(1,1).v);
-        renderRFmap(ax, d, ...
+        renderRFmap(ax, d, [], [], ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(theCenterConeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,:), ...
@@ -381,8 +395,18 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
             stimulusChromaticity, xLim, yLim, ...
             'bipolar');
 
+        ax = subplot('Position', subplotPosVectors(2,2).v);
+        renderRFmap(ax, d, smoothingKernel, rfPixelSizeSamples, ...
+            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(theCenterConeIndices,:), ...
+            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,:), ...
+            theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,:), ...
+            theRGCindex, crossHairsPosition, ...
+            stimulusChromaticity, xLim, yLim, ...
+            'smoothedBipolarRF');
+
+
         ax = subplot('Position', subplotPosVectors(1,3).v);
-        renderRFmap(ax, d, ...
+        renderRFmap(ax, d, [], [],...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(theCenterConeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,:), ...
@@ -391,7 +415,7 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
             'increments');
 
         ax = subplot('Position', subplotPosVectors(2,3).v);
-        renderRFmap(ax, d, ...
+        renderRFmap(ax, d, [],[], ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(theCenterConeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundLconeIndices,:), ...
             theMRGCMosaic.inputConeMosaic.coneRFpositionsDegs(surroundMconeIndices,:), ...
@@ -497,10 +521,14 @@ function shadedAreaPlotY(ax, x,y, baseline, faceColor, edgeColor, faceAlpha, lin
 end
 
 
-function renderRFmap(ax, d, centerConePositions, surroundLconePositions, surroundMconePositions, theRGCindex, ...
+function renderRFmap(ax, d, smoothingKernel, rfPixelSizeSamples, centerConePositions, surroundLconePositions, surroundMconePositions, theRGCindex, ...
     crossHairsPosition, stimulusChromaticity, xLim, yLim,  rfPolarity)
 
     switch (rfPolarity)
+        case 'smoothedBipolarRF'
+            theRFmap = d.smoothedBipolarRF;
+            rfMapRange = max(abs(d.theRFmap(:)))*[-1 1];
+
         case 'bipolar'
             theRFmap = d.theRFmap;
             rfMapRange = max(abs(d.theRFmap(:)))*[-1 1];
@@ -520,14 +548,43 @@ function renderRFmap(ax, d, centerConePositions, surroundLconePositions, surroun
     imagesc(ax, d.spatialSupportDegsX,  d.spatialSupportDegsY, theRFmap);
     hold(ax, 'on');    
 
-    
-    scatter(ax, surroundLconePositions(:,1), surroundLconePositions(:,2), ...
-         16*16, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.5, 'LineWidth', 1.0);
+    dx = d.spatialSupportDegsX(2)- d.spatialSupportDegsX(1);
+
+    if (~isempty(smoothingKernel))
+        imagesc(ax, xLim(1) + dx*(1:size(smoothingKernel,2)), ...
+                    yLim(1)+dx*(1:size(smoothingKernel,1)), ...
+                    rfMapRange(2)*smoothingKernel/max(smoothingKernel(:)));
+    end
+
+    if (~isempty(rfPixelSizeSamples))
         
-    scatter(ax, surroundMconePositions(:,1), surroundMconePositions(:,2), ...
-         16*16, 'MarkerFaceColor', [0.5 0.8 0.5], 'MarkerEdgeColor', [0 0.8 0], 'MarkerFaceAlpha', 0.5, 'LineWidth', 1.0);
-    
-    plot(ax, centerConePositions(:,1), centerConePositions(:,2), 'ko', 'MarkerSize', 16, 'LineWidth', 2.0);
+        
+        xx(1) = d.spatialSupportDegsX(1);
+        while (xx(end)<d.spatialSupportDegsX(end))
+            xx(numel(xx)+1) = xx(numel(xx)) + (rfPixelSizeSamples-1)*dx;
+        end
+        dy = d.spatialSupportDegsY(2)- d.spatialSupportDegsY(1);
+        yy(1) = d.spatialSupportDegsY(1);
+        while (yy(end)<d.spatialSupportDegsY(end))
+            yy(numel(yy)+1) = yy(numel(yy)) + (rfPixelSizeSamples-1)*dy;
+        end
+
+        for i = 1:numel(xx)
+            plot(ax, xx(i)*[1 1], [d.spatialSupportDegsY(1) d.spatialSupportDegsY(end)], 'k-');
+        end
+        for i = 1:numel(yy)
+            plot(ax,  [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)], yy(i)*[1 1], 'k-');
+        end
+
+    else
+        scatter(ax, surroundLconePositions(:,1), surroundLconePositions(:,2), ...
+             16*16, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'MarkerFaceAlpha', 0.0, 'LineWidth', 1.0);
+            
+        scatter(ax, surroundMconePositions(:,1), surroundMconePositions(:,2), ...
+             16*16, 'MarkerFaceColor', [0.5 0.8 0.5], 'MarkerEdgeColor', [0 0.8 0], 'MarkerFaceAlpha', 0.0, 'LineWidth', 1.0);
+    end
+
+    plot(ax, mean(centerConePositions(:,1),1), mean(centerConePositions(:,2),1), 'kx', 'MarkerSize', 16, 'LineWidth', 2.0);
 
     plot(crossHairsPosition(1)*[1 1], [-100 100], 'b-', 'LineWidth', 1.0);
     plot([-100 100], crossHairsPosition(2)*[1 1], 'b-', 'LineWidth', 1.0);
@@ -541,9 +598,36 @@ function renderRFmap(ax, d, centerConePositions, surroundLconePositions, surroun
     );
     set(ax, 'XTick', -10:0.05:10);
     set(ax, 'YTick', -10:0.05:10);
-    cLUT = brewermap(1024, '*RdBu');
+    %cLUT = brewermap(1024, '*RdBu');
+
+    % Reid & Shapley (2002) colormap
+    cLUTsampled = [
+        155 164 183; ...
+        148 156 178; ...
+        135 143 170; ...
+        121 131 164; ...
+        105 115 154; ...
+        84 97 142; ...
+        52 70 123; ...
+        46 57 113 ; ...
+        0 0 0; ...
+        105 45 45; ...
+        132 47 47; ...
+        150 49 47; ...
+        166 58 58; ...
+        175 85 83; ...
+        184 112 109; ...
+        190 129 129; ...
+        195 147 144]/255;
+
+
+    cLUT(:,1) = interp1(1:size(cLUTsampled,1), cLUTsampled(:,1), linspace(1, size(cLUTsampled,1), 1025));
+    cLUT(:,2) = interp1(1:size(cLUTsampled,1), cLUTsampled(:,2), linspace(1, size(cLUTsampled,1), 1025));
+    cLUT(:,3) = interp1(1:size(cLUTsampled,1), cLUTsampled(:,3), linspace(1, size(cLUTsampled,1), 1025));
     colormap(ax, cLUT);
-    set(ax, 'Color', cLUT(512,:));
+    midPoint = (size(cLUT,1)-1)/2+1;
+    colorbar
+    set(ax, 'Color', cLUT(midPoint,:));
     xlabel(ax, 'space, x (degs)');
     ylabel(ax, 'space, y (degs)');
     title(ax, sprintf('RGC %d - %s %s RF ([%2.2f ... %2.2f])', theRGCindex, stimulusChromaticity, rfPolarity, min(theRFmap(:)), max(theRFmap(:))));

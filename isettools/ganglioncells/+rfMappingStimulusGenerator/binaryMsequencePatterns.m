@@ -1,4 +1,4 @@
-function H = binaryMsequencePatterns(rfPixelsAcross, rfPixelRetinalPixelsWithin, varargin)
+function indicatorH = binaryMsequencePatterns(rfPixelsAcross, varargin)
     % Parse optional input
     p = inputParser;
     p.addParameter('visualizePatterns', false, @islogical);
@@ -55,24 +55,15 @@ function H = binaryMsequencePatterns(rfPixelsAcross, rfPixelRetinalPixelsWithin,
     end
 
     % Generate 2D patterns
-    H = zeros(nTimePoints, rfPixelsAcross * rfPixelRetinalPixelsWithin, rfPixelsAcross * rfPixelRetinalPixelsWithin, 'single');
+    indicatorH = zeros(nTimePoints, rfPixelsAcross, rfPixelsAcross, 'single');
     for iTimePoint = 1:nTimePoints
-        theFrame = reshape(spatioTemporalActivation(iTimePoint,:), [rfPixelsAcross rfPixelsAcross]);
-        theFullFrame = zeros(rfPixelsAcross * rfPixelRetinalPixelsWithin, rfPixelsAcross * rfPixelRetinalPixelsWithin, 'single');
-        yy = 1:rfPixelRetinalPixelsWithin;
-        xx = 1:rfPixelRetinalPixelsWithin;
-        for i = 1:rfPixelsAcross
-            for j = 1:rfPixelsAcross
-                theFullFrame((i-1)*rfPixelRetinalPixelsWithin+yy, (j-1)*rfPixelRetinalPixelsWithin+xx) = theFrame(i,j);
-            end
-        end
-        H(iTimePoint,:,:) = theFullFrame;
+        indicatorH(iTimePoint,:,:) = reshape(spatioTemporalActivation(iTimePoint,:), [rfPixelsAcross rfPixelsAcross]);
     end
 
     if (visualizePatterns)
-        for i = 1:size(H,1)
+        for i = 1:size(indicatorH,1)
             figure(2);
-            imagesc(squeeze(H(i,:,:)));
+            imagesc(squeeze(indicatorH(i,:,:)));
             axis 'image'
             set(gca, 'CLim', [-2 2]);
             colormap(gray)
