@@ -23,7 +23,7 @@ function t_mRGCMosaicDynamicStimulus
     % Choose the x-eccentricity from one of the available mosaics,
     % displayed above
     % (e.g., -16.0 to load the mosaic 'mRGCMosaicEcDegs(-10.0_0.0)_SizeDegs(6.0_3.0)...'
-    horizontalEccDegs = input('Enter mRGCMosaic''s horizontal eccentricity: ');
+    horizontalEccDegs = 0; %input('Enter mRGCMosaic''s horizontal eccentricity: ');
 
     %% Load the precomputed mRGCMosaic
     theMRGCMosaic = MosaicPoolingOptimizer.loadPreComputedMRGCMosaic(horizontalEccDegs);

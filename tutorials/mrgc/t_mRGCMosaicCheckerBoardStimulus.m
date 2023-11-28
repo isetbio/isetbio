@@ -38,7 +38,6 @@ function t_mRGCMosaicCheckerBoardStimulus
     defaultRGCRFgains = theMRGCMosaic.rgcRFgains;
     max(theMRGCMosaic.rgcRFgains)
     min(theMRGCMosaic.rgcRFgains)
-    pause
 
     % Set the rgcRFgains as 1 / center-integrated retinal cone apertures
     method = '1/integrated center retinal cone apertures';

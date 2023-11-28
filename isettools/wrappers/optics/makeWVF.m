@@ -33,5 +33,6 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelengt
     end
     
     % Now compute the PSF
-    theWVF = wvfCompute(theWVF, false, 'lca', LCA);
+    theWVF = wvfComputePupilFunction(theWVF,'humanlca', LCA);
+    theWVF = wvfComputePSF(theWVF, 'humanlca', LCA);
 end
