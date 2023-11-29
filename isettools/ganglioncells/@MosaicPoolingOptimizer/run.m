@@ -1,36 +1,10 @@
-function run()
+function run(restartParPool)
 
-    computerInfo = GetComputerInfo;
-    switch (lower(computerInfo.localHostName))
-        case 'ithaka'
-            maxNumWorkers = 12;
-        case 'crete'
-            maxNumWorkers = 12;
-        otherwise
-            maxNumWorkers = [];
+    if (nargin == 0)
+        restartParPool = false;
     end
 
-    delete(gcp('nocreate'))
-    c = parcluster('Processes');
-    numWorkers = input('Enter number of parallel workers: ');
-    if (isempty(numWorkers))
-        numWorkers = maxNumWorkers;
-    end
-    if (~isempty(numWorkers))
-        c.NumWorkers = numWorkers;
-    end
-    parpool(c);
-
-    % Generate path to rawFigures root directory.
-    % These are figures generated for manuscripts/presentations, formatted
-    % using a common figureFormat
-    p = getpref('isetbio');
-    rawFiguresRoot = strrep(p.alternateFullDataDir, ...
-        'ISETBioValidationFiles/gradleFiles/validationFull', ...
-        'ManuscriptSupportMaterials/PLOS2024/figures/raw');
-
-    % Where scaled figures are stored
-    scaledFiguresRoot = '/Users/nicolas/Documents/Manuscripts/PLOS2024/figures';
+    [rawFiguresRoot, scaledFiguresRoot] = initializeRun(restartParPool);
 
     % Ask user which mosaic to use
     [mosaicHorizontalEccentricityDegs,  mosaicEccsForSummaryStatistics] = ...
@@ -45,10 +19,9 @@ function run()
     visualizedSpatialFrequencyRange = [0.1 100];
 
     %MosaicPoolingOptimizer.performComputeVisuallyProjectedAnatomicalConeRcsByFittingRFmap([]);
-
+    
     % Get operation to perform
     operationSetToPerformContains = MosaicPoolingOptimizer.operationsMenu(mosaicParams);
-
   
     % Perform the generateRGCMosaic operation
     if (operationSetToPerformContains.generateCenterConnectedRGCMosaic)
@@ -306,12 +279,6 @@ function run()
             );     
     end
 
-   
-    % Perform the computeVisualRFcenterMapsViaDirectConvolutionWithPSF  operation
-    if (operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF)
-        MosaicPoolingOptimizer.performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF()
-    end
-
  
     % Perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities operation
     if (operationSetToPerformContains.contrastSTFsAcrossDifferentOpticsOrChromaticities)
@@ -327,4 +294,63 @@ function run()
             'performSurroundAnalysisForConesExclusiveToTheSurround', true, ...
             'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
     end
+
+    % Perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities operation
+    if (operationSetToPerformContains.contrastMSequenceRFsAcrossDifferentOpticsOrChromaticities)
+        % 0.20 0.31 0.47 0.64 0.75
+        %targetRangeForSurroundConeMix = 0.20 + [0.00 0.05];
+        %targetRangeForSurroundConeMix = 0.31 + [0.00 0.05];
+        targetRangeForSurroundConeMix = 0.475 + [0.00 0.05];
+        %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
+        %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
+
+        MosaicPoolingOptimizer.performContrastMSequenceRFsAcrossDifferentChromaticities(...
+            mosaicParams, rawFiguresRoot, scaledFiguresRoot, ...
+            'performSurroundAnalysisForConesExclusiveToTheSurround', true, ...
+            'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
+    end
+
+    % Perform the computeVisualRFcenterMapsViaDirectConvolutionWithPSF  operation
+    if (operationSetToPerformContains.computeVisualRFcenterMapsViaDirectConvolutionWithPSF)
+        MosaicPoolingOptimizer.performComputeVisualRFcenterMapsViaDirectConvolutionWithPSF()
+    end
+
+end
+
+function [rawFiguresRoot, scaledFiguresRoot] = initializeRun(restartParPool)
+
+    if (restartParPool)
+    computerInfo = GetComputerInfo;
+    switch (lower(computerInfo.localHostName))
+        case 'ithaka'
+            maxNumWorkers = 12;
+        case 'crete'
+            maxNumWorkers = 12;
+        otherwise
+            maxNumWorkers = [];
+    end
+
+    delete(gcp('nocreate'))
+    c = parcluster('Processes');
+    numWorkers = input('Enter number of parallel workers: ');
+    if (isempty(numWorkers))
+        numWorkers = maxNumWorkers;
+    end
+    if (~isempty(numWorkers))
+        c.NumWorkers = numWorkers;
+    end
+    parpool(c);
+    end
+
+    % Generate path to rawFigures root directory.
+    % These are figures generated for manuscripts/presentations, formatted
+    % using a common figureFormat
+    p = getpref('isetbio');
+    rawFiguresRoot = strrep(p.alternateFullDataDir, ...
+        'ISETBioValidationFiles/gradleFiles/validationFull', ...
+        'ManuscriptSupportMaterials/PLOS2024/figures/raw');
+
+    % Where scaled figures are stored
+    scaledFiguresRoot = '/Users/nicolas/Documents/Manuscripts/PLOS2024/figures';
+
 end
