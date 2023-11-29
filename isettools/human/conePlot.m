@@ -66,12 +66,6 @@ function [support, spread, delta, coneMosaicImage] = conePlot(...
 
 % Examples:
 %{
-    c = coneMosaicHex(5);
-    xy = c.coneLocsHexGrid * 1e6;
-    coneType = c.coneTypesHexGrid;
-    [support, spread, delta] = conePlot(xy, coneType);
-%}
-%{
     sz = [75, 75];
     densities = [0.4 .5 .6 .3];
     [xy, coneType] = humanConeMosaic(sz, densities);
