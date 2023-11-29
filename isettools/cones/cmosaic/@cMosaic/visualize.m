@@ -41,15 +41,14 @@ function visualizationParams = visualize(obj, varargin)
 cm = cMosaic;
 
 % Visualize the cone mosaic
-cm.visualizeBrianVersion();        
+cm.visualize();        
 
 % Retrieve the visualization parameters
-pStruct = cm.visualizeBrianVersion('params') 
+pStruct = cm.visualize('params') 
 
-cm.visualizeBrianVersion('density contour overlay',true,...
+cm.visualize('density contour overlay',true,...
              'crosshairs on fovea',true, ...
              'label retinal meridians',true);   
-
 %}
 
 %% If the call is 
