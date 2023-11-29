@@ -44,28 +44,28 @@ function [l, m, s] = coneTypeLocations(cmosaicRect, varargin)
 
 %%
 p = inputParser;
-p.addRequired('cmosaic', @(x)(isa(cmosaic, 'coneMosaicRect')));
+p.addRequired('cmosaicRect', @(x)(isa(cmosaicRect, 'coneMosaicRect')));
 p.addParameter('format', 'index', @ischar);
-p.parse(cmosaic, varargin{:});
+p.parse(cmosaicRect, varargin{:});
 
 format = p.Results.format;
 
 %% Compute
 % Always compute indices
-l = find(cmosaic.pattern == 2);
-m = find(cmosaic.pattern == 3);
-s = find(cmosaic.pattern == 4);
+l = find(cmosaicRect.pattern == 2);
+m = find(cmosaicRect.pattern == 3);
+s = find(cmosaicRect.pattern == 4);
 
 switch format
     case 'index'
         % Done
     case 'rowcol'       
         % Get the (row, col) locations of each of the cone type
-        [r, c] = ind2sub(size(cmosaic.pattern), l); 
+        [r, c] = ind2sub(size(cmosaicRect.pattern), l); 
         l = [r, c]; 
-        [r, c] = ind2sub(size(cmosaic.pattern), m); 
+        [r, c] = ind2sub(size(cmosaicRect.pattern), m); 
         m = [r, c];
-        [r, c] = ind2sub(size(cmosaic.pattern), s); 
+        [r, c] = ind2sub(size(cmosaicRect.pattern), s); 
         s = [r, c];
     otherwise
         error('Unknown return value type %s\n', format);
