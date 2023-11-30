@@ -92,6 +92,7 @@ function [surroundConeMixForAllCells, theCenterMajorityConeTypeForAllCells] = su
 
     parfor theRGCindex = 1:theMRGCmosaic.rgcsNum
 
+        fprintf('Analyzing surround for RGC %d of %d\n', theRGCindex, theMRGCmosaic.rgcsNum);
         [theCenterMajorityConeType, ~,~, netSurroundLconeWeight, netSurroundMconeWeight, surroundConeMix] = MosaicPoolingOptimizer.analyzeCenterSurroundConeMix(...
          theMRGCmosaic, theRGCindex, performSurroundAnalysisForConesExclusiveToTheSurround)
 

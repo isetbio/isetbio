@@ -1,5 +1,8 @@
 function  [shutdownParPoolOnceCompleted, numWorkers] = resetParPool(parPoolSize)
     shutdownParPoolOnceCompleted = [];
+    disp('in resetParPool');
+    pause
+    
     if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize))
         poolobj = gcp('nocreate'); 
         if (~isempty(poolobj))

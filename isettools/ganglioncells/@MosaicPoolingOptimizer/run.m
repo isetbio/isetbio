@@ -243,9 +243,9 @@ function run(restartParPool)
     % Perform the computeVisualRFsUsingMSequenceMapping operation
     if (operationSetToPerformContains.computeVisualRFsUsingMSequenceMapping)
 
-        reComputeInputConeMosaicResponses = true;
-        reComputeMRGCMosaicResponses = true;
-        recomputeRFs = true;
+        reComputeInputConeMosaicResponses = ~true;
+        reComputeMRGCMosaicResponses = ~true;
+        recomputeRFs = ~true;
         visualizeOptimallyMappedRFmapLocations = true;
 
         % (0,0) mosaic
@@ -304,8 +304,29 @@ function run(restartParPool)
         %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
 
+        % (0,0) mosaic
+        stimPositionDegs = [0.65 0.72];
+        stimSizeDegs = [0.4 0.4];
+
+        % (2.5, 0 ) mosaic
+        stimPositionDegs = [3 -1];
+        stimSizeDegs = [0.6 0.6];
+
+        % Spatial sampling of RF (# of squares)
+        rfPixelsAcross = 16;
+        rfPixelsAcross = 32;
+
+        % Bit length of m-sequence
+        mSequenceBitLength = 12;
+
+        % Use ternary instead of binary m-sequence
+        ternaryInsteadOfBinaryMsequence = ~true;
+
         MosaicPoolingOptimizer.performContrastMSequenceRFsAcrossDifferentChromaticities(...
-            mosaicParams, rawFiguresRoot, scaledFiguresRoot, ...
+            mosaicParams, ...
+            stimPositionDegs, ternaryInsteadOfBinaryMsequence, ...
+            mSequenceBitLength, rfPixelsAcross, ...
+            rawFiguresRoot, scaledFiguresRoot, ...
             'performSurroundAnalysisForConesExclusiveToTheSurround', true, ...
             'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
     end
@@ -320,26 +341,26 @@ end
 function [rawFiguresRoot, scaledFiguresRoot] = initializeRun(restartParPool)
 
     if (restartParPool)
-    computerInfo = GetComputerInfo;
-    switch (lower(computerInfo.localHostName))
-        case 'ithaka'
-            maxNumWorkers = 12;
-        case 'crete'
-            maxNumWorkers = 12;
-        otherwise
-            maxNumWorkers = [];
-    end
-
-    delete(gcp('nocreate'))
-    c = parcluster('Processes');
-    numWorkers = input('Enter number of parallel workers: ');
-    if (isempty(numWorkers))
-        numWorkers = maxNumWorkers;
-    end
-    if (~isempty(numWorkers))
-        c.NumWorkers = numWorkers;
-    end
-    parpool(c);
+        computerInfo = GetComputerInfo;
+        switch (lower(computerInfo.localHostName))
+            case 'ithaka'
+                maxNumWorkers = 12;
+            case 'crete'
+                maxNumWorkers = 12;
+            otherwise
+                maxNumWorkers = [];
+        end
+    
+        delete(gcp('nocreate'))
+        c = parcluster('Processes');
+        numWorkers = input('Enter number of parallel workers: ');
+        if (isempty(numWorkers))
+            numWorkers = maxNumWorkers;
+        end
+        if (~isempty(numWorkers))
+            c.NumWorkers = numWorkers;
+        end
+        parpool(c);
     end
 
     % Generate path to rawFigures root directory.

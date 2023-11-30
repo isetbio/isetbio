@@ -360,17 +360,8 @@ function visualizeAllOptimallyMappedRFmapLocations(optimallyMappedRFmapsFileName
 
         d = optimallyMappedVisualRFmaps{iCell};
 
-        dx = (d.spatialSupportDegsX(2)-d.spatialSupportDegsX(1));
-        rfPixelSizeDegs = (d.spatialSupportDegsX(end)-d.spatialSupportDegsX(1)+dx)/rfPixelsAcross;
-        rfPixelSizeSamples = rfPixelSizeDegs/dx;
-        
-        xx = -rfPixelSizeSamples :1: rfPixelSizeSamples;
-        [X, Y] = meshgrid(xx*dx,xx*dx);
-        sigma = dx*rfPixelSizeSamples/2.0;
-        h = exp(-(X.^2 + Y.^2) / (2*sigma*sigma));
-        smoothingKernel = h / sum(h(:));
-
-        d.smoothedBipolarRF = conv2(d.theRFmap, smoothingKernel, 'same');
+        [d.smoothedBipolarRF, smoothingKernel, rfPixelSizeSamples] = MosaicPoolingOptimizer.applyReidShapleySmoothingToRFmap(...
+            d.spatialSupportDegsX, d.theRFmap, rfPixelsAcross);
 
         xLim = [d.spatialSupportDegsX(1) d.spatialSupportDegsX(end)];
         xLim = theRGCRetinalRFcenterPositionDegs(1) + 0.08*[-1 1];
@@ -559,14 +550,20 @@ function renderRFmap(ax, d, smoothingKernel, rfPixelSizeSamples, centerConePosit
     if (~isempty(rfPixelSizeSamples))
         
         
-        xx(1) = d.spatialSupportDegsX(1);
-        while (xx(end)<d.spatialSupportDegsX(end))
-            xx(numel(xx)+1) = xx(numel(xx)) + (rfPixelSizeSamples-1)*dx;
+        xx(1) = mean(d.spatialSupportDegsX);
+        k = 0;
+        while (xx(1)+k*(rfPixelSizeSamples)*dx<d.spatialSupportDegsX(end))
+            xx(numel(xx)+1) = xx(1) + k*(rfPixelSizeSamples)*dx;
+            xx(numel(xx)+1) = xx(1) - k*(rfPixelSizeSamples)*dx;
+            k = k + 1;
         end
-        dy = d.spatialSupportDegsY(2)- d.spatialSupportDegsY(1);
-        yy(1) = d.spatialSupportDegsY(1);
-        while (yy(end)<d.spatialSupportDegsY(end))
-            yy(numel(yy)+1) = yy(numel(yy)) + (rfPixelSizeSamples-1)*dy;
+        
+        yy(1) = mean(d.spatialSupportDegsY);
+        k = 0;
+        while (yy(1)+k*(rfPixelSizeSamples)*dx<d.spatialSupportDegsY(end))
+            yy(numel(yy)+1) = yy(1) + k*(rfPixelSizeSamples)*dx;
+            yy(numel(yy)+1) = yy(1) - k*(rfPixelSizeSamples)*dx;
+            k = k + 1;
         end
 
         for i = 1:numel(xx)
@@ -598,32 +595,9 @@ function renderRFmap(ax, d, smoothingKernel, rfPixelSizeSamples, centerConePosit
     );
     set(ax, 'XTick', -10:0.05:10);
     set(ax, 'YTick', -10:0.05:10);
-    %cLUT = brewermap(1024, '*RdBu');
+    
+    cLUT = MosaicPoolingOptimizer.generateReidShapleyRFmapLUT();
 
-    % Reid & Shapley (2002) colormap
-    cLUTsampled = [
-        155 164 183; ...
-        148 156 178; ...
-        135 143 170; ...
-        121 131 164; ...
-        105 115 154; ...
-        84 97 142; ...
-        52 70 123; ...
-        46 57 113 ; ...
-        0 0 0; ...
-        105 45 45; ...
-        132 47 47; ...
-        150 49 47; ...
-        166 58 58; ...
-        175 85 83; ...
-        184 112 109; ...
-        190 129 129; ...
-        195 147 144]/255;
-
-
-    cLUT(:,1) = interp1(1:size(cLUTsampled,1), cLUTsampled(:,1), linspace(1, size(cLUTsampled,1), 1025));
-    cLUT(:,2) = interp1(1:size(cLUTsampled,1), cLUTsampled(:,2), linspace(1, size(cLUTsampled,1), 1025));
-    cLUT(:,3) = interp1(1:size(cLUTsampled,1), cLUTsampled(:,3), linspace(1, size(cLUTsampled,1), 1025));
     colormap(ax, cLUT);
     midPoint = (size(cLUT,1)-1)/2+1;
     colorbar
