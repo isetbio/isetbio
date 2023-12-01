@@ -10,6 +10,17 @@ function coneParams = DefaultConeParams(type)
 %   
 %    The input string type allows some flexibility about the description.
 %
+%    Asano et al. give the following population SD's for the individual
+%    difference parameters (their Table 5, Step 2 numbers:
+%       Lens    - 18.7%
+%       Macular - 36.5%
+%       L Density - 9%
+%       M Density - 9%
+%       S Density - 7.4%
+%       L Shift   - 2 nm
+%       M Shift   - 1.5 nm
+%       S Shift   - 1.3 nm
+%
 % Inputs:
 %     type                          - String specifying cone parameterization type.
 %                                     'cie_asano': The CIE fundamentals
