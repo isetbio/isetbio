@@ -16,7 +16,7 @@ function [theOptimalNormalizedSTF, theNormalizedSTFsAcrossAllOrientations, ...
 
     temporalFrequency = 1.0;
 
-    for iOri = 1:orientationsNum
+    parfor iOri = 1:orientationsNum
         for iSF = 1:sfsNum
             % Retrieve cone mosaic responses for all frames of this stimulus
             theResponseTimeSeries = squeeze(theResponsesAcrossAllOrientationsAndSpatialFrequencies(iOri, iSF,:));

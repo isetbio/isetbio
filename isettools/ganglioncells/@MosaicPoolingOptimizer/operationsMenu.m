@@ -29,7 +29,7 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
     operationDescriptors{20} = '[20] ComputeVisualRFcenterMapsViaDirectConvolutionWithPSF';
 
     operationDescriptors{21} = '[21] Compute-ready mRGCMosaic (comparisons) : Contrast STF responses for different optics/stim chromaticities';
-
+    operationDescriptors{22} = '[22] Compute-ready mRGCMosaic (comparisons) : Contrast MSequence RFs for different optics/stim chromaticities';
 
     % 01. Generate the center-connected mosaic
     operationSetToPerformContains.generateCenterConnectedRGCMosaic = ~true;
@@ -93,6 +93,9 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
 
     % 21 Contrast mRGC STFs obtained with different optics and/or different  stimulus chromaticities
     operationSetToPerformContains.contrastSTFsAcrossDifferentOpticsOrChromaticities = ~true;
+
+    % 22. Contrast mSequence RFs obtained with different optics and/or different  stimulus chromaticities
+    operationSetToPerformContains.contrastMSequenceRFsAcrossDifferentOpticsOrChromaticities = ~true;
 
 
     operationSetToPerformContains.animateModelConvergence = ~true;
@@ -285,6 +288,13 @@ function operationSetToPerformContains = operationsMenu(mosaicParams)
                             operationSetToPerformContains.contrastSTFsAcrossDifferentOpticsOrChromaticities = true;
                         else
                             error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'contrastSTFsAcrossDifferentOpticsOrChromaticities');
+                        end
+
+                    case 22
+                        if (isfield(operationSetToPerformContains, 'contrastMSequenceRFsAcrossDifferentOpticsOrChromaticities'))
+                            operationSetToPerformContains.contrastMSequenceRFsAcrossDifferentOpticsOrChromaticities = true;
+                        else
+                            error('MosaicPoolingOptimizer.operationsMenu: no such field: ''%s''.', 'contrastMSequenceRFsAcrossDifferentOpticsOrChromaticities');
                         end
 
                     otherwise
