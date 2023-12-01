@@ -60,7 +60,7 @@ function synchronizeISETBIOWithRepository(repositoryName)
     % Get names of sub-directories of $isetbio/external/ptb
     fprintf('\nChecking contents of destination directory (%s) to determine which files to sync.\n', dstDir);
     dirContents = dir(dstDir);
-    ignoredDirs = {'+ptb', '', '.', '..'};
+    ignoredDirs = {'+ptb', '', '..'};
     destDirs = {}; srcDirs = {};
     for k = 1:numel(dirContents)
         if (dirContents(k).isdir)
