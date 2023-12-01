@@ -21,6 +21,9 @@
 
     % Synchronize ISETBIO's external BrainardLab Toolbox routines
     synchronizeISETBIOWithRepository('BLTB_DHB');
+
+    % Synchronize ISETBIO's external ExampleTestToolbox routines
+    synchronizeISETBIOWithRepository('ETTB_DHB');
 %}
 function synchronizeISETBIOWithRepository(repositoryName)
    
@@ -38,6 +41,9 @@ function synchronizeISETBIOWithRepository(repositoryName)
         case 'BLTB_DHB'
             srcDir = '/Users/dhb/Documents/MATLAB/toolboxes/BrainardLabToolbox';
             dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetbio/external/brainardlabtoolbox';
+        case 'ETTB_DHB'
+            srcDir = '/Users/dhb/Documents/MATLAB/toolboxes/ExampleTestToolbox';
+            dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetbio/external/exampletesttoolbox';
         otherwise
             error('No information about how to synchronize ''%s''. Please update ''synchronizeISETBIOWithRepository.m''.', repositoryName);
     end
