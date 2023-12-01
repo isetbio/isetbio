@@ -352,11 +352,14 @@ classdef MosaicPoolingOptimizer < handle
         % Method to contrast STFs across different optics/stimulus
         % chromaticities
         contrastVisualSTFsAcrossDifferentChromaticities(...
+            exampleLconeCenterRGCposition, exampleMconeCenterRGCposition, ...
             theComputeReadyMRGCmosaic, ...
             mRGCMosaicAchromaticSTFresponsesFileName, ...
             mRGCMosaicLconeIsolatingSTFresponsesFileName, ...
             mRGCMosaicMconeIsolatingSTFresponsesFileName, ...
-            opticsParams, rawFiguresRoot, scaledFiguresRoot, varargin);
+            opticsParams, rawFiguresRoot, scaledFiguresRoot, ...
+            exportScaledFigureVersionForManuscript, ...
+            varargin);
 
 
         % Method to contrast m-sequence RFs across different optics/stimulus
@@ -499,7 +502,7 @@ classdef MosaicPoolingOptimizer < handle
     methods (Static)
 
         % Main method for doing mRGCmosaic analyses/computations
-        run();
+        run(restartPool);
 
         % Method to get the user's selection on which operation to perform
         operationSetToPerformContains = operationsMenu(mosaicParams);
@@ -648,7 +651,8 @@ classdef MosaicPoolingOptimizer < handle
         plotRawCronerKaplanData();
 
         % M-sequence RF map smoothing ala ReidShapley (2002)
-        [smoothedRF, smoothingKernel, rfPixelSizeSamples] = applyReidShapleySmoothingToRFmap(spatialSupportDegsX, theRFmap, rfPixelsAcross);
+        [smoothedRF, smoothingKernel, rfPixelSizeSamples] = ...
+            applyReidShapleySmoothingToRFmap(spatialSupportDegsX, theRFmap, rfPixelsAcross);
 
         % M-sequence RF map LUT ala ReidShapley (2002)
         [cLUToriginal, cLUTreversed] = generateReidShapleyRFmapLUT();

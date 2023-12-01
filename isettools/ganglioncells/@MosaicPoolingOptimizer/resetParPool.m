@@ -1,17 +1,15 @@
 function  [shutdownParPoolOnceCompleted, numWorkers] = resetParPool(parPoolSize)
-    shutdownParPoolOnceCompleted = [];
-    disp('in resetParPool');
-    pause
-    
-    if ((~isempty(parPoolSize)) && (parPoolSize>1)) || (isempty(parPoolSize))
+    shutdownParPoolOnceCompleted = false;
+
+    if ((~isempty(parPoolSize)) && (parPoolSize>1))
         poolobj = gcp('nocreate'); 
         if (~isempty(poolobj))
             numWorkers = poolobj.NumWorkers;
             if (numWorkers ~= parPoolSize)
+               delete(poolobj);
                fprintf('Deleting previous parpool with %d workers to start a new one with %d workers instead\n', ...
                    poolobj.NumWorkers, parPoolSize);
-               delete(poolobj);
-               shutdownParPoolOnceCompleted = true;
+               pause(1.0);
                parpool('local',parPoolSize);
             end
         else
@@ -20,13 +18,6 @@ function  [shutdownParPoolOnceCompleted, numWorkers] = resetParPool(parPoolSize)
     end
 
     poolobj = gcp('nocreate');
-    if (isempty(poolobj))
-        if ((~isempty(parPoolSize)) && (parPoolSize>1))
-            parpool('local',parPoolSize);
-        else
-            parpool;
-        end
-    end
-    poolobj = gcp('nocreate');
     numWorkers = poolobj.NumWorkers;
+    fprintf('Number of parallel workers: %d\n', numWorkers);
 end

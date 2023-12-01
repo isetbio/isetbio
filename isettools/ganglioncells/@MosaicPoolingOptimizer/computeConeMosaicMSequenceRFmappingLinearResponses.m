@@ -63,11 +63,12 @@ function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResp
          [shutdownParPoolOnceCompleted, numWorkers] = MosaicPoolingOptimizer.resetParPool(parPoolSize);
 
          theOI = theOptics;
+         fprintf('About to start parallel computation of responses to m-sequence stimuli using %d workers.\n', numWorkers);
          parfor iFrame = 1:nStim
-             % Generate scenes for the m-sequence patterns
-            fprintf('Computing cone mosaic response for m-sequence frame %d of %d (using %d parallel processes).\n', ...
-                iFrame, nStim, numWorkers);
 
+             % Capture time we begin
+             tStart = cputime;
+             
              % Expand the m-sequence indicator function for the current frame
              spatialModulationPattern = rfMappingStimulusGenerator.expandFrame(squeeze(mSequenceIndicatorFunctions(iFrame,:,:)), stimParams.rfPixelRetinalPixelsWithin);
              spatialModulationPattern = reshape(spatialModulationPattern, [1 size(spatialModulationPattern ,1) size(spatialModulationPattern ,2)]);
@@ -132,6 +133,10 @@ function [theConeMosaicMSequenceLinearModulationResponses, theConeMosaicNullResp
              % The inverse response
              theConeMosaicMSequenceInverseModulationResponses(iFrame,:) = single(...
                  noiseFreeAbsorptionsModulationInversePolarity(1,1,:));
+
+             % Report time to completion
+             fprintf('Cone mosaic response computation for m-sequence frame %d of %d took %f seconds.\n', ...
+                iFrame, nStim, cputime - tStart);
          end % iFrame
 
          if (shutdownParPoolOnceCompleted)

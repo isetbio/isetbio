@@ -243,9 +243,9 @@ function run(restartParPool)
     % Perform the computeVisualRFsUsingMSequenceMapping operation
     if (operationSetToPerformContains.computeVisualRFsUsingMSequenceMapping)
 
-        reComputeInputConeMosaicResponses = ~true;
-        reComputeMRGCMosaicResponses = ~true;
-        recomputeRFs = ~true;
+        reComputeInputConeMosaicResponses = true;
+        reComputeMRGCMosaicResponses = true;
+        recomputeRFs = true;
         visualizeOptimallyMappedRFmapLocations = true;
 
         % (0,0) mosaic
@@ -254,6 +254,8 @@ function run(restartParPool)
 
         % (2.5, 0 ) mosaic
         stimPositionDegs = [3 -1];
+        stimPositionDegs = [3.5 -0.1];
+        stimPositionDegs = [2 0.4];
         stimSizeDegs = [0.6 0.6];
 
         % Spatial sampling of RF (# of squares)
