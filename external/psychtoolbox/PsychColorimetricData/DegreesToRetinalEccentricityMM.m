@@ -118,7 +118,7 @@ switch (method)
         degreeThreshold = 0.2;
         index = find(eccDegrees < degreeThreshold);
         if (~isempty(index))
-            eccMM(index) = DegreesToRetinalMM(eccDegrees(index),eyeLengthMm,false);
+            eccMm(index) = DegreesToRetinalMM(eccDegrees(index),eyeLengthMm,false);
         end
 
     case 'Linear'

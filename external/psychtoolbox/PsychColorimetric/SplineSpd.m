@@ -5,6 +5,16 @@ function [spd_out] = SplineSpd(wls_in, spd_in, wls_out, extend)
 % Takes change of deltaLambda into account to keep matrix computations
 % consistent across wavelength samplings.
 %
+% That is, the splining handles conversion of power units according to to
+% the wavelength sampling deltaWl. Power is assumed to be in units of power
+% per wlband on input, and this convention is maintained on output. This
+% convention, used widely in PTB, means that you can omit the
+% multiplication by deltaWl when numerically integrating over wavelength,
+% but is a little counterintuitive.
+%
+% Note that splining to 1 nm spacing puts the units into power per nm, as
+% at 1 nm spacing the two conventions are the same.
+%
 % Handling of out of range values:
 %   extend == 0: Cubic spline, extends with zeros [default]
 %   extend == 1: Cubic spline, extends with last value in that direction

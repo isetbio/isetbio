@@ -5,6 +5,14 @@
 % measurement hardware and return a measured spectral
 % power distribution respectively.
 %
+% NOTE 30-June-2023: I tried to fix some of this mess, to make the functions
+% more compatible with the way current operating systems, graphics cards and
+% display devices work. Specifically the massive changes in how hardware gamma
+% tables work on modern gpu's. I also added support for more Photo Research
+% colormeters. This seems to work ok with the simulated meterType 0, but I don't
+% have actual measurement hardware to verify if things work as expected. I guess
+% it is less broken now, and maybe even working fine, but who knows?
+%
 % NOTE (dhb, 8/19/12).  This code is a bit dusty, as it is not
 % being actively maintained.  In particular, the PTB display 
 % control has evolved since this was last looked at carefully.
@@ -85,34 +93,27 @@
 % 11/08/06 cgb, dhb  OS/X.
 % 9/27/08 dhb  Default primary bases is 1 now.  Use RefitCalLinMod to change later if desired.
 % 8/19/12 mk   Ask user for choice of display output device.
+% 6/30/23 mk   Use new clut mapping to fix this mess on standard gpus. Also allow
+%              choice of different supported colormeters, not just PR-650.
+% 8/31/23 mk   Assign cal.describe.dacsize also if g_usebitspp is already set.
 
 global g_usebitspp;
 
 % Unified key mapping, no unit color range by default:
 PsychDefaultSetup(1);
 
-% If the global flag for using Bits++ is empty, then it hasn't been
-% initialized and we ask user what to use:
-if isempty(g_usebitspp)
-    g_usebitspp = input('Which high-res display device? [0=None, 1=Bits++, 2=DataPixx/ViewPixx]');
-    switch(g_usebitspp)
-        case 0
-            fprintf('Using standard graphics card with 8 bpc framebuffer.\n');
-        case 1
-            fprintf('Using Bits++ device in Bits+ CLUT mode.\n');
-        case 2
-            fprintf('Using DataPixx/ViewPixx et al. in L48 CLUT mode.\n');
-        otherwise
-            error('Unsupported display device. Aborted.');
-    end
-end
-
 % Create calibration structure;
 cal = [];
 
 % Script parameters
 whichScreen = max(Screen('Screens'));
-whichMeterType = 1;
+
+% Type of colormeter to use for measurement of the spectra. See most up to date
+% list in 'help CMCheckInit', but as of June 2023, there is a range of Photo Research
+% devices:
+% 0 = Simulated (Default), 1 = PR650, 4 = PR655, 5 = PR670, 6 = PR705
+whichMeterType = 0;
+
 cal.describe.leaveRoomTime = 10;
 cal.describe.nAverage = 2;  
 cal.describe.nMeas = 30;
@@ -120,41 +121,66 @@ cal.describe.boxSize = 400;
 cal.nDevices = 3;
 cal.nPrimaryBases = 1;
 switch whichMeterType
-	case {0,1}
-		cal.describe.S = [380 4 101];
-	case 2
-		cal.describe.S = [380 1 401];
+    case {0,1}
+        cal.describe.S = [380 4 101];
+    case 2
+        cal.describe.S = [380 1 401];
     otherwise
-		cal.describe.S = [380 4 101];
+        cal.describe.S = [380 4 101]; % Or should it be [380 5 81]?
 end
 cal.manual.use = 0;
-		
+
 % Enter screen
 defaultScreen = whichScreen;
 whichScreen = input(sprintf('Which screen to calibrate [%g]: ', defaultScreen));
 if isempty(whichScreen)
-	whichScreen = defaultScreen;
+    whichScreen = defaultScreen;
 end
 cal.describe.whichScreen = whichScreen;
+
+% If the global flag for using Bits++ is empty, then it hasn't been
+% initialized and we ask user what to use:
+if isempty(g_usebitspp)
+    g_usebitspp = input('Which high-res display device? [0=None, 1=CRS Bits++/Bits#/..., 2=VPixx DataPixx/ViewPixx/ProPixx/...]');
+end
+
+switch(g_usebitspp)
+    case 0
+        fprintf('Using standard graphics card with 8 bpc framebuffer.\n');
+        % We want dacsize to be so that 2^dacsize gives the size of the gamma
+        % lut of the display device, iow. a gamma correction table is produced
+        % as output, which can be loaded into the display devices hardware lut.
+        % For a standard display connected to a standard gpu, the relevant gamma
+        % hardware lut is the one of the gpu, with 'reallutsize' slots of size,
+        % so query reallutsize from system and choose dacsize accordingly:
+        [~, ~, reallutsize] = Screen('ReadNormalizedGammaTable', whichScreen);
+        cal.describe.dacsize = log2(reallutsize);
+    case 1
+        fprintf('Using CRS Bits++/Bits# et al. device in Bits+ CLUT mode.\n');
+        % For 2^8 = 256 slots builtin hw lut of CRS devices:
+        cal.describe.dacsize = 8;
+    case 2
+        fprintf('Using VPixx DataPixx/ViewPixx et al. in L48 CLUT mode.\n');
+        % For 2^8 = 256 slots builtin hw lut of VPixx devices:
+        cal.describe.dacsize = 8;
+    otherwise
+        error('Unsupported display device. Aborted.');
+end
 
 % Blank screen
 defaultBlankOtherScreen = 0;
 blankOtherScreen = input(sprintf('Do you want to blank another screen? (1 for yes, 0 for no) [%g]: ', defaultBlankOtherScreen));
 if isempty(blankOtherScreen)
-	blankOtherScreen = defaultBlankOtherScreen;
+    blankOtherScreen = defaultBlankOtherScreen;
 end
 if blankOtherScreen
-	defaultBlankScreen = 2;
-	whichBlankScreen = input(sprintf('Which screen to blank [%g]: ', defaultBlankScreen));
-	if isempty(whichBlankScreen)
-		whichBlankScreen = defaultBlankScreen;
-	end
-	cal.describe.whichBlankScreen = whichBlankScreen;
+    defaultBlankScreen = 2;
+    whichBlankScreen = input(sprintf('Which screen to blank [%g]: ', defaultBlankScreen));
+    if isempty(whichBlankScreen)
+        whichBlankScreen = defaultBlankScreen;
+    end
+    cal.describe.whichBlankScreen = whichBlankScreen;
 end
-
-% Find out about screen
-cal.describe.dacsize = ScreenDacBits(whichScreen);
-nLevels = 2^cal.describe.dacsize;
 
 % Prompt for background values.  The default is a guess as to what
 % produces one-half of maximum output for a typical CRT.
@@ -162,18 +188,18 @@ defBgColor = [190 190 190]'/255;
 thePrompt = sprintf('Enter RGB values for background (range 0-1) as a row vector [%0.3f %0.3f %0.3f]: ',...
                     defBgColor(1), defBgColor(2), defBgColor(3));
 while 1
-	cal.bgColor = input(thePrompt)';
-	if isempty(cal.bgColor)
-		cal.bgColor = defBgColor;
-	end
-	[m, n] = size(cal.bgColor);
-	if m ~= 3 || n ~= 1
-		fprintf('\nMust enter values as a row vector (in brackets).  Try again.\n');
+    cal.bgColor = input(thePrompt)';
+    if isempty(cal.bgColor)
+        cal.bgColor = defBgColor;
+    end
+    [m, n] = size(cal.bgColor);
+    if m ~= 3 || n ~= 1
+        fprintf('\nMust enter values as a row vector (in brackets).  Try again.\n');
     elseif (any(defBgColor > 1) || any(defBgColor < 0))
         fprintf('\nValues must be in range (0-1) inclusive.  Try again.\n');
     else
-		break;
-	end
+        break;
+    end
 end
 
 % Get distance from meter to screen.
@@ -218,13 +244,12 @@ cal.describe.gamma.fitBreakThresh = 0.02;
 
 % Initialize
 switch whichMeterType
-	case 0
-	case 1
-		CMCheckInit;
-	case 2
-		CVIOpen;
+    case 0
+        % Simulated only.
+    case 2
+        CVIOpen;
     otherwise
-		error('Invalid meter type');
+        CMCheckInit(whichMeterType);
 end
 ClockRandSeed;
 
@@ -237,7 +262,9 @@ USERPROMPT = 0;
 cal = CalibrateAmbDrvr(cal, USERPROMPT, whichMeterType, blankOtherScreen);
 
 % Signal end 
-Snd('Play', sin(0:10000)); WaitSecs(.75); Snd('Play', sin(0:10000)); WaitSecs(.75); Snd('Play', sin(0:20000));
+Beeper; WaitSecs(.75);
+Beeper; WaitSecs(.75);
+Beeper; WaitSecs(.75);
 
 % Save the structure
 fprintf(1, '\nSaving to %s.mat\n', newFileName);
@@ -262,16 +289,12 @@ hold off
 figure(gcf);
 drawnow;
 
-% Reenable screen saver.
-%ScreenSaver(1);
-
 % Close down meter
 switch whichMeterType
-	case 0
-	case 1
-		CMClose;
-	case 2
-		CVIClose;
+    case 0
+        % Simulated needs no close.
+    case 2
+        CVIClose;
     otherwise
-		error('Invalid meter type');
+        CMClose(whichMeterType);
 end

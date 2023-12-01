@@ -100,17 +100,14 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
 %
 % receptortype
 %   'cones'     -- computations for cones. [Default]
-%   'rods'      -- computations for rods.  Currently only implemented for
-%                  recovery kinetics.  Need to find and enter half-bleach
-%                  constant for rods in scotopic trolands and/or
-%                  isomerizations to do steady state of full kinetic
-%                  calculations for rods.
+%   'rods'      -- computations for rods.
 %
 % units         -- units of irradiance
 %   'trolands'     input irradiance trolands.  Note that the computation
 %                  only makes sense for L and M cones if this is the input.
 %                  This is photopic trolands if receptor type is 'cones'.
-%                  [Default]
+%                  [Default].  It is scotopic trolands if receptor type is
+%                  rods.
 %   'isomerizations'  nominal isomerization rate in
 %                  isomerizations/cone-sec, comptued taking into account
 %                  pre-retinal absorption as well as nominal cone axial
@@ -122,6 +119,7 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
 %                  pp. 211 and following. See intro text above. [Default]
 %   'RushtonHenryAlt' - Rushton and Henry's other half-bleach constant.
 %                  Only available for 'cones'.
+%   'WyszeckiStiles' - Wyszecki and Stiles (1982) give parameters on page
 %
 % initialFraction -- fraction of input bleached at time zero. If
 %                 empty, steady state fraction bleached is
@@ -252,7 +250,17 @@ switch (receptortype)
                     otherwise
                         error('Unkown input units specified');
                 end
-                
+
+            case 'WyszeckiStiles'
+                switch (units)
+                    case 'trolands'
+                        Q = 5e6;          % Photopic td sec
+                        N = 130;          % Recovery time constant (seconds)
+                        Izero = Q/N;      % Photopic td, stimulus intensity that bleaches at the rate of 1/N
+                    otherwise
+                        error('Unkown input units specified');
+                end
+
             case 'RushtonHenryAlt'
                 switch (units)
                     case 'trolands'
@@ -264,7 +272,7 @@ switch (receptortype)
                     otherwise
                         error('Unkown input units specified');
                 end
-                
+
             case 'Burkhardt'
                 switch (units)
                     case 'trolands'
@@ -275,14 +283,15 @@ switch (receptortype)
                     otherwise
                         error('Unkown input units for cones specified');
                 end
-                
+
             otherwise
                 error('Unknown source for cones specified');
         end
-        
+
     case 'rods'
         switch (source)
             case 'Boynton'
+                error('No Boynton units entered for rods yet');
                 switch (units)
                     % Values of Izero below are set to 1 just as a
                     % placeholder.  Need to be filled in with correct
@@ -296,77 +305,78 @@ switch (receptortype)
                     otherwise
                         error('Unsupported input units for rods specified');
                 end
-                
+
+            case 'WyszeckiStiles'
+                switch (units)
+                    % Values of Izero below are set to 1 just as a
+                    % placeholder.  Need to be filled in with correct
+                    % values to do full set of rod computations.
+                    case 'trolands'
+                        Q = 1.57e7;       % Scotopic Td-sec
+                        N = 519;          % Recovery time constant (seconds)
+                        Izero = Q/N;
+                    otherwise
+                        error('Unsupported input units for rods specified');
+                end
+
             otherwise
                 error('Unknown source for rods specified');
         end
     otherwise
         error('Unknown receptor type specified');
 end
-        
-    % Steady state calculation
-    if (isempty(initialFraction))
-        if (length(irradiance) ~= 1)
-            error('Irradiance should be passed as a scalar for steady state computation');
-        end
-        
-        % Check for computation we don't know how to do
-        if (strcmp(receptortype,'rods'))
-            error('Currently only have recovery kinetics implemented for rods');
-        end
-          
-        % Simple formula.  This formula appears to have a typo in the first
-        % edition (Eqn. 6.5 is missing the division sign).
-        fractionBleached = (irradiance./(irradiance + Izero));
+
+% Steady state calculation
+if (isempty(initialFraction))
+    if (length(irradiance) ~= 1)
+        error('Irradiance should be passed as a scalar for steady state computation');
+    end
+
+    % Simple formula.  This formula appears to have a typo in the first
+    % edition (Eqn. 6.5 is missing the division sign).
+    fractionBleached = (irradiance./(irradiance + Izero));
 
     % Time varying calculation.
-    else
-        % Take time resolution into account. Our underlying
-        % computations are in seconds, at the specified time
-        % resolution.
-        switch (timeUnits)
-            case 'sec'
-                timeStep = 1;
-            case 'tenth'
-                timeStep = 0.1;
-            case 'hundredth'
-                timeStep = 0.01;    
-            case 'msec'
-                timeStep = 0.001;
-            case 'tenthmsec'
-                timeStep = 0.0001;
-            otherwise
-                error('Unknown time units specified');
-        end
-        
-        % Inline functions to make our lives easier
-        %
-        % This is Eqn. 6.5 from Boynton Human Color Vision
-        % (first edition) and gives the change in fraction
-        % unbleached (p) over time.
-        dp_dt = @(p, I) (( (1-p)./N ) - ( (I.*p)./ (N.*Izero) ));
-        
-        % Need to get half-bleach constants for rods before we can
-        if (strcmp(receptortype,'rods'))
-            if (any(irradiance ~= 0))
-                error('Currently only have recovery kinetics implemented for rods');
-            end
-        end
-        
-        % Set up fraction bleached over simulation time.  Note conversion
-        % of passed fraction bleached to fraction unbleached form here.
-        fractionUnbleached = zeros(size(irradiance));
-        fractionUnbleached(1) = 1-initialFraction;
-        
-        for t=2:length(irradiance)
-            fractionUnbleached(t) = fractionUnbleached(t-1) + ...
-                dp_dt(fractionUnbleached(t-1),irradiance(t-1))*timeStep;
-        end
-        
-        % Convert back to fraction bleached
-        fractionBleached = 1 - fractionUnbleached;
-        
+else
+    % Take time resolution into account. Our underlying
+    % computations are in seconds, at the specified time
+    % resolution.
+    switch (timeUnits)
+        case 'sec'
+            timeStep = 1;
+        case 'tenth'
+            timeStep = 0.1;
+        case 'hundredth'
+            timeStep = 0.01;
+        case 'msec'
+            timeStep = 0.001;
+        case 'tenthmsec'
+            timeStep = 0.0001;
+        otherwise
+            error('Unknown time units specified');
     end
+
+    % Inline functions to make our lives easier
+    %
+    % This is Eqn. 6.5 from Boynton Human Color Vision
+    % (first edition) and gives the change in fraction
+    % unbleached (p) over time.
+    dp_dt = @(p, I) (( (1-p)./N ) - ( (I.*p)./ (N.*Izero) ));
+
+    % Set up fraction bleached over simulation time.  Note conversion
+    % of passed fraction bleached to fraction unbleached form here.
+    fractionUnbleached = zeros(size(irradiance));
+    fractionUnbleached(1) = 1-initialFraction;
+
+    for t=2:length(irradiance)
+        fractionUnbleached(t) = fractionUnbleached(t-1) + ...
+            dp_dt(fractionUnbleached(t-1),irradiance(t-1))*timeStep;
+    end
+
+    % Convert back to fraction bleached
+    fractionBleached = 1 - fractionUnbleached;
+
+end
 end
 
 
