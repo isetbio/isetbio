@@ -43,7 +43,7 @@ function synchronizeISETBIOWithRepository(repositoryName)
             dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetbio/external/brainardlabtoolbox';
         case 'ETTB_DHB'
             srcDir = '/Users/dhb/Documents/MATLAB/toolboxes/ExampleTestToolbox';
-            dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetbio/external/exampletesttoolbox';
+            dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetvalidate/external/exampletesttoolbox';
         otherwise
             error('No information about how to synchronize ''%s''. Please update ''synchronizeISETBIOWithRepository.m''.', repositoryName);
     end
