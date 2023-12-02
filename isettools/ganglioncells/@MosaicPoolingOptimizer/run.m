@@ -260,7 +260,7 @@ function run(restartParPool)
 
         % Spatial sampling of RF (# of squares)
         rfPixelsAcross = 16;
-        rfPixelsAcross = 64;
+        rfPixelsAcross = 45;
 
         % Bit length of m-sequence
         mSequenceBitLength = 12;
