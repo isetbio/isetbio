@@ -9,10 +9,12 @@ function performContrastMSequenceRFsAcrossDifferentChromaticities(...
     p = inputParser;
     p.addParameter('performSurroundAnalysisForConesExclusiveToTheSurround', true, @islogical);
     p.addParameter('targetRangeForSurroundConeMix', [0.4 0.5], @(x)(isnumeric(x)&&(numel(x)==2)));
+    p.addParameter('targetRangeForCenterMix', [1 1], @(x)(isnumeric(x)&&(numel(x)==2)));
     p.addParameter('exportScaledFigureVersionForManuscript', true, @islogical);
     p.parse(varargin{:});
     performSurroundAnalysisForConesExclusiveToTheSurround = p.Results.performSurroundAnalysisForConesExclusiveToTheSurround;
     targetRangeForSurroundConeMix = p.Results.targetRangeForSurroundConeMix;
+    targetRangeForCenterMix = p.Results.targetRangeForCenterMix;
     exportScaledFigureVersionForManuscript = p.Results.exportScaledFigureVersionForManuscript;
 
     % Get PDF directory
@@ -25,7 +27,7 @@ function performContrastMSequenceRFsAcrossDifferentChromaticities(...
     % Find the indices of mRGCs whose surround cone mix is within the target range
     mRGCindicesToVisualizeMSequenceRFmapsAcrossChromaticities = MosaicPoolingOptimizer.findMRGCindicesWithDesiredSurroundConeMix(...
             theComputeReadyMRGCmosaic, ...
-            targetRangeForSurroundConeMix, ...
+            targetRangeForSurroundConeMix, targetRangeForCenterMix, ...
             performSurroundAnalysisForConesExclusiveToTheSurround, ...
             rawFiguresRoot, scaledFiguresRoot, exportScaledFigureVersionForManuscript);
 
@@ -86,10 +88,7 @@ function performContrastMSequenceRFsAcrossDifferentChromaticities(...
 
 
     % Prompt user for examined RGC location
-    exampleLconeCenterRGCposition = [];
-    while (numel(exampleLconeCenterRGCposition) ~= 2)
-        exampleLconeCenterRGCposition = input('Enter example L-cone center RGC position (e.g. [0.7 0.7]) :');
-    end
+    exampleLconeCenterRGCposition = input('Enter visualized RGC position (e.g. [0.7 0.7], or empty to visualize all RGCs) :');
     exampleMconeCenterRGCposition = exampleLconeCenterRGCposition;
 
     MosaicPoolingOptimizer.contrastMSequenceRFsAcrossDifferentChromaticities(...

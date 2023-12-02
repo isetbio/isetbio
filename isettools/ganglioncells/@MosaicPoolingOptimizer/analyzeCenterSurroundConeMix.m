@@ -1,5 +1,5 @@
 function [theCenterMajorityConeType, netCenterLconeWeight, netCenterMconeWeight, ...
-         netSurroundLconeWeight, netSurroundMconeWeight, surroundConeMix] = analyzeCenterSurroundConeMix(...
+         netSurroundLconeWeight, netSurroundMconeWeight, surroundConeMix, centerConeMix] = analyzeCenterSurroundConeMix(...
          theMRGCmosaic, theRGCindex, performSurroundAnalysisForConesExclusiveToTheSurround)
 
     [theCenterConeTypeNetWeights, ~, theCenterMajorityConeType, ...
@@ -20,8 +20,10 @@ function [theCenterMajorityConeType, netCenterLconeWeight, netCenterMconeWeight,
     % non-dominant center cone / total surround L+M cone weight
     if (theCenterMajorityConeType == cMosaic.LCONE_ID)
         surroundConeMix = netSurroundMconeWeight / (netSurroundMconeWeight+netSurroundLconeWeight);
+        centerConeMix = netCenterLconeWeight/(netCenterLconeWeight+netCenterMconeWeight);
     else
         surroundConeMix = netSurroundLconeWeight / (netSurroundMconeWeight+netSurroundLconeWeight);
+        centerConeMix = netCenterMconeWeight/(netCenterLconeWeight+netCenterMconeWeight);
     end
 
 end

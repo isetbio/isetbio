@@ -260,7 +260,7 @@ function run(restartParPool)
 
         % Spatial sampling of RF (# of squares)
         rfPixelsAcross = 16;
-        rfPixelsAcross = 32;
+        rfPixelsAcross = 64;
 
         % Bit length of m-sequence
         mSequenceBitLength = 12;
@@ -291,10 +291,14 @@ function run(restartParPool)
         %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
 
+        % Only cells with RF centers receiving a single type of cone inputs
+        targetRangeForCenterMix = [1 1];
+
         MosaicPoolingOptimizer.performContrastSTFsAcrossDifferentChromaticities(...
             mosaicParams, rawFiguresRoot, scaledFiguresRoot, ...
             'performSurroundAnalysisForConesExclusiveToTheSurround', true, ...
-            'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
+            'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix, ...
+            'targetRangeForCenterMix', targetRangeForCenterMix);
     end
 
     % Perform the ContrastSTFsAcrossDifferentOpticsOrChromaticities operation
@@ -306,12 +310,16 @@ function run(restartParPool)
         %targetRangeForSurroundConeMix = 0.64 + [0.00 0.05];
         %targetRangeForSurroundConeMix = 0.75 + [0.00 0.05];
 
+        % Only cells with RF centers receiving a single type of cone inputs
+        targetRangeForCenterMix = [1 1];
+
         % (0,0) mosaic
         stimPositionDegs = [0.65 0.72];
         stimSizeDegs = [0.4 0.4];
 
         % (2.5, 0 ) mosaic
         stimPositionDegs = [3 -1];
+        stimPositionDegs = [2 0.4];
         stimSizeDegs = [0.6 0.6];
 
         % Spatial sampling of RF (# of squares)
@@ -330,7 +338,8 @@ function run(restartParPool)
             mSequenceBitLength, rfPixelsAcross, ...
             rawFiguresRoot, scaledFiguresRoot, ...
             'performSurroundAnalysisForConesExclusiveToTheSurround', true, ...
-            'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix);
+            'targetRangeForSurroundConeMix', targetRangeForSurroundConeMix, ...
+            'targetRangeForCenterMix', targetRangeForCenterMix);
     end
 
     % Perform the computeVisualRFcenterMapsViaDirectConvolutionWithPSF  operation
