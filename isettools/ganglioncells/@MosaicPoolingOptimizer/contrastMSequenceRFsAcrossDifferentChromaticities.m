@@ -68,7 +68,8 @@ function contrastMSequenceRFsAcrossDifferentChromaticities(...
        opticsString = sprintf('physio-optics, defocus_%1.2fD', opticsParams.refractiveErrorDiopters);
     end
 
-    if (opticsParams.employMonochromaticVlambdaWeigthedPSF)
+    
+    if (opticsParams.employMonochromaticVlambdaWeightedPSF)
         opticsString = sprintf('%s_MonoVLambdaPSF', opticsString);
     end
 
