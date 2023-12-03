@@ -4,8 +4,9 @@ function contrastMSequenceRFsAcrossDifferentChromaticities(...
     theOptimallyMappedAchromaticRFmapsFileName, ...
     theOptimallyMappedLconeIsolatingRFmapsFileName, ...
     theOptimallyMappedMconeIsolatingRFmapsFileName, ...
-    rfPixelsAcross, opticsParams, rawFiguresRoot, scaledFiguresRoot, exportScaledFigureVersionForManuscript, ...
-        varargin)
+    coneFundamentalsOptimizedForStimPosition, ...
+    rfPixelsAcross, opticsParams, rawFiguresRoot, scaledFiguresRoot, ...
+    exportScaledFigureVersionForManuscript, varargin)
 
     % Parse input
     p = inputParser;
@@ -65,6 +66,14 @@ function contrastMSequenceRFsAcrossDifferentChromaticities(...
        opticsString = sprintf('diffr-limited, pupil_%2.0fmm, defocus_%1.2fD', opticsParams.pupilDiameterMM, opticsParams.refractiveErrorDiopters);
     else
        opticsString = sprintf('physio-optics, defocus_%1.2fD', opticsParams.refractiveErrorDiopters);
+    end
+
+    if (opticsParams.employMonochromaticVlambdaWeigthedPSF)
+        opticsString = sprintf('%s_MonoVLambdaPSF', opticsString);
+    end
+
+    if (coneFundamentalsOptimizedForStimPosition)
+        opticsString = sprintf('%s_OptimizedConeFundamentals', opticsString);
     end
 
     analyzedLconeCenterRGCs = 0;
@@ -266,23 +275,33 @@ function renderMSequenceRFMaps(figNo, theComputeReadyMRGCmosaic, exampleConeCent
     [~, theMconeRFmapCentroid] = ellipseContourFromSubregionRFmap(exampleConeCenterData.MconeIsolatingRFmapDataStruct);
 
 
+    % Profiles
+    profileType = 'radially averaged profile';
+    profileType = 'line weighting function';
+
     [~,theRFcenterCol] = min(abs(exampleConeCenterData.achromaticRFmapDataStruct.spatialSupportDegsX-achromaticRFcentroid(1)));
     [~,theRFcenterRow] = min(abs(exampleConeCenterData.achromaticRFmapDataStruct.spatialSupportDegsY-achromaticRFcentroid(2)));
-    radiallySymmetricAchromaticRFprofileX = circularlyAveragedRFmap(exampleConeCenterData.achromaticRFmapDataStruct.theSmoothedRFmap, theRFcenterCol, theRFcenterRow);
+    radiallySymmetricAchromaticRFprofileX = generateRFprofile(...
+        exampleConeCenterData.achromaticRFmapDataStruct.theSmoothedRFmap, ...
+        theRFcenterCol, theRFcenterRow, profileType);
 
     [~,theRFcenterCol] = min(abs(exampleConeCenterData.LconeIsolatingRFmapDataStruct.spatialSupportDegsX-theLconeRFmapCentroid(1)));
     [~,theRFcenterRow] = min(abs(exampleConeCenterData.LconeIsolatingRFmapDataStruct.spatialSupportDegsY-theLconeRFmapCentroid(2)));
-    radiallySymmetricLconeIsolatingRFprofileX = circularlyAveragedRFmap(exampleConeCenterData.LconeIsolatingRFmapDataStruct.theSmoothedRFmap, theRFcenterCol, theRFcenterRow);
+    radiallySymmetricLconeIsolatingRFprofileX = generateRFprofile(...
+        exampleConeCenterData.LconeIsolatingRFmapDataStruct.theSmoothedRFmap, ...
+        theRFcenterCol, theRFcenterRow, profileType);
 
 
     [~,theRFcenterCol] = min(abs(exampleConeCenterData.MconeIsolatingRFmapDataStruct.spatialSupportDegsX-theMconeRFmapCentroid(1)));
     [~,theRFcenterRow] = min(abs(exampleConeCenterData.MconeIsolatingRFmapDataStruct.spatialSupportDegsY-theMconeRFmapCentroid(2)));
-    radiallySymmetricMconeIsolatingRFprofileX = circularlyAveragedRFmap(exampleConeCenterData.MconeIsolatingRFmapDataStruct.theSmoothedRFmap, theRFcenterCol, theRFcenterRow);
+    radiallySymmetricMconeIsolatingRFprofileX = generateRFprofile(...
+        exampleConeCenterData.MconeIsolatingRFmapDataStruct.theSmoothedRFmap, ...
+        theRFcenterCol, theRFcenterRow, profileType);
 
    
 
     % Max RF map range
-    m = max([...
+    m = min([...
            max(abs(exampleConeCenterData.LconeIsolatingRFmapDataStruct.theRFmap(:))) ...
            max(abs(exampleConeCenterData.MconeIsolatingRFmapDataStruct.theRFmap(:)))...
         ]);
@@ -380,10 +399,10 @@ function renderMSequenceRFMaps(figNo, theComputeReadyMRGCmosaic, exampleConeCent
     m1 = max([max(radiallySymmetricAchromaticRFprofileX) max(radiallySymmetricLconeIsolatingRFprofileX) max(radiallySymmetricMconeIsolatingRFprofileX)]);
     m2 = min([min(radiallySymmetricAchromaticRFprofileX) min(radiallySymmetricLconeIsolatingRFprofileX) min(radiallySymmetricMconeIsolatingRFprofileX)]);
     if (-m2 > m1)
-       YLimsProfile(1) = m2;
+       YLimsProfile(1) = m2*1.01;
        YLimsProfile(2) = -m2*0.2;
     else
-       YLimsProfile(2) = m1;
+       YLimsProfile(2) = m1*1.01;
        YLimsProfile(1) = -m1*0.2;
     end
     
@@ -504,8 +523,20 @@ function p = shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, l
     p = patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, 'FaceAlpha', faceAlpha, 'LineWidth', lineWidth, 'lineStyle', lineStyle);
 end
 
-function [theRadiallySymmetricRFprofileX, theRadiallySymmetricRFprofileY] = ...
-    circularlyAveragedRFmap(theRF, theRFcenterCol, theRFcenterRow)
+
+function [theProfileX, theProfileY] = generateRFprofile(theRF, theRFcenterCol, theRFcenterRow, profileType)
+
+    switch (profileType)
+        case 'radially averaged profile'
+            % do nothing
+        case 'line weighting function'
+            theProfileX = sum(theRF, 1);
+            theProfileY = sum(theRF,2);
+            return;
+        otherwise
+            error('Unknown profile type: ''%s''.', profileType);
+    end
+
     % Compute unit circle radial distances
     N = size(theRF,1);
     xx = (1:N)-theRFcenterCol;
@@ -549,6 +580,9 @@ function [theRadiallySymmetricRFprofileX, theRadiallySymmetricRFprofileY] = ...
             theRadiallySymmetricRFprofileY(theRFcenterRow+1-nn(i)) = theRadialRFprofile(nn(i));
         end
     end
+
+    theProfileX = theRadiallySymmetricRFprofileX;
+    theProfileY = theRadiallySymmetricRFprofileY;
 
 end
 
