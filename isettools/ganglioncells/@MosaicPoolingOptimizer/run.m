@@ -250,7 +250,7 @@ function run(restartParPool)
 
         % (0,0) mosaic
         stimPositionDegs = [0.65 0.72];
-        stimSizeDegs = [0.4 0.4];
+        stimSizeDegs = [0.3 0.3];
 
         % (2.5, 0 ) mosaic
         % stimPositionDegs = [3 -1];
