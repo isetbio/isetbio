@@ -67,9 +67,22 @@ excitations = cm.compute(oiLeft);
 
 params = cm.visualize('params');
 
-params.activation = excitations.^0.5;
+params.activation = excitations;
 params.activationColorMap = gray(1024);
+params.plotTitle = ' ';
 cm.visualize(params);
+brighten(gray(1024),0.8);
+
+%%
+roiLine = regionOfInterest('shape', 'line', ...
+    'from', [-5. -1.5], 'to', [-0.5,-1.5], ...
+    'thickness', 0.1);
+
+% Show the ROI on top of the activations
+cm.plot('roi',excitations.^(0.3), 'roi',roiLine);
+cm.plot('excitations horizontal line',excitations, 'y deg',-0.5,'thickness',0.05);
+
+cm.plot('excitations roi',excitations, 'cone type','l','roi',roiLine);
 
 %%  Plot the histogram of excitations
 

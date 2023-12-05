@@ -1,36 +1,32 @@
 function visualizationParams = visualize(obj, varargin)
 % Visualize different aspects of a @cMosaic or its activation
 %
-% THERE IS NOW A SET OF CONFLICTS BETWEEN THIS VERSION AND WHAT NICOLAS HAS
-% DONE. ONE MAJOR ISSUE IS THE UPPER/LOWER CASE OF THE PARAMETERS AND THE
-% USE OF ieParamFormat(), which BW ADDED AND NC DID NOT USE. 
-%
-% But NC also made changes the functionality, and we should preserve these.
-% I think resolving requires a discussion between NC and BW. (Oct 29, 2023)
-%
 % TODO:
 %   Comments, extraction of useful utilities for reuse.
 %
+% Syntax:
+%   cm = cMosaic(); cm.visualize();
+%
 % Brief description
-%   NC built many nice visualization functions and inserted them here.
-%   The number of parameters is so large and the possibilities so
-%   vast, the it seemed useful to provide the user with a set of
-%   simpler calls.  Those are in cMosaic.plot and likely cMosaicPlot()
-%   will be implemented.  Those routine interface to this one
+%   These are the NC visualization functions.
+%
+%   The number of parameters is large and the possibilities are vast.
+%   Thus, we also provide the user with a set of simpler calls.  Those
+%   are in cMosaic.plot.  Those routine interface to this one
 %   regularly.
 %
-%   I am considering making this routine visualize(cm,...) and having
-%   it live outside of the class.  We can leave just the cm.plot as
-%   part of the class.  Noodling, not sure what I think.
+%   (It is likely that a function cMosaicPlot() will be implemented.)
+%   Also, we are considering making this routine visualize(cm,...) and
+%   having it live outside of the class.  We can leave just the
+%   cm.plot as part of the class.  Noodling, not sure what I think.
 %
-% Syntax:
-%   cm = cMosaic(); cm.visualizeBrianVersion();
+%   You can see the many settable visualize params
 %
-%   % Return the many settable visualize params
-%   visParams = cm.visualizeBrianVersion('params')
+%        visParams = cm.visualize('params')
 %
-%   % Display the various settable params and info about them
-%   cm.visualize('help');
+%   Also, display the various settable params and info about them
+%   
+%        cm.visualize('help');
 %
 %  See also
 %   cMosaic.plot (an interface to this)
@@ -1006,7 +1002,11 @@ else
     if (strcmp(visualizationDomain, 'microns'))
         % Convert degs to microns
         x0  =  obj.distanceMicronsToDistanceDegreesForCmosaic(x0);
-        x0  =  obj.distanceMicronsToDistanceDegreesForCmosaic(y0);
+
+        % BW changed Dec. 5, 2023.  Hopefully that is what NC intended!
+        %
+        % x0  =  obj.distanceMicronsToDistanceDegreesForCmosaic(y0);
+        y0  =  obj.distanceMicronsToDistanceDegreesForCmosaic(y0);
     end
     xSupport = xSupport + x0;
     ySupport = ySupport + y0;
@@ -1024,11 +1024,10 @@ end
 %% Key rendering function.  Could be used by coneMosaicRect, too, I think
 function renderPatchArray(axesHandle, apertureShape, apertureRadii, rfCoords, ...
     faceColors, edgeColor, lineWidth, faceAlpha, edgeAlpha)
-% Called several times to render each of the different cone classes
+% Called multiple times to render each of the different cone classes
 %
-% In principle, the parameters could be calculated from a
-% coneMosaicRect, too so that this could be the visualization routine
-% for that class.
+% In principle, the parameters could be derived from a coneMosaicRect,
+% too so that this could be the visualization routine for that class.
 %
 
 conesNum = numel(apertureRadii);
