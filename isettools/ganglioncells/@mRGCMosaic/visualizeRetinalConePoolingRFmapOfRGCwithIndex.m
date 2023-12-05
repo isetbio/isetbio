@@ -103,11 +103,15 @@ function visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj, theRGCindex, vararg
 
     S.FaceVertexCData = [0.5 0.5 0.5];
 
-    S.FaceColor = 'flat';
-    S.EdgeColor = [0 0 0];
+    S.FaceColor = [1 1 1];
+    S.EdgeColor = [1 1 0];
     S.FaceAlpha = 0.0;
-    S.LineWidth = 1.0;
-    patch(S, 'Parent', theAxes{1,1})
+    S.LineWidth = 1.5;
+    patch(S, 'Parent', theAxes{1,1});
+    S.LineStyle = ':';
+    S.EdgeColor = [0 0 0];
+    S.LineWidth = 1.5;
+    patch(S, 'Parent', theAxes{1,1});
     hold(theAxes{1,1}, 'off');
 
 

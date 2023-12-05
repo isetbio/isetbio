@@ -56,7 +56,7 @@ function performComputeVisualRFsUsingMSequenceMapping(mosaicParams, varargin)
 
 
     % Generate filename for the mRGCMosaic subspace responses
-    userPrompt = 'Select the optics for computing the mRGC mosaic STF responses';
+    userPrompt = 'Select the optics for computing the mRGC mosaic m-sequence responses';
     measuredResponseType = 'MSequenceResponses';
     
     [mRGCMosaicMSequenceResponsesFileName, ~, ~, ...
