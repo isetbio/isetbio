@@ -250,17 +250,17 @@ function run(restartParPool)
 
         % (0,0) mosaic
         stimPositionDegs = [0.65 0.72];
-        stimSizeDegs = [0.4 0.4];
+        stimSizeDegs = [0.3 0.3];
 
         % (2.5, 0 ) mosaic
-        stimPositionDegs = [3 -1];
-        stimPositionDegs = [3.5 -0.1];
-        stimPositionDegs = [2 0.4];
-        stimSizeDegs = [0.6 0.6];
+        % stimPositionDegs = [3 -1];
+        % stimPositionDegs = [3.5 -0.1];
+        % stimPositionDegs = [2 0.4];
+        % stimSizeDegs = [0.6 0.6];
 
         % Spatial sampling of RF (# of squares)
         rfPixelsAcross = 16;
-        rfPixelsAcross = 43;
+        rfPixelsAcross = 44.0;
 
         % Bit length of m-sequence
         mSequenceBitLength = 12;
@@ -325,7 +325,7 @@ function run(restartParPool)
         % Spatial sampling of RF (# of squares)
         rfPixelsAcross = 16;
         rfPixelsAcross = 32;
-        rfPixelsAcross = 45;
+        rfPixelsAcross = 44;
 
         % Bit length of m-sequence
         mSequenceBitLength = 12;
