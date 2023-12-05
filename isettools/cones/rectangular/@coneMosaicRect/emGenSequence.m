@@ -57,7 +57,7 @@ function [emPath, fixEMobj] = emGenSequence(obj, nEyeMovements, varargin)
 %
 % Examples:
 %{
- cm = coneMosaic;
+ cm = coneMosaicRect;
  cm.emGenSequence('help');
 %}
 %{
