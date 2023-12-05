@@ -180,7 +180,7 @@ function [fractionBleached] = ComputePhotopigmentBleaching(irradiance,receptorty
     timeMinutes = timeSec/(60);
     irradiance = zeros(60*40,1);
     initialFractionBleached = 1;
-    fractionBleached = ComputePhotopigmentBleaching(irradiance,'rods','trolands','Boynton',initialFractionBleached,'sec');
+    fractionBleached = ComputePhotopigmentBleaching(irradiance,'rods','trolands','WyszeckiStiles',initialFractionBleached,'sec');
     fractionBleached1 = ComputePhotopigmentBleaching(irradiance,'cones','isomerizations','Boynton',initialFractionBleached,'sec');
     figure; clf; hold on;
     plot(timeMinutes,fractionBleached,'r','LineWidth',6);
