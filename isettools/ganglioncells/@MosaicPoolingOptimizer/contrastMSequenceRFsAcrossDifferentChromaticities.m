@@ -277,32 +277,46 @@ function renderMSequenceRFMaps(figNo, theComputeReadyMRGCmosaic, exampleConeCent
 
 
     % Profiles
-    profileType = 'radially averaged profile';
-    profileType = 'line weighting function';
-
     [~,theRFcenterCol] = min(abs(exampleConeCenterData.achromaticRFmapDataStruct.spatialSupportDegsX-achromaticRFcentroid(1)));
     [~,theRFcenterRow] = min(abs(exampleConeCenterData.achromaticRFmapDataStruct.spatialSupportDegsY-achromaticRFcentroid(2)));
     radiallySymmetricAchromaticRFprofileX = generateRFprofile(...
         exampleConeCenterData.achromaticRFmapDataStruct.theSmoothedRFmap, ...
-        theRFcenterCol, theRFcenterRow, profileType);
+        theRFcenterCol, theRFcenterRow, 'radially averaged profile');
+
+    lineWeightingAchromaticRFprofileX = generateRFprofile(...
+        exampleConeCenterData.achromaticRFmapDataStruct.theSmoothedRFmap, ...
+        theRFcenterCol, theRFcenterRow,'line weighting function');
 
     [~,theRFcenterCol] = min(abs(exampleConeCenterData.LconeIsolatingRFmapDataStruct.spatialSupportDegsX-theLconeRFmapCentroid(1)));
     [~,theRFcenterRow] = min(abs(exampleConeCenterData.LconeIsolatingRFmapDataStruct.spatialSupportDegsY-theLconeRFmapCentroid(2)));
     radiallySymmetricLconeIsolatingRFprofileX = generateRFprofile(...
         exampleConeCenterData.LconeIsolatingRFmapDataStruct.theSmoothedRFmap, ...
-        theRFcenterCol, theRFcenterRow, profileType);
+        theRFcenterCol, theRFcenterRow, 'radially averaged profile');
+
+    lineWeightingLconeIsolatingRFprofileX = generateRFprofile(...
+        exampleConeCenterData.LconeIsolatingRFmapDataStruct.theSmoothedRFmap, ...
+        theRFcenterCol, theRFcenterRow,'line weighting function');
 
 
     [~,theRFcenterCol] = min(abs(exampleConeCenterData.MconeIsolatingRFmapDataStruct.spatialSupportDegsX-theMconeRFmapCentroid(1)));
     [~,theRFcenterRow] = min(abs(exampleConeCenterData.MconeIsolatingRFmapDataStruct.spatialSupportDegsY-theMconeRFmapCentroid(2)));
     radiallySymmetricMconeIsolatingRFprofileX = generateRFprofile(...
         exampleConeCenterData.MconeIsolatingRFmapDataStruct.theSmoothedRFmap, ...
-        theRFcenterCol, theRFcenterRow, profileType);
+        theRFcenterCol, theRFcenterRow, 'radially averaged profile');
 
+    lineWeightingMconeIsolatingRFprofileX = generateRFprofile(...
+        exampleConeCenterData.MconeIsolatingRFmapDataStruct.theSmoothedRFmap, ...
+        theRFcenterCol, theRFcenterRow,'line weighting function');
    
 
     % Max RF map range
     m = min([...
+           max(abs(exampleConeCenterData.LconeIsolatingRFmapDataStruct.theRFmap(:))) ...
+           max(abs(exampleConeCenterData.MconeIsolatingRFmapDataStruct.theRFmap(:)))...
+        ]);
+    RFmapRangeMaxSurroundVisibility = m * [-1 1];
+
+    m = max([...
            max(abs(exampleConeCenterData.LconeIsolatingRFmapDataStruct.theRFmap(:))) ...
            max(abs(exampleConeCenterData.MconeIsolatingRFmapDataStruct.theRFmap(:)))...
         ]);
@@ -360,76 +374,98 @@ function renderMSequenceRFMaps(figNo, theComputeReadyMRGCmosaic, exampleConeCent
                       'YTickLabel', sprintf('%2.2f\n', YTicks));
     title(theAxes{1,1}, sprintf('RGC #%d\n(surround purity: %2.2f)', exampleConeCenterData.theRGCindex, exampleConeCenterData.surroundConeMix));
 
-    ax = subplot('Position', subplotPosVectors(1,2).v);
-    renderRFmap(ax, exampleConeCenterData.achromaticRFmapDataStruct, RFmapRange, ...
-        [], achromaticRFcentroid, referenceCentroid,...
-        XLims, YLims, XTicks, YTicks, cLUTBlueRed,  ...
-        'raw', 'achromatic RF (raw)', true, true, fontSize);
+    
 
-    ax = subplot('Position', subplotPosVectors(1,3).v);
-    renderRFmap(ax, exampleConeCenterData.LconeIsolatingRFmapDataStruct, RFmapRange, ...
+    ax = subplot('Position', subplotPosVectors(1,2).v);
+    renderRFmap(ax, exampleConeCenterData.LconeIsolatingRFmapDataStruct, RFmapRangeMaxSurroundVisibility, ...
         [], theLconeRFmapCentroid, referenceCentroid, ...
         XLims, YLims, XTicks, YTicks, cLUTBlueRed,  ...
-        'raw', 'L-cone RF (raw)', true, true, fontSize);
+        'raw', 'L-cone', true, true, fontSize);
 
-    ax = subplot('Position', subplotPosVectors(1,4).v);
-    renderRFmap(ax, exampleConeCenterData.MconeIsolatingRFmapDataStruct, RFmapRange, ...
+    ax = subplot('Position', subplotPosVectors(1,3).v);
+    renderRFmap(ax, exampleConeCenterData.MconeIsolatingRFmapDataStruct, RFmapRangeMaxSurroundVisibility, ...
         [], theMconeRFmapCentroid, referenceCentroid, ...
         XLims, YLims, XTicks, YTicks, cLUTBlueRed,  ...
-        'raw', 'M-cone RF (raw)', true, true, fontSize);
+        'raw', 'M-cone', true, true, fontSize);
     
-    ax = subplot('Position', subplotPosVectors(2,2).v);
-    renderRFmap(ax, exampleConeCenterData.achromaticRFmapDataStruct, RFmapRange, ...
-        [], achromaticRFcentroid, referenceCentroid, ...
-        XLims, YLims, XTicks, YTicks, cLUTReidShapley,  ...
-        'smoothed', '', true, true, fontSize);
+    ax = subplot('Position', subplotPosVectors(1,4).v);
+    renderRFmap(ax, exampleConeCenterData.achromaticRFmapDataStruct, RFmapRangeMaxSurroundVisibility, ...
+        [], achromaticRFcentroid, referenceCentroid,...
+        XLims, YLims, XTicks, YTicks, cLUTBlueRed,  ...
+        'raw', 'achromatic', true, true, fontSize);
 
-    ax = subplot('Position', subplotPosVectors(2,3).v);
+
+    ax = subplot('Position', subplotPosVectors(2,2).v);
     renderRFmap(ax, exampleConeCenterData.LconeIsolatingRFmapDataStruct, RFmapRange, ...
         [], theLconeRFmapCentroid, referenceCentroid, ...
         XLims, YLims, XTicks, YTicks,  cLUTReidShapley,  ...
         'smoothed', '', true, true, fontSize);
 
-    ax = subplot('Position', subplotPosVectors(2,4).v);
+    ax = subplot('Position', subplotPosVectors(2,3).v);
     renderRFmap(ax, exampleConeCenterData.MconeIsolatingRFmapDataStruct, RFmapRange, ...
         [],  theMconeRFmapCentroid, referenceCentroid, ...
         XLims, YLims, XTicks, YTicks, cLUTReidShapley,  ...
         'smoothed', '', true, true, fontSize);
     
-    
+     ax = subplot('Position', subplotPosVectors(2,4).v);
+    renderRFmap(ax, exampleConeCenterData.achromaticRFmapDataStruct, RFmapRange, ...
+        [], achromaticRFcentroid, referenceCentroid, ...
+        XLims, YLims, XTicks, YTicks, cLUTReidShapley,  ...
+        'smoothed', '', true, true, fontSize);
+
+
     m1 = max([max(radiallySymmetricAchromaticRFprofileX) max(radiallySymmetricLconeIsolatingRFprofileX) max(radiallySymmetricMconeIsolatingRFprofileX)]);
     m2 = min([min(radiallySymmetricAchromaticRFprofileX) min(radiallySymmetricLconeIsolatingRFprofileX) min(radiallySymmetricMconeIsolatingRFprofileX)]);
     if (-m2 > m1)
-       YLimsProfile(1) = m2*1.01;
-       YLimsProfile(2) = -m2*0.2;
+       YLimsRadiallySymmetricProfiles(1) = m2*1.01;
+       YLimsRadiallySymmetricProfiles(2) = -m2*0.3;
     else
-       YLimsProfile(2) = m1*1.01;
-       YLimsProfile(1) = -m1*0.2;
+       YLimsRadiallySymmetricProfiles(2) = m1*1.01;
+       YLimsRadiallySymmetricProfiles(1) = -m1*0.3;
     end
     
-    ax = subplot('Position', subplotPosVectors(3,2).v);
-    faceColor = [0.8 0.8 0.8];
-    edgeColor = [0.0 0.0 0.0];
-    renderRadiallySymmetricRFprofile(ax, exampleConeCenterData.achromaticRFmapDataStruct, ...
-        radiallySymmetricAchromaticRFprofileX(:), faceColor, edgeColor, ...
-        XLims, YLimsProfile, XTicks, ...
-        referenceCentroid, visualizedRangeDegs, fontSize);
+    m1 = max([max(lineWeightingAchromaticRFprofileX) max(lineWeightingLconeIsolatingRFprofileX) max(lineWeightingMconeIsolatingRFprofileX)]);
+    m2 = min([min(lineWeightingAchromaticRFprofileX) min(lineWeightingLconeIsolatingRFprofileX) min(lineWeightingMconeIsolatingRFprofileX)]);
+    if (-m2 > m1)
+       YLimsLineWeightingProfiles(1) = m2*1.01;
+       YLimsLineWeightingProfiles(2) = -m2*0.3;
+    else
+       YLimsLineWeightingProfiles(2) = m1*1.01;
+       YLimsLineWeightingProfiles(1) = -m1*0.3;
+    end
 
-    ax = subplot('Position', subplotPosVectors(3,3).v);
+    
+
+    % The line weighting functions
+    labelYaxisTicks = false;
+    ax = subplot('Position', subplotPosVectors(3,2).v);
     faceColor = [237 110 128]/237;
     edgeColor = [1 0 0];
-    renderRadiallySymmetricRFprofile(ax, exampleConeCenterData.LconeIsolatingRFmapDataStruct, ...
-        radiallySymmetricLconeIsolatingRFprofileX(:), faceColor, edgeColor, ...
-        XLims, YLimsProfile, XTicks, ...
-        referenceCentroid, visualizedRangeDegs, fontSize);
+    renderRFprofile(ax, exampleConeCenterData.LconeIsolatingRFmapDataStruct, ...
+        lineWeightingLconeIsolatingRFprofileX(:), faceColor, edgeColor, ...
+        XLims, YLimsLineWeightingProfiles, XTicks, ...
+        referenceCentroid, visualizedRangeDegs, fontSize, ...
+        labelYaxisTicks, 1);
 
-    ax = subplot('Position', subplotPosVectors(3,4).v);
+    ax = subplot('Position', subplotPosVectors(3,3).v);
     faceColor = [91 197 128]/197;
     edgeColor = [0 0.8 0.3];
-    renderRadiallySymmetricRFprofile(ax, exampleConeCenterData.MconeIsolatingRFmapDataStruct, ...
-        radiallySymmetricMconeIsolatingRFprofileX(:), faceColor, edgeColor, ...
-        XLims, YLimsProfile, XTicks, ...
-        referenceCentroid, visualizedRangeDegs, fontSize);
+    renderRFprofile(ax, exampleConeCenterData.MconeIsolatingRFmapDataStruct, ...
+        lineWeightingMconeIsolatingRFprofileX(:), faceColor, edgeColor, ...
+        XLims, YLimsLineWeightingProfiles, XTicks, ...
+        referenceCentroid, visualizedRangeDegs, fontSize, ...
+        labelYaxisTicks, 1);
+
+    ax = subplot('Position', subplotPosVectors(3,4).v);
+    faceColor = [0.8 0.8 0.8];
+    edgeColor = [0.0 0.0 0.0];
+    labelYaxisTicks = true;
+    renderRFprofile(ax, exampleConeCenterData.achromaticRFmapDataStruct, ...
+        lineWeightingAchromaticRFprofileX(:), faceColor, edgeColor, ...
+        XLims, YLimsLineWeightingProfiles, XTicks, ...
+        referenceCentroid, visualizedRangeDegs, fontSize, ...
+        labelYaxisTicks, 1);
+
 
     p = subplotPosVectors(3,4).v;
     ax = subplot('Position', [p(1)+p(3)+0.04 p(2) p(3) 0.91]);
@@ -438,11 +474,14 @@ function renderMSequenceRFMaps(figNo, theComputeReadyMRGCmosaic, exampleConeCent
         radiallySymmetricLconeIsolatingRFprofileX(:) ...
         radiallySymmetricMconeIsolatingRFprofileX(:) ...
         ];
-    renderRadiallySymmetricRFprofile(ax, exampleConeCenterData.MconeIsolatingRFmapDataStruct, ...
+    labelYaxisTicks = true;
+    renderRFprofile(ax, exampleConeCenterData.MconeIsolatingRFmapDataStruct, ...
         allProfiles, [], [], ...
-        XLims, YLimsProfile, XTicks, ...
-        referenceCentroid, visualizedRangeDegs, fontSize);
+        XLims, YLimsRadiallySymmetricProfiles, XTicks, ...
+        referenceCentroid, visualizedRangeDegs, fontSize, ...
+        labelYaxisTicks, 10);
 
+    title(ax, 'radially-averaged profiles');
     drawnow;
 
     thePDFFileName = sprintf('mosaicEcc_%2.1f_%2.1f_%s_RGC%d_%dx%dmSeqRFmap.pdf', ...
@@ -457,20 +496,22 @@ function renderMSequenceRFMaps(figNo, theComputeReadyMRGCmosaic, exampleConeCent
 end
 
 
-function renderRadiallySymmetricRFprofile(ax, RFmapDataStruct,  radiallySymmetricRFprofileX, faceColor, edgeColor, ...
-    XLims, YLims, XTicks, theRFmapReferenceCentroid, visualizedRangeDegs, fontSize)
+function renderRFprofile(ax, RFmapDataStruct,  profileX, faceColor, edgeColor, ...
+    XLims, YLims, XTicks, theRFmapReferenceCentroid, visualizedRangeDegs, fontSize, ...
+    labelYaxisTicks, YTickRoundingNumber)
 
-    if (size(radiallySymmetricRFprofileX,2) == 1)
+    if (size(profileX,2) == 1)
         faceAlpha = 0.6;
         lineWidth = 1.5;
-        shadedAreaPlot(ax,RFmapDataStruct.spatialSupportDegsX, radiallySymmetricRFprofileX, radiallySymmetricRFprofileX*0, ...
+        shadedAreaPlot(ax,RFmapDataStruct.spatialSupportDegsX, profileX, profileX*0, ...
             faceColor, edgeColor, faceAlpha, lineWidth, '-');
     else
         faceColor = [0.8 0.8 0.8];
         edgeColor = [0.0 0.0 0.0];
         faceAlpha = 0.0;
         lineWidth = 1.5;
-        p(1) = shadedAreaPlot(ax,RFmapDataStruct.spatialSupportDegsX, (radiallySymmetricRFprofileX(:,1))', (radiallySymmetricRFprofileX(:,1))'*0, ...
+
+        p(1) = shadedAreaPlot(ax,RFmapDataStruct.spatialSupportDegsX, profileX(:,1), profileX(:,1)*0, ...
             faceColor, edgeColor, faceAlpha, lineWidth, '-');
         hold(ax, 'on');
 
@@ -478,7 +519,7 @@ function renderRadiallySymmetricRFprofile(ax, RFmapDataStruct,  radiallySymmetri
         edgeColor = [1 0 0];
         faceAlpha = 0.6;
         lineWidth = 1.5;
-        p(2) = shadedAreaPlot(ax,RFmapDataStruct.spatialSupportDegsX, (radiallySymmetricRFprofileX(:,2))', (radiallySymmetricRFprofileX(:,2))'*0, ...
+        p(2) = shadedAreaPlot(ax,RFmapDataStruct.spatialSupportDegsX, profileX(:,2), profileX(:,2)*0, ...
             faceColor, edgeColor, faceAlpha, lineWidth, '-');
   
 
@@ -486,33 +527,50 @@ function renderRadiallySymmetricRFprofile(ax, RFmapDataStruct,  radiallySymmetri
         edgeColor = [0 0.5 0.3];
         faceAlpha = 0.6;
         lineWidth = 1.5;
-        p(3) = shadedAreaPlot(ax,RFmapDataStruct.spatialSupportDegsX, (radiallySymmetricRFprofileX(:,3))', (radiallySymmetricRFprofileX(:,3))'*0, ...
+        p(3) = shadedAreaPlot(ax,RFmapDataStruct.spatialSupportDegsX, profileX(:,3), profileX(:,3)*0, ...
             faceColor, edgeColor, faceAlpha, lineWidth, '-');
 
     end
 
     
     hold(ax, 'on');
-    YTicks = linspace(0, YLims(2), 10);
+
+    YTicks = linspace(0, ceil(YLims(2)/YTickRoundingNumber)*YTickRoundingNumber, 10);
     YTicks = [-fliplr(YTicks) YTicks(2:end)];
+    
+    YTicksToBeLabeled = [YTicks(1) 0 YTicks(end)];
+    YLims(2) = YTicks(end);
+    YTickLabels = cell(1, numel(YTicks));
+    for k = 1:numel(YTicks)
+        if (ismember(YTicks(k), YTicksToBeLabeled))
+            YTickLabels{k} = sprintf('%2.0f', YTicks(k));
+        else
+            YTickLabels{k} = '';
+        end
+    end
+
     
 
     plot(ax, theRFmapReferenceCentroid(1)*[1 1], YLims, 'k-', 'LineWidth', 1.0);
     plot(ax, visualizedRangeDegs*0.5*[-1 1] + theRFmapReferenceCentroid(1), [0 0], 'k-', 'LineWidth', 1.0);
     box(ax, 'off');
     grid(ax, 'on');
-    if (size(radiallySymmetricRFprofileX,2) == 1)
+    if (size(profileX,2) == 1)
         axis(ax, 'square');
     end
 
     set(ax, 'XLim', XLims, 'YLim', YLims);
     set(ax, 'XTick', XTicks, 'YTick', YTicks, 'XTickLabel', sprintf('%2.2f\n', XTicks), 'YTickLabel', {}); 
     set(ax, 'FontSize', fontSize);
+    if (labelYaxisTicks)
+        set(ax, 'YTickLabel', YTickLabels);
+    end
+
     xlabel(ax, 'space, x (deg)');
     xtickangle(ax, 0);
-    if (size(radiallySymmetricRFprofileX,2) == 3)
-        legend(ax, p, {'achromatic', 'L-cone', 'M-cone'});
-    end
+    % if (size(profileX,2) == 3)
+    %     legend(ax, p, {'achromatic', 'L-cone', 'M-cone'});
+    % end
 end
 
 function p = shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
@@ -531,8 +589,8 @@ function [theProfileX, theProfileY] = generateRFprofile(theRF, theRFcenterCol, t
         case 'radially averaged profile'
             % do nothing
         case 'line weighting function'
-            theProfileX = sum(theRF, 1);
-            theProfileY = sum(theRF,2);
+            theProfileX = mean(theRF, 1);
+            theProfileY = mean(theRF,2);
             return;
         otherwise
             error('Unknown profile type: ''%s''.', profileType);
