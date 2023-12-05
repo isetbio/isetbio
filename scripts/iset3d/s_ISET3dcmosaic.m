@@ -16,7 +16,8 @@ ieInit;
 if ~piDockerExists, piDockerConfig; end
 
 %% Read the recipe
-thisSE = sceneEye('chess set','eye model','navarro');
+% thisSE = sceneEye('chess set','eye model','navarro');
+thisSE = sceneEye('MacBethChecker','eye model','navarro');
 
 %% Rendering parameters
 
@@ -49,13 +50,8 @@ thisSE.set('retina Semi Diam',1)     % This controls the size of the retina
 thisSE.set('spatial samples',[320 320]*2);  % 
 
 %%
-thisSE.lensDensity = 1;
 thisDocker = dockerWrapper.humanEyeDocker;
-thisSE.piWRS('docker wrapper',thisDocker,'name','Density 1');
-
-%%
-thisSE.lensDensity = 0;
-thisSE.piWRS('docker wrapper',thisDocker,'name','Density 0');
+oiLeft = thisSE.piWRS('docker wrapper',thisDocker,'name','oiLeft');
 
 %% Cone mosaic
 
@@ -72,7 +68,7 @@ excitations = cm.compute(oiLeft);
 params = cm.visualize('params');
 
 params.activation = excitations.^0.5;
-params.activationColorMap = hot(1024);
+params.activationColorMap = gray(1024);
 cm.visualize(params);
 
 %%  Plot the histogram of excitations
