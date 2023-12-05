@@ -12,6 +12,12 @@ function obj = piWRS(SE,varargin)
 %   managed here.  But everything else is passed to the piWRS function
 %   in ISET3d-v4.
 %
+%   The Docker implementation does NOT include multiplication by the
+%   lens transmission.  The lens density is stored in the slot
+%   sceneEye.lensDensity.  Upon return of the optical image, we create
+%   the lens transmission for that lens density and apply it to the
+%   OI.
+%
 % Inputs
 %   SE - sceneEye object
 %
@@ -60,18 +66,27 @@ if SE.usePinhole
     thisR.set('fov',fov);
 end
 
-% Call the master piWRS routine
-obj = piWRS(thisR,varargin{:},'dockerwrapper',thisDockerWrapper);
+% We render but do not show at this point.   We need to apply the
+% oi settings before showing.
+obj = piRender(thisR,varargin{:},'ourdocker',thisDockerWrapper);
 
 % Deal with special ISETBio pinhole management
 if(~SE.usePinhole)
-    % If we are not in debug mode with a pinhole, set OI parameters.
-    obj = SE.setOI(obj, 'scale illuminance', scaleIlluminance);
-    % oiWindow(obj);
+    % If we are not in pinhole (debug) mode, set the OI parameters.
+    % This includes applying the lens transmittance.
+    obj = SE.setOI(obj, 'scale illuminance', scaleIlluminance);    
 else
-    % If debugMode, put back the saved camera information.
-    thisR.set('camera',cameraSave);
-    % sceneWindow(obj);
+    % If in pinhole (debug) mode, copy back the saved camera
+    % information that was stored above.
+    thisR.set('camera',cameraSave);    
+end
+
+% Ready to show.
+switch obj.type
+    case 'opticalimage'
+        oiWindow(obj);
+    case 'scene'
+        sceneWindow(obj);
 end
 
 end

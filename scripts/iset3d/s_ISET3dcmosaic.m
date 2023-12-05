@@ -16,13 +16,27 @@ ieInit;
 if ~piDockerExists, piDockerConfig; end
 
 %% Read the recipe
-thisSE = sceneEye('chess set pieces','human eye','navarro');
+thisSE = sceneEye('chess set','eye model','navarro');
 
 %% Rendering parameters
 
 thisSE.set('rays per pixel',32);  % 32 is Pretty quick, but not high quality
 
+thisSE.set('fov',40);
+
+% Render the scene
+thisSE.set('render type', {'radiance','depth'});
+
+thisSE.set('use pinhole',true);
+
+thisDocker = dockerWrapper;
+scene = thisSE.piWRS('docker wrapper',thisDocker,'name','pinhole');
+
 %% Eye parameters:  position, focal distance and field of view
+
+thisSE.set('use optics',true);
+
+thisSE.set('pupil diameter',3);
 
 % thisSE.set('to',[-0.09 0.05 0.01]);  % Puts the small pawn in the center
 thisSE.set('to',[-0.04 0.05 0.01]);    % Puts the small pawn in the center
@@ -34,8 +48,14 @@ thisSE.set('retina Semi Diam',1)     % This controls the size of the retina
 
 thisSE.set('spatial samples',[320 320]*2);  % 
 
-oiLeft = thisSE.render('render type','radiance');  % Render radiance only
-oiWindow(oiLeft);
+%%
+thisSE.lensDensity = 1;
+thisDocker = dockerWrapper.humanEyeDocker;
+thisSE.piWRS('docker wrapper',thisDocker,'name','Density 1');
+
+%%
+thisSE.lensDensity = 0;
+thisSE.piWRS('docker wrapper',thisDocker,'name','Density 0');
 
 %% Cone mosaic
 
