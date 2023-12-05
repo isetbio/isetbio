@@ -41,12 +41,16 @@ function [otf, williamsFactor] = mouseCore(wave, sampleSF, p, D0)
 
 % Example:
 %{
+    % mesh() was throwing an error because otf is complex.
+    % I put an abs() around it so now it plots, but I am
+    % not confident as to whether the complex values are
+    % indicative of some other problem.
     wave = 400:10:700;
     sampleSF = [0:1:30];
     p = 0.0015;
     D0 = 60;
     [otf, wF] = mouseCore(wave, sampleSF, p, D0);
-    mesh(sampleSF, wave, otf)
+    figure; mesh(sampleSF, wave, abs(otf))
 %}
 
 %% Defocus
