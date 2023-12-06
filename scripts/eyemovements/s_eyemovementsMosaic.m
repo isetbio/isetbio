@@ -1,8 +1,11 @@
-% Yes !
+%% s_eyemovementsMosaic
+%
+% Illustrating the differential effect of eye movements on the fovea and
+% periphery, as cone apertures change size.
 % 
-% See cut and paste code below:
 
-% Generate a @cMosaic
+%% Generate two @cMosaic objects.  Fovea and periphery.
+
 cmFovea = cMosaic(...
     'sizeDegs', [0.3 0.3], ...    
     'eccentricityDegs', [0 0], ...
@@ -16,9 +19,12 @@ cmPeriphery = cMosaic(...
     'integrationTime', 5/1000);
 
 
-% Generate fixational eye movements (10 trials, each lasting for 100 msec)
+%% Generate fixational eye movements (10 trials, each lasting for 100 msec)
+
 eyeMovementDurationSeconds = 100/1000;
 nTrials = 10;
+
+% These are the same because they have the same seed.
 cmFovea.emGenSequence(eyeMovementDurationSeconds, ...
     'microsaccadeType', 'none', ...
     'nTrials', nTrials, ...
@@ -30,14 +36,16 @@ cmPeriphery.emGenSequence(eyeMovementDurationSeconds, ...
     'randomSeed', 1);
 
 %% Extract the computed eye movement path
+
 emPathsDegs = cmFovea.fixEMobj.emPosArcMin/60;
 
 nTimePoints = size(emPathsDegs,2);
 
-% Visualize the full emPath of the first trial
-hFig = figure(1); clf;
-axFovea = subplot(1,2,1)
+% Visualize the full emPaths on the mosaic
+hFig = ieNewGraphWin;
+axFovea = subplot(1,2,1);
 axPeriphery = subplot(1,2,2);
+
 for iTrial = 1:nTrials
     for iTimePoint = 1:nTimePoints
         cmFovea.visualize('figureHandle', hFig, 'axesHandle', axFovea, ...
@@ -56,4 +64,4 @@ for iTrial = 1:nTrials
     end
 end
 
-%%
+%% END
