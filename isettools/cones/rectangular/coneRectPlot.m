@@ -257,8 +257,8 @@ switch ieParamFormat(plotType)
             return;
         else
             % Additional movie arguments may include the video file name, step,
-            % and FrameRate
-            ieMovie(cm.absorptions, varargin{:});
+            % and FrameRate.  Apply the gamma from the window.
+            ieMovie((cm.absorptions).^gam, varargin{:});
         end
 
     case {'hlineabsorptions', 'vlineabsorptions'}

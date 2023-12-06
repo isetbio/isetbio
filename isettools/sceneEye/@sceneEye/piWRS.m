@@ -51,7 +51,7 @@ p.addParameter('dockerwrapper',[],@(x)(isa(x,'dockerWrapper') || isempty(x)));
 
 p.parse(SE, varargin{:});
 scaleIlluminance  = p.Results.scaleilluminance;
-thisDockerWrapper = p.Results.dockerwrapper;
+% thisDockerWrapper = p.Results.dockerwrapper;
 
 thisR = SE.recipe;
 
@@ -67,8 +67,9 @@ if SE.usePinhole
 end
 
 % We render but do not show at this point.   We need to apply the
-% oi settings before showing.
-obj = piRender(thisR,varargin{:},'ourdocker',thisDockerWrapper);
+% oi settings before showing.  The varargin can include 'docker
+% wrapper' as a key/val pair.
+obj = piRender(thisR,varargin{:});
 
 % Deal with special ISETBio pinhole management
 if(~SE.usePinhole)

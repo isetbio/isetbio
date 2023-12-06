@@ -681,7 +681,7 @@ classdef cMosaic < handle
         visualizeFullAbsorptionsDensity(obj, figNo);
         
         % Method to generate eye movement sequences
-        emGenSequence(obj, durationSeconds, varargin);
+        params = emGenSequence(obj, durationSeconds, varargin);
         
         % Method to generate an ensemble of OIs for the mosaic
         [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
