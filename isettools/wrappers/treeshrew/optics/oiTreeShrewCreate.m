@@ -34,7 +34,7 @@ function oi = oiTreeShrewCreate(varargin)
     theTreeShrewLens = lensTreeShrewCreate('wave', oiGet(oi, 'optics wave'));
     
     % Update the oi.lens
-    oi = oiSet(oi, 'lens', theTreeShrewLens);
+    oi = oiSet(oi, 'optics lens', theTreeShrewLens);
     
     % Set the same lens in the optics structure too
     oi.optics.lens = theTreeShrewLens;

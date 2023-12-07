@@ -262,7 +262,7 @@ theOI = oiSet(theOI, 'optics fnumber', focalLengthMM/pupilDiameterMm);
 % transmittance.  See "help Lens".
 %
 % Note that this code is not highly tested, but it runs without crashing.
-lens0 = oiGet(theOI,'lens');
+lens0 = oiGet(theOI,'optics lens');
 
 % I believe I have fixed wvf2oi so that this is OK now.  DHB, 12/1/23
 if (any(lens0.wave ~= wls))
@@ -283,7 +283,7 @@ if (changeLens)
     lensPeakDensity1 = 100;
 end
 lens1 = Lens('wave',wls,'unitDensity',lensUnitDensity1,'density',lensPeakDensity1);
-theOI = oiSet(theOI,'lens',lens1);
+theOI = oiSet(theOI,'optics lens',lens1);
 
 % Set some properties of the object, mainly to show how we
 % extract, set, and put this back.

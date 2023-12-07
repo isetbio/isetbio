@@ -1203,9 +1203,9 @@ function theOI = opticalImageConstruct(oiParams)
 
     % Take out lens transmittance if desired
     if (~oiParams.lens)
-        lens = oiGet(theOI, 'lens');
+        lens = oiGet(theOI, 'optics lens');
         lens.density = 0;
-        theOI = oiSet(theOI, 'lens', lens);
+        theOI = oiSet(theOI, 'optics lens', lens);
     end
 end
 

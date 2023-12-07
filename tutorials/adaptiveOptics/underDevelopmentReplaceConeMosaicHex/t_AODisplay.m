@@ -262,7 +262,7 @@ theOI = oiSet(theOI, 'optics fnumber', focalLengthMM/pupilDiameterMm);
 % transmittance.  See "help Lens".
 %
 % Note that this code is not highly tested, but it runs without crashing.
-lens0 = oiGet(theOI,'lens');
+lens0 = oiGet(theOI,'optics lens');
 
 % Well (BW) it does not run without crashing any more on this branch.  We
 % need to figure out the lens wavelength check for you.
@@ -284,7 +284,7 @@ if (changeLens)
     lensPeakDensity1 = 100;
 end
 lens1 = Lens('wave',wls,'unitDensity',lensUnitDensity1,'density',lensPeakDensity1);
-theOI = oiSet(theOI,'lens',lens1);
+theOI = oiSet(theOI,'optics lens',lens1);
 
 % Set some properties of the object, mainly to show how we
 % extract, set, and put this back.

@@ -213,7 +213,7 @@ oiBaseline = oiSet(oiBaseline,'optics',opticsTemp);
 % normalization factor to comptue the scalar optical density, and get the
 % same answer.
 lensObject = Lens('wave',wls,'unitDensity',-log10(lensTransmittance),'density',1);
-oiBaseline = oiSet(oiBaseline,'lens',lensObject);
+oiBaseline = oiSet(oiBaseline,'optics lens',lensObject);
 
 % Set up macular pigment object.  See comments where we set up lens object
 % above.
