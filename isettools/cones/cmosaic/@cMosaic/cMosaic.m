@@ -181,6 +181,11 @@ classdef cMosaic < handle
     
     % Read-only private properties
     properties (GetAccess=public, SetAccess=private)
+
+        % Size (in degs) of source lattice from which to crop positions for
+        % the desired eccentricity
+        sourceLatticeSizeDegs = 58;
+        
         % [n x 2] matrix of cone positions, in microns
         coneRFpositionsMicrons;
         
@@ -300,9 +305,6 @@ classdef cMosaic < handle
     
     % Private properties
     properties (GetAccess=private, SetAccess=private)
-        % Size (in degs) of source lattice from which to crop positions for
-        % the desired eccentricity
-        sourceLatticeSizeDegs = 58;
         
         % Scalar or empty, indicating whether to check and eliminate cones that are
         % too close to each other (overlap = overlappingConeFractionForElimination). 
