@@ -1,9 +1,9 @@
 function [horizontalRetinalMeridian, verticalRetinalMeridian] = retinalMeridiansForEccentricityInEye(horizontalEcc, verticalEcc, whichEye)
 
-    temporalRetinaMeridianName = WatsonRGCModel.enumeratedMeridianNames{1};
-    nasalRetinaMeridianName = WatsonRGCModel.enumeratedMeridianNames{3};
-    superiorRetinaMeridianName = WatsonRGCModel.enumeratedMeridianNames{2};
-    inferiorRetinaMeridianName = WatsonRGCModel.enumeratedMeridianNames{4};
+    temporalRetinaMeridianName = RGCmodels.Watson.constants.indexedMeridians{1};
+    nasalRetinaMeridianName = RGCmodels.Watson.constants.indexedMeridians{3};
+    superiorRetinaMeridianName = RGCmodels.Watson.constants.indexedMeridians{2};
+    inferiorRetinaMeridianName = RGCmodels.Watson.constants.indexedMeridians{4};
    
     assert(ismember(whichEye, {'right eye', 'left eye'}), ...
         sprintf('Eye (''%s'') is invalid. It must be either ''left eye'', or ''right eye''.', whichEye));
