@@ -8,13 +8,9 @@
 %
 %    In particular note options to vary stimulus spot wavelength, to
 %    specify stimulus intensity in terms of conrneal power or radiance of a
-%    display, to turn modeling of longitudinal chromatic aberration on or
+%    display, and to turn modeling of longitudinal chromatic aberration on or
 %    off, and to provide custom specification of paramters such as lens
-%    density, macular pigment density, and cone photopigment absorbance.
-%    The latter may requires some substantive thought for accurate modeling
-%    of what happens out at the near IR wavelengths used in AO experiments.
-%    Although standard tables go out to about 830 nm, it is not immediately
-%    clear how accurate these tables are at such long wavelengths.
+%    density.
 %       
 %    This tutorial has not worried much about how realistic these
 %    specified powers are, nor whether they are within light safety
@@ -209,7 +205,10 @@ theScene = sceneSet(theScene,'photons',radiancePhotonsSpot);
 vcAddAndSelectObject(theScene);
 sceneWindow;
 
-%% Build a simple retinal image
+%% Build the oi
+%
+% Computes diffraction limited retinal image but  you can add
+% some defocus.
 %
 % Assume observer is accommodated to the test wavelength.
 % You have the option here of turning off LCA, if that is the
@@ -241,8 +240,7 @@ wvfP = wvfSet(wvfP,'zcoeffs', defocusAmount, 'defocus');
 % Whether LCA should be included depends on your apparatus and
 % is controlled by the boolean defeatLCA in the computation of
 % the pupil function.
-wvfP = wvfCompute(wvfP,'human lca',defeatLCA);
-% wvfP = wvfComputePSF(wvfP);
+wvfP = wvfCompute(wvfP,'human lca',~defeatLCA);
 
 % Generate optical image object from the wavefront object
 theOI = wvf2oi(wvfP,'model','human');
@@ -251,45 +249,11 @@ theOI = wvf2oi(wvfP,'model','human');
 focalLengthMM = oiGet(theOI,'focal length','mm');
 theOI = oiSet(theOI, 'optics fnumber', focalLengthMM/pupilDiameterMm);
 
-% You could adjust lens density if you don't like the default values for
-% the very long wavelengths used here.  But, the default density at long
-% wavelengths is zero, which is probably what you want. Change the values
-% in variables lensUnitDensity1 and lensPeakDensity1 to do this to do this,
-% as illustrated by the conditional.
-%
-% The values in the unit density variable are multiplied by the scalar in
-% the density variable to get the overall spectral density, and from thence the
-% transmittance.  See "help Lens".
-%
-% Note that this code is not highly tested, but it runs without crashing.
-lens0 = oiGet(theOI,'optics lens');
-
-% I believe I have fixed wvf2oi so that this is OK now.  DHB, 12/1/23
-if (any(lens0.wave ~= wls))
-    error('Wavelengths in Lens object are not as expected');
-end
-lensUnitDensity1 = lens0.unitDensity;
-lensPeakDensity1 = lens0.density;
-
-% Set to true to see that making lens opaque at the test wavelength
-% attenuates the test spot.  The effect will be clearest in the
-% isomerizations image, because the optical image display is normalized and
-% will show the remaining spot from the tails of the Gaussian spd.
-changeLens = false;
-if (changeLens)
-    wlsChange = find(testSpdRadiance > 0.001*max(testSpdRadiance));
-    lensUnitDensity1 = zeros(size(lensUnitDensity1));
-    lensUnitDensity1(wlsChange) = 1;
-    lensPeakDensity1 = 100;
-end
-lens1 = Lens('wave',wls,'unitDensity',lensUnitDensity1,'density',lensPeakDensity1);
-theOI = oiSet(theOI,'optics lens',lens1);
-
 % Set some properties of the object, mainly to show how we
 % extract, set, and put this back.
 opticsP = oiGet(theOI, 'optics');
 opticsP = opticsSet(opticsP, 'model', 'shift invariant');
-opticsP = opticsSet(opticsP, 'name', 'human-wvf-nolca');
+opticsP = opticsSet(opticsP, 'name', 'AO tutorial');
 theOI = oiSet(theOI,'optics',opticsP);
 
 % Compute the retinal image and visualize.  Note that to convolve with the
@@ -305,69 +269,36 @@ vcAddAndSelectObject(theOI);
 oiWindow;
 
 %% Create the coneMosaic object
-% Generate default human optics
-%defaultHumanOI = oiCreate('wvf human');
-
+%
 % Generate a human foveal cone mosaic.  We construct
 % this a bit larger than the image, but at the edges
-% you shouldn't trust the computations too much because
-% the PSF doesn't know what to convolve with beyond the
+% you shouldn't trust the computations too much anyway,
+% because the PSF doesn't know what to convolve with beyond the
 % edge of the retinal image.
-resamplingFactor = 7;
 integrationTimeSecs = 50/1000;
-cMosaic = coneMosaicHex(resamplingFactor , ...
-    'wave',wls, ...
-    'eccBasedConeDensity', false, ...
-    'eccBasedConeQuantalEfficiency', false, ...
-    'maxGridAdjustmentIterations',200, ...
+theMosaic = cMosaic(...
+    'sizeDegs', [1.2*backgroundSizeDegs 1.2*backgroundSizeDegs], ...
+    'computeMeshFromScratch', false, ...
+    'eccentricityDegs', [0 0], ...
+    'whichEye', PolansOptics.constants.rightEye, ...
+    'noiseFlag', 'none', ...
     'integrationTime', integrationTimeSecs, ...
-    'fovDegs', [1.2*backgroundSizeDegs 1.2*backgroundSizeDegs]);
-
-%% Adjust components that determine cone spectral sensitivity
-%
-% Macular density.  Parallels exposure of lens density in the optical
-% image above.  See there for an example of how to adjust this.
-% See also "help Macular".
-macular0 = cMosaic.macular;
-if (any(macular0.wave ~= wls))
-    error('Wavelengths in Macular object are not as expected');
-end
-macularUnitDensity1 = macular0.unitDensity;
-macularDensity1 = macular0.density;
-macular1 = Macular('wave',wls','unitDensity',macularUnitDensity1,'density',macularDensity1);
-cMosaic.macular = macular1;
-
-% Adjust photopigment properties.  Again, similar to how we expose and
-% adjust lens and macular pigment density.  See "help receptorPigment"
-photopigment0 = cMosaic.pigment;
-if (any(photopigment0.wave ~= wls))
-    error('Wavelengths in photoPigment object are not as expected');
-end
-absorbance1 = photopigment0.absorbance;
-peakOpticalDensity1 = photopigment0.opticalDensity;
-quantalEfficiency1 = photopigment0.peakEfficiency;
-
-% Set this to true set absorbance of photopigments to zero near the test wavelengths,
-% which demonstrates that an adjustment has an effect.  We only demonstrate
-% this for testWl == 550, at 840 we get an error from the routine that
-% tries to scale the image.
-changePhotopigment = false;
-if (changePhotopigment & testWl == 550)
-    wlsChange = find(testSpdRadiance > 0.001*max(testSpdRadiance));
-    absorbance1(wlsChange,:) = zeros(size(absorbance1(wlsChange,:)));
-end
-
-% Put adjusted photopigment back into mosaic.
-photopigment1 = photoPigment('wave',wls,'opticalDensity',peakOpticalDensity1, ...
-    'peakEfficiency',quantalEfficiency1,'absorbance',absorbance1);
-cMosaic.pigment = photopigment1;
+    'rodIntrusionAdjustedConeAperture', false, ...
+    'eccVaryingConeAperture', false, ...
+    'eccVaryingConeBlur', false, ...
+    'eccVaryingOuterSegmentLength', false, ...
+    'eccVaryingMacularPigmentDensity', false, ...
+    'eccVaryingMacularPigmentDensityDynamic', false, ...
+    'anchorAllEccVaryingParamsToTheirFovealValues', true, ...
+    'wave',wls, ...
+    'useParfor', false);
 
 % Eye movement path.  Here, just one time point and no motion.
 nTrialsNum = 1;
 emPath = zeros(nTrialsNum, 1, 2);
 
 % Compute isomerizations for each eye position.
-cMosaic.compute(theOI);
-cMosaic.window;
+theExcitations = theMosaic.compute(theOI);
+theMosaic.plot('excitations',theExcitations);
 
 %% END
