@@ -13,6 +13,13 @@
 % History:
 %    03/01/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 
+%% This no longer runs because we have deleted the coneMosaicHex object.
+%
+% But it might be useful for someone converting some code.  So just
+% return here so it doesn't break on auto-run of tutorials, and leave
+% for now.
+return;
+
 
 %% Initialize
 ieInit;

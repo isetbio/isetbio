@@ -1,4 +1,4 @@
-t% Demo how to generate a stereo pair of @cMosaic objects
+% Demo how to generate a stereo pair of @cMosaic objects
 %
 % Description:
 %    Shows how to generate a stereo pair of @cMosaic objects, and

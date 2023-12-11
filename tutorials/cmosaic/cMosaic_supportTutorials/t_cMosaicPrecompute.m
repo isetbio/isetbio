@@ -19,8 +19,7 @@ cMosaic(...
     'eccentricityDegs', [0 0], ...                  % ECC:  x=0.0 degs, y= 0.0 degs
     'computeMeshFromScratch', true, ...             % generate mesh on-line, will take some time
     'maxMeshIterations', maxIterations, ...         % stop iterative procedure after this many iterations
-    'visualizeMeshConvergence', ~true, ...           % visualize the convergence
-    'exportMeshConvergenceHistoryToFile', true...
+    'visualizeMeshConvergence', ~true ...           % visualize the convergence
     );
 
 % Generate and save the generation progression of the right eye cone mosaic
@@ -30,8 +29,7 @@ cMosaic(...
     'eccentricityDegs', [0 0], ...                  % ECC:  x=0.0 degs, y= 0.0 degs
     'computeMeshFromScratch', true, ...             % generate mesh on-line, will take some time
     'maxMeshIterations', maxIterations, ...         % stop iterative procedure after this many iterations
-    'visualizeMeshConvergence', ~true, ...          % visualize the convergence
-    'exportMeshConvergenceHistoryToFile', true...
+    'visualizeMeshConvergence', ~true ...          % visualize the convergence
     );
 
 % Extract and export final cone positions for use in all computations
