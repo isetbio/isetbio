@@ -40,7 +40,7 @@ cm.eccVaryingConeBlur = true;
     
 %% Compute the optical image
 theOI = oiCreate('human');
-theOI = oiCompute(theOI, scene, ,'pad value','mean');
+theOI = oiCompute(theOI, scene, 'pad value','mean');
 
 
 %% Setup plotting
