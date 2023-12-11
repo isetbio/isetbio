@@ -70,7 +70,6 @@ runIt(oi, mosaicSize, mosaicEcc, cond1Struct, cond2Struct, figNo, 'IS aperture/O
 % degrees as follows):
 %   eccVaryingConeBlur = ~true;
 %   pixelSizeDegs = cMosaic.suggestedScenePixelSizeDegs(eccVaryingConeBlur);
-    
 cond1Struct = struct(...
     'name', 'ecc-dependent aperture blur', ...
     'eccVaryingConeBlur', true, ...
@@ -209,7 +208,6 @@ function runIt(oi, mosaicSize, mosaicEcc, cond1Struct, cond2Struct, figNo, plotT
     for k = 1:numel(fNames)
         cm.(fNames{k}) = cond1Struct.(fNames{k});
     end
-    
     r1 = cm.compute(oi);
     
     % Compute response for condition2 
