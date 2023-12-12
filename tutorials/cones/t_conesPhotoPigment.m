@@ -126,9 +126,6 @@ temp = load('T_log10coneabsorbance_ss');
 photopigmentAbsorbance = 10.^SplineCmf(temp.S_log10coneabsorbance_ss,temp.T_log10coneabsorbance_ss,wls,2);
 clear temp
 
-%{
-% BW: There are missing fields in the PTB functions.  DHB to investigate.
-
 % The individual differences model allows for shifting the absorbance along
 % the wavelength axis. Do that here.
 photopigmentAbsorbance = ShiftPhotopigmentAbsorbance(wls,photopigmentAbsorbance, ...
@@ -144,7 +141,6 @@ if (any(adjIndDiffParams.dphotopigment(:) ~= axialDensity(:)))
     error('Mysterious axial density difference');
 end
 
-%
 % Compute absorbtance from absorbance.  The absorbtance is the probabilyt that a photon
 % entering the cone will be absorbed, so 1- tranmittance = 1 - 10^(-absorbance*axialDensity).
 % This calculation is done by routine AbsorbanceToAbsorbtance;
@@ -152,7 +148,6 @@ photopigmentAbsorptance = AbsorbanceToAbsorptance(photopigmentAbsorbance,wls,axi
 if (any(adjIndDiffParams.absorptance(:) ~= photopigmentAbsorptance(:)))
     error('Fail to compute photopigment absorptance same way twice');
 end
-%}
 
 %% Put it all together
 %
