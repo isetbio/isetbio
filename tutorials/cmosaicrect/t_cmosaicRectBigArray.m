@@ -30,9 +30,9 @@ cMosaic.compute(oi);
 %% Bring up a window so that we can look at things.
 
 % Using the pull down in the window, you can choose the image that is
-% displayed. You can bring up one or the other images with the 'show'
+% displayed. You can bring up one or the other images with the 'plottype'
 % argument
-cMosaic.window('show','mean absorptions');
+cMosaic.window('plottype','mean absorptions');
 
 %% Or the cone mosaic
 
@@ -41,7 +41,7 @@ cMosaic.window('show','mean absorptions');
 % Notice that once the cone mosaic is displayed, it is stored.  So if you
 % now choose mean absorptions and then go back to cone mosaic, the change
 % back is quite rapid.
-cMosaic.window('show','cone mosaic');
+cMosaic.window('plottype','cone mosaic');
 
 %% No photocurrent because we didn't compute it
 
@@ -50,6 +50,6 @@ cMosaic.window('show','cone mosaic');
    cMosaic.emGenSequence(100);
    cMosaic.compute(oi);
    cMosaic.computeCurrent;
-   cMosaic.window('show','mean photocurrent');
+   cMosaic.window('plottype','mean photocurrent');
 %}
 %% END
