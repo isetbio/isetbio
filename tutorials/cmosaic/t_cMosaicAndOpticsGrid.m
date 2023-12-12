@@ -69,7 +69,6 @@ for iEcc = 1:numel(R)
 
     % Determine if we need to subtract the subject's central refraction
     subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(testSubjectID);
-
     
     % Mosaic size: 20 cones across
     conesAcrossMosaic = 20;
