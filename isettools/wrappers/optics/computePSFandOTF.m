@@ -56,7 +56,7 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
             % Retrieve OTF closest to the measurement wavelength]
             theWavelengthSupport = wvfGet(theWVF, 'wave');
             [~,idx] = min(abs(theWavelengthSupport-measWavelength));
-            theCenteringOTF = wvfGet(theWVF, 'otf', theWavelengthSupport(idx));
+            theCenteringOTF = ifftshift(wvfGet(theWVF, 'otf', theWavelengthSupport(idx)));
             theCenteringPSF = wvfGet(theWVF, 'psf', theWavelengthSupport(idx));
             translationVector = []; showTranslation = false;
             [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(...
@@ -70,7 +70,7 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     
     
     for wIndex = 1:numel(wavelengthsListToCompute)
-        theWaveOTF = wvfGet(theWVF, 'otf', wavelengthsListToCompute(wIndex));
+        theWaveOTF = ifftshift(wvfGet(theWVF, 'otf', wavelengthsListToCompute(wIndex)));
         theWavePSF = wvfGet(theWVF, 'psf', wavelengthsListToCompute(wIndex));
         [theWaveOTF, ~, ~, ~,~] = ...
             otfWithZeroCenteredPSF(theWaveOTF, theWavePSF, translationVector,  xSfGridCyclesDegGrid, ySfGridCyclesDegGrid, showTranslation);
