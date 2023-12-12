@@ -53,7 +53,7 @@ title(sprintf('Duration %.1f', duration));
 drawnow;
 
 %% Show how it is done for a cone mosaic
-cm = coneMosaic;
+cm = coneMosaicRect;
 cm.integrationTime = tStep;
 nEyeMovements = duration / tStep;
 em.computeForConeMosaic(cm, nEyeMovements, 'nTrials', nTrials);
