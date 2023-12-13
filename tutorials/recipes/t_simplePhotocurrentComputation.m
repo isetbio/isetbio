@@ -46,7 +46,7 @@ ois = oisCreate('harmonic', 'blend', stimModulationEnvelope, ...
     'sceneParameters', sparams);
 
 % Create cone mosaic
-cMosaic = coneMosaic('center', [0, 0], 'whichEye', 'left');
+cMosaic = coneMosaicRect('center', [0, 0], 'whichEye', 'left');
 
 % Set the field of view (degrees)
 cMosaic.setSizeToFOV(sparams.fov);

@@ -152,7 +152,7 @@ else
         'sample interval domain', sampleDomain);
 end
 % Compute the PSF
-theWVF = wvfComputePSF(theWVF);
+theWVF = wvfCompute(theWVF,'human lca',true);
 end
 
 %% Method to extract and plot the PSF/OTF out of the WVF
