@@ -26,7 +26,7 @@
 ieInit;
 
 %% Create a small cone mosaic of L cones
-cMosaic = coneMosaic('os', osLinear, 'pattern', [2 2 2]);
+cMosaic = coneMosaicRect('os', osLinear, 'pattern', [2 2 2]);
 
 %% Setup background levels
 % Mean of isomerization stimulus in R*/sec (scaled by time step to be

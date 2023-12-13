@@ -269,7 +269,7 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, ...
 %
 
 % Default human mosaic
-theConeMosaic = coneMosaic;
+theConeMosaic = coneMosaicRect;
 
 % Adjust size
 if isnan(mosaicSize)

@@ -73,7 +73,7 @@ whichGroup = 'emmetropes';
 %% Plot OTF
 
 % units, wavelength, plot range
-wvfPlot(wvf,'2d otf','mm',550,500);
+wvfPlot(wvf,'2d otf','unit','mm','wave',550,'plotrange',500);
 xlim = get(gca,'xlim');
 ylim = get(gca,'ylim');
 
@@ -87,7 +87,7 @@ title(sprintf('%s: OTF 550 nm, pupil 4 mm, eccen %d deg, %s eye', ...
 
 % Not sure why the PSF is off center ... presumably there is an
 % unwanted linear phase ramp in the OTF data.
-wvfPlot(wvf,'psf space','um',550);
+wvfPlot(wvf,'psf','unit','um','wave',550);
 
 % Maybe the phases of all the OTF terms are shifted?
 oiPlot(oi,'psf',550);

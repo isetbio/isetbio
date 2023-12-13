@@ -65,7 +65,7 @@ for osIndex = 1:numel(osTypesExamined)
     %    type 2 -> L cone).
     osPeripheral = eval(sprintf('%s(''eccentricity'', 15)', osType));
     osPeripheral.set('noise flag', 'none');
-    cmPeripheral = coneMosaic('os', osPeripheral, 'pattern', 2);
+    cmPeripheral = coneMosaicRect('os', osPeripheral, 'pattern', 2);
     cmPeripheral.integrationTime = timeStep;
     cmPeripheral.os.timeStep = timeStep;
 
@@ -89,7 +89,7 @@ for osIndex = 1:numel(osTypesExamined)
     %    Setting 'eccentricity' to 0, for foveal dynamics
     osFoveal = eval(sprintf('%s(''eccentricity'', 0)', osType));
     osFoveal.set('noise flag', 'none');
-    cmFoveal = coneMosaic('os', osFoveal, 'pattern', 2); % a single cone
+    cmFoveal = coneMosaicRect('os', osFoveal, 'pattern', 2); % a single cone
     cmFoveal.integrationTime = timeStep;
     cmFoveal.os.timeStep = timeStep;
     cmFoveal.absorptions = stimulus;
