@@ -118,7 +118,7 @@ rng(1);
 % os.noiseFlag     - Photocurrent noise
 
 fprintf('Setting up cone mosaic.\n');
-cm = coneMosaic();
+cm = coneMosaicRect;
 cm.setSizeToFOV(mosaicParams.fov);
 cm.center = [eccDegs * 300, 0] * 1e-6;
 cm.integrationTime = mosaicParams.integrationTimeInSeconds;
