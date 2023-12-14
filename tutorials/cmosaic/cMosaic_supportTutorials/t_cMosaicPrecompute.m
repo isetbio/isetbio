@@ -5,6 +5,12 @@
 %    mosaics are used to generate smaller mosaics at any eccentricity via
 %    cropping.
 %
+%    This takes a very long time to run, and I'm not sure we want to write
+%    out mosaics by default.  The UTTBSkip comment below prevents this from
+%    being autorun.  And I set up a conditional at the bottom so it doesn't
+%    write anything out unless you change the default value.
+
+% UTTBSKip
 
 % History:
 %    03/23/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
@@ -32,8 +38,13 @@ cMosaic(...
     'visualizeMeshConvergence', ~true ...          % visualize the convergence
     );
 
-% Extract and export final cone positions for use in all computations
-fovDegs = max(mosaicFOV)*1.3;
-neuronType = 'cones';
-retinalattice.savePositionsAtIteration(fovDegs, neuronType, 'left eye');
-retinalattice.savePositionsAtIteration(fovDegs, neuronType, 'right eye');
+% Extract and export final cone positions for use in all computations.
+% We don't really want to do this write just because someone decided
+% to run the tutorial, so set write to false by default.
+writeMosaics = false;
+if (writeMosaics)
+    fovDegs = max(mosaicFOV)*1.3;
+    neuronType = 'cones';
+    retinalattice.savePositionsAtIteration(fovDegs, neuronType, 'left eye');
+    retinalattice.savePositionsAtIteration(fovDegs, neuronType, 'right eye');
+end
