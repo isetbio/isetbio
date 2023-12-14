@@ -10,7 +10,7 @@
 %    being autorun.  And I set up a conditional at the bottom so it doesn't
 %    write anything out unless you change the default value.
 
-% UTTBSKip
+% UTTBSkip
 
 % History:
 %    03/23/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
