@@ -9,6 +9,12 @@ function rootPath = isetbioRootPath()
 %
 %    Examples are included within the code.
 %
+%    This function works by using the function mfilename to find itself,
+%    and then walks back up the result to the top level of
+%    isetbio. Thus, you can't move this function within the isetbio tree
+%    without also adjusting the number of levels in the walk to match
+%    where you move it to.
+%
 % Inputs:
 %    None.
 %
@@ -17,13 +23,6 @@ function rootPath = isetbioRootPath()
 %
 % Optional key/value pairs:
 %    None.
-%
-% Notes:
-%    * [Note: XXX - This function works by using the function mfilename to
-%      find itself, and then walks back up the result to the top level of
-%      isetbio. Thus, you can't move this function within the isetbio tree
-%      without also adjusting the number of levels in the walk to match
-%      where you move it to.]
 % 
 % See Also:
 %    isetbioDataPath, isetRootPath
