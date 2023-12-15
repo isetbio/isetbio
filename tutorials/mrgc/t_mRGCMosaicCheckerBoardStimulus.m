@@ -1,4 +1,15 @@
 function t_mRGCMosaicCheckerBoardStimulus
+    
+    % Control saving of figures.  We don't want tutorials
+    % saving things into the isetbio source tree.
+    saveFigures = false;
+    figureDir = fullfile(isetbioRootPath,'local',mfilename);
+    if (saveFigures)
+        if (~exist(figureDir,'dir'))
+            mkdir(figureDir);
+        end
+        fprintf('Will save figures into %s\n',figureDir)
+    end
 
     % Specify the precomputed mosaic's eccentricity
     horizontalEccDegs = 7;
@@ -69,37 +80,33 @@ function t_mRGCMosaicCheckerBoardStimulus
 
 
     % Visualize the mRGCMosaic
-    visualizeTheMRGCMosaic(1,theMRGCMosaic);
+    visualizeTheMRGCMosaic(1,theMRGCMosaic, saveFigures, figureDir);
 
     % Visualize the activation of the input cone mosaic
-    visualizeRetinalOpticalImage(2, theMRGCMosaic, theStimulusRetinalImage);
+    visualizeRetinalOpticalImage(2, theMRGCMosaic, theStimulusRetinalImage, saveFigures, figureDir);
 
     % Visualize the activation of the input cone mosaic
     visualizedResponseGain = 0.8;
 
     visualizeInputConeMosaicActivation(3, theMRGCMosaic, theConeMosaicResponse, ...
         theROI, targetYdegs, theVisualizedConeXcoords, theVisualizedConeResponses, ...
-        visualizedResponseGain, numberOfChecks);
+        visualizedResponseGain, numberOfChecks, saveFigures, figureDir);
 
     % Visualize the activation of the mRGCmosaic (default gain)
     visualizeMRGCMosaicActivation(4, theMRGCMosaic, theMRGCMosaicResponseDefaultGain, ...
         theROI, targetYdegs, theVisualizedMRGCXcoords, theVisualizedMRGCResponsesDefaultGain, ...
-        visualizedResponseGain, numberOfChecks, 'defaultGain');
+        visualizedResponseGain, numberOfChecks, 'defaultGain', saveFigures, figureDir);
 
     % Visualize the activation of the mRGCmosaic (integrated cone apertures based gain)
     visualizeMRGCMosaicActivation(5, theMRGCMosaic, theMRGCMosaicResponseIntegratedConeApertureBasedGain , ...
         theROI, targetYdegs, theVisualizedMRGCXcoords, theVisualizedMRGCResponsesIntegratedConeApertureBasedGain, ...
-        visualizedResponseGain, numberOfChecks, 'integratedConeAperturesBasedGain');
+        visualizedResponseGain, numberOfChecks, 'integratedConeAperturesBasedGain', saveFigures, figureDir);
 end
 
-
-
-
 % HELPER FUNCTIONS
-
 function visualizeMRGCMosaicActivation(figNo, theMRGCMosaic, theMRGCMosaicResponse, ...
         theROI, targetYdegs, theVisualizedMRGCXcoords, theVisualizedMRGCResponses, ...
-        visualizedResponseGain, numberOfChecks, postFix)
+        visualizedResponseGain, numberOfChecks, postFix, saveFigures, figureDir)
 
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [0 0 0], 'Name', postFix);
@@ -131,13 +138,15 @@ function visualizeMRGCMosaicActivation(figNo, theMRGCMosaic, theMRGCMosaicRespon
     set(hFig, 'Color', [0 0 0]);
     set(ax, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'LineWidth', 1.5, 'FontSize', 30);
     grid(ax, 'off')
-    NicePlot.exportFigToPDF(sprintf('theMRGCMosaicActivation_%dChecks_%s.pdf', numberOfChecks, postFix), hFig, 300);
+    if (saveFigures)
+         NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('theMRGCMosaicActivation_%dChecks_%s.pdf', numberOfChecks, postFix)), hFig, 300);
+    end
 end
 
 
 function visualizeInputConeMosaicActivation(figNo, theMRGCMosaic, theConeMosaicResponse, ...
         theROI, targetYdegs, theVisualizedConeXcoords, theVisualizedConeResponses, ...
-        visualizedResponseGain, numberOfChecks)
+        visualizedResponseGain, numberOfChecks, saveFigures, figureDir)
 
     hFig = figure(figNo);clf;
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [0 0 0]);
@@ -167,11 +176,13 @@ function visualizeInputConeMosaicActivation(figNo, theMRGCMosaic, theConeMosaicR
     set(hFig, 'Color', [0 0 0]);
     set(ax, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'LineWidth', 1.5, 'FontSize', 30);
     grid(ax, 'off')
-    NicePlot.exportFigToPDF(sprintf('theConeMosaicActivation_%dChecks.pdf', numberOfChecks), hFig, 300);
+    if (saveFigures)
+        NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('theConeMosaicActivation_%dChecks.pdf', numberOfChecks)), hFig, 300);
+    end
 end
 
 
-function visualizeRetinalOpticalImage(figNo, theMRGCMosaic, theStimulusRetinalImage)
+function visualizeRetinalOpticalImage(figNo, theMRGCMosaic, theStimulusRetinalImage, saveFigures, figureDir)
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
     ax = subplot('Position', [0.05 0.05 0.94 0.94]);
@@ -185,12 +196,14 @@ function visualizeRetinalOpticalImage(figNo, theMRGCMosaic, theStimulusRetinalIm
         'withsuperimposedOpticalImageAlpha', 0.7, ...
         'domainVisualizationLimits', [theMRGCMosaic.eccentricityDegs(1) + theMRGCMosaic.sizeDegs(1)*0.51*[-1 1] theMRGCMosaic.eccentricityDegs(2) + theMRGCMosaic.sizeDegs(2)*0.51*[-1 1]], ...
         'domainVisualizationTicks', struct('x', 4:10, 'y', -5:5));
-    NicePlot.exportFigToPDF('theRetinalOpticalImage.pdf', hFig, 300);
+    if (saveFigures)
+        NicePlot.exportFigToPDF(fullfile(figureDir,'theRetinalOpticalImage.pdf'), hFig, 300);
+    end
 
 end
 
 
-function visualizeTheMRGCMosaic(figNo,theMRGCMosaic)
+function visualizeTheMRGCMosaic(figNo,theMRGCMosaic, saveFigures, figureDir)
 
     % Here, we visualize the mRGCMosaic (RF centers) without with the input cone mosaic.
     % In this visualization, the gray contours identify the mRGC RF centers
@@ -210,7 +223,9 @@ function visualizeTheMRGCMosaic(figNo,theMRGCMosaic)
     set(hFig, 'Color', [1 1 1]);
     set(ax, 'XColor', [0.5 0.5 0.5], 'YColor', [0.5 0.5 0.5], 'LineWidth', 1.5, 'FontSize', 30);
     grid(ax, 'off')
-    NicePlot.exportFigToPDF('theMRGCMosaic.pdf', hFig, 300)
+    if (saveFigures)
+        NicePlot.exportFigToPDF(fullfile(figureDir,'theMRGCMosaic.pdf'), hFig, 300)
+    end
 end
 
 
