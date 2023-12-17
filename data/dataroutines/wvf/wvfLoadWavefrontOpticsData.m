@@ -491,8 +491,7 @@ for p = 1:length(subjectIdx)
         end
 
         % Compute and accumulate the PSF, OTF and zernikes across subjects
-        wvf = wvfComputePupilFunction(wvf);
-        wvf = wvfComputePSF(wvf);
+        wvf = wvfCompute(wvf,'humanlca',true);
         all_psf(:, :, p) = wvfGet(wvf, 'psf');
         all_otf(:, :, p) = wvfGet(wvf, 'otf');
         usedSubjectData(:, p) = subjectZData;
@@ -554,8 +553,14 @@ if length(subjectIdx) > 1
     otfMeanAbs = abs(otfMean);
 
     % Set the wvf fields to correct OTF and PSF
+    %
+    % @Nicolas
+    % Do not write fields directly.  Need to understand and set
     wvf.otf = {otfMeanAbs};
-    wvf = wvfComputePSF(wvf);
+    wvf = wvfCompute(wvf,'humanlca',true);
+    
+    % Not sure why this is needed.  Doesn't the compute just above do this?
+    % If needed, use wvfSet().
     wvf.psf = {wvfGet(wvf, 'psf')};
 
     % Change name
