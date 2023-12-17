@@ -58,11 +58,10 @@ wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMm);
 % we're using here.
 wvfP = wvfSet(wvfP, 'measured wavelength', accommodatedWavelength);
 
-%% Make optical image object using wvfP and no LCA calc
+%% Make optical image object using wvfP and no LCA 
 %
 % Same as above but don't defeat LCA calc
-wvfPNoLca = wvfComputePupilFunction(wvfP,'humanlca',false);
-wvfPNoLca = wvfComputePSF(wvfPNoLca,'humanlca',false);
+wvfPNoLca = wvfCompute(wvfPNoLca,'humanlca',false);
 theOINoLca = wvf2oi(wvfPNoLca);
 opticsNoLca = oiGet(theOINoLca, 'optics');
 opticsNoLca = opticsSet(opticsNoLca, 'model', 'shift invariant');
@@ -70,8 +69,7 @@ opticsNoLca = opticsSet(opticsNoLca, 'name', 'human-wvf-nolca');
 theOINoLca = oiSet(theOINoLca,'optics',opticsNoLca);
 
 %% For comparison, make optical image object using wvfP with LCA calc
-wvfPWithLca = wvfComputePupilFunction(wvfP,'humanlca',true);
-wvfPWithLca = wvfComputePSF(wvfPWithLca,'humanlca',true);
+wvfPWithLca = wvfCompute(wvfP,'humanlca',true);
 theOIWithLca = wvf2oi(wvfPWithLca);
 opticsWithLca = oiGet(theOIWithLca, 'optics');
 opticsWithLca = opticsSet(opticsWithLca, 'model', 'shift invariant');
