@@ -26,7 +26,8 @@ wvfM  = wvfCreate;
 wvfM = wvfSet(wvfM,'um per degree',35);
 wvfM = wvfSet(wvfM,'calc pupil size',1);
 
-wvfM  = wvfComputePSF(wvfM);
+%% @Nicolas/@Brian What should we do with LCA here?
+wvfM  = wvfCompute(wvfM);
 oiM   = wvf2oi(wvfM);
 
 oiM = oiCompute(oiM,scene,'pad value','mean');
