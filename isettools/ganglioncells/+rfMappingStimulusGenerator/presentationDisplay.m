@@ -1,8 +1,7 @@
 function theDisplay = presentationDisplay(wavelengthSupport, desiredPixelSizeDegs, viewingDistanceMeters)
 
-    theDisplay = displayCreate('LCD-Apple', ...
-        'wave', wavelengthSupport, ...
-        'viewing distance',viewingDistanceMeters);
+    theDisplay = displayCreate('LCD-Apple', wavelengthSupport);
+    theDisplay = displaySet(theDisplay, 'viewing distance', viewingDistanceMeters);
     
     % Linear, 12-bit LUT
     bitDepth = 12;

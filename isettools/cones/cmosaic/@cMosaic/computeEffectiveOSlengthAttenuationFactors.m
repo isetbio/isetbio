@@ -11,7 +11,7 @@ function osLengthAttenuationFactors = computeEffectiveOSlengthAttenuationFactors
             else
                 % Do it for alls cones based on the median attenuation factor 
                 v = median(obj.outerSegmentLengthEccVariationAttenuationFactors);
-                osLengthAttenuationFactors = v(coneIndices);
+                osLengthAttenuationFactors = repmat(v, [1 numel(coneIndices)]);
             end
         else
             if (obj.eccVaryingOuterSegmentLength)

@@ -8,7 +8,7 @@
 % History:
 %    09/28/22  NPC  ISETBIO Team, Copyright 2022 Wrote it.
 
-function t_mapConeRF
+function t_conesMapRF
     
     mosaicEccDegs = [0 -0];
     mosaicSizeDegs = 0.3*[1 1];
@@ -49,12 +49,13 @@ function t_mapConeRF
         );
 
     % Generate optics given the optical params
-    [thePSFData, ~, ~, ~, theOI] = RetinaToVisualFieldTransformer.computeVlambdaWeightedPSF(...
+    [thePSFData, ~, ~, theOI] = computeVlambdaWeightedPSF(...
             opticsParams, theConeMosaic, theConeMosaic.wave);
 
     % Generate a presentation display with a desired resolution
-    retinalImageResolutionDegs = thePSFData.psfSupportXdegs(2)-thePSFData.psfSupportXdegs(1);
+    retinalImageResolutionDegs = thePSFData.supportXdegs(2)-thePSFData.supportXdegs(1);
     viewingDistanceMeters = 4;
+
     theDisplay = rfMappingStimulusGenerator.presentationDisplay(...
         theConeMosaic.wave, retinalImageResolutionDegs, viewingDistanceMeters);
 
@@ -82,12 +83,15 @@ function t_mapConeRF
     % Generate scenes for the Hartley patterns
     [theRFMappingStimulusScenes, theNullStimulusScene, spatialSupportDegs] = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
         theDisplay, stimParams, HartleySpatialModulationPatterns, ...
-        'validateScenes', false);
+        'validateScenes', ~true);
+
+    fprintf('Generated forward polarity stimuli\n');
 
     % Generate scenes for the inverse-polarity Hartley patterns
     theReversePolarityRFMappingStimulusScenes = rfMappingStimulusGenerator.generateStimulusFramesOnPresentationDisplay(...
         theDisplay, stimParams, -HartleySpatialModulationPatterns, ...
         'validateScenes', false);
+     fprintf('Generated inverse polarity stimuli\n');
 
     % Preallocate memory
     conesNum = numel(theConeMosaic.coneTypes);
@@ -98,13 +102,16 @@ function t_mapConeRF
 
     % Compute the cone mosaic responses and build - up the RF
     for iFrame = 0:nStim
+        fprintf('Computing mosaic response to stim %d of %d\n', iFrame, nStim);
+
         if (iFrame == 0)
+            tic
             theOI = oiCompute(theOI, theNullStimulusScene, 'pad value','mean');
             theNullStimConeMosaicExcitation = squeeze(theConeMosaic.compute(theOI));
+            fprintf('Done in %f seconds!!\n', toc);
             continue;
         end
 
-        fprintf('Computing mosaic response to stim %d of %d\n', iFrame, nStim);
         % The forward polarity responses
         theOI = oiCompute(theOI,theRFMappingStimulusScenes{iFrame},'pad value','mean');
         theConeMosaicExcitation(iFrame,:) = (squeeze(theConeMosaic.compute(theOI)) - theNullStimConeMosaicExcitation)./theNullStimConeMosaicExcitation;
@@ -145,7 +152,9 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
     yTicks = mosaicCenterPositionDegs(2) + round(0.4*stimParams.stimSizeDegs*[-1:0.5:1]*100)/100;
 
 
-    videoOBJ = VideoWriter('SubSpaceRFmapping', 'MPEG-4');
+    % Write to local dir so it is not check in the repo
+    localDirPath = fullfile(isetbioRootPath, 'local');
+    videoOBJ = VideoWriter(fullfile(localDirPath,'SubSpaceRFmapping'), 'MPEG-4');
     videoOBJ.FrameRate = 10;
     videoOBJ.Quality = 100;
     videoOBJ.open();
@@ -167,10 +176,10 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
 
 
     ax = subplot(2,3,2);
-    imagesc(ax, thePSFData.psfSupportXdegs, thePSFData.psfSupportYdegs, thePSFData.vLambdaWeightedData);
+    imagesc(ax, thePSFData.supportXdegs, thePSFData.supportYdegs, thePSFData.data);
     hold(ax, 'on');
-    plot(ax, [thePSFData.psfSupportXdegs(1) thePSFData.psfSupportXdegs(end)], [0 0], 'g-');
-    plot(ax, [0 0], [thePSFData.psfSupportYdegs(1) thePSFData.psfSupportYdegs(end)], 'g-');
+    plot(ax, [thePSFData.supportXdegs(1) thePSFData.supportXdegs(end)], [0 0], 'g-');
+    plot(ax, [0 0], [thePSFData.supportYdegs(1) thePSFData.supportYdegs(end)], 'g-');
     hold(ax, 'off');
     axis(ax, 'image'); axis(ax, 'xy');
     set(ax, 'XLim', xLims-mosaicCenterPositionDegs(1), 'YLim', yLims-mosaicCenterPositionDegs(2), ...
@@ -189,12 +198,20 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
 
 
     for iFrame = 1:numel(theRFMappingStimulusScenes)
-       % [~, sceneSRGBimage] = ...
-        %        sceneRepresentations(theRFMappingStimulusScenes{iFrame}, theDisplay);
-        sceneSRGBimage = sceneGet(theRFMappingStimulusScenes{iFrame}, 'RGBimage');
-        image(ax1, spatialSupportDegs+mosaicCenterPositionDegs(1), spatialSupportDegs+mosaicCenterPositionDegs(2), sceneSRGBimage);
-        axis(ax1, 'image');
-        set(ax1, 'XLim', xLims,  'YLim', yLims, 'XTick', [], 'YTick', [], 'Color', sceneSRGBimage(1,1,:));
+       
+        visualizeScene(theRFMappingStimulusScenes{iFrame}, ...
+            'presentationDisplay', theDisplay, ...
+            'displayRadianceMaps', false, ...
+            'spatialSupportInDegs', true, ...
+            'axesHandle', ax1);
+
+       % sceneSRGBimage = sceneGet(theRFMappingStimulusScenes{iFrame}, 'RGBimage');
+
+       %image(ax1, spatialSupportDegs+mosaicCenterPositionDegs(1), spatialSupportDegs+mosaicCenterPositionDegs(2), sceneSRGBimage);
+       %axis(ax1, 'image');
+
+        set(ax1, 'XLim', xLims-mosaicCenterPositionDegs(1),  'YLim', yLims-mosaicCenterPositionDegs(2), ...
+            'XTick', [], 'YTick', []);
         set(ax1, 'FontSize', fontSize);
         title(ax1, sprintf('stimulus scene %d/%d',iFrame, numel(theRFMappingStimulusScenes)));
 
@@ -248,7 +265,7 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
         %theConeAperture(R <= 0.5*theConeMosaic.coneApertureDiametersDegs(iCone)) = 1;
 
         % The visual cone aperture
-        theVisualConeAperture = conv2(theConeAperture, thePSFData.vLambdaWeightedData, 'same');
+        theVisualConeAperture = conv2(theConeAperture, thePSFData.data, 'same');
 
         [~,maxIndex] = max(theVisualConeAperture(:));
         [row,col] = ind2sub(size(R), maxIndex);
@@ -306,21 +323,6 @@ function visualizeMosaicStimuliAndMappedRFs(theConeMosaic, theConeMosaicExcitati
 end
 
 
-function [sceneLRGBimage, sceneSRGBimage, sceneLMScontrastsImage, sceneLMSexcitationsImage] = ...
-    sceneRepresentations(theScene, presentationDisplay)
-
-    emittedRadianceImage = sceneGet(theScene, 'energy');
-    displaySPDs = displayGet(presentationDisplay, 'spd');
-    displayWavelengths = displayGet(presentationDisplay, 'wave');
-    [sceneLRGBimage, sceneSRGBimage] = displayRadianceToDisplayRGB(emittedRadianceImage, displaySPDs);
-        
-    % Load the 2-deg Stockman cone fundamentals on a wavelength support matching the display
-    coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
-
-    % Compute the LMS cone contrasts of the emitted radiance image
-    [sceneLMScontrastsImage, sceneLMSexcitationsImage] = displayRadianceToLMS(emittedRadianceImage, coneFundamentals);
-end
-
 function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineWidth, lineStyle)
     x = [x fliplr(x)];
     y = [y y*0+baseline];
@@ -329,4 +331,110 @@ function shadedAreaPlot(ax,x,y, baseline, faceColor, edgeColor, faceAlpha, lineW
     pz = -10*eps*ones(size(py)); 
     patch(ax,px,py,pz,'FaceColor',faceColor,'EdgeColor', edgeColor, ...
         'FaceAlpha', faceAlpha, 'LineWidth', lineWidth, 'LineStyle', lineStyle);
+end
+
+function [thePSFData, testSubjectID, subtractCentralRefraction, theOI] = computeVlambdaWeightedPSF(...
+    opticsParams, theConeMosaic, psfWavelengthSupport)
+
+
+    % Ensure we have a valid eye specification
+    assert(ismember(opticsParams.analyzedEye, {'left eye','right eye'}), ...
+        'Invalid analyzed eye specification: ''%s''.', opticsParams.analyzedEye);
+
+    assert(ismember(opticsParams.subjectRankingEye, {'left eye','right eye'}), ...
+        'Invalid subject rank eye specification: ''%s''.', opticsParams.subjectRankingEye);
+
+
+    switch (opticsParams.ZernikeDataBase)
+        case 'Artal2012'
+            rankedSujectIDs = ArtalOptics.constants.subjectRanking(opticsParams.subjectRankingEye);
+            testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
+            subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(...
+                opticsParams.analyzedEye, testSubjectID);
+
+        case 'Polans2015'
+            if (~strcmp(opticsParams.subjectRankingEye, 'right eye'))
+                error('Polans measurements exist only for the right eye.');
+            end
+            rankedSujectIDs = PolansOptics.constants.subjectRanking();
+            testSubjectID = rankedSujectIDs(opticsParams.examinedSubjectRankOrder);
+            subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(...
+                testSubjectID);
+
+        otherwise
+            error('Unknown zernike database: ''%ss'.', opticsParams.ZernikeDataBase);
+    end
+
+
+    if (opticsParams.refractiveErrorDiopters == -999)
+        % Compute optics at the rf position
+        [oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(opticsParams.positionDegs, ...
+                    'zernikeDataBase', opticsParams.ZernikeDataBase, ...
+                    'subjectID', testSubjectID, ...
+                    'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
+                    'refractiveErrorDiopters', 0, ...
+                    'zeroCenterPSF', true, ...
+                    'subtractCentralRefraction', false, ...
+                    'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
+                    'upsampleFactor', opticsParams.psfUpsampleFactor, ...
+                    'warningInsteadOfErrorForBadZernikeCoeffs', true);
+    else
+        % Compute optics at the rf position
+        [oiEnsemble, psfEnsemble] = theConeMosaic.oiEnsembleGenerate(opticsParams.positionDegs, ...
+                    'zernikeDataBase', opticsParams.ZernikeDataBase, ...
+                    'subjectID', testSubjectID, ...
+                    'pupilDiameterMM', opticsParams.pupilDiameterMM, ...
+                    'refractiveErrorDiopters', opticsParams.refractiveErrorDiopters, ...
+                    'zeroCenterPSF', true, ...
+                    'subtractCentralRefraction', subtractCentralRefraction, ...
+                    'wavefrontSpatialSamples', opticsParams.wavefrontSpatialSamples, ...
+                    'upsampleFactor', opticsParams.psfUpsampleFactor, ...
+                    'warningInsteadOfErrorForBadZernikeCoeffs', true);
+    end
+
+    if (isempty(oiEnsemble))
+        fprintf(2,'Could not generate optics at this eccentricity');
+    end
+
+    % Extract the OTF & the PSF
+    thePSFData = psfEnsemble{1};
+    theOI = oiEnsemble{1};
+    theOTFData.data = theOI.optics.OTF.OTF;
+    theOTFData.supportX = theOI.optics.OTF.fx;
+    theOTFData.supportY = theOI.optics.OTF.fy;
+    theOTFData.supportWavelength = theOI.optics.OTF.wave;
+
+    % Compute v_lambda weights for weigthing the PSF/OTF
+    weights = vLambdaWeights(theConeMosaic.wave);
+
+    % Compute vLambda weighted PSF
+    vLambdaWeightedPSF = zeros(size(thePSFData.data,1), size(thePSFData.data,2));
+    for iWave = 1:size(theOTFData.data,3)
+        if (ismember(theConeMosaic.wave(iWave), psfWavelengthSupport)) || ...
+           (isempty(psfWavelengthSupport))
+            vLambdaWeightedPSF = vLambdaWeightedPSF + thePSFData.data(:,:,iWave) * weights(iWave);
+        end
+    end
+    thePSFData.data = vLambdaWeightedPSF;
+
+    % Ensure we have a unit volume
+    thePSFData.data = thePSFData.data / sum(thePSFData.data(:));
+
+    % Specify support in degs instead of the default arc min
+    thePSFData.supportXdegs = thePSFData.supportX/60;
+    thePSFData.supportYdegs = thePSFData.supportY/60;
+
+    % Remove irrelevant fields
+    thePSFData = rmfield(thePSFData, 'supportWavelength');
+    thePSFData = rmfield(thePSFData, 'zCoeffs');
+    thePSFData = rmfield(thePSFData, 'supportX');
+    thePSFData = rmfield(thePSFData, 'supportY');
+end
+
+function w = vLambdaWeights(wavelengthSupport)
+    load T_xyz1931;
+    S = WlsToS(wavelengthSupport(:));
+    T_vLambda = SplineCmf(S_xyz1931,T_xyz1931(2,:),S);
+    w = T_vLambda/max(T_vLambda(:));
+    w = w / sum(w(:));
 end
