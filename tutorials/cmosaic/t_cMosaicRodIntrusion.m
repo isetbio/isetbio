@@ -12,8 +12,7 @@
 function t_cMosaicRodIntrusion()
 
     % Load Figure 3 of Curcio 1990 
-    resourcesDir = strrep(isetRootPath, 'isettools', 'tutorials/cones/resources');
-    load(fullfile(resourcesDir, 'CurcioConesRods.mat'), 'CurcioConesRods');
+    load(fullfile(isetbioRootPath, 'tutorials/cones/resources/CurcioConesRods'));
 
     hFig = figure(1);clf;
     set(hFig, 'Position', [70 70 1280 890]);
@@ -194,17 +193,17 @@ function t_cMosaicRodIntrusion()
             'noYLabel', true, ...
             'plotTitle', plotTitle);
 
-end
+    end
 
-% Generate a mosaic with a custom factor for cone aperture adjustment due to rod intrusion 
-cMosaicTest = cMosaic(...
+    % Generate a mosaic with a custom factor for cone aperture adjustment due to rod intrusion 
+    cMosaicTest = cMosaic(...
         'eccentricityDegs', [10 0], ...
         'sizeDegs', [0.5 0.5], ...
         'coneDensities', [1.0 0 0 0], ...
         'whichEye', whichEye, ...
         'rodIntrusionAdjustedConeAperture', 0.6, ...
         'coneApertureModifiers', struct('smoothLocalVariations', true));
-cMosaicTest.visualize()
+    cMosaicTest.visualize()
 
 end
 
