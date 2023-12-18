@@ -35,7 +35,7 @@ function t_mRGCMosaicDynamicStimulus
     viewingDistanceMeters = 1.0;
     wavelengthSupport = theMRGCMosaic.inputConeMosaic.wave;
 
-    % Sstimulus resolution so that cone aperture blur will have an observable effect
+    % Stimulus resolution so that cone aperture blur will have an observable effect
     pixelSizeDegs = min(theMRGCMosaic.inputConeMosaic.coneApertureDiametersDegs)/5;
       
     %% Generate the presentation display on which the stimulus must be realized
@@ -44,6 +44,12 @@ function t_mRGCMosaicDynamicStimulus
             viewingDistanceMeters);
 
     %% Set drifting sinusoidal stimulus parameters
+    %
+    % These are set with a short duration so this runs reasonably
+    % fast.  Lengthen durationSecs (e.g to 1) if you want to
+    % see more of the drift.  But beware, it will take while
+    % and might fill your computer's memory and crash if you do
+    % so.
     driftingSinusoidalStimulusParams = struct(...
             'backgroundLuminanceCdM2', 50.0, ...
             'backgroundChromaticity', [0.301 0.301], ...
@@ -53,7 +59,7 @@ function t_mRGCMosaicDynamicStimulus
             'spatialFrequencyCPD', 2.0, ...
             'spatialPhaseIncrementDegs', 30, ...
             'temporalFrequencyHz', 2.0, ...
-            'durationSeconds', 1.0, ...
+            'durationSeconds', 1.0/12, ...
             'temporalEnvelopeTau', 0.5/3, ...
             'pixelSizeDegs', pixelSizeDegs, ...
             'stimSizeDegs', 10.0, ...
@@ -81,7 +87,7 @@ function t_mRGCMosaicDynamicStimulus
     theOI = theMRGCMosaic.theNativeOptics;
 
     %% Compute the retinal image of the background scene
-    theBackgroundRetinalImage = oiCompute(theBackgroundScene, theOI);
+    theBackgroundRetinalImage = oiCompute(theOI, theBackgroundScene);
 
     %% Compute the retinal image sequence corresponding to the different frames of the drifting grating
     framesNum = numel(theDriftingGratingSceneSequence);
@@ -89,7 +95,7 @@ function t_mRGCMosaicDynamicStimulus
     for iFrame = 1:framesNum
         fprintf('Generating retinal image sequence for frame %d of %d\n', iFrame, framesNum);
         theListOfRetinalImages{iFrame} = ...
-            oiCompute(theDriftingGratingSceneSequence{iFrame}, theOI);
+            oiCompute(theOI,theDriftingGratingSceneSequence{iFrame});
     end
 
     %% Generate an @oiSequence object from the list of computed optical images
