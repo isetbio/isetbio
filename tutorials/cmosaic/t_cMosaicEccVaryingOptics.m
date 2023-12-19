@@ -19,13 +19,41 @@ ieInit;
 clear;
 close all;
 
+%% Control parameters below
+%
+% Setting fastParamters to true does
+% a more limited set of calculations
+% and the whole thing runs more quickly.
+fastParameters = true;
+
+%% Control saving of figures.
+%
+% We don't want tutorials saving things into the isetbio source tree
+% willy-nilly
+saveFigures = false;
+figureDir = fullfile(isetbioRootPath,'local',mfilename);
+if (saveFigures)
+    if (~exist(figureDir,'dir'))
+        mkdir(figureDir);
+    end
+    fprintf('Will save figures into %s\n',figureDir)
+else
+    fprintf('Not saving figures. Set saveFigures to true in the source to save\n');
+end
+
 %% Mosaic size (in degrees)
 mosaicSizeDegs = [1 1]*0.15;
 
 %% Mosaic eccentricity (in degrees)
-mosaicEccDegsX  = -23:1:22;
-mosaicEccDegsX = setdiff(mosaicEccDegsX, [13 14 15 16 17 18]);
-mosaicEccDegsY  = 0;
+if (fastParameters)
+    fprintf('Running limited set of locations. Change fastPareters to false in the source to get more\n');
+    mosaicEccDegsX  = [-20 -10 0 10 20];
+    mosaicEccDegsY  = 0;
+else
+    mosaicEccDegsX  = -23:1:22;
+    mosaicEccDegsX = setdiff(mosaicEccDegsX, [13 14 15 16 17 18]);
+    mosaicEccDegsY  = 0;
+end
 
 %% Eye: choose {from 'right eye', 'left eye'}
 whichEye = 'right eye';   
@@ -35,7 +63,6 @@ opticsZernikeCoefficientsDataBase = 'Polans2015';
 
 %% Select ranking of displayed subject
 subjectRankOrder = 1;
-
 
 %% Setup figure
 hFig = figure(1); clf;
@@ -59,8 +86,6 @@ Y = Y(:);
 R = sqrt(X.^2+Y.^2);
 
 for iEcc = 1:numel(R)
-    
-    % 
     switch (opticsZernikeCoefficientsDataBase)
         case 'Polans2015'
             % Obtain subject IDs ranking in decreasing foveal resolution
@@ -113,7 +138,6 @@ for iEcc = 1:numel(R)
     psfSupportMicronsX = psfSupportMicrons + cm.eccentricityMicrons(1);
     psfSupportMicronsY = psfSupportMicrons + cm.eccentricityMicrons(2);
     
-    
     r = floor((iEcc-1)/colsNum);
     r = mod(r,rowsNum)+1;
     c = mod(iEcc-1,colsNum)+1;
@@ -137,7 +161,8 @@ for iEcc = 1:numel(R)
         'noYLabel', true, ...
         'noXlabel', true, ...
         'plotTitle', sprintf('ecc: %d,%d degs\n(spatial support: %2.1f arc min.)', X(iEcc), Y(iEcc), visualizedFraction*sizeDegs(1)*60), ...
-        'fontSize', 12);
+        'fontSize', 12, ...
+        'verbose', false);
     hold(ax, 'on');
     cmap = brewermap(1024,'reds');
     alpha = 0.5;
@@ -146,7 +171,7 @@ for iEcc = 1:numel(R)
     axis(ax, 'square');
 end   
 
-% If you want a PDF of the figure:
-%
-%  NicePlot.exportFigToPDF(sprintf('%s_subject%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID), hFig, 300);
-%
+% Optional figure save
+if (saveFigures)
+    NicePlot.exportFigToPDF(fullfile(sprintf('%s_subject%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID)), hFig, 300);
+end
