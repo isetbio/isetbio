@@ -48,7 +48,7 @@ mosaicSizeDegs = [1 1]*0.5;
 
 %% Mosaic eccentricity (in degrees)
 if (fastParameters)
-    fprintf('Running limited set of locations. Change fastPareters to false in the source to get more\n');
+    fprintf('Running limited set of locations. Change fastParameters to false in the source to get more\n');
     mosaicEccDegsX  = [-12 0 12];
     mosaicEccDegsY  = [-8 0 8];
 else
