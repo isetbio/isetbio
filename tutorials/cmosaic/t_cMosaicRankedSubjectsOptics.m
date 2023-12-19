@@ -19,6 +19,28 @@ ieInit;
 clear;
 close all;
 
+%% Control parameters below
+%
+% Setting fastParamters to true does
+% a more limited set of calculations
+% and the whole thing runs more quickly.
+fastParameters = true;
+
+%% Control saving of figures.
+%
+% We don't want tutorials saving things into the isetbio source tree
+% willy-nilly
+saveFigures = false;
+figureDir = fullfile(isetbioRootPath,'local',mfilename);
+if (saveFigures)
+    if (~exist(figureDir,'dir'))
+        mkdir(figureDir);
+    end
+    fprintf('Will save figures into %s\n',figureDir)
+else
+    fprintf('Not saving figures. Set saveFigures to true in the source to save\n');
+end
+
 %% Mosaic size (in degrees)
 mosaicSizeDegs = [1 1]*0.15;
 
@@ -32,13 +54,25 @@ whichEye = 'left eye';
 opticsZernikeCoefficientsDataBase = 'Thibos2002';            
 
 %% Select ranking of subjects for which to visualize the PSFs
-switch (opticsZernikeCoefficientsDataBase)
-     case 'Polans2015'
-         subjectRankOrderList = 1:10;
-     case 'Artal2012'
-         subjectRankOrderList = 1:5:50;
-     case 'Thibos2002'
-         subjectRankOrderList = 1:7:70;
+if (fastParameters)
+    fprintf('Running limited number of subjects. Change fastParameters to false in the source to get more\n');
+    switch (opticsZernikeCoefficientsDataBase)
+        case 'Polans2015'
+            subjectRankOrderList = [1 3 5];
+        case 'Artal2012'
+            subjectRankOrderList = [1 25 50];
+        case 'Thibos2002'
+            subjectRankOrderList = [1 35 70];
+    end
+else
+    switch (opticsZernikeCoefficientsDataBase)
+        case 'Polans2015'
+            subjectRankOrderList = 1:10;
+        case 'Artal2012'
+            subjectRankOrderList = 1:5:50;
+        case 'Thibos2002'
+            subjectRankOrderList = 1:7:70;
+    end
 end
  
 %% Generate mosaic centered at target eccentricity
@@ -135,6 +169,9 @@ for subjectRankOrderIndex = 1:numel(subjectRankOrderList)
     cMosaic.semiTransparentContourPlot(ax, psfSupportMicrons, psfSupportMicrons, psf, 0.05:0.1:0.95, cmap, alpha, contourLineColor);
 end
 
-NicePlot.exportFigToPDF(sprintf('%s_rankedPSFs.pdf', opticsZernikeCoefficientsDataBase), hFig, 300);
+% Optional figure save
+if (saveFigures)
+    NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s_rankedPSFs.pdf', opticsZernikeCoefficientsDataBase)), hFig, 300);
+end
 
 %%
