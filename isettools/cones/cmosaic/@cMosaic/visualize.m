@@ -28,6 +28,8 @@ function visualizationParams = visualize(obj, varargin)
 %   
 %        cm.visualize('help');
 %
+%  The source code contains examples.
+%
 %  See also
 %   cMosaic.plot (an interface to this)
 %   Tutorials in tutorials/cones/cMosaic
@@ -46,6 +48,14 @@ cm.visualize('density contour overlay',true,...
              'crosshairs on fovea',true, ...
              'label retinal meridians',true);   
 %}
+
+%% History
+%  12/19/23  dhb  Add 'verbose' flag.  Remove red from text that isn't
+%                 actually an error.  In general, any text printed by a 
+%                 function would ideally be controllable all the way down
+%                 a calling chain, and won't be red unless it represents
+%                 something bad.  Here, I don't think visualizing a
+%                 circular aperture as a circle rises to red.
 
 %% If the call is 
 %
@@ -142,6 +152,8 @@ p.addParameter('plottitlecolor', [0 0 0], @isnumeric);
 p.addParameter('plottitlefontsize', 16, @isscalar);
 p.addParameter('textdisplay', '',@(x)(isempty(x) || ischar(x)));
 p.addParameter('textdisplaycolor', [], @isnumeric);
+
+p.addParameter('verbose',true,@islogical);
 
 p.parse(varargin{:});
 domain = p.Results.domain;
@@ -394,7 +406,9 @@ switch (ieParamFormat(visualizedConeAperture))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 2*sqrt(2)*gaussianSigma*rfApertureDiameters;
         else
-            fprintf(2,'cone aperture is not Gaussian, so cannot visualize characteristic radius. Visualizing the diameter\n');
+            if (p.Results.verbose)
+                fprintf('Cone aperture is not Gaussian, so cannot visualize characteristic radius. Visualizing the diameter\n');
+            end
             visualizedApertures = rfApertureDiameters;
         end
         
@@ -403,7 +417,9 @@ switch (ieParamFormat(visualizedConeAperture))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 2*gaussianSigma*rfApertureDiameters;
         else
-            fprintf(2,'cone aperture is not Gaussian, so cannot visualize 2xsigma. Visualizing the diameter\n');
+            if (p.Results.verbose)
+                fprintf('Cone aperture is not Gaussian, so cannot visualize 2xsigma. Visualizing the diameter\n');
+            end
             visualizedApertures = rfApertureDiameters;
         end
         
@@ -412,7 +428,9 @@ switch (ieParamFormat(visualizedConeAperture))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 4*gaussianSigma*rfApertureDiameters;
         else
-            fprintf(2,'cone aperture is not Gaussian, so cannot visualize 4xsigma. Visualizing the diameter\n');
+            if (p.Results.verbose)
+                fprintf('Cone aperture is not Gaussian, so cannot visualize 4xsigma. Visualizing the diameter\n');
+            end
             visualizedApertures = rfApertureDiameters;
         end
         
@@ -421,7 +439,9 @@ switch (ieParamFormat(visualizedConeAperture))
             gaussianSigma = obj.coneApertureModifiers.sigma;
             visualizedApertures = 5*gaussianSigma*rfApertureDiameters;
         else
-            fprintf(2,'cone aperture is not Gaussian, so cannot visualize 5xsigma. Visualizing the diameter\n');
+            if (p.Results.verbose)
+                fprintf('Cone aperture is not Gaussian, so cannot visualize 5xsigma. Visualizing the diameter\n');
+            end
             visualizedApertures = rfApertureDiameters;
         end
         
@@ -431,7 +451,9 @@ switch (ieParamFormat(visualizedConeAperture))
             visualizedApertures = 6*gaussianSigma*rfApertureDiameters;
         else
             visualizedApertures = rfApertureDiameters;
-            fprintf(2,'cone aperture is not Gaussian, so cannot visualize 6xsigma. Visualizing the diameter\n');
+            if (p.Results.verbose)
+                fprintf('Cone aperture is not Gaussian, so cannot visualize 6xsigma. Visualizing the diameter\n');
+            end
         end
         
     otherwise
