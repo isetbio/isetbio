@@ -1,14 +1,12 @@
 function t_cMosaicAndOpticsGrid()
 % Plot Polans optics across a grid of (x,y) eccentricities
 %
-% BW:   This is a good tutorial to go through with Nicolas and/or David. It
+% BW: This is a good tutorial to go through with Nicolas and/or David. It
 % is a very complicated read of something that should be much simpler. It
 % does not use the wvf* methods, but reimplements them in its own way, and
 % only their only use is in this context.  I believe that this relies on a
 % very important method, oiEnsembleGenerate, that should be at the heart of
-% the re-write.
-%
-% We would like the functionality of this tutorial.  But we would like it
+% the re-write. We would like the functionality of this tutorial. But we would like it
 % to read simply and to rely on the existing tools.
 %
 % See Also:
@@ -23,12 +21,40 @@ ieInit;
 clear;
 close all;
 
+%% Control parameters below
+%
+% Setting fastParamters to true does
+% a more limited set of calculations
+% and the whole thing runs more quickly.
+fastParameters = true;
+
+%% Control saving of figures.
+%
+% We don't want tutorials saving things into the isetbio source tree
+% willy-nilly
+saveFigures = false;
+figureDir = fullfile(isetbioRootPath,'local',mfilename);
+if (saveFigures)
+    if (~exist(figureDir,'dir'))
+        mkdir(figureDir);
+    end
+    fprintf('Will save figures into %s\n',figureDir)
+else
+    fprintf('Not saving figures. Set saveFigures to true in the source to save\n');
+end
+
 %% Mosaic size (in degrees)
 mosaicSizeDegs = [1 1]*0.5;
 
 %% Mosaic eccentricity (in degrees)
-mosaicEccDegsX  = [-12 -8 -4 -2 0 2 4 8 12];
-mosaicEccDegsY  = [-8 -4 -2 0 2 4 8];
+if (fastParameters)
+    fprintf('Running limited set of locations. Change fastPareters to false in the source to get more\n');
+    mosaicEccDegsX  = [-12 0 12];
+    mosaicEccDegsY  = [-8 0 8];
+else
+    mosaicEccDegsX  = [-12 -8 -4 -2 0 2 4 8 12];
+    mosaicEccDegsY  = [-8 -4 -2 0 2 4 8];
+end
 
 %% Eye: choose {from 'right eye', 'left eye'}
 whichEye = 'right eye';   
@@ -60,7 +86,8 @@ sv = NicePlot.getSubPlotPosVectors(...
 X = X(:);
 Y = Y(:);
 R = sqrt(X.^2+Y.^2);
-%
+
+% Loop over eccentricities
 for iEcc = 1:numel(R)
     
     % Obtain subject IDs ranking in decreasing foveal resolution
@@ -108,7 +135,6 @@ for iEcc = 1:numel(R)
     psfSupportMicronsX = psfSupportMicrons + cm.eccentricityMicrons(1);
     psfSupportMicronsY = psfSupportMicrons + cm.eccentricityMicrons(2);
     
-    
     r = floor((iEcc-1)/colsNum);
     r = mod(r,rowsNum)+1;
     c = mod(iEcc-1,colsNum)+1;
@@ -138,7 +164,8 @@ for iEcc = 1:numel(R)
         'clearAxesBeforeDrawing', false, ...
         'plotTitle', sprintf('%d, %d', X(iEcc), Y(iEcc)), ...
         'plotTitleColor', [0.5 0.5 0.5], ...
-        'fontSize', 12);
+        'fontSize', 12, ...
+        'verbose', false);
     hold(ax, 'on');
     cmap = brewermap(1024,'reds');
     alpha = 0.5;
@@ -147,7 +174,11 @@ for iEcc = 1:numel(R)
     axis(ax, 'square');
 end   
 
-NicePlot.exportFigToPDF(sprintf('%s_subject%d_rank%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID, subjectRankOrder), hFig, 300);
+%% Save figure if desired
+if (saveFigures)
+    NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s_subject%d_rank%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID, subjectRankOrder)), hFig, 300);
+end
+
 end
 
 end
