@@ -165,22 +165,21 @@ classdef AppleSiliconParPoolManager < handle
         end % setParpoolSize
 
         function cpuInfo(obj)
-            [~, architecture] = system('uname -p');
-            architecture = architecture(1:end-1);
-            obj.architecture = architecture;
+            [~, systemArchitecture] = system('uname -p');
+            obj.architecture = systemArchitecture(1:end-1);
     
             [~, numCPUs] = system('sysctl -n hw.ncpu');
             obj.coresNum = str2double(numCPUs(1:end-1));
             
-                [~, physicalMemory] = system('sysctl -a -h | grep memsize:');
-                physicalMemory = physicalMemory(2:end-1);
-                physicalMemory = strrep(physicalMemory, 'w.memsize:', '');
-                obj.physicalMemoryGB = str2num(physicalMemory)/1e9;
-    
-                [~, usablePhysicalMemory] = system('sysctl -a -h | grep memsize_usable:');
-                usablePhysicalMemory = usablePhysicalMemory(2:end-1);
-                usablePhysicalMemory = strrep(usablePhysicalMemory, 'w.memsize_usable:', '');
-                obj.usablePhysicalMemoryGB = str2num(usablePhysicalMemory)/1e9;
+            [~, physicalMemory] = system('sysctl -a -h | grep memsize:');
+            physicalMemory = physicalMemory(2:end-1);
+            physicalMemory = strrep(physicalMemory, 'w.memsize:', '');
+            obj.physicalMemoryGB = str2double(physicalMemory)/1e9;
+
+            [~, usablePhysicalMemory] = system('sysctl -a -h | grep memsize_usable:');
+            usablePhysicalMemory = usablePhysicalMemory(2:end-1);
+            usablePhysicalMemory = strrep(usablePhysicalMemory, 'w.memsize_usable:', '');
+            obj.usablePhysicalMemoryGB = str2double(usablePhysicalMemory)/1e9;
         end
 
         function restartParpool(obj, desiredNumWorkers)
