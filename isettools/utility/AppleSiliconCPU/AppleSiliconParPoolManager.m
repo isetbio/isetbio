@@ -1,6 +1,6 @@
 classdef AppleSiliconParPoolManager < handle
 
-    % Create an APpleSiliconParPoolManager
+    % Create an AppleSiliconParPoolManager
     %
     % Syntax:
     %   (Default ParPool manager: Configure a parpool that gives at least 4 GB RAM to each core)
