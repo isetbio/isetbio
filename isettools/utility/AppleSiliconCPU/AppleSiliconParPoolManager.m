@@ -3,8 +3,8 @@ classdef AppleSiliconParPoolManager < handle
     % Create an AppleSiliconParPoolManager
     %
     % Syntax:
-    %   (Default ParPool manager: Configure a parpool that gives at least 4 GB RAM to each core)
-    %   M3ParPoolManager = AppleSiliconParPoolManager;
+    %   (Default ParPool manager: Configure a parpool that gives at least 4 GB RAM to each core, and do not print anything on the console)
+    %   M3ParPoolManager = AppleSiliconParPoolManager('runSilent', true);
     %   
     %   (Default ParPool manager: Configure a parpool that gives at least 4 GB RAM to each core)
     %   M3ParPoolManager = AppleSiliconParPoolManager('default');
@@ -21,7 +21,10 @@ classdef AppleSiliconParPoolManager < handle
     %  
     %   Restore previous parpool size:
     %   M3ParPoolManager.restoreLastParpoolSize();
-
+    %   
+    %   Info on current Manager: Returns a struct with all properties
+    %   M3ParPoolManager.info
+    %
     % Description:
     %    An object to optimize parpool creation on Apple Silicon machines
     %
@@ -34,7 +37,7 @@ classdef AppleSiliconParPoolManager < handle
         currentParpoolSize = [];
         lastParpoolSize = [];
         parpoolConfig = [];
-        
+        runSilent = false;
         currentRAMperCore;
         usablePhysicalMemoryGB;
         physicalMemoryGB;
@@ -51,7 +54,7 @@ classdef AppleSiliconParPoolManager < handle
     methods
         
         % Constructor
-        function obj = AppleSiliconParPoolManager(parpoolConfig)
+        function obj = AppleSiliconParPoolManager(parpoolConfig, varargin)
 
             if (nargin == 0)
                 obj.parpoolConfig = 'default';
@@ -61,11 +64,17 @@ classdef AppleSiliconParPoolManager < handle
 
             parpoolConfigErrorMessage = 'AppleSiliconParPool() can be initialized either with no arguments, or a single argument which must be either a scalar (>=1), ''default'', ''conservative'', ''extreme''.'; 
 
+            if ~isempty(varargin) && ~isstruct(varargin{1})
+                varargin = ieParamFormat(varargin);
+            end
+
             % Parse input
             p = inputParser;
-            p.addRequired('parpoolConfig', @(x)parpoolConfigValidationFunction(x, parpoolConfigErrorMessage ));
-            p.parse(parpoolConfig);
-            obj.parpoolConfig = p.Results.parpoolConfig;
+            p.addRequired('parpoolconfig', @(x)parpoolConfigValidationFunction(x, parpoolConfigErrorMessage ));
+            p.addParameter('runsilent', false, @islogical);
+            p.parse(parpoolConfig, varargin{:});
+            obj.parpoolConfig = p.Results.parpoolconfig;
+            obj.runSilent = p.Results.runsilent;
 
             obj.setParpoolSize();
 
@@ -89,10 +98,22 @@ classdef AppleSiliconParPoolManager < handle
                 if (~isempty(poolobj))
                     delete(poolobj);
                 end
-                fprintf('Staring new parpool with the previous # of workers (%d)\n', obj.lastParpoolSize);
+                if (~obj.runSilent)
+                    fprintf('Staring new parpool with the previous # of workers (%d)\n', obj.lastParpoolSize);
+                end
                 parpool(obj.lastParpoolSize);
             else
-                fprintf('Did not detect a previously running parpool. Not restoring a previous parpool size.\n')
+                if (~obj.runSilent)
+                    fprintf('Did not detect a previously running parpool. Not restoring a previous parpool size.\n');
+                end
+            end
+        end
+
+        function s = info(obj)
+            props = properties(obj);
+            for iProp = 1:numel(props)
+                fieldname = props{iProp};
+                s.(fieldname) = obj.(fieldname);
             end
         end
 
@@ -137,7 +158,9 @@ classdef AppleSiliconParPoolManager < handle
                     error('Unknown parpoolConfig!')
                 end
             else
-                fprintf('Not an Apple Silicon machine. No change in parpool.\n')
+                if (~obj.runSilent)
+                    fprintf('Not an Apple Silicon machine. No change in parpool.\n');
+                end
             end
         end % setParpoolSize
 
@@ -171,12 +194,16 @@ classdef AppleSiliconParPoolManager < handle
             if (~isempty(poolobj)) && ((poolobj.NumWorkers == desiredNumWorkers))
                 obj.currentParpoolSize = desiredNumWorkers;
                 obj.currentRAMperCore = obj.usablePhysicalMemoryGB / obj.currentParpoolSize;
-                fprintf('Previously established parpool had the desired num of workers. Keeping it as is.\n');
+                if (~obj.runSilent)
+                    fprintf('Previously established parpool had the desired num of workers. Keeping it as is.\n');
+                end
                 return;
             end
 
             if (~isempty(poolobj)) && ((poolobj.NumWorkers ~= desiredNumWorkers))
-                fprintf('Closing old parpool which had %d workers\n', poolobj.NumWorkers);
+                if (~obj.runSilent)
+                    fprintf('Closing old parpool which had %d workers\n', poolobj.NumWorkers);
+                end
                 obj.lastParpoolSize = poolobj.NumWorkers;
                 delete(poolobj);
             else
@@ -184,7 +211,9 @@ classdef AppleSiliconParPoolManager < handle
             end
 
             if (isempty(obj.lastParpoolSize)) || (obj.lastParpoolSize ~= desiredNumWorkers)
-                fprintf('Starting new parpool with %d workers\n', desiredNumWorkers);
+                if (~obj.runSilent)
+                    fprintf('Starting new parpool with %d workers\n', desiredNumWorkers);
+                end
                 parpool(desiredNumWorkers);
                 obj.currentParpoolSize = desiredNumWorkers;
                 obj.currentRAMperCore = obj.usablePhysicalMemoryGB / obj.currentParpoolSize;
