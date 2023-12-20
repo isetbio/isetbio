@@ -32,12 +32,16 @@ classdef AppleSiliconParPoolManager < handle
     %    December 2023  NPC  Wrote it
 
     
+    % Public properties
+    properties
+        runSilent = false;
+    end
+
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
         currentParpoolSize = [];
         lastParpoolSize = [];
         parpoolConfig = [];
-        runSilent = false;
         currentRAMperCore;
         usablePhysicalMemoryGB;
         physicalMemoryGB;
