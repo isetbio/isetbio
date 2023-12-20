@@ -15,6 +15,9 @@ function t_mRGCMosaicDynamicStimulus
     %% Close all figures
     close all;
 
+    % Configure a conservative parpool manager. This gives at least 8 GB RAM/core
+    ASPPManager = AppleSiliconParPoolManager('conservative')
+
     %% Display available mRGCMosaics
     rgcMosaicType = 'ONcenterMidgetRGC';
     mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
@@ -23,7 +26,7 @@ function t_mRGCMosaicDynamicStimulus
     % Choose the x-eccentricity from one of the available mosaics,
     % displayed above
     % (e.g., -16.0 to load the mosaic 'mRGCMosaicEcDegs(-10.0_0.0)_SizeDegs(6.0_3.0)...'
-    horizontalEccDegs = 0; %input('Enter mRGCMosaic''s horizontal eccentricity: ');
+    horizontalEccDegs = 2.5; %input('Enter mRGCMosaic''s horizontal eccentricity: ');
 
     %% Load the precomputed mRGCMosaic
     theMRGCMosaic = MosaicPoolingOptimizer.loadPreComputedMRGCMosaic(horizontalEccDegs);
@@ -55,15 +58,15 @@ function t_mRGCMosaicDynamicStimulus
             'backgroundChromaticity', [0.301 0.301], ...
             'coneContrasts', [1 1 1], ...
             'contrast', 0.5, ...
-            'orientationDegs', 0, ...
+            'orientationDegs', 90, ...
             'spatialFrequencyCPD', 2.0, ...
-            'spatialPhaseIncrementDegs', 30, ...
+            'spatialPhaseIncrementDegs', 45, ...
             'temporalFrequencyHz', 2.0, ...
-            'durationSeconds', 1.0/12, ...
+            'durationSeconds', 0.5, ...
             'temporalEnvelopeTau', 0.5/3, ...
             'pixelSizeDegs', pixelSizeDegs, ...
-            'stimSizeDegs', 10.0, ...
-            'positionDegs', [7 0], ...
+            'stimSizeDegs', 4.0, ...
+            'positionDegs', theMRGCMosaic.eccentricityDegs, ...
             'wavelengthSupport', displayGet(presentationDisplay, 'wave'), ...
             'viewingDistanceMeters', displayGet(presentationDisplay, 'viewing distance') ...
             );
@@ -118,9 +121,7 @@ function t_mRGCMosaicDynamicStimulus
             theStimulusRetinalOISequence, ...
             'opticalImagePositionDegs', driftingSinusoidalStimulusParams.positionDegs);
 
-    %% Save some RAM
-    clear 'theStimulusRetinalOISequence'
-
+   
     %% Compute the noise-free background activation of the input cone mosaic
     theConeMosaicNoiseFreeBackgroundResponse = theMRGCMosaic.inputConeMosaic.compute(...
             theBackgroundRetinalImage, ...
@@ -130,7 +131,12 @@ function t_mRGCMosaicDynamicStimulus
     % This function must be called after the cMosaic.compute() method in
     % order to display the OI at the correct location within the mosaic
     [~,maxModulationFrame] = max(theStimulusTemporalRamp(:));
-    coVisualizeRetinalStimulusConeAndMRGCmosaic(1, theMRGCMosaic, theListOfRetinalImages{maxModulationFrame});
+    figNo = 1;
+    hFig = coVisualizeRetinalStimulusConeAndMRGCmosaic(figNo, theMRGCMosaic, theStimulusRetinalOISequence.frameAtIndex(maxModulationFrame));
+
+    % Save figure
+    pdfFileName = fullfile(isetbioRootPath, 'local', 'mRGCmosaic_ConeMosaic_OpticalImage_Combo.pdf');
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
 
     %% Save some RAM
     clear 'theStimulusRetinalOISequence'
@@ -139,7 +145,7 @@ function t_mRGCMosaicDynamicStimulus
     excitationsToModulations = @(e) (bsxfun(@times, (bsxfun(@minus, e, theConeMosaicNoiseFreeBackgroundResponse)), 1./theConeMosaicNoiseFreeBackgroundResponse));
 
     %% Number of noisy response instances to compute
-    noisyInstancesNum = 128;
+    noisyInstancesNum = 4;
 
     %% Set the mRGCMosaic noise flag
     theMRGCMosaic.noiseFlag = 'random';
@@ -159,15 +165,22 @@ function t_mRGCMosaicDynamicStimulus
     %% Find indices of RGCs along the y-stimulus position
     targetYdegs = driftingSinusoidalStimulusParams.positionDegs(2);
     minConeSeparation = 0;
-    minRGCSeparation = 0.1;
+    minRGCSeparation = 0.05;
     [~, mRGCIndices] = coneAndMRGCindicesAlongDesiredYposition(...
         theMRGCMosaic, targetYdegs, ...
         minConeSeparation, minRGCSeparation);
 
-    exportVideo = true;
-    visualizeDynamicMRGCMosaicResponse(theMRGCMosaic, mRGCIndices, ...
+    % Export the video
+    exportVideo = false;
+    videofFileName = fullfile(isetbioRootPath, 'local', 'mRGCmosaicDynamicActivationVideo');
+
+    figNo =  figNo + 1;
+    visualizeDynamicMRGCMosaicResponse(figNo, theMRGCMosaic, mRGCIndices, ...
         mRGCMosaicNoiseFreeSpatiotemporalResponse, ...
         mRGCMosaicNoisySpatiotemporalResponseInstances,  ...
         mRGCMosaicResponseTemporalSupportSeconds, ...
-        exportVideo);
+        exportVideo, videofFileName);
+
+    % Restore previous parpool config
+    ASPPManager.restoreLastParpoolSize();
 end

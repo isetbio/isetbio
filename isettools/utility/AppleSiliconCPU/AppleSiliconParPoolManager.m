@@ -3,24 +3,27 @@ classdef AppleSiliconParPoolManager < handle
     % Create an APpleSiliconParPoolManager
     %
     % Syntax:
-    %   (Default ParPool manager: will configure a parpool that gives at least 4 GB RAM to each core)
+    %   (Default ParPool manager: Configure a parpool that gives at least 4 GB RAM to each core)
     %   M3ParPoolManager = AppleSiliconParPoolManager;
     %   
-    %   (Default ParPool manager: will configure a parpool that gives at least 4 GB RAM to each core)
+    %   (Default ParPool manager: Configure a parpool that gives at least 4 GB RAM to each core)
     %   M3ParPoolManager = AppleSiliconParPoolManager('default');
     %  
-    %   (Conservative ParPool manager: will configure a parpool that gives at least 8 GB RAM to each core)
+    %   (Conservative ParPool manager: Configure a parpool that gives at least 8 GB RAM to each core)
     %   M3ParPoolManager = AppleSiliconParPoolManager('consevative');
     %  
-    %   (Extreme ParPool manager: will configure a parpool with the max # of cores, independent of system RAM)
+    %   (Extreme ParPool manager: Configure a parpool with the max # of cores, independent of system RAM)
     %   M3ParPoolManager = AppleSiliconParPoolManager('extreme');
     % 
-    %   (Custom ParPool manager: will configure a parpool with the desired # of cores, independent of system RAM)
+    %   (Custom ParPool manager: Configure a parpool with the desired # of cores, independent of system RAM)
     %   nCores = some number;
     %   M3ParPoolManager = AppleSiliconParPoolManager(nCores);
     %  
+    %   Restore previous parpool size:
+    %   M3ParPoolManager.restoreLastParpoolSize();
+
     % Description:
-    %    An object to handle parpool creation on Apple Silicon machines
+    %    An object to optimize parpool creation on Apple Silicon machines
     %
     % History:
     %    December 2023  NPC  Wrote it
