@@ -121,11 +121,16 @@ classdef AppleSiliconParPoolManager < handle
                             obj.minRAMperCore = obj.usablePhysicalMemoryGB/obj.coresNum;
 
                         otherwise
-                            obj.parpoolConfig
-                            error('Unknown parpoolConfig!')
+                            fprintf('\n\n----> Valid configs are either a scalar between %d and %d, or {''default'', ''conservative'', ''extreme''}. <----\n\n', 1, obj.coresNum);
+                            if (ischar(obj.parpoolConfig))
+                                 error('''%s'' is an invalid parpoolConfig!', obj.parpoolConfig);
+                            else
+                                error('%g is an invalid parpoolConfig!', obj.parpoolConfig);
+                            end
+
                     end % switch
 
-                    numWorkers = max([1 floor(obj.usablePhysicalMemoryGB / obj.minRAMperCore)]);
+                    numWorkers = min([obj.coresNum , max([1 floor(obj.usablePhysicalMemoryGB / obj.minRAMperCore)])]);
                     obj.restartParpool(numWorkers);
                 else
                     obj.parpoolConfig
