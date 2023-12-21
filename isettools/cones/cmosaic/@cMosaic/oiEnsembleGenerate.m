@@ -170,7 +170,7 @@ switch (zernikeDataBase)
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
 
-            if (targetEcc(2) ~= 0)
+            if (abs(targetEcc(2)) > 0.1)
                 fprintf(2,'Artal optics not available off the horizontal meridian. Computing for vEcc = 0\n');
                 targetEcc(2) = 0;
             end
