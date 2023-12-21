@@ -1,5 +1,11 @@
 function t_mRGCMosaicCheckerBoardStimulus
     
+    %% Close all figures
+    close all;
+
+    % Configure a conservative parpool manager. This gives at least 8 GB RAM/core
+    ASPPManager = AppleSiliconParPoolManager('conservative');
+
     % Control saving of figures.  We don't want tutorials
     % saving things into the isetbio source tree.
     saveFigures = true;
