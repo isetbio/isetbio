@@ -2,16 +2,8 @@ function t_mRGCMosaicCheckerBoardStimulus
     
     % Control saving of figures.  We don't want tutorials
     % saving things into the isetbio source tree.
-    saveFigures = false;
-    figureDir = fullfile(isetbioRootPath,'local',mfilename);
-    if (saveFigures)
-        if (~exist(figureDir,'dir'))
-            mkdir(figureDir);
-        end
-        fprintf('Will save figures into %s\n',figureDir)
-    else
-        fprintf('Not saving figures. Set saveFigures to true in the source to save\n');
-    end
+    saveFigures = true;
+    figureDir = figExporter.figureDir(mfilename, saveFigures);
 
     % Specify the precomputed mosaic's eccentricity
     horizontalEccDegs = 7;
