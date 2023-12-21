@@ -17,6 +17,14 @@ function t_mRGCMosaicBasic
     %% Close all figures
     close all;
 
+    % Configure a conservative parpool manager. This gives at least 8 GB RAM/core
+    ASPPManager = AppleSiliconParPoolManager('conservative');
+
+    % Control saving of figures.  We don't want tutorials
+    % saving things into the isetbio source tree.
+    saveFigures = true;
+    figureDir = figExporter.figureDir(mfilename, saveFigures);
+
     %% Display available mRGCMosaics
     rgcMosaicType = 'ONcenterMidgetRGC';
     mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
@@ -134,9 +142,16 @@ function t_mRGCMosaicBasic
         minConeSeparation, minRGCSeparation);
 
     %% Visualize response components
-    generatePDFs = ~true;
-    visualizeMRGMosaicResponseComponents(theMRGCMosaic, mRGCIndices, ...
+    figHandlesAndFileNames = visualizeMRGMosaicResponseComponents(theMRGCMosaic, mRGCIndices, ...
         noiseFreeResponse, ...
         noisyResponseInstancesConeNoiseOnly, ...
-        noisyResponseInstancesIntrinsicMRGCnoiseOnly, generatePDFs);
+        noisyResponseInstancesIntrinsicMRGCnoiseOnly);
+
+    if (saveFigures)
+        for iFig = 1:numel(figHandlesAndFileNames)
+            s = figHandlesAndFileNames{iFig};
+            NicePlot.exportFigToPDF(fullfile(figureDir,s.pdfFileName), s.hFig,300);
+        end
+    end
+
 end
