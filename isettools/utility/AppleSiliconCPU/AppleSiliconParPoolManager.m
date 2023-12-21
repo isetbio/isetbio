@@ -127,8 +127,12 @@ classdef AppleSiliconParPoolManager < handle
     methods (Access=private)
 
         function setParpoolSize(obj)
-            obj.cpuInfo();
+            determinedSystemResourcesSuccessfully = obj.cpuInfo();
             
+            if (~determinedSystemResourcesSuccessfully)
+                fprintf('Could not determine system resources. No change in parpool.\n');
+            end
+
             if (strcmp(obj.architecture, 'arm'))
                 if (isscalar(obj.parpoolConfig))
                     numWorkers = obj.parpoolConfig;
@@ -168,22 +172,57 @@ classdef AppleSiliconParPoolManager < handle
             end
         end % setParpoolSize
 
-        function cpuInfo(obj)
+        function determinedSystemResourcesSuccessfully = cpuInfo(obj)
+
+            determinedSystemResourcesSuccessfully = true;
+
+            % Determine system architecture
             [~, systemArchitecture] = system('uname -p');
+            if (isempty(systemArchitecture))
+                determinedSystemResourcesSuccessfully = false;
+                return;
+            end
             obj.architecture = systemArchitecture(1:end-1);
     
+
+            % Determine # of cores
             [~, numCPUs] = system('sysctl -n hw.ncpu');
+            if (isempty(numCPUs))
+                determinedSystemResourcesSuccessfully = false;
+                return;
+            end
             obj.coresNum = str2double(numCPUs(1:end-1));
             
             [~, physicalMemory] = system('sysctl -a -h | grep memsize:');
-            physicalMemory = physicalMemory(2:end-1);
-            physicalMemory = strrep(physicalMemory, 'w.memsize:', '');
-            obj.physicalMemoryGB = str2double(physicalMemory)/1e9;
+            if (isempty(physicalMemory))
+                obj.physicalMemoryGB = [];
+            else
+                physicalMemory = physicalMemory(2:end-1);
+                physicalMemory = strrep(physicalMemory, 'w.memsize:', '');
+                obj.physicalMemoryGB = str2double(physicalMemory)/1e9;
+            end
 
             [~, usablePhysicalMemory] = system('sysctl -a -h | grep memsize_usable:');
-            usablePhysicalMemory = usablePhysicalMemory(2:end-1);
-            usablePhysicalMemory = strrep(usablePhysicalMemory, 'w.memsize_usable:', '');
-            obj.usablePhysicalMemoryGB = str2double(usablePhysicalMemory)/1e9;
+            if (isempty(usablePhysicalMemory))
+                obj.usablePhysicalMemoryGB = [];
+            else
+                usablePhysicalMemory = usablePhysicalMemory(2:end-1);
+                usablePhysicalMemory = strrep(usablePhysicalMemory, 'w.memsize_usable:', '');
+                obj.usablePhysicalMemoryGB = str2double(usablePhysicalMemory)/1e9;
+            end
+
+            if (isempty(obj.usablePhysicalMemoryGB))
+                obj.usablePhysicalMemoryGB = obj.physicalMemoryGB;
+            end
+
+            if (isempty(obj.physicalMemoryGB))
+                obj.physicalMemoryGB = obj.usablePhysicalMemoryGB;
+            end
+
+            if (isempty(obj.usablePhysicalMemoryGB)) && (isempty(obj.physicalMemoryGB))
+                determinedSystemResourcesSuccessfully = false;
+            end
+
         end
 
         function restartParpool(obj, desiredNumWorkers)
