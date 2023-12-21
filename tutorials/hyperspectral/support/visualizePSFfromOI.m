@@ -15,18 +15,20 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
     p.addParameter('visualizedWavelengths', [], @isnumeric);
     p.addParameter('rows', [], @isnumeric);
     p.addParameter('cols', [], @isnumeric);
+    p.addParameter('spatialSupportSamples', 301, @isscalar);
     p.addParameter('colormapToUse', 1-gray(1024), @isnumeric);
     p.addParameter('labelLastPSF', true, @islogical);
     p.addParameter('displayWavelengthInTitle', true, @islogical);
     p.addParameter('displayPSFCenterOfMass', false, @islogical);
-    p.addParameter('psfRangeMicrons',5,@isnumeric);
+    p.addParameter('psfRangeMicrons',20,@isnumeric);
     p.parse(varargin{:});
     
     visualizedWavelengths = p.Results.visualizedWavelengths;
     colormapToUse = p.Results.colormapToUse;
     labelLastPSF = p.Results.labelLastPSF;
     displayWavelengthInTitle = p.Results.displayWavelengthInTitle;
-    
+    spatialSupportSamples = p.Results.spatialSupportSamples;
+
     rows = p.Results.rows;
     cols = p.Results.cols;
     if (isempty(rows) && isempty(cols))
@@ -45,14 +47,10 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
         visualizedWavelengths = waves;
     end
     
-    psfSupportMicrons = opticsGet(optics,'psf support','um');
-    xGridMinutes = 60*psfSupportMicrons{1}/micronsPerDegree;
-    yGridMinutes = 60*psfSupportMicrons{2}/micronsPerDegree;
-    xSupportMicrons = xGridMinutes(1,:);
-    ySupportMicrons = yGridMinutes(:,1);
+    
 
     hFig = figure(10); clf;
-    set(hFig, 'Position', [10 10 940 940], 'Color', [0 0 0]);
+    set(hFig, 'Position', [10 10 1700 940], 'Color', [1 1 1]);
     
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -67,9 +65,7 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
     
     
     psfRange = p.Results.psfRangeMicrons;
-    xx = find(abs(xSupportMicrons) <= psfRange);
-    yy = find(abs(ySupportMicrons) <= psfRange);
-
+    
     for waveIndex = 1:numel(visualizedWavelengths)
         
         [~,idx] = min(abs(visualizedWavelengths(waveIndex)-waves));
@@ -78,7 +74,20 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
         row = floor((waveIndex-1)/cols)+1;
         col = mod(waveIndex-1, cols)+1;
         
-        psf = opticsGet(optics,'psf data',targetWavelength );
+        psfData = opticsGet(optics,'psf data',targetWavelength, 'um');
+        psf = psfData.psf;
+        spatialSupport = psfData.xy;
+        spatialSupportXgrid = spatialSupport(:,:,1);
+        spatialSupportYgrid = spatialSupport(:,:,2);
+        xSupportMicrons = spatialSupportXgrid(1,:);
+        ySupportMicrons = spatialSupportYgrid(:,1);
+        xx = find(abs(xSupportMicrons) <= psfRange);
+        yy = find(abs(ySupportMicrons) <= psfRange);
+
+
+        xGridMinutes = 60*xSupportMicrons/micronsPerDegree;
+        yGridMinutes = 60*ySupportMicrons/micronsPerDegree;
+
         subplot('Position', subplotPosVectors(row,col).v);
         imagesc(xSupportMicrons(xx), ySupportMicrons(yy), psf(yy,xx)/max(psf(:)));
         hold on;
@@ -116,7 +125,7 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
             xT = -psfRange/1.5;
             yT = psfRange*0.93;
             t = text(xT,yT,sprintf('\\lambda = %2.0f nm', targetWavelength)); 
-            set(t, 'Color', [1 1 1], 'FontSize', 40);
+            set(t, 'Color', [0 0 1], 'FontSize', 16);
         end
     end
     
