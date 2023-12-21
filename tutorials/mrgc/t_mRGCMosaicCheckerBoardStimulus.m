@@ -9,6 +9,8 @@ function t_mRGCMosaicCheckerBoardStimulus
             mkdir(figureDir);
         end
         fprintf('Will save figures into %s\n',figureDir)
+    else
+        fprintf('Not saving figures. Set saveFigures to true in the source to save\n');
     end
 
     % Specify the precomputed mosaic's eccentricity
