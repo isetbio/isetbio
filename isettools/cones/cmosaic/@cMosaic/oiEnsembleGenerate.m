@@ -249,7 +249,7 @@ switch (zernikeDataBase)
             %fprintf('Generating %s optics for eccentricity: %2.1f,%2.1f degs (um/deg):%2.1f\n', ...
             %    zernikeDataBase, oiSamplingGridDegs(oiIndex,1), oiSamplingGridDegs(oiIndex,2), obj.micronsPerDegree);
             targetEcc = oiSamplingGridDegs(oiIndex,:);
-            if (targetEcc(1) ~= 0 || targetEcc(2) ~= 0)
+            if (abs(targetEcc(1)) > 0.1 || abs(targetEcc(2)) > 0.1)
                 fprintf(2,'Thibos optics not available off the fovea. Computing for hEcc = 0 and vEcc = 0\n');
             end
 
