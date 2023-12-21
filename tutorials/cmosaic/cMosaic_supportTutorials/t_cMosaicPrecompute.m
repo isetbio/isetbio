@@ -38,7 +38,11 @@ cMosaic(...
     'visualizeMeshConvergence', ~true ...          % visualize the convergence
     );
 
-% Extract and export final cone positions for use in all computations.
+% Extract and export cone positions for use in all computations.
+% The retinalattice.savePositionsAtIteration() method loads the mosaic
+% positions at each step during the iterative optimization phase along with 
+% a measurement of quality of the lattice at each stop. Then it queries the user
+% to select the iteration at which to save the lattice positions. 
 % We don't really want to do this write just because someone decided
 % to run the tutorial, so set write to false by default.
 writeMosaics = false;
