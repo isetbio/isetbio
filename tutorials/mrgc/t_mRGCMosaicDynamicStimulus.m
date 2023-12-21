@@ -16,8 +16,13 @@ function t_mRGCMosaicDynamicStimulus
     close all;
 
     % Configure a conservative parpool manager. This gives at least 8 GB RAM/core
-    ASPPManager = AppleSiliconParPoolManager('conservative')
+    ASPPManager = AppleSiliconParPoolManager('conservative');
 
+    % Control saving of figures.  We don't want tutorials
+    % saving things into the isetbio source tree.
+    saveFigures = true;
+    figureDir = figExporter.figureDir(mfilename, saveFigures);
+    
     %% Display available mRGCMosaics
     rgcMosaicType = 'ONcenterMidgetRGC';
     mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
@@ -135,7 +140,7 @@ function t_mRGCMosaicDynamicStimulus
     hFig = coVisualizeRetinalStimulusConeAndMRGCmosaic(figNo, theMRGCMosaic, theStimulusRetinalOISequence.frameAtIndex(maxModulationFrame));
 
     % Save figure
-    pdfFileName = fullfile(isetbioRootPath, 'local', 'mRGCmosaic_ConeMosaic_OpticalImage_Combo.pdf');
+    pdfFileName = fullfile(figureDir, 'mRGCmosaic_ConeMosaic_OpticalImage_Combo.pdf');
     NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
 
     %% Save some RAM
