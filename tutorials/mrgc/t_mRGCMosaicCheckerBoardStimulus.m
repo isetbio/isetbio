@@ -4,7 +4,13 @@ function t_mRGCMosaicCheckerBoardStimulus
     close all;
 
     % Configure a conservative parpool manager. This gives at least 8 GB RAM/core
-    ASPPManager = AppleSiliconParPoolManager('conservative');
+    % You might need to set this to true if you are hitting a strange
+    % parpool crash.  Setting it to true, however, invokes a new parpool
+    % open and restore which slows things down in most cases.
+    fancyParpoolControl = false;
+    if (fancyParpoolControl)
+        ASPPManager = AppleSiliconParPoolManager('conservative');
+    end
 
     % Control saving of figures.  We don't want tutorials
     % saving things into the isetbio source tree.
@@ -101,6 +107,11 @@ function t_mRGCMosaicCheckerBoardStimulus
     visualizeMRGCMosaicActivation(5, theMRGCMosaic, theMRGCMosaicResponseIntegratedConeApertureBasedGain , ...
         theROI, targetYdegs, theVisualizedMRGCXcoords, theVisualizedMRGCResponsesIntegratedConeApertureBasedGain, ...
         visualizedResponseGain, numberOfChecks, 'integratedConeAperturesBasedGain', saveFigures, figureDir);
+
+    % Restore previous parpool config
+    if (fancyParpoolControl)
+        ASPPManager.restoreLastParpoolSize();
+    end
 end
 
 % HELPER FUNCTIONS
