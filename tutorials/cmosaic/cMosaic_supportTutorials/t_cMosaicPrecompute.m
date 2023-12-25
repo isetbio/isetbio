@@ -3,7 +3,10 @@
 % Description:
 %    Shows how to precompute a left/right eye pair of @cMosaic objects. These large
 %    mosaics are used to generate smaller mosaics at any eccentricity via
-%    cropping.
+%    cropping. More specifically, this stores positions and other related
+%    information so that the actual mosaic object at a patch can be
+%    computed quickly.  The data are stored in:
+%        isetbio/isettools/ganglioncells/data/lattices
 %
 %    This takes a very long time to run, and I'm not sure we want to write
 %    out mosaics by default.  The UTTBSkip comment below prevents this from
@@ -15,6 +18,15 @@
 % History:
 %    03/23/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 
+% Configure a conservative parpool manager. This gives at least 8 GB RAM/core
+% when the flag is true, and minimizes the chance of a crash because
+% of memory fill up.
+fancyParpoolControl = true;
+if (fancyParpoolControl)
+    ASPPManager = AppleSiliconParPoolManager('conservative');
+end
+
+% Parameters.  
 mosaicFOV = 45*[1 1];
 maxIterations = 500;
 
@@ -51,4 +63,9 @@ if (writeMosaics)
     neuronType = 'cones';
     retinalattice.savePositionsAtIteration(fovDegs, neuronType, 'left eye');
     retinalattice.savePositionsAtIteration(fovDegs, neuronType, 'right eye');
+end
+
+% Restore previous parpool config
+if (fancyParpoolControl)
+    ASPPManager.restoreLastParpoolSize();
 end
