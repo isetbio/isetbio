@@ -30,7 +30,7 @@ function [resourceFileName, resourcesDirectory, pdfsDirectory] = resourceFileNam
     else
         resourcesDirectory = fullfile(...
                 resourcesRootDirectory, ...
-                'intermediateFiles');
+                'intermediateFiles/old');
     end
 
 

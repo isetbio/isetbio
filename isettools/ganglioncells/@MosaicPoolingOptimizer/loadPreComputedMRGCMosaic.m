@@ -5,7 +5,8 @@ function theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEccDegs)
     mosaicParams = MosaicPoolingOptimizer.getMosaicParams(horizontalEccDegs);
 
     % 2. optics params
-    opticsParams = MosaicPoolingOptimizer.getOpticsParams(mosaicParams);
+    %opticsParams = MosaicPoolingOptimizer.getOpticsParams(mosaicParams);
+    opticsParams = mRGCMosaic.defaultOpticsParams;
 
     % 3. retinal RF pooling params
     retinalRFmodelParams = MosaicPoolingOptimizer.getSurroundParams(mosaicParams, opticsParams);
