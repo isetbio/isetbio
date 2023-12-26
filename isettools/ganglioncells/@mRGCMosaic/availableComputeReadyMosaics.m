@@ -3,6 +3,13 @@ function availableComputeReadyMosaics(rgcMosaicType)
     assert(ismember(rgcMosaicType, validMRGCMosaicTypes), sprintf('Unknown mRGCmosaic type: ''%s''.', rgcMosaicType));
 
     p = getpref('isetbio');
+    if (isempty(p))
+        error('Did not find ''isetbio'' preferences');
+    end
+    assert(~isempty(p), 'Did not find ''isetbio'' preferences');
+    assert(isfield(p, 'rgcResources'), 'Did not find ''rgcResources'' field in isetbio prefs\n');
+    assert(isfield(p.rgcResources, 'method'), 'Did not find ''method'' field in isetbio prefs.rgcResources\n');
+
     switch (p.rgcResources.method)
        case 'localFile'
            allRGCmosaicsRootDir = p.rgcResources.URLpath;
@@ -11,8 +18,16 @@ function availableComputeReadyMosaics(rgcMosaicType)
     end % switch
     
     midgetRGCmosaicsRootDir = fullfile(allRGCmosaicsRootDir, sprintf('%smosaics', rgcMosaicType),'computeReadyMosaics');
-    filesFound = dir(midgetRGCmosaicsRootDir);
+    if (~isfolder(midgetRGCmosaicsRootDir))
+        fprintf('\n\nThe %s directory with all compute-ready RGC mosaics was not found.\n', midgetRGCmosaicsRootDir);
+        if (strfind(midgetRGCmosaicsRootDir, 'Dropbox'))
+            fprintf('This directory exists at https://www.dropbox.com/scl/fo/vam7x2b5uwpavh4qj9dm3/h?rlkey=cm9ivsvrphdu67bn77swlb88v&dl=0\n\n');
+        end
+        error('Unable to find directory: ''%s''.', midgetRGCmosaicsRootDir);
+    end
 
+
+    filesFound = dir(midgetRGCmosaicsRootDir);
     mosaicsAvailableNum = 0;
     theFileDescriptors = {};
     theFileInfos = {};
