@@ -82,7 +82,7 @@ function t_generateConeSpecificStimuli
     emittedRadianceImage = sceneGet(theScene, 'energy');
     
     %% Load the 2-deg Stockman cone fundamentals on a wavelength support matching the display
-    coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayGet(presentationDisplay, 'wave'));
+    coneFundamentals = ieReadSpectra(fullfile(isetRootPath,'data','human','stockman'), displayGet(presentationDisplay, 'wave'));
     
     %% Compute the LMS cone contrasts of the emitted radiance image
     test.achievedLMScontrastImage = computeLMScontrastImage(emittedRadianceImage, coneFundamentals, []);

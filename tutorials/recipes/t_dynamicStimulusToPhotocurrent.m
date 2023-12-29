@@ -1178,7 +1178,7 @@ function theOI = opticalImageConstruct(oiParams)
     theOI = oiSet(theOI, 'h fov', oiParams.fieldOfViewDegs);
 
     % Set the pupil diamter
-    focalLength = oiGet(theOI, 'distance');
+    focalLength = oiGet(theOI,'optics focal length');
     desiredFNumber = focalLength / (oiParams.pupilDiamMm / 1000);
     theOI  = oiSet(theOI , 'optics fnumber', desiredFNumber);
     pupilDiamMmCheck = 1000 * oiGet(theOI, 'optics aperture diameter');
