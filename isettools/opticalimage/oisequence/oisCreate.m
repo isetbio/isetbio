@@ -93,7 +93,7 @@ function [ois, scene] = ...
     % Impulse (temporal)
     clear iparams
     sparams.fov = 1;
-    sparams.luminance = 100;
+    sparams.meanluminance = 100;
     stimWeights = zeros(1, 50);
     stimWeights(2:4) = 1;
     impulse = oisCreate('impulse', 'add', stimWeights, ...
@@ -198,7 +198,7 @@ switch oisType
 
         % Create vernier stimulus and background
         for ii = 1:2
-            scene{ii} = sceneCreate('vernier', 'display', tparams(ii));
+            scene{ii} = sceneVernier('vernier', 'display', tparams(ii));
             scene{ii} = sceneSet(scene{ii}, 'name', tparams(ii).name);
         end
 
