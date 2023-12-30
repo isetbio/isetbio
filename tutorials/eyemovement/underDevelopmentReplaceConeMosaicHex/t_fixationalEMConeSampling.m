@@ -33,7 +33,7 @@ integrationTime = 1 / 1000;
 resamplingFactors = [1 3 6 13];
 
 % Stimulus params for a pulse stimulus
-sceneParams = struct('fov', fovDegs, 'luminance', 100);
+sceneParams = struct('fov', fovDegs, 'meanluminance', 100);
 stimRefreshInterval = 10 / 1000;
 stimWeights = zeros(1, 50);
 stimWeights(4) = 1;

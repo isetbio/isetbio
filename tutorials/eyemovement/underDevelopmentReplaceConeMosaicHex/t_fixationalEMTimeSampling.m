@@ -39,7 +39,7 @@ function t_fixationalEMTimeSampling
     integrationTimes = [1.0 2.5 4.0 5.0 10]/1000;
     
     % Stimulus params for a pulse stimulus
-    sceneParams = struct('fov', fovDegs, 'luminance', 100);
+    sceneParams = struct('fov', fovDegs, 'meanluminance', 100);
     stimRefreshInterval = 50 / 1000;
     stimWeights = zeros(1,50);
     stimWeights(4) = 1;

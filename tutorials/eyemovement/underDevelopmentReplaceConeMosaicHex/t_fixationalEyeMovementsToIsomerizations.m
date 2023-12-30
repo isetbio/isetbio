@@ -74,7 +74,7 @@ useParfor = p.Results.useparfor;
 % refresh interval is 20 milliseconds, and the temporal modulation has a
 % pulse envelope with an amplitude of 1.0 between frames 5 and 20 (i.e.,
 % 100-400 msecs) and 0.1 for the remaining time.
-sceneParams = struct('fov', 0.05, 'luminance', 100);
+sceneParams = struct('fov', 0.05, 'meanluminance', 100);
 stimDurationSeconds = 0.5;
 stimRefreshInterval = 20 / 1000;
 stimFrames = round(stimDurationSeconds / stimRefreshInterval);

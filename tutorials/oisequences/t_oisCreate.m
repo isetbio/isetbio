@@ -156,7 +156,7 @@ vernier.visualize('movie illuminance');
 clear iparams
 
 sparams.fov = 1;
-sparams.luminance = 100;
+sparams.meanluminance = 100;
 stimWeights = zeros(1, 50);
 stimWeights(20:23) = 1;
 
