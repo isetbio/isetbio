@@ -170,7 +170,8 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
                 [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames] = doRecursion(...
                     fullFieldName1, field1, fullFieldName2, field2, ...
                     tolerance, customTolerances, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames, ...
-                    result, oldResultOperations, topLevelStruct2Name, graphMismatchedData);
+                    result, oldResultOperations, topLevelStruct2Name, graphMismatchedData, ...
+                    failOnMissingFields, verbosityLevel);
 
             elseif ((isstruct(field1)) && (~isstruct(field2))) || ((isstruct(field2)) && (~isstruct(field1)))
                 error('One is struct the other one is not.');
@@ -193,7 +194,8 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
                         [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames] = doRecursion(...
                             sprintf('%s{%d}',fullFieldName1, cellIndex), cell1, sprintf('%s{%d}',fullFieldName2, cellIndex), cell2, ...
                             tolerance, customTolerances, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames, ...
-                            result, oldResultOperations, topLevelStruct2Name, graphMismatchedData);
+                            result, oldResultOperations, topLevelStruct2Name, graphMismatchedData, ...
+                            failOnMissingFields, verbosityLevel);
 
                     elseif (isnumeric(cell1)) && (isnumeric(cell2))
                         try
@@ -298,7 +300,7 @@ end
 
 
 function assertCellsHaveMatchingLength(cellArray1Name, cellArray1, cellArray2Name, cellArray2)
-    if (isempty(cellArray1)) && (isempty(cellArray1))
+    if (isempty(cellArray1)) && (isempty(cellArray2))
         ;
     elseif ((isempty(cellArray1)) && (~isempty(cellArray2))) || ((isempty(cellArray2)) && (~isempty(cellArray1)))
         error('''%s'' is empty whereas ''%s'' is not. Will not compare further.', cellArray1Name, cellArray2Name);
