@@ -17,6 +17,8 @@ function result = RecursivelyCompareStructs(struct1Name, struct1, struct2Name, s
 % 02/07/17  NPC  Wrote it.
 % 10/05/17  NPC  If a field is not found in one struct do not throw an
 %                error. Print a message in red and skip to the next field.
+% 12/31/23  NPC  Buglet fixes
+
 %% Parse input
 p = inputParser;
 p.addParameter('defaultTolerance', 0, @isnumeric);
