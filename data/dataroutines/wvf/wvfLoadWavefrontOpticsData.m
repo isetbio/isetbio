@@ -580,6 +580,6 @@ else % No averaging, just use single subject, add otf and change name
 end
 
 % Create OI from our wvf
-oi = wvf2oi(wvf,'model','human');
+oi = wvf2oi(wvf,'humanlens',true);
 
 end
