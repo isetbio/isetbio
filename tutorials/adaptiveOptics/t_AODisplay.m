@@ -243,7 +243,7 @@ wvfP = wvfSet(wvfP,'zcoeffs', defocusAmount, 'defocus');
 wvfP = wvfCompute(wvfP,'human lca',~defeatLCA);
 
 % Generate optical image object from the wavefront object
-theOI = wvf2oi(wvfP,'model','human');
+theOI = wvf2oi(wvfP,'humanlens',true);
 
 % Set the fNumber to correspond to the pupil size
 focalLengthMM = oiGet(theOI,'focal length','mm');

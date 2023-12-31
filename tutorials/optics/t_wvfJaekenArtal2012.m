@@ -59,7 +59,7 @@ whichGroup = 'emmetropes';
     'jIndex', zIndices, 'whichEye', whichEye, ...
     'eccentricity', eccen, 'whichGroup', whichGroup, 'verbose', false);
 
-% oi = wvf2oi(wvf,'model','human');
+% oi = wvf2oi(wvf,'humanlens',true);
 
 %{
     % Faster ISETBio way to get the plots

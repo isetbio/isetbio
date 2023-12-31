@@ -52,7 +52,7 @@ for sFactor = [1, 2, 5]
     wvfPlot(wvf,'psf','unit','um','wave',550,'plotrange',20);
     xlim = get(gca,'xlim');
     ylim = get(gca,'ylim');
-    oi = wvf2oi(wvf,'model','wvfhuman');
+    oi = wvf2oi(wvf,'humanlens',true);
     oi.optics.lens.density = 0;
     oi = oiCompute(oi,scene,'pad value','mean');
     oi = oiSet(oi,'name',sprintf('Watson x %d',sFactor));
