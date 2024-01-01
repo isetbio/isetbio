@@ -82,9 +82,16 @@ function t_mRGCMosaicBasic
     theMRGCMosaic.inputConeMosaic.noiseFlag = 'none';
     
     %% Compute the noise-free background activation of the input cone mosaic
+    %
+    % Setting 'lowOpticalImageResolutionWarning' to false supresses a
+    % warning that the oi spatial resolution is too low to model cone
+    % aperture blur. This would go away if the oi is set to have a higher 
+    % spatial resolution, but we use a lower resolution here to speed this
+    % tutorial up.
     theConeMosaicBackgroundNoiseFreeActivation = theMRGCMosaic.inputConeMosaic.compute(...
             theBackgroundRetinalImage, ...
-            'opticalImagePositionDegs', sinusoidalStimulusParams.positionDegs);
+            'opticalImagePositionDegs', sinusoidalStimulusParams.positionDegs, ...
+            'lowOpticalImageResolutionWarning',false);
 
     %% Set the input cone mosaic noise flag to random to generate noisy response instances
     theMRGCMosaic.inputConeMosaic.noiseFlag = 'random';
@@ -98,7 +105,8 @@ function t_mRGCMosaicBasic
      theConeMosaicResponseTemporalSupportSeconds] = theMRGCMosaic.inputConeMosaic.compute(...
             theStimulusRetinalImage, ...
             'opticalImagePositionDegs', sinusoidalStimulusParams.positionDegs, ...
-            'nTrials', noisyInstancesNum);
+            'nTrials', noisyInstancesNum, ...
+            'lowOpticalImageResolutionWarning',false);
 
     %% Visualize the spatial relationship between stimulus and MRGCMmosaic
     % This function must be called after the cMosaic.compute() method in
