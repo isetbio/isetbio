@@ -252,22 +252,22 @@ classdef regionOfInterest < handle
             fprintf('\n@regionOfInterest: A class to manage a region of interest.');
             fprintf('\nUsage patterns:');
             
-            fprintf(2,'\n\n0. Print some documentation:');
+            fprintf('\n\n0. Print some documentation:');
             fprintf('\n\t regionOfInterest(''help'')');
             
-            fprintf(2,'\n\n1. Generate the default ROI and visualize it:');
+            fprintf('\n\n1. Generate the default ROI and visualize it:');
             fprintf('\n\t d = regionOfInterest(); d.visualize();');
             
-            fprintf(2,'\n\n2. Generate default ROI with some modifications and visualize it:');
+            fprintf('\n\n2. Generate default ROI with some modifications and visualize it:');
             fprintf('\n\t d = regionOfInterest(''center'', [3 5], ''width'', 3, ''rotation'', 30); d.visualize();');
             
-            fprintf(2,'\n\n3. Alter some params of an existing ROI and visualize it:');
+            fprintf('\n\n3. Alter some params of an existing ROI and visualize it:');
             fprintf('\n\t d.set(''center'', [-3 -5], ''height'', 5); d.visualize();');
             
-            fprintf(2,'\n\n4. Generate the a customlineROI andvisualize it:');
+            fprintf('\n\n4. Generate the a customlineROI andvisualize it:');
             fprintf('\n\t d = regionOfInterest(''shape'', ''line'', ''from'', [-2.4 1.3], ''to'', [3 -2]); d.visualize();');
             
-            fprintf(2,'\n\n5. Generate a completely customizable ellipse ROI and visualize it:');
+            fprintf('\n\n5. Generate a completely customizable ellipse ROI and visualize it:');
             fprintf('\n\t d.set(''geometryStruct'', struct(...');
             fprintf('\n\t\t ''units'', ''degs'', ...');
             fprintf('\n\t\t ''shape'', ''ellipse'', ...');
@@ -277,14 +277,14 @@ classdef regionOfInterest < handle
             fprintf('\n\t\t ''rotation'', 13.0));');
             fprintf('\n\t d.visualize();');
 
-            fprintf(2,'\n\n6. Compute the indices of points that lie inside an ROI:');
+            fprintf('\n\n6. Compute the indices of points that lie inside an ROI:');
             fprintf('\n\t randomPoints = bsxfun(@plus, [14 2], randn(600,2)*3);');
             fprintf('\n\t idxPointsInside = d.indicesOfPointsInside(randomPoints);');
             
-            fprintf(2,'\n\n7. Compute the indices of points that lie outside an ROI:');
+            fprintf('\n\n7. Compute the indices of points that lie outside an ROI:');
             fprintf('\n\t idxPointsOutside = d.indicesOfPointsOutside(randomPoints);');
             
-            fprintf(2,'\n\n8. Compute the indices of points that lie near the perimeter of an ROI:');
+            fprintf('\n\n8. Compute the indices of points that lie near the perimeter of an ROI:');
             fprintf('\n\t samplingPoints = 1000; %% sample the perimeter of the ROI along 1000 points');
             fprintf('\n\t pointsPerSample = 30;  %% return up to 30 points for each sample along the perimeter');
             fprintf('\n\t maxDistance = 0.5;     %% points must be no further than 0.5 units away from the closest perimeter sample');
