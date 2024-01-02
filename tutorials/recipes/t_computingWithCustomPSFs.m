@@ -82,7 +82,8 @@ function t_computingWithCustomPSFs()
         'colsNum', 400, ...                            % Pixels along the horizontal (x) dimension
         'targetRow', 20, ...                           % Stimulus Y-pixel offset 
         'targetCol', 20, ...                           % Stimulus X-pixel offset 
-        'chromaSpecification', chromaSpecification ... % Background and stimulus chromaticity
+        'chromaSpecification', chromaSpecification, ... % Background and stimulus chromaticity
+        'upSampleFactor', uint8(1) ...
     );
             
     % Generate the scene
