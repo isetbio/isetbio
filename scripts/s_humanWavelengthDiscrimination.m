@@ -62,7 +62,7 @@ for rr = 1:nLevels
         scene{ww} = sceneAdjustLuminance(scene{ww},luminance(rr));
         
         % Compute the spectral irradiance at the retina
-        oi = oiCompute(scene{ww},oi,'pad value','mean');
+        oi = oiCompute(oi,scene{ww},'pad value','mean');
         
         % Compute the absorptions
         cMosaic.compute(oi);
