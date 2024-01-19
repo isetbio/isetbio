@@ -16,7 +16,7 @@ function conePsfInfo = conePsfInfoCreate(varargin)
 %
 %    If you pass spectral sensitivities and/or spectral weighting, you must
 %    make sure that they are on the same wavelength sampling as the
-%    specified wavelengths.
+%    specified waDvelengths.
 %
 % Inputs:
 %    None
@@ -73,7 +73,7 @@ if (~isempty(p.Results.spectralSensitivities))
     end
     conePsfInfo.spectralSensitivities = p.Results.spectralSensitivities;
 else
-    temp = load('conesPsfInfoData_ss2');
+    temp = load('T_cones_ss2.mat');
     conePsfInfo.spectralSensitivities = SplineCmf(temp.S_cones_ss2, ...
         temp.T_cones_ss2, conePsfInfo.wavelengths);
     clear temp    
