@@ -121,7 +121,11 @@ p.addParameter('oi', [], @isstruct);
 p.parse(oisType, composition, modulation, varargin{:});
 
 oi = p.Results.oi;
-if isempty(oi), oi = oiCreate('wvf human'); end
+if isempty(oi)
+    oi = oiCreate('wvf human'); 
+    oi = oiSet(oi,'optics name','opticsotf');
+    disp('Creating for opticsOTF method.')
+end
 
 oisType = ieParamFormat(oisType);
 
