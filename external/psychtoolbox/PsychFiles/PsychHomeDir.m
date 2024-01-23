@@ -30,18 +30,10 @@ end
 
 % No path yet? If so find it - and create configdir folder if neccessary.
 if isempty(ThePath)
-    if IsOSX
+    if IsOSX || IsLinux
         % Did this instead of '~/' because the which command above and the addpath
-        % commands below will expand '~/' to a full path; echoing the HOME
-        % environment variable was the first way I found to get said full path so
-        % that strings will match when they should
-        [ErrMsg,HomeDir] = unix('echo $HOME');
-        % end-1 to trim trailing carriage return
-        StringStart = [HomeDir(1:(end-1)) ''];
-    elseif IsLinux
-        [ErrMsg,HomeDir] = unix('echo $HOME');
-        % end-1 to trim trailing carriage return
-        StringStart = [HomeDir(1:(end-1)) ''];
+        % commands below will expand '~/' to a full path
+        StringStart = getenv('HOME');
     elseif IsWindows
         [ErrMsg,StringStart] = dos('echo %UserData%');
         % end-1 to trim trailing carriage return
@@ -101,7 +93,11 @@ end
 if exist('subDir', 'var')
     % Yes. Usercode wants path to subdirectory inside config dir. Assemble
     % path name:
-    ThePath = [ThePath subDir];
+	if ThePath(end) ~= filesep
+		ThePath = [ThePath filesep subDir];
+	else
+		ThePath = [ThePath subDir];
+	end
     if ThePath(end) ~= filesep
         ThePath = [ThePath filesep];
     end

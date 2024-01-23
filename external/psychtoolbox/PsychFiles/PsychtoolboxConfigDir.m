@@ -41,13 +41,11 @@ if isempty(ThePath)
         % commands below will expand '~/' to a full path; echoing the HOME
         % environment variable was the first way I found to get said full path so
         % that strings will match when they should
-        [ErrMsg,HomeDir] = unix('echo $HOME');
-        % end-1 to trim trailing carriage return
-        StringStart = [HomeDir(1:(end-1)) '/Library/Preferences/'];
+        HomeDir = getenv('HOME');
+        StringStart = [HomeDir '/Library/Preferences/'];
     elseif IsLinux
-        [ErrMsg,HomeDir] = unix('echo $HOME');
-        % end-1 to trim trailing carriage return
-        StringStart = [HomeDir(1:(end-1)) '/.'];
+        HomeDir = getenv('HOME');
+        StringStart = [HomeDir '/.'];
     elseif IsWindows
         [ErrMsg,StringStart] = dos('echo %AppData%');
         StringStart = deblank(StringStart);

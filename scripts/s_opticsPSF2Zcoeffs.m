@@ -35,7 +35,7 @@ wvf = wvfSet(wvf,'z pupil diameter',8);
 wvf = wvfSet(wvf,'ref pupil plane size',50);
 % wvf = wvfSet(wvf,'ref pupil plane size',25);
 
-wvf = wvfComputePSF(wvf);
+wvf = wvfCompute(wvf,'humanlca',true);
 
 % This plot is not the same in ISETBio and ISETCam
 % wvfPlot(wvf,'image pupil phase','mm');
@@ -51,7 +51,7 @@ zpupilDiameterMM = wvfGet(wvf,'z pupil diameter');
 
 pupilPlaneSizeMM = wvfGet(wvf,'pupil plane size','mm',thisWaveNM);
 nPixels = wvfGet(wvf,'spatial samples');
-wvf     = wvfComputePSF(wvf);
+wvf     = wvfComputePSF(wvf,'humanlca',true);
 
 % These are the spatial samples and psf value.
 % When we get a psf from another source, we should interpolate the
@@ -100,7 +100,7 @@ disp(x)
 
 % Compare the PSFs to make sure we have a match
 wvf2 = wvfSet(wvf,'zcoeffs',x);
-wvf2 = wvfComputePSF(wvf2);
+wvf2 = wvfComputePSF(wvf2),'humanlca',true);;
 wvfPlot(wvf2,'image psf space','um')
 title('Estimated PSF');
 
@@ -126,7 +126,7 @@ vcNewGraphWin([],'tall');
 subplot(2,1,1), wvfPlot(wvf,'image pupil phase','mm',wave,'no window')
 
 wvf2 = wvfSet(wvf,'zcoeffs',x);
-wvf2     = wvfComputePSF(wvf2);
+wvf2     = wvfComputePSF(wvf2,'humanlca',true);
 subplot(2,1,2), wvfPlot(wvf2,'image pupil phase','mm',wave,'no window')
 
 %%

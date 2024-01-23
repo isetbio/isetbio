@@ -3,18 +3,18 @@ function cal = CalibrateAmbDrvr(cal,USERPROMPT,whichMeterType,blankOtherScreen)
 %
 % This script does the work for monitor ambient calibration.
 
-% 4/4/94		dhb		Wrote it.
-% 8/5/94		dhb, ccc	More flexible interface.
-% 9/4/94		dhb		Small changes.
-% 10/20/94	dhb		Add bgColor variable.
-% 12/9/94   ccc   Nine-bit modification
-% 1/23/95		dhb		Pulled out working code to be called from elsewhere.
-%						dhb		Make user prompting optional.
-% 1/24/95		dhb		Get filename right.
+% 4/4/94    dhb     Wrote it.
+% 8/5/94    dhb,ccc More flexible interface.
+% 9/4/94    dhb     Small changes.
+% 10/20/94  dhb     Add bgColor variable.
+% 12/9/94   ccc     Nine-bit modification
+% 1/23/95   dhb     Pulled out working code to be called from elsewhere.
+%           dhb     Make user prompting optional.
+% 1/24/95   dhb     Get filename right.
 % 12/17/96  dhb, jmk  Remove big bug.  Ambient wasn't getting set.
-% 4/12/97   dhb   Update for new toolbox.
-% 8/21/97		dhb		Don't save files here.
-%									Always measure.
+% 4/12/97   dhb     Update for new toolbox.
+% 8/21/97   dhb     Don't save files here.
+%                   Always measure.
 % 4/7/99    dhb   NINEBIT -> NBITS
 %           dhb   Handle noMeterAvail, RADIUS switches.
 % 9/22/99   dhb, mdr  Make boxRect depend on boxSize, defined up one level.
@@ -33,6 +33,7 @@ function cal = CalibrateAmbDrvr(cal,USERPROMPT,whichMeterType,blankOtherScreen)
 % 8/19/12   mk    Rewrite setup and clut code to be able to better cope with all
 %                 the broken operating systems / drivers / gpus and to also
 %                 support DataPixx/ViewPixx devices.
+% 6/30/23   mk    Use new clut mapping to fix this mess on standard gpus.
 
 global g_usebitspp;
 
@@ -42,26 +43,21 @@ if isempty(g_usebitspp)
     g_usebitspp = 0;
 end
 
-% Check meter
-if ~whichMeterType
-	CMCheckInit;
-end
-
 % User prompt
 if USERPROMPT
-	if cal.describe.whichScreen == 0
-		fprintf('Hit any key to proceed past this message and display a box.\n');
-		fprintf('Focus radiometer on the displayed box.\n');
-		fprintf('Once meter is set up, hit any key - you will get %g seconds\n',...
+    if cal.describe.whichScreen == 0
+        fprintf('Hit any key to proceed past this message and display a box.\n');
+        fprintf('Focus radiometer on the displayed box.\n');
+        fprintf('Once meter is set up, hit any key - you will get %g seconds\n',...
                 cal.describe.leaveRoomTime);
-		fprintf('to leave room.\n');
+        fprintf('to leave room.\n');
         KbStrokeWait(-1);
-	else
-		fprintf('Focus radiometer on the displayed box.\n');
-		fprintf('Once meter is set up, hit any key - you will get %g seconds\n',...
+    else
+        fprintf('Focus radiometer on the displayed box.\n');
+        fprintf('Once meter is set up, hit any key - you will get %g seconds\n',...
                 cal.describe.leaveRoomTime);
-		fprintf('to leave room.\n');
-	end
+        fprintf('to leave room.\n');
+    end
 end
 
 % Blank other screen, if requested:
@@ -80,6 +76,11 @@ end
 % care of possible graphics driver bugs and other quirks:
 PsychImaging('PrepareConfiguration');
 
+if g_usebitspp == 0
+    % Setup for imaging pipeline based clut mapping:
+    PsychImaging('AddTask', 'AllViews', 'EnableCLUTMapping', 256, 1);
+end
+
 if g_usebitspp == 1
     % Setup for Bits++ CLUT mode. This will automatically load proper
     % identity gamma tables into the graphics hardware and into the Bits+:
@@ -94,50 +95,50 @@ if g_usebitspp == 2
 end
 
 % Open the window:
-[window, screenRect] = PsychImaging('OpenWindow', cal.describe.whichScreen);
-if (cal.describe.whichScreen == 0)
-    HideCursor;
+[window, screenRect] = PsychImaging('OpenWindow', cal.describe.whichScreen, 0);
+
+% Only need to set identity mapping for standard display mode, as all needed setup
+% is already done automatically for CRS, VPixx devices etc. by PsychImaging():
+if g_usebitspp == 0
+    % Upload an identity gamma ramp into all channels. Upload a LUT with exactly
+    % as many slots as the operating system + gpu driver expects, so we pass through
+    % the full framebuffer precision one-to-one, as much as framebuffer depths allows.
+    % Don't use LoadIdentityClut here, as it configures for a 8 bpc identity lut,
+    % suitable for special display devices, but may lose a bit of precision for
+    % conventional display setups:
+    [~, ~, nslots] = Screen('ReadNormalizedGammaTable', window);
+    Screen('LoadNormalizedGammaTable', window, (linspace(0, 1, nslots)' * ones(1, 3)), 0);
 end
 
-theClut = zeros(256,3);
-if g_usebitspp
-    % Load zero theClut into device:
-    Screen('LoadNormalizedGammaTable', window, theClut, 2);
-    Screen('Flip', window);    
-else
-    % Load zero lut into regular graphics card:
-    Screen('LoadNormalizedGammaTable', window, theClut);
+if (cal.describe.whichScreen == 0)
+    HideCursor(window);
 end
+
+% Load zero theClut into device:
+theClut = zeros(256,3);
+Screen('LoadNormalizedGammaTable', window, theClut, 2);
+Screen('Flip', window);
 
 % Draw a box in the center of the screen
 boxRect = [0 0 cal.describe.boxSize cal.describe.boxSize];
 boxRect = CenterRect(boxRect, screenRect);
 theClut(2,:) = [1 1 1];
 Screen('FillRect', window, 1, boxRect);
-if g_usebitspp
-    Screen('LoadNormalizedGammaTable', window, theClut, 2);
-    Screen('Flip', window, 0, 1);
-else
-    Screen('LoadNormalizedGammaTable', window, theClut);
-end
+Screen('LoadNormalizedGammaTable', window, theClut, 2);
+Screen('Flip', window, 0, 1);
 
 % Wait for user
 if USERPROMPT == 1
     KbStrokeWait(-1);
-	fprintf('Pausing for %d seconds ...', cal.describe.leaveRoomTime);
-	WaitSecs(cal.describe.leaveRoomTime);
-	fprintf(' done\n');
+    fprintf('Pausing for %d seconds ...', cal.describe.leaveRoomTime);
+    WaitSecs(cal.describe.leaveRoomTime);
+    fprintf(' done\n');
 end
 
 % Put in appropriate background.
-theClut(2,:) = cal.bgColor';
-if g_usebitspp
-    Screen('FillRect', window, 1, boxRect);
-    Screen('LoadNormalizedGammaTable', window, theClut, 2);
-    Screen('Flip', window, 0, 1);
-else
-    Screen('LoadNormalizedGammaTable', window, theClut);
-end
+theClut(1,:) = cal.bgColor';
+Screen('LoadNormalizedGammaTable', window, theClut, 2);
+Screen('Flip', window, 0, 1);
 
 % Start timing
 t0 = clock;
@@ -145,7 +146,7 @@ t0 = clock;
 ambient = zeros(cal.describe.S(3), 1);
 for a = 1:cal.describe.nAverage
     % Measure ambient
-    ambient = ambient + MeasMonSpd(window, [0 0 0]', cal.describe.S, 0, whichMeterType, theClut);
+    ambient = ambient + MeasMonSpd(window, [0 0 0]', cal.describe.S, 'on', whichMeterType, theClut);
 end
 ambient = ambient / cal.describe.nAverage;
 
@@ -156,16 +157,8 @@ if g_usebitspp
     Screen('Flip', window);
 end
 
-% Restore graphics card gamma tables to original state:
-RestoreCluts;
-
-% Show hidden cursor:
-if cal.describe.whichScreen == 0
-	ShowCursor;
-end
-
-% Close all windows:
-Screen('CloseAll');
+% Restore graphics card gamma tables to original state, close windows, etc.
+sca;
 
 % Report time:
 t1 = clock;

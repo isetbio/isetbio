@@ -15,3 +15,5 @@ isettools/local/*
 isetbio.wiki/
 wiki/
 *.asv
+/tutorials/mrgc/theMRGCMosaic.pdf
+/tutorials/mrgc/theRetinalOpticalImage.pdf

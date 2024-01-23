@@ -128,9 +128,11 @@ methods
         p.addParameter('eyemodel','navarro',@(x)ismember(x,{'navarro','legrand','arizona'}));
         p.parse(pbrtFile,varargin{:});
 
+        obj.modelName = p.Results.eyemodel;
+
         % Setup the pbrt scene recipe
         if isempty(pbrtFile),  obj.recipe = recipe;
-        else,                  obj.recipe = piRecipeDefault('scene name',pbrtFile);
+        else,                  obj.recipe = piRecipeCreate(pbrtFile);
         end
         
         % Create the camera model
@@ -149,7 +151,6 @@ methods
 
         % Assign this object the basename of the input file
         obj.set('name',obj.get('input basename'));
-                        
     end
 
     %% Get methods for dependent variables
@@ -218,7 +219,8 @@ end
 
 methods (Access=public)
     [oi, terminalOutput, outputFile] = render(obj, varargin);
-    
+    [oi, terminalOutput, outputFile] = piWRS(obj, varargin);
+
     % These are helper functions called within render() above. Splitting
     % them into their individual functions allows us to integrate them with
     % isetcloud tools.
@@ -226,5 +228,6 @@ methods (Access=public)
     [obj] = setOI(obj, ieObject, varargin)
     [objNew] = write(obj, varargin)
 end
+
 
 end

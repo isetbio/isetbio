@@ -26,10 +26,11 @@ wvfM  = wvfCreate;
 wvfM = wvfSet(wvfM,'um per degree',35);
 wvfM = wvfSet(wvfM,'calc pupil size',1);
 
-wvfM  = wvfComputePSF(wvfM);
+%% @Nicolas/@Brian What should we do with LCA here?
+wvfM  = wvfCompute(wvfM);
 oiM   = wvf2oi(wvfM);
 
-oiM = oiCompute(oiM,scene);
+oiM = oiCompute(oiM,scene,'pad value','mean');
 oiM = oiSet(oiM,'name','mouse');
 oiWindow(oiM);
 
@@ -52,7 +53,7 @@ oi = oiSet(oi,'lens density',0.0);
 
 % We need to check the PSF and do better here.  Probably we need to deal
 % with chromatic aberration, too.
-oi = oiCompute(oi,scene);
+oi = oiCompute(oi,scene,'pad value','mean');
 oiWindow(oi);
 
 %% Check this number as per Geng et al. 34 microns

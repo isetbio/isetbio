@@ -62,8 +62,26 @@ targetWavelength = wavelengthSupport(idx);
 % Get PSF slice at target wavelength
 wavePSF = opticsGet(optics,'psf data',targetWavelength);
 
-% Extract support in arcmin
-psfSupportMicrons = opticsGet(optics,'psf support','um');
+% Extract PSF support
+%
+% The commented code here is what we were doing.  But the wavePSF
+% provides the support in microns, so we just use that directly.
+% The .xy field of wavePSF is (n,m,2), while the comment out opticsGet
+% returned a cell array.  We fixed this below.  We are not entirely sure
+% we have the x and y straight if support ever becomes rectangular.
+%
+% nSamp = opticsGet(optics,'otf size');
+% if (nSamp(1) ~= nSamp(2))
+%     error('Do not yet handle non-square psf support');
+% end
+% psfSupportMicrons = opticsGet(optics,'psf support','um',oiGet(theOI,'fsupport'),nSamp(1));
+psfSupportMicrons = wavePSF.xy;
+
+% Not sure when optics structures have a micronsPerDegree field
+% Not desired to set or access this directly.
+%
+% @Nicolas, once we figure out wvf2oiSpecial we should do this
+% with sets and gets and make sure we enforce consistency.
 if (isfield(optics, 'micronsPerDegree'))
     micronsPerDegree = optics.micronsPerDegree;
 else
@@ -72,14 +90,25 @@ else
     micronsPerDegree = focalLengthMicrons * tand(1);
 end
 
-xGridMinutes = 60*psfSupportMicrons{1}/micronsPerDegree;
-yGridMinutes = 60*psfSupportMicrons{2}/micronsPerDegree;
+% If the x and y support are different, we should worry as
+% we are not entirely sure of conventions.  Plus, we think
+% that would be really bad as we'd then need the scene to have
+% different number of pixels/deg in x and y.
+%
+% The transposing of psfSupport2 is a little squirrly.
+psfSupport1 = squeeze(psfSupportMicrons(:,:,1));
+psfSupport2 = squeeze(psfSupportMicrons(:,:,2))';
+if (any(psfSupport1(:) ~= psfSupport2(:)))
+    error('Time to think hard about structure of returned psf support');
+end
+xGridMinutes = 60*psfSupport1/micronsPerDegree;
+yGridMinutes = 60*psfSupport2'/micronsPerDegree;
 xSupportMinutes = xGridMinutes(1,:);
 ySupportMinutes = yGridMinutes(:,1);
 
 % Extract slice through horizontal meridian
 [~,idx] = min(abs(ySupportMinutes));
-psfSlice = wavePSF(idx,:)/max(wavePSF(:));
+psfSlice = wavePSF.psf(idx,:)/max(wavePSF.psf(:));
 
 if (isempty(axesHandle))
     figure(); clf;
@@ -121,7 +150,7 @@ if (~isempty(theMosaic))
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.1 0.3 0.3], 'LineWidth', 4.0);
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), '-', 'Color', [0.3 0.99 0.99], 'LineWidth', 2);
 else
-    contourf(axesHandle,xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)), contourLevels, ...
+    contourf(axesHandle,xSupportMinutes, ySupportMinutes, wavePSF.psf/max(wavePSF.psf(:)), contourLevels, ...
         'Color', [0.3 0.3 0.3], 'LineWidth', 1.0);
 
     %imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));

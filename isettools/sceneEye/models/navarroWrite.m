@@ -1,30 +1,33 @@
 function filename = navarroWrite(thisR,accommodation)
-% Write the navarro lens and support IoR files for a given accommodation
+% Write the navarro lens and support IOR files for a given accommodation
 %
 % Synopsis
 %     filename = navarroWrite(thisR,[accommodation]);
 %
 % Description
-%   Write the navarro.dat file and associated index of refraction
-%   files (iorX.spd) into the lens rendering directory. The navarro
-%   model accounts for accommodation by changing the ior and lens
-%   files.  The retinalDistance does not change.
+%   Write the navarro lens file and associated index of refraction (IOR)
+%   files into the lens rendering directory. The navarro model accounts for
+%   accommodation by changing the ior and lens files.
 % 
 % Input
 %  thisR:  The rendering recipe.  The accommodation (1 / focus distance)
-%          is specified in the lens file comment.  The file can be
-%          read and the value extracted using
+%          is specified in the lens file comment, and as of May 2023 it is
+%          also stored in the focaldistance parameter. It can be returned
+%          using
 %
-%                thisR.get('accommodation')
+%               thisR.get('accommodation')
 %
-%  accom:  Specify an accommodation value.  Default is 0 (Accommodated
-%  to infinity).  
+% Optional
+%    accommodation - If not passed, we use thisR.get('accommodation')
 %
 % Outputs
-%   filename:  Lens file, full path to navarro.dat
+%   filename:  lens file name.  
+%       The file names include three digits that specify the accommodation
+%       (diopters). So navarro-ABC.dat, and similarly for ior{1-4}-ABC.dat
+%       and the accommodation is AB.C.
 %
 % See also
-%   navarroLensCreate, navarroRefractiveIndices
+%   navarroLensCreate, navarroRefractiveIndices, arizonaWrite, legrandWrite
 
 % History:
 %   10/19/20  dhb Example checks for required iset3d function
@@ -45,6 +48,20 @@ end
 if notDefined('accommodation')
     accommodation = (thisR.get('accommodation'));
 end
+
+% TL believed that the usual accomodation value and the equivalent
+% value for the Navarro model differ.  She inserted this function so
+% that the Navarro model accommodation matched her Zemax calculation.
+% See the comments in the function.
+%
+% The script t_eyeAccommodation images an edge, sweeping through
+% accommodation from close, in focus, too far. The color fringe shifts
+% as focus shift from too close to too far.
+accommodation = convertToNavarroAccomm(accommodation);
+
+% Round to 1 decimal place
+accommodation = round(accommodation*10)/10;
+
 na    = navarroLensCreate(accommodation);  % Diopters
 
 % Build matrix and set focal Length
@@ -58,10 +75,11 @@ focalLength = 1 / (60.6061 + accommodation) * 10 ^ 3; % mm
 
 lensDir = thisR.get('lens dir output');
 if ~exist(lensDir,'dir'), mkdir(lensDir); end
+baseName = sprintf('navarro-%03.0f.dat',10*accommodation);
 
 % Make the lens file for this accommodation and put it in the lens
 % directory.
-lensFile = fullfile(lensDir,'navarro.dat');
+lensFile = fullfile(lensDir,baseName);
 thisR.set('lens file',lensFile);
 
 %% Do the writing
@@ -92,7 +110,7 @@ fprintf(fid,'%s\n',str);
 fclose(fid);
 
 % The file should be there, so no warning should come from this.
-thisR.set('lens file',lensFile);
+thisR.set('lens file',fullfile('lens',baseName));
 
 %% Now write out the IoR files
 
@@ -109,7 +127,7 @@ thisR.set('lens file',lensFile);
 %   ior3 --> aqueous-lens
 %   ior4 --> lens-vitreous
 %
-iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
+iorNames = {'ior1','ior2','ior3','ior4'};
 
 % We assume the eye is accommodated to the object distance.  There is only
 % a very very small impact of accommodation until the object is very close
@@ -119,7 +137,8 @@ iorNames = {'ior1.spd','ior2.spd','ior3.spd','ior4.spd'};
 % We will put these files next to the lens file (navarro.dat).
 nSamples = numel(wave);
 for ii=1:4
-    filename = fullfile(thisR.get('lens dir output'),iorNames{ii});
+    baseName = sprintf('%s-%03.0f.spd',iorNames{ii},accommodation);
+    filename = fullfile(thisR.get('lens dir output'),baseName);
     fid = fopen(filename, 'w');
     for jj = 1:nSamples
         fprintf(fid, '%d %f\n', wave(jj), ior(jj,ii));
@@ -127,10 +146,10 @@ for ii=1:4
     fclose(fid);
     
     % Update the recipe with the ior files
-    [~,str,~] = fileparts(filename);
-    thisR.set(str,filename);
+    filename = fullfile('lens',baseName);
+    thisR.set(iorNames{ii},filename);
 end
 
-fprintf('Wrote lens file to %s (accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
+fprintf('Wrote lens file to %s (navarro adjusted accomm: %.2f D)\n',thisR.get('lensfile'),accommodation);
 
 end

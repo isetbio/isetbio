@@ -22,7 +22,7 @@ cm = foo.cm;
 
 scene = sceneCreate('ringsrays');
 scene = sceneSet(scene,'fov',5);
-oi = oiCreate; oi = oiCompute(oi,scene);
+oi = oiCreate('human'); oi = oiCompute(oi,scene,'pad value','mean');
 cm.integrationTime = 50e-3;
 noiseFree = cm.compute(oi);
 

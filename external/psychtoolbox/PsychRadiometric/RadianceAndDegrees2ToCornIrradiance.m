@@ -2,7 +2,7 @@ function cornealIrradiance_PowerPerArea = RadianceAndDegrees2ToCornIrradiance(ra
 % cornealIrradiance_PowerPerArea = RadianceAndDegrees2ToCornIrradiance(radiance_PowerPerSrArea,stimulusAreaDegrees2)
 %
 % Convert the radiance of a stimulus to corneal irradiance, given that we know the area of the stimulus in degrees2.
-% The routine assumes that the stimulus is rectangular with linear subtense sqrt(stimulusAreaDegrees2).
+% The routine assumes that the stimulus is square with linear subtense sqrt(stimulusAreaDegrees2).
 %
 % Light power can be in your favorite units (Watts, quanta/sec) as can distance (m, cm, mm).  The units for
 % area in the returned irradiance match those used for area in the passed radiance.
@@ -14,7 +14,6 @@ function cornealIrradiance_PowerPerArea = RadianceAndDegrees2ToCornIrradiance(ra
 % a correction for the Lambertian dropoff in light with cos(theta).  This differs from computing retinal
 % irradiance from radiance, where the area of the surface seen by a fixed retinal area increases exactly
 % so as to compensate for that dropoff.
-
 %
 % The derivation also assumes the small angle approximation simulusSizeUnits = stimulusSizeRadians*stimulusDistanceUnits,
 % where units are the relavant units of length.  Although we don't have stimulusSizeUnits and stimulusDistanceUnits,

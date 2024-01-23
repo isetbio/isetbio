@@ -2,6 +2,7 @@ function [ior,wave,txt] = arizonaRefractiveIndices(accom)
 % Return the IoR data for the Arizona model
 %
 % Synopsis
+%   [ior,wave,txt] = arizonaRefractiveIndices(accom)
 %
 % Input
 %   wave:   Wavelength sames, usually 400:10:800

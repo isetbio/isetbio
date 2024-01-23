@@ -93,7 +93,7 @@ function [ois, scene] = ...
     % Impulse (temporal)
     clear iparams
     sparams.fov = 1;
-    sparams.luminance = 100;
+    sparams.meanluminance = 100;
     stimWeights = zeros(1, 50);
     stimWeights(2:4) = 1;
     impulse = oisCreate('impulse', 'add', stimWeights, ...
@@ -121,7 +121,11 @@ p.addParameter('oi', [], @isstruct);
 p.parse(oisType, composition, modulation, varargin{:});
 
 oi = p.Results.oi;
-if isempty(oi), oi = oiCreate('wvf human'); end
+if isempty(oi)
+    oi = oiCreate('wvf human'); 
+    oi = oiSet(oi,'optics name','opticsotf');
+    disp('Creating for opticsOTF method.')
+end
 
 oisType = ieParamFormat(oisType);
 
@@ -176,7 +180,7 @@ switch oisType
         % sceneWindow;
 
         % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii}); end
+        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
         % ieAddObject(OIs{1});
         % ieAddObject(OIs{2});
         % oiWindow;
@@ -198,7 +202,7 @@ switch oisType
 
         % Create vernier stimulus and background
         for ii = 1:2
-            scene{ii} = sceneCreate('vernier', 'display', tparams(ii));
+            scene{ii} = sceneVernier('vernier', 'display', tparams(ii));
             scene{ii} = sceneSet(scene{ii}, 'name', tparams(ii).name);
         end
 
@@ -217,7 +221,7 @@ switch oisType
         % sceneWindow;
 
         % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii}); end
+        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
         % ieAddObject(OIs{1});
         % ieAddObject(OIs{2});
         % oiWindow;
@@ -250,7 +254,7 @@ switch oisType
         % sceneWindow;
 
         % Compute optical images from the scene
-        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii}); end
+        for ii = 1:2, OIs{ii} = oiCompute(oi, scene{ii},'pad value','mean'); end
         % ieAddObject(OIs{1});
         % ieAddObject(OIs{2});
         % oiWindow;

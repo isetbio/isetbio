@@ -63,11 +63,11 @@ classdef oiSequence < handle
     params.freq = 6;
     params.contrast = 0.6;
     scene = sceneCreate('harmonic', params);
-    oiModulated =  oiCompute(oi, scene);
+    oiModulated =  oiCompute(oi,scene,'pad value','mean');
 
     params.contrast = 0;  % contrast of the two frequencies
     scene = sceneCreate('harmonic', params);
-    oiBackground =  oiCompute(oi, scene);
+    oiBackground =  oiCompute(oi,scene,'pad value','mean');
     stimWeights = fspecial('gaussian', [1, 50], 15);
     sampleTimes = 0.002 * (1:length(stimWeights));
     oiHarmonicSeq = oiSequence(oiBackground, oiModulated, ...

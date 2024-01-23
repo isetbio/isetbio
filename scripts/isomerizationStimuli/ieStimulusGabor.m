@@ -194,7 +194,7 @@ grayStart = 50; grayEnd = 20;
 % This is the mean oi that we use at the start and end
 params.ph = 0
 scene    = sceneCreate('harmonic', params);
-oiMean   = oiCompute(oi,scene);
+oiMean   = oiCompute(oi,scene,'pad value','mean');
 
 % nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
 stimFrames = (sceneGet(scene,'cols'));
@@ -222,7 +222,7 @@ for t = 1 : params.nSteps
     scene = sceneSet(scene, 'h fov', fov);
 
     % Compute optical image
-    oi = oiCompute(oi, scene);    
+    oi = oiCompute(oi,scene,'pad value','mean');    
     
     % Compute absorptions and photocurrent
     % cm.compute(oi, 'append', true, 'emPath', [0 0]);

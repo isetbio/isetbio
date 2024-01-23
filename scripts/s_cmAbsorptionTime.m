@@ -12,8 +12,8 @@
 ieInit
 
 scene = sceneCreate('uniform ee');
-oi = oiCreate;
-oi = oiCompute(oi,scene);
+oi = oiCreate('human');
+oi = oiCompute(oi,scene,'pad value','mean');
 
 cMosaic = coneMosaic('size',[10 10]);
 cMosaic.integrationTime = 0.05;

@@ -88,8 +88,8 @@ scene = sceneSet(scene,'fov',2);
 scene = sceneAdjustIlluminant(scene,'D65');
 vcAddObject(scene); sceneWindow;
 
-oi = oiCreate;
-oi = oiCompute(oi,scene);
+oi = oiCreate('human');
+oi = oiCompute(oi,scene,'pad value','mean');
 vcAddObject(oi); oiWindow;
 
 cMosaic = coneMosaic;

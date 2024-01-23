@@ -38,7 +38,6 @@ function radius = selectPlotSupport(data, prct, minRadius)
  g = ieScale(g,0,1);
  r = selectPlotSupport(g,0.1);
  vcNewGraphWin; imagesc(g); axis image
- ieShape('circle','center',[128,128],'radius',r,'color','white');
  colorbar;
 %}
 

@@ -12,12 +12,12 @@
 ieInit
 
 scene = sceneCreate('uniform ee');
-oi = oiCreate;
-oi = oiCompute(oi,scene);
+oi = oiCreate('human');
+oi = oiCompute(oi,scene,'pad value','mean');
 
 %% One cone, one time
 
-cMosaic = coneMosaic('size',[1 1]);
+cMosaic = coneMosaicRect('size',[1 1]);
 cMosaic.compute(oi);
 
 % In this case, we have a matrix.  size(
@@ -27,7 +27,7 @@ cMosaic.window;
 
 %% One cone, multiple times
 
-cMosaic = coneMosaic('size',[1 1]);
+cMosaic = coneMosaicRect('size',[1 1]);
 cMosaic.emGenSequence(10);
 cMosaic.compute(oi);
 
@@ -37,7 +37,7 @@ cMosaic.window;
 
 %% One dimensional cone array, one time
 
-cMosaic = coneMosaic('size',[1 100]);
+cMosaic = coneMosaicRect('size',[1 100]);
 cMosaic.compute(oi);
 cMosaic.window;
 
@@ -47,7 +47,7 @@ assert(isequal(size(cMosaic.absorptions,3),1));
 
 %% One dimensional cone array, 10 times
 
-cMosaic = coneMosaic('size',[1 100]);
+cMosaic = coneMosaicRect('size',[1 100]);
 cMosaic.emGenSequence(10);
 cMosaic.compute(oi);
 cMosaic.window;
@@ -56,7 +56,7 @@ assert(isequal(size(cMosaic.absorptions),[1,100,10]));
 
 %% Two dimensional cone array, 20 times
 
-cMosaic = coneMosaic('size',[20 20]);
+cMosaic = coneMosaicRect('size',[20 20]);
 cMosaic.emGenSequence(20);
 cMosaic.compute(oi);
 cMosaic.window;

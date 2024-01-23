@@ -1,8 +1,8 @@
-function [l, m, s] = coneTypeLocations(cmosaic, varargin)
+function [l, m, s] = coneTypeLocations(cmosaicRect, varargin)
 % Return row/col or indices of the three types of cones
 %
 % Syntax:
-%   [l, m, s] = coneTypeLocations(cmosaic, 'val', [{'index' or 'rowcol'}])
+%   [l, m, s] = coneTypeLocations(cmosaicRect, 'val', [{'index' or 'rowcol'}])
 %
 % Description:
 %    A function designed to return the row and column or indices of the
@@ -15,8 +15,12 @@ function [l, m, s] = coneTypeLocations(cmosaic, varargin)
 %    There are examples contained in the code. To access, type 'edit
 %    coneTypeLocations.m' into the Command Window.
 %
+%    Note: This routine works with the coneMosaicRect mosaic type.  With
+%    the cMosaic, you'll need to do this a different way.  See the cMosaic
+%    tutorials.
+%
 % Input:
-%    cmosaic  - Cone Mosaic object
+%    cmosaicRect  - coneMosaicRect object
 %
 % Outputs:
 %    l        - Pertinent information for L cones
@@ -33,35 +37,35 @@ function [l, m, s] = coneTypeLocations(cmosaic, varargin)
 
 % Examples:
 %{
-   cm = coneMosaic;
-   [l, m, s] = coneTypeLocations(cm);
-   [l, m, s] = coneTypeLocations(cm, 'format', 'rowcol');
+   cmRect = coneMosaicRect;
+   [l, m, s] = coneTypeLocations(cmRect);
+   [l, m, s] = coneTypeLocations(cmRect, 'format', 'rowcol');
 %}
 
 %%
 p = inputParser;
-p.addRequired('cmosaic', @(x)(isa(cmosaic, 'coneMosaic')));
+p.addRequired('cmosaicRect', @(x)(isa(cmosaicRect, 'coneMosaicRect')));
 p.addParameter('format', 'index', @ischar);
-p.parse(cmosaic, varargin{:});
+p.parse(cmosaicRect, varargin{:});
 
 format = p.Results.format;
 
 %% Compute
 % Always compute indices
-l = find(cmosaic.pattern == 2);
-m = find(cmosaic.pattern == 3);
-s = find(cmosaic.pattern == 4);
+l = find(cmosaicRect.pattern == 2);
+m = find(cmosaicRect.pattern == 3);
+s = find(cmosaicRect.pattern == 4);
 
 switch format
     case 'index'
         % Done
     case 'rowcol'       
         % Get the (row, col) locations of each of the cone type
-        [r, c] = ind2sub(size(cmosaic.pattern), l); 
+        [r, c] = ind2sub(size(cmosaicRect.pattern), l); 
         l = [r, c]; 
-        [r, c] = ind2sub(size(cmosaic.pattern), m); 
+        [r, c] = ind2sub(size(cmosaicRect.pattern), m); 
         m = [r, c];
-        [r, c] = ind2sub(size(cmosaic.pattern), s); 
+        [r, c] = ind2sub(size(cmosaicRect.pattern), s); 
         s = [r, c];
     otherwise
         error('Unknown return value type %s\n', format);

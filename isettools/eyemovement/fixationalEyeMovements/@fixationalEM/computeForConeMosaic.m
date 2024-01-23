@@ -35,7 +35,7 @@ function computeForConeMosaic(obj, coneMosaic, eyeMovementsPerTrial, varargin)
 %   6/04/19  npc      Added centerPaths key/value pair
 
 p = inputParser;
-p.addRequired('coneMosaic', @(x)(isa(x, 'coneMosaic')));
+p.addRequired('coneMosaic', @(x)(isa(x, 'coneMosaicRect') || isa(x,'cMosaic')));
 p.addRequired('eyeMovementsPerTrial', @isscalar);
 p.addParameter('nTrials', 1, @isscalar);
 p.addParameter('centerPaths', false, @islogical);

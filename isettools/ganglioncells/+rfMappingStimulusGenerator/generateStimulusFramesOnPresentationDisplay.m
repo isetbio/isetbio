@@ -18,8 +18,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
         if (isempty(customConeFundamentals))
             % Load the 2-deg Stockman cone fundamentals on wavelength support matching the display
             displayWavelengths = displayGet(presentationDisplay, 'wave');
-            coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
-
+            coneFundamentals = ieReadSpectra('stockman', displayWavelengths);
             % Returned coneFundamentals struct
             coneFundamentalsStruct.coneFundamentals = coneFundamentals;
             coneFundamentalsStruct.spectralSupport = displayWavelengths;
@@ -82,7 +81,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
     backgroundXYZ = (xyYToXYZ(xyY(:)))';
     
     % Background linear RGB primary values for the presentation display
-    backgroundRGB = imageLinearTransform(backgroundXYZ, inv(displayGet(presentationDisplay, 'rgb2xyz')));
+    backgroundRGB = imageLinearTransform(reshape(backgroundXYZ, [1 1 3]), inv(displayGet(presentationDisplay, 'rgb2xyz')));
     
     % Background LMS excitations
     backgroundLMS = imageLinearTransform(backgroundRGB, displayRGBtoLMS);
@@ -104,6 +103,9 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
 
         % The LMS contrast image
         LMScontrastImage = zeros(size(spatialModulationPatterns,2), size(spatialModulationPatterns,2), numel(stimParams.coneContrasts));
+
+        
+
         if (sceneIndex > 0)
             for coneIndex = 1:numel(stimParams.coneContrasts)
                 LMScontrastImage(:,:,coneIndex) = stimParams.coneContrasts(coneIndex) * stimParams.contrast * squeeze(spatialModulationPatterns(sceneIndex,:,:));
@@ -135,18 +137,16 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
         % Generate scene corresponding to the test stimulus on the presentation display
         format = 'rgb';
         meanLuminance = []; % EMPTY, so that mean luminance is determined from the rgb settings values we pass
-        theScene = sceneFromFile(flipud(RGBsettings), format, meanLuminance, presentationDisplay);
+        theScene = sceneFromFile(RGBsettings, format, meanLuminance, presentationDisplay);
 
         % Set the desired FOV 
         theScene = sceneSet(theScene, 'h fov', stimParams.stimSizeDegs);
-
 
         if (validateScenes)
             emittedRadianceImage = sceneGet(theScene, 'energy');
             % Compute the LMS cone contrasts of the emitted radiance image
             sceneLMScontrastsImage = computeLMScontrastImage(emittedRadianceImage, coneFundamentals, backgroundLMS);
        
-
             % Assert that the scene cone contrasts match the desired ones
             figNo = 1999;
             assertDisplayContrasts(figNo, sceneLMScontrastsImage, LMScontrastImage);
@@ -182,6 +182,7 @@ end
 
 
 function assertDisplayContrasts(figNo, sceneLMScontrastsImage, desiredLMScontrastImage)
+
     hFig = figure(figNo); clf;
     targetRow = round(size(sceneLMScontrastsImage,1)/2);
     subplot(1,3,1)
@@ -214,17 +215,20 @@ end
 
 
 function LMScontrastImage = computeLMScontrastImage(radianceImage, coneFundamentals, coneExcitationsBackground)
+
     rowsNum = size(radianceImage,1);
     colsNum = size(radianceImage,2);
     wavelengthsNum = size(radianceImage, 3);
     radianceImage = reshape(radianceImage, [rowsNum*colsNum wavelengthsNum]);
         
     coneExcitationsImage = radianceImage * coneFundamentals;
+    
     if (isempty(coneExcitationsBackground))
         % Assuming the top-left pixel has 0 cone contrast, i.e. equal to the background
         coneExcitationsBackground = coneExcitationsImage(1,:);
     end
     
+    coneExcitationsBackground = (squeeze(coneExcitationsBackground))';
     LMScontrastImage = bsxfun(@times, ...
         bsxfun(@minus, coneExcitationsImage, coneExcitationsBackground), ...
         1./coneExcitationsBackground);

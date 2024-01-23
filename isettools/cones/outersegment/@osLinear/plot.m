@@ -52,7 +52,7 @@ p.addRequired('os', @(x)(isa(os, 'osLinear')));
 p.addRequired('pType', @ischar);
 
 % Sometime we need these
-p.addParameter('cmosaic', [], @(x)(isa(x, 'coneMosaic')));
+p.addParameter('cmosaic', [], @(x)(isa(x, 'coneMosaicRect') || isa(x,'cMosaic')));
 p.addParameter('meancurrent', [], @isvector);
 
 p.parse(os, pType, varargin{:});

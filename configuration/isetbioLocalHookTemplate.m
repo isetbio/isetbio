@@ -76,9 +76,17 @@ switch (computerInfo.localHostName)
     case 'Leviathan'
         % Leviathan
         dropboxValidationRootDirPath = '/mnt/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    case 'Ithaka'
+        % Nicolas' M1 Macbook Pro
+        dropboxValidationRootDirPath = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    case 'Crete'
+        % Nicolas' M1 MacStudio Ultra
+        dropboxValidationRootDirPath = '/Volumes/Dropbox/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    case 'Santorini'
+        % Nicolas' M1 MacMini
+        dropboxValidationRootDirPath  = '/Users/nicolas/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';    
     otherwise
-        % Some unspecified machine, try user specific customization
-        if ismac
+         if ismac
             dbJsonConfigFile = '~/.dropbox/info.json';
             fid = fopen(dbJsonConfigFile);
             raw = fread(fid,inf);
@@ -90,19 +98,6 @@ switch (computerInfo.localHostName)
          else
             error('Dropbox validation root directory location not available for computer named: ''%s''.', computerInfo.localHostName);
          end
-
-        % switch(computerInfo.userShortName)
-        %     % Could put user specific things in, but at the moment generic
-        %     % is good enough.
-        % 
-        %     case 'colorlab'
-        %         % SACCSFA desktop (Linux)
-        %         userNameDropbox = 'Mela Nopsin';
-        %         dropboxValidationRootDirPath = fullfile('/home/',computerInfo.userShortName,'Aguirre-Brainard Lab Dropbox',userNameDropbox);
-        % 
-        %     otherwise
-        %         dropboxValidationRootDirPath = fullfile('/Users/',computerInfo.userShortName,'Dropbox (Aguirre-Brainard Lab)');
-        % end
 end
 
 % RGC mosaic resources Dropbox URLpath
@@ -113,9 +108,11 @@ else
 end
 
 if (exist('isetvalidateRootPath','file'))
-    validationRootDir = fullfile(isetvalidateRootPath, 'isetbio');
+    validationRootDir = fullfile(isetvalidateRootPath, 'isetbioRDT');
+    listingScript = 'ieValidateRDTListAllValidationDirs';
 else
     validationRootDir = fullfile(isetbioRootPath, 'validation');
+    listingScript = 'ieValidateListAllValidationDirs';
 end
 
 p = struct(...
@@ -127,9 +124,9 @@ p = struct(...
     'remoteDataToolboxConfig', 'isetbio', ...
     'githubRepoURL', 'http://isetbio.github.io/isetbio', ...
     'rgcResources', struct('method', 'localFile', 'URLpath', rgcDropboxURLpath), ...
-    'generateGroundTruthDataIfNotFound', ~true, ...
-    'listingScript', 'ieValidateListAllValidationDirs', ...
-    'coreListingScript', 'ieValidateListCoreValidationFiles', ...
+    'generateGroundTruthDataIfNotFound', true, ...
+    'listingScript', listingScript, ...
+    'coreListingScript', '', ...
     'numericTolerance', 1e-11);
 
 % Add to the path the Dropbox Validation RootDir location

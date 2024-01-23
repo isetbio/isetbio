@@ -19,7 +19,6 @@ function theCMosaic = cMosaicTreeShrewCreate(varargin)
     % Parse input
     p.parse(varargin{:});
 
-
     % Generate the treeshrew oi to retrieve the micronsPerDegree factor
     theOI = oiTreeShrewCreate('pupilDiameterMM', 2.0);
     micronsPerDegree = theOI.optics.micronsPerDegree;

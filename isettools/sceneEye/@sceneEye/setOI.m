@@ -1,19 +1,19 @@
-function [ieObject] = setOI(obj, ieObject, varargin)
+function [ieObject] = setOI(SE, ieObject, varargin)
 % Set optical image parameters to match sceneEye parameters. 
 %
 % Syntax:
 %   ieObject = write(obj, [varargin])
 %
 % Description:
-%    Given an ieObject (the optical image), we will set the parameters
-%    within to match those given in the sceneEye object. This is necessary,
-%    since the optical image returned by piRender will have parameters such
-%    as f-number, focal length, etc. set to default, but we want these
-%    values to reflect the retinal image we have just rendered.
+%    Given an ieObject (the optical image), we set the parameters
+%    within to match those given in the sceneEye object. This is
+%    necessary, since the optical image returned by piRender will have
+%    parameters such as f-number, focal length, etc. set to default.
+%    We want the values to reflect the retinal model we rendered.
 %
 % Inputs:
-%    obj                   - Object. The scene3D object to render.
-%    ieObject              - Object. the rendered optical image; typically
+%    SE                    - The sceneEye object
+%    ieObject              - The rendered optical image; typically
 %                            from piRender.
 %
 % Outputs:
@@ -21,10 +21,12 @@ function [ieObject] = setOI(obj, ieObject, varargin)
 %                            correct parameters set. 
 %
 % Optional key/value pairs:
-%    meanIlluminancePerMM2 - Numeric. The mean illuminance per mm^2.
-%                            Default 5.
-%    scaleIlluminance      - Boolean. Whether or not to scale the
-%                            illuminance. Default true.
+%    meanIlluminancePerMM2 - The mean illuminance per mm^2 of pupil area
+%                            Default 5 cd/m2. (Numeric)
+%    scaleIlluminance      - Scale the returned illuminance with respect to
+%                            the pupil area. Default true. 
+%
+% See also
 %
 
 %% Initialization
@@ -39,7 +41,7 @@ p.addRequired('ieObject');
 p.addParameter('meanilluminancepermm2', 5, @isnumeric);
 p.addParameter('scaleilluminance', true, @islogical);
 
-p.parse(obj, ieObject, varargin{:});
+p.parse(SE, ieObject, varargin{:});
 meanIlluminancePerMM2 = p.Results.meanilluminancepermm2;
 scaleIlluminance = p.Results.scaleilluminance;
 
@@ -51,11 +53,11 @@ scaleIlluminance = p.Results.scaleilluminance;
 ieObject = oiSet(ieObject, 'distance', Inf);
 
 % If there is a crop window we're going to have to adjust the FOV
-crop_window   = obj.recipe.get('cropwindow');
-retDistance   = obj.recipe.get('retina distance','m');
-pupilDiameter = obj.recipe.get('pupil diameter','m');
+crop_window   = SE.recipe.get('cropwindow');
+retDistance   = SE.recipe.get('retina distance','m');
+pupilDiameter = SE.recipe.get('pupil diameter','m');
 
-full_size = 2 * tand(obj.recipe.get('fov') / 2) * retDistance;
+full_size = 2 * tand(SE.recipe.get('fov') / 2) * retDistance;
 image_size = full_size .* crop_window;
 
 % Convert coordinates so center is (0, 0)
@@ -81,27 +83,26 @@ ieObject = oiSet(ieObject, 'optics name', 'PBRT Navarro Eye');
 ieObject = oiSet(ieObject, 'optics focal length',retDistance);
 
 ieObject = oiSet(ieObject,'optics OTF', []);
-ieObject = oiSet(ieObject,'optics name',obj.recipe.get('lens file'));
-ieObject = oiSet(ieObject,'optics offaxis','');
+ieObject = oiSet(ieObject,'optics name',SE.recipe.get('lens file'));
+ieObject = oiSet(ieObject,'optics offaxis method','');
 % ieObject = oiSet(ieObject,'optics vignetting',[]);
 
 %% Calculate and apply lens transmittance
 
 thisLens = Lens;
-thisLens.wave = oiGet(ieObject,'wave');
-thisLens.density = obj.lensDensity;
-ieObject = oiSet(ieObject,'optics lens',thisLens);
+thisLens.wave    = oiGet(ieObject,'wave');
+thisLens.density = SE.lensDensity;
+ieObject         = oiSet(ieObject,'optics lens',thisLens);
+
+%% Apply lens transmittance
 
 irradiance    = oiGet(ieObject, 'photons');
 transmittance = oiGet(ieObject, 'optics transmittance');
 
-if any(transmittance(:) ~= 1)
-    % Do this in a loop to avoid large memory demand
-    transmittance = reshape(transmittance, [1 1 length(transmittance)]);
-    irradiance = bsxfun(@times, irradiance, transmittance);
-end
-
-ieObject = oiSet(ieObject, 'photons', irradiance);
+% We could conditionalize on any(transmittance(:) ~= 1)
+transmittance = reshape(transmittance, [1 1 length(transmittance)]);
+irradiance    = bsxfun(@times, irradiance, transmittance);
+ieObject      = oiSet(ieObject, 'photons', irradiance);
 
 %% Scale the irradiance with pupil size
 

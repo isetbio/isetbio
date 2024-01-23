@@ -1,1 +1,0 @@
-This section contains example validation script that demonstrate different features of the @UnitTest framework.

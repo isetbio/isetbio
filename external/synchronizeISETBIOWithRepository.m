@@ -21,6 +21,9 @@
 
     % Synchronize ISETBIO's external BrainardLab Toolbox routines
     synchronizeISETBIOWithRepository('BLTB_DHB');
+
+    % Synchronize ISETBIO's external ExampleTestToolbox routines
+    synchronizeISETBIOWithRepository('ETTB_DHB');
 %}
 function synchronizeISETBIOWithRepository(repositoryName)
    
@@ -38,6 +41,9 @@ function synchronizeISETBIOWithRepository(repositoryName)
         case 'BLTB_DHB'
             srcDir = '/Users/dhb/Documents/MATLAB/toolboxes/BrainardLabToolbox';
             dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetbio/external/brainardlabtoolbox';
+        case 'ETTB_DHB'
+            srcDir = '/Users/dhb/Documents/MATLAB/toolboxes/ExampleTestToolbox';
+            dstDir = '/Users/dhb/Documents/MATLAB/toolboxes/isetvalidate/external/exampletesttoolbox';
         otherwise
             error('No information about how to synchronize ''%s''. Please update ''synchronizeISETBIOWithRepository.m''.', repositoryName);
     end
@@ -54,7 +60,7 @@ function synchronizeISETBIOWithRepository(repositoryName)
     % Get names of sub-directories of $isetbio/external/ptb
     fprintf('\nChecking contents of destination directory (%s) to determine which files to sync.\n', dstDir);
     dirContents = dir(dstDir);
-    ignoredDirs = {'+ptb', '', '.', '..'};
+    ignoredDirs = {'+ptb', '', '..'};
     destDirs = {}; srcDirs = {};
     for k = 1:numel(dirContents)
         if (dirContents(k).isdir)

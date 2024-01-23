@@ -347,7 +347,7 @@ function [theOI, micronsPerDegreeFromOptics] = computeTheOI(dataPath)
     
     fprintf('Computing OI\n');
     theOI = oiCreate('wvf human');
-    theOI = oiCompute(theOI, theScene);
+    theOI = oiCompute(theOI,theScene,'pad value','mean');
     
     oiSize = oiGet(theOI, 'size');
     % Compute optics micronsPerDegree

@@ -1,5 +1,7 @@
 %% s_LayersFace.m
 %
+% Deprecated
+%
 % Testing the new layer architecture with face image of LC
 %
 % BW ISETBIO Team, 2017

@@ -491,7 +491,7 @@ for p = 1:length(subjectIdx)
         end
 
         % Compute and accumulate the PSF, OTF and zernikes across subjects
-        wvf = wvfComputePSF(wvf);
+        wvf = wvfCompute(wvf,'humanlca',true);
         all_psf(:, :, p) = wvfGet(wvf, 'psf');
         all_otf(:, :, p) = wvfGet(wvf, 'otf');
         usedSubjectData(:, p) = subjectZData;
@@ -537,8 +537,11 @@ end
 if length(subjectIdx) > 1
     % First check for subjects without data
     if any(subjectWithoutData)
-        fprintf('(%s): Excluding subject nr %02d because there is no data available \n', ...
-            mfilename, find(subjectWithoutData))
+        badSubjectIndex = find(subjectWithoutData);
+        for ss = 1:length(badSubjectIndex)
+        fprintf('(%s): Excluding subject number %02d because there is no data available\n', ...
+            mfilename, badSubjectIndex(ss))
+        end
     end
     all_otf = all_otf(:, :, ~subjectWithoutData);
 
@@ -550,8 +553,14 @@ if length(subjectIdx) > 1
     otfMeanAbs = abs(otfMean);
 
     % Set the wvf fields to correct OTF and PSF
+    %
+    % @Nicolas
+    % Do not write fields directly.  Need to understand and set
     wvf.otf = {otfMeanAbs};
-    wvf = wvfComputePSF(wvf);
+    wvf = wvfCompute(wvf,'humanlca',true);
+    
+    % Not sure why this is needed.  Doesn't the compute just above do this?
+    % If needed, use wvfSet().
     wvf.psf = {wvfGet(wvf, 'psf')};
 
     % Change name
@@ -571,25 +580,6 @@ else % No averaging, just use single subject, add otf and change name
 end
 
 % Create OI from our wvf
-oi = wvf2oi(wvf);
+oi = wvf2oi(wvf,'humanlens',true);
 
-% Get optics
-optics = oiGet(oi, 'optics');
-
-% [Note: EK - Not sure why, but we need to reset the otf data in oi.optics]
-oi.optics = opticsSet(optics, 'otf data', wvf.otf{1});
-oi.optics.model = 'custom';
-
-% Plot OTF and PSF
-%{
-if (params.verbose)
-    wvfPlot(wvf, '2d otf', 'um', 550);
-    xlim([-0.6 0.6]);
-    ylim([-0.6 0.6]);
-
-    % Plot PSF based off the OTF mean requested eye
-    wvfPlot(wvf, '2d psf angle', 'deg', 550);
 end
-%}
-
-return

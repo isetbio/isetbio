@@ -17,6 +17,8 @@ function result = RecursivelyCompareStructs(struct1Name, struct1, struct2Name, s
 % 02/07/17  NPC  Wrote it.
 % 10/05/17  NPC  If a field is not found in one struct do not throw an
 %                error. Print a message in red and skip to the next field.
+% 12/31/23  NPC  Buglet fixes
+
 %% Parse input
 p = inputParser;
 p.addParameter('defaultTolerance', 0, @isnumeric);
@@ -30,11 +32,29 @@ customTolerances = p.Results.customTolerances;
 graphMismatchedData = p.Results.graphMismatchedData;
 failOnMissingFields = p.Results.failOnMissingFields;
 verbosityLevel = p.Results.verbosityLevel;
+
 % Go
-[result, resultOperations, ~, ~, ~] = doRecursion(...
-    struct1Name, struct1, struct2Name, struct2, ...
-    defaultTolerance, customTolerances, {}, {}, {}, ...
-    [], [], struct2Name, graphMismatchedData, failOnMissingFields, verbosityLevel);
+if (failOnMissingFields)
+    [result, resultOperations, ~, ~, ~] = doRecursion(...
+        struct1Name, struct1, struct2Name, struct2, ...
+        defaultTolerance, customTolerances, {}, {}, {}, ...
+        [], [], struct2Name, graphMismatchedData, failOnMissingFields, verbosityLevel);
+else
+    try
+        [result, resultOperations, ~, ~, ~] = doRecursion(...
+            struct1Name, struct1, struct2Name, struct2, ...
+            defaultTolerance, customTolerances, {}, {}, {}, ...
+            [], [], struct2Name, graphMismatchedData, ~failOnMissingFields, verbosityLevel);
+    catch
+        result{1} = 'structs are not identical';
+        if (verbosityLevel > 0)
+            fprintf(2, 'structs are not identical\n');
+        end
+    
+    end
+
+end
+
 
 % Print the results
 if (verbosityLevel > 0)
@@ -101,10 +121,11 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
         struct2FieldNames = sort(fieldnames(struct2));
 
         if (numel(struct1FieldNames) ~= numel(struct2FieldNames))
-            fprintf(2,'** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames))
+            if (verbosityLevel > 0)
+                fprintf(2,'** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames))
+            end
             if (failOnMissingFields)
-                result{numel(result)+1} = sprintf('** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames));
-                continue;
+                error('** structs ''%s'' and ''%s'' have different number of fields: %d vs %d\n', struct1Name, struct2Name, numel(struct1FieldNames), numel(struct2FieldNames));
             end
         end
         
@@ -113,10 +134,11 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
             fullFieldName1 = sprintf('%s.%s', struct1FullName,theFieldName);
             if (~isfield(struct2, theFieldName))
                 if (failOnMissingFields)
-                    result{numel(result)+1} = sprintf('*** Field ''%ss'' not found in struct ''%s''. Skipping this field.\n', theFieldName, struct2FullName);
-                    continue;
+                    error('*** Field ''%ss'' not found in struct ''%s''. Skipping this field.\n', theFieldName, struct2FullName);
                 else
-                    fprintf(2, '**** Field ''%ss'' not found in struct ''%s''. Skipping this field.\n', theFieldName, struct2FullName);
+                    if (verbosityLevel > 0)
+                        fprintf(2, '**** Field ''%ss'' not found in struct ''%s''. Skipping this field.\n', theFieldName, struct2FullName);
+                    end
                     continue;
                 end
             end
@@ -150,7 +172,8 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
                 [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames] = doRecursion(...
                     fullFieldName1, field1, fullFieldName2, field2, ...
                     tolerance, customTolerances, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames, ...
-                    result, oldResultOperations, topLevelStruct2Name, graphMismatchedData);
+                    result, oldResultOperations, topLevelStruct2Name, graphMismatchedData, ...
+                    failOnMissingFields, verbosityLevel);
 
             elseif ((isstruct(field1)) && (~isstruct(field2))) || ((isstruct(field2)) && (~isstruct(field1)))
                 error('One is struct the other one is not.');
@@ -173,7 +196,8 @@ function [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, 
                         [result, resultOperations, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames] = doRecursion(...
                             sprintf('%s{%d}',fullFieldName1, cellIndex), cell1, sprintf('%s{%d}',fullFieldName2, cellIndex), cell2, ...
                             tolerance, customTolerances, toleranceFieldPaths, flatStruct1FieldNames, flatStruct2FieldNames, ...
-                            result, oldResultOperations, topLevelStruct2Name, graphMismatchedData);
+                            result, oldResultOperations, topLevelStruct2Name, graphMismatchedData, ...
+                            failOnMissingFields, verbosityLevel);
 
                     elseif (isnumeric(cell1)) && (isnumeric(cell2))
                         try
@@ -278,7 +302,7 @@ end
 
 
 function assertCellsHaveMatchingLength(cellArray1Name, cellArray1, cellArray2Name, cellArray2)
-    if (isempty(cellArray1)) && (isempty(cellArray1))
+    if (isempty(cellArray1)) && (isempty(cellArray2))
         ;
     elseif ((isempty(cellArray1)) && (~isempty(cellArray2))) || ((isempty(cellArray2)) && (~isempty(cellArray1)))
         error('''%s'' is empty whereas ''%s'' is not. Will not compare further.', cellArray1Name, cellArray2Name);

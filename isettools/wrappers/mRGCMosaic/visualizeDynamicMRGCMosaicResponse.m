@@ -1,5 +1,6 @@
-function visualizeDynamicMRGCMosaicResponse(theMRGCMosaic, visualizedMRGCindices, ...
-    noiseFreeResponseSequence, noisyResponseInstancesSequence, responseTemporalSupportSeconds, generateVideo)
+function visualizeDynamicMRGCMosaicResponse(figNo, theMRGCMosaic, visualizedMRGCindices, ...
+    noiseFreeResponseSequence, noisyResponseInstancesSequence, responseTemporalSupportSeconds, ...
+    exportVideo, videoFileName)
 
     %% Visualize the mRGCMosaic
     visualizedWidthDegs  = theMRGCMosaic.sizeDegs(1)*1.01;
@@ -7,7 +8,7 @@ function visualizeDynamicMRGCMosaicResponse(theMRGCMosaic, visualizedMRGCindices
     domainVisualizationLimits(1:2) = theMRGCMosaic.eccentricityDegs(1) + visualizedWidthDegs  * 0.5*[-1 1];
     domainVisualizationLimits(3:4) = theMRGCMosaic.eccentricityDegs(2) + visualizedHeightDegs * 0.5*[-1 1];
 
-    hFig = figure(1); clf;
+    hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
     ax = subplot('Position', [0.035 0.03 0.96 0.96]);
     theMRGCMosaic.visualize(...
@@ -25,166 +26,134 @@ function visualizeDynamicMRGCMosaicResponse(theMRGCMosaic, visualizedMRGCindices
         'plotTitle', '');
 
 
-    %% Visualize the time course of activation of select mRGC responses in a 3D perspective plot
-    hFig = figure(2); clf;
-    set(hFig, 'Position', [10 10 1020 715], 'Color', [1 1 1]);
+    %% Visualize the time course of activation of select mRGC responses
+    hFig = figure(figNo+1); clf;
+    set(hFig, 'Position', [10 10 750 1150], 'Color', [1 1 1]);
 
+    
     visualizedMRGCXcoords = squeeze(theMRGCMosaic.rgcRFpositionsDegs(visualizedMRGCindices,1));
+    trialNo = 1;
+    spatioTemporalResponseOfSelectMRGCs = (squeeze(noiseFreeResponseSequence(trialNo,:,visualizedMRGCindices)))';
+    activationRange = max(abs(noiseFreeResponseSequence(:)))*[-1 1];
+    dt = responseTemporalSupportSeconds(2)-responseTemporalSupportSeconds(1);
+    temporalSupportRange = [responseTemporalSupportSeconds(1)-dt/2 responseTemporalSupportSeconds(end)+dt/2]*1000;
 
-    subplotHeight = 0.1;
-    subplotWidth = 0.4;
-    dX = (1.0-subplotWidth)/(numel(visualizedMRGCXcoords)+5);
-    dY = (1.0-subplotHeight)/(numel(visualizedMRGCXcoords)+5);
-    faceColor = [1 0.85 0.85];
-    edgeColor = 'none';
-    faceAlpha = 0.75;
-    lineWidth = 1.5;
-    lineStyle = '-';
-    for iRGC = 1:numel(visualizedMRGCXcoords)
-        perspectiveScaleFactor = 0.7+0.3*iRGC/numel(visualizedMRGCXcoords);
-        perspectiveScaleFactor2 = 0.5+1.6*iRGC/numel(visualizedMRGCXcoords);
-        gain = 2 * perspectiveScaleFactor2;
-        responseRange = gain*[min(noiseFreeResponseSequence(:)) max(noiseFreeResponseSequence(:))];
+    ax = subplot(2,1,1);
+    imagesc(ax,responseTemporalSupportSeconds*1000, visualizedMRGCXcoords, spatioTemporalResponseOfSelectMRGCs);
+    set(ax, 'XLim', temporalSupportRange);
+    set(ax, 'CLim', activationRange);
+    xlabel(ax,'time (msec)');
+    set(ax, 'FontSize', 16, 'YDir', 'reverse');
+    ylabel(ax,'mRGC cell x-position (degs)');
+    c = colorbar(ax, 'northoutside');
+    c.Label.String = 'mRGC activation';
+    colormap(ax,brewermap(1024, '*greys'));
 
-        xCoord = dX + iRGC * dX*0.2;
-        yCoord = 1 - subplotHeight - iRGC*dY*perspectiveScaleFactor;
-        ax = axes('Position', [xCoord yCoord subplotWidth*perspectiveScaleFactor2 subplotHeight*perspectiveScaleFactor2 ]);
-        
-        mm = 0; % min(gain*squeeze(noiseFreeResponseSequence(1,:,visualizedMRGCindices(iRGC))));
-        shadedAreaBetweenTwoLines(ax, ...
-            responseTemporalSupportSeconds*1000, ...
-            gain*noiseFreeResponseSequence(1,:,visualizedMRGCindices(iRGC)), ...
-            responseTemporalSupportSeconds*0+mm, ...
-            faceColor, edgeColor, faceAlpha, lineWidth, lineStyle);
-
+    ax = subplot(2,1,2);
+    cLUT = brewermap(numel(visualizedMRGCXcoords), 'Spectral');
+    for iCell = 1:numel(visualizedMRGCXcoords)
+        lineColor = squeeze(cLUT(iCell,:));
         hold(ax, 'on')
-        plot(ax, responseTemporalSupportSeconds*1000, responseTemporalSupportSeconds*0, 'k-');
-        plot(ax, responseTemporalSupportSeconds*1000, gain*noiseFreeResponseSequence(1,:,visualizedMRGCindices(iRGC)), ...
-            'r-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]);
+        plot(ax, responseTemporalSupportSeconds*1000, spatioTemporalResponseOfSelectMRGCs(iCell,:), ...
+            '-', 'LineWidth', 1.5, 'Color', lineColor);
         
-
-        set(ax, 'Color', 'none', 'XColor', 'none', 'YColor', [0.5 0.5 0.5], ...
-            'XTick', [], 'YTick', [], 'YLim', responseRange, 'FontSize', 16);
-        if (iRGC == numel(visualizedMRGCXcoords))
-            set(ax, 'XColor', [0.5 0.5 0.5])
-        end
-        box(ax, 'off')
-        
-        if (iRGC == numel(visualizedMRGCXcoords))
-            set(ax, 'XColor', [0 0 0], 'XTick', 0:100:20000);
-            xlabel(ax, 'time (msec)')
-        end
     end
 
+    colorbarTicks = prctile(visualizedMRGCXcoords(:), 0:20:100);
+    c = colorbar(ax, 'northoutside');
+    c.Label.String = 'mRGC x position';
+    c.Ticks = 0:0.2:1;
+    c.TickLabels = sprintf('%2.2f\n', colorbarTicks);
+    colormap(ax,cLUT);
+
+    set(ax, 'XLim', temporalSupportRange);
+    set(ax, 'YLim', activationRange);
+    xlabel(ax,'time (msec)');
+    set(ax, 'FontSize', 16);
+    ylabel(ax,'mRGC activation');
+    drawnow
 
 
-    %% Visualize the peak response amplitudes of the select mRGCs
-    hFig = figure(3); clf;
-    set(hFig, 'Position', [10 10 1020 715], 'Color', [1 1 1]);
+    if (exportVideo)
+        %% Visualize the mean spatiotemporal response as a video
+        hFig = figure(figNo+4); clf;
+        set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
+        ax = subplot('Position', [0.035 0.03 0.96 0.96]);
+    
+        videoOBJ = VideoWriter(videoFileName, 'Uncompressed AVI');
+        videoOBJ.FrameRate = 10;
+        videoOBJ.Quality = 100;
+        videoOBJ.open();
 
-    maxResponseAmplitudes = max(abs(noiseFreeResponseSequence(1,:,visualizedMRGCindices)), [], 2);
-size(maxResponseAmplitudes)
-
-visualizedMRGCXcoords
-    plot(visualizedMRGCXcoords, squeeze(maxResponseAmplitudes), 'ro');
-    set(ax, 'XLim', domainVisualizationLimits(1:2), ...
-            'YLim', [-1.0 1.0], 'FontSize', 16);
-    grid(ax, 'on');
-    xlabel('space (degs)')
-    ylabel('mRGC response')
-
-    pause
-
-
-    if (1==2)
-    %% Visualize the mean spatiotemporal response as a video
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.035 0.03 0.96 0.96]);
-
-    videoFileName = 'FullMRGCMosaicNoiseFreeResponseToDriftingGrating';
-    videoOBJ = VideoWriter(videoFileName, 'Uncompressed AVI');
-    videoOBJ.FrameRate = 10;
-    videoOBJ.open();
-
-    for iFrame = 1:size(noiseFreeResponseSequence,2)
-        noiseFreeResponse = noiseFreeResponseSequence(1,iFrame,:);
-
-        theMRGCMosaic.visualize(...
-            'figureHandle', hFig, ...
-            'axesHandle', ax, ...
-            'activation', noiseFreeResponse, ...
-            'activationRange', max(abs(noiseFreeResponseSequence(:)))*[-1 1], ...
-            'verticalActivationColorBarInside', true, ...
-            'centerSubregionContourSamples', 24, ...
-            'backgroundColor', [0 0 0], ...
-            'labelRGCsWithIndices', visualizedMRGCindices, ...
-            'labeledRGCsColor', [1 0 0], ...
-            'domainVisualizationLimits', domainVisualizationLimits, ...
-            'domainVisualizationTicks', struct('x', -10:10, 'y', -10:10), ...
-            'plotTitle', sprintf('noise-free response (%2.3f sec)', responseTemporalSupportSeconds(iFrame)));
-
-        drawnow;
-        videoOBJ.writeVideo(getframe(hFig));
-    end
-    videoOBJ.close();
-    exportVideo(videoFileName);
+        iTrial = 1;
+        for iFrame = 1:size(noiseFreeResponseSequence,2)
+            noiseFreeResponse = noiseFreeResponseSequence(iTrial,iFrame,:);
+    
+            theMRGCMosaic.visualize(...
+                'figureHandle', hFig, ...
+                'axesHandle', ax, ...
+                'activation', noiseFreeResponse, ...
+                'activationRange', max(abs(noiseFreeResponseSequence(:)))*[-1 1], ...
+                'verticalActivationColorBarInside', true, ...
+                'centerSubregionContourSamples', 24, ...
+                'backgroundColor', [0 0 0], ...
+                'labelRGCsWithIndices', visualizedMRGCindices, ...
+                'labeledRGCsColor', [1 0 0], ...
+                'domainVisualizationLimits', domainVisualizationLimits, ...
+                'domainVisualizationTicks', struct('x', -10:10, 'y', -10:10), ...
+                'plotTitle', sprintf('noise-free response (%2.3f sec)', responseTemporalSupportSeconds(iFrame)));
+    
+            drawnow;
+            videoOBJ.writeVideo(getframe(hFig));
+        end
+        
     
 
-    %% Visualize a noisy spatiotemporal response instance
-    hFig = figure(2); clf;
-    set(hFig, 'Position', [10 10 1900 1050], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.035 0.03 0.96 0.96]);
-
-    videoFileName = 'FullMRGCMosaicNoisyResponseInstancesToDriftingGrating';
-    videoOBJ = VideoWriter(videoFileName, 'Uncompressed AVI');
-    videoOBJ.FrameRate = 10;
-    videoOBJ.open();
-
-    visualizedTrials = size(noisyResponseInstancesSequence,1);
-    visualizedTrials = 1;
-
-    for iTrial = 1:visualizedTrials
-    for iFrame = 1:size(noisyResponseInstancesSequence,2)
-        noiseFreeResponse = noisyResponseInstancesSequence(iTrial,iFrame,:);
-
-        theMRGCMosaic.visualize(...
-            'figureHandle', hFig, ...
-            'axesHandle', ax, ...
-            'activation', noiseFreeResponse, ...
-            'activationRange', max(abs(noisyResponseInstancesSequence(:)))*[-1 1], ...
-            'verticalActivationColorBarInside', true, ...
-            'centerSubregionContourSamples', 24, ...
-            'backgroundColor', [0 0 0], ...
-            'labelRGCsWithIndices', visualizedMRGCindices, ...
-            'labeledRGCsColor', [1 0 0], ...
-            'domainVisualizationLimits', domainVisualizationLimits, ...
-            'domainVisualizationTicks', struct('x', -10:10, 'y', -10:10), ...
-            'plotTitle', sprintf('noisy response instance %d (%2.3f sec)', iTrial, responseTemporalSupportSeconds(iFrame)));
-
-        drawnow;
-        videoOBJ.writeVideo(getframe(hFig));
-    end
-    end
-    videoOBJ.close();
-    exportVideo(videoFileName);
-
-
-end
-
+        %% Visualize noisy spatiotemporal response instances
     
+        visualizedTrials = size(noisyResponseInstancesSequence,1);
 
+        for iTrial = 1:visualizedTrials
+        for iFrame = 1:size(noisyResponseInstancesSequence,2)
+            noiseFreeResponse = noisyResponseInstancesSequence(iTrial,iFrame,:);
+    
+            theMRGCMosaic.visualize(...
+                'figureHandle', hFig, ...
+                'axesHandle', ax, ...
+                'activation', noiseFreeResponse, ...
+                'activationRange', max(abs(noisyResponseInstancesSequence(:)))*[-1 1], ...
+                'verticalActivationColorBarInside', true, ...
+                'centerSubregionContourSamples', 24, ...
+                'backgroundColor', [0 0 0], ...
+                'labelRGCsWithIndices', visualizedMRGCindices, ...
+                'labeledRGCsColor', [1 0 0], ...
+                'domainVisualizationLimits', domainVisualizationLimits, ...
+                'domainVisualizationTicks', struct('x', -10:10, 'y', -10:10), ...
+                'plotTitle', sprintf('noisy response instance %d (%2.3f sec)', iTrial, responseTemporalSupportSeconds(iFrame)));
+    
+            drawnow;
+            videoOBJ.writeVideo(getframe(hFig));
+        end
+        end
+        
+        videoOBJ.close();
+
+        % Reformat video from AVI to mp4
+        reformatVideo(videoFileName);
+    end
 
 end
 
 
-function exportVideo(videoFileName)
-    sysCommand = sprintf('/opt/homebrew/bin/ffmpeg -i %s.avi -c:v libx264 -crf 22 -pix_fmt yuv420p %s.mp4', ...
-        videoFileName, videoFileName);
-    system(sysCommand);
-
-    sysCommand = sprintf('rm %s.avi ', videoFileName);
-    system(sysCommand);
+function reformatVideo(videoFileName)
+    if (exist('/opt/homebrew/bin/ffmpeg'))
+        sysCommand = sprintf('/opt/homebrew/bin/ffmpeg -i %s.avi -c:v libx264 -crf 22 -pix_fmt yuv420p %s.mp4', ...
+            videoFileName, videoFileName);
+        system(sysCommand);
+    
+        sysCommand = sprintf('rm %s.avi ', videoFileName);
+        system(sysCommand);
+    end
 end
 
 

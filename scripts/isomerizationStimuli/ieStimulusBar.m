@@ -146,7 +146,7 @@ wbar = waitbar(0,'Stimulus movie');
 % This is the mean oi that we use at the start and end
 barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;  % Gray background
 scene    = sceneFromFile(barMovie, 'rgb', params.meanLuminance, display);
-oiMean   = oiCompute(oi,scene);
+oiMean   = oiCompute(oi,scene,'pad value','mean');
 
 % nSteps = min(sceneGet(scene,'cols')+grayStart+grayEnd, params.nSteps);
 stimFrames = (sceneGet(scene,'cols') - params.barWidth);
@@ -180,7 +180,7 @@ for t = 1 : nSteps
         sceneRGB(:,:,t,:) = sceneGet(scene,'rgb');
         
         % Compute optical image
-        oi = oiCompute(oi, scene);
+        oi = oiCompute(oi,scene,'pad value','mean');
     end   
 
     % Compute absorptions and photocurrent

@@ -20,7 +20,7 @@ rng('default');  % To achieve the same result each time
 % or for simulating people with biological variability.
 
 % Human optics
-oi = oiCreate; 
+oi = oiCreate('human'); 
 % vcAddObject(oi);
 
 % Create a typical cone mosaic and show a little picture
@@ -62,7 +62,7 @@ for rr = 1:nLevels
         scene{ww} = sceneAdjustLuminance(scene{ww},luminance(rr));
         
         % Compute the spectral irradiance at the retina
-        oi = oiCompute(scene{ww},oi);
+        oi = oiCompute(oi,scene{ww},'pad value','mean');
         
         % Compute the absorptions
         cMosaic.compute(oi);

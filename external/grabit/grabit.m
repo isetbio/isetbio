@@ -664,7 +664,7 @@ switch lower(ext)
     eval(sprintf('%s = var;', fname));
     save(fullfile(pname, [fname, ext]), fname, '-ascii', '-double', '-tabs');
   otherwise
-    errordlg('Unknown extension.');
+    errordlg('Unknown extension "%s".',ext);
 end
 
 

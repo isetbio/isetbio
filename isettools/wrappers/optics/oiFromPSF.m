@@ -57,7 +57,7 @@ function oi = oiFromPSF(psfEnsemble, wavelengthSupport, spatialSupportArcMin, ..
     spatialFrequencySupportYcyclesPerMM = ySfCyclesDeg / (1e-3*umPerDegree);
     
     % Create oi
-    oi = oiCreate;
+    oi = oiCreate('human');
     oi = oiSet(oi, 'name', 'oi from PSF');
 
     % Set the OTF data and support parameters.

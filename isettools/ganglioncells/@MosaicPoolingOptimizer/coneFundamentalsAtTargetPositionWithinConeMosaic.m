@@ -81,7 +81,7 @@ function customConeFundamentals = coneFundamentalsAtTargetPositionWithinConeMosa
         scene = sceneSet(scene,'energy',energy);
 
         % Compute the retinal image of the monochromatic scene
-        theMonochromaticOpticalImage = oiCompute(scene, theOptics);
+        theMonochromaticOpticalImage = oiCompute(theOptics, scene);
 
         % Compute the L-, M-, and S-cone exciations to the monochromatic scene
         theConeExcitations = theConeMosaic.compute(...

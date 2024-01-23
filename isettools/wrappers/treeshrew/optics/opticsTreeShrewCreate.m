@@ -162,8 +162,13 @@ function optics = opticsFromTreeShrewZCoefs(whichShrew, pupilDiameterMM, ...
     wvfP = wvfSet(wvfP, 'measured pupil size', measuredDiameterMM_TreeShrew);
     wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMM);
     wvfP = wvfSet(wvfP, 'ref psf sample interval', psfSamplesPerMinute);
-    % Compute the PSF using the wavefront code
-    wvfP = wvfComputePSF(wvfP);
+    
+
+    % Compute the PSF using the wavefront code.
+    %
+    % @Nicolas
+    % How does custom lca interact with the new compute function?
+    wvfP = wvfCompute(wvfP);
     
     % Create the corresponding optics object
     optics = oiGet(wvf2oi(wvfP), 'optics');

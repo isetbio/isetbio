@@ -42,7 +42,7 @@ f = zeros(tSamples,length(lum));
 for ii = 1:length(lum)
     
     scene = sceneSet(scene,'mean luminance',lum(ii));
-    oi = oiCompute(oi,scene);
+    oi = oiCompute(oi,scene,'pad value','mean');
     % oiGet(oi,'mean illuminance')
     
     cMosaic.compute(oi);
