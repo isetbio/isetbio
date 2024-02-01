@@ -734,7 +734,7 @@ end
 
 % Superimpose an optical PSF
 if (~isempty(superimposedPSF))
-    superimposeThePSF(obj, axesHandle, domain, superimposedPSF);
+    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, cMap);
 end
 
 hold(axesHandle, 'off');
@@ -835,6 +835,11 @@ if (isempty(domainVisualizationTicks))
     ticksX = xo + xx*0.5*[-0.75 0 0.75];
     ticksY = yo + yy*0.5*[-0.75 0 0.75];
     
+    signX = sign(ticksX);
+    signY = sign(ticksY);
+    ticksX = abs(ticksX);
+    ticksY = abs(ticksY);
+    
     if (xx > 10)
         domainVisualizationTicks.x = round(ticksX);
     elseif (xx > 5)
@@ -854,6 +859,14 @@ if (isempty(domainVisualizationTicks))
     else
         domainVisualizationTicks.y = round(ticksY*1000)/1000;
     end
+
+    domainVisualizationTicks.x = signX .* domainVisualizationTicks.x;
+    domainVisualizationTicks.y = signY .* domainVisualizationTicks.y;
+end
+
+if (strcmp(domain, 'microns'))
+    domainVisualizationTicks.x = sign(domainVisualizationTicks.x) .* round(abs(domainVisualizationTicks.x));
+    domainVisualizationTicks.y = sign(domainVisualizationTicks.y) .* round(abs(domainVisualizationTicks.y));
 end
 
 set(axesHandle, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
@@ -966,30 +979,34 @@ drawnow;
 end
 
 %% Method to superimpose an optical PSF on top of the mosaic
-function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData)
+function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData, theColorMap)
 
-xSupport = thePSFData.supportXdegs + obj.eccentricityDegs(1);
-ySupport = thePSFData.supportYdegs + obj.eccentricityDegs(2);
 
 if (strcmp(visualizationDomain, 'microns'))
     if (isfield(thePSFData, 'supportXmicrons'))
         xSupport  = thePSFData.supportXmicrons + obj.eccentricityMicrons(1);
         ySupport  = thePSFData.supportYmicrons + obj.eccentricityMicrons(2);
     else
-         % Convert spatial support in microns to degs
-         xSupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(xSupport);
-         ySupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(ySupport);
+        % Convert spatial support in microns to degs
+        xSupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(thePSFData.supportXdegs + obj.eccentricityDegs(1));
+        ySupport  = obj.distanceDegreesToDistanceMicronsForCmosaic(thePSFData.supportYdegs + obj.eccentricityDegs(2));
     end
+else
+    xSupport = thePSFData.supportXdegs + obj.eccentricityDegs(1);
+    ySupport = thePSFData.supportYdegs + obj.eccentricityDegs(2);
 end
 
-cmap = brewermap(1024,'blues');
+if (isempty(theColorMap))
+    theColorMap = brewermap(1024,'blues');
+end
+
 alpha = 0.75;
 contourLineColor = [0.2 0.2 0.2];
 
 cMosaic.semiTransparentContourPlot(axesHandle, ...
     xSupport, ySupport, ...
     thePSFData.data/max(thePSFData.data(:)), ...
-    0.05:0.15:0.95, cmap, alpha, contourLineColor, ...
+    0.05:0.15:0.95, theColorMap, alpha, contourLineColor, ...
     'lineWidth', 1.5);
 end
 
