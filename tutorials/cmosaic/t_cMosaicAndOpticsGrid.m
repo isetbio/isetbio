@@ -43,14 +43,17 @@ else
     fprintf('Not saving figures. Set saveFigures to true in the source to save\n');
 end
 
+% Setup fast version
+fastVersion = true;
+
 %% Mosaic size (in degrees)
 mosaicSizeDegs = [1 1];
 
 %% Mosaic eccentricity (in degrees)
 if (fastParameters)
     fprintf('Running limited set of locations. Change fastParameters to false in the source to get more\n');
-    mosaicEccDegsX  = [-12 0 12];
-    mosaicEccDegsY  = [-8 0 8];
+    mosaicEccDegsX  = [-30 -20 0 20 30];
+    mosaicEccDegsY  = [-10 0 10];
 else
     mosaicEccDegsX  = [-12 -8 -4 -2 0 2 4 8 12];
     mosaicEccDegsY  = [-8 -4 -2 0 2 4 8];
@@ -135,7 +138,7 @@ for subjectRankOrder = 1
         thePSFData = psfEnsemble{1};
 
         % Visualize PSF
-        targetWavelength = 550;
+        targetWavelength = 400;
         [~,idx] = min(abs(thePSFData.supportWavelength-targetWavelength));
         psf = squeeze(thePSFData.data(:,:,idx));
         psf = psf/max(psf(:));
@@ -189,7 +192,7 @@ for subjectRankOrder = 1
 
     %% Save figure if desired
     if (saveFigures)
-        NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s_subject%d_rank%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID, subjectRankOrder)), hFig, 300);
+        NicePlot.exportFigToPDF(fullfile(figureDir,sprintf('%s_subject%d_rank%d_%d_%d.pdf',opticsZernikeCoefficientsDataBase, testSubjectID, subjectRankOrder, inFocusWavelength, targetWavelength)), hFig, 300);
     end
 
 end
