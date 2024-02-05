@@ -32,7 +32,7 @@ fastParameters = true;
 %
 % We don't want tutorials saving things into the isetbio source tree
 % willy-nilly
-saveFigures = false;
+saveFigures = true;
 figureDir = fullfile(isetbioRootPath,'local',mfilename);
 if (saveFigures)
     if (~exist(figureDir,'dir'))
@@ -59,13 +59,17 @@ else
     mosaicEccDegsY  = [-8 -4 -2 0 2 4 8];
 end
 
+% Size of psf plot times 0.5
+psfPlotHalfWidthMicrons = 40;
+
 %% Eye: choose {from 'right eye', 'left eye'}
 whichEye = 'right eye';
 
-%% PSF in-focus wavelength
+%% PSF in-focus and target wavelength
 inFocusWavelength = 550;
+targetWavelength = 550;
 
-%% choose between {'Polans2015', and 'Artal2012'}
+%% Choose between {'Polans2015', and 'Artal2012'}
 opticsZernikeCoefficientsDataBase = 'Polans2015';
 
 %% Select ranking of displayed subject and loop
@@ -74,9 +78,10 @@ opticsZernikeCoefficientsDataBase = 'Polans2015';
 % For example, use 1:10
 for subjectRankOrder = 1
 
-    % Setup a very large and complex figure
+    % Setup a very large and complex figure.  This might
+    % not fit well on your screen.
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1600 1200], 'Color', [0 0 0]);
+    set(hFig, 'Position', [0 0 3000 1500], 'Color', [0 0 0]);
 
     rowsNum = numel(mosaicEccDegsY);
     colsNum = numel(mosaicEccDegsX);
@@ -138,7 +143,6 @@ for subjectRankOrder = 1
         thePSFData = psfEnsemble{1};
 
         % Visualize PSF
-        targetWavelength = 400;
         [~,idx] = min(abs(thePSFData.supportWavelength-targetWavelength));
         psf = squeeze(thePSFData.data(:,:,idx));
         psf = psf/max(psf(:));
@@ -154,12 +158,11 @@ for subjectRankOrder = 1
         domainUnits = 'microns';
         
         % Visualize part of the mosaic
-        halfWidthMicrons = 20;
-        domainVisualizationLims(1:2) = cm.eccentricityMicrons(1) + (halfWidthMicrons+0.5)*[-1 1];
-        domainVisualizationLims(3:4) = cm.eccentricityMicrons(2) + (halfWidthMicrons+0.5)*[-1 1];
+        domainVisualizationLims(1:2) = cm.eccentricityMicrons(1) + (psfPlotHalfWidthMicrons+0.5)*[-1 1];
+        domainVisualizationLims(3:4) = cm.eccentricityMicrons(2) + (psfPlotHalfWidthMicrons+0.5)*[-1 1];
         domainVisualizationTicks = struct(...
-            'x',  sign(cm.eccentricityMicrons(1)) * round(abs(cm.eccentricityMicrons(1))) + halfWidthMicrons*[-1 0 1], ...
-            'y',  sign(cm.eccentricityMicrons(2)) * round(abs(cm.eccentricityMicrons(2))) + halfWidthMicrons*[-1 0 1]);
+            'x',  sign(cm.eccentricityMicrons(1)) * round(abs(cm.eccentricityMicrons(1))) + psfPlotHalfWidthMicrons*[-1 0 1], ...
+            'y',  sign(cm.eccentricityMicrons(2)) * round(abs(cm.eccentricityMicrons(2))) + psfPlotHalfWidthMicrons*[-1 0 1]);
 
         thePSFdataStruct = struct(...
             'supportXmicrons', psfSupportMicrons, ...
@@ -183,11 +186,12 @@ for subjectRankOrder = 1
             'noXlabel', (r < rowsNum), ...
             'backgroundColor', 0.85*[1 1 1], ...
             'clearAxesBeforeDrawing', false, ...
-            'plotTitle', sprintf('%d, %d', X(iEcc), Y(iEcc)), ...
             'plotTitleColor', [0.5 0.5 0.5], ...
-            'fontSize', 16, ...
+            'fontSize', 8, ...
             'verbose', false, ...
-            'plotTitle', sprintf('focus: %2.0fnm, target: %2.0fnm', inFocusWavelength, targetWavelength));
+            'plotTitle', { sprintf('focus: %2.0fnm, target: %2.0fnm', inFocusWavelength, targetWavelength) ; sprintf('x ecc degs %d, y ecc degs %d', X(iEcc), Y(iEcc)) }, ...
+            'plotTitleFontSize', 10 ...
+            );
     end
 
     %% Save figure if desired
