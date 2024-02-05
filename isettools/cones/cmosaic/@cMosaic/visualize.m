@@ -147,7 +147,7 @@ p.addParameter('fontangle', 'normal', @(x)(ismember(lower(x), {'normal', 'italic
 p.addParameter('colorbarfontsize', 16, @(x)(isempty(x)||(isscalar(x))));
 p.addParameter('backgroundcolor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
 
-p.addParameter('plottitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
+p.addParameter('plottitle', '', @(x)(isempty(x) || ischar(x) || islogical(x) || iscell(x)));
 p.addParameter('plottitlecolor', [0 0 0], @isnumeric);
 p.addParameter('plottitlefontsize', 16, @isscalar);
 p.addParameter('textdisplay', '',@(x)(isempty(x) || ischar(x)));
@@ -946,7 +946,7 @@ switch (domain)
 end
 
 % User can set plotTitle to false, empty or a character string.
-if plotTitle
+if (iscell(plotTitle) || plotTitle)
     title(axesHandle, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
 else
     if (numel(obj.coneDensities) == 4)
