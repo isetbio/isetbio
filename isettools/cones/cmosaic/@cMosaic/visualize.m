@@ -946,7 +946,7 @@ switch (domain)
 end
 
 % User can set plotTitle to false, empty or a character string.
-if (iscell(plotTitle) || plotTitle)
+if (iscell(plotTitle) || ~isempty(plotTitle))
     title(axesHandle, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
 else
     if (numel(obj.coneDensities) == 4)
