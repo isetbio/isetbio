@@ -1,8 +1,23 @@
 function initializeConePositions(obj, overlappingConeFractionForElimination)
-% Import cone RF positions, for passed eccentricity, size, and
+% Import cone positions
+% 
+% Syntax
+%   cMosaic.initializeConePositions(coneOverlapThreshold)
+%
+% Inputs
+%   obj  -  A cMosaic object
+%   overlappingConeFractionForElimination - Some unexplained cone overlap
+%          parameter that I will try to document.
+%
+% , for passed eccentricity, size, and
 % eye. Get a little larger region and crop after we compute the
 % cone spacing below
 %
+%
+% See also
+%   cMosaic
+%
+% NC
 %
 
 %%
