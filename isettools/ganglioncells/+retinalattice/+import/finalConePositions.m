@@ -1,16 +1,40 @@
 function rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, eccDegs, sizeDegs, whichEye, overlappingConeFractionForElimination)
+% Starting with a large cone lattice, extract new cone positions 
 %
-% Comments needed.
+% Brief
+%   It appears (BW) that we start with a large lattice and some parameters.
+%   We return a part of the lattice, extracted according to the parameters.
 %
-% Notice the chatGPT below in which I asked it to shorten the variable
-% names.  Interesting.
+% Syntax
+%   rfPositionsMicrons = finalConePositions(sourceLatticeSizeDegs, ...
+%          eccDegs,sizeDegs, whichEye, ...
+%          overlappingConeFractionForElimination) 
 %
+% Inputs
+%   sourceLatticeSizeDegs - The original lattice
+%   eccDegs
+%   sizeDegs
+%   whichEye
+%   overlappingConeFractionForElimination
+%
+% Output
+%   rfPositionsMicros - I think rf means receptive field but in this case
+%          it is cone center positions (BW).
+%
+% Description
+%
+%
+% Also:  Read the chatGPT code below in which I asked it to shorten the
+% variable names.  Interesting.
+%
+% See also
+%   retinalattice
 
-% Convert degs to retinal microns
+%% Convert degs to retinal microns
 eccMicrons  = 1000*RGCmodels.Watson.convert.rhoDegsToMMs(eccDegs);
 sizeMicrons = RGCmodels.Watson.convert.sizeVisualDegsToSizeRetinalMicrons(sizeDegs, sqrt(sum(eccDegs.^2,2)));
 
-% Load final cone positions
+% Load cone positions
 p = retinalattice.configure(sourceLatticeSizeDegs, 'cones', whichEye);
 theMosaicFileName = fullfile(p.latticeGalleryDir, p.patchFinalPositionsSaveFileName);
 fprintf('Loading cone mosaic data from %s.\n', theMosaicFileName);
