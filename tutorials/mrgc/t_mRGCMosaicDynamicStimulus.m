@@ -146,8 +146,10 @@ function t_mRGCMosaicDynamicStimulus
     hFig = coVisualizeRetinalStimulusConeAndMRGCmosaic(figNo, theMRGCMosaic, theStimulusRetinalOISequence.frameAtIndex(maxModulationFrame));
 
     % Save figure
-    pdfFileName = fullfile(figureDir, 'mRGCmosaic_ConeMosaic_OpticalImage_Combo.pdf');
-    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+    if (saveFigures)
+        pdfFileName = fullfile(figureDir, 'mRGCmosaic_ConeMosaic_OpticalImage_Combo.pdf');
+        NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+    end
 
     %% Save some RAM
     clear 'theStimulusRetinalOISequence'
