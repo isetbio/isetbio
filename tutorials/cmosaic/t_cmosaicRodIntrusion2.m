@@ -42,12 +42,12 @@ cM1 = cMosaic(...
 cM1.visualize;
 
 %%
-oi = oiSet(oi,'fov',2)
+oi = oiSet(oi,'fov',10)
 allE = cM1.compute(oi);
-% uData = cM1.plot('excitations',allE);
-% uData = cM1.plot('excitations',allE,'label cones',true);
 uData = cM1.plot('excitations',allE);
 
+% uData = cM1.plot('excitations',allE);
+% uData = cM1.plot('excitations',allE,'label cones',true);
 
 %% Near the fovea, smaller gaps
 cM2 = cMosaic(...
