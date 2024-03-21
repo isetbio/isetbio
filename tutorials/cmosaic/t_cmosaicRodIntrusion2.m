@@ -11,11 +11,12 @@ ieInit;
 
 %% Make an OI
 
+hParms = harmonicP;
+hParms.row = 1024; hParms.col = 1024; hParms.freq = 10;
 scene = sceneCreate('harmonic',hParms);
 scene = sceneSet(scene,'fov',10);
 
-hParms = harmonicP;
-hParms.row = 1024; hParms.col = 1024; hParms.freq = 10;
+
 oi = oiCreate; oi = oiCompute(oi,scene); oiWindow(oi);
 
 %% Cone aperture rule
@@ -40,7 +41,7 @@ cM1 = cMosaic(...
 cM1.visualize;
 
 %%
-oi = oiSet(oi,'fov',1)
+oi = oiSet(oi,'fov',10)
 allE = cM1.compute(oi);
 % uData = cM1.plot('excitations',allE);
 uData = cM1.plot('excitations',allE,'label cones',true);
