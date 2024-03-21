@@ -17,7 +17,7 @@ scene = sceneCreate('harmonic',hParms);
 scene = sceneSet(scene,'fov',10);
 
 
-oi = oiCreate; oi = oiCompute(oi,scene); oiWindow(oi);
+oi = oiCreate('human'); oi = oiCompute(oi,scene); oiWindow(oi);
 
 %% Cone aperture rule
 sigmaGaussian = 0.204;  % From McMahon et al, 2000
@@ -41,7 +41,7 @@ cM1 = cMosaic(...
 cM1.visualize;
 
 %%
-oi = oiSet(oi,'fov',10)
+oi = oiSet(oi,'fov',20)
 allE = cM1.compute(oi);
 % uData = cM1.plot('excitations',allE);
 uData = cM1.plot('excitations',allE,'label cones',true);
