@@ -31,8 +31,11 @@ fastParameters = true;
 %% Control saving of figures.
 %
 % We don't want tutorials saving things into the isetbio source tree
-% willy-nilly
-saveFigures = true;
+% willy-nilly.
+%
+% Set default for save to false in any case, as for this tutorial at least
+% saving crushes Matlab on the autorun.
+saveFigures = false;
 figureDir = fullfile(isetbioRootPath,'local',mfilename);
 if (saveFigures)
     if (~exist(figureDir,'dir'))
