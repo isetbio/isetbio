@@ -16,13 +16,9 @@ hParms.row = 1024; hParms.col = 1024; hParms.freq = 10;
 scene = sceneCreate('harmonic',hParms);
 scene = sceneSet(scene,'fov',10);
 
-<<<<<<< Updated upstream
-
 oi = oiCreate('human'); oi = oiCompute(oi,scene); oiWindow(oi);
-=======
-oi = oiCreate('human wvf'); 
 oi = oiCompute(oi,scene); oiWindow(oi);
->>>>>>> Stashed changes
+
 
 %% Cone aperture rule
 sigmaGaussian = 0.204;  % From McMahon et al, 2000
@@ -46,11 +42,7 @@ cM1 = cMosaic(...
 cM1.visualize;
 
 %%
-<<<<<<< Updated upstream
-oi = oiSet(oi,'fov',20)
-=======
-oi = oiSet(oi,'fov',10);
->>>>>>> Stashed changes
+oi = oiSet(oi,'fov',2)
 allE = cM1.compute(oi);
 % uData = cM1.plot('excitations',allE);
 % uData = cM1.plot('excitations',allE,'label cones',true);
