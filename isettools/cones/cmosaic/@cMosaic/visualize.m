@@ -8,17 +8,29 @@ function visualizationParams = visualize(obj, varargin)
 %   cm = cMosaic(); cm.visualize();
 %
 % Brief description
-%   These are the NC visualization functions.
+%   These are the Cottaris visualization functions.
 %
+% Input
+%   obj - a cMosaic
+% 
+% Optional key/val
+%   Many.  Not yet documented here.  Sigh.
+%
+% Output
+%   visualizationParams - Using these as the varargin should produce
+%       the same plot.
+%
+% Description
 %   The number of parameters is large and the possibilities are vast.
-%   Thus, we also provide the user with a set of simpler calls.  Those
-%   are in cMosaic.plot.  Those routine interface to this one
-%   regularly.
+%   To simplify, we also provide the user with a set of simpler calls
+%   in cMosaic.plot.  Those routine interface to this one regularly.
 %
-%   (It is likely that a function cMosaicPlot() will be implemented.)
+%   It is likely that a function cMosaicPlot() will be implemented
+%   someday.
+%
 %   Also, we are considering making this routine visualize(cm,...) and
 %   having it live outside of the class.  We can leave just the
-%   cm.plot as part of the class.  Noodling, not sure what I think.
+%   cm.plot as part of the class.  Noodling, not sure what I think (BW).
 %
 %   You can see the many settable visualize params
 %
@@ -32,7 +44,7 @@ function visualizationParams = visualize(obj, varargin)
 %
 %  See also
 %   cMosaic.plot (an interface to this)
-%   Tutorials in tutorials/cones/cMosaic
+%   There are tutorials in tutorials/cones/cMosaic
 
 % Examples:
 %{
@@ -217,6 +229,7 @@ clearAxesBeforeDrawing = p.Results.clearaxesbeforedrawing;
 if (~isempty(activation))
     labelCones = false;
     if (labelConesInActivationMap)
+        % Colored cones in addition to activiation level.
         labelCones = true;
     end
 end

@@ -6,11 +6,26 @@
 %  t_cmosaicRodIntrusion for the main explanation
 % 
 
+%%
+ieInit;
+
+%% Make an OI
+
+scene = sceneCreate('harmonic',hParms);
+scene = sceneSet(scene,'fov',10);
+
+hParms = harmonicP;
+hParms.row = 1024; hParms.col = 1024; hParms.freq = 10;
+oi = oiCreate; oi = oiCompute(oi,scene); oiWindow(oi);
+
+%% Cone aperture rule
 sigmaGaussian = 0.204;  % From McMahon et al, 2000
 coneApertureModifiers = struct(...
     'smoothLocalVariations', true, ...
     'sigma',  sigmaGaussian, ...
     'shape', 'Gaussian');
+
+%% Different mosaics
 
 % In the periphery, there are gaps for the rods
 cM1 = cMosaic(...
@@ -24,7 +39,14 @@ cM1 = cMosaic(...
     'randomSeed', 1234);
 cM1.visualize;
 
-% Near the fovea, smaller gaps
+%%
+oi = oiSet(oi,'fov',1)
+allE = cM1.compute(oi);
+% uData = cM1.plot('excitations',allE);
+uData = cM1.plot('excitations',allE,'label cones',true);
+
+
+%% Near the fovea, smaller gaps
 cM2 = cMosaic(...
     'sourceLatticeSizeDegs', 60, ...
     'eccentricityDegs', [5 3], ...
@@ -46,10 +68,9 @@ cM3 = cMosaic(...
     'coneApertureModifiers', coneApertureModifiers, ...
     'randomSeed', 1234);
 cM3.visualize;
+cM3.plot('excitations',allE,'label cones',true);
 
-% This is very cool because it touches on the fovea and goes out to 10
-% deg.  It shows the rod spacing as well.  So, pretty much everything
-% you might want.
+
 cM4 = cMosaic(...
     'sourceLatticeSizeDegs', 60, ...
     'eccentricityDegs', [5 0.5], ...
@@ -59,16 +80,9 @@ cM4 = cMosaic(...
     'rodIntrusionAdjustedConeAperture', true, ...
     'coneApertureModifiers', coneApertureModifiers, ...
     'randomSeed', 1234);
-cM4.visualize;
-
-hParms = harmonicP;
-hParms.row = 1024; hParms.col = 1024;
-hParms.freq = 10;
-scene = sceneCreate('harmonic',hParms);
-oi = oiCreate;
-oi = oiCompute(oi,scene);
-oiWindow(oi);
-
 allE = cM4.compute(oi);
-cM4.plot('excitations',allE);
+uData = cM4.plot('excitations',allE);
+
+
+
 
