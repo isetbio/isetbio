@@ -50,17 +50,15 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
             theWavelengthSupport = wvfGet(theWVF, 'wave');
             [~,idx] = min(abs(theWavelengthSupport-measWavelength));
 
-            % In the ISETCam branch, wvfGet returns the OTF with zero sf in the
-            % middle.  But this routine was expecting it to have zero in the
-            % upper left, as accomplished by ifftshift. Thus we apply an
-            % ifftshift() here.
-            theCenteringOTF = ifftshift(wvfGet(theWVF, 'otf', theWavelengthSupport(idx)));
+            % 04/02/24, DHB: Remove ifftshift to match change to wvfGet (where
+            % the ifftshift went back in)
+            theCenteringOTF = wvfGet(theWVF, 'otf', theWavelengthSupport(idx));
             theCenteringPSF = wvfGet(theWVF, 'psf', theWavelengthSupport(idx));
             translationVector = []; showTranslation = false;
             [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(...
-                        theCenteringOTF, theCenteringPSF, ...
-                        translationVector, xSfGridCyclesDegGrid,ySfGridCyclesDegGrid, ...
-                        showTranslation);
+                theCenteringOTF, theCenteringPSF, ...
+                translationVector, xSfGridCyclesDegGrid,ySfGridCyclesDegGrid, ...
+                showTranslation);
         else
             translationVector = [0 0];
         end
