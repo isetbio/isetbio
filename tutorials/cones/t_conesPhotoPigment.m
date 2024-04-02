@@ -8,6 +8,12 @@
 %
 %    This tutorial illustrates how it works.
 %
+%    This is a complicated tutorial, but it is illustrating and checking
+%    complicated things.  We may want to add a simpler version, but it is
+%    important to keep this one because it illustrates how to do things
+%    that are important and sufficiently difficult that it gets referred to
+%    with some frequency by DHB.
+%
 %    Note: This obtains ISET/PTB agreement with the opticsotf method, but
 %    not the opticspsf method, as of 04/02/24.  This might be related to
 %    the fact that the opticspsf method does not completely respect the
