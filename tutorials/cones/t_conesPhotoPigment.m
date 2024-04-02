@@ -1,6 +1,5 @@
 % Illustrate photoPigment object
-%
-% BW:  Too complicated.
+
 %
 % Description:
 %    The photoPigment object represents the spectral responsivity of
