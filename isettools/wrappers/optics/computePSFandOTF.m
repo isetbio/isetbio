@@ -67,11 +67,9 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
     end
     
     for wIndex = 1:numel(wavelengthsListToCompute)
-        % In the ISETCam branch, wvfGet returns the OTF with zero sf in the
-        % middle.  But this routine was expecting it to have zero in the
-        % upper left, as accomplished by ifftshift. Thus we apply an
-        % ifftshift here.
-        theWaveOTF = ifftshift(wvfGet(theWVF, 'otf', wavelengthsListToCompute(wIndex)));
+        % 04/02/24, DHB: Remove ifftshift to match change to wvfGet (where
+        % the ifftshift went back in)
+        theWaveOTF = wvfGet(theWVF, 'otf', wavelengthsListToCompute(wIndex));
 
         % The rest of this code then works as it did in the ISETBio branch,
         % where the OTF had zero sf in the upper left.
@@ -88,12 +86,9 @@ function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = 
             PSFs = zeros(size(theWavePSF,1), size(theWavePSF,2), numel(wavelengthsListToCompute));
         end
         
-        % The fftshift() puts the OTF back with zero sf in the middle.
-        % I'm not sure why this was being done in the ISETBio version, but
-        % it seems right. And, OTF was never picked up on return by any of
-        % the existing calls to this routine, so I think it is OK to have
-        % it now match the format returned by wvfGet().
-        OTFs(:,:,wIndex) = fftshift(theWaveOTF);
+        % 04/02/24: Take out fftshift on OTF, because we now are putting DC
+        % at 1,1
+        OTFs(:,:,wIndex) = theWaveOTF;
         PSFs(:,:,wIndex) = theWavePSF;
         
         % Also set the PSF stored within theWVF
