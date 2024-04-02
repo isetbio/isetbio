@@ -59,8 +59,7 @@ wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMm);
 wvfP = wvfSet(wvfP, 'measured wavelength', accommodatedWavelength);
 
 %% Make optical image object using wvfP and no LCA 
-%
-% Same as above but don't defeat LCA calc
+wvfPNoLca = wvfP;
 wvfPNoLca = wvfCompute(wvfPNoLca,'humanlca',false);
 theOINoLca = wvf2oi(wvfPNoLca);
 opticsNoLca = oiGet(theOINoLca, 'optics');
@@ -96,11 +95,11 @@ line_height=20;
 img_center = floor([imageSize/2,imageSize/2]);
 img        = ones(imageSize)*background_level;
 img_red    = img;
-img_red(img_center - line_height/2:img_center + line_height/2,...
-    img_center - spacing/2 - line_thickness : img_center - spacing/2-1) = 1;
+img_red(img_center(1) - line_height/2:img_center(1) + line_height/2,...
+    img_center(2) - spacing/2 - line_thickness : img_center(2) - spacing/2-1) = 1;
 img_green  = img;
-img_green(img_center - line_height/2:img_center + line_height/2,...
-    img_center + spacing/2 : img_center + spacing/2 + line_thickness-1) = 1;
+img_green(img_center(1) - line_height/2:img_center(1) + line_height/2,...
+    img_center(2) + spacing/2 : img_center(2) + spacing/2 + line_thickness-1) = 1;
  
 % Now put image planes into a fresh image
 twoLineImage=zeros(imageSize,imageSize,3);
