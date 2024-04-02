@@ -1,5 +1,4 @@
 % Illustrate photoPigment object
-
 %
 % Description:
 %    The photoPigment object represents the spectral responsivity of
@@ -14,8 +13,7 @@
 %    the fact that the opticspsf method does not completely respect the
 %    oi pad metho.
 %
-% See also
-%    
+% See also   
 
 %% Initialize
 ieInit; clear; close all;
