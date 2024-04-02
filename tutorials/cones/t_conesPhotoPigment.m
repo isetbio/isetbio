@@ -9,6 +9,11 @@
 %
 %    This tutorial illustrates how it works.
 %
+%    Note: This obtains ISET/PTB agreement with the opticsotf method, but
+%    not the opticspsf method, as of 04/02/24.  This might be related to
+%    the fact that the opticspsf method does not completely respect the
+%    oi pad metho.
+%
 % See also
 %    
 
@@ -208,6 +213,7 @@ oiBaseline = oiSet(oiBaseline,'optics',opticsTemp);
 % same answer.
 lensObject = Lens('wave',wls,'unitDensity',-log10(lensTransmittance),'density',1);
 oiBaseline = oiSet(oiBaseline,'optics lens',lensObject);
+oiBaseline  = oiSet(oiBaseline,'optics name','opticsotf');  
 
 % Set up macular pigment object.  See comments where we set up lens object
 % above.
