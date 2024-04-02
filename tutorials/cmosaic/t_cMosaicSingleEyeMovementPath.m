@@ -42,7 +42,7 @@ oi = oiCompute(oi,scene,'pad value','mean');
 cm = cMosaic(...
     'sizeDegs', [0.25 0.25], ...      % SIZE: 1.0 degs (x) 0.5 degs (y)
     'eccentricityDegs', [0 0], ...  % ECC: (0,0)
-    'integrationTime', 5/1000 ...   % integration time: 5 msec
+    'integrationTime', 10/1000 ...   % integration time: 10 msec
     );
 
 %% Generate 1 eye movement path lasting for 100 msec
@@ -88,8 +88,8 @@ set(gca, 'FontSize', 16);
 % Extract the eye movement path to visualize
 emPathsDegs = cm.fixEMobj.emPosArcMin/60;
 
-hFig = ieNewGraphWin;
-set(hFig, 'Position', [100 300 1120 1060]);
+hFig = figure;
+set(hFig, 'Position', [100 300 800 400]);
 activationRange = prctile(noiseFreeExcitationResponseInstances(:), [1 99]);
 
 subplotPos = NicePlot.getSubPlotPosVectors(...
