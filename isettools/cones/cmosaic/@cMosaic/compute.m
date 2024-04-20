@@ -454,6 +454,7 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
         end
         % No emPaths passed: make the nTimePoints = legth of oiSequence
         nTimePoints = numel(timeAxis);
+        
         % Also ensure that the cone mosaic's integrationTime matches the
         % oiSequence frame duration
         if (numel(timeAxis) > 1)
