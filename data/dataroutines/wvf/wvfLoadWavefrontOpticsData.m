@@ -471,7 +471,7 @@ for p = 1:length(subjectIdx)
         subjectWithoutData(p) = 1;
     else
         % Create human diffraction limited PSF for 550nm light & 3mm pupil
-        wvf = wvfCreate;
+        wvf = wvfCreate('customlca','human');
         
         % Set pupil size to the one reported in both Jaeken and Artal
         % (2012) and Polans (2015) (i.e. 4 mm) and wavelength 550nm.
@@ -491,7 +491,7 @@ for p = 1:length(subjectIdx)
         end
 
         % Compute and accumulate the PSF, OTF and zernikes across subjects
-        wvf = wvfCompute(wvf,'humanlca',true);
+        wvf = wvfCompute(wvf);
         all_psf(:, :, p) = wvfGet(wvf, 'psf');
         all_otf(:, :, p) = wvfGet(wvf, 'otf');
         usedSubjectData(:, p) = subjectZData;
@@ -557,7 +557,7 @@ if length(subjectIdx) > 1
     % @Nicolas
     % Do not write fields directly.  Need to understand and set
     wvf.otf = {otfMeanAbs};
-    wvf = wvfCompute(wvf,'humanlca',true);
+    wvf = wvfCompute(wvf);
     
     % Not sure why this is needed.  Doesn't the compute just above do this?
     % If needed, use wvfSet().

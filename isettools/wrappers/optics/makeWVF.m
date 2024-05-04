@@ -36,7 +36,7 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelengt
     if (LCA)
         theWVF = wvfSet(theWVF,'customLca','human');
     else
-        theWVF = wvfSet(theWVF,'customLca',[]);
+        theWVF = wvfSet(theWVF,'customLca','none');
     end
-    theWVF = wvfCompute(theWVF, 'humanlca', LCA);
+    theWVF = wvfCompute(theWVF);
 end
