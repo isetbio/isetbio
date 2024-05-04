@@ -32,6 +32,11 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelengt
         theWVF = wvfSet(theWVF,'ref psf sample interval',arcminPerSample/double(upsampleFactor));
     end
     
-    % Now compute the PSF
+    % Now compute the PSF.  Also set customLca field if human LCA is on.
+    if (LCA)
+        theWVF = wvfSet(theWVF,'customLca','human');
+    else
+        theWVF = wvfSet(theWVF,'customLca',[]);
+    end
     theWVF = wvfCompute(theWVF, 'humanlca', LCA);
 end
