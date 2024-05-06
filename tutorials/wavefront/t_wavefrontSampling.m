@@ -151,8 +151,10 @@ else
         'spatial samples', spatialSamples, ...
         'sample interval domain', sampleDomain);
 end
+
 % Compute the PSF
-theWVF = wvfCompute(theWVF,'human lca',true);
+theWVF = wvfSet(theWVF,'customLca','human');
+theWVF = wvfCompute(theWVF);
 end
 
 %% Method to extract and plot the PSF/OTF out of the WVF

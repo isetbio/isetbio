@@ -48,7 +48,8 @@ zcoeffs = wvfGet(wvf,'zcoeffs');
 
 for sFactor = [1, 2, 5]
     wvf = wvfSet(wvf,'zcoeffs',sFactor*zcoeffs);
-    wvf = wvfCompute(wvf,'human lca',true);
+    wvf = wvfSet(wvf,'customLca','human');
+    wvf = wvfCompute(wvf);
     wvfPlot(wvf,'psf','unit','um','wave',550,'plotrange',20);
     xlim = get(gca,'xlim');
     ylim = get(gca,'ylim');
@@ -111,8 +112,9 @@ wvfGet(wvf,'zcoeffs')
 wvf = wvfCreate;
 jIndex = wvfZernikeNMToOSAIndex(2,-2);
 wvf = wvfSet(wvf,'zcoeff',0.63,jIndex);
-disp(wvfGet(wvf,'zcoeff'))
-wvf = wvfCompute(wvf,'human lca',true);
+disp(wvfGet(wvf,'zcoeff'));
+wvf = wvfSet(wvf,'customLca','human');
+wvf = wvfCompute(wvf);
 wvfPlot(wvf,'image wavefront aberrations','unit','um','wave',550)
 colormap("gray");
 
@@ -120,7 +122,8 @@ colormap("gray");
 for ii=2:8
     wvf = wvfCreate;
     wvf = wvfSet(wvf,'zcoeff',1,ii);
-    wvf = wvfCompute(wvf,'human lca',true);
+    wvf = wvfSet(wvf,'customLca','human');
+    wvf = wvfCompute(wvf);
     [n,m] = wvfOSAIndexToZernikeNM(ii);
     wvfPlot(wvf,'image wavefront aberrations','unit','um','wave',550);
     colormap("gray"); title(sprintf('Z_%d^%d',n,m));
