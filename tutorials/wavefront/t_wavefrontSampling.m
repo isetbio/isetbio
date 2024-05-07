@@ -153,7 +153,7 @@ else
 end
 
 % Compute the PSF
-theWVF = wvfSet(theWVF,'customLca','human');
+theWVF = wvfSet(theWVF,'lcaMethod','human');
 theWVF = wvfCompute(theWVF);
 end
 

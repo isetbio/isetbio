@@ -471,7 +471,7 @@ for p = 1:length(subjectIdx)
         subjectWithoutData(p) = 1;
     else
         % Create human diffraction limited PSF for 550nm light & 3mm pupil
-        wvf = wvfCreate('customlca','human');
+        wvf = wvfCreate('lca method','human');
         
         % Set pupil size to the one reported in both Jaeken and Artal
         % (2012) and Polans (2015) (i.e. 4 mm) and wavelength 550nm.

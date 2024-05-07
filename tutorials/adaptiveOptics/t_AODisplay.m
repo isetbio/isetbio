@@ -235,9 +235,9 @@ wvfP = wvfSet(wvfP, 'measured wavelength', accommodatedWl);
 wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMm);
 wvfP = wvfSet(wvfP,'zcoeffs', defocusAmount, 'defocus');
 if (defeatLCA)
-    wvfP = wvfSet(wvfP,'customLca','none');
+    wvfP = wvfSet(wvfP,'lcaMethod','none');
 else
-    wvfP = wvfSet(wvfP,'customLca','human');
+    wvfP = wvfSet(wvfP,'lcaMethod','human');
 end
 
 % Compute pupil function and PSF
