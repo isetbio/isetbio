@@ -1,10 +1,10 @@
-% Demo computation with an off-axis  @cMosaic object
+% Demo off-axis  @cMosaic object computation
 %
 % Description:
 %    Shows how to generate and use the new cone mosaic class, @cMosaic.
 %    Here, we generate off-axis (located at different eccentricities)
 %    cMosaic objects and compute their mean responses to a static stimulus
-%    (rigs/rays) with no eye movements. 
+%    (rings/rays) with no eye movements. 
 %
 % See Also:
 %   t_cMosaicBasic
@@ -41,37 +41,37 @@ sv = NicePlot.getSubPlotPosVectors(...
 %% Generate mosaics and compute responses on a 3x3 grid of eccentricities
 deltaDeg = 0.7;
 for xOffset = 1:3
-for yOffset = 1:3
+    for yOffset = 1:3
 
-    % Mosaic eccentricity
-    mosaicEcc = [(xOffset-2)*deltaDeg (yOffset-2)*deltaDeg];
-    
-    % Generate mosaic centered at target eccentricity
-    cm = cMosaic(...
-        'sizeDegs', [1 1]*0.7, ...          % SIZE: 0.7 degs (x) 0.7 degs (y)
-        'eccentricityDegs', mosaicEcc ...  % ECC: varying
-        );
+        % Mosaic eccentricity
+        mosaicEcc = [(xOffset-2)*deltaDeg (yOffset-2)*deltaDeg];
 
-    % Generate standard human optics
-    oi = oiCreate('wvf human');
-    
-    % Compute the optical image of the scene
-    oi = oiCompute(oi,scene,'pad value','mean');
- 
-    % Compute the noise-free excitation response
-    noiseFreeExcitationResponse = cm.compute(oi, 'opticalImagePositionDegs', [0 0]);
+        % Generate mosaic centered at target eccentricity
+        cm = cMosaic(...
+            'sizeDegs', [1 1]*0.7, ...         % SIZE: 0.7 degs (x) 0.7 degs (y)
+            'eccentricityDegs', mosaicEcc ...  % ECC: varying
+            );
 
-    % Visualize mosaic response
-    cm.visualize('figureHandle', hFig, ...
-        'axesHandle', subplot('Position', sv(end-yOffset+1,xOffset).v), ...
-        'domain', 'degrees', ...
-        'crossHairsOnMosaicCenter', true, ...
-        'visualizedConeAperture', 'geometricArea', ...
-        'domainVisualizationTicks', struct('x', -5:0.1:5, 'y', -5:0.1:5), ...
-        'activation', noiseFreeExcitationResponse, ...
-        'backgroundColor', 0.2*[1 1 1], ...
-        'plotTitle',  sprintf('ecc: %2.1f, %2.1f degs', mosaicEcc(1), mosaicEcc(2)));
+        % Generate standard human optics
+        oi = oiCreate('wvf human');
 
-end
+        % Compute the optical image of the scene
+        oi = oiCompute(oi,scene,'pad value','mean');
+
+        % Compute the noise-free excitation response
+        noiseFreeExcitationResponse = cm.compute(oi, 'opticalImagePositionDegs', [0 0]);
+
+        % Visualize mosaic response
+        cm.visualize('figureHandle', hFig, ...
+            'axesHandle', subplot('Position', sv(end-yOffset+1,xOffset).v), ...
+            'domain', 'degrees', ...
+            'crossHairsOnMosaicCenter', true, ...
+            'visualizedConeAperture', 'geometricArea', ...
+            'domainVisualizationTicks', struct('x', -5:0.1:5, 'y', -5:0.1:5), ...
+            'activation', noiseFreeExcitationResponse, ...
+            'backgroundColor', 0.2*[1 1 1], ...
+            'plotTitle',  sprintf('ecc: %2.1f, %2.1f degs', mosaicEcc(1), mosaicEcc(2)));
+
+    end
 end
 
