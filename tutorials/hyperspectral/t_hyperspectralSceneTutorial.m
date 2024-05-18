@@ -8,16 +8,19 @@
 %
 % 07/24/18  npc  Wrote it.
 % 10/08/18  dhb  Save cached mosaic in tempdir, not inside isetbio tree.
-% 01/02/25  npc  cMosaic version
+% 01/02/24  npc  cMosaic version
+% 05/18/24  bw   Reduced size for speed, removed dropbox directory.
 
 %% Close all open figures
 % close all
 
 %% Load hyperspectral image data from Dropbox
-dropboxDirPath = localDropboxDir();
-scenesDir = fullfile(dropboxDirPath, 'HyperspectralSceneTutorial', 'resources', 'manchester_database', '2004');
-load(fullfile(scenesDir, 'scene3.mat'), 'scene');
+% dropboxDirPath = localDropboxDir();
+% scenesDir = fullfile(dropboxDirPath, 'HyperspectralSceneTutorial', 'resources', 'manchester_database', '2004');
+% load(fullfile(scenesDir, 'scene3.mat'), 'scene');
 
+scene = sceneFromFile('StuffedAnimals_tungsten-hdrs','multispectral');
+scene = sceneSet(scene,'fov',2);
 %% Generate human optics
 theOI = oiCreate('wvf human');
               
@@ -32,10 +35,12 @@ xSupportDegs = (1:cols)*dxy(1);
 ySupportDegs = (1:rows)*dxy(2);
 xSupportDegs = xSupportDegs - mean(xSupportDegs);
 ySupportDegs = ySupportDegs - mean(ySupportDegs);
-figure(); image(xSupportDegs, ySupportDegs, sceneRGB);
+
+ieNewGraphWin;
+image(xSupportDegs, ySupportDegs, sceneRGB);
 
 % Generata a 3x3 cMosaic (which covers part of the image only)
-theConeMosaic = cMosaic('sizeDegs', [3,3]);
+theConeMosaic = cMosaic('sizeDegs', [1,1]);
 
 % Compute its activation
 theConeMosaicActivation = theConeMosaic.compute(theOI);
@@ -46,3 +51,5 @@ theConeMosaic.visualize();
 % Visualize its activation to the hyperspecral image
 theConeMosaic.visualize(...
     'activation', theConeMosaicActivation);
+
+%% END
