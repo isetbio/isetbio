@@ -34,9 +34,9 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffsMicrons, measWavelengt
     
     % Now compute the PSF.  Also set customLca field if human LCA is on.
     if (LCA)
-        theWVF = wvfSet(theWVF,'customLca','human');
+        theWVF = wvfSet(theWVF,'lcaMethod','human');
     else
-        theWVF = wvfSet(theWVF,'customLca',[]);
+        theWVF = wvfSet(theWVF,'lcaMethod','none');
     end
-    theWVF = wvfCompute(theWVF, 'humanlca', LCA);
+    theWVF = wvfCompute(theWVF);
 end

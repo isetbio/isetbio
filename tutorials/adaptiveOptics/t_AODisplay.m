@@ -234,13 +234,18 @@ wvfP = wvfSet(wvfP, 'measured pupil size', pupilDiameterMm);
 wvfP = wvfSet(wvfP, 'measured wavelength', accommodatedWl);
 wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMm);
 wvfP = wvfSet(wvfP,'zcoeffs', defocusAmount, 'defocus');
+if (defeatLCA)
+    wvfP = wvfSet(wvfP,'lcaMethod','none');
+else
+    wvfP = wvfSet(wvfP,'lcaMethod','human');
+end
 
 % Compute pupil function and PSF
 %
 % Whether LCA should be included depends on your apparatus and
 % is controlled by the boolean defeatLCA in the computation of
 % the pupil function.
-wvfP = wvfCompute(wvfP,'human lca',~defeatLCA);
+wvfP = wvfCompute(wvfP);
 
 % Generate optical image object from the wavefront object
 theOI = wvf2oi(wvfP,'humanlens',true);

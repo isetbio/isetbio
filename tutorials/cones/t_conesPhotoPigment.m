@@ -217,7 +217,7 @@ oiBaseline = oiSet(oiBaseline,'optics',opticsTemp);
 % same answer.
 lensObject = Lens('wave',wls,'unitDensity',-log10(lensTransmittance),'density',1);
 oiBaseline = oiSet(oiBaseline,'optics lens',lensObject);
-oiBaseline  = oiSet(oiBaseline,'optics name','opticsotf');  
+oiBaseline  = oiSet(oiBaseline,'compute method','opticsotf');  
 
 % Set up macular pigment object.  See comments where we set up lens object
 % above.

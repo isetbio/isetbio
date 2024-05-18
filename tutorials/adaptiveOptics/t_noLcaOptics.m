@@ -48,7 +48,7 @@ zCoeffs = zeros(66,1);
 % Compute pupil function using 'no lca' key/value pair to turn off LCA.
 % You can turn it back on to compare the effect.
 wvfP = wvfCreate('calc wavelengths', wave, 'zcoeffs', zCoeffs, ...
-    'name', sprintf('human-%d', pupilDiameterMm));
+    'name', sprintf('human-%d', pupilDiameterMm),'lcaMethod','human');
 wvfP = wvfSet(wvfP, 'measured pupil size', pupilDiameterMm);
 wvfP = wvfSet(wvfP, 'calc pupil size', pupilDiameterMm);
 
@@ -60,7 +60,8 @@ wvfP = wvfSet(wvfP, 'measured wavelength', accommodatedWavelength);
 
 %% Make optical image object using wvfP and no LCA 
 wvfPNoLca = wvfP;
-wvfPNoLca = wvfCompute(wvfPNoLca,'humanlca',false);
+wvfPNoLca = wvfSet(wvfP,'lcaMethod','none');
+wvfPNoLca = wvfCompute(wvfPNoLca);
 theOINoLca = wvf2oi(wvfPNoLca);
 opticsNoLca = oiGet(theOINoLca, 'optics');
 opticsNoLca = opticsSet(opticsNoLca, 'model', 'shift invariant');
@@ -68,7 +69,7 @@ opticsNoLca = opticsSet(opticsNoLca, 'name', 'human-wvf-nolca');
 theOINoLca = oiSet(theOINoLca,'optics',opticsNoLca);
 
 %% For comparison, make optical image object using wvfP with LCA calc
-wvfPWithLca = wvfCompute(wvfP,'humanlca',true);
+wvfPWithLca = wvfCompute(wvfP);
 theOIWithLca = wvf2oi(wvfPWithLca);
 opticsWithLca = oiGet(theOIWithLca, 'optics');
 opticsWithLca = opticsSet(opticsWithLca, 'model', 'shift invariant');
