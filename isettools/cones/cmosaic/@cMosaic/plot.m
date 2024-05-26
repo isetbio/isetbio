@@ -60,8 +60,8 @@ p.addRequired('allE',@isnumeric);
 p.addParameter('conetype',{'l','m','s'},@(x)(ischar(x) || iscell(x)));
 p.addParameter('roi',[],@(x)(isa(x,'regionOfInterest')));
 p.addParameter('plottitle','',@ischar);
-p.addParameter('dataonly',false,@islogical);   %NYI
-
+p.addParameter('dataonly',false,@islogical);   % NYI
+p.addParameter('labelcones',false,@islogical)  % for excitations, show cones colored by type
 p.addParameter('lens',[],@(x)(isa(x,'Lens')));
 
 % Horizontal line key val pairs
@@ -98,7 +98,8 @@ switch ieParamFormat(plotType)
         params.plotTitle = pTitle;
         params.verticalActivationColorBar = true;
         params.figureHandle = hdl;
-        
+        params.labelconesinactivationmap = p.Results.labelcones;
+
         % Return
         tmp = cmosaic.visualize(params);
         hdl = tmp.figureHandle;
