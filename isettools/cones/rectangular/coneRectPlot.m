@@ -132,7 +132,9 @@ hf  = p.Results.hf;
 oi  = p.Results.oi;                    % Used in plotGraphs routine
 roi = p.Results.roi;
 
-
+% Returns.
+uData = [];
+hf = [];
 
 %% Initialize the window for plotting
 

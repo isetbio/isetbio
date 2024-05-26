@@ -26,7 +26,7 @@ scene = sceneSet(scene,'fov',1);
 oi = oiCreate('human');
 
 %%
-cMosaic = coneMosaic('os',osLinear,'spatialDensity',[0 0 1 0]);
+cMosaic = coneMosaicRect('os',osLinear,'spatialDensity',[0 0 1 0]);
 cMosaic.setSizeToFOV(0.7);
 cMosaic.integrationTime = 0.001;
 

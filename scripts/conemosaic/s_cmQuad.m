@@ -19,7 +19,7 @@ sig = 0.4*square(2*f*pi*x) + 0.5;
 eBase = dot(sig,s)^2 + dot(sig,c)^2;
 
 %
-vcNewGraphWin; plot(x,sig,'k-',x,s,'r-',x,c,'b-');
+ieNewGraphWin; plot(x,sig,'k-',x,s,'r-',x,c,'b-');
 
 %% Take the inner product of the signal with each harmonic. 
 
@@ -36,7 +36,7 @@ end
 img    = repmat(sig,[128,1]);
 simg   = repmat(s,[128,1]);
 cimg   = repmat(c,[128,1]);
-vcNewGraphWin; imagesc(img); colormap(gray); axis image
+ieNewGraphWin; imagesc(img); colormap(gray); axis image
 
 eBase = dot(img(:),simg(:))^2 + dot(img(:),cimg(:))^2;
 for ii=1:2:10
@@ -69,7 +69,6 @@ end
 
 %%  Now try with some stimuil
 
-ieInit
 chdir(fullfile(isetbioRootPath,'local'));
 
 %% Harmonic calculations
@@ -87,7 +86,7 @@ ieAddObject(oi);
 
 %% Start the cone absorptions with no Poisson noise
 
-cm = coneMosaic;
+cm = coneMosaicRect;
 cm.setSizeToFOV(fov*0.7);
 cm.emGenSequence(50,'rSeed',[],'nTrials',1);
 cm.noiseFlag = 'none';
@@ -284,7 +283,7 @@ ieAddObject(oi);
 
 %% Start the cone absorptions with no Poisson noise
 
-cm = coneMosaic;
+cm = coneMosaicRect;
 cm.setSizeToFOV(fov*0.7);
 cm.emGenSequence(50,'rSeed',[],'nTrials',1);
 cm.noiseFlag = 'random';
@@ -347,7 +346,7 @@ for ii=1:t
 end
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieNewGraphWin;
 plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 
@@ -368,7 +367,7 @@ for ii=1:t
 end
 % Plot the size of the displacement and the error on the same graph
 d = sqrt(cm.emPositions(:,1).^2 + cm.emPositions(:,2).^2);
-vcNewGraphWin;
+ieNewGraphWin;
 plot(d,eAbsorb,'o-'); grid on;
 xlabel('Distance (cones)'); ylabel('Percent error');
 

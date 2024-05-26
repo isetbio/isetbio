@@ -125,7 +125,7 @@ elseif strcmpi(osType,'hex')
     cm.setSizeToFOVForHexMosaic([0.9 0.6]);
     
 else
-    cm = coneMosaic;
+    cm = coneMosaicRect;
 end
 
 % Set the cone aperture size
