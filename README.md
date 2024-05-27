@@ -1,6 +1,8 @@
-The Image System Engineering Toolbox for Biology - ISETBIO - is a Matlab toolbox for calculating the properties of the front end of the visual system.  This includes a description of the scene, the optics and retinal image, the capture of light by the photopigment, the photocurrent responses in the receptors, bipolar responses, and retinal ganglion cell responses.
+The Image System Engineering Toolbox for Biology - ISETBio - is a Matlab toolbox for calculating the properties of the front end of the visual system.  The toolbox begins with a description of the scene radiance, how the radiance is transformed by the optics into the retinal image, captured of light by the photopigment, the photocurrent responses in the receptors.  We are actively working on modeling how the photoreceptor signals are converted into retinal ganglion cell responses.
 
-This repository includes a [WIKI](https://github.com/isetbio/isetbio/wiki) that describes the software as well as many examples of how to perform computations to calculate the visual encoding of light in the eye.  The [WIKI](https://github.com/isetbio/isetbio/wiki) also describes tools to view and and analyze the information contained the information at different neural stages.  Finally, we describe the methods we use to validate and test our code. 
+This repository includes a [WIKI](https://github.com/isetbio/isetbio/wiki) that describes the software as well as many examples of how to perform computations to calculate the visual encoding of light in the eye.  The [WIKI](https://github.com/isetbio/isetbio/wiki) also describes tools to quantify, view and and analyze the information contained at different neural stages.  
+
+As of May 27, 2024 ISETBio is built as an extension of [ISETCam](https://github.com/iset/isetcam/wiki) toolbox. To run ISETBio, you must download ISETCam and have it on your Matlab path.
 
 ### History 
 
