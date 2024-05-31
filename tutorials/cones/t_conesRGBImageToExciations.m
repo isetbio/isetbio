@@ -144,6 +144,8 @@ conePositionsMicrons = cm.coneRFpositionsMicrons;
 % LMS coded as 1, 2, and 3
 coneTypes = cm.coneTypes;
 
-
+% The continuous LMS images
+LMSImages = cm.absorptionsDensityFullMap;
+figure; clf; imshow(LMSImages/max(LMSImages(:)));
 
 %% END
