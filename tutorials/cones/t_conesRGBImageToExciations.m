@@ -31,8 +31,7 @@ wave = 400:5:700;
 % automatically with the RGB image.  Luminance is in cd/m2.
 %
 % Set parameters
-imgFileName = 'macbeth.tif';
-imgFileName = 'eagle.jpg';
+imgFileName = 'zebra.jpg';              % Available images include: 'macbeth.tif', 'bears.png'. 'eagle.jpg', 'hats.jpg', 'lion-cardinal.png'
 dispLCDFile = 'LCD-Apple.mat';
 upsampleFactor = 1;
 fieldOfViewDegs = 1;
@@ -108,7 +107,24 @@ cm.visualize;
 
 %% Compute cone photopigment excitations
 [noiseFree, noisy] = cm.compute(oi);
-cm.plot('excitations',noiseFree);
+
+%% Visualize excitations
+%
+% The plot command commented out here is simple but
+% does not give much flexibility
+cm.plot('excitations',noiseFree,'labelcones',true);
+
+% The visualize command has many options but is more
+% complex to use.
+vParams = cm.visualize('params');
+vParams.activation = noisy;
+vParams.activationColorMap = gray(512);
+vParams.verticalActivationColorBar = true;
+vParams.activationRange = [0 max(noisy(:))];
+vParams.labelcones = true;
+cm.visualize(vParams);
+
+% Here are some slices through the acivations
 cm.plot('excitations horizontal line',noiseFree, 'y deg',0,'thickness',0.05,'conetype','l');
 cm.plot('excitations horizontal line',noiseFree, 'y deg',0,'thickness',0.05,'conetype','m');
 cm.plot('excitations horizontal line',noiseFree, 'y deg',0,'thickness',0.05,'conetype','s');
