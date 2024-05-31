@@ -167,6 +167,11 @@ classdef cMosaic < handle
         mConeColor = [0.1 1 0.5];
         sConeColor = [0.6 0.1 1];
         kConeColor = [0.9 0.9 0.2];
+
+        % Full absorptions density map.  This gets set on each
+        % call to compute.
+        absorptionsDensityFullMap;
+        absorptionsDensitySpatialSupportMicrons;
     end
     
     
@@ -339,11 +344,7 @@ classdef cMosaic < handle
         % Min and max cone positions
         minRFpositionMicrons;
         maxRFpositionMicrons;
-        
-        % Full absorptions density map
-        absorptionsDensityFullMap;
-        absorptionsDensitySpatialSupportMicrons;
-        
+   
         % The theoretical cone densities
         theoreticalConeDensities;
     end
