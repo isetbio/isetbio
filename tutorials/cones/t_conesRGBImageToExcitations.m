@@ -144,8 +144,12 @@ conePositionsMicrons = cm.coneRFpositionsMicrons;
 % LMS coded as 1, 2, and 3
 coneTypes = cm.coneTypes;
 
-% The continuous LMS images
+% The continuous LMS images.  As they sit in the
+% cMosaic property, they are up down flipped to
+% match what happens with real retinal images.  Useful
+% flip back.
 LMSImages = cm.absorptionsDensityFullMap;
+LMSImages = LMSImages(end:-1:1,:,:);
 figure; clf; imshow(LMSImages/max(LMSImages(:)));
 
 %% END
