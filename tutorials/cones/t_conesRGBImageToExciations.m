@@ -59,6 +59,7 @@ ieAddObject(sc); sceneWindow;
 % can dial in other optics from various databases that
 % are included in ISETBio.
 oi = oiCreate('human');
+oi = oiSet(oi,'wave',wave);
 oi = oiCompute(oi, sc,'pad value','mean');
 oiSizeDegs = [oiGet(oi,'w angular') oiGet(oi,'h angular')];
 ieAddObject(oi); oiWindow;
@@ -121,12 +122,28 @@ vParams.activation = noisy;
 vParams.activationColorMap = gray(512);
 vParams.verticalActivationColorBar = true;
 vParams.activationRange = [0 max(noisy(:))];
-vParams.labelcones = true;
+vParams.labelcones = false;
 cm.visualize(vParams);
 
 % Here are some slices through the acivations
 cm.plot('excitations horizontal line',noiseFree, 'y deg',0,'thickness',0.05,'conetype','l');
 cm.plot('excitations horizontal line',noiseFree, 'y deg',0,'thickness',0.05,'conetype','m');
 cm.plot('excitations horizontal line',noiseFree, 'y deg',0,'thickness',0.05,'conetype','s');
+
+%% Unpack what's in the mosaic a little
+%
+% You might want a list of the cone positions
+% A little sleuthing will be required to decide
+% which is horizontal and which is vertical.
+%
+% The actual excitations noiseFree, noisy are in a list ordered as the two lists below.
+conePositionsMicrons = cm.coneRFpositionsMicrons;
+
+% Cone types
+%
+% LMS coded as 1, 2, and 3
+coneTypes = cm.coneTypes;
+
+
 
 %% END
