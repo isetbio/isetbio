@@ -2,9 +2,6 @@
 %
 % ISETBio-ISET3D
 
-thisDir = '/Volumes/GoogleDrive/My Drive/Grants/2018 Occulus (Hillis)'; 
-chdir(thisDir)
-
 %% The cone mosaic at different eccentricities 
 
 % A long strip along the horizontal axis
@@ -52,11 +49,12 @@ for ii=0:2:8
     sum(excitations(l))
 end
 
-%% Rendering of letters
-if piCamBio
-    fprintf('%s: requires ISETBio, not ISETCam\n',mfilename); 
+%% Rendering of letters - Requires iset3d or iset3d-tiny
+
+if ~exist('piRootPath.m','file')
     return;
-end
+else
+
 ieInit;
 if ~piDockerExists, piDockerConfig; end
 
@@ -215,6 +213,8 @@ oi = ieGetObject('oi');
 [allE, noisyE] = cm.compute(oi);
 cm.plot('excitations',allE);
 title('');
+
+end
 
 %% Rendering of stereo pairs
 
