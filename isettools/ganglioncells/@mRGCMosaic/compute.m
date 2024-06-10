@@ -79,14 +79,18 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     end
 
     % Compute the response of each mRGC
+    rgcRFcenterConePoolingMatrix = obj.rgcRFcenterConePoolingMatrix;
+    rgcRFsurroundConePoolingMatrix  = obj.rgcRFsurroundConePoolingMatrix;
+    rgcRFgains = obj.rgcRFgains;
+
     parfor iRGC = 1:obj.rgcsNum
         % Retrieve the center cone indices & weights
-        centerConnectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
+        centerConnectivityVector = full(squeeze(rgcRFcenterConePoolingMatrix(:, iRGC)));
         centerConeIndices = find(centerConnectivityVector > 0.0001);
         centerConeWeights = reshape(centerConnectivityVector(centerConeIndices), [1 1 numel(centerConeIndices)]);
         
         % Retrieve the surround cone indices & weights
-        surroundConnectivityVector = full(squeeze(obj.rgcRFsurroundConePoolingMatrix (:, iRGC)));
+        surroundConnectivityVector = full(squeeze(rgcRFsurroundConePoolingMatrix (:, iRGC)));
         surroundConeIndices = find(surroundConnectivityVector > 0.0001);
         surroundConeWeights = reshape(surroundConnectivityVector(surroundConeIndices), [1 1 numel(surroundConeIndices)]);
 
@@ -111,10 +115,10 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         end
 
         % Response gain
-        if (isempty(obj.rgcRFgains))
+        if (isempty(rgcRFgains))
             responseGain = 1.0 / sum(centerConeWeights);
         else
-            responseGain = obj.rgcRFgains(iRGC);
+            responseGain = rgcRFgains(iRGC);
         end
 
         % Composite respose

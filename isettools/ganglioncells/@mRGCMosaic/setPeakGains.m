@@ -32,10 +32,13 @@ function setPeakGains(obj, method, methodParams)
                 error('Cannot call the setPeakGains method before the rgcRFcenterConePoolingMatrix is computed.');
             else
                 integratedConeApertureAreas = zeros(1,obj.rgcsNum);
+                rgcRFcenterConePoolingMatrix = obj.rgcRFcenterConePoolingMatrix;
+                theInputConeMosaic = obj.inputConeMosaic;
+
                 parfor iRGC = 1:obj.rgcsNum
-                    connectivityVector = full(squeeze(obj.rgcRFcenterConePoolingMatrix(:, iRGC)));
+                    connectivityVector = full(squeeze(rgcRFcenterConePoolingMatrix(:, iRGC)));
                     centerConeIndices = find(abs(connectivityVector) > 0.0001);
-                    integratedConeApertureAreas(iRGC) = sum(obj.inputConeMosaic.computeApertureAreasMetersSquared(centerConeIndices));
+                    integratedConeApertureAreas(iRGC) = sum(theInputConeMosaic.computeApertureAreasMetersSquared(centerConeIndices));
                 end
                 
                 maxGain = methodParams(1);
