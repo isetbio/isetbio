@@ -4,10 +4,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
 % Compute the cone absorptions, possibly for multiple instances
 %
 % Syntax:
-%   [absorptions, current, interpFilters, meanCur] = compute(obj, oi);
-%   [absorptions, current, interpFilters, meanCur] = ...
-%       compute(obj, oiSequence);
-%
+%     [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
+%         photoCurrents, photoCurrentInstances, responseTemporalSupport] = ...
+%         compute(obj, oi, varargin)
+% 
 % Description:
 %    Compute the response of a @cMosaic object to an optical image or an
 %    optical image sequence
