@@ -772,12 +772,7 @@ classdef cMosaic < handle
                 val = obj.theoreticalConeDensities;
             else
                 % Return actual densities
-                conesNum = size(obj.coneRFpositionsMicrons,1);
-                val = [...
-                    numel(obj.lConeIndices)/conesNum ...
-                    numel(obj.mConeIndices)/conesNum ...
-                    numel(obj.sConeIndices)/conesNum ...
-                    numel(obj.kConeIndices)/conesNum];
+                val = obj.achievedConeDensities;
             end
         end
         
