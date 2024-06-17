@@ -768,7 +768,7 @@ classdef cMosaic < handle
         end
         
         function val = get.coneDensities(obj)
-            if (isempty(obj.lConeIndices))
+            if (isempty(obj.lConeIndices)) && (isempty(obj.mConeIndices)) && (isempty(obj.sConeIndices))
                 val = obj.theoreticalConeDensities;
             else
                 % Return actual densities
