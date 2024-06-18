@@ -267,7 +267,7 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
     %----------------------|****xxxx|********|********|-----------------|
     %                       p1    p2   full     full
 
-    if (debugTiming)
+    if (debugTiming)obj.os
         hFig = figure(9000);
         clf;
         set(hFig, 'Name', 'Visual Timing Debug Window', ...

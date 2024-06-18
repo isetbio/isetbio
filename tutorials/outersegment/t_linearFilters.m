@@ -64,7 +64,7 @@ integrationTime = 1 / 1000;
 photonNoise = 'none';
 osNoise = 'none';
 osTimeStep = 0.2 / 1000;
-theConeMosaic = coneMosaicGenerate(...
+[theConeMosaic, theOuterSegment] = coneMosaicGenerate(...
     mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep);
 
 modulationFunction = cell(numel(backgroundLuminances), 1);
@@ -239,7 +239,7 @@ end %iLum
 end
 
 %% Internal utility
-function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, ...
+function [theConeMosaic,theOuterSegment]  = coneMosaicGenerate(mosaicSize, photonNoise, ...
     osNoise, integrationTime, osTimeStep)
 % An internal utility to generate a cone mosaic
 %
@@ -269,16 +269,36 @@ function theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, ...
 %
 
 % Default human mosaic
-theConeMosaic = coneMosaicRect;
+%theConeMosaic = cMosaic;
 
 % Adjust size
 if isnan(mosaicSize)
     % Generate a human cone mosaic with 1L, 1M and 1S cone
-    theConeMosaic.rows = 1;
-    theConeMosaic.cols = 3;
-    theConeMosaic.pattern = [2 3 4];
+    % theConeMosaic.rows = 1;
+    % theConeMosaic.cols = 3;
+    theTypes(1) = cMosaic.LCONE_ID;
+    theTypes(2) = cMosaic.MCONE_ID;
+    theTypes(3) = cMosaic.SCONE_ID;
+    thePositionUnits = 'microns';
+    theConeApertureDiameters = [2, 2, 2];
+    thePositions=[0, 0; 0, 2.7; 0, 5.4];
+
+    theCustomConeDataStruct = struct(...
+        'types', theTypes, ...
+        'positionUnits', thePositionUnits, ...
+        'positions', thePositions, ...,
+        'lightGatheringApertureDiameters', theConeApertureDiameters ...  
+        );
+   theConeMosaic= cMosaic(...
+  'size degs',[0.03, 0.0067], ...
+  'coneData', theCustomConeDataStruct ...
+   );
+x=1
+  
 else
-    theConeMosaic.setSizeToFOV(mosaicSize);
+   
+    theConeMosaic= cMosaic(...
+  'sizeDegs', mosaicSize);
 end
 
 % Set the noise
@@ -294,8 +314,6 @@ theOuterSegment.noiseFlag = osNoise;
 % Set a custom timeStep, for @osLinear we do not need the default 0.1 msec
 theOuterSegment.timeStep = osTimeStep;
 
-% Couple the outersegment object to the cone mosaic object
-theConeMosaic.os = theOuterSegment;
 end
 
 function theOI = oiGenerate(noOptics)
