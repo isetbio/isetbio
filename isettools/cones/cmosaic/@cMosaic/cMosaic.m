@@ -678,8 +678,6 @@ classdef cMosaic < handle
         hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
             horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, varargin);
 
-
-
         % Method to visualize the continuous, full absorptions density and the actual cone positions
         visualizeFullAbsorptionsDensity(obj, figNo);
         

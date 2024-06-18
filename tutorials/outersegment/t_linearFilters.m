@@ -1,4 +1,5 @@
-function t_linearFilters
+% t_linearFilters
+%
 % Compute the photocurrent at different mean field levels
 %
 % Syntax:
@@ -41,7 +42,7 @@ function t_linearFilters
 % Define the time axis for the simulation
 %
 % Shorten stimulusSamplingInterval for cleaner plots
-stimulusSamplingInterval = 5 / 1000;
+stimulusSamplingInterval = 5/1000;
 oiTimeAxis = -0.5:stimulusSamplingInterval:1;
 
 % Define background luminace levels examined & the pedestal step (cd/m2)
@@ -60,7 +61,7 @@ theOI = oiGenerate(noOptics);
 
 % Generate a cone mosaic with 1 L-, 1 M-, and 1 S-cone only
 mosaicSize = nan;
-integrationTime = 1 / 1000;
+integrationTime = stimulusSamplingInterval;
 photonNoise = 'none';
 osNoise = 'none';
 osTimeStep = 0.2 / 1000;
@@ -92,19 +93,36 @@ for iLum = 1:numel(backgroundLuminances)
     theOIsequence = oiSequence(oiBackground, oiModulated, oiTimeAxis, ...
         modulationFunction{iLum});
 
-    % Generate eye movement path with zero movement
-    eyeMovementsNum = ...
-        theOIsequence.maxEyeMovementsNumGivenIntegrationTime(...
-        theConeMosaic.integrationTime);
-    instancesNum = 1;
-    emPaths = zeros(instancesNum, eyeMovementsNum, 2);
+    % Generate eye movement path
+    %
+    % This gets stored as a fixational eye movement object
+    % within the cMosaic.  It is property theConeMosaic.fixEMobj.
+    theConeMosaic.emGenSequence(oiTimeAxis(end)-oiTimeAxis(1));
 
     % Compute responses
-    [isomerizations{iLum}, photocurrents{iLum}, ...
-        osLinearFilters{iLum}] = ...
-        theConeMosaic.computeForOISequence(theOIsequence, ...
-        'emPaths', emPaths, 'currentFlag', true);
-    timeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);
+    %
+    % We will need to modify the compute method of cMosaic so that
+    % it can compute with an oiSequence and fixational eye movements.
+    % The code to do this for the coneMosaicRect is at lines 249 ff. of
+    % computeForOISequence.  We more or less want to copy/adapt that logic
+    % and bring it into the part of cMosaic.compute that handles
+    % oiSequences.  The conceptual question is whether we can pretty much
+    % turn that logic into a function that we then call from both the
+    % coneMosaicRect and the cMosaic.
+    %
+    % We also need to add photocurrent computations.  Need to add/pass
+    % 'currentFlag' to the cMosaic.compute.  And get a photocurrent object
+    % associated with the cMosaic.  And we need to have a flag called 'os'
+    % for when we create a cMosaic, that gives it an os property.  Around
+    % line 195 of coneMosaicRect compute then shows how the photocurrent
+    % object is used to compute the photocurrent, and we'd do that and
+    % return it here, possibly along with teh osLinearFilters which would
+    % be a new output argument to the cMosaic.
+    [isomerizations{iLum}, ~, photocurrents{iLum}, photocurrentInstances{iLum}, timeAxis] = ...
+        theConeMosaic.compute(theOIsequence, ...
+        'withFixationalEyeMovements', false);
+    % osLinearFilters{iLum},] = ...
+    % 'currentFlag', true);
 end
 
 visualizedTrange = [0 1];
@@ -127,7 +145,6 @@ render(backgroundLuminances, osLinearFilters, ...
 render(backgroundLuminances, photocurrents, ...
     theConeMosaic.integrationTime, 'photocurrent (pAmps)', [-90 -40], ...
     timeAxis, visualizedTrange, 4);
-end
 
 function render(backgroundLuminances, responses, integrationTime, ...
     yLabelTitle, yAxisRange, timeAxis, tRange, figNo)

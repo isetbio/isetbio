@@ -38,7 +38,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     p.addParameter('lowOpticalImageResolutionWarning', true, @islogical);
     p.addParameter('verbosityLevel', 'none', @(x)ismember(x, {'default', 'min', 'max'}));
     p.parse(oi,varargin{:});
-    
 
     if (isempty(obj.minRFpositionMicrons))
         noiseFreeAbsorptionsCount = [];
@@ -458,8 +457,8 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
         % Also ensure that the cone mosaic's integrationTime matches the
         % oiSequence frame duration
         if (numel(timeAxis) > 1)
-            assert(obj.integrationTime == timeAxis(2)-timeAxis(1), ...
-                'cMosaic.compute() with oiSequence: the mosaic''s integrationTime (%2.2f msec) does not match the oiSequence.frame duration (%2.2f msec).', ...
+            assert(max(abs(obj.integrationTime-(timeAxis(2)-timeAxis(1))))/obj.integrationTime < 1e-4, ...
+                'cMosaic.compute() with oiSequence: the mosaic''s integrationTime (%2.5f msec) does not match the oiSequence.frame duration (%2.5f msec).', ...
                 obj.integrationTime*1000, (timeAxis(2)-timeAxis(1))*1000)
         end
         
