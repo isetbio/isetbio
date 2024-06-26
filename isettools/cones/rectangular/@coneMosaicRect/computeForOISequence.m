@@ -109,7 +109,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)( (isa(x, 'oiSequence')) || (isa(x, 'oiArbitrarySequence')) ));
-p.addParameter('emPaths', [], @isnumeric);
+p.addParameter('emPaths', [], @isnumeric);%delte
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('interpFilters', [], @isnumeric);
 p.addParameter('meanCur', [], @isnumeric);
@@ -118,7 +118,7 @@ p.addParameter('currentFlag', false, @islogical);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
 p.addParameter('beVerbose', false, @islogical);
-p.addParameter('theExpandedMosaic', []);
+p.addParameter('theExpandedMosaic', []);%delete
 p.addParameter('stimulusSamplingInterval', [], @isnumeric);
 p.parse(oiSequence, varargin{:});
 
@@ -348,6 +348,7 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                 obj.integrationTime = ...
                     integrationTimeForFirstPartialAbsorption * ...
                     rounded.factor;
+                %--------------------------%
                 % Compute partial absorptions
                 %in the new version with cMosaic, emPaths are part of the
                 %structure, so perhaps we need a copy of cMosaic so we can
@@ -366,7 +367,9 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                     'emPath', emSubPath, ...
                     'currentFlag', false, ...
                     'beVerbose', beVerbose));
-                %needs to replace with something like this:
+                %--------------------------%
+                %needs to replace with something like this, some of these 
+                % options are not available in cmosaic:
                 % absorptionsAllTrials = single(obj.compute(...
                 % previousOI, ...
                 % 'seed', currentSeed , ...
@@ -393,6 +396,8 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                     integrationTimeForSecondPartialAbsorption * ...
                     rounded.factor;
                 % Compute partial absorptions
+                %----------------------%
+                %same as above
                 emSubPath = reshape(squeeze(...
                     emPaths(trialIndicesForBlock, idx, :)), ...
                     [numel(trialIndicesForBlock) 2]);
@@ -420,6 +425,12 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                 rounded.eyeMovementTimeAxis(idx) - ...
             rounded.eyeMovementTimeAxis(1)) / ...
             rounded.defaultIntegrationTime) + 1;
+            %---------------%
+            %pattern is not a field in the cMosaic anymore, I'm guessing
+            %it's now coneTypes and its's pnly a one dimensional vector sp
+            %perhaps this needs to be changed to:
+             % reformatAbsorptionsAllTrialsMatrix(numel(...
+             %    trialIndicesForBlock), 1, obj.conesNum);
             reformatAbsorptionsAllTrialsMatrix(numel(...
                 trialIndicesForBlock), 1, size(obj.pattern, 1), ...
                 size(obj.pattern, 2));
@@ -434,6 +445,8 @@ if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
                     rounded.factor;
                 % Compute absorptions for all remaining the eye movements
                 idx = indices(2:end);
+                %------------------------------%
+                %same as above%
                 emSubPath = reshape(...
                     emPaths(trialIndicesForBlock, idx, :), ...
                     [numel(trialIndicesForBlock) * numel(idx) 2]);
@@ -568,7 +581,7 @@ else
         emStart = rounded.eyeMovementTimeAxis(emIndex);
         emEnd = emStart + rounded.defaultIntegrationTime;
 
-        % Find oi indices withing the eye movement frame time limits
+        % Find oi indices within the eye movement frame time limits
         indices = find(( ...
             rounded.oiTimeAxis > emStart - rounded.oiRefreshInterval) & ...
             (rounded.oiTimeAxis <= emEnd));
@@ -604,6 +617,8 @@ else
                 actualIntegrationTime = actualIntegrationTime + ...
                     obj.integrationTime;
                 % Compute absorptions
+                %------------%
+                same as above
                 emSubPath = reshape(emPaths(trialIndicesForBlock, ...
                     emIndex, :), [numel(trialIndicesForBlock) 2]);
                 currentSeed = currentSeed  + 1;
@@ -641,6 +656,8 @@ else
                     actualIntegrationTime = actualIntegrationTime + ...
                         obj.integrationTime;
                     % Compute absorptions
+                    %-----------%
+                    %same as above
                     emSubPath = reshape(emPaths(trialIndicesForBlock, ...
                         emIndex, :), [numel(trialIndicesForBlock) 2]);
                     currentSeed = currentSeed  + 1;
@@ -689,6 +706,9 @@ obj.integrationTime = defaultIntegrationTime;
 
 % Reload the full eye movement sequence for the last trial only
 if (ndims(emPaths) == 3)
+    %----------------%
+    %it should be changed to obj.fixEMobj.emPosArcMin or
+    %obj.fixEMobj.emPosMicrons 
     obj.emPositions = reshape(squeeze(emPaths(nTrials, :, :)), ...
         [nEyeMovements 2]);
 else
@@ -710,7 +730,8 @@ end
 
 % free some RAM before procedding with allocating more RAM
 obj.absorptions = [];
-
+%-----------------------%
+%Perhaps we don't need this if statements anymore (lines 735-761)
 if (isa(obj, 'coneMosaicHex'))
     photocurrents = zeros(nTrials, numel(nonNullConesIndices), ...
         numel(rounded.eyeMovementTimeAxis), 'single');
@@ -738,6 +759,11 @@ if (isa(obj, 'coneMosaicHex'))
         photocurrents(ii, :, :) = single(obj.current);
     end
 else
+    %------------------------------%
+    %row and column does not exist in the cMosaic, it should be something
+    %like:
+    % photocurrents = zeros(nTrials, obj.conesNum,...
+    % numel(rounded.eyeMovementTimeAxis), 'single');
     photocurrents = zeros(nTrials, obj.rows, obj.cols, ...
         numel(rounded.eyeMovementTimeAxis), 'single');
     for ii = 1:nTrials
@@ -746,6 +772,10 @@ else
                 workDescription), 0.5 + 0.5 * ii / nTrials);
         end
         % Put this trial of absorptions into the cone mosaic
+        %--------------------%
+        %again should be changes to something like:
+        % obj.absorptions = reshape(squeeze(absorptions(ii, :, :)), ...
+        %    [obj.conesNum, numel(rounded.eyeMovementTimeAxis)]);
         obj.absorptions = reshape(squeeze(absorptions(ii, :, :, :)), ...
             [obj.rows obj.cols, numel(rounded.eyeMovementTimeAxis)]);
         currentSeed = currentSeed  + 1;
@@ -760,6 +790,10 @@ else
             LMSfilters = obj.computeCurrent('seed', currentSeed, ...
                 'interpFilters', LMSfilters, 'meanCur', meanCur);
         end
+        %------------------------%
+        %should be changed to:
+        %photocurrents(ii, :, :) = single(reshape(obj.current, ...
+        %    [1  numel(obj.coneTypes), numel(rounded.eyeMovementTimeAxis)]));
         photocurrents(ii, :, :, :) = single(reshape(obj.current, ...
             [1 obj.rows obj.cols numel(rounded.eyeMovementTimeAxis)]));
     end
@@ -824,6 +858,9 @@ returnAbsorptionsFromLastTrial();
     end
 
 %% Nested function to reformat absorptions
+%change to:
+%function reformatAbsorptionsAllTrialsMatrix(trialsNum, ...
+%            timePointsNum, coneNumbers)
     function reformatAbsorptionsAllTrialsMatrix(trialsNum, ...
             timePointsNum, coneRows, coneCols)
         % Reformat all of the trial matrix absorptions
@@ -851,6 +888,8 @@ returnAbsorptionsFromLastTrial();
         % Reshape to cones x instances x timePoints. Note the 3rd dimension
         % of absorptionsAllTrials is traditionally time, but when we are
         % doing multiple instances, it is instances * time
+        %--------------%
+        %change coneRows*coneCols to conesNum
         absorptionsAllTrials = reshape(absorptionsAllTrials, ...
             [coneRows * coneCols, trialsNum, timePointsNum]);
 
