@@ -618,7 +618,7 @@ else
                     obj.integrationTime;
                 % Compute absorptions
                 %------------%
-                same as above
+                % same as above
                 emSubPath = reshape(emPaths(trialIndicesForBlock, ...
                     emIndex, :), [numel(trialIndicesForBlock) 2]);
                 currentSeed = currentSeed  + 1;
