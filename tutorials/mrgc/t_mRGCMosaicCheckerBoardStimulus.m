@@ -18,7 +18,7 @@ function t_mRGCMosaicCheckerBoardStimulus
     figureDir = figExporter.figureDir(mfilename, saveFigures);
 
     % Specify the precomputed mosaic's eccentricity
-    horizontalEccDegs = 7;
+    horizontalEccDegs = 0;
 
     % Load the precomputed mRGCMosaic
     theMRGCMosaic = loadPreComputedMRGCMosaic(horizontalEccDegs);
@@ -29,7 +29,7 @@ function t_mRGCMosaicCheckerBoardStimulus
 
     % Input stimulus
     imageFOVdegs = 7.0;
-    pixelsPerCheck = 64;
+    pixelsPerCheck = 256;
     numberOfChecks = 4;
 
     % Compute the stimulus scene
@@ -43,7 +43,7 @@ function t_mRGCMosaicCheckerBoardStimulus
     % Compute the cone mosaic response
     theConeMosaicResponse = theMRGCMosaic.inputConeMosaic.compute(...
         theStimulusRetinalImage, ...
-        'opticalImagePositionDegs', [7. 0]);
+        'opticalImagePositionDegs', [horizontalEccDegs 0]);
 
     % Compute the mRGC mosaic response using the default RGCRGgains
     theConeMosaicResponseTemporalSupportSeconds = [0];
@@ -53,8 +53,6 @@ function t_mRGCMosaicCheckerBoardStimulus
 
     % Retrieve the default rgcRFgains
     defaultRGCRFgains = theMRGCMosaic.rgcRFgains;
-    max(theMRGCMosaic.rgcRFgains)
-    min(theMRGCMosaic.rgcRFgains)
 
     % Set the rgcRFgains as 1 / center-integrated retinal cone apertures
     method = '1/integrated center retinal cone apertures';
@@ -203,6 +201,7 @@ function visualizeRetinalOpticalImage(figNo, theMRGCMosaic, theStimulusRetinalIm
         'axesHandle', ax, ...
         'conesAlpha', 0.0, ...
         'conesEdgeAlpha', 0.5, ...
+        'outlinedConesWithIndices', 1:theMRGCMosaic.inputConeMosaic.conesNum, ...
         'withSuperimposedOpticalImage', theStimulusRetinalImage, ...
         'withsuperimposedOpticalImageAlpha', 0.7, ...
         'domainVisualizationLimits', [theMRGCMosaic.eccentricityDegs(1) + theMRGCMosaic.sizeDegs(1)*0.51*[-1 1] theMRGCMosaic.eccentricityDegs(2) + theMRGCMosaic.sizeDegs(2)*0.51*[-1 1]], ...
@@ -211,6 +210,7 @@ function visualizeRetinalOpticalImage(figNo, theMRGCMosaic, theStimulusRetinalIm
         NicePlot.exportFigToPDF(fullfile(figureDir,'theRetinalOpticalImage.pdf'), hFig, 300);
     end
 
+    saveas(hFig,'test.tiff','tiff');
 end
 
 

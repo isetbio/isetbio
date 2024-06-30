@@ -5,7 +5,7 @@ function [interpFilters, meanCur] = computeCurrent(obj, varargin)
 %   [interpFilters, meanCur] = computeCurrent(obj, [varargin]) 
 %
 % Input:
-%    obj           - A coneMosaic object.
+%    obj           - A coneMosaicRect object.
 %
 % Output:
 %    interpFilters - The linear filters are computed from the biophys
@@ -54,7 +54,7 @@ elseif isa(obj.os, 'osBioPhys')
     interpFilters = [];
     meanCur = [];
 else
-    error('Attempting to computer current with unsupported os class');
+    error('Attempting to compute current with unsupported os class');
 end
 
 end

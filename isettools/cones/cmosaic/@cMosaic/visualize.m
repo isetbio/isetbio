@@ -1054,10 +1054,6 @@ else
     if (strcmp(visualizationDomain, 'microns'))
         % Convert degs to microns
         x0  =  obj.distanceMicronsToDistanceDegreesForCmosaic(x0);
-
-        % BW changed Dec. 5, 2023.  Hopefully that is what NC intended!
-        %
-        % x0  =  obj.distanceMicronsToDistanceDegreesForCmosaic(y0);
         y0  =  obj.distanceMicronsToDistanceDegreesForCmosaic(y0);
     end
     xSupport = xSupport + x0;

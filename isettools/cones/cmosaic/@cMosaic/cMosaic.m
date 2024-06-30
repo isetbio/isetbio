@@ -271,6 +271,11 @@ classdef cMosaic < handle
 
         % Flag indicating whether the cMosaic is based on i mported conedata
         employsImportedConeData = false;
+
+        % Full absorptions density map.  This gets set on each
+        % call to compute.
+        absorptionsDensityFullMap;
+        absorptionsDensitySpatialSupportMicrons;
     end
     
     % Dependent properties
@@ -339,11 +344,7 @@ classdef cMosaic < handle
         % Min and max cone positions
         minRFpositionMicrons;
         maxRFpositionMicrons;
-        
-        % Full absorptions density map
-        absorptionsDensityFullMap;
-        absorptionsDensitySpatialSupportMicrons;
-        
+   
         % The theoretical cone densities
         theoreticalConeDensities;
     end
@@ -767,16 +768,11 @@ classdef cMosaic < handle
         end
         
         function val = get.coneDensities(obj)
-            if (isempty(obj.lConeIndices))
+            if (isempty(obj.lConeIndices)) && (isempty(obj.mConeIndices)) && (isempty(obj.sConeIndices))
                 val = obj.theoreticalConeDensities;
             else
                 % Return actual densities
-                conesNum = size(obj.coneRFpositionsMicrons,1);
-                val = [...
-                    numel(obj.lConeIndices)/conesNum ...
-                    numel(obj.mConeIndices)/conesNum ...
-                    numel(obj.sConeIndices)/conesNum ...
-                    numel(obj.kConeIndices)/conesNum];
+                val = obj.achievedConeDensities;
             end
         end
         

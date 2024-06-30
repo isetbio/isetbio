@@ -32,11 +32,13 @@ cmParams.sizeDegs = [1.5 1.5];
 cmParams.micronsPerDegree = oiGet(oi,'distance per degree','um');
 cm = cMosaic(cmParams);
 
+% Visualize
 cm.visualize;
 
-%% Compute isomerizations for each eye position.
+%% Compute isomerizations
 [noiseFree, noisy] = cm.compute(oi);
 
+% Visualize
 vParams = cm.visualize('params');
 vParams.activation = noisy;
 vParams.activationColorMap = gray(512);
