@@ -30,7 +30,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %   May not be fully implemented yet.]
 %
 % Inputs:
-%    obj                - @coneMosaicRect object
+%    obj                - @cMosaic object
 %    oiSequence         - @oiSequence object
 %
 % Outputs:
@@ -41,9 +41,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %    meanCur            - The mean current
 %
 % Optional key/value pairs:
-%    'seed'             - Value of random noise seed.(default 1). 
-%    'emPaths'          - [N x M x 2] matrix of N eye movement paths, each
-%                         with Mx2 eye positions (default empty)
+%    'seed'             - Value of random noise seed.(default 1).
 %    'trialBlockSize'   - How many trials each trialBlock should have.
 %                         Default: is emtpy, which results in nTrials (no
 %                         blocking). This only has an effect with
@@ -58,12 +56,7 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %                         photocurrent responses
 %   'meanCur'           - The steady state current caused by the mean
 %                         absorption rate.
-%   'currentFlag'       - Whether to compute photocurrent(default false). 
-%   'theExpandedMosaic' - We need an expanded version of the coneMosaic to
-%                         deal with eye movements. For multiple calls to
-%                         computeForOISequence, we may want to generate it
-%                         once and pass it. If it is empty (default), the
-%                         expanded version is generated here.
+%   'currentFlag'       - Whether to compute photocurrent(default false).
 %   'workerID'            If this field is non-empty (default is empty),
 %                         the progress of the computation is printed in the
 %                         command window along with the workerID (from a
@@ -71,6 +64,12 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %   'workDescription'     A string describing the condition
 %                         computed. Used only when workerID is non-empty
 %                         (default empty).
+%   'withFEM'             -Whether to enabale fixational eye movement or
+%                          not (default false)
+%   'instancesNum'        -number of eye movement path (default is 1). Only
+%                         needed if withFEM is true
+%   'durationSecondsFEM'  -duration of eye movement is seconds (default is
+%                          5 seconds).Only needed if withFEM is true.
 %   'beVerbose'          - Whether to display infos (default false).
 %
 % Notes:
@@ -109,7 +108,6 @@ function [absorptions, photocurrents, LMSfilters, meanCur] = ...
 %% Parse inputs
 p = inputParser;
 p.addRequired('oiSequence', @(x)( (isa(x, 'oiSequence')) || (isa(x, 'oiArbitrarySequence')) ));
-p.addParameter('emPaths', [], @isnumeric);%delte
 p.addParameter('seed', 1, @isnumeric);
 p.addParameter('interpFilters', [], @isnumeric);
 p.addParameter('meanCur', [], @isnumeric);
@@ -117,24 +115,32 @@ p.addParameter('trialBlockSize', [], @isnumeric);
 p.addParameter('currentFlag', false, @islogical);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('workDescription', '', @ischar);
+p.addParameter('withFEM', false, @islogical);
+p.addParameter('instancesNum',1,@isnumeric);
+p.addParameter('durationSecondsFEM',5,@isnumeric);
 p.addParameter('beVerbose', false, @islogical);
-p.addParameter('theExpandedMosaic', []);%delete
 p.addParameter('stimulusSamplingInterval', [], @isnumeric);
 p.parse(oiSequence, varargin{:});
 
 oiSequence  = p.Results.oiSequence;
 
 currentSeed = p.Results.seed;
-emPaths     = p.Results.emPaths;
+%emPaths     = p.Results.emPaths;
 LMSfilters  = p.Results.interpFilters;
 meanCur     = p.Results.meanCur;
 trialBlockSize    = p.Results.trialBlockSize;
 currentFlag       = p.Results.currentFlag;
 workerID          = p.Results.workerID;
 workDescription   = p.Results.workDescription;
-theExpandedMosaic = p.Results.theExpandedMosaic;
+withFEM = p.Results.withFEM;
+instancesNum=p.Results.instancesNum;
+durationSecondsFEM=p.Results.durationSecondsFEM;
 beVerbose = p.Results.beVerbose;
 
+if ~(isa(obj, 'cMosaic'))
+    error(['This code works only for cMosaci for coneMosaicRect or' ...
+        'coneMosaicHex use computeForOISequence instead.'])
+end
 
 if (currentFlag)
     % save noiseFlag
@@ -154,46 +160,40 @@ if (oiSequence.length ~= nTimes)
     error('oiTimeAxis and oiSequence must have equal length\n');
 end
 
-if (isempty(emPaths))
-    if ndims(obj.emPositions) == 3
-        emPaths = obj.emPositions;
-    elseif ismatrix(obj.emPositions)
-        emPaths = reshape(obj.emPositions, [1 size(obj.emPositions)]);
-    else 
-        error('Bad shape for emPositions data %d\n',size(obj.emPositions));
+if withFEM && (isempty(obj.fixEMobj))
+    obj.emGenSequence(durationSecondsFEM, ...
+        'centerPaths', true, ...
+        'microsaccadeType', 'none', ...
+        'nTrials', instancesNum);
+end
+
+
+
+
+
+% We need a copy of the object because of eye movements. Make it here
+% instead of in coneMosaicRect.compute(), which is called multiple times.
+obj.absorptions = [];
+obj.current = [];
+if (isa(obj.os, 'osLinear'))
+    obj.os.lmsConeFilter = [];
+end
+theExpandedMosaic = obj.copy();
+% theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
+%    obj.cols + 2 * padCols);
+
+
+
+% Determine if we need to compute eccentricity-dependent corrections for
+% the absorptions, and if so do it here.
+%--%
+%perhaps this section must go, check with Davind and Nicholas
+if (obj.shouldCorrectAbsorptionsWithEccentricity())%--% not sure what is the equivalant in cMosaic
+    if (isempty(obj.coneEfficiencyCorrectionFactors))%--% not sure what is the equivalant in cMosaic
+        correctionFactors = coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
+            mfilename(), 'beVerbose', beVerbose);
+        obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
     end
-end
-
-if (isempty(emPaths))
-    error(['Either supply an ''emPaths'' key-value pair, or preload ' ...
-        'coneMosaic.emPositions']);
-end
-
-if (isempty(theExpandedMosaic))
-    padRows = max(max(abs(emPaths(:, :, 2))));
-    padCols = max(max(abs(emPaths(:, :, 1))));
-
-    % We need a copy of the object because of eye movements. Make it here
-    % instead of in coneMosaicRect.compute(), which is called multiple times.
-    obj.absorptions = [];
-    obj.current = [];
-    if (isa(obj.os, 'osLinear'))
-        obj.os.lmsConeFilter = [];
-    end
-    theExpandedMosaic = obj.copy();
-    theExpandedMosaic.pattern = zeros(obj.rows + 2 * padRows, ...
-        obj.cols + 2 * padCols);
-    
-end
-
-% Determine if we need to compute eccentricity-dependent corrections for 
-% the absorptions, and if so do it here.  
-if (obj.shouldCorrectAbsorptionsWithEccentricity())
-if (isempty(obj.coneEfficiencyCorrectionFactors))
-    correctionFactors = coneMosaicHex.computeConeEfficiencyCorrectionFactors(obj, ...
-        mfilename(), 'beVerbose', beVerbose);
-    obj.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
-end
 end
 
 %% Get ready for output variables
@@ -205,22 +205,23 @@ photocurrents = [];
 defaultIntegrationTime = obj.integrationTime;
 
 %% Compute eye movement time axis
-nTrials = size(emPaths, 1);
-nEyeMovements = size(emPaths, 2);
+nTrials = instancesNum;
+nEyeMovements = size(obj.fixEMobj.timeAxis, 2);
 
 %% round everything to 1 microsecond to avoid rounding-off timing issues
 rounded.factor = 1 / (1000 * 1000.0);
 rounded.oiTimeAxis = round(oiTimeAxis / rounded.factor);
 rounded.defaultIntegrationTime = round(defaultIntegrationTime / ...
     rounded.factor);
+rounded.FEMTimeAxis=round(obj.fixEMobj.timeAxis/rounded.factor);
 rounded.eyeMovementTimeAxis = rounded.oiTimeAxis(1) + ...
-    (0:1:(nEyeMovements - 1)) * rounded.defaultIntegrationTime;
+    rounded.FEMTimeAxis;
 
 %% Compute OIrefresh
 if (numel(rounded.oiTimeAxis) == 1)
     if (~isempty(p.Results.stimulusSamplingInterval))
         rounded.oiRefreshInterval = ...
-           round(p.Results.stimulusSamplingInterval/rounded.factor);
+            round(p.Results.stimulusSamplingInterval/rounded.factor);
     else
         % No information about what the stimulus refresh interval is,
         % so arbitrarily set it to the integrationTime
@@ -233,18 +234,13 @@ end
 
 % Only allocate memory for the non-null cones in a 3D matrix [instances x
 % numel(nonNullConesIndices) x time]
-nonNullConesIndices = find(obj.pattern > 1);
+nonNullConesIndices = find(obj.coneTypes< 3);
 absorptions = zeros(nTrials, numel(nonNullConesIndices), ...
     numel(rounded.eyeMovementTimeAxis), 'single');
 
-% Organize trials in blocks if we have a hex mosaic
-if (isempty(trialBlockSize)), trialBlockSize = nTrials; end
-if (nTrials > 1) && (trialBlockSize == -1) && (isa(obj, 'coneMosaicHex'))
-    blockedTrialIndices = ...
-        computeBlockedTrialIndices(trialBlockSize, nTrials);
-else
-    blockedTrialIndices{1} = 1:nTrials;
-end
+
+blockedTrialIndices{1} = 1:nTrials;
+
 
 if (rounded.oiRefreshInterval >= rounded.defaultIntegrationTime)
     % There are two main time sampling scenarios. This one is when the oi
