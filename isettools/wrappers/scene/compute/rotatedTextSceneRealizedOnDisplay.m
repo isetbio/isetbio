@@ -23,38 +23,34 @@ function theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textS
 % Optional key/value pairs:
 %    none
 %
-%
-% Example usage:
-%   chromaSpecificationRGB = struct(...
-%                'type', chromaSpecificationType, ...
-%                'backgroundRGB', [0.5 0.5 0.5], ...
-%                'foregroundRGB',  [1 1 1]);
-%
-%
-%   chromaSpecificationLMS = struct(...
-%               'type', chromaSpecificationType, ...
-%               'backgroundChromaLuma', [0.31 0.32 40], ...
-%               'foregroundLMSConeContrasts', [-0.5 -0.5 0.0]);
-%           
-%   textSceneParams = struct(...
-%         'textString', 'Hello ISETBio world ! ', ...       % Text to display
-%         'textRotation', 0, ...                            % Rotation (0,90,180,270 only)
-%         'rowsNum', 60, ...                                % Pixels along the vertical (y) dimension
-%         'colsNum', 400, ...                               % Pixels along the horizontal (x) dimension
-%         'targetRow', 20, ...                              % Stimulus Y-pixel offset 
-%         'targetCol', 20, ...                              % Stimulus X-pixel offset 
-%         'upSampleFactor', 1, ...                          % Upsample factor to increase the retinal image resolution            
-%         'chromaSpecification', chromaSpecificationRGB, ...% background and stimulus chromaticity
-%         'horizontalFOVDegs', 0.4 ...
-%         );
-%
-%   theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textSceneParams, visualizeScene);
-%
+% Examples:
+%{
+  % ETTBSkip
+  % This was not written as an actual working example.  Too many variables
+  % not defined.
+
+  % chromaSpecificationRGB = struct(...
+  %              'type', 'RGBsettings', ...
+  %              'backgroundRGB', [0.5 0.5 0.5], ...
+  %              'foregroundRGB',  [1 1 1]);
+  % 
+  % textSceneParams = struct(...
+  %       'textString', 'Hello ISETBio world ! ', ...       % Text to display
+  %       'textRotation', 0, ...                            % Rotation (0,90,180,270 only)
+  %       'rowsNum', 60, ...                                % Pixels along the vertical (y) dimension
+  %       'colsNum', 400, ...                               % Pixels along the horizontal (x) dimension
+  %       'targetRow', 20, ...                              % Stimulus Y-pixel offset 
+  %       'targetCol', 20, ...                              % Stimulus X-pixel offset 
+  %       'upSampleFactor', 1, ...                          % Upsample factor to increase the retinal image resolution            
+  %       'chromaSpecification', chromaSpecificationRGB, ...% Background and stimulus chromaticity
+  %       'horizontalFOVDegs', 0.4 ...
+  %       );
+  % 
+  % theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textSceneParams, visualizeScene);
+%}
 
 % History:
 %    12/01/21  npc  Wrote it.
-%
-
     
     switch(textSceneParams.chromaSpecification.type)
         case 'RGBsettings'
@@ -74,7 +70,6 @@ function theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textS
             'displayRadianceMaps', false);
     end
 end
-
 
 function theScene = textSceneFromRGBSettings(textSceneParams, presentationDisplay) 
     
@@ -144,7 +139,6 @@ function RGBimageUpSampled = upSampleImage(RGBimage, upSampleFactor)
     end
 end
 
-
 function RGBimage = centerImage(RGBimage)
     % Center image
     binaryImage = squeeze(RGBimage(:,:,1));
@@ -171,7 +165,6 @@ function RGBimage = centerImage(RGBimage)
         RGBimage(:,:,iChannel) = tmp;
     end
 end
-
 
 function theScene = textSceneFromChromaLuminanceSettings(textSceneParams, presentationDisplay)
 
