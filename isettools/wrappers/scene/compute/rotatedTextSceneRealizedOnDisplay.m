@@ -43,7 +43,6 @@ function theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textS
   %       'targetCol', 20, ...                              % Stimulus X-pixel offset 
   %       'upSampleFactor', 1, ...                          % Upsample factor to increase the retinal image resolution            
   %       'chromaSpecification', chromaSpecificationRGB, ...% Background and stimulus chromaticity
-  %       'horizontalFOVDegs', 0.4 ...
   %       );
   % 
   % theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textSceneParams, visualizeScene);
@@ -83,11 +82,19 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     % It is, now make it double
     textSceneParams.upSampleFactor = double(textSceneParams.upSampleFactor);
 
+    % See if we want to scale the bitmap before we stick it into the scene
+    if (isfield(textSceneParams,'textBitMapRescaledRowsCols'))
+        textBitMapRescaledRowsCols = textSceneParams.textBitMapRescaledRowsCols;
+    else
+        textBitMapRescaledRowsCols = [20 18];
+    end
+
     % Generate the rgb settings pattern 
     for rgbChannel = 1:3
        linearRGBimage(:,:,rgbChannel) = rotatedTextStringBitMapPattern(...
             textSceneParams.textString, textSceneParams.textRotation, ...
             textSceneParams.colsNum, textSceneParams.rowsNum, ...
+            textBitMapRescaledRowsCols, ...
             textSceneParams.targetCol, textSceneParams.targetRow, ...
             textSceneParams.chromaSpecification.foregroundRGB(rgbChannel), ...
             textSceneParams.chromaSpecification.backgroundRGB(rgbChannel));
@@ -110,6 +117,9 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     % Set the DPI of the presentationDisplay to reflect the upsampling factor
     upSampledDPI = double(textSceneParams.upSampleFactor) * displayGet(presentationDisplay, 'dpi');
     presentationDisplay = displaySet(presentationDisplay, 'dpi', upSampledDPI);
+
+    % If the upSampleFactor is 1, we allow for the possibility of an image
+    % scaling to a target number of rows.
 
     % Create scene from the centered,upsampled RGBimage on the presentation display
     theScene = sceneFromFile(gammaUncorrectedRGBimageCentered,'rgb', [], presentationDisplay);
@@ -208,16 +218,48 @@ function theScene = textSceneFromChromaLuminanceSettings(textSceneParams, presen
     theScene = sceneFromFile(gammaUncorrectedRGBimage,'rgb', [], presentationDisplay);
 end
 
-function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotation, colsNum, rowsNum, targetCol, targetRow,  foreground, background)
-
+function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotation, colsNum, rowsNum, textBitMapRescaledRowsCols, targetCol, targetRow,  foreground, background)
+    % Get the bitmapped character
     X = textTo20x18BitmapFontImage(theTextString);
-    X = rot90(X,floor(rotation/90));
-
     idxBackground = find(X(:) == 1);
     idxForeground = find(X(:) == 0);
+
+    % Rescale if specified.  Backwards compatible with case where this
+    % possibility did not exist.  We convert X to a categorical variable
+    % before resizing, and then back to a double afterwards.
+    if (~isempty(textBitMapRescaledRowsCols))
+        if (textBitMapRescaledRowsCols(1) ~= 20 && textBitMapRescaledRowsCols(2) ~= 18)
+            X = imresize(categorical(X),textBitMapRescaledRowsCols);
+
+            % Not clear to me why double(X) returns 1 for categorical(0) and 2 for categorical(1), 
+            % at least when both 0 and 1 are in the array, but this is what it does.  Deal with it.
+            % But put in a check in case this behavior changes or is version dependent
+            if ( any(double(categorical([0 1])) ~= [1 2]) || any(double(categorical([1 0])) ~= [2 1]) )
+                error('Behavior of Matlab categorical conversions has changed.  Check code here.');
+            end
+            X = double(X) - 1;
+            X(X > 1) = 1;
+            X(X < 0) = 0;
+        end
+    end
+
     X(idxBackground) = background;
     X(idxForeground) = foreground;
+
+    % Make sure X is between 0 and 1, which is what we expect here
+    if (any(X(:) > 1))
+        error('Some values of X greater than 1.  We do not expect that');
+    end
+    if (any(X(:) < 0))
+         error('Some values of X less than 0.  We do not expect that');
+    end
+
     
+
+    % Rotate as desired
+    X = rot90(X,floor(rotation/90));
+
+    % Put the text image into the larger image. 
     xx = 1:size(X,2);
     yy = 1:size(X,1);
     
@@ -227,7 +269,6 @@ function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotat
     theSpatialPattern = zeros(rowsNum,colsNum) + background;
     theSpatialPattern(targetRow+yy,targetCol+xx) = X(yy,xx);
 end
-
 
 function bitmapTextImage = textTo20x18BitmapFontImage(text)
     % converting string into Ascii-number array
