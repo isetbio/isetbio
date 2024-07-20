@@ -221,8 +221,7 @@ end
 function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotation, colsNum, rowsNum, textBitMapRescaledRowsCols, targetCol, targetRow,  foreground, background)
     % Get the bitmapped character
     X = textTo20x18BitmapFontImage(theTextString);
-    idxBackground = find(X(:) == 1);
-    idxForeground = find(X(:) == 0);
+
 
     % Rescale if specified.  Backwards compatible with case where this
     % possibility did not exist.  We convert X to a categorical variable
@@ -243,6 +242,9 @@ function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotat
         end
     end
 
+    % Set foreground and background actual values based on binary values
+    idxBackground = find(X(:) == 1);
+    idxForeground = find(X(:) == 0);
     X(idxBackground) = background;
     X(idxForeground) = foreground;
 
