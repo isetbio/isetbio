@@ -112,7 +112,7 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     gammaUncorrectedRGBimageUpSampled = upSampleImage(gammaUncorrectedRGBimage, textSceneParams.upSampleFactor);
     
     % Center RGC image
-    gammaUncorrectedRGBimageCentered = centerImage(gammaUncorrectedRGBimageUpSampled);
+    gammaUncorrectedRGBimageCentered = gammaUncorrectedRGBimageUpSampled; % centerImage(gammaUncorrectedRGBimageUpSampled);
     
     % Set the DPI of the presentationDisplay to reflect the upsampling factor
     upSampledDPI = double(textSceneParams.upSampleFactor) * displayGet(presentationDisplay, 'dpi');
@@ -255,8 +255,6 @@ function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotat
     if (any(X(:) < 0))
          error('Some values of X less than 0.  We do not expect that');
     end
-
-    
 
     % Rotate as desired
     X = rot90(X,floor(rotation/90));
