@@ -111,8 +111,16 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     % Upsample RGB image
     gammaUncorrectedRGBimageUpSampled = upSampleImage(gammaUncorrectedRGBimage, textSceneParams.upSampleFactor);
     
-    % Center RGC image
-    gammaUncorrectedRGBimageCentered = gammaUncorrectedRGBimageUpSampled; % centerImage(gammaUncorrectedRGBimageUpSampled);
+    % Center RGC image. The original (chrom aberration paper) version of
+    % this code explicitly centerd the letter with the call below.  But if
+    % we want to postition the letter carefully somewhere else, this is a
+    % bad idea.  The code here provides a backwards compatibile way to turn
+    % this feature on or off.
+    if (~isfield(textSceneParams,'centerLetter') || textSceneParams.centerLetter)
+        gammaUncorrectedRGBimageCentered = centerImage(gammaUncorrectedRGBimageUpSampled);
+    else
+        gammaUncorrectedRGBimageCentered = gammaUncorrectedRGBimageUpSampled; 
+    end
     
     % Set the DPI of the presentationDisplay to reflect the upsampling factor
     upSampledDPI = double(textSceneParams.upSampleFactor) * displayGet(presentationDisplay, 'dpi');
