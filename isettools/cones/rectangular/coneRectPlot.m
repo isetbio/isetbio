@@ -520,7 +520,9 @@ switch ieParamFormat(plotType)
         mx = max(data(:));
         mn = min(data(:));
 
-        pt = iePointSelect(app,'Select a point.',1);
+        if isempty(roi), pt = iePointSelect(app,'Select a point.',1);
+        else, pt = roi;
+        end
         x = ieClip(pt(1), 1, size(data, 1));
         y = ieClip(pt(2), 1, size(data, 2));
         c = [3 x y];
