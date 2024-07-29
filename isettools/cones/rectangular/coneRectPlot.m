@@ -533,7 +533,7 @@ switch ieParamFormat(plotType)
         t = (1:size(data, 3)) * cm.integrationTime * 1e3;
 
         ieNewGraphWin;
-        yStr = 'Absorptions per frame';
+        yStr = 'Photcurrent per frame (pA)';
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
         uData.x = t;
         uData.y = squeeze(data(y, x, :));
