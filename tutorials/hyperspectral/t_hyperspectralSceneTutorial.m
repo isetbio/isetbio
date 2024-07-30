@@ -14,16 +14,15 @@
 %% Close all open figures
 clear; close all
 
-%% Load hyperspectral image data from Dropbox
-%
-% This will work if you are in the Brainard Lab and have the
-% HyperspectralSceneTutorial folder on your lab dropbox path.
+%% Load hyperspectral image data
 defaultImage = false;
 if (defaultImage)
     % This image comes with ISETBio.
     scene = sceneFromFile('StuffedAnimals_tungsten-hdrs','multispectral');
     scene = sceneSet(scene,'fov',2);
 else
+    % This will work if you are in the Brainard Lab and have the
+    % HyperspectralSceneTutorial folder on your lab dropbox path
     dropboxDirPath = localDropboxDir();
     scenesDir = fullfile(dropboxDirPath, 'HyperspectralSceneTutorial', 'resources', 'manchester_database', '2004');
     load(fullfile(scenesDir, 'scene3.mat'), 'scene');
