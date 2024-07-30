@@ -228,8 +228,14 @@ end
 
 function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotation, colsNum, rowsNum, textBitMapRescaledRowsCols, targetCol, targetRow,  foreground, background)
     % Get the bitmapped character
-    X = textTo20x18BitmapFontImage(theTextString);
-
+    %
+    % If you pass a string, convert to a bitmap.  Otherwise assume that a
+    % bitmap was passed.
+    if (ischar(theTextString))
+        X = textTo20x18BitmapFontImage(theTextString);
+    else
+        X = theTextString;
+    end
 
     % Rescale if specified.  Backwards compatible with case where this
     % possibility did not exist.  We convert X to a categorical variable
