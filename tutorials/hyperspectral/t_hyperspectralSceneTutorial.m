@@ -1,4 +1,4 @@
-%%t_hyperspectralSceneTutorial  
+% t_hyperspectralSceneTutorial  
 %
 % Description:
 %     Illustrates how to load a hyperspectral image, compute its optical
@@ -12,15 +12,23 @@
 % 05/18/24  bw   Reduced size for speed, removed dropbox directory.
 
 %% Close all open figures
-% close all
+clear; close all
 
 %% Load hyperspectral image data from Dropbox
-% dropboxDirPath = localDropboxDir();
-% scenesDir = fullfile(dropboxDirPath, 'HyperspectralSceneTutorial', 'resources', 'manchester_database', '2004');
-% load(fullfile(scenesDir, 'scene3.mat'), 'scene');
+%
+% This will work if you are in the Brainard Lab and have the
+% HyperspectralSceneTutorial folder on your lab dropbox path.
+defaultImage = false;
+if (defaultImage)
+    % This image comes with ISETBio.
+    scene = sceneFromFile('StuffedAnimals_tungsten-hdrs','multispectral');
+    scene = sceneSet(scene,'fov',2);
+else
+    dropboxDirPath = localDropboxDir();
+    scenesDir = fullfile(dropboxDirPath, 'HyperspectralSceneTutorial', 'resources', 'manchester_database', '2004');
+    load(fullfile(scenesDir, 'scene3.mat'), 'scene');
+end
 
-scene = sceneFromFile('StuffedAnimals_tungsten-hdrs','multispectral');
-scene = sceneSet(scene,'fov',2);
 %% Generate human optics
 theOI = oiCreate('wvf human');
               
