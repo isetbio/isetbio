@@ -510,12 +510,10 @@ classdef cMosaic < handle
                     sprintf('Can not have both ''anchorAllEccVaryingParamsToTheirFovealValues'' and ''eccVaryingConeBlur'' set to true.'));
             end
             
-            
             % These listeners make sure the wavelength support
             % in obj.pigment and obj.macular match the wave property
             addlistener(obj.pigment, 'wave', 'PostSet', @obj.matchWaveInAttachedMacular);
             addlistener(obj.macular, 'wave', 'PostSet', @obj.matchWaveInAttachedPhotopigment);
-            
             
             % These listeners trigger the assignConeTypes() method when the
             % coneDensities or the tritanopicRadiusDegs properties are
@@ -558,12 +556,9 @@ classdef cMosaic < handle
                 if isequal(obj.noiseFlag,'random') && (isempty(obj.randomSeed))
                     % Make a noise seed and store it.  One in a million.
                     obj.randomSeed = randi(1e6);
-
                 elseif isequal(obj.noiseFlag,'frozen') && isempty(obj.randomSeed)
                     error('Frozen noise but no seed provided.');
-                end
-
-                
+                end        
             else
                 % Load cone positions and cone types from passed struct
                 obj.importExternalConeData(p.Results.conedata);
@@ -583,7 +578,6 @@ classdef cMosaic < handle
                 end
             end
             
-
             % Compute min and max cone position
             obj.minRFpositionMicrons = squeeze(min(obj.coneRFpositionsMicrons,[],1));
             obj.maxRFpositionMicrons = squeeze(max(obj.coneRFpositionsMicrons,[],1));
@@ -607,12 +601,9 @@ classdef cMosaic < handle
             [obj.horizontalRetinalMeridian, obj.verticalRetinalMeridian] = cMosaic.retinalMeridiansForEccentricityInEye(...
                 obj.eccentricityDegs(1), obj.eccentricityDegs(2),  obj.whichEye);
 
-
             % Compute photon absorption attenuation factors to account for
             % the decrease in outer segment legth with ecc.
-            obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);
-            
-            
+            obj.computeOuterSegmentLengthEccVariationAttenuationFactors('useParfor', obj.useParfor);           
             if nargout > 1
                 % Return a struct with all the Results parameters from this
                 % object. If you want the default, use
@@ -677,8 +668,6 @@ classdef cMosaic < handle
         % horizontal slice ROI
         hFig = visualizeHorizontalConeActivationProfiles(obj, theConeMosaicResponse, coneTypesToVisualize, ...
             horizontalSliceYcoordDegs, horizontalSliceWidthDegs, maxResponse, varargin);
-
-
 
         % Method to visualize the continuous, full absorptions density and the actual cone positions
         visualizeFullAbsorptionsDensity(obj, figNo);
@@ -799,8 +788,7 @@ classdef cMosaic < handle
                 obj.computeConeApertures(lowOpticalImageResolutionWarning);
             end
         end
-        
-        
+         
         function set.coneApertureModifiers(obj, val)
             % Validate fields
             fNames = fieldnames(val);
@@ -903,7 +891,6 @@ classdef cMosaic < handle
 
         % Called automatically after either the coneDensity of the tritanopicRadiusDegs are set
         assignConeTypes(obj, src, ~);
-        
         
         % Called when the wave property in the attached photopigment object is changed
         function matchWaveInAttachedMacular(obj, src,~)

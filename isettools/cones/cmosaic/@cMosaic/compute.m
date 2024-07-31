@@ -21,11 +21,9 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
 %                                 with noise-free cone excitations
 %    noisyAbsorptionInstances - [nTrials, nTimePoints, nConesNum] matrix
 %                                 with noisy cone excitation instances
-
 % Optional key/value pairs:
 %    'emPaths'           - Eye movement paths. Either empty or a matrix of [nTrials x N x 2]. Default is [].
-%                          
-
+                          
     % Parse input
     p = inputParser;
     p.addRequired('oi', @(x)((isa(x, 'struct')) || (isa(x, 'oiSequence')) || (isa(x, 'oiArbitrarySequence'))))
@@ -39,7 +37,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     p.addParameter('verbosityLevel', 'none', @(x)ismember(x, {'default', 'min', 'max'}));
     p.parse(oi,varargin{:});
     
-
     if (isempty(obj.minRFpositionMicrons))
         noiseFreeAbsorptionsCount = [];
         noisyAbsorptionInstances = []; 
@@ -73,7 +70,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     % First save the current value so we can restore it once we are done
     % with this computation
     originalValues.wave = obj.wave;
-    
     if (isa(oi, 'struct'))
         % Set the new wavelength. The cMosaic object has listeners on wave
         % that set the wavelength support of the attached pigment and macular
@@ -163,12 +159,10 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     
     spatialSupportXDegrees = obj.distanceMicronsToDistanceDegreesForCmosaic(spatialSupportXMicrons);
     spatialSupportYDegrees = obj.distanceMicronsToDistanceDegreesForCmosaic(spatialSupportYMicrons);
-    
-    
+
     [oiPositionsDegsXgrid, oiPositionsDegsYgrid] = meshgrid(spatialSupportXDegrees, spatialSupportYDegrees);
     oiPositionsDegs = [oiPositionsDegsXgrid(:), oiPositionsDegsYgrid(:)];
     oiPositionsVectorsMicrons = {spatialSupportYMicrons(:), spatialSupportXMicrons(:)};
-    
 
     % Allocate memory for noiseFreeAbsorptionsCount
     nConesNum = size(obj.coneRFpositionsMicrons,1);
@@ -184,10 +178,8 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
         oiTimeAxis = oi.timeAxis;
     end
     oiFramesNum = numel(oiTimeAxis);
-    
             
-    for oiFrame = 1:oiFramesNum
-        
+    for oiFrame = 1:oiFramesNum    
         if (isa(oi, 'struct'))
             % Retrieve retinal irradiance in photons
             photons = oiGet(oi, 'photons');
@@ -196,7 +188,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
             % Retrieve retinal irradiance in photons
             photons = oiGet(oi.frameAtIndex(oiFrame), 'photons');
         end
-
 
         % Flip the optical image upside-down because the y-coords in the
         % oi spatial support vectors increase from top -> bottom (y-coords in an image)
@@ -377,7 +368,6 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     obj.wave = originalValues.wave;
 end
 
-
 function photons = padPhotons(photons, additionalPixels, padOIwithZeros)
     if ((additionalPixels.xLeft > 0) || (additionalPixels.xRight > 0) || ...
         (additionalPixels.yBottom > 0) || (additionalPixels.yTop > 0))
@@ -402,7 +392,6 @@ function photons = padPhotons(photons, additionalPixels, padOIwithZeros)
     end
     clear 'originalPhotons';
 end
-
 
 function macularPigmentDensityBoostFactors = updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons)
     
@@ -432,7 +421,6 @@ function opticalImagePositionMicrons = validateAndDecodeOpticalImagePosition(obj
     obj.opticalImagePositionDegs = opticalImagePositionDegs;
 end
     
-
 % Method for the validation and decoding for optional argument
 % 'withFixationalEyeMovements' when we are dealing with an OIsequence
 function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseToFirstEMpath] = ...
@@ -471,8 +459,6 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
     end
     
 end
-
-
         
 % Method for the validation and decoding for optional argument
 % 'withFixationalEyeMovements' when we are dealing with a singleOI
