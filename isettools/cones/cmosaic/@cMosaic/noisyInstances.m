@@ -2,7 +2,7 @@ function noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin)
     
     p = inputParser;
     p.addRequired('meanAbsorptions', @isnumeric);
-    p.addParameter('noiseFlag', 'random', @(x)(ismember(x, {'random', 'frozen'})));
+    p.addParameter('noiseFlag', 'random', @(x)(ismember(x, {'random', 'frozen','donotset'})));
     p.addParameter('seed', 1, @isnumeric);
     p.parse(meanAbsorptions, varargin{:});
 
