@@ -3,18 +3,29 @@ function noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin)
     p = inputParser;
     p.addRequired('meanAbsorptions', @isnumeric);
     p.addParameter('noiseFlag', 'random', @(x)(ismember(x, {'random', 'frozen'})));
-    p.addParameter('seed', 1, @isnumeric);
+    p.addParameter('seed', -1, @isnumeric);
     p.parse(meanAbsorptions, varargin{:});
 
     seed = p.Results.seed;
     noiseFlag = p.Results.noiseFlag;
 
     % Set up RNG depending on noiseFlag
-    switch noiseFlag
-        case 'frozen'
-            rng(seed);
-        case 'random'
-            rng('shuffle');
+    %
+    % rng('shuffle') is very slow.  Avoid unless
+    % we really need to call it.
+    if (seed ~= -1)
+        rng(seed);
+    else
+        switch noiseFlag
+            case 'frozen'
+                if (seed == -1)
+                    rng(1);
+                else
+                    rng(seed);
+                end
+            case 'random'
+                rng('shuffle');
+        end
     end
 
     % Gaussian approximation
