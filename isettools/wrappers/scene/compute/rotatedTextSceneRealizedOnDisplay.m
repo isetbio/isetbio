@@ -107,6 +107,12 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     % gamma table to get RGB settings values, so that when they are passed
     % through the display's gamma table we get back the desired linear RGB values
     gammaUncorrectedRGBimage = ieLUTLinear(linearRGBimage, inverseGammaTable);
+
+    % ISETBio's gamma correction routine failes to map 0 in to 0 out, which
+    % is bad.  We handle that pathology here.  It can also return numbers
+    % greter than 1, which also seems bad so we fix that too.
+    gammaUncorrectedRGBimage(linearRGBimage == 0) = 0;
+    gammaUncorrectedRGBimage(gammaUncorrectedRGBimage > 1) = 1;
     
     % Upsample RGB image
     gammaUncorrectedRGBimageUpSampled = upSampleImage(gammaUncorrectedRGBimage, textSceneParams.upSampleFactor);
