@@ -7,12 +7,14 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     p.addParameter('nTrials', [], @isscalar);
     p.addParameter('timeResolutionSeconds', [], @(x)(isempty(x))||(isscalar(x)));
     p.addParameter('seed', [], @isnumeric);
+    p.addParameter('skipTemporalFiltering', true, @islogical);
 
     % Parse input
     p.parse(varargin{:});
     mRGCMosaicNoisyResponseInstancesNum = p.Results.nTrials;
     timeResolutionSeconds = p.Results.timeResolutionSeconds;
     noiseSeed = p.Results.seed;
+    skipTemporalFiltering = p.Results.skipTemporalFiltering;
 
     % Validate input: ensure theConeMosaicResponse is a 3D matrix
     assert(ndims(theConeMosaicResponse) == 3, ...
@@ -69,10 +71,12 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
     % Allocate memory for the computed responses
     noiseFreeMRGCresponses = zeros(nTrials, numel(responseTemporalSupportSeconds), obj.rgcsNum);
     
-    % Delta function center impulse response with a length of 200 mseconds
-    theImpulseResponseTemporalSupport = 0:timeResolutionSeconds:0.2;
-    theRFcenterImpulseResponse = generateCenterTemporalImpulseResponse(theImpulseResponseTemporalSupport);
-    theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
+    if (~skipTemporalFiltering)
+        % Delta function center impulse response with a length of 200 mseconds
+        theImpulseResponseTemporalSupport = 0:timeResolutionSeconds:0.2;
+        theRFcenterImpulseResponse = generateCenterTemporalImpulseResponse(theImpulseResponseTemporalSupport);
+        theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
+    end
 
     if (isempty(obj.rgcRFgains))
         fprintf(2,'the mRGCMosaic.rgcRFgains property has not been set: will employ the ''1/integrated center cone weights'' method\n');
@@ -100,7 +104,7 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         % Spatially pool the weighted cone responses to the RF surround
         surroundSpatiallyIntegratedActivations = sum(bsxfun(@times, theConeMosaicResponse(1:nTrials,1:inputTimePoints, surroundConeIndices), surroundConeWeights),3);
 
-        if (numel(theConeMosaicResponseTemporalSupportSeconds)>1)
+        if (numel(theConeMosaicResponseTemporalSupportSeconds)>1) && (~skipTemporalFiltering)
             % Temporally filter the center responses
             centerSpatiallyIntegratedActivations = temporalFilter(centerSpatiallyIntegratedActivations, ...
                 theConeMosaicResponseTemporalSupportSeconds, ...
