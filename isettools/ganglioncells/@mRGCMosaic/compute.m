@@ -76,6 +76,9 @@ function [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSu
         theImpulseResponseTemporalSupport = 0:timeResolutionSeconds:0.2;
         theRFcenterImpulseResponse = generateCenterTemporalImpulseResponse(theImpulseResponseTemporalSupport);
         theRFsurroundImpulseResponse = generateSurroundTemporalImpulseResponse(theImpulseResponseTemporalSupport);
+    else
+        theRFcenterImpulseResponse = [];
+        theRFsurroundImpulseResponse = [];
     end
 
     if (isempty(obj.rgcRFgains))
