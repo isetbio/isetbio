@@ -626,7 +626,7 @@ classdef cMosaic < handle
             
         end % constructor
         
-        % Method to crop the cMosaic to only incluce cones with specific
+        % Method to crop the cMosaic to only include cones with specific
         % indices
         cropMosaicToIncluceConesWithIndices(obj,keptConeIndices);
         
