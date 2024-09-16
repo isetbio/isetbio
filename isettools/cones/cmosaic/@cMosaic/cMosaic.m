@@ -272,6 +272,9 @@ classdef cMosaic < handle
         % Flag indicating whether the cMosaic is based on i mported conedata
         employsImportedConeData = false;
 
+        % Shadow mask
+        shadowMask = [];
+
         % Full absorptions density map.  This gets set on each
         % call to compute.
         absorptionsDensityFullMap;
@@ -373,6 +376,7 @@ classdef cMosaic < handle
             p.addParameter('sourcelatticesizedegs', 58, @isscalar);
             p.addParameter('overlappingconefractionforelimination', [], @(x)( (isempty(x)) || (isscalar(x)&&(x<=1.0)&&(x>0))));
             p.addParameter('wave', 400:10:700, @isnumeric);
+            p.addParameter('shadowmask', [], @(x)(isempty(x))||(isnumeric(x) && (size(x,2) == 3)));
             p.addParameter('pigment', cPhotoPigment(), @(x) isa(x, 'cPhotoPigment'));
             p.addParameter('macular', Macular(), @(x)isa(x, 'Macular'));
             p.addParameter('conedata', [], @(x)(isempty(x) || (isstruct(x))));
@@ -521,6 +525,10 @@ classdef cMosaic < handle
             addlistener(obj, 'coneDensities','PostSet', @obj.assignConeTypes);
             addlistener(obj, 'tritanopicRadiusDegs', 'PostSet', @obj.assignConeTypes);
                 
+            if (~isempty(p.Results.shadowmask))
+                obj.shadowMaskForMosaic(p.Results.shadowmask);
+            end
+
             if (isempty(p.Results.conedata))
                 if (p.Results.computemeshfromscratch)
                     
@@ -708,6 +716,9 @@ classdef cMosaic < handle
         % Linear photocurrent approximation
         result = current(obj,excitations,irf,timeAxis);
 
+        % Generate a shadow mask for the mosaic given a passed [x,y,scalars] shadowMaskMatrix
+        shadowMaskForMosaic(obj, shadowMaskMatrix);
+
         % Getter/Setter methods for dependent variables
         % QE
         function val = get.qe(obj)
@@ -892,6 +903,7 @@ classdef cMosaic < handle
         % Called automatically after either the coneDensity of the tritanopicRadiusDegs are set
         assignConeTypes(obj, src, ~);
         
+
         % Called when the wave property in the attached photopigment object is changed
         function matchWaveInAttachedMacular(obj, src,~)
             % Set the wave property in the attached macular
