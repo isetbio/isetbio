@@ -28,6 +28,11 @@ scene = sceneCreate('ringsrays', 10, scenePixels);
 scene = sceneSet(scene, 'fov', fovDegs);
 sceneWindow(scene);
 
+%% Some optics parameters
+turnOffLca = false;
+diffractionLimitedHumanEye = false;
+pupilSizeMm = 3;
+
 %% Generate at a specified retinal location
 %
 % First coodinate is horizontal, second is vertical
@@ -85,12 +90,38 @@ end
     cm.oiEnsembleGenerate(cm.eccentricityDegs, ...
     'zernikeDataBase', opticsZernikeCoefficientsDataBase, ...
     'subjectID', testSubjectID, ...
-    'pupilDiameterMM', 3.0, ...
+    'pupilDiameterMM', pupilSizeMm, ...
     'zeroCenterPSF', false, ...
     'subtractCentralRefraction', subtractCentralRefraction, ...
     'wavefrontSpatialSamples', wavefrontPixels);
 oi = oiEnsemble{1};
 thePSFData = psfEnsemble{1};
+
+% Get and manipulate the underlying wavefront data
+wvf = oiGet(oi,'optics wvf');
+zcoeffs = wvfGet(wvf,'zcoeffs');
+% wvfPlot(wvf,'psf','plot range',10,'unit','um','wave',550);
+% wvfPlot(wvf,'psf',550);
+% wvfPlot(wvf,'psf',700);
+
+% Look at the current lca method, then set if desired.
+% Options are 'humanlca', and 'none'.  You might want
+% to set this to 'none' if you were modeling an experiment
+% done in a way that compensated for human lca.
+lcaMethod = wvfGet(wvf,'lcamethod');
+if (turnOffLca)
+    wvf = wvfSet(wvf,'lcamethod','none');
+end
+
+% Adjust the pupil function to be diffraction limited.  You might
+% want to do this if you were modeling an adaptive optics experiment.
+if (diffractionLimitedHumanEye)
+    zcoeffs = zeros(size(zcoeffs));
+end
+zcoeffs = wvfSet(wvf,'zcoeffs',zcoeffs);
+
+% Put back the wvf into the oi
+oi = oiSet(oi,'optics wvf',wvf);
 
 % Compute the optical image of the scene
 oi = oiCompute(oi,scene,'pad value','mean');
