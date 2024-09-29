@@ -29,7 +29,7 @@ scene = sceneSet(scene, 'fov', fovDegs);
 sceneWindow(scene);
 
 %% Some optics parameters
-turnOffLca = false;
+turnOffLca = true;
 diffractionLimitedHumanEye = false;
 pupilSizeMm = 3;
 
@@ -56,7 +56,7 @@ whichEye = 'right eye';
 %
 % The Artal2012 database has 41 subjects but only measured along the
 % horizontal meridian.
-opticsZernikeCoefficientsDataBase = 'Artal2012';            
+opticsZernikeCoefficientsDataBase = 'Polans2015';            
 
 % Select ranking of subject in database whose optics we will use.
 % 1 is the best
@@ -100,9 +100,6 @@ thePSFData = psfEnsemble{1};
 % Get and manipulate the underlying wavefront data
 wvf = oiGet(oi,'optics wvf');
 zcoeffs = wvfGet(wvf,'zcoeffs');
-% wvfPlot(wvf,'psf','plot range',10,'unit','um','wave',550);
-% wvfPlot(wvf,'psf',550);
-% wvfPlot(wvf,'psf',700);
 
 % Look at the current lca method, then set if desired.
 % Options are 'humanlca', and 'none'.  You might want
@@ -120,7 +117,12 @@ if (diffractionLimitedHumanEye)
 end
 zcoeffs = wvfSet(wvf,'zcoeffs',zcoeffs);
 
-% Put back the wvf into the oi
+% Put back the wvf into the oi. You need to compute on it first, though,
+% if you actually changed anything about it.
+wvf = wvfCompute(wvf);
+wvfPlot(wvf,'psf','unit','um','wave',400,'plot range',40);
+wvfPlot(wvf,'psf','unit','um','wave',550,'plot range',40);
+wvfPlot(wvf,'psf','unit','um','wave',700,'plot range',40);
 oi = oiSet(oi,'optics wvf',wvf);
 
 % Compute the optical image of the scene
