@@ -1,10 +1,11 @@
-% Demo off-axis  @cMosaic object computation
+% Demo off-axis  @cMosaic optics and cone excitation computation
 %
 % Description:
 %    Shows how to generate and use the new cone mosaic class, @cMosaic.
 %    Here, we generate off-axis (located at different eccentricities)
-%    cMosaic objects and compute their mean responses to a static stimulus
-%    (rings/rays) with no eye movements.
+%    cMosaic objects and compute their mean cone excitations to a static stimulus
+%    with no eye movements. In particular, this illustrates how to match up
+%    and manipulate the optics as well.
 %
 % See Also:
 %   t_cMosaicBasic
@@ -13,7 +14,7 @@
 
 % History:
 %    03/01/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
-
+%    09/29/24  dhb  Simplified and extended for video.
 
 %% Initialize
 ieInit;
@@ -34,7 +35,7 @@ sceneWindow(scene);
 %% Some optics parameters
 turnOffLca = false;
 diffractionLimitedHumanEye = false;
-pupilDiamMM = 6;
+pupilDiamMM = 3;
 addedDefocusDiopters = 0;
 
 % Optics database: choose between {'Polans2015', 'Artal2012', 'Thibos2002'}
@@ -125,7 +126,7 @@ oiEnsemble = ...
     'zernikeDataBase', opticsZernikeCoefficientsDataBase, ...
     'subjectID', testSubjectID, ...
     'pupilDiameterMM', pupilDiamMM, ...
-    'zeroCenterPSF', false, ...
+    'zeroCenterPSF', true, ...
     'subtractCentralRefraction', subtractCentralRefraction, ...
     'wavefrontSpatialSamples', wavefrontPixels);
 oi = oiEnsemble{1};
