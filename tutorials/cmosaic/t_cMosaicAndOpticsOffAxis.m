@@ -20,47 +20,43 @@ ieInit;
 clear;
 close all;
 
-%% Generate the ring rays stimulus
-fovDegs = 2;
-scenePixels = 200;
-wavefrontPixels = 201;
-scene = sceneCreate('ringsrays', 10, scenePixels);
+%% Generate a checkerboard with checks of specified size 
+fovDegs = 1;
+degreesPerCheck = 0.05;
+nPixels = 200;
+pixelsPerDegree = nPixels/fovDegs;
+pixelsPerCheck = round(degreesPerCheck*pixelsPerDegree);
+nCheckPairs = round(nPixels/(2*pixelsPerCheck));
+scene = sceneCreate('checkerboard',pixelsPerCheck,nCheckPairs);
 scene = sceneSet(scene, 'fov', fovDegs);
 sceneWindow(scene);
 
 %% Some optics parameters
-turnOffLca = true;
+turnOffLca = false;
 diffractionLimitedHumanEye = false;
-pupilSizeMm = 3;
+pupilDiamMM = 6;
+addedDefocusDiopters = 0;
 
-%% Generate at a specified retinal location
-%
-% First coodinate is horizontal, second is vertical
-mosaicEccDegs = [-2 0];
-
-% Generate mosaic centered at target eccentricity
-cm = cMosaic(...
-    'sizeDegs', [1 1]*fovDegs, ...         % Mosaic size in degrees
-    'eccentricityDegs', mosaicEccDegs ...  % Mosaic location in degrees
-    );
-
-%% Generate optics at same position
-%
-% Eye: choose {from 'right eye', 'left eye'}
-whichEye = 'right eye';   
-
-% Optics database: choose between {'Polans2015', and 'Artal2012'}
+% Optics database: choose between {'Polans2015', 'Artal2012', 'Thibos2002'}
 % 
 % The Polans2015 database has 10 subjects with measurements in a grid
 % across the retina.
 %
 % The Artal2012 database has 41 subjects but only measured along the
 % horizontal meridian.
-opticsZernikeCoefficientsDataBase = 'Polans2015';            
+%
+% Our curation of the Thibos2002 database has 70 subjects but only at the fovea.
+opticsZernikeCoefficientsDataBase = 'Thibos2002';  
 
-% Select ranking of subject in database whose optics we will use.
-% 1 is the best
+% Rank order of subject's optics in database used.
+% 1 is the best.  If you specify a number than the number of available
+% subjects, the worst subject is used.
 subjectRankOrder = 1;
+
+%% Get optics information
+%
+% Eye: choose {from 'right eye', 'left eye'}
+whichEye = 'right eye';             
 
 % Pick out the right subject from the database, and some info
 % needed determined through our examination of the data.
@@ -68,7 +64,11 @@ switch (opticsZernikeCoefficientsDataBase)
     case 'Polans2015'
         % Obtain subject IDs ranking in decreasing foveal resolution
         rankedSujectIDs = PolansOptics.constants.subjectRanking;
-        testSubjectID = rankedSujectIDs(subjectRankOrder);
+        if (subjectRankOrder > length(rankedSujectIDs))
+            testSubjectID = subjectRankOrder(end);
+        else
+            testSubjectID = rankedSujectIDs(subjectRankOrder);
+        end
 
         % Determine if we need to subtract the subject's central refraction
         subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(testSubjectID);
@@ -76,28 +76,61 @@ switch (opticsZernikeCoefficientsDataBase)
     case 'Artal2012'
         % Obtain subject IDs ranking in decreasing foveal resolution
         rankedSujectIDs = ArtalOptics.constants.subjectRanking(whichEye);
-        testSubjectID = rankedSujectIDs(subjectRankOrder);
+        if (subjectRankOrder > length(rankedSujectIDs))
+            testSubjectID = subjectRankOrder(end);
+        else
+            testSubjectID = rankedSujectIDs(subjectRankOrder);
+        end
 
         % Determine if we need to subtract the subject's central refraction
         subtractCentralRefraction = ArtalOptics.constants.subjectRequiresCentralRefractionCorrection(whichEye, testSubjectID);
+   
+    case 'Thibos2002'
+        % Obtain subject IDs ranking in decreasing foveal resolution
+        rankedSujectIDs = ThibosOptics.constants.subjectRanking(whichEye);
+        if (subjectRankOrder > length(rankedSujectIDs))
+            testSubjectID = subjectRankOrder(end);
+        else
+            testSubjectID = rankedSujectIDs(subjectRankOrder);
+        end
+
+        % Determine if we need to subtract the subject's central refraction
+        subtractCentralRefraction = ThibosOptics.constants.subjectRequiresCentralRefractionCorrection(whichEye, testSubjectID);
 end
 
-% Generate the optics for the right retinal location.
+%% Mosaic position on retina
+%
+% First coodinate is horizontal, second is vertical
+mosaicEccDegs = [0 0];
+
+%% Generate mosaic centered at target eccentricity
+cm = cMosaic(...
+    'sizeDegs', [1 1]*fovDegs, ...         % Mosaic size in degrees
+    'eccentricityDegs', mosaicEccDegs ...  % Mosaic location in degrees
+    );
+
+%% Generate the optics for the right retinal location.
 %
 % It is the cMosaic object that knows how to process the databases
-% and generate the optics.
-[oiEnsemble, psfEnsemble] = ...
+% and generate the optics. The oi comes back in a cell array, and below
+% we pick out the first and only element of that array. 
+%
+% The reason the oi comes back as a cell array is that it is possible to
+% pass an eye movement path to this call, and then you need a shifted oi
+% relative to the mosaic for every frame of the eye movement.  We will not
+% explore that in this tutorial.
+wavefrontPixels = 201;
+oiEnsemble = ...
     cm.oiEnsembleGenerate(cm.eccentricityDegs, ...
     'zernikeDataBase', opticsZernikeCoefficientsDataBase, ...
     'subjectID', testSubjectID, ...
-    'pupilDiameterMM', pupilSizeMm, ...
+    'pupilDiameterMM', pupilDiamMM, ...
     'zeroCenterPSF', false, ...
     'subtractCentralRefraction', subtractCentralRefraction, ...
     'wavefrontSpatialSamples', wavefrontPixels);
 oi = oiEnsemble{1};
-thePSFData = psfEnsemble{1};
 
-% Get and manipulate the underlying wavefront data
+%% Get and manipulate the underlying wavefront data
 wvf = oiGet(oi,'optics wvf');
 zcoeffs = wvfGet(wvf,'zcoeffs');
 
@@ -110,23 +143,28 @@ if (turnOffLca)
     wvf = wvfSet(wvf,'lcamethod','none');
 end
 
-% Adjust the pupil function to be diffraction limited.  You might
+% Adjust the pupil function to be diffraction limited, if desired. You might
 % want to do this if you were modeling an adaptive optics experiment.
 if (diffractionLimitedHumanEye)
     zcoeffs = zeros(size(zcoeffs));
 end
-zcoeffs = wvfSet(wvf,'zcoeffs',zcoeffs);
 
-% Put back the wvf into the oi. You need to compute on it first, though,
-% if you actually changed anything about it.
+% Add in refractive error
+addedDefocusMicrons = wvfDefocusDioptersToMicrons(addedDefocusDiopters, pupilDiamMM);
+zcoeffs(5) = zcoeffs(5) + addedDefocusMicrons;
+wvf = wvfSet(wvf,'zcoeffs',zcoeffs);
+
+% Have a look at the point spread functions we are going to sue
 wvf = wvfCompute(wvf);
 wvfPlot(wvf,'psf','unit','um','wave',400,'plot range',40);
 wvfPlot(wvf,'psf','unit','um','wave',550,'plot range',40);
 wvfPlot(wvf,'psf','unit','um','wave',700,'plot range',40);
+
+% Put the wvf back into the oi
 oi = oiSet(oi,'optics wvf',wvf);
 
-% Compute the optical image of the scene
-oi = oiCompute(oi,scene,'pad value','mean');
+%% Compute the optical image of the scene
+oi = oiCompute(oi,scene,'pad value','mean','crop',true);
 oiWindow(oi);
 
 %% Compute the noise-free excitation response
@@ -142,6 +180,3 @@ cm.visualize('figureHandle', [], ...
     'activation', noiseFreeExcitationResponse, ...
     'backgroundColor', 0.2*[1 1 1], ...
     'plotTitle',  sprintf('ecc: %2.1f, %2.1f degs', mosaicEccDegs(1), mosaicEccDegs(2)));
-
-
-
