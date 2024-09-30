@@ -32,6 +32,11 @@ scene = sceneCreate('checkerboard',pixelsPerCheck,nCheckPairs);
 scene = sceneSet(scene, 'fov', fovDegs);
 sceneWindow(scene);
 
+%% Mosaic position on retina
+%
+% First coodinate is horizontal, second is vertical
+mosaicEccDegs = [0 0];
+
 %% Some optics parameters
 turnOffLca = false;
 diffractionLimitedHumanEye = false;
@@ -47,7 +52,7 @@ addedDefocusDiopters = 0;
 % horizontal meridian.
 %
 % Our curation of the Thibos2002 database has 70 subjects but only at the fovea.
-opticsZernikeCoefficientsDataBase = 'Thibos2002';  
+opticsZernikeCoefficientsDataBase = 'Polans2015';  
 
 % Rank order of subject's optics in database used.
 % 1 is the best.  If you specify a number than the number of available
@@ -99,11 +104,6 @@ switch (opticsZernikeCoefficientsDataBase)
         subtractCentralRefraction = ThibosOptics.constants.subjectRequiresCentralRefractionCorrection(whichEye, testSubjectID);
 end
 
-%% Mosaic position on retina
-%
-% First coodinate is horizontal, second is vertical
-mosaicEccDegs = [0 0];
-
 %% Generate mosaic centered at target eccentricity
 cm = cMosaic(...
     'sizeDegs', [1 1]*fovDegs, ...         % Mosaic size in degrees
@@ -130,6 +130,14 @@ oiEnsemble = ...
     'subtractCentralRefraction', subtractCentralRefraction, ...
     'wavefrontSpatialSamples', wavefrontPixels);
 oi = oiEnsemble{1};
+
+% Compute retinal magnification factor from focal length of the OI
+% and check that it is matched to the cMosaic
+focalLengthMeters = opticsGet(oiGet(oi,'optics'),'focal length');
+micronsPerDegree = focalLengthMeters*tand(1)*1e6;
+if (abs(micronsPerDegree-cm.micronsPerDegree)/micronsPerDegree > 1e-4)
+    error('Mismatch between oi and cMosaic eye size')
+end
 
 %% Get and manipulate the underlying wavefront data
 wvf = oiGet(oi,'optics wvf');
