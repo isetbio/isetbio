@@ -35,7 +35,7 @@ sceneWindow(scene);
 %% Mosaic position on retina
 %
 % First coodinate is horizontal, second is vertical
-mosaicEccDegs = [5 0];
+mosaicEccDegs = [0 0];
 
 %% Some optics parameters
 turnOffLca = false;
