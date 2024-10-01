@@ -35,7 +35,7 @@ sceneWindow(scene);
 %% Mosaic position on retina
 %
 % First coodinate is horizontal, second is vertical
-mosaicEccDegs = [0 0];
+mosaicEccDegs = [5 0];
 
 %% Some optics parameters
 turnOffLca = false;
@@ -57,7 +57,7 @@ opticsZernikeCoefficientsDataBase = 'Polans2015';
 % Rank order of subject's optics in database used.
 % 1 is the best.  If you specify a number than the number of available
 % subjects, the worst subject is used.
-subjectRankOrder = 1;
+subjectRankOrder = 5;
 
 %% Get optics information
 %
@@ -71,7 +71,7 @@ switch (opticsZernikeCoefficientsDataBase)
         % Obtain subject IDs ranking in decreasing foveal resolution
         rankedSujectIDs = PolansOptics.constants.subjectRanking;
         if (subjectRankOrder > length(rankedSujectIDs))
-            testSubjectID = subjectRankOrder(end);
+            testSubjectID = rankedSubjectIDs(end);
         else
             testSubjectID = rankedSujectIDs(subjectRankOrder);
         end
@@ -83,7 +83,7 @@ switch (opticsZernikeCoefficientsDataBase)
         % Obtain subject IDs ranking in decreasing foveal resolution
         rankedSujectIDs = ArtalOptics.constants.subjectRanking(whichEye);
         if (subjectRankOrder > length(rankedSujectIDs))
-            testSubjectID = subjectRankOrder(end);
+            testSubjectID = rankedSubjectIDs(end);
         else
             testSubjectID = rankedSujectIDs(subjectRankOrder);
         end
@@ -95,7 +95,7 @@ switch (opticsZernikeCoefficientsDataBase)
         % Obtain subject IDs ranking in decreasing foveal resolution
         rankedSujectIDs = ThibosOptics.constants.subjectRanking(whichEye);
         if (subjectRankOrder > length(rankedSujectIDs))
-            testSubjectID = subjectRankOrder(end);
+            testSubjectID = rankedSubjectIDs(end);
         else
             testSubjectID = rankedSujectIDs(subjectRankOrder);
         end
