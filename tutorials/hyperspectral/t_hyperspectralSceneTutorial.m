@@ -15,7 +15,7 @@
 clear; close all
 
 %% Load hyperspectral image data
-defaultImage = false;
+defaultImage = true;
 if (defaultImage)
     % This image comes with ISETBio.
     scene = sceneFromFile('StuffedAnimals_tungsten-hdrs','multispectral');
