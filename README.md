@@ -4,6 +4,8 @@ This repository includes a [WIKI](https://github.com/isetbio/isetbio/wiki) that 
 
 As of May 27, 2024 To run ISETBio, you must download ISETCam and have it on your Matlab path.  See installing [ISETCam](https://github.com/iset/isetcam/wiki). 
 
+A set of tutorial videos introducing aspects of ISETBio and ISETCam is available at [this YouTube playlist](https://www.youtube.com/playlist?list=PLr6PuubdQrtQ-rz5RIe13k3YFrmwBh7gr).
+
 ### History 
 
 * May 29, 2024 - See changes to ISETCam in the ReadMe for that repository. The validation routines for ISETBio have been moved into a new [ISETValidations](https://github.com/ISET/isetvalidate) repository.
