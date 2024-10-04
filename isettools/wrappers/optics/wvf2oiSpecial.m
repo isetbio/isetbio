@@ -2,6 +2,8 @@ function theOI = wvf2oiSpecial(theWVF, umPerDegree, pupilDiameterMM)
     % Generate oi from the wvf
     theOI = wvf2oi(theWVF,'humanlens',true);
     
+    theOI = oiSet(theOI,'compute method','opticsotf');
+
     % Adjust the OI's fNumber and focalLength to be consistent with the
     % micronsPerDegree and pupilDiameter of the WVF
     optics = oiGet(theOI, 'optics');
