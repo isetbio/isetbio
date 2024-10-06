@@ -210,7 +210,8 @@ function visualizeRetinalOpticalImage(figNo, theMRGCMosaic, theStimulusRetinalIm
         NicePlot.exportFigToPDF(fullfile(figureDir,'theRetinalOpticalImage.pdf'), hFig, 300);
     end
 
-    saveas(hFig,'test.tiff','tiff');
+    exportDir = fullfile(isetbioRootPath,'local');
+    saveas(hFig,fullfile(exportDir,'test.tiff'),'tiff');
 end
 
 
