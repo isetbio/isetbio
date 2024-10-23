@@ -1,4 +1,4 @@
-function populationPSFvariationWithEccentricity(ZernikeDataBase, whichEye, visualizePSFs)
+function populationPSFvariationWithEccentricity(ZernikeDataBase, whichEye, rankingsAnalyzed, visualizePSFs)
 %
 % ZernikeDataBase = 'Polans2015'; 
 % whichEye = 'right eye'
@@ -31,8 +31,7 @@ function populationPSFvariationWithEccentricity(ZernikeDataBase, whichEye, visua
         	eccYdegs = PolansOptics.constants.measurementVerticalEccentricities;
 	end
 
-	% Just the 5 best subjects
-	rankingsAnalyzed = 1:5; %10; % 1:5;
+	% Which subjects to average
 	rankedSubjectIDs = rankedSubjectIDs(rankingsAnalyzed);
      
 	% Range of eccentricities to examine
