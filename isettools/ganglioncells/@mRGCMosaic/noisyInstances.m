@@ -1,6 +1,7 @@
 function noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses, varargin)
     p = inputParser;
     p.addRequired('noiseFreeMRGCresponses', @isnumeric);
+    p.addParameter('noiseFlag', 'random', @(x)(ismember(x, {'random', 'frozen','donotset','none'})));
     p.addParameter('seed', 1, @isnumeric);
     p.parse(noiseFreeMRGCresponses, varargin{:});
 
@@ -20,6 +21,8 @@ function noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses
             noiseGain = 1.0;
         case 'random'
             rng('shuffle');
+            noiseGain = 1.0;
+        case 'donotset'
             noiseGain = 1.0;
     end
 
