@@ -30,7 +30,7 @@ function noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses
     % At some moment when we have a little time, we should rationalize all
     % of this and deal with any backwards incompatibilities we introduce at
     % that point.
-    if (isempth(p.Results.noiseFlag))
+    if (isempty(p.Results.noiseFlag))
         switch obj.noiseFlag
             case 'none'
                 noiseGain = 0.0;
