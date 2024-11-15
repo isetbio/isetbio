@@ -16,11 +16,11 @@ c = cMosaic(...
 theConeSignedEccentricityDegs = sqrt(sum(c.coneRFpositionsDegs.^2,2)) .* sign(c.coneRFpositionsDegs(:,1));
 
 %% Setup figure
-hFig = figure(2); clf;
-set(hFig, 'Position', [10 10 950 1250], 'Color', [1 1 1]);
+ieNewGraphWin([],'tall');
+tiledlayout(3,1);
 
 % Plot the variation in cone spacing with eccentricity
-subplot(2,1,1)
+nexttile
 plot(theConeSignedEccentricityDegs, c.coneRFspacingsDegs*60, 'r.');
 set(gca, 'XTick', -40:5:40, 'XLim', 40*[-1 1], 'YLim', [0 4], 'YTick', 0:0.5:10);
 xtickangle(0)
@@ -30,18 +30,35 @@ ylabel('cone spacings (arc min)');
 set(gca, 'FontSize', 20);
 
 %% Plot the variation in cone aperture with eccentricity
-subplot(2,1,2)
-plot(theConeSignedEccentricityDegs, c.coneApertureDiametersDegs*60, 'r.');
-set(gca, 'XTick', -40:5:40, 'XLim', 40*[-1 1], 'YLim', [0 4], 'YTick', 0:0.5:10);
+nexttile
+plot(theConeSignedEccentricityDegs, c.coneApertureDiametersDegs*c.micronsPerDegree, 'r.');
+set(gca, 'XTick', -40:5:40, 'XLim', 40*[-1 1], 'YLim', [0 10], 'YTick', 0:2:10);
 xtickangle(0)
 grid on
 ylabel('cone apertures (arc min)');
 xlabel('(temporal retina) eccentricity (degs) (nasal retina)');
 set(gca, 'FontSize', 20);
 
-% Export PDFs
+%% Cone aperture area (um^2)
+
+nexttile;
+coneApertureArea = (c.coneApertureDiametersDegs*c.micronsPerDegree).^2;
+plot(theConeSignedEccentricityDegs, coneApertureArea, 'r.');
+set(gca, 'XTick', -40:5:40, 'XLim', 40*[-1 1], 'YLim', [0 50], 'YTick', 0:10:50);
+xtickangle(0)
+grid on 
+ylabel('cone apertures (um^2)');
+xlabel('(  temporal  ) eccentricity (degs) (  nasal  )');
+set(gca, 'FontSize', 20);
+
+
+%% Export PDFs
+%{
 if (~rodIntrusionAdjustedConeAperture)
    NicePlot.exportFigToPDF('withoutRodIntrusion.pdf', hFig, 300);
 else
    NicePlot.exportFigToPDF('withRodIntrusion.pdf', hFig, 300);
 end
+%}
+
+%%
