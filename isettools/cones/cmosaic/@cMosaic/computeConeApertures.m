@@ -6,7 +6,11 @@ function computeConeApertures(obj, lowOpticalImageResolutionWarning)
 %  cMosaic.computeConeApertures(lowResolutionWarning)
 %
 % Inputs:
-%   lowResolutionWarning
+%   obj - A cmosaic (I think).
+%   lowResolutionWarning - Seems unused
+%
+% Outputs
+%   Adjust some of the parameters in the cmosaic obj.
 %
 % Description
 %   Hairy code that NC wrote.  Will try to comment (BW). A lot of the work
