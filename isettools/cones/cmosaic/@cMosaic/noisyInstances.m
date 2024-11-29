@@ -2,7 +2,7 @@ function noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin)
     
     p = inputParser;
     p.addRequired('meanAbsorptions', @isnumeric);
-    p.addParameter('noiseFlag', 'random', @(x)(ismember(x, {'random', 'frozen'})));
+    p.addParameter('noiseFlag', 'random', @(x)(ismember(x, {'random', 'frozen','donotset'})));
     p.addParameter('seed', 1, @isnumeric);
     p.parse(meanAbsorptions, varargin{:});
 
@@ -10,6 +10,9 @@ function noisyAbsorptionInstances = noisyInstances(meanAbsorptions, varargin)
     noiseFlag = p.Results.noiseFlag;
 
     % Set up RNG depending on noiseFlag
+    %
+    % rng('shuffle') is very slow.  Avoid on inner loops
+    % if possible.
     switch noiseFlag
         case 'frozen'
             rng(seed);
