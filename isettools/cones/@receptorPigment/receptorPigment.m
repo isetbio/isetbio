@@ -235,9 +235,39 @@ methods
         %
         % Optional key/value pairs:
         %    None.
-        %
-        val = interp1(obj.wave_, obj.absorbance_, obj.wave, ...
-            'linear', 'extrap');
+        
+        % DHB: Careful handling of long wavelengths beyond those in our table of
+        % photopigment absorbance. We linearly extrapolate the values out,
+        % but do so not just on the last 1 nm base but on a larger spacing
+        % to stablilize the extrapolation.  Perhaps too clever by half but
+        % we need estimates for wavelengths greater then the 830 in our
+        % typical table for AO modeling.  We don't need these to be
+        % perfect, but the extrapolation based on the last two points was
+        % not good. I wrote this not to change the behavior if no requested
+        % wavelengths exceed those in the table.
+        maxWlInTable = max(obj.wave_(:));
+        index2 = find(obj.wave > maxWlInTable);
+        if (isempty(index2))
+            val = interp1(obj.wave_, obj.absorbance_, obj.wave, ...
+                'linear', 'extrap');
+        else
+            extrapolationBaseNm = 30;
+            index1 = find(obj.wave <= maxWlInTable);
+            temp1 = interp1(obj.wave_, obj.absorbance_, obj.wave(index1), ...
+                'linear', 'extrap');
+            index3 = find(obj.wave_ < maxWlInTable - extrapolationBaseNm);
+            if (isempty(index3))
+                error('Do not have enough data in table for requested long wavelength extrapolation base');
+            else
+                index4 = find(obj.wave_ == maxWlInTable);
+                if (length(index4) ~= 1)
+                    error('We do not understand something really basic about Matlab');
+                end
+                temp2 = 10.^interp1(obj.wave_([index3(end) index4(1)]), log10(obj.absorbance_([index3(end) index4(1)],:)), obj.wave(index2), ...
+                    'linear', 'extrap');
+                val = [temp1 ; temp2];
+            end
+        end
         val = ieClip(val, 0, 1);
     end
 

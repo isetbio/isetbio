@@ -520,7 +520,9 @@ switch ieParamFormat(plotType)
         mx = max(data(:));
         mn = min(data(:));
 
-        pt = iePointSelect(app,'Select a point.',1);
+        if isempty(roi), pt = iePointSelect(app,'Select a point.',1);
+        else, pt = roi;
+        end
         x = ieClip(pt(1), 1, size(data, 1));
         y = ieClip(pt(2), 1, size(data, 2));
         c = [3 x y];
@@ -531,7 +533,7 @@ switch ieParamFormat(plotType)
         t = (1:size(data, 3)) * cm.integrationTime * 1e3;
 
         ieNewGraphWin;
-        yStr = 'Absorptions per frame';
+        yStr = 'Photcurrent per frame (pA)';
         plot(t, squeeze(data(y, x, :)), 'LineWidth', 2);
         uData.x = t;
         uData.y = squeeze(data(y, x, :));

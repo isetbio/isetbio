@@ -23,38 +23,33 @@ function theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textS
 % Optional key/value pairs:
 %    none
 %
-%
-% Example usage:
-%   chromaSpecificationRGB = struct(...
-%                'type', chromaSpecificationType, ...
-%                'backgroundRGB', [0.5 0.5 0.5], ...
-%                'foregroundRGB',  [1 1 1]);
-%
-%
-%   chromaSpecificationLMS = struct(...
-%               'type', chromaSpecificationType, ...
-%               'backgroundChromaLuma', [0.31 0.32 40], ...
-%               'foregroundLMSConeContrasts', [-0.5 -0.5 0.0]);
-%           
-%   textSceneParams = struct(...
-%         'textString', 'Hello ISETBio world ! ', ...       % Text to display
-%         'textRotation', 0, ...                            % Rotation (0,90,180,270 only)
-%         'rowsNum', 60, ...                                % Pixels along the vertical (y) dimension
-%         'colsNum', 400, ...                               % Pixels along the horizontal (x) dimension
-%         'targetRow', 20, ...                              % Stimulus Y-pixel offset 
-%         'targetCol', 20, ...                              % Stimulus X-pixel offset 
-%         'upSampleFactor', 1, ...                          % Upsample factor to increase the retinal image resolution            
-%         'chromaSpecification', chromaSpecificationRGB, ...% background and stimulus chromaticity
-%         'horizontalFOVDegs', 0.4 ...
-%         );
-%
-%   theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textSceneParams, visualizeScene);
-%
+% Examples:
+%{
+  % ETTBSkip
+  % This was not written as an actual working example.  Too many variables
+  % not defined.
+
+  % chromaSpecificationRGB = struct(...
+  %              'type', 'RGBsettings', ...
+  %              'backgroundRGB', [0.5 0.5 0.5], ...
+  %              'foregroundRGB',  [1 1 1]);
+  % 
+  % textSceneParams = struct(...
+  %       'textString', 'Hello ISETBio world ! ', ...       % Text to display
+  %       'textRotation', 0, ...                            % Rotation (0,90,180,270 only)
+  %       'rowsNum', 60, ...                                % Pixels along the vertical (y) dimension
+  %       'colsNum', 400, ...                               % Pixels along the horizontal (x) dimension
+  %       'targetRow', 20, ...                              % Stimulus Y-pixel offset 
+  %       'targetCol', 20, ...                              % Stimulus X-pixel offset 
+  %       'upSampleFactor', 1, ...                          % Upsample factor to increase the retinal image resolution            
+  %       'chromaSpecification', chromaSpecificationRGB, ...% Background and stimulus chromaticity
+  %       );
+  % 
+  % theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textSceneParams, visualizeScene);
+%}
 
 % History:
 %    12/01/21  npc  Wrote it.
-%
-
     
     switch(textSceneParams.chromaSpecification.type)
         case 'RGBsettings'
@@ -75,7 +70,6 @@ function theScene = rotatedTextSceneRealizedOnDisplay(presentationDisplay, textS
     end
 end
 
-
 function theScene = textSceneFromRGBSettings(textSceneParams, presentationDisplay) 
     
     % Assert that the upSampleFactor is an integer >= 1
@@ -88,11 +82,19 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     % It is, now make it double
     textSceneParams.upSampleFactor = double(textSceneParams.upSampleFactor);
 
+    % See if we want to scale the bitmap before we stick it into the scene
+    if (isfield(textSceneParams,'textBitMapRescaledRowsCols'))
+        textBitMapRescaledRowsCols = textSceneParams.textBitMapRescaledRowsCols;
+    else
+        textBitMapRescaledRowsCols = [20 18];
+    end
+
     % Generate the rgb settings pattern 
     for rgbChannel = 1:3
        linearRGBimage(:,:,rgbChannel) = rotatedTextStringBitMapPattern(...
             textSceneParams.textString, textSceneParams.textRotation, ...
             textSceneParams.colsNum, textSceneParams.rowsNum, ...
+            textBitMapRescaledRowsCols, ...
             textSceneParams.targetCol, textSceneParams.targetRow, ...
             textSceneParams.chromaSpecification.foregroundRGB(rgbChannel), ...
             textSceneParams.chromaSpecification.backgroundRGB(rgbChannel));
@@ -105,16 +107,33 @@ function theScene = textSceneFromRGBSettings(textSceneParams, presentationDispla
     % gamma table to get RGB settings values, so that when they are passed
     % through the display's gamma table we get back the desired linear RGB values
     gammaUncorrectedRGBimage = ieLUTLinear(linearRGBimage, inverseGammaTable);
+
+    % ISETBio's gamma correction routine failes to map 0 in to 0 out, which
+    % is bad.  We handle that pathology here.  It can also return numbers
+    % greter than 1, which also seems bad so we fix that too.
+    gammaUncorrectedRGBimage(linearRGBimage == 0) = 0;
+    gammaUncorrectedRGBimage(gammaUncorrectedRGBimage > 1) = 1;
     
     % Upsample RGB image
     gammaUncorrectedRGBimageUpSampled = upSampleImage(gammaUncorrectedRGBimage, textSceneParams.upSampleFactor);
     
-    % Center RGC image
-    gammaUncorrectedRGBimageCentered = centerImage(gammaUncorrectedRGBimageUpSampled);
+    % Center RGC image. The original (chrom aberration paper) version of
+    % this code explicitly centerd the letter with the call below.  But if
+    % we want to postition the letter carefully somewhere else, this is a
+    % bad idea.  The code here provides a backwards compatibile way to turn
+    % this feature on or off.
+    if (~isfield(textSceneParams,'centerLetter') || textSceneParams.centerLetter)
+        gammaUncorrectedRGBimageCentered = centerImage(gammaUncorrectedRGBimageUpSampled);
+    else
+        gammaUncorrectedRGBimageCentered = gammaUncorrectedRGBimageUpSampled; 
+    end
     
     % Set the DPI of the presentationDisplay to reflect the upsampling factor
     upSampledDPI = double(textSceneParams.upSampleFactor) * displayGet(presentationDisplay, 'dpi');
     presentationDisplay = displaySet(presentationDisplay, 'dpi', upSampledDPI);
+
+    % If the upSampleFactor is 1, we allow for the possibility of an image
+    % scaling to a target number of rows.
 
     % Create scene from the centered,upsampled RGBimage on the presentation display
     theScene = sceneFromFile(gammaUncorrectedRGBimageCentered,'rgb', [], presentationDisplay);
@@ -144,7 +163,6 @@ function RGBimageUpSampled = upSampleImage(RGBimage, upSampleFactor)
     end
 end
 
-
 function RGBimage = centerImage(RGBimage)
     % Center image
     binaryImage = squeeze(RGBimage(:,:,1));
@@ -171,7 +189,6 @@ function RGBimage = centerImage(RGBimage)
         RGBimage(:,:,iChannel) = tmp;
     end
 end
-
 
 function theScene = textSceneFromChromaLuminanceSettings(textSceneParams, presentationDisplay)
 
@@ -215,16 +232,54 @@ function theScene = textSceneFromChromaLuminanceSettings(textSceneParams, presen
     theScene = sceneFromFile(gammaUncorrectedRGBimage,'rgb', [], presentationDisplay);
 end
 
-function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotation, colsNum, rowsNum, targetCol, targetRow,  foreground, background)
+function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotation, colsNum, rowsNum, textBitMapRescaledRowsCols, targetCol, targetRow,  foreground, background)
+    % Get the bitmapped character
+    %
+    % If you pass a string, convert to a bitmap.  Otherwise assume that a
+    % bitmap was passed.
+    if (ischar(theTextString))
+        X = textTo20x18BitmapFontImage(theTextString);
+    else
+        X = theTextString;
+    end
 
-    X = textTo20x18BitmapFontImage(theTextString);
-    X = rot90(X,floor(rotation/90));
+    % Rescale if specified.  Backwards compatible with case where this
+    % possibility did not exist.  We convert X to a categorical variable
+    % before resizing, and then back to a double afterwards.
+    if (~isempty(textBitMapRescaledRowsCols))
+        if (textBitMapRescaledRowsCols(1) ~= 20 && textBitMapRescaledRowsCols(2) ~= 18)
+            X = imresize(categorical(X),textBitMapRescaledRowsCols);
 
+            % Not clear to me why double(X) returns 1 for categorical(0) and 2 for categorical(1), 
+            % at least when both 0 and 1 are in the array, but this is what it does.  Deal with it.
+            % But put in a check in case this behavior changes or is version dependent
+            if ( any(double(categorical([0 1])) ~= [1 2]) || any(double(categorical([1 0])) ~= [2 1]) )
+                error('Behavior of Matlab categorical conversions has changed.  Check code here.');
+            end
+            X = double(X) - 1;
+            X(X > 1) = 1;
+            X(X < 0) = 0;
+        end
+    end
+
+    % Set foreground and background actual values based on binary values
     idxBackground = find(X(:) == 1);
     idxForeground = find(X(:) == 0);
     X(idxBackground) = background;
     X(idxForeground) = foreground;
-    
+
+    % Make sure X is between 0 and 1, which is what we expect here
+    if (any(X(:) > 1))
+        error('Some values of X greater than 1.  We do not expect that');
+    end
+    if (any(X(:) < 0))
+         error('Some values of X less than 0.  We do not expect that');
+    end
+
+    % Rotate as desired
+    X = rot90(X,floor(rotation/90));
+
+    % Put the text image into the larger image. 
     xx = 1:size(X,2);
     yy = 1:size(X,1);
     
@@ -234,7 +289,6 @@ function theSpatialPattern = rotatedTextStringBitMapPattern(theTextString, rotat
     theSpatialPattern = zeros(rowsNum,colsNum) + background;
     theSpatialPattern(targetRow+yy,targetCol+xx) = X(yy,xx);
 end
-
 
 function bitmapTextImage = textTo20x18BitmapFontImage(text)
     % converting string into Ascii-number array

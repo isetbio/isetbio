@@ -84,8 +84,8 @@ function importExternalConeData(obj, coneData)
     assert(conesNum==numel(obj.lConeIndices)+numel(obj.mConeIndices)+numel(obj.sConeIndices)+numel(obj.kConeIndices), ...
         'loadExternalConeData():: indices do not sum up to total cones');
     
-    
     % Compute achieved cone densities
+    obj.achievedConeDensities = [numel(obj.lConeIndices) numel(obj.mConeIndices) numel(obj.sConeIndices) numel(obj.kConeIndices)]/obj.conesNum;
     achievedConeDensities = obj.coneDensities;
 
     fprintf('Achieved cone densities: L (%2.3f), M (%2.3f), S (%2.3f), K (%2.3f)\n', ...

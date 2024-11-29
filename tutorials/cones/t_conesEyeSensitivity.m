@@ -37,6 +37,10 @@ function t_conesEyeSensitivity
 %                     This involved removing the point near zero sensitivity.
 %                     A little screwing around could put it back.
 
+
+fprintf(2,'\nThis tutorial currently not working.  The developers are aware.\n')
+error('Intentionally throwing an error to flag this fact.')
+
 %% Initialize workspace and close old figures
 clear; close all;
 ieInit;

@@ -93,7 +93,6 @@ wvfPlot(wvf,'psf','unit','um','wave',550);
 oiPlot(oi,'psf',550);
 
 %% Here are the phase and amplitude images
-
 OTF = oiGet(oi,'optics OTF');
 otfAngle = angle(OTF);
 ieNewGraphWin; imagesc(fftshift(otfAngle)); colormap(gray)
@@ -101,7 +100,6 @@ otfAmp = abs(OTF);
 ieNewGraphWin; imagesc(fftshift(otfAmp)); colormap(gray)
 
 %% Plot the PSF
-
 psf = wvfGet(wvf,'PSF',550);
 psfSupport = wvfGet(wvf, 'spatial Support', 'um');
 

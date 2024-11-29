@@ -17,6 +17,14 @@ function density = eccDensity(obj, eccDeg, varargin)
 %	 density  - macular pigment peak optical density, one entry for every
 %	            entry of the input.
 %
+% Optional Key/Valuue Pairs
+%    'eccDegs2' - Boolean, default false. Interpret passed eccDeg as
+%                 being expressed as degrees^2 rather than degrees.
+%                 You might want to do this to speed up a calculation,
+%                 where you compute radial degrees^2 from the x and y
+%                 coordinates as x^2 + Y^2, skip taking the square root,
+%                 and pass here, where squaring the input is also skipped.
+%
 % Notes:
 %   1) Macular pigment density is roughly symmetric and thus we
 %      approximate the 2D position by 1D eccentricity

@@ -1,5 +1,6 @@
 %% s_fazMask
-%
+% Re:
+%   David Buckians and Heather Moss
 %{
 June 5th email
 
@@ -17,7 +18,7 @@ which I thought I could crop specific regions from an unchanged
 cMosaic which would mimic a masked cone mosaic.   
 
 Questions: 
-1. Is there a parameter in cMosiac that can accomplish a 2D mask?
+1. Is there a parameter in cMosaic that can accomplish a 2D mask?
       Is there a function that allows individual control of cone placement?
       Is there a function that allows individual control of cone absorption?
 2. Should I create a cone mosaic which incorporates the mask into the

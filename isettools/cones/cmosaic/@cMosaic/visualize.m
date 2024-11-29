@@ -122,6 +122,10 @@ p.addParameter('densitycolormap', [], @(x)(isempty(x)||(size(x,2) == 3)));
 
 p.addParameter('withsuperimposedopticalimage', [], @(x)(isempty(x) || isstruct(x)));
 p.addParameter('withsuperimposedopticalimagealpha', 0.7, @isnumeric);
+p.addParameter('withsuperimposedrgbopticalimage', [], @isnumeric);
+p.addParameter('withsuperimposedrgbopticalimagealpha', 0.7, @isnumeric);
+p.addParameter('withsuperimposedrgbopticalimagespatialsupportmicrons', [], @isnumeric);
+
 p.addParameter('withsuperimposedpsf', [], @(x)(isempty(x) || isstruct(x)));
 
 p.addParameter('activation', []);
@@ -183,6 +187,9 @@ densityContourLevelLabelsDisplay = p.Results.densitycontourlevellabelsdisplay;
 densityColorMap = p.Results.densitycolormap;
 superimposedOpticalImage = p.Results.withsuperimposedopticalimage;
 superimposedOpticalImageAlpha = p.Results.withsuperimposedopticalimagealpha;
+superimposedRGBopticalImageSpatialSupportMicrons = p.Results.withsuperimposedrgbopticalimagespatialsupportmicrons;
+superimposedRGBopticalImage = p.Results.withsuperimposedrgbopticalimage;
+superimposedRGBopticalImageAlpha = p.Results.withsuperimposedrgbopticalimagealpha;
 superimposedPSF = p.Results.withsuperimposedpsf;
 activation = p.Results.activation;
 activationRange = p.Results.activationrange;
@@ -742,8 +749,36 @@ end
 
 % Superimpose an optical image
 if (~isempty(superimposedOpticalImage))
-    superimposeTheOpticalImage(obj, axesHandle, domain, superimposedOpticalImage, superimposedOpticalImageAlpha);
+    superimposeTheOpticalImage(obj, axesHandle, domain, ...
+        superimposedOpticalImage, superimposedOpticalImageAlpha);
 end
+
+% Superimpose an RGB optical image
+if (~isempty(superimposedRGBopticalImage))
+    assert(ndims(superimposedRGBopticalImage) == 3, ...
+        'The superimposed RGC optical image must be an N x N x 3 matrix');
+
+    assert(size(superimposedRGBopticalImage,3) == 3, ...
+        'The superimposed RGC optical image must be an N x N x 3 matrix');
+
+    assert(size(superimposedRGBopticalImage,1) == size(superimposedRGBopticalImage,2), ...
+        'The superimposed RGC optical image must be an N x N x 3 matrix');
+
+    assert(~isempty(superimposedRGBopticalImageSpatialSupportMicrons), ...
+        'You must pass a spatial support (in microns) for the passed superimposed RGB optical image');
+
+    assert(numel(superimposedRGBopticalImageSpatialSupportMicrons) == size(superimposedRGBopticalImage,1), ...
+        'The **spatial support** of superimposed RGB optical image does not match the size of the passed superimposed RGC optical image');
+
+    assert(numel(superimposedRGBopticalImageSpatialSupportMicrons) == size(superimposedRGBopticalImage,2), ...
+        'The **spatial support** of superimposed RGB optical image does not match the size of the passed superimposed RGC optical image');
+    
+    superimposeRGBopticalImage(obj, axesHandle, domain, ...
+        superimposedRGBopticalImageSpatialSupportMicrons, ...
+        superimposedRGBopticalImageSpatialSupportMicrons, ...
+        superimposedRGBopticalImage, superimposedRGBopticalImageAlpha)
+end
+
 
 % Superimpose an optical PSF
 if (~isempty(superimposedPSF))
@@ -1025,12 +1060,27 @@ end
 
 
 %% Method to superimpose an optical image on top of the mosaic
-function superimposeTheOpticalImage(obj, axesHandle, visualizationDomain, theOI, superimposedOIAlpha)
+function superimposeTheOpticalImage(obj, axesHandle, visualizationDomain, ...
+    theOI, superimposedRGBimageAlpha)
+    
+    % Get the rgb value
+    theOpticalImageRGB = oiGet(theOI, 'rgb');
 
-% Obtain spatial support in microns
-spatialSupportMeters = oiGet(theOI, 'spatial support');
-xSupport = squeeze(spatialSupportMeters(1,1:end,1)) * 1e6;
-ySupport = squeeze(spatialSupportMeters(1:end,1,2)) * 1e6;
+    % Obtain spatial support in microns
+    theSpatialSupportMeters = oiGet(theOI, 'spatial support');
+
+    % Obtain spatial support in microns
+    xSupportMicrons = squeeze(theSpatialSupportMeters(1,1:end,1)) * 1e6;
+    ySupportMicrons = squeeze(theSpatialSupportMeters(1:end,1,2)) * 1e6;
+
+    % Render the RGBimage
+    superimposeRGBopticalImage(obj,axesHandle, visualizationDomain, ...
+        xSupportMicrons, ySupportMicrons, theOpticalImageRGB, superimposedRGBimageAlpha);
+end
+
+
+function superimposeRGBopticalImage(obj, axesHandle, visualizationDomain, ...
+    xSupport, ySupport, theRGBimage, theRGBimageAlpha)
 
 if (strcmp(visualizationDomain, 'degrees'))
     % Convert spatial support in microns to degs
@@ -1060,13 +1110,17 @@ else
     ySupport = ySupport + y0;
 end
 
-% Get the rgb value
-theOpticalImageRGB = flipud(oiGet(theOI, 'rgb'));
-% Superimpose the optical image
-imPlot = image(axesHandle, xSupport, ySupport, theOpticalImageRGB);
+% Superimpose the RGB image
+imPlot = image(axesHandle, xSupport, ySupport, flipud(theRGBimage));
+
 % Make it semi-transparent
-imPlot.AlphaData = superimposedOIAlpha;
+imPlot.AlphaData = theRGBimageAlpha;
 end
+
+
+
+
+
 
 
 %% Key rendering function.  Could be used by coneMosaicRect, too, I think

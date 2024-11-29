@@ -83,4 +83,9 @@ function absorptionsRate = computeAbsorptionRate(obj, currentEMposMicrons, ...
         absorptionsRate = absorptionsRate .* effectiveOSlengthAttenuationFactors;
     end
 
+    % Apple shadow mask, if one exists
+    if (~isempty(obj.shadowMask))
+        absorptionsRate = absorptionsRate .* obj.shadowMask;
+    end
+
 end
