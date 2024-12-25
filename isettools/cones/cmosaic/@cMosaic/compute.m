@@ -440,6 +440,7 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
         if (~isempty(nTimePoints))
             fprintf('cMosaic.compute() with oiSequence: ignoring ''nTimePoints'' (set to %d) parameter, and setting it to the length of the oiSequence.', nTimePoints);
         end
+        
         % No emPaths passed: make the nTimePoints = legth of oiSequence
         nTimePoints = numel(timeAxis);
         
