@@ -682,6 +682,11 @@ classdef cMosaic < handle
         
         % Method to generate eye movement sequences
         params = emGenSequence(obj, durationSeconds, varargin);
+
+        % Setter for just sticking in our own fixationalEM object
+        function emSetFixationalEMObj(obj,fixationalEMObj)
+            obj.fixEMobj = fixationalEMobj;
+        end
         
         % Method to generate an ensemble of OIs for the mosaic
         [oiEnsemble, psfEnsemble, zCoeffs] = oiEnsembleGenerate(obj, oiSamplingGridDegs, varargin);
