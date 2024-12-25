@@ -111,7 +111,7 @@ obj.emPosTimeSeriesArcMin = obj.emPosTimeSeries*obj.scalarToArcMin;
 obj.velocityArcMinPerSecTimeSeries = ...
     obj.velocityTimeSeries * obj.scalarToArcMin;
 
-if (obj.displayComputeProgress))
+if (obj.displayComputeProgress)
     close(hWaitBar);
 end
 
