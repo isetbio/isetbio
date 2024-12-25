@@ -685,7 +685,7 @@ classdef cMosaic < handle
 
         % Setter for just sticking in our own fixationalEM object
         function emSetFixationalEMObj(obj,fixationalEMObj)
-            obj.fixEMobj = fixationalEMobj;
+            obj.fixEMobj = fixationalEMObj;
         end
         
         % Method to generate an ensemble of OIs for the mosaic
