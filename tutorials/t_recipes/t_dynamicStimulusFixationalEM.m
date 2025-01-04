@@ -9,13 +9,15 @@
 ieInit;
 
 %% Stimulus params
-% stimulus duration: 0.5 second
+% Duration: 0.5 second
 stimulusDurationSeconds = 0.5;
 
-% 120 Hz frame rate
+% Frame duration: based on a 120 Hz refresh rate
+% The time resolution of the fixationalEM and the
+% integration time of the cone mosaic also get set to this value
 frameDurationSeconds = 1/120;
 
-% FOV: 0.3 degs
+% Field of view: 0.3 degs
 fovDegs = .3;
 
 %% Generate the OIsequence
@@ -30,7 +32,7 @@ theConeMosaic = cMosaic(...
 
 %% Generate fixational eye movements
 nTrials = 3;
-theFixationalEMObj = generateFixationalEyeMovements(theConeMosaic, theOISequence.timeAxis, nTrials);
+theFixationalEMObj = generateFixationalEyeMovements(stimulusDurationSeconds, frameDurationSeconds, nTrials, theConeMosaic);
 
 %% Compute mosaic responses
 [theNeuralResponses, ~, ~, ~, temporalSupportSeconds] = ...
@@ -56,8 +58,8 @@ function visualizeConeExcitationsStimulusModulationAndFixationalEMs(...
     end
     illuminanceRange = [min(stimulusIlluminanceSequence(:)) max(stimulusIlluminanceSequence(:))];
 
-    oiPixelWidthDegs = oiGet(theOISequence.frameAtIndex(iTimePoint), 'wangular resolution')
-    oiWidthPixels = oiGet(theOISequence.frameAtIndex(iTimePoint), 'cols')
+    oiPixelWidthDegs = oiGet(theOISequence.frameAtIndex(iTimePoint), 'wangular resolution');
+    oiWidthPixels = oiGet(theOISequence.frameAtIndex(iTimePoint), 'cols');
     oiSupport = (1:oiWidthPixels)*oiPixelWidthDegs;
     oiSupport = oiSupport - mean(oiSupport);
 
@@ -114,15 +116,13 @@ end
 
 
 
-function fixationalEMObj = generateFixationalEyeMovements(theConeMosaic, theTimeAxis, nTrials)
+function fixationalEMObj = generateFixationalEyeMovements(stimDurationSeconds, frameDurationSeconds, nTrials, theConeMosaic)
     % Initialize
     fixationalEMObj = fixationalEM;              % Instantiate a fixationalEM object
     fixationalEMObj.microSaccadeType = 'none';   % No microsaccades, just drift
     
-    % Specify parameters
-    frameDurationSeconds = theTimeAxis(2)-theTimeAxis(1);
-    stimDuration = theTimeAxis(end)-theTimeAxis(1) + frameDurationSeconds;
-    eyeMovementsPerTrial = stimDuration/frameDurationSeconds;
+    % Compute number of eye movements
+    eyeMovementsPerTrial = stimDurationSeconds/frameDurationSeconds;
 
     % Generate the em sequence for the passed cone mosaic,
     % which results in a time step equal to the integration time of theConeMosaic
