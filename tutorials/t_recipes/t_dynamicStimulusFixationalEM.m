@@ -15,8 +15,8 @@ stimulusDurationSeconds = 0.5;
 % 120 Hz frame rate
 frameDurationSeconds = 1/120;
 
-% FOV: 0.7 degs
-fovDegs = .5;
+% FOV: 0.3 degs
+fovDegs = .3;
 
 %% Generate the OIsequence
 theOISequence = generateOpticalImageSequence(stimulusDurationSeconds, frameDurationSeconds, fovDegs);
@@ -56,6 +56,10 @@ function visualizeConeExcitationsStimulusModulationAndFixationalEMs(...
     end
     illuminanceRange = [min(stimulusIlluminanceSequence(:)) max(stimulusIlluminanceSequence(:))];
 
+    oiPixelWidthDegs = oiGet(theOISequence.frameAtIndex(iTimePoint), 'wangular resolution')
+    oiWidthPixels = oiGet(theOISequence.frameAtIndex(iTimePoint), 'cols')
+    oiSupport = (1:oiWidthPixels)*oiPixelWidthDegs;
+    oiSupport = oiSupport - mean(oiSupport);
 
     hFig = figure(1);
     set(hFig, 'Position', [10 10 1800 650]);
@@ -71,6 +75,8 @@ function visualizeConeExcitationsStimulusModulationAndFixationalEMs(...
     nTrials = size(theNeuralResponses,1);
     timeSamplesNum = size(theNeuralResponses,2);
 
+    
+
     for iTrial = 1:nTrials
     for iTimePoint = 1:timeSamplesNum
         theMosaicResponse = squeeze(theNeuralResponses(iTrial, iTimePoint,:));
@@ -81,8 +87,8 @@ function visualizeConeExcitationsStimulusModulationAndFixationalEMs(...
             'plotTitleFontSize', 20, ...
             'plotTitle', sprintf('cone mosaic excitations\ntrial: %d, time: %2.1f msec', iTrial,temporalSupportSeconds(iTimePoint)*1e3));
     
-        xStimSupport = linspace(-fovDegs*0.5, fovDegs*0.5, size(stimulusIlluminanceSequence,3));
-        imagesc(axStim, xStimSupport, xStimSupport, (squeeze(stimulusIlluminanceSequence(iTimePoint,:,:))-illuminanceRange(1))/(illuminanceRange(2) - illuminanceRange(1)), [0 1]);
+            
+        imagesc(axStim, oiSupport, oiSupport, (squeeze(stimulusIlluminanceSequence(iTimePoint,:,:))-illuminanceRange(1))/(illuminanceRange(2) - illuminanceRange(1)), [0 1]);
         axis(axStim, 'image');
         set(axStim, 'FontSize', 20, 'Color', [0 0 0]);
         set(axStim, 'XLim', theConeMosaic.sizeDegs(1)*0.5*[-1 1], 'YLim', theConeMosaic.sizeDegs(2)*0.5*[-1 1]);
@@ -142,8 +148,8 @@ function theOISequence = generateOpticalImageSequence(stimulusDurationSeconds, f
     vparams(1).name = 'uniform';
     sparams.fov = fovDegs;
     
-    stimFramesNum = round(stimulusDurationSeconds/frameDurationSeconds)
-    stimWeights = ieScale(fspecial('gaussian', [1, stimFramesNum], max([1 round(stimFramesNum/3)])), 0, 1)
+    stimFramesNum = round(stimulusDurationSeconds/frameDurationSeconds);
+    stimWeights = ieScale(fspecial('gaussian', [1, stimFramesNum], max([1 round(stimFramesNum/3)])), 0, 1);
     sampleTimes = (0:(numel(stimWeights)-1))*frameDurationSeconds;
     
     theOISequence = oisCreate('vernier', 'add', stimWeights, ...
