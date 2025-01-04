@@ -9,13 +9,17 @@
 ieInit;
 
 %% Stimulus params
-% frame duration: 10 msec
-frameDurationSeconds = 10/1000;
-% FOV: 0.2 degs
-fovDegs = 0.2;
+% stimulus duration: 0.5 second
+stimulusDurationSeconds = 0.5;
+
+% 120 Hz frame rate
+frameDurationSeconds = 1/120;
+
+% FOV: 0.7 degs
+fovDegs = .5;
 
 %% Generate the OIsequence
-theOISequence = generateOpticalImageSequence(frameDurationSeconds, fovDegs);
+theOISequence = generateOpticalImageSequence(stimulusDurationSeconds, frameDurationSeconds, fovDegs);
 
 %% Generate the cone mosaic
 theConeMosaic = cMosaic(...
@@ -34,13 +38,17 @@ theFixationalEMObj = generateFixationalEyeMovements(theConeMosaic, theOISequence
         'withFixationalEyeMovements', true);
 
 %% Visualize everything
-visualizeEverything(theOISequence, fovDegs, theConeMosaic, theNeuralResponses, temporalSupportSeconds, theFixationalEMObj);
+visualizeConeExcitationsStimulusModulationAndFixationalEMs(...
+    theConeMosaic, theNeuralResponses, temporalSupportSeconds, ...
+    theOISequence, fovDegs, theFixationalEMObj);
 
 
 %
 % SUPPORT ROUTINES
 %
-function visualizeEverything(theOISequence, fovDegs, theConeMosaic, theNeuralResponses, temporalSupportSeconds, theFixationalEMOb)
+function visualizeConeExcitationsStimulusModulationAndFixationalEMs(...
+    theConeMosaic, theNeuralResponses, temporalSupportSeconds, ...
+    theOISequence, fovDegs, theFixationalEMOb)
 
     stimulusIlluminanceSequence = [];
     for iTimePoint = 1:theOISequence.length
@@ -59,6 +67,7 @@ function visualizeEverything(theOISequence, fovDegs, theConeMosaic, theNeuralRes
     % Cone mosaic activation range
     activationRange = [min(theNeuralResponses(:)) max(theNeuralResponses(:))];
 
+    % Visualize each frame of the stimulus/response/fixational EM
     nTrials = size(theNeuralResponses,1);
     timeSamplesNum = size(theNeuralResponses,2);
 
@@ -69,29 +78,31 @@ function visualizeEverything(theOISequence, fovDegs, theConeMosaic, theNeuralRes
             'axesHandle', axConeMosaicExcitation, ...
             'activation', theMosaicResponse, ...
             'activationRange', activationRange, ...
-            'plotTitle', sprintf('cone mosaic excitations\ntrial: %d, t: %2.4f msec', iTrial,temporalSupportSeconds(iTimePoint)*1e3));
+            'plotTitleFontSize', 20, ...
+            'plotTitle', sprintf('cone mosaic excitations\ntrial: %d, time: %2.1f msec', iTrial,temporalSupportSeconds(iTimePoint)*1e3));
     
         xStimSupport = linspace(-fovDegs*0.5, fovDegs*0.5, size(stimulusIlluminanceSequence,3));
         imagesc(axStim, xStimSupport, xStimSupport, (squeeze(stimulusIlluminanceSequence(iTimePoint,:,:))-illuminanceRange(1))/(illuminanceRange(2) - illuminanceRange(1)), [0 1]);
         axis(axStim, 'image');
         set(axStim, 'FontSize', 20, 'Color', [0 0 0]);
         set(axStim, 'XLim', theConeMosaic.sizeDegs(1)*0.5*[-1 1], 'YLim', theConeMosaic.sizeDegs(2)*0.5*[-1 1]);
-        title(axStim, 'stimulus');
+        title(axStim, sprintf('retinal illuminance\n time: %2.1f msec', temporalSupportSeconds(iTimePoint)*1e3));
         colormap(gray);
     
 
-        cla(axEyeMovementPath);
+
         plot(axEyeMovementPath, ...
             theFixationalEMOb.emPosArcMin(iTrial, 1:iTimePoint,1)/60, ...
-            theFixationalEMOb.emPosArcMin(iTrial, 1:iTimePoint,2)/60, 'r-', 'LineWidth', 1.5);
+            theFixationalEMOb.emPosArcMin(iTrial, 1:iTimePoint,2)/60, '-', ...
+            'LineWidth', 1.5, 'Color', 'r');
         axis(axEyeMovementPath, 'equal');
         set(axEyeMovementPath, 'XLim', theConeMosaic.sizeDegs(1)*0.5*[-1 1], 'YLim', theConeMosaic.sizeDegs(2)*0.5*[-1 1]);
         set(axEyeMovementPath, 'FontSize', 20, 'Color', [0 0 0]);
-        title(axEyeMovementPath, 'fixational eye movements');
+        title(axEyeMovementPath, sprintf('fixational eye movement path\ntrial: %d, time: %2.1f msec', iTrial,temporalSupportSeconds(iTimePoint)*1e3));
         drawnow;
          
-    end
-    end
+    end % for iTimePoint
+    end % for iTrial
 
 end
 
@@ -103,11 +114,12 @@ function fixationalEMObj = generateFixationalEyeMovements(theConeMosaic, theTime
     fixationalEMObj.microSaccadeType = 'none';   % No microsaccades, just drift
     
     % Specify parameters
-    stimDuration = theTimeAxis(end)-theTimeAxis(1);
     frameDurationSeconds = theTimeAxis(2)-theTimeAxis(1);
-    eyeMovementsPerTrial = stimDuration/frameDurationSeconds + 1;
+    stimDuration = theTimeAxis(end)-theTimeAxis(1) + frameDurationSeconds;
+    eyeMovementsPerTrial = stimDuration/frameDurationSeconds;
 
-    % Generate the em sequence
+    % Generate the em sequence for the passed cone mosaic,
+    % which results in a time step equal to the integration time of theConeMosaic
     fixationalEMObj.computeForCmosaic(...
         theConeMosaic, eyeMovementsPerTrial,...
         'nTrials' , nTrials);
@@ -117,10 +129,9 @@ function fixationalEMObj = generateFixationalEyeMovements(theConeMosaic, theTime
 end
 
 
-function theOISequence = generateOpticalImageSequence(frameDurationSeconds, fovDegs)
+function theOISequence = generateOpticalImageSequence(stimulusDurationSeconds, frameDurationSeconds, fovDegs)
 
     sparams = struct();
-    vParams = struct();
     
     vparams(2) = vernierP;
     vparams(2).name = 'offset';
@@ -131,8 +142,9 @@ function theOISequence = generateOpticalImageSequence(frameDurationSeconds, fovD
     vparams(1).name = 'uniform';
     sparams.fov = fovDegs;
     
-    stimWeights = ieScale(fspecial('gaussian', [1, 50], 15), 0, 1);
-    sampleTimes = (0:numel(stimWeights)-1)*frameDurationSeconds;
+    stimFramesNum = round(stimulusDurationSeconds/frameDurationSeconds)
+    stimWeights = ieScale(fspecial('gaussian', [1, stimFramesNum], max([1 round(stimFramesNum/3)])), 0, 1)
+    sampleTimes = (0:(numel(stimWeights)-1))*frameDurationSeconds;
     
     theOISequence = oisCreate('vernier', 'add', stimWeights, ...
        'testParameters', vparams, 'sceneParameters', sparams, ...
