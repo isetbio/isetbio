@@ -494,7 +494,9 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
         
         % Then check that they have the same time support
         timeAxisDifferentialsPicoSeconds = abs((timeAxis-obj.fixEMobj.timeAxis)*1e12);
-        assert(all(timeAxisDifferentialsPicoSeconds < 1), sprintf('The time support of the oiSequence does not match the time support of the eye movement path (max diff: %f picoseconds)', max(timeAxisDifferentialsPicoSeconds)));
+        dtOIsequenceMsec = (timeAxis(2)-timeAxis(1))*1e3;
+        dtFixationalEMMsec = (obj.fixEMobj.timeAxis(2)-obj.fixEMobj.timeAxis(1))*1e3;
+        assert(all(timeAxisDifferentialsPicoSeconds < 1), sprintf('The time support of the oiSequence (dt:%f msec) does not match the time support of the eye movement path (dt:%f msec). Max diff: %f picoseconds', dtOIsequenceMsec, dtFixationalEMMsec, max(timeAxisDifferentialsPicoSeconds)));
 
         % All good.
         emPathsMicrons = obj.fixEMobj.emPosMicrons;
