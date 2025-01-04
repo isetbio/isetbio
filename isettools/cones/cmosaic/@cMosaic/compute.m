@@ -179,7 +179,8 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     end
     oiFramesNum = numel(oiTimeAxis);
             
-    for oiFrame = 1:oiFramesNum    
+    for oiFrame = 1:oiFramesNum  
+
         if (isa(oi, 'struct'))
             % Retrieve retinal irradiance in photons
             photons = oiGet(oi, 'photons');
@@ -206,7 +207,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
         % Reshape the photons for efficient computations
         [photons, oiRowsNum, oiColsNum] = RGB2XWFormat(photons);
 
-        % Single OI
+        % We were passed a single OI
         if (isa(oi, 'struct'))
             
             if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
@@ -242,6 +243,7 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                 end
                 
             else
+                % We have eye movements
                 if (~obj.eccVaryingMacularPigmentDensityDynamic)
                     % No dynamic adjustment of MP density, so compute MP boost factors for the mean  eye movement position
                     % across all time points and all instances. Alternatively, we
@@ -291,10 +293,9 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                         end % timePoint
                     end
                 end % iTrial
-                
             end
             
-        % OISequence
+        % We were passed an OISequence
         else
             if (isempty(obj.fixEMobj)) || (all(emPathsMicrons(:)==0))
                 % No emPath
@@ -326,9 +327,60 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
                 for iTrial = 2:nTrials
                     noiseFreeAbsorptionsCount(iTrial, oiFrame, :) = noiseFreeAbsorptionsCount(1,oiFrame,:);
                 end
-            end
+            else
+                % We have eye movements & an oiSequence - NEW FUNCTIONALITY
+
+                if (oiFrame == 1)
+                    if (~obj.eccVaryingMacularPigmentDensityDynamic)
+                        % No dynamic adjustment of MP density, so compute MP boost factors for the mean  eye movement position
+                        % across all time points and all instances. Alternatively, we
+                        % could do mean over all time points separately for each instance
+                        meanEMPosDegs = mean(mean(emPathsDegs,1),2);
+                        macularPigmentDensityBoostFactors = ...
+                            updateMPBoostFactorsForCurrentEMpos(obj, [meanEMPosDegs(1) meanEMPosDegs(2)], oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                    
+                        if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+                            macularPigmentDensityBoostFactors = 1 + 0*macularPigmentDensityBoostFactors;
+                        end
+                    end
+                end
+
+
+                % Compute for emPath
+                for iTrial = 1:nTrials
+
+                    % Stimulus frames and emPoints are locked togehter
+                    timePoint = oiFrame;
+  
+                    if (obj.eccVaryingMacularPigmentDensityDynamic)
+                        % Recompute MP boost factors for current eye movement position
+                        currentEMposDegs = [emPathsDegs(iTrial, timePoint,1) emPathsDegs(iTrial, timePoint,2)];
+                        macularPigmentDensityBoostFactors = ...
+                            updateMPBoostFactorsForCurrentEMpos(obj, currentEMposDegs, oiPositionsDegs, oiWave, oiSize, oiResMicrons);
+                    
+                        if (obj.anchorAllEccVaryingParamsToTheirFovealValues)
+                            macularPigmentDensityBoostFactors = 1 + 0*macularPigmentDensityBoostFactors;
+                        end
+    
+                    end
+                            
+                    % Compute density of cone absosprions, by integrating photons over
+                    % wavelength. The size of abosrptionsDensity is [oiRows x oiCols x coneTypes]
+                    absorptionsDensityFullMap = XW2RGBFormat((photons .* macularPigmentDensityBoostFactors) * scaledQE, oiRowsNum, oiColsNum);
+                            
+                   
+                    % Compute absorptions
+                    noiseFreeAbsorptionsCount(iTrial, timePoint, :) = obj.integrationTime * ...
+                                obj.computeAbsorptionRate(emPathsMicrons(iTrial, timePoint,:), ...
+                                                          oiPositionsVectorsMicrons, ...
+                                                          absorptionsDensityFullMap, ...
+                                                          oiResMicrons, lowOpticalImageResolutionWarning);
+                            
+                end % iTrial
+            end  % We have eye movements & an oiSequence - NEW FUNCTIONALITY
             
         end  % oiSequence
+        
     end % for oiFrame
     
     
@@ -435,7 +487,19 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
         
     replicateResponseToFirstEMpath = false;
     if (withFixationalEyeMovements)
-        error('cMosaic.compute(): We have not yet implemented this method for fixationalEyeMovements with an OIsequence');
+
+        % First check that the OIsequence and the emPath have the same length
+        [nTrials, nTimePoints, ~] = size(obj.fixEMobj.emPosMicrons);
+        assert(numel(timeAxis) == nTimePoints, 'The oiSequence length (%d) does not match the eye movement path length (%d)', numel(timeAxis), nTimePoints);
+        
+        % Then check that they have the same time support
+        timeAxisDifferentialsPicoSeconds = abs((timeAxis-obj.fixEMobj.timeAxis)*1e12);
+        assert(all(timeAxisDifferentialsPicoSeconds < 1), sprintf('The time support of the oiSequence does not match the time support of the eye movement path (max diff: %f picoseconds)', max(timeAxisDifferentialsPicoSeconds)));
+
+        % All good.
+        emPathsMicrons = obj.fixEMobj.emPosMicrons;
+        emPathsDegs = obj.fixEMobj.emPosArcMin/60;
+        %error('cMosaic.compute(): We have not yet implemented this method for fixationalEyeMovements with an OIsequence');
     else
         if (~isempty(nTimePoints))
             fprintf('cMosaic.compute() with oiSequence: ignoring ''nTimePoints'' (set to %d) parameter, and setting it to the length of the oiSequence.', nTimePoints);
