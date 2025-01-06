@@ -137,6 +137,14 @@ properties
     % If it is -1, don't touch the seed.
     randomSeed;
 
+     % emPosArcMin - Matrix. Matrix of eye pos in arc min with no truncation
+    % Matrix dimensions: nTrials x emPath length x 2. Default [].
+    emPosArcMin = [];
+
+    % emPosMicrons - Matrix. Matrix of eye positions in microns. Truncated.
+    % Matrix dimensions: nTrials x emPath length x 2. Default []. 
+    emPosMicrons  = [];
+    
     %% user-feedback
 
     % displayComputeProgress - Boolean. Display progress bar if set to true
@@ -145,7 +153,7 @@ properties
 
     % beVerbose - Boolean. Curtail output if set to false(0).
     % Default is true(1). This is a numeric boolean based on observation.
-    beVerbose;
+    beVerbose; 
 end
 
 % Read-only properties
@@ -156,14 +164,6 @@ properties (SetAccess = private)
     % velocityArcMin - Matrix. Matrix of velocity in units of arc min/sec.
     % Matrix dimensions: nTrials x emPath length. Default [].
     velocityArcMin = [];
-
-    % emPosArcMin - Matrix. Matrix of eye pos in arc min with no truncation
-    % Matrix dimensions: nTrials x emPath length x 2. Default [].
-    emPosArcMin = [];
-
-    % emPosMicrons - Matrix. Matrix of eye positions in microns. Truncated.
-    % Matrix dimensions: nTrials x emPath length x 2. Default []. 
-    emPosMicrons  = [];
     
     % emPos - Matrix. Matrix of eye pos. in cone mosaic pattern size units.
     % Matrix dimensions: nTrials x emPath length x 2.
