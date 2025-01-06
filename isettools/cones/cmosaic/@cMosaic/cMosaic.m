@@ -579,9 +579,6 @@ classdef cMosaic < handle
                     % round.
                     obj.randomSeed = randi(1e4);
                 else
-                    disp(obj.randomSeed)
-                end
-                if (~isempty(obj.randomSeed))
                     rng(obj.randomSeed);
                 end
             end
