@@ -20,8 +20,9 @@ Possible rndCodePaths for scenario: FixationalEyeMovements
 
 %{ 
 Possible rndCodePaths for scenario: ConeMosaicCompute
-    'emGenSequence without randomSeed';
-    'emGenSequence passing randomSeed';
+    'singleOInoFixationalEMrandomNoise';
+    'singleOInoFixationalEMfrozenNoise';
+    'singleOIwithFixationalEMrandomNoise';
 %}
 
 
