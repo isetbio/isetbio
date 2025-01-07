@@ -17,30 +17,30 @@ function settings = rng(arg1,arg2)
 
         switch (nargin)
             case 0
-                dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''.\n\nrng() call (#%d) with no arguments. \n', scenarioBeingRun, codePathBeingTested, rngCallNo);
+                dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''\n\nrng() call (#%d) with no arguments. \n', scenarioBeingRun, codePathBeingTested, rngCallNo);
     
             case 1
                 if (ischar(arg1))
-                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''.\n\nrng() call (#%d) with a single argument: ''%s''.', scenarioBeingRun, codePathBeingTested, rngCallNo, arg1);
+                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''\n\nrng() call (#%d) with a single argument: ''%s''.', scenarioBeingRun, codePathBeingTested, rngCallNo, arg1);
     
                 elseif (isnumeric(arg1))
-                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''.\n\nrng() call (#%d) with a single argument: %g', scenarioBeingRun, codePathBeingTested, rngCallNo, arg1);
+                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''\n\nrng() call (#%d) with a single argument: %g', scenarioBeingRun, codePathBeingTested, rngCallNo, arg1);
     
                 elseif (isstruct(arg1))
-                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''.\n\nrng() call (#%d) with a struct with the following fields:', scenarioBeingRun, codePathBeingTested, rngCallNo);
+                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''\n\nrng() call (#%d) with a struct with the following fields:', scenarioBeingRun, codePathBeingTested, rngCallNo);
                     fNames = fieldnames(arg1);
                     for i = 1:numel(fNames)
                         if (ischar(arg1.(fNames{i})))
-                            dialogHeader = sprintf('%s\n%s: ''%s''', dialogHeader, fNames{i}, arg1.(fNames{i}));
+                            dialogHeader = sprintf('%s\n\t%s: ''%s''', dialogHeader, fNames{i}, arg1.(fNames{i}));
                         elseif (numel(arg1.(fNames{i})) == 1)
-                            dialogHeader = sprintf('%s\n%s: %g', dialogHeader, fNames{i}, arg1.(fNames{i}));
+                            dialogHeader = sprintf('%s\n\t%s: %g', dialogHeader, fNames{i}, arg1.(fNames{i}));
                         else
-                            dialogHeader = sprintf('%s\n%s, containing %d elements', dialogHeader, fNames{i}, numel(arg1.(fNames{i})));
+                            dialogHeader = sprintf('%s\n\t%s: contains %d elements', dialogHeader, fNames{i}, numel(arg1.(fNames{i})));
                         end
                     end
     
                 else
-                    dialogHeader = sprintf('Running scenario: ''%s'' with path: ''%s''.\n\nrng() call (#%d) with an argument that is neither a char, a numeric, or a struct', scenarioBeingRun, codePathBeingTested);
+                    dialogHeader = sprintf('Running scenario: ''%s'' with path: ''%s''\n\nrng() call (#%d) with an argument that is neither a char, a numeric, or a struct', scenarioBeingRun, codePathBeingTested);
                     arg1
                     class(arg1)
                 end
@@ -48,9 +48,9 @@ function settings = rng(arg1,arg2)
             case 2
     
                 if (isnumeric(arg1)&&isnumeric(arg2))
-                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''.\n\nrng() call (#%d) with 2 arguments: %g %g', scenarioBeingRun, codePathBeigTested, rngCallNo, arg1, arg2);
+                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''\n\nrng() call (#%d) with 2 arguments: %g %g', scenarioBeingRun, codePathBeigTested, rngCallNo, arg1, arg2);
                 else
-                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''.\n\nrng() call (#%d) with 2 arguments that are not numeric', scenarioBeingRun, codePathBeingTested, rngCallNo);
+                    dialogHeader = sprintf('Running scenario: ''%s''\nCode path tested: ''%s''\n\nrng() call (#%d) with 2 arguments that are not numeric', scenarioBeingRun, codePathBeingTested, rngCallNo);
                     arg1
                     arg2
                     disp('classes of arg1, arg2')
@@ -59,7 +59,7 @@ function settings = rng(arg1,arg2)
                 end
     
             otherwise
-                error('Running scenario: ''%s''\nCode path tested: ''%s''.\n\nrng() call (#%d) with %d arguments. Dont know how to handle this.', scenarioBeingRun, codePathBeingTested, rngCallNo, nargin)
+                error('Running scenario: ''%s''\nCode path tested: ''%s''\n\nrng() call (#%d) with %d arguments. Dont know how to handle this.', scenarioBeingRun, codePathBeingTested, rngCallNo, nargin)
     
         end % switch (nargin)
 

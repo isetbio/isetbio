@@ -1,6 +1,6 @@
 %% Initialize
 ieInit;
-theRootDir = fullfile(strrep(isetRootPath, 'isetcam', ''), 'isetbio')
+theRootDir = fullfile(strrep(isetRootPath, 'isetcam', ''), 'isetbio');
 cd(theRootDir);
 
     
@@ -42,7 +42,7 @@ set(hFig, 'Position', [10 10 1520 400]);
 rngTrackingInfo.callingStackUIFigure = hFig;
 
 for iScenario = 1:size(scenarioList,1)
-    
+
     % Update rngTrackingInfo
     rngTrackingInfo.scenarioBeingRun = scenarioList{iScenario,1};
     rngTrackingInfo.rngCodePathToRun = scenarioList{iScenario,2};
