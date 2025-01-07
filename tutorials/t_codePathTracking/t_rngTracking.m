@@ -1,7 +1,7 @@
 %% Initialize
 ieInit;
-cd(isetbioRootPath);
-
+theRootDir = fullfile(strrep(isetRootPath, 'isetcam', ''), 'isetbio')
+cd(theRootDir);
 
     
 %{ 
@@ -21,29 +21,43 @@ Possible rndCodePaths for scenario: FixationalEyeMovements
 
 
 % Scenarios to run
+% (1) Cone mosaic initialization scenarios
 scenarioList{1,1} = 'ConeMosaicInitialization';
 scenarioList{1,2} = 'precomputed lattice passing randomSeed';
 
-scenarioList{2,1} = 'FixationalEyeMovements';
-scenarioList{2,2} = 'emGenSequence passing randomSeed';
+% (2) Fixational eye movement scenarios
+scenarioList{size(scenarioList,1)+1,1} = 'FixationalEyeMovements';
+scenarioList{size(scenarioList,1),2} = 'emGenSequence passing randomSeed';
+
+% (3) Compute scenarios
+%scenarioList{size(scenarioList,1)+1,1} = 'ConeMosaicCompute';
+%scenarioList{size(scenarioList,1),2} = '??';
 
 
-global scenarioBeingRun
+% Struct with info on what is being currently run that we pass to intercepted rng
+global rngTrackingInfo
+
+hFig = uifigure();
+set(hFig, 'Position', [10 10 1520 400]);
+rngTrackingInfo.callingStackUIFigure = hFig;
 
 for iScenario = 1:size(scenarioList,1)
-    % Retrieve scenario
+    
+    % Update rngTrackingInfo
+    rngTrackingInfo.scenarioBeingRun = scenarioList{iScenario,1};
+    rngTrackingInfo.rngCodePathToRun = scenarioList{iScenario,2};
+    rngTrackingInfo.callNo = 0;
 
-    % Save scenarioBeingRun so that our custom rng can use it
-    scenarioBeingRun = scenarioList{iScenario,1};
-    rngCodePathToRun = scenarioList{iScenario,2};
-
-    switch (scenarioBeingRun)
+    switch (rngTrackingInfo.scenarioBeingRun)
         case  'ConeMosaicInitialization'
-            theConeMosaic = runConeMosaicInitializationScenario(rngCodePathToRun);
+            theConeMosaic = runConeMosaicInitializationScenario(rngTrackingInfo.rngCodePathToRun);
     
         case 'FixationalEyeMovements'
-            runFixationalEMgenerationScenario(rngCodePathToRun, theConeMosaic);
+            runFixationalEMgenerationScenario(rngTrackingInfo.rngCodePathToRun, theConeMosaic);
     
+        otherwise
+            error('Unknown scenario: ''%s''.', rngTrackingInfo.scenarioBeingRun);
+
     end %switch (scenario)
 end % for iScenario
 
@@ -71,12 +85,9 @@ function runFixationalEMgenerationScenario(rngCodePathToRun, theConeMosaic)
             %   cMosaic.emGenSequence (line 105) which calls obj.fixEMobj.computeForCmosaic().compute
             %   obj.fixEMobj.computeForCmosaic.compute (line 66) sets the passed random seed
             
-            % rng called 3rd timefrom:
+            % rng called 3rd time from:
             %   cMosaic.emGenSequence (line 114) to restore the previous rng state struct
             
-            % rng called 3rd timefrom:
-            %   cMosaic.emGenSequence (line 114) to restore the previous rng state struct
-
             
         case 'emGenSequence passing randomSeed'
             theConeMosaic.emGenSequence(eyeMovementDurationSeconds, ...
@@ -92,8 +103,7 @@ function runFixationalEMgenerationScenario(rngCodePathToRun, theConeMosaic)
             %   cMosaic.emGenSequence (line 105) which calls obj.fixEMobj.computeForCmosaic().compute
             %   obj.fixEMobj.computeForCmosaic.compute (line 68) shuffles the seed (rng('shuffle')
             
-
-            % rng called 3rd timefrom:
+            % rng called 3rd time from:
             %   cMosaic.emGenSequence (line 114) to restore the previous rng state struct
 
 
