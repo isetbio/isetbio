@@ -53,28 +53,32 @@ scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
 scenariosList{size(scenariosList,1),2} = 'singleOIwithFixationalEMrandomNoise';
 
 
+
 % Change directory to the intercepted functions so we can run these instead
 % of the original ones
 theRootDir = fullfile(strrep(isetRootPath, 'isetcam', ''), 'isetbio', 'interceptedFunctions');
 cd(theRootDir);
 
-% Struct with info on what is being currently run that we pass to intercepted rng
-global rngTrackingInfo
 
+% Struct with info that we pass to intercepted rng
+global rngTrackingInfo
 
 % Generate UIfigure and save it in global variable rngTrackingInfo
 hFig = uifigure();
 set(hFig, 'Position', [10 10 1520 500]);
 rngTrackingInfo.callingStackUIFigure = hFig;
 
-% Run all specified scenarios
+% Run all scenarios from the scenariosList
 for iScenario = 1:size(scenariosList,1)
 
     % Update rngTrackingInfo
     rngTrackingInfo.scenarioBeingRun = scenariosList{iScenario,1};
     rngTrackingInfo.rngCodePathToRun = scenariosList{iScenario,2};
+
+    % Initialize the rng call number
     rngTrackingInfo.callNo = 0;
 
+    % Run the current scenario
     switch (rngTrackingInfo.scenarioBeingRun)
         case  'ConeMosaicInitialization'
             theConeMosaic = runConeMosaicInitializationScenario(rngTrackingInfo.rngCodePathToRun);
@@ -232,7 +236,6 @@ function runFixationalEMgenerationScenario(rngCodePathToRun, theConeMosaic)
           otherwise
             error('Unknown case to run: ''%s''.', rngCodePathToRun)
     end  % switch (rngCodePathToRun)
-
 
 end
 
