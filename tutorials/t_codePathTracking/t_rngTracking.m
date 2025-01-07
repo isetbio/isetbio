@@ -30,24 +30,26 @@ scenariosList = {};
 
 % Add scenarios to generate a list of scenarios to run
 % (A) Cone mosaic initialization scenarios
-scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicInitialization';
-scenariosList{size(scenariosList,1),2} = 'custom coneData without randomSeed';
+%scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicInitialization';
+%scenariosList{size(scenariosList,1),2} = 'custom coneData without randomSeed';
 
 scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicInitialization';
 scenariosList{size(scenariosList,1),2} = 'precomputed lattice passing randomSeed';
 
 
 % (B) Fixational eye movement scenarios
-scenariosList{size(scenariosList,1)+1,1} = 'FixationalEyeMovements';
-scenariosList{size(scenariosList,1),2} = 'emGenSequence passing randomSeed';
+%scenariosList{size(scenariosList,1)+1,1} = 'FixationalEyeMovements';
+%scenariosList{size(scenariosList,1),2} = 'emGenSequence passing randomSeed';
 
 % (C) Compute scenarios
-scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
-scenariosList{size(scenariosList,1),2} = 'singleOInoFixationalEMrandomNoise';
+%scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
+%scenariosList{size(scenariosList,1),2} = 'singleOInoFixationalEMrandomNoise';
+
+%scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
+%scenariosList{size(scenariosList,1),2} = 'singleOInoFixationalEMfrozenNoise';
 
 scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
-scenariosList{size(scenariosList,1),2} = 'singleOInoFixationalEMfrozenNoise';
-
+scenariosList{size(scenariosList,1),2} = 'singleOIwithFixationalEMrandomNoise';
 
 
 % Change directory to the intercepted functions so we can run these instead
@@ -104,7 +106,7 @@ function runConeMosaicComputeScenario(rngCodePathToRun, theConeMosaic)
             theConeMosaic.noiseFlag = 'random';
 
             % Generate test scene and OI appropriate for theConeMosaic
-            [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic);
+            [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic, false);
 
 
             % Compute the cone mosaic response
@@ -112,7 +114,8 @@ function runConeMosaicComputeScenario(rngCodePathToRun, theConeMosaic)
                 theConeMosaic.compute(theOI);
             
             % Visualize everything
-            visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, theNoiseFreeAbsorptions, theNoisyAbsorptionInstances);
+            visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, ...
+                theNoiseFreeAbsorptions, theNoisyAbsorptionInstances, temporalSupportSeconds);
 
             % rng called from:
             %   cMosaic.compute (line 401) which calls noisyInstances with passed randomSeed
@@ -128,14 +131,15 @@ function runConeMosaicComputeScenario(rngCodePathToRun, theConeMosaic)
             theConeMosaic.noiseFlag = 'frozen';
 
             % Generate test scene and OI appropriate for theConeMosaic
-            [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic);
+            [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic, false);
 
             % Compute the cone mosaic response
             [theNoiseFreeAbsorptions, theNoisyAbsorptionInstances, ~, ~, temporalSupportSeconds] = ...
                 theConeMosaic.compute(theOI);
             
             % Visualize everything
-            visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, theNoiseFreeAbsorptions, theNoisyAbsorptionInstances);
+            visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, ...
+                theNoiseFreeAbsorptions, theNoisyAbsorptionInstances, temporalSupportSeconds);
 
             % rng called from:
             %   cMosaic.compute (line 401) which calls noisyInstances with passed randomSeed
@@ -144,6 +148,37 @@ function runConeMosaicComputeScenario(rngCodePathToRun, theConeMosaic)
             % rng called 2nd time from
             %    cMosaic.noisyInstances (line 33) which calls iePoisson
             %    iePoisson (line 107) which sets the passed seed (rng(seed));
+
+
+        case 'singleOIwithFixationalEMrandomNoise'
+
+            % Set the noise flag to 'random'
+            theConeMosaic.noiseFlag = 'random';
+
+            % Generate test scene and OI appropriate for theConeMosaic
+            [theScene, theOI, fixationalEMobj] = generateConeMosaicComputeComponents(theConeMosaic, true);
+
+
+            % Compute the cone mosaic response
+            [theNoiseFreeAbsorptions, theNoisyAbsorptionInstances, ~, ~, temporalSupportSeconds] = ...
+                theConeMosaic.compute(theOI, ...
+                'withFixationalEyeMovements', true);
+            
+            % Visualize everything
+            visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, ...
+                theNoiseFreeAbsorptions, theNoisyAbsorptionInstances, temporalSupportSeconds);
+
+            % rng called from:
+            %   fixationalEMObj.computeForCmosaic (line 66) which calls
+            %   fixationalEMObj.compute (line 65) which shuffles the seed (rng('shuffle'))
+
+            % rng called 2nd time from:
+            %   cMosaic.compute (line 401) which calls noisyInstances with passed randomSeed
+            %   cMosaic.noisyInstances (line 20) which shuffles the seed (rng('shuffle'))
+
+            % rng called 3rd time from
+            %    cMosaic.noisyInstances (line 33) which calls iePoisson
+            %    iePoisson (line 109) which gets the current seed (seed = rng);
 
 
         otherwise
@@ -327,7 +362,7 @@ function [theCustomConeDataStruct, theCustomRetinalMagnification] = helperGenera
 end
 
 
-function [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic)
+function [theScene, theOI, fixationalEMObj] = generateConeMosaicComputeComponents(theConeMosaic, generateFixationalEMobj)
 
     vParams = vernierP;
     vParams.barWidth = 2;
@@ -355,10 +390,36 @@ function [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic)
 
     % Compute the retinal image
     theOI = oiCompute(theOI, theScene);
+
+    if (generateFixationalEMobj)
+        % Initialize
+        fixationalEMObj = fixationalEM;              % Instantiate a fixationalEM object
+        fixationalEMObj.microSaccadeType = 'none';   % No microsaccades, just drift
+    
+        % Compute number of eye movements
+        nTrials = 1;
+        frameDurationSeconds = theConeMosaic.integrationTime;
+        stimDurationSeconds = frameDurationSeconds * 30;
+        eyeMovementsPerTrial = stimDurationSeconds/frameDurationSeconds;
+
+        % Generate the em sequence for the passed cone mosaic,
+        % which results in a time step equal to the integration time of theConeMosaic
+        fixationalEMObj.computeForCmosaic(...
+            theConeMosaic, eyeMovementsPerTrial,...
+            'nTrials' , nTrials);
+
+        % Set the fixational eye movements into the cone mosaic
+        theConeMosaic.emSetFixationalEMObj(fixationalEMObj);
+
+    else
+        fixationalEMObj = [];
+    end
+
 end
 
 
-function visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, theNoiseFreeAbsorptions, theNoisyAbsorptionInstances)
+function visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, ...
+    theNoiseFreeAbsorptions, theNoisyAbsorptionInstances, temporalSupportSeconds)
 
     activationRange = [min(theNoiseFreeAbsorptions(:)) max(theNoiseFreeAbsorptions(:))];
 
@@ -375,14 +436,15 @@ function visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, th
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1000 1000]);
 
+    % The stimulus
     ax1 = subplot(2,2,1);
-    
     image(ax1, sceneSupport, sceneSupport, sceneGet(theScene, 'rgbimage'));
     axis(ax1, 'image');
     set(ax1, 'Color', [0 0 0], 'XLim', 0.5*theConeMosaic.sizeDegs(1)*[-1 1], 'YLim', 0.5*theConeMosaic.sizeDegs(2)*[-1 1] );
     set(ax1, 'FontSize', 16);
     title(ax1, 'stimulus');
 
+    % The optical image
     ax2 = subplot(2,2,2);
     image(ax2, oiSupport, oiSupport, oiGet(theOI, 'rgbimage'));
     axis(ax2, 'image');
@@ -390,23 +452,57 @@ function visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, th
     title(ax2, 'retinal image');
     set(ax2, 'FontSize', 16);
 
-    ax3 = subplot(2,2,3);
-    theConeMosaic.visualize(...
-        'figureHandle', hFig, ...
-        'axesHandle', ax3, ...
-        'activation', theNoiseFreeAbsorptions, ...
-        'activationRange', activationRange, ...
-        'plotTitle', 'noise-free response', ...
-        'fontSize', 16 ...
-        );
+    
+    % The cone mosaic response
+    iTrial = 1; iTimePoint = 1;
+    [nTrials, nTimePoints, nCones] = size(theNoiseFreeAbsorptions);
 
-    ax3 = subplot(2,2,4);
-    theConeMosaic.visualize(...
-        'figureHandle', hFig, ...
-        'axesHandle', ax3, ...
-        'activation', theNoisyAbsorptionInstances, ...
-        'activationRange', activationRange, ...
-        'plotTitle', 'noisy response instance', ...
-        'fontSize', 16 ...
-        );
+    if (nTimePoints > 1)
+        for iTimePoint = 1:numel( temporalSupportSeconds)
+            ax3 = subplot(2,2,3);
+            theConeMosaic.visualize(...
+                'figureHandle', hFig, ...
+                'axesHandle', ax3, ...
+                'activation', theNoiseFreeAbsorptions(iTrial, iTimePoint,:), ...
+                'activationRange', activationRange, ...
+                'plotTitle', sprintf('noise-free response (%2.1f msec)', temporalSupportSeconds(iTimePoint)*1000), ...
+                'fontSize', 16 ...
+                );
+
+            ax4 = subplot(2,2,4);
+            theConeMosaic.visualize(...
+                'figureHandle', hFig, ...
+                'axesHandle', ax4, ...
+                'activation', theNoisyAbsorptionInstances(iTrial, iTimePoint,:), ...
+                'activationRange', activationRange, ...
+                'plotTitle', sprintf('noisy response instance (%2.1f msec)', temporalSupportSeconds(iTimePoint)*1000), ...
+                'fontSize', 16 ...
+                );
+
+            drawnow;
+        end
+
+    else
+        ax3 = subplot(2,2,3);
+        theConeMosaic.visualize(...
+            'figureHandle', hFig, ...
+            'axesHandle', ax3, ...
+            'activation', theNoiseFreeAbsorptions(iTrial, iTimePoint,:), ...
+            'activationRange', activationRange, ...
+            'plotTitle', 'noise-free response', ...
+            'fontSize', 16 ...
+            );
+        ax4 = subplot(2,2,4);
+        theConeMosaic.visualize(...
+            'figureHandle', hFig, ...
+            'axesHandle', ax4, ...
+            'activation', theNoisyAbsorptionInstances(iTrial, iTimePoint,:), ...
+            'activationRange', activationRange, ...
+            'plotTitle', 'noisy response instance', ...
+            'fontSize', 16 ...
+            );
+    end
+
+
+    
 end
