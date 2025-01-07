@@ -396,9 +396,12 @@ function [noiseFreeAbsorptionsCount, noisyAbsorptionInstances, ...
     else
         % Add photon noise here.
         if (isempty(noiseSeed))
-            noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount);
+            noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount, ...
+                'noiseFlag', obj.noiseFlag);
         else
-            noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount, 'seed', noiseSeed);
+            noisyAbsorptionInstances = cMosaic.noisyInstances(noiseFreeAbsorptionsCount, ...
+                'noiseFlag', obj.noiseFlag, ...
+                'seed', noiseSeed);
         end
         %fprintf('Tile lapsed to compute Poisson noise for %d trials: %2.2f seconds\n', nTrials, etime(clock, tStart));
     end
