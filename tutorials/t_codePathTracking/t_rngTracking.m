@@ -18,6 +18,12 @@ Possible rndCodePaths for scenario: FixationalEyeMovements
     'emGenSequence passing randomSeed';
 %}
 
+%{ 
+Possible rndCodePaths for scenario: ConeMosaicCompute
+    'emGenSequence without randomSeed';
+    'emGenSequence passing randomSeed';
+%}
+
 
 % Scenarios to run
 scenariosList = {};
@@ -25,10 +31,10 @@ scenariosList = {};
 % Add scenarios to generate a list of scenarios to run
 % (A) Cone mosaic initialization scenarios
 scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicInitialization';
-scenariosList{size(scenariosList,1),2} = 'precomputed lattice passing randomSeed';
+scenariosList{size(scenariosList,1),2} = 'custom coneData without randomSeed';
 
 scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicInitialization';
-scenariosList{size(scenariosList,1),2} = 'custom coneData without randomSeed';
+scenariosList{size(scenariosList,1),2} = 'precomputed lattice passing randomSeed';
 
 
 % (B) Fixational eye movement scenarios
@@ -36,10 +42,11 @@ scenariosList{size(scenariosList,1)+1,1} = 'FixationalEyeMovements';
 scenariosList{size(scenariosList,1),2} = 'emGenSequence passing randomSeed';
 
 % (C) Compute scenarios
-%scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
-%scenariosList{size(scenariosList,1),2} = '??';
+scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
+scenariosList{size(scenariosList,1),2} = 'singleOInoFixationalEMrandomNoise';
 
-
+scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
+scenariosList{size(scenariosList,1),2} = 'singleOInoFixationalEMfrozenNoise';
 
 
 
@@ -51,10 +58,13 @@ cd(theRootDir);
 % Struct with info on what is being currently run that we pass to intercepted rng
 global rngTrackingInfo
 
+
+% Generate UIfigure and save it in global variable rngTrackingInfo
 hFig = uifigure();
 set(hFig, 'Position', [10 10 1520 500]);
 rngTrackingInfo.callingStackUIFigure = hFig;
 
+% Run all specified scenarios
 for iScenario = 1:size(scenariosList,1)
 
     % Update rngTrackingInfo
@@ -69,6 +79,9 @@ for iScenario = 1:size(scenariosList,1)
         case 'FixationalEyeMovements'
             runFixationalEMgenerationScenario(rngTrackingInfo.rngCodePathToRun, theConeMosaic);
     
+        case 'ConeMosaicCompute'
+            runConeMosaicComputeScenario(rngTrackingInfo.rngCodePathToRun, theConeMosaic);
+
         otherwise
             error('Unknown scenario: ''%s''.', rngTrackingInfo.scenarioBeingRun);
 
@@ -81,6 +94,64 @@ end % for iScenario
 % SCENARIO FUNCTIONS
 %
 %
+
+function runConeMosaicComputeScenario(rngCodePathToRun, theConeMosaic)
+
+    switch (rngCodePathToRun)
+        case 'singleOInoFixationalEMrandomNoise'
+
+            % Set the noise flag to 'random'
+            theConeMosaic.noiseFlag = 'random';
+
+            % Generate test scene and OI appropriate for theConeMosaic
+            [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic);
+
+
+            % Compute the cone mosaic response
+            [theNoiseFreeAbsorptions, theNoisyAbsorptionInstances, ~, ~, temporalSupportSeconds] = ...
+                theConeMosaic.compute(theOI);
+            
+            % Visualize everything
+            visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, theNoiseFreeAbsorptions, theNoisyAbsorptionInstances);
+
+            % rng called from:
+            %   cMosaic.compute (line 401) which calls noisyInstances with passed randomSeed
+            %   cMosaic.noisyInstances (line 20) which shuffles the seed (rng('shuffle'))
+
+            % rng called 2nd time from
+            %    cMosaic.noisyInstances (line 33) which calls iePoisson
+            %    iePoisson (line 109) which gets the current seed (seed = rng);
+
+        case 'singleOInoFixationalEMfrozenNoise'
+
+            % Set the noise flag to 'frozen'
+            theConeMosaic.noiseFlag = 'frozen';
+
+            % Generate test scene and OI appropriate for theConeMosaic
+            [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic);
+
+            % Compute the cone mosaic response
+            [theNoiseFreeAbsorptions, theNoisyAbsorptionInstances, ~, ~, temporalSupportSeconds] = ...
+                theConeMosaic.compute(theOI);
+            
+            % Visualize everything
+            visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, theNoiseFreeAbsorptions, theNoisyAbsorptionInstances);
+
+            % rng called from:
+            %   cMosaic.compute (line 401) which calls noisyInstances with passed randomSeed
+            %   cMosaic.noisyInstances (line 18) which sets the passed seed (rng(seed));
+
+            % rng called 2nd time from
+            %    cMosaic.noisyInstances (line 33) which calls iePoisson
+            %    iePoisson (line 107) which sets the passed seed (rng(seed));
+
+
+        otherwise
+            error('Unknown case to run: ''%s''.', rngCodePathToRun)
+    end  % switch (rngCodePathToRun)
+
+
+end
 
 function runFixationalEMgenerationScenario(rngCodePathToRun, theConeMosaic)
 
@@ -134,13 +205,15 @@ end
 
 function theConeMosaic = runConeMosaicInitializationScenario(rngCodePathToRun)
 
+    coneMosaicIntegrationTimeMilliSeconds = 1;
+
     switch (rngCodePathToRun)
         case 'precomputed lattice passing randomSeed'
             % CASE 1: Generate a @cMosaic passing ('randomSeed', val) key-value pair
             theConeMosaic = cMosaic(...
                 'sizeDegs', [0.5 0.5], ...      
                 'eccentricityDegs', [0 0], ... 
-                'integrationTime', 10/1000, ...    
+                'integrationTime', coneMosaicIntegrationTimeMilliSeconds/1000, ...    
                 'randomSeed', 22 ...
                 );
             % rng called from:
@@ -152,7 +225,8 @@ function theConeMosaic = runConeMosaicInitializationScenario(rngCodePathToRun)
             [theCustomConeDataStruct, theCustomRetinalMagnification] = helperGenerateCustomConeData();
             theConeMosaic = cMosaic(...
                      'coneData', theCustomConeDataStruct, ...
-                     'micronsPerDegree', theCustomRetinalMagnification);
+                     'micronsPerDegree', theCustomRetinalMagnification, ...
+                     'integrationTime', coneMosaicIntegrationTimeMilliSeconds/1000);
             
             % rng called from:
             %   cMosaic.cMosaic (line 576)
@@ -164,6 +238,7 @@ function theConeMosaic = runConeMosaicInitializationScenario(rngCodePathToRun)
             theConeMosaic = cMosaic(...
                      'coneData', theCustomConeDataStruct, ...
                      'micronsPerDegree', theCustomRetinalMagnification, ...
+                     'integrationTime', coneMosaicIntegrationTimeMilliSeconds/1000, ... 
                      'randomSeed', 123);
             
             % rng called from:
@@ -175,7 +250,8 @@ function theConeMosaic = runConeMosaicInitializationScenario(rngCodePathToRun)
             % specifying a randomSeed
             theConeMosaic = cMosaic(...
                      'coneData', [], ...
-                     'computemeshfromscratch', true);
+                     'computemeshfromscratch', true, ...
+                     'integrationTime', coneMosaicIntegrationTimeMilliSeconds/1000);
     
             % rng called with seed set to 1 from:
             %   cMosaic.regenerationConePositions (line 540) -> 
@@ -188,7 +264,8 @@ function theConeMosaic = runConeMosaicInitializationScenario(rngCodePathToRun)
             theConeMosaic = cMosaic(...
                      'coneData', [], ...
                      'computemeshfromscratch', true, ...
-                     'randomSeed', 555);
+                     'randomSeed', 555, ...
+                     'integrationTime', coneMosaicIntegrationTimeMilliSeconds/1000);
     
             % rng called with seed set to 1 from:
             %   cMosaic.regenerationConePositions (line 540) ->
@@ -249,3 +326,87 @@ function [theCustomConeDataStruct, theCustomRetinalMagnification] = helperGenera
 
 end
 
+
+function [theScene, theOI] = generateConeMosaicComputeComponents(theConeMosaic)
+
+    vParams = vernierP;
+    vParams.barWidth = 2;
+    vParams.offset = 3;
+    theScene = sceneCreate('vernier', vParams.sceneSz(1), vParams.barWidth, vParams.offset);
+    theScene = sceneSet(theScene, 'fov', 0.3);
+
+    % Best Polans subject
+    opticsDataBase = 'Polans2015';
+    subjectRankOrder = 1;
+    rankedSujectIDs = PolansOptics.constants.subjectRanking;
+    testSubjectID = rankedSujectIDs(subjectRankOrder);
+
+    % Determine if we need to subtract the subject's central refraction
+    subtractCentralRefraction = PolansOptics.constants.subjectRequiresCentralRefractionCorrection(testSubjectID);
+
+    % Generate theOI
+    oiEnsemble = theConeMosaic.oiEnsembleGenerate(theConeMosaic.eccentricityDegs, ...
+        'zernikeDataBase', opticsDataBase, ...
+        'subjectID', testSubjectID, ...
+        'pupilDiameterMM', 3.0, ...
+        'zeroCenterPSF', true, ...
+        'subtractCentralRefraction', subtractCentralRefraction);
+    theOI = oiEnsemble{1,1};
+
+    % Compute the retinal image
+    theOI = oiCompute(theOI, theScene);
+end
+
+
+function visualizeConeMosaicComputeComponents(theScene, theOI, theConeMosaic, theNoiseFreeAbsorptions, theNoisyAbsorptionInstances)
+
+    activationRange = [min(theNoiseFreeAbsorptions(:)) max(theNoiseFreeAbsorptions(:))];
+
+    scenePixelWidthDegs = sceneGet(theScene, 'wangular resolution');
+    sceneWidthPixels = sceneGet(theScene, 'cols');
+    sceneSupport = (1:sceneWidthPixels)*scenePixelWidthDegs;
+    sceneSupport = sceneSupport - mean(sceneSupport);
+
+    oiPixelWidthDegs = oiGet(theOI, 'wangular resolution');
+    oiWidthPixels = oiGet(theOI, 'cols');
+    oiSupport = (1:oiWidthPixels)*oiPixelWidthDegs;
+    oiSupport = oiSupport - mean(oiSupport);
+
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [10 10 1000 1000]);
+
+    ax1 = subplot(2,2,1);
+    
+    image(ax1, sceneSupport, sceneSupport, sceneGet(theScene, 'rgbimage'));
+    axis(ax1, 'image');
+    set(ax1, 'Color', [0 0 0], 'XLim', 0.5*theConeMosaic.sizeDegs(1)*[-1 1], 'YLim', 0.5*theConeMosaic.sizeDegs(2)*[-1 1] );
+    set(ax1, 'FontSize', 16);
+    title(ax1, 'stimulus');
+
+    ax2 = subplot(2,2,2);
+    image(ax2, oiSupport, oiSupport, oiGet(theOI, 'rgbimage'));
+    axis(ax2, 'image');
+    set(ax2, 'Color', [0 0 0], 'XLim', 0.5*theConeMosaic.sizeDegs(1)*[-1 1], 'YLim', 0.5*theConeMosaic.sizeDegs(2)*[-1 1] );
+    title(ax2, 'retinal image');
+    set(ax2, 'FontSize', 16);
+
+    ax3 = subplot(2,2,3);
+    theConeMosaic.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax3, ...
+        'activation', theNoiseFreeAbsorptions, ...
+        'activationRange', activationRange, ...
+        'plotTitle', 'noise-free response', ...
+        'fontSize', 16 ...
+        );
+
+    ax3 = subplot(2,2,4);
+    theConeMosaic.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax3, ...
+        'activation', theNoisyAbsorptionInstances, ...
+        'activationRange', activationRange, ...
+        'plotTitle', 'noisy response instance', ...
+        'fontSize', 16 ...
+        );
+end
