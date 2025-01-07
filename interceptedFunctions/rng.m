@@ -1,3 +1,5 @@
+% Intercepted function rng()
+
 function settings = rng(arg1,arg2)
 
     global rngTrackingInfo
@@ -67,6 +69,7 @@ function settings = rng(arg1,arg2)
         % Display the calling stack in a separate window
         theUIFigure = rngTrackingInfo.callingStackUIFigure;
 
+        
         if (~isempty(theUIFigure))
             % Assemble calling stack info
             theRootDir = strrep(isetRootPath, 'isetcam', '');
@@ -100,11 +103,50 @@ function settings = rng(arg1,arg2)
         
             T.Properties.VariableNames = ["Call no", "Filename", "Function name", "Line no"];
              
-            uit = uitable(theUIFigure, ...
-                'Data',T, ...
-                'Position',[20 20 1800 300], ...
-                'FontSize', 16);
-            set (uit,'ColumnWidth', {80,700,600,100});
+            uit   = findobj(theUIFigure, 'tag', 'table1');
+            if (isempty(uit ))
+                uit = uitable(theUIFigure, ...
+                    'Position',[20 20 1800 350], ...
+                    'FontSize', 16);
+                set(uit,'ColumnWidth', {80,700,600,100});
+                set(uit, 'Tag', 'table1');
+            end
+            set(uit, 'Data', T);
+
+            % Labels
+            lbl1  = findobj(theUIFigure, 'tag', 'label1');
+            if (isempty(lbl1))
+                lbl1 = uilabel(theUIFigure);
+                lbl1.FontSize = 16;
+                lbl1.FontName = 'Menlo';
+                lbl1.Position = [15 440 800 60];
+                lbl1.Tag = 'label1';
+            end
+            lbl1.Text = sprintf('Scenario tested: ''%s''', scenarioBeingRun);
+
+
+            lbl2  = findobj(theUIFigure, 'tag', 'label2');
+            if (isempty(lbl2))
+                lbl2 = uilabel(theUIFigure);
+                lbl2.FontSize = 16;
+                lbl2.FontName = 'Menlo';
+                lbl2.Position = [15 410 800 60];
+                lbl2.Tag = 'label2';
+            end
+            lbl2.Text = sprintf('Code path tested: ''%s''', codePathBeingTested);
+
+
+            lbl3  = findobj(theUIFigure, 'tag', 'label3');
+            if (isempty(lbl3))
+                lbl3 = uilabel(theUIFigure);
+                lbl3.FontSize = 16;
+                lbl3.FontName = 'Menlo';
+                lbl3.Position = [15 380 800 60];
+                lbl3.Tag = 'label3';
+            end
+            lbl3.Text = sprintf('Rng() call (#%d) with %d arguments', rngCallNo, nargin);
+            
+
         end % if (~isempty(theUIFigure))
 
     end

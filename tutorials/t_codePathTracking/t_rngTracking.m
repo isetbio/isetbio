@@ -1,9 +1,8 @@
 %% Initialize
 ieInit;
-theRootDir = fullfile(strrep(isetRootPath, 'isetcam', ''), 'isetbio');
-cd(theRootDir);
 
-    
+%%
+% Choose scenarios to run
 %{ 
  Possible rndCodePaths for scenario: 'ConeMosaicInitialization'
     'precomputed lattice passing randomSeed';
@@ -21,31 +20,46 @@ Possible rndCodePaths for scenario: FixationalEyeMovements
 
 
 % Scenarios to run
-% (1) Cone mosaic initialization scenarios
-scenarioList{1,1} = 'ConeMosaicInitialization';
-scenarioList{1,2} = 'precomputed lattice passing randomSeed';
+scenariosList = {};
 
-% (2) Fixational eye movement scenarios
-scenarioList{size(scenarioList,1)+1,1} = 'FixationalEyeMovements';
-scenarioList{size(scenarioList,1),2} = 'emGenSequence passing randomSeed';
+% Add scenarios to generate a list of scenarios to run
+% (A) Cone mosaic initialization scenarios
+scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicInitialization';
+scenariosList{size(scenariosList,1),2} = 'precomputed lattice passing randomSeed';
 
-% (3) Compute scenarios
-%scenarioList{size(scenarioList,1)+1,1} = 'ConeMosaicCompute';
-%scenarioList{size(scenarioList,1),2} = '??';
+scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicInitialization';
+scenariosList{size(scenariosList,1),2} = 'custom coneData without randomSeed';
 
+
+% (B) Fixational eye movement scenarios
+scenariosList{size(scenariosList,1)+1,1} = 'FixationalEyeMovements';
+scenariosList{size(scenariosList,1),2} = 'emGenSequence passing randomSeed';
+
+% (C) Compute scenarios
+%scenariosList{size(scenariosList,1)+1,1} = 'ConeMosaicCompute';
+%scenariosList{size(scenariosList,1),2} = '??';
+
+
+
+
+
+% Change directory to the intercepted functions so we can run these instead
+% of the original ones
+theRootDir = fullfile(strrep(isetRootPath, 'isetcam', ''), 'isetbio', 'interceptedFunctions');
+cd(theRootDir);
 
 % Struct with info on what is being currently run that we pass to intercepted rng
 global rngTrackingInfo
 
 hFig = uifigure();
-set(hFig, 'Position', [10 10 1520 400]);
+set(hFig, 'Position', [10 10 1520 500]);
 rngTrackingInfo.callingStackUIFigure = hFig;
 
-for iScenario = 1:size(scenarioList,1)
+for iScenario = 1:size(scenariosList,1)
 
     % Update rngTrackingInfo
-    rngTrackingInfo.scenarioBeingRun = scenarioList{iScenario,1};
-    rngTrackingInfo.rngCodePathToRun = scenarioList{iScenario,2};
+    rngTrackingInfo.scenarioBeingRun = scenariosList{iScenario,1};
+    rngTrackingInfo.rngCodePathToRun = scenariosList{iScenario,2};
     rngTrackingInfo.callNo = 0;
 
     switch (rngTrackingInfo.scenarioBeingRun)
