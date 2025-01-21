@@ -20,7 +20,7 @@
 % 01/06/18  dhb    Suppress warning 'MATLAB:Figure:RecursionOnClose'.
 
 %% Check if there is a running instance, closes it, and clears workspace
-ieMainClose;   % Closes open ISETBIO windows
+%ieMainClose;   % Closes open ISETBIO windows
 close all;     % Closes other windows (e.g., vcNewGraphWin)]
 clear global   % Clear out pesky globals
 
