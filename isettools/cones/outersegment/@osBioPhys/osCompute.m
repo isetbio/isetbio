@@ -60,7 +60,7 @@ obj.state = osAdaptSteadyState(obj, bgR, [size(pRate, 1) size(pRate, 2)]);
 obj.state.timeStep = obj.timeStep;
 
 % How does this handle the separate cone signals?
-[current, obj.state] = osAdaptTemporal(pRate, obj);
+[current, obj.state] = osAdaptTemporal(obj, pRate);
 
 % The outer segment noise flag
 if (~strcmp(obj.noiseFlag, 'none'))  

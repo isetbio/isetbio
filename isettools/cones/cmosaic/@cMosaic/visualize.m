@@ -270,7 +270,7 @@ if (isstruct(displayedEyeMovementData))
             case 'all'
                 displayedTimePoints = 1:size(obj.fixEMobj.emPosArcMin,2);
             otherwise
-                error('unknown ''displayedEyeMovementData.samples'': ''%s''.', displayedEyeMovementData.samples);
+                error('unknown ''displayedEyeMovementData.timePoints'': ''%s''.', displayedEyeMovementData.timePoints);
         end
     else
         displayedTimePoints = displayedEyeMovementData.timePoints;

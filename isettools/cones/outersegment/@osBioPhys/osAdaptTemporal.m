@@ -1,4 +1,4 @@
- function [adaptedData, model] = osAdaptTemporal(pRate, obj)
+ function [adaptedData, model] = osAdaptTemporal(obj, pRate)
 % Time varying current response from photon rate and initial state
 %
 % Syntax:

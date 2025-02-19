@@ -177,11 +177,16 @@ classdef osBioPhys < outerSegment
 
         state = osAdaptSteadyState(obj, bgR, varargin);
 
-        [adaptedData, state] = osAdaptTemporal(pRate, obj);
+        [adaptedData, state] = osAdaptTemporal(obj, Rate);
 
     end
 
     methods (Access=public)
+
+        function setModelState(obj, theState)
+            obj.state = theState;
+        end
+
         % see osCompute for details
         function obj = compute(obj, varargin)
             obj = osCompute(obj, varargin{:});
