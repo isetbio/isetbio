@@ -144,6 +144,11 @@ properties
     % emPosMicrons - Matrix. Matrix of eye positions in microns. Truncated.
     % Matrix dimensions: nTrials x emPath length x 2. Default []. 
     emPosMicrons  = [];
+
+    % emPos - Matrix. Matrix of eye pos. in cone mosaic pattern size units.
+    % Matrix dimensions: nTrials x emPath length x 2.
+    % Note:  not set if we are computing for the new @cMosaic
+    emPos = [];
     
     %% user-feedback
 
@@ -163,12 +168,7 @@ properties (SetAccess = private)
 
     % velocityArcMin - Matrix. Matrix of velocity in units of arc min/sec.
     % Matrix dimensions: nTrials x emPath length. Default [].
-    velocityArcMin = [];
-    
-    % emPos - Matrix. Matrix of eye pos. in cone mosaic pattern size units.
-    % Matrix dimensions: nTrials x emPath length x 2.
-    % Note:  not set if we are computing for the new @cMosaic
-    emPos = [];
+    velocityArcMin = [];   
 end
 
 properties (GetAccess = protected)
