@@ -15,6 +15,9 @@
 % History:
 %    03/01/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 %    09/29/24  dhb  Simplified and extended for video.
+%    02/26/25  NPC  Fixed how wvf is clocked back into the OI, thanks to
+%                   Dragos Reazenu for pointing out that it didn't work as 
+%                   originally coded.
 
 %% Initialize
 ieInit;
@@ -169,8 +172,13 @@ wvfPlot(wvf,'psf','unit','um','wave',400,'plot range',40);
 wvfPlot(wvf,'psf','unit','um','wave',550,'plot range',40);
 wvfPlot(wvf,'psf','unit','um','wave',700,'plot range',40);
 
-% Put the wvf back into the oi
-% oi = oiSet(oi,'optics wvf',wvf);
+% Put the wvf back into the oi.
+%
+% Note that you might think that 
+%   oi = oiSet(oi,'optics wvf',wvf);
+% would do this, but it doesn't currently (Feb 2025).
+% 
+% This is how you do it.
 oi = wvf2oiSpecial(wvf, cm.micronsPerDegree, pupilDiamMM);
 
 %% Compute the optical image of the scene
