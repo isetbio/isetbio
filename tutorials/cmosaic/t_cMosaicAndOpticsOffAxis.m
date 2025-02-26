@@ -170,7 +170,8 @@ wvfPlot(wvf,'psf','unit','um','wave',550,'plot range',40);
 wvfPlot(wvf,'psf','unit','um','wave',700,'plot range',40);
 
 % Put the wvf back into the oi
-oi = oiSet(oi,'optics wvf',wvf);
+% oi = oiSet(oi,'optics wvf',wvf);
+oi = wvf2oiSpecial(wvf, cm.micronsPerDegree, pupilDiamMM);
 
 %% Compute the optical image of the scene
 oi = oiCompute(oi,scene,'pad value','mean','crop',true);
