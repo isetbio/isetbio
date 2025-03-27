@@ -42,8 +42,14 @@ function exportFigToPNG(imFileName,figHandle,dpi, varargin)
     else
         print(figHandle,'-dpng',imFileName,sprintf('-r%d',dpi))
     end
-    fprintf('\nNicePlot: figure saved to %s.\n', imFileName);
-    
+
+    % Handle beVerbose
+    if (~isempty(varargin))
+        if ismember('beVerbose', varargin{:})
+            fprintf('\nNicePlot: figure saved to %s.\n', imFileName);
+        end
+    end
+
     % Restore the previous settings
     set(figHandle,'PaperType',prePaperType);
     set(figHandle,'PaperUnits',prePaperUnits);
