@@ -38,6 +38,8 @@ function exportFigToPDF(pdfFileName,figHandle,dpi, varargin)
     if (~isempty(varargin))
         if ismember('noui', varargin{:})
             print(figHandle,'-dpdf', '-noui', pdfFileName,sprintf('-r%d',dpi));
+        else
+            print(figHandle,'-dpdf', pdfFileName,sprintf('-r%d',dpi));
         end
     else
         print(figHandle,'-dpdf', pdfFileName,sprintf('-r%d',dpi));
