@@ -756,13 +756,13 @@ end
 % Superimpose an RGB optical image
 if (~isempty(superimposedRGBopticalImage))
     assert(ndims(superimposedRGBopticalImage) == 3, ...
-        'The superimposed RGC optical image must be an N x N x 3 matrix');
+        'The superimposed RGB optical image must be an N x N x 3 matrix');
 
     assert(size(superimposedRGBopticalImage,3) == 3, ...
-        'The superimposed RGC optical image must be an N x N x 3 matrix');
+        'The superimposed RGB optical image must be an N x N x 3 matrix');
 
     assert(size(superimposedRGBopticalImage,1) == size(superimposedRGBopticalImage,2), ...
-        'The superimposed RGC optical image must be an N x N x 3 matrix');
+        'The superimposed RGB optical image must be an N x N x 3 matrix');
 
     assert(~isempty(superimposedRGBopticalImageSpatialSupportMicrons), ...
         'You must pass a spatial support (in microns) for the passed superimposed RGB optical image');
