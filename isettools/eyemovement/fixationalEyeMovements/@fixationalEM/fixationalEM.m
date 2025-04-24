@@ -392,6 +392,10 @@ methods
     % Method to compute an emPath with duration emDurationSeconds
     % sampled with a temporal resolution of sampleDurationSeconds
     computeSingleTrial(obj, emDurationSeconds, sampleDurationSeconds);
+
+    % Method to trim the emPath to include only selectTimeIndices
+    trimPathToIncludeSelectTimePoints(obj, selectTimeIndices);
+
 end % Public methods
 
 methods (Static)
