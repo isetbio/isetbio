@@ -933,18 +933,18 @@ switch (domain)
                     leftMeridianName = 'nasal retina';
                     rightMeridianName = 'temporal retina';
                 end
-                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} space (degrees)    \\color[rgb]{0 0.7 0} %s', ...
+                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} eccentricity, x (degrees)  \\color[rgb]{0 0.7 0} %s', ...
                     leftMeridianName, rightMeridianName));
             else
-                xlabel(axesHandle, 'space (degrees)');
+                xlabel(axesHandle, 'eccentricity, x (degrees)');
             end
         end
         if (~noYlabel)
             if (labelRetinalMeridians)
-                ylabel(axesHandle, sprintf('%s  < = = = = = |     space (degrees)    | = = = = =  > %s', ...
+                ylabel(axesHandle, sprintf('%s  < = = = = = |    eccentricity, y (degrees)    | = = = = =  > %s', ...
                     'superior retina', 'inferior retina'));
             else
-                ylabel(axesHandle, 'space (degrees)');
+                ylabel(axesHandle, 'eccentricity, y (degrees)');
             end
         end
         minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
@@ -967,20 +967,20 @@ switch (domain)
                     leftMeridianName = '(nasal)';
                     rightMeridianName = '(temporal)';
                 end
-                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} space (microns)    \\color[rgb]{0 0.7 0} %s', ...
+                xlabel(axesHandle, sprintf('\\color{red}%s    \\color{black} eccentricity, x (um)   \\color[rgb]{0 0.7 0} %s', ...
                     leftMeridianName, rightMeridianName));
             else
-                xlabel(axesHandle, 'space (microns)');
+                xlabel(axesHandle, 'eccentricity, x (microns)');
             end
         end
         if (~noYlabel)
             if (labelRetinalMeridians)
                 upperMeridianName = '(inferior)';
                 lowerMeridianName = '(superior)';
-                ylabel(axesHandle, sprintf('\\color{blue}%s    \\color{black} space (microns)    \\color[rgb]{0.6 0.6 0.4} %s', ...
+                ylabel(axesHandle, sprintf('\\color{blue}%s    \\color{black} eccentricity, y (um)   \\color[rgb]{0.6 0.6 0.4} %s', ...
                     lowerMeridianName, upperMeridianName));
             else
-                ylabel(axesHandle, 'space (microns)');
+                ylabel(axesHandle, 'eccentricity, y (microns)');
             end
         end
         minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
