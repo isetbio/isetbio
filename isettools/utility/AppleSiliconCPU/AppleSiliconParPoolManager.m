@@ -10,7 +10,7 @@ classdef AppleSiliconParPoolManager < handle
     %   M3ParPoolManager = AppleSiliconParPoolManager('default');
     %  
     %   (Conservative ParPool manager: Configure a parpool that gives at least 8 GB RAM to each core)
-    %   M3ParPoolManager = AppleSiliconParPoolManager('consevative');
+    %   M3ParPoolManager = AppleSiliconParPoolManager('conservative');
     %  
     %   (Extreme ParPool manager: Configure a parpool with the max # of cores, independent of system RAM)
     %   M3ParPoolManager = AppleSiliconParPoolManager('extreme');
