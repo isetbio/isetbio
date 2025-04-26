@@ -21,5 +21,9 @@ function oiFrame = frameAtIndex(obj, frameIndex)
 % History:
 %    06/26/2020 NPC   ISETBIO Team, 2020
 
-    oiFrame = obj.oiList{frameIndex};
+    if (obj.isPeriodic)
+        oiFrame = obj.oiList{mod(frameIndex-1,numel(obj.oiList))+1};
+    else
+        oiFrame = obj.oiList{frameIndex};
+    end
 end

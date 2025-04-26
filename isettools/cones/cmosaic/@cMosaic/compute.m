@@ -493,8 +493,11 @@ function [emPathsDegs, emPathsMicrons, nTrials, nTimePoints, replicateResponseTo
 
         % First check that the OIsequence and the emPath have the same length
         [nTrials, nTimePoints, ~] = size(obj.fixEMobj.emPosMicrons);
-        assert(numel(timeAxis) == nTimePoints, 'The oiSequence length (%d) does not match the eye movement path length (%d)', numel(timeAxis), nTimePoints);
-        
+
+        if (~oiSequence.isPeriodic)
+            assert(numel(timeAxis) == nTimePoints, 'The oiSequence length (%d) does not match the eye movement path length (%d)', numel(timeAxis), nTimePoints);
+        end
+
         % Then check that they have the same time support
         timeAxisDifferentialsPicoSeconds = abs((timeAxis-obj.fixEMobj.timeAxis)*1e12);
         dtOIsequenceMsec = (timeAxis(2)-timeAxis(1))*1e3;

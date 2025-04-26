@@ -48,6 +48,8 @@ properties (SetAccess = private)
     % timeAxis - the oiSequence timebase
     timeAxis
 
+    % whether the sequence is periodic
+    isPeriodic
 end
 
 methods  % public methods
@@ -74,12 +76,16 @@ methods  % public methods
         p = inputParser;
         p.addRequired('oiList', @iscell);
         p.addRequired('oiTimeAxis', @isnumeric);
+        p.addParameter('isPeriodic', false, @islogical);
         p.parse(oiList, oiTimeAxis, varargin{:});
 
         obj.oiList = p.Results.oiList;
         obj.timeAxis = p.Results.oiTimeAxis;
+        obj.isPeriodic = p.Results.isPeriodic;
 
-        assert(numel(obj.oiList) == numel(obj.timeAxis), 'time axis and oiList must have the same number of elements');
+        if (~obj.isPeriodic)
+            assert(numel(obj.oiList) == numel(obj.timeAxis), 'time axis and oiList must have the same number of elements');
+        end
     end
 
     %% Define methods in the @oiSequence directory
