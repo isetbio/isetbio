@@ -1,4 +1,4 @@
-% s_syntehsizeOneOverF
+% s_synthesizeOneOverF
 %
 % Testing two ideas:
 %
@@ -12,13 +12,10 @@
 % To make life easier, we do the simulation in 1D, and for bookkeeping, we
 % will give the signal units of time (seconds).
 %
-% See also s_CroppingSpectrum, s_oneFsimulate
+% See also 
+%   s_CroppingSpectrum, s_oneFsimulate, sceneDeadLeaves
 %
 % Jon and Brian: Thinking about 1/f.
-
-
-
-
 
 %%
 % *************************************
@@ -63,7 +60,7 @@ sigma   = 1./carrier;
 
 
 % We will plot the signal as it is generated, updating at each scale
-figHandle = vcNewGraphWin;
+figHandle = ieNewGraphWin;
 
 % loop across scales, adding in local elements
 for ii = 1:length(carrier)
@@ -75,7 +72,7 @@ for ii = 1:length(carrier)
     %       for n = 1
     %   or should we add a constant number of elements at all scales?
     %       for n = 1:round(max(carrier));
-    for n = 1:1+round(carrier(ii));
+    for n = 1:1+round(carrier(ii))
         
         % Create a gaussian with a randomized center position. Note that we
         % randomize over a distance greater than signal ([-.5 1.5]) so that
@@ -105,7 +102,7 @@ for ii = 1:length(carrier)
     
     
     % watch it go for fun, or comment this out to speed up
-    figure(figHandle)
+    ieFigure(figHandle)
     subplot(4,1,1); plot(t, H, carrier(ii)/sz, 0, 'rx'); title('Harmonics', 'FontSize', 16)
     subplot(4,1,2); plot(t, G); title('Gaussians', 'FontSize', 16)
     subplot(4,1,3); plot(t, W); title('Wavelets', 'FontSize', 16)
@@ -113,7 +110,7 @@ for ii = 1:length(carrier)
     drawnow
     
     % to visualize the local elements being added ...
-    % figure(99); plot(t, h, t, g, t, g.*h);
+    % ieFigure; plot(t, h, t, g, t, g.*h);
 end
 
 
@@ -124,7 +121,7 @@ end
 %% Calculate spectrum of truncated images
 
 
-vcNewGraphWin;
+ieNewGraphWin;
 
 % different markers for the different lines
 markers = '+o*.xsd^v><ph';
@@ -215,7 +212,7 @@ end
 
 
 %% convolve with gabors
-figure
+ieFigure
 for ii = 2:length(carrier)
     f = carrier(ii);
     s = sigma(ii);
