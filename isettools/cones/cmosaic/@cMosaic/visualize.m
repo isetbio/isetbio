@@ -162,7 +162,7 @@ p.addParameter('fontsize', 16, @isscalar);
 p.addParameter('fontangle', 'normal', @(x)(ismember(lower(x), {'normal', 'italic'})));
 p.addParameter('colorbarfontsize', 16, @(x)(isempty(x)||(isscalar(x))));
 p.addParameter('backgroundcolor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
-
+p.addParameter('figurebackgroundcolor', [1 1 1], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
 p.addParameter('plottitle', '', @(x)(isempty(x) || ischar(x) || islogical(x) || iscell(x)));
 p.addParameter('plottitlecolor', [0 0 0], @isnumeric);
 p.addParameter('plottitlefontsize', 16, @isscalar);
@@ -224,6 +224,7 @@ colorBarTickLabelPostFix = p.Results.colorbarticklabelpostfix;
 horizontalActivationSliceEccentricity = p.Results.horizontalactivationsliceeccentricity;
 verticalActivationSliceEccentricity = p.Results.verticalactivationsliceeccentricity;
 backgroundColor = p.Results.backgroundcolor;
+figureBackgroundColor = p.Results.figurebackgroundcolor;
 
 plotTitle  = p.Results.plottitle;
 plotTitleColor = p.Results.plottitlecolor;
@@ -920,7 +921,9 @@ end
 set(axesHandle, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
 
 box(axesHandle, 'on');
-set(figureHandle, 'Color', [1 1 1]);
+if (~isempty(figureBackgroundColor))
+    set(figureHandle, 'Color', figureBackgroundColor);
+end
 
 switch (domain)
     case 'degrees'
