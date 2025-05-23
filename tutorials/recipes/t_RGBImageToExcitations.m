@@ -243,6 +243,15 @@ coneTypes = cm.coneTypes;
 % cMosaic property, they are up down flipped to
 % match what happens with real retinal images.  Useful
 % flip back.
-8;
+lmsImages = cm.absorptionsDensityFullMap(end:-1:1,:,:);
+figure; subplot(1,3,1);
+imagesc(lmsImages(:,:,1));
+title('L');
+subplot(1,3,2);
+imagesc(lmsImages(:,:,1));
+title('M');
+subplot(1,3,3);
+imagesc(lmsImages(:,:,3));
+title('S');
 
 %% END
