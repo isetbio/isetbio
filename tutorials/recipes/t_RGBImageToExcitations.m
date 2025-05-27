@@ -248,7 +248,7 @@ figure; subplot(1,3,1);
 imagesc(lmsImages(:,:,1));
 title('L');
 subplot(1,3,2);
-imagesc(lmsImages(:,:,1));
+imagesc(lmsImages(:,:,2));
 title('M');
 subplot(1,3,3);
 imagesc(lmsImages(:,:,3));
