@@ -737,7 +737,11 @@ end
 if (~isempty(emPath))
     assert(size(emPath,3) == 2, sprintf('The third dimension of an emPath must be 2.'));
     nTrials = size(emPath,1);
-    lineColors = brewermap(nTrials, 'Spectral');
+    if (nTrials > 1)
+        lineColors = brewermap(nTrials, 'Spectral');
+    else
+        lineColors = [1 0 0];
+    end
     for emTrialIndex = 1:nTrials
         plot(axesHandle, emPath(emTrialIndex,:,1), emPath(emTrialIndex,:,2), ...
             'k-', 'LineWidth', 4.0);
