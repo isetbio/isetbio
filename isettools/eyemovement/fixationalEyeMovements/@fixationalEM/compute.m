@@ -63,6 +63,7 @@ obj.initOutputs();
 % Set random seed
 if (isempty(obj.randomSeed))
     rng('shuffle');
+elseif (obj.randomSeed == -1)
 else
     rng(obj.randomSeed);
 end

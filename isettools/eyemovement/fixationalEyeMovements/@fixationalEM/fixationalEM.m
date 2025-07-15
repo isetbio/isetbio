@@ -133,7 +133,8 @@ properties
     % To clarify, the Time constant for the heat map's temporal kernel.
     heatMapKernelTimeConstantSeconds;
 
-    % randomSeed - Numeric. The random seed to use.
+    % randomSeed - Numeric. The random seed to use.  
+    % If it is -1, don't touch the seed.
     randomSeed;
 
     %% user-feedback

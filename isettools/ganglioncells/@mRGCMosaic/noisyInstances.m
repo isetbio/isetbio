@@ -3,9 +3,11 @@ function noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses
     p.addRequired('noiseFreeMRGCresponses', @isnumeric);
     p.addParameter('noiseFlag', [], @(x)(isempty(x) | ismember(x, {'random', 'frozen','donotset','none'})));
     p.addParameter('seed', 1, @isnumeric);
+    p.addParameter('verbose',false,@islogical)
     p.parse(noiseFreeMRGCresponses, varargin{:});
 
     seed = p.Results.seed;
+    verbose = p.Results.verbose;
 
     if (strcmp(obj.noiseFlag, 'none'))
         noisyMRGCresponseInstances = [];
@@ -59,7 +61,9 @@ function noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses
     end
 
     % vMembrane additive noise
-    fprintf('Computing noisy mRGC response instances with vMembrane noise std = %2.3f\n', noiseGain * obj.vMembraneGaussianNoiseSigma);
+    if (verbose)
+        fprintf('Computing noisy mRGC response instances with vMembrane noise std = %2.3f\n', noiseGain * obj.vMembraneGaussianNoiseSigma);
+    end
     noisyMRGCresponseInstances = noiseFreeMRGCresponses + ...
                 noiseGain * obj.vMembraneGaussianNoiseSigma * randn(size(noiseFreeMRGCresponses));
 

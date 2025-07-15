@@ -153,7 +153,7 @@ else
     contourf(axesHandle,xSupportMinutes, ySupportMinutes, wavePSF.psf/max(wavePSF.psf(:)), contourLevels, ...
         'Color', [0.3 0.3 0.3], 'LineWidth', 1.0);
 
-    %imagesc(xSupportMinutes, ySupportMinutes, wavePSF/max(wavePSF(:)));
+    %imagesc(xSupportMinutes, ySupportMinutes, wavePSF.psf/max(wavePSF.psf(:)));
     hold(axesHandle, 'on');
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'c-', 'LineWidth', 3.0);
     plot(axesHandle, xSupportMinutes, psfRangeArcMin*(psfSlice-1), 'b-', 'LineWidth', 1.0);
@@ -162,8 +162,8 @@ end
 
 
 xtickangle(axesHandle, 0);
-
-axis(axesHandle, 'image'); axis(axesHandle, 'xy');
+axis(axesHandle, 'image'); 
+axis(axesHandle, 'ij');
 grid(axesHandle, 'on'); box(axesHandle,  'on');
 
 set(axesHandle, 'XLim', psfRangeArcMin*1.05*[-1 1], 'YLim', psfRangeArcMin*1.05*[-1 1], 'CLim', [0 1], ...
