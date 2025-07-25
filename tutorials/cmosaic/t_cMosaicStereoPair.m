@@ -10,16 +10,17 @@
 
 % History:
 %    03/22/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
-%    Still runs in ISETCAM branch (7/23).
-%
+%    01/07/24               Still runs in ISETCAM branch
+%    07/25/25  NPC  Updated script
 
 %% Initialize
 ieInit;
 clear;
 close all;
 
-generateNewMosaics = false;
-if (generateNewMosaics)
+% Whether to generate new mosaics from scratch (can take a very long time for large mosaicFOVs)
+generateNewMosaicLattices = false;
+if (generateNewMosaicLattices)
     mosaicFOV = [1 1];
     mosaicEccInVisualSpace = [0 0];
     % Generate left mosaic
@@ -32,7 +33,7 @@ if (generateNewMosaics)
         'visualizeMeshConvergence', ~true ...           % visualize the convergence
         );
 
-    % Geounerate right mosaic
+    % Generate right mosaic
     cmRight = cMosaic(...
         'whichEye', 'right eye', ...                    % Generate mosaic for the right eye
         'sizeDegs', mosaicFOV, ...                      % SIZE: x,y in degs
@@ -43,15 +44,22 @@ if (generateNewMosaics)
         );
 
 else
-    mosaicEccInVisualSpace = [-12 0];
+    % Mosaic size
     mosaicFOV = [5 3];
 
-    %mosaicEccInVisualSpace = [0 0];
+    % Generate a cone mosaic at a negativ e horizontal eccentricity in visual space
+    mosaicEccInVisualSpace = [-12 0];
 
+    % Where to place the stimulus relative to the mosaic's center (offset in visual degrees)
+    stimOffsetRelativeToMosaicCenter = [1 1];
+
+    % Generate the left eye cone mosaic
     cmLeft = cMosaic(...
         'whichEye', 'left eye', ...                    
         'sizeDegs', mosaicFOV, ...
         'eccentricityDegs', mosaicEccInVisualSpace);
+
+    % Generate the right eye cone mosaic
     cmRight = cMosaic(...
         'whichEye', 'right eye', ...                      
         'sizeDegs', mosaicFOV, ...
@@ -59,103 +67,40 @@ else
 end
 
 
+% Descriptive labels for the two cone mosaics
 if (mosaicEccInVisualSpace(1) < 0)
-    leftMosaicTitle = 'left cMosaic activation (nasal retina)';
-    rightMosaicTitle = 'right cMosaic activation (temporal retina)';
+    leftMosaicTitle = 'left cMosaic activation (located in nasal retina)';
+    rightMosaicTitle = 'right cMosaic activation (located in temporal retina)';
 elseif (mosaicEccInVisualSpace(1) > 0)
-    leftMosaicTitle = 'left cMosaic activation (temporal retina)';
-    rightMosaicTitle = 'right cMosaic activation (retina retina)';
+    leftMosaicTitle = 'left cMosaic activation (located in temporal retina)';
+    rightMosaicTitle = 'right cMosaic activation (located in nasal retina)';
 else
     leftMosaicTitle = 'left cMosaic activation';
     rightMosaicTitle = 'right cMosaic activation';
 end
 
-if (1==2)
-hFig = figure(1000);
-set(hFig, 'Position', [10 10 1600 1150]);
 
-% Visualize the left mosaic with the corresponding contour density plot
-% superimposed.
-ax = subplot('Position', [0.05 0.05 0.9 0.35]);
-cmLeft.visualize(...
-    'figureHandle', hFig, ...
-    'axesHandle', ax, ...
-    'domain', 'microns', ...
-    'visualizedConeAperture', 'geometricArea', ...
-    'densityContourOverlay', true, ...
-    'densityContourLevels', 1e3*[20 25 30 35 40 50 60 80 100 130 180 250], ...
-    'densityContourLevelLabelsDisplay', true, ...
-    'crossHairsOnFovea', true, ...
-    'labelRetinalMeridians', true, ...
-    'plotTitle', cmLeft.whichEye);
-
-% Visualize the right mosaic with the corresponding contour density plot
-% superimposed.
-ax = subplot('Position', [0.05 0.55 0.9 0.35]);
-cmRight.visualize(...
-    'figureHandle', hFig, ...
-    'axesHandle', ax, ...
-    'domain', 'microns', ...
-    'visualizedConeAperture', 'geometricArea', ...
-    'densityContourOverlay', true, ...
-    'densityContourLevels', 1e3*[20 25 30 35 40 50 60 80 100 130 180 250], ...
-    'densityContourLevelLabelsDisplay', true, ...
-    'crossHairsOnFovea', true, ...
-    'labelRetinalMeridians', true, ...
-    'plotTitle', cmRight.whichEye);
-
-end
+% Generate the letter ('A') scene
+font = fontCreate;
+font = fontSet(font,'character','A');
+font = fontSet(font, 'size', 30);
+stim = sceneCreate('letter',font);
 
 
-% Generate scene
-generateLetterSceneStimulus = true;
-if (generateLetterSceneStimulus)
-    
-    fontSize = 30;
-    if (mosaicEccInVisualSpace(1) == 0)
-        fontSize = 30;
-    end
-    font = fontCreate;
-    font = fontSet(font,'character','A');
-    font = fontSet(font, 'size', fontSize);
-    stim = sceneCreate('letter',font);
-else
-    params.freq = 10;
-    params.row = 512;
-    params.col = 512;
-    spectrum = 400:20:700;
-    stim = sceneCreate('Harmonic', params, spectrum);
-
-    % Put grating in the lower bottom part of the field
-    spatialSupport = sceneGet(stim, 'spatial support');
-    spatialSupportX = squeeze(spatialSupport(1,1:end,1));
-    spatialSupportY =-squeeze(spatialSupport(1:end,1,2));
-    photonsFullImage = sceneGet(stim, 'photons');
-    photons = bsxfun(@plus, photonsFullImage * 0, mean(mean(photonsFullImage,1),2));
-    idx = find((spatialSupportX >= max(spatialSupportX)*0.3) & (spatialSupportX <= max(spatialSupportX)*0.8));
-    idy = find((spatialSupportY >= max(spatialSupportX)*0.2) & (spatialSupportY <= max(spatialSupportY)*0.6));
-    photons(idy, idx,:) = photonsFullImage(idy, idx,:);
-    stim = sceneSet(stim, 'photons', photons);
-
-end
-
-
-%sceneFOVDegs = 8;
-%stim = sceneSet(stim, 'fov', sceneFOVDegs);
-
-
-% Compute the optical image
+% Compute the optical image of the letter scene using default human optics
 oi = oiCreate('human');
 oi = oiCompute(oi,stim,'pad value','mean');
 
-% Compute mosaic activations
+% Compute the left mosaic's activation
 leftMosaicActivation = cmLeft.compute(oi, ...
-    'opticalImagePositionDegs', mosaicEccInVisualSpace);
+    'opticalImagePositionDegs', mosaicEccInVisualSpace + stimOffsetRelativeToMosaicCenter);
+
+% Compute the right mosaic's activation
 rightMosaicActivation = cmRight.compute(oi, ...
-    'opticalImagePositionDegs', mosaicEccInVisualSpace);
+    'opticalImagePositionDegs', mosaicEccInVisualSpace + stimOffsetRelativeToMosaicCenter);
  
  
-%% Visualize mosaics
+%% Visualize the cone mosaics (in visual space referred coordinates) and the ISETBio meridian conventions
 hFig = figure(1001);
 set(hFig, 'Position', [10 10 1600 1150]);
 
@@ -197,17 +142,27 @@ cmRight.visualize(...
     'plotTitle', cmRight.whichEye);
 
 
+%% Visualize the stimulus in visual space and the cone mosaic activations (also in visual space referred coordinates)
 hFig = figure(1002); clf;
 set(hFig, 'Position', [10 10 1850 1090]);
 
-% Visualize optical image of the stimulus in visual space coordinates
+% Visualize the optical image of the stimulus in visual space coordinates
+% at the top
 ax = subplot('Position', [0.3 0.57 0.45 0.4]);
 oiSpatialSupportMeters = oiGet(oi, 'spatial support');
 oiSpatialSupportXMicrons = squeeze(oiSpatialSupportMeters(1,1:end,1)) * 1e6;
-oiSpatialSupportYMicrons = squeeze(oiSpatialSupportMeters(1:end,1,2)) * 1e6;
-image(ax, ...
-    oiSpatialSupportXMicrons + mosaicEccInVisualSpace(1)*cmLeft.micronsPerDegree, ...
-    oiSpatialSupportYMicrons + mosaicEccInVisualSpace(2)*cmLeft.micronsPerDegree, flipud(oiGet(oi, 'rgb')));
+oiSpatialSupportYMicrons = flipud(squeeze(oiSpatialSupportMeters(1:end,1,2))) * 1e6;
+oiSpatialSupportXMicrons = oiSpatialSupportXMicrons + (mosaicEccInVisualSpace(1) + stimOffsetRelativeToMosaicCenter(1))*cmLeft.micronsPerDegree;
+oiSpatialSupportYMicrons = oiSpatialSupportYMicrons + (mosaicEccInVisualSpace(2) + stimOffsetRelativeToMosaicCenter(2))*cmLeft.micronsPerDegree;
+image(ax, oiSpatialSupportXMicrons,oiSpatialSupportYMicrons, oiGet(oi, 'rgb'));
+hold(ax, 'on');
+
+% Superimpose the outline of the cone mosaic
+xOutline = cmRight.eccentricityMicrons(1) + 0.5*[-1 -1 1 1 -1]*cmRight.sizeMicrons(1);
+yOutline = cmRight.eccentricityMicrons(2) + 0.5*[-1 1 1 -1 -1]*cmRight.sizeMicrons(2);
+
+plot(ax, xOutline, yOutline, 'r-', 'LineWidth', 1.5);
+hold(ax, 'off');
 xlabel(ax, 'visual space (microns)');
 ylabel(ax, 'visual space (microns)');
 set(ax, 'XLim', 4000*[-1 1], 'YLim', 2000*[-1 1]);
@@ -217,8 +172,6 @@ title(ax, 'optical image of stimulus (in visual space)');
 
 % Visualize the left mosaic activation
 ax = subplot('Position', [0.05 0.05 0.45 0.47]);
-
-
 cmLeft.visualize('figureHandle', hFig, 'axesHandle', ax, ...
       'activation', leftMosaicActivation, ...
       'visualizedConeAperture', 'geometricArea', ...
@@ -237,5 +190,3 @@ cmRight.visualize('figureHandle', hFig, 'axesHandle', ax, ...
       'labelRetinalMeridians', true, ...
       'plotTitle', rightMosaicTitle);
   
-      
-         
