@@ -5,13 +5,42 @@
 %    also demonstrates our convention for labelling visual field & retinal
 %    meridians, which can be a bit confusing.
 %
+%    In ISETBio it was decided early on that all coordinates, even those of cone positions, 
+%    are visual space -- referred. This can be a bit confusing, so this tutorial attempts to clarify things. 
+%    The first figure depicts the conventions used in ISETBio.
+%    The second figure shows an example of responses for a pair of a left
+%    and a right eye cone mosaics.
+%
+%    The top plot of the second figure depicts a stimulus (letter A), positioned, in VISUAL SPACE, 
+%    at a negative horizontal eccentricity and at a positive vertical eccentricity. 
+%    The red outline depicts the outline of a model cone mosaic, projected in visual space. 
+%    The code generates two cone mosaics that correspond to the red outline, 
+%    with one mosaic located in the left eye and the other mosaic located in the right eye.
+%    The stimulus is projected in both eyes, and its optical image is captured by the two cone mosaics.
+%
+%    The activations of the the left and right eye cone mosaics are depicted at the bottom two plots. 
+%    For the left eye, the stimulus lands in the nasal part of the retina, near the optic disk, 
+%    where the cone mosaic model has no cones. In the right eye, the stimulus lands in the temporal part 
+%    of the retina. Since the cone mosaics and their activations are depicted in visual space - referred coordinates in ISETBio, 
+%    there is no up-down reversal of cone activations with respect to the stimulus. 
+%    But the up-down reversal can be evidenced if you note the labeling of the retinal meridians 
+%    in these activation plots, which are shown in color. The inferior retina label (in yellow) 
+%    appears at positive coordinates, and the superior retinal label (in blue) appears at negative coordinates. 
+%    
+%    Along the same lines, since the cone mosaic activations are depicted in VISUAL space, 
+%    the left and right mosaic activations are not depicted as mirror images of each other. 
+%    But you can again note, that the temporal side of the left mosaic (located in the nasal retina), 
+%    which is shown in green, appears on the right side, 
+%    whereas for the right cone mosaic (located in the temporal retina), the temporal side, 
+%    which is shown in red, appears on the left side.
+
 % See Also:
 %   t_cMosaicBasic
 
 % History:
 %    03/22/21  NPC  ISETBIO Team, Copyright 2021 Wrote it.
 %    01/07/24               Still runs in ISETCAM branch
-%    07/25/25  NPC  Updated script
+%    07/25/25  NPC  Updated script and expanded the comments
 
 %% Initialize
 ieInit;
@@ -25,6 +54,7 @@ if (generateNewMosaicLattices)
     mosaicEccInVisualSpace = [0 0];
     % Generate left mosaic
     cmLeft = cMosaic(...
+        'sourceLatticeSizeDegs', 64, ...                % Use the 64-deg wide lattices
         'whichEye', 'left eye', ...                     % Generate mosaic for the left eye
         'sizeDegs', mosaicFOV, ...                      % SIZE: x,y in degs
         'eccentricityDegs', mosaicEccInVisualSpace, ... % ECC:  x=0.0 degs, y= 0.0 degs
@@ -35,6 +65,7 @@ if (generateNewMosaicLattices)
 
     % Generate right mosaic
     cmRight = cMosaic(...
+        'sourceLatticeSizeDegs', 64, ...                % Use the 64-deg wide lattices
         'whichEye', 'right eye', ...                    % Generate mosaic for the right eye
         'sizeDegs', mosaicFOV, ...                      % SIZE: x,y in degs
         'eccentricityDegs', mosaicEccInVisualSpace, ... % ECC:  x=0.0 degs, y= 0.0 degs
@@ -55,12 +86,14 @@ else
 
     % Generate the left eye cone mosaic
     cmLeft = cMosaic(...
+        'sourceLatticeSizeDegs', 58, ...                % Use the 58-deg wide lattices
         'whichEye', 'left eye', ...                    
         'sizeDegs', mosaicFOV, ...
         'eccentricityDegs', mosaicEccInVisualSpace);
 
     % Generate the right eye cone mosaic
     cmRight = cMosaic(...
+        'sourceLatticeSizeDegs', 58, ...                % Use the 58-deg wide lattices
         'whichEye', 'right eye', ...                      
         'sizeDegs', mosaicFOV, ...
         'eccentricityDegs', mosaicEccInVisualSpace);
