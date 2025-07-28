@@ -15,15 +15,31 @@ function t_mRGCMosaicBasic
     %% Close all figures
     close all;
 
-    % Load an mRGCmosaic located the far periphery
-    visualizePSFonTopOfConeMosaic = true;
-    [theMRGCmosaic, theOI] = farPeripheryMRGCmosaiAndOptics(visualizePSFonTopOfConeMosaic);
+    AppleSiliconParPoolManager(4);
+    
+    mosaicParams.eccDegs = [-4 0];
+    mosaicParams.sizeDegs = [3 3];
+    mosaicParams.croppedFoVdegs = 1.0;
+
+    opticsParams.subject = 'Polans2015-2';
+    opticsParams.type = 'adaptiveOptics6MM';
+    opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = [];
+
+    opticsParams.type = 'nativeOptics';  % native optics + StrehlRatio optimization (what was used to optimize the mosaic)
+    opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = [];
+
+    opticsParams.type = 'customRefraction';
+    opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = 0.0;
+    opticsParams.visualizePSFonTopOfConeMosaic = true;
+
+    % Load an mRGCmosaic located the far periphery and the associated optics
+    [theMRGCmosaic, theOI] = loadMRGCmosaicAndOptics(mosaicParams, opticsParams);
     theMRGCmosaic.visualize();
 
     % Input stimulus
     imageFOVdegs = min(theMRGCmosaic.sizeDegs);
     pixelsPerCheck = 256;
-    numberOfChecks = 4;
+    numberOfChecks = 5;
 
     % Compute the stimulus scene
     theStimulusScene = sceneCreate('checkerboard', pixelsPerCheck, numberOfChecks);
@@ -67,38 +83,39 @@ function t_mRGCMosaicBasic
 
 end
 
-% Supporting functions
-function [theMRGCMosaic, theOI] = farPeripheryMRGCmosaiAndOptics(visualizePSFonTopOfConeMosaic)
 
-    theOpticsSubject = 'Polans2015-2';
+
+% Supporting functions
+function [theMRGCMosaic, theOI] = loadMRGCmosaicAndOptics(mosaicParams, opticsParams)
+
     theMosaicXYeccentricityDegs = [-32.0 0.0];
     theMosaicXYsizeDegs = [9 9];
 
+    mosaicParams.eccDegs = [-4 0];
+    mosaicParams.sizeDegs = [3 3];
+    mosaicParams.croppedFoVdegs = 1.0;
+
     prebakedMRGCMosaicDir = 'isettools/ganglioncells/data/prebakedRGCmosaics/ONmRGCmosaics';
     spatialCompactnessSpectralPurityTradeoff = 1;
-    opticsSubString = sprintf('Optics_%s_maxStrehlRatio', theOpticsSubject);
-    surroundOptimizationSubString = 'PackerDacey2002H1freeUpperH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0';
+    opticsSubString = sprintf('Optics_%s_maxStrehlRatio', opticsParams.subject);
+    surroundOptimizationSubString = 'PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0';
 
     mRGCMosaicFilename = sprintf('MRGCMosaic_RE_Ecc%2.1f_%2.1f_Size%2.1fx%2.1f_Phi_%1.2f_%s_srndModel_%s.mat', ...
-        theMosaicXYeccentricityDegs(1), theMosaicXYeccentricityDegs(2), ...
-        theMosaicXYsizeDegs(1), theMosaicXYsizeDegs(2), ...
+        mosaicParams.eccDegs(1), mosaicParams.eccDegs(2), ...
+        mosaicParams.sizeDegs(1), mosaicParams.sizeDegs(2), ...
         spatialCompactnessSpectralPurityTradeoff, opticsSubString, surroundOptimizationSubString);
 
     load(fullfile(isetbioRootPath, prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic');
 
-    % Employ the native optics (what was used to optimize the surround)
-    opticsForSTFresponses = 'nativeOptics';  % native optics + StrehlRatio optimization (what was used to optimize the mosaic)
     
-    %opticsForSTFresponses = 'adaptiveOptics6MM';
-
-    opticsForSTFresponses = 'customRefraction';  % native optics without StrehlRatio optimization )
-    residualWithRespectToNativeOpticsDefocusDiopters = 0.0;
-
-    
+    theMRGCMosaic.cropToSizeAtEccentricity(mosaicParams.croppedFoVdegs*[1 1], theMRGCMosaic.eccentricityDegs);
+    theMRGCMosaic.visualize();
 
     % Generate the optics for the mosaic
     [theOI, thePSF] = RGCMosaicAnalyzer.compute.opticsForResponses(...
-        theMRGCMosaic, opticsForSTFresponses, residualWithRespectToNativeOpticsDefocusDiopters, visualizePSFonTopOfConeMosaic);
+        theMRGCMosaic, opticsParams.type, ...
+        opticsParams.residualWithRespectToNativeOpticsDefocusDiopters, ...
+        opticsParams.visualizePSFonTopOfConeMosaic);
  end
 
 

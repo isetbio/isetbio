@@ -1,4 +1,4 @@
-classdef mRGCMosaicOLD < handle
+classdef mRGCMosaic < handle
 % Create an mRGCMosaic mosaic object
 
     % Public properties

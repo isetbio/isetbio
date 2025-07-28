@@ -14,7 +14,7 @@ function theComputeReadyMRGCmosaic = loadComputeReadyRGCMosaic(mosaicParams, opt
 
     if ((~isfolder(resourcesDirectory)) || (~isfile(sourceRGCMosaicFileName)))
         % Mosaic was not found. List available compute-ready mosaics of the desired type
-        mRGCMosaic.availableComputeReadyMosaics(mosaicParams.rgcType);
+        mRGCMosaicOLD.availableComputeReadyMosaics(mosaicParams.rgcType);
     end
 
     % Check that the mosaic directory exists
