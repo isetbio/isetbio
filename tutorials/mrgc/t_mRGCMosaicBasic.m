@@ -2,8 +2,9 @@
 %% Introduction to the 2025 midget RGC mosaic (mRGCMosaic) object.
 %
 % Description:
-%    Demonstrates
-%        - how to load of of pre-baked midget RGC mosaics,
+%    Demonstrates: how to load of of pre-baked midget RGC mosaics, compute
+%    its response to a checkberboard stimulus, and visualize the response
+%    of the input cone mosaic along with the response of the mRGC mosaic
 %
 
 
@@ -15,13 +16,59 @@ function t_mRGCMosaicBasic
     close all;
 
     % Load an mRGCmosaic located the far periphery
-    theMRGCmosaic = farPeripheryMRGCmosaic();
+    visualizePSFonTopOfConeMosaic = true;
+    [theMRGCmosaic, theOI] = farPeripheryMRGCmosaiAndOptics(visualizePSFonTopOfConeMosaic);
     theMRGCmosaic.visualize();
+
+    % Input stimulus
+    imageFOVdegs = min(theMRGCmosaic.sizeDegs);
+    pixelsPerCheck = 256;
+    numberOfChecks = 4;
+
+    % Compute the stimulus scene
+    theStimulusScene = sceneCreate('checkerboard', pixelsPerCheck, numberOfChecks);
+    theStimulusScene = sceneSet(theStimulusScene, 'fov', imageFOVdegs);
+
+    % Compute the retinal image
+    theStimulusRetinalImage = oiCompute(theOI, theStimulusScene);
+
+    % Compute the input cone mosaic response to the retinal image of the stimulus
+    [theNoiseFreeConeMosaicExcitationsResponse, ...
+     theNoisyConeMosaicExcitationsResponses, ~, ~, ...
+     theConeMosaicResponseTemporalSupportSeconds] = theMRGCmosaic.inputConeMosaic.compute(...
+        theStimulusRetinalImage, ...
+        'opticalImagePositionDegs', theMRGCmosaic.eccentricityDegs);
+
+    % Compute the mRGCmosaic response to the input cone mosaic response
+    mRGCNonLinearityParams = [];
+    [theNoiseFreeSpatioTemporalMRCMosaicResponse, ~, ...
+     theMRGCMosaicResponseTemporalSupportSeconds] = theMRGCmosaic.compute( ...
+                theNoiseFreeConeMosaicExcitationsResponse, ...
+                theConeMosaicResponseTemporalSupportSeconds, ...
+                'nonLinearityParams', mRGCNonLinearityParams);
+
+    hFig = figure(1);
+    set(hFig, 'Position', [10 10 1980 910]);
+
+    ax = subplot(1,2,1);
+    theMRGCmosaic.inputConeMosaic.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax, ...
+        'activation', theNoiseFreeConeMosaicExcitationsResponse, ...
+        'plotTitle', 'input cone mosaic response');
+
+    ax = subplot(1,2,2);
+    theMRGCmosaic.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax, ...
+        'activation', theNoiseFreeSpatioTemporalMRCMosaicResponse, ...
+        'plotTitle', 'mRGC mosaic response');
+
 
 end
 
 % Supporting functions
-function theMRGCMosaic = farPeripheryMRGCmosaic()
+function [theMRGCMosaic, theOI] = farPeripheryMRGCmosaiAndOptics(visualizePSFonTopOfConeMosaic)
 
     theOpticsSubject = 'Polans2015-2';
     theMosaicXYeccentricityDegs = [-32.0 0.0];
@@ -40,16 +87,18 @@ function theMRGCMosaic = farPeripheryMRGCmosaic()
     load(fullfile(isetbioRootPath, prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic');
 
     % Employ the native optics (what was used to optimize the surround)
-    opticsForSTFresponses = 'nativeOptics';
+    opticsForSTFresponses = 'nativeOptics';  % native optics + StrehlRatio optimization (what was used to optimize the mosaic)
+    
     %opticsForSTFresponses = 'adaptiveOptics6MM';
-    residualWithRespectToNativeOpticsDefocusDiopters = [];
-    visualizePSFonTopOfConeMosaic = true;
+
+    opticsForSTFresponses = 'customRefraction';  % native optics without StrehlRatio optimization )
+    residualWithRespectToNativeOpticsDefocusDiopters = 0.0;
+
+    
 
     % Generate the optics for the mosaic
     [theOI, thePSF] = RGCMosaicAnalyzer.compute.opticsForResponses(...
         theMRGCMosaic, opticsForSTFresponses, residualWithRespectToNativeOpticsDefocusDiopters, visualizePSFonTopOfConeMosaic);
-
-    
  end
 
 
