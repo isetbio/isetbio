@@ -10,7 +10,7 @@ classdef AppleSiliconParPoolManager < handle
     %   M3ParPoolManager = AppleSiliconParPoolManager('default');
     %  
     %   (Conservative ParPool manager: Configure a parpool that gives at least 8 GB RAM to each core)
-    %   M3ParPoolManager = AppleSiliconParPoolManager('conservative');
+    %   M3ParPoolManager = AppleSiliconParPoolManager('consevative');
     %  
     %   (Extreme ParPool manager: Configure a parpool with the max # of cores, independent of system RAM)
     %   M3ParPoolManager = AppleSiliconParPoolManager('extreme');
@@ -85,7 +85,7 @@ classdef AppleSiliconParPoolManager < handle
             % Validation function for parpoolConfig
             function s = parpoolConfigValidationFunction(x, parpoolConfigErrorMessage)
                 c(1) = ~isempty(x);
-                c(2) = ischar(x)&&(~ismember(x, {'default', 'conservative', 'extreme'}));
+                c(2) = ischar(x)&&(~ismember(x, {'default', 'conservative', 'extreme', 'half max'}));
                 c(3) = isscalar(x)&&(~(x >=1));
                 if (all(c))
                     error(parpoolConfigErrorMessage);
@@ -146,8 +146,10 @@ classdef AppleSiliconParPoolManager < handle
                             obj.minRAMperCore = 4.0;
                         case 'conservative'
                             obj.minRAMperCore = 8.0;
-                        case 'extreme'
+                        case {'extreme', 'half max'}
                             obj.minRAMperCore = obj.usablePhysicalMemoryGB/obj.coresNum;
+
+                        case 'half max'
 
                         otherwise
                             fprintf('\n\n----> Valid configs are either a scalar between %d and %d, or {''default'', ''conservative'', ''extreme''}. <----\n\n', 1, obj.coresNum);
@@ -160,6 +162,11 @@ classdef AppleSiliconParPoolManager < handle
                     end % switch
 
                     numWorkers = min([obj.coresNum , max([1 floor(obj.usablePhysicalMemoryGB / obj.minRAMperCore)])]);
+
+                    if (strcmp(obj.parpoolConfig, 'half max'))
+                        numWorkers = round(numWorkers / 2);
+                    end
+
                     obj.restartParpool(numWorkers);
                 else
                     obj.parpoolConfig
