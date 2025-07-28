@@ -39,6 +39,17 @@ function theMRGCMosaic = farPeripheryMRGCmosaic()
 
     load(fullfile(isetbioRootPath, prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic');
 
-end
+    % Employ the native optics (what was used to optimize the surround)
+    opticsForSTFresponses = 'nativeOptics';
+    %opticsForSTFresponses = 'adaptiveOptics6MM';
+    residualWithRespectToNativeOpticsDefocusDiopters = [];
+    visualizePSFonTopOfConeMosaic = true;
+
+    % Generate the optics for the mosaic
+    [theOI, thePSF] = RGCMosaicAnalyzer.compute.opticsForResponses(...
+        theMRGCMosaic, opticsForSTFresponses, residualWithRespectToNativeOpticsDefocusDiopters, visualizePSFonTopOfConeMosaic);
+
+    
+ end
 
 
