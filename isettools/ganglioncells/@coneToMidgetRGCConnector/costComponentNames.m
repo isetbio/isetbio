@@ -1,3 +1,3 @@
 function  costComponentNames = costComponentNames(obj)
-    costComponentNames = {'total cost', 'spatial variance cost', 'chromatic variance cost'};
+    costComponentNames = {'total cost', 'numerosity differential cost', 'spectral uniformity cost', 'spatial overlap cost', 'spatial variance cost'};
 end

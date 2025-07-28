@@ -1,8 +1,10 @@
 function visualizeCostComponentStatistics(obj, axSpatial, axChromatic, theCostComponentsMatrix)
 
     totalCosts = theCostComponentsMatrix(:,1);
-    spatialVarianceCosts = theCostComponentsMatrix(:,2);
+    numeorityDifferentialCosts = theCostComponentsMatrix(:,2);
     chromaticVarianceCosts = theCostComponentsMatrix(:,3);
+    spatialOverlapCosts = theCostComponentsMatrix(:,4);
+    spatialVarianceCosts = theCostComponentsMatrix(:,5);
 
     plotSpatialVarianceCostStatistics(axSpatial, spatialVarianceCosts);
     plotChromaticVarianceCostStatistics(axChromatic, chromaticVarianceCosts);
