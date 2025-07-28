@@ -1,4 +1,4 @@
-classdef mRGCMosaic < handle
+classdef mRGCMosaicOLD < handle
 % Create an mRGCMosaic mosaic object
 
     % Public properties
@@ -156,7 +156,7 @@ classdef mRGCMosaic < handle
     methods
         
         % Constructor
-        function obj = mRGCMosaic(varargin)
+        function obj = mRGCMosaicOLD(varargin)
 
             % Parse input
             p = inputParser;
@@ -297,7 +297,7 @@ classdef mRGCMosaic < handle
 
         % Setter for noiseFlag
         function set.noiseFlag(obj, val)
-            assert((isempty(val))||ismember(val, mRGCMosaic.validNoiseFlags), ...
+            assert((isempty(val))||ismember(val, mRGCMosaicOLD.validNoiseFlags), ...
                 sprintf('''%s'' is not a valid noise flag', val));
             obj.noiseFlag = val;
         end
