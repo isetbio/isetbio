@@ -341,8 +341,11 @@ classdef mRGCMosaic < handle
 
     % Static methods
     methods (Static)
-        % Method to list available mRGCMosaics and allow the user to select one
-        theMRGCmosaicFullFileName = listMosaics();
+        % Method to list available prebaked mRGCMosaics
+        [themRGCmosaicFileNames, prebakedMRGCMosaicDir] = listPrebakedMosaics();
+
+        % Method to load a prebaked mRGCMosaic and associated optics
+        [theMRGCmosaic, theOI] = loadPrebakedMosaic(mosaicParams, opticsParams);
 
         % Method to compute extra support needed to account for surrounds at a given eccentricity
         extraDegs = extraSupportDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);

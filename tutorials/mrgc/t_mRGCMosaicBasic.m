@@ -16,24 +16,36 @@ function t_mRGCMosaicBasic
     close all;
 
     AppleSiliconParPoolManager(4);
-    
-    mosaicParams.eccDegs = [-4 0];
+
+    % List the locally-available prebaded mosaics
+    % themRGCmosaicFileNames = mRGCMosaic.listPrebakedMosaics();
+   
+    % Mosaic params
+    mosaicParams.eccDegs  = [-4 0];
     mosaicParams.sizeDegs = [3 3];
+    mosaicParams.spatialCompactnessSpectralPurityTradeoff = 1;
+    mosaicParams.surroundOptimizationSubString = 'PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0';
     mosaicParams.croppedFoVdegs = 1.0;
 
-    opticsParams.subject = 'Polans2015-2';
+    % Optics params
+    opticsParams.ZernikeDataBase = 'Polans2015';
+    opticsParams.subjectRankOrder = 2; 
+
+    % Adaptive optics
     opticsParams.type = 'adaptiveOptics6MM';
     opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = [];
 
-    opticsParams.type = 'nativeOptics';  % native optics + StrehlRatio optimization (what was used to optimize the mosaic)
+    % native optics + StrehlRatio optimization (what was used to optimize the mosaic
+    opticsParams.type = 'nativeOptics';
     opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = [];
 
-    opticsParams.type = 'customRefraction';
-    opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = 0.0;
+    % native optics without StrehlRatio optimization
+    %opticsParams.type = 'customRefraction';
+    %opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = 0.0;
     opticsParams.visualizePSFonTopOfConeMosaic = true;
 
-    % Load an mRGCmosaic located the far periphery and the associated optics
-    [theMRGCmosaic, theOI] = loadMRGCmosaicAndOptics(mosaicParams, opticsParams);
+    % Load the desired mRGCmosaic and the associated optics
+    [theMRGCmosaic, theOI] = mRGCMosaic.loadPrebakedMosaic(mosaicParams, opticsParams);
     theMRGCmosaic.visualize();
 
     % Input stimulus
@@ -86,36 +98,5 @@ end
 
 
 % Supporting functions
-function [theMRGCMosaic, theOI] = loadMRGCmosaicAndOptics(mosaicParams, opticsParams)
-
-    theMosaicXYeccentricityDegs = [-32.0 0.0];
-    theMosaicXYsizeDegs = [9 9];
-
-    mosaicParams.eccDegs = [-4 0];
-    mosaicParams.sizeDegs = [3 3];
-    mosaicParams.croppedFoVdegs = 1.0;
-
-    prebakedMRGCMosaicDir = 'isettools/ganglioncells/data/prebakedRGCmosaics/ONmRGCmosaics';
-    spatialCompactnessSpectralPurityTradeoff = 1;
-    opticsSubString = sprintf('Optics_%s_maxStrehlRatio', opticsParams.subject);
-    surroundOptimizationSubString = 'PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0';
-
-    mRGCMosaicFilename = sprintf('MRGCMosaic_RE_Ecc%2.1f_%2.1f_Size%2.1fx%2.1f_Phi_%1.2f_%s_srndModel_%s.mat', ...
-        mosaicParams.eccDegs(1), mosaicParams.eccDegs(2), ...
-        mosaicParams.sizeDegs(1), mosaicParams.sizeDegs(2), ...
-        spatialCompactnessSpectralPurityTradeoff, opticsSubString, surroundOptimizationSubString);
-
-    load(fullfile(isetbioRootPath, prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic');
-
-    
-    theMRGCMosaic.cropToSizeAtEccentricity(mosaicParams.croppedFoVdegs*[1 1], theMRGCMosaic.eccentricityDegs);
-    theMRGCMosaic.visualize();
-
-    % Generate the optics for the mosaic
-    [theOI, thePSF] = RGCMosaicAnalyzer.compute.opticsForResponses(...
-        theMRGCMosaic, opticsParams.type, ...
-        opticsParams.residualWithRespectToNativeOpticsDefocusDiopters, ...
-        opticsParams.visualizePSFonTopOfConeMosaic);
- end
 
 

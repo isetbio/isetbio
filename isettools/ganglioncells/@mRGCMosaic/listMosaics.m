@@ -1,2 +1,0 @@
-function theMRGCmosaicFullFileName = listMosaics()
-end
