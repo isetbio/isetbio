@@ -4,8 +4,7 @@ function connectUnconnectedSourceRFsToClosestDestinationRF(obj)
     % source RFs that have been connected to some destination RF
     connectedSourceRFIndices = find(squeeze(sum(obj.connectivityMatrix,2)) > 0);
 
-    sourceRFIndicesInsideBoundaryOfConnectedSourceRFs = ...
-        MosaicConnector.pointsInsideBoundaryDefinedBySelectedPoints(...
+    sourceRFIndicesInsideBoundaryOfConnectedSourceRFs = pointsInsideBoundaryDefinedBySelectedPoints(...
             obj.sourceLattice.RFpositionsMicrons, connectedSourceRFIndices);
 
     
@@ -52,7 +51,8 @@ function connectUnconnectedSourceRFsToClosestDestinationRF(obj)
 
     % Save the metaDataStuct for this stage
     if (obj.saveIntermediateConnectivityStagesMetaData)
-        obj.updateIntermediateMetaDataStructs();
+        phaseDescriptor = 'connecting unconnected source RFs to nearest destination RF';
+        obj.updateIntermediateMetaDataStructs(phaseDescriptor, [], []);
     end
 
     % Visualize connectivity at this stage
@@ -60,5 +60,23 @@ function connectUnconnectedSourceRFsToClosestDestinationRF(obj)
         obj.intermediateFigureHandles{numel(obj.intermediateFigureHandles)+1} = ...
             obj.visualizeCurrentConnectivity(1002);
     end
+end
 
+function [insideBoundaryPointIndices, onBoundaryPointIndices] = pointsInsideBoundaryDefinedBySelectedPoints(...
+    allPointPositions, selectedPointIndices)
+
+    % Find indices of points are inside the boundary defined by a select subset of points
+
+    allXcoords = squeeze(allPointPositions(:,1));
+    allYcoords = squeeze(allPointPositions(:,2));
+    
+    shrinkFactor = 1.0;
+    idx = boundary(allXcoords(selectedPointIndices), allYcoords(selectedPointIndices), shrinkFactor);
+
+    boundingPolygonXcoords = allXcoords(selectedPointIndices(idx));
+    boundingPolygonYcoords = allYcoords(selectedPointIndices(idx));
+    [in,on] = inpolygon(allXcoords, allYcoords, boundingPolygonXcoords, boundingPolygonYcoords);
+
+    insideBoundaryPointIndices = find((in == 1) | (on == 1));
+    onBoundaryPointIndices = find(on == 1);
 end

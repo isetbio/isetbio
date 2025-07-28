@@ -1,5 +1,10 @@
 function updateDestinationRFspacingsBasedOnCentroids(obj)
 
+    if (~obj.wiringParams.localSpacingFromCurrentCentroids)
+        obj.destinationRFspacingsFromCentroids = obj.destinationLattice.RFspacingsMicrons;
+        return;
+    end
+
     % Find all the distances
     [distancesToNearbyDestinationRFs, nearbyDestinationRFIndices] = ...
         MosaicConnector.pdist2(...

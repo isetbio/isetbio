@@ -1,18 +1,16 @@
-function nearbyDestinationRFIndices = indicesOfNeighboringDestinationRFs(obj, destinationRFIndex, varargin)
+function [nearbyDestinationRFIndices,distancesToNearbyDestinationRFs] = indicesOfNeighboringDestinationRFs(obj, destinationRFIndex, varargin)
        
     p = inputParser;
     p.addParameter('maxNeighborsNum', [], @(x)((isempty(x))||(isscalar(x))));
+    p.addParameter('ignoreInfCentroids', false, @islogical);
     p.parse(varargin{:});
     
+    maxNormDistance = obj.wiringParams.maxNeighborNormDistance;
     if (isempty(p.Results.maxNeighborsNum))
         maxNeighborsNum = obj.wiringParams.maxNeighborsNum;
-        maxNormDistance = obj.wiringParams.maxNeighborNormDistance;
     else
-        fprintf(2,'**** Overriding wiringParams.maxNeighborsNum and wiringParams.maxNeighborNormDistance');
         maxNeighborsNum = p.Results.maxNeighborsNum;
-        maxNormDistance = inf;
     end
-    
 
     % Find the indices of the neighboring destination RFs
     [distancesToNearbyDestinationRFs, nearbyDestinationRFIndices] = MosaicConnector.pdist2(...
@@ -25,7 +23,7 @@ function nearbyDestinationRFIndices = indicesOfNeighboringDestinationRFs(obj, de
     distancesToNearbyDestinationRFs = distancesToNearbyDestinationRFs(ia);
 
     % Exclude nearbyRGCs that are further than a maxDistance
-    if (isinf(obj.destinationRFcentroidsFromInputs(destinationRFIndex)))
+    if (~p.Results.ignoreInfCentroids) && (isinf(obj.destinationRFcentroidsFromInputs(destinationRFIndex)))
         error('local spacing should not be inf here')
     end
     maxDistance = maxNormDistance * obj.destinationRFspacingsFromCentroids(destinationRFIndex);
@@ -37,4 +35,5 @@ function nearbyDestinationRFIndices = indicesOfNeighboringDestinationRFs(obj, de
     % Sort them according to their distance to the destinationRFIndex
     [~,idx] = sort(distancesToNearbyDestinationRFs, 'ascend');
     nearbyDestinationRFIndices = nearbyDestinationRFIndices(idx);
+    distancesToNearbyDestinationRFs = distancesToNearbyDestinationRFs(idx);
 end
