@@ -1,0 +1,2 @@
+function theMRGCmosaicFullFileName = listMosaics()
+end
