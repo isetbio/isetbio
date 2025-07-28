@@ -1,6 +1,6 @@
 function [theLconeWeightedPSFstruct, theMconeWeightedPSFstruct, theSconeWeightedPSFstruct] = coneWeightedPSFs(thePSF)
     % Load the 2-deg Stockman cone fundamentals on wavelength support matching the display
-    coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), thePSF.supportWavelength);
+    coneFundamentals = ieReadSpectra(fullfile(isetRootPath,'data','human','stockman'), thePSF.supportWavelength);
     theLconeWeightingSpectrum = squeeze(coneFundamentals(:,1));
     theMconeWeightingSpectrum = squeeze(coneFundamentals(:,2));
     theSconeWeightingSpectrum = squeeze(coneFundamentals(:,3));
