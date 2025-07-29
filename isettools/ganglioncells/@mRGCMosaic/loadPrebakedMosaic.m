@@ -30,15 +30,16 @@ function [theMRGCMosaic, theOI] = loadPrebakedMosaic(mosaicParams, opticsParams)
     % Load the mosaic 
     load(fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic')
 
-    if (isfield(mosaicParams, 'croppedFoVdegs'))&&(~isempty(mosaicParams.croppedFoVdegs))
+
+    if (isfield(mosaicParams, 'cropParams'))&&(~isempty(mosaicParams.cropParams))
         % Crop the mosaic to requested size
-        theMRGCMosaic.cropToSizeAtEccentricity(mosaicParams.croppedFoVdegs*[1 1], theMRGCMosaic.eccentricityDegs);
+        theMRGCMosaic.cropToSizeAtEccentricity(mosaicParams.cropParams.sizeDegs, mosaicParams.cropParams.eccentricityDegs);
     end
     
     % Generate the optics for the mosaic
     [theOI, thePSF] = RGCMosaicAnalyzer.compute.opticsForResponses(...
         theMRGCMosaic, opticsParams.type, ...
-        opticsParams.residualWithRespectToNativeOpticsDefocusDiopters, ...
+        opticsParams.refractiveErrorDiopters, ...
         opticsParams.visualizePSFonTopOfConeMosaic);
  end
 

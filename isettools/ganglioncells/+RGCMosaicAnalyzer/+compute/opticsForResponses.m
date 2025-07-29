@@ -23,7 +23,7 @@ function [theOI, thePSF] = opticsForResponses(theMRGCMosaic, whichOptics, custom
                 'visualizePSF', true, ...
                 'visualizedWavelengths', 450:20:650);
 
-        case 'refractionResidualWithRespectToNativeOptics'
+        case {'refractionResidualWithRespectToNativeOptics', 'loadComputeReadyRGCMosaic'}
             % Retrieve the defocus required to optimized the Strehl ratio
            [~,~,theOptimalStrehlRatioDefocusDiopters] = theMRGCMosaic.nativeOI(...
                 'visualizePSF', true);

@@ -25,7 +25,10 @@ function t_mRGCMosaicBasic
     mosaicParams.sizeDegs = [3 3];
     mosaicParams.spatialCompactnessSpectralPurityTradeoff = 1;
     mosaicParams.surroundOptimizationSubString = 'PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0';
-    mosaicParams.croppedFoVdegs = 1.0;
+    mosaicParams.cropParams = struct(...
+        'sizeDegs', [1 1], ...
+        'eccentricityDegs', [-5 0] ...
+        );
 
     % Optics params
     opticsParams.ZernikeDataBase = 'Polans2015';
@@ -33,15 +36,15 @@ function t_mRGCMosaicBasic
 
     % Adaptive optics
     opticsParams.type = 'adaptiveOptics6MM';
-    opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = [];
+    opticsParams. refractiveErrorDiopters = [];
 
     % native optics + StrehlRatio optimization (what was used to optimize the mosaic
     opticsParams.type = 'nativeOptics';
-    opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = [];
+    opticsParams.refractiveErrorDiopters = [];
 
     % native optics without StrehlRatio optimization
     %opticsParams.type = 'customRefraction';
-    %opticsParams.residualWithRespectToNativeOpticsDefocusDiopters = 0.0;
+    %opticsParams. refractiveErrorDiopters = 0.0;
     opticsParams.visualizePSFonTopOfConeMosaic = true;
 
     % Load the desired mRGCmosaic and the associated optics
