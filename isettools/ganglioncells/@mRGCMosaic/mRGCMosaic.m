@@ -26,7 +26,7 @@ classdef mRGCMosaic < handle
         validNoiseFlags = {'none', 'frozen', 'random'};
         defaultRandomSeed = 123;
         
-        validOpticsModifications = {'adaptiveOptics6MM', 'adaptiveOptics6MMwithLCA', 'diffractionLimited', 'centralRefractionCorrected', 'maxStrehlRatio', 'customRefraction'};
+        validOpticsModifications = {'adaptiveOptics6MM', 'adaptiveOptics6MMwithLCA', 'diffractionLimited', 'centralRefractionCorrected', 'maxStrehlRatio', 'customRefraction', 'nativeOpticsNoStrehlRatioOptimization'};
 
         % max surround support factor (used during optimizing surround)
         maxSurroundSupportFactor = 7.0;   % max surround radius: this factor x C&K surroundCharacteristicRadius

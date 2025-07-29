@@ -1,6 +1,13 @@
 function [theOI, thePSF] = opticsForResponses(theMRGCMosaic, whichOptics, customRefractionDiopters, visualizsPSFonTopOfConeMosaic)
 
 	switch (whichOptics)
+
+        case 'nativeOpticsNoStrehlRatioOptimization'
+            % Generate the optics that where used to optimize the mosaic
+            [theOI, thePSF] = theMRGCMosaic.nativeOI(...
+                'opticsModification', whichOptics, ...
+                'visualizePSF', true);
+
         case 'nativeOptics'
             % Generate the optics that where used to optimize the mosaic
             [theOI, thePSF] = theMRGCMosaic.nativeOI(...
@@ -42,6 +49,8 @@ function [theOI, thePSF] = opticsForResponses(theMRGCMosaic, whichOptics, custom
                 'customRefractionDiopters', customRefractionDiopters, ...
                 'visualizePSF', true);
 
+        otherwise
+            error('Unknown optics: ''%s''.', whichOptics)
    	end % switch
 
    	if (visualizsPSFonTopOfConeMosaic)

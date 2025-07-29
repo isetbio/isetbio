@@ -110,6 +110,12 @@ function [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlR
 			       'warningInsteadOfErrorForBadZernikeCoeffs', false);
 			theOI = oiEnsemble{1,1}; thePSF = psfEnsemble{1,1};
 
+        case 'nativeOpticsNoStrehlRatioOptimization'
+            examinedRefractionErrorDiopters = 0.0;
+            [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio] = RGCMosaicConstructor.helper.optics.optimizedStrehlRatioPSF(examinedRefractionErrorDiopters, ...
+				theConeMosaic, oiPositionDegs, opticsParams, wavefrontSpatialSamples, psfUpsampleFactor, ...
+				visualizeStrehlRatioOptimization, contrastMaxStrehlRatioPSFtoAsMeasuredAndCentralCorrection);
+
 		case 'maxStrehlRatio'
 			examinedRefractionErrorDiopters = -6:0.25:1;
 			[theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio] = RGCMosaicConstructor.helper.optics.optimizedStrehlRatioPSF(examinedRefractionErrorDiopters, ...

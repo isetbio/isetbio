@@ -27,6 +27,8 @@ function [theMRGCMosaic, theOI] = loadPrebakedMosaic(mosaicParams, opticsParams)
     theFileName = fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename);
     assert(isfile(theFileName), 'Could not locate the mosaic. File %s not found.\n', theFileName);
 
+    fprintf('Loading prebaked mRGCmosaic from:\n\t%s\n', mRGCMosaicFilename);
+
     % Load the mosaic 
     load(fullfile(prebakedMRGCMosaicDir,mRGCMosaicFilename), 'theMRGCMosaic')
 
