@@ -146,10 +146,8 @@ classdef AppleSiliconParPoolManager < handle
                             obj.minRAMperCore = 4.0;
                         case 'conservative'
                             obj.minRAMperCore = 8.0;
-                        case {'extreme', 'half max'}
+                        case {'extreme', 'half max', '3/4'}
                             obj.minRAMperCore = obj.usablePhysicalMemoryGB/obj.coresNum;
-
-                        case 'half max'
 
                         otherwise
                             fprintf('\n\n----> Valid configs are either a scalar between %d and %d, or {''default'', ''conservative'', ''extreme''}. <----\n\n', 1, obj.coresNum);
@@ -164,7 +162,12 @@ classdef AppleSiliconParPoolManager < handle
                     numWorkers = min([obj.coresNum , max([1 floor(obj.usablePhysicalMemoryGB / obj.minRAMperCore)])]);
 
                     if (strcmp(obj.parpoolConfig, 'half max'))
-                        numWorkers = round(numWorkers / 2);
+                        numWorkers = ceil(0.5*numWorkers);
+                    end
+
+                    
+                    if (strcmp(obj.parpoolConfig, '3/4'))
+                        numWorkers = floor(0.75*numWorkers);
                     end
 
                     obj.restartParpool(numWorkers);
