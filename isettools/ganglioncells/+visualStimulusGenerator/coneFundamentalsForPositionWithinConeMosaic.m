@@ -58,7 +58,7 @@ function customConeFundamentals = coneFundamentalsForPositionWithinConeMosaic(..
     customConeFundamentals.quantalExcitationSpectra = zeros(numel(customConeFundamentals.wavelengthSupport),3);
     
     StockmanSharpe2DegConeFundamentals = ...
-        ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), customConeFundamentals.wavelengthSupport);
+        ieReadSpectra(fullfile(isetRootPath,'data','human','stockman'), customConeFundamentals.wavelengthSupport);
 
     % Compute the cone mosaic's response to a series of monochromatic, 
     % spatially-uniform images with constant power in photons/sec-nm

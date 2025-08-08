@@ -39,7 +39,8 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
             assert(size(customConeFundamentals.quantalExcitationSpectra,1) == numel(customConeFundamentals.wavelengthSupport), ...
                 'customConeFundamentals.spf does not have the same dimensionality as customConeFundamentals.wavelengthSupport');
     
-            if (~isequal(displayWavelengths, customConeFundamentals.wavelengthSupport))
+            if (~isequal(displayWavelengths, customConeFundamentals.wavelengthSupport)) || ...
+                ((isequal(displayWavelengths, customConeFundamentals.wavelengthSupport))&&(~all(displayWavelengths==customConeFundamentals.wavelengthSupport)))
                 % Resample customConeFundamentals.spd to wavelength support matching the display
                 resampledCustomConeFundamantals = displayWavelengths*0;
                 for iChannel = 1:size(customConeFundamentals.quantalExcitationSpectra,2)
