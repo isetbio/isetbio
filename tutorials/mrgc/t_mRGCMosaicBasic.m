@@ -23,17 +23,17 @@ function t_mRGCMosaicBasic
     % themRGCmosaicFileNames = mRGCMosaic.listPrebakedMosaics();
    
     % Load one of the prebaked mRGC mosaics. 
-    % We need to specify 3 arguments:
-    % (i) the eccentricity and size of the mosaic
-    % (ii) the surround optimization method
-    % (iii) the optics under which the mosaic was optimized
-    % (iv) the optics to employ for the computation at hand
+    % We need to specify 4 pieces of information:
+    % (A) the eccentricity and size of the mosaic
+    % (B) the surround optimization method
+    % (C) the optics under which the mosaic was optimized
+    % (D) the optics to employ for the computation at hand
 
-    % (i) Eccentricity (-4.0) and size (3x3deg) 
+    % (A) Eccentricity (-4.0) and size (3x3deg) 
     mosaicParams.eccDegs  = [-4 0];
     mosaicParams.sizeDegs = [3 3];
 
-    % (ii) Surround optimization method
+    % (B) Surround optimization method
     mosaicParams.spatialCompactnessSpectralPurityTradeoff = 1;
     mosaicParams.surroundOptimizationSubString = 'PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0';
 
@@ -46,13 +46,13 @@ function t_mRGCMosaicBasic
         );
 
 
-    % (iii) Optics under which the mosaic was optimized
+    % (C) Optics under which the mosaic was optimized
     opticsParams.ZernikeDataBase = 'Polans2015';
     opticsParams.subjectRankOrder = 2; 
     opticsParams.visualizePSFonTopOfConeMosaic = true;
 
 
-    % (iv) Optics to employ for the computation at hand
+    % (D) Optics to employ for the computation at hand
     
     % EITHER adaptive optics (diffraction limited with 6 mm pupil)
     %opticsParams.type = 'adaptiveOptics6MM';
