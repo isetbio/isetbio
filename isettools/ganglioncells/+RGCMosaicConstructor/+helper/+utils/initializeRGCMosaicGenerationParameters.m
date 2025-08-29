@@ -325,9 +325,37 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
 
+    case 'PLOSpaperNasal14DegsMosaic'
+        % This includes the OD, so we have to generate a large enough region
+		rgcMosaicSurroundOptimization.mosaicEccDegs = [-14 0]; 
+		rgcMosaicSurroundOptimization.mosaicSizeDegs = 12*[1 1]; %-11.5 -16.5 (2695 cells)
+		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
+		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
+		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
+		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
+		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.18^2; 
+		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
+		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
+		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
+
+
+    case 'PLOSpaperNasal19DegsMosaic'
+        % This includes the OD, so we have to generate a large enough region
+		rgcMosaicSurroundOptimization.mosaicEccDegs = [19 0]; 
+		rgcMosaicSurroundOptimization.mosaicSizeDegs = 12*[1 1];
+		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
+		rgcMosaicSurroundOptimization.minGridSize = 1.5; 
+		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
+		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
+		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.18^2; 
+		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
+		rgcMosaicSurroundOptimization.optimizationStrategy = 'MidH1paramsNarrowVisualSTFparamTolerance';
+		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
+
+
     case 'PLOSpaperNasal25DegsMosaic'
 		rgcMosaicSurroundOptimization.mosaicEccDegs = [25 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 6*[1 1]; %-21.5 -28.5 (1358 cells)
+		rgcMosaicSurroundOptimization.mosaicSizeDegs = 6*[1 1]; 
 		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'low res'; 
 		rgcMosaicSurroundOptimization.minGridSize = 2; 
 		rgcMosaicSurroundOptimization.maxGridSize = 4.0;

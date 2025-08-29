@@ -63,7 +63,7 @@ classdef mRGCMosaic < handle
         % The ecc-dependent variation in superGaussian exponent: 'c50' point
         superGaussianExponentSigmoidEccDegs50 = 8;
 
-        % 1% min sensitivity for inclusion of divergence cone connections
+        % 1% min sensitivity for inclusion of divergent cone connections
         minSensitivityForInclusionOfDivergentConeConnections = 1/100;
 
         % 10% which is the noise floor in the measurements of cone weights according to RF center overlap according to Greg Field

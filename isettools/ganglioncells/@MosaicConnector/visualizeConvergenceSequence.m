@@ -17,12 +17,18 @@ function visualizeConvergenceSequence(currentPass, costsMatrix, costsNames, ...
     maxCostRange = max([0.02 max(rangeOfCosts)]);
     dTick = max([0.01 ceil(maxCostRange/5*100)/100]);
 
+
     for costIndex = 1:maxCostsDisplayed
-        subplot(2,3,costIndex);
+        
         theCostSequence = squeeze(costsMatrix(:,costIndex));
 
         minCost = min(theCostSequence(:));
         maxCost = max(theCostSequence(:));
+
+        if (isnan(minCost))
+            continue;
+        end
+
         dCost = maxCostRange-(maxCost-minCost);
 
         minCost = minCost - dCost*0.5;
@@ -33,6 +39,7 @@ function visualizeConvergenceSequence(currentPass, costsMatrix, costsNames, ...
             maxCost = 1;
         end
 
+        
         currentPass = numel(theCostSequence);
         if (currentPass < 10)
             currentPassTick = 1;
@@ -49,9 +56,12 @@ function visualizeConvergenceSequence(currentPass, costsMatrix, costsNames, ...
         else
             currentPassTick = 100;
         end
+
+        subplot(2,3,costIndex);
         plot(1:currentPass, theCostSequence, 'bo-', ...
             'MarkerFaceColor', [0.5 0.8 0.9], 'MarkerSize', 14, 'LineWidth', 1.5);
-        set(gca, 'YLim', [minCost maxCost], 'XLim', [-0.5 currentPass+0.5], 'FontSize', 20);
+
+        set(gca, 'YLim', [minCost-10*eps maxCost+10*eps], 'XLim', [-0.5 currentPass+0.5], 'FontSize', 20);
         set(gca, 'YTick', 0:dTick:maxCost, 'XTick', 0:currentPassTick:currentPass);
         grid on
         ylabel(sprintf('%s', costsNames{costIndex}));
