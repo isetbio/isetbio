@@ -94,27 +94,12 @@ pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParamet
     coneMosaicSpecies, opticsSubjectName, rgcMosaicName, targetVisualSTFdescriptorToOptimizeFor);
 end
       
-% Params relevant to the optimization of the RF center input cone convergence
-switch (round(pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs(1)))
-    case num2cell([0 -1 -2])
-        maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = 4; 
-        maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs = 4;
-    case num2cell([-3 -4])
-        maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = 10;
-        maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs = 10;
-    case num2cell([-6 -7 -10])
-        maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = 10;
-        maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs = 10;
-    case num2cell([-12 -13 -14])
-        maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = 15;
-        maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs = 15;
-    case num2cell([-19 -20])
-        maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = 30;
-        maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs = 30;
-     case num2cell([-25 -32])
-        maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = 30;
-        maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs = 30;
-end
+% Determine the max number of cones that can be
+% transferred or swapped between nearby RF centers, depending on
+% the mosaic eccentricity
+[maxConeInputsPerRGCToConsiderTransferToNearbyRGCs, ...
+ maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs] = ...
+    MosaicConnector.coneTransferAndSwapLimits(pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs);
 
     
 % RandomSeed so we get same cone assignments in the inputConeMosaic
@@ -129,7 +114,7 @@ rfCenterOverlapParams = struct(...
     'minSensitivityForInclusion', mRGCMosaic.minSensitivityForInclusionOfDivergentConeConnections, ...
     'maxNumberOfConesOutsideContour', 0, ...
     'overlappingWeightsDivergencePattern', 'inLineWithExclusiveConnections', ...  % choose from {'isotropic', 'inLineWithExclusiveConnections', 'orthogonalToExclusiveConnections'}
-    'coneTypesIncluded', [cMosaic.LCONE_ID cMosaic.MCONE_ID]);
+    'coneTypesIncluded', coneTypesIncludedInRFcenter);
 
 
 latticeParamsStruct = struct(...

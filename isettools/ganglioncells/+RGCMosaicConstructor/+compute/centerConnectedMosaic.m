@@ -1,3 +1,6 @@
+% Function for generating the center-connected (no cone divergence) mRGCMosaic
+% Only exclusive connections of cones to mRGC RF centers, so no RGC RF center ovelap
+
 function [theCenterConnectedMRGCMosaicFullFileName, theIntermediateConnectivityStageMetaDataFile, ...
           theCenterConnectedMRGCMosaicFileName] = centerConnectedMosaic(...
             whichEye, eccentricityDegs, sizeDegs, rfCenterConnectivityParams, sourceLatticeSizeDegs,  varargin)

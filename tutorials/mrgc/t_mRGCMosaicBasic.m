@@ -52,7 +52,7 @@ function t_mRGCMosaicBasic
     opticsParams.visualizePSFonTopOfConeMosaic = true;
 
 
-    % (D) Optics to employ for the computation at hand
+    % Append to opticsParams, information on which optics to employ for the computation at hand
     
     % EITHER adaptive optics (diffraction limited with 6 mm pupil)
     %opticsParams.type = 'adaptiveOptics6MM';
@@ -67,8 +67,7 @@ function t_mRGCMosaicBasic
     opticsParams.refractiveErrorDiopters = -3.5;
     
     
-    % Load the desired mRGCmosaic and generated the optics for the
-    % computation
+    % Load the desired mRGCmosaic and generated the optics for the computation
     [theMRGCmosaic, theOpticsToEmploy] = mRGCMosaic.loadPrebakedMosaic(mosaicParams, opticsParams);
     theMRGCmosaic.visualize();
 

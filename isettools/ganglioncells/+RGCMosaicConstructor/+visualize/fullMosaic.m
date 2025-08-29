@@ -7,20 +7,25 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
     p.addParameter('visualizeRGCsAroundPositionAndWithingPositionDegs', [], @(x)(isempty(x)||(isnumeric(x)&&(numel(x)==4))));
     p.addParameter('identifyInputCones', false, @islogical);
     p.addParameter('identifyPooledCones', false, @islogical);
+    p.addParameter('inputConesAlpha', 0.6, @isscalar);
     p.addParameter('domainVisualizationLimits', [], @(x)(isempty(x)||(isnumeric(x)&&(numel(x)==4))));
     p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||isstruct(x)));
     p.addParameter('visualizedSamplingPositionsGrid', [], @(x)(isempty(x)||isnumeric(x)));
     p.addParameter('visualizedSamplingPositionsGridColor', [1 1 0], @(x)(isnumeric(x)&&(size(x,2)==3)));
     p.addParameter('withFigureFormat', [], @isstruct);
+    p.addParameter('withoutPlotTitle', false, @islogical);
     p.parse(varargin{:});
+
     visualizeRGCsAroundPositionAndWithingPositionDegs = p.Results.visualizeRGCsAroundPositionAndWithingPositionDegs;
     identifyInputCones = p.Results.identifyInputCones;
     identifyPooledCones = p.Results.identifyPooledCones;
+    inputConesAlpha = p.Results.inputConesAlpha;
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
     visualizedSamplingPositionsGrid = p.Results.visualizedSamplingPositionsGrid;
     visualizedSamplingPositionsGridColor = p.Results.visualizedSamplingPositionsGridColor;
     figureFormat = p.Results.withFigureFormat;
+    withoutPlotTitle = p.Results.withoutPlotTitle;
 
     assert(...
         (size(visualizedSamplingPositionsGridColor,1) == 1) ||...
@@ -46,7 +51,11 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
     % Compute spatial and chromatic costs
     [theSpatialCompactnessCostsPatch, theSpectralUniformityCostsPatch] = theMRGCMosaic.rfCenterSpatioChromaticCosts();
          
-    plotTitle = sprintf('min cone weight visualized: %2.3f',minConeWeightVisualized);
+    if (~withoutPlotTitle)
+        plotTitle = sprintf('min cone weight visualized: %2.3f',minConeWeightVisualized);
+    else
+        plotTitle = '';
+    end
       
     % Visualize the entire mosaic
     if (isempty(domainVisualizationLimits))
@@ -86,6 +95,7 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
         'plottedRFoutlineFaceColor',  [0 1 0.4], ...
         'minConeWeightVisualized', minConeWeightVisualized, ...
         'maxNumberOfConesOutsideContour', maxNumberOfConesOutsideContour, ...
+        'inputConesAlpha', inputConesAlpha, ...
         'identifyPooledCones', identifyPooledCones, ...
         'identifyInputCones', identifyInputCones, ...
         'pooledConesLineWidth', 1.0, ...

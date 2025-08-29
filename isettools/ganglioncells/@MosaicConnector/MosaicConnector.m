@@ -237,6 +237,12 @@ classdef MosaicConnector < handle
         visualizeConvergenceSequence(currentPass, ...
             costsMatrix, costsNames, ...
             netTransfers, maxPassesNum, plotTitle, figNo);
+
+        % Method to determine the max number of cones that can be
+        % transferred or swapped between nearby RF centers, depending on
+        % the mosaic eccentricity
+        [maxConesNumTransferred, maxConesNumSwapped] = coneTransferAndSwapLimits(mosaicEccDegs);
+
     end
 
 end
