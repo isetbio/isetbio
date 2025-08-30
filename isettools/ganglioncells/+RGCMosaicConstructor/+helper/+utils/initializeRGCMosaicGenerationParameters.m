@@ -325,10 +325,22 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'UpperH1paramsNarrowVisualSTFparamTolerance';
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
 
+    case 'PLOSpaperNasal10DegsMosaic'
+		rgcMosaicSurroundOptimization.mosaicEccDegs = [10 0]; 
+		rgcMosaicSurroundOptimization.mosaicSizeDegs = 10*[1 1];
+		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
+		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
+		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
+		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
+		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.17^2; 
+		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
+		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
+		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = false;
+
     case 'PLOSpaperNasal14DegsMosaic'
         % This includes the OD, so we have to generate a large enough region
 		rgcMosaicSurroundOptimization.mosaicEccDegs = [14 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 12*[1 1]; 
+		rgcMosaicSurroundOptimization.mosaicSizeDegs = 16*[1 1]; 
 		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
 		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
 		rgcMosaicSurroundOptimization.maxGridSize = 3.0;

@@ -21,7 +21,7 @@ close all; clear all;
 spatialChromaticUniformityTradeoff = 1.0; 
 
 % Name encoding rgcMosaic
-rgcMosaicName = 'PLOSpaperNasal14DegsMosaic';
+rgcMosaicName = 'PLOSpaperNasal10DegsMosaic';
 
 % Which optics to employ
 opticsSubjectName = 'PLOSpaperDefaultSubject';
