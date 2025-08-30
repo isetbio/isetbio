@@ -327,8 +327,8 @@ switch (rgcMosaicName)
 
     case 'PLOSpaperNasal14DegsMosaic'
         % This includes the OD, so we have to generate a large enough region
-		rgcMosaicSurroundOptimization.mosaicEccDegs = [-14 0]; 
-		rgcMosaicSurroundOptimization.mosaicSizeDegs = 12*[1 1]; %-11.5 -16.5 (2695 cells)
+		rgcMosaicSurroundOptimization.mosaicEccDegs = [14 0]; 
+		rgcMosaicSurroundOptimization.mosaicSizeDegs = 12*[1 1]; 
 		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
 		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
 		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
