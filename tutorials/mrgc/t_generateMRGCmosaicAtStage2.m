@@ -22,6 +22,10 @@ spatialChromaticUniformityTradeoff = 1.0;
 
 % Name encoding rgcMosaic
 rgcMosaicName = 'PLOSpaperNasal10DegsMosaic';
+rgcMosaicName = 'PLOSpaperNasal14DegsMosaic';
+rgcMosaicName = 'PLOSpaperNasal19DegsMosaic';
+rgcMosaicName = 'PLOSpaperNasal25DegsMosaic';
+rgcMosaicName = 'PLOSpaperNasal7DegsMosaic';
 
 % Which optics to employ
 opticsSubjectName = 'PLOSpaperDefaultSubject';
@@ -185,7 +189,7 @@ end
 identifyInputConesInFullMosaic = ~true;
 
 % Whether to identify the pooling of the input cones for each mRGC RF center
-identifyPooledConesInFullMosaic = ~true;
+identifyPooledConesInFullMosaic = true;
 
 % Visualization domain:
 % If empty, we are visualizing the entire mosaic
