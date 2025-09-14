@@ -428,7 +428,7 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly = true;
 
 	otherwise
-		error('Unknown rgc mosaic  name: ''%s''.', rgcMosaicName);
+		error('No params specified for rgc mosaic  name: ''%s''.', rgcMosaicName);
 end % switch (rgcMosaicName)
 
 

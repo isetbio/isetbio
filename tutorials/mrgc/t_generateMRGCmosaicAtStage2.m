@@ -22,10 +22,10 @@ spatialChromaticUniformityTradeoff = 1.0;
 
 % Name encoding rgcMosaic
 rgcMosaicName = 'PLOSpaperNasal10DegsMosaic';
-rgcMosaicName = 'PLOSpaperNasal14DegsMosaic';
-rgcMosaicName = 'PLOSpaperNasal19DegsMosaic';
-rgcMosaicName = 'PLOSpaperNasal25DegsMosaic';
-rgcMosaicName = 'PLOSpaperNasal7DegsMosaic';
+%rgcMosaicName = 'PLOSpaperNasal14DegsMosaic';
+%rgcMosaicName = 'PLOSpaperNasal19DegsMosaic';
+%rgcMosaicName = 'PLOSpaperNasal25DegsMosaic';
+%rgcMosaicName = 'PLOSpaperNasal7DegsMosaic';
 
 % Which optics to employ
 opticsSubjectName = 'PLOSpaperDefaultSubject';
@@ -44,16 +44,16 @@ pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParamet
 
 
 % Whether to regenerate the mosaic at stage2A
-regenerateMosaicAtStage2A = true;
+regenerateMosaicAtStage2A = ~true;
 
 % Whether to regenerate the mosaic at stage2C
-regenerateMosaicAtStage2C = ~true;
+regenerateMosaicAtStage2C = true;
 
 % Whether to visualize the mosaic at stage2A
 visualizeMosaicAtStage2A = true;
 
 % Whether to visualize the mosaic at stage2C
-visualizeMosaicAtStage2C = ~true;
+visualizeMosaicAtStage2C = true;
 
 
 if (regenerateMosaicAtStage2A)
