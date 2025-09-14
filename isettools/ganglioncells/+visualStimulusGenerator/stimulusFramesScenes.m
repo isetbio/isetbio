@@ -19,8 +19,7 @@ function [theScenes, theNullStimulusScene, spatialSupportDegs, coneFundamentalsS
         if (isempty(customConeFundamentals))
             % Load the 2-deg Stockman cone fundamentals on wavelength support matching the display
             displayWavelengths = displayGet(presentationDisplay, 'wave');
-            coneFundamentals = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), displayWavelengths);
-
+            coneFundamentals = ieReadSpectra(fullfile(isetRootPath,'data','human','stockman'), displayWavelengths);
             % Returned coneFundamentals struct
             coneFundamentalsStruct.coneFundamentals = coneFundamentals;
             coneFundamentalsStruct.spectralSupport = displayWavelengths;
@@ -239,7 +238,8 @@ end
 
 
 function visuallyContrastCustomConeFundamentalsToDefaultSS2(customConeFundamentalsStruct)
-    coneFundamentalsSS2 = ieReadSpectra(fullfile(isetbioDataPath,'human','stockman'), customConeFundamentalsStruct.spectralSupport);
+
+    coneFundamentalsSS2 = ieReadSpectra(fullfile(isetRootPath,'data','human','stockman'), customConeFundamentalsStruct.spectralSupport);
     figure(55);clf;
     for iFund = 1:3
         subplot(1,3,iFund);
