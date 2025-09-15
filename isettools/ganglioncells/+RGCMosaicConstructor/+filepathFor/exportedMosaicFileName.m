@@ -10,8 +10,6 @@ function [theFullMRGCMosaicFileName, theIntermediateConnectivityStagesMetaDataFi
 
     % Root directory
     intermediateDataDir = RGCMosaicConstructor.filepathFor.intermediateDataDir();
-    intermediateDataDir = fullfile(intermediateDataDir, 'SLIM');
-
     if (~isempty(extraSubDirPath))
         intermediateDataDir = fullfile(intermediateDataDir, extraSubDirPath);
     end

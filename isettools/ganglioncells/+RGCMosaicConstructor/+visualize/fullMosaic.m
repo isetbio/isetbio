@@ -129,11 +129,15 @@ function [hFig, theAxes] = fullMosaic(theCenterConnectedMRGCMosaicFullFileName, 
 
     % Export figure
     theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-    thePDFfileName = fullfile(theRawFiguresDir, strrep(theCenterConnectedMRGCMosaicFileName, '.mat', '.pdf' ));
+    thePDFfileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        theRawFiguresDir, strrep(theCenterConnectedMRGCMosaicFileName, '.mat', '.pdf' ), ...
+        'generateMissingSubDirs', true);
+
+
     % Export to PDF
-    NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+    NicePlot.exportFigToPDF(thePDFfileName,hFig,  300, 'beVerbose');
 
     % Also export to PNG for better color saturation
-    NicePlot.exportFigToPNG(strrep(thePDFfileName, 'pdf', 'png'),hFig,  300);
+    NicePlot.exportFigToPNG(strrep(thePDFfileName, 'pdf', 'png'),hFig,  300, 'beVerbose');
 
 end

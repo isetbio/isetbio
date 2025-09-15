@@ -1,4 +1,10 @@
 function theIntermediateDataDir = intermediateDataDir()
-    dropboxDirPath = RGCMosaicConstructor.filepathFor.localDropboxDir();
-    theIntermediateDataDir = fullfile(dropboxDirPath, 'IBIO_rgcMosaicResources', 'ONcenterMidgetRGCmosaics', 'intermediateFiles');
+
+    p = getpref('isetbio'); 
+    theIntermediateDataDir = p.rgcResources.intermediateDataDir;
+
+    % OLD WAY
+    % dropboxDirPath = RGCMosaicConstructor.filepathFor.localDropboxDir();
+    % theIntermediateDataDir = fullfile(dropboxDirPath, 'IBIO_rgcMosaicResources', 'ONcenterMidgetRGCmosaics', 'intermediateFiles', 'SLIM');
+
 end
