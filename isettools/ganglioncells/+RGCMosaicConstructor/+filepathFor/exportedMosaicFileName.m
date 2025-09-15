@@ -3,10 +3,11 @@ function [theFullMRGCMosaicFileName, theIntermediateConnectivityStagesMetaDataFi
 
     p = inputParser;
     p.addParameter('extraSubDirPath', '', @ischar);
+    p.addParameter('generateMissingSubDirs', false, @islogical);
     % Execute the parser
     p.parse(varargin{:});
     extraSubDirPath = p.Results.extraSubDirPath;
-
+    generateMissingSubDirs = p.Results.generateMissingSubDirs;
 
     % Root directory
     intermediateDataDir = RGCMosaicConstructor.filepathFor.intermediateDataDir();
@@ -109,4 +110,25 @@ function [theFullMRGCMosaicFileName, theIntermediateConnectivityStagesMetaDataFi
     % Synthesize file with intermediate connectivity stages meta data so we can
     % visualize later connecticity at different stages
     theIntermediateConnectivityStagesMetaDataFile = strrep(theFullMRGCMosaicFileName, mRGCMosaicSubDir, 'centerConnectivityStages/');
+
+
+
+    % Check that the specified subdirs exist in intermediateDataDir
+
+    theIntermediateConnectivityStagesMetaDataFile = checkForPathExistenceAndGenerateSubPath(...
+        intermediateDataDir, theIntermediateConnectivityStagesMetaDataFile, generateMissingSubDirs)
+
+    theFullMRGCMosaicFileName = checkForPathExistenceAndGenerateSubPath(...
+        intermediateDataDir, theFullMRGCMosaicFileName, generateMissingSubDirs)
+
+end
+
+
+function theFullFileName = checkForPathExistenceAndGenerateSubPath(intermediateDataDir, theFullFileName, generateMissingSubDirs)
+
+    theFullFileName = strrep(theFullFileName, intermediateDataDir, '');
+    theFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        intermediateDataDir, theFullFileName, ...
+        'generateMissingSubDirs', generateMissingSubDirs);
+
 end

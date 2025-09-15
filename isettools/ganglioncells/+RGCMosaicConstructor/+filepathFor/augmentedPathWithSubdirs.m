@@ -15,12 +15,17 @@ function theAugmentedFilePath = augmentedPathWithSubdirs(theRootDir, filePath, v
     else
         augmentedPath = theRootDir;
         for iSubDir = 1:numel(augmentedSubDirs)
+            if (numel(augmentedSubDirs{iSubDir})==0)
+                continue;
+            end
             augmentedPath = fullfile(augmentedPath, augmentedSubDirs{iSubDir});
             if (~isfolder(augmentedPath))
                 if (~generateMissingSubDirs)
                     error('File ''%s'', does not exist. ', augmentedPath);
                 end
-                fprintf('Generating subdir ''%s'' within %s\n', augmentedSubDirs{iSubDir}, strrep(augmentedPath, augmentedSubDirs{iSubDir}, ''));
+                fprintf(2,'Will generate subdir ''%s'' within %s\n', augmentedSubDirs{iSubDir}, strrep(augmentedPath, augmentedSubDirs{iSubDir}, ''));
+                disp('Hit enter to continue...')
+                pause;
                 mkdir(augmentedPath);
             end
         end % for iSubDir
