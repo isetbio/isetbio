@@ -6,7 +6,7 @@ function generateLocalPrefs()
     rgcResourcesRootDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
 
     % User on Crete
-    gcResourcesRootDir  = '/Volumes/M1ProBackUp/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    %rgcResourcesRootDir  = '/Volumes/M1ProBackUp/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
 
 
     % User needs to make sure that the following dirs exist under resourcesRootDir
@@ -16,8 +16,8 @@ function generateLocalPrefs()
     % Generate the rgcResources struct
     rgcResources = struct(...
         'method', 'localFile', ...
-        'intermediateDataDir', fullfile(gcResourcesRootDir, intermediateDataDir), ...
-        'figurePDFsDir',    fullfile(gcResourcesRootDir, figurePDFsDir) ...
+        'intermediateDataDir', fullfile(rgcResourcesRootDir, intermediateDataDir), ...
+        'figurePDFsDir',    fullfile(rgcResourcesRootDir, figurePDFsDir) ...
      );
      
      % Set the rgcResources pref
