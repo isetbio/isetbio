@@ -1,11 +1,23 @@
 function [theInputConeMosaicSTFResponsesFullFileName, theMRGCMosaicSTFResponsesFullFileName] = stfResponsesFileName(...
-        theSurroundConnectedMRGCMosaicFullFileName, surroundConnectedMRGCMosaicSubDir, chromaParamsStruct, paramsStruct)
+        theSurroundConnectedMRGCMosaicFullFileName, surroundConnectedMRGCMosaicSubDir, chromaParamsStruct, paramsStruct, varargin)
 
-    % Assemble STFresponses filename: add sub-directory- inputConeMosaicSTFresponses
-    theInputConeMosaicSTFResponsesFullFileName = strrep(theSurroundConnectedMRGCMosaicFullFileName, 'SLIM', 'SLIM/inputConeMosaicSTFresponses');
+    p = inputParser;
+    p.addParameter('extraSubDirPath', '', @ischar);
+    p.addParameter('generateMissingSubDirs', false, @islogical);
+    % Execute the parser
+    p.parse(varargin{:});
+    extraSubDirPath = p.Results.extraSubDirPath;
+    generateMissingSubDirs = p.Results.generateMissingSubDirs;
 
-    % Remove the 'surroundConnected' prefix inherited from theSurroundConnectedMRGCMosaicFullFileName
-    theInputConeMosaicSTFResponsesFullFileName = strrep(theInputConeMosaicSTFResponsesFullFileName, surroundConnectedMRGCMosaicSubDir, '');
+    % Root directory
+    intermediateDataDir = RGCMosaicConstructor.filepathFor.intermediateDataDir();
+    if (~isempty(extraSubDirPath))
+        intermediateDataDir = fullfile(intermediateDataDir, extraSubDirPath);
+    end
+
+    % Assemble STFresponses filename from theSurroundConnectedMRGCMosaicFullFileName
+    theInputConeMosaicSTFResponsesFullFileName = ...
+        strrep(theSurroundConnectedMRGCMosaicFullFileName, surroundConnectedMRGCMosaicSubDir, 'inputConeMosaicSTFresponses/');
 
     % Update STFresponses filename to include the chromaticity info
     [~, ~, theInputConeMosaicSTFResponsesFullFileName] = ...
@@ -21,4 +33,15 @@ function [theInputConeMosaicSTFResponsesFullFileName, theMRGCMosaicSTFResponsesF
 
 	theInputConeMosaicSTFResponsesFullFileName = strrep(theInputConeMosaicSTFResponsesFullFileName, ...
 		targetVisualSTFModifiersString, '');
+
+     
+    theInputConeMosaicSTFResponsesFullFileName = strrep(theInputConeMosaicSTFResponsesFullFileName, intermediateDataDir , '');
+    theInputConeMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        intermediateDataDir , theInputConeMosaicSTFResponsesFullFileName, ...
+        'generateMissingSubDirs', generateMissingSubDirs);
+
+    theMRGCMosaicSTFResponsesFullFileName = strrep(theMRGCMosaicSTFResponsesFullFileName, intermediateDataDir,  '');
+    theMRGCMosaicSTFResponsesFullFileName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        intermediateDataDir , theMRGCMosaicSTFResponsesFullFileName, ...
+        'generateMissingSubDirs', generateMissingSubDirs);
 end

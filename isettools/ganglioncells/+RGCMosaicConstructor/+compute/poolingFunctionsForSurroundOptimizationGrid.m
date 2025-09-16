@@ -103,7 +103,8 @@ for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimiz
     % Generate the STFresponses file names
     [theInputConeMosaicSTFResponsesFullFileName, theMRGCMosaicSTFResponsesFullFileName] = ...
         RGCMosaicConstructor.filepathFor.stfResponsesFileName(...
-            theSurroundConnectedMRGCMosaicFullFileName, surroundConnectedMRGCMosaicSubDir, chromaParamsStruct, pSurround);
+            theSurroundConnectedMRGCMosaicFullFileName, surroundConnectedMRGCMosaicSubDir, chromaParamsStruct, pSurround, ...
+            'generateMissingSubDirs', true);
 
     if (computeInputConeMosaicResponses)
         startTime = cputime;

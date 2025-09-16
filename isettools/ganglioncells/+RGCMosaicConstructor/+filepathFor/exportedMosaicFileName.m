@@ -112,14 +112,12 @@ function [theFullMRGCMosaicFileName, theIntermediateConnectivityStagesMetaDataFi
     theIntermediateConnectivityStagesMetaDataFile = strrep(theFullMRGCMosaicFileName, mRGCMosaicSubDir, 'centerConnectivityStages/');
 
 
-
     % Check that the specified subdirs exist in intermediateDataDir
-
     theIntermediateConnectivityStagesMetaDataFile = checkForPathExistenceAndGenerateSubPath(...
-        intermediateDataDir, theIntermediateConnectivityStagesMetaDataFile, generateMissingSubDirs)
+        intermediateDataDir, theIntermediateConnectivityStagesMetaDataFile, generateMissingSubDirs);
 
     theFullMRGCMosaicFileName = checkForPathExistenceAndGenerateSubPath(...
-        intermediateDataDir, theFullMRGCMosaicFileName, generateMissingSubDirs)
+        intermediateDataDir, theFullMRGCMosaicFileName, generateMissingSubDirs);
 
 end
 
