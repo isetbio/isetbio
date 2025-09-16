@@ -24,7 +24,7 @@ function theAugmentedFilePath = augmentedPathWithSubdirs(theRootDir, filePath, v
                     error('File ''%s'', does not exist. ', augmentedPath);
                 end
                 fprintf(2,'Will generate subdir ''%s'' within %s\n', augmentedSubDirs{iSubDir}, strrep(augmentedPath, augmentedSubDirs{iSubDir}, ''));
-                disp('Hit enter to continue...')
+                fprintf(2,'Hit enter to continue...');
                 pause;
                 mkdir(augmentedPath);
             end

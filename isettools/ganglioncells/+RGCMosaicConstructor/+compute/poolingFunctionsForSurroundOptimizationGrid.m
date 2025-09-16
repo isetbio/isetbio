@@ -96,7 +96,8 @@ for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimiz
     pSurround.surroundConnectivitySimulationParamsStruct.optimizationPosition = surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iOptimizationPos,:);
     [theSurroundConnectedMRGCMosaicFullFileName, ~, theSurroundConnectedMRGCMosaicFileName, surroundConnectedMRGCMosaicSubDir] = ...
         RGCMosaicConstructor.filepathFor.exportedMosaicFileName(...
-        pSurround, surroundConnectivityStage);
+        pSurround, surroundConnectivityStage, ...
+        'generateMissingSubDirs', true);
     'clear pSurround';
 
     % Generate the STFresponses file names

@@ -21,11 +21,11 @@ close all; clear all;
 spatialChromaticUniformityTradeoff = 1.0; 
 
 % Name encoding rgcMosaic
-rgcMosaicName = 'PLOSpaperNasal10DegsMosaic';
+%rgcMosaicName = 'PLOSpaperNasal10DegsMosaic';
 %rgcMosaicName = 'PLOSpaperNasal14DegsMosaic';
 %rgcMosaicName = 'PLOSpaperNasal19DegsMosaic';
 %rgcMosaicName = 'PLOSpaperNasal25DegsMosaic';
-%rgcMosaicName = 'PLOSpaperNasal7DegsMosaic';
+rgcMosaicName = 'PLOSpaperNasal7DegsMosaic';
 
 % Which optics to employ
 opticsSubjectName = 'PLOSpaperDefaultSubject';
@@ -44,10 +44,10 @@ pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParamet
 
 
 % Whether to regenerate the mosaic at stage2A
-regenerateMosaicAtStage2A = true;
+regenerateMosaicAtStage2A = ~true;
 
 % Whether to regenerate the mosaic at stage2C
-regenerateMosaicAtStage2C = ~true;
+regenerateMosaicAtStage2C = true;
 
 % Whether to visualize the mosaic at stage2A
 visualizeMosaicAtStage2A = ~true;
@@ -136,7 +136,8 @@ if (regenerateMosaicAtStage2C)
     [theCenterConnectedMRGCMosaicFullFileName, ~, ...
      theCenterConnectedMRGCMosaicFileName] = ...
         RGCMosaicConstructor.filepathFor.exportedMosaicFileName(...
-            centerConnectedParamsStruct, 'center connected with overlap');
+            centerConnectedParamsStruct, 'center connected with overlap', ...
+            'generateMissingSubDirs', true);
   
     % Export the RF center overlapping mosaic
     save(theCenterConnectedMRGCMosaicFullFileName, 'theMRGCMosaic', '-v7.3');

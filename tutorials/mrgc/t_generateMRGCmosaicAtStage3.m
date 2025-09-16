@@ -41,12 +41,12 @@ pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParamet
 
 % Whether to regenerate the mosaic at stage3A 
 % (computation of input cone mosaic STF responses)
-regenerateMosaicAtStage3A = ~true;
+regenerateMosaicAtStage3A = true;
 
 % Whether to regenerate the mosaic at stage3B 
 % (determine optimized surround cone pooling functions so as to yield C&K '95 macaque Rs/Rc intS/C ratios
 % appropriate for  the mosaic's eccentricity)
-regenerateMosaicAtStage3B = true;
+regenerateMosaicAtStage3B = ~true;
 
 
 % Grid of (X,Y)-positions, (W,H)-sizes on which the surround will be optimized 
