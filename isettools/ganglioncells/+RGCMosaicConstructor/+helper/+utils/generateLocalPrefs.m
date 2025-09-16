@@ -1,11 +1,12 @@
 % RGCMosaicConstructor.helper.util.generateLocalPrefs()
 function generateLocalPrefs()
 
-    % Ithaka
-    resourcesRootDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    % User needs to specify the rgc resourcesRootDir
+    % User on Ithaka
+    rgcResourcesRootDir = '/Volumes/SSDdisk/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
 
-    % Crete
-    resourcesRootDir = '/Volumes/M1ProBackUp/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
+    % User on Crete
+    gcResourcesRootDir  = '/Volumes/M1ProBackUp/Aguirre-Brainard Lab Dropbox/Nicolas Cottaris';
 
 
     % User needs to make sure that the following dirs exist under resourcesRootDir
@@ -15,8 +16,8 @@ function generateLocalPrefs()
     % Generate the rgcResources struct
     rgcResources = struct(...
         'method', 'localFile', ...
-        'intermediateDataDir', fullfile(resourcesRootDir, intermediateDataDir), ...
-        'figurePDFsDir',    fullfile(resourcesRootDir, figurePDFsDir) ...
+        'intermediateDataDir', fullfile(gcResourcesRootDir, intermediateDataDir), ...
+        'figurePDFsDir',    fullfile(gcResourcesRootDir, figurePDFsDir) ...
      );
      
      % Set the rgcResources pref
