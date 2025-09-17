@@ -211,12 +211,16 @@ function [centerLineWeightingFunctions, surroundLineWeightingFunctions] = ...
 
     if (isempty(axesToRenderIn))
         % Export figure
-        theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        
         thePDFFileName = sprintf('conePoolingWeightsMap_centerConeThreshold_%2.2f_surroundConeThreshold_%2.3f.pdf', ...
             minConeWeightForVisualizingRFcenterPooling, ...
             minConeWeightForVisualizingRFsurroundPooling);
 
-        thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, thePDFFileName);
+        % OLD WAY
+        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, thePDFFileName);
+
+        thePDFfileName = fullfile(pdfExportSubDir, thePDFFileName);
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end
 end

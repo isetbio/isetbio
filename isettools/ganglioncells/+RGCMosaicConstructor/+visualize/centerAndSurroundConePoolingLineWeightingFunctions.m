@@ -136,8 +136,11 @@ function centerAndSurroundConePoolingLineWeightingFunctions(pdfExportSubDir, fig
 
     if (isempty(axesToRenderIn))
         % Export figure
-        theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, pdfFileName);
+        % OLD Way
+        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, pdfFileName);
+
+        thePDFfileName = fullfile(pdfExportSubDir, pdfFileName);
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end
 end

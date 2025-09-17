@@ -34,12 +34,10 @@ function  fName = optimizationResults(theSurroundConnectedMRGCMosaicFullFileName
 		case cMosaic.SCONE_ID
 			targetInfoString = sprintf('_SconeDominated_%dconeRF.mat', theTargetRGCRFcenterConesNum);
 	end
-	fName = strrep(theOptimizationResultsFullFileName, '.mat', targetInfoString)
-
-    fName = strrep(fName, intermediateDataDir , '')
-    generateMissingSubDirs
+	fName = strrep(theOptimizationResultsFullFileName, '.mat', targetInfoString);
+    fName = strrep(fName, intermediateDataDir , '');
     fName = RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
-        intermediateDataDir , fName, ...
-        'generateMissingSubDirs', generateMissingSubDirs)
+        intermediateDataDir, fName, ...
+        'generateMissingSubDirs', generateMissingSubDirs);
 
 end

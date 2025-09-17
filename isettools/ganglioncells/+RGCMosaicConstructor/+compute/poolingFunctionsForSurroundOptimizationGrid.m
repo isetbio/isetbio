@@ -56,6 +56,13 @@ visualizeSpatialRelationshipToSourceMosaic = p.Results.visualizeSpatialRelations
 
 randomSeed = p.Results.randomSeed;
 
+
+if (onlyReturnSurroundOptimizationResultFilenames)
+    generateMissingSubDirs = false;
+else
+    generateMissingSubDirs = true;
+end
+
 if (surroundConnectivitySimulationParamsStruct.poolingOptimizationParamsStruct.employRFCenterOverlappingMosaic)
     centerConnectivityStage = 'center connected with overlap';
     surroundConnectivityStage = 'surround connected with center overlap';
@@ -92,19 +99,20 @@ for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimiz
     % This encodes the optics under which the visual STFresponses were computed
     % as well as the optimization position within the mosaic
     pSurround = p.Results;
-
     pSurround.surroundConnectivitySimulationParamsStruct.optimizationPosition = surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iOptimizationPos,:);
+    
     [theSurroundConnectedMRGCMosaicFullFileName, ~, theSurroundConnectedMRGCMosaicFileName, surroundConnectedMRGCMosaicSubDir] = ...
         RGCMosaicConstructor.filepathFor.exportedMosaicFileName(...
         pSurround, surroundConnectivityStage, ...
-        'generateMissingSubDirs', true);
+        'generateMissingSubDirs', generateMissingSubDirs);
     'clear pSurround';
 
+    
     % Generate the STFresponses file names
     [theInputConeMosaicSTFResponsesFullFileName, theMRGCMosaicSTFResponsesFullFileName] = ...
         RGCMosaicConstructor.filepathFor.stfResponsesFileName(...
             theSurroundConnectedMRGCMosaicFullFileName, surroundConnectedMRGCMosaicSubDir, chromaParamsStruct, pSurround, ...
-            'generateMissingSubDirs', true);
+            'generateMissingSubDirs', generateMissingSubDirs);
 
     if (computeInputConeMosaicResponses)
         startTime = cputime;
@@ -267,7 +275,7 @@ for iOptimizationPos = 1:size(surroundConnectivitySimulationParamsStruct.optimiz
                             theSurroundConnectedMRGCMosaicFullFileNames{iOptimizationPos}, ...
                             theOptimizedCenterConesNum, ...
                             centerConeDominanceToOptimize, ...
-                            'generateMissingSubDirs', true);
+                            'generateMissingSubDirs', generateMissingSubDirs);
                 end % if (ismember(theOptimizedCenterConesNum, dataOut.RFcenterConesNumToOptimizeFor))
             end % for iCenterConesNum
             fprintf('Only returning optimizationResults filename. \n')

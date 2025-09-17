@@ -233,8 +233,11 @@ function optimizationResults(optimizationResultsStruct, ...
                 error('Invalid targetRFcenterDominantConeType: %d', targetRFcenterDominantConeType)
         end
 
-        theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, theSummaryPDFfileName);
+        % OLD WAY
+        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, theSummaryPDFfileName);
+
+        thePDFfileName = fullfile(pdfExportSubDir, theSummaryPDFfileName);
         NicePlot.exportFigToPDF(thePDFfileName, hFigSummary, 300);
     end
 
@@ -318,8 +321,12 @@ function renderAchievedOptimizationPerformance(pdfExportSubDir, figNo, figPos, t
 
     if (isempty(axesToRenderIn))
         % Export figure
-        theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, 'achievedPerformance.pdf');
+        % OLD WAY
+        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, 'achievedPerformance.pdf');
+
+        thePDFfileName = fullfile(pdfExportSubDir, 'achievedPerformance.pdf');
+
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end
 end
@@ -408,8 +415,11 @@ function renderCorrespondenceBetweenFittedH1paramsAndPackerDaceyData(pdfExportSu
 
     if (isempty(axesToRenderIn))
         % Export figure
-        theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, 'fitted_H1model.pdf');
+        % OLD WAY
+        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, 'fitted_H1model.pdf');
+
+        thePDFfileName = fullfile(pdfExportSubDir, 'fitted_H1model.pdf');
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end
 end
@@ -444,8 +454,11 @@ function renderModelParamsAndRanges(pdfExportSubDir, figNo, figPos, ...
 
     if (isempty(axesToRenderIn))
         % Export figure
-        theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, sprintf('fitted_%s.pdf', modelName));
+        % OLD WAY
+        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, sprintf('fitted_%s.pdf', modelName));
+
+        thePDFfileName = fullfile(pdfExportSubDir, sprintf('fitted_%s.pdf', modelName));
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end
 
@@ -498,8 +511,11 @@ function renderSTF(pdfExportSubDir, figNo, figPos, sf, STF, sfHiRes, compositeST
 
     if (isempty(axesToRenderIn))
         % Export figure
-        theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-        thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, 'fitted_optimizedSTF.pdf');
+        % OLD WAY
+        %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        %thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, 'fitted_optimizedSTF.pdf');
+
+        thePDFfileName = fullfile(pdfExportSubDir, 'fitted_optimizedSTF.pdf');
         NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
     end
 end
