@@ -37,7 +37,8 @@ function connectSourceRFsToDestinationRFsBasedOnLocalDensities(obj)
 
     % Save the metaDataStuct for this stage
     if (obj.saveIntermediateConnectivityStagesMetaData)
-        obj.updateIntermediateMetaDataStructs();
+        phaseDescriptor = 'local density based connections';
+        obj.updateIntermediateMetaDataStructs(phaseDescriptor, [], []);
     end
 
     % Visualize connectivity at this stage

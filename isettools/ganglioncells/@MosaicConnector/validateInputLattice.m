@@ -33,7 +33,7 @@ function validateInputLattice(obj, theLattice, latticeName)
         case 'source'
             % Smooth source lattice spacings
             if (obj.smoothSourceLatticeSpacings)
-                theLattice.RFspacingsMicrons = MosaicConnector.smoothSpacings(...
+                theLattice.RFspacingsMicrons = smoothSpacings(...
                     theLattice.RFspacingsMicrons, theLattice.nearbyRFindices);
             end
             obj.sourceLattice = theLattice;
@@ -41,7 +41,7 @@ function validateInputLattice(obj, theLattice, latticeName)
         case 'destination'
             % Smooth destination lattice spacings
             if (obj.smoothDestinationLatticeSpacings)
-                theLattice.RFspacingsMicrons = MosaicConnector.smoothSpacings(...
+                theLattice.RFspacingsMicrons = smoothSpacings(...
                     theLattice.RFspacingsMicrons, theLattice.nearbyRFindices);
             end
             obj.destinationLattice = theLattice;
@@ -49,7 +49,13 @@ function validateInputLattice(obj, theLattice, latticeName)
         otherwise
             error('lattice name (''%s'') is invalid. It must be either ''source'' or ''destination''.', latticeName);
     end
+end
 
+function theSmoothedSpacings = smoothSpacings(rfSpacings, nearbyRFindices)
+    % Smooth variations in RF spacings
+    theSmoothedSpacings = 0*rfSpacings;
     
-
+    parfor rfIndex = 1:numel(rfSpacings)
+        theSmoothedSpacings(rfIndex) = median(rfSpacings(nearbyRFindices(rfIndex,:)));
+    end
 end

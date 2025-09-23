@@ -32,9 +32,9 @@ function hFig = figure14(varargin)
 
     % Generate figure
     hFig = figure(14); clf;
-    ff = MSreadyPlot.figureFormat('1x1 small tall');
-    theAxes = MSreadyPlot.generateAxes(hFig,ff);
     set(hFig, 'Color', [1 1 1]);
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
 
     theRatio = midgetRGCtoConeRatio;
     if (inverseRatio)
@@ -42,35 +42,37 @@ function hFig = figure14(varargin)
     end
 
     theMeridianLabels = cell(1,numel(examinedMeridians));
+    pHandles = zeros(1,numel(examinedMeridians));
     for k = 1:numel(examinedMeridians)
         % Retrieve color for meridian
         meridianColor = RGCmodels.Watson.plot.colorForMeridian(examinedMeridians{k});
         theMeridianLabels{k} = examinedMeridians{k};
-        plot(theAxes{1,1},eccDegs, squeeze(theRatio(k,:)), 'k-', 'Color', meridianColor, 'LineWidth', ff.lineWidth);
+        pHandles(k) = plot(theAxes{1,1},eccDegs, squeeze(theRatio(k,:)), 'k-', 'Color', meridianColor, 'LineWidth', ff.lineWidth);
         hold(theAxes{1,1}, 'on');
     end
 
+    % Axes scaling and ticks
+    set(theAxes{1,1}, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100]);
     
-    % Axes and limits
-    set(theAxes{1,1}, 'XLim', [0.01*(1+3*ff.axisOffsetFactor) 100], 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100]);
-    xtickangle(theAxes{1,1}, 0);
-    xlabel(theAxes{1,1},'eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
-
+    % Finalize figure using the Publication-Ready format
+    XLims = [0.01 100];
+    
     if (inverseRatio)
 
         % Plot the min cone density as a disk
         plot(theAxes{1,1},0.01, min(theRatio(:)), 'ko', ...
             'MarkerSize', ff.markerSize, 'LineWidth', 1.0, 'MarkerFaceColor', 0.8*[1 1 1]);
 
+        % Label the meridians
+        legend(theAxes{1,1}, pHandles, theMeridianLabels, 'Location', 'NorthWest');
 
-        set(theAxes{1,1}, 'YLim', [1+2*ff.axisOffsetFactor 200], 'YScale', 'log', ...
+        set(theAxes{1,1}, 'YScale', 'log', ...
             'YTick', [0.5 1 1.7 3 5 10 18 30 55 100 200], ...
             'YTickLabel', {'.5', '1', '1.7', '3', '5', '10', '18', '30', '55', '100', '200'});
     
-        ylabel(theAxes{1,1}, 'cone / midget RGC RF ratio', 'FontAngle', ff.axisFontAngle);
-
-        % Label the meridians
-        legend(theAxes{1,1},theMeridianLabels, 'Location', 'NorthWest', 'FontSize', ff.legendFontSize);
+        YLims = [1 200];
+        PublicationReadyPlotLib.offsetAxes(theAxes{1,1},ff, XLims, YLims);
+        PublicationReadyPlotLib.labelAxes(theAxes{1,1},ff, 'eccentricity (degs)', 'cone / midget RGC RF ratio');
 
     else
 
@@ -78,29 +80,20 @@ function hFig = figure14(varargin)
         plot(theAxes{1,1},0.01, max(theRatio(:)), 'ko', ...
             'MarkerSize', ff.markerSize, 'LineWidth', 1.0, 'MarkerFaceColor', 0.8*[1 1 1]);
 
-        set(theAxes{1,1}, 'YLim', [0.01*(1+3*ff.axisOffsetFactor) 1.1], 'YScale', 'log', ...
+        % Label the meridians
+        legend(theAxes{1,1}, pHandles, theMeridianLabels, 'Location', 'NorthWest');
+
+        set(theAxes{1,1}, 'YScale', 'log', ...
             'YTick', [0.01 0.02 0.05 0.1 0.2 0.5 1 2], ...
             'YTickLabel', {'.01', '.02', '.05', '.1', '.2', '.5', '1', '2'});
     
-        ylabel(theAxes{1,1}, 'midget RGC RF / cone ratio', 'FontAngle', ff.axisFontAngle);
+        YLims = [0.01 1.1];
+        PublicationReadyPlotLib.offsetAxes(theAxes{1,1},ff, XLims, YLims);
+        PublicationReadyPlotLib.labelAxes(theAxes{1,1},ff, 'eccentricity (degs)', 'midget RGC RF / cone ratio');
 
-        % Label the meridians
-        legend(theAxes{1,1},theMeridianLabels, 'Location', 'SouthWest', 'FontSize', ff.legendFontSize);
     end
 
-    legend boxoff
-
-    % Grid
-    grid(theAxes{1,1}, 'on'); box(theAxes{1,1}, 'off');
-
-    % Ticks
-    set(theAxes{1,1}, 'TickDir', 'both');
-
-    % Font size
-    set(theAxes{1,1}, 'FontSize', ff.fontSize);
-
-    % axis color and width
-    set(theAxes{1,1}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+    PublicationReadyPlotLib.applyFormat(theAxes{1,1},ff);
 end
 
 

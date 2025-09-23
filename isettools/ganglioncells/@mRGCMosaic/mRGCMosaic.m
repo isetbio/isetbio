@@ -4,52 +4,102 @@ classdef mRGCMosaic < handle
     % Public properties
     properties  (GetAccess=public, SetAccess=public)
         % Name of the mosaic
-        name;
+        name = 'unnamed MRGC mosaic';
 
-        % Noise flag for mRGC responses
-        noiseFlag;
+        % noise flag
+        noiseFlag = 'random';
 
-        % Random seed
-        randomSeed = [];
+        % random seed
+        randomSeed = 1;
 
         % vMembrane noise sigma
         vMembraneGaussianNoiseSigma = 0.07;
+
+        % Scaling factor for temporal equivalent eccentricity
+        temporalEquivantEccentricityScalingMode = 'ISETBioMosaicsBased';
     end % Public properties
 
 
     % Constant properties
     properties (Constant)
-
         % Valid noise flags
         validNoiseFlags = {'none', 'frozen', 'random'};
-
-        % Default optics params
-        defaultOpticsParams = struct(...
-            'positionDegs', [], ...
-            'ZernikeDataBase', 'Polans2015', ...
-            'examinedSubjectRankOrder', 6, ...
-            'pupilDiameterMM', 3.0, ...
-            'refractiveErrorDiopters', 0.0, ...    % use -999 for optics that do not subtract the central refraction
-            'noLCA', false, ...
-            'analyzedEye', 'right eye', ...
-            'subjectRankingEye', 'right eye', ...
-            'zeroCenterPSF', true, ...
-            'psfUpsampleFactor', 1.0, ...
-            'wavefrontSpatialSamples', 401); 
-
-        defaultRetinalRFparams = struct(...
-            );
-
-        defaultVisualRFparams = struct(...
-            );
+        defaultRandomSeed = 123;
         
-    end % Constant properties
+        validOpticsModifications = {'adaptiveOptics6MM', 'adaptiveOptics6MMwithLCA', 'diffractionLimited', 'centralRefractionCorrected', 'maxStrehlRatio', 'customRefraction', 'nativeOpticsNoStrehlRatioOptimization'};
+
+        % max surround support factor (used during optimizing surround)
+        maxSurroundSupportFactor = 7.0;   % max surround radius: this factor x C&K surroundCharacteristicRadius
+
+        % Min surround weight for inclusion in response computation
+        minSurroundWeightForInclusionInComputing = 1e-4;
+
+
+        % default minConeWeight when none is specified.
+        % This is the amplitude of a Gaussian at 1 sigma, the weight at which nearby
+        % RGCs abut according to Gauthier et al (2008). 
+        % "Uniform Signal Redundancy of Parasol and Midget Ganglion Cells in Primate Retina"
+        % Since the abut at 1 sigma, the sensitivity should be exp(-1/2). 
+        sensitivityAtPointOfOverlapFromGauthierRFmappingExperiment = exp(-0.5);
+
+        % However, since we are doing the overlap with no surrounds, and the in-vitro measurements are
+        % with the surrounds (obviously), this sensitivity should be amplified by some factor.
+        % Different attempts:
+        %    0.85 -> way to much overlap and RF centers quite large (first attempt)
+        %    0.55 -> a little too little overlap; 
+        %    0.70 -> still too much overlap (the .1 eccentricity mosaics were done with 0.7); 
+        %    0.60 -> probably the best value, going with that
+        amplificationInCenterOnlySensitivityCausedByInactiveSurrounds = 0.6; 
+
+        % Sensitivity for RF center only operations
+        sensitivityAtPointOfOverlap = mRGCMosaic.sensitivityAtPointOfOverlapFromGauthierRFmappingExperiment * ...
+                                      mRGCMosaic.amplificationInCenterOnlySensitivityCausedByInactiveSurrounds;
+
+        % Other RF center overlap parameters:
+        % The max exponent, 10 (flat-top). The min is 2 (regular Gaussian)
+        superGaussianMaxExponent = 2 + 8;
+        % The ecc-dependent variation in superGaussian exponent: steepness
+        superGaussianExponentSigmoidSteepnessExponent = 10; 
+        % The ecc-dependent variation in superGaussian exponent: 'c50' point
+        superGaussianExponentSigmoidEccDegs50 = 8;
+
+        % 1% min sensitivity for inclusion of divergent cone connections
+        minSensitivityForInclusionOfDivergentConeConnections = 1/100;
+
+        % 10% which is the noise floor in the measurements of cone weights according to RF center overlap according to Greg Field
+        % and which is what they used in Fig 4 of their 2010 paper.
+        minRFcenterConeWeightIncludedToMatchFigure4OfFieldEtAl2010 = 10/100;
+
+        % In the supplementary section of Field et al (2010) paper it is stated that all cells were recorded at
+	    % an eccentricity of 6.75 mm along the horizontal meridian.
+	    % 6.75 mm in macaque retina corresponds to 25 degs in human retina
+        eccentricityMMsForFigure4OfFieldEtAl2010 = 6.75;
+
+        % Convert to degs in macaque retina
+	    eccentricityDegsMacaqueRetinaForFigure4OfFieldEtAl2010 = ...
+            RGCMosaicConstructor.helper.convert.eccentricityInMacaqueRetina(...
+               'MMsToDegs', mRGCMosaic.eccentricityMMsForFigure4OfFieldEtAl2010);
+
+	    % Convert to degs in human retina
+	    eccentricityDegsHumanRetinaForFigure4OfFieldEtAl2010 = ...
+            RGCMosaicConstructor.helper.convert.eccentricityDegsBetweenSpecies(...
+            'MacaqueRetinaToHumanRetina', RGCMosaicConstructor.helper.convert.eccentricityInMacaqueRetina(...
+                                               'MMsToDegs', mRGCMosaic.eccentricityMMsForFigure4OfFieldEtAl2010));
+
+
+        % Valid methors for RF subregion contour generation
+        validRFsubregionContourGenerationMethods = {...
+            'ellipseFitBasedOnLocalSpacing', ...
+            'contourOfPooledConeApertureImage', ...
+            'ellipseFitToPooledConeApertureImage', ...
+            'ellipseFitToPooledConePositions'};
+
+        validTemporalEquivalentScalingModes = {'ISETBioMosaicsBased', 'WatanabeRodieckBased'};
+    end  % Constant properties
+
 
     % Read-only properties
     properties (GetAccess=public, SetAccess=private)
-
-        % The source lattice specification
-        sourceLatticeSizeDegs;
 
         % Eccentricity [x,y] of the center of the mRGC mosaic (degs)
         eccentricityDegs;
@@ -63,15 +113,14 @@ classdef mRGCMosaic < handle
         % Either 'right eye' or 'left eye'
         whichEye;
 
+        % The params that were used to determine the center-connectivity
+        rfCenterConnectivityParams;
+
         % The input cone mosaic (@cMosaic)
         inputConeMosaic;
 
-        % Extra size of the input cone mosaic (to allow for cone inputs to
-        % the RF surrounds)
-        extraDegsForInputConeMosaic;
-
-        % [0: minimize chromatic variance 1: minimize spatial variance]
-        chromaticSpatialVarianceTradeoff;
+        % The number of RGCs
+        rgcsNum;
 
         % [n x 2] matrix of rgc rf positions, in microns & degrees
         rgcRFpositionsMicrons;
@@ -81,313 +130,244 @@ classdef mRGCMosaic < handle
         rgcRFspacingsMicrons;
         rgcRFspacingsDegs;
 
-        % The factor by which we convert nasal eccentricities to their
-        % temporal equivalents
-        temporalEquivantEccentricityFactor;
+        % Positions and spacings of the source (not connected to cones mRGC lattice)
+        rgcRFpositionsDegsOfSourceLattice;
+        rgcRFspacingsDegsOfSourceLattice;
+
+        % Flag indicating whether RF centers have been wired to overlap
+        rgcRFcentersOverlap = false;
+
+        % Struct with rfCenter overlapping params
+        rfCenterOverlapParams = struct();
+
 
         % Computed params
-        % Sparse [conesNum x rgcRFsNum]  connectivity matrix 
+        % Sparse [conesNum x rgcRFsNum] connectivity matrix for the centers
         % To find which cones are connected to an rgcRF:
         %  connectivityVector = full(squeeze(rgcRFcenterConeConnectivityMatrix(:, rgcRF)));
         %  inputConeIndices = find(abs(connectivityVector) > 0.0001);
         rgcRFcenterConeConnectivityMatrix = [];
+        rgcRFcenterConeConnectivityMatrixNoOverlap = [];
+        exclusivelyConnectedInputConeIndicesNum = [];
 
-        % Sparse [conesNum x rgcRFsNum] cone pooling matrices for RF center
-        % and RF surrounds.
-        % To find which cones are connected to the surround of an rgcRF:
-        %  connectivityVector = full(squeeze(rgcRFsurroundConePoolingMatrix(:, rgcRF)));
-        %  surroundConeIndices = find(abs(connectivityVector) > 0.0001);
-        rgcRFcenterConePoolingMatrix = [];
-        rgcRFsurroundConePoolingMatrix = [];
+        % Sparse [conesNum x rgcRFsNum] connectivity matrix for the surrounds
+        rgcRFsurroundConeConnectivityMatrix = [];
 
-        % Peak gain for each RGC. 
-        rgcRFgains = [];
+        % The response gain for each RGC
+        responseGains = [];
 
-        % The optics used to optimize surround cone weights
-        % so as to generate RFs with the target visual properties
-        % These are the optics at the mosaic'c center
-        theNativeOptics;
+        % Struct with all the params that were used to generate the rgcRFsurroundConeConnectivityMatrix
+        rfSurroundConnectivityParams = [];
 
-        % The params used to generate theNativeOptics
-        theNativeOpticsParams;
+        % Struct with variance params for the surround
+        surroundVarianceInComputeReadyMosaic = [];
 
-        % Custom optics. These are optics generated at a position other
-        % that the center of the mosaic
-        theCustomOptics;
-
-        % The params used to generate theCustomOptics
-        theCustomOpticsParams;
-
-        % Encodes what generation stage the mosaic is in.
-        generationStage;
-
-        % Cell array of meta data structs at each intermediate connectivity stage of theMosaicConnectorOBJ 
-        intermediateMetaDataStructs;
-
-        % Cell array of figure handles for each intermediate connectivity stage of theMosaicConnectorOBJ 
-        mosaicConnectorIntermediateFigureHandles;
-
-        % Cache for various visualizations
         visualizationCache = [];
-    end % Read-only properties
+    end %  Read-only properties
 
     % Dependent properties
     properties (Dependent)
-        % The mosaic's temporal equivalent eccentricity.
-        % If the mosaic is on the temporal retinal quadrant this is: sqrt(ecc_x^2 + ecc_y^2)
-        % If the mosaic is on the nasal retinal quadrant this is: sqrt((0.61 * ecc_x)^2 + ecc_y^2)
-        temporalEquivalentEccentricityDegs;
+    end % Dependent properties
 
-        % Number of cells
-        rgcsNum;
-
-        % Retinal quadrant (i.e. nasal, temporal, inferior, superior)
-        horizontalRetinalMeridian;
-        verticalRetinalMeridian;
-    end
 
     % Private properties
     properties (GetAccess=private, SetAccess=private)
-        % The MosaicConnectorOBJ used to connect cones to midget RGCs
-        theMosaicConnectorOBJ;
-    end
+    end % private properties
 
     % Public methods
     methods
-        
         % Constructor
         function obj = mRGCMosaic(varargin)
 
+            % If the input arguments are in the form of a struct, we
+            % leave it alone.
+            %
+            % The key/val parameters are all defined as lower case
+            % with no spaces. The ieParamFormat function allows the
+            % user to specify parameters that include spaces and mixed
+            % case.  It forces to lower case and removes space.  This
+            % improves readability.
+            if ~isempty(varargin) && ~isstruct(varargin{1})
+                varargin = ieParamFormat(varargin);
+            end
+
             % Parse input
             p = inputParser;
-            p.addParameter('name', 'mRGC mosaic', @ischar);
-            p.addParameter('sourceLatticeSizeDegs', 58, @isscalar);
-            p.addParameter('whichEye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
-            
-            % Eccentricity/Position: if positionDegs is sent in, it overwrites eccentricityDegs
-            p.addParameter('eccentricityDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('positionDegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('sizeDegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
-            p.addParameter('withInputConeMosaic', [],  @(x) (isempty(x) || isa(x, 'cMosaic')));
-            p.addParameter('temporalEquivantEccentricityFactor', 'ISETBioMosaicsBased', @(x)(ischar(x) && (ismember(x, {'ISETBioMosaicsBased', 'WatanabeRodieckBased'}))));
-            
-            % Custom Degs <-> MM conversion functions
-            p.addParameter('customDegsToMMsConversionFunction', @(x)RGCmodels.Watson.convert.rhoDegsToMMs(x), @(x) (isempty(x) || isa(x,'function_handle')));
-            p.addParameter('customMMsToDegsConversionFunction', @(x)RGCmodels.Watson.convert.rhoMMsToDegs(x), @(x) (isempty(x) || isa(x,'function_handle')));
-            
-            p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxSourceInputsToConsiderTransferToNearbyDestinationRF, @isscalar);
-            p.addParameter('maxMeanConeInputsPerRGCToConsiderSwappingWithNearbyRGCs', MosaicConnector.maxMeanSourceInputsToConsiderSwappingWithNearbyDestinationRF, @isscalar);
-            p.addParameter('chromaticSpatialVarianceTradeoff', 1.0, @(x)(isscalar(x)&&((x>=0)&&(x<=1))));
-            p.addParameter('visualizeIntermediateStagesOfCenterConnectivityOptimization', false, @islogical);
-            p.addParameter('saveIntermediateStagesOfCenterConnectivityOptimization', false, @islogical);
-            
-            % Compute-ready mosaic params
-            p.addParameter('noiseFlag', 'random');
-            p.addParameter('randomSeed', [], @(x)(isempty(x) || isscalar(x)));
+            p.addParameter('withcomponents', [], @(x)(isempty(x) || (isstruct(x))));
+            p.addParameter('eccentricitydegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('positiondegs', [], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('sizedegs', [0.4 0.4], @(x)(isnumeric(x) && (numel(x) == 2)));
+            p.addParameter('whicheye', 'right eye', @(x)(ischar(x) && (ismember(x, {'left eye', 'right eye'}))));
             p.parse(varargin{:});
 
-            obj.name = p.Results.name;
-            obj.sourceLatticeSizeDegs = p.Results.sourceLatticeSizeDegs;
-            obj.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
-            obj.temporalEquivantEccentricityFactor = p.Results.temporalEquivantEccentricityFactor;
-            
-            % Generate the input cone mosaic. This also sets various
-            % other properties that are matched to the input cone
-            % mosaic, such as:
-            % - eccentricityDegs
-            % - sizeDegs
-            % - whichEye
-            obj.generateInputConeMosaic(p.Results);
-
-            % Set the eccentricity in microns
-            obj.eccentricityMicrons = obj.inputConeMosaic.eccentricityMicrons;
-
-            % Wire the RF centers. This configures and runs theobj.theMosaicConnectorOBJ
-            % which wires cones to midget RGC RF center (no overlap)
-            obj.generateRFpositionsAndWireTheirCenters(p.Results);
-
-            % Eliminate RGCs near the border
-            obj.cropRGCsOnTheBorder();
-
-            % Compute-ready params
-            obj.noiseFlag = p.Results.noiseFlag;
+            if (~isempty(p.Results.withcomponents))
+                obj.initializeWithComponents(p.Results.withcomponents);
+                fprintf('Initializing with passed components. All other key/value pair values are ignored.\n')
+                return;
+            end
         end % Constructor
 
-        % Method to crop a compute-ready mRGCMosaic to size at an eccentricity
-        cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin);
+        % Method to generate optics that are native to the MRGCmosaic
+        [theOI, thePSF, theOptimalStrehlRatioDefocusDiopters, theOptimalStrehlRatio] = nativeOI(obj, varargin);
 
-        % Method to set the peak gain of each mRGC 
-        setPeakGains(obj, method, methodParams);
-
-        % Compute method
+        % Method to compute  the spatiotemporal response of the mRGCMosaic given the response of its input cone  mosaic
         [noiseFreeMRGCresponses, noisyMRGCresponseInstances, responseTemporalSupportSeconds] = compute(obj, ...
-            theConeMosaicResponse, theConeMosaicResponseTemporalSupportSeconds, varargin);
+            theInputConeMosaicResponse, theInputConeMosaicResponseTemporalSupportSeconds, varargin);
 
-        % Method to compute noisy mRGCresponse instances
-        noisyMRGCresponseInstances = noisyInstances(obj, noiseFreeMRGCresponses, varargin);
+        % Method to generate noisy response instances
+        noisyMRGCresponseInstances = noisyResponseInstances(obj, noiseFreeMRGCresponses, varargin);
+
+        % Method to visualize the mRGCMosaic
+        [hFig, ax] = visualize(obj, varargin);
 
         % Method to generate the visualization cache
-        generateVisualizationCache(obj, xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod);
+        generateVisualizationCache(obj, xSupport, ySupport, ...
+            centerSubregionContourSamples, contourGenerationMethod, ...
+            visualizedRGCindices, minConedWeightIncluded, varargin);
 
-        % Method to visualize the mRGCmosaic and its activation
-        visualize(obj, varargin);
+        % Method to crop the mosaic
+        theCroppedMosaic = cropToSizeAtEccentricity(obj, sizeDegs, eccentricityDegs, varargin);
 
-        % Method to visualize the spatial RF of an RGC near a target
-        % positon, with a target # of center cones, and a target center
-        % cone majority type
-        theVisualizedRGCindex = visualizeRetinalConePoolingRFmapNearPosition(obj, ...
-            targetRGCposition, targetCenterConesNum, ...
-            targetCenterConeMajorityType, varargin);
+        % Method to generate RF center overlap
+        generateRFcenterOverlap(obj, rfCenterOverlapParamsStruct, varargin);
 
-        % Method to visualize the spatial RF of an RGC with a specific index
-        visualizeRetinalConePoolingRFmapOfRGCwithIndex(obj,theRGCindex, varargin);
+        % Method to set the  rgcRFsurroundConeConnectivityMatrix, the gains, the rfSurroundConnectivityParams
+        bakeSurroundConeConnectivityMatrixAndFreeze(obj, rgcRFsurroundConeConnectivityMatrix, rfSurroundConnectivityParams, surroundVarianceInComputeReadyMosaic);
 
-        % Method to generate optics for the mosaic.
-        dataOut = generateOptics(obj, opticsParams);
-        
-        % Method to set either the native (apropriate for the mosaic's center)
-        % or the custom optics (at an arbitrary position within the mosaic)
-        setTheOptics(obj, opticsParams);
+        % Method to compute the spatial and chromatic uniformity of cone inputs to the RF centers
+        [theSpatialCompactnessCosts, theSpectralUniformityCosts, ...
+        atLeastOneConeInputWithGreaterThanMinWeightIncluded, theInputConeNumerosityDifferentials, ...
+        theCentroidSpacingCosts, theSpatialVarianceCosts] = ...
+            rfCenterSpatioChromaticCosts(obj, varargin);
 
-        % Method to visualize optics at a number of eccentricities
-        hFig = visualizeOpticsAtEccentricities(obj, eccDegs, opticsParams, tickSeparationArcMin);
+        % Method to compute the surround cone purities for all a set or all RGCs in the mosaic
+        [surroundConePurities, centerConeDominances, centerConeNumerosities, centerConePurities] = surroundConePurities(obj, theRGCindices, surroundConeSelection);
 
-        % Method to bake in center/surround cone pooling weights.
-        % This method replaces the rgcRFcenterConeConnectivityMatrix with
-        % the rgcRFcenterConePoolingMatrix & rgcRFsurroundConePoolingMatrix
-        % It is called by the MosaicPoolingOptimizer.generateComputeReadyMidgetRGCMosaic()
-        % method which computes optimal center/surround weights for all RGCs in the mosaic
-        % by fitting the mRGC model to the Croner&Kaplan STF data 
-        bakeInConePoolingMatrices(obj, centerConePoolingMatrix, surroundConePoolingMatrix);
+        % Method to return cone connectivity stats for theSubregion ('center' or 'surround') oftheRGCindex
+        s = singleCellConnectivityStats(obj, theRGCindex, theSubregion, varargin);
 
-        % Method to return the majority center cone type for an RGC
-        [theCenterConeTypeWeights, theCenterConeTypeNum, theMajorityConeType, ...
-            theCenterConeTypes, theCenterConeIndices] = ...
-            centerConeTypeWeights(obj, theRGCindex);
+        % Method to return connectivity stats for the RF centers of all mRGCs within the mosaic
+        [allRGCCenterConesNum, allRGCCenterDominantConeTypes, allRGCCenterRelativeConeWeights] = ...
+            allRFcenterConnectivityStats(obj, varargin);
 
-        % Method to return the L, M, and S net cone weights in the surround
-        % If a non-empty theCenterConeIndices is passed the computed
-        % surround cone type weights are computed after excluding the surround cones
-        % that also feed into the RF center
-        [theSurroundConeTypeWeights, theExclusiveSurroundConeTypeWeights, ...
-         theSurroundConeTypes, theSurroundConeIndices] = ...
-            surroundConeTypeWeights(obj, theRGCindex, theCenterConeIndices);
+        % Method to return the indices of all RGCs with a specified range in the following properties:
+        % - center cone numerocity 
+        % - surround purity (for L-center RFs, surround purity is: M/(L+M), and correspondingly for M-center RFs)
+        % - radial eccentricity
+        % - center purity (for L-center RFs, center purity is: M/(L+M), and correspondingly for M-center RFs)
 
-        % Method to return the index of the RGC best matching the target
-        % criteria
-        [targetCenterConesNumNotMatched, theCurrentRGCindex] = indexOfRGCNearPosition(obj, ...
-            targetRGCposition, targetCenterConesNum, targetCenterConeMajorityType);
+        [targetRGCindices, surroundConePurities, centerConeDominances, ...
+          centerConeNumerosities, centerConePurities] = indicesOfRGCsWithinTargetedPropertyRanges(obj, ...
+            targetedCenterConeNumerosityRange, ...
+            targetedSurroundPurityRange, ...
+            targetedRadialEccentricityRange, ...
+            targetedCenterPurityRange)
 
-        % Method to return the indices of RGCs with a specific number of center cones
-        indicesOfRGCsIdentified = indicesOfRGCsWithThisManyCenterCones(obj, targetCenterConesNum);
+        % Method to return the indices of all RGCs with a specificed number of center input cones
+        theRGCIndices = indicesOfRGCsWithTargetCenterConesNumInRange(obj,targetCenterConesNumRange, varargin);
 
-        % Method to eliminate RGCs with a specified number of center cones
-        eliminateRGCsWithThisManyCenterConesNum(obj, targetCenterConesNum)
+        % Method to return the indices of all RGCs within a rectangular region
+        theRGCIndices = indicesOfRGCsWithinROI(obj, roiCenterDegs, roiSizeDegs);
 
-        % Stats on the center cones
-        centerConesNumCases = centerConePoolingStats(obj);
+        % Method to return the indices of all RGCs that are near targetRGC
+        [nearbyRGCindices, distancesToNearbyRGCs] = indicesOfNearbyRGCs(obj, targetRGC, varargin);
 
-        % Method to compute the spatial and chromatic variance cost for each RGC
-        theCostComponentsMatrix = totalInputMaintenanceCost(obj, ...
-            chromaticSpatialVarianceTradeoff, spatialVarianceMetric)
+        % Method to return the indices and distances of the maxNeighborsNum nearest RGCs to theTargetRGCindices
+        % nearbyRGCindices: 
+        %   [maxNeighborsNum x numel(theTargetRGCindices)] matrix of indices of nearby RGCs to theTargetRGCindices
+        % distanceMatrix: 
+        %   [maxNeighborsNum x numel(theTargetRGCindices)] matrix of distances of nearby RGCs to theTargetRGCindices
+        [nearbyRGCindices, distancesToNearbyRGCs] = neighboringRGCsToTargetRGCs(obj, theTargetRGCindices, maxNeighborsNum)
 
-        % Method to overwrite the connectivity matrix and the RGCRF
-        % positions (only used for debugging purposes)
-        overwritePositionConnectivityDataForDebugPurposes(obj, theStageMetaDataStruct);
+        % Methods to go back and forth between angular and linear eccentricities
+        angularEccDegs = linearEccMMsToAngularEccDegs(obj, linearEccMM);
+        linearEccMMs = angularEccDegsToLinearEccMMs(obj, angularEccDegs);
 
-        % Setter for noiseFlag
+        % Return temporal equivalent eccentricities (xy) for an array of xy positions
+        temporalEquivalentEccDegs = temporalEquivalentEccentricityForEccXYDegs(obj, xyEccDegs);
+
+        % Setters
+        function set.temporalEquivantEccentricityScalingMode(obj, val)
+            assert((ischar(val))&&ismember(val, mRGCMosaic.validTemporalEquivalentScalingModes), ...
+                sprintf('''%s'' is not a valid temporalEquivantEccentricityScalingMode', val));
+            obj.temporalEquivantEccentricityScalingMode = val;
+        end
+
         function set.noiseFlag(obj, val)
-            assert((isempty(val))||ismember(val, mRGCMosaic.validNoiseFlags), ...
+            assert((ischar(val))&&ismember(val, mRGCMosaic.validNoiseFlags), ...
                 sprintf('''%s'' is not a valid noise flag', val));
             obj.noiseFlag = val;
         end
 
-        % Getter for dependent property cellsNum
-        function val = get.rgcsNum(obj)
-            val = size(obj.rgcRFpositionsDegs,1);
+        function set.randomSeed(obj, val)
+            assert(isnumeric(val), sprintf('randomSeed must be a numeral'));
+            obj.randomSeed = val;
         end
 
-        % Getter for dependent property temporalEquivalentEccentricityDegs
-        function val = get.temporalEquivalentEccentricityDegs(obj)
-            val = obj.temporalEquivalentEccentricityForEccentricity(obj.eccentricityDegs);
+        function set.vMembraneGaussianNoiseSigma(obj, val)
+            assert(isnumeric(val)&&(val>=0), sprintf('rvMembraneGaussianNoiseSigma must be a positive numeral'));
+            obj.vMembraneGaussianNoiseSigma = val;
         end
-
-        % Getter for dependent property horizontalRetinalMeridian
-        function val = get.horizontalRetinalMeridian(obj)
-            val = obj.inputConeMosaic.horizontalRetinalMeridian;
-        end
-
-        % Getter for dependent property verticalRetinalMeridian
-        function val = get.verticalRetinalMeridian(obj)
-            val = obj.inputConeMosaic.verticalRetinalMeridian;
-        end
-
 
     end % Public methods
 
+
     % Private methods
-    methods (Access=private)
-        generateInputConeMosaic(obj, pResults);
-        generateRFpositionsAndWireTheirCenters(obj,pResults);
-        
-        % Method to crop RGCs on the border
-        cropRGCsOnTheBorder(obj);
-    end % Private methods
+    methods (Access = private)
+
+        % Method to initialize an mRGCMosaic with previously-computed components
+        % These components are generated by the RGCMosaicConstructor
+        function initializeWithComponents(obj,pStruct)
+            propertyNames = fieldnames(pStruct);
+            for iProperty = 1:numel(propertyNames)
+                thePropertyName = propertyNames{iProperty};
+                if (isprop(obj,thePropertyName))
+                    fprintf('Generating mRGCMosaic (property: ''%s'').\n', thePropertyName);
+                    obj.(thePropertyName) = pStruct.(thePropertyName);
+                else
+                    error('mRGCMosaic does not include a ''%s'' property.\n', thePropertyName);
+                end
+            end
+        end
+ 
+        % Method to render the cone pooling RF map of a single RGC. Called
+        % by visualize(), using the following key-value pairs
+        % 'visualizedRGCindices', [some list of RGCs], ...
+        % 'singleRGCconePoolingRFmaps', true, 
+        hFig = renderConePoolingRFmap(obj, theRGCindex, varargin);
+
+    end % private methods
 
 
     % Static methods
     methods (Static)
-        % Method to render the cone pooling plot with a subregion based on
-        % the cone indices and weights pooled by that subregion and return
-        % the X,Y line weighting functions for that subregion
-        [subregionLineWeightingFunctions, subregionContourData] = renderSubregionConePoolingPlot(ax, theConeMosaic, ...
-            rgcRFposDegs, coneIndices, coneWeights, varargin);
+        % Method to list available prebaked mRGCMosaics
+        [themRGCmosaicFileNames, prebakedMRGCMosaicDir] = listPrebakedMosaics();
 
-        % Method to render the X,Y line weighting functions for a subregion
-        renderSubregionConePoolingLineWeightingFunctions(ax, ...
-            centerLineWeightingFunction, surroundLineWeightingFunction, ...
-            sensitivityRange, horizontalAxisDirection, varargin);
+        % Method to load a prebaked mRGCMosaic and associated optics
+        [theMRGCmosaic, theOI] = loadPrebakedMosaic(mosaicParams, opticsParams);
 
-        % Method to generate iso-sensitivity contour data for a 2D map at a specified set of levels
-        cData = contourDataFromDensityMap(spatialSupportXY, zData, zLevels);
+        % Method to compute extra support needed to account for surrounds at a given eccentricity
+        extraDegs = extraSupportDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
 
-        % Method to list the available compute-ready mosaics
-        availableComputeReadyMosaics(rgcMosaicType);
+        % Method to render the input cone mosaic pooling map within a subregion (center or surround)
+        subregionLineWeightingFunctions = renderInputConeMosaicSubregionPoolingMap(theAxes, ...
+            theInputConeMosaic, theContourData, ...
+            theSubregionConeIndices, theSubregionConeWeights, flatTopSaturationLevel, ...
+            spatialSupportCenterDegs, spatialSupportTickSeparationArcMin, ...
+            scaleBarDegs, gridless, noXLabel, noYLabel, varargin);
 
-        % Method to load a compute-ready mosaic
-        theComputeReadyMRGCmosaic = loadComputeReadyRGCMosaic(mosaicParams, opticsParams, retinalRFmodelParams);
+        % Method to compute the cone mosaic pooling map 
+        [retinalSubregionConeMap, retinalSubregionConeMapFlatTop] = retinalSubregionConeMapFromPooledConeInputs(...
+            theConeMosaic, theConeIndices, theConeWeights, spatialSupportDegs, flatTopSaturationLevel)
 
-        % Method to compute the extra degs to include the surrounds
-        extraDegs = extraConeMosaicDegsForMidgetRGCSurrounds(eccentricityDegs, sizeDegs);
+        % Method to fit an ellipse to a subregion defined by pooled cones
+        contourData = subregionEllipseFromPooledCones(conePos, coneSpacings, poolingWeights, ...
+                xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples);
 
-        % Method to generate  data for visualization of the PSF
-        thePSFData = generateOpticsPSFdataForVisualization(theOI, visualizedWavelength, micronsPerDegree);
-
-        % Method to generate RF center contours from the pooled cones when
-        % the contourGenerationMethod is set to 'ellipseFitBasedOnLocalSpacing'
-        contourData = subregionOutlineContourFromSpacing(...
-            rgcPos, rgcRFradius,  ...
-            xSupport, ySupport, spatialSupportSamples);
-
-        % Method to generate RF center contours from the pooled cones when
-        % the contourGenerationMethod is set to 'contourOfPooledConeApertureImage'
-        [contourData, RFmap2D] = subregionOutlineContourFromPooledCones(...
-            conePos, coneRc, poolingWeights, ...
-            xSupport, ySupport, spatialSupportSamples)
-
-        % Method to generate RF center contours from the pooled cones when
-        % the contourGenerationMethod is set to 'ellipseFitToPooledConeApertureImage'
-        contourData = subregionEllipseFromPooledCones(...
-            conePos, coneRc, poolingWeights, ...
-            xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples);
-
-        % Method to fit an ellipse at some RFmap at the normalized level zLevel
-        contourData = ellipseContourFromSubregionRFmap(xSupport, ySupport, RFmap, ...
-            zLevel, centerSubregionContourSamples);
+        % Method to fit an ellipse to the pooled cones
+        [contourData, theCenter, xAlpha, yAlpha, theRotationRadians] = subregionEllipseFromPooledConePositions(...
+                         theConePositions, ellipseContourPoints, ellipseContourAngles, pLevel, maxNumberOfConesOutsideContour);
     end % Static methods
-
+    
 end
-
-
-
- 

@@ -12,14 +12,12 @@ classdef coneToMidgetRGCConnector < MosaicConnector
     properties (Constant)
 
         defaultWiringParams = struct(...
-            'optimizationCenter', 'latticeCenter', ...            % {'latticeCenter', 'origin'}
-            'chromaticSpatialVarianceTradeoff', 1.0, ...          % [0: minimize chromatic variance 1: minimize spatial variance]
-            'rfCentroidOverlapPenaltyFactor', 1, ...              % Penalty for overlapping centroids
+            'optimizationCenter', 'latticeCenter', ...            % {'latticeCenter', 'origin', or, 'localSpacingBased'}
+            'spatialChromaticUniformityTradeoff', 1.0, ...        % [0: maximize RF center chromatic uniformity, 1: maximize RF center spatial uniformity]
             'destinationRFoverlapRatio', 0.0, ...                 % overlap of midgetRGCRFs (0 = no overlap)
-            'spatialVarianceMetric', 'spatial variance', ...      % choose between {'maximal interinput distance', 'spatial variance'}
-            'maxMeanConeInputsPerRGCToConsiderSwapping', 7, ...   % Do cone swapping only if the mean cones/RGC less than or equal to this number
-            'maxNumberOfConesToSwap', 4, ...                      % Only swap up to this many cones
-            'maxPassesNum', 15 ...     
+            'maxSourceInputsToConsiderTransferToNearbyDestinationRF', 30, ...
+            'maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs', 4, ...                      % Only swap cones for  RGCs with up to this many input cones
+            'maxPassesNum', 10 ...     
         );
 
     end
@@ -48,10 +46,13 @@ classdef coneToMidgetRGCConnector < MosaicConnector
 
             p.addParameter('maxNeighborNormDistance', MosaicConnector.maxNeighborNormDistance, @isscalar);
             p.addParameter('maxNeighborsNum', MosaicConnector.maxNeighborsNum, @isscalar);
-            p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', MosaicConnector.maxSourceInputsToConsiderTransferToNearbyDestinationRF, @(x)(isscalar(x)&&(x>=MosaicConnector.minSourceInputsToConsiderTransferToNearbyDestinationRF)));
-            p.addParameter('maxMeanConeInputsPerRGCToConsiderSwappingWithNearbyRGCs',MosaicConnector.maxMeanSourceInputsToConsiderSwappingWithNearbyDestinationRF, @(x)(isscalar(x)&&(x>1)));
-            p.addParameter('chromaticSpatialVarianceTradeoff', coneToMidgetRGCConnector.defaultWiringParams.chromaticSpatialVarianceTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));  % [0: minimize chromatic variance 1: minimize spatial variance]
-            p.addParameter('optimizationCenter', coneToMidgetRGCConnector.defaultWiringParams.optimizationCenter, @(x)(ismember(x, {'patchCenter', 'origin'})));
+            p.addParameter('localSpacingFromCurrentCentroids', MosaicConnector.localSpacingFromCurrentCentroids);
+            p.addParameter('spatialChromaticUniformityTradeoff', coneToMidgetRGCConnector.defaultWiringParams.spatialChromaticUniformityTradeoff, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));  % [0: maximize RF center chromatic uniformity, 1: maximize RF center spatial uniformity]
+            p.addParameter('optimizationCenter', coneToMidgetRGCConnector.defaultWiringParams.optimizationCenter, @(x)(ismember(x, {'patchCenter', 'origin', 'localSpacing', 'localConeToRGCdensityRatio'})));
+            
+            p.addParameter('maxConeInputsPerRGCToConsiderTransferToNearbyRGCs', coneToMidgetRGCConnector.defaultWiringParams.maxSourceInputsToConsiderTransferToNearbyDestinationRF, @isscalar);
+            p.addParameter('maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs', coneToMidgetRGCConnector.defaultWiringParams.maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs, @isscalar);
+            p.addParameter('maxPassesNum', coneToMidgetRGCConnector.defaultWiringParams.maxPassesNum, @(x)(isscalar(x)&&(x>=1)));
 
             % Execute the parser
             p.parse(varargin{:});
@@ -59,13 +60,13 @@ classdef coneToMidgetRGCConnector < MosaicConnector
             customWiringParams = coneToMidgetRGCConnector.defaultWiringParams;
             customWiringParams.maxNeighborNormDistance = p.Results.maxNeighborNormDistance;
             customWiringParams.maxNeighborsNum = p.Results.maxNeighborsNum;
-
             customWiringParams.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs = p.Results.maxConeInputsPerRGCToConsiderTransferToNearbyRGCs;
-            customWiringParams.maxMeanConeInputsPerRGCToConsiderSwapping = p.Results.maxMeanConeInputsPerRGCToConsiderSwappingWithNearbyRGCs;
-
-            customWiringParams.chromaticSpatialVarianceTradeoff = p.Results.chromaticSpatialVarianceTradeoff;
+            customWiringParams.maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs = p.Results.maxConeInputsPerRGCToConsiderSwappingWithNearbyRGCs;
+            customWiringParams.localSpacingFromCurrentCentroids = p.Results.localSpacingFromCurrentCentroids;
+            customWiringParams.spatialChromaticUniformityTradeoff = p.Results.spatialChromaticUniformityTradeoff;
             customWiringParams.optimizationCenter = p.Results.optimizationCenter;
-           
+            customWiringParams.maxPassesNum = p.Results.maxPassesNum;
+
             generateProgressVideo = p.Results.generateProgressVideo;
 
             % Initialize the super-class constructor.
@@ -104,23 +105,8 @@ classdef coneToMidgetRGCConnector < MosaicConnector
         % (depending on the source lattice)
         cropDestinationLattice(obj);
 
-        % coneToMidgetRGCconnector -specific method to compute the cost
-        % components to maintain a set of inputs (cones)
-        theCostComponents = inputMaintenanceCost(obj, inputIndices, inputWeights, destinationRFspacing);
-
         % Return names of the different cost components
         costComponentNames = costComponentNames(obj);
-
-        
-
-        % Subclass-secific method for computing the various cost components
-        % to maintain the overlap between two RGCs
-        theCostComponents = overlappingDestinationRFCost(obj, ...
-            theRGCindex, ...
-            theRGCinputIndices, theRGCinputWeights, ...
-            theNearbyRGCindex, ...
-            theNearbyRGCinputIndices, theNearbyRGCinputWeights ...
-            );
 
         % coneToMidgetRGCconnector - specific method to visualize the
         % source lattice RFs (i.e., the cone RFs)
@@ -133,13 +119,16 @@ classdef coneToMidgetRGCConnector < MosaicConnector
     end % Implementations of required -- Public -- Abstract methods defined in the MosaicConnector interface
     
 
-    methods (Access = private) 
-
+    methods (Access = protected) 
+        theTotalPoolingCosts = totalPoolingCosts(obj);
     end % Private methods 
 
     methods (Static)
-        cost = chromaticVarianceCost(inputWeights, inputConeTypes);
-        cost = spatialVarianceCost(spatialVarianceMetric, inputWeights, inputPositions, destinationRFspacing);
+        cost = spectralUniformityCost(inputConeTypes, inputConeWeights);
+        [theCentroidSpacingCost, theCenterConeNumerosityDifferential, theCentroidOverlapCost, theVarianceCost] = spatialCompactnessCost(...
+            theTargetRFSourceRFpositions, theDonorRFSourceRFpositions, ...
+            theTargetRFSourceRFconnectionWeights, theDonorRFSourceRFconnectionWeights, ...
+            theTargetDestinationRFspacing, theDonorDestinationRFspacing);
     end % Static methods
 
 end

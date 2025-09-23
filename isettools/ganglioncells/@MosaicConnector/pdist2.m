@@ -66,7 +66,6 @@ function [D,idx] = pdist2(A, B, varargin)
                 B = fromPosition;
             end
         end
-
     end
 
     BB = sum(B.^2,2);

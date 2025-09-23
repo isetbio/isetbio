@@ -509,6 +509,8 @@ classdef digitizedData
         end  % parvoSurroundCenterPeakSensisitivityRatioAgainstEccentricity
 
         
+        
+
         % Surround/center integrated sensitivity ratio as a function of 
         % eccentricity for parvocellular cells (Figure 11)
         function [eccentricityDegs, SCintegratedSensitivityRatio, whichFigure] = ...

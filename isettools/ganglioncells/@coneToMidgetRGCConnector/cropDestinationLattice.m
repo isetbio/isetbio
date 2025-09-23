@@ -3,7 +3,7 @@ function cropDestinationLattice(obj)
     % for the surround cones
 
     % Compute the max surround radius
-    maxSurroundRadiusMicrons = obj.sourceLattice.metaData.midgetRGCSurroundRadiusMicronsAtMaxEccentricityGivenOptics;
+    maxSurroundRadiusMicrons = obj.sourceLattice.metaData.midgetRGCSurroundRadiusMicronsAtMaxEccentricity;
     minConePosXY = min(obj.sourceLattice.RFpositionsMicrons,[],1);
     maxConePosXY = max(obj.sourceLattice.RFpositionsMicrons,[],1);
 

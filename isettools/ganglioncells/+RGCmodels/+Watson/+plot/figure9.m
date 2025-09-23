@@ -19,9 +19,9 @@ function hFig = figure9()
 
     % Generate figure
     hFig = figure(9); clf;
-    ff = MSreadyPlot.figureFormat('1x1 small');
-    theAxes = MSreadyPlot.generateAxes(hFig,ff);
     set(hFig, 'Color', [1 1 1]);
+    ff = PublicationReadyPlotLib.figureComponents('1x1 standard figure');
+    theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
 
     theMeridianLabels = cell(1,numel(examinedMeridians));
     for k = 1:numel(examinedMeridians)
@@ -36,30 +36,19 @@ function hFig = figure9()
         'MarkerSize', ff.markerSize, 'LineWidth', 1.0, 'MarkerFaceColor', 0.8*[1 1 1]);
 
     % Label the meridians
-    legend(theAxes{1,1}, theMeridianLabels,  'Location', 'SouthWest', 'FontSize', ff.legendFontSize);
-    legend boxoff
+    legend(theAxes{1,1}, theMeridianLabels,  'Location', 'SouthWest');
 
-    % Axes and limits
-    set(theAxes{1,1}, 'XLim', [0.01*(1+3*ff.axisOffsetFactor) 100], 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100]);
-    set(theAxes{1,1}, 'YLim', [1*(1+3*ff.axisOffsetFactor) 20000], 'YScale', 'log', ...
+    % Axes scaling and ticks
+    set(theAxes{1,1}, 'XScale', 'log', 'XTick', [0.01 0.03 0.1 0.3 1 3 10 30 100]);
+    set(theAxes{1,1}, 'YScale', 'log', ...
         'YTick', [1 10 100 1000 10000], ...
         'YTickLabel', {'1', '10', '100', '1k', '10k'});
-    xtickangle(theAxes{1,1}, 0);
 
-    xlabel(theAxes{1,1}, 'eccentricity (degs)', 'FontAngle', ff.axisFontAngle);
-    ylabel(theAxes{1,1},'density (midget RGC RFs/deg^2)', 'FontAngle', ff.axisFontAngle);
-
-    % Grid
-    grid(theAxes{1,1}, 'on'); box(theAxes{1,1}, 'off');
-
-    % Ticks
-    set(theAxes{1,1}, 'TickDir', 'both');
-
-    % Font size
-    set(theAxes{1,1}, 'FontSize', ff.fontSize);
-
-    % axis color and width
-    set(theAxes{1,1}, 'XColor', ff.axisColor, 'YColor', ff.axisColor, 'LineWidth', ff.axisLineWidth);
+    % Finalize figure using the Publication-Ready format
+    XLims = [0.01 100]; YLims = [1 20000];
+    PublicationReadyPlotLib.offsetAxes(theAxes{1,1},ff, XLims, YLims);
+    PublicationReadyPlotLib.labelAxes(theAxes{1,1},ff, 'eccentricity (degs)', 'density (midget RGC RFs/deg^2)');
+    PublicationReadyPlotLib.applyFormat(theAxes{1,1},ff);
 end
 
 

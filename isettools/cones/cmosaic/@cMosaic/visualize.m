@@ -127,6 +127,7 @@ p.addParameter('withsuperimposedrgbopticalimagealpha', 0.7, @isnumeric);
 p.addParameter('withsuperimposedrgbopticalimagespatialsupportmicrons', [], @isnumeric);
 
 p.addParameter('withsuperimposedpsf', [], @(x)(isempty(x) || isstruct(x)));
+p.addParameter('withsuperimposedpsfcontourlinecolor', [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
 
 p.addParameter('activation', []);
 p.addParameter('activationrange', [],@(x)((isempty(x))||(numel(x)==2)));
@@ -191,6 +192,7 @@ superimposedRGBopticalImageSpatialSupportMicrons = p.Results.withsuperimposedrgb
 superimposedRGBopticalImage = p.Results.withsuperimposedrgbopticalimage;
 superimposedRGBopticalImageAlpha = p.Results.withsuperimposedrgbopticalimagealpha;
 superimposedPSF = p.Results.withsuperimposedpsf;
+superimposedPSFcontourLineColor = p.Results.withsuperimposedpsfcontourlinecolor;
 activation = p.Results.activation;
 activationRange = p.Results.activationrange;
 currentEMposition = p.Results.currentemposition;
@@ -787,7 +789,7 @@ end
 
 % Superimpose an optical PSF
 if (~isempty(superimposedPSF))
-    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, cMap);
+    superimposeThePSF(obj, axesHandle, domain, superimposedPSF, cMap, superimposedPSFcontourLineColor);
 end
 
 hold(axesHandle, 'off');
@@ -1034,7 +1036,7 @@ drawnow;
 end
 
 %% Method to superimpose an optical PSF on top of the mosaic
-function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData, theColorMap)
+function superimposeThePSF(obj, axesHandle, visualizationDomain, thePSFData, theColorMap, contourLineColor)
 
 
 if (strcmp(visualizationDomain, 'microns'))
@@ -1055,8 +1057,10 @@ if (isempty(theColorMap))
     theColorMap = brewermap(1024,'blues');
 end
 
-alpha = 0.75;
-contourLineColor = [0.2 0.2 0.2];
+alpha = 0.5;
+if (isempty(contourLineColor))
+    contourLineColor=[0.2 0.2 0.2];
+end
 
 cMosaic.semiTransparentContourPlot(axesHandle, ...
     xSupport, ySupport, ...

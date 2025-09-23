@@ -141,6 +141,7 @@ UnitTest.usePreferencesForProject(p.projectName);
 setpref('ISET','waitbar',false);
 ieSessionSet('waitbar',false);
 
+RGCMosaicConstructor.helper.utils.generateLocalPrefs();
 
 end
 

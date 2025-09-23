@@ -1,176 +1,117 @@
-%% Introduction to the midget RGC mosaic (mRGCMosaic) object.
+
+%% Introduction to the 2025 midget RGC mosaic (mRGCMosaic) object.
 %
 % Description:
-%    Demonstrates
-%        - how to select one of the pre-computed midget RGC mosaics,
-%        - how to select noise source (cone-only or intrinscic mRGC noise only)
-%        - how to compute responses to a static (single-frame) stimulus
-%        - how to visualize different aspects of the mRGCMosaic
-%        - how to visualize its response
+%    Demonstrates the following:
+%    (i)   how to load apre-baked midget RGC mosaic, 
+%    (ii)  generate custom optics for the computation,
+%    (iii) compute the response of the mRGC mosaic to a checkberboard stimulus, and
+%    (iv)  visualize the responses of the mRGC mosaic and of its input cone mosaic
 %
 
 
 % History:
-%    10/25/23  NPC  Wrote it.
+%    07/28/25  NPC  Wrote it.
 
 function t_mRGCMosaicBasic
     %% Close all figures
     close all;
 
-    % Configure a conservative parpool manager. This gives at least 8 GB RAM/core
-    % You might need to set this to true if you are hitting a strange
-    % parpool crash.  Setting it to true, however, invokes a new parpool
-    % open and restore which slows things down in most cases.
-    fancyParpoolControl = false;
-    if (fancyParpoolControl)
-        ASPPManager = AppleSiliconParPoolManager('conservative');
-    end
+    AppleSiliconParPoolManager(4);
 
-    % Control saving of figures.  We don't want tutorials
-    % saving things into the isetbio source tree.
-    saveFigures = true;
-    figureDir = figExporter.figureDir(mfilename, saveFigures);
+    % List the locally-available prebaded mosaics
+    % themRGCmosaicFileNames = mRGCMosaic.listPrebakedMosaics();
+   
+    % Load one of the prebaked mRGC mosaics. 
+    % We need to specify 4 pieces of information:
+    % (A) the eccentricity and size of the mosaic
+    % (B) the surround optimization method
+    % (C) the optics under which the mosaic was optimized
+    % (D) the optics to employ for the computation at hand
 
-    %% Display available mRGCMosaics
-    rgcMosaicType = 'ONcenterMidgetRGC';
-    mRGCMosaic.availableComputeReadyMosaics(rgcMosaicType);
+    % (A) Eccentricity (-4.0) and size (3x3deg) 
+    mosaicParams.eccDegs  = [-4 0];
+    mosaicParams.sizeDegs = [3 3];
 
-    %% Specify the desired eccentricity of the precomputed mRGC mosaic
-    % Choose the x-eccentricity from one of the available mosaics displayed above
-    % (e.g., -16.0 to load the mosaic 'mRGCMosaicEcDegs(-10.0_0.0)_SizeDegs(6.0_3.0)...'
-    %
-    % Better to code one we know should be there, because asking user for
-    % input in a tutorial hangs the autorun validations.
-    horizontalEccDegs = 0; % input('Enter mRGCMosaic''s horizontal eccentricity: ');
+    % (B) Surround optimization method
+    mosaicParams.spatialCompactnessSpectralPurityTradeoff = 1;
+    mosaicParams.surroundOptimizationSubString = 'PackerDacey2002H1freeLowH1paramsNarrowVisualSTFparamTolerance_vSTF_1.0_1.0';
 
-    %% Load precomputed mRGCMosaic
-    theMRGCMosaic = MosaicPoolingOptimizer.loadPreComputedMRGCMosaic(horizontalEccDegs);
+    % We will employ a smaller (2x1) patch centered at (-5,0), cropped from
+    % the full mosaic. If cropParams is not specified, we employ the full
+    % mosaic
+    mosaicParams.cropParams = struct(...
+        'sizeDegs', [2 1], ...
+        'eccentricityDegs', [-5 0] ...
+        );
 
-    %% Set the presentation display on which the stimulus must be realized
-    presentationDisplay = generateCRTDisplay();
 
-    %% Set stimulus parameters
-    sinusoidalStimulusParams = struct(...
-        'sizeDegs', 2.0, ...
-        'positionDegs',[horizontalEccDegs 0.], ...
-        'spatialFrequencyCyclesPerDeg', 10.0, ...
-        'orientationDegs', 0, ...               
-        'phaseDegs', 0, ...  
-        'contrast', 0.9, ...
-        'meanLuminanceCdPerM2', 40, ...
-        'isWindowed', false, ...
-        'pixelsAlongWidthDim', 1024, ...       
-        'pixelsAlongHeightDim', 1024);
+    % (C) Optics under which the mosaic was optimized
+    opticsParams.ZernikeDataBase = 'Polans2015';
+    opticsParams.subjectRankOrder = 2; 
+    opticsParams.visualizePSFonTopOfConeMosaic = true;
 
-    %% Generate a sinusoidal stimulus scene and the background scene
-    [theStimulusScene, theBackgroundScene] = generateSinusoidalStimulusAndBackgroundScene(...
-        presentationDisplay, sinusoidalStimulusParams);
 
-    %% Retrieve the native optics
-    % These are the optics under which the connections from the input cone
-    % mosaic to the mRGC mosaic were optimized
-    theOI = theMRGCMosaic.theNativeOptics;
-
-    %% Compute the retinal image of the stimulus and background scenes
-    theStimulusRetinalImage = oiCompute(theOI, theStimulusScene);
-    theBackgroundRetinalImage = oiCompute(theOI, theBackgroundScene);
-
-    %% Set the integration time of the input cone mosaic to 100 msec
-    theMRGCMosaic.inputConeMosaic.integrationTime = 100/1000;
-
-    %% Set the input cone mosaic noise flag to none
-    theMRGCMosaic.inputConeMosaic.noiseFlag = 'none';
+    % Append to opticsParams, information on which optics to employ for the computation at hand
     
-    %% Compute the noise-free background activation of the input cone mosaic
-    %
-    % Setting 'lowOpticalImageResolutionWarning' to false supresses a
-    % warning that the oi spatial resolution is too low to model cone
-    % aperture blur. This would go away if the oi is set to have a higher 
-    % spatial resolution, but we use a lower resolution here to speed this
-    % tutorial up.
-    theConeMosaicBackgroundNoiseFreeActivation = theMRGCMosaic.inputConeMosaic.compute(...
-            theBackgroundRetinalImage, ...
-            'opticalImagePositionDegs', sinusoidalStimulusParams.positionDegs, ...
-            'lowOpticalImageResolutionWarning',false);
+    % EITHER adaptive optics (diffraction limited with 6 mm pupil)
+    %opticsParams.type = 'adaptiveOptics6MM';
+    %opticsParams. refractiveErrorDiopters = [];
+    
+    % OR the native optics + StrehlRatio optimization (what was used to optimize the mosaic
+    %opticsParams.type = 'nativeOptics';
+    %opticsParams.refractiveErrorDiopters = [];
 
-    %% Set the input cone mosaic noise flag to random to generate noisy response instances
-    theMRGCMosaic.inputConeMosaic.noiseFlag = 'random';
+    % OR the native optics without a custom refraction, here -3.5D
+    opticsParams.type = 'customRefraction';
+    opticsParams.refractiveErrorDiopters = -3.5;
+    
+    
+    % Load the desired mRGCmosaic and generated the optics for the computation
+    [theMRGCmosaic, theOpticsToEmploy] = mRGCMosaic.loadPrebakedMosaic(mosaicParams, opticsParams);
+    theMRGCmosaic.visualize();
 
-    %% Number of noisy response instances to compute
-    noisyInstancesNum = 128;
+    % Input stimulus
+    imageFOVdegs = min(theMRGCmosaic.sizeDegs);
+    pixelsPerCheck = 256;
+    numberOfChecks = 5;
 
-    %% Compute the noise-free response and noisyInstancesNum of noisy response instances of the input cone mosaic
-    [theConeMosaicNoiseFreeResponse,  ...
-     theConeMosaicNoisyResponseInstances, ~, ~, ...
-     theConeMosaicResponseTemporalSupportSeconds] = theMRGCMosaic.inputConeMosaic.compute(...
-            theStimulusRetinalImage, ...
-            'opticalImagePositionDegs', sinusoidalStimulusParams.positionDegs, ...
-            'nTrials', noisyInstancesNum, ...
-            'lowOpticalImageResolutionWarning',false);
+    % Compute the stimulus scene
+    theStimulusScene = sceneCreate('checkerboard', pixelsPerCheck, numberOfChecks);
+    theStimulusScene = sceneSet(theStimulusScene, 'fov', imageFOVdegs);
 
-    %% Visualize the spatial relationship between stimulus and MRGCMmosaic
-    % This function must be called after the cMosaic.compute() method in
-    % order to display the OI at the correct location within the mosaic
-    coVisualizeRetinalStimulusConeAndMRGCmosaic(1, theMRGCMosaic, theStimulusRetinalImage);
+    % Compute the retinal image
+    theStimulusRetinalImage = oiCompute(theOpticsToEmploy, theStimulusScene);
 
-    %% Define a function handle to convert excitations to modulations
-    excitationsToModulations = @(e) (bsxfun(@times, (bsxfun(@minus, e, theConeMosaicBackgroundNoiseFreeActivation)), 1./theConeMosaicBackgroundNoiseFreeActivation));
+    % Compute the input cone mosaic response to the retinal image of the stimulus
+    [theNoiseFreeConeMosaicExcitationsResponse, ...
+     theNoisyConeMosaicExcitationsResponses, ~, ~, ...
+     theConeMosaicResponseTemporalSupportSeconds] = theMRGCmosaic.inputConeMosaic.compute(...
+        theStimulusRetinalImage, ...
+        'opticalImagePositionDegs', theMRGCmosaic.eccentricityDegs);
 
-    %% Set the mRGCMosaic noise flag to none
-    theMRGCMosaic.noiseFlag = 'none';
+    % Compute the mRGCmosaic response to the input cone mosaic response
+    mRGCNonLinearityParams = [];
+    [theNoiseFreeSpatioTemporalMRCMosaicResponse, ~, ...
+     theMRGCMosaicResponseTemporalSupportSeconds] = theMRGCmosaic.compute( ...
+                theNoiseFreeConeMosaicExcitationsResponse, ...
+                theConeMosaicResponseTemporalSupportSeconds, ...
+                'nonLinearityParams', mRGCNonLinearityParams);
 
-    %% Compute the noise-free response of the mRGC mosaic. No cone noise, no mRGC noise
-    noiseFreeResponse = theMRGCMosaic.compute( ...
-              excitationsToModulations(theConeMosaicNoiseFreeResponse), ...
-              theConeMosaicResponseTemporalSupportSeconds);
+    hFig = figure(1);
+    set(hFig, 'Position', [10 10 1980 910]);
 
-    %% Set the mRGCMosaic noise flag to random
-    theMRGCMosaic.noiseFlag = 'random';
- 
-    %% Set the intrinsic noise of the mRGCMosaic to 0
-    theMRGCMosaic.vMembraneGaussianNoiseSigma = 0.0;
+    ax = subplot(1,2,1);
+    theMRGCmosaic.inputConeMosaic.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax, ...
+        'activation', theNoiseFreeConeMosaicExcitationsResponse, ...
+        'plotTitle', 'input cone mosaic response');
 
-    %% Compute noisyInstancesNum of mRGC mosaic responses with the cone mosaic noise being the only noise source
-    % To do so, we compute using the input cone mosaic noisy modulation response instances
-    [~, noisyResponseInstancesConeNoiseOnly] = theMRGCMosaic.compute( ...
-             excitationsToModulations(theConeMosaicNoisyResponseInstances), ...
-             theConeMosaicResponseTemporalSupportSeconds, ...
-             'nTrials', noisyInstancesNum);
-
-    %% Set the intrinsic noise of the mRGCMosaic to the examined level
-    theMRGCMosaic.vMembraneGaussianNoiseSigma = 0.05;
-
-    %% Compute noisyInstancesNum of mRGC mosaic responses with the mRGCMosaic intrinsic noise being the only noise source
-    % To do so, we compute using the input cone mosaic noise-free modulation response 
-    [~, noisyResponseInstancesIntrinsicMRGCnoiseOnly] = theMRGCMosaic.compute( ...
-             excitationsToModulations(theConeMosaicNoiseFreeResponse), ...
-             theConeMosaicResponseTemporalSupportSeconds, ...
-             'nTrials', noisyInstancesNum);
-
-    %% Find indices of RGCs along the y = y-stimulus position
-    targetYdegs = sinusoidalStimulusParams.positionDegs(2);
-    minConeSeparation = 0;
-    minRGCSeparation = 0;
-    [~, mRGCIndices] = coneAndMRGCindicesAlongDesiredYposition(...
-        theMRGCMosaic, targetYdegs, ...
-        minConeSeparation, minRGCSeparation);
-
-    %% Visualize response components
-    figHandlesAndFileNames = visualizeMRGMosaicResponseComponents(theMRGCMosaic, mRGCIndices, ...
-        noiseFreeResponse, ...
-        noisyResponseInstancesConeNoiseOnly, ...
-        noisyResponseInstancesIntrinsicMRGCnoiseOnly);
-
-    if (saveFigures)
-        for iFig = 1:numel(figHandlesAndFileNames)
-            s = figHandlesAndFileNames{iFig};
-            NicePlot.exportFigToPDF(fullfile(figureDir,s.pdfFileName), s.hFig,300);
-        end
-    end
-
-     % Restore previous parpool config
-    if (fancyParpoolControl)
-        ASPPManager.restoreLastParpoolSize();
-    end
-
+    ax = subplot(1,2,2);
+    theMRGCmosaic.visualize(...
+        'figureHandle', hFig, ...
+        'axesHandle', ax, ...
+        'activation', theNoiseFreeSpatioTemporalMRCMosaicResponse, ...
+        'plotTitle', 'mRGC mosaic response');
 end

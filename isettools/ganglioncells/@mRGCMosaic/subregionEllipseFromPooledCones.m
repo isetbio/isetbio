@@ -1,12 +1,11 @@
 function contourData = subregionEllipseFromPooledCones(...
-    conePos, coneRc, poolingWeights, ...
+    conePos, coneSpacings, poolingWeights, ...
     xSupport, ySupport, spatialSupportSamples, centerSubregionContourSamples)
 
     % Compute spatial support
-    xSep = max(coneRc)*2.5*sqrt(numel(poolingWeights));
+    xSep = max(coneSpacings)*sqrt(numel(poolingWeights));
 
     if (isempty(poolingWeights))
-        fprintf(2, 'poolingWeights is []. Returning an empty contourData struct\n');
         contourData = [];
         return;
     end
@@ -39,7 +38,7 @@ function contourData = subregionEllipseFromPooledCones(...
         yo = mean(yy);
 
         poolingWeights = poolingWeights(idx);
-        coneRc = coneRc(idx);
+        coneRc = exp(-1)*coneSpacings(idx);
         xx = xx(idx);
         yy = yy(idx);
         interpolationPointsNum = 4;
@@ -58,7 +57,6 @@ function contourData = subregionEllipseFromPooledCones(...
             end
         end
 
-
         for iConeInterp = 1:numel(coneRcInterp)
             % Characteristic radius of the input RF
             rC = coneRcInterp(iConeInterp);
@@ -70,21 +68,10 @@ function contourData = subregionEllipseFromPooledCones(...
             RF = RF + theAperture2D;
             RF(RF>1) = 1;
         end
-
-        % for iCone = 1:numel(poolingWeights)
-        %     % Characteristic radius of the input RF
-        %     rC = coneRc(iCone);
-        %     % Compute aperture2D x weight
-        %     XX = X-conePos(iCone,1);
-        %     YY = Y-conePos(iCone,2);
-        %     theAperture2D = poolingWeights(iCone) * exp(-(XX/rC).^2) .* exp(-(YY/rC).^2);
-        %     % Accumulate 2D apertures
-        %     RF = RF + theAperture2D;
-        % end
     else
         % Characteristic radius of the input RF
         iCone = 1;
-        rC = coneRc(iCone);
+        rC = exp(-1)*coneSpacings(iCone);
         % Compute aperture2D x weight
         XX = X-conePos(iCone,1);
         YY = Y-conePos(iCone,2);
@@ -93,51 +80,44 @@ function contourData = subregionEllipseFromPooledCones(...
         RF(RF>1) = 1;
     end
 
+    contourData = ellipseContourFromSubregionRFmap(xSupport, ySupport, RF, centerSubregionContourSamples);
+end
 
-    zLevel = 0.02;
-    contourData = mRGCMosaic.ellipseContourFromSubregionRFmap(xSupport, ySupport, RF, zLevel, centerSubregionContourSamples);
+function contourData = ellipseContourFromSubregionRFmap(xSupport, ySupport, RF,  centerSubregionContourSamples)
 
+    % Binarize
+    RF = RF / max(RF(:));
+    zLevel = 0.01;
+    RF(RF<zLevel) = 0.0;
+    RF(RF>0) = 1.0;
+    BW = imbinarize(RF);
 
-    % % Binarize
-    % RF = RF / max(RF(:));
-    % RF(RF<0.1) = 0.0;
-    % RF(RF>0) = 1.0;
-    % BW = imbinarize(RF);
-    % 
-    % 
-    % % Extract the maximum area
-    % BW = imclearborder(BW);
-    % BW = bwareafilt(BW,1);
-    % 
-    % % Calculate centroid, orientation and major/minor axis length of the ellipse
-    % s = regionprops(BW,{'Centroid','Orientation','MajorAxisLength','MinorAxisLength'});
-    % if (isempty(s))
-    %     figure()
-    %     subplot(1,2,1);
-    %     imagesc(RF)
-    %     axis 'image'
-    %     subplot(1,2,2)
-    %     imagesc(BW);
-    %     axis 'image'
-    % 
-    %     contourData = [];
-    %     return;
-    % end
-    % 
-    % % Calculate the ellipse line
-    % theta = linspace(0, 2*pi, centerSubregionContourSamples);
-    % col = (s.MajorAxisLength/2)*cos(theta);
-    % row = (s.MinorAxisLength/2)*sin(theta);
-    % M = makehgtform('translate',[s.Centroid, 0],'zrotate',deg2rad(-1*s.Orientation));
-    % D = M*[col;row;zeros(1,numel(row));ones(1,numel(row))];
-    % 
-    % x = D(1,:);
-    % y = D(2,:);
-    % x = (x-1)/(numel(xSupport)-1) * (xSupport(end)-xSupport(1)) + xSupport(1); 
-    % y = (y-1)/(numel(ySupport)-1) * (ySupport(end)-ySupport(1)) + ySupport(1); 
-    % 
-    % v = [x(:) y(:)];
-    % f = 1:numel(x);
-    % s = struct('faces', f, 'vertices', v);
-    % contourData = s;
+    % Extract the maximum area
+    BW = imclearborder(BW);
+    BW = bwareafilt(BW,1);
+
+    % Calculate centroid, orientation and major/minor axis length of the ellipse
+    s = regionprops(BW,{'Centroid','Orientation','MajorAxisLength','MinorAxisLength'});
+    if (isempty(s))
+        fprintf(2, 'Could not fit an ellipse to subregion map. Returning empty contour.\n')
+        contourData = [];
+        return;
+    end
+
+    % Calculate the ellipse line
+    theta = linspace(0, 2*pi, centerSubregionContourSamples);
+    col = exp(-1)*(s.MajorAxisLength)*cos(theta);
+    row = exp(-1)*(s.MinorAxisLength)*sin(theta);
+    M = makehgtform('translate',[s.Centroid, 0],'zrotate',deg2rad(-1*s.Orientation));
+    D = M*[col;row;zeros(1,numel(row));ones(1,numel(row))];
+
+    x = D(1,:);
+    y = D(2,:);
+    x = (x-1)/(numel(xSupport)-1) * (xSupport(end)-xSupport(1)) + xSupport(1); 
+    y = (y-1)/(numel(ySupport)-1) * (ySupport(end)-ySupport(1)) + ySupport(1); 
+
+    v = [x(:) y(:)];
+    f = 1:numel(x);
+    s = struct('faces', f, 'vertices', v);
+    contourData = s;
 end

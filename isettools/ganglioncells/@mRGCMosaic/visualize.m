@@ -1,4 +1,4 @@
-function visualize(obj, varargin)
+function [hFig,ax] = visualize(obj, varargin)
     
     % Parse optional input
     p = inputParser;
@@ -6,30 +6,43 @@ function visualize(obj, varargin)
     p.addParameter('axesHandle', [], @(x)(isempty(x)||isa(x, 'handle')));
     p.addParameter('clearAxesBeforeDrawing', true, @islogical);
     p.addParameter('labelRetinalMeridians', false, @islogical);
-    p.addParameter('component', 'RF centers', @(x)ismember(x, {'RF centers'}));
+    p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
+    p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
+    p.addParameter('tickSeparationArcMinForRFconePoolingMap', 3, @isscalar);
+    p.addParameter('visualizedRGCindices', 'all', @(x)(isnumeric(x)||(ischar(x)&&(strcmp(x,'all')))));
+    p.addParameter('singleRGCconePoolingRFmaps', false, @islogical);
+    p.addParameter('scaleBarDegs', [], @isscalar);
+    p.addParameter('doNotLabelScaleBar', false, @islogical);
+
     p.addParameter('centerSubregionContourSamples', 10, @isscalar);
-    p.addParameter('contourGenerationMethod', 'ellipseFitToPooledConeApertureImage', @(x)(ismember(x, {'ellipseFitBasedOnLocalSpacing', 'contourOfPooledConeApertureImage','ellipseFitToPooledConeApertureImage'})));
-    p.addParameter('activation', []);
-    p.addParameter('samplingGrid', [], @(x)(isempty(x) || (isnumeric(x) && (size(x,2) == 2)) ));
-    p.addParameter('samplingGridOutlineColor', [1 0 0], @(x)(isempty(x)||(numel(x)==3)));
-    p.addParameter('samplingGridFillColor', [1 0.6 0.6], @(x)(isempty(x)||(numel(x)==3)));
+    p.addParameter('spatialSupportSamples', [], @(x)(isempty(x)||isscalar(x)));
+    p.addParameter('forceRegenerateVisualizationCache', false, @islogical);
+    p.addParameter('contourGenerationMethod', 'ellipseFitToPooledConeApertureImage', @(x)(ismember(x, obj.validRFsubregionContourGenerationMethods)));
+    p.addParameter('minConeWeightVisualized', mRGCMosaic.sensitivityAtPointOfOverlap, @isscalar);
+    p.addParameter('maxNumberOfConesOutsideContour', 1, @isscalar);
     p.addParameter('identifiedConeAperture', 'geometricArea', @(x)ismember(x, ...
         {'lightCollectingArea', 'geometricArea', 'coneSpacing', ...
         'lightCollectingAreaCharacteristicDiameter', 'lightCollectingArea2sigma', 'lightCollectingArea4sigma', 'lightCollectingArea5sigma', 'lightCollectingArea6sigma'}));
-    p.addParameter('identifiedConeApertureThetaSamples', [], @(x)(isempty(x) || isscalar(x)));
-   
+    p.addParameter('identifiedConeApertureThetaSamples', 8, @(x)(isempty(x) || isscalar(x)));
     p.addParameter('identifyInputCones', false, @islogical);
     p.addParameter('identifyPooledCones', false, @islogical);
     p.addParameter('identifiedInputConeIndices', [], @isnumeric);
-    p.addParameter('pooledConesLineWidth', 1.0, @isscalar);
+    p.addParameter('pooledConesLineWidth', 1.0, @(x)(isempty(x) || isscalar(x)));
+    p.addParameter('inputConesAlpha', 0.7, @isscalar);
     p.addParameter('plotRFoutlines', true, @islogical);
     p.addParameter('plottedRFoutlineLineWidth', 1.0, @isscalar);
+    p.addParameter('plottedRFoutlineFaceColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('plottedRFoutlineFaceAlpha', 1.0, @isscalar);
+    p.addParameter('renderSourceLatticeInsteadOfConnectedRFcenters', false, @islogical);
+
+    p.addParameter('activation', []);
     p.addParameter('activationRange', [],@(x)((isempty(x))||(numel(x)==2)));
     p.addParameter('activationColorMap', [], @(x)(isempty(x)||(size(x,2) == 3)));
     p.addParameter('horizontalActivationColorBar', false, @islogical);
     p.addParameter('verticalActivationColorBar', false, @islogical);
     p.addParameter('horizontalActivationColorBarInside', false, @islogical);
     p.addParameter('verticalActivationColorBarInside', false, @islogical);
+
     p.addParameter('fontSize', 16, @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('fontAngle', 'normal', @(x)(ismember(lower(x), {'normal', 'italic'})));
     p.addParameter('labelRGCsWithIndices', [], @(x)(isempty(x)||isnumeric(x)));
@@ -38,37 +51,66 @@ function visualize(obj, varargin)
     p.addParameter('colorbarFontSize', 16, @(x)(isempty(x)||(isscalar(x))));
     p.addParameter('colorBarTickLabelPostFix', '', @ischar);
     p.addParameter('colorbarTickLabelColor',  [], @(x)(isempty(x)||((isvector(x))&&(numel(x) == 3))));
+
     p.addParameter('backgroundColor', [], @(x)( (ischar(x)&&((strcmp(x,'none'))||(strcmp(x,'mean of color map'))) ) || isempty(x) || ((isvector(x))&&(numel(x) == 3))));
     p.addParameter('plotTitle', '', @(x)(isempty(x) || ischar(x) || islogical(x)));
     p.addParameter('plotTitleColor', [0 0 0], @isnumeric);
     p.addParameter('plotTitleFontSize', 16, @isscalar);
-    p.addParameter('domainVisualizationLimits', [], @(x)((isempty(x))||(numel(x)==4)));
-    p.addParameter('domainVisualizationTicks', [], @(x)(isempty(x)||(isstruct(x)&&((isfield(x, 'x'))&&(isfield(x,'y'))))));
+    
     p.addParameter('superimposedRect', [], @(x)(isempty(x)||isstruct(x)));
+    p.addParameter('superimposedRectLineWidth', 2, @isscalar);
     p.addParameter('superimposedRectColor', [], @(x)( isempty(x) || ((isvector(x))&&(numel(x) == 3))));
+    p.addParameter('superimposedRectAlpha', 1, @(x)(isscalar(x)&&(x>=0)&&(x<=1)));
+
     p.parse(varargin{:});
 
     hFig = p.Results.figureHandle;
     ax = p.Results.axesHandle;
+    if (isempty(hFig)) && (~isempty(ax))
+        try
+            hFig = ancestor(ax, 'figure');
+        catch
+            fprintf('MRGCMosaic.visualize:: Unable to retrieve the parent figure handle from passed axes\n');
+        end
+    end
+
     clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
     domainVisualizationTicks = p.Results.domainVisualizationTicks;
-    visualizedComponent = p.Results.component;
+    tickSeparationArcMinForRFconePoolingMap = p.Results.tickSeparationArcMinForRFconePoolingMap;
+
+    if (~strcmp(p.Results.visualizedRGCindices, 'all'))
+        visualizedRGCindices = unique(p.Results.visualizedRGCindices);
+    else
+        visualizedRGCindices = p.Results.visualizedRGCindices;
+    end
+
+    singleRGCconePoolingRFmaps = p.Results.singleRGCconePoolingRFmaps;
+    scaleBarDegs = p.Results.scaleBarDegs;
+    doNotLabelScaleBar = p.Results.doNotLabelScaleBar;
+
+    spatialSupportSamples = p.Results.spatialSupportSamples;
     centerSubregionContourSamples = p.Results.centerSubregionContourSamples;
     contourGenerationMethod = p.Results.contourGenerationMethod;
+    
+    forceRegenerateVisualizationCache = p.Results.forceRegenerateVisualizationCache;
+    minConeWeightVisualized = p.Results.minConeWeightVisualized;
+    maxNumberOfConesOutsideContour = p.Results.maxNumberOfConesOutsideContour;
     identifiedConeAperture = p.Results.identifiedConeAperture;
     identifiedConeApertureThetaSamples = p.Results.identifiedConeApertureThetaSamples;
     identifiedInputConeIndices = p.Results.identifiedInputConeIndices;
     identifyInputCones = p.Results.identifyInputCones;
     identifyPooledCones = p.Results.identifyPooledCones;
     pooledConesLineWidth = p.Results.pooledConesLineWidth;
+    inputConesAlpha = p.Results.inputConesAlpha;
     plotRFoutlines = p.Results.plotRFoutlines;
     plottedRFoutlineLineWidth = p.Results.plottedRFoutlineLineWidth;
+    plottedRFoutlineFaceColor = p.Results.plottedRFoutlineFaceColor;
+    plottedRFoutlineFaceAlpha = p.Results.plottedRFoutlineFaceAlpha;
+
+    renderSourceLatticeInsteadOfConnectedRFcenters = p.Results.renderSourceLatticeInsteadOfConnectedRFcenters;
     activation = p.Results.activation;
-    samplingGrid = p.Results.samplingGrid;
-    samplingGridOutlineColor = p.Results.samplingGridOutlineColor;
-    samplingGridFillColor = p.Results.samplingGridFillColor;
     activationRange = p.Results.activationRange;
     activationColorMap = p.Results.activationColorMap;
     colorBarTickLabelPostFix = p.Results.colorBarTickLabelPostFix;
@@ -80,7 +122,7 @@ function visualize(obj, varargin)
     backgroundColor = p.Results.backgroundColor;
     fontSize = p.Results.fontSize;
     fontAngle = p.Results.fontAngle;
-    labelRGCsWithIndices = p.Results.labelRGCsWithIndices;
+    labelRGCsWithIndices = unique(p.Results.labelRGCsWithIndices);
     labeledRGCsColor = p.Results.labeledRGCsColor;
     labeledRGCsLineWidth = p.Results.labeledRGCsLineWidth;
     colorbarFontSize = p.Results.colorbarFontSize;
@@ -88,12 +130,17 @@ function visualize(obj, varargin)
     plotTitleColor = p.Results.plotTitleColor;
     plotTitleFontSize = p.Results.plotTitleFontSize;
     superimposedRect = p.Results.superimposedRect;
+    superimposedRectLineWidth = p.Results.superimposedRectLineWidth;
     superimposedRectColor = p.Results.superimposedRectColor;
+    superimposedRectAlpha = p.Results.superimposedRectAlpha;
 
-    % Generate the visualization cache
-    xSupport = [];
-    ySupport = []; 
-    obj.generateVisualizationCache(xSupport, ySupport, centerSubregionContourSamples, contourGenerationMethod);
+    % validateSuperimposedRect
+    if (~isempty(superimposedRect))
+        assert(size(superimposedRect.center,2) == 2, 'superimposedRect must have 2 columns'); 
+        assert(size(superimposedRect.center,1) == numel(superimposedRect.xRange), 'The rows of superimposedRect.center must equal the length of superimposedRect.xRange'); 
+        assert(size(superimposedRect.center,1) == numel(superimposedRect.yRange), 'The rows of superimposedRect.center must equal the length of superimposedRect.xRange'); 
+    end
+
 
     % Determine X,Y limits
     if (isempty(domainVisualizationLimits))
@@ -161,62 +208,93 @@ function visualize(obj, varargin)
             domainVisualizationTicks.y = round(ticksY*1000)/1000;
         end 
     end
+
+
+    assert(domainVisualizationLimits(2)>domainVisualizationLimits(1), 'xRange: domainVisualizationLimits(2) must be > domainVisualizationLimits(1)');
+    assert(domainVisualizationLimits(4)>domainVisualizationLimits(3), 'yRange: domainVisualizationLimits(4) must be > domainVisualizationLimits(2)');
+
+    if (singleRGCconePoolingRFmaps)
+        for iRGC = 1:numel(visualizedRGCindices)
+            theRGCindex = visualizedRGCindices(iRGC);
+            hFig = obj.renderConePoolingRFmap(theRGCindex, ...
+                'figureHandle', hFig, ...
+                'axesHandle', ax, ...
+                'scaleBarDegs', scaleBarDegs, ...
+                'doNotLabelScaleBar', doNotLabelScaleBar, ...
+                'minConeWeightIncluded', minConeWeightVisualized, ...
+                'tickSeparationArcMin', tickSeparationArcMinForRFconePoolingMap);
+        end
+        return;
+    end
+
+    if (renderSourceLatticeInsteadOfConnectedRFcenters)
+        contourGenerationMethod = 'ellipseFitBasedOnLocalSpacingOfSourceLattice';
+        % Load data from the source lattice
+        [~, obj.rgcRFpositionsDegsOfSourceLattice] = retinalattice.import.finalMRGCPositions(...
+            obj.inputConeMosaic.sourceLatticeSizeDegs, ...
+            obj.inputConeMosaic.eccentricityMicrons, ... 
+            max(obj.inputConeMosaic.coneRFpositionsMicrons,[], 1)-min(obj.inputConeMosaic.coneRFpositionsMicrons,[], 1), ...
+            obj.inputConeMosaic.whichEye, ...
+            obj.inputConeMosaic.customMMsToDegsConversionFunction);
+        visualizedRGCindices = 1:size(obj.rgcRFpositionsDegsOfSourceLattice,1);
+        % Compute spacings
+        obj.rgcRFspacingsDegsOfSourceLattice = RGCmodels.Watson.convert.positionsToSpacings(obj.rgcRFpositionsDegsOfSourceLattice);
+        identifyPooledCones = false;
+    end
+
+    % Generate the visualization cache
     
-    switch (visualizedComponent)
-        case 'RF centers'
-            [hFig, ax] = visualizeRFcenters(obj, hFig, ax, clearAxesBeforeDrawing, ...
-                labelRetinalMeridians, ...
-                domainVisualizationTicks, domainVisualizationLimits, ...
-                identifiedConeAperture, identifiedConeApertureThetaSamples, ...
-                identifyInputCones, identifyPooledCones, identifiedInputConeIndices, ...
-                pooledConesLineWidth, labelRGCsWithIndices, ...
-                labeledRGCsColor, labeledRGCsLineWidth, ...
-                plotRFoutlines, plottedRFoutlineLineWidth, superimposedRect, superimposedRectColor, ...
-                activation, activationRange, activationColorMap, ...
-                colorBarTickLabelPostFix, colorbarTickLabelColor, ...
-                verticalColorBar, horizontalColorBar, colorbarFontSize, ...
-                verticalColorBarInside, horizontalColorBarInside, ...
-                backgroundColor, fontSize, fontAngle, ...
-                plotTitle, plotTitleColor, plotTitleFontSize);
-
-        otherwise
-            error('Uknown visualized component: ''%s''.', visualizedComponent);
+    if (ischar(visualizedRGCindices))&&(strcmp(visualizedRGCindices,'all'))
+        visualizedRGCindices = 1:obj.rgcsNum;
     end
+    xSupport = []; ySupport = []; 
+    obj.generateVisualizationCache(xSupport, ySupport, ...
+        centerSubregionContourSamples, contourGenerationMethod, ...
+        visualizedRGCindices, minConeWeightVisualized, ...
+        'spatialSupportSamples', spatialSupportSamples, ...
+        'maxNumberOfConesOutsideContour', maxNumberOfConesOutsideContour, ...
+        'forceRegenerateVisualizationCache', forceRegenerateVisualizationCache);
 
-
-    % Superimpose a sampling grid
-    if (~isempty(samplingGrid))
-       plot(ax, samplingGrid(:,1), samplingGrid(:,2), '^', ...
-           'Color', samplingGridFillColor , 'LineWidth', 5.0, 'MarkerSize', 20);
-       plot(ax, samplingGrid(:,1), samplingGrid(:,2), '^', ...
-           'Color', samplingGridOutlineColor , 'LineWidth', 2.0, 'MarkerSize', 16);
-    end
-
-end
-
-
-function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, ...
+    [hFig, ax] = renderMosaicOfRFcenters(obj, hFig, ax, clearAxesBeforeDrawing, ...
         labelRetinalMeridians, ...
         domainVisualizationTicks, domainVisualizationLimits, ...
         identifiedConeAperture, identifiedConeApertureThetaSamples, ...
-        identifyInputCones, identifyPooledCones, identifiedInputConeIndices, pooledConesLineWidth, labelRGCsWithIndices, ...
+        identifyInputCones, identifyPooledCones, identifiedInputConeIndices, ...
+        pooledConesLineWidth, inputConesAlpha, visualizedRGCindices, labelRGCsWithIndices, ...
         labeledRGCsColor, labeledRGCsLineWidth, ...
-        plotRFoutlines, plottedRFoutlineLineWidth, superimposedRect, superimposedRectColor, ...
+        scaleBarDegs, doNotLabelScaleBar, ...
+        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
+        superimposedRect, superimposedRectLineWidth, superimposedRectColor, superimposedRectAlpha, ...
+        activation, activationRange, activationColorMap, ...
+        colorBarTickLabelPostFix, colorbarTickLabelColor, ...
+        verticalColorBar, horizontalColorBar, colorbarFontSize, ...
+        verticalColorBarInside, horizontalColorBarInside, ...
+        backgroundColor, fontSize, fontAngle, ...
+        plotTitle, plotTitleColor, plotTitleFontSize);
+end
+
+
+function [hFig, ax] = renderMosaicOfRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, ...
+        labelRetinalMeridians, ...
+        domainVisualizationTicks, domainVisualizationLimits, ...
+        identifiedConeAperture, identifiedConeApertureThetaSamples, ...
+        identifyInputCones, identifyPooledCones, identifiedInputConeIndices, ...
+        pooledConesLineWidth, inputConesAlpha, visualizedRGCindices, labelRGCsWithIndices, ...
+        labeledRGCsColor, labeledRGCsLineWidth, ...
+        scaleBarDegs, doNotLabelScaleBar, ...
+        plotRFoutlines, plottedRFoutlineLineWidth, plottedRFoutlineFaceColor, plottedRFoutlineFaceAlpha, ...
+        superimposedRect, superimposedRectLineWidth, superimposedRectColor, superimposedRectAlpha, ...
         activation, activationRange, activationColorMap, ...
         colorBarTickLabelPostFix, colorbarTickLabelColor, ...
         verticalColorBar, horizontalColorBar, colorbarFontSize, ...
         verticalColorBarInside, horizontalColorBarInside, ...
         backgroundColor, fontSize, fontAngle, plotTitle, plotTitleColor,  plotTitleFontSize)
 
-    
+
     if (isempty(ax))
         if (isempty(hFig))
             hFig = figure(); clf;
-            if (isempty(obj.name))
-                set(hFig, 'Color', [1 1 1], 'Position', [10 10 1300 900]);
-            else
-                set(hFig, 'Color', [1 1 1], 'Position', [10 10 1300 900], 'Name', obj.name);
-            end
+            set(hFig, 'Color', [1 1 1], 'Position', [10 10 1300 900]);
         end
         ax = subplot('Position', [0.05 0.06 0.91 0.91]);
     else
@@ -277,65 +355,80 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
         if (~isempty(activation))
             S.EdgeColor = [0 0 0]';
         else
-            S.FaceColor = [0.95 0.95 0.95]*0.6;
-            S.EdgeColor = [0 0 0];
+            if (isempty(plottedRFoutlineFaceColor))
+                S.FaceColor = [0.95 0.95 0.95]*0.6;
+                S.EdgeColor = [0 0 0];
+            else
+                S.FaceColor = plottedRFoutlineFaceColor;
+                S.EdgeColor = S.FaceColor*0.25;
+            end
         end
+
         if (isempty(activation))
-            S.FaceAlpha = 0.4;
+            S.FaceAlpha = plottedRFoutlineFaceAlpha;
         else
-            S.FaceAlpha = 0.9;
+            S.FaceAlpha = 1.0;
         end
 
         S.EdgeAlpha = 1.0;
         S.LineWidth = plottedRFoutlineLineWidth;
-        patch(S, 'Parent', ax)
+        patch(S, 'Parent', ax);
     end
-
 
     if (identifyPooledCones)
         hold(ax, 'on')
-        if (identifyInputCones)
-            lConeInputLineColor = [1 0.1 0.5];
-            mConeInputLineColor = [0.1 1 0.5];
-            lineSegmentWidth = pooledConesLineWidth;
-        else
-            lConeInputLineColor = [0 0 0];
-            mConeInputLineColor = [0 0 0];
-            lineSegmentWidth = pooledConesLineWidth;
-            % Put a single dot in all mRGC RF centers with a single input
-            if (~isempty(obj.visualizationCache.rfCenterSingleConeInputDotPositions))
-                plot(ax, obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,1), ...
-                         obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,2), 'k.');
-            end
+        lConeInputLineColor = [1 0.1 0.5];
+        mConeInputLineColor = [0.1 1 0.5];
+
+        % Put a single dot in all mRGC RF centers with a single input
+        if (~isempty(obj.visualizationCache.rfCenterSingleConeInputDotPositions))
+            plot(ax, obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,1), ...
+                     obj.visualizationCache.rfCenterSingleConeInputDotPositions(:,2), 'k.');
         end
-        
+     
         % Render line segments from centroid to pulled cones
-        renderPooledConesLineSegments(obj, ax, lConeInputLineColor, mConeInputLineColor, lineSegmentWidth);
+        renderPooledConesLineSegments(obj, ax, lConeInputLineColor, mConeInputLineColor, pooledConesLineWidth);
     end
+
 
     % Identify input cones
     if (identifyInputCones)
         hold(ax, 'on')
         if (isempty(identifiedInputConeIndices))
-            obj.inputConeMosaic.visualize(...
-                'figureHandle', hFig, 'axesHandle', ax, ...
-                'clearAxesBeforeDrawing', false, ...
-                'visualizedConeAperture', identifiedConeAperture, ...
-                'conesAlpha', 0.7, ...
-                'conesEdgeAlpha', 0.7, ...
-                'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
-                'labelRetinalMeridians', labelRetinalMeridians, ...
-                'domainVisualizationTicks', domainVisualizationTicks, ...
-                'domainVisualizationLimits', domainVisualizationLimits, ...
-                'backgroundColor', backgroundColor);
+            if (identifiedConeApertureThetaSamples > 0)
+                obj.inputConeMosaic.visualize(...
+                    'figureHandle', hFig, 'axesHandle', ax, ...
+                    'clearAxesBeforeDrawing', false, ...
+                    'visualizedConeAperture', identifiedConeAperture, ...
+                    'conesAlpha', inputConesAlpha, ...
+                    'conesEdgeAlpha', inputConesAlpha, ...
+                    'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
+                    'labelRetinalMeridians', labelRetinalMeridians, ...
+                    'domainVisualizationTicks', domainVisualizationTicks, ...
+                    'domainVisualizationLimits', domainVisualizationLimits, ...
+                    'backgroundColor', backgroundColor);
+            else
+                plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.lConeIndices,1), ...
+                         obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.lConeIndices,2), ...
+                         'r.', 'MarkerSize', 16, 'LineWidth', 1.0);
+                plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.mConeIndices,1), ...
+                         obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.mConeIndices,2), ...
+                         'g.', 'MarkerSize', 16,'LineWidth', 1.0);
+                plot(ax, obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,1), ...
+                         obj.inputConeMosaic.coneRFpositionsDegs(obj.inputConeMosaic.sConeIndices,2), ...
+                         'b.', 'MarkerSize', 16, 'LineWidth', 1.0);
+                set(ax, 'XLim', [domainVisualizationLimits(1) domainVisualizationLimits(2)], ...
+                        'YLim', [domainVisualizationLimits(3) domainVisualizationLimits(4)]);
+                set(ax, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
+            end
         else
             obj.inputConeMosaic.visualize(...
                 'figureHandle', hFig, 'axesHandle', ax, ...
                 'clearAxesBeforeDrawing', false, ...
                 'visualizedConeAperture', identifiedConeAperture, ...
                 'labelConesWithIndices', identifiedInputConeIndices, ...
-                'conesAlpha', 0.7, ...
-                'conesEdgeAlpha', 0.7, ...
+                'conesAlpha', inputConesAlpha, ...
+                'conesEdgeAlpha', inputConesAlpha, ...
                 'visualizedConeApertureThetaSamples', identifiedConeApertureThetaSamples, ...
                 'labelRetinalMeridians', labelRetinalMeridians, ...
                 'domainVisualizationTicks', domainVisualizationTicks, ...
@@ -355,30 +448,33 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             'backgroundColor', backgroundColor);
     end
 
+
     if (~isempty(labelRGCsWithIndices))
         if (plotRFoutlines) || (~isempty(activation))
             hold(ax, 'on')
             for iRGC = 1:numel(labelRGCsWithIndices)
-                theRGCindex = labelRGCsWithIndices(iRGC);
-                if (iscell(obj.visualizationCache.rfCenterContourData{theRGCindex}))
-                    S = obj.visualizationCache.rfCenterContourData{theRGCindex}{1};
-                else
-                    S = obj.visualizationCache.rfCenterContourData{theRGCindex};
+                theLabeledRGCindex = find(visualizedRGCindices == labelRGCsWithIndices(iRGC));
+                if (~isempty(theLabeledRGCindex))
+                    if (iscell(obj.visualizationCache.rfCenterContourData{theLabeledRGCindex}))
+                        S = obj.visualizationCache.rfCenterContourData{theLabeledRGCindex}{1};
+                    else
+                        S = obj.visualizationCache.rfCenterContourData{theLabeledRGCindex};
+                    end
+    
+                    S.FaceVertexCData = 0.5;
+                    S.FaceColor = 'flat';
+                    if (isempty(labeledRGCsColor))
+                        S.EdgeColor = [1 1 0];
+                    else
+                        S.EdgeColor = labeledRGCsColor;
+                    end
+    
+                    S.FaceAlpha = 0.0;
+                    S.LineWidth = labeledRGCsLineWidth;
+                    
+                    S.LineStyle = '-';
+                    patch(S, 'Parent', ax);
                 end
-
-                S.FaceVertexCData = 0.5;
-                S.FaceColor = 'flat';
-                if (isempty(labeledRGCsColor))
-                    S.EdgeColor = [1 1 0];
-                else
-                    S.EdgeColor = labeledRGCsColor;
-                end
-
-                S.FaceAlpha = 0.0;
-                S.LineWidth = labeledRGCsLineWidth;
-                
-                S.LineStyle = '-';
-                patch(S, 'Parent', ax);
             end
         end
     end
@@ -390,32 +486,58 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
             superimposedRectColor = [1 0 0];
         end
 
-        x1 = superimposedRect.center(1) - 0.5*superimposedRect.xRange;
-        x2 = superimposedRect.center(1) + 0.5*superimposedRect.xRange;
-        y1 = superimposedRect.center(2) - 0.5*superimposedRect.yRange;
-        y2 = superimposedRect.center(2) + 0.5*superimposedRect.yRange;
-        xx = [x1 x1 x2 x2 x1];
-        yy = [y1 y2 y2 y1 y1];
-        if (all(superimposedRectColor(1:2) == [1 1]))
-            plot(ax, xx,yy, '-', 'LineWidth', 3, 'Color', [0 0 0]);
-        else
-            plot(ax, xx,yy, '-', 'LineWidth', 3, 'Color', [1 1 0]);
-        end
+        for iRect = 1:size(superimposedRect.center,1)
+            x1 = superimposedRect.center(iRect,1) - 0.5*superimposedRect.xRange(iRect);
+            x2 = superimposedRect.center(iRect,1) + 0.5*superimposedRect.xRange(iRect);
+            y1 = superimposedRect.center(iRect,2) - 0.5*superimposedRect.yRange(iRect);
+            y2 = superimposedRect.center(iRect,2) + 0.5*superimposedRect.yRange(iRect);
+            xx = [x1 x1 x2 x2 x1];
+            yy = [y1 y2 y2 y1 y1];
+            patchVertices = [xx(:) yy(:)];
+            patchFaces = 1:size(patchVertices,1);
+            patch('Faces', patchFaces, 'Vertices', patchVertices, ...
+                'FaceColor', superimposedRectColor,  'FaceAlpha', superimposedRectAlpha, 'Parent', ax);
 
-        plot(ax, xx,yy, '--', 'LineWidth', 3, 'Color', superimposedRectColor);
+            plot(ax, xx,yy, '-', 'LineWidth', superimposedRectLineWidth, 'Color', ones(size(superimposedRectColor)) - superimposedRectColor);
+
+            plot(ax, xx,yy, '--', 'LineWidth', superimposedRectLineWidth, 'Color', superimposedRectColor);
+        end % iRect
+    end
+
+    % Add a scale bar for comparison with physiology
+    if (~isempty(scaleBarDegs)) && (scaleBarDegs > 0) 
+        hold(ax, 'on');
+        xOffset = domainVisualizationLimits(1)+0.05*(domainVisualizationLimits(2)-domainVisualizationLimits(1));
+        yOffset = domainVisualizationLimits(3)+0.05*(domainVisualizationLimits(4)-domainVisualizationLimits(3));
+        yOffset2 = yOffset + 0.05*(domainVisualizationLimits(4)-domainVisualizationLimits(3));
+        plot(ax, xOffset+[0 scaleBarDegs], yOffset2*[1 1], 'k-', 'LineWidth', 2);
+        if (~doNotLabelScaleBar)
+            if (scaleBarDegs>=1.0)
+                text(ax, xOffset+scaleBarDegs, yOffset, sprintf(' %2.1f degs', scaleBarDegs), ...
+                    'FontSize', 20, 'Color', [0 0 0], 'BackgroundColor', [0.85 0.85 0.85]);
+            elseif (scaleBarDegs>=0.1)
+                text(ax, xOffset+scaleBarDegs, yOffset, sprintf(' %2.2f degs', scaleBarDegs), ...
+                    'FontSize', 20, 'Color', [0 0 0], 'BackgroundColor', [0.85 0.85 0.85]);
+            else
+                text(ax, xOffset+scaleBarDegs, yOffset, sprintf(' %2.3f degs', scaleBarDegs), ...
+                    'FontSize', 20, 'Color', [0 0 0], 'BackgroundColor', [0.85 0.85 0.85]);
+            end
+        end
     end
 
     % Finalize plot
+    hold(ax, 'off');
     set(ax, 'FontSize', fontSize, 'FontAngle', fontAngle);
 
     minTickIncrement = min([min(abs(diff(domainVisualizationTicks.x))) min(abs(diff(domainVisualizationTicks.y)))]);
-    if (minTickIncrement >= 2)
-       set(ax, 'XTickLabel', sprintf('%1.0f\n', domainVisualizationTicks.x), ...
-               'YTickLabel', sprintf('%1.0f\n', domainVisualizationTicks.y));
-    elseif (minTickIncrement >= 1)
+    set(ax, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
+    if (minTickIncrement > 1-100*eps)
+       set(ax, 'XTickLabel', sprintf('%1.0f\n', sign(domainVisualizationTicks.x).*round(abs(domainVisualizationTicks.x))), ...
+               'YTickLabel', sprintf('%1.0f\n', sign(domainVisualizationTicks.y).*round(abs(domainVisualizationTicks.y))));
+    elseif (minTickIncrement >= 0.1-100*eps)
        set(ax, 'XTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.x), ...
                'YTickLabel', sprintf('%1.1f\n', domainVisualizationTicks.y));
-    elseif (minTickIncrement >= 0.1)
+    elseif (minTickIncrement > 0.01-100*eps)
        set(ax, 'XTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.x), ...
                'YTickLabel', sprintf('%1.2f\n', domainVisualizationTicks.y));
     else
@@ -426,7 +548,6 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
     if (~identifyInputCones)
         colormap(ax, cMap);
     end
-
 
     if (isempty(backgroundColor))
         set(ax, 'CLim', [0 1], 'Color', 'none');
@@ -484,16 +605,8 @@ function [hFig, ax] = visualizeRFcenters(obj,hFig, ax, clearAxesBeforeDrawing, .
         colorbar(ax, 'off');
     end
 
-    if (plotTitle)    
-       title(ax, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
-    end
-
-
-    fprintf('\nDrawning mRGCmosaic patch. Please wait ...');
-    tic
+    title(ax, plotTitle, 'Color', plotTitleColor, 'FontSize', plotTitleFontSize);
     drawnow;
-    fprintf('Done in %2.2f seconds\n', toc);
-
 end
 
 
@@ -503,34 +616,61 @@ function renderPooledConesLineSegments(obj,ax, lConeInputLineColor, mConeInputLi
         % Plot the connections from the RF center to the input L-cones
         idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.LCONE_ID);
     
-        plot(ax, ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-            'Color', [0 0 0],...
-            'LineWidth', lineSegmentWidth*2);  
+        if (isempty(lineSegmentWidth))
+            for i = 1:numel(idx)
+                plot(ax, ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx(i)), ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx(i)), ...
+                'Color', [0 0 0],...
+                'LineWidth', obj.visualizationCache.rfCenterConeConnectionLineSegments.lineSegmentWidths(idx(i))*2); 
 
-        plot(ax, ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-            'Color', lConeInputLineColor,...
-            'LineWidth', lineSegmentWidth); 
+                plot(ax, ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx(i)), ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx(i)), ...
+                'Color', lConeInputLineColor,...
+                'LineWidth', obj.visualizationCache.rfCenterConeConnectionLineSegments.lineSegmentWidths(idx(i)));
+            end
+        else
+            plot(ax, ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+                'Color', [0 0 0],...
+                'LineWidth', lineSegmentWidth*2);  
 
+            plot(ax, ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+                'Color', lConeInputLineColor,...
+                'LineWidth', lineSegmentWidth); 
+        end
     
         idx = find(obj.visualizationCache.rfCenterConeConnectionLineSegments.coneTypes == cMosaic.MCONE_ID);
-        plot(ax, ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-            'Color', [0 0 0],...
-            'LineWidth', lineSegmentWidth*2);
-        plot(ax, ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
-            obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
-            'Color', mConeInputLineColor,...
-            'LineWidth', lineSegmentWidth);
+
+        if (isempty(lineSegmentWidth))
+            for i = 1:numel(idx)
+                plot(ax, ...
+                    obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx(i)), ...
+                    obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx(i)), ...
+                    'Color', [0 0 0],...
+                    'LineWidth', obj.visualizationCache.rfCenterConeConnectionLineSegments.lineSegmentWidths(idx(i))*2);
+                plot(ax, ...
+                    obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx(i)), ...
+                    obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx(i)), ...
+                    'Color', mConeInputLineColor,...
+                    'LineWidth', obj.visualizationCache.rfCenterConeConnectionLineSegments.lineSegmentWidths(idx(i)));
+            end
+        else
+            plot(ax, ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+                'Color', [0 0 0],...
+                'LineWidth', lineSegmentWidth*2);
+            plot(ax, ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Xpos(:, idx), ...
+                obj.visualizationCache.rfCenterConeConnectionLineSegments.Ypos(:,idx), ...
+                'Color', mConeInputLineColor,...
+                'LineWidth', lineSegmentWidth);
+        end
     end
 
 end
-
-
-
-
