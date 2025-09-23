@@ -83,9 +83,8 @@ function t_cMosaicRodIntrusion()
         ax = subplot('Position', axisPos);
         
         plotTitle = [];
-        if (positionIndex == 1)
-            plotTitle = 'nasal retina';
-        end
+        plotTitle = 'nasal retina';
+        
 
         cMosaicNasalMeridian{positionIndex}.visualize(...
             'figureHandle', hFig, ...
@@ -108,10 +107,8 @@ function t_cMosaicRodIntrusion()
             cMosaicTemporalMeridian{positionIndex}.eccentricityMicrons(2)+13]';
 
         % Visualize a patch of the temporal mosaic
-        plotTitle = [];
-        if (positionIndex == 1)
-            plotTitle = 'temporal retina';
-        end
+        plotTitle = 'temporal retina';
+        
         xyLimitsTemporal(positionIndex,:)
         axisPos = sv(positionIndex,2).v;
         axisPos(3) = 0.51*axisPos(3);
@@ -146,10 +143,8 @@ function t_cMosaicRodIntrusion()
     
 
         ax = subplot('Position', sv(positionIndex,1).v);
-        plotTitle = [];
-        if (positionIndex == 1)
-            plotTitle = 'nasal meridian';
-        end
+        plotTitle = 'nasal meridian';
+        
 
         cMosaicNasalMeridian{positionIndex}.visualize(...
             'figureHandle', hFig, ...
@@ -171,10 +166,8 @@ function t_cMosaicRodIntrusion()
         activation = cMosaicTemporalMeridian{positionIndex}.compute(uniformFieldOI, 'opticalImagePositionDegs', 'mosaic-centered');
 
    
-        plotTitle = [];
-        if (positionIndex == 1)
-            plotTitle = 'temporal meridian';
-        end
+        plotTitle = 'temporal meridian';
+        
         ax = subplot('Position', sv(positionIndex,2).v);
     
         cMosaicTemporalMeridian{positionIndex}.visualize(...
