@@ -74,6 +74,7 @@ function [hFig,ax] = visualize(obj, varargin)
         end
     end
 
+    exportVisualizationPDF = true;
     clearAxesBeforeDrawing = p.Results.clearAxesBeforeDrawing;
     labelRetinalMeridians = p.Results.labelRetinalMeridians;
     domainVisualizationLimits = p.Results.domainVisualizationLimits;
@@ -271,6 +272,22 @@ function [hFig,ax] = visualize(obj, varargin)
         verticalColorBarInside, horizontalColorBarInside, ...
         backgroundColor, fontSize, fontAngle, ...
         plotTitle, plotTitleColor, plotTitleFontSize);
+
+
+    if (exportVisualizationPDF)
+        p = getpref('isetbio');
+        pdfExportSubDir = fullfile(p.rgcResources.figurePDFsDir);
+        theVisualizationPDFfilename = fullfile('modelComponentVisualizations', 'mRGCmosaic.pdf');
+    
+        % Generate the path if we need to
+        RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+            pdfExportSubDir, theVisualizationPDFfilename, ...
+            'generateMissingSubDirs', true);
+
+        thePDFfileName = fullfile(pdfExportSubDir, theVisualizationPDFfilename);
+        NicePlot.exportFigToPDF(thePDFfileName, hFig, 300);
+    end
+
 end
 
 
