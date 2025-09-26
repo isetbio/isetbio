@@ -41,7 +41,7 @@ pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParamet
 
 % Whether to regenerate the mosaic at stage3A 
 % (computation of input cone mosaic STF responses)
-regenerateMosaicAtStage3A = ~true;
+regenerateMosaicAtStage3A = true;
 
 % Whether to regenerate the mosaic at stage3B 
 % (determine optimized surround cone pooling functions so as to yield C&K '95 macaque Rs/Rc intS/C ratios
@@ -49,17 +49,25 @@ regenerateMosaicAtStage3A = ~true;
 regenerateMosaicAtStage3B = ~true;
 
 % Inspect the optimized surround pooling functions
-inspectMosaicAtStage3B = true;
+inspectMosaicAtStage3B = ~true;
+
+% Whether to regenerate the mosaic at stage3C. This is the compute-ready mosaic
+regenerateMosaicAtStage3C = ~true;
+
 
 % Whether to generate separate figures for each component (better for figures in a paper)
 % or a single PDF with all components in a panel array. Summary PDFs have
 % unique names for each visualized location.
 % Non-summary PDFs get overriden for each visualized location (but the code
-% pauses at each location)
+% pauses at each location). 
+% This flag has an effect only for Stage 3B (inspection of optimized
+% surround cone pooling functions)
 summaryInsteadOfSeparateInspectionFigures = true;
 
 
 % Grid of (X,Y)-positions, (W,H)-sizes on which the surround will be optimized 
+pStruct.rgcMosaicSurroundOptimization.addEightExtremePositions = true;
+
 optimizationPositionsAndSizesGrids = RGCMosaicConstructor.compute.surroundOptimizationGrid(...
 		pStruct.rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme, ...
 		pStruct.rgcMosaicSurroundOptimization.minGridSize, ...
@@ -67,10 +75,12 @@ optimizationPositionsAndSizesGrids = RGCMosaicConstructor.compute.surroundOptimi
 		pStruct.whichZernikeDataBase, pStruct.whichEye, pStruct.sourceLatticeSizeDegs, ...
 		pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs, ...
 		pStruct.rgcMosaicSurroundOptimization.mosaicSizeDegs, ...
-		'withExtremePositions', pStruct.rgcMosaicSurroundOptimization.addEightExtremePositions);
+		'withExtremePositions', pStruct.rgcMosaicSurroundOptimization.addEightExtremePositions)
+
 
 % User may select a subset of the positions 
 optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
+optimizationPositionIndicesToCompute = size(optimizationPositionsAndSizesGrids,1):-1:(size(optimizationPositionsAndSizesGrids,1)-7)
 
 % Generate the surroundRetinalConePoolingModel params struct
 surroundRetinalConePoolingModelParamsStruct = ...
@@ -343,3 +353,35 @@ if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
 end %if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
 
 
+if (regenerateMosaicAtStage3C)
+    visualizeSurroundConeWeightsInterpolationProcess = false;
+    visualizeOptimizationGridOnTopOfMosaic = true;
+
+    % Do not introduce additional variance to the intSens surround-to-center ratio
+    surroundVarianceInComputeReadyMosaic = struct();
+
+	% Or introduce additional variance and a bias
+	if ((~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioBias))&&(~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioVariance)))
+			surroundVarianceInComputeReadyMosaic = struct(...
+				'intSensRatioBias', pStruct.rgcMosaicSurroundOptimization.intSensRatioBias, ...
+				'intSensRatioSigma', sqrt(pStruct.rgcMosaicSurroundOptimization.intSensRatioVariance));
+    end
+
+    % Only visualize the locations where the surround pooling functions were generated
+    if (visualizeOptimizationGridOnTopOfMosaic)
+        hFig = RGCMosaicConstructor.compute.computeReadyMosaic(...
+			pStruct.whichEye, ...
+			pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs, ...
+			pStruct.rgcMosaicSurroundOptimization.mosaicSizeDegs, ...
+ 			pStruct.rgcMosaic.spatialChromaticUniformityTradeoff, ...
+			pStruct.customLMSconeDensities, ...
+			surroundConnectivitySimulationParamsStruct, ...
+			optimizationPositionIndicesToCompute, ...
+ 			visualizeOptimizationGridOnTopOfMosaic, ...
+            'employLconeDominanceOptimizationOnly', pStruct.rgcMosaicSurroundOptimization.employLconeDominanceOptimizationOnly, ...
+ 			'surroundVarianceInComputeReadyMosaic', surroundVarianceInComputeReadyMosaic, ...
+ 			'onlyVisualizeOptimizationGrid', true, ...
+ 			'visualizeInterpolationProcess', false);
+    end % if (visualizeOptimizationGridOnTopOfMosaic)
+
+end % if (regenerateMosaicAtStage3C)
