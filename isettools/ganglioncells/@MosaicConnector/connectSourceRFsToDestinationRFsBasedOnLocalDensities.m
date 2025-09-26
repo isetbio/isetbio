@@ -69,11 +69,15 @@ function [connectedSourceRFIndices, nearestDestinationRFIndices] = doIt(obj, ...
             continue;
         end
 
+        % Find which source RFs are not more than the local search region from the destination RF.
+        % Search region is: MosaicConnector.maxFractionOfRFspacingDuringInitialNeighborSearch x local RF spacing
+        withinInitialSearchRegion = distances <= ...
+            MosaicConnector.maxFractionOfRFspacingDuringInitialNeighborSearch * ...
+            obj.destinationLattice.RFspacingsMicrons(iDestinationRF);
+
         % Find which of these closest source RFs are not already connected to
-        % another destination RF and also not more than 0.6 x local RF spacing 
-        idx = find(...
-            (~ismember(closestSourceRFIndices, connectedSourceRFIndices)) & ...
-            (distances <= 0.6*obj.destinationLattice.RFspacingsMicrons(iDestinationRF)));
+        % another destination RF and are within the local search region
+        idx = find((~ismember(closestSourceRFIndices, connectedSourceRFIndices)) & (withinInitialSearchRegion));
 
         if (isempty(idx))
             continue;

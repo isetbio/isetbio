@@ -22,6 +22,7 @@ classdef MosaicConnector < handle
     % Constant properties
     properties (Constant)
         maxNeighborsNum = 6;                                    % max number of neighboring destination RF
+        maxFractionOfRFspacingDuringInitialNeighborSearch = 0.6;
         maxNeighborNormDistance = 1.35;                         % max distance to search for neighboring destination RFs
         localSpacingFromCurrentCentroids = false;
     end
