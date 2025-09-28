@@ -1,7 +1,7 @@
 function theRawFiguresDir = rawFigurePDFsDir()
 
     p = getpref('isetbio'); 
-    theRawFiguresDir = p.rgcResources.rawFigurePDFsDir;
+    theRawFiguresDir = p.rgcResources.figurePDFsDir;
 
     % OLD WAY
     %dropboxDirPath = RGCMosaicConstructor.filepathFor.localDropboxDir();

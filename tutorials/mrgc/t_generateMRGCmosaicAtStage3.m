@@ -49,10 +49,10 @@ regenerateMosaicAtStage3A = ~true;
 regenerateMosaicAtStage3B = ~true;
 
 % Inspect the optimized surround pooling functions
-inspectMosaicAtStage3B = true;
+inspectMosaicAtStage3B = ~true;
 
 % Whether to regenerate the mosaic at stage3C. This is the compute-ready mosaic
-regenerateMosaicAtStage3C = ~true;
+regenerateMosaicAtStage3C = true;
 
 
 % Whether to generate separate figures for each component (better for figures in a paper)
@@ -77,13 +77,6 @@ optimizationPositionsAndSizesGrids = RGCMosaicConstructor.compute.surroundOptimi
 
 % Do all positions
 optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
-
-% Do the last 8 positions (only for this run)
-optimizationPositionIndicesToCompute = size(optimizationPositionsAndSizesGrids,1):-1:(size(optimizationPositionsAndSizesGrids,1)-7);
-
-% Next to run
-startingIndex = 2;
-optimizationPositionIndicesToCompute = optimizationPositionIndicesToCompute(startingIndex:2:end);
 
 % Generate the surroundRetinalConePoolingModel params struct
 surroundRetinalConePoolingModelParamsStruct = ...
@@ -359,14 +352,22 @@ end %if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
 
 
 if (regenerateMosaicAtStage3C)
+    % Just visualize the optimization grid, no not generate the mRGCmosaic
+    onlyVisualizeOptimizationGridOnTopOfMosaic = true;
+
+    % Generate the mRGCmosaic
+    onlyVisualizeOptimizationGridOnTopOfMosaic = false;
+
     visualizeSurroundConeWeightsInterpolationProcess = false;
-    visualizeOptimizationGridOnTopOfMosaic = true;
 
     % Do not introduce additional variance to the intSens surround-to-center ratio
     surroundVarianceInComputeReadyMosaic = struct();
 
 	% Or introduce additional variance and a bias
-	if ((~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioBias))&&(~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioVariance)))
+    if (...
+            (~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioBias)) && ...
+            (~isempty(pStruct.rgcMosaicSurroundOptimization.intSensRatioVariance))...
+        )
 			surroundVarianceInComputeReadyMosaic = struct(...
 				'intSensRatioBias', pStruct.rgcMosaicSurroundOptimization.intSensRatioBias, ...
 				'intSensRatioSigma', sqrt(pStruct.rgcMosaicSurroundOptimization.intSensRatioVariance));
