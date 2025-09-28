@@ -12,8 +12,6 @@ function optimizationPositionsAndSizesGrids = surroundOptimizationGrid(...
 	assert(ismember(peripheralSampling, {'high res', 'medium res', 'low res', 'very low res'}), ...
 		'invalid peripheralSampling. Valid values are: {''high res'', ''medium res'', ''low res'', ''very low res''}');
 
-	
-
 	neuronType = 'midget ganglion cells';
 	
     mosaicOutline.x = mosaicEccDegs(1)+0.5*mosaicSizeDegs(1)*[-1 -1 1 1 -1];

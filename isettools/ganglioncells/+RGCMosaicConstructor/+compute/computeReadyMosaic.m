@@ -146,7 +146,7 @@ function hFig = computeReadyMosaic(whichEye,  mosaicEccDegs, mosaicSizeDegs, ...
     % Additional info specific to the surround process
     surroundConnectedParamsStruct.surroundConnectivitySimulationParamsStruct = surroundConnectivitySimulationParamsStruct;
     surroundConnectedParamsStruct.surroundConnectivitySimulationParamsStruct.optimizationPosition = [];
-    theSurroundConnectedMRGCMosaicFullFileName = RGCMosaicConstructor.filepathFor.exportedMosaicFileName(...
+    [theSurroundConnectedMRGCMosaicFullFileName, ~,  theSurroundConnectedMRGCMosaicFileName]= RGCMosaicConstructor.filepathFor.exportedMosaicFileName(...
 			    surroundConnectedParamsStruct, surroundConnectivityStage);
 
     hFig = [];
@@ -210,9 +210,17 @@ function hFig = computeReadyMosaic(whichEye,  mosaicEccDegs, mosaicSizeDegs, ...
 			end % for theTargetConeDominance
 		end % for theTargetConeNumerosity
 
-		theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-    	thePDFfileName = fullfile(theRawFiguresDir, strrep(theCenterConnectedMRGCMosaicFileName, '.mat', 'WithOptimizationGridSuprimposed.pdf' ));
+		pdfExportSubDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+        theVisualizationPDFfilename = strrep(theSurroundConnectedMRGCMosaicFileName, '.mat', 'WithOptimizationGridSuprimposed.pdf');
+    	
+        % Generate the path if we need to
+        RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+            pdfExportSubDir, theVisualizationPDFfilename, ...
+            'generateMissingSubDirs', true);
+
+        thePDFfileName = fullfile(pdfExportSubDir, theVisualizationPDFfilename);
     	NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+
 	end % visualizeOptimizationGridOnTopOfMosaic
 
 	if (onlyVisualizeOptimizationGrid)
