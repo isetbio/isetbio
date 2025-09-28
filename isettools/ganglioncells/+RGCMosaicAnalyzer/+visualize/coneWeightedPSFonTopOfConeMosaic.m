@@ -28,14 +28,29 @@ function coneWeightedPSFonTopOfConeMosaic(figNo, theInputConeMosaic, theConeWeig
     PublicationReadyPlotLib.applyFormat(ax,ff);
     %PublicationReadyPlotLib.offsetAxes(ax, ff, XLims, YLims);
 
-    theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
-    if (isdir(theRawFiguresDir))
-        pdfExportSubDir = 'validation';
+    % OLD WAY
+    %theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
+
+    %if (isdir(theRawFiguresDir))
+    %    pdfExportSubDir = 'validation';
     
-        thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, thePDFfileName);
-        NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
-    else
-        fprintf('Raw figures directory not found: %s.\nWill not export PDF\n', theRawFiguresDir);
-    end
+    %    thePDFfileName = fullfile(theRawFiguresDir, pdfExportSubDir, thePDFfileName);
+    %    NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
+    %else
+    %    fprintf('Raw figures directory not found: %s.\nWill not export PDF\n', theRawFiguresDir);
+    %end
+
+
+    p = getpref('isetbio');
+    pdfExportSubDir = fullfile(p.rgcResources.figurePDFsDir);
+    theVisualizationPDFfilename = fullfile('modelComponentVisualizations', thePDFfileName);
+    
+    % Generate the path if we need to
+    RGCMosaicConstructor.filepathFor.augmentedPathWithSubdirs(...
+        pdfExportSubDir, theVisualizationPDFfilename, ...
+        'generateMissingSubDirs', true);
+
+    thePDFfileName = fullfile(pdfExportSubDir, theVisualizationPDFfilename);
+    NicePlot.exportFigToPDF(thePDFfileName, hFig, 300);
 
 end
