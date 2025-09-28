@@ -5,14 +5,18 @@ function hFig = computeReadyMosaic(whichEye,  mosaicEccDegs, mosaicSizeDegs, ...
 	 % Parse input
     p = inputParser;
     p.addParameter('surroundVarianceInComputeReadyMosaic', @isstruct);
-    p.addParameter('onlyVisualizeOptimizationGrid', false, @islogical);
     p.addParameter('visualizeInterpolationProcess', false, @islogical);
     p.addParameter('employLconeDominanceOptimizationOnly', false, @islogical);
+    p.addParameter('onlyVisualizeOptimizationGrid', false, @islogical);
+    p.addParameter('visualizeNeighboringOptimizationGridNodesWithLines', false, @islogical);
+
     p.parse(varargin{:});
 	onlyVisualizeOptimizationGrid = p.Results.onlyVisualizeOptimizationGrid;
+
 	visualizeInterpolationProcess = p.Results.visualizeInterpolationProcess;
 	surroundVarianceInComputeReadyMosaic = p.Results.surroundVarianceInComputeReadyMosaic;
     employLconeDominanceOptimizationOnly = p.Results.employLconeDominanceOptimizationOnly;
+    visualizeNeighboringOptimizationGridNodesWithLines = p.Results.visualizeNeighboringOptimizationGridNodesWithLines;
 
 	% All L-cone dominance optimization files
 	[theLconeDominanceOptimizationResultsFileNameCollection, ...
@@ -181,33 +185,34 @@ function hFig = computeReadyMosaic(whichEye,  mosaicEccDegs, mosaicSizeDegs, ...
 					theDominantConeColor = [1 0 0];
 				else
 					theDominantConeColor = [0 1 0];
-				end
-				for idx = 1:numel(optimizationPositionIndicesToCompute)
-					iPos = optimizationPositionIndicesToCompute(idx);
-					kdx = find((theOptimizationGrid.centerConeNumerosity == theTargetConeNumerosity) & (theOptimizationGrid.centerConeDominance == theTargetConeDominance));
-					ddd = sum((bsxfun(@minus, theOptimizationGrid.positionDegs(kdx,:),surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iPos,:))).^2,2);
-					[~,iidx] = sort(ddd);
+                end
 
-					% Plot at most the 3 closest optimization positions with the same numerisity and cone dominance
-					for jjj = 1:min([3 numel(iidx)])
-						theGridNodeIndex = kdx(iidx(jjj));
+                if (visualizeNeighboringOptimizationGridNodesWithLines)
+				    for idx = 1:numel(optimizationPositionIndicesToCompute)
+					    iPos = optimizationPositionIndicesToCompute(idx);
+					    kdx = find((theOptimizationGrid.centerConeNumerosity == theTargetConeNumerosity) & (theOptimizationGrid.centerConeDominance == theTargetConeDominance));
+					    ddd = sum((bsxfun(@minus, theOptimizationGrid.positionDegs(kdx,:),surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iPos,:))).^2,2);
+					    [~,iidx] = sort(ddd);
+    
+					    % Plot at most the 3 closest optimization positions with the same numerisity and cone dominance
+					    for jjj = 1:min([3 numel(iidx)])
+						    theGridNodeIndex = kdx(iidx(jjj));
+    
+						    xx = [surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iPos,1) theOptimizationGrid.positionDegs(theGridNodeIndex,1)];
+						    yy = [surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iPos,2) theOptimizationGrid.positionDegs(theGridNodeIndex,2)];
+						    plot(theAxes, xx, yy, 'r-', 'LineWidth', 2.0, 'Color', theDominantConeColor);
+						    text(theAxes, xx(2), yy(2), sprintf('%d', theTargetConeNumerosity), 'FontSize', 14);
+					    end
+    
+				    end % idx
+                end % if (visualizeNeighboringOptimizationGridNodesWithLines)
 
-						xx = [surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iPos,1) theOptimizationGrid.positionDegs(theGridNodeIndex,1)];
-						yy = [surroundConnectivitySimulationParamsStruct.optimizationPositionsGrid(iPos,2) theOptimizationGrid.positionDegs(theGridNodeIndex,2)];
-						plot(theAxes, xx, yy, 'r-', 'LineWidth', 2.0, 'Color', theDominantConeColor);
-						text(theAxes, xx(2), yy(2), sprintf('%d', theTargetConeNumerosity), 'FontSize', 14);
-					end
-
-				end % idx
 			end % for theTargetConeDominance
 		end % for theTargetConeNumerosity
-
-		
 
 		theRawFiguresDir = RGCMosaicConstructor.filepathFor.rawFigurePDFsDir();
     	thePDFfileName = fullfile(theRawFiguresDir, strrep(theCenterConnectedMRGCMosaicFileName, '.mat', 'WithOptimizationGridSuprimposed.pdf' ));
     	NicePlot.exportFigToPDF(thePDFfileName,hFig,  300);
-
 	end % visualizeOptimizationGridOnTopOfMosaic
 
 	if (onlyVisualizeOptimizationGrid)
@@ -698,7 +703,7 @@ function renderSurroundConePoolingWeightsMap(ax, coneDominance, theSurroundConeW
 	theSurroundConePositions = theRGCMosaic.inputConeMosaic.coneRFpositionsDegs(theSurroundConeIndices,:);
 	theSurroundConeTypes = theRGCMosaic.inputConeMosaic.coneTypes(theSurroundConeIndices);
 
-	c = median(theSurroundConePositions,1)
+	c = median(theSurroundConePositions,1);
 	XLims = c(1) + maxXYrange*0.51*[-1 1];
 	YLims = c(2) + maxXYrange*0.51*[-1 1];
 
