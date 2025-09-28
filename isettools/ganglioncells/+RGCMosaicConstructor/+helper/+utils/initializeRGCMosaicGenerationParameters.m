@@ -331,7 +331,7 @@ switch (rgcMosaicName)
 		rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme = 'medium res'; 
 		rgcMosaicSurroundOptimization.minGridSize = 1.0; 
 		rgcMosaicSurroundOptimization.maxGridSize = 3.0;
-		rgcMosaicSurroundOptimization.addEightExtremePositions = false;
+		rgcMosaicSurroundOptimization.addEightExtremePositions = true;
 		rgcMosaicSurroundOptimization.intSensRatioVariance = 0.1^2; 
 		rgcMosaicSurroundOptimization.intSensRatioBias = 1.0;
 		rgcMosaicSurroundOptimization.optimizationStrategy = 'LowH1paramsNarrowVisualSTFparamTolerance';
