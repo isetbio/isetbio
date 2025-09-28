@@ -41,7 +41,7 @@ pStruct = RGCMosaicConstructor.helper.utils.initializeRGCMosaicGenerationParamet
 
 % Whether to regenerate the mosaic at stage3A 
 % (computation of input cone mosaic STF responses)
-regenerateMosaicAtStage3A = true;
+regenerateMosaicAtStage3A = ~true;
 
 % Whether to regenerate the mosaic at stage3B 
 % (determine optimized surround cone pooling functions so as to yield C&K '95 macaque Rs/Rc intS/C ratios
@@ -49,7 +49,7 @@ regenerateMosaicAtStage3A = true;
 regenerateMosaicAtStage3B = ~true;
 
 % Inspect the optimized surround pooling functions
-inspectMosaicAtStage3B = ~true;
+inspectMosaicAtStage3B = true;
 
 % Whether to regenerate the mosaic at stage3C. This is the compute-ready mosaic
 regenerateMosaicAtStage3C = ~true;
@@ -65,9 +65,6 @@ regenerateMosaicAtStage3C = ~true;
 summaryInsteadOfSeparateInspectionFigures = true;
 
 
-% Grid of (X,Y)-positions, (W,H)-sizes on which the surround will be optimized 
-pStruct.rgcMosaicSurroundOptimization.addEightExtremePositions = true;
-
 optimizationPositionsAndSizesGrids = RGCMosaicConstructor.compute.surroundOptimizationGrid(...
 		pStruct.rgcMosaicSurroundOptimization.peripheralOptimizationSamplingScheme, ...
 		pStruct.rgcMosaicSurroundOptimization.minGridSize, ...
@@ -75,12 +72,18 @@ optimizationPositionsAndSizesGrids = RGCMosaicConstructor.compute.surroundOptimi
 		pStruct.whichZernikeDataBase, pStruct.whichEye, pStruct.sourceLatticeSizeDegs, ...
 		pStruct.rgcMosaicSurroundOptimization.mosaicEccDegs, ...
 		pStruct.rgcMosaicSurroundOptimization.mosaicSizeDegs, ...
-		'withExtremePositions', pStruct.rgcMosaicSurroundOptimization.addEightExtremePositions)
+		'withExtremePositions', pStruct.rgcMosaicSurroundOptimization.addEightExtremePositions);
 
 
-% User may select a subset of the positions 
+% Do all positions
 optimizationPositionIndicesToCompute = 1:size(optimizationPositionsAndSizesGrids,1);
-optimizationPositionIndicesToCompute = size(optimizationPositionsAndSizesGrids,1):-1:(size(optimizationPositionsAndSizesGrids,1)-7)
+
+% Do the last 8 positions (only for this run)
+optimizationPositionIndicesToCompute = size(optimizationPositionsAndSizesGrids,1):-1:(size(optimizationPositionsAndSizesGrids,1)-7);
+
+% Next to run
+startingIndex = 2;
+optimizationPositionIndicesToCompute = optimizationPositionIndicesToCompute(startingIndex:2:end);
 
 % Generate the surroundRetinalConePoolingModel params struct
 surroundRetinalConePoolingModelParamsStruct = ...
@@ -125,21 +128,23 @@ end  % regenerateMosaicAtStage3A
 
 if (regenerateMosaicAtStage3B) || (inspectMosaicAtStage3B)
 
-    % Optimize all numerosities
-    centerConeNumerositiesToOptimize = [];
-    	
-    % Query user as to which cone dominance to optimize, 1 or 2
-    %centerConeDominanceToOptimize = input('Cone dominance of RF center for which to optimize surrounds. 1: L-cone dominance, 2:M-cone dominance. Your choice: ');
-
-    % Optimize L-cone centers
-    centerConeDominanceToOptimize = 1;
-
-    % Options for loading the nitial optimization params
-	% Choose from {'none', 'default', 'imported exact match' or 'imported closest match'}
-	%initialSurroundOptimizationValuesSource = 'imported exact match';	
-	initialSurroundOptimizationValuesSource = 'imported closest match';
-	%initialSurroundOptimizationValuesSource = 'none';	
-	%initialSurroundOptimizationValuesSource = 'skip if previous file exists';
+    if (regenerateMosaicAtStage3B)
+        % Optimize all numerosities
+        centerConeNumerositiesToOptimize = [];
+    	    
+        % Query user as to which cone dominance to optimize, 1 or 2
+        %centerConeDominanceToOptimize = input('Cone dominance of RF center for which to optimize surrounds. 1: L-cone dominance, 2:M-cone dominance. Your choice: ');
+    
+        % Optimize L-cone centers
+        centerConeDominanceToOptimize = 2;
+    
+        % Options for loading the nitial optimization params
+	    % Choose from {'none', 'default', 'imported exact match' or 'imported closest match'}
+	    %initialSurroundOptimizationValuesSource = 'imported exact match';	
+	    initialSurroundOptimizationValuesSource = 'imported closest match';
+	    %initialSurroundOptimizationValuesSource = 'none';	
+	    initialSurroundOptimizationValuesSource = 'skip if previous file exists';
+    end
 
     % User may select to use params from a fixed H1 cell index
     if (strcmp(surroundRetinalConePoolingModelParamsStruct.name, 'PackerDacey2002H1FixedCellIndex')) 
