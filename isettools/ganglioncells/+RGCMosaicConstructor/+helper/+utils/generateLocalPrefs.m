@@ -1,5 +1,10 @@
-% RGCMosaicConstructor.helper.util.generateLocalPrefs()
-function generateLocalPrefs()
+% RGCMosaicConstructor.helper.utils.generateLocalPrefs(['useSLIMpaths', true])
+function generateLocalPrefs(varargin)
+    ip = inputParser;
+    ip.addParameter('useSLIMpaths', false, @islogical);
+    % Execute the parser
+    ip.parse(varargin{:});
+    useSLIMpaths = ip.Results.useSLIMpaths;
 
     p = GetComputerInfo;
     
@@ -21,8 +26,13 @@ function generateLocalPrefs()
 
 
     % User needs to make sure that the following dirs exist under the rgcResourcesRootDir
-    intermediateDataDir = 'IBIO_rgcMosaicResources/denovo/intermediateFiles/ONcenterMidgetRGCmosaics/';
-    figurePDFsDir = 'ManuscriptSupportMaterials/denovo/PLOS2024/figures/';
+    if (useSLIMpaths)
+        intermediateDataDir = 'IBIO_rgcMosaicResources/ONcenterMidgetRGCmosaics/intermediateFiles/SLIM';
+        figurePDFsDir = 'ManuscriptSupportMaterials/PLOS2024/figures/SLIM/raw';
+    else
+        intermediateDataDir = 'IBIO_rgcMosaicResources/denovo/intermediateFiles/ONcenterMidgetRGCmosaics/';
+        figurePDFsDir = 'ManuscriptSupportMaterials/denovo/PLOS2024/figures/';
+    end
 
     % Generate the rgcResources struct
     rgcResources = struct(...
