@@ -90,7 +90,7 @@ function optimizationResults(optimizationResultsStruct, ...
         'axesToRenderIn', axCorrespondenceToPackerDaceyH1);
 
 
-    % The achieved performaynce ratios
+    % The achieved ratios
     figNo = 5; figPos = [700 120];
 
     % Visualize the fit performance

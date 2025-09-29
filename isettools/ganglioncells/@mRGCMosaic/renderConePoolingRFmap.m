@@ -66,7 +66,7 @@ function hFig = renderConePoolingRFmap(obj, theRGCindex, varargin)
     % Retrieve this cell's surround cone indices and weights
     if (~isempty(obj.rgcRFsurroundConeConnectivityMatrix))
         surroundConnectivityVector = full(squeeze(obj.rgcRFsurroundConeConnectivityMatrix(:, theRGCindex)));
-        surroundConeIndices = find(max(surroundConnectivityVector)*minConeWeightIncluded);
+        surroundConeIndices = find(surroundConnectivityVector > max(surroundConnectivityVector)*minConeWeightIncluded);
         surroundConeWeights = surroundConnectivityVector(surroundConeIndices);
 
         % The surround cones, which include the center cones
