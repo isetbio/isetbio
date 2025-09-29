@@ -35,8 +35,16 @@ function [theMRGCMosaic, theOI] = loadPrebakedMosaic(mosaicParams, opticsParams)
 
     fprintf('\t---> The prebaked mRGC mosaic contains %d mRGCs\n', theMRGCMosaic.rgcsNum);
     if (isfield(mosaicParams, 'cropParams'))&&(~isempty(mosaicParams.cropParams))
+
+        extraDegs = mRGCMosaic.extraSupportDegsForMidgetRGCSurrounds(...
+            theMRGCMosaic.eccentricityDegs, ...
+            theMRGCMosaic.sizeDegs);    
+
         % Crop the mosaic to requested size
-        theMRGCMosaic.cropToSizeAtEccentricity(mosaicParams.cropParams.sizeDegs, mosaicParams.cropParams.eccentricityDegs);
+        theMRGCMosaic.cropToSizeAtEccentricity(...
+            mosaicParams.cropParams.sizeDegs, ...
+            mosaicParams.cropParams.eccentricityDegs, ...
+            'extraSupportDegsForInputConeMosaic', extraDegs);
     end
     
     fprintf('\t----> The final mRGC mosaic contains %d mRGCs\n', theMRGCMosaic.rgcsNum);
