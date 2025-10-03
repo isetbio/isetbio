@@ -92,12 +92,12 @@ function t_mRGCMosaicBasicComputation
     
     % Visualization limits and ticks
     visualizedWidthDegs = theMRGCmosaic.inputConeMosaic.sizeDegs(1);
-    visualizedHeightDegs = theMRGCmosaic.inputConeMosaic.sizeDegs(2);;
+    visualizedHeightDegs = theMRGCmosaic.inputConeMosaic.sizeDegs(2);
     domainVisualizationLimits(1:2) = theMRGCmosaic.eccentricityDegs(1) + 0.5 * visualizedWidthDegs * [-1 1];
     domainVisualizationLimits(3:4) = theMRGCmosaic.eccentricityDegs(2) + 0.5 * visualizedHeightDegs * [-1 1];
     domainVisualizationTicks = struct(...
         'x', theMRGCmosaic.eccentricityDegs(1) + 0.5 * visualizedWidthDegs * [-1 -0.5 0 0.5 1], ...
-        'y', theMRGCmosaic.eccentricityDegs(2) + 0.5 * visualizedWidthDegs * [-1 -0.5 0 0.5 1]);
+        'y', theMRGCmosaic.eccentricityDegs(2) + 0.5 * visualizedHeightDegs * [-1 -0.5 0 0.5 1]);
 
     ff = PublicationReadyPlotLib.figureComponents('1x1 giant rectangular-wide mosaic');
 
@@ -165,12 +165,17 @@ function t_mRGCMosaicBasicComputation
 
 
     % Visualize the response of the input cone mosaic
-    ff = PublicationReadyPlotLib.figureComponents('1x2 standard figure');
+    ff = PublicationReadyPlotLib.figureComponents('1x2 giant figure');
     ff.backgroundColor = [0 0 0];
     hFig = figure(2); clf;
     theAxes = PublicationReadyPlotLib.generatePanelAxes(hFig,ff);
     ax1 = theAxes{1,1};
     ax2 = theAxes{1,2};
+
+    visualizedWidthDegs = theMRGCmosaic.sizeDegs(1);
+    visualizedHeightDegs = theMRGCmosaic.sizeDegs(2);
+    domainVisualizationLimits(1:2) = theMRGCmosaic.eccentricityDegs(1) + 0.5 * visualizedWidthDegs * [-1 1];
+    domainVisualizationLimits(3:4) = theMRGCmosaic.eccentricityDegs(2) + 0.5 * visualizedHeightDegs * [-1 1];
 
     theMRGCmosaic.inputConeMosaic.visualize(...
         'figureHandle', hFig, ...
@@ -191,6 +196,7 @@ function t_mRGCMosaicBasicComputation
         'domainVisualizationLimits', domainVisualizationLimits, ...
         'domainVisualizationTicks', domainVisualizationTicks, ...
         'activation', theNoiseFreeSpatioTemporalMRCMosaicResponse, ...
+        'noYLabel', true, ...
         'plotTitle', 'mRGC mosaic response');
 
     % Finalize figure using the Publication-Ready format
@@ -199,7 +205,7 @@ function t_mRGCMosaicBasicComputation
 
     % Compute indices of visualized cones and RGCs along the Y = 0.15 degs
     targetYdegs = -0.42;
-    targetHeightDegs = 0.05;
+    targetHeightDegs = 0.4;
 
     % Compute indices of mRGCs and input cones that are in the target ROI
     [visualizedConeIndices, theVisualizedConeXcoords, ...
@@ -272,6 +278,7 @@ function visualizeMRGCMosaicActivationWithinROI(hFig, ax, theMRGCMosaic, theMRGC
         'activation', theMRGCMosaicResponse, ...
         'verticalActivationColorBarInside', true, ...
         'backgroundColor', [0 0 0], ...
+        'plotTitle', 'mRGCmosaic activation', ...
         'domainVisualizationLimits', domainVisualizationLimits, ...
         'domainVisualizationTicks', domainVisualizationTicks);
 
@@ -285,13 +292,13 @@ function visualizeMRGCMosaicActivationWithinROI(hFig, ax, theMRGCMosaic, theMRGC
         'fillColor', [0.8 0.8 0.8 0.4]);
 
 
-    plot(ax, theVisualizedMRGCXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedMRGCResponses/max(theMRGCMosaicResponse(:)), 'k-', 'LineWidth', 5);
-    plot(ax, theVisualizedMRGCXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedMRGCResponses/max(theMRGCMosaicResponse(:)), 'r-', 'LineWidth', 4);
-    plot(ax, theVisualizedMRGCXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedMRGCResponses/max(theMRGCMosaicResponse(:)), 'ro', 'MarkerSize', 16, 'MarkerFaceColor', [1 0.8 0.5], 'LineWidth', 1.5);
+    %plot(ax, theVisualizedMRGCXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedMRGCResponses/max(theMRGCMosaicResponse(:)), 'k-', 'LineWidth', 5);
+    %plot(ax, theVisualizedMRGCXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedMRGCResponses/max(theMRGCMosaicResponse(:)), 'r-', 'LineWidth', 4);
+    plot(ax, theVisualizedMRGCXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedMRGCResponses/max(theMRGCMosaicResponse(:)), 'ro', 'MarkerSize', 10, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'LineWidth', 1.0);
     plot(ax, theVisualizedMRGCXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedMRGCResponses/max(theMRGCMosaicResponse(:))*0.0, 'r-', 'LineWidth', 2);
 
 
-    set(ax, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'LineWidth', 1.5, 'FontSize', 30);
+    set(ax, 'XColor', [0.95 0.95 0.95], 'YColor', [0.95 0.95 0.95], 'LineWidth', 1.5);
     set(ax, 'XLim', domainVisualizationLimits(1:2), 'YLim', domainVisualizationLimits(3:4));
     set(ax, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
     grid(ax, 'off')
@@ -309,6 +316,7 @@ function visualizeInputConeMosaicActivation(hFig, ax, theMRGCMosaic, theConeMosa
         'activation', theConeMosaicResponse, ...
         'verticalActivationColorBarInside', true, ...
         'backgroundColor', [0 0 0], ...
+        'plotTitle', 'input cone mosaic activation', ...
         'domainVisualizationLimits', domainVisualizationLimits, ...
         'domainVisualizationTicks', domainVisualizationTicks);
 
@@ -320,13 +328,12 @@ function visualizeInputConeMosaicActivation(hFig, ax, theMRGCMosaic, theConeMosa
         'yLims', theMRGCMosaic.eccentricityDegs(2) + theMRGCMosaic.sizeDegs(2)*0.51*[-1 1], ...
         'fillColor', [0.8 0.8 0.8 0.4]);
 
-    plot(ax, theVisualizedConeXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedConeResponses/max(theConeMosaicResponse(:)), 'k-', 'LineWidth', 5);
-    plot(ax, theVisualizedConeXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedConeResponses/max(theConeMosaicResponse(:)), 'r-', 'LineWidth', 4);
-    plot(ax, theVisualizedConeXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedConeResponses/max(theConeMosaicResponse(:)), 'ro', 'MarkerSize', 16, 'MarkerFaceColor', [1 0.8 0.5], 'LineWidth', 1.5);
+    %plot(ax, theVisualizedConeXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedConeResponses/max(theConeMosaicResponse(:)), 'k-', 'LineWidth', 5);
+    %plot(ax, theVisualizedConeXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedConeResponses/max(theConeMosaicResponse(:)), 'r-', 'LineWidth', 4);
+    plot(ax, theVisualizedConeXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedConeResponses/max(theConeMosaicResponse(:)), 'ro', 'MarkerSize', 10, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'LineWidth', 1.0);
     plot(ax, theVisualizedConeXcoords, targetYdegs + theMRGCMosaic.sizeDegs(2)*0.4 * theVisualizedConeResponses/max(theConeMosaicResponse(:))*0.0, 'r-', 'LineWidth', 2);
     
-    set(hFig, 'Color', [0 0 0]);
-    set(ax, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], 'LineWidth', 1.5, 'FontSize', 30);
+    set(ax, 'XColor', [0.95 0.95 0.95], 'YColor', [0.95 0.95 0.95], 'LineWidth', 1.5);
     set(ax, 'XLim', domainVisualizationLimits(1:2), 'YLim', domainVisualizationLimits(3:4));
     set(ax, 'XTick', domainVisualizationTicks.x, 'YTick', domainVisualizationTicks.y);
     grid(ax, 'off')
